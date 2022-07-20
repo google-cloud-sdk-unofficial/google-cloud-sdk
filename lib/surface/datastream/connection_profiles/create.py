@@ -39,6 +39,10 @@ EXAMPLES = """\
     To create a connection profile for Google Cloud Storage:
 
         $ {command} CONNECTION_PROFILE --location=us-central1 --type=google-cloud-storage --bucket=fake-bucket --root-path=/root/path --display-name=my-profile
+
+    To create a connection profile for BigQuery:
+
+        $ {command} CONNECTION_PROFILE --location=us-central1 --type=bigquery --display-name=my-profile
    """
 EXAMPLES_BETA = """\
     To create a connection profile for Oracle:
@@ -78,7 +82,7 @@ class Create(base.Command):
     if release_track == base.ReleaseTrack.GA:
       cp_flags.AddValidationGroup(parser, 'Create')
 
-    profile_flags = parser.add_group(required=True, mutex=True)
+    profile_flags = parser.add_group(mutex=True)
     cp_flags.AddMysqlProfileGroup(profile_flags)
     cp_flags.AddOracleProfileGroup(profile_flags)
     cp_flags.AddGcsProfileGroup(profile_flags, release_track)

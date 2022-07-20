@@ -54,8 +54,8 @@ DETAILED_HELP = {
 
 
 @base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class CreateBeta(base.CreateCommand):
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class Create(base.CreateCommand):
   """Create a Google Cloud VMware Engine network."""
 
   detailed_help = DETAILED_HELP
@@ -105,8 +105,3 @@ class CreateBeta(base.CreateCommand):
         has_result=True)
     log.CreatedResource(resource, kind='VMware Engine network', is_async=False)
     return resource
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class CreateAlpha(CreateBeta):
-  """Create a Google Cloud VMware Engine network."""

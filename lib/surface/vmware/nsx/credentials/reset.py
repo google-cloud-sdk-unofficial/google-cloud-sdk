@@ -45,8 +45,8 @@ DETAILED_HELP = {
 
 
 @base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class ResetBeta(base.UpdateCommand):
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class Reset(base.UpdateCommand):
   """Reset VMware NSX sign-in credentials associated with a Google Cloud VMware Engine private cloud."""
 
   detailed_help = DETAILED_HELP
@@ -74,9 +74,3 @@ class ResetBeta(base.UpdateCommand):
     log.UpdatedResource(resource, kind='nsx credentials')
 
     return resource
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class ResetAlpha(ResetBeta):
-  """Reset VMware NSX sign-in credentials associated with a Google Cloud VMware Engine private cloud."""
-  _is_hidden = False

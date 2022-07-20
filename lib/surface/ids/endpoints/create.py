@@ -91,7 +91,7 @@ class Create(base.CreateCommand):
         args.format = 'default'
       return operation
     return client.WaitForOperation(
-        operation_ref=client.GetOperationRef(operation, endpoint),
+        operation_ref=client.GetOperationRef(operation),
         message='waiting for endpoint [{}] to be created'.format(
             endpoint.RelativeName()),
         max_wait=max_wait)

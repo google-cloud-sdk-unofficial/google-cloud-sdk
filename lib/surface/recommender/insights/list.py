@@ -37,7 +37,7 @@ DETAILED_HELP = {
 class List(base.ListCommand):
   r"""List insights for a cloud entity.
 
-  This command will list all insights for a give cloud entity, location and
+  This command will list all insights for a given cloud entity, location and
   insight type. Supported insight-types can be found here:
   https://cloud.google.com/recommender/docs/insights/insight-types. Currently
   the following cloud_entity_types are supported: project, billing_account,

@@ -65,7 +65,6 @@ class Create(base.CreateCommand):
     flags.AddCPUCount(parser)
     flags.AddReadPoolNodeCount(parser)
     flags.AddRegion(parser)
-    flags.AddZone(parser)
     # TODO(b/185795425): Add --ssl-required and --labels later once we
     # understand the use cases
 

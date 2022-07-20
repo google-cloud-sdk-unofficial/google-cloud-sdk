@@ -179,7 +179,7 @@ class CreateGA(base.CreateCommand):
     if args.target_distribution_shape:
       distribution_policy.targetShape = (
           messages.DistributionPolicy.TargetShapeValueValuesEnum)(
-              args.target_distribution_shape)
+              args.target_distribution_shape.upper())
 
     return ValueOrNone(distribution_policy)
 
@@ -353,7 +353,7 @@ class CreateBeta(CreateGA):
       instance_group_manager.listManagedInstancesResults = (
           client.messages.InstanceGroupManager
           .ListManagedInstancesResultsValueValuesEnum)(
-              args.list_managed_instances_results)
+              args.list_managed_instances_results.upper())
 
     return instance_group_manager
 

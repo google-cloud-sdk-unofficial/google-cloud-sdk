@@ -44,8 +44,8 @@ DETAILED_HELP = {
 
 
 @base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class DeleteBeta(base.DeleteCommand):
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class Delete(base.DeleteCommand):
   """Delete a Google Cloud VMware Engine private cloud."""
 
   detailed_help = DETAILED_HELP
@@ -80,9 +80,3 @@ class DeleteBeta(base.DeleteCommand):
         message='waiting for private cloud [{}] to be deleted'.format(
             privatecloud.RelativeName()),
         has_result=False)
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class DeleteAlpha(DeleteBeta):
-  """Delete a Google Cloud VMware Engine private cloud."""
-  _is_hidden = False

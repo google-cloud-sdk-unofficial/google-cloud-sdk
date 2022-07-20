@@ -49,7 +49,7 @@ class Import(base.Command):
          --keyring=fellowship \
          --key=frodo \
          --import-job=strider \
-         --rsa-aes-wrapped-key-file=path/to/target/key \
+         --wrapped-key-file=path/to/target/key \
          --algorithm=google-symmetric-encryption
   """
 
@@ -59,10 +59,11 @@ class Import(base.Command):
     flags.AddCryptoKeyVersionFlag(
         parser, 'to re-import into. Omit this field for first-time import')
     flags.AddRsaAesWrappedKeyFileFlag(parser, 'to import')
+    flags.AddWrappedKeyFileFlag(parser, 'to import')
     flags.AddImportedVersionAlgorithmFlag(parser)
     flags.AddRequiredImportJobArgument(parser, 'to import from')
-    flags.AddOptionalPublicKeyFileArgument(parser)
-    flags.AddOptionalTargetKeyFileArgument(parser)
+    flags.AddPublicKeyFileFlag(parser)
+    flags.AddTargetKeyFileFlag(parser)
 
   def _ReadFile(self, path, max_bytes):
     data = files.ReadBinaryFileContents(path)
@@ -72,33 +73,44 @@ class Import(base.Command):
               max_bytes))
     return data
 
-  def _ReadOrFetchPublicKeyBytes(self, args, import_job_name):
-    client = cloudkms_base.GetClientInstance()
-    messages = cloudkms_base.GetMessagesModule()
-    # If the public key was provided, read it off disk. Otherwise, fetch it from
-    # KMS.
-    public_key_bytes = None
-    if args.public_key_file:
-      try:
-        public_key_bytes = self._ReadFile(
-            args.public_key_file, max_bytes=65536)
-      except files.Error as e:
-        raise exceptions.BadFileException(
-            'Failed to read public key file [{0}]: {1}'.format(
-                args.public_key_file, e))
-    else:
-      import_job = client.projects_locations_keyRings_importJobs.Get(  # pylint: disable=line-too-long
-          messages.CloudkmsProjectsLocationsKeyRingsImportJobsGetRequest(
-              name=import_job_name))
-      if import_job.state != messages.ImportJob.StateValueValuesEnum.ACTIVE:
-        raise exceptions.BadArgumentException(
-            'import-job',
-            'Import job [{0}] is not active (state is {1}).'.format(
-                import_job_name, import_job.state))
-      public_key_bytes = import_job.publicKey.pem.encode('ascii')
-    return public_key_bytes
+  def _IsSha2ImportMethod(self, import_method, messages):
+    return import_method in (
+        messages.ImportJob.ImportMethodValueValuesEnum.RSA_OAEP_3072_SHA256,
+        messages.ImportJob.ImportMethodValueValuesEnum.RSA_OAEP_4096_SHA256,
+        messages.ImportJob.ImportMethodValueValuesEnum
+        .RSA_OAEP_3072_SHA256_AES_256, messages.ImportJob
+        .ImportMethodValueValuesEnum.RSA_OAEP_4096_SHA256_AES_256)
 
-  def _CkmRsaAesKeyWrap(self, public_key_bytes, target_key_bytes):
+  def _IsRsaAesWrappingImportMethod(self, import_method, messages):
+    return import_method in (messages.ImportJob.ImportMethodValueValuesEnum
+                             .RSA_OAEP_3072_SHA1_AES_256,
+                             messages.ImportJob.ImportMethodValueValuesEnum
+                             .RSA_OAEP_4096_SHA1_AES_256,
+                             messages.ImportJob.ImportMethodValueValuesEnum
+                             .RSA_OAEP_3072_SHA256_AES_256,
+                             messages.ImportJob.ImportMethodValueValuesEnum
+                             .RSA_OAEP_4096_SHA256_AES_256)
+
+  def _ReadPublicKeyBytes(self, args):
+    try:
+      return self._ReadFile(args.public_key_file, max_bytes=65536)
+    except files.Error as e:
+      raise exceptions.BadFileException(
+          'Failed to read public key file [{0}]: {1}'.format(
+              args.public_key_file, e))
+
+  def _FetchImportJob(self, args, import_job_name, client, messages):
+    import_job = client.projects_locations_keyRings_importJobs.Get(
+        messages.CloudkmsProjectsLocationsKeyRingsImportJobsGetRequest(
+            name=import_job_name))
+    if import_job.state != messages.ImportJob.StateValueValuesEnum.ACTIVE:
+      raise exceptions.BadArgumentException(
+          'import-job', 'Import job [{0}] is not active (state is {1}).'.format(
+              import_job_name, import_job.state))
+    return import_job
+
+  def _CkmRsaAesKeyWrap(self, import_method, public_key_bytes, target_key_bytes,
+                        client, messages):
     try:
       # TODO(b/141249289): Move imports to the top of the file. In the
       # meantime, until we're sure that all Cloud SDK users have the
@@ -118,54 +130,76 @@ class Import(base.Command):
                     'instructions.')
       sys.exit(1)
 
+    sha = hashes.SHA1()
+    if self._IsSha2ImportMethod(import_method, messages):
+      sha = hashes.SHA256()
+
+    aes_wrapped_key = b''
+    to_be_rsa_wrapped_key = target_key_bytes
     public_key = serialization.load_pem_public_key(
         public_key_bytes, backend=default_backend())
-    ephem_key = os.urandom(32)
-    wrapped_ephem_key = public_key.encrypt(ephem_key,
-                                           padding.OAEP(
-                                               mgf=padding.MGF1(
-                                                   algorithm=hashes.SHA1()),
-                                               algorithm=hashes.SHA1(),
-                                               label=None))
-    wrapped_target_key = keywrap.aes_key_wrap_with_padding(ephem_key,
-                                                           target_key_bytes,
-                                                           default_backend())
-    return wrapped_ephem_key + wrapped_target_key
+    if self._IsRsaAesWrappingImportMethod(import_method, messages):
+      to_be_rsa_wrapped_key = os.urandom(32)  # an ephemeral key
+      aes_wrapped_key = keywrap.aes_key_wrap_with_padding(
+          to_be_rsa_wrapped_key, target_key_bytes, default_backend())
+    rsa_wrapped_key = public_key.encrypt(
+        to_be_rsa_wrapped_key,
+        padding.OAEP(mgf=padding.MGF1(sha), algorithm=sha, label=None))
+    return rsa_wrapped_key + aes_wrapped_key
 
   def Run(self, args):
     client = cloudkms_base.GetClientInstance()
     messages = cloudkms_base.GetMessagesModule()
     import_job_name = flags.ParseImportJobName(args).RelativeName()
 
-    if bool(args.rsa_aes_wrapped_key_file) == bool(args.target_key_file):
+    # set wrapped_key_file to wrapped_key_file or rsa_aes_wrapped_key_file
+    wrapped_key_file = None
+    if args.wrapped_key_file:
+      wrapped_key_file = args.wrapped_key_file
+      if args.rsa_aes_wrapped_key_file:
+        raise exceptions.OneOfArgumentsRequiredException(
+            ('--wrapped-key-file', '--rsa-aes-wrapped-key-file'),
+            'Either wrapped-key-file or rsa-aes-wrapped-key-file should be provided.')  # pylint: disable=line-too-long
+    else:
+      wrapped_key_file = args.rsa_aes_wrapped_key_file
+
+    if bool(wrapped_key_file) == bool(args.target_key_file):
       raise exceptions.OneOfArgumentsRequiredException(
-          ('--target-key-file', '--rsa-aes-wrapped-key-file'),
+          ('--target-key-file', '--wrapped-key-file/--rsa-aes-wrapped-key-file'),  # pylint: disable=line-too-long
           'Either a pre-wrapped key or a key to be wrapped must be provided.')
 
-    rsa_aes_wrapped_key_bytes = None
-    if args.rsa_aes_wrapped_key_file:
+    wrapped_key_bytes = None
+    if wrapped_key_file:
       try:
         # This should be less than 64KiB.
-        rsa_aes_wrapped_key_bytes = self._ReadFile(
-            args.rsa_aes_wrapped_key_file, max_bytes=65536)
+        wrapped_key_bytes = self._ReadFile(wrapped_key_file, max_bytes=65536)
       except files.Error as e:
         raise exceptions.BadFileException(
-            'Failed to read rsa_aes_wrapped_key_file [{0}]: {1}'.format(
-                args.wrapped_target_key_file, e))
+            'Failed to read wrapped key file [{0}]: {1}'.format(
+                wrapped_key_file, e))
 
+    import_job = self._FetchImportJob(args, import_job_name, client, messages)
     if args.target_key_file:
-      public_key_bytes = self._ReadOrFetchPublicKeyBytes(args, import_job_name)
       target_key_bytes = None
       try:
         # This should be less than 64KiB.
-        target_key_bytes = self._ReadFile(
-            args.target_key_file, max_bytes=8192)
+        target_key_bytes = self._ReadFile(args.target_key_file, max_bytes=8192)
       except files.Error as e:
         raise exceptions.BadFileException(
             'Failed to read target key file [{0}]: {1}'.format(
                 args.target_key_file, e))
-      rsa_aes_wrapped_key_bytes = self._CkmRsaAesKeyWrap(public_key_bytes,
-                                                         target_key_bytes)
+
+      # Read the public key off disk if provided, otherwise, fetch it from KMS.
+      public_key_bytes = None
+      if args.public_key_file:
+        public_key_bytes = self._ReadPublicKeyBytes(args)
+      else:
+        public_key_bytes = import_job.publicKey.pem.encode('ascii')
+
+      wrapped_key_bytes = self._CkmRsaAesKeyWrap(import_job.importMethod,
+                                                 public_key_bytes,
+                                                 target_key_bytes, client,
+                                                 messages)
 
     # Send the request to KMS.
     req = messages.CloudkmsProjectsLocationsKeyRingsCryptoKeysCryptoKeyVersionsImportRequest(  # pylint: disable=line-too-long
@@ -174,7 +208,7 @@ class Import(base.Command):
         algorithm=maps.ALGORITHM_MAPPER_FOR_IMPORT.GetEnumForChoice(
             args.algorithm),
         importJob=import_job_name,
-        rsaAesWrappedKey=rsa_aes_wrapped_key_bytes)
+        wrappedKey=wrapped_key_bytes)
 
     if args.version:
       req.importCryptoKeyVersionRequest.cryptoKeyVersion = flags.ParseCryptoKeyVersionName(

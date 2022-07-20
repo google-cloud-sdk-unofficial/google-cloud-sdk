@@ -57,7 +57,7 @@ class Run(base.Command):
           textwrap.dedent("""\
           To run the 'finance' sample app using instance 'my-instance', run:
 
-          $ {command} finance --instance-id my-instance
+          $ {command} finance --instance-id=my-instance
         """),
   }
 

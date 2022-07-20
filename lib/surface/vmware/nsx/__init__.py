@@ -23,14 +23,8 @@ from googlecloudsdk.calliope import base
 
 
 @base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class NsxBeta(base.Group):
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class Nsx(base.Group):
   """Manage NSX using Google Cloud VMware Engine."""
 
   category = base.COMPUTE_CATEGORY
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class NsxAlpha(NsxBeta):
-  """Manage NSX using Google Cloud VMware Engine."""
-  _is_hidden = False

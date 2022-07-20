@@ -60,7 +60,6 @@ class Update(base.UpdateCommand):
     flags.AddCPUCount(parser, required=False)
     flags.AddReadPoolNodeCount(parser)
     flags.AddRegion(parser)
-    flags.AddZone(parser)
     # TODO(b/185795425): Add --ssl-required and --labels later once we
     # understand the use cases
 
@@ -90,5 +89,6 @@ class Update(base.UpdateCommand):
         op.name, collection='alloydb.projects.locations.operations')
     log.status.Print('Operation ID: {}'.format(op_ref.Name()))
     if not args.async_:
-      instance_operations.Await(op_ref, 'Updating instance', self.ReleaseTrack(), False)
+      instance_operations.Await(op_ref, 'Updating instance',
+                                self.ReleaseTrack(), False)
     return op

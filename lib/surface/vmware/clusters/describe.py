@@ -43,8 +43,8 @@ DETAILED_HELP = {
 
 
 @base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class DescribeBeta(base.DescribeCommand):
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class Describe(base.DescribeCommand):
   """Describe a Google Cloud VMware Engine cluster."""
 
   detailed_help = DETAILED_HELP
@@ -58,9 +58,3 @@ class DescribeBeta(base.DescribeCommand):
     cluster = args.CONCEPTS.cluster.Parse()
     client = ClustersClient()
     return client.Get(cluster)
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class DescribeAlpha(DescribeBeta):
-  """Describe a Google Cloud VMware Engine cluster."""
-  _is_hidden = False

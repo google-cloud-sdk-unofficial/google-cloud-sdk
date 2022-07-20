@@ -19,6 +19,7 @@ from __future__ import division
 from __future__ import unicode_literals
 
 import json
+import re
 import textwrap
 
 from apitools.base.py import exceptions as apitools_exceptions
@@ -30,6 +31,7 @@ from googlecloudsdk.command_lib.container.fleet import agent_util
 from googlecloudsdk.command_lib.container.fleet import api_util
 from googlecloudsdk.command_lib.container.fleet import exclusivity_util
 from googlecloudsdk.command_lib.container.fleet import kube_util
+from googlecloudsdk.command_lib.container.fleet import resources
 from googlecloudsdk.command_lib.container.fleet import util as hub_util
 from googlecloudsdk.command_lib.util.apis import arg_utils
 from googlecloudsdk.core import exceptions
@@ -68,12 +70,12 @@ class Register(base.CreateCommand):
   authenticate to Google using a `--service-account-key-file` that corresponds
   to a service account that has been granted `gkehub.connect` permissions.
 
-  If the cluster is already registered to another Fleet, the registration is not
+  If the cluster is already registered to another fleet, the registration is not
   successful.
 
   Rerunning this command against the same cluster with the same MEMBERSHIP_NAME
-  and  target GKEFleet is successful and upgrades the Connect Agent if a new
-  agent is
+  and target fleet is successful and upgrades the Connect Agent if a new agent
+  is
   available.
 
   ## EXAMPLES
@@ -152,23 +154,29 @@ class Register(base.CreateCommand):
 
   @classmethod
   def Args(cls, parser):
-    parser.add_argument(
-        'MEMBERSHIP_NAME',
-        type=str,
-        help=textwrap.dedent("""\
-          The membership name that you choose to uniquely represents the cluster
-          being registered on the fleet.
-         """),
-    )
+    # Location only in alpha and autopush environment
     if cls.ReleaseTrack() is base.ReleaseTrack.ALPHA:
+      resources.AddMembershipResourceArg(
+          parser,
+          membership_help=textwrap.dedent("""\
+            The membership name that you choose to uniquely represents the cluster
+            being registered in the fleet.
+          """),
+          location_help=textwrap.dedent("""\
+            The location for the membership resource, e.g. `us-central1`.
+            If not specified, defaults to `global`. Not supported for GKE clusters,
+            whose membership location will be the location of the cluster.
+          """),
+          membership_required=True,
+          positional=True)
+    else:
       parser.add_argument(
-          '--location',
+          'MEMBERSHIP_NAME',
           type=str,
-          hidden=True,
           help=textwrap.dedent("""\
-              The location for the membership resource, e.g. `us-central1`.
-              If not specified, defaults to `global`. Not supported for GKE clusters.
-            """),
+            The membership name that you choose to uniquely represents the cluster
+            being registered on the fleet.
+          """),
       )
     hub_util.AddClusterConnectionCommonArgs(parser)
     parser.add_argument(
@@ -325,9 +333,34 @@ class Register(base.CreateCommand):
         enable_workload_identity=getattr(args, 'enable_workload_identity',
                                          False),
     ) as kube_client:
-      location = getattr(args, 'location', 'global')
-      if location is None:
-        location = 'global'
+      location = 'global'
+      if self.ReleaseTrack(
+      ) is base.ReleaseTrack.ALPHA and hub_util.APIEndpoint(
+      ) == hub_util.AUTOPUSH_API:
+        # For GKE clusters, use cluster location as membership location, unless
+        # they are registered with kubeconfig in which case they are not
+        # considered "GKE clusters"
+        if args.gke_cluster:
+          # e.g. us-central1/my-cluster
+          location_re = re.search(
+              r'([a-z0-9]+\-[a-z0-9]+)(\-[a-z])?/(\-[a-z])?', args.gke_cluster)
+          if location_re:
+            location = location_re.group(1)
+          else:
+            raise exceptions.Error(
+                'Error processing location in `gke-cluster` flag')
+        elif args.gke_uri:
+          # e.g. .../projects/123/locations/us-central1-a/clusters/my-cluster
+          location_re = re.search(
+              r'(regions|locations)/([a-z0-9]+\-[a-z0-9]+)(\-[a-z])?/clusters',
+              args.gke_uri)
+          if location_re:
+            location = location_re.group(2)
+          else:
+            raise exceptions.Error(
+                'Error processing location in `gke-uri` flag')
+        elif args.location:
+          location = args.location
       kube_client.CheckClusterAdminPermissions()
       kube_util.ValidateClusterIdentifierFlags(kube_client, args)
       if self.ReleaseTrack() is not base.ReleaseTrack.GA:

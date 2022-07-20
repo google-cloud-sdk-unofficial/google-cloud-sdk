@@ -43,8 +43,8 @@ DETAILED_HELP = {
 
 
 @base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class DescribeBeta(base.DescribeCommand):
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class Describe(base.DescribeCommand):
   """Describe a Google Cloud VMware Engine operation."""
 
   detailed_help = DETAILED_HELP
@@ -58,9 +58,3 @@ class DescribeBeta(base.DescribeCommand):
     resource = args.CONCEPTS.operation.Parse()
     client = OperationsClient()
     return client.Get(resource)
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class DescribeAlpha(DescribeBeta):
-  """Describe a Google Cloud VMware Engine operation."""
-  _is_hidden = False

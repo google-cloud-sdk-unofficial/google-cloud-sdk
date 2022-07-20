@@ -27,9 +27,16 @@ from googlecloudsdk.core import properties
 from googlecloudsdk.core.resource import resource_projection_spec
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class List(base.ListCommand):
-  """List security policies."""
+  """List security policies.
+
+  ## EXAMPLES
+
+  To list security policies run this:
+
+    $ {command}
+  """
 
   @staticmethod
   def Args(parser):
@@ -59,9 +66,51 @@ class List(base.ListCommand):
         batch_size=None)
 
 
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class ListBeta(base.ListCommand):
+  """List security policies.
+
+  ## EXAMPLES
+
+  To list security policies in all scopes run this:
+
+    $ {command}
+  """
+
+  @staticmethod
+  def Args(parser):
+    parser.display_info.AddFormat("""\
+        table(
+          name,
+          region.basename()
+        )""")
+    lister.AddMultiScopeListerFlags(parser, regional=True, global_=True)
+
+  def Run(self, args):
+    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    client = holder.client
+
+    request_data = lister.ParseMultiScopeFlags(args, holder.resources)
+
+    list_implementation = lister.MultiScopeLister(
+        client,
+        regional_service=client.apitools_client.regionSecurityPolicies,
+        global_service=client.apitools_client.securityPolicies,
+        aggregation_service=client.apitools_client.securityPolicies)
+
+    return lister.Invoke(request_data, list_implementation)
+
+
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class ListAlpha(base.ListCommand):
-  """List security policies."""
+  """List security policies.
+
+  ## EXAMPLES
+
+  To list security policies in all scopes run this:
+
+    $ {command}
+  """
 
   @staticmethod
   def Args(parser):

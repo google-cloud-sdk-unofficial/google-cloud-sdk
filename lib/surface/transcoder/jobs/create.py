@@ -24,6 +24,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.transcoder import flags
 from googlecloudsdk.command_lib.transcoder import resource_args
 from googlecloudsdk.command_lib.transcoder import util
+from googlecloudsdk.command_lib.util.args import labels_util
 
 
 class Create(base.CreateCommand):
@@ -46,6 +47,10 @@ class Create(base.CreateCommand):
         To create a transcoder job with json format configuration file:
 
           $ {command} --location=us-central1 --file="config.json"
+
+        To Create a transcoder job with labels:
+
+          $ {command} --location=us-central1 --file="config.json" --labels=key=value
       """
   }
 
@@ -54,6 +59,7 @@ class Create(base.CreateCommand):
     resource_args.AddLocationResourceArg(parser)
     flags.AddCreateJobFlags(parser)
     parser.display_info.AddFormat('json')
+    labels_util.AddCreateLabelsFlags(parser)
 
   def Run(self, args):
     """Create a job."""
@@ -62,18 +68,8 @@ class Create(base.CreateCommand):
     client = jobs.JobsClient(self.ReleaseTrack())
 
     parent_ref = args.CONCEPTS.location.Parse()
-    input_uri = args.input_uri
-    output_uri = args.output_uri
-
-    template_id = args.template_id
-    job_config = None
-    if template_id is None:
-      job_config = util.GetContent(args.file, args.json)
 
     return client.Create(
         parent_ref=parent_ref,
-        job_json=job_config,
-        template_id=template_id,
-        input_uri=input_uri,
-        output_uri=output_uri,
+        args=args,
     )

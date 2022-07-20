@@ -23,14 +23,8 @@ from googlecloudsdk.calliope import base
 
 
 @base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class ClustersBeta(base.Group):
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class Clusters(base.Group):
   """Manage clusters in Google Cloud VMware Engine."""
 
   category = base.COMPUTE_CATEGORY
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class ClustersAlpha(ClustersBeta):
-  """Manage clusters in Google Cloud VMware Engine."""
-  _is_hidden = False

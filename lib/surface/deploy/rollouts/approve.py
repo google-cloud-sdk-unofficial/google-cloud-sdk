@@ -55,9 +55,11 @@ class Approve(base.CreateCommand):
   def Run(self, args):
     rollout_ref = args.CONCEPTS.rollout.Parse()
     pipeline_ref = rollout_ref.Parent().Parent()
+    pipeline_obj = delivery_pipeline_util.GetPipeline(
+        pipeline_ref.RelativeName())
     failed_activity_msg = 'Cannot approve rollout {}.'.format(
         rollout_ref.RelativeName())
-    delivery_pipeline_util.ThrowIfPipelineSuspended(pipeline_ref,
+    delivery_pipeline_util.ThrowIfPipelineSuspended(pipeline_obj,
                                                     failed_activity_msg)
     try:
       rollout_obj = rollout.RolloutClient().Get(rollout_ref.RelativeName())

@@ -18,7 +18,6 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
-import sys
 import threading
 
 from argcomplete.completers import FilesCompleter
@@ -73,8 +72,9 @@ def SCPRunCmd(env, cmd, *args):
 class Scp(base.Command):
   """Copy files to and from a Cloud TPU VM via SCP."""
 
-  # IAP is not available for GA.
-  enable_iap = False
+  # IAP and Batching are not available for GA.
+  _ENABLE_IAP = False
+  _ENABLE_BATCHING = False
 
   @classmethod
   def Args(cls, parser):
@@ -84,7 +84,7 @@ class Scp(base.Command):
       parser: An argparse.ArgumentParser.
     """
     ssh_utils.BaseSSHCLIHelper.Args(parser)
-    tpu_ssh_utils.AddTPUSSHArgs(parser, cls.enable_iap)
+    tpu_ssh_utils.AddTPUSSHArgs(parser, cls._ENABLE_IAP, cls._ENABLE_BATCHING)
     AddSCPArgs(parser)
     flags.AddZoneFlag(parser, resource_type='tpu', operation_type='scp')
 
@@ -121,8 +121,14 @@ class Scp(base.Command):
           '--worker', 'cannot target multiple workers while copying files to '
           'client.')
 
+    if self._ENABLE_BATCHING:
+      scp_batch_size = tpu_ssh_utils.ParseBatchSize(args.batch_size, worker_ips)
+
     tpu_ssh_utils.ValidateTPUState(node.state,
                                    tpu.messages.Node.StateValueValuesEnum)
+
+    if node.health == tpu.messages.Node.HealthValueValuesEnum.UNHEALTHY_MAINTENANCE:
+      raise tpu_exceptions.TPUInMaintenanceEvent()
 
     # Retrieve GuestAttributes.
     single_pod_worker = len(node.networkEndpoints) > 1 and len(worker_ips) == 1
@@ -130,8 +136,8 @@ class Scp(base.Command):
         tpu_ssh_utils.GetGuestAttributes(tpu, single_pod_worker, worker_ips,
                                          tpu_name, args.zone))
     if guest_attributes_response is None:
-      if (args.IsKnownAndSpecified('tunnel_through_iap')
-          and args.tunnel_through_iap):
+      if (args.IsKnownAndSpecified('tunnel_through_iap') and
+          args.tunnel_through_iap):
         log.debug('Unable to retrieve host information from guest attributes.')
         log.status.Print('Failed to connect to TPU.')
         log.status.Print(tpu_ssh_utils.IAP_TROUBLESHOOTING_HELP)
@@ -199,8 +205,8 @@ class Scp(base.Command):
       extra_flags.extend(args.scp_flag)
 
     instance_names = {}
-    if (args.IsKnownAndSpecified('tunnel_through_iap')
-        and args.tunnel_through_iap):
+    if (args.IsKnownAndSpecified('tunnel_through_iap') and
+        args.tunnel_through_iap):
       # Retrieve the instance names from the GuestAttributes.
       for worker in worker_ips:
         # The GuestAttributes will only have one entry if we're targeting a
@@ -215,6 +221,7 @@ class Scp(base.Command):
         instance_names[worker] = instance_name
 
     ssh_threads = []
+    current_batch_size = 0
     exit_statuses = [None] * len(worker_ips)
     for worker, ips in worker_ips.items():
       options = None
@@ -224,8 +231,8 @@ class Scp(base.Command):
             args.strict_host_key_checking, None)
 
       iap_tunnel_args = None
-      if (args.IsKnownAndSpecified('tunnel_through_iap')
-          and args.tunnel_through_iap):
+      if (args.IsKnownAndSpecified('tunnel_through_iap') and
+          args.tunnel_through_iap):
         # Retrieve the instance name from the GuestAttributes.
         instance_name = instance_names[worker]
         iap_tunnel_args = tpu_ssh_utils.CreateSshTunnelArgs(
@@ -254,29 +261,26 @@ class Scp(base.Command):
                 args=('SCP', worker, exit_statuses, cmd, ssh_helper.env, None,
                       True, SCPRunCmd)))
         ssh_threads[-1].start()
+        current_batch_size += 1
+        if self._ENABLE_BATCHING and current_batch_size == scp_batch_size:
+          tpu_ssh_utils.WaitForBatchCompletion(ssh_threads, exit_statuses)
+          current_batch_size = 0
+          ssh_threads = []
       else:
         # Run on a single worker.
-        tpu_ssh_utils.AttemptRunWithRetries('SCP', worker, exit_statuses,
-                                            cmd, ssh_helper.env, None, False,
+        tpu_ssh_utils.AttemptRunWithRetries('SCP', worker, exit_statuses, cmd,
+                                            ssh_helper.env, None, False,
                                             SCPRunCmd)
 
-    if len(worker_ips) > 1:
-      # Wait for all the threads to complete.
-      for i in range(len(ssh_threads)):
-        ssh_threads[i].join()
-
-      # Exit with a nonzero status, if any.
-      # This ensures that if any command failed on a worker, we don't end up
-      # returning 0 for a value.
-      for status in exit_statuses:
-        if status:
-          sys.exit(status)
+    if len(worker_ips) > 1 and ssh_threads:
+      tpu_ssh_utils.WaitForBatchCompletion(ssh_threads, exit_statuses)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class ScpAlpha(Scp):
   """Copy files to and from a Cloud TPU VM via SCP (Alpha)."""
-  enable_iap = True
+  _ENABLE_IAP = True
+  _ENABLE_BATCHING = True
 
 
 Scp.detailed_help = {

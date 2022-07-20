@@ -22,13 +22,7 @@ from googlecloudsdk.calliope import base
 
 
 @base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class NetworkPoliciesBeta(base.Group):
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class NetworkPolicies(base.Group):
   """Manage VMware Engine network policies in Google Cloud VMware Engine."""
   category = base.COMPUTE_CATEGORY
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class NetworkPoliciesAlpha(NetworkPoliciesBeta):
-  """Manage VMware Engine network policies in Google Cloud VMware Engine."""
-  _is_hidden = False

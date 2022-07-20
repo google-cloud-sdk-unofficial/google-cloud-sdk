@@ -71,21 +71,20 @@ class Workload(base.Command):
   Before sending traffic to the backend service, create the database and
   start the service with:
 
-      $ {parent_command} init APPNAME --instance-id INSTANCE_ID
-      $ {parent_command} backend APPNAME --instance-id INSTANCE_ID
+      $ {parent_command} init APPNAME --instance-id=INSTANCE_ID
+      $ {parent_command} backend APPNAME --instance-id=INSTANCE_ID
 
   To run all three steps together, use:
 
-      $ {parent_command} run APPNAME --instance-id INSTANCE_ID
+      $ {parent_command} run APPNAME --instance-id=INSTANCE_ID
   """
 
   detailed_help = {
       'EXAMPLES':
           textwrap.dedent("""\
-          To generate traffic for the 'finance' sample app using instance
-          'my-instance', run:
+          To generate traffic for the 'finance' sample app, run:
 
-          $ {command} finance --instance-id my-instance
+          $ {command} finance
         """),
   }
 

@@ -20,7 +20,6 @@ from __future__ import unicode_literals
 
 import argparse
 import os.path
-import sys
 import threading
 
 from googlecloudsdk.api_lib.compute import base_classes
@@ -126,8 +125,9 @@ def SSHRunCmd(env, cmd, output_file_writer):
 class Ssh(base.Command):
   """SSH into a Cloud TPU VM."""
 
-  # IAP is not available for GA.
-  enable_iap = False
+  # IAP and Batching are not available for GA.
+  _ENABLE_IAP = False
+  _ENABLE_BATCHING = False
 
   @classmethod
   def Args(cls, parser):
@@ -138,7 +138,8 @@ class Ssh(base.Command):
     """
     ssh_utils.BaseSSHCLIHelper.Args(parser)
     AddSSHArgs(parser)
-    tpu_ssh_utils.AddTPUSSHArgs(parser, enable_iap=cls.enable_iap)
+    tpu_ssh_utils.AddTPUSSHArgs(parser, enable_iap=cls._ENABLE_IAP,
+                                enable_batching=cls._ENABLE_BATCHING)
     AddCommandArgGroup(parser)
     flags.AddZoneFlag(parser, resource_type='tpu', operation_type='ssh')
 
@@ -184,14 +185,20 @@ class Ssh(base.Command):
           '--worker', 'cannot target multiple workers without the `--command` '
           'flag.')
 
+    if self._ENABLE_BATCHING:
+      ssh_batch_size = tpu_ssh_utils.ParseBatchSize(args.batch_size, worker_ips)
+
+    if node.health == tpu.messages.Node.HealthValueValuesEnum.UNHEALTHY_MAINTENANCE:
+      raise tpu_exceptions.TPUInMaintenanceEvent()
+
     # Retrieve GuestAttributes.
     single_pod_worker = len(node.networkEndpoints) > 1 and len(worker_ips) == 1
     guest_attributes_response = (
         tpu_ssh_utils.GetGuestAttributes(tpu, single_pod_worker, worker_ips,
                                          tpu_name, args.zone))
     if guest_attributes_response is None:
-      if (args.IsKnownAndSpecified('tunnel_through_iap')
-          and args.tunnel_through_iap):
+      if (args.IsKnownAndSpecified('tunnel_through_iap') and
+          args.tunnel_through_iap):
         log.debug('Unable to retrieve host information from guest attributes.')
         log.status.Print('Failed to connect to TPU.')
         log.status.Print(tpu_ssh_utils.IAP_TROUBLESHOOTING_HELP)
@@ -247,8 +254,8 @@ class Ssh(base.Command):
                        'to {}'.format(output_directory_path))
 
     instance_names = {}
-    if (args.IsKnownAndSpecified('tunnel_through_iap')
-        and args.tunnel_through_iap):
+    if (args.IsKnownAndSpecified('tunnel_through_iap') and
+        args.tunnel_through_iap):
       # Retrieve the instance names from the GuestAttributes.
       for worker in worker_ips:
         # The GuestAttributes will only have one entry if we're targeting a
@@ -263,6 +270,7 @@ class Ssh(base.Command):
         instance_names[worker] = instance_name
 
     ssh_threads = []
+    current_batch_size = 0
     exit_statuses = [None] * len(worker_ips)
     for worker, ips in worker_ips.items():
       identity_file = None
@@ -278,8 +286,8 @@ class Ssh(base.Command):
                                                    ips.internal_address)
 
       iap_tunnel_args = None
-      if (args.IsKnownAndSpecified('tunnel_through_iap')
-          and args.tunnel_through_iap):
+      if (args.IsKnownAndSpecified('tunnel_through_iap') and
+          args.tunnel_through_iap):
         # Retrieve the instance name from the GuestAttributes.
         instance_name = instance_names[worker]
         iap_tunnel_args = tpu_ssh_utils.CreateSshTunnelArgs(
@@ -311,29 +319,26 @@ class Ssh(base.Command):
                 args=('SSH', worker, exit_statuses, cmd, ssh_helper.env,
                       output_file_writer, True, SSHRunCmd)))
         ssh_threads[-1].start()
+        current_batch_size += 1
+        if self._ENABLE_BATCHING and current_batch_size == ssh_batch_size:
+          tpu_ssh_utils.WaitForBatchCompletion(ssh_threads, exit_statuses)
+          current_batch_size = 0
+          ssh_threads = []
       else:
         # Run on a single worker.
         tpu_ssh_utils.AttemptRunWithRetries('SSH', worker, exit_statuses, cmd,
                                             ssh_helper.env, output_file_writer,
                                             False, SSHRunCmd)
 
-    if len(worker_ips) > 1:
-      # Wait for all the threads to complete.
-      for i in range(len(ssh_threads)):
-        ssh_threads[i].join()
-
-      # Exit with a nonzero code, if there are any.
-      # This ensures that if any command failed on a worker, we don't end up
-      # returning 0 for a value.
-      for status in exit_statuses:
-        if status:
-          sys.exit(status)
+    if len(worker_ips) > 1 and ssh_threads:
+      tpu_ssh_utils.WaitForBatchCompletion(ssh_threads, exit_statuses)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class SshAlpha(Ssh):
   """SSH into a Cloud TPU VM (Alpha)."""
-  enable_iap = True
+  _ENABLE_IAP = True
+  _ENABLE_BATCHING = True
 
 
 Ssh.detailed_help = {

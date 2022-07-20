@@ -116,7 +116,8 @@ class Rm(base.Command):
         stdin_iterator.get_urls_iterable(args.urls, args.read_paths_from_stdin),
         all_versions=args.all_versions or args.recursive,
         include_buckets=args.recursive,
-        recursion_requested=args.recursive)
+        recursion_requested=name_expansion.RecursionSetting.YES
+        if args.recursive else name_expansion.RecursionSetting.NO_WITH_WARNING)
 
     user_request_args = (
         user_request_args_factory.get_user_request_args_from_command_args(args))

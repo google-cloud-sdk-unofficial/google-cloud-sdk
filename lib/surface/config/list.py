@@ -35,8 +35,8 @@ class List(base.ListCommand):
   """List Google Cloud CLI properties for the currently active configuration.
 
   {command} lists all properties of the active configuration. These include the
-  account used to authorize access to the Cloud Platform, the current Cloud
-  Platform project, and the default Compute Engine region and zone, if set. See
+  account used to authorize access to Google Cloud, the current Google Cloud
+  project, and the default Compute Engine region and zone, if set. See
   `gcloud topic configurations` for more about configurations.
 
   ## AVAILABLE PROPERTIES
@@ -52,6 +52,10 @@ class List(base.ListCommand):
   To list the zone property in the compute section, run:
 
     $ {command} compute/zone
+
+  To list all the properties in the compute section, run:
+
+  $ {command} compute/
 
   To list all the properties, run:
 

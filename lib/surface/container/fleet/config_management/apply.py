@@ -149,7 +149,7 @@ def _validate_meta(configmanagement):
 
 
 def _parse_config_sync(configmanagement, msg):
-  """Load GitConfig with the parsed configmanagement yaml.
+  """Load ConfigSync configuration with the parsed configmanagement yaml.
 
   Args:
     configmanagement: dict, The data loaded from the config-management.yaml
@@ -158,15 +158,16 @@ def _parse_config_sync(configmanagement, msg):
 
   Returns:
     config_sync: The ConfigSync configuration holds configmanagement.spec.git
-    being used in MembershipConfigs
-  Raises: Error, if required fields are missing from .spec.git
+    or configmanagement.spec.oci being used in MembershipConfigs
+  Raises: Error, if required fields are missing from .spec or unsupported fields
+    are included in .spec
   """
 
   if ('spec' not in configmanagement or
       utils.CONFIG_SYNC not in configmanagement['spec']):
     return None
-  spec_git = configmanagement['spec'][utils.CONFIG_SYNC]
-  for field in spec_git:
+  spec_source = configmanagement['spec'][utils.CONFIG_SYNC]
+  for field in spec_source:
     if field not in yaml.load(
         utils.APPLY_SPEC_VERSION_1)['spec'][utils.CONFIG_SYNC]:
       raise exceptions.Error(
@@ -175,26 +176,69 @@ def _parse_config_sync(configmanagement, msg):
 
   config_sync = msg.ConfigManagementConfigSync()
   # missing `enabled: true` will disable configSync
-  if 'enabled' not in spec_git:
+  if 'enabled' not in spec_source:
     raise exceptions.Error('Missing required field [{}.enabled]'.format(
         utils.CONFIG_SYNC))
-  config_sync.enabled = spec_git['enabled']
+  config_sync.enabled = spec_source['enabled']
+  # Default to use sourceType 'git' if not specified
+  source_type = spec_source.get('sourceType', 'git')
+  if source_type == 'oci':
+    config_sync.oci = _parse_oci_config(spec_source, msg)
+  else:
+    config_sync.git = _parse_git_config(spec_source, msg)
+  if 'sourceFormat' in spec_source:
+    config_sync.sourceFormat = spec_source['sourceFormat']
+  if 'preventDrift' in spec_source:
+    config_sync.preventDrift = spec_source['preventDrift']
+
+  return config_sync
+
+
+def _parse_git_config(spec_source, msg):
+  """Load GitConfig with the parsed config_sync yaml.
+
+  Args:
+    spec_source: The config_sync dict loaded from the config-management.yaml
+      given by user.
+    msg: The Hub messages package.
+
+  Returns:
+    git_config: The GitConfig configuration being used in MembershipConfigs
+  """
+
   git_config = msg.ConfigManagementGitConfig()
-  config_sync.git = git_config
+  if 'syncWait' in spec_source:
+    git_config.syncWaitSecs = spec_source['syncWait']
   for field in [
       'policyDir', 'secretType', 'syncBranch', 'syncRepo', 'syncRev',
       'httpsProxy', 'gcpServiceAccountEmail'
   ]:
-    if field in spec_git:
-      setattr(git_config, field, spec_git[field])
-  if 'syncWait' in spec_git:
-    git_config.syncWaitSecs = spec_git['syncWait']
+    if field in spec_source:
+      setattr(git_config, field, spec_source[field])
+  return git_config
 
-  if 'sourceFormat' in spec_git:
-    config_sync.sourceFormat = spec_git['sourceFormat']
-  if 'preventDrift' in spec_git:
-    config_sync.preventDrift = spec_git['preventDrift']
-  return config_sync
+
+def _parse_oci_config(spec_source, msg):
+  """Load OciConfig with the parsed config_sync yaml.
+
+  Args:
+    spec_source: The config_sync dict loaded from the config-management.yaml
+      given by user.
+    msg: The Hub messages package.
+
+  Returns:
+    oci_config: The OciConfig being used in MembershipConfigs
+  """
+
+  oci_config = msg.ConfigManagementOciConfig()
+  if 'syncWait' in spec_source:
+    oci_config.syncWaitSecs = spec_source['syncWait']
+  for field in [
+      'policyDir', 'secretType', 'syncRepo', 'gcpServiceAccountEmail'
+  ]:
+    if field in spec_source:
+      setattr(oci_config, field, spec_source[field])
+  return oci_config
 
 
 def _parse_policy_controller(configmanagement, msg):

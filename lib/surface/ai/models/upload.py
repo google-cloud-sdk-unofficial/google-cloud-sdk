@@ -82,7 +82,9 @@ class UploadV1(base.CreateCommand):
               args.container_ports,
               args.container_predict_route,
               args.container_health_route,
-              explanation_spec=self._BuildExplanationSpec(args))
+              explanation_spec=self._BuildExplanationSpec(args),
+              parent_model=args.parent_model,
+              model_id=args.model_id)
       return operations_util.WaitForOpMaybe(
           operations_client=operations.OperationsClient(
               client=client_instance, messages=client_instance.MESSAGES_MODULE),
@@ -226,7 +228,8 @@ class UploadV1Beta1(UploadV1):
           args.container_image_uri, args.container_command, args.container_args,
           args.container_env_vars, args.container_ports,
           args.container_predict_route, args.container_health_route,
-          self._BuildExplanationSpec(args))
+          self._BuildExplanationSpec(args), parent_model=args.parent_model,
+          model_id=args.model_id)
       return operations_util.WaitForOpMaybe(
           operations_client=operations.OperationsClient(),
           op=operation,

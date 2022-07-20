@@ -39,8 +39,8 @@ DETAILED_HELP = {
 
 
 @base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class DescribeBeta(base.DescribeCommand):
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class Describe(base.DescribeCommand):
   """Describe a Google Cloud VMware Engine VPC network peering."""
 
   detailed_help = DETAILED_HELP
@@ -54,9 +54,3 @@ class DescribeBeta(base.DescribeCommand):
     peering = args.CONCEPTS.network_peering.Parse()
     client = NetworkPeeringClient()
     return client.Get(peering)
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class DescribeAlpha(DescribeBeta):
-  """Describe a Google Cloud VMware Engine VPC network peering."""
-  _is_hidden = False

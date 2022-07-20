@@ -38,6 +38,9 @@ def AddBaseArgs(parser):
   password_group = parser.add_mutually_exclusive_group()
   flags.AddPassword(password_group)
   flags.AddPromptForPassword(password_group)
+  dual_password_group = parser.add_mutually_exclusive_group()
+  flags.AddUserDiscardDualPassword(dual_password_group)
+  flags.AddUserRetainPassword(dual_password_group)
 
 
 def AddBetaArgs(parser):
@@ -47,18 +50,14 @@ def AddBetaArgs(parser):
 
 def AddAlphaArgs(parser):
   AddBetaArgs(parser)
-  password_group = parser.add_mutually_exclusive_group(hidden=True)
-  flags.AddUserDiscardDualPassword(password_group)
-  flags.AddUserRetainPassword(password_group)
   pass
 
 
-def RunBaseSetPasswordCommand(args, release_track):
+def RunBaseSetPasswordCommand(args):
   """Changes a user's password in a given instance.
 
   Args:
     args: argparse.Namespace, The arguments that this command was invoked with.
-    release_track: base.ReleaseTrack, the release track that this was run under.
 
   Returns:
     SQL user resource iterator.
@@ -77,10 +76,7 @@ def RunBaseSetPasswordCommand(args, release_track):
       params={'project': properties.VALUES.core.project.GetOrFail},
       collection='sql.instances')
 
-  dual_password_type = None
-  if release_track == base.ReleaseTrack.ALPHA:
-    dual_password_type = users.ParseDualPasswordType(sql_messages, args)
-
+  dual_password_type = users.ParseDualPasswordType(sql_messages, args)
   request = users_util.CreateSetPasswordRequest(sql_messages,
                                                 args,
                                                 dual_password_type,
@@ -113,7 +109,7 @@ class Create(base.CreateCommand):
     parser.display_info.AddCacheUpdater(None)
 
   def Run(self, args):
-    return RunBaseSetPasswordCommand(args, self.ReleaseTrack())
+    return RunBaseSetPasswordCommand(args)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
@@ -132,7 +128,7 @@ class CreateBeta(Create):
     parser.display_info.AddCacheUpdater(None)
 
   def Run(self, args):
-    return RunBaseSetPasswordCommand(args, self.ReleaseTrack())
+    return RunBaseSetPasswordCommand(args)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -151,4 +147,4 @@ class CreateAlpha(CreateBeta):
     parser.display_info.AddCacheUpdater(None)
 
   def Run(self, args):
-    return RunBaseSetPasswordCommand(args, self.ReleaseTrack())
+    return RunBaseSetPasswordCommand(args)

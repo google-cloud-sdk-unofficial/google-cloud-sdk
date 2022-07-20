@@ -28,7 +28,6 @@ from googlecloudsdk.command_lib.artifacts import flags
 from googlecloudsdk.core import resources
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
 class Import(base.Command):
   """Import one or more RPM packages into an artifact repository."""
 
@@ -41,7 +40,7 @@ class Import(base.Command):
     Args:
       parser: An argparse.ArgumentPaser.
     """
-    flags.GetRepoArgFromBeta().AddToParser(parser)
+    flags.GetRepoArg().AddToParser(parser)
     base.ASYNC_FLAG.AddToParser(parser)
 
     parser.add_argument(
@@ -53,49 +52,6 @@ class Import(base.Command):
             The Google Cloud Storage location of a package to import.
             To import multiple packages, use wildcards at the end of the path.
             """)
-
-  def Run(self, args):
-    """Run package import command."""
-    client = apis.GetClientInstance('artifactregistry', self.api_version)
-    messages = client.MESSAGES_MODULE
-
-    for gcs_source in args.gcs_source:
-      if '*' in gcs_source and not gcs_source.endswith('*'):
-        raise exceptions.InvalidArgumentException(
-            'GCS_SOURCE', 'Wildcards must be at the end of the GCS path.')
-
-    repo_ref = args.CONCEPTS.repository.Parse()
-    gcs_source = messages.ImportYumArtifactsGcsSource(
-        uris=args.gcs_source,
-        useWildcards=True)
-    import_request = messages.ImportYumArtifactsRequest(
-        gcsSource=gcs_source)
-
-    request = messages.ArtifactregistryProjectsLocationsRepositoriesYumArtifactsImportRequest(
-        importYumArtifactsRequest=import_request,
-        parent=repo_ref.RelativeName())
-
-    op = client.projects_locations_repositories_yumArtifacts.Import(request)
-
-    op_ref = resources.REGISTRY.ParseRelativeName(
-        op.name, collection='artifactregistry.projects.locations.operations')
-
-    if args.async_:
-      return op_ref
-    else:
-      result = waiter.WaitFor(
-          waiter.CloudOperationPollerNoResources(
-              client.projects_locations_operations),
-          op_ref, 'Importing package(s)')
-
-      return result
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class ImportAlpha(Import):
-  """Import one or more RPM packages into an artifact repository."""
-
-  api_version = 'v1'
 
   def Run(self, args):
     """Run package import command."""

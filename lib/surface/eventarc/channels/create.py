@@ -29,11 +29,11 @@ _DETAILED_HELP = {
         '{description}',
     'EXAMPLES':
         """ \
-        To create a new channel ``my-channel'' in location ``us-central1'', run:
+        To create a new channel `my-channel` in location `us-central1`, run:
 
           $ {command} my-channel --location=us-central1
 
-        To create a new channel ``my-channel'' in location ``us-central1'' with a Cloud KMS CryptoKey, run:
+        To create a new channel `my-channel` in location `us-central1` with a Cloud KMS CryptoKey, run:
 
           $ {command} my-channel --location=us-central1 --crypto-key=projects/PROJECT_ID/locations/KMS_LOCATION/keyRings/KEYRING/cryptoKeys/KEY
         """,

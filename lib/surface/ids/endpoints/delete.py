@@ -72,7 +72,7 @@ class Delete(base.DeleteCommand):
         args.format = 'default'
       return operation
     return client.WaitForOperation(
-        operation_ref=client.GetOperationRef(operation, endpoint),
+        operation_ref=client.GetOperationRef(operation),
         message='waiting for endpoint [{}] to be deleted'.format(
             endpoint.RelativeName()),
         has_result=False,

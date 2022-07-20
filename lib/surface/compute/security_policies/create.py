@@ -130,14 +130,16 @@ class CreateBeta(Create):
 
   @classmethod
   def Args(cls, parser):
-    cls.SECURITY_POLICY_ARG = flags.SecurityPolicyArgument()
+    cls.SECURITY_POLICY_ARG = flags.SecurityPolicyMultiScopeArgument()
     cls.SECURITY_POLICY_ARG.AddArgument(parser, operation_type='create')
 
     group = parser.add_group(mutex=True, help='Creation options.')
 
     group.add_argument(
         '--type',
-        choices=['CLOUD_ARMOR', 'CLOUD_ARMOR_EDGE'],
+        choices=[
+            'CLOUD_ARMOR', 'CLOUD_ARMOR_EDGE', 'CLOUD_ARMOR_NETWORK'
+        ],
         type=lambda x: x.upper(),
         metavar='SECURITY_POLICY_TYPE',
         help=('The type indicates the intended use of the security policy.'))
@@ -159,7 +161,7 @@ class CreateBeta(Create):
         '--description',
         help=('An optional, textual description for the security policy.'))
 
-    parser.display_info.AddCacheUpdater(flags.GlobalSecurityPoliciesCompleter)
+    parser.display_info.AddCacheUpdater(flags.SecurityPoliciesCompleter)
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())

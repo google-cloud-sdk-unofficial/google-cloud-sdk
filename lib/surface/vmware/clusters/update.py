@@ -45,8 +45,8 @@ DETAILED_HELP = {
 
 
 @base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class UpdateBeta(base.UpdateCommand):
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class Update(base.UpdateCommand):
   """Update a Google Cloud VMware Engine cluster."""
 
   detailed_help = DETAILED_HELP
@@ -82,9 +82,3 @@ class UpdateBeta(base.UpdateCommand):
     log.UpdatedResource(resource, kind='cluster')
 
     return resource
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class UpdateAlpha(UpdateBeta):
-  """Update a Google Cloud VMware Engine cluster."""
-  _is_hidden = False

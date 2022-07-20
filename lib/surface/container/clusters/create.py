@@ -199,6 +199,8 @@ def ParseCreateOptionsBase(args, is_autopilot, get_default, location,
 
   flags.ValidateNotificationConfigFlag(args)
 
+  flags.WarnForLocationPolicyDefault(args)
+
   return api_adapter.CreateClusterOptions(
       accelerators=get_default('accelerator'),
       additional_zones=get_default('additional_zones'),
@@ -223,6 +225,7 @@ def ParseCreateOptionsBase(args, is_autopilot, get_default, location,
                           hasattr(args, 'enable_autoupgrade')
                           else None),
       enable_binauthz=get_default('enable_binauthz'),
+      binauthz_evaluation_mode=get_default('binauthz_evaluation_mode'),
       enable_stackdriver_kubernetes=_GetEnableStackdriver(args),
       enable_cloud_logging=args.enable_cloud_logging if (hasattr(args, 'enable_cloud_logging') and args.IsSpecified('enable_cloud_logging')) else None,
       enable_cloud_monitoring=args.enable_cloud_monitoring if (hasattr(args, 'enable_cloud_monitoring') and args.IsSpecified('enable_cloud_monitoring')) else None,
@@ -427,8 +430,7 @@ flags_to_add = {
             _Args,
         'basicauth':
             flags.AddBasicAuthFlags,
-        'binauthz':
-            flags.AddEnableBinAuthzFlag,
+        'binauthz': (lambda p: flags.AddBinauthzFlags(p, api_version='v1')),
         'bootdiskkms':
             flags.AddBootDiskKmsKeyFlag,
         'cloudlogging':
@@ -440,9 +442,7 @@ flags_to_add = {
         'cloudrunconfig':
             flags.AddCloudRunConfigFlag,
         'clusterautoscaling':
-            functools.partial(
-                flags.AddClusterAutoscalingFlags,
-                location_policy_present=False),
+            functools.partial(flags.AddClusterAutoscalingFlags),
         'clusterdns':
             flags.AddClusterDNSFlags,
         'clusterversion':
@@ -595,7 +595,7 @@ flags_to_add = {
         'basicauth':
             flags.AddBasicAuthFlags,
         'binauthz':
-            flags.AddEnableBinAuthzFlag,
+            (lambda p: flags.AddBinauthzFlags(p, api_version='v1beta1')),
         'bootdiskkms':
             flags.AddBootDiskKmsKeyFlag,
         'cloudlogging':
@@ -607,8 +607,7 @@ flags_to_add = {
         'cloudrunconfig':
             flags.AddCloudRunConfigFlag,
         'clusterautoscaling':
-            functools.partial(
-                flags.AddClusterAutoscalingFlags, location_policy_present=True),
+            functools.partial(flags.AddClusterAutoscalingFlags),
         'clusterdns':
             flags.AddClusterDNSFlags,
         'clusterversion':
@@ -805,7 +804,7 @@ flags_to_add = {
         'autoupgrade':
             AddEnableAutoUpgradeWithDefault,
         'binauthz':
-            flags.AddEnableBinAuthzFlag,
+            (lambda p: flags.AddBinauthzFlags(p, api_version='v1alpha1')),
         'bootdiskkms':
             flags.AddBootDiskKmsKeyFlag,
         'cloudmonitoring':
@@ -815,8 +814,7 @@ flags_to_add = {
         'cloudrunconfig':
             flags.AddCloudRunConfigFlag,
         'clusterautoscaling':
-            functools.partial(
-                flags.AddClusterAutoscalingFlags, location_policy_present=True),
+            functools.partial(flags.AddClusterAutoscalingFlags),
         'clusterdns':
             flags.AddClusterDNSFlags,
         'placementtype':
@@ -1108,11 +1106,6 @@ class Create(base.CreateCommand):
           'no upgrade path available with this feature enabled. For additional '
           'details, please refer to '
           'https://cloud.google.com/kubernetes-engine/docs/how-to/pod-security-policies'
-      )
-
-    if options.enable_managed_prometheus:
-      log.warning(
-          'Managed collection for Google Cloud Managed Service for Prometheus is in preview for clusters on version 1.21. It is fully supported on clusters on version 1.22 and above.'
       )
 
     # TODO(b/201956384) Remove check that requires specifying scope, once

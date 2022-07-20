@@ -23,13 +23,8 @@ from googlecloudsdk.calliope import base
 
 
 @base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class NetworksBeta(base.Group):
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class Networks(base.Group):
   """Manage VMware Engine networks in Google Cloud VMware Engine."""
 
   category = base.COMPUTE_CATEGORY
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class NetworksAlpha(NetworksBeta):
-  """Manage VMware Engine networks in Google Cloud VMware Engine."""

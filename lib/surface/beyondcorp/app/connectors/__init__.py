@@ -22,7 +22,6 @@ from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Connectors(base.Group):
   """Create and manipulate beyondcorp connectors.
@@ -33,3 +32,5 @@ class Connectors(base.Group):
   Cloud Platform. It initiates connections to the applications and can proxy the
   data from users over the connection.
   """
+
+  category = base.SECURITY_CATEGORY

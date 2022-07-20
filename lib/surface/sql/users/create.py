@@ -46,6 +46,7 @@ def AddBaseArgs(parser):
   flags.AddPasswordPolicyAllowedFailedAttempts(parser)
   flags.AddPasswordPolicyPasswordExpirationDuration(parser)
   flags.AddPasswordPolicyEnableFailedAttemptsCheck(parser)
+  flags.AddPasswordPolicyEnablePasswordVerification(parser)
 
 
 def AddBetaArgs(parser):
@@ -55,15 +56,13 @@ def AddBetaArgs(parser):
 
 def AddAlphaArgs(parser):
   AddBetaArgs(parser)
-  flags.AddPasswordPolicyEnablePasswordVerification(parser)
 
 
-def RunBaseCreateCommand(args, release_track):
+def RunBaseCreateCommand(args):
   """Creates a user in a given instance.
 
   Args:
     args: argparse.Namespace, The arguments that this command was invoked with.
-    release_track: base.ReleaseTrack, the release track that this was run under.
 
   Returns:
     SQL user resource iterator.
@@ -80,7 +79,7 @@ def RunBaseCreateCommand(args, release_track):
 
   user_type = users.ParseUserType(sql_messages, args)
   password_policy = users.CreatePasswordPolicyFromArgs(
-      sql_messages, release_track, args)
+      sql_messages, args)
 
   new_user = sql_messages.User(
       kind='sql#user',
@@ -127,7 +126,7 @@ class Create(base.CreateCommand):
     parser.display_info.AddCacheUpdater(flags.UserCompleter)
 
   def Run(self, args):
-    return RunBaseCreateCommand(args, self.ReleaseTrack())
+    return RunBaseCreateCommand(args)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
@@ -146,7 +145,7 @@ class CreateBeta(Create):
     parser.display_info.AddCacheUpdater(flags.UserCompleter)
 
   def Run(self, args):
-    return RunBaseCreateCommand(args, self.ReleaseTrack())
+    return RunBaseCreateCommand(args)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -165,4 +164,4 @@ class CreateAlpha(CreateBeta):
     parser.display_info.AddCacheUpdater(flags.UserCompleter)
 
   def Run(self, args):
-    return RunBaseCreateCommand(args, self.ReleaseTrack())
+    return RunBaseCreateCommand(args)

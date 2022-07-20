@@ -39,6 +39,10 @@ EXAMPLES = """\
     To update a connection profile for Google Cloud Storage:
 
         $ {command} CONNECTION_PROFILE --location=us-central1 --type=google-cloud-storage --bucket=fake-bucket --root-path=/root/path --display-name=my-profile
+
+    To update a connection profile for Google Cloud Storage:
+
+        $ {command} CONNECTION_PROFILE --location=us-central1 --type=bigquery --display-name=my-profile
    """
 
 EXAMPLES_BETA = """\
@@ -79,7 +83,7 @@ class Update(base.Command):
     if release_track == base.ReleaseTrack.GA:
       cp_flags.AddValidationGroup(parser, 'Update')
 
-    profile_flags = parser.add_group(required=False, mutex=True)
+    profile_flags = parser.add_group(mutex=True)
     cp_flags.AddMysqlProfileGroup(profile_flags, required=False)
     cp_flags.AddOracleProfileGroup(profile_flags, required=False)
     cp_flags.AddGcsProfileGroup(profile_flags, release_track, required=False)

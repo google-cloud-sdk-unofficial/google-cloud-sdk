@@ -20,8 +20,16 @@ from __future__ import unicode_literals
 
 import textwrap
 
+from googlecloudsdk.api_lib.storage import cloud_api
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.storage import encryption_util
+from googlecloudsdk.command_lib.storage import errors
+from googlecloudsdk.command_lib.storage import flags
+from googlecloudsdk.command_lib.storage import name_expansion
+from googlecloudsdk.command_lib.storage import storage_url
+from googlecloudsdk.command_lib.storage.tasks import task_executor
+from googlecloudsdk.command_lib.storage.tasks.cat import cat_task_iterator
 
 
 @base.Hidden
@@ -89,5 +97,29 @@ class Cat(base.Command):
             If the bytes are out of range of the object,
             then nothing is printed"""))
 
+    flags.add_encryption_flags(parser)
+
   def Run(self, args):
-    raise NotImplementedError
+    encryption_util.initialize_key_store(args)
+    if args.url:
+      storage_urls = []
+      for url_string in args.url:
+        url_object = storage_url.storage_url_from_string(url_string)
+        if not isinstance(url_object, storage_url.CloudUrl):
+          raise errors.InvalidUrlError('cat only works for valid cloud URLs.'
+                                       ' {} is an invalid cloud URL.'.format(
+                                           url_object.url_string))
+        storage_urls.append(url_object)
+
+    # Not using "FieldsScope.SHORT" because downloads always expect
+    # serialization data for recovering from errors, which requires
+    # the "GCS mediaLink" API field.
+    source_expansion_iterator = name_expansion.NameExpansionIterator(
+        args.url,
+        fields_scope=cloud_api.FieldsScope.NO_ACL,
+        recursion_requested=name_expansion.RecursionSetting.NO)
+
+    task_iterator = cat_task_iterator.get_cat_task_iterator(
+        source_expansion_iterator, args.display_url)
+
+    self.exit_code = task_executor.execute_tasks(task_iterator=task_iterator)

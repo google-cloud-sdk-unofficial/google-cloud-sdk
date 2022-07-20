@@ -21,9 +21,8 @@ from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class App(base.Group):
+class ClientConnector(base.Group):
   """Provides context-aware access to non-web applications.
 
      BeyondCorp Enterprise is the zero trust solution from Google that provides

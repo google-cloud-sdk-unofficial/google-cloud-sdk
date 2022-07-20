@@ -18,7 +18,6 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
-from googlecloudsdk.calliope import base as calliope_base
 from googlecloudsdk.command_lib.container.fleet.features import base
 from googlecloudsdk.command_lib.container.fleet.policycontroller import utils
 from googlecloudsdk.core import exceptions
@@ -51,7 +50,8 @@ class Update(base.UpdateCommand):
         '--all-memberships',
         action='store_true',
         help='If supplied, update Policy Controller for all memberships in the fleet.',
-        default=False)
+        default=False,
+    )
     parser.add_argument(
         '--audit-interval-seconds',
         type=int,
@@ -68,12 +68,11 @@ class Update(base.UpdateCommand):
         const=None,
         help='If set, log all denies and dry run failures. (To disable, use --no-log-denies-enabled)'
     )
-    if cls.ReleaseTrack() is calliope_base.ReleaseTrack.ALPHA:
-      parser.add_argument(
-          '--mutation-enabled',
-          action=utils.BooleanOptionalAction,
-          help='If set, enable support for mutation. (To disable, use --no-mutation-enabled)'
-      )
+    parser.add_argument(
+        '--mutation-enabled',
+        action=utils.BooleanOptionalAction,
+        help='If set, enable support for mutation. (To disable, use --no-mutation-enabled)'
+    )
     parser.add_argument(
         '--referential-rules-enabled',
         action=utils.BooleanOptionalAction,

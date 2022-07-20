@@ -96,9 +96,11 @@ class Create(base.CreateCommand):
     args.CONCEPTS.parsed_args.release = release_util.RenderPattern(
         args.CONCEPTS.parsed_args.release)
     release_ref = args.CONCEPTS.release.Parse()
+    pipeline_obj = delivery_pipeline_util.GetPipeline(
+        release_ref.Parent().RelativeName())
     failed_activity_msg = 'Cannot create release {}.'.format(
         release_ref.RelativeName())
-    delivery_pipeline_util.ThrowIfPipelineSuspended(release_ref.Parent(),
+    delivery_pipeline_util.ThrowIfPipelineSuspended(pipeline_obj,
                                                     failed_activity_msg)
     client = release.ReleaseClient()
     # Create the release create request.

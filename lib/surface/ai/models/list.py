@@ -37,11 +37,11 @@ _DEFAULT_FORMAT = """
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class ListV1(base.ListCommand):
-  """Lists the models of the given project and region.
+  """List the models of the given project and region.
 
   ## EXAMPLES
 
-  Lists the models of project ``example'' in region ``us-central1'', run:
+  List the models of project ``example'' in region ``us-central1'', run:
 
     $ {command} --project=example --region=us-central1
   """
@@ -70,11 +70,11 @@ class ListV1(base.ListCommand):
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class ListV1Beta1(ListV1):
-  """Lists the models of the given project and region.
+  """List the models of the given project and region.
 
   ## EXAMPLES
 
-  Lists the models of project `example` in region `us-central1`, run:
+  List the models of project `example` in region `us-central1`, run:
 
     $ {command} --project=example --region=us-central1
   """

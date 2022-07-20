@@ -81,9 +81,12 @@ Troubleshoot.detailed_help = {
     *{command}* troubleshoots issues with the setup of VM Manager on a specified
     VM instance
 
-    The troubleshoot command investigates the following issues with VM Manager:\n
+    The troubleshoot command investigates the following settings or configurations for your VM Manager setup:\n
     + Checks if the OS Config API is enabled in the project.\n
-    + Checks if the required metadata is set up correctly in the VM instance.
+    + Checks if the required metadata is set up correctly in the VM instance.\n
+    + Checks if the latest version of the OS Config agent is running on the VM instance.\n
+    + Checks if a service account is attached to the VM instance.\n
+    + Checks if the VM Manager service agent is enabled.
     """,
     'EXAMPLES': """
     To troubleshoot an instance named `my-instance` in zone `us-west1-a`, run

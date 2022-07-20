@@ -44,8 +44,8 @@ DETAILED_HELP = {
 
 
 @base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class DeleteBeta(base.DeleteCommand):
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class Delete(base.DeleteCommand):
   """Delete a VMware Engine network policy."""
   detailed_help = DETAILED_HELP
   @staticmethod
@@ -71,9 +71,3 @@ class DeleteBeta(base.DeleteCommand):
         message='waiting for network policy [{}] to be deleted'.format(
             network_policy.RelativeName()),
         has_result=False)
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class DeleteAlpha(DeleteBeta):
-  """Delete a VMware Engine network policy."""
-  _is_hidden = False

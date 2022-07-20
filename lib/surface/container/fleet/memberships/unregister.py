@@ -26,6 +26,7 @@ from googlecloudsdk.command_lib.container.fleet import agent_util
 from googlecloudsdk.command_lib.container.fleet import api_util
 from googlecloudsdk.command_lib.container.fleet import exclusivity_util
 from googlecloudsdk.command_lib.container.fleet import kube_util
+from googlecloudsdk.command_lib.container.fleet import resources
 from googlecloudsdk.command_lib.container.fleet import util as hub_util
 from googlecloudsdk.command_lib.util.apis import arg_utils
 from googlecloudsdk.core import exceptions
@@ -56,7 +57,7 @@ class Unregister(base.DeleteCommand):
   To register a GKE cluster use --gke-cluster or --gke-uri flag (no --kubeconfig
   flag is required).
 
-  To only delete the Fleet membership resource, consider using the command:
+  To only delete the Fleet Membership resource, consider using the command:
   `{parent_command} delete`. This command is intended to delete stale Fleet
   Membership resources as doing so on a fully registered cluster will skip some
   of the steps above and orphan in-cluster resources and agent connections to
@@ -88,25 +89,30 @@ class Unregister(base.DeleteCommand):
 
   @classmethod
   def Args(cls, parser):
-    parser.add_argument(
-        'MEMBERSHIP_NAME',
-        type=str,
-        help=textwrap.dedent("""\
-            The membership name that corresponds to the cluster being
-            unregistered. To get list of all the memberships on the Fleet,
-            consider using the command: `{parent_command} list`.
-         """),
-    )
+    # Location only in alpha and autopush environment
     if cls.ReleaseTrack() is base.ReleaseTrack.ALPHA:
+      resources.AddMembershipResourceArg(
+          parser,
+          membership_help=textwrap.dedent("""\
+            The membership name that you choose to uniquely represent the cluster
+            being registered in the fleet.
+          """),
+          location_help=textwrap.dedent("""\
+            The location of the membership resource, e.g. `us-central1`.
+            If not specified, defaults to `global`.
+          """),
+          membership_required=True,
+          positional=True)
+    else:
       parser.add_argument(
-          '--location',
+          'MEMBERSHIP_NAME',
           type=str,
-          hidden=True,
           help=textwrap.dedent("""\
-              The location for the membership resource, e.g. `us-central1`.
-              If not specified, defaults to `global`. Not supported for GKE clusters.
-            """),
+            The membership name that you choose to uniquely represents the cluster
+            being registered on the fleet.
+          """),
       )
+
     hub_util.AddClusterConnectionCommonArgs(parser)
 
   def Run(self, args):
@@ -157,9 +163,9 @@ class Unregister(base.DeleteCommand):
       raise exceptions.Error(
           'You are not authorized to unregister clusters from project [{}]. '
           'Underlying error: {}'.format(project, e))
-    except apitools_exceptions.HttpNotFoundError as e:
+    except apitools_exceptions.HttpNotFoundError:
       log.status.Print(
-          'Membership [{}] for the cluster [{}] was not found on the Fleet. '
+          'Membership [{}] for the cluster [{}] was not found on the fleet. '
           'It may already have been deleted, or it may never have existed.'
           .format(name, args.MEMBERSHIP_NAME))
 

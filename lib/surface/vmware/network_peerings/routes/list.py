@@ -45,8 +45,8 @@ DETAILED_HELP = {
 
 
 @base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class ListBeta(base.ListCommand):
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class List(base.ListCommand):
   """List Google Cloud VMware Engine VPC network peering routes."""
 
   detailed_help = DETAILED_HELP
@@ -84,9 +84,3 @@ class ListBeta(base.ListCommand):
       # Set "status" to "Imported" or "Imported by peer" based on direction.
       route['status'] = _TransformStatus(route['direction'], route['imported'])
       yield route
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class ListAlpha(ListBeta):
-  """List Google Cloud VMware Engine VPC network peering routes."""
-  _is_hidden = False

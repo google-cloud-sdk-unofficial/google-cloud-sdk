@@ -18,7 +18,6 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
-from googlecloudsdk.calliope import base as calliope_base
 from googlecloudsdk.command_lib.container.fleet.features import base
 from googlecloudsdk.command_lib.container.fleet.policycontroller import utils
 from googlecloudsdk.core import exceptions
@@ -65,12 +64,11 @@ class Enable(base.UpdateCommand, base.EnableCommand):
         action='store_true',
         help='Log all denies and dry run failures.',
         default=False)
-    if cls.ReleaseTrack() is calliope_base.ReleaseTrack.ALPHA:
-      parser.add_argument(
-          '--mutation-enabled',
-          action='store_true',
-          help='Enable support for mutation.',
-          default=False)
+    parser.add_argument(
+        '--mutation-enabled',
+        action='store_true',
+        help='Enable support for mutation.',
+        default=False)
     parser.add_argument(
         '--referential-rules-enabled',
         action='store_true',

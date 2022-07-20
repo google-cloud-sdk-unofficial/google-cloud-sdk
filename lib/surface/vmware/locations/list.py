@@ -39,8 +39,8 @@ DETAILED_HELP = {
 
 
 @base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class ListBeta(base.ListCommand):
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class List(base.ListCommand):
   """List Google Cloud VMware Engine locations."""
 
   detailed_help = DETAILED_HELP
@@ -59,9 +59,3 @@ class ListBeta(base.ListCommand):
     project = args.CONCEPTS.project.Parse()
     client = LocationsClient()
     return client.List(project, limit=args.limit)
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class ListAlpha(ListBeta):
-  """List Google Cloud VMware Engine locations."""
-  _is_hidden = False

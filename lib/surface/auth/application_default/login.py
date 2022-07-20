@@ -77,7 +77,6 @@ class Login(base.Command):
   @staticmethod
   def Args(parser):
     """Set args for gcloud auth application-default login."""
-    flags.AddNoLaunchBrowserFlag(parser)
     parser.add_argument(
         '--client-id-file',
         help='A file containing your own client id to use to login. If '
@@ -93,7 +92,7 @@ class Login(base.Command):
         '[](https://developers.google.com/identity/protocols/googlescopes).'
         .format(', '.join(auth_util.DEFAULT_SCOPES)))
     flags.AddQuotaProjectFlags(parser)
-    flags.AddRemoteLoginArgGroup(parser, for_adc=True)
+    flags.AddRemoteLoginFlags(parser, for_adc=True)
 
     parser.display_info.AddFormat('none')
 

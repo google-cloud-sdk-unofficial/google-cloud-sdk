@@ -172,7 +172,6 @@ class Login(base.Command):
   @staticmethod
   def Args(parser):
     """Set args for gcloud auth."""
-    auth_flags.AddNoLaunchBrowserFlag(parser)
     parser.add_argument(
         '--activate', action='store_true', default=True,
         help='Set the new account to active.')
@@ -217,7 +216,7 @@ class Login(base.Command):
         '`gcloud iam workload-identity-pools create-cred-config`) or service '
         'account credential key file (JSON).')
 
-    auth_flags.AddRemoteLoginArgGroup(parser)
+    auth_flags.AddRemoteLoginFlags(parser)
 
     parser.display_info.AddFormat('none')
 

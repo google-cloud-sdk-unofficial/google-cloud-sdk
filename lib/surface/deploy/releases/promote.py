@@ -76,9 +76,11 @@ class Promote(base.CreateCommand):
 
   def Run(self, args):
     release_ref = args.CONCEPTS.release.Parse()
+    pipeline_obj = delivery_pipeline_util.GetPipeline(
+        release_ref.Parent().RelativeName())
     failed_activity_msg = 'Cannot promote release {}.'.format(
         release_ref.RelativeName())
-    delivery_pipeline_util.ThrowIfPipelineSuspended(release_ref.Parent(),
+    delivery_pipeline_util.ThrowIfPipelineSuspended(pipeline_obj,
                                                     failed_activity_msg)
     try:
       release_obj = release.ReleaseClient().Get(release_ref.RelativeName())

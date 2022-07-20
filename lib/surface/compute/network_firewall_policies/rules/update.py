@@ -27,7 +27,7 @@ from googlecloudsdk.command_lib.compute.network_firewall_policies import flags
 from googlecloudsdk.command_lib.compute.network_firewall_policies import secure_tags_utils
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Update(base.UpdateCommand):
   r"""Updates a Compute Engine network firewall policy rule.
 
@@ -39,13 +39,14 @@ class Update(base.UpdateCommand):
   _support_fqdn = False
   _support_geo = False
   _support_nti = False
+  _support_ips = False
 
   @classmethod
   def Args(cls, parser):
     cls.NETWORK_FIREWALL_POLICY_ARG = flags.NetworkFirewallPolicyRuleArgument(
         required=True, operation='update')
     cls.NETWORK_FIREWALL_POLICY_ARG.AddArgument(parser)
-    flags.AddAction(parser, required=False)
+    flags.AddAction(parser, required=False, support_ips=cls._support_ips)
     flags.AddRulePriority(parser, operation='updated')
     flags.AddSrcIpRanges(parser)
     flags.AddDestIpRanges(parser)
@@ -70,6 +71,8 @@ class Update(base.UpdateCommand):
     if cls._support_nti:
       flags.AddSrcThreatIntelligence(parser)
       flags.AddDestThreatIntelligence(parser)
+    if cls._support_ips:
+      flags.AddSecurityProfileGroup(parser)
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
@@ -87,6 +90,7 @@ class Update(base.UpdateCommand):
     dest_ip_ranges = []
     layer4_config_list = []
     target_service_accounts = []
+    security_profile_group = None
     enable_logging = False
     disabled = False
     should_setup_match = False
@@ -148,6 +152,8 @@ class Update(base.UpdateCommand):
     if self._support_nti and args.IsSpecified('dest_threat_intelligence'):
       matcher.destThreatIntelligences = args.dest_threat_intelligence
       should_setup_match = True
+    if self._support_ips and args.IsSpecified('security_profile_group'):
+      security_profile_group = args.security_profile_group
     # If not need to construct a new matcher.
     if not should_setup_match:
       matcher = None
@@ -162,16 +168,29 @@ class Update(base.UpdateCommand):
             holder.client.messages.FirewallPolicyRule.DirectionValueValuesEnum
             .EGRESS)
 
-    firewall_policy_rule = holder.client.messages.FirewallPolicyRule(
-        priority=new_priority,
-        action=args.action,
-        match=matcher,
-        direction=traffic_direct,
-        targetServiceAccounts=target_service_accounts,
-        description=args.description,
-        enableLogging=enable_logging,
-        disabled=disabled,
-        targetSecureTags=target_secure_tags)
+    if self._support_ips:
+      firewall_policy_rule = holder.client.messages.FirewallPolicyRule(
+          priority=new_priority,
+          action=args.action,
+          match=matcher,
+          direction=traffic_direct,
+          targetServiceAccounts=target_service_accounts,
+          description=args.description,
+          enableLogging=enable_logging,
+          disabled=disabled,
+          targetSecureTags=target_secure_tags,
+          securityProfileGroup=security_profile_group)
+    else:
+      firewall_policy_rule = holder.client.messages.FirewallPolicyRule(
+          priority=new_priority,
+          action=args.action,
+          match=matcher,
+          direction=traffic_direct,
+          targetServiceAccounts=target_service_accounts,
+          description=args.description,
+          enableLogging=enable_logging,
+          disabled=disabled,
+          targetSecureTags=target_secure_tags)
 
     return network_firewall_policy_rule_client.Update(
         priority=priority,
@@ -180,16 +199,27 @@ class Update(base.UpdateCommand):
         only_generate_request=False)
 
 
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class UpdateBeta(Update):
+  r"""Updates a Compute Engine network firewall policy rule.
+
+  *{command}* is used to update network firewall policy rules.
+  """
+  _support_geo = True
+  _support_nti = True
+
+
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class UpdateAlpha(Update):
-  r"""Creates a Compute Engine network firewall policy rule.
+  r"""Updates a Compute Engine network firewall policy rule.
 
-  *{command}* is used to create network firewall policy rules.
+  *{command}* is used to update network firewall policy rules.
   """
   _support_address_group = True
   _support_fqdn = True
   _support_geo = True
   _support_nti = True
+  _support_ips = True
 
 
 Update.detailed_help = {

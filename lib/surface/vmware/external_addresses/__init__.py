@@ -23,13 +23,8 @@ from googlecloudsdk.calliope import base
 
 
 @base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class ExternalAddressesBeta(base.Group):
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class ExternalAddresses(base.Group):
   """Manage external IP addresses in Google Cloud VMware Engine."""
 
   category = base.COMPUTE_CATEGORY
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class ExternalAddressesAlpha(ExternalAddressesBeta):
-  """Manage external IP addresses in Google Cloud VMware Engine."""

@@ -45,8 +45,8 @@ DETAILED_HELP = {
 
 
 @base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class CreateBeta(base.CreateCommand):
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class Create(base.CreateCommand):
   """Create a VMware Engine private cloud."""
 
   detailed_help = DETAILED_HELP
@@ -88,7 +88,6 @@ class CreateBeta(base.CreateCommand):
     group.add_argument(
         '--vmware-engine-network',
         required=False,
-        hidden=True,
         help="""\
         Network ID of the VMware Engine network attached to the private cloud.
         """)
@@ -101,7 +100,6 @@ class CreateBeta(base.CreateCommand):
     parser.add_argument(
         '--node-custom-core-count',
         required=False,
-        hidden=True,
         type=int,
         help="""\
          Customized number of virtual cores to use for each node of the management cluster. To get a list of valid values for your node type, run the `{grandparent_command} node-types describe` command and reference the `availableCustomCoreCounts` field in the output.
@@ -127,9 +125,3 @@ class CreateBeta(base.CreateCommand):
     log.CreatedResource(resource, kind='private cloud')
 
     return resource
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class CreateAlpha(CreateBeta):
-  """Create a VMware Engine private cloud."""
-  _is_hidden = False

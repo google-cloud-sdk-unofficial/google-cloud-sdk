@@ -69,8 +69,7 @@ class Describe(base.DescribeCommand):
     with run_apps_operations.Connect(conn_context) as client:
       resource_config = client.GetIntegration(name)
       resource_status = client.GetIntegrationStatus(name)
-      resource_type = client.GetResourceTypeFromConfig(resource_config)
-      integration_type = types_utils.GetIntegrationType(resource_type)
+      integration_type = types_utils.GetIntegrationType(resource_config)
       return {
           'name': name,
           'region': conn_context.region,

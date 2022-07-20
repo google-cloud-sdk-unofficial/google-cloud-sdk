@@ -240,7 +240,7 @@ class Create(base.Command):
   _support_numa_node_count = False
   _support_visible_core_count = False
   _support_max_run_duration = False
-  _support_enable_target_shape = False
+  _support_enable_target_shape = True
 
   _log_async = False
 

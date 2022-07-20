@@ -40,8 +40,8 @@ DETAILED_HELP = {
 
 
 @base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class DeleteBeta(base.DescribeCommand):
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class Delete(base.DescribeCommand):
   """Delete a Google Cloud VMware Engine VPC network peering."""
 
   detailed_help = DETAILED_HELP
@@ -68,9 +68,3 @@ class DeleteBeta(base.DescribeCommand):
         message='waiting for vpc peering [{}] to be deleted'.format(
             peering.RelativeName()),
         has_result=False)
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class DeleteAlpha(DeleteBeta):
-  """Delete a Google Cloud VMware Engine VPC network peering."""
-  _is_hidden = False

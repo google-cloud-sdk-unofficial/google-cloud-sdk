@@ -105,32 +105,53 @@ def merge_config_sync(spec, config, version):
   """
   if not spec or not spec.configSync:
     return
-  git = spec.configSync.git
   cs = config[utils.CONFIG_SYNC]
+  git = spec.configSync.git
+  oci = spec.configSync.oci
   if spec.configSync.enabled is not None:
     cs['enabled'] = spec.configSync.enabled
   else:
     # when enabled is no set in feature spec, it's determined by syncRepo
-    if spec.configSync.git and git.syncRepo:
+    if (git and git.syncRepo) or (oci and oci.syncRepo):
       cs['enabled'] = True
+  if spec.configSync.sourceFormat:
+    cs['sourceFormat'] = spec.configSync.sourceFormat
   if (not version or
       semver.SemVer(version) >= semver.SemVer(utils.PREVENT_DRIFT_VERSION)):
     if spec.configSync.preventDrift:
       cs['preventDrift'] = spec.configSync.preventDrift
   else:
     del cs['preventDrift']
-  if spec.configSync.sourceFormat:
-    cs['sourceFormat'] = spec.configSync.sourceFormat
-  if not git:
+
+  if not git and not oci:
     return
-  if git.syncWaitSecs:
-    cs['syncWait'] = git.syncWaitSecs
-  for field in [
-      'policyDir', 'httpsProxy', 'secretType', 'syncBranch', 'syncRepo',
-      'syncRev', 'gcpServiceAccountEmail'
-  ]:
-    if hasattr(git, field) and getattr(git, field) is not None:
-      cs[field] = getattr(git, field)
+  # Update sourceType if version >= 1.12.0
+  if (not version or
+      semver.SemVer(version) >= semver.SemVer(utils.OCI_SUPPORT_VERSION)):
+    if git:
+      cs['sourceType'] = 'git'
+    elif oci:
+      cs['sourceType'] = 'oci'
+  else:
+    del cs['sourceType']
+
+  if cs['sourceType'] and cs['sourceType'] == 'oci':
+    if oci.syncWaitSecs:
+      cs['syncWait'] = oci.syncWaitSecs
+    for field in [
+        'policyDir', 'secretType', 'syncRepo', 'gcpServiceAccountEmail'
+    ]:
+      if hasattr(oci, field) and getattr(oci, field) is not None:
+        cs[field] = getattr(oci, field)
+  else:
+    if git.syncWaitSecs:
+      cs['syncWait'] = git.syncWaitSecs
+    for field in [
+        'policyDir', 'httpsProxy', 'secretType', 'syncBranch', 'syncRepo',
+        'syncRev', 'gcpServiceAccountEmail'
+    ]:
+      if hasattr(git, field) and getattr(git, field) is not None:
+        cs[field] = getattr(git, field)
 
 
 def merge_policy_controller(spec, config, version):

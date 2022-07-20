@@ -18,7 +18,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
-from googlecloudsdk.api_lib.container.gkemulticloud import util as api_util
+from googlecloudsdk.api_lib.container.gkemulticloud import locations as api_util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.container.azure import resource_args
 from googlecloudsdk.command_lib.container.gkemulticloud import endpoint_util
@@ -43,16 +43,10 @@ class GetServerConfig(base.Command):
     resource_args.AddLocationResourceArg(parser, 'to get server configuration')
 
   def Run(self, args):
-    """Run get-server-config command."""
-    release_track = self.ReleaseTrack()
+    """Runs the get-server-config command."""
     location_ref = args.CONCEPTS.location.Parse()
-
-    with endpoint_util.GkemulticloudEndpointOverride(location_ref.locationsId,
-                                                     release_track):
-      client = api_util.GetClientInstance(release_track=release_track)
-      messages = api_util.GetMessagesModule(release_track=release_track)
+    with endpoint_util.GkemulticloudEndpointOverride(location_ref.locationsId):
       log.status.Print('Fetching server config for {location}'.format(
           location=location_ref.locationsId))
-      req = messages.GkemulticloudProjectsLocationsGetAzureServerConfigRequest(
-          name='{}/azureServerConfig'.format(location_ref.RelativeName()))
-      return client.projects_locations.GetAzureServerConfig(req)
+      client = api_util.LocationsClient()
+      return client.GetAzureServerConfig(location_ref)

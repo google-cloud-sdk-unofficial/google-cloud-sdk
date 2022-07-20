@@ -18,6 +18,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+from googlecloudsdk.api_lib.container.fleet import util
 from googlecloudsdk.calliope import actions
 from googlecloudsdk.calliope import base as gbase
 from googlecloudsdk.command_lib.container.fleet.features import base
@@ -39,19 +40,32 @@ def _RunUpdate(cmd, args):
     patch = cmd.messages.MembershipFeatureSpec()
 
     for name, spec in cmd.hubclient.ToPyDict(f.membershipSpecs).items():
-      if name == membership and spec:
+      if util.MembershipShortname(name) == util.MembershipShortname(
+          membership) and spec:
         patch = spec
     if not patch.mesh:
       patch.mesh = cmd.messages.ServiceMeshMembershipSpec()
 
-    control_plane = (
-        cmd.messages.ServiceMeshMembershipSpec.ControlPlaneValueValuesEnum(
-            'MANUAL'))
-    if args.control_plane == 'automatic':
+    if hasattr(args, 'management') and args.management is not None:
+      management = (
+          cmd.messages.ServiceMeshMembershipSpec.ManagementValueValuesEnum(
+              'MANAGEMENT_MANUAL'))
+      if args.management == 'automatic':
+        management = (
+            cmd.messages.ServiceMeshMembershipSpec.ManagementValueValuesEnum(
+                'MANAGEMENT_AUTOMATIC'))
+      patch.mesh.management = management
+
+    if args.control_plane is not None:
       control_plane = (
-          cmd.messages.ServiceMeshMembershipSpec
-          .ControlPlaneValueValuesEnum('AUTOMATIC'))
-    patch.mesh.controlPlane = control_plane
+          cmd.messages.ServiceMeshMembershipSpec.ControlPlaneValueValuesEnum(
+              'MANUAL'))
+      if args.control_plane == 'automatic':
+        control_plane = (
+            cmd.messages.ServiceMeshMembershipSpec.ControlPlaneValueValuesEnum(
+                'AUTOMATIC'))
+      patch.mesh.controlPlane = control_plane
+
     membership_specs[membership] = patch
 
   f = cmd.messages.Feature(
@@ -93,11 +107,17 @@ class UpdateAlpha(base.UpdateCommand):
             warn='The {flag_name} flag is now '
             'deprecated. Please use `--memberships` '
             'instead.'))
-    parser.add_argument(
+    group = parser.add_argument_group(required=True)
+    group.add_argument(
         '--control-plane',
         choices=['automatic', 'manual'],
-        help='The control plane management to update to.',
-        required=True
+        help='The control plane management to update to.'
+    )
+    group.add_argument(
+        '--management',
+        choices=['automatic', 'manual'],
+        help='The management mode to update to.',
+        hidden=True
     )
 
   def Run(self, args):

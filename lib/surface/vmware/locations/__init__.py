@@ -23,13 +23,7 @@ from googlecloudsdk.calliope import base
 
 
 @base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class LocationsBeta(base.Group):
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class Locations(base.Group):
   """List locations in Google Cloud VMware Engine."""
   category = base.COMPUTE_CATEGORY
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class LocationsAlpha(LocationsBeta):
-  """List locations in Google Cloud VMware Engine."""
-  _is_hidden = False

@@ -29,7 +29,7 @@ from googlecloudsdk.command_lib.ai import region_util
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class DescribeV1(base.DescribeCommand):
-  """Gets detailed model information about the given model id.
+  """Get detailed model information about the given model id.
 
   ## EXAMPLES
 
@@ -62,7 +62,7 @@ class DescribeV1(base.DescribeCommand):
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class DescribeV1Beta1(DescribeV1):
-  """Gets detailed model information about the given model id.
+  """Get detailed model information about the given model id.
 
   ## EXAMPLES
 

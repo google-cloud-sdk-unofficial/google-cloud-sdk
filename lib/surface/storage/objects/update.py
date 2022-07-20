@@ -127,7 +127,7 @@ class Update(base.Command):
     flags.add_continue_on_error_flag(parser)
     flags.add_encryption_flags(parser, allow_patch=True, hidden=False)
     flags.add_precondition_flags(parser)
-    flags.add_object_metadata_flags(parser)
+    flags.add_object_metadata_flags(parser, allow_patch=True)
 
   def Run(self, args):
     encryption_util.initialize_key_store(args)

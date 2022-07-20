@@ -298,8 +298,7 @@ class Update(base.UpdateCommand):
     group_locations = group.add_mutually_exclusive_group()
     _AddMutuallyExclusiveArgs(group, base.ReleaseTrack.GA)
     flags.AddNodeLocationsFlag(group_locations)
-    flags.AddClusterAutoscalingFlags(
-        parser, group, location_policy_present=False)
+    flags.AddClusterAutoscalingFlags(parser, group)
     flags.AddMasterAuthorizedNetworksFlags(
         parser, enable_group_for_update=group)
     flags.AddEnableLegacyAuthorizationFlag(group)
@@ -319,7 +318,7 @@ class Update(base.UpdateCommand):
     group_logging_monitoring_config = group.add_group()
     flags.AddLoggingFlag(group_logging_monitoring_config)
     flags.AddMonitoringFlag(group_logging_monitoring_config)
-    flags.AddEnableBinAuthzFlag(group)
+    flags.AddBinauthzFlags(group, api_version='v1')
     flags.AddEnableStackdriverKubernetesFlag(group)
     flags.AddDailyMaintenanceWindowFlag(group, add_unset_text=True)
     flags.AddRecurringMaintenanceWindowFlags(group, is_update=True)
@@ -400,8 +399,7 @@ class Update(base.UpdateCommand):
     if opts.cluster_dns and opts.cluster_dns.lower() == 'clouddns':
       if not opts.cluster_dns_scope:
         raise util.Error(
-            'DNS Scope should be specified when using CloudDNS in GA.'
-        )
+            'DNS Scope should be specified when using CloudDNS in GA.')
       console_io.PromptContinue(
           message='Enabling CloudDNS is a one-way operation. Once enabled, '
           'this configuration cannot be disabled. '
@@ -413,6 +411,7 @@ class Update(base.UpdateCommand):
     opts.enable_identity_service = args.enable_identity_service
     opts.enable_private_endpoint = args.enable_private_endpoint
     opts.enable_google_cloud_access = args.enable_google_cloud_access
+    opts.binauthz_evaluation_mode = args.binauthz_evaluation_mode
     return opts
 
   def Run(self, args):
@@ -774,8 +773,7 @@ class UpdateBeta(Update):
     _AddCommonArgs(parser)
     group = parser.add_mutually_exclusive_group(required=True)
     _AddMutuallyExclusiveArgs(group, base.ReleaseTrack.BETA)
-    flags.AddClusterAutoscalingFlags(
-        parser, group, location_policy_present=True)
+    flags.AddClusterAutoscalingFlags(parser, group)
     group_locations = group.add_mutually_exclusive_group()
     _AddAdditionalZonesArg(group_locations, deprecated=True)
     flags.AddNodeLocationsFlag(group_locations)
@@ -803,7 +801,7 @@ class UpdateBeta(Update):
     flags.AddDailyMaintenanceWindowFlag(group, add_unset_text=True)
     flags.AddRecurringMaintenanceWindowFlags(group, is_update=True)
     flags.AddPodSecurityPolicyFlag(group)
-    flags.AddEnableBinAuthzFlag(group)
+    flags.AddBinauthzFlags(group, api_version='v1beta1')
     flags.AddAutoprovisioningFlags(group)
     flags.AddAutoscalingProfilesFlag(group)
     flags.AddVerticalPodAutoscalingFlags(group, experimental=True)
@@ -865,7 +863,6 @@ class UpdateBeta(Update):
     opts.enable_workload_certificates = args.enable_workload_certificates
     opts.enable_alts = args.enable_alts
     opts.enable_experimental_vertical_pod_autoscaling = args.enable_experimental_vertical_pod_autoscaling
-    opts.location_policy = args.location_policy
     flags.ValidateIstioConfigUpdateArgs(args.istio_config, args.disable_addons)
     flags.ValidateCloudRunConfigUpdateArgs(opts.cloud_run_config,
                                            args.disable_addons)
@@ -941,6 +938,7 @@ class UpdateBeta(Update):
     opts.enable_private_endpoint = args.enable_private_endpoint
     opts.enable_google_cloud_access = args.enable_google_cloud_access
     opts.enable_cost_allocation = args.enable_cost_allocation
+    opts.binauthz_evaluation_mode = args.binauthz_evaluation_mode
     return opts
 
 
@@ -953,8 +951,7 @@ class UpdateAlpha(Update):
     _AddCommonArgs(parser)
     group = parser.add_mutually_exclusive_group(required=True)
     _AddMutuallyExclusiveArgs(group, base.ReleaseTrack.ALPHA)
-    flags.AddClusterAutoscalingFlags(
-        parser, group, location_policy_present=True)
+    flags.AddClusterAutoscalingFlags(parser, group)
     group_locations = group.add_mutually_exclusive_group()
     _AddAdditionalZonesArg(group_locations, deprecated=True)
     flags.AddNodeLocationsFlag(group_locations)
@@ -984,7 +981,7 @@ class UpdateAlpha(Update):
     flags.AddDailyMaintenanceWindowFlag(group, add_unset_text=True)
     flags.AddRecurringMaintenanceWindowFlags(group, is_update=True)
     flags.AddPodSecurityPolicyFlag(group)
-    flags.AddEnableBinAuthzFlag(group)
+    flags.AddBinauthzFlags(group, api_version='v1alpha1')
     flags.AddResourceUsageExportFlags(group, is_update=True)
     flags.AddVerticalPodAutoscalingFlags(group, experimental=True)
     flags.AddSecurityProfileForUpdateFlag(group)
@@ -1047,7 +1044,6 @@ class UpdateAlpha(Update):
     opts.enable_workload_certificates = args.enable_workload_certificates
     opts.enable_alts = args.enable_alts
     opts.enable_experimental_vertical_pod_autoscaling = args.enable_experimental_vertical_pod_autoscaling
-    opts.location_policy = args.location_policy
     flags.ValidateIstioConfigUpdateArgs(args.istio_config, args.disable_addons)
     flags.ValidateCloudRunConfigUpdateArgs(opts.cloud_run_config,
                                            args.disable_addons)
@@ -1116,4 +1112,5 @@ class UpdateAlpha(Update):
     opts.enable_workload_vulnerability_scanning = args.enable_workload_vulnerability_scanning
     opts.enable_private_endpoint = args.enable_private_endpoint
     opts.enable_google_cloud_access = args.enable_google_cloud_access
+    opts.binauthz_evaluation_mode = args.binauthz_evaluation_mode
     return opts

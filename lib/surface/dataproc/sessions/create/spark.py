@@ -67,7 +67,7 @@ class Spark(base.Command):
 
     if not args.async_:
       poller = session_poller.SessionPoller(dataproc)
-      output_uri = waiter.WaitFor(
+      waiter.WaitFor(
           poller,
           '{}/sessions/{}'.format(request.parent, request.sessionId),
           max_wait_ms=sys.maxsize,
@@ -76,7 +76,6 @@ class Spark(base.Command):
           exponential_sleep_multiplier=1.,
           custom_tracker=None,
           tracker_update_func=poller.TrackerUpdateFunction)
-      log.status.Print('Session [{}] is available at [{}].'.format(
-          request.sessionId, output_uri))
+      log.status.Print('Session [{}] is created.'.format(request.sessionId))
 
     return session_op

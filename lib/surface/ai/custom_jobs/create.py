@@ -91,9 +91,9 @@ class CreateGA(base.CreateCommand):
         network=args.network,
         service_account=args.service_account,
         enable_web_access=args.enable_web_access,
-        python_package_uri=args.python_package_uris,
         args=args.args,
-        command=args.command)
+        command=args.command,
+        python_package_uri=args.python_package_uris)
     return job_spec
 
   def Run(self, args):

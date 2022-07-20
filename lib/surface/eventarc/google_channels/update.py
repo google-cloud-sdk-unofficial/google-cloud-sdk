@@ -27,11 +27,11 @@ _DETAILED_HELP = {
         '{description}',
     'EXAMPLES':
         """ \
-        To update the google channel in location ``us-central1'', run:
+        To update the Google channel in location `us-central1`, run:
 
           $ {command} --location=us-central1
 
-        To configure the google channel in location ``us-central1'' with a Cloud KMS CryptoKey, run:
+        To configure the Google channel in location `us-central1` with a Cloud KMS CryptoKey, run:
 
           $ {command} --location=us-central1 --crypto-key=projects/PROJECT_ID/locations/KMS_LOCATION/keyRings/KEYRING/cryptoKeys/KEY
 
@@ -41,7 +41,7 @@ _DETAILED_HELP = {
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Update(base.UpdateCommand):
-  """Updates an Eventarc Google channel."""
+  """Update an Eventarc Google channel."""
 
   detailed_help = _DETAILED_HELP
 

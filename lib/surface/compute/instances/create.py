@@ -244,7 +244,6 @@ class Create(base.CreateCommand):
   _support_disk_architecture = False
   _support_network_queue_count = False
   _support_instance_kms = False
-  _support_key_revocation_action_type = False
   _support_max_run_duration = False
   _support_ipv6_assignment = False
 
@@ -272,6 +271,7 @@ class Create(base.CreateCommand):
     instances_flags.AddPrivateIpv6GoogleAccessArg(parser,
                                                   utils.COMPUTE_GA_API_VERSION)
     instances_flags.AddConfidentialComputeArgs(parser)
+    instances_flags.AddKeyRevocationActionTypeArgs(parser)
 
   def Collection(self):
     return 'compute.instances'
@@ -496,7 +496,7 @@ class Create(base.CreateCommand):
             args.post_key_revocation_action_type, compute_client.messages
             .Instance.PostKeyRevocationActionTypeValueValuesEnum)
 
-      if self._support_key_revocation_action_type and args.IsSpecified(
+      if args.IsSpecified(
           'key_revocation_action_type'):
         instance.keyRevocationActionType = arg_utils.ChoiceToEnum(
             args.key_revocation_action_type, compute_client.messages.Instance
@@ -645,7 +645,6 @@ class CreateBeta(Create):
   _support_disk_architecture = False
   _support_network_queue_count = False
   _support_instance_kms = False
-  _support_key_revocation_action_type = True
   _support_max_run_duration = False
   _support_ipv6_assignment = False
 
@@ -727,7 +726,6 @@ class CreateAlpha(CreateBeta):
   _support_disk_architecture = True
   _support_network_queue_count = True
   _support_instance_kms = True
-  _support_key_revocation_action_type = True
   _support_max_run_duration = True
   _support_ipv6_assignment = True
 

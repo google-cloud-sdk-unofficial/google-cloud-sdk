@@ -44,8 +44,8 @@ DETAILED_HELP = {
 
 
 @base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class DescribeBeta(base.DescribeCommand):
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class Describe(base.DescribeCommand):
   """Describe Google Cloud VMware Engine vCenter credentials."""
 
   detailed_help = DETAILED_HELP
@@ -59,9 +59,3 @@ class DescribeBeta(base.DescribeCommand):
     resource = args.CONCEPTS.private_cloud.Parse()
     client = PrivateCloudsClient()
     return client.GetVcenterCredentials(resource)
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class DescribeAlpha(DescribeBeta):
-  """Describe Google Cloud VMware Engine vCenter credentials."""
-  _is_hidden = False

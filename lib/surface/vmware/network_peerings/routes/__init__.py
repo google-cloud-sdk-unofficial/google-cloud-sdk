@@ -22,14 +22,8 @@ from googlecloudsdk.calliope import base
 
 
 @base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class NetworkPeeringRoutesBeta(base.Group):
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class NetworkPeeringRoutes(base.Group):
   """Manage VMware Engine VPC peering routes using Google Cloud VMware Engine."""
 
   category = base.COMPUTE_CATEGORY
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class NetworkPeeringRoutesAlpha(NetworkPeeringRoutesBeta):
-  """Manage VMware Engine VPC peering routes using Google Cloud VMware Engine."""
-  _is_hidden = False

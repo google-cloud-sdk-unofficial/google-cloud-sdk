@@ -21,7 +21,6 @@ from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Connections(base.Group):
   """Create and manipulate beyondcorp connections.
@@ -31,3 +30,5 @@ class Connections(base.Group):
   Platform components needed for creating a BeyondCorp protected connection.
   Multiple connectors can be authorised for a single Connection.
   """
+
+  category = base.SECURITY_CATEGORY

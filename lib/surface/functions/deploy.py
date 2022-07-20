@@ -81,7 +81,7 @@ def _CommonArgs(parser, track):
   flags.AddBuildWorkerPoolMutexGroup(parser)
 
   # Configure flags for Artifact Registry
-  flags.AddDockerRegistryFlags(parser, track)
+  flags.AddDockerRegistryFlags(parser)
 
   # Add additional flags for GCFv2
   flags.AddRunServiceAccountFlag(parser, track)

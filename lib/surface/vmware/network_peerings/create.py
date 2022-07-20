@@ -42,8 +42,8 @@ DETAILED_HELP = {
 
 
 @base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class CreateBeta(base.CreateCommand):
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class Create(base.CreateCommand):
   """Create a VMware Engine VPC network peering."""
 
   detailed_help = DETAILED_HELP
@@ -158,9 +158,3 @@ class CreateBeta(base.CreateCommand):
     log.CreatedResource(resource, kind='VPC network peering')
 
     return resource
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class CreateAlpha(CreateBeta):
-  """Create a VMware Engine VPC network peering."""
-  _is_hidden = False

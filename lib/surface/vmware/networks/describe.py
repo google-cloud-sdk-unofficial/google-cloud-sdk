@@ -53,8 +53,8 @@ DETAILED_HELP = {
 
 
 @base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class DescribeBeta(base.DescribeCommand):
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class Describe(base.DescribeCommand):
   """Describe a Google Cloud VMware Engine network."""
 
   detailed_help = DETAILED_HELP
@@ -68,8 +68,3 @@ class DescribeBeta(base.DescribeCommand):
     network = args.CONCEPTS.vmware_engine_network.Parse()
     client = NetworksClient()
     return client.Get(network)
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class DescribeAlpha(DescribeBeta):
-  """Describe a Google Cloud VMware Engine network."""

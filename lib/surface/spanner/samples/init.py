@@ -102,7 +102,7 @@ def check_create_db(appname, instance_ref, database_id):
         textwrap.dedent("""\
         Database '{database_id}' exists already. Delete it with:
 
-        $ gcloud spanner databases delete {database_id} --instance {instance_id}
+        $ gcloud spanner databases delete {database_id} --instance={instance_id}
         """.format(
             database_id=database_id, instance_id=instance_ref.instancesId)))
   except HttpError as ex:
@@ -124,7 +124,7 @@ class Init(base.Command):
           To initialize the 'finance' sample app using instance
           'my-instance', run:
 
-          $ {command} finance --instance-id my-instance
+          $ {command} finance --instance-id=my-instance
         """),
   }
 
@@ -198,7 +198,7 @@ class Init(base.Command):
       raise BadArgumentException('--database-id', ex)
     database_operations.Await(op, 'Creating database "{}"'.format(database_id))
 
-    backend_args = '{appname} --instance-id {instance_id}'.format(
+    backend_args = '{appname} --instance-id={instance_id}'.format(
         appname=appname, instance_id=instance_id)
     if args.database_id is not None:
       backend_args += ' --database-id {}'.format(database_id)

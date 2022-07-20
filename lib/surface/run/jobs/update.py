@@ -60,7 +60,10 @@ class Update(base.Command):
         'Job to update.',
         required=True,
         prefixes=False)
-    flags.AddImageArg(parser, required=False)
+    flags.AddImageArg(
+        parser,
+        required=False,
+        image='us-docker.pkg.dev/cloudrun/container/job:latest')
     flags.AddLabelsFlags(parser)
     flags.AddParallelismFlag(parser)
     flags.AddTasksFlag(parser)

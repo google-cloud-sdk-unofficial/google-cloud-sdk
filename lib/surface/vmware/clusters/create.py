@@ -45,8 +45,8 @@ DETAILED_HELP = {
 
 
 @base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class CreateBeta(base.CreateCommand):
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class Create(base.CreateCommand):
   """Create a Google Cloud VMware Engine cluster."""
 
   detailed_help = DETAILED_HELP
@@ -69,7 +69,6 @@ class CreateBeta(base.CreateCommand):
         '--node-custom-core-count',
         required=False,
         type=int,
-        hidden=True,
         help="""\
          Customized number of virtual cores to use for each node of the cluster. To get a list of valid values for your node type, run the `{grandparent_command} node-types describe` command and reference the `availableCustomCoreCounts` field in the output.
         """)
@@ -91,9 +90,3 @@ class CreateBeta(base.CreateCommand):
     log.CreatedResource(resource, kind='cluster')
 
     return resource
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class CreateAlpha(CreateBeta):
-  """Create a Google Cloud VMware Engine cluster."""
-  _is_hidden = False

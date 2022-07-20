@@ -158,7 +158,7 @@ class UpdateGA(base.UpdateCommand):
       distribution_policy = client.messages.DistributionPolicy()
     distribution_policy.targetShape = (
         client.messages.DistributionPolicy.TargetShapeValueValuesEnum)(
-            target_distribution_shape)
+            target_distribution_shape.upper())
     patch_instance_group_manager.distributionPolicy = distribution_policy
 
   def _MakePatchRequest(self, client, igm_ref, igm_updated_resource):
@@ -274,7 +274,7 @@ class UpdateBeta(UpdateGA):
       patch_instance_group_manager.listManagedInstancesResults = (
           client.messages.InstanceGroupManager
           .ListManagedInstancesResultsValueValuesEnum)(
-              args.list_managed_instances_results)
+              args.list_managed_instances_results.upper())
 
     return patch_instance_group_manager
 

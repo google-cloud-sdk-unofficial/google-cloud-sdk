@@ -28,7 +28,7 @@ _DETAILED_HELP = {
         '{description}',
     'EXAMPLES':
         """ \
-        To delete the channel ``my-channel'' in location ``us-central1'', run:
+        To delete the channel `my-channel` in location `us-central1`, run:
 
           $ {command} my-channel --location=us-central1
         """,
@@ -37,7 +37,7 @@ _DETAILED_HELP = {
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Delete(base.DeleteCommand):
-  """Deletes an Eventarc channel."""
+  """Delete an Eventarc channel."""
 
   detailed_help = _DETAILED_HELP
 

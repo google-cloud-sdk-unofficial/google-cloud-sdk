@@ -40,7 +40,8 @@ class Update(base.UpdateCommand):
     cls.FIREWALL_POLICY_ARG = flags.FirewallPolicyRuleArgument(
         required=True, operation='update')
     cls.FIREWALL_POLICY_ARG.AddArgument(parser)
-    flags.AddAction(parser, required=False)
+    is_alpha = (cls.ReleaseTrack() == base.ReleaseTrack.ALPHA)
+    flags.AddAction(parser, required=False, support_ips=is_alpha)
     flags.AddFirewallPolicyId(parser, operation='updated')
     flags.AddSrcIpRanges(parser)
     flags.AddDestIpRanges(parser)
@@ -50,13 +51,15 @@ class Update(base.UpdateCommand):
     flags.AddDisabled(parser)
     flags.AddTargetResources(parser)
     flags.AddTargetServiceAccounts(parser)
-    if cls.ReleaseTrack() == base.ReleaseTrack.ALPHA:
+    if is_alpha:
       flags.AddSrcFqdns(parser)
       flags.AddDestFqdns(parser)
-      flags.AddSrcRegionCodes(parser)
-      flags.AddDestRegionCodes(parser)
+      flags.AddSecurityProfileGroup(parser)
+    if cls.ReleaseTrack() in [base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA]:
       flags.AddSrcThreatIntelligence(parser)
       flags.AddDestThreatIntelligence(parser)
+      flags.AddSrcRegionCodes(parser)
+      flags.AddDestRegionCodes(parser)
     flags.AddDescription(parser)
     flags.AddNewPriority(parser, operation='update')
     flags.AddOrganization(parser, required=False)
@@ -87,6 +90,7 @@ class Update(base.UpdateCommand):
     should_setup_match = False
     traffic_direct = None
     matcher = None
+    security_profile_group = None
     if args.IsSpecified('src_ip_ranges'):
       src_ip_ranges = args.src_ip_ranges
       should_setup_match = True
@@ -108,17 +112,20 @@ class Update(base.UpdateCommand):
       if args.IsSpecified('dest_fqdns'):
         dest_fqdns = args.dest_fqdns
         should_setup_match = True
-      if args.IsSpecified('src_region_codes'):
-        src_region_codes = args.src_region_codes
-        should_setup_match = True
-      if args.IsSpecified('dest_region_codes'):
-        dest_region_codes = args.dest_region_codes
-        should_setup_match = True
+      if args.IsSpecified('security_profile_group'):
+        security_profile_group = args.security_profile_group
+    if self.ReleaseTrack() in [base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA]:
       if args.IsSpecified('src_threat_intelligence'):
         src_threat_intelligence = args.src_threat_intelligence
         should_setup_match = True
       if args.IsSpecified('dest_threat_intelligence'):
         dest_threat_intelligence = args.dest_threat_intelligence
+        should_setup_match = True
+      if args.IsSpecified('src_region_codes'):
+        src_region_codes = args.src_region_codes
+        should_setup_match = True
+      if args.IsSpecified('dest_region_codes'):
+        dest_region_codes = args.dest_region_codes
         should_setup_match = True
     if args.IsSpecified('enable_logging'):
       enable_logging = args.enable_logging
@@ -142,6 +149,15 @@ class Update(base.UpdateCommand):
             destRegionCodes=dest_region_codes,
             srcThreatIntelligences=src_threat_intelligence,
             destThreatIntelligences=dest_threat_intelligence)
+      elif self.ReleaseTrack() == base.ReleaseTrack.BETA:
+        matcher = holder.client.messages.FirewallPolicyRuleMatcher(
+            srcIpRanges=src_ip_ranges,
+            destIpRanges=dest_ip_ranges,
+            layer4Configs=layer4_config_list,
+            srcRegionCodes=src_region_codes,
+            destRegionCodes=dest_region_codes,
+            srcThreatIntelligences=src_threat_intelligence,
+            destThreatIntelligences=dest_threat_intelligence)
       else:
         matcher = holder.client.messages.FirewallPolicyRuleMatcher(
             srcIpRanges=src_ip_ranges,
@@ -153,16 +169,29 @@ class Update(base.UpdateCommand):
       else:
         traffic_direct = holder.client.messages.FirewallPolicyRule.DirectionValueValuesEnum.EGRESS
 
-    firewall_policy_rule = holder.client.messages.FirewallPolicyRule(
-        priority=new_priority,
-        action=args.action,
-        match=matcher,
-        direction=traffic_direct,
-        targetResources=target_resources,
-        targetServiceAccounts=target_service_accounts,
-        description=args.description,
-        enableLogging=enable_logging,
-        disabled=disabled)
+    if self.ReleaseTrack() == base.ReleaseTrack.ALPHA:
+      firewall_policy_rule = holder.client.messages.FirewallPolicyRule(
+          priority=new_priority,
+          action=args.action,
+          match=matcher,
+          direction=traffic_direct,
+          targetResources=target_resources,
+          targetServiceAccounts=target_service_accounts,
+          description=args.description,
+          enableLogging=enable_logging,
+          disabled=disabled,
+          securityProfileGroup=security_profile_group)
+    else:
+      firewall_policy_rule = holder.client.messages.FirewallPolicyRule(
+          priority=new_priority,
+          action=args.action,
+          match=matcher,
+          direction=traffic_direct,
+          targetResources=target_resources,
+          targetServiceAccounts=target_service_accounts,
+          description=args.description,
+          enableLogging=enable_logging,
+          disabled=disabled)
 
     firewall_policy_id = firewall_policies_utils.GetFirewallPolicyId(
         firewall_policy_rule_client,

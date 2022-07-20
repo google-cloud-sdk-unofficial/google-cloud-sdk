@@ -68,7 +68,8 @@ def _CommonArgs(parser,
                 support_numa_node_count=False,
                 support_visible_core_count=False,
                 support_disk_architecture=False,
-                support_max_run_duration=False):
+                support_max_run_duration=False,
+                support_region_instance_template=False):
   """Adding arguments applicable for creating instance templates."""
   parser.display_info.AddFormat(instance_templates_flags.DEFAULT_LIST_FORMAT)
   metadata_utils.AddMetadataArgs(parser)
@@ -130,6 +131,13 @@ def _CommonArgs(parser,
     instances_flags.AddVisibleCoreCountArgs(parser)
 
   instances_flags.AddNetworkPerformanceConfigsArgs(parser)
+
+  if support_region_instance_template:
+    parser.add_argument(
+        '--subnet-region', help='Specifies the region of the subnetwork.')
+    parser.add_argument(
+        '--instance-template-region',
+        help='Specifies the region of the regional instance template.')
 
   flags.AddRegionFlag(
       parser, resource_type='subnetwork', operation_type='attach')
@@ -514,8 +522,8 @@ def _RunCreate(compute_api,
                support_numa_node_count=False,
                support_visible_core_count=False,
                support_disk_architecture=False,
-               support_key_revocation_action_type=False,
-               support_max_run_duration=False):
+               support_max_run_duration=False,
+               support_region_instance_template=False):
   """Common routine for creating instance template.
 
   This is shared between various release tracks.
@@ -539,10 +547,10 @@ def _RunCreate(compute_api,
       support_disk_architecture: Storage resources can be used to create boot
         disks compatible with ARM64 or X86_64 machine architectures. If this
         field is not specified, the default is ARCHITECTURE_UNSPECIFIED.
-      support_key_revocation_action_type: Indicate whether
-        key_revocation_action_type is supported.
       support_max_run_duration: Indicate whether max-run-duration or
-        termination-time issupported.
+        termination-time is supported.
+      support_region_instance_template: Indicate whether create region instance
+        template is supported.
 
   Returns:
       A resource object dispatched by display.Displayer().
@@ -569,17 +577,27 @@ def _RunCreate(compute_api,
   AddServiceProxyArgsToMetadata(args)
 
   if hasattr(args, 'network_interface') and args.network_interface:
+    subnet_region = None
+    if support_region_instance_template:
+      subnet_region = getattr(args, 'subnet_region', None)
+    else:
+      subnet_region = getattr(args, 'region', None)
     network_interfaces = (
         instance_template_utils.CreateNetworkInterfaceMessages)(
             resources=compute_api.resources,
             scope_lister=flags.GetDefaultScopeLister(client),
             messages=client.messages,
             network_interface_arg=args.network_interface,
-            region=args.region)
+            subnet_region=subnet_region)
   else:
     network_tier = getattr(args, 'network_tier', None)
     stack_type = getattr(args, 'stack_type', None)
     ipv6_network_tier = getattr(args, 'ipv6_network_tier', None)
+    subnet_region = None
+    if support_region_instance_template:
+      subnet_region = getattr(args, 'subnet_region', None)
+    else:
+      subnet_region = getattr(args, 'region', None)
     network_interfaces = [
         instance_template_utils.CreateNetworkInterfaceMessage(
             resources=compute_api.resources,
@@ -587,7 +605,7 @@ def _RunCreate(compute_api,
             messages=client.messages,
             network=args.network,
             private_ip=args.private_network_ip,
-            region=args.region,
+            subnet_region=subnet_region,
             subnet=args.subnet,
             address=(instance_template_utils.EPHEMERAL_ADDRESS
                      if not args.no_address and not args.address else
@@ -757,22 +775,43 @@ def _RunCreate(compute_api,
       instance_template_utils.CreateAcceleratorConfigMessages(
           client.messages, getattr(args, 'accelerator', None)))
 
-  instance_template = client.messages.InstanceTemplate(
-      properties=client.messages.InstanceProperties(
-          machineType=machine_type,
-          disks=disks,
-          canIpForward=args.can_ip_forward,
-          metadata=metadata,
-          minCpuPlatform=args.min_cpu_platform,
-          networkInterfaces=network_interfaces,
-          serviceAccounts=service_accounts,
-          scheduling=scheduling,
-          tags=tags,
-          guestAccelerators=guest_accelerators,
-      ),
-      description=args.description,
-      name=instance_template_ref.Name(),
-  )
+  instance_template = None
+  if support_region_instance_template and args.IsSpecified(
+      'instance_template_region'):
+    instance_template = client.messages.InstanceTemplate(
+        properties=client.messages.InstanceProperties(
+            machineType=machine_type,
+            disks=disks,
+            canIpForward=args.can_ip_forward,
+            metadata=metadata,
+            minCpuPlatform=args.min_cpu_platform,
+            networkInterfaces=network_interfaces,
+            serviceAccounts=service_accounts,
+            scheduling=scheduling,
+            tags=tags,
+            guestAccelerators=guest_accelerators,
+        ),
+        description=args.description,
+        name=instance_template_ref.Name(),
+        region=getattr(args, 'instance_template_region', None),
+    )
+  else:
+    instance_template = client.messages.InstanceTemplate(
+        properties=client.messages.InstanceProperties(
+            machineType=machine_type,
+            disks=disks,
+            canIpForward=args.can_ip_forward,
+            metadata=metadata,
+            minCpuPlatform=args.min_cpu_platform,
+            networkInterfaces=network_interfaces,
+            serviceAccounts=service_accounts,
+            scheduling=scheduling,
+            tags=tags,
+            guestAccelerators=guest_accelerators,
+        ),
+        description=args.description,
+        name=instance_template_ref.Name(),
+    )
 
   instance_template.properties.shieldedInstanceConfig = shieldedinstance_config_message
 
@@ -796,8 +835,7 @@ def _RunCreate(compute_api,
         args.post_key_revocation_action_type, client.messages.InstanceProperties
         .PostKeyRevocationActionTypeValueValuesEnum)
 
-  if support_key_revocation_action_type and args.IsSpecified(
-      'key_revocation_action_type'):
+  if args.IsSpecified('key_revocation_action_type'):
     instance_template.properties.keyRevocationActionType = arg_utils.ChoiceToEnum(
         args.key_revocation_action_type, client.messages.InstanceProperties
         .KeyRevocationActionTypeValueValuesEnum)
@@ -845,9 +883,18 @@ def _RunCreate(compute_api,
 
   _AddSourceInstanceToTemplate(compute_api, args, instance_template,
                                support_source_instance)
-
-  return client.MakeRequests([(client.apitools_client.instanceTemplates,
-                               'Insert', request)])
+  if support_region_instance_template and args.IsSpecified(
+      'instance_template_region'):
+    request = client.messages.ComputeRegionInstanceTemplatesInsertRequest(
+        instanceTemplate=instance_template,
+        project=instance_template_ref.project)
+    request.instanceTemplate.properties.labels = ParseCreateArgsWithServiceProxy(
+        args, client.messages.InstanceProperties.LabelsValue)
+    return client.MakeRequests([(client.apitools_client.regionInstanceTemplates,
+                                 'Insert', request)])
+  else:
+    return client.MakeRequests([(client.apitools_client.instanceTemplates,
+                                 'Insert', request)])
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
@@ -872,8 +919,8 @@ class Create(base.CreateCommand):
   _support_numa_node_count = False
   _support_visible_core_count = False
   _support_disk_architecture = False
-  _support_key_revocation_action_type = False
   _support_max_run_duration = False
+  _support_region_instance_template = False
 
   @classmethod
   def Args(cls, parser):
@@ -887,11 +934,13 @@ class Create(base.CreateCommand):
         support_numa_node_count=cls._support_numa_node_count,
         support_visible_core_count=cls._support_visible_core_count,
         support_disk_architecture=cls._support_disk_architecture,
-        support_max_run_duration=cls._support_max_run_duration)
+        support_max_run_duration=cls._support_max_run_duration,
+        support_region_instance_template=cls._support_region_instance_template)
     instances_flags.AddMinCpuPlatformArgs(parser, base.ReleaseTrack.GA)
     instances_flags.AddPrivateIpv6GoogleAccessArgForTemplate(
         parser, utils.COMPUTE_GA_API_VERSION)
     instances_flags.AddConfidentialComputeArgs(parser)
+    instance_templates_flags.AddKeyRevocationActionTypeArgs(parser)
 
   def Run(self, args):
     """Creates and runs an InstanceTemplates.Insert request.
@@ -915,9 +964,8 @@ class Create(base.CreateCommand):
         support_numa_node_count=self._support_numa_node_count,
         support_visible_core_count=self._support_visible_core_count,
         support_disk_architecture=self._support_disk_architecture,
-        support_key_revocation_action_type=self
-        ._support_key_revocation_action_type,
-        support_max_run_duration=self._support_max_run_duration)
+        support_max_run_duration=self._support_max_run_duration,
+        support_region_instance_template=self._support_region_instance_template)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
@@ -943,8 +991,8 @@ class CreateBeta(Create):
   _support_numa_node_count = False
   _support_visible_core_count = True
   _support_disk_architecture = False
-  _support_key_revocation_action_type = True
   _support_max_run_duration = False
+  _support_region_instance_template = False
 
   @classmethod
   def Args(cls, parser):
@@ -960,7 +1008,8 @@ class CreateBeta(Create):
         ._support_host_error_timeout_seconds,
         support_visible_core_count=cls._support_visible_core_count,
         support_disk_architecture=cls._support_disk_architecture,
-        support_max_run_duration=cls._support_max_run_duration)
+        support_max_run_duration=cls._support_max_run_duration,
+        support_region_instance_template=cls._support_region_instance_template)
     instances_flags.AddMinCpuPlatformArgs(parser, base.ReleaseTrack.BETA)
     instances_flags.AddPrivateIpv6GoogleAccessArgForTemplate(
         parser, utils.COMPUTE_BETA_API_VERSION)
@@ -992,9 +1041,8 @@ class CreateBeta(Create):
         support_numa_node_count=self._support_numa_node_count,
         support_visible_core_count=self._support_visible_core_count,
         support_disk_architecture=self._support_disk_architecture,
-        support_key_revocation_action_type=self
-        ._support_key_revocation_action_type,
-        support_max_run_duration=self._support_max_run_duration)
+        support_max_run_duration=self._support_max_run_duration,
+        support_region_instance_template=self._support_region_instance_template)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -1020,8 +1068,8 @@ class CreateAlpha(Create):
   _support_numa_node_count = True
   _support_visible_core_count = True
   _support_disk_architecture = True
-  _support_key_revocation_action_type = True
   _support_max_run_duration = True
+  _support_region_instance_template = True
 
   @classmethod
   def Args(cls, parser):
@@ -1038,7 +1086,8 @@ class CreateAlpha(Create):
         support_numa_node_count=cls._support_numa_node_count,
         support_visible_core_count=cls._support_visible_core_count,
         support_disk_architecture=cls._support_disk_architecture,
-        support_max_run_duration=cls._support_max_run_duration)
+        support_max_run_duration=cls._support_max_run_duration,
+        support_region_instance_template=cls._support_region_instance_template)
     instances_flags.AddLocalNvdimmArgs(parser)
     instances_flags.AddMinCpuPlatformArgs(parser, base.ReleaseTrack.ALPHA)
     instances_flags.AddConfidentialComputeArgs(parser)
@@ -1071,9 +1120,8 @@ class CreateAlpha(Create):
         support_numa_node_count=self._support_numa_node_count,
         support_visible_core_count=self._support_visible_core_count,
         support_disk_architecture=self._support_disk_architecture,
-        support_key_revocation_action_type=self
-        ._support_key_revocation_action_type,
-        support_max_run_duration=self._support_max_run_duration)
+        support_max_run_duration=self._support_max_run_duration,
+        support_region_instance_template=self._support_region_instance_template)
 
 
 DETAILED_HELP = {

@@ -27,7 +27,7 @@ from googlecloudsdk.command_lib.compute.network_firewall_policies import flags
 from googlecloudsdk.command_lib.compute.network_firewall_policies import secure_tags_utils
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Create(base.CreateCommand):
   r"""Creates a Compute Engine network firewall policy rule.
 
@@ -39,13 +39,14 @@ class Create(base.CreateCommand):
   _support_fqdn = False
   _support_geo = False
   _support_nti = False
+  _support_ips = False
 
   @classmethod
   def Args(cls, parser):
     cls.NETWORK_FIREWALL_POLICY_ARG = flags.NetworkFirewallPolicyRuleArgument(
         required=True, operation='create')
     cls.NETWORK_FIREWALL_POLICY_ARG.AddArgument(parser, operation_type='create')
-    flags.AddAction(parser)
+    flags.AddAction(parser, support_ips=cls._support_ips)
     flags.AddRulePriority(parser, operation='inserted')
     flags.AddSrcIpRanges(parser)
     flags.AddDestIpRanges(parser)
@@ -69,6 +70,8 @@ class Create(base.CreateCommand):
     if cls._support_nti:
       flags.AddSrcThreatIntelligence(parser)
       flags.AddDestThreatIntelligence(parser)
+    if cls._support_ips:
+      flags.AddSecurityProfileGroup(parser)
     parser.display_info.AddCacheUpdater(flags.NetworkFirewallPoliciesCompleter)
 
   def Run(self, args):
@@ -85,6 +88,7 @@ class Create(base.CreateCommand):
     dest_ip_ranges = []
     layer4_configs = []
     target_service_accounts = []
+    security_profile_group = None
     enable_logging = False
     disabled = False
     src_secure_tags = []
@@ -107,6 +111,8 @@ class Create(base.CreateCommand):
     if args.IsSpecified('target_secure_tags'):
       target_secure_tags = secure_tags_utils.TranslateSecureTagsForFirewallPolicy(
           holder.client, args.target_secure_tags)
+    if self._support_ips and args.IsSpecified('security_profile_group'):
+      security_profile_group = args.security_profile_group
     layer4_config_list = rule_utils.ParseLayer4Configs(layer4_configs,
                                                        holder.client.messages)
     matcher = holder.client.messages.FirewallPolicyRuleMatcher(
@@ -143,20 +149,43 @@ class Create(base.CreateCommand):
             holder.client.messages.FirewallPolicyRule.DirectionValueValuesEnum
             .EGRESS)
 
-    firewall_policy_rule = holder.client.messages.FirewallPolicyRule(
-        priority=rule_utils.ConvertPriorityToInt(args.priority),
-        action=args.action,
-        match=matcher,
-        direction=traffic_direct,
-        targetServiceAccounts=target_service_accounts,
-        description=args.description,
-        enableLogging=enable_logging,
-        disabled=disabled,
-        targetSecureTags=target_secure_tags)
+    if self._support_ips:
+      firewall_policy_rule = holder.client.messages.FirewallPolicyRule(
+          priority=rule_utils.ConvertPriorityToInt(args.priority),
+          action=args.action,
+          match=matcher,
+          direction=traffic_direct,
+          targetServiceAccounts=target_service_accounts,
+          description=args.description,
+          enableLogging=enable_logging,
+          disabled=disabled,
+          targetSecureTags=target_secure_tags,
+          securityProfileGroup=security_profile_group)
+    else:
+      firewall_policy_rule = holder.client.messages.FirewallPolicyRule(
+          priority=rule_utils.ConvertPriorityToInt(args.priority),
+          action=args.action,
+          match=matcher,
+          direction=traffic_direct,
+          targetServiceAccounts=target_service_accounts,
+          description=args.description,
+          enableLogging=enable_logging,
+          disabled=disabled,
+          targetSecureTags=target_secure_tags)
 
     return network_firewall_policy_rule_client.Create(
         firewall_policy=args.firewall_policy,
         firewall_policy_rule=firewall_policy_rule)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class CreateBeta(Create):
+  r"""Creates a Compute Engine network firewall policy rule.
+
+  *{command}* is used to create network firewall policy rules.
+  """
+  _support_geo = True
+  _support_nti = True
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -169,6 +198,7 @@ class CreateAlpha(Create):
   _support_fqdn = True
   _support_geo = True
   _support_nti = True
+  _support_ips = True
 
 
 Create.detailed_help = {

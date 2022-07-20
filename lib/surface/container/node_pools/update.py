@@ -75,8 +75,7 @@ class Update(base.UpdateCommand):
     flags.AddEnableAutoRepairFlag(node_management_group, for_node_pool=True)
     flags.AddEnableAutoUpgradeFlag(node_management_group, for_node_pool=True)
 
-    autoscaling_group = flags.AddClusterAutoscalingFlags(
-        group, location_policy_present=False)
+    autoscaling_group = flags.AddClusterAutoscalingFlags(group)
     flags.AddNodePoolAutoprovisioningFlag(autoscaling_group, hidden=False)
     flags.AddWorkloadMetadataFlag(group)
 
@@ -105,6 +104,7 @@ class Update(base.UpdateCommand):
 
   def ParseUpdateNodePoolOptions(self, args):
     flags.ValidateSurgeUpgradeSettings(args)
+    flags.WarnForLocationPolicyDefault(args)
     return api_adapter.UpdateNodePoolOptions(
         enable_autorepair=args.enable_autorepair,
         enable_autoupgrade=args.enable_autoupgrade,
@@ -114,6 +114,7 @@ class Update(base.UpdateCommand):
         min_nodes=args.min_nodes,
         total_max_nodes=args.total_max_nodes,
         total_min_nodes=args.total_min_nodes,
+        location_policy=args.location_policy,
         workload_metadata=args.workload_metadata,
         workload_metadata_from_node=args.workload_metadata_from_node,
         enable_autoprovisioning=args.enable_autoprovisioning,
@@ -211,8 +212,7 @@ class UpdateBeta(Update):
     flags.AddEnableAutoRepairFlag(node_management_group, for_node_pool=True)
     flags.AddEnableAutoUpgradeFlag(node_management_group, for_node_pool=True)
 
-    autoscaling_group = flags.AddClusterAutoscalingFlags(
-        group, location_policy_present=True)
+    autoscaling_group = flags.AddClusterAutoscalingFlags(group)
     flags.AddNodePoolAutoprovisioningFlag(autoscaling_group, hidden=False)
 
     upgrade_settings_group = group.add_argument_group('Upgrade settings')
@@ -246,6 +246,7 @@ class UpdateBeta(Update):
 
   def ParseUpdateNodePoolOptions(self, args):
     flags.ValidateSurgeUpgradeSettings(args)
+    flags.WarnForLocationPolicyDefault(args)
     ops = api_adapter.UpdateNodePoolOptions(
         enable_autorepair=args.enable_autorepair,
         enable_autoupgrade=args.enable_autoupgrade,
@@ -291,8 +292,7 @@ class UpdateAlpha(Update):
     flags.AddEnableAutoRepairFlag(node_management_group, for_node_pool=True)
     flags.AddEnableAutoUpgradeFlag(node_management_group, for_node_pool=True)
 
-    autoscaling_group = flags.AddClusterAutoscalingFlags(
-        group, location_policy_present=True)
+    autoscaling_group = flags.AddClusterAutoscalingFlags(group)
     flags.AddNodePoolAutoprovisioningFlag(autoscaling_group, hidden=False)
 
     upgrade_settings_group = group.add_argument_group('Upgrade settings')
@@ -326,6 +326,7 @@ class UpdateAlpha(Update):
 
   def ParseUpdateNodePoolOptions(self, args):
     flags.ValidateSurgeUpgradeSettings(args)
+    flags.WarnForLocationPolicyDefault(args)
     ops = api_adapter.UpdateNodePoolOptions(
         enable_autorepair=args.enable_autorepair,
         enable_autoupgrade=args.enable_autoupgrade,

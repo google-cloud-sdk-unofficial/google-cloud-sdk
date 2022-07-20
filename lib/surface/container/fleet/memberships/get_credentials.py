@@ -112,9 +112,9 @@ class GetCredentials(base.Command):
       # exempt.
       if project_id == 'gkeconnect-prober':
         pass
-      if (hasattr(membership, 'endpoint') and
-          hasattr(membership.endpoint, 'gkeCluster') and
-          membership.endpoint.gkeCluster):
+      elif (hasattr(membership, 'endpoint') and
+            hasattr(membership.endpoint, 'gkeCluster') and
+            membership.endpoint.gkeCluster):
         resource_type = 'gkeMemberships'
 
     self.GenerateKubeconfig(

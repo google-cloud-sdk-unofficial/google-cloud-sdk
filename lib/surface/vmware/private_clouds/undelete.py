@@ -47,8 +47,8 @@ DETAILED_HELP = {
 
 
 @base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class UnDeleteBeta(base.RestoreCommand):
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class UnDelete(base.RestoreCommand):
   """Cancel deletion of a Google Cloud VMware Engine private cloud."""
 
   detailed_help = DETAILED_HELP
@@ -76,9 +76,3 @@ class UnDeleteBeta(base.RestoreCommand):
     log.RestoredResource(resource, kind='private cloud')
 
     return resource
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class UnDeleteAlpha(UnDeleteBeta):
-  """Cancel deletion of a Google Cloud VMware Engine private cloud."""
-  _is_hidden = False

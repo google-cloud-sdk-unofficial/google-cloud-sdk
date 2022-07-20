@@ -100,7 +100,7 @@ class Backend(base.Command):
   application. Before starting the service, create the database and load any
   initial data with:
 
-      $ {parent_command} init APPNAME --instance-id INSTANCE_ID
+      $ {parent_command} init APPNAME --instance-id=INSTANCE_ID
 
   After starting the service, generate traffic with:
 
@@ -108,7 +108,7 @@ class Backend(base.Command):
 
   To run all three steps together, use:
 
-      $ {parent_command} run APPNAME --instance-id INSTANCE_ID
+      $ {parent_command} run APPNAME --instance-id=INSTANCE_ID
   """
 
   detailed_help = {
@@ -117,7 +117,7 @@ class Backend(base.Command):
           To run the backend gRPC service for the 'finance' sample app using
           instance 'my-instance', run:
 
-          $ {command} finance --instance-id my-instance
+          $ {command} finance --instance-id=my-instance
         """),
   }
 

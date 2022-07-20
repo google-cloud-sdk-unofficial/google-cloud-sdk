@@ -43,8 +43,8 @@ DETAILED_HELP = {
 
 
 @base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class DescribeBeta(base.DescribeCommand):
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class Describe(base.DescribeCommand):
   """Describe a VMware Engine network policy."""
   detailed_help = DETAILED_HELP
 
@@ -57,9 +57,3 @@ class DescribeBeta(base.DescribeCommand):
     network_policy = args.CONCEPTS.network_policy.Parse()
     client = NetworkPoliciesClient()
     return client.Get(network_policy)
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class DescribeAlpha(DescribeBeta):
-  """Describe a VMware Engine network policy."""
-  _is_hidden = False

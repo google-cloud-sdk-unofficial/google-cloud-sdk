@@ -60,6 +60,7 @@ def AddBaseArgs(parser):
   flags.AddPasswordPolicyAllowedFailedAttempts(parser)
   flags.AddPasswordPolicyPasswordExpirationDuration(parser)
   flags.AddPasswordPolicyEnableFailedAttemptsCheck(parser)
+  flags.AddPasswordPolicyEnablePasswordVerification(parser)
   flags.AddPasswordPolicyClearPasswordPolicy(parser)
   base.ASYNC_FLAG.AddToParser(parser)
   parser.display_info.AddCacheUpdater(None)
@@ -71,16 +72,16 @@ def AddBetaArgs(parser):
 
 
 def AddAlphaArgs(parser):
-  flags.AddPasswordPolicyEnablePasswordVerification(parser)
+  del parser  # Unused.
+  pass
 
 
-def RunBaseSetPasswordCommand(args, release_track):
+def RunBaseSetPasswordCommand(args):
   """Changes a user's password in a given instance.
 
   Args:
     args: argparse.Namespace, The arguments that this command was invoked
       with.
-    release_track: base.ReleaseTrack, the release track that this was run under.
 
   Returns:
     SQL user resource iterator.
@@ -95,8 +96,7 @@ def RunBaseSetPasswordCommand(args, release_track):
       collection='sql.instances')
   operation_ref = None
 
-  password_policy = users.CreatePasswordPolicyFromArgs(
-      sql_messages, release_track, args)
+  password_policy = users.CreatePasswordPolicyFromArgs(sql_messages, args)
 
   result_operation = sql_client.users.Update(
       sql_messages.SqlUsersUpdateRequest(
@@ -143,7 +143,7 @@ class SetPasswordPolicy(base.UpdateCommand):
     AddBaseArgs(parser)
 
   def Run(self, args):
-    RunBaseSetPasswordCommand(args, self.ReleaseTrack())
+    RunBaseSetPasswordCommand(args)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
@@ -168,7 +168,7 @@ class SetPasswordPolicyBeta(base.UpdateCommand):
     AddBaseArgs(parser)
 
   def Run(self, args):
-    RunBaseSetPasswordCommand(args, self.ReleaseTrack())
+    RunBaseSetPasswordCommand(args)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -194,4 +194,4 @@ class SetPasswordPolicyAlpha(base.UpdateCommand):
     AddBaseArgs(parser)
 
   def Run(self, args):
-    RunBaseSetPasswordCommand(args, self.ReleaseTrack())
+    RunBaseSetPasswordCommand(args)

@@ -27,7 +27,6 @@ from googlecloudsdk.command_lib.artifacts import flags
 from googlecloudsdk.core import resources
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
 class Upload(base.Command):
   """Upload a Debian package to an artifact repository."""
 
@@ -40,7 +39,7 @@ class Upload(base.Command):
     Args:
       parser: An argparse.ArgumentPaser.
     """
-    flags.GetRepoArgFromBeta().AddToParser(parser)
+    flags.GetRepoArg().AddToParser(parser)
     base.ASYNC_FLAG.AddToParser(parser)
 
     parser.add_argument(
@@ -49,49 +48,6 @@ class Upload(base.Command):
         required=True,
         help="""\
             The path of a package to upload.""")
-
-  def Run(self, args):
-    """Run package import command."""
-    client = apis.GetClientInstance('artifactregistry', self.api_version)
-    messages = client.MESSAGES_MODULE
-
-    client.additional_http_headers['X-Goog-Upload-Protocol'] = 'multipart'
-
-    repo_ref = args.CONCEPTS.repository.Parse()
-
-    upload_req = messages.UploadAptArtifactRequest
-    upload_request = upload_req()
-
-    request = messages.ArtifactregistryProjectsLocationsRepositoriesAptArtifactsUploadRequest(
-        uploadAptArtifactRequest=upload_request,
-        parent=repo_ref.RelativeName())
-
-    upload = transfer.Upload.FromFile(
-        args.source, mime_type='application/vnd.debian.binary-package')
-
-    op_obj = client.projects_locations_repositories_aptArtifacts.Upload(
-        request, upload=upload)
-
-    op = op_obj.operation
-    op_ref = resources.REGISTRY.ParseRelativeName(
-        op.name, collection='artifactregistry.projects.locations.operations')
-
-    if args.async_:
-      return op_ref
-    else:
-      result = waiter.WaitFor(
-          waiter.CloudOperationPollerNoResources(
-              client.projects_locations_operations),
-          op_ref, 'Uploading package')
-
-      return result
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class UploadAlpha(Upload):
-  """Upload a Debian package to an artifact repository."""
-
-  api_version = 'v1'
 
   def Run(self, args):
     """Run package import command."""

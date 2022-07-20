@@ -27,7 +27,7 @@ _DETAILED_HELP = {
         '{description}',
     'EXAMPLES':
         """ \
-        To describe the google channel in location ``us-central1'', run:
+        To describe the Google channel in location `us-central1`, run:
 
           $ {command}  --location=us-central1
         """,
@@ -36,7 +36,7 @@ _DETAILED_HELP = {
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Describe(base.DescribeCommand):
-  """Describes an Eventarc Google channel."""
+  """Describe an Eventarc Google channel."""
 
   detailed_help = _DETAILED_HELP
 

@@ -43,8 +43,8 @@ DETAILED_HELP = {
 
 
 @base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class DescribeBeta(base.DescribeCommand):
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class Describe(base.DescribeCommand):
   """Describe a Google Cloud VMware HCX activation key."""
 
   detailed_help = DETAILED_HELP
@@ -58,9 +58,3 @@ class DescribeBeta(base.DescribeCommand):
     key = args.CONCEPTS.hcx_activation_key.Parse()
     client = HcxActivationKeysClient()
     return client.Get(key)
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class DescribeAlpha(DescribeBeta):
-  """Describe a Google Cloud VMware HCX activation key."""
-  _is_hidden = False

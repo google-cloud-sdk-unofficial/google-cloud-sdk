@@ -35,6 +35,10 @@ EXAMPLES = """\
 
         $ {command} STREAM --location=us-central1 --display-name=my-stream --source=source --mysql-source-config=source_config.json --destination=destination --gcs-destination-config=destination_config.json --backfill-all --mysql-excluded-objects=excluded_objects.json
 
+    To create a stream with an Oracle source and a BigQuery destination:
+
+        $ {command} STREAM --location=us-central1 --display-name=my-stream --source=source --oracle-source-config=source_config.json --destination=destination --bigquery-destination-config=destination_config.json --backfill-none
+
    """
 EXAMPLES_BETA = """\
     To create a stream with an Oracle source and a Google Cloud Storage destination:

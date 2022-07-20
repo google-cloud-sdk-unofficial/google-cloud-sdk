@@ -28,11 +28,11 @@ _DETAILED_HELP = {
         '{description}',
     'EXAMPLES':
         """ \
-        To update the channel ``my-channel'' in location ``us-central1'', run:
+        To update the channel `my-channel` in location `us-central1`, run:
 
           $ {command} my-channel --location=us-central1
 
-        To configure the channel ``my-channel'' in location ``us-central1'' with a Cloud KMS CryptoKey, run:
+        To configure the channel `my-channel` in location `us-central1` with a Cloud KMS CryptoKey, run:
 
           $ {command} my-channel --location=us-central1 --crypto-key=projects/PROJECT_ID/locations/KMS_LOCATION/keyRings/KEYRING/cryptoKeys/KEY
 
@@ -42,7 +42,7 @@ _DETAILED_HELP = {
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Update(base.UpdateCommand):
-  """Updates an Eventarc channel."""
+  """Update an Eventarc channel."""
 
   detailed_help = _DETAILED_HELP
 

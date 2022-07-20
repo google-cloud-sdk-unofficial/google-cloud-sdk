@@ -43,8 +43,8 @@ DETAILED_HELP = {
 
 
 @base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class ListBeta(base.ListCommand):
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class List(base.ListCommand):
   """List HCX activation keys in a Google Cloud VMware Engine private cloud."""
 
   detailed_help = DETAILED_HELP
@@ -62,9 +62,3 @@ class ListBeta(base.ListCommand):
     privatecloud = args.CONCEPTS.private_cloud.Parse()
     client = HcxActivationKeysClient()
     return client.List(privatecloud, limit=args.limit)
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class ListAlpha(ListBeta):
-  """List HCX activation keys in a Google Cloud VMware Engine private cloud."""
-  _is_hidden = False

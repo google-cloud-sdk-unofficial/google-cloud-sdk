@@ -45,8 +45,8 @@ DETAILED_HELP = {
 
 
 @base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class CreateBeta(base.CreateCommand):
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class Create(base.CreateCommand):
   """Create an external IP address that represents an allocated external IP address and its corresponding internal IP address in the private cloud."""
 
   detailed_help = DETAILED_HELP
@@ -81,8 +81,3 @@ class CreateBeta(base.CreateCommand):
     log.CreatedResource(resource, kind='external address')
 
     return resource
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class CreateAlpha(CreateBeta):
-  """Create an external IP address that represents an allocated external IP address and its corresponding internal IP address in the private cloud."""

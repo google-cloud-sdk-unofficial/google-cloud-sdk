@@ -45,8 +45,8 @@ DETAILED_HELP = {
 
 
 @base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class DescribeBeta(base.DescribeCommand):
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class Describe(base.DescribeCommand):
   """Describe an external IP address in a VMware Engine private cloud."""
 
   detailed_help = DETAILED_HELP
@@ -60,8 +60,3 @@ class DescribeBeta(base.DescribeCommand):
     resource = args.CONCEPTS.external_address.Parse()
     client = ExternalAddressesClient()
     return client.Get(resource)
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class DescribeAlpha(DescribeBeta):
-  """Describe an external IP address in a VMware Engine private cloud."""

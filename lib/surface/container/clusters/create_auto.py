@@ -18,6 +18,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+from googlecloudsdk.api_lib.container import api_adapter
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.container import flags
 from surface.container.clusters import create
@@ -55,10 +56,14 @@ auto_flag_defaults = dict(
     list(create.base_flag_defaults.items()) + list(flag_overrides.items()))
 
 
-def AddAutoFlags(parser):
+def AddAutoFlags(parser, release_track):
   """Adds flags that are not same in create."""
   flags.AddLoggingFlag(parser, autopilot=True)
   flags.AddMonitoringFlag(parser, autopilot=True)
+  flags.AddBinauthzFlags(
+      parser,
+      api_version=api_adapter.APIVersionFromReleaseTrack(release_track),
+      autopilot=True)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
@@ -71,7 +76,7 @@ class Create(create.Create):
   @staticmethod
   def Args(parser):
     create.AddFlags(create.GA, parser, auto_flag_defaults, auto_flags)
-    AddAutoFlags(parser)
+    AddAutoFlags(parser, base.ReleaseTrack.GA)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
@@ -84,7 +89,7 @@ class CreateBeta(create.CreateBeta):
   @staticmethod
   def Args(parser):
     create.AddFlags(create.BETA, parser, auto_flag_defaults, auto_flags)
-    AddAutoFlags(parser)
+    AddAutoFlags(parser, base.ReleaseTrack.BETA)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -97,4 +102,4 @@ class CreateAlpha(create.CreateAlpha):
   @staticmethod
   def Args(parser):
     create.AddFlags(create.ALPHA, parser, auto_flag_defaults, auto_flags)
-    AddAutoFlags(parser)
+    AddAutoFlags(parser, base.ReleaseTrack.ALPHA)

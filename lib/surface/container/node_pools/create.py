@@ -120,6 +120,7 @@ def ParseCreateNodePoolOptionsBase(args):
   enable_autorepair = cmd_util.GetAutoRepair(args)
   flags.WarnForNodeModification(args, enable_autorepair)
   flags.ValidateSurgeUpgradeSettings(args)
+  flags.WarnForLocationPolicyDefault(args)
   metadata = metadata_utils.ConstructMetadataDict(args.metadata,
                                                   args.metadata_from_file)
   return api_adapter.CreateNodePoolOptions(
@@ -141,6 +142,7 @@ def ParseCreateNodePoolOptionsBase(args):
       min_nodes=args.min_nodes,
       total_max_nodes=args.total_max_nodes,
       total_min_nodes=args.total_min_nodes,
+      location_policy=args.location_policy,
       image_type=args.image_type,
       image=args.image,
       image_project=args.image_project,
@@ -190,7 +192,7 @@ class Create(base.CreateCommand):
         enable_gpu_sharing=True,
         enable_gpu_deprecated_fields=False)
     flags.AddBootDiskKmsKeyFlag(parser)
-    flags.AddClusterAutoscalingFlags(parser, location_policy_present=False)
+    flags.AddClusterAutoscalingFlags(parser)
     flags.AddLocalSSDFlag(parser)
     flags.AddPreemptibleFlag(parser, for_node_pool=True)
     flags.AddEnableAutoRepairFlag(parser, for_node_pool=True, for_create=True)
@@ -287,7 +289,7 @@ class CreateBeta(Create):
         enable_gpu_partition=True,
         enable_gpu_sharing=True,
         enable_gpu_deprecated_fields=True)
-    flags.AddClusterAutoscalingFlags(parser, location_policy_present=True)
+    flags.AddClusterAutoscalingFlags(parser)
     flags.AddLocalSSDsBetaFlags(parser, for_node_pool=True)
     flags.AddBootDiskKmsKeyFlag(parser)
     flags.AddPreemptibleFlag(parser, for_node_pool=True)
@@ -385,7 +387,7 @@ class CreateAlpha(Create):
         enable_gpu_partition=True,
         enable_gpu_sharing=True,
         enable_gpu_deprecated_fields=True)
-    flags.AddClusterAutoscalingFlags(parser, location_policy_present=True)
+    flags.AddClusterAutoscalingFlags(parser)
     flags.AddNodePoolAutoprovisioningFlag(parser, hidden=False)
     flags.AddLocalSSDsAlphaFlags(parser, for_node_pool=True)
     flags.AddBootDiskKmsKeyFlag(parser)

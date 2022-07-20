@@ -27,7 +27,7 @@ _DETAILED_HELP = {
         "{description}",
     "EXAMPLES":
         """ \
-        To list all channels in location ``us-central1'', run:
+        To list all channels in location `us-central1`, run:
 
           $ {command} --location=us-central1
 

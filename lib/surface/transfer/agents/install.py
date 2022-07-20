@@ -30,6 +30,7 @@ from googlecloudsdk.api_lib.util import apis
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.auth import auth_util
+from googlecloudsdk.command_lib.transfer import creds_util
 from googlecloudsdk.core import config
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
@@ -164,6 +165,15 @@ def _get_docker_command(args, project, creds_file_path):
       '--rm',
       '-d',
   ]
+  aws_access_key, aws_secret_key = creds_util.get_default_aws_creds()
+  if aws_access_key:
+    base_docker_command.append('--env')
+    base_docker_command.append('AWS_ACCESS_KEY_ID={}'.format(aws_access_key))
+  if aws_secret_key:
+    base_docker_command.append('--env')
+    base_docker_command.append(
+        'AWS_SECRET_ACCESS_KEY={}'.format(aws_secret_key))
+
   expanded_creds_file_path = _expand_path(creds_file_path)
   expanded_logs_directory_path = _expand_path(args.logs_directory)
   if args.mount_directories:
@@ -180,9 +190,11 @@ def _get_docker_command(args, project, creds_file_path):
   else:
     # Mount entire filesystem by default.
     base_docker_command.append('-v=/:/transfer_root')
+
   if args.proxy:
     base_docker_command.append('--env')
     base_docker_command.append('HTTPS_PROXY={}'.format(args.proxy))
+
   agent_args = [
       'gcr.io/cloud-ingest/tsop-agent:latest',
       '--agent-pool={}'.format(args.pool),
@@ -201,6 +213,9 @@ def _get_docker_command(args, project, creds_file_path):
       agent_id_prefix = args.id_prefix
     # ID prefix must be the last argument for multipe-agent creation to work.
     agent_args.append('--agent-id-prefix={}'.format(agent_id_prefix))
+  if args.s3_compatible_mode:
+    # TODO(b/238213039): Remove when this flag becomes optional.
+    agent_args.append('--enable-s3')
   return base_docker_command + agent_args
 
 
@@ -296,6 +311,12 @@ class Install(base.Command):
         metavar='MOUNT-DIRECTORIES',
         help=MOUNT_DIRECTORIES_HELP_TEXT)
     parser.add_argument('--proxy', help=PROXY_FLAG_HELP_TEXT)
+    parser.add_argument(
+        '--s3-compatible-mode',
+        action='store_true',
+        help='Allow the agent to work with S3-compatible sources. This flag'
+        ' blocks the agents ability to work with other source types'
+        ' (e.g. POSIX filesystems).')
 
   def Run(self, args):
     if args.count is not None and args.count < 1:

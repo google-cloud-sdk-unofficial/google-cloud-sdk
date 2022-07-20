@@ -53,8 +53,8 @@ DETAILED_HELP = {
 
 
 @base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class ListBeta(base.ListCommand):
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class List(base.ListCommand):
   """List VMware Engine network policies."""
   detailed_help = DETAILED_HELP
 
@@ -73,9 +73,3 @@ class ListBeta(base.ListCommand):
     location = args.CONCEPTS.location.Parse()
     client = NetworkPoliciesClient()
     return client.List(location, limit=args.limit)
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class ListAlpha(ListBeta):
-  """List VMware Engine network policies."""
-  _is_hidden = False

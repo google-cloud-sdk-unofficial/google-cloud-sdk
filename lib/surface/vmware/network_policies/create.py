@@ -45,8 +45,8 @@ DETAILED_HELP = {
 
 
 @base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class CreateBeta(base.CreateCommand):
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class Create(base.CreateCommand):
   """Create a VMware Engine network policy."""
   detailed_help = DETAILED_HELP
 
@@ -103,9 +103,3 @@ class CreateBeta(base.CreateCommand):
     log.CreatedResource(
         resource, kind='VMware Engine network policy', is_async=False)
     return resource
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class CreateAlpha(CreateBeta):
-  """Create a VMware Engine network policy."""
-  _is_hidden = False

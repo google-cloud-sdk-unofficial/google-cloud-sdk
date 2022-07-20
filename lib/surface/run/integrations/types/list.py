@@ -51,7 +51,7 @@ class List(base.ListCommand):
     """
     parser.display_info.AddFormat(
         'table('
-        'name:label="TYPE",'
+        'integration_type:label="TYPE",'
         'description:label=DESCRIPTION)')
 
   def Run(self, args):

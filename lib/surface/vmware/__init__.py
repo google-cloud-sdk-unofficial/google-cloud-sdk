@@ -23,14 +23,14 @@ from googlecloudsdk.calliope import base
 
 
 @base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class VmwareBeta(base.Group):
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class Vmware(base.Group):
   """Manage Google Cloud VMware Engine resources."""
 
   category = base.COMPUTE_CATEGORY
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class VmwareAlpha(VmwareBeta):
+class VmwareAlpha(Vmware):
   """Manage Google Cloud VMware Engine resources."""
   _is_hidden = False

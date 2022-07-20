@@ -65,7 +65,8 @@ class Create(base.Command):
         'Job to create.',
         required=True,
         prefixes=False)
-    flags.AddImageArg(parser)
+    flags.AddImageArg(
+        parser, image='us-docker.pkg.dev/cloudrun/container/job:latest')
     flags.AddLabelsFlag(parser)
     flags.AddParallelismFlag(parser)
     flags.AddTasksFlag(parser)

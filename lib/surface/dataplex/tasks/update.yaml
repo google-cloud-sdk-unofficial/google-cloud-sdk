@@ -88,10 +88,22 @@
           help_text: |
             Service account to use to execute a task.
             If not provided, the default Compute service account for the project is used.
+        - arg_name: execution-project
+          api_field: googleCloudDataplexV1Task.executionSpec.project
+          help_text: |
+            The project in which jobs are run.
+            By default, the project containing the Lake is used.
+            If a project is provided, the --execution-service-account must belong to this same
+            project.
         - arg_name: max-job-execution-lifetime
           api_field: googleCloudDataplexV1Task.executionSpec.maxJobExecutionLifetime
           help_text: |
             The maximum duration before the job execution expires.
+        - arg_name: kms-key
+          api_field: googleCloudDataplexV1Task.executionSpec.kmsKey
+          help_text: |
+            The Cloud KMS key to use for encryption, of the form:
+            projects/{project_number}/locations/{location_id}/keyRings/{key-ring-name}/cryptoKeys/{key-name}
     - group:  # spark_task_config
         help_text: |
           Config related to running custom Spark tasks.
@@ -162,6 +174,10 @@
                 help_text: |
                   Container Image Runtime Configuration.
                 params:
+                - arg_name: container-image
+                  api_field: googleCloudDataplexV1Task.spark.infrastructureSpec.containerImage.image
+                  help_text: |
+                    Optional custom container image for the job.
                 - arg_name: container-image-java-jars
                   api_field: googleCloudDataplexV1Task.spark.infrastructureSpec.containerImage.javaJars
                   repeated: true

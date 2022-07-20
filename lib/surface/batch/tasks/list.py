@@ -44,6 +44,7 @@ class List(base.ListCommand):
   def Args(parser):
     resource_args.AddTaskGroupResourceArgs(parser)
     base.URI_FLAG.RemoveFromParser(parser)
+    parser.display_info.AddFormat('table(name, status.state)')
 
   def Run(self, args):
     release_track = self.ReleaseTrack()

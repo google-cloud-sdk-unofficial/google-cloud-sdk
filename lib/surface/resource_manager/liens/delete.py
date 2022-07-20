@@ -51,5 +51,5 @@ class Delete(base.DeleteCommand):
     service = liens.LiensService()
     messages = liens.LiensMessages()
     service.Delete(
-        messages.CloudresourcemanagerLiensDeleteRequest(liensId=args.id))
+        messages.CloudresourcemanagerLiensDeleteRequest(name=args.id))
     log.DeletedResource(liens.LienIdToName(args.id))

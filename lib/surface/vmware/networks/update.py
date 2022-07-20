@@ -54,8 +54,8 @@ DETAILED_HELP = {
 
 
 @base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class UpdateBeta(base.UpdateCommand):
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class Update(base.UpdateCommand):
   """Update a Google Cloud VMware Engine network."""
 
   detailed_help = DETAILED_HELP
@@ -89,8 +89,3 @@ class UpdateBeta(base.UpdateCommand):
         has_result=True)
     log.UpdatedResource(resource, kind='VMware Engine network', is_async=False)
     return resource
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class UpdateAlpha(UpdateBeta):
-  """Update a Google Cloud VMware Engine network."""

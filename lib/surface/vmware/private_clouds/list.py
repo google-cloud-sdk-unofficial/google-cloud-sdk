@@ -45,8 +45,8 @@ DETAILED_HELP = {
 
 
 @base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class ListBeta(base.ListCommand):
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class List(base.ListCommand):
   """List Google Cloud VMware Engine private clouds."""
 
   detailed_help = DETAILED_HELP
@@ -66,9 +66,3 @@ class ListBeta(base.ListCommand):
 
     client = PrivateCloudsClient()
     return client.List(location, limit=args.limit)
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class ListAlpha(ListBeta):
-  """List Google Cloud VMware Engine private clouds."""
-  _is_hidden = False

@@ -43,16 +43,13 @@ def AddScopeArgument(parser):
       metavar='SCOPE',
       required=True,
       help=("""\
-        Scope can be a project, a folder, or an organization. The analysis is
+        Scope can only be an organization for now. The analysis is
         limited to the Cloud org policies within this scope. The caller must be
         granted the `cloudasset.assets.searchAllResources` permission on
         the desired scope.
 
         The allowed values are:
 
-          * ```projects/{PROJECT_ID}``` (e.g., ``projects/foo-bar'')
-          * ```projects/{PROJECT_NUMBER}``` (e.g., ``projects/12345678'')
-          * ```folders/{FOLDER_NUMBER}``` (e.g., ``folders/1234567'')
           * ```organizations/{ORGANIZATION_NUMBER}``` (e.g. ``organizations/123456'')
         """))
 

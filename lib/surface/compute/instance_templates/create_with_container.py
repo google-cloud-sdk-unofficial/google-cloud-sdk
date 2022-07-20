@@ -40,7 +40,8 @@ def _Args(parser,
           release_track,
           container_mount_enabled=False,
           enable_guest_accelerators=False,
-          support_multi_writer=True):
+          support_multi_writer=True,
+          support_region_instance_template=False):
   """Add flags shared by all release tracks."""
   parser.display_info.AddFormat(instance_templates_flags.DEFAULT_LIST_FORMAT)
   metadata_utils.AddMetadataArgs(parser)
@@ -80,6 +81,10 @@ def _Args(parser,
   flags.AddRegionFlag(
       parser, resource_type='instance template', operation_type='create')
 
+  if support_region_instance_template:
+    parser.add_argument(
+        '--subnet-region', help='Specifies the region of the subnetwork.')
+
   parser.add_argument(
       '--description',
       help='Specifies a textual description for the instance template.')
@@ -98,8 +103,12 @@ class CreateWithContainer(base.CreateCommand):
 
   @staticmethod
   def Args(parser):
-    _Args(parser, base.ReleaseTrack.GA, container_mount_enabled=True,
-          support_multi_writer=False)
+    _Args(
+        parser,
+        base.ReleaseTrack.GA,
+        container_mount_enabled=True,
+        support_multi_writer=False,
+        support_region_instance_template=False)
     instances_flags.AddPrivateIpv6GoogleAccessArgForTemplate(
         parser, utils.COMPUTE_GA_API_VERSION)
 
@@ -139,7 +148,7 @@ class CreateWithContainer(base.CreateCommand):
           scope_lister=flags.GetDefaultScopeLister(client),
           messages=client.messages,
           network_interface_arg=args.network_interface,
-          region=args.region)
+          subnet_region=args.region)
     stack_type = getattr(args, 'stack_type', None)
     ipv6_network_tier = getattr(args, 'ipv6_network_tier', None)
     return [
@@ -149,7 +158,7 @@ class CreateWithContainer(base.CreateCommand):
             messages=client.messages,
             network=args.network,
             private_ip=args.private_network_ip,
-            region=args.region,
+            subnet_region=args.region,
             subnet=args.subnet,
             address=(instance_template_utils.EPHEMERAL_ADDRESS
                      if not args.no_address and not args.address else
@@ -351,7 +360,8 @@ class CreateWithContainerBeta(CreateWithContainer):
         parser,
         base.ReleaseTrack.BETA,
         container_mount_enabled=True,
-        enable_guest_accelerators=True)
+        enable_guest_accelerators=True,
+        support_region_instance_template=False)
     instances_flags.AddPrivateIpv6GoogleAccessArgForTemplate(
         parser, utils.COMPUTE_BETA_API_VERSION)
 
@@ -455,7 +465,8 @@ class CreateWithContainerAlpha(CreateWithContainerBeta):
         parser,
         base.ReleaseTrack.ALPHA,
         container_mount_enabled=True,
-        enable_guest_accelerators=True)
+        enable_guest_accelerators=True,
+        support_region_instance_template=True)
     instances_flags.AddLocalNvdimmArgs(parser)
     instances_flags.AddPrivateIpv6GoogleAccessArgForTemplate(
         parser, utils.COMPUTE_ALPHA_API_VERSION)

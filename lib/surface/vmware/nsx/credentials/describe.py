@@ -43,8 +43,8 @@ DETAILED_HELP = {
 
 
 @base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class DescribeBeta(base.DescribeCommand):
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class Describe(base.DescribeCommand):
   """Retrieve VMware NSX sign-in credentials associated with a Google Cloud VMware Engine private cloud."""
 
   detailed_help = DETAILED_HELP
@@ -58,9 +58,3 @@ class DescribeBeta(base.DescribeCommand):
     resource = args.CONCEPTS.private_cloud.Parse()
     client = PrivateCloudsClient()
     return client.GetNsxCredentials(resource)
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class DescribeAlpha(DescribeBeta):
-  """Retrieve VMware NSX sign-in credentials associated with a Google Cloud VMware Engine private cloud."""
-  _is_hidden = False

@@ -36,8 +36,8 @@ class DeleteV1(base.DeleteCommand):
 
   ## EXAMPLES
 
-  To delete a model ``123'' under project ``example'' in region
-  ``us-central1'', run:
+  To delete a model `123` under project `example` in region
+  `us-central1`, run:
 
     $ {command} 123 --project=example --region=us-central1
   """

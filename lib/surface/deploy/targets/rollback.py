@@ -46,6 +46,7 @@ _DETAILED_HELP = {
 
 """,
 }
+_ROLLBACK = 'rollback'
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
@@ -67,6 +68,8 @@ class Rollback(base.CreateCommand):
     flags.AddRolloutID(parser)
     flags.AddDeliveryPipeline(parser)
     flags.AddDescriptionFlag(parser)
+    flags.AddAnnotationsFlag(parser, _ROLLBACK)
+    flags.AddLabelsFlag(parser, _ROLLBACK)
 
   def Run(self, args):
     target_ref = args.CONCEPTS.target.Parse()
@@ -79,9 +82,11 @@ class Rollback(base.CreateCommand):
             'locationsId': ref_dict['locationsId'],
             'deliveryPipelinesId': args.delivery_pipeline,
         })
+    pipeline_obj = delivery_pipeline_util.GetPipeline(
+        pipeline_ref.RelativeName())
     failed_activity_error_annotation_prefix = 'Cannot perform rollback.'
     delivery_pipeline_util.ThrowIfPipelineSuspended(
-        pipeline_ref, failed_activity_error_annotation_prefix)
+        pipeline_obj, failed_activity_error_annotation_prefix)
     # Check if target exists
     target_util.GetTarget(target_ref)
 
@@ -111,6 +116,8 @@ class Rollback(base.CreateCommand):
         target_ref.Name(),
         False,
         args.rollout_id,
+        args.annotations,
+        args.labels,
         description=rollout_description)
 
 

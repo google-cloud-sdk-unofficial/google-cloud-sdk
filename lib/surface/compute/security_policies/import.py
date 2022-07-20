@@ -32,7 +32,7 @@ from googlecloudsdk.core.util import files
 import six
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 @base.UnicodeIsSupported
 class Import(base.SilentCommand):
   """Import security policy configs into your project.
@@ -75,6 +75,77 @@ class Import(base.SilentCommand):
     if os.path.isdir(args.file_name):
       raise exceptions.BadFileException('[{0}] is a directory'.format(
           args.file_name))
+
+    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    ref = self.SECURITY_POLICY_ARG.ResolveAsResource(args, holder.resources)
+
+    # Get the imported security policy config.
+    try:
+      with files.FileReader(args.file_name) as import_file:
+        if args.file_format == 'json':
+          imported = security_policies_utils.SecurityPolicyFromFile(
+              import_file, holder.client.messages, 'json')
+        else:
+          imported = security_policies_utils.SecurityPolicyFromFile(
+              import_file, holder.client.messages, 'yaml')
+    except Exception as exp:
+      exp_msg = getattr(exp, 'message', six.text_type(exp))
+      msg = ('Unable to read security policy config from specified file [{0}] '
+             'because [{1}]'.format(args.file_name, exp_msg))
+      raise exceptions.BadFileException(msg)
+
+    # Send the change to the service.
+    security_policy = client.SecurityPolicy(ref, compute_client=holder.client)
+    security_policy.Patch(security_policy=imported)
+
+    msg = 'Updated [{0}] with config from [{1}].'.format(
+        ref.Name(), args.file_name)
+    log.status.Print(msg)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.UnicodeIsSupported
+class ImportBeta(base.SilentCommand):
+  """Import security policy configs into your project.
+
+  *{command}* imports a security policy to update an existing policy. The
+  command does not support updating rules for the policy. To create a new policy
+  from a file please use the create command instead.
+
+  ## EXAMPLES
+
+  To import a security policy from a YAML file run this:
+
+    $ {command} --file-name=myFile
+  """
+
+  SECURITY_POLICY_ARG = None
+
+  @classmethod
+  def Args(cls, parser):
+    cls.SECURITY_POLICY_ARG = flags.SecurityPolicyMultiScopeArgument()
+    cls.SECURITY_POLICY_ARG.AddArgument(parser, operation_type='import')
+
+    parser.add_argument(
+        '--file-name',
+        required=True,
+        help=('The name of the JSON or YAML file to import the security policy '
+              'config from.'))
+
+    parser.add_argument(
+        '--file-format',
+        choices=['json', 'yaml'],
+        help=(
+            'The format of the file to import the security policy config from. '
+            'Specify either yaml or json. Defaults to yaml if not specified.'))
+
+  def Run(self, args):
+    if not os.path.exists(args.file_name):
+      raise exceptions.BadFileException(
+          'No such file [{0}]'.format(args.file_name))
+    if os.path.isdir(args.file_name):
+      raise exceptions.BadFileException(
+          '[{0}] is a directory'.format(args.file_name))
 
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     ref = self.SECURITY_POLICY_ARG.ResolveAsResource(args, holder.resources)

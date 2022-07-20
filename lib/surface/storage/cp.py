@@ -289,12 +289,14 @@ class Cp(base.Command):
         plurality_checkable_iterator.PluralityCheckableIterator(
             stdin_iterator.get_urls_iterable(
                 args.source, args.read_paths_from_stdin)))
+
     source_expansion_iterator = name_expansion.NameExpansionIterator(
         raw_source_string_iterator,
         all_versions=args.all_versions,
         fields_scope=fields_scope,
         ignore_symlinks=args.ignore_symlinks,
-        recursion_requested=args.recursive)
+        recursion_requested=name_expansion.RecursionSetting.YES
+        if args.recursive else name_expansion.RecursionSetting.NO_WITH_WARNING)
 
     raw_destination_url = storage_url.storage_url_from_string(args.destination)
     if (isinstance(raw_destination_url, storage_url.FileUrl) and

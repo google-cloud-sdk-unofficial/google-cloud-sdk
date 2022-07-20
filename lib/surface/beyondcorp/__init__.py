@@ -22,20 +22,19 @@ from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Beyondcorp(base.Group):
-  """Manages application connectors and connections.
-
-     The gcloud beyondcorp command group lets you secure non-gcp application by
-     managing connectors and connections.
+  """Manage secure access to applications with integrated threat and data protection.
 
      BeyondCorp Enterprise offers a zero trust solution that enables
      secure access with integrated threat and data protection.The solution
      enables secure access to both Google Cloud Platform and on-prem hosted
      apps. For remote apps that are not deployed in Google Cloud Platform,
      BeyondCorp Enterprise's App connector provides simplified
-     connectivity and app publishing experience.
+     connectivity and app publishing experience. The BeyondCorp Enterprise
+     client connector extends support to non-web applications by creating a
+     secure connection to applications running in both Google Cloud and
+     non-Google Cloud environments with full context and identity aware access.
 
 
      More information on Beyondcorp can be found here:

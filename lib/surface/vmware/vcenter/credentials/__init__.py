@@ -23,14 +23,8 @@ from googlecloudsdk.calliope import base
 
 
 @base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class VcenterCredentialsBeta(base.Group):
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class VcenterCredentials(base.Group):
   """Manage VMware vCenter credentials using Google Cloud VMware Engine."""
 
   category = base.COMPUTE_CATEGORY
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class VcenterCredentialsAlpha(VcenterCredentialsBeta):
-  """Manage VMware vCenter credentials using Google Cloud VMware Engine."""
-  _is_hidden = False

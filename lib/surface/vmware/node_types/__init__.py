@@ -23,14 +23,8 @@ from googlecloudsdk.calliope import base
 
 
 @base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class NodeTypesBeta(base.Group):
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class NodeTypes(base.Group):
   """Show node types in Google Cloud VMware Engine."""
 
   category = base.COMPUTE_CATEGORY
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class NodeTypesAlpha(NodeTypesBeta):
-  """Show node types in Google Cloud VMware Engine."""
-  _is_hidden = False
