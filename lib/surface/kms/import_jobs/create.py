@@ -20,11 +20,12 @@ from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.cloudkms import base as cloudkms_base
 from googlecloudsdk.calliope import base
-from googlecloudsdk.command_lib.kms import exceptions
+from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.kms import flags
 from googlecloudsdk.command_lib.kms import maps
 
 
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Create(base.CreateCommand):
   r"""Create a new import job.
 
@@ -36,17 +37,17 @@ class Create(base.CreateCommand):
   'fellowship' keyring, and 'us-central1' location:
 
     $ {command} strider --location=us-central1 \
-        --keyring=fellowship --import-method=rsa-oaep-3072-sha1-aes-256 \
+        --keyring=fellowship --import-method=rsa-oaep-3072-sha256-aes-256 \
         --protection-level=hsm
   """
 
   @staticmethod
   def Args(parser):
-    flags.AddKeyRingFlag(parser, "import job")
-    flags.AddLocationFlag(parser, "import job")
+    flags.AddKeyRingFlag(parser, 'import job')
+    flags.AddLocationFlag(parser, 'import job')
     flags.AddRequiredProtectionLevelFlag(parser)
     flags.AddRequiredImportMethodFlag(parser)
-    flags.AddPositionalImportJobArgument(parser, "to create")
+    flags.AddPositionalImportJobArgument(parser, 'to create')
 
     parser.display_info.AddCacheUpdater(flags.KeyRingCompleter)
 
@@ -55,12 +56,12 @@ class Create(base.CreateCommand):
 
     if not args.protection_level:
       raise exceptions.ArgumentError(
-          "--protection-level needs to be specified when creating an import job"
+          '--protection-level needs to be specified when creating an import job'
       )
 
     if not args.import_method:
       raise exceptions.ArgumentError(
-          "--import-method needs to be specified when creating an import job")
+          '--import-method needs to be specified when creating an import job')
 
     import_job_ref = flags.ParseImportJobName(args)
     parent_ref = flags.ParseParentFromResource(import_job_ref)
@@ -78,3 +79,33 @@ class Create(base.CreateCommand):
     client = cloudkms_base.GetClientInstance()
     return client.projects_locations_keyRings_importJobs.Create(
         self._CreateRequest(args))
+
+
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class CreateGA(Create):
+  r"""Create a new import job.
+
+  Creates a new import job within the given keyring.
+
+  ## EXAMPLES
+
+  The following command creates a new import job named 'strider' within the
+  'fellowship' keyring, and 'us-central1' location:
+
+    $ {command} strider --location=us-central1 \
+        --keyring=fellowship --import-method=rsa-oaep-3072-sha1-aes-256 \
+        --protection-level=hsm
+  """
+
+  def _CreateRequest(self, args):
+    if args.import_method in [
+        'rsa-oaep-3072-sha256',
+        'rsa-oaep-4096-sha256',
+        'rsa-oaep-3072-sha256-aes-256',
+        'rsa-oaep-4096-sha256-aes-256',
+    ]:
+      raise exceptions.BadArgumentException(
+          'import-method',
+          'Import method [{0}] is not yet GA. Use `gcloud beta` to use this method.'
+          .format(args.import_method))
+    return super(CreateGA, self)._CreateRequest(args)

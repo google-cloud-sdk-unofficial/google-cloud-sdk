@@ -23,6 +23,8 @@ import textwrap
 import time
 
 from googlecloudsdk.api_lib.services import enable_api
+from googlecloudsdk.command_lib.container.fleet import resources
+from googlecloudsdk.command_lib.container.fleet import util as hub_util
 from googlecloudsdk.command_lib.container.fleet.features import base
 from googlecloudsdk.command_lib.container.fleet.features import info
 from googlecloudsdk.core import exceptions
@@ -47,14 +49,18 @@ class Enable(base.EnableCommand):
 
   @staticmethod
   def Args(parser):
-    parser.add_argument(
-        '--config-membership',
-        type=str,
-        help=textwrap.dedent("""\
-            Membership resource representing the cluster which hosts
-            the MultiClusterIngress and MultiClusterService CustomResourceDefinitions.
-            """),
-    )
+    if hub_util.APIEndpoint() == hub_util.AUTOPUSH_API:
+      resources.AddMembershipResourceArg(
+          parser, membership_arg='--config-membership')
+    else:
+      parser.add_argument(
+          '--config-membership',
+          type=str,
+          help=textwrap.dedent("""\
+              Membership resource representing the cluster which hosts
+              the MultiClusterIngress and MultiClusterService CustomResourceDefinitions.
+              """),
+      )
 
   def Run(self, args):
     if not args.config_membership:

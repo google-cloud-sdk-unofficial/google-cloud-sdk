@@ -35,10 +35,9 @@ class Update(base.UpdateCommand):
       'EXAMPLES':
           textwrap.dedent("""\
           The following command updates the IAM policy defined at the resource
-          project ``123'' of kind ``denypolicies'' and id ``my-deny-policy'',
-          with etag ``abc'':
+          project ``123'' of kind ``denypolicies'' and id ``my-deny-policy'':
 
-            $ {command} my-deny-policy --attachment-point=cloudresourcemanager.googleapis.com/projects/123 --kind=denypolicies --policy-file=policy.json --etag=abc
+            $ {command} my-deny-policy --attachment-point=cloudresourcemanager.googleapis.com/projects/123 --kind=denypolicies --policy-file=policy.json
           """),
   }
 
@@ -47,7 +46,6 @@ class Update(base.UpdateCommand):
     flags.GetAttachmentPointFlag().AddToParser(parser)
     flags.GetKindFlag().AddToParser(parser)
     flags.GetPolicyIDFlag().AddToParser(parser)
-    flags.GetEtagFlag().AddToParser(parser)
     flags.GetPolicyFileFlag().AddToParser(parser)
 
   def Run(self, args):
@@ -56,24 +54,6 @@ class Update(base.UpdateCommand):
     messages = apis.GetMessagesModule(release_track)
 
     attachment_point = args.attachment_point.replace('/', '%2F')
-
-    # If etag is not present, get using GetPolicy API.
-    etag = args.etag
-    if not etag:
-      get_result = client.policies.Get(
-          messages.IamPoliciesGetRequest(name='policies/{}/{}/{}'.format(
-              attachment_point, args.kind, args.policy_id)))
-      if release_track == base.ReleaseTrack.ALPHA and isinstance(
-          get_result, messages.GoogleIamV2alphaPolicy):
-        etag = get_result.etag
-      elif release_track == base.ReleaseTrack.BETA and isinstance(
-          get_result, messages.GoogleIamV2betaPolicy):
-        etag = get_result.etag
-      elif release_track == base.ReleaseTrack.GA and isinstance(
-          get_result, messages.GoogleIamV2Policy):
-        etag = get_result.etag
-      else:
-        raise Exception('Unexpected response from policies client.')
 
     if release_track == base.ReleaseTrack.ALPHA:
       policy = apis.ParseYamlOrJsonPolicyFile(args.policy_file,
@@ -88,7 +68,6 @@ class Update(base.UpdateCommand):
 
     policy.name = 'policies/{}/{}/{}'.format(attachment_point, args.kind,
                                              args.policy_id)
-    policy.etag = etag
 
     result = client.policies.Update(policy)
     log.UpdatedResource(result.name, 'denyPolicy', is_async=True)

@@ -38,6 +38,12 @@
           api_field: connectivityTest.source.cloudSqlInstance
           help_text: |
             A Cloud SQL instance URI as the source endpoint.
+        - arg_name: source-cloud-function
+          release_tracks: [BETA]
+          hidden: true
+          api_field: connectivityTest.source.cloudFunction.uri
+          help_text: |
+            A Cloud function URI as the source endpoint.
     - arg_name: source-network
       api_field: connectivityTest.source.network
       help_text: |
@@ -128,6 +134,7 @@
       - googlecloudsdk.command_lib.network_management.util:AppendLocationsGlobalToParent
       - googlecloudsdk.command_lib.network_management.util:ValidateGKEMasterClustersURIs
       - googlecloudsdk.command_lib.network_management.util:ValidateCloudSQLInstancesURIs
+      - googlecloudsdk.command_lib.network_management.util:ValidateCloudFunctionsURIs
     GA:
       api_version: v1
       modify_request_hooks:

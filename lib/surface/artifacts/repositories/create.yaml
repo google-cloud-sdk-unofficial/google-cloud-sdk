@@ -121,7 +121,7 @@
         enum_value: PYPI
     labels:
       api_field: repository.labels
-    additional_arguments_hook: googlecloudsdk.command_lib.artifacts.util:AddRepositoryFormatArg
+    additional_arguments_hook: googlecloudsdk.command_lib.artifacts.util:AddAdditionalArgs
 
   async:
     collection: artifactregistry.projects.locations.operations
@@ -132,6 +132,7 @@
     modify_request_hooks:
     - googlecloudsdk.command_lib.artifacts.util:CheckServiceAccountPermission
     - googlecloudsdk.command_lib.artifacts.util:AppendRepoDataToRequest
+    - googlecloudsdk.command_lib.artifacts.util:AppendUpstreamPoliciesToRequest
     - googlecloudsdk.command_lib.artifacts.util:SanitizeRemoteRepositoryConfig
 
 - release_tracks: [ALPHA, BETA]

@@ -27,4 +27,4 @@
     api_version: v1
     collection: artifactregistry.projects.locations.repositories.packages.tags
     modify_request_hooks:
-    - googlecloudsdk.command_lib.artifacts.util:SlashUnescapeTagNameHook
+    - googlecloudsdk.command_lib.artifacts.util:UnescapeTagNameHook

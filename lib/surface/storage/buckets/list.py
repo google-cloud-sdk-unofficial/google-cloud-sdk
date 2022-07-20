@@ -74,5 +74,4 @@ class List(base.ListCommand):
           fields_scope=cloud_api.FieldsScope.FULL,
           get_bucket_metadata=True):
         # MakeSerializable will omit all the None values.
-        yield resource_projector.MakeSerializable(
-            bucket.get_displayable_bucket_data())
+        yield resource_projector.MakeSerializable(bucket.metadata)

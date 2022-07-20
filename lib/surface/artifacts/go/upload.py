@@ -28,7 +28,6 @@ from googlecloudsdk.api_lib.util import waiter
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.artifacts import flags
 from googlecloudsdk.command_lib.artifacts import go_util
-from googlecloudsdk.core import log
 from googlecloudsdk.core import resources
 
 
@@ -94,9 +93,9 @@ class Upload(base.Command):
         version=args.version,
         source=args.source,
         output=zip_path)
-    log.debug(pack_result.stderr)
     if pack_result.exit_code:
-      raise exceptions.InvalidGoModuleError('failed to package the go module.')
+      raise exceptions.InvalidGoModuleError(
+          'failed to package the go module: ' + pack_result.stderr)
 
     # Upload the go.zip.
     repo_ref = args.CONCEPTS.repository.Parse()

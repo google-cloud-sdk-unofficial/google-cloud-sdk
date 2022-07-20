@@ -60,6 +60,11 @@ class Enable(base.UpdateCommand, base.EnableCommand):
         help='Namespaces that Policy Controller should ignore, separated by commas if multiple are supplied.'
     )
     parser.add_argument(
+        '--no-exemptable-namespaces',
+        action='store_true',
+        help='Disables any namespace exemptions, enabling Policy Controller on all namespaces.'
+    )
+    parser.add_argument(
         '--log-denies-enabled',
         action='store_true',
         help='Log all denies and dry run failures.',

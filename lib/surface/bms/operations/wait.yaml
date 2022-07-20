@@ -18,8 +18,8 @@
         want to wait for.
 
   request:
-    api_version: v1
-    collection: baremetalsolution.operations
+    api_version: v2
+    collection: baremetalsolution.projects.locations.operations
 
   async:
-    collection: baremetalsolution.operations
+    collection: baremetalsolution.projects.locations.operations

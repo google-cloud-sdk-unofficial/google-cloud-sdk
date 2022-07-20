@@ -50,8 +50,7 @@ class Update(base.UpdateCommand):
   def Args(parser):
     resource_args.AddCaPoolPositionalResourceArg(
         parser, 'to update')
-    flags_v1.AddPublishCrlFlag(parser, use_update_help_text=True)
-    flags_v1.AddPublishCaCertFlag(parser, use_update_help_text=True)
+    flags_v1.AddPublishingOptionsFlags(parser, use_update_help_text=True)
     flags_v1.AddCaPoolIssuancePolicyFlag(parser)
     labels_util.AddUpdateLabelsFlags(parser)
 

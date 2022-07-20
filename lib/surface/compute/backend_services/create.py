@@ -94,9 +94,8 @@ class CreateHelper(object):
            support_logging, support_tcp_ssl_logging, support_net_lb_ilb_logging,
            support_multinic, support_client_only, support_grpc_protocol,
            support_unspecified_protocol, support_subsetting,
-           support_subsetting_subset_size, support_strong_session_affinity,
-           support_advanced_load_balancing, support_dynamic_compression,
-           support_weighted_lb):
+           support_subsetting_subset_size, support_advanced_load_balancing,
+           support_dynamic_compression, support_weighted_lb):
     """Add flags to create a backend service to the parser."""
 
     parser.display_info.AddFormat(flags.DEFAULT_LIST_FORMAT)
@@ -178,18 +177,14 @@ class CreateHelper(object):
 
     flags.AddConnectionTrackingPolicy(parser)
 
-    if support_strong_session_affinity:
-      flags.AddStrongSessionAffinity(parser)
-
     if support_dynamic_compression:
       flags.AddCompressionMode(parser)
 
   def __init__(self, support_l7_internal_load_balancer, support_failover,
                support_logging, support_tcp_ssl_logging,
                support_net_lb_ilb_logging, support_multinic, support_subsetting,
-               support_subsetting_subset_size, support_strong_session_affinity,
-               support_advanced_load_balancing, support_dynamic_compression,
-               support_weighted_lb):
+               support_subsetting_subset_size, support_advanced_load_balancing,
+               support_dynamic_compression, support_weighted_lb):
     self._support_l7_internal_load_balancer = support_l7_internal_load_balancer
     self._support_failover = support_failover
     self._support_logging = support_logging
@@ -198,7 +193,6 @@ class CreateHelper(object):
     self._support_multinic = support_multinic
     self._support_subsetting = support_subsetting
     self._support_subsetting_subset_size = support_subsetting_subset_size
-    self._support_strong_session_affinity = support_strong_session_affinity
     self._support_advanced_load_balancing = support_advanced_load_balancing
     self._support_dynamic_compression = support_dynamic_compression
     self._support_weighted_lb = support_weighted_lb
@@ -340,10 +334,7 @@ class CreateHelper(object):
           client, args, backend_service, self._support_subsetting_subset_size)
 
     backend_services_utils.ApplyConnectionTrackingPolicyArgs(
-        client,
-        args,
-        backend_service,
-        support_strong_session_affinity=self._support_strong_session_affinity)
+        client, args, backend_service)
 
     self._ApplyIapArgs(client.messages, args.iap, backend_service)
 
@@ -454,7 +445,6 @@ class CreateGA(base.CreateCommand):
   _support_unspecified_protocol = True
   _support_subsetting = True
   _support_subsetting_subset_size = False
-  _support_strong_session_affinity = False
   _support_advanced_load_balancing = False
   _support_dynamic_compression = False
   _support_weighted_lb = False
@@ -475,7 +465,6 @@ class CreateGA(base.CreateCommand):
         support_unspecified_protocol=cls._support_unspecified_protocol,
         support_subsetting=cls._support_subsetting,
         support_subsetting_subset_size=cls._support_subsetting_subset_size,
-        support_strong_session_affinity=cls._support_strong_session_affinity,
         support_advanced_load_balancing=cls._support_advanced_load_balancing,
         support_dynamic_compression=cls._support_dynamic_compression,
         support_weighted_lb=cls._support_weighted_lb)
@@ -494,7 +483,6 @@ class CreateGA(base.CreateCommand):
         support_multinic=self._support_multinic,
         support_subsetting=self._support_subsetting,
         support_subsetting_subset_size=self._support_subsetting_subset_size,
-        support_strong_session_affinity=self._support_strong_session_affinity,
         support_advanced_load_balancing=self._support_advanced_load_balancing,
         support_dynamic_compression=self._support_dynamic_compression,
         support_weighted_lb=self._support_weighted_lb).Run(args, holder)
@@ -524,7 +512,6 @@ class CreateBeta(CreateGA):
   _support_unspecified_protocol = True
   _support_subsetting = True
   _support_subsetting_subset_size = True
-  _support_strong_session_affinity = True
   _support_advanced_load_balancing = False
   _support_dynamic_compression = True
   _support_weighted_lb = True
@@ -555,7 +542,6 @@ class CreateAlpha(CreateBeta):
   _support_unspecified_protocol = True
   _support_subsetting = True
   _support_subsetting_subset_size = True
-  _support_strong_session_affinity = True
   _support_advanced_load_balancing = True
   _support_dynamic_compression = True
   _support_weighted_lb = True

@@ -35,6 +35,7 @@ from googlecloudsdk.command_lib.compute import scope as compute_scope
 from googlecloudsdk.command_lib.compute.instance_groups import flags as instance_groups_flags
 from googlecloudsdk.command_lib.compute.instance_groups.managed import flags as managed_flags
 from googlecloudsdk.command_lib.compute.managed_instance_groups import auto_healing_utils
+from googlecloudsdk.command_lib.util.apis import arg_utils
 from googlecloudsdk.core import properties
 
 
@@ -107,8 +108,10 @@ def ValidateUpdatePolicyAgainstStateful(update_policy, group_ref,
 class CreateGA(base.CreateCommand):
   """Create Compute Engine managed instance groups."""
 
-  @staticmethod
-  def Args(parser):
+  support_any_single_zone = False
+
+  @classmethod
+  def Args(cls, parser):
     parser.display_info.AddFormat(managed_flags.DEFAULT_CREATE_OR_LIST_FORMAT)
     _AddInstanceGroupManagerArgs(parser)
     auto_healing_utils.AddAutohealingArgs(parser)
@@ -117,7 +120,8 @@ class CreateGA(base.CreateCommand):
     instance_groups_flags.AddZonesFlag(parser)
     instance_groups_flags.AddMigCreateStatefulFlags(parser)
     managed_flags.AddMigInstanceRedistributionTypeFlag(parser)
-    managed_flags.AddMigDistributionPolicyTargetShapeFlag(parser)
+    managed_flags.AddMigDistributionPolicyTargetShapeFlag(
+        parser, cls.support_any_single_zone)
     # When adding RMIG-specific flag, update REGIONAL_FLAGS constant.
 
   def _HandleStatefulArgs(self, instance_group_manager, args, client):
@@ -177,10 +181,9 @@ class CreateGA(base.CreateCommand):
       distribution_policy.zones = policy_zones
 
     if args.target_distribution_shape:
-      distribution_policy.targetShape = (
-          messages.DistributionPolicy.TargetShapeValueValuesEnum)(
-              args.target_distribution_shape.upper())
-
+      distribution_policy.targetShape = arg_utils.ChoiceToEnum(
+          args.target_distribution_shape,
+          messages.DistributionPolicy.TargetShapeValueValuesEnum)
     return ValueOrNone(distribution_policy)
 
   def _GetRegionForGroup(self, group_ref):
@@ -338,7 +341,7 @@ class CreateBeta(CreateGA):
 
   @classmethod
   def Args(cls, parser):
-    CreateGA.Args(parser)
+    super(CreateBeta, cls).Args(parser)
     instance_groups_flags.AddMigCreateStatefulIPsFlags(parser)
     managed_flags.AddMigListManagedInstancesResultsFlag(parser)
 
@@ -398,9 +401,11 @@ CreateBeta.detailed_help = CreateGA.detailed_help
 class CreateAlpha(CreateBeta):
   """Create Compute Engine managed instance groups."""
 
+  support_any_single_zone = True
+
   @classmethod
   def Args(cls, parser):
-    CreateBeta.Args(parser)
+    super(CreateAlpha, cls).Args(parser)
 
 
 CreateAlpha.detailed_help = CreateBeta.detailed_help

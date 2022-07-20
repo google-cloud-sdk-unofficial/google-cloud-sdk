@@ -53,31 +53,11 @@ class Delete(base.DeleteCommand):
     release_track = args.calliope_command.ReleaseTrack()
     client = apis.GetClientInstance(release_track)
     messages = apis.GetMessagesModule(release_track)
-
     attachment_point = args.attachment_point.replace('/', '%2F')
-
-    # If etag is not present, get using GetPolicy API.
-    etag = args.etag
-    if not etag:
-      get_result = client.policies.Get(
-          messages.IamPoliciesGetRequest(name='policies/{}/{}/{}'.format(
-              attachment_point, args.kind, args.policy_id)))
-      if release_track == base.ReleaseTrack.ALPHA and isinstance(
-          get_result, messages.GoogleIamV2alphaPolicy):
-        etag = get_result.etag
-      elif release_track == base.ReleaseTrack.BETA and isinstance(
-          get_result, messages.GoogleIamV2betaPolicy):
-        etag = get_result.etag
-      elif release_track == base.ReleaseTrack.GA and isinstance(
-          get_result, messages.GoogleIamV2Policy):
-        etag = get_result.etag
-      else:
-        raise Exception('Unexpected response from policies client.')
-
     result = client.policies.Delete(
         messages.IamPoliciesDeleteRequest(
             name='policies/{}/{}/{}'.format(attachment_point, args.kind,
                                             args.policy_id),
-            etag=etag))
+            etag=args.etag))
     log.DeletedResource(result.name, 'denyPolicy', is_async=True)
     return result

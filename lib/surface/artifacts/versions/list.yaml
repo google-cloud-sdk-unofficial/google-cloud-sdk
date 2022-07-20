@@ -26,7 +26,7 @@
     api_version: v1
     collection: artifactregistry.projects.locations.repositories.packages.versions
     modify_request_hooks:
-    - googlecloudsdk.command_lib.artifacts.util:SlashEscapePackageName
+    - googlecloudsdk.command_lib.artifacts.util:EscapePackageName
     - googlecloudsdk.command_lib.artifacts.util:AppendSortingToRequest
 
   response:

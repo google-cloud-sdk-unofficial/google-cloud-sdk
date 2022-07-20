@@ -32,6 +32,27 @@ from googlecloudsdk.command_lib.storage.tasks import task_executor
 from googlecloudsdk.command_lib.storage.tasks.cat import cat_task_iterator
 
 
+def _range_parser(string_value):
+  """Creates Range object out of given string value.
+
+  Args:
+    string_value (str): The range the user entered.
+
+  Returns:
+    Range(int, int|None): The Range object from the given string value.
+  """
+  if string_value == '-':
+    return arg_parsers.Range(start=0, end=None)
+  range_start, _, range_end = string_value.partition('-')
+  if not range_start:
+    # Checking to see if the user entered -y for the range.
+    return arg_parsers.Range(start=-1 * int(range_end), end=None)
+  if not range_end:
+    # Checking to see if the user entered x- for the range.
+    return arg_parsers.Range(start=int(range_start), end=None)
+  return arg_parsers.Range.Parse(string_value)
+
+
 @base.Hidden
 class Cat(base.Command):
   """Outputs the contents of one or more URLs to stdout."""
@@ -81,7 +102,7 @@ class Cat(base.Command):
     parser.add_argument(
         '-r',
         '--range',
-        type=arg_parsers.Range.Parse,
+        type=_range_parser,
         help=textwrap.dedent("""\
             Causes gcloud storage to output just the specified byte range of
             the object. In a case where "start" = 'x', and "end" = 'y',
@@ -120,6 +141,8 @@ class Cat(base.Command):
         recursion_requested=name_expansion.RecursionSetting.NO)
 
     task_iterator = cat_task_iterator.get_cat_task_iterator(
-        source_expansion_iterator, args.display_url)
-
+        source_expansion_iterator,
+        args.display_url,
+        start_byte=getattr(args.range, 'start', 0),
+        end_byte=getattr(args.range, 'end', None))
     self.exit_code = task_executor.execute_tasks(task_iterator=task_iterator)

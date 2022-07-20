@@ -243,14 +243,13 @@ class Login(base.Command):
       return LoginAs(args.account, creds, args.project, args.activate,
                      args.brief, args.update_adc, args.add_quota_project_to_adc)
 
-    redirect_uri = 'https://sdk.cloud.google.com/authcode.html' if not args.launch_browser else None
     # No valid creds, do the web flow.
     creds = auth_util.DoInstalledAppBrowserFlowGoogleAuth(
         scopes,
         no_launch_browser=not args.launch_browser,
         no_browser=args.no_browser,
         remote_bootstrap=args.remote_bootstrap,
-        redirect_uri=redirect_uri)
+        auth_proxy_redirect_uri='https://sdk.cloud.google.com/authcode.html')
     if not creds:
       return
     account = ExtractAndValidateAccount(args.account, creds)

@@ -31,7 +31,7 @@
     api_version: v1
     collection: artifactregistry.projects.locations.repositories.packages.versions
     modify_request_hooks:
-    - googlecloudsdk.command_lib.artifacts.util:SlashUnescapeVersionNameHook
+    - googlecloudsdk.command_lib.artifacts.util:UnescapeVersionNameHook
     - googlecloudsdk.command_lib.artifacts.util:DeleteVersionTags
 
   async:

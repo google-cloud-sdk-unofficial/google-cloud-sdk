@@ -83,5 +83,4 @@ class List(base.ListCommand):
           fields_scope=cloud_api.FieldsScope.FULL):
         if isinstance(resource, resource_reference.ObjectResource):
           # MakeSerializable will omit all the None values.
-          yield resource_projector.MakeSerializable(
-              resource.get_displayable_object_data())
+          yield resource_projector.MakeSerializable(resource.metadata)

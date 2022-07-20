@@ -1,0 +1,52 @@
+- release_tracks: [ALPHA]
+
+  command_type: LIST
+
+  help_text:
+    brief: List Effective Security Health Analytics custom modules.
+    description: List Effective Security Health Analytics custom modules.
+    examples: |
+      List Effective Security Health Analytics custom modules under organization `123`:
+
+        $ {command} --organization=organizations/123
+        $ {command} --organization=123
+
+      List Effective Security Health Analytics custom modules under folder `456`:
+
+        $ {command} --folder=folders/456
+        $ {command} --folder=456
+
+      List Effective Security Health Analytics custom modules under project `789`:
+
+        $ {command} --project=projects/789
+        $ {command} --project=789
+
+  request:
+    collection: securitycenter.organizations.securityHealthAnalyticsSettings.effectiveCustomModules
+    disable_resource_check: true
+    api_version: v1
+    method: list
+    modify_request_hooks:
+    - googlecloudsdk.command_lib.scc.custom_modules.sha.request_hooks:ListEffectiveSecurityHealthAnalyticsCustomModulesReqHook
+
+  arguments:
+
+    params:
+    - group:
+        required: true
+        mutex: true
+        params:
+        - arg_name: organization
+          api_field: parent
+          help_text: |
+            Organization where the Effective Security Health Analytics custom modules resides. Formatted as `organizations/123` or just `123`.
+
+        - arg_name: folder
+          api_field: parent
+          help_text: |
+            Folder where the Effective Security Health Analytics custom modules resides. Formatted as `folders/456` or just `456`.
+
+        - arg_name: project
+          api_field: parent
+          help_text: |
+            Project (id or number) where the Effective Security Health Analytics custom modules resides. Formatted as `projects/789` or just `789`.

@@ -20,6 +20,8 @@ from __future__ import unicode_literals
 
 from googlecloudsdk.calliope import base as gbase
 from googlecloudsdk.calliope import exceptions as calliope_exceptions
+from googlecloudsdk.command_lib.container.fleet import resources
+from googlecloudsdk.command_lib.container.fleet import util as hub_util
 from googlecloudsdk.command_lib.container.fleet.features import base
 from googlecloudsdk.core import exceptions
 from googlecloudsdk.core.console import console_io
@@ -47,12 +49,14 @@ class Update(base.UpdateCommand):
 
   @staticmethod
   def Args(parser):
-
-    parser.add_argument(
-        '--memberships',
-        type=str,
-        help='Membership names to update, separated by commas if multiple are supplied.',
-    )
+    if hub_util.APIEndpoint() == hub_util.AUTOPUSH_API:
+      resources.AddMembershipResourceArg(parser, plural=True)
+    else:
+      parser.add_argument(
+          '--memberships',
+          type=str,
+          help='Membership names to update, separated by commas if multiple are supplied.',
+      )
     parser.add_argument(
         '--all-memberships',
         action='store_true',

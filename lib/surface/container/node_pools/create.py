@@ -176,7 +176,8 @@ def ParseCreateNodePoolOptionsBase(args):
       enable_surge_upgrade=args.enable_surge_upgrade,
       node_pool_soak_duration=args.node_pool_soak_duration,
       standard_rollout_policy=args.standard_rollout_policy,
-      enable_private_nodes=args.enable_private_nodes)
+      enable_private_nodes=args.enable_private_nodes,
+      enable_fast_socket=args.enable_fast_socket)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
@@ -221,6 +222,7 @@ class Create(base.CreateCommand):
     flags.AddStandardRolloutPolicyFlag(parser)
     flags.AddNodePoolSoakDurationFlag(parser)
     flags.AddNodePoolEnablePrivateNodes(parser)
+    flags.AddEnableFastSocketFlag(parser)
 
   def ParseCreateNodePoolOptions(self, args):
     ops = ParseCreateNodePoolOptionsBase(args)
@@ -323,6 +325,7 @@ class CreateBeta(Create):
     flags.AddNetworkPerformanceConfigFlags(parser, hidden=False)
     flags.AddEnableConfidentialNodesFlag(parser, for_node_pool=True)
     flags.AddDisablePodCIDROverprovisionFlag(parser)
+    flags.AddEnableFastSocketFlag(parser)
 
   def ParseCreateNodePoolOptions(self, args):
     ops = ParseCreateNodePoolOptionsBase(args)
@@ -346,6 +349,7 @@ class CreateBeta(Create):
     ops.network_performance_config = args.network_performance_configs
     ops.enable_confidential_nodes = args.enable_confidential_nodes
     ops.disable_pod_cidr_overprovision = args.disable_pod_cidr_overprovision
+    ops.enable_fast_socket = args.enable_fast_socket
     return ops
 
 
@@ -377,6 +381,7 @@ class CreateAlpha(Create):
     ops.network_performance_config = args.network_performance_configs
     ops.enable_confidential_nodes = args.enable_confidential_nodes
     ops.disable_pod_cidr_overprovision = args.disable_pod_cidr_overprovision
+    ops.enable_fast_socket = args.enable_fast_socket
     return ops
 
   @staticmethod
@@ -422,6 +427,7 @@ class CreateAlpha(Create):
     flags.AddNetworkPerformanceConfigFlags(parser, hidden=False)
     flags.AddEnableConfidentialNodesFlag(parser, for_node_pool=True)
     flags.AddDisablePodCIDROverprovisionFlag(parser)
+    flags.AddEnableFastSocketFlag(parser)
 
 
 Create.detailed_help = DETAILED_HELP

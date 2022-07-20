@@ -39,7 +39,7 @@ class Submit(base.Command):
   To submit the job with config.json sample config file and name
   `projects/foo/locations/us-central1/jobs/bar`, run:
 
-    $ {command} projects/foo/locations/us-central1/jobs/bar --config config.json
+    $ {command} projects/foo/locations/us-central1/jobs/bar --config=config.json
   """
 
   @staticmethod

@@ -136,6 +136,7 @@ class UpdateBeta(UpdateGa):
         help=('An optional, textual description for the security policy.'))
 
     flags.AddCloudArmorAdaptiveProtection(parser)
+    flags.AddCloudArmorAdaptiveProtectionAutoDeploy(parser)
     flags.AddAdvancedOptions(parser)
     flags.AddRecaptchaOptions(parser)
     flags.AddDdosProtectionConfig(parser)
@@ -146,18 +147,27 @@ class UpdateBeta(UpdateGa):
     Args:
       args: The arguments given to the update command.
     """
-
-    if not (args.IsSpecified('description') or
-            args.IsSpecified('enable_layer7_ddos_defense') or
-            args.IsSpecified('layer7_ddos_defense_rule_visibility') or
-            args.IsSpecified('json_parsing') or args.IsSpecified('log_level') or
-            args.IsSpecified('recaptcha_redirect_site_key') or
-            args.IsSpecified('network_ddos_protection')):
+    if not (
+        args.IsSpecified('description') or
+        args.IsSpecified('enable_layer7_ddos_defense') or
+        args.IsSpecified('layer7_ddos_defense_rule_visibility') or
+        args.IsSpecified('json_parsing') or args.IsSpecified('log_level') or
+        args.IsSpecified('recaptcha_redirect_site_key') or
+        args.IsSpecified('network_ddos_protection') or
+        args.IsSpecified('layer7_ddos_defense_auto_deploy_load_threshold') or
+        args.IsSpecified('layer7_ddos_defense_auto_deploy_confidence_threshold')
+        or args.IsSpecified(
+            'layer7_ddos_defense_auto_deploy_impacted_baseline_threshold') or
+        args.IsSpecified('layer7_ddos_defense_auto_deploy_expiration_sec')):
       parameter_names = [
           '--description', '--enable-layer7-ddos-defense',
           '--layer7-ddos-defense-rule-visibility', '--json-parsing',
           '--log-level', '--recaptcha-redirect-site-key',
-          '--network-ddos-protection'
+          '--network-ddos-protection',
+          '--layer7-ddos-defense-auto-deploy-load-threshold',
+          '--layer7-ddos-defense-auto-deploy-confidence-threshold',
+          '--layer7-ddos-defense-auto-deploy-impacted-baseline-threshold',
+          '--layer7-ddos-defense-auto-deploy-expiration-sec'
       ]
       raise exceptions.MinimumArgumentException(
           parameter_names, 'Please specify at least one property to update')
@@ -179,9 +189,15 @@ class UpdateBeta(UpdateGa):
     if args.description is not None:
       description = args.description
     if (args.IsSpecified('enable_layer7_ddos_defense') or
-        args.IsSpecified('layer7_ddos_defense_rule_visibility')):
+        args.IsSpecified('layer7_ddos_defense_rule_visibility') or
+        args.IsSpecified('layer7_ddos_defense_auto_deploy_load_threshold') or
+        args.IsSpecified('layer7_ddos_defense_auto_deploy_confidence_threshold')
+        or args.IsSpecified(
+            'layer7_ddos_defense_auto_deploy_impacted_baseline_threshold') or
+        args.IsSpecified('layer7_ddos_defense_auto_deploy_expiration_sec')):
       adaptive_protection_config = (
-          security_policies_utils.CreateAdaptiveProtectionConfig(
+          security_policies_utils
+          .CreateAdaptiveProtectionConfigWithAutoDeployConfig(
               holder.client, args, adaptive_protection_config))
     if (args.IsSpecified('json_parsing') or args.IsSpecified('log_level')):
       advanced_options_config = (
@@ -231,6 +247,7 @@ class UpdateAlpha(UpdateBeta):
         help=('An optional, textual description for the security policy.'))
 
     flags.AddCloudArmorAdaptiveProtection(parser)
+    flags.AddCloudArmorAdaptiveProtectionAutoDeploy(parser)
     flags.AddAdvancedOptions(parser)
     flags.AddRecaptchaOptions(parser)
     flags.AddDdosProtectionConfig(parser)
@@ -286,9 +303,15 @@ class UpdateAlpha(UpdateBeta):
       cloud_armor_config = security_policies_utils.CreateCloudArmorConfig(
           holder.client, args)
     if (args.IsSpecified('enable_layer7_ddos_defense') or
-        args.IsSpecified('layer7_ddos_defense_rule_visibility')):
+        args.IsSpecified('layer7_ddos_defense_rule_visibility') or
+        args.IsSpecified('layer7_ddos_defense_auto_deploy_load_threshold') or
+        args.IsSpecified('layer7_ddos_defense_auto_deploy_confidence_threshold')
+        or args.IsSpecified(
+            'layer7_ddos_defense_auto_deploy_impacted_baseline_threshold') or
+        args.IsSpecified('layer7_ddos_defense_auto_deploy_expiration_sec')):
       adaptive_protection_config = (
-          security_policies_utils.CreateAdaptiveProtectionConfig(
+          security_policies_utils
+          .CreateAdaptiveProtectionConfigWithAutoDeployConfig(
               holder.client, args, adaptive_protection_config))
     if (args.IsSpecified('json_parsing') or args.IsSpecified('log_level')):
       advanced_options_config = (

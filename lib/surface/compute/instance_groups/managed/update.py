@@ -28,6 +28,7 @@ from googlecloudsdk.command_lib.compute import scope as compute_scope
 from googlecloudsdk.command_lib.compute.instance_groups import flags as instance_groups_flags
 from googlecloudsdk.command_lib.compute.instance_groups.managed import flags as managed_flags
 from googlecloudsdk.command_lib.compute.managed_instance_groups import auto_healing_utils
+from googlecloudsdk.command_lib.util.apis import arg_utils
 import six
 
 # Flags valid only for regional MIGs.
@@ -38,8 +39,10 @@ REGIONAL_FLAGS = ['instance_redistribution_type', 'target_distribution_shape']
 class UpdateGA(base.UpdateCommand):
   r"""Update a Compute Engine managed instance group."""
 
-  @staticmethod
-  def Args(parser):
+  support_any_single_zone = False
+
+  @classmethod
+  def Args(cls, parser):
     instance_groups_flags.MULTISCOPE_INSTANCE_GROUP_MANAGER_ARG.AddArgument(
         parser, operation_type='update')
 
@@ -56,7 +59,8 @@ class UpdateGA(base.UpdateCommand):
     instance_groups_flags.AddMigUpdateStatefulFlags(parser)
     instance_groups_flags.AddDescriptionFlag(parser, for_update=True)
     managed_flags.AddMigInstanceRedistributionTypeFlag(parser)
-    managed_flags.AddMigDistributionPolicyTargetShapeFlag(parser)
+    managed_flags.AddMigDistributionPolicyTargetShapeFlag(
+        parser, cls.support_any_single_zone)
     # When adding RMIG-specific flag, update REGIONAL_FLAGS constant.
 
   def _GetUpdatedStatefulPolicyForDisks(self,
@@ -64,18 +68,23 @@ class UpdateGA(base.UpdateCommand):
                                         current_stateful_policy,
                                         update_disks=None,
                                         remove_device_names=None):
-    # Extract disk protos from current stateful policy proto
-    if (current_stateful_policy and current_stateful_policy.preservedState
-        and current_stateful_policy.preservedState.disks):
-      current_disks = (current_stateful_policy
-                       .preservedState.disks.additionalProperties)
+    patched_disks_map = {}
+    if remove_device_names:
+      managed_instance_groups_utils.RegisterCustomStatefulDisksPatchEncoders(
+          client)
     else:
-      current_disks = []
-    # Map of disks to have in the stateful policy, after updating and removing
-    # the disks specified by the update and remove flags.
-    final_disks_map = {
-        disk_entry.key: disk_entry for disk_entry in current_disks
-    }
+      # Extract disk protos from current stateful policy proto
+      if (current_stateful_policy and current_stateful_policy.preservedState and
+          current_stateful_policy.preservedState.disks):
+        current_disks = (
+            current_stateful_policy.preservedState.disks.additionalProperties)
+      else:
+        current_disks = []
+      # Map of disks to have in the stateful policy, after updating and removing
+      # the disks specified by the update and remove flags.
+      patched_disks_map = {
+          disk_entry.key: disk_entry for disk_entry in current_disks
+      }
 
     # Update the disks specified in --stateful-disk
     for update_disk in (update_disks or []):
@@ -84,19 +93,22 @@ class UpdateGA(base.UpdateCommand):
           policy_utils.MakeStatefulPolicyPreservedStateDiskEntry(
               client.messages, update_disk))
       # Patch semantics on the `--stateful-disk` flag
-      if device_name in final_disks_map:
-        policy_utils.PatchStatefulPolicyDisk(final_disks_map[device_name],
+      if device_name in patched_disks_map:
+        policy_utils.PatchStatefulPolicyDisk(patched_disks_map[device_name],
                                              updated_preserved_state_disk)
       else:
-        final_disks_map[device_name] = updated_preserved_state_disk
+        patched_disks_map[device_name] = updated_preserved_state_disk
 
     # Remove the disks specified in --remove-stateful-disks
     for device_name in remove_device_names or []:
-      del final_disks_map[device_name]
+      patched_disks_map[
+          device_name] = policy_utils.MakeDiskDeviceNullEntryForDisablingInPatch(
+              client, device_name)
 
-    stateful_disks = sorted(
-        [stateful_disk for _, stateful_disk in six.iteritems(final_disks_map)],
-        key=lambda x: x.key)
+    stateful_disks = sorted([
+        stateful_disk for _, stateful_disk in six.iteritems(patched_disks_map)
+    ],
+                            key=lambda x: x.key)
     return stateful_disks
 
   def _GetUpdatedStatefulPolicy(self, client, current_stateful_policy, args):
@@ -156,9 +168,9 @@ class UpdateGA(base.UpdateCommand):
     distribution_policy = igm_resource.distributionPolicy
     if distribution_policy is None:
       distribution_policy = client.messages.DistributionPolicy()
-    distribution_policy.targetShape = (
-        client.messages.DistributionPolicy.TargetShapeValueValuesEnum)(
-            target_distribution_shape.upper())
+    distribution_policy.targetShape = arg_utils.ChoiceToEnum(
+        target_distribution_shape,
+        client.messages.DistributionPolicy.TargetShapeValueValuesEnum)
     patch_instance_group_manager.distributionPolicy = distribution_policy
 
   def _MakePatchRequest(self, client, igm_ref, igm_updated_resource):
@@ -259,7 +271,7 @@ class UpdateBeta(UpdateGA):
 
   @classmethod
   def Args(cls, parser):
-    UpdateGA.Args(parser)
+    super(UpdateBeta, cls).Args(parser)
     instance_groups_flags.AddMigUpdateStatefulFlagsIPs(parser)
     managed_flags.AddMigListManagedInstancesResultsFlag(parser)
 
@@ -372,9 +384,11 @@ UpdateBeta.detailed_help = UpdateGA.detailed_help
 class UpdateAlpha(UpdateBeta):
   """Update a Compute Engine managed instance group."""
 
+  support_any_single_zone = True
+
   @classmethod
   def Args(cls, parser):
-    UpdateBeta.Args(parser)
+    super(UpdateAlpha, cls).Args(parser)
 
 
 UpdateAlpha.detailed_help = UpdateBeta.detailed_help

@@ -64,6 +64,7 @@ DETAILED_HELP = {
 
 
 def _CommonArgs(parser,
+                release_track,
                 deprecate_maintenance_policy=False,
                 support_min_node_cpu=False,
                 support_erase_vss=False,
@@ -165,6 +166,12 @@ def _CommonArgs(parser,
   if support_enable_target_shape:
     instances_flags.AddDistributionTargetShapeArgs(parser)
 
+  instances_flags.AddMinCpuPlatformArgs(parser, release_track)
+  instances_flags.AddPublicDnsArgs(parser, instance=True)
+  instances_flags.AddConfidentialComputeArgs(parser)
+  instances_flags.AddPostKeyRevocationActionTypeArgs(parser)
+  instances_flags.AddBulkCreateArgs(parser)
+
 
 def _GetOperations(compute_client, project, operation_group_id):
   """Requests operations with group id matching the given one."""
@@ -248,6 +255,7 @@ class Create(base.Command):
   def Args(cls, parser):
     _CommonArgs(
         parser,
+        base.ReleaseTrack.GA,
         deprecate_maintenance_policy=cls._deprecate_maintenance_policy,
         support_min_node_cpu=cls._support_min_node_cpu,
         support_erase_vss=cls._support_erase_vss,
@@ -259,14 +267,13 @@ class Create(base.Command):
         support_visible_core_count=cls._support_visible_core_count,
         support_max_run_duration=cls._support_max_run_duration,
         support_enable_target_shape=cls._support_enable_target_shape)
+    cls.AddSourceInstanceTemplate(parser)
+
+  @classmethod
+  def AddSourceInstanceTemplate(cls, parser):
     cls.SOURCE_INSTANCE_TEMPLATE = (
         instances_flags.MakeBulkSourceInstanceTemplateArg())
     cls.SOURCE_INSTANCE_TEMPLATE.AddArgument(parser)
-    instances_flags.AddMinCpuPlatformArgs(parser, base.ReleaseTrack.GA)
-    instances_flags.AddPublicDnsArgs(parser, instance=True)
-    instances_flags.AddConfidentialComputeArgs(parser)
-    instances_flags.AddPostKeyRevocationActionTypeArgs(parser)
-    instances_flags.AddBulkCreateArgs(parser)
 
   def Collection(self):
     return 'compute.instances'
@@ -648,6 +655,7 @@ class CreateBeta(Create):
   def Args(cls, parser):
     _CommonArgs(
         parser,
+        base.ReleaseTrack.BETA,
         deprecate_maintenance_policy=cls._deprecate_maintenance_policy,
         support_min_node_cpu=cls._support_min_node_cpu,
         support_erase_vss=cls._support_erase_vss,
@@ -659,14 +667,9 @@ class CreateBeta(Create):
         support_visible_core_count=cls._support_visible_core_count,
         support_max_run_duration=cls._support_max_run_duration,
         support_enable_target_shape=cls._support_enable_target_shape)
-    cls.SOURCE_INSTANCE_TEMPLATE = (
-        instances_flags.MakeBulkSourceInstanceTemplateArg())
-    cls.SOURCE_INSTANCE_TEMPLATE.AddArgument(parser)
-    instances_flags.AddMinCpuPlatformArgs(parser, base.ReleaseTrack.BETA)
-    instances_flags.AddPublicDnsArgs(parser, instance=True)
-    instances_flags.AddConfidentialComputeArgs(parser)
-    instances_flags.AddPostKeyRevocationActionTypeArgs(parser)
-    instances_flags.AddBulkCreateArgs(parser)
+    cls.AddSourceInstanceTemplate(parser)
+
+    # Flags specific to Beta release track
     instances_flags.AddHostErrorTimeoutSecondsArgs(parser)
 
 
@@ -687,6 +690,7 @@ class CreateAlpha(Create):
   def Args(cls, parser):
     _CommonArgs(
         parser,
+        base.ReleaseTrack.ALPHA,
         deprecate_maintenance_policy=cls._deprecate_maintenance_policy,
         support_min_node_cpu=cls._support_min_node_cpu,
         support_erase_vss=cls._support_erase_vss,
@@ -699,14 +703,9 @@ class CreateAlpha(Create):
         support_max_run_duration=cls._support_max_run_duration,
         support_enable_target_shape=cls._support_enable_target_shape)
 
-    cls.SOURCE_INSTANCE_TEMPLATE = (
-        instances_flags.MakeBulkSourceInstanceTemplateArg())
-    cls.SOURCE_INSTANCE_TEMPLATE.AddArgument(parser)
-    instances_flags.AddMinCpuPlatformArgs(parser, base.ReleaseTrack.ALPHA)
-    instances_flags.AddPublicDnsArgs(parser, instance=True)
-    instances_flags.AddConfidentialComputeArgs(parser)
-    instances_flags.AddPostKeyRevocationActionTypeArgs(parser)
-    instances_flags.AddBulkCreateArgs(parser)
+    cls.AddSourceInstanceTemplate(parser)
+
+    # Flags specific to Alpha release track
     instances_flags.AddSecureTagsArgs(parser)
     instances_flags.AddHostErrorTimeoutSecondsArgs(parser)
 

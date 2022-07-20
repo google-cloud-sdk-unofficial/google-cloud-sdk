@@ -56,8 +56,7 @@ class Create(base.CreateCommand):
   def Args(parser):
     resource_args.AddCaPoolPositionalResourceArg(parser, 'to create')
     flags_v1.AddTierFlag(parser)
-    flags_v1.AddPublishCrlFlag(parser, use_update_help_text=True)
-    flags_v1.AddPublishCaCertFlag(parser, use_update_help_text=True)
+    flags_v1.AddPublishingOptionsFlags(parser, use_update_help_text=False)
     flags_v1.AddCaPoolIssuancePolicyFlag(parser)
     labels_util.AddCreateLabelsFlags(parser)
 

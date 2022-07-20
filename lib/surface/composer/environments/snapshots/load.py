@@ -57,12 +57,18 @@ class LoadSnapshot(base.Command):
         'that should be loaded.',
         required=True)
     flags.SKIP_PYPI_PACKAGES_INSTALLATION.AddToParser(parser)
+    flags.SKIP_ENVIRONMENT_VARIABLES_SETTING.AddToParser(parser)
+    flags.SKIP_AIRFLOW_OVERRIDES_SETTING.AddToParser(parser)
+    flags.SKIP_COPYING_GCS_DATA.AddToParser(parser)
 
   def Run(self, args):
     env_resource = args.CONCEPTS.environment.Parse()
     operation = environments_api_util.LoadSnapshot(
         env_resource,
         args.skip_pypi_packages_installation,
+        args.skip_environment_variables_setting,
+        args.skip_airflow_overrides_setting,
+        args.skip_gcs_data_copying,
         args.snapshot_path,
         release_track=self.ReleaseTrack())
     if args.async_:

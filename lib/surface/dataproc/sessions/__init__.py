@@ -12,7 +12,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """The command group for cloud dataproc sessions."""
 
 from __future__ import absolute_import
@@ -49,4 +48,8 @@ class Sessions(base.Group):
   Terminate an active session:
 
     $ {command} terminate SESSION_ID
+
+  Enable Personal Auth on an active session:
+
+    $ {command} enable-personal-auth-session SESSION_ID
   """

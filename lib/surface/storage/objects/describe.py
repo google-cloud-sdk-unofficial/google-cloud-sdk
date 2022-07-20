@@ -65,5 +65,4 @@ class Describe(base.DescribeCommand):
         url.object_name,
         fields_scope=cloud_api.FieldsScope.FULL)
     # MakeSerializable will omit all the None values.
-    return resource_projector.MakeSerializable(
-        object_resource.get_displayable_object_data())
+    return resource_projector.MakeSerializable(object_resource.metadata)

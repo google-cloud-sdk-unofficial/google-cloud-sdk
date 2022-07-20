@@ -27,6 +27,8 @@ from googlecloudsdk.command_lib.storage import flags
 from googlecloudsdk.command_lib.storage import storage_url
 from googlecloudsdk.command_lib.storage.tasks import task_executor
 from googlecloudsdk.command_lib.storage.tasks.ls import cloud_list_task
+from googlecloudsdk.core import log
+from googlecloudsdk.core import properties
 
 
 class Ls(base.Command):
@@ -125,6 +127,11 @@ class Ls(base.Command):
         action='store_true',
         help='Include ETag metadata in listings that use the `--long` flag.')
     parser.add_argument(
+        '--format',
+        help='Use "gsutil" to get the style of the older gsutil CLI. (e.g.'
+        ' "--format=gsutil"). Other format values (e.g. "json") do not work.'
+        ' See different ls flags and commands for alternative formatting.')
+    parser.add_argument(
         '--readable-sizes',
         action='store_true',
         help='When used with `--long`, print object sizes in human'
@@ -160,6 +167,20 @@ class Ls(base.Command):
   def Run(self, args):
     """Command execution logic."""
     encryption_util.initialize_key_store(args)
+
+    if args.format:
+      if args.format != 'gsutil':
+        raise errors.Error(
+            'The only valid format value for ls is "gsutil" (e.g. "--format='
+            'gsutil"). See other ls flags and commands for additional'
+            ' formatting options.')
+      use_gsutil_style = True
+      # Prevents validation errors in resource_printer.py.
+      args.format = None
+    else:
+      use_gsutil_style = properties.VALUES.storage.run_by_gsutil_shim.GetBool()
+
+    found_non_default_provider = False
     if args.path:
       storage_urls = [storage_url.storage_url_from_string(path)
                       for path in args.path]
@@ -167,6 +188,8 @@ class Ls(base.Command):
         if not isinstance(url, storage_url.CloudUrl):
           raise errors.InvalidUrlError('Ls only works for cloud URLs.'
                                        ' Error for: {}'.format(url.url_string))
+        if url.scheme is not cloud_api.DEFAULT_PROVIDER:
+          found_non_default_provider = True
     else:
       storage_urls = [storage_url.CloudUrl(cloud_api.DEFAULT_PROVIDER)]
 
@@ -189,5 +212,11 @@ class Ls(base.Command):
               display_detail=display_detail,
               include_etag=args.etag,
               readable_sizes=args.readable_sizes,
-              recursion_flag=args.recursive))
+              recursion_flag=args.recursive,
+              use_gsutil_style=use_gsutil_style))
     task_executor.execute_tasks(tasks, parallelizable=False)
+
+    if found_non_default_provider and args.full:
+      # We do guarantee full-style formatting for all metadata fields of
+      # non-GCS providers. In this case, data is hidden.
+      log.warning('For additional metadata information, please run ls --json.')

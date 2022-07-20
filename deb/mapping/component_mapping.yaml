@@ -28,6 +28,7 @@ gsutil: google-cloud-sdk
 harbourbridge: unavailable
 kpt: google-cloud-sdk-kpt
 kubectl: kubectl
+harbourbridge: google-cloud-sdk-harbourbridge
 kubectl-oidc: google-cloud-sdk-kubectl-oidc
 local-extract: google-cloud-sdk-local-extract
 package-go-module: google-cloud-sdk-package-go-module

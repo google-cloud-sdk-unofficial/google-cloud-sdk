@@ -19,6 +19,7 @@ from __future__ import print_function
 from __future__ import division
 from __future__ import unicode_literals
 
+import collections
 import enum
 import os
 import re
@@ -35,11 +36,17 @@ class HIDDEN_SHIM_MODE(enum.Enum):
   NONE = 'none'
 
 
+class RepeatFlagType(enum.Enum):
+  LIST = 0
+  DICT = 1
+
+
 DECRYPTION_KEY_REGEX = re.compile(r'^decryption_key([1-9]$|[1-9][0-9]$|100$)')
 
 # Required for headers translation and boto config translation.
 DATA_TRANSFER_COMMANDS = frozenset(['cp', 'mv', 'rsync'])
-ENCRYPTION_SUPPORTED_COMMANDS = DATA_TRANSFER_COMMANDS | frozenset(['ls'])
+ENCRYPTION_SUPPORTED_COMMANDS = DATA_TRANSFER_COMMANDS | frozenset(
+    ['ls', 'rewrite'])
 PRECONDITONS_ONLY_SUPPORTED_COMMANDS = frozenset(
     ['compose', 'rewrite', 'rm', 'retention'])
 DATA_TRANSFER_HEADERS = frozenset([
@@ -91,7 +98,9 @@ _BOTO_CONFIG_MAP = {
         'use_magicfile':
             'CLOUDSDK_STORAGE_USE_MAGICFILE',
         'parallel_composite_upload_threshold':
-            'CLOUDSDK_STORAGE_PARALLEL_COMPOSITE_UPLOAD_THRESHOLD'
+            'CLOUDSDK_STORAGE_PARALLEL_COMPOSITE_UPLOAD_THRESHOLD',
+        'resumable_threshold':
+            'CLOUDSDK_STORAGE_RESUMABLE_THRESHOLD',
     },
     'OAuth2': {
         'client_id': 'CLOUDSDK_AUTH_CLIENT_ID',
@@ -168,15 +177,23 @@ def get_flag_from_header(header_key_raw, header_value, unset=False):
 
 class GcloudStorageFlag(object):
 
-  def __init__(self, gcloud_flag, supports_output_translation=False):
+  def __init__(self,
+               gcloud_flag,
+               repeat_type=None,
+               supports_output_translation=False):
     """Initializes GcloudStorageFlag.
 
     Args:
-      gcloud_flag (str): The name of the gcloud flag.
+      gcloud_flag (str|dict): The name of the gcloud flag or a dictionary for
+        when the gcloud flag depends on a gsutil value.
+        gsutil "--pap off" -> gcloud "--no-public-access-prevention"
+      repeat_type (RepeatFlagType|None): Gsutil sometimes handles list
+        and dictionary inputs by accepting a flag multiple times.
       support_output_translation (bool): If True, this flag in gcloud storage
         supports printing gsutil formatted output.
     """
     self.gcloud_flag = gcloud_flag
+    self.repeat_type = repeat_type
     self.supports_output_translation = supports_output_translation
 
 
@@ -244,6 +261,55 @@ def _get_s3_endpoint_from_boto_config(config):
   return None
 
 
+def _convert_args_to_gcloud_values(args, gcloud_storage_map):
+  gcloud_args = []
+  repeat_flag_data = collections.defaultdict(list)
+  i = 0
+  while i < len(args):
+    if not args[i] in gcloud_storage_map.flag_map:
+      # Add raw value (positional args and flag values for non-repeated flags).
+      gcloud_args.append(args[i])
+      i += 1
+      continue
+
+    gcloud_flag_object = gcloud_storage_map.flag_map[args[i]]
+    if not gcloud_flag_object:
+      # Flag asked to be skipped over.
+      i += 1
+    elif gcloud_flag_object.repeat_type:
+      # Capture "v1" and "v2" in ["-k", "v1", "-k", "v2"].
+      repeat_flag_data[gcloud_flag_object].append(args[i + 1])
+      i += 2
+    elif isinstance(gcloud_flag_object.gcloud_flag, str):
+      # Simple translation.
+      # gsutil: "-x" -> gcloud: "-y"
+      gcloud_args.append(gcloud_flag_object.gcloud_flag)
+      i += 1
+    else:  # isinstance(gcloud_flag_object.gcloud_flag, dict)
+      # gsutil: "--pap on" -> gcloud: "--pap"
+      # gsutil: "--pap off" -> gcloud: "--no-pap"
+      translated_flag_and_value = gcloud_flag_object.gcloud_flag[args[i + 1]]
+      if translated_flag_and_value:
+        gcloud_args.append(translated_flag_and_value)
+      i += 2
+
+  for gcloud_flag_object, values in repeat_flag_data.items():
+    if gcloud_flag_object.repeat_type is RepeatFlagType.LIST:
+      # gsutil: "-k v1 -k v2" -> gcloud: "-k=v1,v2"
+      condensed_flag_values = ','.join(values)
+    elif gcloud_flag_object.repeat_type is RepeatFlagType.DICT:
+      # gcloud: "-d k1:v1 -d k2:v2" -> gcloud: "-d=k1=v1,k2=v2"
+      condensed_flag_values = ','.join(
+          ['{}={}'.format(*s.split(':', 1)) for s in values])
+    else:
+      raise ValueError('Shim cannot handle repeat flag type: {}'.format(
+          repeat_flag_data.repeat_type))
+    gcloud_args.append('{}={}'.format(gcloud_flag_object.gcloud_flag,
+                                      condensed_flag_values))
+
+  return gcloud_args
+
+
 class GcloudStorageCommandMixin(object):
   """Provides gcloud storage translation functionality.
 
@@ -290,12 +356,15 @@ class GcloudStorageCommandMixin(object):
           raise exception.GcloudStorageTranslationError(
               'Command option "{}" cannot be translated to'
               ' gcloud storage'.format(option))
-        args.append(gcloud_storage_map.flag_map[option].gcloud_flag)
-        if value != '':
-          # Empty string represents that the user did not passed in a value
-          # for the flag.
-          args.append(value)
-    return args + gsutil_args
+        else:
+          args.append(option)
+          if value != '':
+            # Empty string represents that the user did not passed in a value
+            # for the flag.
+            args.append(value)
+
+    return _convert_args_to_gcloud_values(args + gsutil_args,
+                                          gcloud_storage_map)
 
   def _translate_top_level_flags(self):
     """Translates gsutil's top level flags.
@@ -309,7 +378,7 @@ class GcloudStorageCommandMixin(object):
         variables that can be set for the gcloud storage command execution.
     """
     top_level_flags = []
-    env_variables = {}
+    env_variables = {'CLOUDSDK_STORAGE_RUN_BY_GSUTIL_SHIM': 'True'}
     if self.debug >= 3:
       top_level_flags.extend(['--verbosity', 'debug'])
     if self.debug == 4:

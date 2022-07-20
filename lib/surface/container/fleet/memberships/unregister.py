@@ -127,9 +127,15 @@ class Unregister(base.DeleteCommand):
         enable_workload_identity=getattr(args, 'enable_workload_identity',
                                          False),
     )
-    location = getattr(args, 'location', 'global')
-    if location is None:
-      location = 'global'
+    location = 'global'
+    if self.ReleaseTrack() is base.ReleaseTrack.ALPHA and hub_util.APIEndpoint(
+    ) == hub_util.AUTOPUSH_API:
+      # Allow attempting to override location for unregister
+      # e.g. in case of global GKE cluster memberships
+      if args.location:
+        location = args.location
+      elif hub_util.LocationFromGKEArgs(args):
+        location = hub_util.LocationFromGKEArgs(args)
     kube_client.CheckClusterAdminPermissions()
     kube_util.ValidateClusterIdentifierFlags(kube_client, args)
     membership_id = args.MEMBERSHIP_NAME

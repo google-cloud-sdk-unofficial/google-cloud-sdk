@@ -33,10 +33,15 @@ class DescribeV1(base.DescribeCommand):
 
   ## EXAMPLES
 
-  Describe a model ``123'' of project ``example'' in region ``us-central1'',
+  Describe a model `123` of project `example` in region `us-central1`,
   run:
 
     $ {command} 123 --project=example --region=us-central1
+
+  Describe a model `123` of version `2` of project `example` in region
+  `us-central1`, run:
+
+    $ {command} 123@2 --project=example --region=us-central1
   """
 
   @staticmethod
@@ -70,6 +75,11 @@ class DescribeV1Beta1(DescribeV1):
   run:
 
     $ {command} 123 --project=example --region=us-central1
+
+  Describe a model `123` of version `2` of project `example` in region
+  `us-central1`, run:
+
+    $ {command} 123@2 --project=example --region=us-central1
   """
 
   def _Run(self, args, model_ref, region):

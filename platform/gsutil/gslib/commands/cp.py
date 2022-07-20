@@ -251,7 +251,7 @@ _COPY_IN_CLOUD_TEXT = """
 
     gsutil cp gs://bucket1/obj gs://bucket2
 
-   To also copy noncurrent versions, use the ``-A`` flag:
+  To also copy noncurrent versions, use the ``-A`` flag:
 
     gsutil cp -A gs://bucket1/obj gs://bucket2
 
@@ -283,8 +283,8 @@ _CHECKSUM_VALIDATION_TEXT = """
     Copying file://obj [Content-Type=text/plain]...
     Uploading   gs://your-bucket/obj:                                182 b/182 B
 
-    If the checksums don't match, the service rejects the upload and
-    gsutil prints a message like:
+  If the checksums don't match, the service rejects the upload and
+  gsutil prints a message like:
 
     BadRequestException: 400 Provided MD5 hash "VgyllJgiiaRAbyUUIqDMmw=="
     doesn't match calculated MD5 hash "7gyllJgiiaRAbyUUIqDMmw==".
@@ -757,12 +757,21 @@ class CpCommand(Command):
   gcloud_storage_map = GcloudStorageMap(
       gcloud_command=['alpha', 'storage', 'cp'],
       flag_map={
+          '-a': GcloudStorageFlag('--predefined-acl'),
           '-e': GcloudStorageFlag('--ignore-symlinks'),
+          '-I': GcloudStorageFlag('--read-paths-from-stdin'),
+          '-J': GcloudStorageFlag('--gzip-in-flight-all'),
+          '-j': GcloudStorageFlag('--gzip-in-flight'),
+          '-L': GcloudStorageFlag('--manifest-path'),
           '-n': GcloudStorageFlag('--no-clobber'),
+          '-P': GcloudStorageFlag('--preserve-posix'),
+          '-p': GcloudStorageFlag('--preserve-acl'),
           '-r': GcloudStorageFlag('-r'),
           '-R': GcloudStorageFlag('-r'),
           '-s': GcloudStorageFlag('--storage-class'),
           '-v': GcloudStorageFlag('--print-created-message'),
+          '-Z': GcloudStorageFlag('--gzip-local-all'),
+          '-z': GcloudStorageFlag('--gzip-local'),
       },
   )
 

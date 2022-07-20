@@ -93,8 +93,8 @@ class Update(base.UpdateCommand):
 
     op_resource = resources.REGISTRY.ParseRelativeName(
         op_ref.name,
-        collection='baremetalsolution.operations',
-        api_version='v1')
+        collection='baremetalsolution.projects.locations.operations',
+        api_version='v2')
     poller = waiter.CloudOperationPollerNoResources(client.operation_service)
     res = waiter.WaitFor(
         poller, op_resource,

@@ -1,0 +1,49 @@
+- release_tracks: [ALPHA]
+
+  help_text:
+    brief: List Security Health Analytics custom modules.
+    description: List Security Health Analytics custom modules.
+    examples: |
+      List Security Health Analytics custom modules under organization `123`:
+
+        $ {command} --organization=organizations/123
+        $ {command} --organization=123
+
+      List Security Health Analytics custom modules under folder `456`:
+
+        $ {command} --folder=folders/456
+        $ {command} --folder=456
+
+      List Security Health Analytics custom modules under project `789`:
+
+        $ {command} --project=projects/789
+        $ {command} --project=789
+
+  request:
+    collection: securitycenter.organizations.securityHealthAnalyticsSettings.customModules
+    disable_resource_check: true
+    api_version: v1
+    modify_request_hooks:
+    - googlecloudsdk.command_lib.scc.custom_modules.sha.request_hooks:ListSecurityHealthAnalyticsCustomModulesReqHook
+
+  arguments:
+
+    params:
+    - group:
+        required: true
+        mutex: true
+        params:
+        - arg_name: organization
+          api_field: parent
+          help_text: |
+            Organization where the Security Health Analytics custom modules resides. Formatted as `organizations/123` or just `123`.
+
+        - arg_name: folder
+          api_field: parent
+          help_text: |
+            Folder where the Security Health Analytics custom modules resides. Formatted as `folders/456` or just `456`.
+
+        - arg_name: project
+          api_field: parent
+          help_text: |
+            Project (id or number) where the Security Health Analytics custom modules resides. Formatted as `projects/789` or just `789`.

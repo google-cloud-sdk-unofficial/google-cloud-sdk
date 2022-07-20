@@ -96,7 +96,19 @@ def RunBaseSetPasswordCommand(args):
       collection='sql.instances')
   operation_ref = None
 
-  password_policy = users.CreatePasswordPolicyFromArgs(sql_messages, args)
+  # the GetUser API specifies that the user parameter is actually user[@host],
+  # we need to append the host if it exists
+  full_username = args.username
+  if args.host:
+    full_username += '@' + args.host
+  user = sql_client.users.Get(
+      sql_messages.SqlUsersGetRequest(
+          project=instance_ref.project,
+          instance=args.instance,
+          name=full_username))
+
+  password_policy = users.CreatePasswordPolicyFromArgs(
+      sql_messages, user.passwordPolicy, args)
 
   result_operation = sql_client.users.Update(
       sql_messages.SqlUsersUpdateRequest(

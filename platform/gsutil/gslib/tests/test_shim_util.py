@@ -41,7 +41,7 @@ from gslib.tests import util
 @contextmanager
 def _mock_boto_config(boto_config_dict):
   """"Mock boto config replacing any exiting config.
-  
+
   The util.SetBotoConfigForTest has a use_existing_config flag that can be
   set to False, but it does not work if the config has been already loaded,
   which is the case for all unit tests that do not use RunCommand method.
@@ -68,13 +68,30 @@ class FakeCommandWithGcloudStorageMap(command.Command):
   command_spec = command.Command.CreateCommandSpec('fake_shim',
                                                    min_args=1,
                                                    max_args=constants.NO_MAX,
-                                                   supported_sub_args='irz:',
+                                                   supported_sub_args='deilrz:',
                                                    file_url_ok=True)
   gcloud_storage_map = shim_util.GcloudStorageMap(
       gcloud_command=['objects', 'fake'],
       flag_map={
-          '-r': shim_util.GcloudStorageFlag(gcloud_flag='-x'),
-          '-z': shim_util.GcloudStorageFlag(gcloud_flag='--zip'),
+          '-r':
+              shim_util.GcloudStorageFlag(gcloud_flag='-x'),
+          '-z':
+              shim_util.GcloudStorageFlag(gcloud_flag='--zip'),
+          '-l':
+              shim_util.GcloudStorageFlag(
+                  gcloud_flag='--ludicrous-list',
+                  repeat_type=shim_util.RepeatFlagType.LIST),
+          '-d':
+              shim_util.GcloudStorageFlag(
+                  gcloud_flag='--delightful-dict',
+                  repeat_type=shim_util.RepeatFlagType.DICT),
+          '-e':
+              shim_util.GcloudStorageFlag(gcloud_flag={
+                  'on': '--e-on',
+                  'off': '--e-off'
+              }),
+          '-f':
+              None,
       })
   help_spec = command.Command.HelpSpec(
       help_name='fake_shim',
@@ -170,6 +187,115 @@ class TestGetGCloudStorageArgs(testcase.GsUtilUnitTestCase):
     self.assertEqual(
         gcloud_args,
         ['buckets', 'update', '--yyy', 'opt1', '-x', 'arg1', 'arg2'])
+
+  def test_get_gcloud_storage_args_with_flags_to_ignore(self):
+    fake_command = FakeCommandWithGcloudStorageMap(
+        command_runner=mock.ANY,
+        args=['positional_arg', '-f', '-r', 'opt2', '-f'],
+        headers=mock.ANY,
+        debug=mock.ANY,
+        trace_token=mock.ANY,
+        parallel_operations=mock.ANY,
+        bucket_storage_uri_class=mock.ANY,
+        gsutil_api_class_map_factory=mock.MagicMock())
+    gcloud_args = fake_command.get_gcloud_storage_args()
+    self.assertEqual(gcloud_args,
+                     ['objects', 'fake', 'positional_arg', '-x', 'opt2'])
+
+  def test_get_gcloud_storage_args_with_positional_arg_at_beginning(self):
+    fake_command = FakeCommandWithGcloudStorageMap(
+        command_runner=mock.ANY,
+        args=['positional_arg', '-z', 'opt1', '-r', 'opt2'],
+        headers=mock.ANY,
+        debug=mock.ANY,
+        trace_token=mock.ANY,
+        parallel_operations=mock.ANY,
+        bucket_storage_uri_class=mock.ANY,
+        gsutil_api_class_map_factory=mock.MagicMock())
+    gcloud_args = fake_command.get_gcloud_storage_args()
+    self.assertEqual(
+        gcloud_args,
+        ['objects', 'fake', 'positional_arg', '--zip', 'opt1', '-x', 'opt2'])
+
+  def test_get_gcloud_storage_args_with_positional_arg_in_middle(self):
+    fake_command = FakeCommandWithGcloudStorageMap(
+        command_runner=mock.ANY,
+        args=['-z', 'opt1', 'positional_arg', '-r', 'opt2'],
+        headers=mock.ANY,
+        debug=mock.ANY,
+        trace_token=mock.ANY,
+        parallel_operations=mock.ANY,
+        bucket_storage_uri_class=mock.ANY,
+        gsutil_api_class_map_factory=mock.MagicMock())
+    gcloud_args = fake_command.get_gcloud_storage_args()
+    self.assertEqual(
+        gcloud_args,
+        ['objects', 'fake', '--zip', 'opt1', 'positional_arg', '-x', 'opt2'])
+
+  def test_get_gcloud_storage_args_with_repeat_flag_list(self):
+    fake_command = FakeCommandWithGcloudStorageMap(
+        command_runner=mock.ANY,
+        args=['-l', 'flag_value1', '-l', 'flag_value2', 'positional_arg'],
+        headers=mock.ANY,
+        debug=mock.ANY,
+        trace_token=mock.ANY,
+        parallel_operations=mock.ANY,
+        bucket_storage_uri_class=mock.ANY,
+        gsutil_api_class_map_factory=mock.MagicMock())
+    gcloud_args = fake_command.get_gcloud_storage_args()
+    self.assertEqual(gcloud_args, [
+        'objects', 'fake', 'positional_arg',
+        '--ludicrous-list=flag_value1,flag_value2'
+    ])
+
+  def test_get_gcloud_storage_args_with_repeat_flag_dict(self):
+    fake_command = FakeCommandWithGcloudStorageMap(
+        command_runner=mock.ANY,
+        args=[
+            '-d', 'flag_key1:flag_value1', '-d', 'flag_key2:flag_value2',
+            'positional_arg'
+        ],
+        headers=mock.ANY,
+        debug=mock.ANY,
+        trace_token=mock.ANY,
+        parallel_operations=mock.ANY,
+        bucket_storage_uri_class=mock.ANY,
+        gsutil_api_class_map_factory=mock.MagicMock())
+    gcloud_args = fake_command.get_gcloud_storage_args()
+    self.assertEqual(gcloud_args, [
+        'objects', 'fake', 'positional_arg',
+        '--delightful-dict=flag_key1=flag_value1,flag_key2=flag_value2'
+    ])
+
+  def test_get_gcloud_storage_args_with_value_translated_to_flag(self):
+    fake_command = FakeCommandWithGcloudStorageMap(
+        command_runner=mock.ANY,
+        args=['-e', 'on', 'positional_arg'],
+        headers=mock.ANY,
+        debug=mock.ANY,
+        trace_token=mock.ANY,
+        parallel_operations=mock.ANY,
+        bucket_storage_uri_class=mock.ANY,
+        gsutil_api_class_map_factory=mock.MagicMock())
+    gcloud_args = fake_command.get_gcloud_storage_args()
+    self.assertEqual(gcloud_args,
+                     ['objects', 'fake', '--e-on', 'positional_arg'])
+    fake_command = FakeCommandWithGcloudStorageMap(
+        command_runner=mock.ANY,
+        args=[
+            'positional_arg',
+            '-e',
+            'off',
+        ],
+        headers=mock.ANY,
+        debug=mock.ANY,
+        trace_token=mock.ANY,
+        parallel_operations=mock.ANY,
+        bucket_storage_uri_class=mock.ANY,
+        gsutil_api_class_map_factory=mock.MagicMock())
+    gcloud_args = fake_command.get_gcloud_storage_args()
+    self.assertEqual(gcloud_args,
+                     ['objects', 'fake', 'positional_arg', '--e-off'])
 
   def test_raises_error_if_gcloud_storage_map_is_missing(self):
     self._fake_command.gcloud_storage_map = None
@@ -427,10 +553,13 @@ class TestTranslateToGcloudStorageIfRequested(testcase.GsUtilUnitTestCase):
                                autospec=True) as mock_logger:
           self._fake_command.translate_to_gcloud_storage_if_requested()
           # Verify translation.
-          mock_logger.debug.assert_called_once_with(
-              'Gcloud Storage Command: {} objects'
-              ' fake --zip opt1 -x arg1 arg2'.format(
-                  os.path.join('fake_dir', 'bin', 'gcloud')))
+          mock_logger.debug.assert_has_calls([
+              mock.call('Gcloud Storage Command: {} objects'
+                        ' fake --zip opt1 -x arg1 arg2'.format(
+                            os.path.join('fake_dir', 'bin', 'gcloud'))),
+              mock.call('Environment variables for Gcloud Storage:'),
+              mock.call('%s=%s', 'CLOUDSDK_STORAGE_RUN_BY_GSUTIL_SHIM', 'True')
+          ])
 
   def test_print_gcloud_storage_env_vars_in_dry_run_mode(self):
     """Should log the command and env vars to logger.info"""
@@ -481,6 +610,7 @@ class TestTranslateToGcloudStorageIfRequested(testcase.GsUtilUnitTestCase):
             fake_command._translated_env_variables, {
                 'CLOUDSDK_STORAGE_PROCESS_COUNT': '1',
                 'CLOUDSDK_STORAGE_THREAD_COUNT': '1',
+                'CLOUDSDK_STORAGE_RUN_BY_GSUTIL_SHIM': 'True',
             })
 
   def test_parallel_operations_true_does_not_add_process_count_env_vars(self):
@@ -744,7 +874,7 @@ class TestHeaderTranslation(testcase.GsUtilUnitTestCase):
 
 class TestGetFlagFromHeader(testcase.GsUtilUnitTestCase):
   """Test Command.get_flag_from_header function.
-  
+
   We only test the unset functionality because rest of the workflows have been
   already tested indirectly in TestHeaderTranslation.
   """
@@ -840,8 +970,11 @@ class TestBotoTranslation(testcase.GsUtilUnitTestCase):
                 expected_gcloud_path, 'objects', 'fake', '--zip', 'opt1', '-x',
                 'arg1', 'arg2', '--content-language=foo'
             ])
-        self.assertEqual(self._fake_command._translated_env_variables,
-                         {'CLOUDSDK_CORE_PROJECT': 'fake_project'})
+        self.assertEqual(
+            self._fake_command._translated_env_variables, {
+                'CLOUDSDK_CORE_PROJECT': 'fake_project',
+                'CLOUDSDK_STORAGE_RUN_BY_GSUTIL_SHIM': 'True'
+            })
 
   def test_gcs_json_endpoint_translation(self):
     with _mock_boto_config({
@@ -955,6 +1088,7 @@ class TestBotoTranslation(testcase.GsUtilUnitTestCase):
             'disable_analytics_prompt': 'USAGE_REPORTING_value',
             'use_magicfile': 'USE_MAGICFILE_value',
             'parallel_composite_upload_threshold': '100M',
+            'resumable_threshold': '256K',
         },
         'OAuth2': {
             'client_id': 'CLOUDSDK_AUTH_CLIENT_ID_value',
@@ -988,6 +1122,7 @@ class TestBotoTranslation(testcase.GsUtilUnitTestCase):
               'CLOUDSDK_CORE_DISABLE_USAGE_REPORTING': 'USAGE_REPORTING_value',
               'CLOUDSDK_STORAGE_USE_MAGICFILE': 'USE_MAGICFILE_value',
               'CLOUDSDK_STORAGE_PARALLEL_COMPOSITE_UPLOAD_THRESHOLD': '100M',
+              'CLOUDSDK_STORAGE_RESUMABLE_THRESHOLD': '256K',
               'CLOUDSDK_AUTH_CLIENT_ID': 'CLOUDSDK_AUTH_CLIENT_ID_value',
               'CLOUDSDK_AUTH_CLIENT_SECRET': 'AUTH_CLIENT_SECRET_value',
               'CLOUDSDK_AUTH_AUTH_HOST': 'CLOUDSDK_AUTH_AUTH_HOST_value',

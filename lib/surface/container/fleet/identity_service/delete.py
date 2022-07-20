@@ -19,6 +19,9 @@ from __future__ import division
 from __future__ import unicode_literals
 
 import sys
+
+from googlecloudsdk.command_lib.container.fleet import resources
+from googlecloudsdk.command_lib.container.fleet import util as hub_util
 from googlecloudsdk.command_lib.container.fleet.features import base
 from googlecloudsdk.core import exceptions
 from googlecloudsdk.core.console import console_io
@@ -41,11 +44,14 @@ class Delete(base.UpdateCommand):
 
   @staticmethod
   def Args(parser):
-    parser.add_argument(
-        '--membership',
-        type=str,
-        help=('Membership name provided during registration.'),
-    )
+    if hub_util.APIEndpoint() == hub_util.AUTOPUSH_API:
+      resources.AddMembershipResourceArg(parser)
+    else:
+      parser.add_argument(
+          '--membership',
+          type=str,
+          help=('Membership name provided during registration.'),
+      )
 
   def Run(self, args):
     # Get fleet memberships (cluster registered with fleet) from GCP Project.

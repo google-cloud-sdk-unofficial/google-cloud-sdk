@@ -25,7 +25,7 @@
     api_version: v1
     collection: artifactregistry.projects.locations.repositories.packages
     modify_request_hooks:
-    - googlecloudsdk.command_lib.artifacts.util:SlashUnescapePackageNameHook
+    - googlecloudsdk.command_lib.artifacts.util:UnescapePackageNameHook
 
   async:
     collection: artifactregistry.projects.locations.operations

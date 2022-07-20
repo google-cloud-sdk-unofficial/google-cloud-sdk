@@ -82,6 +82,19 @@
           help_text: |
             Clear existing source Cloud SQL instance.
     - group:
+        release_tracks: [BETA]
+        hidden: true
+        mutex: true
+        params:
+        - arg_name: source-cloud-function
+          api_field: connectivityTest.source.cloudFunction.uri
+          help_text: |
+            A Cloud function URI as the source endpoint.
+        - arg_name: clear-source-cloud-function
+          type: bool
+          help_text: |
+            Clear existing source Cloud function.
+    - group:
         mutex: true
         params:
         - arg_name: destination-instance
@@ -176,12 +189,13 @@
       - googlecloudsdk.command_lib.network_management.util:ClearEndpointAttrsBeta
       - googlecloudsdk.command_lib.network_management.util:ValidateGKEMasterClustersURIs
       - googlecloudsdk.command_lib.network_management.util:ValidateCloudSQLInstancesURIs
+      - googlecloudsdk.command_lib.network_management.util:ValidateCloudFunctionsURIs
     GA:
       api_version: v1
       modify_request_hooks:
       - googlecloudsdk.command_lib.network_management.util:ValidateInstanceNames
       - googlecloudsdk.command_lib.network_management.util:ValidateNetworkURIs
-      - googlecloudsdk.command_lib.network_management.util:ClearEndpointAttrsBeta
+      - googlecloudsdk.command_lib.network_management.util:ClearEndpointAttrs
       - googlecloudsdk.command_lib.network_management.util:ValidateGKEMasterClustersURIs
       - googlecloudsdk.command_lib.network_management.util:ValidateCloudSQLInstancesURIs
     method: patch

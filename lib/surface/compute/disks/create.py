@@ -153,8 +153,7 @@ def _CommonArgs(parser,
         number followed by a size unit of ``GB'' for gigabyte, or ``TB''
         for terabyte. If no size unit is specified, GB is
         assumed. For example, ``10GB'' will produce 10 gigabyte
-        disks. Disk size must be a multiple of 1 GB. Limit your boot disk size
-        to 2TB to account for MBR partition table limitations. If disk size is
+        disks. Disk size must be a multiple of 1 GB. If disk size is
         not specified, the default size of {}GB for pd-standard disks, {}GB for
         pd-balanced disks, {}GB for pd-ssd disks, and {}GB for pd-extreme will
         be used. For details about disk size limits, refer to:

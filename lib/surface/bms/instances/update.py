@@ -59,6 +59,8 @@ class Update(base.UpdateCommand):
     flags.AddInstanceArgToParser(parser, positional=True)
     labels_util.AddUpdateLabelsFlags(parser)
     base.ASYNC_FLAG.AddToParser(parser)
+    flags.AddInstanceOsImageToParser(parser, hidden=False)
+    flags.AddInstanceEnableHyperthreadingToParser(parser, hidden=False)
 
   def Run(self, args):
     client = BmsClient()
@@ -86,8 +88,8 @@ class Update(base.UpdateCommand):
 
     op_resource = resources.REGISTRY.ParseRelativeName(
         op_ref.name,
-        collection='baremetalsolution.operations',
-        api_version='v1')
+        collection='baremetalsolution.projects.locations.operations',
+        api_version='v2')
     poller = waiter.CloudOperationPollerNoResources(client.operation_service)
     res = waiter.WaitFor(
         poller, op_resource,
@@ -102,9 +104,8 @@ class UpdateAlpha(Update):
 
   @staticmethod
   def Args(parser):
+    # Flags which are only available in ALPHA should be added to parser here.
     Update.Args(parser)
-    flags.AddInstanceOsImageToParser(parser, hidden=False)
-    flags.AddInstanceEnableHyperthreadingToParser(parser, hidden=False)
 
 
 Update.detailed_help = DETAILED_HELP

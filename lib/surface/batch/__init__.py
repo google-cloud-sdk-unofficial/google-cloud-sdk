@@ -23,6 +23,7 @@ from googlecloudsdk.calliope import base
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
-@base.Hidden
 class Batch(base.Group):
   """Manage Batch resources."""
+
+  category = base.BATCH_CATEGORY

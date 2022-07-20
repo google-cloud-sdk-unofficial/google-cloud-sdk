@@ -21,6 +21,9 @@ from __future__ import unicode_literals
 import os
 import textwrap
 
+from googlecloudsdk.calliope import base as calliope_base
+from googlecloudsdk.command_lib.container.fleet import resources
+from googlecloudsdk.command_lib.container.fleet import util as hub_util
 from googlecloudsdk.command_lib.container.fleet.features import base
 from googlecloudsdk.core import exceptions
 from googlecloudsdk.core import log
@@ -43,14 +46,18 @@ class Update(base.UpdateCommand):
 
   @classmethod
   def Args(cls, parser):
-    parser.add_argument(
-        '--config-membership',
-        type=str,
-        help=textwrap.dedent("""\
-            Membership resource representing the cluster which hosts
-            the MultiClusterIngress and MultiClusterService CustomResourceDefinitions.
-            """),
-    )
+    if (hub_util.APIEndpoint() == hub_util.AUTOPUSH_API) and (
+        cls.ReleaseTrack() is calliope_base.ReleaseTrack.ALPHA):
+      resources.AddMembershipResourceArg(parser)
+    else:
+      parser.add_argument(
+          '--config-membership',
+          type=str,
+          help=textwrap.dedent("""\
+              Membership resource representing the cluster which hosts
+              the MultiClusterIngress and MultiClusterService CustomResourceDefinitions.
+              """),
+      )
 
   def Run(self, args):
     log.warning('Are you sure you want to update your config membership? Any '
@@ -66,8 +73,7 @@ class Update(base.UpdateCommand):
       if not memberships:
         raise exceptions.Error('No Memberships available in the fleet.')
       index = console_io.PromptChoice(
-          options=memberships,
-          message='Please specify a config membership:\n')
+          options=memberships, message='Please specify a config membership:\n')
       config_membership = memberships[index]
     else:
       # Strip to the final path component to allow short and long names.

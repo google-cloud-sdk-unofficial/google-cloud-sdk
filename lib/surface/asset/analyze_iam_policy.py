@@ -23,8 +23,8 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.asset import flags
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class AnalyzeIamPolicyBeta(base.Command):
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class AnalyzeIamPolicyGA(base.Command):
   """Analyzes IAM policies that match a request."""
 
   detailed_help = {
@@ -53,26 +53,15 @@ class AnalyzeIamPolicyBeta(base.Command):
       """
   }
 
-  _API_VERSION = client_util.V1P4BETA1_API_VERSION
+  _API_VERSION = client_util.DEFAULT_API_VERSION
 
   @classmethod
   def Args(cls, parser):
     flags.AddAnalyzerParentArgs(parser)
     flags.AddAnalyzerSelectorsGroup(parser)
     flags.AddAnalyzerOptionsGroup(parser, True)
+    flags.AddAnalyzerConditionContextGroup(parser)
 
   def Run(self, args):
     client = client_util.AnalyzeIamPolicyClient(self._API_VERSION)
     return client.Analyze(args)
-
-
-@base.ReleaseTracks(base.ReleaseTrack.GA)
-class AnalyzeIamPolicyGA(AnalyzeIamPolicyBeta):
-  """Analyzes IAM policies that match a request."""
-
-  @classmethod
-  def Args(cls, parser):
-    super(AnalyzeIamPolicyGA, cls).Args(parser)
-    flags.AddAnalyzerConditionContextGroup(parser)
-
-  _API_VERSION = client_util.DEFAULT_API_VERSION

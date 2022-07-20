@@ -21,8 +21,10 @@ from __future__ import unicode_literals
 from googlecloudsdk.api_lib.clouddeploy import client_util
 from googlecloudsdk.api_lib.clouddeploy import release
 from googlecloudsdk.calliope import base
+from googlecloudsdk.calliope import exceptions as c_exceptions
 from googlecloudsdk.command_lib.deploy import delivery_pipeline_util
 from googlecloudsdk.command_lib.deploy import deploy_util
+from googlecloudsdk.command_lib.deploy import exceptions
 from googlecloudsdk.command_lib.deploy import flags
 from googlecloudsdk.command_lib.deploy import promote_util
 from googlecloudsdk.command_lib.deploy import release_util
@@ -78,6 +80,8 @@ def _CommonArgs(parser):
   flags.AddLabelsFlag(parser, _RELEASE)
   flags.AddSkaffoldVersion(parser)
   flags.AddSkaffoldFileFlag(parser)
+  flags.AddKubernetesFileFlag(parser)
+  flags.AddInitialRolloutGroup(parser)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
@@ -93,6 +97,10 @@ class Create(base.CreateCommand):
 
   def Run(self, args):
     """This is what gets called when the user runs this command."""
+    self._CheckSkaffoldArgs(args)
+    if args.disable_initial_rollout and args.to_target:
+      raise c_exceptions.ConflictingArgumentsException(
+          '--disable-initial-rollout', '--to-target')
     args.CONCEPTS.parsed_args.release = release_util.RenderPattern(
         args.CONCEPTS.parsed_args.release)
     release_ref = args.CONCEPTS.release.Parse()
@@ -108,7 +116,8 @@ class Create(base.CreateCommand):
         args.source, args.gcs_source_staging_dir, args.ignore_file, args.images,
         args.build_artifacts, args.description, args.skaffold_version,
         args.skaffold_file,
-        release_ref.AsDict()['locationsId'])
+        release_ref.AsDict()['locationsId'], pipeline_obj.uid,
+        args.from_k8s_manifest)
     deploy_util.SetMetadata(client.messages, release_config,
                             deploy_util.ResourceType.RELEASE, args.annotations,
                             args.labels)
@@ -121,6 +130,22 @@ class Create(base.CreateCommand):
         release_ref.Name()))
 
     release_obj = release.ReleaseClient().Get(release_ref.RelativeName())
+    if args.disable_initial_rollout:
+      return release_obj
     rollout_resource = promote_util.Promote(release_ref, release_obj,
                                             args.to_target, True)
+
     return release_obj, rollout_resource
+
+  # Check that if a kubernetes manifest was given, source(s) for a Skaffold file
+  # were not given as well.
+  def _CheckSkaffoldArgs(self, args):
+    if args.from_k8s_manifest:
+      skaffold_sources = []
+      if args.IsSpecified('skaffold_file'):
+        skaffold_sources.append('--skaffold-file=' + args.skaffold_file)
+      if args.source != '.':
+        skaffold_sources.append('--source=' + args.source)
+      if skaffold_sources:
+        raise exceptions.MultipleSkaffoldSourcesError(args.from_k8s_manifest,
+                                                      skaffold_sources)

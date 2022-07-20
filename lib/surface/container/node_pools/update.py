@@ -101,10 +101,12 @@ class Update(base.UpdateCommand):
         group, for_node_pool=True, is_update=True)
     flags.AddNetworkPerformanceConfigFlags(group, hidden=False)
     flags.AddNodePoolEnablePrivateNodes(group)
+    flags.AddEnableFastSocketFlag(group)
 
   def ParseUpdateNodePoolOptions(self, args):
     flags.ValidateSurgeUpgradeSettings(args)
     flags.WarnForLocationPolicyDefault(args)
+
     return api_adapter.UpdateNodePoolOptions(
         enable_autorepair=args.enable_autorepair,
         enable_autoupgrade=args.enable_autoupgrade,
@@ -132,7 +134,8 @@ class Update(base.UpdateCommand):
         enable_surge_upgrade=args.enable_surge_upgrade,
         node_pool_soak_duration=args.node_pool_soak_duration,
         standard_rollout_policy=args.standard_rollout_policy,
-        enable_private_nodes=args.enable_private_nodes)
+        enable_private_nodes=args.enable_private_nodes,
+        enable_fast_socket=args.enable_fast_socket)
 
   def Run(self, args):
     """This is what gets called when the user runs this command.
@@ -243,10 +246,12 @@ class UpdateBeta(Update):
     flags.AddNetworkPerformanceConfigFlags(group, hidden=False)
     flags.AddEnableConfidentialNodesFlag(
         group, for_node_pool=True, is_update=True)
+    flags.AddEnableFastSocketFlag(group)
 
   def ParseUpdateNodePoolOptions(self, args):
     flags.ValidateSurgeUpgradeSettings(args)
     flags.WarnForLocationPolicyDefault(args)
+
     ops = api_adapter.UpdateNodePoolOptions(
         enable_autorepair=args.enable_autorepair,
         enable_autoupgrade=args.enable_autoupgrade,
@@ -275,7 +280,8 @@ class UpdateBeta(Update):
         node_pool_soak_duration=args.node_pool_soak_duration,
         standard_rollout_policy=args.standard_rollout_policy,
         network_performance_config=args.network_performance_configs,
-        enable_confidential_nodes=args.enable_confidential_nodes)
+        enable_confidential_nodes=args.enable_confidential_nodes,
+        enable_fast_socket=args.enable_fast_socket)
     return ops
 
 
@@ -323,10 +329,12 @@ class UpdateAlpha(Update):
     flags.AddNetworkPerformanceConfigFlags(group, hidden=False)
     flags.AddEnableConfidentialNodesFlag(
         group, for_node_pool=True, is_update=True)
+    flags.AddEnableFastSocketFlag(group)
 
   def ParseUpdateNodePoolOptions(self, args):
     flags.ValidateSurgeUpgradeSettings(args)
     flags.WarnForLocationPolicyDefault(args)
+
     ops = api_adapter.UpdateNodePoolOptions(
         enable_autorepair=args.enable_autorepair,
         enable_autoupgrade=args.enable_autoupgrade,
@@ -355,7 +363,8 @@ class UpdateAlpha(Update):
         node_pool_soak_duration=args.node_pool_soak_duration,
         standard_rollout_policy=args.standard_rollout_policy,
         network_performance_config=args.network_performance_configs,
-        enable_confidential_nodes=args.enable_confidential_nodes)
+        enable_confidential_nodes=args.enable_confidential_nodes,
+        enable_fast_socket=args.enable_fast_socket)
     return ops
 
 

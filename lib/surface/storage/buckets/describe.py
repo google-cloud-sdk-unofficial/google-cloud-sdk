@@ -62,5 +62,4 @@ class Describe(base.DescribeCommand):
     bucket_resource = api_factory.get_api(url.scheme).get_bucket(
         url.bucket_name, fields_scope=cloud_api.FieldsScope.FULL)
     # MakeSerializable will omit all the None values.
-    return resource_projector.MakeSerializable(
-        bucket_resource.get_displayable_bucket_data())
+    return resource_projector.MakeSerializable(bucket_resource.metadata)

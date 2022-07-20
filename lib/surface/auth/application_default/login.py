@@ -130,7 +130,6 @@ class Login(base.Command):
       )
     # This reauth scope is only used here and when refreshing the access token.
     scopes = (args.scopes or auth_util.DEFAULT_SCOPES) + [config.REAUTH_SCOPE]
-    redirect_uri = 'https://sdk.cloud.google.com/applicationdefaultauthcode.html' if not args.launch_browser else None
     properties.VALUES.auth.client_id.Set(
         auth_util.DEFAULT_CREDENTIALS_DEFAULT_CLIENT_ID)
     properties.VALUES.auth.client_secret.Set(
@@ -141,7 +140,7 @@ class Login(base.Command):
         no_launch_browser=not args.launch_browser,
         no_browser=args.no_browser,
         remote_bootstrap=args.remote_bootstrap,
-        redirect_uri=redirect_uri
+        auth_proxy_redirect_uri='https://sdk.cloud.google.com/applicationdefaultauthcode.html'
     )
     if not creds:
       return

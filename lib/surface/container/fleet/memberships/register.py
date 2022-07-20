@@ -19,7 +19,6 @@ from __future__ import division
 from __future__ import unicode_literals
 
 import json
-import re
 import textwrap
 
 from apitools.base.py import exceptions as apitools_exceptions
@@ -337,28 +336,8 @@ class Register(base.CreateCommand):
       if self.ReleaseTrack(
       ) is base.ReleaseTrack.ALPHA and hub_util.APIEndpoint(
       ) == hub_util.AUTOPUSH_API:
-        # For GKE clusters, use cluster location as membership location, unless
-        # they are registered with kubeconfig in which case they are not
-        # considered "GKE clusters"
-        if args.gke_cluster:
-          # e.g. us-central1/my-cluster
-          location_re = re.search(
-              r'([a-z0-9]+\-[a-z0-9]+)(\-[a-z])?/(\-[a-z])?', args.gke_cluster)
-          if location_re:
-            location = location_re.group(1)
-          else:
-            raise exceptions.Error(
-                'Error processing location in `gke-cluster` flag')
-        elif args.gke_uri:
-          # e.g. .../projects/123/locations/us-central1-a/clusters/my-cluster
-          location_re = re.search(
-              r'(regions|locations)/([a-z0-9]+\-[a-z0-9]+)(\-[a-z])?/clusters',
-              args.gke_uri)
-          if location_re:
-            location = location_re.group(2)
-          else:
-            raise exceptions.Error(
-                'Error processing location in `gke-uri` flag')
+        if hub_util.LocationFromGKEArgs(args):
+          location = hub_util.LocationFromGKEArgs(args)
         elif args.location:
           location = args.location
       kube_client.CheckClusterAdminPermissions()

@@ -59,10 +59,11 @@ class ListAlpha(List):
     flags.AddListingShareSettingsArgToParser(parser)
 
   def Run(self, args):
-    args.GetDisplayInfo().AddTransforms({
-        'description': _TransformShareSettings,
-    })
     if args.share_settings:
+      args.GetDisplayInfo().AddTransforms({
+          'description': _TransformShareSettings,
+      })
+
       args.GetDisplayInfo().AddFormat("""\
           table(
             name,
@@ -73,6 +74,10 @@ class ListAlpha(List):
             shareSettings.description()
           )""")
     else:
+      args.GetDisplayInfo().AddTransforms({
+          'description': _IsShared,
+      })
+
       args.GetDisplayInfo().AddFormat("""\
           table(
             name,
@@ -80,7 +85,7 @@ class ListAlpha(List):
             description,
             nodeTemplate.basename(),
             size:label=NODES,
-            shareSettings.yesno(yes="true", no="false"):label=SHARED
+            shareSettings.description():label=SHARED
           )""")
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     client = holder.client
@@ -90,6 +95,13 @@ class ListAlpha(List):
         client, aggregation_service=client.apitools_client.nodeGroups)
 
     return lister.Invoke(request_data, list_implementation)
+
+
+def _IsShared(share_setting):
+  """"Transforms share settings to simple share settings information."""
+  if share_setting and share_setting['shareType'] != 'LOCAL':
+    return 'true'
+  return 'false'
 
 
 def _TransformShareSettings(share_setting):

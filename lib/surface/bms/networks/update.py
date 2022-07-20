@@ -61,6 +61,7 @@ class Update(base.UpdateCommand):
     flags.AddNetworkArgToParser(parser, positional=True)
     labels_util.AddUpdateLabelsFlags(parser)
     base.ASYNC_FLAG.AddToParser(parser)
+    flags.AddNetworkIpReservationToParser(parser, hidden=False)
 
   def Run(self, args):
     client = BmsClient()
@@ -89,8 +90,8 @@ class Update(base.UpdateCommand):
 
     op_resource = resources.REGISTRY.ParseRelativeName(
         op_ref.name,
-        collection='baremetalsolution.operations',
-        api_version='v1')
+        collection='baremetalsolution.projects.locations.operations',
+        api_version='v2')
     poller = waiter.CloudOperationPollerNoResources(
         client.operation_service)
     res = waiter.WaitFor(poller, op_resource,
@@ -106,8 +107,8 @@ class UpdateAlpha(Update):
 
   @staticmethod
   def Args(parser):
+    # Flags which are only available in ALPHA should be added to parser here.
     Update.Args(parser)
-    flags.AddNetworkIpReservationToParser(parser, hidden=False)
 
 
 def _ApplyIpReservationsUpdates(args, existing_network):

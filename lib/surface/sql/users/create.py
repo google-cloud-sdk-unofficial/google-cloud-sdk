@@ -79,7 +79,7 @@ def RunBaseCreateCommand(args):
 
   user_type = users.ParseUserType(sql_messages, args)
   password_policy = users.CreatePasswordPolicyFromArgs(
-      sql_messages, args)
+      sql_messages, sql_messages.UserPasswordValidationPolicy(), args)
 
   new_user = sql_messages.User(
       kind='sql#user',

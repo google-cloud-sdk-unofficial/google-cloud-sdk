@@ -34,6 +34,8 @@ from gslib.storage_url import StorageUrlFromString
 from gslib.third_party.storage_apitools import storage_v1_messages as apitools_messages
 from gslib.utils.constants import NO_MAX
 from gslib.utils.retention_util import RetentionInSeconds
+from gslib.utils.shim_util import GcloudStorageFlag
+from gslib.utils.shim_util import GcloudStorageMap
 from gslib.utils.text_util import InsistAscii
 from gslib.utils.text_util import InsistOnOrOff
 from gslib.utils.text_util import NormalizeStorageClass
@@ -42,6 +44,7 @@ from gslib.utils.encryption_helper import ValidateCMEK
 _SYNOPSIS = """
   gsutil mb [-b (on|off)] [-c <class>] [-k <key>] [-l <location>] [-p <project>]
             [--autoclass] [--retention <time>] [--pap <setting>]
+            [--placement <region1>,<region2>]
             [--rpo {}] gs://<bucket_name>...
 """.format(VALID_RPO_VALUES_STRING)
 
@@ -157,6 +160,12 @@ _DETAILED_HELP_TEXT = ("""
                          "enforced", objects in this bucket cannot be made
                          publicly accessible. Default is "inherited".
 
+  --placement reg1,reg2  Two regions that form the custom dual-region.
+                         Only regions within the same continent are or will ever
+                         be valid. Invalid location pairs (such as
+                         mixed-continent, or with unsupported regions)
+                         will return an error.
+
   --rpo setting          Specifies the `replication setting <https://cloud.google.com/storage/docs/turbo-replication>`_.
                          This flag is not valid for single-region buckets,
                          and multi-region buckets only accept a value of
@@ -186,7 +195,9 @@ class MbCommand(Command):
       min_args=1,
       max_args=NO_MAX,
       supported_sub_args='b:c:l:p:s:k:',
-      supported_private_args=['autoclass', 'retention=', 'pap=', 'rpo='],
+      supported_private_args=[
+          'autoclass', 'retention=', 'pap=', 'placement=', 'rpo='
+      ],
       file_url_ok=False,
       provider_url_ok=False,
       urls_start_arg=0,
@@ -222,6 +233,30 @@ class MbCommand(Command):
       subcommand_help_text={},
   )
 
+  gcloud_storage_map = GcloudStorageMap(
+      gcloud_command=['alpha', 'storage', 'buckets', 'create'],
+      flag_map={
+          '-b':
+              GcloudStorageFlag({
+                  'on': '--uniform-bucket-level-access',
+                  'off': None,
+              }),
+          '-c':
+              GcloudStorageFlag('--default-storage-class'),
+          '-k':
+              GcloudStorageFlag('--default-encryption-key'),
+          '-l':
+              GcloudStorageFlag('--location'),
+          '--pap':
+              GcloudStorageFlag({
+                  'enforced': '--public-access-prevention',
+                  'inherited': None,
+              }),
+          '--retention':
+              GcloudStorageFlag('--retention-period'),
+      },
+  )
+
   def RunCommand(self):
     """Command entry point for the mb command."""
     autoclass = False
@@ -230,6 +265,7 @@ class MbCommand(Command):
     location = None
     storage_class = None
     seconds = None
+    placements = None
     public_access_prevention = None
     rpo = None
     json_only_flags_in_command = []
@@ -266,6 +302,13 @@ class MbCommand(Command):
         elif o == '--pap':
           public_access_prevention = a
           json_only_flags_in_command.append(o)
+        elif o == '--placement':
+          placements = a.split(',')
+          if len(placements) != 2:
+            raise CommandException(
+                'Please specify two regions separated by comma without space.'
+                ' Specified: {}'.format(a))
+          json_only_flags_in_command.append(o)
 
     bucket_metadata = apitools_messages.Bucket(location=location,
                                                rpo=rpo,
@@ -286,6 +329,11 @@ class MbCommand(Command):
       encryption = apitools_messages.Bucket.EncryptionValue()
       encryption.defaultKmsKeyName = kms_key
       bucket_metadata.encryption = encryption
+
+    if placements:
+      placement_config = apitools_messages.Bucket.CustomPlacementConfigValue()
+      placement_config.dataLocations = placements
+      bucket_metadata.customPlacementConfig = placement_config
 
     for bucket_url_str in self.args:
       bucket_url = StorageUrlFromString(bucket_url_str)
