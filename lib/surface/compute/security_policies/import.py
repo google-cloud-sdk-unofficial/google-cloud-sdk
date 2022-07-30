@@ -24,6 +24,7 @@ from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute.security_policies import client
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
+from googlecloudsdk.command_lib.compute import scope as compute_scope
 from googlecloudsdk.command_lib.compute.security_policies import flags
 from googlecloudsdk.command_lib.compute.security_policies import (
     security_policies_utils)
@@ -141,14 +142,15 @@ class ImportBeta(base.SilentCommand):
 
   def Run(self, args):
     if not os.path.exists(args.file_name):
-      raise exceptions.BadFileException(
-          'No such file [{0}]'.format(args.file_name))
+      raise exceptions.BadFileException('No such file [{0}]'.format(
+          args.file_name))
     if os.path.isdir(args.file_name):
-      raise exceptions.BadFileException(
-          '[{0}] is a directory'.format(args.file_name))
+      raise exceptions.BadFileException('[{0}] is a directory'.format(
+          args.file_name))
 
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
-    ref = self.SECURITY_POLICY_ARG.ResolveAsResource(args, holder.resources)
+    ref = self.SECURITY_POLICY_ARG.ResolveAsResource(
+        args, holder.resources, default_scope=compute_scope.ScopeEnum.GLOBAL)
 
     # Get the imported security policy config.
     try:
@@ -212,14 +214,15 @@ class ImportAlpha(base.SilentCommand):
 
   def Run(self, args):
     if not os.path.exists(args.file_name):
-      raise exceptions.BadFileException(
-          'No such file [{0}]'.format(args.file_name))
+      raise exceptions.BadFileException('No such file [{0}]'.format(
+          args.file_name))
     if os.path.isdir(args.file_name):
-      raise exceptions.BadFileException(
-          '[{0}] is a directory'.format(args.file_name))
+      raise exceptions.BadFileException('[{0}] is a directory'.format(
+          args.file_name))
 
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
-    ref = self.SECURITY_POLICY_ARG.ResolveAsResource(args, holder.resources)
+    ref = self.SECURITY_POLICY_ARG.ResolveAsResource(
+        args, holder.resources, default_scope=compute_scope.ScopeEnum.GLOBAL)
 
     # Get the imported security policy config.
     try:

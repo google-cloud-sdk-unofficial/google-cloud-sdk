@@ -59,9 +59,8 @@
   request:
     collection: cloudbuild.projects.locations.connections
     api_version: v2
-    # Field apiKey is required but will be removed soon, so hardcoding a fake value here.
     static_fields:
-      "connection.githubEnterpriseConfig": {"apiKey":"none"}
+      "connection.githubEnterpriseConfig": {}
 
   arguments:
     resource:

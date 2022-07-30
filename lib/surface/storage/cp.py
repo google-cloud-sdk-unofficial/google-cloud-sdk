@@ -18,6 +18,9 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+import contextlib
+import os
+
 from googlecloudsdk.api_lib.storage import cloud_api
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
@@ -123,6 +126,91 @@ attributes on files after they are downloaded.
 On Windows, this flag will only set and restore access time and modification
 time because Windows doesn't have a notion of POSIX UID, GID, and mode.
 """
+
+
+def _validate_args(args, raw_destination_url):
+  """Raises errors if invalid flags are passed."""
+  if args.no_clobber and args.if_generation_match:
+    raise ValueError(
+        'Cannot specify both generation precondition and no-clobber.')
+
+  if (isinstance(raw_destination_url, storage_url.FileUrl) and
+      args.storage_class):
+    raise ValueError(
+        'Cannot specify storage class for a non-cloud destination: {}'.format(
+            raw_destination_url))
+
+
+@contextlib.contextmanager
+def _get_shared_stream(args, raw_destination_url):
+  """Context manager for streams used in streaming downloads.
+
+  Warns the user when downloading to a named pipe.
+
+  Args:
+    args (parser_extensions.Namespace): Flags passed by the user.
+    raw_destination_url (storage_url.StorageUrl): The destination of the
+        transfer. May contain unexpanded wildcards.
+
+  Yields:
+    A stream used for downloads, or None if the transfer is not a streaming
+    download. The stream is closed by the context manager if it is not stdout.
+  """
+  if raw_destination_url.is_stdio:
+    yield os.fdopen(1, 'wb')
+  elif raw_destination_url.is_stream:
+    log.warning('Downloading to a pipe.'
+                ' This command may stall until the pipe is read.')
+    with files.BinaryFileWriter(args.destination) as stream:
+      yield stream
+  else:
+    yield None
+
+
+def _is_parallelizable(args, raw_destination_url, first_source_url):
+  """Determines whether a a `cp` workload is parallelizable.
+
+  Logs warnings if gcloud storage is configured to parallelize workloads, but
+  doing so is not possible.
+
+  Args:
+    args (parser_extensions.Namespace): Flags passed by the user.
+    raw_destination_url (storage_url.StorageUrl): The destination of the
+        transfer. May contain unexpanded wildcards.
+    first_source_url (storage_url.StorageUrl): The first source URL passed by
+        the user. May contain unexpanded wildcards.
+
+  Returns:
+    True if the transfer is parallelizable, False otherwise.
+  """
+  configured_for_parallelism = (
+      properties.VALUES.storage.process_count.GetInt() != 1 or
+      properties.VALUES.storage.thread_count.GetInt() != 1)
+
+  if args.all_versions:
+    if configured_for_parallelism:
+      log.warning(
+          'Using sequential instead of parallel task execution. This will'
+          ' maintain version ordering when copying all versions of an object.')
+    return False
+
+  if raw_destination_url.is_stream:
+    if configured_for_parallelism:
+      log.warning(
+          'Using sequential instead of parallel task execution to write to a'
+          ' stream.')
+    return False
+
+  # Only the first url needs to be checked since multiple sources aren't
+  # allowed with stdin.
+  if first_source_url.is_stdio:
+    if configured_for_parallelism:
+      log.warning(
+          'Using sequential instead of parallel task execution to'
+          ' transfer from stdin.')
+    return False
+
+  return True
 
 
 class Cp(base.Command):
@@ -271,12 +359,11 @@ class Cp(base.Command):
     flags.add_continue_on_error_flag(parser)
     flags.add_precondition_flags(parser)
     flags.add_object_metadata_flags(parser)
-    flags.add_encryption_flags(parser)
+    flags.add_encryption_flags(parser, hidden=True)
 
   def Run(self, args):
-    if args.no_clobber and args.if_generation_match:
-      raise ValueError(
-          'Cannot specify both generation precondition and no-clobber.')
+    raw_destination_url = storage_url.storage_url_from_string(args.destination)
+    _validate_args(args, raw_destination_url)
 
     encryption_util.initialize_key_store(args)
 
@@ -298,68 +385,42 @@ class Cp(base.Command):
         recursion_requested=name_expansion.RecursionSetting.YES
         if args.recursive else name_expansion.RecursionSetting.NO_WITH_WARNING)
 
-    raw_destination_url = storage_url.storage_url_from_string(args.destination)
-    if (isinstance(raw_destination_url, storage_url.FileUrl) and
-        args.storage_class):
-      raise ValueError(
-          'Cannot specify storage class for a non-cloud destination: {}'.format(
-              raw_destination_url))
+    if raw_destination_url.is_stdio:
+      task_status_queue = None
+    else:
+      task_status_queue = task_graph_executor.multiprocessing_context.Queue()
 
-    configured_for_parallelism = (
-        properties.VALUES.storage.process_count.GetInt() != 1 or
-        properties.VALUES.storage.thread_count.GetInt() != 1)
-
-    parallelizable = True
-    shared_stream = None
-    if (args.all_versions and configured_for_parallelism):
-      log.warning(
-          'Using sequential instead of parallel task execution. This will'
-          ' maintain version ordering when copying all versions of an object.')
-      parallelizable = False
-    if (isinstance(raw_destination_url, storage_url.FileUrl) and
-        raw_destination_url.is_pipe):
-      log.warning('Downloading to a pipe.'
-                  ' This command may stall until the pipe is read.')
-      parallelizable = False
-      shared_stream = files.BinaryFileWriter(args.destination)
-
-    # Only the first url needs to be checked since multiple sources aren't
-    # allowed with stdin.
     first_raw_source_string = raw_source_string_iterator.peek()
     first_source_url = storage_url.storage_url_from_string(
         first_raw_source_string)
-    if (isinstance(first_source_url, storage_url.FileUrl) and
-        first_source_url.is_stream and configured_for_parallelism):
-      log.warning(
-          'Using sequential instead of parallel task execution to'
-          ' transfer from stdin.')
-      parallelizable = False
+    parallelizable = _is_parallelizable(args, raw_destination_url,
+                                        first_source_url)
 
     user_request_args = (
         user_request_args_factory.get_user_request_args_from_command_args(
             args, metadata_type=user_request_args_factory.MetadataType.OBJECT))
-    task_status_queue = task_graph_executor.multiprocessing_context.Queue()
-    task_iterator = copy_task_iterator.CopyTaskIterator(
-        source_expansion_iterator,
-        args.destination,
-        custom_md5_digest=args.content_md5,
-        do_not_decompress=args.do_not_decompress,
-        print_created_message=args.print_created_message,
-        shared_stream=shared_stream,
-        skip_unsupported=args.skip_unsupported,
-        task_status_queue=task_status_queue,
-        user_request_args=user_request_args,
-    )
-    self.exit_code = task_executor.execute_tasks(
-        task_iterator,
-        parallelizable=parallelizable,
-        task_status_queue=task_status_queue,
-        progress_manager_args=task_status.ProgressManagerArgs(
-            task_status.IncrementType.FILES_AND_BYTES,
-            manifest_path=user_request_args.manifest_path,
-        ),
-        continue_on_error=args.continue_on_error,
-    )
 
-    if shared_stream:
-      shared_stream.close()
+    with _get_shared_stream(args, raw_destination_url) as shared_stream:
+      task_iterator = copy_task_iterator.CopyTaskIterator(
+          source_expansion_iterator,
+          args.destination,
+          custom_md5_digest=args.content_md5,
+          do_not_decompress=args.do_not_decompress,
+          print_created_message=args.print_created_message,
+          shared_stream=shared_stream,
+          skip_unsupported=args.skip_unsupported,
+          task_status_queue=task_status_queue,
+          user_request_args=user_request_args,
+      )
+
+      self.exit_code = task_executor.execute_tasks(
+          task_iterator,
+          parallelizable=parallelizable,
+          task_status_queue=task_status_queue,
+          progress_manager_args=task_status.ProgressManagerArgs(
+              task_status.IncrementType.FILES_AND_BYTES,
+              manifest_path=user_request_args.manifest_path,
+          ),
+          continue_on_error=args.continue_on_error,
+      )
+

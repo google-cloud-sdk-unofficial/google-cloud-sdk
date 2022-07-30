@@ -40,13 +40,13 @@ class GetIamPolicy(base.ListCommand):
           'my-group' and located in the region 'us-west1' within the active
           project, run:
 
-            $ {command} --group-name='my-group' --region='us-west1'
+            $ {command} --dest-group='my-group' --region='us-west1'
 
           To get the IAM policy for the TCP Destination Group resource with name
           'my-group' and located in the region 'us-west1' within project
           'project', run:
 
-            $ {command} --group-name='my-group' --region='us-west1'
+            $ {command} --dest-group='my-group' --region='us-west1'
             --project='project'
 
   """,

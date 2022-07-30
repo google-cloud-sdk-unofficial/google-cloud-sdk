@@ -29,6 +29,7 @@
     api_version: v1
     modify_request_hooks:
     - googlecloudsdk.command_lib.certificate_manager.hooks:SetAuthorizationURL
+    - googlecloudsdk.command_lib.certificate_manager.hooks:SetIssuanceConfigURL
 
   async:
     collection: certificatemanager.projects.locations.operations
@@ -63,19 +64,28 @@
 
                 You may list multiple, comma-separated domain names to include multiple
                 names as Subject Alternative Names on the issued certificate.
-            - arg_name: dns-authorizations
-              api_field: certificate.managed.dnsAuthorizations
-              repeated: true
-              help_text: |
-                Name(s) of the DNS authorizations for each listed domain.
+            - group:
+                mutex: true
+                params:
+                - arg_name: dns-authorizations
+                  api_field: certificate.managed.dnsAuthorizations
+                  repeated: true
+                  help_text: |
+                    Name(s) of the DNS authorizations for each listed domain.
 
-                Note that each domain requires a matching authorization, and any domain that
-                fails authorization will prevent issuance and/or renewal of the certificate.
+                    Note that each domain requires a matching authorization, and any domain that
+                    fails authorization will prevent issuance and/or renewal of the certificate.
 
-                To reference multiple DNS authorizations, provide a list of comma separated DNS
-                authorization resource names or URLs. For example:
+                    To reference multiple DNS authorizations, provide a list of comma separated DNS
+                    authorization resource names or URLs. For example:
 
-                 $ {command} --dns-authorizations=api-example-com,www-example-com
+                     $ {command} --dns-authorizations=api-example-com,www-example-com
+                - arg_name: issuance-config
+                  hidden: true
+                  release_tracks: [ALPHA, BETA]
+                  api_field: certificate.managed.issuanceConfig
+                  help_text: |
+                    Name of the Certificate Issuance Config to use for issuance.
         - group:
             help_text: |
               Configuration for uploading self-managed certificates and keys.

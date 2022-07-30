@@ -19,6 +19,7 @@ from __future__ import division
 from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.compute import base_classes
+from googlecloudsdk.calliope  import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute import flags
 from googlecloudsdk.command_lib.compute.images import flags as images_flags
@@ -49,7 +50,10 @@ DETAILED_HELP = {
 }
 
 
-def _CommonArgs(cls, parser, support_update_architecture=False):
+def _CommonArgs(cls,
+                parser,
+                support_update_architecture=False,
+                support_user_licenses=False):
   """Add arguments used for parsing in all command tracks."""
   cls.DISK_IMAGE_ARG = images_flags.MakeDiskImageArg(plural=False)
   cls.DISK_IMAGE_ARG.AddArgument(parser, operation_type='update')
@@ -74,6 +78,22 @@ def _CommonArgs(cls, parser, support_update_architecture=False):
         help=('Image resources can be used to create boot disks compatible '
               'with different machine architectures.'))
 
+  if support_user_licenses:
+    scope = parser.add_mutually_exclusive_group()
+    scope.add_argument(
+        '--update-user-licenses',
+        type=arg_parsers.ArgList(),
+        metavar='LICENSE',
+        action=arg_parsers.UpdateAction,
+        help=(
+            'List of user licenses to be updated on an image. These user '
+            'licenses replace all existing user licenses. If this flag is not '
+            'provided, all existing user licenses remain unchanged.'))
+    scope.add_argument(
+        '--clear-user-licenses',
+        action='store_true',
+        help='Remove all existing user licenses on an image.')
+
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Update(base.UpdateCommand):
@@ -84,12 +104,17 @@ class Update(base.UpdateCommand):
 
   @classmethod
   def Args(cls, parser):
-    _CommonArgs(cls, parser, support_update_architecture=False)
+    _CommonArgs(cls, parser, support_update_architecture=False,
+                support_user_licenses=False)
 
   def Run(self, args):
-    return self._Run(args, support_update_architecture=False)
+    return self._Run(args, support_update_architecture=False,
+                     support_user_licenses=False)
 
-  def _Run(self, args, support_update_architecture=False):
+  def _Run(self,
+           args,
+           support_update_architecture=False,
+           support_user_licenses=True):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     client = holder.client
     messages = holder.client.messages
@@ -137,6 +162,13 @@ class Update(base.UpdateCommand):
           args.architecture)
       should_patch = True
 
+    if support_user_licenses and (args.IsSpecified('update_user_licenses') or
+                                  args.IsSpecified('clear_user_licenses')):
+      if args.IsSpecified('update_user_licenses'):
+        image_resource.userLicenses = args.update_user_licenses
+      else:
+        image_resource.userLicenses = []
+      should_patch = True
     if should_patch:
       request = messages.ComputeImagesPatchRequest(
           project=image_ref.project,
@@ -167,7 +199,11 @@ class UpdateBeta(Update):
 
   @classmethod
   def Args(cls, parser):
-    _CommonArgs(cls, parser, support_update_architecture=False)
+    _CommonArgs(
+        cls,
+        parser,
+        support_update_architecture=False,
+        support_user_licenses=True)
 
   def Run(self, args, support_update_architecture=False):
     return self._Run(args, support_update_architecture)
@@ -182,7 +218,11 @@ class UpdateAlpha(UpdateBeta):
 
   @classmethod
   def Args(cls, parser):
-    _CommonArgs(cls, parser, support_update_architecture=True)
+    _CommonArgs(
+        cls,
+        parser,
+        support_update_architecture=True,
+        support_user_licenses=True)
 
   def Run(self, args, support_update_architecture=True):
     return self._Run(args, support_update_architecture)

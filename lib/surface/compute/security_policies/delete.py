@@ -22,6 +22,7 @@ from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import utils
 from googlecloudsdk.api_lib.compute.security_policies import client
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.compute import scope as compute_scope
 from googlecloudsdk.command_lib.compute.security_policies import flags
 
 
@@ -78,7 +79,8 @@ class DeleteBeta(base.DeleteCommand):
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
-    refs = self.SECURITY_POLICY_ARG.ResolveAsResource(args, holder.resources)
+    refs = self.SECURITY_POLICY_ARG.ResolveAsResource(
+        args, holder.resources, default_scope=compute_scope.ScopeEnum.GLOBAL)
     utils.PromptForDeletion(refs)
 
     requests = []
@@ -109,7 +111,8 @@ class DeleteAlpha(base.DeleteCommand):
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
-    refs = self.SECURITY_POLICY_ARG.ResolveAsResource(args, holder.resources)
+    refs = self.SECURITY_POLICY_ARG.ResolveAsResource(
+        args, holder.resources, default_scope=compute_scope.ScopeEnum.GLOBAL)
     utils.PromptForDeletion(refs)
 
     requests = []

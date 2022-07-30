@@ -1,4 +1,4 @@
-- release_tracks: [ALPHA]
+- release_tracks: [ALPHA, BETA]
   help_text:
     brief: Update an existing Beyondcorp application connection.
     description: Update an existing Beyondcorp application connection.
@@ -22,6 +22,10 @@
     - googlecloudsdk.command_lib.beyondcorp.app.connections.hooks:SetConnectors
     - googlecloudsdk.command_lib.beyondcorp.app.connections.hooks:ValidateAndParseAppEndpoint
     - googlecloudsdk.command_lib.beyondcorp.app.connections.hooks:UpdateApplicationEndpointMask
+    ALPHA:
+      api_version: v1alpha
+    BETA:
+      api_version: v1
 
   response:
     modify_response_hooks:
@@ -37,8 +41,14 @@
       help_text: The Beyondcorp connection you want to update.
 
     params:
-    - _REF_: googlecloudsdk.command_lib.beyondcorp.app.connections.flags:display_name
-    - _REF_: googlecloudsdk.command_lib.beyondcorp.app.connections.flags:connectors
+    - _REF_: googlecloudsdk.command_lib.beyondcorp.app.connections.flags:display_name_v1alpha
+      release_tracks: [ALPHA]
+    - _REF_: googlecloudsdk.command_lib.beyondcorp.app.connections.flags:display_name_v1
+      release_tracks: [BETA]
+    - _REF_: googlecloudsdk.command_lib.beyondcorp.app.connections.flags:connectors_v1alpha
+      release_tracks: [ALPHA]
+    - _REF_: googlecloudsdk.command_lib.beyondcorp.app.connections.flags:connectors_v1
+      release_tracks: [BETA]
     - _REF_: googlecloudsdk.command_lib.beyondcorp.app.connections.flags:application_endpoint
 
     additional_arguments_hook: googlecloudsdk.command_lib.beyondcorp.app.connections.hooks:UpdateLabelsFlags

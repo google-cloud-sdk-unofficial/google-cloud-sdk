@@ -47,13 +47,13 @@ def _Run(args, enable_labels=False, legacy_output=False):
   retention_duration = getattr(args, 'message_retention_duration', None)
   enable_exactly_once_delivery = getattr(args, 'enable_exactly_once_delivery',
                                          None)
-  if retention_duration:
+  if args.IsSpecified('message_retention_duration'):
     retention_duration = util.FormatDuration(retention_duration)
   min_retry_delay = getattr(args, 'min_retry_delay', None)
-  if min_retry_delay:
+  if args.IsSpecified('min_retry_delay'):
     min_retry_delay = util.FormatDuration(min_retry_delay)
   max_retry_delay = getattr(args, 'max_retry_delay', None)
-  if max_retry_delay:
+  if args.IsSpecified('max_retry_delay'):
     max_retry_delay = util.FormatDuration(max_retry_delay)
   bigquery_table = getattr(args, 'bigquery_table', None)
   use_topic_schema = getattr(args, 'use_topic_schema', None)
@@ -62,7 +62,7 @@ def _Run(args, enable_labels=False, legacy_output=False):
 
   no_expiration = False
   expiration_period = getattr(args, 'expiration_period', None)
-  if expiration_period:
+  if args.IsSpecified('expiration_period'):
     if expiration_period == subscriptions.NEVER_EXPIRATION_PERIOD_VALUE:
       no_expiration = True
       expiration_period = None

@@ -118,7 +118,7 @@ class Cat(base.Command):
             If the bytes are out of range of the object,
             then nothing is printed"""))
 
-    flags.add_encryption_flags(parser)
+    flags.add_encryption_flags(parser, hidden=True)
 
   def Run(self, args):
     encryption_util.initialize_key_store(args)

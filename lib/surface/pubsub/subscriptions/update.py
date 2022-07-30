@@ -81,10 +81,10 @@ class Update(base.UpdateCommand):
       dead_letter_topic = args.CONCEPTS.dead_letter_topic.Parse().RelativeName()
 
     min_retry_delay = getattr(args, 'min_retry_delay', None)
-    if min_retry_delay:
+    if args.IsSpecified('min_retry_delay'):
       min_retry_delay = util.FormatDuration(min_retry_delay)
     max_retry_delay = getattr(args, 'max_retry_delay', None)
-    if max_retry_delay:
+    if args.IsSpecified('max_retry_delay'):
       max_retry_delay = util.FormatDuration(max_retry_delay)
     bigquery_table = getattr(args, 'bigquery_table', None)
     use_topic_schema = getattr(args, 'use_topic_schema', None)

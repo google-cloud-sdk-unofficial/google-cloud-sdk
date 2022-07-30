@@ -404,6 +404,10 @@ def AddServiceProxyArgsToMetadata(args):
     if 'project-number' in args.service_proxy:
       proxy_spec['project-number'] = args.service_proxy['project-number']
 
+    if 'source' in args.service_proxy:
+      proxy_spec['primary-source'] = args.service_proxy['source']
+      proxy_spec['secondary-source'] = args.service_proxy['source']
+
     traffic_interception = collections.OrderedDict()
     if 'intercept-all-outbound-traffic' in args.service_proxy:
       traffic_interception['intercept-all-outbound'] = True
@@ -887,7 +891,8 @@ def _RunCreate(compute_api,
       'instance_template_region'):
     request = client.messages.ComputeRegionInstanceTemplatesInsertRequest(
         instanceTemplate=instance_template,
-        project=instance_template_ref.project)
+        project=instance_template_ref.project,
+        region=instance_template.region)
     request.instanceTemplate.properties.labels = ParseCreateArgsWithServiceProxy(
         args, client.messages.InstanceProperties.LabelsValue)
     return client.MakeRequests([(client.apitools_client.regionInstanceTemplates,

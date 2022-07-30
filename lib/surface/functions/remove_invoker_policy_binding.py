@@ -44,7 +44,6 @@ def _CommonArgs(parser, track):
   iam_util.AddMemberFlag(parser, 'to remove from the IAM policy', False)
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class RemoveInvokerPolicyBinding(base.Command):
   """Removes an invoker binding from the IAM policy of a Google Cloud Function.

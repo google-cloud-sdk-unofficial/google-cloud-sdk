@@ -71,7 +71,7 @@ class UpdateHelper(object):
   @classmethod
   def Args(cls, parser, support_l7_internal_load_balancer, support_failover,
            support_logging, support_tcp_ssl_logging, support_net_lb_ilb_logging,
-           support_client_only, support_grpc_protocol, support_subsetting,
+           support_client_only, support_subsetting,
            support_subsetting_subset_size, support_unspecified_protocol,
            support_advanced_load_balancing, support_dynamic_compression,
            support_weighted_lb):
@@ -103,7 +103,6 @@ class UpdateHelper(object):
     flags.AddProtocol(
         parser,
         default=None,
-        support_grpc_protocol=support_grpc_protocol,
         support_unspecified_protocol=support_unspecified_protocol)
 
     flags.AddConnectionDrainingTimeout(parser)
@@ -557,7 +556,6 @@ class UpdateGA(base.UpdateCommand):
   _support_failover = True
   _support_client_only = True
   _support_unspecified_protocol = True
-  _support_grpc_protocol = True
   _support_subsetting = True
   _support_subsetting_subset_size = False
   _support_advanced_load_balancing = False
@@ -575,7 +573,6 @@ class UpdateGA(base.UpdateCommand):
         support_tcp_ssl_logging=cls._support_tcp_ssl_logging,
         support_net_lb_ilb_logging=cls._support_net_lb_ilb_logging,
         support_client_only=cls._support_client_only,
-        support_grpc_protocol=cls._support_grpc_protocol,
         support_subsetting=cls._support_subsetting,
         support_subsetting_subset_size=cls._support_subsetting_subset_size,
         support_unspecified_protocol=cls._support_unspecified_protocol,
@@ -606,7 +603,6 @@ class UpdateBeta(UpdateGA):
 
   _support_client_only = True
   _support_unspecified_protocol = True
-  _support_grpc_protocol = True
   _support_subsetting = True
   _support_subsetting_subset_size = True
   _support_advanced_load_balancing = False
@@ -625,7 +621,6 @@ class UpdateAlpha(UpdateBeta):
 
   _support_client_only = True
   _support_unspecified_protocol = True
-  _support_grpc_protocol = True
   _support_subsetting = True
   _support_subsetting_subset_size = True
   _support_advanced_load_balancing = True

@@ -1,4 +1,4 @@
-- release_tracks: [ALPHA]
+- release_tracks: [ALPHA, BETA]
   help_text:
     brief: Update an existing Beyondcorp application connector.
     description: Update an existing Beyondcorp application connector.
@@ -17,6 +17,10 @@
     modify_request_hooks:
     - googlecloudsdk.command_lib.beyondcorp.app.connectors.hooks:CheckFieldsSpecified
     - googlecloudsdk.command_lib.beyondcorp.app.connectors.hooks:UpdateLabels
+    ALPHA:
+      api_version: v1alpha
+    BETA:
+      api_version: v1
 
   response:
     modify_response_hooks:
@@ -31,6 +35,10 @@
       spec: !REF googlecloudsdk.command_lib.beyondcorp.app.resources:appconnector
       help_text: The Beyondcorp connector you want to update
     params:
-    - _REF_: googlecloudsdk.command_lib.beyondcorp.app.connectors.flags:display_name
+    - _REF_: googlecloudsdk.command_lib.beyondcorp.app.connectors.flags:display_name_v1alpha
+      release_tracks: [ALPHA]
+    - _REF_: googlecloudsdk.command_lib.beyondcorp.app.connectors.flags:display_name_v1
+      release_tracks: [BETA]
+
 
     additional_arguments_hook: googlecloudsdk.command_lib.beyondcorp.app.connectors.hooks:UpdateLabelsFlags

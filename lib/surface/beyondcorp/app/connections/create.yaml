@@ -1,4 +1,4 @@
-- release_tracks: [ALPHA]
+- release_tracks: [ALPHA, BETA]
   help_text:
     brief: Create a new Beyondcorp application connection.
     description: Create a new Beyondcorp application connection.
@@ -27,6 +27,10 @@
 
   request:
     collection: beyondcorp.projects.locations.appConnections
+    ALPHA:
+      api_version: v1alpha
+    BETA:
+      api_version: v1
     modify_request_hooks:
     - googlecloudsdk.command_lib.beyondcorp.app.connections.hooks:ValidateAndParseAppEndpoint
     - googlecloudsdk.command_lib.beyondcorp.app.connections.hooks:SetConnectors
@@ -53,13 +57,33 @@
         - _REF_: googlecloudsdk.command_lib.beyondcorp.app.connections.flags:application_endpoint
         - group:
             params:
-            - _REF_: googlecloudsdk.command_lib.beyondcorp.app.connections.flags:application_endpoint_host
+            - _REF_: googlecloudsdk.command_lib.beyondcorp.app.connections.flags:application_endpoint_host_v1alpha
               required: true
-            - _REF_: googlecloudsdk.command_lib.beyondcorp.app.connections.flags:application_endpoint_port
+              release_tracks: [ALPHA]
+            - _REF_: googlecloudsdk.command_lib.beyondcorp.app.connections.flags:application_endpoint_host_v1
               required: true
-    - _REF_: googlecloudsdk.command_lib.beyondcorp.app.connections.flags:connectors
-    - _REF_: googlecloudsdk.command_lib.beyondcorp.app.connections.flags:connection_type
-    - _REF_: googlecloudsdk.command_lib.beyondcorp.app.connections.flags:display_name
+              release_tracks: [BETA]
+            - _REF_: googlecloudsdk.command_lib.beyondcorp.app.connections.flags:application_endpoint_port_v1alpha
+              required: true
+              release_tracks: [ALPHA]
+            - _REF_: googlecloudsdk.command_lib.beyondcorp.app.connections.flags:application_endpoint_port_v1
+              required: true
+              release_tracks: [BETA]
+    - _REF_: googlecloudsdk.command_lib.beyondcorp.app.connections.flags:connectors_v1alpha
+      release_tracks: [ALPHA]
+    - _REF_: googlecloudsdk.command_lib.beyondcorp.app.connections.flags:connectors_v1
+      release_tracks: [BETA]
+    - _REF_: googlecloudsdk.command_lib.beyondcorp.app.connections.flags:connection_type_v1alpha
+      release_tracks: [ALPHA]
+    - _REF_: googlecloudsdk.command_lib.beyondcorp.app.connections.flags:connection_type_v1
+      release_tracks: [BETA]
+    - _REF_: googlecloudsdk.command_lib.beyondcorp.app.connections.flags:display_name_v1alpha
+      release_tracks: [ALPHA]
+    - _REF_: googlecloudsdk.command_lib.beyondcorp.app.connections.flags:display_name_v1
+      release_tracks: [BETA]
 
     labels:
-      api_field: googleCloudBeyondcorpAppconnectionsV1alphaAppConnection.labels
+      ALPHA:
+        api_field: googleCloudBeyondcorpAppconnectionsV1alphaAppConnection.labels
+      BETA:
+        api_field: googleCloudBeyondcorpAppconnectionsV1AppConnection.labels

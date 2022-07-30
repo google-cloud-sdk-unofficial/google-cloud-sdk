@@ -1,4 +1,4 @@
-- release_tracks: [ALPHA]
+- release_tracks: [ALPHA, BETA]
   help_text:
     brief: Create a new BeyondCorp client connector service.
     description: Create a new BeyondCorp client connector service.
@@ -19,6 +19,10 @@
     collection: beyondcorp.projects.locations.clientConnectorServices
     modify_request_hooks:
     - googlecloudsdk.command_lib.beyondcorp.client_connector.services.hooks:ParseConfig
+    ALPHA:
+      api_version: v1alpha
+    BETA:
+      api_version: v1
 
   async:
     collection: beyondcorp.projects.locations.operations

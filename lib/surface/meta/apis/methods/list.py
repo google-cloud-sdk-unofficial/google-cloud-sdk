@@ -40,6 +40,13 @@ class List(base.ListCommand):
              'If left blank, returns methods from all collections.')
     collection_flag.AddToParser(parser)
     flags.API_VERSION_FLAG.AddToParser(parser)
+    api_flag = base.Argument(
+        '--api',
+        completer=flags.APICompleter,
+        help=('The name of the API to get the methods for. If `--api-version` '
+              'is also supplied, then returns methods from specified version, '
+              'otherwise returns methods from all versions of this API.'))
+    api_flag.AddToParser(parser)
     parser.display_info.AddFormat("""
       table(
         name:sort=1,
@@ -52,8 +59,13 @@ class List(base.ListCommand):
 
   def Run(self, args):
     if not args.collection:
-      collections = [registry.GetAPICollections(api.name, api.version)
-                     for api in registry.GetAllAPIs()]
+      if args.api:
+        collections = [registry.GetAPICollections(args.api, args.api_version)]
+      else:
+        collections = [
+            registry.GetAPICollections(api.name, api.version)
+            for api in registry.GetAllAPIs()
+        ]
       collections = list(itertools.chain.from_iterable(collections))
       methods = [registry.GetMethods(collection.full_name,
                                      api_version=collection.api_version)

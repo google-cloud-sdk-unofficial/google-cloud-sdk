@@ -1,4 +1,4 @@
-- release_tracks: [ALPHA]
+- release_tracks: [ALPHA, BETA]
 
   help_text:
     brief: Describe a single Connection
@@ -19,6 +19,10 @@
 
   request:
     collection: beyondcorp.projects.locations.appConnections
+    ALPHA:
+      api_version: v1alpha
+    BETA:
+      api_version: v1
 
   response:
     modify_response_hooks:

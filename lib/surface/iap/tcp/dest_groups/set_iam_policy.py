@@ -42,13 +42,13 @@ class SetIamPolicy(base.Command):
           the active project in the group 'my-group' located in the region
           'us-west1', run:
 
-            $ {command} POLICY_FILE  --group-name='my-group' --region='us-west1'
+            $ {command} POLICY_FILE  --dest-group=='my-group' --region='us-west1'
 
           To set the IAM policy for the TCP Destination Group resource within
           project PROJECT_ID in the group 'my-group' located in the region
           'us-west1', run:
 
-            $ {command} POLICY_FILE --project=PROJECT_ID --group-name='my-group'
+            $ {command} POLICY_FILE --project=PROJECT_ID --dest-group=='my-group'
               --region='us-west1'
   """,
   }

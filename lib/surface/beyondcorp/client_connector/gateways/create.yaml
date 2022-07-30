@@ -1,4 +1,4 @@
-- release_tracks: [ALPHA]
+- release_tracks: [ALPHA, BETA]
   help_text:
     brief: Create a new BeyondCorp client gateway.
     description: Create a new BeyondCorp client gateway.
@@ -16,6 +16,10 @@
 
   request:
     collection: beyondcorp.projects.locations.clientGateways
+    ALPHA:
+      api_version: v1alpha
+    BETA:
+      api_version: v1
 
   async:
     collection: beyondcorp.projects.locations.operations

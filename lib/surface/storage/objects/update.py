@@ -125,7 +125,7 @@ class Update(base.Command):
         action=arg_parsers.StoreTrueFalseAction,
         help='Enables or disables a temporary hold on objects.')
     flags.add_continue_on_error_flag(parser)
-    flags.add_encryption_flags(parser, allow_patch=True, hidden=False)
+    flags.add_encryption_flags(parser, allow_patch=True)
     flags.add_precondition_flags(parser)
     flags.add_object_metadata_flags(parser, allow_patch=True)
 

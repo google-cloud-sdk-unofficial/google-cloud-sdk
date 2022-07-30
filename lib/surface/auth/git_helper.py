@@ -93,6 +93,8 @@ class GitHelper(base.Command):
         GitHelper.GOOGLESOURCE,  # Requires a different username value.
     ]
     credentialed_domains_suffix = [
+        '.sourcemanager.dev',
+        '.blueoryx.dev',
         '.'+GitHelper.GOOGLESOURCE,
     ]
     extra = properties.VALUES.core.credentialed_hosted_repo_domains.Get()

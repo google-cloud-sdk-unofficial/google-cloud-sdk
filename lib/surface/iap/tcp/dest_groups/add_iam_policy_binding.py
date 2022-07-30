@@ -39,7 +39,7 @@ class AddIamPolicyBinding(base.Command):
 
             $ {command} --member='user:test-user@gmail.com'
                --role='roles/iap.tunnelResourceAccessor'
-               --group-name='my-group' --region='us-west1'
+               --dest-group='my-group' --region='us-west1'
 
           To add an IAM policy binding for the role of
           'roles/iap.tunnelResourceAccessor' for all authenticated users in the
@@ -47,7 +47,7 @@ class AddIamPolicyBinding(base.Command):
 
             $ {command} --member='allAuthenticatedUsers'
               --role='roles/iap.tunnelResourceAccessor'
-              --group-name='my-group' --region='us-west1'
+              --dest-group='my-group' --region='us-west1'
 
           To add an IAM policy binding which expires at the end of the year 2018
           for the role of 'roles/iap.tunnelResourceAccessor' and the user
@@ -59,7 +59,7 @@ class AddIamPolicyBinding(base.Command):
                 --condition='expression=request.time <
                 timestamp("2019-01-01T00:00:00Z"),title=expires_end_of_2018,
                 description=Expires at midnight on 2018-12-31'
-                --group-name='my-group' --region='us-west1'
+                --dest-group='my-group' --region='us-west1'
 
           See https://cloud.google.com/iam/docs/managing-policies for details of
           policy role and member types.

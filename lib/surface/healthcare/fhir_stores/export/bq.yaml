@@ -71,6 +71,12 @@
         help_text: |
           Analytics schema defined by the FHIR community.
           See https://github.com/rbrush/sql-on-fhir/blob/master/sql-on-fhir.md.
+      - arg_value: analytics_v2
+        enum_value: ANALYTICS_V2
+        help_text: |
+          Analytics V2, similar to Analytics schema type, with added support
+          for extensions with one or more occurrences and contained resources
+          to be represented in stringified JSON.
     - arg_name: recursive-depth
       api_field: exportResourcesRequest.bigqueryDestination.schemaConfig.recursiveStructureDepth
       help_text: |

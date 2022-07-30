@@ -26,8 +26,7 @@ from googlecloudsdk.core import log
 from googlecloudsdk.core.console import console_io
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA,
-                    base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
 class Update(base.UpdateCommand):
   """Updates a sink.
 
@@ -152,7 +151,7 @@ class Update(base.UpdateCommand):
             sinkName=util.CreateResourceName(parent, 'sinks',
                                              sink_ref.sinksId)))
 
-  def PatchSink(self, parent, sink_data, update_mask):
+  def PatchSink(self, parent, sink_data, update_mask, custom_writer_identity):
     """Patches a sink specified by the arguments."""
     messages = util.GetMessages()
     return util.GetClient().projects_sinks.Patch(
@@ -161,7 +160,8 @@ class Update(base.UpdateCommand):
                                              sink_data['name']),
             logSink=messages.LogSink(**sink_data),
             uniqueWriterIdentity=True,
-            updateMask=','.join(update_mask)))
+            updateMask=','.join(update_mask),
+            customWriterIdentity=custom_writer_identity))
 
   def _Run(self, args):
     sink_ref = util.GetSinkReference(args.sink_name, args)
@@ -238,6 +238,12 @@ class Update(base.UpdateCommand):
       if args.IsSpecified('add_exclusion'):
         sink_data['exclusions'] += args.add_exclusion
 
+    custom_writer_identity = None
+    is_alpha = self.ReleaseTrack() == base.ReleaseTrack.ALPHA
+    if is_alpha and args.IsSpecified('custom_writer_identity'):
+      custom_writer_identity = args.custom_writer_identity
+      parameter_names.extend(['--custom_writer_identity'])
+
     if not update_mask:
       raise calliope_exceptions.MinimumArgumentException(
           parameter_names, 'Please specify at least one property to update')
@@ -254,7 +260,8 @@ class Update(base.UpdateCommand):
           default=False)
 
     result = self.PatchSink(
-        util.GetParentFromArgs(args), sink_data, update_mask)
+        util.GetParentFromArgs(args), sink_data, update_mask,
+        custom_writer_identity)
 
     log.UpdatedResource(sink_ref)
     if args.IsSpecified('destination'):
@@ -278,3 +285,36 @@ class Update(base.UpdateCommand):
     if hasattr(self, '_epilog_result_destination'):
       util.PrintPermissionInstructions(self._epilog_result_destination,
                                        self._epilog_writer_identity)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class UpdateAlpha(Update):
+  """Updates a sink.
+
+  Changes the *[DESTINATION]* or *--log-filter* associated with a sink.
+  The new destination must already exist and Cloud Logging must have
+  permission to write to it.
+
+  Log entries are exported to the new destination immediately.
+
+  ## EXAMPLES
+
+  To only update a sink filter, run:
+
+    $ {command} my-sink --log-filter='severity>=ERROR'
+
+  Detailed information about filters can be found at:
+  [](https://cloud.google.com/logging/docs/view/logging-query-language)
+  """
+
+  @staticmethod
+  def Args(parser):
+    Update.Args(parser)
+    parser.add_argument(
+        '--custom-writer-identity',
+        metavar='SERVICE_ACCOUNT_EMAIL',
+        help=(
+            'Writer identity for the sink. Only available for writing to cross-project '
+            'LogBucket sinks. Note a writer identity is '
+            'automatically generated if needed for the sink when it is not explicitly provided.'
+        ))

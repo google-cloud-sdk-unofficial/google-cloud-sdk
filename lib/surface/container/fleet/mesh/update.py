@@ -21,6 +21,8 @@ from __future__ import unicode_literals
 from googlecloudsdk.api_lib.container.fleet import util
 from googlecloudsdk.calliope import actions
 from googlecloudsdk.calliope import base as gbase
+from googlecloudsdk.command_lib.container.fleet import resources
+from googlecloudsdk.command_lib.container.fleet import util as hub_util
 from googlecloudsdk.command_lib.container.fleet.features import base
 from googlecloudsdk.command_lib.container.fleet.mesh import utils
 
@@ -93,11 +95,19 @@ class UpdateAlpha(base.UpdateCommand):
   @staticmethod
   def Args(parser):
     group = parser.add_mutually_exclusive_group()
-    group.add_argument(
-        '--memberships',
-        type=str,
-        help='Membership names to update, separated by commas if multiple are supplied.',
-    )
+    if hub_util.APIEndpoint() == hub_util.AUTOPUSH_API:
+      resources.AddMembershipResourceArg(
+          group,
+          plural=True,
+          membership_help='Membership names to update, separated by commas if '
+          'multiple are supplied.')
+    else:
+      group.add_argument(
+          '--memberships',
+          type=str,
+          help='Membership names to update, separated by commas if multiple '
+          'are supplied.',
+      )
     group.add_argument(
         '--membership',
         type=str,
@@ -111,14 +121,12 @@ class UpdateAlpha(base.UpdateCommand):
     group.add_argument(
         '--control-plane',
         choices=['automatic', 'manual'],
-        help='The control plane management to update to.'
-    )
+        help='The control plane management to update to.')
     group.add_argument(
         '--management',
         choices=['automatic', 'manual'],
         help='The management mode to update to.',
-        hidden=True
-    )
+        hidden=True)
 
   def Run(self, args):
     _RunUpdate(self, args)
@@ -153,8 +161,7 @@ class UpdateGA(base.UpdateCommand):
         '--control-plane',
         choices=['automatic', 'manual'],
         help='Control plane management to update to.',
-        required=True
-    )
+        required=True)
 
   def Run(self, args):
     _RunUpdate(self, args)

@@ -268,8 +268,8 @@ class Register(base.CreateCommand):
           Enable Workload Identity when registering the cluster with a fleet.
           Ensure that GKE Workload Identity is enabled on your GKE cluster, it
           is a requirement for using Workload Identity with memberships. Refer
-          to the `Registering a cluster using Workload Identity` section in
-          https://cloud.google.com/anthos/multicluster-management/connect/registering-a-cluster#register_cluster
+          to the `Enable GKE Workload Identity` section in
+          https://cloud.google.com/kubernetes-engine/docs/how-to/workload-identity#enable
           --service_account_key_file flag should not be set if this is set.
           """),
     )
@@ -336,10 +336,10 @@ class Register(base.CreateCommand):
       if self.ReleaseTrack(
       ) is base.ReleaseTrack.ALPHA and hub_util.APIEndpoint(
       ) == hub_util.AUTOPUSH_API:
-        if hub_util.LocationFromGKEArgs(args):
-          location = hub_util.LocationFromGKEArgs(args)
-        elif args.location:
+        if args.location:
           location = args.location
+        elif hub_util.LocationFromGKEArgs(args):
+          location = hub_util.LocationFromGKEArgs(args)
       kube_client.CheckClusterAdminPermissions()
       kube_util.ValidateClusterIdentifierFlags(kube_client, args)
       if self.ReleaseTrack() is not base.ReleaseTrack.GA:

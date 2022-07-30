@@ -68,6 +68,11 @@ class Update(base.UpdateCommand):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     ref = self.FIREWALL_POLICY_ARG.ResolveAsResource(
         args, holder.resources, with_project=False)
+    org_firewall_policy = client.OrgFirewallPolicy(
+        ref=ref,
+        compute_client=holder.client,
+        resources=holder.resources,
+        version=six.text_type(self.ReleaseTrack()).lower())
     firewall_policy_rule_client = client.OrgFirewallPolicyRule(
         ref=ref,
         compute_client=holder.client,
@@ -113,7 +118,11 @@ class Update(base.UpdateCommand):
         dest_fqdns = args.dest_fqdns
         should_setup_match = True
       if args.IsSpecified('security_profile_group'):
-        security_profile_group = args.security_profile_group
+        security_profile_group = firewall_policies_utils.BuildSecurityProfileGroupUrl(
+            security_profile_group=args.security_profile_group,
+            optional_organization=args.organization,
+            firewall_policy_client=org_firewall_policy,
+            firewall_policy_id=args.firewall_policy)
     if self.ReleaseTrack() in [base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA]:
       if args.IsSpecified('src_threat_intelligence'):
         src_threat_intelligence = args.src_threat_intelligence

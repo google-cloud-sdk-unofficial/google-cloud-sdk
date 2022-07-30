@@ -24,6 +24,7 @@ from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute.security_policies import client
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
+from googlecloudsdk.command_lib.compute import scope as compute_scope
 from googlecloudsdk.command_lib.compute.security_policies import flags
 from googlecloudsdk.command_lib.compute.security_policies import security_policies_utils
 from googlecloudsdk.core.util import files
@@ -109,8 +110,8 @@ class Create(base.CreateCommand):
         template = holder.client.messages.SecurityPolicy(
             name=ref.Name(),
             description=args.description,
-            type=holder.client.messages.SecurityPolicy
-            .TypeValueValuesEnum(args.type))
+            type=holder.client.messages.SecurityPolicy.TypeValueValuesEnum(
+                args.type))
       else:
         template = holder.client.messages.SecurityPolicy(
             name=ref.Name(), description=args.description)
@@ -137,9 +138,7 @@ class CreateBeta(Create):
 
     group.add_argument(
         '--type',
-        choices=[
-            'CLOUD_ARMOR', 'CLOUD_ARMOR_EDGE', 'CLOUD_ARMOR_NETWORK'
-        ],
+        choices=['CLOUD_ARMOR', 'CLOUD_ARMOR_EDGE', 'CLOUD_ARMOR_NETWORK'],
         type=lambda x: x.upper(),
         metavar='SECURITY_POLICY_TYPE',
         help=('The type indicates the intended use of the security policy.'))
@@ -165,7 +164,8 @@ class CreateBeta(Create):
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
-    ref = self.SECURITY_POLICY_ARG.ResolveAsResource(args, holder.resources)
+    ref = self.SECURITY_POLICY_ARG.ResolveAsResource(
+        args, holder.resources, default_scope=compute_scope.ScopeEnum.GLOBAL)
     security_policy = client.SecurityPolicy(ref, compute_client=holder.client)
 
     if args.file_name:
@@ -176,8 +176,8 @@ class CreateBeta(Create):
         template = holder.client.messages.SecurityPolicy(
             name=ref.Name(),
             description=args.description,
-            type=holder.client.messages.SecurityPolicy
-            .TypeValueValuesEnum(args.type))
+            type=holder.client.messages.SecurityPolicy.TypeValueValuesEnum(
+                args.type))
       else:
         template = holder.client.messages.SecurityPolicy(
             name=ref.Name(), description=args.description)
@@ -233,7 +233,8 @@ class CreateAlpha(Create):
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
-    ref = self.SECURITY_POLICY_ARG.ResolveAsResource(args, holder.resources)
+    ref = self.SECURITY_POLICY_ARG.ResolveAsResource(
+        args, holder.resources, default_scope=compute_scope.ScopeEnum.GLOBAL)
     security_policy = client.SecurityPolicy(ref, compute_client=holder.client)
 
     if args.file_name:
@@ -244,8 +245,8 @@ class CreateAlpha(Create):
         template = holder.client.messages.SecurityPolicy(
             name=ref.Name(),
             description=args.description,
-            type=holder.client.messages.SecurityPolicy
-            .TypeValueValuesEnum(args.type))
+            type=holder.client.messages.SecurityPolicy.TypeValueValuesEnum(
+                args.type))
       else:
         template = holder.client.messages.SecurityPolicy(
             name=ref.Name(), description=args.description)

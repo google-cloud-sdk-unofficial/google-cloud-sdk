@@ -92,10 +92,10 @@ class CreateHelper(object):
   @classmethod
   def Args(cls, parser, support_l7_internal_load_balancer, support_failover,
            support_logging, support_tcp_ssl_logging, support_net_lb_ilb_logging,
-           support_multinic, support_client_only, support_grpc_protocol,
-           support_unspecified_protocol, support_subsetting,
-           support_subsetting_subset_size, support_advanced_load_balancing,
-           support_dynamic_compression, support_weighted_lb):
+           support_multinic, support_client_only, support_unspecified_protocol,
+           support_subsetting, support_subsetting_subset_size,
+           support_advanced_load_balancing, support_dynamic_compression,
+           support_weighted_lb):
     """Add flags to create a backend service to the parser."""
 
     parser.display_info.AddFormat(flags.DEFAULT_LIST_FORMAT)
@@ -119,7 +119,6 @@ class CreateHelper(object):
     flags.AddProtocol(
         parser,
         default=None,
-        support_grpc_protocol=support_grpc_protocol,
         support_unspecified_protocol=support_unspecified_protocol)
     flags.AddEnableCdn(parser)
     flags.AddSessionAffinity(parser, support_client_only=support_client_only)
@@ -441,7 +440,6 @@ class CreateGA(base.CreateCommand):
   _support_net_lb_ilb_logging = False
   _support_multinic = True
   _support_client_only = True
-  _support_grpc_protocol = True
   _support_unspecified_protocol = True
   _support_subsetting = True
   _support_subsetting_subset_size = False
@@ -461,7 +459,6 @@ class CreateGA(base.CreateCommand):
         support_net_lb_ilb_logging=cls._support_net_lb_ilb_logging,
         support_multinic=cls._support_multinic,
         support_client_only=cls._support_client_only,
-        support_grpc_protocol=cls._support_grpc_protocol,
         support_unspecified_protocol=cls._support_unspecified_protocol,
         support_subsetting=cls._support_subsetting,
         support_subsetting_subset_size=cls._support_subsetting_subset_size,
@@ -508,7 +505,6 @@ class CreateBeta(CreateGA):
   """
   _support_multinic = True
   _support_client_only = True
-  _support_grpc_protocol = True
   _support_unspecified_protocol = True
   _support_subsetting = True
   _support_subsetting_subset_size = True
@@ -538,7 +534,6 @@ class CreateAlpha(CreateBeta):
   https://cloud.google.com/load-balancing/docs/backend-service.
   """
   _support_client_only = True
-  _support_grpc_protocol = True
   _support_unspecified_protocol = True
   _support_subsetting = True
   _support_subsetting_subset_size = True

@@ -22,6 +22,7 @@ import multiprocessing
 
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.storage import errors
+from googlecloudsdk.command_lib.storage import flags
 from googlecloudsdk.command_lib.storage import name_expansion
 from googlecloudsdk.command_lib.storage import plurality_checkable_iterator
 from googlecloudsdk.command_lib.storage import storage_url
@@ -55,6 +56,7 @@ class Delete(base.Command):
   def Args(parser):
     parser.add_argument(
         'urls', nargs='+', help='Specifies the URLs of the buckets to delete.')
+    flags.add_continue_on_error_flag(parser)
 
   def Run(self, args):
     for url_string in args.urls:
@@ -78,4 +80,5 @@ class Delete(base.Command):
         task_status_queue=task_status_queue,
         progress_manager_args=task_status.ProgressManagerArgs(
             increment_type=task_status.IncrementType.INTEGER,
-            manifest_path=None))
+            manifest_path=None),
+        continue_on_error=args.continue_on_error)

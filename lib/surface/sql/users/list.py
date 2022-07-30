@@ -56,8 +56,15 @@ def RunBaseListCommand(args, release_track):
   # has information about this field. This an implicit way of saying that we
   # will only show dual password type on MySQL 8.0, as no other instance type
   # will have dual password information.
-  show_dual_password_type = any(map(lambda user: user.dualPasswordType, users))
-  dual_password_type = "dualPasswordType," if show_dual_password_type else ""
+  dual_password_type = ""
+  for user in users:
+    if user.dualPasswordType:
+      dual_password_type = "dualPasswordType,"
+    policy = user.passwordPolicy
+    if not policy:
+      continue
+    # Don't display
+    policy.enableFailedAttemptsCheck = None
 
   # Dual Password types is exposed in all release tracks, but we will not
   # expose the column early to customers, because returning the Dual Password

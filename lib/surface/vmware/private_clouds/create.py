@@ -19,6 +19,7 @@ from __future__ import division
 from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.vmware.privateclouds import PrivateCloudsClient
+from googlecloudsdk.calliope import actions
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.vmware import flags
 from googlecloudsdk.core import log
@@ -84,7 +85,11 @@ class Create(base.CreateCommand):
         required=False,
         help="""\
         Network ID of the Google Cloud VPC network to connect with your private cloud.
-        """)
+        """,
+        action=actions.DeprecationAction(
+            '--network',
+            warn='The {flag_name} flag is deprecated; consider using --vmware-engine-network instead.',
+            removed=False))
     group.add_argument(
         '--vmware-engine-network',
         required=False,
@@ -109,8 +114,8 @@ class Create(base.CreateCommand):
     privatecloud = args.CONCEPTS.private_cloud.Parse()
     client = PrivateCloudsClient()
     is_async = args.async_
-    operation = client.Create(privatecloud, args.description,
-                              args.cluster, args.node_type, args.node_count,
+    operation = client.Create(privatecloud, args.description, args.cluster,
+                              args.node_type, args.node_count,
                               args.management_range, args.network,
                               args.vmware_engine_network, args.network_project,
                               args.node_custom_core_count)

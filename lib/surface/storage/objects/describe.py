@@ -21,7 +21,9 @@ from __future__ import unicode_literals
 from googlecloudsdk.api_lib.storage import api_factory
 from googlecloudsdk.api_lib.storage import cloud_api
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.storage import encryption_util
 from googlecloudsdk.command_lib.storage import errors
+from googlecloudsdk.command_lib.storage import flags
 from googlecloudsdk.command_lib.storage import storage_url
 from googlecloudsdk.command_lib.storage import wildcard_iterator
 from googlecloudsdk.core.resource import resource_projector
@@ -52,8 +54,10 @@ class Describe(base.DescribeCommand):
   @staticmethod
   def Args(parser):
     parser.add_argument('url', help='Specifies URL of object to describe.')
+    flags.add_encryption_flags(parser)
 
   def Run(self, args):
+    encryption_util.initialize_key_store(args)
     if wildcard_iterator.contains_wildcard(args.url):
       raise errors.InvalidUrlError(
           'Describe does not accept wildcards because it returns a single'

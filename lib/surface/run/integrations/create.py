@@ -69,7 +69,7 @@ class Create(base.Command):
     service = args.service
     input_name = args.name
     parameters = flags.GetParameters(args)
-    flags.ValidateCreateParameters(integration_type, parameters)
+    flags.ValidateCreateParameters(integration_type, parameters, service)
     flags.ValidateEnabledGcpApis(integration_type)
 
     conn_context = connection_context.GetConnectionContext(
@@ -108,6 +108,8 @@ class Create(base.Command):
   def _validateServiceNameAgainstIntegrations(self, client, integration_type,
                                               integration_name, service):
     """Checks if the service name matches an integration name."""
+    if not service:
+      return
     error = exceptions.ArgumentError('Service name cannot be the same as ' +
                                      'the provided integration name or an ' +
                                      'existing integration name')

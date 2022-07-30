@@ -252,6 +252,7 @@ def AddBetaArgs(parser):
   flags.AddAllocatedIpRangeName(parser)
   flags.AddDeletionProtection(parser)
   labels_util.AddUpdateLabelsFlags(parser, enable_clear=True)
+  flags.AddEnableGooglePrivatePath(parser)
 
 
 def AddAlphaArgs(unused_parser):

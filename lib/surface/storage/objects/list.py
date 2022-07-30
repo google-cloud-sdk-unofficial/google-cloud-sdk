@@ -20,11 +20,28 @@ from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.storage import cloud_api
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.storage import encryption_util
 from googlecloudsdk.command_lib.storage import errors
+from googlecloudsdk.command_lib.storage import flags
 from googlecloudsdk.command_lib.storage import storage_url
 from googlecloudsdk.command_lib.storage import wildcard_iterator
+from googlecloudsdk.command_lib.storage.resources import gsutil_full_resource_formatter
 from googlecloudsdk.command_lib.storage.resources import resource_reference
+from googlecloudsdk.core import log
+from googlecloudsdk.core import properties
+from googlecloudsdk.core.resource import resource_printer
 from googlecloudsdk.core.resource import resource_projector
+
+
+def _object_iterator(url):
+  """Iterates through resources matching URL and filter out non-objects."""
+  for resource in wildcard_iterator.get_wildcard_iterator(
+      url.url_string,
+      all_versions=True,
+      error_on_missing_key=False,
+      fields_scope=cloud_api.FieldsScope.FULL):
+    if isinstance(resource, resource_reference.ObjectResource):
+      yield resource
 
 
 class List(base.ListCommand):
@@ -60,8 +77,18 @@ class List(base.ListCommand):
   def Args(parser):
     parser.add_argument(
         'urls', nargs='+', help='Specifies URL of objects to list.')
+    flags.add_encryption_flags(parser, hidden=False)
+
+  def Display(self, args, resources):
+    del args  # Unused.
+    if properties.VALUES.storage.run_by_gsutil_shim.GetBool():
+      resource_printer.Print(resources, 'object[terminator=""]')
+    else:
+      resource_printer.Print(resources, 'yaml')
 
   def Run(self, args):
+    encryption_util.initialize_key_store(args)
+
     urls = []
     for url_string in args.urls:
       url = storage_url.storage_url_from_string(url_string)
@@ -77,10 +104,18 @@ class List(base.ListCommand):
         urls.append(url)
 
     for url in urls:
-      for resource in wildcard_iterator.get_wildcard_iterator(
-          url.url_string,
-          all_versions=True,
-          fields_scope=cloud_api.FieldsScope.FULL):
-        if isinstance(resource, resource_reference.ObjectResource):
+      if properties.VALUES.storage.run_by_gsutil_shim.GetBool():
+        # Replicating gsutil "stat" command behavior.
+        found_match = False
+        for resource in _object_iterator(url):
+          found_match = True
+          yield resource.get_full_metadata_string(
+              gsutil_full_resource_formatter.GsutilFullResourceFormatter(),
+              show_acl=False)
+        if not found_match:
+          log.error('No URLs matched: ' + url.url_string)
+          self.exit_code = 1
+      else:
+        for resource in _object_iterator(url):
           # MakeSerializable will omit all the None values.
           yield resource_projector.MakeSerializable(resource.metadata)

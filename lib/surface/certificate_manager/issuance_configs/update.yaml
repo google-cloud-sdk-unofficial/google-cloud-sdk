@@ -1,0 +1,42 @@
+- release_tracks: [ALPHA, BETA]
+
+  help_text:
+    brief: Update a Certificate Issuance Config.
+    description: |
+      Update a Certificate Issuance Config.
+    examples: |
+      To Update a Certificate Issuance Config called `my-cic`, run:
+
+        $ {command} my-cic
+
+  request:
+    collection: certificatemanager.projects.locations.certificateIssuanceConfigs
+    api_version: v1
+
+  async:
+    collection: certificatemanager.projects.locations.operations
+
+  arguments:
+    resource:
+      help_text: Name of the Certificate Issuance Config to update.
+      spec: !REF googlecloudsdk.command_lib.certificate_manager.resources:certificateIssuanceConfig
+
+    params:
+    - arg_name: description
+      api_field: certificateIssuanceConfig.description
+      help_text: |
+        Human-readable description of the resource.
+    - arg_name: rotation-window-percentage
+      api_field: certificateIssuanceConfig.rotationWindowPercentage
+      help_text: |
+        How long along the lifetime of the ceritificate to renew, expressed as a percentage.
+    - arg_name: lifetime
+      api_field: certificateIssuanceConfig.lifetime
+      help_text: |
+        Lifetime of issued certificates.
+
+    labels:
+      api_field: certificateIssuanceConfig.labels
+
+  update:
+    read_modify_update: true

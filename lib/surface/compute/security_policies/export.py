@@ -12,7 +12,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """Command for exporting security policy configs to a file."""
 
 from __future__ import absolute_import
@@ -23,6 +22,7 @@ from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute.security_policies import client
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
+from googlecloudsdk.command_lib.compute import scope as compute_scope
 from googlecloudsdk.command_lib.compute.security_policies import flags
 from googlecloudsdk.command_lib.compute.security_policies import (
     security_policies_utils)
@@ -75,8 +75,8 @@ class Export(base.Command):
           args.file_name, exp)
       raise exceptions.BadFileException(msg)
 
-    log.status.Print(
-        'Exported security policy to [{0}].'.format(args.file_name))
+    log.status.Print('Exported security policy to [{0}].'.format(
+        args.file_name))
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
@@ -105,7 +105,8 @@ class ExportBeta(base.Command):
   def Run(self, args):
     # Get the security policy.
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
-    ref = self.SECURITY_POLICY_ARG.ResolveAsResource(args, holder.resources)
+    ref = self.SECURITY_POLICY_ARG.ResolveAsResource(
+        args, holder.resources, default_scope=compute_scope.ScopeEnum.GLOBAL)
 
     requests = []
     security_policy = client.SecurityPolicy(ref, compute_client=holder.client)
@@ -124,8 +125,8 @@ class ExportBeta(base.Command):
           args.file_name, exp)
       raise exceptions.BadFileException(msg)
 
-    log.status.Print(
-        'Exported security policy to [{0}].'.format(args.file_name))
+    log.status.Print('Exported security policy to [{0}].'.format(
+        args.file_name))
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -154,7 +155,8 @@ class ExportAlpha(base.Command):
   def Run(self, args):
     # Get the security policy.
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
-    ref = self.SECURITY_POLICY_ARG.ResolveAsResource(args, holder.resources)
+    ref = self.SECURITY_POLICY_ARG.ResolveAsResource(
+        args, holder.resources, default_scope=compute_scope.ScopeEnum.GLOBAL)
 
     requests = []
     security_policy = client.SecurityPolicy(ref, compute_client=holder.client)
@@ -173,5 +175,5 @@ class ExportAlpha(base.Command):
           args.file_name, exp)
       raise exceptions.BadFileException(msg)
 
-    log.status.Print(
-        'Exported security policy to [{0}].'.format(args.file_name))
+    log.status.Print('Exported security policy to [{0}].'.format(
+        args.file_name))

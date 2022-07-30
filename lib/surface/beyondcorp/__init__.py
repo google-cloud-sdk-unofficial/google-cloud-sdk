@@ -22,7 +22,7 @@ from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Beyondcorp(base.Group):
   """Manage secure access to applications with integrated threat and data protection.
 

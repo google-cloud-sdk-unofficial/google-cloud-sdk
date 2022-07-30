@@ -118,6 +118,7 @@ class Deploy(base.Command):
     flags.AddEgressSettingsFlag(managed_group)
     flags.AddCmekKeyFlag(managed_group)
     flags.AddCmekKeyRevocationActionTypeFlag(managed_group)
+    flags.AddDescriptionFlag(managed_group)
 
     # Flags specific to connecting to a cluster
     cluster_group = flags.GetClusterArgGroup(parser)
@@ -296,7 +297,6 @@ class BetaDeploy(Deploy):
     managed_group = flags.GetManagedArgGroup(parser)
     flags.AddSandboxArg(managed_group)
     flags.AddSessionAffinityFlag(managed_group)
-    flags.AddDescriptionFlag(managed_group)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -317,6 +317,5 @@ class AlphaDeploy(Deploy):
     flags.AddVpcNetworkFlags(managed_group)
     flags.AddVpcSubnetFlags(managed_group)
     flags.AddVpcNetworkTagsFlags(managed_group)
-    flags.AddDescriptionFlag(managed_group)
 
 AlphaDeploy.__doc__ = Deploy.__doc__

@@ -20,12 +20,10 @@ from __future__ import unicode_literals
 
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
-from googlecloudsdk.command_lib.functions import flags
-from googlecloudsdk.command_lib.functions.v1.list import command as command_v1
 from googlecloudsdk.command_lib.functions.v2.list import command as command_v2
 
 
-def _CommonArgs(parser, track):
+def _CommonArgs(parser, track):  # pylint: disable=unused-argument
   """Registers flags for this command."""
   parser.add_argument(
       '--regions',
@@ -35,9 +33,16 @@ def _CommonArgs(parser, track):
             'listed.'),
       type=arg_parsers.ArgList(min_length=1),
       default=['-'])
+  parser.display_info.AddFormat("""
+      table(
+        name.basename():sort=1,
+        state():label=STATE,
+        trigger():label=TRIGGER,
+        name.scope("locations").segment(0):label=REGION,
+        generation():label=ENVIRONMENT
+      )""")
 
   base.URI_FLAG.RemoveFromParser(parser)
-  flags.AddGen2Flag(parser, track)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
@@ -49,27 +54,7 @@ class List(base.ListCommand):
     _CommonArgs(parser, base.ReleaseTrack.GA)
 
   def Run(self, args):
-    if flags.ShouldUseGen2():
-      args.GetDisplayInfo().AddFormat("""
-          table(
-            name.basename():sort=1,
-            state():label=STATE,
-            trigger():label=TRIGGER,
-            name.scope("locations").segment(0):label=REGION,
-            generation():label=ENVIRONMENT
-          )
-      """)
-      return command_v2.Run(args, self.ReleaseTrack())
-    else:
-      args.GetDisplayInfo().AddFormat("""
-        table(
-          name.basename():sort=1,
-          status,
-          trigger():label=TRIGGER,
-          name.scope("locations").segment(0):label=REGION
-        )
-      """)
-      return command_v1.Run(args)
+    return command_v2.Run(args, self.ReleaseTrack())
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)

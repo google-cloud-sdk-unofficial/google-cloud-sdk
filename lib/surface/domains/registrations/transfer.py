@@ -211,8 +211,6 @@ class Transfer(base.CreateCommand):
               'order for the transfer to proceed. Even after confirmation, '
               'transfers can sometimes take several days to complete. The '
               'transfer will be complete when the registration resource changes'
-              ' state to ACTIVE.\nTo check the status of the domain transfer,'
-              ' sign into Google Domains by visiting '
-              'https://domains.google.com/registrar.'))
+              ' state to ACTIVE.'))
 
     return response

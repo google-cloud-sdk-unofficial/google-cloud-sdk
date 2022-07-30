@@ -26,6 +26,7 @@ DEFAULT_LIST_FORMAT = """\
     table[title="ARTIFACT_REGISTRY"](
          name.basename():label=REPOSITORY,
          format:label=FORMAT,
+         mode.basename(undefined=STANDARD_REPOSITORY):label=MODE,
          description:label=DESCRIPTION,
          name.segment(3):label=LOCATION,
          labels.list():label=LABELS,

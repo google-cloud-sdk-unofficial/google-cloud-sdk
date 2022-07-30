@@ -1,0 +1,59 @@
+- release_tracks: [ALPHA]
+
+  help_text:
+    brief: Get an effective Security Health Analytics custom module.
+    description: Get an effective Security Health Analytics custom module.
+    examples: |
+      To get an effective Security Health Analytics custom module given organization `123` with id `test-sha-custom-module`, run:
+
+        $ {command} test-sha-custom-module --organization=organizations/123
+        $ {command} test-sha-custom-module --organization=123
+        $ {command} organizations/123/securityHealthAnalyticsSettings/effectiveCustomModules/test-sha-custom-module
+
+      To get an effective Security Health Analytics custom module given folder `456` with id `test-sha-custom-module`, run:
+
+        $ {command} test-sha-custom-module --folder=folders/456
+        $ {command} test-sha-custom-module --folder=456
+        $ {command} folders/456/securityHealthAnalyticsSettings/effectiveCustomModules/test-sha-custom-module
+
+      To get an effective Security Health Analytics custom module given project `789` with id `test-sha-custom-module`, run:
+
+        $ {command} test-sha-custom-module --project=projects/789
+        $ {command} test-sha-custom-module --project=789
+        $ {command} projects/789/securityHealthAnalyticsSettings/effectiveCustomModules/test-sha-custom-module
+
+  request:
+    collection: securitycenter.organizations.securityHealthAnalyticsSettings.effectiveCustomModules
+    disable_resource_check: true
+    api_version: v1
+    method: get
+    modify_request_hooks:
+    - googlecloudsdk.command_lib.scc.custom_modules.sha.request_hooks:GetEffectiveSecurityHealthAnalyticsCustomModuleReqHook
+
+  arguments:
+
+    params:
+    - arg_name: custom_module
+      api_field: name
+      is_positional: true
+      required: true
+      help_text: |
+        Id or the full resource name of the effective Security Health Analytics custom module.
+
+    - group:
+        mutex: true
+        params:
+        - arg_name: organization
+          api_field: name
+          help_text: |
+            Organization where the effective Security Health Analytics custom module resides. Formatted as `organizations/123` or just `123`.
+
+        - arg_name: folder
+          api_field: name
+          help_text: |
+            Folder where the effective Security Health Analytics custom module resides. Formatted as `folders/456` or just `456`.
+
+        - arg_name: project
+          api_field: name
+          help_text: |
+            Project (id or number) where the effective Security Health Analytics custom module resides. Formatted as `projects/789` or just `789`.

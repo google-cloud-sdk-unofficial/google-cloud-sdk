@@ -22,7 +22,6 @@ from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute.instances import flags
 from googlecloudsdk.command_lib.compute.os_config import troubleshooter
-from googlecloudsdk.core import log
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -65,11 +64,9 @@ class Troubleshoot(base.Command):
     compute_client = holder.client
 
     instance_ref = self._ResolveInstance(holder, compute_client, args)
-    log.Print(
-        troubleshooter.Troubleshoot(
-            compute_client,
-            instance_ref,
-            self.ReleaseTrack().prefix))
+    troubleshooter.Troubleshoot(compute_client,
+                                instance_ref,
+                                self.ReleaseTrack().prefix)
     return
 
 Troubleshoot.detailed_help = {
@@ -86,7 +83,8 @@ Troubleshoot.detailed_help = {
     + Checks if the required metadata is set up correctly in the VM instance.\n
     + Checks if the latest version of the OS Config agent is running on the VM instance.\n
     + Checks if a service account is attached to the VM instance.\n
-    + Checks if the VM Manager service agent is enabled.
+    + Checks if the VM Manager service agent is enabled.\n
+    + Checks if the VM instance has a public IP or Private Google Access.
     """,
     'EXAMPLES': """
     To troubleshoot an instance named `my-instance` in zone `us-west1-a`, run

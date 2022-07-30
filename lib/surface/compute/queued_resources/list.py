@@ -24,8 +24,7 @@ from googlecloudsdk.api_lib.compute import utils
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute import completers as compute_completers
-from googlecloudsdk.core.util.iso_duration import Duration
-from googlecloudsdk.core.util.times import FormatDuration
+from googlecloudsdk.command_lib.compute.queued_resources import flags
 
 DETAILED_HELP = {
     'DESCRIPTION':
@@ -46,21 +45,6 @@ DETAILED_HELP = {
 }
 
 
-def _TransformMaxRunDuration(resource):
-  """Properly format max_run_duration field."""
-  # This will always be present in the resource.
-  bulk_resource = resource.get('bulkInsertInstanceResource')
-
-  # Use get with dictionary optional return value to skip existence checking
-  max_run_duration = bulk_resource.get('instanceProperties',
-                                       {}).get('scheduling',
-                                               {}).get('maxRunDuration')
-  if not max_run_duration:
-    return ''
-  duration = Duration(seconds=int(max_run_duration.get('seconds')))
-  return FormatDuration(duration, parts=4)
-
-
 class List(base.ListCommand):
   """List Compute Engine queued resources."""
 
@@ -68,20 +52,7 @@ class List(base.ListCommand):
 
   @staticmethod
   def Args(parser):
-    parser.display_info.AddFormat("""\
-        table(
-          name,
-          location(),
-          bulkInsertInstanceResource.count,
-          bulkInsertInstanceResource.instanceProperties.machineType,
-          bulkInsertInstanceResource.instanceProperties.guest_accelerators[0].accelerator_type,
-          state,
-          maxRunDuration(),
-          status.queuingPolicy.validUntilTime
-        )""")
-    parser.display_info.AddTransforms({
-        'maxRunDuration': _TransformMaxRunDuration,
-    })
+    flags.AddOutputFormat(parser)
     parser.display_info.AddUriFunc(utils.MakeGetUriFunc())
     # TODO(b/212438138) Use lister.AddZonalListerArgs(parser).
     parser.add_argument(

@@ -1,4 +1,4 @@
-- release_tracks: [GA, BETA, ALPHA]
+- release_tracks: [ALPHA, BETA]
 
   help_text:
     brief: |
@@ -21,6 +21,10 @@
 
   request:
     collection: beyondcorp.projects.locations.operations
+    ALPHA:
+      api_version: v1alpha
+    BETA:
+      api_version: v1
 
   output:
     format: |

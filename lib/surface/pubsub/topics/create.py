@@ -82,7 +82,7 @@ def _Run(args, legacy_output=False):
             '--topic-encryption-key was not fully specified.')
 
   retention_duration = getattr(args, 'message_retention_duration', None)
-  if retention_duration:
+  if args.IsSpecified('message_retention_duration'):
     retention_duration = util.FormatDuration(retention_duration)
 
   message_storage_policy_allowed_regions = args.message_storage_policy_allowed_regions

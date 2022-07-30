@@ -162,7 +162,7 @@ class Ls(base.Command):
         action='store_true',
         help='List all available metadata about items as a JSON dump.')
 
-    flags.add_encryption_flags(parser)
+    flags.add_encryption_flags(parser, hidden=True)
 
   def Run(self, args):
     """Command execution logic."""
