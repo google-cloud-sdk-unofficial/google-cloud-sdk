@@ -75,7 +75,8 @@ class Execute(base.Command):
           stages.ExecutionStages(include_completion=args.wait),
           failure_message='Executing job failed',
           suppress_output=args.async_) as tracker:
-        e = operations.RunJob(job_ref, args.wait, tracker, asyn=args.async_)
+        e = operations.RunJob(job_ref, args.wait, tracker, args.async_,
+                              self.ReleaseTrack())
 
       if args.async_:
         pretty_print.Success(

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
     pygments.lexers._lua_builtins
     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -9,11 +8,11 @@
 
     Do not edit the MODULES dict by hand.
 
-    :copyright: Copyright 2006-2017 by the Pygments team, see AUTHORS.
+    Run with `python -I` to regenerate.
+
+    :copyright: Copyright 2006-2022 by the Pygments team, see AUTHORS.
     :license: BSD, see LICENSE for details.
 """
-
-from __future__ import print_function
 
 MODULES = {'basic': ('_G',
            '_VERSION',
@@ -38,6 +37,7 @@ MODULES = {'basic': ('_G',
            'tonumber',
            'tostring',
            'type',
+           'warn',
            'xpcall'),
  'bit32': ('bit32.arshift',
            'bit32.band',
@@ -51,7 +51,8 @@ MODULES = {'basic': ('_G',
            'bit32.replace',
            'bit32.rrotate',
            'bit32.rshift'),
- 'coroutine': ('coroutine.create',
+ 'coroutine': ('coroutine.close',
+               'coroutine.create',
                'coroutine.isyieldable',
                'coroutine.resume',
                'coroutine.running',
@@ -176,17 +177,7 @@ MODULES = {'basic': ('_G',
 if __name__ == '__main__':  # pragma: no cover
     import re
     import sys
-
-    # urllib ends up wanting to import a module called 'math' -- if
-    # pygments/lexers is in the path, this ends badly.
-    for i in range(len(sys.path)-1, -1, -1):
-        if sys.path[i].endswith('/lexers'):
-            del sys.path[i]
-
-    try:
-        from urllib import urlopen
-    except ImportError:
-        from urllib.request import urlopen
+    from urllib.request import urlopen
     import pprint
 
     # you can't generally find out what module a function belongs to if you
@@ -235,7 +226,7 @@ if __name__ == '__main__':  # pragma: no cover
         f = urlopen('http://www.lua.org/manual/')
         r = re.compile(r'^<A HREF="(\d\.\d)/">(Lua )?\1</A>')
         for line in f:
-            m = r.match(line)
+            m = r.match(line.decode('iso-8859-1'))
             if m is not None:
                 return m.groups()[0]
 
@@ -244,7 +235,7 @@ if __name__ == '__main__':  # pragma: no cover
         r = re.compile(r'^<A HREF="manual.html#pdf-(?!lua|LUA)([^:]+)">\1</A>')
         functions = []
         for line in f:
-            m = r.match(line)
+            m = r.match(line.decode('iso-8859-1'))
             if m is not None:
                 functions.append(m.groups()[0])
         return functions
@@ -288,7 +279,7 @@ if __name__ == '__main__':  # pragma: no cover
             print('>> %s' % full_function_name)
             m = get_function_module(full_function_name)
             modules.setdefault(m, []).append(full_function_name)
-        modules = {k: tuple(v) for k, v in modules.iteritems()}
+        modules = {k: tuple(v) for k, v in modules.items()}
 
         regenerate(__file__, modules)
 

@@ -1,11 +1,10 @@
-# -*- coding: utf-8 -*-
 """
     pygments.lexers.monte
     ~~~~~~~~~~~~~~~~~~~~~
 
     Lexer for the Monte programming language.
 
-    :copyright: Copyright 2006-2017 by the Pygments team, see AUTHORS.
+    :copyright: Copyright 2006-2022 by the Pygments team, see AUTHORS.
     :license: BSD, see LICENSE for details.
 """
 
@@ -78,11 +77,12 @@ _safeScope = [
 
 class MonteLexer(RegexLexer):
     """
-    Lexer for the `Monte <https://monte.readthedocs.io/>`_ programming language.
+    Lexer for the Monte programming language.
 
     .. versionadded:: 2.2
     """
     name = 'Monte'
+    url = 'https://monte.readthedocs.io/'
     aliases = ['monte']
     filenames = ['*.mt']
 

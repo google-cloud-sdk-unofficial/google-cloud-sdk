@@ -1,11 +1,10 @@
-# -*- coding: utf-8 -*-
 """
     pygments.lexers.algebra
     ~~~~~~~~~~~~~~~~~~~~~~~
 
     Lexers for computer algebra systems.
 
-    :copyright: Copyright 2006-2017 by the Pygments team, see AUTHORS.
+    :copyright: Copyright 2006-2022 by the Pygments team, see AUTHORS.
     :license: BSD, see LICENSE for details.
 """
 
@@ -13,18 +12,19 @@ import re
 
 from pygments.lexer import RegexLexer, bygroups, words
 from pygments.token import Text, Comment, Operator, Keyword, Name, String, \
-    Number, Punctuation
+    Number, Punctuation, Whitespace
 
 __all__ = ['GAPLexer', 'MathematicaLexer', 'MuPADLexer', 'BCLexer']
 
 
 class GAPLexer(RegexLexer):
     """
-    For `GAP <http://www.gap-system.org>`_ source code.
+    For GAP source code.
 
     .. versionadded:: 2.0
     """
     name = 'GAP'
+    url = 'http://www.gap-system.org'
     aliases = ['gap']
     filenames = ['*.g', '*.gd', '*.gi', '*.gap']
 
@@ -68,14 +68,34 @@ class GAPLexer(RegexLexer):
         ],
     }
 
+    def analyse_text(text):
+        score = 0.0
+
+        # Declaration part
+        if re.search(
+            r"(InstallTrueMethod|Declare(Attribute|Category|Filter|Operation" +
+            r"|GlobalFunction|Synonym|SynonymAttr|Property))", text
+        ):
+            score += 0.7
+
+        # Implementation part
+        if re.search(
+            r"(DeclareRepresentation|Install(GlobalFunction|Method|" +
+            r"ImmediateMethod|OtherMethod)|New(Family|Type)|Objectify)", text
+        ):
+            score += 0.7
+
+        return min(score, 1.0)
+
 
 class MathematicaLexer(RegexLexer):
     """
-    Lexer for `Mathematica <http://www.wolfram.com/mathematica/>`_ source code.
+    Lexer for Mathematica source code.
 
     .. versionadded:: 2.0
     """
     name = 'Mathematica'
+    url = 'http://www.wolfram.com/mathematica/'
     aliases = ['mathematica', 'mma', 'nb']
     filenames = ['*.nb', '*.cdf', '*.nbp', '*.ma']
     mimetypes = ['application/mathematica',
@@ -118,12 +138,13 @@ class MathematicaLexer(RegexLexer):
 
 class MuPADLexer(RegexLexer):
     """
-    A `MuPAD <http://www.mupad.com>`_ lexer.
+    A MuPAD lexer.
     Contributed by Christopher Creutzig <christopher@creutzig.de>.
 
     .. versionadded:: 0.8
     """
     name = 'MuPAD'
+    url = 'http://www.mupad.com'
     aliases = ['mupad']
     filenames = ['*.mu']
 
@@ -176,10 +197,11 @@ class MuPADLexer(RegexLexer):
               (?:::[a-zA-Z_#][\w#]*|`[^`]*`)*''', Name.Variable),
             (r'[0-9]+(?:\.[0-9]*)?(?:e[0-9]+)?', Number),
             (r'\.[0-9]+(?:e[0-9]+)?', Number),
+            (r'\s+', Whitespace),
             (r'.', Text)
         ],
         'comment': [
-            (r'[^*/]', Comment.Multiline),
+            (r'[^/*]+', Comment.Multiline),
             (r'/\*', Comment.Multiline, '#push'),
             (r'\*/', Comment.Multiline, '#pop'),
             (r'[*/]', Comment.Multiline)
@@ -189,11 +211,12 @@ class MuPADLexer(RegexLexer):
 
 class BCLexer(RegexLexer):
     """
-    A `BC <https://www.gnu.org/software/bc/>`_ lexer.
+    A BC lexer.
 
     .. versionadded:: 2.1
     """
     name = 'BC'
+    url = 'https://www.gnu.org/software/bc/'
     aliases = ['bc']
     filenames = ['*.bc']
 

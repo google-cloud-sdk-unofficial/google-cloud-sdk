@@ -1,11 +1,10 @@
-# -*- coding: utf-8 -*-
 """
     pygments.lexers.ruby
     ~~~~~~~~~~~~~~~~~~~~
 
     Lexers for Ruby and related languages.
 
-    :copyright: Copyright 2006-2017 by the Pygments team, see AUTHORS.
+    :copyright: Copyright 2006-2022 by the Pygments team, see AUTHORS.
     :license: BSD, see LICENSE for details.
 """
 
@@ -30,36 +29,39 @@ RUBY_OPERATORS = (
 
 class RubyLexer(ExtendedRegexLexer):
     """
-    For `Ruby <http://www.ruby-lang.org>`_ source code.
+    For Ruby source code.
     """
 
     name = 'Ruby'
-    aliases = ['rb', 'ruby', 'duby']
+    url = 'http://www.ruby-lang.org'
+    aliases = ['ruby', 'rb', 'duby']
     filenames = ['*.rb', '*.rbw', 'Rakefile', '*.rake', '*.gemspec',
-                 '*.rbx', '*.duby', 'Gemfile']
+                 '*.rbx', '*.duby', 'Gemfile', 'Vagrantfile']
     mimetypes = ['text/x-ruby', 'application/x-ruby']
 
     flags = re.DOTALL | re.MULTILINE
 
     def heredoc_callback(self, match, ctx):
         # okay, this is the hardest part of parsing Ruby...
-        # match: 1 = <<-?, 2 = quote? 3 = name 4 = quote? 5 = rest of line
+        # match: 1 = <<[-~]?, 2 = quote? 3 = name 4 = quote? 5 = rest of line
 
         start = match.start(1)
-        yield start, Operator, match.group(1)        # <<-?
+        yield start, Operator, match.group(1)        # <<[-~]?
         yield match.start(2), String.Heredoc, match.group(2)   # quote ", ', `
         yield match.start(3), String.Delimiter, match.group(3) # heredoc name
         yield match.start(4), String.Heredoc, match.group(4)   # quote again
 
         heredocstack = ctx.__dict__.setdefault('heredocstack', [])
         outermost = not bool(heredocstack)
-        heredocstack.append((match.group(1) == '<<-', match.group(3)))
+        heredocstack.append((match.group(1) in ('<<-', '<<~'), match.group(3)))
 
         ctx.pos = match.start(5)
         ctx.end = match.end(5)
-        # this may find other heredocs
-        for i, t, v in self.get_tokens_unprocessed(context=ctx):
-            yield i, t, v
+        # this may find other heredocs, so limit the recursion depth
+        if len(heredocstack) < 100:
+            yield from self.get_tokens_unprocessed(context=ctx)
+        else:
+            yield ctx.pos, String.Heredoc, match.group(5)
         ctx.pos = match.end()
 
         if outermost:
@@ -108,17 +110,18 @@ class RubyLexer(ExtendedRegexLexer):
             # easy ones
             (r'\:@{0,2}[a-zA-Z_]\w*[!?]?', String.Symbol),
             (words(RUBY_OPERATORS, prefix=r'\:@{0,2}'), String.Symbol),
-            (r":'(\\\\|\\'|[^'])*'", String.Symbol),
-            (r"'(\\\\|\\'|[^'])*'", String.Single),
+            (r":'(\\\\|\\[^\\]|[^'\\])*'", String.Symbol),
             (r':"', String.Symbol, 'simple-sym'),
             (r'([a-zA-Z_]\w*)(:)(?!:)',
              bygroups(String.Symbol, Punctuation)),  # Since Ruby 1.9
-            (r'"', String.Double, 'simple-string'),
+            (r'"', String.Double, 'simple-string-double'),
+            (r"'", String.Single, 'simple-string-single'),
             (r'(?<!\.)`', String.Backtick, 'simple-backtick'),
         ]
 
-        # double-quoted string and symbol
-        for name, ttype, end in ('string', String.Double, '"'), \
+        # quoted string and symbol
+        for name, ttype, end in ('string-double', String.Double, '"'), \
+                                ('string-single', String.Single, "'"),\
                                 ('sym', String.Symbol, '"'), \
                                 ('backtick', String.Backtick, '`'):
             states['simple-'+name] = [
@@ -247,10 +250,10 @@ class RubyLexer(ExtendedRegexLexer):
              Name.Builtin),
             (r'__(FILE|LINE)__\b', Name.Builtin.Pseudo),
             # normal heredocs
-            (r'(?<!\w)(<<-?)(["`\']?)([a-zA-Z_]\w*)(\2)(.*?\n)',
+            (r'(?<!\w)(<<[-~]?)(["`\']?)([a-zA-Z_]\w*)(\2)(.*?\n)',
              heredoc_callback),
             # empty string heredocs
-            (r'(<<-?)("|\')()(\2)(.*?\n)', heredoc_callback),
+            (r'(<<[-~]?)("|\')()(\2)(.*?\n)', heredoc_callback),
             (r'__END__', Comment.Preproc, 'end-part'),
             # multiline regex (after keywords or assignments)
             (r'(?:^|(?<=[=<>~!:])|'
@@ -327,9 +330,13 @@ class RubyLexer(ExtendedRegexLexer):
         ],
         'funcname': [
             (r'\(', Punctuation, 'defexpr'),
-            (r'(?:([a-zA-Z_]\w*)(\.))?'
-             r'([a-zA-Z_]\w*[!?]?|\*\*?|[-+]@?|'
-             r'[/%&|^`~]|\[\]=?|<<|>>|<=?>|>=?|===?)',
+            (r'(?:([a-zA-Z_]\w*)(\.))?'  # optional scope name, like "self."
+             r'('
+                r'[a-zA-Z\u0080-\uffff][a-zA-Z0-9_\u0080-\uffff]*[!?=]?'  # method name
+                r'|!=|!~|=~|\*\*?|[-+!~]@?|[/%&|^]|<=>|<[<=]?|>[>=]?|===?'  # or operator override
+                r'|\[\]=?'  # or element reference/assignment override
+                r'|`'  # or the undocumented backtick override
+             r')',
              bygroups(Name.Class, Operator, Name.Function), '#pop'),
             default('#pop')
         ],
@@ -403,8 +410,8 @@ class RubyConsoleLexer(Lexer):
     aliases = ['rbcon', 'irb']
     mimetypes = ['text/x-ruby-shellsession']
 
-    _prompt_re = re.compile('irb\([a-zA-Z_]\w*\):\d{3}:\d+[>*"\'] '
-                            '|>> |\?> ')
+    _prompt_re = re.compile(r'irb\([a-zA-Z_]\w*\):\d{3}:\d+[>*"\'] '
+                            r'|>> |\?> ')
 
     def get_tokens_unprocessed(self, text):
         rblexer = RubyLexer(**self.options)
@@ -421,21 +428,19 @@ class RubyConsoleLexer(Lexer):
                 curcode += line[end:]
             else:
                 if curcode:
-                    for item in do_insertions(
-                            insertions, rblexer.get_tokens_unprocessed(curcode)):
-                        yield item
+                    yield from do_insertions(
+                        insertions, rblexer.get_tokens_unprocessed(curcode))
                     curcode = ''
                     insertions = []
                 yield match.start(), Generic.Output, line
         if curcode:
-            for item in do_insertions(
-                    insertions, rblexer.get_tokens_unprocessed(curcode)):
-                yield item
+            yield from do_insertions(
+                insertions, rblexer.get_tokens_unprocessed(curcode))
 
 
 class FancyLexer(RegexLexer):
     """
-    Pygments Lexer For `Fancy <http://www.fancy-lang.org/>`_.
+    Pygments Lexer For Fancy.
 
     Fancy is a self-hosted, pure object-oriented, dynamic,
     class-based, concurrent general-purpose programming language
@@ -444,6 +449,7 @@ class FancyLexer(RegexLexer):
     .. versionadded:: 1.5
     """
     name = 'Fancy'
+    url = 'https://github.com/bakkdoor/fancy'
     filenames = ['*.fy', '*.fancypack']
     aliases = ['fancy', 'fy']
     mimetypes = ['text/x-fancysrc']
@@ -451,26 +457,26 @@ class FancyLexer(RegexLexer):
     tokens = {
         # copied from PerlLexer:
         'balanced-regex': [
-            (r'/(\\\\|\\/|[^/])*/[egimosx]*', String.Regex, '#pop'),
-            (r'!(\\\\|\\!|[^!])*![egimosx]*', String.Regex, '#pop'),
+            (r'/(\\\\|\\[^\\]|[^/\\])*/[egimosx]*', String.Regex, '#pop'),
+            (r'!(\\\\|\\[^\\]|[^!\\])*![egimosx]*', String.Regex, '#pop'),
             (r'\\(\\\\|[^\\])*\\[egimosx]*', String.Regex, '#pop'),
-            (r'\{(\\\\|\\\}|[^}])*\}[egimosx]*', String.Regex, '#pop'),
-            (r'<(\\\\|\\>|[^>])*>[egimosx]*', String.Regex, '#pop'),
-            (r'\[(\\\\|\\\]|[^\]])*\][egimosx]*', String.Regex, '#pop'),
-            (r'\((\\\\|\\\)|[^)])*\)[egimosx]*', String.Regex, '#pop'),
-            (r'@(\\\\|\\@|[^@])*@[egimosx]*', String.Regex, '#pop'),
-            (r'%(\\\\|\\%|[^%])*%[egimosx]*', String.Regex, '#pop'),
-            (r'\$(\\\\|\\\$|[^$])*\$[egimosx]*', String.Regex, '#pop'),
+            (r'\{(\\\\|\\[^\\]|[^}\\])*\}[egimosx]*', String.Regex, '#pop'),
+            (r'<(\\\\|\\[^\\]|[^>\\])*>[egimosx]*', String.Regex, '#pop'),
+            (r'\[(\\\\|\\[^\\]|[^\]\\])*\][egimosx]*', String.Regex, '#pop'),
+            (r'\((\\\\|\\[^\\]|[^)\\])*\)[egimosx]*', String.Regex, '#pop'),
+            (r'@(\\\\|\\[^\\]|[^@\\])*@[egimosx]*', String.Regex, '#pop'),
+            (r'%(\\\\|\\[^\\]|[^%\\])*%[egimosx]*', String.Regex, '#pop'),
+            (r'\$(\\\\|\\[^\\]|[^$\\])*\$[egimosx]*', String.Regex, '#pop'),
         ],
         'root': [
             (r'\s+', Text),
 
             # balanced delimiters (copied from PerlLexer):
-            (r's\{(\\\\|\\\}|[^}])*\}\s*', String.Regex, 'balanced-regex'),
-            (r's<(\\\\|\\>|[^>])*>\s*', String.Regex, 'balanced-regex'),
-            (r's\[(\\\\|\\\]|[^\]])*\]\s*', String.Regex, 'balanced-regex'),
-            (r's\((\\\\|\\\)|[^)])*\)\s*', String.Regex, 'balanced-regex'),
-            (r'm?/(\\\\|\\/|[^/\n])*/[gcimosx]*', String.Regex),
+            (r's\{(\\\\|\\[^\\]|[^}\\])*\}\s*', String.Regex, 'balanced-regex'),
+            (r's<(\\\\|\\[^\\]|[^>\\])*>\s*', String.Regex, 'balanced-regex'),
+            (r's\[(\\\\|\\[^\\]|[^\]\\])*\]\s*', String.Regex, 'balanced-regex'),
+            (r's\((\\\\|\\[^\\]|[^)\\])*\)\s*', String.Regex, 'balanced-regex'),
+            (r'm?/(\\\\|\\[^\\]|[^///\n])*/[gcimosx]*', String.Regex),
             (r'm(?=[/!\\{<\[(@%$])', String.Regex, 'balanced-regex'),
 
             # Comments
@@ -478,9 +484,9 @@ class FancyLexer(RegexLexer):
             # Symbols
             (r'\'([^\'\s\[\](){}]+|\[\])', String.Symbol),
             # Multi-line DoubleQuotedString
-            (r'"""(\\\\|\\"|[^"])*"""', String),
+            (r'"""(\\\\|\\[^\\]|[^\\])*?"""', String),
             # DoubleQuotedString
-            (r'"(\\\\|\\"|[^"])*"', String),
+            (r'"(\\\\|\\[^\\]|[^"\\])*"', String),
             # keywords
             (r'(def|class|try|catch|finally|retry|return|return_local|match|'
              r'case|->|=>)\b', Keyword),
@@ -498,11 +504,11 @@ class FancyLexer(RegexLexer):
             (r'[a-zA-Z](\w|[-+?!=*/^><%])*:', Name.Function),
             # operators, must be below functions
             (r'[-+*/~,<>=&!?%^\[\].$]+', Operator),
-            ('[A-Z]\w*', Name.Constant),
-            ('@[a-zA-Z_]\w*', Name.Variable.Instance),
-            ('@@[a-zA-Z_]\w*', Name.Variable.Class),
+            (r'[A-Z]\w*', Name.Constant),
+            (r'@[a-zA-Z_]\w*', Name.Variable.Instance),
+            (r'@@[a-zA-Z_]\w*', Name.Variable.Class),
             ('@@?', Operator),
-            ('[a-zA-Z_]\w*', Name),
+            (r'[a-zA-Z_]\w*', Name),
             # numbers - / checks are necessary to avoid mismarking regexes,
             # see comment in RubyLexer
             (r'(0[oO]?[0-7]+(?:_[0-7]+)*)(\s*)([/?])?',

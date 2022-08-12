@@ -135,7 +135,7 @@ class Create(base.Command):
             job_ref, changes, tracker, asyn=(args.async_ and not execute_now))
         if execute_now:
           execution = operations.RunJob(job_ref, args.wait, tracker,
-                                        args.async_)
+                                        args.async_, self.ReleaseTrack())
 
       if args.async_ and not execute_now:
         pretty_print.Success('Job [{{bold}}{job}{{reset}}] is being created '

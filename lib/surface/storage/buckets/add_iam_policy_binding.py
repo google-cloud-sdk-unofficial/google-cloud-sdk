@@ -22,6 +22,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.iam import iam_util
 
 
+@base.Hidden
 class AddIamPolicyBinding(base.Command):
   """Add an IAM policy binding to a bucket."""
 

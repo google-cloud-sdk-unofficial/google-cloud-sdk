@@ -21,6 +21,7 @@ from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 
 
+@base.Hidden
 class RemoveAclGrant(base.Command):
   """Remove an access control list grant on one or more objects."""
 

@@ -21,6 +21,7 @@ from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 
 
+@base.Hidden
 class SetDefaultObjectAcl(base.Command):
   """Set the default object access control list on one or more buckets."""
 

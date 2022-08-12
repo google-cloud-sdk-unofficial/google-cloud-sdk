@@ -17,7 +17,7 @@
     GA:
       api_version: v1
     modify_request_hooks:
-    - googlecloudsdk.command_lib.edge_cloud.container.hub:SetHubMembershipPath
+    - googlecloudsdk.command_lib.edge_cloud.container.fleet:SetFleetProjectPath
     - googlecloudsdk.command_lib.edge_cloud.container.admin_users:SetAdminUsers
 
   arguments:
@@ -34,14 +34,6 @@
       api_field: cluster.fleet.project
       help_text: |
         Name of the Fleet host project where the cluster is registered.
-    - arg_name: hub-membership
-      api_field: cluster.hub.membership
-      release_tracks: [ALPHA]
-      help_text: |
-        DEPRECATED - use --fleet-project instead.
-
-        Name of the membership resource to use when registering this cluster
-        with GKE Hub.
     - arg_name: cluster-ipv4-cidr
       api_field: cluster.networking.clusterIpv4CidrBlocks
       repeated: false

@@ -1,11 +1,10 @@
-# -*- coding: utf-8 -*-
 """
     pygments.lexers.parasail
     ~~~~~~~~~~~~~~~~~~~~~~~~
 
     Lexer for ParaSail.
 
-    :copyright: Copyright 2006-2017 by the Pygments team, see AUTHORS.
+    :copyright: Copyright 2006-2022 by the Pygments team, see AUTHORS.
     :license: BSD, see LICENSE for details.
 """
 
@@ -20,12 +19,13 @@ __all__ = ['ParaSailLexer']
 
 class ParaSailLexer(RegexLexer):
     """
-    For `ParaSail <http://www.parasail-lang.org>`_ source code.
+    For ParaSail source code.
 
     .. versionadded:: 2.1
     """
 
     name = 'ParaSail'
+    url = 'http://www.parasail-lang.org'
     aliases = ['parasail']
     filenames = ['*.psi', '*.psl']
     mimetypes = ['text/x-parasail']

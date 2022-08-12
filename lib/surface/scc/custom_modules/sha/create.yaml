@@ -1,0 +1,102 @@
+- release_tracks: [ALPHA]
+
+  help_text:
+    brief: Create a Security Health Analytics custom module.
+    description: Create a Security Health Analytics custom module.
+    examples: |
+      To create a Security Health Analytics custom module for given organization `123`, run:
+
+        $ {command} --organization=organizations/123 \
+            --description="This is a test custom module" \
+            --display-name="Test display name" \
+            --enablement-state="ENABLED" \
+            --custom-config-from-file=custom_config.yaml
+        $ {command} --organization=123 \
+            --description="This is a test custom module" \
+            --display-name="Test display name" \
+            --enablement-state="ENABLED"
+            --custom-config-from-file=custom_config.yaml
+
+      To create a Security Health Analytics custom module for given folder `123`, run:
+
+        $ {command} --folder=folders/456 \
+            --description="This is a test custom module" \
+            --display-name="Test display name" \
+            --enablement-state="ENABLED"
+            --custom-config-from-file=custom_config.yaml
+        $ {command} --folder=456 \
+            --description="This is a test custom module" \
+            --display-name="Test display name" \
+            --enablement-state="ENABLED"
+            --custom-config-from-file=custom_config.yaml
+
+      To create a Security Health Analytics custom module for given project `123`, run:
+
+        $ {command} --project=projects/789 \
+            --description="This is a test custom module" \
+            --display-name="Test display name" \
+            --enablement-state="ENABLED"
+            --custom-config-from-file=custom_config.yaml
+
+        $ {command} --project=789 \
+            --description="This is a test custom module" \
+            --display-name="Test display name" \
+            --enablement-state="ENABLED"
+            --custom-config-from-file=custom_config.yaml
+
+  request:
+    collection: securitycenter.organizations.securityHealthAnalyticsSettings.customModules
+    disable_resource_check: true
+    api_version: v1
+    modify_request_hooks:
+    - googlecloudsdk.command_lib.scc.custom_modules.sha.request_hooks:CreateSecurityHealthAnalyticsCustomModuleReqHook
+
+  arguments:
+    params:
+    - group:
+        mutex: true
+        params:
+        - arg_name: organization
+          api_field: parent
+          help_text: |
+            Organization where the Security Health Analytics custom module resides. Formatted as `organizations/123` or just `123`.
+
+        - arg_name: folder
+          api_field: parent
+          help_text: |
+            Folder where the Security Health Analytics custom module resides. Formatted as `folders/456` or just `456`.
+
+        - arg_name: project
+          api_field: parent
+          help_text: |
+            Project (id or number) where the Security Health Analytics custom module resides. Formatted as `projects/789` or just `789`.
+
+    - arg_name: display-name
+      api_field: googleCloudSecuritycenterV1SecurityHealthAnalyticsCustomModule.displayName
+      is_positional: false
+      required: true
+      help_text: |
+        The text that will be used to represent a Security Health Analytics custom module display name. Display name must be at most 64 characters
+
+    - arg_name: description
+      api_field: googleCloudSecuritycenterV1SecurityHealthAnalyticsCustomModule.description
+      is_positional: false
+      required: false
+      help_text: |
+        The text that will be used to describe a Security Health Analytics custom module. Description must be at most 1024 characters
+
+    - arg_name: enablement-state
+      api_field: googleCloudSecuritycenterV1SecurityHealthAnalyticsCustomModule.enablementState
+      is_positional: false
+      required: true
+      help_text: |
+        The enablement state of the Security Health Analytics custom module.
+
+    - arg_name: custom-config-from-file
+      api_field: googleCloudSecuritycenterV1SecurityHealthAnalyticsCustomModule.customConfig
+      type: "googlecloudsdk.calliope.arg_parsers:FileContents:"
+      processor: googlecloudsdk.command_lib.scc.hooks:ProcessCustomConfigFile
+      is_positional: false
+      required: true
+      help_text: |
+        Path to a yaml file containing the custom configuration for the Security Health Analytics custom module.

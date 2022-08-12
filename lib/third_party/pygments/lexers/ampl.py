@@ -1,17 +1,16 @@
-# -*- coding: utf-8 -*-
 """
     pygments.lexers.ampl
     ~~~~~~~~~~~~~~~~~~~~
 
-    Lexers for the ampl language. <http://ampl.com/>
+    Lexers for the AMPL language.
 
-    :copyright: Copyright 2006-2017 by the Pygments team, see AUTHORS.
+    :copyright: Copyright 2006-2022 by the Pygments team, see AUTHORS.
     :license: BSD, see LICENSE for details.
 """
 
 from pygments.lexer import RegexLexer, bygroups, using, this, words
 from pygments.token import Text, Comment, Operator, Keyword, Name, String, \
-    Number, Punctuation
+    Number, Punctuation, Whitespace
 
 __all__ = ['AmplLexer']
 
@@ -23,13 +22,14 @@ class AmplLexer(RegexLexer):
     .. versionadded:: 2.2
     """
     name = 'Ampl'
+    url = 'http://ampl.com/'
     aliases = ['ampl']
     filenames = ['*.run']
 
     tokens = {
         'root': [
             (r'\n', Text),
-            (r'\s+', Text.Whitespace),
+            (r'\s+', Whitespace),
             (r'#.*?\n', Comment.Single),
             (r'/[*](.|\n)*?[*]/', Comment.Multiline),
             (words((
@@ -54,12 +54,12 @@ class AmplLexer(RegexLexer):
              bygroups(Name.Variable, Punctuation, Keyword.Reserved)),
             (r'(set|param|var|arc|minimize|maximize|subject to|s\.t\.|subj to|'
              r'node|table|suffix|read table|write table)(\s+)(\w+)',
-             bygroups(Keyword.Declaration, Text, Name.Variable)),
+             bygroups(Keyword.Declaration, Whitespace, Name.Variable)),
             (r'(param)(\s*)(:)(\s*)(\w+)(\s*)(:)(\s*)((\w|\s)+)',
-             bygroups(Keyword.Declaration, Text, Punctuation, Text,
-                      Name.Variable, Text, Punctuation, Text, Name.Variable)),
+             bygroups(Keyword.Declaration, Whitespace, Punctuation, Whitespace,
+                      Name.Variable, Whitespace, Punctuation, Whitespace, Name.Variable)),
             (r'(let|fix|unfix)(\s*)((?:\{.*\})?)(\s*)(\w+)',
-             bygroups(Keyword.Declaration, Text, using(this), Text, Name.Variable)),
+             bygroups(Keyword.Declaration, Whitespace, using(this), Whitespace, Name.Variable)),
             (words((
                 'abs', 'acos', 'acosh', 'alias', 'asin', 'asinh', 'atan', 'atan2',
                 'atanh', 'ceil', 'ctime', 'cos', 'exp', 'floor', 'log', 'log10',

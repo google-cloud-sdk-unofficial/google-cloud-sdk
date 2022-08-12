@@ -36,7 +36,8 @@ _DETAILED_HELP = {
 }
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA,
+                    base.ReleaseTrack.GA)
 class Update(base.Command):
   r"""Update a recommender configuration.
 

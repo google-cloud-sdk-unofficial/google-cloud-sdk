@@ -30,6 +30,12 @@
       required: true
       help_text: |
         Region (e.g. us-central1) for the backup.
+    - arg_name: kms-key
+      required: false
+      release_tracks: [BETA]
+      hidden: true
+      help_text: |
+        CMEK for backup.
     - group:
         mutex: true
         required: true

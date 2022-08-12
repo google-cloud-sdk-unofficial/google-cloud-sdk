@@ -29,6 +29,4 @@ class Deploy(base.Group):
   category = base.CI_CD_CATEGORY
 
   def Filter(self, context, args):
-    # TODO(b/190530892):  Determine if command group works with project number
-    base.RequireProjectID(args)
     del context, args

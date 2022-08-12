@@ -268,6 +268,20 @@ class Cp(base.Command):
         action='store_true',
         help='Do not automatically decompress downloaded gzip files.')
     parser.add_argument(
+        '-D',
+        '--daisy-chain',
+        action='store_true',
+        help='Copy in "daisy chain" mode, which means copying an object by'
+        ' first downloading it to the machine where the command is run, then'
+        ' uploading it to the destination bucket. The default mode is a "copy'
+        ' in the cloud," where data is copied without uploading or downloading.'
+        ' During a copy in the cloud, a source composite object remains'
+        ' composite at its destination. However, you can use daisy chain mode'
+        ' to change a composite object into a non-composite object.'
+        ' Note: Daisy chain mode is automatically used when copying between'
+        ' providers.'
+    )
+    parser.add_argument(
         '--ignore-symlinks',
         action='store_true',
         help='Ignore file symlinks instead of copying what they point to.'
@@ -406,6 +420,7 @@ class Cp(base.Command):
           args.destination,
           custom_md5_digest=args.content_md5,
           do_not_decompress=args.do_not_decompress,
+          force_daisy_chain=args.daisy_chain,
           print_created_message=args.print_created_message,
           shared_stream=shared_stream,
           skip_unsupported=args.skip_unsupported,

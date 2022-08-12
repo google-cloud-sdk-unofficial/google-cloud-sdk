@@ -28,7 +28,6 @@
     format: |
       table(
         name.basename():label=NAME,
-        hub.membership.segment(5):label=HUB_MEMBERSHIP,
         endpoint:label=ENDPOINT,
         labels:label=LABELS,
         createTime.date():label=CREATED

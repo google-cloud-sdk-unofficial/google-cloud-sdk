@@ -19,9 +19,13 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+from apitools.base.py import exceptions as apitools_exceptions
 from googlecloudsdk.api_lib.batch import jobs
+from googlecloudsdk.api_lib.batch import util
+from googlecloudsdk.api_lib.util import exceptions
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.batch import resource_args
+from googlecloudsdk.core import log
 
 
 class Delete(base.DeleteCommand):
@@ -48,4 +52,10 @@ class Delete(base.DeleteCommand):
 
     client = jobs.JobsClient(release_track)
     job_ref = args.CONCEPTS.job.Parse()
-    return client.Delete(job_ref)
+    try:
+      operation = client.Delete(job_ref)
+    except apitools_exceptions.HttpError as e:
+      raise exceptions.HttpException(e, util.HTTP_ERROR_FORMAT)
+    log.status.Print('Job {jobName} deletion is in progress'.format(
+        jobName=job_ref.RelativeName()))
+    return operation

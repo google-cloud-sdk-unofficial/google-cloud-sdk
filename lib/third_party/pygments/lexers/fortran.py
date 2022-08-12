@@ -1,11 +1,10 @@
-# -*- coding: utf-8 -*-
 """
     pygments.lexers.fortran
     ~~~~~~~~~~~~~~~~~~~~~~~
 
     Lexers for Fortran languages.
 
-    :copyright: Copyright 2006-2017 by the Pygments team, see AUTHORS.
+    :copyright: Copyright 2006-2022 by the Pygments team, see AUTHORS.
     :license: BSD, see LICENSE for details.
 """
 
@@ -25,7 +24,8 @@ class FortranLexer(RegexLexer):
     .. versionadded:: 0.10
     """
     name = 'Fortran'
-    aliases = ['fortran']
+    url = 'https://fortran-lang.org/'
+    aliases = ['fortran', 'f90']
     filenames = ['*.f03', '*.f90', '*.F03', '*.F90']
     mimetypes = ['text/x-fortran']
     flags = re.IGNORECASE | re.MULTILINE
@@ -45,25 +45,32 @@ class FortranLexer(RegexLexer):
             include('core'),
             (r'[a-z][\w$]*', Name),
             include('nums'),
-            (r'[\s]+', Text),
+            (r'[\s]+', Text.Whitespace),
         ],
         'core': [
             # Statements
+
+            (r'\b(DO)(\s+)(CONCURRENT)\b', bygroups(Keyword, Text.Whitespace, Keyword)),
+            (r'\b(GO)(\s*)(TO)\b', bygroups(Keyword, Text.Whitespace, Keyword)),
+
             (words((
                 'ABSTRACT', 'ACCEPT', 'ALL', 'ALLSTOP', 'ALLOCATABLE', 'ALLOCATE',
                 'ARRAY', 'ASSIGN', 'ASSOCIATE', 'ASYNCHRONOUS', 'BACKSPACE', 'BIND',
                 'BLOCK', 'BLOCKDATA', 'BYTE', 'CALL', 'CASE', 'CLASS', 'CLOSE',
-                'CODIMENSION', 'COMMON', 'CONCURRRENT', 'CONTIGUOUS', 'CONTAINS',
+                'CODIMENSION', 'COMMON', 'CONTIGUOUS', 'CONTAINS',
                 'CONTINUE', 'CRITICAL', 'CYCLE', 'DATA', 'DEALLOCATE', 'DECODE',
                 'DEFERRED', 'DIMENSION', 'DO', 'ELEMENTAL', 'ELSE', 'ENCODE', 'END',
-                'ENTRY', 'ENUM', 'ENUMERATOR', 'EQUIVALENCE', 'EXIT', 'EXTENDS',
-                'EXTERNAL', 'EXTRINSIC', 'FILE', 'FINAL', 'FORALL', 'FORMAT',
-                'FUNCTION', 'GENERIC', 'GOTO', 'IF', 'IMAGES', 'IMPLICIT',
+                'ENDASSOCIATE', 'ENDBLOCK', 'ENDDO', 'ENDENUM', 'ENDFORALL',
+                'ENDFUNCTION',  'ENDIF', 'ENDINTERFACE', 'ENDMODULE', 'ENDPROGRAM',
+                'ENDSELECT', 'ENDSUBMODULE', 'ENDSUBROUTINE', 'ENDTYPE', 'ENDWHERE',
+                'ENTRY', 'ENUM', 'ENUMERATOR', 'EQUIVALENCE', 'ERROR STOP', 'EXIT',
+                'EXTENDS', 'EXTERNAL', 'EXTRINSIC', 'FILE', 'FINAL', 'FORALL', 'FORMAT',
+                'FUNCTION', 'GENERIC', 'IF', 'IMAGES', 'IMPLICIT',
                 'IMPORT', 'IMPURE', 'INCLUDE', 'INQUIRE', 'INTENT', 'INTERFACE',
                 'INTRINSIC', 'IS', 'LOCK', 'MEMORY', 'MODULE', 'NAMELIST', 'NULLIFY',
-                'NONE', 'NON_INTRINSIC', 'NON_OVERRIDABLE', 'NOPASS', 'OPEN', 'OPTIONAL',
-                'OPTIONS', 'PARAMETER', 'PASS', 'PAUSE', 'POINTER', 'PRINT', 'PRIVATE',
-                'PROGRAM', 'PROCEDURE', 'PROTECTED', 'PUBLIC', 'PURE', 'READ',
+                'NONE', 'NON_INTRINSIC', 'NON_OVERRIDABLE', 'NOPASS', 'ONLY', 'OPEN', 
+                'OPTIONAL', 'OPTIONS', 'PARAMETER', 'PASS', 'PAUSE', 'POINTER', 'PRINT', 
+                'PRIVATE', 'PROGRAM', 'PROCEDURE', 'PROTECTED', 'PUBLIC', 'PURE', 'READ',
                 'RECURSIVE', 'RESULT', 'RETURN', 'REWIND', 'SAVE', 'SELECT', 'SEQUENCE',
                 'STOP', 'SUBMODULE', 'SUBROUTINE', 'SYNC', 'SYNCALL', 'SYNCIMAGES',
                 'SYNCMEMORY', 'TARGET', 'THEN', 'TYPE', 'UNLOCK', 'USE', 'VALUE',
@@ -155,9 +162,10 @@ class FortranLexer(RegexLexer):
         ],
 
         'nums': [
-            (r'\d+(?![.e])(_[a-z]\w+)?', Number.Integer),
-            (r'[+-]?\d*\.\d+([ed][-+]?\d+)?(_[a-z]\w+)?', Number.Float),
-            (r'[+-]?\d+\.\d*([ed][-+]?\d+)?(_[a-z]\w+)?', Number.Float),
+            (r'\d+(?![.e])(_([1-9]|[a-z]\w*))?', Number.Integer),
+            (r'[+-]?\d*\.\d+([ed][-+]?\d+)?(_([1-9]|[a-z]\w*))?', Number.Float),
+            (r'[+-]?\d+\.\d*([ed][-+]?\d+)?(_([1-9]|[a-z]\w*))?', Number.Float),
+            (r'[+-]?\d+(\.\d*)?[ed][-+]?\d+(_([1-9]|[a-z]\w*))?', Number.Float),
         ],
     }
 
@@ -198,8 +206,8 @@ class FortranFixedLexer(RegexLexer):
         ],
         'code': [
             (r'(.{66})(.*)(\n)',
-             bygroups(_lex_fortran, Comment, Text), 'root'),
-            (r'(.*)(\n)', bygroups(_lex_fortran, Text), 'root'),
+             bygroups(_lex_fortran, Comment, Text.Whitespace), 'root'),
+            (r'(.*)(\n)', bygroups(_lex_fortran, Text.Whitespace), 'root'),
             default('root'),
         ]
     }

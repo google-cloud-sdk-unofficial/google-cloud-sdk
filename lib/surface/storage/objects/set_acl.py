@@ -21,6 +21,7 @@ from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 
 
+@base.Hidden
 class SetAcl(base.Command):
   """Set the access control list for one or more objects."""
 

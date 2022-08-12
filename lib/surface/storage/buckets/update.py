@@ -73,7 +73,6 @@ old are deleted automatically:
 """
 
 
-@base.Hidden
 class Update(base.Command):
   """Update bucket settings."""
 
@@ -88,7 +87,7 @@ class Update(base.Command):
       The following command updates the retention period of a Cloud Storage
       bucket named "my-bucket" to one year and thirty-six minutes:
 
-        $ {command} gs://my-bucket --retention-period 1y36m
+        $ {command} gs://my-bucket --retention-period=1y36m
 
       The following command clears the retention period of a bucket:
 

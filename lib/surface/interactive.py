@@ -23,14 +23,19 @@ import io
 import os
 
 from googlecloudsdk.calliope import base
-from googlecloudsdk.command_lib.interactive import application
-from googlecloudsdk.command_lib.interactive import bindings
 from googlecloudsdk.command_lib.interactive import config as configuration
+from googlecloudsdk.core import exceptions
 from googlecloudsdk.core import properties
 from googlecloudsdk.core.document_renderers import render_document
 from googlecloudsdk.core.util import encoding
 
 import six
+
+if six.PY3:
+  # pylint: disable=g-import-not-at-top
+  from googlecloudsdk.command_lib.interactive import application
+  from googlecloudsdk.command_lib.interactive import bindings
+  # pylint: enable=g-import-not-at-top
 
 
 _FEATURES = """
@@ -72,6 +77,8 @@ def _AppendMetricsEnvironment(tag):
 
 def _GetKeyBindingsHelp():
   """Returns the function key bindings help markdown."""
+  if six.PY2:
+    return ''
   lines = []
   for key in bindings.KeyBindings().bindings:
     help_text = key.GetHelp(markdown=True)
@@ -284,6 +291,10 @@ class Interactive(base.Command):
               'too rudimentary for prime time.'))
 
   def Run(self, args):
+    if six.PY2:
+      raise exceptions.Error('This command does not support Python 2. Please '
+                             'upgrade to Python 3.')
+
     if not args.quiet:
       render_document.RenderDocument(fin=io.StringIO(_SPLASH))
     config = configuration.Config(

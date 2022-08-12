@@ -27,7 +27,7 @@ from googlecloudsdk.core import properties
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Describe(base.DescribeCommand):
-  """Creates a new AlloyDB backup within a given project and location."""
+  """Describes an AlloyDB backup in a given project and region."""
 
   detailed_help = {
       'DESCRIPTION':

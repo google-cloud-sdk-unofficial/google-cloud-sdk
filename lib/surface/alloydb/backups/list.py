@@ -28,7 +28,8 @@ BACKUP_FORMAT = """
         name,
         state:label=STATUS,
         cluster_name,
-        create_time
+        create_time,
+        encryptionInfo.encryptionType:label=ENCRYPTION_TYPE
     )
 """
 

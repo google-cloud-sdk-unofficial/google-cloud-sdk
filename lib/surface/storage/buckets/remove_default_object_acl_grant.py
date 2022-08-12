@@ -21,6 +21,7 @@ from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 
 
+@base.Hidden
 class RemoveDefaultObjectsAclGrant(base.Command):
   """Remove a grant from the default access control list of one or more buckets."""
 

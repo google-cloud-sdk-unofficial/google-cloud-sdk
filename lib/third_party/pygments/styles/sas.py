@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
     pygments.styles.sas
     ~~~~~~~~~~~~~~~~~~~
@@ -7,7 +6,7 @@
     meant to be a complete style. It's merely meant to mimic SAS'
     program editor syntax highlighting.
 
-    :copyright: Copyright 2006-2017 by the Pygments team, see AUTHORS.
+    :copyright: Copyright 2006-2022 by the Pygments team, see AUTHORS.
     :license: BSD, see LICENSE for details.
 """
 
@@ -29,7 +28,7 @@ class SasStyle(Style):
         Whitespace:            '#bbbbbb',
         Comment:               'italic #008800',
         String:                '#800080',
-        Number:                'bold #2e8b57',
+        Number:                'bold #2c8553',
         Other:                 'bg:#ffffe0',
         Keyword:               '#2c2cff',
         Keyword.Reserved:      'bold #353580',

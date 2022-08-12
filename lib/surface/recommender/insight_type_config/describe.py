@@ -35,7 +35,8 @@ _DETAILED_HELP = {
 }
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA,
+                    base.ReleaseTrack.GA)
 class Describe(base.DescribeCommand):
   """Describe an insight type configuration.
 

@@ -123,7 +123,7 @@ class Create(base.Command):
 class CreateBeta(Create):
   """Create Compute Engine commitments."""
   _support_share_setting = True
-  _support_stable_fleet = False
+  _support_stable_fleet = True
 
   @classmethod
   def Args(cls, parser):

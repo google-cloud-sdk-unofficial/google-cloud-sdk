@@ -23,6 +23,7 @@ import textwrap
 from googlecloudsdk.calliope import base
 
 
+@base.Hidden
 class AddAclGrant(base.Command):
   """Add an access control list grant on one or more objects."""
 

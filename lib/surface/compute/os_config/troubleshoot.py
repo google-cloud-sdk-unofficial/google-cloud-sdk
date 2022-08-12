@@ -24,7 +24,7 @@ from googlecloudsdk.command_lib.compute.instances import flags
 from googlecloudsdk.command_lib.compute.os_config import troubleshooter
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.GA)
 class Troubleshoot(base.Command):
   """Troubleshoot VM Manager issues.
 
@@ -66,7 +66,7 @@ class Troubleshoot(base.Command):
     instance_ref = self._ResolveInstance(holder, compute_client, args)
     troubleshooter.Troubleshoot(compute_client,
                                 instance_ref,
-                                self.ReleaseTrack().prefix)
+                                self.ReleaseTrack())
     return
 
 Troubleshoot.detailed_help = {
@@ -79,16 +79,16 @@ Troubleshoot.detailed_help = {
     VM instance
 
     The troubleshoot command investigates the following settings or configurations for your VM Manager setup:\n
-    + Checks if the OS Config API is enabled in the project.\n
-    + Checks if the required metadata is set up correctly in the VM instance.\n
-    + Checks if the latest version of the OS Config agent is running on the VM instance.\n
-    + Checks if a service account is attached to the VM instance.\n
-    + Checks if the VM Manager service agent is enabled.\n
-    + Checks if the VM instance has a public IP or Private Google Access.
+    - Checks if the OS Config API is enabled in the project.
+    - Checks if the required metadata is set up correctly in the VM instance.
+    - Checks if the latest version of the OS Config agent is running on the VM instance.
+    - Checks if a service account is attached to the VM instance.
+    - Checks if the VM Manager service agent is enabled.
+    - Checks if the VM instance has a public IP or Private Google Access.
     """,
     'EXAMPLES': """
     To troubleshoot an instance named `my-instance` in zone `us-west1-a`, run
 
-    $ *{command}* my-instance --zone=us-west1-a
+    $ {command} my-instance --zone=us-west1-a
     """
 }

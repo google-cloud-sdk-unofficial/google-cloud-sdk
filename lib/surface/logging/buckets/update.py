@@ -34,6 +34,22 @@ DETAILED_HELP = {
      To update a bucket in your project, run:
 
         $ {command} my-bucket --location=global --description=my-new-description
+
+     To update a bucket in your project and remove all indexes, run:
+
+        $ {command} my-bucket --location=global --clear-indexes
+
+     To update a bucket in your project and remove an index, run:
+
+        $ {command} my-bucket --location=global --remove-indexes=jsonPayload.foo2
+
+     To update a bucket in your project and add an index, run:
+
+        $ {command} my-bucket --location=global --add-index=fieldPath=jsonPayload.foo2,type=INDEX_TYPE_STRING
+
+     To update a bucket in your project and update an existing index, run:
+
+        $ {command} my-bucket --location=global --update-index=fieldPath=jsonPayload.foo,type=INDEX_TYPE_INTEGER
     """,
 }
 
@@ -70,6 +86,62 @@ class Update(base.UpdateCommand):
         help='A new set of restricted fields for the bucket.',
         type=arg_parsers.ArgList(),
         metavar='RESTRICTED_FIELD')
+    parser.add_argument(
+        '--clear-indexes',
+        action='store_true',
+        help=('Remove all logging indexes from the bucket.'))
+    parser.add_argument(
+        '--remove-indexes',
+        type=arg_parsers.ArgList(),
+        metavar='FIELD PATH',
+        help=('Specify the field path of the logging index(es) to delete.'))
+    parser.add_argument(
+        '--add-index',
+        action='append',
+        type=arg_parsers.ArgDict(
+            spec={
+                'fieldPath': str,
+                'type': util.IndexTypeToEnum
+            },
+            required_keys=['fieldPath', 'type']),
+        metavar='KEY=VALUE, ...',
+        help=('Add an index to be added to the log bucket. This flag can be '
+              'repeated. The ``fieldPath\'\' and ``type\'\' attributes are '
+              'required. For example: '
+              ' --index=fieldPath=jsonPayload.foo,type=INDEX_TYPE_STRING. '
+              'The following keys are accepted:\n\n'
+              '*fieldPath*::: The LogEntry field path to index. '
+              'For example: jsonPayload.request.status. '
+              'Paths are limited to 800 characters and can include only '
+              'letters, digits, underscores, hyphens, and periods.\n\n'
+              '*type*::: The type of data in this index. '
+              'For example: INDEX_TYPE_STRING '
+              'Supported types are strings and integers. \n\n '))
+    parser.add_argument(
+        '--update-index',
+        action='append',
+        type=arg_parsers.ArgDict(
+            spec={
+                'fieldPath': str,
+                'type': util.IndexTypeToEnum
+            },
+            required_keys=['fieldPath', 'type']),
+        metavar='KEY=VALUE, ...',
+        help=(
+            'Update an index to be added to the log bucket. '
+            'This will update the type of the index, and also update its '
+            'createTime to the new update time. '
+            'This flag can be repeated. The ``fieldPath\'\' and ``type\'\' '
+            'attributes are required. For example: '
+            ' --index=fieldPath=jsonPayload.foo,type=INDEX_TYPE_STRING. '
+            'The following keys are accepted:\n\n'
+            '*fieldPath*::: The LogEntry field path to index. '
+            'For example: jsonPayload.request.status. '
+            'Paths are limited to 800 characters and can include only '
+            'letters, digits, underscores, hyphens, and periods.\n\n'
+            '*type*::: The type of data in this index. '
+            'For example: INDEX_TYPE_STRING '
+            'Supported types are strings and integers. '))
 
   def GetCurrentBucket(self, args):
     """Returns a bucket specified by the arguments.
@@ -116,10 +188,9 @@ class Update(base.UpdateCommand):
       bucket_data['logLink'] = {'enabled': args.enable_loglink}
       update_mask.append('log_link.enabled')
 
-    if is_alpha and (args.IsSpecified('clear_indexes') or
-                     args.IsSpecified('remove_indexes') or
-                     args.IsSpecified('add_index') or
-                     args.IsSpecified('update_index')):
+    if (args.IsSpecified('clear_indexes') or
+        args.IsSpecified('remove_indexes') or args.IsSpecified('add_index') or
+        args.IsSpecified('update_index')):
       bucket = self.GetCurrentBucket(args)
       bucket_data['indexConfigs'] = []
       update_mask.append('index_configs')
@@ -216,62 +287,6 @@ class UpdateAlpha(Update):
         which give a ready-only access to logs in BigQuery. This option can
         only be enabled in a log bucket with advanced log analytics enabled.
         Use --no-enable-loglink to disable the linked dataset.""")
-    parser.add_argument(
-        '--clear-indexes',
-        action='store_true',
-        help=('Remove all logging indexes from the bucket.'))
-    parser.add_argument(
-        '--remove-indexes',
-        type=arg_parsers.ArgList(),
-        metavar='FIELD PATH',
-        help=('Specify the field path of the Logging index(es) to delete.'))
-    parser.add_argument(
-        '--add-index',
-        action='append',
-        type=arg_parsers.ArgDict(
-            spec={
-                'fieldPath': str,
-                'type': util.IndexTypeToEnum
-            },
-            required_keys=['fieldPath', 'type']),
-        metavar='KEY=VALUE, ...',
-        help=('Add an index to be added to the log bucket. This flag can be '
-              'repeated. The ``fieldPath\'\' and ``type\'\' attributes are '
-              'required. For example '
-              ' --index=fieldPath=jsonPayload.foo,type=INDEX_TYPE_STRING. '
-              'The following keys are accepted:\n\n'
-              '*fieldPath*::: The LogEntry field path to index.'
-              'For example: jsonPayload.request.status. '
-              'Paths are limited to 800 characters and can include only '
-              'letters, digits, underscores, hyphens, and periods.\n\n'
-              '*type*::: The type of data in this index.'
-              'For example: INDEX_TYPE_STRING '
-              'Supported types are Strings and Integers. \n\n '))
-    parser.add_argument(
-        '--update-index',
-        action='append',
-        type=arg_parsers.ArgDict(
-            spec={
-                'fieldPath': str,
-                'type': util.IndexTypeToEnum
-            },
-            required_keys=['fieldPath', 'type']),
-        metavar='KEY=VALUE, ...',
-        help=(
-            'Update an index to be added to the log bucket. '
-            'This will update the type of the index, and also update its create '
-            'time to the new update time.'
-            'This flag can be repeated. The ``fieldPath\'\' and ``type\'\' '
-            'attributes are required. For example '
-            ' --index=fieldPath=jsonPayload.foo,type=INDEX_TYPE_STRING. '
-            'The following keys are accepted:\n\n'
-            '*fieldPath*::: The LogEntry field path to index. '
-            'For example: jsonPayload.request.status. '
-            'Paths are limited to 800 characters and can include only '
-            'letters, digits, underscores, hyphens, and periods.\n\n'
-            '*type*::: The type of data in this index. '
-            'For example: INDEX_TYPE_STRING '
-            'Supported types are Strings and Integers. '))
     parser.add_argument(
         '--cmek-kms-key-name',
         help='A valid `kms_key_name` will enable CMEK for the bucket.')

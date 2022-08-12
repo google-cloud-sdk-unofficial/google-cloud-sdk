@@ -1,17 +1,16 @@
-# -*- coding: utf-8 -*-
 """
     pygments.lexers.esoteric
     ~~~~~~~~~~~~~~~~~~~~~~~~
 
     Lexers for esoteric languages.
 
-    :copyright: Copyright 2006-2017 by the Pygments team, see AUTHORS.
+    :copyright: Copyright 2006-2022 by the Pygments team, see AUTHORS.
     :license: BSD, see LICENSE for details.
 """
 
-from pygments.lexer import RegexLexer, include, words
+from pygments.lexer import RegexLexer, include, words, bygroups
 from pygments.token import Text, Comment, Operator, Keyword, Name, String, \
-    Number, Punctuation, Error
+    Number, Punctuation, Error, Whitespace
 
 __all__ = ['BrainfuckLexer', 'BefungeLexer', 'RedcodeLexer', 'CAmkESLexer',
            'CapDLLexer', 'AheuiLexer']
@@ -19,11 +18,11 @@ __all__ = ['BrainfuckLexer', 'BefungeLexer', 'RedcodeLexer', 'CAmkESLexer',
 
 class BrainfuckLexer(RegexLexer):
     """
-    Lexer for the esoteric `BrainFuck <http://www.muppetlabs.com/~breadbox/bf/>`_
-    language.
+    Lexer for the esoteric BrainFuck language.
     """
 
     name = 'Brainfuck'
+    url = 'http://www.muppetlabs.com/~breadbox/bf/'
     aliases = ['brainfuck', 'bf']
     filenames = ['*.bf', '*.b']
     mimetypes = ['application/x-brainfuck']
@@ -48,15 +47,40 @@ class BrainfuckLexer(RegexLexer):
         ]
     }
 
+    def analyse_text(text):
+        """It's safe to assume that a program which mostly consists of + -
+        and < > is brainfuck."""
+        plus_minus_count = 0
+        greater_less_count = 0
+
+        range_to_check = max(256, len(text))
+
+        for c in text[:range_to_check]:
+            if c == '+' or c == '-':
+                plus_minus_count += 1
+            if c == '<' or c == '>':
+                greater_less_count += 1
+
+        if plus_minus_count > (0.25 * range_to_check):
+            return 1.0
+        if greater_less_count > (0.25 * range_to_check):
+            return 1.0
+
+        result = 0
+        if '[-]' in text:
+            result += 0.5
+
+        return result
+
 
 class BefungeLexer(RegexLexer):
     """
-    Lexer for the esoteric `Befunge <http://en.wikipedia.org/wiki/Befunge>`_
-    language.
+    Lexer for the esoteric Befunge language.
 
     .. versionadded:: 0.7
     """
     name = 'Befunge'
+    url = 'http://en.wikipedia.org/wiki/Befunge'
     aliases = ['befunge']
     filenames = ['*.befunge']
     mimetypes = ['application/x-befunge']
@@ -74,31 +98,32 @@ class BefungeLexer(RegexLexer):
             (r'[#;]', Comment),                   # Trampoline... depends on direction hit
             (r'[pg&~=@iotsy]', Keyword),          # Misc
             (r'[()A-Z]', Comment),                # Fingerprints
-            (r'\s+', Text),                       # Whitespace doesn't matter
+            (r'\s+', Whitespace),                 # Whitespace doesn't matter
         ],
     }
 
 
 class CAmkESLexer(RegexLexer):
     """
-    Basic lexer for the input language for the
-    `CAmkES <https://sel4.systems/CAmkES/>`_ component platform.
+    Basic lexer for the input language for the CAmkES component platform.
 
     .. versionadded:: 2.1
     """
     name = 'CAmkES'
+    url = 'https://sel4.systems/CAmkES/'
     aliases = ['camkes', 'idl4']
     filenames = ['*.camkes', '*.idl4']
 
     tokens = {
         'root': [
             # C pre-processor directive
-            (r'^\s*#.*\n', Comment.Preproc),
+            (r'^(\s*)(#.*)(\n)', bygroups(Whitespace, Comment.Preproc, 
+                Whitespace)),
 
             # Whitespace, comments
-            (r'\s+', Text),
+            (r'\s+', Whitespace),
             (r'/\*(.|\n)*?\*/', Comment),
-            (r'//.*\n', Comment),
+            (r'//.*$', Comment),
 
             (r'[\[(){},.;\]]', Punctuation),
             (r'[~!%^&*+=|?:<>/-]', Operator),
@@ -126,10 +151,12 @@ class CAmkESLexer(RegexLexer):
                 Keyword.Reserved),
 
             # CAmkES-level include
-            (r'import\s+(<[^>]*>|"[^"]*");', Comment.Preproc),
+            (r'(import)(\s+)((?:<[^>]*>|"[^"]*");)',
+                bygroups(Comment.Preproc, Whitespace, Comment.Preproc)),
 
             # C-level include
-            (r'include\s+(<[^>]*>|"[^"]*");', Comment.Preproc),
+            (r'(include)(\s+)((?:<[^>]*>|"[^"]*");)',
+                bygroups(Comment.Preproc, Whitespace, Comment.Preproc)),
 
             # Literals
             (r'0[xX][\da-fA-F]+', Number.Hex),
@@ -146,8 +173,7 @@ class CAmkESLexer(RegexLexer):
 
 class CapDLLexer(RegexLexer):
     """
-    Basic lexer for
-    `CapDL <https://ssrg.nicta.com.au/publications/nictaabstracts/Kuz_KLW_10.abstract.pml>`_.
+    Basic lexer for CapDL.
 
     The source of the primary tool that reads such specifications is available
     at https://github.com/seL4/capdl/tree/master/capDL-tool. Note that this
@@ -159,18 +185,20 @@ class CapDLLexer(RegexLexer):
     .. versionadded:: 2.2
     """
     name = 'CapDL'
+    url = 'https://ssrg.nicta.com.au/publications/nictaabstracts/Kuz_KLW_10.abstract.pml'
     aliases = ['capdl']
     filenames = ['*.cdl']
 
     tokens = {
         'root': [
             # C pre-processor directive
-            (r'^\s*#.*\n', Comment.Preproc),
+            (r'^(\s*)(#.*)(\n)',
+                bygroups(Whitespace, Comment.Preproc, Whitespace)),
 
             # Whitespace, comments
-            (r'\s+', Text),
+            (r'\s+', Whitespace),
             (r'/\*(.|\n)*?\*/', Comment),
-            (r'(//|--).*\n', Comment),
+            (r'(//|--).*$', Comment),
 
             (r'[<>\[(){},:;=\]]', Punctuation),
             (r'\.\.', Punctuation),
@@ -222,7 +250,7 @@ class RedcodeLexer(RegexLexer):
     tokens = {
         'root': [
             # Whitespace:
-            (r'\s+', Text),
+            (r'\s+', Whitespace),
             (r';.*$', Comment.Single),
             # Lexemes:
             #  Identifiers
@@ -241,37 +269,33 @@ class RedcodeLexer(RegexLexer):
 
 class AheuiLexer(RegexLexer):
     """
-    Aheui_ Lexer.
-
-    Aheui_ is esoteric language based on Korean alphabets.
-
-    .. _Aheui:: http://aheui.github.io/
-
+    Aheui is esoteric language based on Korean alphabets.
     """
 
     name = 'Aheui'
+    url = 'http://aheui.github.io/'
     aliases = ['aheui']
     filenames = ['*.aheui']
 
     tokens = {
         'root': [
-            (u'['
-             u'나-낳냐-냫너-넣녀-녛노-놓뇨-눟뉴-닇'
-             u'다-닿댜-댷더-덯뎌-뎧도-돟됴-둫듀-딓'
-             u'따-땋땨-떃떠-떻뗘-뗳또-똫뚀-뚷뜌-띟'
-             u'라-랗랴-럏러-렇려-렿로-롷료-뤃류-릫'
-             u'마-맣먀-먛머-멓며-몋모-뫃묘-뭏뮤-믷'
-             u'바-밯뱌-뱧버-벟벼-볗보-봏뵤-붛뷰-빃'
-             u'빠-빻뺘-뺳뻐-뻫뼈-뼣뽀-뽛뾰-뿧쀼-삏'
-             u'사-샇샤-샿서-섷셔-셯소-솧쇼-숳슈-싛'
-             u'싸-쌓쌰-썋써-쎃쎠-쎻쏘-쏳쑈-쑿쓔-씧'
-             u'자-잫쟈-쟣저-젛져-졓조-좋죠-줗쥬-즿'
-             u'차-챃챠-챻처-첳쳐-쳫초-촣쵸-춯츄-칗'
-             u'카-캏캬-컇커-컿켜-켷코-콯쿄-쿻큐-킣'
-             u'타-탛탸-턓터-텋텨-톃토-톻툐-퉇튜-틯'
-             u'파-팧퍄-퍟퍼-펗펴-폏포-퐇표-풓퓨-픻'
-             u'하-핳햐-햫허-헣혀-혛호-홓효-훟휴-힇'
-             u']', Operator),
+            ('['
+             '나-낳냐-냫너-넣녀-녛노-놓뇨-눟뉴-닇'
+             '다-닿댜-댷더-덯뎌-뎧도-돟됴-둫듀-딓'
+             '따-땋땨-떃떠-떻뗘-뗳또-똫뚀-뚷뜌-띟'
+             '라-랗랴-럏러-렇려-렿로-롷료-뤃류-릫'
+             '마-맣먀-먛머-멓며-몋모-뫃묘-뭏뮤-믷'
+             '바-밯뱌-뱧버-벟벼-볗보-봏뵤-붛뷰-빃'
+             '빠-빻뺘-뺳뻐-뻫뼈-뼣뽀-뽛뾰-뿧쀼-삏'
+             '사-샇샤-샿서-섷셔-셯소-솧쇼-숳슈-싛'
+             '싸-쌓쌰-썋써-쎃쎠-쎻쏘-쏳쑈-쑿쓔-씧'
+             '자-잫쟈-쟣저-젛져-졓조-좋죠-줗쥬-즿'
+             '차-챃챠-챻처-첳쳐-쳫초-촣쵸-춯츄-칗'
+             '카-캏캬-컇커-컿켜-켷코-콯쿄-쿻큐-킣'
+             '타-탛탸-턓터-텋텨-톃토-톻툐-퉇튜-틯'
+             '파-팧퍄-퍟퍼-펗펴-폏포-퐇표-풓퓨-픻'
+             '하-핳햐-햫허-헣혀-혛호-홓효-훟휴-힇'
+             ']', Operator),
             ('.', Comment),
         ],
     }

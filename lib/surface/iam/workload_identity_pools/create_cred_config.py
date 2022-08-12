@@ -80,9 +80,22 @@ class CreateCredConfig(base.CreateCommand):
     credential_types.add_argument(
         '--azure', help='Use Azure.', action='store_true')
 
-    parser.add_argument(
+    service_account_impersonation_options = parser.add_group(
+        help='Service account impersonation options.')
+    service_account_impersonation_options.add_argument(
         '--service-account',
-        help='The email of the service account to impersonate.')
+        help='The email of the service account to impersonate.',
+        required=True)
+    service_account_impersonation_options .add_argument(
+        '--service-account-token-lifetime-seconds',
+        type=arg_parsers.Duration(
+            default_unit='s',
+            lower_bound='600',
+            upper_bound='43200',
+            parsed_unit='s'),
+        help='The desired lifetime duration of the service account access token in seconds. This defaults to one hour when not provided. If a lifetime greater than one hour is required, the service account must be added as an allowed value in an Organization Policy that enforces the `constraints/iam.allowServiceAccountCredentialLifetimeExtension` constraint.'
+    )
+
     parser.add_argument(
         '--credential-source-headers',
         type=arg_parsers.ArgDict(),

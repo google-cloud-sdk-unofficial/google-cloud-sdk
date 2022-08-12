@@ -19,14 +19,13 @@ from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.edge_cloud.container import util
 from googlecloudsdk.command_lib.run import flags
-from googlecloudsdk.core import resources
 
 
-def SetHubMembershipPath(ref, args, request):
-  """Sets the cluster.hub.membership field with a relative resource path.
+def SetFleetProjectPath(ref, args, request):
+  """Sets the cluster.fleet.project field with a relative resource path.
 
   Args:
-    ref: reference to the membership object.
+    ref: reference to the projectsId object.
     args: command line arguments.
     request: API request to be issued
 
@@ -35,16 +34,7 @@ def SetHubMembershipPath(ref, args, request):
   """
   release_track = args.calliope_command.ReleaseTrack()
   msgs = util.GetMessagesModule(release_track)
-  if flags.FlagIsExplicitlySet(args, 'hub_membership'):
-    # Populate hub membership with a relative resource path using the same
-    # project as the cluster, and --hub-membership as the membership id.
-    hub_membership = resources.REGISTRY.Create(
-        'gkehub.projects.locations.memberships',
-        projectsId=ref.projectsId,
-        locationsId='global',  # All Hub memberships are global.
-        membershipsId=args.hub_membership)
-    request.cluster.hub.membership = hub_membership.RelativeName()
-  elif flags.FlagIsExplicitlySet(args, 'fleet_project'):
+  if flags.FlagIsExplicitlySet(args, 'fleet_project'):
     request.cluster.fleet = msgs.Fleet()
     request.cluster.fleet.project = 'projects/' + args.fleet_project
   else:

@@ -44,6 +44,11 @@ class Create(base.CreateCommand):
 
     $ {command} my-bucket --location=us-central1
 
+  To create a bucket with custom index of 'jsonPayload.foo', run:
+
+    $ {command} my-bucket
+      --index=fieldPath=jsonPayload.foo,type=INDEX_TYPE_STRING
+
   """
 
   @staticmethod
@@ -66,6 +71,30 @@ class Create(base.CreateCommand):
         type=int,
         help='The period logs will be retained, after which logs will '
         'automatically be deleted. The default is 30 days.')
+    parser.add_argument(
+        '--index',
+        action='append',
+        type=arg_parsers.ArgDict(
+            spec={
+                'fieldPath': str,
+                'type': util.IndexTypeToEnum
+            },
+            required_keys=['fieldPath', 'type']),
+        metavar='KEY=VALUE, ...',
+        help=(
+            'Specify an index to be added to the log bucket. This flag can be '
+            'repeated. The ``fieldPath\'\' and ``type\'\' attributes are '
+            'required. For example: '
+            ' --index=fieldPath=jsonPayload.foo,type=INDEX_TYPE_STRING. '
+            'The following keys are accepted:\n\n'
+            '*fieldPath*::: The LogEntry field path to index. '
+            'For example: jsonPayload.request.status. '
+            'Paths are limited to 800 characters and can include only '
+            'letters, digits, underscores, hyphens, and periods.\n\n'
+            '*type*::: The type of data in this index. '
+            'For example: INDEX_TYPE_STRING '
+            'Supported types are INDEX_TYPE_STRING and '
+            'INDEX_TYPE_INTEGER. \n\n '))
     util.AddBucketLocationArg(
         parser, True,
         'Location in which to create the bucket. Once the bucket is created, '
@@ -79,12 +108,11 @@ class Create(base.CreateCommand):
       bucket_data['description'] = args.description
     if args.IsSpecified('restricted_fields'):
       bucket_data['restrictedFields'] = args.restricted_fields
+    if args.IsSpecified('index'):
+      bucket_data['indexConfigs'] = args.index
 
     if is_alpha and args.IsSpecified('enable_analytics'):
       bucket_data['analyticsEnabled'] = args.enable_analytics
-
-    if is_alpha and args.IsSpecified('index'):
-      bucket_data['indexConfigs'] = args.index
 
     if is_alpha and args.IsSpecified('cmek_kms_key_name'):
       console_io.PromptContinue(
@@ -129,30 +157,6 @@ class CreateAlpha(Create):
         default=None,
         help='Whether to opt the bucket into advanced log analytics. This '
         'field may only be set at bucket creation and cannot be changed later.')
-    parser.add_argument(
-        '--index',
-        action='append',
-        type=arg_parsers.ArgDict(
-            spec={
-                'fieldPath': str,
-                'type': util.IndexTypeToEnum
-            },
-            required_keys=['fieldPath', 'type']),
-        metavar='KEY=VALUE, ...',
-        help=(
-            'Specify an index to be added to the log bucket. This flag can be '
-            'repeated. The ``fieldPath\'\' and ``type\'\' attributes are '
-            'required. For example '
-            ' --index=fieldPath=jsonPayload.foo,type=INDEX_TYPE_STRING. '
-            'The following keys are accepted:\n\n'
-            '*fieldPath*::: The LogEntry field path to index.'
-            'For example: jsonPayload.request.status. '
-            'Paths are limited to 800 characters and can include only '
-            'letters, digits, underscores, hyphens, and periods.\n\n'
-            '*type*::: The type of data in this index.'
-            'For example: INDEX_TYPE_STRING '
-            'Supported types are INDEX_TYPE_STRING and '
-            'INDEX_TYPE_INTEGER. \n\n '))
     parser.add_argument(
         '--cmek-kms-key-name',
         help='A valid `kms_key_name` will enable CMEK for the bucket.')

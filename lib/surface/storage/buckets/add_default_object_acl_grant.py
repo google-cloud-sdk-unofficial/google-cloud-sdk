@@ -23,6 +23,7 @@ import textwrap
 from googlecloudsdk.calliope import base
 
 
+@base.Hidden
 class AddDefaultObjectAclGrant(base.Command):
   """Add a grant to the default access control list of one or more buckets."""
 

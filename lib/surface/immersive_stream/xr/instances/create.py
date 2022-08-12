@@ -39,10 +39,10 @@ class Create(base.CreateCommand):
       'EXAMPLES': ("""
           To create a service instance called 'my-instance' serving content
           'my-content' with version 'my-version' that has availablilty for 2
-          concurent sessions in REALM_NA_WEST and 3 concurrent sessions in
-          REALM_NA_EAST, run:
+          concurent sessions in us-west1 region and 3 concurrent sessions in
+          us-east4 region, run:
 
-            $ {command} my-instance --content=my-content --version=my-version --add-realm=realm=REALM_NA_WEST,capacity=2 --add-realm=realm=REALM_NA_EAST,capacity=3
+            $ {command} my-instance --content=my-content --version=my-version --add-region=region=us-west1,capacity=2 --add-region=region=us-east4,capacity=3
       """)
   }
 
@@ -55,11 +55,11 @@ class Create(base.CreateCommand):
         '--version',
         required=True,
         help='Build version tag of the content served by this instance')
-    flags.AddRealmConfigArg('--add-realm', parser)
+    flags.AddRegionConfigArg('--add-region', parser)
     base.ASYNC_FLAG.AddToParser(parser)
 
   def Run(self, args):
-    realm_configs = args.add_realm
+    region_configs = args.add_region
     content_ref = args.CONCEPTS.content.Parse()
     content_name = content_ref.RelativeName()
     location = content_ref.locationsId
@@ -68,7 +68,7 @@ class Create(base.CreateCommand):
 
     client = api_util.GetClient()
     result_operation = instances.Create(instance_name, content_name, location,
-                                        version, realm_configs)
+                                        version, region_configs)
     log.status.Print('Create request issued for: [{}]'.format(instance_name))
     if args.async_:
       log.status.Print('Check operation [{}] for status.\n'.format(

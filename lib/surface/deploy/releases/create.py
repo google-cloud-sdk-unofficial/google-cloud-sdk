@@ -46,6 +46,11 @@ _DETAILED_HELP = {
 
       $ {command} my-release --delivery-pipeline=my-pipeline --region=us-central1 --to-target=prod
 
+    The following command creates a release without a `skaffold.yaml` as input, and generates one
+    for you:
+
+      $ {command} my-release --delivery-pipeline=my-pipeline --region=us-central1 --from-k8s-manifest=path/to/kubernetes/k8.yaml
+
     The current UTC date and time on the machine running the gcloud command can
     also be included in the release name by adding $DATE and $TIME parameters:
 

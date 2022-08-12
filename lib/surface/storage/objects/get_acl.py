@@ -21,6 +21,7 @@ from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 
 
+@base.Hidden
 class GetAcl(base.Command):
   """Get the access control list of an object."""
 

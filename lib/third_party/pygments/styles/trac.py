@@ -1,11 +1,10 @@
-# -*- coding: utf-8 -*-
 """
     pygments.styles.trac
     ~~~~~~~~~~~~~~~~~~~~
 
     Port of the default trac highlighter design.
 
-    :copyright: Copyright 2006-2017 by the Pygments team, see AUTHORS.
+    :copyright: Copyright 2006-2022 by the Pygments team, see AUTHORS.
     :license: BSD, see LICENSE for details.
 """
 

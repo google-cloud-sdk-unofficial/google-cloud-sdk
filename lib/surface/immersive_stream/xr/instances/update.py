@@ -24,7 +24,6 @@ from googlecloudsdk.api_lib.util import waiter
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.immersive_stream.xr import flags
 from googlecloudsdk.command_lib.immersive_stream.xr import resource_args
-from googlecloudsdk.core import exceptions
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 from googlecloudsdk.core import resources
@@ -38,15 +37,16 @@ class Update(base.Command):
       'DESCRIPTION': ("""
           Update an Immersive Stream for XR service instance.
           This command can either be used to update the capacity for an existing
-          realm of the service instance or to update the content build version
+          region of the service instance or to update the content build version
           served by the instance.
-          If updating the capacity, only one realm may be updated for each command execution, and
-          the new capacity may not be 0 or exceed the quota limit.
+          If updating the capacity, only one region may be updated for each
+          command execution, and the new capacity may not be 0 or exceed the
+          quota limit.
       """),
       'EXAMPLES': ("""
-          To update the service instance 'my-instance' to have capacity 2 for realm REALM_NA_WEST, run:
+          To update the service instance 'my-instance' to have capacity 2 for region us-west1, run:
 
-            $ {command} my-instance --update-realm=realm=REALM_NA_WEST,capacity=2
+            $ {command} my-instance --update-region=region=us-west1,capacity=2
 
           To update the service instance 'my-instance' to serve content build version 'my-version', run:
 
@@ -61,12 +61,12 @@ class Update(base.Command):
     group.add_argument(
         '--version',
         help='Build version tag of the content served by this instance')
-    flags.AddRealmConfigArg(
-        '--update-realm', group, repeatable=False, required=False)
+    flags.AddRegionConfigArg(
+        '--update-region', group, repeatable=False, required=False)
     base.ASYNC_FLAG.AddToParser(parser)
 
   def Run(self, args):
-    realm_configs = args.update_realm
+    region_configs = args.update_region
     instance_name = args.instance
     version = args.version
 
@@ -80,24 +80,16 @@ class Update(base.Command):
             'streamInstancesId': instance_name
         })
 
-    if realm_configs:
-      if len(realm_configs) > 1:
+    if region_configs:
+      if len(region_configs) > 1:
         log.status.Print(
-            'Only one realm may be updated at a time. Please try again with only one --update-realm argument.'
+            'Only one region may be updated at a time. Please try again with only one --update-region argument.'
         )
         return
       current_instance = instances.Get(instance_ref.RelativeName())
-      if not instances.ValidateRealmExists(current_instance.realmConfigs,
-                                           realm_configs):
-        error_message = (
-            '{} is not an existing realm for instance {}. Capacity'
-            ' updates can only be applied to existing realms, '
-            'adding a new realm is not currently supported.').format(
-                realm_configs[0]['realm'], instance_name)
-        raise exceptions.Error(error_message)
       result_operation = instances.UpdateCapacity(instance_ref,
                                                   current_instance,
-                                                  realm_configs)
+                                                  region_configs)
     else:
       result_operation = instances.UpdateContentBuildVersion(
           instance_ref, version)

@@ -74,7 +74,7 @@ class Delete(base.Command):
         plurality_checkable_iterator.PluralityCheckableIterator(
             bucket_iterator))
 
-    task_executor.execute_tasks(
+    self.exit_code = task_executor.execute_tasks(
         plurality_checkable_bucket_iterator,
         parallelizable=True,
         task_status_queue=task_status_queue,

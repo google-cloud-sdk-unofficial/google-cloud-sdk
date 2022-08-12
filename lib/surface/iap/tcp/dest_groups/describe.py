@@ -22,7 +22,8 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.iap import util as iap_util
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
+                    base.ReleaseTrack.GA)
 class Describe(base.Command):
   """Describe the IAP TCP Destination Group resource."""
   detailed_help = {

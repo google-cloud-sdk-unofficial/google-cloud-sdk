@@ -22,6 +22,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.iam import iam_util
 
 
+@base.Hidden
 class RemoveIamPolicyBinding(base.Command):
   """Remove an IAM policy binding from a bucket."""
 

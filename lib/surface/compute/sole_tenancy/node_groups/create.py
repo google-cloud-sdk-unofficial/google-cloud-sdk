@@ -86,7 +86,7 @@ class Create(base.CreateCommand):
     if hasattr(args, 'location_hint') and args.location_hint:
       node_group.locationHint = args.location_hint
 
-    if hasattr(args, 'share_setting'):
+    if hasattr(args, 'share_setting') and args.share_setting:
       node_group.shareSettings = util.BuildShareSettings(messages, args)
 
     request = messages.ComputeNodeGroupsInsertRequest(

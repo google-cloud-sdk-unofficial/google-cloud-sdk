@@ -127,6 +127,9 @@ class DeployAlpha(DeployBeta):
     """Register alpha (and implicitly beta) flags for this command."""
     _CommonArgs(parser, base.ReleaseTrack.ALPHA)
 
+    # Flags specific to the Alpha track
+    flags.AddBuildpackStackFlag(parser)
+
 
 DETAILED_HELP = {
     'EXAMPLES':
