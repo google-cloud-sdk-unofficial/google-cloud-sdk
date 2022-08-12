@@ -36,6 +36,7 @@ def _AddArgs(parser):
   flags.GetDisplayNameArg('endpoint', required=False).AddToParser(parser)
   flags.GetDescriptionArg('endpoint').AddToParser(parser)
   flags.AddTrafficSplitGroupArgs(parser)
+  flags.AddRequestResponseLoggingConfigUpdateGroupArgs(parser)
   labels_util.AddUpdateLabelsFlags(parser)
 
 
@@ -61,7 +62,11 @@ def _Run(args, version):
             display_name=args.display_name,
             description=args.description,
             traffic_split=args.traffic_split,
-            clear_traffic_split=args.clear_traffic_split)
+            clear_traffic_split=args.clear_traffic_split,
+            request_response_logging_table=args.request_response_logging_table,
+            request_response_logging_rate=args.request_response_logging_rate,
+            disable_request_response_logging=args
+            .disable_request_response_logging)
       else:
         op = endpoints_client.PatchBeta(
             endpoint_ref,
@@ -71,11 +76,17 @@ def _Run(args, version):
             display_name=args.display_name,
             description=args.description,
             traffic_split=args.traffic_split,
-            clear_traffic_split=args.clear_traffic_split)
+            clear_traffic_split=args.clear_traffic_split,
+            request_response_logging_table=args.request_response_logging_table,
+            request_response_logging_rate=args.request_response_logging_rate,
+            disable_request_response_logging=args
+            .disable_request_response_logging)
     except errors.NoFieldsSpecifiedError:
       available_update_args = [
           'display_name', 'traffic_split', 'clear_traffic_split',
-          'update_labels', 'clear_labels', 'remove_labels', 'description'
+          'update_labels', 'clear_labels', 'remove_labels', 'description',
+          'request_response_logging_table', 'request_response_logging_rate',
+          'disable_request_response_logging'
       ]
       if not any(args.IsSpecified(arg) for arg in available_update_args):
         raise

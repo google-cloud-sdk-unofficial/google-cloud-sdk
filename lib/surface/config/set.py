@@ -79,8 +79,8 @@ class Set(base.Command):
     $ {command} proxy/address 1.234.56.78
     $ {command} proxy/port 8080
 
-  For a full list of accepted values, see the Google Cloud CLI properties
-  page: https://cloud.google.com/sdk/docs/properties.
+  For a full list of accepted values, see
+  https://cloud.google.com/sdk/gcloud/reference/topic/configurations#AVAILABLE-PROPERTIES.
   """
 
   detailed_help = {'properties': properties.VALUES.GetHelpString()}

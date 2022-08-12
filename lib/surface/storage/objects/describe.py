@@ -45,9 +45,9 @@ class Describe(base.DescribeCommand):
 
         $ {command} gs://bucket/my-object
 
-      Desribe object with JSON formatting, only returning the "name" key:
+      Describe object with JSON formatting, only returning the "name" key:
 
-        $ {command} gs://bucket/my-object --format=json(name)
+        $ {command} gs://bucket/my-object --format="json(name)"
       """,
   }
 

@@ -79,11 +79,6 @@ class Remove(base.Command):
 
     dns = util.GetApiClient(api_version)
 
-    record_to_remove = rrsets_util.CreateRecordSetFromArgs(
-        args,
-        api_version=api_version,
-        allow_extended_records=(self.ReleaseTrack() == base.ReleaseTrack.ALPHA))
-
     # Ensure the record to be removed exists
     zone_ref = util.GetRegistry(api_version).Parse(
         args.zone,
@@ -91,6 +86,13 @@ class Remove(base.Command):
             'project': properties.VALUES.core.project.GetOrFail,
         },
         collection='dns.managedZones')
+
+    record_to_remove = rrsets_util.CreateRecordSetFromArgs(
+        args,
+        zone_ref.project,
+        api_version=api_version,
+        allow_extended_records=(self.ReleaseTrack() == base.ReleaseTrack.ALPHA))
+
     existing_records = [record for record in list_pager.YieldFromList(
         dns.resourceRecordSets,
         dns.MESSAGES_MODULE.DnsResourceRecordSetsListRequest(

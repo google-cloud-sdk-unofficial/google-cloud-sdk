@@ -42,7 +42,7 @@ class GetEffectiveFirewalls(base.DescribeCommand, base.ListCommand):
   Compute Engine virtual machine "example-instance" in zone
   us-central1-a
   """
-  _support_network_firewall_policy = False
+  _support_network_firewall_policy = True
 
   @staticmethod
   def Args(parser):

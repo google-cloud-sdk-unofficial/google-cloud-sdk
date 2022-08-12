@@ -1,5 +1,4 @@
 - release_tracks: [ALPHA, BETA]
-  hidden: true
   help_text:
     brief: |
       List all Artifact Registry project settings.

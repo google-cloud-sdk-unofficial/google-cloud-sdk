@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Utils for storage resource formatters."""
+"""Shim-related utils for storage resource formatters."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -20,6 +20,7 @@ from __future__ import unicode_literals
 
 import datetime
 
+from googlecloudsdk.command_lib.storage.resources import resource_util
 from googlecloudsdk.core.util import scaled_integer
 
 _BUCKET_FIELDS_WITH_PRESENT_VALUE = ('cors_config', 'lifecycle_config',
@@ -110,3 +111,23 @@ def replace_time_values_with_gsutil_style_strings(displayable_resource_data):
                                                    '%Y-%m-%dT%H:%M:%SZ')
       setattr(displayable_resource_data, key,
               datetime_object.strftime('%a, %d %b %Y %H:%M:%S GMT'))
+
+
+def reformat_custom_metadata_for_gsutil(displayable_object_data):
+  """Reformats custom metadata full format string in gsutil style."""
+  metadata = displayable_object_data.additional_properties
+  if not metadata:
+    return
+
+  if isinstance(metadata, dict):
+    iterable_metadata = metadata.items()
+  else:
+    # Assuming GCS format: [{"key": "_", "value": "_"}, ...]
+    iterable_metadata = [(d['key'], d['value']) for d in metadata]
+
+  metadata_lines = []
+  for k, v in iterable_metadata:
+    metadata_lines.append(
+        resource_util.get_padded_metadata_key_value_line(k, v, extra_indent=2))
+  displayable_object_data.additional_properties = '\n' + '\n'.join(
+      metadata_lines)

@@ -21,6 +21,7 @@ from __future__ import unicode_literals
 from googlecloudsdk.api_lib.util import apis as core_apis
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.firestore import create_util
+from googlecloudsdk.core.log import logging
 
 
 class Create(base.Command):
@@ -39,15 +40,32 @@ class Create(base.Command):
 
               $ {command}
 
-          To create an app in the us-central region, run:
+          To create an app in the nam5 region (multi-region), run:
 
-              $ {command} --region=us-central
+              $ {command} --region=nam5
 
+          To create an app in the us-east1 region,  run:
+
+              $ {command} --region=us-east1
           """,
   }
 
   def Run(self, args):
-    create_util.create(args, self.product_name, self.enum_value)
+    if args.region:
+      location_map = {'us-central': 'nam5', 'europe-west': 'eur3'}
+      if args.region in location_map:
+        logging.warning('Warning: {region} is not a valid Firestore location. '
+                        'Please use {location} instead.'.format(
+                            region=args.region,
+                            location=location_map[args.region]))
+
+    region = args.region
+    if args.region == 'nam5':
+      region = 'us-central'
+    elif args.region == 'eur3':
+      region = 'europe-west'
+
+    create_util.create(region, self.product_name, self.enum_value)
 
   @staticmethod
   def Args(parser):

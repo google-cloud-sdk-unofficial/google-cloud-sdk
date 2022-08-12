@@ -22,6 +22,7 @@ from googlecloudsdk.api_lib.alloydb import api_util
 from googlecloudsdk.api_lib.alloydb import cluster_operations
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.alloydb import flags
+from googlecloudsdk.command_lib.kms import resource_args as kms_resource_args
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 from googlecloudsdk.core import resources
@@ -54,6 +55,11 @@ class Restore(base.RestoreCommand):
     flags.AddBackup(parser, False)
     flags.AddRegion(parser)
     flags.AddNetwork(parser)
+    kms_resource_args.AddKmsKeyResourceArg(
+        parser,
+        'cluster',
+        permission_info="The 'AlloyDB Service Agent' service account must hold permission 'Cloud KMS CryptoKey Encrypter/Decrypter'"
+    )
 
   def Run(self, args):
     """Constructs and sends request.
@@ -80,6 +86,12 @@ class Restore(base.RestoreCommand):
 
     cluster_resource = alloydb_messages.Cluster()
     cluster_resource.network = args.network
+    kms_key = flags.GetAndValidateKmsKeyName(args)
+    if kms_key:
+      encryption_config = alloydb_messages.EncryptionConfig()
+      encryption_config.kmsKeyName = kms_key
+      cluster_resource.encryptionConfig = encryption_config
+
     req = alloydb_messages.AlloydbProjectsLocationsClustersRestoreRequest(
         parent=location_ref.RelativeName(),
         restoreClusterRequest=alloydb_messages.RestoreClusterRequest(

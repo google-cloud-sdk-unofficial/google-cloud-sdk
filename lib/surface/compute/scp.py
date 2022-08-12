@@ -12,7 +12,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """Implements the command for copying files from and to virtual machines."""
 
 from __future__ import absolute_import
@@ -27,24 +26,7 @@ from googlecloudsdk.command_lib.compute import ssh_utils
 from googlecloudsdk.command_lib.util.ssh import ip
 
 
-_ON_PREM_EXTRA_DESCRIPTION = """
-
-If the `--region` and `--network` flags are provided, then `--plain` and
-`--tunnel-through-iap` are implied and any remote file names must be prefixed
-with the remote IP address instead of the instance name. This is most useful for
-connecting to on-prem resources.
-"""
-
-_ON_PREM_EXTRA_EXAMPLES = """
-
-To use the IP address of your remote VM (eg, for on-prem), you must also specify
-the `--region` and `--network` flags:
-
-  $ {command} 10.1.2.3:~/narnia ~/wardrobe --region=us-central1 --network=default
-"""
-
-
-def _DetailedHelp(version):
+def _DetailedHelp():
   """Generate detailed help for each version."""
   detailed_help = {
       'brief': ('Copy files to and from Google Compute Engine '
@@ -66,7 +48,12 @@ In order to set up a successful transfer, follow these guidelines:
 *   When the destination of your transfer is remote instead, all sources must
     be local.
 
-Under the covers, *scp(1)* is used to facilitate the transfer.""",
+Under the covers, *scp(1)* is used to facilitate the transfer.
+
+If the `--region` and `--network` flags are provided, then `--plain` and
+`--tunnel-through-iap` are implied and any remote file names must be prefixed
+with the remote IP address instead of the instance name. This is most useful for
+connecting to on-prem resources.""",
       'EXAMPLES':
           """
 To copy a remote directory, `~/narnia`, from ``example-instance'' to the
@@ -95,22 +82,23 @@ through 2019:
 Or alternatively, allow access for the next two minutes:
 
   $ {command} --recurse example-instance:~/narnia ~/wardrobe --ssh-key-expire-after=2m
+
+To use the IP address of your remote VM (eg, for on-prem), you must also specify
+the `--region` and `--network` flags:
+
+  $ {command} 10.1.2.3:~/narnia ~/wardrobe --region=us-central1 --network=default
 """,
   }
-
-  if version == 'ALPHA':
-    detailed_help['DESCRIPTION'] += _ON_PREM_EXTRA_DESCRIPTION
-    detailed_help['EXAMPLES'] += _ON_PREM_EXTRA_EXAMPLES
 
   return detailed_help
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
+                    base.ReleaseTrack.GA)
 class Scp(base.Command):
   """Copy files to and from Google Compute Engine virtual machines via scp."""
 
   category = base.TOOLS_CATEGORY
-  enable_host_based_flags = False
 
   @classmethod
   def Args(cls, parser):
@@ -158,16 +146,12 @@ class Scp(base.Command):
         """)
 
     iap_tunnel.AddSshTunnelArgs(parser, routing_group)
-    # TODO(b/190426150): Move this to Beta and then GA.
-    if cls.enable_host_based_flags:
-      iap_tunnel.AddHostBasedTunnelArgs(parser)
+    iap_tunnel.AddHostBasedTunnelArgs(parser)
 
   def Run(self, args):
     """See scp_utils.BaseScpCommand.Run."""
 
-    on_prem = (
-        args.IsKnownAndSpecified('network') and
-        args.IsKnownAndSpecified('region'))
+    on_prem = (args.IsSpecified('network') and args.IsSpecified('region'))
     if on_prem:
       args.plain = True
 
@@ -197,18 +181,4 @@ class Scp(base.Command):
         ip_type=ip_type)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class ScpBeta(Scp):
-  """Copy files to and from Google Compute Engine virtual machines via scp (Beta)."""
-  enable_host_based_flags = False
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class ScpAlpha(ScpBeta):
-  """Copy files to and from Google Compute Engine virtual machines via scp (Alpha)."""
-  enable_host_based_flags = True
-
-
-ScpAlpha.detailed_help = _DetailedHelp('ALPHA')
-ScpBeta.detailed_help = _DetailedHelp('BETA')
-Scp.detailed_help = _DetailedHelp('GA')
+Scp.detailed_help = _DetailedHelp()

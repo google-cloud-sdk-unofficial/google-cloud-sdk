@@ -103,6 +103,27 @@ def _clear_fields(args, messages, job):
   if args.clear_log_config:
     job.loggingConfig = None
 
+  if getattr(job.transferSpec, 'awsS3CompatibleDataSource', None):
+    if args.clear_source_endpoint:
+      job.transferSpec.awsS3CompatibleDataSource.endpoint = None
+    if args.clear_source_signing_region:
+      job.transferSpec.awsS3CompatibleDataSource.region = None
+
+    s3_compatible_metadata = getattr(job.transferSpec.awsS3CompatibleDataSource,
+                                     's3Metadata', None)
+    if s3_compatible_metadata:
+      if args.clear_source_auth_method:
+        s3_compatible_metadata.authMethod = None
+      if args.clear_source_list_api:
+        s3_compatible_metadata.listApi = None
+      if args.clear_source_network_protocol:
+        s3_compatible_metadata.protocol = None
+      if args.clear_source_request_model:
+        s3_compatible_metadata.requestModel = None
+
+    if s3_compatible_metadata == messages.S3CompatibleMetadata():
+      job.transferSpec.awsS3CompatibleDataSource.s3Metadata = None
+
 
 class Update(base.Command):
   """Update a Transfer Service transfer job."""

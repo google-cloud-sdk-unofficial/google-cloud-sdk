@@ -78,14 +78,14 @@ class Update(base.UpdateCommand):
         type=arg_parsers.ArgList(min_length=1),
         metavar='SOURCE_IP_RANGES',
         help="""\
-        A list of source IP addresses that the rule applies to. Each entry in the list can use ExternalAddress resource name, CIDR notation or be a single IP address. When the value is set to `0.0.0.0/0`, all IP addresses are allowed.
+        A list of source IP addresses that the rule applies to. Each entry in the list can be a CIDR notation or a single IP address. When the value is set to `0.0.0.0/0`, all IP addresses are allowed.
         """)
     parser.add_argument(
         '--destination-ranges',
         type=arg_parsers.ArgList(min_length=1),
         metavar='DESTINATION_IP_RANGES',
         help="""\
-        A list of destination IP addresses that the rule applies to. Each entry in the list can use ExternalAddress resource name, CIDR notation or be a single IP address.
+        A list of destination IP addresses that the rule applies to. Each entry in the list be an ExternalAddress resource name or `0.0.0.0/0`. When the value is set to `0.0.0.0/0`, all IP addresses are allowed.
         """)
     parser.add_argument(
         '--source-ports',

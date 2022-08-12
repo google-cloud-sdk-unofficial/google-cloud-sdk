@@ -99,7 +99,7 @@ class ListUsable(base.ListCommand):
         'UsableSubnetworkSecondaryRange.Status::enum': {
             'UNKNOWN': 'Unknown',
             'UNUSED': 'usable for pods or services',
-            'IN_USE_SERVICE': 'unusable',
+            'IN_USE_SERVICE': 'usable for services',
             'IN_USE_SHAREABLE_POD': 'usable for pods',
             'IN_USE_MANAGED_POD': 'unusable'
         }

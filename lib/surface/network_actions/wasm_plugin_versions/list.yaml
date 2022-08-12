@@ -7,7 +7,7 @@
     examples: |
       To list existing WasmPluginVersions, run:
 
-        $ {command} --wasm_plugin=WASM_PLUGIN
+        $ {command} --wasm-plugin=WASM_PLUGIN
 
   request:
     collection: networkservices.projects.locations.wasmPlugins.versions
@@ -20,7 +20,7 @@
   arguments:
     resource:
       help_text: The parent WasmPlugin.
-      spec: !REF googlecloudsdk.command_lib.network_actions.resources:wasmPlugin
+      spec: !REF googlecloudsdk.command_lib.network_actions.resources:wasmPluginHyphen
 
   output:
     format: |

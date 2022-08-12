@@ -67,6 +67,7 @@ class Update(base.UpdateCommand):
 
     resource_record_set = rrsets_util.CreateRecordSetFromArgs(
         args,
+        zone_ref.project,
         api_version,
         allow_extended_records=(self.ReleaseTrack() == base.ReleaseTrack.ALPHA))
 

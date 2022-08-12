@@ -24,18 +24,9 @@ from googlecloudsdk.command_lib.compute.instances import flags
 from googlecloudsdk.command_lib.compute.os_config import troubleshooter
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Troubleshoot(base.Command):
-  """Troubleshoot VM Manager issues.
-
-  ## EXAMPLES
-
-  The following command troubleshoots issues for a VM instance with the name
-  `my-instance-name` in the zone `us-central1-a`:
-
-    $ {command} my-instance-name --zone=us-central1-a
-
-  """
+  """Troubleshoot VM Manager issues."""
 
   def _ResolveInstance(self, holder, compute_client, args):
     """Resolves the arguments into an instance.
@@ -89,6 +80,82 @@ Troubleshoot.detailed_help = {
     'EXAMPLES': """
     To troubleshoot an instance named `my-instance` in zone `us-west1-a`, run
 
-    $ {command} my-instance --zone=us-west1-a
+        $ {command} my-instance --zone=us-west1-a
+    """
+}
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class TroubleshootAlpha(base.Command):
+  """(ALPHA) Troubleshoot VM Manager issues."""
+
+  def _ResolveInstance(self, holder, compute_client, args):
+    """Resolves the arguments into an instance.
+
+    Args:
+      holder: the api holder
+      compute_client: the compute client
+      args: The command line arguments.
+
+    Returns:
+      An instance reference to a VM.
+    """
+    resources = holder.resources
+    instance_ref = flags.INSTANCE_ARG.ResolveAsResource(
+        args,
+        resources,
+        scope_lister=flags.GetInstanceZoneScopeLister(compute_client))
+    return instance_ref
+
+  @staticmethod
+  def Args(parser):
+    flags.INSTANCE_ARG.AddArgument(parser)
+    parser.add_argument('--enable-log-analysis',
+                        required=False,
+                        action='store_true',
+                        help=(
+                            'Enable the checking of audit logs created by Cloud'
+                            ' Logging. The troubleshooter checks the VM\'s '
+                            'Cloud Logging logs and serial log output for '
+                            'errors, provides you with the analysis data, and '
+                            'allows you to download the logs.'
+                        ))
+
+  def Run(self, args):
+    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    compute_client = holder.client
+
+    instance_ref = self._ResolveInstance(holder, compute_client, args)
+    troubleshooter.Troubleshoot(compute_client,
+                                instance_ref,
+                                self.ReleaseTrack(),
+                                analyze_logs=args.enable_log_analysis)
+    return
+
+TroubleshootAlpha.detailed_help = {
+    'brief':
+        'Troubleshoot issues with the setup of VM Manager on a specified VM '
+        'instance',
+    'DESCRIPTION':
+        """
+    *{command}* troubleshoots issues with the setup of VM Manager on a specified
+    VM instance
+
+    The troubleshoot command investigates the following settings or configurations for your VM Manager setup:\n
+    - Checks if the OS Config API is enabled in the project.\n
+    - Checks if the required metadata is set up correctly in the VM instance.\n
+    - Checks if the latest version of the OS Config agent is running on the VM instance.\n
+    - Checks if a service account is attached to the VM instance.\n
+    - Checks if the VM Manager service agent is enabled.\n
+    - Checks if the VM instance has a public IP or Private Google Access.
+    """,
+    'EXAMPLES': """
+    To troubleshoot an instance named `my-instance` in zone `us-west1-a`, run
+
+        $ {command} my-instance --zone=us-west1-a
+
+    To troubleshoot the same instance in the same zone with log analysis, run
+
+        $ {command} my-instance --zone=us-west1-a --enable-log-analysis
     """
 }

@@ -24,7 +24,6 @@ import time
 
 from googlecloudsdk.api_lib.services import enable_api
 from googlecloudsdk.command_lib.container.fleet import resources
-from googlecloudsdk.command_lib.container.fleet import util as hub_util
 from googlecloudsdk.command_lib.container.fleet.features import base
 from googlecloudsdk.command_lib.container.fleet.features import info
 from googlecloudsdk.core import exceptions
@@ -47,9 +46,9 @@ class Enable(base.EnableCommand):
 
   feature_name = 'multiclusteringress'
 
-  @staticmethod
-  def Args(parser):
-    if hub_util.APIEndpoint() == hub_util.AUTOPUSH_API:
+  @classmethod
+  def Args(cls, parser):
+    if resources.UseRegionalMemberships(cls.ReleaseTrack()):
       resources.AddMembershipResourceArg(
           parser, membership_arg='--config-membership')
     else:

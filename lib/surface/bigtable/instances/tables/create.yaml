@@ -55,3 +55,4 @@
         the value indicates how long the replication logs are kept and should be in the range of
         [1 day, 7 days]. For example: `5d` or `48h`
       processor: googlecloudsdk.api_lib.bigtable.tables:ConvertDurationToSeconds
+      release_tracks: [ALPHA]

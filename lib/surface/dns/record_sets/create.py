@@ -57,6 +57,29 @@ class Create(base.CreateCommand):
 
           $ {command} us-east1-a.bar.com. --rrdatas=1.2.3.4,9.8.7.6 --type=A --ttl=60
             --zone=my_zone --location=us-east1-a
+
+          To create a failover type health checked routed record-set with dnsName
+          foo.bar.com., record type A, primary routing data "config1", backup
+          routing data "us-centra1=1.2.3.4,2.3.4.5;us-west1=3.4.5.6,9.8.7.6", with a
+          trickle traffic ratio of 10% to the backup data,
+          and ttl 60 in my_zone.
+
+          $ {command} foo.bar.com.  --type=A --ttl=60 \
+            --zone=routing-policy-test --routing-policy-type=FAILOVER \
+            --routing-policy-primary-data='config1' \
+            --routing-policy-backup-data-type=GEO \
+            --routing-policy-backup-data='us-centra1=1.2.3.4,2.3.4.5;us-west1=3.4.5.6,9.8.7.6' \
+            --backup-data-trickle-ratio=0.1 --enable-health-checking --zone=my_zone
+
+          To create a geo fenced health checked routed record-set with dnsName
+          foo.bar.com., record type A, routing-policy-data
+          "us-centra1=config1,config2;us-west1=3.4.5.6,9.8.7.6",
+          and ttl 60 in my_zone.
+
+          $ {command} foo.bar.com.  --type=A --ttl=60 \
+            --zone=routing-policy-test --routing-policy-type=GEO \
+            --routing-policy-data='us-centra1=config1,config2;us-west1=3.4.5.6,9.8.7.6' \
+            --enable-health-checking --enable-geo-fencing --zone=my_zone
           """)
   }
 
@@ -86,7 +109,7 @@ class Create(base.CreateCommand):
         project=zone_ref.project,
         managedZone=zone_ref.Name(),
         resourceRecordSet=rrsets_util.CreateRecordSetFromArgs(
-            args, api_version, allow_extended_records=False))
+            args, zone_ref.project, api_version, allow_extended_records=False))
 
     result = dns_client.resourceRecordSets.Create(request)
 
@@ -123,6 +146,29 @@ class CreateBeta(Create):
 
           $ {command} us-east1-a.bar.com. --rrdatas=1.2.3.4,9.8.7.6 --type=A --ttl=60
             --zone=my_zone --location=us-east1-a
+
+          To create a failover type health checked routed record-set with dnsName
+          foo.bar.com., record type A, primary routing data "config1", backup
+          routing data "us-centra1=1.2.3.4,2.3.4.5;us-west1=3.4.5.6,9.8.7.6", with a
+          trickle traffic ratio of 10% to the backup data,
+          and ttl 60 in my_zone.
+
+          $ {command} foo.bar.com.  --type=A --ttl=60 \
+            --zone=routing-policy-test --routing_policy_type=FAILOVER \
+            --routing-policy-primary-data='config1' \
+            --routing-policy-backup-data-type=GEO \
+            --routing-policy-backup-data='us-centra1=1.2.3.4,2.3.4.5;us-west1=3.4.5.6,9.8.7.6' \
+            --backup-data-trickle-ratio=0.1 --enable-health-checking --zone=my_zone
+
+          To create a geo fenced health checked routed record-set with dnsName
+          foo.bar.com., record type A, routing-policy-data
+          "us-centra1=config1,config2;us-west1=3.4.5.6,9.8.7.6",
+          and ttl 60 in my_zone.
+
+          $ {command} foo.bar.com.  --type=A --ttl=60 \
+            --zone=routing-policy-test --routing_policy_type=GEO \
+            --routing_policy_data='us-centra1=config1,config2;us-west1=3.4.5.6,9.8.7.6' \
+            --enable-health-checking --enable-geo-fencing --zone=my_zone
           """)
   }
 
@@ -155,6 +201,7 @@ class CreateBeta(Create):
         managedZone=zone_ref.Name(),
         resourceRecordSet=rrsets_util.CreateRecordSetFromArgs(
             args,
+            zone_ref.project,
             api_version,
             allow_extended_records=(
                 self.ReleaseTrack() == base.ReleaseTrack.ALPHA)))

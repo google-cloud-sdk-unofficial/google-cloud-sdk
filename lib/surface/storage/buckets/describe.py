@@ -42,9 +42,9 @@ class Describe(base.DescribeCommand):
 
         $ {command} gs://my-bucket
 
-      Desribe bucket with JSON formatting, only returning the "name" key:
+      Describe bucket with JSON formatting, only returning the "name" key:
 
-        $ {command} gs://my-bucket --format=json(name)
+        $ {command} gs://my-bucket --format="json(name)"
       """,
   }
 

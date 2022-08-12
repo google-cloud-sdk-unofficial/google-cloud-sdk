@@ -168,9 +168,9 @@ def AddBetaArgs(parser):
   flags.AddEnableGooglePrivatePath(parser)
 
 
-def AddAlphaArgs(unused_parser):
+def AddAlphaArgs(parser):
   """Declare alpha flags for this command parser."""
-  pass
+  flags.AddSqlServerTimeZone(parser)
 
 
 def RunBaseCreateCommand(args, release_track):

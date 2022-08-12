@@ -244,12 +244,11 @@ class UpdateBeta(Update):
               args.airflow_version))
 
     # Checks validity of image_version upgrade request.
-    if (args.image_version and
-        not image_versions_command_util.IsValidImageVersionUpgrade(
-            env_ref, args.image_version, self.ReleaseTrack())):
-      raise command_util.InvalidUserInputError(
-          'Invalid environment upgrade. [Requested: {}]'.format(
-              args.image_version))
+    if args.image_version:
+      upgrade_validation = image_versions_command_util.IsValidImageVersionUpgrade(
+          env_ref, args.image_version, self.ReleaseTrack())
+      if not upgrade_validation.upgrade_valid:
+        raise command_util.InvalidUserInputError(upgrade_validation.error)
 
     # Checks validity of update_web_server_allow_ip
     if (self.ReleaseTrack() == base.ReleaseTrack.BETA and

@@ -1,4 +1,5 @@
 - release_tracks: [ALPHA, BETA]
+  hidden: true
   help_text:
     brief: |
       Finalizes redirection from Container Registry to Artifact Registry. This change is permanent.

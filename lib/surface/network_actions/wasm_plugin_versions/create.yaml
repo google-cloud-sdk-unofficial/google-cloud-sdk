@@ -7,13 +7,16 @@
     examples: |
       To create a WasmPluginVersion called 'my-plugin-version', run:
 
-        $ {command} my-plugin-version --wasm_plugin=my-plugin
+        $ {command} my-plugin-version --wasm-plugin=my-plugin
         --image=...-docker.pkg.dev/my-project/repository/container:tag
 
   request:
     collection: networkservices.projects.locations.wasmPlugins.versions
     ALPHA:
       api_version: v1alpha1
+
+  async:
+    collection: networkservices.projects.locations.operations
 
   arguments:
     resource:

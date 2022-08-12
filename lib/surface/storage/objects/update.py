@@ -118,8 +118,8 @@ class Update(base.Command):
     parser.add_argument(
         '-s',
         '--storage-class',
-        help='Specify the storage class of the object. Triggers a rewrite of'
-        'underlying object data.')
+        help='Specify the storage class of the object. Using this flag triggers'
+        ' a rewrite of underlying object data.')
     parser.add_argument(
         '--temporary-hold',
         action=arg_parsers.StoreTrueFalseAction,

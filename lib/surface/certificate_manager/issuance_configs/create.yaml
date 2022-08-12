@@ -40,9 +40,9 @@
         Lifetime of issued certificates. Defaults to `604800s`.
     - arg_name: rotation-window-percentage
       api_field: certificateIssuanceConfig.rotationWindowPercentage
-      default: 80
+      default: 66
       help_text: |
-        How long along the lifetime of the ceritificate to renew, expressed as a percentage. Defaults to `80`.
+        How long along the lifetime of the ceritificate to renew, expressed as a percentage. Defaults to `66`.
     - arg_name: key-algorithm
       api_field: certificateIssuanceConfig.keyAlgorithm
       default: "rsa-4096"

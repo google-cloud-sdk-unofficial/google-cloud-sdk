@@ -69,7 +69,7 @@ To list all iOS models available for testing, run:
     filtered_models = [
         model for model in catalog.models if model.supportedVersionIds
     ]
-    self._epilog = util.GetDeprecatedTagWarning(filtered_models)
+    self._epilog = util.GetDeprecatedTagWarning(filtered_models, 'ios')
 
     return filtered_models
 

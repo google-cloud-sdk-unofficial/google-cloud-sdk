@@ -227,7 +227,6 @@ class Ssh(base.Command):
   """SSH into a virtual machine instance."""
 
   category = base.TOOLS_CATEGORY
-  enable_host_based_flags = False
   enable_security_keys = False
 
   @classmethod
@@ -242,9 +241,7 @@ class Ssh(base.Command):
     AddSSHArgs(parser)
     AddContainerArg(parser)
     AddTroubleshootArg(parser)
-    # TODO(b/190426150): Move this to Beta and then GA.
-    if cls.enable_host_based_flags:
-      iap_tunnel.AddHostBasedTunnelArgs(parser)
+    iap_tunnel.AddHostBasedTunnelArgs(parser)
 
     flags.AddZoneFlag(
         parser, resource_type='instance', operation_type='connect to')
@@ -288,8 +285,11 @@ class Ssh(base.Command):
           scope_lister=instance_flags.GetInstanceZoneScopeLister(client))[0]
       instance = ssh_helper.GetInstance(client, instance_ref)
       project = ssh_helper.GetProject(client, instance_ref.project)
-      host_keys = ssh_helper.GetHostKeysFromGuestAttributes(
-          client, instance_ref, instance, project)
+      if args.strict_host_key_checking == 'no':
+        host_keys = None
+      else:
+        host_keys = ssh_helper.GetHostKeysFromGuestAttributes(
+            client, instance_ref, instance, project)
       iap_tunnel_args = iap_tunnel.CreateSshTunnelArgs(
           args, self.ReleaseTrack(), instance_ref,
           ssh_utils.GetExternalInterface(instance, no_raise=True))
@@ -450,37 +450,13 @@ class Ssh(base.Command):
     return RECOMMEND_MESSAGE.format(command, command_iap)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class SshBeta(Ssh):
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+class SshAlphaBeta(Ssh):
   """SSH into a virtual machine instance (Beta)."""
-  enable_host_based_flags = False
   enable_security_keys = True
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class SshAlpha(SshBeta):
-  """SSH into a virtual machine instance (Alpha)."""
-  enable_host_based_flags = True
-  enable_security_keys = True
-
-
-_ON_PREM_EXTRA_DESCRIPTION = """
-
-If the `--region` and `--network` flags are provided, then `--plain` and
-`--tunnel-through-iap` are implied and an IP address must be supplied instead of
-an instance name. This is most useful for connecting to on-prem resources.
-"""
-
-_ON_PREM_EXTRA_EXAMPLES = """
-
-To use the IP address of your remote VM (eg, for on-prem), you must also specify
-the `--region` and `--network` flags:
-
-  $ {command} 10.1.2.3 --region=us-central1 --network=default
-"""
-
-
-def _DetailedHelp(version):
+def _DetailedHelp():
   """Construct help text based on the command release track."""
   detailed_help = {
       'brief': 'SSH into a virtual machine instance',
@@ -503,6 +479,10 @@ a firewall-rule:
 in the project's metadata. If the user does not have a public
 SSH key, one is generated using *ssh-keygen(1)* (if the `--quiet`
 flag is given, the generated key will have an empty passphrase).
+
+If the `--region` and `--network` flags are provided, then `--plain` and
+`--tunnel-through-iap` are implied and an IP address must be supplied instead of
+an instance name. This is most useful for connecting to on-prem resources.
 """,
       'EXAMPLES': """\
 To SSH into 'example-instance' in zone ``us-central1-a'', run:
@@ -536,16 +516,16 @@ used through 2019:
 Or alternatively, allow access for the next two minutes:
 
   $ {command} example-instance --zone=us-central1-a --ssh-key-expire-after=2m
+
+To use the IP address of your remote VM (eg, for on-prem), you must also specify
+the `--region` and `--network` flags:
+
+  $ {command} 10.1.2.3 --region=us-central1 --network=default
 """,
   }
-
-  if version == 'ALPHA':
-    detailed_help['DESCRIPTION'] += _ON_PREM_EXTRA_DESCRIPTION
-    detailed_help['EXAMPLES'] += _ON_PREM_EXTRA_EXAMPLES
 
   return detailed_help
 
 
-SshAlpha.detailed_help = _DetailedHelp('ALPHA')
-SshBeta.detailed_help = _DetailedHelp('BETA')
-Ssh.detailed_help = _DetailedHelp('GA')
+SshAlphaBeta.detailed_help = _DetailedHelp()
+Ssh.detailed_help = _DetailedHelp()

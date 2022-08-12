@@ -21,6 +21,7 @@ from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.dns import resource_record_sets as rrsets_util
 from googlecloudsdk.api_lib.dns import transaction_util as trans_util
+from googlecloudsdk.api_lib.dns import util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.dns import flags
 from googlecloudsdk.core import log
@@ -82,9 +83,14 @@ class Add(base.Command):
       change = trans_util.ChangeFromYamlFile(
           trans_file, api_version=api_version)
 
+    zone_ref = util.GetRegistry(api_version).Parse(
+        args.zone,
+        params=util.GetParamsForRegistry(api_version, args),
+        collection='dns.managedZones')
     change.additions.append(
         rrsets_util.CreateRecordSetFromArgs(
             args,
+            zone_ref.project,
             api_version=api_version,
             allow_extended_records=(
                 self.ReleaseTrack() == base.ReleaseTrack.ALPHA)))

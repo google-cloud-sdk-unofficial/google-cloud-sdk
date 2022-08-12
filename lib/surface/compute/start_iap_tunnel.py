@@ -12,7 +12,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """Implements the command for starting a tunnel with Cloud IAP."""
 
 from __future__ import absolute_import
@@ -33,26 +32,10 @@ from googlecloudsdk.command_lib.compute.instances import flags
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 
-
 _CreateTargetArgs = collections.namedtuple('_TargetArgs', [
     'project', 'zone', 'instance', 'interface', 'port', 'region', 'network',
     'host', 'dest_group'
 ])
-
-_ON_PREM_EXTRA_DESCRIPTION = """
-
-If the `--region` and `--network` flags are provided, then an IP address or FQDN
-must be supplied instead of an instance name. This is most useful for connecting
-to on-prem resources.
-"""
-
-_ON_PREM_EXTRA_EXAMPLES = """
-
-To use the IP address or FQDN of your remote VM (eg, for on-prem), you must also
-specify the `--region` and `--network` flags:
-
-  $ {command} 10.1.2.3 3389 --region=us-central1 --network=default
-"""
 
 _NUMPY_HELP_TEXT = """
 
@@ -61,19 +44,26 @@ please see https://cloud.google.com/iap/docs/using-tcp-forwarding#increasing_the
 """
 
 
-def _DetailedHelp(version):
+def _DetailedHelp():
   """Construct help text based on the command release track."""
   detailed_help = {
-      'brief': 'Starts an IAP TCP forwarding tunnel.',
-      'DESCRIPTION': """\
+      'brief':
+          'Starts an IAP TCP forwarding tunnel.',
+      'DESCRIPTION':
+          """\
 Starts a tunnel to Cloud Identity-Aware Proxy for TCP forwarding through which
 another process can create a connection (eg. SSH, RDP) to a Google Compute
 Engine instance.
 
 To learn more, see the
 [IAP for TCP forwarding documentation](https://cloud.google.com/iap/docs/tcp-forwarding-overview).
+
+If the `--region` and `--network` flags are provided, then an IP address or FQDN
+must be supplied instead of an instance name. This is most useful for connecting
+to on-prem resources.
 """,
-      'EXAMPLES': """\
+      'EXAMPLES':
+          """\
 To open a tunnel to the instances's RDP port on an arbitrary local port, run:
 
   $ {command} my-instance 3389
@@ -81,12 +71,13 @@ To open a tunnel to the instances's RDP port on an arbitrary local port, run:
 To open a tunnel to the instance's RDP port on a specific local port, run:
 
   $ {command} my-instance 3389 --local-host-port=localhost:3333
+
+To use the IP address or FQDN of your remote VM (eg, for on-prem), you must also
+specify the `--region` and `--network` flags:
+
+  $ {command} 10.1.2.3 3389 --region=us-central1 --network=default
 """
   }
-
-  if version == 'ALPHA':
-    detailed_help['DESCRIPTION'] += _ON_PREM_EXTRA_DESCRIPTION
-    detailed_help['EXAMPLES'] += _ON_PREM_EXTRA_EXAMPLES
 
   return detailed_help
 
@@ -95,7 +86,6 @@ To open a tunnel to the instance's RDP port on a specific local port, run:
 class StartIapTunnel(base.Command):
   """Starts an IAP TCP forwarding tunnel."""
 
-  enable_host_based_flags = False
   fetch_instance_after_connect_error = False
 
   @classmethod
@@ -139,8 +129,7 @@ If `LOCAL_PORT` is 0, an arbitrary unused local port is chosen."""
         action='store_true',
         help='Disables the immediate check of the connection.')
 
-    if cls.enable_host_based_flags:
-      iap_tunnel.AddHostBasedTunnelArgs(parser)
+    iap_tunnel.AddHostBasedTunnelArgs(parser)
 
   def Run(self, args):
     if args.listen_on_stdin and args.IsSpecified('local_host_port'):
@@ -154,8 +143,8 @@ If `LOCAL_PORT` is 0, an arbitrary unused local port is chosen."""
     try:
       iap_tunnel_helper.Run()
     except iap_tunnel_websocket.ConnectionCreationError as e:
-      if (self._ShouldFetchInstanceAfterConnectError(args.zone)
-          and not target.host):
+      if (self._ShouldFetchInstanceAfterConnectError(args.zone) and
+          not target.host):
         # Try to fetch the instance, to see if we can get a more precise error
         # message. If we can, then this will throw an exception, and we won't
         # raise the ConnectionCreationError.
@@ -189,9 +178,7 @@ If `LOCAL_PORT` is 0, an arbitrary unused local port is chosen."""
     return iap_tunnel_helper
 
   def _GetTargetArgs(self, args):
-    # TODO(b/190426150): change to just "IsSpecified" when going to GA
-    if args.IsKnownAndSpecified('network') and args.IsKnownAndSpecified(
-        'region'):
+    if args.IsSpecified('network') and args.IsSpecified('region'):
       return _CreateTargetArgs(
           project=properties.VALUES.core.project.GetOrFail(),
           region=args.region,
@@ -235,7 +222,10 @@ If `LOCAL_PORT` is 0, an arbitrary unused local port is chosen."""
     ssh_helper = ssh_utils.BaseSSHCLIHelper()
 
     instance_ref = flags.SSH_INSTANCE_RESOLVER.ResolveResources(
-        [args.instance_name], scope.ScopeEnum.ZONE, args.zone, holder.resources,
+        [args.instance_name],
+        scope.ScopeEnum.ZONE,
+        args.zone,
+        holder.resources,
         scope_lister=flags.GetInstanceZoneScopeLister(client))[0]
     return instance_ref, ssh_helper.GetInstance(client, instance_ref)
 
@@ -259,22 +249,12 @@ If `LOCAL_PORT` is 0, an arbitrary unused local port is chosen."""
       log.warning(_NUMPY_HELP_TEXT)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class StartIapTunnelBeta(StartIapTunnel):
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+class StartIapTunnelAlphaBeta(StartIapTunnel):
   """Starts an IAP TCP forwarding tunnel (Beta)."""
-  enable_host_based_flags = True
   # Make the Compute Engine instances.Get call only after failing to connect.
   fetch_instance_after_connect_error = True
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class StartIapTunnelAlpha(StartIapTunnelBeta):
-  """Starts an IAP TCP forwarding tunnel (Alpha)."""
-  enable_host_based_flags = True
-  # Make the Compute Engine instances.Get call only after failing to connect.
-  fetch_instance_after_connect_error = True
-
-
-StartIapTunnelAlpha.detailed_help = _DetailedHelp('ALPHA')
-StartIapTunnelBeta.detailed_help = _DetailedHelp('BETA')
-StartIapTunnel.detailed_help = _DetailedHelp('GA')
+StartIapTunnelAlphaBeta.detailed_help = _DetailedHelp()
+StartIapTunnel.detailed_help = _DetailedHelp()

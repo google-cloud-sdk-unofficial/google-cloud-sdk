@@ -23,6 +23,12 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.firestore import create_util
 
 
+@base.Deprecate(
+    is_removed=False,
+    warning=(
+        'This command is deprecated. '
+        'Please use `gcloud alpha firestore database update --type=datastore-mode` instead.'
+    ))
 class Create(base.Command):
   """Create a Google Cloud Firestore in Datastore Mode database."""
   product_name = 'Google Cloud Firestore in Datastore Mode'
@@ -48,7 +54,7 @@ class Create(base.Command):
   }
 
   def Run(self, args):
-    create_util.create(args, self.product_name, self.enum_value)
+    create_util.create(args.region, self.product_name, self.enum_value)
 
   @staticmethod
   def Args(parser):

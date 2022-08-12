@@ -217,6 +217,13 @@ class Deploy(base.Command):
         build_type = BuildType.DOCKERFILE
       else:
         pack = [{'image': args.image}]
+        if self.ReleaseTrack() is base.ReleaseTrack.ALPHA:
+          command_arg = getattr(args, 'command', None)
+          if command_arg is not None:
+            command = ' '.join(command_arg)
+            pack[0].update({
+                'env': 'GOOGLE_ENTRYPOINT="{command}"'.format(command=command)
+            })
         build_type = BuildType.BUILDPACKS
       image = None if pack else args.image
       operation_message = ('Building using {build_type} and deploying container'

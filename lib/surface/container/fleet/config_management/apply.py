@@ -352,9 +352,10 @@ def _build_monitoring_msg(spec_monitoring, msg):
     configmanagement.spec.policyController.monitoring
   Raises: Error, if Policy Controller Monitoring Backend is not recognized
   """
-  spec_backends = spec_monitoring['backends']
+  if spec_monitoring['backends'] is None:
+    return None
   backends = []
-  for backend in spec_backends:
+  for backend in spec_monitoring['backends']:
     if backend == 'prometheus':
       backends.append(msg.ConfigManagementPolicyControllerMonitoring
                       .BackendsValueListEntryValuesEnum.PROMETHEUS)

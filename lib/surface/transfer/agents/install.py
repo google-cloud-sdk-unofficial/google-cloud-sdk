@@ -115,6 +115,21 @@ characters printed by step [2/3]. The container ID can also be found by running
 "docker container list".
 """
 
+S3_COMPATIBLE_HELP_TEXT = """
+Allow the agent to work with S3-compatible sources. This flag blocks the
+agent's ability to work with other source types (e.g., file systems).
+
+When using this flag, you must provide source credentials either as
+environment variables `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` or
+as default credentials in your system's configuration files.
+
+To provide credentials as environment variables, run:
+
+```
+AWS_ACCESS_KEY_ID="id" AWS_SECRET_ACCESS_KEY="secret" gcloud transfer agents install --s3-compatible-mode
+```
+"""
+
 
 def _expand_path(path):
   """Converts relative and symbolic paths to absolute paths."""
@@ -314,9 +329,7 @@ class Install(base.Command):
     parser.add_argument(
         '--s3-compatible-mode',
         action='store_true',
-        help='Allow the agent to work with S3-compatible sources. This flag'
-        ' blocks the agents ability to work with other source types'
-        ' (e.g. POSIX filesystems).')
+        help=S3_COMPATIBLE_HELP_TEXT)
 
   def Run(self, args):
     if args.count is not None and args.count < 1:

@@ -20,25 +20,29 @@ from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.container.fleet import util
 from googlecloudsdk.calliope import actions
-from googlecloudsdk.calliope import base as gbase
+from googlecloudsdk.calliope import base as calliope_base
 from googlecloudsdk.command_lib.container.fleet import resources
-from googlecloudsdk.command_lib.container.fleet import util as hub_util
 from googlecloudsdk.command_lib.container.fleet.features import base
 from googlecloudsdk.command_lib.container.fleet.mesh import utils
 
 
-def _RunUpdate(cmd, args):
+def _RunUpdate(cmd, args, resource=False):
   """Runs the update command implementation that is common across release tracks.
 
   Args:
     cmd: the release track specific command
     args: the args passed to the command
+    resource: whether the membership args are resource args
   """
-  memberships = utils.ParseMemberships(args)
+  if resource:
+    memberships = utils.ParseMembershipsFull(args)
+  else:
+    memberships = utils.ParseMemberships(args)
   f = cmd.GetFeature()
   membership_specs = {}
   for membership in memberships:
-    membership = cmd.MembershipResourceName(membership)
+    if not resource:
+      membership = cmd.MembershipResourceName(membership)
     patch = cmd.messages.MembershipFeatureSpec()
 
     for name, spec in cmd.hubclient.ToPyDict(f.membershipSpecs).items():
@@ -75,7 +79,7 @@ def _RunUpdate(cmd, args):
   cmd.Update(['membershipSpecs'], f)
 
 
-@gbase.ReleaseTracks(gbase.ReleaseTrack.ALPHA)
+@calliope_base.ReleaseTracks(calliope_base.ReleaseTrack.ALPHA)
 class UpdateAlpha(base.UpdateCommand):
   """Update the configuration of the Service Mesh Feature.
 
@@ -95,7 +99,7 @@ class UpdateAlpha(base.UpdateCommand):
   @staticmethod
   def Args(parser):
     group = parser.add_mutually_exclusive_group()
-    if hub_util.APIEndpoint() == hub_util.AUTOPUSH_API:
+    if resources.UseRegionalMemberships(calliope_base.ReleaseTrack.ALPHA):
       resources.AddMembershipResourceArg(
           group,
           plural=True,
@@ -129,10 +133,12 @@ class UpdateAlpha(base.UpdateCommand):
         hidden=True)
 
   def Run(self, args):
-    _RunUpdate(self, args)
+    _RunUpdate(
+        self, args,
+        resources.UseRegionalMemberships(calliope_base.ReleaseTrack.ALPHA))
 
 
-@gbase.ReleaseTracks(gbase.ReleaseTrack.GA)
+@calliope_base.ReleaseTracks(calliope_base.ReleaseTrack.GA)
 class UpdateGA(base.UpdateCommand):
   """Update the configuration of the Service Mesh Feature.
 
@@ -152,11 +158,20 @@ class UpdateGA(base.UpdateCommand):
   @staticmethod
   def Args(parser):
     group = parser.add_mutually_exclusive_group()
-    group.add_argument(
-        '--memberships',
-        type=str,
-        help='Membership names to update, separated by commas if multiple are supplied.',
-    )
+    if resources.UseRegionalMemberships(calliope_base.ReleaseTrack.GA):
+      resources.AddMembershipResourceArg(
+          group,
+          plural=True,
+          membership_help=('Membership names to update, separated by commas if '
+                           'multiple are supplied.'),
+      )
+    else:
+      group.add_argument(
+          '--memberships',
+          type=str,
+          help=('Membership names to update, separated by commas '
+                'if multiple are supplied.'),
+      )
     parser.add_argument(
         '--control-plane',
         choices=['automatic', 'manual'],
@@ -164,4 +179,5 @@ class UpdateGA(base.UpdateCommand):
         required=True)
 
   def Run(self, args):
-    _RunUpdate(self, args)
+    _RunUpdate(self, args,
+               resources.UseRegionalMemberships(calliope_base.ReleaseTrack.GA))

@@ -19,10 +19,8 @@ from __future__ import division
 from __future__ import unicode_literals
 
 import sys
-from googlecloudsdk.calliope import base as calliope_base
 from googlecloudsdk.command_lib.anthos.common import file_parsers
 from googlecloudsdk.command_lib.container.fleet import resources
-from googlecloudsdk.command_lib.container.fleet import util as hub_util
 from googlecloudsdk.command_lib.container.fleet.features import base
 from googlecloudsdk.core import exceptions
 from googlecloudsdk.core import log
@@ -56,8 +54,7 @@ class Apply(base.UpdateCommand):
 
   @classmethod
   def Args(cls, parser):
-    if (hub_util.APIEndpoint() == hub_util.AUTOPUSH_API) and (
-        cls.ReleaseTrack() is calliope_base.ReleaseTrack.ALPHA):
+    if resources.UseRegionalMemberships(cls.ReleaseTrack()):
       resources.AddMembershipResourceArg(parser)
     else:
       parser.add_argument(

@@ -117,12 +117,14 @@ class Update(base.UpdateCommand):
         raise exceptions.Error(
             'Policy Controller is not enabled for membership {}'.format(
                 membership))
-      poco_hub_config = membership_specs[
-          full_membership_name].policycontroller.policyControllerHubConfig
+      current_poco_membership_spec = membership_specs[
+          full_membership_name].policycontroller
+      poco_hub_config = current_poco_membership_spec.policyControllerHubConfig
+      current_version = current_poco_membership_spec.version
       utils.merge_args_with_poco_hub_config(args, poco_hub_config,
                                             self.messages)
       poco_membership_spec = self.messages.PolicyControllerMembershipSpec(
-          policyControllerHubConfig=poco_hub_config)
+          policyControllerHubConfig=poco_hub_config, version=current_version)
       if args.version:
         poco_membership_spec.version = args.version
 

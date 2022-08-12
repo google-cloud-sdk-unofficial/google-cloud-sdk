@@ -21,7 +21,6 @@ from __future__ import unicode_literals
 import sys
 
 from googlecloudsdk.command_lib.container.fleet import resources
-from googlecloudsdk.command_lib.container.fleet import util as hub_util
 from googlecloudsdk.command_lib.container.fleet.features import base
 from googlecloudsdk.core import exceptions
 from googlecloudsdk.core.console import console_io
@@ -42,9 +41,9 @@ class Delete(base.UpdateCommand):
 
   feature_name = 'identityservice'
 
-  @staticmethod
-  def Args(parser):
-    if hub_util.APIEndpoint() == hub_util.AUTOPUSH_API:
+  @classmethod
+  def Args(cls, parser):
+    if resources.UseRegionalMemberships(cls.ReleaseTrack()):
       resources.AddMembershipResourceArg(parser)
     else:
       parser.add_argument(

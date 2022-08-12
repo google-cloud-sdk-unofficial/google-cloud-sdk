@@ -23,6 +23,7 @@ from apitools.base.py import list_pager
 from googlecloudsdk.api_lib.batch import jobs
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.batch import resource_args
+from googlecloudsdk.core import properties
 
 
 class List(base.ListCommand):
@@ -34,29 +35,38 @@ class List(base.ListCommand):
   project/location.
 
   ## EXAMPLES
+  To print all the jobs under all available locations for the default project,
+  run:
+
+    $ {command}
 
   To print all the jobs under projects/location
   `projects/foo/locations/us-central1`, run:
 
-    $ {command} projects/foo/locations/us-central1
+    $ {command} --project=foo --location=us-central1
   """
 
   @staticmethod
   def Args(parser):
     resource_args.AddLocationResourceArgs(parser)
     base.URI_FLAG.RemoveFromParser(parser)
-    parser.display_info.AddFormat('table(name, status.state)')
+    parser.display_info.AddFormat(
+        'table(name, name.segment(3):label=LOCATION, status.state)')
 
   def Run(self, args):
     release_track = self.ReleaseTrack()
 
     client = jobs.JobsClient(release_track)
-    location_ref = args.CONCEPTS.location.Parse()
+    if args.location:
+      parent = args.CONCEPTS.location.Parse().RelativeName()
+    else:
+      project = args.project or properties.VALUES.core.project.GetOrFail()
+      parent = 'projects/{}/locations/{}'.format(project, '-')
 
     return list_pager.YieldFromList(
         client.service,
         client.messages.BatchProjectsLocationsJobsListRequest(
-            parent=location_ref.RelativeName(),
+            parent=parent,
             pageSize=args.page_size,
             filter=args.filter),
         batch_size=args.page_size,

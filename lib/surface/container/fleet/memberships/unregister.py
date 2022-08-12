@@ -89,7 +89,6 @@ class Unregister(base.DeleteCommand):
 
   @classmethod
   def Args(cls, parser):
-    # Location only in alpha and autopush environment
     if cls.ReleaseTrack() is base.ReleaseTrack.ALPHA:
       resources.AddMembershipResourceArg(
           parser,
@@ -127,9 +126,23 @@ class Unregister(base.DeleteCommand):
         enable_workload_identity=getattr(args, 'enable_workload_identity',
                                          False),
     )
+    prod_regional_allowlist = [
+        'gkeconnect-prober',
+        'gkeconnect-e2e',
+        'gkehub-cep-test',
+        'connectgateway-gke-testing',
+        'xuebinz-gke',
+        'kolber-anthos-testing',
+        'anthonytong-hub2',
+        'wenjuntoy2',
+        'hub-regionalisation-test',  # For Cloud Console UI testing.
+        'a4vm-ui-tests-3',  # For Cloud Console UI testing.
+        'm4a-ui-playground-1',  # For Cloud Console UI testing.
+    ]
     location = 'global'
-    if self.ReleaseTrack() is base.ReleaseTrack.ALPHA and hub_util.APIEndpoint(
-    ) == hub_util.AUTOPUSH_API:
+    if resources.UseRegionalMemberships(self.ReleaseTrack()) or (
+        self.ReleaseTrack() is base.ReleaseTrack.ALPHA and
+        project in prod_regional_allowlist):
       # Allow attempting to override location for unregister
       # e.g. in case of global GKE cluster memberships
       if args.location:
