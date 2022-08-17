@@ -41,6 +41,7 @@ def _AddArgs(parser):
   flags.GetUserSpecifiedIdArg('endpoint').AddToParser(parser)
   labels_util.AddCreateLabelsFlags(parser)
   flags.GetEndpointNetworkArg().AddToParser(parser)
+  flags.GetEncryptionKmsKeyNameArg().AddToParser(parser)
   flags.AddRequestResponseLoggingConfigGroupArgs(parser)
 
 
@@ -58,18 +59,26 @@ def _Run(args, version):
           region_ref, args.display_name,
           labels_util.ParseCreateArgs(
               args, endpoints_client.messages.GoogleCloudAiplatformV1Endpoint
-              .LabelsValue), args.description, args.network, args.endpoint_id,
-          args.request_response_logging_table,
-          args.request_response_logging_rate)
+              .LabelsValue),
+          description=args.description,
+          network=args.network,
+          endpoint_id=args.endpoint_id,
+          encryption_kms_key_name=args.encryption_kms_key_name,
+          request_response_logging_table=args.request_response_logging_table,
+          request_response_logging_rate=args.request_response_logging_rate)
     else:
       op = endpoints_client.CreateBeta(
           region_ref, args.display_name,
           labels_util.ParseCreateArgs(
               args,
               endpoints_client.messages.GoogleCloudAiplatformV1beta1Endpoint
-              .LabelsValue), args.description, args.network, args.endpoint_id,
-          args.request_response_logging_table,
-          args.request_response_logging_rate)
+              .LabelsValue),
+          description=args.description,
+          network=args.network,
+          endpoint_id=args.endpoint_id,
+          encryption_kms_key_name=args.encryption_kms_key_name,
+          request_response_logging_table=args.request_response_logging_table,
+          request_response_logging_rate=args.request_response_logging_rate)
     response_msg = operations_util.WaitForOpMaybe(
         operation_client, op, endpoints_util.ParseOperation(op.name))
     if response_msg is not None:

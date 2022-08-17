@@ -324,9 +324,6 @@ class InvalidResourceError(exceptions.ToolException):
 class Edit(base.Command):
   """Modify URL maps."""
 
-  # TODO(b/144022508): Remove _include_l7_internal_load_balancing
-  _include_l7_internal_load_balancing = True
-
   detailed_help = _DetailedHelp()
   DEFAULT_FORMAT = 'yaml'
   URL_MAP_ARG = None
@@ -334,9 +331,7 @@ class Edit(base.Command):
 
   @classmethod
   def Args(cls, parser):
-    cls.URL_MAP_ARG = flags.UrlMapArgument(
-        include_l7_internal_load_balancing=cls
-        ._include_l7_internal_load_balancing)
+    cls.URL_MAP_ARG = flags.UrlMapArgument()
     cls.URL_MAP_ARG.AddArgument(parser)
 
   def Run(self, args):

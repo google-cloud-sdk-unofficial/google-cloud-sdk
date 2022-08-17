@@ -64,17 +64,12 @@ def _Run(args, holder, url_map_arg):
 class Describe(base.DescribeCommand):
   """Describe a URL map."""
 
-  # TODO(b/144022508): Remove _include_l7_internal_load_balancing
-  _include_l7_internal_load_balancing = True
-
   detailed_help = _DetailedHelp()
   URL_MAP_ARG = None
 
   @classmethod
   def Args(cls, parser):
-    cls.URL_MAP_ARG = flags.UrlMapArgument(
-        include_l7_internal_load_balancing=cls
-        ._include_l7_internal_load_balancing)
+    cls.URL_MAP_ARG = flags.UrlMapArgument()
     cls.URL_MAP_ARG.AddArgument(parser, operation_type='describe')
 
   def Run(self, args):

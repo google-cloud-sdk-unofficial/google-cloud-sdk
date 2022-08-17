@@ -68,6 +68,11 @@ class Create(base.CreateCommand):
         'Full DDL specification is at '
         'https://cloud.google.com/spanner/docs/data-definition-language.'
         ' If --ddl_file is set, --ddl is ignored.').AddToParser(parser)
+    flags.ProtoDescriptorsFile(
+        help_text='Path of a file that contains a protobuf-serialized '
+        'google.protobuf.FileDescriptorSet message. To generate it, install and'
+        ' run `protoc` with --include_imports and --descriptor_set_out.'
+    ).AddToParser(parser)
     base.ASYNC_FLAG.AddToParser(parser)
     parser.display_info.AddCacheUpdater(flags.DatabaseCompleter)
     resource_args.AddKmsKeyResourceArg(parser,
@@ -91,7 +96,8 @@ class Create(base.CreateCommand):
     instance_ref = database_ref.Parent()
     kms_key = resource_args.GetAndValidateKmsKeyName(args)
     op = databases.Create(instance_ref, args.database,
-                          flags.SplitDdlIntoStatements(args), kms_key,
+                          flags.SplitDdlIntoStatements(args),
+                          flags.GetProtoDescriptors(args), kms_key,
                           args.database_dialect)
     if args.async_:
       return op

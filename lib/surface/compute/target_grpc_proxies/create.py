@@ -64,7 +64,7 @@ class Create(base.CreateCommand):
     cls.TARGET_GRPC_PROXY_ARG = flags.TargetGrpcProxyArgument()
     cls.TARGET_GRPC_PROXY_ARG.AddArgument(parser, operation_type='create')
     cls.URL_MAP_ARG = url_map_flags.UrlMapArgumentForTargetProxy(
-        proxy_type='gRPC', include_l7_internal_load_balancing=True)
+        proxy_type='gRPC')
     cls.URL_MAP_ARG.AddArgument(parser)
 
     parser.display_info.AddFormat(flags.DEFAULT_LIST_FORMAT)

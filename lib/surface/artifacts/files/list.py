@@ -24,7 +24,7 @@ from googlecloudsdk.command_lib.artifacts import util
 
 DEFAULT_LIST_FORMAT = """\
     table(
-      name:label=FILE,
+      name.basename().sub("%2F", "/").sub("%2B", "+"):label=FILE,
       createTime.date(tz=LOCAL),
       updateTime.date(tz=LOCAL),
       sizeBytes.size(zero='0',precision=3,units_out=M):label="SIZE (MB)",

@@ -31,7 +31,7 @@ DETAILED_HELP = {
         """
           To list external IP addresses in the ``my-privatecloud'' private cloud, run:
 
-            $ {command} --private-cloud=my-privatecloud
+            $ {command} --private-cloud=my-privatecloud --project=my-project --location=us-east2-b
     """,
 }
 

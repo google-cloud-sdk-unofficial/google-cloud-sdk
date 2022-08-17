@@ -29,6 +29,12 @@ class Describe(base.DescribeCommand):
 
   *{command}* displays all data associated with a Compute Engine
   firewall rule in a project.
+
+  ## EXAMPLES
+
+  To describe a firewall rule, run:
+
+    $ {command} my-firewall-rule
   """
 
   FIREWALL_ARG = None

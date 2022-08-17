@@ -36,15 +36,14 @@ from six.moves import range  # pylint: disable=redefined-builtin
 
 
 def _Args(parser, support_global_access, support_psc_global_access,
-          support_l7_internal_load_balancing, support_psc_google_apis,
-          support_all_protocol, support_target_service_attachment,
-          support_l3_default, support_source_ip_range,
-          support_disable_automate_dns_zone, support_regional_tcp_proxy):
+          support_psc_google_apis, support_all_protocol,
+          support_target_service_attachment, support_l3_default,
+          support_source_ip_range, support_disable_automate_dns_zone,
+          support_regional_tcp_proxy):
   """Add the flags to create a forwarding rule."""
 
-  flags.AddUpdateArgs(
+  flags.AddCreateArgs(
       parser,
-      include_l7_internal_load_balancing=support_l7_internal_load_balancing,
       include_psc_google_apis=support_psc_google_apis,
       include_target_service_attachment=support_target_service_attachment,
       include_regional_tcp_proxy=support_regional_tcp_proxy)
@@ -80,10 +79,7 @@ def _Args(parser, support_global_access, support_psc_global_access,
       'You cannot use the `--service-label` flag  if the forwarding rule '
       'references an internal IP address that has the '
       '`--purpose=SHARED_LOADBALANCER_VIP` flag set.')
-  flags.AddAddressesAndIPVersions(
-      parser,
-      required=False,
-      include_l7_internal_load_balancing=support_l7_internal_load_balancing)
+  flags.AddAddressesAndIPVersions(parser, required=False)
   forwarding_rule_arg = flags.ForwardingRuleArgument()
   forwarding_rule_arg.AddArgument(parser, operation_type='create')
   parser.display_info.AddCacheUpdater(flags.ForwardingRulesCompleter)
@@ -96,15 +92,14 @@ class CreateHelper(object):
   FORWARDING_RULE_ARG = None
 
   def __init__(self, holder, support_global_access, support_psc_global_access,
-               support_l7_internal_load_balancing, support_psc_google_apis,
-               support_all_protocol, support_target_service_attachment,
+               support_psc_google_apis, support_all_protocol,
+               support_target_service_attachment,
                _support_sd_registration_for_regional, support_l3_default,
                support_source_ip_range, support_disable_automate_dns_zone,
                support_regional_tcp_proxy):
     self._holder = holder
     self._support_global_access = support_global_access
     self._support_psc_global_access = support_psc_global_access
-    self._support_l7_internal_load_balancing = support_l7_internal_load_balancing
     self._support_psc_google_apis = support_psc_google_apis
     self._support_all_protocol = support_all_protocol
     self._support_target_service_attachment = support_target_service_attachment
@@ -116,16 +111,16 @@ class CreateHelper(object):
 
   @classmethod
   def Args(cls, parser, support_global_access, support_psc_global_access,
-           support_l7_internal_load_balancing, support_psc_google_apis,
-           support_all_protocol, support_target_service_attachment,
-           support_l3_default, support_source_ip_range,
-           support_disable_automate_dns_zone, support_regional_tcp_proxy):
+           support_psc_google_apis, support_all_protocol,
+           support_target_service_attachment, support_l3_default,
+           support_source_ip_range, support_disable_automate_dns_zone,
+           support_regional_tcp_proxy):
     cls.FORWARDING_RULE_ARG = _Args(
         parser, support_global_access, support_psc_global_access,
-        support_l7_internal_load_balancing, support_psc_google_apis,
-        support_all_protocol, support_target_service_attachment,
-        support_l3_default, support_source_ip_range,
-        support_disable_automate_dns_zone, support_regional_tcp_proxy)
+        support_psc_google_apis, support_all_protocol,
+        support_target_service_attachment, support_l3_default,
+        support_source_ip_range, support_disable_automate_dns_zone,
+        support_regional_tcp_proxy)
 
   def ConstructProtocol(self, messages, args):
     if args.ip_protocol:
@@ -200,6 +195,32 @@ class CreateHelper(object):
     # schemes presently.
     load_balancing_scheme = _GetLoadBalancingScheme(args, client.messages,
                                                     is_psc_google_apis)
+    if (load_balancing_scheme == client.messages.ForwardingRule
+        .LoadBalancingSchemeValueValuesEnum.INTERNAL):
+      raise fw_exceptions.ArgumentError(
+          'You cannot specify internal [--load-balancing-scheme] for a global '
+          'forwarding rule.')
+
+    if (load_balancing_scheme == client.messages.ForwardingRule
+        .LoadBalancingSchemeValueValuesEnum.INTERNAL_SELF_MANAGED):
+      if (not args.target_http_proxy and not args.target_https_proxy and
+          not args.target_grpc_proxy and not args.target_tcp_proxy):
+        target_error_message_with_tcp = (
+            'You must specify either [--target-http-proxy], '
+            '[--target-https-proxy], [--target-grpc-proxy] '
+            'or [--target-tcp-proxy] for an '
+            'INTERNAL_SELF_MANAGED [--load-balancing-scheme].')
+        raise fw_exceptions.ArgumentError(target_error_message_with_tcp)
+
+      if args.subnet:
+        raise fw_exceptions.ArgumentError(
+            'You cannot specify [--subnet] for an INTERNAL_SELF_MANAGED '
+            '[--load-balancing-scheme].')
+
+      if not args.address:
+        raise fw_exceptions.ArgumentError(
+            'You must specify [--address] for an INTERNAL_SELF_MANAGED '
+            '[--load-balancing-scheme]')
 
     if is_psc_google_apis:
       rule_name = forwarding_rule_ref.Name()
@@ -265,9 +286,8 @@ class CreateHelper(object):
     if sd_registration:
       forwarding_rule.serviceDirectoryRegistrations.append(sd_registration)
     if args.IsSpecified('network'):
-      forwarding_rule.network = flags.NetworkArg(
-          self._support_l7_internal_load_balancing).ResolveAsResource(
-              args, resources).SelfLink()
+      forwarding_rule.network = flags.NetworkArg().ResolveAsResource(
+          args, resources).SelfLink()
 
     if self._support_global_access and args.IsSpecified('allow_global_access'):
       forwarding_rule.allowGlobalAccess = args.allow_global_access
@@ -297,8 +317,6 @@ class CreateHelper(object):
         args,
         forwarding_rule_ref,
         include_regional_tcp_proxy=self._support_regional_tcp_proxy,
-        include_l7_internal_load_balancing=self
-        ._support_l7_internal_load_balancing,
         include_target_service_attachment=self
         ._support_target_service_attachment)
 
@@ -319,6 +337,20 @@ class CreateHelper(object):
           '--load-balancing-scheme',
           'The --load-balancing-scheme flag is not allowed for PSC-ILB '
           'forwarding rules.')
+
+    if (load_balancing_scheme == client.messages.ForwardingRule
+        .LoadBalancingSchemeValueValuesEnum.INTERNAL):
+      if args.port_range:
+        raise fw_exceptions.ArgumentError(
+            'You cannot specify [--port-range] for a forwarding rule '
+            'whose [--load-balancing-scheme] is internal, '
+            'please use [--ports] flag instead.')
+
+    if (load_balancing_scheme == client.messages.ForwardingRule
+        .LoadBalancingSchemeValueValuesEnum.INTERNAL_SELF_MANAGED):
+      raise fw_exceptions.ArgumentError(
+          'You cannot specify an INTERNAL_SELF_MANAGED '
+          '[--load-balancing-scheme] for a regional forwarding rule.')
 
     if args.ip_version:
       ip_version = client.messages.ForwardingRule.IpVersionValueValuesEnum(
@@ -356,9 +388,8 @@ class CreateHelper(object):
       # or target instance)
       # - L7ILB (scheme INTERNAL_MANAGED)
       # - PSC forwarding rules (no scheme)
-      forwarding_rule.network = flags.NetworkArg(
-          self._support_l7_internal_load_balancing).ResolveAsResource(
-              args, resources).SelfLink()
+      forwarding_rule.network = flags.NetworkArg().ResolveAsResource(
+          args, resources).SelfLink()
 
     ports_all_specified, range_list = _ExtractPortsAndAll(args.ports)
 
@@ -547,9 +578,8 @@ class CreateHelper(object):
           if not args.global_address and not args.address_region:
             if forwarding_rule_ref.Collection() == 'compute.forwardingRules':
               args.address_region = forwarding_rule_ref.region
-        address_ref = flags.AddressArg(
-            self._support_l7_internal_load_balancing).ResolveAsResource(
-                args, resources, default_scope=scope)
+        address_ref = flags.AddressArg().ResolveAsResource(
+            args, resources, default_scope=scope)
         address = address_ref.SelfLink()
 
     return address
@@ -561,7 +591,6 @@ class Create(base.CreateCommand):
 
   _support_global_access = True
   _support_psc_global_access = False
-  _support_l7_internal_load_balancing = True
   _support_psc_google_apis = True
   _support_all_protocol = False
   _support_target_service_attachment = True
@@ -573,19 +602,20 @@ class Create(base.CreateCommand):
 
   @classmethod
   def Args(cls, parser):
-    CreateHelper.Args(
-        parser, cls._support_global_access, cls._support_psc_global_access,
-        cls._support_l7_internal_load_balancing, cls._support_psc_google_apis,
-        cls._support_all_protocol, cls._support_target_service_attachment,
-        cls._support_l3_default, cls._support_source_ip_range,
-        cls._support_disable_automate_dns_zone, cls._support_regional_tcp_proxy)
+    CreateHelper.Args(parser, cls._support_global_access,
+                      cls._support_psc_global_access,
+                      cls._support_psc_google_apis, cls._support_all_protocol,
+                      cls._support_target_service_attachment,
+                      cls._support_l3_default, cls._support_source_ip_range,
+                      cls._support_disable_automate_dns_zone,
+                      cls._support_regional_tcp_proxy)
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     return CreateHelper(
         holder, self._support_global_access, self._support_psc_global_access,
-        self._support_l7_internal_load_balancing, self._support_psc_google_apis,
-        self._support_all_protocol, self._support_target_service_attachment,
+        self._support_psc_google_apis, self._support_all_protocol,
+        self._support_target_service_attachment,
         self._support_sd_registration_for_regional, self._support_l3_default,
         self._support_source_ip_range, self._support_disable_automate_dns_zone,
         self._support_regional_tcp_proxy).Run(args)
@@ -596,7 +626,6 @@ class CreateBeta(Create):
   """Create a forwarding rule to direct network traffic to a load balancer."""
   _support_global_access = True
   _support_psc_global_access = False
-  _support_l7_internal_load_balancing = True
   _support_all_protocol = False
   _support_target_service_attachment = True
   _support_sd_registration_for_regional = True
@@ -611,7 +640,6 @@ class CreateAlpha(CreateBeta):
   """Create a forwarding rule to direct network traffic to a load balancer."""
   _support_global_access = True
   _support_psc_global_access = True
-  _support_l7_internal_load_balancing = True
   _support_all_protocol = True
   _support_target_service_attachment = True
   _support_sd_registration_for_regional = True

@@ -21,7 +21,6 @@ from __future__ import unicode_literals
 import textwrap
 import time
 
-from googlecloudsdk.api_lib.spanner import database_operations
 from googlecloudsdk.api_lib.spanner import databases
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
@@ -129,15 +128,12 @@ class Run(base.Command):
     except ValueError as ex:
       raise BadArgumentException('--instance-id', ex)
     try:
-      db_create_op = samples_init.check_create_db(args.appname, instance_ref,
-                                                  database_id)
+      samples_init.check_create_db(args.appname, instance_ref, database_id)
     except ValueError as ex:
       raise BadArgumentException('--database-id', ex)
-    database_operations.Await(db_create_op,
-                              "Creating database '{}'".format(database_id))
 
-    be_proc = samples_backend.run_proc(project, appname, instance_id,
-                                       database_id)
+    be_proc = samples_backend.run_backend(project, appname, instance_id,
+                                          database_id)
     try:
       be_proc.wait(2)
       return (
@@ -148,7 +144,7 @@ class Run(base.Command):
 
     now = int(time.time())
     later = now + duration
-    wl_proc = samples_workload.run_proc(appname, capture_logs=True)
+    wl_proc = samples_workload.run_workload(appname, capture_logs=True)
     # Wait a second to let the workload print startup logs
     time.sleep(1)
     log.status.Print(

@@ -1,10 +1,14 @@
-release_tracks: [ALPHA]
+release_tracks: [GA, ALPHA]
 
 help_text:
   brief: |
     Delete tcp route.
   description: |
     Delete the specified tcp route.
+  examples: |
+      To delete a tcp route named 'my-tcp-route', run:
+
+        $ {command} my-tcp-route --location=global
 
 arguments:
   resource:
@@ -16,5 +20,8 @@ async:
   collection: networkservices.projects.locations.operations
 
 request: &request
-  api_version: v1alpha1
+  ALPHA:
+    api_version: v1alpha1
+  GA:
+    api_version: v1
   collection: networkservices.projects.locations.tcpRoutes

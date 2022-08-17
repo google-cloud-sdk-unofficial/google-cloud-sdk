@@ -1,13 +1,19 @@
-release_tracks: [ALPHA]
+release_tracks: [GA, ALPHA]
 help_text:
   brief: |
     Export the configuration for a gateway.
   description: |
     Export the configuration for a Network Services gateway.
+  examples: |
+      To export a gateway named 'my-gateway' to a YAML file, run:
 
+        $ {command} my-gateway --destination=my-gateway.yaml --location=global
 request:
   collection: networkservices.projects.locations.gateways
-  api_version: v1alpha1
+  ALPHA:
+    api_version: v1alpha1
+  GA:
+    api_version: v1
 
 arguments:
   resource:

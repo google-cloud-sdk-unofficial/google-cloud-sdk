@@ -104,8 +104,7 @@ def _SendPatchRequest(client, resources, target_https_proxy_ref,
             project=target_https_proxy_ref.project,
             region=target_https_proxy_ref.region,
             targetHttpsProxy=target_https_proxy_ref.Name(),
-            targetHttpsProxyResource=target_https_proxy
-        ))
+            targetHttpsProxyResource=target_https_proxy))
   else:
     service = client.apitools_client.targetHttpsProxies
     operation = service.Patch(
@@ -219,8 +218,7 @@ class Import(base.UpdateCommand):
 
   @classmethod
   def Args(cls, parser):
-    cls.TARGET_HTTPS_PROXY_ARG = flags.TargetHttpsProxyArgument(
-        include_l7_internal_load_balancing=True)
+    cls.TARGET_HTTPS_PROXY_ARG = flags.TargetHttpsProxyArgument()
     cls.TARGET_HTTPS_PROXY_ARG.AddArgument(parser, operation_type='import')
     export_util.AddImportFlags(
         parser, _GetSchemaPath(cls.ReleaseTrack(), for_help=True))

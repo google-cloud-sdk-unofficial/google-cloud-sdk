@@ -52,6 +52,11 @@ class Add(base.Command):
         --type=TXT --zone=MANAGED_ZONE
   """
 
+  @classmethod
+  def _IsBetaOrAlpha(cls):
+    return cls.ReleaseTrack() in (base.ReleaseTrack.BETA,
+                                  base.ReleaseTrack.ALPHA)
+
   @staticmethod
   def Args(parser):
     flags.GetZoneArg().AddToParser(parser)
@@ -92,8 +97,7 @@ class Add(base.Command):
             args,
             zone_ref.project,
             api_version=api_version,
-            allow_extended_records=(
-                self.ReleaseTrack() == base.ReleaseTrack.ALPHA)))
+            allow_extended_records=self._IsBetaOrAlpha()))
 
     with trans_util.TransactionFile(args.transaction_file, 'w') as trans_file:
       trans_util.WriteToYamlFile(trans_file, change)

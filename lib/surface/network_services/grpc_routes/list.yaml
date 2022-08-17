@@ -1,13 +1,20 @@
-release_tracks: [ALPHA]
+release_tracks: [GA, ALPHA]
 
 help_text:
   brief: |
     List grpc routes.
   description: |
     List all grpc routes in the specified location of the current project.
+  examples: |
+      To list grpc routes in the current project, run:
+
+        $ {command} --location=global
 
 request: &request
-  api_version: v1alpha1
+  ALPHA:
+    api_version: v1alpha1
+  GA:
+    api_version: v1
   collection: networkservices.projects.locations.grpcRoutes
 
 arguments:

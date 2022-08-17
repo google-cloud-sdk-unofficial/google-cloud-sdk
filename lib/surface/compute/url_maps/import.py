@@ -386,21 +386,17 @@ def _Run(args, holder, url_map_arg, release_track):
     return _SendPatchRequest(client, resources, url_map_ref, url_map)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA,
-                    base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA,
+                    base.ReleaseTrack.ALPHA)
 class Import(base.UpdateCommand):
   """Import a URL map."""
-
-  _include_l7_internal_load_balancing = True
 
   detailed_help = _DetailedHelp()
   URL_MAP_ARG = None
 
   @classmethod
   def Args(cls, parser):
-    cls.URL_MAP_ARG = flags.UrlMapArgument(
-        include_l7_internal_load_balancing=cls
-        ._include_l7_internal_load_balancing)
+    cls.URL_MAP_ARG = flags.UrlMapArgument()
     cls.URL_MAP_ARG.AddArgument(parser, operation_type='import')
     export_util.AddImportFlags(
         parser, _GetSchemaPath(cls.ReleaseTrack(), for_help=True))

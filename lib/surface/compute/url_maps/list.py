@@ -24,33 +24,26 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute.url_maps import flags
 
 
-def _DetailedHelp(include_l7_internal_load_balancing):
-  if include_l7_internal_load_balancing:
-    return base_classes.GetMultiScopeListerHelp(
-        'URL maps',
-        scopes=[
-            base_classes.ScopeType.global_scope,
-            base_classes.ScopeType.regional_scope
-        ])
-  else:
-    return base_classes.GetGlobalListerHelp('URL maps')
+def _DetailedHelp():
+  return base_classes.GetMultiScopeListerHelp(
+      'URL maps',
+      scopes=[
+          base_classes.ScopeType.global_scope,
+          base_classes.ScopeType.regional_scope
+      ])
 
 
-def _Run(args, holder, include_l7_internal_load_balancing):
+def _Run(args, holder):
   """Issues requests necessary to list URL maps."""
   client = holder.client
 
-  if include_l7_internal_load_balancing:
-    request_data = lister.ParseMultiScopeFlags(args, holder.resources)
-    list_implementation = lister.MultiScopeLister(
-        client,
-        regional_service=client.apitools_client.regionUrlMaps,
-        global_service=client.apitools_client.urlMaps,
-        aggregation_service=client.apitools_client.urlMaps)
-  else:
-    request_data = lister.ParseNamesAndRegexpFlags(args, holder.resources)
-    list_implementation = lister.GlobalLister(client,
-                                              client.apitools_client.urlMaps)
+  request_data = lister.ParseMultiScopeFlags(args, holder.resources)
+  list_implementation = lister.MultiScopeLister(
+      client,
+      regional_service=client.apitools_client.regionUrlMaps,
+      global_service=client.apitools_client.urlMaps,
+      aggregation_service=client.apitools_client.urlMaps)
+
   return lister.Invoke(request_data, list_implementation)
 
 
@@ -59,21 +52,14 @@ def _Run(args, holder, include_l7_internal_load_balancing):
 class List(base.ListCommand):
   """List URL maps."""
 
-  # TODO(b/144022508): Remove _include_l7_internal_load_balancing
-  _include_l7_internal_load_balancing = True
-
-  detailed_help = _DetailedHelp(_include_l7_internal_load_balancing)
+  detailed_help = _DetailedHelp()
 
   @classmethod
   def Args(cls, parser):
     parser.display_info.AddFormat(flags.DEFAULT_LIST_FORMAT)
-    if cls._include_l7_internal_load_balancing:
-      lister.AddMultiScopeListerFlags(parser, regional=True, global_=True)
-      parser.display_info.AddCacheUpdater(flags.UrlMapsCompleterAlpha)
-    else:
-      lister.AddBaseListerArgs(parser)
-      parser.display_info.AddCacheUpdater(flags.UrlMapsCompleter)
+    lister.AddMultiScopeListerFlags(parser, regional=True, global_=True)
+    parser.display_info.AddCacheUpdater(flags.UrlMapsCompleter)
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
-    return _Run(args, holder, self._include_l7_internal_load_balancing)
+    return _Run(args, holder)

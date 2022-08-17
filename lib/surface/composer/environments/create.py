@@ -44,6 +44,10 @@ _INVALID_OPTION_FOR_V1_ERROR_MSG = """\
 Cannot specify --{opt} with Composer 1.X.
 """
 
+_INVALID_OPTION_FOR_MIN_AIRFLOW_VERSION_ERROR_MSG = """\
+Cannot specify {opt}. Airflow version {airflow_version} is required.
+"""
+
 DETAILED_HELP = {
     'EXAMPLES':
         """\
@@ -269,6 +273,7 @@ class Create(base.Command):
                                                         self.ReleaseTrack())
     self.ParseWebServerAccessControlConfigOptions(args, self.image_version)
     self.ParseMasterAuthorizedNetworksConfigOptions(args, self.ReleaseTrack())
+    self.ValidateTriggererFlags(args)
     self.ValidateFlagsAddedInComposer2(
         args,
         image_versions_util.IsImageVersionStringComposerV1(self.image_version),
@@ -460,6 +465,9 @@ class Create(base.Command):
         args.master_authorized_networks)
     self.master_authorized_networks = args.master_authorized_networks
 
+  def ValidateTriggererFlags(self, args):
+    pass
+
   def ValidateFlagsAddedInComposer2(self, args, is_composer_v1, release_track):
     """Raises InputError if flags from Composer v2 are used when creating v1."""
     if args.environment_size and is_composer_v1:
@@ -580,6 +588,14 @@ class CreateBeta(Create):
   def Args(cls, parser, release_track=base.ReleaseTrack.BETA):
     super(CreateBeta, cls).Args(parser, base.ReleaseTrack.BETA)
 
+    triggerer_params_group = parser.add_argument_group(
+        flags.TRIGGERER_PARAMETERS_FLAG_GROUP_DESCRIPTION, hidden=True)
+    flags.TRIGGERER_CPU.AddToParser(triggerer_params_group)
+    flags.TRIGGERER_MEMORY.AddToParser(
+        triggerer_params_group)
+    flags.ENABLE_TRIGGERER.AddToParser(
+        triggerer_params_group)
+
   def GetOperationMessage(self, args, is_composer_v1):
     """See base class."""
     create_flags = environments_api_util.CreateEnvironmentFlags(
@@ -617,10 +633,13 @@ class CreateBeta(Create):
         cloud_sql_machine_type=args.cloud_sql_machine_type,
         web_server_machine_type=args.web_server_machine_type,
         scheduler_cpu=args.scheduler_cpu,
+        triggerer_cpu=args.triggerer_cpu,
         worker_cpu=args.worker_cpu,
         web_server_cpu=args.web_server_cpu,
         scheduler_memory_gb=environments_api_util.MemorySizeBytesToGB(
             args.scheduler_memory),
+        triggerer_memory_gb=environments_api_util.MemorySizeBytesToGB(
+            args.triggerer_memory),
         worker_memory_gb=environments_api_util.MemorySizeBytesToGB(
             args.worker_memory),
         web_server_memory_gb=environments_api_util.MemorySizeBytesToGB(
@@ -634,6 +653,7 @@ class CreateBeta(Create):
         min_workers=args.min_workers,
         max_workers=args.max_workers,
         scheduler_count=args.scheduler_count,
+        enable_triggerer=args.enable_triggerer,
         maintenance_window_start=args.maintenance_window_start,
         maintenance_window_end=args.maintenance_window_end,
         maintenance_window_recurrence=args.maintenance_window_recurrence,
@@ -645,6 +665,33 @@ class CreateBeta(Create):
 
     return environments_api_util.Create(self.env_ref, create_flags,
                                         is_composer_v1)
+
+  def ValidateTriggererFlags(self, args):
+    if args.image_version:
+      triggerer_supported = image_versions_util.IsVersionTriggererCompatible(
+          args.image_version)
+      possible_args = {
+          'enable-triggerer': args.enable_triggerer,
+          'triggerer-cpu': args.triggerer_cpu,
+          'triggerer-memory': args.triggerer_memory
+      }
+
+      for k, v in possible_args.items():
+        if v and not triggerer_supported:
+          raise command_util.InvalidUserInputError(
+              _INVALID_OPTION_FOR_MIN_AIRFLOW_VERSION_ERROR_MSG.format(
+                  opt=k,
+                  airflow_version=image_versions_util
+                  .MIN_TRIGGERER_AIRFLOW_VERSION))
+    if not args.enable_triggerer:
+      if args.triggerer_cpu:
+        raise command_util.InvalidUserInputError(
+            PREREQUISITE_OPTION_ERROR_MSG.format(
+                opt='triggerer-cpu', prerequisite='enable-triggerer'))
+      if args.triggerer_memory:
+        raise command_util.InvalidUserInputError(
+            PREREQUISITE_OPTION_ERROR_MSG.format(
+                opt='triggerer-memory', prerequisite='enable-triggerer'))
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -715,10 +762,13 @@ class CreateAlpha(CreateBeta):
         cloud_sql_machine_type=args.cloud_sql_machine_type,
         web_server_machine_type=args.web_server_machine_type,
         scheduler_cpu=args.scheduler_cpu,
+        triggerer_cpu=args.triggerer_cpu,
         worker_cpu=args.worker_cpu,
         web_server_cpu=args.web_server_cpu,
         scheduler_memory_gb=environments_api_util.MemorySizeBytesToGB(
             args.scheduler_memory),
+        triggerer_memory_gb=environments_api_util.MemorySizeBytesToGB(
+            args.triggerer_memory),
         worker_memory_gb=environments_api_util.MemorySizeBytesToGB(
             args.worker_memory),
         web_server_memory_gb=environments_api_util.MemorySizeBytesToGB(
@@ -732,6 +782,7 @@ class CreateAlpha(CreateBeta):
         min_workers=args.min_workers,
         max_workers=args.max_workers,
         scheduler_count=args.scheduler_count,
+        enable_triggerer=args.enable_triggerer,
         maintenance_window_start=args.maintenance_window_start,
         maintenance_window_end=args.maintenance_window_end,
         maintenance_window_recurrence=args.maintenance_window_recurrence,

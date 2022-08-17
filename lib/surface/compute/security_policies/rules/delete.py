@@ -29,9 +29,16 @@ from googlecloudsdk.core import properties
 
 
 class Delete(base.DeleteCommand):
-  """Delete Compute Engine security policy rules.
+  r"""Delete Compute Engine security policy rules.
 
   *{command}* is used to delete security policy rules.
+
+  ## EXAMPLES
+
+  To delete the rule at priority 1000, run:
+
+    $ {command} 1000 \
+       --security-policy=my-policy
   """
 
   SECURITY_POLICY_ARG = None

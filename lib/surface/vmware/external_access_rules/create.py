@@ -33,11 +33,11 @@ DETAILED_HELP = {
         """
           To create an external access firewall rule called ``my-external-access-rule''  associated with the network policy ``my-network-policy'' in the ``us-west2'' region, run:
 
-            $ {command} my-external-access-rule --network-policy=my-network-policy --priority=1000 --ip-protocol=TCP --source-ranges=34.148.30.114/32 --destination-ranges=34.148.184.144 --source-ports=22,10000-11000 --destination-ports=22 --action=ALLOW --location=us-west2 --project=sample-project
+            $ {command} my-external-access-rule --network-policy=my-network-policy --priority=1000 --ip-protocol=TCP --source-ranges=34.148.30.114/32 --destination-ranges=projects/sample-project/locations/us-west2-a/privateClouds/my-private-cloud/externalAddresses/my-external-address --source-ports=22,10000-11000 --destination-ports=22 --action=ALLOW --location=us-west2 --project=sample-project
 
           Or:
 
-            $ {command} my-external-access-rule --network-policy=my-network-policy --priority=1000 --ip-protocol=TCP --source-ranges=34.148.30.114/32 --destination-ranges=34.148.184.144 --source-ports=22,10000-11000 --destination-ports=22
+            $ {command} my-external-access-rule --network-policy=my-network-policy --priority=1000 --ip-protocol=TCP --source-ranges=34.148.30.114/32 --destination-ranges=projects/sample-project/locations/us-west2-a/privateClouds/my-private-cloud/externalAddresses/my-external-address --source-ports=22,10000-11000 --destination-ports=22
 
           In the second example, the project and the location are taken from gcloud properties core/project and compute/region respectively. The ``--action'' field also isn't specified, so its value defaults to ``ALLOW''.
     """,
@@ -93,7 +93,6 @@ class Create(base.CreateCommand):
         """)
     parser.add_argument(
         '--source-ports',
-        required=True,
         type=arg_parsers.ArgList(min_length=1),
         metavar='SOURCE_PORTS',
         help="""\
@@ -101,7 +100,6 @@ class Create(base.CreateCommand):
         """)
     parser.add_argument(
         '--destination-ports',
-        required=True,
         type=arg_parsers.ArgList(min_length=1),
         metavar='DESTINATION_PORTS',
         help="""\

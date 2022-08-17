@@ -65,12 +65,14 @@ from gslib.tests.testcase.integration_testcase import SkipForGS
 from gslib.tests.testcase.integration_testcase import SkipForS3
 from gslib.tests.testcase.integration_testcase import SkipForXML
 from gslib.tests.testcase.integration_testcase import SkipForJSON
+from gslib.tests.util import AuthorizeProjectToUseTestingKmsKey
 from gslib.tests.util import BuildErrorRegex
 from gslib.tests.util import GenerationFromURI as urigen
 from gslib.tests.util import HaltingCopyCallbackHandler
 from gslib.tests.util import HaltOneComponentCopyCallbackHandler
 from gslib.tests.util import HAS_GS_PORT
 from gslib.tests.util import HAS_S3_CREDS
+from gslib.tests.util import KmsTestingResources
 from gslib.tests.util import ObjectToURI as suri
 from gslib.tests.util import ORPHANED_FILE
 from gslib.tests.util import POSIX_GID_ERROR
@@ -157,7 +159,21 @@ def TestCpMvPOSIXBucketToLocalErrors(cls, bucket_uri, obj, tmpdir, is_cp=True):
     tmpdir: The local file path to cp to.
     is_cp: Whether or not the calling test suite is cp or mv.
   """
-  error = 'error'
+  error_key = 'error_regex'
+  if cls._use_gcloud_storage:
+    insufficient_access_error = no_read_access_error = re.compile(
+        r"User \d+ owns file, but owner does not have read permission")
+    missing_gid_error = re.compile(
+        r"GID in .* metadata doesn't exist on current system")
+    missing_uid_error = re.compile(
+        r"UID in .* metadata doesn't exist on current system")
+  else:
+    insufficient_access_error = BuildErrorRegex(
+        obj, POSIX_INSUFFICIENT_ACCESS_ERROR)
+    missing_gid_error = BuildErrorRegex(obj, POSIX_GID_ERROR)
+    missing_uid_error = BuildErrorRegex(obj, POSIX_UID_ERROR)
+    no_read_access_error = BuildErrorRegex(obj, POSIX_MODE_ERROR)
+
   # A dict of test_name: attrs_dict.
   # attrs_dict holds the different attributes that we want for the object in a
   # specific test.
@@ -167,74 +183,74 @@ def TestCpMvPOSIXBucketToLocalErrors(cls, bucket_uri, obj, tmpdir, is_cp=True):
   test_params = {
       'test1': {
           MODE_ATTR: '333',
-          error: POSIX_MODE_ERROR
+          error_key: no_read_access_error,
       },
       'test2': {
           GID_ATTR: GetInvalidGid,
-          error: POSIX_GID_ERROR
+          error_key: missing_gid_error,
       },
       'test3': {
           GID_ATTR: GetInvalidGid,
           MODE_ATTR: '420',
-          error: POSIX_GID_ERROR
+          error_key: missing_gid_error,
       },
       'test4': {
           UID_ATTR: INVALID_UID,
-          error: POSIX_UID_ERROR
+          error_key: missing_uid_error,
       },
       'test5': {
           UID_ATTR: INVALID_UID,
           MODE_ATTR: '530',
-          error: POSIX_UID_ERROR
+          error_key: missing_uid_error,
       },
       'test6': {
           UID_ATTR: INVALID_UID,
           GID_ATTR: GetInvalidGid,
-          error: POSIX_UID_ERROR
+          error_key: missing_uid_error,
       },
       'test7': {
           UID_ATTR: INVALID_UID,
           GID_ATTR: GetInvalidGid,
           MODE_ATTR: '640',
-          error: POSIX_UID_ERROR
+          error_key: missing_uid_error,
       },
       'test8': {
           UID_ATTR: INVALID_UID,
           GID_ATTR: GetPrimaryGid,
-          error: POSIX_UID_ERROR
+          error_key: missing_uid_error,
       },
       'test9': {
           UID_ATTR: INVALID_UID,
           GID_ATTR: GetNonPrimaryGid,
-          error: POSIX_UID_ERROR
+          error_key: missing_uid_error,
       },
       'test10': {
           UID_ATTR: INVALID_UID,
           GID_ATTR: GetPrimaryGid,
           MODE_ATTR: '640',
-          error: POSIX_UID_ERROR
+          error_key: missing_uid_error,
       },
       'test11': {
           UID_ATTR: INVALID_UID,
           GID_ATTR: GetNonPrimaryGid,
           MODE_ATTR: '640',
-          error: POSIX_UID_ERROR
+          error_key: missing_uid_error,
       },
       'test12': {
           UID_ATTR: USER_ID,
           GID_ATTR: GetInvalidGid,
-          error: POSIX_GID_ERROR
+          error_key: missing_gid_error,
       },
       'test13': {
           UID_ATTR: USER_ID,
           GID_ATTR: GetInvalidGid,
           MODE_ATTR: '640',
-          error: POSIX_GID_ERROR
+          error_key: missing_gid_error,
       },
       'test14': {
           GID_ATTR: GetPrimaryGid,
           MODE_ATTR: '240',
-          error: POSIX_INSUFFICIENT_ACCESS_ERROR
+          error_key: insufficient_access_error,
       }
   }
   # The first variable below can be used to help debug the test if there is a
@@ -266,11 +282,17 @@ def TestCpMvPOSIXBucketToLocalErrors(cls, bucket_uri, obj, tmpdir, is_cp=True):
     ],
                            expected_status=1,
                            return_stderr=True)
+
+    if cls._use_gcloud_storage:
+      general_posix_error = 'ERROR'
+    else:
+      general_posix_error = ORPHANED_FILE
     cls.assertIn(
-        ORPHANED_FILE, stderr,
+        general_posix_error, stderr,
         'Error during test "%s": %s not found in stderr:\n%s' %
-        (test_name, ORPHANED_FILE, stderr))
-    error_regex = BuildErrorRegex(obj, attrs_dict.get(error))
+        (test_name, general_posix_error, stderr))
+
+    error_regex = attrs_dict[error_key]
     cls.assertTrue(
         error_regex.search(stderr),
         'Test %s did not match expected error; could not find a match for '
@@ -1153,6 +1175,7 @@ class TestCp(testcase.GsUtilIntegrationTestCase):
 
     stdout = self.RunGsUtil(['ls', '-L', dst_uri], return_stdout=True)
     self.assertRegex(stdout, r'Cache-Control\s*:\s*public,max-age=12')
+
     self.assertRegex(stdout, r'Metadata:\s*1:\s*abcd')
 
     dst_uri2 = suri(bucket_uri, 'bar')
@@ -1170,13 +1193,17 @@ class TestCp(testcase.GsUtilIntegrationTestCase):
     dst_uri = suri(bucket_uri, 'foo')
     fpath = self._get_test_file('test.gif')
     # Ensure x-goog-request-header is set in cp command
-    stderr = self.RunGsUtil(['-D', 'cp', fpath, dst_uri], return_stderr=True)
-    self.assertRegex(stderr,
-                     r'\'x-goog-request-reason\': \'b/this_is_env_reason\'')
+    stderr = self.RunGsUtil(['-DD', 'cp', fpath, dst_uri], return_stderr=True)
+
+    if self._use_gcloud_storage:
+      reason_regex = r"b'X-Goog-Request-Reason': b'b/this_is_env_reason'"
+    else:
+      reason_regex = r"'x-goog-request-reason': 'b/this_is_env_reason'"
+
+    self.assertRegex(stderr, reason_regex)
     # Ensure x-goog-request-header is set in ls command
-    stderr = self.RunGsUtil(['-D', 'ls', '-L', dst_uri], return_stderr=True)
-    self.assertRegex(stderr,
-                     r'\'x-goog-request-reason\': \'b/this_is_env_reason\'')
+    stderr = self.RunGsUtil(['-DD', 'ls', '-L', dst_uri], return_stderr=True)
+    self.assertRegex(stderr, reason_regex)
 
   @SequentialAndParallelTransfer
   @SkipForXML('XML APIs use a different debug log format.')
@@ -1189,14 +1216,17 @@ class TestCp(testcase.GsUtilIntegrationTestCase):
 
     boto_config_for_test = ('GSUtil', 'resumable_threshold', '0')
     with SetBotoConfigForTest([boto_config_for_test]):
-      stderr = self.RunGsUtil(['-D', 'cp', fpath, dst_uri], return_stderr=True)
+      stderr = self.RunGsUtil(['-DD', 'cp', fpath, dst_uri], return_stderr=True)
 
-    # PUT follows GET request. Both need the request-reason header.
-    reason_regex = (r'Making http GET[\s\S]*'
-                    r'x-goog-request-reason\': \'b/this_is_env_reason[\s\S]*'
-                    r'send: (b\')?PUT[\s\S]*x-goog-request-reason:'
-                    r' b/this_is_env_reason')
-    self.assertRegex(stderr, reason_regex)
+    if self._use_gcloud_storage:
+      reason_regex = r'X-Goog-Request-Reason\': b\'b/this_is_env_reason'
+    else:
+      reason_regex = r'x-goog-request-reason\': \'b/this_is_env_reason'
+
+    self.assertRegex(
+        stderr,
+        # POST follows GET request. Both need the request-reason header.
+        r'GET[\s\S]*' + reason_regex + r'[\s\S]*POST[\s\S]*' + reason_regex)
 
   @SequentialAndParallelTransfer
   @SkipForJSON('JSON API uses a different debug log format.')
@@ -1280,7 +1310,10 @@ class TestCp(testcase.GsUtilIntegrationTestCase):
       ],
                               expected_status=1,
                               return_stderr=True)
-      self.assertIn('-m option is not supported with the cp -A flag', stderr)
+      if self._use_gcloud_storage:
+        self.assertIn('sequential instead of parallel task execution', stderr)
+      else:
+        self.assertIn('-m option is not supported with the cp -A flag', stderr)
 
     _Check()
 
@@ -1386,7 +1419,12 @@ class TestCp(testcase.GsUtilIntegrationTestCase):
          suri(bucket_uri)],
         return_stderr=True,
         expected_status=1)
-    self.assertIn('PreconditionException', stderr)
+    if self._use_gcloud_storage:
+      self.assertIn(
+          'HTTPError 412: At least one of the pre-conditions you specified'
+          ' did not hold.', stderr)
+    else:
+      self.assertIn('PreconditionException', stderr)
 
   @SequentialAndParallelTransfer
   @SkipForS3('Preconditions not supported for S3.')
@@ -1410,7 +1448,10 @@ class TestCp(testcase.GsUtilIntegrationTestCase):
         return_stderr=True,
         expected_status=1)
 
-    self.assertIn('PreconditionException', stderr)
+    if self._use_gcloud_storage:
+      self.assertIn('pre-condition', stderr)
+    else:
+      self.assertIn('PreconditionException', stderr)
 
     # Specifiying a generation with -n should fail before the request hits the
     # server.
@@ -1420,10 +1461,14 @@ class TestCp(testcase.GsUtilIntegrationTestCase):
         return_stderr=True,
         expected_status=1)
 
-    self.assertIn('ArgumentException', stderr)
-    self.assertIn(
-        'Specifying x-goog-if-generation-match is not supported '
-        'with cp -n', stderr)
+    if self._use_gcloud_storage:
+      self.assertIn(
+          'Cannot specify both generation precondition and no-clobber', stderr)
+    else:
+      self.assertIn('ArgumentException', stderr)
+      self.assertIn(
+          'Specifying x-goog-if-generation-match is not supported '
+          'with cp -n', stderr)
 
   @SequentialAndParallelTransfer
   def test_cp_nv(self):
@@ -3313,7 +3358,7 @@ class TestCp(testcase.GsUtilIntegrationTestCase):
     bucket_uri = self.CreateBucket()
     fpath = self.CreateTempFile(contents=b'abcd')
     obj_suri = suri(bucket_uri, 'composed')
-    key_fqn = self.authorize_project_to_use_testing_kms_key()
+    key_fqn = AuthorizeProjectToUseTestingKmsKey()
 
     with SetBotoConfigForTest([
         ('GSUtil', 'encryption_key', key_fqn),
@@ -3324,6 +3369,26 @@ class TestCp(testcase.GsUtilIntegrationTestCase):
 
     with SetBotoConfigForTest([('GSUtil', 'prefer_api', 'json')]):
       self.AssertObjectUsesCMEK(obj_suri, key_fqn)
+
+  @SkipForS3('No composite upload support for S3.')
+  def test_nearline_applied_to_parallel_composite_upload(self):
+    bucket_uri = self.CreateBucket(storage_class='standard')
+    fpath = self.CreateTempFile(contents=b'abcd')
+    obj_suri = suri(bucket_uri, 'composed')
+
+    with SetBotoConfigForTest([
+        ('GSUtil', 'parallel_composite_upload_threshold', '1'),
+        ('GSUtil', 'parallel_composite_upload_component_size', '1')
+    ]):
+      self.RunGsUtil(['cp', '-s', 'nearline', fpath, obj_suri])
+    stdout = self.RunGsUtil(['ls', '-L', obj_suri], return_stdout=True)
+    if self._use_gcloud_storage:
+      self.assertRegexpMatchesWithFlags(
+          stdout, r'Storage class:               NEARLINE', flags=re.IGNORECASE)
+    else:
+      self.assertRegexpMatchesWithFlags(stdout,
+                                        r'Storage class:          NEARLINE',
+                                        flags=re.IGNORECASE)
 
   # This temporarily changes the tracker directory to unwritable which
   # interferes with any parallel running tests that use the tracker directory.
@@ -4676,25 +4741,12 @@ class TestCp(testcase.GsUtilIntegrationTestCase):
                                       r'Storage class:\s+STANDARD',
                                       flags=re.IGNORECASE)
 
-  def authorize_project_to_use_testing_kms_key(
-      self, key_name=testcase.KmsTestingResources.CONSTANT_KEY_NAME):
-    # Make sure our keyRing and cryptoKey exist.
-    keyring_fqn = self.kms_api.CreateKeyRing(
-        PopulateProjectId(None),
-        testcase.KmsTestingResources.KEYRING_NAME,
-        location=testcase.KmsTestingResources.KEYRING_LOCATION)
-    key_fqn = self.kms_api.CreateCryptoKey(keyring_fqn, key_name)
-    # Make sure that the service account for our default project is authorized
-    # to use our test KMS key.
-    self.RunGsUtil(['kms', 'authorize', '-k', key_fqn], force_gsutil=True)
-    return key_fqn
-
   @SkipForS3('Test uses gs-specific KMS encryption')
   def test_kms_key_correctly_applied_to_dst_obj_from_src_with_no_key(self):
     bucket_uri = self.CreateBucket()
     obj1_name = 'foo'
     obj2_name = 'bar'
-    key_fqn = self.authorize_project_to_use_testing_kms_key()
+    key_fqn = AuthorizeProjectToUseTestingKmsKey()
 
     # Create the unencrypted object, then copy it, specifying a KMS key for the
     # new object.
@@ -4717,7 +4769,7 @@ class TestCp(testcase.GsUtilIntegrationTestCase):
     fpath = self.CreateTempFile(contents=b'abcd')
     obj_name = 'foo'
     obj_suri = suri(bucket_uri) + '/' + obj_name
-    key_fqn = self.authorize_project_to_use_testing_kms_key()
+    key_fqn = AuthorizeProjectToUseTestingKmsKey()
 
     with SetBotoConfigForTest([('GSUtil', 'encryption_key', key_fqn)]):
       self.RunGsUtil(['cp', fpath, obj_suri])
@@ -4732,7 +4784,7 @@ class TestCp(testcase.GsUtilIntegrationTestCase):
     fpath = self.CreateTempFile(contents=b'a' * resumable_threshold)
     obj_name = 'foo'
     obj_suri = suri(bucket_uri) + '/' + obj_name
-    key_fqn = self.authorize_project_to_use_testing_kms_key()
+    key_fqn = AuthorizeProjectToUseTestingKmsKey()
 
     with SetBotoConfigForTest([('GSUtil', 'encryption_key', key_fqn),
                                ('GSUtil', 'resumable_threshold',
@@ -4747,9 +4799,9 @@ class TestCp(testcase.GsUtilIntegrationTestCase):
     bucket_uri = self.CreateBucket()
     obj1_name = 'foo'
     obj2_name = 'bar'
-    key1_fqn = self.authorize_project_to_use_testing_kms_key()
-    key2_fqn = self.authorize_project_to_use_testing_kms_key(
-        key_name=testcase.KmsTestingResources.CONSTANT_KEY_NAME2)
+    key1_fqn = AuthorizeProjectToUseTestingKmsKey()
+    key2_fqn = AuthorizeProjectToUseTestingKmsKey(
+        key_name=KmsTestingResources.CONSTANT_KEY_NAME2)
     obj1_suri = suri(
         self.CreateObject(bucket_uri=bucket_uri,
                           object_name=obj1_name,
@@ -4771,7 +4823,7 @@ class TestCp(testcase.GsUtilIntegrationTestCase):
     bucket_uri = self.CreateBucket()
     obj1_name = 'foo'
     obj2_name = 'bar'
-    key1_fqn = self.authorize_project_to_use_testing_kms_key()
+    key1_fqn = AuthorizeProjectToUseTestingKmsKey()
     obj1_suri = suri(
         self.CreateObject(bucket_uri=bucket_uri,
                           object_name=obj1_name,

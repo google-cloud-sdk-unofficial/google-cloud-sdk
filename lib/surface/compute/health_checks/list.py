@@ -59,7 +59,10 @@ class List(base_classes.MultiScopeLister):
   def _GetValidColumns(self, args):
     """Returns a list of valid columns."""
     # Start with the columns that apply to all protocols.
-    columns = ['name:label=NAME', 'type:label=PROTOCOL']
+    columns = [
+        'name:label=NAME', 'region.basename():label=REGION',
+        'type:label=PROTOCOL'
+    ]
 
     # Add protocol-specific columns. Note that we only need to worry about
     # protocols that were allowlisted in our GetResources method below.

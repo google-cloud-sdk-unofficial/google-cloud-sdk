@@ -20,7 +20,16 @@ from __future__ import unicode_literals
 
 import textwrap
 
+from googlecloudsdk.api_lib.storage import cloud_api
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.storage import encryption_util
+from googlecloudsdk.command_lib.storage import errors
+from googlecloudsdk.command_lib.storage import flags
+from googlecloudsdk.command_lib.storage import name_expansion
+from googlecloudsdk.command_lib.storage import storage_url
+from googlecloudsdk.command_lib.storage import user_request_args_factory
+from googlecloudsdk.command_lib.storage.resources import resource_reference
+from googlecloudsdk.command_lib.storage.tasks import compose_objects_task
 
 
 @base.Hidden
@@ -57,5 +66,38 @@ class Compose(base.Command):
             single object."""))
     parser.add_argument('destination', help='The destination object.')
 
+    flags.add_encryption_flags(parser, hidden=True)
+    flags.add_precondition_flags(parser)
+
   def Run(self, args):
-    raise NotImplementedError
+    encryption_util.initialize_key_store(args)
+    if args.source:
+      for url_string in args.source:
+        source_url = storage_url.storage_url_from_string(url_string)
+        if not (isinstance(source_url, storage_url.CloudUrl) and
+                source_url.is_object()):
+          raise errors.InvalidUrlError(
+              'Source URLs must point to existing objects. {} is an invalid URL.'
+              .format(source_url.url_string))
+
+    source_expansion_iterator = name_expansion.NameExpansionIterator(
+        args.source,
+        fields_scope=cloud_api.FieldsScope.SHORT,
+        recursion_requested=name_expansion.RecursionSetting.NO)
+
+    objects_to_compose = [
+        source.resource for source in source_expansion_iterator
+    ]
+
+    destination_resource = resource_reference.UnknownResource(
+        storage_url.storage_url_from_string(args.destination))
+
+    user_request_args = (
+        user_request_args_factory.get_user_request_args_from_command_args(
+            args, metadata_type=user_request_args_factory.MetadataType.OBJECT))
+
+    compose_objects_task.ComposeObjectsTask(
+        objects_to_compose,
+        destination_resource,
+        user_request_args=user_request_args,
+        print_status_message=True).execute()

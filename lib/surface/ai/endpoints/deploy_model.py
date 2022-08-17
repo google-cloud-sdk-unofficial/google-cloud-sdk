@@ -33,6 +33,7 @@ from googlecloudsdk.core import log
 
 
 def _AddArgs(parser, version):
+  """Prepares for the arguments of the command."""
   flags.AddEndpointResourceArg(
       parser, 'to deploy a model to', prompt_func=region_util.PromptForOpRegion)
   flags.GetModelIdArg().AddToParser(parser)
@@ -42,13 +43,13 @@ def _AddArgs(parser, version):
   flags.GetEnableAccessLoggingArg().AddToParser(parser)
   flags.GetServiceAccountArg().AddToParser(parser)
   flags.GetUserSpecifiedIdArg('deployed-model').AddToParser(parser)
+  flags.GetAutoscalingMetricSpecsArg().AddToParser(parser)
 
 
 def _Run(args, version):
   """Deploy a model to an existing Vertex AI endpoint."""
   validation.ValidateDisplayName(args.display_name)
-  if version != constants.GA_VERSION:
-    validation.ValidateAutoscalingMetricSpecs(args.autoscaling_metric_specs)
+  validation.ValidateAutoscalingMetricSpecs(args.autoscaling_metric_specs)
 
   endpoint_ref = args.CONCEPTS.endpoint.Parse()
   args.region = endpoint_ref.AsDict()['locationsId']
@@ -65,6 +66,7 @@ def _Run(args, version):
           accelerator_dict=args.accelerator,
           min_replica_count=args.min_replica_count,
           max_replica_count=args.max_replica_count,
+          autoscaling_metric_specs=args.autoscaling_metric_specs,
           enable_access_logging=args.enable_access_logging,
           disable_container_logging=args.disable_container_logging,
           service_account=args.service_account,
@@ -137,7 +139,6 @@ class DeployModelBeta(DeployModelGa):
   def Args(parser):
     _AddArgs(parser, constants.BETA_VERSION)
     flags.GetEnableContainerLoggingArg().AddToParser(parser)
-    flags.GetAutoscalingMetricSpecsArg().AddToParser(parser)
 
   def Run(self, args):
     _Run(args, constants.BETA_VERSION)

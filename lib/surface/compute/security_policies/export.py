@@ -32,7 +32,19 @@ from googlecloudsdk.core.util import files
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Export(base.Command):
-  """Export security policy configs into yaml files."""
+  r"""Export security policy configs into YAML or JSON files.
+
+  *{command}* exports all data associated with Compute Engine security
+  policy into a local file.
+
+  ## EXAMPLES
+
+  To export a security policy in JSON format to a given file, run:
+
+    $ {command} my-policy \
+       --file-name=my-file-name \
+       --file-format=json
+  """
 
   SECURITY_POLICY_ARG = None
 
@@ -81,7 +93,19 @@ class Export(base.Command):
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class ExportBeta(base.Command):
-  """Export security policy configs into yaml files."""
+  r"""Export security policy configs into YAML or JSON files.
+
+  *{command}* exports all data associated with Compute Engine security
+  policy into a local file.
+
+  ## EXAMPLES
+
+  To export a security policy in JSON format to a given file, run:
+
+    $ {command} my-policy \
+       --file-name=my-file-name \
+       --file-format=json
+  """
 
   SECURITY_POLICY_ARG = None
 
@@ -131,7 +155,19 @@ class ExportBeta(base.Command):
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class ExportAlpha(base.Command):
-  """Export security policy configs into yaml files."""
+  r"""Export security policy configs into YAML or JSON files.
+
+  *{command}* exports all data associated with Compute Engine security
+  policy into a local file.
+
+  ## EXAMPLES
+
+  To export a security policy in JSON format to a given file, run:
+
+    $ {command} my-policy \
+       --file-name=my-file-name \
+       --file-format=json
+  """
 
   SECURITY_POLICY_ARG = None
 

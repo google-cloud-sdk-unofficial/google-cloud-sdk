@@ -76,17 +76,12 @@ def _Run(args, holder, target_https_proxy_arg):
 class Describe(base.DescribeCommand):
   """Display detailed information about a target HTTPS proxy."""
 
-  # TODO(b/144022508): Remove _include_l7_internal_load_balancing
-  _include_l7_internal_load_balancing = True
-
   TARGET_HTTPS_PROXY_ARG = None
   detailed_help = _DetailedHelp()
 
   @classmethod
   def Args(cls, parser):
-    cls.TARGET_HTTPS_PROXY_ARG = flags.TargetHttpsProxyArgument(
-        include_l7_internal_load_balancing=cls
-        ._include_l7_internal_load_balancing)
+    cls.TARGET_HTTPS_PROXY_ARG = flags.TargetHttpsProxyArgument()
     cls.TARGET_HTTPS_PROXY_ARG.AddArgument(parser, operation_type='describe')
 
   def Run(self, args):

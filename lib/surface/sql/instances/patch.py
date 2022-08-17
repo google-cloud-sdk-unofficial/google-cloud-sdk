@@ -244,13 +244,13 @@ def AddBaseArgs(parser, is_alpha=False):
   flags.AddNetwork(parser)
   flags.AddMaintenanceVersion(parser)
   flags.AddSqlServerAudit(parser)
+  flags.AddDeletionProtection(parser)
 
 
 def AddBetaArgs(parser):
   """Adds beta args and flags to the parser."""
   flags.AddInstanceResizeLimit(parser)
   flags.AddAllocatedIpRangeName(parser)
-  flags.AddDeletionProtection(parser)
   labels_util.AddUpdateLabelsFlags(parser, enable_clear=True)
   flags.AddEnableGooglePrivatePath(parser)
 

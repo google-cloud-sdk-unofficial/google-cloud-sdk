@@ -149,10 +149,12 @@ RE2 and described at https://github.com/google/re2/wiki/Syntax.
 
     # Send the Create request
     project = properties.VALUES.core.project.Get(required=True)
+    regionprop = properties.VALUES.builds.region.Get()
+    location = args.region or regionprop or cloudbuild_util.DEFAULT_REGION
     parent = resources.REGISTRY.Create(
         collection='cloudbuild.projects.locations',
         projectsId=project,
-        locationsId=args.region).RelativeName()
+        locationsId=location).RelativeName()
     created_trigger = client.projects_locations_triggers.Create(
         messages.CloudbuildProjectsLocationsTriggersCreateRequest(
             parent=parent, buildTrigger=trigger))

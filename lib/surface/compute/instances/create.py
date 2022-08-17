@@ -106,7 +106,6 @@ def _CommonArgs(parser,
                 support_node_project=False,
                 support_host_error_timeout_seconds=False,
                 support_numa_node_count=False,
-                support_disk_architecture=False,
                 support_network_queue_count=False,
                 support_instance_kms=False,
                 support_max_run_duration=False):
@@ -121,8 +120,7 @@ def _CommonArgs(parser,
       image_csek=image_csek,
       support_boot=True,
       support_multi_writer=support_multi_writer,
-      support_replica_zones=support_replica_zones,
-      support_disk_architecture=support_disk_architecture)
+      support_replica_zones=support_replica_zones)
   instances_flags.AddCanIpForwardArgs(parser)
   instances_flags.AddAddressArgs(
       parser,
@@ -241,7 +239,6 @@ class Create(base.CreateCommand):
   _support_host_error_timeout_seconds = False
   _support_numa_node_count = False
   _support_visible_core_count = False
-  _support_disk_architecture = False
   _support_network_queue_count = False
   _support_instance_kms = False
   _support_max_run_duration = False
@@ -260,7 +257,6 @@ class Create(base.CreateCommand):
         support_host_error_timeout_seconds=cls
         ._support_host_error_timeout_seconds,
         support_numa_node_count=cls._support_numa_node_count,
-        support_disk_architecture=cls._support_disk_architecture,
         support_instance_kms=cls._support_instance_kms,
         support_max_run_duration=cls._support_max_run_duration)
     cls.SOURCE_INSTANCE_TEMPLATE = (
@@ -384,8 +380,7 @@ class Create(base.CreateCommand):
             support_image_csek=self._support_image_csek,
             support_create_disk_snapshots=self._support_create_disk_snapshots,
             support_replica_zones=self._support_replica_zones,
-            support_multi_writer=self._support_multi_writer,
-            support_disk_architecture=self._support_disk_architecture)
+            support_multi_writer=self._support_multi_writer)
 
       machine_type_uri = None
       if instance_utils.CheckSpecifiedMachineTypeArgs(args, skip_defaults):
@@ -642,7 +637,6 @@ class CreateBeta(Create):
   _support_host_error_timeout_seconds = True
   _support_numa_node_count = False
   _support_visible_core_count = True
-  _support_disk_architecture = False
   _support_network_queue_count = False
   _support_instance_kms = False
   _support_max_run_duration = False
@@ -678,7 +672,6 @@ class CreateBeta(Create):
         support_host_error_timeout_seconds=cls
         ._support_host_error_timeout_seconds,
         support_numa_node_count=cls._support_numa_node_count,
-        support_disk_architecture=cls._support_disk_architecture,
         support_instance_kms=cls._support_instance_kms,
         support_max_run_duration=cls._support_max_run_duration)
     cls.SOURCE_INSTANCE_TEMPLATE = (
@@ -723,7 +716,6 @@ class CreateAlpha(CreateBeta):
   _support_host_error_timeout_seconds = True
   _support_numa_node_count = True
   _support_visible_core_count = True
-  _support_disk_architecture = True
   _support_network_queue_count = True
   _support_instance_kms = True
   _support_max_run_duration = True
@@ -746,7 +738,6 @@ class CreateAlpha(CreateBeta):
         support_host_error_timeout_seconds=cls
         ._support_host_error_timeout_seconds,
         support_numa_node_count=cls._support_numa_node_count,
-        support_disk_architecture=cls._support_disk_architecture,
         support_network_queue_count=cls._support_network_queue_count,
         support_instance_kms=cls._support_instance_kms,
         support_max_run_duration=cls._support_max_run_duration)

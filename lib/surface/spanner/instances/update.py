@@ -24,8 +24,10 @@ from googlecloudsdk.api_lib.spanner import instance_operations
 from googlecloudsdk.api_lib.spanner import instances
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.spanner import flags
+from googlecloudsdk.command_lib.spanner import resource_args
 
 
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
 class Update(base.Command):
   """Update a Cloud Spanner instance."""
 
@@ -75,6 +77,34 @@ class Update(base.Command):
         description=args.description,
         nodes=args.nodes,
         processing_units=args.processing_units)
+    if args.async_:
+      return op
+    instance_operations.Await(op, 'Updating instance')
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class AlphaUpdate(Update):
+  """Update a Cloud Spanner instance."""
+  __doc__ = Update.__doc__
+
+  @staticmethod
+  def Args(parser):
+    Update.Args(parser)
+    resource_args.AddExpireBehaviorArg(parser)
+    resource_args.AddInstanceTypeArg(parser)
+
+  def Run(self, args):
+    """This is what gets called when the user runs this command."""
+    instance_type = resource_args.GetInstanceType(args)
+    expire_behavior = resource_args.GetExpireBehavior(args)
+
+    op = instances.Patch(
+        args.instance,
+        description=args.description,
+        nodes=args.nodes,
+        processing_units=args.processing_units,
+        instance_type=instance_type,
+        expire_behavior=expire_behavior)
     if args.async_:
       return op
     instance_operations.Await(op, 'Updating instance')

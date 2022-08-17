@@ -69,8 +69,8 @@ class UpdateHelper(object):
   EDGE_SECURITY_POLICY_ARG = None
 
   @classmethod
-  def Args(cls, parser, support_l7_internal_load_balancer, support_failover,
-           support_logging, support_tcp_ssl_logging, support_net_lb_ilb_logging,
+  def Args(cls, parser, support_failover, support_logging,
+           support_tcp_ssl_logging, support_net_lb_ilb_logging,
            support_client_only, support_subsetting,
            support_subsetting_subset_size, support_unspecified_protocol,
            support_advanced_load_balancing, support_dynamic_compression,
@@ -80,8 +80,7 @@ class UpdateHelper(object):
     flags.GLOBAL_REGIONAL_BACKEND_SERVICE_ARG.AddArgument(
         parser, operation_type='update')
     flags.AddDescription(parser)
-    cls.HEALTH_CHECK_ARG = flags.HealthCheckArgument(
-        support_regional_health_check=support_l7_internal_load_balancer)
+    cls.HEALTH_CHECK_ARG = flags.HealthCheckArgument()
     cls.HEALTH_CHECK_ARG.AddArgument(parser, cust_metavar='HEALTH_CHECK')
     cls.HTTP_HEALTH_CHECK_ARG = flags.HttpHealthCheckArgument()
     cls.HTTP_HEALTH_CHECK_ARG.AddArgument(
@@ -166,7 +165,6 @@ class UpdateHelper(object):
       flags.AddLocalityLbPolicy(parser)
 
   def __init__(self,
-               support_l7_internal_load_balancer,
                support_failover,
                support_logging,
                support_tcp_ssl_logging,
@@ -176,7 +174,6 @@ class UpdateHelper(object):
                support_advanced_load_balancing=False,
                support_dynamic_compression=False,
                support_weighted_lb=False):
-    self._support_l7_internal_load_balancer = support_l7_internal_load_balancer
     self._support_failover = support_failover
     self._support_logging = support_logging
     self._support_tcp_ssl_logging = support_tcp_ssl_logging
@@ -549,7 +546,6 @@ class UpdateGA(base.UpdateCommand):
   *{command}* is used to update backend services.
   """
 
-  _support_l7_internal_load_balancer = True
   _support_logging = True
   _support_tcp_ssl_logging = False
   _support_net_lb_ilb_logging = False
@@ -566,8 +562,6 @@ class UpdateGA(base.UpdateCommand):
   def Args(cls, parser):
     UpdateHelper.Args(
         parser,
-        support_l7_internal_load_balancer=cls
-        ._support_l7_internal_load_balancer,
         support_failover=cls._support_failover,
         support_logging=cls._support_logging,
         support_tcp_ssl_logging=cls._support_tcp_ssl_logging,
@@ -583,8 +577,7 @@ class UpdateGA(base.UpdateCommand):
   def Run(self, args):
     """Issues requests necessary to update the Backend Services."""
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
-    return UpdateHelper(self._support_l7_internal_load_balancer,
-                        self._support_failover, self._support_logging,
+    return UpdateHelper(self._support_failover, self._support_logging,
                         self._support_tcp_ssl_logging,
                         self._support_net_lb_ilb_logging,
                         self._support_subsetting,

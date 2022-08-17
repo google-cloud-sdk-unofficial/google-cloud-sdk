@@ -69,10 +69,6 @@ class Import(base.Command):
                                   base.ReleaseTrack.ALPHA)
 
   @classmethod
-  def _IsAlpha(cls):
-    return cls.ReleaseTrack() == base.ReleaseTrack.ALPHA
-
-  @classmethod
   def Args(cls, parser):
     flags.GetZoneArg().AddToParser(parser)
     if cls._IsBetaOrAlpha():
@@ -154,7 +150,7 @@ class Import(base.Command):
         else:
           imported = import_util.RecordSetsFromYamlFile(
               import_file,
-              include_extended_records=self._IsAlpha(),
+              include_extended_records=self._IsBetaOrAlpha(),
               api_version=api_version)
     except Exception as exp:
       msg = ('Unable to read record-sets from specified records-file [{0}] '

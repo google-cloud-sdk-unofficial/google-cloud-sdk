@@ -35,17 +35,17 @@ class Export(base.Command):
 
   @classmethod
   def Args(cls, parser):
-    cls.URL_MAP_ARG = flags.UrlMapArgument(
-        required=False, include_l7_internal_load_balancing=True)
+    cls.URL_MAP_ARG = flags.UrlMapArgument(required=False)
     declarative_python_util.RegisterArgs(
         parser, cls.URL_MAP_ARG.AddArgument, operation_type='export')
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
-    resource_ref = str(self.URL_MAP_ARG.ResolveAsResource(
-        args,
-        holder.resources,
-        default_scope=compute_scope.ScopeEnum.GLOBAL,
-        scope_lister=compute_flags.GetDefaultScopeLister(holder.client)))
+    resource_ref = str(
+        self.URL_MAP_ARG.ResolveAsResource(
+            args,
+            holder.resources,
+            default_scope=compute_scope.ScopeEnum.GLOBAL,
+            scope_lister=compute_flags.GetDefaultScopeLister(holder.client)))
     return declarative_python_util.RunExport(
         args=args, collection='compute.urlMaps', resource_ref=resource_ref)

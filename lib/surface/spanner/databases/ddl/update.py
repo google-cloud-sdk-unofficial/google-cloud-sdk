@@ -56,6 +56,11 @@ class Update(base.UpdateCommand):
         'statement fails, all subsequent statements in the batch are '
         'automatically cancelled. If --ddl_file is set, --ddl is ignored.'
     ).AddToParser(parser)
+    flags.ProtoDescriptorsFile(
+        help_text='Path of a file that contains a protobuf-serialized '
+        'google.protobuf.FileDescriptorSet message. To generate it, install and'
+        ' run `protoc` with --include_imports and --descriptor_set_out.'
+    ).AddToParser(parser)
     base.ASYNC_FLAG.AddToParser(parser)
 
   def Run(self, args):
@@ -69,7 +74,8 @@ class Update(base.UpdateCommand):
       Some value that we want to have printed later.
     """
     op = databases.UpdateDdl(args.CONCEPTS.database.Parse(),
-                             flags.SplitDdlIntoStatements(args))
+                             flags.SplitDdlIntoStatements(args),
+                             flags.GetProtoDescriptors(args))
     if args.async_:
       return log.status.Print(
           'Schema update in progress. Operation name={}'.format(op.name))

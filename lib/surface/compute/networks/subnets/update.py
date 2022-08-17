@@ -51,8 +51,6 @@ class Update(base.UpdateCommand):
   """Updates properties of an existing Compute Engine subnetwork."""
 
   _include_alpha_logging = False
-  # TODO(b/144022508): Remove _include_l7_internal_load_balancing
-  _include_l7_internal_load_balancing = True
   _include_reserved_internal_range = False
   _api_version = compute_api.COMPUTE_GA_API_VERSION
   detailed_help = _DetailedHelp()
@@ -68,7 +66,6 @@ class Update(base.UpdateCommand):
     cls.SUBNETWORK_ARG.AddArgument(parser, operation_type='update')
 
     flags.AddUpdateArgs(parser, cls._include_alpha_logging,
-                        cls._include_l7_internal_load_balancing,
                         cls._include_reserved_internal_range, cls._api_version)
 
   def Run(self, args):
@@ -92,11 +89,9 @@ class Update(base.UpdateCommand):
         metadata = args.metadata
 
     set_role_active = None
-    drain_timeout_seconds = None
-    if self._include_l7_internal_load_balancing:
-      drain_timeout_seconds = args.drain_timeout
-      if args.role is not None:
-        set_role_active = getattr(args, 'role', None) == 'ACTIVE'
+    drain_timeout_seconds = args.drain_timeout
+    if args.role is not None:
+      set_role_active = getattr(args, 'role', None) == 'ACTIVE'
 
     set_new_purpose = None
     if args.purpose is not None:

@@ -20,9 +20,9 @@ from __future__ import unicode_literals
 
 import textwrap
 
-from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
+from googlecloudsdk.command_lib.iam import flags
 from googlecloudsdk.command_lib.iam.byoid_utilities import cred_config
 
 
@@ -62,6 +62,9 @@ class CreateCredConfig(base.CreateCommand):
 
   @classmethod
   def Args(cls, parser):
+    # Add args common between workload and workforce.
+    flags.AddCommonByoidCreateConfigFlags(parser)
+
     parser.add_argument(
         'audience', help='The workload identity pool provider resource name.')
 
@@ -80,63 +83,18 @@ class CreateCredConfig(base.CreateCommand):
     credential_types.add_argument(
         '--azure', help='Use Azure.', action='store_true')
 
-    service_account_impersonation_options = parser.add_group(
-        help='Service account impersonation options.')
-    service_account_impersonation_options.add_argument(
-        '--service-account',
-        help='The email of the service account to impersonate.',
-        required=True)
-    service_account_impersonation_options .add_argument(
-        '--service-account-token-lifetime-seconds',
-        type=arg_parsers.Duration(
-            default_unit='s',
-            lower_bound='600',
-            upper_bound='43200',
-            parsed_unit='s'),
-        help='The desired lifetime duration of the service account access token in seconds. This defaults to one hour when not provided. If a lifetime greater than one hour is required, the service account must be added as an allowed value in an Organization Policy that enforces the `constraints/iam.allowServiceAccountCredentialLifetimeExtension` constraint.'
-    )
-
+    # Optional args.
     parser.add_argument(
-        '--credential-source-headers',
-        type=arg_parsers.ArgDict(),
-        metavar='key=value',
-        help='Headers to use when querying the credential-source-url.')
-    parser.add_argument(
-        '--credential-source-type',
-        help='The format of the credential source (JSON or text).')
-    parser.add_argument(
-        '--credential-source-field-name',
-        help='The subject token field name (key) in a JSON credential source.')
+        '--subject-token-type',
+        help='The type of token being used for authorization. ' +
+        'This defaults to urn:ietf:params:oauth:token-type:jwt.')
     parser.add_argument(
         '--app-id-uri',
         help='The custom Application ID URI for the Azure access token.')
     parser.add_argument(
-        '--output-file',
-        help='Location to store the generated credential configuration file.',
-        required=True)
-    parser.add_argument(
-        '--subject-token-type',
-        help='The type of token being used for authorization.')
-    parser.add_argument(
         '--enable-imdsv2',
         help='Adds the AWS IMDSv2 session token Url to the credential source to enforce the AWS IMDSv2 flow.',
         action='store_true')
-
-    executable_args = parser.add_group(
-        help='Arguments for an executable type credential source.')
-
-    executable_args.add_argument(
-        '--executable-timeout-millis',
-        type=arg_parsers.Duration(
-            default_unit='ms',
-            lower_bound='5s',
-            upper_bound='120s',
-            parsed_unit='ms'),
-        help='The timeout duration in milliseconds for waiting for the executable to finish.'
-    )
-    executable_args.add_argument(
-        '--executable-output-file',
-        help='The absolute path to the file storing the executable response.')
 
   def _ValidateArgs(self, args):
     if args.enable_imdsv2 and not args.aws:

@@ -163,7 +163,7 @@ class Create(base.CreateCommand):
     return response
 
   def Epilog(self, resources_were_displayed):
-    if resources_were_displayed and types.IsAuditLogType(self._event_type):
+    if resources_were_displayed:
       log.warning(
           'It may take up to {} minutes for the new trigger to become active.'
           .format(triggers.MAX_ACTIVE_DELAY_MINUTES))

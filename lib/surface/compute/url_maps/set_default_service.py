@@ -145,9 +145,6 @@ def _Run(args, holder, backend_bucket_arg, backend_service_arg, url_map_arg):
 class SetDefaultService(base.UpdateCommand):
   """Change the default service or default bucket of a URL map."""
 
-  # TODO(b/144022508): Remove _include_l7_internal_load_balancing
-  _include_l7_internal_load_balancing = True
-
   detailed_help = _DetailedHelp()
   BACKEND_BUCKET_ARG = None
   BACKEND_SERVICE_ARG = None
@@ -158,13 +155,8 @@ class SetDefaultService(base.UpdateCommand):
     cls.BACKEND_BUCKET_ARG = (
         backend_bucket_flags.BackendBucketArgumentForUrlMap(required=False))
     cls.BACKEND_SERVICE_ARG = (
-        backend_service_flags.BackendServiceArgumentForUrlMap(
-            required=False,
-            include_l7_internal_load_balancing=cls
-            ._include_l7_internal_load_balancing))
-    cls.URL_MAP_ARG = flags.UrlMapArgument(
-        include_l7_internal_load_balancing=cls
-        ._include_l7_internal_load_balancing)
+        backend_service_flags.BackendServiceArgumentForUrlMap(required=False))
+    cls.URL_MAP_ARG = flags.UrlMapArgument()
     cls.URL_MAP_ARG.AddArgument(parser)
 
     _Args(parser)

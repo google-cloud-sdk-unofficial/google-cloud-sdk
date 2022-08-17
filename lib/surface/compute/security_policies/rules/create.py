@@ -32,20 +32,21 @@ class CreateHelper(object):
 
   *{command}* is used to create security policy rules.
 
-  For example to create a rule at priority 1000 to block the IP range
+  ## EXAMPLES
+
+  To create a rule at priority 1000 to block the IP range
   1.2.3.0/24, run:
 
-        $ {command} 1000 \
-            --action deny-403 \
-            --security-policy my-policy \
-            --description "block 1.2.3.0/24" \
-            --src-ip-ranges 1.2.3.0/24
+    $ {command} 1000 \
+       --action=deny-403 \
+       --security-policy=my-policy \
+       --description="block 1.2.3.0/24" \
+       --src-ip-ranges=1.2.3.0/24
   """
 
   @classmethod
   def Args(cls, parser, support_redirect, support_rate_limit,
-           support_header_action, support_tcp_ssl,
-           support_exceed_action_rpc_status):
+           support_header_action, support_tcp_ssl, support_fairshare):
     """Generates the flagset for a Create command."""
     flags.AddPriority(parser, 'add')
     cls.SECURITY_POLICY_ARG = (
@@ -56,7 +57,8 @@ class CreateHelper(object):
         parser,
         support_redirect=support_redirect,
         support_rate_limit=support_rate_limit,
-        support_tcp_ssl=support_tcp_ssl)
+        support_tcp_ssl=support_tcp_ssl,
+        support_fairshare=support_fairshare)
     flags.AddDescription(parser)
     flags.AddPreview(parser, default=None)
     if support_redirect:
@@ -66,7 +68,7 @@ class CreateHelper(object):
           parser,
           support_tcp_ssl=support_tcp_ssl,
           support_exceed_redirect=support_redirect,
-          support_exceed_action_rpc_status=support_exceed_action_rpc_status)
+          support_fairshare=support_fairshare)
     if support_header_action:
       flags.AddRequestHeadersToAdd(parser)
     parser.display_info.AddCacheUpdater(
@@ -74,7 +76,7 @@ class CreateHelper(object):
 
   @classmethod
   def Run(cls, release_track, args, support_redirect, support_rate_limit,
-          support_header_action, support_exceed_action_rpc_status):
+          support_header_action, support_fairshare):
     """Validates arguments and creates a security policy rule."""
     holder = base_classes.ComputeApiHolder(release_track)
     ref = holder.resources.Parse(
@@ -95,7 +97,7 @@ class CreateHelper(object):
     if support_rate_limit:
       rate_limit_options = (
           security_policies_utils.CreateRateLimitOptions(
-              holder.client, args, support_exceed_action_rpc_status))
+              holder.client, args, support_fairshare))
 
     request_headers_to_add = None
     if support_header_action:
@@ -118,14 +120,16 @@ class CreateGA(base.CreateCommand):
 
   *{command}* is used to create security policy rules.
 
-  For example to create a rule at priority 1000 to block the IP range
+  ## EXAMPLES
+
+  To create a rule at priority 1000 to block the IP range
   1.2.3.0/24, run:
 
-        $ {command} 1000 \
-            --action deny-403 \
-            --security-policy my-policy \
-            --description "block 1.2.3.0/24" \
-            --src-ip-ranges 1.2.3.0/24
+    $ {command} 1000 \
+       --action=deny-403 \
+       --security-policy=my-policy \
+       --description="block 1.2.3.0/24" \
+       --src-ip-ranges=1.2.3.0/24
   """
 
   SECURITY_POLICY_ARG = None
@@ -134,7 +138,7 @@ class CreateGA(base.CreateCommand):
   _support_rate_limit = True
   _support_header_action = True
   _support_tcl_ssl = False
-  _support_exceed_action_rpc_status = False
+  _support_fairshare = False
 
   @classmethod
   def Args(cls, parser):
@@ -144,7 +148,7 @@ class CreateGA(base.CreateCommand):
         support_rate_limit=cls._support_rate_limit,
         support_header_action=cls._support_header_action,
         support_tcp_ssl=cls._support_tcl_ssl,
-        support_exceed_action_rpc_status=cls._support_exceed_action_rpc_status)
+        support_fairshare=cls._support_fairshare)
 
   def Run(self, args):
     return CreateHelper.Run(
@@ -153,7 +157,7 @@ class CreateGA(base.CreateCommand):
         support_redirect=self._support_redirect,
         support_rate_limit=self._support_rate_limit,
         support_header_action=self._support_header_action,
-        support_exceed_action_rpc_status=self._support_exceed_action_rpc_status)
+        support_fairshare=self._support_fairshare)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
@@ -162,14 +166,16 @@ class CreateBeta(base.CreateCommand):
 
   *{command}* is used to create security policy rules.
 
-  For example to create a rule at priority 1000 to block the IP range
+  ## EXAMPLES
+
+  To create a rule at priority 1000 to block the IP range
   1.2.3.0/24, run:
 
-        $ {command} 1000 \
-            --action deny-403 \
-            --security-policy my-policy \
-            --description "block 1.2.3.0/24" \
-            --src-ip-ranges 1.2.3.0/24
+    $ {command} 1000 \
+       --action=deny-403 \
+       --security-policy=my-policy \
+       --description="block 1.2.3.0/24" \
+       --src-ip-ranges=1.2.3.0/24
   """
 
   SECURITY_POLICY_ARG = None
@@ -178,7 +184,7 @@ class CreateBeta(base.CreateCommand):
   _support_rate_limit = True
   _support_header_action = True
   _support_tcl_ssl = False
-  _support_exceed_action_rpc_status = False
+  _support_fairshare = False
 
   @classmethod
   def Args(cls, parser):
@@ -188,7 +194,7 @@ class CreateBeta(base.CreateCommand):
         support_rate_limit=cls._support_rate_limit,
         support_header_action=cls._support_header_action,
         support_tcp_ssl=cls._support_tcl_ssl,
-        support_exceed_action_rpc_status=cls._support_exceed_action_rpc_status)
+        support_fairshare=cls._support_fairshare)
 
   def Run(self, args):
     return CreateHelper.Run(
@@ -197,7 +203,7 @@ class CreateBeta(base.CreateCommand):
         support_redirect=self._support_redirect,
         support_rate_limit=self._support_rate_limit,
         support_header_action=self._support_header_action,
-        support_exceed_action_rpc_status=self._support_exceed_action_rpc_status)
+        support_fairshare=self._support_fairshare)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -206,14 +212,16 @@ class CreateAlpha(base.CreateCommand):
 
   *{command}* is used to create security policy rules.
 
-  For example to create a rule at priority 1000 to block the IP range
+  ## EXAMPLES
+
+  To create a rule at priority 1000 to block the IP range
   1.2.3.0/24, run:
 
-        $ {command} 1000 \
-            --action deny-403 \
-            --security-policy my-policy \
-            --description "block 1.2.3.0/24" \
-            --src-ip-ranges 1.2.3.0/24
+    $ {command} 1000 \
+       --action=deny-403 \
+       --security-policy=my-policy \
+       --description="block 1.2.3.0/24" \
+       --src-ip-ranges=1.2.3.0/24
   """
 
   SECURITY_POLICY_ARG = None
@@ -222,7 +230,7 @@ class CreateAlpha(base.CreateCommand):
   _support_rate_limit = True
   _support_header_action = True
   _support_tcl_ssl = True
-  _support_exceed_action_rpc_status = True
+  _support_fairshare = True
 
   @classmethod
   def Args(cls, parser):
@@ -232,7 +240,7 @@ class CreateAlpha(base.CreateCommand):
         support_rate_limit=cls._support_rate_limit,
         support_header_action=cls._support_header_action,
         support_tcp_ssl=cls._support_tcl_ssl,
-        support_exceed_action_rpc_status=cls._support_exceed_action_rpc_status)
+        support_fairshare=cls._support_fairshare)
 
   def Run(self, args):
     return CreateHelper.Run(
@@ -241,4 +249,4 @@ class CreateAlpha(base.CreateCommand):
         support_redirect=self._support_redirect,
         support_rate_limit=self._support_rate_limit,
         support_header_action=self._support_header_action,
-        support_exceed_action_rpc_status=self._support_exceed_action_rpc_status)
+        support_fairshare=self._support_fairshare)

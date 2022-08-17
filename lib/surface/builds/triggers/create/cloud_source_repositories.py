@@ -119,7 +119,8 @@ class CreateCSR(base.CreateCommand):
     # Send the Create request
     client = cloudbuild_util.GetClientInstance()
     project = properties.VALUES.core.project.Get(required=True)
-    location = args.region or cloudbuild_util.DEFAULT_REGION
+    regionprop = properties.VALUES.builds.region.Get()
+    location = args.region or regionprop or cloudbuild_util.DEFAULT_REGION
     parent = resources.REGISTRY.Create(
         collection='cloudbuild.projects.locations',
         projectsId=project,

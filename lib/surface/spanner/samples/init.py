@@ -88,15 +88,14 @@ def _download_sample_files(appname):
       storage_client.CopyFileFromGCS(gcs_ref, local_path, overwrite=True)
 
 
-def check_create_db(appname, instance_ref, database_id):
-  """Create the DB if it doesn't exist already, raise otherwise."""
-  schema_file = samples.get_local_schema_path(appname)
-
-  statements = ddl_parser.PreprocessDDLWithParser(
-      files.ReadFileContents(schema_file))
-
+def _create_db_op(instance_ref, database_id, statements, database_dialect):
+  """Wrapper over databases.Create with error handling."""
   try:
-    return databases.Create(instance_ref, database_id, statements)
+    return databases.Create(
+        instance_ref,
+        database_id,
+        statements,
+        database_dialect=database_dialect)
   except HttpConflictError:
     raise ValueError(
         textwrap.dedent("""\
@@ -109,6 +108,46 @@ def check_create_db(appname, instance_ref, database_id):
     raise ValueError(json.loads(ex.content)['error']['message'])
   except Exception:  # pylint: disable=broad-except
     raise ValueError("Failed to create database '{}'.".format(database_id))
+
+
+def check_create_db(appname, instance_ref, database_id):
+  """Create the DB if it doesn't exist already, raise otherwise."""
+  schema_file = samples.get_local_schema_path(appname)
+  database_dialect = samples.get_database_dialect(appname)
+
+  schema = files.ReadFileContents(schema_file)
+  # Special case for POSTGRESQL dialect:
+  # a. CreateDatabase does not support additional_statements. Instead a
+  #    separate call to UpdateDDL is used.
+  # b. ddl_parser only supports GSQL; instead remove comment lines, then
+  #    split on ';'.
+  if database_dialect == databases.DATABASE_DIALECT_POSTGRESQL:
+    create_ddl = []
+    # Remove comments
+    schema = '\n'.join(
+        [line for line in schema.split('\n') if not line.startswith('--')])
+    # TODO(b/195711543): This would be incorrect if ';' is inside strings
+    # and / or comments.
+    update_ddl = [stmt for stmt in schema.split(';') if stmt]
+  else:
+    create_ddl = ddl_parser.PreprocessDDLWithParser(schema)
+    update_ddl = []
+
+  create_op = _create_db_op(instance_ref, database_id, create_ddl,
+                            database_dialect)
+  database_operations.Await(create_op,
+                            "Creating database '{}'".format(database_id))
+  if update_ddl:
+    database_ref = resources.REGISTRY.Parse(
+        database_id,
+        params={
+            'instancesId': instance_ref.instancesId,
+            'projectsId': instance_ref.projectsId,
+        },
+        collection='spanner.projects.instances.databases')
+    update_op = databases.UpdateDdl(database_ref, update_ddl)
+    database_operations.Await(update_op,
+                              "Updating database '{}'".format(database_id))
 
 
 class Init(base.Command):
@@ -193,10 +232,9 @@ class Init(base.Command):
         "Initializing database '{database_id}' for sample app '{appname}'"
         .format(database_id=database_id, appname=appname))
     try:
-      op = check_create_db(appname, instance_ref, database_id)
+      check_create_db(appname, instance_ref, database_id)
     except ValueError as ex:
       raise BadArgumentException('--database-id', ex)
-    database_operations.Await(op, 'Creating database "{}"'.format(database_id))
 
     backend_args = '{appname} --instance-id={instance_id}'.format(
         appname=appname, instance_id=instance_id)

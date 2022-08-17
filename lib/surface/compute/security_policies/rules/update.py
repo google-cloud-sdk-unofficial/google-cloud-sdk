@@ -33,19 +33,20 @@ class UpdateHelper(object):
 
   *{command}* is used to update security policy rules.
 
-  For example to update the description and IP ranges of a rule at priority
+  ## EXAMPLES
+
+  To update the description and IP ranges of a rule at priority
   1000, run:
 
-        $ {command} 1000 \
-            --security-policy my-policy \
-            --description "block 1.2.3.4/32" \
-            --src-ip-ranges 1.2.3.4/32
+    $ {command} 1000 \
+       --security-policy=my-policy \
+       --description="block 1.2.3.4/32" \
+       --src-ip-ranges=1.2.3.4/32
   """
 
   @classmethod
   def Args(cls, parser, support_redirect, support_rate_limit,
-           support_header_action, support_tcp_ssl,
-           support_exceed_action_rpc_status):
+           support_header_action, support_tcp_ssl, support_fairshare):
     """Generates the flagset for an Update command."""
     flags.AddPriority(parser, 'update')
     cls.SECURITY_POLICY_ARG = (
@@ -57,7 +58,8 @@ class UpdateHelper(object):
         required=False,
         support_redirect=support_redirect,
         support_rate_limit=support_rate_limit,
-        support_tcp_ssl=support_tcp_ssl)
+        support_tcp_ssl=support_tcp_ssl,
+        support_fairshare=support_fairshare)
     flags.AddDescription(parser)
     flags.AddPreview(parser, default=None)
     if support_redirect:
@@ -67,13 +69,13 @@ class UpdateHelper(object):
           parser,
           support_tcp_ssl=support_tcp_ssl,
           support_exceed_redirect=support_redirect,
-          support_exceed_action_rpc_status=support_exceed_action_rpc_status)
+          support_fairshare=support_fairshare)
     if support_header_action:
       flags.AddRequestHeadersToAdd(parser)
 
   @classmethod
   def Run(cls, release_track, args, support_redirect, support_rate_limit,
-          support_header_action, support_exceed_action_rpc_status):
+          support_header_action, support_fairshare):
     """Validates arguments and patches a security policy rule."""
     modified_fields = [
         args.description, args.src_ip_ranges, args.expression, args.action,
@@ -104,7 +106,7 @@ class UpdateHelper(object):
           '--enforce-on-key-name', '--ban-threshold-count',
           '--ban-threshold-interval-sec', '--ban-duration-sec'
       ])
-      if support_exceed_action_rpc_status:
+      if support_fairshare:
         modified_fields.extend([
             args.exceed_action_rpc_status_code,
             args.exceed_action_rpc_status_message
@@ -136,7 +138,7 @@ class UpdateHelper(object):
     if support_rate_limit:
       rate_limit_options = (
           security_policies_utils.CreateRateLimitOptions(
-              holder.client, args, support_exceed_action_rpc_status))
+              holder.client, args, support_fairshare))
 
     request_headers_to_add = None
     if support_header_action:
@@ -159,13 +161,15 @@ class UpdateGA(base.UpdateCommand):
 
   *{command}* is used to update security policy rules.
 
-  For example to update the description and IP ranges of a rule at priority
+  ## EXAMPLES
+
+  To update the description and IP ranges of a rule at priority
   1000, run:
 
-        $ {command} 1000 \
-            --security-policy my-policy \
-            --description "block 1.2.3.4/32" \
-            --src-ip-ranges 1.2.3.4/32
+    $ {command} 1000 \
+       --security-policy=my-policy \
+       --description="block 1.2.3.4/32" \
+       --src-ip-ranges=1.2.3.4/32
   """
 
   SECURITY_POLICY_ARG = None
@@ -174,7 +178,7 @@ class UpdateGA(base.UpdateCommand):
   _support_rate_limit = True
   _support_header_action = True
   _support_tcl_ssl = False
-  _support_exceed_action_rpc_status = False
+  _support_fairshare = False
 
   @classmethod
   def Args(cls, parser):
@@ -184,13 +188,13 @@ class UpdateGA(base.UpdateCommand):
         support_rate_limit=cls._support_rate_limit,
         support_header_action=cls._support_header_action,
         support_tcp_ssl=cls._support_tcl_ssl,
-        support_exceed_action_rpc_status=cls._support_exceed_action_rpc_status)
+        support_fairshare=cls._support_fairshare)
 
   def Run(self, args):
     return UpdateHelper.Run(self.ReleaseTrack(), args, self._support_redirect,
                             self._support_rate_limit,
                             self._support_header_action,
-                            self._support_exceed_action_rpc_status)
+                            self._support_fairshare)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
@@ -199,13 +203,15 @@ class UpdateBeta(base.UpdateCommand):
 
   *{command}* is used to update security policy rules.
 
-  For example to update the description and IP ranges of a rule at priority
+  ## EXAMPLES
+
+  To update the description and IP ranges of a rule at priority
   1000, run:
 
-        $ {command} 1000 \
-            --security-policy my-policy \
-            --description "block 1.2.3.4/32" \
-            --src-ip-ranges 1.2.3.4/32
+    $ {command} 1000 \
+       --security-policy=my-policy \
+       --description="block 1.2.3.4/32" \
+       --src-ip-ranges=1.2.3.4/32
   """
 
   SECURITY_POLICY_ARG = None
@@ -214,7 +220,7 @@ class UpdateBeta(base.UpdateCommand):
   _support_rate_limit = True
   _support_header_action = True
   _support_tcl_ssl = False
-  _support_exceed_action_rpc_status = False
+  _support_fairshare = False
 
   @classmethod
   def Args(cls, parser):
@@ -224,13 +230,13 @@ class UpdateBeta(base.UpdateCommand):
         support_rate_limit=cls._support_rate_limit,
         support_header_action=cls._support_header_action,
         support_tcp_ssl=cls._support_tcl_ssl,
-        support_exceed_action_rpc_status=cls._support_exceed_action_rpc_status)
+        support_fairshare=cls._support_fairshare)
 
   def Run(self, args):
     return UpdateHelper.Run(self.ReleaseTrack(), args, self._support_redirect,
                             self._support_rate_limit,
                             self._support_header_action,
-                            self._support_exceed_action_rpc_status)
+                            self._support_fairshare)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -239,13 +245,15 @@ class UpdateAlpha(base.UpdateCommand):
 
   *{command}* is used to update security policy rules.
 
-  For example to update the description and IP ranges of a rule at priority
+  ## EXAMPLES
+
+  To update the description and IP ranges of a rule at priority
   1000, run:
 
-        $ {command} 1000 \
-            --security-policy my-policy \
-            --description "block 1.2.3.4/32" \
-            --src-ip-ranges 1.2.3.4/32
+    $ {command} 1000 \
+       --security-policy=my-policy \
+       --description="block 1.2.3.4/32" \
+       --src-ip-ranges=1.2.3.4/32
   """
 
   SECURITY_POLICY_ARG = None
@@ -254,7 +262,7 @@ class UpdateAlpha(base.UpdateCommand):
   _support_rate_limit = True
   _support_header_action = True
   _support_tcl_ssl = True
-  _support_exceed_action_rpc_status = True
+  _support_fairshare = True
 
   @classmethod
   def Args(cls, parser):
@@ -264,10 +272,10 @@ class UpdateAlpha(base.UpdateCommand):
         support_rate_limit=cls._support_rate_limit,
         support_header_action=cls._support_header_action,
         support_tcp_ssl=cls._support_tcl_ssl,
-        support_exceed_action_rpc_status=cls._support_exceed_action_rpc_status)
+        support_fairshare=cls._support_fairshare)
 
   def Run(self, args):
     return UpdateHelper.Run(self.ReleaseTrack(), args, self._support_redirect,
                             self._support_rate_limit,
                             self._support_header_action,
-                            self._support_exceed_action_rpc_status)
+                            self._support_fairshare)

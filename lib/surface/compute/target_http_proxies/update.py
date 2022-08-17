@@ -83,9 +83,6 @@ def _Run(holder, target_http_proxy_ref, url_map_ref):
 class Update(base.SilentCommand):
   """Update a target HTTP proxy."""
 
-  # TODO(b/144022508): Remove _include_l7_internal_load_balancing
-  _include_l7_internal_load_balancing = True
-
   TARGET_HTTP_PROXY_ARG = None
   URL_MAP_ARG = None
   detailed_help = _DetailedHelp()
@@ -94,9 +91,7 @@ class Update(base.SilentCommand):
   def Args(cls, parser):
     cls.TARGET_HTTP_PROXY_ARG = flags.TargetHttpProxyArgument()
     cls.TARGET_HTTP_PROXY_ARG.AddArgument(parser, operation_type='update')
-    cls.URL_MAP_ARG = url_map_flags.UrlMapArgumentForTargetProxy(
-        include_l7_internal_load_balancing=cls
-        ._include_l7_internal_load_balancing)
+    cls.URL_MAP_ARG = url_map_flags.UrlMapArgumentForTargetProxy()
     cls.URL_MAP_ARG.AddArgument(parser)
 
   def Run(self, args):

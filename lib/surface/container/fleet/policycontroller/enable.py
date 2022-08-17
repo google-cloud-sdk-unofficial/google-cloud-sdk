@@ -18,6 +18,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+from googlecloudsdk.command_lib.container.fleet import resources
 from googlecloudsdk.command_lib.container.fleet.features import base
 from googlecloudsdk.command_lib.container.fleet.policycontroller import utils
 from googlecloudsdk.core import exceptions
@@ -39,11 +40,25 @@ class Enable(base.UpdateCommand, base.EnableCommand):
 
   @classmethod
   def Args(cls, parser):
-    parser.add_argument(
-        '--memberships',
-        type=str,
-        help='The membership names to update, separated by commas if multiple are supplied. Ignored if --all-memberships is supplied; if neither is supplied, a prompt will appear with all available memberships.',
-    )
+    if resources.UseRegionalMemberships(cls.ReleaseTrack()):
+      resources.AddMembershipResourceArg(
+          parser,
+          plural=True,
+          membership_help=(
+              'The membership names to update, separated by commas if multiple '
+              'are supplied. Ignored if --all-memberships is supplied; if '
+              'neither is supplied, a prompt will appear with all available '
+              'memberships.'))
+    else:
+      parser.add_argument(
+          '--memberships',
+          type=str,
+          help=(
+              'The membership names to update, separated by commas if multiple '
+              'are supplied. Ignored if --all-memberships is supplied; if '
+              'neither is supplied, a prompt will appear with all available '
+              'memberships.'),
+      )
     parser.add_argument(
         '--all-memberships',
         action='store_true',
@@ -105,10 +120,13 @@ class Enable(base.UpdateCommand, base.EnableCommand):
     poco_hub_config = utils.set_poco_hub_config_parameters_from_args(
         args, self.messages)
     poco_hub_config.installSpec = self.messages.PolicyControllerHubConfig.InstallSpecValueValuesEnum(
-        self.messages.PolicyControllerHubConfig
-        .InstallSpecValueValuesEnum.INSTALL_SPEC_ENABLED)
+        self.messages.PolicyControllerHubConfig.InstallSpecValueValuesEnum
+        .INSTALL_SPEC_ENABLED)
 
-    memberships = utils.select_memberships(args)
+    if resources.UseRegionalMemberships(self.ReleaseTrack()):
+      memberships = utils.select_memberships_full(args)
+    else:
+      memberships = utils.select_memberships(args)
     for membership in memberships:
       poco_membership_spec = self.messages.PolicyControllerMembershipSpec(
           policyControllerHubConfig=poco_hub_config)

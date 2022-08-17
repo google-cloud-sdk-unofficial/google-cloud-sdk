@@ -18,6 +18,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+from googlecloudsdk.command_lib.container.fleet import resources
 from googlecloudsdk.command_lib.container.fleet.features import base
 from googlecloudsdk.command_lib.container.fleet.policycontroller import utils
 from googlecloudsdk.core import exceptions
@@ -38,14 +39,27 @@ class Update(base.UpdateCommand):
     $ {command} --audit-interval-seconds=120
   """
   feature_name = 'policycontroller'
-  @classmethod
 
+  @classmethod
   def Args(cls, parser):
-    parser.add_argument(
-        '--memberships',
-        type=str,
-        help='The membership names to update, separated by commas if multiple are supplied. Ignored if --all-memberships is supplied; if neither is supplied, a prompt will appear with all available memberships.',
-    )
+    if resources.UseRegionalMemberships(cls.ReleaseTrack()):
+      resources.AddMembershipResourceArg(
+          parser,
+          plural=True,
+          membership_help=(
+              'The membership names to update, separated by commas if multiple '
+              'are supplied. Ignored if --all-memberships is supplied; if '
+              'neither is supplied, a prompt will appear with all available '
+              'memberships.'))
+    else:
+      parser.add_argument(
+          '--memberships',
+          type=str,
+          help=(
+              'The membership names to update, separated by commas if multiple '
+              'are supplied. Ignored if --all-memberships is supplied; if '
+              'neither is supplied, a prompt will appear with all available '
+              'memberships.'))
     parser.add_argument(
         '--all-memberships',
         action='store_true',
@@ -101,7 +115,11 @@ class Update(base.UpdateCommand):
     parser.add_argument(
         '--version',
         type=str,
-        help='The version of Policy Controller to install.'
+        help='The version of Policy Controller to install.')
+    parser.add_argument(
+        '--suspend',
+        action=utils.BooleanOptionalAction,
+        help='If set, suspend Policy Controller webhooks and only preserve the audit functionality. (To resume normal operation, use --no-suspend)'
     )
 
   def Run(self, args):
@@ -109,7 +127,10 @@ class Update(base.UpdateCommand):
         self.GetFeature().membershipSpecs)
     poco_hub_config = utils.set_poco_hub_config_parameters_from_args(
         args, self.messages)
-    memberships = utils.select_memberships(args)
+    if resources.UseRegionalMemberships(self.ReleaseTrack()):
+      memberships = utils.select_memberships_full(args)
+    else:
+      memberships = utils.select_memberships(args)
     for membership in memberships:
       full_membership_name = self.MembershipResourceName(
           membership, use_number=True)

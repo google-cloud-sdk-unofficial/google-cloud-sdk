@@ -61,10 +61,6 @@ class Export(base.Command):
                                   base.ReleaseTrack.ALPHA)
 
   @classmethod
-  def _IsAlpha(cls):
-    return cls.ReleaseTrack() == base.ReleaseTrack.ALPHA
-
-  @classmethod
   def Args(cls, parser):
     flags.GetZoneArg().AddToParser(parser)
     if cls._IsBetaOrAlpha():
@@ -114,8 +110,8 @@ class Export(base.Command):
 
     for record_set in list_pager.YieldFromList(
         dns.resourceRecordSets, list_request, field='rrsets'):
-      # Alpha is handled differently as it supports ALIAS records.
-      if self._IsAlpha():
+      # Alpha/beta are handled differently as they support ALIAS records.
+      if self._IsBetaOrAlpha():
         # For BIND file format, ALIAS record sets must be ignored, as they are
         # not DNS standards. A zone will have at most one ALIAS record.
         if args.zone_file_format:
@@ -126,8 +122,8 @@ class Export(base.Command):
                 'export ALIAS records, use YAML format instead.'
             )
             continue
-      else:  # beta or GA
-        # Quietly ignore ALIAS records in beta/GA - they aren't supported yet.
+      else:  # GA
+        # Quietly ignore ALIAS records in GA - they aren't supported yet.
         if record_set.type == 'ALIAS':
           continue
 

@@ -33,10 +33,23 @@ import six
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Create(base.CreateCommand):
-  """Create a Compute Engine security policy.
+  r"""Create a Compute Engine security policy.
 
   *{command}* is used to create security policies. A security policy policy is a
   set of rules that controls access to various resources.
+
+  ## EXAMPLES
+
+  To create a security policy with a given type and description, run:
+
+    $ {command} my-policy \
+       --type=CLOUD_ARMOR_EDGE \
+       --description="policy description"
+
+  To create a security from an input file, run:
+
+    $ {command} my-policy \
+       --file-name=my-file-name
   """
 
   SECURITY_POLICY_ARG = None
@@ -121,10 +134,23 @@ class Create(base.CreateCommand):
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class CreateBeta(Create):
-  """Create a Compute Engine security policy.
+  r"""Create a Compute Engine security policy.
 
   *{command}* is used to create security policies. A security policy policy is a
   set of rules that controls access to various resources.
+
+  ## EXAMPLES
+
+  To create a security policy with a given type and description, run:
+
+    $ {command} my-policy \
+       --type=CLOUD_ARMOR_EDGE \
+       --description="policy description"
+
+  To create a security from an input file, run:
+
+    $ {command} my-policy \
+       --file-name=my-file-name
   """
 
   SECURITY_POLICY_ARG = None
@@ -187,10 +213,23 @@ class CreateBeta(Create):
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class CreateAlpha(Create):
-  """Create a Compute Engine security policy.
+  r"""Create a Compute Engine security policy.
 
   *{command}* is used to create security policies. A security policy policy is a
   set of rules that controls access to various resources.
+
+  ## EXAMPLES
+
+  To create a security policy with a given type and description, run:
+
+    $ {command} my-policy \
+       --type=CLOUD_ARMOR_EDGE \
+       --description="policy description"
+
+  To create a security from an input file, run:
+
+    $ {command} my-policy \
+       --file-name=my-file-name
   """
 
   SECURITY_POLICY_ARG = None

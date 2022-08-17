@@ -28,9 +28,16 @@ from googlecloudsdk.core import properties
 
 
 class Describe(base.DescribeCommand):
-  """Describe a Compute Engine security policy rule.
+  r"""Describe a Compute Engine security policy rule.
 
   *{command}* displays all data associated with a security policy rule.
+
+  ## EXAMPLES
+
+  To describe the rule at priority 1000, run:
+
+    $ {command} 1000 \
+       --security-policy=my-policy
   """
 
   SECURITY_POLICY_ARG = None

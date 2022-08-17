@@ -328,12 +328,23 @@ class Build(base.Command):
             $ {command} gs://template-file-gcs-path --image=gcr://image-path \
               --metadata-file=/local/path/to/metadata.json --sdk-language=JAVA
 
+          If using prebuilt template image from private registry, run:
+
             $ {command} gs://template-file-gcs-path \
-            --image-gcr-path=gcr://path-tos-tore-image \
-            --jar=path/to/pipeline.jar --jar=path/to/dependency.jar \
-            --env=FLEX_TEMPLATE_JAVA_MAIN_CLASS=classpath \
-            --flex-template-base-image=JAVA11 \
-            --metadata-file=/local/path/to/metadata.json --sdk-language=JAVA
+              --image=private.registry.com:3000/image-path \
+              --image-repository-username-secret-id="projects/test-project/secrets/username-secret"
+              --image-repository-password-secret-id="projects/test-project/secrets/password-secret/versions/latest"
+              --metadata-file=metadata.json
+              --sdk-language=JAVA
+
+          To build the template image and flex template json file, run:
+
+            $ {command} gs://template-file-gcs-path \
+              --image-gcr-path=gcr://path-tos-tore-image \
+              --jar=path/to/pipeline.jar --jar=path/to/dependency.jar \
+              --env=FLEX_TEMPLATE_JAVA_MAIN_CLASS=classpath \
+              --flex-template-base-image=JAVA11 \
+              --metadata-file=/local/path/to/metadata.json --sdk-language=JAVA
           """,
   }
 

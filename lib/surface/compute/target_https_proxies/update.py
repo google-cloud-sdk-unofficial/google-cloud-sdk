@@ -185,8 +185,6 @@ def _PatchTargetHttpsProxy(client, target_https_proxy_ref, new_resource,
 class Update(base.SilentCommand):
   """Update a target HTTPS proxy."""
 
-  # TODO(b/144022508): Remove _include_l7_internal_load_balancing
-  _include_l7_internal_load_balancing = True
   _certificate_map = True
   _regional_ssl_policies = False
 
@@ -202,22 +200,16 @@ class Update(base.SilentCommand):
         ssl_certificates_flags.SslCertificatesArgumentForOtherResource(
             'target HTTPS proxy',
             required=False,
-            include_l7_internal_load_balancing=cls
-            ._include_l7_internal_load_balancing))
+            include_l7_internal_load_balancing=True))
     if not cls._certificate_map:
       cls.SSL_CERTIFICATES_ARG.AddArgument(
           parser, cust_metavar='SSL_CERTIFICATE')
 
-    cls.TARGET_HTTPS_PROXY_ARG = flags.TargetHttpsProxyArgument(
-        include_l7_internal_load_balancing=cls
-        ._include_l7_internal_load_balancing)
+    cls.TARGET_HTTPS_PROXY_ARG = flags.TargetHttpsProxyArgument()
     cls.TARGET_HTTPS_PROXY_ARG.AddArgument(parser, operation_type='update')
 
     cls.URL_MAP_ARG = url_map_flags.UrlMapArgumentForTargetProxy(
-        required=False,
-        proxy_type='HTTPS',
-        include_l7_internal_load_balancing=cls
-        ._include_l7_internal_load_balancing)
+        required=False, proxy_type='HTTPS')
     cls.URL_MAP_ARG.AddArgument(parser)
 
     if cls._certificate_map:

@@ -1,13 +1,20 @@
-release_tracks: [ALPHA]
+release_tracks: [ALPHA, GA]
 help_text:
   brief: |
     Import http route.
   description: |
     Import a http route.
+  examples: |
+      To import a route named 'my-route' from a YAML file, run:
+
+        $ {command} my-route --source=my-route.yaml --location=global
 
 request:
   collection: networkservices.projects.locations.httpRoutes
-  api_version: v1alpha1
+  ALPHA:
+    api_version: v1alpha1
+  GA:
+    api_version: v1
 
 arguments:
   resource:
@@ -23,5 +30,8 @@ import:
   create_if_not_exists: true
   create_request:
     collection: networkservices.projects.locations.httpRoutes
-    api_version: v1alpha1
+    ALPHA:
+      api_version: v1alpha1
+    GA:
+      api_version: v1
     method: create

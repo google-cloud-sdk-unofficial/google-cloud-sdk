@@ -54,7 +54,7 @@ class Describe(base.DescribeCommand):
   @staticmethod
   def Args(parser):
     parser.add_argument('url', help='Specifies URL of object to describe.')
-    flags.add_encryption_flags(parser)
+    flags.add_encryption_flags(parser, command_only_reads_data=True)
 
   def Run(self, args):
     encryption_util.initialize_key_store(args)

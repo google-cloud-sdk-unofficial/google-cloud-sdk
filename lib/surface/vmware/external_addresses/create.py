@@ -31,9 +31,9 @@ DETAILED_HELP = {
     'EXAMPLES':
         """
           To create an external IP address called ``myip'' that corresponds to the internal IP address ``165.87.54.14'' in private cloud
-          ``myprivatecloud'', in region ``us-east2'', run:
+          ``myprivatecloud'', in location ``us-east2-b'', run:
 
-            $ {command} myip --project=my project --private-cloud=myprivatecloud --region=us-east2 --internal-ip=165.87.54.14
+            $ {command} myip --project=my-project --private-cloud=myprivatecloud --location=us-east2-b --internal-ip=165.87.54.14
 
           Or:
 

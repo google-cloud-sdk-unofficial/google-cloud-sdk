@@ -90,8 +90,8 @@ class CreateHelper(object):
   HTTPS_HEALTH_CHECK_ARG = None
 
   @classmethod
-  def Args(cls, parser, support_l7_internal_load_balancer, support_failover,
-           support_logging, support_tcp_ssl_logging, support_net_lb_ilb_logging,
+  def Args(cls, parser, support_failover, support_logging,
+           support_tcp_ssl_logging, support_net_lb_ilb_logging,
            support_multinic, support_client_only, support_unspecified_protocol,
            support_subsetting, support_subsetting_subset_size,
            support_advanced_load_balancing, support_dynamic_compression,
@@ -102,8 +102,7 @@ class CreateHelper(object):
     flags.GLOBAL_REGIONAL_BACKEND_SERVICE_ARG.AddArgument(
         parser, operation_type='create')
     flags.AddDescription(parser)
-    cls.HEALTH_CHECK_ARG = flags.HealthCheckArgument(
-        support_regional_health_check=support_l7_internal_load_balancer)
+    cls.HEALTH_CHECK_ARG = flags.HealthCheckArgument()
     cls.HEALTH_CHECK_ARG.AddArgument(parser, cust_metavar='HEALTH_CHECK')
     cls.HTTP_HEALTH_CHECK_ARG = flags.HttpHealthCheckArgument()
     cls.HTTP_HEALTH_CHECK_ARG.AddArgument(
@@ -124,8 +123,7 @@ class CreateHelper(object):
     flags.AddSessionAffinity(parser, support_client_only=support_client_only)
     flags.AddAffinityCookieTtl(parser)
     flags.AddConnectionDrainingTimeout(parser)
-    flags.AddLoadBalancingScheme(
-        parser, include_l7_ilb=support_l7_internal_load_balancer)
+    flags.AddLoadBalancingScheme(parser)
     flags.AddCustomRequestHeaders(parser, remove_all_flag=False)
     flags.AddCacheKeyIncludeProtocol(parser, default=True)
     flags.AddCacheKeyIncludeHost(parser, default=True)
@@ -179,12 +177,10 @@ class CreateHelper(object):
     if support_dynamic_compression:
       flags.AddCompressionMode(parser)
 
-  def __init__(self, support_l7_internal_load_balancer, support_failover,
-               support_logging, support_tcp_ssl_logging,
+  def __init__(self, support_failover, support_logging, support_tcp_ssl_logging,
                support_net_lb_ilb_logging, support_multinic, support_subsetting,
                support_subsetting_subset_size, support_advanced_load_balancing,
                support_dynamic_compression, support_weighted_lb):
-    self._support_l7_internal_load_balancer = support_l7_internal_load_balancer
     self._support_failover = support_failover
     self._support_logging = support_logging
     self._support_tcp_ssl_logging = support_tcp_ssl_logging
@@ -433,7 +429,6 @@ class CreateGA(base.CreateCommand):
 
   """
 
-  _support_l7_internal_load_balancer = True
   _support_failover = True
   _support_logging = True
   _support_tcp_ssl_logging = False
@@ -451,8 +446,6 @@ class CreateGA(base.CreateCommand):
   def Args(cls, parser):
     CreateHelper.Args(
         parser,
-        support_l7_internal_load_balancer=cls
-        ._support_l7_internal_load_balancer,
         support_failover=cls._support_failover,
         support_logging=cls._support_logging,
         support_tcp_ssl_logging=cls._support_tcp_ssl_logging,
@@ -471,8 +464,6 @@ class CreateGA(base.CreateCommand):
 
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     return CreateHelper(
-        support_l7_internal_load_balancer=self
-        ._support_l7_internal_load_balancer,
         support_failover=self._support_failover,
         support_logging=self._support_logging,
         support_tcp_ssl_logging=self._support_tcp_ssl_logging,

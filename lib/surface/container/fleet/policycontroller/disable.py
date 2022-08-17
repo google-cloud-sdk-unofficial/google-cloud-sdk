@@ -18,6 +18,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+from googlecloudsdk.command_lib.container.fleet import resources
 from googlecloudsdk.command_lib.container.fleet.features import base
 from googlecloudsdk.command_lib.container.fleet.policycontroller import utils
 
@@ -38,28 +39,45 @@ class Disable(base.UpdateCommand):
 
   @classmethod
   def Args(cls, parser):
-    parser.add_argument(
-        '--memberships',
-        type=str,
-        help='The membership names for which to uninstall Policy Controller, separated by commas if multiple are supplied. Ignored if --all-memberships is supplied; if neither is supplied, a prompt will appear with all available memberships.',
-    )
+    if resources.UseRegionalMemberships(cls.ReleaseTrack()):
+      resources.AddMembershipResourceArg(
+          parser,
+          plural=True,
+          membership_help=(
+              'The membership names for which to uninstall Policy '
+              'Controller, separated by commas if multiple are '
+              'supplied. Ignored if --all-memberships is supplied; '
+              'if neither is supplied, a prompt will appear with all '
+              'available memberships.'))
+    else:
+      parser.add_argument(
+          '--memberships',
+          type=str,
+          help=(
+              'The membership names for which to uninstall Policy Controller, '
+              'separated by commas if multiple are supplied. Ignored if '
+              '--all-memberships is supplied; if neither is supplied, a prompt '
+              'will appear with all available memberships.'),
+      )
     parser.add_argument(
         '--all-memberships',
         action='store_true',
         help='If supplied, uninstall Policy Controller for all memberships in the fleet.',
-        default=False
-    )
+        default=False)
 
   def Run(self, args):
     membership_specs = {}
     poco_not_installed = self.messages.PolicyControllerHubConfig.InstallSpecValueValuesEnum(
-        self.messages.PolicyControllerHubConfig
-        .InstallSpecValueValuesEnum.INSTALL_SPEC_NOT_INSTALLED)
+        self.messages.PolicyControllerHubConfig.InstallSpecValueValuesEnum
+        .INSTALL_SPEC_NOT_INSTALLED)
 
     poco_hub_config = self.messages.PolicyControllerHubConfig(
         installSpec=poco_not_installed)
 
-    memberships = utils.select_memberships(args)
+    if resources.UseRegionalMemberships(self.ReleaseTrack()):
+      memberships = utils.select_memberships_full(args)
+    else:
+      memberships = utils.select_memberships(args)
 
     for membership in memberships:
       membership_specs[self.MembershipResourceName(

@@ -30,9 +30,15 @@ from googlecloudsdk.command_lib.compute.security_policies import flags
 class Delete(base.DeleteCommand):
   """Delete security policies.
 
-    *{command}* deletes Compute Engine security policies. Security
-    policies can only be deleted when no other resources (e.g.,
-    backend services) refer to them.
+  *{command}* deletes Compute Engine security policies. Security
+  policies can only be deleted when no other resources (e.g.,
+  backend services) refer to them.
+
+  ## EXAMPLES
+
+  To delete a security policy, run:
+
+    $ {command} my-policy
   """
 
   SECURITY_POLICY_ARG = None
@@ -63,9 +69,15 @@ class Delete(base.DeleteCommand):
 class DeleteBeta(base.DeleteCommand):
   """Delete security policies.
 
-    *{command}* deletes Compute Engine security policies. Security
-    policies can only be deleted when no other resources (e.g.,
-    backend services) refer to them.
+  *{command}* deletes Compute Engine security policies. Security
+  policies can only be deleted when no other resources (e.g.,
+  backend services) refer to them.
+
+  ## EXAMPLES
+
+  To delete a security policy, run:
+
+    $ {command} my-policy
   """
 
   SECURITY_POLICY_ARG = None
@@ -95,9 +107,15 @@ class DeleteBeta(base.DeleteCommand):
 class DeleteAlpha(base.DeleteCommand):
   """Delete security policies.
 
-    *{command}* deletes Compute Engine security policies. Security
-    policies can only be deleted when no other resources (e.g.,
-    backend services) refer to them.
+  *{command}* deletes Compute Engine security policies. Security
+  policies can only be deleted when no other resources (e.g.,
+  backend services) refer to them.
+
+  ## EXAMPLES
+
+  To delete a security policy, run:
+
+    $ {command} my-policy
   """
 
   SECURITY_POLICY_ARG = None

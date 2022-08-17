@@ -172,11 +172,16 @@ class UpdateGA(base.UpdateCommand):
           help=('Membership names to update, separated by commas '
                 'if multiple are supplied.'),
       )
-    parser.add_argument(
+    group = parser.add_argument_group(required=True)
+    group.add_argument(
         '--control-plane',
         choices=['automatic', 'manual'],
-        help='Control plane management to update to.',
-        required=True)
+        help='Control plane management to update to.')
+    group.add_argument(
+        '--management',
+        choices=['automatic', 'manual'],
+        help='The management mode to update to.',
+        hidden=True)
 
   def Run(self, args):
     _RunUpdate(self, args,

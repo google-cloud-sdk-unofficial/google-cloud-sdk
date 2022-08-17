@@ -390,9 +390,9 @@ _PARALLEL_COMPOSITE_UPLOADS_TEXT = """
   gsutil can automatically use
   `object composition <https://cloud.google.com/storage/docs/composite-objects>`_
   to perform uploads in parallel for large, local files being uploaded to
-  Cloud Storage. See the `Uploads and downloads documentation
-  <https://cloud.google.com/storage/docs/uploads-downloads#parallel-composite-uploads>`_
-  for a complete discussion.
+  Cloud Storage. See the `parallel composite uploads documentation
+  <https://cloud.google.com/storage/docs/parallel-composite-uploads>`_ for a
+  complete discussion.
 """
 
 _CHANGING_TEMP_DIRECTORIES_TEXT = """
@@ -757,7 +757,9 @@ class CpCommand(Command):
   gcloud_storage_map = GcloudStorageMap(
       gcloud_command=['alpha', 'storage', 'cp'],
       flag_map={
+          '-A': GcloudStorageFlag('--all-versions'),
           '-a': GcloudStorageFlag('--predefined-acl'),
+          '-D': GcloudStorageFlag('--daisy-chain'),
           '-e': GcloudStorageFlag('--ignore-symlinks'),
           '-I': GcloudStorageFlag('--read-paths-from-stdin'),
           '-J': GcloudStorageFlag('--gzip-in-flight-all'),

@@ -101,8 +101,7 @@ class Export(base.Command):
 
   @classmethod
   def Args(cls, parser):
-    cls.TARGET_HTTPS_PROXY_ARG = flags.TargetHttpsProxyArgument(
-        include_l7_internal_load_balancing=True)
+    cls.TARGET_HTTPS_PROXY_ARG = flags.TargetHttpsProxyArgument()
     cls.TARGET_HTTPS_PROXY_ARG.AddArgument(parser, operation_type='export')
     export_util.AddExportFlags(
         parser, _GetSchemaPath(cls.ReleaseTrack(), for_help=True))

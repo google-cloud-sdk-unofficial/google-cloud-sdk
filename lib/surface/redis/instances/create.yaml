@@ -187,7 +187,6 @@
         --read-replicas-mode flag, then the block size required for this flag is /28.
     - arg_name: customer-managed-key
       api_field: instance.customerManagedKey
-      release_tracks: [BETA, ALPHA]
       help_text: |
         The KMS key reference that you want to use to encrypt the data at rest for this Redis
         instance. If this is provided, CMEK is enabled.

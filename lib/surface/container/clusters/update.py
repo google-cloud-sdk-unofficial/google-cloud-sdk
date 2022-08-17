@@ -845,6 +845,7 @@ class UpdateBeta(Update):
     flags.AddEnablePrivateEndpoint(group)
     flags.AddEnableGoogleCloudAccess(group)
     flags.AddCostManagementConfigFlag(group, is_update=True)
+    flags.AddStackTypeFlag(group, hidden=True)
 
   def ParseUpdateOptions(self, args, locations):
     get_default = lambda key: getattr(args, key)
@@ -939,6 +940,7 @@ class UpdateBeta(Update):
     opts.enable_google_cloud_access = args.enable_google_cloud_access
     opts.enable_cost_allocation = args.enable_cost_allocation
     opts.binauthz_evaluation_mode = args.binauthz_evaluation_mode
+    opts.stack_type = args.stack_type
     return opts
 
 
@@ -1024,6 +1026,7 @@ class UpdateAlpha(Update):
     flags.AddWorkloadVulnScanningFlag(group)
     flags.AddEnablePrivateEndpoint(group)
     flags.AddEnableGoogleCloudAccess(group)
+    flags.AddStackTypeFlag(group, hidden=True)
 
   def ParseUpdateOptions(self, args, locations):
     get_default = lambda key: getattr(args, key)
@@ -1113,4 +1116,5 @@ class UpdateAlpha(Update):
     opts.enable_private_endpoint = args.enable_private_endpoint
     opts.enable_google_cloud_access = args.enable_google_cloud_access
     opts.binauthz_evaluation_mode = args.binauthz_evaluation_mode
+    opts.stack_type = args.stack_type
     return opts

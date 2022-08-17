@@ -48,6 +48,11 @@ class Remove(base.Command):
         --type=TXT "Hello world" "Bye world"
   """
 
+  @classmethod
+  def _IsBetaOrAlpha(cls):
+    return cls.ReleaseTrack() in (base.ReleaseTrack.BETA,
+                                  base.ReleaseTrack.ALPHA)
+
   @staticmethod
   def Args(parser):
     flags.GetZoneArg().AddToParser(parser)
@@ -91,7 +96,7 @@ class Remove(base.Command):
         args,
         zone_ref.project,
         api_version=api_version,
-        allow_extended_records=(self.ReleaseTrack() == base.ReleaseTrack.ALPHA))
+        allow_extended_records=self._IsBetaOrAlpha())
 
     existing_records = [record for record in list_pager.YieldFromList(
         dns.resourceRecordSets,

@@ -125,11 +125,12 @@ def _Args(parser):
             'matcher cannot match. Exactly one of --default-service or '
             '--default-backend-bucket is required.'))
 
-  parser.add_argument('--backend-service-path-rules',
-                      type=arg_parsers.ArgDict(min_length=1),
-                      default={},
-                      metavar='PATH=SERVICE',
-                      help='Rules for mapping request paths to services.')
+  parser.add_argument(
+      '--backend-service-path-rules',
+      type=arg_parsers.ArgDict(min_length=1),
+      default={},
+      metavar='PATH=SERVICE',
+      help='Rules for mapping request paths to services.')
   parser.add_argument(
       '--backend-bucket-path-rules',
       type=arg_parsers.ArgDict(min_length=1),
@@ -355,9 +356,6 @@ def _Run(args, holder, url_map_arg, backend_servie_arg, backend_bucket_arg):
 class AddPathMatcher(base.UpdateCommand):
   """Add a path matcher to a URL map."""
 
-  # TODO(b/144022508): Remove _include_l7_internal_load_balancing
-  _include_l7_internal_load_balancing = True
-
   detailed_help = _DetailedHelp()
   BACKEND_SERVICE_ARG = None
   BACKEND_BUCKET_ARG = None
@@ -368,12 +366,8 @@ class AddPathMatcher(base.UpdateCommand):
     cls.BACKEND_BUCKET_ARG = (
         backend_bucket_flags.BackendBucketArgumentForUrlMap())
     cls.BACKEND_SERVICE_ARG = (
-        backend_service_flags.BackendServiceArgumentForUrlMap(
-            include_l7_internal_load_balancing=cls
-            ._include_l7_internal_load_balancing))
-    cls.URL_MAP_ARG = flags.UrlMapArgument(
-        include_l7_internal_load_balancing=cls
-        ._include_l7_internal_load_balancing)
+        backend_service_flags.BackendServiceArgumentForUrlMap())
+    cls.URL_MAP_ARG = flags.UrlMapArgument()
     cls.URL_MAP_ARG.AddArgument(parser)
 
     _Args(parser)

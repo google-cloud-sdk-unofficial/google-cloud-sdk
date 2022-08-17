@@ -43,6 +43,11 @@ class Update(base.UpdateCommand):
   """
 
   @classmethod
+  def _IsBetaOrAlpha(cls):
+    return cls.ReleaseTrack() in (base.ReleaseTrack.BETA,
+                                  base.ReleaseTrack.ALPHA)
+
+  @classmethod
   def Args(cls, parser):
     flags.GetZoneArg().AddToParser(parser)
     flags.GetResourceRecordSetsNameArg().AddToParser(parser)
@@ -69,7 +74,7 @@ class Update(base.UpdateCommand):
         args,
         zone_ref.project,
         api_version,
-        allow_extended_records=(self.ReleaseTrack() == base.ReleaseTrack.ALPHA))
+        allow_extended_records=self._IsBetaOrAlpha())
 
     request = messages.DnsResourceRecordSetsPatchRequest(
         project=zone_ref.project,

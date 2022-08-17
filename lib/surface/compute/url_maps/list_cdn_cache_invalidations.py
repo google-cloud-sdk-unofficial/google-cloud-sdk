@@ -12,7 +12,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """Command for listing Cloud CDN cache invalidations."""
 
 from __future__ import absolute_import
@@ -25,6 +24,7 @@ from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import constants
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.compute import scope as compute_scope
 from googlecloudsdk.command_lib.compute.url_maps import flags
 from googlecloudsdk.command_lib.compute.url_maps import url_maps_utils
 from googlecloudsdk.core import properties
@@ -62,7 +62,8 @@ def _Run(args, holder, url_map_arg):
   """Issues requests necessary to list URL map cdn cache invalidations."""
   client = holder.client
 
-  url_map_ref = url_map_arg.ResolveAsResource(args, holder.resources)
+  url_map_ref = url_map_arg.ResolveAsResource(
+      args, holder.resources, default_scope=compute_scope.ScopeEnum.GLOBAL)
   get_request = _GetUrlMapGetRequest(url_map_ref, client)
 
   objects = client.MakeRequests([get_request])
@@ -87,8 +88,6 @@ def _Run(args, holder, url_map_arg):
 class ListCacheInvalidations(base.ListCommand):
   """List Cloud CDN cache invalidations for a URL map."""
 
-  _include_l7_internal_load_balancing = False
-
   detailed_help = _DetailedHelp()
 
   @staticmethod
@@ -100,9 +99,7 @@ class ListCacheInvalidations(base.ListCommand):
 
   @classmethod
   def Args(cls, parser):
-    cls.URL_MAP_ARG = flags.UrlMapArgument(
-        include_l7_internal_load_balancing=cls
-        ._include_l7_internal_load_balancing)
+    cls.URL_MAP_ARG = flags.UrlMapArgument()
     cls.URL_MAP_ARG.AddArgument(parser, operation_type='describe')
     parser.display_info.AddFormat("""\
         table(
@@ -119,8 +116,7 @@ class ListCacheInvalidations(base.ListCommand):
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class ListCacheInvalidationsBeta(ListCacheInvalidations):
-
-  _include_l7_internal_load_balancing = True
+  pass
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)

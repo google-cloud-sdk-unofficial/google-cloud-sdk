@@ -18,6 +18,8 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+import os.path
+
 from googlecloudsdk.api_lib.clouddeploy import client_util
 from googlecloudsdk.api_lib.clouddeploy import release
 from googlecloudsdk.calliope import base
@@ -28,8 +30,10 @@ from googlecloudsdk.command_lib.deploy import flags
 from googlecloudsdk.command_lib.deploy import promote_util
 from googlecloudsdk.command_lib.deploy import release_util
 from googlecloudsdk.command_lib.deploy import resource_args
+from googlecloudsdk.core import exceptions as core_exceptions
 from googlecloudsdk.core import log
 from googlecloudsdk.core import resources
+from googlecloudsdk.core.util import files
 
 _DETAILED_HELP = {
     'DESCRIPTION':
@@ -111,6 +115,21 @@ class Create(base.CreateCommand):
         release_ref.RelativeName())
     delivery_pipeline_util.ThrowIfPipelineSuspended(pipeline_obj,
                                                     failed_activity_msg)
+
+    if args.skaffold_file:
+      # Only when skaffold is absolute path need to be handled here
+      if os.path.isabs(args.skaffold_file):
+        source = args.source
+        source_description = 'source'
+        if args.source == '.':
+          source = os.getcwd()
+          source_description = 'current working directory'
+        if not files.IsDirAncestorOf(source, args.skaffold_file):
+          raise core_exceptions.Error(
+              'The skaffold file {} could not be found in the {}. Please enter a valid Skaffold file path.'
+              .format(args.skaffold_file, source_description))
+        args.skaffold_file = os.path.relpath(
+            os.path.abspath(args.skaffold_file), os.path.abspath(source))
     client = release.ReleaseClient()
     # Create the release create request.
     release_config = release_util.CreateReleaseConfig(

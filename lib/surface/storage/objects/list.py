@@ -77,7 +77,7 @@ class List(base.ListCommand):
   def Args(parser):
     parser.add_argument(
         'urls', nargs='+', help='Specifies URL of objects to list.')
-    flags.add_encryption_flags(parser, hidden=False)
+    flags.add_encryption_flags(parser, command_only_reads_data=True)
 
   def Display(self, args, resources):
     del args  # Unused.

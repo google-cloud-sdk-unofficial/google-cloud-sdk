@@ -30,10 +30,10 @@ DETAILED_HELP = {
     'EXAMPLES':
         """
           To get a description of an address called ``first-ip'' in the
-          ``my-privatecloud'' private cloud in the ``us-central1''
-          region, run:
+          ``my-privatecloud'' private cloud in the ``us-east2-b''
+          location, run:
 
-            $ {command} first-ip --private-cloud=my-privatecloud --region=us-central1 --project=my-project
+            $ {command} first-ip --private-cloud=my-privatecloud --location=us-east2-b --project=my-project
 
           Or:
 

@@ -64,7 +64,6 @@ def _DetailedHelp():
 
 
 def _Args(parser,
-          include_l7_internal_load_balancing=False,
           traffic_director_security=False,
           certificate_map=False,
           list_format=None):
@@ -75,9 +74,7 @@ def _Args(parser,
       '--description',
       help='An optional, textual description for the target HTTPS proxy.')
 
-  parser.display_info.AddCacheUpdater(
-      flags.TargetHttpsProxiesCompleterAlpha if
-      include_l7_internal_load_balancing else flags.TargetHttpsProxiesCompleter)
+  parser.display_info.AddCacheUpdater(flags.TargetHttpsProxiesCompleter)
   target_proxies_utils.AddQuicOverrideCreateArgs(parser)
 
   if traffic_director_security:
@@ -142,8 +139,6 @@ def _Run(args, holder, target_https_proxy_ref, url_map_ref, ssl_cert_refs,
 class Create(base.CreateCommand):
   """Create a target HTTPS proxy."""
 
-  # TODO(b/144022508): Remove _include_l7_internal_load_balancing
-  _include_l7_internal_load_balancing = True
   _traffic_director_security = False
   _certificate_map = True
   _regional_ssl_policies = False
@@ -161,19 +156,14 @@ class Create(base.CreateCommand):
         ssl_certificates_flags.SslCertificatesArgumentForOtherResource(
             'target HTTPS proxy',
             required=False,
-            include_l7_internal_load_balancing=cls
-            ._include_l7_internal_load_balancing))
+            include_l7_internal_load_balancing=True))
     cls.SSL_CERTIFICATES_ARG.AddArgument(parser, cust_metavar='SSL_CERTIFICATE')
 
-    cls.TARGET_HTTPS_PROXY_ARG = flags.TargetHttpsProxyArgument(
-        include_l7_internal_load_balancing=cls
-        ._include_l7_internal_load_balancing)
+    cls.TARGET_HTTPS_PROXY_ARG = flags.TargetHttpsProxyArgument()
     cls.TARGET_HTTPS_PROXY_ARG.AddArgument(parser, operation_type='create')
 
     cls.URL_MAP_ARG = url_map_flags.UrlMapArgumentForTargetProxy(
-        proxy_type='HTTPS',
-        include_l7_internal_load_balancing=cls
-        ._include_l7_internal_load_balancing)
+        proxy_type='HTTPS')
     cls.URL_MAP_ARG.AddArgument(parser)
 
     if cls._regional_ssl_policies:
@@ -186,8 +176,6 @@ class Create(base.CreateCommand):
 
     _Args(
         parser,
-        include_l7_internal_load_balancing=cls
-        ._include_l7_internal_load_balancing,
         traffic_director_security=cls._traffic_director_security,
         certificate_map=cls._certificate_map,
         list_format=cls._list_format)

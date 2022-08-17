@@ -30,6 +30,12 @@ class Delete(base.DeleteCommand):
 
   *{command}* deletes one or more Compute Engine firewall
   rules.
+
+  ## EXAMPLES
+
+  To delete a firewall rule, run:
+
+    $ {command} my-firewall-rule
   """
 
   FIREWALL_ARG = None

@@ -92,16 +92,12 @@ def _Run(args, holder, url_map_arg, release_track):
 class Export(base.Command):
   """Export a URL map."""
 
-  _include_l7_internal_load_balancing = True
-
   detailed_help = _DetailedHelp()
   URL_MAP_ARG = None
 
   @classmethod
   def Args(cls, parser):
-    cls.URL_MAP_ARG = flags.UrlMapArgument(
-        include_l7_internal_load_balancing=cls
-        ._include_l7_internal_load_balancing)
+    cls.URL_MAP_ARG = flags.UrlMapArgument()
     cls.URL_MAP_ARG.AddArgument(parser, operation_type='export')
     export_util.AddExportFlags(
         parser, _GetSchemaPath(cls.ReleaseTrack(), for_help=True))

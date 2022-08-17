@@ -33,7 +33,7 @@ def _DetailedHelp():
       'brief':
           'Create a URL map.',
       'DESCRIPTION':
-      """
+          """
       *{command}* is used to create URL maps which map HTTP and
       HTTPS request URLs to backend services and backend buckets.
       Mappings are done using a longest-match strategy.
@@ -54,7 +54,7 @@ def _DetailedHelp():
       and `gcloud compute url-maps add-host-rule`.
       """,
       'EXAMPLES':
-      """
+          """
         To create a global URL map with a default service, run:
 
         $ {command} URL_MAP_NAME --default-service=BACKEND_SERVICE_NAME
@@ -70,11 +70,10 @@ def _DetailedHelp():
   }
 
 
-def _Args(parser, include_l7_internal_load_balancing=False):
+def _Args(parser):
   """Common arguments to create commands for each release track."""
   parser.add_argument(
-      '--description',
-      help='An optional, textual description for the URL map.')
+      '--description', help='An optional, textual description for the URL map.')
 
   group = parser.add_mutually_exclusive_group(required=True)
   group.add_argument(
@@ -87,9 +86,7 @@ def _Args(parser, include_l7_internal_load_balancing=False):
       help=('A backend bucket that will be used for requests for which this '
             'URL map has no mappings. Exactly one of --default-service or '
             '--default-backend-bucket is required.'))
-  parser.display_info.AddCacheUpdater(
-      flags.UrlMapsCompleterAlpha
-      if include_l7_internal_load_balancing else flags.UrlMapsCompleter)
+  parser.display_info.AddCacheUpdater(flags.UrlMapsCompleter)
 
 
 def _MakeGlobalRequest(args, url_map_ref, default_backend_uri, client):
@@ -143,9 +140,6 @@ def _Run(args, holder, backend_bucket_arg, backend_service_arg, url_map_arg):
 class Create(base.CreateCommand):
   """Create a URL map."""
 
-  # TODO(b/144022508): Remove _include_l7_internal_load_balancing
-  _include_l7_internal_load_balancing = True
-
   detailed_help = _DetailedHelp()
   BACKEND_BUCKET_ARG = None
   BACKEND_SERVICE_ARG = None
@@ -157,18 +151,10 @@ class Create(base.CreateCommand):
     cls.BACKEND_BUCKET_ARG = (
         backend_bucket_flags.BackendBucketArgumentForUrlMap(required=False))
     cls.BACKEND_SERVICE_ARG = (
-        backend_service_flags.BackendServiceArgumentForUrlMap(
-            required=False,
-            include_l7_internal_load_balancing=cls
-            ._include_l7_internal_load_balancing))
-    cls.URL_MAP_ARG = flags.UrlMapArgument(
-        include_l7_internal_load_balancing=cls
-        ._include_l7_internal_load_balancing)
+        backend_service_flags.BackendServiceArgumentForUrlMap(required=False))
+    cls.URL_MAP_ARG = flags.UrlMapArgument()
     cls.URL_MAP_ARG.AddArgument(parser, operation_type='create')
-    _Args(
-        parser,
-        include_l7_internal_load_balancing=cls
-        ._include_l7_internal_load_balancing)
+    _Args(parser)
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())

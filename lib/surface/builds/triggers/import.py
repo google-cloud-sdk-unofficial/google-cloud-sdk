@@ -128,7 +128,8 @@ File path where trigger should be imported from.
     messages = cloudbuild_util.GetMessagesModule()
 
     project = properties.VALUES.core.project.Get(required=True)
-    location = args.region or cloudbuild_util.DEFAULT_REGION
+    regionprop = properties.VALUES.builds.region.Get()
+    location = args.region or regionprop or cloudbuild_util.DEFAULT_REGION
     triggers = cloudbuild_util.LoadMessagesFromPath(
         args.source,
         messages.BuildTrigger,

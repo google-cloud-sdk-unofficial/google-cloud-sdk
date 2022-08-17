@@ -373,7 +373,7 @@ class Cp(base.Command):
     flags.add_continue_on_error_flag(parser)
     flags.add_precondition_flags(parser)
     flags.add_object_metadata_flags(parser)
-    flags.add_encryption_flags(parser, hidden=True)
+    flags.add_encryption_flags(parser)
 
   def Run(self, args):
     raw_destination_url = storage_url.storage_url_from_string(args.destination)

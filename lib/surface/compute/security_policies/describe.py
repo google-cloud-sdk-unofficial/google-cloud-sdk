@@ -29,8 +29,14 @@ from googlecloudsdk.command_lib.compute.security_policies import flags
 class Describe(base.DescribeCommand):
   """Describe a Compute Engine security policy.
 
-    *{command}* displays all data associated with Compute Engine security
-    policy in a project.
+  *{command}* displays all data associated with Compute Engine security
+  policy in a project.
+
+  ## EXAMPLES
+
+  To describe a security policy, run:
+
+    $ {command} my-policy
   """
 
   SECURITY_POLICY_ARG = None
@@ -55,8 +61,14 @@ class Describe(base.DescribeCommand):
 class DescribeBeta(base.DescribeCommand):
   """Describe a Compute Engine security policy.
 
-    *{command}* displays all data associated with Compute Engine security
-    policy in a project.
+  *{command}* displays all data associated with Compute Engine security
+  policy in a project.
+
+  ## EXAMPLES
+
+  To describe a security policy, run:
+
+    $ {command} my-policy
   """
 
   SECURITY_POLICY_ARG = None
@@ -79,8 +91,14 @@ class DescribeBeta(base.DescribeCommand):
 class DescribeAlpha(base.DescribeCommand):
   """Describe a Compute Engine security policy.
 
-    *{command}* displays all data associated with Compute Engine security
-    policy in a project.
+  *{command}* displays all data associated with Compute Engine security
+  policy in a project.
+
+  ## EXAMPLES
+
+  To describe a security policy, run:
+
+    $ {command} my-policy
   """
 
   SECURITY_POLICY_ARG = None

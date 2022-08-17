@@ -1,13 +1,20 @@
-release_tracks: [ALPHA]
+release_tracks: [GA, ALPHA]
 help_text:
   brief: |
-    Export mesh.
+    Export a mesh.
   description: |
     Export a mesh.
+  examples: |
+      To export a mesh named 'my-mesh' to a YAML file, run:
+
+        $ {command} my-mesh --destination=my-mesh.yaml --location=global
 
 request:
   collection: networkservices.projects.locations.meshes
-  api_version: v1alpha1
+  ALPHA:
+    api_version: v1alpha1
+  GA:
+    api_version: v1
 
 arguments:
   resource:

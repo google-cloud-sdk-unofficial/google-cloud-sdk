@@ -81,22 +81,14 @@ def _Run(args, holder, target_https_proxy_arg):
 class Delete(base.DeleteCommand):
   """Delete target HTTPS proxies."""
 
-  # TODO(b/144022508): Remove _include_l7_internal_load_balancing
-  _include_l7_internal_load_balancing = True
-
   TARGET_HTTPS_PROXY_ARG = None
   detailed_help = _DetailedHelp()
 
   @classmethod
   def Args(cls, parser):
-    cls.TARGET_HTTPS_PROXY_ARG = flags.TargetHttpsProxyArgument(
-        plural=True,
-        include_l7_internal_load_balancing=cls
-        ._include_l7_internal_load_balancing)
+    cls.TARGET_HTTPS_PROXY_ARG = flags.TargetHttpsProxyArgument(plural=True)
     cls.TARGET_HTTPS_PROXY_ARG.AddArgument(parser, operation_type='delete')
-    if cls._include_l7_internal_load_balancing:
-      parser.display_info.AddCacheUpdater(
-          flags.TargetHttpsProxiesCompleterAlpha)
+    parser.display_info.AddCacheUpdater(flags.TargetHttpsProxiesCompleter)
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())

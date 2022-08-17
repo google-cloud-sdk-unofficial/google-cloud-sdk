@@ -67,7 +67,6 @@ def _CommonArgs(parser,
                 support_host_error_timeout_seconds=False,
                 support_numa_node_count=False,
                 support_visible_core_count=False,
-                support_disk_architecture=False,
                 support_max_run_duration=False,
                 support_region_instance_template=False):
   """Adding arguments applicable for creating instance templates."""
@@ -78,8 +77,7 @@ def _CommonArgs(parser,
       parser,
       enable_kms=support_kms,
       support_boot=True,
-      support_multi_writer=support_multi_writer,
-      support_disk_architecture=support_disk_architecture)
+      support_multi_writer=support_multi_writer)
   if support_local_ssd_size:
     instances_flags.AddLocalSsdArgsWithSize(parser)
   else:
@@ -525,7 +523,6 @@ def _RunCreate(compute_api,
                support_host_error_timeout_seconds=False,
                support_numa_node_count=False,
                support_visible_core_count=False,
-               support_disk_architecture=False,
                support_max_run_duration=False,
                support_region_instance_template=False):
   """Common routine for creating instance template.
@@ -548,9 +545,6 @@ def _RunCreate(compute_api,
       support_numa_node_count: Indicates whether setting NUMA node count is
         supported.
       support_visible_core_count: Indicates whether setting a custom visible
-      support_disk_architecture: Storage resources can be used to create boot
-        disks compatible with ARM64 or X86_64 machine architectures. If this
-        field is not specified, the default is ARCHITECTURE_UNSPECIFIED.
       support_max_run_duration: Indicate whether max-run-duration or
         termination-time is supported.
       support_region_instance_template: Indicate whether create region instance
@@ -733,8 +727,7 @@ def _RunCreate(compute_api,
           instance_template_ref.project,
           getattr(args, 'create_disk', []),
           support_kms=support_kms,
-          support_multi_writer=support_multi_writer,
-          support_disk_architecture=support_disk_architecture))
+          support_multi_writer=support_multi_writer))
 
   if create_boot_disk:
     boot_disk_list = [
@@ -923,7 +916,6 @@ class Create(base.CreateCommand):
   _support_mesh = False
   _support_numa_node_count = False
   _support_visible_core_count = False
-  _support_disk_architecture = False
   _support_max_run_duration = False
   _support_region_instance_template = False
 
@@ -938,7 +930,6 @@ class Create(base.CreateCommand):
         support_mesh=cls._support_mesh,
         support_numa_node_count=cls._support_numa_node_count,
         support_visible_core_count=cls._support_visible_core_count,
-        support_disk_architecture=cls._support_disk_architecture,
         support_max_run_duration=cls._support_max_run_duration,
         support_region_instance_template=cls._support_region_instance_template)
     instances_flags.AddMinCpuPlatformArgs(parser, base.ReleaseTrack.GA)
@@ -968,7 +959,6 @@ class Create(base.CreateCommand):
         support_mesh=self._support_mesh,
         support_numa_node_count=self._support_numa_node_count,
         support_visible_core_count=self._support_visible_core_count,
-        support_disk_architecture=self._support_disk_architecture,
         support_max_run_duration=self._support_max_run_duration,
         support_region_instance_template=self._support_region_instance_template)
 
@@ -995,7 +985,6 @@ class CreateBeta(Create):
   _support_host_error_timeout_seconds = True
   _support_numa_node_count = False
   _support_visible_core_count = True
-  _support_disk_architecture = False
   _support_max_run_duration = False
   _support_region_instance_template = False
 
@@ -1012,7 +1001,6 @@ class CreateBeta(Create):
         support_host_error_timeout_seconds=cls
         ._support_host_error_timeout_seconds,
         support_visible_core_count=cls._support_visible_core_count,
-        support_disk_architecture=cls._support_disk_architecture,
         support_max_run_duration=cls._support_max_run_duration,
         support_region_instance_template=cls._support_region_instance_template)
     instances_flags.AddMinCpuPlatformArgs(parser, base.ReleaseTrack.BETA)
@@ -1045,7 +1033,6 @@ class CreateBeta(Create):
         ._support_host_error_timeout_seconds,
         support_numa_node_count=self._support_numa_node_count,
         support_visible_core_count=self._support_visible_core_count,
-        support_disk_architecture=self._support_disk_architecture,
         support_max_run_duration=self._support_max_run_duration,
         support_region_instance_template=self._support_region_instance_template)
 
@@ -1072,7 +1059,6 @@ class CreateAlpha(Create):
   _support_host_error_timeout_seconds = True
   _support_numa_node_count = True
   _support_visible_core_count = True
-  _support_disk_architecture = True
   _support_max_run_duration = True
   _support_region_instance_template = True
 
@@ -1090,7 +1076,6 @@ class CreateAlpha(Create):
         ._support_host_error_timeout_seconds,
         support_numa_node_count=cls._support_numa_node_count,
         support_visible_core_count=cls._support_visible_core_count,
-        support_disk_architecture=cls._support_disk_architecture,
         support_max_run_duration=cls._support_max_run_duration,
         support_region_instance_template=cls._support_region_instance_template)
     instances_flags.AddLocalNvdimmArgs(parser)
@@ -1124,7 +1109,6 @@ class CreateAlpha(Create):
         ._support_host_error_timeout_seconds,
         support_numa_node_count=self._support_numa_node_count,
         support_visible_core_count=self._support_visible_core_count,
-        support_disk_architecture=self._support_disk_architecture,
         support_max_run_duration=self._support_max_run_duration,
         support_region_instance_template=self._support_region_instance_template)
 

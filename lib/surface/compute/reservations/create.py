@@ -74,7 +74,7 @@ class Create(base.CreateCommand):
 class CreateBeta(Create):
   """Create a Compute Engine reservation."""
   _support_share_setting = True
-  _support_resource_policies = False
+  _support_resource_policies = True
 
   @classmethod
   def Args(cls, parser):

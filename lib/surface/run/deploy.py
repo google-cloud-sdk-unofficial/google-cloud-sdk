@@ -304,6 +304,7 @@ class BetaDeploy(Deploy):
     managed_group = flags.GetManagedArgGroup(parser)
     flags.AddSandboxArg(managed_group)
     flags.AddSessionAffinityFlag(managed_group)
+    flags.AddStartupCpuBoostFlag(managed_group)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)

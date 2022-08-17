@@ -18,6 +18,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+from googlecloudsdk.api_lib.storage import cloud_api
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.storage import flags
 from googlecloudsdk.command_lib.storage import name_expansion
@@ -115,6 +116,7 @@ class Rm(base.Command):
     name_expansion_iterator = name_expansion.NameExpansionIterator(
         stdin_iterator.get_urls_iterable(args.urls, args.read_paths_from_stdin),
         all_versions=args.all_versions or args.recursive,
+        fields_scope=cloud_api.FieldsScope.SHORT,
         include_buckets=args.recursive,
         recursion_requested=name_expansion.RecursionSetting.YES
         if args.recursive else name_expansion.RecursionSetting.NO_WITH_WARNING)

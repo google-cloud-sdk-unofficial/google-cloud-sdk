@@ -19,12 +19,13 @@ from __future__ import division
 from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.container.fleet import client
-from googlecloudsdk.calliope import base as gbase
+from googlecloudsdk.calliope import base as calliope_base
+from googlecloudsdk.command_lib.container.fleet import resources
 from googlecloudsdk.command_lib.container.fleet.features import base
 from googlecloudsdk.core import exceptions
 
 
-@gbase.Hidden
+@calliope_base.Hidden
 class Update(base.UpdateCommand):
   """Update Anthos Observability spec on the specified membership.
 
@@ -46,12 +47,19 @@ class Update(base.UpdateCommand):
     Args:
       parser: An argparse.ArgumentParser.
     """
-    parser.add_argument(
-        '--membership',
-        type=str,
-        help='The name of the Membership to update.',
-        required=True,
-    )
+    if resources.UseRegionalMemberships(cls.ReleaseTrack()):
+      resources.AddMembershipResourceArg(
+          parser,
+          membership_required=True,
+          membership_help='The name of the Membership to update.',
+      )
+    else:
+      parser.add_argument(
+          '--membership',
+          type=str,
+          help='The name of the Membership to update.',
+          required=True,
+      )
     app_group = parser.add_mutually_exclusive_group(required=False)
 
     app_group.add_argument(
@@ -101,9 +109,12 @@ class Update(base.UpdateCommand):
           --enable-optimized-metrics
           --disable-optimized-metrics""")
 
-    membership = args.membership
-
-    all_memberships = base.ListMemberships()
+    if resources.UseRegionalMemberships(self.ReleaseTrack()):
+      membership = resources.MembershipResourceName(args)
+      all_memberships = base.ListMembershipsFull()
+    else:
+      membership = args.membership
+      all_memberships = base.ListMemberships()
     if not all_memberships:
       raise exceptions.Error('No Memberships available in the fleet.')
     if membership not in all_memberships:
@@ -111,7 +122,9 @@ class Update(base.UpdateCommand):
           'Membership {} not found. Valid choices are {}.'.format(
               membership, all_memberships))
 
-    resource_name = self.MembershipResourceName(membership)
+    resource_name = membership
+    if not resources.UseRegionalMemberships(self.ReleaseTrack()):
+      resource_name = self.MembershipResourceName(membership)
 
     old_feature = self.GetFeature(v1alpha1=True)
 

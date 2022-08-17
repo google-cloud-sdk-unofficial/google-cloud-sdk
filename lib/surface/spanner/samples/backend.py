@@ -28,10 +28,8 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope.exceptions import BadArgumentException
 from googlecloudsdk.command_lib.spanner import samples
 from googlecloudsdk.core import execution_utils
-from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 from googlecloudsdk.core import resources
-from googlecloudsdk.core.util import files
 from surface.spanner.samples import init as samples_init
 
 
@@ -46,6 +44,9 @@ def _get_popen_jar(appname):
       samples.get_local_bin_path(appname), samples.APPS[appname].backend_bin)
 
 
+# Note: Currently all apps supported use the same flag definitions.
+# If there is a need for different flags by app in the future this logic can
+# move to: third_party/py/googlecloudsdk/command_lib/spanner/samples.py
 def _get_popen_args(project, appname, instance_id, database_id=None, port=None):
   """Get formatted args for server command."""
   if database_id is None:
@@ -57,15 +58,18 @@ def _get_popen_args(project, appname, instance_id, database_id=None, port=None):
   ]
   if port is not None:
     flags.append('--port={}'.format(port))
+  if samples.get_database_dialect(
+      appname) == databases.DATABASE_DIALECT_POSTGRESQL:
+    flags.append('--spanner_use_pg')
   return flags
 
 
-def run_proc(project,
-             appname,
-             instance_id,
-             database_id=None,
-             port=None,
-             capture_logs=False):
+def run_backend(project,
+                appname,
+                instance_id,
+                database_id=None,
+                port=None,
+                capture_logs=False):
   """Run the backend service executable for the given sample app.
 
   Args:
@@ -84,13 +88,10 @@ def run_proc(project,
   proc_args.append(_get_popen_jar(appname))
   proc_args.extend(
       _get_popen_args(project, appname, instance_id, database_id, port))
-  popen_args = {}
-  if capture_logs:
-    log_fn = os.path.join(samples.SAMPLES_LOG_PATH, _get_logfile_name(appname))
-    logfile = files.FileWriter(log_fn, append=True)
-    log.status.Print('Writing backend service logs to {}'.format(log_fn))
-    popen_args.update(stdout=logfile, stderr=logfile)
-  return execution_utils.Subprocess(proc_args, **popen_args)
+  capture_logs_fn = (
+      os.path.join(samples.SAMPLES_LOG_PATH, '{}-backend.log'.format(appname))
+      if capture_logs else None)
+  return samples.run_proc(proc_args, capture_logs_fn)
 
 
 class Backend(base.Command):
@@ -192,7 +193,8 @@ class Backend(base.Command):
             "Database {} doesn't exist. Did you run `gcloud spanner samples "
             'init` first?'.format(database_id))
 
-    proc = run_proc(project, appname, instance_id, args.database_id, args.port)
+    proc = run_backend(project, appname, instance_id, args.database_id,
+                       args.port)
     try:
       with execution_utils.RaisesKeyboardInterrupt():
         proc.wait(args.duration)

@@ -133,24 +133,6 @@ class CreateBeta(Create):
         support_share_setting=cls._support_share_setting,
         support_stable_fleet=cls._support_stable_fleet)
 
-  def _MakeCreateRequest(self, args, messages, project, region, commitment_ref,
-                         holder):
-    commitment_type_flag = flags.GetTypeMapperFlag(messages)
-    commitment_type = commitment_type_flag.GetEnumForChoice(args.type)
-    commitment = messages.Commitment(
-        reservations=reservation_helper.MakeReservations(
-            args, messages, holder),
-        name=commitment_ref.Name(),
-        plan=flags.TranslatePlanArg(messages, args.plan),
-        resources=flags.TranslateResourcesArgGroup(messages, args),
-        type=commitment_type,
-        autoRenew=flags.TranslateAutoRenewArg(args))
-    return messages.ComputeRegionCommitmentsInsertRequest(
-        commitment=commitment,
-        project=project,
-        region=commitment_ref.region,
-    )
-
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class CreateAlpha(CreateBeta):

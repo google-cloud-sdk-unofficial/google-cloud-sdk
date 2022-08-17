@@ -31,9 +31,9 @@ DETAILED_HELP = {
     'EXAMPLES':
         """
           To delete an external IP address called ``first-ip'' in private cloud
-          ``my-privatecloud'' and region ``us-central1'', run:
+          ``my-privatecloud'' and location ``us-east2-b'', run:
 
-            $ {command} first-ip --private-cloud=my-privatecloud --region=us-central1 --project=my-project
+            $ {command} first-ip --private-cloud=my-privatecloud --location=us-east2-b --project=my-project
 
           Or:
 

@@ -22,6 +22,7 @@ from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import batch_helper
 from googlecloudsdk.api_lib.compute import utils
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.compute import scope as compute_scope
 from googlecloudsdk.command_lib.compute.url_maps import flags
 from googlecloudsdk.command_lib.compute.url_maps import url_maps_utils
 from googlecloudsdk.core import log
@@ -84,7 +85,8 @@ def _Args(parser):
 
 def _CreateRequests(holder, args, url_map_arg):
   """Returns a list of requests necessary for cache invalidations."""
-  url_map_ref = url_map_arg.ResolveAsResource(args, holder.resources)
+  url_map_ref = url_map_arg.ResolveAsResource(
+      args, holder.resources, default_scope=compute_scope.ScopeEnum.GLOBAL)
   cache_invalidation_rule = holder.client.messages.CacheInvalidationRule(
       path=args.path)
   if args.host is not None:
@@ -138,16 +140,12 @@ def _Run(args, holder, url_map_arg):
 class InvalidateCdnCache(base.SilentCommand):
   """Invalidate specified objects for a URL map in Cloud CDN caches."""
 
-  _include_l7_internal_load_balancing = False
-
   detailed_help = _DetailedHelp()
   URL_MAP_ARG = None
 
   @classmethod
   def Args(cls, parser):
-    cls.URL_MAP_ARG = flags.UrlMapArgument(
-        include_l7_internal_load_balancing=cls
-        ._include_l7_internal_load_balancing)
+    cls.URL_MAP_ARG = flags.UrlMapArgument()
     cls.URL_MAP_ARG.AddArgument(parser, cust_metavar='URLMAP')
     _Args(parser)
 
@@ -158,8 +156,7 @@ class InvalidateCdnCache(base.SilentCommand):
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class InvalidateCdnCacheBeta(InvalidateCdnCache):
-
-  _include_l7_internal_load_balancing = True
+  pass
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)

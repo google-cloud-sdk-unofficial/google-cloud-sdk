@@ -203,8 +203,7 @@ class CreateBeta(Create):
             args,
             zone_ref.project,
             api_version,
-            allow_extended_records=(
-                self.ReleaseTrack() == base.ReleaseTrack.ALPHA)))
+            allow_extended_records=True))
 
     if api_version == 'v2':
       request.location = args.location

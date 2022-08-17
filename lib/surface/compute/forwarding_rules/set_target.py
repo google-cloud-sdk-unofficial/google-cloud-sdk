@@ -30,20 +30,16 @@ class SetTargetHelper(object):
 
   FORWARDING_RULE_ARG = None
 
-  def __init__(self, holder, include_l7_internal_load_balancing,
-               include_regional_tcp_proxy):
+  def __init__(self, holder, include_regional_tcp_proxy):
     self._holder = holder
-    self._include_l7_internal_load_balancing = include_l7_internal_load_balancing
     self._include_regional_tcp_proxy = include_regional_tcp_proxy
 
   @classmethod
-  def Args(cls, parser, include_l7_internal_load_balancing,
-           include_regional_tcp_proxy):
+  def Args(cls, parser, include_regional_tcp_proxy):
     """Adds flags to set the target of a forwarding rule."""
     cls.FORWARDING_RULE_ARG = flags.ForwardingRuleArgument()
-    flags.AddUpdateArgs(
+    flags.AddSetTargetArgs(
         parser,
-        include_l7_internal_load_balancing=include_l7_internal_load_balancing,
         include_regional_tcp_proxy=include_regional_tcp_proxy)
     cls.FORWARDING_RULE_ARG.AddArgument(parser)
 
@@ -105,8 +101,6 @@ class Set(base.UpdateCommand):
   """Modify a forwarding rule to direct network traffic to a new target."""
 
   FORWARDING_RULE_ARG = None
-  # TODO(b/144022508): Remove _include_l7_internal_load_balancing
-  _include_l7_internal_load_balancing = True
   _include_regional_tcp_proxy = False
 
   detailed_help = {
@@ -124,24 +118,20 @@ class Set(base.UpdateCommand):
 
   @classmethod
   def Args(cls, parser):
-    SetTargetHelper.Args(parser, cls._include_l7_internal_load_balancing,
-                         cls._include_regional_tcp_proxy)
+    SetTargetHelper.Args(parser, cls._include_regional_tcp_proxy)
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
-    return SetTargetHelper(holder, self._include_l7_internal_load_balancing,
-                           self._include_regional_tcp_proxy).Run(args)
+    return SetTargetHelper(holder, self._include_regional_tcp_proxy).Run(args)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class SetBeta(Set):
   """Modify a forwarding rule to direct network traffic to a new target."""
-  _include_l7_internal_load_balancing = True
   _include_regional_tcp_proxy = True
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class SetAlpha(SetBeta):
   """Modify a forwarding rule to direct network traffic to a new target."""
-  _include_l7_internal_load_balancing = True
   _include_regional_tcp_proxy = True

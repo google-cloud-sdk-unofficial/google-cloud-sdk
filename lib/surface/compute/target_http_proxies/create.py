@@ -105,8 +105,6 @@ def _Run(args, holder, url_map_ref, target_http_proxy_ref,
 class Create(base.CreateCommand):
   """Create a target HTTP proxy."""
 
-  # TODO(b/144022508): Remove _include_l7_internal_load_balancing
-  _include_l7_internal_load_balancing = True
   _traffic_director_security = False
 
   URL_MAP_ARG = None
@@ -117,9 +115,7 @@ class Create(base.CreateCommand):
   def Args(cls, parser):
     cls.TARGET_HTTP_PROXY_ARG = flags.TargetHttpProxyArgument()
     cls.TARGET_HTTP_PROXY_ARG.AddArgument(parser, operation_type='create')
-    cls.URL_MAP_ARG = url_map_flags.UrlMapArgumentForTargetProxy(
-        include_l7_internal_load_balancing=cls
-        ._include_l7_internal_load_balancing)
+    cls.URL_MAP_ARG = url_map_flags.UrlMapArgumentForTargetProxy()
     cls.URL_MAP_ARG.AddArgument(parser)
     _Args(parser, cls._traffic_director_security)
 

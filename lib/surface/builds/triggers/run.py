@@ -68,7 +68,8 @@ class Run(base.Command):
     messages = cloudbuild_util.GetMessagesModule()
 
     project = properties.VALUES.core.project.Get(required=True)
-    location = args.region or cloudbuild_util.DEFAULT_REGION
+    regionprop = properties.VALUES.builds.region.Get()
+    location = args.region or regionprop or cloudbuild_util.DEFAULT_REGION
     trigger = args.TRIGGER
 
     name = resources.REGISTRY.Parse(

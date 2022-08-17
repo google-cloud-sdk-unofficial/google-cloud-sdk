@@ -69,22 +69,14 @@ def _Run(args, holder, url_map_arg):
 class Delete(base.DeleteCommand):
   """Delete URL maps."""
 
-  # TODO(b/144022508): Remove _include_l7_internal_load_balancing
-  _include_l7_internal_load_balancing = True
-
   detailed_help = _DetailedHelp()
   URL_MAP_ARG = None
 
   @classmethod
   def Args(cls, parser):
-    cls.URL_MAP_ARG = flags.UrlMapArgument(
-        plural=True,
-        include_l7_internal_load_balancing=cls
-        ._include_l7_internal_load_balancing)
+    cls.URL_MAP_ARG = flags.UrlMapArgument(plural=True)
     cls.URL_MAP_ARG.AddArgument(parser, operation_type='delete')
-    parser.display_info.AddCacheUpdater(
-        flags.UrlMapsCompleterAlpha if cls
-        ._include_l7_internal_load_balancing else flags.UrlMapsCompleter)
+    parser.display_info.AddCacheUpdater(flags.UrlMapsCompleter)
 
   def Run(self, args):
     """Issues requests necessary to delete URL maps."""

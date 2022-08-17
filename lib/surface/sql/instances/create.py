@@ -156,6 +156,7 @@ def AddBaseArgs(parser, is_alpha=False):
   flags.AddEnablePointInTimeRecovery(parser)
   flags.AddNetwork(parser)
   flags.AddSqlServerAudit(parser)
+  flags.AddDeletionProtection(parser)
 
 
 def AddBetaArgs(parser):
@@ -163,7 +164,6 @@ def AddBetaArgs(parser):
   flags.AddExternalMasterGroup(parser)
   flags.AddInstanceResizeLimit(parser)
   flags.AddAllocatedIpRangeName(parser)
-  flags.AddDeletionProtection(parser)
   labels_util.AddCreateLabelsFlags(parser)
   flags.AddEnableGooglePrivatePath(parser)
 
