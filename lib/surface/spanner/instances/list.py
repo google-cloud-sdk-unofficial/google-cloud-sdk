@@ -24,7 +24,6 @@ from googlecloudsdk.api_lib.spanner import instances
 from googlecloudsdk.calliope import base
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
 class List(base.ListCommand):
   """List the Cloud Spanner instances in this project."""
 
@@ -46,7 +45,8 @@ class List(base.ListCommand):
             config.basename(),
             nodeCount,
             processing_units,
-            state
+            state,
+            instance_type
           )
         """)
 
@@ -61,22 +61,3 @@ class List(base.ListCommand):
       Some value that we want to have printed later.
     """
     return instances.List()
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class AlphaList(List):
-  """List the Cloud Spanner instances in this project."""
-
-  @staticmethod
-  def Args(parser):
-    parser.display_info.AddFormat("""
-          table(
-            name.basename(),
-            displayName,
-            config.basename(),
-            nodeCount,
-            processing_units,
-            state,
-            instance_type
-          )
-        """)

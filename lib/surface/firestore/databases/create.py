@@ -18,15 +18,54 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+from googlecloudsdk.api_lib.firestore import admin_api
 from googlecloudsdk.api_lib.util import apis as core_apis
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.firestore import create_util
+from googlecloudsdk.core import properties
 from googlecloudsdk.core.log import logging
 
+PRODUCT_NAME = 'Google Cloud Firestore Native'
+LOCATION_HELP_TEXT = (
+    'The location to create the {product_name} database within. Available '
+    'databases are listed at '
+    'https://cloud.google.com/firestore/docs/locations.'.format(
+        product_name=PRODUCT_NAME))
 
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class CreateAlpha(base.Command):
+  """Create a Google Cloud Firestore Native database via Firestore API."""
+
+  def DatabaseType(self, database_type):
+    if database_type == 'firestore-native':
+      return admin_api.GetMessages(
+      ).GoogleFirestoreAdminV1Database.TypeValueValuesEnum.FIRESTORE_NATIVE
+    elif database_type == 'datastore-mode':
+      return admin_api.GetMessages(
+      ).GoogleFirestoreAdminV1Database.TypeValueValuesEnum.DATASTORE_MODE
+    else:
+      raise ValueError('invalid database type: {}'.format(database_type))
+
+  def Run(self, args):
+    project = properties.VALUES.core.project.Get(required=True)
+    return admin_api.CreateDatabase(project, args.location,
+                                    self.DatabaseType(args.type))
+
+  @staticmethod
+  def Args(parser):
+    parser.add_argument('--location', help=LOCATION_HELP_TEXT)
+    parser.add_argument(
+        '--type',
+        help='The type of the database.',
+        default='firestore-native',
+        choices=['firestore-native', 'datastore-mode'],
+    )
+
+
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
 class Create(base.Command):
   """Create a Google Cloud Firestore Native database."""
-  product_name = 'Google Cloud Firestore Native'
   enum_value = core_apis.GetMessagesModule(
       'appengine', 'v1').Application.DatabaseTypeValueValuesEnum.CLOUD_FIRESTORE
   detailed_help = {
@@ -65,7 +104,7 @@ class Create(base.Command):
     elif args.region == 'eur3':
       region = 'europe-west'
 
-    create_util.create(region, self.product_name, self.enum_value)
+    create_util.create(region, PRODUCT_NAME, self.enum_value)
 
   @staticmethod
   def Args(parser):
@@ -74,4 +113,4 @@ class Create(base.Command):
         help=(
             'The region to create the {product_name} database within. '
             'Use `gcloud app regions list` to list available regions.').format(
-                product_name=Create.product_name))
+                product_name=PRODUCT_NAME))

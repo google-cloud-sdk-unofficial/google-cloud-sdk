@@ -28,22 +28,18 @@ class Startup(base.TopicCommand):
 
   # Choosing a Python Interpreter
 
-  The `gcloud` CLI runs under Python. Windows, Mac and Linux RPM based installs
+  The `gcloud` CLI runs under Python. Note that `gcloud` requires Python
+  version 3.5-3.8. Windows, Mac and Linux RPM based installs
   include a bundled Python interpreter. To install on Linux using a different
   package format, you must have a Python interpreter on your system,
   `gcloud` will  attempt to locate an interpreter on your system PATH by looking
   for the following binaries:
 
-      * python2
-      * python27
       * python
       * python3
 
-  If you have a bundled python installed it will be preferred, to override
-  this you will need to set CLOUDSDK_PYTHON env var, see below.
-
-  Python 3 is preferred over Python 2. Note that `gcloud` requires Python
-  version 2.7.x or 3.5-3.8.
+  If you have a bundled Python installed, it will be preferred. To override
+  this you will need to set `CLOUDSDK_PYTHON` env var, see below.
 
   Other Python tools shipped in the Google Cloud CLI do not support Python 3 and
   require Python 2.7.x, including:
@@ -71,13 +67,13 @@ class Startup(base.TopicCommand):
     # Use a python you have installed in a special location
     $ export CLOUDSDK_PYTHON=/usr/local/my-custom-python-install/python
 
-  gsutil versions 5.0 and onward support Python 3.5-3.8. To use a different
-  interpreter for gsutil than for the other Python tools, set the
-  CLOUDSDK_GSUTIL_PYTHON environment variable to the desired interpreter.
+  `gsutil` versions 5.0 and onward support Python 3.5-3.8. To use a different
+  interpreter for `gsutil` than for the other Python tools, set the
+  `CLOUDSDK_GSUTIL_PYTHON` environment variable to the desired interpreter.
 
-  bq now supports Python 3.5-3.8 in addition to Python 2.7.x. To use a
-  different interpreter for bq than for the other Python tools, you can set the
-  desired interpreter by setting the CLOUDSDK_BQ_PYTHON environment variable.
+  `bq` now supports Python 3.5-3.8. To use a different interpreter for `bq` than
+   or the other Python tools, you can set the desired interpreter by setting the
+   `CLOUDSDK_BQ_PYTHON` environment variable.
 
   # Configuring the Python Interpreter
 
@@ -89,7 +85,7 @@ class Startup(base.TopicCommand):
   'site packages'. This allows Python to pick up libraries from the system (
   for example, those that may have been installed with `pip`). Site packages may
   be necessary if you require certain native libraries (as is the case if you
-  work with service accounts using a legacy .p12 key, for example). To enable
+  work with service accounts using a legacy `.p12` key, for example). To enable
   site packages, set `CLOUDSDK_PYTHON_SITEPACKAGES=1`. Note that enabling site
   packages may cause conflicts with `gcloud` packaged libraries, depending on
   what you have installed on your system.

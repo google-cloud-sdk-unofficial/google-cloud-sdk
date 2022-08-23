@@ -55,31 +55,27 @@ class Update(base.UpdateCommand):
     )
 
     cls.fr_arg.AddArgument(parser, operation_type='update')
-    fr_flags.GetTotalCountFlag(required=False).AddToParser(parser)
-    fr_flags.GetStartTimeFlag(required=False).AddToParser(parser)
+    fr_flags.AddUpdateFlags(parser,
+                            support_fleet=True,
+                            support_planning_status=True)
 
-    scope = parser.add_mutually_exclusive_group()
-    scope.add_argument('--end-time', help=fr_flags.GetEndTimeHelpText())
-    scope.add_argument(
-        '--duration', type=int, help=fr_flags.GetDurationHelpText())
-
-  def _ValidateArgs(self, args):
+  def _ValidateArgs(self, update_mask):
     """Validates that at least one field to update is specified.
 
     Args:
-      args: The arguments given to the update command.
+      update_mask: The arguments being updated.
     """
 
-    if not (args.IsSpecified('total_count') or args.IsSpecified('start_time') or
-            args.IsSpecified('end_time') or args.IsSpecified('duration')):
+    if not update_mask:
       parameter_names = [
-          '--total-count', '--start-time', '--end-time', '--duration'
+          '--planning-status', '--total-count', '--min-cpu-platform',
+          '--local-ssd', '--accelerator', '--maintenance-interval',
+          '--start-time', '--end-time', '--duration', '--machine-type'
       ]
       raise exceptions.MinimumArgumentException(
           parameter_names, 'Please specify at least one property to update')
 
   def Run(self, args):
-    self._ValidateArgs(args)
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     client = holder.client
     resources = holder.resources
@@ -93,36 +89,35 @@ class Update(base.UpdateCommand):
 
     # Set updated properties and build update mask.
     update_mask = []
-    sku_properties = messages.FutureReservationSpecificSKUProperties()
 
+    if args.IsSpecified('planning_status'):
+      update_mask.append('planningStatus')
     if args.IsSpecified('total_count'):
-      sku_properties = util.MakeSpecificSKUPropertiesMessage(
-          messages, None, total_count=args.total_count)
       update_mask.append('specificSkuProperties.totalCount')
-
-    start_time = None
+    if args.IsSpecified('min_cpu_platform'):
+      update_mask.append(
+          'specificSkuProperties.instanceProperties.minCpuPlatform')
+    if args.IsSpecified('machine_type'):
+      update_mask.append('specificSkuProperties.instanceProperties.machineType')
+    if args.IsSpecified('accelerator'):
+      update_mask.append(
+          'specificSkuProperties.instanceProperties.guestAccelerator')
+    if args.IsSpecified('local_ssd'):
+      update_mask.append('specificSkuProperties.instanceProperties.localSsd')
+    if args.IsSpecified('maintenance_interval'):
+      update_mask.append(
+          'specificSkuProperties.intanceProperties.maintenanceInterval')
     if args.IsSpecified('start_time'):
-      start_time = args.start_time
       update_mask.append('timeWindow.startTime')
-
-    end_time = None
     if args.IsSpecified('end_time'):
-      end_time = args.end_time
       update_mask.append('timeWindow.endTime')
-
-    duration = None
     if args.IsSpecified('duration'):
-      duration = args.duration
       update_mask.append('timeWindow.duration')
 
-    time_window = util.MakeTimeWindowMessage(messages, start_time, end_time,
-                                             duration)
+    self._ValidateArgs(update_mask=update_mask)
 
-    # Build future reservation object using new properties.
-    fr_resource = messages.FutureReservation(
-        name=fr_ref.Name(),
-        specificSkuProperties=sku_properties,
-        timeWindow=time_window)
+    fr_resource = util.MakeFutureReservationMessageFromArgs(
+        messages, args, fr_ref)
 
     # Build update request.
     fr_update_request = messages.ComputeFutureReservationsUpdateRequest(

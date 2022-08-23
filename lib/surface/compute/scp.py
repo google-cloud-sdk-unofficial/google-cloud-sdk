@@ -35,7 +35,9 @@ def _DetailedHelp():
           """
 *{command}* securely copies files between a virtual machine instance and your
 local machine using the scp command.
-*This command does not work for Windows VMs.*
+
+This command works for Linux VMs and Windows Server 2019 and later VMs that
+have [SSH enabled](https://cloud.google.com/compute/docs/connect/windows-ssh).
 
 In order to set up a successful transfer, follow these guidelines:
 *   Prefix remote file names with the virtual machine instance

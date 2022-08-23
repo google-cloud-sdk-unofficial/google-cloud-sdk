@@ -344,7 +344,8 @@ def ParseCreateOptionsBase(args, is_autopilot, get_default, location,
       enable_service_externalips=get_default('enable_service_externalips'),
       disable_pod_cidr_overprovision=get_default('disable_pod_cidr_overprovision'),
       private_endpoint_subnetwork=get_default('private_endpoint_subnetwork'),
-      enable_google_cloud_access=get_default('enable_google_cloud_access'))
+      enable_google_cloud_access=get_default('enable_google_cloud_access'),
+      gateway_api=get_default('gateway_api'))
 
 
 GA = 'ga'
@@ -776,6 +777,8 @@ flags_to_add = {
             flags.AddPodAutoscalingDirectMetricsOptInFlag,
         'enableGoogleCloudAccess':
             flags.AddEnableGoogleCloudAccess,
+        'managedConfig':
+            flags.AddManagedConfigFlag,
     },
     ALPHA: {
         'accelerator': (lambda p: AddAcceleratorFlag(p, True, True, True)),
@@ -835,6 +838,8 @@ flags_to_add = {
             flags.AddDiskSizeFlag,
         'disktype':
             flags.AddDiskTypeFlag,
+        'gatewayapi':
+            flags.AddGatewayFlags,
         'gcfs':
             flags.AddEnableGcfsFlag,
         'imagestreaming':
@@ -990,6 +995,8 @@ flags_to_add = {
             flags.AddPodAutoscalingDirectMetricsOptInFlag,
         'enableGoogleCloudAccess':
             flags.AddEnableGoogleCloudAccess,
+        'managedConfig':
+            flags.AddManagedConfigFlag,
     },
 }
 
@@ -1240,6 +1247,7 @@ class CreateBeta(Create):
     ops.enable_workload_vulnerability_scanning = get_default(
         'enable_workload_vulnerability_scanning')
     ops.enable_cost_allocation = get_default('enable_cost_allocation')
+    ops.managed_config = get_default('managed_config')
     return ops
 
 
@@ -1330,4 +1338,5 @@ class CreateAlpha(Create):
         'pod_autoscaling_direct_metrics_opt_in')
     ops.enable_workload_vulnerability_scanning = get_default(
         'enable_workload_vulnerability_scanning')
+    ops.managed_config = get_default('managed_config')
     return ops

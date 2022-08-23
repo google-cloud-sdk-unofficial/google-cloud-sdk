@@ -218,9 +218,11 @@ def _get_docker_command(args, project, creds_file_path):
       '--log-dir={}'.format(expanded_logs_directory_path),
       '--project-id={}'.format(project),
   ]
+  if args.enable_multipart:
+    agent_args.append('--enable-multipart')
   if not args.mount_directories:
     # Needed to mount entire filesystem.
-    agent_args.append('--enable-mount-directory',)
+    agent_args.append('--enable-mount-directory')
   if args.id_prefix:
     if args.count is not None:
       agent_id_prefix = args.id_prefix + '0'
@@ -303,6 +305,13 @@ class Install(base.Command):
         ' which agents are activated.')
     parser.add_argument('--count', type=int, help=COUNT_FLAG_HELP_TEXT)
     parser.add_argument('--creds-file', help=CREDS_FILE_FLAG_HELP_TEXT)
+    parser.add_argument(
+        '--enable-multipart',
+        action='store_true',
+        help='Split up files and transfer the resulting chunks in parallel'
+        ' before merging them at the destination. Can be used make transfers of'
+        ' large files faster as long as the network and disk speed are not'
+        ' limiting factors.')
     parser.add_argument(
         '--id-prefix',
         help='An optional prefix to add to the agent ID to help identify the'

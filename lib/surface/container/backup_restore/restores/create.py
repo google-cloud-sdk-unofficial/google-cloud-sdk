@@ -37,6 +37,7 @@ class Create(base.CreateCommand):
 
     $ {command} my-restore --project=my-project --location=us-central1
     --restore-plan=my-restore-plan
+    --backup=projects/my-project/locations/us-east1/backupPlans/my-backup-plan/backups/my-backup
 
   """
 

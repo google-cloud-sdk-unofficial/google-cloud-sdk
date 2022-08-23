@@ -9,7 +9,7 @@
     examples: |
       To roll out a WasmPlugin with a WasmPluginVersion called 'WASM_PLUGIN_VERSION', run:
 
-        $ {command} my-plugin --main_version=WASM_PLUGIN_VERSION
+        $ {command} my-plugin --main-version=WASM_PLUGIN_VERSION
 
   request:
     collection: networkservices.projects.locations.wasmPlugins

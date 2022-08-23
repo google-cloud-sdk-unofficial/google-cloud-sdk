@@ -31,14 +31,14 @@ DETAILED_HELP = {
         """,
     'EXAMPLES':
         """
-          To create a private cloud in the ``us-west2-a'' zone using ``standard-72'' nodes that connects to the ``default-vpc'' VPC network of another project, run:
+          To create a private cloud in the ``us-west2-a'' zone using ``standard-72'' nodes that connects to the ``my-network'' VMware Engine network, run:
 
 
-          $ {command} my-private-cloud --location=us-west2-a --project=my-project --cluster=my-management-cluster --node-type=standard-72 --node-count=3 --management-range=192.168.0.0/24 --network=default-vpc --network-project=another-project
+          $ {command} my-private-cloud --location=us-west2-a --project=my-project --cluster=my-management-cluster --node-type=standard-72 --node-count=3 --management-range=192.168.0.0/24 --vmware-engine-network=projects/my-project/locations/us-west2/vmwareEngineNetworks/my-network
 
           Or:
 
-          $ {command} my-private-cloud --cluster=my-management-cluster --node-type=standard-72 --node-count=3 --management-range=192.168.0.0/24 --network=default-vpc --network-project=another-project
+          $ {command} my-private-cloud --cluster=my-management-cluster --node-type=standard-72 --node-count=3 --management-range=192.168.0.0/24 --vmware-engine-network=projects/my-project/locations/us-west2/vmwareEngineNetworks/my-network
 
           In the second example, the project and location are taken from gcloud properties core/project and compute/zone.
     """,
@@ -94,14 +94,18 @@ class Create(base.CreateCommand):
         '--vmware-engine-network',
         required=False,
         help="""\
-        Network ID of the VMware Engine network attached to the private cloud.
+        Full resource path of the VMware Engine network attached to the private cloud.
         """)
     parser.add_argument(
         '--network-project',
         required=False,
         help="""\
          Project ID or project name of the VPC network. Use this flag when the VPC network is in another project.
-        """)
+        """,
+        action=actions.DeprecationAction(
+            '--network-project',
+            warn='The {flag_name} flag is deprecated; consider using --vmware-engine-network instead.',
+            removed=False))
     parser.add_argument(
         '--node-custom-core-count',
         required=False,

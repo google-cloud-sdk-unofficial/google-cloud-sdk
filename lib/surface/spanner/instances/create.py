@@ -27,7 +27,6 @@ from googlecloudsdk.command_lib.spanner import flags
 from googlecloudsdk.command_lib.spanner import resource_args
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
 class Create(base.CreateCommand):
   """Create a Cloud Spanner instance."""
 
@@ -54,7 +53,9 @@ class Create(base.CreateCommand):
     flags.Instance().AddToParser(parser)
     flags.Config().AddToParser(parser)
     flags.Description().AddToParser(parser)
-    group_parser = parser.add_argument_group(mutex=True, required=True)
+    resource_args.AddExpireBehaviorArg(parser)
+    resource_args.AddInstanceTypeArg(parser)
+    group_parser = parser.add_argument_group(mutex=True, required=False)
     flags.Nodes().AddToParser(group_parser)
     flags.ProcessingUnits().AddToParser(group_parser)
     base.ASYNC_FLAG.AddToParser(parser)
@@ -70,33 +71,6 @@ class Create(base.CreateCommand):
     Returns:
       Some value that we want to have printed later.
     """
-    op = instances.Create(args.instance, args.config, args.description,
-                          args.nodes, args.processing_units)
-    if args.async_:
-      return op
-    instance_operations.Await(op, 'Creating instance')
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class AlphaCreate(Create):
-  """Create a Cloud Spanner instance."""
-  __doc__ = Create.__doc__
-
-  @staticmethod
-  def Args(parser):
-    flags.Instance().AddToParser(parser)
-    flags.Config().AddToParser(parser)
-    flags.Description().AddToParser(parser)
-    resource_args.AddExpireBehaviorArg(parser)
-    resource_args.AddInstanceTypeArg(parser)
-    group_parser = parser.add_argument_group(mutex=True, required=False)
-    flags.Nodes().AddToParser(group_parser)
-    flags.ProcessingUnits().AddToParser(group_parser)
-    base.ASYNC_FLAG.AddToParser(parser)
-    parser.display_info.AddCacheUpdater(flags.InstanceCompleter)
-
-  def Run(self, args):
-    """This is what gets called when the user runs this command."""
     instance_type = resource_args.GetInstanceType(args)
     expire_behavior = resource_args.GetExpireBehavior(args)
 

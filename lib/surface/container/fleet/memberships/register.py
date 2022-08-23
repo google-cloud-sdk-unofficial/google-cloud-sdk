@@ -331,23 +331,9 @@ class Register(base.CreateCommand):
         enable_workload_identity=getattr(args, 'enable_workload_identity',
                                          False),
     ) as kube_client:
-      prod_regional_allowlist = [
-          'gkeconnect-prober',
-          'gkeconnect-e2e',
-          'gkehub-cep-test',
-          'connectgateway-gke-testing',
-          'xuebinz-gke',
-          'kolber-anthos-testing',
-          'anthonytong-hub2',
-          'wenjuntoy2',
-          'hub-regionalisation-test',  # For Cloud Console UI testing.
-          'a4vm-ui-tests-3',  # For Cloud Console UI testing.
-          'm4a-ui-playground-1',  # For Cloud Console UI testing.
-      ]
       location = 'global'
       if resources.UseRegionalMemberships(self.ReleaseTrack()) or (
-          self.ReleaseTrack() is base.ReleaseTrack.ALPHA and
-          project in prod_regional_allowlist):
+          resources.InProdRegionalAllowlist(project, self.ReleaseTrack())):
         # Allow attempting to override location for register
         # e.g. in case of global GKE cluster memberships
         if args.location:

@@ -1027,6 +1027,7 @@ class UpdateAlpha(Update):
     flags.AddEnablePrivateEndpoint(group)
     flags.AddEnableGoogleCloudAccess(group)
     flags.AddStackTypeFlag(group, hidden=True)
+    flags.AddGatewayFlags(group, hidden=True)
 
   def ParseUpdateOptions(self, args, locations):
     get_default = lambda key: getattr(args, key)
@@ -1117,4 +1118,5 @@ class UpdateAlpha(Update):
     opts.enable_google_cloud_access = args.enable_google_cloud_access
     opts.binauthz_evaluation_mode = args.binauthz_evaluation_mode
     opts.stack_type = args.stack_type
+    opts.gateway_api = args.gateway_api
     return opts

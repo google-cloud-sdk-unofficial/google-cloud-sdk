@@ -30,16 +30,20 @@ from googlecloudsdk.core import resources
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Restore(base.RestoreCommand):
-  """Restores an AlloyDB cluster from a given backup."""
+  """Restores an AlloyDB cluster from a given backup or a source cluster at a specific point in time."""
 
   detailed_help = {
       'DESCRIPTION':
           '{description}',
       'EXAMPLES':
           """\
-        To restore a cluster from a backup, run:
+          To restore a cluster from a backup, run:
 
-          $ {command} my-cluster --region=us-central1 --backup=my-backup
+              $ {command} my-cluster --region=us-central1 --backup=my-backup
+
+          To restore a cluster back to a point in time, run:
+
+              $ {command} my-cluster --region=us-central1 --source-cluster=my-source-cluster --point-in-time=2003-09-25T10:49:41.519Z
         """,
   }
 
@@ -52,7 +56,7 @@ class Restore(base.RestoreCommand):
     """
     base.ASYNC_FLAG.AddToParser(parser)
     flags.AddCluster(parser)
-    flags.AddBackup(parser, False)
+    flags.AddRestoreClusterSourceFlags(parser)
     flags.AddRegion(parser)
     flags.AddNetwork(parser)
     kms_resource_args.AddKmsKeyResourceArg(
@@ -78,11 +82,6 @@ class Restore(base.RestoreCommand):
         'alloydb.projects.locations',
         projectsId=properties.VALUES.core.project.GetOrFail,
         locationsId=args.region)
-    backup_ref = client.resource_parser.Create(
-        'alloydb.projects.locations.backups',
-        projectsId=properties.VALUES.core.project.GetOrFail,
-        locationsId=args.region,
-        backupsId=args.backup)
 
     cluster_resource = alloydb_messages.Cluster()
     cluster_resource.network = args.network
@@ -92,11 +91,30 @@ class Restore(base.RestoreCommand):
       encryption_config.kmsKeyName = kms_key
       cluster_resource.encryptionConfig = encryption_config
 
+    backup_source, pitr_source = None, None
+    if args.backup:
+      backup_ref = client.resource_parser.Create(
+          'alloydb.projects.locations.backups',
+          projectsId=properties.VALUES.core.project.GetOrFail,
+          locationsId=args.region,
+          backupsId=args.backup)
+      backup_source = alloydb_messages.BackupSource(
+          backupName=backup_ref.RelativeName())
+    else:
+      cluster_ref = client.resource_parser.Create(
+          'alloydb.projects.locations.clusters',
+          projectsId=properties.VALUES.core.project.GetOrFail,
+          locationsId=args.region,
+          clustersId=args.source_cluster)
+      pitr_source = alloydb_messages.PitrSource(
+          cluster=cluster_ref.RelativeName(),
+          pointInTime=args.point_in_time.strftime('%Y-%m-%dT%H:%M:%S.%fZ'))
+
     req = alloydb_messages.AlloydbProjectsLocationsClustersRestoreRequest(
         parent=location_ref.RelativeName(),
         restoreClusterRequest=alloydb_messages.RestoreClusterRequest(
-            backupSource=alloydb_messages.BackupSource(
-                backupName=backup_ref.RelativeName()),
+            backupSource=backup_source,
+            pitrSource=pitr_source,
             clusterId=args.cluster,
             cluster=cluster_resource,
         ))

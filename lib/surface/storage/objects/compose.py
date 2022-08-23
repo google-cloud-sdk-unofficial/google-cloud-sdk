@@ -18,12 +18,13 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+
 import textwrap
 
 from googlecloudsdk.api_lib.storage import cloud_api
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.storage import encryption_util
-from googlecloudsdk.command_lib.storage import errors
+from googlecloudsdk.command_lib.storage import errors as command_errors
 from googlecloudsdk.command_lib.storage import flags
 from googlecloudsdk.command_lib.storage import name_expansion
 from googlecloudsdk.command_lib.storage import storage_url
@@ -32,7 +33,6 @@ from googlecloudsdk.command_lib.storage.resources import resource_reference
 from googlecloudsdk.command_lib.storage.tasks import compose_objects_task
 
 
-@base.Hidden
 class Compose(base.Command):
   """Concatenate a sequence of objects into a new composite object."""
 
@@ -72,13 +72,24 @@ class Compose(base.Command):
   def Run(self, args):
     encryption_util.initialize_key_store(args)
     if args.source:
+      destination_resource = resource_reference.UnknownResource(
+          storage_url.storage_url_from_string(args.destination))
       for url_string in args.source:
         source_url = storage_url.storage_url_from_string(url_string)
+        if source_url.scheme is not destination_resource.storage_url.scheme:
+          raise command_errors.Error(
+              'Composing across providers is not supported.')
         if not (isinstance(source_url, storage_url.CloudUrl) and
                 source_url.is_object()):
-          raise errors.InvalidUrlError(
+          raise command_errors.InvalidUrlError(
               'Source URLs must point to existing objects. {} is an invalid URL.'
               .format(source_url.url_string))
+    if (args.destination !=
+        destination_resource.storage_url.versionless_url_string):
+      raise command_errors.Error(
+          'Verison-specific URLs are not valid destinations because'
+          ' composing always results in creating an object with the'
+          ' latest generation.')
 
     source_expansion_iterator = name_expansion.NameExpansionIterator(
         args.source,
@@ -88,9 +99,6 @@ class Compose(base.Command):
     objects_to_compose = [
         source.resource for source in source_expansion_iterator
     ]
-
-    destination_resource = resource_reference.UnknownResource(
-        storage_url.storage_url_from_string(args.destination))
 
     user_request_args = (
         user_request_args_factory.get_user_request_args_from_command_args(

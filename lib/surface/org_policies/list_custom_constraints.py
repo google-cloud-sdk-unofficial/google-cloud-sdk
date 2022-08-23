@@ -38,7 +38,6 @@ DETAILED_HELP = {
 }
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class ListCustomConstraints(base.ListCommand):
   """Lists the custom constraints set on an organization."""

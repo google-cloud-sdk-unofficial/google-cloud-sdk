@@ -12,7 +12,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """The 'gcloud firebase test ios list-device-capacities' command."""
 
 from __future__ import absolute_import
@@ -60,8 +59,8 @@ class ListDeviceCapacities(base.ListCommand, DeviceCapacities):
     """Method called by Calliope to register flags for this command.
 
     Args:
-      parser: An argparse parser used to add arguments that follow this
-          command in the CLI. Positional arguments are allowed.
+      parser: An argparse parser used to add arguments that follow this command
+        in the CLI. Positional arguments are allowed.
     """
     parser.display_info.AddFormat(DEVICE_CAPACITY_TABLE_FORMAT)
     base.URI_FLAG.RemoveFromParser(parser)

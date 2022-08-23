@@ -89,7 +89,7 @@ def _CommonArgs(parser):
   parser.add_argument(
       '--sdk-language',
       help=('SDK language of the flex template job.'),
-      choices=['JAVA', 'PYTHON'],
+      choices=['JAVA', 'PYTHON', 'GO'],
       required=True)
 
   parser.add_argument(
@@ -238,6 +238,15 @@ def _CommonArgs(parser):
             'Ex: --py-path="path/pipleline/,path/dependency/" or '
             '--py-path path/pipleline/, --py-path path/dependency/.'))
 
+  pipeline_args.add_argument(
+      '--go-binary-path',
+      metavar='GO_BINARY_PATH',
+      help=('Local path to your compiled dataflow pipeline Go binary. '
+            'The binary should be compiled to run on the target worker '
+            'architecture (usually linux-amd64). See '
+            'https://beam.apache.org/documentation/sdks/go-cross-compilation/ '
+            'for more information.'))
+
   image_building_args.add_argument(
       '--flex-template-base-image',
       help=('Flex template base image to be used while building the '
@@ -247,8 +256,8 @@ def _CommonArgs(parser):
             'the container. You can also provide a specific version from '
             'this link  https://gcr.io/dataflow-templates-base/'),
       type=arg_parsers.RegexpValidator(
-          r'^JAVA11$|^JAVA8$|^PYTHON3$|^gcr.io/.*',
-          'Must be JAVA11, JAVA8, PYTHON3 or begin with \'gcr.io/\''),
+          r'^JAVA11$|^JAVA8$|^PYTHON3$|^GO$|^gcr.io/.*',
+          'Must be JAVA11, JAVA8, PYTHON3, GO, or begin with \'gcr.io/\''),
       required=True)
 
   image_building_args.add_argument(
@@ -304,7 +313,8 @@ def _CommonRun(args):
     apis.Templates.BuildAndStoreFlexTemplateImage(args.image_gcr_path,
                                                   args.flex_template_base_image,
                                                   args.jar, args.py_path,
-                                                  args.env, args.sdk_language,
+                                                  args.go_binary_path, args.env,
+                                                  args.sdk_language,
                                                   args.gcs_log_dir)
 
   return apis.Templates.BuildAndStoreFlexTemplateFile(
@@ -354,4 +364,3 @@ class Build(base.Command):
 
   def Run(self, args):
     return _CommonRun(args)
-

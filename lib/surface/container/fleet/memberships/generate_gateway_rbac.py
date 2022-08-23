@@ -71,15 +71,23 @@ class GenerateGatewayRbac(base.Command):
 
       $ {command} --membership=my-cluster
       --users=foo@example.com,test-acct@test-project.iam.gserviceaccount.com
-      --role=clusterrole/cluster-admin --context=my-cluster-contex
+      --role=clusterrole/cluster-admin --context=my-cluster-context
       --kubeconfig=/home/user/custom_kubeconfig --apply
 
     Revoke mode, revoke the RBAC policy for the specified users:
 
       $ {command} --membership=my-cluster
       --users=foo@example.com,test-acct@test-project.iam.gserviceaccount.com
-      --role=clusterrole/cluster-admin --context=my-cluster-contex
+      --role=clusterrole/cluster-admin --context=my-cluster-context
       --kubeconfig=/home/user/custom_kubeconfig --revoke
+
+    The role to be granted to the users can either be cluster-scoped or
+    namespace-scoped. To grant a namespace-scoped role to the users in dry run
+    mode, run:
+
+      $ {command} --membership=my-cluster
+      --users=foo@example.com,test-acct@test-project.iam.gserviceaccount.com
+      --role=role/mynamespace/namespace-reader
   """
 
   @classmethod

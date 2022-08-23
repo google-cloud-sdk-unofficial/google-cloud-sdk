@@ -29,6 +29,5 @@
         name.basename():label=NAME,
         network.basename():label=NETWORK,
         nextHopAddress:label=NEXT_HOP,
-        destinationCidr:label=DESTINATION_CIDR,
-        withdrawOnFailure:label=WITHDRAW_ON_FAILURE
+        destinationCidr:label=DESTINATION_CIDR
       )

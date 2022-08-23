@@ -126,6 +126,6 @@ def ParseTriggerFromFlags(args):
   trigger_utils.ParseBuildConfigArgs(
       trigger, args, messages, default_image, need_repo=True)
 
-  trigger.filter = args.filter
+  trigger.filter = args.subscription_filter
 
   return trigger

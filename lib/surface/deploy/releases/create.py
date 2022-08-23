@@ -119,11 +119,12 @@ class Create(base.CreateCommand):
     if args.skaffold_file:
       # Only when skaffold is absolute path need to be handled here
       if os.path.isabs(args.skaffold_file):
-        source = args.source
-        source_description = 'source'
         if args.source == '.':
           source = os.getcwd()
           source_description = 'current working directory'
+        else:
+          source = args.source
+          source_description = 'source'
         if not files.IsDirAncestorOf(source, args.skaffold_file):
           raise core_exceptions.Error(
               'The skaffold file {} could not be found in the {}. Please enter a valid Skaffold file path.'
@@ -137,7 +138,7 @@ class Create(base.CreateCommand):
         args.build_artifacts, args.description, args.skaffold_version,
         args.skaffold_file,
         release_ref.AsDict()['locationsId'], pipeline_obj.uid,
-        args.from_k8s_manifest)
+        args.from_k8s_manifest, args.from_run_manifest)
     deploy_util.SetMetadata(client.messages, release_config,
                             deploy_util.ResourceType.RELEASE, args.annotations,
                             args.labels)

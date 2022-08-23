@@ -38,7 +38,6 @@ DETAILED_HELP = {
 }
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class DescribeCustomConstraint(base.DescribeCommand):
   """Describe a custom constraint."""

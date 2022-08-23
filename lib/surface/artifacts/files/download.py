@@ -22,6 +22,7 @@ from apitools.base.py import transfer
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.artifacts import flags
 from googlecloudsdk.command_lib.artifacts import requests
+from googlecloudsdk.core import log
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
@@ -61,6 +62,7 @@ class Download(base.Command):
 
   def Run(self, args):
     """Run the file download command."""
+    log.status.Print('Downloading the file.')
     client = requests.GetClientV1beta2()
     file = args.CONCEPTS.file.Parse()
     download_path = args.destination
@@ -69,3 +71,5 @@ class Download(base.Command):
     download_object = transfer.Download.FromFile(
         download_path + '/' + file.filesId, args.allow_overwrite)
     client.media.Download(request, download=download_object)
+    log.status.Print(
+        'Successfully downloaded the file to ' + download_path)

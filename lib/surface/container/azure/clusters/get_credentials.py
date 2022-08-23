@@ -24,6 +24,7 @@ from googlecloudsdk.command_lib.container.azure import resource_args
 from googlecloudsdk.command_lib.container.gkemulticloud import endpoint_util
 from googlecloudsdk.command_lib.container.gkemulticloud import flags
 from googlecloudsdk.command_lib.container.gkemulticloud import kubeconfig
+from googlecloudsdk.core import log
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.GA)
@@ -49,18 +50,20 @@ class GetCredentials(base.Command):
       cluster_ref = resource_args.ParseAzureClusterResourceArg(args)
       client = api_util.ClustersClient()
       if not args.private_endpoint:
-        kubeconfig.CheckClusterHasNodePools(
-            api_util.NodePoolsClient(),
-            cluster_ref)
+        kubeconfig.CheckClusterHasNodePools(api_util.NodePoolsClient(),
+                                            cluster_ref)
+      log.status.Print('Fetching cluster endpoint and auth data.')
       resp = client.Get(cluster_ref)
-      kubeconfig.ValidateClusterVersion(resp)
-      context = kubeconfig.GenerateContext(
-          'azure',
-          cluster_ref.projectsId,
-          cluster_ref.locationsId,
-          cluster_ref.azureClustersId)
+      if resp.state != 'RUNNING':
+        log.warning(
+            kubeconfig.NOT_RUNNING_MSG.format(cluster_ref.azureClustersId))
+      kubeconfig.ValidateClusterVersion(resp, cluster_ref.azureClustersId)
+      context = kubeconfig.GenerateContext('azure', cluster_ref.projectsId,
+                                           cluster_ref.locationsId,
+                                           cluster_ref.azureClustersId)
       cmd_args = kubeconfig.GenerateAuthProviderCmdArgs(
           'azure', cluster_ref.azureClustersId, cluster_ref.locationsId,
           cluster_ref.projectsId)
-      kubeconfig.GenerateKubeconfig(resp, context, args.auth_provider_cmd_path,
-                                    cmd_args, args.private_endpoint)
+      kubeconfig.GenerateKubeconfig(resp, cluster_ref.azureClustersId, context,
+                                    args.auth_provider_cmd_path, cmd_args,
+                                    args.private_endpoint)

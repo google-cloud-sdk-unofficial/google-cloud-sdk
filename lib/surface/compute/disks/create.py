@@ -129,13 +129,13 @@ def _SourceArgs(parser,
   disks_flags.AddLocationHintArg(parser)
 
 
-def _CommonArgs(parser,
+def _CommonArgs(messages,
+                parser,
                 include_physical_block_size_support=False,
                 vss_erase_enabled=False,
                 source_instant_snapshot_enabled=False,
                 support_pd_interface=False,
                 support_user_licenses=False,
-                support_architecture=False,
                 support_async_pd=False):
   """Add arguments used for parsing in all command tracks."""
   Create.disks_arg.AddArgument(parser, operation_type='create')
@@ -195,6 +195,7 @@ def _CommonArgs(parser,
   _SourceArgs(parser, source_instant_snapshot_enabled, support_async_pd)
 
   disks_flags.AddProvisionedIopsFlag(parser, arg_parsers, constants)
+  disks_flags.AddArchitectureFlag(parser, messages)
 
   if support_user_licenses:
     parser.add_argument(
@@ -203,9 +204,6 @@ def _CommonArgs(parser,
         metavar='LICENSE',
         help=('List of URIs to license resources. User-provided licenses '
               'can be edited after disk is created.'))
-
-  if support_architecture:
-    disks_flags.AddArchitectureFlag(parser)
 
   csek_utils.AddCsekKeyArgs(parser)
   labels_util.AddCreateLabelsFlags(parser)
@@ -260,7 +258,7 @@ class Create(base.Command):
   def Args(cls, parser):
     messages = cls._GetApiHolder(no_http=True).client.messages
     Create.disks_arg = disks_flags.MakeDiskArg(plural=True)
-    _CommonArgs(parser)
+    _CommonArgs(messages, parser)
     image_utils.AddGuestOsFeaturesArg(parser, messages)
     _AddReplicaZonesArg(parser)
     kms_resource_args.AddKmsKeyResourceArg(
@@ -451,7 +449,6 @@ class Create(base.Command):
            support_vss_erase=False,
            support_pd_interface=False,
            support_user_licenses=False,
-           support_architecture=False,
            support_async_pd=False):
     compute_holder = self._GetApiHolder()
     client = compute_holder.client
@@ -577,7 +574,7 @@ class Create(base.Command):
               '--provisioned-iops',
               '--provisioned-iops cannot be used with the given disk type.')
 
-      if support_architecture and args.IsSpecified('architecture'):
+      if args.IsSpecified('architecture'):
         disk.architecture = disk.ArchitectureValueValuesEnum(args.architecture)
 
       if support_user_licenses and args.IsSpecified('user_licenses'):
@@ -622,6 +619,7 @@ class CreateBeta(Create):
     messages = cls._GetApiHolder(no_http=True).client.messages
     Create.disks_arg = disks_flags.MakeDiskArg(plural=True)
     _CommonArgs(
+        messages,
         parser,
         include_physical_block_size_support=True,
         vss_erase_enabled=True,
@@ -653,13 +651,13 @@ class CreateAlpha(CreateBeta):
     messages = cls._GetApiHolder(no_http=True).client.messages
     Create.disks_arg = disks_flags.MakeDiskArg(plural=True)
     _CommonArgs(
+        messages,
         parser,
         include_physical_block_size_support=True,
         vss_erase_enabled=True,
         source_instant_snapshot_enabled=True,
         support_pd_interface=True,
         support_user_licenses=True,
-        support_architecture=True,
         support_async_pd=True)
     image_utils.AddGuestOsFeaturesArg(parser, messages)
     _AddReplicaZonesArg(parser)
@@ -676,7 +674,6 @@ class CreateAlpha(CreateBeta):
         support_vss_erase=True,
         support_pd_interface=True,
         support_user_licenses=True,
-        support_architecture=True,
         support_async_pd=True)
 
 

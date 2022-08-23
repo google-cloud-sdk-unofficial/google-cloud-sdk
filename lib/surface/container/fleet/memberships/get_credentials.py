@@ -104,18 +104,17 @@ class GetCredentials(base.Command):
     membership = self.ReadClusterMembership(project_id, location,
                                             args.MEMBERSHIP)
 
+    # Registered GKE clusters use a different URL scheme, having
+    # `gkeMemberships/` rather than the standard `memberships/` resource type.
     resource_type = 'memberships'
-    # Change the URL for registered GKE clusters
-    if self.ReleaseTrack() is base.ReleaseTrack.ALPHA or self.ReleaseTrack(
-    ) is base.ReleaseTrack.BETA:
-      # Probers use GKE clusters to emulate attached clusters, and so must be
-      # exempt.
-      if project_id == 'gkeconnect-prober':
-        pass
-      elif (hasattr(membership, 'endpoint') and
-            hasattr(membership.endpoint, 'gkeCluster') and
-            membership.endpoint.gkeCluster):
-        resource_type = 'gkeMemberships'
+    # Probers use GKE clusters to emulate attached clusters, and so must be
+    # exempt from this.
+    if project_id == 'gkeconnect-prober':
+      pass
+    elif (hasattr(membership, 'endpoint') and
+          hasattr(membership.endpoint, 'gkeCluster') and
+          membership.endpoint.gkeCluster):
+      resource_type = 'gkeMemberships'
 
     self.GenerateKubeconfig(
         util.GetConnectGatewayServiceName(hub_endpoint_override, location),

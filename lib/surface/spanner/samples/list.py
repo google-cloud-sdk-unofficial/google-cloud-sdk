@@ -18,12 +18,23 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+import textwrap
+
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.spanner import samples
 
 
 class List(base.ListCommand):
   """List available sample applications."""
+
+  detailed_help = {
+      'EXAMPLES':
+          textwrap.dedent("""\
+          To list available sample applications, run:
+
+          $ {command}
+        """),
+  }
 
   @staticmethod
   def Args(parser):
@@ -45,4 +56,4 @@ class List(base.ListCommand):
     Returns:
       Some value that we want to have printed later.
     """
-    return list(samples.APPS)
+    return list(sorted(samples.APPS))

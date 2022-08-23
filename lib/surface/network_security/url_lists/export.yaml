@@ -1,0 +1,20 @@
+release_tracks: [ALPHA]
+help_text:
+  brief: |
+    Export UrlList.
+  description: |
+    Export a UrlList.
+  examples: |
+      To export a UrlList, run:
+
+        $ {command} my-url-list --destination=my-url-list.yaml --location=global
+
+request:
+  collection: networksecurity.projects.locations.urlLists
+  api_version: v1alpha1
+
+arguments:
+  resource:
+    spec: !REF googlecloudsdk.command_lib.network_security.resources:urlList
+    help_text: |
+      Name of the UrlList to export.

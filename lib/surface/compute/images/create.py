@@ -37,8 +37,7 @@ POLL_TIMEOUT = 36000  # 10 hours is recommended by PD team b/131850402#comment20
 def _Args(parser,
           messages,
           supports_force_create=False,
-          support_user_licenses=False,
-          support_disk_architecture=False):
+          support_user_licenses=False):
   """Set Args based on Release Track."""
   # GA Args
   parser.display_info.AddFormat(flags.LIST_FORMAT)
@@ -58,13 +57,11 @@ def _Args(parser,
   flags.AddCreatingImageFromSnapshotArgs(parser, sources_group)
 
   image_utils.AddGuestOsFeaturesArg(parser, messages)
+  image_utils.AddArchitectureArg(parser, messages)
   kms_resource_args.AddKmsKeyResourceArg(parser, 'image')
   flags.AddSourceDiskProjectFlag(parser)
 
   # Alpha and Beta Args
-  if support_disk_architecture:
-    image_utils.AddArchitectureArg(parser)
-
   if supports_force_create:
     # Deprecated as of Aug 2017.
     flags.MakeForceCreateArg().AddToParser(parser)
@@ -116,10 +113,7 @@ class Create(base.CreateCommand):
   def Run(self, args):
     return self._Run(args)
 
-  def _Run(self,
-           args,
-           support_user_licenses=False,
-           support_disk_architecture=False):
+  def _Run(self, args, support_user_licenses=False):
     """Returns a list of requests necessary for adding images."""
     holder = self._GetApiHolder()
     client = holder.client
@@ -133,7 +127,7 @@ class Create(base.CreateCommand):
         sourceType=messages.Image.SourceTypeValueValuesEnum.RAW,
         family=args.family)
 
-    if support_disk_architecture and args.IsSpecified('architecture'):
+    if args.IsSpecified('architecture'):
       image.architecture = messages.Image.ArchitectureValueValuesEnum(
           args.architecture)
 
@@ -258,13 +252,11 @@ class CreateBeta(Create):
         parser,
         messages,
         supports_force_create=True,
-        support_user_licenses=True,
-        support_disk_architecture=False)
+        support_user_licenses=True)
     parser.display_info.AddCacheUpdater(flags.ImagesCompleter)
 
   def Run(self, args):
-    return self._Run(
-        args, support_user_licenses=True, support_disk_architecture=False)
+    return self._Run(args, support_user_licenses=True)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -278,13 +270,11 @@ class CreateAlpha(Create):
         parser,
         messages,
         supports_force_create=True,
-        support_user_licenses=True,
-        support_disk_architecture=True)
+        support_user_licenses=True)
     parser.display_info.AddCacheUpdater(flags.ImagesCompleter)
 
   def Run(self, args):
-    return self._Run(
-        args, support_user_licenses=True, support_disk_architecture=True)
+    return self._Run(args, support_user_licenses=True)
 
 
 Create.detailed_help = {

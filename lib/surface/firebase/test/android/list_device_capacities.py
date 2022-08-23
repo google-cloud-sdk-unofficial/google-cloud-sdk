@@ -32,13 +32,13 @@ DETAILED_HELP = {
 
       $ {command}
 
-    To list only models made by Samsung, run:
+    To list capacity only for model named redfin, run:
 
-      $ {command} --filter=Samsung
+      $ {command} --filter=redfin
 
-    To list only physical device models, run:
+    To list capacity only for API version 30, run:
 
-      $ {command} --filter=physical
+      $ {command} --filter=30
     """,
 }
 

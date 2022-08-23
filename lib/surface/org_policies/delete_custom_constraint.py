@@ -39,7 +39,6 @@ DETAILED_HELP = {
 }
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class DeleteCustomConstraint(base.DeleteCommand):
   """Deletes a custom constraint."""

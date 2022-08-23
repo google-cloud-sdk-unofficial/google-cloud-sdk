@@ -29,10 +29,7 @@ from googlecloudsdk.command_lib.compute.disks import flags as disks_flags
 from googlecloudsdk.command_lib.util.args import labels_util
 
 
-def _CommonArgs(cls,
-                parser,
-                support_user_licenses=False,
-                support_architecture=False):
+def _CommonArgs(messages, cls, parser, support_user_licenses=False):
   """Add arguments used for parsing in all command tracks."""
   cls.DISK_ARG = disks_flags.MakeDiskArg(plural=False)
   cls.DISK_ARG.AddArgument(parser, operation_type='update')
@@ -54,19 +51,23 @@ def _CommonArgs(cls,
         action='store_true',
         help='Remove all existing user licenses on a disk.')
 
-  if support_architecture:
-    scope = parser.add_mutually_exclusive_group()
-    architecture_choices = sorted(['ARM64', 'X86_64'])
-    scope.add_argument(
-        '--update-architecture',
-        choices=architecture_choices,
-        help=(
-            'Storage resources can be used to create boot disks compatible with '
-            'different machine architectures.'))
-    scope.add_argument(
-        '--clear-architecture',
-        action='store_true',
-        help='Remove the architecture annotation on a disk.')
+  scope = parser.add_mutually_exclusive_group()
+
+  architecture_enum_type = messages.Disk.ArchitectureValueValuesEnum
+  excluded_enums = [architecture_enum_type.ARCHITECTURE_UNSPECIFIED.name]
+  architecture_choices = sorted(
+      [e for e in architecture_enum_type.names() if e not in excluded_enums])
+  scope.add_argument(
+      '--update-architecture',
+      choices=architecture_choices,
+      help=(
+          'Updates the architecture or processor type that this disk can support. For available processor types on Compute Engine, see https://cloud.google.com/compute/docs/cpu-platforms.'
+      ))
+  scope.add_argument(
+      '--clear-architecture',
+      action='store_true',
+      help='Removes the architecture or processor type annotation from the disk.'
+  )
 
 
 def _LabelsFlagsIncluded(args):
@@ -92,18 +93,17 @@ class Update(base.UpdateCommand):
 
   @classmethod
   def Args(cls, parser):
-    _CommonArgs(
-        cls, parser, support_user_licenses=False, support_architecture=False)
+    messages = cls._GetApiHolder(no_http=True).client.messages
+    _CommonArgs(messages, cls, parser, support_user_licenses=False)
 
   @classmethod
   def _GetApiHolder(cls, no_http=False):
     return base_classes.ComputeApiHolder(cls.ReleaseTrack(), no_http)
 
   def Run(self, args):
-    return self._Run(
-        args, support_user_licenses=False, support_architecture=False)
+    return self._Run(args, support_user_licenses=False)
 
-  def _Run(self, args, support_user_licenses=False, support_architecture=False):
+  def _Run(self, args, support_user_licenses=False):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     client = holder.client.apitools_client
     messages = holder.client.messages
@@ -114,9 +114,8 @@ class Update(base.UpdateCommand):
     disk_info = api_util.GetDiskInfo(disk_ref, client, messages)
     service = disk_info.GetService()
 
-    if (support_architecture and
-        _ArchitectureFlagsIncluded(args)) or (support_user_licenses and
-                                              _UserLicensesFlagsIncluded(args)):
+    if _ArchitectureFlagsIncluded(args) or (support_user_licenses and
+                                            _UserLicensesFlagsIncluded(args)):
       disk_res = messages.Disk(name=disk_ref.Name())
       disk_update_request = None
       if disk_ref.Collection() == 'compute.disks':
@@ -139,7 +138,7 @@ class Update(base.UpdateCommand):
           disk_res.userLicenses = args.update_user_licenses
         disk_update_request.paths.append('userLicenses')
 
-      if support_architecture and _ArchitectureFlagsIncluded(args):
+      if _ArchitectureFlagsIncluded(args):
         if args.update_architecture:
           disk_res.architecture = disk_res.ArchitectureValueValuesEnum(
               args.update_architecture)
@@ -187,16 +186,15 @@ class UpdateBeta(Update):
 
   @classmethod
   def Args(cls, parser):
-    _CommonArgs(
-        cls, parser, support_user_licenses=True, support_architecture=False)
+    messages = cls._GetApiHolder(no_http=True).client.messages
+    _CommonArgs(messages, cls, parser, support_user_licenses=True)
 
   @classmethod
   def _GetApiHolder(cls, no_http=False):
     return base_classes.ComputeApiHolder(cls.ReleaseTrack(), no_http)
 
   def Run(self, args):
-    return self._Run(
-        args, support_user_licenses=True, support_architecture=False)
+    return self._Run(args, support_user_licenses=True)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -207,16 +205,15 @@ class UpdateAlpha(UpdateBeta):
 
   @classmethod
   def Args(cls, parser):
-    _CommonArgs(
-        cls, parser, support_user_licenses=True, support_architecture=True)
+    messages = cls._GetApiHolder(no_http=True).client.messages
+    _CommonArgs(messages, cls, parser, support_user_licenses=True)
 
   @classmethod
   def _GetApiHolder(cls, no_http=False):
     return base_classes.ComputeApiHolder(cls.ReleaseTrack(), no_http)
 
   def Run(self, args):
-    return self._Run(
-        args, support_user_licenses=True, support_architecture=True)
+    return self._Run(args, support_user_licenses=True)
 
 
 Update.detailed_help = {

@@ -1,0 +1,20 @@
+release_tracks: [ALPHA]
+help_text:
+  brief: |
+    Export GatewaySecurityPolicyRule.
+  description: |
+    Export a GatewaySecurityPolicyRule.
+  examples: |
+      To export a GatewaySecurityPolicyRule, run:
+
+        $ {command} my-gateway-security-policy-rule --destination=my-gateway-security-policy-rule-list.yaml --location=global
+
+request:
+  collection: networksecurity.projects.locations.gatewaySecurityPolicies.rules
+  api_version: v1alpha1
+
+arguments:
+  resource:
+    spec: !REF googlecloudsdk.command_lib.network_security.resources:gatewaySecurityPolicyRule
+    help_text: |
+      Name of the GatewaySecurityPolicyRule to export.

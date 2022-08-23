@@ -1,0 +1,30 @@
+release_tracks: [ALPHA]
+
+help_text:
+  brief: |
+    List UrlLists.
+  description: |
+    List all UrlLists in the specified location of the current project.
+  examples: |
+      To list UrlLists in the current project, run:
+
+        $ {command} --location=global
+
+request: &request
+  api_version: v1alpha1
+  collection: networksecurity.projects.locations.urlLists
+
+arguments:
+  resource:
+    spec: !REF googlecloudsdk.command_lib.network_security.resources:location
+    help_text: |
+      The project of the UrlLists to display.
+
+response:
+  id_field: name
+
+output:
+  format: |
+     table(
+        name.basename():label=NAME
+      )

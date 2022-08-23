@@ -42,7 +42,6 @@ DETAILED_HELP = {
 }
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class SetCustomConstraint(base.Command):
   """Set a custom constraint from a JSON or YAML file."""
