@@ -61,7 +61,7 @@ BIN_DIR = os.path.dirname(BOOTSTRAPPING_DIR)
 SDK_ROOT = os.path.dirname(BIN_DIR)
 
 
-def DisallowPython3():
+def DisallowIncompatiblePythonVersions():
   if not platforms.PythonVersion().IsCompatible():
     sys.exit(1)
 

@@ -198,9 +198,7 @@ class Update(base.SilentCommand):
   def Args(cls, parser):
     cls.SSL_CERTIFICATES_ARG = (
         ssl_certificates_flags.SslCertificatesArgumentForOtherResource(
-            'target HTTPS proxy',
-            required=False,
-            include_l7_internal_load_balancing=True))
+            'target HTTPS proxy', required=False))
     if not cls._certificate_map:
       cls.SSL_CERTIFICATES_ARG.AddArgument(
           parser, cust_metavar='SSL_CERTIFICATE')

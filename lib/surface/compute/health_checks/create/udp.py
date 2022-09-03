@@ -40,25 +40,19 @@ def _DetailedHelp():
   }
 
 
-def _Args(parser, include_l7_internal_load_balancing=False):
+def _Args(parser):
   parser.display_info.AddFormat(flags.DEFAULT_LIST_FORMAT)
-  flags.HealthCheckArgument(
-      'UDP',
-      include_l7_internal_load_balancing=include_l7_internal_load_balancing
-  ).AddArgument(
-      parser, operation_type='create')
+  flags.HealthCheckArgument('UDP').AddArgument(parser, operation_type='create')
   health_checks_utils.AddUdpRelatedArgs(parser)
   health_checks_utils.AddProtocolAgnosticCreationArgs(parser, 'UDP')
 
 
-def _Run(args, holder, include_l7_internal_load_balancing=False):
+def _Run(args, holder):
   """Issues the request necessary for adding the health check."""
   client = holder.client
 
-  health_check_ref = flags.HealthCheckArgument(
-      'UDP',
-      include_l7_internal_load_balancing=include_l7_internal_load_balancing
-  ).ResolveAsResource(args, holder.resources)
+  health_check_ref = flags.HealthCheckArgument('UDP').ResolveAsResource(
+      args, holder.resources)
 
   # Check that request and response are not None and empty.
   if not args.request:
@@ -117,20 +111,12 @@ class CreateAlpha(base.CreateCommand):
   with the correct feature parameters.
   """
 
-  _include_l7_internal_load_balancing = True
   detailed_help = _DetailedHelp()
 
   @classmethod
   def Args(cls, parser):
-    _Args(
-        parser,
-        include_l7_internal_load_balancing=cls
-        ._include_l7_internal_load_balancing)
+    _Args(parser)
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
-    return _Run(
-        args,
-        holder,
-        include_l7_internal_load_balancing=self
-        ._include_l7_internal_load_balancing)
+    return _Run(args, holder)

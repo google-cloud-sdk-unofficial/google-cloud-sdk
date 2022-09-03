@@ -51,6 +51,7 @@ class Update(base.Command):
 
   detailed_help = DETAILED_HELP
   _support_autoscaling = True
+  _support_triggerer = False
   _support_maintenance_window = False
   _support_environment_size = True
   _support_airflow_database_retention = False
@@ -146,9 +147,12 @@ class Update(base.Command):
     if self._support_autoscaling:
       if (is_composer_v1 and
           (args.scheduler_cpu or args.worker_cpu or args.web_server_cpu or
-           args.scheduler_memory or args.worker_memory or args.web_server_memory
-           or args.scheduler_storage or args.worker_storage or
-           args.web_server_storage or args.min_workers or args.max_workers)):
+           args.scheduler_memory or args.worker_memory or
+           args.web_server_memory or args.scheduler_storage or
+           args.worker_storage or args.web_server_storage or args.min_workers or
+           args.max_workers or self._support_triggerer and
+           (args.enable_triggerer or args.disable_triggerer or
+            args.triggerer_cpu or args.triggerer_memory))):
         raise command_util.InvalidUserInputError(
             'Workloads Config flags introduced in Composer 2.X'
             ' cannot be used when creating Composer 1.X environments.')
@@ -172,6 +176,10 @@ class Update(base.Command):
               args.web_server_storage)
       params['min_workers'] = args.min_workers
       params['max_workers'] = args.max_workers
+    if self._support_triggerer and (args.triggerer_cpu or args.triggerer_memory
+                                    or args.enable_triggerer or
+                                    args.disable_triggerer):
+      self._addTriggererFields(params, args, env_obj)
     if self._support_maintenance_window:
       params['maintenance_window_start'] = args.maintenance_window_start
       params['maintenance_window_end'] = args.maintenance_window_end
@@ -200,6 +208,46 @@ class Update(base.Command):
     params['master_authorized_networks'] = args.master_authorized_networks
     return patch_util.ConstructPatch(**params)
 
+  def _addTriggererFields(self, params, args, env_obj):
+    triggerer_supported = image_versions_command_util.IsVersionTriggererCompatible(
+        env_obj.config.softwareConfig.imageVersion)
+    triggerer_count = None
+    triggerer_cpu = None
+    triggerer_memory_gb = None
+    if env_obj.config.workloadsConfig and env_obj.config.workloadsConfig.triggerer:
+      triggerer_count = env_obj.config.workloadsConfig.triggerer.count
+      triggerer_memory_gb = env_obj.config.workloadsConfig.triggerer.memoryGb
+      triggerer_cpu = env_obj.config.workloadsConfig.triggerer.cpu
+    if args.disable_triggerer or args.enable_triggerer:
+      triggerer_count = 1 if args.enable_triggerer else 0
+    if args.triggerer_cpu:
+      triggerer_cpu = args.triggerer_cpu
+    if args.triggerer_memory:
+      triggerer_memory_gb = environments_api_util.MemorySizeBytesToGB(
+          args.triggerer_memory)
+    possible_args = {
+        'triggerer-count': args.enable_triggerer,
+        'triggerer-cpu': args.triggerer_cpu,
+        'triggerer-memory': args.triggerer_memory
+    }
+    for k, v in possible_args.items():
+      if v and not triggerer_supported:
+        raise command_util.InvalidUserInputError(
+            flags.INVALID_OPTION_FOR_MIN_AIRFLOW_VERSION_ERROR_MSG.format(
+                opt=k,
+                airflow_version=image_versions_command_util
+                .MIN_TRIGGERER_AIRFLOW_VERSION))
+    if not triggerer_count:
+      if args.triggerer_cpu:
+        raise command_util.InvalidUserInputError(
+            'Cannot specify --triggerer-cpu without enabled triggerer')
+      if args.triggerer_memory:
+        raise command_util.InvalidUserInputError(
+            'Cannot specify --triggerer-memory without enabled triggerer')
+    params['triggerer_cpu'] = triggerer_cpu
+    params['triggerer_count'] = triggerer_count
+    params['triggerer_memory_gb'] = triggerer_memory_gb
+
   def Run(self, args):
     env_ref = args.CONCEPTS.environment.Parse()
     field_mask, patch = self._ConstructPatch(env_ref, args)
@@ -216,6 +264,7 @@ class UpdateBeta(Update):
   """Update properties of a Cloud Composer environment."""
 
   _support_autoscaling = True
+  _support_triggerer = True
   _support_maintenance_window = True
   _support_environment_size = True
 
@@ -272,6 +321,7 @@ class UpdateAlpha(UpdateBeta):
   """Update properties of a Cloud Composer environment."""
 
   _support_autoscaling = True
+  _support_triggerer = True
   _support_airflow_database_retention = True
 
   @staticmethod

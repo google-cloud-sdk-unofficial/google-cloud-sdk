@@ -59,10 +59,7 @@ class Apply(base.UpdateCommand):
         help='The path to config-management.yaml.',
         required=True)
     parser.add_argument(
-        '--version',
-        type=str,
-        help='The version of ACM to install.'
-    )
+        '--version', type=str, help='The version of ACM to install.')
 
   def Run(self, args):
     # check static yaml fields before query membership

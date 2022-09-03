@@ -64,8 +64,10 @@ class Upload(base.Command):
     parser.add_argument(
         '--source',
         metavar='SOURCE',
-        required=True,
-        help='The root directory of the go module source code.')
+        required=False,
+        default='.',
+        help='The root directory of the go module source code, '
+        'defaults to the current directory.')
     parser.add_argument(
         '--module-path',
         metavar='MODULE_PATH',

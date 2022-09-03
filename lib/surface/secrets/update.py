@@ -81,6 +81,7 @@ class Update(base.UpdateCommand):
     secrets_args.AddSecret(
         parser, purpose='to update', positional=True, required=True)
     alias = parser.add_group(mutex=True, help='Version Aliases')
+    annotations = parser.add_group(mutex=True, help='Annotations')
     labels_util.AddUpdateLabelsFlags(parser)
     secrets_args.AddSecretEtag(parser)
     secrets_args.AddUpdateExpirationGroup(parser)
@@ -90,6 +91,10 @@ class Update(base.UpdateCommand):
                               int)
     map_util.AddMapRemoveFlag(alias, 'version-aliases', 'Version Aliases', str)
     map_util.AddMapClearFlag(alias, 'version-aliases', 'Version Aliases')
+    map_util.AddMapUpdateFlag(annotations, 'annotations', 'Annotations', str,
+                              str)
+    map_util.AddMapRemoveFlag(annotations, 'annotations', 'Annotations', str)
+    map_util.AddMapClearFlag(annotations, 'annotations', 'Annotations')
 
   def _RunUpdate(self, original, args):
     messages = secrets_api.GetMessages()
@@ -123,6 +128,10 @@ class Update(base.UpdateCommand):
         'remove_version_aliases') or args.IsSpecified('clear_version_aliases'):
       update_mask.append('version_aliases')
 
+    if args.IsSpecified('update_annotations') or args.IsSpecified(
+        'remove_annotations') or args.IsSpecified('clear_annotations'):
+      update_mask.append('annotations')
+
     # Validations
     if not update_mask:
       raise exceptions.MinimumArgumentException([
@@ -130,6 +139,7 @@ class Update(base.UpdateCommand):
           '--expire-time', '--remove-expiration', '--clear-topics',
           '--remove-topics', '--add-topics', '--update-version-aliases',
           '--remove-version-aliases', '--clear-version-aliases',
+          '--update-annotations', '--remove-annotations', '--clear-annotations',
           '--next-rotation-time', '--remove-next-rotation-time',
           '--rotation-period', '--remove-rotation-period',
           '--remove-rotation-schedule'
@@ -168,11 +178,23 @@ class Update(base.UpdateCommand):
         version_aliases.append(
             messages.Secret.VersionAliasesValue.AdditionalProperty(
                 key=alias, value=version))
+    annotations = []
+    if 'annotations' in update_mask:
+      if original.annotations is None:
+        original.annotations = messages.Secret.AnnotationsValue(
+            additionalProperties=[])
+      annotations_dict = secrets_util.ApplyAnnotationsUpdate(
+          args, original.annotations.additionalProperties)
+      for annotation, metadata in annotations_dict.items():
+        annotations.append(
+            messages.Secret.AnnotationsValue.AdditionalProperty(
+                key=annotation, value=metadata))
 
     secret = secrets_api.Secrets().Update(
         secret_ref=secret_ref,
         labels=labels,
         version_aliases=version_aliases,
+        annotations=annotations,
         update_mask=update_mask,
         etag=args.etag,
         expire_time=args.expire_time,
@@ -254,6 +276,7 @@ class UpdateBeta(Update):
     secrets_args.AddSecret(
         parser, purpose='to update', positional=True, required=True)
     alias = parser.add_group(mutex=True, help='Version Aliases')
+    annotations = parser.add_group(mutex=True, help='Annotations')
     labels_util.AddUpdateLabelsFlags(parser)
     secrets_args.AddSecretEtag(parser)
     secrets_args.AddUpdateExpirationGroup(parser)
@@ -263,6 +286,10 @@ class UpdateBeta(Update):
                               int)
     map_util.AddMapRemoveFlag(alias, 'version-aliases', 'Version Aliases', str)
     map_util.AddMapClearFlag(alias, 'version-aliases', 'Version Aliases')
+    map_util.AddMapUpdateFlag(annotations, 'annotations', 'Annotations', str,
+                              str)
+    map_util.AddMapRemoveFlag(annotations, 'annotations', 'Annotations', str)
+    map_util.AddMapClearFlag(annotations, 'annotations', 'Annotations')
 
   def _RunUpdate(self, original, args):
     messages = secrets_api.GetMessages()
@@ -298,6 +325,10 @@ class UpdateBeta(Update):
         'remove_version_aliases') or args.IsSpecified('clear_version_aliases'):
       update_mask.append('version_aliases')
 
+    if args.IsSpecified('update_annotations') or args.IsSpecified(
+        'remove_annotations') or args.IsSpecified('clear_annotations'):
+      update_mask.append('annotations')
+
     # Validations
     if not update_mask:
       raise exceptions.MinimumArgumentException([
@@ -305,6 +336,7 @@ class UpdateBeta(Update):
           '--expire-time', '--remove-expiration', '--clear-topics',
           '--remove-topics', '--add-topics', '--update-version-aliases',
           '--remove-version-aliases', '--clear-version-aliases',
+          '--update-annotations', '--remove-annotations', '--clear-annotations',
           '--next-rotation-time', '--remove-next-rotation-time',
           '--rotation-period', '--remove-rotation-period',
           '--remove-rotation-schedule'
@@ -331,6 +363,18 @@ class UpdateBeta(Update):
         version_aliases.append(
             messages.Secret.VersionAliasesValue.AdditionalProperty(
                 key=alias, value=version))
+    annotations = []
+    if 'annotations' in update_mask:
+      annotations = []
+      if original.annotations is None:
+        original.annotations = messages.Secret.AnnotationsValue(
+            additionalProperties=[])
+      annotations_dict = secrets_util.ApplyAnnotationsUpdate(
+          args, original.annotations.additionalProperties)
+      for annotation, metadata in annotations_dict.items():
+        annotations.append(
+            messages.Secret.AnnotationsValue.AdditionalProperty(
+                key=annotation, value=metadata))
     if args.expire_time:
       msg = self.CONFIRM_EXPIRE_TIME_MESSAGE.format(
           expire_time=args.expire_time)
@@ -347,6 +391,7 @@ class UpdateBeta(Update):
         labels=labels,
         update_mask=update_mask,
         version_aliases=version_aliases,
+        annotations=annotations,
         etag=args.etag,
         expire_time=args.expire_time,
         ttl=args.ttl,

@@ -348,6 +348,7 @@ class Update(base.UpdateCommand):
     flags.AddEnableServiceExternalIPs(group)
     flags.AddEnablePrivateEndpoint(group)
     flags.AddEnableGoogleCloudAccess(group)
+    flags.AddLoggingVariantFlag(group)
 
   def ParseUpdateOptions(self, args, locations):
     get_default = lambda key: getattr(args, key)
@@ -401,17 +402,17 @@ class Update(base.UpdateCommand):
         raise util.Error(
             'DNS Scope should be specified when using CloudDNS in GA.')
       console_io.PromptContinue(
-          message='Enabling CloudDNS is a one-way operation. Once enabled, '
-          'this configuration cannot be disabled. '
-          'All the node-pools in the cluster need to be re-created by the user '
-          'to start using CloudDNS for DNS lookups. It is highly recommended to'
-          ' complete this step shortly after enabling CloudDNS.',
+          message='All the node-pools in the cluster need to be re-created '
+          'by the user to start using Cloud DNS for DNS lookups. It is '
+          'highly recommended to complete this step shortly after '
+          'enabling Cloud DNS.',
           cancel_on_no=True)
     opts.enable_service_externalips = args.enable_service_externalips
     opts.enable_identity_service = args.enable_identity_service
     opts.enable_private_endpoint = args.enable_private_endpoint
     opts.enable_google_cloud_access = args.enable_google_cloud_access
     opts.binauthz_evaluation_mode = args.binauthz_evaluation_mode
+    opts.logging_variant = args.logging_variant
     return opts
 
   def Run(self, args):
@@ -846,6 +847,7 @@ class UpdateBeta(Update):
     flags.AddEnableGoogleCloudAccess(group)
     flags.AddCostManagementConfigFlag(group, is_update=True)
     flags.AddStackTypeFlag(group, hidden=True)
+    flags.AddLoggingVariantFlag(group)
 
   def ParseUpdateOptions(self, args, locations):
     get_default = lambda key: getattr(args, key)
@@ -920,11 +922,10 @@ class UpdateBeta(Update):
     opts.cluster_dns_domain = args.cluster_dns_domain
     if opts.cluster_dns and opts.cluster_dns.lower() == 'clouddns':
       console_io.PromptContinue(
-          message='Enabling CloudDNS is a one-way operation. Once enabled, '
-          'this configuration cannot be disabled. '
-          'All the node-pools in the cluster need to be re-created by the user '
-          'to start using CloudDNS for DNS lookups. It is highly recommended to'
-          ' complete this step shortly after enabling CloudDNS.',
+          message='All the node-pools in the cluster need to be re-created '
+          'by the user to start using Cloud DNS for DNS lookups. It is '
+          'highly recommended to complete this step shortly after '
+          'enabling Cloud DNS.',
           cancel_on_no=True)
     opts.enable_service_externalips = args.enable_service_externalips
     opts.security_group = args.security_group
@@ -941,6 +942,7 @@ class UpdateBeta(Update):
     opts.enable_cost_allocation = args.enable_cost_allocation
     opts.binauthz_evaluation_mode = args.binauthz_evaluation_mode
     opts.stack_type = args.stack_type
+    opts.logging_variant = args.logging_variant
     return opts
 
 
@@ -1028,6 +1030,7 @@ class UpdateAlpha(Update):
     flags.AddEnableGoogleCloudAccess(group)
     flags.AddStackTypeFlag(group, hidden=True)
     flags.AddGatewayFlags(group, hidden=True)
+    flags.AddLoggingVariantFlag(group)
 
   def ParseUpdateOptions(self, args, locations):
     get_default = lambda key: getattr(args, key)
@@ -1098,11 +1101,9 @@ class UpdateAlpha(Update):
     opts.cluster_dns_domain = args.cluster_dns_domain
     if opts.cluster_dns and opts.cluster_dns.lower() == 'clouddns':
       console_io.PromptContinue(
-          message='Enabling CloudDNS is a one-way operation. Once enabled, '
-          'this configuration cannot be disabled. '
-          'All the node-pools in the cluster need to be re-created by the user '
-          'to start using CloudDNS for DNS lookups. It is highly recommended to'
-          ' complete this step shortly after enabling CloudDNS.',
+          message='All the node-pools in the cluster need to be re-created by '
+          'the user to start using Cloud DNS for DNS lookups. It is highly '
+          'recommended to complete this step shortly after enabling Cloud DNS.',
           cancel_on_no=True)
     opts.enable_service_externalips = args.enable_service_externalips
     opts.security_group = args.security_group
@@ -1119,4 +1120,5 @@ class UpdateAlpha(Update):
     opts.binauthz_evaluation_mode = args.binauthz_evaluation_mode
     opts.stack_type = args.stack_type
     opts.gateway_api = args.gateway_api
+    opts.logging_variant = args.logging_variant
     return opts

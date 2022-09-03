@@ -67,7 +67,9 @@ class Update(base.SilentCommand):
     cls.TARGET_SSL_PROXY_ARG.AddArgument(parser, operation_type='update')
     cls.SSL_CERTIFICATES_ARG = (
         ssl_certificates_flags.SslCertificatesArgumentForOtherResource(
-            'target SSL proxy', required=False))
+            'target SSL proxy',
+            required=False,
+            include_regional_ssl_certificates=False))
     if not cls._certificate_map:
       cls.SSL_CERTIFICATES_ARG.AddArgument(
           parser, cust_metavar='SSL_CERTIFICATE')

@@ -22,8 +22,24 @@ from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 
 
+DETAILED_HELP = {
+    'DESCRIPTION': """
+        The gcloud batch tasks command group lets you describe and list Batch tasks.
+
+        With Batch, you can utilize the fully managed service to schedule, queue, and
+        execute batch jobs on Google's infrastructure.
+
+        For more information about Batch, see the
+        [Batch overview](https://cloud.google.com/batch)
+        and the
+        [Batch documentation](https://cloud.google.com/batch/docs/).
+        """,
+}
+
+
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Tasks(base.Group):
   """Manage Batch task resources."""
+  detailed_help = DETAILED_HELP
 
   category = base.BATCH_CATEGORY

@@ -42,6 +42,7 @@ from six.moves import map
 from six.moves import range
 from six.moves import zip
 import six.moves.http_client
+from six.moves.urllib.parse import urljoin
 
 # pylint: disable=unused-import
 import bq_flags
@@ -72,6 +73,7 @@ CONNECTION_TYPE_TO_PROPERTY_MAP = {
     'SQL_DATA_SOURCE': 'sqlDataSource',
     'CLOUD_SPANNER': 'cloudSpanner',
     'CLOUD_RESOURCE': 'cloudResource',
+    'SPARK': 'spark',
 }
 CONNECTION_PROPERTY_TO_TYPE_MAP = {
     p: t for t, p in six.iteritems(CONNECTION_TYPE_TO_PROPERTY_MAP)
@@ -401,7 +403,7 @@ def _ParseReservationIdentifier(identifier):
 
   Args:
     identifier: String specifying the reservation identifier in the format
-    "project_id:reservation_id", "project_id:location.reservation_id", or
+      "project_id:reservation_id", "project_id:location.reservation_id", or
       "reservation_id".
 
   Returns:
@@ -467,8 +469,7 @@ def _ParseCapacityCommitmentIdentifier(identifier, allow_commas):
 
   Args:
     identifier: String specifying the capacity commitment identifier in the
-      format
-    "project_id:capacity_commitment_id",
+      format "project_id:capacity_commitment_id",
       "project_id:location.capacity_commitment_id", or "capacity_commitment_id".
     allow_commas: whether to allow commas in the capacity commitment id.
 
@@ -544,9 +545,8 @@ def _ParseReservationAssignmentIdentifier(identifier):
 
   Args:
     identifier: String specifying the reservation assignment identifier in the
-      format
-    "project_id:reservation_id.assignment_id",
-    "project_id:location.reservation_id.assignment_id", or
+      format "project_id:reservation_id.assignment_id",
+      "project_id:location.reservation_id.assignment_id", or
       "reservation_id.assignment_id".
 
   Returns:
@@ -679,6 +679,34 @@ def _ParseConnectionPath(path):
   location = match.groupdict().get('location', None)
   connection_id = match.groupdict().get('connection_id', None)
   return (project_id, location, connection_id)
+
+
+def _ParseDiscoveryDoc(discovery_document):
+  """Takes a downloaded discovery document and parses it.
+
+  Args:
+    discovery_document: The discovery doc to parse.
+
+  Returns:
+    The parsed api doc.
+  """
+  if isinstance(discovery_document, six.string_types):
+    return json.loads(discovery_document)
+  elif isinstance(discovery_document, six.binary_type):
+    return json.loads(discovery_document.decode('utf-8'))
+
+
+def _BuildApiEndpointFromApiFlag(api_flag, parsed_discovery_document):
+  """Builds an api endpoint from the user flag and the parsed discovery doc.
+
+  Args:
+    api_flag: The api flag set by the user.
+    parsed_discovery_document: The parsed discovery doc.
+
+  Returns:
+    The api endpoint to use in the client options.
+  """
+  return urljoin(api_flag, parsed_discovery_document['servicePath'])
 
 
 def ConfigurePythonLogger(apilog=None):
@@ -1308,6 +1336,12 @@ class BigqueryClient(object):
     discovery_document_to_build_client = discovery_document
     try:
       client_options = discovery.get_client_options()
+      if (not flags.FLAGS['api'].using_default_value and
+          not resolver_lib.IsNamedApi(flags.FLAGS.api) and
+          not flags.FLAGS.environment):
+        client_options.api_endpoint = _BuildApiEndpointFromApiFlag(
+            flags.FLAGS.api,
+            _ParseDiscoveryDoc(discovery_document_to_build_client))
       if flags.FLAGS.mtls:
         client_options.api_endpoint = discovery.get_mtls_endpoint(
             discovery_document_to_build_client)
@@ -1545,6 +1579,8 @@ class BigqueryClient(object):
             entry += '(%s, %s)' % (field['precision'], field['scale'])
           else:
             entry += '(%s)' % (field['precision'])
+          if 'roundingMode' in field:
+            entry += ' options(rounding_mode="%s")' % (field['roundingMode'])
         # Print type mode.
         if field.get('mode', 'NULLABLE') != 'NULLABLE':
           entry += ' (%s)' % (field['mode'].lower(),)
@@ -2009,12 +2045,11 @@ class BigqueryClient(object):
       self,
       slots,
       ignore_idle_slots,
-      concurrency,
-      enable_queuing_and_priorities,
-      multi_region_auxiliary,
-      autoscale_max_slots = None,
-      autoscale_budget_slot_hours = None):
-    # pylint: disable=g-doc-args
+    concurrency,
+    enable_queuing_and_priorities,
+    multi_region_auxiliary,
+    autoscale_max_slots = None,
+    autoscale_budget_slot_hours = None):
     """Return the request body for CreateReservation.
 
     Arguments:
@@ -2055,11 +2090,6 @@ class BigqueryClient(object):
           'value'] = enable_queuing_and_priorities
 
     if autoscale_max_slots is not None:
-      if (self.api_version != 'autoscale_alpha'
-         ):
-        raise BigqueryError(
-            'autoscale_max_slots is only supported in autoscale_alpha. Please '
-            'specify \'--api_version=autoscale_alpha\' and retry.')
       reservation['autoscale'] = {}
       reservation['autoscale']['max_slots'] = autoscale_max_slots
     if autoscale_budget_slot_hours is not None:
@@ -2072,6 +2102,8 @@ class BigqueryClient(object):
       reservation['autoscale'][
           'budget_slot_hours'] = autoscale_budget_slot_hours
 
+
+
     return reservation
 
   def CreateReservation(
@@ -2079,12 +2111,11 @@ class BigqueryClient(object):
       reference,
       slots,
       ignore_idle_slots,
-      concurrency,
-      enable_queuing_and_priorities,
-      multi_region_auxiliary,
-      autoscale_max_slots = None,
-      autoscale_budget_slot_hours = None):
-    # pylint: disable=g-doc-args
+    concurrency,
+    enable_queuing_and_priorities,
+    multi_region_auxiliary,
+    autoscale_max_slots = None,
+    autoscale_budget_slot_hours = None):
     """Create a reservation with the given reservation reference.
 
     Arguments:
@@ -2228,7 +2259,6 @@ class BigqueryClient(object):
       enable_queuing_and_priorities,
       autoscale_max_slots,
       autoscale_budget_slot_hours=None):
-    # pylint: disable=g-doc-args
     """Return the request body and update mask for UpdateReservation.
 
     Arguments:
@@ -2274,11 +2304,6 @@ class BigqueryClient(object):
       update_mask += 'enable_queuing_and_priorities.value,'
 
     if autoscale_max_slots is not None:
-      if (self.api_version != 'autoscale_alpha'
-         ):
-        raise BigqueryError(
-            'autoscale_max_slots is only supported in autoscale_alpha. Please '
-            'specify \'--api_version=autoscale_alpha\' and retry.')
       if autoscale_max_slots != 0:
         reservation['autoscale'] = {}
         reservation['autoscale']['max_slots'] = autoscale_max_slots
@@ -2313,7 +2338,6 @@ class BigqueryClient(object):
       autoscale_max_slots,
       autoscale_budget_slot_hours=None,
   ):
-    # pylint: disable=g-doc-args
     """Updates a reservation with the given reservation reference.
 
     Arguments:
@@ -2349,11 +2373,10 @@ class BigqueryClient(object):
   def CreateCapacityCommitment(
       self,
       reference,
-      slots,
-      plan,
-      renewal_plan,
-      multi_region_auxiliary):
-    # pylint: disable=g-doc-args
+    slots,
+    plan,
+    renewal_plan,
+    multi_region_auxiliary):
     """Create a capacity commitment.
 
     Arguments:
@@ -2606,10 +2629,10 @@ class BigqueryClient(object):
 
   def SearchAllReservationAssignments(
       self,
-      location,
-      job_type,
-      assignee_type,
-      assignee_id):
+    location,
+    job_type,
+    assignee_type,
+    assignee_id):
     """Searches reservations assignments for given assignee.
 
     Arguments:
@@ -2740,9 +2763,7 @@ class BigqueryClient(object):
 
       Arguments:
         base_path: 'cloud_sql'
-        json_properties: {
-          'host': ... ,
-          'instanceId': ... }
+        json_properties: { 'host': ... , 'instanceId': ... }
 
       Returns:
          list of  paths in snake case:
@@ -2828,6 +2849,20 @@ class BigqueryClient(object):
       else:
         connection['cloudSpanner'] = {}
 
+    elif connection_type == 'SPARK':
+      if properties:
+        spark_properties = json.loads(properties)
+        connection['spark'] = spark_properties
+        if spark_properties.get(
+            'sparkHistoryServerConfig') and spark_properties[
+                'sparkHistoryServerConfig'].get('dataprocCluster'):
+          update_mask.append(
+              'spark.spark_history_server_config.dataproc_cluster')
+        if spark_properties.get('metastoreServiceConfig') and spark_properties[
+            'metastoreServiceConfig'].get('metastoreService'):
+          update_mask.append('spark.metastore_service_config.metastore_service')
+      else:
+        connection['spark'] = {}
 
     client = self.GetConnectionV1ApiClient()
 
@@ -3026,17 +3061,22 @@ class BigqueryClient(object):
       if print_format == 'list':
         formatter.AddColumns(('Id', 'Routine Type', 'Language', 'Creation Time',
                               'Last Modified Time'))
-        formatter.AddColumns((
-            'Is Remote',
-        ))
+        formatter.AddColumns(('Is Remote',))
       if print_format == 'show':
         formatter.AddColumns(
             ('Id', 'Routine Type', 'Language', 'Signature', 'Definition',
              'Creation Time', 'Last Modified Time'))
         if 'remoteFunctionOptions' in object_info:
           formatter.AddColumns((
-              'Remote Function Endpoint', 'Connection', 'User Defined Context',
+              'Remote Function Endpoint',
+              'Connection',
+              'User Defined Context',
           ))
+        if 'sparkOptions' in object_info:
+          formatter.AddColumns(
+              ('Connection', 'Runtime Version', 'Container Image', 'Properties',
+               'Main File URI', 'PyFile URIs', 'Jar URIs', 'File URIs',
+               'Archive URIs'))
     elif reference_type == ApiClientHelper.RowAccessPolicyReference:
       if print_format == 'list':
         formatter.AddColumns(('Id', 'Filter Predicate', 'Grantees',
@@ -3078,17 +3118,24 @@ class BigqueryClient(object):
       if print_format == 'view':
         formatter.AddColumns(('Query',))
       if print_format == 'materialized_view':
-        formatter.AddColumns(('Query',
-                              'Enable Refresh',
-                              'Refresh Interval Ms',
-                              'Last Refresh Time'
-                              ))
+        formatter.AddColumns((
+            'Query',
+            'Enable Refresh',
+            'Refresh Interval Ms',
+            'Last Refresh Time'
+        ))
     elif reference_type == ApiClientHelper.EncryptionServiceAccount:
       formatter.AddColumns(list(object_info.keys()))
     elif reference_type == ApiClientHelper.ReservationReference:
-      formatter.AddColumns(
-          ('name', 'slotCapacity', 'concurrency', 'ignoreIdleSlots',
-           'creationTime', 'updateTime', 'multiRegionAuxiliary'))
+      formatter.AddColumns((
+          'name',
+          'slotCapacity',
+          'concurrency',
+          'ignoreIdleSlots',
+          'creationTime',
+          'updateTime',
+          'multiRegionAuxiliary'
+      ))
     elif reference_type == ApiClientHelper.BetaReservationReference:
       formatter.AddColumns((
           'name',
@@ -3098,21 +3145,43 @@ class BigqueryClient(object):
           'enableQueuingAndPriorities',
           'creationTime',
           'updateTime',
-          'multiRegionAuxiliary'))
+          'multiRegionAuxiliary'
+      ))
     elif reference_type == ApiClientHelper.AutoscaleAlphaReservationReference:
-      formatter.AddColumns(
-          ('name', 'slotCapacity', 'concurrency', 'ignoreIdleSlots',
-           'autoscaleMaxSlots', 'autoscaleCurrentSlots', 'creationTime',
-           'updateTime', 'multiRegionAuxiliary'))
+      formatter.AddColumns((
+          'name',
+          'slotCapacity',
+          'concurrency',
+          'ignoreIdleSlots',
+          'autoscaleMaxSlots',
+          'autoscaleCurrentSlots',
+          'creationTime',
+          'updateTime',
+          'multiRegionAuxiliary'
+      ))
     elif reference_type == ApiClientHelper.AutoscalePreviewReservationReference:
-      formatter.AddColumns(
-          ('name', 'slotCapacity', 'concurrency', 'ignoreIdleSlots',
-           'autoscaleBudgetSlotHours', 'autoscaleUsedBudgetSlotHours',
-           'creationTime', 'updateTime', 'multiRegionAuxiliary'))
+      formatter.AddColumns((
+          'name',
+          'slotCapacity',
+          'concurrency',
+          'ignoreIdleSlots',
+          'autoscaleBudgetSlotHours',
+          'autoscaleUsedBudgetSlotHours',
+          'creationTime',
+          'updateTime',
+          'multiRegionAuxiliary'
+      ))
     elif reference_type == ApiClientHelper.CapacityCommitmentReference:
-      formatter.AddColumns(('name', 'slotCount', 'plan', 'renewalPlan', 'state',
-                            'commitmentStartTime', 'commitmentEndTime',
-                            'multiRegionAuxiliary'))
+      formatter.AddColumns((
+          'name',
+          'slotCount',
+          'plan',
+          'renewalPlan',
+          'state',
+          'commitmentStartTime',
+          'commitmentEndTime',
+          'multiRegionAuxiliary'
+      ))
     elif reference_type == ApiClientHelper.BetaReservationAssignmentReference:
       formatter.AddColumns(('name', 'jobType', 'assignee', 'priority'))
     elif reference_type == ApiClientHelper.ReservationAssignmentReference:
@@ -3554,6 +3623,17 @@ class BigqueryClient(object):
       result['Connection'] = routine_info['remoteFunctionOptions']['connection']
       result['User Defined Context'] = routine_info[
           'remoteFunctionOptions'].get('userDefinedContext', '')
+    if 'sparkOptions' in routine_info:
+      spark_options = routine_info['sparkOptions']
+      options = [('connection', 'Connection'),
+                 ('runtimeVersion', 'Runtime Version'),
+                 ('containerImage', 'Container Image'),
+                 ('properties', 'Properties'), ('mainFileUri', 'Main File URI'),
+                 ('pyFileUris', 'PyFile URIs'), ('jarUris', 'Jar URIs'),
+                 ('fileUris', 'File URIs'), ('archiveUris', 'Archive URIs')]
+      for spark_key, result_key in options:
+        if spark_key in spark_options:
+          result[result_key] = spark_options[spark_key]
     return result
 
   @staticmethod
@@ -3794,18 +3874,14 @@ class BigqueryClient(object):
     if (reference_type == ApiClientHelper.BetaReservationReference and
         'enableQueuingAndPriorities' not in list(result.keys())):
       result['enableQueuingAndPriorities'] = 'False'
-    if (reference_type == ApiClientHelper.AutoscaleAlphaReservationReference and
-        'autoscale' in list(result.keys())):
+    if 'autoscale' in list(result.keys()):
       if 'maxSlots' in result['autoscale']:
         result['autoscaleMaxSlots'] = result['autoscale']['maxSlots']
         result['autoscaleCurrentSlots'] = '0'
         if 'currentSlots' in result['autoscale']:
           result['autoscaleCurrentSlots'] = result['autoscale']['currentSlots']
-      # The original 'autoscale' fields is not needed anymore now.
-      result.pop('autoscale', None)
-    if (reference_type == ApiClientHelper.AutoscalePreviewReservationReference
-        and 'autoscale' in list(result.keys())):
-      if 'budgetSlotHours' in result['autoscale']:
+      if (reference_type == ApiClientHelper.AutoscalePreviewReservationReference
+          and 'budgetSlotHours' in result['autoscale']):
         result['autoscaleBudgetSlotHours'] = result['autoscale'][
             'budgetSlotHours']
         result['autoscaleUsedBudgetSlotHours'] = '0'
@@ -4600,8 +4676,8 @@ class BigqueryClient(object):
         dest_reference.
       ignore_already_exists: Whether to ignore "already exists" errors.
       encryption_configuration: Optional. Allows user to encrypt the table from
-        the copy table command with Cloud KMS key. Passed as a dictionary in
-          the following format: {'kmsKeyName': 'destination_kms_key'}
+        the copy table command with Cloud KMS key. Passed as a dictionary in the
+        following format: {'kmsKeyName': 'destination_kms_key'}
       **kwds: Passed on to ExecuteJob.
 
     Returns:
@@ -4715,8 +4791,7 @@ class BigqueryClient(object):
       default_kms_key=None,
       source_dataset_reference=None
       ,
-      max_time_travel_hours=None
-  ):
+      max_time_travel_hours=None):
     """Create a dataset corresponding to DatasetReference.
 
     Args:
@@ -4738,7 +4813,7 @@ class BigqueryClient(object):
         tables in the dataset, if no explicit key is supplied in the creating
         request.
       source_dataset_reference: An optional ApiClientHelper.DatasetReference
-        that will be the source of this linked dataset.
+        that will be the source of this linked dataset. #
       max_time_travel_hours: Optional. Define the max time travel in hours. The
         value can be from 48 to 168 hours (2 to 7 days). The default value is
         168 hours if this is not set.
@@ -4793,27 +4868,29 @@ class BigqueryClient(object):
       if not ignore_existing:
         raise
 
-  def CreateTable(self,
-                  reference,
-                  ignore_existing=False,
-                  schema=None,
-                  description=None,
-                  display_name=None,
-                  expiration=None,
-                  view_query=None,
-                  materialized_view_query=None,
-                  enable_refresh=None,
-                  refresh_interval_ms=None,
-                  external_data_config=None,
-                  view_udf_resources=None,
-                  use_legacy_sql=None,
-                  labels=None,
-                  time_partitioning=None,
-                  clustering=None,
-                  range_partitioning=None,
-                  require_partition_filter=None,
-                  destination_kms_key=None,
-                  location=None):
+  def CreateTable(
+      self,
+      reference,
+      ignore_existing=False,
+      schema=None,
+      description=None,
+      display_name=None,
+      expiration=None,
+      view_query=None,
+      materialized_view_query=None,
+      enable_refresh=None,
+      refresh_interval_ms=None,
+      max_staleness=None,
+      external_data_config=None,
+      view_udf_resources=None,
+      use_legacy_sql=None,
+      labels=None,
+      time_partitioning=None,
+      clustering=None,
+      range_partitioning=None,
+      require_partition_filter=None,
+      destination_kms_key=None,
+      location=None):
     """Create a table corresponding to TableReference.
 
     Args:
@@ -4832,6 +4909,9 @@ class BigqueryClient(object):
         disable automatic refresh when the base table is updated.
       refresh_interval_ms: for materialized views, an optional maximum frequency
         for automatic refreshes.
+      max_staleness: INTERVAL value that determines the maximum staleness
+        allowed when querying a materialized view or an external table. By
+        default no staleness is allowed.
       external_data_config: defines a set of external resources used to create
         an external table. For example, a BigQuery table backed by CSV files in
         GCS.
@@ -4876,10 +4956,9 @@ class BigqueryClient(object):
       if materialized_view_query is not None:
         materialized_view_args = {'query': materialized_view_query}
         if enable_refresh is not None:
-          materialized_view_args.update({'enableRefresh': enable_refresh})
+          materialized_view_args['enableRefresh'] = enable_refresh
         if refresh_interval_ms is not None:
-          materialized_view_args.update(
-              {'refreshIntervalMs': refresh_interval_ms})
+          materialized_view_args['refreshIntervalMs'] = refresh_interval_ms
         body['materializedView'] = materialized_view_args
       if external_data_config is not None:
         body['externalDataConfiguration'] = external_data_config
@@ -5035,8 +5114,8 @@ class BigqueryClient(object):
       refresh_window_days: Refresh window days for the transfer config.
       params: Parameters for the created transfer config. The parameters should
         be in JSON format given as a string. Ex: --params="{'param':'value'}".
-          The params should be the required values needed for each data source
-          and will vary.
+        The params should be the required values needed for each data source and
+        will vary.
       auth_info: A dict contains authorization info which can be either an
         authorization_code or a version_info that the user input if they need
         credentials.
@@ -5116,7 +5195,7 @@ class BigqueryClient(object):
 
     Args:
       params: The user specified parameters. The parameters should be in JSON
-      format given as a string. Ex: --params="{'param':'value'}".
+        format given as a string. Ex: --params="{'param':'value'}".
       items: The body that contains information of all the flags set.
 
     Returns:
@@ -5173,6 +5252,7 @@ class BigqueryClient(object):
       materialized_view_query=None,
       enable_refresh=None,
       refresh_interval_ms=None,
+      max_staleness=None,
       external_data_config=None,
       view_udf_resources=None,
       use_legacy_sql=None,
@@ -5185,8 +5265,7 @@ class BigqueryClient(object):
       etag=None,
       encryption_configuration=None,
       location=None,
-      autodetect_schema=False
-  ):
+      autodetect_schema=False):
     """Updates a table.
 
     Args:
@@ -5203,6 +5282,9 @@ class BigqueryClient(object):
         disable automatic refresh when the base table is updated.
       refresh_interval_ms: for materialized views, an optional maximum frequency
         for automatic refreshes.
+      max_staleness: INTERVAL value that determines the maximum staleness
+        allowed when querying a materialized view or an external table. By
+        default no staleness is allowed.
       external_data_config: defines a set of external resources used to create
         an external table. For example, a BigQuery table backed by CSV files in
         GCS.
@@ -5257,11 +5339,11 @@ class BigqueryClient(object):
       table['view'] = view_args
     materialized_view_args = {}
     if materialized_view_query is not None:
-      materialized_view_args.update({'query': materialized_view_query})
+      materialized_view_args['query'] = materialized_view_query
     if enable_refresh is not None:
-      materialized_view_args.update({'enableRefresh': enable_refresh})
+      materialized_view_args['enableRefresh'] = enable_refresh
     if refresh_interval_ms is not None:
-      materialized_view_args.update({'refreshIntervalMs': refresh_interval_ms})
+      materialized_view_args['refreshIntervalMs'] = refresh_interval_ms
     if materialized_view_args:
       table['materializedView'] = materialized_view_args
     if external_data_config is not None:
@@ -5289,9 +5371,7 @@ class BigqueryClient(object):
       table['location'] = location
 
     request = self.apiclient.tables().patch(
-        autodetect_schema=autodetect_schema,
-        body=table,
-        **dict(reference))
+        autodetect_schema=autodetect_schema, body=table, **dict(reference))
 
     # Perform a conditional update to protect against concurrent
     # modifications to this table. If there is a conflicting
@@ -5307,6 +5387,7 @@ class BigqueryClient(object):
                   expiration=None,
                   labels_to_set=None,
                   label_keys_to_remove=None,
+                  vertex_ai_model_id=None,
                   etag=None):
     """Updates a Model.
 
@@ -5318,6 +5399,7 @@ class BigqueryClient(object):
       labels_to_set: an optional dict of labels to set on this model.
       label_keys_to_remove: an optional list of label keys to remove from this
         model.
+      vertex_ai_model_id: an optional string as Vertex AI model ID to register.
       etag: if set, checks that etag in the existing model matches.
 
     Raises:
@@ -5338,6 +5420,10 @@ class BigqueryClient(object):
     if label_keys_to_remove:
       for label_key in label_keys_to_remove:
         updated_model['labels'][label_key] = None
+    if vertex_ai_model_id is not None:
+      updated_model['trainingRuns'] = [{
+          'vertex_ai_model_id': vertex_ai_model_id
+      }]
 
     request = self.GetModelsApiClient().models().patch(
         body=updated_model,
@@ -5366,10 +5452,8 @@ class BigqueryClient(object):
       labels_to_set=None,
       label_keys_to_remove=None,
       etag=None,
-      default_kms_key=None
-      ,
-      max_time_travel_hours=None
-  ):
+      default_kms_key=None,
+      max_time_travel_hours=None):
     """Updates a dataset.
 
     Args:
@@ -6422,13 +6506,15 @@ class BigqueryClient(object):
       clustering=None,
       destination_encryption_configuration=None,
       use_avro_logical_types=None,
+      reference_file_schema_uri=None,
       range_partitioning=None,
       hive_partitioning_options=None,
       decimal_target_types=None,
       json_extension=None,
       thrift_options=None,
       parquet_options=None,
-      **kwds):
+      **kwds
+  ):
     """Load the given data into BigQuery.
 
     The job will execute synchronously if sync=True is provided as an
@@ -6479,15 +6565,17 @@ class BigqueryClient(object):
         behaviour for Avro logical types. If this is set, Avro fields with
         logical types will be interpreted into their corresponding types (ie.
         TIMESTAMP), instead of only using their raw types (ie. INTEGER).
+      reference_file_schema_uri: Optional. Allows user to provide a reference
+        file with the reader schema, enabled for the format: AVRO, PARQUET, ORC.
       range_partitioning: Optional. Provides range partitioning specification
         for the destination table.
       hive_partitioning_options: (experimental) Options for configuring hive
-        partitioning.  'mode' determines the partitioning mode. It accepts
-          three strings: AUTO (automatic type inference), STRINGS (treat all
-            partition key types as strings) and CUSTOM (customer provided
-            schema). No other values are accepted. 'sourceUriPrefix' is the
-            shared prefix after which partition encoding is expected to begin
-            across all uris.
+        is picked if it is in the specified list and if it supports the
+        precision and the scale. STRING supports all precision and scale values.
+        If none of the listed types supports the precision and the scale, the
+        type supporting the widest range in the specified list is picked, and if
+        a value exceeds the supported range when reading the data, an error will
+        be returned. This field cannot contain duplicate types. The order of the
       decimal_target_types: (experimental) Defines the list of possible SQL data
         types to which the source decimal values are converted. This list and
         the precision and the scale parameters of the decimal field determine
@@ -6526,6 +6614,8 @@ class BigqueryClient(object):
       load_config['schema'] = {'fields': BigqueryClient.ReadSchema(schema)}
     if use_avro_logical_types is not None:
       load_config['useAvroLogicalTypes'] = use_avro_logical_types
+    if reference_file_schema_uri is not None:
+      load_config['reference_file_schema_uri'] = reference_file_schema_uri
     if json_extension is not None:
       load_config['jsonExtension'] = json_extension
     if parquet_options is not None:
@@ -6569,6 +6659,7 @@ class BigqueryClient(object):
               field_delimiter=None,
               destination_format=None,
               trial_id=None,
+              add_serving_default_signature=None,
               compression=None,
               use_avro_logical_types=None,
               **kwds):
@@ -6587,6 +6678,8 @@ class BigqueryClient(object):
         "AVRO" or "NEWLINE_DELIMITED_JSON".
       trial_id: Optional. 1-based ID of the trial to be exported from a
         hyperparameter tuning model.
+      add_serving_default_signature: Optional. Whether to add serving_default
+        signature for BigQuery ML trained tf based models.
       compression: Optional. The compression type to use for exported files.
         Possible values include "GZIP" and "NONE". The default value is NONE.
       use_avro_logical_types: Optional. Whether to use avro logical types for
@@ -6615,6 +6708,12 @@ class BigqueryClient(object):
       extract_config = {'sourceModel': dict(reference)}
       if trial_id:
         extract_config.update({'modelExtractOptions': {'trialId': trial_id}})
+      if add_serving_default_signature:
+        extract_config.update({
+            'modelExtractOptions': {
+                'addServingDefaultSignature': add_serving_default_signature
+            }
+        })
     _ApplyParameters(
         extract_config,
         destination_uris=uris,

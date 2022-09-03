@@ -20,6 +20,7 @@ from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.container.vmware import node_pools as apis
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.container.vmware import constants
 from googlecloudsdk.command_lib.container.vmware import flags
 
 _EXAMPLES = """
@@ -27,16 +28,6 @@ To list all node pools in a cluster named ``my-cluster''
 managed in location ``us-west1'', run:
 
 $ {command} --cluster=my-cluster --location=us-west1
-"""
-
-VMWARE_NODEPOOLS_FORMAT = """
-table(
-  name.segment(7):label=NAME,
-  name.segment(3):label=LOCATION,
-  nodePoolAutoscaling.minReplicas,
-  nodePoolAutoscaling.maxReplicas,
-  config.image:label=IMAGE,
-  state)
 """
 
 
@@ -50,7 +41,7 @@ class List(base.ListCommand):
   @staticmethod
   def Args(parser):
     flags.AddClusterResourceArg(parser, 'to list', positional=False)
-    parser.display_info.AddFormat(VMWARE_NODEPOOLS_FORMAT)
+    parser.display_info.AddFormat(constants.VMWARE_NODEPOOLS_FORMAT)
 
   def Run(self, args):
     """Runs the list command."""

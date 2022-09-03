@@ -41,10 +41,8 @@ def _DetailedHelp():
   }
 
 
-def _Args(parser, include_l7_internal_load_balancing, include_log_config):
-  health_check_arg = flags.HealthCheckArgument(
-      'gRPC',
-      include_l7_internal_load_balancing=include_l7_internal_load_balancing)
+def _Args(parser, include_log_config):
+  health_check_arg = flags.HealthCheckArgument('gRPC')
   health_check_arg.AddArgument(parser, operation_type='update')
   health_checks_utils.AddGrpcRelatedUpdateArgs(parser)
   health_checks_utils.AddProtocolAgnosticUpdateArgs(parser, 'gRPC')
@@ -157,15 +155,13 @@ def _ValidateArgs(args, include_log_config):
     raise exceptions.ArgumentError('At least one property must be modified.')
 
 
-def _Run(args, holder, include_l7_internal_load_balancing, include_log_config):
+def _Run(args, holder, include_log_config):
   """Issues the requests necessary for updating the health check."""
   client = holder.client
 
   _ValidateArgs(args, include_log_config)
 
-  health_check_arg = flags.HealthCheckArgument(
-      'gRPC',
-      include_l7_internal_load_balancing=include_l7_internal_load_balancing)
+  health_check_arg = flags.HealthCheckArgument('gRPC')
 
   health_check_ref = health_check_arg.ResolveAsResource(
       args, holder.resources, default_scope=compute_scope.ScopeEnum.GLOBAL)
@@ -198,19 +194,16 @@ def _Run(args, holder, include_l7_internal_load_balancing, include_log_config):
 class Update(base.UpdateCommand):
   """Update a gRPC health check."""
 
-  _include_l7_internal_load_balancing = True
   _include_log_config = True
   detailed_help = _DetailedHelp()
 
   @classmethod
   def Args(cls, parser):
-    _Args(parser, cls._include_l7_internal_load_balancing,
-          cls._include_log_config)
+    _Args(parser, cls._include_log_config)
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
-    return _Run(args, holder, self._include_l7_internal_load_balancing,
-                self._include_log_config)
+    return _Run(args, holder, self._include_log_config)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)

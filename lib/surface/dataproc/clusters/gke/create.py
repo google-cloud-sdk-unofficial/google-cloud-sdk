@@ -35,6 +35,7 @@ from googlecloudsdk.command_lib.dataproc.gke_clusters import GkeNodePoolTargetsP
 from googlecloudsdk.core import log
 
 
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
 class Create(base.CreateCommand):
   """Create a GKE-based virtual cluster."""
 
@@ -62,6 +63,8 @@ class Create(base.CreateCommand):
             $ {command} my-cluster --region='us-central1' --gke-cluster='my-gke-cluster' --spark-engine-version='dataproc-2.0' --pools='name=dp-default,roles=default,machineType=e2-standard-4' --pools='name=workers,roles=spark-drivers;spark-executors,machineType=n2-standard-8
           """
   }
+
+  _support_shuffle_service = False
 
   @classmethod
   def Args(cls, parser):
@@ -105,8 +108,11 @@ class Create(base.CreateCommand):
             The name of the Kubernetes namespace to deploy Dataproc system
             components in. This namespace does not need to exist.
             """)
+    if cls._support_shuffle_service:
+      gke_clusters.AddPoolsAlphaArg(parser)
+    else:
+      gke_clusters.AddPoolsArg(parser)
 
-    gke_clusters.AddPoolsArg(parser)
     parser.add_argument(
         '--setup-workload-identity',
         action='store_true',
@@ -259,3 +265,9 @@ class Create(base.CreateCommand):
           gsa_email=gsa,
           k8s_namespace=k8s_namespace,
           k8s_service_accounts=ksas)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class CreateAlpha(Create):
+  _support_shuffle_service = True
+  __doc__ = Create.__doc__

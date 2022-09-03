@@ -18,6 +18,9 @@ What do you do?
 
 import sys
 
+# This import hack is for Python 2 support.
+# TODO(b/234740725): Import collections.abc once BigQuery bq CLI doesn't require
+# Python 2 support.
 try:
     import collections.abc as collections_abc
 except ImportError:

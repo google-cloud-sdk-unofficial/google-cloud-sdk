@@ -25,7 +25,7 @@ def main():
 
 
 if __name__ == '__main__':
-  bootstrapping.DisallowPython3()
+  bootstrapping.DisallowIncompatiblePythonVersions()
   try:
     bootstrapping.CommandStart('endpointscfg', component_id='core')
     bootstrapping.CheckUpdates('endpointscfg')

@@ -524,6 +524,8 @@
             "AutoML Tables regression model.",
             "AutoML Tables classification model.",
             "Prinpical Component Analysis model.",
+            "Wide-and-deep classifier model.",
+            "Wide-and-deep regressor model.",
             "Autoencoder model.",
             "New name for the ARIMA model."
           ],
@@ -542,6 +544,8 @@
             "AUTOML_REGRESSOR",
             "AUTOML_CLASSIFIER",
             "PCA",
+            "DNN_LINEAR_COMBINED_CLASSIFIER",
+            "DNN_LINEAR_COMBINED_REGRESSOR",
             "AUTOENCODER",
             "ARIMA_PLUS"
           ]
@@ -632,6 +636,11 @@
         "trainingOptions": {
           "description": "Options that were used for this training run, includes user specified and default options that were used.",
           "$ref": "TrainingOptions"
+        },
+        "trainingStartTime": {
+          "description": "The start time of this training run, in milliseconds since epoch.",
+          "type": "string",
+          "format": "int64"
         },
         "startTime": {
           "description": "The start time of this training run.",
@@ -1275,12 +1284,52 @@
           "type": "boolean"
         },
         "sampledShapleyNumPaths": {
-          "description": "Number of paths for the sampled shapley explain method.",
+          "description": "Number of paths for the sampled Shapley explain method.",
           "type": "string",
           "format": "int64"
         },
         "integratedGradientsNumSteps": {
           "description": "Number of integral steps for the integrated gradients explain method.",
+          "type": "string",
+          "format": "int64"
+        },
+        "colorSpace": {
+          "description": "Enums for color space, used for processing images in Object Table. See more details at https:\/\/www.tensorflow.org\/io\/tutorials\/colorspace.",
+          "type": "string",
+          "enumDescriptions": [
+            "Unspecified color space",
+            "RGB",
+            "HSV",
+            "YIQ",
+            "YUV",
+            "GRAYSCALE"
+          ],
+          "enum": [
+            "COLOR_SPACE_UNSPECIFIED",
+            "RGB",
+            "HSV",
+            "YIQ",
+            "YUV",
+            "GRAYSCALE"
+          ]
+        },
+        "trendSmoothingWindowSize": {
+          "description": "The smoothing window size for the trend component of the time series.",
+          "type": "string",
+          "format": "int64"
+        },
+        "timeSeriesLengthFraction": {
+          "description": "Get truncated length by fraction in time series.",
+          "type": "number",
+          "format": "double"
+        },
+        "minTimeSeriesLength": {
+          "description": "Set fast trend ARIMA_PLUS model minimum training length. Use in pair with time_series_length_fraction.",
+          "type": "string",
+          "format": "int64"
+        },
+        "maxTimeSeriesLength": {
+          "description": "Get truncated length by last n points in time series. Use separately from time_series_length_fraction and min_time_series_length.",
           "type": "string",
           "format": "int64"
         }
@@ -2694,7 +2743,7 @@
           "type": "string"
         },
         "defaultDataset": {
-          "description": "Optional. Specifies the default dataset to use for unqualified table names in the query. Note that this does not alter behavior of unqualified dataset names.",
+          "description": "Optional. Specifies the default dataset to use for unqualified table names in the query. This setting does not alter behavior of unqualified dataset names. Setting the system variable @@dataset_id achieves the same behavior.",
           "$ref": "DatasetReference"
         },
         "priority": {
@@ -2748,7 +2797,7 @@
           }
         },
         "systemVariables": {
-          "description": "Output only. System variables for standard SQL queries. A system variable will be output if it's a settable variable and its value is different from the system default. The following output format will be honored: @@ prefix will not be included in the name of the System variables.",
+          "description": "Output only. System variables for standard SQL queries. A system variable is output if the variable is settable and its value differs from the system default. \"@@\" prefix is not included in the name of the System variables.",
           "readOnly": true,
           "$ref": "SystemVariables"
         },
@@ -2886,6 +2935,24 @@
         "parquetOptions": {
           "description": "Optional. Additional properties to set if sourceFormat is set to PARQUET.",
           "$ref": "ParquetOptions"
+        },
+        "referenceFileSchemaUri": {
+          "description": "Optional. When creating an external table, the user can provide a reference file with the table schema. This is enabled for the following formats: AVRO, PARQUET, ORC.",
+          "type": "string"
+        },
+        "metadataCacheMode": {
+          "description": "Optional. Metadata Cache Mode for the table. Set this to enable caching of metadata from external data source.",
+          "type": "string",
+          "enumDescriptions": [
+            "Unspecified metadata cache mode.",
+            "Set this mode to trigger automatic background refresh of metadata cache from the external source. Queries will use the latest available cache version within the table's maxStaleness interval.",
+            "Set this mode to enable triggering manual refresh of the metadata cache from external source. Queries will use the latest manually triggered cache version within the table's maxStaleness interval."
+          ],
+          "enum": [
+            "METADATA_CACHE_MODE_UNSPECIFIED",
+            "AUTOMATIC",
+            "MANUAL"
+          ]
         }
       }
     },
@@ -2913,7 +2980,7 @@
           "type": "string"
         },
         "type": {
-          "description": "Required. The field data type. Possible values include: * STRING * BYTES * INTEGER (or INT64) * FLOAT (or FLOAT64) * BOOLEAN (or BOOL) * TIMESTAMP * DATE * TIME * DATETIME * GEOGRAPHY, * NUMERIC * BIGNUMERIC * RECORD (or STRUCT) Use of RECORD\/STRUT indicates that the field contains a nested schema.",
+          "description": "Required. The field data type. Possible values include: * STRING * BYTES * INTEGER (or INT64) * FLOAT (or FLOAT64) * BOOLEAN (or BOOL) * TIMESTAMP * DATE * TIME * DATETIME * GEOGRAPHY, * NUMERIC * BIGNUMERIC * RECORD (or STRUCT) Use of RECORD\/STRUCT indicates that the field contains a nested schema.",
           "type": "string"
         },
         "mode": {
@@ -2964,7 +3031,22 @@
           "type": "string"
         },
         "defaultValueExpression": {
-          "description": "Optional. A SQL expression to specify the default value for this field. It can only be set for top level fields (columns). You can use struct or array expression to specify default value for the entire struct or array. The valid SQL expressions are: * Literals for all data types, including STRUCT and ARRAY. * Following functions: * CURRENT_TIMESTAMP * CURRENT_TIME * CURRENT_DATE * CURRENT_DATETIME * GENERATE_UUID * RAND * SESSION_USER * ST_GEOGPOINT * Struct or array composed with the above allowed functions, for example, [CURRENT_DATE(), DATE '2020-01-01']",
+          "description": "Optional. A SQL expression to specify the [default value] (https:\/\/cloud.google.com\/bigquery\/docs\/default-values) for this field.",
+          "type": "string"
+        },
+        "rangeElementType": {
+          "description": "Optional. The subtype of the RANGE, if the type of this field is RANGE. If the type is RANGE, this field is required. Possible values for the field element type of a RANGE include: * DATE * DATETIME * TIMESTAMP",
+          "$ref": "FieldElementType"
+        }
+      }
+    },
+    "FieldElementType": {
+      "id": "FieldElementType",
+      "description": "Represents the type of a field element.",
+      "type": "object",
+      "properties": {
+        "type": {
+          "description": "Required. The type of a field element. See TableFieldSchema.type.",
           "type": "string"
         }
       }
@@ -2999,6 +3081,10 @@
         "encoding": {
           "description": "Optional. The character encoding of the data. The supported values are UTF-8 or ISO-8859-1. The default value is UTF-8. BigQuery decodes the data after the raw, binary data has been split using the values of the quote and fieldDelimiter properties.",
           "type": "string"
+        },
+        "preserveAsciiControlCharacters": {
+          "description": "Optional. Indicates if the embedded ASCII control characters (the first 32 characters in the ASCII-table, from '\\x00' to '\\x1F') are preserved.",
+          "type": "boolean"
         }
       }
     },
@@ -3372,7 +3458,7 @@
     },
     "ConnectionProperty": {
       "id": "ConnectionProperty",
-      "description": "A connection-level property to customize query behavior. Under JDBC, these correspond directly to connection properties passed to the DriverManager. Under ODBC, these correspond to properties in the connection string. Currently supported connection properties: * **time_zone** - Represents the default timezone used to run the query. * **session_id** - Associates the query with a given session. * **query_label** - Associates the query with a given job label. If set, all subsequent queries in a script or session will have this label. For the format in which a you can specify a query label, see labels in the JobConfiguration resource type. Additional properties are allowed, but ignored. Specifying multiple connection properties with the same key returns an error.",
+      "description": "A connection-level property to customize query behavior. Under JDBC, these correspond directly to connection properties passed to the DriverManager. Under ODBC, these correspond to properties in the connection string. Currently supported connection properties: * **dataset_project_id**: represents the default project for datasets that are used in the query. Setting the system variable `@@dataset_project_id` achieves the same behavior. * **time_zone**: represents the default timezone used to run the query. * **session_id**: associates the query with a given session. * **query_label**: associates the query with a given job label. If set, all subsequent queries in a script or session will have this label. For the format in which a you can specify a query label, see labels in the JobConfiguration resource type. Additional properties are allowed, but ignored. Specifying multiple connection properties with the same key returns an error.",
       "type": "object",
       "properties": {
         "key": {
@@ -3506,6 +3592,10 @@
         "useAvroLogicalTypes": {
           "description": "Optional. If sourceFormat is set to \"AVRO\", indicates whether to interpret logical types as the corresponding BigQuery data type (for example, TIMESTAMP), instead of using the raw type (for example, INTEGER).",
           "type": "boolean"
+        },
+        "referenceFileSchemaUri": {
+          "description": "Optional. The user can provide a reference file with the reader schema. This file is only loaded if it is part of source URIs, but is not loaded otherwise. It is enabled for the following formats: AVRO, PARQUET, ORC.",
+          "type": "string"
         },
         "hivePartitioningOptions": {
           "description": "Optional. When set, configures hive partitioning support. Not all storage formats support hive partitioning -- requesting hive partitioning on an unsupported format will lead to an error, as will providing an invalid specification.",
@@ -3894,7 +3984,7 @@
           "$ref": "TransactionInfo"
         },
         "sessionInfo": {
-          "description": "Output only. [Preview] Information of the session if this job is part of one.",
+          "description": "Output only. Information of the session if this job is part of one.",
           "readOnly": true,
           "$ref": "SessionInfo"
         }
@@ -4110,6 +4200,11 @@
           "description": "Output only. Search query specific statistics.",
           "readOnly": true,
           "$ref": "SearchStatistics"
+        },
+        "sparkStatistics": {
+          "description": "Output only. Statistics of a Spark procedure job.",
+          "readOnly": true,
+          "$ref": "SparkStatistics"
         }
       }
     },
@@ -4307,7 +4402,7 @@
           "format": "int64"
         },
         "pendingUnits": {
-          "description": "Total parallel units of work remaining for the active stages.",
+          "description": "Total units of work remaining for the query. This number can be revised (increased or decreased) while the query is running.",
           "type": "string",
           "format": "int64"
         },
@@ -4318,6 +4413,11 @@
         },
         "activeUnits": {
           "description": "Total number of active workers. This does not correspond directly to slot usage. This is the largest value observed since the last sample.",
+          "type": "string",
+          "format": "int64"
+        },
+        "estimatedRunnableUnits": {
+          "description": "Units of work that can be scheduled immediately. Providing additional slots for these units of work will accelerate the query, if no other query in the reservation needs additional slots.",
           "type": "string",
           "format": "int64"
         }
@@ -4408,6 +4508,8 @@
             "AutoML Tables regression model.",
             "AutoML Tables classification model.",
             "Prinpical Component Analysis model.",
+            "Wide-and-deep classifier model.",
+            "Wide-and-deep regressor model.",
             "Autoencoder model.",
             "New name for the ARIMA model."
           ],
@@ -4426,6 +4528,8 @@
             "AUTOML_REGRESSOR",
             "AUTOML_CLASSIFIER",
             "PCA",
+            "DNN_LINEAR_COMBINED_CLASSIFIER",
+            "DNN_LINEAR_COMBINED_REGRESSOR",
             "AUTOENCODER",
             "ARIMA_PLUS"
           ]
@@ -4620,12 +4724,12 @@
       "type": "object",
       "properties": {
         "indexUsageMode": {
-          "description": "Specifies index usage mode for the query.",
+          "description": "Specifies the index usage mode for the query.",
           "type": "string",
           "enumDescriptions": [
-            "IndexUsageMode not specified.",
-            "No search indexes were used in the search query, see index_unused_reason for detailed reasons.",
-            "Part of the search query used search indexes, see index_unused_reason for why other parts of the query did not use search indexes.",
+            "Index usage mode not specified.",
+            "No search indexes were used in the search query. See [`indexUnusedReasons`] (\/bigquery\/docs\/reference\/rest\/v2\/Job#IndexUnusedReason) for detailed reasons.",
+            "Part of the search query used search indexes. See [`indexUnusedReasons`] (\/bigquery\/docs\/reference\/rest\/v2\/Job#IndexUnusedReason) for why other parts of the query did not use search indexes.",
             "The entire search query used search indexes."
           ],
           "enum": [
@@ -4636,7 +4740,7 @@
           ]
         },
         "indexUnusedReasons": {
-          "description": "When index_usage_mode is UNUSED or PARTIALLY_USED, this field explains why index was not used in all or part of the search query. If index_usage_mode is FULLY_USED, this field is not populated.",
+          "description": "When `indexUsageMode` is `UNUSED` or `PARTIALLY_USED`, this field explains why indexes were not used in all or part of the search query. If `indexUsageMode` is `FULLY_USED`, this field is not populated.",
           "type": "array",
           "items": {
             "$ref": "IndexUnusedReason"
@@ -4664,6 +4768,8 @@
             "Indicates the search index does not support the given search query pattern.",
             "Indicates the query has been optimized by using a materialized view.",
             "Indicates the query has been secured by data masking, and thus search indexes are not applicable.",
+            "Indicates that the search index and the search function call do not have the same text analyzer.",
+            "Indicates the base table is too small (below certain threshold) to trigger index usage.",
             "Indicates an internal error that causes the search index to be unused."
           ],
           "enum": [
@@ -4678,6 +4784,8 @@
             "UNSUPPORTED_SEARCH_PATTERN",
             "OPTIMIZED_WITH_MATERIALIZED_VIEW",
             "SECURED_BY_DATA_MASKING",
+            "MISMATCHED_TEXT_ANALYZER",
+            "BASE_TABLE_TOO_SMALL",
             "INTERNAL_ERROR"
           ]
         },
@@ -4691,6 +4799,53 @@
         },
         "indexName": {
           "description": "Specifies the name of the unused search index, if available.",
+          "type": "string"
+        }
+      }
+    },
+    "SparkStatistics": {
+      "id": "SparkStatistics",
+      "description": "Statistics for a BigSpark query. Populated as part of JobStatistics2",
+      "type": "object",
+      "properties": {
+        "sparkJobId": {
+          "description": "Output only. Spark job id if a Spark job is created successfully.",
+          "readOnly": true,
+          "type": "string"
+        },
+        "sparkJobLocation": {
+          "description": "Output only. Location where the Spark job is executed. A location is selected by BigQueury for jobs configured to run in multi-region.",
+          "readOnly": true,
+          "type": "string"
+        },
+        "endpoints": {
+          "description": "Output only. Endpoints returned from Dataproc. Key list: - history_server_endpoint: A link to Spark job UI.",
+          "readOnly": true,
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "loggingInfo": {
+          "description": "Output only. Logging info is used to generate a link to Cloud Logging.",
+          "readOnly": true,
+          "$ref": "LoggingInfo"
+        }
+      }
+    },
+    "LoggingInfo": {
+      "id": "LoggingInfo",
+      "description": "Spark job logs can be filtered by these fields in Cloud Logging.",
+      "type": "object",
+      "properties": {
+        "resourceType": {
+          "description": "Output only. Resource type used for logging.",
+          "readOnly": true,
+          "type": "string"
+        },
+        "projectId": {
+          "description": "Output only. Project ID used for logging. It is either tenant project ID where the Spark job is executed, or the user project id.",
+          "readOnly": true,
           "type": "string"
         }
       }
@@ -5449,6 +5604,10 @@
         "remoteFunctionOptions": {
           "description": "Optional. Remote function specific options.",
           "$ref": "RemoteFunctionOptions"
+        },
+        "sparkOptions": {
+          "description": "Optional. Spark specific options.",
+          "$ref": "SparkOptions"
         }
       }
     },
@@ -5517,11 +5676,11 @@
       "type": "object",
       "properties": {
         "endpoint": {
-          "description": "Endpoint of the user-provided remote service (e.g. a function url in Google Cloud Functions).",
+          "description": "Endpoint of the user-provided remote service, e.g. ```https:\/\/us-east1-my_gcf_project.cloudfunctions.net\/remote_add```",
           "type": "string"
         },
         "connection": {
-          "description": "Fully qualified name of the user-provided connection object which holds the authentication information to send requests to the remote service. projects\/{project_id}\/locations\/{location_id}\/connections\/{connection_id}",
+          "description": "Fully qualified name of the user-provided connection object which holds the authentication information to send requests to the remote service. Format: ```\"projects\/{projectId}\/locations\/{locationId}\/connections\/{connectionId}\"```",
           "type": "string"
         },
         "userDefinedContext": {
@@ -5532,9 +5691,67 @@
           }
         },
         "maxBatchingRows": {
-          "description": "Max number of rows in each batch sent to the remote service. If absent or if 0, it means no limit.",
+          "description": "Max number of rows in each batch sent to the remote service. If absent or if 0, BigQuery dynamically decides the number of rows in a batch.",
           "type": "string",
           "format": "int64"
+        }
+      }
+    },
+    "SparkOptions": {
+      "id": "SparkOptions",
+      "description": "Options for a user-defined Spark routine.",
+      "type": "object",
+      "properties": {
+        "connection": {
+          "description": "Fully qualified name of the user-provided Spark connection object. Format: ```\"projects\/{project_id}\/locations\/{location_id}\/connections\/{connection_id}\"```",
+          "type": "string"
+        },
+        "runtimeVersion": {
+          "description": "Runtime version. If not specified, the default runtime version is used.",
+          "type": "string"
+        },
+        "containerImage": {
+          "description": "Custom container image for the runtime environment.",
+          "type": "string"
+        },
+        "properties": {
+          "description": "Configuration properties as a set of key\/value pairs, which will be passed on to the Spark application. For more information, see [Apache Spark](https:\/\/spark.apache.org\/docs\/latest\/index.html).",
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "mainFileUri": {
+          "description": "The main file URI of the Spark application. Exactly one of the definition_body field and the main_file_uri field must be set.",
+          "type": "string"
+        },
+        "pyFileUris": {
+          "description": "Python files to be placed on the PYTHONPATH for PySpark application. Supported file types: `.py`, `.egg`, and `.zip`. For more information about Apache Spark, see [Apache Spark](https:\/\/spark.apache.org\/docs\/latest\/index.html).",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "jarUris": {
+          "description": "JARs to include on the driver and executor CLASSPATH. For more information about Apache Spark, see [Apache Spark](https:\/\/spark.apache.org\/docs\/latest\/index.html).",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "fileUris": {
+          "description": "Files to be placed in the working directory of each executor. For more information about Apache Spark, see [Apache Spark](https:\/\/spark.apache.org\/docs\/latest\/index.html).",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "archiveUris": {
+          "description": "Archive files to be extracted into the working directory of each executor. For more information about Apache Spark, see [Apache Spark](https:\/\/spark.apache.org\/docs\/latest\/index.html).",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
         }
       }
     },
@@ -5802,6 +6019,10 @@
           "readOnly": true,
           "type": "string",
           "format": "int64"
+        },
+        "maxStaleness": {
+          "description": "Optional. The maximum staleness of data that could be returned when the table (or stale MV) is queried. Staleness encoded as a string encoding of sql IntervalValue type.",
+          "type": "string"
         }
       }
     },
@@ -6135,7 +6356,7 @@
           "type": "string"
         },
         "members": {
-          "description": "Specifies the principals requesting access for a Google Cloud resource. `members` can have the following values: * `allUsers`: A special identifier that represents anyone who is on the internet; with or without a Google account. * `allAuthenticatedUsers`: A special identifier that represents anyone who is authenticated with a Google account or a service account. * `user:{emailid}`: An email address that represents a specific Google account. For example, `alice@example.com` . * `serviceAccount:{emailid}`: An email address that represents a service account. For example, `my-other-app@appspot.gserviceaccount.com`. * `group:{emailid}`: An email address that represents a Google group. For example, `admins@example.com`. * `deleted:user:{emailid}?uid={uniqueid}`: An email address (plus unique identifier) representing a user that has been recently deleted. For example, `alice@example.com?uid=123456789012345678901`. If the user is recovered, this value reverts to `user:{emailid}` and the recovered user retains the role in the binding. * `deleted:serviceAccount:{emailid}?uid={uniqueid}`: An email address (plus unique identifier) representing a service account that has been recently deleted. For example, `my-other-app@appspot.gserviceaccount.com?uid=123456789012345678901`. If the service account is undeleted, this value reverts to `serviceAccount:{emailid}` and the undeleted service account retains the role in the binding. * `deleted:group:{emailid}?uid={uniqueid}`: An email address (plus unique identifier) representing a Google group that has been recently deleted. For example, `admins@example.com?uid=123456789012345678901`. If the group is recovered, this value reverts to `group:{emailid}` and the recovered group retains the role in the binding. * `domain:{domain}`: The G Suite domain (primary) that represents all the users of that domain. For example, `google.com` or `example.com`. ",
+          "description": "Specifies the principals requesting access for a Google Cloud resource. `members` can have the following values: * `allUsers`: A special identifier that represents anyone who is on the internet; with or without a Google account. * `allAuthenticatedUsers`: A special identifier that represents anyone who is authenticated with a Google account or a service account. * `user:{emailid}`: An email address that represents a specific Google account. For example, `alice@example.com` . * `serviceAccount:{emailid}`: An email address that represents a Google service account. For example, `my-other-app@appspot.gserviceaccount.com`. * `serviceAccount:{projectid}.svc.id.goog[{namespace}\/{kubernetes-sa}]`: An identifier for a [Kubernetes service account](https:\/\/cloud.google.com\/kubernetes-engine\/docs\/how-to\/kubernetes-service-accounts). For example, `my-project.svc.id.goog[my-namespace\/my-kubernetes-sa]`. * `group:{emailid}`: An email address that represents a Google group. For example, `admins@example.com`. * `deleted:user:{emailid}?uid={uniqueid}`: An email address (plus unique identifier) representing a user that has been recently deleted. For example, `alice@example.com?uid=123456789012345678901`. If the user is recovered, this value reverts to `user:{emailid}` and the recovered user retains the role in the binding. * `deleted:serviceAccount:{emailid}?uid={uniqueid}`: An email address (plus unique identifier) representing a service account that has been recently deleted. For example, `my-other-app@appspot.gserviceaccount.com?uid=123456789012345678901`. If the service account is undeleted, this value reverts to `serviceAccount:{emailid}` and the undeleted service account retains the role in the binding. * `deleted:group:{emailid}?uid={uniqueid}`: An email address (plus unique identifier) representing a Google group that has been recently deleted. For example, `admins@example.com?uid=123456789012345678901`. If the group is recovered, this value reverts to `group:{emailid}` and the recovered group retains the role in the binding. * `domain:{domain}`: The G Suite domain (primary) that represents all the users of that domain. For example, `google.com` or `example.com`. ",
           "type": "array",
           "items": {
             "type": "string"

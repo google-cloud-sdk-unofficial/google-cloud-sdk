@@ -62,6 +62,7 @@ class CreateAlpha(base.CreateCommand):
   """Create a Compute Engine future reservation."""
   _support_share_setting = True
   _support_location_hint = True
+  _support_instance_template = True
   _support_planning_status = True
 
   @classmethod
@@ -73,7 +74,8 @@ class CreateAlpha(base.CreateCommand):
         support_share_setting=cls._support_share_setting,
         support_location_hint=cls._support_location_hint,
         support_fleet=True,
-        support_planning_status=cls._support_planning_status)
+        support_planning_status=cls._support_planning_status,
+        support_instance_template=cls._support_instance_template)
 
   def Run(self, args):
     return _RunCreate(

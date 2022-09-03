@@ -40,25 +40,17 @@ def _DetailedHelp():
   }
 
 
-def _Args(parser, include_l7_internal_load_balancing):
-  health_check_arg = flags.HealthCheckArgument(
-      '',
-      plural=True,
-      include_l7_internal_load_balancing=include_l7_internal_load_balancing)
+def _Args(parser):
+  health_check_arg = flags.HealthCheckArgument('', plural=True)
   health_check_arg.AddArgument(parser, operation_type='delete')
-  parser.display_info.AddCacheUpdater(completers.HealthChecksCompleterAlpha
-                                      if include_l7_internal_load_balancing
-                                      else completers.HealthChecksCompleter)
+  parser.display_info.AddCacheUpdater(completers.HealthChecksCompleterAlpha)
 
 
-def _Run(holder, args, include_l7_internal_load_balancing):
+def _Run(holder, args):
   """Issues the request necessary for deleting the health check."""
   client = holder.client
 
-  health_check_arg = flags.HealthCheckArgument(
-      '',
-      plural=True,
-      include_l7_internal_load_balancing=include_l7_internal_load_balancing)
+  health_check_arg = flags.HealthCheckArgument('', plural=True)
   health_check_refs = health_check_arg.ResolveAsResource(
       args,
       holder.resources,
@@ -87,13 +79,12 @@ def _Run(holder, args, include_l7_internal_load_balancing):
 class Delete(base.DeleteCommand):
   """Delete Ga/Beta health checks."""
 
-  _include_l7_internal_load_balancing = True
   detailed_help = _DetailedHelp()
 
   @classmethod
   def Args(cls, parser):
-    _Args(parser, cls._include_l7_internal_load_balancing)
+    _Args(parser)
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
-    return _Run(holder, args, self._include_l7_internal_load_balancing)
+    return _Run(holder, args)

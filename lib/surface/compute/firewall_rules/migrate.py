@@ -60,6 +60,14 @@ def _GetLegacyTags(firewalls):
   return tags
 
 
+def _GetServiceAccounts(firewalls):
+  service_accounts = set()
+  for firewall in firewalls:
+    service_accounts.update(firewall.sourceServiceAccounts)
+    service_accounts.update(firewall.targetServiceAccounts)
+  return service_accounts
+
+
 def _IsDefaultFirewallPolicyRule(rule):
   # Default egress/ingress IPv4/IPv6 rules
   if 2147483644 <= rule.priority <= 2147483647:
@@ -72,11 +80,20 @@ def _UnsupportedTagResult(field, tag):
   return (False, 'Mapping for {} \'{}\' was not found.'.format(field, tag))
 
 
-def _IsFirewallSupported(firewall, tag_mapping, disable_logging):
+def _IsFirewallSupported(firewall, tag_mapping):
   """Checks if the given VPC Firewall can be converted by the Migration Tool."""
   # Source Service Accounts
-  if firewall.sourceServiceAccounts:
-    return (False, 'Firewalls with source_service_accounts are not supported.')
+  for service_account in firewall.sourceServiceAccounts:
+    prefixed_service_account = 'sa:' + service_account
+    if prefixed_service_account not in tag_mapping:
+      return _UnsupportedTagResult('source_service_account',
+                                   prefixed_service_account)
+  # Target Service Accounts
+  for service_account in firewall.targetServiceAccounts:
+    prefixed_service_account = 'sa:' + service_account
+    if prefixed_service_account not in tag_mapping:
+      return _UnsupportedTagResult('target_service_account',
+                                   prefixed_service_account)
   # Source Tags
   for tag in firewall.sourceTags:
     if tag not in tag_mapping:
@@ -85,9 +102,6 @@ def _IsFirewallSupported(firewall, tag_mapping, disable_logging):
   for tag in firewall.targetTags:
     if tag not in tag_mapping:
       return _UnsupportedTagResult('target_tag', tag)
-  # Logging is not supported in Network Firewall Policies MVP
-  if not disable_logging and firewall.logConfig and firewall.logConfig.enable:
-    return (False, 'Logging is not supported in Network Firewall Policy MVP.')
   return (True, '')
 
 
@@ -121,8 +135,15 @@ def _ConvertTags(messages, tag_mapping, tags):
   ]
 
 
-def _ConvertRuleInternal(messages, firewall, action, l4_configs, tag_mapping,
-                         disable_logging):
+def _ConvertServiceAccounts(messages, tag_mapping, service_accounts):
+  return [
+      messages.FirewallPolicyRuleSecureTag(name=tag_mapping['sa:' +
+                                                            service_account])
+      for service_account in service_accounts
+  ]
+
+
+def _ConvertRuleInternal(messages, firewall, action, l4_configs, tag_mapping):
   return messages.FirewallPolicyRule(
       disabled=firewall.disabled,
       ruleName=firewall.name,  # Allow and deny cannot be in the same rule
@@ -130,23 +151,25 @@ def _ConvertRuleInternal(messages, firewall, action, l4_configs, tag_mapping,
       direction=_ConvertRuleDirection(messages, firewall.direction),
       priority=firewall.priority,
       action=action,
-      enableLogging=(not disable_logging and firewall.logConfig.enable),
+      enableLogging=firewall.logConfig.enable,
       match=messages.FirewallPolicyRuleMatcher(
           destIpRanges=firewall.destinationRanges,
           srcIpRanges=firewall.sourceRanges,
-          srcSecureTags=_ConvertTags(messages, tag_mapping,
-                                     firewall.sourceTags),
+          srcSecureTags=_ConvertTags(messages, tag_mapping, firewall.sourceTags)
+          + _ConvertServiceAccounts(messages, tag_mapping,
+                                    firewall.sourceServiceAccounts),
           layer4Configs=_ConvertLayer4Configs(messages, l4_configs)),
-      targetSecureTags=_ConvertTags(messages, tag_mapping, firewall.targetTags),
-      targetServiceAccounts=firewall.targetServiceAccounts)
+      targetSecureTags=_ConvertTags(
+          messages, tag_mapping, firewall.targetTags) + _ConvertServiceAccounts(
+              messages, tag_mapping, firewall.targetServiceAccounts))
 
 
-def _ConvertRule(messages, firewall, tag_mapping, disable_logging):
+def _ConvertRule(messages, firewall, tag_mapping):
   if firewall.denied:
     return _ConvertRuleInternal(messages, firewall, 'deny', firewall.denied,
-                                tag_mapping, disable_logging)
+                                tag_mapping)
   return _ConvertRuleInternal(messages, firewall, 'allow', firewall.allowed,
-                              tag_mapping, disable_logging)
+                              tag_mapping)
 
 
 def _IsPrefixTrue(statuses):
@@ -189,9 +212,11 @@ def _ReadTagMapping(file_name):
   return data
 
 
-def _WriteTagMapping(file_name, tags):
+def _WriteTagMapping(file_name, tags, service_accounts):
   """Exports legacy to secure tag mapping to a JSON file."""
-  mapping = dict.fromkeys(tags)
+  # Prefix service account tags with 'sa:'
+  prefixed_service_accounts = set(map(lambda x: ('sa:' + x), service_accounts))
+  mapping = dict.fromkeys(tags.union(prefixed_service_accounts))
 
   try:
     with files.FileWriter(path=file_name, create_path=True) as f:
@@ -247,16 +272,8 @@ class MigrateAlpha(base.CreateCommand):
     parser.add_argument(
         '--tag-mapping-file',
         required=False,
-        help='Path to a JSON file with legacy to secure tag mapping.')
-    # optional --disable-logging argument
-    parser.add_argument(
-        '--disable-logging',
-        action='store_true',
-        required=False,
-        help="""\
-      If set, migration tool will not migrate logging config. This is a
-      workaround to use before Network Firewall Policies support logging.
-      """)
+        help='Path to a JSON file with legacy tags and service accounts to secure tags mapping.'
+    )
 
   def Run(self, args):
     """Run the migration logic."""
@@ -275,7 +292,6 @@ class MigrateAlpha(base.CreateCommand):
     policy_name = getattr(args, 'target_firewall_policy', None)
     export_tag_mapping = getattr(args, 'export_tag_mapping', False)
     tag_mapping_file_name = getattr(args, 'tag_mapping_file', None)
-    disable_logging = getattr(args, 'disable_logging', False)
 
     # In the export tag mode, the tag mapping file must be provided
     if export_tag_mapping and not tag_mapping_file_name:
@@ -333,7 +349,8 @@ class MigrateAlpha(base.CreateCommand):
     # Branch 1: Just generate pre-mapping for legacy tags
     if export_tag_mapping:
       legacy_tags = _GetLegacyTags(firewalls)
-      _WriteTagMapping(tag_mapping_file_name, legacy_tags)
+      service_accounts = _GetServiceAccounts(firewalls)
+      _WriteTagMapping(tag_mapping_file_name, legacy_tags, service_accounts)
       log.status.Print(
           'Legacy tags were exported to \'{}\''.format(tag_mapping_file_name))
       return
@@ -374,11 +391,9 @@ class MigrateAlpha(base.CreateCommand):
       # Convert only supported customer defined VPC Firewalls
       if is_custom:
         customer_defined_firewalls = customer_defined_firewalls + 1
-        (status, error) = _IsFirewallSupported(firewall, tag_mapping,
-                                               disable_logging)
+        (status, error) = _IsFirewallSupported(firewall, tag_mapping)
         if status:
-          converted_firewall = _ConvertRule(messages, firewall, tag_mapping,
-                                            disable_logging)
+          converted_firewall = _ConvertRule(messages, firewall, tag_mapping)
         else:
           conversion_failures = conversion_failures + 1
       converted_firewalls.append(

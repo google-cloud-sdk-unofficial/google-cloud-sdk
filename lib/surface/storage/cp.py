@@ -53,11 +53,30 @@ class Cp(base.Command):
       following command uploads the directory tree ``dir'':
 
         $ {command} --recursive dir gs://my-bucket
+
+      Recursive listings are similar to adding `**` to a query, except
+      `**` matches only cloud objects and will not match prefixes. For
+      example, the following would not match ``gs://my-bucket/dir/log.txt''
+
+        $ {command} gs://my-bucket/**/dir dir
+
+      `**` retrieves a flat list of objects in a single API call. However, `**`
+      matches folders for non-cloud queries. For example, a folder ``dir''
+      would be copied in the following.
+
+        $ {command} ~/Downloads/**/dir gs://my-bucket
       """,
   }
 
   @staticmethod
   def Args(parser):
+    parser.add_argument(
+        '-R',
+        '-r',
+        '--recursive',
+        action='store_true',
+        help='Recursively copy the contents of any directories that match the'
+        ' source path expression.')
     cp_command_util.add_cp_flags(parser)
 
   def Run(self, args):

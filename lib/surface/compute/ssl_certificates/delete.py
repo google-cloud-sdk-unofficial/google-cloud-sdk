@@ -41,8 +41,7 @@ class Delete(base.DeleteCommand):
 
   @staticmethod
   def Args(parser):
-    Delete.SSL_CERTIFICATE_ARG = flags.SslCertificateArgument(
-        plural=True, include_l7_internal_load_balancing=True)
+    Delete.SSL_CERTIFICATE_ARG = flags.SslCertificateArgument(plural=True)
     Delete.SSL_CERTIFICATE_ARG.AddArgument(parser, operation_type='delete')
     parser.display_info.AddCacheUpdater(flags.SslCertificatesCompleterBeta)
 

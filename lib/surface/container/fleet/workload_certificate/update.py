@@ -91,18 +91,21 @@ class Update(base.UpdateCommand):
       memberships = args.memberships.split(',')
 
     if not memberships:  # The user didn't provide --memberships.
-      if console_io.CanPrompt():
-        index = console_io.PromptChoice(
-            options=all_memberships,
-            message='Please specify a membership:\n',
-            cancel_option=True)
-        memberships.append(all_memberships[index])
+      if resources.UseRegionalMemberships(self.ReleaseTrack()):
+        memberships.append(resources.PromptForMembership(flag='--memberships'))
       else:
-        raise calliope_exceptions.RequiredArgumentException(
-            '--memberships',
-            ('Cannot prompt a console for membership. Membership is required. '
-             'Please specify `--memberships` to select at least one membership.'
-            ))
+        if console_io.CanPrompt():
+          index = console_io.PromptChoice(
+              options=all_memberships,
+              message='Please specify a membership:\n',
+              cancel_option=True)
+          memberships.append(all_memberships[index])
+        else:
+          raise calliope_exceptions.RequiredArgumentException(
+              '--memberships',
+              ('Cannot prompt a console for membership. Membership is '
+               'required. Please specify `--memberships` to select at '
+               'least one membership.'))
 
     for membership in memberships:
       if membership not in all_memberships:

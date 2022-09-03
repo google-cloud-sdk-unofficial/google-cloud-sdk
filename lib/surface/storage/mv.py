@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*- #
-# Copyright 2021 Google LLC. All Rights Reserved.
+# Copyright 2022 Google LLC. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -19,9 +19,11 @@ from __future__ import division
 from __future__ import unicode_literals
 
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.storage import cp_command_util
+from googlecloudsdk.command_lib.storage import errors
+from googlecloudsdk.command_lib.storage import storage_url
 
 
-@base.Hidden
 class Mv(base.Command):
   """Moves or renames objects."""
 
@@ -80,8 +82,15 @@ class Mv(base.Command):
 
   @staticmethod
   def Args(parser):
-    del parser  # Unused.
+    cp_command_util.add_cp_flags(parser)
 
   def Run(self, args):
-    del args  # Unused.
-    raise NotImplementedError
+    for url_string in args.source:
+      url = storage_url.storage_url_from_string(url_string)
+      if isinstance(url, storage_url.CloudUrl) and not url.is_object():
+        raise errors.InvalidUrlError("Cannot mv buckets.")
+      if url.is_stdio:
+        raise errors.InvalidUrlError("Cannot mv stdin.")
+    # Must copy children of prefixes and folders.
+    args.recursive = True
+    self.exit_code = cp_command_util.run_cp(args, delete_source=True)

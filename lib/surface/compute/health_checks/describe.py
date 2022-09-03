@@ -39,8 +39,7 @@ class Describe(base.DescribeCommand):
 
   @classmethod
   def Args(cls, parser):
-    cls.HEALTH_CHECK_ARG = flags.HealthCheckArgument(
-        '', include_l7_internal_load_balancing=True)
+    cls.HEALTH_CHECK_ARG = flags.HealthCheckArgument('')
     cls.HEALTH_CHECK_ARG.AddArgument(parser, operation_type='describe')
 
   def Run(self, args):

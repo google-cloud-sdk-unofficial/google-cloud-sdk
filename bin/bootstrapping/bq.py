@@ -85,7 +85,7 @@ def main():
 
 
 if __name__ == '__main__':
-  bootstrapping.DisallowPython3()
+  bootstrapping.DisallowIncompatiblePythonVersions()
   try:
     main()
   except Exception as e:  # pylint: disable=broad-except

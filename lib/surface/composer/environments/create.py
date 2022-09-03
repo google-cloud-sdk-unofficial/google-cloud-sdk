@@ -44,10 +44,6 @@ _INVALID_OPTION_FOR_V1_ERROR_MSG = """\
 Cannot specify --{opt} with Composer 1.X.
 """
 
-_INVALID_OPTION_FOR_MIN_AIRFLOW_VERSION_ERROR_MSG = """\
-Cannot specify {opt}. Airflow version {airflow_version} is required.
-"""
-
 DETAILED_HELP = {
     'EXAMPLES':
         """\
@@ -679,7 +675,7 @@ class CreateBeta(Create):
       for k, v in possible_args.items():
         if v and not triggerer_supported:
           raise command_util.InvalidUserInputError(
-              _INVALID_OPTION_FOR_MIN_AIRFLOW_VERSION_ERROR_MSG.format(
+              flags.INVALID_OPTION_FOR_MIN_AIRFLOW_VERSION_ERROR_MSG.format(
                   opt=k,
                   airflow_version=image_versions_util
                   .MIN_TRIGGERER_AIRFLOW_VERSION))

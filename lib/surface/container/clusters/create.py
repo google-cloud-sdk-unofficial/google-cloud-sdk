@@ -345,7 +345,8 @@ def ParseCreateOptionsBase(args, is_autopilot, get_default, location,
       disable_pod_cidr_overprovision=get_default('disable_pod_cidr_overprovision'),
       private_endpoint_subnetwork=get_default('private_endpoint_subnetwork'),
       enable_google_cloud_access=get_default('enable_google_cloud_access'),
-      gateway_api=get_default('gateway_api'))
+      gateway_api=get_default('gateway_api'),
+      logging_variant=get_default('logging_variant'))
 
 
 GA = 'ga'
@@ -572,6 +573,8 @@ flags_to_add = {
             flags.AddPrivateEndpointSubnetworkFlag,
         'enableGoogleCloudAccess':
             flags.AddEnableGoogleCloudAccess,
+        'loggingvariant':
+            flags.AddLoggingVariantFlag,
     },
     BETA: {
         'accelerator': (lambda p: AddAcceleratorFlag(p, True, True, True)),
@@ -779,6 +782,8 @@ flags_to_add = {
             flags.AddEnableGoogleCloudAccess,
         'managedConfig':
             flags.AddManagedConfigFlag,
+        'loggingvariant':
+            flags.AddLoggingVariantFlag,
     },
     ALPHA: {
         'accelerator': (lambda p: AddAcceleratorFlag(p, True, True, True)),
@@ -997,6 +1002,8 @@ flags_to_add = {
             flags.AddEnableGoogleCloudAccess,
         'managedConfig':
             flags.AddManagedConfigFlag,
+        'loggingvariant':
+            flags.AddLoggingVariantFlag,
     },
 }
 

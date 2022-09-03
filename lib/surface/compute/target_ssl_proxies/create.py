@@ -66,7 +66,9 @@ class Create(base.CreateCommand):
 
     cls.SSL_CERTIFICATES_ARG = (
         ssl_certificates_flags.SslCertificatesArgumentForOtherResource(
-            'target SSL proxy', required=not cls._certificate_map))
+            'target SSL proxy',
+            required=not cls._certificate_map,
+            include_regional_ssl_certificates=False))
     if not cls._certificate_map:
       cls.SSL_CERTIFICATES_ARG.AddArgument(
           parser, cust_metavar='SSL_CERTIFICATE')

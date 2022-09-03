@@ -177,7 +177,8 @@ def ParseCreateNodePoolOptionsBase(args):
       node_pool_soak_duration=args.node_pool_soak_duration,
       standard_rollout_policy=args.standard_rollout_policy,
       enable_private_nodes=args.enable_private_nodes,
-      enable_fast_socket=args.enable_fast_socket)
+      enable_fast_socket=args.enable_fast_socket,
+      logging_variant=args.logging_variant)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
@@ -223,6 +224,7 @@ class Create(base.CreateCommand):
     flags.AddNodePoolSoakDurationFlag(parser)
     flags.AddNodePoolEnablePrivateNodes(parser)
     flags.AddEnableFastSocketFlag(parser)
+    flags.AddLoggingVariantFlag(parser, for_node_pool=True)
 
   def ParseCreateNodePoolOptions(self, args):
     ops = ParseCreateNodePoolOptionsBase(args)
@@ -326,6 +328,7 @@ class CreateBeta(Create):
     flags.AddEnableConfidentialNodesFlag(parser, for_node_pool=True)
     flags.AddDisablePodCIDROverprovisionFlag(parser)
     flags.AddEnableFastSocketFlag(parser)
+    flags.AddLoggingVariantFlag(parser, for_node_pool=True)
 
   def ParseCreateNodePoolOptions(self, args):
     ops = ParseCreateNodePoolOptionsBase(args)
@@ -428,6 +431,7 @@ class CreateAlpha(Create):
     flags.AddEnableConfidentialNodesFlag(parser, for_node_pool=True)
     flags.AddDisablePodCIDROverprovisionFlag(parser)
     flags.AddEnableFastSocketFlag(parser)
+    flags.AddLoggingVariantFlag(parser, for_node_pool=True)
 
 
 Create.detailed_help = DETAILED_HELP

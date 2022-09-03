@@ -28,15 +28,13 @@ from googlecloudsdk.command_lib.compute.ssl_certificates import ssl_certificates
 from googlecloudsdk.core.util import files
 
 
-def _Args(parser, include_l7_internal_load_balancing=False):
+def _Args(parser):
   """Add the SSL certificates command line flags to the parser."""
   parser.add_argument(
       '--description',
       help='An optional, textual description for the SSL certificate.')
 
-  parser.display_info.AddCacheUpdater(
-      flags.SslCertificatesCompleterBeta
-      if include_l7_internal_load_balancing else flags.SslCertificatesCompleter)
+  parser.display_info.AddCacheUpdater(flags.SslCertificatesCompleterBeta)
 
   managed_or_not = parser.add_group(
       mutex=True,
@@ -139,10 +137,9 @@ class Create(base.CreateCommand):
   @classmethod
   def Args(cls, parser):
     parser.display_info.AddFormat(flags.DEFAULT_LIST_FORMAT)
-    cls.SSL_CERTIFICATE_ARG = flags.SslCertificateArgument(
-        include_l7_internal_load_balancing=True)
+    cls.SSL_CERTIFICATE_ARG = flags.SslCertificateArgument()
     cls.SSL_CERTIFICATE_ARG.AddArgument(parser, operation_type='create')
-    _Args(parser, include_l7_internal_load_balancing=True)
+    _Args(parser)
 
   def Run(self, args):
     """Issues the request necessary for adding the SSL certificate."""

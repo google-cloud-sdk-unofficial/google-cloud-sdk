@@ -40,29 +40,22 @@ def _DetailedHelp():
   }
 
 
-def _Args(parser, include_l7_internal_load_balancing, include_log_config):
+def _Args(parser, include_log_config):
   """Set up arguments to create an SSL HealthCheck."""
   parser.display_info.AddFormat(flags.DEFAULT_LIST_FORMAT)
-  flags.HealthCheckArgument(
-      'SSL',
-      include_l7_internal_load_balancing=include_l7_internal_load_balancing
-  ).AddArgument(
-      parser, operation_type='create')
+  flags.HealthCheckArgument('SSL').AddArgument(parser, operation_type='create')
   health_checks_utils.AddTcpRelatedCreationArgs(parser)
   health_checks_utils.AddProtocolAgnosticCreationArgs(parser, 'SSL')
   if include_log_config:
     health_checks_utils.AddHealthCheckLoggingRelatedArgs(parser)
 
 
-def _Run(args, holder, include_l7_internal_load_balancing, include_log_config):
+def _Run(args, holder, include_log_config):
   """Issues the request necessary for adding the health check."""
   client = holder.client
   messages = client.messages
 
-  health_check_ref = flags.HealthCheckArgument(
-      'SSL',
-      include_l7_internal_load_balancing=include_l7_internal_load_balancing
-  ).ResolveAsResource(
+  health_check_ref = flags.HealthCheckArgument('SSL').ResolveAsResource(
       args, holder.resources, default_scope=compute_scope.ScopeEnum.GLOBAL)
   proxy_header = messages.SSLHealthCheck.ProxyHeaderValueValuesEnum(
       args.proxy_header)
@@ -115,19 +108,16 @@ def _Run(args, holder, include_l7_internal_load_balancing, include_log_config):
 class Create(base.CreateCommand):
   """Create a SSL health check."""
 
-  _include_l7_internal_load_balancing = True
   _include_log_config = True
   detailed_help = _DetailedHelp()
 
   @classmethod
   def Args(cls, parser):
-    _Args(parser, cls._include_l7_internal_load_balancing,
-          cls._include_log_config)
+    _Args(parser, cls._include_log_config)
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
-    return _Run(args, holder, self._include_l7_internal_load_balancing,
-                self._include_log_config)
+    return _Run(args, holder, self._include_log_config)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)

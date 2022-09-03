@@ -111,7 +111,7 @@ class Update(base.UpdateCommand):
 
     if resources.UseRegionalMemberships(self.ReleaseTrack()):
       membership = resources.MembershipResourceName(args)
-      all_memberships = base.ListMembershipsFull()
+      all_memberships, _ = base.ListMembershipsFull()
     else:
       membership = args.membership
       all_memberships = base.ListMemberships()

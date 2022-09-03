@@ -75,7 +75,7 @@ def _IsSpecifiedPython2():
 
 if __name__ == '__main__':
   if not _IsSpecifiedPython2():
-    bootstrapping.DisallowPython3()
+    bootstrapping.DisallowIncompatiblePythonVersions()
   try:
     bootstrapping.CommandStart('dev_appserver', component_id='core')
     bootstrapping.CheckUpdates('dev_appserver')

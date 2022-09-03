@@ -57,6 +57,7 @@ class Create(base.CreateCommand):
   """Create a Compute Engine reservation."""
   _support_share_setting = True
   _support_resource_policies = False
+  _support_instance_template = False
 
   @classmethod
   def Args(cls, parser):
@@ -75,6 +76,7 @@ class CreateBeta(Create):
   """Create a Compute Engine reservation."""
   _support_share_setting = True
   _support_resource_policies = True
+  _support_instance_template = False
 
   @classmethod
   def Args(cls, parser):
@@ -94,6 +96,7 @@ class CreateAlpha(CreateBeta):
   """Create a Compute Engine reservation."""
   _support_share_setting = True
   _support_resource_policies = True
+  _support_instance_template = True
 
   @classmethod
   def Args(cls, parser):
@@ -103,7 +106,8 @@ class CreateAlpha(CreateBeta):
         parser,
         support_share_setting=cls._support_share_setting,
         support_fleet=True,
-        support_resource_policies=cls._support_resource_policies)
+        support_resource_policies=cls._support_resource_policies,
+        support_instance_template=cls._support_instance_template)
 
   def Run(self, args):
     return _RunCreate(

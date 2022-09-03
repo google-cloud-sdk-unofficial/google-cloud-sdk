@@ -47,12 +47,9 @@ def _DetailedHelp():
   }
 
 
-def _Args(parser, include_l7_internal_load_balancing, include_log_config,
-          include_weighted_load_balancing):
+def _Args(parser, include_log_config, include_weighted_load_balancing):
   """Adds all the args in the parser."""
-  health_check_arg = flags.HealthCheckArgument(
-      'HTTP2',
-      include_l7_internal_load_balancing=include_l7_internal_load_balancing)
+  health_check_arg = flags.HealthCheckArgument('HTTP2')
   health_check_arg.AddArgument(parser, operation_type='update')
   health_checks_utils.AddHttpRelatedUpdateArgs(parser,
                                                include_weighted_load_balancing)
@@ -204,16 +201,13 @@ def _ValidateArgs(args,
     raise exceptions.ArgumentError('At least one property must be modified.')
 
 
-def _Run(args, holder, include_l7_internal_load_balancing, include_log_config,
-         include_weighted_load_balancing):
+def _Run(args, holder, include_log_config, include_weighted_load_balancing):
   """Issues requests necessary to update the HTTP2 Health Checks."""
   client = holder.client
 
   _ValidateArgs(args, include_log_config, include_weighted_load_balancing)
 
-  health_check_arg = flags.HealthCheckArgument(
-      'HTTP2',
-      include_l7_internal_load_balancing=include_l7_internal_load_balancing)
+  health_check_arg = flags.HealthCheckArgument('HTTP2')
   health_check_ref = health_check_arg.ResolveAsResource(
       args, holder.resources, default_scope=compute_scope.ScopeEnum.GLOBAL)
   if health_checks_utils.IsRegionalHealthCheckRef(health_check_ref):
@@ -246,20 +240,18 @@ def _Run(args, holder, include_l7_internal_load_balancing, include_log_config,
 class Update(base.UpdateCommand):
   """Update a HTTP2 health check."""
 
-  _include_l7_internal_load_balancing = True
   _include_log_config = True
   _include_weighted_load_balancing = False
   detailed_help = _DetailedHelp()
 
   @classmethod
   def Args(cls, parser):
-    _Args(parser, cls._include_l7_internal_load_balancing,
-          cls._include_log_config, cls._include_weighted_load_balancing)
+    _Args(parser, cls._include_log_config, cls._include_weighted_load_balancing)
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
-    return _Run(args, holder, self._include_l7_internal_load_balancing,
-                self._include_log_config, self._include_weighted_load_balancing)
+    return _Run(args, holder, self._include_log_config,
+                self._include_weighted_load_balancing)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)

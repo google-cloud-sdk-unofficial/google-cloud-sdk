@@ -44,7 +44,7 @@ def main():
 
 
 if __name__ == '__main__':
-  bootstrapping.DisallowPython3()
+  bootstrapping.DisallowIncompatiblePythonVersions()
   bootstrapping.CommandStart('dev_appserver_java', component_id='core')
   bootstrapping.CheckUpdates('dev_appserver_java')
   main()

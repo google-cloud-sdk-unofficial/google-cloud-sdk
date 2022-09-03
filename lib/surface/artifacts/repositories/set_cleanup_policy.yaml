@@ -13,7 +13,7 @@
         * A valid cleanup policy format was not provided.
         * A cleanup policy exists with a different name.
 
-      See https://cloud.google.com/artifact-registry/docs/repos/cleanup-policy
+      See https://cloud.google.com/artifact-registry/docs/repositories/cleanup-policy
       for details of the cleanup policy file format and contents.
 
     examples: |

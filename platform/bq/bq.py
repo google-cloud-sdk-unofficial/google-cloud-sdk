@@ -1024,6 +1024,12 @@ class _Load(BigqueryCmd):
         'interpreting logical types into their corresponding types '
         '(ie. TIMESTAMP), instead of only using their raw types (ie. INTEGER).',
         flag_values=fv)
+    flags.DEFINE_string(
+        'reference_file_schema_uri',
+        None,
+        'provide a reference file with the reader schema, currently '
+        'enabled for the format: AVRO, PARQUET, ORC.',
+        flag_values=fv)
     flags.DEFINE_boolean(
         'parquet_enum_as_string',
         False, 'Infer Parquet ENUM logical type as STRING '
@@ -1212,6 +1218,9 @@ class _Load(BigqueryCmd):
       }
     if self.use_avro_logical_types is not None:
       opts['use_avro_logical_types'] = self.use_avro_logical_types
+    if self.reference_file_schema_uri is not None:
+      opts[
+          'reference_file_schema_uri'] = self.reference_file_schema_uri
     if self.hive_partitioning_mode is not None:
       _ValidateHivePartitioningOptions(self.hive_partitioning_mode)
       hive_partitioning_options = {}
@@ -1272,6 +1281,9 @@ def _CreateExternalTableDefinition(
     use_avro_logical_types=False,
     parquet_enum_as_string=False,
     parquet_enable_list_inference=False,
+    metadata_cache_mode=None,
+    preserve_ascii_control_characters=False,
+    reference_file_schema_uri=None,
     ):
   """Create an external table definition with the given URIs and the schema.
 
@@ -1304,6 +1316,9 @@ def _CreateExternalTableDefinition(
       partition keys as STRING typed.  No other values are accepted.
     hive_partitioning_source_uri_prefix: Shared prefix for all files until hive
       partitioning encoding begins.
+    metadata_cache_mode: Enables metadata cache for an external table with a
+      connection. Specify 'AUTOMATIC' to automatically refresh the cached
+      metadata. Specify 'MANUAL' to stop the automatic refresh.
 
   Returns:
     A python dictionary that contains a external table definition for the given
@@ -1325,6 +1340,8 @@ def _CreateExternalTableDefinition(
 
     external_table_def = {'sourceFormat': source_format}
 
+    if metadata_cache_mode is not None:
+      external_table_def['metadataCacheMode'] = metadata_cache_mode
 
     if external_table_def['sourceFormat'] == 'CSV':
       if autodetect:
@@ -1346,6 +1363,8 @@ def _CreateExternalTableDefinition(
                 "encoding": "UTF-8"
             }
         """)
+      external_table_def['csvOptions'][
+          'preserveAsciiControlCharacters'] = preserve_ascii_control_characters
     elif external_table_def['sourceFormat'] == 'NEWLINE_DELIMITED_JSON':
       if autodetect is None or autodetect:
         external_table_def['autodetect'] = True
@@ -1358,17 +1377,22 @@ def _CreateExternalTableDefinition(
                 "skipLeadingRows": 0
             }
         """)
-    elif external_table_def['sourceFormat'] == 'AVRO' and use_avro_logical_types:
-      external_table_def['avroOptions'] = yaml.safe_load("""
-          {
-              "useAvroLogicalTypes": true
-          }
-      """)
+    elif external_table_def['sourceFormat'] == 'AVRO':
+      external_table_def['avroOptions'] = {
+          'useAvroLogicalTypes': use_avro_logical_types
+      }
+      if reference_file_schema_uri is not None:
+        external_table_def['referenceFileSchemaUri'] = reference_file_schema_uri
     elif external_table_def['sourceFormat'] == 'PARQUET':
       external_table_def['parquetOptions'] = {
           'enumAsString': parquet_enum_as_string,
           'enableListInference': parquet_enable_list_inference
       }
+      if reference_file_schema_uri is not None:
+        external_table_def['referenceFileSchemaUri'] = reference_file_schema_uri
+    elif external_table_def['sourceFormat'] == 'ORC':
+      if reference_file_schema_uri is not None:
+        external_table_def['referenceFileSchemaUri'] = reference_file_schema_uri
 
     if ignore_unknown_values:
       external_table_def['ignoreUnknownValues'] = True
@@ -1482,7 +1506,25 @@ class _MakeExternalTableDefinition(BigqueryCmd):
         False,
         _PARQUET_LIST_INFERENCE_DESCRIPTION,
         flag_values=fv)
-
+    flags.DEFINE_enum(
+        'metadata_cache_mode',
+        None,
+        ['AUTOMATIC', 'MANUAL'],
+        'Enables metadata cache for an external table with a connection. '
+        'Specify AUTOMATIC to automatically refresh the cached metadata. '
+        'Specify MANUAL to stop the automatic refresh.',
+        flag_values=fv)
+    flags.DEFINE_boolean(
+        'preserve_ascii_control_characters',
+        False,
+        'Whether to preserve embedded Ascii Control characters in CSV External table ',
+        flag_values=fv)
+    flags.DEFINE_string(
+        'reference_file_schema_uri',
+        None,
+        'provide a referencing file with the expected table schema, currently '
+        'enabled for the formats: AVRO, PARQUET, ORC.',
+        flag_values=fv)
     self._ProcessCommandRc(fv)
 
   def RunWithArgs(self, source_uris, schema=None):
@@ -1538,6 +1580,9 @@ class _MakeExternalTableDefinition(BigqueryCmd):
             use_avro_logical_types=self.use_avro_logical_types,
             parquet_enum_as_string=self.parquet_enum_as_string,
             parquet_enable_list_inference=self.parquet_enable_list_inference,
+            metadata_cache_mode=self.metadata_cache_mode,
+            preserve_ascii_control_characters=self.preserve_ascii_control_characters,
+            reference_file_schema_uri=self.reference_file_schema_uri,
             ),
         sys.stdout,
         sort_keys=True,
@@ -2168,6 +2213,9 @@ def _GetExternalDataConfig(file_path_or_simple_spec,
                            use_avro_logical_types=False,
                            parquet_enum_as_string=False,
                            parquet_enable_list_inference=False,
+                           metadata_cache_mode=None,
+                           preserve_ascii_control_characters=None,
+                           reference_file_schema_uri=None,
                            ):
   """Returns a ExternalDataConfiguration from the file or specification string.
 
@@ -2182,7 +2230,6 @@ def _GetExternalDataConfig(file_path_or_simple_spec,
   Raises:
     UsageError: when incorrect usage or invalid args are used.
   """
-
   maybe_filepath = os.path.expanduser(file_path_or_simple_spec)
   if os.path.isfile(maybe_filepath):
     try:
@@ -2250,7 +2297,10 @@ def _GetExternalDataConfig(file_path_or_simple_spec,
         use_avro_logical_types=use_avro_logical_types,
         parquet_enum_as_string=parquet_enum_as_string,
         parquet_enable_list_inference=parquet_enable_list_inference,
-        )
+        metadata_cache_mode=metadata_cache_mode,
+        preserve_ascii_control_characters=preserve_ascii_control_characters,
+        reference_file_schema_uri=reference_file_schema_uri,
+    )
 
 
 class _Extract(BigqueryCmd):
@@ -2284,6 +2334,12 @@ class _Extract(BigqueryCmd):
         '1-based ID of the trial to be exported from a hyperparameter tuning '
         'model. The default_trial_id will be exported if not specified. This '
         'does not apply for models not trained with hyperparameter tuning.',
+        flag_values=fv)
+    flags.DEFINE_boolean(
+        'add_serving_default_signature',
+        None,
+        'Whether to add serving_default signature for export BigQuery ML '
+        'trained tf based models.',
         flag_values=fv)
     flags.DEFINE_enum(
         'compression',
@@ -2351,6 +2407,7 @@ class _Extract(BigqueryCmd):
         field_delimiter=_NormalizeFieldDelimiter(self.field_delimiter),
         destination_format=self.destination_format,
         trial_id=self.trial_id,
+        add_serving_default_signature=self.add_serving_default_signature,
         compression=self.compression,
         use_avro_logical_types=self.use_avro_logical_types,
         **kwds)
@@ -3672,6 +3729,16 @@ class _Make(BigqueryCmd):
         'materialized view can be automatically refreshed again. If not set, '
         'the default value is "1800000" (30 minutes).',
         flag_values=fv)
+    flags.DEFINE_string(
+        'max_staleness',
+        None,
+        'INTERVAL value that determines the maximum staleness allowed when '
+        'querying a materialized view or an external table. By default no '
+        'staleness is allowed. Examples of valid max_staleness values: '
+        '1 day: "0-0 1 0:0:0"; 1 hour: "0-0 0 1:0:0".'
+        'See more explanation about the INTERVAL values: '
+        'https://cloud.google.com/bigquery/docs/reference/standard-sql/data-types#interval_type',  # pylint: disable=line-too-long
+        flag_values=fv)
     flags.DEFINE_boolean(
         'use_legacy_sql',
         None,
@@ -3757,7 +3824,12 @@ class _Make(BigqueryCmd):
         flag_values=fv)
     flags.DEFINE_enum(
         'renewal_plan',
-        None, ['FLEX', 'MONTHLY', 'ANNUAL'],
+        None,
+        [
+            'FLEX',
+            'MONTHLY',
+            'ANNUAL',
+        ],
         'The plan this capacity commitment is converted to after committed '
         'period ends. Options include:'
         '\n FLEX'
@@ -3825,7 +3897,7 @@ class _Make(BigqueryCmd):
         flag_values=fv)
     flags.DEFINE_enum(
         'job_type',
-        None, ['QUERY', 'PIPELINE', 'ML_EXTERNAL'],
+        None, ['QUERY', 'PIPELINE', 'ML_EXTERNAL', 'BACKGROUND'],
         'Type of jobs to create reservation assignment for. Options include:'
         '\n QUERY'
         '\n PIPELINE'
@@ -3837,7 +3909,10 @@ class _Make(BigqueryCmd):
         'training will use slots from this reservation. Slots used by these '
         'jobs are not preemptible, i.e., they are not available for other jobs '
         'running in the reservation. These jobs will not utilize idle slots '
-        'from other reservations.',
+        'from other reservations.'
+        '\n BACKGROUND'
+        '\n BigQuery CDC background merge will use BACKGROUND reservations to '
+        'execute if created.',
         flag_values=fv)
     flags.DEFINE_enum(
         'priority',
@@ -3951,6 +4026,25 @@ class _Make(BigqueryCmd):
         'Optional. Define the max time travel in hours. The value can be from '
         '48 to 168 hours (2 to 7 days). The default value is 168 hours if this '
         'is not set.',
+        flag_values=fv)
+    flags.DEFINE_enum(
+        'metadata_cache_mode',
+        None,
+        ['AUTOMATIC', 'MANUAL'],
+        'Enables metadata cache for an external table with a connection. '
+        'Specify AUTOMATIC to automatically refresh the cached metadata. '
+        'Specify MANUAL to stop the automatic refresh.',
+        flag_values=fv)
+    flags.DEFINE_boolean(
+        'preserve_ascii_control_characters',
+        False,
+        'Whether to preserve embedded Ascii Control characters in CSV External table ',
+        flag_values=fv)
+    flags.DEFINE_string(
+        'reference_file_schema_uri',
+        None,
+        'provide a reference file with the table schema, currently '
+        'enabled for the formats: AVRO, PARQUET, ORC.',
         flag_values=fv)
     self._ProcessCommandRc(fv)
 
@@ -4155,6 +4249,10 @@ class _Make(BigqueryCmd):
       # by the connection service.
       if not param_properties and self.connection_type == 'CLOUD_RESOURCE':
         param_properties = '{}'
+      # SPARK connections does not require properties since all the fields in
+      # the properties are optional.
+      if not param_properties and self.connection_type == 'SPARK':
+        param_properties = '{}'
       if not param_properties:
         raise app.UsageError('Need to specify --properties')
       created_connection = client.CreateConnection(
@@ -4269,6 +4367,9 @@ class _Make(BigqueryCmd):
             self.use_avro_logical_types,
             self.parquet_enum_as_string,
             self.parquet_enable_list_inference,
+            self.metadata_cache_mode,
+            self.preserve_ascii_control_characters,
+            self.reference_file_schema_uri,
             )
 
       view_udf_resources = None
@@ -4292,6 +4393,7 @@ class _Make(BigqueryCmd):
           materialized_view_query=materialized_view_query_arg,
           enable_refresh=self.enable_refresh,
           refresh_interval_ms=self.refresh_interval_ms,
+          max_staleness=self.max_staleness,
           view_udf_resources=view_udf_resources,
           use_legacy_sql=self.use_legacy_sql,
           external_data_config=external_data_config,
@@ -4605,7 +4707,12 @@ class _Update(BigqueryCmd):
         flag_values=fv)
     flags.DEFINE_enum(
         'renewal_plan',
-        None, ['FLEX', 'MONTHLY', 'ANNUAL'],
+        None,
+        [
+            'FLEX',
+            'MONTHLY',
+            'ANNUAL',
+        ],
         'The plan this capacity commitment is converted to after committed '
         'period ends. Options include:'
         '\n FLEX'
@@ -4850,6 +4957,16 @@ class _Update(BigqueryCmd):
         'the default value is "1800000" (30 minutes).',
         flag_values=fv)
     flags.DEFINE_string(
+        'max_staleness',
+        None,
+        'INTERVAL value that determines the maximum staleness allowed when '
+        'querying a materialized view or an external table. By default no '
+        'staleness is allowed. Examples of valid max_staleness values: '
+        '1 day: "0-0 1 0:0:0"; 1 hour: "0-0 0 1:0:0".'
+        'See more explanation about the INTERVAL values: '
+        'https://cloud.google.com/bigquery/docs/reference/standard-sql/data-types#interval_type',  # pylint: disable=line-too-long
+        flag_values=fv)
+    flags.DEFINE_string(
         'external_table_definition',
         None,
         'Specifies a table definition to use to update an external table. '
@@ -4858,6 +4975,14 @@ class _Update(BigqueryCmd):
         'The format of inline definition is "schema@format=uri@connection". '
         'Note using connection is an experiment feature and is still under '
         'development.',
+        flag_values=fv)
+    flags.DEFINE_enum(
+        'metadata_cache_mode',
+        None,
+        ['AUTOMATIC', 'MANUAL'],
+        'Enables metadata cache for an external table with a connection. '
+        'Specify AUTOMATIC to automatically refresh the cached metadata. '
+        'Specify MANUAL to stop the automatic refresh.',
         flag_values=fv)
     flags.DEFINE_multi_string(
         'view_udf_resource',
@@ -4975,6 +5100,12 @@ class _Update(BigqueryCmd):
         'autodetect_schema',
         False,
         'Optional. If true, schema is autodetected; else schema is unchanged.',
+        flag_values=fv)
+    flags.DEFINE_string(
+        'vertex_ai_model_id',
+        None,
+        'Optional. Define the Vertex AI model ID to register to Vertex AI for '
+        'BigQuery ML models.',
         flag_values=fv)
     self._ProcessCommandRc(fv)
 
@@ -5222,7 +5353,9 @@ class _Update(BigqueryCmd):
       external_data_config = None
       if self.external_table_definition is not None:
         external_data_config = _GetExternalDataConfig(
-            self.external_table_definition)
+            self.external_table_definition,
+            metadata_cache_mode=self.metadata_cache_mode,
+            )
         # When updating, move the schema out of the external_data_config.
         # If schema is set explicitly on this update, prefer it over the
         # external_data_config schema.
@@ -5260,6 +5393,7 @@ class _Update(BigqueryCmd):
           materialized_view_query=materialized_view_query_arg,
           enable_refresh=self.enable_refresh,
           refresh_interval_ms=self.refresh_interval_ms,
+          max_staleness=self.max_staleness,
           view_udf_resources=view_udf_resources,
           use_legacy_sql=self.use_legacy_sql,
           external_data_config=external_data_config,
@@ -5324,6 +5458,7 @@ class _Update(BigqueryCmd):
           expiration=expiration,
           labels_to_set=labels_to_set,
           label_keys_to_remove=label_keys_to_remove,
+          vertex_ai_model_id=self.vertex_ai_model_id,
           etag=self.etag)
       print("Model '%s' successfully updated." % (reference))
 
@@ -5561,11 +5696,12 @@ class _Show(BigqueryCmd):
         flag_values=fv)
     flags.DEFINE_enum(
         'job_type',
-        None, ['QUERY', 'PIPELINE', 'ML_EXTERNAL'],
+        None, ['QUERY', 'PIPELINE', 'ML_EXTERNAL', 'BACKGROUND'],
         'Type of jobs to search reservation assignment for. Options include:'
         '\n QUERY'
         '\n PIPELINE'
         '\n ML_EXTERNAL'
+        '\n BACKGROUND'
         '\n Used in conjunction with --reservation_assignment.',
         flag_values=fv)
     flags.DEFINE_enum(
@@ -7180,6 +7316,8 @@ def main(unused_argv):
   # Avoid using global flags in main(). In this command line:
   # bq <global flags> <command> <global and local flags> <command args>,
   # only "<global flags>" will parse before main, not "<global and local flags>"
+
+
   try:
     _ValidateGlobalFlags()
 

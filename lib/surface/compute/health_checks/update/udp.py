@@ -41,25 +41,22 @@ class Update(base.UpdateCommand):
 
   @classmethod
   def Args(cls, parser):
-    cls.HEALTH_CHECK_ARG = flags.HealthCheckArgument(
-        'UDP', include_l7_internal_load_balancing=True)
+    cls.HEALTH_CHECK_ARG = flags.HealthCheckArgument('UDP')
     cls.HEALTH_CHECK_ARG.AddArgument(parser, operation_type='update')
-    health_checks_utils.AddUdpRelatedArgs(parser,
-                                          request_and_response_required=False)
+    health_checks_utils.AddUdpRelatedArgs(
+        parser, request_and_response_required=False)
     health_checks_utils.AddProtocolAgnosticUpdateArgs(parser, 'UDP')
 
   def _GetGetRequest(self, client, health_check_ref):
     """Returns a request for fetching the existing health check."""
-    return (client.apitools_client.healthChecks,
-            'Get',
+    return (client.apitools_client.healthChecks, 'Get',
             client.messages.ComputeHealthChecksGetRequest(
                 healthCheck=health_check_ref.Name(),
                 project=health_check_ref.project))
 
   def _GetSetRequest(self, client, health_check_ref, replacement):
     """Returns a request for updating the health check."""
-    return (client.apitools_client.healthChecks,
-            'Update',
+    return (client.apitools_client.healthChecks, 'Update',
             client.messages.ComputeHealthChecksUpdateRequest(
                 healthCheck=health_check_ref.Name(),
                 healthCheckResource=replacement,
@@ -134,13 +131,9 @@ class Update(base.UpdateCommand):
 
     health_checks_utils.CheckProtocolAgnosticArgs(args)
 
-    args_unset = not (args.port
-                      or args.check_interval
-                      or args.timeout
-                      or args.healthy_threshold
-                      or args.unhealthy_threshold
-                      or args.request
-                      or args.response)
+    args_unset = not (args.port or args.check_interval or args.timeout or
+                      args.healthy_threshold or args.unhealthy_threshold or
+                      args.request or args.response)
     if args.description is None and args.port_name is None and args_unset:
       raise exceptions.ArgumentError('At least one property must be modified.')
 
@@ -168,9 +161,8 @@ class Update(base.UpdateCommand):
     # Modify() returns None, then there is no work to be done, so we
     # print the resource and return.
     if objects[0] == new_object:
-      log.status.Print(
-          'No change requested; skipping update for [{0}].'.format(
-              objects[0].name))
+      log.status.Print('No change requested; skipping update for [{0}].'.format(
+          objects[0].name))
       return objects
 
     if health_checks_utils.IsRegionalHealthCheckRef(health_check_ref):

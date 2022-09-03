@@ -51,7 +51,6 @@ class RetryJob(base.CreateCommand):
     flags.AddPhaseId(parser)
 
   def Run(self, args):
-    # TODO(b/239937067) Add e2e tests before unhiding retry job.
     rollout_ref = args.CONCEPTS.rollout.Parse()
     pipeline_ref = rollout_ref.Parent().Parent()
     pipeline_obj = delivery_pipeline_util.GetPipeline(

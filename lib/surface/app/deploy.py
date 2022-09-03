@@ -39,7 +39,7 @@ _DETAILED_HELP = {
         files specific to your App Engine environment, refer to
         [](https://cloud.google.com/appengine/docs/standard/python/configuration-files)
         or [](https://cloud.google.com/appengine/docs/flexible/python/configuration-files)).
-        Note, for Java8 Standard apps or Java11 Standard apps using bundled services, you must add the path to the
+        Note, for Java8 Standard apps or Java11/17 Standard apps using bundled services, you must add the path to the
         `appengine-web.xml` file inside the WEB-INF directory. {command}
         skips files specified in the .gcloudignore file (see `gcloud topic
         gcloudignore` for more information).

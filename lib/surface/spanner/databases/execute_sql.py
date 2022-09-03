@@ -41,17 +41,19 @@ DETAILED_HELP = {
 }
 
 
-def CreateSession(args):
+def CreateSession(args, database_role=None):
   """Creates a session.
 
   Args:
     args: an argparse namespace. All the arguments that were provided to the
       command invocation.
+    database_role: Cloud Spanner database role which owns this session.
 
   Returns:
     A session reference to be used to execute the sql.
   """
-  session_name = database_sessions.Create(args.CONCEPTS.database.Parse())
+  session_name = database_sessions.Create(args.CONCEPTS.database.Parse(),
+                                          database_role)
   return resources.REGISTRY.ParseRelativeName(
       relative_name=session_name.name,
       collection='spanner.projects.instances.databases.sessions')
@@ -121,14 +123,12 @@ def AddBetaArgs(parser):
     parser: an argparse argument parser.
   """
   parser.add_argument(
-      '--enable-partitioned-dml',
-      action='store_true',
-      help='Execute DML statement using Partitioned DML')
+      '--database-role',
+      help='Database role user assumes while accessing the database.')
 
 
 @base.UnicodeIsSupported
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA,
-                    base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Query(base.Command):
   """Executes a SQL query against a Cloud Spanner database."""
   detailed_help = DETAILED_HELP
@@ -226,3 +226,36 @@ class Query(base.Command):
       sql.DisplayQueryResults(result, log.status)
     else:
       raise ValueError('Invalid query mode: {}'.format(args.query_mode))
+
+
+@base.UnicodeIsSupported
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
+class QueryBeta(Query):
+  """Executes a SQL query against a Cloud Spanner database."""
+  detailed_help = DETAILED_HELP
+
+  @staticmethod
+  def Args(parser):
+    """See base class."""
+    AddBaseArgs(parser)
+    AddBetaArgs(parser)
+
+  def Run(self, args):
+    """Runs this command.
+
+    Args:
+      args: an argparse namespace. All the arguments that were provided to this
+        command invocation.
+
+    Returns:
+      Some value that we want to have printed later.
+    """
+    read_only_options = self.ParseReadOnlyOptions(args)
+    session = CreateSession(args, args.database_role)
+    try:
+      return database_sessions.ExecuteSql(args.sql, args.query_mode, session,
+                                          read_only_options,
+                                          args.enable_partitioned_dml,
+                                          args.timeout)
+    finally:
+      database_sessions.Delete(session)

@@ -12,6 +12,8 @@ help_text:
 request:
   collection: networksecurity.projects.locations.gatewaySecurityPolicies.rules
   api_version: v1alpha1
+  modify_request_hooks:
+  - googlecloudsdk.command_lib.network_security.hooks:SetUpdateMask
 
 arguments:
   resource:

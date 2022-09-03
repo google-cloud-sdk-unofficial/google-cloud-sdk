@@ -26,6 +26,7 @@ from googlecloudsdk.command_lib.secrets import log as secrets_log
 from googlecloudsdk.command_lib.secrets import util as secrets_util
 from googlecloudsdk.command_lib.util import crc32c
 from googlecloudsdk.command_lib.util.args import labels_util
+from googlecloudsdk.command_lib.util.args import map_util
 from googlecloudsdk.core import properties
 from googlecloudsdk.core.console import console_io
 
@@ -166,6 +167,8 @@ class Create(base.CreateCommand):
     secrets_args.AddCreateExpirationGroup(parser)
     secrets_args.AddTopics(parser)
     secrets_args.AddCreateRotationGroup(parser)
+    annotations = parser.add_group(mutex=True, help='Annotations')
+    map_util.AddMapSetFlag(annotations, 'annotations', 'Annotations', str, str)
 
   def Run(self, args):
     messages = secrets_api.GetMessages()
@@ -255,6 +258,14 @@ class Create(base.CreateCommand):
       console_io.PromptContinue(
           msg, throw_if_unattended=True, cancel_on_no=True)
 
+    annotations = []
+    if args.IsSpecified('set_annotations'):
+      annotations = [
+          messages.Secret.AnnotationsValue.AdditionalProperty(
+              key=annotation, value=metadata)
+          for (annotation, metadata) in args.set_annotations.items()
+      ]
+
     # Create the secret
     response = secrets_api.Secrets().Create(
         secret_ref,
@@ -265,6 +276,7 @@ class Create(base.CreateCommand):
         ttl=args.ttl,
         keys=kms_keys,
         topics=args.topics,
+        annotations=annotations,
         next_rotation_time=args.next_rotation_time,
         rotation_period=args.rotation_period)
 
@@ -427,6 +439,8 @@ class CreateBeta(Create):
     secrets_args.AddCreateExpirationGroup(parser)
     secrets_args.AddCreateRotationGroup(parser)
     secrets_args.AddTopics(parser)
+    annotations = parser.add_group(mutex=True, help='Annotations')
+    map_util.AddMapSetFlag(annotations, 'annotations', 'Annotations', str, str)
 
   def Run(self, args):
     messages = secrets_api.GetMessages()
@@ -518,6 +532,14 @@ class CreateBeta(Create):
       console_io.PromptContinue(
           msg, throw_if_unattended=True, cancel_on_no=True)
 
+    annotations = []
+    if args.IsSpecified('set_annotations'):
+      annotations = [
+          messages.Secret.AnnotationsValue.AdditionalProperty(
+              key=annotation, value=metadata)
+          for (annotation, metadata) in args.set_annotations.items()
+      ]
+
     # Create the secret
     response = secrets_api.Secrets().Create(
         secret_ref,
@@ -529,7 +551,8 @@ class CreateBeta(Create):
         keys=kms_keys,
         next_rotation_time=args.next_rotation_time,
         rotation_period=args.rotation_period,
-        topics=args.topics)
+        topics=args.topics,
+        annotations=annotations)
 
     if data:
       data_crc32c = crc32c.get_crc32c(data)

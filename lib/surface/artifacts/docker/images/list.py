@@ -124,7 +124,7 @@ class List(base.ListCommand):
             images,
             key=lambda img: img['createTime'])
         most_recent_images = [
-            'https://{}@{}'.format(img['package'], img['version'])
+            '{}@{}'.format(img['package'], img['version'])
             for img in images
         ]
       metadata = ca_util.GetContainerAnalysisMetadataForImages(

@@ -48,15 +48,26 @@ class ViolationCounter:
                         violation.constraintRef.name)))
 
   def check_for_max_constraint_violations(self):
+    """Displays a warning if any membership constraints have >=20 violations.
+
+    """
     membership_constraint_counts = collections.Counter(
         self.membership_constraints)
+    max_violation_constraints = []
     for mc, count in membership_constraint_counts.items():
       if count >= 20:
-        log.warning('Maximum of 20 violations returned for ' +
-                    'constraint {}'.format(mc[1]) +
-                    ' in membership {}.'.format(mc[0]) +
-                    ' There may be additional violations which can be found' +
-                    ' in resource logs.')
+        max_violation_constraints.append(mc)
+    if max_violation_constraints:
+      warning_constraint_list = ''
+      for mc in max_violation_constraints:
+        warning_constraint_list += '\n{}\t{}'.format(mc[0], mc[1])
+      constraint_noun = 'constraint' if len(
+          max_violation_constraints) == 1 else 'constraints'
+      log.warning('Maximum of 20 violations returned for the following ' +
+                  constraint_noun +
+                  '. There may be additional violations which' +
+                  ' can be found in the audit Pod logs.{}'.format(
+                      warning_constraint_list))
 
 
 @calliope_base.Hidden
@@ -89,6 +100,8 @@ class List(calliope_base.ListCommand):
     )
 
   def Run(self, args):
+    calliope_base.EnableUserProjectQuota()
+
     if args.group_by not in ['constraint', 'membership', '']:
       raise exceptions.Error(
           'Invalid group-by parameter "{}"'.format(args.group_by))

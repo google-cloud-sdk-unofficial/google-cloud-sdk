@@ -34,8 +34,6 @@ from googlecloudsdk.core import log
 
 def _AddArgs(parser, version):
   """Prepares for the arguments of the command."""
-  flags.AddEndpointResourceArg(
-      parser, 'to deploy a model to', prompt_func=region_util.PromptForOpRegion)
   flags.GetModelIdArg().AddToParser(parser)
   flags.GetDisplayNameArg('deployed model').AddToParser(parser)
   flags.GetTrafficSplitArg().AddToParser(parser)
@@ -44,13 +42,20 @@ def _AddArgs(parser, version):
   flags.GetServiceAccountArg().AddToParser(parser)
   flags.GetUserSpecifiedIdArg('deployed-model').AddToParser(parser)
   flags.GetAutoscalingMetricSpecsArg().AddToParser(parser)
+  flags.AddEndpointResourceArg(
+      parser,
+      'to deploy a model to',
+      prompt_func=region_util.PromptForOpRegion)
+  if version != constants.GA_VERSION:
+    flags.AddSharedResourcesArg(
+        parser,
+        'to co-host a model on')
 
 
 def _Run(args, version):
   """Deploy a model to an existing Vertex AI endpoint."""
   validation.ValidateDisplayName(args.display_name)
   validation.ValidateAutoscalingMetricSpecs(args.autoscaling_metric_specs)
-
   endpoint_ref = args.CONCEPTS.endpoint.Parse()
   args.region = endpoint_ref.AsDict()['locationsId']
   with endpoint_util.AiplatformEndpointOverrides(version, region=args.region):
@@ -73,6 +78,14 @@ def _Run(args, version):
           traffic_split=args.traffic_split,
           deployed_model_id=args.deployed_model_id)
     else:
+      shared_resources_ref = args.CONCEPTS.shared_resources.Parse()
+      validation.ValidateSharedResourceArgs(
+          shared_resources_ref=shared_resources_ref,
+          machine_type=args.machine_type,
+          accelerator_dict=args.accelerator,
+          min_replica_count=args.min_replica_count,
+          max_replica_count=args.max_replica_count,
+          autoscaling_metric_specs=args.autoscaling_metric_specs)
       op = endpoints_client.DeployModelBeta(
           endpoint_ref,
           args.model,
@@ -87,7 +100,8 @@ def _Run(args, version):
           enable_container_logging=args.enable_container_logging,
           service_account=args.service_account,
           traffic_split=args.traffic_split,
-          deployed_model_id=args.deployed_model_id)
+          deployed_model_id=args.deployed_model_id,
+          shared_resources_ref=shared_resources_ref)
     response_msg = operations_util.WaitForOpMaybe(
         operation_client, op, endpoints_util.ParseOperation(op.name))
     if response_msg is not None:
