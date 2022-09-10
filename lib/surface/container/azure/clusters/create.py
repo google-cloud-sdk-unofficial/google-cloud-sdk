@@ -64,6 +64,8 @@ class Create(base.CreateCommand):
     flags.AddProxyConfig(parser)
     flags.AddFleetProject(parser)
     flags.AddAdminUsers(parser)
+    flags.AddDescription(parser)
+    flags.AddAnnotations(parser)
     base.ASYNC_FLAG.AddToParser(parser)
     parser.display_info.AddFormat(constants.AZURE_CLUSTERS_FORMAT)
 

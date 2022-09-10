@@ -518,7 +518,9 @@ class CreateWithContainerAlpha(CreateWithContainerBeta):
         match_container_mount_disks=True)
     confidential_instance_config = (
         create_utils.BuildConfidentialInstanceConfigMessage(
-            messages=client.messages, args=args))
+            messages=client.messages,
+            args=args,
+            support_confidential_compute_type=True))
     guest_accelerators = (
         instance_template_utils.CreateAcceleratorConfigMessages(
             client.messages, getattr(args, 'accelerator', None)))

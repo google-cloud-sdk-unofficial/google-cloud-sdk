@@ -217,6 +217,7 @@ class Create(base.CreateCommand):
     flags.AddEnableImageStreamingFlag(parser, for_node_pool=True)
     flags.AddSpotFlag(parser, for_node_pool=True)
     flags.AddEnableConfidentialNodesFlag(parser, for_node_pool=True)
+    flags.AddDisablePodCIDROverprovisionFlag(parser, hidden=True)
     flags.AddNetworkPerformanceConfigFlags(parser, hidden=False)
     flags.AddEnableSurgeUpgradeFlag(parser)
     flags.AddEnableBlueGreenUpgradeFlag(parser)
@@ -230,6 +231,7 @@ class Create(base.CreateCommand):
     ops = ParseCreateNodePoolOptionsBase(args)
     ops.node_locations = args.node_locations
     ops.network_performance_config = args.network_performance_configs
+    ops.disable_pod_cidr_overprovision = args.disable_pod_cidr_overprovision
     return ops
 
   def Run(self, args):

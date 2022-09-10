@@ -144,19 +144,24 @@ def _parse_config(loaded_config, msg):
 
   # Create empy MemberConfig and populate it with Auth_Provider configurations.
   member_config = msg.IdentityServiceMembershipSpec()
-  # The config must contain an OIDC auth_method.
-  oidc = False
+  # The config must contain at least one auth method
+  found_auth_method = False
   for auth_provider in auth_providers:
     # Provision OIDC proto from OIDC ClientConfig dictionary.
     if 'oidc' in auth_provider:
       auth_method = _provision_oidc_config(auth_provider, msg)
       member_config.authMethods.append(auth_method)
-      oidc = True
+      found_auth_method = True
+    elif 'google' in auth_provider:
+      auth_method = _provision_google_config(auth_provider, msg)
+      member_config.authMethods.append(auth_method)
+      found_auth_method = True
     # LDAP is currently not supported.
     elif 'ldap' in auth_provider:
       log.status.Print('LDAP configuration not supported. Skipping to next.')
-  if not oidc:
-    raise exceptions.Error('No OIDC config is found.')
+  if not found_auth_method:
+    raise exceptions.Error(
+        'No authentication method is present in the provided config.')
   return member_config
 
 
@@ -166,30 +171,23 @@ def _validate_clientconfig_meta(clientconfig):
   Args:
     clientconfig: The data field of the YamlConfigFile.
   """
-  if not isinstance(clientconfig, file_parsers.YamlConfigObject):
-    raise exceptions.Error('Invalid ClientConfig template.')
-  if ('apiVersion' not in clientconfig or
-      clientconfig['apiVersion'] != 'authentication.gke.io/v2alpha1'):
-    raise exceptions.Error(
-        'Only support "apiVersion: authentication.gke.io/v2alpha1"')
-  if ('kind' not in clientconfig or clientconfig['kind'] != 'ClientConfig'):
-    raise exceptions.Error('Only support "kind: ClientConfig"')
+
   if 'spec' not in clientconfig:
     raise exceptions.Error('Missing required field .spec')
 
 
 def _provision_oidc_config(auth_method, msg):
-  """Provision FeatureSpec OIDCConfig from the parsed oidc ClientConfig CRD yaml file.
+  """Provision FeatureSpec OIDCConfig from the parsed yaml file.
 
   Args:
-    auth_method: YamlConfigFile, The data loaded from the ClientConfig CRD yaml
+    auth_method: YamlConfigFile, The data loaded from the yaml
       file given by the user. YamlConfigFile is from
       googlecloudsdk.command_lib.anthos.common.file_parsers.
     msg: The gkehub messages package.
 
   Returns:
-    member_config: The MemberConfig configuration containing the AuthMethods for
-      the IdentityServiceFeatureSpec.
+    member_config: A MemberConfig configuration containing a single
+    OIDC auth method for the IdentityServiceFeatureSpec.
   """
   auth_method_proto = msg.IdentityServiceAuthMethod()
   auth_method_proto.name = auth_method['name']
@@ -242,6 +240,38 @@ def _provision_oidc_config(auth_method, msg):
   if 'clientSecret' in oidc_config:
     auth_method_proto.oidcConfig.clientSecret = oidc_config['clientSecret']
 
+  return auth_method_proto
+
+
+def _provision_google_config(auth_method, msg):
+  """Provision FeatureSpec GoogleConfig from the parsed configuration file.
+
+  Args:
+    auth_method: YamlConfigFile, The data loaded from the yaml
+      file given by the user. YamlConfigFile is from
+      googlecloudsdk.command_lib.anthos.common.file_parsers.
+    msg: The gkehub messages package.
+
+  Returns:
+    member_config: A MemberConfig configuration containing a single Google
+    auth method for the IdentityServiceFeatureSpec.
+  """
+  auth_method_proto = msg.IdentityServiceAuthMethod()
+  auth_method_proto.name = auth_method['name']
+  google_config = auth_method['google']
+
+  auth_method_proto.googleConfig = msg.IdentityServiceGoogleConfig()
+
+  # Optional Auth Method Fields.
+  if 'proxy' in auth_method:
+    auth_method_proto.proxy = auth_method['proxy']
+
+  # Required Google Config Fields.
+  if 'disable' not in google_config:
+    raise exceptions.Error(
+        'The "disable" field is not set for the authentication method "{}"'
+        .format(auth_method['name']))
+  auth_method_proto.googleConfig.disable = google_config['disable']
   return auth_method_proto
 
 

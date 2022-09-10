@@ -195,6 +195,8 @@ class ImportGA(base.UpdateCommand):
       cleared_fields.append('securitySettings')
     if not backend_service.localityLbPolicy:
       cleared_fields.append('localityLbPolicy')
+    if not backend_service.localityLbPolicies:
+      cleared_fields.append('localityLbPolicies')
     if not backend_service.circuitBreakers:
       cleared_fields.append('circuitBreakers')
     if not backend_service.consistentHash:

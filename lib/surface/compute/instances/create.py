@@ -103,7 +103,6 @@ def _CommonArgs(parser,
                 support_multi_writer=False,
                 support_replica_zones=False,
                 support_subinterface=False,
-                support_node_project=False,
                 support_host_error_timeout_seconds=False,
                 support_numa_node_count=False,
                 support_network_queue_count=False,
@@ -200,8 +199,7 @@ def _CommonArgs(parser,
   parser.display_info.AddFormat(instances_flags.DEFAULT_LIST_FORMAT)
   parser.display_info.AddCacheUpdater(completers.InstancesCompleter)
 
-  if support_node_project:
-    instances_flags.AddNodeProjectArgs(parser)
+  instances_flags.AddNodeProjectArgs(parser)
 
   if support_host_error_timeout_seconds:
     instances_flags.AddHostErrorTimeoutSecondsArgs(parser)
@@ -235,7 +233,6 @@ class Create(base.CreateCommand):
   _support_multi_writer = False
   _support_subinterface = False
   _support_secure_tag = False
-  _support_node_project = False
   _support_host_error_timeout_seconds = False
   _support_numa_node_count = False
   _support_visible_core_count = False
@@ -243,6 +240,7 @@ class Create(base.CreateCommand):
   _support_instance_kms = False
   _support_max_run_duration = False
   _support_ipv6_assignment = False
+  _support_confidential_compute_type = False
 
   @classmethod
   def Args(cls, parser):
@@ -253,7 +251,6 @@ class Create(base.CreateCommand):
         support_replica_zones=cls._support_replica_zones,
         enable_regional=cls._support_regional,
         support_subinterface=cls._support_subinterface,
-        support_node_project=cls._support_node_project,
         support_host_error_timeout_seconds=cls
         ._support_host_error_timeout_seconds,
         support_numa_node_count=cls._support_numa_node_count,
@@ -302,7 +299,7 @@ class Create(base.CreateCommand):
         compute_client,
         skip_defaults,
         support_node_affinity=True,
-        support_node_project=self._support_node_project,
+        support_node_project=True,
         support_host_error_timeout_seconds=self
         ._support_host_error_timeout_seconds,
         support_max_run_duration=self._support_max_run_duration)
@@ -326,6 +323,11 @@ class Create(base.CreateCommand):
     confidential_vm = (
         args.IsSpecified('confidential_compute') and args.confidential_compute)
 
+    if self._support_confidential_compute_type:
+      confidential_vm |= (
+          args.IsSpecified('confidential_compute_type') and
+          args.confidential_compute_type is not None)
+
     create_boot_disk = not (
         instance_utils.UseExistingBootDisk((args.disk or []) +
                                            (args.create_disk or [])))
@@ -345,7 +347,10 @@ class Create(base.CreateCommand):
 
     confidential_instance_config = (
         create_utils.BuildConfidentialInstanceConfigMessage(
-            messages=compute_client.messages, args=args))
+            messages=compute_client.messages,
+            args=args,
+            support_confidential_compute_type=self
+            ._support_confidential_compute_type))
 
     csek_keys = csek_utils.CsekKeyStore.FromArgs(args,
                                                  self._support_rsa_encrypted)
@@ -633,7 +638,6 @@ class CreateBeta(Create):
   _support_multi_writer = True
   _support_subinterface = False
   _support_secure_tag = False
-  _support_node_project = True
   _support_host_error_timeout_seconds = True
   _support_numa_node_count = False
   _support_visible_core_count = True
@@ -668,7 +672,6 @@ class CreateBeta(Create):
         support_replica_zones=cls._support_replica_zones,
         support_multi_writer=cls._support_multi_writer,
         support_subinterface=cls._support_subinterface,
-        support_node_project=cls._support_node_project,
         support_host_error_timeout_seconds=cls
         ._support_host_error_timeout_seconds,
         support_numa_node_count=cls._support_numa_node_count,
@@ -712,7 +715,6 @@ class CreateAlpha(CreateBeta):
   _support_multi_writer = True
   _support_subinterface = True
   _support_secure_tag = True
-  _support_node_project = True
   _support_host_error_timeout_seconds = True
   _support_numa_node_count = True
   _support_visible_core_count = True
@@ -720,6 +722,7 @@ class CreateAlpha(CreateBeta):
   _support_instance_kms = True
   _support_max_run_duration = True
   _support_ipv6_assignment = True
+  _support_confidential_compute_type = True
 
   @classmethod
   def Args(cls, parser):
@@ -734,7 +737,6 @@ class CreateAlpha(CreateBeta):
         support_replica_zones=cls._support_replica_zones,
         support_multi_writer=cls._support_multi_writer,
         support_subinterface=cls._support_subinterface,
-        support_node_project=cls._support_node_project,
         support_host_error_timeout_seconds=cls
         ._support_host_error_timeout_seconds,
         support_numa_node_count=cls._support_numa_node_count,
@@ -752,7 +754,8 @@ class CreateAlpha(CreateBeta):
     instances_flags.AddPublicDnsArgs(parser, instance=True)
     instances_flags.AddLocalSsdArgsWithSize(parser)
     instances_flags.AddLocalNvdimmArgs(parser)
-    instances_flags.AddConfidentialComputeArgs(parser)
+    instances_flags.AddConfidentialComputeArgs(
+        parser, support_confidential_compute_type=True)
     instances_flags.AddPostKeyRevocationActionTypeArgs(parser)
     instances_flags.AddPrivateIpv6GoogleAccessArg(
         parser, utils.COMPUTE_ALPHA_API_VERSION)
@@ -762,6 +765,8 @@ class CreateAlpha(CreateBeta):
     instances_flags.AddKeyRevocationActionTypeArgs(parser)
     instances_flags.AddIPv6AddressArgs(parser)
     instances_flags.AddIPv6PrefixLengthArgs(parser)
+    instances_flags.AddInternalIPv6AddressArgs(parser)
+    instances_flags.AddInternalIPv6PrefixLengthArgs(parser)
 
 
 Create.detailed_help = DETAILED_HELP

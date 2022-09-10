@@ -214,8 +214,7 @@ class Import(base.CreateCommand):
       import_from_aws = source.add_group(help='Image import from AWS.')
       daisy_utils.AddAWSImageImportSourceArgs(import_from_aws)
 
-    if cls.ReleaseTrack() != base.ReleaseTrack.GA:
-      image_utils.AddGuestOsFeaturesArgForImport(parser, messages)
+    image_utils.AddGuestOsFeaturesArgForImport(parser, messages)
 
     workflow = parser.add_mutually_exclusive_group()
     os_group = workflow.add_group()

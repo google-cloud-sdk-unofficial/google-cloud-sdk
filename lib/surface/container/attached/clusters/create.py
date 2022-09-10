@@ -49,8 +49,13 @@ class Create(base.CreateCommand):
     resource_args.AddAttachedClusterResourceArg(parser, 'to create')
 
     attached_flags.AddPlatformVersion(parser)
+    attached_flags.AddAuthority(parser)
+    attached_flags.AddDistribution(parser, required=True)
+
+    flags.AddAnnotations(parser)
     flags.AddValidateOnly(parser, 'cluster to create')
     flags.AddFleetProject(parser)
+    flags.AddDescription(parser)
 
     base.ASYNC_FLAG.AddToParser(parser)
 

@@ -24,34 +24,9 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute.sole_tenancy.node_groups import flags
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA,
+                    base.ReleaseTrack.GA)
 class List(base.ListCommand):
-  """List Compute Engine node groups."""
-
-  @staticmethod
-  def Args(parser):
-    parser.display_info.AddFormat("""\
-        table(
-          name,
-          zone.basename(),
-          description,
-          nodeTemplate.basename(),
-          size:label=NODES
-        )""")
-
-  def Run(self, args):
-    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
-    client = holder.client
-
-    request_data = lister.ParseMultiScopeFlags(args, holder.resources)
-    list_implementation = lister.MultiScopeLister(
-        client, aggregation_service=client.apitools_client.nodeGroups)
-
-    return lister.Invoke(request_data, list_implementation)
-
-
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
-class ListAlpha(List):
   """List Compute Engine node groups."""
 
   @staticmethod

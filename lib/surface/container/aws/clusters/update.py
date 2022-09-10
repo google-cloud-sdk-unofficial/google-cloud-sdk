@@ -48,6 +48,8 @@ class Update(base.UpdateCommand):
     flags.AddValidateOnly(parser, 'update of the cluster')
     flags.AddAdminUsers(parser, create=False)
     flags.AddRootVolumeSize(parser)
+    flags.AddDescriptionForUpdate(parser)
+    flags.AddAnnotationsForUpdate(parser, 'cluster')
     aws_flags.AddInstanceType(parser)
     aws_flags.AddRoleArn(parser, required=False)
     aws_flags.AddRoleSessionName(parser)

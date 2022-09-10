@@ -72,8 +72,7 @@ class Import(base.CreateCommand):
         help='Specifies the OS of the image being imported.')
     daisy_utils.AddByolArg(parser)
 
-    if cls.ReleaseTrack() != base.ReleaseTrack.GA:
-      image_utils.AddGuestOsFeaturesArgForImport(parser, messages)
+    image_utils.AddGuestOsFeaturesArgForImport(parser, messages)
 
     parser.add_argument(
         '--description',

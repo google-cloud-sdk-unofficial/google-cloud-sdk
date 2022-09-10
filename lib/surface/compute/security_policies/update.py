@@ -64,12 +64,15 @@ class UpdateGa(base.UpdateCommand):
     if not (args.IsSpecified('description') or
             args.IsSpecified('enable_layer7_ddos_defense') or
             args.IsSpecified('layer7_ddos_defense_rule_visibility') or
-            args.IsSpecified('json_parsing') or args.IsSpecified('log_level') or
+            args.IsSpecified('json_parsing') or
+            args.IsSpecified('json_custom_content_types') or
+            args.IsSpecified('log_level') or
             args.IsSpecified('recaptcha_redirect_site_key')):
       parameter_names = [
           '--description', '--enable-layer7-ddos-defense',
           '--layer7-ddos-defense-rule-visibility', '--json-parsing',
-          '--log-level', '--recaptcha-redirect-site-key'
+          '--json-custom-content-types', '--log-level',
+          '--recaptcha-redirect-site-key'
       ]
       raise exceptions.MinimumArgumentException(
           parameter_names, 'Please specify at least one property to update')
@@ -94,7 +97,9 @@ class UpdateGa(base.UpdateCommand):
       adaptive_protection_config = (
           security_policies_utils.CreateAdaptiveProtectionConfig(
               holder.client, args, adaptive_protection_config))
-    if (args.IsSpecified('json_parsing') or args.IsSpecified('log_level')):
+    if (args.IsSpecified('json_parsing') or
+        args.IsSpecified('json_custom_content_types') or
+        args.IsSpecified('log_level')):
       advanced_options_config = (
           security_policies_utils.CreateAdvancedOptionsConfig(
               holder.client, args, advanced_options_config))
@@ -152,7 +157,9 @@ class UpdateBeta(UpdateGa):
         args.IsSpecified('description') or
         args.IsSpecified('enable_layer7_ddos_defense') or
         args.IsSpecified('layer7_ddos_defense_rule_visibility') or
-        args.IsSpecified('json_parsing') or args.IsSpecified('log_level') or
+        args.IsSpecified('json_parsing') or
+        args.IsSpecified('json_custom_content_types') or
+        args.IsSpecified('log_level') or
         args.IsSpecified('recaptcha_redirect_site_key') or
         args.IsSpecified('network_ddos_protection') or
         args.IsSpecified('layer7_ddos_defense_auto_deploy_load_threshold') or
@@ -163,8 +170,8 @@ class UpdateBeta(UpdateGa):
       parameter_names = [
           '--description', '--enable-layer7-ddos-defense',
           '--layer7-ddos-defense-rule-visibility', '--json-parsing',
-          '--log-level', '--recaptcha-redirect-site-key',
-          '--network-ddos-protection',
+          '--json-custom-content-types', '--log-level',
+          '--recaptcha-redirect-site-key', '--network-ddos-protection',
           '--layer7-ddos-defense-auto-deploy-load-threshold',
           '--layer7-ddos-defense-auto-deploy-confidence-threshold',
           '--layer7-ddos-defense-auto-deploy-impacted-baseline-threshold',
@@ -201,7 +208,9 @@ class UpdateBeta(UpdateGa):
           security_policies_utils
           .CreateAdaptiveProtectionConfigWithAutoDeployConfig(
               holder.client, args, adaptive_protection_config))
-    if (args.IsSpecified('json_parsing') or args.IsSpecified('log_level')):
+    if (args.IsSpecified('json_parsing') or
+        args.IsSpecified('json_custom_content_types') or
+        args.IsSpecified('log_level')):
       advanced_options_config = (
           security_policies_utils.CreateAdvancedOptionsConfig(
               holder.client, args, advanced_options_config))
@@ -271,15 +280,18 @@ class UpdateAlpha(UpdateBeta):
     if not (args.IsSpecified('description') or args.IsSpecified('enable_ml') or
             args.IsSpecified('enable_layer7_ddos_defense') or
             args.IsSpecified('layer7_ddos_defense_rule_visibility') or
-            args.IsSpecified('json_parsing') or args.IsSpecified('log_level') or
+            args.IsSpecified('json_parsing') or
+            args.IsSpecified('json_custom_content_types') or
+            args.IsSpecified('log_level') or
             args.IsSpecified('recaptcha_redirect_site_key') or
             args.IsSpecified('network_ddos_protection') or
             args.IsSpecified('ddos_protection')):
       parameter_names = [
           '--description', '--enable-ml', '--enable-layer7-ddos-defense',
           '--layer7-ddos-defense-rule-visibility', '--json-parsing',
-          '--log-level', '--recaptcha-redirect-site-key',
-          '--network-ddos-protection', '--ddos-protection'
+          '--json-custom-content-types', '--log-level',
+          '--recaptcha-redirect-site-key', '--network-ddos-protection',
+          '--ddos-protection'
       ]
       raise exceptions.MinimumArgumentException(
           parameter_names, 'Please specify at least one property to update')
@@ -316,7 +328,9 @@ class UpdateAlpha(UpdateBeta):
           security_policies_utils
           .CreateAdaptiveProtectionConfigWithAutoDeployConfig(
               holder.client, args, adaptive_protection_config))
-    if (args.IsSpecified('json_parsing') or args.IsSpecified('log_level')):
+    if (args.IsSpecified('json_parsing') or
+        args.IsSpecified('json_custom_content_types') or
+        args.IsSpecified('log_level')):
       advanced_options_config = (
           security_policies_utils.CreateAdvancedOptionsConfig(
               holder.client, args, advanced_options_config))

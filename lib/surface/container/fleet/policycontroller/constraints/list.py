@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""List policy command."""
+"""List constraints command."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -21,32 +21,20 @@ from __future__ import unicode_literals
 from apitools.base.py import list_pager
 from googlecloudsdk.api_lib.util import apis as core_apis
 from googlecloudsdk.calliope import base as calliope_base
+from googlecloudsdk.command_lib.container.fleet.policycontroller import utils
 from googlecloudsdk.core import properties
-
-
-ENFORCEMENT_ACTION_LABEL_MAP = {
-    'ENFORCEMENT_ACTION_UNSPECIFIED': 'UNSPECIFIED',
-    'ENFORCEMENT_ACTION_DENY': 'DENY',
-    'ENFORCEMENT_ACTION_DRYRUN': 'DRYRUN',
-    'ENFORCEMENT_ACTION_WARN': 'WARN'
-}
-
-
-def get_enforcement_action_label(enforcement_action):
-  if enforcement_action in ENFORCEMENT_ACTION_LABEL_MAP:
-    return ENFORCEMENT_ACTION_LABEL_MAP[enforcement_action]
-  return ENFORCEMENT_ACTION_LABEL_MAP['ENFORCEMENT_ACTION_UNSPECIFIED']
 
 
 @calliope_base.Hidden
 @calliope_base.ReleaseTracks(calliope_base.ReleaseTrack.ALPHA,
                              calliope_base.ReleaseTrack.BETA)
 class List(calliope_base.ListCommand):
-  """List Policy Controller constraints.
+  """List Policy Controller constraints from the Policy Library.
 
   ## EXAMPLES
 
-  To list all Policy Controller constraints across the Fleet:
+  To list all Policy Controller constraints from the Policy Library across the
+  Fleet:
 
       $ {command}
   """
@@ -113,15 +101,14 @@ class List(calliope_base.ListCommand):
               constraint.constraintRef
           )]['memberships'][constraint.membershipRef.name] = {
               'enforcementAction':
-                  get_enforcement_action_label(
+                  utils.get_enforcement_action_label(
                       messages.MembershipConstraintSpec
                       .EnforcementActionValueValuesEnum(
                           constraint.spec.enforcementAction).name),
               'violations': [],
-              # TODO(b/242916711) match is not showing up in the API response
-              # 'match': constraint.spec.match,
+              'match': constraint.spec.kubernetesMatch or {},
               'parameters':
-                  constraint.spec.parameters
+                  constraint.spec.parameters or {}
           }
 
       violations = list_pager.YieldFromList(

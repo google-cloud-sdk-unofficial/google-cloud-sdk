@@ -23,7 +23,8 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.core.console import console_io
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
+                    base.ReleaseTrack.GA)
 class Copy(base.Command):
   """Copy log entries."""
 
@@ -74,7 +75,7 @@ class Copy(base.Command):
 Copy.detailed_help = {
     'DESCRIPTION':
         """\
-        {command} copy log entries.  Start a copy log entries operation.
+        {command} starts the process to copy log entries from a log bucket to a destination.
     """,
     'EXAMPLES':
         """\

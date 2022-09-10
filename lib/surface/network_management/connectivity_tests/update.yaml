@@ -82,7 +82,6 @@
           help_text: |
             Clear existing source Cloud SQL instance.
     - group:
-        release_tracks: [BETA]
         mutex: true
         params:
         - arg_name: source-cloud-function

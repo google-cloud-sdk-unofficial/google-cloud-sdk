@@ -311,6 +311,8 @@ class Ssh(base.Command):
         output_file_writer = FileWriter('{}/{}.log'.format(
             output_directory_path, six.text_type(worker)))
 
+      # Orchestrate threading of ssh commands based on number of workers, if
+      # batching is enabled, and batch size
       if len(worker_ips) > 1:
         # Run the command on multiple workers concurrently.
         ssh_threads.append(

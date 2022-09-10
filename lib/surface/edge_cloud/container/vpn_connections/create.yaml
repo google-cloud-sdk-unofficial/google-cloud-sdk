@@ -35,18 +35,35 @@
     - arg_name: vpc-network
       api_field: vpnConnection.vpc
       help_text: |
-        The name of the {{vpc_name_short}} to be connected under current project.
+        The name of the VPC network to be connected. By default it is assumed to be under the same
+        project as cluster. If this VPC network is under a different project, `vpc-project` and
+        `vpc-service-account` are required.
       required: true
     - arg_name: nat-gateway-ip
       api_field: vpnConnection.natGatewayIp
       help_text: |
-        The NAT gateway IP for the gateway floating IPs. Do not specify this if no NAT is used.
+        The NAT gateway IP for the gateway floating IPs. Required if cluster sits behind NAT.
     - arg_name: high-availability
       api_field: vpnConnection.enableHighAvailability
       type: bool
       help_text: |
         Enables high availability on cluster side. This creates an additional VPN endpoint in
         cluster. Multiple Nodes/NodePools are required to enable this feature.
+    - arg_name: vpc-project
+      api_field: vpnConnection.vpcProject.projectId
+      help_text: |
+        The project of the VPC network. Required if the project of VPC network differs from the
+        project of the cluster.
+      GA:
+        hidden: true
+    - arg_name: vpc-service-account
+      api_field: vpnConnection.vpcProject.serviceAccount
+      help_text: |
+        The service account in the VPC project used to create Cloud Router and Cloud HA VPNs when
+        creating/deleting the VPN connection. Required if the project of VPC network differs from
+        the project of the cluster.
+      GA:
+        hidden: true
 
     labels:
       api_field: vpnConnection.labels

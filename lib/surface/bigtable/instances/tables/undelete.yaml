@@ -3,7 +3,7 @@
     brief: Undelete a previously deleted Cloud Bigtable table.
     description: Undelete a previously deleted Cloud Bigtable table.
     examples: |
-      To undelete the table 'my-table' in instance 'my-instance', run:
+      To undelete the table `my-table` in instance `my-instance`, run:
 
       $ {command} my-table --instance=my-instance
 

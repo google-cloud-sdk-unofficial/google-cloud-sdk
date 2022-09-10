@@ -27,7 +27,8 @@ from googlecloudsdk.command_lib.compute.sole_tenancy.node_groups import flags
 from googlecloudsdk.command_lib.compute.sole_tenancy.node_groups import util
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA,
+                    base.ReleaseTrack.GA)
 class Create(base.CreateCommand):
   """Create a Compute Engine node group."""
 
@@ -47,6 +48,7 @@ class Create(base.CreateCommand):
     flags.AddAutoscalingPolicyArgToParser(parser, required_mode=True)
     flags.AddMaintenanceWindowArgToParser(parser)
     flags.AddLocationHintArgToParser(parser)
+    flags.AddShareSettingArgToParser(parser)
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
@@ -86,7 +88,7 @@ class Create(base.CreateCommand):
     if hasattr(args, 'location_hint') and args.location_hint:
       node_group.locationHint = args.location_hint
 
-    if hasattr(args, 'share_setting') and args.share_setting:
+    if args.share_setting:
       node_group.shareSettings = util.BuildShareSettings(messages, args)
 
     request = messages.ComputeNodeGroupsInsertRequest(
@@ -97,31 +99,3 @@ class Create(base.CreateCommand):
 
     service = holder.client.apitools_client.nodeGroups
     return client.MakeRequests([(service, 'Insert', request)])[0]
-
-
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class CreateBeta(Create):
-  """Create a Compute Engine node group."""
-
-  @staticmethod
-  def Args(parser):
-    flags.MakeNodeGroupArg().AddArgument(parser)
-    flags.AddCreateArgsToParser(parser)
-    flags.AddAutoscalingPolicyArgToParser(parser, required_mode=True)
-    flags.AddMaintenanceWindowArgToParser(parser)
-    flags.AddLocationHintArgToParser(parser)
-    flags.AddShareSettingArgToParser(parser)
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class CreateAlpha(CreateBeta):
-  """Create a Compute Engine node group."""
-
-  @staticmethod
-  def Args(parser):
-    flags.MakeNodeGroupArg().AddArgument(parser)
-    flags.AddCreateArgsToParser(parser)
-    flags.AddAutoscalingPolicyArgToParser(parser, required_mode=True)
-    flags.AddMaintenanceWindowArgToParser(parser)
-    flags.AddLocationHintArgToParser(parser)
-    flags.AddShareSettingArgToParser(parser)

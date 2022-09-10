@@ -19,6 +19,7 @@ from __future__ import division
 from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.container.gkemulticloud import azure as api_util
+from googlecloudsdk.api_lib.container.gkemulticloud import util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.container.azure import resource_args
 from googlecloudsdk.command_lib.container.gkemulticloud import endpoint_util
@@ -54,7 +55,8 @@ class GetCredentials(base.Command):
                                             cluster_ref)
       log.status.Print('Fetching cluster endpoint and auth data.')
       resp = client.Get(cluster_ref)
-      if resp.state != 'RUNNING':
+      if resp.state != util.GetMessagesModule(
+      ).GoogleCloudGkemulticloudV1AzureCluster.StateValueValuesEnum.RUNNING:
         log.warning(
             kubeconfig.NOT_RUNNING_MSG.format(cluster_ref.azureClustersId))
       kubeconfig.ValidateClusterVersion(resp, cluster_ref.azureClustersId)

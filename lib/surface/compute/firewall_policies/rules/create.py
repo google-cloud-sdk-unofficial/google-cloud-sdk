@@ -52,6 +52,8 @@ class Create(base.CreateCommand):
     flags.AddTargetResources(parser)
     flags.AddTargetServiceAccounts(parser)
     if cls.ReleaseTrack() == base.ReleaseTrack.ALPHA:
+      flags.AddSrcAddressGroups(parser)
+      flags.AddDestAddressGroups(parser)
       flags.AddSrcFqdns(parser)
       flags.AddDestFqdns(parser)
       flags.AddSecurityProfileGroup(parser)
@@ -83,6 +85,8 @@ class Create(base.CreateCommand):
     layer4_configs = []
     target_resources = []
     target_service_accounts = []
+    src_address_groups = []
+    dest_address_groups = []
     src_fqdns = []
     dest_fqdns = []
     src_region_codes = []
@@ -103,6 +107,18 @@ class Create(base.CreateCommand):
     if args.IsSpecified('target_service_accounts'):
       target_service_accounts = args.target_service_accounts
     if self.ReleaseTrack() == base.ReleaseTrack.ALPHA:
+      if args.IsSpecified('src_address_groups'):
+        src_address_groups = [
+            firewall_policies_utils.BuildAddressGroupUrl(
+                x, args.organization, org_firewall_policy, args.firewall_policy)
+            for x in args.src_address_groups
+        ]
+      if args.IsSpecified('dest_address_groups'):
+        dest_address_groups = [
+            firewall_policies_utils.BuildAddressGroupUrl(
+                x, args.organization, org_firewall_policy, args.firewall_policy)
+            for x in args.dest_address_groups
+        ]
       if args.IsSpecified('src_fqdns'):
         src_fqdns = args.src_fqdns
       if args.IsSpecified('dest_fqdns'):
@@ -134,6 +150,8 @@ class Create(base.CreateCommand):
           srcIpRanges=src_ip_ranges,
           destIpRanges=dest_ip_ranges,
           layer4Configs=layer4_config_list,
+          srcAddressGroups=src_address_groups,
+          destAddressGroups=dest_address_groups,
           srcFqdns=src_fqdns,
           destFqdns=dest_fqdns,
           srcRegionCodes=src_region_codes,

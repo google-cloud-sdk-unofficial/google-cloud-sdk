@@ -50,6 +50,10 @@ DETAILED_HELP = {
      To update a bucket in your project and update an existing index, run:
 
         $ {command} my-bucket --location=global --update-index=fieldPath=jsonPayload.foo,type=INDEX_TYPE_INTEGER
+
+     To update a bucket in your project and update existing cmek, run:
+
+        $ {command} my-bucket --location=global --cmek-kms-key-name=CMEK_KEY_NAME
     """,
 }
 
@@ -142,6 +146,9 @@ class Update(base.UpdateCommand):
             '*type*::: The type of data in this index. '
             'For example: INDEX_TYPE_STRING '
             'Supported types are strings and integers. '))
+    parser.add_argument(
+        '--cmek-kms-key-name',
+        help='A valid `kms_key_name` will enable CMEK for the bucket.')
 
   def GetCurrentBucket(self, args):
     """Returns a bucket specified by the arguments.
@@ -227,7 +234,7 @@ class Update(base.UpdateCommand):
       if args.IsSpecified('add_index'):
         bucket_data['indexConfigs'] += args.add_index
 
-    if is_alpha and args.IsSpecified('cmek_kms_key_name'):
+    if args.IsSpecified('cmek_kms_key_name'):
       bucket = self.GetCurrentBucket(args)
       if not bucket.cmekSettings:
         # This is the first time CMEK settings are being applied. Warn the user
@@ -287,9 +294,6 @@ class UpdateAlpha(Update):
         which give a ready-only access to logs in BigQuery. This option can
         only be enabled in a log bucket with advanced log analytics enabled.
         Use --no-enable-loglink to disable the linked dataset.""")
-    parser.add_argument(
-        '--cmek-kms-key-name',
-        help='A valid `kms_key_name` will enable CMEK for the bucket.')
 
   def Run(self, args):
     return self._Run(args, is_alpha=True)

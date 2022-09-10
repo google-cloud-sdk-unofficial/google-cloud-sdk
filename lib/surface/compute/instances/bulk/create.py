@@ -128,6 +128,7 @@ class Create(base.Command):
   _support_visible_core_count = False
   _support_max_run_duration = False
   _support_enable_target_shape = True
+  _support_confidential_compute_type = False
 
   _log_async = False
 
@@ -146,7 +147,9 @@ class Create(base.Command):
         support_numa_node_count=cls._support_numa_node_count,
         support_visible_core_count=cls._support_visible_core_count,
         support_max_run_duration=cls._support_max_run_duration,
-        support_enable_target_shape=cls._support_enable_target_shape)
+        support_enable_target_shape=cls._support_enable_target_shape,
+        support_confidential_compute_type=cls._support_confidential_compute_type
+    )
     cls.AddSourceInstanceTemplate(parser)
 
   # LINT.IfChange(instance_template)
@@ -172,7 +175,8 @@ class Create(base.Command):
         self._support_display_device, self._support_local_ssd_size,
         self._support_secure_tags, self._support_host_error_timeout_seconds,
         self._support_numa_node_count, self._support_visible_core_count,
-        self._support_max_run_duration, self._support_enable_target_shape)
+        self._support_max_run_duration, self._support_enable_target_shape,
+        self._support_confidential_compute_type)
     bulk_instance_resource = bulk_util.CreateBulkInsertInstanceResource(
         args, holder, compute_client, resource_parser, project, location, scope,
         self.SOURCE_INSTANCE_TEMPLATE, supported_features)
@@ -323,6 +327,7 @@ class CreateAlpha(Create):
   _support_visible_core_count = True
   _support_max_run_duration = True
   _support_enable_target_shape = True
+  _support_confidential_compute_type = True
 
   @classmethod
   def Args(cls, parser):
@@ -339,7 +344,9 @@ class CreateAlpha(Create):
         support_numa_node_count=cls._support_numa_node_count,
         support_visible_core_count=cls._support_visible_core_count,
         support_max_run_duration=cls._support_max_run_duration,
-        support_enable_target_shape=cls._support_enable_target_shape)
+        support_enable_target_shape=cls._support_enable_target_shape,
+        support_confidential_compute_type=cls._support_confidential_compute_type
+    )
 
     cls.AddSourceInstanceTemplate(parser)
 

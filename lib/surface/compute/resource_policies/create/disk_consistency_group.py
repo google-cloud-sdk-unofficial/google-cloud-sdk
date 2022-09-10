@@ -27,7 +27,7 @@ from googlecloudsdk.command_lib.compute.resource_policies import util
 
 def _CommonArgs(parser):
   """A helper function to build args based on different API version."""
-  flags.MakeResourcePolicyArg().AddArgument(parser)
+  CreateDiskConsistencyGroup.resource_policy_arg.AddArgument(parser)
   flags.AddCommonArgs(parser)
   parser.display_info.AddCacheUpdater(None)
 
@@ -38,13 +38,15 @@ class CreateDiskConsistencyGroup(base.CreateCommand):
 
   @staticmethod
   def Args(parser):
+    CreateDiskConsistencyGroup.resource_policy_arg = (
+        flags.MakeResourcePolicyArg())
     _CommonArgs(parser)
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     client = holder.client
 
-    policy_ref = flags.MakeResourcePolicyArg().ResolveAsResource(
+    policy_ref = self.resource_policy_arg.ResolveAsResource(
         args,
         holder.resources,
         scope_lister=compute_flags.GetDefaultScopeLister(holder.client))

@@ -48,59 +48,17 @@ DETAILED_HELP = {
 
           The config file can be in YAML or JSON format. Detailed information
           about how to configure metrics can be found at: [](https://cloud.google.com/logging/docs/reference/v2/rest/v2/projects.metrics#LogMetric).
+
+          To create a bucket log-based metric, run:
+
+            $ {command} my_bucket_metric --description="DESCRIPTION" --log-filter="LOG_FILTER" --bucket-name="BUCKET_NAME"
       """,
 }
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA,
+                    base.ReleaseTrack.ALPHA)
 class Create(base.CreateCommand):
-  """Creates a logs-based metric."""
-
-  @staticmethod
-  def Args(parser):
-    """Register flags for this command."""
-    parser.add_argument('metric_name', help='The name of the new metric.')
-    config_group = parser.add_argument_group(
-        help='Data about the new metric.', mutex=True, required=True)
-    legacy_mode_group = config_group.add_argument_group(
-        help=('A group of arguments to specify simple counter logs-based '
-              'metrics. '))
-    legacy_mode_group.add_argument(
-        '--description', required=True, help='The metric\'s description.')
-    legacy_mode_group.add_argument(
-        '--log-filter', required=True, help='The metric\'s filter expression.')
-    config_group.add_argument(
-        '--config-from-file',
-        help=('A path to a YAML or JSON file specifying '
-              'the logs-based metric to create.'),
-        type=arg_parsers.FileContents())
-
-  def Run(self, args):
-    """This is what gets called when the user runs this command.
-
-    Args:
-      args: an argparse namespace. All the arguments that were provided to this
-        command invocation.
-
-    Returns:
-      The created metric.
-    """
-    messages = util.GetMessages()
-
-    new_metric = util.CreateLogMetric(
-        metric_name=args.metric_name,
-        description=args.description,
-        log_filter=args.log_filter,
-        data=args.config_from_file)
-    request = messages.LoggingProjectsMetricsCreateRequest(
-        parent=util.GetCurrentProjectParent(), logMetric=new_metric)
-    result = util.GetClient().projects_metrics.Create(request)
-    log.CreatedResource(args.metric_name)
-    return result
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class CreateAlpha(base.CreateCommand):
   """Creates a logs-based metric."""
 
   @staticmethod
@@ -154,4 +112,3 @@ class CreateAlpha(base.CreateCommand):
 
 
 Create.detailed_help = DETAILED_HELP
-CreateAlpha.detailed_help = DETAILED_HELP

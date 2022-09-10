@@ -53,6 +53,7 @@ def _GAArgs(parser):
   parser.add_argument(
       '--description', help=('Text to describe the new snapshot.'))
   snap_flags.SOURCE_DISK_ARG.AddArgument(parser)
+  snap_flags.AddSnapshotType(parser)
 
 
 def _BetaArgs(parser):
@@ -62,7 +63,6 @@ def _BetaArgs(parser):
 def _AlphaArgs(parser):
   _GAArgs(parser)
   snap_flags.SOURCE_INSTANT_SNAPSHOT_ARG.AddArgument(parser)
-  snap_flags.AddSnapshotType(parser)
   snap_flags.AddMaxRetentionDays(parser)
 
 
@@ -80,7 +80,6 @@ class Create(base.CreateCommand):
   def _Run(self,
            args,
            support_source_instant_snapshot=False,
-           support_snapshot_type=False,
            support_max_retention_days=False):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     client = holder.client.apitools_client
@@ -131,7 +130,7 @@ class Create(base.CreateCommand):
           scope_lister=flags.GetDefaultScopeLister(holder.client))
       snapshot_message.sourceInstantSnapshot = iss_ref.SelfLink()
 
-    if support_snapshot_type and args.IsSpecified('snapshot_type'):
+    if args.IsSpecified('snapshot_type'):
       snapshot_message.snapshotType = snapshot_message.SnapshotTypeValueValuesEnum(
           args.snapshot_type)
 
@@ -180,7 +179,6 @@ class CreateAlpha(Create):
     return self._Run(
         args,
         support_source_instant_snapshot=True,
-        support_snapshot_type=True,
         support_max_retention_days=True)
 
 

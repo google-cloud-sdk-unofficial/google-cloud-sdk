@@ -37,7 +37,8 @@ from googlecloudsdk.core import log
 def _Args(parser,
           deprecate_maintenance_policy=False,
           container_mount_enabled=False,
-          support_multi_writer=True):
+          support_multi_writer=True,
+          support_confidential_compute_type=False):
   """Add flags shared by all release tracks."""
   parser.display_info.AddFormat(instances_flags.DEFAULT_LIST_FORMAT)
   metadata_utils.AddMetadataArgs(parser)
@@ -69,7 +70,8 @@ def _Args(parser,
   instances_flags.AddKonletArgs(parser)
   instances_flags.AddPublicPtrArgs(parser, instance=True)
   instances_flags.AddImageArgs(parser)
-  instances_flags.AddConfidentialComputeArgs(parser)
+  instances_flags.AddConfidentialComputeArgs(parser,
+                                             support_confidential_compute_type)
   instances_flags.AddNestedVirtualizationArgs(parser)
   instances_flags.AddThreadsPerCoreArgs(parser)
   labels_util.AddCreateLabelsFlags(parser)
@@ -96,6 +98,7 @@ class CreateWithContainer(base.CreateCommand):
   _support_host_error_timeout_seconds = False
   _support_numa_node_count = False
   _support_visible_core_count = False
+  _support_confidential_compute_type = False
 
   @staticmethod
   def Args(parser):
@@ -212,6 +215,11 @@ class CreateWithContainer(base.CreateCommand):
     confidential_vm = (
         args.IsSpecified('confidential_compute') and args.confidential_compute)
 
+    if self._support_confidential_compute_type:
+      confidential_vm |= (
+          args.IsSpecified('confidential_compute_type') and
+          args.confidential_compute_type is not None)
+
     requests = []
     for instance_ref in instance_refs:
       metadata = containers_utils.CreateKonletMetadataMessage(
@@ -280,7 +288,10 @@ class CreateWithContainer(base.CreateCommand):
 
       confidential_instance_config = (
           create_utils.BuildConfidentialInstanceConfigMessage(
-              messages=compute_client.messages, args=args))
+              messages=compute_client.messages,
+              args=args,
+              support_confidential_compute_type=self
+              ._support_confidential_compute_type))
       if confidential_instance_config:
         instance.confidentialInstanceConfig = confidential_instance_config
 
@@ -359,11 +370,15 @@ class CreateWithContainerAlpha(CreateWithContainerBeta):
   _support_host_error_timeout_seconds = True
   _support_numa_node_count = True
   _support_visible_core_count = True
+  _support_confidential_compute_type = True
 
   @staticmethod
   def Args(parser):
     _Args(
-        parser, deprecate_maintenance_policy=True, container_mount_enabled=True)
+        parser,
+        deprecate_maintenance_policy=True,
+        container_mount_enabled=True,
+        support_confidential_compute_type=True)
 
     instances_flags.AddNetworkTierArgs(parser, instance=True)
     instances_flags.AddLocalSsdArgsWithSize(parser)

@@ -18,6 +18,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+import copy
 import threading
 
 from argcomplete.completers import FilesCompleter
@@ -224,6 +225,12 @@ class Scp(base.Command):
     current_batch_size = 0
     exit_statuses = [None] * len(worker_ips)
     for worker, ips in worker_ips.items():
+      # Make a copy of the destination for each worker so that concurrent
+      # threads do not mutate the same object. b/238058396
+      worker_dst = copy.deepcopy(dst)
+      if worker_dst.remote:
+        worker_dst.remote.host = ips.ip_address
+
       options = None
       if not args.plain:
         options = ssh_helper.GetConfig(
@@ -238,10 +245,9 @@ class Scp(base.Command):
         iap_tunnel_args = tpu_ssh_utils.CreateSshTunnelArgs(
             args, self.ReleaseTrack(), project, args.zone, instance_name)
 
-      remote.host = ips.ip_address
       cmd = ssh.SCPCommand(
           srcs,
-          dst,
+          worker_dst,
           identity_file=identity_file,
           options=options,
           recursive=args.recurse,
@@ -253,6 +259,8 @@ class Scp(base.Command):
         log.out.Print(' '.join(cmd.Build(ssh_helper.env)))
         continue
 
+      # Orchestrate threading of scp commands based on number of workers, if
+      # batching is enabled, and batch size
       if len(worker_ips) > 1:
         # Run the command on multiple workers concurrently.
         ssh_threads.append(

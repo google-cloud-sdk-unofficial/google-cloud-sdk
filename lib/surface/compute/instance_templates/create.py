@@ -294,29 +294,11 @@ def BuildShieldedInstanceConfigMessage(messages, args):
   return shielded_instance_config_message
 
 
-def BuildConfidentialInstanceConfigMessage(messages, args):
-  """Build a Confidential Instance Config message.
-
-  Args:
-      messages: The client messages.
-      args: the arguments passed to the test.
-
-  Returns:
-      A Confidential Instance Config message.
-  """
-  confidential_instance_config_message = None
-  enable_confidential_compute = False
-  if not (hasattr(args, 'confidential_compute') and
-          args.IsSpecified('confidential_compute')):
-    return confidential_instance_config_message
-
-  if args.confidential_compute is not None and (isinstance(
-      args.confidential_compute, bool)):
-    enable_confidential_compute = args.confidential_compute
-  confidential_instance_config_message = (
-      instance_utils.CreateConfidentialInstanceMessage(
-          messages, enable_confidential_compute))
-  return confidential_instance_config_message
+def BuildConfidentialInstanceConfigMessage(
+    messages, args, support_confidential_compute_type=False):
+  """Builds a confidential instance configuration message."""
+  return instance_utils.CreateConfidentialInstanceMessage(
+      messages, args, support_confidential_compute_type)
 
 
 def PackageLabels(labels_cls, labels):
@@ -524,7 +506,8 @@ def _RunCreate(compute_api,
                support_numa_node_count=False,
                support_visible_core_count=False,
                support_max_run_duration=False,
-               support_region_instance_template=False):
+               support_region_instance_template=False,
+               support_confidential_compute_type=False):
   """Common routine for creating instance template.
 
   This is shared between various release tracks.
@@ -549,6 +532,8 @@ def _RunCreate(compute_api,
         termination-time is supported.
       support_region_instance_template: Indicate whether create region instance
         template is supported.
+      support_confidential_compute_type: Indicate what confidential compute type
+        is used.
 
   Returns:
       A resource object dispatched by display.Displayer().
@@ -627,7 +612,9 @@ def _RunCreate(compute_api,
 
   confidential_instance_config_message = (
       BuildConfidentialInstanceConfigMessage(
-          messages=client.messages, args=args))
+          messages=client.messages,
+          args=args,
+          support_confidential_compute_type=support_confidential_compute_type))
 
   node_affinities = sole_tenancy_util.GetSchedulingNodeAffinityListFromArgs(
       args, client.messages)
@@ -1061,6 +1048,7 @@ class CreateAlpha(Create):
   _support_visible_core_count = True
   _support_max_run_duration = True
   _support_region_instance_template = True
+  _support_confidential_compute_type = True
 
   @classmethod
   def Args(cls, parser):
@@ -1080,7 +1068,8 @@ class CreateAlpha(Create):
         support_region_instance_template=cls._support_region_instance_template)
     instances_flags.AddLocalNvdimmArgs(parser)
     instances_flags.AddMinCpuPlatformArgs(parser, base.ReleaseTrack.ALPHA)
-    instances_flags.AddConfidentialComputeArgs(parser)
+    instances_flags.AddConfidentialComputeArgs(
+        parser, support_confidential_compute_type=True)
     instances_flags.AddPrivateIpv6GoogleAccessArgForTemplate(
         parser, utils.COMPUTE_ALPHA_API_VERSION)
     instances_flags.AddPostKeyRevocationActionTypeArgs(parser)
@@ -1110,7 +1099,9 @@ class CreateAlpha(Create):
         support_numa_node_count=self._support_numa_node_count,
         support_visible_core_count=self._support_visible_core_count,
         support_max_run_duration=self._support_max_run_duration,
-        support_region_instance_template=self._support_region_instance_template)
+        support_region_instance_template=self._support_region_instance_template,
+        support_confidential_compute_type=self
+        ._support_confidential_compute_type)
 
 
 DETAILED_HELP = {

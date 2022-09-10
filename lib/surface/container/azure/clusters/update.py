@@ -48,6 +48,8 @@ class Update(base.UpdateCommand):
     flags.AddAdminUsers(parser, create=False)
     flags.AddSSHPublicKey(parser, required=False)
     flags.AddValidateOnly(parser, 'update of the cluster')
+    flags.AddDescriptionForUpdate(parser)
+    flags.AddAnnotationsForUpdate(parser, 'cluster')
     base.ASYNC_FLAG.AddToParser(parser)
     parser.display_info.AddFormat(constants.AZURE_CLUSTERS_FORMAT)
 

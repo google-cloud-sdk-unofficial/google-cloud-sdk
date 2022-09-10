@@ -49,6 +49,11 @@ class Create(base.CreateCommand):
     $ {command} my-bucket
       --index=fieldPath=jsonPayload.foo,type=INDEX_TYPE_STRING
 
+  To create a bucket with custom CMEK, run:
+
+    $ {command} my-bucket --location=us-central1
+      --cmek-kms-key-name=CMEK_KMS_KEY_NAME
+
   """
 
   @staticmethod
@@ -95,6 +100,9 @@ class Create(base.CreateCommand):
             'For example: INDEX_TYPE_STRING '
             'Supported types are INDEX_TYPE_STRING and '
             'INDEX_TYPE_INTEGER. \n\n '))
+    parser.add_argument(
+        '--cmek-kms-key-name',
+        help='A valid `kms_key_name` will enable CMEK for the bucket.')
     util.AddBucketLocationArg(
         parser, True,
         'Location in which to create the bucket. Once the bucket is created, '
@@ -114,7 +122,7 @@ class Create(base.CreateCommand):
     if is_alpha and args.IsSpecified('enable_analytics'):
       bucket_data['analyticsEnabled'] = args.enable_analytics
 
-    if is_alpha and args.IsSpecified('cmek_kms_key_name'):
+    if args.IsSpecified('cmek_kms_key_name'):
       console_io.PromptContinue(
           'CMEK cannot be disabled on a bucket once enabled.',
           cancel_on_no=True)
@@ -157,9 +165,6 @@ class CreateAlpha(Create):
         default=None,
         help='Whether to opt the bucket into advanced log analytics. This '
         'field may only be set at bucket creation and cannot be changed later.')
-    parser.add_argument(
-        '--cmek-kms-key-name',
-        help='A valid `kms_key_name` will enable CMEK for the bucket.')
 
   def Run(self, args):
     return self._Run(args, is_alpha=True)

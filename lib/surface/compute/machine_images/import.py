@@ -65,8 +65,7 @@ class Import(base.CreateCommand):
     daisy_utils.AddCommonDaisyArgs(parser, operation='an import')
     daisy_utils.AddOVFSourceUriArg(parser)
 
-    if cls.ReleaseTrack() != base.ReleaseTrack.GA:
-      image_utils.AddGuestOsFeaturesArgForImport(parser, messages)
+    image_utils.AddGuestOsFeaturesArgForImport(parser, messages)
 
     parser.add_argument(
         '--os',

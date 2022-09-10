@@ -20,6 +20,7 @@ from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.container.gkemulticloud import attached as api_util
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.container.attached import flags as attached_flags
 from googlecloudsdk.command_lib.container.attached import resource_args
 from googlecloudsdk.command_lib.container.gkemulticloud import command_util
 from googlecloudsdk.command_lib.container.gkemulticloud import constants
@@ -48,6 +49,8 @@ class Update(base.UpdateCommand):
     flags.AddClearDescription(parser)
     flags.AddAnnotations(parser)
     flags.AddValidateOnly(parser, 'update of the cluster')
+
+    attached_flags.AddPlatformVersion(parser, required=False)
 
     base.ASYNC_FLAG.AddToParser(parser)
     parser.display_info.AddFormat(constants.ATTACHED_CLUSTERS_FORMAT)

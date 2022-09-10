@@ -20,6 +20,7 @@ from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.container.fleet import client
 from googlecloudsdk.calliope import base as calliope_base
+from googlecloudsdk.command_lib.container.fleet import api_util
 from googlecloudsdk.command_lib.container.fleet import resources
 from googlecloudsdk.command_lib.container.fleet.features import base
 from googlecloudsdk.core import exceptions
@@ -111,7 +112,7 @@ class Update(base.UpdateCommand):
 
     if resources.UseRegionalMemberships(self.ReleaseTrack()):
       membership = resources.MembershipResourceName(args)
-      all_memberships, _ = base.ListMembershipsFull()
+      all_memberships, _ = api_util.ListMembershipsFull()
     else:
       membership = args.membership
       all_memberships = base.ListMemberships()

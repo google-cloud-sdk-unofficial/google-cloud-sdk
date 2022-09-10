@@ -52,6 +52,8 @@ class Update(base.UpdateCommand):
     flags.AddTargetResources(parser)
     flags.AddTargetServiceAccounts(parser)
     if is_alpha:
+      flags.AddSrcAddressGroups(parser)
+      flags.AddDestAddressGroups(parser)
       flags.AddSrcFqdns(parser)
       flags.AddDestFqdns(parser)
       flags.AddSecurityProfileGroup(parser)
@@ -84,6 +86,8 @@ class Update(base.UpdateCommand):
     layer4_config_list = []
     target_resources = []
     target_service_accounts = []
+    src_address_groups = []
+    dest_address_groups = []
     src_fqdns = []
     dest_fqdns = []
     src_region_codes = []
@@ -111,6 +115,20 @@ class Update(base.UpdateCommand):
     if args.IsSpecified('target_service_accounts'):
       target_service_accounts = args.target_service_accounts
     if self.ReleaseTrack() == base.ReleaseTrack.ALPHA:
+      if args.IsSpecified('src_address_groups'):
+        src_address_groups = [
+            firewall_policies_utils.BuildAddressGroupUrl(
+                x, args.organization, org_firewall_policy, args.firewall_policy)
+            for x in args.src_address_groups
+        ]
+        should_setup_match = True
+      if args.IsSpecified('dest_address_groups'):
+        dest_address_groups = [
+            firewall_policies_utils.BuildAddressGroupUrl(
+                x, args.organization, org_firewall_policy, args.firewall_policy)
+            for x in args.dest_address_groups
+        ]
+        should_setup_match = True
       if args.IsSpecified('src_fqdns'):
         src_fqdns = args.src_fqdns
         should_setup_match = True
@@ -152,6 +170,8 @@ class Update(base.UpdateCommand):
             srcIpRanges=src_ip_ranges,
             destIpRanges=dest_ip_ranges,
             layer4Configs=layer4_config_list,
+            srcAddressGroups=src_address_groups,
+            destAddressGroups=dest_address_groups,
             srcFqdns=src_fqdns,
             destFqdns=dest_fqdns,
             srcRegionCodes=src_region_codes,

@@ -49,12 +49,17 @@ class Update(base.UpdateCommand):
   @classmethod
   def Args(cls, parser):
     if resources.UseRegionalMemberships(cls.ReleaseTrack()):
-      resources.AddMembershipResourceArg(parser, plural=True)
+      resources.AddMembershipResourceArg(
+          parser,
+          plural=True,
+          membership_help=('Membership names to update, separated by commas '
+                           'if multiple are supplied.'))
     else:
       parser.add_argument(
           '--memberships',
           type=str,
-          help='Membership names to update, separated by commas if multiple are supplied.',
+          help=('Membership names to update, separated by commas if multiple'
+                ' are supplied.'),
       )
     parser.add_argument(
         '--all-memberships',
@@ -80,20 +85,21 @@ class Update(base.UpdateCommand):
     # memberships.
     enable = args.enable
 
-    all_memberships = base.ListMemberships()
-    if not all_memberships:
-      raise exceptions.Error('No memberships available in the fleet.')
     memberships = []
+    if resources.UseRegionalMemberships(self.ReleaseTrack()):
+      memberships = base.ParseMemberships(
+          args, memberships_flag=True, all_memberships_flag=True, prompt=True)
+    else:
+      all_memberships = base.ListMemberships()
+      if not all_memberships:
+        raise exceptions.Error('No memberships available in the fleet.')
 
-    if args.all_memberships:
-      memberships = all_memberships
-    elif args.memberships:
-      memberships = args.memberships.split(',')
+      if args.all_memberships:
+        memberships = all_memberships
+      elif args.memberships:
+        memberships = args.memberships.split(',')
 
-    if not memberships:  # The user didn't provide --memberships.
-      if resources.UseRegionalMemberships(self.ReleaseTrack()):
-        memberships.append(resources.PromptForMembership(flag='--memberships'))
-      else:
+      if not memberships:  # The user didn't provide --memberships.
         if console_io.CanPrompt():
           index = console_io.PromptChoice(
               options=all_memberships,
@@ -107,16 +113,18 @@ class Update(base.UpdateCommand):
                'required. Please specify `--memberships` to select at '
                'least one membership.'))
 
-    for membership in memberships:
-      if membership not in all_memberships:
-        raise exceptions.Error(
-            'Membership {} does not exist in the fleet.'.format(membership))
+      for membership in memberships:
+        if membership not in all_memberships:
+          raise exceptions.Error(
+              'Membership {} does not exist in the fleet.'.format(membership))
 
     # All memberships in memberships are valid.
     f = self.GetFeature()
     membership_specs = {}
     for membership_str in memberships:
-      membership = self.MembershipResourceName(membership_str)
+      membership = membership_str
+      if not resources.UseRegionalMemberships(self.ReleaseTrack()):
+        membership = self.MembershipResourceName(membership_str)
       patch = self.messages.MembershipFeatureSpec()
 
       # Use current spec if it exists.

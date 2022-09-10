@@ -25,7 +25,8 @@ from googlecloudsdk.command_lib.compute import flags as compute_flags
 from googlecloudsdk.command_lib.compute.sole_tenancy.node_groups import flags
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
+                    base.ReleaseTrack.GA)
 class Update(base.UpdateCommand):
   """Update a Compute Engine node group."""
 
@@ -45,6 +46,7 @@ class Update(base.UpdateCommand):
     flags.MakeNodeGroupArg().AddArgument(parser)
     flags.AddUpdateArgsToParser(parser)
     flags.AddAutoscalingPolicyArgToParser(parser)
+    flags.AddShareSettingArgToParser(parser)
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
@@ -61,9 +63,8 @@ class Update(base.UpdateCommand):
                          (hasattr(args, 'min_nodes') and args.IsSpecified('min_nodes')) or \
                          (hasattr(args, 'max_nodes') and args.IsSpecified('max_nodes'))
 
-    share_setting = hasattr(args, 'share_setting') and hasattr(
-        args, 'share_with') and (args.IsSpecified('share_setting') or
-                                 args.IsSpecified('share_with'))
+    share_setting = (
+        args.IsSpecified('share_setting') or args.IsSpecified('share_with'))
 
     return groups_client.Update(
         node_group_ref,
@@ -72,15 +73,3 @@ class Update(base.UpdateCommand):
         delete_nodes=args.delete_nodes,
         autoscaling_policy_args=args if autoscaling_policy else None,
         share_setting_args=args if share_setting else None)
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
-class UpdateAlpha(Update):
-  """Update a Compute Engine node group."""
-
-  @staticmethod
-  def Args(parser):
-    flags.MakeNodeGroupArg().AddArgument(parser)
-    flags.AddUpdateArgsToParser(parser)
-    flags.AddAutoscalingPolicyArgToParser(parser)
-    flags.AddShareSettingArgToParser(parser)

@@ -20,22 +20,13 @@ from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.container.vmware import clusters as apis
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.container.vmware import constants
 from googlecloudsdk.command_lib.container.vmware import flags
 
 _EXAMPLES = """
 To lists all clusters managed in location ``us-west1'', run:
 
 $ {command} --location=us-west1
-"""
-
-
-VMWARE_CLUSTERS_FORMAT = """
-table(
-  name.segment(5):label=NAME,
-  name.segment(3):label=LOCATION,
-  onPremVersion,
-  adminClusterMembership.segment(5),
-  state)
 """
 
 
@@ -48,12 +39,23 @@ class List(base.ListCommand):
 
   @staticmethod
   def Args(parser):
-    parser.display_info.AddFormat(VMWARE_CLUSTERS_FORMAT)
-    # parser.display_info.AddUriFunc(apis.GetClusterURI)
+    """Gathers command line arguments for the list command.
+
+    Args:
+      parser: The argparse parser to add the flag to.
+    """
+    parser.display_info.AddFormat(constants.VMWARE_CLUSTERS_FORMAT)
     flags.AddLocationResourceArg(parser)
 
   def Run(self, args):
-    """Runs the list command."""
+    """Runs the list command.
+
+    Args:
+      args: Arguments received from command line.
+
+    Returns:
+      protorpc.message.Message, The resources listed by the service.
+    """
     location_ref = args.CONCEPTS.location.Parse()
     client = apis.ClustersClient()
     return client.List(location_ref, limit=args.limit, page_size=args.page_size)

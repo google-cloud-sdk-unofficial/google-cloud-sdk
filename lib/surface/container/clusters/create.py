@@ -569,6 +569,9 @@ flags_to_add = {
             flags.AddWorkloadMetadataFlag,
         'enableserviceexternalips':
             flags.AddEnableServiceExternalIPs,
+        'disablepodcidroverprovision':
+            (lambda p: flags.AddDisablePodCIDROverprovisionFlag(p, hidden=True)
+             ),
         'privateEndpointSubnetwork':
             flags.AddPrivateEndpointSubnetworkFlag,
         'enableGoogleCloudAccess':

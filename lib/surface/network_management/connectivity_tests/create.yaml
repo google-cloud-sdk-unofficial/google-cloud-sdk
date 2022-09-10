@@ -39,7 +39,6 @@
           help_text: |
             A Cloud SQL instance URI as the source endpoint.
         - arg_name: source-cloud-function
-          release_tracks: [BETA]
           api_field: connectivityTest.source.cloudFunction.uri
           help_text: |
             A Cloud function URI as the source endpoint.

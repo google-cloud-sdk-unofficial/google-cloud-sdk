@@ -65,6 +65,7 @@ class Create(base.CreateCommand):
   _support_rsa_encrypted = True
   _support_create_disk_snapshots = True
   _support_boot_snapshot_uri = True
+  _support_confidential_compute_type = True
 
   @classmethod
   def Args(cls, parser):
@@ -83,7 +84,9 @@ class Create(base.CreateCommand):
         support_visible_core_count=cls._support_visible_core_count,
         support_max_run_duration=cls._support_max_run_duration,
         support_enable_target_shape=cls._support_enable_target_shape,
-        add_zone_region_flags=False)
+        add_zone_region_flags=False,
+        support_confidential_compute_type=cls._support_confidential_compute_type
+    )
     cls.AddSourceInstanceTemplate(parser)
     instances_flags.AddSecureTagsArgs(parser)
     instances_flags.AddHostErrorTimeoutSecondsArgs(parser)
@@ -139,7 +142,8 @@ class Create(base.CreateCommand):
         self._support_display_device, self._support_local_ssd_size,
         self._support_secure_tags, self._support_host_error_timeout_seconds,
         self._support_numa_node_count, self._support_visible_core_count,
-        self._support_max_run_duration, self._support_enable_target_shape)
+        self._support_max_run_duration, self._support_enable_target_shape,
+        self._support_confidential_compute_type)
     bulk_insert_instance_resource = bulk_util.CreateBulkInsertInstanceResource(
         args, holder, client, holder.resources, queued_resource_ref.project,
         args.zone, compute_scopes.ScopeEnum.ZONE, self.SOURCE_INSTANCE_TEMPLATE,

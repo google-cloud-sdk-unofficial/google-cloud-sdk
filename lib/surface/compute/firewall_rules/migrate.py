@@ -21,6 +21,7 @@ from __future__ import unicode_literals
 import json
 import re
 
+from apitools.base.py import list_pager
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute.operations import poller
 from googlecloudsdk.api_lib.util import waiter
@@ -233,8 +234,8 @@ def _WriteTagMapping(file_name, tags, service_accounts):
     log.status.Print(repr(e))
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class MigrateAlpha(base.CreateCommand):
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+class Migrate(base.CreateCommand):
   """Migrate from legacy firewall rules to network firewall policies."""
 
   NETWORK_ARG = None
@@ -335,10 +336,13 @@ class MigrateAlpha(base.CreateCommand):
 
     # List all legacy VPC Firewalls attached to the given VPC Network
     # Hidden VPC Firewalls are not listed.
-    # TODO(b/222646415) Support more than 500 VPC Firewalls (maxResults)!
-    response = client.firewalls.List(
-        messages.ComputeFirewallsListRequest(project=project))
-    firewalls = _GetFirewallsAssociatedWithNetwork(network, response.items)
+    fetched_firewalls = list_pager.YieldFromList(
+        service=client.firewalls,
+        batch_size=500,
+        request=messages.ComputeFirewallsListRequest(project=project),
+        method='List',
+        field='items')
+    firewalls = _GetFirewallsAssociatedWithNetwork(network, fetched_firewalls)
     log.status.Print(
         'Found {} VPC Firewalls associated with the VPC Network \'{}\'.\n'
         .format(len(firewalls), network_name))
@@ -492,11 +496,16 @@ class MigrateAlpha(base.CreateCommand):
       log.status.Print('')
 
     # Create a new Network Firewall Policy
-    firewall_policy = messages.FirewallPolicy(
-        description='Network Firewall Policy containing all VPC Firewalls and FirewallPolicy.Rules migrated using GCP Firewall Migration Tool.',
-        name=policy_name,
-        vpcNetworkScope=messages.FirewallPolicy.VpcNetworkScopeValueValuesEnum
-        .GLOBAL_VPC_NETWORK)
+    if self.ReleaseTrack() == base.ReleaseTrack.ALPHA:
+      firewall_policy = messages.FirewallPolicy(
+          description='Network Firewall Policy containing all VPC Firewalls and FirewallPolicy.Rules migrated using GCP Firewall Migration Tool.',
+          name=policy_name,
+          vpcNetworkScope=messages.FirewallPolicy.VpcNetworkScopeValueValuesEnum
+          .GLOBAL_VPC_NETWORK)
+    else:
+      firewall_policy = messages.FirewallPolicy(
+          description='Network Firewall Policy containing all VPC Firewalls and FirewallPolicy.Rules migrated using GCP Firewall Migration Tool.',
+          name=policy_name)
     response = client.networkFirewallPolicies.Insert(
         messages.ComputeNetworkFirewallPoliciesInsertRequest(
             project=project, firewallPolicy=firewall_policy))
@@ -523,7 +532,7 @@ class MigrateAlpha(base.CreateCommand):
                                                 firewall.description))
 
 
-MigrateAlpha.detailed_help = {
+Migrate.detailed_help = {
     'brief':
         'Create a new Network Firewall Policy and move all customer defined '
         'firewall rules there.',

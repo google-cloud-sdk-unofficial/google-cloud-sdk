@@ -38,6 +38,8 @@ from googlecloudsdk.core.util import platforms
 
 from oauth2client import client as oauth2_client
 
+_AUTH_PROXY_REDIRECT_URI = (
+    'https://sdk.cloud.google.com/transfer-agents-install-authcode.html')
 COUNT_FLAG_HELP_TEXT = """
 Specify the number of agents to install on your current machine.
 System requirements: 8 GB of memory and 4 CPUs per agent.
@@ -152,7 +154,9 @@ def _authenticate_and_get_creds_file_path(existing_creds_file=None):
     # pylint:enable=protected-access
     if not os.path.exists(creds_file_path):
       creds = login_util.DoInstalledAppBrowserFlowGoogleAuth(
-          scopes=(login_util.DEFAULT_SCOPES + [config.REAUTH_SCOPE]))
+          scopes=(login_util.DEFAULT_SCOPES + [config.REAUTH_SCOPE]),
+          auth_proxy_redirect_uri=_AUTH_PROXY_REDIRECT_URI,
+      )
       auth_util.DumpADCOptionalQuotaProject(creds)
 
   return creds_file_path

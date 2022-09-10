@@ -18,6 +18,8 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+import ipaddress
+
 from googlecloudsdk.api_lib.compute import alias_ip_range_utils
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import constants
@@ -29,6 +31,7 @@ from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.compute import flags
 from googlecloudsdk.command_lib.compute.instances import flags as instances_flags
 from googlecloudsdk.command_lib.util.apis import arg_utils
+import six
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
@@ -133,6 +136,28 @@ class Update(base.UpdateCommand):
           is 96.
         """)
 
+      parser.add_argument(
+          '--internal-ipv6-address',
+          type=str,
+          help="""
+          Assigns the given internal IPv6 address or range to an instance.
+          The address must be the first IP in the range or a IP range with
+          /96. This option can only be used on a dual stack instance network
+          interface.
+        """)
+
+      parser.add_argument(
+          '--internal-ipv6-prefix-length',
+          type=int,
+          help="""
+          Optional field that indicates the prefix length of the internal IPv6
+          address range, should be used together with
+          `--internal-ipv6-address=fd20::`. Currently only /96 is supported and
+          the default value is 96. If not set, the prefix length from
+          `--internal-ipv6-address=fd20::/96` will be used or assigned a
+          default value of 96.
+        """)
+
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     client = holder.client.apitools_client
@@ -167,8 +192,8 @@ class Update(base.UpdateCommand):
           collection='compute.networks').SelfLink()
 
     subnetwork_uri = None
+    region = api_utils.ZoneNameToRegionName(instance_ref.zone)
     if getattr(args, 'subnetwork', None) is not None:
-      region = api_utils.ZoneNameToRegionName(instance_ref.zone)
       subnetwork_uri = resources.Parse(
           args.subnetwork, {
               'project': instance_ref.project,
@@ -179,6 +204,9 @@ class Update(base.UpdateCommand):
     stack_type = getattr(args, 'stack_type', None)
     ipv6_address = getattr(args, 'ipv6_address', None)
     ipv6_prefix_length = getattr(args, 'ipv6_prefix_length', None)
+    internal_ipv6_address = getattr(args, 'internal_ipv6_address', None)
+    internal_ipv6_prefix_length = getattr(args, 'internal_ipv6_prefix_length',
+                                          None)
     if stack_type is not None:
       stack_type_enum = (
           messages.NetworkInterface.StackTypeValueValuesEnum(stack_type))
@@ -193,12 +221,29 @@ class Update(base.UpdateCommand):
         ipv6_access_config.networkTier = (
             messages.AccessConfig.NetworkTierValueValuesEnum(ipv6_network_tier))
         if ipv6_address:
-          ipv6_access_config.externalIpv6 = ipv6_address
+          # Try interpreting the address as IPv6.
+          try:
+            # ipaddress only allows unicode input
+            ipaddress.ip_address(six.text_type(ipv6_address))
+            ipv6_access_config.externalIpv6 = ipv6_address
+          except ValueError:
+            # ipaddress could not resolve as an IPv6 address.
+            ipv6_access_config.externalIpv6 = instances_flags.GetAddressRef(
+                resources, ipv6_address, region).SelfLink()
           if ipv6_prefix_length:
             ipv6_access_config.externalIpv6PrefixLength = ipv6_prefix_length
           else:
             ipv6_access_config.externalIpv6PrefixLength = 96
         ipv6_access_configs = [ipv6_access_config]
+      if internal_ipv6_address:
+        # Try interpreting the address as IPv6.
+        try:
+          # ipaddress only allows unicode input
+          ipaddress.ip_address(six.text_type(internal_ipv6_address))
+        except ValueError:
+          # ipaddress could not resolve as an IPv6 address.
+          internal_ipv6_address = instances_flags.GetAddressRef(
+              resources, internal_ipv6_address, region).SelfLink()
       patch_network_interface = messages.NetworkInterface(
           aliasIpRanges=(
               alias_ip_range_utils.CreateAliasIpRangeMessagesFromString(
@@ -208,7 +253,9 @@ class Update(base.UpdateCommand):
           networkIP=getattr(args, 'private_network_ip', None),
           stackType=stack_type_enum,
           ipv6AccessConfigs=ipv6_access_configs,
-          fingerprint=fingerprint)
+          fingerprint=fingerprint,
+          ipv6Address=internal_ipv6_address,
+          internalIpv6PrefixLength=internal_ipv6_prefix_length)
     else:
       patch_network_interface = messages.NetworkInterface(
           aliasIpRanges=(

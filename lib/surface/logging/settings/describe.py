@@ -24,7 +24,8 @@ from googlecloudsdk.api_lib.logging import util
 from googlecloudsdk.calliope import base
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
+                    base.ReleaseTrack.GA)
 class Describe(base.DescribeCommand):
   # pylint: disable=line-too-long
   """Displays the settings for the Cloud Logging Logs Router.
@@ -33,7 +34,7 @@ class Describe(base.DescribeCommand):
   project, folder, organization or billing-account. You can also find the Logs
   Router service account using this command.
 
-  ## EXAMPLE
+  ## EXAMPLES
 
   To describe the Logs Router settings for a project, run:
 

@@ -30,6 +30,12 @@
       help_text: |
         Arguments and flags specifying the worker pool you want to create.
     params:
+    - api_field: workerPool.hostOs
+      arg_name: host-os
+      required: false
+      default: ubuntu
+      help_text: |
+        OS type of the worker pool.
     - api_field: workerPool.channel
       arg_name: channel
       required: false

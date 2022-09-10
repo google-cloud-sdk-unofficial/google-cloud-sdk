@@ -33,6 +33,12 @@
       help_text: |
         Arguments and flags specifying the worker pool to update.
     params:
+    - api_field: googleDevtoolsRemotebuildexecutionAdminV1alphaUpdateWorkerPoolRequest.workerPool.hostOs
+      arg_name: host-os
+      required: false
+      default: ubuntu
+      help_text: |
+        OS type of the worker pool.
     - api_field: googleDevtoolsRemotebuildexecutionAdminV1alphaUpdateWorkerPoolRequest.workerPool.channel
       arg_name: channel
       required: false

@@ -284,7 +284,7 @@ class Create(base.CreateCommand):
       if purpose == messages.Address.PurposeValueValuesEnum.IPSEC_INTERCONNECT:
         raise exceptions.RequiredArgumentException(
             '--prefix-length', 'prefix length is needed for reserving IP ranges'
-            ' for IPsec-encrypted Cloud Interconnect.')
+            ' for HA VPN over Cloud Interconnect.')
 
     if self._support_ipv6_reservation:
       return messages.Address(

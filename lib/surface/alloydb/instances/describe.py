@@ -38,19 +38,22 @@ class Describe(base.DescribeCommand):
         To describe an instance, run:
 
           $ {command} my-instance --cluster=my-cluster --region=us-central1
+          --view=BASIC/FULL
         """,
   }
 
-  @staticmethod
-  def Args(parser):
+  @classmethod
+  def Args(cls, parser):
     """Specifies additional command flags.
 
     Args:
       parser: argparse.Parser: Parser object for command line inputs
     """
+    alloydb_messages = api_util.GetMessagesModule(cls.ReleaseTrack())
     flags.AddCluster(parser, False)
     flags.AddInstance(parser)
     flags.AddRegion(parser)
+    flags.AddView(parser, alloydb_messages)
 
   def Run(self, args):
     """Constructs and sends request.
@@ -71,7 +74,14 @@ class Describe(base.DescribeCommand):
         locationsId=args.region,
         clustersId=args.cluster,
         instancesId=args.instance)
-    req = alloydb_messages.AlloydbProjectsLocationsClustersInstancesGetRequest(
-        name=instance_ref.RelativeName())
+
+    if args.view:
+      req = alloydb_messages.AlloydbProjectsLocationsClustersInstancesGetRequest(
+          name=instance_ref.RelativeName(),
+          view=flags.GetInstanceViewFlagMapper(
+              alloydb_messages).GetEnumForChoice(args.view))
+    else:
+      req = alloydb_messages.AlloydbProjectsLocationsClustersInstancesGetRequest(
+          name=instance_ref.RelativeName())
     op = alloydb_client.projects_locations_clusters_instances.Get(req)
     return op

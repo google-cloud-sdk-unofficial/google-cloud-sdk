@@ -27,7 +27,8 @@ from googlecloudsdk.command_lib.kms import resource_args as kms_resource_args
 from googlecloudsdk.command_lib.resource_manager import completers
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
+                    base.ReleaseTrack.GA)
 class Update(base.Command):
   # pylint: disable=line-too-long
   """Updates the settings for the Cloud Logging Logs Router.
