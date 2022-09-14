@@ -34,11 +34,11 @@ DETAILED_HELP = {
           To create a private cloud in the ``us-west2-a'' zone using ``standard-72'' nodes that connects to the ``my-network'' VMware Engine network, run:
 
 
-          $ {command} my-private-cloud --location=us-west2-a --project=my-project --cluster=my-management-cluster --node-type=standard-72 --node-count=3 --management-range=192.168.0.0/24 --vmware-engine-network=projects/my-project/locations/us-west2/vmwareEngineNetworks/my-network
+          $ {command} my-private-cloud --location=us-west2-a --project=my-project --cluster=my-management-cluster --node-type=standard-72 --node-count=3 --management-range=192.168.0.0/24 --vmware-engine-network=my-network
 
           Or:
 
-          $ {command} my-private-cloud --cluster=my-management-cluster --node-type=standard-72 --node-count=3 --management-range=192.168.0.0/24 --vmware-engine-network=projects/my-project/locations/us-west2/vmwareEngineNetworks/my-network
+          $ {command} my-private-cloud --cluster=my-management-cluster --node-type=standard-72 --node-count=3 --management-range=192.168.0.0/24 --vmware-engine-network=my-network
 
           In the second example, the project and location are taken from gcloud properties core/project and compute/zone.
     """,
@@ -94,7 +94,7 @@ class Create(base.CreateCommand):
         '--vmware-engine-network',
         required=False,
         help="""\
-        Full resource path of the VMware Engine network attached to the private cloud.
+        Resource ID of the VMware Engine network attached to the private cloud.
         """)
     parser.add_argument(
         '--network-project',

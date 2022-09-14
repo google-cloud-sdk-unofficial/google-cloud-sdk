@@ -22,6 +22,5 @@ from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 
 
-@base.Hidden
 class Notifications(base.Group):
   """Manage Cloud Storage bucket notifications."""

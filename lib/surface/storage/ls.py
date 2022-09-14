@@ -157,8 +157,7 @@ class Ls(base.Command):
         '-l',
         '--long',
         action='store_true',
-        help='For objects only. List size in bytes, creation time, and URL.'
-        ' Note: Creation time not available for S3.')
+        help='For objects only. List size in bytes, creation time, and URL.')
     output_styles.add_argument(
         '-L',
         '--full',

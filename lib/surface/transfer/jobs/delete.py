@@ -21,7 +21,8 @@ from __future__ import unicode_literals
 from googlecloudsdk.api_lib.transfer import jobs_util
 from googlecloudsdk.api_lib.util import apis
 from googlecloudsdk.calliope import base
-from googlecloudsdk.command_lib.transfer import jobs_apitools_util
+from googlecloudsdk.command_lib.transfer import name_util
+from googlecloudsdk.core import properties
 
 
 class Delete(base.Command):
@@ -48,9 +49,10 @@ class Delete(base.Command):
     client = apis.GetClientInstance('storagetransfer', 'v1')
     messages = apis.GetMessagesModule('storagetransfer', 'v1')
 
-    existing_job = jobs_util.api_get(args.name)
-    existing_job.status = messages.TransferJob.StatusValueValuesEnum.DELETED
-
-    return client.transferJobs.Patch(
-        jobs_apitools_util.generate_patch_transfer_job_message(
-            messages, existing_job, 'status'))
+    formatted_job_name = name_util.add_job_prefix(args.name)
+    client.transferJobs.Delete(
+        messages.StoragetransferTransferJobsDeleteRequest(
+            jobName=formatted_job_name,
+            projectId=properties.VALUES.core.project.Get()))
+    # Display metadata of job with status updated to `DELETED`.
+    return jobs_util.api_get(args.name)

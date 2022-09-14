@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""'Bare Metal Solution volume snapshot describe command."""
+"""'Bare Metal Solution boot volume snapshot delete command."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -26,21 +26,21 @@ from googlecloudsdk.core.console import console_io
 DETAILED_HELP = {
     'DESCRIPTION':
         """
-          Delete a Bare Metal Solution volume snapshot.
+          Delete a Bare Metal Solution boot volume snapshot.
         """,
     'EXAMPLES':
         """
-          To delete a snapshot called ``my-snapshot'' on volume ``my-volume''
-          in region ``us-central1'', run:
+          To delete a snapshot called ``my-snapshot'' on boot volume
+          ``my-boot-volume'' in region ``us-central1'', run:
 
-          $ {command} my-snapshot --region=us-central1 --volume=my-volume
+          $ {command} my-snapshot --region=us-central1 --volume=my-boot-volume
     """,
 }
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Delete(base.DeleteCommand):
-  """Delete a Bare Metal Solution volume snapshot."""
+  """Delete a Bare Metal Solution boot volume snapshot."""
 
   @staticmethod
   def Args(parser):
@@ -50,12 +50,19 @@ class Delete(base.DeleteCommand):
   def Run(self, args):
     snapshot = args.CONCEPTS.snapshot.Parse()
     client = BmsClient()
-
-    console_io.PromptContinue(
-        message=('You are about to delete the snapshot '
-                 '[{0}]'.format(snapshot.Name())),
-        cancel_on_no=True)
-
+    snapshot_type = client.GetVolumeSnapshot(snapshot).type
+    if snapshot_type == client.messages.VolumeSnapshot.TypeValueValuesEnum.SCHEDULED:
+      console_io.PromptContinue(
+          message='Deleting a SCHEDULED snapshot of a boot volume '
+          'is unsafe and should only be done when necessary.',
+          prompt_string='Are you sure you want to delete snapshot {}'
+          .format(snapshot.Name()),
+          cancel_on_no=True)
+    else:
+      console_io.PromptContinue(
+          message=('You are about to delete the snapshot '
+                   '[{0}]'.format(snapshot.Name())),
+          cancel_on_no=True)
     return client.DeleteVolumeSnapshot(snapshot)
 
 

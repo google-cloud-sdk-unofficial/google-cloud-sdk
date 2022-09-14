@@ -25,6 +25,7 @@ from googlecloudsdk.calliope import base
 
 
 @base.Hidden
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Rsync(base.Command):
   """Synchronize content of two buckets/directories."""
 

@@ -23,6 +23,7 @@ from googlecloudsdk.command_lib.iam import iam_util
 
 
 @base.Hidden
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class RemoveIamPolicyBinding(base.Command):
   """Remove a principal from the access policy for an object."""
 

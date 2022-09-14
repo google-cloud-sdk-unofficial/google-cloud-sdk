@@ -50,6 +50,7 @@ class Update(base.UpdateCommand):
     flags.AddAnnotations(parser)
     flags.AddValidateOnly(parser, 'update of the cluster')
 
+    attached_flags.AddAdminUsers(parser)
     attached_flags.AddPlatformVersion(parser, required=False)
 
     base.ASYNC_FLAG.AddToParser(parser)

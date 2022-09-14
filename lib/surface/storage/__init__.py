@@ -24,7 +24,7 @@ from googlecloudsdk.calliope import base
 
 DETAILED_HELP = {
     'DESCRIPTION': """\
-        The gcloud alpha storage command group lets you create and manage
+        The gcloud storage command group lets you create and manage
         Cloud Storage resources such as buckets and objects.
 
         More information on Cloud Storage can be found here:
@@ -34,7 +34,7 @@ DETAILED_HELP = {
 }
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.GA)
 class Storage(base.Group):
   """Create and manage Cloud Storage buckets and objects."""
 

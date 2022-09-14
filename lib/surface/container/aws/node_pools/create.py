@@ -54,6 +54,7 @@ class Create(base.CreateCommand):
     flags.AddTags(parser, 'node pool')
     flags.AddNodeLabels(parser)
     flags.AddNodeTaints(parser)
+    flags.AddAnnotations(parser, 'node pool')
 
     aws_flags.AddInstanceType(parser, kind='node pool')
     aws_flags.AddSshEC2KeyPair(parser, kind='node pool')

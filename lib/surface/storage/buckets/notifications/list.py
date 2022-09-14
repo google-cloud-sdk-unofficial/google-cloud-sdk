@@ -24,7 +24,6 @@ from googlecloudsdk.command_lib.storage import notification_configuration_iterat
 from googlecloudsdk.core.resource import resource_projector
 
 
-@base.Hidden
 class List(base.ListCommand):
   """List the notification configurations belonging to a given bucket."""
 

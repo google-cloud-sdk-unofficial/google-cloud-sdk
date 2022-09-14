@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""'Bare Metal Solution volumes "restore" command."""
+"""'Bare Metal Solution boot volumes "restore" command."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -23,24 +23,21 @@ from googlecloudsdk.api_lib.util import waiter
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.bms import flags
 from googlecloudsdk.core import log
+from googlecloudsdk.core import properties
 from googlecloudsdk.core import resources
 
 
 DETAILED_HELP = {
     'DESCRIPTION':
         """
-          Restore a Bare Metal Solution volume to an existing snapshot.
-
-          This call returns immediately, but the restore operation may take
-          several minutes to complete. To check if the operation is complete,
-          use the `describe` command for the volume.
+          Restore a Bare Metal Solution boot volume from an existing snapshot.
         """,
     'EXAMPLES':
         """
-          To restore a volume named ``my-volume'' in region
-          ``us-central1'' to a snapshot named ``my-snapshot'', run:
+          To restore a boot volume named ``my-boot-volume'' in region
+          ``us-central1'' from snapshot named ``my-snapshot'', run:
 
-          $ {command} my-volume --region=us-central1 --snapshot=my-snapshot
+          $ {command} my-boot-volume --region=us-central1 --snapshot=my-snapshot
     """,
 }
 
@@ -48,7 +45,7 @@ DETAILED_HELP = {
 @base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Restore(base.UpdateCommand):
-  """Restore a Bare Metal Solution volume to an existing snapshot."""
+  """Restore a Bare Metal Solution boot volume from an existing snapshot."""
 
   @staticmethod
   def Args(parser):
@@ -62,7 +59,17 @@ class Restore(base.UpdateCommand):
   def Run(self, args):
     volume = args.CONCEPTS.volume.Parse()
     client = BmsClient()
-    op_ref = client.RestoreVolumeSnapshot(volume, args.snapshot)
+    snapshot_ref = resources.REGISTRY.Parse(
+        args.snapshot,
+        params={
+            'projectsId': properties.VALUES.core.project.GetOrFail,
+            'locationsId': args.region,
+            'volumesId': args.volume,
+        },
+        collection='baremetalsolution.projects.locations.volumes.snapshots',
+        api_version='v2')
+    op_ref = client.RestoreVolumeSnapshot(
+        snapshot_name=snapshot_ref.RelativeName())
 
     if op_ref.done:
       log.RestoredResource(volume.Name(), kind='volume')

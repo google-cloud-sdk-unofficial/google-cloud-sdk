@@ -21,7 +21,6 @@ from __future__ import unicode_literals
 from googlecloudsdk.api_lib.vmware.networkpolicies import NetworkPoliciesClient
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.vmware.network_policies import flags
-from googlecloudsdk.command_lib.vmware.networks import flags as networks_flags
 from googlecloudsdk.core import log
 
 DETAILED_HELP = {
@@ -31,13 +30,13 @@ DETAILED_HELP = {
         """,
     'EXAMPLES':
         """
-          To create a network policy called ``my-network-policy'' which connects to the VMware Engine network ``projects/my-project/locations/global/vmwareEngineNetworks/my-vmware-engine-network'' using the edge services address range ``192.168.0.0/26'' with the internet access service enabled and the external IP access service disabled, run:
+          To create a network policy called ``my-network-policy'' which connects to the VMware Engine network ``my-vmware-engine-network'' using the edge services address range ``192.168.0.0/26'' with the internet access service enabled and the external IP access service disabled, run:
 
-            $ {command} my-network-policy --location=us-west2 --project=my-project --vmware-engine-network=projects/my-project/locations/global/vmwareEngineNetworks/my-vmware-engine-network --edge-services-cidr=192.168.0.0/26 --internet-access --no-external-ip-access
+            $ {command} my-network-policy --location=us-west2 --project=my-project --vmware-engine-network=my-vmware-engine-network --edge-services-cidr=192.168.0.0/26 --internet-access --no-external-ip-access
 
           Or:
 
-            $ {command} my-network-policy --vmware-engine-network=projects/my-project/locations/global/vmwareEngineNetworks/my-vmware-engine-network --edge-services-cidr=192.168.0.0/26 --internet-access
+            $ {command} my-network-policy --vmware-engine-network=my-vmware-engine-network --edge-services-cidr=192.168.0.0/26 --internet-access
 
           In the second example, the project and the location are taken from gcloud properties core/project and compute/region respectively. If the ``--external-ip-access'' flag is not specified, it is taken as ``False''.
     """,
@@ -54,9 +53,14 @@ class Create(base.CreateCommand):
   def Args(parser):
     """Register flags for this command."""
     flags.AddNetworkPolicyToParser(parser, positional=True)
-    networks_flags.AddNetworkToParser(parser)
     base.ASYNC_FLAG.AddToParser(parser)
     base.ASYNC_FLAG.SetDefault(parser, True)
+    parser.add_argument(
+        '--vmware-engine-network',
+        required=True,
+        help="""\
+        Resource ID of the VMware Engine network to attach the new policy to.
+        """)
     parser.add_argument(
         '--description',
         help="""\

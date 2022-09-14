@@ -64,7 +64,7 @@ class Create(base.Command):
     parser.add_argument(
         '--public-access-prevention',
         '--pap',
-        action='store_true',
+        action=arg_parsers.StoreTrueFalseAction,
         help='Sets public access prevention to "enforced".'
         ' For details on how exactly public access is blocked, see:'
         ' http://cloud/storage/docs/public-access-prevention')

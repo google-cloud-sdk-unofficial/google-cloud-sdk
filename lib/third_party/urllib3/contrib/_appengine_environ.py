@@ -16,8 +16,7 @@ def is_appengine_sandbox():
     is much less restrictive, so generally you shouldn't need to check for it.
     see https://cloud.google.com/appengine/docs/standard/runtimes
     """
-    return is_appengine() and os.environ["APPENGINE_RUNTIME"] in (
-        "python27", "googlelegacy")
+    return is_appengine() and os.environ["APPENGINE_RUNTIME"] == "python27"
 
 
 def is_local_appengine():

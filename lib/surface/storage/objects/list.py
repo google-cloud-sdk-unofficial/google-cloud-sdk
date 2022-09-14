@@ -28,16 +28,15 @@ from googlecloudsdk.command_lib.storage import wildcard_iterator
 from googlecloudsdk.command_lib.storage.resources import gsutil_full_resource_formatter
 from googlecloudsdk.command_lib.storage.resources import resource_reference
 from googlecloudsdk.core import log
-from googlecloudsdk.core import properties
 from googlecloudsdk.core.resource import resource_printer
 from googlecloudsdk.core.resource import resource_projector
 
 
-def _object_iterator(url):
+def _object_iterator(url, all_versions):
   """Iterates through resources matching URL and filter out non-objects."""
   for resource in wildcard_iterator.get_wildcard_iterator(
       url.url_string,
-      all_versions=True,
+      all_versions=all_versions,
       error_on_missing_key=False,
       fields_scope=cloud_api.FieldsScope.FULL):
     if isinstance(resource, resource_reference.ObjectResource):
@@ -77,11 +76,15 @@ class List(base.ListCommand):
   def Args(parser):
     parser.add_argument(
         'urls', nargs='+', help='Specifies URL of objects to list.')
+    parser.add_argument(
+        '--stat',
+        action='store_true',
+        help='Emulates gsutil stat-style behavior. Does not show past object'
+        ' versions and changes output format.')
     flags.add_encryption_flags(parser, command_only_reads_data=True)
 
   def Display(self, args, resources):
-    del args  # Unused.
-    if properties.VALUES.storage.run_by_gsutil_shim.GetBool():
+    if args.stat:
       resource_printer.Print(resources, 'object[terminator=""]')
     else:
       resource_printer.Print(resources, 'yaml')
@@ -104,10 +107,10 @@ class List(base.ListCommand):
         urls.append(url)
 
     for url in urls:
-      if properties.VALUES.storage.run_by_gsutil_shim.GetBool():
+      if args.stat:
         # Replicating gsutil "stat" command behavior.
         found_match = False
-        for resource in _object_iterator(url):
+        for resource in _object_iterator(url, all_versions=False):
           found_match = True
           yield resource.get_full_metadata_string(
               gsutil_full_resource_formatter.GsutilFullResourceFormatter(),
@@ -116,6 +119,6 @@ class List(base.ListCommand):
           log.error('No URLs matched: ' + url.url_string)
           self.exit_code = 1
       else:
-        for resource in _object_iterator(url):
+        for resource in _object_iterator(url, all_versions=True):
           # MakeSerializable will omit all the None values.
           yield resource_projector.MakeSerializable(resource.metadata)

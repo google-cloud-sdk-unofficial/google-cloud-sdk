@@ -30,21 +30,21 @@ import six
 DETAILED_HELP = {
     'DESCRIPTION':
         """
-          List snapshots for a Bare Metal Solution volume.
+          List snapshots for a Bare Metal Solution boot volume.
         """,
     'EXAMPLES':
         """
-          To list snapshots on volume ``my-volume'' in region ``us-central1'',
-          run:
+          To list snapshots on boot volume ``my-boot-volume'' in region
+          ``us-central1'', run:
 
-            $ {command} --region=us-central1 --volume=my-volume
+            $ {command} --region=us-central1 --volume=my-boot-volume
     """,
 }
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class List(six.with_metaclass(abc.ABCMeta, base.CacheCommand)):
-  """List snapshots for a Bare Metal Solution volume."""
+  """List snapshots for a Bare Metal Solution boot volume."""
 
   @staticmethod
   def Args(parser):
@@ -64,7 +64,7 @@ class List(six.with_metaclass(abc.ABCMeta, base.CacheCommand)):
     parser.display_info.AddFormat(
         'table(name.segment(-1):label=NAME,id:label=ID,'
         'name.segment(-5):label=REGION,'
-        'name.segment(-3):label=VOLUME,description,createTime)')
+        'name.segment(-3):label=VOLUME,description,createTime,type)')
 
   def Run(self, args):
     volume = args.CONCEPTS.volume.Parse()

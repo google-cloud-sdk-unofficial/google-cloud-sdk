@@ -102,6 +102,16 @@
         internal addresses that are reserved for this instance. For example, 10.0.0.0/28 or
         192.168.0.0/28. Range must be unique and non-overlapping with existing ranges in the
         network. If value 'auto' passed, the service will automatically pick an available range.
+    - arg_name: maintenance-version
+      api_field: instance.maintenanceVersion
+      release_tracks: [ALPHA]
+      hidden: true
+      help_text: |
+        This value specifies which maintenance version to apply to your instance during self-service maintenance.
+        To view the available maintenance versions for your instance, run 'gcloud redis
+        instances describe [INSTANCE_ID]'. Acceptable values for this flag are either 'latest' or
+        one of the specific versions listed by the describe command. If you pass the value
+        `latest`, the Memorystore updates to the most recent available maintenance version during self service maintenance.
     - group:
         mutex: true
         params:
@@ -147,6 +157,7 @@
       - googlecloudsdk.command_lib.redis.instances_update_util:UpdateReplicaCount
       - googlecloudsdk.command_lib.redis.instances_update_util:UpdateReadReplicasMode
       - googlecloudsdk.command_lib.redis.instances_update_util:UpdateSecondaryIpRange
+      - googlecloudsdk.command_lib.redis.instances_update_util:UpdateMaintenanceVersion
     BETA:
       api_version: v1beta1
       modify_request_hooks:

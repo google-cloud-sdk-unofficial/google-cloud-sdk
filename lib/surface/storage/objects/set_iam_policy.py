@@ -22,6 +22,7 @@ from googlecloudsdk.calliope import base
 
 
 @base.Hidden
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class SetIamPolicy(base.Command):
   """Set access policy for an object."""
 

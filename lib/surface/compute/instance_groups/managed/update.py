@@ -389,6 +389,22 @@ class UpdateAlpha(UpdateBeta):
   @classmethod
   def Args(cls, parser):
     super(UpdateAlpha, cls).Args(parser)
+    managed_flags.AddMigForceUpdateOnRepairFlags(parser)
+
+  def _CreateInstanceGroupManagerPatch(self, args, igm_ref, igm_resource,
+                                       client, holder):
+    igm_patch = super(UpdateAlpha, self)._CreateInstanceGroupManagerPatch(
+        args, igm_ref, igm_resource, client, holder)
+
+    igm_patch.instanceLifecyclePolicy = self._GetUpdatedInstanceLifecyclePolicy(
+        args, client)
+
+    return igm_patch
+
+  def _GetUpdatedInstanceLifecyclePolicy(self, args, client):
+    """Create an updated instance lifecycle policy based on specified args."""
+    return managed_instance_groups_utils.CreateInstanceLifecyclePolicy(
+        client.messages, args)
 
 
 UpdateAlpha.detailed_help = UpdateBeta.detailed_help

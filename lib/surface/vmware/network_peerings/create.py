@@ -32,9 +32,9 @@ DETAILED_HELP = {
         """,
     'EXAMPLES':
         """
-          To create a VPC network peering called ``new-peering'' that connects the VMware Engine network ``projects/my-project/locations/us-west1/vmwareEngineNetworks/my-vmware-engine-network'' with another VMware Engine network ``projects/another-project/global/networks/another-vmware-engine-network'', run:
+          To create a VPC network peering called ``new-peering'' that connects the VMware Engine network ``my-vmware-engine-network'' with another VMware Engine network ``another-vmware-engine-network'' from project ``another-project'', run:
 
-          $ {command} new-peering --vmware-engine-network=projects/my-project/locations/us-west1/vmwareEngineNetworks/my-vmware-engine-network --peer-network=projects/another-project/global/networks/another-vmware-engine-network --peer-network-type=VMWARE_ENGINE_NETWORK
+          $ {command} new-peering --vmware-engine-network=my-vmware-engine-network --peer-network=another-vmware-engine-network --peer-network-type=VMWARE_ENGINE_NETWORK --peer-project=another-project
 
           In this example, the project is taken from gcloud properties core/project and location is taken as ``global''.
     """,
@@ -56,17 +56,19 @@ class Create(base.CreateCommand):
         'PRIVATE_SERVICES_ACCESS', 'NETAPP_CLOUD_VOLUMES', 'THIRD_PARTY_SERVICE'
     ]
     flags.AddNetworkPeeringToParser(parser, positional=True)
-    flags.AddNetworkToParser(parser)
     base.ASYNC_FLAG.AddToParser(parser)
     base.ASYNC_FLAG.SetDefault(parser, True)
+    parser.add_argument(
+        '--vmware-engine-network',
+        required=True,
+        help="""\
+        ID of the VMware Engine network to attach the new peering to.
+        """)
     parser.add_argument(
         '--peer-network',
         required=True,
         help="""\
-        Name of the VPC network to peer with the VMware Engine network. The peer network can be a consumer VPC network or another service producer VPC network.
-        For a consumer VPC network, provide the name in the following form: projects/{project}/global/networks/{network_id}
-        If the peer network is of type VMWARE_ENGINE_NETWORK, then the peer network will be a service producer VPC network.
-        For a service producer VPC network, provide the name in the following form: projects/{project}/locations/{location}/vmwareEngineNetworks/{vmware_engine_network_id}
+        ID of the network to peer with the VMware Engine network. The peer network can be a consumer VPC network or another VMware Engine network.
         """)
     parser.add_argument(
         '--peer-network-type',
@@ -82,10 +84,14 @@ class Create(base.CreateCommand):
         * THIRD_PARTY_SERVICE: Peering connection used for connecting to third-party services. Most third-party services require manual setup of reverse peering on the VPC network associated with the third-party service.
         """)
     parser.add_argument(
+        '--peer-project',
+        help="""\
+        Project ID or project number of the peer network. Use this flag when the peer network is in another project.
+        """)
+    parser.add_argument(
         '--description',
         help="""\
         User-provided description of the VPC network peering.
-
         """)
     parser.add_argument(
         '--peer-mtu',
@@ -142,8 +148,8 @@ class Create(base.CreateCommand):
 
     operation = client.Create(
         peering, args.description, args.vmware_engine_network,
-        args.peer_network, args.peer_network_type, args.peer_mtu,
-        args.export_custom_routes, args.import_custom_routes,
+        args.peer_network, args.peer_network_type, args.peer_project,
+        args.peer_mtu, args.export_custom_routes, args.import_custom_routes,
         args.export_custom_routes_with_public_ip,
         args.import_custom_routes_with_public_ip, args.exchange_subnet_routes)
     if is_async:

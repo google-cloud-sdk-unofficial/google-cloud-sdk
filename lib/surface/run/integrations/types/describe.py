@@ -40,7 +40,7 @@ class Params:
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Describe(base.DescribeCommand):
-  """Describes a Cloud Run Integration."""
+  """Describes a Cloud Run Integration type."""
 
   detailed_help = {
       'DESCRIPTION':
@@ -83,9 +83,13 @@ class Describe(base.DescribeCommand):
             'Cannot find integration type [{}]'.format(type_name))
 
       return {
-          'description': type_def['description'],
-          'example_command': type_def['example_command'],
-          'parameters': self._GetParams(type_def),
+          'description':
+              type_def['description'],
+          'example_command':
+              type_def['example_command'].format(
+                  track=self.ReleaseTrack().prefix),
+          'parameters':
+              self._GetParams(type_def),
       }
 
   def _GetParams(self, type_def):

@@ -123,14 +123,13 @@ class UpdateAlpha(base.UpdateCommand):
             'instead.'))
     group = parser.add_argument_group(required=True)
     group.add_argument(
+        '--management',
+        choices=['automatic', 'manual'],
+        help='The management mode to update to.')
+    group.add_argument(
         '--control-plane',
         choices=['automatic', 'manual'],
         help='The control plane management to update to.')
-    group.add_argument(
-        '--management',
-        choices=['automatic', 'manual'],
-        help='The management mode to update to.',
-        hidden=True)
 
   def Run(self, args):
     _RunUpdate(
@@ -174,14 +173,13 @@ class UpdateGA(base.UpdateCommand):
       )
     group = parser.add_argument_group(required=True)
     group.add_argument(
+        '--management',
+        choices=['automatic', 'manual'],
+        help='The management mode to update to.')
+    group.add_argument(
         '--control-plane',
         choices=['automatic', 'manual'],
         help='Control plane management to update to.')
-    group.add_argument(
-        '--management',
-        choices=['automatic', 'manual'],
-        help='The management mode to update to.',
-        hidden=True)
 
   def Run(self, args):
     _RunUpdate(self, args,

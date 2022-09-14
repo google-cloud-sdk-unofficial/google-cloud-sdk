@@ -40,6 +40,26 @@ class Submit(base.Command):
   `projects/foo/locations/us-central1/jobs/bar`, run:
 
     $ {command} projects/foo/locations/us-central1/jobs/bar --config=config.json
+
+  To submit the job through stdin with json job config and name
+  `projects/foo/locations/us-central1/jobs/bar`, run:
+
+    $ {command} projects/foo/locations/us-central1/jobs/bar --config=-
+
+      then input json job config via stdin
+      {
+        json job config
+      }
+
+  To submit the job through HereDoc with json job config and name
+  `projects/foo/locations/us-central1/jobs/bar`, run:
+
+    $ {command} projects/foo/locations/us-central1/jobs/bar --config=- << EOF
+
+      {
+        json job config
+      }
+      EOF
   """
 
   @staticmethod
@@ -61,7 +81,11 @@ class Submit(base.Command):
 
     task_spec_group = parser.add_group(required=True)
     task_spec_group.add_argument(
-        '--config', help='The JSON file of the job config.')
+        '--config',
+        type=arg_parsers.FileContents(),
+        help="""The file path of the JSON job config JSON. It also supports direct
+        input from stdin with '-' or HereDoc (in shells with HereDoc support like
+        Bash) with '- <<DELIMITER'. """)
     runnable_group = task_spec_group.add_group(
         mutex=True,
         help="""Either specify the config file for the job or
@@ -207,8 +231,6 @@ class Submit(base.Command):
         'Job {jobName} was successfully submitted.'.format(jobName=resp.uid))
     return resp
 
-    # TODO(b/216858129): add HEREDOC support.
   def _CreateJobMessage(self, batch_msgs, config):
     """Construct the job proto with the config input."""
-    file_contents = files.ReadFileContents(config)
-    return encoding.JsonToMessage(batch_msgs.Job, file_contents)
+    return encoding.JsonToMessage(batch_msgs.Job, config)

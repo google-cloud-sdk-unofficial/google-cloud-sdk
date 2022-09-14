@@ -23,6 +23,7 @@ from googlecloudsdk.command_lib.iam import iam_util
 
 
 @base.Hidden
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class AddIamPolicyBinding(base.Command):
   """Grant a principal access to an object."""
 

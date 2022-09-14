@@ -30,6 +30,7 @@ from six.moves import queue
 @base.Hidden
 @base.Deprecate(is_removed=False, warning='This command is deprecated. '
                 'Use `gcloud alpha storage ls` instead.')
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class List(base.ListCommand):
   """List the objects in Cloud Storage buckets."""
 

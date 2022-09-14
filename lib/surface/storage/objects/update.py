@@ -58,6 +58,72 @@ def _get_task_iterator(args):
       yield task_type(object_resource, user_request_args=user_request_args)
 
 
+def _add_common_args(parser):
+  """Register flags for this command.
+
+  Args:
+    parser (argparse.ArgumentParser): The parser to add the arguments to.
+
+  Returns:
+    objects update flag group
+  """
+  parser.add_argument(
+      'url', nargs='*', help='Specifies URLs of objects to update.')
+  parser.add_argument(
+      '-p',
+      '--preserve-acl',
+      action='store_true',
+      default=True,
+      help='Preserves ACLs when copying in the cloud. This feature is'
+      ' supported for only Google Cloud Storage and requires OWNER access'
+      " to all copied objects. To use the destination bucket's default policy"
+      ' (necessary for uniform bucket-level access), use --no-preserve-acl.')
+  parser.add_argument(
+      '--read-paths-from-stdin',
+      '-I',
+      action='store_true',
+      help='Read the list of objects to update from stdin. No need to enter'
+      ' a source argument if this flag is present.\nExample:'
+      ' "storage objects update -I --content-type=new-type"')
+  parser.add_argument(
+      '-R',
+      '-r',
+      '--recursive',
+      action='store_true',
+      help='Recursively update objects under any buckets or directories that'
+      ' match the URL expression.')
+  parser.add_argument(
+      '-s',
+      '--storage-class',
+      help='Specify the storage class of the object. Using this flag triggers'
+      ' a rewrite of underlying object data.')
+
+  flags.add_continue_on_error_flag(parser)
+  flags.add_encryption_flags(parser, allow_patch=True)
+  flags.add_precondition_flags(parser)
+  flags.add_object_metadata_flags(parser, allow_patch=True)
+
+
+def _add_alpha_args(parser):
+  """Register flags for the alpha version of this command.
+
+  Args:
+    parser (argparse.ArgumentParser): The parser to add the arguments to.
+
+  Returns:
+    objects update flag group
+  """
+  parser.add_argument(
+      '--event-based-hold',
+      action=arg_parsers.StoreTrueFalseAction,
+      help='Enables or disables an event-based hold on objects.')
+  parser.add_argument(
+      '--temporary-hold',
+      action=arg_parsers.StoreTrueFalseAction,
+      help='Enables or disables a temporary hold on objects.')
+
+
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Update(base.Command):
   """Update Cloud Storage objects."""
 
@@ -71,63 +137,22 @@ class Update(base.Command):
 
       Update a Google Cloud Storage object's custom-metadata:
 
-        $ *{command}* gs://bucket/my-object --custom-metadata=key1=value1,key2=value2
+        $ {command} gs://bucket/my-object --custom-metadata=key1=value1,key2=value2
 
-      Set a temporary hold on JPG images:
+      Rewrite all JPEG images to the NEARLINE storage class:
 
-        $ *{command}* gs://bucket/*.jpg --temporary-hold
+        $ {command} gs://bucket/*.jpg --storage-class=NEARLINE
 
        You can also provide a precondition on an object's metageneration in
        order to avoid potential race conditions:
 
-        $ *{command}* gs://bucket/*.jpg --temporary-hold --if-metageneration-match=123456789
+        $ {command} gs://bucket/*.jpg --storage-class=NEARLINE --if-metageneration-match=123456789
       """,
   }
 
   @staticmethod
   def Args(parser):
-    parser.add_argument(
-        'url', nargs='*', help='Specifies URLs of objects to update.')
-    parser.add_argument(
-        '--event-based-hold',
-        action=arg_parsers.StoreTrueFalseAction,
-        help='Enables or disables an event-based hold on objects.')
-    parser.add_argument(
-        '-p',
-        '--preserve-acl',
-        action='store_true',
-        default=True,
-        help='Preserves ACLs when copying in the cloud. This feature is'
-        ' supported for only Google Cloud Storage and requires OWNER access'
-        " to all copied objects. To use the destination bucket's default policy"
-        ' (necessary for uniform bucket-level access), use --no-preserve-acl.')
-    parser.add_argument(
-        '--read-paths-from-stdin',
-        '-I',
-        action='store_true',
-        help='Read the list of objects to update from stdin. No need to enter'
-        ' a source argument if this flag is present.\nExample:'
-        ' "storage objects update -I --content-type=new-type"')
-    parser.add_argument(
-        '-R',
-        '-r',
-        '--recursive',
-        action='store_true',
-        help='Recursively update objects under any buckets or directories that'
-        ' match the URL expression.')
-    parser.add_argument(
-        '-s',
-        '--storage-class',
-        help='Specify the storage class of the object. Using this flag triggers'
-        ' a rewrite of underlying object data.')
-    parser.add_argument(
-        '--temporary-hold',
-        action=arg_parsers.StoreTrueFalseAction,
-        help='Enables or disables a temporary hold on objects.')
-    flags.add_continue_on_error_flag(parser)
-    flags.add_encryption_flags(parser, allow_patch=True)
-    flags.add_precondition_flags(parser)
-    flags.add_object_metadata_flags(parser, allow_patch=True)
+    _add_common_args(parser)
 
   def Run(self, args):
     encryption_util.initialize_key_store(args)
@@ -143,3 +168,13 @@ class Update(base.Command):
             manifest_path=None),
         continue_on_error=args.continue_on_error,
     )
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class UpdateAlpha(Update):
+  """Update Cloud Storage objects."""
+
+  @staticmethod
+  def Args(parser):
+    _add_common_args(parser)
+    _add_alpha_args(parser)

@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Command to list tasks for a specified Batch task_group."""
+"""Command to list tasks for a specified Batch job."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -26,23 +26,27 @@ from googlecloudsdk.command_lib.batch import resource_args
 
 
 class List(base.ListCommand):
-  """List tasks for a specified Batch task_group.
+  """List tasks for a specified Batch job.
+
+  Currently, since Batch only supports one taskGroup, group0, the command
+  takes --job as the required argument and will list all tasks
+  in group0 of the job.
 
   This command can fail for the following reasons:
-  * The task_group specified does not exist.
-  * The active account does not have permission to access the given task_group.
+  * The job specified does not exist.
+  * The active account does not have permission to access the given job
 
   ## EXAMPLES
 
-  To print all tasks under the task_group with name
-  `projects/foo/locations/us-central1/jobs/bar/taskGroups/group0`, run:
+  To print all tasks in the group0 of job with name
+  `projects/foo/locations/us-central1/jobs/bar`, run:
 
-    $ {command} projects/foo/locations/us-central1/jobs/bar/taskGroups/group0
+    $ {command} projects/foo/locations/us-central1/jobs/bar
   """
 
   @staticmethod
   def Args(parser):
-    resource_args.AddTaskGroupResourceArgs(parser)
+    resource_args.AddJobFlagResourceArgs(parser)
     base.URI_FLAG.RemoveFromParser(parser)
     parser.display_info.AddFormat('table(name, status.state)')
 
@@ -50,12 +54,12 @@ class List(base.ListCommand):
     release_track = self.ReleaseTrack()
 
     client = tasks.TasksClient(release_track)
-    task_group_ref = args.CONCEPTS.task_group.Parse()
+    job_ref = args.CONCEPTS.job.Parse()
 
     return list_pager.YieldFromList(
         client.service,
         client.messages.BatchProjectsLocationsJobsTaskGroupsTasksListRequest(
-            parent=task_group_ref.RelativeName(),
+            parent=job_ref.RelativeName() + '/taskGroups/group0',
             pageSize=args.page_size,
             filter=args.filter),
         batch_size=args.page_size,

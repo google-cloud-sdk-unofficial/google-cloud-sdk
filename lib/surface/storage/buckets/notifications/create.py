@@ -94,7 +94,6 @@ def _maybe_create_or_modify_topic(topic_name, service_account_email):
   return created_new_topic
 
 
-@base.Hidden
 class Create(base.Command):
   """Create a notification configuration on a bucket."""
 
@@ -145,22 +144,22 @@ class Create(base.Command):
       Create a notification configuration that only sends an event when a new
       object has been created or an object is deleted:
 
-        $ {command} --event_types=OBJECT_FINALIZE,OBJECT_DELETE gs://example-bucket
+        $ {command} --event-types=OBJECT_FINALIZE,OBJECT_DELETE gs://example-bucket
 
       Create a topic and notification configuration that sends events only when
       they affect objects with the prefix `photos/`:
 
-        $ {command} --object-prefix photos/ gs://example-bucket
+        $ {command} --object-prefix=photos/ gs://example-bucket
 
       Specifies the destination topic ID `files-to-process` in the default
       project:
 
-        $ {command} --topic files-to-process gs://example-bucket
+        $ {command} --topic=files-to-process gs://example-bucket
 
       The same as above but specifies a Cloud Pub/Sub topic belonging
       to the specific cloud project `example-project`:
 
-        $ {command} --topic projects/example-project/topics/files-to-process gs://example-bucket
+        $ {command} --topic=projects/example-project/topics/files-to-process gs://example-bucket
 
       Skip creating a topic when creating the notification configuraiton:
 
@@ -172,7 +171,7 @@ class Create(base.Command):
   def Args(parser):
     parser.add_argument(
         'url',
-        help='The URL of the bucket to create the notification configuration'
+        help='URL of the bucket to create the notification configuration'
         ' on.')
     parser.add_argument(
         '-m',
@@ -224,7 +223,7 @@ class Create(base.Command):
     parser.add_argument(
         '-t',
         '--topic',
-        help='The Cloud Pub/Sub topic to send notifications to.'
+        help='Specifies the Cloud Pub/Sub topic to send notifications to.'
         ' If not specified, this command chooses a topic whose project is'
         ' your default project and whose ID is the same as the'
         ' Cloud Storage bucket name.')

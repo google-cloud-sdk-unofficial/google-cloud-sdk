@@ -25,22 +25,22 @@ from googlecloudsdk.command_lib.bms import flags
 DETAILED_HELP = {
     'DESCRIPTION':
         """
-          Describe a Bare Metal Solution volume snapshot.
+          Describe a Bare Metal Solution boot volume snapshot.
         """,
     'EXAMPLES':
         """
-          To get a description of a snapshot called ``my-snapshot'' on volume
-          ``my-volume'' in region ``us-central1'',
+          To get a description of a snapshot called ``my-snapshot'' on boot
+          volume ``my-boot-volume'' in region ``us-central1'',
           run:
 
-          $ {command} my-snapshot --region=us-central1 --volume=my-volume
+          $ {command} my-snapshot --region=us-central1 --volume=my-boot-volume
     """,
 }
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Describe(base.DescribeCommand):
-  """Describe a Bare Metal Solution volume snapshot."""
+  """Describe a Bare Metal Solution boot volume snapshot."""
 
   @staticmethod
   def Args(parser):

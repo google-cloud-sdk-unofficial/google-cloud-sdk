@@ -406,6 +406,17 @@ class CreateAlpha(CreateBeta):
   @classmethod
   def Args(cls, parser):
     super(CreateAlpha, cls).Args(parser)
+    managed_flags.AddMigForceUpdateOnRepairFlags(parser)
 
+  def _CreateInstanceGroupManager(self, args, group_ref, template_ref, client,
+                                  holder):
+    instance_group_manager = super(CreateAlpha,
+                                   self)._CreateInstanceGroupManager(
+                                       args, group_ref, template_ref, client,
+                                       holder)
+    instance_group_manager.instanceLifecyclePolicy = managed_instance_groups_utils.CreateInstanceLifecyclePolicy(
+        client.messages, args)
+
+    return instance_group_manager
 
 CreateAlpha.detailed_help = CreateBeta.detailed_help

@@ -22,6 +22,7 @@ from googlecloudsdk.calliope import base
 
 
 @base.Hidden
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class SetIamPolicy(base.Command):
   """Set the IAM policy for a bucket."""
 

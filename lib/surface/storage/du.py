@@ -22,6 +22,7 @@ from googlecloudsdk.calliope import base
 
 
 @base.Hidden
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Du(base.Command):
   """Displays the amount of space in bytes used up storage resources."""
 

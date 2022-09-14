@@ -363,26 +363,11 @@ _STREAMING_TRANSFERS_TEXT = """
 
 _SLICED_OBJECT_DOWNLOADS_TEXT = """
 <B>SLICED OBJECT DOWNLOADS</B>
-  gsutil uses HTTP Range GET requests to perform "sliced" downloads in parallel
-  when downloading large objects from Cloud Storage. This means that disk
-  space for the temporary download destination file is pre-allocated and
-  byte ranges (slices) within the file are downloaded in parallel. Once all
-  slices have completed downloading, the temporary file is renamed to the
-  destination file. No additional local disk space is required for this
-  operation.
-
-  This feature is only available for Cloud Storage objects because it
-  requires a fast composable checksum (CRC32C) to verify the
-  data integrity of the slices. Because sliced object downloads depend on CRC32C,
-  they require a compiled crcmod on the machine performing the download. If compiled
-  crcmod is not available, a non-sliced object download is performed instead.
-
-  NOTE: Since sliced object downloads cause multiple writes to occur at various
-  locations on disk, this mechanism can degrade performance for disks with slow
-  seek times, especially for large numbers of slices. While the default number
-  of slices is set small to avoid this problem, you can disable sliced object
-  download if necessary by setting the "sliced_object_download_threshold"
-  variable in the ``.boto`` config file to 0.
+  gsutil can automatically use ranged ``GET`` requests to perform downloads in
+  parallel for large files being downloaded from Cloud Storage. See `sliced object
+  download documentation
+  <https://cloud.google.com/storage/docs/sliced-object-downloads>`_
+  for a complete discussion.
 """
 
 _PARALLEL_COMPOSITE_UPLOADS_TEXT = """
@@ -681,6 +666,29 @@ _DETAILED_HELP_TEXT = '\n\n'.join([
 ])
 
 CP_SUB_ARGS = 'a:AcDeIL:MNnpPrRs:tUvz:Zj:J'
+# May be used by mv or rsync.
+GENERIC_COPY_COMMAND_SHIM_FLAG_MAP = {
+    '-A': GcloudStorageFlag('--all-versions'),
+    '-a': GcloudStorageFlag('--predefined-acl'),
+    '-D': GcloudStorageFlag('--daisy-chain'),
+    '-e': GcloudStorageFlag('--ignore-symlinks'),
+    '-I': GcloudStorageFlag('--read-paths-from-stdin'),
+    '-J': GcloudStorageFlag('--gzip-in-flight-all'),
+    '-j': GcloudStorageFlag('--gzip-in-flight'),
+    '-L': GcloudStorageFlag('--manifest-path'),
+    '-n': GcloudStorageFlag('--no-clobber'),
+    '-P': GcloudStorageFlag('--preserve-posix'),
+    '-p': GcloudStorageFlag('--preserve-acl'),
+    '-s': GcloudStorageFlag('--storage-class'),
+    '-v': GcloudStorageFlag('--print-created-message'),
+    '-Z': GcloudStorageFlag('--gzip-local-all'),
+    '-z': GcloudStorageFlag('--gzip-local'),
+}
+# Adds recursion flags.
+CP_SHIM_FLAG_MAP = {
+    k: v for k, v in list(GENERIC_COPY_COMMAND_SHIM_FLAG_MAP.items()) +
+    [('-r', GcloudStorageFlag('-r')), ('-R', GcloudStorageFlag('-r'))]
+}
 
 
 def _CopyFuncWrapper(cls, args, thread_state=None):
@@ -756,25 +764,7 @@ class CpCommand(Command):
   # TODO(b/206151615) Add mappings for remaining flags.
   gcloud_storage_map = GcloudStorageMap(
       gcloud_command=['alpha', 'storage', 'cp'],
-      flag_map={
-          '-A': GcloudStorageFlag('--all-versions'),
-          '-a': GcloudStorageFlag('--predefined-acl'),
-          '-D': GcloudStorageFlag('--daisy-chain'),
-          '-e': GcloudStorageFlag('--ignore-symlinks'),
-          '-I': GcloudStorageFlag('--read-paths-from-stdin'),
-          '-J': GcloudStorageFlag('--gzip-in-flight-all'),
-          '-j': GcloudStorageFlag('--gzip-in-flight'),
-          '-L': GcloudStorageFlag('--manifest-path'),
-          '-n': GcloudStorageFlag('--no-clobber'),
-          '-P': GcloudStorageFlag('--preserve-posix'),
-          '-p': GcloudStorageFlag('--preserve-acl'),
-          '-r': GcloudStorageFlag('-r'),
-          '-R': GcloudStorageFlag('-r'),
-          '-s': GcloudStorageFlag('--storage-class'),
-          '-v': GcloudStorageFlag('--print-created-message'),
-          '-Z': GcloudStorageFlag('--gzip-local-all'),
-          '-z': GcloudStorageFlag('--gzip-local'),
-      },
+      flag_map=CP_SHIM_FLAG_MAP,
   )
 
   # pylint: disable=too-many-statements

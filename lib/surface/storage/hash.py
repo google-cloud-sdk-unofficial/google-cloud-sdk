@@ -22,6 +22,7 @@ from googlecloudsdk.calliope import base
 
 
 @base.Hidden
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Hash(base.Command):
   """Calculates hashes on local or cloud files."""
 

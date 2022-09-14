@@ -32,6 +32,7 @@ from googlecloudsdk.core.console import console_io
 @base.Hidden
 @base.Deprecate(is_removed=False, warning='This command is deprecated. '
                 'Use `gcloud alpha storage rm` instead.')
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Delete(base.Command):
   """Delete Cloud Storage objects and buckets."""
 

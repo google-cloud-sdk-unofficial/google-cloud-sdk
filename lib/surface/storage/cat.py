@@ -63,7 +63,7 @@ class Cat(base.Command):
       the cat command does not compute a checksum, it is otherwise equivalent to
       doing:
 
-        $ gcloud alpha storage cp url... -
+        $ {parent_command} cp url... -
 
       (The final '-' causes gcloud to stream the output to stdout.)
       """,

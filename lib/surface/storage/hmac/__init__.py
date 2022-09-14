@@ -23,5 +23,6 @@ from googlecloudsdk.calliope import base
 
 
 @base.Hidden
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Hmac(base.Group):
   """Manage Cloud Storage HMAC."""

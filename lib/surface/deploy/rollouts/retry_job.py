@@ -38,8 +38,8 @@ _DETAILED_HELP = {
 }
 
 
-@base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
+                    base.ReleaseTrack.GA)
 class RetryJob(base.CreateCommand):
   """Retries a specified job, phase combination on a rollout."""
   detailed_help = _DETAILED_HELP

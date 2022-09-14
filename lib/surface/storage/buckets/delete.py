@@ -44,11 +44,11 @@ class Delete(base.Command):
 
       Delete a Google Cloud Storage bucket named "my-bucket":
 
-        $ *{command}* gs://my-bucket
+        $ {command} gs://my-bucket
 
       Delete two buckets:
 
-        $ *{command}* gs://my-bucket gs://my-other-bucket
+        $ {command} gs://my-bucket gs://my-other-bucket
       """,
   }
 

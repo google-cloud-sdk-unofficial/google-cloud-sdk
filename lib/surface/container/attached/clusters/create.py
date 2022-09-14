@@ -51,6 +51,7 @@ class Create(base.CreateCommand):
     attached_flags.AddPlatformVersion(parser)
     attached_flags.AddAuthority(parser)
     attached_flags.AddDistribution(parser, required=True)
+    attached_flags.AddAdminUsers(parser)
 
     flags.AddAnnotations(parser)
     flags.AddValidateOnly(parser, 'cluster to create')

@@ -200,9 +200,11 @@ class CustomAuthenticator(baseauthenticator.BaseAuthenticator):
 
     # Ensure response type
     if json_response.get('type') != 'sign_helper_reply':
-      raise errors.PluginError('Plugin returned invalid response type '
-                               '(exit_status={})'
-                               .format(exit_status))
+      error_string = 'Plugin returned invalid response type (exit_status={})'.format(exit_status)
+      error_detail = json_response.get('errorDetail')
+      if (error_detail):
+        error_string += '. Additional information:\n' + error_detail
+      raise errors.PluginError(error_string)
 
     # Parse response codes
     result_code = json_response.get('code')

@@ -28,3 +28,4 @@
     - _REF_: googlecloudsdk.command_lib.edge_cache.flags:keyset.description
     - _REF_: googlecloudsdk.command_lib.edge_cache.flags:keyset.labels
     - _REF_: googlecloudsdk.command_lib.edge_cache.flags:keyset.public_keys
+    - _REF_: googlecloudsdk.command_lib.edge_cache.flags:keyset.validation_shared_keys
