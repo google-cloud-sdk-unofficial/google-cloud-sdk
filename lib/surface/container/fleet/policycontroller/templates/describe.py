@@ -18,7 +18,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
-from googlecloudsdk.api_lib.util import apis as core_apis
+from googlecloudsdk.api_lib.container.fleet.policycontroller import status_api_utils
 from googlecloudsdk.calliope import base as calliope_base
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
@@ -26,22 +26,19 @@ from surface.container.fleet.policycontroller import templates as poco_templates
 
 
 @calliope_base.Hidden
-@calliope_base.ReleaseTracks(calliope_base.ReleaseTrack.ALPHA,
-                             calliope_base.ReleaseTrack.BETA)
+@calliope_base.ReleaseTracks(calliope_base.ReleaseTrack.ALPHA)
 class Describe(calliope_base.DescribeCommand):
   """Describe Policy Controller constraint template.
 
   ## EXAMPLES
 
-  To describe a Policy Controller constraint template:
+  To describe the "k8srequiredlabels" constraint template:
 
-      $ {command}
+      $ {command} k8srequiredlabels
   """
 
   @staticmethod
   def Args(parser):
-    calliope_base.URI_FLAG.RemoveFromParser(parser)
-    calliope_base.PAGE_SIZE_FLAG.SetDefault(parser, 100)
     parser.add_argument(
         'TEMPLATE_NAME',
         type=str,
@@ -52,10 +49,11 @@ class Describe(calliope_base.DescribeCommand):
     calliope_base.EnableUserProjectQuota()
 
     project_id = properties.VALUES.core.project.Get(required=True)
-    messages = core_apis.GetMessagesModule('anthospolicycontrollerstatus_pa',
-                                           'v1alpha')
-    client = core_apis.GetClientInstance('anthospolicycontrollerstatus_pa',
-                                         'v1alpha')
+
+    client = status_api_utils.GetClientInstance(
+        self.ReleaseTrack())
+    messages = status_api_utils.GetMessagesModule(
+        self.ReleaseTrack())
 
     formatted_templates = poco_templates.list_membership_templates(
         project_id, messages, client, name_filter=args.TEMPLATE_NAME)

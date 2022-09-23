@@ -125,7 +125,7 @@ class Create(base.Command):
   _support_secure_tags = False
   _support_host_error_timeout_seconds = False
   _support_numa_node_count = False
-  _support_visible_core_count = False
+  _support_visible_core_count = True
   _support_max_run_duration = False
   _support_enable_target_shape = True
   _support_confidential_compute_type = False

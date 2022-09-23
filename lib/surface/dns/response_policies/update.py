@@ -30,6 +30,8 @@ from googlecloudsdk.core import log
 def _AddArgsCommon(parser):
   flags.GetResponsePolicyDescriptionArg().AddToParser(parser)
   flags.GetResponsePolicyNetworksArg().AddToParser(parser)
+  flags.GetResponsePolicyGkeClustersArg().AddToParser(parser)
+  flags.GetLocationArg().AddToParser(parser)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA,
@@ -79,10 +81,6 @@ class Update(base.UpdateCommand):
         verb='to update',
         api_version=util.GetApiFromTrack(cls.ReleaseTrack()))
     _AddArgsCommon(parser)
-    if cls._BetaOrAlpha():
-      flags.GetResponsePolicyGkeClustersArg().AddToParser(parser)
-      flags.GetLocationArg().AddToParser(parser)
-
     parser.display_info.AddFormat('json')
 
   def Run(self, args):
@@ -109,7 +107,7 @@ class Update(base.UpdateCommand):
       to_update.networks = command_util.ParseResponsePolicyNetworks(
           args.networks, response_policy_ref.project, api_version)
 
-    if self._BetaOrAlpha() and args.IsSpecified('gkeclusters'):
+    if args.IsSpecified('gkeclusters'):
       gkeclusters = args.gkeclusters
       to_update.gkeClusters = [
           messages.ResponsePolicyGKECluster(gkeClusterName=name)

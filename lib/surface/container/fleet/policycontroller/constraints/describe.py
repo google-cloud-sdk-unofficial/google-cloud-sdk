@@ -18,7 +18,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
-from googlecloudsdk.api_lib.util import apis as core_apis
+from googlecloudsdk.api_lib.container.fleet.policycontroller import status_api_utils
 from googlecloudsdk.calliope import base as calliope_base
 from googlecloudsdk.command_lib.container.fleet.policycontroller import utils
 from googlecloudsdk.core import log
@@ -27,21 +27,20 @@ import six
 
 
 @calliope_base.Hidden
-@calliope_base.ReleaseTracks(calliope_base.ReleaseTrack.ALPHA,
-                             calliope_base.ReleaseTrack.BETA)
+@calliope_base.ReleaseTracks(calliope_base.ReleaseTrack.ALPHA)
 class Describe(calliope_base.DescribeCommand):
   """Describe a Policy Controller constraint from the Policy Library.
 
   ## EXAMPLES
 
-  To describe a Policy Controller constraint from the Policy Library:
+  To describe the "all-must-have-owner" constraint for the template
+  "k8srequiredlabels":
 
-      $ {command}
+      $ {command} k8srequiredlabels/all-must-have-owner
   """
 
   @staticmethod
   def Args(parser):
-    calliope_base.URI_FLAG.RemoveFromParser(parser)
     parser.add_argument(
         'CONSTRAINT_NAME',
         type=str,
@@ -52,10 +51,11 @@ class Describe(calliope_base.DescribeCommand):
     calliope_base.EnableUserProjectQuota()
 
     project_id = properties.VALUES.core.project.Get(required=True)
-    messages = core_apis.GetMessagesModule('anthospolicycontrollerstatus_pa',
-                                           'v1alpha')
-    client = core_apis.GetClientInstance('anthospolicycontrollerstatus_pa',
-                                         'v1alpha')
+
+    client = status_api_utils.GetClientInstance(
+        self.ReleaseTrack())
+    messages = status_api_utils.GetMessagesModule(
+        self.ReleaseTrack())
 
     request = messages.AnthospolicycontrollerstatusPaProjectsMembershipConstraintsListRequest(
         parent='projects/{}'.format(project_id))
@@ -98,12 +98,22 @@ class Describe(calliope_base.DescribeCommand):
             violation.constraintRef.constraintTemplateName,
             violation.constraintRef.name
         ) and violation.membershipRef.name in formatted_constraints:
-          formatted_constraints[
-              violation.membershipRef.name]['violations'].append({
-                  'name': violation.resourceRef.name,
-                  'namespace': violation.resourceRef.resourceNamespace,
-                  'apiGroup': violation.resourceRef.groupKind.apiGroup,
-                  'kind': violation.resourceRef.groupKind.kind
-              })
+          formatted_constraint = {
+              'resource_name':
+                  violation.resourceRef.name,
+              'resource_api_group':
+                  violation.resourceRef.groupKind.apiGroup,
+              'resource_kind':
+                  violation.resourceRef.groupKind.kind
+          }
+
+          if violation.resourceRef.resourceNamespace is not None:
+            formatted_constraint['resource_namespace'] = (
+                violation.resourceRef.resourceNamespace)
+          else:
+            formatted_constraint['resource_namespace'] = 'N/A'
+
+          formatted_constraints[violation.membershipRef.
+                                name]['violations'].append(formatted_constraint)
 
     return formatted_constraints

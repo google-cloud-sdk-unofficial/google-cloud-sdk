@@ -125,6 +125,15 @@
           This also implies that peer's cannot use this range in a way that is visible to this VPC,
           but can re-use this range as long as it is NOT_SHARED from the peer VPC too.
       default: for-self
+    - arg_name: overlaps
+      api_field: internalRange.overlaps
+      help_text: Overlap specifications for the range being created.
+      choices:
+      - arg_value: overlap-route-range
+        enum_value: OVERLAP_ROUTE_RANGE
+        help_text: |
+          Allows for creation or existence of routes that have a more specific destination
+          than the created range.
 
   async:
     collection: networkconnectivity.projects.locations.operations

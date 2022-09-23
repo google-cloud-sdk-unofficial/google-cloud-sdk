@@ -43,7 +43,6 @@ class Update(base.UpdateCommand):
 
   BACKEND_BUCKET_ARG = None
   EDGE_SECURITY_POLICY_ARG = None
-  _support_dynamic_compression = False
 
   @classmethod
   def Args(cls, parser):
@@ -62,8 +61,7 @@ class Update(base.UpdateCommand):
 
     backend_buckets_flags.AddCacheKeyExtendedCachingArgs(parser)
 
-    if cls._support_dynamic_compression:
-      backend_buckets_flags.AddCompressionMode(parser)
+    backend_buckets_flags.AddCompressionMode(parser)
 
   def AnyArgsSpecified(self, args):
     """Returns true if any args for updating backend bucket were specified."""
@@ -73,8 +71,7 @@ class Update(base.UpdateCommand):
             args.IsSpecified('edge_security_policy') or
             args.IsSpecified('cache_key_include_http_header') or
             args.IsSpecified('cache_key_query_string_whitelist') or
-            (self._support_dynamic_compression and
-             args.IsSpecified('compression_mode')))
+            args.IsSpecified('compression_mode'))
 
   def AnyFlexibleCacheArgsSpecified(self, args):
     """Returns true if any Flexible Cache args for updating backend bucket were specified."""
@@ -151,7 +148,7 @@ class Update(base.UpdateCommand):
         replacement.cdnPolicy.cacheMode and args.enable_cdn is not False):  # pylint: disable=g-bool-id-comparison
       replacement.enableCdn = True
 
-    if self._support_dynamic_compression and args.compression_mode is not None:
+    if args.compression_mode is not None:
       replacement.compressionMode = (
           client.messages.BackendBucket.CompressionModeValueValuesEnum(
               args.compression_mode))
@@ -223,7 +220,6 @@ class UpdateBeta(Update):
 
   *{command}* is used to update backend buckets.
   """
-  _support_dynamic_compression = True
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -232,4 +228,3 @@ class UpdateAlpha(UpdateBeta):
 
   *{command}* is used to update backend buckets.
   """
-  _support_dynamic_compression = True

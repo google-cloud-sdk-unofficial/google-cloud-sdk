@@ -87,6 +87,8 @@ VERSION_INFO = 'version_info'
 # IAM role name that represents being a grantee on a row access policy.
 _FILTERED_DATA_VIEWER_ROLE = 'roles/bigquery.filteredDataViewer'
 
+VALID_REGIONAL_ENDPOINT_LOCATIONS = ['us-east4', 'us-west1']
+
 
 def MakeAccessRolePropertiesJson(iam_role_id):
   """Returns properties for a connection with IAM role id.
@@ -1333,7 +1335,8 @@ class BigqueryClient(object):
           raise BigqueryCommunicationError('Invalid API name or version: %s' %
                                            (str(e),))
 
-    discovery_document_to_build_client = discovery_document
+    discovery_document_to_build_client = self.OverrideEndpoint(
+        discovery_document)
     try:
       client_options = discovery.get_client_options()
       if (not flags.FLAGS['api'].using_default_value and
@@ -1367,9 +1370,9 @@ class BigqueryClient(object):
     )
     models_discovery_document = None
     try:
-      models_discovery_document = pkgutil.get_data(
-          'bigquery_client',
-          'discovery_next/bigquery.json')
+      models_discovery_document = self.OverrideEndpoint(
+          pkgutil.get_data('bigquery_client',
+                           'discovery_next/bigquery.json'))
     except IOError:
       logging.error('Failed to build discovery_next document')
       raise
@@ -1399,9 +1402,9 @@ class BigqueryClient(object):
     )
     iam_policy_discovery_document = None
     try:
-      iam_policy_discovery_document = pkgutil.get_data(
-          'bigquery_client',
-          'discovery_next/iam-policy.json')
+      iam_policy_discovery_document = self.OverrideEndpoint(
+          pkgutil.get_data('bigquery_client',
+                           'discovery_next/iam-policy.json'))
     except IOError:
       logging.error('Failed to build iam policy discovery document')
       raise
@@ -1498,6 +1501,61 @@ class BigqueryClient(object):
       discovery_url=discovery_url)
     return self._op_connection_service_client
 
+
+  def OverrideEndpoint(self, discovery_document):
+    """Override rootUrl for regional endpoints.
+
+    Args:
+      discovery_document: BigQuery discovery document.
+
+    Returns:
+      discovery_document updated discovery document.
+
+    Raises:
+      BigqueryClientError: if location is not set and use_regional_endpoints is.
+    """
+    if discovery_document is None:
+      return discovery_document
+
+    if isinstance(discovery_document, six.string_types):
+      discovery_document = json.loads(discovery_document)
+    elif isinstance(discovery_document, six.binary_type):
+      discovery_document = json.loads(discovery_document.decode('utf-8'))
+
+    if flags.FLAGS.use_regional_endpoints and flags.FLAGS.location:
+      self.ValidateRegionalEndpointLocation(flags.FLAGS.location)
+      regional_endpoint = self._GetRegionalEndpointUrl(
+          discovery_document['rootUrl'])
+      discovery_document['rootUrl'] = regional_endpoint
+    elif flags.FLAGS.use_regional_endpoints:
+      raise BigqueryClientError(
+          '--location is required when --use_regional_endpoints is set')
+
+
+    return json.dumps(discovery_document)
+
+  def ValidateRegionalEndpointLocation(self, location):
+    """Check that the given location is valid for regional endpoint use.
+
+    Args:
+      location: The location to check. e.g. us-east4
+
+    Raises:
+      BigqueryClientError: If the location is not valid.
+    """
+    if location.lower() not in VALID_REGIONAL_ENDPOINT_LOCATIONS:
+      raise BigqueryClientError(
+          ('Invalid regional endpoints location %s. '
+           '--use_regional_endpoints is currently only supported '
+           'for regions: %s') %
+          (location, ', '.join(VALID_REGIONAL_ENDPOINT_LOCATIONS)))
+
+  def _GetRegionalEndpointUrl(self, discovery_document_root_url):
+    """Returns regional endpoint."""
+    # Example - https://paste.googleplex.com/5514563861610496
+    result = discovery_document_root_url.replace(
+        '://', '://%s-' % flags.FLAGS.location.lower())
+    return result
 
 
   #################################
@@ -1715,12 +1773,14 @@ class BigqueryClient(object):
       raise BigqueryError('Cannot determine dataset described by %s' %
                           (identifier,))
 
-  def GetTableReference(self, identifier=''):
+  def GetTableReference(self, identifier='', default_dataset_id=''):
     """Determine a TableReference from an identifier and self."""
     project_id, dataset_id, table_id = BigqueryClient._ParseIdentifier(
         identifier)
     if not dataset_id:
       project_id, dataset_id = self._ParseDatasetIdentifier(self.dataset_id)
+    if default_dataset_id and not dataset_id:
+      dataset_id = default_dataset_id
     try:
       return ApiClientHelper.TableReference.Create(
           projectId=project_id or self.project_id,
@@ -1853,6 +1913,10 @@ class BigqueryClient(object):
          ):
       return ApiClientHelper.BetaReservationReference(
           projectId=project_id, location=location, reservationId=reservation_id)
+    elif (self.api_version == 'edition_preview'
+         ):
+      return ApiClientHelper.EditionPreviewReservationReference(
+          projectId=project_id, location=location, reservationId=reservation_id)
     else:
       return ApiClientHelper.ReservationReference(
           projectId=project_id, location=location, reservationId=reservation_id)
@@ -1892,6 +1956,13 @@ class BigqueryClient(object):
     capacity_commitment_id = capacity_commitment_id or default_capacity_commitment_id
     if not capacity_commitment_id:
       raise BigqueryError('Capacity commitment id not specified.')
+
+    if (self.api_version == 'edition_preview'
+       ):
+      return ApiClientHelper.EditionPreviewCapacityCommitmentReference.Create(
+          projectId=project_id,
+          location=location,
+          capacityCommitmentId=capacity_commitment_id)
     return ApiClientHelper.CapacityCommitmentReference.Create(
         projectId=project_id,
         location=location,
@@ -2045,6 +2116,7 @@ class BigqueryClient(object):
       self,
       slots,
       ignore_idle_slots,
+    edition,
     concurrency,
     enable_queuing_and_priorities,
     multi_region_auxiliary,
@@ -2056,6 +2128,7 @@ class BigqueryClient(object):
       slots: Number of slots allocated to this reservation subtree.
       ignore_idle_slots: Specifies whether queries should ignore idle slots from
         other reservations.
+      edition: The edition for this reservation.
       concurrency: Reservation maximum concurrency.
       enable_queuing_and_priorities: Whether queuing and new prioritization
         behavior should be enabled for the reservation.
@@ -2103,6 +2176,8 @@ class BigqueryClient(object):
           'budget_slot_hours'] = autoscale_budget_slot_hours
 
 
+    if edition is not None:
+      reservation['edition'] = edition
 
     return reservation
 
@@ -2111,6 +2186,7 @@ class BigqueryClient(object):
       reference,
       slots,
       ignore_idle_slots,
+    edition,
     concurrency,
     enable_queuing_and_priorities,
     multi_region_auxiliary,
@@ -2123,6 +2199,7 @@ class BigqueryClient(object):
       slots: Number of slots allocated to this reservation subtree.
       ignore_idle_slots: Specifies whether queries should ignore idle slots from
         other reservations.
+      edition: The edition for this reservation.
       concurrency: Reservation maximum concurrency.
       enable_queuing_and_priorities: Whether queuing and new prioritization
         behavior should be enabled for the reservation.
@@ -2141,6 +2218,7 @@ class BigqueryClient(object):
     reservation = self.GetBodyForCreateReservation(
         slots,
         ignore_idle_slots,
+        edition,
         concurrency,
         enable_queuing_and_priorities,
         multi_region_auxiliary,
@@ -2373,6 +2451,7 @@ class BigqueryClient(object):
   def CreateCapacityCommitment(
       self,
       reference,
+    edition,
     slots,
     plan,
     renewal_plan,
@@ -2381,6 +2460,7 @@ class BigqueryClient(object):
 
     Arguments:
       reference: Project to create a capacity commitment within.
+      edition: The edition for this capacity commitment.
       slots: Number of slots in this commitment.
       plan: Commitment plan for this capacity commitment.
       renewal_plan: Renewal plan for this capacity commitment.
@@ -2396,6 +2476,8 @@ class BigqueryClient(object):
     capacity_commitment['renewal_plan'] = renewal_plan
     if multi_region_auxiliary is not None:
       capacity_commitment['multi_region_auxiliary'] = multi_region_auxiliary
+    if edition is not None:
+      capacity_commitment['edition'] = edition
     client = self.GetReservationApiClient()
     parent = 'projects/%s/locations/%s' % (reference.projectId,
                                            reference.location)
@@ -3160,28 +3242,23 @@ class BigqueryClient(object):
           'multiRegionAuxiliary'
       ))
     elif reference_type == ApiClientHelper.AutoscalePreviewReservationReference:
-      formatter.AddColumns((
-          'name',
-          'slotCapacity',
-          'concurrency',
-          'ignoreIdleSlots',
-          'autoscaleBudgetSlotHours',
-          'autoscaleUsedBudgetSlotHours',
-          'creationTime',
-          'updateTime',
-          'multiRegionAuxiliary'
-      ))
+      formatter.AddColumns(
+          ('name', 'slotCapacity', 'concurrency', 'ignoreIdleSlots',
+           'autoscaleBudgetSlotHours', 'autoscaleUsedBudgetSlotHours',
+           'creationTime', 'updateTime', 'multiRegionAuxiliary'))
+    elif reference_type == ApiClientHelper.EditionPreviewReservationReference:
+      formatter.AddColumns(
+          ('name', 'slotCapacity', 'concurrency', 'ignoreIdleSlots',
+           'creationTime', 'updateTime', 'multiRegionAuxiliary', 'edition',
+           'autoscaleMaxSlots', 'autoscaleCurrentSlots'))
     elif reference_type == ApiClientHelper.CapacityCommitmentReference:
-      formatter.AddColumns((
-          'name',
-          'slotCount',
-          'plan',
-          'renewalPlan',
-          'state',
-          'commitmentStartTime',
-          'commitmentEndTime',
-          'multiRegionAuxiliary'
-      ))
+      formatter.AddColumns(
+          ('name', 'slotCount', 'plan', 'renewalPlan', 'state',
+           'commitmentStartTime', 'commitmentEndTime', 'multiRegionAuxiliary'))
+    elif reference_type == ApiClientHelper.EditionPreviewCapacityCommitmentReference:
+      formatter.AddColumns(('name', 'slotCount', 'plan', 'renewalPlan', 'state',
+                            'commitmentStartTime', 'commitmentEndTime',
+                            'multiRegionAuxiliary', 'edition'))
     elif reference_type == ApiClientHelper.BetaReservationAssignmentReference:
       formatter.AddColumns(('name', 'jobType', 'assignee', 'priority'))
     elif reference_type == ApiClientHelper.ReservationAssignmentReference:
@@ -3386,8 +3463,9 @@ class BigqueryClient(object):
     elif issubclass(object_type, ApiClientHelper.ReservationReference):
       return BigqueryClient.FormatReservationInfo(
           reservation=object_info, reference_type=object_type)
-    elif object_type == ApiClientHelper.CapacityCommitmentReference:
-      return BigqueryClient.FormatCapacityCommitmentInfo(object_info)
+    elif issubclass(object_type, ApiClientHelper.CapacityCommitmentReference):
+      return BigqueryClient.FormatCapacityCommitmentInfo(
+          object_info, reference_type=object_type)
     elif issubclass(object_type,
                     ApiClientHelper.ReservationAssignmentReference):
       return BigqueryClient.FormatReservationAssignmentInfo(object_info)
@@ -3859,6 +3937,10 @@ class BigqueryClient(object):
             location=location,
             reservationId=reservation_id)
         result[key] = reference.__str__()
+      # Don't show edition unless the correct api_version is specified.
+      elif key == 'edition':
+        if reference_type == ApiClientHelper.EditionPreviewReservationReference:
+          result[key] = value
       else:
         result[key] = value
     # Default values not passed along in the response.
@@ -3875,7 +3957,10 @@ class BigqueryClient(object):
         'enableQueuingAndPriorities' not in list(result.keys())):
       result['enableQueuingAndPriorities'] = 'False'
     if 'autoscale' in list(result.keys()):
-      if 'maxSlots' in result['autoscale']:
+      if ((reference_type == ApiClientHelper.AutoscaleAlphaReservationReference
+           or reference_type
+           == ApiClientHelper.EditionPreviewReservationReference) and
+          'maxSlots' in result['autoscale']):
         result['autoscaleMaxSlots'] = result['autoscale']['maxSlots']
         result['autoscaleCurrentSlots'] = '0'
         if 'currentSlots' in result['autoscale']:
@@ -3892,12 +3977,13 @@ class BigqueryClient(object):
       result.pop('autoscale', None)
     return result
 
-  @staticmethod
-  def FormatCapacityCommitmentInfo(capacity_commitment):
+  @classmethod
+  def FormatCapacityCommitmentInfo(cls, capacity_commitment, reference_type):
     """Prepare a capacity commitment for printing.
 
     Arguments:
       capacity_commitment: capacity commitment to format.
+      reference_type: Type of capacity commitment.
 
     Returns:
       A dictionary of capacity commitment properties.
@@ -3912,6 +3998,10 @@ class BigqueryClient(object):
             location=location,
             capacityCommitmentId=capacity_commitment_id)
         result[key] = reference.__str__()
+      elif key == 'edition':
+        if (reference_type ==
+            ApiClientHelper.EditionPreviewCapacityCommitmentReference):
+          result[key] = value
       else:
         result[key] = value
     # Default values not passed along in the response.
@@ -6513,8 +6603,7 @@ class BigqueryClient(object):
       json_extension=None,
       thrift_options=None,
       parquet_options=None,
-      **kwds
-  ):
+      **kwds):
     """Load the given data into BigQuery.
 
     The job will execute synchronously if sync=True is provided as an
@@ -7155,6 +7244,9 @@ class ApiClientHelper(object):
     """Reference for autoscale_preview, which has more features than stable versions."""
     pass
 
+  class EditionPreviewReservationReference(ReservationReference):
+    """Reference for edition_preview, which has more features than stable versions."""
+
   class CapacityCommitmentReference(Reference):
     """Helper class to provide a reference to capacity commitment."""
     _required_fields = frozenset(
@@ -7165,6 +7257,9 @@ class ApiClientHelper(object):
 
     def path(self):
       return self._path_str % dict(self)
+
+  class EditionPreviewCapacityCommitmentReference(CapacityCommitmentReference):
+    """Reference for edition_preview, which has more features than stable versions."""
 
   class ReservationAssignmentReference(Reference):
     """Helper class to provide a reference to reservation assignment."""

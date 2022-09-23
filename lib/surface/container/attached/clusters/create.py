@@ -49,7 +49,7 @@ class Create(base.CreateCommand):
     resource_args.AddAttachedClusterResourceArg(parser, 'to create')
 
     attached_flags.AddPlatformVersion(parser)
-    attached_flags.AddAuthority(parser)
+    attached_flags.AddOidcConfig(parser)
     attached_flags.AddDistribution(parser, required=True)
     attached_flags.AddAdminUsers(parser)
 

@@ -25,7 +25,6 @@ from googlecloudsdk.command_lib.ai import endpoint_util
 from googlecloudsdk.command_lib.ai import flags
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class UpsertDatapoints(base.CreateCommand):
   """Upsert data points into the specified index.

@@ -14,7 +14,6 @@
 # limitations under the License.
 """Creates a new AlloyDB cluster."""
 
-
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
@@ -22,6 +21,7 @@ from __future__ import unicode_literals
 from googlecloudsdk.api_lib.alloydb import api_util
 from googlecloudsdk.api_lib.alloydb import cluster_operations
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.alloydb import cluster_helper
 from googlecloudsdk.command_lib.alloydb import flags
 from googlecloudsdk.command_lib.kms import resource_args as kms_resource_args
 from googlecloudsdk.core import log
@@ -44,13 +44,14 @@ class Create(base.CreateCommand):
         """,
   }
 
-  @staticmethod
-  def Args(parser):
+  @classmethod
+  def Args(cls, parser):
     """Specifies additional command flags.
 
     Args:
       parser: argparse.Parser: Parser object for command line inputs.
     """
+    alloydb_messages = api_util.GetMessagesModule(cls.ReleaseTrack())
     base.ASYNC_FLAG.AddToParser(parser)
     flags.AddRegion(parser)
     flags.AddCluster(parser)
@@ -61,13 +62,15 @@ class Create(base.CreateCommand):
         'cluster',
         permission_info="The 'AlloyDB Service Agent' service account must hold permission 'Cloud KMS CryptoKey Encrypter/Decrypter'"
     )
+    flags.AddAutomatedBackupFlags(parser, alloydb_messages, update=False)
+    flags.AddPitrConfigFlags(parser)
 
   def Run(self, args):
     """Constructs and sends request.
 
     Args:
       args: argparse.Namespace, An object that contains the values for the
-          arguments specified in the .Args() method.
+        arguments specified in the .Args() method.
 
     Returns:
       ProcessHttpResponse of the request made.
@@ -79,21 +82,8 @@ class Create(base.CreateCommand):
         'alloydb.projects.locations',
         projectsId=properties.VALUES.core.project.GetOrFail,
         locationsId=args.region)
-    cluster_resource = alloydb_messages.Cluster()
-    cluster_resource.network = args.network
-    cluster_resource.initialUser = alloydb_messages.UserPassword(
-        password=args.password, user='postgres')
-    kms_key = flags.GetAndValidateKmsKeyName(args)
-    if kms_key:
-      encryption_config = alloydb_messages.EncryptionConfig()
-      encryption_config.kmsKeyName = kms_key
-      cluster_resource.encryptionConfig = encryption_config
-
-    req = alloydb_messages.AlloydbProjectsLocationsClustersCreateRequest(
-        cluster=cluster_resource,
-        clusterId=args.cluster,
-        parent=location_ref.RelativeName()
-        )
+    req = cluster_helper.ConstructCreateRequestFromArgs(
+        alloydb_messages, location_ref, args)
     op = alloydb_client.projects_locations_clusters.Create(req)
     op_ref = resources.REGISTRY.ParseRelativeName(
         op.name, collection='alloydb.projects.locations.operations')

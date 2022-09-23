@@ -2214,7 +2214,7 @@
     },
     "StandardSqlDataType": {
       "id": "StandardSqlDataType",
-      "description": "The data type of a variable such as a function argument. Examples include: * INT64: `{\"typeKind\": \"INT64\"}` * ARRAY: { \"typeKind\": \"ARRAY\", \"arrayElementType\": {\"typeKind\": \"STRING\"} } * STRUCT>: { \"typeKind\": \"STRUCT\", \"structType\": { \"fields\": [ { \"name\": \"x\", \"type\": {\"typeKind: \"STRING\"} }, { \"name\": \"y\", \"type\": { \"typeKind\": \"ARRAY\", \"arrayElementType\": {\"typekind\": \"DATE\"} } } ] } }",
+      "description": "The data type of a variable such as a function argument. Examples include: * INT64: `{\"typeKind\": \"INT64\"}` * ARRAY: { \"typeKind\": \"ARRAY\", \"arrayElementType\": {\"typeKind\": \"STRING\"} } * STRUCT>: { \"typeKind\": \"STRUCT\", \"structType\": { \"fields\": [ { \"name\": \"x\", \"type\": {\"typeKind\": \"STRING\"} }, { \"name\": \"y\", \"type\": { \"typeKind\": \"ARRAY\", \"arrayElementType\": {\"typeKind\": \"DATE\"} } } ] } }",
       "type": "object",
       "properties": {
         "typeKind": {
@@ -2936,6 +2936,18 @@
           "description": "Optional. Additional properties to set if sourceFormat is set to PARQUET.",
           "$ref": "ParquetOptions"
         },
+        "objectMetadata": {
+          "description": "Optional. Object Metadata Type used to create Object Tables. When making an Object Table, source_format should be omitted. Currently DIRECTORY is the only supported Object Metadata type. This would produce an Object Table containing a Directory Listing of Objects found at the source_uris.",
+          "type": "string",
+          "enumDescriptions": [
+            "Unspecified by default.",
+            "Directory listing of objects."
+          ],
+          "enum": [
+            "OBJECT_METADATA_UNSPECIFIED",
+            "DIRECTORY"
+          ]
+        },
         "referenceFileSchemaUri": {
           "description": "Optional. When creating an external table, the user can provide a reference file with the table schema. This is enabled for the following formats: AVRO, PARQUET, ORC.",
           "type": "string"
@@ -3621,7 +3633,7 @@
           }
         },
         "thriftOptions": {
-          "description": "Optional. [Experimental] The load options for Apache Thrift serialized data. It defines the source of IDL bundle that should be used to be parsed as the schema and deserilization options to parse Thrift data.",
+          "description": "Optional. [Experimental] The load options for Apache Thrift serialized data. It defines the source of IDL bundle that should be used to be parsed as the schema and deserialization options to parse Thrift data.",
           "$ref": "ThriftOptions"
         },
         "jsonExtension": {
@@ -3643,6 +3655,13 @@
         "preserveAsciiControlCharacters": {
           "description": "Optional. When sourceFormat is set to \"CSV\", this indicates whether the embedded ASCII control characters (the first 32 characters in the ASCII-table, from '\\x00' to '\\x1F') are preserved.",
           "type": "boolean"
+        },
+        "connectionProperties": {
+          "description": "Optional. Connection properties which can modify the load job behavior. Currently, only the 'session_id' connection property is supported, and is used to resolve _SESSION appearing as the dataset id.",
+          "type": "array",
+          "items": {
+            "$ref": "ConnectionProperty"
+          }
         }
       }
     },
@@ -4769,7 +4788,7 @@
             "Indicates the query has been optimized by using a materialized view.",
             "Indicates the query has been secured by data masking, and thus search indexes are not applicable.",
             "Indicates that the search index and the search function call do not have the same text analyzer.",
-            "Indicates the base table is too small (below certain threshold) to trigger index usage.",
+            "Indicates the base table is too small (below a certain threshold) to trigger index usage.",
             "Indicates an internal error that causes the search index to be unused."
           ],
           "enum": [
@@ -5248,7 +5267,7 @@
           "type": "string"
         },
         "query": {
-          "description": "Required. A query string, following the BigQuery query syntax, of the query to execute. Example: \"SELECT count(f1) FROM [myProjectId:myDatasetId.myTableId]\".",
+          "description": "Required. A query string to execute, using Google Standard SQL or legacy SQL syntx. Example: \"SELECT COUNT(f1) FROM myProjectId.myDatasetId.myTableId\".",
           "type": "string"
         },
         "maxResults": {
@@ -5545,12 +5564,14 @@
           "enumDescriptions": [
             "",
             "SQL language.",
-            "JavaScript language."
+            "JavaScript language.",
+            "Python language."
           ],
           "enum": [
             "LANGUAGE_UNSPECIFIED",
             "SQL",
-            "JAVASCRIPT"
+            "JAVASCRIPT",
+            "PYTHON"
           ]
         },
         "arguments": {
@@ -5940,6 +5961,11 @@
           "description": "Optional. The materialized view definition.",
           "$ref": "MaterializedViewDefinition"
         },
+        "materializedViewStatus": {
+          "description": "Output only. The materialized view status.",
+          "readOnly": true,
+          "$ref": "MaterializedViewStatus"
+        },
         "externalDataConfiguration": {
           "description": "Optional. Describes the data format, location, and other properties of a table stored outside of BigQuery. By defining these properties, the data source can then be queried as if it were a standard BigQuery table.",
           "$ref": "ExternalDataConfiguration"
@@ -6053,6 +6079,7 @@
     },
     "MaterializedViewDefinition": {
       "id": "MaterializedViewDefinition",
+      "description": "Definition and configuration of a materialized view.",
       "type": "object",
       "properties": {
         "query": {
@@ -6073,6 +6100,24 @@
           "description": "Optional. The maximum frequency at which this materialized view will be refreshed. The default value is \"1800000\" (30 minutes).",
           "type": "string",
           "format": "uint64"
+        }
+      }
+    },
+    "MaterializedViewStatus": {
+      "id": "MaterializedViewStatus",
+      "description": "Status of a materialized view. The last refresh timestamp status is omitted here, it is already present in the MaterializedViewDefinition message.",
+      "type": "object",
+      "properties": {
+        "refreshWatermark": {
+          "description": "Output only. Refresh watermark of materialized view. Data of base tables up to this time are collected into the materialized view cache.",
+          "readOnly": true,
+          "type": "string",
+          "format": "google-datetime"
+        },
+        "lastRefreshStatus": {
+          "description": "Output only. Error result of the last refresh job. If present, indicates that the last refresh was unsuccessful.",
+          "readOnly": true,
+          "$ref": "ErrorProto"
         }
       }
     },
@@ -6356,7 +6401,7 @@
           "type": "string"
         },
         "members": {
-          "description": "Specifies the principals requesting access for a Google Cloud resource. `members` can have the following values: * `allUsers`: A special identifier that represents anyone who is on the internet; with or without a Google account. * `allAuthenticatedUsers`: A special identifier that represents anyone who is authenticated with a Google account or a service account. * `user:{emailid}`: An email address that represents a specific Google account. For example, `alice@example.com` . * `serviceAccount:{emailid}`: An email address that represents a Google service account. For example, `my-other-app@appspot.gserviceaccount.com`. * `serviceAccount:{projectid}.svc.id.goog[{namespace}\/{kubernetes-sa}]`: An identifier for a [Kubernetes service account](https:\/\/cloud.google.com\/kubernetes-engine\/docs\/how-to\/kubernetes-service-accounts). For example, `my-project.svc.id.goog[my-namespace\/my-kubernetes-sa]`. * `group:{emailid}`: An email address that represents a Google group. For example, `admins@example.com`. * `deleted:user:{emailid}?uid={uniqueid}`: An email address (plus unique identifier) representing a user that has been recently deleted. For example, `alice@example.com?uid=123456789012345678901`. If the user is recovered, this value reverts to `user:{emailid}` and the recovered user retains the role in the binding. * `deleted:serviceAccount:{emailid}?uid={uniqueid}`: An email address (plus unique identifier) representing a service account that has been recently deleted. For example, `my-other-app@appspot.gserviceaccount.com?uid=123456789012345678901`. If the service account is undeleted, this value reverts to `serviceAccount:{emailid}` and the undeleted service account retains the role in the binding. * `deleted:group:{emailid}?uid={uniqueid}`: An email address (plus unique identifier) representing a Google group that has been recently deleted. For example, `admins@example.com?uid=123456789012345678901`. If the group is recovered, this value reverts to `group:{emailid}` and the recovered group retains the role in the binding. * `domain:{domain}`: The G Suite domain (primary) that represents all the users of that domain. For example, `google.com` or `example.com`. ",
+          "description": "Specifies the principals requesting access for a Google Cloud resource. `members` can have the following values: * `allUsers`: A special identifier that represents anyone who is on the internet; with or without a Google account. * `allAuthenticatedUsers`: A special identifier that represents anyone who is authenticated with a Google account or a service account. Does not include identities that come from external identity providers (IdPs) through identity federation. * `user:{emailid}`: An email address that represents a specific Google account. For example, `alice@example.com` . * `serviceAccount:{emailid}`: An email address that represents a Google service account. For example, `my-other-app@appspot.gserviceaccount.com`. * `serviceAccount:{projectid}.svc.id.goog[{namespace}\/{kubernetes-sa}]`: An identifier for a [Kubernetes service account](https:\/\/cloud.google.com\/kubernetes-engine\/docs\/how-to\/kubernetes-service-accounts). For example, `my-project.svc.id.goog[my-namespace\/my-kubernetes-sa]`. * `group:{emailid}`: An email address that represents a Google group. For example, `admins@example.com`. * `deleted:user:{emailid}?uid={uniqueid}`: An email address (plus unique identifier) representing a user that has been recently deleted. For example, `alice@example.com?uid=123456789012345678901`. If the user is recovered, this value reverts to `user:{emailid}` and the recovered user retains the role in the binding. * `deleted:serviceAccount:{emailid}?uid={uniqueid}`: An email address (plus unique identifier) representing a service account that has been recently deleted. For example, `my-other-app@appspot.gserviceaccount.com?uid=123456789012345678901`. If the service account is undeleted, this value reverts to `serviceAccount:{emailid}` and the undeleted service account retains the role in the binding. * `deleted:group:{emailid}?uid={uniqueid}`: An email address (plus unique identifier) representing a Google group that has been recently deleted. For example, `admins@example.com?uid=123456789012345678901`. If the group is recovered, this value reverts to `group:{emailid}` and the recovered group retains the role in the binding. * `domain:{domain}`: The G Suite domain (primary) that represents all the users of that domain. For example, `google.com` or `example.com`. ",
           "type": "array",
           "items": {
             "type": "string"

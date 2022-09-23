@@ -49,8 +49,7 @@ class List(base.ListCommand):
         parser,
         verb='to list',
         api_version=util.GetApiFromTrack(cls.ReleaseTrack()))
-    if cls._BetaOrAlpha():
-      flags.GetLocationArg().AddToParser(parser)
+    flags.GetLocationArg().AddToParser(parser)
     parser.display_info.AddFormat('json')
 
   def Run(self, args):
@@ -69,7 +68,7 @@ class List(base.ListCommand):
         responsePolicy=response_policy_ref.Name(),
         project=response_policy_ref.project)
 
-    if api_version == 'v2' and self._BetaOrAlpha():
+    if api_version == 'v2':
       list_request.location = args.location
 
     return list_pager.YieldFromList(

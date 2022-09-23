@@ -18,7 +18,6 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
-import re
 import socket
 import ssl
 import sys
@@ -48,22 +47,20 @@ class StartTcpTunnel(base.Command):
     concept_parsers.ConceptParser.ForResource(
         'workstation',
         concepts.ResourceSpec(
-            'workstations.projects.locations.workstationClusters.workstations',
+            'workstations.projects.locations.workstationClusters.workstationConfigs.workstations',
             resource_name='workstation',
             projectsId=concepts.DEFAULT_PROJECT_ATTRIBUTE_CONFIG,
             locationsId=concepts.ResourceParameterAttributeConfig(
                 name='region', help_text='The region for the workstation.'),
             workstationClustersId=concepts.ResourceParameterAttributeConfig(
                 name='cluster', help_text='The cluster for the workstation.'),
+            workstationConfigsId=concepts.ResourceParameterAttributeConfig(
+                name='config', help_text='The config for the workstation.'),
             workstationsId=concepts.ResourceParameterAttributeConfig(
                 name='workstation', help_text='The workstation.'),
         ),
         'The workstation to which traffic should be sent.',
         required=True).AddToParser(parser)
-    # TODO(b/243686512): fold this argument into workstation once we drop
-    # support for v1alpha1.
-    parser.add_argument(
-        '--config', default='', help='The config for the workstation.')
     parser.add_argument(
         'workstation_port',
         type=int,
@@ -82,33 +79,15 @@ unused local port is chosen. The colon also may be omitted in that case.
 If `LOCAL_PORT` is 0, an arbitrary unused local port is chosen.""")
 
   def Run(self, args):
-    workstation_ref = args.CONCEPTS.workstation.Parse()
-    if args.config:
-      workstation_name = re.sub(
-          '/workstations/',
-          '/workstationConfigs/' + args.config + '/workstations/',
-          workstation_ref.RelativeName())
-    else:
-      workstation_name = workstation_ref.RelativeName()
-
-    if args.config:
-      self.messages = apis.GetMessagesModule('workstations', 'v1beta')
-      self.client = apis.GetClientInstance('workstations', 'v1beta')
-    else:
-      self.messages = apis.GetMessagesModule('workstations', 'v1alpha1')
-      self.client = apis.GetClientInstance('workstations', 'v1alpha1')
+    workstation_name = args.CONCEPTS.workstation.Parse().RelativeName()
+    self.messages = apis.GetMessagesModule('workstations', 'v1beta')
+    self.client = apis.GetClientInstance('workstations', 'v1beta')
 
     # Look up the workstation host and determine port
-    if args.config:
-      workstation = self.client.projects_locations_workstationClusters_workstationConfigs_workstations.Get(
-          self.messages.
-          WorkstationsProjectsLocationsWorkstationClustersWorkstationConfigsWorkstationsGetRequest(
-              name=workstation_name))
-    else:
-      workstation = self.client.projects_locations_workstationClusters_workstations.Get(
-          self.messages.
-          WorkstationsProjectsLocationsWorkstationClustersWorkstationsGetRequest(
-              name=workstation_name))
+    workstation = self.client.projects_locations_workstationClusters_workstationConfigs_workstations.Get(
+        self.messages.
+        WorkstationsProjectsLocationsWorkstationClustersWorkstationConfigsWorkstationsGetRequest(
+            name=workstation_name))
     self.host = workstation.host
     self.port = args.workstation_port
     if workstation.state != self.messages.Workstation.StateValueValuesEnum.STATE_RUNNING:
@@ -116,8 +95,8 @@ If `LOCAL_PORT` is 0, an arbitrary unused local port is chosen.""")
       sys.exit(1)
 
     # Generate an access token and refresh it periodically
-    self._FetchAccessToken(workstation_name, args.config)
-    self._RefreshAccessToken(workstation_name, args.config)
+    self._FetchAccessToken(workstation_name)
+    self._RefreshAccessToken(workstation_name)
 
     # Bind on the local TCP port
     (host, port) = self._GetLocalHostPort(args)
@@ -141,28 +120,22 @@ If `LOCAL_PORT` is 0, an arbitrary unused local port is chosen.""")
       log.info('Keyboard interrupt received.')
     log.status.Print('Server shutdown complete.')
 
-  def _FetchAccessToken(self, workstation, v1beta):
+  def _FetchAccessToken(self, workstation):
     try:
-      if v1beta:
-        self.access_token = self.client.projects_locations_workstationClusters_workstationConfigs_workstations.GenerateAccessToken(
-            self.messages.
-            WorkstationsProjectsLocationsWorkstationClustersWorkstationConfigsWorkstationsGenerateAccessTokenRequest(
-                workstation=workstation)).accessToken
-      else:
-        self.access_token = self.client.projects_locations_workstationClusters_workstations.GenerateAccessToken(
-            self.messages.
-            WorkstationsProjectsLocationsWorkstationClustersWorkstationsGenerateAccessTokenRequest(
-                workstation=workstation)).accessToken
+      self.access_token = self.client.projects_locations_workstationClusters_workstationConfigs_workstations.GenerateAccessToken(
+          self.messages.
+          WorkstationsProjectsLocationsWorkstationClustersWorkstationConfigsWorkstationsGenerateAccessTokenRequest(
+              workstation=workstation)).accessToken
     except Error as e:
       log.error('Error fetching access token: {0}'.format(e))
       sys.exit(1)
 
-  def _RefreshAccessToken(self, workstation, v1beta):
+  def _RefreshAccessToken(self, workstation):
 
     def refresh():
       while True:
         time.sleep(2700)  # 45 minutes
-        self._FetchAccessToken(workstation, v1beta)
+        self._FetchAccessToken(workstation)
 
     t = threading.Thread(target=refresh)
     t.daemon = True

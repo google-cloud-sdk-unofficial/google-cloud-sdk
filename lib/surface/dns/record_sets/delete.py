@@ -51,8 +51,7 @@ class Delete(base.DeleteCommand):
     flags.GetZoneArg().AddToParser(parser)
     flags.GetResourceRecordSetsNameArg().AddToParser(parser)
     flags.GetResourceRecordSetsTypeArg(True).AddToParser(parser)
-    if cls._BetaOrAlpha():
-      flags.GetLocationArg().AddToParser(parser)
+    flags.GetLocationArg().AddToParser(parser)
     parser.display_info.AddCacheUpdater(None)
 
   def Run(self, args):
@@ -79,7 +78,7 @@ class Delete(base.DeleteCommand):
         name=util.AppendTrailingDot(args.name),
         type=args.type)
 
-    if api_version == 'v2' and self._BetaOrAlpha():
+    if api_version == 'v2':
       request.location = args.location
 
     result = dns_client.resourceRecordSets.Delete(request)

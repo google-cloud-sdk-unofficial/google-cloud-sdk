@@ -29,7 +29,12 @@ from googlecloudsdk.command_lib.compute.disks import flags as disks_flags
 from googlecloudsdk.command_lib.util.args import labels_util
 
 
-def _CommonArgs(messages, cls, parser, support_user_licenses=False):
+def _CommonArgs(messages,
+                cls,
+                parser,
+                support_user_licenses=False,
+                support_provisioned_iops=False,
+                support_provisioned_throughput=False):
   """Add arguments used for parsing in all command tracks."""
   cls.DISK_ARG = disks_flags.MakeDiskArg(plural=False)
   cls.DISK_ARG.AddArgument(parser, operation_type='update')
@@ -69,6 +74,22 @@ def _CommonArgs(messages, cls, parser, support_user_licenses=False):
       help='Removes the architecture or processor type annotation from the disk.'
   )
 
+  if support_provisioned_iops:
+    parser.add_argument('--provisioned-iops',
+                        type=arg_parsers.BoundedInt(),
+                        help=(
+                            'Provisioned IOPS of disk to update. '
+                            'Only for use with disks of type '
+                            'hyperdisk-extreme.'))
+
+  if support_provisioned_throughput:
+    parser.add_argument('--provisioned-throughput',
+                        type=arg_parsers.BoundedInt(),
+                        help=(
+                            'Provisioned throughput of disk to update. '
+                            'The throughput unit is  MB per sec. '
+                            'Only for use with disks of type hyperdisk-throughput'))
+
 
 def _LabelsFlagsIncluded(args):
   return args.IsSpecified('update_labels') or args.IsSpecified(
@@ -85,6 +106,14 @@ def _ArchitectureFlagsIncluded(args):
       'clear_architecture')
 
 
+def _ProvisionedIopsIncluded(args):
+  return args.IsSpecified('provisioned_iops')
+
+
+def _ProvisionedThroughputIncluded(args):
+  return args.IsSpecified('provisioned_throughput')
+
+
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Update(base.UpdateCommand):
   r"""Update a Compute Engine persistent disk."""
@@ -94,16 +123,26 @@ class Update(base.UpdateCommand):
   @classmethod
   def Args(cls, parser):
     messages = cls._GetApiHolder(no_http=True).client.messages
-    _CommonArgs(messages, cls, parser, support_user_licenses=False)
+    _CommonArgs(
+        messages, cls, parser, False,
+        support_provisioned_throughput=False)
 
   @classmethod
   def _GetApiHolder(cls, no_http=False):
     return base_classes.ComputeApiHolder(cls.ReleaseTrack(), no_http)
 
   def Run(self, args):
-    return self._Run(args, support_user_licenses=False)
+    return self._Run(
+        args,
+        support_user_licenses=False,
+        support_provisioned_iops=False,
+        support_provisioned_throughput=False)
 
-  def _Run(self, args, support_user_licenses=False):
+  def _Run(self,
+           args,
+           support_user_licenses=False,
+           support_provisioned_iops=False,
+           support_provisioned_throughput=False):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     client = holder.client.apitools_client
     messages = holder.client.messages
@@ -114,8 +153,10 @@ class Update(base.UpdateCommand):
     disk_info = api_util.GetDiskInfo(disk_ref, client, messages)
     service = disk_info.GetService()
 
-    if _ArchitectureFlagsIncluded(args) or (support_user_licenses and
-                                            _UserLicensesFlagsIncluded(args)):
+    if (support_provisioned_iops and _ProvisionedIopsIncluded(args)) or (
+        support_provisioned_throughput and _ProvisionedThroughputIncluded(args)
+    ) or _ArchitectureFlagsIncluded(args) or (
+        support_user_licenses and _UserLicensesFlagsIncluded(args)):
       disk_res = messages.Disk(name=disk_ref.Name())
       disk_update_request = None
       if disk_ref.Collection() == 'compute.disks':
@@ -143,6 +184,17 @@ class Update(base.UpdateCommand):
           disk_res.architecture = disk_res.ArchitectureValueValuesEnum(
               args.update_architecture)
         disk_update_request.paths.append('architecture')
+
+      if support_provisioned_iops and _ProvisionedIopsIncluded(args):
+        if args.provisioned_iops:
+          disk_res.provisionedIops = args.provisioned_iops
+          disk_update_request.paths.append('provisionedIops')
+
+      if support_provisioned_throughput and _ProvisionedThroughputIncluded(
+          args):
+        if args.provisioned_throughput:
+          disk_res.provisionedThroughput = args.provisioned_throughput
+          disk_update_request.paths.append('provisionedThroughput')
 
       update_operation = service.Update(disk_update_request)
       update_operation_ref = holder.resources.Parse(
@@ -187,14 +239,20 @@ class UpdateBeta(Update):
   @classmethod
   def Args(cls, parser):
     messages = cls._GetApiHolder(no_http=True).client.messages
-    _CommonArgs(messages, cls, parser, support_user_licenses=True)
+    _CommonArgs(
+        messages, cls, parser, support_user_licenses=True,
+        support_provisioned_iops=False, support_provisioned_throughput=False)
 
   @classmethod
   def _GetApiHolder(cls, no_http=False):
     return base_classes.ComputeApiHolder(cls.ReleaseTrack(), no_http)
 
   def Run(self, args):
-    return self._Run(args, support_user_licenses=True)
+    return self._Run(
+        args,
+        support_user_licenses=True,
+        support_provisioned_iops=False,
+        support_provisioned_throughput=False)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -206,14 +264,20 @@ class UpdateAlpha(UpdateBeta):
   @classmethod
   def Args(cls, parser):
     messages = cls._GetApiHolder(no_http=True).client.messages
-    _CommonArgs(messages, cls, parser, support_user_licenses=True)
+    _CommonArgs(
+        messages, cls, parser, support_user_licenses=True,
+        support_provisioned_iops=True, support_provisioned_throughput=True)
 
   @classmethod
   def _GetApiHolder(cls, no_http=False):
     return base_classes.ComputeApiHolder(cls.ReleaseTrack(), no_http)
 
   def Run(self, args):
-    return self._Run(args, support_user_licenses=True)
+    return self._Run(
+        args,
+        support_user_licenses=True,
+        support_provisioned_iops=True,
+        support_provisioned_throughput=True)
 
 
 Update.detailed_help = {

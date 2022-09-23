@@ -33,6 +33,7 @@ def _AddArgsCommon(parser):
   flags.GetLocalDataResourceRecordSets().AddToParser(parser)
   # TODO(b/215745011) use AddResponsePolicyRulesBehaviorFlag once switch to v2
   flags.GetResponsePolicyRulesBehavior().AddToParser(parser)
+  flags.GetLocationArg().AddToParser(parser)
 
   parser.add_argument(
       '--dns-name',
@@ -77,8 +78,6 @@ class Create(base.UpdateCommand):
     _AddArgsCommon(parser)
     resource_args.AddResponsePolicyRuleArg(
         parser, verb='to create', api_version=api_version)
-    if cls._BetaOrAlpha():
-      flags.GetLocationArg().AddToParser(parser)
     parser.display_info.AddFormat('json')
 
   def Run(self, args):
@@ -125,7 +124,7 @@ class Create(base.UpdateCommand):
         project=response_policy_rule_ref.project,
         responsePolicyRule=response_policy_rule)
 
-    if api_version == 'v2' and self._BetaOrAlpha():
+    if api_version == 'v2':
       create_request.location = args.location
 
     result = client.responsePolicyRules.Create(create_request)

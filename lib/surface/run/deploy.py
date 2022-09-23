@@ -305,6 +305,7 @@ class BetaDeploy(Deploy):
     flags.AddSandboxArg(managed_group)
     flags.AddSessionAffinityFlag(managed_group)
     flags.AddStartupCpuBoostFlag(managed_group)
+    flags.AddEncryptionKeyShutdownHoursFlag(managed_group)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)

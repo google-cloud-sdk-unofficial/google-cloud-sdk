@@ -785,6 +785,8 @@ flags_to_add = {
             flags.AddEnableGoogleCloudAccess,
         'managedConfig':
             flags.AddManagedConfigFlag,
+        'fleetProject':
+            flags.AddFleetProjectFlag,
         'loggingvariant':
             flags.AddLoggingVariantFlag,
     },
@@ -1005,6 +1007,8 @@ flags_to_add = {
             flags.AddEnableGoogleCloudAccess,
         'managedConfig':
             flags.AddManagedConfigFlag,
+        'fleetProject':
+            flags.AddFleetProjectFlag,
         'loggingvariant':
             flags.AddLoggingVariantFlag,
     },
@@ -1258,6 +1262,7 @@ class CreateBeta(Create):
         'enable_workload_vulnerability_scanning')
     ops.enable_cost_allocation = get_default('enable_cost_allocation')
     ops.managed_config = get_default('managed_config')
+    ops.fleet_project = get_default('fleet_project')
     return ops
 
 
@@ -1349,4 +1354,5 @@ class CreateAlpha(Create):
     ops.enable_workload_vulnerability_scanning = get_default(
         'enable_workload_vulnerability_scanning')
     ops.managed_config = get_default('managed_config')
+    ops.fleet_project = get_default('fleet_project')
     return ops

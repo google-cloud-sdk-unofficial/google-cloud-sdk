@@ -51,7 +51,7 @@ _ROLLOUT = 'rollout'
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
                     base.ReleaseTrack.GA)
 class Redeploy(base.CreateCommand):
-  """Redeploy the last rollout to a target.
+  """Redeploy the last release to a target.
 
   Redeploy the last rollout that has a state of SUCCESSFUL or FAILED to a
   target.

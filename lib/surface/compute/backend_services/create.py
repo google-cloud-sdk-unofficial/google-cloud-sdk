@@ -94,8 +94,7 @@ class CreateHelper(object):
            support_tcp_ssl_logging, support_net_lb_ilb_logging,
            support_multinic, support_client_only, support_unspecified_protocol,
            support_subsetting, support_subsetting_subset_size,
-           support_advanced_load_balancing, support_dynamic_compression,
-           support_weighted_lb):
+           support_advanced_load_balancing, support_weighted_lb):
     """Add flags to create a backend service to the parser."""
 
     parser.display_info.AddFormat(flags.DEFAULT_LIST_FORMAT)
@@ -174,13 +173,12 @@ class CreateHelper(object):
 
     flags.AddConnectionTrackingPolicy(parser)
 
-    if support_dynamic_compression:
-      flags.AddCompressionMode(parser)
+    flags.AddCompressionMode(parser)
 
   def __init__(self, support_failover, support_logging, support_tcp_ssl_logging,
                support_net_lb_ilb_logging, support_multinic, support_subsetting,
                support_subsetting_subset_size, support_advanced_load_balancing,
-               support_dynamic_compression, support_weighted_lb):
+               support_weighted_lb):
     self._support_failover = support_failover
     self._support_logging = support_logging
     self._support_tcp_ssl_logging = support_tcp_ssl_logging
@@ -189,7 +187,6 @@ class CreateHelper(object):
     self._support_subsetting = support_subsetting
     self._support_subsetting_subset_size = support_subsetting_subset_size
     self._support_advanced_load_balancing = support_advanced_load_balancing
-    self._support_dynamic_compression = support_dynamic_compression
     self._support_weighted_lb = support_weighted_lb
 
   def _CreateGlobalRequests(self, holder, args, backend_services_ref):
@@ -236,7 +233,7 @@ class CreateHelper(object):
                                                  'global', binding_name)
           for binding_name in args.service_bindings
       ]
-    if self._support_dynamic_compression and args.compression_mode is not None:
+    if args.compression_mode is not None:
       backend_service.compressionMode = (
           client.messages.BackendService.CompressionModeValueValuesEnum(
               args.compression_mode))
@@ -439,7 +436,6 @@ class CreateGA(base.CreateCommand):
   _support_subsetting = True
   _support_subsetting_subset_size = False
   _support_advanced_load_balancing = False
-  _support_dynamic_compression = False
   _support_weighted_lb = False
 
   @classmethod
@@ -456,7 +452,6 @@ class CreateGA(base.CreateCommand):
         support_subsetting=cls._support_subsetting,
         support_subsetting_subset_size=cls._support_subsetting_subset_size,
         support_advanced_load_balancing=cls._support_advanced_load_balancing,
-        support_dynamic_compression=cls._support_dynamic_compression,
         support_weighted_lb=cls._support_weighted_lb)
 
   def Run(self, args):
@@ -472,7 +467,6 @@ class CreateGA(base.CreateCommand):
         support_subsetting=self._support_subsetting,
         support_subsetting_subset_size=self._support_subsetting_subset_size,
         support_advanced_load_balancing=self._support_advanced_load_balancing,
-        support_dynamic_compression=self._support_dynamic_compression,
         support_weighted_lb=self._support_weighted_lb).Run(args, holder)
 
 
@@ -500,7 +494,6 @@ class CreateBeta(CreateGA):
   _support_subsetting = True
   _support_subsetting_subset_size = True
   _support_advanced_load_balancing = False
-  _support_dynamic_compression = True
   _support_weighted_lb = True
   _support_tcp_ssl_logging = True
   _support_net_lb_ilb_logging = True
@@ -529,7 +522,6 @@ class CreateAlpha(CreateBeta):
   _support_subsetting = True
   _support_subsetting_subset_size = True
   _support_advanced_load_balancing = True
-  _support_dynamic_compression = True
   _support_weighted_lb = True
   _support_tcp_ssl_logging = True
   _support_net_lb_ilb_logging = True

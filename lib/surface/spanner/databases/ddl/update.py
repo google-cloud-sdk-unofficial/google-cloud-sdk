@@ -54,8 +54,8 @@ class Update(base.UpdateCommand):
         help_text='Path of a file containing semi-colon separated DDL (data '
         'definition language) statements to run inside the database. If a '
         'statement fails, all subsequent statements in the batch are '
-        'automatically cancelled. If --ddl_file is set, --ddl is ignored.'
-    ).AddToParser(parser)
+        'automatically cancelled. If --ddl_file is set, --ddl is ignored. '
+        'One line comments starting with -- are ignored.').AddToParser(parser)
     flags.ProtoDescriptorsFile(
         help_text='Path of a file that contains a protobuf-serialized '
         'google.protobuf.FileDescriptorSet message. To generate it, install and'

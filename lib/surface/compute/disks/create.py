@@ -136,7 +136,8 @@ def _CommonArgs(messages,
                 source_instant_snapshot_enabled=False,
                 support_pd_interface=False,
                 support_user_licenses=False,
-                support_async_pd=False):
+                support_async_pd=False,
+                support_provisioned_throughput=False):
   """Add arguments used for parsing in all command tracks."""
   Create.disks_arg.AddArgument(parser, operation_type='create')
   parser.add_argument(
@@ -196,6 +197,9 @@ def _CommonArgs(messages,
 
   disks_flags.AddProvisionedIopsFlag(parser, arg_parsers, constants)
   disks_flags.AddArchitectureFlag(parser, messages)
+
+  if support_provisioned_throughput:
+    disks_flags.AddProvisionedThroughputFlag(parser, arg_parsers)
 
   if support_user_licenses:
     parser.add_argument(
@@ -449,7 +453,8 @@ class Create(base.Command):
            support_vss_erase=False,
            support_pd_interface=False,
            support_user_licenses=False,
-           support_async_pd=False):
+           support_async_pd=False,
+           support_provisioned_throughput=False):
     compute_holder = self._GetApiHolder()
     client = compute_holder.client
 
@@ -574,6 +579,16 @@ class Create(base.Command):
               '--provisioned-iops',
               '--provisioned-iops cannot be used with the given disk type.')
 
+      if support_provisioned_throughput and args.IsSpecified(
+          'provisioned_throughput'):
+        if type_uri and disks_util.IsProvisioningTypeThroughput(type_uri):
+          disk.provisionedThroughput = args.provisioned_throughput
+        else:
+          raise exceptions.InvalidArgumentException(
+              '--provisioned-throughput',
+              '--provisioned-throughput cannot be used with the given disk '
+              'type.')
+
       if args.IsSpecified('architecture'):
         disk.architecture = disk.ArchitectureValueValuesEnum(args.architecture)
 
@@ -658,7 +673,8 @@ class CreateAlpha(CreateBeta):
         source_instant_snapshot_enabled=True,
         support_pd_interface=True,
         support_user_licenses=True,
-        support_async_pd=True)
+        support_async_pd=True,
+        support_provisioned_throughput=True)
     image_utils.AddGuestOsFeaturesArg(parser, messages)
     _AddReplicaZonesArg(parser)
     kms_resource_args.AddKmsKeyResourceArg(
@@ -674,7 +690,8 @@ class CreateAlpha(CreateBeta):
         support_vss_erase=True,
         support_pd_interface=True,
         support_user_licenses=True,
-        support_async_pd=True)
+        support_async_pd=True,
+        support_provisioned_throughput=True)
 
 
 def _ValidateAndParseDiskRefsRegionalReplica(args, compute_holder):

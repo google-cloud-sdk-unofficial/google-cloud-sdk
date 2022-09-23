@@ -21,8 +21,8 @@ from __future__ import unicode_literals
 from googlecloudsdk.api_lib.bms.bms_client import BmsClient
 from googlecloudsdk.api_lib.util import waiter
 from googlecloudsdk.calliope import base
-from googlecloudsdk.command_lib.bms import exceptions
 from googlecloudsdk.command_lib.bms import flags
+from googlecloudsdk.command_lib.bms import util
 from googlecloudsdk.command_lib.util.args import labels_util
 from googlecloudsdk.core import log
 from googlecloudsdk.core import resources
@@ -54,7 +54,7 @@ DETAILED_HELP = {
 }
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Update(base.UpdateCommand):
   """Update a Bare Metal Solution NFS share."""
 
@@ -67,19 +67,20 @@ class Update(base.UpdateCommand):
 
   def Run(self, args):
     labels_diff = labels_util.Diff.FromUpdateArgs(args)
-    if not labels_diff.MayHaveUpdates():
-      raise exceptions.NoConfigurationChangeError(
-          'No configuration change was requested. Did you mean to include the '
-          'flags `--update-labels` `--remove-labels` or `--clear-labels`?')
-
     nfs_share = args.CONCEPTS.nfs_share.Parse()
     client = BmsClient()
     orig_resource = client.GetNfsShare(nfs_share)
     labels_update = labels_diff.Apply(client.messages.NfsShare.LabelsValue,
                                       orig_resource.labels).GetOrNone()
+    updated_allowed_clients = _ApplyNFSAllowedClientsUpdates(
+        client=client,
+        args=args,
+        existing_nfs=orig_resource,
+        nfs_share_resource=nfs_share)
 
-    op_ref = client.UpdateNfsShare(
-        nfs_share_resource=nfs_share, labels=labels_update)
+    op_ref = client.UpdateNfsShare(nfs_share_resource=nfs_share,
+                                   labels=labels_update,
+                                   allowed_clients=updated_allowed_clients)
 
     if op_ref.done:
       log.UpdatedResource(nfs_share.Name(), kind='NFS share')
@@ -102,5 +103,49 @@ class Update(base.UpdateCommand):
     log.UpdatedResource(nfs_share.Name(), kind='NFS share')
     return res
 
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class UpdateAlpha(Update):
+  """Update a Bare Metal Solution NFS share."""
+
+  @staticmethod
+  def Args(parser):
+    # Flags which are only available in ALPHA should be added to parser here.
+    Update.Args(parser)
+    flags.AddNfsUpdateAllowedClientArgs(parser=parser, hidden=True)
+
+
+def _ApplyNFSAllowedClientsUpdates(client, args, existing_nfs,
+                                   nfs_share_resource):
+  """Applies the changes in args to the allowed_clients in existing_nfs.
+
+  Returns None if no changes were to be applied.
+
+  Args:
+    client: BmsClient.
+    args: The arguments passed to the command.
+    existing_nfs: The existing nfs.
+    nfs_share_resource: The ref to the NFS share.
+
+  Returns:
+    List of allowed clients after applying updates or None if there are
+    no changes.
+  """
+
+  if args.IsKnownAndSpecified(
+      'clear_allowed_clients') and args.clear_allowed_clients:
+    return []
+
+  if args.IsKnownAndSpecified('add_allowed_client'):
+    new_clients = client.ParseAllowedClientsDicts(
+        nfs_share_resource=nfs_share_resource,
+        allowed_clients_dicts=args.add_allowed_client)
+    return existing_nfs.allowedClients + new_clients
+
+  if args.IsKnownAndSpecified('remove_allowed_client'):
+    return util.RemoveAllowedClients(
+        nfs_share_resource=nfs_share_resource,
+        allowed_clients=existing_nfs.allowedClients,
+        remove_key_dicts=args.remove_allowed_client)
 
 Update.detailed_help = DETAILED_HELP

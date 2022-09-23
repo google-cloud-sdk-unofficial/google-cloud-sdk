@@ -60,8 +60,7 @@ flags.DEFINE_string('proxy_password', '',
 
 flags.DEFINE_boolean(
     'synchronous_mode',
-    True,
-    'If True, wait for command completion before returning, and use the '
+    True, 'If True, wait for command completion before returning, and use the '
     'job completion status for error codes. If False, simply create the '
     'job, and use the success of job creation as the error code.',
     short_name='sync')
@@ -75,6 +74,11 @@ flags.DEFINE_string(
     'location', None,
     'Default geographic location to use when creating datasets or determining '
     'where jobs should run (Ignored when not applicable.)')
+flags.DEFINE_boolean(
+    'use_regional_endpoints', False,
+    'Use a regional endpoint based on the operation\'s location. '
+    'Regional endpoints are currently limited to the following locations: '
+    'us-east4, us-west1.')
 
 # This flag is "hidden" at the global scope to avoid polluting help
 # text on individual commands for rarely used functionality.

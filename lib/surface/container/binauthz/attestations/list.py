@@ -73,9 +73,9 @@ class List(base.ListCommand):
     )
 
   def Run(self, args):
-    normalized_artifact_url = None
+    artifact_url_without_scheme = None
     if args.artifact_url:
-      normalized_artifact_url = binauthz_command_util.NormalizeArtifactUrl(
+      artifact_url_without_scheme = binauthz_command_util.RemoveArtifactUrlScheme(
           args.artifact_url)
 
     attestor_ref = args.CONCEPTS.attestor.Parse()
@@ -91,7 +91,7 @@ class List(base.ListCommand):
         self.ReleaseTrack()))
     return client.YieldAttestations(
         note_ref=note_ref,
-        artifact_url=normalized_artifact_url,
+        artifact_url=artifact_url_without_scheme,
         page_size=args.page_size,
         limit=args.limit,
     )

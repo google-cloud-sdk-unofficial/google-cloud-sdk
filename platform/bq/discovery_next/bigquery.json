@@ -4,7 +4,7 @@
  "id": "bigquery:v2",
  "name": "bigquery",
  "version": "v2",
- "revision": "20220823",
+ "revision": "20220906",
  "title": "BigQuery API",
  "description": "A data platform for customers to create, manage, share and query data.",
  "ownerDomain": "google.com",
@@ -1326,6 +1326,13 @@
      "$ref": "Clustering",
      "description": "[Beta] Clustering specification for the destination table. Must be specified with time-based partitioning, data in the table will be first partitioned and subsequently clustered."
     },
+    "connectionProperties": {
+     "type": "array",
+     "description": "Connection properties.",
+     "items": {
+      "$ref": "ConnectionProperty"
+     }
+    },
     "createDisposition": {
      "type": "string",
      "description": "[Optional] Specifies whether the job is allowed to create new tables. The following values are supported: CREATE_IF_NEEDED: If the table does not exist, BigQuery creates the table. CREATE_NEVER: The table must already exist. If it does not, a 'notFound' error is returned in the job result. The default value is CREATE_IF_NEEDED. Creation, truncation and append actions occur as one atomic update upon job completion."
@@ -1944,6 +1951,10 @@
     "searchStatistics": {
      "$ref": "SearchStatistics",
      "description": "[Output-only] Search query specific statistics."
+    },
+    "sparkStatistics": {
+     "$ref": "SparkStatistics",
+     "description": "[Output-only] Statistics of a Spark procedure job."
     },
     "statementType": {
      "type": "string",
@@ -2709,6 +2720,45 @@
      "type": "string",
      "description": "[Required] The time at which the base table was snapshot. This value is reported in the JSON response using RFC3339 format.",
      "format": "date-time"
+    }
+   }
+  },
+  "SparkLoggingInfo": {
+   "id": "SparkLoggingInfo",
+   "type": "object",
+   "properties": {
+    "project_id": {
+     "type": "string",
+     "description": "[Output-only] Project ID used for logging"
+    },
+    "resource_type": {
+     "type": "string",
+     "description": "[Output-only] Resource type used for logging"
+    }
+   }
+  },
+  "SparkStatistics": {
+   "id": "SparkStatistics",
+   "type": "object",
+   "properties": {
+    "endpoints": {
+     "type": "object",
+     "description": "[Output-only] Endpoints generated for the Spark job.",
+     "additionalProperties": {
+      "type": "string"
+     }
+    },
+    "logging_info": {
+     "$ref": "SparkLoggingInfo",
+     "description": "[Output-only] Logging info is used to generate a link to Cloud Logging."
+    },
+    "spark_job_id": {
+     "type": "string",
+     "description": "[Output-only] Spark job id if a Spark job is created successfully."
+    },
+    "spark_job_location": {
+     "type": "string",
+     "description": "[Output-only] Location where the Spark job is executed."
     }
    }
   },
@@ -5028,7 +5078,7 @@
   },
   "StandardSqlDataType": {
    "id": "StandardSqlDataType",
-   "description": "The data type of a variable such as a function argument. Examples include: * INT64: `{\"typeKind\": \"INT64\"}` * ARRAY: { \"typeKind\": \"ARRAY\", \"arrayElementType\": {\"typeKind\": \"STRING\"} } * STRUCT>: { \"typeKind\": \"STRUCT\", \"structType\": { \"fields\": [ { \"name\": \"x\", \"type\": {\"typeKind: \"STRING\"} }, { \"name\": \"y\", \"type\": { \"typeKind\": \"ARRAY\", \"arrayElementType\": {\"typekind\": \"DATE\"} } } ] } }",
+   "description": "The data type of a variable such as a function argument. Examples include: * INT64: `{\"typeKind\": \"INT64\"}` * ARRAY: { \"typeKind\": \"ARRAY\", \"arrayElementType\": {\"typeKind\": \"STRING\"} } * STRUCT>: { \"typeKind\": \"STRUCT\", \"structType\": { \"fields\": [ { \"name\": \"x\", \"type\": {\"typeKind\": \"STRING\"} }, { \"name\": \"y\", \"type\": { \"typeKind\": \"ARRAY\", \"arrayElementType\": {\"typeKind\": \"DATE\"} } } ] } }",
    "type": "object",
    "properties": {
     "typeKind": {
@@ -5462,12 +5512,14 @@
      "enumDescriptions": [
       "",
       "SQL language.",
-      "JavaScript language."
+      "JavaScript language.",
+      "Python language."
      ],
      "enum": [
       "LANGUAGE_UNSPECIFIED",
       "SQL",
-      "JAVASCRIPT"
+      "JAVASCRIPT",
+      "PYTHON"
      ]
     },
     "arguments": {
@@ -5796,7 +5848,7 @@
      "type": "string"
     },
     "members": {
-     "description": "Specifies the principals requesting access for a Google Cloud resource. `members` can have the following values: * `allUsers`: A special identifier that represents anyone who is on the internet; with or without a Google account. * `allAuthenticatedUsers`: A special identifier that represents anyone who is authenticated with a Google account or a service account. * `user:{emailid}`: An email address that represents a specific Google account. For example, `alice@example.com` . * `serviceAccount:{emailid}`: An email address that represents a Google service account. For example, `my-other-app@appspot.gserviceaccount.com`. * `serviceAccount:{projectid}.svc.id.goog[{namespace}/{kubernetes-sa}]`: An identifier for a [Kubernetes service account](https://cloud.google.com/kubernetes-engine/docs/how-to/kubernetes-service-accounts). For example, `my-project.svc.id.goog[my-namespace/my-kubernetes-sa]`. * `group:{emailid}`: An email address that represents a Google group. For example, `admins@example.com`. * `deleted:user:{emailid}?uid={uniqueid}`: An email address (plus unique identifier) representing a user that has been recently deleted. For example, `alice@example.com?uid=123456789012345678901`. If the user is recovered, this value reverts to `user:{emailid}` and the recovered user retains the role in the binding. * `deleted:serviceAccount:{emailid}?uid={uniqueid}`: An email address (plus unique identifier) representing a service account that has been recently deleted. For example, `my-other-app@appspot.gserviceaccount.com?uid=123456789012345678901`. If the service account is undeleted, this value reverts to `serviceAccount:{emailid}` and the undeleted service account retains the role in the binding. * `deleted:group:{emailid}?uid={uniqueid}`: An email address (plus unique identifier) representing a Google group that has been recently deleted. For example, `admins@example.com?uid=123456789012345678901`. If the group is recovered, this value reverts to `group:{emailid}` and the recovered group retains the role in the binding. * `domain:{domain}`: The G Suite domain (primary) that represents all the users of that domain. For example, `google.com` or `example.com`. ",
+     "description": "Specifies the principals requesting access for a Google Cloud resource. `members` can have the following values: * `allUsers`: A special identifier that represents anyone who is on the internet; with or without a Google account. * `allAuthenticatedUsers`: A special identifier that represents anyone who is authenticated with a Google account or a service account. Does not include identities that come from external identity providers (IdPs) through identity federation. * `user:{emailid}`: An email address that represents a specific Google account. For example, `alice@example.com` . * `serviceAccount:{emailid}`: An email address that represents a Google service account. For example, `my-other-app@appspot.gserviceaccount.com`. * `serviceAccount:{projectid}.svc.id.goog[{namespace}/{kubernetes-sa}]`: An identifier for a [Kubernetes service account](https://cloud.google.com/kubernetes-engine/docs/how-to/kubernetes-service-accounts). For example, `my-project.svc.id.goog[my-namespace/my-kubernetes-sa]`. * `group:{emailid}`: An email address that represents a Google group. For example, `admins@example.com`. * `deleted:user:{emailid}?uid={uniqueid}`: An email address (plus unique identifier) representing a user that has been recently deleted. For example, `alice@example.com?uid=123456789012345678901`. If the user is recovered, this value reverts to `user:{emailid}` and the recovered user retains the role in the binding. * `deleted:serviceAccount:{emailid}?uid={uniqueid}`: An email address (plus unique identifier) representing a service account that has been recently deleted. For example, `my-other-app@appspot.gserviceaccount.com?uid=123456789012345678901`. If the service account is undeleted, this value reverts to `serviceAccount:{emailid}` and the undeleted service account retains the role in the binding. * `deleted:group:{emailid}?uid={uniqueid}`: An email address (plus unique identifier) representing a Google group that has been recently deleted. For example, `admins@example.com?uid=123456789012345678901`. If the group is recovered, this value reverts to `group:{emailid}` and the recovered group retains the role in the binding. * `domain:{domain}`: The G Suite domain (primary) that represents all the users of that domain. For example, `google.com` or `example.com`. ",
      "type": "array",
      "items": {
       "type": "string"

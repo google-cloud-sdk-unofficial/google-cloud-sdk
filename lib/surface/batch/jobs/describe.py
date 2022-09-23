@@ -19,7 +19,9 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+from apitools.base.py import exceptions as apitools_exceptions
 from googlecloudsdk.api_lib.batch import jobs
+from googlecloudsdk.api_lib.util import exceptions
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.batch import resource_args
 
@@ -48,4 +50,8 @@ class Describe(base.DescribeCommand):
 
     client = jobs.JobsClient(release_track)
     job_ref = args.CONCEPTS.job.Parse()
-    return client.Get(job_ref)
+    try:
+      return client.Get(job_ref)
+    except apitools_exceptions.HttpNotFoundError as e:
+      raise exceptions.HttpException(
+          e, error_format='Could not fetch resource: {status_message}.')

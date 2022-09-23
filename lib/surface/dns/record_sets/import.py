@@ -71,8 +71,7 @@ class Import(base.Command):
   @classmethod
   def Args(cls, parser):
     flags.GetZoneArg().AddToParser(parser)
-    if cls._IsBetaOrAlpha():
-      flags.GetLocationArg().AddToParser(parser)
+    flags.GetLocationArg().AddToParser(parser)
     parser.add_argument('records_file',
                         help='File from which record-sets should be '
                              'imported. For examples of YAML-formatted '
@@ -122,7 +121,7 @@ class Import(base.Command):
       get_request = dns.MESSAGES_MODULE.DnsManagedZonesGetRequest(
           project=zone_ref.project, managedZone=zone_ref.managedZone)
 
-      if api_version == 'v2' and self._IsBetaOrAlpha():
+      if api_version == 'v2':
         get_request.location = args.location
 
       zone = dns.managedZones.Get(get_request)
@@ -176,7 +175,7 @@ class Import(base.Command):
     create_request = dns.MESSAGES_MODULE.DnsChangesCreateRequest(
         change=change, managedZone=zone.name, project=zone_ref.project)
 
-    if api_version == 'v2' and self._IsBetaOrAlpha():
+    if api_version == 'v2':
       create_request.location = args.location
 
     result = dns.changes.Create(create_request)

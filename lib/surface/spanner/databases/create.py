@@ -67,7 +67,8 @@ class Create(base.CreateCommand):
         'created. This option is not supported for the PostgreSQL dialect. '
         'Full DDL specification is at '
         'https://cloud.google.com/spanner/docs/data-definition-language.'
-        ' If --ddl_file is set, --ddl is ignored.').AddToParser(parser)
+        ' If --ddl_file is set, --ddl is ignored. One line comments starting '
+        'with -- are ignored.').AddToParser(parser)
     flags.ProtoDescriptorsFile(
         help_text='Path of a file that contains a protobuf-serialized '
         'google.protobuf.FileDescriptorSet message. To generate it, install and'

@@ -239,7 +239,9 @@ def _provision_oidc_config(auth_method, msg):
     auth_method_proto.oidcConfig.userPrefix = oidc_config['userPrefix']
   if 'clientSecret' in oidc_config:
     auth_method_proto.oidcConfig.clientSecret = oidc_config['clientSecret']
-
+  if 'enableAccessToken' in oidc_config:
+    auth_method_proto.oidcConfig.enableAccessToken = oidc_config[
+        'enableAccessToken']
   return auth_method_proto
 
 

@@ -35,43 +35,9 @@ def _GetUriFunction(api_version):
   return _GetUri
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
+                    base.ReleaseTrack.GA)
 class List(base.ListCommand):
-  """View the list of all your managed-zones.
-
-  This command displays the list of your managed-zones.
-
-  ## EXAMPLES
-
-  To see the list of all managed-zones, run:
-
-    $ {command}
-
-  To see the list of first 10 managed-zones, run:
-
-    $ {command} --limit=10
-  """
-
-  @staticmethod
-  def Args(parser):
-    parser.display_info.AddFormat('table(name, dnsName, description,'
-                                  ' visibility)')
-    parser.display_info.AddUriFunc(_GetUriFunction('v1'))
-
-  def Run(self, args):
-    dns_client = util.GetApiClient('v1')
-
-    project_id = properties.VALUES.core.project.GetOrFail()
-
-    return list_pager.YieldFromList(
-        dns_client.managedZones,
-        dns_client.MESSAGES_MODULE.DnsManagedZonesListRequest(
-            project=project_id),
-        field='managedZones')
-
-
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class ListBeta(base.ListCommand):
   """View the list of all your managed-zones.
 
   This command displays the list of your managed-zones.
@@ -92,11 +58,17 @@ class ListBeta(base.ListCommand):
     $ {command} --location=us-east1-c
   """
 
-  @staticmethod
-  def Args(parser):
+  @classmethod
+  def _BetaOrAlpha(cls):
+    return cls.ReleaseTrack() in (base.ReleaseTrack.BETA,
+                                  base.ReleaseTrack.ALPHA)
+
+  @classmethod
+  def Args(cls, parser):
     parser.display_info.AddFormat('table(name, dnsName, description,'
                                   ' visibility)')
-    parser.display_info.AddUriFunc(_GetUriFunction('v1beta2'))
+    parser.display_info.AddUriFunc(
+        _GetUriFunction(util.GetApiFromTrack(cls.ReleaseTrack())))
     flags.GetLocationArg().AddToParser(parser)
 
   def Run(self, args):
@@ -113,33 +85,3 @@ class ListBeta(base.ListCommand):
 
     return list_pager.YieldFromList(
         dns_client.managedZones, request, field='managedZones')
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class ListAlpha(ListBeta):
-  """View the list of all your managed-zones.
-
-  This command displays the list of your managed-zones.
-
-  ## EXAMPLES
-
-  To see the list of all managed-zones, run:
-
-    $ {command}
-
-  To see the list of first 10 managed-zones, run:
-
-    $ {command} --limit=10
-
-  To see the list of all managed-zones in a Zonal Cloud DNS service in
-  us-east1-c, run:
-
-    $ {command} --location=us-east1-c
-  """
-
-  @staticmethod
-  def Args(parser):
-    parser.display_info.AddFormat('table(name, dnsName, description,'
-                                  ' visibility)')
-    parser.display_info.AddUriFunc(_GetUriFunction('v1alpha2'))
-    flags.GetLocationArg().AddToParser(parser)

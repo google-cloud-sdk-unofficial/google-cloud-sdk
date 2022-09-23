@@ -21,10 +21,11 @@ from __future__ import unicode_literals
 import textwrap
 import time
 
+from apitools.base.py import exceptions as apitools_exceptions
 from googlecloudsdk.api_lib.spanner import databases
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
-from googlecloudsdk.calliope.exceptions import BadArgumentException
+from googlecloudsdk.calliope import exceptions as calliope_exceptions
 from googlecloudsdk.command_lib.spanner import samples
 from googlecloudsdk.core import execution_utils
 from googlecloudsdk.core import log
@@ -35,6 +36,7 @@ from surface.spanner.samples import init as samples_init
 from surface.spanner.samples import workload as samples_workload
 
 
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
 class Run(base.Command):
   """Run the given Cloud Spanner sample app.
 
@@ -105,7 +107,7 @@ class Run(base.Command):
     try:
       samples.check_appname(appname)
     except ValueError as ex:
-      raise BadArgumentException('APPNAME', ex)
+      raise calliope_exceptions.BadArgumentException('APPNAME', ex)
     instance_id = args.instance_id
     project = properties.VALUES.core.project.GetOrFail()
     instance_ref = resources.REGISTRY.Parse(
@@ -119,18 +121,39 @@ class Run(base.Command):
     else:
       database_id = samples.get_db_id_for_app(appname)
     duration = args.duration
+    skip_init = getattr(args, 'skip_init', False)
 
-    log.status.Print(
-        "Initializing database '{database_id}' for sample app '{appname}'"
-        .format(database_id=database_id, appname=appname))
     try:
       samples_init.check_instance(instance_id)
     except ValueError as ex:
-      raise BadArgumentException('--instance-id', ex)
-    try:
-      samples_init.check_create_db(args.appname, instance_ref, database_id)
-    except ValueError as ex:
-      raise BadArgumentException('--database-id', ex)
+      raise calliope_exceptions.BadArgumentException('--instance-id', ex)
+    log.status.Print(
+        "Initializing database '{database_id}' for sample app '{appname}'"
+        .format(database_id=database_id, appname=appname))
+    if skip_init:
+      database_ref = resources.REGISTRY.Parse(
+          database_id,
+          params={
+              'instancesId': instance_id,
+              'projectsId': project
+          },
+          collection='spanner.projects.instances.databases')
+      try:
+        databases.Get(database_ref)
+      # --skip-init assumes the database exists already, raise if it doesn't.
+      except apitools_exceptions.HttpNotFoundError:
+        bad_flag = ('--instance-id'
+                    if args.database_id is None else '--database-id')
+        raise calliope_exceptions.BadArgumentException(
+            bad_flag, "Database '{database_id}' does not exist in instance "
+            "'{instance_id}'. Re-run this command without `--skip-init` to "
+            'create it.'.format(
+                database_id=database_id, instance_id=instance_id))
+    else:
+      try:
+        samples_init.check_create_db(args.appname, instance_ref, database_id)
+      except ValueError as ex:
+        raise calliope_exceptions.BadArgumentException('--database-id', ex)
 
     be_proc = samples_backend.run_backend(project, appname, instance_id,
                                           database_id)
@@ -178,3 +201,36 @@ class Run(base.Command):
 
     log.status.Print('Done')
     return
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class RunAlpha(Run):
+  """Run the given Cloud Spanner sample app.
+
+  Each Cloud Spanner sample application includes a backend gRPC service
+  backed by a Cloud Spanner database and a workload script that generates
+  service traffic. This command creates and initializes the Cloud Spanner
+  database and runs both the backend service and workload script.
+
+  These sample apps are open source and available at
+  https://github.com/GoogleCloudPlatform/cloud-spanner-samples.
+
+  To see a list of available sample apps, run:
+
+      $ {parent_command} list
+  """
+
+  @staticmethod
+  def Args(parser):
+    """Args is called by calliope to gather arguments for this command.
+
+    Args:
+      parser: An argparse parser that you can use to add arguments that go on
+        the command line after this command. Positional arguments are allowed.
+    """
+    Run.Args(parser)
+    parser.add_argument(
+        '--skip-init',
+        action='store_true',
+        default=False,
+        help=('Use an existing database instead of creating a new one.'))

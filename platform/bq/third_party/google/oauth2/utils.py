@@ -43,7 +43,6 @@ capabilities:
 
 import abc
 import base64
-import enum
 import json
 
 import six
@@ -53,7 +52,7 @@ from google.auth import exceptions
 
 # OAuth client authentication based on
 # https://tools.ietf.org/html/rfc6749#section-2.3.
-class ClientAuthType(enum.Enum):
+class ClientAuthType:
     basic = 1
     request_body = 2
 

@@ -20,6 +20,7 @@ from __future__ import division
 from __future__ import unicode_literals
 
 from apitools.base.py import list_pager
+from googlecloudsdk.api_lib.dataproc import constants
 from googlecloudsdk.api_lib.dataproc import dataproc as dp
 from googlecloudsdk.api_lib.dataproc import display_helper
 from googlecloudsdk.api_lib.dataproc import util
@@ -44,6 +45,7 @@ class List(base.ListCommand):
   @staticmethod
   def Args(parser):
     base.URI_FLAG.RemoveFromParser(parser)
+    base.PAGE_SIZE_FLAG.SetDefault(parser, constants.DEFAULT_PAGE_SIZE)
     # TODO(b/207032388): Use built-in filter arg after it is supported by
     # backend.
     # Filter is not supported yet.

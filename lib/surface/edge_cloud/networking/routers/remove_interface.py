@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Command to remove a list of interfaces on a Distributed Cloud Edge Network router."""
+"""Command to an interface on a Distributed Cloud Edge Network router."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -25,20 +25,20 @@ from googlecloudsdk.command_lib.edge_cloud.networking import resource_args
 from googlecloudsdk.core import log
 
 DESCRIPTION = (
-    'Remove a list of interfaces on a Distributed Cloud Edge '
+    'Remove an interface on a Distributed Cloud Edge '
     'Network router.')
 EXAMPLES = """\
-    To remove a list of interfaces contains 'my-int-r1' on Distributed Cloud Edge Network router 'my-router' in edge zone 'us-central1-edge-den1' , run:
+    To remove the interface 'my-int-r1' on Distributed Cloud Edge Network router 'my-router' in edge zone 'us-central1-edge-den1' , run:
 
-        $ {command} my-router --interface-names=my-int-r1 --location=us-central1 --zone=us-central1-edge-den1
+        $ {command} my-router --interface-name=my-int-r1 --location=us-central1 --zone=us-central1-edge-den1
 
    """
 
 
 class RemoveInterface(base.UpdateCommand):
-  """remove a list of interfaces on a Distributed Cloud Edge Network router.
+  """remove an interface on a Distributed Cloud Edge Network router.
 
-  *{command}* is used to remove a list of interfaces to a Distributed Cloud Edge
+  *{command}* is used to remove an interface to a Distributed Cloud Edge
   Network router.
   """
   detailed_help = {'DESCRIPTION': DESCRIPTION, 'EXAMPLES': EXAMPLES}
@@ -46,13 +46,16 @@ class RemoveInterface(base.UpdateCommand):
   @staticmethod
   def Args(parser):
     resource_args.AddRouterResourceArg(
-        parser, 'from which we remove a list of interfaces', True)
-    parser.add_argument(
+        parser, 'from which we remove an interface', True)
+    interface_parser = parser.add_mutually_exclusive_group(required=True)
+    interface_parser.add_argument(
         '--interface-names',
         type=arg_parsers.ArgList(),
-        required=True,
         metavar='INTERFACE_NAME',
         help='The list of names for interfaces being removed.')
+    interface_parser.add_argument(
+        '--interface-name',
+        help='The name of the interface being removed.')
     base.ASYNC_FLAG.AddToParser(parser)
 
   def Run(self, args):

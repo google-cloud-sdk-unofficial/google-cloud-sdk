@@ -48,8 +48,7 @@ class Describe(base.DescribeCommand):
     api_version = util.GetApiFromTrack(cls.ReleaseTrack())
     resource_args.AddResponsePolicyRuleArg(
         parser, verb='to describe', api_version=api_version)
-    if cls._BetaOrAlpha():
-      flags.GetLocationArg().AddToParser(parser)
+    flags.GetLocationArg().AddToParser(parser)
     parser.display_info.AddFormat('json')
 
   def Run(self, args):
@@ -70,7 +69,7 @@ class Describe(base.DescribeCommand):
         responsePolicyRule=response_policy_rule_name,
         project=properties.VALUES.core.project.GetOrFail())
 
-    if api_version == 'v2' and self._BetaOrAlpha():
+    if api_version == 'v2':
       request.location = args.location
 
     return client.responsePolicyRules.Get(request)

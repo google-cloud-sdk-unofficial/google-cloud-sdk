@@ -36,7 +36,6 @@ class Create(base.CreateCommand):
   """
 
   BACKEND_BUCKET_ARG = None
-  _support_dynamic_compression = False
 
   @classmethod
   def Args(cls, parser):
@@ -51,8 +50,7 @@ class Create(base.CreateCommand):
     cdn_flags.AddCdnPolicyArgs(parser, 'backend bucket')
 
     backend_buckets_flags.AddCacheKeyExtendedCachingArgs(parser)
-    if cls._support_dynamic_compression:
-      backend_buckets_flags.AddCompressionMode(parser)
+    backend_buckets_flags.AddCompressionMode(parser)
 
   def CreateBackendBucket(self, args):
     """Creates and returns the backend bucket."""
@@ -78,7 +76,7 @@ class Create(base.CreateCommand):
         backend_bucket.cdnPolicy.cacheMode and args.enable_cdn is not False):  # pylint: disable=g-bool-id-comparison
       backend_bucket.enableCdn = True
 
-    if self._support_dynamic_compression and args.compression_mode is not None:
+    if args.compression_mode is not None:
       backend_bucket.compressionMode = (
           client.messages.BackendBucket.CompressionModeValueValuesEnum(
               args.compression_mode))
@@ -109,5 +107,3 @@ class CreateAlphaBeta(Create):
   define Google Cloud Storage buckets that can serve content. URL
   maps define which requests are sent to which backend buckets.
   """
-
-  _support_dynamic_compression = True

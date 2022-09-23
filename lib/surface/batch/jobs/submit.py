@@ -24,6 +24,7 @@ from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.batch import resource_args
 from googlecloudsdk.command_lib.util.apis import arg_utils
+from googlecloudsdk.core import exceptions
 from googlecloudsdk.core import log
 from googlecloudsdk.core.util import files
 
@@ -233,4 +234,7 @@ class Submit(base.Command):
 
   def _CreateJobMessage(self, batch_msgs, config):
     """Construct the job proto with the config input."""
-    return encoding.JsonToMessage(batch_msgs.Job, config)
+    try:
+      return encoding.JsonToMessage(batch_msgs.Job, config)
+    except Exception as e:
+      raise exceptions.Error('Unable to parse config file: {}'.format(e))

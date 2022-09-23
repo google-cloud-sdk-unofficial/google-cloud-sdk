@@ -26,7 +26,6 @@ from googlecloudsdk.command_lib.dns import flags
 from googlecloudsdk.command_lib.dns import util as command_util
 from googlecloudsdk.command_lib.util.args import labels_util
 from googlecloudsdk.core import log
-from googlecloudsdk.core import properties
 
 
 def _AddArgsCommon(parser, messages):
@@ -45,6 +44,8 @@ def _AddArgsCommon(parser, messages):
   flags.GetReverseLookupArg().AddToParser(parser)
   flags.GetServiceDirectoryArg().AddToParser(parser)
   flags.GetManagedZoneLoggingArg().AddToParser(parser)
+  flags.GetManagedZoneGkeClustersArg().AddToParser(parser)
+  flags.GetLocationArg().AddToParser(parser)
 
 
 def _MakeDnssecConfig(args, messages, api_version='v1'):
@@ -67,136 +68,9 @@ def _MakeDnssecConfig(args, messages, api_version='v1'):
   return dnssec_config
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
+                    base.ReleaseTrack.GA)
 class Create(base.CreateCommand):
-  """Create a Cloud DNS managed-zone.
-
-  This command creates a Cloud DNS managed-zone.
-
-  ## EXAMPLES
-
-  To create a managed-zone, run:
-
-    $ {command} my-zone --dns-name my.zone.com. --description "My zone!"
-  """
-
-  @staticmethod
-  def Args(parser):
-    messages = apis.GetMessagesModule('dns', 'v1')
-    _AddArgsCommon(parser, messages)
-    parser.display_info.AddCacheUpdater(flags.ManagedZoneCompleter)
-
-  def Run(self, args):
-    # We explicitly want to allow --networks='' as a valid option and we need
-    # to differentiate between that option and not passing --networks at all.
-    if args.visibility == 'public' and args.IsSpecified('networks'):
-      raise exceptions.InvalidArgumentException(
-          '--networks',
-          'If --visibility is set to public (default), setting networks is '
-          'not allowed.')
-    if args.visibility == 'private' and args.networks is None:
-      raise exceptions.RequiredArgumentException('--networks', ("""
-           If --visibility is set to private, a list of networks must be
-           provided.'
-         NOTE: You can provide an empty value ("") for private zones that
-          have NO network binding.
-          """))
-
-    dns = util.GetApiClient('v1')
-    messages = apis.GetMessagesModule('dns', 'v1')
-
-    registry = util.GetRegistry('v1')
-
-    zone_ref = registry.Parse(
-        args.dns_zone,
-        params={
-            'project': properties.VALUES.core.project.GetOrFail,
-        },
-        collection='dns.managedZones')
-
-    visibility = messages.ManagedZone.VisibilityValueValuesEnum(args.visibility)
-    visibility_config = None
-    if visibility == messages.ManagedZone.VisibilityValueValuesEnum.private:
-      # Handle explicitly empty networks case (--networks='')
-      networks = args.networks if args.networks != [''] else []
-
-      def GetNetworkSelfLink(network):
-        return registry.Parse(
-            network,
-            collection='compute.networks',
-            params={
-                'project': zone_ref.project
-            }).SelfLink()
-
-      network_urls = [GetNetworkSelfLink(n) for n in networks]
-      network_configs = [
-          messages.ManagedZonePrivateVisibilityConfigNetwork(networkUrl=nurl)
-          for nurl in network_urls
-      ]
-      visibility_config = messages.ManagedZonePrivateVisibilityConfig(
-          networks=network_configs)
-
-    if args.IsSpecified('forwarding_targets') or args.IsSpecified(
-        'private_forwarding_targets'):
-      forwarding_config = command_util.ParseManagedZoneForwardingConfigWithForwardingPath(
-          messages=messages,
-          server_list=args.forwarding_targets,
-          private_server_list=args.private_forwarding_targets)
-    else:
-      forwarding_config = None
-
-    dnssec_config = _MakeDnssecConfig(args, messages)
-
-    labels = labels_util.ParseCreateArgs(args, messages.ManagedZone.LabelsValue)
-
-    peering_config = None
-    if args.target_project and args.target_network:
-      peering_network = 'https://www.googleapis.com/compute/v1/projects/{}/global/networks/{}'.format(
-          args.target_project, args.target_network)
-      peering_config = messages.ManagedZonePeeringConfig()
-      peering_config.targetNetwork = messages.ManagedZonePeeringConfigTargetNetwork(
-          networkUrl=peering_network)
-
-    reverse_lookup_config = None
-    if args.IsSpecified(
-        'managed_reverse_lookup') and args.managed_reverse_lookup:
-      reverse_lookup_config = messages.ManagedZoneReverseLookupConfig()
-
-    service_directory_config = None
-    if args.IsSpecified(
-        'service_directory_namespace') and args.service_directory_namespace:
-      service_directory_config = messages.ManagedZoneServiceDirectoryConfig(
-          namespace=messages.ManagedZoneServiceDirectoryConfigNamespace(
-              namespaceUrl=args.service_directory_namespace))
-
-    cloud_logging_config = None
-    if args.IsSpecified('log_dns_queries'):
-      cloud_logging_config = messages.ManagedZoneCloudLoggingConfig()
-      cloud_logging_config.enableLogging = args.log_dns_queries
-
-    zone = messages.ManagedZone(
-        name=zone_ref.managedZone,
-        dnsName=util.AppendTrailingDot(args.dns_name),
-        description=args.description,
-        dnssecConfig=dnssec_config,
-        labels=labels,
-        visibility=visibility,
-        forwardingConfig=forwarding_config,
-        privateVisibilityConfig=visibility_config,
-        peeringConfig=peering_config,
-        reverseLookupConfig=reverse_lookup_config,
-        serviceDirectoryConfig=service_directory_config,
-        cloudLoggingConfig=cloud_logging_config)
-
-    result = dns.managedZones.Create(
-        messages.DnsManagedZonesCreateRequest(managedZone=zone,
-                                              project=zone_ref.project))
-    log.CreatedResource(zone_ref)
-    return [result]
-
-
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class CreateBeta(base.CreateCommand):
   r"""Create a Cloud DNS managed-zone.
 
   This command creates a Cloud DNS managed-zone.
@@ -205,29 +79,33 @@ class CreateBeta(base.CreateCommand):
 
   To create a managed-zone, run:
 
-    $ {command} my-zone --dns-name my.zone.com. --description "My zone!"
+    $ {command} my-zone --dns-name=my.zone.com. --description="My zone!"
 
   To create a managed-zone with DNSSEC, run:
 
-    $ {command} my-zone-2 --description "Signed Zone"
-        --dns-name myzone.example
+    $ {command} my-zone-2 --description="Signed Zone"
+        --dns-name=myzone.example
         --dnssec-state=on
 
     To create a zonal managed-zone scoped to a GKE Cluster in us-east1-a, run:
 
-    $ {command} my-zonal-zone --description "Signed Zone"
+    $ {command} my-zonal-zone --description="Signed Zone"
         --dns-name=cluster.local
-        --visibiilty=private
+        --visibility=private
         --gkeclusters=cluster1
         --location=us-east1-a
   """
 
-  @staticmethod
-  def Args(parser):
-    messages = apis.GetMessagesModule('dns', 'v1beta2')
+  @classmethod
+  def _BetaOrAlpha(cls):
+    return cls.ReleaseTrack() in (base.ReleaseTrack.BETA,
+                                  base.ReleaseTrack.ALPHA)
+
+  @classmethod
+  def Args(cls, parser):
+    api_version = util.GetApiFromTrack(cls.ReleaseTrack())
+    messages = apis.GetMessagesModule('dns', api_version)
     _AddArgsCommon(parser, messages)
-    flags.GetManagedZoneGkeClustersArg().AddToParser(parser)
-    flags.GetLocationArg().AddToParser(parser)
     parser.display_info.AddCacheUpdater(flags.ManagedZoneCompleter)
 
   def Run(self, args):
@@ -239,6 +117,13 @@ class CreateBeta(base.CreateCommand):
             '--networks',
             'If --visibility is set to public (default), setting networks is '
             'not allowed.')
+      # We explicitly want to allow --gkeclusters='' as an optional flag.
+      elif args.IsSpecified('gkeclusters'):
+        raise exceptions.InvalidArgumentException(
+            '--gkeclusters',
+            'If --visibility is set to public (default), setting gkeclusters is '
+            'not allowed.')
+
     if args.visibility == 'private' and args.networks is None and args.gkeclusters is None:
       raise exceptions.RequiredArgumentException(
           '--networks, --gkeclusters',
@@ -247,13 +132,6 @@ class CreateBeta(base.CreateCommand):
          NOTE: You can provide an empty value ("") for private zones that
           have NO network or GKE clusters binding.
           """))
-
-    # We explicitly want to allow --gkeclusters='' as an optional flag.
-    if args.visibility == 'public' and args.IsSpecified('gkeclusters'):
-      raise exceptions.InvalidArgumentException(
-          '--gkeclusters',
-          'If --visibility is set to public (default), setting gkeclusters is '
-          'not allowed.')
 
     api_version = util.GetApiFromTrackAndArgs(self.ReleaseTrack(), args)
     dns = util.GetApiClient(api_version)
@@ -305,10 +183,17 @@ class CreateBeta(base.CreateCommand):
           networks=network_configs, gkeClusters=gkecluster_configs)
 
     if args.forwarding_targets or args.private_forwarding_targets:
-      forwarding_config = command_util.BetaParseManagedZoneForwardingConfigWithForwardingPath(
-          messages=messages,
-          server_list=args.forwarding_targets,
-          private_server_list=args.private_forwarding_targets)
+      if self._BetaOrAlpha():
+        # Special handling for the beta Forwarding config.
+        forwarding_config = command_util.BetaParseManagedZoneForwardingConfigWithForwardingPath(
+            messages=messages,
+            server_list=args.forwarding_targets,
+            private_server_list=args.private_forwarding_targets)
+      else:
+        forwarding_config = command_util.ParseManagedZoneForwardingConfigWithForwardingPath(
+            messages=messages,
+            server_list=args.forwarding_targets,
+            private_server_list=args.private_forwarding_targets)
     else:
       forwarding_config = None
 
@@ -364,39 +249,3 @@ class CreateBeta(base.CreateCommand):
     result = dns.managedZones.Create(request)
     log.CreatedResource(zone_ref)
     return [result]
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class CreateAlpha(CreateBeta):
-  r"""Create a Cloud DNS managed-zone.
-
-  This command creates a Cloud DNS managed-zone.
-
-  ## EXAMPLES
-
-  To create a managed-zone, run:
-
-    $ {command} my-zone --dns-name=my.zone.com. --description="My zone!"
-
-  To create a managed-zone with DNSSEC, run:
-
-    $ {command} my-zone-2 --description="Signed Zone" \
-        --dns-name=myzone.example \
-        --dnssec-state=on
-
-  To create a zonal managed-zone scoped to a GKE Cluster in us-east1-a, run:
-
-    $ {command} my-zonal-zone --description="Signed Zone" \
-        --dns-name=cluster.local
-        --visibiilty=private
-        --gkeclusters=cluster1
-        --location=us-east1-a
-  """
-
-  @staticmethod
-  def Args(parser):
-    messages = apis.GetMessagesModule('dns', 'v1alpha2')
-    _AddArgsCommon(parser, messages)
-    flags.GetManagedZoneGkeClustersArg().AddToParser(parser)
-    flags.GetLocationArg().AddToParser(parser)
-    parser.display_info.AddCacheUpdater(flags.ManagedZoneCompleter)

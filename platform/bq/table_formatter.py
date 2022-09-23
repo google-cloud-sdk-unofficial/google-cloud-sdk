@@ -90,13 +90,10 @@ from __future__ import division
 from __future__ import print_function
 
 import csv
+import io
 import itertools
 import json
 import sys
-
-import six
-from six.moves import map
-from six.moves import zip
 
 import wcwidth
 
@@ -364,7 +361,7 @@ class PrettyFormatter(TableFormatter):
 
     # pylint: disable=g-long-lambda
     curried_format = lambda entry, width, align: self.__class__.FormatCell(
-        six.text_type(entry), width, cell_height=row_height, align=align)
+        str(entry), width, cell_height=row_height, align=align)
     printed_rows = zip(
         *map(curried_format, entries, column_widths, column_alignments))
     return (self.vertical_char.join(itertools.chain([''], cells, ['']))
@@ -402,7 +399,7 @@ class PrettyFormatter(TableFormatter):
     """
     if len(row) != len(self.column_names):
       raise FormatterException('Invalid row length: %s' % (len(row),))
-    split_rows = [six.text_type(entry).split('\n') for entry in row]
+    split_rows = [str(entry).split('\n') for entry in row]
     self.row_heights.append(max(len(lines) for lines in split_rows))
     column_widths = (
         max(wcwidth.wcswidth(line) for line in entry) for entry in split_rows)
@@ -428,7 +425,7 @@ class PrettyFormatter(TableFormatter):
           'Cannot add a new column to an initialized table')
     if align not in ('l', 'c', 'r'):
       raise FormatterException('Invalid column alignment: %s' % (align,))
-    lines = six.text_type(column_name).split('\n')
+    lines = str(column_name).split('\n')
     self.column_widths.append(max(wcwidth.wcswidth(line) for line in lines))
     self.column_alignments.append(align)
     self.column_names.append(column_name)
@@ -471,7 +468,7 @@ class CsvFormatter(TableFormatter):
 
   def __init__(self, **kwds):
     super(CsvFormatter, self).__init__(**kwds)
-    self._buffer = six.StringIO()
+    self._buffer = io.StringIO()
     self._header = []
     self._table = csv.writer(
         self._buffer, quoting=csv.QUOTE_MINIMAL, lineterminator='\n')
@@ -483,7 +480,7 @@ class CsvFormatter(TableFormatter):
     return bool(self._buffer.getvalue())
 
   def __len__(self):
-    return len(six.text_type(self).splitlines())
+    return len(str(self).splitlines())
 
   def __unicode__(self):
     if self or not self.skip_header_when_empty:

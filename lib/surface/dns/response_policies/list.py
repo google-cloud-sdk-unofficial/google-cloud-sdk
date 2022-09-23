@@ -45,8 +45,7 @@ class List(base.ListCommand):
 
   @classmethod
   def Args(cls, parser):
-    if cls._BetaOrAlpha():
-      flags.GetLocationArg().AddToParser(parser)
+    flags.GetLocationArg().AddToParser(parser)
     parser.display_info.AddFormat('json')
 
   def Run(self, args):
@@ -57,7 +56,7 @@ class List(base.ListCommand):
     request = messages.DnsResponsePoliciesListRequest(
         project=properties.VALUES.core.project.GetOrFail())
 
-    if api_version == 'v2' and self._BetaOrAlpha():
+    if api_version == 'v2':
       request.location = args.location
 
     return list_pager.YieldFromList(

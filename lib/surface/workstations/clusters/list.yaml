@@ -15,7 +15,7 @@
         The region of the clusters to display.
 
   request:
-    api_version: v1alpha1
+    api_version: v1beta
     collection: workstations.projects.locations.workstationClusters
 
   output:

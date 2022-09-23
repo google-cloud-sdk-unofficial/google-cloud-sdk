@@ -117,5 +117,5 @@ class Create(base.Command):
       raise error
     integrations = client.ListIntegrations(integration_type, None)
     for integration in integrations:
-      if integration['name'] == service:
+      if integration.integration_name == service:
         raise error

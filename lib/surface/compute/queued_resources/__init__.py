@@ -21,7 +21,7 @@ from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class QueuedResources(base.Group):
-  """List, create, delete, and manage queued resources."""
+  """Manage queued resources."""
+  category = base.COMPUTE_CATEGORY

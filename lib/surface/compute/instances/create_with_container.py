@@ -97,7 +97,7 @@ class CreateWithContainer(base.CreateCommand):
   _support_nvdimm = False
   _support_host_error_timeout_seconds = False
   _support_numa_node_count = False
-  _support_visible_core_count = False
+  _support_visible_core_count = True
   _support_confidential_compute_type = False
 
   @staticmethod
@@ -108,6 +108,7 @@ class CreateWithContainer(base.CreateCommand):
     instances_flags.AddMinCpuPlatformArgs(parser, base.ReleaseTrack.GA)
     instances_flags.AddPrivateIpv6GoogleAccessArg(parser,
                                                   utils.COMPUTE_GA_API_VERSION)
+    instances_flags.AddVisibleCoreCountArgs(parser)
 
   def _ValidateArgs(self, args):
     self._ValidateTrackSpecificArgs(args)

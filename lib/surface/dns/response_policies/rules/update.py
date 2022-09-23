@@ -33,6 +33,7 @@ def _AddArgsCommon(parser):
   flags.GetLocalDataResourceRecordSets().AddToParser(parser)
   # TODO(b/215745011) use AddResponsePolicyRulesBehaviorFlag once switch to v2
   flags.GetResponsePolicyRulesBehavior().AddToParser(parser)
+  flags.GetLocationArg().AddToParser(parser)
 
   parser.add_argument(
       '--dns-name',
@@ -89,8 +90,6 @@ class Update(base.UpdateCommand):
     _AddArgsCommon(parser)
     resource_args.AddResponsePolicyRuleArg(
         parser, verb='to update', api_version='v1')
-    if cls._BetaOrAlpha():
-      flags.GetLocationArg().AddToParser(parser)
     parser.display_info.AddFormat('json')
 
   def Run(self, args):
@@ -144,7 +143,7 @@ class Update(base.UpdateCommand):
         responsePolicyRuleResource=to_update,
         project=properties.VALUES.core.project.Get())
 
-    if api_version == 'v2' and self._BetaOrAlpha():
+    if api_version == 'v2':
       update_req.location = args.location
 
     updated_response_policy_rule = client.responsePolicyRules.Update(update_req)

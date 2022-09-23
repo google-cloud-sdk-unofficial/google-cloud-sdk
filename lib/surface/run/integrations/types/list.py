@@ -59,4 +59,8 @@ class List(base.ListCommand):
     conn_context = connection_context.GetConnectionContext(
         args, run_flags.Product.RUN_APPS, self.ReleaseTrack())
     with run_apps_operations.Connect(conn_context) as client:
-      return list(client.ListIntegrationTypes())
+      # Output is sorted by the integration name to guarantee the same ordering
+      # for scenario tests.
+      result = sorted(client.ListIntegrationTypes(),
+                      key=lambda t: t['integration_type'])
+      return list(result)

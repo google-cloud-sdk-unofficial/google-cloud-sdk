@@ -132,6 +132,10 @@ class Create(base.CreateCommand):
         holder.resources,
         scope_lister=compute_flags.GetDefaultScopeLister(client))
 
+    zone = args.zone
+    if not zone and queued_resource_ref.zone:
+      zone = queued_resource_ref.zone
+
     supported_features = bulk_util.SupportedFeatures(
         self._support_nvdimm, self._support_public_dns, self._support_erase_vss,
         self._support_min_node_cpu, self._support_source_snapshot_csek,
@@ -146,7 +150,7 @@ class Create(base.CreateCommand):
         self._support_confidential_compute_type)
     bulk_insert_instance_resource = bulk_util.CreateBulkInsertInstanceResource(
         args, holder, client, holder.resources, queued_resource_ref.project,
-        args.zone, compute_scopes.ScopeEnum.ZONE, self.SOURCE_INSTANCE_TEMPLATE,
+        zone, compute_scopes.ScopeEnum.ZONE, self.SOURCE_INSTANCE_TEMPLATE,
         supported_features)
 
     # minCount is not supported in QueuedResource

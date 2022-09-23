@@ -235,7 +235,7 @@ class Create(base.CreateCommand):
   _support_secure_tag = False
   _support_host_error_timeout_seconds = False
   _support_numa_node_count = False
-  _support_visible_core_count = False
+  _support_visible_core_count = True
   _support_network_queue_count = False
   _support_instance_kms = False
   _support_max_run_duration = False
@@ -265,6 +265,7 @@ class Create(base.CreateCommand):
                                                   utils.COMPUTE_GA_API_VERSION)
     instances_flags.AddConfidentialComputeArgs(parser)
     instances_flags.AddKeyRevocationActionTypeArgs(parser)
+    instances_flags.AddVisibleCoreCountArgs(parser)
 
   def Collection(self):
     return 'compute.instances'

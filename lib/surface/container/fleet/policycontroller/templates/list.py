@@ -18,16 +18,14 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
-from apitools.base.py import list_pager
-from googlecloudsdk.api_lib.util import apis as core_apis
+from googlecloudsdk.api_lib.container.fleet.policycontroller import status_api_utils
 from googlecloudsdk.calliope import base as calliope_base
 from googlecloudsdk.core import properties
 from surface.container.fleet.policycontroller import templates as poco_templates
 
 
 @calliope_base.Hidden
-@calliope_base.ReleaseTracks(calliope_base.ReleaseTrack.ALPHA,
-                             calliope_base.ReleaseTrack.BETA)
+@calliope_base.ReleaseTracks(calliope_base.ReleaseTrack.ALPHA)
 class List(calliope_base.ListCommand):
   """List Policy Controller constraint templates.
 
@@ -53,10 +51,10 @@ class List(calliope_base.ListCommand):
 
     project_id = properties.VALUES.core.project.Get(required=True)
 
-    client = core_apis.GetClientInstance('anthospolicycontrollerstatus_pa',
-                                         'v1alpha')
-    messages = core_apis.GetMessagesModule('anthospolicycontrollerstatus_pa',
-                                           'v1alpha')
+    client = status_api_utils.GetClientInstance(
+        self.ReleaseTrack())
+    messages = status_api_utils.GetMessagesModule(
+        self.ReleaseTrack())
 
     formatted_templates = {}
 
@@ -65,17 +63,11 @@ class List(calliope_base.ListCommand):
                                                       client)
 
     # Return fleet templates if verbose flag is not given.
-    fleet_templates = list_pager.YieldFromList(
-        service=client.projects_fleetConstraintTemplates,
-        request=messages.
-        AnthospolicycontrollerstatusPaProjectsFleetConstraintTemplatesListRequest(
-            parent='projects/' + project_id),
-        field='fleetConstraintTemplates',
-        batch_size_attribute='pageSize',
-        batch_size=args.page_size
-    )
+    request = messages.AnthospolicycontrollerstatusPaProjectsFleetConstraintTemplatesListRequest(
+        parent='projects/' + project_id)
+    response = client.projects_fleetConstraintTemplates.List(request)
 
-    for template in fleet_templates:
+    for template in response.fleetConstraintTemplates:
       formatted_template = {
           'name': template.ref.name,
           'constraints': template.numConstraints or 0,

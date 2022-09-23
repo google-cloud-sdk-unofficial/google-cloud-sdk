@@ -73,8 +73,7 @@ class UpdateHelper(object):
            support_tcp_ssl_logging, support_net_lb_ilb_logging,
            support_client_only, support_subsetting,
            support_subsetting_subset_size, support_unspecified_protocol,
-           support_advanced_load_balancing, support_dynamic_compression,
-           support_weighted_lb):
+           support_advanced_load_balancing, support_weighted_lb):
     """Add all arguments for updating a backend service."""
 
     flags.GLOBAL_REGIONAL_BACKEND_SERVICE_ARG.AddArgument(
@@ -152,8 +151,7 @@ class UpdateHelper(object):
 
     flags.AddConnectionTrackingPolicy(parser)
 
-    if support_dynamic_compression:
-      flags.AddCompressionMode(parser)
+    flags.AddCompressionMode(parser)
 
     if support_advanced_load_balancing:
       flags.AddServiceLoadBalancingPolicy(
@@ -172,7 +170,6 @@ class UpdateHelper(object):
                support_subsetting,
                support_subsetting_subset_size,
                support_advanced_load_balancing=False,
-               support_dynamic_compression=False,
                support_weighted_lb=False):
     self._support_failover = support_failover
     self._support_logging = support_logging
@@ -181,7 +178,6 @@ class UpdateHelper(object):
     self._support_subsetting = support_subsetting
     self._support_subsetting_subset_size = support_subsetting_subset_size
     self._support_advanced_load_balancing = support_advanced_load_balancing
-    self._support_dynamic_compression = support_dynamic_compression
     self._support_weighted_lb = support_weighted_lb
 
   def Modify(self, client, resources, args, existing, backend_service_ref):
@@ -271,7 +267,7 @@ class UpdateHelper(object):
     backend_services_utils.ApplyConnectionTrackingPolicyArgs(
         client, args, replacement)
 
-    if self._support_dynamic_compression and args.compression_mode is not None:
+    if args.compression_mode is not None:
       replacement.compressionMode = (
           client.messages.BackendService.CompressionModeValueValuesEnum(
               args.compression_mode))
@@ -378,8 +374,7 @@ class UpdateHelper(object):
         args.IsSpecified('tracking_mode'),
         args.IsSpecified('idle_timeout_sec'),
         args.IsSpecified('enable_strong_affinity'),
-        args.IsSpecified('compression_mode')
-        if self._support_dynamic_compression else False,
+        args.IsSpecified('compression_mode'),
         args.IsSpecified('service_lb_policy')
         if self._support_advanced_load_balancing else False,
         args.IsSpecified('no_service_lb_policy')
@@ -555,7 +550,6 @@ class UpdateGA(base.UpdateCommand):
   _support_subsetting = True
   _support_subsetting_subset_size = False
   _support_advanced_load_balancing = False
-  _support_dynamic_compression = False
   _support_weighted_lb = False
 
   @classmethod
@@ -571,7 +565,6 @@ class UpdateGA(base.UpdateCommand):
         support_subsetting_subset_size=cls._support_subsetting_subset_size,
         support_unspecified_protocol=cls._support_unspecified_protocol,
         support_advanced_load_balancing=cls._support_advanced_load_balancing,
-        support_dynamic_compression=cls._support_dynamic_compression,
         support_weighted_lb=cls._support_weighted_lb)
 
   def Run(self, args):
@@ -583,7 +576,6 @@ class UpdateGA(base.UpdateCommand):
                         self._support_subsetting,
                         self._support_subsetting_subset_size,
                         self._support_advanced_load_balancing,
-                        self._support_dynamic_compression,
                         self._support_weighted_lb).Run(args, holder)
 
 
@@ -599,7 +591,6 @@ class UpdateBeta(UpdateGA):
   _support_subsetting = True
   _support_subsetting_subset_size = True
   _support_advanced_load_balancing = False
-  _support_dynamic_compression = True
   _support_weighted_lb = True
   _support_tcp_ssl_logging = True
   _support_net_lb_ilb_logging = True
@@ -617,7 +608,6 @@ class UpdateAlpha(UpdateBeta):
   _support_subsetting = True
   _support_subsetting_subset_size = True
   _support_advanced_load_balancing = True
-  _support_dynamic_compression = True
   _support_weighted_lb = True
   _support_tcp_ssl_logging = True
   _support_net_lb_ilb_logging = True

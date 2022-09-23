@@ -21,11 +21,11 @@ from __future__ import unicode_literals
 import os
 import textwrap
 
-from apitools.base.py.exceptions import HttpNotFoundError
+from apitools.base.py import exceptions as apitools_exceptions
 from googlecloudsdk.api_lib.spanner import databases
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
-from googlecloudsdk.calliope.exceptions import BadArgumentException
+from googlecloudsdk.calliope import exceptions as calliope_exceptions
 from googlecloudsdk.command_lib.spanner import samples
 from googlecloudsdk.core import execution_utils
 from googlecloudsdk.core import properties
@@ -162,7 +162,7 @@ class Backend(base.Command):
     try:
       samples.check_appname(appname)
     except ValueError as ex:
-      raise BadArgumentException('APPNAME', ex)
+      raise calliope_exceptions.BadArgumentException('APPNAME', ex)
 
     project = properties.VALUES.core.project.GetOrFail()
 
@@ -170,7 +170,7 @@ class Backend(base.Command):
     try:
       samples_init.check_instance(instance_id)
     except ValueError as ex:
-      raise BadArgumentException('--instance-id', ex)
+      raise calliope_exceptions.BadArgumentException('--instance-id', ex)
 
     if args.database_id is not None:
       database_id = args.database_id
@@ -185,9 +185,9 @@ class Backend(base.Command):
         collection='spanner.projects.instances.databases')
     try:
       databases.Get(database_ref)
-    except HttpNotFoundError as ex:
+    except apitools_exceptions.HttpNotFoundError as ex:
       if args.database_id is not None:
-        raise BadArgumentException('--database-id', ex)
+        raise calliope_exceptions.BadArgumentException('--database-id', ex)
       else:
         raise samples.SpannerSamplesError(
             "Database {} doesn't exist. Did you run `gcloud spanner samples "

@@ -48,8 +48,7 @@ class Delete(base.DeleteCommand):
     api_version = util.GetApiFromTrack(cls.ReleaseTrack())
     resource_args.AddResponsePolicyRuleArg(
         parser, verb='to delete', api_version=api_version)
-    if cls._BetaOrAlpha():
-      flags.GetLocationArg().AddToParser(parser)
+    flags.GetLocationArg().AddToParser(parser)
     parser.display_info.AddFormat('json')
 
   def Run(self, args):
@@ -70,7 +69,7 @@ class Delete(base.DeleteCommand):
         project=response_policy_rule_ref.project,
         responsePolicyRule=response_policy_rule_name)
 
-    if api_version == 'v2' and self._BetaOrAlpha():
+    if api_version == 'v2':
       delete_request.location = args.location
 
     result = client.responsePolicyRules.Delete(delete_request)

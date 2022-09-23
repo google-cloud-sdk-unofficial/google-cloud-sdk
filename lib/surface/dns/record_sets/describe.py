@@ -50,8 +50,7 @@ class Describe(base.DescribeCommand):
     flags.GetZoneArg().AddToParser(parser)
     flags.GetResourceRecordSetsNameArg().AddToParser(parser)
     flags.GetResourceRecordSetsTypeArg(True).AddToParser(parser)
-    if cls._BetaOrAlpha():
-      flags.GetLocationArg().AddToParser(parser)
+    flags.GetLocationArg().AddToParser(parser)
     parser.display_info.AddCacheUpdater(None)
     parser.display_info.AddTransforms(flags.RESOURCERECORDSETS_TRANSFORMS)
     parser.display_info.AddFormat(flags.RESOURCERECORDSETS_FORMAT)
@@ -74,7 +73,7 @@ class Describe(base.DescribeCommand):
         name=util.AppendTrailingDot(args.name),
         type=args.type)
 
-    if api_version == 'v2' and self._BetaOrAlpha():
+    if api_version == 'v2':
       request.location = args.location
 
     return dns_client.resourceRecordSets.Get(request)

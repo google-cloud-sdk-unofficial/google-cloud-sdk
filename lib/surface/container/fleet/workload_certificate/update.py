@@ -87,8 +87,7 @@ class Update(base.UpdateCommand):
 
     memberships = []
     if resources.UseRegionalMemberships(self.ReleaseTrack()):
-      memberships = base.ParseMemberships(
-          args, memberships_flag=True, all_memberships_flag=True, prompt=True)
+      memberships = base.ParseMembershipsPlural(args, prompt=True)
     else:
       all_memberships = base.ListMemberships()
       if not all_memberships:

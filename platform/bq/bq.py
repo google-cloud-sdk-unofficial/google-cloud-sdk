@@ -96,6 +96,8 @@ ReservationReference = bigquery_client.ApiClientHelper.ReservationReference
 AutoscaleAlphaReservationReference = bigquery_client.ApiClientHelper.AutoscaleAlphaReservationReference
 AutoscalePreviewReservationReference = bigquery_client.ApiClientHelper.AutoscalePreviewReservationReference
 BetaReservationReference = bigquery_client.ApiClientHelper.BetaReservationReference
+EditionPreviewReservationReference = bigquery_client.ApiClientHelper.EditionPreviewReservationReference
+EditionPreviewCapacityCommitmentReference = bigquery_client.ApiClientHelper.EditionPreviewCapacityCommitmentReference
 CapacityCommitmentReference = bigquery_client.ApiClientHelper.CapacityCommitmentReference  # pylint: disable=line-too-long
 ReservationAssignmentReference = bigquery_client.ApiClientHelper.ReservationAssignmentReference  # pylint: disable=line-too-long
 BetaReservationAssignmentReference = bigquery_client.ApiClientHelper.BetaReservationAssignmentReference  # pylint: disable=line-too-long
@@ -1130,10 +1132,11 @@ class _Load(BigqueryCmd):
     """Perform a load operation of source into destination_table.
 
     Usage:
-      load <destination_table> <source> [<schema>]
+      load <destination_table> <source> [<schema>] [--session_id=[session]]
 
     The <destination_table> is the fully-qualified table name of table to
     create, or append to if the table already exists.
+
 
     The <source> argument can be a path to a single local file, or a
     comma-separated list of URIs.
@@ -1167,7 +1170,9 @@ class _Load(BigqueryCmd):
       schema: Either a text schema or JSON file, as above.
     """
     client = Client.Get()
-    table_reference = client.GetTableReference(destination_table)
+    default_dataset_id = ''
+    table_reference = client.GetTableReference(destination_table,
+                                               default_dataset_id)
     opts = {
         'encoding': self.encoding,
         'skip_leading_rows': self.skip_leading_rows,
@@ -1282,6 +1287,7 @@ def _CreateExternalTableDefinition(
     parquet_enum_as_string=False,
     parquet_enable_list_inference=False,
     metadata_cache_mode=None,
+    object_metadata=None,
     preserve_ascii_control_characters=False,
     reference_file_schema_uri=None,
     ):
@@ -1319,6 +1325,7 @@ def _CreateExternalTableDefinition(
     metadata_cache_mode: Enables metadata cache for an external table with a
       connection. Specify 'AUTOMATIC' to automatically refresh the cached
       metadata. Specify 'MANUAL' to stop the automatic refresh.
+    object_metadata: Object Metadata Type
 
   Returns:
     A python dictionary that contains a external table definition for the given
@@ -1342,6 +1349,17 @@ def _CreateExternalTableDefinition(
 
     if metadata_cache_mode is not None:
       external_table_def['metadataCacheMode'] = metadata_cache_mode
+    if object_metadata is not None:
+      supported_obj_metadata_types = [
+          'DIRECTORY',
+      ]
+
+      if object_metadata not in supported_obj_metadata_types:
+        raise app.UsageError('%s is not a supported Object Metadata Type.' %
+                             object_metadata)
+
+      external_table_def['sourceFormat'] = None
+      external_table_def['objectMetadata'] = object_metadata
 
     if external_table_def['sourceFormat'] == 'CSV':
       if autodetect:
@@ -1514,6 +1532,15 @@ class _MakeExternalTableDefinition(BigqueryCmd):
         'Specify AUTOMATIC to automatically refresh the cached metadata. '
         'Specify MANUAL to stop the automatic refresh.',
         flag_values=fv)
+    flags.DEFINE_enum(
+        'object_metadata',
+        None,
+        [
+            'DIRECTORY',
+        ],
+        'Object Metadata Type. Options include:'
+        '\n DIRECTORY',
+        flag_values=fv)
     flags.DEFINE_boolean(
         'preserve_ascii_control_characters',
         False,
@@ -1581,6 +1608,7 @@ class _MakeExternalTableDefinition(BigqueryCmd):
             parquet_enum_as_string=self.parquet_enum_as_string,
             parquet_enable_list_inference=self.parquet_enable_list_inference,
             metadata_cache_mode=self.metadata_cache_mode,
+            object_metadata=self.object_metadata,
             preserve_ascii_control_characters=self.preserve_ascii_control_characters,
             reference_file_schema_uri=self.reference_file_schema_uri,
             ),
@@ -2214,6 +2242,7 @@ def _GetExternalDataConfig(file_path_or_simple_spec,
                            parquet_enum_as_string=False,
                            parquet_enable_list_inference=False,
                            metadata_cache_mode=None,
+                           object_metadata=None,
                            preserve_ascii_control_characters=None,
                            reference_file_schema_uri=None,
                            ):
@@ -2298,6 +2327,7 @@ def _GetExternalDataConfig(file_path_or_simple_spec,
         parquet_enum_as_string=parquet_enum_as_string,
         parquet_enable_list_inference=parquet_enable_list_inference,
         metadata_cache_mode=metadata_cache_mode,
+        object_metadata=object_metadata,
         preserve_ascii_control_characters=preserve_ascii_control_characters,
         reference_file_schema_uri=reference_file_schema_uri,
     )
@@ -2678,8 +2708,8 @@ class _List(BigqueryCmd):  # pylint: disable=missing-docstring
         flag_values=fv)
     flags.DEFINE_string(
         'filter',
-        None, 'Show datasets that match the filter expression. '
-        'Use a space-separated list of label keys and values '
+        None, 'Filters resources based on the filter expression.'
+        '\nFor datasets, use a space-separated list of label keys and values '
         'in the form "labels.key:value". Datasets must match '
         'all provided filter expressions. See '
         'https://cloud.google.com/bigquery/docs/filtering-labels'
@@ -2694,7 +2724,8 @@ class _List(BigqueryCmd):  # pylint: disable=missing-docstring
         'transfer runs with the specified states. See '
         'https://cloud.google.com/bigquery/docs/reference/datatransfer/rest/v1/'
         'TransferState '
-        'for details',
+        'for details.'
+        '\nFor jobs, filtering is currently not supported.',
         flag_values=fv)
     flags.DEFINE_boolean(
         'reservation',
@@ -2878,6 +2909,8 @@ class _List(BigqueryCmd):  # pylint: disable=missing-docstring
     elif self.capacity_commitment:
       try:
         object_type = CapacityCommitmentReference
+        if FLAGS.api_version == 'edition_preview':
+          object_type = EditionPreviewCapacityCommitmentReference
         reference = client.GetCapacityCommitmentReference(
             identifier=identifier,
             default_location=FLAGS.location,
@@ -2902,6 +2935,8 @@ class _List(BigqueryCmd):  # pylint: disable=missing-docstring
         object_type = AutoscalePreviewReservationReference
       elif FLAGS.api_version == 'v1beta1':
         object_type = BetaReservationReference
+      elif FLAGS.api_version == 'edition_preview':
+        object_type = EditionPreviewReservationReference
       else:
         object_type = ReservationReference
       reference = client.GetReservationReference(
@@ -3829,12 +3864,16 @@ class _Make(BigqueryCmd):
             'FLEX',
             'MONTHLY',
             'ANNUAL',
+            'NONE',
         ],
         'The plan this capacity commitment is converted to after committed '
         'period ends. Options include:'
+        '\n NONE'
         '\n FLEX'
         '\n MONTHLY'
-        '\n ANNUAL',
+        '\n ANNUAL'
+        '\n NONE can only be used in conjunction with --edition, '
+        '\n while FLEX and MONTHLY cannot be used together with --edition.',
         flag_values=fv)
     flags.DEFINE_integer(
         'slots',
@@ -3951,6 +3990,17 @@ class _Make(BigqueryCmd):
         'Project/folder/organization ID, to which the reservation is assigned. '
         'Used in conjunction with --reservation_assignment.',
         flag_values=fv)
+    flags.DEFINE_enum(
+        'edition',
+        None, ['BASIC', 'ENTERPRISE', 'MISSION_CRITICAL'],
+        'Type of editions for the reservation or capacity commitment. '
+        'Options include:'
+        '\n BASIC'
+        '\n ENTERPRISE'
+        '\n MISSION_CRITICAL'
+        '\n Used in conjunction with --reservation or --capacity_commitment.'
+        '\n BASIC cannot be used together with --capacity_commitment.',
+        flag_values=fv)
     flags.DEFINE_boolean(
         'connection', None, 'Create a connection.', flag_values=fv)
     flags.DEFINE_enum(
@@ -4035,6 +4085,14 @@ class _Make(BigqueryCmd):
         'Specify AUTOMATIC to automatically refresh the cached metadata. '
         'Specify MANUAL to stop the automatic refresh.',
         flag_values=fv)
+    flags.DEFINE_enum(
+        'object_metadata',
+        None,
+        ['DIRECTORY'],
+        'Object Metadata Type used to create Object Tables. DIRECTORY is the '
+        'only supported value to create an Object Table containing a directory '
+        'listing of objects found at the uri in external_data_definition.',
+        flag_values=fv)
     flags.DEFINE_boolean(
         'preserve_ascii_control_characters',
         False,
@@ -4113,6 +4171,7 @@ class _Make(BigqueryCmd):
             reference=reference,
             slots=self.slots,
             ignore_idle_slots=ignore_idle_arg,
+            edition=self.edition,
             concurrency=self.concurrency
             if self.concurrency is not None else self.max_concurrency,
             enable_queuing_and_priorities=self.enable_queuing_and_priorities,
@@ -4132,6 +4191,7 @@ class _Make(BigqueryCmd):
       try:
         object_info = client.CreateCapacityCommitment(
             reference,
+            self.edition,
             self.slots,
             self.plan,
             self.renewal_plan,
@@ -4368,6 +4428,7 @@ class _Make(BigqueryCmd):
             self.parquet_enum_as_string,
             self.parquet_enable_list_inference,
             self.metadata_cache_mode,
+            self.object_metadata,
             self.preserve_ascii_control_characters,
             self.reference_file_schema_uri,
             )
@@ -4984,6 +5045,14 @@ class _Update(BigqueryCmd):
         'Specify AUTOMATIC to automatically refresh the cached metadata. '
         'Specify MANUAL to stop the automatic refresh.',
         flag_values=fv)
+    flags.DEFINE_enum(
+        'object_metadata',
+        None,
+        ['DIRECTORY'],
+        'Object Metadata Type used to create Object Tables. DIRECTORY is the '
+        'only supported value to create an Object Table containing a directory '
+        'listing of objects found at the uri in external_data_definition.',
+        flag_values=fv)
     flags.DEFINE_multi_string(
         'view_udf_resource',
         None, 'The URI or local filesystem path of a code file to load and '
@@ -5355,6 +5424,7 @@ class _Update(BigqueryCmd):
         external_data_config = _GetExternalDataConfig(
             self.external_table_definition,
             metadata_cache_mode=self.metadata_cache_mode,
+            object_metadata=self.object_metadata,
             )
         # When updating, move the schema out of the external_data_config.
         # If schema is set explicitly on this update, prefer it over the
@@ -7195,8 +7265,13 @@ def _SplitParam(param_string):
 
 
 def _ParseParameter(param_string):
+  """Parse a string of the form <name><type>:<value> into each part."""
   name, param_string = _SplitParam(param_string)
-  type_dict, value_dict = _ParseParameterTypeAndValue(param_string)
+  try:
+    type_dict, value_dict = _ParseParameterTypeAndValue(param_string)
+  except app.UsageError as e:
+    print('Error parsing parameter %s: %s' % (name, e))
+    sys.exit(1)
   result = {'parameterType': type_dict, 'parameterValue': value_dict}
   if name:
     result['name'] = name
@@ -7302,7 +7377,13 @@ def _ParseParameterValue(type_dict, value_input):
     if isinstance(value_input, str):
       if value_input == 'NULL':
         return {'arrayValues': None}
-      value_input = json.loads(value_input)
+      try:
+        value_input = json.loads(value_input)
+      except json.decoder.JSONDecodeError:
+        tb = sys.exc_info()[2]
+        # pylint: disable=raise-missing-from
+        raise app.UsageError(('Error parsing string as JSON: %s') %
+                             value_input).with_traceback(tb)
     values = [
         _ParseParameterValue(type_dict['arrayType'], x) for x in value_input
     ]

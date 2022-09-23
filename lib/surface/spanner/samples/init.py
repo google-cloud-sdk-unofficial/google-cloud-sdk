@@ -22,16 +22,14 @@ import json
 import os
 import textwrap
 
-from apitools.base.py.exceptions import HttpConflictError
-from apitools.base.py.exceptions import HttpError
-from apitools.base.py.exceptions import HttpNotFoundError
+from apitools.base.py import exceptions as apitools_exceptions
 from googlecloudsdk.api_lib.spanner import database_operations
 from googlecloudsdk.api_lib.spanner import databases
 from googlecloudsdk.api_lib.spanner import instances
 from googlecloudsdk.api_lib.storage import storage_api
 from googlecloudsdk.api_lib.storage import storage_util
 from googlecloudsdk.calliope import base
-from googlecloudsdk.calliope.exceptions import BadArgumentException
+from googlecloudsdk.calliope import exceptions as calliope_exceptions
 from googlecloudsdk.command_lib.spanner import ddl_parser
 from googlecloudsdk.command_lib.spanner import samples
 from googlecloudsdk.core import log
@@ -44,7 +42,7 @@ def check_instance(instance_id):
   """Raise if the given instance doesn't exist."""
   try:
     instances.Get(instance_id)
-  except HttpNotFoundError:
+  except apitools_exceptions.HttpNotFoundError:
     raise ValueError(
         textwrap.dedent("""\
         Instance '{instance_id}' does not exist. Create it with:
@@ -96,7 +94,7 @@ def _create_db_op(instance_ref, database_id, statements, database_dialect):
         database_id,
         statements,
         database_dialect=database_dialect)
-  except HttpConflictError:
+  except apitools_exceptions.HttpConflictError:
     raise ValueError(
         textwrap.dedent("""\
         Database '{database_id}' exists already. Delete it with:
@@ -104,7 +102,7 @@ def _create_db_op(instance_ref, database_id, statements, database_dialect):
         $ gcloud spanner databases delete {database_id} --instance={instance_id}
         """.format(
             database_id=database_id, instance_id=instance_ref.instancesId)))
-  except HttpError as ex:
+  except apitools_exceptions.HttpError as ex:
     raise ValueError(json.loads(ex.content)['error']['message'])
   except Exception:  # pylint: disable=broad-except
     raise ValueError("Failed to create database '{}'.".format(database_id))
@@ -201,7 +199,7 @@ class Init(base.Command):
     try:
       samples.check_appname(appname)
     except ValueError as ex:
-      raise BadArgumentException('APPNAME', ex)
+      raise calliope_exceptions.BadArgumentException('APPNAME', ex)
 
     instance_id = args.instance_id
     instance_ref = resources.REGISTRY.Parse(
@@ -221,7 +219,7 @@ class Init(base.Command):
     try:
       check_instance(instance_id)
     except ValueError as ex:
-      raise BadArgumentException('--instance-id', ex)
+      raise calliope_exceptions.BadArgumentException('--instance-id', ex)
 
     # Download any missing sample app binaries from GCS, including the schema
     # file we need to create the DB
@@ -234,7 +232,7 @@ class Init(base.Command):
     try:
       check_create_db(appname, instance_ref, database_id)
     except ValueError as ex:
-      raise BadArgumentException('--database-id', ex)
+      raise calliope_exceptions.BadArgumentException('--database-id', ex)
 
     backend_args = '{appname} --instance-id={instance_id}'.format(
         appname=appname, instance_id=instance_id)

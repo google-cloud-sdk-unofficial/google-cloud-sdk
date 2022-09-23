@@ -18,13 +18,11 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
-from apitools.base.py import list_pager
 from googlecloudsdk.calliope import base as calliope_base
 
 
 @calliope_base.Hidden
-@calliope_base.ReleaseTracks(calliope_base.ReleaseTrack.ALPHA,
-                             calliope_base.ReleaseTrack.BETA)
+@calliope_base.ReleaseTracks(calliope_base.ReleaseTrack.ALPHA)
 class Policycontroller(calliope_base.Group):
   """Get Policy Controller constraint templates."""
   pass

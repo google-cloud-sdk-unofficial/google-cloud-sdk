@@ -63,8 +63,7 @@ class Export(base.Command):
   @classmethod
   def Args(cls, parser):
     flags.GetZoneArg().AddToParser(parser)
-    if cls._IsBetaOrAlpha():
-      flags.GetLocationArg().AddToParser(parser)
+    flags.GetLocationArg().AddToParser(parser)
     parser.add_argument('records_file',
                         help='File to which record-sets should be exported.')
     parser.add_argument(
@@ -93,7 +92,7 @@ class Export(base.Command):
       get_request = dns.MESSAGES_MODULE.DnsManagedZonesGetRequest(
           project=zone_ref.project, managedZone=zone_ref.managedZone)
 
-      if api_version == 'v2' and self._IsBetaOrAlpha():
+      if api_version == 'v2':
         get_request.location = args.location
 
       zone = dns.managedZones.Get(get_request)
@@ -105,7 +104,7 @@ class Export(base.Command):
     list_request = dns.MESSAGES_MODULE.DnsResourceRecordSetsListRequest(
         project=zone_ref.project, managedZone=zone_ref.Name())
 
-    if api_version == 'v2' and self._IsBetaOrAlpha():
+    if api_version == 'v2':
       list_request.location = args.location
 
     for record_set in list_pager.YieldFromList(

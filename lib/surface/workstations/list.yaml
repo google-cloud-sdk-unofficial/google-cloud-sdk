@@ -4,25 +4,25 @@
     brief: |
       List workstations.
     description: |
-      List all workstations under the specified cluster.
+      List all workstations under the specified config.
     examples: |
       $ {command}
 
   arguments:
     resource:
-      spec: !REF googlecloudsdk.command_lib.workstations.resources:cluster
+      spec: !REF googlecloudsdk.command_lib.workstations.resources:config
       help_text: |
-        The cluster of the workstations to display.
+        The config of the workstations to display.
 
   request:
-    api_version: v1alpha1
-    collection: workstations.projects.locations.workstationClusters.workstations
+    api_version: v1beta
+    collection: workstations.projects.locations.workstationClusters.workstationConfigs.workstations
 
   output:
     format: |
       table(
         name.basename():sort=1,
-        config.basename(),
+        name.scope(workstationConfigs).segment(0):label='CONFIG',
         state.sub("STATE_", ""),
         createTime.date()
       )

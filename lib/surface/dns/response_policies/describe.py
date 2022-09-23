@@ -49,8 +49,7 @@ class Describe(base.DescribeCommand):
     api_version = util.GetApiFromTrack(cls.ReleaseTrack())
     resource_args.AddResponsePolicyResourceArg(
         parser, verb='to describe', api_version=api_version)
-    if cls._BetaOrAlpha():
-      flags.GetLocationArg().AddToParser(parser)
+    flags.GetLocationArg().AddToParser(parser)
     parser.display_info.AddFormat('json')
 
   def Run(self, args):
@@ -70,7 +69,7 @@ class Describe(base.DescribeCommand):
         responsePolicy=response_policy_name,
         project=response_policy_ref.project)
 
-    if api_version == 'v2' and self._BetaOrAlpha():
+    if api_version == 'v2':
       request.location = args.location
 
     result = client.responsePolicies.Get(request)

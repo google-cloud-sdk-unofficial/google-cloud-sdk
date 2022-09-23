@@ -23,7 +23,9 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.run import connection_context
 from googlecloudsdk.command_lib.run import flags as run_flags
 from googlecloudsdk.command_lib.run.integrations import flags
+from googlecloudsdk.command_lib.run.integrations import integration_list_printer as printer
 from googlecloudsdk.command_lib.run.integrations import run_apps_operations
+from googlecloudsdk.core.resource import resource_printer
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -62,18 +64,27 @@ class List(base.ListCommand):
     flags.ListIntegrationsOfService(parser)
     flags.ListIntegrationsOfType(parser)
 
-    # TODO(b/217741829): Create printer to limit outputed services to 3.
-    parser.display_info.AddFormat("""
-        table(
-          name:label="INTEGRATION",
-          type:label="TYPE",
-          services:label="SERVICE"
-        )
-      """)
+    resource_printer.RegisterFormatter(
+        printer.PRINTER_FORMAT,
+        printer.IntegrationListPrinter,
+        hidden=True,
+    )
+    parser.display_info.AddFormat(printer.PRINTER_FORMAT)
 
   def Run(self, args):
-    """Create a Cloud Run Integration."""
+    """Lists all the Cloud Run Integrations.
 
+    Args:
+      args: ArgumentParser, used to reference the inputs provided by the user.
+
+    Returns:
+      dict with a single key that maps to a list of integrations.
+      This will be used by the integration_list_printer to format all
+      the entries in the list.
+
+      The reason this is not a list is because the printer will only recieve
+      one entry at a time and cannot easily format all entries into a table.
+    """
     integration_type = args.type
     service_name = args.service
 
@@ -83,4 +94,7 @@ class List(base.ListCommand):
       if integration_type:
         types_utils.CheckValidIntegrationType(integration_type)
 
-      return client.ListIntegrations(integration_type, service_name)
+      return {
+          printer.RECORD_KEY:
+              client.ListIntegrations(integration_type, service_name)
+          }

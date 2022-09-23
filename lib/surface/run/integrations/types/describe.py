@@ -112,4 +112,8 @@ class Describe(base.DescribeCommand):
             'description': param['description']
         }))
 
+    # sorting the parameters based on name to guarantee the same ordering
+    # for scenario tests.
+    required_params = sorted(required_params, key=lambda x: x['name'])
+    optional_params = sorted(optional_params, key=lambda x: x['name'])
     return Params(required=required_params, optional=optional_params)

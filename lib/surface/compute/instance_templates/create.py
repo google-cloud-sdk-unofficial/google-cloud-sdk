@@ -545,6 +545,8 @@ def _RunCreate(compute_api,
   instances_flags.ValidateNetworkTierArgs(args)
 
   instance_templates_flags.ValidateServiceProxyFlags(args)
+  if support_source_instance:
+    instance_templates_flags.ValidateSourceInstanceFlags(args)
   if support_mesh:
     instance_templates_flags.ValidateMeshFlag(args)
 
@@ -902,7 +904,7 @@ class Create(base.CreateCommand):
   _support_multi_writer = False
   _support_mesh = False
   _support_numa_node_count = False
-  _support_visible_core_count = False
+  _support_visible_core_count = True
   _support_max_run_duration = False
   _support_region_instance_template = False
 

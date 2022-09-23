@@ -36,16 +36,17 @@
     - arg_name: mtu
       api_field: interconnectAttachment.mtu
       type: int
+      default: 1500
       help_text: |
         Maximum transmission unit (MTU) is the size of the largest
         IP packet that can be transmitted on this attachment. Default
         value is 1500 bytes, and the valid values are 1500 and 9000.
     - arg_name: vlan-id
       api_field: interconnectAttachment.vlanId
-      required: true
+      default: 0
       type: int
       help_text: |
-        The ID of the vlan to tag the subnetwork.
+        The ID of the vlan to tag the subnetwork. Default value is 0.
     - arg_name: description
       api_field: interconnectAttachment.description
       help_text: |

@@ -42,6 +42,8 @@ def _CommonArgs(parser, messages):
   flags.GetPrivateForwardingTargetsArg().AddToParser(parser)
   flags.GetReverseLookupArg().AddToParser(parser)
   flags.GetManagedZoneLoggingArg().AddToParser(parser)
+  flags.GetManagedZoneGkeClustersArg().AddToParser(parser)
+  flags.GetLocationArg().AddToParser(parser)
 
 
 def _Update(zones_client,
@@ -117,103 +119,9 @@ def _Update(zones_client,
   return update_results
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
+                    base.ReleaseTrack.GA)
 class UpdateGA(base.UpdateCommand):
-  """Update an existing Cloud DNS managed-zone.
-
-  Update an existing Cloud DNS managed-zone.
-
-  ## EXAMPLES
-
-  To change the description of a managed-zone, run:
-
-    $ {command} my-zone --description="Hello, world!"
-
-  """
-
-  @staticmethod
-  def Args(parser):
-    messages = apis.GetMessagesModule('dns', 'v1')
-    _CommonArgs(parser, messages)
-
-  def Run(self, args):
-    zones_client = managed_zones.Client.FromApiVersion('v1')
-    messages = apis.GetMessagesModule('dns', 'v1')
-
-    forwarding_config = None
-    if args.IsSpecified('forwarding_targets') or args.IsSpecified(
-        'private_forwarding_targets'):
-      forwarding_config = command_util.ParseManagedZoneForwardingConfigWithForwardingPath(
-          messages=messages,
-          server_list=args.forwarding_targets,
-          private_server_list=args.private_forwarding_targets)
-    else:
-      forwarding_config = None
-
-    peering_config = None
-    if args.target_project and args.target_network:
-      peering_network = 'https://www.googleapis.com/compute/v1/projects/{}/global/networks/{}'.format(
-          args.target_project, args.target_network)
-      peering_config = messages.ManagedZonePeeringConfig()
-      peering_config.targetNetwork = messages.ManagedZonePeeringConfigTargetNetwork(
-          networkUrl=peering_network)
-
-    visibility_config = None
-    # When the Python object is converted to JSON for the HTTP request body, all
-    # fields that are their default value will be omitted by default.  This is
-    # problematic for list fields, as an empty list signals that the list field
-    # should be cleared in a PATCH request, but an empty list is also the
-    # default list value.
-    #
-    # Cleared fields tracks the fields that should be included as their default
-    # value in the HTTP request body's JSON.  Cleared fields is ultimately
-    # passed to the JSON encoder in the SDK library internals to achieve this.
-    cleared_fields = []
-    if args.networks is not None:
-      networks = args.networks
-      # If networks is an empty array, it should clear the networks value.
-      if not networks:
-        cleared_fields.append('privateVisibilityConfig.networks')
-
-      def GetNetworkSelfLink(network):
-        return util.GetRegistry('v1').Parse(
-            network,
-            collection='compute.networks',
-            params={
-                'project': properties.VALUES.core.project.GetOrFail
-            }).SelfLink()
-
-      network_urls = [GetNetworkSelfLink(n) for n in networks]
-      network_configs = [
-          messages.ManagedZonePrivateVisibilityConfigNetwork(networkUrl=nurl)
-          for nurl in network_urls
-      ]
-      visibility_config = messages.ManagedZonePrivateVisibilityConfig(
-          networks=network_configs)
-
-    reverse_lookup_config = None
-    if args.IsSpecified(
-        'managed_reverse_lookup') and args.managed_reverse_lookup:
-      reverse_lookup_config = messages.ManagedZoneReverseLookupConfig()
-
-    cloud_logging_config = None
-    if args.IsSpecified('log_dns_queries'):
-      cloud_logging_config = messages.ManagedZoneCloudLoggingConfig()
-      cloud_logging_config.enableLogging = args.log_dns_queries
-
-    return _Update(
-        zones_client,
-        args,
-        private_visibility_config=visibility_config,
-        forwarding_config=forwarding_config,
-        peering_config=peering_config,
-        reverse_lookup_config=reverse_lookup_config,
-        cloud_logging_config=cloud_logging_config,
-        cleared_fields=cleared_fields)
-
-
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class UpdateBeta(base.UpdateCommand):
   """Update an existing Cloud DNS managed-zone.
 
   Update an existing Cloud DNS managed-zone.
@@ -230,12 +138,16 @@ class UpdateBeta(base.UpdateCommand):
 
   """
 
-  @staticmethod
-  def Args(parser):
-    messages = apis.GetMessagesModule('dns', 'v1beta2')
+  @classmethod
+  def _BetaOrAlpha(cls):
+    return cls.ReleaseTrack() in (base.ReleaseTrack.BETA,
+                                  base.ReleaseTrack.ALPHA)
+
+  @classmethod
+  def Args(cls, parser):
+    api_version = util.GetApiFromTrack(cls.ReleaseTrack())
+    messages = apis.GetMessagesModule('dns', api_version)
     _CommonArgs(parser, messages)
-    flags.GetManagedZoneGkeClustersArg().AddToParser(parser)
-    flags.GetLocationArg().AddToParser(parser)
 
   def Run(self, args):
     api_version = util.GetApiFromTrackAndArgs(self.ReleaseTrack(), args)
@@ -244,7 +156,8 @@ class UpdateBeta(base.UpdateCommand):
     messages = zones_client.messages
 
     forwarding_config = None
-    if args.forwarding_targets or args.private_forwarding_targets:
+    if args.IsSpecified('forwarding_targets') or args.IsSpecified(
+        'private_forwarding_targets'):
       forwarding_config = command_util.ParseManagedZoneForwardingConfigWithForwardingPath(
           messages=messages,
           server_list=args.forwarding_targets,
@@ -328,25 +241,3 @@ class UpdateBeta(base.UpdateCommand):
         cloud_logging_config=cloud_logging_config,
         api_version=api_version,
         cleared_fields=cleared_fields)
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class UpdateAlpha(UpdateBeta):
-  """Update an existing Cloud DNS managed-zone.
-
-  Update an existing Cloud DNS managed-zone.
-
-  ## EXAMPLES
-
-  To change the description of a managed-zone, run:
-
-    $ {command} my-zone --description="Hello, world!"
-
-  """
-
-  @staticmethod
-  def Args(parser):
-    messages = apis.GetMessagesModule('dns', 'v1alpha2')
-    _CommonArgs(parser, messages)
-    flags.GetManagedZoneGkeClustersArg().AddToParser(parser)
-    flags.GetLocationArg().AddToParser(parser)

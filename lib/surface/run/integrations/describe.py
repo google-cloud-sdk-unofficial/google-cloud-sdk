@@ -68,12 +68,16 @@ class Describe(base.DescribeCommand):
         args, run_flags.Product.RUN_APPS, self.ReleaseTrack())
     with run_apps_operations.Connect(conn_context) as client:
       resource_config = client.GetIntegration(name)
+      latest_deployment = client.GetLatestDeployment(resource_config)
       resource_status = client.GetIntegrationStatus(name)
       integration_type = types_utils.GetIntegrationType(resource_config)
+
+      # TODO(b/244491059) Return a class to avoid hardcoded strings for keys.
       return {
           'name': name,
           'region': conn_context.region,
           'type': integration_type,
           'config': resource_config,
-          'status': resource_status
+          'status': resource_status,
+          types_utils.LATEST_DEPLOYMENT_FIELD: latest_deployment,
       }

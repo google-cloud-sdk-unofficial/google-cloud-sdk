@@ -31,6 +31,8 @@ from googlecloudsdk.core import log
 def _AddArgsCommon(parser):
   flags.GetResponsePolicyDescriptionArg(required=True).AddToParser(parser)
   flags.GetResponsePolicyNetworksArg().AddToParser(parser)
+  flags.GetLocationArg().AddToParser(parser)
+  flags.GetResponsePolicyGkeClustersArg().AddToParser(parser)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA,
@@ -72,9 +74,6 @@ class Create(base.UpdateCommand):
         verb='to create',
         api_version=util.GetApiFromTrack(cls.ReleaseTrack()))
     _AddArgsCommon(parser)
-    if cls._BetaOrAlpha():
-      flags.GetLocationArg().AddToParser(parser)
-      flags.GetResponsePolicyGkeClustersArg().AddToParser(parser)
     parser.display_info.AddFormat('json')
 
   def Run(self, args):
@@ -93,16 +92,13 @@ class Create(base.UpdateCommand):
     response_policy = messages.ResponsePolicy(
         responsePolicyName=response_policy_name)
 
-    if args.IsSpecified('networks') or (self._BetaOrAlpha() and
-                                        args.IsSpecified('gkeclusters')):
+    if args.IsSpecified('networks') or args.IsSpecified('gkeclusters'):
       if args.networks == ['']:
         args.networks = []
       response_policy.networks = command_util.ParseResponsePolicyNetworks(
           args.networks, response_policy_ref.project, api_version)
 
-      if (self.ReleaseTrack()
-          in (base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA) and
-          args.IsSpecified('gkeclusters')):
+      if args.IsSpecified('gkeclusters'):
         gkeclusters = args.gkeclusters
         response_policy.gkeClusters = [
             messages.ResponsePolicyGKECluster(gkeClusterName=name)
@@ -110,13 +106,6 @@ class Create(base.UpdateCommand):
         ]
 
     else:
-      if self._BetaOrAlpha():
-        raise exceptions.RequiredArgumentException(
-            '--networks', ("""A list of networks must be provided.'
-           NOTE: You can provide an empty value ("") for response policies that
-           have NO network binding.
-            """))
-
       raise exceptions.RequiredArgumentException(
           '--networks,--gkeclusters',
           ("""A list of networks or GKE clusters must be provided.'

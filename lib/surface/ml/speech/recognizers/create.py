@@ -19,14 +19,16 @@ from __future__ import division
 from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.ml.speech import client
-from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.ml.speech import flags_v2
 from googlecloudsdk.core import log
 
-public_allowed_locations = ['us', 'eu', 'global']
-private_allowed_locations = ['us', 'eu', 'global', 'us-central1']
+public_allowed_locations = ('us', 'eu', 'global')
+private_allowed_locations = frozenset(public_allowed_locations) | {
+    # TODO(b/246590388): Remove when multiregion support is complete.
+    'us-central1'
+}
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -36,67 +38,7 @@ class Create(base.Command):
   @staticmethod
   def Args(parser):
     """Register flags for this command."""
-    flags_v2.AddRecognizerArgToParser(parser)
-    base.ASYNC_FLAG.AddToParser(parser)
-    base.ASYNC_FLAG.SetDefault(parser, True)
-    parser.add_argument(
-        '--display-name',
-        help="""\
-        Name of this recognizer as it appears in UIs.
-        """)
-    parser.add_argument(
-        '--model',
-        required=True,
-        help="""\
-        `latest_long` or `latest_short`
-        """)
-    parser.add_argument(
-        '--language-codes',
-        metavar='LANGUAGE_CODE',
-        required=True,
-        type=arg_parsers.ArgList(),
-        help="""\
-        Language code is one of `en-US`, `en-GB`, `fr-FR`.
-        Check [documentation](https://cloud.google.com/speech-to-text/docs/multiple-languages)
-        for using more than one language code.
-        """)
-    parser.add_argument(
-        '--profanity-filter',
-        type=arg_parsers.ArgBoolean(),
-        help="""\
-        If true, the server will censor profanities.
-        """)
-    parser.add_argument(
-        '--enable-word-time-offsets',
-        type=arg_parsers.ArgBoolean(),
-        help="""\
-        If true, the top result includes a list of words and their timestamps.
-        """)
-    parser.add_argument(
-        '--enable-word-confidence',
-        type=arg_parsers.ArgBoolean(),
-        help="""\
-        If true, the top result includes a list of words and the confidence for
-        those words.
-        """)
-    parser.add_argument(
-        '--enable-automatic-punctuation',
-        type=arg_parsers.ArgBoolean(),
-        help="""\
-        If true, adds punctuation to recognition result hypotheses.
-        """)
-    parser.add_argument(
-        '--enable-spoken-punctuation',
-        type=arg_parsers.ArgBoolean(),
-        help="""\
-        If true, replaces spoken punctuation with the corresponding symbols in the request.
-        """)
-    parser.add_argument(
-        '--enable-spoken-emojis',
-        type=arg_parsers.ArgBoolean(),
-        help="""\
-        If true, adds spoken emoji formatting.
-        """)
+    flags_v2.AddAllFlagsToParser(parser, create=True)
 
   def Run(self, args):
     recognizer = args.CONCEPTS.recognizer.Parse()

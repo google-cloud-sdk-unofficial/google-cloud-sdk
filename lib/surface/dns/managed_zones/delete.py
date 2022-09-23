@@ -20,55 +20,14 @@ from __future__ import division
 from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.dns import util
-from googlecloudsdk.api_lib.util import apis
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.dns import flags
 from googlecloudsdk.core import log
-from googlecloudsdk.core import properties
-from googlecloudsdk.core import resources
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
+                    base.ReleaseTrack.GA)
 class Delete(base.DeleteCommand):
-  """Delete an empty Cloud DNS managed-zone.
-
-  This command deletes an empty Cloud DNS managed-zone. An empty managed-zone
-  has only SOA and NS record-sets.
-
-  ## EXAMPLES
-
-  To delete an empty managed-zone, run:
-
-    $ {command} my-zone
-  """
-
-  @staticmethod
-  def Args(parser):
-    flags.GetDnsZoneArg(
-        'The name of the empty managed-zone to be deleted.').AddToParser(parser)
-    parser.display_info.AddCacheUpdater(None)
-
-  def Run(self, args):
-    dns = util.GetApiClient('v1')
-    messages = apis.GetMessagesModule('dns', 'v1')
-
-    zone_ref = resources.REGISTRY.Parse(
-        args.dns_zone,
-        params={
-            'project': properties.VALUES.core.project.GetOrFail,
-        },
-        collection='dns.managedZones')
-
-    result = dns.managedZones.Delete(
-        messages.DnsManagedZonesDeleteRequest(
-            managedZone=zone_ref.managedZone,
-            project=zone_ref.project))
-    log.DeletedResource(zone_ref)
-    return result
-
-
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class DeleteBeta(base.DeleteCommand):
   """Delete an empty Cloud DNS managed-zone.
 
   This command deletes an empty Cloud DNS managed-zone. An empty managed-zone
@@ -85,8 +44,13 @@ class DeleteBeta(base.DeleteCommand):
     $ {command} my-zone --location=us-east1-c
   """
 
-  @staticmethod
-  def Args(parser):
+  @classmethod
+  def _BetaOrAlpha(cls):
+    return cls.ReleaseTrack() in (base.ReleaseTrack.BETA,
+                                  base.ReleaseTrack.ALPHA)
+
+  @classmethod
+  def Args(cls, parser):
     flags.GetDnsZoneArg(
         'The name of the empty managed-zone to be deleted.').AddToParser(parser)
     flags.GetLocationArg().AddToParser(parser)
@@ -111,29 +75,3 @@ class DeleteBeta(base.DeleteCommand):
     result = dns.managedZones.Delete(request)
     log.DeletedResource(zone_ref)
     return result
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class DeleteAlpha(DeleteBeta):
-  """Delete an empty Cloud DNS managed-zone.
-
-  This command deletes an empty Cloud DNS managed-zone. An empty managed-zone
-  has only SOA and NS record-sets.
-
-  ## EXAMPLES
-
-  To delete an empty managed-zone, run:
-
-    $ {command} my-zone
-
-  To delete an empty zonal managed-zone in us-east1-c, run:
-
-    $ {command} my-zone --location=us-east1-c
-  """
-
-  @staticmethod
-  def Args(parser):
-    flags.GetDnsZoneArg(
-        'The name of the empty managed-zone to be deleted.').AddToParser(parser)
-    parser.display_info.AddCacheUpdater(None)
-    flags.GetLocationArg().AddToParser(parser)

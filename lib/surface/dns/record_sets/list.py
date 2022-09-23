@@ -61,8 +61,7 @@ class List(base.ListCommand):
   @classmethod
   def Args(cls, parser):
     flags.GetZoneArg().AddToParser(parser)
-    if cls._BetaOrAlpha():
-      flags.GetLocationArg().AddToParser(parser)
+    flags.GetLocationArg().AddToParser(parser)
     name_type_group = parser.add_group()
     name_type_group.add_argument(
         '--name', required=True,
@@ -91,7 +90,7 @@ class List(base.ListCommand):
         name=util.AppendTrailingDot(args.name),
         type=args.type)
 
-    if api_version == 'v2' and self._BetaOrAlpha():
+    if api_version == 'v2':
       list_request.location = args.location
 
     return list_pager.YieldFromList(

@@ -28,18 +28,19 @@ class Startup(base.TopicCommand):
 
   # Choosing a Python Interpreter
 
-  The `gcloud` CLI runs under Python. Note that `gcloud` requires Python
-  version 3.5-3.8. Windows, Mac and Linux RPM based installs
-  include a bundled Python interpreter. To install on Linux using a different
-  package format, you must have a Python interpreter on your system,
-  `gcloud` will  attempt to locate an interpreter on your system PATH by looking
-  for the following binaries:
+  The `gcloud` CLI runs under Python. Note that `gcloud` requires Python version
+  3.5-3.9. Certain Windows and Linux installs include a bundled Python
+  interpreter depending on the package and architecture. Similarly, Intel-based
+  Macs offer the option to install CPython as part of the main install script.
+  Otherwise, you must have a Python interpreter available on your system. The
+  `gcloud` CLI will attempt to locate an interpreter on your system PATH by
+  looking for the following binaries:
 
-      * python
       * python3
+      * python
 
-  If you have a bundled Python installed, it will be preferred. To override
-  this you will need to set `CLOUDSDK_PYTHON` env var, see below.
+  If you have a bundled Python installed, it will be preferred. To override this
+  you will need to set the `CLOUDSDK_PYTHON` environment variable, see below.
 
   Other Python tools shipped in the Google Cloud CLI do not support Python 3 and
   require Python 2.7.x, including:
@@ -47,13 +48,12 @@ class Startup(base.TopicCommand):
       * `dev_appserver`
       * `endpointscfg`
 
-  Bundled Python on Linux
+  # Bundled Python on Linux
 
-  Starting with release 365.0.0, RPM installs of google-cloud-sdk will include
-  a bundled Python 3.8 installation. This installation will be used by
-  default. If you want to use a different Python installation, set the
-  CLOUDSDK_PYTHON environment variable to the absolute path to your python
-  interpreter.
+  Linux-based installs include a bundled Python installation on x86_64
+  architectures. This installation will be used by default. If you want to use a
+  different Python installation, set the `CLOUDSDK_PYTHON` environment variable
+  to the absolute path to your python interpreter.
 
   If you have multiple Python interpreters available (including a bundled
   python) or if you don't have one on your PATH, you can specify which
