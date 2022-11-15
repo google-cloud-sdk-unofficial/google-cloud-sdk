@@ -229,14 +229,16 @@ class ApplicationDefaultCredentialFileLoader(CachedCredentialLoader):
       return wrapped_credentials.WrappedCredentials.for_external_account(
           self._credential_file)
     else:  # Service account
+      token_uri = None
+      revoke_uri = None
       credentials['type'] = oauth2client_4_0.client.SERVICE_ACCOUNT
       service_account_credentials = (
           oauth2client_4_0.service_account.ServiceAccountCredentials
           .from_json_keyfile_dict(
               keyfile_dict=credentials,
               scopes=client_scope,
-              token_uri=oauth2client_4_0.GOOGLE_TOKEN_URI,
-              revoke_uri=oauth2client_4_0.GOOGLE_REVOKE_URI))
+              token_uri=token_uri,
+              revoke_uri=revoke_uri))
       service_account_credentials._user_agent = _CLIENT_USER_AGENT  # pylint: disable=protected-access
       return service_account_credentials
 

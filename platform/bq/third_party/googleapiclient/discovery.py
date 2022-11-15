@@ -933,6 +933,15 @@ def _fix_up_method_description(method_desc, root_desc, schema):
 
     return path_url, http_method, method_id, accept, max_size, media_path_url
 
+def _fix_up_media_path_base_url(media_path_url, base_url):
+    # Update the media upload base url in case it was overridden by
+    # client_options.api_endpoint.
+    parsed_media_url = list(urlparse(media_path_url))
+    parsed_base_url = list(urlparse(base_url))
+    if (parsed_media_url[1] == parsed_base_url[1]):
+        return media_path_url
+    parsed_media_url = parsed_base_url[0:2] + parsed_media_url[2:]
+    return urlunparse(parsed_media_url)
 
 def _urljoin(base, url):
     """Custom urljoin replacement supporting : before / in url."""
@@ -1180,6 +1189,7 @@ def createMethod(methodName, methodDesc, rootDesc, schema):
             # Use the media path uri for media uploads
             expanded_url = uritemplate.expand(mediaPathUrl, params)
             url = _urljoin(self._baseUrl, expanded_url + query)
+            url = _fix_up_media_path_base_url(url, self._baseUrl)
             if media_upload.resumable():
                 url = _add_query_parameter(url, "uploadType", "resumable")
 

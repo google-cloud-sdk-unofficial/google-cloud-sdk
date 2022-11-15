@@ -4,7 +4,7 @@
  "id": "bigquery:v2",
  "name": "bigquery",
  "version": "v2",
- "revision": "20221026",
+ "revision": "20221028",
  "title": "BigQuery API",
  "description": "A data platform for customers to create, manage, share and query data.",
  "ownerDomain": "google.com",
@@ -3497,7 +3497,9 @@
       "Wide-and-deep classifier model.",
       "Wide-and-deep regressor model.",
       "Autoencoder model.",
-      "New name for the ARIMA model."
+      "New name for the ARIMA model.",
+      "Random Forest regressor model.",
+      "Random Forest classifier model."
      ],
      "enum": [
       "MODEL_TYPE_UNSPECIFIED",
@@ -3517,7 +3519,9 @@
       "DNN_LINEAR_COMBINED_CLASSIFIER",
       "DNN_LINEAR_COMBINED_REGRESSOR",
       "AUTOENCODER",
-      "ARIMA_PLUS"
+      "ARIMA_PLUS",
+      "RANDOM_FOREST_REGRESSOR",
+      "RANDOM_FOREST_CLASSIFIER"
      ]
     },
     "trainingRuns": {

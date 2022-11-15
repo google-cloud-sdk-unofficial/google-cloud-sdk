@@ -541,7 +541,9 @@
             "Wide-and-deep classifier model.",
             "Wide-and-deep regressor model.",
             "Autoencoder model.",
-            "New name for the ARIMA model."
+            "New name for the ARIMA model.",
+            "Random Forest regressor model.",
+            "Random Forest classifier model."
           ],
           "enum": [
             "MODEL_TYPE_UNSPECIFIED",
@@ -561,7 +563,9 @@
             "DNN_LINEAR_COMBINED_CLASSIFIER",
             "DNN_LINEAR_COMBINED_REGRESSOR",
             "AUTOENCODER",
-            "ARIMA_PLUS"
+            "ARIMA_PLUS",
+            "RANDOM_FOREST_REGRESSOR",
+            "RANDOM_FOREST_CLASSIFIER"
           ]
         },
         "trainingRuns": {
@@ -4594,7 +4598,9 @@
             "Wide-and-deep classifier model.",
             "Wide-and-deep regressor model.",
             "Autoencoder model.",
-            "New name for the ARIMA model."
+            "New name for the ARIMA model.",
+            "Random Forest regressor model.",
+            "Random Forest classifier model."
           ],
           "enum": [
             "MODEL_TYPE_UNSPECIFIED",
@@ -4614,7 +4620,9 @@
             "DNN_LINEAR_COMBINED_CLASSIFIER",
             "DNN_LINEAR_COMBINED_REGRESSOR",
             "AUTOENCODER",
-            "ARIMA_PLUS"
+            "ARIMA_PLUS",
+            "RANDOM_FOREST_REGRESSOR",
+            "RANDOM_FOREST_CLASSIFIER"
           ]
         },
         "trainingType": {
@@ -4853,7 +4861,7 @@
             "Indicates the query has been secured by data masking, and thus search indexes are not applicable.",
             "Indicates that the search index and the search function call do not have the same text analyzer.",
             "Indicates the base table is too small (below a certain threshold). The index does not provide noticeable search performance gains when the base table is too small.",
-            "Indicates that the total size of indexed base tables in your organization is too large for indexing in the free pool, thus the index is not available to be used in the query.",
+            "Indicates that the total size of indexed base tables in your organization exceeds your region's limit and the index is not used in the query. To index larger base tables, you can use your own reservation for index-management jobs.",
             "Indicates that the esitmated performance gain from using the search index is too low for the given search query.",
             "Indicates an internal error that causes the search index to be unused.",
             "Indicates that the reason search indexes cannot be used in the query is not covered by any of the other IndexUnusedReason options."
