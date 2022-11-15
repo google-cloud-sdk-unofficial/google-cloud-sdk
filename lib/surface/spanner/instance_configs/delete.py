@@ -26,15 +26,13 @@ from googlecloudsdk.command_lib.spanner import flags
 from googlecloudsdk.core.console import console_io
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-@base.Hidden
 class Delete(base.DeleteCommand):
-  """Delete a Cloud Spanner instance config."""
+  """Delete a Cloud Spanner instance configuration."""
 
   detailed_help = {
       'EXAMPLES':
           textwrap.dedent("""\
-        To delete a Cloud Spanner instance config, run:
+        To delete a custom Cloud Spanner instance configuration, run:
 
           $ {command} custom-instance-config
         """),
@@ -51,8 +49,8 @@ class Delete(base.DeleteCommand):
     parser.add_argument(
         '--validate-only',
         action='store_true',
-        help='If included, the command will only validate the request, '
-        'but not execute it.')
+        help='Use this flag to validate that the request will succeed before executing it.'
+    )
 
     parser.add_argument(
         '--etag',

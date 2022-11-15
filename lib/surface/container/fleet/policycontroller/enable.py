@@ -133,9 +133,11 @@ class Enable(base.UpdateCommand, base.EnableCommand):
       if args.version:
         poco_membership_spec.version = args.version
 
-      membership_specs[self.MembershipResourceName(
-          membership)] = self.messages.MembershipFeatureSpec(
-              policycontroller=poco_membership_spec)
+      membership_path = membership
+      if not resources.UseRegionalMemberships(self.ReleaseTrack()):
+        membership_path = self.MembershipResourceName(membership)
+      membership_specs[membership_path] = self.messages.MembershipFeatureSpec(
+          policycontroller=poco_membership_spec)
 
     f = self.messages.Feature(
         membershipSpecs=self.hubclient.ToMembershipSpecs(membership_specs))

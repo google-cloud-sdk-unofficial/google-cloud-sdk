@@ -18,6 +18,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+from googlecloudsdk.api_lib.storage.insights.inventory_reports import insights_api
 from googlecloudsdk.calliope import base
 
 
@@ -33,27 +34,22 @@ class Describe(base.DescribeCommand):
       'EXAMPLES':
           """
 
-      Describe an inventory report configuration in source bucket "my-bucket"
-      with the UUID "some-id":
+      Describe an inventory report configuration using the Report Config name:
 
-        $ {command} gs://my-bucket some-id
+        $ {command} /projects/<project-id>/locations/<location>/reportConfigs/<UUID>
 
       Describe the same inventory report with JSON formatting, only returning
-      the "display-name" field:
+      the "displayName" field:
 
-        $ {command} gs://my-bucket some-id --format="json(display-name)"
+        $ {command} /projects/<project-id>/locations/<location>/reportConfigs/<UUID> --format="json(displayName)"
       """,
   }
 
   @staticmethod
   def Args(parser):
     parser.add_argument(
-        'source_bucket_url',
-        help='Indicates the URL of the source bucket that contains the '
-             'inventory report configuration.')
-    parser.add_argument(
-        'config_id',
-        help='Specifies the UUID of the report configuration to describe.')
+        'report_config_name',
+        help='Indicates the report config name.')
 
   def Run(self, args):
-    raise NotImplementedError
+    return insights_api.InsightsApi().get(args.report_config_name)

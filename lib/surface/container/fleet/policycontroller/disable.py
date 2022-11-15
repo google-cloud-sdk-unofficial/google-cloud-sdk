@@ -75,15 +75,18 @@ class Disable(base.UpdateCommand):
         installSpec=poco_not_installed)
 
     if resources.UseRegionalMemberships(self.ReleaseTrack()):
-      memberships = utils.select_memberships_full(args)
+      memberships = base.ParseMembershipsPlural(
+          args, prompt=True, prompt_cancel=False, search=True)
     else:
       memberships = utils.select_memberships(args)
 
     for membership in memberships:
-      membership_specs[self.MembershipResourceName(
-          membership)] = self.messages.MembershipFeatureSpec(
-              policycontroller=self.messages.PolicyControllerMembershipSpec(
-                  policyControllerHubConfig=poco_hub_config))
+      membership_path = membership
+      if not resources.UseRegionalMemberships(self.ReleaseTrack()):
+        membership_path = self.MembershipResourceName(membership)
+      membership_specs[membership_path] = self.messages.MembershipFeatureSpec(
+          policycontroller=self.messages.PolicyControllerMembershipSpec(
+              policyControllerHubConfig=poco_hub_config))
 
     patch = self.messages.Feature(
         membershipSpecs=self.hubclient.ToMembershipSpecs(membership_specs))

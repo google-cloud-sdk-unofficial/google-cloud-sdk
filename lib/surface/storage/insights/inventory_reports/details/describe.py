@@ -18,7 +18,9 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+from googlecloudsdk.api_lib.storage.insights.inventory_reports import insights_api
 from googlecloudsdk.calliope import base
+from googlecloudsdk.core import log
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -33,32 +35,29 @@ class Describe(base.DescribeCommand):
       'EXAMPLES':
           """
 
-      Describe the details of an inventory report in source bucket "my-bucket",
-      where the inventory report UUID is "detail-id" and the inventory report
-      configuration UUID is "some-id":
+      Describe the details of an inventory report where the
+      inventory report details name is
+      "projects/a/locations/b/reportConfigs/c/reportDetails/d":
 
-        $ {command} gs://my-bucket some-id detail-id
+        $ {command} projects/a/locations/b/reportConfigs/c/reportDetails/d
 
       Describe the same inventory report with JSON formatting, only returning
       the "status" field:
 
-        $ {command} gs://my-bucket some-id detail-id --format="json(status)"
+        $ {command} projects/a/locations/b/reportConfigs/c/reportDetails/d --format="json(status)"
       """,
   }
 
   @staticmethod
   def Args(parser):
     parser.add_argument(
-        'source_bucket_url',
-        help='Indicates the URL of the source bucket that contains the '
-             'inventory report configuration.')
-    parser.add_argument(
-        'config_id',
-        help='Specifies the UUID of the inventory report configuration that '
-             'generated the inventory report to describe.')
-    parser.add_argument(
-        'report_id',
-        help='Specifies the UUID of the report detail to describe.')
+        'report_details_name',
+        help='Specifies the name of the report detail to describe.')
 
   def Run(self, args):
-    raise NotImplementedError
+    report_details = insights_api.InsightsApi().get_report_details(
+        args.report_details_name)
+    if report_details:
+      log.status.Print(
+          'To download the reports, use the `gcloud storage cp` command.')
+      return report_details

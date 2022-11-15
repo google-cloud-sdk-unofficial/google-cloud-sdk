@@ -33,7 +33,6 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.core import log
 import six
 
-
 _APK_MIME_TYPE = 'application/vnd.android.package-archive'
 
 
@@ -194,9 +193,9 @@ class _BaseRun(object):
     tr_messages = self.context['toolresults_messages']
     storage_client = self.context['storage_client']
 
-    bucket_ops = results_bucket.ResultsBucketOps(
-        project, args.results_bucket, args.results_dir,
-        tr_client, tr_messages, storage_client)
+    bucket_ops = results_bucket.ResultsBucketOps(project, args.results_bucket,
+                                                 args.results_dir, tr_client,
+                                                 tr_messages, storage_client)
     bucket_ops.UploadFileToGcs(args.app, _APK_MIME_TYPE)
     if args.test:
       bucket_ops.UploadFileToGcs(args.test, _APK_MIME_TYPE)
@@ -223,12 +222,13 @@ class _BaseRun(object):
     matrix = matrix_creator.CreateMatrix(args, self.context, history_id,
                                          bucket_ops.gcs_results_root,
                                          six.text_type(self.ReleaseTrack()))
-    monitor = matrix_ops.MatrixMonitor(
-        matrix.testMatrixId, args.type, self.context)
+    monitor = matrix_ops.MatrixMonitor(matrix.testMatrixId, args.type,
+                                       self.context)
 
     with ctrl_c_handler.CancellableTestSection(monitor):
-      supported_executions = monitor.HandleUnsupportedExecutions(matrix)
       tr_ids = tool_results.GetToolResultsIds(matrix, monitor)
+      matrix = monitor.GetTestMatrixStatus()
+      supported_executions = monitor.HandleUnsupportedExecutions(matrix)
 
       url = tool_results.CreateToolResultsUiUrl(project, tr_ids)
       log.status.Print('')

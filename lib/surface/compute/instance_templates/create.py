@@ -28,9 +28,7 @@ from googlecloudsdk.api_lib.compute import instance_utils
 from googlecloudsdk.api_lib.compute import metadata_utils
 from googlecloudsdk.api_lib.compute import utils
 from googlecloudsdk.api_lib.compute.instances.create import utils as create_utils
-from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
-from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.compute import completers
 from googlecloudsdk.command_lib.compute import flags
 from googlecloudsdk.command_lib.compute import resource_manager_tags_utils
@@ -46,15 +44,6 @@ from googlecloudsdk.command_lib.util.args import labels_util
 from googlecloudsdk.core import log
 
 import six
-
-_INSTANTIATE_FROM_VALUES = [
-    'attach-read-only',
-    'blank',
-    'custom-image',
-    'do-not-include',
-    'source-image',
-    'source-image-family',
-]
 
 
 def _CommonArgs(parser,
@@ -151,37 +140,7 @@ def _CommonArgs(parser,
   Create.InstanceTemplateArg.AddArgument(parser, operation_type='create')
   if support_source_instance:
     instance_templates_flags.MakeSourceInstanceArg().AddArgument(parser)
-    parser.add_argument(
-        '--configure-disk',
-        type=arg_parsers.ArgDict(
-            spec={
-                'auto-delete': arg_parsers.ArgBoolean(),
-                'device-name': str,
-                'instantiate-from': str,
-                'custom-image': str,
-            },),
-        metavar='PROPERTY=VALUE',
-        action='append',
-        help="""\
-        This option has effect only when used with `--source-instance`. It
-        allows you to override how the source-instance's disks are defined in
-        the template.
-
-        *auto-delete*::: If `true`, this persistent disk will be automatically
-        deleted when the instance is deleted. However, if the disk is later
-        detached from the instance, this option won't apply. If not provided,
-        the setting is copied from the source instance. Allowed values of the
-        flag are: `false`, `no`, `true`, and `yes`.
-
-        *device-name*::: Name of the device.
-
-        *instantiate-from*::: Specifies whether to include the disk and which
-        image to use. Valid values are: {}
-
-        *custom-image*::: The custom image to use if custom-image is specified
-        for instantiate-from.
-        """.format(', '.join(_INSTANTIATE_FROM_VALUES)),
-    )
+    instance_templates_flags.AddConfigureDiskArgs(parser)
 
   instances_flags.AddReservationAffinityGroup(
       parser,
@@ -236,22 +195,18 @@ def _AddSourceInstanceToTemplate(compute_api, args, instance_template,
     messages = compute_api.client.messages
     instance_template.sourceInstanceParams = messages.SourceInstanceParams()
     for disk in args.configure_disk:
-      instantiate_from = disk.get('instantiate-from')
-      custom_image = disk.get('custom-image')
-      if custom_image and instantiate_from != 'custom-image':
-        raise exceptions.InvalidArgumentException(
-            '--configure-disk',
-            'Value for `instaniate-from` must be \'custom-image\' if the key '
-            '`custom-image` is specified.')
       disk_config = messages.DiskInstantiationConfig()
-      disk_config.autoDelete = disk.get('auto-delete')
+      # device-name is required argument with --configure-disk
       disk_config.deviceName = disk.get('device-name')
-      disk_config.instantiateFrom = (
-          messages.DiskInstantiationConfig.InstantiateFromValueValuesEnum(
-              instantiate_from.upper().replace('-', '_')))
-      disk_config.customImage = custom_image
+      disk_config.autoDelete = disk.get('auto-delete')
+      instantiate_from = disk.get('instantiate-from')
+      if instantiate_from:
+        disk_config.instantiateFrom = (
+            messages.DiskInstantiationConfig.InstantiateFromValueValuesEnum(
+                disk.get('instantiate-from').upper().replace('-', '_')))
+      disk_config.customImage = disk.get('custom-image')
       instance_template.sourceInstanceParams.diskConfigs.append(disk_config)
-  # `properties` and `sourceInstance` are a one of.
+
   instance_template.properties = None
 
 

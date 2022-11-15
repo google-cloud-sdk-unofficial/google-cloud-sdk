@@ -27,32 +27,30 @@ from googlecloudsdk.command_lib.spanner import flags
 from googlecloudsdk.command_lib.util.args import labels_util
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-@base.Hidden
 class Create(base.CreateCommand):
-  """Create a Cloud Spanner instance config."""
+  """Create a Cloud Spanner instance configuration."""
 
   detailed_help = {
       'EXAMPLES':
           textwrap.dedent("""\
-        To create a Cloud Spanner instance config, run:
+        To create a custom Cloud Spanner instance configuration, run:
 
           $ {command} custom-instance-config
             --display-name=custom-instance-config-name
             --base-config=nam3
             --replicas=location=us-east4,type=READ_WRITE:location=us-east4,type=READ_WRITE:location=us-east1,type=READ_WRITE:location=us-east1,type=READ_WRITE:location=us-central1,type=WITNESS
 
-        To create a Cloud Spanner instance config based on an existing Google managed configs (nam3) and user managed configs with adding replica 'us-east4' of type 'READ_WRITE', run:
+        To create a custom Cloud Spanner instance configuration based on an existing Google-managed configuration (nam3) by adding a 'READ_ONLY' type replica in location 'us-east4', run:
 
           $ {command} custom-instance-config
             --clone-config=nam3
-            --add-replicas=location=us-east4,type=READ_WRITE
+            --add-replicas=location=us-east4,type=READ_ONLY
 
-        To create a Cloud Spanner instance config based on an existing Google managed configs (nam3) and user managed configs with adding replica 'us-east4' of type 'READ_WRITE' and removing replica 'us-central1' of type 'READ_ONLY', run:
+        To create a custom Cloud Spanner instance configuration based on an existing Google-managed configuration (nam3) by adding  a 'READ_ONLY' type replica in location 'us-east4' and removing a 'READ_ONLY' type replica in location 'us-central1', run:
 
           $ {command} custom-instance-config
             --clone-config=nam3
-            --add-replicas=location=us-east4,type=READ_WRITE
+            --add-replicas=location=us-east4,type=READ_ONLY
             --skip-replicas=location=us-central1,type=READ_ONLY
         """),
   }
@@ -69,8 +67,8 @@ class Create(base.CreateCommand):
         'config',
         metavar='INSTANCE_CONFIG',
         completer=flags.InstanceConfigCompleter,
-        help='Cloud Spanner instance config. The `custom-` prefix is required '
-        'to avoid name conflicts with Google managed configurations.')
+        help='Cloud Spanner instance configuration. The \'custom-\' prefix is required '
+        'to avoid name conflicts with Google-managed configurations.')
 
     parser.add_argument(
         '--display-name',
@@ -88,11 +86,12 @@ class Create(base.CreateCommand):
         '--validate-only',
         action='store_true',
         default=False,
-        help='Validate the create action, but don\'t actually perform it.')
+        help='Use this flag to validate that the request will succeed before executing it.'
+    )
 
     replica_help_text = """\
         The geographic placement of nodes in this instance configuration and
-        their replication properties.
+        their replication types.
 
         *location*::: The location of the serving resources, e.g. "us-central1".
 
@@ -146,16 +145,17 @@ class Create(base.CreateCommand):
         """
     clone_or_manual = parser.add_mutually_exclusive_group(required=True)
     manual_flags = clone_or_manual.add_argument_group(
-        'Command-line flags to setup an instance-config replicas:')
+        'Command-line flags to setup a custom instance configuration replicas:')
     flags.ReplicaFlag(manual_flags, name='--replicas', text=replica_help_text)
     manual_flags.add_argument(
         '--base-config',
         required=True,
-        help='The ID of the instance config, based on which this configuration '
-        'is created.')
+        help='The name of the Google-managed instance configuration, based on which your custom configuration is created.'
+    )
 
     clone_flags = clone_or_manual.add_argument_group(
-        'Command-line flags to setup an instance-config using clone options:')
+        'Command-line flags to setup a custom instance configuration using clone options:'
+    )
     clone_flags.add_argument(
         '--clone-config',
         required=True,

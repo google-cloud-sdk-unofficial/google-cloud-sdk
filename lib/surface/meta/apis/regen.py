@@ -66,9 +66,10 @@ class Regen(base.Command):
                         help='Regeneration config yaml filename. '
                              'If not specified canonical config will be used.')
 
-    parser.add_argument('--base-dir',
-                        help='Directory where generated code will be written. '
-                        'By default googlecloudsdk/third_party/apis.')
+    parser.add_argument(
+        '--base-dir',
+        help='Directory where generated code will be written. '
+        'By default googlecloudsdk/generated_clients/apis.')
 
   def Run(self, args):
     config = _LoadConfig(args.config)

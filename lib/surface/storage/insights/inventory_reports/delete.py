@@ -18,7 +18,9 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+from googlecloudsdk.api_lib.storage.insights.inventory_reports import insights_api
 from googlecloudsdk.calliope import base
+from googlecloudsdk.core import log
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -33,22 +35,25 @@ class Delete(base.Command):
       'EXAMPLES':
           """
 
-      Delete an inventory report configuration in the source bucket "my-bucket",
-      with the UUID "some-id":
+      Delete an inventory report configuration using the report config name:
 
-        $ {command} gs://my-bucket some-id
+        $ {command} /projects/<project-id>/locations/<location>/reportConfigs/<UUID>
       """,
   }
 
   @staticmethod
   def Args(parser):
     parser.add_argument(
-        'source_bucket_url',
-        help='Indicates the URL of the source bucket that contains the '
-             'inventory report configuration.')
+        'report_config_name',
+        help='Indicates the report config name.')
     parser.add_argument(
-        'config_id',
-        help='Specifies the UUID of the report configuration to delete.')
+        '--force',
+        action='store_true',
+        help='If set, all ReportDetails for this ReportConfig'
+        ' will be deleted'
+    )
 
   def Run(self, args):
-    raise NotImplementedError
+    insights_api.InsightsApi().delete(args.report_config_name, args.force)
+    log.status.Print('Deleted report config: {}'.format(
+        args.report_config_name))

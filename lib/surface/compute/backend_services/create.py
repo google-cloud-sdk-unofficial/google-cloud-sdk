@@ -347,6 +347,14 @@ class CreateHelper(object):
           client.messages.BackendService.LocalityLbPolicyValueValuesEnum(
               args.locality_lb_policy))
 
+    backend_services_utils.ApplyLogConfigArgs(
+        client.messages,
+        args,
+        backend_service,
+        support_logging=self._support_logging,
+        support_tcp_ssl_logging=self._support_tcp_ssl_logging,
+        support_net_lb_ilb_logging=self._support_net_lb_ilb_logging)
+
     request = client.messages.ComputeRegionBackendServicesInsertRequest(
         backendService=backend_service,
         region=backend_services_ref.region,

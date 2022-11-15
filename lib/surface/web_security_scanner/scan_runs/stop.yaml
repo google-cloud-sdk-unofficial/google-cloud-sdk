@@ -31,3 +31,4 @@
     resource:
       help_text: Scan run to stop.
       spec: !REF googlecloudsdk.command_lib.web_security_scanner.resources:scan_run
+      is_positional: true

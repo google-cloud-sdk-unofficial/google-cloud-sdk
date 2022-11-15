@@ -117,14 +117,18 @@ class List(commands.List):
       with serverless_operations.Connect(conn_context) as client:
         self.SetCompleteApiEndpoint(conn_context.endpoint)
         if not is_managed:
-          location_msg = ' in [{}]'.format(conn_context.cluster_location)
-          project_msg = ' in project [{}]'.format(conn_context.cluster_project)
+          is_gke = platforms.GetPlatform() == platforms.PLATFORM_GKE
+          location_msg = ' in [{}]'.format(
+              conn_context.cluster_location) if is_gke else ''
           is_multi_tenant = conn_context.cluster_project != properties.VALUES.core.project.Get(
               required=False)
+          project_msg = ' in project [{}]'.format(
+              conn_context.cluster_project
+          ) if is_gke and is_multi_tenant else ''
           log.status.Print('For cluster [{cluster}]{zone}{project}:'.format(
               cluster=conn_context.cluster_name,
-              zone=location_msg if conn_context.cluster_location else '',
-              project=project_msg if is_multi_tenant else ''))
+              zone=location_msg,
+              project=project_msg))
         return commands.SortByName(client.ListServices(namespace_ref))
 
 
@@ -135,5 +139,6 @@ class AlphaList(List):
   @classmethod
   def Args(cls, parser):
     cls.CommonArgs(parser)
+
 
 AlphaList.__doc__ = List.__doc__

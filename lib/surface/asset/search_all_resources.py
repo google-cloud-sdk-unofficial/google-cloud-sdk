@@ -96,6 +96,10 @@ def AddQueryArgument(parser):
           ``env''.
         * ```kmsKey:key``` to find Cloud resources encrypted with a
           customer-managed encryption key whose name contains ``key'' as a word.
+          This field is deprecated. Please use the `kmsKeys` field to retrieve
+          KMS key information.
+        * ```kmsKeys:key``` to find Cloud resources encrypted with
+          customer-managed encryption keys whose name contains the word ``key''.
         * ```relationships:instance-group-1``` to find Cloud resources that have
           relationships with ``instance-group-1'' in the related resource name.
         * ```relationships:INSTANCE_TO_INSTANCEGROUP``` to find Compute
@@ -171,16 +175,15 @@ def AddOrderByArgument(parser):
           * `displayName`
           * `description`
           * `location`
-          * `kmsKey`
           * `createTime`
           * `updateTime`
           * `state`
           * `parentFullResourceName`
           * `parentAssetType`
 
-        All the other fields such as repeated fields (e.g., `networkTags`), map
-        fields (e.g., `labels`) and struct fields (e.g., `additionalAttributes`)
-        are not supported.
+        All the other fields such as repeated fields (e.g., `networkTags`,
+        `kmsKeys`), map fields (e.g., `labels`) and struct fields (e.g.,
+        `additionalAttributes`) are not supported.
 
         Both ```--order-by``` and ```--sort-by``` flags can be used to sort the
         output, with the following differences:
@@ -213,7 +216,7 @@ def AddReadMaskArgument(parser):
           * `location`
           * `labels`
           * `network_tags` or `networkTags`
-          * `kms_key` or `kmsKey`
+          * `kms_keys` or `kmsKeys`
           * `create_time` or `createTime`
           * `update_time` or `updateTime`
           * `state`

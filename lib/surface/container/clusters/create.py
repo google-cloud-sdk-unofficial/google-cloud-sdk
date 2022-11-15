@@ -342,10 +342,13 @@ def ParseCreateOptionsBase(args, is_autopilot, get_default, location,
       spot=get_default('spot'),
       enable_service_externalips=get_default('enable_service_externalips'),
       disable_pod_cidr_overprovision=get_default('disable_pod_cidr_overprovision'),
+      stack_type=get_default('stack_type'),
+      ipv6_access_type=get_default('ipv6_access_type'),
       private_endpoint_subnetwork=get_default('private_endpoint_subnetwork'),
       enable_google_cloud_access=get_default('enable_google_cloud_access'),
       gateway_api=get_default('gateway_api'),
-      logging_variant=get_default('logging_variant'))
+      logging_variant=get_default('logging_variant'),
+      enable_cost_allocation=get_default('enable_cost_allocation'))
 
 
 GA = 'ga'
@@ -450,6 +453,8 @@ flags_to_add = {
             flags.AddClusterVersionFlag,
         'confidentialnodes':
             flags.AddEnableConfidentialNodesFlag,
+        'costmanagementconfig':
+            flags.AddCostManagementConfigFlag,
         'disabledefaultsnat':
             AddDisableDefaultSnatFlagForClusterCreate,
         'databaseencryption':
@@ -548,6 +553,10 @@ flags_to_add = {
             lambda p: flags.AddSystemConfigFlag(p, hidden=False),
         'stackdriver':
             flags.AddEnableStackdriverKubernetesFlag,
+        'stacktype':
+            lambda p: flags.AddStackTypeFlag(p, hidden=True),
+        'ipv6accesstype':
+            lambda p: flags.AddIpv6AccessTypeFlag(p, hidden=True),
         'tags':
             flags.AddTagsCreate,
         'threads_per_core':
@@ -734,7 +743,7 @@ flags_to_add = {
             flags.AddEnableStackdriverKubernetesFlag,
         'stacktype':
             flags.AddStackTypeFlag,
-        'ipv6Accesstype':
+        'ipv6accesstype':
             flags.AddIpv6AccessTypeFlag,
         'surgeupgrade': (lambda p: flags.AddSurgeUpgradeFlag(p, default=1)),
         'systemconfig':

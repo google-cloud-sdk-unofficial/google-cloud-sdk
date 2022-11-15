@@ -34,5 +34,6 @@
   arguments:
     resource:
       help_text: Scan run to list crawled URLs for.
-      spec: !REF googlecloudsdk.command_lib.web_security_scanner.resources:scan-run
+      spec: !REF googlecloudsdk.command_lib.web_security_scanner.resources:scan_run
+      is_positional: false
       is_parent_resource: true

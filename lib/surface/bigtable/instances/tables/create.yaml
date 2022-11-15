@@ -26,6 +26,15 @@
         for the table to be kept for 7 days, run:
 
         $ {command} my-table --instance=my-instance --column-families="my-family:maxage=10d" --change-stream-retention-period=7d
+
+        To create a deletion-protected table `my-table` in instance `my-instance` with a column family `my-family`, run:
+
+        $ {command} my-table --instance=my-instance --column-families="my-family" --deletion-protection
+
+        To create a table `my-table` without deletion protection in instance `my-instance` with a column family `my-family`, run:
+
+        $ {command} my-table --instance=my-instance --column-families="my-family" --no-deletion-protection
+
     BETA:
       examples: |
         To create a table `my-table` in instance `my-instance` with a column family `my-family`, run:
@@ -91,7 +100,6 @@
       processor: googlecloudsdk.api_lib.bigtable.tables:ConvertDurationToSeconds
       release_tracks: [ALPHA]
     - api_field: createTableRequest.table.deletionProtection
-      hidden: true  # TODO(b/218321162): unhide once the deletion protection feature is released.
       arg_name: deletion-protection
       type: bool
       help_text: |

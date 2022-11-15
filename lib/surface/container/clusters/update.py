@@ -347,6 +347,10 @@ class Update(base.UpdateCommand):
     flags.AddEnablePrivateEndpoint(group)
     flags.AddEnableGoogleCloudAccess(group)
     flags.AddLoggingVariantFlag(group)
+    flags.AddAdditionalPodIpv4RangesFlag(group)
+    flags.AddRemoveAdditionalPodIpv4RangesFlag(group)
+    flags.AddStackTypeFlag(group, hidden=True)
+    flags.AddCostManagementConfigFlag(group, is_update=True)
 
   def ParseUpdateOptions(self, args, locations):
     get_default = lambda key: getattr(args, key)
@@ -412,6 +416,10 @@ class Update(base.UpdateCommand):
     opts.binauthz_evaluation_mode = args.binauthz_evaluation_mode
     opts.binauthz_policy = None
     opts.logging_variant = args.logging_variant
+    opts.additional_pod_ipv4_ranges = args.additional_pod_ipv4_ranges
+    opts.removed_additional_pod_ipv4_ranges = args.remove_additional_pod_ipv4_ranges
+    opts.stack_type = args.stack_type
+    opts.enable_cost_allocation = args.enable_cost_allocation
     return opts
 
   def Run(self, args):
@@ -671,12 +679,13 @@ to completion."""
             args.enable_google_cloud_access)
       except apitools_exceptions.HttpError as error:
         raise exceptions.HttpException(error, util.HTTP_ERROR_FORMAT)
-    elif getattr(args, 'binauthz_evaluation_mode', None) is not None or getattr(
-        args, 'binauthz_policy', None) is not None:
+    elif getattr(args, 'enable_binauthz', None) is not None or getattr(
+        args, 'binauthz_evaluation_mode', None) is not None or getattr(
+            args, 'binauthz_policy', None) is not None:
       try:
         op_ref = adapter.ModifyBinaryAuthorization(
-            cluster_ref,
-            cluster.binaryAuthorization, args.binauthz_evaluation_mode,
+            cluster_ref, cluster.binaryAuthorization,
+            args.enable_binauthz, args.binauthz_evaluation_mode,
             getattr(args, 'binauthz_policy', None))
       except apitools_exceptions.HttpError as error:
         raise exceptions.HttpException(error, util.HTTP_ERROR_FORMAT)
@@ -822,6 +831,8 @@ class UpdateBeta(Update):
     flags.AddCostManagementConfigFlag(group, is_update=True)
     flags.AddStackTypeFlag(group, hidden=True)
     flags.AddLoggingVariantFlag(group)
+    flags.AddAdditionalPodIpv4RangesFlag(group)
+    flags.AddRemoveAdditionalPodIpv4RangesFlag(group)
 
   def ParseUpdateOptions(self, args, locations):
     get_default = lambda key: getattr(args, key)
@@ -918,6 +929,8 @@ class UpdateBeta(Update):
     opts.binauthz_policy = None
     opts.stack_type = args.stack_type
     opts.logging_variant = args.logging_variant
+    opts.additional_pod_ipv4_ranges = args.additional_pod_ipv4_ranges
+    opts.removed_additional_pod_ipv4_ranges = args.remove_additional_pod_ipv4_ranges
     return opts
 
 
@@ -1004,6 +1017,8 @@ class UpdateAlpha(Update):
     flags.AddStackTypeFlag(group, hidden=True)
     flags.AddGatewayFlags(group, hidden=True)
     flags.AddLoggingVariantFlag(group)
+    flags.AddAdditionalPodIpv4RangesFlag(group)
+    flags.AddRemoveAdditionalPodIpv4RangesFlag(group)
 
   def ParseUpdateOptions(self, args, locations):
     get_default = lambda key: getattr(args, key)
@@ -1095,4 +1110,6 @@ class UpdateAlpha(Update):
     opts.stack_type = args.stack_type
     opts.gateway_api = args.gateway_api
     opts.logging_variant = args.logging_variant
+    opts.additional_pod_ipv4_ranges = args.additional_pod_ipv4_ranges
+    opts.removed_additional_pod_ipv4_ranges = args.remove_additional_pod_ipv4_ranges
     return opts

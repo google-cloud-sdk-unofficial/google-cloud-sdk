@@ -35,7 +35,12 @@ def _RunUpdate(cmd, args, resource=False):
     resource: whether the membership args are resource args
   """
   if resource:
-    memberships = utils.ParseMembershipsFull(args)
+    # Deprecated non-resource arg
+    if args.IsKnownAndSpecified('membership'):
+      resource = False
+      memberships = utils.ParseMemberships(args)
+    else:
+      memberships = base.ParseMembershipsPlural(args, prompt=True, search=True)
   else:
     memberships = utils.ParseMemberships(args)
   f = cmd.GetFeature()

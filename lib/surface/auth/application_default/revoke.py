@@ -61,7 +61,8 @@ class Revoke(base.SilentCommand):
         cred_file)
     if not (c_creds.IsUserAccountCredentials(creds) or
             c_creds.IsExternalAccountCredentials(creds) or
-            c_creds.IsExternalAccountUserCredentials(creds)):
+            c_creds.IsExternalAccountUserCredentials(creds) or
+            c_creds.IsImpersonatedAccountCredentials(creds)):
       raise c_exc.BadFileException(
           'The given credential file is a service account credential, and '
           'cannot be revoked.')

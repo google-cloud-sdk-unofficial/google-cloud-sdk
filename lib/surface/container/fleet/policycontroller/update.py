@@ -128,12 +128,18 @@ class Update(base.UpdateCommand):
     poco_hub_config = utils.set_poco_hub_config_parameters_from_args(
         args, self.messages)
     if resources.UseRegionalMemberships(self.ReleaseTrack()):
-      memberships = utils.select_memberships_full(args)
+      memberships = base.ParseMembershipsPlural(
+          args, prompt=True, prompt_cancel=False, search=True)
     else:
       memberships = utils.select_memberships(args)
     for membership in memberships:
-      full_membership_name = self.MembershipResourceName(
-          membership, use_number=True)
+      full_membership_name = ''
+      if resources.UseRegionalMemberships(self.ReleaseTrack()):
+        full_membership_name = utils.convert_membership_from_project_id_to_number(
+            membership)
+      else:
+        full_membership_name = self.MembershipResourceName(
+            membership, use_number=True)
       if full_membership_name not in membership_specs:
         raise exceptions.Error(
             'Policy Controller is not enabled for membership {}'.format(

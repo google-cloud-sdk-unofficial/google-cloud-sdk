@@ -32,5 +32,5 @@
   arguments:
     resource:
       help_text: Scan config to get scan runs for.
-      # TODO(b/124305522)
-      spec: !REF googlecloudsdk.command_lib.web_security_scanner.resources:scan-config
+      spec: !REF googlecloudsdk.command_lib.web_security_scanner.resources:scan_config
+      is_positional: false

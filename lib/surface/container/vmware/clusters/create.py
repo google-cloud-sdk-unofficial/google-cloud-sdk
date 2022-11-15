@@ -72,8 +72,8 @@ class Create(base.CreateCommand):
     admin_cluster_membership_ref = args.CONCEPTS.admin_cluster_membership.Parse(
     )
     cluster_client = apis.ClustersClient()
-    operation = cluster_client.Create(cluster_ref, admin_cluster_membership_ref,
-                                      args)
+    operation = cluster_client.Create(args, cluster_ref,
+                                      admin_cluster_membership_ref)
 
     if args.async_ and not args.IsSpecified('format'):
       args.format = constants.VMWARE_OPERATIONS_FORMAT

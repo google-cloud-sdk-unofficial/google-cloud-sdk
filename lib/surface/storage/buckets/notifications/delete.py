@@ -58,7 +58,7 @@ class Delete(base.DeleteCommand):
       Delete a single notification configuration (with ID 3) in the
       bucket `example-bucket`:
 
-        $ {command} b/example-bucket/notificationConfigs/3
+        $ {command} projects/_/buckets/example-bucket/notificationConfigs/3
 
       Delete all notification configurations in the bucket `example-bucket`:
 

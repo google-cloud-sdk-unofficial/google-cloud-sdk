@@ -76,4 +76,5 @@ class List(base.ListCommand):
     destination = storage_url.storage_url_from_string(
         args.destination) if args.destination is not None else None
 
-    return insights_api.InsightsApi().list(source_bucket, destination)
+    return insights_api.InsightsApi().list(
+        source_bucket, destination, page_size=args.page_size)

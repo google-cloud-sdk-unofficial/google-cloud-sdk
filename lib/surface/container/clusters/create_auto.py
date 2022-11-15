@@ -41,6 +41,7 @@ auto_flags = [
     'enableGoogleCloudAccess',
     'privateEndpointSubnetwork',
     'managedConfig',
+    'fleetProject',
 ]
 
 # Change default flag values in create-auto

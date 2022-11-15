@@ -25,7 +25,7 @@ from googlecloudsdk.calliope import base
 
 
 class List(base.ListCommand):
-  """List the available Cloud Spanner instance configs."""
+  """List the available Cloud Spanner instance configurations."""
 
   detailed_help = {
       'EXAMPLES':

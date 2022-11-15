@@ -1,15 +1,46 @@
-- release_tracks: [GA, BETA, ALPHA]
-  hidden: true  # TODO(b/227216958): unhide this CLI after the feature is released.
+- release_tracks: [ALPHA]
 
   help_text:
-    brief: Update the specifications of an existing Cloud Bigtable table.
+    brief: Update an existing Cloud Bigtable table.
     description: Update an existing new Cloud Bigtable table with the specified configuration.
     examples: |
-      To enable the deletion proteced bit, run:
+      To enable deletion protection, run:
 
       $ {command} my-table --instance=my-instance --deletion-protection
 
-      To disable the deletion proteced bit, run:
+      To disable deletion protection, run:
+
+      $ {command} my-table --instance=my-instance --no-deletion-protection
+
+  request:
+    collection: bigtableadmin.projects.instances.tables
+    method: patch
+    modify_request_hooks:
+    - googlecloudsdk.api_lib.bigtable.tables:RefreshUpdateMask
+
+  arguments:
+    resource:
+      help_text: Cloud Bigtable table to update.
+      spec: !REF googlecloudsdk.command_lib.bigtable.resources:table
+    params:
+    - api_field: table.deletionProtection
+      arg_name: deletion-protection
+      type: bool
+      help_text: |
+        Once specified, the table is deletion protected.
+
+- release_tracks: [GA, BETA]
+  hidden: true  # TODO(b/227216958): unhide this CLI after the feature is released.
+
+  help_text:
+    brief: Update an existing Cloud Bigtable table.
+    description: Update an existing new Cloud Bigtable table with the specified configuration.
+    examples: |
+      To enable deletion protection, run:
+
+      $ {command} my-table --instance=my-instance --deletion-protection
+
+      To disable deletion protection, run:
 
       $ {command} my-table --instance=my-instance --no-deletion-protection
 

@@ -79,8 +79,7 @@ class RemoveBgpPeer(base.UpdateCommand):
                 region=router_ref.region,
                 project=router_ref.project))
 
-  def Modify(self, args, existing, cleared_fields,
-             support_md5_authentication_keys):
+  def Modify(self, args, existing, cleared_fields):
     """Mutate the router and record any cleared_fields for Patch request."""
     replacement = encoding.CopyProtoMessage(existing)
 
@@ -98,14 +97,14 @@ class RemoveBgpPeer(base.UpdateCommand):
     for p in existing_router.bgpPeers:
       if p.name in input_remove_list:
         peer = p
-        if support_md5_authentication_keys and peer.md5AuthenticationKeyName is not None:
+        if peer.md5AuthenticationKeyName is not None:
           md5_authentication_keys_to_remove.add(peer.md5AuthenticationKeyName)
         replacement.bgpPeers.remove(peer)
         if not replacement.bgpPeers:
           cleared_fields.append('bgpPeers')
         actual_remove_list.append(peer.name)
 
-    if support_md5_authentication_keys and replacement.md5AuthenticationKeys:
+    if replacement.md5AuthenticationKeys:
       replacement.md5AuthenticationKeys = [
           md5_key for md5_key in replacement.md5AuthenticationKeys
           if md5_key.name not in md5_authentication_keys_to_remove
@@ -119,7 +118,7 @@ class RemoveBgpPeer(base.UpdateCommand):
 
     return replacement
 
-  def _Run(self, args, support_md5_authentication_keys=False):
+  def _Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     client = holder.client
 
@@ -130,8 +129,7 @@ class RemoveBgpPeer(base.UpdateCommand):
 
     # Cleared list fields need to be explicitly identified for Patch API.
     cleared_fields = []
-    new_object = self.Modify(args, objects[0], cleared_fields,
-                             support_md5_authentication_keys)
+    new_object = self.Modify(args, objects[0], cleared_fields)
 
     with client.apitools_client.IncludeFields(cleared_fields):
       # There is only one response because one request is made above
@@ -154,7 +152,7 @@ class RemoveBgpPeerBeta(RemoveBgpPeer):
     cls._Args(parser)
 
   def Run(self, args):
-    return self._Run(args, support_md5_authentication_keys=True)
+    return self._Run(args)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -168,7 +166,7 @@ class RemoveBgpPeerAlpha(RemoveBgpPeerBeta):
     cls._Args(parser)
 
   def Run(self, args):
-    return self._Run(args, support_md5_authentication_keys=True)
+    return self._Run(args)
 
 
 RemoveBgpPeer.detailed_help = {

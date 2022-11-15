@@ -22,7 +22,8 @@ from googlecloudsdk.calliope import base
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA,
-                    base.ReleaseTrack.ALPHA)
+                    base.ReleaseTrack.ALPHA,
+                    base.ReleaseTrack.GA)
 class Fields(base.Group):
   """Manage field metadata for Cloud Firestore."""
   pass

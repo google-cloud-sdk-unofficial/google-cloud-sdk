@@ -81,6 +81,8 @@
       release_tracks: [ALPHA]
     - _REF_: googlecloudsdk.command_lib.beyondcorp.app.connections.flags:display_name_v1
       release_tracks: [BETA]
+    - _REF_: googlecloudsdk.command_lib.beyondcorp.app.connections.flags:app_gateway_v1
+      release_tracks: [BETA]
 
     labels:
       ALPHA:

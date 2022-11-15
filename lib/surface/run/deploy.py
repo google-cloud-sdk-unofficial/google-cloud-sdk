@@ -80,12 +80,12 @@ class BuildType(enum.Enum):
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Deploy(base.Command):
-  """Deploy a container to Cloud Run."""
+  """Create or update a Cloud Run service."""
 
   detailed_help = {
       'DESCRIPTION':
           """\
-          Deploys container images to Google Cloud Run.
+          Creates or updates a Cloud Run service.
           """,
       'EXAMPLES':
           """\
@@ -294,7 +294,7 @@ class Deploy(base.Command):
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class BetaDeploy(Deploy):
-  """Deploy a container to Cloud Run."""
+  """Create or update a Cloud Run service."""
 
   @staticmethod
   def Args(parser):
@@ -310,7 +310,7 @@ class BetaDeploy(Deploy):
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class AlphaDeploy(Deploy):
-  """Deploy a container to Cloud Run."""
+  """Create or update a Cloud Run service."""
 
   @staticmethod
   def Args(parser):

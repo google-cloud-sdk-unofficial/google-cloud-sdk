@@ -41,7 +41,6 @@ from googlecloudsdk.core import resources
 from googlecloudsdk.core.console import progress_tracker
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Replace(base.Command):
   """Creates or replaces a job from a YAML Job specification."""
 

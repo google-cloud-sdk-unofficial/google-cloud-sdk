@@ -21,7 +21,7 @@ from __future__ import unicode_literals
 import io
 
 from googlecloudsdk.calliope import base
-from googlecloudsdk.third_party.apis import apis_map
+from googlecloudsdk.generated_clients.apis import apis_map
 
 IAP_TUNNEL_SERVICE = 'iap_tunnel'
 START_IAP_TUNNEL_COMMAND = 'gcloud compute start-iap-tunnel'

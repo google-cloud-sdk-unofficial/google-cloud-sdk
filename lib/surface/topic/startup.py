@@ -46,7 +46,6 @@ class Startup(base.TopicCommand):
   require Python 2.7.x, including:
 
       * `dev_appserver`
-      * `endpointscfg`
 
   # Bundled Python on Linux
 

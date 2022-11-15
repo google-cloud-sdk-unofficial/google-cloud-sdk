@@ -26,7 +26,7 @@ from googlecloudsdk.command_lib.spanner import flags
 
 
 class Describe(base.DescribeCommand):
-  """Describe a Cloud Spanner instance config."""
+  """Describe a Cloud Spanner instance configuration."""
 
   detailed_help = {
       'EXAMPLES':

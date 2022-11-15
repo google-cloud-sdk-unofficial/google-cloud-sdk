@@ -50,6 +50,7 @@ class Update(base.UpdateCommand):
     flags.AddRootVolumeSize(parser)
     flags.AddDescriptionForUpdate(parser)
     flags.AddAnnotationsForUpdate(parser, 'cluster')
+    flags.AddTagsForUpdate(parser, 'control plane')
     aws_flags.AddInstanceType(parser)
     aws_flags.AddRoleArn(parser, required=False)
     aws_flags.AddRoleSessionName(parser)

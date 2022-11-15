@@ -27,26 +27,24 @@ from googlecloudsdk.command_lib.spanner import flags
 from googlecloudsdk.command_lib.util.args import labels_util
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-@base.Hidden
 class Update(base.UpdateCommand):
-  """Update a Cloud Spanner instance config."""
+  """Update a Cloud Spanner instance configuration."""
   detailed_help = {
       'EXAMPLES':
           textwrap.dedent("""\
-        To update display name on a Cloud Spanner instance config 'custom-instance-config', run:
+        To update display name of a custom Cloud Spanner instance configuration 'custom-instance-config', run:
 
           $ {command} custom-instance-config --display-name=nam3-RO-us-central1
 
-        To modify the instance config 'custom-instance-config' by adding labels 'k0', with value 'value1' and label 'k1' with value 'value2' and removing labels with key 'k3', run:
+        To modify the instance config 'custom-instance-config' by adding label 'k0', with value 'value1' and label 'k1' with value 'value2' and removing labels with key 'k3', run:
 
          $ {command} custom-instance-config --update-labels=k0=value1,k1=value2 --remove-labels=k3
 
-        To clear all labels on a Cloud Spanner instance config 'custom-instance-config', run:
+        To clear all labels of a custom Cloud Spanner instance configuration 'custom-instance-config', run:
 
           $ {command} custom-instance-config --clear-labels
 
-        To remove an existing label on a Cloud Spanner instance config 'custom-instance-config', run:
+        To remove an existing label of a custom Cloud Spanner instance configuration 'custom-instance-config', run:
 
           $ {command} custom-instance-config --remove-labels=KEY1,KEY2
         """),
@@ -64,8 +62,8 @@ class Update(base.UpdateCommand):
         'config',
         metavar='INSTANCE_CONFIG',
         completer=flags.InstanceConfigCompleter,
-        help='Cloud Spanner instance config. The `custom-` prefix is required '
-        'to avoid name conflicts with Google managed configurations.')
+        help='Cloud Spanner instance config. The \'custom-\' prefix is required '
+        'to avoid name conflicts with Google-managed configurations.')
 
     parser.add_argument(
         '--display-name',
@@ -81,7 +79,8 @@ class Update(base.UpdateCommand):
         '--validate-only',
         action='store_true',
         default=False,
-        help='Validate the update action, but don\'t actually perform it.')
+        help='Use this flag to validate that the request will succeed before executing it.'
+    )
 
   def Run(self, args):
     """This is what gets called when the user runs this command.

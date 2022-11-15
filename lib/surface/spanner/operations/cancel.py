@@ -29,34 +29,8 @@ from googlecloudsdk.calliope import exceptions as c_exceptions
 from googlecloudsdk.command_lib.spanner import flags
 
 
-def _CommonRun(args):
-  """Performs run actions common to all Cancel stages.
-
-  Args:
-    args: The arguments that were provided to this command invocation.
-
-  Returns:
-    (Operation) The response message.
-  """
-  # TODO(b/215646847): Remove Common Run from the cancel after instance-config
-  # flag is present in all (GA/Beta/Alpha) stages. Currently, it is only present
-  # in the Alpha stage.
-  # Checks that user only specified either database or backup flag.
-  if (args.IsSpecified('database') and args.IsSpecified('backup')):
-    raise c_exceptions.InvalidArgumentException(
-        '--database or --backup', 'Must specify either --database or --backup.')
-
-  if args.backup:
-    return backup_operations.Cancel(args.instance, args.backup, args.operation)
-
-  if args.database:
-    return database_operations.Cancel(args.instance, args.database,
-                                      args.operation)
-  else:
-    return instance_operations.Cancel(args.instance, args.operation)
-
-
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA,
+                    base.ReleaseTrack.ALPHA)
 class Cancel(base.Command):
   """Cancel a Cloud Spanner operation."""
 
@@ -90,36 +64,12 @@ class Cancel(base.Command):
           on the command line after this command. Positional arguments are
           allowed.
     """
-    flags.Instance(positional=False,
-                   text='The ID of the instance the operation is executing on.'
-                  ).AddToParser(parser)
-    flags.AddCommonCancelArgs(parser)
-
-  def Run(self, args):
-    """This is what gets called when the user runs this command.
-
-    Args:
-      args: an argparse namespace. All the arguments that were provided to this
-        command invocation.
-
-    Returns:
-      Some value that we want to have printed later.
-    """
-    return _CommonRun(args)
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class AlphaCancel(Cancel):
-  """Cancel a Cloud Spanner operation."""
-
-  @staticmethod
-  def Args(parser):
-    """See base class."""
     mutex_group = parser.add_group(mutex=True, required=True)
     mutex_group.add_argument(
         '--instance-config',
         completer=flags.InstanceConfigCompleter,
-        help='The ID of the instance config the operation is executing on.')
+        help='The ID of the instance configuration the operation is executing on.'
+    )
     mutex_group.add_argument(
         '--instance',
         completer=flags.InstanceCompleter,
@@ -140,4 +90,19 @@ class AlphaCancel(Cancel):
     if args.instance_config:
       return instance_config_operations.Cancel(args.instance_config,
                                                args.operation)
-    return _CommonRun(args)
+
+    # Checks that user only specified either database or backup flag.
+    if (args.IsSpecified('database') and args.IsSpecified('backup')):
+      raise c_exceptions.InvalidArgumentException(
+          '--database or --backup',
+          'Must specify either --database or --backup.')
+
+    if args.backup:
+      return backup_operations.Cancel(args.instance, args.backup,
+                                      args.operation)
+
+    if args.database:
+      return database_operations.Cancel(args.instance, args.database,
+                                        args.operation)
+    else:
+      return instance_operations.Cancel(args.instance, args.operation)

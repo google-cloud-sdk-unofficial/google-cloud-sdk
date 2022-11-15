@@ -36,25 +36,18 @@ class UpdateBgpPeer(base.UpdateCommand):
   ROUTER_ARG = None
 
   @classmethod
-  def _Args(cls, parser, support_md5_authentication_keys=False):
+  def _Args(cls, parser):
     cls.ROUTER_ARG = flags.RouterArgument()
     cls.ROUTER_ARG.AddArgument(parser)
     base.ASYNC_FLAG.AddToParser(parser)
-    flags.AddBgpPeerArgs(
-        parser,
-        for_add_bgp_peer=False,
-        support_md5_authentication_keys=support_md5_authentication_keys,
-        is_update=True)
+    flags.AddBgpPeerArgs(parser, for_add_bgp_peer=False, is_update=True)
     flags.AddUpdateCustomAdvertisementArgs(parser, 'peer')
 
   @classmethod
   def Args(cls, parser):
     cls._Args(parser)
 
-  def _Run(self,
-           args,
-           support_bfd_mode=False,
-           support_md5_authentication_keys=False):
+  def _Run(self, args, support_bfd_mode=False):
     # Manually ensure replace/incremental flags are mutually exclusive.
     router_utils.CheckIncompatibleFlagsOrRaise(args)
 
@@ -72,37 +65,35 @@ class UpdateBgpPeer(base.UpdateCommand):
 
     md5_authentication_key_name = None
     cleared_fields = []
-    if support_md5_authentication_keys:
-      if args.clear_md5_authentication_key and peer.md5AuthenticationKeyName is not None:
-        replacement.md5AuthenticationKeys = [
-            md5_authentication_key
-            for md5_authentication_key in replacement.md5AuthenticationKeys
-            if md5_authentication_key.name != peer.md5AuthenticationKeyName
-        ]
-        if not replacement.md5AuthenticationKeys:
-          cleared_fields.append('md5AuthenticationKeys')
-      elif args.md5_authentication_key is not None:
-        if peer.md5AuthenticationKeyName is not None:
-          md5_authentication_key_name = peer.md5AuthenticationKeyName
-          for md5_authentication_key in replacement.md5AuthenticationKeys:
-            if md5_authentication_key.name == md5_authentication_key_name:
-              md5_authentication_key.key = args.md5_authentication_key
-              break
-        else:
-          md5_authentication_key_name = router_utils.GenerateMd5AuthenticationKeyName(
-              replacement, args)
+    if args.clear_md5_authentication_key and peer.md5AuthenticationKeyName is not None:
+      replacement.md5AuthenticationKeys = [
+          md5_authentication_key
+          for md5_authentication_key in replacement.md5AuthenticationKeys
+          if md5_authentication_key.name != peer.md5AuthenticationKeyName
+      ]
+      if not replacement.md5AuthenticationKeys:
+        cleared_fields.append('md5AuthenticationKeys')
+    elif args.md5_authentication_key is not None:
+      if peer.md5AuthenticationKeyName is not None:
+        md5_authentication_key_name = peer.md5AuthenticationKeyName
+        for md5_authentication_key in replacement.md5AuthenticationKeys:
+          if md5_authentication_key.name == md5_authentication_key_name:
+            md5_authentication_key.key = args.md5_authentication_key
+            break
+      else:
+        md5_authentication_key_name = router_utils.GenerateMd5AuthenticationKeyName(
+            replacement, args)
 
-          md5_authentication_key = messages.RouterMd5AuthenticationKey(
-              name=md5_authentication_key_name, key=args.md5_authentication_key)
-          replacement.md5AuthenticationKeys.append(md5_authentication_key)
+        md5_authentication_key = messages.RouterMd5AuthenticationKey(
+            name=md5_authentication_key_name, key=args.md5_authentication_key)
+        replacement.md5AuthenticationKeys.append(md5_authentication_key)
 
     _UpdateBgpPeerMessage(
         peer,
         messages,
         args,
         md5_authentication_key_name=md5_authentication_key_name,
-        support_bfd_mode=support_bfd_mode,
-        support_md5_authentication_keys=support_md5_authentication_keys)
+        support_bfd_mode=support_bfd_mode)
 
     if router_utils.HasReplaceAdvertisementFlags(args):
       mode, groups, ranges = router_utils.ParseAdvertisements(
@@ -214,11 +205,10 @@ class UpdateBgpPeerBeta(UpdateBgpPeer):
 
   @classmethod
   def Args(cls, parser):
-    cls._Args(parser, support_md5_authentication_keys=True)
+    cls._Args(parser)
 
   def Run(self, args):
-    return self._Run(
-        args, support_bfd_mode=False, support_md5_authentication_keys=True)
+    return self._Run(args, support_bfd_mode=False)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -229,19 +219,17 @@ class UpdateBgpPeerAlpha(UpdateBgpPeerBeta):
 
   @classmethod
   def Args(cls, parser):
-    cls._Args(parser, support_md5_authentication_keys=True)
+    cls._Args(parser)
 
   def Run(self, args):
-    return self._Run(
-        args, support_bfd_mode=True, support_md5_authentication_keys=True)
+    return self._Run(args, support_bfd_mode=True)
 
 
 def _UpdateBgpPeerMessage(peer,
                           messages,
                           args,
                           md5_authentication_key_name,
-                          support_bfd_mode=False,
-                          support_md5_authentication_keys=False):
+                          support_bfd_mode=False):
   """Updates base attributes of a BGP peer based on flag arguments."""
 
   attrs = {
@@ -263,12 +251,12 @@ def _UpdateBgpPeerMessage(peer,
     attrs['ipv6NexthopAddress'] = args.ipv6_nexthop_address
   if args.peer_ipv6_nexthop_address is not None:
     attrs['peerIpv6NexthopAddress'] = args.peer_ipv6_nexthop_address
-  if support_md5_authentication_keys and args.md5_authentication_key is not None:
+  if args.md5_authentication_key is not None:
     attrs['md5AuthenticationKeyName'] = md5_authentication_key_name
   for attr, value in attrs.items():
     if value is not None:
       setattr(peer, attr, value)
-  if support_md5_authentication_keys and args.clear_md5_authentication_key:
+  if args.clear_md5_authentication_key:
     peer.md5AuthenticationKeyName = None
   bfd = None
   if support_bfd_mode:

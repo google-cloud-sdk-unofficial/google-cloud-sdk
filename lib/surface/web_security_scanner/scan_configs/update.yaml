@@ -35,6 +35,7 @@
     resource:
       help_text: Scan config to update.
       spec: !REF googlecloudsdk.command_lib.web_security_scanner.resources:scan_config
+      is_positional: true
     params:
     - !REF googlecloudsdk.command_lib.web_security_scanner.flags:display_name
     - !REF googlecloudsdk.command_lib.web_security_scanner.flags:starting_urls
