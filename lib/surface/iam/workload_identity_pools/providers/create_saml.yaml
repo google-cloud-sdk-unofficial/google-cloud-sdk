@@ -41,6 +41,7 @@
       help_text: |-
         The workload identity pool provider to create.
       spec: !REF googlecloudsdk.command_lib.iam.resources:workload_identity_pool_provider
+      is_positional: true
 
     params:
     - _REF_: googlecloudsdk.command_lib.iam.flags:workload_identity_pool_provider.display_name

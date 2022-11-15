@@ -51,7 +51,7 @@ def check_instance(instance_id):
         """.format(instance_id=instance_id)))
 
 
-def _download_sample_files(appname):
+def download_sample_files(appname):
   """Download schema and binaries for the given sample app.
 
   If the schema and all binaries exist already, skip download. If any file
@@ -223,7 +223,7 @@ class Init(base.Command):
 
     # Download any missing sample app binaries from GCS, including the schema
     # file we need to create the DB
-    _download_sample_files(appname)
+    download_sample_files(appname)
 
     # Create the sample app DB
     log.status.Print(

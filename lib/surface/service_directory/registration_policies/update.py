@@ -51,19 +51,7 @@ class UpdateBeta(base.UpdateCommand):
     location_ref = args.CONCEPTS.location.Parse()
 
     policy = args.policy_from_file
-
-    if 'metadata' not in policy.keys():
-      raise util.PolicyFileRequiredFieldsUnsetError(
-          'Field "metadata" is not specified.')
-    if 'name' not in policy['metadata']:
-      raise util.PolicyFileRequiredFieldsUnsetError(
-          'Field "name" is not specified in "metadata".')
-    if 'spec' not in policy.keys():
-      raise util.PolicyFileRequiredFieldsUnsetError(
-          'Field "spec" is not specified.')
-    if 'resource_policies' not in policy['spec']:
-      raise util.PolicyFileRequiredFieldsUnsetError(
-          'Field "resource_policies" is not specified in "spec".')
+    util.ValidatePolicyFile(policy)
 
     result = client.Update(location_ref, policy)
     log.UpdatedResource(policy['metadata']['name'], _RESOURCE_TYPE)

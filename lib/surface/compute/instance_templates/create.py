@@ -68,7 +68,8 @@ def _CommonArgs(parser,
                 support_numa_node_count=False,
                 support_visible_core_count=False,
                 support_max_run_duration=False,
-                support_region_instance_template=False):
+                support_region_instance_template=False,
+                support_provisioned_throughput=False):
   """Adding arguments applicable for creating instance templates."""
   parser.display_info.AddFormat(instance_templates_flags.DEFAULT_LIST_FORMAT)
   metadata_utils.AddMetadataArgs(parser)
@@ -77,7 +78,8 @@ def _CommonArgs(parser,
       parser,
       enable_kms=support_kms,
       support_boot=True,
-      support_multi_writer=support_multi_writer)
+      support_multi_writer=support_multi_writer,
+      support_provisioned_throughput=support_provisioned_throughput)
   if support_local_ssd_size:
     instances_flags.AddLocalSsdArgsWithSize(parser)
   else:
@@ -507,7 +509,8 @@ def _RunCreate(compute_api,
                support_visible_core_count=False,
                support_max_run_duration=False,
                support_region_instance_template=False,
-               support_confidential_compute_type=False):
+               support_confidential_compute_type=False,
+               support_provisioned_throughput=False):
   """Common routine for creating instance template.
 
   This is shared between various release tracks.
@@ -534,6 +537,8 @@ def _RunCreate(compute_api,
         template is supported.
       support_confidential_compute_type: Indicate what confidential compute type
         is used.
+      support_provisioned_throughput: Indicate the provisioned throughput is
+        set.
 
   Returns:
       A resource object dispatched by display.Displayer().
@@ -716,7 +721,8 @@ def _RunCreate(compute_api,
           instance_template_ref.project,
           getattr(args, 'create_disk', []),
           support_kms=support_kms,
-          support_multi_writer=support_multi_writer))
+          support_multi_writer=support_multi_writer,
+          support_provisioned_throughput=support_provisioned_throughput))
 
   if create_boot_disk:
     boot_disk_list = [
@@ -907,6 +913,7 @@ class Create(base.CreateCommand):
   _support_visible_core_count = True
   _support_max_run_duration = False
   _support_region_instance_template = False
+  _support_provisioned_throughput = False
 
   @classmethod
   def Args(cls, parser):
@@ -920,7 +927,8 @@ class Create(base.CreateCommand):
         support_numa_node_count=cls._support_numa_node_count,
         support_visible_core_count=cls._support_visible_core_count,
         support_max_run_duration=cls._support_max_run_duration,
-        support_region_instance_template=cls._support_region_instance_template)
+        support_region_instance_template=cls._support_region_instance_template,
+        support_provisioned_throughput=cls._support_provisioned_throughput)
     instances_flags.AddMinCpuPlatformArgs(parser, base.ReleaseTrack.GA)
     instances_flags.AddPrivateIpv6GoogleAccessArgForTemplate(
         parser, utils.COMPUTE_GA_API_VERSION)
@@ -949,7 +957,8 @@ class Create(base.CreateCommand):
         support_numa_node_count=self._support_numa_node_count,
         support_visible_core_count=self._support_visible_core_count,
         support_max_run_duration=self._support_max_run_duration,
-        support_region_instance_template=self._support_region_instance_template)
+        support_region_instance_template=self._support_region_instance_template,
+        support_provisioned_throughput=self._support_provisioned_throughput)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
@@ -976,6 +985,7 @@ class CreateBeta(Create):
   _support_visible_core_count = True
   _support_max_run_duration = False
   _support_region_instance_template = False
+  _support_provisioned_throughput = False
 
   @classmethod
   def Args(cls, parser):
@@ -991,7 +1001,8 @@ class CreateBeta(Create):
         ._support_host_error_timeout_seconds,
         support_visible_core_count=cls._support_visible_core_count,
         support_max_run_duration=cls._support_max_run_duration,
-        support_region_instance_template=cls._support_region_instance_template)
+        support_region_instance_template=cls._support_region_instance_template,
+        support_provisioned_throughput=cls._support_provisioned_throughput)
     instances_flags.AddMinCpuPlatformArgs(parser, base.ReleaseTrack.BETA)
     instances_flags.AddPrivateIpv6GoogleAccessArgForTemplate(
         parser, utils.COMPUTE_BETA_API_VERSION)
@@ -1023,7 +1034,8 @@ class CreateBeta(Create):
         support_numa_node_count=self._support_numa_node_count,
         support_visible_core_count=self._support_visible_core_count,
         support_max_run_duration=self._support_max_run_duration,
-        support_region_instance_template=self._support_region_instance_template)
+        support_region_instance_template=self._support_region_instance_template,
+        support_provisioned_throughput=self._support_provisioned_throughput)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -1051,6 +1063,7 @@ class CreateAlpha(Create):
   _support_max_run_duration = True
   _support_region_instance_template = True
   _support_confidential_compute_type = True
+  _support_provisioned_throughput = True
 
   @classmethod
   def Args(cls, parser):
@@ -1067,7 +1080,8 @@ class CreateAlpha(Create):
         support_numa_node_count=cls._support_numa_node_count,
         support_visible_core_count=cls._support_visible_core_count,
         support_max_run_duration=cls._support_max_run_duration,
-        support_region_instance_template=cls._support_region_instance_template)
+        support_region_instance_template=cls._support_region_instance_template,
+        support_provisioned_throughput=cls._support_provisioned_throughput)
     instances_flags.AddLocalNvdimmArgs(parser)
     instances_flags.AddMinCpuPlatformArgs(parser, base.ReleaseTrack.ALPHA)
     instances_flags.AddConfidentialComputeArgs(
@@ -1103,7 +1117,8 @@ class CreateAlpha(Create):
         support_max_run_duration=self._support_max_run_duration,
         support_region_instance_template=self._support_region_instance_template,
         support_confidential_compute_type=self
-        ._support_confidential_compute_type)
+        ._support_confidential_compute_type,
+        support_provisioned_throughput=self._support_provisioned_throughput)
 
 
 DETAILED_HELP = {

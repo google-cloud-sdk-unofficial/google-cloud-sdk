@@ -32,11 +32,11 @@ class Pig(pig.PigBase, submitter.JobSubmitter):
 
   To submit a Pig job with a local script, run:
 
-    $ {command} --cluster=my_cluster --file=my_queries.pig
+    $ {command} --cluster=my-cluster --file=my_queries.pig
 
   To submit a Pig job with inline queries, run:
 
-    $ {command} --cluster=my_cluster
+    $ {command} --cluster=my-cluster
         -e="LNS = LOAD 'gs://my_bucket/my_file.txt' AS (line)"
         -e="WORDS = FOREACH LNS GENERATE FLATTEN(TOKENIZE(line)) AS word"
         -e="GROUPS = GROUP WORDS BY word"

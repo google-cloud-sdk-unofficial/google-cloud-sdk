@@ -1,4 +1,4 @@
-- release_tracks: [ALPHA]
+- release_tracks: [ALPHA, BETA]
 
   help_text:
     brief: |
@@ -6,7 +6,9 @@
     description: |
       List all workstations under the specified config.
     examples: |
-      $ {command}
+      To list workstations, run:
+
+        $ {command}
 
   arguments:
     resource:

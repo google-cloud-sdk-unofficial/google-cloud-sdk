@@ -57,10 +57,11 @@ class List(base.ListCommand):
     release_track = self.ReleaseTrack()
 
     client = jobs.JobsClient(release_track)
-    if args.location:
-      parent = args.CONCEPTS.location.Parse().RelativeName()
+    location = args.location or properties.VALUES.batch.location.Get()
+    project = args.project or properties.VALUES.core.project.GetOrFail()
+    if location:
+      parent = 'projects/{}/locations/{}'.format(project, location)
     else:
-      project = args.project or properties.VALUES.core.project.GetOrFail()
       parent = 'projects/{}/locations/{}'.format(project, '-')
 
     return list_pager.YieldFromList(

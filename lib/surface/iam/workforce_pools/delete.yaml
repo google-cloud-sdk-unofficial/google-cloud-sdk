@@ -27,7 +27,8 @@
   arguments:
     resource:
       help_text: The workforce pool to delete.
-      spec: !REF googlecloudsdk.command_lib.iam.resources:positional_workforce_pool
+      spec: !REF googlecloudsdk.command_lib.iam.resources:workforce_pool
+      is_positional: true
 
   async:
     collection: iam.locations.workforcePools.operations

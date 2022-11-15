@@ -38,7 +38,6 @@ DETAILED_HELP = {
 }
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Remove(base.DeleteCommand):
   """Remove an SSH key that is used to access the interactive serial console in Bare Metal Solution given its name."""

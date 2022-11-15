@@ -41,23 +41,23 @@ class Update(base.UpdateCommand):
 
   To resize a cluster, run:
 
-    $ {command} my_cluster --region=us-central1 --num-workers=5
+    $ {command} my-cluster --region=us-central1 --num-workers=5
 
   To change the number preemptible workers in a cluster, run:
 
-    $ {command} my_cluster --region=us-central1 --num-preemptible-workers=5
+    $ {command} my-cluster --region=us-central1 --num-preemptible-workers=5
 
   To add the label 'customer=acme' to a cluster, run:
 
-    $ {command} my_cluster --region=us-central1 --update-labels=customer=acme
+    $ {command} my-cluster --region=us-central1 --update-labels=customer=acme
 
   To update the label 'customer=ackme' to 'customer=acme', run:
 
-    $ {command} my_cluster --region=us-central1 --update-labels=customer=acme
+    $ {command} my-cluster --region=us-central1 --update-labels=customer=acme
 
   To remove the label whose key is 'customer', run:
 
-    $ {command} my_cluster --region=us-central1 --remove-labels=customer
+    $ {command} my-cluster --region=us-central1 --remove-labels=customer
 
   """
 

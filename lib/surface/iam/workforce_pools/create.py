@@ -56,10 +56,11 @@ class Create(base.CreateCommand):
   @staticmethod
   def Args(parser):
     workforce_pool_data = yaml_data.ResourceYAMLData.FromPath(
-        'iam.positional_workforce_pool')
+        'iam.workforce_pool')
     concept_parsers.ConceptParser.ForResource(
         'workforce_pool',
-        concepts.ResourceSpec.FromYaml(workforce_pool_data.GetData()),
+        concepts.ResourceSpec.FromYaml(workforce_pool_data.GetData(),
+                                       is_positional=True),
         'The workforce pool to create.',
         required=True).AddToParser(parser)
     flags.AddParentFlags(parser, 'create')

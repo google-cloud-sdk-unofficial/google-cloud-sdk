@@ -19,7 +19,6 @@ import mock
 import pytest  # type: ignore
 
 from google.auth import _default
-from google.auth import api_key
 from google.auth import app_engine
 from google.auth import aws
 from google.auth import compute_engine
@@ -29,6 +28,8 @@ from google.auth import exceptions
 from google.auth import external_account
 from google.auth import identity_pool
 from google.auth import impersonated_credentials
+from google.auth import pluggable
+from google.oauth2 import gdch_credentials
 from google.oauth2 import service_account
 import google.oauth2.credentials
 
@@ -51,6 +52,8 @@ SERVICE_ACCOUNT_FILE = os.path.join(DATA_DIR, "service_account.json")
 
 CLIENT_SECRETS_FILE = os.path.join(DATA_DIR, "client_secrets.json")
 
+GDCH_SERVICE_ACCOUNT_FILE = os.path.join(DATA_DIR, "gdch_service_account.json")
+
 with open(SERVICE_ACCOUNT_FILE) as fh:
     SERVICE_ACCOUNT_FILE_DATA = json.load(fh)
 
@@ -72,6 +75,13 @@ IDENTITY_POOL_DATA = {
     "subject_token_type": "urn:ietf:params:oauth:token-type:jwt",
     "token_url": TOKEN_URL,
     "credential_source": {"file": SUBJECT_TOKEN_TEXT_FILE},
+}
+PLUGGABLE_DATA = {
+    "type": "external_account",
+    "audience": AUDIENCE,
+    "subject_token_type": "urn:ietf:params:oauth:token-type:jwt",
+    "token_url": TOKEN_URL,
+    "credential_source": {"executable": {"command": "command"}},
 }
 AWS_DATA = {
     "type": "external_account",
@@ -638,6 +648,14 @@ def test__get_gcloud_sdk_credentials_no_project_id(load, unused_isfile, get_proj
     assert get_project_id.called
 
 
+def test__get_gdch_service_account_credentials_invalid_format_version():
+    with pytest.raises(exceptions.DefaultCredentialsError) as excinfo:
+        _default._get_gdch_service_account_credentials(
+            "file_name", {"format_version": "2"}
+        )
+    assert excinfo.match("Failed to load GDCH service account credentials")
+
+
 class _AppIdentityModule(object):
     """The interface of the App Idenity app engine module.
     See https://cloud.google.com/appengine/docs/standard/python/refdocs\
@@ -1089,44 +1107,83 @@ def test_default_no_warning_with_quota_project_id_for_user_creds(get_adc_path):
     credentials, project_id = _default.default(quota_project_id="project-foo")
 
 
-def test__get_api_key_credentials_no_env_var():
-    cred, project_id = _default._get_api_key_credentials(quota_project_id="project-foo")
-    assert cred is None
+@mock.patch(
+    "google.auth._cloud_sdk.get_application_default_credentials_path", autospec=True
+)
+def test_default_impersonated_service_account(get_adc_path):
+    get_adc_path.return_value = IMPERSONATED_SERVICE_ACCOUNT_AUTHORIZED_USER_SOURCE_FILE
+
+    credentials, _ = _default.default()
+
+    assert isinstance(credentials, impersonated_credentials.Credentials)
+    assert isinstance(
+        credentials._source_credentials, google.oauth2.credentials.Credentials
+    )
+    assert credentials.service_account_email == "service-account-target@example.com"
+    assert credentials._delegates == ["service-account-delegate@example.com"]
+    assert not credentials._quota_project_id
+    assert not credentials._target_scopes
+
+
+@mock.patch(
+    "google.auth._cloud_sdk.get_application_default_credentials_path", autospec=True
+)
+def test_default_impersonated_service_account_set_scopes(get_adc_path):
+    get_adc_path.return_value = IMPERSONATED_SERVICE_ACCOUNT_AUTHORIZED_USER_SOURCE_FILE
+    scopes = ["scope1", "scope2"]
+
+    credentials, _ = _default.default(scopes=scopes)
+    assert credentials._target_scopes == scopes
+
+
+@mock.patch(
+    "google.auth._cloud_sdk.get_application_default_credentials_path", autospec=True
+)
+def test_default_impersonated_service_account_set_default_scopes(get_adc_path):
+    get_adc_path.return_value = IMPERSONATED_SERVICE_ACCOUNT_AUTHORIZED_USER_SOURCE_FILE
+    default_scopes = ["scope1", "scope2"]
+
+    credentials, _ = _default.default(default_scopes=default_scopes)
+    assert credentials._target_scopes == default_scopes
+
+
+@mock.patch(
+    "google.auth._cloud_sdk.get_application_default_credentials_path", autospec=True
+)
+def test_default_impersonated_service_account_set_both_scopes_and_default_scopes(
+    get_adc_path
+):
+    get_adc_path.return_value = IMPERSONATED_SERVICE_ACCOUNT_AUTHORIZED_USER_SOURCE_FILE
+    scopes = ["scope1", "scope2"]
+    default_scopes = ["scope3", "scope4"]
+
+    credentials, _ = _default.default(scopes=scopes, default_scopes=default_scopes)
+    assert credentials._target_scopes == scopes
+
+
+@EXTERNAL_ACCOUNT_GET_PROJECT_ID_PATCH
+def test_load_credentials_from_external_account_pluggable(get_project_id, tmpdir):
+    config_file = tmpdir.join("config.json")
+    config_file.write(json.dumps(PLUGGABLE_DATA))
+    credentials, project_id = _default.load_credentials_from_file(str(config_file))
+
+    assert isinstance(credentials, pluggable.Credentials)
+    # Since no scopes are specified, the project ID cannot be determined.
     assert project_id is None
+    assert get_project_id.called
 
 
-def test__get_api_key_credentials_from_env_var():
-    with mock.patch.dict(os.environ, {environment_vars.API_KEY: "api-key"}):
-        cred, project_id = _default._get_api_key_credentials(
-            quota_project_id="project-foo"
-        )
-        assert isinstance(cred, api_key.Credentials)
-        assert cred.token == "api-key"
-        assert project_id == "project-foo"
+@mock.patch(
+    "google.auth._cloud_sdk.get_application_default_credentials_path", autospec=True
+)
+def test_default_gdch_service_account_credentials(get_adc_path):
+    get_adc_path.return_value = GDCH_SERVICE_ACCOUNT_FILE
 
+    creds, project = _default.default(quota_project_id="project-foo")
 
-def test_exception_with_api_key_and_adc_env_var():
-    with mock.patch.dict(os.environ, {environment_vars.API_KEY: "api-key"}):
-        with mock.patch.dict(
-            os.environ, {environment_vars.CREDENTIALS: "/path/to/json"}
-        ):
-            with pytest.raises(exceptions.DefaultCredentialsError) as excinfo:
-                _default.default()
-
-            assert excinfo.match(
-                r"GOOGLE_API_KEY and GOOGLE_APPLICATION_CREDENTIALS are mutually exclusive"
-            )
-
-
-def test_default_api_key_from_env_var():
-    with mock.patch.dict(os.environ, {environment_vars.API_KEY: "api-key"}):
-        cred, project_id = _default.default()
-        assert isinstance(cred, api_key.Credentials)
-        assert cred.token == "api-key"
-        assert project_id is None
-
-
-def test_get_api_key_credentials():
-    cred = _default.get_api_key_credentials("api-key")
-    assert isinstance(cred, api_key.Credentials)
-    assert cred.token == "api-key"
+    assert isinstance(creds, gdch_credentials.ServiceAccountCredentials)
+    assert creds._service_identity_name == "service_identity_name"
+    assert creds._audience is None
+    assert creds._token_uri == "https://service-identity.<Domain>/authenticate"
+    assert creds._ca_cert_path == "/path/to/ca/cert"
+    assert project == "project_foo"

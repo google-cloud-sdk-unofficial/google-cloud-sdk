@@ -326,8 +326,6 @@ class Update(base.UpdateCommand):
     flags.AddReleaseChannelFlag(group, is_update=True, hidden=False)
     flags.AddWorkloadIdentityFlags(group)
     flags.AddWorkloadIdentityUpdateFlags(group)
-    flags.AddWorkloadIdentityCPUFlags(group)
-    flags.AddWorkloadIdentityMemoryFlags(group)
     flags.AddIdentityServiceFlag(group)
     flags.AddDatabaseEncryptionFlag(group)
     flags.AddDisableDatabaseEncryptionFlag(group)
@@ -412,6 +410,7 @@ class Update(base.UpdateCommand):
     opts.enable_private_endpoint = args.enable_private_endpoint
     opts.enable_google_cloud_access = args.enable_google_cloud_access
     opts.binauthz_evaluation_mode = args.binauthz_evaluation_mode
+    opts.binauthz_policy = None
     opts.logging_variant = args.logging_variant
     return opts
 
@@ -672,38 +671,15 @@ to completion."""
             args.enable_google_cloud_access)
       except apitools_exceptions.HttpError as error:
         raise exceptions.HttpException(error, util.HTTP_ERROR_FORMAT)
-    elif getattr(args, 'tune_gke_metadata_server_cpu', None) is not None:
-      if cluster.workloadIdentityConfig is None:
-        raise util.Error(
-            'Cannot specify --tune-gke-metadata-server-cpu without workload identity enabled.'
-        )
-      elif not cluster.workloadIdentityConfig.workloadPool:
-        raise util.Error(
-            'Cannot specify --tune-gke-metadata-server-cpu without workloadPool.'
-        )
-      else:
-        try:
-          op_ref = adapter.TuneGkeMetadataServerCpu(
-              cluster_ref, cluster,
-              args.tune_gke_metadata_server_cpu)
-        except apitools_exceptions.HttpError as error:
-          raise exceptions.HttpException(error, util.HTTP_ERROR_FORMAT)
-    elif getattr(args, 'tune_gke_metadata_server_memory', None) is not None:
-      if cluster.workloadIdentityConfig is None:
-        raise util.Error(
-            'Cannot specify --tune-gke-metadata-server-memory without workload identity enabled.'
-        )
-      elif not cluster.workloadIdentityConfig.workloadPool:
-        raise util.Error(
-            'Cannot specify --tune-gke-metadata-server-memory without workloadPool.'
-        )
-      else:
-        try:
-          op_ref = adapter.TuneGkeMetadataServerMemory(
-              cluster_ref, cluster,
-              args.tune_gke_metadata_server_memory)
-        except apitools_exceptions.HttpError as error:
-          raise exceptions.HttpException(error, util.HTTP_ERROR_FORMAT)
+    elif getattr(args, 'binauthz_evaluation_mode', None) is not None or getattr(
+        args, 'binauthz_policy', None) is not None:
+      try:
+        op_ref = adapter.ModifyBinaryAuthorization(
+            cluster_ref,
+            cluster.binaryAuthorization, args.binauthz_evaluation_mode,
+            getattr(args, 'binauthz_policy', None))
+      except apitools_exceptions.HttpError as error:
+        raise exceptions.HttpException(error, util.HTTP_ERROR_FORMAT)
     else:
       if args.enable_legacy_authorization is not None:
         op_ref = adapter.SetLegacyAuthorization(
@@ -815,8 +791,6 @@ class UpdateBeta(Update):
     flags.AddMeshCertificatesFlags(group)
     flags.AddWorkloadIdentityFlags(group, use_identity_provider=True)
     flags.AddWorkloadIdentityUpdateFlags(group)
-    flags.AddWorkloadIdentityCPUFlags(group)
-    flags.AddWorkloadIdentityMemoryFlags(group)
     flags.AddGkeOidcFlag(group)
     flags.AddIdentityServiceFlag(group)
     flags.AddDatabaseEncryptionFlag(group)
@@ -941,6 +915,7 @@ class UpdateBeta(Update):
     opts.enable_google_cloud_access = args.enable_google_cloud_access
     opts.enable_cost_allocation = args.enable_cost_allocation
     opts.binauthz_evaluation_mode = args.binauthz_evaluation_mode
+    opts.binauthz_policy = None
     opts.stack_type = args.stack_type
     opts.logging_variant = args.logging_variant
     return opts
@@ -997,8 +972,6 @@ class UpdateAlpha(Update):
     flags.AddMeshCertificatesFlags(group)
     flags.AddWorkloadIdentityFlags(group, use_identity_provider=True)
     flags.AddWorkloadIdentityUpdateFlags(group)
-    flags.AddWorkloadIdentityCPUFlags(group)
-    flags.AddWorkloadIdentityMemoryFlags(group)
     flags.AddGkeOidcFlag(group)
     flags.AddIdentityServiceFlag(group)
     flags.AddDisableDefaultSnatFlag(group, for_cluster_create=False)
@@ -1118,6 +1091,7 @@ class UpdateAlpha(Update):
     opts.enable_private_endpoint = args.enable_private_endpoint
     opts.enable_google_cloud_access = args.enable_google_cloud_access
     opts.binauthz_evaluation_mode = args.binauthz_evaluation_mode
+    opts.binauthz_policy = None
     opts.stack_type = args.stack_type
     opts.gateway_api = args.gateway_api
     opts.logging_variant = args.logging_variant

@@ -399,6 +399,22 @@ class TestImpersonatedCredentials(object):
         request_kwargs = request.call_args[1]
         assert request_kwargs["url"] == self.IAM_ENDPOINT_OVERRIDE
 
+    def test_with_scopes(self):
+        credentials = self.make_credentials()
+        credentials._target_scopes = []
+        assert credentials.requires_scopes is True
+        credentials = credentials.with_scopes(["fake_scope1", "fake_scope2"])
+        assert credentials.requires_scopes is False
+        assert credentials._target_scopes == ["fake_scope1", "fake_scope2"]
+
+    def test_with_scopes_provide_default_scopes(self):
+        credentials = self.make_credentials()
+        credentials._target_scopes = []
+        credentials = credentials.with_scopes(
+            ["fake_scope1"], default_scopes=["fake_scope2"]
+        )
+        assert credentials._target_scopes == ["fake_scope1"]
+
     def test_id_token_success(
         self, mock_donor_credentials, mock_authorizedsession_idtoken
     ):
@@ -449,14 +465,17 @@ class TestImpersonatedCredentials(object):
         assert credentials.valid
         assert not credentials.expired
 
+        new_credentials = self.make_credentials(lifetime=None)
+
         id_creds = impersonated_credentials.IDTokenCredentials(
             credentials, target_audience=target_audience, include_email=True
         )
-        id_creds = id_creds.from_credentials(target_credentials=credentials)
+        id_creds = id_creds.from_credentials(target_credentials=new_credentials)
         id_creds.refresh(request)
 
         assert id_creds.token == ID_TOKEN_DATA
         assert id_creds._include_email is True
+        assert id_creds._target_credentials is new_credentials
 
     def test_id_token_with_target_audience(
         self, mock_donor_credentials, mock_authorizedsession_idtoken

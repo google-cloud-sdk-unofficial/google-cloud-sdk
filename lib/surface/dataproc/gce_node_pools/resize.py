@@ -26,7 +26,6 @@ from googlecloudsdk.core import log
 import six
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
                     base.ReleaseTrack.GA)
 class Resize(base.Command):
@@ -47,7 +46,9 @@ class Resize(base.Command):
     flags.AddGceNodePoolResourceArg(parser, 'resize', dataproc.api_version)
     flags.AddSizeFlag(parser)
     flags.AddGracefulDecommissionTimeoutFlag(parser)
-    flags.AddTimeoutFlag(parser)
+    # For consistency with clusters update polling timeout. Max allowed graceful
+    # decommission timeout is 24 hours.
+    flags.AddTimeoutFlag(parser, default='25h')
 
   def Run(self, args):
     dataproc = dp.Dataproc(self.ReleaseTrack())

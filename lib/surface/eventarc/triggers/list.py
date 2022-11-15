@@ -49,7 +49,8 @@ table(
     name.scope("triggers"):label=NAME,
     eventFilters.type():label=TYPE,
     destination():label=DESTINATION,
-    active_status():label=ACTIVE
+    active_status():label=ACTIVE,
+    name.scope("locations").segment(0):label=LOCATION
 )
 """
 

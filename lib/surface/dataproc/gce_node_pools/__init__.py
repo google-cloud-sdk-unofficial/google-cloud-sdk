@@ -31,7 +31,12 @@ class GceNodePools(base.Group):
 
   ## EXAMPLES
 
+  To describe a node pool:
+
+    $ {command} describe GCE_NODE_POOL_ID --cluster cluster_name --region region
+
   To resize a node pool:
 
-    $ {command} resize GCE_NODE_POOL_ID --cluster cluster_name --size new_size
+    $ {command} resize GCE_NODE_POOL_ID --cluster cluster_name --region region
+    --size new_size
   """

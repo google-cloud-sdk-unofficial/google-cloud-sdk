@@ -24,7 +24,8 @@
   arguments:
     resource:
       help_text: The Cloud Deploy delivery pipeline to delete.
-      spec: !REF googlecloudsdk.command_lib.deploy.resources:delivery_pipeline_positional
+      spec: !REF googlecloudsdk.command_lib.deploy.resources:delivery_pipeline
+      is_positional: true
     params:
     - arg_name: force
       api_field: force

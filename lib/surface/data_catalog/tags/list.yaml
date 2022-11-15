@@ -19,6 +19,7 @@
     resource:
       help_text: Data Catalog entry in which to list tags. The arguments in this group can be used to specify the attributes of this resource.
       spec: !REF googlecloudsdk.command_lib.data_catalog.resources:entry
+      is_positional: false
 
 - release_tracks: [ALPHA, BETA]
   help_text:
@@ -40,3 +41,4 @@
     resource:
       help_text: Data Catalog entry in which to list tags. The arguments in this group can be used to specify the attributes of this resource.
       spec: !REF googlecloudsdk.command_lib.data_catalog.resources:entry
+      is_positional: false

@@ -19,7 +19,8 @@
   arguments:
     resource:
       help_text: Entry group for which to add an IAM policy binding.
-      spec: !REF googlecloudsdk.command_lib.data_catalog.resources:positional_entry_group
+      spec: !REF googlecloudsdk.command_lib.data_catalog.resources:entry_group
+      is_positional: true
 
 - release_tracks: [ALPHA, BETA]
   help_text:
@@ -41,4 +42,5 @@
   arguments:
     resource:
       help_text: Entry group for which to add an IAM policy binding.
-      spec: !REF googlecloudsdk.command_lib.data_catalog.resources:positional_entry_group
+      spec: !REF googlecloudsdk.command_lib.data_catalog.resources:entry_group
+      is_positional: true

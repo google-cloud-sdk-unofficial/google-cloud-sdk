@@ -39,11 +39,11 @@ class Import(base.UpdateCommand):
       'EXAMPLES': """
 To import a cluster from a YAML file, run:
 
-  $ {command} my_cluster --region=us-central1 --source=cluster.yaml
+  $ {command} my-cluster --region=us-central1 --source=cluster.yaml
 
 To import a cluster from standard output, run:
 
-  $ {command} my_cluster --region=us-central1
+  $ {command} my-cluster --region=us-central1
 """
   }
 

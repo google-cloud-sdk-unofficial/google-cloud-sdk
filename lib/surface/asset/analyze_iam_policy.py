@@ -61,6 +61,7 @@ class AnalyzeIamPolicyGA(base.Command):
     flags.AddAnalyzerSelectorsGroup(parser)
     flags.AddAnalyzerOptionsGroup(parser, True)
     flags.AddAnalyzerConditionContextGroup(parser)
+    flags.AddAnalyzerSavedAnalysisQueryArgs(parser)
 
   def Run(self, args):
     client = client_util.AnalyzeIamPolicyClient(self._API_VERSION)

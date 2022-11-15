@@ -29,6 +29,7 @@
     resource:
       help_text: The workforce pool subject to delete.
       spec: !REF googlecloudsdk.command_lib.iam.resources:workforce_pool_subject
+      is_positional: true
 
   async:
     collection: iam.locations.workforcePools.subjects.operations

@@ -25,7 +25,8 @@
 
   arguments:
     resource:
-      spec: !REF googlecloudsdk.command_lib.deploy.resources:delivery_pipeline_positional
+      spec: !REF googlecloudsdk.command_lib.deploy.resources:delivery_pipeline
+      is_positional: true
       help_text: |
         The delivery pipeline for which to set the IAM policy..
 

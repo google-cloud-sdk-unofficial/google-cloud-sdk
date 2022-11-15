@@ -40,7 +40,7 @@ EXPECTED_USER_ROLES = frozenset([
 ])
 EXPECTED_P4SA_ROLES = frozenset([
     'roles/storage.admin',
-    'roles/pubsub.editor',
+    'roles/storagetransfer.serviceAgent',
 ])
 
 

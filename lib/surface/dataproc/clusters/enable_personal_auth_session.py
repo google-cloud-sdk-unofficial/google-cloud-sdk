@@ -82,7 +82,7 @@ class EnablePersonalAuthSession(base.Command):
           """
           To enable a personal auth session, run:
 
-            $ {command} my_cluster --region=us-central1
+            $ {command} my-cluster --region=us-central1
           """,
   }
 

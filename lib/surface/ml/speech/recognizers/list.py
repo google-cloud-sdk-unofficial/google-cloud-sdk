@@ -41,4 +41,4 @@ class Create(base.ListCommand):
   def Run(self, args):
     location = args.CONCEPTS.location.Parse()
     speech_client = client.SpeechV2Client()
-    return speech_client.List(location, limit=args.limit)
+    return speech_client.ListRecognizers(location, limit=args.limit)

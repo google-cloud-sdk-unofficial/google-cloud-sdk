@@ -41,11 +41,11 @@ class Export(base.DescribeCommand):
       'EXAMPLES': """
 To export a cluster to a YAML file, run:
 
-  $ {command} my_cluster --region=us-central1 --destination=cluster.yaml
+  $ {command} my-cluster --region=us-central1 --destination=cluster.yaml
 
 To export a cluster to standard output, run:
 
-  $ {command} my_cluster --region=us-central1
+  $ {command} my-cluster --region=us-central1
 """
   }
 

@@ -33,6 +33,7 @@
     resource:
       help_text: The parent workforce pool provider of the keys to list.
       spec: !REF googlecloudsdk.command_lib.iam.resources:workforce_pool_provider
+      is_positional: false
 
     params:
     - api_field: showDeleted

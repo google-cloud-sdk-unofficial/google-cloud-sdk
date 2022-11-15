@@ -32,27 +32,27 @@ class Submit(base.Group):
 
   To submit a Hadoop MapReduce job, run:
 
-    $ {command} hadoop --cluster my_cluster --jar my_jar.jar -- arg1 arg2
+    $ {command} hadoop --cluster my-cluster --jar my_jar.jar -- arg1 arg2
 
   To submit a Spark Scala or Java job, run:
 
-    $ {command} spark --cluster my_cluster --jar my_jar.jar -- arg1 arg2
+    $ {command} spark --cluster my-cluster --jar my_jar.jar -- arg1 arg2
 
   To submit a PySpark job, run:
 
-    $ {command} pyspark --cluster my_cluster my_script.py -- arg1 arg2
+    $ {command} pyspark --cluster my-cluster my_script.py -- arg1 arg2
 
   To submit a Spark SQL job, run:
 
-    $ {command} spark-sql --cluster my_cluster --file my_queries.q
+    $ {command} spark-sql --cluster my-cluster --file my_queries.q
 
   To submit a Pig job, run:
 
-    $ {command} pig --cluster my_cluster --file my_script.pig
+    $ {command} pig --cluster my-cluster --file my_script.pig
 
   To submit a Hive job, run:
 
-    $ {command} hive --cluster my_cluster --file my_queries.q
+    $ {command} hive --cluster my-cluster --file my_queries.q
   """
 
   @staticmethod

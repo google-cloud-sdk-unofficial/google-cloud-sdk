@@ -138,6 +138,14 @@ class Vet(base.Command):
             'true',
     }
 
+    proxy_env_names = [
+        'HTTP_PROXY', 'http_proxy', 'HTTPS_PROXY', 'https_proxy', 'NO_PROXY',
+        'no_proxy'
+    ]
+    for env_key, env_val in os.environ.items():
+      if env_key in proxy_env_names:
+        env_vars[env_key] = env_val
+
     with files.TemporaryDirectory() as tempdir:
       cai_assets = os.path.join(tempdir, 'cai_assets.json')
 

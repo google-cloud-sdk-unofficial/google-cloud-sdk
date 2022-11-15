@@ -42,22 +42,22 @@ class Repair(base.Command):
           """
           To repair a cluster by deleting faulty primary worker nodes, run:
 
-            $ {command} my_cluster --region=us-central1 \
+            $ {command} my-cluster --region=us-central1 \
               --node-pool id=PRIMARY_WORKER_POOL,repair-action=delete,instance_names="w-1;w-10"
 
           To repair a cluster by deleting faulty secondary worker nodes, run:
 
-            $ {command} my_cluster --region=us-central1 \
+            $ {command} my-cluster --region=us-central1 \
               --node-pool id=SECONDARY_WORKER_POOL,repair-action=delete,instance_names="sw-1;sw-10"
 
           To repair a cluster by deleting faulty auxillary nodes, run:
 
-            $ {command} my_cluster --region=us-central1 \
+            $ {command} my-cluster --region=us-central1 \
               --node-pool id=<aux_pool_id>,repair-action=delete,instance_names="aux-1;aux-3"
 
           To repair a cluster by deleting faulty nodes from different pools, run:
 
-            $ {command} my_cluster --region=us-central1 \
+            $ {command} my-cluster --region=us-central1 \
               --node-pool id=PRIMARY_WORKER_POOL,repair-action=delete,instance_names="w-1;w-10" \
               --node-pool id=SECONDARY_WORKER_POOL,repair-action=delete,instance_names="sw-1;sw-10" \
               --node-pool id=<aux_pool_id>,repair-action=delete,instance_names="aux-1;aux-3"

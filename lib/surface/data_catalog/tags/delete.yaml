@@ -16,6 +16,7 @@
     resource:
       help_text: Entry tag to delete. The arguments in this group can be used to specify the attributes of this resource.
       spec: !REF googlecloudsdk.command_lib.data_catalog.resources:tag
+      is_positional: true
 
 - release_tracks: [ALPHA, BETA]
   help_text:
@@ -34,3 +35,4 @@
     resource:
       help_text: Entry tag to delete. The arguments in this group can be used to specify the attributes of this resource.
       spec: !REF googlecloudsdk.command_lib.data_catalog.resources:tag
+      is_positional: true

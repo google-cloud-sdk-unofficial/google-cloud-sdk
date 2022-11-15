@@ -189,7 +189,7 @@ class TestGetGCloudStorageArgs(testcase.GsUtilUnitTestCase):
     fake_with_subcommand = FakeCommandWithSubCommandWithGcloudStorageMap(
         command_runner=mock.ANY,
         args=['set', '-y', 'opt1', '-a', 'arg1', 'arg2'],
-        headers=mock.ANY,
+        headers={},
         debug=mock.ANY,
         trace_token=mock.ANY,
         parallel_operations=mock.ANY,
@@ -204,7 +204,7 @@ class TestGetGCloudStorageArgs(testcase.GsUtilUnitTestCase):
     fake_command = FakeCommandWithGcloudStorageMap(
         command_runner=mock.ANY,
         args=['positional_arg', '-f', '-r', 'opt2', '-f'],
-        headers=mock.ANY,
+        headers={},
         debug=mock.ANY,
         trace_token=mock.ANY,
         parallel_operations=mock.ANY,
@@ -218,7 +218,7 @@ class TestGetGCloudStorageArgs(testcase.GsUtilUnitTestCase):
     fake_command = FakeCommandWithGcloudStorageMap(
         command_runner=mock.ANY,
         args=['positional_arg', '-z', 'opt1', '-r', 'opt2'],
-        headers=mock.ANY,
+        headers={},
         debug=mock.ANY,
         trace_token=mock.ANY,
         parallel_operations=mock.ANY,
@@ -233,7 +233,7 @@ class TestGetGCloudStorageArgs(testcase.GsUtilUnitTestCase):
     fake_command = FakeCommandWithGcloudStorageMap(
         command_runner=mock.ANY,
         args=['-z', 'opt1', 'positional_arg', '-r', 'opt2'],
-        headers=mock.ANY,
+        headers={},
         debug=mock.ANY,
         trace_token=mock.ANY,
         parallel_operations=mock.ANY,
@@ -248,7 +248,7 @@ class TestGetGCloudStorageArgs(testcase.GsUtilUnitTestCase):
     fake_command = FakeCommandWithGcloudStorageMap(
         command_runner=mock.ANY,
         args=['-l', 'flag_value1', '-l', 'flag_value2', 'positional_arg'],
-        headers=mock.ANY,
+        headers={},
         debug=mock.ANY,
         trace_token=mock.ANY,
         parallel_operations=mock.ANY,
@@ -267,7 +267,7 @@ class TestGetGCloudStorageArgs(testcase.GsUtilUnitTestCase):
             '-d', 'flag_key1:flag_value1', '-d', 'flag_key2:flag_value2',
             'positional_arg'
         ],
-        headers=mock.ANY,
+        headers={},
         debug=mock.ANY,
         trace_token=mock.ANY,
         parallel_operations=mock.ANY,
@@ -283,7 +283,7 @@ class TestGetGCloudStorageArgs(testcase.GsUtilUnitTestCase):
     fake_command = FakeCommandWithGcloudStorageMap(
         command_runner=mock.ANY,
         args=['-e', 'on', 'positional_arg'],
-        headers=mock.ANY,
+        headers={},
         debug=mock.ANY,
         trace_token=mock.ANY,
         parallel_operations=mock.ANY,
@@ -299,7 +299,7 @@ class TestGetGCloudStorageArgs(testcase.GsUtilUnitTestCase):
             '-e',
             'off',
         ],
-        headers=mock.ANY,
+        headers={},
         debug=mock.ANY,
         trace_token=mock.ANY,
         parallel_operations=mock.ANY,
@@ -308,6 +308,20 @@ class TestGetGCloudStorageArgs(testcase.GsUtilUnitTestCase):
     gcloud_args = fake_command.get_gcloud_storage_args()
     self.assertEqual(gcloud_args,
                      ['objects', 'fake', 'positional_arg', '--e-off'])
+
+  def test_raises_error_for_invalid_value_translated_to_flag(self):
+    fake_command = FakeCommandWithGcloudStorageMap(
+        command_runner=mock.ANY,
+        args=['-e', 'incorrect', 'positional_arg'],
+        headers={},
+        debug=mock.ANY,
+        trace_token=mock.ANY,
+        parallel_operations=mock.ANY,
+        bucket_storage_uri_class=mock.ANY,
+        gsutil_api_class_map_factory=mock.MagicMock())
+    with self.assertRaisesRegex(
+        ValueError, 'Flag value not in translation map for "-e": incorrect'):
+      gcloud_args = fake_command.get_gcloud_storage_args()
 
   def test_raises_error_if_gcloud_storage_map_is_missing(self):
     self._fake_command.gcloud_storage_map = None
@@ -340,7 +354,7 @@ class TestGetGCloudStorageArgs(testcase.GsUtilUnitTestCase):
     fake_with_subcommand = FakeCommandWithSubCommandWithGcloudStorageMap(
         command_runner=mock.ANY,
         args=['set', '-y', 'opt1', '-a', 'arg1', 'arg2'],
-        headers=mock.ANY,
+        headers={},
         debug=mock.ANY,
         trace_token=mock.ANY,
         parallel_operations=mock.ANY,
@@ -359,7 +373,7 @@ class TestGetGCloudStorageArgs(testcase.GsUtilUnitTestCase):
     fake_with_subcommand = FakeCommandWithSubCommandWithGcloudStorageMap(
         command_runner=mock.ANY,
         args=['set', '-y', 'opt1', '-a', 'arg1', 'arg2'],
-        headers=mock.ANY,
+        headers={},
         debug=mock.ANY,
         trace_token=mock.ANY,
         parallel_operations=mock.ANY,
@@ -1230,7 +1244,7 @@ class TestRunGcloudStorage(testcase.GsUtilUnitTestCase):
     command_instance = FakeCommandWithGcloudStorageMap(
         command_runner=mock.ANY,
         args=['-z', 'opt1', '-r', 'arg1', 'arg2'],
-        headers=mock.ANY,
+        headers={},
         debug=mock.ANY,
         trace_token=mock.ANY,
         parallel_operations=mock.ANY,

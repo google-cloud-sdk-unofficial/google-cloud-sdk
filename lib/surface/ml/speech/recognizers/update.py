@@ -49,7 +49,7 @@ class Create(base.Command):
 
     speech_client = client.SpeechV2Client()
     is_async = args.async_
-    operation = speech_client.Update(
+    operation = speech_client.UpdateRecognizer(
         recognizer, args.display_name, args.model, args.language_codes,
         args.profanity_filter, args.enable_word_time_offsets,
         args.enable_word_confidence, args.enable_automatic_punctuation,
@@ -60,10 +60,11 @@ class Create(base.Command):
           operation.name, kind='speech recognizer', is_async=True)
       return operation
 
-    resource = client.WaitForOperation(
-        operation_ref=client.GetOperationRef(operation),
+    resource = speech_client.WaitForRecognizerOperation(
+        location=recognizer.Parent().Name(),
+        operation_ref=speech_client.GetOperationRef(operation),
         message='waiting for recognizer [{}] to be updated'.format(
             recognizer.RelativeName()))
-    log.UpdatedResource(resource, kind='speech recognizer')
+    log.UpdatedResource(resource.name, kind='speech recognizer')
 
     return resource

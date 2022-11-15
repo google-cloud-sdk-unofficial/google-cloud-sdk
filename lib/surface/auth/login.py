@@ -313,7 +313,12 @@ def LoginWithCredFileConfig(cred_config, scopes, project, activate, brief,
         'credential files.')
   # Check if account already exists in storage.
   try:
-    exist_creds = c_store.Load(account=account, scopes=scopes)
+    # prevent_refresh must be set to True. We don't actually want to
+    # use the existing credentials, but check for their presence. If a
+    # refresh occurs but the credentials are no longer valid, this
+    # will cause gcloud to crash.
+    exist_creds = c_store.Load(
+        account=account, scopes=scopes, prevent_refresh=True)
   except creds_exceptions.Error:
     exist_creds = None
   if exist_creds:

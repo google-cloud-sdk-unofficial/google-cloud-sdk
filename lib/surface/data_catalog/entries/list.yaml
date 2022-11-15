@@ -18,6 +18,7 @@
     resource:
       help_text: The entry group to list.
       spec: !REF googlecloudsdk.command_lib.data_catalog.resources:entry_group
+      is_positional: false
 
 - release_tracks: [ALPHA, BETA]
   help_text:
@@ -38,3 +39,4 @@
     resource:
       help_text: The entry group to list.
       spec: !REF googlecloudsdk.command_lib.data_catalog.resources:entry_group
+      is_positional: false

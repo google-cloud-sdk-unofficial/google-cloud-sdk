@@ -226,6 +226,7 @@ def ParseCreateOptionsBase(args, is_autopilot, get_default, location,
                           else None),
       enable_binauthz=get_default('enable_binauthz'),
       binauthz_evaluation_mode=get_default('binauthz_evaluation_mode'),
+      binauthz_policy=get_default('binauthz_policy'),
       enable_stackdriver_kubernetes=_GetEnableStackdriver(args),
       enable_cloud_logging=args.enable_cloud_logging if (hasattr(args, 'enable_cloud_logging') and args.IsSpecified('enable_cloud_logging')) else None,
       enable_cloud_monitoring=args.enable_cloud_monitoring if (hasattr(args, 'enable_cloud_monitoring') and args.IsSpecified('enable_cloud_monitoring')) else None,
@@ -301,8 +302,6 @@ def ParseCreateOptionsBase(args, is_autopilot, get_default, location,
       database_encryption_key=get_default('database_encryption_key'),
       workload_pool=get_default('workload_pool'),
       identity_provider=get_default('identity_provider'),
-      tune_gke_metadata_server_cpu=get_default('tune_gke_metadata_server_cpu'),
-      tune_gke_metadata_server_memory=get_default('tune_gke_metadata_server_memory'),
       workload_metadata=get_default('workload_metadata'),
       workload_metadata_from_node=get_default('workload_metadata_from_node'),
       enable_vertical_pod_autoscaling=get_default('enable_vertical_pod_autoscaling'),
@@ -561,17 +560,13 @@ flags_to_add = {
             flags.AddVerticalPodAutoscalingFlags,
         'workloadidentity':
             flags.AddWorkloadIdentityFlags,
-        'tune_gke_metadata_server_cpu':
-            flags.AddWorkloadIdentityCPUFlags,
-        'tune_gke_metadata_server_memory':
-            flags.AddWorkloadIdentityMemoryFlags,
         'workloadmetadata':
             flags.AddWorkloadMetadataFlag,
         'enableserviceexternalips':
             flags.AddEnableServiceExternalIPs,
         'disablepodcidroverprovision':
             (lambda p: flags.AddDisablePodCIDROverprovisionFlag(p, hidden=True)
-             ),
+            ),
         'privateEndpointSubnetwork':
             flags.AddPrivateEndpointSubnetworkFlag,
         'enableGoogleCloudAccess':
@@ -759,10 +754,6 @@ flags_to_add = {
         'workloadcertificates':
             flags.AddWorkloadCertificatesFlags,
         'workloadidentity': (lambda p: flags.AddWorkloadIdentityFlags(p, True)),
-        'tune_gke_metadata_server_cpu':
-            flags.AddWorkloadIdentityCPUFlags,
-        'tune_gke_metadata_server_memory':
-            flags.AddWorkloadIdentityMemoryFlags,
         'workloadmetadata':
             (lambda p: flags.AddWorkloadMetadataFlag(p, use_mode=False)),
         'workloadmonitoringeap':
@@ -981,10 +972,6 @@ flags_to_add = {
         'workloadcertificates':
             flags.AddWorkloadCertificatesFlags,
         'workloadidentity': (lambda p: flags.AddWorkloadIdentityFlags(p, True)),
-        'tune_gke_metadata_server_cpu':
-            flags.AddWorkloadIdentityCPUFlags,
-        'tune_gke_metadata_server_memory':
-            flags.AddWorkloadIdentityMemoryFlags,
         'workloadmetadata':
             (lambda p: flags.AddWorkloadMetadataFlag(p, use_mode=False)),
         'workloadmonitoringeap':

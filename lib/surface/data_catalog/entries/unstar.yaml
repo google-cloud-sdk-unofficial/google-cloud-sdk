@@ -18,6 +18,7 @@ arguments:
   resource:
     help_text: Entry to unstar.
     spec: !REF googlecloudsdk.command_lib.data_catalog.resources:entry
+    is_positional: true
 
 response:
   modify_response_hooks:

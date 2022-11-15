@@ -1126,6 +1126,12 @@ class _Load(BigqueryCmd):
         'NEWLINE_DELIMITED_JSON. When specified, the input is loaded as '
         'newline-delimited GeoJSON.',
         flag_values=fv)
+    flags.DEFINE_string(
+        'session_id',
+        None,
+        'If loading to a temporary table, specifies the session ID of the '
+        'temporary table',
+        flag_values=fv)
     self._ProcessCommandRc(fv)
 
   def RunWithArgs(self, destination_table, source, schema=None):
@@ -1137,6 +1143,8 @@ class _Load(BigqueryCmd):
     The <destination_table> is the fully-qualified table name of table to
     create, or append to if the table already exists.
 
+    To load to a temporary table, specify the table name in <destination_table>
+    without a dataset and specify the session id with --session_id.
 
     The <source> argument can be a path to a single local file, or a
     comma-separated list of URIs.
@@ -1162,6 +1170,7 @@ class _Load(BigqueryCmd):
       bq load ds.new_tbl gs://mybucket/info.csv ./info_schema.json
       bq load ds.small gs://mybucket/small.csv name:integer,value:string
       bq load ds.small gs://mybucket/small.csv field1,field2,field3
+      bq load temp_tbl --session_id=my_session ./info.csv ./info_schema.json
 
     Arguments:
       destination_table: Destination table name.
@@ -1171,6 +1180,8 @@ class _Load(BigqueryCmd):
     """
     client = Client.Get()
     default_dataset_id = ''
+    if self.session_id:
+      default_dataset_id = '_SESSION'
     table_reference = client.GetTableReference(destination_table,
                                                default_dataset_id)
     opts = {
@@ -1184,6 +1195,11 @@ class _Load(BigqueryCmd):
     }
     if FLAGS.location:
       opts['location'] = FLAGS.location
+    if self.session_id:
+      opts['connection_properties'] = [{
+          'key': 'session_id',
+          'value': self.session_id
+      }]
     if self.replace:
       opts['write_disposition'] = 'WRITE_TRUNCATE'
     if self.field_delimiter is not None:
@@ -4078,6 +4094,14 @@ class _Make(BigqueryCmd):
         'is not set.',
         flag_values=fv)
     flags.DEFINE_enum(
+        'storage_billing_model',
+        None,
+        ['LOGICAL', 'PHYSICAL'],
+        'Optional. Sets the storage billing model for the dataset. \n'
+        'LOGICAL - switches to logical billing model \n'
+        'PHYSICAL - switches to physical billing model.',
+        flag_values=fv)
+    flags.DEFINE_enum(
         'metadata_cache_mode',
         None,
         ['AUTOMATIC', 'MANUAL'],
@@ -4381,7 +4405,8 @@ class _Make(BigqueryCmd):
           labels=labels,
           source_dataset_reference=source_dataset_reference
           ,
-          max_time_travel_hours=self.max_time_travel_hours
+          max_time_travel_hours=self.max_time_travel_hours,
+          storage_billing_model=self.storage_billing_model
       )
       print("Dataset '%s' successfully created." % (reference,))
     elif isinstance(reference, TableReference):
@@ -5165,6 +5190,14 @@ class _Update(BigqueryCmd):
         '48 to 168 hours (2 to 7 days). The default value is 168 hours if this '
         'is not set.',
         flag_values=fv)
+    flags.DEFINE_enum(
+        'storage_billing_model',
+        None,
+        ['LOGICAL', 'PHYSICAL'],
+        'Optional. Sets the storage billing model for the dataset. \n'
+        'LOGICAL - switches to logical billing model \n'
+        'PHYSICAL - switches to physical billing model.',
+        flag_values=fv)
     flags.DEFINE_boolean(
         'autodetect_schema',
         False,
@@ -5395,7 +5428,8 @@ class _Update(BigqueryCmd):
           default_kms_key=self.default_kms_key,
           etag=self.etag
           ,
-          max_time_travel_hours=self.max_time_travel_hours
+          max_time_travel_hours=self.max_time_travel_hours,
+          storage_billing_model=self.storage_billing_model
       )
       print("Dataset '%s' successfully updated." % (reference,))
     elif isinstance(reference, TableReference):
@@ -5625,7 +5659,8 @@ def _UpdateDataset(
     etag=None,
     default_kms_key=None
     ,
-    max_time_travel_hours=None
+    max_time_travel_hours=None,
+    storage_billing_model=None
 ):
   """Updates a dataset.
 
@@ -5650,7 +5685,8 @@ def _UpdateDataset(
     max_time_travel_hours: Optional. Define the max time travel in hours. The
       value can be from 48 to 168 hours (2 to 7 days). The default value is 168
       hours if this is not set.
-
+    storage_billing_model: Optional. Sets the storage billing model for the
+      dataset.
   Raises:
     UsageError: when incorrect usage or invalid args are used.
   """
@@ -5681,7 +5717,8 @@ def _UpdateDataset(
       etag=etag,
       default_kms_key=default_kms_key
       ,
-      max_time_travel_hours=max_time_travel_hours
+      max_time_travel_hours=max_time_travel_hours,
+      storage_billing_model=storage_billing_model
   )
 
 

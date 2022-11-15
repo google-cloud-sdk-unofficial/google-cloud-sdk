@@ -1,5 +1,5 @@
 {
-  "CLI_VERSION": "2.0.77",
+  "CLI_VERSION": "2.0.78",
   "VERSION": "1",
   "capsule": "",
   "commands": {
@@ -177,8 +177,8 @@
       "positionals": [],
       "release": "GA",
       "sections": {
-        "DESCRIPTION": "Perform a load operation of source into\ndestination_table.\n\nUsage:\nload <destination_table> <source> [<schema>]\n[--session_id=[session]]\n\nThe <destination_table> is the fully-qualified table\nname of table to create, or append to if the table\nalready exists.\n\n\nThe <source> argument can be a path to a single local\nfile, or a comma-separated list of URIs.\n\nThe <schema> argument should be either the name of a\nJSON file or a text schema. This schema should be\nomitted if the table already has one.\n\nIn the case that the schema is provided in text form,\nit should be a comma-separated list of entries of the\nform name[:type], where type will default to string\nif not specified.\n\nIn the case that <schema> is a filename, it should be\na JSON file containing a single array, each entry of\nwhich should be an object with properties 'name',\n'type', and (optionally) 'mode'. For more detail: htt\nps://cloud.google.com/bigquery/docs/schemas#specifyin\ng_a_json_schema_file\n\nNote: the case of a single-entry schema with no type\nspecified is ambiguous; one can use name:string to\nforce interpretation as a text schema.\n",
-        "EXAMPLES": "bq load ds.new_tbl ./info.csv ./info_schema.json\nbq load ds.new_tbl gs://mybucket/info.csv\n./info_schema.json\nbq load ds.small gs://mybucket/small.csv\nname:integer,value:string\nbq load ds.small gs://mybucket/small.csv\nfield1,field2,field3\n"
+        "DESCRIPTION": "Perform a load operation of source into\ndestination_table.\n\nUsage:\nload <destination_table> <source> [<schema>]\n[--session_id=[session]]\n\nThe <destination_table> is the fully-qualified table\nname of table to create, or append to if the table\nalready exists.\n\nTo load to a temporary table, specify the table name\nin <destination_table> without a dataset and specify\nthe session id with --session_id.\n\nThe <source> argument can be a path to a single local\nfile, or a comma-separated list of URIs.\n\nThe <schema> argument should be either the name of a\nJSON file or a text schema. This schema should be\nomitted if the table already has one.\n\nIn the case that the schema is provided in text form,\nit should be a comma-separated list of entries of the\nform name[:type], where type will default to string\nif not specified.\n\nIn the case that <schema> is a filename, it should be\na JSON file containing a single array, each entry of\nwhich should be an object with properties 'name',\n'type', and (optionally) 'mode'. For more detail: htt\nps://cloud.google.com/bigquery/docs/schemas#specifyin\ng_a_json_schema_file\n\nNote: the case of a single-entry schema with no type\nspecified is ambiguous; one can use name:string to\nforce interpretation as a text schema.\n",
+        "EXAMPLES": "bq load ds.new_tbl ./info.csv ./info_schema.json\nbq load ds.new_tbl gs://mybucket/info.csv\n./info_schema.json\nbq load ds.small gs://mybucket/small.csv\nname:integer,value:string\nbq load ds.small gs://mybucket/small.csv\nfield1,field2,field3\nbq load temp_tbl --session_id=my_session ./info.csv\n./info_schema.json\n"
       }
     },
     "ls": {

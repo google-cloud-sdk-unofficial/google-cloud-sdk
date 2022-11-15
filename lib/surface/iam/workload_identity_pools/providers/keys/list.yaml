@@ -33,6 +33,7 @@
     resource:
       help_text: The parent workload identity pool provider to list keys for.
       spec: !REF googlecloudsdk.command_lib.iam.resources:workload_identity_pool_provider
+      is_positional: false
 
     params:
     - api_field: showDeleted

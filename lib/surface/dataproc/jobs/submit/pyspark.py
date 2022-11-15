@@ -33,11 +33,11 @@ class PySpark(pyspark.PySparkBase, submitter.JobSubmitter):
 
   To submit a PySpark job with a local script and custom flags, run:
 
-    $ {command} --cluster=my_cluster my_script.py -- --custom-flag
+    $ {command} --cluster=my-cluster my_script.py -- --custom-flag
 
   To submit a Spark job that runs a script that is already on the cluster, run:
 
-    $ {command} --cluster=my_cluster file:///usr/lib/spark/examples/src/main/python/pi.py -- 100
+    $ {command} --cluster=my-cluster file:///usr/lib/spark/examples/src/main/python/pi.py -- 100
   """
   # pylint: enable=line-too-long
 

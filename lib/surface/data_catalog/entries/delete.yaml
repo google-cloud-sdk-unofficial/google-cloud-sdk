@@ -16,6 +16,7 @@
     resource:
       help_text: Entry to delete.
       spec: !REF googlecloudsdk.command_lib.data_catalog.resources:entry
+      is_positional: true
 
 - release_tracks: [ALPHA, BETA]
   help_text:
@@ -34,3 +35,4 @@
     resource:
       help_text: Entry to delete.
       spec: !REF googlecloudsdk.command_lib.data_catalog.resources:entry
+      is_positional: true

@@ -24,6 +24,7 @@
     resource:
       help_text: The ID of the WasmPlugin to perform a rollout for.
       spec: !REF googlecloudsdk.command_lib.network_actions.resources:wasmPlugin
+      is_positional: true
 
     params:
     - group:

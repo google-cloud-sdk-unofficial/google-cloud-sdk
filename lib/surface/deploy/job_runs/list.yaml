@@ -19,3 +19,4 @@
     resource:
       help_text: The rollouts for which you want to list the job runs.
       spec: !REF googlecloudsdk.command_lib.deploy.resources:rollout
+      is_positional: false

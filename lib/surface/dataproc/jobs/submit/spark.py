@@ -34,16 +34,16 @@ class Spark(spark.SparkBase, submitter.JobSubmitter):
 
   To submit a Spark job that runs the main class of a jar, run:
 
-    $ {command} --cluster=my_cluster --region=us-central1 --jar=my_jar.jar -- arg1 arg2
+    $ {command} --cluster=my-cluster --region=us-central1 --jar=my_jar.jar -- arg1 arg2
 
   To submit a Spark job that runs a specific class of a jar, run:
 
-    $ {command} --cluster=my_cluster --region=us-central1 --class=org.my.main.Class \
+    $ {command} --cluster=my-cluster --region=us-central1 --class=org.my.main.Class \
         --jars=my_jar1.jar,my_jar2.jar -- arg1 arg2
 
   To submit a Spark job that runs a jar that is already on the cluster, run:
 
-    $ {command} --cluster=my_cluster --region=us-central1 \
+    $ {command} --cluster=my-cluster --region=us-central1 \
         --class=org.apache.spark.examples.SparkPi \
         --jars=file:///usr/lib/spark/examples/jars/spark-examples.jar \
         -- 1000

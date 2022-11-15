@@ -31,6 +31,7 @@ kubectl: kubectl
 harbourbridge: google-cloud-sdk-harbourbridge
 kubectl-oidc: google-cloud-sdk-kubectl-oidc
 local-extract: google-cloud-sdk-local-extract
+log-streaming: unavailable
 package-go-module: google-cloud-sdk-package-go-module
 minikube: google-cloud-sdk-minikube
 nomos: google-cloud-sdk-nomos

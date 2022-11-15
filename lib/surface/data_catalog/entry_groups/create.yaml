@@ -16,7 +16,8 @@
   arguments:
     resource:
       help_text: Entry group to create.
-      spec: !REF googlecloudsdk.command_lib.data_catalog.resources:positional_entry_group
+      spec: !REF googlecloudsdk.command_lib.data_catalog.resources:entry_group
+      is_positional: true
     params:
     - !REF googlecloudsdk.command_lib.data_catalog.entry_groups.v1_flags:display_name
     - !REF googlecloudsdk.command_lib.data_catalog.entry_groups.v1_flags:description
@@ -38,7 +39,8 @@
   arguments:
     resource:
       help_text: Entry group to create.
-      spec: !REF googlecloudsdk.command_lib.data_catalog.resources:positional_entry_group
+      spec: !REF googlecloudsdk.command_lib.data_catalog.resources:entry_group
+      is_positional: true
     params:
     - !REF googlecloudsdk.command_lib.data_catalog.entry_groups.flags:display_name
     - !REF googlecloudsdk.command_lib.data_catalog.entry_groups.flags:description

@@ -43,6 +43,7 @@
     resource:
       help_text: Entry to create.
       spec: !REF googlecloudsdk.command_lib.data_catalog.resources:entry
+      is_positional: true
     params:
     - !REF googlecloudsdk.command_lib.data_catalog.entries.v1_flags:display_name
     - !REF googlecloudsdk.command_lib.data_catalog.entries.v1_flags:description
@@ -159,6 +160,7 @@
     resource:
       help_text: Entry to create.
       spec: !REF googlecloudsdk.command_lib.data_catalog.resources:entry
+      is_positional: true
     params:
     - !REF googlecloudsdk.command_lib.data_catalog.entries.flags:display_name
     - !REF googlecloudsdk.command_lib.data_catalog.entries.flags:description

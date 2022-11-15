@@ -20,7 +20,8 @@
   arguments:
     resource:
       help_text: The parent WasmPlugin.
-      spec: !REF googlecloudsdk.command_lib.network_actions.resources:wasmPluginHyphen
+      spec: !REF googlecloudsdk.command_lib.network_actions.resources:wasmPlugin
+      is_positional: false
 
   output:
     format: |

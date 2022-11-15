@@ -31,11 +31,11 @@ class Presto(presto.PrestoBase, submitter.JobSubmitter):
 
   To submit a Presto job with a local script, run:
 
-    $ {command} --cluster=my_cluster --file=my_script.R
+    $ {command} --cluster=my-cluster --file=my_script.R
 
   To submit a Presto job with inline queries, run:
 
-    $ {command} --cluster=my_cluster -e="SELECT * FROM foo WHERE bar > 2"
+    $ {command} --cluster=my-cluster -e="SELECT * FROM foo WHERE bar > 2"
   """
 
   @staticmethod

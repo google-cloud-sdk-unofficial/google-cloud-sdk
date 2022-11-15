@@ -113,7 +113,7 @@ class Create(base.Command):
 
     async_ = getattr(args, 'async_', False)
     if not async_:
-      lake.WaitForOperation(create_req_op)
+      lake.WaitForLongOperation(create_req_op)
       log.CreatedResource(
           lake_ref.Name(),
           details='Lake created in [{0}]'.format(

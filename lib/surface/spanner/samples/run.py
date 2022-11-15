@@ -151,6 +151,9 @@ class Run(base.Command):
                 database_id=database_id, instance_id=instance_id))
     else:
       try:
+        # Download any missing sample files and create the DB.
+        if self.ReleaseTrack() == base.ReleaseTrack.ALPHA:
+          samples_init.download_sample_files(args.appname)
         samples_init.check_create_db(args.appname, instance_ref, database_id)
       except ValueError as ex:
         raise calliope_exceptions.BadArgumentException('--database-id', ex)

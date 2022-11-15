@@ -26,6 +26,7 @@ from googlecloudsdk.command_lib.run import pretty_print
 from googlecloudsdk.command_lib.run.integrations import flags
 from googlecloudsdk.command_lib.run.integrations import messages_util
 from googlecloudsdk.command_lib.run.integrations import run_apps_operations
+from googlecloudsdk.core.console import console_io
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -61,6 +62,14 @@ class Delete(base.Command):
 
     conn_context = connection_context.GetConnectionContext(
         args, run_flags.Product.RUN_APPS, self.ReleaseTrack())
+
+    console_io.PromptContinue(
+        message=('Integration [{}] will be deleted. '
+                 'This will also delete any resources this integration created.'
+                ).format(integration_name),
+        throw_if_unattended=True,
+        cancel_on_no=True)
+
     with run_apps_operations.Connect(conn_context) as client:
       try:
         integration_type = client.DeleteIntegration(name=integration_name)

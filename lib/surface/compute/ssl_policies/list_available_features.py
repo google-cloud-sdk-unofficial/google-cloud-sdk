@@ -24,7 +24,6 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.core import properties
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
 class ListAvailableFeatures(base.ListCommand):
   """List available features that can be specified in an SSL policy.
 
@@ -38,15 +37,12 @@ class ListAvailableFeatures(base.ListCommand):
   backends.
   """
 
-  _regional_ssl_policies = False
-
   @classmethod
   def Args(cls, parser):
     """Set up arguments for this command."""
-    if cls._regional_ssl_policies:
-      parser.add_argument(
-          '--region',
-          help='If provided, only features for the given region are shown.')
+    parser.add_argument(
+        '--region',
+        help='If provided, only features for the given region are shown.')
     parser.display_info.AddFormat('table([])')
 
   def Run(self, args):
@@ -55,25 +51,5 @@ class ListAvailableFeatures(base.ListCommand):
     helper = ssl_policies_utils.SslPolicyHelper(holder)
     project = properties.VALUES.core.project.GetOrFail()
 
-    if self._regional_ssl_policies:
-      return helper.ListAvailableFeatures(
-          project, args.region if args.IsSpecified('region') else None)
-    else:
-      return helper.ListAvailableFeatures(project, None)
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
-class ListAvailableFeaturesAlphaBeta(ListAvailableFeatures):
-  """List available features that can be specified in an SSL policy.
-
-  *{command}* lists available features that can be specified as part of the
-  list of custom features in an SSL policy.
-
-  An SSL policy specifies the server-side support for SSL features. An SSL
-  policy can be attached to a TargetHttpsProxy or a TargetSslProxy. This affects
-  connections between clients and the HTTPS or SSL proxy load balancer. SSL
-  policies do not affect the connection between the load balancers and the
-  backends.
-  """
-
-  _regional_ssl_policies = True
+    return helper.ListAvailableFeatures(
+        project, args.region if args.IsSpecified('region') else None)

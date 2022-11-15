@@ -15,11 +15,15 @@ s.move(
         "continuous/common.cfg",
         "presubmit/common.cfg",
         "build.sh",
+        "samples/*",
     ],
 )  # just move kokoro configs
 s.move(
     # needed by samples kokoro jobs
     templated_files / ".trampolinerc"
+)
+s.move(
+    templated_files / "renovate.json",
 )
 
 

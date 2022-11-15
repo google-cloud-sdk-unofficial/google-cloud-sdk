@@ -16,3 +16,4 @@
     resource:
       help_text: The name of the rollout you want to describe.
       spec: !REF googlecloudsdk.command_lib.deploy.resources:rollout
+      is_positional: true

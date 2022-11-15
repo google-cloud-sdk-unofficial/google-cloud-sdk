@@ -32,11 +32,11 @@ class SparkSql(spark_sql.SparkSqlBase, submitter.JobSubmitter):
 
   To submit a Spark SQL job with a local script, run:
 
-    $ {command} --cluster=my_cluster --file=my_queries.ql
+    $ {command} --cluster=my-cluster --file=my_queries.ql
 
   To submit a Spark SQL job with inline queries, run:
 
-    $ {command} --cluster=my_cluster
+    $ {command} --cluster=my-cluster
         -e="CREATE EXTERNAL TABLE foo(bar int) LOCATION 'gs://my_bucket/'"
         -e="SELECT * FROM foo WHERE bar > 2"
   """

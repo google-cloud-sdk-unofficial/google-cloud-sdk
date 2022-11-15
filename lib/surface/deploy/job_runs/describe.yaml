@@ -14,4 +14,5 @@
   arguments:
     resource:
       help_text: The name of the job run you want to describe.
-      spec: !REF googlecloudsdk.command_lib.deploy.resources:job_run_positional
+      spec: !REF googlecloudsdk.command_lib.deploy.resources:job_run
+      is_positional: true

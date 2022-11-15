@@ -107,7 +107,8 @@ def _CommonArgs(parser,
                 support_numa_node_count=False,
                 support_network_queue_count=False,
                 support_instance_kms=False,
-                support_max_run_duration=False):
+                support_max_run_duration=False,
+                support_provisioned_throughput=False):
   """Register parser args common to all tracks."""
   metadata_utils.AddMetadataArgs(parser)
   instances_flags.AddDiskArgs(parser, enable_regional, enable_kms=enable_kms)
@@ -119,7 +120,8 @@ def _CommonArgs(parser,
       image_csek=image_csek,
       support_boot=True,
       support_multi_writer=support_multi_writer,
-      support_replica_zones=support_replica_zones)
+      support_replica_zones=support_replica_zones,
+      support_provisioned_throughput=support_provisioned_throughput)
   instances_flags.AddCanIpForwardArgs(parser)
   instances_flags.AddAddressArgs(
       parser,
@@ -231,6 +233,7 @@ class Create(base.CreateCommand):
   _enable_pd_interface = False
   _support_replica_zones = False
   _support_multi_writer = False
+  _support_provisioned_throughput = False
   _support_subinterface = False
   _support_secure_tag = False
   _support_host_error_timeout_seconds = False
@@ -255,7 +258,8 @@ class Create(base.CreateCommand):
         ._support_host_error_timeout_seconds,
         support_numa_node_count=cls._support_numa_node_count,
         support_instance_kms=cls._support_instance_kms,
-        support_max_run_duration=cls._support_max_run_duration)
+        support_max_run_duration=cls._support_max_run_duration,
+        support_provisioned_throughput=cls._support_provisioned_throughput)
     cls.SOURCE_INSTANCE_TEMPLATE = (
         instances_flags.MakeSourceInstanceTemplateArg())
     cls.SOURCE_INSTANCE_TEMPLATE.AddArgument(parser)
@@ -386,7 +390,8 @@ class Create(base.CreateCommand):
             support_image_csek=self._support_image_csek,
             support_create_disk_snapshots=self._support_create_disk_snapshots,
             support_replica_zones=self._support_replica_zones,
-            support_multi_writer=self._support_multi_writer)
+            support_multi_writer=self._support_multi_writer,
+            support_provisioned_throughput=self._support_provisioned_throughput)
 
       machine_type_uri = None
       if instance_utils.CheckSpecifiedMachineTypeArgs(args, skip_defaults):
@@ -637,6 +642,7 @@ class CreateBeta(Create):
   _support_boot_snapshot_uri = True
   _support_replica_zones = False
   _support_multi_writer = True
+  _support_provisioned_throughput = False
   _support_subinterface = False
   _support_secure_tag = False
   _support_host_error_timeout_seconds = True
@@ -677,7 +683,8 @@ class CreateBeta(Create):
         ._support_host_error_timeout_seconds,
         support_numa_node_count=cls._support_numa_node_count,
         support_instance_kms=cls._support_instance_kms,
-        support_max_run_duration=cls._support_max_run_duration)
+        support_max_run_duration=cls._support_max_run_duration,
+        support_provisioned_throughput=cls._support_provisioned_throughput)
     cls.SOURCE_INSTANCE_TEMPLATE = (
         instances_flags.MakeSourceInstanceTemplateArg())
     cls.SOURCE_INSTANCE_TEMPLATE.AddArgument(parser)
@@ -714,6 +721,7 @@ class CreateAlpha(CreateBeta):
   _enable_pd_interface = True
   _support_replica_zones = True
   _support_multi_writer = True
+  _support_provisioned_throughput = True
   _support_subinterface = True
   _support_secure_tag = True
   _support_host_error_timeout_seconds = True
@@ -743,7 +751,8 @@ class CreateAlpha(CreateBeta):
         support_numa_node_count=cls._support_numa_node_count,
         support_network_queue_count=cls._support_network_queue_count,
         support_instance_kms=cls._support_instance_kms,
-        support_max_run_duration=cls._support_max_run_duration)
+        support_max_run_duration=cls._support_max_run_duration,
+        support_provisioned_throughput=cls._support_provisioned_throughput)
 
     CreateAlpha.SOURCE_INSTANCE_TEMPLATE = (
         instances_flags.MakeSourceInstanceTemplateArg())

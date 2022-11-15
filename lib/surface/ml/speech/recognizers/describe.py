@@ -35,4 +35,4 @@ class Create(base.Command):
   def Run(self, args):
     recognizer = args.CONCEPTS.recognizer.Parse()
     speech_client = client.SpeechV2Client()
-    return speech_client.Get(recognizer)
+    return speech_client.GetRecognizer(recognizer)

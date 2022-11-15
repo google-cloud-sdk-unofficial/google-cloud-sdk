@@ -129,7 +129,7 @@ def _parse_config(loaded_config, msg):
 
   # Get list of of auth providers from ClientConfig.
   if len(loaded_config.data) != 1:
-    raise exceptions.Error('Input config file must contains one YAML document.')
+    raise exceptions.Error('Input config file must contain one YAML document.')
   clientconfig = loaded_config.data[0]
   _validate_clientconfig_meta(clientconfig)
   auth_providers = clientconfig.GetAuthProviders(name_only=False)
@@ -152,16 +152,25 @@ def _parse_config(loaded_config, msg):
       auth_method = _provision_oidc_config(auth_provider, msg)
       member_config.authMethods.append(auth_method)
       found_auth_method = True
+    # Provision Google proto from Google ClientConfig dictionary.
     elif 'google' in auth_provider:
       auth_method = _provision_google_config(auth_provider, msg)
       member_config.authMethods.append(auth_method)
       found_auth_method = True
-    # LDAP is currently not supported.
-    elif 'ldap' in auth_provider:
-      log.status.Print('LDAP configuration not supported. Skipping to next.')
+    # Provision AzureAD proto from AzureAD ClientConfig dictionary.
+    elif 'azureAD' in auth_provider:
+      auth_method = _provision_azuread_config(auth_provider, msg)
+      member_config.authMethods.append(auth_method)
+      found_auth_method = True
+    # Unsupported configuration found.
+    else:
+      status_msg = ('Authentication method [{}] is not supported, '
+                    'skipping to the next.').format(
+                        auth_provider['name'])
+      log.status.Print(status_msg)
   if not found_auth_method:
     raise exceptions.Error(
-        'No authentication method is present in the provided config.')
+        'No supported authentication method is present in the provided config.')
   return member_config
 
 
@@ -274,6 +283,46 @@ def _provision_google_config(auth_method, msg):
         'The "disable" field is not set for the authentication method "{}"'
         .format(auth_method['name']))
   auth_method_proto.googleConfig.disable = google_config['disable']
+  return auth_method_proto
+
+
+def _provision_azuread_config(auth_method, msg):
+  """Provision FeatureSpec AzureADConfig from the parsed yaml file.
+
+  Args:
+    auth_method: YamlConfigFile, The data loaded from the yaml
+      file given by the user. YamlConfigFile is from
+      googlecloudsdk.command_lib.anthos.common.file_parsers.
+    msg: The gkehub messages package.
+
+  Returns:
+    member_config: A MemberConfig configuration containing a single
+    Azure AD auth method for the IdentityServiceFeatureSpec.
+  """
+  auth_method_proto = msg.IdentityServiceAuthMethod()
+  auth_method_proto.name = auth_method['name']
+  auth_method_proto.azureadConfig = msg.IdentityServiceAzureADConfig()
+  # Optional Auth Method Fields.
+  if 'proxy' in auth_method:
+    auth_method_proto.proxy = auth_method['proxy']
+
+  azuread_config = auth_method['azureAD']
+
+  # Required AzureAD Config fields.
+  if 'clientID' not in azuread_config or 'kubectlRedirectURI' not in azuread_config or 'tenant' not in azuread_config:
+    err_msg = (
+        'Authentication method [{}] must contain '
+        'clientID, kubectlRedirectURI, and tenant.').format(auth_method['name'])
+    raise exceptions.Error(err_msg)
+  auth_method_proto.azureadConfig.clientId = azuread_config['clientID']
+  auth_method_proto.azureadConfig.kubectlRedirectUri = azuread_config[
+      'kubectlRedirectURI']
+  auth_method_proto.azureadConfig.tenant = azuread_config['tenant']
+
+  # Optional AzureAD Config fields.
+  if 'clientSecret' in azuread_config:
+    auth_method_proto.azureadConfig.clientSecret = azuread_config[
+        'clientSecret']
   return auth_method_proto
 
 

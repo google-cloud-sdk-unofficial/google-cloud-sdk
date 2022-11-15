@@ -29,7 +29,7 @@
       table(
         ipCidrRange,
         type,
-        firstof(nextHopVpcNetwork.uri):label=NEXT_HOP,
+        firstof(nextHopVpcNetwork.uri).basename():label=NEXT_HOP,
         name.segment(5):label=HUB,
         name.segment(7):label=ROUTE_TABLE
       )

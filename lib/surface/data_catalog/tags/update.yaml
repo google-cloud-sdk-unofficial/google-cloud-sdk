@@ -22,6 +22,7 @@
     resource:
       help_text: Entry tag to update. The arguments in this group can be used to specify the attributes of this resource.
       spec: !REF googlecloudsdk.command_lib.data_catalog.resources:tag
+      is_positional: true
 
     params:
     - arg_name: tag-file
@@ -66,6 +67,7 @@
     resource:
       help_text: Entry tag to update. The arguments in this group can be used to specify the attributes of this resource.
       spec: !REF googlecloudsdk.command_lib.data_catalog.resources:tag
+      is_positional: true
 
     params:
     - arg_name: tag-file

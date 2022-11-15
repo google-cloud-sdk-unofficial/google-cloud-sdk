@@ -141,7 +141,6 @@ class Create(base.CreateCommand):
 
   _traffic_director_security = False
   _certificate_map = True
-  _regional_ssl_policies = False
   _list_format = flags.DEFAULT_LIST_FORMAT
 
   SSL_CERTIFICATES_ARG = None
@@ -164,12 +163,8 @@ class Create(base.CreateCommand):
         proxy_type='HTTPS')
     cls.URL_MAP_ARG.AddArgument(parser)
 
-    if cls._regional_ssl_policies:
-      cls.SSL_POLICY_ARG = ssl_policies_flags.GetSslPolicyMultiScopeArgumentForOtherResource(
-          'HTTPS', required=False)
-    else:
-      cls.SSL_POLICY_ARG = ssl_policies_flags.GetSslPolicyArgumentForOtherResource(
-          'HTTPS', required=False)
+    cls.SSL_POLICY_ARG = ssl_policies_flags.GetSslPolicyMultiScopeArgumentForOtherResource(
+        'HTTPS', required=False)
     cls.SSL_POLICY_ARG.AddArgument(parser)
 
     _Args(
@@ -201,7 +196,7 @@ class Create(base.CreateCommand):
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class CreateBeta(Create):
-  _regional_ssl_policies = True
+  pass
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)

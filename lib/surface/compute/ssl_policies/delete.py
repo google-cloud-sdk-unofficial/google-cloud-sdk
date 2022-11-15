@@ -40,7 +40,6 @@ class DeleteBatchPoller(poller.BatchPoller):
     return
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Delete(base.DeleteCommand):
   """Delete Compute Engine SSL policies.
 
@@ -55,18 +54,12 @@ class Delete(base.DeleteCommand):
   backends.
   """
 
-  _regional_ssl_policies = False
-
   SSL_POLICY_ARG = None
 
   @classmethod
   def Args(cls, parser):
-    if cls._regional_ssl_policies:
-      parser.display_info.AddCacheUpdater(flags.SslPoliciesCompleter)
-      cls.SSL_POLICY_ARG = flags.GetSslPolicyMultiScopeArgument(plural=True)
-    else:
-      parser.display_info.AddCacheUpdater(flags.LegacySslPoliciesCompleter)
-      cls.SSL_POLICY_ARG = flags.GetSslPolicyArgument(plural=True)
+    parser.display_info.AddCacheUpdater(flags.SslPoliciesCompleter)
+    cls.SSL_POLICY_ARG = flags.GetSslPolicyMultiScopeArgument(plural=True)
     cls.SSL_POLICY_ARG.AddArgument(parser, operation_type='delete')
 
   def Run(self, args):
@@ -84,21 +77,3 @@ class Delete(base.DeleteCommand):
     operation_poller = DeleteBatchPoller(holder.client, client.sslPolicies)
     return waiter.WaitFor(operation_poller,
                           poller.OperationBatch(operation_refs), wait_message)
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
-class DeleteAlphaBeta(Delete):
-  """Delete Compute Engine SSL policies.
-
-  *{command}* is used to delete one or more Compute Engine SSL policies.
-  SSL policies can only be deleted when no other resources (e.g.,
-  Target HTTPS proxies, Target SSL proxies) refer to them.
-
-  An SSL policy specifies the server-side support for SSL features. An SSL
-  policy can be attached to a TargetHttpsProxy or a TargetSslProxy. This affects
-  connections between clients and the HTTPS or SSL proxy load balancer. SSL
-  policies do not affect the connection between the load balancers and the
-  backends.
-  """
-
-  _regional_ssl_policies = True

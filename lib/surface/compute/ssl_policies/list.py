@@ -18,43 +18,13 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
-from apitools.base.py import list_pager
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import lister
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute.ssl_policies import flags
-from googlecloudsdk.core import properties
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
 class List(base.ListCommand):
-  """List Compute Engine SSL policies."""
-
-  @staticmethod
-  def Args(parser):
-    parser.display_info.AddFormat(flags.DEFAULT_LIST_FORMAT)
-
-  def Run(self, args):
-    """Issues the request to list all SSL policies."""
-    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
-    client = holder.client.apitools_client
-    messages = client.MESSAGES_MODULE
-
-    project = properties.VALUES.core.project.Get(required=True)
-
-    request = messages.ComputeSslPoliciesListRequest(
-        project=project, filter=args.filter)
-
-    return list_pager.YieldFromList(
-        client.sslPolicies,
-        request,
-        field='items',
-        limit=args.limit,
-        batch_size=None)
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
-class ListAlphaBeta(base.ListCommand):
   """List SSL policies."""
 
   @staticmethod
@@ -77,6 +47,4 @@ class ListAlphaBeta(base.ListCommand):
     return lister.Invoke(request_data, list_implementation)
 
 
-List.detailed_help = base_classes.GetGlobalListerHelp('SSL policies')
-ListAlphaBeta.detailed_help = base_classes.GetGlobalRegionalListerHelp(
-    'SSL policies')
+List.detailed_help = base_classes.GetGlobalRegionalListerHelp('SSL policies')

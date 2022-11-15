@@ -35,7 +35,7 @@ class Start(base.Command):
       'EXAMPLES': """
           To start a cluster, run:
 
-            $ {command} my_cluster --region=us-central1
+            $ {command} my-cluster --region=us-central1
           """,
   }
 

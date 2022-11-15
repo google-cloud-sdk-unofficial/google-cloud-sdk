@@ -44,7 +44,7 @@ _DETAILED_HELP = {
 }
 
 
-@base.ReleaseTracks(ReleaseTrack.ALPHA)
+@base.ReleaseTracks(ReleaseTrack.GA, ReleaseTrack.BETA, ReleaseTrack.ALPHA)
 class List(base.ListCommand):
   """List all Assured Workloads violations that belong to a assured workloads environment."""
 

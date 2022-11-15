@@ -20,3 +20,4 @@
     resource:
       help_text: The release for which you want to list the rollouts.
       spec: !REF googlecloudsdk.command_lib.deploy.resources:release
+      is_positional: false

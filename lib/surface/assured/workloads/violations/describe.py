@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Command to describe an existing Assured Workloads Compliance Violation."""
+"""Command to describe an existing Assured Workloads compliance violation."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -26,12 +26,12 @@ from googlecloudsdk.command_lib.assured import flags
 
 _DETAILED_HELP = {
     'DESCRIPTION':
-        'Obtain details about a given Compliance Violation.',
+        'Obtain details about a given compliance violation.',
     'EXAMPLES':
         """ \
-        To describe an Assured Workloads Violation in the us-central1 region,
-        belonging to an organization with ID 123, with workload ID 456, with
-        violation ID 789, run:
+        To describe an Assured Workloads Violation in the `us-central1` region,
+        belonging to an organization with ID `123`, with workload ID `456`, with
+        violation ID `789`, run:
 
 
           $ {command} organizations/123/locations/us-central1/workloads/456/violations/789
@@ -39,9 +39,9 @@ _DETAILED_HELP = {
 }
 
 
-@base.ReleaseTracks(ReleaseTrack.ALPHA)
+@base.ReleaseTracks(ReleaseTrack.GA, ReleaseTrack.BETA, ReleaseTrack.ALPHA)
 class Describe(base.DescribeCommand):
-  """Describe Assured Workloads Compliance Violation."""
+  """Describe an Assured Workloads compliance violation."""
 
   detailed_help = _DETAILED_HELP
 

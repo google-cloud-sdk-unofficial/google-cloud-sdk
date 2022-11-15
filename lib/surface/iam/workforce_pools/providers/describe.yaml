@@ -31,3 +31,4 @@
     resource:
       help_text: The workforce pool provider to describe.
       spec: !REF googlecloudsdk.command_lib.iam.resources:workforce_pool_provider
+      is_positional: true

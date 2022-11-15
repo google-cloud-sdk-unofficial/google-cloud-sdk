@@ -28,3 +28,4 @@
     resource:
       help_text: The workload identity pool provider key long-running operation to describe.
       spec: !REF googlecloudsdk.command_lib.iam.resources:workload_identity_pool_provider_key_operation
+      is_positional: true

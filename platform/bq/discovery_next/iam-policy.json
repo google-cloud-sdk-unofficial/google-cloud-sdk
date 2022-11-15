@@ -277,6 +277,20 @@
           "items": {
             "$ref": "GcpTag"
           }
+        },
+        "storageBillingModel": {
+          "description": "Optional. Updates storage_billing_model for the dataset.",
+          "type": "string",
+          "enumDescriptions": [
+            "Value not set.",
+            "Billing for logical bytes.",
+            "Billing for physical bytes."
+          ],
+          "enum": [
+            "STORAGE_BILLING_MODEL_UNSPECIFIED",
+            "LOGICAL",
+            "PHYSICAL"
+          ]
         }
       }
     },
@@ -551,8 +565,7 @@
           ]
         },
         "trainingRuns": {
-          "description": "Output only. Information for all training runs in increasing order of start_time.",
-          "readOnly": true,
+          "description": "Information for all training runs in increasing order of start_time.",
           "type": "array",
           "items": {
             "$ref": "TrainingRun"
@@ -634,40 +647,48 @@
       "type": "object",
       "properties": {
         "trainingOptions": {
-          "description": "Options that were used for this training run, includes user specified and default options that were used.",
+          "description": "Output only. Options that were used for this training run, includes user specified and default options that were used.",
+          "readOnly": true,
           "$ref": "TrainingOptions"
         },
         "trainingStartTime": {
-          "description": "The start time of this training run, in milliseconds since epoch.",
+          "description": "Output only. The start time of this training run, in milliseconds since epoch.",
+          "readOnly": true,
           "type": "string",
           "format": "int64"
         },
         "startTime": {
-          "description": "The start time of this training run.",
+          "description": "Output only. The start time of this training run.",
+          "readOnly": true,
           "type": "string",
           "format": "google-datetime"
         },
         "results": {
-          "description": "Output of each iteration run, results.size() <= max_iterations.",
+          "description": "Output only. Output of each iteration run, results.size() <= max_iterations.",
+          "readOnly": true,
           "type": "array",
           "items": {
             "$ref": "IterationResult"
           }
         },
         "evaluationMetrics": {
-          "description": "The evaluation metrics over training\/eval data that were computed at the end of training.",
+          "description": "Output only. The evaluation metrics over training\/eval data that were computed at the end of training.",
+          "readOnly": true,
           "$ref": "EvaluationMetrics"
         },
         "dataSplitResult": {
-          "description": "Data split result of the training run. Only set when the input data is actually split.",
+          "description": "Output only. Data split result of the training run. Only set when the input data is actually split.",
+          "readOnly": true,
           "$ref": "DataSplitResult"
         },
         "modelLevelGlobalExplanation": {
-          "description": "Global explanation contains the explanation of top features on the model level. Applies to both regression and classification models.",
+          "description": "Output only. Global explanation contains the explanation of top features on the model level. Applies to both regression and classification models.",
+          "readOnly": true,
           "$ref": "GlobalExplanation"
         },
         "classLevelGlobalExplanations": {
-          "description": "Global explanation contains the explanation of top features on the class level. Applies to classification models only.",
+          "description": "Output only. Global explanation contains the explanation of top features on the class level. Applies to classification models only.",
+          "readOnly": true,
           "type": "array",
           "items": {
             "$ref": "GlobalExplanation"
@@ -678,7 +699,8 @@
           "type": "string"
         },
         "vertexAiModelVersion": {
-          "description": "The model version in Vertex AI Model Registry for this training run",
+          "description": "Output only. The model version in Vertex AI Model Registry for this training run",
+          "readOnly": true,
           "type": "string"
         }
       }
@@ -3662,6 +3684,10 @@
           "items": {
             "$ref": "ConnectionProperty"
           }
+        },
+        "createSession": {
+          "description": "Optional. If this property is true, the job creates a new session using a randomly generated session_id. To continue using a created session with subsequent queries, pass the existing session identifier as a `ConnectionProperty` value. The session identifier is returned as part of the `SessionInfo` message within the query statistics. The new session's location will be set to `Job.JobReference.location` if it is present, otherwise it's set to the default location based on existing routing logic.",
+          "type": "boolean"
         }
       }
     },
@@ -4006,6 +4032,12 @@
           "description": "Output only. Information of the session if this job is part of one.",
           "readOnly": true,
           "$ref": "SessionInfo"
+        },
+        "finalExecutionDurationMs": {
+          "description": "Output only. The duration in milliseconds of the execution of the final attempt of this job, as BigQuery may internally re-attempt to execute the job.",
+          "readOnly": true,
+          "type": "string",
+          "format": "int64"
         }
       }
     },
@@ -4220,10 +4252,21 @@
           "readOnly": true,
           "$ref": "SearchStatistics"
         },
+        "performanceInsights": {
+          "description": "Output only. Performance insights.",
+          "readOnly": true,
+          "$ref": "PerformanceInsights"
+        },
         "sparkStatistics": {
           "description": "Output only. Statistics of a Spark procedure job.",
           "readOnly": true,
           "$ref": "SparkStatistics"
+        },
+        "transferredBytes": {
+          "description": "Output only. Total bytes transferred for cross-cloud queries such as Cross Cloud Transfer and CREATE TABLE AS SELECT (CTAS).",
+          "readOnly": true,
+          "type": "string",
+          "format": "int64"
         }
       }
     },
@@ -4819,6 +4862,89 @@
         "indexName": {
           "description": "Specifies the name of the unused search index, if available.",
           "type": "string"
+        }
+      }
+    },
+    "PerformanceInsights": {
+      "id": "PerformanceInsights",
+      "description": "Performance insights for the job.",
+      "type": "object",
+      "properties": {
+        "avgPreviousExecutionMs": {
+          "description": "Output only. Average execution ms of previous runs. Indicates the job ran slow compared to previous executions. To find previous executions, use INFORMATION_SCHEMA tables and filter jobs with same query hash.",
+          "readOnly": true,
+          "type": "string",
+          "format": "int64"
+        },
+        "stagePerformanceStandaloneInsights": {
+          "description": "Output only. Standalone query stage performance insights, for exploring potential improvements.",
+          "readOnly": true,
+          "type": "array",
+          "items": {
+            "$ref": "StagePerformanceStandaloneInsight"
+          }
+        },
+        "stagePerformanceChangeInsights": {
+          "description": "Output only. Query stage performance insights compared to previous runs, for diagnosing performance regression.",
+          "readOnly": true,
+          "type": "array",
+          "items": {
+            "$ref": "StagePerformanceChangeInsight"
+          }
+        }
+      }
+    },
+    "StagePerformanceStandaloneInsight": {
+      "id": "StagePerformanceStandaloneInsight",
+      "description": "Standalone performance insights for a specific stage.",
+      "type": "object",
+      "properties": {
+        "stageId": {
+          "description": "Output only. The stage id that the insight mapped to.",
+          "readOnly": true,
+          "type": "string",
+          "format": "int64"
+        },
+        "slotContention": {
+          "description": "Output only. True if the stage has a slot contention issue.",
+          "readOnly": true,
+          "type": "boolean"
+        },
+        "insufficientShuffleQuota": {
+          "description": "Output only. True if the stage has insufficient shuffle quota.",
+          "readOnly": true,
+          "type": "boolean"
+        }
+      }
+    },
+    "StagePerformanceChangeInsight": {
+      "id": "StagePerformanceChangeInsight",
+      "description": "Performance insights compared to the previous executions for a specific stage.",
+      "type": "object",
+      "properties": {
+        "stageId": {
+          "description": "Output only. The stage id that the insight mapped to.",
+          "readOnly": true,
+          "type": "string",
+          "format": "int64"
+        },
+        "inputDataChange": {
+          "description": "Output only. Input data change insight of the query stage.",
+          "readOnly": true,
+          "$ref": "InputDataChange"
+        }
+      }
+    },
+    "InputDataChange": {
+      "id": "InputDataChange",
+      "description": "Details about the input data change insight.",
+      "type": "object",
+      "properties": {
+        "recordsReadDiffPercentage": {
+          "description": "Output only. Records read difference percentage compared to a previous run.",
+          "readOnly": true,
+          "type": "number",
+          "format": "float"
         }
       }
     },

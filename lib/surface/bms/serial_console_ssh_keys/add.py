@@ -44,7 +44,6 @@ DETAILED_HELP = {
 }
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Add(base.CreateCommand):
   """Add a public SSH key to the project for accessing the interactive serial console in Bare Metal Solution."""

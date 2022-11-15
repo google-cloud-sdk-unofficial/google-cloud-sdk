@@ -33,23 +33,24 @@ class Delete(base.Command):
     """Register flags for this command."""
     flags_v2.AddRecognizerArgToParser(parser)
     base.ASYNC_FLAG.AddToParser(parser)
-    base.ASYNC_FLAG.SetDefault(parser, True)
+    base.ASYNC_FLAG.SetDefault(parser, False)
 
   def Run(self, args):
     recognizer = args.CONCEPTS.recognizer.Parse()
     speech_client = client.SpeechV2Client()
     is_async = args.async_
-    operation = speech_client.Delete(recognizer)
+    operation = speech_client.DeleteRecognizer(recognizer)
 
     if is_async:
       log.DeletedResource(
           operation.name, kind='speech recognizer', is_async=True)
       return operation
 
-    resource = client.WaitForOperation(
-        operation_ref=client.GetOperationRef(operation),
+    resource = speech_client.WaitForRecognizerOperation(
+        location=recognizer.Parent().Name(),
+        operation_ref=speech_client.GetOperationRef(operation),
         message='waiting for recognizer [{}] to be deleted'.format(
             recognizer.RelativeName()))
-    log.DeletedResource(resource, kind='speech recognizer')
+    log.DeletedResource(resource.name, kind='speech recognizer')
 
     return resource

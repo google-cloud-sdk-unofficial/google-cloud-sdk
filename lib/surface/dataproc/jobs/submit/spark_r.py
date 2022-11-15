@@ -32,11 +32,11 @@ class SparkR(spark_r.SparkRBase, submitter.JobSubmitter):
 
   To submit a SparkR job with a local script, run:
 
-    $ {command} --cluster=my_cluster my_script.R
+    $ {command} --cluster=my-cluster my_script.R
 
   To submit a Spark job that runs a script already on the cluster, run:
 
-    $ {command} --cluster=my_cluster file:///.../my_script.R \
+    $ {command} --cluster=my-cluster file:///.../my_script.R \
         -- gs://my_bucket/data.csv
   """
 

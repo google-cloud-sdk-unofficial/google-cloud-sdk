@@ -42,6 +42,17 @@ import websocket._exceptions as websocket_exceptions
 class StartTcpTunnel(base.Command):
   """Starts a tunnel through which a local process can forward TCP traffic to the workstation."""
 
+  detailed_help = {
+      'DESCRIPTION':
+          '{description}',
+      'EXAMPLES':
+          """\
+          To start a tunnel to port 22 on a workstation, run:
+
+            $ {command} --project=my-project --region=us-central1 --cluster=my-cluster --config=my-config my-workstation 22
+          """,
+  }
+
   @staticmethod
   def Args(parser):
     concept_parsers.ConceptParser.ForResource(

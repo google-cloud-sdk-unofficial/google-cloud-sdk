@@ -37,7 +37,6 @@ from google.auth import _helpers
 from google.auth import credentials
 from google.auth import exceptions
 from google.auth import jwt
-from google.auth.transport.requests import AuthorizedSession
 
 _DEFAULT_TOKEN_LIFETIME_SECS = 3600  # 1 hour in seconds
 
@@ -101,7 +100,7 @@ def _make_iam_token_request(
     )
 
     if response.status != http_client.OK:
-        exceptions.RefreshError(_REFRESH_ERROR, response_body)
+        raise exceptions.RefreshError(_REFRESH_ERROR, response_body)
 
     try:
         token_response = json.loads(response_body)
@@ -120,7 +119,9 @@ def _make_iam_token_request(
         six.raise_from(new_exc, caught_exc)
 
 
-class Credentials(credentials.CredentialsWithQuotaProject, credentials.Signing):
+class Credentials(
+    credentials.Scoped, credentials.CredentialsWithQuotaProject, credentials.Signing
+):
     """This module defines impersonated credentials which are essentially
     impersonated identities.
 
@@ -231,7 +232,7 @@ class Credentials(credentials.CredentialsWithQuotaProject, credentials.Signing):
         self._target_principal = target_principal
         self._target_scopes = target_scopes
         self._delegates = delegates
-        self._lifetime = lifetime
+        self._lifetime = lifetime or _DEFAULT_TOKEN_LIFETIME_SECS
         self.token = None
         self.expiry = _helpers.utcnow()
         self._quota_project_id = quota_project_id
@@ -274,6 +275,7 @@ class Credentials(credentials.CredentialsWithQuotaProject, credentials.Signing):
         )
 
     def sign_bytes(self, message):
+        from google.auth.transport.requests import AuthorizedSession
 
         iam_sign_endpoint = _IAM_SIGN_ENDPOINT.format(self._target_principal)
 
@@ -286,9 +288,12 @@ class Credentials(credentials.CredentialsWithQuotaProject, credentials.Signing):
 
         authed_session = AuthorizedSession(self._source_credentials)
 
-        response = authed_session.post(
-            url=iam_sign_endpoint, headers=headers, json=body
-        )
+        try:
+            response = authed_session.post(
+                url=iam_sign_endpoint, headers=headers, json=body
+            )
+        finally:
+            authed_session.close()
 
         if response.status_code != http_client.OK:
             raise exceptions.TransportError(
@@ -309,6 +314,10 @@ class Credentials(credentials.CredentialsWithQuotaProject, credentials.Signing):
     def signer(self):
         return self
 
+    @property
+    def requires_scopes(self):
+        return not self._target_scopes
+
     @_helpers.copy_docstring(credentials.CredentialsWithQuotaProject)
     def with_quota_project(self, quota_project_id):
         return self.__class__(
@@ -318,6 +327,18 @@ class Credentials(credentials.CredentialsWithQuotaProject, credentials.Signing):
             delegates=self._delegates,
             lifetime=self._lifetime,
             quota_project_id=quota_project_id,
+            iam_endpoint_override=self._iam_endpoint_override,
+        )
+
+    @_helpers.copy_docstring(credentials.Scoped)
+    def with_scopes(self, scopes, default_scopes=None):
+        return self.__class__(
+            self._source_credentials,
+            target_principal=self._target_principal,
+            target_scopes=scopes or default_scopes,
+            delegates=self._delegates,
+            lifetime=self._lifetime,
+            quota_project_id=self._quota_project_id,
             iam_endpoint_override=self._iam_endpoint_override,
         )
 
@@ -356,7 +377,7 @@ class IDTokenCredentials(credentials.CredentialsWithQuotaProject):
 
     def from_credentials(self, target_credentials, target_audience=None):
         return self.__class__(
-            target_credentials=self._target_credentials,
+            target_credentials=target_credentials,
             target_audience=target_audience,
             include_email=self._include_email,
             quota_project_id=self._quota_project_id,
@@ -389,6 +410,7 @@ class IDTokenCredentials(credentials.CredentialsWithQuotaProject):
 
     @_helpers.copy_docstring(credentials.Credentials)
     def refresh(self, request):
+        from google.auth.transport.requests import AuthorizedSession
 
         iam_sign_endpoint = _IAM_IDTOKEN_ENDPOINT.format(
             self._target_credentials.signer_email

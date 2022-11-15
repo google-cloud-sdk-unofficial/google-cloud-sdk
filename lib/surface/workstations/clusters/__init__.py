@@ -21,7 +21,6 @@ from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 
 
-@base.Hidden
 class Clusters(base.Group):
   """Manage Cloud Workstations cluster resources."""
 

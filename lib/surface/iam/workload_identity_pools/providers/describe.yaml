@@ -35,3 +35,4 @@
     resource:
       help_text: The workload identity pool provider to describe.
       spec: !REF googlecloudsdk.command_lib.iam.resources:workload_identity_pool_provider
+      is_positional: true

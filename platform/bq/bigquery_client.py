@@ -1502,6 +1502,7 @@ class BigqueryClient(object):
     return self._op_connection_service_client
 
 
+
   def OverrideEndpoint(self, discovery_document):
     """Override rootUrl for regional endpoints.
 
@@ -4881,7 +4882,8 @@ class BigqueryClient(object):
       default_kms_key=None,
       source_dataset_reference=None
       ,
-      max_time_travel_hours=None):
+      max_time_travel_hours=None,
+      storage_billing_model=None):
     """Create a dataset corresponding to DatasetReference.
 
     Args:
@@ -4907,6 +4909,8 @@ class BigqueryClient(object):
       max_time_travel_hours: Optional. Define the max time travel in hours. The
         value can be from 48 to 168 hours (2 to 7 days). The default value is
         168 hours if this is not set.
+      storage_billing_model: Optional. Sets the storage billing model for the
+      dataset.
 
     Raises:
       TypeError: if reference is not an ApiClientHelper.DatasetReference
@@ -4950,6 +4954,8 @@ class BigqueryClient(object):
 
     if max_time_travel_hours is not None:
       body['maxTimeTravelHours'] = max_time_travel_hours
+    if storage_billing_model is not None:
+      body['storageBillingModel'] = storage_billing_model
 
     try:
       self.apiclient.datasets().insert(
@@ -5543,7 +5549,8 @@ class BigqueryClient(object):
       label_keys_to_remove=None,
       etag=None,
       default_kms_key=None,
-      max_time_travel_hours=None):
+      max_time_travel_hours=None,
+      storage_billing_model=None):
     """Updates a dataset.
 
     Args:
@@ -5566,6 +5573,8 @@ class BigqueryClient(object):
       max_time_travel_hours: Optional. Define the max time travel in hours. The
         value can be from 48 to 168 hours (2 to 7 days). The default value is
         168 hours if this is not set.
+      storage_billing_model: Optional. Sets the storage billing model for the
+      dataset.
 
     Raises:
       TypeError: if reference is not a DatasetReference.
@@ -5608,6 +5617,8 @@ class BigqueryClient(object):
         dataset['labels'].pop(label_key, None)
     if max_time_travel_hours is not None:
       dataset['maxTimeTravelHours'] = max_time_travel_hours
+    if storage_billing_model is not None:
+      dataset['storageBillingModel'] = storage_billing_model
 
     request = self.apiclient.datasets().update(body=dataset, **dict(reference))
 
@@ -6603,6 +6614,7 @@ class BigqueryClient(object):
       json_extension=None,
       thrift_options=None,
       parquet_options=None,
+      connection_properties=None,
       **kwds):
     """Load the given data into BigQuery.
 
@@ -6686,6 +6698,7 @@ class BigqueryClient(object):
         which is required if `source_format` is 'THRIFT'.
       parquet_options: Options for configuring parquet files load, only
         applicable if `source_format` is 'PARQUET'.
+      connection_properties: Optional. ConnectionProperties for load job.
       **kwds: Passed on to self.ExecuteJob.
 
     Returns:
@@ -6736,6 +6749,7 @@ class BigqueryClient(object):
         range_partitioning=range_partitioning,
         hive_partitioning_options=hive_partitioning_options,
         thrift_options=thrift_options,
+        connection_properties=connection_properties,
         parquet_options=parquet_options)
     return self.ExecuteJob(
         configuration={'load': load_config}, upload_file=upload_file, **kwds)

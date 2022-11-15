@@ -34,6 +34,7 @@
       help_text: |-
         The workforce pool provider key to undelete.
       spec: !REF googlecloudsdk.command_lib.iam.resources:workforce_pool_provider_key
+      is_positional: true
 
   async:
     collection: iam.locations.workforcePools.providers.keys.operations

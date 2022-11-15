@@ -26,7 +26,6 @@ from googlecloudsdk.command_lib.compute import scope as compute_scope
 from googlecloudsdk.command_lib.compute.ssl_policies import flags
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Describe(base.DescribeCommand):
   """Describe a Compute Engine ssl policy.
 
@@ -40,16 +39,11 @@ class Describe(base.DescribeCommand):
   backends.
   """
 
-  _regional_ssl_policies = False
-
   SSL_POLICY_ARG = None
 
   @classmethod
   def Args(cls, parser):
-    if cls._regional_ssl_policies:
-      cls.SSL_POLICY_ARG = flags.GetSslPolicyMultiScopeArgument()
-    else:
-      cls.SSL_POLICY_ARG = flags.GetSslPolicyArgument()
+    cls.SSL_POLICY_ARG = flags.GetSslPolicyMultiScopeArgument()
     cls.SSL_POLICY_ARG.AddArgument(parser, operation_type='describe')
 
   def Run(self, args):
@@ -62,20 +56,3 @@ class Describe(base.DescribeCommand):
         scope_lister=compute_flags.GetDefaultScopeLister(holder.client),
         default_scope=compute_scope.ScopeEnum.GLOBAL)
     return helper.Describe(ref)
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
-class DescribeAlphaBeta(Describe):
-  """Describe a Compute Engine ssl policy.
-
-  *{command}* is used to display all data associated with a Compute Engine
-  SSL policy in a project.
-
-  An SSL policy specifies the server-side support for SSL features. An SSL
-  policy can be attached to a TargetHttpsProxy or a TargetSslProxy. This affects
-  connections between clients and the HTTPS or SSL proxy load balancer. SSL
-  policies do not affect the connection between the load balancers and the
-  backends.
-  """
-
-  _regional_ssl_policies = True

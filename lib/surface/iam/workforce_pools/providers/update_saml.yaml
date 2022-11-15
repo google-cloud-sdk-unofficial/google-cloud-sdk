@@ -40,6 +40,7 @@
     resource:
       help_text: The workforce pool provider to update.
       spec: !REF googlecloudsdk.command_lib.iam.resources:workforce_pool_provider
+      is_positional: true
 
     params:
     - _REF_: googlecloudsdk.command_lib.iam.flags:workforce_pool_provider.display_name

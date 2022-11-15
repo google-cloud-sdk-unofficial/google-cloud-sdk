@@ -22,6 +22,7 @@
     resource:
       help_text: The ID of the WasmPluginVersion to create.
       spec: !REF googlecloudsdk.command_lib.network_actions.resources:wasmPluginVersion
+      is_positional: true
 
     params:
     - _REF_: googlecloudsdk.command_lib.network_actions.flags:wasmPluginVersion.image

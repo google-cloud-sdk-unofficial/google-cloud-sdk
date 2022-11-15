@@ -20,3 +20,4 @@
     resource:
       help_text: The delivery pipeline for which you want to list the releases.
       spec: !REF googlecloudsdk.command_lib.deploy.resources:delivery_pipeline
+      is_positional: false

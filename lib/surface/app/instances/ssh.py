@@ -22,8 +22,10 @@ from __future__ import unicode_literals
 import argparse
 import textwrap
 
+from apitools.base.py import exceptions as apitools_exceptions
 from googlecloudsdk.api_lib.app import appengine_api_client
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.app import exceptions as command_exceptions
 from googlecloudsdk.command_lib.app import flags
 from googlecloudsdk.command_lib.app import ssh_common
 from googlecloudsdk.command_lib.util.ssh import containers
@@ -96,6 +98,8 @@ class SshGa(base.Command):
       OperationCancelledError: User cancelled the operation.
       ssh.CommandError: The SSH command exited with SSH exit code, which
         usually implies that a connection problem occurred.
+      InvalidInstanceNetworkIpModeTypeError: Network Ip mode is not supported
+        for ssh.
 
     Returns:
       int, The exit code of the SSH command.
@@ -124,6 +128,15 @@ class SshGa(base.Command):
                                                       self.ReleaseTrack())
     remote_command = containers.GetRemoteCommand(args.container, args.command)
     tty = containers.GetTty(args.container, args.command)
+
+    try:
+      version_resource = api_client.GetVersionResource(service, version)
+    except apitools_exceptions.HttpNotFoundError:
+      raise command_exceptions.MissingVersionError('{}/{}'.format(
+          service, version))
+    if version_resource.network.instanceIpMode is api_client.messages.Network.InstanceIpModeValueValuesEnum.INTERNAL:
+      raise command_exceptions.InvalidInstanceIpModeError(
+          version_resource.network.instanceIpMode)
     cmd = ssh.SSHCommand(
         connection_details.remote,
         identity_file=keys.key_file, tty=tty,

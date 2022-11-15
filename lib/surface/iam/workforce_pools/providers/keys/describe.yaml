@@ -33,3 +33,4 @@
       help_text: |-
         The workforce pool provider key to describe.
       spec: !REF googlecloudsdk.command_lib.iam.resources:workforce_pool_provider_key
+      is_positional: true

@@ -32,10 +32,6 @@ from googlecloudsdk.command_lib.util.args import labels_util
 from googlecloudsdk.core import log
 import six
 
-PREREQUISITE_OPTION_ERROR_MSG = """\
-Cannot specify --{opt} without --{prerequisite}.
-"""
-
 _INVALID_OPTION_FOR_V2_ERROR_MSG = """\
 Cannot specify --{opt} with Composer 2.X or greater.
 """
@@ -236,6 +232,14 @@ information on how to structure KEYs and VALUEs, run
   flags.MASTER_AUTHORIZED_NETWORKS_FLAG.AddToParser(
       master_authorized_networks_group)
 
+  scheduled_snapshots_params_group = parser.add_argument_group(
+      flags.SCHEDULED_SNAPSHOTS_GROUP_DESCRIPTION, hidden=True)
+  flags.ENABLE_SCHEDULED_SNAPSHOT_CREATION.AddToParser(
+      scheduled_snapshots_params_group)
+  flags.SNAPSHOT_LOCATION.AddToParser(scheduled_snapshots_params_group)
+  flags.SNAPSHOT_CREATION_SCHEDULE.AddToParser(scheduled_snapshots_params_group)
+  flags.SNAPSHOT_SCHEDULE_TIMEZONE.AddToParser(scheduled_snapshots_params_group)
+
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Create(base.Command):
@@ -341,23 +345,23 @@ class Create(base.Command):
     if (args.cluster_ipv4_cidr and not args.enable_ip_alias and
         image_versions_util.IsImageVersionStringComposerV1(image_version)):
       raise command_util.InvalidUserInputError(
-          PREREQUISITE_OPTION_ERROR_MSG.format(
+          flags.PREREQUISITE_OPTION_ERROR_MSG.format(
               prerequisite='enable-ip-alias', opt='cluster-ipv4-cidr'))
     if (args.cluster_secondary_range_name and not args.enable_ip_alias and
         image_versions_util.IsImageVersionStringComposerV1(image_version)):
       raise command_util.InvalidUserInputError(
-          PREREQUISITE_OPTION_ERROR_MSG.format(
+          flags.PREREQUISITE_OPTION_ERROR_MSG.format(
               prerequisite='enable-ip-alias',
               opt='cluster-secondary-range-name'))
     if (args.services_ipv4_cidr and not args.enable_ip_alias and
         image_versions_util.IsImageVersionStringComposerV1(image_version)):
       raise command_util.InvalidUserInputError(
-          PREREQUISITE_OPTION_ERROR_MSG.format(
+          flags.PREREQUISITE_OPTION_ERROR_MSG.format(
               prerequisite='enable-ip-alias', opt='services-ipv4-cidr'))
     if (args.services_secondary_range_name and not args.enable_ip_alias and
         image_versions_util.IsImageVersionStringComposerV1(image_version)):
       raise command_util.InvalidUserInputError(
-          PREREQUISITE_OPTION_ERROR_MSG.format(
+          flags.PREREQUISITE_OPTION_ERROR_MSG.format(
               prerequisite='enable-ip-alias',
               opt='services-secondary-range-name'))
     if (self._support_max_pods_per_node and args.max_pods_per_node and
@@ -367,12 +371,12 @@ class Create(base.Command):
     if (self._support_max_pods_per_node and args.max_pods_per_node and
         not args.enable_ip_alias):
       raise command_util.InvalidUserInputError(
-          PREREQUISITE_OPTION_ERROR_MSG.format(
+          flags.PREREQUISITE_OPTION_ERROR_MSG.format(
               prerequisite='enable-ip-alias', opt='max-pods-per-node'))
     if (args.enable_ip_masq_agent and not args.enable_ip_alias and
         image_versions_util.IsImageVersionStringComposerV1(image_version)):
       raise command_util.InvalidUserInputError(
-          PREREQUISITE_OPTION_ERROR_MSG.format(
+          flags.PREREQUISITE_OPTION_ERROR_MSG.format(
               prerequisite='enable-ip-alias', opt='enable-ip-masq-agent'))
 
   def ParsePrivateEnvironmentConfigOptions(self, args, image_version):
@@ -380,25 +384,25 @@ class Create(base.Command):
     if (args.enable_private_environment and not args.enable_ip_alias and
         image_versions_util.IsImageVersionStringComposerV1(image_version)):
       raise command_util.InvalidUserInputError(
-          PREREQUISITE_OPTION_ERROR_MSG.format(
+          flags.PREREQUISITE_OPTION_ERROR_MSG.format(
               prerequisite='enable-ip-alias', opt='enable-private-environment'))
 
     if args.enable_private_endpoint and not args.enable_private_environment:
       raise command_util.InvalidUserInputError(
-          PREREQUISITE_OPTION_ERROR_MSG.format(
+          flags.PREREQUISITE_OPTION_ERROR_MSG.format(
               prerequisite='enable-private-environment',
               opt='enable-private-endpoint'))
 
     if (args.enable_privately_used_public_ips and
         not args.enable_private_environment):
       raise command_util.InvalidUserInputError(
-          PREREQUISITE_OPTION_ERROR_MSG.format(
+          flags.PREREQUISITE_OPTION_ERROR_MSG.format(
               prerequisite='enable-private-environment',
               opt='enable-privately-used-public-ips'))
 
     if args.master_ipv4_cidr and not args.enable_private_environment:
       raise command_util.InvalidUserInputError(
-          PREREQUISITE_OPTION_ERROR_MSG.format(
+          flags.PREREQUISITE_OPTION_ERROR_MSG.format(
               prerequisite='enable-private-environment',
               opt='master-ipv4-cidr'))
 
@@ -411,13 +415,13 @@ class Create(base.Command):
 
     if args.web_server_ipv4_cidr and not args.enable_private_environment:
       raise command_util.InvalidUserInputError(
-          PREREQUISITE_OPTION_ERROR_MSG.format(
+          flags.PREREQUISITE_OPTION_ERROR_MSG.format(
               prerequisite='enable-private-environment',
               opt='web-server-ipv4-cidr'))
 
     if args.cloud_sql_ipv4_cidr and not args.enable_private_environment:
       raise command_util.InvalidUserInputError(
-          PREREQUISITE_OPTION_ERROR_MSG.format(
+          flags.PREREQUISITE_OPTION_ERROR_MSG.format(
               prerequisite='enable-private-environment',
               opt='cloud-sql-ipv4-cidr'))
 
@@ -430,7 +434,7 @@ class Create(base.Command):
     if (args.composer_network_ipv4_cidr and
         not args.enable_private_environment):
       raise command_util.InvalidUserInputError(
-          PREREQUISITE_OPTION_ERROR_MSG.format(
+          flags.PREREQUISITE_OPTION_ERROR_MSG.format(
               prerequisite='enable-private-environment',
               opt='composer-network-ipv4-cidr'))
 
@@ -461,6 +465,9 @@ class Create(base.Command):
         args.master_authorized_networks)
     self.master_authorized_networks = args.master_authorized_networks
 
+  def ValidateScheduledSnapshotFlags(self, args):
+    pass
+
   def ValidateTriggererFlags(self, args):
     pass
 
@@ -478,13 +485,12 @@ class Create(base.Command):
       raise command_util.InvalidUserInputError(
           'Workloads Config flags introduced in Composer 2.X'
           ' cannot be used when creating Composer 1.X environments.')
-
     if args.connection_subnetwork and is_composer_v1:
       raise command_util.InvalidUserInputError(
           _INVALID_OPTION_FOR_V1_ERROR_MSG.format(opt='connection-subnetwork'))
     if args.connection_subnetwork and not args.enable_private_environment:
       raise command_util.InvalidUserInputError(
-          PREREQUISITE_OPTION_ERROR_MSG.format(
+          flags.PREREQUISITE_OPTION_ERROR_MSG.format(
               prerequisite='enable-private-environment',
               opt='connection-subnetwork'))
 
@@ -560,9 +566,14 @@ class Create(base.Command):
         maintenance_window_start=args.maintenance_window_start,
         maintenance_window_end=args.maintenance_window_end,
         maintenance_window_recurrence=args.maintenance_window_recurrence,
-        enable_master_authorized_networks=args
-        .enable_master_authorized_networks,
+        enable_master_authorized_networks=(
+            args.enable_master_authorized_networks),
         master_authorized_networks=args.master_authorized_networks,
+        enable_scheduled_snapshot_creation=(
+            args.enable_scheduled_snapshot_creation),
+        snapshot_creation_schedule=args.snapshot_creation_schedule,
+        snapshot_location=args.snapshot_location,
+        snapshot_schedule_timezone=args.snapshot_schedule_timezone,
         release_track=self.ReleaseTrack())
     return environments_api_util.Create(self.env_ref, create_flags,
                                         is_composer_v1)
@@ -587,10 +598,8 @@ class CreateBeta(Create):
     triggerer_params_group = parser.add_argument_group(
         flags.TRIGGERER_PARAMETERS_FLAG_GROUP_DESCRIPTION, hidden=True)
     flags.TRIGGERER_CPU.AddToParser(triggerer_params_group)
-    flags.TRIGGERER_MEMORY.AddToParser(
-        triggerer_params_group)
-    flags.ENABLE_TRIGGERER.AddToParser(
-        triggerer_params_group)
+    flags.TRIGGERER_MEMORY.AddToParser(triggerer_params_group)
+    flags.ENABLE_TRIGGERER.AddToParser(triggerer_params_group)
 
   def GetOperationMessage(self, args, is_composer_v1):
     """See base class."""
@@ -657,6 +666,11 @@ class CreateBeta(Create):
         enable_master_authorized_networks=args
         .enable_master_authorized_networks,
         master_authorized_networks=args.master_authorized_networks,
+        enable_scheduled_snapshot_creation=args
+        .enable_scheduled_snapshot_creation,
+        snapshot_creation_schedule=args.snapshot_creation_schedule,
+        snapshot_location=args.snapshot_location,
+        snapshot_schedule_timezone=args.snapshot_schedule_timezone,
         release_track=self.ReleaseTrack())
 
     return environments_api_util.Create(self.env_ref, create_flags,
@@ -682,11 +696,11 @@ class CreateBeta(Create):
     if not args.enable_triggerer:
       if args.triggerer_cpu:
         raise command_util.InvalidUserInputError(
-            PREREQUISITE_OPTION_ERROR_MSG.format(
+            flags.PREREQUISITE_OPTION_ERROR_MSG.format(
                 opt='triggerer-cpu', prerequisite='enable-triggerer'))
       if args.triggerer_memory:
         raise command_util.InvalidUserInputError(
-            PREREQUISITE_OPTION_ERROR_MSG.format(
+            flags.PREREQUISITE_OPTION_ERROR_MSG.format(
                 opt='triggerer-memory', prerequisite='enable-triggerer'))
 
 
@@ -786,6 +800,11 @@ class CreateAlpha(CreateBeta):
         .enable_master_authorized_networks,
         master_authorized_networks=args.master_authorized_networks,
         airflow_database_retention_days=args.airflow_database_retention_days,
+        enable_scheduled_snapshot_creation=args
+        .enable_scheduled_snapshot_creation,
+        snapshot_creation_schedule=args.snapshot_creation_schedule,
+        snapshot_location=args.snapshot_location,
+        snapshot_schedule_timezone=args.snapshot_schedule_timezone,
         release_track=self.ReleaseTrack())
 
     return environments_api_util.Create(self.env_ref, create_flags,

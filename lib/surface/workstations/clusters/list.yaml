@@ -1,4 +1,4 @@
-- release_tracks: [ALPHA]
+- release_tracks: [ALPHA, BETA]
 
   help_text:
     brief: |
@@ -6,7 +6,9 @@
     description: |
       List all workstation clusters under the specified project and region.
     examples: |
-      $ {command}
+      To list workstation clusters, run:
+
+        $ {command}
 
   arguments:
     resource:

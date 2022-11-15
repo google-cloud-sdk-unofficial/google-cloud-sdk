@@ -22,7 +22,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope.base import ReleaseTrack
 
 
-@base.ReleaseTracks(ReleaseTrack.ALPHA)
+@base.ReleaseTracks(ReleaseTrack.GA, ReleaseTrack.BETA, ReleaseTrack.ALPHA)
 class Violations(base.Group):
   """Read and list Assured Workloads Violations."""
 

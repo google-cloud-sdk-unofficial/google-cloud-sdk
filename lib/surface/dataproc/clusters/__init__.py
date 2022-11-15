@@ -32,19 +32,19 @@ class Clusters(base.Group):
 
   To create a cluster, run:
 
-    $ {command} create my_cluster --region=us-central1
+    $ {command} create my-cluster --region=us-central1
 
   To resize a cluster, run:
 
-    $ {command} update my_cluster --region=us-central1 --num_workers 5
+    $ {command} update my-cluster --region=us-central1 --num_workers 5
 
   To delete a cluster, run:
 
-    $ {command} delete my_cluster --region=us-central1
+    $ {command} delete my-cluster --region=us-central1
 
   To view the details of a cluster, run:
 
-    $ {command} describe my_cluster --region=us-central1
+    $ {command} describe my-cluster --region=us-central1
 
   To see the list of all clusters, run:
 

@@ -22,6 +22,5 @@ from googlecloudsdk.calliope import base
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-@base.Hidden
 class Recognizers(base.Group):
   """Manage Google cloud speech-to-text recognizers."""

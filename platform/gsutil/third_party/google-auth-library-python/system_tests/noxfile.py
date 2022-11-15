@@ -37,6 +37,7 @@ AUTHORIZED_USER_FILE = os.path.join(DATA_DIR, "authorized_user.json")
 EXPLICIT_CREDENTIALS_ENV = "GOOGLE_APPLICATION_CREDENTIALS"
 EXPLICIT_PROJECT_ENV = "GOOGLE_CLOUD_PROJECT"
 EXPECT_PROJECT_ENV = "EXPECT_PROJECT_ID"
+ALLOW_PLUGGABLE_ENV = "GOOGLE_EXTERNAL_ACCOUNT_ALLOW_EXECUTABLES"
 
 SKIP_GAE_TEST_ENV = "SKIP_APP_ENGINE_SYSTEM_TEST"
 GAE_APP_URL_TMPL = "https://{}-dot-{}.appspot.com"
@@ -168,7 +169,7 @@ def configure_cloud_sdk(session, application_default_credentials, project=False)
 
 # Test sesssions
 
-TEST_DEPENDENCIES_ASYNC = ["aiohttp", "pytest-asyncio", "nest-asyncio"]
+TEST_DEPENDENCIES_ASYNC = ["aiohttp", "pytest-asyncio", "nest-asyncio", "mock"]
 TEST_DEPENDENCIES_SYNC = ["pytest", "requests", "mock"]
 PYTHON_VERSIONS_ASYNC = ["3.7"]
 PYTHON_VERSIONS_SYNC = ["2.7", "3.7"]
@@ -334,7 +335,7 @@ def app_engine(session):
 @nox.session(python=PYTHON_VERSIONS_SYNC)
 def grpc(session):
     session.install(LIBRARY_DIR)
-    session.install(*TEST_DEPENDENCIES_SYNC, "google-cloud-pubsub==1.7.0")
+    session.install(*TEST_DEPENDENCIES_SYNC, "google-cloud-pubsub==1.7.2")
     session.env[EXPLICIT_CREDENTIALS_ENV] = SERVICE_ACCOUNT_FILE
     default(
         session,
@@ -379,10 +380,11 @@ def mtls_http(session):
     )
 
 
-@nox.session(python=PYTHON_VERSIONS_SYNC)
+@nox.session(python=PYTHON_VERSIONS_ASYNC)
 def external_accounts(session):
+    session.env[ALLOW_PLUGGABLE_ENV] = "1"
     session.install(
-        *TEST_DEPENDENCIES_SYNC,
+        *TEST_DEPENDENCIES_ASYNC,
         LIBRARY_DIR,
         "google-api-python-client",
     )

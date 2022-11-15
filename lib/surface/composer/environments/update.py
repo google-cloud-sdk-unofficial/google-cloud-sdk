@@ -84,6 +84,8 @@ class Update(base.Command):
       flags.AIRFLOW_DATABASE_RETENTION_DAYS.AddToParser(
           Update.update_type_group.add_argument_group(hidden=True))
 
+    flags.AddScheduledSnapshotFlagsToGroup(Update.update_type_group)
+
   def _ConstructPatch(self, env_ref, args, support_environment_upgrades=False):
     env_obj = environments_api_util.Get(
         env_ref, release_track=self.ReleaseTrack())
@@ -176,6 +178,9 @@ class Update(base.Command):
               args.web_server_storage)
       params['min_workers'] = args.min_workers
       params['max_workers'] = args.max_workers
+
+    self._addScheduledSnapshotFields(params, args, is_composer_v1)
+
     if self._support_triggerer and (args.triggerer_cpu or args.triggerer_memory
                                     or args.enable_triggerer or
                                     args.disable_triggerer):
@@ -207,6 +212,22 @@ class Update(base.Command):
         args.master_authorized_networks)
     params['master_authorized_networks'] = args.master_authorized_networks
     return patch_util.ConstructPatch(**params)
+
+  # TODO(b/245909413): Update Composer version
+  def _addScheduledSnapshotFields(self, params, args, is_composer_v1):
+    if (args.disable_scheduled_snapshot_creation or
+        args.enable_scheduled_snapshot_creation) and is_composer_v1:
+      raise command_util.InvalidUserInputError(
+          'Scheduled Snapshots flags introduced in Composer 2.X'
+          ' cannot be used when creating Composer 1 environments.')
+
+    if args.disable_scheduled_snapshot_creation:
+      params['enable_scheduled_snapshot_creation'] = False
+    if args.enable_scheduled_snapshot_creation:
+      params['enable_scheduled_snapshot_creation'] = True
+      params['snapshot_location'] = args.snapshot_location
+      params['snapshot_schedule_timezone'] = args.snapshot_schedule_timezone
+      params['snapshot_creation_schedule'] = args.snapshot_creation_schedule
 
   def _addTriggererFields(self, params, args, env_obj):
     triggerer_supported = image_versions_command_util.IsVersionTriggererCompatible(

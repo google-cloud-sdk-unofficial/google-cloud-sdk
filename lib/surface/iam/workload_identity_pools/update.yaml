@@ -33,7 +33,8 @@
   arguments:
     resource:
       help_text: The workload identity pool to update.
-      spec: !REF googlecloudsdk.command_lib.iam.resources:positional_workload_identity_pool
+      spec: !REF googlecloudsdk.command_lib.iam.resources:workload_identity_pool
+      is_positional: true
 
     params:
     - _REF_: googlecloudsdk.command_lib.iam.flags:workload_identity_pool.display_name
@@ -67,7 +68,8 @@
   arguments:
     resource:
       help_text: The workload identity pool to update.
-      spec: !REF googlecloudsdk.command_lib.iam.resources:positional_workload_identity_pool
+      spec: !REF googlecloudsdk.command_lib.iam.resources:workload_identity_pool
+      is_positional: true
 
     params:
     - _REF_: googlecloudsdk.command_lib.iam.flags:workload_identity_pool.display_name

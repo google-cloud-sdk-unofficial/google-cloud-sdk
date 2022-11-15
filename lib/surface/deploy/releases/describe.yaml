@@ -16,3 +16,4 @@
     resource:
       help_text: The release you want to describe.
       spec: !REF googlecloudsdk.command_lib.deploy.resources:release
+      is_positional: true

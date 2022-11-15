@@ -27,4 +27,5 @@
   arguments:
     resource:
       help_text: The workforce pool for which to display the IAM policy.
-      spec: !REF googlecloudsdk.command_lib.iam.resources:positional_workforce_pool
+      spec: !REF googlecloudsdk.command_lib.iam.resources:workforce_pool
+      is_positional: true

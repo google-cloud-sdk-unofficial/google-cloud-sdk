@@ -109,22 +109,16 @@
             the GitHub App.
         - api_field: connection.githubEnterpriseConfig.oauthSecretSecretVersion
           arg_name: oauth-secret-secret-version
-          required: true
           help_text: Secret containing the OAuth secret of the GitHub App.
         - api_field: connection.githubEnterpriseConfig.oauthClientIdSecretVersion
           arg_name: oauth-client-id-secret-version
-          required: true
           help_text: Secret containing the OAuth Client ID of the GitHub App.
-        - group:
-            help_text: Group of argument for the Installation of the GitHub App.
-            params:
-            - api_field: connection.githubEnterpriseConfig.authorizerCredential.oauthTokenSecretVersion
-              arg_name: authorizer-token-secret-version
-              help_text: Secret containing the authorizer user's token.
-              required: true
-            - api_field: connection.githubEnterpriseConfig.appInstallationId
-              arg_name: app-installation-id
-              help_text: Installation ID of the Cloud Build GitHub App.
+        - api_field: connection.githubEnterpriseConfig.authorizerCredential.oauthTokenSecretVersion
+          arg_name: authorizer-token-secret-version
+          help_text: Secret containing the authorizer user's token.
+        - api_field: connection.githubEnterpriseConfig.appInstallationId
+          arg_name: app-installation-id
+          help_text: Installation ID of the Cloud Build GitHub App.
 
   output:
     # Print the installation instruction and link (if any) after creation.

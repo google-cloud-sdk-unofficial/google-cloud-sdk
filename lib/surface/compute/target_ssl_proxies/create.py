@@ -33,7 +33,6 @@ from googlecloudsdk.command_lib.compute.target_ssl_proxies import flags
 from googlecloudsdk.command_lib.compute.target_ssl_proxies import target_ssl_proxies_utils
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Create(base.CreateCommand):
   """Create a target SSL proxy.
 
@@ -41,12 +40,12 @@ class Create(base.CreateCommand):
   referenced by one or more forwarding rules which define which packets the
   proxy is responsible for routing. The target SSL proxy points to a backend
   service which handle the actual requests. The target SSL proxy also points
-  to at most 15 SSL certificates used for server-side authentication. The
-  target SSL proxy can be associated with at most one SSL policy.
+  to at most 15 SSL certificates used for server-side authentication or one
+  certificate map. The target SSL proxy can be associated with at most one SSL
+  policy.
   """
 
   _certificate_map = True
-  _regional_ssl_policies = False
   _list_format = flags.DEFAULT_LIST_FORMAT
 
   BACKEND_SERVICE_ARG = None
@@ -73,12 +72,8 @@ class Create(base.CreateCommand):
       cls.SSL_CERTIFICATES_ARG.AddArgument(
           parser, cust_metavar='SSL_CERTIFICATE')
 
-    if cls._regional_ssl_policies:
-      cls.SSL_POLICY_ARG = ssl_policies_flags.GetSslPolicyMultiScopeArgumentForOtherResource(
-          'SSL', required=False)
-    else:
-      cls.SSL_POLICY_ARG = ssl_policies_flags.GetSslPolicyArgumentForOtherResource(
-          'SSL', required=False)
+    cls.SSL_POLICY_ARG = ssl_policies_flags.GetSslPolicyMultiScopeArgumentForOtherResource(
+        'SSL', required=False)
     cls.SSL_POLICY_ARG.AddArgument(parser)
 
     parser.add_argument(
@@ -156,19 +151,3 @@ class Create(base.CreateCommand):
 
   def Run(self, args):
     return self._CreateResource(args)
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
-class CreateAlphaBeta(Create):
-  """Create a target SSL proxy.
-
-  *{command}* is used to create target SSL proxies. A target SSL proxy is
-  referenced by one or more forwarding rules which define which packets the
-  proxy is responsible for routing. The target SSL proxy points to a backend
-  service which handle the actual requests. The target SSL proxy also points
-  to at most 15 SSL certificates used for server-side authentication or one
-  certificate map. The target SSL proxy can be associated with at most one SSL
-  policy.
-  """
-
-  _regional_ssl_policies = True

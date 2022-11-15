@@ -41,7 +41,6 @@ DETAILED_HELP = {
 }
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class List(six.with_metaclass(abc.ABCMeta, base.CacheCommand)):
   """List the SSH keys added to the project for accessing the interactive serial console in Bare Metal Solution."""

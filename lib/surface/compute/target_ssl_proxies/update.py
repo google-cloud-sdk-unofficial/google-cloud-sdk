@@ -34,7 +34,6 @@ from googlecloudsdk.command_lib.compute.target_ssl_proxies import flags
 from googlecloudsdk.command_lib.compute.target_ssl_proxies import target_ssl_proxies_utils
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Update(base.SilentCommand):
   """Update a target SSL proxy.
 
@@ -43,12 +42,12 @@ class Update(base.SilentCommand):
   referenced by one or more forwarding rules which define which packets the
   proxy is responsible for routing. The target SSL proxy in turn points to a
   backend service which will handle the requests. The target SSL proxy also
-  points to at most 15 SSL certificates used for server-side authentication.
-  The target SSL proxy can be associated with at most one SSL policy.
+  points to at most 15 SSL certificates used for server-side authentication
+  or one certificate map. The target SSL proxy can be associated with at most
+  one SSL policy.
   """
 
   _certificate_map = True
-  _regional_ssl_policies = False
 
   BACKEND_SERVICE_ARG = None
   SSL_CERTIFICATES_ARG = None
@@ -74,14 +73,9 @@ class Update(base.SilentCommand):
       cls.SSL_CERTIFICATES_ARG.AddArgument(
           parser, cust_metavar='SSL_CERTIFICATE')
 
-    if cls._regional_ssl_policies:
-      cls.SSL_POLICY_ARG = (
-          ssl_policies_flags.GetSslPolicyMultiScopeArgumentForOtherResource(
-              'SSL', required=False))
-    else:
-      cls.SSL_POLICY_ARG = (
-          ssl_policies_flags.GetSslPolicyArgumentForOtherResource(
-              'SSL', required=False))
+    cls.SSL_POLICY_ARG = (
+        ssl_policies_flags.GetSslPolicyMultiScopeArgumentForOtherResource(
+            'SSL', required=False))
 
     group = parser.add_mutually_exclusive_group()
     ssl_policy_group = group.add_argument_group()
@@ -219,20 +213,3 @@ class Update(base.SilentCommand):
   def Run(self, args):
     self._CheckMissingArgument(args)
     return self._SendRequests(args)
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
-class UpdateAlphaBeta(Update):
-  """Update a target SSL proxy.
-
-  *{command}* is used to replace the SSL certificate, backend service, proxy
-  header or SSL policy of existing target SSL proxies. A target SSL proxy is
-  referenced by one or more forwarding rules which define which packets the
-  proxy is responsible for routing. The target SSL proxy in turn points to a
-  backend service which will handle the requests. The target SSL proxy also
-  points to at most 15 SSL certificates used for server-side authentication
-  or one certificate map. The target SSL proxy can be associated with at most
-  one SSL policy.
-  """
-
-  _regional_ssl_policies = True

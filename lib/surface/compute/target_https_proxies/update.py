@@ -181,12 +181,10 @@ def _PatchTargetHttpsProxy(client, target_https_proxy_ref, new_resource,
     return client.MakeRequests(requests)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Update(base.SilentCommand):
   """Update a target HTTPS proxy."""
 
   _certificate_map = True
-  _regional_ssl_policies = False
 
   SSL_CERTIFICATES_ARG = None
   TARGET_HTTPS_PROXY_ARG = None
@@ -226,12 +224,8 @@ class Update(base.SilentCommand):
       resource_args.GetClearCertificateMapArgumentForOtherResource(
           'HTTPS proxy').AddToParser(map_group)
 
-    if cls._regional_ssl_policies:
-      cls.SSL_POLICY_ARG = ssl_policies_flags.GetSslPolicyMultiScopeArgumentForOtherResource(
-          'HTTPS', required=False)
-    else:
-      cls.SSL_POLICY_ARG = ssl_policies_flags.GetSslPolicyArgumentForOtherResource(
-          'HTTPS', required=False)
+    cls.SSL_POLICY_ARG = ssl_policies_flags.GetSslPolicyMultiScopeArgumentForOtherResource(
+        'HTTPS', required=False)
 
     group = parser.add_mutually_exclusive_group()
     ssl_policy_group = group.add_argument_group()
@@ -250,8 +244,3 @@ class Update(base.SilentCommand):
     return _Run(args, holder, self.SSL_CERTIFICATES_ARG,
                 self.TARGET_HTTPS_PROXY_ARG, self.URL_MAP_ARG,
                 self.SSL_POLICY_ARG, certificate_map_ref)
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
-class UpdateAlphaBeta(Update):
-  _regional_ssl_policies = True
