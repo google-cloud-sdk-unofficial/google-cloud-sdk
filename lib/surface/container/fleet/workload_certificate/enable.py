@@ -24,7 +24,7 @@ from googlecloudsdk.command_lib.container.fleet.features import base
 class Enable(base.EnableCommand):
   """Enable Workload Certificate Feature.
 
-  Enable the Workload Certificate Feature in a Fleet, specify
+  Enable the Workload Certificate Feature in a fleet, specify
   provision-google-ca to use Google provisioned CAS.
 
   ## Examples

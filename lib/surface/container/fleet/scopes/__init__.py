@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Command group for Fleet workspaces."""
+"""Command group for Fleet scopes."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -23,7 +23,7 @@ from googlecloudsdk.calliope import base
 
 @base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class Workspaces(base.Group):
-  """Manage workspaces of all your GKE and other fleets."""
+class Scopes(base.Group):
+  """Manage scopes of all your GKE fleets."""
   pass
 

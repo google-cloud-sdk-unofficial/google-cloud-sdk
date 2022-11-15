@@ -46,6 +46,7 @@ class Delete(base.DeleteCommand):
     resource_args.AddAwsClusterResourceArg(parser, 'to delete')
 
     flags.AddValidateOnly(parser, 'cluster to delete')
+    flags.AddAllowMissing(parser)
 
     base.ASYNC_FLAG.AddToParser(parser)
 

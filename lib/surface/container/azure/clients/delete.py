@@ -24,6 +24,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.container.azure import resource_args
 from googlecloudsdk.command_lib.container.gkemulticloud import constants
 from googlecloudsdk.command_lib.container.gkemulticloud import endpoint_util
+from googlecloudsdk.command_lib.container.gkemulticloud import flags
 from googlecloudsdk.core import log
 from googlecloudsdk.core.console import console_io
 
@@ -43,6 +44,8 @@ class Delete(base.DeleteCommand):
   @staticmethod
   def Args(parser):
     resource_args.AddAzureClientResourceArg(parser, 'to delete')
+
+    flags.AddAllowMissing(parser)
 
   def Run(self, args):
     """Runs the delete command."""

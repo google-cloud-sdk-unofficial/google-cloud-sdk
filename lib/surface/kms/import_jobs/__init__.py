@@ -30,6 +30,8 @@ class ImportJobs(base.Group):
   pre-existing key material, generated outside of Cloud KMS.
   """
 
+  category = base.IDENTITY_AND_SECURITY_CATEGORY
+
   @classmethod
   def Args(cls, parser):
     parser.display_info.AddUriFunc(

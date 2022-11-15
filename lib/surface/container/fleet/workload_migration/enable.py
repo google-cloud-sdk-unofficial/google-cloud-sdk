@@ -24,7 +24,7 @@ from googlecloudsdk.command_lib.container.fleet.features import base
 class Enable(base.EnableCommand):
   """Enable Workload Migration Feature.
 
-  Enable the Workload Migration Feature in a Fleet.
+  Enable the Workload Migration Feature in a fleet.
 
   ## Examples
 

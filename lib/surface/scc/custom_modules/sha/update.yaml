@@ -4,61 +4,61 @@
     brief: Update a Security Health Analytics custom module.
     description: Update a Security Health Analytics custom module.
     examples: |
-      Update a Security Health Analytics custom module with id `test-sha-custom-module` for given organization `123`:
+      Update a Security Health Analytics custom module with id `123456` for organization `123`:
 
-        $ {command} test-sha-custom-module \
+        $ {command} 123456 \
             --organization=organizations/123 \
             --description="This is a test custom module" \
             --display-name="Test display name" \
             --enablement-state="ENABLED"
             --custom-config-from-file=custom_config.yaml
-        $ {command} test-sha-custom-module \
+        $ {command} 123456 \
             --organization=123 \
             --description="This is a test custom module" \
             --display-name="Test display name" \
             --enablement-state="ENABLED"
             --custom-config-from-file=custom_config.yaml
-        $ {command} organizations/123/securityHealthAnalyticsSettings/customModules/test-sha-custom-module \
+        $ {command} organizations/123/securityHealthAnalyticsSettings/customModules/123456 \
             --description="This is a test custom module" \
             --display-name="Test display name" \
             --enablement-state="ENABLED"
             --custom-config-from-file=custom_config.yaml
 
-      Update a Security Health Analytics custom module with id `test-sha-custom-module` for given folder `123`:
+      Update a Security Health Analytics custom module with id `123456` for folder `123`:
 
-        $ {command} test-sha-custom-module \
+        $ {command} 123456 \
             --folder=folders/456 \
             --description="This is a test custom module" \
             --display-name="Test display name" \
             --enablement-state="ENABLED"
             --custom-config-from-file=custom_config.yaml
-        $ {command} test-sha-custom-module \
+        $ {command} 123456 \
             --folder=456 \
             --description="This is a test custom module" \
             --display-name="Test display name" \
             --enablement-state="ENABLED"
             --custom-config-from-file=custom_config.yaml
-        $ {command} folders/456/securityHealthAnalyticsSettings/customModules/test-sha-custom-module \
+        $ {command} folders/456/securityHealthAnalyticsSettings/customModules/123456 \
             --description="This is a test custom module" \
             --display-name="Test display name" \
             --enablement-state="ENABLED"
             --custom-config-from-file=custom_config.yaml
 
-      Update a Security Health Analytics custom module with id `test-sha-custom-module` for given project `123`:
+      Update a Security Health Analytics custom module with id `123456` for project `123`:
 
-        $ {command} test-sha-custom-module \
+        $ {command} 123456 \
             --project=projects/789 \
             --description="This is a test custom module" \
             --display-name="Test display name" \
             --enablement-state="ENABLED"
             --custom-config-from-file=custom_config.yaml
-        $ {command} test-sha-custom-module \
+        $ {command} 123456 \
             --project=789 \
             --description="This is a test custom module" \
             --display-name="Test display name" \
             --enablement-state="ENABLED"
             --custom-config-from-file=custom_config.yaml
-        $ {command} projects/789/securityHealthAnalyticsSettings/customModules/test-sha-custom-module \
+        $ {command} projects/789/securityHealthAnalyticsSettings/customModules/123456 \
             --description="This is a test custom module" \
             --display-name="Test display name" \
             --enablement-state="ENABLED"

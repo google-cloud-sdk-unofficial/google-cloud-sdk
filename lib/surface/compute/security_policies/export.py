@@ -50,7 +50,7 @@ class Export(base.Command):
 
   @classmethod
   def Args(cls, parser):
-    cls.SECURITY_POLICY_ARG = flags.SecurityPolicyArgument()
+    cls.SECURITY_POLICY_ARG = flags.SecurityPolicyMultiScopeArgument()
     cls.SECURITY_POLICY_ARG.AddArgument(parser, operation_type='export')
 
     parser.add_argument(
@@ -68,7 +68,8 @@ class Export(base.Command):
   def Run(self, args):
     # Get the security policy.
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
-    ref = self.SECURITY_POLICY_ARG.ResolveAsResource(args, holder.resources)
+    ref = self.SECURITY_POLICY_ARG.ResolveAsResource(
+        args, holder.resources, default_scope=compute_scope.ScopeEnum.GLOBAL)
 
     requests = []
     security_policy = client.SecurityPolicy(ref, compute_client=holder.client)

@@ -19,12 +19,12 @@ from __future__ import division
 from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.services import enable_api
-from googlecloudsdk.calliope import base as gbase
+from googlecloudsdk.calliope import base as calliope_base
 from googlecloudsdk.command_lib.container.fleet.features import base
 from googlecloudsdk.command_lib.container.fleet.features import info
 
 
-@gbase.Hidden
+@calliope_base.Hidden
 class Enable(base.EnableCommand):
   """Enable the Cloud Deploy Hybrid Feature.
 

@@ -21,7 +21,8 @@ from __future__ import unicode_literals
 from googlecloudsdk.api_lib.container.gkeonprem import operations
 from googlecloudsdk.api_lib.container.gkeonprem import vmware_node_pools as apis
 from googlecloudsdk.calliope import base
-from googlecloudsdk.command_lib.container.vmware import constants
+from googlecloudsdk.command_lib.container.gkeonprem import constants
+from googlecloudsdk.command_lib.container.vmware import constants as vmware_constants
 from googlecloudsdk.command_lib.container.vmware import flags
 from googlecloudsdk.core import log
 
@@ -47,12 +48,12 @@ class Create(base.CreateCommand):
     Args:
       parser: The argparse parser to add the flag to.
     """
-    parser.display_info.AddFormat(constants.VMWARE_NODEPOOLS_FORMAT)
+    parser.display_info.AddFormat(vmware_constants.VMWARE_NODEPOOLS_FORMAT)
     flags.AddNodePoolResourceArg(parser, 'to create')
     flags.AddValidationOnly(parser, hidden=True)
     base.ASYNC_FLAG.AddToParser(parser)
     flags.AddNodePoolDisplayName(parser)
-    flags.AddAnnotations(parser)
+    flags.AddNodePoolAnnotations(parser)
     flags.AddVmwareNodePoolAutoscalingConfig(parser, for_update=False)
     flags.AddVmwareNodeConfig(parser, for_update=False)
 
@@ -73,7 +74,7 @@ class Create(base.CreateCommand):
     operation = client.Create(args)
 
     if args.async_ and not args.IsSpecified('format'):
-      args.format = constants.VMWARE_OPERATIONS_FORMAT
+      args.format = constants.OPERATIONS_FORMAT
 
     if args.validate_only:
       return

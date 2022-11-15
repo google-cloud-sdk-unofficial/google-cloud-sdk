@@ -12,25 +12,25 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Generic command to disable any Hub Feature."""
+"""Generic command to disable any fleet feature."""
 
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
-from googlecloudsdk.calliope import base as sdk_base
+from googlecloudsdk.calliope import base as calliope_base
 from googlecloudsdk.command_lib.container.fleet.features import base
 
 
-@sdk_base.Hidden
+@calliope_base.Hidden
 class Disable(base.DisableCommand):
-  """Disable a Hub Feature.
+  """Disable a fleet feature.
 
   ## EXAMPLES
 
-  To disable the `metering` feature, run:
+  To disable the `servicemesh` feature, run:
 
-    $ {command} metering
+    $ {command} servicemesh
   """
 
   @staticmethod
@@ -38,7 +38,7 @@ class Disable(base.DisableCommand):
     base.DisableCommand.Args(parser)
     parser.add_argument(
         'feature',
-        help='Short name of the Feature to disable.',
+        help='Short name of the feature to disable.',
     )
 
   def Run(self, args):

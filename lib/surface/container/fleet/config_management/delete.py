@@ -18,19 +18,19 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
-from googlecloudsdk.calliope import base
+from googlecloudsdk.calliope import base as calliope_base
 from surface.container.fleet.config_management import unmanage
 
 MEMBERSHIP_FLAG = '--membership'
 
 
-@base.Deprecate(
+@calliope_base.Deprecate(
     is_removed=False,
     warning=('This command has been deprecated. '
              'Please use `unmanage` instead.'),
     error=('This command has been removed.'
            'Please use `unmanage` instead.'))
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@calliope_base.ReleaseTracks(calliope_base.ReleaseTrack.ALPHA)
 class Delete(unmanage.Unmanage):
   """Remove the Config Management Feature Spec for the given membership.
 

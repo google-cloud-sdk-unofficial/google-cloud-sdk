@@ -24,6 +24,7 @@ from googlecloudsdk.command_lib.container.azure import resource_args
 from googlecloudsdk.command_lib.container.gkemulticloud import command_util
 from googlecloudsdk.command_lib.container.gkemulticloud import constants
 from googlecloudsdk.command_lib.container.gkemulticloud import endpoint_util
+from googlecloudsdk.command_lib.container.gkemulticloud import flags
 
 _EXAMPLES = """
 To delete a node pool named ``my-node-pool'' in a cluster named ``my-cluster''
@@ -42,6 +43,9 @@ class Delete(base.DeleteCommand):
   @staticmethod
   def Args(parser):
     resource_args.AddAzureNodePoolResourceArg(parser, 'to delete')
+
+    flags.AddAllowMissing(parser)
+
     base.ASYNC_FLAG.AddToParser(parser)
 
   def Run(self, args):

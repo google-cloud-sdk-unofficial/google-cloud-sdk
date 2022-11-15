@@ -21,7 +21,8 @@ from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
+                    base.ReleaseTrack.GA)
 class NetworkEdgeSecurityServices(base.Group):
   """Read and manipulate network edge security services."""
   pass
@@ -30,7 +31,8 @@ class NetworkEdgeSecurityServices(base.Group):
 NetworkEdgeSecurityServices.category = base.LOAD_BALANCING_CATEGORY
 
 NetworkEdgeSecurityServices.detailed_help = {
-    'DESCRIPTION': """
+    'DESCRIPTION':
+        """
        Read and manipulate network edge security services.
 
        Network edge security services are used to protect network load balancing

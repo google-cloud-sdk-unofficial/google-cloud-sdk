@@ -102,6 +102,11 @@ def _add_common_args(parser):
       '--clear-default-encryption-key',
       action='store_true',
       help="Clears the bucket's default encryption key.")
+  parser.add_argument(
+      '--enable-autoclass',
+      action=arg_parsers.StoreTrueFalseAction,
+      help='The Autoclass feature automatically selects the best storage class'
+      ' for objects based on access patterns.')
   labels = parser.add_mutually_exclusive_group()
   labels.add_argument('--labels-file', help=_LABELS_HELP_TEXT)
   update_labels = labels.add_group()
@@ -226,6 +231,19 @@ def _add_alpha_args(parser):
       action='store_true',
       help='Clears the object retention period for a bucket.')
   parser.add_argument(
+      '--acl-file',
+      hidden=True,
+      help='Path to a local JSON or YAML formatted file containing a valid'
+      ' policy. The output of `gcloud storage buckets describe`'
+      ' `--format="multi(acl:format=json)"` is a valid file and can be edited'
+      ' for more fine-grained control.')
+  parser.add_argument(
+      '--add-acl-grant',
+      hidden=True,
+      help='JSON object in the format accepted by your cloud provider.'
+      ' For example, for GCS, `--add-acl-grant=entity=user-tim@gmail.com,'
+      'role=OWNER`')
+  parser.add_argument(
       '--lock-retention-period',
       action=arg_parsers.StoreTrueFalseAction,
       help='Locks an unlocked retention policy on the buckets. Caution: A'
@@ -245,6 +263,17 @@ def _add_alpha_args(parser):
       help='Enables or disables [uniform bucket-level access]'
       '(https://cloud.google.com/storage/docs/bucket-policy-only)'
       ' for the buckets.')
+
+
+def _is_initial_bucket_metadata_needed(user_request_args):
+  """Determines if the bucket update has to patch existing metadata."""
+  resource_args = user_request_args.resource_args
+  if not resource_args:
+    return False
+  return any([
+      resource_args.acl_grants_to_add, resource_args.acl_grants_to_remove,
+      resource_args.labels_to_append, resource_args.labels_to_remove
+  ])
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
@@ -281,7 +310,10 @@ class Update(base.Command):
       fields_scope = cloud_api.FieldsScope.NO_ACL
     for url in args.url:
       for resource in wildcard_iterator.get_wildcard_iterator(
-          url, fields_scope=fields_scope):
+          url,
+          fields_scope=fields_scope,
+          get_bucket_metadata=_is_initial_bucket_metadata_needed(
+              user_request_args)):
         yield update_bucket_task.UpdateBucketTask(
             resource, user_request_args=user_request_args)
 

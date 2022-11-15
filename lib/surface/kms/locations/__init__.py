@@ -23,4 +23,4 @@ from googlecloudsdk.calliope import base
 
 class Locations(base.Group):
   """View locations available for a project."""
-  pass
+  category = base.IDENTITY_AND_SECURITY_CATEGORY

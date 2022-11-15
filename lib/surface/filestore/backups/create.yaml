@@ -30,11 +30,6 @@
       required: true
       help_text: |
         Region (e.g. us-central1) for the backup.
-    - arg_name: kms-key
-      required: false
-      release_tracks: [BETA]
-      help_text: |
-        CMEK for backup in the form of projects/{}/locations/{}/keyRings/{}/cryptoKeys/{}
     - group:
         mutex: true
         required: true
@@ -51,6 +46,12 @@
       required: false
       help_text: |
         Description for the backup. Limit: 2048 characters.
+    - api_field: backup.kmsKeyName
+      arg_name: kms-key
+      required: false
+      release_tracks: [BETA]
+      help_text: |
+        CMEK for backup in the form of projects/{}/locations/{}/keyRings/{}/cryptoKeys/{}
     - api_field: backup.sourceFileShare
       arg_name: file-share
       required: true

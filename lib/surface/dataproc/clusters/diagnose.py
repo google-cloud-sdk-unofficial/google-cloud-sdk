@@ -48,12 +48,7 @@ class Diagnose(base.Command):
     flags.AddTimeoutFlag(parser)
     dataproc = dp.Dataproc(cls.ReleaseTrack())
     flags.AddClusterResourceArg(parser, 'diagnose', dataproc.api_version)
-    parser.add_argument(
-        '--tarball-access',
-        type=arg_utils.ChoiceToEnumName,
-        choices=Diagnose._GetValidTarballAccessChoices(dataproc),
-        hidden=True,
-        help='Target access privileges for diagnose tarball.')
+    Diagnose.addDiagnoseFlags(parser, dataproc)
 
   @staticmethod
   def _GetValidTarballAccessChoices(dataproc):
@@ -64,28 +59,65 @@ class Diagnose(base.Command):
         if n != 'TARBALL_ACCESS_UNSPECIFIED'
     ]
 
+  @staticmethod
+  def addDiagnoseFlags(parser, dataproc):
+    parser.add_argument(
+        '--tarball-access',
+        type=arg_utils.ChoiceToEnumName,
+        choices=Diagnose._GetValidTarballAccessChoices(dataproc),
+        hidden=True,
+        help='Target access privileges for diagnose tarball.')
+    parser.add_argument(
+        '--start-time',
+        hidden=True,
+        help='Time instant to start the diagnosis from. (in ' +
+        '%Y-%m-%dT%H:%M:%S.%fZ format)')
+    parser.add_argument(
+        '--end-time',
+        hidden=True,
+        help='Time instant to stop the diagnosis at. (in ' +
+        '%Y-%m-%dT%H:%M:%S.%fZ format)')
+    parser.add_argument(
+        '--job-id',
+        hidden=True,
+        help='The job on which to perform the diagnosis.')
+    parser.add_argument(
+        '--yarn-application-id',
+        hidden=True,
+        help='The yarn application on which to perform the diagnosis.')
+    parser.add_argument(
+        '--workers',
+        hidden=True,
+        help='A list of workers in the cluster to run the diagnostic script ' +
+        'on.')
+
   def Run(self, args):
     dataproc = dp.Dataproc(self.ReleaseTrack())
 
     cluster_ref = args.CONCEPTS.cluster.Parse()
 
     request = None
+    diagnose_request = dataproc.messages.DiagnoseClusterRequest(
+        job=args.job_id,
+        yarnApplicationId=args.yarn_application_id
+    )
+    diagnose_request.diagnosisInterval = dataproc.messages.Interval(
+        startTime=args.start_time,
+        endTime=args.end_time
+    )
+    if args.workers is not None:
+      diagnose_request.workers.extend(args.workers.split(','))
     if args.tarball_access is not None:
       tarball_access = arg_utils.ChoiceToEnum(
           args.tarball_access,
           dataproc.messages.DiagnoseClusterRequest.TarballAccessValueValuesEnum)
-      diagnose_request = dataproc.messages.DiagnoseClusterRequest(
-          tarballAccess=tarball_access)
-      request = dataproc.messages.DataprocProjectsRegionsClustersDiagnoseRequest(
-          clusterName=cluster_ref.clusterName,
-          region=cluster_ref.region,
-          projectId=cluster_ref.projectId,
-          diagnoseClusterRequest=diagnose_request)
-    else:
-      request = dataproc.messages.DataprocProjectsRegionsClustersDiagnoseRequest(
-          clusterName=cluster_ref.clusterName,
-          region=cluster_ref.region,
-          projectId=cluster_ref.projectId)
+      diagnose_request.tarballAccess = tarball_access
+
+    request = dataproc.messages.DataprocProjectsRegionsClustersDiagnoseRequest(
+        clusterName=cluster_ref.clusterName,
+        region=cluster_ref.region,
+        projectId=cluster_ref.projectId,
+        diagnoseClusterRequest=diagnose_request)
 
     operation = dataproc.client.projects_regions_clusters.Diagnose(request)
     # TODO(b/36052522): Stream output during polling.

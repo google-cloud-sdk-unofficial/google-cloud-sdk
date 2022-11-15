@@ -57,7 +57,7 @@ def GetMembershipConstraint(client, messages, constraint_name, project_id,
                                                   release_track)
   except apitools_exceptions.HttpNotFoundError:
     raise exceptions.Error(
-        'Membership [{}] was not found in the Fleet.'
+        'Membership [{}] was not found in the fleet.'
         .format(membership))
 
   try:
@@ -98,7 +98,7 @@ def GetFleetConstraint(client, messages, constraint_name, project_id):
     response = client.projects_fleetConstraints.Get(request)
   except apitools_exceptions.HttpNotFoundError:
     raise exceptions.Error(
-        'Constraint [{}] was not found in the Fleet.'
+        'Constraint [{}] was not found in the fleet.'
         .format(constraint_name))
   constraint = {
       'name': response.ref.name,
@@ -173,10 +173,10 @@ class Describe(calliope_base.DescribeCommand):
       memberships = args.memberships
       if len(memberships) != 1:
         raise exceptions.Error('Please specify a single membership name.')
-
+      membership_name = memberships[0]
       constraint = GetMembershipConstraint(client, messages,
                                            constraint_name,
-                                           project_id, args.memberships,
+                                           project_id, membership_name,
                                            self.ReleaseTrack())
     else:
       constraint = GetFleetConstraint(client, messages, constraint_name,
@@ -193,7 +193,7 @@ class Describe(calliope_base.DescribeCommand):
         if constraint_name == '{}/{}'.format(
             violation.constraintRef.constraintTemplateName,
             violation.constraintRef.name
-        ) and violation.membershipRef.name == args.memberships:
+        ) and violation.membershipRef.name == membership_name:
           constraint['violations'].append(FormatViolation(violation))
       return constraint
     else:

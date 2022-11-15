@@ -18,13 +18,13 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
-from googlecloudsdk.calliope import base as gbase
+from googlecloudsdk.calliope import base as calliope_base
 from googlecloudsdk.command_lib.container.fleet.build import utils
 from googlecloudsdk.command_lib.container.fleet.features import base
 from googlecloudsdk.core.console import console_io
 
 
-@gbase.Hidden
+@calliope_base.Hidden
 class Disable(base.DisableCommand):
   """Disable the Cloud Build hybrid pools feature.
 

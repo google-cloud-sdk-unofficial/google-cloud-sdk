@@ -53,7 +53,8 @@ class Create(base.Command):
         recognizer, args.display_name, args.model, args.language_codes,
         args.profanity_filter, args.enable_word_time_offsets,
         args.enable_word_confidence, args.enable_automatic_punctuation,
-        args.enable_spoken_punctuation, args.enable_spoken_emojis)
+        args.enable_spoken_punctuation, args.enable_spoken_emojis,
+        args.min_speaker_count, args.max_speaker_count)
 
     if is_async:
       log.UpdatedResource(

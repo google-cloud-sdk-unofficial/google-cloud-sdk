@@ -28,17 +28,18 @@ from googlecloudsdk.core import properties
 @base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class List(base.ListCommand):
-  """List fleet namespaces in a project.
+  """List RBAC RoleBindings in a fleet namespace.
 
   This command can fail for the following reasons:
-  * The project specified does not exist.
-  * The user does not have access to the project specified.
+  * The namespace specified does not exist.
+  * The user does not have access to the specified namespace.
 
   ## EXAMPLES
 
-  The following command lists RBACRoleBindings in namespace `my-namespace`:
+  The following command lists RBAC RoleBindings in namespace `NAMESPACE` in
+  project `PROJECT_ID`:
 
-    $ {command} --namespace=my-namespace
+    $ {command} --namespace=NAMESPACE --project=PROJECT_ID
 
   """
 
@@ -50,7 +51,7 @@ class List(base.ListCommand):
         '--namespace',
         type=str,
         required=True,
-        help='Name of the fleet namespace to list RBACRoleBindings from.')
+        help='Name of the fleet namespace to list RBAC RoleBindings from.')
 
   def Run(self, args):
     fleetclient = client.FleetClient(release_track=base.ReleaseTrack.ALPHA)

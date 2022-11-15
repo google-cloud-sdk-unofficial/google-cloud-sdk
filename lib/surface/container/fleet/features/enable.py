@@ -12,32 +12,32 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Generic command to enable any Hub Feature."""
+"""Generic command to enable any fleet feature."""
 
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
-from googlecloudsdk.calliope import base as sdk_base
+from googlecloudsdk.calliope import base as calliope_base
 from googlecloudsdk.command_lib.container.fleet.features import base
 
 
-@sdk_base.Hidden
+@calliope_base.Hidden
 class Enable(base.EnableCommand):
-  """Enable a Hub Feature.
+  """Enable a fleet feature.
 
   ## EXAMPLES
 
-  To enable the `metering` feature, run:
+  To enable the `servicemesh` feature, run:
 
-    $ {command} metering
+    $ {command} servicemesh
   """
 
   @staticmethod
   def Args(parser):
     parser.add_argument(
         'feature',
-        help='Short name of the Feature to enable.',
+        help='Short name of the feature to enable.',
     )
 
   def Run(self, args):

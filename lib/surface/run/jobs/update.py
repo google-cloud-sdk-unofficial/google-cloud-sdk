@@ -69,7 +69,7 @@ class Update(base.Command):
     flags.AddTasksFlag(parser)
     flags.AddMaxRetriesFlag(parser)
     flags.AddTaskTimeoutFlags(parser)
-    flags.AddServiceAccountFlag(parser)
+    flags.AddServiceAccountFlag(parser, managed_only=True)
     flags.AddMutexEnvVarsFlags(parser)
     flags.AddCloudSQLFlags(parser)
     flags.AddVpcConnectorArgs(parser)

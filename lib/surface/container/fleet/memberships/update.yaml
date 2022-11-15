@@ -2,10 +2,10 @@
 
   help_text:
     brief: Update a membership.
-    description: Update an existing membership in Fleet.
+    description: Update an existing membership in a fleet.
     examples: |
       First retrieve the ID of the membership using the command below. The output of this command
-      lists all the fleet's members, with their unique IDs in the Names column:
+      lists all the fleet's members, with their unique IDs in the NAME column:
 
         $ {parent_command} list
 

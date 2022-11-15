@@ -9,9 +9,9 @@
         $ {command}
 
   request:
-    collection: gkehub.projects.locations.workspaces
+    collection: gkehub.projects.locations.scopes
     modify_request_hooks:
-    - googlecloudsdk.command_lib.container.fleet.workspaces.util:SetParentCollection
+    - googlecloudsdk.command_lib.container.fleet.scopes.util:SetParentCollection
     ALPHA:
       api_version: v1alpha
 

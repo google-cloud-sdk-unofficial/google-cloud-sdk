@@ -21,7 +21,7 @@ from __future__ import unicode_literals
 from googlecloudsdk.api_lib.container.gkeonprem import bare_metal_clusters as apis
 from googlecloudsdk.api_lib.container.gkeonprem import operations
 from googlecloudsdk.calliope import base
-from googlecloudsdk.command_lib.container.bare_metal import flags as bare_metal_flags
+from googlecloudsdk.command_lib.container.bare_metal import cluster_flags as bare_metal_flags
 from googlecloudsdk.command_lib.container.gkeonprem import flags
 
 _EXAMPLES = """

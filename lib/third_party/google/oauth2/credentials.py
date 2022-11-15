@@ -54,7 +54,7 @@ class Credentials(credentials.ReadOnlyScoped, credentials.CredentialsWithQuotaPr
     The credentials are considered immutable. If you want to modify the
     quota project, use :meth:`with_quota_project` or ::
 
-        credentials = credentials.with_quota_project('myproject-123)
+        credentials = credentials.with_quota_project('myproject-123')
 
     Reauth is disabled by default. To enable reauth, set the
     `enable_reauth_refresh` parameter to True in the constructor. Note that
@@ -250,6 +250,23 @@ class Credentials(credentials.ReadOnlyScoped, credentials.CredentialsWithQuotaPr
             scopes=self.scopes,
             default_scopes=self.default_scopes,
             quota_project_id=quota_project_id,
+            rapt_token=self.rapt_token,
+            enable_reauth_refresh=self._enable_reauth_refresh,
+        )
+
+    @_helpers.copy_docstring(credentials.CredentialsWithTokenUri)
+    def with_token_uri(self, token_uri):
+
+        return self.__class__(
+            self.token,
+            refresh_token=self.refresh_token,
+            id_token=self.id_token,
+            token_uri=token_uri,
+            client_id=self.client_id,
+            client_secret=self.client_secret,
+            scopes=self.scopes,
+            default_scopes=self.default_scopes,
+            quota_project_id=self.quota_project_id,
             rapt_token=self.rapt_token,
             enable_reauth_refresh=self._enable_reauth_refresh,
         )

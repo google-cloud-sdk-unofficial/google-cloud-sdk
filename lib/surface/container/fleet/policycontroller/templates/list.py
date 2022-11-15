@@ -147,7 +147,7 @@ class List(calliope_base.ListCommand):
 
   ## EXAMPLES
 
-  To list all Policy Controller constraint templates across the Fleet:
+  To list all Policy Controller constraint templates across the fleet:
 
       $ {command}
 

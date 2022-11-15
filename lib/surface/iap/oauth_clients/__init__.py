@@ -24,6 +24,11 @@ from googlecloudsdk.calliope import base
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
                     base.ReleaseTrack.GA)
 class Iap(base.Group):
-  """Manage IAP OAuth clients."""
+  """Manage IAP OAuth clients.
+
+  Manage OAuth clients that are used by Cloud Identity-Aware Proxy. Note this
+  API cannot be used as a generic management API for all OAuth clients in your
+  project.
+  """
 
   category = 'Identity and Security'

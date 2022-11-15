@@ -35,10 +35,14 @@ class Create(base.CreateCommand):
 
   ## EXAMPLES
 
-  To create a fleet namespace in project `foo-bar-1` with name
-  `my-ns`, run:
+  To create a fleet namespace with name `NAMESPACE` in the active project, run:
 
-    $ {command} my-ns --project=foo-bar-1
+    $ {command} NAMESPACE
+
+  To create a fleet namespace in project `PROJECT_ID` with name
+  `NAMESPACE`, run:
+
+    $ {command} NAMESPACE --project=PROJECT_ID
   """
 
   @staticmethod

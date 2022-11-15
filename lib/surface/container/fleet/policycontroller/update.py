@@ -18,6 +18,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+from googlecloudsdk.api_lib.container.fleet import util as fleet_util
 from googlecloudsdk.command_lib.container.fleet import resources
 from googlecloudsdk.command_lib.container.fleet.features import base
 from googlecloudsdk.command_lib.container.fleet.policycontroller import utils
@@ -119,28 +120,25 @@ class Update(base.UpdateCommand):
         args, self.messages)
     memberships = base.ParseMembershipsPlural(
         args, search=True, prompt=True, prompt_cancel=False, autoselect=True)
+    membership_specs_short_path = {
+        fleet_util.MembershipPartialName(full_path): ms
+        for full_path, ms in membership_specs.items()
+    }
     for membership in memberships:
-      full_membership_name = ''
-      full_membership_name = utils.convert_membership_from_project_id_to_number(
-          membership)
-      if full_membership_name not in membership_specs:
+      short_membership = fleet_util.MembershipPartialName(membership)
+      if short_membership not in membership_specs_short_path:
         raise exceptions.Error(
             'Policy Controller is not enabled for membership {}'.format(
                 membership))
-      current_poco_membership_spec = membership_specs[
-          full_membership_name].policycontroller
+      # make changes to membership spec in place, so that we don't have to deal
+      # with project ID/number conversion.
+      current_poco_membership_spec = membership_specs_short_path[
+          short_membership].policycontroller
       poco_hub_config = current_poco_membership_spec.policyControllerHubConfig
-      current_version = current_poco_membership_spec.version
       utils.merge_args_with_poco_hub_config(args, poco_hub_config,
                                             self.messages)
-      poco_membership_spec = self.messages.PolicyControllerMembershipSpec(
-          policyControllerHubConfig=poco_hub_config, version=current_version)
       if args.version:
-        poco_membership_spec.version = args.version
-
-      membership_specs[
-          full_membership_name] = self.messages.MembershipFeatureSpec(
-              policycontroller=poco_membership_spec)
+        current_poco_membership_spec.version = args.version
 
     patch = self.messages.Feature(
         membershipSpecs=self.hubclient.ToMembershipSpecs(membership_specs))

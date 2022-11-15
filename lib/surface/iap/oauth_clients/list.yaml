@@ -3,9 +3,10 @@
     brief: |
       List Cloud IAP OAuth clients in the Cloud OAuth brand.
     description: |
-      *{command}* is used to list Cloud IAP OAuth clients in a Cloud OAuth brand.
+      *{command}* is used to list Cloud IAP OAuth clients in a Cloud OAuth brand. Note this command
+      will not list any other type of OAuth client in your project.
     examples: |
-      To list a Cloud OAuth client for the current project, run:
+      To list the Cloud IAP OAuth clients for the current project, run:
 
         $ {command} BRAND
 

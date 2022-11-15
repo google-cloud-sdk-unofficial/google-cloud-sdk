@@ -904,7 +904,7 @@ class CreateBeta(Create):
   _support_host_error_timeout_seconds = True
   _support_numa_node_count = False
   _support_visible_core_count = True
-  _support_max_run_duration = False
+  _support_max_run_duration = True
   _support_region_instance_template = False
   _support_provisioned_throughput = False
 

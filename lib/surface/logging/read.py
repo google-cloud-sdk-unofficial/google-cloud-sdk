@@ -20,6 +20,7 @@ from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.logging import common
 from googlecloudsdk.api_lib.logging import util
+from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.logs import read as read_logs_lib
 
@@ -34,7 +35,18 @@ class Read(base.Command):
     """Register flags for this command."""
     read_logs_lib.LogFilterPositionalArgs(parser)
     read_logs_lib.LoggingReadArgs(parser)
-    view_group = parser.add_argument_group(
+    target_group = parser.add_mutually_exclusive_group()
+    target_group.add_argument(
+        '--resource-names',
+        type=arg_parsers.ArgList(),
+        metavar='RESOURCE',
+        help='Resource name(s) to read logs from. A resource can either be an '
+        'top-level resource (e.g., "projects/my-project") or a full log view '
+        'resource path (e.g., '
+        '"projects/my-project/locations/my-location/buckets/my-bucket/'
+        'views/my-view"). Multiple resources can be specified, separated by a '
+        'comma.')
+    view_group = target_group.add_argument_group(
         help='These arguments are used in conjunction with the parent to '
         'construct a view resource.')
     view_group.add_argument(
@@ -58,17 +70,27 @@ class Read(base.Command):
   def _Run(self, args):
     filter_clauses = read_logs_lib.MakeTimestampFilters(args)
     filter_clauses += [args.log_filter] if args.log_filter else []
-    parent = util.GetParentFromArgs(args)
+
     if args.IsSpecified('location'):
+      # Explicit parent/location/bucket/view specification.
       parent = util.CreateResourceName(
           util.CreateResourceName(
-              util.CreateResourceName(parent, 'locations', args.location),
+              util.CreateResourceName(
+                  util.GetParentFromArgs(args), 'locations', args.location),
               'buckets', args.bucket), 'views', args.view)
+    elif args.IsSpecified('resource_names'):
+      # Explicit resource names listing.
+      parent = None
+    else:
+      # Neither is explicitly located, default scope to parent-from-args.
+      parent = util.GetParentFromArgs(args)
+
     return common.FetchLogs(
         read_logs_lib.JoinFilters(filter_clauses, operator='AND') or None,
         order_by=args.order,
         limit=args.limit,
-        parent=parent)
+        parent=parent,
+        resource_names=args.resource_names)
 
   def Run(self, args):
     """This is what gets called when the user runs this command.
@@ -130,6 +152,15 @@ Read.detailed_help = {
         To read a log entry from a log bucket using a custom log view that you have created for the bucket:
 
           $ {command} "" --bucket=[BUCKET_ID] --location=[LOCATION] --view=[VIEW_ID] --limit=1
+
+        To read log entries from multiple resources, specify them as a
+        comma-delimeted sequence with --resource-names. Each resource name can
+        be specified either as a top-level resource (e.g.,
+        projects/[PROJECT_ID], folders/[FOLDER_ID], etc.) or as a Log View
+        resource (e.g.,
+        projects/[PROJECT_ID]/locations/[LOCATION]/buckets/[BUCKET_NAME]/views/[VIEW_ID]).
+
+          $ {command} "" --resource-names=[RESOURCE-1],[RESOURCE-2]
 
     """,
 }

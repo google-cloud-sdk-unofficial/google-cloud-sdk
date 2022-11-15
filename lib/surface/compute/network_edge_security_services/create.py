@@ -57,7 +57,7 @@ class Create(base.CreateCommand):
     cls.NETWORK_EDGE_SECURITY_SERVICE_ARG.AddArgument(
         parser, operation_type='create')
     cls.SECURITY_POLICY_ARG = (
-        security_policy_flags.SecurityPolicyMultiScopeArgumentForTargetResource(
+        security_policy_flags.SecurityPolicyRegionalArgumentForTargetResource(
             resource='network edge security service'))
     cls.SECURITY_POLICY_ARG.AddArgument(parser)
 

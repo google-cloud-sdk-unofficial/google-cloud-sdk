@@ -24,6 +24,7 @@ from googlecloudsdk.command_lib.container.azure import resource_args
 from googlecloudsdk.command_lib.container.gkemulticloud import command_util
 from googlecloudsdk.command_lib.container.gkemulticloud import constants
 from googlecloudsdk.command_lib.container.gkemulticloud import endpoint_util
+from googlecloudsdk.command_lib.container.gkemulticloud import flags
 
 _EXAMPLES = """
 To delete a cluster named ``my-cluster'' managed in location ``us-west1'', run:
@@ -41,6 +42,9 @@ class Delete(base.DeleteCommand):
   @staticmethod
   def Args(parser):
     resource_args.AddAzureClusterResourceArg(parser, 'to delete')
+
+    flags.AddAllowMissing(parser)
+
     base.ASYNC_FLAG.AddToParser(parser)
 
   def Run(self, args):

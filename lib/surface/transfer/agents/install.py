@@ -228,8 +228,8 @@ def _get_docker_command(args, project, creds_file_path):
       '--log-dir={}'.format(expanded_logs_directory_path),
       '--project-id={}'.format(project),
   ]
-  if args.enable_multipart:
-    agent_args.append('--enable-multipart')
+  if args.enable_multipart is not None:
+    agent_args.append('--enable-multipart={}'.format(args.enable_multipart))
   if not args.mount_directories:
     # Needed to mount entire filesystem.
     agent_args.append('--enable-mount-directory')
@@ -317,11 +317,11 @@ class Install(base.Command):
     parser.add_argument('--creds-file', help=CREDS_FILE_FLAG_HELP_TEXT)
     parser.add_argument(
         '--enable-multipart',
-        action='store_true',
+        action=arg_parsers.StoreTrueFalseAction,
         help='Split up files and transfer the resulting chunks in parallel'
         ' before merging them at the destination. Can be used make transfers of'
         ' large files faster as long as the network and disk speed are not'
-        ' limiting factors.')
+        ' limiting factors. If unset, agent decides when to use the feature.')
     parser.add_argument(
         '--id-prefix',
         help='An optional prefix to add to the agent ID to help identify the'

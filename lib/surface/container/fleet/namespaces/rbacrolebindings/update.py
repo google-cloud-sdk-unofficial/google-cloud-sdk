@@ -26,19 +26,23 @@ from googlecloudsdk.command_lib.container.fleet import resources
 @base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Update(base.UpdateCommand):
-  """Update a fleet namespace.rbacrolebinding.
+  """Update a fleet namespace RBAC RoleBinding.
 
   This command can fail for the following reasons:
-  * The project specified does not exist.
-  * The rbacrolebinding does not exist in the project.
-  * The caller does not have permission to access the rbacrolebinding.
+  * The RoleBinding does not exist in the project.
+  * The caller does not have permission to access the RoleBinding.
 
   ## EXAMPLES
 
-  To update the rbacrolebinding `my-rb` in namespace `test-ns` in the active
-  project:
+  To update the RBAC RoleBinding `RBRB` in namespace `NAMESPACE` in the active
+  project to the `viewer` role:
 
-    $ {command} my-rb --namespace=test-ns
+    $ {command} RBRB --namespace=NAMESPACE --role=viewer
+
+  To update the RBAC RoleBinding `RBRB` in namespace `NAMESPACE` in the active
+  project to the user `someone@google.com`:
+
+    $ {command} RBRB --namespace=NAMESPACE --user=someone@google.com
 
   """
 
@@ -64,7 +68,7 @@ class Update(base.UpdateCommand):
     parser.add_argument(
         '--role',
         choices=['admin', 'edit', 'view'],
-        help='Role to update to.',
+        help='Role for the RBACRoleBinding to update to.',
     )
 
   def Run(self, args):

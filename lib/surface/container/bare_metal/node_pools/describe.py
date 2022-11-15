@@ -20,7 +20,7 @@ from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.container.gkeonprem import bare_metal_node_pools as apis
 from googlecloudsdk.calliope import base
-from googlecloudsdk.command_lib.container.bare_metal import flags
+from googlecloudsdk.command_lib.container.bare_metal import node_pool_flags as flags
 
 _EXAMPLES = """
 To describe a node pool named ``my-node-pool'' in a cluster named

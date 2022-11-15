@@ -20,6 +20,7 @@ from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.container.gkemulticloud import attached as api_util
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.container.attached import flags as attached_flags
 from googlecloudsdk.command_lib.container.attached import resource_args
 from googlecloudsdk.command_lib.container.gkemulticloud import command_util
 from googlecloudsdk.command_lib.container.gkemulticloud import constants
@@ -47,6 +48,9 @@ class Delete(base.DeleteCommand):
     resource_args.AddAttachedClusterResourceArg(parser, 'to delete')
 
     flags.AddValidateOnly(parser, 'cluster to delete')
+    flags.AddAllowMissing(parser)
+
+    attached_flags.AddIgnoreErrors(parser)
 
     base.ASYNC_FLAG.AddToParser(parser)
 

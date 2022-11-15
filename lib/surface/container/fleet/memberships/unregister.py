@@ -37,7 +37,7 @@ from googlecloudsdk.core.console import console_io
 
 
 class Unregister(calliope_base.DeleteCommand):
-  r"""Unregister a cluster from Fleet.
+  r"""Unregister a cluster from a fleet.
 
   This command unregisters a cluster with the fleet by:
 

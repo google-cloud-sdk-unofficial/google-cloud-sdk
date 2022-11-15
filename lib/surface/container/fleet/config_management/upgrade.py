@@ -22,7 +22,6 @@ from googlecloudsdk.api_lib.container.fleet import util
 from googlecloudsdk.command_lib.container.fleet import resources
 from googlecloudsdk.command_lib.container.fleet.config_management import utils
 from googlecloudsdk.command_lib.container.fleet.features import base
-from googlecloudsdk.core import exceptions
 from googlecloudsdk.core import log
 from googlecloudsdk.core.console import console_io
 
@@ -91,28 +90,3 @@ class Upgrade(base.UpdateCommand):
       return False
 
     return True
-
-
-def _get_or_prompt_membership(membership):
-  """Retrieve the membership name from args or user prompt choice.
-
-  Args:
-    membership: The default membership, if any.
-
-  Returns:
-    membership: A final membership name
-  Raises: Error, if specified membership could not be found
-  """
-  memberships = base.ListMemberships()
-  if not memberships:
-    raise exceptions.Error('No Memberships available in the fleet.')
-  # User should choose an existing membership if this arg wasn't provided
-  if not membership:
-    index = console_io.PromptChoice(
-        options=memberships,
-        message='Please specify a membership to upgrade:\n')
-    membership = memberships[index]
-  elif membership not in memberships:
-    raise exceptions.Error(
-        'Membership {} is not in the fleet.'.format(membership))
-  return membership

@@ -13,9 +13,9 @@
         $ {command} SCOPE_NAME
 
   request:
-    collection: gkehub.projects.locations.workspaces
+    collection: gkehub.projects.locations.scopes
     modify_request_hooks:
-    - googlecloudsdk.command_lib.container.fleet.workspaces.util:CheckUpdateArguments
+    - googlecloudsdk.command_lib.container.fleet.scopes.util:CheckUpdateArguments
     ALPHA:
       api_version: v1alpha
 
@@ -24,7 +24,7 @@
 
   arguments:
     resource:
-      spec: !REF googlecloudsdk.command_lib.container.fleet.resources:workspace
+      spec: !REF googlecloudsdk.command_lib.container.fleet.resources:scope
       help_text: fleet scope resource.
       arg_name: scope
 

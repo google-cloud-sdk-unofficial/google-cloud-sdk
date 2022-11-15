@@ -30,6 +30,7 @@ class Keys(base.Group):
   A key represents a logical key that can be used for cryptographic
   operations.
   """
+  category = base.IDENTITY_AND_SECURITY_CATEGORY
 
   @classmethod
   def Args(cls, parser):

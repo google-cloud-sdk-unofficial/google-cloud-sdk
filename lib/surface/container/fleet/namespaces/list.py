@@ -35,13 +35,13 @@ class List(base.ListCommand):
 
   ## EXAMPLES
 
-  The following command lists fleets in the active project:
+  The following command lists namespaces in the active project:
 
     $ {command}
 
-  The following command lists fleets in project `foo-bar-1`:
+  The following command lists namespaces in project `PROJECT_ID`:
 
-    $ {command} --project=foo-bar-1
+    $ {command} --project=PROJECT_ID
   """
 
   @staticmethod

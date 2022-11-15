@@ -181,6 +181,37 @@
     - group:
         required: false
         help_text: |
+          Flags for dockerRunAsContainerProvidedUser - either only docker-run-as-container-provided-user
+          or both flags may be specified.
+        params:
+        - api_field: googleDevtoolsRemotebuildexecutionAdminV1alphaInstance.featurePolicy.dockerRunAsContainerProvidedUser.policy
+          arg_name: docker-run-as-container-provided-user
+          required: true
+          choices:
+          - arg_value: allowed
+            enum_value: allowed
+            help_text: |
+              The feature can be used.
+          - arg_value: forbidden
+            enum_value: forbidden
+            help_text: |
+              The feature cannot be used.
+          - arg_value: restricted
+            enum_value: restricted
+            help_text: |
+              The feature can be used, if and only if, it is set to one of the allowed values.
+          help_text: |
+            Whether dockerRunAsContainerProvidedUser can be used. If unspecified, the default is
+            equivalent to "forbidden".
+        - api_field: googleDevtoolsRemotebuildexecutionAdminV1alphaInstance.featurePolicy.dockerRunAsContainerProvidedUser.allowedValues
+          arg_name: docker-run-as-container-provided-user-allowlist
+          required: false
+          help_text: |
+            The list of allowed dockerRunAsContainerProvidedUser values. Note: this will only be
+            used if the corresponding policy is set to "restricted".
+    - group:
+        required: false
+        help_text: |
           Flags for dockerRuntime - either only docker-runtime or both flags may be specified.
         params:
         - api_field: googleDevtoolsRemotebuildexecutionAdminV1alphaInstance.featurePolicy.dockerRuntime.policy

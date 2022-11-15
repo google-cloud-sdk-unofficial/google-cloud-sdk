@@ -22,6 +22,7 @@ from apitools.base.py import list_pager
 from googlecloudsdk.api_lib.cloudbuild.v2 import client_util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.cloudbuild import run_flags
+from googlecloudsdk.core import properties
 
 
 @base.Hidden
@@ -31,7 +32,7 @@ class List(base.ListCommand):
 
   @staticmethod
   def Args(parser):
-    run_flags.AddsRegionResourceArg(parser)
+    run_flags.AddsRegionResourceArg(parser, False)  # Not required.
 
   def Run(self, args):
     """This is what gets called when the user runs this command."""
@@ -39,7 +40,11 @@ class List(base.ListCommand):
     messages = client_util.GetMessagesModule()
 
     region_ref = args.CONCEPTS.region.Parse()
-    parent = region_ref.RelativeName()
+    if region_ref:
+      parent = region_ref.RelativeName()
+    else:
+      project = args.project or properties.VALUES.core.project.GetOrFail()
+      parent = 'projects/{}/locations/-'.format(project)
 
     return list_pager.YieldFromList(
         client.projects_locations_workflows,

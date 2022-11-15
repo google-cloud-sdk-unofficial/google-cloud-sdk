@@ -47,13 +47,29 @@ class Create(base.Command):
           '--location', '[--location] must be set to one of ' +
           ', '.join(public_allowed_locations) + '.')
 
+    if (args.min_speaker_count is not None and
+        args.max_speaker_count is None) or (args.min_speaker_count is None and
+                                            args.max_speaker_count is not None):
+      raise exceptions.InvalidArgumentException(
+          '--min-speaker-count',
+          '[----min-speaker-count] and --max-speaker-count must both be set to enable speaker diarization.'
+      )
+
+    if (args.min_speaker_count is not None and args.max_speaker_count
+        is not None) and (args.min_speaker_count > args.max_speaker_count):
+      raise exceptions.InvalidArgumentException(
+          '--max-speaker-count',
+          '[--max-speaker-count] must be equal to or larger than min-speaker-count.'
+      )
+
     speech_client = client.SpeechV2Client()
     is_async = args.async_
     operation = speech_client.CreateRecognizer(
         recognizer, args.display_name, args.model, args.language_codes,
         args.profanity_filter, args.enable_word_time_offsets,
         args.enable_word_confidence, args.enable_automatic_punctuation,
-        args.enable_spoken_punctuation, args.enable_spoken_emojis)
+        args.enable_spoken_punctuation, args.enable_spoken_emojis,
+        args.min_speaker_count, args.max_speaker_count)
 
     if is_async:
       log.CreatedResource(

@@ -24,7 +24,7 @@ from googlecloudsdk.command_lib.container.fleet.features import base
 class Disable(base.DisableCommand):
   """Disable Workload Migration Feature.
 
-  Disable the Workload Migration Feature in a Fleet.
+  Disable the Workload Migration Feature in a fleet.
 
   ## Examples
 

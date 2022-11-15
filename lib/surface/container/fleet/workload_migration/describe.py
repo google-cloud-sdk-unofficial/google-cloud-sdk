@@ -24,11 +24,11 @@ from googlecloudsdk.command_lib.container.fleet.features import base
 class Describe(base.DescribeCommand):
   """Describe the status of Workload Migration Feature resource.
 
-  Describe the status of Workload Migration Feature resource in a Fleet.
+  Describe the status of Workload Migration Feature resource in a fleet.
 
   ## Examples
 
-  To describe Service Feature, run:
+  To describe Workload Migration Feature, run:
 
     $ {command}
   """

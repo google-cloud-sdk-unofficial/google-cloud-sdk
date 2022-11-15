@@ -578,7 +578,7 @@ class Register(base.CreateCommand):
           exclusivity_util.DeleteMembershipResources(kube_client)
         raise
       log.status.Print(
-          'Finished registering the cluster [{}] with the Fleet.'.format(
+          'Finished registering the cluster [{}] with the fleet.'.format(
               args.MEMBERSHIP_NAME))
       return obj
 

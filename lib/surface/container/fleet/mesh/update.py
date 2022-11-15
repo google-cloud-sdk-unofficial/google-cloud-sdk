@@ -85,14 +85,14 @@ def _RunUpdate(cmd, args):
 class UpdateAlpha(base.UpdateCommand):
   """Update the configuration of the Service Mesh Feature.
 
-  Update the Service Mesh Feature Spec of a Membership.
+  Update the Service Mesh Feature Spec of a membership.
 
   ## EXAMPLES
 
-  To update the control plane management of comma separated Memberships like
-  `membership1,membership2`, run:
+  To update the control plane management of comma separated memberships like
+  `MEMBERSHIP1,MEMBERSHIP2`, run:
 
-    $ {command} --memberships=membership1,membership2
+    $ {command} --memberships=MEMBERSHIP1,MEMBERSHIP2
       --control-plane=CONTROL_PLANE
   """
 

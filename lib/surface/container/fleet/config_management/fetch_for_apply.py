@@ -19,7 +19,7 @@ from __future__ import division
 from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.container.fleet import util
-from googlecloudsdk.calliope import base as gbase
+from googlecloudsdk.calliope import base as calliope_base
 from googlecloudsdk.command_lib.container.fleet import resources
 from googlecloudsdk.command_lib.container.fleet.config_management import utils
 from googlecloudsdk.command_lib.container.fleet.features import base
@@ -28,7 +28,7 @@ from googlecloudsdk.core import yaml
 from googlecloudsdk.core.util import semver
 
 
-@gbase.ReleaseTracks(gbase.ReleaseTrack.ALPHA)
+@calliope_base.ReleaseTracks(calliope_base.ReleaseTrack.ALPHA)
 class Fetch(base.DescribeCommand):
   """Prints the Config Management configuration applied to the given membership.
 

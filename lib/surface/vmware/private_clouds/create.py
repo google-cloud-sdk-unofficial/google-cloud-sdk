@@ -19,7 +19,6 @@ from __future__ import division
 from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.vmware.privateclouds import PrivateCloudsClient
-from googlecloudsdk.calliope import actions
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.vmware import flags
 from googlecloudsdk.core import log
@@ -78,34 +77,12 @@ class Create(base.CreateCommand):
         help="""\
          IP address range in the private cloud to use for management appliances, in CIDR format. Use an IP address range that meets the [VMware Engine networking requirements](https://cloud.google.com/vmware-engine/docs/quickstart-networking-requirements).
         """)
-
-    group = parser.add_mutually_exclusive_group(required=True)
-    group.add_argument(
-        '--network',
-        required=False,
-        help="""\
-        Network ID of the Google Cloud VPC network to connect with your private cloud.
-        """,
-        action=actions.DeprecationAction(
-            '--network',
-            warn='The {flag_name} flag is deprecated; consider using --vmware-engine-network instead.',
-            removed=False))
-    group.add_argument(
+    parser.add_argument(
         '--vmware-engine-network',
-        required=False,
+        required=True,
         help="""\
         Resource ID of the VMware Engine network attached to the private cloud.
         """)
-    parser.add_argument(
-        '--network-project',
-        required=False,
-        help="""\
-         Project ID or project name of the VPC network. Use this flag when the VPC network is in another project.
-        """,
-        action=actions.DeprecationAction(
-            '--network-project',
-            warn='The {flag_name} flag is deprecated; consider using --vmware-engine-network instead.',
-            removed=False))
     parser.add_argument(
         '--node-custom-core-count',
         required=False,
@@ -120,8 +97,7 @@ class Create(base.CreateCommand):
     is_async = args.async_
     operation = client.Create(privatecloud, args.description, args.cluster,
                               args.node_type, args.node_count,
-                              args.management_range, args.network,
-                              args.vmware_engine_network, args.network_project,
+                              args.management_range, args.vmware_engine_network,
                               args.node_custom_core_count)
     if is_async:
       log.CreatedResource(operation.name, kind='private cloud', is_async=True)

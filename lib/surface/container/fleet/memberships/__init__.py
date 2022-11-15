@@ -18,11 +18,12 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
-from googlecloudsdk.calliope import base
+from googlecloudsdk.calliope import base as calliope_base
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
-                    base.ReleaseTrack.GA)
-class Memberships(base.Group):
-  """Manage memberships of all your GKE and other Kubernetes cluster with fleets."""
+@calliope_base.ReleaseTracks(calliope_base.ReleaseTrack.ALPHA,
+                             calliope_base.ReleaseTrack.BETA,
+                             calliope_base.ReleaseTrack.GA)
+class Memberships(calliope_base.Group):
+  """Manage memberships of all your GKE and other Kubernetes clusters with fleets."""
   pass

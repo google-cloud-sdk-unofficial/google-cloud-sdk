@@ -1,8 +1,8 @@
 - help_text:
     brief: List enabled features.
-    description: List enabled Hub features in a project.
+    description: List enabled fleet features in a project.
     examples: |
-      To list all enabled Hub features in a project, run:
+      To list all enabled fleet features in a project, run:
 
       $ {command}
 
@@ -17,7 +17,7 @@
   arguments:
     resource:
       help_text: |
-        The location to list Features under.
+        The location to list features under.
 
         'global' is the only supported value.
       spec: !REF googlecloudsdk.command_lib.container.fleet.resources:location

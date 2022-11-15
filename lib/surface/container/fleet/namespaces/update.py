@@ -31,17 +31,17 @@ class Update(base.UpdateCommand):
   This command can fail for the following reasons:
   * The project specified does not exist.
   * The fleet namespace does not exist in the project.
-  * The caller does not have permission to access the namespace.
+  * The caller does not have permission to access the project or namespace.
 
   ## EXAMPLES
 
-  To update the namespace `my-ns` in the active project:
+  To update the namespace `NAMESPACE` in the active project:
 
-    $ {command} my-ns
+    $ {command} NAMESPACE
 
-  To update the namespace `my-ns` in project `foo-bar-1`:
+  To update the namespace `NAMESPACE` in project `PROJECT_ID`:
 
-    $ {command} my-ns --project=foo-bar-1
+    $ {command} NAMESPACE --project=PROJECT_ID
   """
 
   @staticmethod

@@ -94,7 +94,7 @@ class StopGroupAsyncReplication(base.Command):
               resourcePolicy=policy_url))
       request = (client.apitools_client.regionDisks,
                  'StopGroupAsyncReplication', request)
-    return client.MakeRequests([request])
+    return client.MakeRequests([request], no_followup=True)
 
 
 StopGroupAsyncReplication.detailed_help = DETAILED_HELP

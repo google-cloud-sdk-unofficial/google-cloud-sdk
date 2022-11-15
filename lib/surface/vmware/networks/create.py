@@ -36,9 +36,9 @@ DETAILED_HELP = {
 
           Or:
 
-            $ {command} my-network
+            $ {command} my-network --type=STANDARD
 
-          In the second example, the project is taken from gcloud properties core/project and the location is taken as ``global''. The type is set as ``STANDARD'' when no value is provided.
+          In the second example, the project is taken from gcloud properties core/project and the location is taken as ``global''.
 
           To create a VMware Engine network of type ``LEGACY'' in the ``us-west2'' region, run:
 
@@ -83,9 +83,8 @@ class Create(base.CreateCommand):
         """)
     parser.add_argument(
         '--type',
-        required=False,
+        required=True,
         choices=type_choices,
-        default='STANDARD',
         help="""Type of the VMware Engine network.""")
 
   def Run(self, args):

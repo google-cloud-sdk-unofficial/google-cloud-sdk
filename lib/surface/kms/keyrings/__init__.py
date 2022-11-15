@@ -30,6 +30,8 @@ class KeyRings(base.Group):
   A keyring is a toplevel logical grouping of keys.
   """
 
+  category = base.IDENTITY_AND_SECURITY_CATEGORY
+
   @staticmethod
   def Args(parser):
     parser.display_info.AddUriFunc(

@@ -21,6 +21,10 @@
       help_text: |
         Arguments and flags that specify the Memorystore Redis cluster you want to update.
     params:
+    - arg_name: display-name
+      api_field: cluster.displayName
+      help_text: |
+        A human-readable name for the cluster.
     - arg_name: total-memory-size-gb
       api_field: cluster.totalMemorySizeGb
       help_text: |
@@ -33,6 +37,7 @@
     ALPHA:
       api_version: v1alpha1
       modify_request_hooks:
+      - googlecloudsdk.command_lib.redis.clusters_update_util:UpdateDisplayName
       - googlecloudsdk.command_lib.redis.clusters_update_util:UpdateTotalMemorySizeGb
     collection: redis.projects.locations.clusters
 

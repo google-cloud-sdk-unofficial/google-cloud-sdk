@@ -26,19 +26,18 @@ from googlecloudsdk.command_lib.container.fleet import resources
 @base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Describe(base.DescribeCommand):
-  """Show fleet namespace info.
+  """Show fleet namespace RBAC RoleBinding information.
 
   This command can fail for the following reasons:
-  * The project specified does not exist.
-  * The namespace specified does not exist in the project.
-  * The caller does not have permission to access the namespace.
+  * The RoleBinding specified does not exist in the project.
+  * The caller does not have permission to access the RoleBinding.
 
   ## EXAMPLES
 
-  To print metadata for the namespace `test-ns` in project `foo-bar-1`,
+  To print metadata for RBAC RoleBinding `RBRB` in the namespace `NAMESPACE`,
   run:
 
-    $ {command} test-ns --project=foo-bar-1
+    $ {command} RBRB --namespace=NAMESPACE
   """
 
   @staticmethod

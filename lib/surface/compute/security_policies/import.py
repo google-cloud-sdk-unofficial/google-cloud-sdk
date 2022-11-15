@@ -53,7 +53,7 @@ class Import(base.SilentCommand):
 
   @classmethod
   def Args(cls, parser):
-    cls.SECURITY_POLICY_ARG = flags.SecurityPolicyArgument()
+    cls.SECURITY_POLICY_ARG = flags.SecurityPolicyMultiScopeArgument()
     cls.SECURITY_POLICY_ARG.AddArgument(parser, operation_type='import')
 
     parser.add_argument(
@@ -78,7 +78,8 @@ class Import(base.SilentCommand):
           args.file_name))
 
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
-    ref = self.SECURITY_POLICY_ARG.ResolveAsResource(args, holder.resources)
+    ref = self.SECURITY_POLICY_ARG.ResolveAsResource(
+        args, holder.resources, default_scope=compute_scope.ScopeEnum.GLOBAL)
 
     # Get the imported security policy config.
     try:

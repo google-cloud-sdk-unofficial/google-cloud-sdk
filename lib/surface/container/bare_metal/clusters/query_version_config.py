@@ -20,7 +20,7 @@ from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.container.gkeonprem import bare_metal_clusters as apis
 from googlecloudsdk.calliope import base
-from googlecloudsdk.command_lib.container.bare_metal import flags
+from googlecloudsdk.command_lib.container.bare_metal import cluster_flags as flags
 
 _EXAMPLES = """
 To query versions for creating a cluster with an admin cluster membership named `my-admin-cluster-membership`,

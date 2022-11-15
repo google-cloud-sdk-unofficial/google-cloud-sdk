@@ -19,7 +19,7 @@ from __future__ import division
 from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.container.fleet import util
-from googlecloudsdk.calliope import base
+from googlecloudsdk.calliope import base as calliope_base
 from googlecloudsdk.command_lib.container.fleet import api_util
 from googlecloudsdk.command_lib.container.fleet.features import base as feature_base
 from googlecloudsdk.core import log
@@ -31,12 +31,12 @@ NA = 'NA'
 class ConfigmanagementFeatureState(object):
   """Feature state class stores ACM status."""
 
-  def __init__(self, clusterName):
-    self.name = clusterName
+  def __init__(self, cluster_name):
+    self.name = cluster_name
     self.version = NA
 
 
-class Version(feature_base.FeatureCommand, base.ListCommand):
+class Version(feature_base.FeatureCommand, calliope_base.ListCommand):
   """Print the version of all clusters with Config Management enabled.
 
   ## EXAMPLES

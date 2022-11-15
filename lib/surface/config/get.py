@@ -18,6 +18,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+from googlecloudsdk.api_lib.util import apis
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions as c_exc
 from googlecloudsdk.command_lib.config import completers
@@ -28,7 +29,8 @@ from googlecloudsdk.core.configurations import named_configs
 import six
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
+                    base.ReleaseTrack.GA)
 class Get(base.Command):
   """Print the value of a Google Cloud CLI property.
 
@@ -84,6 +86,10 @@ class Get(base.Command):
         # Writing message to stderr but returning any potentially empty
         # value to caller as is
         log.err.Print('(unset)')
+        if section == properties.VALUES.api_endpoint_overrides.name:
+          api_version = apis.ResolveVersion(prop)
+          default_endpoint = apis.GetEffectiveApiEndpoint(prop, api_version)
+          log.status.Print('Defaults to ', default_endpoint)
     except properties.InvalidValueError as e:
       # Writing warning to stderr but returning invalid value as is
       log.warning(six.text_type(e))

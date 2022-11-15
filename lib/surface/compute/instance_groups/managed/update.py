@@ -269,6 +269,8 @@ UpdateGA.detailed_help = {
 class UpdateBeta(UpdateGA):
   """Update a Compute Engine managed instance group."""
 
+  support_any_single_zone = True
+
   @classmethod
   def Args(cls, parser):
     super(UpdateBeta, cls).Args(parser)
@@ -391,8 +393,6 @@ UpdateBeta.detailed_help = UpdateGA.detailed_help
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class UpdateAlpha(UpdateBeta):
   """Update a Compute Engine managed instance group."""
-
-  support_any_single_zone = True
 
   @classmethod
   def Args(cls, parser):

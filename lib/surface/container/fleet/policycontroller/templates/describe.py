@@ -37,7 +37,7 @@ def GetFleetTemplate(client, messages, project_id, template_name):
         fleet_template_request)
   except apitools_exceptions.HttpNotFoundError:
     raise exceptions.Error(
-        'Constraint template [{}] was not found in the Fleet.'
+        'Constraint template [{}] was not found in the fleet.'
         .format(template_name))
   formatted_template = {
       'name': fleet_template_response.ref.name,
@@ -76,7 +76,7 @@ def GetMembershipTemplate(client, messages, project_id, membership,
                                                   release_track)
   except apitools_exceptions.HttpNotFoundError:
     raise exceptions.Error(
-        'Membership [{}] was not found in the Fleet.'
+        'Membership [{}] was not found in the fleet.'
         .format(membership))
 
   try:

@@ -20,8 +20,8 @@ from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.container.gkeonprem import bare_metal_node_pools as apis
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.container.bare_metal import cluster_flags as flags
 from googlecloudsdk.command_lib.container.bare_metal import constants
-from googlecloudsdk.command_lib.container.bare_metal import flags
 
 
 _EXAMPLES = """

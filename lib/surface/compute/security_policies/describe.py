@@ -43,7 +43,7 @@ class Describe(base.DescribeCommand):
 
   @classmethod
   def Args(cls, parser):
-    cls.SECURITY_POLICY_ARG = flags.SecurityPolicyArgument()
+    cls.SECURITY_POLICY_ARG = flags.SecurityPolicyMultiScopeArgument()
     cls.SECURITY_POLICY_ARG.AddArgument(parser, operation_type='describe')
 
   def Collection(self):
@@ -51,7 +51,8 @@ class Describe(base.DescribeCommand):
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
-    ref = self.SECURITY_POLICY_ARG.ResolveAsResource(args, holder.resources)
+    ref = self.SECURITY_POLICY_ARG.ResolveAsResource(
+        args, holder.resources, default_scope=compute_scope.ScopeEnum.GLOBAL)
     security_policy = client.SecurityPolicy(ref, compute_client=holder.client)
 
     return security_policy.Describe()

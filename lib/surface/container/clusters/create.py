@@ -249,12 +249,14 @@ def ParseCreateOptionsBase(args, is_autopilot, get_default, location,
       enable_private_endpoint=get_default('enable_private_endpoint'),
       enable_gke_oidc=getattr(args, 'enable_gke_oidc', None),
       enable_identity_service=getattr(args, 'enable_identity_service', None),
+      ephemeral_storage_local_ssd=get_default('ephemeral_storage_local_ssd'),
       image_type=get_default('image_type'),
       image=get_default('image'),
       image_project=get_default('image_project'),
       image_family=get_default('image_family'),
       issue_client_certificate=get_default('issue_client_certificate'),
       labels=get_default('labels'),
+      local_nvme_ssd_block=get_default('local_nvme_ssd_block'),
       local_ssd_count=get_default('local_ssd_count'),
       maintenance_window=get_default('maintenance_window'),
       maintenance_window_start=get_default('maintenance_window_start'),
@@ -435,7 +437,8 @@ flags_to_add = {
             _Args,
         'basicauth':
             flags.AddBasicAuthFlags,
-        'binauthz': (lambda p: flags.AddBinauthzFlags(p, api_version='v1')),
+        'binauthz': (lambda p: flags.AddBinauthzFlags(
+            p, release_track=base.ReleaseTrack.GA)),
         'bootdiskkms':
             flags.AddBootDiskKmsKeyFlag,
         'cloudlogging':
@@ -492,8 +495,8 @@ flags_to_add = {
             flags.AddLabelsFlag,
         'legacyauth':
             flags.AddEnableLegacyAuthorizationFlag,
-        'localssd':
-            flags.AddLocalSSDFlag,
+        'localssds':
+            flags.AddLocalSSDsGAFlags,
         'logging':
             flags.AddLoggingFlag,
         'machinetype':
@@ -612,8 +615,8 @@ flags_to_add = {
             AddEnableAutoUpgradeWithDefault,
         'basicauth':
             flags.AddBasicAuthFlags,
-        'binauthz':
-            (lambda p: flags.AddBinauthzFlags(p, api_version='v1beta1')),
+        'binauthz': (lambda p: flags.AddBinauthzFlags(
+            p, release_track=base.ReleaseTrack.BETA)),
         'bootdiskkms':
             flags.AddBootDiskKmsKeyFlag,
         'cloudlogging':
@@ -827,8 +830,8 @@ flags_to_add = {
             flags.AddClusterVersionFlag,
         'autoupgrade':
             AddEnableAutoUpgradeWithDefault,
-        'binauthz':
-            (lambda p: flags.AddBinauthzFlags(p, api_version='v1alpha1')),
+        'binauthz': (lambda p: flags.AddBinauthzFlags(
+            p, release_track=base.ReleaseTrack.ALPHA)),
         'bootdiskkms':
             flags.AddBootDiskKmsKeyFlag,
         'cloudmonitoring':

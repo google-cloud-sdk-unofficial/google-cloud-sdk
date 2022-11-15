@@ -31,17 +31,18 @@ class Delete(base.DeleteCommand):
   This command can fail for the following reasons:
   * The project specified does not exist.
   * The namespace specified does not exist.
-  * The caller does not have permission to access the given project.
+  * The caller does not have permission to access the given project or
+  namespace.
 
   ## EXAMPLES
 
-  To delete fleet namespace `my-ns` in the active project:
+  To delete fleet namespace `NAMESPACE` in the active project:
 
-    $ {command} my-ns
+    $ {command} NAMESPACE
 
-  To delete fleet namespace `my-ns` in project `foo-bar-1`:
+  To delete fleet namespace `NAMESPACE` in project `PROJECT_ID`:
 
-    $ {command} my-ns --project=foo-bar-1
+    $ {command} NAMESPACE --project=PROJECT_ID
   """
 
   @staticmethod

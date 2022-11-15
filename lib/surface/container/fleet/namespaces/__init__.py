@@ -24,7 +24,7 @@ from googlecloudsdk.calliope import base
 @base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Namespace(base.Group):
-  """Fleet namespaces are the Fleet equivalent of k8s cluster namespaces.
+  """Fleet namespaces are the fleet equivalent of k8s cluster namespaces.
 
   This command group allows for manipulation of fleet namespaces.
 
@@ -33,5 +33,10 @@ class Namespace(base.Group):
   Manage fleet namespaces:
 
     $ {command} --help
+
+  Manage RBAC RoleBindings in a fleet namespace:
+
+    $ {command} rbacrolebindings --help
+
   """
   pass

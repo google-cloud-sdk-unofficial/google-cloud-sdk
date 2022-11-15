@@ -135,6 +135,8 @@ def ParseCreateNodePoolOptionsBase(args):
       node_version=args.node_version,
       num_nodes=args.num_nodes,
       local_ssd_count=args.local_ssd_count,
+      local_nvme_ssd_block=args.local_nvme_ssd_block,
+      ephemeral_storage_local_ssd=args.ephemeral_storage_local_ssd,
       tags=args.tags,
       threads_per_core=args.threads_per_core,
       labels=args.labels,
@@ -202,7 +204,7 @@ class Create(base.CreateCommand):
         enable_gpu_deprecated_fields=False)
     flags.AddBootDiskKmsKeyFlag(parser)
     flags.AddClusterAutoscalingFlags(parser)
-    flags.AddLocalSSDFlag(parser)
+    flags.AddLocalSSDsGAFlags(parser, for_node_pool=True)
     flags.AddPreemptibleFlag(parser, for_node_pool=True)
     flags.AddEnableAutoRepairFlag(parser, for_node_pool=True, for_create=True)
     flags.AddMinCpuPlatformFlag(parser, for_node_pool=True)

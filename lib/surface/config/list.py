@@ -12,7 +12,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """Command to list properties."""
 
 from __future__ import absolute_import
@@ -34,10 +33,11 @@ class BadConfigListInvocation(exceptions.Error):
 class List(base.ListCommand):
   """List Google Cloud CLI properties for the currently active configuration.
 
-  {command} lists all properties of the active configuration. These include the
-  account used to authorize access to Google Cloud, the current Google Cloud
-  project, and the default Compute Engine region and zone, if set. See
-  `gcloud topic configurations` for more about configurations.
+  {command} lists the properties of the specified section using the
+  active configuration. These include the account used to authorize access to
+  Google Cloud, the current Google Cloud project, and the default Compute Engine
+  region and zone, if set. See `gcloud topic configurations` for more about
+  configurations.
 
   ## AVAILABLE PROPERTIES
 
@@ -45,23 +45,29 @@ class List(base.ListCommand):
 
   ## EXAMPLES
 
-  To list the project property in the core section, run:
+  To list the set project property in the core section, run:
 
     $ {command} project
 
-  To list the zone property in the compute section, run:
+  To list the set zone property in the compute section, run:
 
     $ {command} compute/zone
 
-  To list all the properties in the compute section, run:
+  To list all the set properties in the compute section, run:
 
   $ {command} compute/
+
+  To list all the properties in the compute section, run:
+
+  $ {command} compute/ --all
 
   To list all the properties, run:
 
     $ {command} --all
 
-  Note, you cannot specify both --all and a property name.
+  Note, you cannot specify both `--all` and a property name. Only a section name
+  and the `--all` flag can be used together in the format `gcloud config list
+  <SECTION>/ --all`.
   """
 
   detailed_help = {'properties': properties.VALUES.GetHelpString()}
@@ -70,7 +76,8 @@ class List(base.ListCommand):
   def Args(parser):
     """Adds args for this command."""
     parser.add_argument(
-        '--all', action='store_true',
+        '--all',
+        action='store_true',
         help='List all set and unset properties that match the arguments.')
     parser.add_argument(
         'property',
@@ -89,21 +96,27 @@ class List(base.ListCommand):
     section, prop = properties.ParsePropertyString(args.property)
 
     if prop:
-      return {section: {
-          prop: properties.VALUES.Section(section).Property(prop).Get()}}
+      return {
+          section: {
+              prop: properties.VALUES.Section(section).Property(prop).Get()
+          }
+      }
     if section:
-      return {section: properties.VALUES.Section(section).AllValues(
-          list_unset=args.all)}
+      return {
+          section:
+              properties.VALUES.Section(section).AllValues(list_unset=args.all)
+      }
     return properties.VALUES.AllValues(list_unset=args.all)
 
   def Run(self, args):
-    if args.all and args.property:
-      raise BadConfigListInvocation('`gcloud config list` cannot take both '
-                                    'a property name and the `--all` flag.')
+    _, prop = properties.ParsePropertyString(args.property)
+    if args.all and prop:
+      raise BadConfigListInvocation(
+          'Commands with the `--all` flag must be in the format `gcloud '
+          'config list <SECTION>/` without a property specified.')
     return self._GetPropertiesToDisplay(args)
 
   def Epilog(self, resources_were_displayed):
     config_name = named_configs.ConfigurationStore.ActiveConfig().name
-    log.status.write('\nYour active configuration is: [{0}]\n'.format(
-        config_name))
-
+    log.status.write(
+        '\nYour active configuration is: [{0}]\n'.format(config_name))

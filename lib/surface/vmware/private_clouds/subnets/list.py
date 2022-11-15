@@ -48,7 +48,7 @@ class List(base.ListCommand):
     """Register flags for this command."""
     flags.AddPrivatecloudArgToParser(parser)
     parser.display_info.AddFormat('table(name.segment(-1):label=NAME,'
-                                  'name.segment(-5):label=PROJECT,'
+                                  'name.segment(-5):label=LOCATION,'
                                   'name.segment(-3):label=PRIVATE_CLOUD,'
                                   'type,gatewayIp,ipCidrRange)')
 

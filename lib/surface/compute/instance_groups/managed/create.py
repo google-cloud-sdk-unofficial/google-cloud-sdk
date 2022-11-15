@@ -38,7 +38,6 @@ from googlecloudsdk.command_lib.compute.managed_instance_groups import auto_heal
 from googlecloudsdk.command_lib.util.apis import arg_utils
 from googlecloudsdk.core import properties
 
-
 # API allows up to 58 characters but asked us to send only 54 (unless user
 # explicitly asks us for more).
 _MAX_LEN_FOR_DEDUCED_BASE_INSTANCE_NAME = 54
@@ -156,10 +155,11 @@ class CreateGA(base.CreateCommand):
           },
           collection='compute.regionInstanceGroupManagers')
     group_ref = (
-        instance_groups_flags.GetInstanceGroupManagerArg().
-        ResolveAsResource)(args, resources,
-                           default_scope=compute_scope.ScopeEnum.ZONE,
-                           scope_lister=flags.GetDefaultScopeLister(client))
+        instance_groups_flags.GetInstanceGroupManagerArg().ResolveAsResource)(
+            args,
+            resources,
+            default_scope=compute_scope.ScopeEnum.ZONE,
+            scope_lister=flags.GetDefaultScopeLister(client))
     if _IsZonalGroup(group_ref):
       zonal_resource_fetcher = zone_utils.ZoneResourceFetcher(client)
       zonal_resource_fetcher.WarnForZonalCreation([group_ref])
@@ -217,23 +217,24 @@ class CreateGA(base.CreateCommand):
           project=group_ref.project,
           region=group_ref.region)
 
-  def _GetInstanceGroupManagerTargetPools(
-      self, target_pools, group_ref, holder):
+  def _GetInstanceGroupManagerTargetPools(self, target_pools, group_ref,
+                                          holder):
     pool_refs = []
     if target_pools:
       region = self._GetRegionForGroup(group_ref)
       for pool in target_pools:
-        pool_refs.append(holder.resources.Parse(
-            pool,
-            params={
-                'project': properties.VALUES.core.project.GetOrFail,
-                'region': region
-            },
-            collection='compute.targetPools'))
+        pool_refs.append(
+            holder.resources.Parse(
+                pool,
+                params={
+                    'project': properties.VALUES.core.project.GetOrFail,
+                    'region': region
+                },
+                collection='compute.targetPools'))
     return [pool_ref.SelfLink() for pool_ref in pool_refs]
 
-  def _CreateInstanceGroupManager(
-      self, args, group_ref, template_ref, client, holder):
+  def _CreateInstanceGroupManager(self, args, group_ref, template_ref, client,
+                                  holder):
     """Create parts of Instance Group Manager shared for the track."""
     managed_flags.ValidateRegionalMigFlagsUsage(args, REGIONAL_FLAGS, group_ref)
     instance_groups_flags.ValidateManagedInstanceGroupScopeArgs(
@@ -339,6 +340,8 @@ in the ``us-central1-a'' zone.
 class CreateBeta(CreateGA):
   """Create Compute Engine managed instance groups."""
 
+  support_any_single_zone = True
+
   @classmethod
   def Args(cls, parser):
     super(CreateBeta, cls).Args(parser)
@@ -374,8 +377,8 @@ class CreateBeta(CreateGA):
           self._CreateStatefulPolicy(args, client))
 
   def _CreateStatefulPolicy(self, args, client):
-    stateful_policy = super(CreateBeta, self)._CreateStatefulPolicy(args,
-                                                                    client)
+    stateful_policy = super(CreateBeta,
+                            self)._CreateStatefulPolicy(args, client)
     stateful_internal_ips = []
     for stateful_ip_dict in args.stateful_internal_ip or []:
       stateful_internal_ips.append(
@@ -398,14 +401,13 @@ class CreateBeta(CreateGA):
 
     return stateful_policy
 
+
 CreateBeta.detailed_help = CreateGA.detailed_help
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class CreateAlpha(CreateBeta):
   """Create Compute Engine managed instance groups."""
-
-  support_any_single_zone = True
 
   @classmethod
   def Args(cls, parser):
@@ -418,5 +420,6 @@ class CreateAlpha(CreateBeta):
                                        args, group_ref, template_ref, client,
                                        holder)
     return instance_group_manager
+
 
 CreateAlpha.detailed_help = CreateBeta.detailed_help

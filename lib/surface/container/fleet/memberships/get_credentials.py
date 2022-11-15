@@ -46,21 +46,26 @@ class GetCredentials(base.Command):
 
   {command} updates the `kubeconfig` file with the appropriate credentials and
   endpoint information to send `kubectl` commands to a fleet-registered and
-  connected cluster through Connect Gateway Service.
+  -connected cluster through the Connect Gateway service.
 
   It takes a project, passed through by set defaults or flags. By default,
   credentials are written to `$HOME/.kube/config`. You can provide an alternate
   path by setting the `KUBECONFIG` environment variable. If `KUBECONFIG`
   contains multiple paths, the first one is used.
 
-  Upon success, this command will switch current context to the target cluster,
-  when working with multiple clusters.
+  Upon success, this command will switch the current context to the target
+  cluster if other contexts are already present in the `kubeconfig` file.
 
   ## EXAMPLES
 
-    Get gateway kubeconfig for a registered cluster:
+    Get the Gateway kubeconfig for a globally registered cluster:
 
       $ {command} my-cluster
+      $ {command} my-cluster --location=global
+
+    Get the Gateway kubeconfig for a cluster registered in us-central1:
+
+      $ {command} my-cluster --location=us-central1
   """
 
   @classmethod
@@ -76,7 +81,6 @@ class GetCredentials(base.Command):
     parser.add_argument(
         '--location',
         type=str,
-        hidden=True,
         help=textwrap.dedent("""\
             The location for the membership resource, e.g. `us-central1`.
             If not specified, defaults to `global`.

@@ -146,7 +146,6 @@ class CreateAlpha(CreateBeta):
     flags.AddCreateFlags(
         parser, support_share_setting=cls._support_share_setting,
         support_stable_fleet=cls._support_stable_fleet)
-    flags.AddSplitSourceCommitment(parser)
     flags.AddMergeSourceCommitments(parser)
 
   def _MakeCreateRequest(self, args, messages, project, region, commitment_ref,

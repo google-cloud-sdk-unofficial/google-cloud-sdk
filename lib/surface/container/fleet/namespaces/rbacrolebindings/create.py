@@ -34,16 +34,16 @@ class Create(base.CreateCommand):
 
   ## EXAMPLES
 
-  To create an admin RBAC RoleBinding `some-rbrb` in namespace `my-ns` for user
+  To create an admin RBAC RoleBinding `RBRB` in namespace `NAMESPACE` for user
   `person@google.com`, run:
 
-    $ {command} some-rbrb --namespace=my-ns --role=admin
+    $ {command} RBRB --namespace=NAMESPACE --role=admin
     --user=person@google.com
 
-  To create a viewer RBAC RoleBinding `some-rbrb` in namespace `my-ns` for group
+  To create a viewer RBAC RoleBinding `RBRB` in namespace `NAMESPACE` for group
   `people@google.com`, run:
 
-    $ {command} some-rbrb --namespace=my-ns --role=viewer
+    $ {command} RBRB --namespace=NAMESPACE --role=viewer
     --group=people@google.com
   """
 

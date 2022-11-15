@@ -31,14 +31,19 @@ class Describe(base.DescribeCommand):
   This command can fail for the following reasons:
   * The project specified does not exist.
   * The namespace specified does not exist in the project.
-  * The caller does not have permission to access the namespace.
+  * The caller does not have permission to access the project or namespace.
 
   ## EXAMPLES
 
-  To print metadata for the namespace `test-ns` in project `foo-bar-1`,
+  To print metadata for the namespace `NAMESPACE` in the active project,
   run:
 
-    $ {command} test-ns --project=foo-bar-1
+    $ {command} NAMESPACE
+
+  To print metadata for the namespace `NAMESPACE` in project `PROJECT_ID`,
+  run:
+
+    $ {command} NAMESPACE --project=PROJECT_ID
   """
 
   @staticmethod

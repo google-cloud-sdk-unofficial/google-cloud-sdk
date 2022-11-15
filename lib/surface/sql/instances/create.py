@@ -38,6 +38,9 @@ from googlecloudsdk.core.resource import resource_lex
 from googlecloudsdk.core.resource import resource_property
 import six
 
+# 1h, based off of the max time it usually takes to create a SQL instance.
+_INSTANCE_CREATION_TIMEOUT_SECONDS = 3600
+
 DETAILED_HELP = {
     'EXAMPLES':
         """\
@@ -168,6 +171,7 @@ def AddBetaArgs(parser):
   flags.AddAllocatedIpRangeName(parser)
   labels_util.AddCreateLabelsFlags(parser)
   flags.AddEnableGooglePrivatePath(parser)
+  flags.AddTimeout(parser, _INSTANCE_CREATION_TIMEOUT_SECONDS)
 
 
 def AddAlphaArgs(unused_parser):
@@ -317,12 +321,14 @@ def RunBaseCreateCommand(args, release_track):
           sql_messages.SqlOperationsGetRequest(
               project=operation_ref.project, operation=operation_ref.operation))
 
+    timeout = _INSTANCE_CREATION_TIMEOUT_SECONDS
+    if command_util.IsBetaOrNewer(release_track):
+      timeout = args.timeout
     operations.OperationsV1Beta4.WaitForOperation(
         sql_client,
         operation_ref,
         'Creating Cloud SQL instance for ' + args.database_version,
-        # TODO(b/138403566): Remove the override once we improve creation times.
-        max_wait_seconds=680)
+        max_wait_seconds=timeout)
 
     log.CreatedResource(instance_ref)
 

@@ -45,7 +45,8 @@ class Delete(base.DeleteCommand):
 
   @classmethod
   def Args(cls, parser):
-    cls.SECURITY_POLICY_ARG = flags.SecurityPolicyArgument(plural=True)
+    cls.SECURITY_POLICY_ARG = flags.SecurityPolicyMultiScopeArgument(
+        plural=True)
     cls.SECURITY_POLICY_ARG.AddArgument(parser, operation_type='delete')
     parser.display_info.AddCacheUpdater(flags.GlobalSecurityPoliciesCompleter)
 
@@ -54,7 +55,8 @@ class Delete(base.DeleteCommand):
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
-    refs = self.SECURITY_POLICY_ARG.ResolveAsResource(args, holder.resources)
+    refs = self.SECURITY_POLICY_ARG.ResolveAsResource(
+        args, holder.resources, default_scope=compute_scope.ScopeEnum.GLOBAL)
     utils.PromptForDeletion(refs)
 
     requests = []

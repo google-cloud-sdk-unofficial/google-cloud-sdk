@@ -24,7 +24,7 @@ from googlecloudsdk.command_lib.container.fleet.features import base
 class Disable(base.DisableCommand):
   """Disable Workload Certificate Feature.
 
-  Disable the Workload Certificate Feature in a Fleet.
+  Disable the Workload Certificate Feature in a fleet.
 
   ## Examples
 

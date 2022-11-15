@@ -45,6 +45,7 @@ class Delete(base.DeleteCommand):
     resource_args.AddAwsNodePoolResourceArg(parser, 'to delete')
 
     flags.AddValidateOnly(parser, 'node pool to delete')
+    flags.AddAllowMissing(parser)
 
     base.ASYNC_FLAG.AddToParser(parser)
 

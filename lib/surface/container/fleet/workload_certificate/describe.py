@@ -24,7 +24,7 @@ from googlecloudsdk.command_lib.container.fleet.features import base
 class Describe(base.DescribeCommand):
   """Describe the status of Workload Certificate Feature resource.
 
-  Describe the status of Workload Certificate Feature resource in a Fleet.
+  Describe the status of Workload Certificate Feature resource in a fleet.
 
   ## Examples
 

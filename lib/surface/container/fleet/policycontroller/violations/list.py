@@ -33,7 +33,7 @@ class List(calliope_base.ListCommand):
 
   ## EXAMPLES
 
-  To list all Policy Controller audit violations across the Fleet:
+  To list all Policy Controller audit violations across the fleet:
 
       $ {command}
 

@@ -18,13 +18,9 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
-from apitools.base.py import list_pager
 from googlecloudsdk.api_lib.compute import base_classes
-from googlecloudsdk.api_lib.compute import filter_rewrite
 from googlecloudsdk.api_lib.compute import lister
 from googlecloudsdk.calliope import base
-from googlecloudsdk.core import properties
-from googlecloudsdk.core.resource import resource_projection_spec
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
@@ -40,30 +36,26 @@ class List(base.ListCommand):
 
   @staticmethod
   def Args(parser):
-    parser.display_info.AddFormat('table(name)')
+    parser.display_info.AddFormat("""\
+        table(
+          name,
+          region.basename()
+        )""")
+    lister.AddMultiScopeListerFlags(parser, regional=True, global_=True)
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    client = holder.client
 
-    client = holder.client.apitools_client
-    messages = client.MESSAGES_MODULE
+    request_data = lister.ParseMultiScopeFlags(args, holder.resources)
 
-    project = properties.VALUES.core.project.Get(required=True)
+    list_implementation = lister.MultiScopeLister(
+        client,
+        regional_service=client.apitools_client.regionSecurityPolicies,
+        global_service=client.apitools_client.securityPolicies,
+        aggregation_service=client.apitools_client.securityPolicies)
 
-    display_info = args.GetDisplayInfo()
-    defaults = resource_projection_spec.ProjectionSpec(
-        symbols=display_info.transforms, aliases=display_info.aliases)
-    args.filter, filter_expr = filter_rewrite.Rewriter().Rewrite(
-        args.filter, defaults=defaults)
-    request = messages.ComputeSecurityPoliciesListRequest(
-        project=project, filter=filter_expr)
-
-    return list_pager.YieldFromList(
-        client.securityPolicies,
-        request,
-        field='items',
-        limit=args.limit,
-        batch_size=None)
+    return lister.Invoke(request_data, list_implementation)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)

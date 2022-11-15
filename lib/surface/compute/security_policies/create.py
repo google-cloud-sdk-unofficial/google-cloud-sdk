@@ -56,14 +56,14 @@ class Create(base.CreateCommand):
 
   @classmethod
   def Args(cls, parser):
-    cls.SECURITY_POLICY_ARG = flags.SecurityPolicyArgument()
+    cls.SECURITY_POLICY_ARG = flags.SecurityPolicyMultiScopeArgument()
     cls.SECURITY_POLICY_ARG.AddArgument(parser, operation_type='create')
 
     group = parser.add_group(mutex=True, help='Creation options.')
 
     group.add_argument(
         '--type',
-        choices=['CLOUD_ARMOR', 'CLOUD_ARMOR_EDGE'],
+        choices=['CLOUD_ARMOR', 'CLOUD_ARMOR_EDGE', 'CLOUD_ARMOR_NETWORK'],
         type=lambda x: x.upper(),
         metavar='SECURITY_POLICY_TYPE',
         help=('The type indicates the intended use of the security policy.'))
@@ -112,7 +112,8 @@ class Create(base.CreateCommand):
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
-    ref = self.SECURITY_POLICY_ARG.ResolveAsResource(args, holder.resources)
+    ref = self.SECURITY_POLICY_ARG.ResolveAsResource(
+        args, holder.resources, default_scope=compute_scope.ScopeEnum.GLOBAL)
     security_policy = client.SecurityPolicy(ref, compute_client=holder.client)
 
     if args.file_name:

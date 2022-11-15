@@ -54,6 +54,11 @@ class Create(base.Command):
     parser.add_argument(
         'url', type=str, help='The URL of the bucket to create.')
     parser.add_argument(
+        '--enable-autoclass',
+        action=arg_parsers.StoreTrueFalseAction,
+        help='The Autoclass feature automatically selects the best storage class'
+        ' for objects based on access patterns.')
+    parser.add_argument(
         '--location',
         '-l',
         type=str,

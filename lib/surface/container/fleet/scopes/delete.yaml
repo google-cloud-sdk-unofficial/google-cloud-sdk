@@ -16,7 +16,7 @@
         $ {command} SCOPE_NAME
 
   request:
-    collection: gkehub.projects.locations.workspaces
+    collection: gkehub.projects.locations.scopes
     ALPHA:
       api_version: v1alpha
 
@@ -26,5 +26,5 @@
   arguments:
     resource:
       help_text: The fleet scope to delete.
-      spec: !REF googlecloudsdk.command_lib.container.fleet.resources:workspace
+      spec: !REF googlecloudsdk.command_lib.container.fleet.resources:scope
       arg_name: scope

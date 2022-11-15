@@ -18,11 +18,11 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
-from googlecloudsdk.calliope import base
+from googlecloudsdk.calliope import base as calliope_base
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-@base.Hidden
-class WorkloadMigration(base.Group):
+@calliope_base.ReleaseTracks(calliope_base.ReleaseTrack.ALPHA)
+@calliope_base.Hidden
+class WorkloadMigration(calliope_base.Group):
   """Manage Workload Migration Feature."""
   pass

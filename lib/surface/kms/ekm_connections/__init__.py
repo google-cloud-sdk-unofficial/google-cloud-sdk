@@ -33,6 +33,8 @@ class EkmConnections(base.Group):
   EXTERNAL_VPC CryptoKey.
   """
 
+  category = base.IDENTITY_AND_SECURITY_CATEGORY
+
   @staticmethod
   def Args(parser):
     parser.display_info.AddUriFunc(

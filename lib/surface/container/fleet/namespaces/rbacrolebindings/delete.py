@@ -26,22 +26,18 @@ from googlecloudsdk.command_lib.container.fleet import resources
 @base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Delete(base.DeleteCommand):
-  """Delete a fleet namespace.
+  """Delete a fleet namespace RBAC RoleBinding.
 
   This command can fail for the following reasons:
-  * The project specified does not exist.
-  * The namespace specified does not exist.
-  * The caller does not have permission to access the given project.
+  * The RoleBinding specified does not exist.
+  * The caller does not have permission to access the given RoleBinding.
 
   ## EXAMPLES
 
-  To delete fleet namespace `my-ns` in the active project:
+  To delete RBAC RoleBinding `RBRB` in namespace `NAMESPACE` in the active
+  project:
 
-    $ {command} my-ns
-
-  To delete fleet namespace `my-ns` in project `foo-bar-1`:
-
-    $ {command} my-ns --project=foo-bar-1
+    $ {command} RBRB --namespace=NAMESPACE
   """
 
   @staticmethod
