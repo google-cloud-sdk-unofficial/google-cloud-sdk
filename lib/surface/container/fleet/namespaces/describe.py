@@ -44,7 +44,7 @@ class Describe(base.DescribeCommand):
   @staticmethod
   def Args(parser):
     parser.add_argument(
-        'NAME', type=str, help='Name of the fleet namespace to be deleted.')
+        'NAME', type=str, help='Name of the fleet namespace to be described.')
 
   def Run(self, args):
     project = arg_utils.GetFromNamespace(args, '--project', use_defaults=True)

@@ -25,17 +25,24 @@ from googlecloudsdk.command_lib.dataplex import resource_args
 from googlecloudsdk.command_lib.iam import iam_util
 
 
-@base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.GA)
 class RemoveIamPolicyBinding(base.Command):
   """Removes IAM policy binding from a Dataplex Environment."""
 
   detailed_help = {
       'EXAMPLES':
           """\
-          To Remove an IAM policy binding from an environment, run:
 
-            $ {command} projects/{project_id}/locations/{location}/lakes/{lake_id}/environments/{environment_id} --role=roles/dataplex.viewer --member=user:foo@gmail.com
+          To remove an IAM policy binding for the role `roles/dataplex.viewer`
+          for the user `testuser@gmail.com` from an environment `test-environment` within lake
+          `test-lake` in location `us-central1`, run:
+
+            $ {command} test-environment --project=test-project --location=us-central1 --lake=test-lake --role=roles/dataplex.viewer --member=user:testuser@gmail.com
+
+
+          See https://cloud.google.com/dataplex/docs/iam-roles for details of
+          policy role and member types.
+
           """,
   }
 

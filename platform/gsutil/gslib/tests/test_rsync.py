@@ -20,6 +20,7 @@ from __future__ import division
 from __future__ import unicode_literals
 
 import os
+import re
 
 import six
 
@@ -31,6 +32,8 @@ from gslib.tests.testcase.integration_testcase import SkipForGS
 from gslib.tests.testcase.integration_testcase import SkipForS3
 from gslib.tests.testcase.integration_testcase import SkipForXML
 from gslib.tests.util import AuthorizeProjectToUseTestingKmsKey
+from gslib.tests.util import TEST_ENCRYPTION_KEY_S3
+from gslib.tests.util import TEST_ENCRYPTION_KEY_S3_MD5
 from gslib.tests.util import BuildErrorRegex
 from gslib.tests.util import ObjectToURI as suri
 from gslib.tests.util import ORPHANED_FILE
@@ -2755,6 +2758,31 @@ class TestRsync(testcase.GsUtilIntegrationTestCase):
 
     _Check2()
 
+  def test_dir_to_bucket_relative_minus_x(self):
+    """Test that rsync -x option works with a relative regex per the docs."""
+    bucket_uri = self.CreateBucket()
+    tmpdir = self.CreateTempDir(test_files=[
+        'a', 'b', 'c', ('data1', 'a.txt'), ('data1', 'ok'), ('data2', 'b.txt')
+    ])
+
+    # Use @Retry as hedge against bucket listing eventual consistency.
+    @Retry(AssertionError, tries=3, timeout_secs=1)
+    def _Check1():
+      """Tests rsync skips the excluded pattern."""
+      # Add a trailing slash to the source directory to ensure its removed.
+      self.RunGsUtil([
+          'rsync', '-r', '-x', 'data./.*\\.txt$', tmpdir + '/',
+          suri(bucket_uri)
+      ])
+      listing1 = TailSet(tmpdir, self.FlatListDir(tmpdir))
+      listing2 = TailSet(suri(bucket_uri), self.FlatListBucket(bucket_uri))
+      self.assertEquals(
+          listing1,
+          set(['/a', '/b', '/c', '/data1/a.txt', '/data1/ok', '/data2/b.txt']))
+      self.assertEquals(listing2, set(['/a', '/b', '/c', '/data1/ok']))
+
+    _Check1()
+
   @unittest.skipIf(IS_WINDOWS,
                    "os.chmod() won't make file unreadable on Windows.")
   def test_dir_to_bucket_minus_C(self):
@@ -3130,3 +3158,51 @@ class TestRsync(testcase.GsUtilIntegrationTestCase):
     # formatting (i.e. specifying KMS key in a request to S3's API).
     with SetBotoConfigForTest([('GSUtil', 'prefer_api', 'json')]):
       self.RunGsUtil(['rsync', tmp_dir, suri(bucket_uri)])
+
+  def test_bucket_to_bucket_includes_arbitrary_headers(self):
+    bucket1_uri = self.CreateBucket()
+    bucket2_uri = self.CreateBucket()
+    self.CreateObject(bucket_uri=bucket1_uri,
+                      object_name='obj1',
+                      contents=b'obj1')
+
+    stderr = self.RunGsUtil([
+        '-D', '-h', 'arbitrary:header', 'rsync',
+        suri(bucket1_uri),
+        suri(bucket2_uri)
+    ],
+                            return_stderr=True)
+
+    headers_for_all_requests = re.findall(r"Headers: \{([\s\S]*?)\}", stderr)
+    self.assertTrue(headers_for_all_requests)
+    for headers in headers_for_all_requests:
+      self.assertIn("'arbitrary': 'header'", headers)
+
+  @SkipForGS('Tests that S3 SSE-C is handled.')
+  def test_s3_sse_is_handled_with_arbitrary_headers(self):
+    tmp_dir = self.CreateTempDir()
+    tmp_file = self.CreateTempFile(tmpdir=tmp_dir, contents=b'foo')
+    bucket_uri1 = self.CreateBucket()
+    bucket_uri2 = self.CreateBucket()
+
+    header_flags = [
+        '-h',
+        '"x-amz-server-side-encryption-customer-algorithm:AES256"',
+        '-h',
+        '"x-amz-server-side-encryption-customer-key:{}"'.format(
+            TEST_ENCRYPTION_KEY_S3),
+        '-h',
+        '"x-amz-server-side-encryption-customer-key-md5:{}"'.format(
+            TEST_ENCRYPTION_KEY_S3_MD5),
+    ]
+
+    with SetBotoConfigForTest([('GSUtil', 'check_hashes', 'never')]):
+      self.RunGsUtil(header_flags + ['cp', tmp_file, suri(bucket_uri1, 'test')])
+      self.RunGsUtil(header_flags +
+                     ['rsync', suri(bucket_uri1),
+                      suri(bucket_uri2)])
+      contents = self.RunGsUtil(header_flags +
+                                ['cat', suri(bucket_uri2, 'test')],
+                                return_stdout=True)
+
+    self.assertEqual(contents, 'foo')

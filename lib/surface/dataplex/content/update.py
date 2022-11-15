@@ -29,17 +29,19 @@ from googlecloudsdk.command_lib.util.args import labels_util
 from googlecloudsdk.core import log
 
 
-@base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.GA)
 class Update(base.Command):
-  """Updating a content."""
+  """Update a Dataplex Content Resource with the given configurations."""
 
   detailed_help = {
       'EXAMPLES':
           """\
-          To update a Dataplex Content, run:
 
-            $ {command} projects/{project_id}/locations/{location}/lakes/{lake_id}/content/{content_id}
+          To update a Dataplex content `test-content` in project `test-project` within lake `test-lake` in location `us-central1` and
+          change the description to `Updated Description`, run:
+
+            $ {command}  test-content --project=test-project --location=us-central1 --lake=test-lake  --description='Updated Description'
+
           """,
   }
 

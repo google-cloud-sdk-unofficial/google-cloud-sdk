@@ -19,6 +19,7 @@ from __future__ import division
 from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.container.fleet import util
+from googlecloudsdk.command_lib.container.fleet import resources
 from googlecloudsdk.command_lib.container.fleet.config_management import utils
 from googlecloudsdk.command_lib.container.fleet.features import base
 from googlecloudsdk.core import exceptions
@@ -41,13 +42,16 @@ class Upgrade(base.UpdateCommand):
 
   feature_name = 'configmanagement'
 
-  @staticmethod
-  def Args(parser):
-    parser.add_argument(
-        '--membership',
-        type=str,
-        help='The Membership name provided during registration.',
-    )
+  @classmethod
+  def Args(cls, parser):
+    if resources.UseRegionalMemberships(cls.ReleaseTrack()):
+      resources.AddMembershipResourceArg(parser)
+    else:
+      parser.add_argument(
+          '--membership',
+          type=str,
+          help='The Membership name provided during registration.',
+      )
     parser.add_argument(
         '--version',
         type=str,
@@ -57,8 +61,14 @@ class Upgrade(base.UpdateCommand):
   def Run(self, args):
     f = self.GetFeature()
     new_version = args.version
-    membership = _get_or_prompt_membership(args.membership)
-    _, cluster_v = utils.versions_for_member(f, membership)
+    if resources.UseRegionalMemberships(self.ReleaseTrack()):
+      membership = base.ParseMembership(
+          args, prompt=True, autoselect=True, search=True)
+      _, cluster_v = utils.versions_for_member(f, membership)
+    else:
+      membership = _get_or_prompt_membership(args.membership)
+      _, cluster_v = utils.versions_for_member(
+          f, self.MembershipResourceName(membership))
 
     if not self._validate_versions(membership, cluster_v, new_version):
       return
@@ -71,16 +81,27 @@ class Upgrade(base.UpdateCommand):
 
     patch = self.messages.MembershipFeatureSpec()
     # If there's an existing spec, copy it to leave the other fields intact.
-    for full_name, spec in self.hubclient.ToPyDict(f.membershipSpecs).items():
-      if util.MembershipShortname(full_name) == membership and spec is not None:
-        patch = spec
+    if resources.UseRegionalMemberships(self.ReleaseTrack()):
+      for full_name, spec in self.hubclient.ToPyDict(f.membershipSpecs).items():
+        if util.MembershipPartialName(full_name) == util.MembershipPartialName(
+            membership) and spec is not None:
+          patch = spec
+    else:
+      for full_name, spec in self.hubclient.ToPyDict(f.membershipSpecs).items():
+        if util.MembershipShortname(
+            full_name) == membership and spec is not None:
+          patch = spec
     if patch.configmanagement is None:
       patch.configmanagement = self.messages.ConfigManagementMembershipSpec()
     patch.configmanagement.version = new_version
 
+    if resources.UseRegionalMemberships(self.ReleaseTrack()):
+      membership_key = membership
+    else:
+      membership_key = self.MembershipResourceName(membership)
     f = self.messages.Feature(
         membershipSpecs=self.hubclient.ToMembershipSpecs(
-            {self.MembershipResourceName(membership): patch}))
+            {membership_key: patch}))
     self.Update(['membershipSpecs'], f)
 
   def _validate_versions(self, membership, cluster_v, new_v):

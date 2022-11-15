@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Base class for Anthos on VMware API client resources."""
+"""Base class for Anthos GKE On-Prem API client resources."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -23,7 +23,7 @@ from googlecloudsdk.api_lib.util import apis
 
 # pylint: disable=invalid-name
 class ClientBase(object):
-  """Base class for Anthos on VMware API clients."""
+  """Base class for Anthos GKE On-Prem API clients."""
 
   def __init__(self, service=None):
     self._client = apis.GetClientInstance('gkeonprem', 'v1')
@@ -39,6 +39,12 @@ class ClientBase(object):
     """Parses user cluster resource argument and returns its reference."""
     if getattr(args.CONCEPTS, 'cluster', None):
       return args.CONCEPTS.cluster.Parse()
+    return None
+
+  def _admin_cluster_ref(self, args):
+    """Parses admin cluster resource argument and returns its reference."""
+    if getattr(args.CONCEPTS, 'admin_cluster', None):
+      return args.CONCEPTS.admin_cluster.Parse()
     return None
 
   def _location_ref(self, args):
@@ -68,7 +74,28 @@ class ClientBase(object):
       return user_cluster_ref.Name()
     return None
 
-  def _admin_cluster_ref(self, args):
+  def _admin_cluster_name(self, args):
+    """Parses admin cluster from args and returns its name."""
+    admin_cluster_ref = self._admin_cluster_ref(args)
+    if admin_cluster_ref:
+      return admin_cluster_ref.RelativeName()
+    return None
+
+  def _admin_cluster_parent(self, args):
+    """Parses admin cluster from args and returns its parent name."""
+    admin_cluster_ref = self._admin_cluster_ref(args)
+    if admin_cluster_ref:
+      return admin_cluster_ref.Parent().RelativeName()
+    return None
+
+  def _admin_cluster_id(self, args):
+    """Parses admin cluster from args and returns its ID."""
+    admin_cluster_ref = self._admin_cluster_ref(args)
+    if admin_cluster_ref:
+      return admin_cluster_ref.Name()
+    return None
+
+  def _admin_cluster_membership_ref(self, args):
     """Parses admin cluster resource argument and returns its reference."""
     if getattr(args.CONCEPTS, 'admin_cluster_membership', None):
       return args.CONCEPTS.admin_cluster_membership.Parse()
@@ -76,7 +103,7 @@ class ClientBase(object):
 
   def _admin_cluster_membership_name(self, args):
     """Parses admin cluster from args and returns its name."""
-    admin_cluster_ref = self._admin_cluster_ref(args)
+    admin_cluster_ref = self._admin_cluster_membership_ref(args)
     if admin_cluster_ref:
       return admin_cluster_ref.RelativeName()
     return None

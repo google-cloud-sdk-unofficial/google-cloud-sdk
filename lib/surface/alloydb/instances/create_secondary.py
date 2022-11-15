@@ -27,6 +27,7 @@ from googlecloudsdk.core import properties
 from googlecloudsdk.core import resources
 
 
+@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class CreateSecondary(base.CreateCommand):
   """Creates a new AlloyDB secondary instance within a given cluster."""

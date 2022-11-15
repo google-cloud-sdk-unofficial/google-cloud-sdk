@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Describe a node pool command."""
+"""Describe a node group command."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -26,13 +26,13 @@ from googlecloudsdk.command_lib.dataproc import flags
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
                     base.ReleaseTrack.GA)
 class Describe(base.Command):
-  """Describe the node pool."""
+  """Describe the node group."""
   detailed_help = {
       'EXAMPLES':
           """\
-          To describe a node pool, run:
+          To describe a node group, run:
 
-            $ {command} my-gce-node-pool-id --region=us-central1 --cluster=my-cluster-name
+            $ {command} my-node-group-id --region=us-central1 --cluster=my-cluster-name
           """
   }
 
@@ -40,15 +40,15 @@ class Describe(base.Command):
   def Args(cls, parser):
     dataproc = dp.Dataproc(cls.ReleaseTrack())
 
-    flags.AddGceNodePoolResourceArg(parser, 'describe', dataproc.api_version)
+    flags.AddNodeGroupResourceArg(parser, 'describe', dataproc.api_version)
 
   def Run(self, args):
-    gce_node_pool_ref = args.CONCEPTS.gce_node_pool.Parse()
+    node_group_ref = args.CONCEPTS.node_group.Parse()
     dataproc = dp.Dataproc(self.ReleaseTrack())
     messages = dataproc.messages
-    request = messages.DataprocProjectsRegionsClustersGceNodePoolsGetRequest(
-        name=gce_node_pool_ref.RelativeName())
-    gce_node_pool = dataproc.client.projects_regions_clusters_gceNodePools.Get(
+    request = messages.DataprocProjectsRegionsClustersNodeGroupsGetRequest(
+        name=node_group_ref.RelativeName())
+    node_group = dataproc.client.projects_regions_clusters_nodeGroups.Get(
         request)
 
-    return gce_node_pool
+    return node_group

@@ -106,35 +106,38 @@ class SimulateAlpha(base.Command):
         self.ReleaseTrack())
     # Parse files and get Policy Overlay
     policies = []
-    for policy_file in args.policies:
-      policy = utils.GetPolicyMessageFromFile(policy_file,
-                                              self.ReleaseTrack())
-      if not policy.name:
-        raise exceptions.InvalidArgumentException(
-            'Policy name',
-            "'name' field not present in the organization policy.")
-      policy_parent = orgpolicy_utils.GetResourceFromPolicyName(
-          policy.name)
-      policy_overlay = orgpolicy_simulator_api.GetOrgPolicyPolicyOverlay(
-          policy=policy,
-          policy_parent=policy_parent)
-      policies.append(policy_overlay)
+    if args.policies:
+      for policy_file in args.policies:
+        policy = utils.GetPolicyMessageFromFile(policy_file,
+                                                self.ReleaseTrack())
+        if not policy.name:
+          raise exceptions.InvalidArgumentException(
+              'Policy name',
+              "'name' field not present in the organization policy.")
+        policy_parent = orgpolicy_utils.GetResourceFromPolicyName(
+            policy.name)
+        policy_overlay = orgpolicy_simulator_api.GetOrgPolicyPolicyOverlay(
+            policy=policy,
+            policy_parent=policy_parent)
+        policies.append(policy_overlay)
+
     # Parse files and get Custom Constraints Overlay
     custom_constraints = []
-    for custom_constraint_file in args.custom_constraints:
-      custom_constraint = utils.GetCustomConstraintMessageFromFile(
-          custom_constraint_file,
-          self.ReleaseTrack())
-      if not custom_constraint.name:
-        raise exceptions.InvalidArgumentException(
-            'Custom constraint name',
-            "'name' field not present in the custom constraint.")
-      custom_constraint_parent = orgpolicy_utils.GetResourceFromPolicyName(
-          custom_constraint.name)
-      constraint_overlay = orgpolicy_simulator_api.GetOrgPolicyCustomConstraintOverlay(
-          custom_constraint=custom_constraint,
-          custom_constraint_parent=custom_constraint_parent)
-      custom_constraints.append(constraint_overlay)
+    if args.custom_constraints:
+      for custom_constraint_file in args.custom_constraints:
+        custom_constraint = utils.GetCustomConstraintMessageFromFile(
+            custom_constraint_file,
+            self.ReleaseTrack())
+        if not custom_constraint.name:
+          raise exceptions.InvalidArgumentException(
+              'Custom constraint name',
+              "'name' field not present in the custom constraint.")
+        custom_constraint_parent = orgpolicy_utils.GetResourceFromPolicyName(
+            custom_constraint.name)
+        constraint_overlay = orgpolicy_simulator_api.GetOrgPolicyCustomConstraintOverlay(
+            custom_constraint=custom_constraint,
+            custom_constraint_parent=custom_constraint_parent)
+        custom_constraints.append(constraint_overlay)
 
     overlay = orgpolicy_simulator_api.GetOrgPolicyOverlay(
         policies=policies, custom_constraints=custom_constraints)

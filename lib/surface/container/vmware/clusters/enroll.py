@@ -18,10 +18,11 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
-from googlecloudsdk.api_lib.container.vmware import clusters as apis
-from googlecloudsdk.api_lib.container.vmware import operations
+from googlecloudsdk.api_lib.container.gkeonprem import operations
+from googlecloudsdk.api_lib.container.gkeonprem import vmware_clusters as apis
 from googlecloudsdk.calliope import base
-from googlecloudsdk.command_lib.container.vmware import flags
+from googlecloudsdk.command_lib.container.gkeonprem import flags
+from googlecloudsdk.command_lib.container.vmware import flags as vmware_flags
 
 _EXAMPLES = """
 To enroll a cluster named ``my-cluster'' managed in location ``us-west1''
@@ -41,7 +42,7 @@ class Enroll(base.Command):
   @staticmethod
   def Args(parser):
     flags.AddAdminClusterMembershipResourceArg(parser, positional=False)
-    flags.AddClusterResourceArg(parser, 'to enroll')
+    vmware_flags.AddClusterResourceArg(parser, 'to enroll')
     base.ASYNC_FLAG.AddToParser(parser)
 
   def Run(self, args):

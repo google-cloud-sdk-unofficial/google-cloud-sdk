@@ -28,17 +28,18 @@ from googlecloudsdk.command_lib.util.args import labels_util
 from googlecloudsdk.core import log
 
 
-@base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.GA)
 class Create(base.Command):
   """Creating a content."""
 
   detailed_help = {
       'EXAMPLES':
           """\
-          To create a Dataplex Content, run:
 
-            $ {command} projects/{project_id}/locations/{location}/lakes/{lake_id}/content/{content_id}
+          To create a Dataplex content `test-content` of type notebook  within lake `test-lake` in location `us-central1`.
+
+           $ {command} --project=test-project --location=us-central1 --lake=test-lake --kernel-type=PYTHON3 --data-text='' --path='test-content'
+
           """,
   }
 

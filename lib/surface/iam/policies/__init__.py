@@ -12,7 +12,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """The policies command group for the IAM CLI."""
 
 from __future__ import absolute_import
@@ -22,18 +21,10 @@ from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 
 
-@base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.GA)
-class PoliciesGA(base.Group):
-  """Manage IAM policies.
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
+                    base.ReleaseTrack.GA)
+class Policies(base.Group):
+  """Manage IAM deny policies.
 
-  Commands for managing Google Cloud IAM policies.
-  """
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
-class PoliciesAlphaBeta(base.Group):
-  """Manage IAM policies.
-
-  Commands for managing Google Cloud IAM policies.
+  Commands for managing Google Cloud IAM deny policies.
   """

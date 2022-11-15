@@ -29,6 +29,7 @@ from googlecloudsdk.command_lib.container.fleet import exclusivity_util
 from googlecloudsdk.command_lib.container.fleet import kube_util
 from googlecloudsdk.command_lib.container.fleet import resources
 from googlecloudsdk.command_lib.container.fleet import util as hub_util
+from googlecloudsdk.command_lib.container.fleet.memberships import gke_util
 from googlecloudsdk.command_lib.util.apis import arg_utils
 from googlecloudsdk.core import exceptions
 from googlecloudsdk.core import log
@@ -45,18 +46,18 @@ class Unregister(calliope_base.DeleteCommand):
     2. Removing the corresponding in-cluster Kubernetes Resources that make the
        cluster exclusive to one fleet (a.k.a `kubectl delete memberships
        membership`).
-    3. Uninstalling the Connect Agent from this cluster (a.k.a
-       `kubectl delete on the gke-connect namespace`).
+    3. [Optional for GKE cluster] Uninstalling the Connect agent from this
+       cluster (a.k.a `kubectl delete on the gke-connect namespace`).
 
   The unregister command makes additional internal checks to ensure that all
   three steps can be safely done to properly clean-up in-Fleet and in-cluster
   resources.
 
-  To register a non-GKE cluster use --context flag (with an optional
-  --kubeconfig flag).
+  To register a GKE cluster use `--gke-cluster` or `--gke-uri` flag (no
+  `--kubeconfig` flag is required).
 
-  To register a GKE cluster use --gke-cluster or --gke-uri flag (no --kubeconfig
-  flag is required).
+  To register a non-GKE cluster use `--context` flag (with an optional
+  -`-kubeconfig`s flag).
 
   To only delete the Fleet Membership resource, consider using the command:
   `{parent_command} delete`. This command is intended to delete stale Fleet
@@ -86,6 +87,12 @@ class Unregister(calliope_base.DeleteCommand):
       $ {command} my-membership \
         --gke-cluster=my-cluster-region-or-zone/my-cluster
 
+    Unregister a GKE cluster and uninstall Connect agent:
+
+      $ {command} my-membership \
+        --gke-cluster=my-cluster-region-or-zone/my-cluster
+        --uninstall-connect-agent
+
   """
 
   @classmethod
@@ -112,12 +119,42 @@ class Unregister(calliope_base.DeleteCommand):
             being registered on the fleet.
           """),
       )
-
+    parser.add_argument(
+        '--uninstall-connect-agent',
+        action='store_true',
+        help=textwrap.dedent("""\
+          If set to True for a GKE cluster, Connect agent will be uninstalled
+          from the cluster. No-op for Non-GKE clusters, where Connect agent will
+          always be uninstalled.
+          """),
+        default=False,
+    )
     hub_util.AddClusterConnectionCommonArgs(parser)
 
   def Run(self, args):
     project = arg_utils.GetFromNamespace(args, '--project', use_defaults=True)
+    if resources.UseRegionalMemberships(
+        self.ReleaseTrack()) or (resources.InProdRegionalAllowlist(
+            project, self.ReleaseTrack())):
+      membership = resources.ParseMembershipArg(args)
+      membership_id = util.MembershipShortname(membership)
+      location = util.MembershipLocation(membership)
+    else:
+      membership_id = args.MEMBERSHIP_NAME
+      location = 'global'
 
+    # Unregister GKE cluster with simple Add-to-Hub API call. Connect agent will
+    # not be uninstalled. And Kubernetes Client is not needed.
+    gke_cluster_resource_link, gke_cluster_uri = gke_util.GetGKEClusterResoureLinkAndURI(
+        gke_uri=args.GetValue('gke_uri'),
+        gke_cluster=args.GetValue('gke_cluster'))
+    if gke_cluster_resource_link and not args.GetValue(
+        'uninstall_connect_agent'):
+      return self._UnregisterGKE(gke_cluster_resource_link, gke_cluster_uri,
+                                 project, location, membership_id, args)
+
+    # Unregister non-GKE, or GKE with --uninstall-connect-agent.
+    # It will require a kube client.
     kube_client = kube_util.KubernetesClient(
         gke_uri=getattr(args, 'gke_uri', None),
         gke_cluster=getattr(args, 'gke_cluster', None),
@@ -127,14 +164,6 @@ class Unregister(calliope_base.DeleteCommand):
         enable_workload_identity=getattr(args, 'enable_workload_identity',
                                          False),
     )
-    if resources.UseRegionalMemberships(self.ReleaseTrack()) or (
-        resources.InProdRegionalAllowlist(project, self.ReleaseTrack())):
-      membership = resources.ParseMembershipArg(args)
-      membership_id = util.MembershipShortname(membership)
-      location = util.MembershipLocation(membership)
-    else:
-      membership_id = args.MEMBERSHIP_NAME
-      location = 'global'
     kube_client.CheckClusterAdminPermissions()
     kube_util.ValidateClusterIdentifierFlags(kube_client, args)
 
@@ -216,3 +245,26 @@ class Unregister(calliope_base.DeleteCommand):
     # Delete the connect agent.
     agent_util.DeleteConnectNamespace(kube_client, args)
 
+  def _UnregisterGKE(self, gke_cluster_resource_link, gke_cluster_uri, project,
+                     location, membership_id, args):
+    """Register a GKE cluster without installing Connect agent."""
+    try:
+      name = 'projects/{}/locations/{}/memberships/{}'.format(
+          project, location, membership_id)
+      obj = api_util.GetMembership(name, self.ReleaseTrack())
+      if obj.endpoint.gkeCluster.resourceLink != gke_cluster_resource_link:
+        raise exceptions.Error(
+            'membership {0} is associated with a different GKE cluster link '
+            '{1}. You may be unregistering the wrong membership.'.format(
+                args.MEMBERSHIP_NAME, obj.endpoint.gkeCluster.resourceLink))
+
+      api_util.DeleteMembership(name, self.ReleaseTrack())
+    except apitools_exceptions.HttpUnauthorizedError as e:
+      raise exceptions.Error(
+          'You are not authorized to unregister clusters from project [{}]. '
+          'Underlying error: {}'.format(project, e))
+    except apitools_exceptions.HttpNotFoundError:
+      log.status.Print(
+          'Membership [{}] for the cluster [{}] was not found on the fleet. '
+          'It may already have been deleted, or it may never have existed.'
+          .format(name, args.MEMBERSHIP_NAME))

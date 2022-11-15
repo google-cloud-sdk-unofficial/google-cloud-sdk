@@ -25,17 +25,22 @@ from googlecloudsdk.command_lib.dataplex import resource_args
 from googlecloudsdk.command_lib.iam import iam_util
 
 
-@base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.GA)
 class AddIamPolicyBinding(base.Command):
   """Adds IAM policy binding to a Dataplex Content."""
 
   detailed_help = {
       'EXAMPLES':
           """\
-          To add an IAM policy binding to a Dataplex Content, run:
+          To add an IAM policy binding for the role of `roles/dataplex.viewer`
+          for the user 'testuser@gmail.com' to content `test-content` within lake
+          `test-lake` in location `us-central`, run:
 
-            $ {command} projects/project_id/locations/location/lakes/{lake_id}/content/{content_id} --role=roles/dataplex.viewer --member=user:foo@gmail.com
+            $ {command}  test-content --project=test-project --location=us-central1 --lake=test-lake --role=roles/dataplex.viewer --member=user:testuser@gmail.com
+
+          See https://cloud.google.com/dataplex/docs/iam-roles for details of
+          policy role and member types.
+
           """,
   }
 

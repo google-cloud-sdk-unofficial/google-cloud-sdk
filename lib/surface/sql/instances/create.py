@@ -167,11 +167,12 @@ def AddBetaArgs(parser):
   flags.AddAllocatedIpRangeName(parser)
   labels_util.AddCreateLabelsFlags(parser)
   flags.AddEnableGooglePrivatePath(parser)
-
-
-def AddAlphaArgs(parser):
-  """Declare alpha flags for this command parser."""
   flags.AddConnectorEnforcement(parser)
+
+
+def AddAlphaArgs(unused_parser):
+  """Declare alpha flags for this command parser."""
+  pass
 
 
 def RunBaseCreateCommand(args, release_track):

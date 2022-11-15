@@ -20,6 +20,7 @@ from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.cloudbuild import cloudbuild_util
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.builds import flags as build_flags
 from googlecloudsdk.core import properties
 from googlecloudsdk.core import resources
 
@@ -36,7 +37,7 @@ class ListAlpha(base.ListCommand):
       parser: An argparse.ArgumentParser-like object. It is mocked out in order
         to capture some information, but behaves like an ArgumentParser.
     """
-
+    build_flags.AddRegionFlag(parser)
     parser.display_info.AddFormat("""
           table(
             name,
@@ -60,12 +61,13 @@ class ListAlpha(base.ListCommand):
     messages = cloudbuild_util.GetMessagesModule()
 
     parent = properties.VALUES.core.project.Get(required=True)
+    regionprop = properties.VALUES.builds.region.Get()
+    bbs_region = args.region or regionprop or cloudbuild_util.DEFAULT_REGION
     # Get the parent project ref
     parent_resource = resources.REGISTRY.Create(
         collection='cloudbuild.projects.locations',
         projectsId=parent,
-        # Use default region global until Proctor is fully regionalized.
-        locationsId=cloudbuild_util.DEFAULT_REGION)
+        locationsId=bbs_region)
 
     # Send the List request
     bbs_list = client.projects_locations_bitbucketServerConfigs.List(

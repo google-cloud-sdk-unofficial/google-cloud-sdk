@@ -37,17 +37,17 @@ class Copy(base.Command):
           """),
       'EXAMPLES':
           textwrap.dedent("""\
-        To copy backup SOURCE_BACKUP to DESTINATION_BACKUP, run:
+        To copy a backup within the same project, run:
 
-          $ {command} --source-instance=SOURCE_INSTANCE --source-cluster=SOURCE_CLUSTER  --source=SOURCE_BACKUP --destination-instance=DESTINATION_INSTANCE --destination-cluster=DESTINATION_CLUSTER --destination=DESTINATION_BACKUP --expiration-date=2022-08-01T10:49:41Z
+          $ {command} --source-instance=SOURCE_INSTANCE --source-cluster=SOURCE_CLUSTER  --source-backup=SOURCE_BACKUP --destination-instance=DESTINATION_INSTANCE --destination-cluster=DESTINATION_CLUSTER --destination-backup=DESTINATION_BACKUP --expiration-date=2022-08-01T10:49:41Z
 
-        To copy backup SOURCE_BACKUP to DESTINATION_BACKUP using relative names, run:
+        To copy a backup to a different project, run:
 
-          $ {command} --source=projects/SOURCE_PROJECT/instances/SOURCE_INSTANCE/clusters/SOURCE_CLUSTER/backups/SOURCE_BACKUP --destination=projects/DESTINATION_PROJECT/instances/DESTINATION_INSTANCE/clusters/DESTINATION_CLUSTER/backups/DESTINATION_BACKUP --expiration-date=2022-08-01T10:49:41Z
+          $ {command} --source-backup=projects/SOURCE_PROJECT/instances/SOURCE_INSTANCE/clusters/SOURCE_CLUSTER/backups/SOURCE_BACKUP --destination-backup=projects/DESTINATION_PROJECT/instances/DESTINATION_INSTANCE/clusters/DESTINATION_CLUSTER/backups/DESTINATION_BACKUP --expiration-date=2022-08-01T10:49:41Z
 
         To set retention period and run asyncronously, run:
 
-          $ {command} --source=projects/SOURCE_PROJECT/instances/SOURCE_INSTANCE/clusters/SOURCE_CLUSTER/backups/SOURCE_BACKUP --destination=projects/DESTINATION_PROJECT/instances/DESTINATION_INSTANCE/clusters/DESTINATION_CLUSTER/backups/DESTINATION_BACKUP --retention-period=2w --async
+          $ {command} --source-backup=projects/SOURCE_PROJECT/instances/SOURCE_INSTANCE/clusters/SOURCE_CLUSTER/backups/SOURCE_BACKUP --destination-backup=projects/DESTINATION_PROJECT/instances/DESTINATION_INSTANCE/clusters/DESTINATION_CLUSTER/backups/DESTINATION_BACKUP --retention-period=2w --async
 
         """),
   }

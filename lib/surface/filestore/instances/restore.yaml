@@ -80,7 +80,6 @@
       help_text: |
         Region of the Filestore backup to restore from.
     - arg_name: location
-      hidden: true
       release_tracks: [BETA]
       help_text: |
         Location of the Filestore instance to restore this backup to.

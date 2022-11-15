@@ -1,14 +1,14 @@
-- release_tracks: [ALPHA]
-  hidden: true
+- release_tracks: [ALPHA, GA]
   help_text:
     brief: |
       List Dataplex Environments.
     description: |
       List Dataplex Environments based on project, location and lake.
 
-      {command} --project={project_id} --location={location} --lake={test-lake}
     examples: |
-      {command} --project=test-project --location=us-central1 --lake=test-lake
+      To list all Dataplex Environments in lake `test-lake` under location `us-central1`, run :-
+
+         $ {command} --project=test-project --location=us-central1 --lake=test-lake
 
   request:
     ALPHA:

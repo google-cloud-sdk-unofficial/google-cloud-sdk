@@ -93,6 +93,7 @@ def _Args(parser):
   flags.AddImageFlag(parser, hidden=True)
   flags.AddImageProjectFlag(parser, hidden=True)
   flags.AddImageFamilyFlag(parser, hidden=True)
+  flags.AddLabelsFlag(parser, for_node_pool=True, hidden=True)
   flags.AddNodeLabelsFlag(parser, for_node_pool=True)
   flags.AddTagsFlag(
       parser, """\
@@ -113,6 +114,8 @@ for examples.
   flags.AddShieldedInstanceFlags(parser)
   flags.AddNetworkConfigFlags(parser)
   flags.AddThreadsPerCore(parser)
+  flags.AddAdditionalNodeNetworkFlag(parser, hidden=True)
+  flags.AddAdditionalPodNetworkFlag(parser, hidden=True)
 
 
 def ParseCreateNodePoolOptionsBase(args):
@@ -134,6 +137,7 @@ def ParseCreateNodePoolOptionsBase(args):
       local_ssd_count=args.local_ssd_count,
       tags=args.tags,
       threads_per_core=args.threads_per_core,
+      labels=args.labels,
       node_labels=args.node_labels,
       node_taints=args.node_taints,
       enable_autoscaling=args.enable_autoscaling,
@@ -179,7 +183,9 @@ def ParseCreateNodePoolOptionsBase(args):
       enable_private_nodes=args.enable_private_nodes,
       enable_fast_socket=args.enable_fast_socket,
       logging_variant=args.logging_variant,
-      windows_os_version=args.windows_os_version)
+      windows_os_version=args.windows_os_version,
+      additional_node_network=args.additional_node_network,
+      additional_pod_network=args.additional_pod_network)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)

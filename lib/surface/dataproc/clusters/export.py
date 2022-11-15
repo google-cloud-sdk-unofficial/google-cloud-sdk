@@ -111,8 +111,8 @@ def RemoveNonImportableFields(cluster):
         config.masterConfig, config.workerConfig, config.secondaryWorkerConfig
     ]
 
-    for aux_config in config.auxiliaryGceNodePools:
-      instance_group_configs.append(aux_config.gceNodePool.nodePoolConfig)
+    for aux_config in config.auxiliaryNodeGroups:
+      instance_group_configs.append(aux_config.nodeGroup.nodePoolConfig)
 
     for group in instance_group_configs:
       if group is not None:

@@ -18,11 +18,12 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
-from googlecloudsdk.api_lib.container.vmware import clusters as apis
-from googlecloudsdk.api_lib.container.vmware import operations
+from googlecloudsdk.api_lib.container.gkeonprem import operations
+from googlecloudsdk.api_lib.container.gkeonprem import vmware_clusters as apis
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.container.gkeonprem import flags
 from googlecloudsdk.command_lib.container.vmware import constants
-from googlecloudsdk.command_lib.container.vmware import flags
+from googlecloudsdk.command_lib.container.vmware import flags as vmware_flags
 from googlecloudsdk.core import log
 
 _EXAMPLES = """
@@ -47,14 +48,13 @@ class Create(base.CreateCommand):
       parser: The argparse parser to add the flag to.
     """
     parser.display_info.AddFormat(constants.VMWARE_CLUSTERS_FORMAT)
-    flags.AddClusterResourceArg(parser, 'to create', True)
+    vmware_flags.AddClusterResourceArg(parser, 'to create', True)
     flags.AddAdminClusterMembershipResourceArg(parser, False)
     base.ASYNC_FLAG.AddToParser(parser)
-    flags.AddValidationOnly(parser)
-    flags.AddVersion(parser)
-    flags.AddServiceAddressCidrBlocks(parser)
-    flags.AddPodAddressCidrBlocks(parser)
-    flags.AddLoadBalancerConfig(parser)
+    vmware_flags.AddValidationOnly(parser)
+    vmware_flags.AddVersion(parser)
+    vmware_flags.AddVmwareNetworkConfig(parser)
+    vmware_flags.AddVmwareLoadBalancerConfig(parser)
 
   def Run(self, args):
     """Runs the create command.

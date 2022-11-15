@@ -354,6 +354,7 @@ class Update(base.UpdateCommand):
     flags.AddRemoveAdditionalPodIpv4RangesFlag(group)
     flags.AddStackTypeFlag(group, hidden=True)
     flags.AddCostManagementConfigFlag(group, is_update=True)
+    flags.AddGatewayFlags(group, hidden=False)
 
   def ParseUpdateOptions(self, args, locations):
     get_default = lambda key: getattr(args, key)
@@ -423,6 +424,7 @@ class Update(base.UpdateCommand):
     opts.removed_additional_pod_ipv4_ranges = args.remove_additional_pod_ipv4_ranges
     opts.stack_type = args.stack_type
     opts.enable_cost_allocation = args.enable_cost_allocation
+    opts.gateway_api = args.gateway_api
     return opts
 
   def Run(self, args):
@@ -836,7 +838,7 @@ class UpdateBeta(Update):
     flags.AddLoggingVariantFlag(group)
     flags.AddAdditionalPodIpv4RangesFlag(group)
     flags.AddRemoveAdditionalPodIpv4RangesFlag(group)
-    flags.AddGatewayFlags(group, hidden=True)
+    flags.AddGatewayFlags(group, hidden=False)
     flags.AddFleetProjectFlag(group, is_update=True)
 
   def ParseUpdateOptions(self, args, locations):
@@ -1023,7 +1025,7 @@ class UpdateAlpha(Update):
     flags.AddEnablePrivateEndpoint(group)
     flags.AddEnableGoogleCloudAccess(group)
     flags.AddStackTypeFlag(group, hidden=True)
-    flags.AddGatewayFlags(group, hidden=True)
+    flags.AddGatewayFlags(group, hidden=False)
     flags.AddLoggingVariantFlag(group)
     flags.AddAdditionalPodIpv4RangesFlag(group)
     flags.AddRemoveAdditionalPodIpv4RangesFlag(group)

@@ -92,6 +92,7 @@ class Update(base.UpdateCommand):
         upgrade_settings_group, for_node_pool=True)
 
     flags.AddSystemConfigFlag(group, hidden=False)
+    flags.AddLabelsFlag(group, for_node_pool=True, hidden=True)
     flags.AddNodeLabelsFlag(group, for_node_pool=True, for_update=True)
     flags.AddNodeTaintsFlag(group, for_node_pool=True, for_update=True)
     flags.AddTagsNodePoolUpdate(group)
@@ -125,6 +126,7 @@ class Update(base.UpdateCommand):
         max_surge_upgrade=args.max_surge_upgrade,
         max_unavailable_upgrade=args.max_unavailable_upgrade,
         system_config_from_file=args.system_config_from_file,
+        labels=args.labels,
         node_labels=args.node_labels,
         node_taints=args.node_taints,
         tags=args.tags,
@@ -240,6 +242,7 @@ class UpdateBeta(Update):
 
     flags.AddSystemConfigFlag(group, hidden=False)
 
+    flags.AddLabelsFlag(group, for_node_pool=True, hidden=True)
     flags.AddNodeLabelsFlag(group, for_node_pool=True, for_update=True)
     flags.AddNodeTaintsFlag(group, for_node_pool=True, for_update=True)
     flags.AddTagsNodePoolUpdate(group)
@@ -274,6 +277,7 @@ class UpdateBeta(Update):
         max_surge_upgrade=args.max_surge_upgrade,
         max_unavailable_upgrade=args.max_unavailable_upgrade,
         system_config_from_file=args.system_config_from_file,
+        labels=args.labels,
         node_labels=args.node_labels,
         node_taints=args.node_taints,
         tags=args.tags,
@@ -327,6 +331,7 @@ class UpdateAlpha(Update):
 
     flags.AddSystemConfigFlag(group, hidden=False)
 
+    flags.AddLabelsFlag(group, for_node_pool=True, hidden=True)
     flags.AddNodeLabelsFlag(group, for_node_pool=True, for_update=True)
     flags.AddNodeTaintsFlag(group, for_node_pool=True, for_update=True)
     flags.AddTagsNodePoolUpdate(group)
@@ -361,6 +366,7 @@ class UpdateAlpha(Update):
         max_surge_upgrade=args.max_surge_upgrade,
         max_unavailable_upgrade=args.max_unavailable_upgrade,
         system_config_from_file=args.system_config_from_file,
+        labels=args.labels,
         node_labels=args.node_labels,
         node_taints=args.node_taints,
         tags=args.tags,

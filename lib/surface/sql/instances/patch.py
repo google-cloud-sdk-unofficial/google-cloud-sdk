@@ -253,11 +253,12 @@ def AddBetaArgs(parser):
   flags.AddAllocatedIpRangeName(parser)
   labels_util.AddUpdateLabelsFlags(parser, enable_clear=True)
   flags.AddEnableGooglePrivatePath(parser)
-
-
-def AddAlphaArgs(parser):
-  """Adds alpha args and flags to the parser."""
   flags.AddConnectorEnforcement(parser)
+
+
+def AddAlphaArgs(unused_parser):
+  """Adds alpha args and flags to the parser."""
+  pass
 
 
 def RunBasePatchCommand(args, release_track):

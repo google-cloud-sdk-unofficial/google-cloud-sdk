@@ -33,7 +33,7 @@ from googlecloudsdk.core.resource import resource_projection_spec
 class List(base.ListCommand):
   """List target TCP proxies."""
 
-  _enable_region_target_tcp_proxy = False
+  _enable_region_target_tcp_proxy = True
 
   @classmethod
   def Args(cls, parser):

@@ -39,6 +39,10 @@ EXAMPLES = """\
 
         $ {command} STREAM --location=us-central1 --display-name=my-stream --source=source --oracle-source-config=source_config.json --destination=destination --bigquery-destination-config=destination_config.json --backfill-none
 
+    To create a stream with a PostgreSQL source and a BigQuery destination:
+
+        $ {command} STREAM --location=us-central1 --display-name=my-stream --source=source --postgresql-source-config=source_config.json --destination=destination --bigquery-destination-config=destination_config.json --backfill-none
+
    """
 EXAMPLES_BETA = """\
     To create a stream with an Oracle source and a Google Cloud Storage destination:
@@ -67,7 +71,7 @@ class Create(base.Command):
       release_track: Some arguments are added based on the command release
         track.
     """
-    resource_args.AddStreamResourceArg(parser, 'to create', release_track)
+    resource_args.AddStreamResourceArg(parser, 'create', release_track)
 
     streams_flags.AddDisplayNameFlag(parser)
     streams_flags.AddBackfillStrategyGroup(parser)

@@ -28,14 +28,28 @@ from googlecloudsdk.core.log import logging
 PRODUCT_NAME = 'Google Cloud Firestore Native'
 LOCATION_HELP_TEXT = (
     'The location to create the {product_name} database within. Available '
-    'databases are listed at '
+    'locations are listed at '
     'https://cloud.google.com/firestore/docs/locations.'.format(
         product_name=PRODUCT_NAME))
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class CreateAlpha(base.Command):
-  """Create a Google Cloud Firestore Native database via Firestore API."""
+  """Create a Google Cloud Firestore Native database via Firestore API.
+
+  'EXAMPLES':
+  To create Cloud Firestore Native database in nam5.
+
+      $ {command} --location=nam5
+
+  To create Cloud Datastore Mode database in us-east1.
+
+      $ {command} --location=us-east1 --type=datastore-mode
+
+  To create Cloud Datastore Mode database in us-east1 with a databaseId foo.
+
+      $ {command} foo --location=us-east1 --type=datastore-mode
+  """
 
   def DatabaseType(self, database_type):
     if database_type == 'firestore-native':
@@ -49,17 +63,33 @@ class CreateAlpha(base.Command):
 
   def Run(self, args):
     project = properties.VALUES.core.project.Get(required=True)
-    return admin_api.CreateDatabase(project, args.location,
+    return admin_api.CreateDatabase(project, args.location, args.database,
                                     self.DatabaseType(args.type))
 
   @staticmethod
   def Args(parser):
-    parser.add_argument('--location', help=LOCATION_HELP_TEXT)
+    parser.add_argument('--location', help=LOCATION_HELP_TEXT, required=True)
     parser.add_argument(
         '--type',
         help='The type of the database.',
         default='firestore-native',
         choices=['firestore-native', 'datastore-mode'],
+    )
+    parser.add_argument(
+        'database',
+        help="""The ID to use for the database, which will become the final
+        component of the database's resource name. If database ID is not
+        provided, (default) will be used as database ID.
+
+        This value should be 4-63 characters. Valid characters are /[a-z][0-9]-/
+        with first character a letter and the last a letter or a number. Must
+        not be UUID-like /[0-9a-f]{8}(-[0-9a-f]{4}){3}-[0-9a-f]{12}/.
+
+        Using "(default)" database ID is also allowed.
+        """,
+        type=str,
+        nargs='?',
+        default='(default)',
     )
 
 

@@ -22,6 +22,12 @@ arguments:
   - arg_name: type
     api_field: addressGroup.type
     help_text: Type of the address group.
+    required: true
+    choices:
+    - arg_value: ipv4
+      enum_value: ipv4
+    - arg_value: ipv6
+      enum_value: ipv6
   - arg_name: capacity
     api_field: addressGroup.capacity
     help_text: Capacity of the address group.

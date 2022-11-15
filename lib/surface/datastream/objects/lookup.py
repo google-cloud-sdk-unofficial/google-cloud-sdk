@@ -35,6 +35,10 @@ EXAMPLES = """\
     To lookup an existing Oracle stream object:
 
         $ {command} --stream=my-stream --location=us-central1 --oracle-schema=my-schema --oracle-table=my-table
+
+    To lookup an existing PostgreSQL stream object:
+
+        $ {command} --stream=my-stream --location=us-central1 --postgresql-schema=my-schema --postgresql-table=my-table
    """
 
 
@@ -56,6 +60,7 @@ class Lookup(base.Command):
     object_identifier_parser = parser.add_group(required=True, mutex=True)
     so_flags.AddOracleObjectIdentifier(object_identifier_parser)
     so_flags.AddMysqlObjectIdentifier(object_identifier_parser)
+    so_flags.AddPostgresqlObjectIdentifier(object_identifier_parser)
 
   def Run(self, args):
     """Lookup a Datastream stream object.

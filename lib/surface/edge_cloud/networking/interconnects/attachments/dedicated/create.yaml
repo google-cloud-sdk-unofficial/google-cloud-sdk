@@ -7,7 +7,7 @@
     examples: |
       To create a dedicated interconnect attachment called 'my-attachment' in edge zone 'us-central1-edge-den1', run:
 
-        $ {command} my-attachment --location=us-central1 --zone=us-central1-edge-den1 --interconnect=INTERCONNECT-LINK1 --router=my-edge-router --vlan-id=200 --mtu=1500
+        $ {command} my-attachment --location=us-central1 --zone=us-central1-edge-den1 --interconnect=INTERCONNECT-LINK1 --network=my-edge-network --vlan-id=200 --mtu=1500
 
   request:
     collection: edgenetwork.projects.locations.zones.interconnectAttachments
@@ -30,9 +30,16 @@
         The underlying interconnect object that this attachment's traffic will traverse through.
     - arg_name: router
       api_field: interconnectAttachment.router
-      required: true
+      hidden: true
+      action:
+        deprecated:
+          warn: Flag {flag_name} is deprecated. Use --network instead.
       help_text: |
         The router to use for dynamic routing.
+    - arg_name: network
+      api_field: interconnectAttachment.network
+      help_text: |
+        The network to use for dynamic routing.
     - arg_name: mtu
       api_field: interconnectAttachment.mtu
       type: int

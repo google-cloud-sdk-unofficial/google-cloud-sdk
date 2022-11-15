@@ -32,6 +32,7 @@ from googlecloudsdk.command_lib.container.fleet import exclusivity_util
 from googlecloudsdk.command_lib.container.fleet import kube_util
 from googlecloudsdk.command_lib.container.fleet import resources
 from googlecloudsdk.command_lib.container.fleet import util as hub_util
+from googlecloudsdk.command_lib.container.fleet.memberships import gke_util
 from googlecloudsdk.command_lib.util.apis import arg_utils
 from googlecloudsdk.core import exceptions
 from googlecloudsdk.core import log
@@ -43,6 +44,15 @@ SERVICE_ACCOUNT_KEY_FILE_FLAG = '--service-account-key-file'
 DOCKER_CREDENTIAL_FILE_FLAG = '--docker-credential-file'
 
 
+def _ValidateConnectAgentCredentialFlags(args):
+  enable_workload_identity = getattr(args, 'enable_workload_identity', False)
+  if not args.service_account_key_file and not enable_workload_identity:
+    raise exceptions.Error(
+        '--enable-workload-identity --service-account-key-file',
+        'One of (--enable-workload-identity | --service-account-key-file) ' +
+        'must be specified for Connect agent authentication.')
+
+
 class Register(base.CreateCommand):
   r"""Register a cluster with a fleet.
 
@@ -51,36 +61,34 @@ class Register(base.CreateCommand):
     1. Creating a Fleet Membership resource corresponding to the cluster.
     2. Adding in-cluster Kubernetes Resources that make the cluster exclusive
        to one fleet.
-    3. Installing the Connect Agent into this cluster.
+    3. Installing the Connect agent into this cluster (optional for GKE).
 
   A successful registration implies that the cluster is now exclusive to a
-  single fleet.
+  single Fleet. If the cluster is already registered to another Fleet, the
+  registration will not be successful.
 
-  For more information about Connect Agent, go to:
+  To register a GKE cluster, use `--gke-cluster` or `--gke-uri` flag (no
+  `--kubeconfig` flag is required). Connect agent will not be installed by
+  default for GKE clusters. To install it, specify `--install-connect-agent`.
+
+  To register a non-GKE or GKE On-Prem cluster, use `--context` flag (with an
+  optional `--kubeconfig` flag). Connect agent will always be installed for
+  non-GKE clusters.
+
+  If Connect agent is to be installed, its authentication needs to be configured
+  by `--enable-workload-identity` or `--service-account-key-file`. For the
+  latter case, the corresponding service account must have been granted
+  `gkehub.connect` permissions. For more information about Connect agent, go to:
   https://cloud.google.com/anthos/multicluster-management/connect/overview/
 
-  To register a non-GKE or GKE On-Prem cluster use --context flag (with an
-  optional --kubeconfig flag).
-
-  To register a GKE cluster use --gke-cluster or --gke-uri flag (no --kubeconfig
-  flag is required).
-
-  In all cases, the Connect Agent that is installed in the target cluster must
-  authenticate to Google using a `--service-account-key-file` that corresponds
-  to a service account that has been granted `gkehub.connect` permissions.
-
-  If the cluster is already registered to another fleet, the registration is not
-  successful.
-
   Rerunning this command against the same cluster with the same MEMBERSHIP_NAME
-  and target fleet is successful and upgrades the Connect Agent if a new agent
-  is
-  available.
+  and target fleet is successful, and will upgrade the Connect agent if it is
+  supposed to be installed and a newer version is avaible.
 
   ## EXAMPLES
 
     Register a non-GKE or GKE On-Prem cluster referenced from a specific
-    kubeconfig file, and install the Connect Agent:
+    kubeconfig file, and install the Connect agent:
 
       $ {command} my-cluster \
         --context=my-cluster-context \
@@ -88,14 +96,14 @@ class Register(base.CreateCommand):
         --service-account-key-file=/tmp/keyfile.json
 
     Register a non-GKE or GKE On-Prem cluster referenced from the default
-    kubeconfig file, and install the Connect Agent:
+    kubeconfig file, and install the Connect agent:
 
       $ {command} my-cluster \
         --context=my-cluster-context \
         --service-account-key-file=/tmp/keyfile.json
 
     Register a non-GKE or GKE On-Prem cluster, and install a specific version
-    of the Connect Agent:
+    of the Connect agent:
 
       $ {command} my-cluster \
         --context=my-cluster-context \
@@ -103,50 +111,51 @@ class Register(base.CreateCommand):
         --service-account-key-file=/tmp/keyfile.json
 
     Register a non-GKE or GKE On-Prem cluster and output a manifest that can be
-    used to install the Connect Agent:
+    used to install the Connect agent:
 
       $ {command} my-cluster \
         --context=my-cluster-context \
         --manifest-output-file=/tmp/manifest.yaml \
         --service-account-key-file=/tmp/keyfile.json
 
-    Register a GKE cluster referenced from a GKE URI, and install the Connect
-    Agent:
+    Register a GKE cluster referenced from a GKE URI:
+
+      $ {command} my-cluster \
+        --gke-uri=my-cluster-gke-uri
+
+   Register a GKE cluster referenced from a GKE URI, and install the Connect
+   agent using service account key file:
 
       $ {command} my-cluster \
         --gke-uri=my-cluster-gke-uri \
+        --install-connect-agent \
         --service-account-key-file=/tmp/keyfile.json
 
-    Register a GKE cluster referenced from a GKE Cluster location and name, and
-    install the Connect Agent:
+    Register a GKE cluster first, and install the Connect agent later.
+
+      $ {command} my-cluster \
+        --gke-cluster=my-cluster-region-or-zone/my-cluster
 
       $ {command} my-cluster \
         --gke-cluster=my-cluster-region-or-zone/my-cluster \
-        --service-account-key-file=/tmp/keyfile.json
+        --install-connect-agent \
+        --enable-workload-identity
 
     Register a GKE cluster, and install a specific version of the Connect
-    Agent:
-
-      $ {command} my-cluster \
-        --gke-uri=my-cluster-gke-uri \
-        --version=gkeconnect_20190802_02_00 \
-        --service-account-key-file=/tmp/keyfile.json
+    agent:
 
       $ {command} my-cluster \
         --gke-cluster=my-cluster-region-or-zone/my-cluster \
+        --install-connect-agent \
         --version=gkeconnect_20190802_02_00 \
         --service-account-key-file=/tmp/keyfile.json
 
     Register a GKE cluster and output a manifest that can be used to install the
-    Connect Agent:
+    Connect agent:
 
       $ {command} my-cluster \
         --gke-uri=my-cluster-gke-uri \
-        --manifest-output-file=/tmp/manifest.yaml \
-        --service-account-key-file=/tmp/keyfile.json
-
-      $ {command} my-cluster \
-        --gke-cluster=my-cluster-region-or-zone/my-cluster \
+        --install-connect-agent \
         --manifest-output-file=/tmp/manifest.yaml \
         --service-account-key-file=/tmp/keyfile.json
   """
@@ -178,10 +187,20 @@ class Register(base.CreateCommand):
       )
     hub_util.AddClusterConnectionCommonArgs(parser)
     parser.add_argument(
+        '--install-connect-agent',
+        action='store_true',
+        help=textwrap.dedent("""\
+          If set to True for a GKE cluster, Connect agent will be installed in
+          the cluster. No-op for Non-GKE clusters, where Connect agent will
+          always be installed.
+          """),
+        default=False,
+    )
+    parser.add_argument(
         '--manifest-output-file',
         type=str,
         help=textwrap.dedent("""\
-            The full path of the file into which the Connect Agent installation
+            The full path of the file into which the Connect agent installation
             manifest should be stored. If this option is provided, then the
             manifest will be written to this file and will not be deployed into
             the cluster by gcloud, and it will need to be deployed manually.
@@ -201,7 +220,7 @@ class Register(base.CreateCommand):
         type=str,
         hidden=True,
         help=textwrap.dedent("""\
-          The version of the Connect Agent to install/upgrade if not using the
+          The version of the Connect agent to install/upgrade if not using the
           latest connect version.
           """),
     )
@@ -212,7 +231,7 @@ class Register(base.CreateCommand):
         help=textwrap.dedent("""\
           The credentials to be used if a private registry is provided and auth
           is required. The contents of the file will be stored into a Secret and
-          referenced from the imagePullSecrets of the Connect Agent workload.
+          referenced from the imagePullSecrets of the Connect agent workload.
           """),
     )
     parser.add_argument(
@@ -220,7 +239,7 @@ class Register(base.CreateCommand):
         type=str,
         hidden=True,
         help=textwrap.dedent("""\
-        The registry to pull GKE Connect Agent image if not using gcr.io/gkeconnect.
+        The registry to pull GKE Connect agent image if not using gcr.io/gkeconnect.
           """),
     )
     parser.add_argument(
@@ -238,7 +257,7 @@ class Register(base.CreateCommand):
           hidden=True,
           default=None,
           action='store_true')
-    credentials = parser.add_mutually_exclusive_group(required=True)
+    credentials = parser.add_mutually_exclusive_group()
     credentials.add_argument(
         SERVICE_ACCOUNT_KEY_FILE_FLAG,
         type=str,
@@ -317,6 +336,30 @@ class Register(base.CreateCommand):
       api_adapter = gke_api_adapter.NewAPIAdapter('v1beta1')
     else:
       api_adapter = gke_api_adapter.NewAPIAdapter('v1')
+
+    location = 'global'
+    if resources.UseRegionalMemberships(
+        self.ReleaseTrack()) or (resources.InProdRegionalAllowlist(
+            project, self.ReleaseTrack())):
+      # Allow attempting to override location for register
+      # e.g. in case of global GKE cluster memberships
+      if args.location:
+        location = args.location
+      elif hub_util.LocationFromGKEArgs(args):
+        location = hub_util.LocationFromGKEArgs(args)
+
+    # Register GKE cluster with simple Add-to-Hub API call. Connect agent will
+    # not get installed. And Kubernetes Client is not needed.
+    gke_cluster_resource_link, gke_cluster_uri = gke_util.GetGKEClusterResoureLinkAndURI(
+        gke_uri=args.GetValue('gke_uri'),
+        gke_cluster=args.GetValue('gke_cluster'))
+    if gke_cluster_resource_link and not args.GetValue('install_connect_agent'):
+      return self._RegisterGKE(gke_cluster_resource_link, gke_cluster_uri,
+                               project, location, args)
+
+    # Register non-GKE cluster, or GKE with --install-connect-agent.
+    # It will require a kube client.
+    _ValidateConnectAgentCredentialFlags(args)
     with kube_util.KubernetesClient(
         api_adapter=api_adapter,
         gke_uri=getattr(args, 'gke_uri', None),
@@ -331,15 +374,6 @@ class Register(base.CreateCommand):
         enable_workload_identity=getattr(args, 'enable_workload_identity',
                                          False),
     ) as kube_client:
-      location = 'global'
-      if resources.UseRegionalMemberships(self.ReleaseTrack()) or (
-          resources.InProdRegionalAllowlist(project, self.ReleaseTrack())):
-        # Allow attempting to override location for register
-        # e.g. in case of global GKE cluster memberships
-        if args.location:
-          location = args.location
-        elif hub_util.LocationFromGKEArgs(args):
-          location = hub_util.LocationFromGKEArgs(args)
       kube_client.CheckClusterAdminPermissions()
       kube_util.ValidateClusterIdentifierFlags(kube_client, args)
       if self.ReleaseTrack() is not base.ReleaseTrack.GA:
@@ -349,7 +383,7 @@ class Register(base.CreateCommand):
       # to catch invalid files before performing mutating operations.
       # Service Account key file is required if Workload Identity is not
       # enabled.
-      # If Workload Identity is enabled, then the Connect Agent uses
+      # If Workload Identity is enabled, then the Connect agent uses
       # a Kubernetes Service Account token instead and hence a Google Cloud
       # Platform Service Account key is not required.
       service_account_key_data = ''
@@ -536,9 +570,9 @@ class Register(base.CreateCommand):
                                       docker_credential_data, resource_name,
                                       self.ReleaseTrack())
       except Exception as e:
-        log.status.Print('Error in installing the Connect Agent: {}'.format(e))
+        log.status.Print('Error in installing the Connect agent: {}'.format(e))
         # In case of a new membership, we need to clean up membership and
-        # resources if we failed to install the Connect Agent.
+        # resources if we failed to install the Connect agent.
         if not already_exists:
           api_util.DeleteMembership(resource_name, self.ReleaseTrack())
           exclusivity_util.DeleteMembershipResources(kube_client)
@@ -636,3 +670,45 @@ class Register(base.CreateCommand):
     res = api_util.GenerateExclusivityManifest(crd_manifest, cr_manifest,
                                                membership_ref)
     kube_client.ApplyMembership(res.crdManifest, res.crManifest)
+
+  def _RegisterGKE(self, gke_cluster_resource_link, gke_cluster_uri, project,
+                   location, args):
+    """Register a GKE cluster without installing Connect agent."""
+    obj = None
+    issuer_url = None
+    if args.enable_workload_identity:
+      issuer_url = gke_cluster_uri
+    try:
+      obj = api_util.CreateMembership(
+          project=project,
+          membership_id=args.MEMBERSHIP_NAME,
+          description=args.MEMBERSHIP_NAME,
+          location=location,
+          gke_cluster_self_link=gke_cluster_resource_link,
+          external_id=None,
+          release_track=self.ReleaseTrack(),
+          issuer_url=issuer_url,
+          oidc_jwks=None,
+          api_server_version=None)
+    except apitools_exceptions.HttpConflictError as e:
+      error = core_api_exceptions.HttpErrorPayload(e)
+      if error.status_description != 'ALREADY_EXISTS':
+        # If the error is not due to the object already existing, re-raise.
+        raise
+      resource_name = api_util.MembershipRef(project, location,
+                                             args.MEMBERSHIP_NAME)
+      obj = api_util.GetMembership(resource_name, self.ReleaseTrack())
+      if obj.endpoint.gkeCluster.resourceLink == gke_cluster_resource_link:
+        log.status.Print(
+            'Membership [{}] already registered with the cluster [{}] in the Fleet.'
+            .format(resource_name, obj.endpoint.gkeCluster.resourceLink))
+      else:
+        raise exceptions.Error(
+            'membership [{}] already exists in the Fleet '
+            'with another cluster link [{}]. If this operation is '
+            'intended, please delete the membership and register '
+            'again.'.format(resource_name,
+                            obj.endpoint.gkeCluster.resourceLink))
+
+    log.status.Print('Finished registering to the Fleet.')
+    return obj

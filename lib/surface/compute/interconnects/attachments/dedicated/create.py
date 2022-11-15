@@ -124,7 +124,8 @@ class Create(base.CreateCommand):
         cloud_router_ipv6_interface_id=getattr(
             args, 'cloud_router_ipv6_interface_id', None),
         customer_router_ipv6_interface_id=getattr(
-            args, 'customer_router_ipv6_interface_id', None))
+            args, 'customer_router_ipv6_interface_id', None),
+        subnet_length=getattr(args, 'subnet_length', None))
 
   def Epilog(self, resources_were_displayed):
     message = ('You must configure your Cloud Router with an interface '
@@ -148,8 +149,32 @@ class CreateAlpha(Create):
 
   @classmethod
   def Args(cls, parser):
-    super(CreateAlpha, cls).Args(parser)
+    cls.INTERCONNECT_ARG = (
+        interconnect_flags.InterconnectArgumentForOtherResource(
+            'The interconnect for the interconnect attachment'))
+    cls.INTERCONNECT_ARG.AddArgument(parser)
+
+    cls.ROUTER_ARG = router_flags.RouterArgumentForOtherResources()
+    cls.ROUTER_ARG.AddArgument(parser)
+
+    cls.INTERCONNECT_ATTACHMENT_ARG = (
+        attachment_flags.InterconnectAttachmentArgument())
+    cls.INTERCONNECT_ATTACHMENT_ARG.AddArgument(parser, operation_type='create')
+    attachment_flags.AddDescription(parser)
+    attachment_flags.AddAdminEnabled(parser, default_behavior=True)
+    attachment_flags.AddVlan(parser)
+    attachment_flags.AddBandwidth(parser, required=False)
+    attachment_flags.AddMtu(parser)
+    attachment_flags.AddEncryption(parser)
+    attachment_flags.GetIpsecInternalAddressesFlag().AddToParser(parser)
+    attachment_flags.AddStackType(parser)
+    attachment_flags.AddCandidateIpv6Subnets(parser)
+    attachment_flags.AddCloudRouterIpv6InterfaceId(parser)
+    attachment_flags.AddCustomerRouterIpv6InterfaceId(parser)
+
+    attachment_flags.AddCandidateSubnetsAlpha(parser)
     attachment_flags.AddDryRun(parser)
+    attachment_flags.AddSubnetLength(parser)
 
   def Run(self, args):
     """See base.CreateCommand."""

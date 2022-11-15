@@ -18,6 +18,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+from googlecloudsdk.command_lib.container.fleet import resources
 from googlecloudsdk.command_lib.container.fleet.config_management import utils
 from googlecloudsdk.command_lib.container.fleet.features import base
 from googlecloudsdk.core import exceptions
@@ -48,11 +49,14 @@ class Apply(base.UpdateCommand):
 
   @classmethod
   def Args(cls, parser):
-    parser.add_argument(
-        '--membership',
-        type=str,
-        help='The Membership name provided during registration.',
-    )
+    if resources.UseRegionalMemberships(cls.ReleaseTrack()):
+      resources.AddMembershipResourceArg(parser)
+    else:
+      parser.add_argument(
+          '--membership',
+          type=str,
+          help='The Membership name provided during registration.',
+      )
     parser.add_argument(
         '--config',
         type=str,
@@ -70,37 +74,48 @@ class Apply(base.UpdateCommand):
                              e)
     _validate_meta(loaded_cm)
 
-    # make sure a valid membership is selected
-    memberships = base.ListMemberships()
-    if not memberships:
-      raise exceptions.Error('No Memberships available in the fleet.')
-    # User should choose an existing membership if not provide one
-    membership = None
-    if not args.membership:
-      index = console_io.PromptChoice(
-          options=memberships,
-          message='Please specify a membership to apply {}:\n'.format(
-              args.config))
-      membership = memberships[index]
+    if resources.UseRegionalMemberships(self.ReleaseTrack()):
+      membership = base.ParseMembership(
+          args, prompt=True, autoselect=True, search=True)
     else:
-      membership = args.membership
-      if membership not in memberships:
-        raise exceptions.Error(
-            'Membership {} is not in the fleet.'.format(membership))
+      # make sure a valid membership is selected
+      memberships = base.ListMemberships()
+      if not memberships:
+        raise exceptions.Error('No Memberships available in the fleet.')
+      # User should choose an existing membership if not provide one
+      if not args.membership:
+        index = console_io.PromptChoice(
+            options=memberships,
+            message='Please specify a membership to apply {}:\n'.format(
+                args.config))
+        membership = memberships[index]
+      else:
+        membership = args.membership
+        if membership not in memberships:
+          raise exceptions.Error(
+              'Membership {} is not in the fleet.'.format(membership))
 
     config_sync = _parse_config_sync(loaded_cm, self.messages)
     policy_controller = _parse_policy_controller(loaded_cm, self.messages)
     hierarchy_controller_config = _parse_hierarchy_controller_config(
         loaded_cm, self.messages)
-    version = self._get_backfill_version(
-        membership) if not args.version else args.version
+    if resources.UseRegionalMemberships(self.ReleaseTrack()):
+      version = self._get_backfill_version(
+          membership) if not args.version else args.version
+    else:
+      version = self._get_backfill_version(
+          self.MembershipResourceName(
+              membership)) if not args.version else args.version
     spec = self.messages.MembershipFeatureSpec(
         configmanagement=self.messages.ConfigManagementMembershipSpec(
             version=version,
             configSync=config_sync,
             policyController=policy_controller,
             hierarchyController=hierarchy_controller_config))
-    spec_map = {self.MembershipResourceName(membership): spec}
+    if resources.UseRegionalMemberships(self.ReleaseTrack()):
+      spec_map = {membership: spec}
+    else:
+      spec_map = {self.MembershipResourceName(membership): spec}
 
     # UpdateFeature uses patch method to update membership_configs map,
     # there's no need to get the existing feature spec
@@ -108,18 +123,18 @@ class Apply(base.UpdateCommand):
         membershipSpecs=self.hubclient.ToMembershipSpecs(spec_map))
     self.Update(['membership_specs'], patch)
 
-  def _get_backfill_version(self, membership_id):
+  def _get_backfill_version(self, membership):
     """Get the value the version field in FeatureSpec should be set to.
 
     Args:
-      membership_id: The membership short name whose Spec will be backfilled.
+      membership: The full membership  name whose Spec will be backfilled.
 
     Returns:
       version: A string denoting the version field in MembershipConfig
     Raises: Error, if retrieving FeatureSpec of FeatureState fails
     """
     f = self.GetFeature()
-    return utils.get_backfill_version_from_feature(f, membership_id)
+    return utils.get_backfill_version_from_feature(f, membership)
 
 
 def _validate_meta(configmanagement):

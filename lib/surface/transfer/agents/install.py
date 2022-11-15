@@ -56,16 +56,18 @@ which Transfer Service will look for in your system.
 Note that the credentials location will be mounted to the agent container.
 """
 MOUNT_DIRECTORIES_HELP_TEXT = """
-If you want to grant agents access to specific parts of your filesystem instead
-of the entire filesystem, specify which directory paths to mount to the agent
-container. Multiple paths must be separated by commas with no spaces (e.g.,
-`--mount-directories=/system/path/to/dir1,/path/to/dir2`). When mounting
-specific directories, gcloud transfer will also mount a directory for logs
-(either /tmp or what you've specified for --logs-directory) and your Google
-credentials file for agent authentication.
+If you want to grant agents access to specific parts of your filesystem
+instead of the entire filesystem, specify which directory paths to
+mount to the agent container. Multiple paths must be separated by
+commas with no spaces (e.g.,
+--mount-directories=/system/path/to/dir1,/path/to/dir2). When mounting
+specific directories, gcloud transfer will also mount a directory for
+logs (either /tmp or what you've specified for --logs-directory) and
+your Google credentials file for agent authentication.
 
-If this flag is not specified, gcloud transfer will mount your entire filesystem
-to the agent container.
+It is strongly recommended that you use this flag. If this flag isn't specified,
+gcloud transfer will mount your entire filesystem to the agent container and
+give the agent root access.
 """
 MISSING_PROJECT_ERROR_TEXT = """
 Could not find project ID. Try adding the project flag: --project=[project-id]
@@ -197,15 +199,19 @@ def _get_docker_command(args, project, creds_file_path):
   expanded_logs_directory_path = _expand_path(args.logs_directory)
   if args.mount_directories:
     # Mount mandatory directories.
-    base_docker_command.extend([
+    mount_flags = [
         '-v={}:/tmp'.format(expanded_logs_directory_path),
         '-v={creds_file_path}:{creds_file_path}'.format(
             creds_file_path=expanded_creds_file_path),
-    ])
-    # Mount user's custom directories.
-    base_docker_command.extend([
-        '-v={path}:{path}'.format(path=path) for path in args.mount_directories
-    ])
+    ]
+    for path in args.mount_directories:
+      if path == '/':
+        # Docker can't handle mounting to root.
+        mount_flags.append('-v=/:/transfer_root')
+      else:
+        # Mount custom directory.
+        mount_flags.append('-v={path}:{path}'.format(path=path))
+    base_docker_command.extend(mount_flags)
   else:
     # Mount entire filesystem by default.
     base_docker_command.append('-v=/:/transfer_root')

@@ -44,7 +44,7 @@
     - arg_name: description
       api_field: router.description
       help_text: |
-        An optional, textual description for the subnet.
+        An optional, textual description for the router.
     labels:
       api_field: router.labels
 

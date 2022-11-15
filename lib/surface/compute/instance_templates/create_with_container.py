@@ -219,9 +219,20 @@ class CreateWithContainer(base.CreateCommand):
                 image_uri,
                 match_container_mount_disks=False):
     boot_disk_size_gb = self._GetBootDiskSize(args)
-    return self._CreateDiskMessages(holder, args, boot_disk_size_gb, image_uri,
-                                    instance_template_ref.project,
-                                    match_container_mount_disks)
+    # create boot disk through args.boot_disk_device_name
+    create_boot_disk = not (
+        instance_utils.UseExistingBootDisk((args.disk or []) +
+                                           (args.create_disk or [])))
+    return instance_template_utils.CreateDiskMessages(
+        args,
+        client,
+        holder.resources,
+        instance_template_ref.project,
+        image_uri,
+        boot_disk_size_gb,
+        create_boot_disk=create_boot_disk,
+        match_container_mount_disks=match_container_mount_disks,
+    )
 
   def Run(self, args):
     """Issues an InstanceTemplates.Insert request.
@@ -304,50 +315,6 @@ class CreateWithContainer(base.CreateCommand):
 
     return client.MakeRequests([(client.apitools_client.instanceTemplates,
                                  'Insert', request)])
-
-  def _CreateDiskMessages(self,
-                          holder,
-                          args,
-                          boot_disk_size_gb,
-                          image_uri,
-                          project,
-                          match_container_mount_disks=False):
-    """Creates API messages with disks attached to VM instance."""
-    container_mount_disk = (
-        args.container_mount_disk if match_container_mount_disks else [])
-    persistent_disks = (
-        instance_template_utils.CreatePersistentAttachedDiskMessages(
-            holder.client.messages,
-            args.disk or [],
-            container_mount_disk=container_mount_disk))
-    boot_disk_list = [
-        instance_template_utils.CreateDefaultBootAttachedDiskMessage(
-            messages=holder.client.messages,
-            disk_type=args.boot_disk_type,
-            disk_device_name=args.boot_disk_device_name,
-            disk_auto_delete=args.boot_disk_auto_delete,
-            disk_size_gb=boot_disk_size_gb,
-            image_uri=image_uri)
-    ]
-    persistent_create_disks = (
-        instance_template_utils.CreatePersistentCreateDiskMessages(
-            holder.client,
-            holder.resources,
-            project,
-            getattr(args, 'create_disk', []),
-            container_mount_disk=container_mount_disk))
-    local_nvdimms = create_utils.CreateLocalNvdimmMessages(
-        args,
-        holder.resources,
-        holder.client.messages,
-    )
-    local_ssds = create_utils.CreateLocalSsdMessages(
-        args,
-        holder.resources,
-        holder.client.messages,
-    )
-    return (boot_disk_list + persistent_disks + persistent_create_disks +
-            local_nvdimms + local_ssds)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)

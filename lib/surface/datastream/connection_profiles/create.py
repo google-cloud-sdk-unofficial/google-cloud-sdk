@@ -32,9 +32,13 @@ EXAMPLES = """\
 
         $ {command} CONNECTION_PROFILE --location=us-central1 --type=oracle --oracle-password=fakepassword --oracle-username=fakeuser --display-name=my-profile --oracle-hostname=35.188.150.50 --oracle-port=1521 --database-service=ORCL --static-ip-connectivity
 
-    To create a connection profile for Mysql:
+    To create a connection profile for MySQL:
 
         $ {command} CONNECTION_PROFILE --location=us-central1 --type=mysql --mysql-password=fakepassword --mysql-username=fakeuser --display-name=my-profile --mysql-hostname=35.188.150.50 --mysql-port=3306 --static-ip-connectivity
+
+    To create a connection profile for PostgreSQL:
+
+        $ {command} CONNECTION_PROFILE --location=us-central1 --type=postgresql --postgresql-password=fakepassword --postgresql-username=fakeuser --display-name=my-profile --postgresql-hostname=35.188.150.50 --postgresql-port=5432 --postgresql-database=db --static-ip-connectivity
 
     To create a connection profile for Google Cloud Storage:
 
@@ -49,7 +53,7 @@ EXAMPLES_BETA = """\
 
         $ {command} CONNECTION_PROFILE --location=us-central1 --type=oracle --oracle-password=fakepassword --oracle-username=fakeuser --display-name=my-profile --oracle-hostname=35.188.150.50 --oracle-port=1521 --database-service=ORCL --static-ip-connectivity
 
-    To create a connection profile for Mysql:
+    To create a connection profile for MySQL:
 
         $ {command} CONNECTION_PROFILE --location=us-central1 --type=mysql --mysql-password=fakepassword --mysql-username=fakeuser --display-name=my-profile --mysql-hostname=35.188.150.50 --mysql-port=3306 --static-ip-connectivity
 
@@ -85,6 +89,7 @@ class Create(base.Command):
     profile_flags = parser.add_group(mutex=True)
     cp_flags.AddMysqlProfileGroup(profile_flags)
     cp_flags.AddOracleProfileGroup(profile_flags)
+    cp_flags.AddPostgresqlProfileGroup(profile_flags)
     cp_flags.AddGcsProfileGroup(profile_flags, release_track)
     flags.AddLabelsCreateFlags(parser)
 
@@ -113,6 +118,10 @@ class Create(base.Command):
 
     if args.mysql_prompt_for_password:
       args.mysql_password = console_io.PromptPassword('Please Enter Password: ')
+
+    if args.postgresql_prompt_for_password:
+      args.postgresql_password = console_io.PromptPassword(
+          'Please Enter Password: ')
 
     cp_type = (args.type).upper()
     cp_client = connection_profiles.ConnectionProfilesClient()

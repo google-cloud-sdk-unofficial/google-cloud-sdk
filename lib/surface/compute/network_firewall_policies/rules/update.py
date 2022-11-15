@@ -120,6 +120,7 @@ class Update(base.UpdateCommand):
     if args.IsSpecified('src_secure_tags'):
       src_secure_tags = secure_tags_utils.TranslateSecureTagsForFirewallPolicy(
           holder.client, args.src_secure_tags)
+      should_setup_match = True
     if args.IsSpecified('target_secure_tags'):
       target_secure_tags = secure_tags_utils.TranslateSecureTagsForFirewallPolicy(
           holder.client, args.target_secure_tags)

@@ -72,7 +72,7 @@ class Update(base.Command):
         track.
     """
     resource_args.AddStreamResourceArg(
-        parser, 'to update', release_track, required=False)
+        parser, 'update', release_track, required=False)
     streams_flags.AddUpdateMaskFlag(parser)
     streams_flags.AddDisplayNameFlag(parser, required=False)
     streams_flags.AddBackfillStrategyGroup(parser, required=False)

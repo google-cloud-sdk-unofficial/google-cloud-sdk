@@ -86,7 +86,8 @@ class Create(base.CreateCommand):
         partner_name=args.partner_name,
         partner_interconnect=args.partner_interconnect_name,
         partner_portal_url=args.partner_portal_url,
-        validate_only=getattr(args, 'dry_run', None))
+        validate_only=getattr(args, 'dry_run', None),
+        subnet_length=getattr(args, 'subnet_length', None))
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -101,5 +102,21 @@ class CreateAlpha(Create):
 
   @classmethod
   def Args(cls, parser):
-    super(CreateAlpha, cls).Args(parser)
+    cls.INTERCONNECT_ARG = (
+        interconnect_flags.InterconnectArgumentForOtherResource(
+            'The interconnect for the interconnect attachment'))
+    cls.INTERCONNECT_ARG.AddArgument(parser)
+
+    cls.INTERCONNECT_ATTACHMENT_ARG = (
+        attachment_flags.InterconnectAttachmentArgument())
+    cls.INTERCONNECT_ATTACHMENT_ARG.AddArgument(parser, operation_type='create')
+
+    attachment_flags.AddBandwidth(parser, required=True)
+    attachment_flags.AddVlan(parser)
+    attachment_flags.AddPartnerAsn(parser)
+    attachment_flags.AddPartnerMetadata(parser, required=True)
+    attachment_flags.AddPairingKey(parser)
+    attachment_flags.AddDescription(parser)
+    attachment_flags.AddCandidateSubnetsAlpha(parser)
     attachment_flags.AddDryRun(parser)
+    attachment_flags.AddSubnetLength(parser)

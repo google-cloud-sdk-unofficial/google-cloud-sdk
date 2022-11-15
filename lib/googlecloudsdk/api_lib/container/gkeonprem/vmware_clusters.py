@@ -18,9 +18,10 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+from apitools.base.py import encoding
 from apitools.base.py import list_pager
-from googlecloudsdk.api_lib.container.vmware import client
-from googlecloudsdk.api_lib.container.vmware import update_mask
+from googlecloudsdk.api_lib.container.gkeonprem import client
+from googlecloudsdk.api_lib.container.gkeonprem import update_mask
 from googlecloudsdk.command_lib.container.vmware import flags
 
 
@@ -113,6 +114,32 @@ class ClustersClient(client.ClientBase):
         **kwargs)
     return self._service.Patch(req)
 
+  def query_version_config(self, args):
+    kwargs = {
+        'createConfig_adminClusterMembership':
+            self._admin_cluster_membership_name(args),
+        'upgradeConfig_clusterName':
+            self._user_cluster_name(args),
+        'parent':
+            self._location_ref(args).RelativeName(),
+    }
+
+    # This is a workaround for the limitation in apitools with nested messages.
+    encoding.AddCustomJsonFieldMapping(
+        self._messages
+        .GkeonpremProjectsLocationsVmwareClustersQueryVersionConfigRequest,
+        'createConfig_adminClusterMembership',
+        'createConfig.adminClusterMembership')
+    encoding.AddCustomJsonFieldMapping(
+        self._messages
+        .GkeonpremProjectsLocationsVmwareClustersQueryVersionConfigRequest,
+        'upgradeConfig_clusterName',
+        'upgradeConfig.clusterName')
+
+    req = self._messages.GkeonpremProjectsLocationsVmwareClustersQueryVersionConfigRequest(
+        **kwargs)
+    return self._service.QueryVersionConfig(req)
+
   def _vmware_cluster(self, args):
     """Constructs proto message VmwareCluster."""
     kwargs = {
@@ -127,13 +154,70 @@ class ClustersClient(client.ClientBase):
       return self._messages.VmwareCluster(**kwargs)
     return None
 
+  def _vmware_host_ip(self, args):
+    """Constructs proto message VmwareHostIp."""
+    host_ips = flags.Get(args, 'host_ips', [])
+    ret = []
+    for host_ip_group in host_ips:
+      ret.append(
+          self._messages.VmwareHostIp(
+              hostname=host_ip_group.get('hostname', ''),
+              ip=host_ip_group.get('ip', ''),
+          ))
+    return ret
+
+  def _vmware_ip_block(self, args):
+    """Constructs proto message VmwareIpBlock."""
+    kwargs = {
+        'gateway': flags.Get(args, 'gateway'),
+        'netmask': flags.Get(args, 'netmask'),
+        'ips': self._vmware_host_ip(args),
+    }
+    if flags.IsSet(kwargs):
+      return self._messages.VmwareIpBlock(**kwargs)
+    return None
+
+  def _vmware_static_ip_config(self, args):
+    """Constructs proto message VmwareStaticIpConfig."""
+    kwargs = {
+        'ipBlocks': [self._vmware_ip_block(args)],
+    }
+    if flags.IsSet(kwargs):
+      return self._messages.VmwareStaticIpConfig(**kwargs)
+    return None
+
+  def _vmware_dhcp_ip_config(self, args):
+    """Constructs proto message VmwareDhcpIpConfig."""
+    kwargs = {
+        'enabled': flags.Get(args, 'enable-dhcp'),
+    }
+    if flags.IsSet(kwargs):
+      return self._messages.VmwareDhcpIpConfig(**kwargs)
+    return None
+
+  def _vmware_host_config(self, args):
+    """Constructs proto message VmwareHostConfig."""
+    kwargs = {
+        'dnsServers': flags.Get(args, 'dns_servers', []),
+        'ntpServers': flags.Get(args, 'ntp_servers', []),
+    }
+    if flags.IsSet(kwargs):
+      return self._messages.VmwareHostConfig(**kwargs)
+    return None
+
   def _vmware_network_config(self, args):
     """Constructs proto message VmwareNetworkConfig."""
     kwargs = {
         'serviceAddressCidrBlocks':
-            flags.Get(args, 'service_address_cidr_blocks'),
+            flags.Get(args, 'service_address_cidr_blocks', []),
         'podAddressCidrBlocks':
-            flags.Get(args, 'pod_address_cidr_blocks'),
+            flags.Get(args, 'pod_address_cidr_blocks', []),
+        'staticIpConfig':
+            self._vmware_static_ip_config(args),
+        'dhcpIpConfig':
+            self._vmware_dhcp_ip_config(args),
+        'hostConfig':
+            self._vmware_host_config(args),
     }
     if any(kwargs.values()):
       return self._messages.VmwareNetworkConfig(**kwargs)
@@ -144,6 +228,7 @@ class ClustersClient(client.ClientBase):
     kwargs = {
         'f5Config': self._vmware_f5_big_ip_config(args),
         'metalLbConfig': self._vmware_metal_lb_config(args),
+        'manualLbConfig': self._vmware_manual_lb_config(args),
         'vipConfig': self._vmware_vip_config(args),
     }
     if any(kwargs.values()):
@@ -178,6 +263,22 @@ class ClustersClient(client.ClientBase):
     }
     if any(kwargs.values()):
       return self._messages.VmwareMetalLbConfig(**kwargs)
+    return None
+
+  def _vmware_manual_lb_config(self, args):
+    """Constructs proto message VmwareManualLbConfig."""
+    kwargs = {
+        'controlPlaneNodePort':
+            flags.Get(args, 'control_plane_node_port'),
+        'ingressHttpNodePort':
+            flags.Get(args, 'ingress_http_node_port'),
+        'ingressHttpsNodePort':
+            flags.Get(args, 'ingress_https_node_port'),
+        'konnectivityServerNodePort':
+            flags.Get(args, 'konnectivity_server_node_port'),
+    }
+    if flags.IsSet(kwargs):
+      return self._messages.VmwareManualLbConfig(**kwargs)
     return None
 
   def _address_pools(self, args):

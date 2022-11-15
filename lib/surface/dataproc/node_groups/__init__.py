@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""The command group for cloud dataproc GCE node pools."""
+"""The command group for cloud dataproc node groups."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -25,18 +25,18 @@ from googlecloudsdk.calliope import base
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
                     base.ReleaseTrack.GA)
 class GceNodePools(base.Group):
-  """Manage Dataproc GCE node pools.
+  """Manage Dataproc node groups.
 
-  Manage and modify Dataproc GCE node pools created alongside a parent cluster.
+  Manage and modify Dataproc node groups created with a parent cluster.
 
   ## EXAMPLES
 
-  To describe a node pool:
+  To describe a node group:
 
-    $ {command} describe GCE_NODE_POOL_ID --cluster cluster_name --region region
+    $ {command} describe NODE_GROUP_ID --cluster cluster_name --region region
 
-  To resize a node pool:
+  To resize a node group:
 
-    $ {command} resize GCE_NODE_POOL_ID --cluster cluster_name --region region
+    $ {command} resize NODE_GROUP_ID --cluster cluster_name --region region
     --size new_size
   """

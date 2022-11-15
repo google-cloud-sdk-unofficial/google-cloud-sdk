@@ -20,6 +20,7 @@ from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.container.fleet import util
 from googlecloudsdk.calliope import base as gbase
+from googlecloudsdk.command_lib.container.fleet import resources
 from googlecloudsdk.command_lib.container.fleet.config_management import utils
 from googlecloudsdk.command_lib.container.fleet.features import base
 from googlecloudsdk.core import exceptions
@@ -48,36 +49,51 @@ class Fetch(base.DescribeCommand):
 
   @classmethod
   def Args(cls, parser):
-    parser.add_argument(
-        '--membership',
-        type=str,
-        help='The Membership name provided during registration.',
-    )
+    if resources.UseRegionalMemberships(cls.ReleaseTrack()):
+      resources.AddMembershipResourceArg(parser)
+    else:
+      parser.add_argument(
+          '--membership',
+          type=str,
+          help='The Membership name provided during registration.',
+      )
 
   def Run(self, args):
-    # Get Hub memberships (cluster registered with fleet) from GCP Project.
-    memberships = base.ListMemberships()
-    if not memberships:
-      raise exceptions.Error('No Memberships available in the fleet.')
-    # User should choose an existing membership if not provide one
-    membership = None
-    if args.membership is None:
-      index = console_io.PromptChoice(
-          options=memberships,
-          message='Please specify a membership to fetch the config:\n')
-      membership = memberships[index]
+    if resources.UseRegionalMemberships(self.ReleaseTrack()):
+      membership = base.ParseMembership(
+          args, prompt=True, autoselect=True, search=True)
     else:
-      membership = args.membership
-      if membership not in memberships:
-        raise exceptions.Error(
-            'Membership {} is not in the fleet.'.format(membership))
+      # Get Hub memberships (cluster registered with fleet) from GCP Project.
+      memberships = base.ListMemberships()
+      if not memberships:
+        raise exceptions.Error('No Memberships available in the fleet.')
+      # User should choose an existing membership if not provide one
+      if args.membership is None:
+        index = console_io.PromptChoice(
+            options=memberships,
+            message='Please specify a membership to fetch the config:\n')
+        membership = memberships[index]
+      else:
+        membership = args.membership
+        if membership not in memberships:
+          raise exceptions.Error(
+              'Membership {} is not in the fleet.'.format(membership))
 
     f = self.GetFeature()
-    version = utils.get_backfill_version_from_feature(f, membership)
     membership_spec = None
-    for full_name, spec in self.hubclient.ToPyDict(f.membershipSpecs).items():
-      if util.MembershipShortname(full_name) == membership and spec is not None:
-        membership_spec = spec.configmanagement
+    if resources.UseRegionalMemberships(self.ReleaseTrack()):
+      version = utils.get_backfill_version_from_feature(f, membership)
+      for full_name, spec in self.hubclient.ToPyDict(f.membershipSpecs).items():
+        if util.MembershipPartialName(full_name) == util.MembershipPartialName(
+            membership) and spec is not None:
+          membership_spec = spec.configmanagement
+    else:
+      version = utils.get_backfill_version_from_feature(
+          f, self.MembershipResourceName(membership))
+      for full_name, spec in self.hubclient.ToPyDict(f.membershipSpecs).items():
+        if util.MembershipShortname(
+            full_name) == membership and spec is not None:
+          membership_spec = spec.configmanagement
 
     if membership_spec is None:
       log.status.Print('Membership {} not initialized'.format(membership))

@@ -63,8 +63,8 @@ class CreateAlpha(base.CreateCommand):
     messages = cloudbuild_util.GetMessagesModule()
     bbs = cloudbuild_util.BitbucketServerConfigFromArgs(args, False)
     parent = properties.VALUES.core.project.Get(required=True)
-    # Use default region global until Proctor is fully regionalized.
-    bbs_region = cloudbuild_util.DEFAULT_REGION
+    regionprop = properties.VALUES.builds.region.Get()
+    bbs_region = args.region or regionprop or cloudbuild_util.DEFAULT_REGION
     # Get the parent project ref
     parent_resource = resources.REGISTRY.Create(
         collection='cloudbuild.projects.locations',

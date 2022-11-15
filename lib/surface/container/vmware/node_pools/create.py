@@ -18,8 +18,8 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
-from googlecloudsdk.api_lib.container.vmware import node_pools as apis
-from googlecloudsdk.api_lib.container.vmware import operations
+from googlecloudsdk.api_lib.container.gkeonprem import operations
+from googlecloudsdk.api_lib.container.gkeonprem import vmware_node_pools as apis
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.container.vmware import constants
 from googlecloudsdk.command_lib.container.vmware import flags
@@ -51,10 +51,10 @@ class Create(base.CreateCommand):
     flags.AddNodePoolResourceArg(parser, 'to create')
     flags.AddValidationOnly(parser, hidden=True)
     base.ASYNC_FLAG.AddToParser(parser)
-    flags.AddReplicas(parser)
-    flags.AddImageType(parser, True)
-    flags.AddEnableLoadBalancer(parser)
-    flags.AddAutoscaling(parser, True)
+    flags.AddNodePoolDisplayName(parser)
+    flags.AddAnnotations(parser)
+    flags.AddVmwareNodePoolAutoscalingConfig(parser, for_update=False)
+    flags.AddVmwareNodeConfig(parser, for_update=False)
 
   def Run(self, args):
     """Runs the create command.

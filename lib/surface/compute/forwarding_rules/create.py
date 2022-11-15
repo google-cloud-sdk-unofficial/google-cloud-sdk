@@ -598,7 +598,7 @@ class Create(base.CreateCommand):
   _support_l3_default = True
   _support_source_ip_range = False
   _support_disable_automate_dns_zone = True
-  _support_regional_tcp_proxy = False
+  _support_regional_tcp_proxy = True
 
   @classmethod
   def Args(cls, parser):

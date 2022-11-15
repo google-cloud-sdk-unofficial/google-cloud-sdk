@@ -25,19 +25,25 @@ from googlecloudsdk.command_lib.dataplex import resource_args
 from googlecloudsdk.command_lib.iam import iam_util
 
 
-@base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.GA)
 class SetIamPolicy(base.Command):
-  """Set an IAM policy binding for a Dataplex Environment."""
+  """Set an IAM policy binding for a Dataplex Environment as defined in a JSON or YAML file.
 
+  See https://cloud.google.com/iam/docs/managing-policies for details of
+    the policy file format and contents.
+  """
   detailed_help = {
       'EXAMPLES':
           """\
-          To set an IAM policy of an environment, run:
 
-            $ {command} projects/test-project/locations/us-central1/lakes/test-lake/environments/test-environment policy.json
+          The following command will read an IAM policy defined in a JSON file
+          `policy.json` and set it for the Dataplex environment `test-environment` within
+          lake `test-lake` in location `us-central1`:
 
-            policy.json is the relative path to the json file.
+            $ {command} test-environment --project=test-project --location=us-central1 --lake=test-lake policy.json
+
+            where policy.json is the relative path to the json file.
+
           """,
   }
 

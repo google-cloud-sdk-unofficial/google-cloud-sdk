@@ -18,7 +18,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
-from googlecloudsdk.api_lib.container.bare_metal import clusters
+from googlecloudsdk.api_lib.container.gkeonprem import bare_metal_clusters
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.container.bare_metal import constants
 from googlecloudsdk.command_lib.container.bare_metal import flags
@@ -52,5 +52,5 @@ class List(base.ListCommand):
       The resources listed by the service.
     """
     location_ref = args.CONCEPTS.location.Parse()
-    client = clusters.ClustersClient()
+    client = bare_metal_clusters.ClustersClient()
     return client.List(location_ref, limit=args.limit, page_size=args.page_size)

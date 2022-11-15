@@ -20,6 +20,7 @@ from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.cloudbuild import cloudbuild_util
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.builds import flags as build_flags
 from googlecloudsdk.core import properties
 from googlecloudsdk.core import resources
 
@@ -36,6 +37,7 @@ class DescribeAlpha(base.DescribeCommand):
       parser: An argparse.ArgumentParser-like object. It is mocked out in order
         to capture some information, but behaves like an ArgumentParser.
     """
+    build_flags.AddRegionFlag(parser)
     parser.add_argument('CONFIG', help='The id of the Bitbucket Server Config')
 
   def Run(self, args):
@@ -52,6 +54,8 @@ class DescribeAlpha(base.DescribeCommand):
     client = cloudbuild_util.GetClientInstance()
     messages = cloudbuild_util.GetMessagesModule()
 
+    regionprop = properties.VALUES.builds.region.Get()
+    bbs_region = args.region or regionprop or cloudbuild_util.DEFAULT_REGION
     parent = properties.VALUES.core.project.Get(required=True)
     config_id = args.CONFIG
     # Get the bitbucket server config ref
@@ -61,8 +65,7 @@ class DescribeAlpha(base.DescribeCommand):
         api_version='v1',
         params={
             'projectsId': parent,
-            # Use default region global until Proctor is fully regionalized.
-            'locationsId': cloudbuild_util.DEFAULT_REGION,
+            'locationsId': bbs_region,
             'bitbucketServerConfigsId': config_id,
         })
 

@@ -27,6 +27,7 @@ from googlecloudsdk.command_lib.compute.instances import flags as instances_flag
 from googlecloudsdk.command_lib.compute.instances.bulk import flags as bulk_flags
 from googlecloudsdk.command_lib.compute.instances.bulk import util as bulk_util
 from googlecloudsdk.command_lib.compute.queued_resources import flags as queued_resource_flags
+from googlecloudsdk.core import log
 
 
 class Create(base.CreateCommand):
@@ -169,5 +170,12 @@ class Create(base.CreateCommand):
         queuedResource=queued_resource,
         project=queued_resource_ref.project,
         zone=queued_resource_ref.zone)
+    if args.async_:
+      response = client.apitools_client.zoneQueuedResources.Insert(request)
+      log.status.Print('Queued resource creation in progress: {}'.format(
+          response.selfLink))
+      # Disable argument formatting since we have not created a resource yet.
+      args.format = 'disable'
+      return response
     return client.MakeRequests([(client.apitools_client.zoneQueuedResources,
                                  'Insert', request)])

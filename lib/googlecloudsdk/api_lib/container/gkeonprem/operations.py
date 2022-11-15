@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Utilities Anthos clusters on VMware operations."""
+"""Utilities Anthos GKE On-Prem resource operations."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -24,7 +24,7 @@ from googlecloudsdk.core import resources
 
 
 class OperationsClient(object):
-  """Client for operations in Anthos clusters on VMware API."""
+  """Client for operations in Anthos GKE On-Prem API resources."""
 
   def __init__(self, client=None):
     self.client = client or apis.GetClientInstance('gkeonprem', 'v1')

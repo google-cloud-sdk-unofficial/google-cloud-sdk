@@ -28,17 +28,23 @@ from googlecloudsdk.command_lib.util.args import labels_util
 from googlecloudsdk.core import log
 
 
-@base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.GA)
 class Create(base.Command):
   """Create a Dataplex Environment."""
 
   detailed_help = {
       'EXAMPLES':
           """\
-          To create a Dataplex Environment, run:
 
-            $ {command} projects/{project_id}/locations/{location}/lakes/{lake_id}/envrionments/{environment_id}
+          To create a Dataplex Environment `test-environment`  within lake `test-lake` in
+          location `us-central1` inside project `test-project` , run:
+
+            $ {command} test-environment  --project=test-project --location=us-central1 --lake=test-lake  --os-image-version=1.0
+
+          To know about the other required arguments to create an environment run:
+
+            $ gcloud dataplex environment create --help
+
           """,
   }
 

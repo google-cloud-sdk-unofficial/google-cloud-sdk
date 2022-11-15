@@ -27,6 +27,12 @@ VMWARE_NODE_POOL_ARGS_TO_UPDATE_MASKS = {
     'min_replicas': 'node_pool_autoscaling.min_replicas',
     'max_replicas': 'node_pool_autoscaling.max_replicas',
     'replicas': 'config.replicas',
+    'enable_load_balancer': 'config.enable_load_balancer',
+    'disable_load_balancer': 'config.enable_load_balancer',
+}
+
+VMWARE_ADMIN_CLUSTER_ARGS_TO_UPDATE_MASKS = {
+    'required_platform_version': 'platform_config.required_platform_version',
 }
 
 

@@ -1,15 +1,14 @@
-- release_tracks: [ALPHA]
-  hidden: true
+- release_tracks: [ALPHA, GA]
   help_text:
     brief: |
       List Sessions associated with a Environment.
     description: |
       List Sessions associated with a Environment based on project, location, lake and environment.
 
-      {command} --project={project_id} --location={location} --lake={lake_id} --environment={environment_id}
     examples: |
-      {command} --projects="test-project" --locations=us-central1 --lakes=test-lake --environment=test-environment
+       To list sessions associated with a Dataplex Environment `test-environment` in project `test-project` and lake `test-lake` under location `us-central1`, run:
 
+         $ {command} test-environment --project=test-project --location=us-central1 --lake=test-lake
   request:
     ALPHA:
       api_version: v1

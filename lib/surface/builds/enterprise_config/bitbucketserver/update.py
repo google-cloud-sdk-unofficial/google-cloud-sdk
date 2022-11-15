@@ -66,6 +66,9 @@ class CreateAlpha(base.CreateCommand):
 
     parent = properties.VALUES.core.project.Get(required=True)
 
+    regionprop = properties.VALUES.builds.region.Get()
+    bbs_region = args.region or regionprop or cloudbuild_util.DEFAULT_REGION
+
     # Get the bitbucket server config ref
     bbs_resource = resources.REGISTRY.Parse(
         None,
@@ -73,8 +76,7 @@ class CreateAlpha(base.CreateCommand):
         api_version='v1',
         params={
             'projectsId': parent,
-            # Use default region global until Proctor is fully regionalized.
-            'locationsId': cloudbuild_util.DEFAULT_REGION,
+            'locationsId': bbs_region,
             'bitbucketServerConfigsId': config_id,
         })
 

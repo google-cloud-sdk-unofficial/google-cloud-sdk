@@ -19,7 +19,9 @@ from __future__ import division
 from __future__ import unicode_literals
 
 from googlecloudsdk.calliope import base as gcloud_base
+from googlecloudsdk.command_lib.container.fleet import resources
 from googlecloudsdk.command_lib.container.fleet.features import base
+
 from googlecloudsdk.core import log
 
 
@@ -43,6 +45,10 @@ class Describe(base.FeatureCommand, gcloud_base.ListCommand):
     pass
 
   def Run(self, args):
+    if resources.UseRegionalMemberships(self.ReleaseTrack()):
+      response = self.GetFeature()
+      return {'Identity Service Feature': response}
+
     # Get fleet memberships (cluster registered with fleet) from GCP Project.
     memberships = base.ListMemberships()
     response = self.GetFeature()

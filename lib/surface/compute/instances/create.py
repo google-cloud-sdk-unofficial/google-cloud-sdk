@@ -97,7 +97,7 @@ def _CommonArgs(parser,
                 enable_regional=False,
                 enable_kms=False,
                 deprecate_maintenance_policy=False,
-                supports_erase_vss=False,
+                supports_erase_vss=True,
                 snapshot_csek=False,
                 image_csek=False,
                 support_multi_writer=False,
@@ -221,8 +221,8 @@ class Create(base.CreateCommand):
   _support_kms = True
   _support_nvdimm = False
   _support_public_dns = False
-  _support_erase_vss = False
-  _support_machine_image_key = False
+  _support_erase_vss = True
+  _support_machine_image_key = True
   _support_source_snapshot_csek = False
   _support_image_csek = False
   _support_post_key_revocation_action_type = False
@@ -259,17 +259,21 @@ class Create(base.CreateCommand):
         support_numa_node_count=cls._support_numa_node_count,
         support_instance_kms=cls._support_instance_kms,
         support_max_run_duration=cls._support_max_run_duration,
-        support_provisioned_throughput=cls._support_provisioned_throughput)
+        support_provisioned_throughput=cls._support_provisioned_throughput,
+        supports_erase_vss=cls._support_erase_vss)
     cls.SOURCE_INSTANCE_TEMPLATE = (
         instances_flags.MakeSourceInstanceTemplateArg())
     cls.SOURCE_INSTANCE_TEMPLATE.AddArgument(parser)
-    instances_flags.AddLocalSsdArgs(parser)
+    cls.SOURCE_MACHINE_IMAGE = (instances_flags.AddMachineImageArg())
+    cls.SOURCE_MACHINE_IMAGE.AddArgument(parser)
+    instances_flags.AddSourceMachineImageEncryptionKey(parser)
     instances_flags.AddMinCpuPlatformArgs(parser, base.ReleaseTrack.GA)
     instances_flags.AddPrivateIpv6GoogleAccessArg(parser,
                                                   utils.COMPUTE_GA_API_VERSION)
     instances_flags.AddConfidentialComputeArgs(parser)
     instances_flags.AddKeyRevocationActionTypeArgs(parser)
     instances_flags.AddVisibleCoreCountArgs(parser)
+    instances_flags.AddLocalSsdArgs(parser)
 
   def Collection(self):
     return 'compute.instances'
@@ -282,8 +286,20 @@ class Create(base.CreateCommand):
     return ref.SelfLink()
 
   def GetSourceMachineImage(self, args, resources):
-    """Get sourceMachineImage value as required by API."""
-    return None
+    """Retrieves the specified source machine image's selflink.
+
+    Args:
+      args: The arguments passed into the gcloud command calling this function.
+      resources: Resource parser used to retrieve the specified resource
+        reference.
+
+    Returns:
+      A string containing the specified source machine image's selflink.
+    """
+    if not args.IsSpecified('source_machine_image'):
+      return None
+    ref = self.SOURCE_MACHINE_IMAGE.ResolveAsResource(args, resources)
+    return ref.SelfLink()
 
   def _CreateRequests(self, args, instance_refs, project, zone, compute_client,
                       resource_parser, holder):

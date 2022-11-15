@@ -29,17 +29,20 @@ from googlecloudsdk.command_lib.util.args import labels_util
 from googlecloudsdk.core import log
 
 
-@base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.GA)
 class Update(base.Command):
-  """Update a Dataplex Environment."""
+  """Update a Dataplex Environment with the given configurations.
+  """
 
   detailed_help = {
       'EXAMPLES':
           """\
-          To update a Dataplex Environment, run:
 
-            $ {command} projects/{project_id}/locations/{location}/lakes/{lake_id}/envrionments/{environment_id}
+          To update a Dataplex environment `test-environment` within lake `test-lake` in location `us-central1` and
+          change the description to `Updated Description`, run:
+
+            $ {command} test-environment --project=test-project --location=us-central1 --lake=test-lake --description='Updated Description'
+
           """,
   }
 

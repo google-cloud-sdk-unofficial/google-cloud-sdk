@@ -348,7 +348,8 @@ def ParseCreateOptionsBase(args, is_autopilot, get_default, location,
       enable_google_cloud_access=get_default('enable_google_cloud_access'),
       gateway_api=get_default('gateway_api'),
       logging_variant=get_default('logging_variant'),
-      enable_cost_allocation=get_default('enable_cost_allocation'))
+      enable_cost_allocation=get_default('enable_cost_allocation'),
+      enable_multi_networking=get_default('enable_multi_networking'))
 
 
 GA = 'ga'
@@ -481,6 +482,8 @@ flags_to_add = {
             flags.AddIPAliasRelatedFlags,
         'issueclientcert':
             flags.AddIssueClientCertificateFlag,
+        'gatewayapi':
+            flags.AddGatewayFlags,
         'gvnic':
             flags.AddEnableGvnicFlag,
         'kubernetesalpha':
@@ -582,6 +585,8 @@ flags_to_add = {
             flags.AddEnableGoogleCloudAccess,
         'loggingvariant':
             flags.AddLoggingVariantFlag,
+        'enableMultiNetworking':
+            flags.AddEnableMultiNetworkingFlag,
     },
     BETA: {
         'accelerator': (lambda p: AddAcceleratorFlag(p, True, True, True)),
@@ -791,6 +796,8 @@ flags_to_add = {
             flags.AddFleetProjectFlag,
         'loggingvariant':
             flags.AddLoggingVariantFlag,
+        'enableMultiNetworking':
+            flags.AddEnableMultiNetworkingFlag,
     },
     ALPHA: {
         'accelerator': (lambda p: AddAcceleratorFlag(p, True, True, True)),
@@ -1009,6 +1016,8 @@ flags_to_add = {
             flags.AddFleetProjectFlag,
         'loggingvariant':
             flags.AddLoggingVariantFlag,
+        'enableMultiNetworking':
+            flags.AddEnableMultiNetworkingFlag,
     },
 }
 
@@ -1259,6 +1268,7 @@ class CreateBeta(Create):
     ops.enable_cost_allocation = get_default('enable_cost_allocation')
     ops.managed_config = get_default('managed_config')
     ops.fleet_project = get_default('fleet_project')
+    ops.enable_multi_networking = get_default('enable_multi_networking')
     return ops
 
 
@@ -1349,4 +1359,5 @@ class CreateAlpha(Create):
         'enable_workload_vulnerability_scanning')
     ops.managed_config = get_default('managed_config')
     ops.fleet_project = get_default('fleet_project')
+    ops.enable_multi_networking = get_default('enable_multi_networking')
     return ops

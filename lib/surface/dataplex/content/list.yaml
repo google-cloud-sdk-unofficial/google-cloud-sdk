@@ -1,14 +1,14 @@
-- release_tracks: [ALPHA]
-  hidden: true
+- release_tracks: [ALPHA, GA]
   help_text:
     brief: |
       List Dataplex Content Resources.
     description: |
       List Dataplex Content resource based on project, location, and lake. Currently list does not support project/{project_id}/.../ notation.
 
-      {command} --project={project_id} --location={location} --lake={lake_id}
     examples: |
-      {command} --projects="test-project" --locations=us-central1 --lake=test-lake
+      To list all Dataplex Content resource in lake `test-lake` under location `us-central1`  inside project `test-project`, run :
+
+       $ {command} --project=test-project --location=us-central1 --lake=test-lake
 
   request:
     ALPHA:

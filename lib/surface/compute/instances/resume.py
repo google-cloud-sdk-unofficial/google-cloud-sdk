@@ -19,15 +19,12 @@ from __future__ import division
 from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.compute import base_classes
-from googlecloudsdk.api_lib.compute import csek_utils
 from googlecloudsdk.api_lib.compute.operations import poller
 from googlecloudsdk.api_lib.util import waiter
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute.instances import flags
 from googlecloudsdk.core import exceptions
 from googlecloudsdk.core import log
-from googlecloudsdk.core import resources
-from six.moves import zip
 
 DETAILED_HELP = {
     'brief':
@@ -58,8 +55,6 @@ class Resume(base.SilentCommand):
   @classmethod
   def Args(cls, parser):
     flags.INSTANCES_ARG.AddArgument(parser)
-    if cls.ReleaseTrack() != base.ReleaseTrack.GA:
-      csek_utils.AddCsekKeyArgs(parser, flags_about_creation=False)
     base.ASYNC_FLAG.AddToParser(parser)
 
   def GetInstances(self, client, refs):
@@ -84,53 +79,12 @@ class Resume(base.SilentCommand):
         holder.resources,
         scope_lister=flags.GetInstanceZoneScopeLister(client))
 
-    # If csek_key_file is supplied, we must first get a reference to the
-    # instances specified in the file to ensure that they exist.
-    # Only then can we verify that the key specified in the file matches what
-    # was used to create the instance.
-    csek_key_file = None
-    if self.ReleaseTrack() != base.ReleaseTrack.GA:
-      csek_key_file = args.csek_key_file
-    if csek_key_file:
-      instances = self.GetInstances(client, instance_refs)
-    else:
-      instances = [None for _ in instance_refs]
-
-    for instance_ref, instance in zip(instance_refs, instances):
-      disks = []
-
-      if instance:
-        allow_rsa_encrypted = self.ReleaseTrack() in [
-            base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA
-            # Suspend/Resume will never support CSEK in GA.
-        ]
-        csek_keys = csek_utils.CsekKeyStore.FromArgs(args, allow_rsa_encrypted)
-        for disk in instance.disks:
-          disk_resource = resources.REGISTRY.Parse(disk.source)
-
-          disk_key_or_none = csek_utils.MaybeLookupKeyMessage(
-              csek_keys, disk_resource, client.apitools_client)
-
-          if disk_key_or_none:
-            disks.append(
-                client.messages.CustomerEncryptionKeyProtectedDisk(
-                    diskEncryptionKey=disk_key_or_none, source=disk.source))
-      if disks:
-        encryption_req = client.messages.InstancesResumeRequest(disks=disks)
-
-        request = (client.apitools_client.instances, 'Resume',
-                   client.messages.ComputeInstancesResumeRequest(
-                       instance=instance_ref.Name(),
-                       instancesResumeRequest=encryption_req,
-                       project=instance_ref.project,
-                       zone=instance_ref.zone))
-
-      else:
-        request = (client.apitools_client.instances, 'Resume',
-                   client.messages.ComputeInstancesResumeRequest(
-                       instance=instance_ref.Name(),
-                       project=instance_ref.project,
-                       zone=instance_ref.zone))
+    for instance_ref in instance_refs:
+      request = (client.apitools_client.instances, 'Resume',
+                 client.messages.ComputeInstancesResumeRequest(
+                     instance=instance_ref.Name(),
+                     project=instance_ref.project,
+                     zone=instance_ref.zone))
 
       request_list.append(request)
 

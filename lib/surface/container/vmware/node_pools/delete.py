@@ -18,8 +18,8 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
-from googlecloudsdk.api_lib.container.vmware import node_pools as apis
-from googlecloudsdk.api_lib.container.vmware import operations
+from googlecloudsdk.api_lib.container.gkeonprem import operations
+from googlecloudsdk.api_lib.container.gkeonprem import vmware_node_pools as apis
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.container.vmware import command_util
 from googlecloudsdk.command_lib.container.vmware import flags

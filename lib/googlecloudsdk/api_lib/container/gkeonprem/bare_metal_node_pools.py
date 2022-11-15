@@ -35,6 +35,7 @@ class NodePoolsClient(object):
     """Lists Node Pools in the Anthos clusters on bare metal API."""
     list_req = self.messages.GkeonpremProjectsLocationsBareMetalClustersBareMetalNodePoolsListRequest(
         parent=location_ref.RelativeName())
+
     return list_pager.YieldFromList(
         self._service,
         list_req,
@@ -43,3 +44,10 @@ class NodePoolsClient(object):
         limit=limit,
         batch_size_attribute='pageSize',
     )
+
+  def Describe(self, resource_ref):
+    """Gets a GKE On-Prem Bare Metal API node pool resource."""
+    req = self.messages.GkeonpremProjectsLocationsBareMetalClustersBareMetalNodePoolsGetRequest(
+        name=resource_ref.RelativeName())
+
+    return self._service.Get(req)

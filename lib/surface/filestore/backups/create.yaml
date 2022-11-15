@@ -33,9 +33,8 @@
     - arg_name: kms-key
       required: false
       release_tracks: [BETA]
-      hidden: true
       help_text: |
-        CMEK for backup.
+        CMEK for backup in the form of projects/{}/locations/{}/keyRings/{}/cryptoKeys/{}
     - group:
         mutex: true
         required: true
@@ -45,7 +44,6 @@
             Zone of the Filestore instance.
         - arg_name: instance-location
           release_tracks: [BETA]
-          hidden: true
           help_text: |
             Region of the Filestore instance.
     - api_field: backup.description

@@ -152,6 +152,8 @@ class List(_List, base.ListCommand):
       return "MySQL"
     elif profile.oracleProfile:
       return "Oracle"
+    elif profile.postgresqlProfile:
+      return "PostgreSQL"
     elif profile.gcsProfile:
       return "Google Cloud Storage"
     else:

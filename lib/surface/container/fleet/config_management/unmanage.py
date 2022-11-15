@@ -18,6 +18,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+from googlecloudsdk.command_lib.container.fleet import resources
 from googlecloudsdk.command_lib.container.fleet.features import base
 from googlecloudsdk.core import exceptions
 from googlecloudsdk.core.console import console_io
@@ -40,31 +41,41 @@ class Unmanage(base.UpdateCommand):
 
   @classmethod
   def Args(cls, parser):
-    parser.add_argument(
-        '--membership',
-        type=str,
-        help='The Membership name provided during registration.',
-    )
+    if resources.UseRegionalMemberships(cls.ReleaseTrack()):
+      resources.AddMembershipResourceArg(parser)
+    else:
+      parser.add_argument(
+          '--membership',
+          type=str,
+          help='The Membership name provided during registration.',
+      )
 
   def Run(self, args):
-    memberships = base.ListMemberships()
-    if not memberships:
-      raise exceptions.Error('No Memberships available in the fleet.')
-    # User should choose an existing membership if not provide one
-    if not args.membership:
-      index = console_io.PromptChoice(
-          options=memberships,
-          message='Please specify a membership to '
-          'unmanage in configmanagement:\n')
-      membership = memberships[index]
+    if resources.UseRegionalMemberships(self.ReleaseTrack()):
+      membership = base.ParseMembership(
+          args, prompt=True, autoselect=True, search=True)
     else:
-      membership = args.membership
-      if membership not in memberships:
-        raise exceptions.Error(
-            'Membership {} is not in the fleet.'.format(membership))
+      memberships = base.ListMemberships()
+      if not memberships:
+        raise exceptions.Error('No Memberships available in the fleet.')
+      # User should choose an existing membership if not provide one
+      if not args.membership:
+        index = console_io.PromptChoice(
+            options=memberships,
+            message='Please specify a membership to '
+            'unmanage in configmanagement:\n')
+        membership = memberships[index]
+      else:
+        membership = args.membership
+        if membership not in memberships:
+          raise exceptions.Error(
+              'Membership {} is not in the fleet.'.format(membership))
 
     # Setup a patch to set the MembershipSpec to the empty proto ("delete").
-    membership_key = self.MembershipResourceName(membership)
+    if resources.UseRegionalMemberships(self.ReleaseTrack()):
+      membership_key = membership
+    else:
+      membership_key = self.MembershipResourceName(membership)
     specs = {membership_key: self.messages.MembershipFeatureSpec()}
     patch = self.messages.Feature(
         membershipSpecs=self.hubclient.ToMembershipSpecs(specs))

@@ -31,7 +31,7 @@ class RestoreTables(base.RestoreCommand):
   detailed_help = {
       'DESCRIPTION':
           textwrap.dedent("""
-          This command restores a Cloud Bigtable backup to a new table in the same instance.
+          This command restores a Cloud Bigtable backup to a new table.
           """),
       'EXAMPLES':
           textwrap.dedent("""

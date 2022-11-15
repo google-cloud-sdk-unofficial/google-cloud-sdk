@@ -42,6 +42,11 @@
           api_field: connectivityTest.source.cloudFunction.uri
           help_text: |
             A Cloud function URI as the source endpoint.
+        - arg_name: source-cloud-run-revision
+          release_tracks: [BETA]
+          api_field: connectivityTest.source.cloudRunRevision.uri
+          help_text: |
+            Cloud Run revision URI as the source endpoint.
     - arg_name: source-network
       api_field: connectivityTest.source.network
       help_text: |
@@ -133,6 +138,7 @@
       - googlecloudsdk.command_lib.network_management.util:ValidateGKEMasterClustersURIs
       - googlecloudsdk.command_lib.network_management.util:ValidateCloudSQLInstancesURIs
       - googlecloudsdk.command_lib.network_management.util:ValidateCloudFunctionsURIs
+      - googlecloudsdk.command_lib.network_management.util:ValidateCloudRunRevisionsURIs
     GA:
       api_version: v1
       modify_request_hooks:

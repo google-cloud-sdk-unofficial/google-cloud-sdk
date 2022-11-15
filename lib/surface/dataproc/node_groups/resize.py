@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Resize a GCE node pool command."""
+"""Resize a node group command."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -29,13 +29,13 @@ import six
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
                     base.ReleaseTrack.GA)
 class Resize(base.Command):
-  """Resize the number of nodes in the Compute Engine node pool."""
+  """Resize the number of nodes in the node group."""
   detailed_help = {
       'EXAMPLES':
           """\
-          To resize a node pool, run:
+          To resize a node group, run:
 
-            $ {command} my-gce-node-pool-id --region=us-central1 --cluster=my-cluster-name --size=5
+            $ {command} my-node-group-id --region=us-central1 --cluster=my-cluster-name --size=5
           """
   }
 
@@ -43,7 +43,7 @@ class Resize(base.Command):
   def Args(cls, parser):
     dataproc = dp.Dataproc(cls.ReleaseTrack())
 
-    flags.AddGceNodePoolResourceArg(parser, 'resize', dataproc.api_version)
+    flags.AddNodeGroupResourceArg(parser, 'resize', dataproc.api_version)
     flags.AddSizeFlag(parser)
     flags.AddGracefulDecommissionTimeoutFlag(parser)
     # For consistency with clusters update polling timeout. Max allowed graceful
@@ -54,31 +54,30 @@ class Resize(base.Command):
     dataproc = dp.Dataproc(self.ReleaseTrack())
     messages = dataproc.messages
 
-    gce_node_pool = args.CONCEPTS.gce_node_pool.Parse()
+    node_group = args.CONCEPTS.node_group.Parse()
 
-    resize_request = messages.ResizeGceNodePoolRequest(
+    resize_request = messages.ResizeNodeGroupRequest(
         size=args.size, requestId=util.GetUniqueId())
     if args.graceful_decommission_timeout is not None:
       resize_request.gracefulDecommissionTimeout = (
           six.text_type(args.graceful_decommission_timeout) + 's')
 
-    request = messages.DataprocProjectsRegionsClustersGceNodePoolsResizeRequest(
-        name=gce_node_pool.RelativeName(),
-        resizeGceNodePoolRequest=resize_request)
+    request = messages.DataprocProjectsRegionsClustersNodeGroupsResizeRequest(
+        name=node_group.RelativeName(), resizeNodeGroupRequest=resize_request)
 
-    operation = dataproc.client.projects_regions_clusters_gceNodePools.Resize(
+    operation = dataproc.client.projects_regions_clusters_nodeGroups.Resize(
         request)
 
     util.WaitForOperation(
         dataproc,
         operation,
-        message='Waiting for node pool resize operation',
+        message='Waiting for node group resize operation',
         timeout_s=args.timeout)
 
-    request = messages.DataprocProjectsRegionsClustersGceNodePoolsGetRequest(
-        name=gce_node_pool.RelativeName())
-    final_gce_node_pool = dataproc.client.projects_regions_clusters_gceNodePools.Get(
+    request = messages.DataprocProjectsRegionsClustersNodeGroupsGetRequest(
+        name=node_group.RelativeName())
+    final_node_group = dataproc.client.projects_regions_clusters_nodeGroups.Get(
         request)
-    log.UpdatedResource(gce_node_pool)
+    log.UpdatedResource(node_group)
 
-    return final_gce_node_pool
+    return final_node_group

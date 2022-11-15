@@ -94,5 +94,8 @@ class List(base.ListCommand):
     elif stream_object.sourceObject.oracleIdentifier:
       identifier = stream_object.sourceObject.oracleIdentifier
       return "%s.%s" % (identifier.schema, identifier.table)
+    elif stream_object.sourceObject.postgresqlIdentifier:
+      identifier = stream_object.sourceObject.postgresqlIdentifier
+      return "%s.%s" % (identifier.schema, identifier.table)
     else:
       return None

@@ -27,7 +27,6 @@ from googlecloudsdk.api_lib.compute import instance_template_utils
 from googlecloudsdk.api_lib.compute import instance_utils
 from googlecloudsdk.api_lib.compute import metadata_utils
 from googlecloudsdk.api_lib.compute import utils
-from googlecloudsdk.api_lib.compute.instances.create import utils as create_utils
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute import completers
 from googlecloudsdk.command_lib.compute import flags
@@ -632,6 +631,7 @@ def _RunCreate(compute_api,
       scopes=[] if args.no_scopes else args.scopes,
       service_account=service_account)
 
+  # create boot disk through args.boot_disk_device_name
   create_boot_disk = not (
       instance_utils.UseExistingBootDisk((args.disk or []) +
                                          (args.create_disk or [])))
@@ -665,51 +665,17 @@ def _RunCreate(compute_api,
   else:
     tags = None
 
-  persistent_disks = (
-      instance_template_utils.CreatePersistentAttachedDiskMessages(
-          client.messages, args.disk or []))
-
-  persistent_create_disks = (
-      instance_template_utils.CreatePersistentCreateDiskMessages(
-          client,
-          compute_api.resources,
-          instance_template_ref.project,
-          getattr(args, 'create_disk', []),
-          support_kms=support_kms,
-          support_multi_writer=support_multi_writer,
-          support_provisioned_throughput=support_provisioned_throughput))
-
-  if create_boot_disk:
-    boot_disk_list = [
-        instance_template_utils.CreateDefaultBootAttachedDiskMessage(
-            messages=client.messages,
-            disk_type=args.boot_disk_type,
-            disk_device_name=args.boot_disk_device_name,
-            disk_auto_delete=args.boot_disk_auto_delete,
-            disk_size_gb=boot_disk_size_gb,
-            image_uri=image_uri,
-            kms_args=args,
-            support_kms=support_kms,
-            disk_provisioned_iops=args.boot_disk_provisioned_iops)
-    ]
-  else:
-    boot_disk_list = []
-
-  local_nvdimms = create_utils.CreateLocalNvdimmMessages(
+  disks = instance_template_utils.CreateDiskMessages(
       args,
+      client,
       compute_api.resources,
-      client.messages,
-  )
-
-  local_ssds = create_utils.CreateLocalSsdMessages(
-      args,
-      compute_api.resources,
-      client.messages,
-  )
-
-  disks = (
-      boot_disk_list + persistent_disks + persistent_create_disks +
-      local_nvdimms + local_ssds)
+      instance_template_ref.project,
+      image_uri,
+      boot_disk_size_gb=boot_disk_size_gb,
+      create_boot_disk=create_boot_disk,
+      support_kms=support_kms,
+      support_multi_writer=support_multi_writer,
+      support_provisioned_throughput=support_provisioned_throughput)
 
   machine_type = instance_utils.InterpretMachineType(
       machine_type=args.machine_type,

@@ -101,7 +101,7 @@ class Set(base.UpdateCommand):
   """Modify a forwarding rule to direct network traffic to a new target."""
 
   FORWARDING_RULE_ARG = None
-  _include_regional_tcp_proxy = False
+  _include_regional_tcp_proxy = True
 
   detailed_help = {
       'DESCRIPTION': ("""

@@ -31,7 +31,7 @@ class Describe(base.DescribeCommand):
 
   TARGET_TCP_PROXY_ARG = None
 
-  _enable_region_target_tcp_proxy = False
+  _enable_region_target_tcp_proxy = True
 
   @classmethod
   def Args(cls, parser):
