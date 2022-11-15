@@ -20,7 +20,7 @@ from __future__ import division
 from __future__ import unicode_literals
 
 import os
-import google.protobuf.descriptor_pb2 as descriptor
+import cloudsdk.google.protobuf.descriptor_pb2 as descriptor
 
 from googlecloudsdk.api_lib.api_gateway import api_configs as api_configs_client
 from googlecloudsdk.api_lib.api_gateway import apis as apis_client

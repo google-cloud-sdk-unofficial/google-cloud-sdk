@@ -25,11 +25,11 @@ from google.api import http_pb2
 from google.iam.v1 import iam_policy_pb2
 from google.iam.v1 import policy_pb2
 from google.iam.v1.logging import audit_data_pb2
-from google.protobuf import descriptor_pb2
-from google.protobuf import duration_pb2
-from google.protobuf import empty_pb2
-from google.protobuf import field_mask_pb2
-from google.protobuf import timestamp_pb2
+from cloudsdk.google.protobuf import descriptor_pb2
+from cloudsdk.google.protobuf import duration_pb2
+from cloudsdk.google.protobuf import empty_pb2
+from cloudsdk.google.protobuf import field_mask_pb2
+from cloudsdk.google.protobuf import timestamp_pb2
 
 from google.api_core.protobuf_helpers import get_messages
 

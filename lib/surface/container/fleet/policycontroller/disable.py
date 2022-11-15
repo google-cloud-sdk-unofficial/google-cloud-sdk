@@ -20,7 +20,6 @@ from __future__ import unicode_literals
 
 from googlecloudsdk.command_lib.container.fleet import resources
 from googlecloudsdk.command_lib.container.fleet.features import base
-from googlecloudsdk.command_lib.container.fleet.policycontroller import utils
 
 
 class Disable(base.UpdateCommand):
@@ -39,26 +38,15 @@ class Disable(base.UpdateCommand):
 
   @classmethod
   def Args(cls, parser):
-    if resources.UseRegionalMemberships(cls.ReleaseTrack()):
-      resources.AddMembershipResourceArg(
-          parser,
-          plural=True,
-          membership_help=(
-              'The membership names for which to uninstall Policy '
-              'Controller, separated by commas if multiple are '
-              'supplied. Ignored if --all-memberships is supplied; '
-              'if neither is supplied, a prompt will appear with all '
-              'available memberships.'))
-    else:
-      parser.add_argument(
-          '--memberships',
-          type=str,
-          help=(
-              'The membership names for which to uninstall Policy Controller, '
-              'separated by commas if multiple are supplied. Ignored if '
-              '--all-memberships is supplied; if neither is supplied, a prompt '
-              'will appear with all available memberships.'),
-      )
+    resources.AddMembershipResourceArg(
+        parser,
+        plural=True,
+        membership_help=(
+            'The membership names for which to uninstall Policy '
+            'Controller, separated by commas if multiple are '
+            'supplied. Ignored if --all-memberships is supplied; '
+            'if neither is supplied, a prompt will appear with all '
+            'available memberships.'))
     parser.add_argument(
         '--all-memberships',
         action='store_true',
@@ -74,16 +62,11 @@ class Disable(base.UpdateCommand):
     poco_hub_config = self.messages.PolicyControllerHubConfig(
         installSpec=poco_not_installed)
 
-    if resources.UseRegionalMemberships(self.ReleaseTrack()):
-      memberships = base.ParseMembershipsPlural(
-          args, prompt=True, prompt_cancel=False, search=True)
-    else:
-      memberships = utils.select_memberships(args)
+    memberships = base.ParseMembershipsPlural(
+        args, prompt=True, prompt_cancel=False, search=True)
 
     for membership in memberships:
       membership_path = membership
-      if not resources.UseRegionalMemberships(self.ReleaseTrack()):
-        membership_path = self.MembershipResourceName(membership)
       membership_specs[membership_path] = self.messages.MembershipFeatureSpec(
           policycontroller=self.messages.PolicyControllerMembershipSpec(
               policyControllerHubConfig=poco_hub_config))

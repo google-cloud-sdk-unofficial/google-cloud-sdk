@@ -6,7 +6,7 @@ from google.bigtable.admin.v2 import instance_pb2 as google_dot_bigtable_dot_adm
 from google.iam.v1 import iam_policy_pb2 as google_dot_iam_dot_v1_dot_iam__policy__pb2
 from google.iam.v1 import policy_pb2 as google_dot_iam_dot_v1_dot_policy__pb2
 from google.longrunning import operations_pb2 as google_dot_longrunning_dot_operations__pb2
-from google.protobuf import empty_pb2 as google_dot_protobuf_dot_empty__pb2
+from cloudsdk.google.protobuf import empty_pb2 as google_dot_protobuf_dot_empty__pb2
 
 
 class BigtableInstanceAdminStub(object):

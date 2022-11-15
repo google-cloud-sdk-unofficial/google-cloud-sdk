@@ -20,13 +20,16 @@ from __future__ import unicode_literals
 
 import textwrap
 
+from googlecloudsdk.api_lib.spanner import instance_configs
 from googlecloudsdk.api_lib.spanner import instance_operations
 from googlecloudsdk.api_lib.spanner import instances
+from googlecloudsdk.api_lib.util import apis
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.spanner import flags
 from googlecloudsdk.command_lib.spanner import resource_args
 
 
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
 class Create(base.CreateCommand):
   """Create a Cloud Spanner instance."""
 
@@ -80,3 +83,67 @@ class Create(base.CreateCommand):
     if args.async_:
       return op
     instance_operations.Await(op, 'Creating instance')
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class AlphaCreate(Create):
+  """Create a Cloud Spanner instance with ALPHA features."""
+  __doc__ = Create.__doc__
+
+  @staticmethod
+  def Args(parser):
+    """See base class."""
+    flags.Instance().AddToParser(parser)
+    flags.Config().AddToParser(parser)
+    flags.Description().AddToParser(parser)
+    resource_args.AddExpireBehaviorArg(parser)
+    resource_args.AddInstanceTypeArg(parser)
+    resource_args.AddDefaultStorageTypeArg(parser)
+    group_parser = parser.add_argument_group(mutex=True, required=False)
+    flags.Nodes().AddToParser(group_parser)
+    flags.ProcessingUnits().AddToParser(group_parser)
+    base.ASYNC_FLAG.AddToParser(parser)
+    parser.display_info.AddCacheUpdater(flags.InstanceCompleter)
+
+  def Run(self, args):
+    """This is what gets called when the user runs this command.
+
+    Args:
+      args: an argparse namespace. All the arguments that were provided to this
+        command invocation.
+
+    Returns:
+      Some value that we want to have printed later.
+    """
+    instance_type = resource_args.GetInstanceType(args)
+    expire_behavior = resource_args.GetExpireBehavior(args)
+    default_storage_type = resource_args.GetDefaultStorageTypeArg(args)
+    if default_storage_type is None:
+      default_storage_type = self.FetchValueFromAllowedStorageTypes(args.config)
+
+    if default_storage_type is None:
+      return ('Operation unsuccessful. Default storage type value could not be '
+              'determined.')
+
+    op = instances.Create(args.instance, args.config, args.description,
+                          args.nodes, args.processing_units, instance_type,
+                          expire_behavior, default_storage_type)
+    if args.async_:
+      return op
+    instance_operations.Await(op, 'Creating instance')
+
+  # Return the first value in the config's allowed-storage-types;
+  # Else, return SSD.
+  def FetchValueFromAllowedStorageTypes(self, instance_config_id):
+    instance_config = instance_configs.Get(instance_config_id)
+    allowed_storage_types = instance_config.allowedStorageTypes
+    msgs = apis.GetMessagesModule('spanner', 'v1')
+    if not allowed_storage_types:
+      return msgs.Instance.DefaultStorageTypeValueValuesEnum.SSD
+    first_allowed_storage_type = allowed_storage_types[0]
+    if first_allowed_storage_type == msgs.InstanceConfig.AllowedStorageTypesValueListEntryValuesEnum.SSD:
+      return msgs.Instance.DefaultStorageTypeValueValuesEnum.SSD
+    elif first_allowed_storage_type == msgs.InstanceConfig.AllowedStorageTypesValueListEntryValuesEnum.HDD:
+      return msgs.Instance.DefaultStorageTypeValueValuesEnum.HDD
+    else:
+      return None

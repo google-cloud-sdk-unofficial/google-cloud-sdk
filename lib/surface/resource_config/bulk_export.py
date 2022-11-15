@@ -21,6 +21,8 @@ from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.util.declarative import flags as declarative_flags
 from googlecloudsdk.command_lib.util.declarative.clients import kcc_client
+from googlecloudsdk.core import log
+
 
 _DETAILED_HELP = {
     'EXAMPLES':
@@ -68,5 +70,11 @@ class Export(base.DeclarativeCommand):
 
   def Run(self, args):
     client = kcc_client.KccClient()
-    client.BulkExport(args)
+    if args.IsSpecified('format'):
+      log.warning('`--format` flag not supported for bulk-export. '
+                  'To change the format of exported resources use the '
+                  '`--resource-format` flag.')
+      args.format = None
+    else:
+      client.BulkExport(args)
     return

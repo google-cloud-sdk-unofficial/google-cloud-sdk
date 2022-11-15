@@ -46,24 +46,37 @@ DETAILED_HELP = {
 }
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.GA,
+                    base.ReleaseTrack.BETA)
 class Stop(base.SilentCommand):
   """Stop a virtual machine instance."""
 
-  @staticmethod
-  def Args(parser):
+  @classmethod
+  def Args(cls, parser):
     flags.INSTANCES_ARG.AddArgument(parser)
+    if cls.ReleaseTrack() != base.ReleaseTrack.GA:
+      parser.add_argument(
+          '--discard-local-ssd',
+          action='store_true',
+          help=('If provided, local SSD data is discarded.'))
     base.ASYNC_FLAG.AddToParser(parser)
 
-  def _CreateStopRequest(self, client, instance_ref):
-    return client.messages.ComputeInstancesStopRequest(
-        instance=instance_ref.Name(),
-        project=instance_ref.project,
-        zone=instance_ref.zone)
+  def _CreateStopRequest(self, client, instance_ref, args):
+    if self.ReleaseTrack() == base.ReleaseTrack.GA:
+      return client.messages.ComputeInstancesStopRequest(
+          instance=instance_ref.Name(),
+          project=instance_ref.project,
+          zone=instance_ref.zone)
+    else:
+      return client.messages.ComputeInstancesStopRequest(
+          discardLocalSsd=args.discard_local_ssd,
+          instance=instance_ref.Name(),
+          project=instance_ref.project,
+          zone=instance_ref.zone)
 
-  def _CreateRequests(self, client, instance_refs, unused_args):
+  def _CreateRequests(self, client, instance_refs, args):
     return [(client.apitools_client.instances, 'Stop',
-             self._CreateStopRequest(client, instance_ref))
+             self._CreateStopRequest(client, instance_ref, args))
             for instance_ref in instance_refs]
 
   def Run(self, args):
@@ -105,34 +118,4 @@ class Stop(base.SilentCommand):
       log.status.Print('Updated [{0}].'.format(instance_ref))
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class StopAlpha(Stop):
-  """Stop a virtual machine instance."""
-
-  @staticmethod
-  def Args(parser):
-    flags.INSTANCES_ARG.AddArgument(parser)
-    parser.add_argument(
-        '--discard-local-ssd',
-        action='store_true',
-        help=('If provided, local SSD data is discarded.'))
-
-    base.ASYNC_FLAG.AddToParser(parser)
-
-  def _CreateStopRequest(self, client, instance_ref, discard_local_ssd):
-    """Adds the discardLocalSsd var into the message."""
-    return client.messages.ComputeInstancesStopRequest(
-        discardLocalSsd=discard_local_ssd,
-        instance=instance_ref.Name(),
-        project=instance_ref.project,
-        zone=instance_ref.zone)
-
-  def _CreateRequests(self, client, instance_refs, args):
-    return [(client.apitools_client.instances, 'Stop',
-             self._CreateStopRequest(client, instance_ref,
-                                     args.discard_local_ssd))
-            for instance_ref in instance_refs]
-
-
 Stop.detailed_help = DETAILED_HELP
-StopAlpha.detailed_help = DETAILED_HELP

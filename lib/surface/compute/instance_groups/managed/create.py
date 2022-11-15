@@ -344,6 +344,7 @@ class CreateBeta(CreateGA):
     super(CreateBeta, cls).Args(parser)
     instance_groups_flags.AddMigCreateStatefulIPsFlags(parser)
     managed_flags.AddMigListManagedInstancesResultsFlag(parser)
+    managed_flags.AddMigForceUpdateOnRepairFlags(parser)
 
   def _CreateInstanceGroupManager(self, args, group_ref, template_ref, client,
                                   holder):
@@ -357,6 +358,9 @@ class CreateBeta(CreateGA):
           client.messages.InstanceGroupManager
           .ListManagedInstancesResultsValueValuesEnum)(
               args.list_managed_instances_results.upper())
+
+    instance_group_manager.instanceLifecyclePolicy = managed_instance_groups_utils.CreateInstanceLifecyclePolicy(
+        client.messages, args)
 
     return instance_group_manager
 
@@ -406,7 +410,6 @@ class CreateAlpha(CreateBeta):
   @classmethod
   def Args(cls, parser):
     super(CreateAlpha, cls).Args(parser)
-    managed_flags.AddMigForceUpdateOnRepairFlags(parser)
 
   def _CreateInstanceGroupManager(self, args, group_ref, template_ref, client,
                                   holder):
@@ -414,9 +417,6 @@ class CreateAlpha(CreateBeta):
                                    self)._CreateInstanceGroupManager(
                                        args, group_ref, template_ref, client,
                                        holder)
-    instance_group_manager.instanceLifecyclePolicy = managed_instance_groups_utils.CreateInstanceLifecyclePolicy(
-        client.messages, args)
-
     return instance_group_manager
 
 CreateAlpha.detailed_help = CreateBeta.detailed_help

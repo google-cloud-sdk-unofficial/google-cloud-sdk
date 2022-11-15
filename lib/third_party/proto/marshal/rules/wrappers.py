@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from google.protobuf import wrappers_pb2
+from cloudsdk.google.protobuf import wrappers_pb2
 
 
 class WrapperRule:

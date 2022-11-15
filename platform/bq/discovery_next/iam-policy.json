@@ -2964,7 +2964,7 @@
           "$ref": "ParquetOptions"
         },
         "objectMetadata": {
-          "description": "Optional. Object Metadata Type used to create Object Tables. When making an Object Table, source_format should be omitted. Currently DIRECTORY is the only supported Object Metadata type. This would produce an Object Table containing a Directory Listing of Objects found at the source_uris.",
+          "description": "Optional. ObjectMetadata is used to create Object Tables. Object Tables contain a listing of objects (with their metadata) found at the source_uris. If ObjectMetadata is set, source_format should be omitted. Currently SIMPLE is the only supported Object Metadata type.",
           "type": "string",
           "enumDescriptions": [
             "Unspecified by default.",
@@ -3134,7 +3134,7 @@
           "type": "boolean"
         },
         "encoding": {
-          "description": "Optional. The character encoding of the data. The supported values are UTF-8 or ISO-8859-1. The default value is UTF-8. BigQuery decodes the data after the raw, binary data has been split using the values of the quote and fieldDelimiter properties.",
+          "description": "Optional. The character encoding of the data. The supported values are UTF-8, ISO-8859-1, UTF-16BE, UTF-16LE, UTF-32BE, and UTF-32LE. The default value is UTF-8. BigQuery decodes the data after the raw, binary data has been split using the values of the quote and fieldDelimiter properties.",
           "type": "string"
         },
         "preserveAsciiControlCharacters": {
@@ -3572,7 +3572,7 @@
           "format": "int32"
         },
         "encoding": {
-          "description": "Optional. The character encoding of the data. The supported values are UTF-8 or ISO-8859-1. The default value is UTF-8. BigQuery decodes the data after the raw, binary data has been split using the values of the quote and fieldDelimiter properties.",
+          "description": "Optional. The character encoding of the data. The supported values are UTF-8, ISO-8859-1, UTF-16BE, UTF-16LE, UTF-32BE, and UTF-32LE. The default value is UTF-8. BigQuery decodes the data after the raw, binary data has been split using the values of the quote and fieldDelimiter properties.",
           "type": "string"
         },
         "quote": {
@@ -4853,8 +4853,10 @@
             "Indicates the query has been secured by data masking, and thus search indexes are not applicable.",
             "Indicates that the search index and the search function call do not have the same text analyzer.",
             "Indicates the base table is too small (below a certain threshold). The index does not provide noticeable search performance gains when the base table is too small.",
-            "Indicates that the base table is too large for indexing, thus the index is not available to be used in the query.",
-            "Indicates an internal error that causes the search index to be unused."
+            "Indicates that the total size of indexed base tables in your organization is too large for indexing in the free pool, thus the index is not available to be used in the query.",
+            "Indicates that the esitmated performance gain from using the search index is too low for the given search query.",
+            "Indicates an internal error that causes the search index to be unused.",
+            "Indicates that the reason search indexes cannot be used in the query is not covered by any of the other IndexUnusedReason options."
           ],
           "enum": [
             "CODE_UNSPECIFIED",
@@ -4871,7 +4873,9 @@
             "MISMATCHED_TEXT_ANALYZER",
             "BASE_TABLE_TOO_SMALL",
             "BASE_TABLE_TOO_LARGE",
-            "INTERNAL_ERROR"
+            "ESTIMATED_PERFORMANCE_GAIN_TOO_LOW",
+            "INTERNAL_ERROR",
+            "OTHER_REASON"
           ]
         },
         "message": {
@@ -5636,7 +5640,7 @@
           }
         },
         "totalItems": {
-          "description": "The total number of projects in the list. A wrapper is used here because the field should still be in the response when the value is 0.",
+          "description": "The total number of projects in the page. A wrapper is used here because the field should still be in the response when the value is 0.",
           "type": "integer",
           "format": "int32"
         }

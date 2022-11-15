@@ -6,10 +6,17 @@
       Create a new cloud access binding. The access level will be bound with the group. The access
       level will be enforced when any user in the group tries to access the Google cloud console
       or API.
-    examples: |
-      To create a new cloud access binding, run:
+    GA:
+      examples: |
+        To create a new cloud access binding, run:
 
-        $ {command} --group-key=my-group-key --level=accessPolicies/123/accessLevels/abc
+          $ {command} --group-key=my-group-key --level=accessPolicies/123/accessLevels/abc
+    ALPHA:
+      examples: |
+        To create a new cloud access binding including the dry run access level, run:
+
+          $ {command} --group-key=my-group-key --level=accessPolicies/123/accessLevels/abc \
+            --dry-run-level=accessPolicies/123/accessLevels/def
 
   request:
     collection: accesscontextmanager.organizations.gcpUserAccessBindings
@@ -30,11 +37,21 @@
       help_text: Google Group id whose members are subject to the restrictions of this binding.
     - api_field: gcpUserAccessBinding.accessLevels
       arg_name: level
-      required: true
+      GA:
+        required: true
       type: str
       help_text: |
         The access level that will bind to the given group. The input must be the full identifier
         for the access level, such as `accessPolicies/123/accessLevels/abc`.
+    - api_field: gcpUserAccessBinding.dryRunAccessLevels
+      arg_name: dry-run-level
+      release_tracks: [ALPHA]
+      type: str
+      help_text: |
+        The dry run access level that will bind to the given group. The dry run access level will be
+        evaluated but won't be enforced. Denial on dry run access level will be logged. The input
+        must be the full identifier for access level, such as
+        `accessPolicies/123/accessLevels/new-def`.
     - api_field: parent
       arg_name: organization
       type: googlecloudsdk.command_lib.util.hooks.types:Resource:collection=cloudresourcemanager.organizations

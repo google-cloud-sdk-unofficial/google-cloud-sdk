@@ -18,9 +18,9 @@
 import proto  # type: ignore
 
 
-from google.protobuf import duration_pb2 as duration  # type: ignore
-from google.protobuf import field_mask_pb2 as field_mask  # type: ignore
-from google.protobuf import timestamp_pb2 as timestamp  # type: ignore
+from cloudsdk.google.protobuf import duration_pb2 as duration  # type: ignore
+from cloudsdk.google.protobuf import field_mask_pb2 as field_mask  # type: ignore
+from cloudsdk.google.protobuf import timestamp_pb2 as timestamp  # type: ignore
 from google.pubsub_v1.types import schema as gp_schema
 
 

@@ -36,16 +36,23 @@ from googlecloudsdk.command_lib.storage.tasks.objects import rewrite_object_task
 
 def _get_task_iterator(args):
   """Yields PatchObjectTask's or RewriteObjectTask's."""
-  if args.encryption_key or args.clear_encryption_key or args.storage_class:
-    fields_scope = cloud_api.FieldsScope.FULL
+  requires_rewrite = (
+      args.encryption_key or args.clear_encryption_key or args.storage_class)
+  if requires_rewrite:
     task_type = rewrite_object_task.RewriteObjectTask
   else:
-    fields_scope = cloud_api.FieldsScope.SHORT
     task_type = patch_object_task.PatchObjectTask
 
   user_request_args = (
       user_request_args_factory.get_user_request_args_from_command_args(
           args, metadata_type=user_request_args_factory.MetadataType.OBJECT))
+  if (requires_rewrite or
+      user_request_args_factory.modifies_full_acl_policy(user_request_args)):
+    # TODO(b/244621490): Add test when ACL flags are exposed.
+    fields_scope = cloud_api.FieldsScope.FULL
+  else:
+    fields_scope = cloud_api.FieldsScope.SHORT
+
   urls = stdin_iterator.get_urls_iterable(args.url, args.read_paths_from_stdin)
   for url in urls:
     if args.recursive:

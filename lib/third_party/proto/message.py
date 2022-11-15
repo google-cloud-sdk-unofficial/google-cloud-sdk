@@ -18,9 +18,9 @@ import copy
 import re
 from typing import List, Type
 
-from google.protobuf import descriptor_pb2
-from google.protobuf import message
-from google.protobuf.json_format import MessageToDict, MessageToJson, Parse
+from cloudsdk.google.protobuf import descriptor_pb2
+from cloudsdk.google.protobuf import message
+from cloudsdk.google.protobuf.json_format import MessageToDict, MessageToJson, Parse
 
 from proto import _file_info
 from proto import _package_info

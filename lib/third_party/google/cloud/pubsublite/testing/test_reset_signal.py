@@ -14,7 +14,7 @@
 
 from asynctest.mock import MagicMock
 from google.api_core.exceptions import Aborted, GoogleAPICallError
-from google.protobuf.any_pb2 import Any  # pytype: disable=pyi-error
+from cloudsdk.google.protobuf.any_pb2 import Any  # pytype: disable=pyi-error
 from google.rpc.error_details_pb2 import ErrorInfo
 from google.rpc.status_pb2 import Status
 import grpc

@@ -18,6 +18,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+from googlecloudsdk.api_lib.storage import cloud_api
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.storage import flags
@@ -273,8 +274,14 @@ class Update(base.Command):
     user_request_args = (
         user_request_args_factory.get_user_request_args_from_command_args(
             args, metadata_type=user_request_args_factory.MetadataType.BUCKET))
+    if user_request_args_factory.modifies_full_acl_policy(user_request_args):
+      # TODO(b/244621490): Add test when ACL flags are exposed.
+      fields_scope = cloud_api.FieldsScope.FULL
+    else:
+      fields_scope = cloud_api.FieldsScope.NO_ACL
     for url in args.url:
-      for resource in wildcard_iterator.get_wildcard_iterator(url):
+      for resource in wildcard_iterator.get_wildcard_iterator(
+          url, fields_scope=fields_scope):
         yield update_bucket_task.UpdateBucketTask(
             resource, user_request_args=user_request_args)
 

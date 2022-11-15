@@ -23,6 +23,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.ai import constants
 from googlecloudsdk.command_lib.ai import endpoint_util
 from googlecloudsdk.command_lib.ai import flags
+from googlecloudsdk.command_lib.ai import region_util
 
 DETAILED_HELP = {
     'EXAMPLES':
@@ -49,8 +50,11 @@ class ListGa(base.ListCommand):
 
   @staticmethod
   def Args(parser):
-    flags.AddRegionResourceArg(parser,
-                               'to list model deployment monitoring jobs')
+    flags.AddRegionResourceArg(
+        parser,
+        'to list model deployment monitoring jobs',
+        prompt_func=region_util.GetPromptForRegionFunc(
+            constants.SUPPORTED_MODEL_MONITORING_JOBS_REGIONS))
 
   def Run(self, args):
     return _Run(args, constants.GA_VERSION)
@@ -62,8 +66,11 @@ class List(base.ListCommand):
 
   @staticmethod
   def Args(parser):
-    flags.AddRegionResourceArg(parser,
-                               'to list model deployment monitoring jobs')
+    flags.AddRegionResourceArg(
+        parser,
+        'to list model deployment monitoring jobs',
+        prompt_func=region_util.GetPromptForRegionFunc(
+            constants.SUPPORTED_MODEL_MONITORING_JOBS_REGIONS))
 
   def Run(self, args):
     return _Run(args, constants.BETA_VERSION)

@@ -65,7 +65,7 @@ class UpdateAppProfile(base.CreateCommand):
     Args:
       app_profile_ref: A resource reference of the new app profile.
       args: an argparse namespace. All the arguments that were provided to this
-          command invocation.
+        command invocation.
 
     Raises:
       ConflictingArgumentsException:
@@ -133,8 +133,8 @@ class UpdateAppProfileAlpha(UpdateAppProfile):
     arguments.AddAppProfileResourceArg(parser, 'to update')
     (arguments.ArgAdder(parser).AddDescription(
         'app profile', required=False).AddAppProfileRouting(
-            required=False,
-            allow_failover_radius=True).AddForce('update').AddAsync())
+            required=False, allow_failover_radius=True).AddForce(
+                'update').AddRequestPriority().AddAsync())
 
   def _UpdateAppProfile(self, app_profile_ref, args):
     """Updates an AppProfile with the given arguments.
@@ -164,4 +164,5 @@ class UpdateAppProfileAlpha(UpdateAppProfile):
         restrict_to=args.restrict_to,
         failover_radius=args.failover_radius,
         transactional_writes=args.transactional_writes,
-        force=args.force)
+        force=args.force,
+        priority=args.priority)

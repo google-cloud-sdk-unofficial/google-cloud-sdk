@@ -120,10 +120,18 @@ class RecognizeAlpha(RecognizeBeta):
 
   @classmethod
   def Args(cls, parser):
-    super(RecognizeAlpha, RecognizeAlpha).Args(parser)
+    parser.display_info.AddFormat('json')
+    cls.flags_mapper.AddRecognizeArgsToParser(
+        parser, cls.API_VERSION, require_flags=False)
+    cls.flags_mapper.AddBetaRecognizeArgsToParser(parser, require_flags=False)
     cls.flags_mapper.AddAlphaRecognizeArgsToParser(parser, cls.API_VERSION)
 
   def MakeRequest(self, args, messages):
     request = super(RecognizeAlpha, self).MakeRequest(args, messages)
     self.flags_mapper.UpdateAlphaArgsInRecognitionConfig(args, request.config)
     return request
+
+  def Run(self, args):
+    client = apis.GetClientInstance(util.SPEECH_API, self.API_VERSION)
+    self._request = self.MakeRequest(args, client.MESSAGES_MODULE)
+    return client.speech.Recognize(self._request)

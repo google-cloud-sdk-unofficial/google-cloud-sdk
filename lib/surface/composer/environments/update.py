@@ -55,6 +55,7 @@ class Update(base.Command):
   _support_maintenance_window = False
   _support_environment_size = True
   _support_airflow_database_retention = False
+  _support_cloud_data_lineage_integration = False
 
   @staticmethod
   def Args(parser, release_track=base.ReleaseTrack.GA):
@@ -211,6 +212,10 @@ class Update(base.Command):
     command_util.ValidateMasterAuthorizedNetworks(
         args.master_authorized_networks)
     params['master_authorized_networks'] = args.master_authorized_networks
+    if self._support_cloud_data_lineage_integration:
+      if args.enable_cloud_data_lineage_integration or args.disable_cloud_data_lineage_integration:
+        params[
+            'cloud_data_lineage_integration_enabled'] = True if args.enable_cloud_data_lineage_integration else False
     return patch_util.ConstructPatch(**params)
 
   # TODO(b/245909413): Update Composer version
@@ -288,6 +293,7 @@ class UpdateBeta(Update):
   _support_triggerer = True
   _support_maintenance_window = True
   _support_environment_size = True
+  _support_cloud_data_lineage_integration = True
 
   @staticmethod
   def AlphaAndBetaArgs(parser, release_track=base.ReleaseTrack.BETA):
@@ -298,6 +304,9 @@ class UpdateBeta(Update):
     UpdateBeta.support_environment_upgrades = True
     flags.AddEnvUpgradeFlagsToGroup(Update.update_type_group)
     flags.AddMaintenanceWindowFlagsGroup(Update.update_type_group)
+
+    flags.AddCloudDataLineageIntegrationUpdateFlagsToGroup(
+        Update.update_type_group)
 
   @staticmethod
   def Args(parser):

@@ -30,7 +30,7 @@ import sys
 import types
 
 __author__ = "Benjamin Peterson <benjamin@python.org>"
-__version__ = "1.14.0"
+__version__ = "1.16.0"
 
 
 # Useful for very coarse version differentiation.
@@ -71,6 +71,11 @@ else:
             # 64-bit
             MAXSIZE = int((1 << 63) - 1)
         del X
+
+if PY34:
+    from importlib.util import spec_from_loader
+else:
+    spec_from_loader = None
 
 
 def _add_doc(func, doc):
@@ -187,6 +192,11 @@ class _SixMetaPathImporter(object):
             return self
         return None
 
+    def find_spec(self, fullname, path, target=None):
+        if fullname in self.known_modules:
+            return spec_from_loader(fullname, self)
+        return None
+
     def __get_module(self, fullname):
         try:
             return self.known_modules[fullname]
@@ -223,6 +233,12 @@ class _SixMetaPathImporter(object):
         self.__get_module(fullname)  # eventually raises ImportError
         return None
     get_source = get_code  # same as get_code
+
+    def create_module(self, spec):
+        return self.load_module(spec.name)
+
+    def exec_module(self, module):
+        pass
 
 _importer = _SixMetaPathImporter(__name__)
 
@@ -905,10 +921,9 @@ def ensure_binary(s, encoding='utf-8', errors='strict'):
     """
     if isinstance(s, binary_type):
         return s
-    elif isinstance(s, text_type):
+    if isinstance(s, text_type):
         return s.encode(encoding, errors)
-    else:
-        raise TypeError("not expecting type '%s'" % type(s))
+    raise TypeError("not expecting type '%s'" % type(s))
 
 
 def ensure_str(s, encoding='utf-8', errors='strict'):
@@ -922,11 +937,7 @@ def ensure_str(s, encoding='utf-8', errors='strict'):
       - `str` -> `str`
       - `bytes` -> decoded to `str`
     """
-    # Optimization: fast return for the common case. Improves performance
-    # by ~2-2.5x in Python 2 or 1.4-1.7x in Py3 for the case where
-    # s is a str. The uncommon case (unicode in 2, bytes in 3), ends up
-    # being around the same. The case that suffers is a subclass, or when
-    # an exception is thrown. Those are about 15-20% slower.
+    # Optimization: Fast return for the common case.
     if type(s) is str:
         return s
     if PY2 and isinstance(s, text_type):

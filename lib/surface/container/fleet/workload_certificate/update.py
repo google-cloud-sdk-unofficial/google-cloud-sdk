@@ -19,11 +19,9 @@ from __future__ import division
 from __future__ import unicode_literals
 
 from googlecloudsdk.calliope import base as gbase
-from googlecloudsdk.calliope import exceptions as calliope_exceptions
 from googlecloudsdk.command_lib.container.fleet import resources
 from googlecloudsdk.command_lib.container.fleet.features import base
 from googlecloudsdk.core import exceptions
-from googlecloudsdk.core.console import console_io
 
 
 @gbase.ReleaseTracks(gbase.ReleaseTrack.ALPHA)
@@ -48,19 +46,11 @@ class Update(base.UpdateCommand):
 
   @classmethod
   def Args(cls, parser):
-    if resources.UseRegionalMemberships(cls.ReleaseTrack()):
-      resources.AddMembershipResourceArg(
-          parser,
-          plural=True,
-          membership_help=('Membership names to update, separated by commas '
-                           'if multiple are supplied.'))
-    else:
-      parser.add_argument(
-          '--memberships',
-          type=str,
-          help=('Membership names to update, separated by commas if multiple'
-                ' are supplied.'),
-      )
+    resources.AddMembershipResourceArg(
+        parser,
+        plural=True,
+        membership_help=('Membership names to update, separated by commas '
+                         'if multiple are supplied.'))
     parser.add_argument(
         '--all-memberships',
         action='store_true',
@@ -84,46 +74,13 @@ class Update(base.UpdateCommand):
     # If neither flag is set, disable workload certificate management for the
     # memberships.
     enable = args.enable
-
-    memberships = []
-    if resources.UseRegionalMemberships(self.ReleaseTrack()):
-      memberships = base.ParseMembershipsPlural(args, prompt=True)
-    else:
-      all_memberships = base.ListMemberships()
-      if not all_memberships:
-        raise exceptions.Error('No memberships available in the fleet.')
-
-      if args.all_memberships:
-        memberships = all_memberships
-      elif args.memberships:
-        memberships = args.memberships.split(',')
-
-      if not memberships:  # The user didn't provide --memberships.
-        if console_io.CanPrompt():
-          index = console_io.PromptChoice(
-              options=all_memberships,
-              message='Please specify a membership:\n',
-              cancel_option=True)
-          memberships.append(all_memberships[index])
-        else:
-          raise calliope_exceptions.RequiredArgumentException(
-              '--memberships',
-              ('Cannot prompt a console for membership. Membership is '
-               'required. Please specify `--memberships` to select at '
-               'least one membership.'))
-
-      for membership in memberships:
-        if membership not in all_memberships:
-          raise exceptions.Error(
-              'Membership {} does not exist in the fleet.'.format(membership))
+    memberships = base.ParseMembershipsPlural(args, prompt=True)
 
     # All memberships in memberships are valid.
     f = self.GetFeature()
     membership_specs = {}
     for membership_str in memberships:
       membership = membership_str
-      if not resources.UseRegionalMemberships(self.ReleaseTrack()):
-        membership = self.MembershipResourceName(membership_str)
       patch = self.messages.MembershipFeatureSpec()
 
       # Use current spec if it exists.

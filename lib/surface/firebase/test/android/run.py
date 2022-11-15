@@ -180,7 +180,7 @@ class _BaseRun(object):
     if args.async_ and not args.IsSpecified('format'):
       args.format = """
           value(format(
-            'Final test results will be available at [{0}].', [])
+            'Final test results will be available at [ {0} ].', [])
           )
       """
     log.status.Print('\nHave questions, feedback, or issues? Get support by '
@@ -234,7 +234,7 @@ class _BaseRun(object):
       log.status.Print('')
       if args.async_:
         return url
-      log.status.Print('Test results will be streamed to [{0}].'.format(url))
+      log.status.Print('Test results will be streamed to [ {0} ].'.format(url))
 
       # If we have exactly one testExecution, show detailed progress info.
       if len(supported_executions) == 1 and args.num_flaky_test_attempts == 0:
@@ -242,7 +242,7 @@ class _BaseRun(object):
       else:
         monitor.MonitorTestMatrixProgress()
 
-    log.status.Print('\nMore details are available at [{0}].'.format(url))
+    log.status.Print('\nMore details are available at [ {0} ].'.format(url))
     # Fetch the per-dimension test outcomes list, and also the "rolled-up"
     # matrix outcome from the Tool Results service.
     summary_fetcher = results_summary.ToolResultsSummaryFetcher(

@@ -15,7 +15,7 @@
 import datetime
 
 from google.api_core.exceptions import InvalidArgument
-from google.protobuf.timestamp_pb2 import Timestamp  # pytype: disable=pyi-error
+from cloudsdk.google.protobuf.timestamp_pb2 import Timestamp  # pytype: disable=pyi-error
 from google.pubsub_v1 import PubsubMessage
 
 from google.cloud.pubsublite.cloudpubsub import MessageTransformer

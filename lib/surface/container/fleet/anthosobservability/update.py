@@ -47,19 +47,11 @@ class Update(base.UpdateCommand):
     Args:
       parser: An argparse.ArgumentParser.
     """
-    if resources.UseRegionalMemberships(cls.ReleaseTrack()):
-      resources.AddMembershipResourceArg(
-          parser,
-          membership_required=True,
-          membership_help='The name of the Membership to update.',
-      )
-    else:
-      parser.add_argument(
-          '--membership',
-          type=str,
-          help='The name of the Membership to update.',
-          required=True,
-      )
+    resources.AddMembershipResourceArg(
+        parser,
+        membership_required=True,
+        membership_help='The name of the Membership to update.',
+    )
     app_group = parser.add_mutually_exclusive_group(required=False)
 
     app_group.add_argument(
@@ -109,22 +101,8 @@ class Update(base.UpdateCommand):
           --enable-optimized-metrics
           --disable-optimized-metrics""")
 
-    if resources.UseRegionalMemberships(self.ReleaseTrack()):
-      membership = base.ParseMembership(args)
-    else:
-      membership = args.membership
-      all_memberships = base.ListMemberships()
-      if not all_memberships:
-        raise exceptions.Error('No Memberships available in the fleet.')
-      if membership not in all_memberships:
-        raise exceptions.Error(
-            'Membership {} not found. Valid choices are {}.'.format(
-                membership, all_memberships))
-
+    membership = base.ParseMembership(args)
     resource_name = membership
-    if not resources.UseRegionalMemberships(self.ReleaseTrack()):
-      resource_name = self.MembershipResourceName(membership)
-
     old_feature = self.GetFeature(v1alpha1=True)
 
     ao_feature_spec = old_feature.anthosobservabilityFeatureSpec

@@ -147,7 +147,7 @@ class Register(base.CreateCommand):
       $ {command} my-cluster \
         --gke-cluster=my-cluster-region-or-zone/my-cluster \
         --install-connect-agent \
-        --version=gkeconnect_20190802_02_00 \
+        --version=20220819-00-00 \
         --service-account-key-file=/tmp/keyfile.json
 
     Register a GKE cluster and output a manifest that can be used to install the

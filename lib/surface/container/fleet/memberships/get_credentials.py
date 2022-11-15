@@ -71,23 +71,22 @@ class GetCredentials(base.Command):
         help=textwrap.dedent("""\
           The membership name used to locate a cluster in your project. """),
     )
-    if cls.ReleaseTrack() is base.ReleaseTrack.ALPHA:
-      parser.add_argument(
-          '--location',
-          type=str,
-          hidden=True,
-          help=textwrap.dedent("""\
-              The location for the membership resource, e.g. `us-central1`.
-              If not specified, defaults to `global`.
-            """),
-      )
+    # TODO(b/255818709): When this becomes unhidden, add a regional example
+    # above.
+    parser.add_argument(
+        '--location',
+        type=str,
+        hidden=True,
+        help=textwrap.dedent("""\
+            The location for the membership resource, e.g. `us-central1`.
+            If not specified, defaults to `global`.
+          """),
+    )
 
   def Run(self, args):
     container_util.CheckKubectlInstalled()
     project_id = properties.VALUES.core.project.GetOrFail()
-    location = getattr(args, 'location', 'global')
-    if location is None:
-      location = 'global'
+    location = args.location or 'global'
 
     log.status.Print('Starting to build Gateway kubeconfig...')
     log.status.Print('Current project_id: ' + project_id)

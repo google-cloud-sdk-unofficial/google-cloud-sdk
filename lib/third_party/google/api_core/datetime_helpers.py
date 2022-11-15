@@ -18,7 +18,7 @@ import calendar
 import datetime
 import re
 
-from google.protobuf import timestamp_pb2
+from cloudsdk.google.protobuf import timestamp_pb2
 
 
 _UTC_EPOCH = datetime.datetime(1970, 1, 1, tzinfo=datetime.timezone.utc)

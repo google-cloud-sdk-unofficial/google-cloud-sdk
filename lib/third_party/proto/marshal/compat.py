@@ -18,10 +18,10 @@
 # If the C extensions were not installed, then their container types will
 # not be included.
 
-from google.protobuf.internal import containers
+from cloudsdk.google.protobuf.internal import containers
 
 try:
-    from google.protobuf.pyext import _message
+    from cloudsdk.google.protobuf.pyext import _message
 except ImportError:
     _message = None
 

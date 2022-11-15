@@ -66,20 +66,12 @@ class List(calliope_base.ListCommand):
         help='If set, returns violations grouped by a common attribute. Options: constraint, membership',
         default=''
     )
-    if resources.UseRegionalMemberships(cls.ReleaseTrack()):
-      resources.AddMembershipResourceArg(
-          parser,
-          plural=True,
-          membership_help=(
-              'The membership names from which to return violations, separated '
-              'by commas if multiple are supplied.'))
-    else:
-      parser.add_argument(
-          '--memberships',
-          type=str,
-          help=(
-              'The membership names from which to return violations, separated '
-              'by commas if multiple are supplied.'))
+    resources.AddMembershipResourceArg(
+        parser,
+        plural=True,
+        membership_help=(
+            'The membership names from which to return violations, separated '
+            'by commas if multiple are supplied.'))
 
   def Run(self, args):
     calliope_base.EnableUserProjectQuota()
@@ -95,10 +87,7 @@ class List(calliope_base.ListCommand):
         self.ReleaseTrack())
 
     if args.memberships is not None:
-      if resources.UseRegionalMemberships(self.ReleaseTrack()):
-        memberships = args.memberships
-      else:
-        memberships = args.memberships.split(',')
+      memberships = args.memberships
     else:
       memberships = []
 

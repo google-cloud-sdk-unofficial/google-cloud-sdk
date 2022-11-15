@@ -15,17 +15,13 @@
 
   request:
     collection: gkehub.projects.locations.memberships
+    issue_request_hook: googlecloudsdk.command_lib.container.fleet.memberships.util:ExecuteUpdateMembershipRequest
     ALPHA:
-      issue_request_hook: googlecloudsdk.command_lib.container.fleet.memberships.util:ExecuteUpdateMembershipRequest
       api_version: v1alpha2
     BETA:
       api_version: v1beta1
     GA:
       api_version: v1
-
-  async:
-    collection: gkehub.projects.locations.operations
-    release_tracks: [BETA, GA]
 
   arguments:
     resource:
@@ -33,7 +29,6 @@
       help_text: membership resource representing a cluster in Fleet.
     params:
     - arg_name: async
-      release_tracks: [ALPHA]
       type: bool
       help_text: Return immediately, without waiting for the operation in progress to complete.
     - api_field: membership.description
@@ -64,9 +59,4 @@
       api_field: membership.labels
 
   update:
-    ALPHA:
-      read_modify_update: false
-    BETA:
-      read_modify_update: true
-    GA:
-      read_modify_update: true
+    read_modify_update: false

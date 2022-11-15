@@ -245,6 +245,7 @@ def AddBaseArgs(parser, is_alpha=False):
   flags.AddMaintenanceVersion(parser)
   flags.AddSqlServerAudit(parser)
   flags.AddDeletionProtection(parser)
+  flags.AddConnectorEnforcement(parser)
 
 
 def AddBetaArgs(parser):
@@ -253,7 +254,6 @@ def AddBetaArgs(parser):
   flags.AddAllocatedIpRangeName(parser)
   labels_util.AddUpdateLabelsFlags(parser, enable_clear=True)
   flags.AddEnableGooglePrivatePath(parser)
-  flags.AddConnectorEnforcement(parser)
 
 
 def AddAlphaArgs(unused_parser):

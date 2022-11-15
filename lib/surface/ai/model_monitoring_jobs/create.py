@@ -24,6 +24,7 @@ from googlecloudsdk.command_lib.ai import constants
 from googlecloudsdk.command_lib.ai import endpoint_util
 from googlecloudsdk.command_lib.ai import flags
 from googlecloudsdk.command_lib.ai import model_monitoring_jobs_util
+from googlecloudsdk.command_lib.ai import region_util
 from googlecloudsdk.command_lib.ai import validation
 from googlecloudsdk.command_lib.util.args import labels_util
 from googlecloudsdk.core import log
@@ -58,8 +59,11 @@ DETAILED_HELP = {
 
 def _Args(parser):
   """Add flags for create command."""
-  flags.AddRegionResourceArg(parser,
-                             'to create model deployment monitoring job')
+  flags.AddRegionResourceArg(
+      parser,
+      'to create model deployment monitoring job',
+      prompt_func=region_util.GetPromptForRegionFunc(
+          constants.SUPPORTED_MODEL_MONITORING_JOBS_REGIONS))
   flags.GetDisplayNameArg('model deployment monitoring job').AddToParser(parser)
   flags.GetEndpointIdArg(required=True).AddToParser(parser)
   flags.GetEmailsArg(required=True).AddToParser(parser)

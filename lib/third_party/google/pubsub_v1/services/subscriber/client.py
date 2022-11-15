@@ -44,8 +44,8 @@ from google.oauth2 import service_account  # type: ignore
 
 from google.iam.v1 import iam_policy_pb2 as iam_policy  # type: ignore
 from google.iam.v1 import policy_pb2 as policy  # type: ignore
-from google.protobuf import duration_pb2 as duration  # type: ignore
-from google.protobuf import timestamp_pb2 as timestamp  # type: ignore
+from cloudsdk.google.protobuf import duration_pb2 as duration  # type: ignore
+from cloudsdk.google.protobuf import timestamp_pb2 as timestamp  # type: ignore
 from google.pubsub_v1.services.subscriber import pagers
 from google.pubsub_v1.types import pubsub
 

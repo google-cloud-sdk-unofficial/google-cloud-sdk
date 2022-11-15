@@ -21,7 +21,6 @@ from __future__ import unicode_literals
 from googlecloudsdk.api_lib.container.fleet import util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.container.fleet import api_util
-from googlecloudsdk.command_lib.container.fleet import resources
 from googlecloudsdk.command_lib.container.fleet.features import base as feature_base
 from googlecloudsdk.core import log
 
@@ -55,24 +54,18 @@ class Version(feature_base.FeatureCommand, base.ListCommand):
         'table(name:label=Name:sort=1,version:label=Version)')
 
   def Run(self, args):
-    if resources.UseRegionalMemberships(self.ReleaseTrack()):
-      memberships, unreachable = api_util.ListMembershipsFull()
-      if unreachable:
-        log.warning('Locations {} are currently unreachable. Version '
-                    'entries may be incomplete'.format(unreachable))
-    else:
-      memberships = feature_base.ListMemberships()
+    memberships, unreachable = api_util.ListMembershipsFull()
+    if unreachable:
+      log.warning('Locations {} are currently unreachable. Version '
+                  'entries may be incomplete'.format(unreachable))
     f = self.GetFeature()
 
     acm_status = []
 
-    if resources.UseRegionalMemberships(self.ReleaseTrack()):
-      feature_state_memberships = self.hubclient.ToPyDict(f.membershipStates)
-    else:
-      feature_state_memberships = {
-          util.MembershipShortname(m): s
-          for m, s in self.hubclient.ToPyDict(f.membershipStates).items()
-      }
+    feature_state_memberships = {
+        util.MembershipPartialName(m): s
+        for m, s in self.hubclient.ToPyDict(f.membershipStates).items()
+    }
     for name in memberships:
       cluster = ConfigmanagementFeatureState(name)
       if name not in feature_state_memberships:

@@ -21,7 +21,7 @@ import grpc
 from google.longrunning import (
     operations_proto_pb2 as google_dot_longrunning_dot_operations__pb2,
 )
-from google.protobuf import empty_pb2 as google_dot_protobuf_dot_empty__pb2
+from cloudsdk.google.protobuf import empty_pb2 as google_dot_protobuf_dot_empty__pb2
 
 
 class OperationsStub(object):

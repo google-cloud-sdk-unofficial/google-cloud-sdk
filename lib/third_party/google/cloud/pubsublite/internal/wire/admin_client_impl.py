@@ -16,7 +16,7 @@ from typing import List, Union
 
 from google.api_core.exceptions import InvalidArgument
 from google.api_core.operation import Operation
-from google.protobuf.field_mask_pb2 import FieldMask  # pytype: disable=pyi-error
+from cloudsdk.google.protobuf.field_mask_pb2 import FieldMask  # pytype: disable=pyi-error
 
 from google.cloud.pubsublite.admin_client_interface import AdminClientInterface
 from google.cloud.pubsublite.types import (

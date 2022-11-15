@@ -74,6 +74,7 @@ class UploadV1(base.CreateCommand):
               region_ref,
               args.display_name,
               args.description,
+              args.version_description,
               args.artifact_uri,
               args.container_image_uri,
               args.container_command,
@@ -226,12 +227,22 @@ class UploadV1Beta1(UploadV1):
     with endpoint_util.AiplatformEndpointOverrides(
         version=constants.BETA_VERSION, region=region):
       operation = client.ModelsClient().UploadV1Beta1(
-          region_ref, args.display_name, args.description, args.artifact_uri,
-          args.container_image_uri, args.container_command, args.container_args,
-          args.container_env_vars, args.container_ports,
-          args.container_predict_route, args.container_health_route,
-          self._BuildExplanationSpec(args), parent_model=args.parent_model,
-          model_id=args.model_id, version_aliases=args.version_aliases,
+          region_ref,
+          args.display_name,
+          args.description,
+          args.version_description,
+          args.artifact_uri,
+          args.container_image_uri,
+          args.container_command,
+          args.container_args,
+          args.container_env_vars,
+          args.container_ports,
+          args.container_predict_route,
+          args.container_health_route,
+          self._BuildExplanationSpec(args),
+          parent_model=args.parent_model,
+          model_id=args.model_id,
+          version_aliases=args.version_aliases,
           labels=args.labels)
       return operations_util.WaitForOpMaybe(
           operations_client=operations.OperationsClient(),

@@ -55,8 +55,8 @@ class CreateAppProfile(base.CreateCommand):
   def Args(parser):
     arguments.AddAppProfileResourceArg(parser, 'to create')
     (arguments.ArgAdder(parser).AddDescription(
-        'app profile',
-        required=False).AddForce('create').AddAppProfileRouting())
+        'app profile', required=False).AddForce(
+            'create').AddAppProfileRouting())
 
   def _CreateAppProfile(self, app_profile_ref, args):
     """Creates an AppProfile with the given arguments.
@@ -64,7 +64,7 @@ class CreateAppProfile(base.CreateCommand):
     Args:
       app_profile_ref: A resource reference of the new app profile.
       args: an argparse namespace. All the arguments that were provided to this
-          command invocation.
+        command invocation.
 
     Raises:
       ConflictingArgumentsException:
@@ -121,8 +121,8 @@ class CreateAppProfileAlpha(CreateAppProfile):
   def Args(parser):
     arguments.AddAppProfileResourceArg(parser, 'to create')
     (arguments.ArgAdder(parser).AddDescription(
-        'app profile', required=False).AddForce('create').AddAppProfileRouting(
-            allow_failover_radius=True))
+        'app profile', required=False).AddForce('create').AddRequestPriority()
+     .AddAppProfileRouting(allow_failover_radius=True))
 
   def _CreateAppProfile(self, app_profile_ref, args):
     """Creates an AppProfile with the given arguments.
@@ -152,4 +152,5 @@ class CreateAppProfileAlpha(CreateAppProfile):
         restrict_to=args.restrict_to,
         failover_radius=args.failover_radius,
         transactional_writes=args.transactional_writes,
-        force=args.force)
+        force=args.force,
+        priority=args.priority)

@@ -3,19 +3,19 @@
 
 import sys
 _b=sys.version_info[0]<3 and (lambda x:x) or (lambda x:x.encode('latin1'))
-from google.protobuf.internal import enum_type_wrapper
-from google.protobuf import descriptor as _descriptor
-from google.protobuf import message as _message
-from google.protobuf import reflection as _reflection
-from google.protobuf import symbol_database as _symbol_database
-from google.protobuf import descriptor_pb2
+from cloudsdk.google.protobuf.internal import enum_type_wrapper
+from cloudsdk.google.protobuf import descriptor as _descriptor
+from cloudsdk.google.protobuf import message as _message
+from cloudsdk.google.protobuf import reflection as _reflection
+from cloudsdk.google.protobuf import symbol_database as _symbol_database
+from cloudsdk.google.protobuf import descriptor_pb2
 # @@protoc_insertion_point(imports)
 
 _sym_db = _symbol_database.Default()
 
 
 from google.api import annotations_pb2 as google_dot_api_dot_annotations__pb2
-from google.protobuf import timestamp_pb2 as google_dot_protobuf_dot_timestamp__pb2
+from cloudsdk.google.protobuf import timestamp_pb2 as google_dot_protobuf_dot_timestamp__pb2
 
 
 DESCRIPTOR = _descriptor.FileDescriptor(

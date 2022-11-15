@@ -1044,20 +1044,20 @@ class _Load(BigqueryCmd):
     flags.DEFINE_string(
         'hive_partitioning_mode',
         None,
-        '(experimental) Enables hive partitioning.  AUTO indicates to perform '
+        'Enables hive partitioning.  AUTO indicates to perform '
         'automatic type inference.  STRINGS indicates to treat all hive '
         'partition keys as STRING typed.  No other values are accepted',
         flag_values=fv)
     flags.DEFINE_string(
         'hive_partitioning_source_uri_prefix',
-        None, '(experimental) Prefix after which hive partition '
+        None, 'Prefix after which hive partition '
         'encoding begins.  For URIs like gs://bucket/path/key1=value/file, '
         'the value should be gs://bucket/path.',
         flag_values=fv)
     flags.DEFINE_multi_enum(
         'decimal_target_types',
         None, ['NUMERIC', 'BIGNUMERIC', 'STRING'],
-        '(experimental) Specifies the list of possible BigQuery data types to '
+        'Specifies the list of possible BigQuery data types to '
         'which the source decimal values are converted. This list and the '
         'precision and the scale parameters of the decimal field determine the '
         'target type in the following preference order, and '
@@ -1313,6 +1313,7 @@ def _CreateExternalTableDefinition(
       JSON, specify 'NEWLINE_DELIMITED_JSON'. For Cloud Datastore backup,
       specify 'DATASTORE_BACKUP'. For Avro files, specify 'AVRO'. For Orc files,
       specify 'ORC'. For Parquet files, specify 'PARQUET'.
+      For Iceberg tables, specify 'ICEBERG'.
     source_uris: Comma separated list of URIs that contain data for this table.
     schema: Either an inline schema or path to a schema file.
     autodetect: Indicates if format options, compression mode and schema be auto
@@ -1351,7 +1352,8 @@ def _CreateExternalTableDefinition(
         'AVRO',
         'ORC',
         'PARQUET',
-        'GOOGLE_SHEETS'
+        'GOOGLE_SHEETS',
+        'ICEBERG'
     ]
 
     if source_format not in supported_formats:
@@ -1421,6 +1423,15 @@ def _CreateExternalTableDefinition(
     elif external_table_def['sourceFormat'] == 'ORC':
       if reference_file_schema_uri is not None:
         external_table_def['referenceFileSchemaUri'] = reference_file_schema_uri
+    elif external_table_def['sourceFormat'] == 'ICEBERG':
+      if autodetect is not None and not autodetect or schema:
+        raise app.UsageError(
+            'Cannot create Iceberg table from user-specified schema.')
+      # Always autodetect schema for ICEBERG from manifest
+      external_table_def['autodetect'] = True
+      if len(source_uris.split(',')) != 1:
+        raise app.UsageError(
+            'Must provide only one source_uri for Iceberg table.')
 
     if ignore_unknown_values:
       external_table_def['ignoreUnknownValues'] = True
@@ -1473,19 +1484,19 @@ class _MakeExternalTableDefinition(BigqueryCmd):
     flags.DEFINE_string(
         'hive_partitioning_mode',
         None,
-        '(experimental) Enables hive partitioning.  AUTO indicates to perform '
+        'Enables hive partitioning.  AUTO indicates to perform '
         'automatic type inference.  STRINGS indicates to treat all hive '
         'partition keys as STRING typed.  No other values are accepted',
         flag_values=fv)
     flags.DEFINE_string(
         'hive_partitioning_source_uri_prefix',
-        None, '(experimental) Prefix after which hive partition '
+        None, 'Prefix after which hive partition '
         'encoding begins.  For URIs like gs://bucket/path/key1=value/file, '
         'the value should be gs://bucket/path.',
         flag_values=fv)
     flags.DEFINE_boolean(
         'require_hive_partition_filter',
-        None, '(experimental) Whether queries against a table are required to '
+        None, 'Whether queries against a table are required to '
         'include a hive partition key in a query predicate.',
         flag_values=fv)
     flags.DEFINE_enum(
@@ -1498,7 +1509,8 @@ class _MakeExternalTableDefinition(BigqueryCmd):
             'DATASTORE_BACKUP',
             'ORC',
             'PARQUET',
-            'AVRO'
+            'AVRO',
+            'ICEBERG'
         ],
         'Format of source data. Options include:'
         '\n CSV'
@@ -1507,6 +1519,7 @@ class _MakeExternalTableDefinition(BigqueryCmd):
         '\n DATASTORE_BACKUP'
         '\n ORC'
         '\n PARQUET'
+        '\n ICEBERG (preview)'
         '\n AVRO',
         flag_values=fv)
     flags.DEFINE_string(
@@ -1730,8 +1743,7 @@ class _Query(BigqueryCmd):
         None, 'Specifies a table name and either an inline table definition '
         'or a path to a file containing a JSON table definition to use in the '
         'query. The format is "table_name::path_to_file_with_json_def" or '
-        '"table_name::schema@format=uri@connection". Note using connection is '
-        'an experimental feature and is still under development.'
+        '"table_name::schema@format=uri@connection". '
         'For example, '
         '"--external_table_definition=Example::/tmp/example_table_def.txt" '
         'will define a table named "Example" using the URIs and schema '
@@ -3738,8 +3750,7 @@ class _Make(BigqueryCmd):
         'file containing a JSON table definition. '
         'The format of inline definition is "schema@format=uri@connection", '
         'where "schema@", "format=", and "connection" are optional and "format"'
-        'has the default value of "CSV" if not specified. Note using '
-        'connection is an experimental feature and is still under development.',
+        'has the default value of "CSV" if not specified. ',
         flag_values=fv)
     flags.DEFINE_string(
         'view', '', 'Create view with this SQL query.', flag_values=fv)
@@ -5053,9 +5064,7 @@ class _Update(BigqueryCmd):
         'Specifies a table definition to use to update an external table. '
         'The value can be either an inline table definition or a path to a '
         'file containing a JSON table definition.'
-        'The format of inline definition is "schema@format=uri@connection". '
-        'Note using connection is an experiment feature and is still under '
-        'development.',
+        'The format of inline definition is "schema@format=uri@connection". ',
         flag_values=fv)
     flags.DEFINE_enum(
         'metadata_cache_mode',

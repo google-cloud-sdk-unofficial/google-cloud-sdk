@@ -500,6 +500,8 @@ flags_to_add = {
             flags.AddMachineTypeFlag,
         'maintenancewindow':
             flags.AddMaintenanceWindowGroup,
+        'managedprometheus':
+            (lambda p: flags.AddManagedPrometheusFlags(p, for_create=True)),
         'masterauth':
             flags.AddMasterAuthorizedNetworksFlags,
         'masterglobalaccess':

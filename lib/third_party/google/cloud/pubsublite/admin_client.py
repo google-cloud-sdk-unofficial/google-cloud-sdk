@@ -18,7 +18,7 @@ from overrides import overrides
 from google.api_core.client_options import ClientOptions
 from google.api_core.operation import Operation
 from google.auth.credentials import Credentials
-from google.protobuf.field_mask_pb2 import FieldMask  # pytype: disable=pyi-error
+from cloudsdk.google.protobuf.field_mask_pb2 import FieldMask  # pytype: disable=pyi-error
 
 from google.cloud.pubsublite.admin_client_interface import AdminClientInterface
 from google.cloud.pubsublite.internal.constructable_from_service_account import (

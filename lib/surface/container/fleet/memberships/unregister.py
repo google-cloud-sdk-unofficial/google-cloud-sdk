@@ -97,28 +97,18 @@ class Unregister(calliope_base.DeleteCommand):
 
   @classmethod
   def Args(cls, parser):
-    if cls.ReleaseTrack() is calliope_base.ReleaseTrack.ALPHA:
-      resources.AddMembershipResourceArg(
-          parser,
-          membership_help=textwrap.dedent("""\
-            The membership name that you choose to uniquely represent the cluster
-            being registered in the fleet.
-          """),
-          location_help=textwrap.dedent("""\
-            The location of the membership resource, e.g. `us-central1`.
-            If not specified, defaults to `global`.
-          """),
-          membership_required=True,
-          positional=True)
-    else:
-      parser.add_argument(
-          'MEMBERSHIP_NAME',
-          type=str,
-          help=textwrap.dedent("""\
-            The membership name that you choose to uniquely represents the cluster
-            being registered on the fleet.
-          """),
-      )
+    resources.AddMembershipResourceArg(
+        parser,
+        membership_help=textwrap.dedent("""\
+          The membership name that you choose to uniquely represent the cluster
+          being registered in the fleet.
+        """),
+        location_help=textwrap.dedent("""\
+          The location of the membership resource, e.g. `us-central1`.
+          If not specified, defaults to `global`.
+        """),
+        membership_required=True,
+        positional=True)
     parser.add_argument(
         '--uninstall-connect-agent',
         action='store_true',
@@ -133,15 +123,9 @@ class Unregister(calliope_base.DeleteCommand):
 
   def Run(self, args):
     project = arg_utils.GetFromNamespace(args, '--project', use_defaults=True)
-    if resources.UseRegionalMemberships(
-        self.ReleaseTrack()) or (resources.InProdRegionalAllowlist(
-            project, self.ReleaseTrack())):
-      membership = resources.ParseMembershipArg(args)
-      membership_id = util.MembershipShortname(membership)
-      location = util.MembershipLocation(membership)
-    else:
-      membership_id = args.MEMBERSHIP_NAME
-      location = 'global'
+    membership = resources.ParseMembershipArg(args)
+    membership_id = util.MembershipShortname(membership)
+    location = util.MembershipLocation(membership)
 
     # Unregister GKE cluster with simple Add-to-Hub API call. Connect agent will
     # not be uninstalled. And Kubernetes Client is not needed.

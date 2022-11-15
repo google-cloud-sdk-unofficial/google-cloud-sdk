@@ -3,11 +3,11 @@
 
 import sys
 _b=sys.version_info[0]<3 and (lambda x:x) or (lambda x:x.encode('latin1'))
-from google.protobuf import descriptor as _descriptor
-from google.protobuf import message as _message
-from google.protobuf import reflection as _reflection
-from google.protobuf import symbol_database as _symbol_database
-from google.protobuf import descriptor_pb2
+from cloudsdk.google.protobuf import descriptor as _descriptor
+from cloudsdk.google.protobuf import message as _message
+from cloudsdk.google.protobuf import reflection as _reflection
+from cloudsdk.google.protobuf import symbol_database as _symbol_database
+from cloudsdk.google.protobuf import descriptor_pb2
 # @@protoc_insertion_point(imports)
 
 _sym_db = _symbol_database.Default()
@@ -18,9 +18,9 @@ from google.bigtable.admin.v2 import instance_pb2 as google_dot_bigtable_dot_adm
 from google.iam.v1 import iam_policy_pb2 as google_dot_iam_dot_v1_dot_iam__policy__pb2
 from google.iam.v1 import policy_pb2 as google_dot_iam_dot_v1_dot_policy__pb2
 from google.longrunning import operations_pb2 as google_dot_longrunning_dot_operations__pb2
-from google.protobuf import empty_pb2 as google_dot_protobuf_dot_empty__pb2
-from google.protobuf import field_mask_pb2 as google_dot_protobuf_dot_field__mask__pb2
-from google.protobuf import timestamp_pb2 as google_dot_protobuf_dot_timestamp__pb2
+from cloudsdk.google.protobuf import empty_pb2 as google_dot_protobuf_dot_empty__pb2
+from cloudsdk.google.protobuf import field_mask_pb2 as google_dot_protobuf_dot_field__mask__pb2
+from cloudsdk.google.protobuf import timestamp_pb2 as google_dot_protobuf_dot_timestamp__pb2
 
 
 DESCRIPTOR = _descriptor.FileDescriptor(

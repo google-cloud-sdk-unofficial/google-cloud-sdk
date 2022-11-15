@@ -14,8 +14,8 @@
 
 from enum import EnumMeta
 
-from google.protobuf import descriptor_pb2
-from google.protobuf.internal.enum_type_wrapper import EnumTypeWrapper
+from cloudsdk.google.protobuf import descriptor_pb2
+from cloudsdk.google.protobuf.internal.enum_type_wrapper import EnumTypeWrapper
 
 from proto.primitives import ProtoType
 

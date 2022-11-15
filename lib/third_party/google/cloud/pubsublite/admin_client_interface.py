@@ -27,7 +27,7 @@ from google.cloud.pubsublite.types import (
 )
 from google.cloud.pubsublite.types.paths import ReservationPath
 from google.cloud.pubsublite_v1 import Topic, Subscription, Reservation
-from google.protobuf.field_mask_pb2 import FieldMask  # pytype: disable=pyi-error
+from cloudsdk.google.protobuf.field_mask_pb2 import FieldMask  # pytype: disable=pyi-error
 
 
 class AdminClientInterface(ABC):

@@ -355,6 +355,7 @@ class Update(base.UpdateCommand):
     flags.AddStackTypeFlag(group, hidden=True)
     flags.AddCostManagementConfigFlag(group, is_update=True)
     flags.AddGatewayFlags(group, hidden=False)
+    flags.AddManagedPrometheusFlags(group)
 
   def ParseUpdateOptions(self, args, locations):
     get_default = lambda key: getattr(args, key)
@@ -425,6 +426,8 @@ class Update(base.UpdateCommand):
     opts.stack_type = args.stack_type
     opts.enable_cost_allocation = args.enable_cost_allocation
     opts.gateway_api = args.gateway_api
+    opts.enable_managed_prometheus = args.enable_managed_prometheus
+    opts.disable_managed_prometheus = args.disable_managed_prometheus
     return opts
 
   def Run(self, args):

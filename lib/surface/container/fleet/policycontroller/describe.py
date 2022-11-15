@@ -40,29 +40,17 @@ class Describe(base.DescribeCommand):
 
   @classmethod
   def Args(cls, parser):
-    if resources.UseRegionalMemberships(cls.ReleaseTrack()):
-      resources.AddMembershipResourceArg(
-          parser,
-          plural=True,
-          membership_help=(
-              'The membership names for which to display Policy Controller '
-              'feature information.'))
-    else:
-      parser.add_argument(
-          '--memberships',
-          type=str,
-          help=(
-              'The membership names for which to display Policy Controller '
-              'feature information.'))
+    resources.AddMembershipResourceArg(
+        parser,
+        plural=True,
+        membership_help=(
+            'The membership names for which to display Policy Controller '
+            'feature information.'))
 
   def Run(self, args):
     feature = self.GetFeature()
     if args.memberships is not None:
-      if resources.UseRegionalMemberships(self.ReleaseTrack()):
-        memberships_filter = args.memberships
-      else:
-        memberships_filter = args.memberships.split(',')
-
+      memberships_filter = args.memberships
       if feature.membershipSpecs:
         specs = client.HubClient.ToPyDict(feature.membershipSpecs)
         filtered_specs = {}

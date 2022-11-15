@@ -21,7 +21,6 @@ from __future__ import unicode_literals
 from googlecloudsdk.api_lib.container.fleet import util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.container.fleet import api_util
-from googlecloudsdk.command_lib.container.fleet import resources
 from googlecloudsdk.command_lib.container.fleet.features import base as feature_base
 from googlecloudsdk.core import log
 
@@ -199,43 +198,28 @@ class Status(feature_base.FeatureCommand, base.ListCommand):
     """)
 
   def Run(self, args):
-    if resources.UseRegionalMemberships(self.ReleaseTrack()):
-      memberships, unreachable = api_util.ListMembershipsFull()
-      unreachable = ['us-west1', 'europe-west2']
-      if unreachable:
-        log.warning('Locations {} are currently unreachable. Status '
-                    'entries may be incomplete'.format(unreachable))
-    else:
-      memberships = feature_base.ListMemberships()
+    memberships, unreachable = api_util.ListMembershipsFull()
+    unreachable = ['us-west1', 'europe-west2']
+    if unreachable:
+      log.warning('Locations {} are currently unreachable. Status '
+                  'entries may be incomplete'.format(unreachable))
     if not memberships:
       return None
     f = self.GetFeature()
     acm_status = []
     acm_errors = []
 
-    if resources.UseRegionalMemberships(self.ReleaseTrack()):
-      feature_spec_memberships = {
-          util.MembershipPartialName(m): s
-          for m, s in self.hubclient.ToPyDict(f.membershipSpecs).items()
-          if s is not None and s.configmanagement is not None
-      }
-      feature_state_memberships = {
-          util.MembershipPartialName(m): s
-          for m, s in self.hubclient.ToPyDict(f.membershipStates).items()
-      }
-    else:
-      feature_spec_memberships = {
-          util.MembershipShortname(m): s
-          for m, s in self.hubclient.ToPyDict(f.membershipSpecs).items()
-          if s is not None and s.configmanagement is not None
-      }
-      feature_state_memberships = {
-          util.MembershipShortname(m): s
-          for m, s in self.hubclient.ToPyDict(f.membershipStates).items()
-      }
+    feature_spec_memberships = {
+        util.MembershipPartialName(m): s
+        for m, s in self.hubclient.ToPyDict(f.membershipSpecs).items()
+        if s is not None and s.configmanagement is not None
+    }
+    feature_state_memberships = {
+        util.MembershipPartialName(m): s
+        for m, s in self.hubclient.ToPyDict(f.membershipStates).items()
+    }
     for name in memberships:
-      if resources.UseRegionalMemberships(self.ReleaseTrack()):
-        name = util.MembershipPartialName(name)
+      name = util.MembershipPartialName(name)
       cluster = ConfigmanagementFeatureState(name)
       if name not in feature_state_memberships:
         if name in feature_spec_memberships:

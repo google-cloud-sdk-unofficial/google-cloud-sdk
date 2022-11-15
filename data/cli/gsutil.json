@@ -1,5 +1,5 @@
 {
-  "CLI_VERSION": "5.15",
+  "CLI_VERSION": "5.16",
   "VERSION": "1",
   "capsule": "",
   "commands": {
@@ -4310,7 +4310,7 @@
           "attr": {},
           "category": "",
           "default": "",
-          "description": "pattern Causes files/objects matching pattern to be excluded, i.e., any\n matching files/objects are not copied or deleted. Note that the\n pattern is a `Python regular expression\n <https://docs.python.org/3/howto/regex.html>`_, not a wildcard\n (so, matching any string ending in \"abc\" would be specified\n using \".*abc$\" rather than \"*abc\"). Note also that the exclude\n path is always relative (similar to Unix rsync or tar exclude\n options). For example, if you run the command:\n gsutil rsync -x \"data./.*\\.txt$\" dir gs://my-bucket\n it skips the file dir/data1/a.txt.\n You can use regex alternation to specify multiple exclusions,\n for example:\n gsutil rsync -x \".*\\.txt$|.*\\.jpg$\" dir gs://my-bucket\n skips all .txt and .jpg files in dir.\n NOTE: When using the Windows cmd.exe command line interpreter,\n use ^ as an escape character instead of \\ and escape the |\n character. When using Windows PowerShell, use ' instead of \"\n and surround the | character with \".",
+          "description": "pattern Causes files/objects matching pattern to be excluded, i.e., any\n matching files/objects are not copied or deleted. Note that the\n pattern is a `Python regular expression\n <https://docs.python.org/3/howto/regex.html>`_, not a wildcard\n (so, matching any string ending in \"abc\" would be specified\n using \".*abc$\" rather than \"*abc\"). Note also that the exclude\n path is always relative (similar to Unix rsync or tar exclude\n options). For example, if you run the command:\n gsutil rsync -x \"data.[/\\\\].*\\.txt$\" dir gs://my-bucket\n it skips the file dir/data1/a.txt.\n You can use regex alternation to specify multiple exclusions,\n for example:\n gsutil rsync -x \".*\\.txt$|.*\\.jpg$\" dir gs://my-bucket\n skips all .txt and .jpg files in dir.\n NOTE: When using the Windows cmd.exe command line interpreter,\n use ^ as an escape character instead of \\ and escape the |\n character. When using Windows PowerShell, use ' instead of \"\n and surround the | character with \".",
           "group": "",
           "is_global": false,
           "is_hidden": false,

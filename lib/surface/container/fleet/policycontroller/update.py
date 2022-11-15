@@ -42,24 +42,14 @@ class Update(base.UpdateCommand):
 
   @classmethod
   def Args(cls, parser):
-    if resources.UseRegionalMemberships(cls.ReleaseTrack()):
-      resources.AddMembershipResourceArg(
-          parser,
-          plural=True,
-          membership_help=(
-              'The membership names to update, separated by commas if multiple '
-              'are supplied. Ignored if --all-memberships is supplied; if '
-              'neither is supplied, a prompt will appear with all available '
-              'memberships.'))
-    else:
-      parser.add_argument(
-          '--memberships',
-          type=str,
-          help=(
-              'The membership names to update, separated by commas if multiple '
-              'are supplied. Ignored if --all-memberships is supplied; if '
-              'neither is supplied, a prompt will appear with all available '
-              'memberships.'))
+    resources.AddMembershipResourceArg(
+        parser,
+        plural=True,
+        membership_help=(
+            'The membership names to update, separated by commas if multiple '
+            'are supplied. Ignored if --all-memberships is supplied; if '
+            'neither is supplied, a prompt will appear with all available '
+            'memberships.'))
     parser.add_argument(
         '--all-memberships',
         action='store_true',
@@ -127,19 +117,12 @@ class Update(base.UpdateCommand):
         self.GetFeature().membershipSpecs)
     poco_hub_config = utils.set_poco_hub_config_parameters_from_args(
         args, self.messages)
-    if resources.UseRegionalMemberships(self.ReleaseTrack()):
-      memberships = base.ParseMembershipsPlural(
-          args, search=True, prompt=True, prompt_cancel=False, autoselect=True)
-    else:
-      memberships = utils.select_memberships(args)
+    memberships = base.ParseMembershipsPlural(
+        args, search=True, prompt=True, prompt_cancel=False, autoselect=True)
     for membership in memberships:
       full_membership_name = ''
-      if resources.UseRegionalMemberships(self.ReleaseTrack()):
-        full_membership_name = utils.convert_membership_from_project_id_to_number(
-            membership)
-      else:
-        full_membership_name = self.MembershipResourceName(
-            membership, use_number=True)
+      full_membership_name = utils.convert_membership_from_project_id_to_number(
+          membership)
       if full_membership_name not in membership_specs:
         raise exceptions.Error(
             'Policy Controller is not enabled for membership {}'.format(

@@ -169,20 +169,12 @@ class List(calliope_base.ListCommand):
         action='store_true',
         help='Include extended information about constraint templates.',
         default=False)
-    if resources.UseRegionalMemberships(cls.ReleaseTrack()):
-      resources.AddMembershipResourceArg(
-          parser,
-          plural=True,
-          membership_help=(
-              'The membership names for which to list constraint templates, '
-              'separated by commas if multiple are supplied.'))
-    else:
-      parser.add_argument(
-          '--memberships',
-          type=str,
-          help=(
-              'The membership names for which to list constraint templates, '
-              'separated by commas if multiple are supplied.'))
+    resources.AddMembershipResourceArg(
+        parser,
+        plural=True,
+        membership_help=(
+            'The membership names for which to list constraint templates, '
+            'separated by commas if multiple are supplied.'))
 
   def Run(self, args):
     calliope_base.EnableUserProjectQuota()
@@ -195,10 +187,7 @@ class List(calliope_base.ListCommand):
         self.ReleaseTrack())
 
     if args.memberships is not None:
-      if resources.UseRegionalMemberships(self.ReleaseTrack()):
-        memberships = args.memberships
-      else:
-        memberships = args.memberships.split(',')
+      memberships = args.memberships
       return ListMembershipTemplates(
           project_id, messages, client, memberships, verbose=args.verbose)
 

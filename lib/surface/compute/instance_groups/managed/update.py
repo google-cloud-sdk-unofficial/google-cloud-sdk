@@ -274,6 +274,7 @@ class UpdateBeta(UpdateGA):
     super(UpdateBeta, cls).Args(parser)
     instance_groups_flags.AddMigUpdateStatefulFlagsIPs(parser)
     managed_flags.AddMigListManagedInstancesResultsFlag(parser)
+    managed_flags.AddMigForceUpdateOnRepairFlags(parser)
 
   def _CreateInstanceGroupManagerPatch(self, args, igm_ref, igm_resource,
                                        client, holder):
@@ -287,6 +288,9 @@ class UpdateBeta(UpdateGA):
           client.messages.InstanceGroupManager
           .ListManagedInstancesResultsValueValuesEnum)(
               args.list_managed_instances_results.upper())
+
+    patch_instance_group_manager.instanceLifecyclePolicy = self._GetUpdatedInstanceLifecyclePolicy(
+        args, client)
 
     return patch_instance_group_manager
 
@@ -376,6 +380,10 @@ class UpdateBeta(UpdateGA):
         client.messages, stateful_policy,
         None, stateful_internal_ips, stateful_external_ips)
 
+  def _GetUpdatedInstanceLifecyclePolicy(self, args, client):
+    """Create an updated instance lifecycle policy based on specified args."""
+    return managed_instance_groups_utils.CreateInstanceLifecyclePolicy(
+        client.messages, args)
 
 UpdateBeta.detailed_help = UpdateGA.detailed_help
 
@@ -389,22 +397,12 @@ class UpdateAlpha(UpdateBeta):
   @classmethod
   def Args(cls, parser):
     super(UpdateAlpha, cls).Args(parser)
-    managed_flags.AddMigForceUpdateOnRepairFlags(parser)
 
   def _CreateInstanceGroupManagerPatch(self, args, igm_ref, igm_resource,
                                        client, holder):
     igm_patch = super(UpdateAlpha, self)._CreateInstanceGroupManagerPatch(
         args, igm_ref, igm_resource, client, holder)
 
-    igm_patch.instanceLifecyclePolicy = self._GetUpdatedInstanceLifecyclePolicy(
-        args, client)
-
     return igm_patch
-
-  def _GetUpdatedInstanceLifecyclePolicy(self, args, client):
-    """Create an updated instance lifecycle policy based on specified args."""
-    return managed_instance_groups_utils.CreateInstanceLifecyclePolicy(
-        client.messages, args)
-
 
 UpdateAlpha.detailed_help = UpdateBeta.detailed_help

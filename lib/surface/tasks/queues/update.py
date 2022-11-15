@@ -83,12 +83,45 @@ class Update(base.UpdateCommand):
       app_engine_routing_override = (
           queue_config.appEngineHttpTarget.appEngineRoutingOverride
           if queue_config.appEngineHttpTarget is not None else None)
+      http_uri_override = (
+          queue_config.httpTarget.uriOverride
+          if queue_config.httpTarget is not None else None)
+      http_method_override = (
+          queue_config.httpTarget.httpMethod
+          if queue_config.httpTarget is not None else None)
+      http_header_override = (
+          queue_config.httpTarget.headerOverrides
+          if queue_config.httpTarget is not None else None)
+      http_oauth_email_override = (
+          queue_config.httpTarget.oauthToken.serviceAccountEmail if
+          (queue_config.httpTarget is not None and
+           queue_config.httpTarget.oauthToken is not None) else None)
+      http_oauth_scope_override = (
+          queue_config.httpTarget.oauthToken.scope if
+          (queue_config.httpTarget is not None and
+           queue_config.httpTarget.oauthToken is not None) else None)
+      http_oidc_email_override = (
+          queue_config.httpTarget.oidcToken.serviceAccountEmail if
+          (queue_config.httpTarget is not None and
+           queue_config.httpTarget.oidcToken is not None) else None)
+      http_oidc_audience_override = (
+          queue_config.httpTarget.oidcToken.audience if
+          (queue_config.httpTarget is not None and
+           queue_config.httpTarget.oidcToken is not None) else None)
+
       update_response = queues_client.Patch(
           queue_ref,
           updated_fields,
           retry_config=queue_config.retryConfig,
           rate_limits=queue_config.rateLimits,
-          app_engine_routing_override=app_engine_routing_override)
+          app_engine_routing_override=app_engine_routing_override,
+          http_uri_override=http_uri_override,
+          http_method_override=http_method_override,
+          http_header_override=http_header_override,
+          http_oauth_email_override=http_oauth_email_override,
+          http_oauth_scope_override=http_oauth_scope_override,
+          http_oidc_email_override=http_oidc_email_override,
+          http_oidc_audience_override=http_oidc_audience_override)
     elif self.ReleaseTrack() == base.ReleaseTrack.BETA:
       app_engine_routing_override = (
           queue_config.appEngineHttpQueue.appEngineRoutingOverride
@@ -183,4 +216,5 @@ class AlphaUpdate(Update):
   def Args(parser):
     flags.AddQueueResourceArg(parser, 'to update')
     flags.AddLocationFlag(parser)
-    flags.AddUpdatePushQueueFlags(parser, release_track=base.ReleaseTrack.ALPHA)
+    flags.AddUpdatePushQueueFlags(
+        parser, release_track=base.ReleaseTrack.ALPHA, http_queue=True)

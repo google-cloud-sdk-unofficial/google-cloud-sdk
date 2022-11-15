@@ -41,11 +41,6 @@ class List(base.ListCommand):
 
         $ {command} --source=gs://my-bucket
 
-      List all inventory report configs with the specified destination of
-      "my-destination-bucket":
-
-        $ {command} --destination=gs://my-destination-bucket
-
       List buckets with JSON formatting, only returning the "displayName" field:
 
         $ {command} --source=gs://my-bucket --format="json(displayName)"
@@ -59,11 +54,6 @@ class List(base.ListCommand):
         metavar='SOURCE_BUCKET_URL',
         help='Specifies URL of the source bucket that contains the inventory '
              'report configuration.')
-    parser.add_argument(
-        '--destination',
-        metavar='DESTINATION_BUCKET_URL',
-        help='Specifies URL of the destination bucket in which generated '
-             'inventory reports are configured to be stored.')
     parser.add_argument(
         '--location',
         help='The location of the report configs.')
@@ -95,16 +85,13 @@ class List(base.ListCommand):
     )
 
   def Run(self, args):
-    if (args.source is None and args.destination is None and
-        args.location is None):
+    if args.source is None and args.location is None:
       raise errors.Error(
-          'At least one of --source, --destination, or --location is required.')
+          'At least one of --source or --location is required.')
 
     source_bucket = storage_url.storage_url_from_string(
         args.source) if args.source is not None else None
 
-    destination = storage_url.storage_url_from_string(
-        args.destination) if args.destination is not None else None
-
     return insights_api.InsightsApi().list(
-        source_bucket, destination, args.location, page_size=args.page_size)
+        source_bucket,
+        location=args.location, page_size=args.page_size)

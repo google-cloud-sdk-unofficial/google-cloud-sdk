@@ -15,11 +15,11 @@
 import abc
 import enum
 
-from google.protobuf import message
-from google.protobuf import duration_pb2
-from google.protobuf import timestamp_pb2
-from google.protobuf import struct_pb2
-from google.protobuf import wrappers_pb2
+from cloudsdk.google.protobuf import message
+from cloudsdk.google.protobuf import duration_pb2
+from cloudsdk.google.protobuf import timestamp_pb2
+from cloudsdk.google.protobuf import struct_pb2
+from cloudsdk.google.protobuf import wrappers_pb2
 
 from proto.marshal import compat
 from proto.marshal.collections import MapComposite

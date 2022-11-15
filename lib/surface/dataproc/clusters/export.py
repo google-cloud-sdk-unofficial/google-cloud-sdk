@@ -112,7 +112,7 @@ def RemoveNonImportableFields(cluster):
     ]
 
     for aux_config in config.auxiliaryNodeGroups:
-      instance_group_configs.append(aux_config.nodeGroup.nodePoolConfig)
+      instance_group_configs.append(aux_config.nodeGroup.nodeGroupConfig)
 
     for group in instance_group_configs:
       if group is not None:

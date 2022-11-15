@@ -153,7 +153,12 @@ class Create(base.CreateCommand):
     release_obj = release.ReleaseClient().Get(release_ref.RelativeName())
     if args.disable_initial_rollout:
       return release_obj
-    rollout_resource = promote_util.Promote(release_ref, release_obj,
-                                            args.to_target, True)
+    rollout_resource = promote_util.Promote(
+        release_ref,
+        release_obj,
+        args.to_target,
+        is_create=True,
+        labels=args.initial_rollout_labels,
+        annotations=args.initial_rollout_annotations)
 
     return release_obj, rollout_resource

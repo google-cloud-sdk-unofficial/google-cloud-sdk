@@ -188,7 +188,7 @@ information on how to structure KEYs and VALUEs, run
       Airflow version supported in the given Cloud Composer version. The
       resolved versions are stored in the created environment.""")
   flags.AddIpAliasEnvironmentFlags(parser, support_max_pods_per_node)
-  flags.AddPrivateIpEnvironmentFlags(parser)
+  flags.AddPrivateIpEnvironmentFlags(parser, release_track)
 
   web_server_group = parser.add_mutually_exclusive_group()
   flags.WEB_SERVER_ALLOW_IP.AddToParser(web_server_group)
@@ -493,6 +493,18 @@ class Create(base.Command):
           flags.PREREQUISITE_OPTION_ERROR_MSG.format(
               prerequisite='enable-private-environment',
               opt='connection-subnetwork'))
+    if args.connection_type and is_composer_v1:
+      raise command_util.InvalidUserInputError(
+          _INVALID_OPTION_FOR_V1_ERROR_MSG.format(opt='connection-type'))
+    if args.connection_type and not args.enable_private_environment:
+      raise command_util.InvalidUserInputError(
+          flags.PREREQUISITE_OPTION_ERROR_MSG.format(
+              prerequisite='enable-private-environment', opt='connection-type'))
+    if (args.connection_type and args.connection_type == 'vpc-peering' and
+        args.connection_subnetwork):
+      raise command_util.InvalidUserInputError(
+          'You cannot specify a connection subnetwork if connection type '
+          "'VPC_PEERING' is selected.")
 
   def ValidateComposer1ExclusiveFlags(self, args, is_composer_v1,
                                       release_track):
@@ -542,6 +554,7 @@ class Create(base.Command):
         composer_network_ipv4_cidr=args.composer_network_ipv4_cidr,
         web_server_access_control=self.web_server_access_control,
         connection_subnetwork=args.connection_subnetwork,
+        connection_type=args.connection_type,
         cloud_sql_machine_type=args.cloud_sql_machine_type,
         web_server_machine_type=args.web_server_machine_type,
         scheduler_cpu=args.scheduler_cpu,
@@ -601,6 +614,11 @@ class CreateBeta(Create):
     flags.TRIGGERER_MEMORY.AddToParser(triggerer_params_group)
     flags.ENABLE_TRIGGERER.AddToParser(triggerer_params_group)
 
+    cloud_data_lineage_integration_params_group = parser.add_argument_group(
+        flags.CLOUD_DATA_LINEAGE_INTEGRATION_GROUP_DESCRIPTION, hidden=True)
+    flags.ENABLE_CLOUD_DATA_LINEAGE_INTEGRATION_FLAG.AddToParser(
+        cloud_data_lineage_integration_params_group)
+
   def GetOperationMessage(self, args, is_composer_v1):
     """See base class."""
     create_flags = environments_api_util.CreateEnvironmentFlags(
@@ -629,6 +647,7 @@ class CreateBeta(Create):
         private_endpoint=args.enable_private_endpoint,
         privately_used_public_ips=args.enable_privately_used_public_ips,
         connection_subnetwork=args.connection_subnetwork,
+        connection_type=args.connection_type,
         master_ipv4_cidr=args.master_ipv4_cidr,
         web_server_ipv4_cidr=args.web_server_ipv4_cidr,
         cloud_sql_ipv4_cidr=args.cloud_sql_ipv4_cidr,
@@ -671,6 +690,8 @@ class CreateBeta(Create):
         snapshot_creation_schedule=args.snapshot_creation_schedule,
         snapshot_location=args.snapshot_location,
         snapshot_schedule_timezone=args.snapshot_schedule_timezone,
+        enable_cloud_data_lineage_integration=args
+        .enable_cloud_data_lineage_integration,
         release_track=self.ReleaseTrack())
 
     return environments_api_util.Create(self.env_ref, create_flags,
@@ -768,6 +789,7 @@ class CreateAlpha(CreateBeta):
         master_ipv4_cidr=args.master_ipv4_cidr,
         privately_used_public_ips=args.enable_privately_used_public_ips,
         connection_subnetwork=args.connection_subnetwork,
+        connection_type=args.connection_type,
         web_server_access_control=self.web_server_access_control,
         cloud_sql_machine_type=args.cloud_sql_machine_type,
         web_server_machine_type=args.web_server_machine_type,
@@ -805,6 +827,8 @@ class CreateAlpha(CreateBeta):
         snapshot_creation_schedule=args.snapshot_creation_schedule,
         snapshot_location=args.snapshot_location,
         snapshot_schedule_timezone=args.snapshot_schedule_timezone,
+        enable_cloud_data_lineage_integration=args
+        .enable_cloud_data_lineage_integration,
         release_track=self.ReleaseTrack())
 
     return environments_api_util.Create(self.env_ref, create_flags,

@@ -23,7 +23,6 @@ from googlecloudsdk.command_lib.container.fleet.config_management import utils
 from googlecloudsdk.command_lib.container.fleet.features import base
 from googlecloudsdk.core import exceptions
 from googlecloudsdk.core import yaml
-from googlecloudsdk.core.console import console_io
 
 # Pull out the example text so the example command can be one line without the
 # py linter complaining. The docgen tool properly breaks it into multiple lines.
@@ -49,14 +48,7 @@ class Apply(base.UpdateCommand):
 
   @classmethod
   def Args(cls, parser):
-    if resources.UseRegionalMemberships(cls.ReleaseTrack()):
-      resources.AddMembershipResourceArg(parser)
-    else:
-      parser.add_argument(
-          '--membership',
-          type=str,
-          help='The Membership name provided during registration.',
-      )
+    resources.AddMembershipResourceArg(parser)
     parser.add_argument(
         '--config',
         type=str,
@@ -74,48 +66,22 @@ class Apply(base.UpdateCommand):
                              e)
     _validate_meta(loaded_cm)
 
-    if resources.UseRegionalMemberships(self.ReleaseTrack()):
-      membership = base.ParseMembership(
-          args, prompt=True, autoselect=True, search=True)
-    else:
-      # make sure a valid membership is selected
-      memberships = base.ListMemberships()
-      if not memberships:
-        raise exceptions.Error('No Memberships available in the fleet.')
-      # User should choose an existing membership if not provide one
-      if not args.membership:
-        index = console_io.PromptChoice(
-            options=memberships,
-            message='Please specify a membership to apply {}:\n'.format(
-                args.config))
-        membership = memberships[index]
-      else:
-        membership = args.membership
-        if membership not in memberships:
-          raise exceptions.Error(
-              'Membership {} is not in the fleet.'.format(membership))
+    membership = base.ParseMembership(
+        args, prompt=True, autoselect=True, search=True)
 
     config_sync = _parse_config_sync(loaded_cm, self.messages)
     policy_controller = _parse_policy_controller(loaded_cm, self.messages)
     hierarchy_controller_config = _parse_hierarchy_controller_config(
         loaded_cm, self.messages)
-    if resources.UseRegionalMemberships(self.ReleaseTrack()):
-      version = self._get_backfill_version(
-          membership) if not args.version else args.version
-    else:
-      version = self._get_backfill_version(
-          self.MembershipResourceName(
-              membership)) if not args.version else args.version
+    version = self._get_backfill_version(
+        membership) if not args.version else args.version
     spec = self.messages.MembershipFeatureSpec(
         configmanagement=self.messages.ConfigManagementMembershipSpec(
             version=version,
             configSync=config_sync,
             policyController=policy_controller,
             hierarchyController=hierarchy_controller_config))
-    if resources.UseRegionalMemberships(self.ReleaseTrack()):
-      spec_map = {membership: spec}
-    else:
-      spec_map = {self.MembershipResourceName(membership): spec}
+    spec_map = {membership: spec}
 
     # UpdateFeature uses patch method to update membership_configs map,
     # there's no need to get the existing feature spec

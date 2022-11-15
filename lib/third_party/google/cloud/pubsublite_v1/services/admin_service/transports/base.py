@@ -29,7 +29,7 @@ from google.oauth2 import service_account  # type: ignore
 from google.cloud.pubsublite_v1.types import admin
 from google.cloud.pubsublite_v1.types import common
 from google.longrunning import operations_pb2  # type: ignore
-from google.protobuf import empty_pb2  # type: ignore
+from cloudsdk.google.protobuf import empty_pb2  # type: ignore
 
 try:
     DEFAULT_CLIENT_INFO = gapic_v1.client_info.ClientInfo(

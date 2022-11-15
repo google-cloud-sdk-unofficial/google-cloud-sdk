@@ -43,7 +43,7 @@ from google.api_core import exceptions
 from google.api_core import protobuf_helpers
 from google.api_core.future import polling
 from google.longrunning import operations_pb2
-from google.protobuf import json_format
+from cloudsdk.google.protobuf import json_format
 from google.rpc import code_pb2
 
 

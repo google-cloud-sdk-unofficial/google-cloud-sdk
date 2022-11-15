@@ -151,20 +151,12 @@ class Describe(calliope_base.DescribeCommand):
         type=str,
         help='The constraint template name and constraint name joined by a slash, e.g. "k8srequiredlabels/all-must-have-owner".'
     )
-    if resources.UseRegionalMemberships(cls.ReleaseTrack()):
-      resources.AddMembershipResourceArg(
-          parser,
-          plural=True,
-          membership_help=(
-              'A single membership name for which to describe a membership '
-              'constraint.'))
-    else:
-      parser.add_argument(
-          '--memberships',
-          type=str,
-          help=(
-              'A single membership name for which to describe a membership '
-              'constraint.'))
+    resources.AddMembershipResourceArg(
+        parser,
+        plural=True,
+        membership_help=(
+            'A single membership name for which to describe a membership '
+            'constraint.'))
 
   def Run(self, args):
     calliope_base.EnableUserProjectQuota()
@@ -178,10 +170,7 @@ class Describe(calliope_base.DescribeCommand):
     constraint_name = args.CONSTRAINT_NAME.lower()
 
     if args.memberships is not None:
-      if resources.UseRegionalMemberships(self.ReleaseTrack()):
-        memberships = args.memberships
-      else:
-        memberships = args.memberships.split(',')
+      memberships = args.memberships
       if len(memberships) != 1:
         raise exceptions.Error('Please specify a single membership name.')
 
