@@ -23,42 +23,76 @@ from googlecloudsdk.api_lib.compute import utils
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute import completers
 from googlecloudsdk.command_lib.compute import flags as compute_flags
+from googlecloudsdk.command_lib.compute import scope as compute_scope
 from googlecloudsdk.command_lib.compute.instance_templates import flags
 
 
-class Delete(base.DeleteCommand):
-  """Delete Compute Engine virtual machine instance templates.
-
-  *{command}* deletes one or more Compute Engine virtual machine
-  instance templates.
-
-  ## EXAMPLES
-  To delete the instance template named 'INSTANCE-TEMPLATE', run:
-
-    $ {command} INSTANCE-TEMPLATE
-  """
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
+class DeleteGA(base.DeleteCommand):
+  """Delete Compute Engine virtual machine instance templates."""
+  support_region_flag = False
 
   @staticmethod
-  def Args(parser):
-    Delete.InstanceTemplateArg = flags.MakeInstanceTemplateArg(plural=True)
-    Delete.InstanceTemplateArg.AddArgument(parser, operation_type='delete')
+  def GetServiceClient(client, ref):
+    if ref.Collection() == 'compute.instanceTemplates':
+      return client.apitools_client.instanceTemplates
+    else:
+      return client.apitools_client.regionInstanceTemplates
+
+  @staticmethod
+  def GetRequestMessage(client, ref):
+    if ref.Collection() == 'compute.instanceTemplates':
+      return client.messages.ComputeInstanceTemplatesDeleteRequest
+    else:
+      return client.messages.ComputeRegionInstanceTemplatesDeleteRequest
+
+  @classmethod
+  def Args(cls, parser):
+    cls.InstanceTemplateArg = flags.MakeInstanceTemplateArg(
+        plural=True, include_regional=cls.support_region_flag)
+    cls.InstanceTemplateArg.AddArgument(parser, operation_type='delete')
     parser.display_info.AddCacheUpdater(completers.InstanceTemplatesCompleter)
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     client = holder.client
 
-    instance_template_refs = Delete.InstanceTemplateArg.ResolveAsResource(
+    instance_template_refs = self.InstanceTemplateArg.ResolveAsResource(
         args,
         holder.resources,
-        scope_lister=compute_flags.GetDefaultScopeLister(client))
+        scope_lister=compute_flags.GetDefaultScopeLister(client),
+        default_scope=compute_scope.ScopeEnum.GLOBAL)
 
     utils.PromptForDeletion(instance_template_refs)
 
     requests = []
-    for instance_template_ref in instance_template_refs:
-      requests.append((client.apitools_client.instanceTemplates, 'Delete',
-                       client.messages.ComputeInstanceTemplatesDeleteRequest(
-                           **instance_template_ref.AsDict())))
+    for ref in instance_template_refs:
+      service_client = self.GetServiceClient(client, ref)
+      request_message = self.GetRequestMessage(client, ref)
+      requests.append(
+          (service_client, 'Delete', request_message(**ref.AsDict())))
 
     return client.MakeRequests(requests)
+
+
+DeleteGA.detailed_help = {
+    'brief':
+        'Delete Compute Engine virtual machine instance templates',
+    'DESCRIPTION':
+        """\
+        *{command}* deletes one or more Compute Engine virtual machine
+        instance templates.
+        """,
+    'EXAMPLES':
+        """\
+        To delete the instance template named 'INSTANCE-TEMPLATE', run:
+
+          $ {command} INSTANCE-TEMPLATE
+        """
+}
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class DeleteAlpha(DeleteGA):
+
+  support_region_flag = True

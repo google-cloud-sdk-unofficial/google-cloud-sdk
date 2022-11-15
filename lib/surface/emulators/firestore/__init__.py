@@ -25,17 +25,18 @@ from googlecloudsdk.command_lib.emulators import util
 from googlecloudsdk.command_lib.util import java
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
+                    base.ReleaseTrack.GA)
 class Firestore(base.Group):
-  """Manage your local firestore emulator.
+  """Manage your local Firestore emulator.
 
-  This set of commands allows you to start and use a local firestore emulator.
+  This set of commands allows you to start and use a local Firestore emulator.
   """
 
   detailed_help = {
       'EXAMPLES':
           """\
-          To start a local firestore emulator, run:
+          To start the local Firestore emulator, run:
 
             $ {command} start
           """,

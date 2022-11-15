@@ -124,7 +124,8 @@ class Enable(base.UpdateCommand, base.EnableCommand):
         .INSTALL_SPEC_ENABLED)
 
     if resources.UseRegionalMemberships(self.ReleaseTrack()):
-      memberships = utils.select_memberships_full(args)
+      memberships = base.ParseMembershipsPlural(
+          args, prompt=True, prompt_cancel=False, search=True)
     else:
       memberships = utils.select_memberships(args)
     for membership in memberships:

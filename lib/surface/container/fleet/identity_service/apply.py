@@ -70,27 +70,31 @@ class Apply(base.UpdateCommand):
 
   def Run(self, args):
     # Get fleet memberships (cluster registered with fleet) from GCP Project.
-    memberships = base.ListMemberships()
-    if not memberships:
-      raise exceptions.Error('No Memberships available in the fleet.')
-
-    # Acquire membership.
-    membership = None
-    # Prompt user for an existing fleet membership if none is provided.
-    if not args.membership:
-      index = 0
-      if len(memberships) > 1:
-        index = console_io.PromptChoice(
-            options=memberships,
-            message='Please specify a membership to apply {}:\n'.format(
-                args.config))
-      membership = memberships[index]
-      sys.stderr.write('Selecting membership [{}].\n'.format(membership))
+    if resources.UseRegionalMemberships(self.ReleaseTrack()):
+      membership = base.ParseMembership(
+          args, prompt=True, autoselect=True, search=True)
     else:
-      membership = args.membership
-      if membership not in memberships:
-        raise exceptions.Error(
-            'Membership {} is not in the fleet.'.format(membership))
+      all_memberships = base.ListMemberships()
+      if not all_memberships:
+        raise exceptions.Error('No Memberships available in the fleet.')
+
+      # Acquire membership.
+      membership = None
+      # Prompt user for an existing fleet membership if none is provided.
+      if not args.membership:
+        index = 0
+        if len(all_memberships) > 1:
+          index = console_io.PromptChoice(
+              options=all_memberships,
+              message='Please specify a membership to apply {}:\n'.format(
+                  args.config))
+        membership = all_memberships[index]
+        sys.stderr.write('Selecting membership [{}].\n'.format(membership))
+      else:
+        membership = args.membership
+        if membership not in all_memberships:
+          raise exceptions.Error(
+              'Membership {} is not in the fleet.'.format(membership))
 
     # Load config YAML file.
     loaded_config = file_parsers.YamlConfigFile(
@@ -101,7 +105,10 @@ class Apply(base.UpdateCommand):
 
     # UpdateFeature uses the patch method to update member_configs map, hence
     # there's no need to get the existing feature spec.
-    full_name = self.MembershipResourceName(membership)
+    if resources.UseRegionalMemberships(self.ReleaseTrack()):
+      full_name = membership
+    else:
+      full_name = self.MembershipResourceName(membership)
     specs = {
         full_name:
             self.messages.MembershipFeatureSpec(identityservice=member_config)
@@ -189,8 +196,8 @@ def _provision_oidc_config(auth_method, msg):
   """Provision FeatureSpec OIDCConfig from the parsed yaml file.
 
   Args:
-    auth_method: YamlConfigFile, The data loaded from the yaml
-      file given by the user. YamlConfigFile is from
+    auth_method: YamlConfigFile, The data loaded from the yaml file given by the
+      user. YamlConfigFile is from
       googlecloudsdk.command_lib.anthos.common.file_parsers.
     msg: The gkehub messages package.
 
@@ -258,8 +265,8 @@ def _provision_google_config(auth_method, msg):
   """Provision FeatureSpec GoogleConfig from the parsed configuration file.
 
   Args:
-    auth_method: YamlConfigFile, The data loaded from the yaml
-      file given by the user. YamlConfigFile is from
+    auth_method: YamlConfigFile, The data loaded from the yaml file given by the
+      user. YamlConfigFile is from
       googlecloudsdk.command_lib.anthos.common.file_parsers.
     msg: The gkehub messages package.
 

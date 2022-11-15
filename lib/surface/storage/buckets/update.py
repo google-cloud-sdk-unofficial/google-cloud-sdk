@@ -198,6 +198,7 @@ def _add_common_args(parser):
       action='store_true',
       help='Clear website error page if bucket is hosting website.')
   flags.add_continue_on_error_flag(parser)
+  flags.add_predefined_acl_flag(parser)
 
 
 def _add_alpha_args(parser):

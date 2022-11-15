@@ -18,45 +18,48 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
-from googlecloudsdk.api_lib.storage.insights.inventory_reports import insights_api
+from googlecloudsdk.api_lib.storage import insights_api
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.storage.insights.inventory_reports import resource_args
 from googlecloudsdk.core import log
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Describe(base.DescribeCommand):
-  """Describes inventory reports details."""
+  """Describe inventory reports detail."""
 
   detailed_help = {
       'DESCRIPTION':
           """
-      Describe the details of an inventory report.
+      Describe the inventory report detail.
       """,
       'EXAMPLES':
           """
 
-      Describe the details of an inventory report where the
-      inventory report details name is
-      "projects/a/locations/b/reportConfigs/c/reportDetails/d":
+      To describe an inventory report detail with ID=4568,
+      location=us, project=foo, and report config ID=1234:
 
-        $ {command} projects/a/locations/b/reportConfigs/c/reportDetails/d
+        $ {command} 1234 --location=us --project=foo --report-config=1234
 
-      Describe the same inventory report with JSON formatting, only returning
+      To describe the same inventory report detail with fully specified name:
+
+        $ {command} /projects/foo/locations/us/reportConfigs/1234/reportDetails/5678
+
+      To describe the same inventory report detail with JSON formatting, only returning
       the "status" field:
 
-        $ {command} projects/a/locations/b/reportConfigs/c/reportDetails/d --format="json(status)"
+        $ {command} /projects/foo/locations/us/reportConfigs/1234/reportDetails/5678 --format="json(status)"
       """,
   }
 
   @staticmethod
   def Args(parser):
-    parser.add_argument(
-        'report_details_name',
-        help='Specifies the name of the report detail to describe.')
+    resource_args.add_report_detail_resource_arg(parser, 'to describe')
 
   def Run(self, args):
+    report_detail_ref = args.CONCEPTS.report_detail.Parse()
     report_details = insights_api.InsightsApi().get_report_details(
-        args.report_details_name)
+        report_detail_ref.RelativeName())
     if report_details:
       log.status.Print(
           'To download the reports, use the `gcloud storage cp` command.')

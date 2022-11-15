@@ -34,7 +34,8 @@ class GetCredentials(base.Command):
 
   detailed_help = {
       'EXAMPLES': kubeconfig.COMMAND_EXAMPLE,
-      'DESCRIPTION': kubeconfig.COMMAND_DESCRIPTION.format(kind='AWS')
+      'DESCRIPTION': kubeconfig.COMMAND_DESCRIPTION.format(
+          cluster_type='Anthos cluster on AWS')
   }
 
   @staticmethod

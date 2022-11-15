@@ -43,7 +43,7 @@ class Delete(base.DeleteCommand):
   @staticmethod
   def Args(parser):
     flags.AddNodePoolResourceArg(parser, 'to delete')
-    flags.AddAllowMissingFlag(parser)
+    flags.AddAllowMissingDeleteNodePool(parser)
     flags.AddValidationOnly(parser, hidden=True)
     base.ASYNC_FLAG.AddToParser(parser)
 
@@ -60,11 +60,7 @@ class Delete(base.DeleteCommand):
       command_util.ConfirmationPrompt('node pool', items, 'deleted')
 
     client = apis.NodePoolsClient()
-    operation = client.Delete(
-        node_pool_ref,
-        allow_missing=args.allow_missing,
-        validate_only=args.validate_only,
-    )
+    operation = client.Delete(args)
 
     if args.validate_only:
       return

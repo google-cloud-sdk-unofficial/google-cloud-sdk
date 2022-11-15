@@ -37,7 +37,7 @@ class ViolationCounter:
   def __init__(self):
     self.membership_constraints = []
 
-  def update(self, membership_name, constraint_label):
+  def Update(self, membership_name, constraint_label):
     """Adds a membership and constraint to the membership_constraints list.
 
     Args:
@@ -47,7 +47,7 @@ class ViolationCounter:
     self.membership_constraints.append(
         (membership_name, constraint_label))
 
-  def check_for_max_constraint_violations(self):
+  def CheckForMaxConstraintViolations(self):
     """Displays a warning if any membership constraints have >=20 violations.
 
     """
@@ -72,12 +72,13 @@ class ViolationCounter:
                   constraint_noun, warning_constraint_list)
 
 
-def list_membership_violations(messages,
-                               client,
-                               project_id,
-                               verbose=False,
-                               group_by=None,
-                               constraint_filter=None):
+def ListMembershipViolations(messages,
+                             client,
+                             project_id,
+                             verbose=False,
+                             group_by=None,
+                             memberships=None,
+                             constraint_filter=None):
   """Lists membership constraint audit violations."""
   formatted_violations = []
   violation_counter = ViolationCounter()
@@ -88,6 +89,9 @@ def list_membership_violations(messages,
   response = client.projects_membershipConstraintAuditViolations.List(request)
 
   for violation in response.membershipConstraintAuditViolations:
+    if memberships and violation.membershipRef.name not in memberships:
+      continue
+
     constraint_label = '{}/{}'.format(
         violation.constraintRef.constraintTemplateName,
         violation.constraintRef.name,
@@ -110,17 +114,17 @@ def list_membership_violations(messages,
       formatted_violation['message'] = violation.errorMessage
 
     formatted_violations.append(formatted_violation)
-    violation_counter.update(violation.membershipRef.name, constraint_label)
+    violation_counter.Update(violation.membershipRef.name, constraint_label)
 
-  violation_counter.check_for_max_constraint_violations()
+  violation_counter.CheckForMaxConstraintViolations()
 
   if group_by == 'constraint' or group_by == 'membership':
-    return group_violations(formatted_violations, group_by)
+    return GroupViolations(formatted_violations, group_by)
 
   return formatted_violations
 
 
-def group_violations(formatted_violations, group_attribute):
+def GroupViolations(formatted_violations, group_attribute):
   """Returns constraint or membership groups with lists of violations."""
   if group_attribute not in ('constraint', 'membership'):
     raise ValueError('group-by type must be constraint or membership')

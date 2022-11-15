@@ -45,14 +45,16 @@ class Update(base.UpdateCommand):
   @classmethod
   def Args(cls, parser):
     if resources.UseRegionalMemberships(cls.ReleaseTrack()):
-      resources.AddMembershipResourceArg(parser)
+      resources.AddMembershipResourceArg(
+          parser, flag_override='--config-membership')
     else:
       parser.add_argument(
           '--config-membership',
           type=str,
           help=textwrap.dedent("""\
               Membership resource representing the cluster which hosts
-              the MultiClusterIngress and MultiClusterService CustomResourceDefinitions.
+              the MultiClusterIngress and MultiClusterService
+              CustomResourceDefinitions.
               """),
       )
 
@@ -64,21 +66,26 @@ class Update(base.UpdateCommand):
 
     console_io.PromptContinue(default=True, cancel_on_no=True)
 
-    config_membership = args.config_membership
-    if not config_membership:
-      memberships = base.ListMemberships()
-      if not memberships:
-        raise exceptions.Error('No Memberships available in the fleet.')
-      index = console_io.PromptChoice(
-          options=memberships, message='Please specify a config membership:\n')
-      config_membership = memberships[index]
+    if resources.UseRegionalMemberships(self.ReleaseTrack()):
+      config_membership = base.ParseMembership(
+          args, prompt=True, flag_override='config_membership')
     else:
-      # Strip to the final path component to allow short and long names.
-      # Assumes long names are for the same project and global location.
-      # TODO(b/192580393): Use the resource args instead of this hack.
-      config_membership = os.path.basename(args.config_membership)
+      config_membership = args.config_membership
+      if not config_membership:
+        all_memberships = base.ListMemberships()
+        if not all_memberships:
+          raise exceptions.Error('No Memberships available in the fleet.')
+        index = console_io.PromptChoice(
+            options=all_memberships,
+            message='Please specify a config membership:\n')
+        config_membership = all_memberships[index]
+      else:
+        # Strip to the final path component to allow short and long names.
+        # Assumes long names are for the same project and global location.
+        # TODO(b/192580393): Use the resource args instead of this hack.
+        config_membership = os.path.basename(args.config_membership)
+      config_membership = self.MembershipResourceName(config_membership)
 
-    config_membership = self.MembershipResourceName(config_membership)
     f = self.messages.Feature(
         spec=self.messages.CommonFeatureSpec(
             multiclusteringress=self.messages.MultiClusterIngressFeatureSpec(

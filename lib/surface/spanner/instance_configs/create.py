@@ -33,25 +33,18 @@ class Create(base.CreateCommand):
   detailed_help = {
       'EXAMPLES':
           textwrap.dedent("""\
-        To create a custom Cloud Spanner instance configuration, run:
-
-          $ {command} custom-instance-config
-            --display-name=custom-instance-config-name
-            --base-config=nam3
-            --replicas=location=us-east4,type=READ_WRITE:location=us-east4,type=READ_WRITE:location=us-east1,type=READ_WRITE:location=us-east1,type=READ_WRITE:location=us-central1,type=WITNESS
-
         To create a custom Cloud Spanner instance configuration based on an existing Google-managed configuration (nam3) by adding a 'READ_ONLY' type replica in location 'us-east4', run:
 
           $ {command} custom-instance-config
             --clone-config=nam3
             --add-replicas=location=us-east4,type=READ_ONLY
 
-        To create a custom Cloud Spanner instance configuration based on an existing Google-managed configuration (nam3) by adding  a 'READ_ONLY' type replica in location 'us-east4' and removing a 'READ_ONLY' type replica in location 'us-central1', run:
+        To create a custom Cloud Spanner instance configuration based on another custom configuration (custom-instance-config) by adding a 'READ_ONLY' type replica in location 'us-east1' and removing a 'READ_ONLY' type replica in location 'us-east4', run:
 
-          $ {command} custom-instance-config
-            --clone-config=nam3
-            --add-replicas=location=us-east4,type=READ_ONLY
-            --skip-replicas=location=us-central1,type=READ_ONLY
+          $ {command} custom-instance-config1
+            --clone-config=custom-instance-config
+            --add-replicas=location=us-east1,type=READ_ONLY
+            --skip-replicas=location=us-east4,type=READ_ONLY
         """),
   }
 

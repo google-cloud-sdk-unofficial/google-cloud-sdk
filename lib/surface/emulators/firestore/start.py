@@ -26,19 +26,28 @@ from googlecloudsdk.command_lib.emulators import util
 from googlecloudsdk.command_lib.util import java
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
+                    base.ReleaseTrack.GA)
 class Start(base.Command):
-  """Start a local firestore emulator.
+  """Start a local Firestore emulator.
 
-  This command starts a local firestore emulator.
+  This command starts a local Firestore emulator.
   """
 
   detailed_help = {
       'EXAMPLES':
           """\
-          To start a local firestore emulator, run:
+          To start the local Firestore emulator, run:
 
             $ {command}
+
+          To bind to a specific host and port, run:
+
+            $ {command} --host-port=0.0.0.0:8080
+
+          To run the local Firestore emulator with a Firebase Rules set, run:
+
+            $ {command} --rules=firestore.rules
           """,
   }
 
@@ -47,7 +56,9 @@ class Start(base.Command):
     parser.add_argument(
         '--rules',
         required=False,
-        help='If set, all projects will use the security rules in this file')
+        help='If set, all projects will use the security rules in this file. '
+        'More information on Firebase Rules and the syntax for this file '
+        'is available at https://firebase.google.com/docs/rules.')
     parser.add_argument(
         '--host-port',
         required=False,

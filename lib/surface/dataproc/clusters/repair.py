@@ -43,24 +43,18 @@ class Repair(base.Command):
           To repair a cluster by deleting faulty primary worker nodes, run:
 
             $ {command} my-cluster --region=us-central1 \
-              --node-pool id=PRIMARY_WORKER_POOL,repair-action=delete,instance_names="w-1;w-10"
+              --node-pool id=PRIMARY_WORKER_POOL,repair-action=delete,instance-names="w-1;w-10"
 
           To repair a cluster by deleting faulty secondary worker nodes, run:
 
             $ {command} my-cluster --region=us-central1 \
-              --node-pool id=SECONDARY_WORKER_POOL,repair-action=delete,instance_names="sw-1;sw-10"
-
-          To repair a cluster by deleting faulty auxillary nodes, run:
-
-            $ {command} my-cluster --region=us-central1 \
-              --node-pool id=<aux_pool_id>,repair-action=delete,instance_names="aux-1;aux-3"
+              --node-pool id=SECONDARY_WORKER_POOL,repair-action=delete,instance-names="sw-1;sw-10"
 
           To repair a cluster by deleting faulty nodes from different pools, run:
 
             $ {command} my-cluster --region=us-central1 \
-              --node-pool id=PRIMARY_WORKER_POOL,repair-action=delete,instance_names="w-1;w-10" \
-              --node-pool id=SECONDARY_WORKER_POOL,repair-action=delete,instance_names="sw-1;sw-10" \
-              --node-pool id=<aux_pool_id>,repair-action=delete,instance_names="aux-1;aux-3"
+              --node-pool id=PRIMARY_WORKER_POOL,repair-action=delete,instance-names="w-1;w-10" \
+              --node-pool id=SECONDARY_WORKER_POOL,repair-action=delete,instance-names="sw-1;sw-10"
           """,
   }
 
@@ -85,9 +79,14 @@ class Repair(base.Command):
         default=[],
         metavar='id=ID,repair-action=REPAIR_ACTION,instance-names="INSTANCE_NAME1[;INSTANCE_NAME2]"',
         help="""
-          Each `--node-pool` flag represents a single node pool associated with
-          the cluster. Valid values for REPAIR_ACTION : {0}.
-          """.format(cls._GetValidRepairActionChoices(dataproc)))
+          Each `--node-pool` flag represents either the primary or secondary
+          worker pool associated with the cluster and an action on specified
+          nodes.
+          *id:*::: Valid values : {}.
+          *repair-action:*::: Valid values : {}.
+          """.format(
+              cls._GetValidNodePoolIdChoices(dataproc),
+              cls._GetValidRepairActionChoices(dataproc)))
     parser.add_argument(
         '--graceful-decommission-timeout',
         type=arg_parsers.Duration(lower_bound='0s', upper_bound='1d'),
@@ -116,6 +115,11 @@ class Repair(base.Command):
     return _ParseRepairActionFunc
 
   @classmethod
+  def _GetValidNodePoolIdChoices(cls, dataproc):
+    """Get list of valid node-pool id values."""
+    return ['PRIMARY_WORKER_POOL', 'SECONDARY_WORKER_POOL']
+
+  @classmethod
   def _GetValidRepairActionChoices(cls, dataproc):
     """Get list of valid REPAIR_ACTION values."""
     repair_action_enums = dataproc.messages.NodePool.RepairActionValueValuesEnum
@@ -138,18 +142,27 @@ class Repair(base.Command):
         self._ParseNodePool(dataproc, node_pool)
         for node_pool in args_node_pools
     ]
-    self._ValidateUniqueNames(pools)
+    self._ValidateNodePoolIds(dataproc, pools)
     return pools
 
-  def _ValidateUniqueNames(self, node_pools):
-    """Validates that unique node-pools are specified."""
+  def _ValidateNodePoolIds(self, dataproc, node_pools):
+    """Validates whether node-pools are valid."""
+    valid_ids = self._GetValidNodePoolIdChoices(dataproc)
+    for node_pool in node_pools:
+      node_pool_id = node_pool.id
+      if node_pool_id not in valid_ids:
+        raise exceptions.InvalidArgumentException(
+            '--node-pool',
+            'Node pool ID "{}" is not one of {}'.format(node_pool_id,
+                                                        valid_ids))
+
     unique_ids = set()
     for node_pool in node_pools:
       node_pool_id = node_pool.id
       if node_pool_id in unique_ids:
         raise exceptions.InvalidArgumentException(
             '--node-pool',
-            'Node pool id "%s" used more than once.' % node_pool_id)
+            'Node pool id "{}" used more than once.'.format(node_pool_id))
       unique_ids.add(node_pool_id)
 
   def Run(self, args):

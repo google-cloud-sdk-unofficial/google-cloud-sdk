@@ -64,6 +64,7 @@ class Update(base.UpdateCommand):
     flags.AddNfsShareArgToParser(parser, positional=True)
     labels_util.AddUpdateLabelsFlags(parser)
     base.ASYNC_FLAG.AddToParser(parser)
+    flags.AddNfsUpdateAllowedClientArgs(parser=parser, hidden=False)
 
   def Run(self, args):
     labels_diff = labels_util.Diff.FromUpdateArgs(args)
@@ -112,7 +113,6 @@ class UpdateAlpha(Update):
   def Args(parser):
     # Flags which are only available in ALPHA should be added to parser here.
     Update.Args(parser)
-    flags.AddNfsUpdateAllowedClientArgs(parser=parser, hidden=True)
 
 
 def _ApplyNFSAllowedClientsUpdates(client, args, existing_nfs,

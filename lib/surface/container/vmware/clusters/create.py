@@ -69,11 +69,8 @@ class Create(base.CreateCommand):
       possible error.
     """
     cluster_ref = args.CONCEPTS.cluster.Parse()
-    admin_cluster_membership_ref = args.CONCEPTS.admin_cluster_membership.Parse(
-    )
     cluster_client = apis.ClustersClient()
-    operation = cluster_client.Create(args, cluster_ref,
-                                      admin_cluster_membership_ref)
+    operation = cluster_client.Create(args)
 
     if args.async_ and not args.IsSpecified('format'):
       args.format = constants.VMWARE_OPERATIONS_FORMAT

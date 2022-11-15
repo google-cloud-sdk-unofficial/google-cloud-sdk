@@ -52,9 +52,9 @@ class Create(base.CreateCommand):
     flags.AddValidationOnly(parser, hidden=True)
     base.ASYNC_FLAG.AddToParser(parser)
     flags.AddReplicas(parser)
-    flags.AddImageType(parser)
+    flags.AddImageType(parser, True)
     flags.AddEnableLoadBalancer(parser)
-    flags.AddAutoscaling(parser)
+    flags.AddAutoscaling(parser, True)
 
   def Run(self, args):
     """Runs the create command.
@@ -70,15 +70,7 @@ class Create(base.CreateCommand):
     """
     node_pool_ref = args.CONCEPTS.node_pool.Parse()
     client = apis.NodePoolsClient()
-    operation = client.Create(
-        node_pool_ref,
-        image_type=args.image_type,
-        replicas=args.replicas,
-        enable_load_balancer=args.enable_load_balancer,
-        min_replicas=args.min_replicas,
-        max_replicas=args.max_replicas,
-        validate_only=args.validate_only,
-    )
+    operation = client.Create(args)
 
     if args.async_ and not args.IsSpecified('format'):
       args.format = constants.VMWARE_OPERATIONS_FORMAT

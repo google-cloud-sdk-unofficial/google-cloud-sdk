@@ -45,6 +45,5 @@ class List(base.ListCommand):
 
   def Run(self, args):
     """Runs the list command."""
-    cluster_ref = args.CONCEPTS.cluster.Parse()
     client = apis.NodePoolsClient()
-    return client.List(cluster_ref, args.page_size, args.limit)
+    return client.List(args)

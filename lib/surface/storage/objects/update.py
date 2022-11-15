@@ -70,15 +70,6 @@ def _add_common_args(parser):
   parser.add_argument(
       'url', nargs='*', help='Specifies URLs of objects to update.')
   parser.add_argument(
-      '-p',
-      '--preserve-acl',
-      action='store_true',
-      default=True,
-      help='Preserves ACLs when copying in the cloud. This feature is'
-      ' supported for only Google Cloud Storage and requires OWNER access'
-      " to all copied objects. To use the destination bucket's default policy"
-      ' (necessary for uniform bucket-level access), use --no-preserve-acl.')
-  parser.add_argument(
       '--read-paths-from-stdin',
       '-I',
       action='store_true',
@@ -101,6 +92,7 @@ def _add_common_args(parser):
   flags.add_continue_on_error_flag(parser)
   flags.add_encryption_flags(parser, allow_patch=True)
   flags.add_precondition_flags(parser)
+  flags.add_object_acl_setter_flags(parser)
   flags.add_object_metadata_flags(parser, allow_patch=True)
 
 
@@ -156,6 +148,9 @@ class Update(base.Command):
 
   def Run(self, args):
     encryption_util.initialize_key_store(args)
+    if not args.predefined_acl and args.preserve_acl is None:
+      # Preserve ACLs by default if nothing set by user.
+      args.preserve_acl = True
     task_iterator = _get_task_iterator(args)
 
     task_status_queue = task_graph_executor.multiprocessing_context.Queue()

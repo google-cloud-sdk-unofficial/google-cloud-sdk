@@ -20,7 +20,7 @@ from __future__ import unicode_literals
 
 import datetime
 
-from googlecloudsdk.api_lib.storage.insights.inventory_reports import insights_api
+from googlecloudsdk.api_lib.storage import insights_api
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.storage import errors
 from googlecloudsdk.command_lib.storage import flags
@@ -30,11 +30,11 @@ from googlecloudsdk.core import log
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Create(base.Command):
-  """Create a new inventory report configuration."""
+  """Create a new inventory report config."""
 
   detailed_help = {
       'DESCRIPTION': """
-       Creates an inventory report configuration that defines how often
+       Create an inventory report config that defines how often
        inventory reports are generated, the metadata fields you want the reports
        to include, and a bucket/prefix in which to store the reports, also known
        as the destination.
@@ -52,7 +52,7 @@ class Create(base.Command):
     parser.add_argument(
         'source_bucket_url',
         type=str,
-        help='Indicates the URL of the source bucket that will contain the '
+        help='URL of the source bucket that will contain the '
              'inventory report configuration.')
     flags.add_inventory_reports_flags(parser, require_create_flags=True)
 
@@ -87,7 +87,9 @@ class Create(base.Command):
     report_config = insights_api.InsightsApi().create(
         source_bucket=source_bucket.bucket_name,
         destination_url=destination,
-        metadata_fields=args.metadata_fields,
+        metadata_fields=(
+            list(flags.REQUIRED_INVENTORY_REPORTS_METADATA_FIELDS) +
+            list(args.metadata_fields)),
         start_date=start_date,
         end_date=end_date,
         frequency=args.schedule_repeats,

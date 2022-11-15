@@ -42,8 +42,7 @@ DETAILED_HELP = {
 }
 
 
-@base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.GA)
 class Restore(base.UpdateCommand):
   """Restore a Bare Metal Solution boot volume from an existing snapshot."""
 

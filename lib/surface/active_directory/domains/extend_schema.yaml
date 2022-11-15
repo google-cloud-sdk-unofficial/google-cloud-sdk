@@ -1,4 +1,4 @@
-- release_tracks: [ALPHA, BETA]
+- release_tracks: [ALPHA, BETA, GA]
   help_text:
     brief: |
       Initiate schema extension for a Managed Microsoft AD domain.
@@ -13,8 +13,8 @@
 
     examples: |
       The following command initiates a schema extension for the domain
-      `my-domain.com` in project `my-project`, with description "Test Description",
-      using the LDIF file "demo.ldif"
+      `my-domain.com` in project `my-project`, with description `Test Description`,
+      using the LDIF file `demo.ldif`
 
       $ {command} my-domain.com --description="Test Description" --ldif-file=demo.ldf --project=my-project --async
 
@@ -28,6 +28,8 @@
       api_version: v1alpha1
     BETA:
       api_version: v1beta1
+    GA:
+      api_version: v1
 
   arguments:
     resource:

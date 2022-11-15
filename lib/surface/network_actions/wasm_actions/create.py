@@ -24,7 +24,9 @@ from googlecloudsdk.api_lib.util import apis
 from googlecloudsdk.api_lib.util import waiter
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope.concepts import concepts
+from googlecloudsdk.command_lib.network_actions import flags
 from googlecloudsdk.command_lib.util.apis import yaml_data
+from googlecloudsdk.command_lib.util.args import labels_util
 from googlecloudsdk.command_lib.util.concepts import concept_parsers
 from googlecloudsdk.command_lib.util.concepts import presentation_specs
 from googlecloudsdk.core import log
@@ -92,19 +94,24 @@ class Create(base.CreateCommand):
             '--wasm-plugin.location': ['wasm_action.location']
         }).AddToParser(parser)
     base.ASYNC_FLAG.AddToParser(parser)
+    labels_util.AddCreateLabelsFlags(parser)
+    flags.AddDescriptionFlag(parser)
 
   def Run(self, args):
     api_version = _GetApiVersion(self.ReleaseTrack())
+    messages = apis.GetMessagesModule('networkservices', api_version)
 
     wasm_action_ref = args.CONCEPTS.wasm_action.Parse()
     wasm_plugin_ref = args.CONCEPTS.wasm_plugin.Parse()
+    labels = labels_util.ParseCreateArgs(args, messages.WasmAction.LabelsValue)
 
-    messages = apis.GetMessagesModule('networkservices', api_version)
     request = messages.NetworkservicesProjectsLocationsWasmActionsCreateRequest(
         parent=wasm_action_ref.Parent().RelativeName(),
         wasmActionId=wasm_action_ref.Name(),
         wasmAction=messages.WasmAction(
-            wasmPlugin=wasm_plugin_ref.RelativeName()))
+            wasmPlugin=wasm_plugin_ref.RelativeName(),
+            description=args.description,
+            labels=labels))
 
     # Issue the create request, which returns an operation.
     client = apis.GetClientInstance('networkservices', api_version)

@@ -59,7 +59,7 @@ class Update(base.Command):
     flags.AddSavedQueriesQueryDescription(parser)
 
   def Run(self, args):
-    parent = asset_utils.GetParentNameForExport(args.organization, args.project,
-                                                args.folder)
+    parent = asset_utils.GetSavedQueriesParent(args.organization, args.project,
+                                               args.folder)
     client = client_util.AssetSavedQueriesClient(parent)
     return client.Update(args)

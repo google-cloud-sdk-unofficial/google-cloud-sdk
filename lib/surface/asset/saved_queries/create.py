@@ -22,6 +22,7 @@ from googlecloudsdk.api_lib.asset import client_util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.asset import flags
 from googlecloudsdk.command_lib.asset import utils as asset_utils
+from googlecloudsdk.command_lib.util.args import labels_util
 
 
 class Create(base.Command):
@@ -55,8 +56,8 @@ class Create(base.Command):
     flags.AddSavedQueriesQueryId(parser, query_id_help_text)
 
     flags.AddSavedQueriesQueryFilePath(parser, True)
-    flags.AddSavedQueriesQueryLabels(parser)
     flags.AddSavedQueriesQueryDescription(parser)
+    labels_util.AddCreateLabelsFlags(parser)
 
   def Run(self, args):
     parent = asset_utils.GetParentNameForExport(args.organization, args.project,

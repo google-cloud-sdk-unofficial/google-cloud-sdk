@@ -72,9 +72,9 @@ class SignJwt(base.Command):
         'written to.')
 
   def Run(self, args):
-    client, messages = util.GetClientAndMessages()
+    client, messages = util.GetIamCredentialsClientAndMessages()
     response = client.projects_serviceAccounts.SignJwt(
-        messages.IamProjectsServiceAccountsSignJwtRequest(
+        messages.IamcredentialsProjectsServiceAccountsSignJwtRequest(
             name=iam_util.EmailToAccountResourceName(args.iam_account),
             signJwtRequest=messages.SignJwtRequest(
                 payload=files.ReadFileContents(args.input,))))

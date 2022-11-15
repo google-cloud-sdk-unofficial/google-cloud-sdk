@@ -50,6 +50,7 @@ class Update(base.UpdateCommand):
     flags.AddValidateOnly(parser, 'update of the cluster')
     flags.AddDescriptionForUpdate(parser)
     flags.AddAnnotationsForUpdate(parser, 'cluster')
+    flags.AddLogging(parser)
     base.ASYNC_FLAG.AddToParser(parser)
     parser.display_info.AddFormat(constants.AZURE_CLUSTERS_FORMAT)
 
@@ -77,4 +78,3 @@ class UpdateAlpha(Update):
   def Args(parser, track=base.ReleaseTrack.ALPHA):
     """Registers alpha track flags for this command."""
     Update.Args(parser)
-    flags.AddLogging(parser)

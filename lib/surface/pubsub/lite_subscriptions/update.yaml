@@ -14,6 +14,7 @@ request:
   method: patch
   modify_request_hooks:
   - googlecloudsdk.command_lib.pubsub.lite_util:UpdateAdminRequest
+  - googlecloudsdk.command_lib.pubsub.lite_util:AddExportResources
 
 arguments:
   resource:
@@ -29,3 +30,12 @@ arguments:
       required: true
       params:
       - _REF_: googlecloudsdk.command_lib.pubsub.flags:delivery-requirement
+      - _REF_: googlecloudsdk.command_lib.pubsub.flags:export-desired-state
+        hidden: true
+        release_tracks: [ALPHA, BETA]
+      - _REF_: googlecloudsdk.command_lib.pubsub.flags:export-pubsub-topic
+        hidden: true
+        release_tracks: [ALPHA, BETA]
+      - _REF_: googlecloudsdk.command_lib.pubsub.flags:export-dead-letter-topic
+        hidden: true
+        release_tracks: [ALPHA, BETA]

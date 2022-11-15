@@ -19,10 +19,7 @@ help_text:
 request:
   collection: pubsublite.admin.projects.locations.subscriptions
   method: create
-  modify_request_hooks:
-  - googlecloudsdk.command_lib.pubsub.lite_util:UpdateAdminRequest
-  - googlecloudsdk.command_lib.pubsub.lite_util:AddSubscriptionTopicResource
-  - googlecloudsdk.command_lib.pubsub.lite_util:UpdateSkipBacklogField
+  issue_request_hook: googlecloudsdk.command_lib.pubsub.lite_util:ExecuteCreateSubscriptionRequest
 
 arguments:
   resource:
@@ -42,5 +39,23 @@ arguments:
     required: true
   - _REF_: googlecloudsdk.command_lib.pubsub.flags:delivery-requirement
     default: deliver-immediately
-  - _REF_: googlecloudsdk.command_lib.pubsub.flags:starting-offset
-    default: end
+  - group:
+      mutex: true
+      params:
+      - _REF_: googlecloudsdk.command_lib.pubsub.flags:starting-offset
+        default: end
+      - _REF_: googlecloudsdk.command_lib.pubsub.flags:publish-time
+        hidden: true
+        release_tracks: [ALPHA, BETA]
+      - _REF_: googlecloudsdk.command_lib.pubsub.flags:event-time
+        hidden: true
+        release_tracks: [ALPHA, BETA]
+  - group:
+      hidden: true
+      release_tracks: [ALPHA, BETA]
+      params:
+      - _REF_: googlecloudsdk.command_lib.pubsub.flags:export-desired-state
+        default: active
+      - _REF_: googlecloudsdk.command_lib.pubsub.flags:export-pubsub-topic
+        required: true
+      - _REF_: googlecloudsdk.command_lib.pubsub.flags:export-dead-letter-topic

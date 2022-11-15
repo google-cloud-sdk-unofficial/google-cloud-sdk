@@ -45,7 +45,7 @@ class Create(base.Command):
 
           To attach a custom domain to a Cloud Run service
 
-              $ {command} --type=domain-routing --parameters='set-mapping=example.com/*:myservice'
+              $ {command} --type=custom-domains --parameters='set-mapping=example.com/*:myservice'
 
          """,
   }

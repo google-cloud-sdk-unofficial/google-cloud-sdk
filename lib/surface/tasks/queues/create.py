@@ -75,7 +75,8 @@ class Create(base.CreateCommand):
           queue_ref,
           retry_config=queue_config.retryConfig,
           rate_limits=queue_config.rateLimits,
-          app_engine_http_target=queue_config.appEngineHttpTarget)
+          app_engine_http_target=queue_config.appEngineHttpTarget,
+          http_target=queue_config.httpTarget)
     elif self.ReleaseTrack() == base.ReleaseTrack.BETA:
       create_response = queues_client.Create(
           location_ref,

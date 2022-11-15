@@ -68,15 +68,15 @@ class SignBlob(base.Command):
                         'written to.')
 
   def Run(self, args):
-    client, messages = util.GetClientAndMessages()
+    client, messages = util.GetIamCredentialsClientAndMessages()
     response = client.projects_serviceAccounts.SignBlob(
-        messages.IamProjectsServiceAccountsSignBlobRequest(
+        messages.IamcredentialsProjectsServiceAccountsSignBlobRequest(
             name=iam_util.EmailToAccountResourceName(args.iam_account),
             signBlobRequest=messages.SignBlobRequest(
-                bytesToSign=files.ReadBinaryFileContents(args.input))))
+                payload=files.ReadBinaryFileContents(args.input))))
 
     log.WriteToFileOrStdout(
-        args.output, content=response.signature, binary=True)
+        args.output, content=response.signedBlob, binary=True)
     log.status.Print(
         'signed blob [{0}] as [{1}] for [{2}] using key [{3}]'.format(
             args.input, args.output, args.iam_account, response.keyId))

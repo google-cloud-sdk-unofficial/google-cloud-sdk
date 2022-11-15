@@ -1,0 +1,26 @@
+- release_tracks: [ALPHA]
+  hidden: true
+  help_text:
+    brief: List fleet scopes.
+    description: List scopes in a fleet.
+    examples: |
+      List scopes in the active project's fleet:
+
+        $ {command}
+
+  request:
+    collection: gkehub.projects.locations.workspaces
+    modify_request_hooks:
+    - googlecloudsdk.command_lib.container.fleet.workspaces.util:SetParentCollection
+    ALPHA:
+      api_version: v1alpha
+
+  arguments:
+    resource:
+      help_text: The fleet host project to list scopes for.
+      spec: !REF googlecloudsdk.command_lib.container.fleet.resources:project
+      override_resource_collection: true
+      arg_name: scope
+
+  response:
+    id_field: name

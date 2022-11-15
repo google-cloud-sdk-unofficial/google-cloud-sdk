@@ -60,6 +60,7 @@ class Create(base.CreateCommand):
     flags.AddAzureAvailabilityZone(parser)
     flags.AddProxyConfig(parser)
     flags.AddConfigEncryption(parser)
+    flags.AddAnnotations(parser, 'node pool')
     base.ASYNC_FLAG.AddToParser(parser)
     parser.display_info.AddFormat(constants.AZURE_NODE_POOL_FORMAT)
 

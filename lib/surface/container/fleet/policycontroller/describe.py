@@ -18,7 +18,9 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+from googlecloudsdk.api_lib.container.fleet import client
 from googlecloudsdk.calliope import base as calliope_base
+from googlecloudsdk.command_lib.container.fleet import resources
 from googlecloudsdk.command_lib.container.fleet.features import base
 
 
@@ -36,5 +38,47 @@ class Describe(base.DescribeCommand):
   """
   feature_name = 'policycontroller'
 
+  @classmethod
+  def Args(cls, parser):
+    if resources.UseRegionalMemberships(cls.ReleaseTrack()):
+      resources.AddMembershipResourceArg(
+          parser,
+          plural=True,
+          membership_help=(
+              'The membership names for which to display Policy Controller '
+              'feature information.'))
+    else:
+      parser.add_argument(
+          '--memberships',
+          type=str,
+          help=(
+              'The membership names for which to display Policy Controller '
+              'feature information.'))
+
   def Run(self, args):
-    return self.GetFeature()
+    feature = self.GetFeature()
+    if args.memberships is not None:
+      if resources.UseRegionalMemberships(self.ReleaseTrack()):
+        memberships_filter = args.memberships
+      else:
+        memberships_filter = args.memberships.split(',')
+
+      if feature.membershipSpecs:
+        specs = client.HubClient.ToPyDict(feature.membershipSpecs)
+        filtered_specs = {}
+        for membership_name in specs:
+          if membership_name in memberships_filter:
+            filtered_specs[membership_name] = specs[membership_name]
+        feature.membershipSpecs = client.HubClient.ToProtoMap(
+            self.messages.Feature.MembershipSpecsValue, filtered_specs)
+
+      if feature.membershipStates:
+        states = client.HubClient.ToPyDict(feature.membershipStates)
+        filtered_states = {}
+        for membership_name in states:
+          if membership_name in memberships_filter:
+            filtered_states[membership_name] = states[membership_name]
+        feature.membershipStates = client.HubClient.ToProtoMap(
+            self.messages.Feature.MembershipStatesValue, filtered_states)
+
+    return feature

@@ -45,14 +45,8 @@ class Enroll(base.Command):
     base.ASYNC_FLAG.AddToParser(parser)
 
   def Run(self, args):
-    cluster_ref = args.CONCEPTS.cluster.Parse()
-    admin_cluster_membership_ref = args.CONCEPTS.admin_cluster_membership.Parse(
-    )
     cluster_client = apis.ClustersClient()
-    operation = cluster_client.Enroll(
-        resource_ref=cluster_ref,
-        admin_cluster_membership_ref=admin_cluster_membership_ref,
-    )
+    operation = cluster_client.Enroll(args)
 
     if args.async_:
       return operation

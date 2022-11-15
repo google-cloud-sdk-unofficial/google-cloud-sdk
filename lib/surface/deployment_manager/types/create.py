@@ -88,10 +88,13 @@ To create a new composite type, run:
     template_contents = composite_types.TemplateContentsFor(self.messages,
                                                             args.template)
 
+    computed_status = self.messages.CompositeType.StatusValueValuesEnum(
+        args.status) if args.status is not None else None
+
     composite_type = self.messages.CompositeType(
         name=args.name,
         description=args.description,
-        status=args.status,
+        status=computed_status,
         templateContents=template_contents,
         labels=labels)
     request = self.messages.DeploymentmanagerCompositeTypesInsertRequest(

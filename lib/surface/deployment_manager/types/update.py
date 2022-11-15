@@ -87,10 +87,13 @@ To update a composite type, run:
         labels_util.GetUpdateLabelsDictFromArgs(args),
         labels_util.GetRemoveLabelsListFromArgs(args))
 
+    computed_status = self.messages.CompositeType.StatusValueValuesEnum(
+        args.status) if args.status is not None else None
+
     composite_type = self.messages.CompositeType(
         name=args.name,
         description=args.description,
-        status=args.status,
+        status=computed_status,
         templateContents=existing_ct.templateContents,
         labels=labels)
 

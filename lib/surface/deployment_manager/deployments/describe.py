@@ -117,7 +117,6 @@ class Describe(base.DescribeCommand, dm_base.DmCommand):
               project=dm_base.GetProject(), deployment=deployment.name))
       resources = response.resources
       if self.ReleaseTrack() is base.ReleaseTrack.ALPHA:
-        dm_api_util.UpdateActionResourceIntent(resources)
         if (not args.IsSpecified('format')) and (deployment.update):
           args.format = (
               alpha_flags.PREVIEWED_DEPLOYMENT_AND_RESOURCES_AND_OUTPUTS_FORMAT)

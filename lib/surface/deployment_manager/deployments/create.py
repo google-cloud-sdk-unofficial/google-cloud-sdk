@@ -219,10 +219,9 @@ More information is available at https://cloud.google.com/deployment-manager/doc
           args.format = flags.OPERATION_FORMAT
         return response
 
-      return dm_api_util.FetchResourcesAndOutputs(
-          self.client, self.messages, dm_base.GetProject(),
-          deployment_ref.deployment,
-          self.ReleaseTrack() is base.ReleaseTrack.ALPHA)
+      return dm_api_util.FetchResourcesAndOutputs(self.client, self.messages,
+                                                  dm_base.GetProject(),
+                                                  deployment_ref.deployment)
 
   def _BuildRequest(self,
                     args,

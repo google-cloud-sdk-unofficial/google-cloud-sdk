@@ -20,9 +20,10 @@ from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.container.fleet.policycontroller import status_api_utils
 from googlecloudsdk.calliope import base as calliope_base
+from googlecloudsdk.command_lib.container.fleet import resources
 from googlecloudsdk.core import exceptions
 from googlecloudsdk.core import properties
-from surface.container.fleet.policycontroller.violations import list_membership_violations
+from surface.container.fleet.policycontroller import violations
 
 
 @calliope_base.Hidden
@@ -35,10 +36,24 @@ class List(calliope_base.ListCommand):
   To list all Policy Controller audit violations across the Fleet:
 
       $ {command}
+
+  To list audit violations with extended information:
+
+      $ {command} --verbose
+
+  To list all audit violations grouped by constraint:
+
+      $ {command} --group-by=constraint
+
+  To list audit violations for specified memberships:
+
+      $ {command}
+      --memberships=MEMBERSHIP
+
   """
 
-  @staticmethod
-  def Args(parser):
+  @classmethod
+  def Args(cls, parser):
     calliope_base.URI_FLAG.RemoveFromParser(parser)
     parser.add_argument(
         '--verbose',
@@ -51,6 +66,20 @@ class List(calliope_base.ListCommand):
         help='If set, returns violations grouped by a common attribute. Options: constraint, membership',
         default=''
     )
+    if resources.UseRegionalMemberships(cls.ReleaseTrack()):
+      resources.AddMembershipResourceArg(
+          parser,
+          plural=True,
+          membership_help=(
+              'The membership names from which to return violations, separated '
+              'by commas if multiple are supplied.'))
+    else:
+      parser.add_argument(
+          '--memberships',
+          type=str,
+          help=(
+              'The membership names from which to return violations, separated '
+              'by commas if multiple are supplied.'))
 
   def Run(self, args):
     calliope_base.EnableUserProjectQuota()
@@ -65,10 +94,19 @@ class List(calliope_base.ListCommand):
     messages = status_api_utils.GetMessagesModule(
         self.ReleaseTrack())
 
-    return list_membership_violations(
+    if args.memberships is not None:
+      if resources.UseRegionalMemberships(self.ReleaseTrack()):
+        memberships = args.memberships
+      else:
+        memberships = args.memberships.split(',')
+    else:
+      memberships = []
+
+    return violations.ListMembershipViolations(
         messages=messages,
         client=client,
         project_id=project_id,
         verbose=args.verbose,
         group_by=args.group_by,
+        memberships=memberships,
         constraint_filter=None)

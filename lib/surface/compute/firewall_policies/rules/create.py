@@ -52,12 +52,12 @@ class Create(base.CreateCommand):
     flags.AddTargetResources(parser)
     flags.AddTargetServiceAccounts(parser)
     if cls.ReleaseTrack() == base.ReleaseTrack.ALPHA:
+      flags.AddSecurityProfileGroup(parser)
+    if cls.ReleaseTrack() in [base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA]:
       flags.AddSrcAddressGroups(parser)
       flags.AddDestAddressGroups(parser)
       flags.AddSrcFqdns(parser)
       flags.AddDestFqdns(parser)
-      flags.AddSecurityProfileGroup(parser)
-    if cls.ReleaseTrack() in [base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA]:
       flags.AddSrcThreatIntelligence(parser)
       flags.AddDestThreatIntelligence(parser)
       flags.AddSrcRegionCodes(parser)
@@ -107,6 +107,13 @@ class Create(base.CreateCommand):
     if args.IsSpecified('target_service_accounts'):
       target_service_accounts = args.target_service_accounts
     if self.ReleaseTrack() == base.ReleaseTrack.ALPHA:
+      if args.IsSpecified('security_profile_group'):
+        security_profile_group = firewall_policies_utils.BuildSecurityProfileGroupUrl(
+            security_profile_group=args.security_profile_group,
+            optional_organization=args.organization,
+            firewall_policy_client=org_firewall_policy,
+            firewall_policy_id=args.firewall_policy)
+    if self.ReleaseTrack() in [base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA]:
       if args.IsSpecified('src_address_groups'):
         src_address_groups = [
             firewall_policies_utils.BuildAddressGroupUrl(
@@ -123,13 +130,6 @@ class Create(base.CreateCommand):
         src_fqdns = args.src_fqdns
       if args.IsSpecified('dest_fqdns'):
         dest_fqdns = args.dest_fqdns
-      if args.IsSpecified('security_profile_group'):
-        security_profile_group = firewall_policies_utils.BuildSecurityProfileGroupUrl(
-            security_profile_group=args.security_profile_group,
-            optional_organization=args.organization,
-            firewall_policy_client=org_firewall_policy,
-            firewall_policy_id=args.firewall_policy)
-    if self.ReleaseTrack() in [base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA]:
       if args.IsSpecified('src_threat_intelligence'):
         src_threat_intelligence = args.src_threat_intelligence
       if args.IsSpecified('dest_threat_intelligence'):
@@ -163,6 +163,10 @@ class Create(base.CreateCommand):
           srcIpRanges=src_ip_ranges,
           destIpRanges=dest_ip_ranges,
           layer4Configs=layer4_config_list,
+          srcAddressGroups=src_address_groups,
+          destAddressGroups=dest_address_groups,
+          srcFqdns=src_fqdns,
+          destFqdns=dest_fqdns,
           srcRegionCodes=src_region_codes,
           destRegionCodes=dest_region_codes,
           srcThreatIntelligences=src_threat_intelligence,

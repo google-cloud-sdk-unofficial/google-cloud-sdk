@@ -4,11 +4,20 @@
     brief: Create a Cloud Security Command Center notification config.
     description: Create a Cloud Security Command Center notification config.
     examples: |
-      Create a notification config test-config under organization 123456 for findings for pubsub-topic projects/test-project/topics/notification-test with a filter on resource name:
+      Create a notification config test-config under organization 123 for findings for pubsub-topic projects/test-project/topics/notification-test with a filter on resource name:
 
-        $ {command} test-config --organization=123456 --pubsub-topic=projects/test-project/topics/notification-test --filter="resource_name: \"a\""
+        $ {command} test-config --organization=123 --pubsub-topic=projects/test-project/topics/notification-test --filter="resource_name: \"a\""
+        $ {command} organizations/123/notificationConfigs/test-config --pubsub-topic=projects/test-project/topics/notification-test --filter="resource_name: \"a\""
 
-        $ {command} organizations/123456/notificationConfigs/test-config --pubsub-topic=projects/test-project/topics/notification-test --filter="resource_name: \"a\""
+      Create a notification config test-config under folder 456 for findings for pubsub-topic projects/test-project/topics/notification-test with a filter on resource name:
+
+        $ {command} test-config --folder=456 --pubsub-topic=projects/test-project/topics/notification-test --filter="resource_name: \"a\""
+        $ {command} folders/456/notificationConfigs/test-config --pubsub-topic=projects/test-project/topics/notification-test --filter="resource_name: \"a\""
+
+      Create a notification config test-config under project 789 for findings for pubsub-topic projects/test-project/topics/notification-test with a filter on resource name:
+
+        $ {command} test-config --project=789 --pubsub-topic=projects/test-project/topics/notification-test --filter="resource_name: \"a\""
+        $ {command} projects/789/notificationConfigs/test-config --pubsub-topic=projects/test-project/topics/notification-test --filter="resource_name: \"a\""
 
   request:
     collection: securitycenter.organizations.notificationConfigs
@@ -27,11 +36,27 @@
       help_text: |
         The ID of the notification config. Formatted as "organizations/123/notificationConfigs/456" or just "456".
 
-    - arg_name: organization
-      required: false
-      api_field: parent
-      help_text: |
-        The organization where the notification config resides. Formatted as "organizations/123" or just "123". Required if notificationConfigId does not contain organization information.
+    - group:
+        mutex: true
+        required: false
+        params:
+        - arg_name: organization
+          required: false
+          api_field: parent
+          help_text: |
+            Organization where the notification config resides. Formatted as ``organizations/123'' or just ``123''.
+
+        - arg_name: folder
+          required: false
+          api_field: parent
+          help_text: |
+            Folder where the notification config resides. Formatted as ``folders/456'' or just ``456''.
+
+        - arg_name: project
+          required: false
+          api_field: parent
+          help_text: |
+            Project (ID or number) where the notification config resides. Formatted as ``projects/789'' or just ``789''.
 
     - arg_name: filter
       required: false

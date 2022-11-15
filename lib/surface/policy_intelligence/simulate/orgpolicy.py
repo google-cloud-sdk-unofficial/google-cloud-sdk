@@ -43,6 +43,7 @@ _DETAILED_HELP_ALPHA = {
       Simulate changes to Organization Policies:, run:
 
         $ {command}
+        --organization=ORGANIZATION_ID
         --policy policy.json
         --custom-constraint custom-constraint.json
 
@@ -55,6 +56,12 @@ _DETAILED_HELP_ALPHA = {
 
 def _ArgsAlpha(parser):
   """Parses arguments for the commands."""
+  parser.add_argument(
+      '--organization',
+      metavar='ORGANIZATION_ID',
+      required=True,
+      help=('Organization ID.'))
+
   parser.add_argument(
       '--policies',
       type=arg_parsers.ArgList(),
@@ -70,7 +77,7 @@ def _ArgsAlpha(parser):
   parser.add_argument(
       '--custom-constraints',
       type=arg_parsers.ArgList(),
-      metavar='CUSTOM-CONSTRAINTS',
+      metavar='CUSTOM_CONSTRAINTS',
       action=arg_parsers.UpdateAction,
       help="""Path to the JSON or YAML file that contains the Custom Constraints to simulate.
       Multiple Custom Constraints can be simulated by providing multiple, comma-separated paths.
@@ -133,8 +140,7 @@ class SimulateAlpha(base.Command):
         policies=policies, custom_constraints=custom_constraints)
 
     # Generate Violations Preview and get long operation id
-    organization_resource = orgpolicy_utils.GetResourceFromPolicyName(
-        policies[0].policy.name)
+    organization_resource = 'organizations/' + args.organization
     parent = utils.GetParentFromOrganization(organization_resource)
     violations = orgpolicy_simulator_api.GetPolicysimulatorOrgPolicyViolationsPreview(
         overlay=overlay)

@@ -125,9 +125,6 @@ class ListAlpha(List):
             limit=args.limit,
             batch_size=args.page_size))
     for resource in paginated_resources:
-      if resource.update:
-        resource.update.intent = dm_api_util.GetActionResourceIntent(
-            resource.update.intent, resource.update.runtimePolicies)
       yield resource
 
   def _isDeploymentInPreview(self, args):

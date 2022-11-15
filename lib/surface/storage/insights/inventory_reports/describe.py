@@ -18,38 +18,43 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
-from googlecloudsdk.api_lib.storage.insights.inventory_reports import insights_api
+from googlecloudsdk.api_lib.storage import insights_api
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.storage.insights.inventory_reports import resource_args
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Describe(base.DescribeCommand):
-  """Describe an inventory report configurations."""
+  """Describe an inventory report config."""
 
   detailed_help = {
       'DESCRIPTION':
           """
-      Describe an inventory report configuration.
+      Describe an inventory report config.
       """,
       'EXAMPLES':
           """
 
-      Describe an inventory report configuration using the Report Config name:
+      To describe an inventory report config with ID=1234,
+      location=us, and project=foo:
 
-        $ {command} /projects/<project-id>/locations/<location>/reportConfigs/<UUID>
+        $ {command} 1234 --location=us --project=foo
 
-      Describe the same inventory report with JSON formatting, only returning
-      the "displayName" field:
+      To describe the same inventory report config with fully specified name:
 
-        $ {command} /projects/<project-id>/locations/<location>/reportConfigs/<UUID> --format="json(displayName)"
+        $ {command} /projects/foo/locations/us/reportConfigs/1234
+
+      Describe the same inventory report config with JSON formatting, only
+      returning the "displayName" field:
+
+        $ {command} /projects/foo/locations/us/reportConfigs/1234 --format="json(displayName)"
       """,
   }
 
   @staticmethod
   def Args(parser):
-    parser.add_argument(
-        'report_config_name',
-        help='Indicates the report config name.')
+    resource_args.add_report_config_resource_arg(parser, 'to describe')
 
   def Run(self, args):
-    return insights_api.InsightsApi().get(args.report_config_name)
+    report_config_ref = args.CONCEPTS.report_config.Parse()
+    return insights_api.InsightsApi().get(report_config_ref.RelativeName())

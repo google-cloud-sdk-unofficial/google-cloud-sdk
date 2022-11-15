@@ -103,6 +103,7 @@ class Update(base.UpdateCommand):
     flags.AddNodePoolEnablePrivateNodes(group)
     flags.AddEnableFastSocketFlag(group)
     flags.AddLoggingVariantFlag(group, for_node_pool=True)
+    flags.AddWindowsOsVersionFlag(group, hidden=True)
 
   def ParseUpdateNodePoolOptions(self, args):
     flags.ValidateSurgeUpgradeSettings(args)
@@ -137,7 +138,8 @@ class Update(base.UpdateCommand):
         standard_rollout_policy=args.standard_rollout_policy,
         enable_private_nodes=args.enable_private_nodes,
         enable_fast_socket=args.enable_fast_socket,
-        logging_variant=args.logging_variant)
+        logging_variant=args.logging_variant,
+        windows_os_version=args.windows_os_version)
 
   def Run(self, args):
     """This is what gets called when the user runs this command.
@@ -250,6 +252,7 @@ class UpdateBeta(Update):
         group, for_node_pool=True, is_update=True)
     flags.AddEnableFastSocketFlag(group)
     flags.AddLoggingVariantFlag(group, for_node_pool=True)
+    flags.AddWindowsOsVersionFlag(group, hidden=True)
 
   def ParseUpdateNodePoolOptions(self, args):
     flags.ValidateSurgeUpgradeSettings(args)
@@ -285,7 +288,8 @@ class UpdateBeta(Update):
         network_performance_config=args.network_performance_configs,
         enable_confidential_nodes=args.enable_confidential_nodes,
         enable_fast_socket=args.enable_fast_socket,
-        logging_variant=args.logging_variant)
+        logging_variant=args.logging_variant,
+        windows_os_version=args.windows_os_version)
     return ops
 
 
@@ -335,6 +339,7 @@ class UpdateAlpha(Update):
         group, for_node_pool=True, is_update=True)
     flags.AddEnableFastSocketFlag(group)
     flags.AddLoggingVariantFlag(group, for_node_pool=True)
+    flags.AddWindowsOsVersionFlag(group, hidden=True)
 
   def ParseUpdateNodePoolOptions(self, args):
     flags.ValidateSurgeUpgradeSettings(args)
@@ -370,7 +375,8 @@ class UpdateAlpha(Update):
         network_performance_config=args.network_performance_configs,
         enable_confidential_nodes=args.enable_confidential_nodes,
         enable_fast_socket=args.enable_fast_socket,
-        logging_variant=args.logging_variant)
+        logging_variant=args.logging_variant,
+        windows_os_version=args.windows_os_version)
     return ops
 
 

@@ -29,5 +29,6 @@
         name.basename():label=NAME,
         network.basename():label=NETWORK,
         nextHopAddress:label=NEXT_HOP,
-        destinationCidr:label=DESTINATION_CIDR
+        destinationCidr:label=DESTINATION_CIDR,
+        state:label=STATE
       )

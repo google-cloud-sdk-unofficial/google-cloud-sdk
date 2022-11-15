@@ -43,8 +43,8 @@ class Delete(base.DeleteCommand):
   def Args(parser):
     flags.AddClusterResourceArg(parser, 'to delete', True)
     flags.AddValidationOnly(parser, hidden=True)
-    flags.AddForceDeleteClusterFlag(parser)
-    flags.AddAllowMissingDeleteClusterFlag(parser)
+    flags.AddForceDeleteCluster(parser)
+    flags.AddAllowMissingDeleteCluster(parser)
     base.ASYNC_FLAG.AddToParser(parser)
 
   def Run(self, args):
@@ -56,12 +56,7 @@ class Delete(base.DeleteCommand):
       command_util.ConfirmationPrompt('cluster', items, 'deleted')
 
     client = apis.ClustersClient()
-    operation = client.Delete(
-        cluster_ref,
-        allow_missing=args.allow_missing,
-        validate_only=args.validate_only,
-        force=args.force,
-    )
+    operation = client.Delete(args)
 
     if args.validate_only:
       return

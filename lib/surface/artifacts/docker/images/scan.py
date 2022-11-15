@@ -99,7 +99,6 @@ class ScanBeta(base.Command):
     flags.GetAdditionalPackageTypesFlag().AddToParser(parser)
     flags.GetExperimentalPackageTypesFlag().AddToParser(parser)
     flags.GetVerboseErrorsFlag().AddToParser(parser)
-    flags.GetKeepUnknownJarsFlag().AddToParser(parser)
     base.ASYNC_FLAG.AddToParser(parser)
 
   def Run(self, args):
@@ -167,7 +166,6 @@ class ScanBeta(base.Command):
           additional_package_types=args.additional_package_types,
           experimental_package_types=args.experimental_package_types,
           verbose_errors=args.verbose_errors,
-          keep_unknown_jars=args.keep_unknown_jars,
       )
       if operation_result.exit_code:
         # Filter out any log messages on std err and only include any actual
@@ -281,7 +279,7 @@ class Command(binary_operations.BinaryBackedOperation):
 
   def _ParseArgsForCommand(self, resource_uri, remote, fake_extraction,
                            additional_package_types, experimental_package_types,
-                           verbose_errors, keep_unknown_jars, **kwargs):
+                           verbose_errors, **kwargs):
     args = [
         '--resource_uri=' + resource_uri,
         '--remote=' + six.text_type(remote),
@@ -308,8 +306,5 @@ class Command(binary_operations.BinaryBackedOperation):
 
     if verbose_errors:
       args.append('--verbose_errors=' + six.text_type(verbose_errors))
-
-    if keep_unknown_jars:
-      args.append('--keep_unknown_jars='+ six.text_type(keep_unknown_jars))
 
     return args

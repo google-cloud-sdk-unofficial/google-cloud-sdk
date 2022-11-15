@@ -255,9 +255,9 @@ def AddBetaArgs(parser):
   flags.AddEnableGooglePrivatePath(parser)
 
 
-def AddAlphaArgs(unused_parser):
+def AddAlphaArgs(parser):
   """Adds alpha args and flags to the parser."""
-  pass
+  flags.AddConnectorEnforcement(parser)
 
 
 def RunBasePatchCommand(args, release_track):

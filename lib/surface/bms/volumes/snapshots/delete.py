@@ -21,6 +21,7 @@ from __future__ import unicode_literals
 from googlecloudsdk.api_lib.bms.bms_client import BmsClient
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.bms import flags
+from googlecloudsdk.core import log
 from googlecloudsdk.core.console import console_io
 
 DETAILED_HELP = {
@@ -38,7 +39,7 @@ DETAILED_HELP = {
 }
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.GA)
 class Delete(base.DeleteCommand):
   """Delete a Bare Metal Solution boot volume snapshot."""
 
@@ -63,7 +64,9 @@ class Delete(base.DeleteCommand):
           message=('You are about to delete the snapshot '
                    '[{0}]'.format(snapshot.Name())),
           cancel_on_no=True)
-    return client.DeleteVolumeSnapshot(snapshot)
+    res = client.DeleteVolumeSnapshot(snapshot)
+    log.DeletedResource(snapshot.Name(), 'snapshot')
+    return res
 
 
 Delete.detailed_help = DETAILED_HELP

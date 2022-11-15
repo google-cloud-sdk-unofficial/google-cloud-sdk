@@ -318,10 +318,9 @@ More information is available at https://cloud.google.com/deployment-manager/doc
       except apitools_exceptions.HttpError as error:
         raise exceptions.HttpException(error, dm_api_util.HTTP_ERROR_FORMAT)
 
-      return dm_api_util.FetchResourcesAndOutputs(
-          self.client, self.messages, dm_base.GetProject(),
-          deployment_ref.deployment,
-          self.ReleaseTrack() is base.ReleaseTrack.ALPHA)
+      return dm_api_util.FetchResourcesAndOutputs(self.client, self.messages,
+                                                  dm_base.GetProject(),
+                                                  deployment_ref.deployment)
 
   def _GetUpdatedDeploymentLabels(self, args, deployment):
     update_labels = labels_util.GetUpdateLabelsDictFromArgs(args)

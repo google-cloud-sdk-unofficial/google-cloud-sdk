@@ -40,8 +40,8 @@ from googlecloudsdk.core import resources
 from googlecloudsdk.core.console import progress_tracker
 import six
 
-_WORKFLOWS_URL = ('https://github.com/GoogleCloudPlatform/compute-image-tools/'
-                  'tree/master/daisy_workflows/image_import')
+_WORKFLOWS_URL = ('https://github.com/GoogleCloudPlatform/compute-image-import/'
+                  'tree/main/daisy_workflows/image_import')
 _OUTPUT_FILTER = [
     '[Daisy', '[import-', '[onestep-', 'starting build', '  import', 'ERROR'
 ]

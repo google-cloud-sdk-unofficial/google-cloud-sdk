@@ -129,7 +129,7 @@ class Update(base.UpdateCommand):
         args, self.messages)
     if resources.UseRegionalMemberships(self.ReleaseTrack()):
       memberships = base.ParseMembershipsPlural(
-          args, prompt=True, prompt_cancel=False, search=True)
+          args, search=True, prompt=True, prompt_cancel=False, autoselect=True)
     else:
       memberships = utils.select_memberships(args)
     for membership in memberships:

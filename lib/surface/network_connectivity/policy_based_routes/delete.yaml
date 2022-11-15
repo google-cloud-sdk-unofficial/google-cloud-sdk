@@ -1,4 +1,4 @@
-- release_tracks: [ALPHA]
+- release_tracks: [ALPHA, GA]
 
   help_text:
     brief: Delete a policy based route.
@@ -19,5 +19,7 @@
 
   request: &request
     ALPHA:
+      api_version: v1
+    GA:
       api_version: v1
     collection: networkconnectivity.projects.locations.global.policyBasedRoutes

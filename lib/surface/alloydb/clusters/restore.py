@@ -30,7 +30,7 @@ from googlecloudsdk.core import resources
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Restore(base.RestoreCommand):
-  """Restores an AlloyDB cluster from a given backup or a source cluster at a specific point in time."""
+  """Restores an AlloyDB cluster from a given backup."""
 
   detailed_help = {
       'DESCRIPTION':
@@ -40,10 +40,6 @@ class Restore(base.RestoreCommand):
           To restore a cluster from a backup, run:
 
               $ {command} my-cluster --region=us-central1 --backup=my-backup
-
-          To restore a cluster back to a point in time, run:
-
-              $ {command} my-cluster --region=us-central1 --source-cluster=my-source-cluster --point-in-time=2003-09-25T10:49:41.519Z
         """,
   }
 

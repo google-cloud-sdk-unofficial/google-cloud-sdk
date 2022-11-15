@@ -1339,9 +1339,8 @@ class BigqueryClient(object):
         discovery_document)
     try:
       client_options = discovery.get_client_options()
-      if (not flags.FLAGS['api'].using_default_value and
-          not resolver_lib.IsNamedApi(flags.FLAGS.api) and
-          not flags.FLAGS.environment):
+      if (not flags.FLAGS['api'].using_default_value
+          ):
         client_options.api_endpoint = _BuildApiEndpointFromApiFlag(
             flags.FLAGS.api,
             _ParseDiscoveryDoc(discovery_document_to_build_client))
@@ -2118,7 +2117,7 @@ class BigqueryClient(object):
       slots,
       ignore_idle_slots,
     edition,
-    concurrency,
+    target_job_concurrency,
     enable_queuing_and_priorities,
     multi_region_auxiliary,
     autoscale_max_slots = None,
@@ -2130,7 +2129,7 @@ class BigqueryClient(object):
       ignore_idle_slots: Specifies whether queries should ignore idle slots from
         other reservations.
       edition: The edition for this reservation.
-      concurrency: Reservation maximum concurrency.
+      target_job_concurrency: Job concurrency target.
       enable_queuing_and_priorities: Whether queuing and new prioritization
         behavior should be enabled for the reservation.
       multi_region_auxiliary: Whether this reservation is for the auxiliary
@@ -2150,8 +2149,8 @@ class BigqueryClient(object):
     reservation['ignore_idle_slots'] = ignore_idle_slots
     if multi_region_auxiliary is not None:
       reservation['multi_region_auxiliary'] = multi_region_auxiliary
-    if concurrency is not None:
-      reservation['concurrency'] = concurrency
+    if target_job_concurrency is not None:
+      reservation['concurrency'] = target_job_concurrency
 
     if enable_queuing_and_priorities is not None:
       if (self.api_version != 'v1beta1'
@@ -2188,7 +2187,7 @@ class BigqueryClient(object):
       slots,
       ignore_idle_slots,
     edition,
-    concurrency,
+    target_job_concurrency,
     enable_queuing_and_priorities,
     multi_region_auxiliary,
     autoscale_max_slots = None,
@@ -2201,7 +2200,7 @@ class BigqueryClient(object):
       ignore_idle_slots: Specifies whether queries should ignore idle slots from
         other reservations.
       edition: The edition for this reservation.
-      concurrency: Reservation maximum concurrency.
+      target_job_concurrency: Job concurrency target.
       enable_queuing_and_priorities: Whether queuing and new prioritization
         behavior should be enabled for the reservation.
       multi_region_auxiliary: Whether this reservation is for the auxiliary
@@ -2220,7 +2219,7 @@ class BigqueryClient(object):
         slots,
         ignore_idle_slots,
         edition,
-        concurrency,
+        target_job_concurrency,
         enable_queuing_and_priorities,
         multi_region_auxiliary,
         autoscale_max_slots,
@@ -2334,7 +2333,7 @@ class BigqueryClient(object):
       self,
       slots,
       ignore_idle_slots,
-      concurrency,
+      target_job_concurrency,
       enable_queuing_and_priorities,
       autoscale_max_slots,
       autoscale_budget_slot_hours=None):
@@ -2344,7 +2343,7 @@ class BigqueryClient(object):
       slots: Number of slots allocated to this reservation subtree.
       ignore_idle_slots: Specifies whether queries should ignore idle slots from
         other reservations.
-      concurrency: Reservation maximum concurrency.
+      target_job_concurrency: Job concurrency target.
       enable_queuing_and_priorities: Whether queuing and new prioritization
         behavior should be enabled for the reservation.
       autoscale_max_slots: Number of slots to be scaled when needed.
@@ -2367,8 +2366,8 @@ class BigqueryClient(object):
       reservation['ignore_idle_slots'] = ignore_idle_slots
       update_mask += 'ignore_idle_slots,'
 
-    if concurrency is not None:
-      reservation['concurrency'] = concurrency
+    if target_job_concurrency is not None:
+      reservation['concurrency'] = target_job_concurrency
       update_mask += 'concurrency,'
 
     if enable_queuing_and_priorities is not None:
@@ -2412,7 +2411,7 @@ class BigqueryClient(object):
       reference,
       slots,
       ignore_idle_slots,
-      concurrency,
+      target_job_concurrency,
       enable_queuing_and_priorities,
       autoscale_max_slots,
       autoscale_budget_slot_hours=None,
@@ -2424,7 +2423,7 @@ class BigqueryClient(object):
       slots: Number of slots allocated to this reservation subtree.
       ignore_idle_slots: Specifies whether queries should ignore idle slots from
         other reservations.
-      concurrency: Reservation maximum concurrency.
+      target_job_concurrency: Job concurrency target.
       enable_queuing_and_priorities: Whether queuing and new prioritization
         behavior should be enabled for the reservation.
       autoscale_max_slots: Number of slots to be scaled when needed.
@@ -2440,7 +2439,7 @@ class BigqueryClient(object):
     reservation, update_mask = self.GetParamsForUpdateReservation(
         slots,
         ignore_idle_slots,
-        concurrency,
+        target_job_concurrency,
         enable_queuing_and_priorities,
         autoscale_max_slots,
         autoscale_budget_slot_hours)
@@ -3213,7 +3212,7 @@ class BigqueryClient(object):
       formatter.AddColumns((
           'name',
           'slotCapacity',
-          'concurrency',
+          'targetJobConcurrency',
           'ignoreIdleSlots',
           'creationTime',
           'updateTime',
@@ -3223,7 +3222,7 @@ class BigqueryClient(object):
       formatter.AddColumns((
           'name',
           'slotCapacity',
-          'concurrency',
+          'targetJobConcurrency',
           'ignoreIdleSlots',
           'enableQueuingAndPriorities',
           'creationTime',
@@ -3234,7 +3233,7 @@ class BigqueryClient(object):
       formatter.AddColumns((
           'name',
           'slotCapacity',
-          'concurrency',
+          'targetJobConcurrency',
           'ignoreIdleSlots',
           'autoscaleMaxSlots',
           'autoscaleCurrentSlots',
@@ -3244,12 +3243,12 @@ class BigqueryClient(object):
       ))
     elif reference_type == ApiClientHelper.AutoscalePreviewReservationReference:
       formatter.AddColumns(
-          ('name', 'slotCapacity', 'concurrency', 'ignoreIdleSlots',
+          ('name', 'slotCapacity', 'targetJobConcurrency', 'ignoreIdleSlots',
            'autoscaleBudgetSlotHours', 'autoscaleUsedBudgetSlotHours',
            'creationTime', 'updateTime', 'multiRegionAuxiliary'))
     elif reference_type == ApiClientHelper.EditionPreviewReservationReference:
       formatter.AddColumns(
-          ('name', 'slotCapacity', 'concurrency', 'ignoreIdleSlots',
+          ('name', 'slotCapacity', 'targetJobConcurrency', 'ignoreIdleSlots',
            'creationTime', 'updateTime', 'multiRegionAuxiliary', 'edition',
            'autoscaleMaxSlots', 'autoscaleCurrentSlots'))
     elif reference_type == ApiClientHelper.CapacityCommitmentReference:
@@ -3951,9 +3950,12 @@ class BigqueryClient(object):
       result['ignoreIdleSlots'] = 'False'
     if 'multiRegionAuxiliary' not in list(result.keys()):
       result['multiRegionAuxiliary'] = 'False'
-    if (reference_type == ApiClientHelper.BetaReservationReference and
-        'concurrency' not in list(result.keys())):
-      result['concurrency'] = '0 (auto)'
+    if 'concurrency' in list(result.keys()):
+      # Rename concurrency we get from the API to targetJobConcurrency.
+      result['targetJobConcurrency'] = result['concurrency']
+      result.pop('concurrency', None)
+    else:
+      result['targetJobConcurrency'] = '0 (auto)'
     if (reference_type == ApiClientHelper.BetaReservationReference and
         'enableQueuingAndPriorities' not in list(result.keys())):
       result['enableQueuingAndPriorities'] = 'False'
@@ -5057,6 +5059,8 @@ class BigqueryClient(object):
           materialized_view_args['refreshIntervalMs'] = refresh_interval_ms
         body['materializedView'] = materialized_view_args
       if external_data_config is not None:
+        if max_staleness is not None:
+          body['maxStaleness'] = max_staleness
         body['externalDataConfiguration'] = external_data_config
       if labels is not None:
         body['labels'] = labels
@@ -5444,6 +5448,8 @@ class BigqueryClient(object):
       table['materializedView'] = materialized_view_args
     if external_data_config is not None:
       table['externalDataConfiguration'] = external_data_config
+      if max_staleness is not None:
+        table['maxStaleness'] = max_staleness
     if 'labels' not in table:
       table['labels'] = {}
     if labels_to_set:

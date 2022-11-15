@@ -49,6 +49,7 @@ class Update(base.UpdateCommand):
     flags.AddNodeVersion(parser, required=False)
     flags.AddAutoscaling(parser, required=False)
     flags.AddSSHPublicKey(parser, required=False)
+    flags.AddAnnotationsForUpdate(parser, 'node pool')
     flags.AddValidateOnly(parser, 'update of the node pool')
 
     base.ASYNC_FLAG.AddToParser(parser)

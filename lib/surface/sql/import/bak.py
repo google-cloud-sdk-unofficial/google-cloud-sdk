@@ -77,6 +77,7 @@ class Bak(base.Command):
     flags.AddDatabase(
         parser, flags.SQLSERVER_DATABASE_IMPORT_HELP_TEXT, required=True)
     flags.AddEncryptedBakFlags(parser)
+    flags.AddBakImportStripedArgument(parser)
 
   def Run(self, args):
     """Runs the command to import into the Cloud SQL instance."""

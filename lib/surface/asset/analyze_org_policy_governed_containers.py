@@ -89,3 +89,23 @@ class AnalyzeOrgPolicyGovernedContainers(base.ListCommand):
   def Run(self, args):
     client = client_util.OrgPolicyAnalyzerClient()
     return client.AnalyzeOrgPolicyGovernedContainers(args)
+
+
+# TODO(b/246989320): remove Hidden label once we are ready to launch.
+@base.Hidden
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class AnalyzeOrgPolicyGovernedContainersBeta(AnalyzeOrgPolicyGovernedContainers
+                                            ):
+  """Analyze organization policies governed containers under a scope."""
+
+  detailed_help = DETAILED_HELP
+
+  @staticmethod
+  def Args(parser):
+    AddScopeArgument(parser)
+    AddConstraintArgument(parser)
+    base.URI_FLAG.RemoveFromParser(parser)
+
+  def Run(self, args):
+    client = client_util.OrgPolicyAnalyzerClient()
+    return client.AnalyzeOrgPolicyGovernedContainers(args)

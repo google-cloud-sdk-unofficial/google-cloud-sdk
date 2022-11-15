@@ -640,6 +640,8 @@ flags_to_add = {
             flags.AddDiskSizeFlag,
         'disktype':
             flags.AddDiskTypeFlag,
+        'gatewayapi':
+            flags.AddGatewayFlags,
         'gcfs':
             flags.AddEnableGcfsFlag,
         'imagestreaming':
@@ -1208,8 +1210,6 @@ class CreateBeta(Create):
     ops.enable_experimental_vertical_pod_autoscaling = get_default(
         'enable_experimental_vertical_pod_autoscaling')
     ops.security_group = get_default('security_group')
-    flags.ValidateIstioConfigCreateArgs(
-        get_default('istio_config'), get_default('addons'))
     ops.max_surge_upgrade = get_default('max_surge_upgrade')
     ops.max_unavailable_upgrade = get_default('max_unavailable_upgrade')
     ops.autoscaling_profile = get_default('autoscaling_profile')
@@ -1290,8 +1290,6 @@ class CreateAlpha(Create):
         get_default('enable_tpu_service_networking')
     ops.istio_config = get_default('istio_config')
     ops.security_group = get_default('security_group')
-    flags.ValidateIstioConfigCreateArgs(
-        get_default('istio_config'), get_default('addons'))
     ops.enable_vertical_pod_autoscaling = \
         get_default('enable_vertical_pod_autoscaling')
     ops.enable_experimental_vertical_pod_autoscaling = get_default(

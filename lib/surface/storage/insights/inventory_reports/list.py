@@ -18,7 +18,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
-from googlecloudsdk.api_lib.storage.insights.inventory_reports import insights_api
+from googlecloudsdk.api_lib.storage import insights_api
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.storage import errors
 from googlecloudsdk.command_lib.storage import storage_url
@@ -26,22 +26,22 @@ from googlecloudsdk.command_lib.storage import storage_url
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class List(base.ListCommand):
-  """Lists all inventory report configurations."""
+  """Lists all inventory report configs."""
 
   detailed_help = {
       'DESCRIPTION':
           """
-      List Cloud Storage inventory report configurations.
+      List Cloud Storage inventory report configs.
       """,
       'EXAMPLES':
           """
 
-      List all inventory report configurations in the source bucket
+      List all inventory report configs in the source bucket
       "my-bucket":
 
         $ {command} --source=gs://my-bucket
 
-      List all inventory report configurations with the specified destination of
+      List all inventory report configs with the specified destination of
       "my-destination-bucket":
 
         $ {command} --destination=gs://my-destination-bucket
@@ -64,11 +64,41 @@ class List(base.ListCommand):
         metavar='DESTINATION_BUCKET_URL',
         help='Specifies URL of the destination bucket in which generated '
              'inventory reports are configured to be stored.')
+    parser.add_argument(
+        '--location',
+        help='The location of the report configs.')
+    parser.display_info.AddFormat(
+        """
+        table(
+            format('{}',name.basename()):label=REPORT_CONFIG_ID,
+            format(
+                '{:04d}-{:02d}-{:02d}',
+                frequencyOptions.startDate.year,
+                frequencyOptions.startDate.month,
+                frequencyOptions.startDate.day):label=START_DATE,
+            format(
+                '{:04d}-{:02d}-{:02d}',
+                frequencyOptions.endDate.year,
+                frequencyOptions.endDate.month,
+                frequencyOptions.endDate.day):label=END_DATE,
+            format(
+                'gs://{}',
+                objectMetadataReportOptions.storageFilters.bucket
+            ):label=SOURCE_BUCKET:wrap,
+            format(
+                'gs://{}/{}',
+                objectMetadataReportOptions.storageDestinationOptions.bucket,
+                objectMetadataReportOptions.storageDestinationOptions.
+                destinationPath.flatten()):label=DESTINATION:wrap
+        )
+        """
+    )
 
   def Run(self, args):
-    if args.source is None and args.destination is None:
+    if (args.source is None and args.destination is None and
+        args.location is None):
       raise errors.Error(
-          'At least one of --source or --destination is required.')
+          'At least one of --source, --destination, or --location is required.')
 
     source_bucket = storage_url.storage_url_from_string(
         args.source) if args.source is not None else None
@@ -77,4 +107,4 @@ class List(base.ListCommand):
         args.destination) if args.destination is not None else None
 
     return insights_api.InsightsApi().list(
-        source_bucket, destination, page_size=args.page_size)
+        source_bucket, destination, args.location, page_size=args.page_size)

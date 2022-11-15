@@ -18,42 +18,50 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
-from googlecloudsdk.api_lib.storage.insights.inventory_reports import insights_api
+from googlecloudsdk.api_lib.storage import insights_api
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.storage.insights.inventory_reports import resource_args
 from googlecloudsdk.core import log
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Delete(base.Command):
-  """Delete an inventory report configuration."""
+  """Delete an inventory report config."""
 
   detailed_help = {
       'DESCRIPTION':
           """
-      Deletes an inventory report configuration.
+      Delete an inventory report config.
       """,
       'EXAMPLES':
           """
+      To delete an inventory report config with ID=1234,
+      location=us and project=foo:
 
-      Delete an inventory report configuration using the report config name:
+        $ {command} 1234 --location=us --project=foo
 
-        $ {command} /projects/<project-id>/locations/<location>/reportConfigs/<UUID>
+      To delete the same inventory report config with fully specified name:
+
+        $ {command} /projects/foo/locations/us/reportConfigs/1234
+
+      To delete the report config with all generated report details:
+
+        $ {command} /projects/foo/locations/us/reportConfigs/1234 --force
       """,
   }
 
   @staticmethod
   def Args(parser):
-    parser.add_argument(
-        'report_config_name',
-        help='Indicates the report config name.')
+    resource_args.add_report_config_resource_arg(parser, 'to delete')
     parser.add_argument(
         '--force',
         action='store_true',
-        help='If set, all ReportDetails for this ReportConfig'
-        ' will be deleted'
+        help='If set, all report details for this report config'
+        ' will be deleted.'
     )
 
   def Run(self, args):
-    insights_api.InsightsApi().delete(args.report_config_name, args.force)
+    report_config_name = args.CONCEPTS.report_config.Parse().RelativeName()
+    insights_api.InsightsApi().delete(report_config_name, args.force)
     log.status.Print('Deleted report config: {}'.format(
-        args.report_config_name))
+        report_config_name))

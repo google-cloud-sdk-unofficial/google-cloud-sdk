@@ -378,7 +378,7 @@ def _ParseLabels(labels):
 
   Args:
     labels: A list of user-supplied strings representing labels.  It is expected
-        to be in the format "key:value".
+      to be in the format "key:value".
 
   Returns:
     A dict mapping label keys to label values.
@@ -1028,8 +1028,7 @@ class _Load(BigqueryCmd):
         flag_values=fv)
     flags.DEFINE_string(
         'reference_file_schema_uri',
-        None,
-        'provide a reference file with the reader schema, currently '
+        None, 'provide a reference file with the reader schema, currently '
         'enabled for the format: AVRO, PARQUET, ORC.',
         flag_values=fv)
     flags.DEFINE_boolean(
@@ -1240,8 +1239,7 @@ class _Load(BigqueryCmd):
     if self.use_avro_logical_types is not None:
       opts['use_avro_logical_types'] = self.use_avro_logical_types
     if self.reference_file_schema_uri is not None:
-      opts[
-          'reference_file_schema_uri'] = self.reference_file_schema_uri
+      opts['reference_file_schema_uri'] = self.reference_file_schema_uri
     if self.hive_partitioning_mode is not None:
       _ValidateHivePartitioningOptions(self.hive_partitioning_mode)
       hive_partitioning_options = {}
@@ -1306,7 +1304,7 @@ def _CreateExternalTableDefinition(
     object_metadata=None,
     preserve_ascii_control_characters=False,
     reference_file_schema_uri=None,
-    ):
+):
   """Create an external table definition with the given URIs and the schema.
 
   Arguments:
@@ -1318,21 +1316,19 @@ def _CreateExternalTableDefinition(
     source_uris: Comma separated list of URIs that contain data for this table.
     schema: Either an inline schema or path to a schema file.
     autodetect: Indicates if format options, compression mode and schema be auto
-      detected from the source data. True - means that autodetect is on,
-      False means that it is off. None means format specific default: - For CSV
-        it means autodetect is OFF - For JSON it means that autodetect is ON.
-        For JSON, defaulting to autodetection is safer because the only option
-        autodetected is compression. If a schema is passed, then the
-        user-supplied schema is used.
+      detected from the source data. True - means that autodetect is on, False
+      means that it is off. None means format specific default: - For CSV it
+      means autodetect is OFF - For JSON it means that autodetect is ON. For
+      JSON, defaulting to autodetection is safer because the only option
+      autodetected is compression. If a schema is passed, then the user-supplied
+      schema is used.
     ignore_unknown_values:  Indicates if BigQuery should allow extra values that
       are not represented in the table schema. If true, the extra values are
       ignored. If false, records with extra columns are treated as bad records,
       and if there are too many bad records, an invalid error is returned in the
       job result. The default value is false. The sourceFormat property
-      determines what BigQuery treats as an
-      extra value:
-         - CSV: Trailing columns
-         - JSON: Named values that don't match any column names.
+      determines what BigQuery treats as an extra value: - CSV: Trailing columns
+      - JSON: Named values that don't match any column names.
     hive_partitioning_mode: Enables hive partitioning.  AUTO indicates to
       perform automatic type inference.  STRINGS indicates to treat all hive
       partition keys as STRING typed.  No other values are accepted.
@@ -1366,9 +1362,7 @@ def _CreateExternalTableDefinition(
     if metadata_cache_mode is not None:
       external_table_def['metadataCacheMode'] = metadata_cache_mode
     if object_metadata is not None:
-      supported_obj_metadata_types = [
-          'DIRECTORY',
-      ]
+      supported_obj_metadata_types = ['DIRECTORY', 'SIMPLE']
 
       if object_metadata not in supported_obj_metadata_types:
         raise app.UsageError('%s is not a supported Object Metadata Type.' %
@@ -1542,20 +1536,15 @@ class _MakeExternalTableDefinition(BigqueryCmd):
         flag_values=fv)
     flags.DEFINE_enum(
         'metadata_cache_mode',
-        None,
-        ['AUTOMATIC', 'MANUAL'],
+        None, ['AUTOMATIC', 'MANUAL'],
         'Enables metadata cache for an external table with a connection. '
         'Specify AUTOMATIC to automatically refresh the cached metadata. '
         'Specify MANUAL to stop the automatic refresh.',
         flag_values=fv)
     flags.DEFINE_enum(
         'object_metadata',
-        None,
-        [
-            'DIRECTORY',
-        ],
-        'Object Metadata Type. Options include:'
-        '\n DIRECTORY',
+        None, ['DIRECTORY', 'SIMPLE'], 'Object Metadata Type. Options include:'
+        '\n SIMPLE.',
         flag_values=fv)
     flags.DEFINE_boolean(
         'preserve_ascii_control_characters',
@@ -1625,9 +1614,10 @@ class _MakeExternalTableDefinition(BigqueryCmd):
             parquet_enable_list_inference=self.parquet_enable_list_inference,
             metadata_cache_mode=self.metadata_cache_mode,
             object_metadata=self.object_metadata,
-            preserve_ascii_control_characters=self.preserve_ascii_control_characters,
+            preserve_ascii_control_characters=self
+            .preserve_ascii_control_characters,
             reference_file_schema_uri=self.reference_file_schema_uri,
-            ),
+        ),
         sys.stdout,
         sort_keys=True,
         indent=2)
@@ -2253,15 +2243,16 @@ class _Query(BigqueryCmd):
     _PrintJobMessages(printable_job_info)
 
 
-def _GetExternalDataConfig(file_path_or_simple_spec,
-                           use_avro_logical_types=False,
-                           parquet_enum_as_string=False,
-                           parquet_enable_list_inference=False,
-                           metadata_cache_mode=None,
-                           object_metadata=None,
-                           preserve_ascii_control_characters=None,
-                           reference_file_schema_uri=None,
-                           ):
+def _GetExternalDataConfig(
+    file_path_or_simple_spec,
+    use_avro_logical_types=False,
+    parquet_enum_as_string=False,
+    parquet_enable_list_inference=False,
+    metadata_cache_mode=None,
+    object_metadata=None,
+    preserve_ascii_control_characters=None,
+    reference_file_schema_uri=None,
+):
   """Returns a ExternalDataConfiguration from the file or specification string.
 
   Determines if the input string is a file path or a string,
@@ -2383,16 +2374,15 @@ class _Extract(BigqueryCmd):
         flag_values=fv)
     flags.DEFINE_boolean(
         'add_serving_default_signature',
-        None,
-        'Whether to add serving_default signature for export BigQuery ML '
+        None, 'Whether to add serving_default signature for export BigQuery ML '
         'trained tf based models.',
         flag_values=fv)
     flags.DEFINE_enum(
         'compression',
-        'NONE', ['GZIP', 'DEFLATE', 'SNAPPY', 'NONE'],
+        'NONE', ['GZIP', 'DEFLATE', 'SNAPPY', 'ZSTD', 'NONE'],
         'The compression type to use for exported files. Possible values '
-        'include GZIP, DEFLATE, SNAPPY and NONE. The default value is NONE. '
-        'Not applicable when extracting models.',
+        'include GZIP, DEFLATE, SNAPPY, ZSTD, and NONE. The default value is '
+        'None. Not applicable when extracting models.',
         flag_values=fv)
     flags.DEFINE_boolean(
         'print_header',
@@ -3354,10 +3344,7 @@ class _Copy(BigqueryCmd):
         'Expiration time, in seconds from now, of the destination table.',
         flag_values=fv)
     flags.DEFINE_boolean(
-        'clone',
-        False,
-        'Create a clone of source table.',
-        flag_values=fv)
+        'clone', False, 'Create a clone of source table.', flag_values=fv)
     self._ProcessCommandRc(fv)
 
   def RunWithArgs(self, source_tables, dest_table):
@@ -3875,14 +3862,12 @@ class _Make(BigqueryCmd):
         flag_values=fv)
     flags.DEFINE_enum(
         'renewal_plan',
-        None,
-        [
+        None, [
             'FLEX',
             'MONTHLY',
             'ANNUAL',
             'NONE',
-        ],
-        'The plan this capacity commitment is converted to after committed '
+        ], 'The plan this capacity commitment is converted to after committed '
         'period ends. Options include:'
         '\n NONE'
         '\n FLEX'
@@ -3899,9 +3884,9 @@ class _Make(BigqueryCmd):
         flag_values=fv)
     flags.DEFINE_boolean(
         'multi_region_auxiliary',
-        False,
-        'If true, capacity commitment or reservation is placed in the '
-        'organization''s auxiliary region which is designated for disaster '
+        False, 'If true, capacity commitment or reservation is placed in the '
+        'organization'
+        's auxiliary region which is designated for disaster '
         'recovery purposes. Applicable only for US and EU locations. Available '
         'only for allow-listed projects.',
         flag_values=fv)
@@ -3921,14 +3906,19 @@ class _Make(BigqueryCmd):
     flags.DEFINE_integer(
         'max_concurrency',
         None,
-        'Reservation maximum concurrency. Deprecated, please use concurrency '
-        'instead.',
+        'Deprecated, please use target_job_concurrency instead.',
         flag_values=fv)
     flags.DEFINE_integer(
         'concurrency',
         None,
-        'Maximum number of queries that are allowed to run concurrently in '
-        'this reservation. Note: this is a soft limit.',
+        'Deprecated, please use target_job_concurrency instead.',
+        flag_values=fv)
+    flags.DEFINE_integer(
+        'target_job_concurrency',
+        None,
+        'Sets a soft upper bound on the number of jobs that can run '
+        'concurrently in the reservation. Default value is 0 which means that '
+        'concurrency target will be automatically computed by the system.',
         flag_values=fv)
     flags.DEFINE_bool(
         'enable_queuing_and_priorities',
@@ -4095,25 +4085,22 @@ class _Make(BigqueryCmd):
         flag_values=fv)
     flags.DEFINE_enum(
         'storage_billing_model',
-        None,
-        ['LOGICAL', 'PHYSICAL'],
+        None, ['LOGICAL', 'PHYSICAL'],
         'Optional. Sets the storage billing model for the dataset. \n'
         'LOGICAL - switches to logical billing model \n'
         'PHYSICAL - switches to physical billing model.',
         flag_values=fv)
     flags.DEFINE_enum(
         'metadata_cache_mode',
-        None,
-        ['AUTOMATIC', 'MANUAL'],
+        None, ['AUTOMATIC', 'MANUAL'],
         'Enables metadata cache for an external table with a connection. '
         'Specify AUTOMATIC to automatically refresh the cached metadata. '
         'Specify MANUAL to stop the automatic refresh.',
         flag_values=fv)
     flags.DEFINE_enum(
         'object_metadata',
-        None,
-        ['DIRECTORY'],
-        'Object Metadata Type used to create Object Tables. DIRECTORY is the '
+        None, ['DIRECTORY', 'SIMPLE'],
+        'Object Metadata Type used to create Object Tables. SIMPLE is the '
         'only supported value to create an Object Table containing a directory '
         'listing of objects found at the uri in external_data_definition.',
         flag_values=fv)
@@ -4124,8 +4111,7 @@ class _Make(BigqueryCmd):
         flag_values=fv)
     flags.DEFINE_string(
         'reference_file_schema_uri',
-        None,
-        'provide a reference file with the table schema, currently '
+        None, 'provide a reference file with the table schema, currently '
         'enabled for the formats: AVRO, PARQUET, ORC.',
         flag_values=fv)
     self._ProcessCommandRc(fv)
@@ -4191,13 +4177,17 @@ class _Make(BigqueryCmd):
         ignore_idle_arg = self.ignore_idle_slots
         if ignore_idle_arg is None:
           ignore_idle_arg = not self.use_idle_slots
+        concurrency = self.target_job_concurrency
+        if concurrency is None:
+          concurrency = (
+              self.concurrency
+              if self.concurrency is not None else self.max_concurrency)
         object_info = client.CreateReservation(
             reference=reference,
             slots=self.slots,
             ignore_idle_slots=ignore_idle_arg,
             edition=self.edition,
-            concurrency=self.concurrency
-            if self.concurrency is not None else self.max_concurrency,
+            target_job_concurrency=concurrency,
             enable_queuing_and_priorities=self.enable_queuing_and_priorities,
             multi_region_auxiliary=self.multi_region_auxiliary,
             autoscale_max_slots=self.autoscale_max_slots,
@@ -4406,8 +4396,7 @@ class _Make(BigqueryCmd):
           source_dataset_reference=source_dataset_reference
           ,
           max_time_travel_hours=self.max_time_travel_hours,
-          storage_billing_model=self.storage_billing_model
-      )
+          storage_billing_model=self.storage_billing_model)
       print("Dataset '%s' successfully created." % (reference,))
     elif isinstance(reference, TableReference):
       if self.source_dataset:
@@ -4456,7 +4445,7 @@ class _Make(BigqueryCmd):
             self.object_metadata,
             self.preserve_ascii_control_characters,
             self.reference_file_schema_uri,
-            )
+        )
 
       view_udf_resources = None
       if self.view_udf_resource:
@@ -4845,7 +4834,8 @@ class _Update(BigqueryCmd):
         flag_values=fv)
     flags.DEFINE_string(
         'reservation_size',
-        None, 'DEPRECATED, Please use bi_reservation_size instead.',
+        None,
+        'DEPRECATED, Please use bi_reservation_size instead.',
         flag_values=fv)
     flags.DEFINE_string(
         'bi_reservation_size',
@@ -4869,14 +4859,19 @@ class _Update(BigqueryCmd):
     flags.DEFINE_integer(
         'max_concurrency',
         None,
-        'Reservation maximum concurrency. Deprecated, please use concurrency '
-        'instead.',
+        'Deprecated, please use target_job_concurrency instead.',
         flag_values=fv)
     flags.DEFINE_integer(
         'concurrency',
         None,
-        'Maximum number of queries that are allowed to run concurrently in '
-        'this reservation. Note: this is a soft limit.',
+        'Deprecated, please use target_job_concurrency instead.',
+        flag_values=fv)
+    flags.DEFINE_integer(
+        'target_job_concurrency',
+        None,
+        'Sets a soft upper bound on the number of jobs that can run '
+        'concurrently in the reservation. Default value is 0 which means that '
+        'concurrency target will be automatically computed by the system.',
         flag_values=fv)
     flags.DEFINE_bool(
         'enable_queuing_and_priorities',
@@ -5064,17 +5059,15 @@ class _Update(BigqueryCmd):
         flag_values=fv)
     flags.DEFINE_enum(
         'metadata_cache_mode',
-        None,
-        ['AUTOMATIC', 'MANUAL'],
+        None, ['AUTOMATIC', 'MANUAL'],
         'Enables metadata cache for an external table with a connection. '
         'Specify AUTOMATIC to automatically refresh the cached metadata. '
         'Specify MANUAL to stop the automatic refresh.',
         flag_values=fv)
     flags.DEFINE_enum(
         'object_metadata',
-        None,
-        ['DIRECTORY'],
-        'Object Metadata Type used to create Object Tables. DIRECTORY is the '
+        None, ['DIRECTORY', 'SIMPLE'],
+        'Object Metadata Type used to create Object Tables. SIMPLE is the '
         'only supported value to create an Object Table containing a directory '
         'listing of objects found at the uri in external_data_definition.',
         flag_values=fv)
@@ -5192,8 +5185,7 @@ class _Update(BigqueryCmd):
         flag_values=fv)
     flags.DEFINE_enum(
         'storage_billing_model',
-        None,
-        ['LOGICAL', 'PHYSICAL'],
+        None, ['LOGICAL', 'PHYSICAL'],
         'Optional. Sets the storage billing model for the dataset. \n'
         'LOGICAL - switches to logical billing model \n'
         'PHYSICAL - switches to physical billing model.',
@@ -5266,8 +5258,7 @@ class _Update(BigqueryCmd):
           if size is None:
             size = self.reservation_size
           reference = client.GetBiReservationReference(FLAGS.location)
-          object_info = client.UpdateBiReservation(reference,
-                                                   size)
+          object_info = client.UpdateBiReservation(reference, size)
           print(object_info)
         else:
           reference = client.GetReservationReference(
@@ -5275,12 +5266,16 @@ class _Update(BigqueryCmd):
           ignore_idle_arg = self.ignore_idle_slots
           if ignore_idle_arg is None and self.use_idle_slots is not None:
             ignore_idle_arg = not self.use_idle_slots
+          concurrency = self.target_job_concurrency
+          if concurrency is None:
+            concurrency = (
+                self.concurrency
+                if self.concurrency is not None else self.max_concurrency)
           object_info = client.UpdateReservation(
               reference=reference,
               slots=self.slots,
               ignore_idle_slots=ignore_idle_arg,
-              concurrency=self.concurrency
-              if self.concurrency is not None else self.max_concurrency,
+              target_job_concurrency=concurrency,
               enable_queuing_and_priorities=self.enable_queuing_and_priorities,
               autoscale_max_slots=self.autoscale_max_slots,
               autoscale_budget_slot_hours=self.autoscale_budget_slot_hours)
@@ -5426,11 +5421,9 @@ class _Update(BigqueryCmd):
           labels_to_set=labels_to_set,
           label_keys_to_remove=label_keys_to_remove,
           default_kms_key=self.default_kms_key,
-          etag=self.etag
-          ,
+          etag=self.etag,
           max_time_travel_hours=self.max_time_travel_hours,
-          storage_billing_model=self.storage_billing_model
-      )
+          storage_billing_model=self.storage_billing_model)
       print("Dataset '%s' successfully updated." % (reference,))
     elif isinstance(reference, TableReference):
       object_name = 'Table'
@@ -5459,7 +5452,7 @@ class _Update(BigqueryCmd):
             self.external_table_definition,
             metadata_cache_mode=self.metadata_cache_mode,
             object_metadata=self.object_metadata,
-            )
+        )
         # When updating, move the schema out of the external_data_config.
         # If schema is set explicitly on this update, prefer it over the
         # external_data_config schema.
@@ -5509,8 +5502,7 @@ class _Update(BigqueryCmd):
           require_partition_filter=self.require_partition_filter,
           etag=self.etag,
           encryption_configuration=encryption_configuration,
-          autodetect_schema=self.autodetect_schema
-      )
+          autodetect_schema=self.autodetect_schema)
 
       print("%s '%s' successfully updated." % (
           object_name,
@@ -5657,11 +5649,9 @@ def _UpdateDataset(
     labels_to_set=None,
     label_keys_to_remove=None,
     etag=None,
-    default_kms_key=None
-    ,
+    default_kms_key=None,
     max_time_travel_hours=None,
-    storage_billing_model=None
-):
+    storage_billing_model=None):
   """Updates a dataset.
 
   Reads JSON file if specified and loads updated values, before calling bigquery
@@ -5687,6 +5677,7 @@ def _UpdateDataset(
       hours if this is not set.
     storage_billing_model: Optional. Sets the storage billing model for the
       dataset.
+
   Raises:
     UsageError: when incorrect usage or invalid args are used.
   """
@@ -5715,11 +5706,9 @@ def _UpdateDataset(
       labels_to_set=labels_to_set,
       label_keys_to_remove=label_keys_to_remove,
       etag=etag,
-      default_kms_key=default_kms_key
-      ,
+      default_kms_key=default_kms_key,
       max_time_travel_hours=max_time_travel_hours,
-      storage_billing_model=storage_billing_model
-  )
+      storage_billing_model=storage_billing_model)
 
 
 class _Show(BigqueryCmd):
@@ -6545,7 +6534,7 @@ class _GetIamPolicy(_IamPolicyCmd):  # pylint: disable=missing-docstring
 
     Arguments:
       identifier: The identifier of the resource. Presently only table and view
-    resources are fully supported. (Last updated: 2020-08-03)
+        resources are fully supported. (Last updated: 2020-08-03)
     """
     client = Client.Get()
     reference = self.GetReferenceFromIdentifier(client, identifier)
@@ -6582,7 +6571,7 @@ class _SetIamPolicy(_IamPolicyCmd):  # pylint: disable=missing-docstring
 
     Arguments:
       identifier: The identifier of the resource. Presently only table and view
-    resources are fully supported. (Last updated: 2020-08-03)
+        resources are fully supported. (Last updated: 2020-08-03)
       filename: The name of a file containing the policy in JSON format.
     """
     client = Client.Get()
@@ -6679,7 +6668,7 @@ class _AddIamPolicyBinding(_IamPolicyBindingCmd):  # pylint: disable=missing-doc
 
     Arguments:
       identifier: The identifier of the resource. Presently only table and view
-    resources are fully supported. (Last updated: 2020-08-03)
+        resources are fully supported. (Last updated: 2020-08-03)
     """
     client = Client.Get()
     reference = self.GetReferenceFromIdentifier(client, identifier)
@@ -6787,7 +6776,7 @@ class _RemoveIamPolicyBinding(_IamPolicyBindingCmd):  # pylint: disable=missing-
 
     Arguments:
       identifier: The identifier of the resource. Presently only table and view
-    resources are fully supported. (Last updated: 2020-08-03)
+        resources are fully supported. (Last updated: 2020-08-03)
     """
     client = Client.Get()
     reference = self.GetReferenceFromIdentifier(client, identifier)
@@ -7273,8 +7262,8 @@ def _ParseParameters(parameters):
 
   Arguments:
     parameters: An iterable of string-form query parameters: name:type:value.
-        Name may be omitted to indicate a positional parameter: :type:value.
-        Type may be omitted to indicate a string: name::value, or ::value.
+      Name may be omitted to indicate a positional parameter: :type:value. Type
+      may be omitted to indicate a string: name::value, or ::value.
 
   Returns:
     A list of query parameters in the form for the BigQuery API client.

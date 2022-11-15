@@ -21,34 +21,55 @@ from __future__ import unicode_literals
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute import flags as compute_flags
+from googlecloudsdk.command_lib.compute import scope as compute_scope
 from googlecloudsdk.command_lib.compute.instance_templates import flags
 
 
-class Describe(base.DescribeCommand):
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
+class DescribeGA(base.DescribeCommand):
   """Describe a virtual machine instance template."""
+  support_region_flag = False
+
+  @classmethod
+  def Args(cls, parser):
+    DescribeGA.InstanceTemplateArg = flags.MakeInstanceTemplateArg(
+        include_regional=cls.support_region_flag)
+    DescribeGA.InstanceTemplateArg.AddArgument(
+        parser, operation_type='describe')
 
   @staticmethod
-  def Args(parser):
-    Describe.InstanceTemplateArg = flags.MakeInstanceTemplateArg()
-    Describe.InstanceTemplateArg.AddArgument(parser, operation_type='describe')
+  def GetServiceClient(client, ref):
+    if ref.Collection() == 'compute.instanceTemplates':
+      return client.apitools_client.instanceTemplates
+    else:
+      return client.apitools_client.regionInstanceTemplates
+
+  @staticmethod
+  def GetRequestMessage(client, ref):
+    if ref.Collection() == 'compute.instanceTemplates':
+      return client.messages.ComputeInstanceTemplatesGetRequest
+    else:
+      return client.messages.ComputeRegionInstanceTemplatesGetRequest
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     client = holder.client
 
-    instance_template_ref = Describe.InstanceTemplateArg.ResolveAsResource(
+    instance_template_ref = DescribeGA.InstanceTemplateArg.ResolveAsResource(
         args,
         holder.resources,
-        scope_lister=compute_flags.GetDefaultScopeLister(client))
+        scope_lister=compute_flags.GetDefaultScopeLister(client),
+        default_scope=compute_scope.ScopeEnum.GLOBAL)
 
-    request = client.messages.ComputeInstanceTemplatesGetRequest(
-        **instance_template_ref.AsDict())
+    service_client = self.GetServiceClient(client, instance_template_ref)
+    request_message = self.GetRequestMessage(client, instance_template_ref)
+    return client.MakeRequests([
+        (service_client, 'Get',
+         request_message(**instance_template_ref.AsDict()))
+    ])[0]
 
-    return client.MakeRequests([(client.apitools_client.instanceTemplates,
-                                 'Get', request)])[0]
 
-
-Describe.detailed_help = {
+DescribeGA.detailed_help = {
     'brief':
         'Describe a virtual machine instance template',
     'DESCRIPTION':
@@ -63,3 +84,8 @@ Describe.detailed_help = {
           $ {command} INSTANCE-TEMPLATE
         """
 }
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class DescribeAlpha(DescribeGA):
+  support_region_flag = True

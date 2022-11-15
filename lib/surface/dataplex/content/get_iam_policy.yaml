@@ -1,0 +1,18 @@
+- release_tracks: [ALPHA]
+  hidden: true
+  help_text:
+    brief: |
+      Retrieve a Dataplex Content IAM policy.
+    description: |
+      Get a Dataplex Content Iam Policy based on project_id, location, lake_id, and contents_id.
+
+      {command} projects/{project_id}/locations/{location}/lakes/{lake_id}/content/{contents_id}
+    examples: |
+      {command} projects/test-project/locations/us-central1/lakes/test-lake/contentss/test-contents
+  request:
+    collection: dataplex.projects.locations.lakes.contentitems
+  arguments:
+    resource:
+      help_text: |
+        Arguments and flags that define the Dataplex contents IAM policy you want to retrieve.
+      spec: !REF googlecloudsdk.command_lib.dataplex.resources:content

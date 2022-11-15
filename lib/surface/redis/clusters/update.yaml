@@ -13,7 +13,7 @@
     examples: |
       To update a Redis cluster with the size to 48GB, run:
 
-        $ {command} my-redis-cluster --size=48
+        $ {command} my-redis-cluster --total-memory-size-gb=48
 
   arguments:
     resource:
@@ -21,7 +21,7 @@
       help_text: |
         Arguments and flags that specify the Memorystore Redis cluster you want to update.
     params:
-    - arg_name: size
+    - arg_name: total-memory-size-gb
       api_field: cluster.totalMemorySizeGb
       help_text: |
           The memory size of the cluster in GiB.
@@ -33,7 +33,7 @@
     ALPHA:
       api_version: v1alpha1
       modify_request_hooks:
-      - googlecloudsdk.command_lib.redis.clusters_update_util:UpdateSize
+      - googlecloudsdk.command_lib.redis.clusters_update_util:UpdateTotalMemorySizeGb
     collection: redis.projects.locations.clusters
 
   update:

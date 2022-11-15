@@ -45,7 +45,7 @@ class List(base.ListCommand):
       parser: The argparse parser to add the flag to.
     """
     parser.display_info.AddFormat(constants.VMWARE_CLUSTERS_FORMAT)
-    flags.AddLocationResourceArg(parser)
+    flags.AddLocationResourceArg(parser, 'to list Anthos on VMware clusters')
 
   def Run(self, args):
     """Runs the list command.
@@ -56,6 +56,5 @@ class List(base.ListCommand):
     Returns:
       protorpc.message.Message, The resources listed by the service.
     """
-    location_ref = args.CONCEPTS.location.Parse()
     client = apis.ClustersClient()
-    return client.List(location_ref, limit=args.limit, page_size=args.page_size)
+    return client.List(args)

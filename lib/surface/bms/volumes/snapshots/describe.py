@@ -22,6 +22,7 @@ from googlecloudsdk.api_lib.bms.bms_client import BmsClient
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.bms import flags
 
+
 DETAILED_HELP = {
     'DESCRIPTION':
         """
@@ -38,7 +39,7 @@ DETAILED_HELP = {
 }
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.GA)
 class Describe(base.DescribeCommand):
   """Describe a Bare Metal Solution boot volume snapshot."""
 

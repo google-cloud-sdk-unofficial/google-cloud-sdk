@@ -25,6 +25,7 @@ arguments:
   - arg_name: capacity
     api_field: addressGroup.capacity
     help_text: Capacity of the address group.
+    required: true
   - arg_name: items
     api_field: addressGroup.items
     help_text: Items of the address group.

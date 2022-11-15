@@ -193,6 +193,7 @@ def _AddMutuallyExclusiveArgs(mutex_group, release_track):
                     api_adapter.HPA: _ParseAddonDisabled,
                     api_adapter.DASHBOARD: _ParseAddonDisabled,
                     api_adapter.NETWORK_POLICY: _ParseAddonDisabled,
+                    api_adapter.BACKUPRESTORE: _ParseAddonDisabled,
                     api_adapter.NODELOCALDNS: _ParseAddonDisabled,
                     api_adapter.CONFIGCONNECTOR: _ParseAddonDisabled,
                     api_adapter.GCEPDCSIDRIVER: _ParseAddonDisabled,
@@ -207,6 +208,7 @@ def _AddMutuallyExclusiveArgs(mutex_group, release_track):
 {ingress}=ENABLED|DISABLED
 {dashboard}=ENABLED|DISABLED
 {network_policy}=ENABLED|DISABLED
+{backuprestore}=ENABLED|DISABLED
 {cloudrun}=ENABLED|DISABLED
 {configconnector}=ENABLED|DISABLED
 {nodelocaldns}=ENABLED|DISABLED
@@ -216,6 +218,7 @@ def _AddMutuallyExclusiveArgs(mutex_group, release_track):
     ingress=api_adapter.INGRESS,
     dashboard=api_adapter.DASHBOARD,
     network_policy=api_adapter.NETWORK_POLICY,
+    backuprestore=api_adapter.BACKUPRESTORE,
     cloudrun=api_adapter.CLOUDRUN_ADDONS[0],
     configconnector=api_adapter.CONFIGCONNECTOR,
     nodelocaldns=api_adapter.NODELOCALDNS,
@@ -833,6 +836,8 @@ class UpdateBeta(Update):
     flags.AddLoggingVariantFlag(group)
     flags.AddAdditionalPodIpv4RangesFlag(group)
     flags.AddRemoveAdditionalPodIpv4RangesFlag(group)
+    flags.AddGatewayFlags(group, hidden=True)
+    flags.AddFleetProjectFlag(group, is_update=True)
 
   def ParseUpdateOptions(self, args, locations):
     get_default = lambda key: getattr(args, key)
@@ -931,6 +936,9 @@ class UpdateBeta(Update):
     opts.logging_variant = args.logging_variant
     opts.additional_pod_ipv4_ranges = args.additional_pod_ipv4_ranges
     opts.removed_additional_pod_ipv4_ranges = args.remove_additional_pod_ipv4_ranges
+    opts.gateway_api = args.gateway_api
+    opts.fleet_project = args.fleet_project
+    opts.clear_fleet_project = args.clear_fleet_project
     return opts
 
 
@@ -1019,6 +1027,7 @@ class UpdateAlpha(Update):
     flags.AddLoggingVariantFlag(group)
     flags.AddAdditionalPodIpv4RangesFlag(group)
     flags.AddRemoveAdditionalPodIpv4RangesFlag(group)
+    flags.AddFleetProjectFlag(group, is_update=True)
 
   def ParseUpdateOptions(self, args, locations):
     get_default = lambda key: getattr(args, key)
@@ -1112,4 +1121,6 @@ class UpdateAlpha(Update):
     opts.logging_variant = args.logging_variant
     opts.additional_pod_ipv4_ranges = args.additional_pod_ipv4_ranges
     opts.removed_additional_pod_ipv4_ranges = args.remove_additional_pod_ipv4_ranges
+    opts.fleet_project = args.fleet_project
+    opts.clear_fleet_project = args.clear_fleet_project
     return opts

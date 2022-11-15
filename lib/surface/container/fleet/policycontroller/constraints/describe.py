@@ -18,12 +18,110 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+from apitools.base.py import exceptions as apitools_exceptions
 from googlecloudsdk.api_lib.container.fleet.policycontroller import status_api_utils
 from googlecloudsdk.calliope import base as calliope_base
+from googlecloudsdk.command_lib.container.fleet import api_util as fleet_api_util
+from googlecloudsdk.command_lib.container.fleet import resources
 from googlecloudsdk.command_lib.container.fleet.policycontroller import utils
-from googlecloudsdk.core import log
+from googlecloudsdk.core import exceptions
 from googlecloudsdk.core import properties
 import six
+
+
+def FormatViolation(violation, include_membership=False):
+  """Returns formatted violation from API response."""
+  formatted_violation = {
+      'resource_name':
+          violation.resourceRef.name,
+      'resource_api_group':
+          violation.resourceRef.groupKind.apiGroup,
+      'resource_kind':
+          violation.resourceRef.groupKind.kind
+  }
+  if violation.resourceRef.resourceNamespace is not None:
+    formatted_violation['resource_namespace'] = (
+        violation.resourceRef.resourceNamespace)
+  else:
+    formatted_violation['resource_namespace'] = 'N/A'
+  if include_membership:
+    formatted_violation['membership'] = violation.membershipRef.name
+  return formatted_violation
+
+
+def GetMembershipConstraint(client, messages, constraint_name, project_id,
+                            membership, release_track):
+  """Returns a formatted membership constraint."""
+  try:
+    membership_obj = fleet_api_util.GetMembership(membership,
+                                                  release_track)
+  except apitools_exceptions.HttpNotFoundError:
+    raise exceptions.Error(
+        'Membership [{}] was not found in the Fleet.'
+        .format(membership))
+
+  try:
+    request = messages.AnthospolicycontrollerstatusPaProjectsMembershipConstraintsGetRequest(
+        name='projects/{}/membershipConstraints/{}/{}'.format(
+            project_id, constraint_name, membership_obj.uniqueId))
+    response = client.projects_membershipConstraints.Get(request)
+  except apitools_exceptions.HttpNotFoundError:
+    raise exceptions.Error(
+        'Constraint [{}] was not found in Fleet membership [{}].'
+        .format(constraint_name, membership))
+
+  return {
+      'name':
+          response.constraintRef.name,
+      'template':
+          response.constraintRef.constraintTemplateName,
+      'enforcementAction':
+          utils.get_enforcement_action_label(
+              six.text_type(response.spec.enforcementAction)),
+      'membership': membership,
+      'violationCount':
+          response.status.numViolations or 0,
+      'violations': [],
+      'match':
+          response.spec.kubernetesMatch or {},
+      'parameters':
+          response.spec.parameters or {}
+  }
+
+
+def GetFleetConstraint(client, messages, constraint_name, project_id):
+  """Returns a formatted Fleet constraint."""
+  try:
+    request = messages.AnthospolicycontrollerstatusPaProjectsFleetConstraintsGetRequest(
+        name='projects/{}/fleetConstraints/{}'.format(
+            project_id, constraint_name))
+    response = client.projects_fleetConstraints.Get(request)
+  except apitools_exceptions.HttpNotFoundError:
+    raise exceptions.Error(
+        'Constraint [{}] was not found in the Fleet.'
+        .format(constraint_name))
+  constraint = {
+      'name': response.ref.name,
+      'template': response.ref.constraintTemplateName,
+      'violations': [],
+      'violationCount': response.numViolations or 0,
+      'memberships': [],
+      'membershipCount': response.numMemberships or 0
+  }
+
+  membership_constraints_request = messages.AnthospolicycontrollerstatusPaProjectsMembershipConstraintsListRequest(
+      parent='projects/{}'.format(project_id))
+  membership_constraints_response = client.projects_membershipConstraints.List(
+      membership_constraints_request)
+
+  for membership_constraint in membership_constraints_response.membershipConstraints:
+    if constraint_name == '{}/{}'.format(
+        membership_constraint.constraintRef.constraintTemplateName,
+        membership_constraint.constraintRef.name):
+      constraint['memberships'].append(
+          membership_constraint.membershipRef.name)
+
+  return constraint
 
 
 @calliope_base.Hidden
@@ -33,23 +131,43 @@ class Describe(calliope_base.DescribeCommand):
 
   ## EXAMPLES
 
-  To describe the "all-must-have-owner" constraint for the template
+  To describe the "all-must-have-owner" Fleet constraint for the template
   "k8srequiredlabels":
 
       $ {command} k8srequiredlabels/all-must-have-owner
+
+  To describe the "all-must-have-owner" membership constraint for the template
+  "k8srequiredlabels" for a membership:
+
+      $ {command} k8srequiredlabels/all-must-have-owner
+      --memberships=MEMBERSHIP
+
   """
 
-  @staticmethod
-  def Args(parser):
+  @classmethod
+  def Args(cls, parser):
     parser.add_argument(
         'CONSTRAINT_NAME',
         type=str,
         help='The constraint template name and constraint name joined by a slash, e.g. "k8srequiredlabels/all-must-have-owner".'
     )
+    if resources.UseRegionalMemberships(cls.ReleaseTrack()):
+      resources.AddMembershipResourceArg(
+          parser,
+          plural=True,
+          membership_help=(
+              'A single membership name for which to describe a membership '
+              'constraint.'))
+    else:
+      parser.add_argument(
+          '--memberships',
+          type=str,
+          help=(
+              'A single membership name for which to describe a membership '
+              'constraint.'))
 
   def Run(self, args):
     calliope_base.EnableUserProjectQuota()
-
     project_id = properties.VALUES.core.project.Get(required=True)
 
     client = status_api_utils.GetClientInstance(
@@ -57,63 +175,44 @@ class Describe(calliope_base.DescribeCommand):
     messages = status_api_utils.GetMessagesModule(
         self.ReleaseTrack())
 
-    request = messages.AnthospolicycontrollerstatusPaProjectsMembershipConstraintsListRequest(
+    constraint_name = args.CONSTRAINT_NAME.lower()
+
+    if args.memberships is not None:
+      if resources.UseRegionalMemberships(self.ReleaseTrack()):
+        memberships = args.memberships
+      else:
+        memberships = args.memberships.split(',')
+      if len(memberships) != 1:
+        raise exceptions.Error('Please specify a single membership name.')
+
+      constraint = GetMembershipConstraint(client, messages,
+                                           constraint_name,
+                                           project_id, args.memberships,
+                                           self.ReleaseTrack())
+    else:
+      constraint = GetFleetConstraint(client, messages, constraint_name,
+                                      project_id)
+
+    violations_request = messages.AnthospolicycontrollerstatusPaProjectsMembershipConstraintAuditViolationsListRequest(
         parent='projects/{}'.format(project_id))
-    response = client.projects_membershipConstraints.List(request)
+    violations_response = client.projects_membershipConstraintAuditViolations.List(
+        violations_request)
 
-    if not response.membershipConstraints:
-      log.status.Print('Constraint {} not found.'.format(args.CONSTRAINT_NAME))
-      return {}
-
-    formatted_constraints = {}
-    for constraint in response.membershipConstraints:
-      if args.CONSTRAINT_NAME == '{}/{}'.format(
-          constraint.constraintRef.constraintTemplateName,
-          constraint.constraintRef.name):
-        formatted_constraints[constraint.membershipRef.name] = {
-            'name':
-                constraint.constraintRef.name,
-            'template':
-                constraint.constraintRef.constraintTemplateName,
-            'enforcementAction':
-                utils.get_enforcement_action_label(
-                    six.text_type(constraint.spec.enforcementAction)),
-            'violationCount':
-                constraint.status.numViolations or 0,
-            'violations': [],
-            'match':
-                constraint.spec.kubernetesMatch or {},
-            'parameters':
-                constraint.spec.parameters or {}
-        }
-
-    # Add violations to formatted constraints
-    if formatted_constraints:
-      request = messages.AnthospolicycontrollerstatusPaProjectsMembershipConstraintAuditViolationsListRequest(
-          parent='projects/{}'.format(project_id))
-      response = client.projects_membershipConstraintAuditViolations.List(
-          request)
-      for violation in response.membershipConstraintAuditViolations:
-        if args.CONSTRAINT_NAME == '{}/{}'.format(
+    # Add violations to constraint.
+    if args.memberships:
+      for violation in violations_response.membershipConstraintAuditViolations:
+        if constraint_name == '{}/{}'.format(
             violation.constraintRef.constraintTemplateName,
             violation.constraintRef.name
-        ) and violation.membershipRef.name in formatted_constraints:
-          formatted_constraint = {
-              'resource_name':
-                  violation.resourceRef.name,
-              'resource_api_group':
-                  violation.resourceRef.groupKind.apiGroup,
-              'resource_kind':
-                  violation.resourceRef.groupKind.kind
-          }
+        ) and violation.membershipRef.name == args.memberships:
+          constraint['violations'].append(FormatViolation(violation))
+      return constraint
+    else:
+      for violation in violations_response.membershipConstraintAuditViolations:
+        if constraint_name == '{}/{}'.format(
+            violation.constraintRef.constraintTemplateName,
+            violation.constraintRef.name):
+          constraint['violations'].append(
+              FormatViolation(violation, include_membership=True))
 
-          if violation.resourceRef.resourceNamespace is not None:
-            formatted_constraint['resource_namespace'] = (
-                violation.resourceRef.resourceNamespace)
-          else:
-            formatted_constraint['resource_namespace'] = 'N/A'
-
-          formatted_constraints[violation.membershipRef.
-                                name]['violations'].append(formatted_constraint)
-
-    return formatted_constraints
+    return constraint

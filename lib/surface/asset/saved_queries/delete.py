@@ -52,7 +52,7 @@ class Delete(base.Command):
     flags.AddSavedQueriesQueryId(parser, query_id_helper_text)
 
   def Run(self, args):
-    parent = asset_utils.GetFeedParent(args.organization, args.project,
-                                       args.folder)
+    parent = asset_utils.GetSavedQueriesParent(args.organization, args.project,
+                                               args.folder)
     client = client_util.AssetSavedQueriesClient(parent)
     client.Delete(args)

@@ -46,7 +46,16 @@ class GetStatus(base.Command):
   def Args(parser):
     resource_args.AddRouterResourceArg(parser, 'to get status', True)
 
+  def _PreprocessResult(self, router_status):
+    """Make the nextHopReachable value explicit for each route status."""
+    # This is necessary because if nextHopReachable == false, then when it's
+    # serialized by the server it will not be included, but we want to print it
+    # out explicitly, whether it's true or false.
+    for route_status in router_status.result.staticRouteStatus:
+      route_status.nextHopReachable = bool(route_status.nextHopReachable)
+    return router_status
+
   def Run(self, args):
     routers_client = routers.RoutersClient()
     router_ref = args.CONCEPTS.router.Parse()
-    return routers_client.GetStatus(router_ref)
+    return self._PreprocessResult(routers_client.GetStatus(router_ref))

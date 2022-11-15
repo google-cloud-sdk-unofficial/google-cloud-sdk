@@ -184,6 +184,8 @@ class CreateBeta(Create):
 
   *{command}* is used to create network firewall policy rules.
   """
+  _support_address_group = True
+  _support_fqdn = True
   _support_geo = True
   _support_nti = True
 

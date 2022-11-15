@@ -18,36 +18,39 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
-from googlecloudsdk.api_lib.storage.insights.inventory_reports import insights_api
+from googlecloudsdk.api_lib.storage import insights_api
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.storage import errors
 from googlecloudsdk.command_lib.storage import flags
 from googlecloudsdk.command_lib.storage import storage_url
-
-REQUIRED_METADATA_FIELDS = frozenset(['name', 'project'])
+from googlecloudsdk.command_lib.storage.insights.inventory_reports import resource_args
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Update(base.Command):
-  """Update an inventory report configuration."""
+  """Update an inventory report config."""
 
   detailed_help = {
       'DESCRIPTION': """
-       Updates an inventory report configuration.
+       Update an inventory report config.
       """,
       'EXAMPLES': """
-       To update the destination bucket of the inventory report config /projects/a/locations/b/reportConfigs/1234:
 
-         $ {command} /projects/a/locations/b/reportConfigs/1234 --destination=gs://new-report-bucket/new-save-path/
+      To update the display-name of an inventory report config with ID=1234,
+      location=us, and project=foo:
+
+        $ {command} 1234 --location=us --project=foo --display-name=bar
+
+      To update the same inventory report config with fully specified name:
+
+        $ {command} /projects/foo/locations/us/reportConfigs/1234 --display-name=bar
       """,
   }
 
   @staticmethod
   def Args(parser):
-    parser.add_argument(
-        'report_config_name',
-        help='Indicates the report config name.')
+    resource_args.add_report_config_resource_arg(parser, 'to update')
     flags.add_inventory_reports_flags(parser)
 
     metadata_fields_group = parser.add_group(mutex=True)
@@ -58,23 +61,25 @@ class Update(base.Command):
         '--add-metadata-fields',
         metavar='METADATA_FIELDS',
         type=arg_parsers.ArgList(
-            choices=flags.INVENTORY_REPORTS_METADATA_FIELDS),
+            choices=flags.OPTIONAL_INVENTORY_REPORTS_METADATA_FIELDS),
         help='Adds fields to the metadata_fields list.')
     metadata_fields_add_remove_group.add_argument(
         '--remove-metadata-fields',
         metavar='METADATA_FIELDS',
         type=arg_parsers.ArgList(
-            choices=flags.INVENTORY_REPORTS_METADATA_FIELDS),
+            choices=flags.OPTIONAL_INVENTORY_REPORTS_METADATA_FIELDS),
         help='Adds fields to the metadata_fields list.')
     # We don't addd --clear-metadata-fields because certain metadata-fields
     # like name and project must be always present.
 
   def Run(self, args):
     client = insights_api.InsightsApi()
+    report_config_name = args.CONCEPTS.report_config.Parse().RelativeName()
+
     if args.add_metadata_fields or args.remove_metadata_fields:
       # Get the existing report config so that we can modify
       # the metadata_fields list.
-      report_config = client.get(args.report_config_name)
+      report_config = client.get(report_config_name)
       metadata_fields = set(
           report_config.objectMetadataReportOptions.metadataFields)
       if args.add_metadata_fields is not None:
@@ -82,16 +87,15 @@ class Update(base.Command):
           metadata_fields.add(field)
       if args.remove_metadata_fields is not None:
         for field in args.remove_metadata_fields:
-          if field in REQUIRED_METADATA_FIELDS:
-            raise errors.Error(
-                'Cannot remove required metadata field: {}'.format(field))
           if field not in metadata_fields:
             raise errors.Error(
                 'Cannot remove non-existing metadata field: {}'.format(field))
           metadata_fields.remove(field)
       metadata_fields_list = list(metadata_fields)
     elif args.metadata_fields:
-      metadata_fields_list = args.metadata_fields
+      metadata_fields_list = (
+          list(flags.REQUIRED_INVENTORY_REPORTS_METADATA_FIELDS) +
+          args.metadata_fields)
     else:
       # messages.ReportConfig does not accept None value.
       # This should be safe, as an empty list has no effect unless we add
@@ -99,7 +103,7 @@ class Update(base.Command):
       metadata_fields_list = []
 
     return client.update(
-        args.report_config_name,
+        report_config_name,
         destination_url=storage_url.storage_url_from_string(
             args.destination) if args.destination is not None else None,
         metadata_fields=metadata_fields_list,

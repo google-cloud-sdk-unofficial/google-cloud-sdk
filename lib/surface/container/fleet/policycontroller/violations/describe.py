@@ -20,14 +20,16 @@ from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.container.fleet.policycontroller import status_api_utils
 from googlecloudsdk.calliope import base as calliope_base
+from googlecloudsdk.command_lib.container.fleet import resources
+from googlecloudsdk.core import exceptions
 from googlecloudsdk.core import properties
-from surface.container.fleet.policycontroller.violations import list_membership_violations
+from surface.container.fleet.policycontroller import violations
 
 
 @calliope_base.Hidden
 @calliope_base.ReleaseTracks(calliope_base.ReleaseTrack.ALPHA)
 class Describe(calliope_base.DescribeCommand):
-  """Describe Policy Controller audit violations.
+  """Describe Policy Controller audit violations of a constraint.
 
   ## EXAMPLES
 
@@ -35,16 +37,34 @@ class Describe(calliope_base.DescribeCommand):
   constraint "all-must-have-owner":
 
       $ {command} k8srequiredlabels/all-must-have-owner
+
+  To describe audit violations for a constraint on a specified membership:
+      $ {command} k8srequiredlabels/all-must-have-owner
+      --memberships=MEMBERSHIP
   """
 
-  @staticmethod
-  def Args(parser):
+  @classmethod
+  def Args(cls, parser):
     parser.add_argument(
         'CONSTRAINT_NAME',
         type=str,
         help=('The constraint template name and constraint name joined '
               + 'by a slash, e.g. "k8srequiredlabels/all-must-have-owner".')
     )
+    if resources.UseRegionalMemberships(cls.ReleaseTrack()):
+      resources.AddMembershipResourceArg(
+          parser,
+          plural=True,
+          membership_help=(
+              'The membership names from which to return violations, separated '
+              'by commas if multiple are supplied.'))
+    else:
+      parser.add_argument(
+          '--memberships',
+          type=str,
+          help=(
+              'A single membership name for which to describe violations of '
+              'a constraint.'))
 
   def Run(self, args):
     calliope_base.EnableUserProjectQuota()
@@ -55,9 +75,22 @@ class Describe(calliope_base.DescribeCommand):
     messages = status_api_utils.GetMessagesModule(
         self.ReleaseTrack())
 
-    return list_membership_violations(
+    constraint_name = args.CONSTRAINT_NAME.lower()
+
+    if args.memberships is not None:
+      if resources.UseRegionalMemberships(self.ReleaseTrack()):
+        memberships = args.memberships
+      else:
+        memberships = args.memberships.split(',')
+      if len(memberships) != 1:
+        raise exceptions.Error('Please specify a single membership name.')
+    else:
+      memberships = []
+
+    return violations.ListMembershipViolations(
         messages,
         client,
         project_id,
         args,
-        constraint_filter=args.CONSTRAINT_NAME)
+        memberships=memberships,
+        constraint_filter=constraint_name)

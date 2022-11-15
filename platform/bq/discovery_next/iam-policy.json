@@ -695,11 +695,11 @@
           }
         },
         "vertexAiModelId": {
-          "description": "The model id in Vertex AI Model Registry for this training run",
+          "description": "The model id in the [Vertex AI Model Registry](https:\/\/cloud.google.com\/vertex-ai\/docs\/model-registry\/introduction) for this training run.",
           "type": "string"
         },
         "vertexAiModelVersion": {
-          "description": "Output only. The model version in Vertex AI Model Registry for this training run",
+          "description": "Output only. The model version in the [Vertex AI Model Registry](https:\/\/cloud.google.com\/vertex-ai\/docs\/model-registry\/introduction) for this training run.",
           "readOnly": true,
           "type": "string"
         }
@@ -2684,6 +2684,11 @@
           "description": "Output only. The status of this job. Examine this value when polling an asynchronous job to see if the job is complete.",
           "readOnly": true,
           "$ref": "JobStatus"
+        },
+        "principal_subject": {
+          "description": "Output only. [Full-projection-only] String representation of identity of requesting party. Populated for both first- and third-party identities. Only present for APIs that support third-party identities.",
+          "readOnly": true,
+          "type": "string"
         }
       }
     },
@@ -2963,11 +2968,13 @@
           "type": "string",
           "enumDescriptions": [
             "Unspecified by default.",
+            "A synonym for `SIMPLE`.",
             "Directory listing of objects."
           ],
           "enum": [
             "OBJECT_METADATA_UNSPECIFIED",
-            "DIRECTORY"
+            "DIRECTORY",
+            "SIMPLE"
           ]
         },
         "referenceFileSchemaUri": {
@@ -3059,6 +3066,20 @@
           "description": "Optional. See documentation for precision.",
           "type": "string",
           "format": "int64"
+        },
+        "roundingMode": {
+          "description": "Optional. Specifies the rounding mode to be used when storing values of NUMERIC and BIGNUMERIC type.",
+          "type": "string",
+          "enumDescriptions": [
+            "Unspecified will default to using ROUND_HALF_AWAY_FROM_ZERO.",
+            "ROUND_HALF_AWAY_FROM_ZERO rounds half values away from zero when applying precision and scale upon writing of NUMERIC and BIGNUMERIC values. For Scale: 0 1.1, 1.2, 1.3, 1.4 => 1 1.5, 1.6, 1.7, 1.8, 1.9 => 2",
+            "ROUND_HALF_EVEN rounds half values to the nearest even when applying precision and scale upon writing of NUMERIC and BIGNUMERIC values. For Scale: 0 1.1, 1.2, 1.3, 1.4 => 1 1.5 => 2 1.6, 1.7, 1.8, 1.9 => 2 2.5 => 2"
+          ],
+          "enum": [
+            "ROUNDING_MODE_UNSPECIFIED",
+            "ROUND_HALF_AWAY_FROM_ZERO",
+            "ROUND_HALF_EVEN"
+          ]
         },
         "collation": {
           "description": "Optional. Field collation can be set only when the type of field is STRING. The following values are supported: * 'und:ci': undetermined locale, case insensitive. * '': empty string. Default to case-sensitive behavior.",
@@ -3859,7 +3880,7 @@
           "type": "string"
         },
         "compression": {
-          "description": "Optional. The compression type to use for exported files. Possible values include GZIP, DEFLATE, SNAPPY, and NONE. The default value is NONE. DEFLATE and SNAPPY are only supported for Avro. Not applicable when extracting models.",
+          "description": "Optional. The compression type to use for exported files. Possible values include DEFLATE, GZIP, NONE, SNAPPY, and ZSTD. The default value is NONE. Not all compression formats are support for all file formats. DEFLATE is only supported for Avro. ZSTD is only supported for Parquet. Not applicable when extracting models.",
           "type": "string"
         },
         "useAvroLogicalTypes": {
@@ -4831,7 +4852,8 @@
             "Indicates the query has been optimized by using a materialized view.",
             "Indicates the query has been secured by data masking, and thus search indexes are not applicable.",
             "Indicates that the search index and the search function call do not have the same text analyzer.",
-            "Indicates the base table is too small (below a certain threshold) to trigger index usage.",
+            "Indicates the base table is too small (below a certain threshold). The index does not provide noticeable search performance gains when the base table is too small.",
+            "Indicates that the base table is too large for indexing, thus the index is not available to be used in the query.",
             "Indicates an internal error that causes the search index to be unused."
           ],
           "enum": [
@@ -4848,6 +4870,7 @@
             "SECURED_BY_DATA_MASKING",
             "MISMATCHED_TEXT_ANALYZER",
             "BASE_TABLE_TOO_SMALL",
+            "BASE_TABLE_TOO_LARGE",
             "INTERNAL_ERROR"
           ]
         },
@@ -5309,6 +5332,10 @@
               },
               "user_email": {
                 "description": "[Full-projection-only] Email address of the user who ran the job.",
+                "type": "string"
+              },
+              "principal_subject": {
+                "description": "[Full-projection-only] String representation of identity of requesting party. Populated for both first- and third-party identities. Only present for APIs that support third-party identities.",
                 "type": "string"
               }
             }

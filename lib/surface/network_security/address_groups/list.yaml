@@ -27,5 +27,8 @@ response:
 output:
   format: |
     table(
-       name.basename():label=NAME
+       name.basename():label=NAME,
+       type:label=TYPE,
+       capacity:label=CAPACITY,
+       items.len():label=USAGE
      )

@@ -27,7 +27,5 @@
       is_positional: true
 
     params:
-    - group:
-        required: true
-        params:
-        - _REF_: googlecloudsdk.command_lib.network_actions.flags:wasmPlugin.mainVersion
+    - _REF_: googlecloudsdk.command_lib.network_actions.flags:wasmPlugin.mainVersion
+      required: true

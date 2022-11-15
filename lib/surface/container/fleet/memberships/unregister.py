@@ -21,7 +21,8 @@ from __future__ import unicode_literals
 import textwrap
 
 from apitools.base.py import exceptions as apitools_exceptions
-from googlecloudsdk.calliope import base
+from googlecloudsdk.api_lib.container.fleet import util
+from googlecloudsdk.calliope import base as calliope_base
 from googlecloudsdk.command_lib.container.fleet import agent_util
 from googlecloudsdk.command_lib.container.fleet import api_util
 from googlecloudsdk.command_lib.container.fleet import exclusivity_util
@@ -34,7 +35,7 @@ from googlecloudsdk.core import log
 from googlecloudsdk.core.console import console_io
 
 
-class Unregister(base.DeleteCommand):
+class Unregister(calliope_base.DeleteCommand):
   r"""Unregister a cluster from Fleet.
 
   This command unregisters a cluster with the fleet by:
@@ -89,7 +90,7 @@ class Unregister(base.DeleteCommand):
 
   @classmethod
   def Args(cls, parser):
-    if cls.ReleaseTrack() is base.ReleaseTrack.ALPHA:
+    if cls.ReleaseTrack() is calliope_base.ReleaseTrack.ALPHA:
       resources.AddMembershipResourceArg(
           parser,
           membership_help=textwrap.dedent("""\
@@ -126,18 +127,16 @@ class Unregister(base.DeleteCommand):
         enable_workload_identity=getattr(args, 'enable_workload_identity',
                                          False),
     )
-    location = 'global'
     if resources.UseRegionalMemberships(self.ReleaseTrack()) or (
         resources.InProdRegionalAllowlist(project, self.ReleaseTrack())):
-      # Allow attempting to override location for unregister
-      # e.g. in case of global GKE cluster memberships
-      if args.location:
-        location = args.location
-      elif hub_util.LocationFromGKEArgs(args):
-        location = hub_util.LocationFromGKEArgs(args)
+      membership = resources.ParseMembershipArg(args)
+      membership_id = util.MembershipShortname(membership)
+      location = util.MembershipLocation(membership)
+    else:
+      membership_id = args.MEMBERSHIP_NAME
+      location = 'global'
     kube_client.CheckClusterAdminPermissions()
     kube_util.ValidateClusterIdentifierFlags(kube_client, args)
-    membership_id = args.MEMBERSHIP_NAME
 
     # Delete membership from Fleet API.
     try:
@@ -216,3 +215,4 @@ class Unregister(base.DeleteCommand):
 
     # Delete the connect agent.
     agent_util.DeleteConnectNamespace(kube_client, args)
+

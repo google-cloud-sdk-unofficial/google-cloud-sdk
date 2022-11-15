@@ -22,3 +22,6 @@
       help_text: The ID of the WasmPlugin to create.
       spec: !REF googlecloudsdk.command_lib.network_actions.resources:wasmPlugin
       is_positional: true
+    params:
+    - _REF_: googlecloudsdk.command_lib.network_actions.flags:wasmPlugin.description
+    - _REF_: googlecloudsdk.command_lib.network_actions.flags:wasmPlugin.labels

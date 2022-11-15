@@ -21,6 +21,7 @@ from __future__ import unicode_literals
 from googlecloudsdk.api_lib.container.fleet import client
 from googlecloudsdk.api_lib.container.fleet.policycontroller import status_api_utils
 from googlecloudsdk.calliope import base as calliope_base
+from googlecloudsdk.command_lib.container.fleet import resources
 from googlecloudsdk.command_lib.container.fleet.features import base
 from googlecloudsdk.command_lib.container.fleet.policycontroller import utils
 from googlecloudsdk.core import properties
@@ -40,6 +41,23 @@ class Status(base.DescribeCommand):
   """
   feature_name = 'policycontroller'
 
+  @classmethod
+  def Args(cls, parser):
+    if resources.UseRegionalMemberships(cls.ReleaseTrack()):
+      resources.AddMembershipResourceArg(
+          parser,
+          plural=True,
+          membership_help=(
+              'The membership names for which to display the Policy Controller '
+              'runtime status.'))
+    else:
+      parser.add_argument(
+          '--memberships',
+          type=str,
+          help=(
+              'The membership names for which to display the Policy Controller '
+              'runtime status.'))
+
   def Run(self, args):
     calliope_base.EnableUserProjectQuota()
     project_id = properties.VALUES.core.project.Get(required=True)
@@ -52,12 +70,23 @@ class Status(base.DescribeCommand):
 
     status = {}
 
+    if args.memberships is not None:
+      if resources.UseRegionalMemberships(self.ReleaseTrack()):
+        memberships_filter = args.memberships
+      else:
+        memberships_filter = args.memberships.split(',')
+    else:
+      memberships_filter = None
+
     request = status_messages.AnthospolicycontrollerstatusPaProjectsMembershipsListRequest(
         parent='projects/' + project_id
     )
     response = status_client.projects_memberships.List(request)
 
     for membership in response.memberships:
+      if memberships_filter and membership.ref.name not in memberships_filter:
+        continue
+
       status[membership.ref.name] = {
           'status': {}
       }
@@ -79,6 +108,9 @@ class Status(base.DescribeCommand):
 
     specs = client.HubClient.ToPyDict(feature.membershipSpecs)
     for membership, spec in specs.items():
+      if memberships_filter and membership not in memberships_filter:
+        continue
+
       if membership not in status:
         status[membership] = {
             'status': {

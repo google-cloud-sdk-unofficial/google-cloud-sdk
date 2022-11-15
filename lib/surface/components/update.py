@@ -66,7 +66,8 @@ class Update(base.SilentCommand):
 
             $ {command}
 
-          To update all installed components to version 1.2.3:
+          To update all installed components to a fixed Google Cloud CLI version
+          1.2.3:
 
             $ {command} --version=1.2.3
       """,

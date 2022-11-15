@@ -178,7 +178,8 @@ def ParseCreateNodePoolOptionsBase(args):
       standard_rollout_policy=args.standard_rollout_policy,
       enable_private_nodes=args.enable_private_nodes,
       enable_fast_socket=args.enable_fast_socket,
-      logging_variant=args.logging_variant)
+      logging_variant=args.logging_variant,
+      windows_os_version=args.windows_os_version)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
@@ -226,6 +227,7 @@ class Create(base.CreateCommand):
     flags.AddNodePoolEnablePrivateNodes(parser)
     flags.AddEnableFastSocketFlag(parser)
     flags.AddLoggingVariantFlag(parser, for_node_pool=True)
+    flags.AddWindowsOsVersionFlag(parser, hidden=True)
 
   def ParseCreateNodePoolOptions(self, args):
     ops = ParseCreateNodePoolOptionsBase(args)
@@ -331,6 +333,7 @@ class CreateBeta(Create):
     flags.AddDisablePodCIDROverprovisionFlag(parser)
     flags.AddEnableFastSocketFlag(parser)
     flags.AddLoggingVariantFlag(parser, for_node_pool=True)
+    flags.AddWindowsOsVersionFlag(parser, hidden=True)
 
   def ParseCreateNodePoolOptions(self, args):
     ops = ParseCreateNodePoolOptionsBase(args)
@@ -434,6 +437,7 @@ class CreateAlpha(Create):
     flags.AddDisablePodCIDROverprovisionFlag(parser)
     flags.AddEnableFastSocketFlag(parser)
     flags.AddLoggingVariantFlag(parser, for_node_pool=True)
+    flags.AddWindowsOsVersionFlag(parser, hidden=True)
 
 
 Create.detailed_help = DETAILED_HELP

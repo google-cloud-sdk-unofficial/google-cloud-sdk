@@ -80,4 +80,3 @@
     - _REF_: googlecloudsdk.command_lib.compute.tpus.tpu_vm.flags:tags
     - _REF_: googlecloudsdk.command_lib.compute.tpus.tpu_vm.flags:data_disks
     - _REF_: googlecloudsdk.command_lib.compute.tpus.tpu_vm.flags:enable_secure_boot
-      release_tracks: [ALPHA]

@@ -18,17 +18,15 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
-from googlecloudsdk.api_lib.cloudbuild import logs as logs_util
-from googlecloudsdk.api_lib.logging.formatter import FormatLog
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.logs import read as read_logs_lib
 from googlecloudsdk.command_lib.run import flags
-from googlecloudsdk.core import log
+from googlecloudsdk.command_lib.run import streaming
 from googlecloudsdk.core import properties
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class Tail(base.Command):
+class Tail(base.BinaryBackedCommand):
   """Tail logs for a revision."""
 
   detailed_help = {
@@ -62,19 +60,14 @@ class Tail(base.Command):
     filters = []
     if args.IsSpecified('log_filter'):
       filters.append(args.log_filter)
-    filters.append('resource.type = %s' % 'cloud_run_revision')
-    filters.append('resource.labels.revision_name = %s' % args.revision)
-    filters.append('resource.labels.location = %s' %
-                   flags.GetRegion(args, prompt=False))
-    filters.append('severity >= DEFAULT')
-
-    parent = 'projects/{project_id}'.format(
-        project_id=properties.VALUES.core.project.Get(required=True))
-    filter_str = '\n'.join(filters)
-    tailer = logs_util.GetGCLLogTailer()
-    logs = tailer.TailLogs([parent], filter_str)
-
-    for log_line in logs:
-      output_log = FormatLog(log_line)
-      if output_log:
-        log.out.Print(output_log)
+    filters.append('resource.type=%s' % 'cloud_run_revision')
+    filters.append('resource.labels.revision_name=%s' % args.revision)
+    filters.append('resource.labels.location=%s' %
+                   flags.GetRegion(args, prompt=True))
+    filters.append('severity>=DEFAULT')
+    project_id = properties.VALUES.core.project.Get(required=True)
+    filter_str = ' '.join(filters)
+    command_executor = streaming.LogStreamingWrapper()
+    response = command_executor(
+        project_id=project_id, log_format='run', log_filter=filter_str)
+    return self._DefaultOperationResponseHandler(response)

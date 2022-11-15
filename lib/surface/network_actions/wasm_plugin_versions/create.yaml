@@ -23,7 +23,22 @@
       help_text: The ID of the WasmPluginVersion to create.
       spec: !REF googlecloudsdk.command_lib.network_actions.resources:wasmPluginVersion
       is_positional: true
-
     params:
     - _REF_: googlecloudsdk.command_lib.network_actions.flags:wasmPluginVersion.image
-    - _REF_: googlecloudsdk.command_lib.network_actions.flags:wasmPluginVersion.config
+    - group:
+        help_text: |
+          Configuration for the WasmPlugin, provided to the Proxy-Wasm plugin at runtime
+          via the proxy_on_configure Proxy-Wasm ABI.
+        mutex: true
+        params:
+        - arg_name: plugin-config
+          api_field: wasmPluginVersion.proxyWasmPluginConfig
+          help_text: |
+            WasmPlugin configuration in the textual format.
+        - arg_name: plugin-config-file
+          api_field: wasmPluginVersion.proxyWasmPluginConfig
+          type: "googlecloudsdk.calliope.arg_parsers:FileContents:binary=True"
+          help_text: |
+            Path to a file containg WasmPlugin configuration.
+    - _REF_: googlecloudsdk.command_lib.network_actions.flags:wasmPluginVersion.description
+    - _REF_: googlecloudsdk.command_lib.network_actions.flags:wasmPluginVersion.labels

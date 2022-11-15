@@ -1,0 +1,32 @@
+- release_tracks: [ALPHA]
+  hidden: true
+  help_text:
+    brief: Update a scope.
+    description: Update an existing Fleet Scope.
+    examples: |
+      First retrieve the ID of the scope using the command below.
+
+        $ {parent_command} list
+
+      Update a scope.
+
+        $ {command} SCOPE_NAME
+
+  request:
+    collection: gkehub.projects.locations.workspaces
+    modify_request_hooks:
+    - googlecloudsdk.command_lib.container.fleet.workspaces.util:CheckUpdateArguments
+    ALPHA:
+      api_version: v1alpha
+
+  async:
+    collection: gkehub.projects.locations.operations
+
+  arguments:
+    resource:
+      spec: !REF googlecloudsdk.command_lib.container.fleet.resources:workspace
+      help_text: fleet scope resource.
+      arg_name: scope
+
+  update:
+    read_modify_update: true

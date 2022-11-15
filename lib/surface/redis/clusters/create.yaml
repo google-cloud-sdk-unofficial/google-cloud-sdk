@@ -13,23 +13,24 @@
       To create a cluster with name `my-redis-cluster` in region `us-central1`
       with memory size of 24 GiB, run:
 
-        $ {command} my-redis-cluster --region=us-central1 --size=24
+        $ {command} my-redis-cluster --region=us-central1 --total-memory-size-gb=24
 
   arguments:
     resource:
       spec: !REF googlecloudsdk.command_lib.redis.resources:cluster
       help_text: |
         Arguments and flags that specify the cluster you want to create.
+        Your cluster ID must be 1 to 63 characters and use only lowercase letters, numbers, or
+        hyphens. It must start with a lowercase letter and end with a lowercase letter or number.
     params:
     - arg_name: display-name
       api_field: cluster.displayName
       help_text: |
         A human-readable name for the cluster.
-    - arg_name: size
+    - arg_name: total-memory-size-gb
       api_field: cluster.totalMemorySizeGb
       help_text: |
-        The memory size of the cluster in GiB. If not provided, size of 24 GiB will be used.
-      default: 24
+        The memory size of the cluster in GiB.
 
   async:
     collection: redis.projects.locations.operations
