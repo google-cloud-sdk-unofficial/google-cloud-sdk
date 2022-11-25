@@ -34,18 +34,18 @@ class Create(base.CreateCommand):
 
   ## EXAMPLES
 
-  To create a policy for Cloud Run in the current project:
+  To create a policy for GKE in the current project:
 
-      $ {command} my-policy --platform=cloudRun --policy_file=my_policy.yaml
+      $ {command} my-policy --platform=gke --policy_file=my_policy.yaml
 
-  To create a policy for Cloud Run in a specific project:
+  To create a policy for GKE in a specific project:
 
-      $ {command} my-policy --platform=cloudRun --project=my-project-id \
+      $ {command} my-policy --platform=gke --project=my-project-id \
         --policy_file=my_policy.yaml
 
   or
 
-      $ {command} /projects/my-project-id/platforms/cloudRun/policies/my-policy
+      $ {command} /projects/my-project-id/platforms/gke/policies/my-policy
       \
         --policy_file=my_policy.yaml
   """

@@ -53,6 +53,16 @@ class Update(base.UpdateCommand):
     flags.AddValidationOnly(parser, True)
     flags.AddAllowMissingUpdateCluster(parser)
     flags.AddDescription(parser)
+    flags.AddVersion(parser)
+    flags.AddVmwareControlPlaneNodeConfig(parser, for_update=True)
+    flags.AddVmwareAAGConfig(parser, for_update=True)
+    flags.AddVmwareStorageConfig(parser, for_update=True)
+    flags.AddVmwareNetworkConfig(parser, for_update=True)
+    flags.AddVmwareLoadBalancerConfig(parser, for_update=True)
+    flags.AddVmwareDataplaneV2Config(parser, for_update=True)
+    flags.AddEnableVmwareTracking(parser, for_update=True)
+    flags.AddVmwareAutoRepairConfig(parser, for_update=True)
+    flags.AddAuthorization(parser)
 
   def Run(self, args):
     """Runs the update command.

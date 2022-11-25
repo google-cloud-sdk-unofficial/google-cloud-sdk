@@ -110,7 +110,6 @@ def _AddMutuallyExclusiveArgs(mutex_group, release_track):
 {ingress}=ENABLED|DISABLED
 {dashboard}=ENABLED|DISABLED
 {istio}=ENABLED|DISABLED
-{application_manager}=ENABLED|DISABLED
 {backuprestore}=ENABLED|DISABLED
 {network_policy}=ENABLED|DISABLED
 {cloudrun}=ENABLED|DISABLED
@@ -124,7 +123,6 @@ def _AddMutuallyExclusiveArgs(mutex_group, release_track):
     dashboard=api_adapter.DASHBOARD,
     network_policy=api_adapter.NETWORK_POLICY,
     istio=api_adapter.ISTIO,
-    application_manager=api_adapter.APPLICATIONMANAGER,
     backuprestore=api_adapter.BACKUPRESTORE,
     cloudrun=api_adapter.CLOUDRUN_ADDONS[0],
     cloudbuild=api_adapter.CLOUDBUILD,
@@ -161,7 +159,6 @@ def _AddMutuallyExclusiveArgs(mutex_group, release_track):
 {ingress}=ENABLED|DISABLED
 {dashboard}=ENABLED|DISABLED
 {istio}=ENABLED|DISABLED
-{application_manager}=ENABLED|DISABLED
 {backuprestore}=ENABLED|DISABLED
 {network_policy}=ENABLED|DISABLED
 {cloudrun}=ENABLED|DISABLED
@@ -174,7 +171,6 @@ def _AddMutuallyExclusiveArgs(mutex_group, release_track):
     dashboard=api_adapter.DASHBOARD,
     network_policy=api_adapter.NETWORK_POLICY,
     istio=api_adapter.ISTIO,
-    application_manager=api_adapter.APPLICATIONMANAGER,
     backuprestore=api_adapter.BACKUPRESTORE,
     cloudrun=api_adapter.CLOUDRUN_ADDONS[0],
     configconnector=api_adapter.CONFIGCONNECTOR,

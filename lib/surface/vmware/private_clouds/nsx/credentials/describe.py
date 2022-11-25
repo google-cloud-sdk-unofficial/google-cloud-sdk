@@ -42,10 +42,10 @@ DETAILED_HELP = {
 }
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Describe(base.DescribeCommand):
-  """Retrieve VMware NSX sign-in credentials associated with a Google Cloud VMware Engine private cloud."""
+  """Retrieve VMware NSX sign-in credentials associated with a Google Cloud VMware Engine private cloud.
+  """
 
   detailed_help = DETAILED_HELP
 

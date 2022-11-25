@@ -30,17 +30,17 @@ class List(base.ListCommand):
 
   ## EXAMPLES
 
-  To list the policies for Cloud Run in the current project:
+  To list the policies for GKE in the current project:
 
-      $ {command} cloudRun
+      $ {command} gke
 
-  To list the policies for Cloud Run in a specific project:
+  To list the policies for GKE in a specific project:
 
-      $ {command} cloudRun --project=my-project-id
+      $ {command} gke --project=my-project-id
 
   or
 
-      $ {command} projects/my-project-id/cloudRun
+      $ {command} projects/my-project-id/gke
   """
 
   @staticmethod

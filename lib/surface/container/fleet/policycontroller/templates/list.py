@@ -32,14 +32,10 @@ def ListMembershipTemplates(project_id,
   """Generate list of formatted membership templates."""
 
   formatted_templates = {}
-  project_path = 'projects/' + project_id
 
-  membership_constraints_request = messages.AnthospolicycontrollerstatusPaProjectsMembershipConstraintTemplatesListRequest(
-      parent=project_path)
-  membership_constraints_response = client.projects_membershipConstraintTemplates.List(
-      membership_constraints_request)
-
-  for template in membership_constraints_response.membershipConstraintTemplates:
+  membership_templates = status_api_utils.ListMembershipConstraintTemplates(
+      client, messages, project_id)
+  for template in membership_templates:
     if memberships and template.membershipRef.name not in memberships:
       continue
 
@@ -68,13 +64,9 @@ def ListMembershipTemplates(project_id,
     formatted_templates[membership_template_key] = formatted_template
 
   if formatted_templates:
-    membership_constraints_request = messages.AnthospolicycontrollerstatusPaProjectsMembershipConstraintsListRequest(
-        parent=project_path)
-
-    membership_constraints_response = client.projects_membershipConstraints.List(
-        membership_constraints_request)
-
-    for constraint in membership_constraints_response.membershipConstraints:
+    membership_constraints = status_api_utils.ListMembershipConstraints(
+        client, messages, project_id)
+    for constraint in membership_constraints:
       membership_template_key = (
           constraint.membershipRef.name,
           constraint.constraintRef.constraintTemplateName)
@@ -92,13 +84,10 @@ def ListFleetTemplates(project_id, messages, client, verbose=False):
   """Generate list of formatted fleet templates."""
 
   formatted_templates = {}
-  project_path = 'projects/' + project_id
-  fleet_templates_request = messages.AnthospolicycontrollerstatusPaProjectsFleetConstraintTemplatesListRequest(
-      parent=project_path)
-  fleet_templates_response = client.projects_fleetConstraintTemplates.List(
-      fleet_templates_request)
 
-  for template in fleet_templates_response.fleetConstraintTemplates:
+  fleet_templates = status_api_utils.ListFleetConstraintTemplates(
+      client, messages, project_id)
+  for template in fleet_templates:
     if verbose:
       formatted_template = {
           'name': template.ref.name,
@@ -114,24 +103,17 @@ def ListFleetTemplates(project_id, messages, client, verbose=False):
     formatted_templates[template.ref.name] = formatted_template
 
   if verbose:
-    membership_templates_request = messages.AnthospolicycontrollerstatusPaProjectsMembershipConstraintTemplatesListRequest(
-        parent=project_path)
-
-    membership_templates_response = client.projects_membershipConstraintTemplates.List(
-        membership_templates_request)
-
-    for template in membership_templates_response.membershipConstraintTemplates:
+    membership_templates = status_api_utils.ListMembershipConstraintTemplates(
+        client, messages, project_id)
+    for template in membership_templates:
       if template.constraintTemplateRef.name in formatted_templates:
         formatted_templates[
             template.constraintTemplateRef.name]['memberships'].append(
                 template.membershipRef.name)
 
-    fleet_constraints_request = messages.AnthospolicycontrollerstatusPaProjectsFleetConstraintsListRequest(
-        parent=project_path)
-    fleet_constraints_response = client.projects_fleetConstraints.List(
-        fleet_constraints_request)
-
-    for constraint in fleet_constraints_response.fleetConstraints:
+    fleet_constraints = status_api_utils.ListFleetConstraints(
+        client, messages, project_id)
+    for constraint in fleet_constraints:
       if constraint.ref.constraintTemplateName in formatted_templates:
         formatted_templates[constraint.ref
                             .constraintTemplateName]['constraints'].append(

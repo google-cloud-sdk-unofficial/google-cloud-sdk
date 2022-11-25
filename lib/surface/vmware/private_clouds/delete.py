@@ -43,7 +43,6 @@ DETAILED_HELP = {
 }
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Delete(base.DeleteCommand):
   """Delete a Google Cloud VMware Engine private cloud."""

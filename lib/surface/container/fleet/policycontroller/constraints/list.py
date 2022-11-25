@@ -32,18 +32,10 @@ def MakeConstraintLabel(template_name, constraint_name):
 def ListFleetConstraints(client, messages, project_id, verbose):
   """Generates list of fleet constraints."""
   formatted_constraints = {}
-  project_path = 'projects/' + project_id
 
-  fleet_constraints_request = (
-      messages
-      .AnthospolicycontrollerstatusPaProjectsFleetConstraintsListRequest(
-          parent=project_path)
-  )
-
-  fleet_constraints_response = client.projects_fleetConstraints.List(
-      request=fleet_constraints_request)
-
-  for constraint in fleet_constraints_response.fleetConstraints:
+  fleet_constraints = status_api_utils.ListFleetConstraints(client, messages,
+                                                            project_id)
+  for constraint in fleet_constraints:
     constraint_label = MakeConstraintLabel(
         constraint.ref.constraintTemplateName,
         constraint.ref.name)
@@ -62,13 +54,9 @@ def ListFleetConstraints(client, messages, project_id, verbose):
 
   # Add membership names and violations to verbose output
   if verbose:
-    membership_constraints_request = (
-        messages.
-        AnthospolicycontrollerstatusPaProjectsMembershipConstraintsListRequest(
-            parent=project_path))
-    membership_constraints_response = client.projects_membershipConstraints.List(
-        request=membership_constraints_request)
-    for constraint in membership_constraints_response.membershipConstraints:
+    membership_constraints = status_api_utils.ListMembershipConstraints(
+        client, messages, project_id)
+    for constraint in membership_constraints:
       constraint_label = MakeConstraintLabel(
           constraint.constraintRef.constraintTemplateName,
           constraint.constraintRef.name)
@@ -76,14 +64,8 @@ def ListFleetConstraints(client, messages, project_id, verbose):
         formatted_constraints[constraint_label]['memberships'].append(
             constraint.membershipRef.name)
 
-    violations_request = (
-        messages
-        .AnthospolicycontrollerstatusPaProjectsMembershipConstraintAuditViolationsListRequest(  # pylint: disable=line-too-long
-            parent='projects/' + project_id))
-    violations_response = client.projects_membershipConstraintAuditViolations.List(
-        request=violations_request)
-
-    for violation in violations_response.membershipConstraintAuditViolations:
+    violations = status_api_utils.ListViolations(client, messages, project_id)
+    for violation in violations:
       constraint_label = MakeConstraintLabel(
           violation.constraintRef.constraintTemplateName,
           violation.constraintRef.name)
@@ -108,14 +90,9 @@ def ListMembershipConstraints(client, messages, project_id, memberships,
   """Generates list of membership constraints."""
   formatted_constraints = {}
 
-  membership_constraints_request = (
-      messages.
-      AnthospolicycontrollerstatusPaProjectsMembershipConstraintsListRequest(
-          parent='projects/' + project_id))
-  membership_constraints_response = client.projects_membershipConstraints.List(
-      request=membership_constraints_request)
-
-  for constraint in membership_constraints_response.membershipConstraints:
+  membership_constraints = status_api_utils.ListMembershipConstraints(
+      client, messages, project_id)
+  for constraint in membership_constraints:
     if memberships and constraint.membershipRef.name not in memberships:
       continue
 
@@ -142,14 +119,8 @@ def ListMembershipConstraints(client, messages, project_id, memberships,
 
   # Add violations to verbose output.
   if verbose:
-    violations_request = (
-        messages
-        .AnthospolicycontrollerstatusPaProjectsMembershipConstraintAuditViolationsListRequest(  # pylint: disable=line-too-long
-            parent='projects/' + project_id))
-    violations_response = client.projects_membershipConstraintAuditViolations.List(
-        request=violations_request)
-
-    for violation in violations_response.membershipConstraintAuditViolations:
+    violations = status_api_utils.ListViolations(client, messages, project_id)
+    for violation in violations:
       if memberships and violation.membershipRef.name not in memberships:
         continue
       constraint_label = MakeConstraintLabel(

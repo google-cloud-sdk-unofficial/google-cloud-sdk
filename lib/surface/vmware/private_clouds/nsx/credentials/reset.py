@@ -44,10 +44,10 @@ DETAILED_HELP = {
 }
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Reset(base.UpdateCommand):
-  """Reset VMware NSX sign-in credentials associated with a Google Cloud VMware Engine private cloud."""
+  """Reset VMware NSX sign-in credentials associated with a Google Cloud VMware Engine private cloud.
+  """
 
   detailed_help = DETAILED_HELP
 

@@ -26,7 +26,8 @@ from googlecloudsdk.command_lib.asset import utils as asset_utils
 from googlecloudsdk.command_lib.util.args import common_args
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
+                    base.ReleaseTrack.GA)
 class Query(base.Command):
   """Query the Cloud assets."""
 
@@ -34,16 +35,16 @@ class Query(base.Command):
   detailed_help = {
       'DESCRIPTION':
           """\
-      Issue an analytical query on Cloud assets using BigQuery Standard SQL
+      Issue an analytical query on Cloud assets using a BigQuery Standard SQL
       compatible statement.
       """,
       'EXAMPLES':
           """\
-      To count the number of compute instance, run:
+      To count the number of compute instances, run:
 
         $ {command} --project='test-project' --statement='SELECT * FROM compute_googleapis_com_Instance'
 
-      To see the query result of previous job, pass the job-reference from previous response:
+      To see the query result of the previous job, pass the job-reference from the previous response:
 
         $ {command} --project='test-project' --job-reference=<job-reference-from>
       """

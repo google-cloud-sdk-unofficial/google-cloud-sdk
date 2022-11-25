@@ -34,4 +34,4 @@
 
   output:
     format: |
-      table[no-heading](value.id,value.condition:format=list)
+      table(value.id,value.action,value.condition:format=flattened)

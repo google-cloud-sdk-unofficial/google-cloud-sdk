@@ -338,6 +338,10 @@ class Register(base.CreateCommand):
       api_adapter = gke_api_adapter.NewAPIAdapter('v1')
 
     location = 'global'
+
+    # if we are using alpha + autopush or using an allowlisted project, use the
+    # final regional behavior that assumes membership region based on cluster
+    # region.
     if resources.UseRegionalMemberships(
         self.ReleaseTrack()) or (resources.InProdRegionalAllowlist(
             project, self.ReleaseTrack())):
@@ -347,6 +351,11 @@ class Register(base.CreateCommand):
         location = args.location
       elif hub_util.LocationFromGKEArgs(args):
         location = hub_util.LocationFromGKEArgs(args)
+    # if we are using alpha + staging or alpha + prod, use the --location flag
+    # if provided, else still default to global
+    elif self.ReleaseTrack() is base.ReleaseTrack.ALPHA:
+      if args.location:
+        location = args.location
 
     # Register GKE cluster with simple Add-to-Hub API call. Connect agent will
     # not get installed. And Kubernetes Client is not needed.

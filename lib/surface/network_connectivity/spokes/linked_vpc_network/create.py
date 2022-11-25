@@ -46,6 +46,9 @@ class Create(base.Command):
     flags.AddVPCNetworkFlag(parser)
     flags.AddDescriptionFlag(parser, 'Description of the spoke to create.')
     flags.AddAsyncFlag(parser)
+    flags.AddExcludeExportRangesFlag(
+        parser,
+        hide_exclude_export_ranges_flag=True)
     labels_util.AddCreateLabelsFlags(parser)
 
   def Run(self, args):
@@ -57,7 +60,9 @@ class Create(base.Command):
         args, client.messages.Spoke.LabelsValue)
     spoke = client.messages.Spoke(
         hub=args.hub,
-        linkedVpcNetwork=client.messages.LinkedVpcNetwork(uri=args.vpc_network),
+        linkedVpcNetwork=client.messages.LinkedVpcNetwork(
+            uri=args.vpc_network,
+            excludeExportRanges=args.exclude_export_ranges),
         description=args.description,
         labels=labels
     )

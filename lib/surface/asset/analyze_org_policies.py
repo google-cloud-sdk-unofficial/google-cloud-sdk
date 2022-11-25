@@ -91,8 +91,6 @@ class AnalyzeOrgPolicies(base.ListCommand):
     return client.AnalyzeOrgPolicies(args)
 
 
-# TODO(b/246989320): remove Hidden label once we are ready to launch.
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class AnalyzeOrgPoliciesBeta(AnalyzeOrgPolicies):
   """Analyze organization policies under a scope."""

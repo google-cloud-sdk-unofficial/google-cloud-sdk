@@ -67,6 +67,7 @@ class Version(feature_base.FeatureCommand, calliope_base.ListCommand):
         for m, s in self.hubclient.ToPyDict(f.membershipStates).items()
     }
     for name in memberships:
+      name = util.MembershipPartialName(name)
       cluster = ConfigmanagementFeatureState(name)
       if name not in feature_state_memberships:
         acm_status.append(cluster)

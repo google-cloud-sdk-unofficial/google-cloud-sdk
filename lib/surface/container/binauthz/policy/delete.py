@@ -33,11 +33,11 @@ class Delete(base.DeleteCommand):
 
   To delete a policy using its resource name:
 
-    $ {command} projects/my_proj/platforms/cloudRun/policies/policy1
+    $ {command} projects/my_proj/platforms/gke/policies/policy1
 
   To delete the same policy using flags:
 
-    $ {command} policy1 --platform=cloudRun --project=my_proj
+    $ {command} policy1 --platform=gke --project=my_proj
   """
 
   @staticmethod

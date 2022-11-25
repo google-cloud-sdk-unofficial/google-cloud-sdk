@@ -259,10 +259,10 @@ class Update(base.Command):
     for k, v in possible_args.items():
       if v and not triggerer_supported:
         raise command_util.InvalidUserInputError(
-            flags.INVALID_OPTION_FOR_MIN_AIRFLOW_VERSION_ERROR_MSG.format(
+            flags.INVALID_OPTION_FOR_MIN_IMAGE_VERSION_ERROR_MSG.format(
                 opt=k,
-                airflow_version=image_versions_command_util
-                .MIN_TRIGGERER_AIRFLOW_VERSION))
+                composer_version=flags.MIN_TRIGGERER_COMPOSER_VERSION,
+                airflow_version=flags.MIN_TRIGGERER_AIRFLOW_VERSION))
     if not triggerer_count:
       if args.triggerer_cpu:
         raise command_util.InvalidUserInputError(

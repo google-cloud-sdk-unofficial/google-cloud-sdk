@@ -184,6 +184,9 @@ class UpdateHelper(object):
     """Modify Backend Service."""
     replacement = encoding.CopyProtoMessage(existing)
     cleared_fields = []
+    location = (
+        backend_service_ref.region if backend_service_ref.Collection()
+        == 'compute.regionBackendServices' else 'global')
 
     if args.connection_draining_timeout is not None:
       replacement.connectionDraining = client.messages.ConnectionDraining(
@@ -226,7 +229,7 @@ class UpdateHelper(object):
     if args.enable_cdn is not None:
       replacement.enableCDN = args.enable_cdn
     elif not replacement.enableCDN and args.cache_mode:
-      # TODO (b/209812994): Replace implicit config change with
+      # TODO(b/209812994): Replace implicit config change with
       # warning that CDN is disabled and a prompt to enable it with
       # --enable-cdn
       log.warning(
@@ -290,9 +293,6 @@ class UpdateHelper(object):
 
     if self._support_advanced_load_balancing:
       if args.service_lb_policy is not None:
-        location = (
-            backend_service_ref.region if backend_service_ref.Collection()
-            == 'compute.regionBackendServices' else 'global')
         replacement.serviceLbPolicy = reference_utils.BuildServiceLbPolicyUrl(
             project_name=backend_service_ref.project,
             location=location,
@@ -304,7 +304,7 @@ class UpdateHelper(object):
     if args.service_bindings is not None:
       replacement.serviceBindings = [
           reference_utils.BuildServiceBindingUrl(backend_service_ref.project,
-                                                 'global', binding_name)
+                                                 location, binding_name)
           for binding_name in args.service_bindings
       ]
     if args.no_service_bindings is not None:

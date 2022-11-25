@@ -52,7 +52,6 @@ DETAILED_HELP = {
 }
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class List(base.ListCommand):
   """List VMware Engine network policies."""
@@ -62,12 +61,11 @@ class List(base.ListCommand):
   def Args(parser):
     """Register flags for this command."""
     flags.AddLocationArgToParser(parser)
-    parser.display_info.AddFormat(
-        'table(name.segment(-1):label=NAME,'
-        'name.segment(-5):label=PROJECT,'
-        'name.segment(-3):label=LOCATION,'
-        'createTime,internetAccess,externalIp,'
-        'edgeServicesCidr,vmwareEngineNetwork)')
+    parser.display_info.AddFormat('table(name.segment(-1):label=NAME,'
+                                  'name.segment(-5):label=PROJECT,'
+                                  'name.segment(-3):label=LOCATION,'
+                                  'createTime,internetAccess,externalIp,'
+                                  'edgeServicesCidr,vmwareEngineNetwork)')
 
   def Run(self, args):
     location = args.CONCEPTS.location.Parse()

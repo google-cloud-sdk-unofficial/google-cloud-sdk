@@ -27,7 +27,6 @@ from googlecloudsdk.core import properties
 from googlecloudsdk.core import resources
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Promote(base.UpdateCommand):
   """Promotes an AlloyDB SECONDARY cluster in a given project and region."""

@@ -44,11 +44,23 @@ class Update(base.Command):
           quota limit.
       """),
       'EXAMPLES': ("""
-          To update the service instance 'my-instance' to have capacity 2 for region us-west1, run:
+          To update the service instance 'my-instance' to have capacity 2 for an
+          existing region us-west1, run:
 
             $ {command} my-instance --update-region=region=us-west1,capacity=2
 
-          To update the service instance 'my-instance' to serve content build version 'my-version', run:
+          To update the service instance 'my-instance' to have capacity 1 for a
+          new region us-east4, run:
+
+            $ {command} my-instance --add-region=region=us-east4,capacity=1
+
+          To update the service instance 'my-instance' to remove the existing
+          region us-east4, run:
+
+            $ {command} my-instance --remove-region=us-east4
+
+          To update the service instance 'my-instance' to serve content version
+          `my-version`, run:
 
             $ {command} my-instance --version=my-version
       """)
@@ -62,13 +74,19 @@ class Update(base.Command):
         '--version',
         help='Build version tag of the content served by this instance')
     flags.AddRegionConfigArg(
+        '--add-region', group, repeatable=False, required=False)
+    flags.AddRegionConfigArg(
         '--update-region', group, repeatable=False, required=False)
+    group.add_argument(
+        '--remove-region', help='Region to remove', action='append')
     base.ASYNC_FLAG.AddToParser(parser)
 
   def Run(self, args):
-    region_configs = args.update_region
-    instance_name = args.instance
     version = args.version
+    add_region_configs = args.add_region
+    remove_regions = args.remove_region
+    update_region_configs = args.update_region
+    instance_name = args.instance
 
     instance_ref = resources.REGISTRY.Parse(
         None,
@@ -80,19 +98,39 @@ class Update(base.Command):
             'streamInstancesId': instance_name
         })
 
-    if region_configs:
-      if len(region_configs) > 1:
-        log.status.Print(
-            'Only one region may be updated at a time. Please try again with only one --update-region argument.'
-        )
-        return
-      current_instance = instances.Get(instance_ref.RelativeName())
-      result_operation = instances.UpdateCapacity(instance_ref,
-                                                  current_instance,
-                                                  region_configs)
-    else:
+    if version:
       result_operation = instances.UpdateContentBuildVersion(
           instance_ref, version)
+    else:
+      # We limit to one update per call.
+      if add_region_configs:
+        if len(add_region_configs) > 1:
+          log.status.Print(('Only one region may be added at a time. Please '
+                            'try again with only one --add-region argument.'))
+          return
+      elif remove_regions:
+        if len(remove_regions) > 1:
+          log.status.Print(
+              ('Only one region may be removed at a time. Please '
+               'try again with only one --remove-region argument.'))
+          return
+      elif update_region_configs:
+        if len(update_region_configs) > 1:
+          log.status.Print(
+              ('Only one region may be updated at a time. Please '
+               'try again with only one --update-region argument.'))
+          return
+
+      current_instance = instances.Get(instance_ref.RelativeName())
+      target_location_configs = instances.GenerateTargetLocationConfigs(
+          add_region_configs=add_region_configs,
+          update_region_configs=update_region_configs,
+          remove_regions=remove_regions,
+          current_instance=current_instance)
+      if target_location_configs is None:
+        return
+      result_operation = instances.UpdateLocationConfigs(
+          instance_ref, target_location_configs)
 
     client = api_util.GetClient()
 

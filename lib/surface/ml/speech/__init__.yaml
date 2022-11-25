@@ -229,7 +229,7 @@ args:
   help_text: |
     If True, the server will attempt to filter out profanities, replacing
     all but the initial character in each filtered word with asterisks,
-    e.g. \"f***\".
+    e.g. ```f***```.
 
 - api_field: config.encoding
   arg_name: encoding

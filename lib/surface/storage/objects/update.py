@@ -22,6 +22,7 @@ from googlecloudsdk.api_lib.storage import cloud_api
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.storage import encryption_util
+from googlecloudsdk.command_lib.storage import errors
 from googlecloudsdk.command_lib.storage import flags
 from googlecloudsdk.command_lib.storage import stdin_iterator
 from googlecloudsdk.command_lib.storage import storage_url
@@ -54,14 +55,16 @@ def _get_task_iterator(args):
     fields_scope = cloud_api.FieldsScope.SHORT
 
   urls = stdin_iterator.get_urls_iterable(args.url, args.read_paths_from_stdin)
-  for url in urls:
+  for url_string in urls:
+    url = storage_url.storage_url_from_string(url_string)
     if args.recursive:
-      potentially_recursive_url = storage_url.storage_url_from_string(url).join(
-          '**').url_string
+      potentially_recursive_url = url.join('**')
     else:
       potentially_recursive_url = url
+    errors.raise_error_if_not_cloud_object(args.command_path,
+                                           potentially_recursive_url)
     for object_resource in wildcard_iterator.get_wildcard_iterator(
-        potentially_recursive_url, fields_scope=fields_scope):
+        potentially_recursive_url.url_string, fields_scope=fields_scope):
       yield task_type(object_resource, user_request_args=user_request_args)
 
 
@@ -113,9 +116,22 @@ def _add_alpha_args(parser):
     objects update flag group
   """
   parser.add_argument(
+      '--add-acl-grant',
+      hidden=True,
+      help='JSON object in the format accepted by your cloud provider.'
+      ' For example, for GCS, `--add-acl-grant=entity=user-tim@gmail.com,'
+      'role=OWNER`')
+  parser.add_argument(
       '--event-based-hold',
       action=arg_parsers.StoreTrueFalseAction,
       help='Enables or disables an event-based hold on objects.')
+  parser.add_argument(
+      '--remove-acl-grant',
+      hidden=True,
+      help='JSON object in the format accepted by your cloud provider.'
+      ' For example, for GCS, `--remove-acl-grant=ENTITY`, where `ENTITY`'
+      ' has a valid ACL entity format, such as `user-tim@gmail.com`,'
+      ' `group-admins`, `allUsers`, etc.')
   parser.add_argument(
       '--temporary-hold',
       action=arg_parsers.StoreTrueFalseAction,

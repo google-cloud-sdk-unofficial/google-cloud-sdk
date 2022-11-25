@@ -20,7 +20,7 @@
 
   response:
     modify_response_hooks:
-    - googlecloudsdk.command_lib.container.fleet.workspaces.rollout_sequencing.util:DescribeClusterUpgrade
+    - googlecloudsdk.command_lib.container.fleet.scopes.rollout_sequencing.util:DescribeClusterUpgrade
 
   arguments:
     resource:

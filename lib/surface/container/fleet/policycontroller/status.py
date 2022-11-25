@@ -67,12 +67,9 @@ class Status(base.DescribeCommand):
     else:
       memberships_filter = None
 
-    request = status_messages.AnthospolicycontrollerstatusPaProjectsMembershipsListRequest(
-        parent='projects/' + project_id
-    )
-    response = status_client.projects_memberships.List(request)
-
-    for membership in response.memberships:
+    memberships = status_api_utils.ListMemberships(status_client,
+                                                   status_messages, project_id)
+    for membership in memberships:
       if memberships_filter and membership.ref.name not in memberships_filter:
         continue
 

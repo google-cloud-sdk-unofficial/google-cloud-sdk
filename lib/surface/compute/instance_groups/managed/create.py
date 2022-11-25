@@ -121,6 +121,7 @@ class CreateGA(base.CreateCommand):
     managed_flags.AddMigInstanceRedistributionTypeFlag(parser)
     managed_flags.AddMigDistributionPolicyTargetShapeFlag(
         parser, cls.support_any_single_zone)
+    managed_flags.AddMigListManagedInstancesResultsFlag(parser)
     # When adding RMIG-specific flag, update REGIONAL_FLAGS constant.
 
   def _HandleStatefulArgs(self, instance_group_manager, args, client):
@@ -265,6 +266,12 @@ class CreateGA(base.CreateCommand):
         updatePolicy=update_policy,
     )
 
+    if args.IsSpecified('list_managed_instances_results'):
+      instance_group_manager.listManagedInstancesResults = (
+          client.messages.InstanceGroupManager
+          .ListManagedInstancesResultsValueValuesEnum)(
+              args.list_managed_instances_results.upper())
+
     self._HandleStatefulArgs(instance_group_manager, args, client)
 
     # Validate updatePolicy + statefulPolicy combination
@@ -346,7 +353,6 @@ class CreateBeta(CreateGA):
   def Args(cls, parser):
     super(CreateBeta, cls).Args(parser)
     instance_groups_flags.AddMigCreateStatefulIPsFlags(parser)
-    managed_flags.AddMigListManagedInstancesResultsFlag(parser)
     managed_flags.AddMigForceUpdateOnRepairFlags(parser)
 
   def _CreateInstanceGroupManager(self, args, group_ref, template_ref, client,
@@ -355,12 +361,6 @@ class CreateBeta(CreateGA):
                                    self)._CreateInstanceGroupManager(
                                        args, group_ref, template_ref, client,
                                        holder)
-
-    if args.list_managed_instances_results:
-      instance_group_manager.listManagedInstancesResults = (
-          client.messages.InstanceGroupManager
-          .ListManagedInstancesResultsValueValuesEnum)(
-              args.list_managed_instances_results.upper())
 
     instance_group_manager.instanceLifecyclePolicy = managed_instance_groups_utils.CreateInstanceLifecyclePolicy(
         client.messages, args)

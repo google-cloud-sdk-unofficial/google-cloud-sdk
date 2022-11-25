@@ -14,11 +14,9 @@
 # limitations under the License.
 """'vmware networks list' command."""
 
-
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
-
 
 from googlecloudsdk.api_lib.vmware.networks import NetworksClient
 from googlecloudsdk.calliope import base
@@ -54,7 +52,6 @@ DETAILED_HELP = {
 }
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class List(base.ListCommand):
   """List Google Cloud VMware Engine networks."""
@@ -65,11 +62,10 @@ class List(base.ListCommand):
   def Args(parser):
     """Register flags for this command."""
     flags.AddLocationArgToParser(parser)
-    parser.display_info.AddFormat(
-        'table(name.segment(-1):label=NAME,'
-        'name.segment(-5):label=PROJECT,'
-        'name.segment(-3):label=LOCATION,'
-        'createTime,state,type)')
+    parser.display_info.AddFormat('table(name.segment(-1):label=NAME,'
+                                  'name.segment(-5):label=PROJECT,'
+                                  'name.segment(-3):label=LOCATION,'
+                                  'createTime,state,type)')
 
   def Run(self, args):
     location = args.CONCEPTS.location.Parse()

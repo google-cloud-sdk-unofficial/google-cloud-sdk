@@ -54,6 +54,12 @@ class Update(base.UpdateCommand):
     flags.AddValidationOnly(parser)
     flags.AddAllowMissingUpdateCluster(parser)
     flags.AddLoadBalancerConfig(parser, is_update=True)
+    flags.AddControlPlaneConfig(parser, is_update=True)
+    flags.AddVersion(parser, is_update=True)
+    flags.AddSecurityConfig(parser, is_update=True)
+    flags.AddMaintenanceConfig(parser, is_update=True)
+    flags.AddDescription(parser)
+    flags.AddClusterOperationsConfig(parser)
 
   def Run(self, args):
     """Runs the update command.

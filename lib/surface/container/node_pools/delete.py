@@ -101,11 +101,15 @@ class Delete(base.DeleteCommand):
       adapter.GetNodePool(pool_ref)
 
       op_ref = adapter.DeleteNodePool(pool_ref)
-      if not args.async_:
-        adapter.WaitForOperation(
-            op_ref,
-            'Deleting node pool {0}'.format(pool_ref.nodePoolId),
-            timeout_s=args.timeout)
+      if args.async_:
+        op = adapter.GetOperation(op_ref)
+        log.out.Print('Delete Node Pool Operation in progress: {0}'.format(
+            op.name))
+        return op
+      adapter.WaitForOperation(
+          op_ref,
+          'Deleting node pool {0}'.format(pool_ref.nodePoolId),
+          timeout_s=args.timeout)
     except apitools_exceptions.HttpError as error:
       raise exceptions.HttpException(error, util.HTTP_ERROR_FORMAT)
 

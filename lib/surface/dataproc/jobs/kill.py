@@ -43,6 +43,7 @@ class Kill(base.Command):
   def Args(cls, parser):
     dataproc = dp.Dataproc(cls.ReleaseTrack())
     flags.AddJobResourceArg(parser, 'kill', dataproc.api_version)
+    flags.AddAsync(parser)
 
   def Run(self, args):
     dataproc = dp.Dataproc(self.ReleaseTrack())
@@ -63,13 +64,15 @@ class Kill(base.Command):
     log.status.Print(
         'Job cancellation initiated for [{0}].'.format(job_ref.jobId))
 
-    job = util.WaitForJobTermination(
-        dataproc,
-        job,
-        job_ref,
-        message='Waiting for job cancellation',
-        goal_state=dataproc.messages.JobStatus.StateValueValuesEnum.CANCELLED)
+    if args.async_:
+      output_job = job
+    else:
+      output_job = util.WaitForJobTermination(
+          dataproc,
+          job,
+          job_ref,
+          message='Waiting for job cancellation',
+          goal_state=dataproc.messages.JobStatus.StateValueValuesEnum.CANCELLED)
+      log.status.Print('Killed [{0}].'.format(job_ref))
 
-    log.status.Print('Killed [{0}].'.format(job_ref))
-
-    return job
+    return output_job

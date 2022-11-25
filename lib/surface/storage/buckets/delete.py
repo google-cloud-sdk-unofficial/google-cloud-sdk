@@ -60,10 +60,8 @@ class Delete(base.Command):
 
   def Run(self, args):
     for url_string in args.urls:
-      if not storage_url.storage_url_from_string(url_string).is_bucket():
-        raise errors.InvalidUrlError(
-            'buckets delete only accepts cloud bucket URLs. Example:'
-            ' "gs://bucket"')
+      url = storage_url.storage_url_from_string(url_string)
+      errors.raise_error_if_not_bucket(args.command_path, url)
 
     task_status_queue = multiprocessing.Queue()
 

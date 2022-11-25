@@ -20,6 +20,7 @@ from __future__ import unicode_literals
 
 import collections
 
+from googlecloudsdk.api_lib.container.fleet.policycontroller import status_api_utils
 from googlecloudsdk.calliope import base as calliope_base
 from googlecloudsdk.core import log
 
@@ -83,12 +84,8 @@ def ListMembershipViolations(messages,
   formatted_violations = []
   violation_counter = ViolationCounter()
 
-  request = messages.AnthospolicycontrollerstatusPaProjectsMembershipConstraintAuditViolationsListRequest(
-      parent='projects/' + project_id,
-  )
-  response = client.projects_membershipConstraintAuditViolations.List(request)
-
-  for violation in response.membershipConstraintAuditViolations:
+  violations = status_api_utils.ListViolations(client, messages, project_id)
+  for violation in violations:
     if memberships and violation.membershipRef.name not in memberships:
       continue
 

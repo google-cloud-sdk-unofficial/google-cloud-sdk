@@ -31,7 +31,9 @@ from googlecloudsdk.core.console import progress_tracker
 
 
 @base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA,
+    base.ReleaseTrack.BETA)
 class Apply(base.Command):
   """Create or replace an application from a YAML specification."""
 

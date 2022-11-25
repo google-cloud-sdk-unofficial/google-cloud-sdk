@@ -93,7 +93,7 @@ def _Args(parser):
   flags.AddImageFlag(parser, hidden=True)
   flags.AddImageProjectFlag(parser, hidden=True)
   flags.AddImageFamilyFlag(parser, hidden=True)
-  flags.AddLabelsFlag(parser, for_node_pool=True, hidden=True)
+  flags.AddLabelsFlag(parser, for_node_pool=True)
   flags.AddNodeLabelsFlag(parser, for_node_pool=True)
   flags.AddTagsFlag(
       parser, """\
@@ -116,6 +116,7 @@ for examples.
   flags.AddThreadsPerCore(parser)
   flags.AddAdditionalNodeNetworkFlag(parser, hidden=True)
   flags.AddAdditionalPodNetworkFlag(parser, hidden=True)
+  flags.AddAsyncFlag(parser)
 
 
 def ParseCreateNodePoolOptionsBase(args):
@@ -280,7 +281,11 @@ class Create(base.CreateCommand):
             pool_ref.projectId)
 
       operation_ref = adapter.CreateNodePool(pool_ref, options)
-
+      if args.async_:
+        op = adapter.GetOperation(operation_ref)
+        log.out.Print('Create Node Pool Operation in progress: {0}'.format(
+            op.name))
+        return op
       adapter.WaitForOperation(
           operation_ref,
           'Creating node pool {0}'.format(pool_ref.nodePoolId),

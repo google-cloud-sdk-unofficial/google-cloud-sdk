@@ -21,7 +21,7 @@ from __future__ import unicode_literals
 from googlecloudsdk.command_lib.anthos.common import file_parsers
 from googlecloudsdk.command_lib.container.fleet import resources
 from googlecloudsdk.command_lib.container.fleet.features import base
-from googlecloudsdk.command_lib.container.fleet.identityservice import utils
+from googlecloudsdk.command_lib.container.fleet.identity_service import utils
 
 
 # Pull out the example text so the example command can be one line without the

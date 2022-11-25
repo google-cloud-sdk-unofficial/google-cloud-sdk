@@ -63,7 +63,8 @@ class CreateCredConfig(base.CreateCommand):
   @classmethod
   def Args(cls, parser):
     # Add args common between workload and workforce.
-    flags.AddCommonByoidCreateConfigFlags(parser)
+    flags.AddCommonByoidCreateConfigFlags(
+        parser, cred_config.ConfigType.WORKLOAD_IDENTITY_POOLS)
 
     parser.add_argument(
         'audience', help='The workload identity pool provider resource name.')

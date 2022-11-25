@@ -317,9 +317,12 @@ class CreateHelper(object):
           policy_name=args.service_lb_policy)
 
     if args.service_bindings is not None:
-      raise exceptions.InvalidArgumentException(
-          '--service-bindings',
-          'Service bindings are allowed only for global backend services.')
+      region = backend_services_ref.region
+      backend_service.serviceBindings = [
+          reference_utils.BuildServiceBindingUrl(backend_services_ref.project,
+                                                 region, binding_name)
+          for binding_name in args.service_bindings
+      ]
 
     if self._support_subsetting:
       backend_services_utils.ApplySubsettingArgs(

@@ -60,7 +60,7 @@
       arg_name: filter-profanity
       help_text: |
         If enabled, the server will attempt to filter out profanities, replacing all but the
-        initial character in each filtered word with asterisks, e.g. "f***". If disabled or
+        initial character in each filtered word with asterisks, e.g. ```f***```. If disabled or
         omitted, profanities will not be filtered out.
     - api_field: videoContext.speechTranscriptionConfig.enableWordConfidence
       arg_name: enable-word-confidence

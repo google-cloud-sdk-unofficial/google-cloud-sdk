@@ -18,10 +18,12 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+from apitools.base.py import exceptions as apitools_exceptions
 from googlecloudsdk.command_lib.container.fleet.features import base as feature_base
 from googlecloudsdk.command_lib.projects import util as project_util
 from googlecloudsdk.core import exceptions
 from googlecloudsdk.core.resource import resource_projector
+from googlecloudsdk.core.util import times
 import six
 
 CLUSTER_UPGRADE_FEATURE = 'clusterupgrade'
@@ -47,11 +49,6 @@ class ClusterUpgradeCommand(object):
     tokens[1] = six.text_type(project_number)
     return delimiter.join(tokens)
 
-  @staticmethod
-  def GetProjectFromScopeName(name):
-    """Extracts the project name from the full Scope resource name."""
-    return name.split('/')[1]
-
   def ReleaseTrack(self):
     """Required to initialize HubClient. See calliope base class."""
     return self.args.calliope_command.ReleaseTrack()
@@ -59,8 +56,14 @@ class ClusterUpgradeCommand(object):
   def IsClusterUpgradeRequest(self):
     """Checks if any Cluster Upgrade Feature related arguments are present."""
     cluster_upgrade_flags = {
+        'upstream_scope',
+        'reset_upstream_scope',
         'show_cluster_upgrade',
         'show_linked_cluster_upgrade',
+        'default_upgrade_soaking',
+        'remove_upgrade_soaking_overrides',
+        'add_upgrade_soaking_override',
+        'upgrade_selector',
     }
     return any(has_value and flag in cluster_upgrade_flags
                for flag, has_value in self.args.__dict__.items())
@@ -69,21 +72,30 @@ class ClusterUpgradeCommand(object):
 class DescribeCommand(feature_base.FeatureCommand, ClusterUpgradeCommand):
   """Command for describing a Scope's Cluster Upgrade Feature."""
 
+  @staticmethod
+  def GetProjectFromScopeName(name):
+    """Extracts the project name from the full Scope resource name."""
+    return name.split('/')[1]
+
   def GetScopeWithClusterUpgradeInfo(self, scope, feature):
     """Adds Cluster Upgrade Feature information to describe Scope response."""
     scope_name = ClusterUpgradeCommand.GetScopeNameWithProjectNumber(scope.name)
-    if self.args.show_cluster_upgrade:
-      serialized_scope = resource_projector.MakeSerializable(scope)
-      serialized_scope[
-          'clusterUpgrade'] = self.GetClusterUpgradeInfoForScope(
-              scope_name, feature)
-      return serialized_scope
-    elif self.args.show_linked_cluster_upgrade:
+    if (self.args.IsKnownAndSpecified('show_cluster_upgrade') and
+        self.args.show_cluster_upgrade):
+      return self.AddClusterUpgradeInfoToScope(scope, scope_name, feature)
+    elif (self.args.IsKnownAndSpecified('show_linked_cluster_upgrade') and
+          self.args.show_linked_cluster_upgrade):
       serialized_scope = resource_projector.MakeSerializable(scope)
       serialized_scope['clusterUpgrades'] = self.GetLinkedClusterUpgradeScopes(
           scope_name, feature)
       return serialized_scope
     return scope
+
+  def AddClusterUpgradeInfoToScope(self, scope, scope_name, feature):
+    serialized_scope = resource_projector.MakeSerializable(scope)
+    serialized_scope['clusterUpgrade'] = self.GetClusterUpgradeInfoForScope(
+        scope_name, feature)
+    return serialized_scope
 
   def GetClusterUpgradeInfoForScope(self, scope_name, feature):
     """Gets Cluster Upgrade Feature information for the provided Scope."""
@@ -104,8 +116,7 @@ class DescribeCommand(feature_base.FeatureCommand, ClusterUpgradeCommand):
   def GetLinkedClusterUpgradeScopes(self, scope_name, feature):
     """Gets Cluster Upgrade Feature information for the entire sequence."""
 
-    current_project = ClusterUpgradeCommand.GetProjectFromScopeName(
-        scope_name)
+    current_project = DescribeCommand.GetProjectFromScopeName(scope_name)
     visited = set([scope_name])
 
     def UpTheStream(cluster_upgrade):
@@ -124,7 +135,7 @@ class DescribeCommand(feature_base.FeatureCommand, ClusterUpgradeCommand):
         return [cluster_upgrade]  # Detected a cycle.
       visited.add(upstream_scope_name)
 
-      upstream_scope_project = ClusterUpgradeCommand.GetProjectFromScopeName(
+      upstream_scope_project = DescribeCommand.GetProjectFromScopeName(
           upstream_scope_name)
       upstream_feature = (
           feature if upstream_scope_project == current_project else
@@ -150,7 +161,7 @@ class DescribeCommand(feature_base.FeatureCommand, ClusterUpgradeCommand):
         return [cluster_upgrade]  # Detected a cycle.
       visited.add(downstream_scope_name)
 
-      downstream_scope_project = ClusterUpgradeCommand.GetProjectFromScopeName(
+      downstream_scope_project = DescribeCommand.GetProjectFromScopeName(
           downstream_scope_name)
       downstream_feature = (
           feature if downstream_scope_project == current_project else
@@ -165,3 +176,94 @@ class DescribeCommand(feature_base.FeatureCommand, ClusterUpgradeCommand):
     downstream_cluster_upgrades = DownTheStream(current_cluster_upgrade)[1:]
     return (upstream_cluster_upgrades + [current_cluster_upgrade] +
             downstream_cluster_upgrades)
+
+
+class EnableCommand(feature_base.EnableCommandMixin, ClusterUpgradeCommand):
+  """Base class for enabling the Cluster Upgrade Feature."""
+
+  def GetWithForceEnable(self):
+    """Gets the project's Cluster Upgrade Feature, enabling if necessary."""
+    try:
+      # Get the feature without transforming HTTP errors.
+      return self.hubclient.GetFeature(self.FeatureResourceName())
+    except apitools_exceptions.HttpNotFoundError:
+      # It is expected for self.GetFeature to raise an exception when the
+      # feature is not enabled. If that is the case, we enable it on behalf
+      # of the caller.
+      self.Enable(self.messages.Feature())
+      return self.GetFeature()
+
+
+class UpdateCommand(feature_base.UpdateCommandMixin, ClusterUpgradeCommand):
+  """Base class for updating the Cluster Upgrade Feature."""
+
+  def Update(self, feature, scope_name):
+    """Updates Cluster Upgrade Feature information."""
+    scope_specs_map = self.hubclient.ToPyDefaultDict(
+        self.messages.ScopeFeatureSpec,
+        feature.scopeSpecs)
+    cluster_upgrade_spec = (scope_specs_map[scope_name].clusterupgrade or
+                            self.messages.ClusterUpgradeScopeSpec())
+
+    self.HandleUpstreamScopes(cluster_upgrade_spec)
+    self.HandleDefaultSoakTime(cluster_upgrade_spec)
+    self.HandleUpgradeSoakingOverrides(cluster_upgrade_spec)
+
+    scope_specs_map[scope_name].clusterupgrade = cluster_upgrade_spec
+    patch = self.messages.Feature(
+        scopeSpecs=self.hubclient.ToScopeSpecs(scope_specs_map))
+
+    # Until the Feature API supports update masking for map values, this
+    # presents a potential race condition; however, this is incredibly unlikely
+    # to occur in most customer use cases.
+    return super(UpdateCommand, self).Update(['scopeSpecs'], patch)
+
+  def HandleUpstreamScopes(self, cluster_upgrade_spec):
+    """Updates the Cluster Upgrade Feature's upstreamScopes field based on provided arguments.
+    """
+    if (self.args.IsKnownAndSpecified('reset_upstream_scope') and
+        self.args.reset_upstream_scope):
+      cluster_upgrade_spec.upstreamScopes = []
+    elif (self.args.IsKnownAndSpecified('upstream_scope') and
+          self.args.upstream_scope is not None):
+      cluster_upgrade_spec.upstreamScopes = [self.args.upstream_scope]
+
+  def HandleDefaultSoakTime(self, cluster_upgrade_spec):
+    """Updates the Cluster Upgrade Feature's postConditions.soaking field."""
+    if (not self.args.IsKnownAndSpecified('default_upgrade_soaking') or
+        self.args.default_upgrade_soaking is None):
+      return
+
+    default_soaking = times.FormatDurationForJson(
+        self.args.default_upgrade_soaking)
+    post_conditions = (
+        cluster_upgrade_spec.postConditions or
+        self.messages.ClusterUpgradePostConditions())
+    post_conditions.soaking = default_soaking
+    cluster_upgrade_spec.postConditions = post_conditions
+
+  def HandleUpgradeSoakingOverrides(self, cluster_upgrade_spec):
+    """Updates the ClusterUpgrade Feature's gkeUpgradeOverrides field."""
+    if (self.args.IsKnownAndSpecified('remove_upgrade_soaking_overrides') and
+        self.args.remove_upgrade_soaking_overrides):
+      cluster_upgrade_spec.gkeUpgradeOverrides = []
+    elif (self.args.IsKnownAndSpecified('add_upgrade_soaking_override') and
+          self.args.IsKnownAndSpecified('upgrade_selector') and
+          self.args.add_upgrade_soaking_override is not None and
+          self.args.upgrade_selector is not None):
+      soaking = times.FormatDurationForJson(
+          self.args.add_upgrade_soaking_override)
+      existing_gke_upgrade_overrides = (
+          cluster_upgrade_spec.gkeUpgradeOverrides or [])
+      new_gke_upgrade_override = (
+          self.messages.ClusterUpgradeGKEUpgradeOverride())
+      new_gke_upgrade_override.postConditions = self.messages.ClusterUpgradePostConditions(
+          soaking=soaking)
+
+      upgrade_name = self.args.upgrade_selector['name']
+      upgrade_version = self.args.upgrade_selector['version']
+      new_gke_upgrade_override.upgrade = self.messages.ClusterUpgradeGKEUpgrade(
+          name=upgrade_name, version=upgrade_version)
+      new_gke_upgrade_overrides = (existing_gke_upgrade_overrides +
+                                   [new_gke_upgrade_override])
+      cluster_upgrade_spec.gkeUpgradeOverrides = new_gke_upgrade_overrides

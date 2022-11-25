@@ -115,8 +115,7 @@ class Create(base.Command):
       `projects/default-project/topics/example-bucket`.
 
       In order to enable notifications, your project's
-      [Cloud Storage service agent]
-      (https://cloud.google.com/storage/docs/projects#service-accounts)
+      [Cloud Storage service agent](https://cloud.google.com/storage/docs/projects#service-accounts)
       must have the IAM permission "pubsub.topics.publish".
       This command checks to see if the destination Cloud Pub/Sub topic grants
       the service agent this permission. If not, the create command attempts to

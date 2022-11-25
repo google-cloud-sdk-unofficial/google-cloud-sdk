@@ -61,6 +61,7 @@ class UpdateGA(base.UpdateCommand):
     managed_flags.AddMigInstanceRedistributionTypeFlag(parser)
     managed_flags.AddMigDistributionPolicyTargetShapeFlag(
         parser, cls.support_any_single_zone)
+    managed_flags.AddMigListManagedInstancesResultsFlag(parser)
     # When adding RMIG-specific flag, update REGIONAL_FLAGS constant.
 
   def _GetUpdatedStatefulPolicyForDisks(self,
@@ -212,6 +213,11 @@ class UpdateGA(base.UpdateCommand):
                                          igm_resource, client)
     if args.IsSpecified('description'):
       patch_instance_group_manager.description = args.description
+    if args.IsSpecified('list_managed_instances_results'):
+      patch_instance_group_manager.listManagedInstancesResults = (
+          client.messages.InstanceGroupManager
+          .ListManagedInstancesResultsValueValuesEnum)(
+              args.list_managed_instances_results.upper())
     return patch_instance_group_manager
 
   def Run(self, args):
@@ -275,7 +281,6 @@ class UpdateBeta(UpdateGA):
   def Args(cls, parser):
     super(UpdateBeta, cls).Args(parser)
     instance_groups_flags.AddMigUpdateStatefulFlagsIPs(parser)
-    managed_flags.AddMigListManagedInstancesResultsFlag(parser)
     managed_flags.AddMigForceUpdateOnRepairFlags(parser)
 
   def _CreateInstanceGroupManagerPatch(self, args, igm_ref, igm_resource,
@@ -284,12 +289,6 @@ class UpdateBeta(UpdateGA):
                                          self)._CreateInstanceGroupManagerPatch(
                                              args, igm_ref, igm_resource,
                                              client, holder)
-
-    if args.list_managed_instances_results:
-      patch_instance_group_manager.listManagedInstancesResults = (
-          client.messages.InstanceGroupManager
-          .ListManagedInstancesResultsValueValuesEnum)(
-              args.list_managed_instances_results.upper())
 
     patch_instance_group_manager.instanceLifecyclePolicy = self._GetUpdatedInstanceLifecyclePolicy(
         args, client)

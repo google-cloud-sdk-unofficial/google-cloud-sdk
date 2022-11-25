@@ -24,22 +24,17 @@ import socket
 import subprocess
 import sys
 
-from googlecloudsdk.api_lib.auth import util as login_util
 from googlecloudsdk.api_lib.transfer import agent_pools_util
 from googlecloudsdk.api_lib.util import apis
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
-from googlecloudsdk.command_lib.auth import auth_util
 from googlecloudsdk.command_lib.transfer import creds_util
-from googlecloudsdk.core import config
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 from googlecloudsdk.core.util import platforms
 
 from oauth2client import client as oauth2_client
 
-_AUTH_PROXY_REDIRECT_URI = (
-    'https://sdk.cloud.google.com/transfer-agents-install-authcode.html')
 COUNT_FLAG_HELP_TEXT = """
 Specify the number of agents to install on your current machine.
 System requirements: 8 GB of memory and 4 CPUs per agent.
@@ -82,6 +77,14 @@ double-wrapping requests in TLS encryption. Double-wrapped requests prevent the
 proxy server from sending valid outbound requests.
 """
 
+MISSING_CREDENTIALS_ERROR_TEXT = """
+Credentials file not found at {creds_file_path}.
+
+{fix_suggestion}.
+
+Afterwards, re-run {executed_command}.
+"""
+
 DOCKER_NOT_FOUND_HELP_TEXT_BASE_FORMAT = """
 The agent runs inside a Docker container, so you'll need
 to install Docker before finishing agent installation.
@@ -95,14 +98,14 @@ For most Linux operating systems, you can copy and run the piped installation
 commands below:
 
 curl -fsSL https://get.docker.com -o get-docker.sh && sudo sh get-docker.sh &&
-sudo systemctl enable docker && gcloud {gcloud_args}
+sudo systemctl enable docker && {executed_command}
 """))
 
 DOCKER_NOT_FOUND_HELP_TEXT_NON_LINUX_FORMAT = (
     DOCKER_NOT_FOUND_HELP_TEXT_BASE_FORMAT.format(os_instructions="""
 See the installation instructions at
 https://docs.docker.com/engine/install/binaries/ and re-run
-'gcloud {gcloud_args}' after Docker installation.
+'{executed_command}' after Docker installation.
 """))
 
 CHECK_AGENT_CONNECTED_HELP_TEXT_FORMAT = """
@@ -140,6 +143,11 @@ def _expand_path(path):
   return os.path.abspath(os.path.expanduser(path))
 
 
+def _get_executed_command():
+  """Returns the run command. Does not include environment variables."""
+  return ' '.join(sys.argv)
+
+
 def _authenticate_and_get_creds_file_path(existing_creds_file=None):
   """Ensures agent will be able to authenticate and returns creds."""
   # Can't disable near "else" (https://github.com/PyCQA/pylint/issues/872).
@@ -147,19 +155,24 @@ def _authenticate_and_get_creds_file_path(existing_creds_file=None):
   if existing_creds_file:
     creds_file_path = _expand_path(existing_creds_file)
     if not os.path.exists(creds_file_path):
+      fix_suggestion = (
+          'Check for typos and ensure a creds file exists at the path')
       raise OSError(
-          'Credentials file not found at {}. Check for typos and ensure a'
-          ' creds file exists at the path, then re-run the command.'.format(
-              creds_file_path))
+          MISSING_CREDENTIALS_ERROR_TEXT.format(
+              creds_file_path=creds_file_path,
+              fix_suggestion=fix_suggestion,
+              executed_command=_get_executed_command()))
   else:
     creds_file_path = oauth2_client._get_well_known_file()
     # pylint:enable=protected-access
     if not os.path.exists(creds_file_path):
-      creds = login_util.DoInstalledAppBrowserFlowGoogleAuth(
-          scopes=(login_util.DEFAULT_SCOPES + [config.REAUTH_SCOPE]),
-          auth_proxy_redirect_uri=_AUTH_PROXY_REDIRECT_URI,
-      )
-      auth_util.DumpADCOptionalQuotaProject(creds)
+      fix_suggestion = ('To generate a credentials file, please run'
+                        ' `gcloud auth application-default login`')
+      raise OSError(
+          MISSING_CREDENTIALS_ERROR_TEXT.format(
+              creds_file_path=creds_file_path,
+              fix_suggestion=fix_suggestion,
+              executed_command=_get_executed_command()))
 
   return creds_file_path
 
@@ -173,7 +186,7 @@ def _check_if_docker_installed():
     else:
       error_format = DOCKER_NOT_FOUND_HELP_TEXT_NON_LINUX_FORMAT
 
-    raise OSError(error_format.format(gcloud_args=' '.join(sys.argv[1:])))
+    raise OSError(error_format.format(executed_command=_get_executed_command()))
 
 
 def _get_docker_command(args, project, creds_file_path):
@@ -292,15 +305,21 @@ class Install(base.Command):
       """,
       'EXAMPLES':
           """\
+      To create an agent pool for your agent, see the
+      `gcloud transfer agent-pools create` command.
+
       To install an agent that authenticates with your user account credentials
       and has default agent parameters, run:
 
-        $ {command}
+        $ {command} --pool=AGENT_POOL
+
+      You will be prompted to run a command to generate a credentials file if
+      one does not already exist.
 
       To install an agent that authenticates with a service account with
       credentials stored at '/example/path.json', run:
 
-        $ {command} --creds-file=/example/path.json
+        $ {command} --creds-file=/example/path.json --pool=AGENT_POOL
 
       """
   }

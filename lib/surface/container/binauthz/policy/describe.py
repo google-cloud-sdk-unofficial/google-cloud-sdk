@@ -32,11 +32,11 @@ class Describe(base.DescribeCommand):
 
   To describe an existing policy using its resource name:
 
-    $ {command} projects/my_proj/platforms/cloudRun/policies/policy1
+    $ {command} projects/my_proj/platforms/gke/policies/policy1
 
   To describe the same policy using flags:
 
-    $ {command} policy1 --platform=cloudRun --project=my_proj
+    $ {command} policy1 --platform=gke --project=my_proj
   """
 
   @staticmethod

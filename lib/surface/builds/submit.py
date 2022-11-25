@@ -92,11 +92,6 @@ class Submit(base.CreateCommand):
   """Submit a build using Google Cloud Build.
 
   Submit a build using Google Cloud Build.
-
-  ## NOTES
-
-  You can also run a build locally using the
-  separate component: `gcloud components install cloud-build-local`.
   """
 
   detailed_help = {
@@ -176,11 +171,6 @@ class SubmitBeta(Submit):
   """Submit a build using Google Cloud Build.
 
   Submit a build using Google Cloud Build.
-
-  ## NOTES
-
-  You can also run a build locally using the
-  separate component: `gcloud components install cloud-build-local`.
   """
 
   _support_gcl = True
@@ -191,11 +181,6 @@ class SubmitAlpha(SubmitBeta):
   """Submit a build using Google Cloud Build.
 
   Submit a build using Google Cloud Build.
-
-  ## NOTES
-
-  You can also run a build locally using the
-  separate component: `gcloud components install cloud-build-local`.
   """
 
   @staticmethod

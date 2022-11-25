@@ -56,6 +56,7 @@ class Update(base.UpdateCommand):
     flags.AddAllowMissingUpdateNodePool(parser)
     base.ASYNC_FLAG.AddToParser(parser)
     flags.AddNodePoolConfig(parser, is_update=True)
+    flags.AddNodePoolDisplayName(parser)
 
   def Run(self, args):
     """Runs the update command.

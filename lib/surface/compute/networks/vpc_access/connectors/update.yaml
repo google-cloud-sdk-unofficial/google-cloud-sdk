@@ -1,4 +1,4 @@
-- release_tracks: [ALPHA]
+- release_tracks: [ALPHA, BETA]
   help_text:
     brief: |
       Update a VPC Access connector.
@@ -12,7 +12,7 @@
       The following command updates a VPC Access connector with name
       `my-vpc-connector` in region `us-central1`:
 
-        $ {command} my-vpc-connector --region=us-central1 --min-instances=3
+        $ {command} my-vpc-connector --region=us-central1 --min-instances=3 --max-instances=5
 
   async:
     collection: vpcaccess.projects.locations.operations
@@ -34,23 +34,27 @@
         Arguments and flags that specify the VPC Access connector you want to update.
     params:
     - arg_name: min-instances
-      release_tracks: [ALPHA]
+      release_tracks: [ALPHA, BETA]
       api_field: connector.minInstances
       required: false
       help_text: |
-        Minimum instances number of instances underlying a connector. Value must be between 2 and 10.
-        Must be lower than the value specified by `--max-instances`.
+        If set, updates the minimum number of instances within an autoscaling group underlying the
+        connector. Value must be between 2 and 9, inclusive, greater than or equal to the currently
+        set minimum number of instances, and less than the value specified by --max-instances`.
+        `--max-instances` must be provided
     - arg_name: max-instances
-      release_tracks: [ALPHA]
+      release_tracks: [ALPHA, BETA]
       api_field: connector.maxInstances
       required: false
       help_text: |
-        Maximum instances number of instances underlying a connector. Value must be between 2 and 10.
-        Must be higher than the value specified by `--min-instances`.
+        If set, updates the maximum number of instances within an autoscaling group underlying the
+        connector. Value must be between 3 and 10, inclusive, greater than or equal to the currently
+        set maximum number of instances, and greater than the value specified by `--min-instances`.
+        `--min-instances` must be provided.
     - arg_name: machine-type
-      release_tracks: [ALPHA]
+      release_tracks: [ALPHA, BETA]
       api_field: connector.machineType
       required: false
       help_text: |
-        Machine type of VMs underlying the VPC Access connector. Accepted values are ``e2-micro'',
-        ``f1-micro'', and ``e2-standard-4''.
+        If set, updates the machine type of VMs underlying the connector. Accepted values are
+        "e2-micro", "f1-micro", and "e2-standard-4".

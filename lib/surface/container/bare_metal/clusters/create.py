@@ -53,13 +53,19 @@ class Create(base.CreateCommand):
     bare_metal_flags.AddClusterResourceArg(parser, 'to create', True)
     flags.AddAdminClusterMembershipResourceArg(parser, False)
     base.ASYNC_FLAG.AddToParser(parser)
-    # TODO(b/256275740) Add is_update param to all flags.
     bare_metal_flags.AddValidationOnly(parser)
+    bare_metal_flags.AddDescription(parser)
+    bare_metal_flags.AddAnnotations(parser)
     bare_metal_flags.AddVersion(parser)
     bare_metal_flags.AddNetworkConfig(parser)
-    bare_metal_flags.AddLoadBalancerConfig(parser, is_update=False)
+    bare_metal_flags.AddLoadBalancerConfig(parser)
     bare_metal_flags.AddStorageConfig(parser)
     bare_metal_flags.AddControlPlaneConfig(parser)
+    bare_metal_flags.AddProxyConfig(parser)
+    bare_metal_flags.AddClusterOperationsConfig(parser)
+    bare_metal_flags.AddMaintenanceConfig(parser)
+    bare_metal_flags.AddWorkloadNodeConfig(parser)
+    bare_metal_flags.AddSecurityConfig(parser)
 
   def Run(self, args):
     """Runs the create command.

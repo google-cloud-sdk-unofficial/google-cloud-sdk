@@ -164,9 +164,10 @@ class Describe(calliope_base.DescribeCommand):
       memberships = args.memberships
       if len(memberships) != 1:
         raise exceptions.Error('Please specify a single membership name.')
+      membership_name = memberships[0]
 
       return GetMembershipTemplate(client, messages, project_id,
-                                   args.memberships, template_name,
+                                   membership_name, template_name,
                                    self.ReleaseTrack())
     else:
       return GetFleetTemplate(client, messages, project_id,

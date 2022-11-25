@@ -54,7 +54,9 @@ class Create(base.CreateCommand):
     node_pool_flags.AddNodePoolResourceArg(parser, 'to create')
     cluster_flags.AddValidationOnly(parser)
     base.ASYNC_FLAG.AddToParser(parser)
-    node_pool_flags.AddNodePoolConfig(parser, is_update=False)
+    node_pool_flags.AddNodePoolAnnotations(parser)
+    node_pool_flags.AddNodePoolDisplayName(parser)
+    node_pool_flags.AddNodePoolConfig(parser)
 
   def Run(self, args):
     """Runs the create command.

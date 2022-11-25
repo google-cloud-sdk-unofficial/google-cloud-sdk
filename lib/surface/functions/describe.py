@@ -12,18 +12,20 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """Displays details of a Google Cloud Function."""
 
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+from apitools.base.py import exceptions as apitools_exceptions
 from googlecloudsdk.api_lib.functions.v1 import util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.functions import flags
 from googlecloudsdk.command_lib.functions.v1.describe import command as command_v1
 from googlecloudsdk.command_lib.functions.v2.describe import command as command_v2
+from googlecloudsdk.core import log
+import six.moves.http_client
 
 
 def _CommonArgs(parser, track):
@@ -54,8 +56,15 @@ class Describe(base.DescribeCommand):
     """
     if flags.ShouldUseGen2():
       return command_v2.Run(args, self.ReleaseTrack())
-    else:
+    try:
       return command_v1.Run(args)
+    except apitools_exceptions.HttpError as error:
+      if error.status_code == six.moves.http_client.NOT_FOUND:
+        log.debug(
+            '1st Gen Cloud Function not found, looking for 2nd Gen Cloud Function ...'
+        )
+        return command_v2.Run(args, self.ReleaseTrack())
+      raise
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)

@@ -46,7 +46,6 @@ DETAILED_HELP = {
 }
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class UnDelete(base.RestoreCommand):
   """Cancel deletion of a Google Cloud VMware Engine private cloud."""

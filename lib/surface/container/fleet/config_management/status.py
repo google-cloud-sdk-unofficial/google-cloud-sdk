@@ -199,7 +199,6 @@ class Status(feature_base.FeatureCommand, base.ListCommand):
 
   def Run(self, args):
     memberships, unreachable = api_util.ListMembershipsFull()
-    unreachable = ['us-west1', 'europe-west2']
     if unreachable:
       log.warning('Locations {} are currently unreachable. Status '
                   'entries may be incomplete'.format(unreachable))

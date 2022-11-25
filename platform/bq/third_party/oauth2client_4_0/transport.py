@@ -277,6 +277,7 @@ def request(http, uri, method='GET', body=None, headers=None,
         headers and the bytes of the content returned.
     """
     # NOTE: Allowing http or http.request is temporary (See Issue 601).
+    _LOGGER.info('Requesting: %s %s', method, uri)
     http_callable = getattr(http, 'request', http)
     return http_callable(uri, method=method, body=body, headers=headers,
                          redirections=redirections,

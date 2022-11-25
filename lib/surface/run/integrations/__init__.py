@@ -24,7 +24,9 @@ from googlecloudsdk.command_lib.run import flags
 from googlecloudsdk.command_lib.run import platforms
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA,
+    base.ReleaseTrack.BETA)
 class Integrations(base.Group):
   """View and manage your Cloud Run (fully managed) integrations.
 

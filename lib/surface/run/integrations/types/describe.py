@@ -38,7 +38,9 @@ class Params:
     self.optional = optional
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA,
+    base.ReleaseTrack.BETA)
 class Describe(base.DescribeCommand):
   """Describes a Cloud Run Integration type."""
 

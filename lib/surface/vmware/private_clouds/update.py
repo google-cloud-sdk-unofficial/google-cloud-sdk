@@ -44,7 +44,6 @@ DETAILED_HELP = {
 }
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Update(base.UpdateCommand):
   """Update a Google Cloud VMware Engine private cloud."""
@@ -67,9 +66,7 @@ class Update(base.UpdateCommand):
     privatecloud = args.CONCEPTS.private_cloud.Parse()
     client = PrivateCloudsClient()
     is_async = args.async_
-    operation = client.Update(
-        privatecloud,
-        description=args.description)
+    operation = client.Update(privatecloud, description=args.description)
     if is_async:
       log.UpdatedResource(operation.name, kind='private cloud', is_async=True)
       return operation

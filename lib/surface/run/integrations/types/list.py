@@ -24,7 +24,9 @@ from googlecloudsdk.command_lib.run import flags as run_flags
 from googlecloudsdk.command_lib.run.integrations import run_apps_operations
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA,
+    base.ReleaseTrack.BETA)
 class List(base.ListCommand):
   """Lists Cloud Run Integration Types."""
 

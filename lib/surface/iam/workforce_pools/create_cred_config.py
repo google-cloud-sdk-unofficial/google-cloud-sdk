@@ -56,7 +56,8 @@ class CreateCredConfig(base.CreateCommand):
   @classmethod
   def Args(cls, parser):
     # Add args common between workload and workforce.
-    flags.AddCommonByoidCreateConfigFlags(parser)
+    flags.AddCommonByoidCreateConfigFlags(
+        parser, cred_config.ConfigType.WORKFORCE_POOLS)
 
     # Required args. The audience is a positional arg, meaning it is required.
     parser.add_argument(

@@ -29,7 +29,9 @@ from googlecloudsdk.command_lib.run.integrations import run_apps_operations
 from googlecloudsdk.core.console import console_io
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA,
+    base.ReleaseTrack.BETA)
 class Delete(base.Command):
   """Delete a Cloud Run Integration and its associated resources."""
 

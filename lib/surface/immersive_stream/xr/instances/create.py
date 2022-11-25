@@ -67,8 +67,13 @@ class Create(base.CreateCommand):
     version = args.version
 
     client = api_util.GetClient()
+    target_location_configs = instances.GenerateTargetLocationConfigs(
+        add_region_configs=region_configs,
+        update_region_configs=None,
+        remove_regions=None,
+        current_instance=None)
     result_operation = instances.Create(instance_name, content_name, location,
-                                        version, region_configs)
+                                        version, target_location_configs)
     log.status.Print('Create request issued for: [{}]'.format(instance_name))
     if args.async_:
       log.status.Print('Check operation [{}] for status.\n'.format(

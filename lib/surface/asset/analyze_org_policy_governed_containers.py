@@ -91,8 +91,6 @@ class AnalyzeOrgPolicyGovernedContainers(base.ListCommand):
     return client.AnalyzeOrgPolicyGovernedContainers(args)
 
 
-# TODO(b/246989320): remove Hidden label once we are ready to launch.
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class AnalyzeOrgPolicyGovernedContainersBeta(AnalyzeOrgPolicyGovernedContainers
                                             ):

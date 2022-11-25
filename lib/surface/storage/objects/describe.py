@@ -64,6 +64,7 @@ class Describe(base.DescribeCommand):
           ' resource. Please use the `ls` or `objects list` command for'
           ' retrieving multiple resources.')
     url = storage_url.storage_url_from_string(args.url)
+    errors.raise_error_if_not_cloud_object(args.command_path, url)
     object_resource = api_factory.get_api(url.scheme).get_object_metadata(
         url.bucket_name,
         url.object_name,

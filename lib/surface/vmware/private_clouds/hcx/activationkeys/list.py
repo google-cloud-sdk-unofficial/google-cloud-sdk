@@ -42,7 +42,6 @@ DETAILED_HELP = {
 }
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class List(base.ListCommand):
   """List HCX activation keys in a Google Cloud VMware Engine private cloud."""

@@ -22,7 +22,7 @@ from googlecloudsdk.command_lib.run import exceptions
 from googlecloudsdk.command_lib.run import platforms
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Logs(base.Group):
   """Read logs for Cloud Run (fully managed) revisions."""
 

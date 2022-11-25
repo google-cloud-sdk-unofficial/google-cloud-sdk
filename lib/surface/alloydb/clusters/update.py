@@ -56,6 +56,7 @@ class Update(base.UpdateCommand):
     flags.AddRegion(parser)
     flags.AddCluster(parser)
     flags.AddAutomatedBackupFlags(parser, alloydb_messages, update=True)
+    flags.AddPitrConfigFlags(parser)
 
   def Run(self, args):
     """Constructs and sends request.
@@ -79,7 +80,7 @@ class Update(base.UpdateCommand):
                                                        cluster_ref, args)
     if not req.updateMask:
       parameters = [('--automated-backup-* | --disable-automated-backup | '
-                     '--clear-automated-backup')]
+                     '--clear-automated-backup | --disable-pitr | --pitr-*')]
       raise exceptions.MinimumArgumentException(
           parameters, 'Please specify at least one property to update')
     op = alloydb_client.projects_locations_clusters.Patch(req)

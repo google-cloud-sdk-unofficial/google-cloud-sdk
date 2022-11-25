@@ -43,13 +43,12 @@ DETAILED_HELP = {
 }
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Delete(base.DeleteCommand):
   """Delete a VMware Engine network policy."""
   detailed_help = DETAILED_HELP
-  @staticmethod
 
+  @staticmethod
   def Args(parser):
     """Register flags for this command."""
     flags.AddNetworkPolicyToParser(parser, positional=True)

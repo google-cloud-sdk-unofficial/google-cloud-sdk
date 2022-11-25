@@ -21,6 +21,7 @@ from __future__ import unicode_literals
 from apitools.base.py import encoding
 
 from googlecloudsdk.api_lib.compute import base_classes
+from googlecloudsdk.api_lib.compute.backend_services import client
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute import flags as compute_flags
 from googlecloudsdk.command_lib.compute import reference_utils
@@ -53,49 +54,32 @@ class AddServiceBindings(base.UpdateCommand):
         help_text='List of service binding names to be added to the backend service.'
     )
 
-  def _GetRequest(self, client, backend_service_ref):
-    return (client.apitools_client.backendServices, 'Get',
-            client.messages.ComputeBackendServicesGetRequest(
-                backendService=backend_service_ref.Name(),
-                project=backend_service_ref.project))
-
-  def _SetRequest(self, client, backend_service_ref, replacement):
-    return (client.apitools_client.backendServices, 'Patch',
-            client.messages.ComputeBackendServicesPatchRequest(
-                backendService=backend_service_ref.Name(),
-                backendServiceResource=replacement,
-                project=backend_service_ref.project))
-
   def _Modify(self, backend_service_ref, args, existing):
+    location = (
+        backend_service_ref.region if backend_service_ref.Collection()
+        == 'compute.regionBackendServices' else 'global')
     replacement = encoding.CopyProtoMessage(existing)
-
     old_bindings = replacement.serviceBindings or []
     new_bindings = [
         reference_utils.BuildServiceBindingUrl(backend_service_ref.project,
-                                               'global', binding_name)
+                                               location, binding_name)
         for binding_name in args.service_bindings
     ]
     new_bindings = reference_utils.FilterReferences(new_bindings, old_bindings)
     replacement.serviceBindings = sorted(
         list(set(old_bindings) | set(new_bindings)))
-
     return replacement
 
   def Run(self, args):
     """Adds service bindings to the Backend Service."""
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
-    client = holder.client
-
     backend_service_ref = (
         flags.GLOBAL_REGIONAL_BACKEND_SERVICE_ARG.ResolveAsResource(
             args,
             holder.resources,
-            scope_lister=compute_flags.GetDefaultScopeLister(client)))
+            scope_lister=compute_flags.GetDefaultScopeLister(holder.client)))
+    backend_service = client.BackendService(
+        backend_service_ref, compute_client=holder.client)
 
-    get_request = self._GetRequest(client, backend_service_ref)
-    objects = client.MakeRequests([get_request])
-
-    new_object = self._Modify(backend_service_ref, args, objects[0])
-
-    return client.MakeRequests(
-        [self._SetRequest(client, backend_service_ref, new_object)])
+    new_object = self._Modify(backend_service_ref, args, backend_service.Get())
+    return backend_service.Set(new_object)

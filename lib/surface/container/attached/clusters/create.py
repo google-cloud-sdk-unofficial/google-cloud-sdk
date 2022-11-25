@@ -57,6 +57,8 @@ class Create(base.CreateCommand):
     flags.AddValidateOnly(parser, 'cluster to create')
     flags.AddFleetProject(parser)
     flags.AddDescription(parser)
+    flags.AddLogging(parser, True)
+    flags.AddMonitoringConfig(parser, True)
 
     base.ASYNC_FLAG.AddToParser(parser)
 

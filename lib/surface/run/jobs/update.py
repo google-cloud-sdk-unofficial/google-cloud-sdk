@@ -88,6 +88,9 @@ class Update(base.Command):
 
     polling_group = parser.add_mutually_exclusive_group()
     flags.AddAsyncFlag(polling_group)
+    flags.AddWaitForCompletionFlag(polling_group, implies_execute_now=True)
+
+    flags.AddExecuteNowFlag(parser)
 
     concept_parsers.ConceptParser([job_presentation]).AddToParser(parser)
     # No output by default, can be overridden by --format
@@ -108,29 +111,52 @@ class Update(base.Command):
     changes.append(
         config_changes.SetLaunchStageAnnotationChange(self.ReleaseTrack()))
 
+    execute_now = args.execute_now or args.wait
+    execution = None
+
     with serverless_operations.Connect(conn_context) as operations:
       pretty_print.Info(
           messages_util.GetStartDeployMessage(conn_context, job_ref, 'Updating',
                                               'job'))
-      header_msg = 'Updating job...'
+      if execute_now:
+        header_msg = 'Updating and running job...'
+      else:
+        header_msg = 'Updating job...'
       with progress_tracker.StagedProgressTracker(
           header_msg,
-          stages.JobStages(),
+          stages.JobStages(
+              execute_now=execute_now, include_completion=args.wait),
           failure_message='Job failed to deploy',
           suppress_output=args.async_) as tracker:
         job = operations.UpdateJob(job_ref, changes, tracker, asyn=args.async_)
+        if execute_now:
+          execution = operations.RunJob(job_ref, args.wait, tracker,
+                                        args.async_, self.ReleaseTrack())
 
-      if args.async_:
+      if args.async_ and not execute_now:
         pretty_print.Success('Job [{{bold}}{job}{{reset}}] is being updated '
                              'asynchronously.'.format(job=job.name))
       else:
         job = operations.GetJob(job_ref)
-        pretty_print.Success(
-            'Job [{{bold}}{job}{{reset}}] has been successfully updated'.format(
-                job=job.name))
+        operation = 'been updated'
+        if args.wait:
+          operation += ' and completed execution [{}]'.format(execution.name)
+        elif execute_now:
+          operation += ' and started running execution [{}]'.format(
+              execution.name)
 
-      log.status.Print(
-          messages_util.GetRunJobMessage(self.ReleaseTrack(), job.name))
+        pretty_print.Success('Job [{{bold}}{job}{{reset}}] has successfully '
+                             '{operation}.'.format(
+                                 job=job.name, operation=operation))
+
+      msg = ''
+      if execute_now:
+        msg += messages_util.GetExecutionCreatedMessage(self.ReleaseTrack(),
+                                                        execution)
+        msg += '\n'
+      msg += messages_util.GetRunJobMessage(
+          self.ReleaseTrack(), job.name, repeat=execute_now)
+      log.status.Print(msg)
       return job
 
 

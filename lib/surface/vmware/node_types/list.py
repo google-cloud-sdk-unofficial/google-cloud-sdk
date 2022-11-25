@@ -14,11 +14,9 @@
 # limitations under the License.
 """'vmware node-types list' command."""
 
-
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
-
 
 from googlecloudsdk.api_lib.vmware.nodetypes import NodeTypesClient
 from googlecloudsdk.calliope import base
@@ -44,7 +42,6 @@ DETAILED_HELP = {
 }
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class List(base.ListCommand):
   """List supported Google Cloud VMware Engine node types."""

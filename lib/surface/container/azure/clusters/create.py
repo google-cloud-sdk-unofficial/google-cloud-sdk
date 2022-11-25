@@ -97,4 +97,4 @@ class CreateAlpha(Create):
   def Args(parser, track=base.ReleaseTrack.ALPHA):
     """Registers alpha track flags for this command."""
     Create.Args(parser)
-    flags.AddMonitoringConfig(parser)
+    flags.AddMonitoringConfig(parser, True)

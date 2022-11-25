@@ -28,7 +28,9 @@ from googlecloudsdk.command_lib.run.integrations import run_apps_operations
 from googlecloudsdk.core.resource import resource_printer
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA,
+    base.ReleaseTrack.BETA)
 class List(base.ListCommand):
   """List Cloud Run Integrations."""
 

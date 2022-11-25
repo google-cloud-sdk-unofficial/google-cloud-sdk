@@ -91,3 +91,4 @@ class UpdateAlpha(Update):
   def Args(parser, track=base.ReleaseTrack.ALPHA):
     """Registers alpha track flags for this command."""
     Update.Args(parser)
+    flags.AddMonitoringConfig(parser)

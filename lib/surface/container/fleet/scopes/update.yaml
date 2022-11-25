@@ -14,19 +14,60 @@
 
   request:
     collection: gkehub.projects.locations.scopes
-    modify_request_hooks:
-    - googlecloudsdk.command_lib.container.fleet.scopes.util:CheckUpdateArguments
+    # TODO(b/257544684): Remove this and restore modify_request_hooks once scope update IAM
+    # permission is ready.
+    issue_request_hook: googlecloudsdk.command_lib.container.fleet.scopes.rollout_sequencing.util:HandleUpdateRequest
+    # modify_request_hooks:
+    # - googlecloudsdk.command_lib.container.fleet.scopes.util:CheckUpdateArguments
+    # - googlecloudsdk.command_lib.container.fleet.scopes.rollout_sequencing.util:ValidateAsync
     ALPHA:
       api_version: v1alpha
 
-  async:
-    collection: gkehub.projects.locations.operations
+  response:
+    modify_response_hooks:
+    - googlecloudsdk.command_lib.container.fleet.scopes.rollout_sequencing.util:UpdateClusterUpgrade
+
+  # TODO(b/257544684): Restore this once scope update IAM permission is ready.
+  # async:
+  #   collection: gkehub.projects.locations.operations
 
   arguments:
     resource:
       spec: !REF googlecloudsdk.command_lib.container.fleet.resources:scope
       help_text: fleet scope resource.
       arg_name: scope
+
+    params:
+    - group:
+        hidden: true
+        help_text: |
+          Rollout Sequencing
+
+          These flags are not compatible with the `--async` flag.
+        params:
+        - !REF googlecloudsdk.command_lib.container.fleet.scopes.rollout_sequencing.flags:default_upgrade_soaking
+        - group:
+            mutex: true
+            params:
+            - arg_name: remove-upgrade-soaking-overrides
+              type: bool
+              help_text: |
+                Removes soaking time overrides for all upgrades propagating through the current
+                scope.
+            - group:
+                help_text: Upgrade soaking override
+                params:
+                - !REF googlecloudsdk.command_lib.container.fleet.scopes.rollout_sequencing.flags:add_upgrade_soaking_override
+                - !REF googlecloudsdk.command_lib.container.fleet.scopes.rollout_sequencing.flags:upgrade_selector
+        - group:
+            mutex: true
+            params:
+            - !REF googlecloudsdk.command_lib.container.fleet.scopes.rollout_sequencing.flags:upstream_scope
+            - arg_name: reset-upstream-scope
+              type: bool
+              help_text: |
+                Clears the relationship between the current scope and its upstream scopes in the
+                rollout sequence.
 
   update:
     read_modify_update: true

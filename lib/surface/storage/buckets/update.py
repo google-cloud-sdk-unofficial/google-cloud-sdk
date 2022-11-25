@@ -21,7 +21,9 @@ from __future__ import unicode_literals
 from googlecloudsdk.api_lib.storage import cloud_api
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.storage import errors
 from googlecloudsdk.command_lib.storage import flags
+from googlecloudsdk.command_lib.storage import storage_url
 from googlecloudsdk.command_lib.storage import user_request_args_factory
 from googlecloudsdk.command_lib.storage import wildcard_iterator
 from googlecloudsdk.command_lib.storage.tasks import task_executor
@@ -163,7 +165,7 @@ def _add_common_args(parser):
       help='If True, sets public access prevention to "enforced".'
       ' If False, sets public access prevention to "inherited".'
       ' For details on how exactly public access is blocked, see:'
-      ' http://cloud/storage/docs/public-access-prevention')
+      ' http://cloud.google.com/storage/docs/public-access-prevention')
   public_access_prevention.add_argument(
       '--clear-public-access-prevention',
       '--clear-pap',
@@ -205,6 +207,7 @@ def _add_common_args(parser):
       help='Clear website error page if bucket is hosting website.')
   flags.add_continue_on_error_flag(parser)
   flags.add_predefined_acl_flag(parser)
+  flags.add_predefined_default_object_acl_flag(parser)
 
 
 def _add_alpha_args(parser):
@@ -243,6 +246,13 @@ def _add_alpha_args(parser):
       help='JSON object in the format accepted by your cloud provider.'
       ' For example, for GCS, `--add-acl-grant=entity=user-tim@gmail.com,'
       'role=OWNER`')
+  parser.add_argument(
+      '--remove-acl-grant',
+      hidden=True,
+      help='JSON object in the format accepted by your cloud provider.'
+      ' For example, for GCS, `--remove-acl-grant=ENTITY`, where `ENTITY`'
+      ' has a valid ACL entity format, such as `user-tim@gmail.com`,'
+      ' `group-admins`, `allUsers`, etc.')
   parser.add_argument(
       '--lock-retention-period',
       action=arg_parsers.StoreTrueFalseAction,
@@ -308,9 +318,11 @@ class Update(base.Command):
       fields_scope = cloud_api.FieldsScope.FULL
     else:
       fields_scope = cloud_api.FieldsScope.NO_ACL
-    for url in args.url:
+    for url_string in args.url:
+      url = storage_url.storage_url_from_string(url_string)
+      errors.raise_error_if_not_bucket(args.command_path, url)
       for resource in wildcard_iterator.get_wildcard_iterator(
-          url,
+          url_string,
           fields_scope=fields_scope,
           get_bucket_metadata=_is_initial_bucket_metadata_needed(
               user_request_args)):

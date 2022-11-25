@@ -39,9 +39,9 @@ class RestoreTables(base.RestoreCommand):
 
             $ {command} --source-instance=instance1 --source-cluster=cluster1 --source=backup1 --destination-instance=instance1 --destination=table2
 
-          To restore table 'table2' from backup 'backup1' using relative names, run:
+          To restore table 'table2' from backup 'backup1' in a different project, run:
 
-            $ {command} --source=projects/project1/instances/instance1/clusters/cluster1/backups/backup1 --destination=projects/project1/instances/instance1/tables/table2
+            $ {command} --source=projects/project1/instances/instance1/clusters/cluster1/backups/backup1 --destination=projects/project2/instances/instance2/tables/table2
           """),
   }
 

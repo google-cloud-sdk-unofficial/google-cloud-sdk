@@ -18,9 +18,71 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+from googlecloudsdk.calliope import base as calliope_base
+from googlecloudsdk.command_lib.anthos.common import file_parsers
 from googlecloudsdk.command_lib.container.fleet.features import base
+from googlecloudsdk.command_lib.container.fleet.identity_service import utils
+
+# Pull out the example text so the example command can be one line without the
+# py linter complaining. The docgen tool properly breaks it into multiple lines.
+EXAMPLES = """\
+    To enable the Identity Service Feature, run:
+
+    $ {command}
+"""
 
 
+@calliope_base.ReleaseTracks(calliope_base.ReleaseTrack.ALPHA)
+class EnableAlpha(base.EnableCommand):
+  """Enable Identity Service Feature.
+
+  This command enables the Identity Service Feature in a fleet.
+  """
+
+  detailed_help = {'EXAMPLES': EXAMPLES}
+
+  feature_name = 'identityservice'
+
+  @classmethod
+  def Args(cls, parser):
+    parser.add_argument(
+        '--fleet-default-member-config',
+        type=str,
+        hidden=True,
+        help="""The path to an identity-service.yaml identity configuration file.
+        This configuration would automatically get applied to every cluster that
+        gets registered to the fleet and would act as the "source of truth" for
+        such clusters. Any local authentication configuration found on any
+        registered cluster would get overwritten by this configuration, including
+        any local updates made after running this command with this flag.
+
+        To enable the Identity Service with a default fleet level authentication configuration, run:
+
+          $ {command} --fleet-default-member-config=/path/to/identity-service.yaml""",
+    )
+
+  def Run(self, args):
+    # run the base enable flow if default config is not specified
+    if not args.fleet_default_member_config:
+      return self.Enable(self.messages.Feature())
+    # Load config YAML file.
+    loaded_config = file_parsers.YamlConfigFile(
+        file_path=args.fleet_default_member_config,
+        item_type=file_parsers.LoginConfigObject)
+
+    # Create new identity service feature spec.
+    member_config = utils.parse_config(loaded_config, self.messages)
+
+    # Create a feature object that has a default fleet identity service config
+    feature = self.messages.Feature(
+        fleetDefaultMemberConfig=self.messages
+        .CommonFleetDefaultMemberConfigSpec(identityservice=member_config))
+
+    return self.Enable(feature)
+
+
+@calliope_base.ReleaseTracks(calliope_base.ReleaseTrack.GA,
+                             calliope_base.ReleaseTrack.BETA)
 class Enable(base.EnableCommand):
   """Enable Identity Service Feature.
 

@@ -152,7 +152,12 @@ class BulkCreate(base.Command):
       for i in range(len(errors_to_collect)):
         error_tuple = errors_to_collect[i]
         error_list = list(error_tuple)
-        error_list[1] = error_list[1].message
+        # When requests are accepted, but workflow server processed it
+        # exceptionally, the error message is in message field. However, when
+        # requests are rejected, message field doesn't exist, we don't need to
+        # extract error message from message field.
+        if hasattr(error_list[1], 'message'):
+          error_list[1] = error_list[1].message
         errors_to_collect[i] = tuple(error_list)
     self._errors = errors_to_collect
     if not response:

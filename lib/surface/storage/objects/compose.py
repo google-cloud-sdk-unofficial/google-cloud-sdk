@@ -76,14 +76,11 @@ class Compose(base.Command):
           storage_url.storage_url_from_string(args.destination))
       for url_string in args.source:
         source_url = storage_url.storage_url_from_string(url_string)
+        command_errors.raise_error_if_not_cloud_object(args.command_path,
+                                                       source_url)
         if source_url.scheme is not destination_resource.storage_url.scheme:
           raise command_errors.Error(
               'Composing across providers is not supported.')
-        if not (isinstance(source_url, storage_url.CloudUrl) and
-                source_url.is_object()):
-          raise command_errors.InvalidUrlError(
-              'Source URLs must point to existing objects. {} is an invalid URL.'
-              .format(source_url.url_string))
     if (args.destination !=
         destination_resource.storage_url.versionless_url_string):
       raise command_errors.Error(

@@ -33,6 +33,9 @@
       - arg_value: encryption
         enum_value: ENCRYPTION_VIEW
         help_text: Only populates `name` and fields related to the table's encryption status.
+      - arg_value: stats
+        enum_value: STATS_VIEW
+        help_text: Only populates `name` and fields related to the table's statistics (e.g. TableStats and ColumnFamilyStats).
       - arg_value: full
         enum_value: FULL
         help_text: Populates all fields.
