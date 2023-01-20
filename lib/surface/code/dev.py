@@ -30,6 +30,8 @@ from googlecloudsdk.command_lib.code import local_files
 from googlecloudsdk.command_lib.code import run_subprocess
 from googlecloudsdk.command_lib.code import skaffold
 from googlecloudsdk.command_lib.code import yaml_helper
+from googlecloudsdk.command_lib.code.cloud import cloud
+from googlecloudsdk.command_lib.code.cloud import cloud_files
 from googlecloudsdk.core import config
 from googlecloudsdk.core import exceptions
 from googlecloudsdk.core import properties
@@ -167,8 +169,13 @@ class Dev(base.Command):
     if _IsDebug():
       _PrintDependencyVersions(args)
 
-    settings = local.AssembleSettings(args, self.ReleaseTrack())
+    if args.IsKnownAndSpecified('cloud') and args.cloud:
+      self._RunCloud(args)
+    else:
+      self._RunLocal(args)
 
+  def _RunLocal(self, args):
+    settings = local.AssembleSettings(args, self.ReleaseTrack())
     local_file_generator = local_files.LocalRuntimeFiles(settings)
 
     kubernetes_config = six.ensure_text(local_file_generator.KubernetesConfig())
@@ -191,12 +198,34 @@ class Dev(base.Command):
                                           skaffold_event_port):
         running_process.wait()
 
+  def _RunCloud(self, args):
+    settings = cloud.AssembleSettings(args)
+    cloud_file_generator = cloud_files.CloudRuntimeFiles(settings)
+    kubernetes_config = six.ensure_text(cloud_file_generator.KubernetesConfig())
+    with _DeployTempFile(kubernetes_config) as kubernetes_file:
+      skaffold_config = six.ensure_text(
+          cloud_file_generator.SkaffoldConfig(kubernetes_file.name))
+      skaffold_event_port = (
+          args.skaffold_events_port or portpicker.pick_unused_port())
+      with _SkaffoldTempFile(skaffold_config) as skaffold_file, \
+           self._CloudSkaffoldProcess(skaffold_file,
+                                      skaffold_event_port) as running_process, \
+           skaffold.PrintUrlThreadContext(settings.service_name,
+                                          skaffold_event_port):
+        running_process.wait()
+
   def _SkaffoldProcess(self, patched_skaffold_file, kube_context, namespace,
                        skaffold_event_port):
     return skaffold.Skaffold(patched_skaffold_file.name,
                              kube_context.context_name, namespace,
                              kube_context.env_vars, _IsDebug(),
                              skaffold_event_port)
+
+  def _CloudSkaffoldProcess(self, patched_skaffold_file, skaffold_event_port):
+    return skaffold.Skaffold(
+        patched_skaffold_file.name,
+        debug=_IsDebug(),
+        events_port=skaffold_event_port)
 
   @staticmethod
   def _GetKubernetesEngine(args):

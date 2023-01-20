@@ -22,12 +22,13 @@ from __future__ import unicode_literals
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute.security_policies import client
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.compute import scope as compute_scope
 from googlecloudsdk.command_lib.compute.security_policies import flags as security_policy_flags
 from googlecloudsdk.command_lib.compute.security_policies.rules import flags
 from googlecloudsdk.core import properties
 
 
-class Describe(base.DescribeCommand):
+class DescribeHelper(object):
   r"""Describe a Compute Engine security policy rule.
 
   *{command}* displays all data associated with a security policy rule.
@@ -43,22 +44,114 @@ class Describe(base.DescribeCommand):
   SECURITY_POLICY_ARG = None
 
   @classmethod
-  def Args(cls, parser):
+  def Args(cls, parser, support_regional_security_policy):
+    """Generates the flagset for a Describe command."""
     flags.AddPriority(parser, 'describe')
-    cls.SECURITY_POLICY_ARG = (
-        security_policy_flags.SecurityPolicyArgumentForRules())
+    if support_regional_security_policy:
+      flags.AddRegionFlag(parser, 'describe')
+      cls.SECURITY_POLICY_ARG = (
+          security_policy_flags.SecurityPolicyMultiScopeArgumentForRules())
+    else:
+      cls.SECURITY_POLICY_ARG = (
+          security_policy_flags.SecurityPolicyArgumentForRules())
     cls.SECURITY_POLICY_ARG.AddArgument(parser)
 
-  def Run(self, args):
-    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
-    ref = holder.resources.Parse(
-        args.name,
-        collection='compute.securityPolicyRules',
-        params={
-            'project': properties.VALUES.core.project.GetOrFail,
-            'securityPolicy': args.security_policy
-        })
+  @classmethod
+  def Run(cls, release_track, args, support_regional_security_policy):
+    """Validates arguments and describes a security policy rule."""
+    holder = base_classes.ComputeApiHolder(release_track)
+    ref = None
+    if support_regional_security_policy:
+      security_policy_ref = cls.SECURITY_POLICY_ARG.ResolveAsResource(
+          args, holder.resources, default_scope=compute_scope.ScopeEnum.GLOBAL)
+      if getattr(security_policy_ref, 'region', None) is not None:
+        ref = holder.resources.Parse(
+            args.name,
+            collection='compute.regionSecurityPolicyRules',
+            params={
+                'project': properties.VALUES.core.project.GetOrFail,
+                'region': security_policy_ref.region,
+                'securityPolicy': args.security_policy,
+            })
+      else:
+        ref = holder.resources.Parse(
+            args.name,
+            collection='compute.securityPolicyRules',
+            params={
+                'project': properties.VALUES.core.project.GetOrFail,
+                'securityPolicy': args.security_policy
+            })
+    else:
+      ref = holder.resources.Parse(
+          args.name,
+          collection='compute.securityPolicyRules',
+          params={
+              'project': properties.VALUES.core.project.GetOrFail,
+              'securityPolicy': args.security_policy
+          })
     security_policy_rule = client.SecurityPolicyRule(
         ref, compute_client=holder.client)
 
     return security_policy_rule.Describe()
+
+
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
+class DescribeGABeta(base.DescribeCommand):
+  r"""Describe a Compute Engine security policy rule.
+
+  *{command}* displays all data associated with a security policy rule.
+
+  ## EXAMPLES
+
+  To describe the rule at priority 1000, run:
+
+    $ {command} 1000 \
+       --security-policy=my-policy
+  """
+
+  SECURITY_POLICY_ARG = None
+
+  _support_regional_security_policy = False
+
+  @classmethod
+  def Args(cls, parser):
+    DescribeHelper.Args(
+        parser,
+        support_regional_security_policy=cls._support_regional_security_policy)
+
+  def Run(self, args):
+    return DescribeHelper.Run(
+        self.ReleaseTrack(),
+        args,
+        support_regional_security_policy=self._support_regional_security_policy)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class DescribeAlpha(base.DescribeCommand):
+  r"""Describe a Compute Engine security policy rule.
+
+  *{command}* displays all data associated with a security policy rule.
+
+  ## EXAMPLES
+
+  To describe the rule at priority 1000, run:
+
+    $ {command} 1000 \
+       --security-policy=my-policy
+  """
+
+  SECURITY_POLICY_ARG = None
+
+  _support_regional_security_policy = True
+
+  @classmethod
+  def Args(cls, parser):
+    DescribeHelper.Args(
+        parser,
+        support_regional_security_policy=cls._support_regional_security_policy)
+
+  def Run(self, args):
+    return DescribeHelper.Run(
+        self.ReleaseTrack(),
+        args,
+        support_regional_security_policy=self._support_regional_security_policy)

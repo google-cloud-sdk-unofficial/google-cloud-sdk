@@ -53,8 +53,8 @@ class TerraformToolsTfplanToCaiOperation(
         structured_output=True,
         **kwargs)
 
-  def _ParseArgsForCommand(self, command, terraform_plan_json, project,
-                           verbosity, output_path, **kwargs):
+  def _ParseArgsForCommand(self, command, terraform_plan_json, project, region,
+                           zone, verbosity, output_path, **kwargs):
     args = [
         command,
         terraform_plan_json,
@@ -67,6 +67,10 @@ class TerraformToolsTfplanToCaiOperation(
     ]
     if project:
       args += ['--project', project]
+    if region:
+      args += ['--region', region]
+    if zone:
+      args += ['--zone', zone]
     return args
 
 
@@ -126,6 +130,16 @@ class Vet(base.Command):
         required=True,
         help='Directory which contains a policy library',
     )
+    parser.add_argument(
+        '--zone',
+        required=False,
+        help='Default zone to use for resources that do not have one set',
+    )
+    parser.add_argument(
+        '--region',
+        required=False,
+        help='Default region to use for resources that do not have one set',
+    )
 
   def Run(self, args):
     tfplan_to_cai_operation = TerraformToolsTfplanToCaiOperation()
@@ -152,6 +166,18 @@ class Vet(base.Command):
         'GCLOUD_PROJECT',
     ]
 
+    zone_env_names = [
+        'GOOGLE_ZONE',
+        'GCLOUD_ZONE',
+        'CLOUDSDK_COMPUTE_ZONE',
+    ]
+
+    region_env_names = [
+        'GOOGLE_REGION',
+        'GCLOUD_REGION',
+        'CLOUDSDK_COMPUTE_REGION',
+    ]
+
     for env_key, env_val in os.environ.items():
       if env_key in proxy_env_names:
         env_vars[env_key] = env_val
@@ -171,9 +197,34 @@ class Vet(base.Command):
                 project, env_key))
             break
 
+      region = ''
+      if args.region:
+        region = args.region
+        log.debug('Setting region to {} from args'.format(region))
+      else:
+        for env_key in region_env_names:
+          region = encoding.GetEncodedValue(os.environ, env_key)
+          if region:
+            log.debug('Setting region to {} from env {}'.format(
+                region, env_key))
+            break
+
+      zone = ''
+      if args.zone:
+        zone = args.zone
+        log.debug('Setting zone to {} from args'.format(zone))
+      else:
+        for env_key in zone_env_names:
+          zone = encoding.GetEncodedValue(os.environ, env_key)
+          if zone:
+            log.debug('Setting zone to {} from env {}'.format(zone, env_key))
+            break
+
       response = tfplan_to_cai_operation(
           command='tfplan-to-cai',
           project=project,
+          region=region,
+          zone=zone,
           terraform_plan_json=args.terraform_plan_json,
           verbosity=args.verbosity,
           output_path=cai_assets,

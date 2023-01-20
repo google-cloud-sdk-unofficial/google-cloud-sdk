@@ -25,7 +25,6 @@ from googlecloudsdk.core import properties
 from googlecloudsdk.core import resources
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class List(base.ListCommand):
   """List Google Cloud Build triggers for a project."""
 

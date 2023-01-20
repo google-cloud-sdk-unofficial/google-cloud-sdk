@@ -164,5 +164,7 @@ class ListGA(_List, base.ListCommand):
       return (profile.cloudsql.publicIp
               if profile.cloudsql.publicIp
               else profile.cloudsql.privateIp)
+    elif profile.alloydb:
+      return profile.alloydb.settings.primaryInstanceSettings.privateIp
     else:
       return None

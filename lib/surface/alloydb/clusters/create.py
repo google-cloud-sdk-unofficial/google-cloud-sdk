@@ -29,9 +29,9 @@ from googlecloudsdk.core import properties
 from googlecloudsdk.core import resources
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Create(base.CreateCommand):
-  """Creates a new AlloyDB cluster within a given project."""
+  """Create a new AlloyDB cluster within a given project."""
 
   detailed_help = {
       'DESCRIPTION':
@@ -63,7 +63,11 @@ class Create(base.CreateCommand):
         permission_info="The 'AlloyDB Service Agent' service account must hold permission 'Cloud KMS CryptoKey Encrypter/Decrypter'"
     )
     flags.AddAutomatedBackupFlags(parser, alloydb_messages, update=False)
-    flags.AddPitrConfigFlags(parser)
+
+  def ConstructCreateRequestFromArgs(self, alloydb_messages, location_ref,
+                                     args):
+    return cluster_helper.ConstructCreateRequestFromArgsGA(
+        alloydb_messages, location_ref, args)
 
   def Run(self, args):
     """Constructs and sends request.
@@ -82,8 +86,8 @@ class Create(base.CreateCommand):
         'alloydb.projects.locations',
         projectsId=properties.VALUES.core.project.GetOrFail,
         locationsId=args.region)
-    req = cluster_helper.ConstructCreateRequestFromArgs(
-        alloydb_messages, location_ref, args)
+    req = self.ConstructCreateRequestFromArgs(alloydb_messages, location_ref,
+                                              args)
     op = alloydb_client.projects_locations_clusters.Create(req)
     op_ref = resources.REGISTRY.ParseRelativeName(
         op.name, collection='alloydb.projects.locations.operations')
@@ -91,3 +95,18 @@ class Create(base.CreateCommand):
     if not args.async_:
       cluster_operations.Await(op_ref, 'Creating cluster', self.ReleaseTrack())
     return op
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+class CreateAlphaBeta(Create):
+  """Create a new AlloyDB cluster within a given project."""
+
+  @classmethod
+  def Args(cls, parser):
+    super(CreateAlphaBeta, cls).Args(parser)
+    flags.AddPitrConfigFlags(parser)
+
+  def ConstructCreateRequestFromArgs(self, alloydb_messages, location_ref,
+                                     args):
+    return cluster_helper.ConstructCreateRequestFromArgsAlphaBeta(
+        alloydb_messages, location_ref, args)

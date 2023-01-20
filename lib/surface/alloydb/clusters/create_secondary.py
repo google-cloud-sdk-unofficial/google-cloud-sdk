@@ -30,7 +30,7 @@ from googlecloudsdk.core import resources
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class CreateSecondary(base.CreateCommand):
-  """Creates a new AlloyDB SECONDARY cluster within a given project."""
+  """Create a new AlloyDB SECONDARY cluster within a given project."""
 
   detailed_help = {
       'DESCRIPTION':

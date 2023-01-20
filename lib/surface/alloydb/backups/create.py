@@ -36,7 +36,8 @@ def _ParseBackupType(alloydb_messages, backup_type):
   return None
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
+                    base.ReleaseTrack.GA)
 class Create(base.CreateCommand):
   """Creates a new AlloyDB backup within a given project."""
 

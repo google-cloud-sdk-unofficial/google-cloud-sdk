@@ -554,9 +554,9 @@ flags_to_add = {
         'stackdriver':
             flags.AddEnableStackdriverKubernetesFlag,
         'stacktype':
-            lambda p: flags.AddStackTypeFlag(p, hidden=True),
+            flags.AddStackTypeFlag,
         'ipv6accesstype':
-            lambda p: flags.AddIpv6AccessTypeFlag(p, hidden=True),
+            flags.AddIpv6AccessTypeFlag,
         'tags':
             flags.AddTagsCreate,
         'threads_per_core':

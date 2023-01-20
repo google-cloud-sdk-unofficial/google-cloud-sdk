@@ -1,4 +1,4 @@
-- release_tracks: [ALPHA]
+- release_tracks: [ALPHA, GA]
 
   help_text:
     brief: Get description of a long-running edge network operation.
@@ -11,7 +11,10 @@
 
   request:
     collection: edgenetwork.projects.locations.operations
-    api_version: v1alpha1
+    ALPHA:
+      api_version: v1alpha1
+    GA:
+      api_version: v1
 
   arguments:
     resource:

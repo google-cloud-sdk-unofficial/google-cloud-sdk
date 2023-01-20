@@ -29,9 +29,9 @@ from googlecloudsdk.core import properties
 from googlecloudsdk.core import resources
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Update(base.UpdateCommand):
-  """Updates an AlloyDB cluster within a given project and region."""
+  """Update an AlloyDB cluster within a given project and region."""
 
   detailed_help = {
       'DESCRIPTION':
@@ -43,6 +43,11 @@ class Update(base.UpdateCommand):
           $ {command} my-cluster --region=us-central1 --automated-backup-start-times=12:00 --automated-backup-days-of-week=MONDAY --automated-backup-retention-count=10
         """,
   }
+
+  def __init__(self, *args, **kwargs):
+    super(Update, self).__init__(*args, **kwargs)
+    self.parameters = [('--automated-backup-* | --disable-automated-backup | '
+                        '--clear-automated-backup')]
 
   @classmethod
   def Args(cls, parser):
@@ -56,7 +61,10 @@ class Update(base.UpdateCommand):
     flags.AddRegion(parser)
     flags.AddCluster(parser)
     flags.AddAutomatedBackupFlags(parser, alloydb_messages, update=True)
-    flags.AddPitrConfigFlags(parser)
+
+  def ConstructPatchRequestFromArgs(self, alloydb_messages, cluster_ref, args):
+    return cluster_helper.ConstructPatchRequestFromArgsGA(
+        alloydb_messages, cluster_ref, args)
 
   def Run(self, args):
     """Constructs and sends request.
@@ -76,13 +84,11 @@ class Update(base.UpdateCommand):
         projectsId=properties.VALUES.core.project.GetOrFail,
         locationsId=args.region,
         clustersId=args.cluster)
-    req = cluster_helper.ConstructPatchRequestFromArgs(alloydb_messages,
-                                                       cluster_ref, args)
+    req = self.ConstructPatchRequestFromArgs(alloydb_messages, cluster_ref,
+                                             args)
     if not req.updateMask:
-      parameters = [('--automated-backup-* | --disable-automated-backup | '
-                     '--clear-automated-backup | --disable-pitr | --pitr-*')]
       raise exceptions.MinimumArgumentException(
-          parameters, 'Please specify at least one property to update')
+          self.parameters, 'Please specify at least one property to update')
     op = alloydb_client.projects_locations_clusters.Patch(req)
     op_ref = resources.REGISTRY.ParseRelativeName(
         op.name, collection='alloydb.projects.locations.operations')
@@ -91,3 +97,22 @@ class Update(base.UpdateCommand):
       cluster_operations.Await(op_ref, 'Updating cluster', self.ReleaseTrack(),
                                False)
     return op
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+class UpdateAlphaBeta(Update):
+  """Update an AlloyDB cluster within a given project and region."""
+
+  def __init__(self, *args, **kwargs):
+    super(UpdateAlphaBeta, self).__init__(*args, **kwargs)
+    self.parameters = [('--automated-backup-* | --disable-automated-backup | '
+                        '--clear-automated-backup | --disable-pitr | --pitr-*')]
+
+  def ConstructPatchRequestFromArgs(self, alloydb_messages, cluster_ref, args):
+    return cluster_helper.ConstructPatchRequestFromArgsAlphaBeta(
+        alloydb_messages, cluster_ref, args)
+
+  @classmethod
+  def Args(cls, parser):
+    super(UpdateAlphaBeta, cls).Args(parser)
+    flags.AddPitrConfigFlags(parser)

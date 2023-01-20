@@ -18,6 +18,8 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+import ast
+
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute.operations import poller
 from googlecloudsdk.api_lib.util import waiter
@@ -27,7 +29,8 @@ from googlecloudsdk.core import exceptions as core_exceptions
 from googlecloudsdk.core import log
 
 DETAILED_HELP = {
-    'brief': 'Stop a virtual machine instance.',
+    'brief':
+        'Stop a virtual machine instance.',
     'DESCRIPTION':
         """\
         *{command}* is used to stop a Compute Engine virtual machine.
@@ -45,7 +48,9 @@ DETAILED_HELP = {
 
         To stop an instance named `test-instance` that has a Local SSD, run:
 
-          $ {command} test-instance --discard-local-ssd
+          $ {command} test-instance --discard-local-ssd=True
+
+        Using '--discard-local-ssd' without a value defaults to True.
       """
 }
 
@@ -60,8 +65,13 @@ class Stop(base.SilentCommand):
     flags.INSTANCES_ARG.AddArgument(parser)
     parser.add_argument(
         '--discard-local-ssd',
-        action='store_true',
-        help=('If provided, local SSD data is discarded.'))
+        nargs='?',
+        default=None,
+        const=True,
+        # If absent, the flag is evaluated to None.
+        # If present without a value, defaults to True.
+        type=lambda x: ast.literal_eval(x.lower().capitalize()),
+        help=('If set to true, local SSD data is discarded.'))
     base.ASYNC_FLAG.AddToParser(parser)
 
   def _CreateStopRequest(self, client, instance_ref, args):

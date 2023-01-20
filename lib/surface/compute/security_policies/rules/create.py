@@ -21,6 +21,7 @@ from __future__ import unicode_literals
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute.security_policies import client
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.compute import scope as compute_scope
 from googlecloudsdk.command_lib.compute.security_policies import flags as security_policies_flags
 from googlecloudsdk.command_lib.compute.security_policies import security_policies_utils
 from googlecloudsdk.command_lib.compute.security_policies.rules import flags
@@ -46,11 +47,18 @@ class CreateHelper(object):
 
   @classmethod
   def Args(cls, parser, support_redirect, support_rate_limit,
-           support_header_action, support_tcp_ssl, support_fairshare):
+           support_header_action, support_tcp_ssl, support_fairshare,
+           support_regional_security_policy):
     """Generates the flagset for a Create command."""
     flags.AddPriority(parser, 'add')
-    cls.SECURITY_POLICY_ARG = (
-        security_policies_flags.SecurityPolicyArgumentForRules())
+    if support_regional_security_policy:
+      flags.AddRegionFlag(parser, 'add')
+      cls.SECURITY_POLICY_ARG = (
+          security_policies_flags.SecurityPolicyMultiScopeArgumentForRules())
+    else:
+      cls.SECURITY_POLICY_ARG = (
+          security_policies_flags.SecurityPolicyArgumentForRules())
+
     cls.SECURITY_POLICY_ARG.AddArgument(parser)
     flags.AddMatcher(parser)
     flags.AddAction(
@@ -71,21 +79,48 @@ class CreateHelper(object):
           support_fairshare=support_fairshare)
     if support_header_action:
       flags.AddRequestHeadersToAdd(parser)
-    parser.display_info.AddCacheUpdater(
-        security_policies_flags.GlobalSecurityPoliciesCompleter)
+    if support_regional_security_policy:
+      parser.display_info.AddCacheUpdater(
+          security_policies_flags.SecurityPoliciesCompleter)
+    else:
+      parser.display_info.AddCacheUpdater(
+          security_policies_flags.GlobalSecurityPoliciesCompleter)
 
   @classmethod
   def Run(cls, release_track, args, support_redirect, support_rate_limit,
-          support_header_action, support_fairshare):
+          support_header_action, support_fairshare,
+          support_regional_security_policy):
     """Validates arguments and creates a security policy rule."""
     holder = base_classes.ComputeApiHolder(release_track)
-    ref = holder.resources.Parse(
-        args.name,
-        collection='compute.securityPolicyRules',
-        params={
-            'project': properties.VALUES.core.project.GetOrFail,
-            'securityPolicy': args.security_policy
-        })
+    ref = None
+    if support_regional_security_policy:
+      security_policy_ref = cls.SECURITY_POLICY_ARG.ResolveAsResource(
+          args, holder.resources, default_scope=compute_scope.ScopeEnum.GLOBAL)
+      if getattr(security_policy_ref, 'region', None) is not None:
+        ref = holder.resources.Parse(
+            args.name,
+            collection='compute.regionSecurityPolicyRules',
+            params={
+                'project': properties.VALUES.core.project.GetOrFail,
+                'region': security_policy_ref.region,
+                'securityPolicy': args.security_policy,
+            })
+      else:
+        ref = holder.resources.Parse(
+            args.name,
+            collection='compute.securityPolicyRules',
+            params={
+                'project': properties.VALUES.core.project.GetOrFail,
+                'securityPolicy': args.security_policy,
+            })
+    else:
+      ref = holder.resources.Parse(
+          args.name,
+          collection='compute.securityPolicyRules',
+          params={
+              'project': properties.VALUES.core.project.GetOrFail,
+              'securityPolicy': args.security_policy
+          })
     security_policy_rule = client.SecurityPolicyRule(
         ref, compute_client=holder.client)
 
@@ -139,6 +174,7 @@ class CreateGA(base.CreateCommand):
   _support_header_action = True
   _support_tcl_ssl = False
   _support_fairshare = False
+  _support_regional_security_policy = False
 
   @classmethod
   def Args(cls, parser):
@@ -148,7 +184,8 @@ class CreateGA(base.CreateCommand):
         support_rate_limit=cls._support_rate_limit,
         support_header_action=cls._support_header_action,
         support_tcp_ssl=cls._support_tcl_ssl,
-        support_fairshare=cls._support_fairshare)
+        support_fairshare=cls._support_fairshare,
+        support_regional_security_policy=cls._support_regional_security_policy)
 
   def Run(self, args):
     return CreateHelper.Run(
@@ -157,7 +194,8 @@ class CreateGA(base.CreateCommand):
         support_redirect=self._support_redirect,
         support_rate_limit=self._support_rate_limit,
         support_header_action=self._support_header_action,
-        support_fairshare=self._support_fairshare)
+        support_fairshare=self._support_fairshare,
+        support_regional_security_policy=self._support_regional_security_policy)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
@@ -185,6 +223,7 @@ class CreateBeta(base.CreateCommand):
   _support_header_action = True
   _support_tcl_ssl = False
   _support_fairshare = False
+  _support_regional_security_policy = False
 
   @classmethod
   def Args(cls, parser):
@@ -194,7 +233,8 @@ class CreateBeta(base.CreateCommand):
         support_rate_limit=cls._support_rate_limit,
         support_header_action=cls._support_header_action,
         support_tcp_ssl=cls._support_tcl_ssl,
-        support_fairshare=cls._support_fairshare)
+        support_fairshare=cls._support_fairshare,
+        support_regional_security_policy=cls._support_regional_security_policy)
 
   def Run(self, args):
     return CreateHelper.Run(
@@ -203,7 +243,8 @@ class CreateBeta(base.CreateCommand):
         support_redirect=self._support_redirect,
         support_rate_limit=self._support_rate_limit,
         support_header_action=self._support_header_action,
-        support_fairshare=self._support_fairshare)
+        support_fairshare=self._support_fairshare,
+        support_regional_security_policy=self._support_regional_security_policy)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -231,6 +272,7 @@ class CreateAlpha(base.CreateCommand):
   _support_header_action = True
   _support_tcl_ssl = True
   _support_fairshare = True
+  _support_regional_security_policy = True
 
   @classmethod
   def Args(cls, parser):
@@ -240,7 +282,8 @@ class CreateAlpha(base.CreateCommand):
         support_rate_limit=cls._support_rate_limit,
         support_header_action=cls._support_header_action,
         support_tcp_ssl=cls._support_tcl_ssl,
-        support_fairshare=cls._support_fairshare)
+        support_fairshare=cls._support_fairshare,
+        support_regional_security_policy=cls._support_regional_security_policy)
 
   def Run(self, args):
     return CreateHelper.Run(
@@ -249,4 +292,5 @@ class CreateAlpha(base.CreateCommand):
         support_redirect=self._support_redirect,
         support_rate_limit=self._support_rate_limit,
         support_header_action=self._support_header_action,
-        support_fairshare=self._support_fairshare)
+        support_fairshare=self._support_fairshare,
+        support_regional_security_policy=self._support_regional_security_policy)

@@ -28,13 +28,20 @@ OP_BASE_CMD = 'gcloud services operations '
 OP_WAIT_CMD = OP_BASE_CMD + 'wait {0}'
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Undelete(base.RestoreCommand):
   """Undelete an API key.
 
     API Keys that are deleted will be retained in the system for 30 days. If a
     key is still within this retention window, it can be undeleted with this
     command.
+
+    ## EXAMPLES
+      UnDelete an API Key :
+
+     $ {command} projects/myproject/locations/global/keys/1234
+
+     $ {command} 1234
   """
 
   @staticmethod

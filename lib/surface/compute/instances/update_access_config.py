@@ -18,8 +18,6 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
-from apitools.base.py import encoding
-
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
@@ -30,13 +28,20 @@ DETAILED_HELP = {
     'DESCRIPTION':
         """
         *{command}* is used to update access configurations for network
-        interfaces of Compute Engine virtual machines.
+        interfaces of Compute Engine virtual machines. IPv4 and IPv6 access
+        configurations cannot be updated together.
         """,
     'EXAMPLES':
         """
-    To update network interface of an instance to 'nic0', run:
+    To update public PTR record in IPv4 access config in network interface 'nic0' of an instance, run:
 
-      $ {command} example-instance  --network-interface=nic0 --zone=us-central1-b
+      $ {command} example-instance --network-interface=nic0 --zone=us-central1-b \
+          --public-ptr --public-ptr-domain=exampledomain.com.
+
+    To update public PTR record in IPv6 access config in default network interface 'nic0' of an instance, run:
+
+      $ {command} example-instance --zone=us-central1-b \
+          --ipv6-public-ptr-domain=exampledomain.com.
   """
 }
 
@@ -72,39 +77,40 @@ class UpdateAccessConfigInstances(base.UpdateCommand):
     return flags.INSTANCE_ARG.ResolveAsResource(
         args, resources, scope_lister=flags.GetInstanceZoneScopeLister(client))
 
+  def CreateV4AddressConfig(self, client):
+    return client.messages.AccessConfig(
+        type=client.messages.AccessConfig.TypeValueValuesEnum.ONE_TO_ONE_NAT)
+
+  def CreateV6AddressConfig(self, client):
+    return client.messages.AccessConfig(
+        type=client.messages.AccessConfig.TypeValueValuesEnum.DIRECT_IPV6)
+
   def GetGetRequest(self, client, instance_ref):
     return (client.apitools_client.instances, 'Get',
             client.messages.ComputeInstancesGetRequest(**instance_ref.AsDict()))
 
-  def GetSetRequest(self, client, args, instance_ref, replacement):
-    for network_interface in replacement.networkInterfaces:
-      if network_interface.name == args.network_interface:
-        if (network_interface.ipv6AccessConfigs is not None and
-            network_interface.ipv6AccessConfigs):
-          access_config_replacement = network_interface.ipv6AccessConfigs[0]
-        else:
-          access_config_replacement = network_interface.accessConfigs[0]
-
+  def GetUpdateRequest(self, client, args, instance_ref, access_config):
     return (client.apitools_client.instances, 'UpdateAccessConfig',
             client.messages.ComputeInstancesUpdateAccessConfigRequest(
                 instance=instance_ref.instance,
                 networkInterface=args.network_interface,
-                accessConfig=access_config_replacement,
+                accessConfig=access_config,
                 project=instance_ref.project,
                 zone=instance_ref.zone))
 
+  # Generate updated AccessConfig for PATCH semantic.
   def Modify(self, client, args, original):
     set_public_dns = None
     if self._support_public_dns:
-      if args.public_dns is True:
+      if args.public_dns:
         set_public_dns = True
-      elif args.no_public_dns is True:
+      elif args.no_public_dns:
         set_public_dns = False
 
     set_ptr = None
-    if args.public_ptr is True:
+    if args.public_ptr:
       set_ptr = True
-    elif args.no_public_ptr is True:
+    elif args.no_public_ptr:
       set_ptr = False
 
     set_ipv6_ptr = None
@@ -113,42 +119,38 @@ class UpdateAccessConfigInstances(base.UpdateCommand):
     elif args.no_ipv6_public_ptr:
       set_ipv6_ptr = False
 
-    modified = encoding.CopyProtoMessage(original)
-    for interface in modified.networkInterfaces:
-      if interface.name == args.network_interface:
-        if self._support_public_dns:
-          if set_public_dns is not None:
-            interface.accessConfigs[0].setPublicDns = set_public_dns
-            # publicDnsName is output only.
-          if set_ipv6_ptr is None:
-            interface.accessConfigs[0].publicDnsName = None
+    if (set_ptr is not None and set_ipv6_ptr is not None):
+      raise exceptions.InvalidArgumentException(
+          '--ipv6-public-ptr-domain',
+          'Cannot update --public-ptr-domain and --ipv6-public-ptr-domain at same time.'
+      )
 
-        if set_ptr is not None:
-          interface.accessConfigs[0].setPublicPtr = set_ptr
-          interface.accessConfigs[0].publicPtrDomainName = ''
-          if args.public_ptr_domain is not None:
-            interface.accessConfigs[
-                0].publicPtrDomainName = args.public_ptr_domain
+    if self._support_public_dns and set_public_dns is not None:
+      access_config = self.CreateV4AddressConfig(client)
+      access_config.setPublicDns = set_public_dns
+      return access_config
 
-        if set_ipv6_ptr is not None:
-          interface.ipv6AccessConfigs[0].setPublicPtr = set_ipv6_ptr
-          interface.ipv6AccessConfigs[0].publicPtrDomainName = ''
-          if args.ipv6_public_ptr_domain is not None:
-            interface.ipv6AccessConfigs[
-                0].publicPtrDomainName = args.ipv6_public_ptr_domain
+    if set_ptr is not None:
+      access_config = self.CreateV4AddressConfig(client)
+      access_config.setPublicPtr = set_ptr
+      new_ptr = '' if args.public_ptr_domain is None else args.public_ptr_domain
+      access_config.publicPtrDomainName = new_ptr
+      return access_config
 
-        if self._support_network_tier:
-          if args.network_tier is not None:
-            interface.accessConfigs[0].networkTier = (
-                client.messages.AccessConfig.NetworkTierValueValuesEnum(
-                    args.network_tier))
+    if set_ipv6_ptr is not None:
+      access_config = self.CreateV6AddressConfig(client)
+      new_ptr = '' if args.ipv6_public_ptr_domain is None else args.ipv6_public_ptr_domain
+      access_config.publicPtrDomainName = new_ptr
+      return access_config
 
-        return modified
+    if self._support_network_tier and args.network_tier is not None:
+      access_config = self.CreateV4AddressConfig(client)
+      access_config.networkTier = (
+          client.messages.AccessConfig.NetworkTierValueValuesEnum(
+              args.network_tier))
+      return access_config
 
-    raise exceptions.InvalidArgumentException(
-        '--network-interface',
-        'The specified network interface \'{0}\' does not exist.'.format(
-            args.network_interface))
+    return None
 
   def Run(self, args):
     flags.ValidatePublicPtrFlags(args)
@@ -165,18 +167,18 @@ class UpdateAccessConfigInstances(base.UpdateCommand):
 
     objects = client.MakeRequests([get_request])
 
-    new_object = self.Modify(client, args, objects[0])
+    new_access_config = self.Modify(client, args, objects[0])
 
-    # If existing object is equal to the proposed object or if
-    # Modify() returns None, then there is no work to be done, so we
+    # If Modify() returns None, then there is no work to be done, so we
     # print the resource and return.
-    if not new_object or objects[0] == new_object:
+    if new_access_config is None:
       log.status.Print('No change requested; skipping update for [{0}].'.format(
           objects[0].name))
       return objects
 
-    return client.MakeRequests(
-        requests=[self.GetSetRequest(client, args, instance_ref, new_object)])
+    return client.MakeRequests(requests=[
+        self.GetUpdateRequest(client, args, instance_ref, new_access_config)
+    ])
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)

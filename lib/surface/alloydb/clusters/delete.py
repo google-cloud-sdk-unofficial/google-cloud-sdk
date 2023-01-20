@@ -29,9 +29,10 @@ from googlecloudsdk.core import resources
 from googlecloudsdk.core.console import console_io
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
+                    base.ReleaseTrack.GA)
 class Delete(base.DeleteCommand):
-  """Deletes an AlloyDB cluster in a given region."""
+  """Delete an AlloyDB cluster in a given region."""
 
   detailed_help = {
       'DESCRIPTION':
@@ -86,8 +87,6 @@ class Delete(base.DeleteCommand):
         op.name, collection='alloydb.projects.locations.operations')
     log.status.Print('Operation ID: {}'.format(op_ref.Name()))
     if not args.async_:
-      cluster_operations.Await(op_ref, 'Deleting cluster', self.ReleaseTrack(), False)
+      cluster_operations.Await(op_ref, 'Deleting cluster', self.ReleaseTrack(),
+                               False)
     return op
-
-
-

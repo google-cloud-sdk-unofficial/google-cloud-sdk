@@ -3,7 +3,7 @@ help_text:
   brief: Update a Pub/Sub Lite subscription.
   description: Update a Pub/Sub Lite subscription.
   examples: |
-    To update a Cloud Pub/Sub lite-subscription, run:
+    To update a Pub/Sub Lite subscription, run:
 
         $ {command} mysubscription \
             --location=us-central1-a \
@@ -31,11 +31,5 @@ arguments:
       params:
       - _REF_: googlecloudsdk.command_lib.pubsub.flags:delivery-requirement
       - _REF_: googlecloudsdk.command_lib.pubsub.flags:export-desired-state
-        hidden: true
-        release_tracks: [ALPHA, BETA]
       - _REF_: googlecloudsdk.command_lib.pubsub.flags:export-pubsub-topic
-        hidden: true
-        release_tracks: [ALPHA, BETA]
       - _REF_: googlecloudsdk.command_lib.pubsub.flags:export-dead-letter-topic
-        hidden: true
-        release_tracks: [ALPHA, BETA]

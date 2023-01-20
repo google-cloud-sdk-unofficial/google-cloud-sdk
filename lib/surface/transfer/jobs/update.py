@@ -35,6 +35,8 @@ def _clear_fields(args, messages, job):
       job.transferSpec.awsS3DataSource.roleArn = None
     if getattr(job.transferSpec, 'azureBlobStorageDataSource', None):
       job.transferSpec.azureBlobStorageDataSource.azureCredentials = None
+  if args.clear_event_stream:
+    job.eventStream = None
   if args.clear_schedule:
     job.schedule = None
   if args.clear_source_agent_pool:

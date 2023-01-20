@@ -97,10 +97,10 @@
                       release_tracks: [ALPHA, BETA, GA]
                       type: int
                       api_field: instance.maintenancePolicy.weeklyMaintenanceWindow.duration
+                      processor: googlecloudsdk.command_lib.memcache.instances_util:ConvertDurationToJsonFormat
                       help_text: |
                         Duration in integer hours (`3` to `8`) of the maintenance window.
         - arg_name: parameters
-          api_field: instance.parameters.params
           metavar: KEY=VALUE
           help_text: |
             User defined parameters to apply to the memcached process on each node. Possible attributes include:
@@ -149,26 +149,14 @@
   request:
     ALPHA:
       api_version: v1beta2
-      method: patch
-      # --parameters flag uses the method `updateParameters`, all other flags use method `patch`
-      modify_method_hook: googlecloudsdk.command_lib.memcache.instances_update_util:ChooseUpdateMethod
-      # The two update methods uses different API calls with incompatible fields so we must create the
-      # requests
-      create_request_hook: googlecloudsdk.command_lib.memcache.instances_update_util:CreateUpdateRequest
     BETA:
       api_version: v1beta2
-      method: patch
-      # --parameters flag uses the method `updateParameters`, all other flags use method `patch`
-      modify_method_hook: googlecloudsdk.command_lib.memcache.instances_update_util:ChooseUpdateMethod
-      # The two update methods uses different API calls with incompatible fields so we must create the
-      # requests
-      create_request_hook: googlecloudsdk.command_lib.memcache.instances_update_util:CreateUpdateRequest
     GA:
-      method: patch
       api_version: v1
-      # --parameters flag uses the method `updateParameters`, all other flags use method `patch`
-      modify_method_hook: googlecloudsdk.command_lib.memcache.instances_update_util:ChooseUpdateMethod
-      # The two update methods uses different API calls with incompatible fields so we must create the
-      # requests
-      create_request_hook: googlecloudsdk.command_lib.memcache.instances_update_util:CreateUpdateRequest
+    method: patch
+    # --parameters flag uses the method `updateParameters`, all other flags use method `patch`
+    modify_method_hook: googlecloudsdk.command_lib.memcache.instances_update_util:ChooseUpdateMethod
+    modify_request_hooks:
+    - googlecloudsdk.command_lib.memcache.instances_update_util:ModifyMaintenanceMask
+    - googlecloudsdk.command_lib.memcache.instances_update_util:ModifyParams
     collection: memcache.projects.locations.instances

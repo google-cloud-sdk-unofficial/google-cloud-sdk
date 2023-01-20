@@ -30,7 +30,6 @@ from googlecloudsdk.command_lib.run import serverless_operations
 from googlecloudsdk.command_lib.util.concepts import concept_parsers
 from googlecloudsdk.command_lib.util.concepts import presentation_specs
 from googlecloudsdk.core import log
-from googlecloudsdk.core import properties
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
@@ -38,10 +37,12 @@ class List(commands.List):
   """List available services."""
 
   detailed_help = {
-      'DESCRIPTION': """\
+      'DESCRIPTION':
+          """\
           {description}
           """,
-      'EXAMPLES': """\
+      'EXAMPLES':
+          """\
           To list available services:
 
               $ {command}
@@ -58,8 +59,8 @@ class List(commands.List):
         'Namespace to list services in.',
         required=True,
         prefixes=False)
-    concept_parsers.ConceptParser(
-        [namespace_presentation]).AddToParser(cluster_group)
+    concept_parsers.ConceptParser([namespace_presentation
+                                  ]).AddToParser(cluster_group)
 
     parser.display_info.AddUriFunc(cls._GetResourceUri)
 
@@ -95,8 +96,7 @@ class List(commands.List):
         'last_modifier:label="LAST DEPLOYED BY"',
         'last_transition_time:label="LAST DEPLOYED AT"',
     ])
-    args.GetDisplayInfo().AddFormat(
-        'table({})'.format(','.join(columns)))
+    args.GetDisplayInfo().AddFormat('table({})'.format(','.join(columns)))
 
   def Run(self, args):
     """List available services."""
@@ -117,14 +117,13 @@ class List(commands.List):
       with serverless_operations.Connect(conn_context) as client:
         self.SetCompleteApiEndpoint(conn_context.endpoint)
         if not is_managed:
-          is_gke = platforms.GetPlatform() == platforms.PLATFORM_GKE
-          location_msg = ' in [{}]'.format(
-              conn_context.cluster_location) if is_gke else ''
-          is_multi_tenant = conn_context.cluster_project != properties.VALUES.core.project.Get(
-              required=False)
-          project_msg = ' in project [{}]'.format(
-              conn_context.cluster_project
-          ) if is_gke and is_multi_tenant else ''
+          location_msg = ''
+          project_msg = ''
+          if hasattr(conn_context, 'cluster_location'):
+            location_msg = ' in [{}]'.format(conn_context.cluster_location)
+          if hasattr(conn_context, 'cluster_project'):
+            project_msg = ' in project [{}]'.format(
+                conn_context.cluster_project)
           log.status.Print('For cluster [{cluster}]{zone}{project}:'.format(
               cluster=conn_context.cluster_name,
               zone=location_msg,

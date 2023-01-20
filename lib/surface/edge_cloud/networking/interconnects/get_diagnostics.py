@@ -35,6 +35,7 @@ EXAMPLES = """\
    """
 
 
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.GA)
 class GetStatus(base.Command):
   """Get the diagnostics of a specified Distributed Cloud Edge Network interconnect.
 

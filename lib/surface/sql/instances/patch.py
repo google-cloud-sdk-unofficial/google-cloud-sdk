@@ -246,6 +246,7 @@ def AddBaseArgs(parser, is_alpha=False):
   flags.AddSqlServerAudit(parser)
   flags.AddDeletionProtection(parser)
   flags.AddConnectorEnforcement(parser)
+  flags.AddEnableGooglePrivatePath(parser)
 
 
 def AddBetaArgs(parser):
@@ -253,7 +254,6 @@ def AddBetaArgs(parser):
   flags.AddInstanceResizeLimit(parser)
   flags.AddAllocatedIpRangeName(parser)
   labels_util.AddUpdateLabelsFlags(parser, enable_clear=True)
-  flags.AddEnableGooglePrivatePath(parser)
 
 
 def AddAlphaArgs(unused_parser):

@@ -21,6 +21,7 @@ from __future__ import unicode_literals
 from googlecloudsdk.api_lib.alloydb import api_util
 from googlecloudsdk.api_lib.alloydb import cluster_operations
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.alloydb import cluster_helper
 from googlecloudsdk.command_lib.alloydb import flags
 from googlecloudsdk.command_lib.kms import resource_args as kms_resource_args
 from googlecloudsdk.core import log
@@ -28,9 +29,9 @@ from googlecloudsdk.core import properties
 from googlecloudsdk.core import resources
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Restore(base.RestoreCommand):
-  """Restores an AlloyDB cluster from a given backup."""
+  """Restore an AlloyDB cluster from a given backup."""
 
   detailed_help = {
       'DESCRIPTION':
@@ -44,15 +45,9 @@ class Restore(base.RestoreCommand):
   }
 
   @staticmethod
-  def Args(parser):
-    """Specifies additional command flags.
-
-    Args:
-      parser: argparse.Parser: Parser object for command line inputs.
-    """
+  def CommonArgs(parser):
     base.ASYNC_FLAG.AddToParser(parser)
     flags.AddCluster(parser)
-    flags.AddRestoreClusterSourceFlags(parser)
     flags.AddRegion(parser)
     flags.AddNetwork(parser)
     kms_resource_args.AddKmsKeyResourceArg(
@@ -60,6 +55,21 @@ class Restore(base.RestoreCommand):
         'cluster',
         permission_info="The 'AlloyDB Service Agent' service account must hold permission 'Cloud KMS CryptoKey Encrypter/Decrypter'"
     )
+
+  @staticmethod
+  def Args(parser):
+    """Specifies additional command flags.
+
+    Args:
+      parser: argparse.Parser: Parser object for command line inputs.
+    """
+    Restore.CommonArgs(parser)
+    flags.AddBackup(parser, False)
+
+  def ConstructRestoreRequestFromArgs(self, alloydb_messages, location_ref,
+                                      resource_parser, args):
+    return cluster_helper.ConstructRestoreRequestFromArgsGA(
+        alloydb_messages, location_ref, resource_parser, args)
 
   def Run(self, args):
     """Constructs and sends request.
@@ -79,41 +89,9 @@ class Restore(base.RestoreCommand):
         projectsId=properties.VALUES.core.project.GetOrFail,
         locationsId=args.region)
 
-    cluster_resource = alloydb_messages.Cluster()
-    cluster_resource.network = args.network
-    kms_key = flags.GetAndValidateKmsKeyName(args)
-    if kms_key:
-      encryption_config = alloydb_messages.EncryptionConfig()
-      encryption_config.kmsKeyName = kms_key
-      cluster_resource.encryptionConfig = encryption_config
+    req = self.ConstructRestoreRequestFromArgs(
+        alloydb_messages, location_ref, client.resource_parser, args)
 
-    backup_source, pitr_source = None, None
-    if args.backup:
-      backup_ref = client.resource_parser.Create(
-          'alloydb.projects.locations.backups',
-          projectsId=properties.VALUES.core.project.GetOrFail,
-          locationsId=args.region,
-          backupsId=args.backup)
-      backup_source = alloydb_messages.BackupSource(
-          backupName=backup_ref.RelativeName())
-    else:
-      cluster_ref = client.resource_parser.Create(
-          'alloydb.projects.locations.clusters',
-          projectsId=properties.VALUES.core.project.GetOrFail,
-          locationsId=args.region,
-          clustersId=args.source_cluster)
-      pitr_source = alloydb_messages.PitrSource(
-          cluster=cluster_ref.RelativeName(),
-          pointInTime=args.point_in_time.strftime('%Y-%m-%dT%H:%M:%S.%fZ'))
-
-    req = alloydb_messages.AlloydbProjectsLocationsClustersRestoreRequest(
-        parent=location_ref.RelativeName(),
-        restoreClusterRequest=alloydb_messages.RestoreClusterRequest(
-            backupSource=backup_source,
-            pitrSource=pitr_source,
-            clusterId=args.cluster,
-            cluster=cluster_resource,
-        ))
     op = alloydb_client.projects_locations_clusters.Restore(req)
     op_ref = resources.REGISTRY.ParseRelativeName(
         op.name, collection='alloydb.projects.locations.operations')
@@ -121,3 +99,18 @@ class Restore(base.RestoreCommand):
     if not args.async_:
       cluster_operations.Await(op_ref, 'Restoring cluster', self.ReleaseTrack())
     return op
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+class RestoreAlphaBeta(Restore):
+  """Restore an AlloyDB cluster from a given backup."""
+
+  @staticmethod
+  def Args(parser):
+    super(RestoreAlphaBeta, RestoreAlphaBeta).CommonArgs(parser)
+    flags.AddRestoreClusterSourceFlags(parser)
+
+  def ConstructRestoreRequestFromArgs(self, alloydb_messages, location_ref,
+                                      resource_parser, args):
+    return cluster_helper.ConstructRestoreRequestFromArgsAlphaBeta(
+        alloydb_messages, location_ref, resource_parser, args)

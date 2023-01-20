@@ -22,6 +22,16 @@ from googlecloudsdk.calliope import base
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class EdgeNetworkAlpha(base.Group):
+  """Manage Distributed Cloud Edge Network resources."""
+  category = base.COMPUTE_CATEGORY
+
+  def Filter(self, context, args):
+    del context, args
+
+
+@base.Hidden
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class EdgeNetwork(base.Group):
   """Manage Distributed Cloud Edge Network resources."""
   category = base.COMPUTE_CATEGORY

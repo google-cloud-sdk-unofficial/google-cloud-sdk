@@ -38,6 +38,7 @@ EXAMPLES = """\
    """
 
 
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.GA)
 class AddInterface(base.UpdateCommand):
   """Add an interface to a Distributed Cloud Edge Network router.
 

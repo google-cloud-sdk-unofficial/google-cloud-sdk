@@ -15,8 +15,6 @@
   arguments:
     resource:
       help_text: The Google Cloud Firestore database to describe.
+      is_positional: false
       # The resource arg specification itself. Imported from firestore/resources.yaml
       spec: !REF googlecloudsdk.command_lib.firestore.resources:database
-      removed_flags:
-      # Ignore the database flag.
-      - database

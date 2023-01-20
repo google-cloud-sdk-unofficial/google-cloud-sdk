@@ -163,6 +163,7 @@ def AddBaseArgs(parser, is_alpha=False):
   flags.AddSqlServerTimeZone(parser)
   flags.AddConnectorEnforcement(parser)
   flags.AddTimeout(parser, _INSTANCE_CREATION_TIMEOUT_SECONDS)
+  flags.AddEnableGooglePrivatePath(parser)
 
 
 def AddBetaArgs(parser):
@@ -171,7 +172,6 @@ def AddBetaArgs(parser):
   flags.AddInstanceResizeLimit(parser)
   flags.AddAllocatedIpRangeName(parser)
   labels_util.AddCreateLabelsFlags(parser)
-  flags.AddEnableGooglePrivatePath(parser)
 
 
 def AddAlphaArgs(unused_parser):

@@ -48,7 +48,7 @@ class Create(base.Command):
     flags.AddAsyncFlag(parser)
     flags.AddExcludeExportRangesFlag(
         parser,
-        hide_exclude_export_ranges_flag=True)
+        hide_exclude_export_ranges_flag=False)
     labels_util.AddCreateLabelsFlags(parser)
 
   def Run(self, args):

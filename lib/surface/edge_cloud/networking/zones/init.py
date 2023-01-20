@@ -33,6 +33,7 @@ EXAMPLES = """\
    """
 
 
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.GA)
 class InitialzeZone(base.Command):
   """Initialize a specified Distributed Cloud Edge Network zone.
 

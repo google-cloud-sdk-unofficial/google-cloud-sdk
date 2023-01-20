@@ -21,4 +21,5 @@
     disable_resource_check: true
     collection: artifactregistry.projects
     method: getProjectSettings
-    issue_request_hook: googlecloudsdk.command_lib.artifacts.util:IssueGetProjectSettingsRequest
+    modify_request_hooks:
+    - googlecloudsdk.command_lib.artifacts.util:UpdateSettingsResource

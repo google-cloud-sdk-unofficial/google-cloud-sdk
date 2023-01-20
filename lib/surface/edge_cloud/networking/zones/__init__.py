@@ -22,6 +22,6 @@ from googlecloudsdk.calliope import base
 
 
 @base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.GA)
 class Zones(base.Group):
   """Manage Distributed Cloud Edge Network zones."""

@@ -76,7 +76,7 @@ class CreateAlpha(base.Command):
         choices=['firestore-native', 'datastore-mode'],
     )
     parser.add_argument(
-        'database',
+        '--database',
         help="""The ID to use for the database, which will become the final
         component of the database's resource name. If database ID is not
         provided, (default) will be used as database ID.
@@ -88,7 +88,6 @@ class CreateAlpha(base.Command):
         Using "(default)" database ID is also allowed.
         """,
         type=str,
-        nargs='?',
         default='(default)',
     )
 

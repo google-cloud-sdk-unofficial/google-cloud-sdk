@@ -21,6 +21,8 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.code import flags
 from googlecloudsdk.command_lib.code import local
 from googlecloudsdk.command_lib.code import local_files
+from googlecloudsdk.command_lib.code.cloud import cloud
+from googlecloudsdk.command_lib.code.cloud import cloud_files
 from googlecloudsdk.core.util import files
 import six
 
@@ -76,14 +78,16 @@ class Export(base.Command):
         help='File containing yaml specifications for kubernetes resources.')
 
   def Run(self, args):
-    settings = local.AssembleSettings(args, self.ReleaseTrack())
-
-    local_file_generator = local_files.LocalRuntimeFiles(settings)
+    if args.IsKnownAndSpecified('cloud') and args.cloud:
+      settings = cloud.AssembleSettings(args)
+      file_generator = cloud_files.CloudRuntimeFiles(settings)
+    else:
+      settings = local.AssembleSettings(args, self.ReleaseTrack())
+      file_generator = local_files.LocalRuntimeFiles(settings)
 
     with files.FileWriter(args.kubernetes_file) as output:
-      output.write(six.u(local_file_generator.KubernetesConfig()))
+      output.write(six.u(file_generator.KubernetesConfig()))
 
     if not args.no_skaffold_file:
       with files.FileWriter(args.skaffold_file) as output:
-        output.write(
-            six.u(local_file_generator.SkaffoldConfig(args.kubernetes_file)))
+        output.write(six.u(file_generator.SkaffoldConfig(args.kubernetes_file)))

@@ -34,6 +34,7 @@ EXAMPLES = """\
    """
 
 
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.GA)
 class AddBgpPeer(base.UpdateCommand):
   """Add a BGP peer to a Distributed Cloud Edge Network router.
 

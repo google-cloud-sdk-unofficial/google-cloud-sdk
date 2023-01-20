@@ -22,22 +22,10 @@
     method: create
     ALPHA:
       api_version: v1alpha
-      # The create API call is on resource MetadataImports instead of Services, so declarative
-      # automatic request creation won't work and the api version cannot be passed in correctly.
-      # Hence we must create the request ourselves for each api version.
-      create_request_hook: googlecloudsdk.command_lib.metastore.services.imports.util:CreateV1AlphaRequest
     BETA:
       api_version: v1beta
-      # The create API call is on resource MetadataImports instead of Services, so declarative
-      # automatic request creation won't work and the api version cannot be passed in correctly.
-      # Hence we must create the request ourselves for each api version.
-      create_request_hook: googlecloudsdk.command_lib.metastore.services.imports.util:CreateV1BetaRequest
     GA:
       api_version: v1
-      # The create API call is on resource MetadataImports instead of Services, so declarative
-      # automatic request creation won't work and the api version cannot be passed in correctly.
-      # Hence we must create the request ourselves for each api version.
-      create_request_hook: googlecloudsdk.command_lib.metastore.services.imports.util:CreateV1Request
     collection: metastore.projects.locations.services.metadataImports
 
   arguments:
@@ -45,7 +33,7 @@
       help_text: |
         Arguments and flags that specify the Dataproc Metastore service
         you want to import.
-      spec: !REF googlecloudsdk.command_lib.metastore.resources:service
+      spec: !REF googlecloudsdk.command_lib.metastore.resources:parent_service
       is_parent_resource: true
 
     params:

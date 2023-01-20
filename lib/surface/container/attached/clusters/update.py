@@ -35,8 +35,7 @@ $ {command} my-cluster --location=us-west1 --description=testcluster
 """
 
 
-@base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.GA)
 class Update(base.UpdateCommand):
   """Update an Attached cluster."""
 

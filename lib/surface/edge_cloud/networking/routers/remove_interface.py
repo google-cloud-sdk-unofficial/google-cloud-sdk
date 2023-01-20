@@ -34,6 +34,7 @@ EXAMPLES = """\
    """
 
 
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.GA)
 class RemoveInterface(base.UpdateCommand):
   """remove an interface on a Distributed Cloud Edge Network router.
 

@@ -232,6 +232,14 @@ information on how to structure KEYs and VALUEs, run
   flags.MASTER_AUTHORIZED_NETWORKS_FLAG.AddToParser(
       master_authorized_networks_group)
 
+  scheduled_snapshots_params_group = parser.add_argument_group(
+      flags.SCHEDULED_SNAPSHOTS_GROUP_DESCRIPTION)
+  flags.ENABLE_SCHEDULED_SNAPSHOT_CREATION.AddToParser(
+      scheduled_snapshots_params_group)
+  flags.SNAPSHOT_LOCATION.AddToParser(scheduled_snapshots_params_group)
+  flags.SNAPSHOT_CREATION_SCHEDULE.AddToParser(scheduled_snapshots_params_group)
+  flags.SNAPSHOT_SCHEDULE_TIMEZONE.AddToParser(scheduled_snapshots_params_group)
+
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Create(base.Command):
@@ -574,6 +582,11 @@ class Create(base.Command):
         enable_master_authorized_networks=(
             args.enable_master_authorized_networks),
         master_authorized_networks=args.master_authorized_networks,
+        enable_scheduled_snapshot_creation=(
+            args.enable_scheduled_snapshot_creation),
+        snapshot_creation_schedule=args.snapshot_creation_schedule,
+        snapshot_location=args.snapshot_location,
+        snapshot_schedule_timezone=args.snapshot_schedule_timezone,
         release_track=self.ReleaseTrack())
     return environments_api_util.Create(self.env_ref, create_flags,
                                         is_composer_v1)
@@ -605,15 +618,6 @@ class CreateBeta(Create):
         flags.CLOUD_DATA_LINEAGE_INTEGRATION_GROUP_DESCRIPTION, hidden=True)
     flags.ENABLE_CLOUD_DATA_LINEAGE_INTEGRATION_FLAG.AddToParser(
         cloud_data_lineage_integration_params_group)
-    scheduled_snapshots_params_group = parser.add_argument_group(
-        flags.SCHEDULED_SNAPSHOTS_GROUP_DESCRIPTION)
-    flags.ENABLE_SCHEDULED_SNAPSHOT_CREATION.AddToParser(
-        scheduled_snapshots_params_group)
-    flags.SNAPSHOT_LOCATION.AddToParser(scheduled_snapshots_params_group)
-    flags.SNAPSHOT_CREATION_SCHEDULE.AddToParser(
-        scheduled_snapshots_params_group)
-    flags.SNAPSHOT_SCHEDULE_TIMEZONE.AddToParser(
-        scheduled_snapshots_params_group)
 
   def GetOperationMessage(self, args, is_composer_v1):
     """See base class."""

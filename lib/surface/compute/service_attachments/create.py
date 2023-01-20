@@ -56,8 +56,7 @@ def _DetailedHelp():
   }
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
-                    base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
 class Create(base.CreateCommand):
   """Create a Google Compute Engine service attachment."""
 
@@ -121,6 +120,78 @@ class Create(base.CreateCommand):
       service_attachment.consumerRejectLists = args.consumer_reject_list
     if args.IsSpecified('consumer_accept_list'):
       accept_list = service_attachments_utils.GetConsumerAcceptList(
+          args, client.messages)
+      service_attachment.consumerAcceptLists = accept_list
+    if args.IsSpecified('domain_names'):
+      service_attachment.domainNames = args.domain_names
+
+    request = client.messages.ComputeServiceAttachmentsInsertRequest(
+        project=service_attachment_ref.project,
+        region=service_attachment_ref.region,
+        serviceAttachment=service_attachment)
+    collection = client.apitools_client.serviceAttachments
+    return client.MakeRequests([(collection, 'Insert', request)])
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class CreateAlpha(Create):
+  """Create a Google Compute Engine service attachment."""
+
+  @classmethod
+  def Args(cls, parser):
+    cls.SERVICE_ATTACHMENT_ARG = flags.ServiceAttachmentArgument()
+    cls.SERVICE_ATTACHMENT_ARG.AddArgument(parser, operation_type='create')
+    cls.PRODUCER_FORWARDING_RULE_ARG = forwarding_rule_flags.ForwardingRuleArgumentForServiceAttachment(
+    )
+    cls.PRODUCER_FORWARDING_RULE_ARG.AddArgument(parser)
+    cls.NAT_SUBNETWORK_ARG = subnetwork_flags.SubnetworkArgumentForServiceAttachment(
+    )
+    cls.NAT_SUBNETWORK_ARG.AddArgument(parser)
+
+    parser.display_info.AddFormat(flags.DEFAULT_LIST_FORMAT)
+    parser.display_info.AddCacheUpdater(flags.ServiceAttachmentsCompleter)
+
+    flags.AddDescription(parser)
+    flags.AddConnectionPreference(parser, is_update=False)
+    flags.AddEnableProxyProtocolForCreate(parser)
+    flags.AddConsumerRejectListAlpha(parser)
+    flags.AddConsumerAcceptListAlpha(parser)
+    flags.AddDomainNames(parser)
+
+  def Run(self, args):
+    """Issue a service attachment INSERT request."""
+    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    client = holder.client
+    service_attachment_ref = self.SERVICE_ATTACHMENT_ARG.ResolveAsResource(
+        args, holder.resources, default_scope=compute_scope.ScopeEnum.REGION)
+    producer_forwarding_rule_ref = self.PRODUCER_FORWARDING_RULE_ARG.ResolveAsResource(
+        args, holder.resources)
+    nat_subnetwork_refs = self.NAT_SUBNETWORK_ARG.ResolveAsResource(
+        args,
+        holder.resources,
+        default_scope=compute_scope.ScopeEnum.REGION,
+        scope_lister=compute_flags.GetDefaultScopeLister(client))
+    nat_subnetworks = [
+        nat_subnetwork_ref.SelfLink()
+        for nat_subnetwork_ref in nat_subnetwork_refs
+    ]
+    connection_preference = service_attachments_utils.GetConnectionPreference(
+        args, client.messages)
+    enable_proxy_protocol = args.enable_proxy_protocol
+
+    service_attachment = client.messages.ServiceAttachment(
+        description=args.description,
+        name=service_attachment_ref.Name(),
+        natSubnets=nat_subnetworks,
+        connectionPreference=connection_preference,
+        enableProxyProtocol=enable_proxy_protocol,
+        producerForwardingRule=producer_forwarding_rule_ref.SelfLink(),
+        targetService=producer_forwarding_rule_ref.SelfLink())
+
+    if args.IsSpecified('consumer_reject_list'):
+      service_attachment.consumerRejectLists = args.consumer_reject_list
+    if args.IsSpecified('consumer_accept_list'):
+      accept_list = service_attachments_utils.GetConsumerAcceptListAlpha(
           args, client.messages)
       service_attachment.consumerAcceptLists = accept_list
     if args.IsSpecified('domain_names'):

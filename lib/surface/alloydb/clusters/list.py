@@ -32,12 +32,13 @@ CLUSTER_FORMAT = """
 """
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
+                    base.ReleaseTrack.GA)
 class List(base.ListCommand):
-  """Lists AlloyDB clusters in a given project and region.
+  """List AlloyDB clusters in a given project and region.
 
-  Lists AlloyDB clusters in a given project in the alphabetical
-  order of the cluster name.
+  List AlloyDB clusters in a given project in alphabetical
+  order based on the cluster name.
   """
 
   detailed_help = {

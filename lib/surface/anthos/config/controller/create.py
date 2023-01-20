@@ -59,6 +59,7 @@ class Create(base.CreateCommand):
     flags.AddClusterNamedRangeFlag(parser)
     flags.AddServicesNamedRange(parser)
     flags.AddUsePrivateEndpoint(parser)
+    flags.AddFullManagement(parser)
 
   def Run(self, args):
     client = krmapihosting_api.GetClientInstance(api_version=self._API_VERSION)

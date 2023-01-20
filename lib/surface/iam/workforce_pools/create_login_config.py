@@ -71,8 +71,8 @@ class CreateLoginConfig(base.CreateCommand):
         'type': 'external_account_authorized_user_login_config',
         'audience': '//iam.googleapis.com/' + args.audience,
         'auth_url': 'https://auth.cloud.google/authorize',
-        'token_url': 'https://sts.googleapis.com/v1/oauth/token',
-        'token_info_url': 'https://sts.googleapis.com/v1/instrospect',
+        'token_url': 'https://sts.googleapis.com/v1/oauthtoken',
+        'token_info_url': 'https://sts.googleapis.com/v1/introspect',
     }
     files.WriteFileContents(args.output_file, json.dumps(output, indent=2))
     log.CreatedResource(args.output_file, RESOURCE_TYPE)

@@ -1,4 +1,4 @@
-release_tracks: [ALPHA]
+release_tracks: [ALPHA, GA]
 
 help_text:
   brief: Show details about the Distributed Cloud Edge Network router.
@@ -11,7 +11,10 @@ help_text:
 
 request:
   collection: edgenetwork.projects.locations.zones.routers
-  api_version: v1alpha1
+  ALPHA:
+    api_version: v1alpha1
+  GA:
+    api_version: v1
 
 arguments:
   resource:

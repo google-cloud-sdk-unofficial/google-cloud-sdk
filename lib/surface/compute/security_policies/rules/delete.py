@@ -23,12 +23,13 @@ from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import utils
 from googlecloudsdk.api_lib.compute.security_policies import client
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.compute import scope as compute_scope
 from googlecloudsdk.command_lib.compute.security_policies import flags as security_policies_flags
 from googlecloudsdk.command_lib.compute.security_policies.rules import flags
 from googlecloudsdk.core import properties
 
 
-class Delete(base.DeleteCommand):
+class DeleteHelper(object):
   r"""Delete Compute Engine security policy rules.
 
   *{command}* is used to delete security policy rules.
@@ -44,28 +45,57 @@ class Delete(base.DeleteCommand):
   SECURITY_POLICY_ARG = None
 
   @classmethod
-  def Args(cls, parser):
+  def Args(cls, parser, support_regional_security_policy):
+    """Generates the flagset for a Delete command."""
     flags.AddPriority(parser, 'delete', is_plural=True)
-    cls.SECURITY_POLICY_ARG = (
-        security_policies_flags.SecurityPolicyArgumentForRules())
+    if support_regional_security_policy:
+      flags.AddRegionFlag(parser, 'delete')
+      cls.SECURITY_POLICY_ARG = (
+          security_policies_flags.SecurityPolicyMultiScopeArgumentForRules())
+    else:
+      cls.SECURITY_POLICY_ARG = (
+          security_policies_flags.SecurityPolicyArgumentForRules())
     cls.SECURITY_POLICY_ARG.AddArgument(parser)
     parser.display_info.AddCacheUpdater(
         security_policies_flags.SecurityPoliciesCompleter)
 
-  def Collection(self):
-    return 'compute.securityPolicyRules'
-
-  def Run(self, args):
-    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+  @classmethod
+  def Run(cls, release_track, args, support_regional_security_policy):
+    """Validates arguments and deletes security policy rule(s)."""
+    holder = base_classes.ComputeApiHolder(release_track)
     refs = []
-    for name in args.names:
-      refs.append(holder.resources.Parse(
-          name,
-          collection=self.Collection(),
-          params={
-              'project': properties.VALUES.core.project.GetOrFail,
-              'securityPolicy': args.security_policy
-          }))
+    if support_regional_security_policy:
+      security_policy_ref = cls.SECURITY_POLICY_ARG.ResolveAsResource(
+          args, holder.resources, default_scope=compute_scope.ScopeEnum.GLOBAL)
+      if getattr(security_policy_ref, 'region', None) is not None:
+        for name in args.names:
+          refs.append(
+              holder.resources.Parse(
+                  name,
+                  collection='compute.regionSecurityPolicyRules',
+                  params={
+                      'project': properties.VALUES.core.project.GetOrFail,
+                      'region': security_policy_ref.region,
+                      'securityPolicy': args.security_policy
+                  }))
+      else:
+        for name in args.names:
+          refs.append(holder.resources.Parse(
+              name,
+              collection='compute.securityPolicyRules',
+              params={
+                  'project': properties.VALUES.core.project.GetOrFail,
+                  'securityPolicy': args.security_policy
+              }))
+    else:
+      for name in args.names:
+        refs.append(holder.resources.Parse(
+            name,
+            collection='compute.securityPolicyRules',
+            params={
+                'project': properties.VALUES.core.project.GetOrFail,
+                'securityPolicy': args.security_policy
+            }))
     utils.PromptForDeletion(refs)
 
     requests = []
@@ -75,3 +105,65 @@ class Delete(base.DeleteCommand):
       requests.extend(security_policy_rule.Delete(only_generate_request=True))
 
     return holder.client.MakeRequests(requests)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
+class DescribeGABeta(base.DeleteCommand):
+  r"""Delete Compute Engine security policy rules.
+
+  *{command}* is used to delete security policy rules.
+
+  ## EXAMPLES
+
+  To delete the rule at priority 1000, run:
+
+    $ {command} 1000 \
+       --security-policy=my-policy
+  """
+
+  SECURITY_POLICY_ARG = None
+
+  _support_regional_security_policy = False
+
+  @classmethod
+  def Args(cls, parser):
+    DeleteHelper.Args(
+        parser,
+        support_regional_security_policy=cls._support_regional_security_policy)
+
+  def Run(self, args):
+    return DeleteHelper.Run(
+        self.ReleaseTrack(),
+        args,
+        support_regional_security_policy=self._support_regional_security_policy)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class DeleteAlpha(base.DeleteCommand):
+  r"""Delete Compute Engine security policy rules.
+
+  *{command}* is used to delete security policy rules.
+
+  ## EXAMPLES
+
+  To delete the rule at priority 1000, run:
+
+    $ {command} 1000 \
+       --security-policy=my-policy
+  """
+
+  SECURITY_POLICY_ARG = None
+
+  _support_regional_security_policy = True
+
+  @classmethod
+  def Args(cls, parser):
+    DeleteHelper.Args(
+        parser,
+        support_regional_security_policy=cls._support_regional_security_policy)
+
+  def Run(self, args):
+    return DeleteHelper.Run(
+        self.ReleaseTrack(),
+        args,
+        support_regional_security_policy=self._support_regional_security_policy)

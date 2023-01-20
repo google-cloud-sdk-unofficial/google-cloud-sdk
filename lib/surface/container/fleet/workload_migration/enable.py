@@ -34,3 +34,13 @@ class Enable(base.EnableCommand):
   """
   feature_name = 'workloadmigration'
   feature_display_name = 'Workload Migration'
+
+  def Run(self, args):
+    # Create an empty feature spec, but explicitly define an empty
+    # workloadmigration object. The server will validate this field is not-empty
+    # in order to ensure API visiblity labels are enforced when enabling the
+    # feature.
+    f = self.messages.Feature(
+        spec=self.messages.CommonFeatureSpec(
+            workloadmigration=self.messages.WorkloadMigrationFeatureSpec()))
+    return self.Enable(f)

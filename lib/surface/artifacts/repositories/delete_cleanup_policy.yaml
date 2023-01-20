@@ -11,9 +11,9 @@
         * The given repository does not exist.
         * The active account does not have permission to update repositories.
     examples: |
-      To delete the cleanup policy from the repository `my-repo`, run:
+      To delete a cleanup policy named `policy_a` from the repository `my-repo`, run:
 
-        $ {command} my-repo
+        $ {command} my-repo --policynames=policy_a
 
   arguments:
     resource:
@@ -21,13 +21,22 @@
       help_text: |
         The Artifact Registry repository to update.
 
+    params:
+    - arg_name: policynames
+      required: true
+      help_text: |
+        Comma-separated list of cleanup policy names to delete.
+
 
   command_type: UPDATE
   request:
     api_version: v1
     collection: artifactregistry.projects.locations.repositories
     modify_request_hooks:
-    - googlecloudsdk.command_lib.artifacts.cleanup_policy_util:SetDeleteCleanupPolicyUpdateMask
+    - googlecloudsdk.command_lib.artifacts.cleanup_policy_util:DeleteCleanupPolicyFields
+
+  update:
+    read_modify_update: true
 
   response:
     modify_response_hooks:

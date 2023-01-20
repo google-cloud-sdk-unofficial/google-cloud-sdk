@@ -22,13 +22,13 @@ from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute.security_policies import client
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
+from googlecloudsdk.command_lib.compute import scope as compute_scope
 from googlecloudsdk.command_lib.compute.security_policies import flags as security_policy_flags
 from googlecloudsdk.command_lib.compute.security_policies.rules import flags
 from googlecloudsdk.core import properties
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
-class RemovePreconfigWafExclusion(base.UpdateCommand):
+class RemovePreconfigWafExclusionHelper(object):
   r"""Remove an exclusion configuration for preconfigured WAF evaluation from a security policy rule.
 
   *{command}* is used to remove an exclusion configuration for preconfigured WAF
@@ -85,13 +85,20 @@ class RemovePreconfigWafExclusion(base.UpdateCommand):
   """
 
   @classmethod
-  def Args(cls, parser):
+  def Args(cls, parser, support_regional_security_policy):
     """Generates the flagset for a RemovePreconfigWafExclusion command."""
     flags.AddPriority(
         parser,
         'remove the exclusion configuration for preconfigured WAF evaluation')
-    cls.SECURITY_POLICY_ARG = (
-        security_policy_flags.SecurityPolicyArgumentForRules())
+    if support_regional_security_policy:
+      flags.AddRegionFlag(
+          parser,
+          'remove the exclusion configuration for preconfigured WAF evaluation')
+      cls.SECURITY_POLICY_ARG = (
+          security_policy_flags.SecurityPolicyMultiScopeArgumentForRules())
+    else:
+      cls.SECURITY_POLICY_ARG = (
+          security_policy_flags.SecurityPolicyArgumentForRules())
     cls.SECURITY_POLICY_ARG.AddArgument(parser)
     flags.AddTargetRuleSet(parser=parser, is_add=False)
     flags.AddTargetRuleIds(parser=parser, is_add=False)
@@ -100,14 +107,17 @@ class RemovePreconfigWafExclusion(base.UpdateCommand):
     flags.AddRequestQueryParam(parser=parser, is_add=False)
     flags.AddRequestUri(parser=parser, is_add=False)
 
-  def _IsIdenticalTarget(self,
+  @classmethod
+  def _IsIdenticalTarget(cls,
                          existing_exclusion,
                          target_rule_set,
                          target_rule_ids=None):
     return target_rule_set == existing_exclusion.targetRuleSet and set(
         target_rule_ids) == set(existing_exclusion.targetRuleIds)
 
-  def _ConvertRequestFieldToAdd(self, compute_client, request_field_to_remove):
+  @classmethod
+  def _ConvertRequestFieldToAdd(cls, compute_client, request_field_to_remove):
+    """Converts RequestFieldToAdd."""
     request_field = (
         compute_client.messages
         .SecurityPolicyRulePreconfiguredWafConfigExclusionFieldParams())
@@ -125,7 +135,8 @@ class RemovePreconfigWafExclusion(base.UpdateCommand):
 
     return request_field
 
-  def _RemoveRequestFields(self, existing_request_fields,
+  @classmethod
+  def _RemoveRequestFields(cls, existing_request_fields,
                            request_fields_to_remove):
     new_request_fields = []
     for existing_request_field in existing_request_fields:
@@ -133,13 +144,15 @@ class RemovePreconfigWafExclusion(base.UpdateCommand):
         new_request_fields.append(existing_request_field)
     return new_request_fields
 
-  def _UpdateExclusion(self,
+  @classmethod
+  def _UpdateExclusion(cls,
                        compute_client,
                        existing_exclusion,
                        request_headers=None,
                        request_cookies=None,
                        request_query_params=None,
                        request_uris=None):
+    """Updates Exclusion."""
     new_exclusion = (
         compute_client.messages
         .SecurityPolicyRulePreconfiguredWafConfigExclusion())
@@ -150,35 +163,35 @@ class RemovePreconfigWafExclusion(base.UpdateCommand):
     request_headers_to_remove = []
     for request_header in request_headers or []:
       request_headers_to_remove.append(
-          self._ConvertRequestFieldToAdd(compute_client, request_header))
+          cls._ConvertRequestFieldToAdd(compute_client, request_header))
     new_exclusion.requestHeadersToExclude.extend(
-        self._RemoveRequestFields(existing_exclusion.requestHeadersToExclude,
-                                  request_headers_to_remove))
+        cls._RemoveRequestFields(existing_exclusion.requestHeadersToExclude,
+                                 request_headers_to_remove))
 
     request_cookies_to_remove = []
     for request_cookie in request_cookies or []:
       request_cookies_to_remove.append(
-          self._ConvertRequestFieldToAdd(compute_client, request_cookie))
+          cls._ConvertRequestFieldToAdd(compute_client, request_cookie))
     new_exclusion.requestCookiesToExclude.extend(
-        self._RemoveRequestFields(existing_exclusion.requestCookiesToExclude,
-                                  request_cookies_to_remove))
+        cls._RemoveRequestFields(existing_exclusion.requestCookiesToExclude,
+                                 request_cookies_to_remove))
 
     request_query_params_to_remove = []
     for request_query_param in request_query_params or []:
       request_query_params_to_remove.append(
-          self._ConvertRequestFieldToAdd(compute_client, request_query_param))
+          cls._ConvertRequestFieldToAdd(compute_client, request_query_param))
     new_exclusion.requestQueryParamsToExclude.extend(
-        self._RemoveRequestFields(
+        cls._RemoveRequestFields(
             existing_exclusion.requestQueryParamsToExclude,
             request_query_params_to_remove))
 
     request_uris_to_remove = []
     for request_uri in request_uris or []:
       request_uris_to_remove.append(
-          self._ConvertRequestFieldToAdd(compute_client, request_uri))
+          cls._ConvertRequestFieldToAdd(compute_client, request_uri))
     new_exclusion.requestUrisToExclude.extend(
-        self._RemoveRequestFields(existing_exclusion.requestUrisToExclude,
-                                  request_uris_to_remove))
+        cls._RemoveRequestFields(existing_exclusion.requestUrisToExclude,
+                                 request_uris_to_remove))
 
     if not (new_exclusion.requestHeadersToExclude or
             new_exclusion.requestCookiesToExclude or
@@ -187,7 +200,9 @@ class RemovePreconfigWafExclusion(base.UpdateCommand):
       return None
     return new_exclusion
 
-  def _UpdatePreconfigWafConfig(self, compute_client, existing_rule, args):
+  @classmethod
+  def _UpdatePreconfigWafConfig(cls, compute_client, existing_rule, args):
+    """Updates Preconfig WafConfig."""
     new_preconfig_waf_config = (
         compute_client.messages.SecurityPolicyRulePreconfiguredWafConfig())
     if args.target_rule_set == '*':
@@ -206,10 +221,10 @@ class RemovePreconfigWafExclusion(base.UpdateCommand):
       exclusions = []
 
     for exclusion in exclusions:
-      if self._IsIdenticalTarget(exclusion, args.target_rule_set,
-                                 args.target_rule_ids or []):
+      if cls._IsIdenticalTarget(exclusion, args.target_rule_set,
+                                args.target_rule_ids or []):
         if has_request_field_args:
-          new_exclusion = self._UpdateExclusion(
+          new_exclusion = cls._UpdateExclusion(
               compute_client, exclusion, args.request_header_to_exclude,
               args.request_cookie_to_exclude,
               args.request_query_param_to_exclude, args.request_uri_to_exclude)
@@ -220,7 +235,8 @@ class RemovePreconfigWafExclusion(base.UpdateCommand):
 
     return new_preconfig_waf_config
 
-  def Run(self, args):
+  @classmethod
+  def Run(cls, release_track, args, support_regional_security_policy):
     """Validates arguments and patches a security policy rule."""
     if args.target_rule_set == '*':
       if (args.IsSpecified('target_rule_ids') or
@@ -250,20 +266,191 @@ class RemovePreconfigWafExclusion(base.UpdateCommand):
               'A request field operator must be one of [EQUALS, STARTS_WITH, '
               'ENDS_WITH, CONTAINS, EQUALS_ANY].')
 
-    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    holder = base_classes.ComputeApiHolder(release_track)
     compute_client = holder.client
-    ref = holder.resources.Parse(
-        args.name,
-        collection='compute.securityPolicyRules',
-        params={
-            'project': properties.VALUES.core.project.GetOrFail,
-            'securityPolicy': args.security_policy
-        })
+    ref = None
+    if support_regional_security_policy:
+      security_policy_ref = cls.SECURITY_POLICY_ARG.ResolveAsResource(
+          args, holder.resources, default_scope=compute_scope.ScopeEnum.GLOBAL)
+      if getattr(security_policy_ref, 'region', None) is not None:
+        ref = holder.resources.Parse(
+            args.name,
+            collection='compute.regionSecurityPolicyRules',
+            params={
+                'project': properties.VALUES.core.project.GetOrFail,
+                'region': security_policy_ref.region,
+                'securityPolicy': args.security_policy,
+            })
+      else:
+        ref = holder.resources.Parse(
+            args.name,
+            collection='compute.securityPolicyRules',
+            params={
+                'project': properties.VALUES.core.project.GetOrFail,
+                'securityPolicy': args.security_policy
+            })
+    else:
+      ref = holder.resources.Parse(
+          args.name,
+          collection='compute.securityPolicyRules',
+          params={
+              'project': properties.VALUES.core.project.GetOrFail,
+              'securityPolicy': args.security_policy
+          })
     security_policy_rule = client.SecurityPolicyRule(
         ref, compute_client=compute_client)
     existing_rule = security_policy_rule.Describe()[0]
 
-    new_preconfig_waf_config = self._UpdatePreconfigWafConfig(
+    new_preconfig_waf_config = cls._UpdatePreconfigWafConfig(
         compute_client, existing_rule, args)
     return security_policy_rule.Patch(
         preconfig_waf_config=new_preconfig_waf_config)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class RemovePreconfigWafExclusionBeta(base.UpdateCommand):
+  r"""Remove an exclusion configuration for preconfigured WAF evaluation from a security policy rule.
+
+  *{command}* is used to remove an exclusion configuration for preconfigured WAF
+  evaluation from a security policy rule.
+
+  Note that request field exclusions are associated with a target, which can be
+  a single rule set, or a rule set plus a list of rule IDs under the rule set.
+
+  It is possible to remove request field exclusions at 3 levels:
+  - Remove specific request field exclusions that are associated with a matching
+    target.
+  - Remove all the request field exclusions that are associated with a matching
+    target.
+  - Remove all the request field exclusions that are configured under the
+    security policy rule, regardless of the target.
+
+  ## EXAMPLES
+
+  To remove specific request field exclusions that are associated with the
+  target of 'sqli-stable': ['owasp-crs-v030001-id942110-sqli',
+  'owasp-crs-v030001-id942120-sqli'], run:
+
+    $ {command} 1000 \
+       --security-policy=my-policy \
+       --target-rule-set=sqli-stable \
+       --target-rule-ids=owasp-crs-v030001-id942110-sqli,owasp-crs-v030001-id942120-sqli
+       \
+       --request-header-to-exclude=op=EQUALS,val=abc \
+       --request-header-to-exclude=op=STARTS_WITH,val=xyz \
+       --request-uri-to-exclude=op=EQUALS_ANY
+
+  To remove all the request field exclusions that are associated with the target
+  of 'sqli-stable': ['owasp-crs-v030001-id942110-sqli',
+  'owasp-crs-v030001-id942120-sqli'], run:
+
+    $ {command} 1000 \
+       --security-policy=my-policy \
+       --target-rule-set=sqli-stable \
+       --target-rule-ids=owasp-crs-v030001-id942110-sqli,owasp-crs-v030001-id942120-sqli
+
+  To remove all the request field exclusions that are associated with the target
+  of 'sqli-stable': [], run:
+
+    $ {command} 1000 \
+       --security-policy=my-policy \
+       --target-rule-set=sqli-stable
+
+  To remove all the request field exclusions that are configured under the
+  security policy rule, regardless of the target, run:
+
+    $ {command} 1000 \
+       --security-policy=my-policy \
+       --target-rule-set=*
+  """
+
+  SECURITY_POLICY_ARG = None
+
+  _support_regional_security_policy = False
+
+  @classmethod
+  def Args(cls, parser):
+    RemovePreconfigWafExclusionHelper.Args(
+        parser,
+        support_regional_security_policy=cls._support_regional_security_policy)
+
+  def Run(self, args):
+    return RemovePreconfigWafExclusionHelper.Run(
+        self.ReleaseTrack(),
+        args,
+        support_regional_security_policy=self._support_regional_security_policy)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class RemovePreconfigWafExclusionAlpha(base.UpdateCommand):
+  r"""Remove an exclusion configuration for preconfigured WAF evaluation from a security policy rule.
+
+  *{command}* is used to remove an exclusion configuration for preconfigured WAF
+  evaluation from a security policy rule.
+
+  Note that request field exclusions are associated with a target, which can be
+  a single rule set, or a rule set plus a list of rule IDs under the rule set.
+
+  It is possible to remove request field exclusions at 3 levels:
+  - Remove specific request field exclusions that are associated with a matching
+    target.
+  - Remove all the request field exclusions that are associated with a matching
+    target.
+  - Remove all the request field exclusions that are configured under the
+    security policy rule, regardless of the target.
+
+  ## EXAMPLES
+
+  To remove specific request field exclusions that are associated with the
+  target of 'sqli-stable': ['owasp-crs-v030001-id942110-sqli',
+  'owasp-crs-v030001-id942120-sqli'], run:
+
+    $ {command} 1000 \
+       --security-policy=my-policy \
+       --target-rule-set=sqli-stable \
+       --target-rule-ids=owasp-crs-v030001-id942110-sqli,owasp-crs-v030001-id942120-sqli
+       \
+       --request-header-to-exclude=op=EQUALS,val=abc \
+       --request-header-to-exclude=op=STARTS_WITH,val=xyz \
+       --request-uri-to-exclude=op=EQUALS_ANY
+
+  To remove all the request field exclusions that are associated with the target
+  of 'sqli-stable': ['owasp-crs-v030001-id942110-sqli',
+  'owasp-crs-v030001-id942120-sqli'], run:
+
+    $ {command} 1000 \
+       --security-policy=my-policy \
+       --target-rule-set=sqli-stable \
+       --target-rule-ids=owasp-crs-v030001-id942110-sqli,owasp-crs-v030001-id942120-sqli
+
+  To remove all the request field exclusions that are associated with the target
+  of 'sqli-stable': [], run:
+
+    $ {command} 1000 \
+       --security-policy=my-policy \
+       --target-rule-set=sqli-stable
+
+  To remove all the request field exclusions that are configured under the
+  security policy rule, regardless of the target, run:
+
+    $ {command} 1000 \
+       --security-policy=my-policy \
+       --target-rule-set=*
+  """
+
+  SECURITY_POLICY_ARG = None
+
+  _support_regional_security_policy = True
+
+  @classmethod
+  def Args(cls, parser):
+    RemovePreconfigWafExclusionHelper.Args(
+        parser,
+        support_regional_security_policy=cls._support_regional_security_policy)
+
+  def Run(self, args):
+    return RemovePreconfigWafExclusionHelper.Run(
+        self.ReleaseTrack(),
+        args,
+        support_regional_security_policy=self._support_regional_security_policy)
+

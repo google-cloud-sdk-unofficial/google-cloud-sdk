@@ -151,6 +151,11 @@ class CreateWithContainer(base.CreateCommand):
           subnet_region=args.region)
     stack_type = getattr(args, 'stack_type', None)
     ipv6_network_tier = getattr(args, 'ipv6_network_tier', None)
+    ipv6_address = getattr(args, 'ipv6_address', None)
+    ipv6_prefix_length = getattr(args, 'ipv6_prefix_length', None)
+    internal_ipv6_address = getattr(args, 'internal_ipv6_address', None)
+    internal_ipv6_prefix_length = getattr(args, 'internal_ipv6_prefix_length',
+                                          None)
     return [
         instance_template_utils.CreateNetworkInterfaceMessage(
             resources=holder.resources,
@@ -165,7 +170,11 @@ class CreateWithContainer(base.CreateCommand):
                      args.address),
             network_tier=getattr(args, 'network_tier', None),
             stack_type=stack_type,
-            ipv6_network_tier=ipv6_network_tier)
+            ipv6_network_tier=ipv6_network_tier,
+            ipv6_address=ipv6_address,
+            ipv6_prefix_length=ipv6_prefix_length,
+            internal_ipv6_address=internal_ipv6_address,
+            internal_ipv6_prefix_length=internal_ipv6_prefix_length)
     ]
 
   def _GetScheduling(self, args, client):
@@ -439,6 +448,10 @@ class CreateWithContainerAlpha(CreateWithContainerBeta):
         parser, utils.COMPUTE_ALPHA_API_VERSION)
     instances_flags.AddStackTypeArgs(parser)
     instances_flags.AddIpv6NetworkTierArgs(parser)
+    instances_flags.AddIPv6AddressArgs(parser)
+    instances_flags.AddIPv6PrefixLengthArgs(parser)
+    instances_flags.AddInternalIPv6AddressArgs(parser)
+    instances_flags.AddInternalIPv6PrefixLengthArgs(parser)
 
   def Run(self, args):
     """Issues an InstanceTemplates.Insert request.

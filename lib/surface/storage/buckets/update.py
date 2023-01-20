@@ -87,12 +87,26 @@ def _add_common_args(parser):
   """
   parser.add_argument(
       'url', nargs='+', type=str, help='URLs of the buckets to update.')
+  parser.add_argument(
+      '--add-default-object-acl-grant',
+      metavar='DEFAULT_OBJECT_ACL_GRANT',
+      type=arg_parsers.ArgDict(),
+      help='add default object acl grant .',
+      hidden=True)
+  parser.add_argument(
+      '--remove-default-object-acl-grant',
+      help='remove default object acl grant .',
+      hidden=True)
   cors = parser.add_mutually_exclusive_group()
   cors.add_argument('--cors-file', help=_CORS_HELP_TEXT)
   cors.add_argument(
       '--clear-cors',
       action='store_true',
       help="Clears the bucket's CORS settings.")
+  parser.add_argument(
+      '--default-object-acl-file',
+      help='Sets the default object ACL from file for the bucket.',
+      hidden=True)
   parser.add_argument(
       '--default-storage-class',
       help='Sets the default storage class for the bucket.')
@@ -340,9 +354,12 @@ class Update(base.Command):
 
   def Run(self, args):
     task_status_queue = task_graph_executor.multiprocessing_context.Queue()
+
+    locks_retention_period = getattr(args, 'lock_retention_period', False)
+
     self.exit_code = task_executor.execute_tasks(
         self.update_task_iterator(args),
-        parallelizable=True,
+        parallelizable=not locks_retention_period,
         task_status_queue=task_status_queue,
         progress_manager_args=task_status.ProgressManagerArgs(
             increment_type=task_status.IncrementType.INTEGER,

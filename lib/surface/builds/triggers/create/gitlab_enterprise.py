@@ -26,7 +26,6 @@ from googlecloudsdk.core import properties
 from googlecloudsdk.core import resources
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class CreateGitLab(base.CreateCommand):
   """Create a build trigger for a GitLab Enterprise repository."""
 
@@ -165,7 +164,7 @@ RE2 and described at https://github.com/google/re2/wiki/Syntax.
         api_version='v1',
         params={
             'projectsId': project,
-            'locationsId': args.region,
+            'locationsId': location,
             'triggersId': created_trigger.id,
         })
     log.CreatedResource(trigger_resource)

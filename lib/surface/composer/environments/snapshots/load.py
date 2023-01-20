@@ -39,7 +39,6 @@ DETAILED_HELP = {
 }
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
 class LoadSnapshot(base.Command):
   """Load a snapshot into the environment."""
 

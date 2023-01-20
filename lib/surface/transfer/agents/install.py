@@ -243,6 +243,10 @@ def _get_docker_command(args, project, creds_file_path):
   ]
   if args.enable_multipart is not None:
     agent_args.append('--enable-multipart={}'.format(args.enable_multipart))
+  if getattr(args, 'max_concurrent_small_file_uploads', None):
+    # Flag is in alpha, so it may not always exist on args object.
+    agent_args.append('--entirefile-fr-parallelism={}'.format(
+        args.max_concurrent_small_file_uploads))
   if not args.mount_directories:
     # Needed to mount entire filesystem.
     agent_args.append('--enable-mount-directory')
@@ -293,6 +297,7 @@ def _create_additional_agents(agent_count, agent_id_prefix, docker_command):
     subprocess.run(docker_command_to_run, check=True)
 
 
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Install(base.Command):
   """Install Transfer Service agents."""
 
@@ -396,3 +401,18 @@ class Install(base.Command):
     log.status.Print(
         CHECK_AGENT_CONNECTED_HELP_TEXT_FORMAT.format(
             pool=args.pool, project=project))
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class InstallAlpha(Install):
+  """Install Transfer Service agents."""
+
+  @staticmethod
+  def Args(parser):
+    Install.Args(parser)
+    parser.add_argument(
+        '--max-concurrent-small-file-uploads',
+        type=int,
+        help='Adjust the maximum number of files less than or equal to 32 MiB'
+        ' large that the agent can upload in parallel. Not recommended for'
+        " users unfamiliar with Google Cloud's rate limiting.")

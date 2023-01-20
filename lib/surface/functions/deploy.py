@@ -28,13 +28,14 @@ from googlecloudsdk.command_lib.functions.v2.deploy import env_vars_util
 from googlecloudsdk.command_lib.util.args import labels_util as args_labels_util
 
 
-def _CommonArgs(parser):
+def _CommonArgs(parser, track):
   """Register base flags for this command."""
   # Add a positional "resource argument" for the name of the function
   flags.AddFunctionResourceArg(parser, 'to deploy')
 
   # Add `args.memory` as str. Converted at runtime to int for v1.
-  flags.AddFunctionMemoryFlag(parser)
+  # Add `args.cpu` as flag that requires `args.memory`
+  flags.AddFunctionMemoryAndCpuFlags(parser, track)
 
   # Add args for function properties
   flags.AddAllowUnauthenticatedFlag(parser)
@@ -89,6 +90,7 @@ def _CommonArgs(parser):
   flags.AddTriggerServiceAccountFlag(parser)
   flags.AddGen2Flag(parser)
   flags.AddServeAllTrafficLatestRevisionFlag(parser)
+  flags.AddConcurrencyFlag(parser, track)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
@@ -97,7 +99,7 @@ class Deploy(base.Command):
 
   @staticmethod
   def Args(parser):
-    _CommonArgs(parser)
+    _CommonArgs(parser, base.ReleaseTrack.GA)
 
   def Run(self, args):
     if flags.ShouldUseGen2():
@@ -112,6 +114,11 @@ class Deploy(base.Command):
 class DeployBeta(Deploy):
   """Create or update a Google Cloud Function."""
 
+  @staticmethod
+  def Args(parser):
+    """Register alpha (and implicitly beta) flags for this command."""
+    _CommonArgs(parser, base.ReleaseTrack.BETA)
+
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class DeployAlpha(DeployBeta):
@@ -120,7 +127,7 @@ class DeployAlpha(DeployBeta):
   @staticmethod
   def Args(parser):
     """Register alpha (and implicitly beta) flags for this command."""
-    _CommonArgs(parser)
+    _CommonArgs(parser, base.ReleaseTrack.ALPHA)
 
     # Flags specific to the Alpha track
     flags.AddBuildpackStackFlag(parser)

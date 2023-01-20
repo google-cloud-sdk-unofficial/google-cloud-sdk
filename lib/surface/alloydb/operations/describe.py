@@ -25,9 +25,10 @@ from googlecloudsdk.command_lib.alloydb import flags
 from googlecloudsdk.core import properties
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
+                    base.ReleaseTrack.GA)
 class Describe(base.DescribeCommand):
-  """Describe an AlloyDB operation."""
+  """Describes an AlloyDB operation."""
 
   detailed_help = {
       'DESCRIPTION':

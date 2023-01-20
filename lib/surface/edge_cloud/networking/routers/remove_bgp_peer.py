@@ -36,6 +36,7 @@ EXAMPLES = """\
    """
 
 
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.GA)
 class RemoveBgpPeer(base.UpdateCommand):
   """Remove a list of BGP peers from a Distributed Cloud Edge Network router.
 

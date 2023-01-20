@@ -34,7 +34,8 @@ _INSTANCE_FORMAT = """
 """
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
+                    base.ReleaseTrack.GA)
 class List(base.ListCommand):
   """Lists AlloyDB instances in a given cluster."""
 

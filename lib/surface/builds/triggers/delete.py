@@ -27,7 +27,6 @@ from googlecloudsdk.core import properties
 from googlecloudsdk.core import resources
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Delete(base.DeleteCommand):
   """Delete a build trigger."""
 

@@ -29,6 +29,7 @@ from googlecloudsdk.core import properties
 from googlecloudsdk.core import resources
 
 
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 # TODO(b/224569250): Remove hidden label once GCB repo trigger is released.
 @base.Hidden
 class CreateRepository(base.CreateCommand):

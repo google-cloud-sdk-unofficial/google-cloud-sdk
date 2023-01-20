@@ -21,9 +21,8 @@ from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
 class Snapshots(base.Group):
-  """Saves and loads snapshots of environment.
+  """Save and load snapshots of environment.
 
   The {command} command group saves and loads snapshots of Cloud Composer
   environments.

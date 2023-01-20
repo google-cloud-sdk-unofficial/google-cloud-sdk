@@ -26,7 +26,6 @@ from googlecloudsdk.core import properties
 from googlecloudsdk.core import resources
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class CreatePubSub(base.CreateCommand):
   """Create a build trigger with a Pub/Sub trigger event."""
 

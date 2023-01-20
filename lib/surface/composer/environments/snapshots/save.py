@@ -39,7 +39,6 @@ DETAILED_HELP = {
 }
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
 class SaveSnapshot(base.Command):
   """Save a snapshot of the environment."""
 

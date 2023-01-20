@@ -156,6 +156,8 @@ class Run(base.ListCommand):
           file_to_upload,
           None,
           destination_object=util.GetRelativeDevicePath(path))
+    if getattr(args, 'robo_script', None):
+      bucket_ops.UploadFileToGcs(args.robo_script, 'application/json')
     bucket_ops.LogGcsResultsUrl()
 
     tr_history_picker = history_picker.ToolResultsHistoryPicker(

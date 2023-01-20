@@ -47,6 +47,7 @@ EXAMPLES = """\
    """
 
 
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Update(base.UpdateCommand):
   """Update a Distributed Cloud Edge Network router.
 

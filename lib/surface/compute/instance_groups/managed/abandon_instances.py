@@ -109,7 +109,6 @@ regional groups when the gcloud command-line tool wasn't able to resolve the
 zone from the instance name.
 
 For a more detailed overview of how abandoning instances from a managed instance
-group works, refer to this section:
-https://cloud.google.com/compute/docs/instance-groups/creating-groups-of-managed-instances#abandoning_instances
+group works, see [Abandoning instances from a MIG](https://cloud.google.com/compute/docs/instance-groups/add-remove-vms-in-mig#abandoning_instances).
 """,
 }

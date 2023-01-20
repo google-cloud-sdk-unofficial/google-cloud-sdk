@@ -40,8 +40,7 @@ $ {command} --location=us-west1 --platform-version=PLATFORM_VERSION --fleet-memb
 """
 
 
-@base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.GA)
 class Import(base.Command):
   """Import fleet membership for an Attached cluster."""
 

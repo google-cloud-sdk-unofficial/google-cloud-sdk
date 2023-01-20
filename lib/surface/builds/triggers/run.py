@@ -26,7 +26,6 @@ from googlecloudsdk.core import properties
 from googlecloudsdk.core import resources
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Run(base.Command):
   """Run a build trigger."""
 
@@ -48,7 +47,7 @@ class Run(base.Command):
         'Build Trigger.',
         required=True).AddToParser(parser)
 
-    revision_config = parser.add_mutually_exclusive_group()
+    revision_config = parser.add_mutually_exclusive_group(required=True)
     revision_config.add_argument('--branch', help='Branch to run.')
     revision_config.add_argument('--tag', help='Tag to run.')
     revision_config.add_argument('--sha', help='SHA to run.')
