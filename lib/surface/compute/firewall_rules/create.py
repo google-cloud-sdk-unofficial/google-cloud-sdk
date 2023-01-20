@@ -198,14 +198,14 @@ incoming/outgoing traffic.
     'EXAMPLES': """
 To create a firewall rule allowing incoming TCP traffic on port 8080, run:
 
-  $ {command} FooService --allow=tcp:8080
+  $ {command} example-service --allow=tcp:8080
       --description="Allow incoming traffic on TCP port 8080" --direction=INGRESS
 
 To create a firewall rule that allows TCP traffic through port 80 and
 determines a list of specific IP address blocks that are allowed to make
 inbound connections, run:
 
-  $ {command} "tcp-rule" --allow=tcp:80
+  $ {command} tcp-rule --allow=tcp:80
       --source-ranges="10.0.0.0/22,10.0.0.0/14" --description="Narrowing TCP traffic"
 
 To list existing firewall rules, run:

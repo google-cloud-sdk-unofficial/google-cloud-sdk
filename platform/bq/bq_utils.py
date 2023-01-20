@@ -2,6 +2,7 @@
 """A library of functions to handle bq flags consistently."""
 
 import codecs
+import http.client
 import json
 import os
 import pkgutil
@@ -38,12 +39,13 @@ _BIGQUERY_TOS_MESSAGE = (
     'quickstart-command-line\n\n'
     'Once you have completed the sign-up process, please try your command '
     'again.')
+_VERSION_FILENAME = 'VERSION'
 
 
 def _GetVersion():
   """Returns content of VERSION file found in same dir as the cli binary."""
   root = 'bq_utils'
-  return six.ensure_str(pkgutil.get_data(root, 'VERSION'))
+  return six.ensure_str(pkgutil.get_data(root, _VERSION_FILENAME)).strip()
 
 
 VERSION_NUMBER = _GetVersion()
@@ -210,7 +212,7 @@ def ProcessError(
           '\n\n'
           'If this problem still occurs, you may have encountered a bug '
           'in the bigquery client.')
-    elif (isinstance(err, six.moves.http_client.HTTPException) or
+    elif (isinstance(err, http.client.HTTPException) or
           isinstance(err, googleapiclient.errors.Error) or
           isinstance(err, httplib2.HttpLib2Error)):
       message_prefix = (

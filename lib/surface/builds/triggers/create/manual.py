@@ -49,7 +49,6 @@ class CreateManual(base.CreateCommand):
     flag_config = trigger_utils.AddTriggerArgs(parser)
     trigger_utils.AddBuildConfigArgs(flag_config)
     trigger_utils.AddGitRepoSource(flag_config)
-    trigger_utils.AddFilterArg(flag_config)
 
   def Run(self, args):
     """This is what gets called when the user runs this command.
@@ -124,7 +123,5 @@ def ParseTriggerFromFlags(args):
   default_image = 'gcr.io/%s/gcb-%s:$COMMIT_SHA' % (project, args.name)
   trigger_utils.ParseBuildConfigArgs(
       trigger, args, messages, default_image, need_repo=True)
-
-  trigger.filter = args.subscription_filter
 
   return trigger

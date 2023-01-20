@@ -21,6 +21,7 @@ from __future__ import unicode_literals
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.storage import errors_util
+from googlecloudsdk.command_lib.storage import flags
 from googlecloudsdk.command_lib.storage import storage_url
 from googlecloudsdk.command_lib.storage import user_request_args_factory
 from googlecloudsdk.command_lib.storage.resources import resource_reference
@@ -106,6 +107,18 @@ class Create(base.Command):
         ' cannot be deleted until they\'ve been stored for the specified'
         ' length of time. Default is no retention period. Only available'
         ' for Cloud Storage using the JSON API.')
+    parser.add_argument(
+        '--placement',
+        metavar='REGION',
+        type=arg_parsers.ArgList(min_length=2,
+                                 max_length=2,
+                                 custom_delim_char=','),
+        help=('A comma-separated list of exactly 2 regions that form the custom'
+              ' dual-region. Only regions within the same continent are or will'
+              ' ever be valid. Invalid location pairs (such as mixed-continent,'
+              ' or with unsupported regions) will return an error.'))
+    flags.add_additional_headers_flag(parser)
+    flags.add_recovery_point_objective_flag(parser)
 
   def Run(self, args):
     url = storage_url.storage_url_from_string(args.url)

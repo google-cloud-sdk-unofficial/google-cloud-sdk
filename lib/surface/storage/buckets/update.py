@@ -89,13 +89,15 @@ def _add_common_args(parser):
       'url', nargs='+', type=str, help='URLs of the buckets to update.')
   parser.add_argument(
       '--add-default-object-acl-grant',
+      action='append',
       metavar='DEFAULT_OBJECT_ACL_GRANT',
       type=arg_parsers.ArgDict(),
-      help='add default object acl grant .',
+      help='Adds default object ACL grant.',
       hidden=True)
   parser.add_argument(
       '--remove-default-object-acl-grant',
-      help='remove default object acl grant .',
+      action='append',
+      help='Removes default object ACL grant.',
       hidden=True)
   cors = parser.add_mutually_exclusive_group()
   cors.add_argument('--cors-file', help=_CORS_HELP_TEXT)
@@ -209,7 +211,7 @@ def _add_common_args(parser):
       help='Clears the object retention period for a bucket.')
   parser.add_argument(
       '--lock-retention-period',
-      action=arg_parsers.StoreTrueFalseAction,
+      action='store_true',
       help='Locks an unlocked retention policy on the buckets. Caution: A'
       ' locked retention policy cannot be removed from a bucket or reduced in'
       ' duration. Once locked, deleting the bucket is the only way to'
@@ -253,9 +255,11 @@ def _add_common_args(parser):
       '--clear-web-error-page',
       action='store_true',
       help='Clear website error page if bucket is hosting website.')
+  flags.add_additional_headers_flag(parser)
   flags.add_continue_on_error_flag(parser)
   flags.add_predefined_acl_flag(parser)
   flags.add_predefined_default_object_acl_flag(parser)
+  flags.add_recovery_point_objective_flag(parser)
 
 
 def _add_alpha_args(parser):
@@ -276,12 +280,16 @@ def _add_alpha_args(parser):
       ' for more fine-grained control.')
   parser.add_argument(
       '--add-acl-grant',
+      action='append',
+      metavar='ACL_GRANT',
+      type=arg_parsers.ArgDict(),
       hidden=True,
       help='JSON object in the format accepted by your cloud provider.'
       ' For example, for GCS, `--add-acl-grant=entity=user-tim@gmail.com,'
       'role=OWNER`')
   parser.add_argument(
       '--remove-acl-grant',
+      action='append',
       hidden=True,
       help='JSON object in the format accepted by your cloud provider.'
       ' For example, for GCS, `--remove-acl-grant=ENTITY`, where `ENTITY`'
@@ -294,10 +302,12 @@ def _is_initial_bucket_metadata_needed(user_request_args):
   resource_args = user_request_args.resource_args
   if not resource_args:
     return False
-  return any([
-      resource_args.acl_grants_to_add, resource_args.acl_grants_to_remove,
-      resource_args.labels_to_append, resource_args.labels_to_remove
-  ])
+  return user_request_args_factory.adds_or_removes_acls(
+      user_request_args) or any([
+          resource_args.labels_file_path,
+          resource_args.labels_to_append,
+          resource_args.labels_to_remove,
+      ])
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)

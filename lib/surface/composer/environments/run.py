@@ -81,15 +81,15 @@ class Run(base.Command):
         'subcommand',
         metavar='SUBCOMMAND',
         choices=list(cls.SUBCOMMAND_ALLOWLIST.keys()),
-        help=(
-            'The Airflow CLI subcommand to run. Available subcommands '
-            'include (listed with Airflow versions that support): {} '
-            '(see {} for more info).').format(
-                ', '.join(
-                    sorted([
-                        '{} [{}, {})'.format(cmd, r[0] or '**', r[1] or '**')
-                        for cmd, r in cls.SUBCOMMAND_ALLOWLIST.items()
-                    ])), doc_url))
+        help=('The Airflow CLI subcommand to run. Available subcommands '
+              'include (listed with Airflow versions that support): {} '
+              '(see {} for more info).').format(
+                  ', '.join(
+                      sorted([
+                          '{} [{}, {})'.format(cmd, r.from_version or '**',
+                                               r.to_version or '**')
+                          for cmd, r in cls.SUBCOMMAND_ALLOWLIST.items()
+                      ])), doc_url))
     parser.add_argument(
         'subcommand_nested',
         metavar='SUBCOMMAND_NESTED',
@@ -122,30 +122,28 @@ class Run(base.Command):
         ('dags', 'backfill'): None,
         ('dags', 'delete'): None,
         ('tasks', 'clear'): None,
+        ('db', 'clean'): None,
     }
 
     # Handle nested commands like "dags list". There are two ways to execute
     # nested Airflow subcommands via gcloud:
     # 1. {command} myenv dags delete -- dag_id
     # 2. {command} myenv dags -- delete dag_id
-    subcommand_two_level = None
-    if args.subcommand_nested:
-      subcommand_two_level = (args.subcommand, args.subcommand_nested)
-    elif args.cmd_args:
-      # It is possible that first element of args.cmd_args will not be a nested
-      # subcommand, but that is ok as it will not break entire logic.
-      # So, essentially there can be subcommand_two_level =
-      # ['info', '--anonymize'].
-      subcommand_two_level = (args.subcommand, args.cmd_args[0])
+    subcommand_two_level = self._GetSubcommandTwoLevel(args)
 
     def _IsPromptingSubcommand(s):
-      return (s in prompting_subcommands and
-              (prompting_subcommands[s] is None or
-               image_versions_command_util.CompareVersions(
-                   airflow_version, prompting_subcommands[s]) >= 0))
+      if s in prompting_subcommands:
+        pass
+      elif s[0] in prompting_subcommands:
+        s = s[0]
+      else:
+        return False
 
-    if ((_IsPromptingSubcommand(args.subcommand) or subcommand_two_level and
-         _IsPromptingSubcommand(subcommand_two_level)) and
+      return (prompting_subcommands[s] is None or
+              image_versions_command_util.CompareVersions(
+                  airflow_version, prompting_subcommands[s]) >= 0)
+
+    if (_IsPromptingSubcommand(subcommand_two_level) and
         set(args.cmd_args or []).isdisjoint({'-y', '--yes'})):
       args.cmd_args = args.cmd_args or []
       args.cmd_args.append('--yes')
@@ -169,20 +167,7 @@ class Run(base.Command):
       quoted_args = ['"{}"'.format(a) for a in cmd_args]
       return '[{}]'.format(', '.join(quoted_args))
 
-    # Handle nested commands like "users create". There are two ways to execute
-    # nested Airflow subcommands via gcloud:
-    # 1. {command} myenv users create -- -u User
-    # 2. {command} myenv users -- create -u User
-    # TODO (b/185343261): avoid code duplication with BypassConfirmationPrompt.
-    subcommand_two_level = None
-    if args.subcommand_nested:
-      subcommand_two_level = (args.subcommand, args.subcommand_nested)
-    elif args.cmd_args:
-      # It is possible that first element of args.cmd_args will not be a nested
-      # subcommand, but that is ok as it will not break entire logic.
-      # So, essentially there can be subcommand_two_level =
-      # ['info', '--anonymize'].
-      subcommand_two_level = (args.subcommand, args.cmd_args[0])
+    subcommand_two_level = self._GetSubcommandTwoLevel(args)
 
     # For now `required_cmd_args` contains only two-level Airflow commands,
     # but potentially in the future it could be extended for one-level
@@ -201,16 +186,74 @@ class Run(base.Command):
     if args.subcommand in command_util.SUBCOMMAND_DEPRECATION:
       response = console_io.PromptContinue(
           message=DEPRECATION_WARNING.format(args.subcommand),
-          default=False, cancel_on_no=True)
+          default=False,
+          cancel_on_no=True)
     return response
 
+  def _GetSubcommandTwoLevel(self, args):
+    """Extract and return two level nested Airflow subcommand in unified shape.
+
+    There are two ways to execute nested Airflow subcommands via gcloud, e.g.:
+    1. {command} myenv users create -- -u User
+    2. {command} myenv users -- create -u User
+    The method returns here (users, create) in both cases.
+
+    It is possible that first element of args.cmd_args will not be a nested
+    subcommand, but that is ok as it will not break entire logic.
+    So, essentially there can be subcommand_two_level = ['info', '--anonymize'].
+
+    Args:
+      args: argparse.Namespace, An object that contains the values for the
+        arguments specified in the .Args() method.
+
+    Returns:
+      subcommand_two_level: two level subcommand in unified format
+    """
+
+    subcommand_two_level = (args.subcommand, None)
+
+    if args.subcommand_nested:
+      subcommand_two_level = (args.subcommand, args.subcommand_nested)
+    elif args.cmd_args:
+      subcommand_two_level = (args.subcommand, args.cmd_args[0])
+
+    return subcommand_two_level
+
   def CheckSubcommandAirflowSupport(self, args, airflow_version):
-    from_version, to_version = self.SUBCOMMAND_ALLOWLIST[args.subcommand]
-    if not image_versions_command_util.IsVersionInRange(
-        airflow_version, from_version, to_version):
+
+    def _CheckIsSupportedSubcommand(command, airflow_version, from_version,
+                                    to_version):
+      if not image_versions_command_util.IsVersionInRange(
+          airflow_version, from_version, to_version):
+        _RaiseLackOfSupportError(command, airflow_version)
+
+    def _RaiseLackOfSupportError(command, airflow_version):
       raise command_util.Error(
-          'The subcommand "{}" is not supported for Composer environments with '
-          'Airflow version {}.'.format(args.subcommand, airflow_version),)
+          'The subcommand "{}" is not supported for Composer environments'
+          ' with Airflow version {}.'.format(command, airflow_version),)
+
+    subcommand, subcommand_nested = self._GetSubcommandTwoLevel(args)
+    _CheckIsSupportedSubcommand(
+        subcommand, airflow_version,
+        self.SUBCOMMAND_ALLOWLIST[args.subcommand].from_version,
+        self.SUBCOMMAND_ALLOWLIST[args.subcommand].to_version)
+
+    if not self.SUBCOMMAND_ALLOWLIST[
+        args.subcommand].allowed_nested_subcommands:
+      return
+
+    two_level_subcommand_string = '{} {}'.format(subcommand, subcommand_nested)
+
+    if subcommand_nested in self.SUBCOMMAND_ALLOWLIST[
+        args.subcommand].allowed_nested_subcommands:
+      _CheckIsSupportedSubcommand(
+          two_level_subcommand_string, airflow_version,
+          self.SUBCOMMAND_ALLOWLIST[args.subcommand]
+          .allowed_nested_subcommands[subcommand_nested].from_version,
+          self.SUBCOMMAND_ALLOWLIST[args.subcommand]
+          .allowed_nested_subcommands[subcommand_nested].to_version)
+    else:
+      _RaiseLackOfSupportError(two_level_subcommand_string, airflow_version)
 
   def CheckSubcommandNestedAirflowSupport(self, args, airflow_version):
     if (args.subcommand_nested and
@@ -289,4 +332,3 @@ class Run(base.Command):
             out_func=log.out.Print)
       except command_util.KubectlError as e:
         raise self.ConvertKubectlError(e, env_obj)
-

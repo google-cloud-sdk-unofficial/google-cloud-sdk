@@ -18,15 +18,11 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
-from apitools.base.py import exceptions as apitools_exceptions
 from googlecloudsdk.api_lib.container.fleet.policycontroller import status_api_utils
 from googlecloudsdk.calliope import base as calliope_base
-from googlecloudsdk.command_lib.container.fleet import api_util as fleet_api_util
 from googlecloudsdk.command_lib.container.fleet import resources
-from googlecloudsdk.command_lib.container.fleet.policycontroller import utils
 from googlecloudsdk.core import exceptions
 from googlecloudsdk.core import properties
-import six
 
 
 def FormatViolation(violation, include_membership=False):
@@ -49,82 +45,6 @@ def FormatViolation(violation, include_membership=False):
   return formatted_violation
 
 
-def GetMembershipConstraint(client, messages, constraint_name, project_id,
-                            membership, release_track):
-  """Returns a formatted membership constraint."""
-  try:
-    membership_obj = fleet_api_util.GetMembership(membership,
-                                                  release_track)
-  except apitools_exceptions.HttpNotFoundError:
-    raise exceptions.Error(
-        'Membership [{}] was not found in the fleet.'
-        .format(membership))
-
-  try:
-    request = messages.AnthospolicycontrollerstatusPaProjectsMembershipConstraintsGetRequest(
-        name='projects/{}/membershipConstraints/{}/{}'.format(
-            project_id, constraint_name, membership_obj.uniqueId))
-    response = client.projects_membershipConstraints.Get(request)
-  except apitools_exceptions.HttpNotFoundError:
-    raise exceptions.Error(
-        'Constraint [{}] was not found in Fleet membership [{}].'
-        .format(constraint_name, membership))
-
-  return {
-      'name':
-          response.constraintRef.name,
-      'template':
-          response.constraintRef.constraintTemplateName,
-      'enforcementAction':
-          utils.get_enforcement_action_label(
-              six.text_type(response.spec.enforcementAction)),
-      'membership': membership,
-      'violationCount':
-          response.status.numViolations or 0,
-      'violations': [],
-      'match':
-          response.spec.kubernetesMatch or {},
-      'parameters':
-          response.spec.parameters or {}
-  }
-
-
-def GetFleetConstraint(client, messages, constraint_name, project_id):
-  """Returns a formatted Fleet constraint."""
-  try:
-    request = messages.AnthospolicycontrollerstatusPaProjectsFleetConstraintsGetRequest(
-        name='projects/{}/fleetConstraints/{}'.format(
-            project_id, constraint_name))
-    response = client.projects_fleetConstraints.Get(request)
-  except apitools_exceptions.HttpNotFoundError:
-    raise exceptions.Error(
-        'Constraint [{}] was not found in the fleet.'
-        .format(constraint_name))
-  constraint = {
-      'name': response.ref.name,
-      'template': response.ref.constraintTemplateName,
-      'violations': [],
-      'violationCount': response.numViolations or 0,
-      'memberships': [],
-      'membershipCount': response.numMemberships or 0
-  }
-
-  membership_constraints_request = messages.AnthospolicycontrollerstatusPaProjectsMembershipConstraintsListRequest(
-      parent='projects/{}'.format(project_id))
-  membership_constraints_response = client.projects_membershipConstraints.List(
-      membership_constraints_request)
-
-  for membership_constraint in membership_constraints_response.membershipConstraints:
-    if constraint_name == '{}/{}'.format(
-        membership_constraint.constraintRef.constraintTemplateName,
-        membership_constraint.constraintRef.name):
-      constraint['memberships'].append(
-          membership_constraint.membershipRef.name)
-
-  return constraint
-
-
-@calliope_base.Hidden
 @calliope_base.ReleaseTracks(calliope_base.ReleaseTrack.ALPHA)
 class Describe(calliope_base.DescribeCommand):
   """Describe a Policy Controller constraint from the Policy Library.
@@ -174,13 +94,13 @@ class Describe(calliope_base.DescribeCommand):
       if len(memberships) != 1:
         raise exceptions.Error('Please specify a single membership name.')
       membership_name = memberships[0]
-      constraint = GetMembershipConstraint(client, messages,
-                                           constraint_name,
-                                           project_id, membership_name,
-                                           self.ReleaseTrack())
+      constraint = status_api_utils.GetMembershipConstraint(
+          client, messages, constraint_name, project_id, membership_name,
+          self.ReleaseTrack())
     else:
-      constraint = GetFleetConstraint(client, messages, constraint_name,
-                                      project_id)
+      constraint = status_api_utils.GetFleetConstraint(client, messages,
+                                                       constraint_name,
+                                                       project_id)
 
     violations_request = messages.AnthospolicycontrollerstatusPaProjectsMembershipConstraintAuditViolationsListRequest(
         parent='projects/{}'.format(project_id))

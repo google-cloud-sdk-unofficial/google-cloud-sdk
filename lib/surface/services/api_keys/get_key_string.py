@@ -23,9 +23,22 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.services import common_flags
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class GetKeyString(base.DescribeCommand):
-  """Get key string of an API key."""
+  """Get the key string of an API key.
+
+   ## EXAMPLES
+
+
+     To get the key string of API key `1234`, run:
+
+      $ {command} 1234
+
+     To get the key string of API key `1234` in project
+     `myproject` using the fully qualified API key name, run:
+
+      $ {command} projects/myproject/locations/global/keys/1234
+  """
 
   @staticmethod
   def Args(parser):

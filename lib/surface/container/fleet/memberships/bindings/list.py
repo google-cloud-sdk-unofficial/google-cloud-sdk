@@ -26,7 +26,8 @@ from googlecloudsdk.core import properties
 
 
 @base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
+                    base.ReleaseTrack.GA)
 class List(base.ListCommand):
   """List Bindings in a Membership.
 
@@ -66,7 +67,7 @@ class List(base.ListCommand):
         help='Name of the Membership location to list Bindings from.')
 
   def Run(self, args):
-    fleetclient = client.FleetClient(release_track=base.ReleaseTrack.ALPHA)
+    fleetclient = client.FleetClient(release_track=self.ReleaseTrack())
     project = args.project
     if project is None:
       project = properties.VALUES.core.project.Get()

@@ -24,4 +24,4 @@ from googlecloudsdk.calliope import base
 @base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class TelcoAutomationOrchestrationClusterAlpha(base.Group):
-  """Manage Telco Automation Orchestration Cluster instances."""
+  """Manage telco automation orchestration cluster instances."""

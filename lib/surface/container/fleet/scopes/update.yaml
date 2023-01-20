@@ -22,7 +22,6 @@
     # - googlecloudsdk.command_lib.container.fleet.scopes.rollout_sequencing.util:ValidateAsync
     ALPHA:
       api_version: v1alpha
-
   response:
     modify_response_hooks:
     - googlecloudsdk.command_lib.container.fleet.scopes.rollout_sequencing.util:UpdateClusterUpgrade
@@ -42,8 +41,6 @@
         hidden: true
         help_text: |
           Rollout Sequencing
-
-          These flags are not compatible with the `--async` flag.
         params:
         - !REF googlecloudsdk.command_lib.container.fleet.scopes.rollout_sequencing.flags:default_upgrade_soaking
         - group:
@@ -53,9 +50,27 @@
               type: bool
               help_text: |
                 Removes soaking time overrides for all upgrades propagating through the current
-                scope.
+                scope. Consequently, all upgrades will follow the soak time configured by
+                `--default-upgrade-soaking` until new overrides are configured with
+                `--add_upgrade_soaking_override` and `--upgrade_selector`.
+
+                To remove all soaking time overrides configured for ``SCOPE_NAME'', run:
+
+                  $ {command} SCOPE_NAME --remove-upgrade-soaking-overrides
             - group:
-                help_text: Upgrade soaking override
+                help_text: |
+                  Upgrade soaking override.
+
+                  Defines a specific soaking time override for a particular upgrade propagating
+                  through the current scope that supercedes the default soaking duration configured
+                  by `--default-upgrade-soaking`.
+
+                  To set an upgrade soaking override of 12 hours for the upgrade with name,
+                  `k8s_control_plane`, and version, `1.23.1-gke.1000`, run:
+
+                    $ {command} SCOPE_NAME \
+                      --add-upgrade-soaking-override=12h \
+                      --upgrade-selector=name="k8s_control_plane",version="1.23.1-gke.1000"
                 params:
                 - !REF googlecloudsdk.command_lib.container.fleet.scopes.rollout_sequencing.flags:add_upgrade_soaking_override
                 - !REF googlecloudsdk.command_lib.container.fleet.scopes.rollout_sequencing.flags:upgrade_selector
@@ -66,8 +81,12 @@
             - arg_name: reset-upstream-scope
               type: bool
               help_text: |
-                Clears the relationship between the current scope and its upstream scopes in the
+                Clears the relationship between the current scope and its upstream scope in the
                 rollout sequence.
+
+                To remove the link between ``SCOPE_NAME'' and its upstream scope, run:
+
+                  $ {command} SCOPE_NAME --reset-upstream-scope
 
   update:
     read_modify_update: true

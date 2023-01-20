@@ -84,7 +84,7 @@ RE2 and described at https://github.com/google/re2/wiki/Syntax.
         help='Require a repository collaborator or owner to comment \'/gcbrun\' on a pull request before running the build.'
     )
 
-    trigger_utils.AddGitLabEnterpriseBuildConfigArgs(flag_config)
+    trigger_utils.AddBuildConfigArgs(flag_config)
     trigger_utils.AddRepoEventArgs(flag_config)
 
   def ParseTriggerFromFlags(self, args):

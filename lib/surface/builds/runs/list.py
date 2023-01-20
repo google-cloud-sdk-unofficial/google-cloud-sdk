@@ -44,6 +44,16 @@ class List(base.ListCommand):
   def Args(parser):
     parser.display_info.AddUriFunc(_GetResultURI)
     run_flags.AddsRegionResourceArg(parser, False)  # Not required.
+    parser.display_info.AddFormat("""
+        table(
+            recordSummaries[0].recordData.name.segment(5):label=ID,
+            recordSummaries[0].recordData.name.segment(3):label=REGION,
+            recordSummaries[0].recordData.createTime.date('%Y-%m-%dT%H:%M:%S%Oz', undefined='-'),
+            result_duration(undefined="-").slice(2:).join(""):label=DURATION,
+            recordSummaries[0].recordData.workflow.yesno(no="-"):label=WORKFLOW,
+            result_status():label=STATUS
+        )
+    """)
 
   def Run(self, args):
     """This is what gets called when the user runs this command."""

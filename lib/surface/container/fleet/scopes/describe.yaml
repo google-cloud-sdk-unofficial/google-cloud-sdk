@@ -1,4 +1,4 @@
-- release_tracks: [ALPHA]
+- release_tracks: [ALPHA, BETA, GA]
   hidden: true
   help_text:
     brief: Describe a fleet scope.
@@ -17,6 +17,10 @@
     collection: gkehub.projects.locations.scopes
     ALPHA:
       api_version: v1alpha
+    BETA:
+      api_version: v1beta
+    GA:
+      api_version: v1
 
   response:
     modify_response_hooks:
@@ -29,13 +33,19 @@
 
     params:
     - group:
+        release_tracks: [ALPHA]
         hidden: true
         mutex: true
         help_text: Rollout Sequencing
         params:
         - arg_name: show-cluster-upgrade
           type: bool
-          help_text: Shows the cluster upgrade feature information for the current scope.
+          help_text: |
+            Shows the cluster upgrade feature information for the current scope.
+
+            To view the cluster upgrade feature information for ``SCOPE_NAME'', run:
+
+              $ {command} SCOPE_NAME --show-cluster-upgrade
         - arg_name: show-linked-cluster-upgrade
           type: bool
           help_text: |
@@ -44,3 +54,8 @@
             caller has permission to view the upstream and downstream scopes that exist in other
             fleets). This displays cluster upgrade information for scopes in the current scope's
             rollout sequence in order of furthest upstream to downstream.
+
+            To view the cluster upgrade feature information for the rollout sequence containing
+            ``SCOPE_NAME'', run:
+
+              $ {command} SCOPE_NAME --show-linked-cluster-upgrade

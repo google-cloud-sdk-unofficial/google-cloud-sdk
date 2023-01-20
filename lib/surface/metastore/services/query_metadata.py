@@ -111,8 +111,12 @@ class Query(base.Command):
         not operation_result.additionalProperties or
         len(operation_result.additionalProperties) < 2):
       return None
-    result_manifest_uri = operation_result.additionalProperties[
-        1].value.string_value
+    result_manifest_uri = None
+    for message in operation_result.additionalProperties:
+      if message.key == 'resultManifestUri':
+        result_manifest_uri = message.value.string_value
+    if result_manifest_uri is None:
+      return None
     gcs_client = storage_api.StorageClient()
     result_manifest_json = json.load(
         io.TextIOWrapper(

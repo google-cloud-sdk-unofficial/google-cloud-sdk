@@ -117,6 +117,7 @@ class Cat(base.Command):
             If the bytes are out of range of the object,
             then nothing is printed"""))
 
+    flags.add_additional_headers_flag(parser)
     flags.add_encryption_flags(parser, command_only_reads_data=True)
 
   def Run(self, args):

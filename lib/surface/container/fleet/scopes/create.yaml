@@ -1,4 +1,4 @@
-- release_tracks: [ALPHA]
+- release_tracks: [ALPHA, BETA, GA]
   hidden: true
   help_text:
     brief: Create a new fleet scope.
@@ -15,6 +15,10 @@
     - googlecloudsdk.command_lib.container.fleet.scopes.rollout_sequencing.util:ValidateAsync
     ALPHA:
       api_version: v1alpha
+    BETA:
+      api_version: v1beta
+    GA:
+      api_version: v1
 
   response:
     modify_response_hooks:
@@ -31,6 +35,7 @@
 
     params:
     - group:
+        release_tracks: [ALPHA]
         hidden: true
         help_text: |
           Rollout Sequencing
@@ -39,7 +44,19 @@
         params:
         - !REF googlecloudsdk.command_lib.container.fleet.scopes.rollout_sequencing.flags:default_upgrade_soaking
         - group:
-            help_text: Upgrade soaking override
+            help_text: |
+              Upgrade soaking override.
+
+              Defines a specific soaking time override for a particular upgrade propagating through
+              the current scope that supercedes the default soaking duration configured by
+              `--default-upgrade-soaking`.
+
+              To set an upgrade soaking override of 12 hours for the upgrade with name,
+              `k8s_control_plane`, and version, `1.23.1-gke.1000`, run:
+
+                $ {command} SCOPE_NAME \
+                  --add-upgrade-soaking-override=12h \
+                  --upgrade-selector=name="k8s_control_plane",version="1.23.1-gke.1000"
             params:
             - !REF googlecloudsdk.command_lib.container.fleet.scopes.rollout_sequencing.flags:add_upgrade_soaking_override
             - !REF googlecloudsdk.command_lib.container.fleet.scopes.rollout_sequencing.flags:upgrade_selector

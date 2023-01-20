@@ -170,14 +170,32 @@ class Update(base.UpdateCommand):
         client.messages.Topic.LabelsValue,
         orig_labels_thunk=lambda: client.Get(topic_ref).labels)
 
+    schema = getattr(args, 'schema', None)
+    if schema:
+      schema = args.CONCEPTS.schema.Parse().RelativeName()
+    message_encoding_list = getattr(args, 'message_encoding', None)
+    message_encoding = None
+    if message_encoding_list:
+      message_encoding = message_encoding_list[0]
+    first_revision_id = getattr(args, 'first_revision_id', None)
+    last_revision_id = getattr(args, 'last_revision_id', None)
     result = None
+    clear_schema_settings = getattr(args, 'clear_schema_settings', None)
     try:
-      result = client.Patch(topic_ref, labels_update.GetOrNone(),
-                            _GetKmsKeyNameFromArgs(args),
-                            message_retention_duration,
-                            clear_message_retention_duration,
-                            args.recompute_message_storage_policy,
-                            args.message_storage_policy_allowed_regions)
+      result = client.Patch(
+          topic_ref,
+          labels_update.GetOrNone(),
+          _GetKmsKeyNameFromArgs(args),
+          message_retention_duration,
+          clear_message_retention_duration,
+          args.recompute_message_storage_policy,
+          args.message_storage_policy_allowed_regions,
+          schema=schema,
+          message_encoding=message_encoding,
+          first_revision_id=first_revision_id,
+          last_revision_id=last_revision_id,
+          clear_schema_settings=clear_schema_settings,
+      )
     except topics.NoFieldsSpecifiedError:
       operations = [
           'clear_labels', 'update_labels', 'remove_labels',
@@ -195,6 +213,11 @@ class Update(base.UpdateCommand):
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class UpdateBeta(Update):
   """Updates an existing Cloud Pub/Sub topic."""
+
+  @staticmethod
+  def Args(parser):
+    flags.AddSchemaSettingsFlags(parser, with_revisions=True, is_update=True)
+    return Update.Args(parser)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)

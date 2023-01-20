@@ -2,11 +2,11 @@
 
   help_text:
     brief: |
-      List workstation configs.
+      List workstation configurations.
     description: |
-      List all workstation configs under the specified cluster.
+      List all workstation configurations under the specified cluster.
     examples: |
-      To list workstation configs, run:
+      To list workstation configurations, run:
 
         $ {command}
 
@@ -14,7 +14,7 @@
     resource:
       spec: !REF googlecloudsdk.command_lib.workstations.resources:cluster
       help_text: |
-        The cluster of the configs to display.
+        The cluster of the configurations to display.
 
   request:
     api_version: v1beta

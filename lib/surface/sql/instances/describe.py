@@ -27,7 +27,6 @@ from googlecloudsdk.api_lib.sql import validate
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions as calliope_exceptions
 from googlecloudsdk.command_lib.sql import flags
-from googlecloudsdk.command_lib.sql import instances as instance_command_util
 from googlecloudsdk.core import properties
 import six.moves.http_client
 
@@ -90,9 +89,6 @@ class Get(base.DescribeCommand):
       instance = sql_client.instances.Get(
           sql_messages.SqlInstancesGetRequest(
               project=instance_ref.project, instance=instance_ref.instance))
-      # TODO(b/122660263): Remove when V1 instances are no longer supported.
-      if instance_api_util.IsInstanceV1(sql_messages, instance):
-        instance_command_util.ShowV1DeprecationWarning()
       return instance_api_util.DatabaseInstancePresentation(instance)
     except apitools_exceptions.HttpError as error:
       if error.status_code == six.moves.http_client.FORBIDDEN:

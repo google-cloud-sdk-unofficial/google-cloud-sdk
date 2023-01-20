@@ -27,7 +27,7 @@ from googlecloudsdk.calliope import base
 DETAILED_HELP = {
     'EXAMPLES':
         """
-    To list capacity information for all devices which are available for
+    To list capacity information for all online devices which are available for
     testing, run:
 
       $ {command}
@@ -50,10 +50,11 @@ class ListDeviceCapacities(base.ListCommand, DeviceCapacities):
     List device capacity (high/medium/low/none) for all Android models &
     versions.
 
-    Device capacity is static information solely based on the number of devices
-    in Firebase Test Lab. It's important to note that device capacity does not
-    directly reflect any real-time data, like the length of the test queue,
-    traffic, or the available/busy/broken state of the devices.
+    Device capacity is the number of online devices in Firebase Test Lab. For
+    physical devices, the number is the average of online devices in the last 30
+    days. It's important to note that device capacity does not directly reflect
+    any real-time data, like the length of the test queue, traffic, or the
+    available/busy state of the devices.
   """
 
   @staticmethod

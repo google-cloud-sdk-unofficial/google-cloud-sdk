@@ -1,11 +1,11 @@
 - release_tracks: [ALPHA]
 
   help_text:
-    brief: Create a Telco Automation orchestrationCluster.
+    brief: Create a telco automation orchestration cluster.
     description: |
-      Create a new Telco Automation orchestrationCluster.
+      Create a new telco automation orchestration cluster.
     examples: |
-      To create an orchestrationCluster called `test-orchestrationCluster` in location `us-central1`, run:
+      To create an orchestration cluster called `test-orchestrationCluster` in location `us-central1`, run:
 
         $ {command} test-orchestrationCluster --location=us-central1
 
@@ -15,5 +15,8 @@
 
   arguments:
     resource:
-      help_text: Telco Automation orchestrationCluster to create.
+      help_text: Telco automation orchestration cluster to create.
       spec: !REF googlecloudsdk.command_lib.telco_automation.resources:orchestrationCluster
+
+  async:
+    collection: telcoautomation.projects.locations.operations

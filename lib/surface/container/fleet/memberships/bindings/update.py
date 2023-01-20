@@ -19,12 +19,14 @@ from __future__ import division
 from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.container.fleet import client
+from googlecloudsdk.api_lib.container.fleet import util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.container.fleet import resources
 
 
 @base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
+                    base.ReleaseTrack.GA)
 class Update(base.UpdateCommand):
   """Update the Binding in a Membership.
 
@@ -53,11 +55,11 @@ class Update(base.UpdateCommand):
 
   """
 
-  @staticmethod
-  def Args(parser):
+  @classmethod
+  def Args(cls, parser):
     resources.AddMembershipBindingResourceArg(
         parser,
-        api_version='v1alpha',
+        api_version=util.VERSION_MAP[cls.ReleaseTrack()],
         binding_help=('Name of the Membership Binding to be updated.'
                       'Must comply with RFC 1123 (up to 63 characters, '
                       'alphanumeric and \'-\')'))
@@ -74,7 +76,7 @@ class Update(base.UpdateCommand):
     )
 
   def Run(self, args):
-    fleetclient = client.FleetClient(release_track=base.ReleaseTrack.ALPHA)
+    fleetclient = client.FleetClient(release_track=self.ReleaseTrack())
     mask = []
     for flag in ['fleet', 'scope']:
       if args.IsKnownAndSpecified(flag):

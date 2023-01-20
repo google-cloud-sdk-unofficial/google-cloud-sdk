@@ -193,9 +193,7 @@ class UploadV1(base.CreateCommand):
     """
     explanation_metadata = None
     if not explanation_metadata_file:
-      raise gcloud_exceptions.BadArgumentException(
-          '--explanation-metadata-file',
-          'Explanation metadata file must be specified.')
+      return explanation_metadata
     # Yaml is a superset of json, so parse json file as yaml.
     data = yaml.load_path(explanation_metadata_file)
     if data:
@@ -340,9 +338,7 @@ class UploadV1Beta1(UploadV1):
   def _ReadExplanationMetadata(self, explanation_metadata_file):
     explanation_metadata = None
     if not explanation_metadata_file:
-      raise gcloud_exceptions.BadArgumentException(
-          '--explanation-metadata-file',
-          'Explanation metadata file must be specified.')
+      return explanation_metadata
     # Yaml is a superset of json, so parse json file as yaml.
     data = yaml.load_path(explanation_metadata_file)
     if data:

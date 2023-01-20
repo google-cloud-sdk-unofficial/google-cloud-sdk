@@ -1,16 +1,19 @@
-- release_tracks: [ALPHA]
+- release_tracks: [ALPHA, GA]
 
   help_text:
     brief: Create an Immersive Stream for XR content resource.
     description: Create an Immersive Stream for XR content resource.
     examples: |
-      To create a content resource called 'my-content' using Cloud Storage bucket 'my-bucket', run:
+      To create a content resource called `my-content` using Cloud Storage bucket `my-bucket`, run:
 
         $ {command} my-content --bucket=my-bucket
 
   request:
     collection: stream.projects.locations.streamContents
-    api_version: v1alpha1
+    ALPHA:
+      api_version: v1alpha1
+    GA:
+      api_version: v1
 
   arguments:
     resource:

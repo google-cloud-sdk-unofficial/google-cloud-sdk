@@ -65,6 +65,7 @@ class Create(base.CreateCommand):
     aws_flags.AddRootVolumeKmsKeyArn(parser)
     aws_flags.AddProxyConfig(parser)
     aws_flags.AddConfigEncryptionKmsKeyArn(parser)
+    aws_flags.AddAutoScalingMetricsCollection(parser)
 
     base.ASYNC_FLAG.AddToParser(parser)
 

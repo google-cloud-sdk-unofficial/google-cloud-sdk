@@ -22,6 +22,7 @@ import textwrap
 
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.storage import flags
 
 
 @base.Hidden
@@ -250,6 +251,8 @@ class Rsync(base.Command):
             ``^'' as an escape character instead of ``\'' and escape the ``|''
             character. When using Windows PowerShell, use ``''' instead of ``"''
             and surround the ``|'' character with ``"''."""))
+
+    flags.add_additional_headers_flag(parser)
 
   def Run(self, args):
     raise NotImplementedError

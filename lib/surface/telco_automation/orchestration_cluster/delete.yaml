@@ -1,13 +1,13 @@
 - release_tracks: [ALPHA]
 
   help_text:
-    brief: Delete a Telco Automation orchestrationCluster.
+    brief: Delete a telco automation orchestration cluster.
     description: |
-      Delete a Telco Automation orchestrationCluster.
+      Delete a telco automation orchestration cluster.
     examples: |
-      To delete an orchestrationCluster called `test-cluster` in region `us-central1`, run:
+      To delete an orchestration cluster called `test-cluster` in region `us-central1`, run:
 
-        $ {command} testcluster --location=us-central1
+        $ {command} test-cluster --location=us-central1
 
   request:
     collection: telcoautomation.projects.locations.orchestrationClusters
@@ -15,5 +15,8 @@
 
   arguments:
     resource:
-      help_text: Telco Automation orchestrationCluster to delete.
+      help_text: Telco automation orchestration cluster to delete.
       spec: !REF googlecloudsdk.command_lib.telco_automation.resources:orchestrationCluster
+
+  async:
+    collection: telcoautomation.projects.locations.operations

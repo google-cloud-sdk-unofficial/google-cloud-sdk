@@ -4957,28 +4957,29 @@ class BigqueryClient(object):
       if not ignore_existing:
         raise
 
-  def CreateTable(self,
-                  reference,
-                  ignore_existing=False,
-                  schema=None,
-                  description=None,
-                  display_name=None,
-                  expiration=None,
-                  view_query=None,
-                  materialized_view_query=None,
-                  enable_refresh=None,
-                  refresh_interval_ms=None,
-                  max_staleness=None,
-                  external_data_config=None,
-                  view_udf_resources=None,
-                  use_legacy_sql=None,
-                  labels=None,
-                  time_partitioning=None,
-                  clustering=None,
-                  range_partitioning=None,
-                  require_partition_filter=None,
-                  destination_kms_key=None,
-                  location=None):
+  def CreateTable(
+      self,
+      reference,
+      ignore_existing=False,
+      schema=None,
+      description=None,
+      display_name=None,
+      expiration=None,
+      view_query=None,
+      materialized_view_query=None,
+      enable_refresh=None,
+      refresh_interval_ms=None,
+      max_staleness=None,
+      external_data_config=None,
+      view_udf_resources=None,
+      use_legacy_sql=None,
+      labels=None,
+      time_partitioning=None,
+      clustering=None,
+      range_partitioning=None,
+      require_partition_filter=None,
+      destination_kms_key=None,
+      location=None):
     """Create a table corresponding to TableReference.
 
     Args:

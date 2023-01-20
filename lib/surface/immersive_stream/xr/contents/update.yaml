@@ -1,16 +1,19 @@
-- release_tracks: [ALPHA]
+- release_tracks: [ALPHA, GA]
 
   help_text:
     brief: Update an Immersive Stream for XR content resource.
     description: Update an Immersive Stream for XR content resource.
     examples: |
-      To update the Cloud Storage bucket used by the content resource 'my-content', to 'my-new-bucket' run:
+      To update the Cloud Storage bucket used by the content resource `my-content`, to `my-new-bucket` run:
 
         $ {command} my-content --bucket=my-new-bucket
 
   request:
     collection: stream.projects.locations.streamContents
-    api_version: v1alpha1
+    ALPHA:
+      api_version: v1alpha1
+    GA:
+      api_version: v1
     method: patch
     modify_request_hooks:
     - googlecloudsdk.command_lib.immersive_stream.xr.util:SetContentUpdateMask

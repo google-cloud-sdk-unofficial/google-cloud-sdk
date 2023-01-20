@@ -26,10 +26,11 @@ from googlecloudsdk.command_lib.compute.future_reservations import resource_args
 from googlecloudsdk.command_lib.compute.future_reservations import util
 
 
-def _MakeCreateRequest(args, messages, project, future_reservation_ref):
+def _MakeCreateRequest(args, messages, resources, project,
+                       future_reservation_ref):
   """Common routine for creating future reservation request."""
   future_reservation = util.MakeFutureReservationMessageFromArgs(
-      messages, args, future_reservation_ref)
+      messages, resources, args, future_reservation_ref)
   future_reservation.description = args.description
   future_reservation.namePrefix = args.name_prefix
 
@@ -50,7 +51,7 @@ def _RunCreate(compute_api, args):
 
   messages = compute_api.client.messages
   project = future_reservation_ref.project
-  create_request = _MakeCreateRequest(args, messages, project,
+  create_request = _MakeCreateRequest(args, messages, resources, project,
                                       future_reservation_ref)
 
   service = compute_api.client.apitools_client.futureReservations
@@ -64,6 +65,7 @@ class CreateAlpha(base.CreateCommand):
   _support_location_hint = True
   _support_instance_template = True
   _support_planning_status = True
+  _support_local_ssd_count = True
 
   @classmethod
   def Args(cls, parser):
@@ -75,7 +77,8 @@ class CreateAlpha(base.CreateCommand):
         support_location_hint=cls._support_location_hint,
         support_fleet=True,
         support_planning_status=cls._support_planning_status,
-        support_instance_template=cls._support_instance_template)
+        support_instance_template=cls._support_instance_template,
+        support_local_ssd_count=cls._support_local_ssd_count)
 
   def Run(self, args):
     return _RunCreate(

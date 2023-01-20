@@ -142,7 +142,6 @@ def ListMembershipConstraints(client, messages, project_id, memberships,
   return [v for _, v in sorted(formatted_constraints.items())]
 
 
-@calliope_base.Hidden
 @calliope_base.ReleaseTracks(calliope_base.ReleaseTrack.ALPHA)
 class List(calliope_base.ListCommand):
   """List Policy Controller constraints from the Policy Library.

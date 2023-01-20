@@ -61,7 +61,7 @@ def _GetTopicPresentationSpec():
       'to create.', positional=True, plural=True)
 
 
-def _Run(args, legacy_output=False):
+def _Run(args, legacy_output=False, with_revisions=False):
   """Creates one or more topics."""
   client = topics.TopicsClient()
 
@@ -88,8 +88,13 @@ def _Run(args, legacy_output=False):
   message_storage_policy_allowed_regions = args.message_storage_policy_allowed_regions
 
   schema = getattr(args, 'schema', None)
+  first_revision_id = None
+  last_revision_id = None
   if schema:
     schema = args.CONCEPTS.schema.Parse().RelativeName()
+    if with_revisions:
+      first_revision_id = getattr(args, 'first_revision_id', None)
+      last_revision_id = getattr(args, 'last_revision_id', None)
   message_encoding_list = getattr(args, 'message_encoding', None)
   message_encoding = None
   if message_encoding_list:
@@ -105,13 +110,17 @@ def _Run(args, legacy_output=False):
           message_retention_duration=retention_duration,
           message_storage_policy_allowed_regions=message_storage_policy_allowed_regions,
           schema=schema,
-          message_encoding=message_encoding)
+          message_encoding=message_encoding,
+          first_revision_id=first_revision_id,
+          last_revision_id=last_revision_id,
+      )
     except api_ex.HttpError as error:
       exc = exceptions.HttpException(error)
       log.CreatedResource(
           topic_ref.RelativeName(),
           kind='topic',
-          failed=exc.payload.status_message)
+          failed=exc.payload.status_message,
+      )
       failed.append(topic_ref.topicsId)
       continue
 
@@ -122,6 +131,35 @@ def _Run(args, legacy_output=False):
 
   if failed:
     raise util.RequestsFailedError(failed, 'create')
+
+
+def _Args(parser, with_revisions=False):
+  """Custom args implementation.
+
+  Args:
+    parser: The current parser.
+    with_revisions: (bool) Whether to add revision-id args.
+  """
+
+  resource_args.AddResourceArgs(
+      parser, [_GetKmsKeyPresentationSpec(), _GetTopicPresentationSpec()]
+  )
+  # This group should not be hidden
+  flags.AddSchemaSettingsFlags(
+      parser, with_revisions=with_revisions, group_hidden=False
+  )
+  labels_util.AddCreateLabelsFlags(parser)
+  flags.AddTopicMessageRetentionFlags(parser, is_update=False)
+
+  parser.add_argument(
+      '--message-storage-policy-allowed-regions',
+      metavar='REGION',
+      type=arg_parsers.ArgList(),
+      help=(
+          'A list of one or more Cloud regions where messages are allowed to'
+          ' be stored at rest.'
+      ),
+  )
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
@@ -138,19 +176,7 @@ class Create(base.CreateCommand):
 
   @staticmethod
   def Args(parser):
-    resource_args.AddResourceArgs(
-        parser, [_GetKmsKeyPresentationSpec(),
-                 _GetTopicPresentationSpec()])
-    flags.AddSchemaSettingsFlags(parser)
-    labels_util.AddCreateLabelsFlags(parser)
-    flags.AddTopicMessageRetentionFlags(parser, is_update=False)
-
-    parser.add_argument(
-        '--message-storage-policy-allowed-regions',
-        metavar='REGION',
-        type=arg_parsers.ArgList(),
-        help='A list of one or more Cloud regions where messages are allowed to'
-        ' be stored at rest.')
+    _Args(parser)
 
   def Run(self, args):
     return _Run(args)
@@ -160,9 +186,13 @@ class Create(base.CreateCommand):
 class CreateBeta(Create):
   """Creates one or more Cloud Pub/Sub topics."""
 
+  @staticmethod
+  def Args(parser):
+    _Args(parser, with_revisions=True)
+
   def Run(self, args):
     legacy_output = properties.VALUES.pubsub.legacy_output.GetBool()
-    return _Run(args, legacy_output=legacy_output)
+    return _Run(args, legacy_output=legacy_output, with_revisions=True)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)

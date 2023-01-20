@@ -20,6 +20,7 @@ from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.cloudbuild import cloudbuild_util as v1_client_util
 from googlecloudsdk.api_lib.cloudbuild import logs as v1_logs
+from googlecloudsdk.api_lib.cloudbuild.v2 import client_util as v2_client_util
 from googlecloudsdk.api_lib.cloudbuild.v2 import logs as v2_logs
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.cloudbuild import run_flags
@@ -72,6 +73,30 @@ class Log(base.Command):
       logger.PrintLog(build_ref)
       return
     else:
+      client = v2_client_util.GetClientInstance()
+      messages = v2_client_util.GetMessagesModule()
+      if args.type == 'pipelinerun':
+        pipeline_run_resource = resources.REGISTRY.Parse(
+            run_id,
+            collection='cloudbuild.projects.locations.pipelineRuns',
+            api_version='v2',
+            params={
+                'projectsId': project,
+                'locationsId': region,
+                'pipelineRunsId': run_id,
+            })
+        run_id = pipeline_run_resource.Name()
+      else:
+        task_run_resource = resources.REGISTRY.Parse(
+            run_id,
+            collection='cloudbuild.projects.locations.taskRuns',
+            api_version='v2',
+            params={
+                'projectsId': project,
+                'locationsId': region,
+                'taskRunsId': run_id,
+            })
+        run_id = task_run_resource.Name()
       logger = v2_logs.CloudBuildLogClient()
       if args.stream:
         logger.Stream(project, region, run_id, args.type)

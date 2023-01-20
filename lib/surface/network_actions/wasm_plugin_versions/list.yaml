@@ -27,8 +27,10 @@
     format: |
       table(
         name.basename():label=NAME,
-        image_uri:label=IMAGE,
-        proxyWasmPluginConfig.yesno(no='').trailoff(40):label=CONFIG,
-        proxyWasmPluginConfig.len().size():label=CONFIGSIZE,
-        updateTime:label=UPDATETIME:sort=1
+        image_uri:label=WASM_IMAGE,
+        image_digest.trailoff(15):label=WASM_IMAGE_DIGEST,
+        plugin_config_data.len().size(zero="-"):label=CONFIG_SIZE,
+        plugin_config_uri:label=CONFIG_IMAGE,
+        plugin_config_digest.yesno(no='').trailoff(15):label=CONFIG_IMAGE_DIGEST,
+        updateTime.date():label=UPDATE_TIME:sort=1
       )

@@ -27,10 +27,9 @@ import time
 from apitools.base.py.exceptions import Error
 
 from googlecloudsdk.api_lib.util import apis
-from googlecloudsdk.calliope import arg_parsers
+from googlecloudsdk.api_lib.workstations.util import VERSION_MAP
 from googlecloudsdk.calliope import base
-from googlecloudsdk.calliope.concepts import concepts
-from googlecloudsdk.command_lib.util.concepts import concept_parsers
+from googlecloudsdk.command_lib.workstations import flags as workstations_flags
 from googlecloudsdk.core import execution_utils
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
@@ -39,8 +38,9 @@ import websocket
 import websocket._exceptions as websocket_exceptions
 
 
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
 class StartTcpTunnel(base.Command):
-  """Starts a tunnel through which a local process can forward TCP traffic to the workstation."""
+  """Start a tunnel through which a local process can forward TCP traffic to the workstation."""
 
   detailed_help = {
       'DESCRIPTION':
@@ -55,44 +55,15 @@ class StartTcpTunnel(base.Command):
 
   @staticmethod
   def Args(parser):
-    concept_parsers.ConceptParser.ForResource(
-        'workstation',
-        concepts.ResourceSpec(
-            'workstations.projects.locations.workstationClusters.workstationConfigs.workstations',
-            resource_name='workstation',
-            projectsId=concepts.DEFAULT_PROJECT_ATTRIBUTE_CONFIG,
-            locationsId=concepts.ResourceParameterAttributeConfig(
-                name='region', help_text='The region for the workstation.'),
-            workstationClustersId=concepts.ResourceParameterAttributeConfig(
-                name='cluster', help_text='The cluster for the workstation.'),
-            workstationConfigsId=concepts.ResourceParameterAttributeConfig(
-                name='config', help_text='The config for the workstation.'),
-            workstationsId=concepts.ResourceParameterAttributeConfig(
-                name='workstation', help_text='The workstation.'),
-        ),
-        'The workstation to which traffic should be sent.',
-        required=True).AddToParser(parser)
-    parser.add_argument(
-        'workstation_port',
-        type=int,
-        help='The port on the workstation to which traffic should be sent.')
-    parser.add_argument(
-        '--local-host-port',
-        type=arg_parsers.HostPort.Parse,
-        default='localhost:0',
-        help="""\
-`LOCAL_HOST:LOCAL_PORT` on which gcloud should bind and listen for connections
-that should be tunneled.
-
-`LOCAL_PORT` may be omitted, in which case it is treated as 0 and an arbitrary
-unused local port is chosen. The colon also may be omitted in that case.
-
-If `LOCAL_PORT` is 0, an arbitrary unused local port is chosen.""")
+    workstations_flags.AddWorkstationResourceArg(parser)
+    workstations_flags.AddWorkstationPortField(parser)
+    workstations_flags.AddLocalHostPortField(parser)
 
   def Run(self, args):
     workstation_name = args.CONCEPTS.workstation.Parse().RelativeName()
-    self.messages = apis.GetMessagesModule('workstations', 'v1beta')
-    self.client = apis.GetClientInstance('workstations', 'v1beta')
+    release_track = VERSION_MAP.get(self.ReleaseTrack())
+    self.messages = apis.GetMessagesModule('workstations', release_track)
+    self.client = apis.GetClientInstance('workstations', release_track)
 
     # Look up the workstation host and determine port
     workstation = self.client.projects_locations_workstationClusters_workstationConfigs_workstations.Get(

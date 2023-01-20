@@ -33,6 +33,13 @@ class List(base.ListCommand):
   @staticmethod
   def Args(parser):
     run_flags.AddsRegionResourceArg(parser, False)  # Not required.
+    parser.display_info.AddFormat("""
+        table(
+            name.segment(5):label=ID,
+            name.segment(3):label=REGION,
+            createTime.date('%Y-%m-%dT%H:%M:%S%Oz', undefined='-')
+        )
+    """)
 
   def Run(self, args):
     """This is what gets called when the user runs this command."""

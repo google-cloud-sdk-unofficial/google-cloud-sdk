@@ -4,7 +4,7 @@
     brief: |
       List workstations.
     description: |
-      List all workstations under the specified config.
+      List all workstations under the specified configuration.
     examples: |
       To list workstations, run:
 
@@ -14,7 +14,7 @@
     resource:
       spec: !REF googlecloudsdk.command_lib.workstations.resources:config
       help_text: |
-        The config of the workstations to display.
+        The configuration of the workstations to display.
 
   request:
     api_version: v1beta

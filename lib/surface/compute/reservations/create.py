@@ -77,6 +77,7 @@ class CreateBeta(Create):
   _support_share_setting = True
   _support_resource_policies = True
   _support_instance_template = False
+  _support_ssd_count = False
 
   @classmethod
   def Args(cls, parser):
@@ -97,6 +98,7 @@ class CreateAlpha(CreateBeta):
   _support_share_setting = True
   _support_resource_policies = True
   _support_instance_template = True
+  _support_ssd_count = True
 
   @classmethod
   def Args(cls, parser):
@@ -107,7 +109,8 @@ class CreateAlpha(CreateBeta):
         support_share_setting=cls._support_share_setting,
         support_fleet=True,
         support_resource_policies=cls._support_resource_policies,
-        support_instance_template=cls._support_instance_template)
+        support_instance_template=cls._support_instance_template,
+        support_ssd_count=cls._support_ssd_count)
 
   def Run(self, args):
     return _RunCreate(

@@ -22,7 +22,6 @@ from apitools.base.py import exceptions as apitools_exceptions
 
 from googlecloudsdk.api_lib.sql import api_util
 from googlecloudsdk.api_lib.sql import exceptions
-from googlecloudsdk.api_lib.sql import instances as instance_util
 from googlecloudsdk.api_lib.sql import operations
 from googlecloudsdk.api_lib.sql import validate
 from googlecloudsdk.calliope import arg_parsers
@@ -46,6 +45,11 @@ DESCRIPTION = ("""\
     For PostgreSQL: The point in time, if specified, defines a past state of the
     instance to clone. If not specified, the current state of the instance is
     cloned.
+
+    For SQL Server: The point in time, if specified, defines a past state of the
+    instance to clone. If not specified, the current state of the instance is
+    cloned.
+
     """)
 
 EXAMPLES_GA = ("""\
@@ -64,6 +68,10 @@ EXAMPLES_GA = ("""\
     $ {command} instance-foo instance-bar --point-in-time '2012-11-15T16:19:00.094Z'
 
   To clone a PostgreSQL source instance at a specific point in time:
+
+    $ {command} instance-foo instance-bar --point-in-time '2012-11-15T16:19:00.094Z'
+
+  To clone a SQL Server source instance at a specific point in time:
 
     $ {command} instance-foo instance-bar --point-in-time '2012-11-15T16:19:00.094Z'
     """)
@@ -124,7 +132,7 @@ def AddAlphaArgs(parser):
       help="""\
       The name of the IP range allocated for the destination instance with
       private network connectivity. For example:
-      \'google-managed-services-default\'. If set, the the destination instance
+      \'google-managed-services-default\'. If set, the destination instance
       IP is created in the allocated range represented by this name.
       Reserved for future use.
       """)
@@ -142,9 +150,10 @@ def _UpdateRequestFromArgs(request, args, sql_messages, release_track):
     clone_context.pointInTime = args.point_in_time.strftime(
         '%Y-%m-%dT%H:%M:%S.%fZ')
 
+  if args.point_in_time and args.restore_database_name:
+    clone_context.databaseNames[:] = [args.restore_database_name]
+
   if release_track == base.ReleaseTrack.ALPHA:
-    if args.point_in_time and args.restore_database_name:
-      clone_context.databaseNames[:] = [args.restore_database_name]
     # ALLOCATED IP RANGE options
     if args.allocated_ip_range_name:
       clone_context.allocatedIpRange = args.allocated_ip_range_name
@@ -181,18 +190,12 @@ def RunBaseCloneCommand(args, release_track):
 
   _UpdateRequestFromArgs(request, args, sql_messages, release_track)
 
-  # Check if source is V1; raise error if so.
   # Check if source has customer-managed key; show warning if so.
   try:
     source_instance_resource = sql_client.instances.Get(
         sql_messages.SqlInstancesGetRequest(
             project=source_instance_ref.project,
             instance=source_instance_ref.instance))
-
-    # TODO(b/122660263): Remove when V1 instances are no longer supported.
-    if instance_util.IsInstanceV1(sql_messages, source_instance_resource):
-      raise exceptions.ArgumentError(
-          'First Generation instances can no longer be created.')
     if source_instance_resource.diskEncryptionConfiguration:
       command_util.ShowCmekWarning('clone', 'the source instance')
   except apitools_exceptions.HttpError:
@@ -233,9 +236,6 @@ def AddBaseArgs(parser):
       help='Cloud SQL instance ID of the source.')
   parser.add_argument('destination', help='Cloud SQL instance ID of the clone.')
 
-
-def _PopulatePointInTimeGroup(parser, include_restore_database_name):
-  """Populates PITR options group."""
   pitr_options_group = parser.add_group(mutex=True, required=False)
   bin_log_group = pitr_options_group.add_group(
       mutex=False,
@@ -272,21 +272,20 @@ def _PopulatePointInTimeGroup(parser, include_restore_database_name):
       Represents the state of an instance at any given point in time inside
       a transaction log file. For MySQL, the binary log file is used for
       transaction logs. For PostgreSQL, the write-ahead log file is used for
-      transaction logs. To create a transaction log, enable point-in-time
-      recovery on the source instance. Instance should have transaction logs
-      accumulated upto the point in time they want to restore upto.
-      Uses RFC 3339 format in UTC timezone. If specified, defines a past
-      state of the instance to clone.
-      For example, '2012-11-15T16:19:00.094Z'.
+      transaction logs. For SQL Server, the log backup file is used for
+      such purpose. To create a transaction log, enable point-in-time recovery
+      on the source instance. Instance should have transaction logs accumulated
+      up to the point in time they want to restore up to. Uses RFC 3339 format
+      in UTC timezone. If specified, defines a past state of the instance to
+      clone. For example, '2012-11-15T16:19:00.094Z'.
       """)
-  if include_restore_database_name:
-    point_in_time_group.add_argument(
-        '--restore-database-name',
-        required=False,
-        help="""\
-      The name of the database to be restored for a point-in-time restore. If
-      set, the destination instance will only restore the specified database.
-      """)
+  point_in_time_group.add_argument(
+      '--restore-database-name',
+      required=False,
+      help="""\
+    The name of the database to be restored for a point-in-time restore. If
+    set, the destination instance will only restore the specified database.
+    """)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
@@ -299,7 +298,6 @@ class Clone(base.CreateCommand):
   def Args(cls, parser):
     """Declare flag and positional arguments for the command parser."""
     AddBaseArgs(parser)
-    _PopulatePointInTimeGroup(parser, include_restore_database_name=False)
     parser.display_info.AddCacheUpdater(flags.InstanceCompleter)
 
   def Run(self, args):
@@ -319,6 +317,5 @@ class CloneAlpha(base.CreateCommand):
   def Args(parser):
     """Args is called by calliope to gather arguments for this command."""
     AddBaseArgs(parser)
-    _PopulatePointInTimeGroup(parser, include_restore_database_name=True)
     AddAlphaArgs(parser)
     parser.display_info.AddCacheUpdater(flags.InstanceCompleter)

@@ -56,14 +56,6 @@ class CreateGitHub(base.CreateCommand):
         to capture some information, but behaves like an ArgumentParser.
     """
     flag_config = trigger_utils.AddTriggerArgs(parser)
-    flag_config.add_argument(
-        '--enterprise-config',
-        help="""\
-Resource name of the GitHub Enterprise config that should be applied to this
-installation.
-
-For example: "projects/{$project_id}/locations/{$location_id}/githubEnterpriseConfigs/{$config_id}
-        """)
 
     gen_config = flag_config.add_mutually_exclusive_group(required=True)
     gen_config.add_argument(
@@ -80,6 +72,15 @@ For example: "projects/{$project_id}/locations/{$location_id}/githubEnterpriseCo
         '--repo-name',
         help='Name of the GitHub Repository (1st gen).',
         required=True)
+    v1_config.add_argument(
+        '--enterprise-config',
+        help="""\
+Resource name of the GitHub Enterprise config that should be applied to this
+installation.
+
+For example: "projects/{$project_id}/locations/{$location_id}/githubEnterpriseConfigs/{$config_id}
+        """)
+
     ref_config = flag_config.add_mutually_exclusive_group(required=True)
     trigger_utils.AddBranchPattern(ref_config)
     trigger_utils.AddTagPattern(ref_config)

@@ -34,7 +34,7 @@ DETAILED_HELP = {
         up, maintain, manage, and administer your Alloydb databases in
         the cloud.
 
-        More information on AlloyDB can be found here at go/alloydb
+        More information on AlloyDB can be found at https://cloud.google.com/alloydb
         """,
 }
 

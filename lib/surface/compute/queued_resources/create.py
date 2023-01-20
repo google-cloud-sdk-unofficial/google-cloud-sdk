@@ -68,6 +68,7 @@ class Create(base.CreateCommand):
   _support_boot_snapshot_uri = True
   _support_confidential_compute_type = True
   _support_provisioned_throughput = True
+  _support_no_address_in_networking = True
 
   @classmethod
   def Args(cls, parser):
@@ -89,11 +90,12 @@ class Create(base.CreateCommand):
         add_zone_region_flags=False,
         support_confidential_compute_type=cls
         ._support_confidential_compute_type,
-        support_provisioned_throughput=cls._support_provisioned_throughput)
+        support_provisioned_throughput=cls._support_provisioned_throughput,
+        support_no_address_in_networking=cls._support_no_address_in_networking)
     cls.AddSourceInstanceTemplate(parser)
     instances_flags.AddSecureTagsArgs(parser)
     instances_flags.AddHostErrorTimeoutSecondsArgs(parser)
-    # LINT.ThenChange(../instances/bulk/create.py:instance_template)
+    # LINT.ThenChange(../instances/bulk/create.py:alpha_spec)
     # Queued resource specific flags
     valid_until_group = parser.add_group(mutex=True, required=True)
     valid_until_group.add_argument(

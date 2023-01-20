@@ -26,7 +26,6 @@ from googlecloudsdk.core import properties
 from surface.container.fleet.policycontroller import violations
 
 
-@calliope_base.Hidden
 @calliope_base.ReleaseTracks(calliope_base.ReleaseTrack.ALPHA)
 class Describe(calliope_base.DescribeCommand):
   """Describe Policy Controller audit violations of a constraint.
@@ -73,8 +72,19 @@ class Describe(calliope_base.DescribeCommand):
       memberships = args.memberships
       if len(memberships) != 1:
         raise exceptions.Error('Please specify a single membership name.')
+      # Look up membership constraint; exception will be thrown if not found.
+      constraint = status_api_utils.GetMembershipConstraint(
+          client, messages, constraint_name, project_id, memberships[0],
+          self.ReleaseTrack())
     else:
       memberships = []
+      # Look up fleet constraint; exception will be thrown if not found.
+      constraint = status_api_utils.GetFleetConstraint(client, messages,
+                                                       constraint_name,
+                                                       project_id)
+
+    if constraint['violationCount'] == 0:
+      return None
 
     return violations.ListMembershipViolations(
         messages,

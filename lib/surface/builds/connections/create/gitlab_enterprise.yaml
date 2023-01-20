@@ -18,8 +18,8 @@
       provide all the required parameters:
 
         $ {command} my-gle-conn \
+          --host-uri=https://my.gle-server.net \
           --project=myproj --region=us-central1 \
-          --service-directory-service=projects/myproj/namespaces/x/services/mysds \
           --authorizer-token-secret-version=projects/myproj/secrets/api-pat/versions/1 \
           --webhook-secret-secret-version=projects/myproj/secrets/whsecret/versions/1
 
@@ -27,8 +27,8 @@
       provide the read-authorizer-token-secret-version parameter as well:
 
         $ {command} my-gle-conn \
+          --host-uri=https://my.gle-server.net \
           --project=myproj --region=us-central1 \
-          --service-directory-service=projects/myproj/namespaces/x/services/mysds \
           --authorizer-token-secret-version=projects/myproj/secrets/api-pat/versions/1 \
           --read-authorizer-token-secret-version=projects/myproj/secrets/read-pat/versions/1 \
           --webhook-secret-secret-version=projects/myproj/secrets/whsecret/versions/1
@@ -37,6 +37,7 @@
       provide the service-directory-service and ssl-ca-file as well:
 
         $ {command} my-gle-conn \
+          --host-uri=https://my.private-gle-server.net \
           --project=myproj --region=us-central1 \
           --service-directory-service=projects/myproj/namespaces/x/services/mysds \
           --ssl-ca-file=mycertificate.crt \

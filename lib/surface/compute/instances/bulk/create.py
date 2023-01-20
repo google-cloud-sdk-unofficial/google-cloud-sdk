@@ -130,6 +130,7 @@ class Create(base.Command):
   _support_enable_target_shape = True
   _support_confidential_compute_type = False
   _support_provisioned_throughput = False
+  _support_no_address_in_networking = False
 
   _log_async = False
 
@@ -151,7 +152,8 @@ class Create(base.Command):
         support_enable_target_shape=cls._support_enable_target_shape,
         support_confidential_compute_type=cls
         ._support_confidential_compute_type,
-        support_provisioned_throughput=cls._support_provisioned_throughput)
+        support_provisioned_throughput=cls._support_provisioned_throughput,
+        support_no_address_in_networking=cls._support_no_address_in_networking)
     cls.AddSourceInstanceTemplate(parser)
 
   # LINT.IfChange(instance_template)
@@ -296,6 +298,7 @@ class CreateBeta(Create):
   _support_max_run_duration = True
   _support_enable_target_shape = True
   _support_provisioned_throughput = False
+  _support_no_address_in_networking = False
 
   @classmethod
   def Args(cls, parser):
@@ -313,7 +316,8 @@ class CreateBeta(Create):
         support_visible_core_count=cls._support_visible_core_count,
         support_max_run_duration=cls._support_max_run_duration,
         support_enable_target_shape=cls._support_enable_target_shape,
-        support_provisioned_throughput=cls._support_provisioned_throughput)
+        support_provisioned_throughput=cls._support_provisioned_throughput,
+        support_no_address_in_networking=cls._support_no_address_in_networking)
     cls.AddSourceInstanceTemplate(parser)
 
     # Flags specific to Beta release track
@@ -335,6 +339,7 @@ class CreateAlpha(Create):
   _support_enable_target_shape = True
   _support_confidential_compute_type = True
   _support_provisioned_throughput = True
+  _support_no_address_in_networking = True
 
   @classmethod
   def Args(cls, parser):
@@ -354,7 +359,8 @@ class CreateAlpha(Create):
         support_enable_target_shape=cls._support_enable_target_shape,
         support_confidential_compute_type=cls
         ._support_confidential_compute_type,
-        support_provisioned_throughput=cls._support_provisioned_throughput)
+        support_provisioned_throughput=cls._support_provisioned_throughput,
+        support_no_address_in_networking=cls._support_no_address_in_networking)
 
     cls.AddSourceInstanceTemplate(parser)
 

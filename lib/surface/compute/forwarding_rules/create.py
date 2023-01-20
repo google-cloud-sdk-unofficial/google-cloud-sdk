@@ -79,7 +79,7 @@ def _Args(parser, support_global_access, support_psc_global_access,
       'You cannot use the `--service-label` flag  if the forwarding rule '
       'references an internal IP address that has the '
       '`--purpose=SHARED_LOADBALANCER_VIP` flag set.')
-  flags.AddAddressesAndIPVersions(parser, required=False)
+  flags.AddAddressesAndIPVersions(parser)
   forwarding_rule_arg = flags.ForwardingRuleArgument()
   forwarding_rule_arg.AddArgument(parser, operation_type='create')
   parser.display_info.AddCacheUpdater(flags.ForwardingRulesCompleter)
@@ -536,7 +536,7 @@ class CreateHelper(object):
     if address is not None:
       try:
         # ipaddress only allows unicode input
-        ipaddress.ip_address(six.text_type(args.address))
+        ipaddress.ip_network(six.text_type(args.address))
       except ValueError:
         # TODO(b/37086838): Make sure global/region settings are inherited by
         # address resource.

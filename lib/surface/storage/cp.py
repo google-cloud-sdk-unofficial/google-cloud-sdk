@@ -20,6 +20,7 @@ from __future__ import unicode_literals
 
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.storage import cp_command_util
+from googlecloudsdk.command_lib.storage import flags
 
 
 class Cp(base.Command):
@@ -77,6 +78,7 @@ class Cp(base.Command):
         action='store_true',
         help='Recursively copy the contents of any directories that match the'
         ' source path expression.')
+    flags.add_additional_headers_flag(parser)
     cp_command_util.add_cp_flags(parser)
 
   def Run(self, args):

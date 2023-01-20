@@ -3578,7 +3578,7 @@
           "format": "int32"
         },
         "encoding": {
-          "description": "Optional. The character encoding of the data. The supported values are UTF-8, ISO-8859-1, UTF-16BE, UTF-16LE, UTF-32BE, and UTF-32LE. The default value is UTF-8. BigQuery decodes the data after the raw, binary data has been split using the values of the quote and fieldDelimiter properties.",
+          "description": "Optional. The character encoding of the data. The supported values are UTF-8, ISO-8859-1, UTF-16BE, UTF-16LE, UTF-32BE, and UTF-32LE. The default value is UTF-8. BigQuery decodes the data after the raw, binary data has been split using the values of the `quote` and `fieldDelimiter` properties. If you don't specify an encoding, or if you specify a UTF-8 encoding when the CSV file is not UTF-8 encoded, BigQuery attempts to convert the data to UTF-8. Generally, your data loads successfully, but it may not match byte-for-byte what you expect. To avoid this, specify the correct encoding by using the `--encoding` flag. If BigQuery can't convert a character other than the ASCII `0` character, BigQuery converts the character to the standard Unicode replacement character: \uFFFD.",
           "type": "string"
         },
         "quote": {
@@ -4744,7 +4744,6 @@
             "BiEngineReason not specified.",
             "No reservation available for BI Engine acceleration.",
             "Not enough memory available for BI Engine acceleration.",
-            "Data is not-cached and could not be accelerated by BI Engine.",
             "This particular SQL text is not supported for acceleration by BI Engine.",
             "Input too large for acceleration by BI Engine.",
             "Catch-all code for all other cases for partial or disabled acceleration.",
@@ -4754,7 +4753,6 @@
             "CODE_UNSPECIFIED",
             "NO_RESERVATION",
             "INSUFFICIENT_RESERVATION",
-            "UNCACHED",
             "UNSUPPORTED_SQL_TEXT",
             "INPUT_TOO_LARGE",
             "OTHER_REASON",
@@ -4804,7 +4802,7 @@
           "format": "int64"
         },
         "bytesTransferred": {
-          "description": "Output only. The number of bytes of source data copied over the network for a LOAD query. If the query is charged for data transferred on the network, the user may be separately billed for these bytes.",
+          "description": "Output only. This field is deprecated. The number of bytes of source data copied over the network for a `LOAD` query. `transferred_bytes` has the canonical value for physical transferred bytes, which is used for BigQuery Omni billing.",
           "readOnly": true,
           "type": "string",
           "format": "int64"
@@ -5910,7 +5908,7 @@
           }
         },
         "mainFileUri": {
-          "description": "The main file URI of the Spark application. Exactly one of the definition_body field and the main_file_uri field must be set.",
+          "description": "The main file\/jar URI of the Spark application. Exactly one of the definition_body field and the main_file_uri field must be set for Python. Exactly one of main_class and main_file_uri field should be set for Java\/Scala language type.",
           "type": "string"
         },
         "pyFileUris": {

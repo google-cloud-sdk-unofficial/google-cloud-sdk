@@ -125,7 +125,8 @@ class Revoke(base.Command):
               '[{}] appears to be an external account. External account '
               'tokens cannot be revoked, but they will expire automatically.'
               .format(account))
-        elif c_creds.IsExternalAccountUserCredentials(creds):
+        elif c_creds.IsExternalAccountUserCredentials(
+            creds) or c_creds.IsExternalAccountAuthorizedUserCredentials(creds):
           log.warning(
               '[{}] appears to be an external account user. External account '
               'user tokens cannot be revoked, but they will expire '

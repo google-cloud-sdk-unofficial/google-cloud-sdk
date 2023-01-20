@@ -21,7 +21,15 @@ from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class Xr(base.Group):
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA,)
+class XrAlpha(base.Group):
   """Manage Immersive Stream for XR resources."""
-  category = base.COMPUTE_CATEGORY
+  category = base.UNCATEGORIZED_CATEGORY
+
+
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.Hidden
+class Xr(base.Group):
+  """Manage Immersive Stream resources."""
+  category = base.UNCATEGORIZED_CATEGORY

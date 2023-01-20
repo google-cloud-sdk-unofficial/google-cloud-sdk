@@ -1,17 +1,20 @@
-- release_tracks: [ALPHA]
+- release_tracks: [ALPHA, GA]
 
   help_text:
     brief: Build an Immersive Stream for XR content resource.
     description: Build an Immersive Stream for XR content resource and tag it with a user specified version tag.
     examples: |
-      To build a content resource 'my-content' tagged with version tag 'my-version', run:
+      To build a content resource `my-content` tagged with version tag `my-version`, run:
 
         $ {command} my-content --version=my-version
 
   request:
     collection: stream.projects.locations.streamContents
-    api_version: v1alpha1
     method: build
+    ALPHA:
+      api_version: v1alpha1
+    GA:
+      api_version: v1
 
   arguments:
     resource:

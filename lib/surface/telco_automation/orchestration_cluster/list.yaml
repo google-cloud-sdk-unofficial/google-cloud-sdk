@@ -1,11 +1,11 @@
 - release_tracks: [ALPHA]
 
   help_text:
-    brief: List Telco Automation orchestrationClusters.
+    brief: List telco automation orchestration clusters.
     description: |
-      List Telco Automation orchestrationClusters.
+      List telco automation orchestration clusters.
     examples: |
-      To list all orchestrationClusters in region `us-central1`, run:
+      To list all orchestration clusters in region `us-central1`, run:
 
         $ {command} --location=us-central1
 
@@ -18,7 +18,7 @@
 
   arguments:
     resource:
-      help_text: Parent Telco Automation location to list all contained Telco Automation orchestrationClusters.
+      help_text: Parent telco automation location to list all contained telco automation orchestration clusters.
       spec: !REF googlecloudsdk.command_lib.telco_automation.resources:location
 
   output:

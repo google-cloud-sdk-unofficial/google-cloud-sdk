@@ -104,7 +104,7 @@ class CreateAlphaBeta(Create):
   @classmethod
   def Args(cls, parser):
     super(CreateAlphaBeta, cls).Args(parser)
-    flags.AddPitrConfigFlags(parser)
+    flags.AddContinuousBackupConfigFlags(parser)
 
   def ConstructCreateRequestFromArgs(self, alloydb_messages, location_ref,
                                      args):

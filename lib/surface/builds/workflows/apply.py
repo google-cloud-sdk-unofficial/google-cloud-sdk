@@ -73,7 +73,8 @@ class Create(base.CreateCommand):
     updated_workflow = waiter.WaitFor(
         waiter.CloudOperationPoller(client.projects_locations_workflows,
                                     client.projects_locations_operations),
-        update_operation_ref, 'Updating Workflow')
+        update_operation_ref,
+        'Applying {file} as workflow {name}'.format(file=args.file, name=name))
 
     updated_workflow_ref = resources.REGISTRY.Parse(
         updated_workflow.name,
@@ -82,5 +83,5 @@ class Create(base.CreateCommand):
             self.ReleaseTrack()],
     )
 
-    log.status.Print('Apply result: {}'.format(updated_workflow_ref))
+    log.status.Print('View workflow: {}'.format(updated_workflow_ref))
     return updated_workflow

@@ -49,6 +49,7 @@ class Update(base.UpdateCommand):
     flags.AddValidateOnly(parser, 'node pool to update')
     flags.AddAutoscaling(parser, required=False)
     flags.AddAnnotationsForUpdate(parser, 'node pool')
+    flags.AddTagsForUpdate(parser, 'node pool')
     aws_flags.AddSecurityGroupFlagsForUpdate(parser, 'node pool')
     flags.AddRootVolumeSize(parser)
     aws_flags.AddRootVolumeKmsKeyArn(parser)
@@ -58,6 +59,7 @@ class Update(base.UpdateCommand):
     aws_flags.AddProxyConfigForUpdate(parser, 'node pool')
     aws_flags.AddSshEC2KeyPairForUpdate(parser, 'node pool')
     aws_flags.AddIamInstanceProfile(parser, kind='node pool', required=False)
+    aws_flags.AddAutoScalingMetricsCollectionForUpdate(parser)
     base.ASYNC_FLAG.AddToParser(parser)
 
     parser.display_info.AddFormat(constants.AWS_NODEPOOLS_FORMAT)

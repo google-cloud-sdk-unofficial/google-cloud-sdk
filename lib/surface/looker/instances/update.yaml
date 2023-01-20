@@ -1,0 +1,75 @@
+- release_tracks: [ALPHA]
+
+  help_text:
+    brief: |
+      Update Looker instances.
+    description: |
+      Update the metadata and/or configuration parameters of a Looker instance.
+
+      This command can fail for the following reasons:
+        * The instance specified does not exist.
+        * The active account does not have permission to update the given
+          instance.
+    examples: |
+      To update a Looker instance with the name `my-looker-instance` to update from standard
+      edition to advanced, run:
+
+        $ {command} my-looker-instance --edition="advanced"
+
+  arguments:
+    resource:
+      spec: !REF googlecloudsdk.command_lib.looker.resources:instance
+      help_text: |
+        Arguments and flags that specify the Looker instance you want
+        to update.
+    params:
+    - arg_name: edition
+      api_field: instance.platformEdition
+      help_text: |
+        The edition of the instance. Options are: STANDARD, ADVANCED, and ELITE
+      choices:
+      - enum_value: STANDARD
+        arg_value: standard
+        help_text:  |
+          This edition provides a full-feature edition for product exploration
+          and development. Exceptional for all your Analytics.
+      - enum_value: ADVANCED
+        arg_value: advanced
+        help_text: |
+          This edition provides a full-feature edition for product exploration and development.
+          Scales as your organization and data add complexity.
+      - enum_value: ELITE
+        arg_value: elite
+        help_text: |
+          This edition provides a full-feature edition for product exploration and development.
+          Drive your business through operational analytics.
+    - arg_name: enable-public-ip
+      api_field: instance.enablePublicIp
+      type: bool
+      help_text: |
+        This specifies whether public IP is enabled on the Looker instance.
+    - arg_name: enable-private-ip
+      api_field: instance.enablePrivateIp
+      type: bool
+      help_text: |
+        This specifies whether public IP is enabled on the Looker instance.
+    - arg_name: consumer-network
+      api_field: instance.consumerNetwork
+      help_text: |
+        The network name within the consumer project. This MUST be delared if enabling private IP
+
+  request:
+    ALPHA:
+      api_version: v1alpha1
+    collection: looker.projects.locations.instances
+
+  output:
+    format: |
+      table(
+         name.basename():label=OPERATION_NAME,
+         name.segment(3):label=REGION,
+         metadata.verb:label=TYPE,
+         metadata.target.basename(),
+         done,
+         metadata.createTime.date():sort=1
+       )

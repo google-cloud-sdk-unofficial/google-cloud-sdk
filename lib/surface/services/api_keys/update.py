@@ -37,6 +37,10 @@ DETAILED_HELP = {
 
           $ {command} projects/myproject/keys/my-key-id --display-name="test name" --allowed-ips=2620:15c:2c4:203:2776:1f90:6b3b:217,104.133.8.78
 
+        To update annoatations:
+
+          $ {command} projects/myproject/keys/my-key-id --annotations=foo=bar,abc=def
+
         To update key's allowed referrers restriction:
 
           $ {command} projects/myproject/keys/my-key-id --allowed-referrers="https://www.example.com/*,http://sub.example.com/*"
@@ -74,7 +78,7 @@ DETAILED_HELP = {
 }
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Update(base.UpdateCommand):
   """Update an API key's metadata."""
 
@@ -103,9 +107,14 @@ class Update(base.UpdateCommand):
     update_mask = []
     key_proto = messages.V2Key(
         name=key_ref.RelativeName(), restrictions=messages.V2Restrictions())
+    if args.IsSpecified('annotations'):
+      update_mask.append('annotations')
+      key_proto.annotations = apikeys.GetAnnotations(args, messages)
     if args.IsSpecified('display_name'):
       update_mask.append('display_name')
       key_proto.displayName = args.display_name
+    if args.IsSpecified('clear_annotations'):
+      update_mask.append('annotations')
     if args.IsSpecified('clear_restrictions'):
       update_mask.append('restrictions')
     else:

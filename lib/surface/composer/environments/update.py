@@ -29,11 +29,11 @@ from googlecloudsdk.command_lib.composer import util as command_util
 DETAILED_HELP = {
     'EXAMPLES':
         """\
-          To update the Cloud Composer environment named ``env-1'' to have 8
-          Airflow workers, and not have the ``production'' label, run:
+        To update the Cloud Composer environment named ``env-1'' to have 8
+        Airflow workers, and not have the ``production'' label, run:
 
-            $ {command} env-1 --node-count=8 --remove-labels=production
-        """
+          $ {command} env-1 --node-count=8 --remove-labels=production
+      """
 }
 
 _INVALID_OPTION_FOR_V2_ERROR_MSG = """\
@@ -158,7 +158,7 @@ class Update(base.Command):
             args.triggerer_cpu or args.triggerer_memory))):
         raise command_util.InvalidUserInputError(
             'Workloads Config flags introduced in Composer 2.X'
-            ' cannot be used when creating Composer 1.X environments.')
+            ' cannot be used when updating Composer 1.X environments.')
       params['scheduler_cpu'] = args.scheduler_cpu
       params['worker_cpu'] = args.worker_cpu
       params['web_server_cpu'] = args.web_server_cpu
@@ -240,7 +240,9 @@ class Update(base.Command):
     triggerer_count = None
     triggerer_cpu = None
     triggerer_memory_gb = None
-    if env_obj.config.workloadsConfig and env_obj.config.workloadsConfig.triggerer:
+    if (env_obj.config.workloadsConfig and
+        env_obj.config.workloadsConfig.triggerer and
+        env_obj.config.workloadsConfig.triggerer.count != 0):
       triggerer_count = env_obj.config.workloadsConfig.triggerer.count
       triggerer_memory_gb = env_obj.config.workloadsConfig.triggerer.memoryGb
       triggerer_cpu = env_obj.config.workloadsConfig.triggerer.cpu
@@ -270,6 +272,9 @@ class Update(base.Command):
       if args.triggerer_memory:
         raise command_util.InvalidUserInputError(
             'Cannot specify --triggerer-memory without enabled triggerer')
+    if triggerer_count == 1 and not (triggerer_memory_gb and triggerer_cpu):
+      raise command_util.InvalidUserInputError(
+          'Cannot enable triggerer without providing triggerer memory and cpu.')
     params['triggerer_cpu'] = triggerer_cpu
     params['triggerer_count'] = triggerer_count
     params['triggerer_memory_gb'] = triggerer_memory_gb

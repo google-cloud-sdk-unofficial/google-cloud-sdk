@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*- #
-# Copyright 2020 Google LLC. All Rights Reserved.
+# Copyright 2022 Google LLC. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -30,14 +30,12 @@ import enum
 from googlecloudsdk.api_lib.storage import cloud_api
 from googlecloudsdk.command_lib.storage import errors
 from googlecloudsdk.command_lib.storage import plurality_checkable_iterator
-from googlecloudsdk.command_lib.storage import storage_url
 from googlecloudsdk.command_lib.storage import wildcard_iterator
 from googlecloudsdk.command_lib.storage.resources import gcloud_full_resource_formatter
 from googlecloudsdk.command_lib.storage.resources import gsutil_full_resource_formatter
 from googlecloudsdk.command_lib.storage.resources import resource_reference
 from googlecloudsdk.command_lib.storage.resources import resource_util
 from googlecloudsdk.command_lib.storage.resources import shim_format_util
-from googlecloudsdk.command_lib.storage.tasks import task
 
 import six
 
@@ -207,14 +205,15 @@ class _ResourceFormatWrapper(_BaseFormatWrapper):
     return self.resource.storage_url.versionless_url_string
 
 
-class CloudListTask(task.Task):
-  """Represents an ls command operation."""
+class LsExecutor:
+  """Helper class for the ls command."""
 
   def __init__(self,
-               cloud_url,
+               cloud_urls,
                all_versions=False,
                buckets_flag=False,
                display_detail=DisplayDetail.SHORT,
+               fetch_encrypted_object_hashes=False,
                include_etag=False,
                readable_sizes=False,
                recursion_flag=False,
@@ -222,12 +221,14 @@ class CloudListTask(task.Task):
     """Initializes task.
 
     Args:
-      cloud_url (storage_url.CloudUrl): Object for a non-local filesystem URL.
+      cloud_urls ([storage_url.CloudUrl]): list of non-local filesystem URLs.
       all_versions (bool): Determine whether or not to return all versions of
         listed objects.
       buckets_flag (bool): If given a bucket URL, only return matching buckets
         ignoring normal recursion rules.
       display_detail (DisplayDetail): Determines level of metadata printed.
+      fetch_encrypted_object_hashes (bool): Fall back to GET requests for
+        encrypted objects in order to fetch their hash values.
       include_etag (bool): Print etag string of resource, depending on other
         settings.
       readable_sizes (bool): Convert bytes to a more human readable format for
@@ -236,12 +237,13 @@ class CloudListTask(task.Task):
         container headers.
       use_gsutil_style (bool): Outputs closer to the style of the gsutil CLI.
     """
-    super(CloudListTask, self).__init__()
+    super(LsExecutor, self).__init__()
 
-    self._cloud_url = cloud_url
+    self._cloud_urls = cloud_urls
     self._all_versions = all_versions
     self._buckets_flag = buckets_flag
     self._display_detail = display_detail
+    self._fetch_encrypted_object_hashes = fetch_encrypted_object_hashes
     self._include_etag = include_etag
     self._readable_sizes = readable_sizes
     self._recursion_flag = recursion_flag
@@ -254,32 +256,26 @@ class CloudListTask(task.Task):
       self._full_formatter = (
           gcloud_full_resource_formatter.GcloudFullResourceFormatter())
 
-    self._only_display_buckets = self._cloud_url.is_provider() or (
-        self._buckets_flag and self._cloud_url.is_bucket())
-
-  def _get_container_iterator(
-      self, cloud_url, recursion_level):
+  def _get_container_iterator(self, container_cloud_url, recursion_level):
     """For recursing into and retrieving the contents of a container.
 
     Args:
-      cloud_url (storage_url.CloudUrl): Container URL for recursing into.
+      container_cloud_url (storage_url.CloudUrl): Container URL for recursing
+        into.
       recursion_level (int): Determines if iterator should keep recursing.
 
     Returns:
       _BaseFormatWrapper generator.
     """
     # End URL with '/*', so WildcardIterator won't filter out its contents.
-    new_url_string = cloud_url.versionless_url_string
-    if cloud_url.versionless_url_string[-1] != cloud_url.delimiter:
-      new_url_string += cloud_url.delimiter
-    new_cloud_url = storage_url.storage_url_from_string(new_url_string + '*')
-
+    new_cloud_url = container_cloud_url.join('*')
     fields_scope = _translate_display_detail_to_fields_scope(
         self._display_detail, is_bucket_listing=False)
     iterator = wildcard_iterator.CloudWildcardIterator(
         new_cloud_url,
         all_versions=self._all_versions,
         error_on_missing_key=False,
+        fetch_encrypted_object_hashes=self._fetch_encrypted_object_hashes,
         fields_scope=fields_scope)
     return self._recursion_helper(iterator, recursion_level)
 
@@ -298,7 +294,8 @@ class CloudListTask(task.Task):
     """
     for resource in iterator:
       # Check if we need to display contents of a container.
-      if resource.is_container() and recursion_level > 0:
+      if resource_reference.is_container_or_has_container_url(
+          resource) and recursion_level > 0:
         yield _HeaderFormatWrapper(
             resource,
             display_detail=self._display_detail,
@@ -341,7 +338,7 @@ class CloudListTask(task.Task):
       # Close long long listing JSON list. Prints nothing if no items.
       print(']')
 
-  def _print_row_list(self, resource_wrappers):
+  def _print_row_list(self, resource_wrappers, only_display_buckets):
     """Prints ResourceWrapper objects in list with custom row formatting."""
     object_count = total_bytes = 0
     for i, resource_wrapper in enumerate(resource_wrappers):
@@ -362,39 +359,41 @@ class CloudListTask(task.Task):
         total_bytes += resource_wrapper.resource.size or 0
 
     if (self._display_detail in (DisplayDetail.LONG, DisplayDetail.FULL) and
-        not self._only_display_buckets):
+        not only_display_buckets):
       # Long listing needs summary line.
       print('TOTAL: {} objects, {} bytes ({})'.format(
           object_count, int(total_bytes),
           shim_format_util.get_human_readable_byte_value(
               total_bytes, self._use_gsutil_style)))
 
-  def execute(self, task_status_queue=None):
+  def _list_url(self, raw_cloud_url):
     """Recursively create wildcard iterators to print all relevant items."""
-    # List task does not need to report status information.
-    del task_status_queue
+    only_display_buckets = raw_cloud_url.is_provider() or (
+        self._buckets_flag and raw_cloud_url.is_bucket())
 
     fields_scope = _translate_display_detail_to_fields_scope(
-        self._display_detail, is_bucket_listing=self._cloud_url.is_provider())
+        self._display_detail, is_bucket_listing=raw_cloud_url.is_provider())
     resources = plurality_checkable_iterator.PluralityCheckableIterator(
         wildcard_iterator.CloudWildcardIterator(
-            self._cloud_url,
+            raw_cloud_url,
             all_versions=self._all_versions,
             error_on_missing_key=False,
+            fetch_encrypted_object_hashes=self._fetch_encrypted_object_hashes,
             fields_scope=fields_scope,
             get_bucket_metadata=self._buckets_flag))
 
     if resources.is_empty():
       raise errors.InvalidUrlError('One or more URLs matched no objects.')
-    if self._only_display_buckets:
+    if only_display_buckets:
       # Received a provider URL ("gs://") -> List all buckets.
       # Received buckets flag and bucket URL -> List matching buckets, ignoring
       #   recursion.
       resources_wrappers = self._recursion_helper(resources, recursion_level=0)
-    elif self._recursion_flag and '**' not in self._cloud_url.url_string:
+    elif self._recursion_flag and '**' not in raw_cloud_url.url_string:
       # "**" overrides recursive flag.
       resources_wrappers = self._recursion_helper(resources, float('inf'))
-    elif not resources.is_plural() and resources.peek().is_container():
+    elif not resources.is_plural() and (
+        resource_reference.is_container_or_has_container_url(resources.peek())):
       # One container was returned by the query, in which case we show
       # its contents.
       resources_wrappers = self._get_container_iterator(
@@ -405,4 +404,8 @@ class CloudListTask(task.Task):
     if self._display_detail == DisplayDetail.JSON:
       self._print_json_list(resources_wrappers)
     else:
-      self._print_row_list(resources_wrappers)
+      self._print_row_list(resources_wrappers, only_display_buckets)
+
+  def list_urls(self):
+    for url in self._cloud_urls:
+      self._list_url(url)

@@ -19,6 +19,7 @@ from __future__ import division
 from __future__ import unicode_literals
 
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.storage import flags
 
 
 @base.Hidden
@@ -110,6 +111,8 @@ class Du(base.Command):
         action='store_true',
         help='Similar to -e, but excludes patterns from the given file.'
         ' The patterns to exclude should be listed one per line.')
+
+    flags.add_additional_headers_flag(parser)
 
   def Run(self, args):
     del args  # Unused.

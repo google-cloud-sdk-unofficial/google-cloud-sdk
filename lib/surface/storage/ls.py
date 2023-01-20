@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*- #
-# Copyright 2020 Google LLC. All Rights Reserved.
+# Copyright 2022 Google LLC. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -24,9 +24,8 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.storage import encryption_util
 from googlecloudsdk.command_lib.storage import errors
 from googlecloudsdk.command_lib.storage import flags
+from googlecloudsdk.command_lib.storage import ls_command_util
 from googlecloudsdk.command_lib.storage import storage_url
-from googlecloudsdk.command_lib.storage.tasks import task_executor
-from googlecloudsdk.command_lib.storage.tasks.ls import cloud_list_task
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 
@@ -169,7 +168,9 @@ class Ls(base.Command):
         action='store_true',
         help='List all available metadata about items as a JSON dump.')
 
+    flags.add_additional_headers_flag(parser)
     flags.add_encryption_flags(parser, command_only_reads_data=True)
+    flags.add_fetch_encrypted_object_hashes_flag(parser, is_list=True)
 
   def Run(self, args):
     """Command execution logic."""
@@ -201,27 +202,24 @@ class Ls(base.Command):
       storage_urls = [storage_url.CloudUrl(cloud_api.DEFAULT_PROVIDER)]
 
     if args.full:
-      display_detail = cloud_list_task.DisplayDetail.FULL
+      display_detail = ls_command_util.DisplayDetail.FULL
     elif args.json:
-      display_detail = cloud_list_task.DisplayDetail.JSON
+      display_detail = ls_command_util.DisplayDetail.JSON
     elif args.long:
-      display_detail = cloud_list_task.DisplayDetail.LONG
+      display_detail = ls_command_util.DisplayDetail.LONG
     else:
-      display_detail = cloud_list_task.DisplayDetail.SHORT
+      display_detail = ls_command_util.DisplayDetail.SHORT
 
-    tasks = []
-    for url in storage_urls:
-      tasks.append(
-          cloud_list_task.CloudListTask(
-              url,
-              all_versions=args.all_versions,
-              buckets_flag=args.buckets,
-              display_detail=display_detail,
-              include_etag=args.etag,
-              readable_sizes=args.readable_sizes,
-              recursion_flag=args.recursive,
-              use_gsutil_style=use_gsutil_style))
-    task_executor.execute_tasks(tasks, parallelizable=False)
+    ls_command_util.LsExecutor(
+        storage_urls,
+        all_versions=args.all_versions,
+        buckets_flag=args.buckets,
+        display_detail=display_detail,
+        fetch_encrypted_object_hashes=args.fetch_encrypted_object_hashes,
+        include_etag=args.etag,
+        readable_sizes=args.readable_sizes,
+        recursion_flag=args.recursive,
+        use_gsutil_style=use_gsutil_style).list_urls()
 
     if found_non_default_provider and args.full:
       # We do guarantee full-style formatting for all metadata fields of

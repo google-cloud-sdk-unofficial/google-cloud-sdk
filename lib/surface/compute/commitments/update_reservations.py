@@ -57,7 +57,7 @@ class UpdateReservationsAlpha(base.UpdateCommand):
     messages = client.messages
     update_reservation_request = messages.RegionCommitmentsUpdateReservationsRequest(
         reservations=reservation_helper.MakeUpdateReservations(
-            args, messages))
+            args, messages, resources))
     request = messages.ComputeRegionCommitmentsUpdateReservationsRequest(
         commitment=commitment_ref.Name(),
         project=commitment_ref.project,

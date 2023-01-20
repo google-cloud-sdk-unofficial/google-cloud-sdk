@@ -67,6 +67,7 @@ class Compose(base.Command):
             single object."""))
     parser.add_argument('destination', help='The destination object.')
 
+    flags.add_additional_headers_flag(parser)
     flags.add_encryption_flags(parser, hidden=True)
     flags.add_precondition_flags(parser)
 

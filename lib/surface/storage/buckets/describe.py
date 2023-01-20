@@ -23,6 +23,7 @@ from googlecloudsdk.api_lib.storage import cloud_api
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.storage import errors
 from googlecloudsdk.command_lib.storage import errors_util
+from googlecloudsdk.command_lib.storage import flags
 from googlecloudsdk.command_lib.storage import storage_url
 from googlecloudsdk.command_lib.storage import wildcard_iterator
 from googlecloudsdk.core.resource import resource_projector
@@ -52,6 +53,7 @@ class Describe(base.DescribeCommand):
   @staticmethod
   def Args(parser):
     parser.add_argument('url', help='Specifies URL of bucket to describe.')
+    flags.add_additional_headers_flag(parser)
 
   def Run(self, args):
     if wildcard_iterator.contains_wildcard(args.url):

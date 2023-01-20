@@ -315,11 +315,6 @@ def RunBasePatchCommand(args, release_track):
   patch_instance.project = instance_ref.project
   patch_instance.name = instance_ref.instance
 
-  # TODO(b/122660263): Remove when V1 instances are no longer supported.
-  # V1 deprecation notice.
-  if api_util.IsInstanceV1(sql_messages, original_instance_resource):
-    command_util.ShowV1DeprecationWarning()
-
   cleared_fields = _GetConfirmedClearedFields(args, patch_instance,
                                               original_instance_resource)
   # beta only

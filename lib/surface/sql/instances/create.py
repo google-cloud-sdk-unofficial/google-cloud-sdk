@@ -22,7 +22,6 @@ from apitools.base.py import exceptions as apitools_exceptions
 
 from googlecloudsdk.api_lib.sql import api_util as common_api_util
 from googlecloudsdk.api_lib.sql import exceptions as sql_exceptions
-from googlecloudsdk.api_lib.sql import instances as api_util
 from googlecloudsdk.api_lib.sql import operations
 from googlecloudsdk.api_lib.sql import validate
 from googlecloudsdk.calliope import base
@@ -292,15 +291,6 @@ def RunBaseCreateCommand(args, release_track):
           args,
           instance_ref=instance_ref,
           release_track=release_track))
-
-  # TODO(b/122660263): Remove when V1 instances are no longer supported.
-  # V1 instances are deprecated.
-  # Note that the exception type is intentionally vague because the user may not
-  # have directly supplied the offending argument.  For example, creating a read
-  # replica defaults its tier to that of its master.
-  if api_util.IsInstanceV1(sql_messages, instance_resource):
-    raise sql_exceptions.ArgumentError(
-        'First Generation instances can no longer be created.')
 
   operation_ref = None
   try:

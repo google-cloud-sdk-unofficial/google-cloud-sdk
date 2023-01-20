@@ -34,17 +34,18 @@ class Update(base.Command):
   """Update a Dataplex Data Attribute Binding."""
 
   detailed_help = {
-            'EXAMPLES':
+      'EXAMPLES':
           """\
 
-          To update Data Attribute Binding `test-attribute-binding` in project `test-dataplex` at location `us-central1`, run:
+          To Update Data Attribute Binding `test-attribute-binding` in project
+          `test-dataplex` at location `us-central1` with resource attributes
+          a1 and a2. Test column 'testColumn1' attached to attribute 'a1' and 'testColumn2' attached to attribute 'a2' , run:
 
             $ {command} test-attribute-binding --project=test-dataplex --location=us-central1
-            --resource-attributes='projects/923750387610/locations/us-central1/dataTaxonomies/test-taxonomy-1/attributes/test-attribute-1,
-              projects/923750387610/locations/us-central1/dataTaxonomies/test-taxonomy-1/attributes/test-attribute-2'
-            --paths ^:^name="TestType":attributes=projects/923750387610/locations/us-central1/dataTaxonomies/test-taxonomy-1/attributes/test-attribute-1,
-              projects/923750387610/locations/us-central1/dataTaxonomies/test-taxonomy-1/attributes/test-attribute-2
-            --paths ^:^name="TransactionAmount":attributes=projects/923750387610/locations/us-central1/dataTaxonomies/test-taxonomy-1/attributes/test-attribute-1
+            --resource-attributes='a1,a2'
+            --paths ^:^name="testColumn1":attributes=a1
+            --paths ^:^name="testColumn2":attributes=a2
+            --etag=Etag_Received_From_Get
 
           """
   }

@@ -29,7 +29,7 @@ from googlecloudsdk.core import properties
 from googlecloudsdk.core import resources
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.GA)
 class Update(base.Command):
   """Update an Immersive Stream for XR service instance."""
 
@@ -47,30 +47,30 @@ class Update(base.Command):
           quota limit.
       """),
       'EXAMPLES': ("""
-          To update the service instance 'my-instance' to have capacity 2 for an
+          To update the service instance `my-instance` to have capacity 2 for an
           existing region us-west1, run:
 
             $ {command} my-instance --update-region=region=us-west1,capacity=2
 
-          To update the service instance 'my-instance' to have capacity 1 for a
+          To update the service instance `my-instance` to have capacity 1 for a
           new region us-east4, run:
 
             $ {command} my-instance --add-region=region=us-east4,capacity=1
 
-          To update the service instance 'my-instance' to remove the existing
+          To update the service instance `my-instance` to remove the existing
           region us-east4, run:
 
             $ {command} my-instance --remove-region=us-east4
 
-          To update the service instance 'my-instance' to serve content version
+          To update the service instance `my-instance` to serve content version
           `my-version`, run:
 
             $ {command} my-instance --version=my-version
 
-          To update the service instance 'my-instance' to use fallback url
-          'https://www.google.com', run:
+          To update the service instance `my-instance` to use fallback url
+          `https://www.google.com`, run:
 
-            $ {command} my-instance --fallback-url='https://www.google.com'
+            $ {command} my-instance --fallback-url="https://www.google.com"
       """)
   }
 
@@ -130,7 +130,7 @@ class Update(base.Command):
     instance_ref = resources.REGISTRY.Parse(
         None,
         collection='stream.projects.locations.streamInstances',
-        api_version='v1alpha1',
+        api_version=api_util.GetApiVersion(self.ReleaseTrack()),
         params={
             'projectsId': properties.VALUES.core.project.Get(required=True),
             'locationsId': 'global',
@@ -139,11 +139,12 @@ class Update(base.Command):
 
     if version:
       result_operation = instances.UpdateContentBuildVersion(
-          instance_ref, version)
+          self.ReleaseTrack(), instance_ref, version)
     elif fallback_url:
       if not flags.ValidateUrl(fallback_url):
         return
-      result_operation = instances.UpdateFallbackUrl(instance_ref, fallback_url)
+      result_operation = instances.UpdateFallbackUrl(self.ReleaseTrack(),
+                                                     instance_ref, fallback_url)
     else:
       # We limit to one update per call.
       if add_region_configs:
@@ -162,8 +163,10 @@ class Update(base.Command):
                      'again with only one --update-region argument.'))
           return
 
-      current_instance = instances.Get(instance_ref.RelativeName())
+      current_instance = instances.Get(self.ReleaseTrack(),
+                                       instance_ref.RelativeName())
       target_location_configs = instances.GenerateTargetLocationConfigs(
+          self.ReleaseTrack(),
           add_region_configs=add_region_configs,
           update_region_configs=update_region_configs,
           remove_regions=remove_regions,
@@ -171,9 +174,9 @@ class Update(base.Command):
       if target_location_configs is None:
         return
       result_operation = instances.UpdateLocationConfigs(
-          instance_ref, target_location_configs)
+          self.ReleaseTrack(), instance_ref, target_location_configs)
 
-    client = api_util.GetClient()
+    client = api_util.GetClient(self.ReleaseTrack())
 
     log.status.Print('Update request issued for: [{}]'.format(instance_name))
     if args.async_:
@@ -184,7 +187,7 @@ class Update(base.Command):
     operation_resource = resources.REGISTRY.Parse(
         result_operation.name,
         collection='stream.projects.locations.operations',
-        api_version='v1alpha1')
+        api_version=api_util.GetApiVersion(self.ReleaseTrack()))
     updated_instance = waiter.WaitFor(
         waiter.CloudOperationPoller(client.projects_locations_streamInstances,
                                     client.projects_locations_operations),
@@ -194,7 +197,7 @@ class Update(base.Command):
     instance_resource = resources.REGISTRY.Parse(
         None,
         collection='stream.projects.locations.streamInstances',
-        api_version='v1alpha1',
+        api_version=api_util.GetApiVersion(self.ReleaseTrack()),
         params={
             'projectsId': properties.VALUES.core.project.Get(required=True),
             'locationsId': 'global',

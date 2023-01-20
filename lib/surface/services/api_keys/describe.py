@@ -27,20 +27,25 @@ DETAILED_HELP = {
         """Describe an API key's metadata.""",
     'EXAMPLES':
         """\
-        To describe an API key:
+        To describe an API key using Key:
 
-          $ {command} projects/myproject/locations/global/keys/1234
-                OR
           $ {command} 1234
                 OR
+          $ {command} projects/myproject/locations/global/keys/1234
+
+        To describe an API key with key and project:
+
           $ {command} 1234 --project=myproject
-                OR
-          $ {command} 1234 --project=myproject --location=global
+
+        To describe an API key with key, project, and location:
+
+            $ {command} 1234 --project=myproject --location=global
         """,
 }
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
+                    base.ReleaseTrack.GA)
 class DescribeGa(base.DescribeCommand):
   """Describe an API key's metadata."""
 

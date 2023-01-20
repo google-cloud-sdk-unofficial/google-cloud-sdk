@@ -43,7 +43,8 @@ def _ListArgs(parser):
       help=('Show soft-deleted keys by specifying this flag.'))
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA,
+                    base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
 class List(base.ListCommand):
   """Lists API keys.
 

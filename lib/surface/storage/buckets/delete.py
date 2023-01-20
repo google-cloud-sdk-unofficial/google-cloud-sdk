@@ -56,6 +56,7 @@ class Delete(base.Command):
   def Args(parser):
     parser.add_argument(
         'urls', nargs='+', help='Specifies the URLs of the buckets to delete.')
+    flags.add_additional_headers_flag(parser)
     flags.add_continue_on_error_flag(parser)
 
   def Run(self, args):

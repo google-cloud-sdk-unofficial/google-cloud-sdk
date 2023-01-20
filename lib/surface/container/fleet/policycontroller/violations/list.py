@@ -26,7 +26,6 @@ from googlecloudsdk.core import properties
 from surface.container.fleet.policycontroller import violations
 
 
-@calliope_base.Hidden
 @calliope_base.ReleaseTracks(calliope_base.ReleaseTrack.ALPHA)
 class List(calliope_base.ListCommand):
   """List Policy Controller audit violations.

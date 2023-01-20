@@ -20,6 +20,7 @@ from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.storage import api_factory
 from googlecloudsdk.api_lib.storage import cloud_api
+from googlecloudsdk.api_lib.storage import request_config_factory
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.storage import encryption_util
 from googlecloudsdk.command_lib.storage import errors
@@ -55,7 +56,9 @@ class Describe(base.DescribeCommand):
   @staticmethod
   def Args(parser):
     parser.add_argument('url', help='Specifies URL of object to describe.')
+    flags.add_additional_headers_flag(parser)
     flags.add_encryption_flags(parser, command_only_reads_data=True)
+    flags.add_fetch_encrypted_object_hashes_flag(parser, is_list=False)
 
   def Run(self, args):
     encryption_util.initialize_key_store(args)
@@ -66,9 +69,25 @@ class Describe(base.DescribeCommand):
           ' retrieving multiple resources.')
     url = storage_url.storage_url_from_string(args.url)
     errors_util.raise_error_if_not_cloud_object(args.command_path, url)
-    object_resource = api_factory.get_api(url.scheme).get_object_metadata(
+    client = api_factory.get_api(url.scheme)
+    resource = client.get_object_metadata(
         url.bucket_name,
         url.object_name,
         fields_scope=cloud_api.FieldsScope.FULL)
+
+    if (args.fetch_encrypted_object_hashes and
+        cloud_api.Capability.ENCRYPTION in client.capabilities and
+        not (resource.md5_hash and resource.crc32c_hash) and
+        resource.decryption_key_hash_sha256):
+      request_config = request_config_factory.get_request_config(
+          resource.storage_url,
+          decryption_key_hash_sha256=resource.decryption_key_hash_sha256,
+          error_on_missing_key=True)
+      return resource_projector.MakeSerializable(
+          client.get_object_metadata(
+              resource.bucket,
+              resource.name,
+              fields_scope=cloud_api.FieldsScope.FULL,
+              request_config=request_config))
     # MakeSerializable will omit all the None values.
-    return resource_projector.MakeSerializable(object_resource.metadata)
+    return resource_projector.MakeSerializable(resource.metadata)

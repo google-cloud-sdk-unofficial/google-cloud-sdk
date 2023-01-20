@@ -74,7 +74,7 @@ class Read(base.Command):
     filters.append('resource.type = %s \n' % 'cloud_run_job')
     filters.append('resource.labels.job_name = %s \n' % args.job)
     filters.append('resource.labels.location = %s \n' %
-                   flags.GetRegion(args, prompt=False))
+                   flags.GetRegion(args, prompt=True))
     filters.append('severity >= DEFAULT \n')
     filters += read_logs_lib.MakeTimestampFilters(args)
 

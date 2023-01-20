@@ -26,7 +26,7 @@ from googlecloudsdk.command_lib.compute import scope as compute_scope
 from googlecloudsdk.command_lib.compute.instance_groups import flags as instance_groups_flags
 
 
-def _AddArgs(parser):
+def _AddArgs(parser, beta=False):
   """Adds args."""
   parser.add_argument(
       '--timeout',
@@ -39,6 +39,14 @@ def _AddArgs(parser):
                           action='store_true',
                           default=False,
                           help='Wait until version target is reached.')
+  if beta:
+    event_type.add_argument(
+        '--all-instances-config-effective',
+        action='store_true',
+        default=False,
+        help="Wait until the group's all-instances configuration is applied "
+             "to all VMs in the group.")
+
   event_type.add_argument('--stable',
                           action='store_true',
                           default=False,
@@ -47,9 +55,8 @@ def _AddArgs(parser):
       parser)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA,
-                    base.ReleaseTrack.ALPHA)
-class WaitUntil(base.Command):
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class WaitUntilGA(base.Command):
   """Wait until the managed instance group reaches the desired state."""
 
   @staticmethod
@@ -57,8 +64,8 @@ class WaitUntil(base.Command):
     _AddArgs(parser=parser)
 
   def CreateGroupReference(self, client, resources, args):
-    return (instance_groups_flags.MULTISCOPE_INSTANCE_GROUP_MANAGER_ARG.
-            ResolveAsResource)(
+    return (instance_groups_flags.MULTISCOPE_INSTANCE_GROUP_MANAGER_ARG
+            .ResolveAsResource)(
                 args,
                 resources,
                 default_scope=compute_scope.ScopeEnum.ZONE,
@@ -70,12 +77,25 @@ class WaitUntil(base.Command):
     client = holder.client
     group_ref = self.CreateGroupReference(client, holder.resources, args)
 
-    igm_state = (wait_utils.IgmState.STABLE if args.stable
-                 else wait_utils.IgmState.VERSION_TARGET_REACHED)
+    if args.stable:
+      igm_state = wait_utils.IgmState.STABLE
+    elif args.version_target_reached:
+      igm_state = wait_utils.IgmState.VERSION_TARGET_REACHED
+    elif args.all_instances_config_effective:
+      igm_state = wait_utils.IgmState.ALL_INSTANCES_CONFIG_EFFECTIVE
+
     wait_utils.WaitForIgmState(client, group_ref, igm_state, args.timeout)
 
 
-WaitUntil.detailed_help = {
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
+class WaitUntilBeta(WaitUntilGA):
+  """Wait until the managed instance group reaches the desired state."""
+
+  @staticmethod
+  def Args(parser):
+    _AddArgs(parser=parser, beta=True)
+
+WaitUntilGA.detailed_help = {
     'brief':
         'Wait until the managed instance group reaches the desired state.',
     'EXAMPLES':
@@ -86,3 +106,5 @@ WaitUntil.detailed_help = {
           $ {command} --stable instance-group-1
         """,
 }
+
+WaitUntilBeta.detailed_help = WaitUntilGA.detailed_help

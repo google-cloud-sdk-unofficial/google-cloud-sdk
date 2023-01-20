@@ -21,6 +21,7 @@ from __future__ import unicode_literals
 from googlecloudsdk.api_lib.storage import cloud_api
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.storage import errors
+from googlecloudsdk.command_lib.storage import flags
 from googlecloudsdk.command_lib.storage import storage_url
 from googlecloudsdk.command_lib.storage import wildcard_iterator
 from googlecloudsdk.core.resource import resource_projector
@@ -55,6 +56,7 @@ class List(base.ListCommand):
   def Args(parser):
     parser.add_argument(
         'urls', nargs='*', help='Specifies URL of buckets to List.')
+    flags.add_additional_headers_flag(parser)
 
   def Run(self, args):
     if args.urls:

@@ -57,7 +57,8 @@ class Update(base.UpdateCommand):
     cls.fr_arg.AddArgument(parser, operation_type='update')
     fr_flags.AddUpdateFlags(parser,
                             support_fleet=True,
-                            support_planning_status=True)
+                            support_planning_status=True,
+                            support_local_ssd_count=True)
 
   def _ValidateArgs(self, update_mask):
     """Validates that at least one field to update is specified.
@@ -117,7 +118,7 @@ class Update(base.UpdateCommand):
     self._ValidateArgs(update_mask=update_mask)
 
     fr_resource = util.MakeFutureReservationMessageFromArgs(
-        messages, args, fr_ref)
+        messages, resources, args, fr_ref)
 
     # Build update request.
     fr_update_request = messages.ComputeFutureReservationsUpdateRequest(

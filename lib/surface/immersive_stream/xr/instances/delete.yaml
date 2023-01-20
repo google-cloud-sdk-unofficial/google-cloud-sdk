@@ -1,17 +1,20 @@
-- release_tracks: [ALPHA]
+- release_tracks: [ALPHA, GA]
 
   help_text:
     brief: Delete an Immersive Stream for XR service instance.
     description: |
       Delete an Immersive Stream for XR service instance.
     examples: |
-      To delete a service instance called 'my-instance', run:
+      To delete a service instance called `my-instance`, run:
 
         $ {command} my-instance
 
   request:
     collection: stream.projects.locations.streamInstances
-    api_version: v1alpha1
+    ALPHA:
+      api_version: v1alpha1
+    GA:
+      api_version: v1
 
   arguments:
     resource:

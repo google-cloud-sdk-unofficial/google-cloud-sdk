@@ -20,7 +20,6 @@ cloud-firestore-emulator: google-cloud-sdk-firestore-emulator
 cloud-spanner-emulator: google-cloud-sdk-spanner-emulator
 core: google-cloud-sdk
 pkg: unavailable
-datalab: google-cloud-sdk-datalab
 docker-credential-gcr: unavailable
 gcloud: google-cloud-sdk
 gcloud-crc32c: google-cloud-sdk
@@ -41,3 +40,4 @@ kustomize: unavailable
 config-connector: google-cloud-sdk-config-connector
 terraform-tools: google-cloud-sdk-terraform-tools
 bundled-python3-unix: google-cloud-sdk-bundled-python3
+ecp: unavailable

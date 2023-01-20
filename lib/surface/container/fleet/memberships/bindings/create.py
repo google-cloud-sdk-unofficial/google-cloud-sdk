@@ -19,12 +19,14 @@ from __future__ import division
 from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.container.fleet import client
+from googlecloudsdk.api_lib.container.fleet import util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.container.fleet import resources
 
 
 @base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
+                    base.ReleaseTrack.GA)
 class Create(base.CreateCommand):
   """Create a Membership Binding.
 
@@ -51,11 +53,11 @@ class Create(base.CreateCommand):
     --location=LOCATION_NAME
   """
 
-  @staticmethod
-  def Args(parser):
+  @classmethod
+  def Args(cls, parser):
     resources.AddMembershipBindingResourceArg(
         parser,
-        api_version='v1alpha',
+        api_version=util.VERSION_MAP[cls.ReleaseTrack()],
         binding_help=('Name of the membership Binding to be created.'
                       'Must comply with RFC 1123 (up to 63 characters, '
                       'alphanumeric and \'-\')'))
@@ -72,7 +74,7 @@ class Create(base.CreateCommand):
     )
 
   def Run(self, args):
-    fleetclient = client.FleetClient(release_track=base.ReleaseTrack.ALPHA)
+    fleetclient = client.FleetClient(release_track=self.ReleaseTrack())
     return fleetclient.CreateMembershipBinding(
         resources.MembershipBindingResourceName(args),
         fleet=args.fleet,

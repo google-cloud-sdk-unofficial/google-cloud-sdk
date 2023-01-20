@@ -122,7 +122,6 @@ def ListFleetTemplates(project_id, messages, client, verbose=False):
   return [v for _, v in sorted(formatted_templates.items())]
 
 
-@calliope_base.Hidden
 @calliope_base.ReleaseTracks(calliope_base.ReleaseTrack.ALPHA)
 class List(calliope_base.ListCommand):
   """List Policy Controller constraint templates.

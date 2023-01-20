@@ -37,15 +37,14 @@ class Create(base.Command):
           """\
 
           To create Data Attribute Binding `test-attribute-binding` in project
-          `test-dataplex` at location `us-central1`, run:
+          `test-dataplex` at location `us-central1` with resouce name 'testResource' and resource attributes
+          a1 and a2. Test column 'testColumn1' attached to attribute 'a1' and 'testColumn2' attached to attribute 'a2' , run:
 
             $ {command} test-attribute-binding --project=test-dataplex --location=us-central1
             --resource='projects/test-dataplex/locations/us-central1/lakes/my-lake/zones/test-zone/entities/testResource'
-            --resource-attributes='projects/923750387610/locations/us-central1/dataTaxonomies/test-taxonomy-1/attributes/test-attribute-1,
-              projects/923750387610/locations/us-central1/dataTaxonomies/test-taxonomy-1/attributes/test-attribute-2'
-            --paths ^:^name="TestType":attributes=projects/923750387610/locations/us-central1/dataTaxonomies/test-taxonomy-1/attributes/test-attribute-1,
-              projects/923750387610/locations/us-central1/dataTaxonomies/test-taxonomy-1/attributes/test-attribute-2
-            --paths ^:^name="TransactionAmount":attributes=projects/923750387610/locations/us-central1/dataTaxonomies/test-taxonomy-1/attributes/test-attribute-1
+            --resource-attributes='a1,a2'
+            --paths ^:^name="testColumn1":attributes=a1
+            --paths ^:^name="testColumn2":attributes=a2
 
           """
   }
@@ -73,7 +72,9 @@ class Create(base.Command):
         default=[],
         required=False,
         type=arg_parsers.ArgList(),
-        help='List of attributes to be associated with the resource')
+        help='List of attributes to be associated with '
+        'the resource. It should be fully qualified attribute name'
+        )
 
     group = parser.add_group(mutex=True, help='Creation options.')
 
@@ -94,7 +95,8 @@ class Create(base.Command):
         'The args can be passed as key value pair. Supported Keys are '
         '--path=name=value1,attributes=value2 '
         ',See https://cloud.google.com/sdk/gcloud/reference/topic/escaping for details on '
-        'using a delimiter other than a comma.')
+        'using a delimiter other than a comma. '
+        'Attribute name should be fully qualified attribute name.')
 
     group.add_argument(
         '--path-file-name',

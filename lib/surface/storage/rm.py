@@ -109,6 +109,7 @@ class Rm(base.Command):
         ' [versions](https://cloud.google.com/storage/docs/object-versioning)'
         ' of an object.')
 
+    flags.add_additional_headers_flag(parser)
     flags.add_precondition_flags(parser)
     flags.add_continue_on_error_flag(parser)
 

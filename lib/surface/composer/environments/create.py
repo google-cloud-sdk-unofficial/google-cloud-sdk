@@ -615,7 +615,7 @@ class CreateBeta(Create):
     flags.ENABLE_TRIGGERER.AddToParser(triggerer_params_group)
 
     cloud_data_lineage_integration_params_group = parser.add_argument_group(
-        flags.CLOUD_DATA_LINEAGE_INTEGRATION_GROUP_DESCRIPTION, hidden=True)
+        flags.CLOUD_DATA_LINEAGE_INTEGRATION_GROUP_DESCRIPTION)
     flags.ENABLE_CLOUD_DATA_LINEAGE_INTEGRATION_FLAG.AddToParser(
         cloud_data_lineage_integration_params_group)
 

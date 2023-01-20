@@ -24,6 +24,7 @@ from googlecloudsdk.api_lib.storage import storage_util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.storage import expansion
+from googlecloudsdk.command_lib.storage import flags
 from googlecloudsdk.command_lib.storage import storage_parallel
 from googlecloudsdk.core import log
 from googlecloudsdk.core.console import console_io
@@ -109,6 +110,8 @@ class Delete(base.Command):
         hidden=True,
         default=16,
         help='The number of threads to use for the delete.')
+
+    flags.add_additional_headers_flag(parser)
 
   def Run(self, args):
     paths = args.path or ['gs://']

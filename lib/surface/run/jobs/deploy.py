@@ -83,7 +83,7 @@ class Deploy(base.Command):
     flags.AddMaxRetriesFlag(parser)
     flags.AddTaskTimeoutFlags(parser)
     flags.AddServiceAccountFlag(parser, managed_only=True)
-    flags.AddSetEnvVarsFlag(parser)
+    flags.AddMutexEnvVarsFlags(parser)
     flags.AddSetCloudSQLFlag(parser)
     flags.AddVpcConnectorArg(parser)
     flags.AddEgressSettingsFlag(parser)

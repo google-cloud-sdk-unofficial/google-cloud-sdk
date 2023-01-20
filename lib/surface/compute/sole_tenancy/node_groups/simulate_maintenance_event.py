@@ -27,7 +27,7 @@ from googlecloudsdk.command_lib.compute.sole_tenancy.node_groups import flags
 from googlecloudsdk.core import log
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class SimulateMaintenanceEvent(base.UpdateCommand):
   """Simulate maintenance of a Compute Engine node group."""
 
@@ -38,7 +38,7 @@ class SimulateMaintenanceEvent(base.UpdateCommand):
           """
          To simulate maintenance of a node group, run:
 
-           $ {command} my-node-group --nodes=example-template
+           $ {command} my-node-group --nodes=example-nodes
        """,
   }
 

@@ -1,10 +1,10 @@
 release_tracks: [ALPHA]
 
 help_text:
-  brief: Show details about the orchestrationCluster.
-  description: Show details about the orchestrationCluster.
+  brief: Show details about the orchestration cluster.
+  description: Show details about the orchestration cluster.
   examples: |
-    To show details about an orchestrationCluster called `test-cluster` in region `us-central1`, run:
+    To show details about an orchestration cluster called `test-cluster` in region `us-central1`, run:
 
       $ {command} test-cluster --location=us-central1
 
@@ -14,5 +14,5 @@ request:
 
 arguments:
   resource:
-    help_text: The orchestrationCluster you want to describe.
+    help_text: The orchestration cluster you want to describe.
     spec: !REF googlecloudsdk.command_lib.telco_automation.resources:orchestrationCluster

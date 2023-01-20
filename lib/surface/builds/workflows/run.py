@@ -24,6 +24,7 @@ from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.cloudbuild import run_flags
 from googlecloudsdk.core import log
+from googlecloudsdk.core import properties
 from googlecloudsdk.core import resources
 
 
@@ -87,7 +88,7 @@ class Create(base.CreateCommand):
     waiter.WaitFor(
         waiter.CloudOperationPoller(client.projects_locations_workflows,
                                     client.projects_locations_operations),
-        run_workflow_operation_ref, 'Running Workflow and Creating PipelineRun')
+        run_workflow_operation_ref, 'Running workflow {}'.format(workflow_name))
 
     # Re-fetch the RunWorkflow LRO now that it is done.
     run_workflow_operation_done = client.projects_locations_operations.Get(
@@ -99,9 +100,12 @@ class Create(base.CreateCommand):
     for additional_property in run_workflow_operation_done.metadata.additionalProperties:
       if additional_property.key == 'pipelineRunId':
         pipeline_run_id = additional_property.value.string_value
-    pipeline_run_name = parent + '/pipelineRuns/' + pipeline_run_id
 
     # Log ran/created resources and return Done RunWorkflow LRO.
-    log.status.Print('Ran workflow: {}'.format(workflow_name))
-    log.status.Print('Created pipeline run: {}'.format(pipeline_run_name))
+    log.status.Print(
+        'View run: https://console.cloud.google.com/cloud-build/runs/{region}/{run}?project={project}'
+        .format(
+            region=args.region,
+            run=pipeline_run_id,
+            project=properties.VALUES.core.project.Get(required=True)))
     return run_workflow_operation_done

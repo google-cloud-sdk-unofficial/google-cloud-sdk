@@ -105,6 +105,8 @@ ConnectionReference = bigquery_client.ApiClientHelper.ConnectionReference
 
 # pylint: enable=g-bad-name
 
+CONNECTION_ID_PATTERN = re.compile(r'[\w-]+')
+
 if os.environ.get('CLOUDSDK_WRAPPER') == '1':
   _CLIENT_ID = '32555940559.apps.googleusercontent.com'
   _CLIENT_SECRET = 'ZmssLNjJy2998hD4CTg2ejr2'
@@ -430,7 +432,11 @@ class TablePrinter(object):
   def _NormalizeTimestamp(unused_field, value):
     """Returns bq-specific formatting of a TIMESTAMP type."""
     try:
-      date = datetime.datetime.utcfromtimestamp(float(value))
+      date = datetime.datetime.fromtimestamp(
+          0,
+          tz=datetime.timezone.utc) + datetime.timedelta(seconds=float(value))
+      # Remove the extra timezone info "+00:00" at the end of the date.
+      date = date.replace(tzinfo=None)
       # Our goal is the equivalent of '%Y-%m-%d %H:%M:%S' via strftime but that
       # doesn't work for dates with years prior to 1900.  Instead we zero out
       # fractional seconds then call isoformat with a space separator.
@@ -4020,14 +4026,14 @@ class _Make(BigqueryCmd):
         flag_values=fv)
     flags.DEFINE_enum(
         'edition',
-        None, ['BASIC', 'ENTERPRISE', 'MISSION_CRITICAL'],
+        None, ['STANDARD', 'ENTERPRISE', 'ENTERPRISE_PLUS'],
         'Type of editions for the reservation or capacity commitment. '
         'Options include:'
-        '\n BASIC'
+        '\n STANDARD'
         '\n ENTERPRISE'
-        '\n MISSION_CRITICAL'
+        '\n ENTERPRISE_PLUS'
         '\n Used in conjunction with --reservation or --capacity_commitment.'
-        '\n BASIC cannot be used together with --capacity_commitment.',
+        '\n STANDARD cannot be used together with --capacity_commitment.',
         flag_values=fv)
     flags.DEFINE_boolean(
         'connection', None, 'Create a connection.', flag_values=fv)
@@ -6285,6 +6291,11 @@ class _Insert(BigqueryCmd):
         'instance table, using the schema of the base template table.',
         short_name='x',
         flag_values=fv)
+    flags.DEFINE_string(
+        'insert_id',
+        None,
+        'A unique insert_id to use for the request.',
+        flag_values=fv)
     self._ProcessCommandRc(fv)
 
   def RunWithArgs(self, identifier='', filename=None):
@@ -6310,21 +6321,24 @@ class _Insert(BigqueryCmd):
             json_file,
             skip_invalid_rows=self.skip_invalid_rows,
             ignore_unknown_values=self.ignore_unknown_values,
-            template_suffix=self.template_suffix)
+            template_suffix=self.template_suffix,
+            insert_id=self.insert_id)
     else:
       return self._DoInsert(
           identifier,
           sys.stdin,
           skip_invalid_rows=self.skip_invalid_rows,
           ignore_unknown_values=self.ignore_unknown_values,
-          template_suffix=self.template_suffix)
+          template_suffix=self.template_suffix,
+          insert_id=self.insert_id)
 
   def _DoInsert(self,
                 identifier,
                 json_file,
                 skip_invalid_rows=None,
                 ignore_unknown_values=None,
-                template_suffix=None):
+                template_suffix=None,
+                insert_id=None):
     """Insert the contents of the file into a table."""
     client = Client.Get()
     reference = client.GetReference(identifier)
@@ -6348,7 +6362,10 @@ class _Insert(BigqueryCmd):
     lineno = 1
     for line in json_file:
       try:
-        batch.append(bigquery_client.JsonToInsertEntry(None, line))
+        unique_insert_id = None
+        if insert_id is not None:
+          unique_insert_id = insert_id + '_' + str(lineno)
+        batch.append(bigquery_client.JsonToInsertEntry(unique_insert_id, line))
         lineno += 1
       except bigquery_client.BigqueryClientError as e:
         raise app.UsageError('Line %d: %s' % (lineno, str(e)))

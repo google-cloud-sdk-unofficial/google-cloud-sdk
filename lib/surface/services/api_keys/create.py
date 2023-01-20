@@ -34,6 +34,10 @@ DETAILED_HELP = {
 
           $ {command} --display-name="test name" --allowed-ips=2620:15c:2c4:203:2776:1f90:6b3b:217,104.133.8.78
 
+        To create a key with annotations:
+
+         $ {command} --annotations=foo=bar,abc=def
+
         To create a key with allowed referrers restriction:
 
           $ {command} --allowed-referrers="https://www.example.com/*,http://sub.example.com/*"
@@ -72,7 +76,7 @@ DETAILED_HELP = {
 }
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Create(base.CreateCommand):
   """Create an API key."""
 
@@ -115,6 +119,8 @@ class Create(base.CreateCommand):
               args, messages))
     if args.IsSpecified('api_target'):
       key_proto.restrictions.apiTargets = apikeys.GetApiTargets(args, messages)
+    if args.IsSpecified('annotations'):
+      key_proto.annotations = apikeys.GetAnnotations(args, messages)
     request = messages.ApikeysProjectsLocationsKeysCreateRequest(
         parent=apikeys.GetParentResourceName(project_id), v2Key=key_proto)
     op = client.projects_locations_keys.Create(request)

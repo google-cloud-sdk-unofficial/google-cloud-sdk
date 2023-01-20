@@ -75,6 +75,18 @@ class Update(base.UpdateCommand):
       flags.AddSecurityProfileGroup(parser)
 
   def Run(self, args):
+    clearable_arg_name_to_field_name = {
+        'src_ip_ranges': 'match.srcIpRanges',
+        'dest_ip_ranges': 'match.destIpRanges',
+        'src_region_codes': 'match.srcRegionCodes',
+        'dest_region_codes': 'match.destRegionCodes',
+        'src_fqdns': 'match.srcFqdns',
+        'dest_fqdns': 'match.destFqdns',
+        'src_address_groups': 'match.srcAddressGroups',
+        'dest_address_groups': 'match.destAddressGroups',
+        'src_threat_intelligence': 'match.srcThreatIntelligences',
+        'dest_threat_intelligence': 'match.destThreatIntelligences'
+    }
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     ref = self.NETWORK_FIREWALL_POLICY_ARG.ResolveAsResource(
         args, holder.resources)
@@ -97,6 +109,10 @@ class Update(base.UpdateCommand):
     traffic_direct = None
     src_secure_tags = []
     target_secure_tags = []
+    cleared_fields = []
+    for arg in clearable_arg_name_to_field_name:
+      if args.IsKnownAndSpecified(arg) and not args.GetValue(arg):
+        cleared_fields.append(clearable_arg_name_to_field_name[arg])
     if args.IsSpecified('src_ip_ranges'):
       src_ip_ranges = args.src_ip_ranges
       should_setup_match = True
@@ -193,11 +209,12 @@ class Update(base.UpdateCommand):
           disabled=disabled,
           targetSecureTags=target_secure_tags)
 
-    return network_firewall_policy_rule_client.Update(
-        priority=priority,
-        firewall_policy=args.firewall_policy,
-        firewall_policy_rule=firewall_policy_rule,
-        only_generate_request=False)
+    with holder.client.apitools_client.IncludeFields(cleared_fields):
+      return network_firewall_policy_rule_client.Update(
+          priority=priority,
+          firewall_policy=args.firewall_policy,
+          firewall_policy_rule=firewall_policy_rule,
+          only_generate_request=False)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)

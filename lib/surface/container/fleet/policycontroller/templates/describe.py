@@ -119,7 +119,6 @@ def GetMembershipTemplate(client, messages, project_id, membership,
   return formatted_template
 
 
-@calliope_base.Hidden
 @calliope_base.ReleaseTracks(calliope_base.ReleaseTrack.ALPHA)
 class Describe(calliope_base.DescribeCommand):
   """Describe a Policy Controller constraint template.
