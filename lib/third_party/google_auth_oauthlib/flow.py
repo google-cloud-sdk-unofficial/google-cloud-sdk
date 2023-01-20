@@ -15,46 +15,45 @@
 """OAuth 2.0 Authorization Flow
 
 This module provides integration with `requests-oauthlib`_ for running the
-`OAuth 2.0 Authorization Flow`_ and acquiring user credentials.
+`OAuth 2.0 Authorization Flow`_ and acquiring user credentials.  See
+`Using OAuth 2.0 to Access Google APIs`_ for an overview of OAuth 2.0
+authorization scenarios Google APIs support.
 
-Here's an example of using :class:`Flow` with the installed application
-authorization flow::
+Here's an example of using :class:`InstalledAppFlow`::
 
-    from google_auth_oauthlib.flow import Flow
+    from google_auth_oauthlib.flow import InstalledAppFlow
 
     # Create the flow using the client secrets file from the Google API
     # Console.
-    flow = Flow.from_client_secrets_file(
-        'path/to/client_secrets.json',
-        scopes=['profile', 'email'],
-        redirect_uri='urn:ietf:wg:oauth:2.0:oob')
+    flow = InstalledAppFlow.from_client_secrets_file(
+        'client_secrets.json',
+        scopes=['profile', 'email'])
 
-    # Tell the user to go to the authorization URL.
-    auth_url, _ = flow.authorization_url(prompt='consent')
-
-    print('Please go to this URL: {}'.format(auth_url))
-
-    # The user will get an authorization code. This code is used to get the
-    # access token.
-    code = input('Enter the authorization code: ')
-    flow.fetch_token(code=code)
+    flow.run_local_server()
 
     # You can use flow.credentials, or you can just get a requests session
     # using flow.authorized_session.
     session = flow.authorized_session()
-    print(session.get('https://www.googleapis.com/userinfo/v2/me').json())
 
-This particular flow can be handled entirely by using
-:class:`InstalledAppFlow`.
+    profile_info = session.get(
+        'https://www.googleapis.com/userinfo/v2/me').json()
+
+    print(profile_info)
+    # {'name': '...',  'email': '...', ...}
 
 .. _requests-oauthlib: http://requests-oauthlib.readthedocs.io/en/stable/
 .. _OAuth 2.0 Authorization Flow:
     https://tools.ietf.org/html/rfc6749#section-1.2
+.. _Using OAuth 2.0 to Access Google APIs:
+    https://developers.google.com/identity/protocols/oauth2
+
 """
 from base64 import urlsafe_b64encode
 import hashlib
 import json
 import logging
+import warnings
+
 try:
     from secrets import SystemRandom
 except ImportError:  # pragma: NO COVER
@@ -66,12 +65,16 @@ import wsgiref.util
 
 import google.auth.transport.requests
 import google.oauth2.credentials
-from six.moves import input
 
 import google_auth_oauthlib.helpers
 
 
 _LOGGER = logging.getLogger(__name__)
+_OOB_REDIRECT_URIS = [
+    "urn:ietf:wg:oauth:2.0:oob",
+    "urn:ietf:wg:oauth:2.0:oob:auto",
+    "oob",
+]
 
 
 class Flow(object):
@@ -87,16 +90,21 @@ class Flow(object):
     from the `Google API Console`_.
 
     .. _client secrets file:
-        https://developers.google.com/identity/protocols/OAuth2WebServer
+        https://developers.google.com/identity/protocols/oauth2/web-server
         #creatingcred
     .. _Google API Console:
         https://console.developers.google.com/apis/credentials
     """
 
     def __init__(
-            self, oauth2session, client_type, client_config,
-            redirect_uri=None, code_verifier=None,
-            autogenerate_code_verifier=False):
+        self,
+        oauth2session,
+        client_type,
+        client_config,
+        redirect_uri=None,
+        code_verifier=None,
+        autogenerate_code_verifier=False,
+    ):
         """
         Args:
             oauth2session (requests_oauthlib.OAuth2Session):
@@ -113,8 +121,8 @@ class Flow(object):
             autogenerate_code_verifier (bool): If true, auto-generate a
                 code_verifier.
         .. _client secrets:
-            https://developers.google.com/api-client-library/python/guide
-            /aaa_client_secrets
+            https://github.com/googleapis/google-api-python-client/blob
+            /main/docs/client-secrets.md
         """
         self.client_type = client_type
         """str: The client type, either ``'web'`` or ``'installed'``"""
@@ -147,27 +155,27 @@ class Flow(object):
                 format.
 
         .. _client secrets:
-            https://developers.google.com/api-client-library/python/guide
-            /aaa_client_secrets
+            https://github.com/googleapis/google-api-python-client/blob/main/docs/client-secrets.md
         """
-        if 'web' in client_config:
-            client_type = 'web'
-        elif 'installed' in client_config:
-            client_type = 'installed'
+        if "web" in client_config:
+            client_type = "web"
+        elif "installed" in client_config:
+            client_type = "installed"
         else:
-            raise ValueError(
-                'Client secrets must be for a web or installed app.')
+            raise ValueError("Client secrets must be for a web or installed app.")
 
         # these args cannot be passed to requests_oauthlib.OAuth2Session
-        code_verifier = kwargs.pop('code_verifier', None)
-        autogenerate_code_verifier = kwargs.pop(
-            'autogenerate_code_verifier', None)
+        code_verifier = kwargs.pop("code_verifier", None)
+        autogenerate_code_verifier = kwargs.pop("autogenerate_code_verifier", None)
 
-        session, client_config = (
-            google_auth_oauthlib.helpers.session_from_client_config(
-                client_config, scopes, **kwargs))
+        (
+            session,
+            client_config,
+        ) = google_auth_oauthlib.helpers.session_from_client_config(
+            client_config, scopes, **kwargs
+        )
 
-        redirect_uri = kwargs.get('redirect_uri', None)
+        redirect_uri = kwargs.get("redirect_uri", None)
 
         return cls(
             session,
@@ -175,7 +183,7 @@ class Flow(object):
             client_config,
             redirect_uri,
             code_verifier,
-            autogenerate_code_verifier
+            autogenerate_code_verifier,
         )
 
     @classmethod
@@ -193,7 +201,7 @@ class Flow(object):
         Returns:
             Flow: The constructed Flow instance.
         """
-        with open(client_secrets_file, 'r') as json_file:
+        with open(client_secrets_file, "r") as json_file:
             client_config = json.load(json_file)
 
         return cls.from_client_config(client_config, scopes=scopes, **kwargs)
@@ -206,6 +214,17 @@ class Flow(object):
 
     @redirect_uri.setter
     def redirect_uri(self, value):
+        if value in _OOB_REDIRECT_URIS:
+            warnings.warn(
+                "'{}' is an OOB redirect URI. The OAuth out-of-band (OOB) flow is deprecated. "
+                "New clients will be unable to use this flow starting on Feb 28, 2022. "
+                "This flow will be deprecated for all clients on Oct 3, 2022. "
+                "Migrate to an alternative flow. "
+                "See https://developers.googleblog.com/2022/02/making-oauth-flows-safer.html?m=1#disallowed-oob".format(
+                    value
+                ),
+                DeprecationWarning,
+            )
         self.oauth2session.redirect_uri = value
 
     def authorization_url(self, **kwargs):
@@ -232,23 +251,24 @@ class Flow(object):
                 :class:`Flow` instance to obtain the token, you will need to
                 specify the ``state`` when constructing the :class:`Flow`.
         """
-        kwargs.setdefault('access_type', 'offline')
+        kwargs.setdefault("access_type", "offline")
         if self.autogenerate_code_verifier:
-            chars = ascii_letters+digits+'-._~'
+            chars = ascii_letters + digits + "-._~"
             rnd = SystemRandom()
             random_verifier = [rnd.choice(chars) for _ in range(0, 128)]
-            self.code_verifier = ''.join(random_verifier)
+            self.code_verifier = "".join(random_verifier)
 
         if self.code_verifier:
             code_hash = hashlib.sha256()
             code_hash.update(str.encode(self.code_verifier))
             unencoded_challenge = code_hash.digest()
             b64_challenge = urlsafe_b64encode(unencoded_challenge)
-            code_challenge = b64_challenge.decode().split('=')[0]
-            kwargs.setdefault('code_challenge', code_challenge)
-            kwargs.setdefault('code_challenge_method', 'S256')
+            code_challenge = b64_challenge.decode().split("=")[0]
+            kwargs.setdefault("code_challenge", code_challenge)
+            kwargs.setdefault("code_challenge_method", "S256")
         url, state = self.oauth2session.authorization_url(
-            self.client_config['auth_uri'], **kwargs)
+            self.client_config["auth_uri"], **kwargs
+        )
 
         return url, state
 
@@ -275,10 +295,9 @@ class Flow(object):
                 :meth:`credentials` to obtain a
                 :class:`~google.auth.credentials.Credentials` instance.
         """
-        kwargs.setdefault('client_secret', self.client_config['client_secret'])
-        kwargs.setdefault('code_verifier', self.code_verifier)
-        return self.oauth2session.fetch_token(
-            self.client_config['token_uri'], **kwargs)
+        kwargs.setdefault("client_secret", self.client_config["client_secret"])
+        kwargs.setdefault("code_verifier", self.code_verifier)
+        return self.oauth2session.fetch_token(self.client_config["token_uri"], **kwargs)
 
     @property
     def credentials(self):
@@ -295,7 +314,8 @@ class Flow(object):
             ValueError: If there is no access token in the session.
         """
         return google_auth_oauthlib.helpers.credentials_from_session(
-            self.oauth2session, self.client_config)
+            self.oauth2session, self.client_config
+        )
 
     def authorized_session(self):
         """Returns a :class:`requests.Session` authorized with credentials.
@@ -308,8 +328,7 @@ class Flow(object):
             google.auth.transport.requests.AuthorizedSession: The constructed
                 session.
         """
-        return google.auth.transport.requests.AuthorizedSession(
-            self.credentials)
+        return google.auth.transport.requests.AuthorizedSession(self.credentials)
 
 
 class InstalledAppFlow(Flow):
@@ -320,9 +339,7 @@ class InstalledAppFlow(Flow):
     local development or applications that are installed on a desktop operating
     system.
 
-    This flow has two strategies: The console strategy provided by
-    :meth:`run_console` and the local server strategy provided by
-    :meth:`run_local_server`.
+    This flow uses a local server strategy provided by :meth:`run_local_server`.
 
     Example::
 
@@ -343,36 +360,47 @@ class InstalledAppFlow(Flow):
         # {'name': '...',  'email': '...', ...}
 
 
-    Note that these aren't the only two ways to accomplish the installed
-    application flow, they are just the most common ways. You can use the
+    Note that this isn't the only way to accomplish the installed
+    application flow, just one of the most common. You can use the
     :class:`Flow` class to perform the same flow with different methods of
     presenting the authorization URL to the user or obtaining the authorization
     response, such as using an embedded web view.
 
     .. _Installed Application Authorization Flow:
-        https://developers.google.com/api-client-library/python/auth
-        /installed-app
+        https://github.com/googleapis/google-api-python-client/blob/main/docs/oauth-installed.md
     """
-    _OOB_REDIRECT_URI = 'urn:ietf:wg:oauth:2.0:oob'
+
+    _OOB_REDIRECT_URI = "urn:ietf:wg:oauth:2.0:oob"
 
     _DEFAULT_AUTH_PROMPT_MESSAGE = (
-        'Please visit this URL to authorize this application: {url}')
+        "Please visit this URL to authorize this application: {url}"
+    )
     """str: The message to display when prompting the user for
     authorization."""
-    _DEFAULT_AUTH_CODE_MESSAGE = (
-        'Enter the authorization code: ')
+    _DEFAULT_AUTH_CODE_MESSAGE = "Enter the authorization code: "
     """str: The message to display when prompting the user for the
     authorization code. Used only by the console strategy."""
 
     _DEFAULT_WEB_SUCCESS_MESSAGE = (
-        'The authentication flow has completed, you may close this window.')
+        "The authentication flow has completed. You may close this window."
+    )
 
     def run_console(
-            self,
-            authorization_prompt_message=_DEFAULT_AUTH_PROMPT_MESSAGE,
-            authorization_code_message=_DEFAULT_AUTH_CODE_MESSAGE,
-            **kwargs):
+        self,
+        authorization_prompt_message=_DEFAULT_AUTH_PROMPT_MESSAGE,
+        authorization_code_message=_DEFAULT_AUTH_CODE_MESSAGE,
+        **kwargs
+    ):
         """Run the flow using the console strategy.
+
+        .. deprecated:: 0.5.0
+          Use :meth:`run_local_server` instead.
+
+          The OAuth out-of-band (OOB) flow is deprecated. New clients will be unable to
+          use this flow starting on Feb 28, 2022. This flow will be deprecated
+          for all clients on Oct 3, 2022. Migrate to an alternative flow.
+
+          See https://developers.googleblog.com/2022/02/making-oauth-flows-safer.html?m=1#disallowed-oob"
 
         The console strategy instructs the user to open the authorization URL
         in their browser. Once the authorization is complete the authorization
@@ -391,7 +419,14 @@ class InstalledAppFlow(Flow):
             google.oauth2.credentials.Credentials: The OAuth 2.0 credentials
                 for the user.
         """
-        kwargs.setdefault('prompt', 'consent')
+        kwargs.setdefault("prompt", "consent")
+        warnings.warn(
+            "New clients will be unable to use `InstalledAppFlow.run_console` "
+            "starting on Feb 28, 2022. All clients will be unable to use this method starting on Oct 3, 2022. "
+            "Use `InstalledAppFlow.run_local_server` instead. For details on the OOB flow deprecation, "
+            "see https://developers.googleblog.com/2022/02/making-oauth-flows-safer.html?m=1#disallowed-oob",
+            DeprecationWarning,
+        )
 
         self.redirect_uri = self._OOB_REDIRECT_URI
 
@@ -406,11 +441,17 @@ class InstalledAppFlow(Flow):
         return self.credentials
 
     def run_local_server(
-            self, host='localhost', port=8080,
-            authorization_prompt_message=_DEFAULT_AUTH_PROMPT_MESSAGE,
-            success_message=_DEFAULT_WEB_SUCCESS_MESSAGE,
-            open_browser=True,
-            **kwargs):
+        self,
+        host="localhost",
+        bind_addr=None,
+        port=8080,
+        authorization_prompt_message=_DEFAULT_AUTH_PROMPT_MESSAGE,
+        success_message=_DEFAULT_WEB_SUCCESS_MESSAGE,
+        open_browser=True,
+        redirect_uri_trailing_slash=True,
+        timeout_seconds=None,
+        **kwargs
+    ):
         """Run the flow using the server strategy.
 
         The server strategy instructs the user to open the authorization URL in
@@ -424,6 +465,11 @@ class InstalledAppFlow(Flow):
         Args:
             host (str): The hostname for the local redirect server. This will
                 be served over http, not https.
+            bind_addr (str): Optionally provide an ip address for the redirect
+                server to listen on when it is not the same as host
+                (e.g. in a container). Default value is None,
+                which means that the redirect server will listen
+                on the ip address specified in the host parameter.
             port (int): The port for the local redirect server.
             authorization_prompt_message (str): The message to display to tell
                 the user to navigate to the authorization URL.
@@ -431,6 +477,12 @@ class InstalledAppFlow(Flow):
                 the authorization flow is complete.
             open_browser (bool): Whether or not to open the authorization URL
                 in the user's browser.
+            redirect_uri_trailing_slash (bool): whether or not to add trailing
+                slash when constructing the redirect_uri. Default value is True.
+            timeout_seconds (int): It will raise an error after the timeout timing
+                if there are no credentials response. The value is in seconds.
+                When set to None there is no timeout.
+                Default value is None.
             kwargs: Additional keyword arguments passed through to
                 :meth:`authorization_url`.
 
@@ -439,11 +491,16 @@ class InstalledAppFlow(Flow):
                 for the user.
         """
         wsgi_app = _RedirectWSGIApp(success_message)
+        # Fail fast if the address is occupied
+        wsgiref.simple_server.WSGIServer.allow_reuse_address = False
         local_server = wsgiref.simple_server.make_server(
-            host, port, wsgi_app, handler_class=_WSGIRequestHandler)
+            bind_addr or host, port, wsgi_app, handler_class=_WSGIRequestHandler
+        )
 
-        self.redirect_uri = 'http://{}:{}/'.format(
-            host, local_server.server_port)
+        redirect_uri_format = (
+            "http://{}:{}/" if redirect_uri_trailing_slash else "http://{}:{}"
+        )
+        self.redirect_uri = redirect_uri_format.format(host, local_server.server_port)
         auth_url, _ = self.authorization_url(**kwargs)
 
         if open_browser:
@@ -451,13 +508,16 @@ class InstalledAppFlow(Flow):
 
         print(authorization_prompt_message.format(url=auth_url))
 
+        local_server.timeout = timeout_seconds
         local_server.handle_request()
 
         # Note: using https here because oauthlib is very picky that
         # OAuth 2.0 should only occur over https.
-        authorization_response = wsgi_app.last_request_uri.replace(
-            'http', 'https')
+        authorization_response = wsgi_app.last_request_uri.replace("http", "https")
         self.fetch_token(authorization_response=authorization_response)
+
+        # This closes the socket
+        local_server.server_close()
 
         return self.credentials
 
@@ -467,6 +527,7 @@ class _WSGIRequestHandler(wsgiref.simple_server.WSGIRequestHandler):
 
     Uses a named logger instead of printing to stderr.
     """
+
     def log_message(self, format, *args):
         # pylint: disable=redefined-builtin
         # (format is the argument name defined in the superclass.)
@@ -499,6 +560,6 @@ class _RedirectWSGIApp(object):
         Returns:
             Iterable[bytes]: The response body.
         """
-        start_response('200 OK', [('Content-type', 'text/plain')])
+        start_response("200 OK", [("Content-type", "text/plain; charset=utf-8")])
         self.last_request_uri = wsgiref.util.request_uri(environ)
-        return [self._success_message.encode('utf-8')]
+        return [self._success_message.encode("utf-8")]

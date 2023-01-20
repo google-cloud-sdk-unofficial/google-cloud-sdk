@@ -43,8 +43,27 @@ class Create(base.CreateCommand):
           us-east4 region, run:
 
             $ {command} my-instance --content=my-content --version=my-version --add-region=region=us-west1,capacity=2 --add-region=region=us-east4,capacity=3
+
+          Optionally, a fallback url may be specified. Users will be redirected
+          to this fallback url when the service instance is unable to provide
+          the streaming experience.
+          To create a service instance called 'my-instance' serving content
+          'my-content' with version 'my-version' that has availablilty for 2
+          concurent sessions in us-west1 and uses fallback url
+          'https://www.google.com' run:
+
+            $ {command} my-instance --content=my-content --version=my-version --add-region=region=us-west1,capacity=2 --fallback-url='https://www.google.com'
       """)
   }
+
+  @staticmethod
+  def __ValidateArgs(args):
+    regions = {region_config['region'] for region_config in args.add_region}
+    if len(regions) < len(args.add_region):
+      log.error('Duplicate regions in --add-region arguments.')
+      return False
+
+    return True
 
   @staticmethod
   def Args(parser):
@@ -55,16 +74,27 @@ class Create(base.CreateCommand):
         '--version',
         required=True,
         help='Build version tag of the content served by this instance')
+    parser.add_argument(
+        '--fallback-url',
+        help='Fallback url to redirect users to when this service instance is unable to provide the streaming experience',
+        required=False)
     flags.AddRegionConfigArg('--add-region', parser)
     base.ASYNC_FLAG.AddToParser(parser)
 
   def Run(self, args):
+    if not Create.__ValidateArgs(args):
+      return
+
     region_configs = args.add_region
     content_ref = args.CONCEPTS.content.Parse()
     content_name = content_ref.RelativeName()
     location = content_ref.locationsId
     instance_name = args.instance
     version = args.version
+    fallback_url = args.fallback_url
+
+    if fallback_url and not flags.ValidateUrl(fallback_url):
+      return
 
     client = api_util.GetClient()
     target_location_configs = instances.GenerateTargetLocationConfigs(
@@ -73,7 +103,8 @@ class Create(base.CreateCommand):
         remove_regions=None,
         current_instance=None)
     result_operation = instances.Create(instance_name, content_name, location,
-                                        version, target_location_configs)
+                                        version, target_location_configs,
+                                        fallback_url)
     log.status.Print('Create request issued for: [{}]'.format(instance_name))
     if args.async_:
       log.status.Print('Check operation [{}] for status.\n'.format(

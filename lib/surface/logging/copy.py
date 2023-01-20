@@ -43,7 +43,7 @@ class Copy(base.Command):
               'The filter must be no more than 20k characters. '
               'An empty filter matches all log entries.'))
 
-    util.AddParentArgs(parser, 'Copy log entries')
+    util.AddParentArgs(parser, 'log entries to copy')
 
   def _Run(self, args):
     if not args.log_filter:

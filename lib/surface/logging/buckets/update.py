@@ -27,7 +27,7 @@ from googlecloudsdk.core.console import console_io
 DETAILED_HELP = {
     'DESCRIPTION':
         """
-        Updates the properties of a bucket.
+        Update the properties of a bucket.
     """,
     'EXAMPLES':
         """
@@ -60,7 +60,7 @@ DETAILED_HELP = {
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
 class Update(base.UpdateCommand):
-  """Updates a bucket.
+  """Update a bucket.
 
   Changes one or more properties associated with a bucket.
   """

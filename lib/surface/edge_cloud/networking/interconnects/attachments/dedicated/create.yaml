@@ -28,14 +28,6 @@
       required: true
       help_text: |
         The underlying interconnect object that this attachment's traffic will traverse through.
-    - arg_name: router
-      api_field: interconnectAttachment.router
-      hidden: true
-      action:
-        deprecated:
-          warn: Flag {flag_name} is deprecated. Use --network instead.
-      help_text: |
-        The router to use for dynamic routing.
     - arg_name: network
       api_field: interconnectAttachment.network
       help_text: |

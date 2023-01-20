@@ -518,8 +518,7 @@ class Create(base.CreateCommand):
             args.post_key_revocation_action_type, compute_client.messages
             .Instance.PostKeyRevocationActionTypeValueValuesEnum)
 
-      if args.IsSpecified(
-          'key_revocation_action_type'):
+      if args.IsSpecified('key_revocation_action_type'):
         instance.keyRevocationActionType = arg_utils.ChoiceToEnum(
             args.key_revocation_action_type, compute_client.messages.Instance
             .KeyRevocationActionTypeValueValuesEnum)

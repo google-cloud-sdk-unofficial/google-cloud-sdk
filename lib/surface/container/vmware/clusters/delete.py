@@ -32,7 +32,6 @@ $ {command} my-cluster --location=us-west1
 """
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Delete(base.DeleteCommand):
   """Delete an Anthos cluster on VMware."""

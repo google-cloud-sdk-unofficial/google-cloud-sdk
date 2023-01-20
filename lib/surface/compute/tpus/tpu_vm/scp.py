@@ -94,8 +94,10 @@ class Scp(base.Command):
     srcs = [ssh.FileReference.FromPath(src) for src in args.sources]
     ssh.SCPCommand.Verify(srcs, dst, single_remote=True)
     if dst.remote:
+      # SCP from local to TPU-VM.
       tpu_name = dst.remote.host
     else:
+      # SCP from TPU-VM to local.
       tpu_name = srcs[0].remote.host
 
     # If zone is not set, retrieve the one from the config.
@@ -229,7 +231,14 @@ class Scp(base.Command):
       # threads do not mutate the same object. b/238058396
       worker_dst = copy.deepcopy(dst)
       if worker_dst.remote:
+        # SCP from local to TPU-VM.
         worker_dst.remote.host = ips.ip_address
+      else:
+        # SCP from  TPU-VM to local.
+        # copy.deepcopy() is not needed for this case because copying from
+        # remote to local only supports a single worker, so there is no concern
+        # of race conditions that mutate the remote ip address
+        srcs[0].remote.host = ips.ip_address
 
       options = None
       if not args.plain:

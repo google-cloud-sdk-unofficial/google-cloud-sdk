@@ -8,10 +8,6 @@
 
         $ {command} my-content --bucket=my-new-bucket
 
-      To trigger an update to the UI configuration, run:
-
-        $ {command} my-content --uiconfig
-
   request:
     collection: stream.projects.locations.streamContents
     api_version: v1alpha1
@@ -32,10 +28,6 @@
           api_field: streamContent.bucketName
           help_text: |
             The name of the Cloud Storage bucket in the consumer project that stores the content source.
-        - arg_name: uiconfig
-          type: bool
-          help_text: |
-            Boolean flag indicating that the update call is for UI configuration.
 
   async:
     collection: stream.projects.locations.operations

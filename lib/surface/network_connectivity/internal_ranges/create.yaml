@@ -1,4 +1,4 @@
-- release_tracks: [ALPHA]
+- release_tracks: [ALPHA, GA]
 
   help_text:
     brief: |
@@ -106,14 +106,14 @@
         enum_value: FOR_SELF
         help_text: |
           This beharior represents the case that the internal range is intended to be used in the
-          VPC on which it is created and is accessible from it's peers. This implies that peers or
-          peer-of-peer's cannot use this range.
+          VPC on which it is created and is accessible from its peers. This implies that peers or
+          peer-of-peers cannot use this range.
       - arg_value: for-peer
         enum_value: FOR_PEER
         help_text: |
           This behavior can be set when the internal range is being reserved for usage by the peers.
           This means that no resource within the VPC in which it is being created can use this to
-          associate with a cloud resource, but one of the peer's can. This represents "donating" a
+          associate with a cloud resource, but one of the peers can. This represents "donating" a
           range for peers to use.
       - arg_value: not-shared
         enum_value: NOT_SHARED
@@ -122,7 +122,7 @@
           which it is created but not shared with the peers. In a sense it is local to the VPC. This
           can be used to create internal ranges for various purposes like
           HTTP_INTERNAL_LOAD_BALANCER or for interconnect routes that are not shared with peers.
-          This also implies that peer's cannot use this range in a way that is visible to this VPC,
+          This also implies that peers cannot use this range in a way that is visible to this VPC,
           but can re-use this range as long as it is NOT_SHARED from the peer VPC too.
       default: for-self
     - arg_name: overlaps
@@ -139,6 +139,9 @@
     collection: networkconnectivity.projects.locations.operations
 
   request: &request
-    api_version: v1alpha1
+    ALPHA:
+      api_version: v1alpha1
+    GA:
+      api_version: v1
     collection: networkconnectivity.projects.locations.internalRanges
     method: create

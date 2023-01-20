@@ -41,7 +41,7 @@ class List(base.ListCommand):
   def Args(parser):
     """Register flags for this command."""
 
-    util.AddParentArgs(parser, 'List locations')
+    util.AddParentArgs(parser, 'locations to list')
     parser.display_info.AddFormat('table(locationId)')
 
   def Run(self, args):

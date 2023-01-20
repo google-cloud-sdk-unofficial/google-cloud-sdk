@@ -7,6 +7,8 @@
 
         $ {command} 3421ef
 
+        $ {command} 3421ef --database=(default)
+
   request:
     collection: firestore.projects.databases.collectionGroups.indexes
 
@@ -15,7 +17,6 @@
       help_text: Index to describe.
       spec: !REF googlecloudsdk.command_lib.firestore.resources:index
       removed_flags:
-      - database
       - collection-group
 
   output:
@@ -44,6 +45,7 @@
                name.segment(-3):label=COLLECTION_GROUP,\
                queryScope,\
                state,\
+               apiScope,\
                fields.slice(:-1).*extract('fieldPath').*flatten().join('\n'):label=FIELD_PATHS,\
                fields.slice(:-1).*extract('order').*flatten().join('\n'):label=ORDER,\
                fields.slice(:-1).*extract('arrayConfig').*flatten().join('\n'):label=ARRAY_CONFIG)"

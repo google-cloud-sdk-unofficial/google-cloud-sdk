@@ -51,7 +51,7 @@ def _DetailedHelp():
 def _AddArgs(parser, include_alpha_logging, include_global_managed_proxy,
              include_aggregate_purpose, include_private_service_connect,
              include_l2, include_private_nat, include_reserved_internal_range,
-             api_version):
+             include_external_ipv6_prefix, api_version):
   """Add subnetwork create arguments to parser."""
   parser.display_info.AddFormat(flags.DEFAULT_LIST_FORMAT_WITH_IPV6_FIELD)
 
@@ -286,6 +286,15 @@ def _AddArgs(parser, include_alpha_logging, include_global_managed_proxy,
          * `INTERNAL_RANGE_URL` - `URL of an InternalRange resource.`
         """)
 
+  if include_external_ipv6_prefix:
+    parser.add_argument(
+        '--external-ipv6-prefix',
+        help=("""
+        Set external IPv6 prefix to be allocated for this subnetwork.
+
+        For example, `--external-ipv6-prefix 2600:1901:0:0:0:0:0:0/64`
+        """))
+
 
 def GetPrivateIpv6GoogleAccessTypeFlagMapper(messages):
   return arg_utils.ChoiceEnumMapper(
@@ -307,7 +316,8 @@ def _CreateSubnetwork(messages, subnet_ref, network_ref, args,
                       include_alpha_logging, include_global_managed_proxy,
                       include_aggregate_purpose,
                       include_private_service_connect, include_l2,
-                      include_reserved_internal_range):
+                      include_reserved_internal_range,
+                      include_external_ipv6_prefix):
   """Create the subnet resource."""
   subnetwork = messages.Subnetwork(
       name=subnet_ref.Name(),
@@ -425,12 +435,16 @@ def _CreateSubnetwork(messages, subnet_ref, network_ref, args,
     if args.reserved_internal_range:
       subnetwork.reservedInternalRange = args.reserved_internal_range
 
+  if include_external_ipv6_prefix:
+    if args.external_ipv6_prefix:
+      subnetwork.externalIpv6Prefix = args.external_ipv6_prefix
+
   return subnetwork
 
 
 def _Run(args, holder, include_alpha_logging, include_global_managed_proxy,
          include_aggregate_purpose, include_private_service_connect, include_l2,
-         include_reserved_internal_range):
+         include_reserved_internal_range, include_external_ipv6_prefix):
   """Issues a list of requests necessary for adding a subnetwork."""
   client = holder.client
 
@@ -442,12 +456,11 @@ def _Run(args, holder, include_alpha_logging, include_global_managed_proxy,
       holder.resources,
       scope_lister=compute_flags.GetDefaultScopeLister(client))
 
-  subnetwork = _CreateSubnetwork(client.messages, subnet_ref, network_ref, args,
-                                 include_alpha_logging,
-                                 include_global_managed_proxy,
-                                 include_aggregate_purpose,
-                                 include_private_service_connect, include_l2,
-                                 include_reserved_internal_range)
+  subnetwork = _CreateSubnetwork(
+      client.messages, subnet_ref, network_ref, args, include_alpha_logging,
+      include_global_managed_proxy, include_aggregate_purpose,
+      include_private_service_connect, include_l2,
+      include_reserved_internal_range, include_external_ipv6_prefix)
   request = client.messages.ComputeSubnetworksInsertRequest(
       subnetwork=subnetwork,
       region=subnet_ref.region,
@@ -477,6 +490,7 @@ class Create(base.CreateCommand):
   _include_l2 = False
   _include_private_nat = False
   _include_reserved_internal_range = False
+  _include_external_ipv6_prefix = False
   _api_version = compute_api.COMPUTE_GA_API_VERSION
 
   detailed_help = _DetailedHelp()
@@ -487,7 +501,7 @@ class Create(base.CreateCommand):
              cls._include_global_managed_proxy, cls._include_aggregate_purpose,
              cls._include_private_service_connect, cls._include_l2,
              cls._include_private_nat, cls._include_reserved_internal_range,
-             cls._api_version)
+             cls._include_external_ipv6_prefix, cls._api_version)
 
   def Run(self, args):
     """Issues a list of requests necessary for adding a subnetwork."""
@@ -496,7 +510,8 @@ class Create(base.CreateCommand):
                 self._include_global_managed_proxy,
                 self._include_aggregate_purpose,
                 self._include_private_service_connect, self._include_l2,
-                self._include_reserved_internal_range)
+                self._include_reserved_internal_range,
+                self._include_external_ipv6_prefix)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
@@ -504,6 +519,7 @@ class CreateBeta(Create):
   """Create a subnet in the Beta release track."""
 
   _include_private_service_connect = True
+  _include_reserved_internal_range = True
   _api_version = compute_api.COMPUTE_BETA_API_VERSION
 
 
@@ -518,4 +534,5 @@ class CreateAlpha(CreateBeta):
   _include_l2 = True
   _include_private_nat = True
   _include_reserved_internal_range = True
+  _include_external_ipv6_prefix = True
   _api_version = compute_api.COMPUTE_ALPHA_API_VERSION

@@ -31,7 +31,6 @@ $ {command} my-cluster --location=us-west1
 """
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Delete(base.DeleteCommand):
   """Delete an Anthos cluster on bare metal."""
@@ -40,7 +39,7 @@ class Delete(base.DeleteCommand):
 
   @staticmethod
   def Args(parser):
-    flags.AddClusterResourceArg(parser, 'to delete')
+    flags.AddClusterResourceArg(parser, verb='to delete')
     flags.AddValidationOnly(parser)
     flags.AddForceCluster(parser)
     flags.AddAllowMissingCluster(parser)

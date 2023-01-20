@@ -42,13 +42,18 @@ class Unenroll(base.Command):
   def Args(parser):
     """Registers flags for this command."""
     flags.AddClusterResourceArg(parser, 'to unenroll')
-    flags.AddForceUnenroll(parser)
+    flags.AddForceUnenrollCluster(parser)
+    flags.AddAllowMissingUnenrollCluster(parser)
+    flags.AddValidationOnly(parser)
     base.ASYNC_FLAG.AddToParser(parser)
 
   def Run(self, args):
     """Runs the unenroll command."""
     cluster_client = apis.ClustersClient()
     operation = cluster_client.Unenroll(args)
+
+    if args.validate_only:
+      return
 
     if args.async_:
       return operation

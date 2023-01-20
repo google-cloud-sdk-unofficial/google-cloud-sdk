@@ -28,9 +28,9 @@ from googlecloudsdk.core.console import console_io
 
 @base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
 class Update(base.UpdateCommand):
-  """Updates a sink.
+  """Update a sink.
 
-  Changes the *[DESTINATION]* or *--log-filter* associated with a sink.
+  Change the *[DESTINATION]* or *--log-filter* associated with a sink.
   The new destination must already exist and Cloud Logging must have
   permission to write to it.
 
@@ -59,7 +59,7 @@ class Update(base.UpdateCommand):
         '--log-filter',
         help=('A new filter expression for the sink. '
               'If omitted, the sink\'s existing filter (if any) is unchanged.'))
-    util.AddParentArgs(parser, 'Update a sink')
+    util.AddParentArgs(parser, 'sink to update')
 
     bigquery_group = parser.add_argument_group(
         help='Settings for sink exporting data to BigQuery.')
@@ -289,9 +289,9 @@ class Update(base.UpdateCommand):
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class UpdateAlpha(Update):
-  """Updates a sink.
+  """Update a sink.
 
-  Changes the *[DESTINATION]* or *--log-filter* associated with a sink.
+  Change the *[DESTINATION]* or *--log-filter* associated with a sink.
   The new destination must already exist and Cloud Logging must have
   permission to write to it.
 

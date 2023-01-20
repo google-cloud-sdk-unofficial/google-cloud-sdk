@@ -24,10 +24,10 @@ from googlecloudsdk.command_lib.network_security import flags
 from googlecloudsdk.command_lib.network_security import util
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
 class ListReferences(base.ListCommand):
   """Lists References of an Organization Address Group."""
-  _release_track = base.ReleaseTrack.ALPHA
+  _release_track = base.ReleaseTrack.BETA
 
   detailed_help = {
       'EXAMPLES':
@@ -46,3 +46,8 @@ class ListReferences(base.ListCommand):
   def Run(self, args):
     return util.ListOrganizationAddressGroupReferences(self._release_track,
                                                        args)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class ListReferencesAlpha(ListReferences):
+  """Lists References of an Organization Address Group."""

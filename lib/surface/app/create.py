@@ -43,6 +43,9 @@ class Create(base.CreateCommand):
 
               $ {command} --region=us-central
 
+          To create an app that with a user-managed service account, run:
+
+              $ {command} --service-account=SERVICE_ACCOUNT
           """,
   }
 
@@ -55,7 +58,6 @@ class Create(base.CreateCommand):
               'If not provided, select region interactively.'))
     parser.add_argument(
         '--service-account',
-        hidden=True,
         help=(
             'The app-level default service account to create the app with.  '
             'Note that you can specify a distinct service account for each App Engine version with `gcloud app deploy --service-account`. However if you do not specify a version-level service account, this default will be used. '

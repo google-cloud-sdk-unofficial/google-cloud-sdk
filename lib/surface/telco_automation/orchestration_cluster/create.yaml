@@ -1,0 +1,19 @@
+- release_tracks: [ALPHA]
+
+  help_text:
+    brief: Create a Telco Automation orchestrationCluster.
+    description: |
+      Create a new Telco Automation orchestrationCluster.
+    examples: |
+      To create an orchestrationCluster called `test-orchestrationCluster` in location `us-central1`, run:
+
+        $ {command} test-orchestrationCluster --location=us-central1
+
+  request:
+    collection: telcoautomation.projects.locations.orchestrationClusters
+    api_version: v1alpha1
+
+  arguments:
+    resource:
+      help_text: Telco Automation orchestrationCluster to create.
+      spec: !REF googlecloudsdk.command_lib.telco_automation.resources:orchestrationCluster

@@ -45,7 +45,7 @@ class Cancel(base.Command):
     parser.add_argument(
         '--location', required=True, help='Location of the operation.')
 
-    util.AddParentArgs(parser, 'Cancel operation')
+    util.AddParentArgs(parser, 'operation to cancel')
 
   def Run(self, args):
     """This is what gets called when the user runs this command.

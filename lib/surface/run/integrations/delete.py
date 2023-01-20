@@ -61,9 +61,10 @@ class Delete(base.Command):
   def Run(self, args):
     """Delete a Cloud Run Integration."""
     integration_name = args.name
+    release_track = self.ReleaseTrack()
 
     conn_context = connection_context.GetConnectionContext(
-        args, run_flags.Product.RUN_APPS, self.ReleaseTrack())
+        args, run_flags.Product.RUN_APPS, release_track)
 
     console_io.PromptContinue(
         message=('Integration [{}] will be deleted. '
@@ -72,7 +73,7 @@ class Delete(base.Command):
         throw_if_unattended=True,
         cancel_on_no=True)
 
-    with run_apps_operations.Connect(conn_context) as client:
+    with run_apps_operations.Connect(conn_context, release_track) as client:
       try:
         integration_type = client.DeleteIntegration(name=integration_name)
       except exceptions.IntegrationsOperationError as err:

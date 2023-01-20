@@ -41,7 +41,7 @@ class List(base.ListCommand):
     base.URI_FLAG.RemoveFromParser(parser)
     base.FILTER_FLAG.RemoveFromParser(parser)
 
-    util.AddParentArgs(parser, 'List operations')
+    util.AddParentArgs(parser, 'operations to list')
 
   def Run(self, args):
     """This is what gets called when the user runs this command.

@@ -70,13 +70,11 @@ class List(base.ListCommand):
         require_coverage_in_tests=False,
         category=base.LIST_COMMAND_FLAGS,
         help="""\
-        Apply a Boolean filter _EXPRESSION_ to each resource item to be listed.
-        If the expression evaluates `True`, then that item is listed. For more
+        Apply a Boolean filter EXPRESSION to each resource item to be listed.
+        If the expression evaluates True, then that item is listed. For more
         details and examples of filter expressions, run $ gcloud topic filters.
-        With the exception of regex matching, this flag interacts with other
-        flags that are applied in this order: *--flatten*, *--sort-by*,
-        *--filter*, *--limit*. Any regex operations specified by *--filter* are
-        applied client-side, after *--limit*.""").AddToParser(parser)
+        This flag interacts with other flags that are applied in this order:
+        --flatten, --sort-by, --filter, --limit.""").AddToParser(parser)
 
     parser.display_info.AddFormat("""
         table(
@@ -124,5 +122,4 @@ class List(base.ListCommand):
             filter=server_filter),
         field='builds',
         batch_size=args.page_size,
-        limit=args.limit,
         batch_size_attribute='pageSize')

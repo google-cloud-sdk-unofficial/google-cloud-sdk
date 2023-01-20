@@ -26,7 +26,7 @@ from googlecloudsdk.core.console import console_io
 
 @base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
 class Create(base.CreateCommand):
-  """Creates a bucket.
+  """Create a bucket.
 
   After creating a bucket, use a log sink to route logs into the bucket.
 
@@ -53,7 +53,6 @@ class Create(base.CreateCommand):
 
     $ {command} my-bucket --location=us-central1
       --cmek-kms-key-name=CMEK_KMS_KEY_NAME
-
   """
 
   @staticmethod

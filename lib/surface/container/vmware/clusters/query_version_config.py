@@ -35,7 +35,6 @@ $ {command} --cluster=my-user-cluster
 """
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class QueryVersionConfig(base.Command):
   """Query Anthos on VMware version configuration."""

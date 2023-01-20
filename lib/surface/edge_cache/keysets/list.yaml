@@ -1,11 +1,10 @@
 - release_tracks: [ALPHA, GA]
-  hidden: true
   help_text:
-    brief: List EdgeCacheKeysets.
+    brief: List EdgeCacheKeyset resources.
     description: |
-      List EdgeCacheKeysets.
+      List EdgeCacheKeyset resources.
     examples: |
-      To list existing keysets, run:
+      To list existing EdgeCacheKeyset resources, run:
 
         $ {command}
 

@@ -38,7 +38,6 @@ $ {command} my-cluster --location=us-west1 --version=1.13.0-gke.1000
 """
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Upgrade(base.Command):
   """Centrally upgrade an Anthos cluster on VMware."""
@@ -54,7 +53,7 @@ class Upgrade(base.Command):
     """
     parser.display_info.AddFormat(constants.VMWARE_CLUSTERS_FORMAT)
     flags.AddClusterResourceArg(parser, 'to upgrade')
-    flags.AddVersion(parser)
+    flags.AddVersion(parser, required=True)
 
   def Run(self, args):
     """Runs the upgrade command.
@@ -119,10 +118,10 @@ class Upgrade(base.Command):
 
   def _upgrade(self, args, cluster_ref):
     log.status.Print(
-        'Upgrading Anthos on VMware cluster [{}]'.format(cluster_ref))
+        'Upgrading Anthos on VMware user cluster [{}]'.format(cluster_ref))
     cluster_client = vmware_clusters.ClustersClient()
     operation_client = operations.OperationsClient()
     operation = cluster_client.Update(args)
     operation_response = operation_client.Wait(operation)
-    log.UpdatedResource(cluster_ref, 'Anthos on VMware cluster')
+    log.UpdatedResource(cluster_ref, 'Anthos on VMware user cluster')
     return operation_response

@@ -73,10 +73,11 @@ class Create(base.Command):
     parameters = flags.GetParameters(args)
     flags.ValidateCreateParameters(integration_type, parameters, service)
     flags.ValidateEnabledGcpApis(integration_type)
+    release_track = self.ReleaseTrack()
 
     conn_context = connection_context.GetConnectionContext(
-        args, run_flags.Product.RUN_APPS, self.ReleaseTrack())
-    with run_apps_operations.Connect(conn_context) as client:
+        args, run_flags.Product.RUN_APPS, release_track)
+    with run_apps_operations.Connect(conn_context, release_track) as client:
       self._validateServiceNameAgainstIntegrations(
           client,
           integration_type=integration_type,
@@ -104,7 +105,7 @@ class Create(base.Command):
       pretty_print.Info('')
       pretty_print.Info(call_to_action)
       pretty_print.Info(
-          messages_util.CheckStatusMessage(self.ReleaseTrack(),
+          messages_util.CheckStatusMessage(release_track,
                                            integration_name))
 
   def _validateServiceNameAgainstIntegrations(self, client, integration_type,

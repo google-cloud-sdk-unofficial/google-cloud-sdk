@@ -46,7 +46,7 @@ class Create(base.CreateCommand):
     parser.add_argument(
         '--log-filter',
         help='A filter for the view.')
-    util.AddParentArgs(parser, 'Create view')
+    util.AddParentArgs(parser, 'view to create')
     util.AddBucketLocationArg(
         parser, True, 'Location of the bucket that will hold the view.')
     parser.add_argument(

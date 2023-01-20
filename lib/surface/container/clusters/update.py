@@ -394,16 +394,13 @@ class Update(base.UpdateCommand):
     opts.security_group = args.security_group
     opts.autoprovisioning_network_tags = args.autoprovisioning_network_tags
     opts.enable_image_streaming = args.enable_image_streaming
-    # TODO(b/201956384) Remove check that requires specifying scope, once
-    # cluster scope is also GA. This check is added to prevent enabling cluster
-    # scope(the default scope) by not specifying a scope value.
     opts.cluster_dns = args.cluster_dns
     opts.cluster_dns_scope = args.cluster_dns_scope
     opts.cluster_dns_domain = args.cluster_dns_domain
+    # TODO(b/201956384): Remove when cluster scope flag is released to GA.
     if opts.cluster_dns and opts.cluster_dns.lower() == 'clouddns':
-      if not opts.cluster_dns_scope:
-        raise util.Error(
-            'DNS Scope should be specified when using CloudDNS in GA.')
+      if opts.cluster_dns_scope == 'cluster':
+        opts.cluster_dns_scope = None
       console_io.PromptContinue(
           message='All the node-pools in the cluster need to be re-created '
           'by the user to start using Cloud DNS for DNS lookups. It is '
@@ -452,7 +449,6 @@ class Update(base.UpdateCommand):
       cluster_name = cluster.name
       cluster_node_count = cluster.currentNodeCount
       cluster_zone = cluster.zone
-      self.MaybeLogDataplaneV2ScaleWarning(cluster)
     except (exceptions.HttpException, apitools_exceptions.HttpForbiddenError,
             util.Error) as error:
       if cluster_is_required:
@@ -740,19 +736,6 @@ to completion."""
         getattr(args, 'clear_cross_connect_subnetworks', False) or
         getattr(args, 'enable_google_cloud_access', False))
 
-  def MaybeLogDataplaneV2ScaleWarning(self, cluster):
-    if (cluster.networkConfig is not None and
-        cluster.networkConfig.datapathProvider is not None and
-        cluster.networkConfig.datapathProvider.name == 'ADVANCED_DATAPATH'):
-      # TODO(b/177430844): Remove once scale limits are gone
-      log.status.Print(
-          'Note: GKE Dataplane V2 has been certified to run up to 500 nodes '
-          'per cluster, including node autoscaling and surge upgrades. You '
-          'may request a cluster size of up to 1000 nodes by filing a '
-          'support ticket with GCP. For more information, please see '
-          'https://cloud.google.com/kubernetes-engine/docs/concepts/dataplane-v2'
-      )
-
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class UpdateBeta(Update):
@@ -932,7 +915,7 @@ class UpdateBeta(Update):
     opts.enable_google_cloud_access = args.enable_google_cloud_access
     opts.enable_cost_allocation = args.enable_cost_allocation
     opts.binauthz_evaluation_mode = args.binauthz_evaluation_mode
-    opts.binauthz_policy = None
+    opts.binauthz_policy = args.binauthz_policy
     opts.stack_type = args.stack_type
     opts.logging_variant = args.logging_variant
     opts.additional_pod_ipv4_ranges = args.additional_pod_ipv4_ranges
@@ -1116,7 +1099,7 @@ class UpdateAlpha(Update):
     opts.enable_private_endpoint = args.enable_private_endpoint
     opts.enable_google_cloud_access = args.enable_google_cloud_access
     opts.binauthz_evaluation_mode = args.binauthz_evaluation_mode
-    opts.binauthz_policy = None
+    opts.binauthz_policy = args.binauthz_policy
     opts.stack_type = args.stack_type
     opts.gateway_api = args.gateway_api
     opts.logging_variant = args.logging_variant

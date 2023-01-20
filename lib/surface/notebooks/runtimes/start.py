@@ -32,7 +32,7 @@ DETAILED_HELP = {
         """
     To start a runtime, run:
 
-        $ {command} example-runtime --location=us-central1-a
+        $ {command} example-runtime --location=us-central1
     """,
 }
 

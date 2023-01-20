@@ -18,6 +18,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+from apitools.base.py import extra_types
 from googlecloudsdk.api_lib.ai import operations
 from googlecloudsdk.api_lib.ai.models import client
 from googlecloudsdk.api_lib.util import apis
@@ -221,6 +222,11 @@ class UploadV1Beta1(UploadV1):
     super(UploadV1Beta1, self).__init__(*args, **kwargs)
     self.messages = client.ModelsClient().messages
 
+  @staticmethod
+  def Args(parser):
+    flags.AddUploadModelFlags(parser, region_util.PromptForOpRegion)
+    flags.AddUploadModelFlagsForSimilarity(parser)
+
   def Run(self, args):
     region_ref = args.CONCEPTS.region.Parse()
     region = region_ref.AsDict()['locationsId']
@@ -274,11 +280,34 @@ class UploadV1Beta1(UploadV1):
               sampledShapleyAttribution=self.messages
               .GoogleCloudAiplatformV1beta1SampledShapleyAttribution(
                   pathCount=args.explanation_path_count)))
+    elif method.lower() == 'examples':
+      if args.explanation_nearest_neighbor_search_config_file:
+        parameters = (
+            self.messages.GoogleCloudAiplatformV1beta1ExplanationParameters(
+                examples=self.messages.GoogleCloudAiplatformV1beta1Examples(
+                    gcsSource=self.messages
+                    .GoogleCloudAiplatformV1beta1GcsSource(uris=args.uris),
+                    neighborCount=args.explanation_neighbor_count,
+                    nearestNeighborSearchConfig=self._ReadIndexMetadata(
+                        args.explanation_nearest_neighbor_search_config_file))))
+      else:
+        parameters = (
+            self.messages.GoogleCloudAiplatformV1beta1ExplanationParameters(
+                examples=self.messages.GoogleCloudAiplatformV1beta1Examples(
+                    gcsSource=self.messages
+                    .GoogleCloudAiplatformV1beta1GcsSource(uris=args.uris),
+                    neighborCount=args.explanation_neighbor_count,
+                    presets=self.messages.GoogleCloudAiplatformV1beta1Presets(
+                        modality=self.messages
+                        .GoogleCloudAiplatformV1beta1Presets
+                        .ModalityValueValuesEnum(args.explanation_modality),
+                        query=self.messages.GoogleCloudAiplatformV1beta1Presets
+                        .QueryValueValuesEnum(args.explanation_query)))))
     else:
       raise gcloud_exceptions.BadArgumentException(
           '--explanation-method',
           'Explanation method must be one of `integrated-gradients`, '
-          '`xrai` and `sampled-shapley`.')
+          '`xrai`, `sampled-shapley` and `examples`.')
     return self.messages.GoogleCloudAiplatformV1beta1ExplanationSpec(
         metadata=self._ReadExplanationMetadata(args.explanation_metadata_file),
         parameters=parameters)
@@ -320,3 +349,13 @@ class UploadV1Beta1(UploadV1):
       explanation_metadata = messages_util.DictToMessageWithErrorCheck(
           data, self.messages.GoogleCloudAiplatformV1beta1ExplanationMetadata)
     return explanation_metadata
+
+  def _ReadIndexMetadata(self, index_metadata_file):
+    """Parse json metadata file."""
+    index_metadata = None
+    # Yaml is a superset of json, so parse json file as yaml.
+    data = yaml.load_path(index_metadata_file)
+    if data:
+      index_metadata = messages_util.DictToMessageWithErrorCheck(
+          data, extra_types.JsonValue)
+    return index_metadata

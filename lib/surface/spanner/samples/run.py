@@ -36,7 +36,6 @@ from surface.spanner.samples import init as samples_init
 from surface.spanner.samples import workload as samples_workload
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
 class Run(base.Command):
   """Run the given Cloud Spanner sample app.
 
@@ -92,6 +91,11 @@ class Run(base.Command):
         action='store_true',
         default=True,
         help=('Delete the instance after running the sample app.'))
+    parser.add_argument(
+        '--skip-init',
+        action='store_true',
+        default=False,
+        help=('Use an existing database instead of creating a new one.'))
 
   def Run(self, args):
     """This is what gets called when the user runs this command.
@@ -121,7 +125,7 @@ class Run(base.Command):
     else:
       database_id = samples.get_db_id_for_app(appname)
     duration = args.duration
-    skip_init = getattr(args, 'skip_init', False)
+    skip_init = args.skip_init
 
     try:
       samples_init.check_instance(instance_id)
@@ -204,36 +208,3 @@ class Run(base.Command):
 
     log.status.Print('Done')
     return
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class RunAlpha(Run):
-  """Run the given Cloud Spanner sample app.
-
-  Each Cloud Spanner sample application includes a backend gRPC service
-  backed by a Cloud Spanner database and a workload script that generates
-  service traffic. This command creates and initializes the Cloud Spanner
-  database and runs both the backend service and workload script.
-
-  These sample apps are open source and available at
-  https://github.com/GoogleCloudPlatform/cloud-spanner-samples.
-
-  To see a list of available sample apps, run:
-
-      $ {parent_command} list
-  """
-
-  @staticmethod
-  def Args(parser):
-    """Args is called by calliope to gather arguments for this command.
-
-    Args:
-      parser: An argparse parser that you can use to add arguments that go on
-        the command line after this command. Positional arguments are allowed.
-    """
-    Run.Args(parser)
-    parser.add_argument(
-        '--skip-init',
-        action='store_true',
-        default=False,
-        help=('Use an existing database instead of creating a new one.'))

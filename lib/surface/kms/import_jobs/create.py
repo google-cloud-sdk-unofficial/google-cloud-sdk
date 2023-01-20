@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*- #
-# Copyright 2019 Google LLC. All Rights Reserved.
+# Copyright 2022 Google LLC. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -25,7 +25,6 @@ from googlecloudsdk.command_lib.kms import flags
 from googlecloudsdk.command_lib.kms import maps
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Create(base.CreateCommand):
   r"""Create a new import job.
 
@@ -79,33 +78,3 @@ class Create(base.CreateCommand):
     client = cloudkms_base.GetClientInstance()
     return client.projects_locations_keyRings_importJobs.Create(
         self._CreateRequest(args))
-
-
-@base.ReleaseTracks(base.ReleaseTrack.GA)
-class CreateGA(Create):
-  r"""Create a new import job.
-
-  Creates a new import job within the given keyring.
-
-  ## EXAMPLES
-
-  The following command creates a new import job named 'strider' within the
-  'fellowship' keyring, and 'us-central1' location:
-
-    $ {command} strider --location=us-central1 \
-        --keyring=fellowship --import-method=rsa-oaep-3072-sha1-aes-256 \
-        --protection-level=hsm
-  """
-
-  def _CreateRequest(self, args):
-    if args.import_method in [
-        'rsa-oaep-3072-sha256',
-        'rsa-oaep-4096-sha256',
-        'rsa-oaep-3072-sha256-aes-256',
-        'rsa-oaep-4096-sha256-aes-256',
-    ]:
-      raise exceptions.BadArgumentException(
-          'import-method',
-          'Import method [{0}] is not yet GA. Use `gcloud beta` to use this method.'
-          .format(args.import_method))
-    return super(CreateGA, self)._CreateRequest(args)

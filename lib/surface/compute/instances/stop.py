@@ -12,7 +12,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """Command for stopping an instance."""
 
 from __future__ import absolute_import
@@ -34,14 +33,19 @@ DETAILED_HELP = {
         *{command}* is used to stop a Compute Engine virtual machine.
         Stopping a VM performs a clean shutdown, much like invoking the shutdown
         functionality of a workstation or laptop. Stopping a VM with a local SSD
-        is not supported and will result in an API error. Stopping a VM which is
+        is not supported and will result in an API error unless the
+        `--discard-local-ssd` flag is passed. Stopping a VM which is
         already stopped will return without errors.
         """,
     'EXAMPLES':
         """\
-        To stop an instance named ``test-instance'', run:
+        To stop an instance named `test-instance`, run:
 
           $ {command} test-instance
+
+        To stop an instance named `test-instance` that has a Local SSD, run:
+
+          $ {command} test-instance --discard-local-ssd
       """
 }
 
@@ -54,25 +58,18 @@ class Stop(base.SilentCommand):
   @classmethod
   def Args(cls, parser):
     flags.INSTANCES_ARG.AddArgument(parser)
-    if cls.ReleaseTrack() != base.ReleaseTrack.GA:
-      parser.add_argument(
-          '--discard-local-ssd',
-          action='store_true',
-          help=('If provided, local SSD data is discarded.'))
+    parser.add_argument(
+        '--discard-local-ssd',
+        action='store_true',
+        help=('If provided, local SSD data is discarded.'))
     base.ASYNC_FLAG.AddToParser(parser)
 
   def _CreateStopRequest(self, client, instance_ref, args):
-    if self.ReleaseTrack() == base.ReleaseTrack.GA:
-      return client.messages.ComputeInstancesStopRequest(
-          instance=instance_ref.Name(),
-          project=instance_ref.project,
-          zone=instance_ref.zone)
-    else:
-      return client.messages.ComputeInstancesStopRequest(
-          discardLocalSsd=args.discard_local_ssd,
-          instance=instance_ref.Name(),
-          project=instance_ref.project,
-          zone=instance_ref.zone)
+    return client.messages.ComputeInstancesStopRequest(
+        discardLocalSsd=args.discard_local_ssd,
+        instance=instance_ref.Name(),
+        project=instance_ref.project,
+        zone=instance_ref.zone)
 
   def _CreateRequests(self, client, instance_refs, args):
     return [(client.apitools_client.instances, 'Stop',
@@ -84,7 +81,8 @@ class Stop(base.SilentCommand):
     client = holder.client
 
     instance_refs = flags.INSTANCES_ARG.ResolveAsResource(
-        args, holder.resources,
+        args,
+        holder.resources,
         scope_lister=flags.GetInstanceZoneScopeLister(client))
 
     requests = self._CreateRequests(client, instance_refs, args)
@@ -105,13 +103,14 @@ class Stop(base.SilentCommand):
           'status of the operation(s).')
       return responses
 
-    operation_poller = poller.BatchPoller(
-        client, client.apitools_client.instances, instance_refs)
+    operation_poller = poller.BatchPoller(client,
+                                          client.apitools_client.instances,
+                                          instance_refs)
     waiter.WaitFor(
         operation_poller,
         poller.OperationBatch(operation_refs),
-        'Stopping instance(s) {0}'.format(
-            ', '.join(i.Name() for i in instance_refs)),
+        'Stopping instance(s) {0}'.format(', '.join(
+            i.Name() for i in instance_refs)),
         max_wait_ms=None)
 
     for instance_ref in instance_refs:

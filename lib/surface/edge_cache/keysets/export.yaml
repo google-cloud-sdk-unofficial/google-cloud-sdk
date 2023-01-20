@@ -1,10 +1,9 @@
 - release_tracks: [ALPHA, GA]
-  hidden: true
   help_text:
-    brief: Export an EdgeCacheKeyset.
-    description: Export an EdgeCacheKeyset to YAML.
+    brief: Export an EdgeCacheKeyset resource.
+    description: Export an EdgeCacheKeyset resource to YAML.
     examples: |
-      To export a keyset, run:
+      To export an EdgeCacheKeyset resourced named 'my-keyset', run:
 
         $ {command} my-keyset --destination=keyset.yaml
 
@@ -17,5 +16,5 @@
 
   arguments:
     resource:
-      help_text: The EdgeCacheKeyset you want to export.
+      help_text: The EdgeCacheKeyset resource you want to export.
       spec: !REF googlecloudsdk.command_lib.edge_cache.resources:edgeCacheKeyset

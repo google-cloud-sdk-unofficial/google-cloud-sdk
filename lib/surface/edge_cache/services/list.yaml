@@ -1,11 +1,10 @@
 - release_tracks: [ALPHA, GA]
-  hidden: true
   help_text:
-    brief: List all EdgeCacheServices in a project.
+    brief: List all EdgeCacheService resources in a project.
     description: |
-      List EdgeCacheServices.
+      List EdgeCacheService resources.
     examples: |
-      To list existing EdgeCacheServices, run:
+      To list existing EdgeCacheService resources, run:
 
         $ {command}
 

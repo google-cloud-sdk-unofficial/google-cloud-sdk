@@ -1,0 +1,31 @@
+- release_tracks: [ALPHA]
+
+  help_text:
+    brief: List Telco Automation orchestrationClusters.
+    description: |
+      List Telco Automation orchestrationClusters.
+    examples: |
+      To list all orchestrationClusters in region `us-central1`, run:
+
+        $ {command} --location=us-central1
+
+  request:
+    collection: telcoautomation.projects.locations.orchestrationClusters
+    api_version: v1alpha1
+
+  response:
+    id_field: name
+
+  arguments:
+    resource:
+      help_text: Parent Telco Automation location to list all contained Telco Automation orchestrationClusters.
+      spec: !REF googlecloudsdk.command_lib.telco_automation.resources:location
+
+  output:
+    format: |
+      table(
+        name.basename():label=NAME,
+        createTime:label=CREATETIME,
+        labels:label=LABELS,
+        updateTime:label=UPDATETIME
+      )

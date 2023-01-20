@@ -85,8 +85,6 @@ class Update(base.Command):
       flags.AIRFLOW_DATABASE_RETENTION_DAYS.AddToParser(
           Update.update_type_group.add_argument_group(hidden=True))
 
-    flags.AddScheduledSnapshotFlagsToGroup(Update.update_type_group)
-
   def _ConstructPatch(self, env_ref, args, support_environment_upgrades=False):
     env_obj = environments_api_util.Get(
         env_ref, release_track=self.ReleaseTrack())
@@ -180,7 +178,8 @@ class Update(base.Command):
       params['min_workers'] = args.min_workers
       params['max_workers'] = args.max_workers
 
-    self._addScheduledSnapshotFields(params, args, is_composer_v1)
+    if self.ReleaseTrack() != base.ReleaseTrack.GA:
+      self._addScheduledSnapshotFields(params, args, is_composer_v1)
 
     if self._support_triggerer and (args.triggerer_cpu or args.triggerer_memory
                                     or args.enable_triggerer or
@@ -307,6 +306,7 @@ class UpdateBeta(Update):
 
     flags.AddCloudDataLineageIntegrationUpdateFlagsToGroup(
         Update.update_type_group)
+    flags.AddScheduledSnapshotFlagsToGroup(Update.update_type_group)
 
   @staticmethod
   def Args(parser):

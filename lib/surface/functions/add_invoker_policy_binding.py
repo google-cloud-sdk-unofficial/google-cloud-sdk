@@ -37,9 +37,8 @@ _DETAILED_HELP = {
 }
 
 
-def _CommonArgs(parser, track):
+def _CommonArgs(parser):
   """Registers flags for this command."""
-  del track
   flags.AddFunctionResourceArg(parser, 'to add the invoker binding to')
   iam_util.AddMemberFlag(parser, 'to add to the IAM policy', False)
 
@@ -48,7 +47,7 @@ def _CommonArgs(parser, track):
 class AddInvokerPolicyBinding(base.Command):
   """Adds an invoker binding to the IAM policy of a Google Cloud Function.
 
-  This command applies to Cloud Functions V2 only.
+  This command applies to Cloud Functions 2nd gen only.
   """
 
   detailed_help = _DETAILED_HELP
@@ -56,7 +55,7 @@ class AddInvokerPolicyBinding(base.Command):
   @staticmethod
   def Args(parser):
     """Registers flags for this command."""
-    _CommonArgs(parser, base.ReleaseTrack.GA)
+    _CommonArgs(parser)
 
   def Run(self, args):
     """Runs the command.
@@ -72,37 +71,16 @@ class AddInvokerPolicyBinding(base.Command):
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
-class AddInvokerPolicyBindingBeta(base.Command):
+class AddInvokerPolicyBindingBeta(AddInvokerPolicyBinding):
   """Adds an invoker binding to the IAM policy of a Google Cloud Function.
 
-  This command applies to Cloud Functions V2 only.
+  This command applies to Cloud Functions 2nd gen only.
   """
-  detailed_help = _DETAILED_HELP
-
-  @staticmethod
-  def Args(parser):
-    _CommonArgs(parser, base.ReleaseTrack.BETA)
-
-  def Run(self, args):
-    """Runs the command.
-
-    Args:
-      args: an argparse namespace. All the arguments that were provided to this
-        command invocation.
-
-    Returns:
-      The updated IAM policy for the service.
-    """
-    return command.Run(args, self.ReleaseTrack())
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class AddInvokerPolicyBindingAlpha(AddInvokerPolicyBindingBeta):
   """Add an invoker binding to the IAM policy of a Google Cloud Function.
 
-  This command applies to Cloud Functions V2 only.
+  This command applies to Cloud Functions 2nd Gen only.
   """
-
-  @staticmethod
-  def Args(parser):
-    _CommonArgs(parser, base.ReleaseTrack.ALPHA)

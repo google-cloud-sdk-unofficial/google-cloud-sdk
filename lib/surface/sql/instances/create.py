@@ -162,6 +162,7 @@ def AddBaseArgs(parser, is_alpha=False):
   flags.AddDeletionProtection(parser)
   flags.AddSqlServerTimeZone(parser)
   flags.AddConnectorEnforcement(parser)
+  flags.AddTimeout(parser, _INSTANCE_CREATION_TIMEOUT_SECONDS)
 
 
 def AddBetaArgs(parser):
@@ -171,7 +172,6 @@ def AddBetaArgs(parser):
   flags.AddAllocatedIpRangeName(parser)
   labels_util.AddCreateLabelsFlags(parser)
   flags.AddEnableGooglePrivatePath(parser)
-  flags.AddTimeout(parser, _INSTANCE_CREATION_TIMEOUT_SECONDS)
 
 
 def AddAlphaArgs(unused_parser):
@@ -321,14 +321,11 @@ def RunBaseCreateCommand(args, release_track):
           sql_messages.SqlOperationsGetRequest(
               project=operation_ref.project, operation=operation_ref.operation))
 
-    timeout = _INSTANCE_CREATION_TIMEOUT_SECONDS
-    if command_util.IsBetaOrNewer(release_track):
-      timeout = args.timeout
     operations.OperationsV1Beta4.WaitForOperation(
         sql_client,
         operation_ref,
         'Creating Cloud SQL instance for ' + args.database_version,
-        max_wait_seconds=timeout)
+        max_wait_seconds=args.timeout)
 
     log.CreatedResource(instance_ref)
 

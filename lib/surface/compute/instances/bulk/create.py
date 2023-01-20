@@ -160,6 +160,7 @@ class Create(base.Command):
     cls.SOURCE_INSTANCE_TEMPLATE = (
         bulk_flags.MakeBulkSourceInstanceTemplateArg())
     cls.SOURCE_INSTANCE_TEMPLATE.AddArgument(parser)
+
   # LINT.ThenChange(../../queued_resources/create.py:instance_template)
 
   def Collection(self):
@@ -360,6 +361,7 @@ class CreateAlpha(Create):
     # Flags specific to Alpha release track
     instances_flags.AddSecureTagsArgs(parser)
     instances_flags.AddHostErrorTimeoutSecondsArgs(parser)
+
   # LINT.ThenChange(../../queued_resources/create.py:alpha_spec)
 
 

@@ -37,9 +37,8 @@ _DETAILED_HELP = {
 }
 
 
-def _CommonArgs(parser, track):
+def _CommonArgs(parser):
   """Registers flags for this command."""
-  del track
   flags.AddFunctionResourceArg(parser, 'to remove the invoker binding from')
   iam_util.AddMemberFlag(parser, 'to remove from the IAM policy', False)
 
@@ -48,7 +47,7 @@ def _CommonArgs(parser, track):
 class RemoveInvokerPolicyBinding(base.Command):
   """Removes an invoker binding from the IAM policy of a Google Cloud Function.
 
-  This command applies to Cloud Functions V2 only.
+  This command applies to Cloud Functions 2nd gen only.
   """
 
   detailed_help = _DETAILED_HELP
@@ -56,7 +55,7 @@ class RemoveInvokerPolicyBinding(base.Command):
   @staticmethod
   def Args(parser):
     """Registers flags for this command."""
-    _CommonArgs(parser, base.ReleaseTrack.GA)
+    _CommonArgs(parser)
 
   def Run(self, args):
     """Runs the command.
@@ -72,39 +71,16 @@ class RemoveInvokerPolicyBinding(base.Command):
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
-class RemoveInvokerPolicyBindingBeta(base.Command):
+class RemoveInvokerPolicyBindingBeta(RemoveInvokerPolicyBinding):
   """Removes an invoker binding from the IAM policy of a Google Cloud Function.
 
-  This command applies to Cloud Functions V2 only.
+  This command applies to Cloud Functions 2nd gen only.
   """
-  detailed_help = _DETAILED_HELP
-
-  @staticmethod
-  def Args(parser):
-    """Registers flags for this command."""
-    _CommonArgs(parser, base.ReleaseTrack.BETA)
-
-  def Run(self, args):
-    """Runs the command.
-
-    Args:
-      args: an argparse namespace. All the arguments that were provided to this
-        command invocation.
-
-    Returns:
-      The updated IAM policy for the service.
-    """
-    return command.Run(args, self.ReleaseTrack())
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class RemoveInvokerPolicyBindingAlpha(RemoveInvokerPolicyBindingBeta):
   """Removes an invoker binding from the IAM policy of a Google Cloud Function.
 
-  This command applies to Cloud Functions V2 only.
+  This command applies to Cloud Functions 2nd gen only.
   """
-
-  @staticmethod
-  def Args(parser):
-    """Registers flags for this command."""
-    _CommonArgs(parser, base.ReleaseTrack.ALPHA)

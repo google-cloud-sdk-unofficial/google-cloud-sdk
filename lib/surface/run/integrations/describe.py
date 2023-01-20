@@ -65,10 +65,11 @@ class Describe(base.DescribeCommand):
 
   def Run(self, args):
     """Describe an integration type."""
+    release_track = self.ReleaseTrack()
     name = args.name
     conn_context = connection_context.GetConnectionContext(
-        args, run_flags.Product.RUN_APPS, self.ReleaseTrack())
-    with run_apps_operations.Connect(conn_context) as client:
+        args, run_flags.Product.RUN_APPS, release_track)
+    with run_apps_operations.Connect(conn_context, release_track) as client:
       resource_config = client.GetIntegration(name)
       latest_deployment = client.GetLatestDeployment(resource_config)
       resource_status = client.GetIntegrationStatus(name)

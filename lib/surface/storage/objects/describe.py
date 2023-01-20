@@ -23,6 +23,7 @@ from googlecloudsdk.api_lib.storage import cloud_api
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.storage import encryption_util
 from googlecloudsdk.command_lib.storage import errors
+from googlecloudsdk.command_lib.storage import errors_util
 from googlecloudsdk.command_lib.storage import flags
 from googlecloudsdk.command_lib.storage import storage_url
 from googlecloudsdk.command_lib.storage import wildcard_iterator
@@ -64,7 +65,7 @@ class Describe(base.DescribeCommand):
           ' resource. Please use the `ls` or `objects list` command for'
           ' retrieving multiple resources.')
     url = storage_url.storage_url_from_string(args.url)
-    errors.raise_error_if_not_cloud_object(args.command_path, url)
+    errors_util.raise_error_if_not_cloud_object(args.command_path, url)
     object_resource = api_factory.get_api(url.scheme).get_object_metadata(
         url.bucket_name,
         url.object_name,

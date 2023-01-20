@@ -7,7 +7,7 @@ help_text:
   examples: |
       To import a GatewaySecurityPolicy from a YAML file, run:
 
-        $ {command} my-gateway-security-policy --source=my-gateway-security-policy-list.yaml --location=global
+        $ {command} my-rule --source=my-rule.yaml --location={region} --gateway-security-policy={policy-name}
 
 request:
   collection: networksecurity.projects.locations.gatewaySecurityPolicies.rules
@@ -20,6 +20,7 @@ arguments:
     spec: !REF googlecloudsdk.command_lib.network_security.resources:gatewaySecurityPolicyRule
     help_text: |
       Name of the GatewaySecurityPolicy to import.
+    is_positional: true
 
 async:
   collection: networksecurity.projects.locations.operations

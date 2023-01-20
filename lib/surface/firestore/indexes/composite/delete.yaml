@@ -7,6 +7,8 @@
 
         $ {command} 3421ef
 
+        $ {command} 3421ef --database=(default)
+
   request:
     collection: firestore.projects.databases.collectionGroups.indexes
 
@@ -15,5 +17,4 @@
       help_text: Index to delete.
       spec: !REF googlecloudsdk.command_lib.firestore.resources:index
       removed_flags:
-      - database
       - collection-group

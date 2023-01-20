@@ -27,7 +27,7 @@ from googlecloudsdk.core import log
 DETAILED_HELP = {
     'DESCRIPTION':
         """\
-          Creates a logs-based metric to count the number of log entries that
+          Create a logs-based metric to count the number of log entries that
           match a filter expression. Logs-based metrics can also be used to
           extract values from logs and create a distribution of the values.
       """,
@@ -59,7 +59,7 @@ DETAILED_HELP = {
 @base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA,
                     base.ReleaseTrack.ALPHA)
 class Create(base.CreateCommand):
-  """Creates a logs-based metric."""
+  """Create a logs-based metric."""
 
   @staticmethod
   def Args(parser):

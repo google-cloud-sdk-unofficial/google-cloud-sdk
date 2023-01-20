@@ -26,6 +26,7 @@ from googlecloudsdk.core import metrics
 from googlecloudsdk.core import properties
 from googlecloudsdk.core.console import progress_tracker
 from googlecloudsdk.core.credentials.store import GetFreshAccessToken
+from googlecloudsdk.core.util import encoding
 from googlecloudsdk.core.util import files
 
 MISSING_BINARY = ('Could not locate terraform-tools executable [{binary}]. '
@@ -142,6 +143,15 @@ class Vet(base.Command):
         'HTTP_PROXY', 'http_proxy', 'HTTPS_PROXY', 'https_proxy', 'NO_PROXY',
         'no_proxy'
     ]
+
+    # env names and orders are from
+    # https://registry.terraform.io/providers/hashicorp/google/latest/docs/guides/provider_reference#full-reference
+    project_env_names = [
+        'GOOGLE_PROJECT',
+        'GOOGLE_CLOUD_PROJECT',
+        'GCLOUD_PROJECT',
+    ]
+
     for env_key, env_val in os.environ.items():
       if env_key in proxy_env_names:
         env_vars[env_key] = env_val
@@ -149,9 +159,21 @@ class Vet(base.Command):
     with files.TemporaryDirectory() as tempdir:
       cai_assets = os.path.join(tempdir, 'cai_assets.json')
 
+      # project flag and CLOUDSDK_CORE_PROJECT env are linked with core property
+      project = properties.VALUES.core.project.Get()
+      if project:
+        log.debug('Setting project to {} from properties'.format(project))
+      else:
+        for env_key in project_env_names:
+          project = encoding.GetEncodedValue(os.environ, env_key)
+          if project:
+            log.debug('Setting project to {} from env {}'.format(
+                project, env_key))
+            break
+
       response = tfplan_to_cai_operation(
           command='tfplan-to-cai',
-          project=args.project or properties.VALUES.core.project.Get(),
+          project=project,
           terraform_plan_json=args.terraform_plan_json,
           verbosity=args.verbosity,
           output_path=cai_assets,

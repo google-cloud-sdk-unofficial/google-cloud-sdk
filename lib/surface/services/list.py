@@ -68,6 +68,8 @@ class List(base.ListCommand):
               'include any services that the project '
               'has already enabled.'))
 
+    base.PAGE_SIZE_FLAG.SetDefault(parser, 200)
+
     # Remove unneeded list-related flags from parser
     base.URI_FLAG.RemoveFromParser(parser)
 

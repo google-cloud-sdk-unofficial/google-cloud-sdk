@@ -24,7 +24,6 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.source_manager import flags
 from googlecloudsdk.command_lib.source_manager import resource_args
 from googlecloudsdk.core import log
-from googlecloudsdk.core import properties
 
 DETAILED_HELP = {
     'DESCRIPTION':
@@ -51,7 +50,6 @@ class Create(base.CreateCommand):
   @staticmethod
   def Args(parser):
     resource_args.AddInstanceResourceArg(parser, 'to create')
-    flags.AddAdminAccount(parser)
     flags.AddMaxWait(parser, '60m')  # Default to 60 minutes wait.
     # Create --async flag and set default to be true.
     base.ASYNC_FLAG.AddToParser(parser)
@@ -62,16 +60,11 @@ class Create(base.CreateCommand):
     is_async = args.async_
     max_wait = datetime.timedelta(seconds=args.max_wait)
 
-    # If admin_account is not specified by users,
-    # then use current account by default.
-    admin_account = args.admin_account or properties.VALUES.core.account.Get()
-
     # Get a long-running operation for this creation
     client = instances.InstancesClient()
     instance = args.CONCEPTS.instance.Parse()
     operation = client.Create(
         instance_ref=instance,
-        admin_account=admin_account
     )
 
     log.status.Print('Create request issued for [{}].'

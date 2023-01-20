@@ -73,7 +73,7 @@ class Delete(base.DeleteCommand):
         provided, the auto-delete bits on the attached disks are
         modified accordingly before the instance deletion requests are
         issued. For more information on disk auto-deletion, see
-        [](https://cloud.google.com/compute/docs/disks/persistent-disks#updateautodelete)
+        [Set the auto-delete state of a zonal persistent disk](https://cloud.google.com/compute/docs/disks/modify-persistent-disk#updateautodelete)
         """)
 
     auto_delete_override.add_argument(
@@ -86,7 +86,7 @@ class Delete(base.DeleteCommand):
         provided, the auto-delete bits on the attached disks are
         modified accordingly before the instance deletion requests are
         issued. For more information on disk auto-deletion, see
-        [](https://cloud.google.com/compute/docs/disks/persistent-disks#updateautodelete)
+        [Set the auto-delete state of a zonal persistent disk](https://cloud.google.com/compute/docs/disks/modify-persistent-disk#updateautodelete)
         """)
 
     flags.INSTANCES_ARG.AddArgument(parser, operation_type='delete')

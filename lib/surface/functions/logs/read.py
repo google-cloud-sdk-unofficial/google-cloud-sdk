@@ -28,7 +28,7 @@ from googlecloudsdk.command_lib.functions.v2.logs.read import command as command
 _DEFAULT_TABLE_FORMAT = 'table(level,name,execution_id,time_utc,log)'
 
 
-def _CommonArgs(parser, track):
+def _CommonArgs(parser):
   """Register flags for this command."""
   flags.AddRegionFlag(
       parser,
@@ -71,7 +71,7 @@ def _CommonArgs(parser, track):
   flags.AddMinLogLevelFlag(parser)
   parser.display_info.AddCacheUpdater(None)
 
-  flags.AddGen2Flag(parser, track)
+  flags.AddGen2Flag(parser)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
@@ -80,7 +80,7 @@ class GetLogs(base.ListCommand):
 
   @staticmethod
   def Args(parser):
-    _CommonArgs(parser, base.ReleaseTrack.GA)
+    _CommonArgs(parser)
 
   @util.CatchHTTPErrorRaiseHTTPException
   def Run(self, args):
@@ -103,17 +103,7 @@ class GetLogs(base.ListCommand):
 class GetLogsBeta(GetLogs):
   """Display log entries produced by Google Cloud Functions."""
 
-  @staticmethod
-  def Args(parser):
-    """Register flags for this command."""
-    _CommonArgs(parser, base.ReleaseTrack.BETA)
-
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class GetLogsAlpha(GetLogsBeta):
   """Display log entries produced by Google Cloud Functions."""
-
-  @staticmethod
-  def Args(parser):
-    """Register flags for this command."""
-    _CommonArgs(parser, base.ReleaseTrack.ALPHA)

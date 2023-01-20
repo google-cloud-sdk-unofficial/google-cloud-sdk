@@ -29,8 +29,10 @@
       help_text: |
         Once specified, the table is deletion protected.
 
+  async:
+    collection: bigtableadmin.operations
+
 - release_tracks: [GA, BETA]
-  hidden: true  # TODO(b/227216958): unhide this CLI after the feature is released.
 
   help_text:
     brief: Update an existing Cloud Bigtable table.
@@ -60,3 +62,6 @@
       type: bool
       help_text: |
         Once specified, the table is deletion protected.
+
+  async:
+    collection: bigtableadmin.operations

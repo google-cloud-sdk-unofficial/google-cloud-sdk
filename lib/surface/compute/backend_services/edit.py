@@ -133,6 +133,8 @@ class Edit(base.Command):
     # Selects only the fields that can be modified.
     field_selector = property_selector.PropertySelector(properties=[
         'backends',
+        'customRequestHeaders',
+        'customResponseHeaders',
         'description',
         'enableCDN',
         'healthChecks',
@@ -222,18 +224,18 @@ class Edit(base.Command):
             client.messages.Backend(
                 balancingMode=(
                     client.messages.Backend.BalancingModeValueValuesEnum.RATE),
-                group=(
-                    instance_groups_uri_prefix +
-                    'us-central1-a/instanceGroups/group-1'),
+                group=(instance_groups_uri_prefix +
+                       'us-central1-a/instanceGroups/group-1'),
                 maxRate=100),
             client.messages.Backend(
                 balancingMode=(
                     client.messages.Backend.BalancingModeValueValuesEnum.RATE),
-                group=(
-                    instance_groups_uri_prefix +
-                    'europe-west1-a/instanceGroups/group-2'),
+                group=(instance_groups_uri_prefix +
+                       'europe-west1-a/instanceGroups/group-2'),
                 maxRate=150),
         ],
+        customRequestHeaders=['X-Forwarded-Port:443'],
+        customResponseHeaders=['X-Client-Geo-Location:US,Mountain View'],
         description='My backend service',
         healthChecks=[
             uri_prefix + 'global/httpHealthChecks/my-health-check-1',

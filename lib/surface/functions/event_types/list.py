@@ -53,10 +53,6 @@ _DETAILED_HELP = {
 }
 
 
-def _CommonArgs(parser, track):
-  flags.AddGen2Flag(parser, track)
-
-
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class List(base.Command):
   """List types of events that can be a trigger for a Google Cloud Function."""
@@ -65,7 +61,7 @@ class List(base.Command):
 
   @staticmethod
   def Args(parser):
-    _CommonArgs(parser, base.ReleaseTrack.GA)
+    flags.AddGen2Flag(parser)
 
   def Run(self, args):
     if flags.ShouldUseGen2():
@@ -82,19 +78,7 @@ class List(base.Command):
 class ListBeta(List):
   """List types of events that can be a trigger for a Google Cloud Function."""
 
-  detailed_help = _DETAILED_HELP
-
-  @staticmethod
-  def Args(parser):
-    _CommonArgs(parser, base.ReleaseTrack.BETA)
-
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class ListAlpha(ListBeta):
   """List types of events that can be a trigger for a Google Cloud Function."""
-
-  detailed_help = _DETAILED_HELP
-
-  @staticmethod
-  def Args(parser):
-    _CommonArgs(parser, base.ReleaseTrack.ALPHA)

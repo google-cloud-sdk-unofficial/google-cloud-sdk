@@ -103,8 +103,8 @@ class Delete(base.DeleteCommand):
       op_ref = adapter.DeleteNodePool(pool_ref)
       if args.async_:
         op = adapter.GetOperation(op_ref)
-        log.out.Print('Delete Node Pool Operation in progress: {0}'.format(
-            op.name))
+        if not args.IsSpecified('format'):
+          args.format = util.OPERATIONS_FORMAT
         return op
       adapter.WaitForOperation(
           op_ref,

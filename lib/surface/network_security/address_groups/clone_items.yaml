@@ -1,4 +1,4 @@
-release_tracks: [ALPHA]
+release_tracks: [ALPHA, BETA]
 
 help_text:
   brief: |
@@ -24,7 +24,10 @@ async:
   collection: networksecurity.projects.locations.operations
 
 request: &request
-  api_version: v1alpha1
+  ALPHA:
+    api_version: v1alpha1
+  BETA:
+    api_version: v1beta1
   method: cloneItems
   modify_request_hooks:
   - googlecloudsdk.command_lib.network_security.util:FormatSourceAddressGroup

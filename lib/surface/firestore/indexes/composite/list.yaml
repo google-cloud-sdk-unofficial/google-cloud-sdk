@@ -7,6 +7,8 @@
 
         $ {command}
 
+        $ {command} --database=(default)
+
       The following command lists composite indexes in the `Events` collection group:
 
         $ {command} --filter=COLLECTION_GROUP:Events
@@ -30,7 +32,6 @@
       # since it has no effect. The user can always filter the responses by collection group using
       # the gcloud wide --filter flag.
       removed_flags:
-      - database
       - collection-group
 
   output:
@@ -59,6 +60,7 @@
                name.segment(-3):label=COLLECTION_GROUP:sort=1,\
                queryScope,\
                state,\
+               apiScope,\
                fields.slice(:-1).*extract('fieldPath').*flatten().join('\n'):label=FIELD_PATHS,\
                fields.slice(:-1).*extract('order').*flatten().join('\n'):label=ORDER,\
                fields.slice(:-1).*extract('arrayConfig').*flatten().join('\n'):label=ARRAY_CONFIG)"

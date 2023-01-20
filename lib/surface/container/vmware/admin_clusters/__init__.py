@@ -23,7 +23,6 @@ from googlecloudsdk.command_lib.projects import util
 from googlecloudsdk.core import log
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class AdminClusters(base.Group):
   """Create and manage admin clusters in Anthos on VMware."""

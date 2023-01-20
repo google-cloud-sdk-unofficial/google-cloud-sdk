@@ -25,11 +25,12 @@ from apitools.base.py import exceptions as apitools_exceptions
 
 from googlecloudsdk.api_lib.storage import api_factory
 from googlecloudsdk.api_lib.storage import cloud_api
-from googlecloudsdk.api_lib.storage import errors
+from googlecloudsdk.api_lib.storage import errors as api_errors
 from googlecloudsdk.api_lib.storage import gcs_error_util
 from googlecloudsdk.api_lib.util import apis
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.storage import notification_configuration_iterator
 from googlecloudsdk.command_lib.storage import storage_url
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
@@ -230,6 +231,8 @@ class Create(base.Command):
   def Run(self, args):
     project_id = properties.VALUES.core.project.GetOrFail()
     url = storage_url.storage_url_from_string(args.url)
+    notification_configuration_iterator.raise_error_if_not_gcs_bucket_matching_url(
+        url)
     if not args.topic:
       topic_name = 'projects/{}/topics/{}'.format(project_id, url.bucket_name)
     elif not args.topic.startswith('projects/'):
@@ -276,7 +279,7 @@ class Create(base.Command):
         payload_format=cloud_api.NotificationPayloadFormat(args.payload_format))
     try:
       return create_notification_configuration()
-    except errors.CloudApiError:
+    except api_errors.CloudApiError:
       if not created_new_topic_or_set_new_permissions:
         raise
       log.warning(

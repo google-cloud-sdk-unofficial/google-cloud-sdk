@@ -118,6 +118,11 @@ flags.DEFINE_multi_string(
     'job_property', None,
     'Additional key-value pairs to include in the properties field of '
     'the job configuration')  # No period: Multistring adds flagspec suffix.
+flags.DEFINE_boolean(
+    'enable_resumable_uploads', None,
+    'Enables resumable uploads over HTTP (Only applies to load jobs that load '
+    'data from local files.). Defaults to True.'
+)
 flags.DEFINE_integer('max_rows_per_request', None,
                      'Specifies the max number of rows to return per read.')
 

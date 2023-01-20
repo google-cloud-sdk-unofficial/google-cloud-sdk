@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Command group for Network Services."""
+"""Command group for Media CDN."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -22,28 +22,30 @@ from googlecloudsdk.calliope import base
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.GA)
-@base.Hidden
 class EdgeCache(base.Group):
-  """Manage Edge Cache resources."""
+  """Manage Media CDN resources."""
   category = base.NETWORKING_CATEGORY
 
   detailed_help = {
-      "DESCRIPTION": "Manage Cloud Media Edge resources.",
+      "DESCRIPTION": "Manage Media CDN resources.",
       "EXAMPLES":
           """
-          To list Services in the active Cloud Platform project, run:
+          To list EdgeCacheService resources in the active Cloud Platform
+          project, run:
 
             $ {command} services list
 
-          To create an Origin that points to a Cloud Storage bucket, run:
+          To create an EdgeCacheOrigin resource named 'my-origin' that
+          points to a Cloud Storage bucket, run:
 
             $ {command} origins create my-origin --origin-address="gs://bucket"
 
-          To import a Service configuration from a YAML definition, run:
+          To import an EdgeCacheService resource configuration from a YAML
+          definition, run:
 
             $ {command} services import my-service --source=config.yaml
 
-          To describe a Keyset, run:
+          To describe an EdgeCacheKeyset resource named 'my-keyset', run:
 
             $ {command} keysets describe my-keyset
           """

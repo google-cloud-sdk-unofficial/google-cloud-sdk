@@ -42,7 +42,7 @@ class Update(base.Command):
   r"""Update an insight type configuration.
 
       Update an insight type configuration based on a given entity (project,
-      organization),
+      organization, billing account),
       location, and insight type.
   """
   detailed_help = _DETAILED_HELP
@@ -55,9 +55,10 @@ class Update(base.Command):
       parser: An argparse parser that you can use to add arguments that go on
         the command line after this command.
     """
-    flags.AddInsightTypeFlagsToParser(
-        parser,
-        [reco_base.EntityType.PROJECT, reco_base.EntityType.ORGANIZATION])
+    flags.AddInsightTypeFlagsToParser(parser, [
+        reco_base.EntityType.PROJECT, reco_base.EntityType.ORGANIZATION,
+        reco_base.EntityType.BILLING_ACCOUNT
+    ])
     flags.AddConfigFileToParser(parser, 'insight type configuration')
     flags.AddDisplayNameToParser(parser, 'insight type configuration')
     flags.AddValidateOnlyToParser(parser)

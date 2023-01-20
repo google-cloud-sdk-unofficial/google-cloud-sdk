@@ -228,6 +228,9 @@ class ApplicationDefaultCredentialFileLoader(CachedCredentialLoader):
     elif credentials['type'] == 'external_account':
       return wrapped_credentials.WrappedCredentials.for_external_account(
           self._credential_file)
+    elif credentials['type'] == 'external_account_authorized_user':
+      return wrapped_credentials.WrappedCredentials.for_external_account_authorized_user(
+          self._credential_file)
     else:  # Service account
       token_uri = None
       revoke_uri = None

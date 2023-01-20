@@ -20,7 +20,7 @@ from __future__ import unicode_literals
 
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
-from googlecloudsdk.command_lib.storage import errors
+from googlecloudsdk.command_lib.storage import errors_util
 from googlecloudsdk.command_lib.storage import storage_url
 from googlecloudsdk.command_lib.storage import user_request_args_factory
 from googlecloudsdk.command_lib.storage.resources import resource_reference
@@ -109,7 +109,7 @@ class Create(base.Command):
 
   def Run(self, args):
     url = storage_url.storage_url_from_string(args.url)
-    errors.raise_error_if_not_bucket(args.command_path, url)
+    errors_util.raise_error_if_not_bucket(args.command_path, url)
     resource = resource_reference.UnknownResource(url)
     user_request_args = (
         user_request_args_factory.get_user_request_args_from_command_args(

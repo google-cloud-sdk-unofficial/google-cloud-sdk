@@ -1,11 +1,11 @@
 - release_tracks: [ALPHA, GA]
 
   help_text:
-    brief: Update an EdgeCacheOrigin.
+    brief: Update an EdgeCacheOrigin resource.
     description: |
-      Update an existing EdgeCacheOrigin.
+      Update an existing EdgeCacheOrigin resource.
     examples: |
-      To update an EdgeCacheOrigin called 'my-origin', run:
+      To update an EdgeCacheOrigin resource named 'my-origin', run:
 
         $ {command} my-origin --origin-address=new-origin.example.com
 
@@ -22,7 +22,7 @@
 
   arguments:
     resource:
-      help_text: The name of the EdgeCacheOrigin to create.
+      help_text: The name of the EdgeCacheOrigin resource to create.
       spec: !REF googlecloudsdk.command_lib.edge_cache.resources:edgeCacheOrigin
 
     params:

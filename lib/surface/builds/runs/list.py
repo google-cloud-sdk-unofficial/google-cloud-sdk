@@ -18,10 +18,12 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+from apitools.base.py import exceptions
 from apitools.base.py import list_pager
 from googlecloudsdk.api_lib.cloudbuild.v2 import client_util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.cloudbuild import run_flags
+from googlecloudsdk.core import properties
 from googlecloudsdk.core import resources
 
 
@@ -41,7 +43,7 @@ class List(base.ListCommand):
   @staticmethod
   def Args(parser):
     parser.display_info.AddUriFunc(_GetResultURI)
-    run_flags.AddsRegionResourceArg(parser)
+    run_flags.AddsRegionResourceArg(parser, False)  # Not required.
 
   def Run(self, args):
     """This is what gets called when the user runs this command."""
@@ -49,11 +51,39 @@ class List(base.ListCommand):
     messages = client_util.GetMessagesModule()
 
     region_ref = args.CONCEPTS.region.Parse()
-    return list_pager.YieldFromList(
-        client.projects_locations_results,
-        messages.CloudbuildProjectsLocationsResultsListRequest(
-            parent=region_ref.RelativeName(), filter=args.filter),
-        field='results',
-        batch_size=args.page_size,
-        batch_size_attribute='pageSize',
-        limit=args.limit)
+    if region_ref:
+      parents = [region_ref.RelativeName()]
+    else:
+      # If no region is specified, list runs from all regions.
+      project = args.project or properties.VALUES.core.project.GetOrFail()
+      response = client.projects_locations.List(
+          messages.CloudbuildProjectsLocationsListRequest(
+              name='projects/{}'.format(project)))
+      parents = sorted([location.name for location in response.locations])
+
+    # Manually manage the limit since we'll be making repeated list requests.
+    total_limit = args.limit
+    parent_errors = []
+    # Note: if this serial approach is too slow, we could consider making
+    # requests in parallel (similar to http://shortn/_NWVYZQrCtp) although it
+    # will be more complicated and harder to do per-parent error reporting.
+    for p in parents:
+      try:
+        results = list_pager.YieldFromList(
+            client.projects_locations_results,
+            messages.CloudbuildProjectsLocationsResultsListRequest(
+                parent=p, filter=args.filter),
+            field='results',
+            batch_size=args.page_size,
+            batch_size_attribute='pageSize',
+            limit=total_limit)
+        for r in results:
+          yield r
+          if total_limit is not None:
+            total_limit -= 1
+      except exceptions.HttpError:
+        parent_errors.append(p)
+
+    if parent_errors:
+      raise exceptions.Error(
+          'Unable to fetch data from: {}'.format(parent_errors))

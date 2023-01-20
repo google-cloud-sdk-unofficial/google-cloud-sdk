@@ -24,7 +24,7 @@ from googlecloudsdk.calliope import base
 
 DETAILED_HELP = {
     'DESCRIPTION': """
-        Displays information about a bucket.
+        Display information about a bucket.
     """,
     'EXAMPLES': """
      To describe a bucket in a project, run:
@@ -35,13 +35,13 @@ DETAILED_HELP = {
 
 
 class Describe(base.DescribeCommand):
-  """Displays information about a bucket."""
+  """Display information about a bucket."""
 
   @staticmethod
   def Args(parser):
     """Register flags for this command."""
     parser.add_argument('BUCKET_ID', help='The id of the bucket to describe.')
-    util.AddParentArgs(parser, 'Describe a bucket')
+    util.AddParentArgs(parser, 'bucket to describe')
     util.AddBucketLocationArg(parser, True, 'Location of the bucket.')
 
   def Run(self, args):

@@ -91,5 +91,10 @@
     labels:
       api_field: cluster.labels
 
+  response:
+    modify_response_hooks:
+    - googlecloudsdk.command_lib.edge_cloud.container.print_warning:PrintWarning
+
   async:
     collection: edgecontainer.projects.locations.operations
+    extract_resource_result: false

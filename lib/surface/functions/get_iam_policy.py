@@ -24,10 +24,10 @@ from googlecloudsdk.command_lib.functions.v1.get_iam_policy import command as co
 from googlecloudsdk.command_lib.functions.v2.get_iam_policy import command as command_v2
 
 
-def _CommonArgs(parser, track):
+def _CommonArgs(parser):
   """Registers flags for this command."""
   flags.AddFunctionResourceArg(parser, 'to get IAM policy for')
-  flags.AddGen2Flag(parser, track)
+  flags.AddGen2Flag(parser)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
@@ -48,7 +48,7 @@ class GetIamPolicy(base.ListCommand):
   @staticmethod
   def Args(parser):
     """Registers flags for this command."""
-    _CommonArgs(parser, base.ReleaseTrack.GA)
+    _CommonArgs(parser)
 
   def Run(self, args):
     """Runs the command.
@@ -70,16 +70,7 @@ class GetIamPolicy(base.ListCommand):
 class GetIamPolicyBeta(GetIamPolicy):
   """Gets IAM policy for a Google Cloud Function."""
 
-  @staticmethod
-  def Args(parser):
-    """Registers flags for this command."""
-    _CommonArgs(parser, base.ReleaseTrack.BETA)
-
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class GetIamPolicyAlpha(GetIamPolicyBeta):
   """Gets IAM policy for a Google Cloud Function."""
-
-  @staticmethod
-  def Args(parser):
-    _CommonArgs(parser, base.ReleaseTrack.ALPHA)

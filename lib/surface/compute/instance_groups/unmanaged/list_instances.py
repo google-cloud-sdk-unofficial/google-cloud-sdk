@@ -27,8 +27,8 @@ from googlecloudsdk.api_lib.compute import request_helper
 from googlecloudsdk.api_lib.compute import utils
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute import flags
+from googlecloudsdk.command_lib.compute import scope as compute_scope
 from googlecloudsdk.command_lib.compute.instance_groups import flags as instance_groups_flags
-from googlecloudsdk.core import properties
 
 
 class ListInstances(base.ListCommand):
@@ -51,13 +51,12 @@ class ListInstances(base.ListCommand):
     client = holder.client
 
     # Note: only zonal resources parsed here.
-    group_ref = holder.resources.Parse(
-        args.name,
-        params={
-            'project': properties.VALUES.core.project.GetOrFail,
-            'zone': args.zone
-        },
-        collection='compute.instanceGroups')
+    group_ref = (
+        ListInstances.ZonalInstanceGroupArg.ResolveAsResource(
+            args, holder.resources,
+            default_scope=compute_scope.ScopeEnum.ZONE,
+            scope_lister=flags.GetDefaultScopeLister(client)))
+
     if args.regexp:
       filter_expr = 'instance eq {0}'.format(args.regexp)
     else:

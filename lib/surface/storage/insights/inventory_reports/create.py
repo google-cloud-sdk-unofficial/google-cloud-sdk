@@ -87,9 +87,7 @@ class Create(base.Command):
     report_config = insights_api.InsightsApi().create(
         source_bucket=source_bucket.bucket_name,
         destination_url=destination,
-        metadata_fields=(
-            list(flags.REQUIRED_INVENTORY_REPORTS_METADATA_FIELDS) +
-            list(args.metadata_fields)),
+        metadata_fields=list(args.metadata_fields),
         start_date=start_date,
         end_date=end_date,
         frequency=args.schedule_repeats,

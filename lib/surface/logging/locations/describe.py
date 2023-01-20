@@ -42,7 +42,7 @@ class Describe(base.DescribeCommand):
   def Args(parser):
     """Register flags for this command."""
     parser.add_argument('LOCATION_ID', help='Id of the location to describe.')
-    util.AddParentArgs(parser, 'Describe a location')
+    util.AddParentArgs(parser, 'location to describe')
 
   def Run(self, args):
     """This is what gets called when the user runs this command.

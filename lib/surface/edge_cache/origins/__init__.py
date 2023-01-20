@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""The origins command group for Edge Cache."""
+"""The origins command group for Media CDN."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -22,6 +22,5 @@ from googlecloudsdk.calliope import base
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.GA)
-@base.Hidden
 class Origins(base.Group):
-  """Interact with and manage Edge Cache Origins."""
+  """Interact with and manage EdgeCacheOrigin resources."""

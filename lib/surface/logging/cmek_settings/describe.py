@@ -26,7 +26,7 @@ from googlecloudsdk.calliope import base
 
 class Describe(base.DescribeCommand):
   # pylint: disable=line-too-long
-  """Displays the CMEK settings for the Cloud Logging Logs Router.
+  """Display the CMEK settings for the Cloud Logging Logs Router.
 
   If *kmsKeyName* is present in the output, then CMEK is enabled for your
   project, folder, organization or billing-account. You can also find the Logs
@@ -52,7 +52,7 @@ class Describe(base.DescribeCommand):
   @staticmethod
   def Args(parser):
     """Register flags for this command."""
-    util.AddParentArgs(parser, 'Describe CMEK settings')
+    util.AddParentArgs(parser, 'CMEK settings to describe')
 
   def Run(self, args):
     """This is what gets called when the user runs this command.

@@ -12,7 +12,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Command to remove a list of BGP peers from a Distributed Cloud Edge Network router."""
+"""Command to remove a list of BGP peers from a Distributed Cloud Edge Network router.
+"""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -54,22 +55,22 @@ class RemoveBgpPeer(base.UpdateCommand):
         type=arg_parsers.ArgList(),
         required=True,
         metavar='BGP_PEER_NAME',
-        help='''The list of names for peers being removed.
+        help="""The list of names for peers being removed.
         Only single value allowed currently.
-        '''
-    )
+        """)
     base.ASYNC_FLAG.AddToParser(parser)
 
   def Run(self, args):
-    routers_client = routers.RoutersClient()
+    routers_client = routers.RoutersClient(self.ReleaseTrack())
     router_ref = args.CONCEPTS.router.Parse()
     update_req_op = routers_client.RemoveBgpPeer(router_ref, args)
 
     async_ = args.async_
     if not async_:
       response = routers_client.WaitForOperation(update_req_op)
-      log.UpdatedResource(router_ref, details='Operation was successful.')
+      log.UpdatedResource(
+          router_ref.RelativeName(), details='Operation was successful.')
       return response
 
     log.status.Print('Updating [{0}] with operation [{1}].'.format(
-        router_ref, update_req_op.name))
+        router_ref.RelativeName(), update_req_op.name))

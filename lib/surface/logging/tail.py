@@ -110,7 +110,7 @@ class Tail(base.Command):
         help='Id of the view. If this argument is provided, then '
         '`--location` and `--bucket` must also be specified.')
 
-    util.AddParentArgs(parser, 'Tail log entries')
+    util.AddParentArgs(parser, 'log entries to tail')
 
   def _Run(self, args):
     try:

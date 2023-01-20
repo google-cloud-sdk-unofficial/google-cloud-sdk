@@ -22,7 +22,6 @@ from googlecloudsdk.api_lib.container.gkeonprem import operations
 from googlecloudsdk.api_lib.container.gkeonprem import vmware_clusters as apis
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.container.gkeonprem import constants
-from googlecloudsdk.command_lib.container.gkeonprem import flags
 from googlecloudsdk.command_lib.container.vmware import constants as vmware_constants
 from googlecloudsdk.command_lib.container.vmware import flags as vmware_flags
 from googlecloudsdk.core import log
@@ -34,7 +33,6 @@ $ {command} my-cluster --location=us-west1
 """
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Create(base.CreateCommand):
   """Create an Anthos cluster on VMware."""
@@ -50,7 +48,7 @@ class Create(base.CreateCommand):
     """
     parser.display_info.AddFormat(vmware_constants.VMWARE_CLUSTERS_FORMAT)
     vmware_flags.AddClusterResourceArg(parser, 'to create', True)
-    flags.AddAdminClusterMembershipResourceArg(parser, False)
+    vmware_flags.AddAdminClusterMembershipResourceArg(parser, positional=False)
     base.ASYNC_FLAG.AddToParser(parser)
     vmware_flags.AddValidationOnly(parser)
     vmware_flags.AddDescription(parser)

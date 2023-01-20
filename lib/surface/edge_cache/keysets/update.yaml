@@ -1,23 +1,25 @@
 - release_tracks: [ALPHA, GA]
-  hidden: true
   help_text:
-    brief: Update an EdgeCacheKeyset.
+    brief: Update an EdgeCacheKeyset resource.
     description: |
-      Update an existing EdgeCacheKeyset.
+      Update an existing EdgeCacheKeyset resource.
     examples: |
-      To update an EdgeCacheKeyset called 'my-keyset', run:
+      To update an EdgeCacheKeyset resource called 'my-keyset', run:
 
         $ {command} my-keyset --public-key='id=KEYID,value=BASE64PUBLICKEY'
 
-      The `update` command appends keys to an existing Keyset. To add more than one key
-      to a Keyset, provide multiple `--public-key` values:
+      The `update` command appends keys to an existing EdgeCacheKeyset
+      resource. To add more than one key to an EdgeCacheKeyset
+      resource, provide multiple `--public-key` values:
 
         $ {command} my-keyset --public-key='id=KEYID,value=BASE64PUBLICKEY' \
           --public-key='id=EXISTING,value=EXISTINGPUBLICKEY'
 
-      You can specify, and a Keyset can contain, up to three (3) public keys. To delete
-      unused public keys within an existing Keyset, use the `import` command to specify
-      the Keyset in full, omitting any unused publicKey items.
+      You can specify, and an EdgeCacheKeyset resource can contain, up
+      to three (3) public keys. To delete unused public keys within an
+      existing Keyset, use the `import` command to specify the
+      EdgeCacheKeyset resource in full, omitting any unused publicKey
+      items.
 
   request:
     collection: networkservices.projects.locations.edgeCacheKeysets
@@ -32,7 +34,7 @@
 
   arguments:
     resource:
-      help_text: The name of the EdgeCacheKeyset to update.
+      help_text: The name of the EdgeCacheKeyset resource to update.
       spec: !REF googlecloudsdk.command_lib.edge_cache.resources:edgeCacheKeyset
 
     params:

@@ -21,7 +21,6 @@ from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class BareMetal(base.Group):
   """Deploy and manage Anthos clusters on bare metal for running containers."""

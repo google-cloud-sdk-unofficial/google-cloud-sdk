@@ -56,6 +56,6 @@ class GetStatus(base.Command):
     return router_status
 
   def Run(self, args):
-    routers_client = routers.RoutersClient()
+    routers_client = routers.RoutersClient(self.ReleaseTrack())
     router_ref = args.CONCEPTS.router.Parse()
     return self._PreprocessResult(routers_client.GetStatus(router_ref))

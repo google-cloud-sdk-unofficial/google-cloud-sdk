@@ -18,12 +18,14 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+from googlecloudsdk.api_lib.storage import api_factory
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.iam import iam_util
+from googlecloudsdk.command_lib.storage import errors_util
+from googlecloudsdk.command_lib.storage import iam_command_util
+from googlecloudsdk.command_lib.storage import storage_url
 
 
-@base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class RemoveIamPolicyBinding(base.Command):
   """Remove an IAM policy binding from a bucket."""
 
@@ -38,20 +40,25 @@ class RemoveIamPolicyBinding(base.Command):
       'EXAMPLES':
           """
       To remove an IAM policy binding from the role of
-      roles/storage.objectCreator for the user john.doe@example.com on BUCKET-1:
+      roles/storage.objectCreator for the user john.doe@example.com on BUCKET:
 
-        $ {command} gs://BUCKET-1 --member=user:john.doe@example.com --role=roles/storage.objectCreator
+        $ {command} gs://BUCKET --member=user:john.doe@example.com --role=roles/storage.objectCreator
       """,
   }
 
   @staticmethod
   def Args(parser):
     parser.add_argument(
-        'url',
-        nargs='+',
-        help='URLs for buckets to remove IAM policy bindings from.')
-    iam_util.AddArgsForRemoveIamPolicyBinding(parser)
+        'url', help='URL of bucket to remove IAM policy binding from.')
+    iam_util.AddArgsForRemoveIamPolicyBinding(parser, add_condition=True)
 
   def Run(self, args):
-    del args  # Unused.
-    raise NotImplementedError
+    url_object = storage_url.storage_url_from_string(args.url)
+    errors_util.raise_error_if_not_bucket(args.command_path, url_object)
+    errors_util.raise_error_if_not_gcs(args.command_path, url_object)
+
+    client = api_factory.get_api(url_object.scheme)
+    policy = client.get_bucket_iam_policy(url_object.bucket_name)
+
+    return iam_command_util.remove_iam_binding_from_resource(
+        args, url_object, policy)

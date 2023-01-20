@@ -6,15 +6,16 @@ help_text:
   description: |
     Delete the specified GatewaySecurityPolicyRule.
   examples: |
-      To delete a GatewaySecurityPolicyRule called 'my-gateway-security-policy-rule', run:
+      To delete a GatewaySecurityPolicyRule called 'my-rule', run:
 
-        $ {command} my-gateway-security-policy-rule --location=global
+        $ {command} my-rule --location={region} --gateway-security-policy={policy-name}
 
 arguments:
   resource:
     spec: !REF googlecloudsdk.command_lib.network_security.resources:gatewaySecurityPolicyRule
     help_text: |
       Name of the GatewaySecurityPolicyRule you want to delete.
+    is_positional: true
 
 async:
   collection: networksecurity.projects.locations.operations

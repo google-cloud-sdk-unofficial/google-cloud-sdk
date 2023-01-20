@@ -41,7 +41,7 @@ class Describe(base.DescribeCommand):
   """Describe a recommender configuration.
 
       Describe a recommender configuration based on a given entity (project,
-      organization), location, and recommender.
+      organization, billing account), location, and recommender.
   """
   detailed_help = _DETAILED_HELP
 
@@ -53,9 +53,10 @@ class Describe(base.DescribeCommand):
       parser: An argparse parser that you can use to add arguments that go on
         the command line after this command.
     """
-    flags.AddRecommenderFlagsToParser(
-        parser,
-        [reco_base.EntityType.PROJECT, reco_base.EntityType.ORGANIZATION])
+    flags.AddRecommenderFlagsToParser(parser, [
+        reco_base.EntityType.PROJECT, reco_base.EntityType.ORGANIZATION,
+        reco_base.EntityType.BILLING_ACCOUNT
+    ])
 
   def Run(self, args):
     """Runs 'gcloud recommender recommender-config describe'.

@@ -28,7 +28,7 @@ from googlecloudsdk.command_lib.resource_manager import completers
 
 class Update(base.Command):
   # pylint: disable=line-too-long
-  """Updates the CMEK settings for the Cloud Logging Logs Router.
+  """Update the CMEK settings for the Cloud Logging Logs Router.
 
   Use this command to update the *--kms-key-name* associated with the
   Cloud Logging Logs Router.
@@ -44,7 +44,8 @@ class Update(base.Command):
 
   To enable CMEK for the Logs Router for an organization, run:
 
-    $ {command} --organization=[ORGANIZATION_ID] --kms-key-name='projects/my-project/locations/my-location/keyRings/my-keyring/cryptoKeys/key'
+    $ {command} --organization=[ORGANIZATION_ID]
+    --kms-key-name='projects/my-project/locations/my-location/keyRings/my-keyring/cryptoKeys/key'
 
   To disable CMEK for the Logs Router for an organization, run:
 

@@ -66,10 +66,11 @@ class Update(base.Command):
     remove_service = args.remove_service
     integration_name = args.name
     parameters = flags.GetParameters(args)
+    release_track = self.ReleaseTrack()
 
     conn_context = connection_context.GetConnectionContext(
-        args, run_flags.Product.RUN_APPS, self.ReleaseTrack())
-    with run_apps_operations.Connect(conn_context) as client:
+        args, run_flags.Product.RUN_APPS, release_track)
+    with run_apps_operations.Connect(conn_context, release_track) as client:
 
       client.UpdateIntegration(
           name=integration_name,

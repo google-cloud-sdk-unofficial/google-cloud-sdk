@@ -464,7 +464,9 @@ def _RunCreate(compute_api,
                support_max_run_duration=False,
                support_region_instance_template=False,
                support_confidential_compute_type=False,
-               support_provisioned_throughput=False):
+               support_provisioned_throughput=False,
+               support_ipv6_reservation=False,
+               support_internal_ipv6_reservation=False):
   """Common routine for creating instance template.
 
   This is shared between various release tracks.
@@ -493,6 +495,9 @@ def _RunCreate(compute_api,
         is used.
       support_provisioned_throughput: Indicate the provisioned throughput is
         set.
+      support_ipv6_reservation: Indicate the external IPv6 address is supported.
+      support_internal_ipv6_reservation: Indicate the internal IPv6 address is
+        supported.
 
   Returns:
       A resource object dispatched by display.Displayer().
@@ -537,11 +542,25 @@ def _RunCreate(compute_api,
     network_tier = getattr(args, 'network_tier', None)
     stack_type = getattr(args, 'stack_type', None)
     ipv6_network_tier = getattr(args, 'ipv6_network_tier', None)
+    ipv6_address = None
+    ipv6_prefix_length = None
+    internal_ipv6_address = None
+    internal_ipv6_prefix_length = None
     subnet_region = None
+
     if support_region_instance_template:
       subnet_region = getattr(args, 'subnet_region', None)
     else:
       subnet_region = getattr(args, 'region', None)
+
+    if support_ipv6_reservation:
+      ipv6_address = getattr(args, 'ipv6_address', None)
+      ipv6_prefix_length = getattr(args, 'ipv6_prefix_length', None)
+    if support_internal_ipv6_reservation:
+      internal_ipv6_address = getattr(args, 'internal_ipv6_address', None)
+      internal_ipv6_prefix_length = getattr(args, 'internal_ipv6_prefix_length',
+                                            None)
+
     network_interfaces = [
         instance_template_utils.CreateNetworkInterfaceMessage(
             resources=compute_api.resources,
@@ -556,7 +575,11 @@ def _RunCreate(compute_api,
                      args.address),
             network_tier=network_tier,
             stack_type=stack_type,
-            ipv6_network_tier=ipv6_network_tier)
+            ipv6_network_tier=ipv6_network_tier,
+            ipv6_address=ipv6_address,
+            ipv6_prefix_length=ipv6_prefix_length,
+            internal_ipv6_address=internal_ipv6_address,
+            internal_ipv6_prefix_length=internal_ipv6_prefix_length)
     ]
 
   if support_mesh:
@@ -1010,6 +1033,10 @@ class CreateAlpha(Create):
     instances_flags.AddPrivateIpv6GoogleAccessArgForTemplate(
         parser, utils.COMPUTE_ALPHA_API_VERSION)
     instances_flags.AddPostKeyRevocationActionTypeArgs(parser)
+    instances_flags.AddIPv6AddressArgs(parser)
+    instances_flags.AddIPv6PrefixLengthArgs(parser)
+    instances_flags.AddInternalIPv6AddressArgs(parser)
+    instances_flags.AddInternalIPv6PrefixLengthArgs(parser)
     instance_templates_flags.AddKeyRevocationActionTypeArgs(parser)
 
   def Run(self, args):

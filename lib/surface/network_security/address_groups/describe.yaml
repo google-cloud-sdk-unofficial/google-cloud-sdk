@@ -1,4 +1,4 @@
-release_tracks: [ALPHA]
+release_tracks: [ALPHA, BETA]
 
 help_text:
   brief: |
@@ -16,5 +16,8 @@ arguments:
     help_text: Name of the address group to be described.
 
 request: &request
-  api_version: v1alpha1
+  ALPHA:
+    api_version: v1alpha1
+  BETA:
+    api_version: v1beta1
   collection: networksecurity.projects.locations.addressGroups

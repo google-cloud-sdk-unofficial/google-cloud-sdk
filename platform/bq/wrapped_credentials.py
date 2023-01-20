@@ -12,8 +12,8 @@ import io
 import json
 
 from google.auth import aws
-from google.auth import exceptions
 from google.auth import external_account
+from google.auth import external_account_authorized_user
 from google.auth import identity_pool
 from google.auth import pluggable
 from google.auth.transport import requests
@@ -29,17 +29,20 @@ class WrappedCredentials(oauth2client_4_0.client.OAuth2Credentials):
       list(oauth2client_4_0.client.OAuth2Credentials.NON_SERIALIZED_MEMBERS) +
       ['_base'])
 
-  def __init__(self, external_account_creds):
+  def __init__(self, base_creds):
     """Initializes oauth2client credentials based on underlying Google Auth credentials.
 
     Args:
-      external_account_creds: subclass of
-        google.auth.external_account.Credentials
+      base_creds: subclass of
+        google.auth.external_account.Credentials or
+        google.auth.external_account_authorized_user.Credentials
     """
 
-    if not isinstance(external_account_creds, external_account.Credentials):
+    if not isinstance(
+        base_creds, external_account.Credentials) and not isinstance(
+            base_creds, external_account_authorized_user.Credentials):
       raise TypeError('Invalid Credentials')
-    self._base = external_account_creds
+    self._base = base_creds
     super(WrappedCredentials, self).__init__(access_token=self._base.token,
                                              client_id=self._base._audience,
                                              client_secret=None,
@@ -99,6 +102,12 @@ class WrappedCredentials(oauth2client_4_0.client.OAuth2Credentials):
     return cls(creds)
 
   @classmethod
+  def for_external_account_authorized_user(cls, filename):
+    creds = _get_external_account_authorized_user_credentials_from_file(
+        filename)
+    return cls(creds)
+
+  @classmethod
   def from_json(cls, json_data):
     """Instantiate a Credentials object from a JSON description of it.
 
@@ -115,8 +124,13 @@ class WrappedCredentials(oauth2client_4_0.client.OAuth2Credentials):
     # Rebuild the credentials.
     base = data.get('_base')
     # Init base cred.
-    external_account_creds = _get_external_account_credentials_from_info(base)
-    creds = cls(external_account_creds)
+    base_creds = None
+    if base.get('type') == 'external_account':
+      base_creds = _get_external_account_credentials_from_info(base)
+    elif base.get('type') == 'external_account_authorized_user':
+      base_creds = _get_external_account_authorized_user_credentials_from_info(
+          base)
+    creds = cls(base_creds)
     # Inject token and expiry.
     creds.access_token = data.get('access_token')
     if (data.get('token_expiry') and
@@ -144,26 +158,33 @@ def _get_external_account_credentials_from_info(info):
   """
 
   scopes = bq_utils.GetClientScopeFromFlags()
-  try:
-    if info.get(
-        'subject_token_type') == 'urn:ietf:params:aws:token-type:aws4_request':
-      # Configuration corresponds to an AWS credentials.
-      return aws.Credentials.from_info(info, scopes=scopes)
-    elif (info.get('credential_source') is not None and
-          info.get('credential_source').get('executable') is not None):
-      # Configuration corresponds to pluggable credentials.
-      return pluggable.Credentials.from_info(info, scopes=scopes)
-    else:
-      # Configuration corresponds to an identity pool credentials.
-      return identity_pool.Credentials.from_info(info, scopes=scopes)
-  except (ValueError, TypeError, exceptions.RefreshError):
-    return None
+  if info.get(
+      'subject_token_type') == 'urn:ietf:params:aws:token-type:aws4_request':
+    # Configuration corresponds to an AWS credentials.
+    return aws.Credentials.from_info(info, scopes=scopes)
+  elif (info.get('credential_source') is not None and
+        info.get('credential_source').get('executable') is not None):
+    # Configuration corresponds to pluggable credentials.
+    return pluggable.Credentials.from_info(info, scopes=scopes)
+  else:
+    # Configuration corresponds to an identity pool credentials.
+    return identity_pool.Credentials.from_info(info, scopes=scopes)
 
 
 def _get_external_account_credentials_from_file(filename):
   with io.open(filename, 'r', encoding='utf-8') as json_file:
     data = json.load(json_file)
     return _get_external_account_credentials_from_info(data)
+
+
+def _get_external_account_authorized_user_credentials_from_info(info):
+  return external_account_authorized_user.Credentials.from_info(info)
+
+
+def _get_external_account_authorized_user_credentials_from_file(filename):
+  with io.open(filename, 'r', encoding='utf-8') as json_file:
+    data = json.load(json_file)
+    return _get_external_account_authorized_user_credentials_from_info(data)
 
 
 def _parse_expiry(expiry):

@@ -1,10 +1,10 @@
 - release_tracks: [ALPHA, GA]
-  hidden: true
   help_text:
-    brief: Show details about an EdgeCacheService.
-    description: Show details about an EdgeCacheService.
+    brief: Show details about an EdgeCacheService resource.
+    description: Show details about an EdgeCacheService resource.
     examples: |
-      To show details about a service, run:
+      To show details about an EdgeCacheService resource named
+      'my-service', run:
 
         $ {command} my-service
 
@@ -17,5 +17,5 @@
 
   arguments:
     resource:
-      help_text: The EdgeCacheService you want to describe.
+      help_text: The EdgeCacheService resource you want to describe.
       spec: !REF googlecloudsdk.command_lib.edge_cache.resources:edgeCacheService

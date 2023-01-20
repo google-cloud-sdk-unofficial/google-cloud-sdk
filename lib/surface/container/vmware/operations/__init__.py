@@ -23,7 +23,6 @@ from googlecloudsdk.command_lib.projects import util
 from googlecloudsdk.core import log
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Operations(base.Group):
   """Manage Anthos on VMware long running operations."""

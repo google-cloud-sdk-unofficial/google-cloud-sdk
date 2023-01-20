@@ -161,8 +161,7 @@ class CreateBeta(Create):
     subscription = resource_args.CreateSubscriptionResourceArg(
         'to create.', plural=True)
     resource_args.AddResourceArgs(parser, [topic, subscription])
-    flags.AddSubscriptionSettingsFlags(
-        parser, support_enable_exactly_once_delivery=True)
+    flags.AddSubscriptionSettingsFlags(parser)
     labels_util.AddCreateLabelsFlags(parser)
 
   def Run(self, args):

@@ -34,7 +34,6 @@ $ {command} my-cluster --location=us-west1 --admin-cluster-membership=projects/m
 """
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Enroll(base.Command):
   """Enroll an Anthos on VMware admin cluster."""

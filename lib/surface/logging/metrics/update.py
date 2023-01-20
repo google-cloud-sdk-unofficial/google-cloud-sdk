@@ -27,7 +27,7 @@ from googlecloudsdk.core import log
 DETAILED_HELP = {
     'DESCRIPTION':
         """\
-          Updates the description or the filter expression of an existing
+          Update the description or the filter expression of an existing
           logs-based metric.
       """,
     'EXAMPLES':
@@ -63,7 +63,7 @@ DETAILED_HELP = {
 @base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA,
                     base.ReleaseTrack.ALPHA)
 class Update(base.UpdateCommand):
-  """Updates the definition of a logs-based metric."""
+  """Update the definition of a logs-based metric."""
 
   @staticmethod
   def Args(parser):

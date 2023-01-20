@@ -22,7 +22,6 @@ from googlecloudsdk.api_lib.container.gkeonprem import bare_metal_clusters as ap
 from googlecloudsdk.api_lib.container.gkeonprem import operations
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.container.bare_metal import cluster_flags as bare_metal_flags
-from googlecloudsdk.command_lib.container.gkeonprem import flags
 
 _EXAMPLES = """
 To enroll a cluster named ``my-cluster'' managed in location ``us-west1''
@@ -34,7 +33,6 @@ $ {command} my-cluster --location=us-west1 --admin-cluster-membership=projects/m
 """
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Enroll(base.Command):
   """Enroll an Anthos cluster on bare metal."""
@@ -43,8 +41,9 @@ class Enroll(base.Command):
 
   @staticmethod
   def Args(parser):
-    flags.AddAdminClusterMembershipResourceArg(parser, positional=False)
-    bare_metal_flags.AddClusterResourceArg(parser, 'to enroll')
+    bare_metal_flags.AddAdminClusterMembershipResourceArg(
+        parser, positional=False)
+    bare_metal_flags.AddClusterResourceArg(parser, verb='to enroll')
     base.ASYNC_FLAG.AddToParser(parser)
 
   def Run(self, args):

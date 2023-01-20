@@ -42,7 +42,7 @@ class List(base.ListCommand):
   def Args(parser):
     """Register flags for this command."""
 
-    util.AddParentArgs(parser, 'List views')
+    util.AddParentArgs(parser, 'views to list')
     util.AddBucketLocationArg(
         parser, True, 'Location of the specified bucket')
     parser.add_argument(

@@ -18,8 +18,6 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
-import ipaddress
-
 from googlecloudsdk.api_lib.edge_cloud.networking.routers import routers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.edge_cloud.networking import resource_args
@@ -64,7 +62,7 @@ class Update(base.UpdateCommand):
     base.ASYNC_FLAG.AddToParser(parser)
 
   def Run(self, args):
-    routers_client = routers.RoutersClient()
+    routers_client = routers.RoutersClient(self.ReleaseTrack())
     router_ref = args.CONCEPTS.router.Parse()
 
     if not self.has_routes_arg(args):
@@ -75,11 +73,12 @@ class Update(base.UpdateCommand):
     async_ = getattr(args, 'async_', False)
     if not async_:
       response = routers_client.WaitForOperation(update_req_op)
-      log.UpdatedResource(router_ref, details='Operation was successful.')
+      log.UpdatedResource(
+          router_ref.RelativeName(), details='Operation was successful.')
       return response
 
     log.status.Print('Updating [{0}] with operation [{1}].'.format(
-        router_ref, update_req_op.name))
+        router_ref.RelativeName(), update_req_op.name))
 
   def has_routes_arg(self, args):
     relevant_args = [

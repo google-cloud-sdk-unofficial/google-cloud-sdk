@@ -33,7 +33,6 @@ $ {command} my-cluster --location=us-west1
 """
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Update(base.UpdateCommand):
   """Update an Anthos cluster on bare metal."""
@@ -49,7 +48,7 @@ class Update(base.UpdateCommand):
     """
     parser.display_info.AddFormat(
         bare_metal_constants.BARE_METAL_CLUSTERS_FORMAT)
-    flags.AddClusterResourceArg(parser, 'to update', True)
+    flags.AddClusterResourceArg(parser, verb='to update', positional=True)
     base.ASYNC_FLAG.AddToParser(parser)
     flags.AddValidationOnly(parser)
     flags.AddAllowMissingUpdateCluster(parser)
@@ -60,6 +59,7 @@ class Update(base.UpdateCommand):
     flags.AddMaintenanceConfig(parser, is_update=True)
     flags.AddDescription(parser)
     flags.AddClusterOperationsConfig(parser)
+    flags.AddNodeAccessConfig(parser)
 
   def Run(self, args):
     """Runs the update command.

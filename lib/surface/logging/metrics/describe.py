@@ -24,7 +24,7 @@ from googlecloudsdk.calliope import base
 
 
 class Describe(base.DescribeCommand):
-  """Shows the definition of a logs-based metric."""
+  """Display the definition of a logs-based metric."""
 
   @staticmethod
   def Args(parser):
@@ -50,7 +50,7 @@ class Describe(base.DescribeCommand):
 
 Describe.detailed_help = {
     'DESCRIPTION': """\
-        Shows the definition of a logs-based metric.
+        Show the definition of a logs-based metric.
     """,
     'EXAMPLES': """\
         To show the definition of a metric called high_severity_count, run:

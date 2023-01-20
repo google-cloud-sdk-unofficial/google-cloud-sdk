@@ -28,7 +28,7 @@ from googlecloudsdk.core import resources
 
 
 class List(base.ListCommand):
-  """Lists your project's logs.
+  """List your project's logs.
 
   Only logs that contain log entries are listed.
 
@@ -41,7 +41,6 @@ class List(base.ListCommand):
   To list all logs for a view:
 
     $ {command} --bucket=[BUCKET_ID] --location=[LOCATION] --view=[VIEW_ID]
-
   """
 
   @staticmethod

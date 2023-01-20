@@ -131,6 +131,7 @@ class Update(base.UpdateCommand):
 class UpdateBeta(Update):
   """Updates properties of an existing Compute Engine subnetwork."""
 
+  _include_reserved_internal_range = True
   _api_version = compute_api.COMPUTE_BETA_API_VERSION
 
 

@@ -28,10 +28,10 @@ from googlecloudsdk.core.console import console_io
 @base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
 class Create(base.CreateCommand):
   # pylint: disable=line-too-long
-  """Creates a log sink.
+  """Create a log sink.
 
-  Creates a log used to route log entries to a destination.  The sink routes all
-  log entries that match its *--log-filter* flag.
+  Create a log sink used to route log entries to a destination. The sink routes
+  all log entries that match its *--log-filter* flag.
 
   An empty filter matches all logs.
 
@@ -135,7 +135,7 @@ class Create(base.CreateCommand):
         action='store_true',
         help=('Sink will be disabled. Disabled sinks do not export logs.'))
 
-    util.AddParentArgs(parser, 'Create a sink')
+    util.AddParentArgs(parser, 'sink to create')
     parser.display_info.AddCacheUpdater(None)
 
   def CreateSink(self, parent, sink_data, custom_writer_identity):

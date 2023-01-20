@@ -7,7 +7,7 @@ help_text:
   examples: |
       To export a GatewaySecurityPolicyRule, run:
 
-        $ {command} my-gateway-security-policy-rule --destination=my-gateway-security-policy-rule-list.yaml --location=global
+        $ {command} my-rule --destination=my-rule.yaml --location={region} --gateway-security-policy={policy-name}
 
 request:
   collection: networksecurity.projects.locations.gatewaySecurityPolicies.rules
@@ -18,3 +18,4 @@ arguments:
     spec: !REF googlecloudsdk.command_lib.network_security.resources:gatewaySecurityPolicyRule
     help_text: |
       Name of the GatewaySecurityPolicyRule to export.
+    is_positional: true

@@ -33,7 +33,6 @@ $ {command} my-cluster --location=us-west1
 """
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Update(base.UpdateCommand):
   """Update an Anthos on bare metal admin cluster."""

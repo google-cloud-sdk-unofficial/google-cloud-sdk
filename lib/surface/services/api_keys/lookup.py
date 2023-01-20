@@ -46,3 +46,37 @@ class Lookup(base.Command):
 
     request = messages.ApikeysKeysLookupKeyRequest(keyString=args.key_string)
     return client.keys.LookupKey(request)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class LookupBeta(base.Command):
+  """Look up resource name of a key string.
+
+  ## EXAMPLES
+
+   Look up resource name of a key string named my-key-string:
+
+    $ gcloud beta services api-keys lookup my-key-string
+
+  """
+
+  @staticmethod
+  def Args(parser):
+    parser.add_argument('key_string', help='Key string of the key')
+
+  def Run(self, args):
+    """Run command.
+
+    Args:
+      args: an argparse namespace. All the arguments that were provided to this
+        command invocation.
+
+    Returns:
+      Resource name and its parent name.
+    """
+
+    client = apikeys.GetClientInstance(base.ReleaseTrack.GA)
+    messages = client.MESSAGES_MODULE
+
+    request = messages.ApikeysKeysLookupKeyRequest(keyString=args.key_string)
+    return client.keys.LookupKey(request)

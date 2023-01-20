@@ -32,15 +32,15 @@ DETAILED_HELP = {
         """
     To diagnose an runtime, run:
 
-        $ {command} example-runtime --location=us-central1-b --gcs-bucket=gs://example-bucket
+        $ {command} example-runtime --location=us-central1 --gcs-bucket=gs://example-bucket
 
     To diagnose an runtime with a relative path:
 
-        $ {command} example-runtime --location=us-central1-b --gcs-bucket=gs://example-bucket --relative-path=logs
+        $ {command} example-runtime --location=us-central1 --gcs-bucket=gs://example-bucket --relative-path=logs
 
     To diagnose an runtime, with packet capture:
 
-        $ {command} example-runtime --location=us-central1-b --gcs-bucket=gs://example-bucket --enable-packet-capture
+        $ {command} example-runtime --location=us-central1 --gcs-bucket=gs://example-bucket --enable-packet-capture
     """,
 }
 

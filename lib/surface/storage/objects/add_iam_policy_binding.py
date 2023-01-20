@@ -18,55 +18,51 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+from googlecloudsdk.api_lib.storage import api_factory
+from googlecloudsdk.api_lib.util import apis
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.iam import iam_util
+from googlecloudsdk.command_lib.storage import errors_util
+from googlecloudsdk.command_lib.storage import iam_command_util
+from googlecloudsdk.command_lib.storage import storage_url
 
 
 @base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class AddIamPolicyBinding(base.Command):
   """Grant a principal access to an object."""
 
   detailed_help = {
       'DESCRIPTION':
           """
-      *{command}* behaves similarly to *{parent_command} add_acl_grant*, but
-      uses the IAM policy binding syntax.
+      Add an IAM policy binding to an object. For more information, see [Cloud
+      Identity and Access
+      Management](https://cloud.google.com/storage/docs/access-control/iam).
       """,
       'EXAMPLES':
           """
-      To grant full control of OBJECT-1 in BUCKET-1 to the user
+      To grant full control of OBJECT in BUCKET to the user
       john.doe@example.com:
 
-        $ {command} gs://BUCKET-1/OBJECT-1 --member=user:john.doe@example.com --role=roles/storage.legacyObjectOwner
+        $ {command} gs://BUCKET/OBJECT --member=user:john.doe@example.com --role=roles/storage.legacyObjectOwner
 
-      To make OBJECT-1 publicly readable:
+      To make OBJECT publicly readable:
 
-        $ {command} gs://BUCKET-1/OBJECT-1 --member=AllUsers --role=roles/storage.legacyObjectReader
-
-      To grant read acess of all jpg objects in BUCKET-1 to the user
-      john.doe@example.com:
-
-        $ {command} gs://BUCKET-1/**.jpg --member=user:john.doe@example.com --role=roles/storage.legacyObjectReader
+        $ {command} gs://BUCKET/OBJECT --member=AllUsers --role=roles/storage.legacyObjectReader
       """,
   }
 
   @staticmethod
   def Args(parser):
     parser.add_argument(
-        'url',
-        nargs='+',
-        help='URLs for objects that the principal is granted access to.')
-    iam_util.AddMemberFlag(parser, 'to add the binding for', False)
-    parser.add_argument(
-        '--role',
-        required=True,
-        choices=[
-            'roles/storage.legacyObjectOwner',
-            'roles/storage.legacyObjectReader'
-        ],
-        help='Role name to assign to the principal.')
+        'url', help='URL of bucket to add IAM policy binding to.')
+    iam_util.AddArgsForAddIamPolicyBinding(parser, add_condition=True)
 
   def Run(self, args):
-    del args  # Unused.
-    raise NotImplementedError
+    url_object = storage_url.storage_url_from_string(args.url)
+    errors_util.raise_error_if_not_cloud_object(args.command_path, url_object)
+    errors_util.raise_error_if_not_gcs(args.command_path, url_object)
+
+    policy = api_factory.get_api(url_object.scheme).get_object_iam_policy(
+        url_object.bucket_name, url_object.object_name, url_object.generation)
+    return iam_command_util.add_iam_binding_to_resource(
+        args, url_object, apis.GetMessagesModule('storage', 'v1'), policy)

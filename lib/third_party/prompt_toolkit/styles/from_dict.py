@@ -7,9 +7,9 @@ This is very similar to the Pygments style dictionary, with some additions:
   colors.)
 """
 try:
-    from collections import Mapping
-except ImportError:
     from collections.abc import Mapping
+except ImportError:
+    from collections import Mapping
 
 from .base import Style, DEFAULT_ATTRS, ANSI_COLOR_NAMES
 from .defaults import DEFAULT_STYLE_EXTENSIONS

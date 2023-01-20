@@ -26,12 +26,12 @@ from googlecloudsdk.command_lib.functions.v1.delete import command as command_v1
 from googlecloudsdk.command_lib.functions.v2.delete import command as command_v2
 
 
-def _CommonArgs(parser, track):
+def _CommonArgs(parser):
   """Registers flags for this command."""
   flags.AddFunctionResourceArg(parser, 'to delete')
   parser.display_info.AddCacheUpdater(None)
 
-  flags.AddGen2Flag(parser, track)
+  flags.AddGen2Flag(parser)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
@@ -41,7 +41,7 @@ class Delete(base.DeleteCommand):
   @staticmethod
   def Args(parser):
     """Register flags for this command."""
-    _CommonArgs(parser, base.ReleaseTrack.GA)
+    _CommonArgs(parser)
 
   @util.CatchHTTPErrorRaiseHTTPException
   def Run(self, args):
@@ -67,15 +67,7 @@ class Delete(base.DeleteCommand):
 class DeleteBeta(Delete):
   """Delete a Google Cloud Function."""
 
-  @staticmethod
-  def Args(parser):
-    _CommonArgs(parser, base.ReleaseTrack.BETA)
-
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class DeleteAlpha(DeleteBeta):
   """Delete a Google Cloud Function."""
-
-  @staticmethod
-  def Args(parser):
-    _CommonArgs(parser, base.ReleaseTrack.ALPHA)

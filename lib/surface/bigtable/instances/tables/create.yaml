@@ -1,8 +1,4 @@
 - release_tracks: [GA, BETA, ALPHA]
-  BETA:
-    hidden: true  # TODO(b/242754602): unhide in Beta once we're ready to release
-  GA:
-    hidden: true  # TODO(b/242754602): unhide in GA once we're ready to release
   help_text:
     brief: Create a new Cloud Bigtable table.
     description: Create a new Cloud Bigtable table.
@@ -50,6 +46,15 @@
         expire after 10 days and keeps a maximum of 5 cells per column in column family `my-family-2` if the data is less than 5 days old, run:
 
         $ {command} my-table --instance=my-instance --column-families="my-family-1:maxage=10d,my-family-2:maxversions=5||maxage=5d"
+
+        To create a deletion-protected table `my-table` in instance `my-instance` with a column family `my-family`, run:
+
+        $ {command} my-table --instance=my-instance --column-families="my-family" --deletion-protection
+
+        To create a table `my-table` without deletion protection in instance `my-instance` with a column family `my-family`, run:
+
+        $ {command} my-table --instance=my-instance --column-families="my-family" --no-deletion-protection
+
     GA:
       examples: |
         To create a table `my-table` in instance `my-instance` with a column family `my-family`, run:
@@ -65,6 +70,15 @@
         expire after 10 days and keeps a maximum of 5 cells per column in column family `my-family-2` if the data is less than 5 days old, run:
 
         $ {command} my-table --instance=my-instance --column-families="my-family-1:maxage=10d,my-family-2:maxversions=5||maxage=5d"
+
+        To create a deletion-protected table `my-table` in instance `my-instance` with a column family `my-family`, run:
+
+        $ {command} my-table --instance=my-instance --column-families="my-family" --deletion-protection
+
+        To create a table `my-table` without deletion protection in instance `my-instance` with a column family `my-family`, run:
+
+        $ {command} my-table --instance=my-instance --column-families="my-family" --no-deletion-protection
+
   request:
     collection: bigtableadmin.projects.instances.tables
     modify_request_hooks:
@@ -98,7 +112,7 @@
         the value indicates how long the replication logs are kept and should be in the range of
         [1 day, 7 days]. For example: `5d` or `48h`
       processor: googlecloudsdk.api_lib.bigtable.tables:ConvertDurationToSeconds
-      release_tracks: [ALPHA]
+      release_tracks: [ALPHA]  # TODO(b/242754602): unhide in Beta and GA once we're ready to release
     - api_field: createTableRequest.table.deletionProtection
       arg_name: deletion-protection
       type: bool

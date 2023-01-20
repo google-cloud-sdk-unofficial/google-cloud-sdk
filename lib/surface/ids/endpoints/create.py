@@ -44,29 +44,6 @@ DETAILED_HELP = {
 
             $ {command} my-endpoint --network=my-net --zone=us-central1-a --project=my-project --severity=LOW
 
-    """,
-}
-
-DETAILED_HELP_ALPHA = {
-    'DESCRIPTION':
-        """
-          Create an endpoint for the specified VPC network. Successful creation
-          of an endpoint results in an endpoint in READY state. Check the
-          progress of endpoint creation by using `gcloud alpha ids endpoints
-          list`.
-
-          For more examples, refer to the EXAMPLES section below.
-
-
-        """,
-    'EXAMPLES':
-        """
-            To create an endpoint called `my-endpoint` for VPC network
-            `my-net`, in zone `us-central1-a`, alerting on LOW threats or
-            higher, run:
-
-            $ {command} my-endpoint --network=my-net --zone=us-central1-a --project=my-project --severity=LOW
-
             To create an endpoint called `my-endpoint` for VPC network
             `my-net`, in zone `us-central1-a`, alerting on LOW threats or
             higher, excluding threat IDs 1000 and 2000, run:
@@ -77,59 +54,9 @@ DETAILED_HELP_ALPHA = {
 }
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
+                    base.ReleaseTrack.GA)
 class Create(base.CreateCommand):
-  """Create a Cloud IDS endpoint."""
-
-  @staticmethod
-  def Args(parser):
-    flags.AddEndpointResource(parser)
-    flags.AddNetworkArg(parser)
-    flags.AddDescriptionArg(parser)
-    flags.AddSeverityArg(parser)
-    flags.AddTrafficLogsArg(parser)
-    flags.AddMaxWait(parser, '60m')  # default to 60 minutes wait.
-    base.ASYNC_FLAG.AddToParser(parser)
-    base.ASYNC_FLAG.SetDefault(parser, True)
-    labels_util.AddCreateLabelsFlags(parser)
-
-  def Run(self, args):
-    client = ids_api.Client(self.ReleaseTrack())
-
-    endpoint = args.CONCEPTS.endpoint.Parse()
-    network = args.network
-    severity = args.severity
-    description = args.description
-    enable_traffic_logs = args.enable_traffic_logs
-    labels = labels_util.ParseCreateArgs(args,
-                                         client.messages.Endpoint.LabelsValue)
-    is_async = args.async_
-    max_wait = datetime.timedelta(seconds=args.max_wait)
-
-    operation = client.CreateEndpoint(
-        name=endpoint.Name(),
-        parent=endpoint.Parent().RelativeName(),
-        network=network,
-        severity=severity,
-        description=description,
-        enable_traffic_logs=enable_traffic_logs,
-        labels=labels)
-    # Return the in-progress operation if async is requested.
-    if is_async:
-      # Delete operations have no format by default,
-      # but here we want the operation metadata to be printed.
-      if not args.IsSpecified('format'):
-        args.format = 'default'
-      return operation
-    return client.WaitForOperation(
-        operation_ref=client.GetOperationRef(operation),
-        message='waiting for endpoint [{}] to be created'.format(
-            endpoint.RelativeName()),
-        max_wait=max_wait)
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class CreateAlpha(base.CreateCommand):
   """Create a Cloud IDS endpoint."""
 
   @staticmethod
@@ -185,4 +112,3 @@ class CreateAlpha(base.CreateCommand):
 
 
 Create.detailed_help = DETAILED_HELP
-CreateAlpha.detailed_help = DETAILED_HELP_ALPHA

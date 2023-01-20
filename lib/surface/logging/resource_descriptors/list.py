@@ -26,14 +26,13 @@ from googlecloudsdk.calliope import base
 
 
 class List(base.ListCommand):
-  """Lists all available resource descriptors.
+  """List all available resource descriptors.
 
   ## EXAMPLES
 
   To list all resource descriptors:
 
     $ {command}
-
   """
 
   @staticmethod
@@ -62,7 +61,7 @@ class List(base.ListCommand):
 
 List.detailed_help = {
     'DESCRIPTION': ("""
-        Lists all available resource descriptors that are used by Cloud
+        List all available resource descriptors that are used by Cloud
         Logging. Each log entry must be associated with a valid resource
         descriptor.
     """),

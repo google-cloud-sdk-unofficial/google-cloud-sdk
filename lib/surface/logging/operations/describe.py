@@ -27,10 +27,10 @@ from googlecloudsdk.core.resource import resource_projector
 @base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA,
                     base.ReleaseTrack.ALPHA)
 class Describe(base.Command):
-  """Describe a long running operation.
+  """Display the information about a long running operation.
 
-  Describe a long running operation which was scheduled before. For example, a
-  copy_log_entries operation scheduled by command:
+  Display the information about a long running operation which was scheduled
+  before. For example, a copy_log_entries operation scheduled by command:
   "gcloud alpha logging copy BUCKET_ID DESTINATION --location=LOCATION"
   OPERATION_ID and LOCATION are required to locate such operation.
 
@@ -48,7 +48,7 @@ class Describe(base.Command):
     parser.add_argument(
         '--location', required=True, help='Location of the operation.')
 
-    util.AddParentArgs(parser, 'Describe operation')
+    util.AddParentArgs(parser, 'operation to describe')
 
   def Run(self, args):
     """This is what gets called when the user runs this command.

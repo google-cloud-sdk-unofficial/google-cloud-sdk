@@ -21,7 +21,7 @@ from __future__ import unicode_literals
 from googlecloudsdk.api_lib.storage import cloud_api
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
-from googlecloudsdk.command_lib.storage import errors
+from googlecloudsdk.command_lib.storage import errors_util
 from googlecloudsdk.command_lib.storage import flags
 from googlecloudsdk.command_lib.storage import storage_url
 from googlecloudsdk.command_lib.storage import user_request_args_factory
@@ -105,6 +105,13 @@ def _add_common_args(parser):
       action='store_true',
       help="Clears the bucket's default encryption key.")
   parser.add_argument(
+      '--default-event-based-hold',
+      action=arg_parsers.StoreTrueFalseAction,
+      help='Sets the default value for an event-based hold on the bucket.'
+      ' By setting the default event-based hold on a bucket, newly-created'
+      ' objects inherit that value as their event-based hold (it is not'
+      ' applied retroactively).')
+  parser.add_argument(
       '--enable-autoclass',
       action=arg_parsers.StoreTrueFalseAction,
       help='The Autoclass feature automatically selects the best storage class'
@@ -172,12 +179,39 @@ def _add_common_args(parser):
       action='store_true',
       help='Unsets the public access prevention setting on a bucket.',
   )
+  retention_period = parser.add_mutually_exclusive_group()
+  retention_period.add_argument(
+      '--retention-period',
+      help='Minimum [retention period](https://cloud.google.com'
+      '/storage/docs/bucket-lock#retention-periods)'
+      ' for objects stored in the bucket, for example'
+      ' ``--retention-period=1Y1M1D5S\'\'. Objects added to the bucket'
+      ' cannot be deleted until they\'ve been stored for the specified'
+      ' length of time. Default is no retention period. Only available'
+      ' for Cloud Storage using the JSON API.')
+  retention_period.add_argument(
+      '--clear-retention-period',
+      action='store_true',
+      help='Clears the object retention period for a bucket.')
+  parser.add_argument(
+      '--lock-retention-period',
+      action=arg_parsers.StoreTrueFalseAction,
+      help='Locks an unlocked retention policy on the buckets. Caution: A'
+      ' locked retention policy cannot be removed from a bucket or reduced in'
+      ' duration. Once locked, deleting the bucket is the only way to'
+      ' "remove" a retention policy.')
   parser.add_argument(
       '--requester-pays',
       action=arg_parsers.StoreTrueFalseAction,
       help='Allows you to configure a Cloud Storage bucket so that the'
       ' requester pays all costs related to accessing the bucket and its'
       ' objects.')
+  parser.add_argument(
+      '--uniform-bucket-level-access',
+      action=arg_parsers.StoreTrueFalseAction,
+      help='Enables or disables [uniform bucket-level access]'
+      '(https://cloud.google.com/storage/docs/bucket-policy-only)'
+      ' for the buckets.')
   parser.add_argument(
       '--versioning',
       action=arg_parsers.StoreTrueFalseAction,
@@ -219,20 +253,6 @@ def _add_alpha_args(parser):
   Returns:
     buckets update flag group
   """
-  retention_period = parser.add_mutually_exclusive_group()
-  retention_period.add_argument(
-      '--retention-period',
-      help='Minimum [retention period](https://cloud.google.com'
-      '/storage/docs/bucket-lock#retention-periods)'
-      ' for objects stored in the bucket, for example'
-      ' ``--retention-period=1Y1M1D5S\'\'. Objects added to the bucket'
-      ' cannot be deleted until they\'ve been stored for the specified'
-      ' length of time. Default is no retention period. Only available'
-      ' for Cloud Storage using the JSON API.')
-  retention_period.add_argument(
-      '--clear-retention-period',
-      action='store_true',
-      help='Clears the object retention period for a bucket.')
   parser.add_argument(
       '--acl-file',
       hidden=True,
@@ -253,26 +273,6 @@ def _add_alpha_args(parser):
       ' For example, for GCS, `--remove-acl-grant=ENTITY`, where `ENTITY`'
       ' has a valid ACL entity format, such as `user-tim@gmail.com`,'
       ' `group-admins`, `allUsers`, etc.')
-  parser.add_argument(
-      '--lock-retention-period',
-      action=arg_parsers.StoreTrueFalseAction,
-      help='Locks an unlocked retention policy on the buckets. Caution: A'
-      ' locked retention policy cannot be removed from a bucket or reduced in'
-      ' duration. Once locked, deleting the bucket is the only way to'
-      ' "remove" a retention policy.')
-  parser.add_argument(
-      '--default-event-based-hold',
-      action=arg_parsers.StoreTrueFalseAction,
-      help='Sets the default value for an event-based hold on the bucket.'
-      ' By setting the default event-based hold on a bucket, newly-created'
-      ' objects inherit that value as their event-based hold (it is not'
-      ' applied retroactively).')
-  parser.add_argument(
-      '--uniform-bucket-level-access',
-      action=arg_parsers.StoreTrueFalseAction,
-      help='Enables or disables [uniform bucket-level access]'
-      '(https://cloud.google.com/storage/docs/bucket-policy-only)'
-      ' for the buckets.')
 
 
 def _is_initial_bucket_metadata_needed(user_request_args):
@@ -302,6 +302,15 @@ class Update(base.Command):
       bucket named "my-bucket" to NEARLINE and sets requester pays to true:
 
         $ {command} gs://my-bucket --default-storage-class=NEARLINE --requester-pays
+
+      The following command updates the retention period of a Cloud Storage
+      bucket named "my-bucket" to one year and thirty-six minutes:
+
+        $ {command} gs://my-bucket --retention-period=1y36m
+
+      The following command clears the retention period of a bucket:
+
+        $ {command} gs://my-bucket --clear-retention-period
       """,
   }
 
@@ -320,7 +329,7 @@ class Update(base.Command):
       fields_scope = cloud_api.FieldsScope.NO_ACL
     for url_string in args.url:
       url = storage_url.storage_url_from_string(url_string)
-      errors.raise_error_if_not_bucket(args.command_path, url)
+      errors_util.raise_error_if_not_bucket(args.command_path, url)
       for resource in wildcard_iterator.get_wildcard_iterator(
           url_string,
           fields_scope=fields_scope,

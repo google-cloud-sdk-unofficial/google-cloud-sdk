@@ -35,7 +35,6 @@ $ {command} --cluster=my-user-cluster
 """
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class QueryVersionConfig(base.Command):
   """Query Anthos on bare metal version configuration."""
@@ -45,7 +44,7 @@ class QueryVersionConfig(base.Command):
   @staticmethod
   def Args(parser):
     """Registers flags for this command."""
-    flags.AddLocationResourceArg(parser, 'to query version configuration')
+    flags.AddLocationResourceArg(parser, verb='to query version configuration')
     flags.AddConfigType(parser)
 
   def Run(self, args):

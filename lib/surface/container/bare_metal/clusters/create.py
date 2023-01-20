@@ -24,7 +24,6 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.container.bare_metal import cluster_flags as bare_metal_flags
 from googlecloudsdk.command_lib.container.bare_metal import constants as bare_metal_constants
 from googlecloudsdk.command_lib.container.gkeonprem import constants
-from googlecloudsdk.command_lib.container.gkeonprem import flags
 from googlecloudsdk.core import log
 
 _EXAMPLES = """
@@ -34,7 +33,6 @@ $ {command} my-cluster --location=us-west1
 """
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Create(base.CreateCommand):
   """Create an Anthos cluster on bare metal."""
@@ -50,8 +48,10 @@ class Create(base.CreateCommand):
     """
     parser.display_info.AddFormat(
         bare_metal_constants.BARE_METAL_CLUSTERS_FORMAT)
-    bare_metal_flags.AddClusterResourceArg(parser, 'to create', True)
-    flags.AddAdminClusterMembershipResourceArg(parser, False)
+    bare_metal_flags.AddClusterResourceArg(
+        parser, verb='to create', positional=True)
+    bare_metal_flags.AddAdminClusterMembershipResourceArg(
+        parser, positional=False)
     base.ASYNC_FLAG.AddToParser(parser)
     bare_metal_flags.AddValidationOnly(parser)
     bare_metal_flags.AddDescription(parser)
@@ -66,6 +66,7 @@ class Create(base.CreateCommand):
     bare_metal_flags.AddMaintenanceConfig(parser)
     bare_metal_flags.AddWorkloadNodeConfig(parser)
     bare_metal_flags.AddSecurityConfig(parser)
+    bare_metal_flags.AddNodeAccessConfig(parser)
 
   def Run(self, args):
     """Runs the create command.

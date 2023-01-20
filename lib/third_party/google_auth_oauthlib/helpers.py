@@ -24,10 +24,11 @@ Typically, you'll want to use the higher-level helpers in
 import datetime
 import json
 
+from google.auth import external_account_authorized_user
 import google.oauth2.credentials
 import requests_oauthlib
 
-_REQUIRED_CONFIG_KEYS = frozenset(('auth_uri', 'token_uri', 'client_id'))
+_REQUIRED_CONFIG_KEYS = frozenset(("auth_uri", "token_uri", "client_id"))
 
 
 def session_from_client_config(client_config, scopes, **kwargs):
@@ -51,25 +52,22 @@ def session_from_client_config(client_config, scopes, **kwargs):
             oauthlib session and the validated client configuration.
 
     .. _client secrets:
-        https://developers.google.com/api-client-library/python/guide
-        /aaa_client_secrets
+        https://github.com/googleapis/google-api-python-client/blob/main/docs/client-secrets.md
     """
 
-    if 'web' in client_config:
-        config = client_config['web']
-    elif 'installed' in client_config:
-        config = client_config['installed']
+    if "web" in client_config:
+        config = client_config["web"]
+    elif "installed" in client_config:
+        config = client_config["installed"]
     else:
-        raise ValueError(
-            'Client secrets must be for a web or installed app.')
+        raise ValueError("Client secrets must be for a web or installed app.")
 
     if not _REQUIRED_CONFIG_KEYS.issubset(config.keys()):
-        raise ValueError('Client secrets is not in the correct format.')
+        raise ValueError("Client secrets is not in the correct format.")
 
     session = requests_oauthlib.OAuth2Session(
-        client_id=config['client_id'],
-        scope=scopes,
-        **kwargs)
+        client_id=config["client_id"], scope=scopes, **kwargs
+    )
 
     return session, client_config
 
@@ -91,10 +89,9 @@ def session_from_client_secrets_file(client_secrets_file, scopes, **kwargs):
             oauthlib session and the validated client configuration.
 
     .. _client secrets:
-        https://developers.google.com/api-client-library/python/guide
-        /aaa_client_secrets
+        https://github.com/googleapis/google-api-python-client/blob/main/docs/client-secrets.md
     """
-    with open(client_secrets_file, 'r') as json_file:
+    with open(client_secrets_file, "r") as json_file:
         client_config = json.load(json_file)
 
     return session_from_client_config(client_config, scopes, **kwargs)
@@ -126,17 +123,28 @@ def credentials_from_session(session, client_config=None):
 
     if not session.token:
         raise ValueError(
-            'There is no access token for this session, did you call '
-            'fetch_token?')
+            "There is no access token for this session, did you call " "fetch_token?"
+        )
 
-    credentials = google.oauth2.credentials.Credentials(
-        session.token['access_token'],
-        refresh_token=session.token.get('refresh_token'),
-        id_token=session.token.get('id_token'),
-        token_uri=client_config.get('token_uri'),
-        client_id=client_config.get('client_id'),
-        client_secret=client_config.get('client_secret'),
-        scopes=session.scope)
-    credentials.expiry = datetime.datetime.utcfromtimestamp(
-        session.token['expires_at'])
+    if "3pi" in client_config:
+        credentials = external_account_authorized_user.Credentials(
+            token=session.token["access_token"],
+            refresh_token=session.token.get("refresh_token"),
+            token_url=client_config.get("token_uri"),
+            client_id=client_config.get("client_id"),
+            client_secret=client_config.get("client_secret"),
+            token_info_url=client_config.get("token_info_url"),
+            scopes=session.scope,
+        )
+    else:
+        credentials = google.oauth2.credentials.Credentials(
+            session.token["access_token"],
+            refresh_token=session.token.get("refresh_token"),
+            id_token=session.token.get("id_token"),
+            token_uri=client_config.get("token_uri"),
+            client_id=client_config.get("client_id"),
+            client_secret=client_config.get("client_secret"),
+            scopes=session.scope,
+        )
+    credentials.expiry = datetime.datetime.utcfromtimestamp(session.token["expires_at"])
     return credentials

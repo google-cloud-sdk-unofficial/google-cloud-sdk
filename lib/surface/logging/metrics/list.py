@@ -27,11 +27,11 @@ from googlecloudsdk.calliope import base
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class ListGA(base.ListCommand):
-  """Displays all logs-based metrics."""
+  """Display all logs-based metrics."""
 
   detailed_help = {
       'DESCRIPTION': """\
-      Lists all logs-based metrics.
+      List all logs-based metrics.
       """,
       'EXAMPLES': """\
       To list the top 10 logs-based metrics, run:
@@ -66,7 +66,7 @@ class ListGA(base.ListCommand):
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
 class ListBeta(ListGA):
-  """Displays all logs-based metrics."""
+  """Display all logs-based metrics."""
 
   detailed_help = {
       'DESCRIPTION': """\

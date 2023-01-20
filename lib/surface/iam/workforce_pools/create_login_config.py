@@ -20,10 +20,12 @@ from __future__ import division
 from __future__ import unicode_literals
 
 import json
+import os
 import textwrap
 
 from googlecloudsdk.calliope import base
 from googlecloudsdk.core import log
+from googlecloudsdk.core import properties
 from googlecloudsdk.core.util import files
 
 RESOURCE_TYPE = 'login configuration file'
@@ -56,6 +58,13 @@ class CreateLoginConfig(base.CreateCommand):
         '--output-file',
         help='Location to store the generated login configuration file.',
         required=True)
+    parser.add_argument(
+        '--activate',
+        action='store_true',
+        default=False,
+        help='Sets the property `auth/login_config_file` to the created login '
+        'configuration file. Calling `gcloud auth login` will automatically '
+        'use this login configuration unless it is explicitly unset.')
 
   def Run(self, args):
     output = {
@@ -67,3 +76,7 @@ class CreateLoginConfig(base.CreateCommand):
     }
     files.WriteFileContents(args.output_file, json.dumps(output, indent=2))
     log.CreatedResource(args.output_file, RESOURCE_TYPE)
+
+    if args.activate:
+      properties.VALUES.auth.login_config_file.Set(
+          os.path.abspath(args.output_file))

@@ -24,7 +24,8 @@ import textwrap
 from googlecloudsdk.api_lib.storage import cloud_api
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.storage import encryption_util
-from googlecloudsdk.command_lib.storage import errors as command_errors
+from googlecloudsdk.command_lib.storage import errors
+from googlecloudsdk.command_lib.storage import errors_util
 from googlecloudsdk.command_lib.storage import flags
 from googlecloudsdk.command_lib.storage import name_expansion
 from googlecloudsdk.command_lib.storage import storage_url
@@ -76,14 +77,13 @@ class Compose(base.Command):
           storage_url.storage_url_from_string(args.destination))
       for url_string in args.source:
         source_url = storage_url.storage_url_from_string(url_string)
-        command_errors.raise_error_if_not_cloud_object(args.command_path,
-                                                       source_url)
+        errors_util.raise_error_if_not_cloud_object(args.command_path,
+                                                    source_url)
         if source_url.scheme is not destination_resource.storage_url.scheme:
-          raise command_errors.Error(
-              'Composing across providers is not supported.')
+          raise errors.Error('Composing across providers is not supported.')
     if (args.destination !=
         destination_resource.storage_url.versionless_url_string):
-      raise command_errors.Error(
+      raise errors.Error(
           'Verison-specific URLs are not valid destinations because'
           ' composing always results in creating an object with the'
           ' latest generation.')

@@ -26,9 +26,9 @@ from googlecloudsdk.core.console import console_io
 
 
 class Delete(base.DeleteCommand):
-  """Deletes a sink.
+  """Delete a sink.
 
-  Deletes a sink and halts the export of log entries associated with that sink.
+  Delete a sink and halt the export of log entries associated with that sink.
   Deleting a sink does not affect log entries already exported through
   the deleted sink, and will not affect other sinks that are exporting
   the same log(s).
@@ -38,14 +38,13 @@ class Delete(base.DeleteCommand):
   To delete a sync 'my-bq-sync':
 
     $ {command} my-bq-sink
-
   """
 
   @staticmethod
   def Args(parser):
     """Register flags for this command."""
     parser.add_argument('sink_name', help='The name of the sink to delete.')
-    util.AddParentArgs(parser, 'Delete a sink')
+    util.AddParentArgs(parser, 'sink to delete')
     parser.display_info.AddCacheUpdater(None)
 
   def Run(self, args):

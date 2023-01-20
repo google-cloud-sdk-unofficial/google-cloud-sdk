@@ -74,26 +74,18 @@ class Suspend(base.SilentCommand):
   @classmethod
   def Args(cls, parser):
     flags.INSTANCES_ARG.AddArgument(parser)
-    if cls.ReleaseTrack() != base.ReleaseTrack.GA:
-      parser.add_argument(
-          '--discard-local-ssd',
-          action='store_true',
-          help=('If provided, local SSD data is discarded.'))
-    # TODO(b/36057354): consider adding detailed help.
+    parser.add_argument(
+        '--discard-local-ssd',
+        action='store_true',
+        help=('If provided, local SSD data is discarded.'))
     base.ASYNC_FLAG.AddToParser(parser)
 
   def _CreateSuspendRequest(self, client, instance_ref, discard_local_ssd):
-    if self.ReleaseTrack() == base.ReleaseTrack.GA:
-      return client.messages.ComputeInstancesSuspendRequest(
-          instance=instance_ref.Name(),
-          project=instance_ref.project,
-          zone=instance_ref.zone)
-    else:
-      return client.messages.ComputeInstancesSuspendRequest(
-          discardLocalSsd=discard_local_ssd,
-          instance=instance_ref.Name(),
-          project=instance_ref.project,
-          zone=instance_ref.zone)
+    return client.messages.ComputeInstancesSuspendRequest(
+        discardLocalSsd=discard_local_ssd,
+        instance=instance_ref.Name(),
+        project=instance_ref.project,
+        zone=instance_ref.zone)
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
@@ -106,12 +98,9 @@ class Suspend(base.SilentCommand):
 
     requests = []
     for instance_ref in instance_refs:
-      discard_local_ssd = None
-      if self.ReleaseTrack() != base.ReleaseTrack.GA:
-        discard_local_ssd = args.discard_local_ssd
       requests.append((client.apitools_client.instances, 'Suspend',
                        self._CreateSuspendRequest(client, instance_ref,
-                                                  discard_local_ssd)))
+                                                  args.discard_local_ssd)))
 
     errors_to_collect = []
     responses = client.BatchRequests(requests, errors_to_collect)
@@ -126,12 +115,12 @@ class Suspend(base.SilentCommand):
             operation_ref.SelfLink()))
       log.status.Print(
           'Use [gcloud compute operations describe URI] command to check the '
-          'status of the operation(s).'
-      )
+          'status of the operation(s).')
       return responses
 
-    operation_poller = poller.BatchPoller(
-        client, client.apitools_client.instances, instance_refs)
+    operation_poller = poller.BatchPoller(client,
+                                          client.apitools_client.instances,
+                                          instance_refs)
 
     result = waiter.WaitFor(
         operation_poller,

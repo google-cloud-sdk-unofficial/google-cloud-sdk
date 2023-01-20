@@ -236,13 +236,15 @@ class Create(base.CreateCommand):
     flags.AddNodePoolEnablePrivateNodes(parser)
     flags.AddEnableFastSocketFlag(parser)
     flags.AddLoggingVariantFlag(parser, for_node_pool=True)
-    flags.AddWindowsOsVersionFlag(parser, hidden=True)
+    flags.AddWindowsOsVersionFlag(parser)
+    flags.AddPlacementTypeFlag(parser, for_node_pool=True, hidden=False)
 
   def ParseCreateNodePoolOptions(self, args):
     ops = ParseCreateNodePoolOptionsBase(args)
     ops.node_locations = args.node_locations
     ops.network_performance_config = args.network_performance_configs
     ops.disable_pod_cidr_overprovision = args.disable_pod_cidr_overprovision
+    ops.placement_type = args.placement_type
     return ops
 
   def Run(self, args):
@@ -283,8 +285,8 @@ class Create(base.CreateCommand):
       operation_ref = adapter.CreateNodePool(pool_ref, options)
       if args.async_:
         op = adapter.GetOperation(operation_ref)
-        log.out.Print('Create Node Pool Operation in progress: {0}'.format(
-            op.name))
+        if not args.IsSpecified('format'):
+          args.format = util.OPERATIONS_FORMAT
         return op
       adapter.WaitForOperation(
           operation_ref,
@@ -346,7 +348,7 @@ class CreateBeta(Create):
     flags.AddDisablePodCIDROverprovisionFlag(parser)
     flags.AddEnableFastSocketFlag(parser)
     flags.AddLoggingVariantFlag(parser, for_node_pool=True)
-    flags.AddWindowsOsVersionFlag(parser, hidden=True)
+    flags.AddWindowsOsVersionFlag(parser)
 
   def ParseCreateNodePoolOptions(self, args):
     ops = ParseCreateNodePoolOptionsBase(args)
@@ -450,7 +452,7 @@ class CreateAlpha(Create):
     flags.AddDisablePodCIDROverprovisionFlag(parser)
     flags.AddEnableFastSocketFlag(parser)
     flags.AddLoggingVariantFlag(parser, for_node_pool=True)
-    flags.AddWindowsOsVersionFlag(parser, hidden=True)
+    flags.AddWindowsOsVersionFlag(parser)
 
 
 Create.detailed_help = DETAILED_HELP

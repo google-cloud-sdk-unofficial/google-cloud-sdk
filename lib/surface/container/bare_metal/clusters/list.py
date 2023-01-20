@@ -31,7 +31,6 @@ $ {command} --location=us-west1
 """
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class List(base.ListCommand):
   """List Anthos clusters on bare metal."""
@@ -40,7 +39,7 @@ class List(base.ListCommand):
   @staticmethod
   def Args(parser):
     """Gathers command line arguments for the list command."""
-    flags.AddLocationResourceArg(parser, 'to list')
+    flags.AddLocationResourceArg(parser, verb='to list')
     parser.display_info.AddFormat(constants.BARE_METAL_CLUSTERS_FORMAT)
 
   def Run(self, args):

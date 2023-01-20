@@ -143,6 +143,8 @@ def _UpdateRequestFromArgs(request, args, sql_messages, release_track):
         '%Y-%m-%dT%H:%M:%S.%fZ')
 
   if release_track == base.ReleaseTrack.ALPHA:
+    if args.point_in_time and args.restore_database_name:
+      clone_context.databaseNames[:] = [args.restore_database_name]
     # ALLOCATED IP RANGE options
     if args.allocated_ip_range_name:
       clone_context.allocatedIpRange = args.allocated_ip_range_name
@@ -231,6 +233,9 @@ def AddBaseArgs(parser):
       help='Cloud SQL instance ID of the source.')
   parser.add_argument('destination', help='Cloud SQL instance ID of the clone.')
 
+
+def _PopulatePointInTimeGroup(parser, include_restore_database_name):
+  """Populates PITR options group."""
   pitr_options_group = parser.add_group(mutex=True, required=False)
   bin_log_group = pitr_options_group.add_group(
       mutex=False,
@@ -257,10 +262,12 @@ def AddBaseArgs(parser):
       a source instance from.
       For example, 123 (a numeric value).
       """)
-  pitr_options_group.add_argument(
+  point_in_time_group = pitr_options_group.add_group(
+      mutex=False, required=False)
+  point_in_time_group.add_argument(
       '--point-in-time',
       type=arg_parsers.Datetime.Parse,
-      required=False,
+      required=True,
       help="""\
       Represents the state of an instance at any given point in time inside
       a transaction log file. For MySQL, the binary log file is used for
@@ -271,6 +278,14 @@ def AddBaseArgs(parser):
       Uses RFC 3339 format in UTC timezone. If specified, defines a past
       state of the instance to clone.
       For example, '2012-11-15T16:19:00.094Z'.
+      """)
+  if include_restore_database_name:
+    point_in_time_group.add_argument(
+        '--restore-database-name',
+        required=False,
+        help="""\
+      The name of the database to be restored for a point-in-time restore. If
+      set, the destination instance will only restore the specified database.
       """)
 
 
@@ -284,6 +299,7 @@ class Clone(base.CreateCommand):
   def Args(cls, parser):
     """Declare flag and positional arguments for the command parser."""
     AddBaseArgs(parser)
+    _PopulatePointInTimeGroup(parser, include_restore_database_name=False)
     parser.display_info.AddCacheUpdater(flags.InstanceCompleter)
 
   def Run(self, args):
@@ -303,5 +319,6 @@ class CloneAlpha(base.CreateCommand):
   def Args(parser):
     """Args is called by calliope to gather arguments for this command."""
     AddBaseArgs(parser)
+    _PopulatePointInTimeGroup(parser, include_restore_database_name=True)
     AddAlphaArgs(parser)
     parser.display_info.AddCacheUpdater(flags.InstanceCompleter)

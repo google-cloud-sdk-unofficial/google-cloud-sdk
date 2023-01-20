@@ -1,11 +1,10 @@
 - release_tracks: [ALPHA, GA]
-  hidden: true
   help_text:
-    brief: Update an EdgeCacheService.
+    brief: Update an EdgeCacheService resource.
     description: |
-      Update an existing EdgeCacheService.
+      Update an existing EdgeCacheService resource.
     examples: |
-      To update an EdgeCacheService called 'my-service' run:
+      To update an EdgeCacheService resource called 'my-service' run:
 
         $ {command} my-service --description="new description"
 
@@ -22,7 +21,7 @@
 
   arguments:
     resource:
-      help_text: The name of the EdgeCacheService to create.
+      help_text: The name of the EdgeCacheService resource to create.
       spec: !REF googlecloudsdk.command_lib.edge_cache.resources:edgeCacheService
 
     params:

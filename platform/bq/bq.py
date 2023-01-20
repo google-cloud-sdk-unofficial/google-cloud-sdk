@@ -562,6 +562,9 @@ class Client(object):
     if FLAGS.discovery_file:
       with open(FLAGS.discovery_file) as f:
         client_args['discovery_document'] = f.read()
+    client_args['enable_resumable_uploads'] = (
+        True if FLAGS.enable_resumable_uploads is None else
+        FLAGS.enable_resumable_uploads)
 
     return client_args
 
@@ -876,10 +879,15 @@ class _Load(BigqueryCmd):
         flag_values=fv)
     flags.DEFINE_enum(
         'encoding',
-        None, ['UTF-8', 'ISO-8859-1'],
+        None,
+        [
+            'UTF-8',
+            'ISO-8859-1',
+        ],
         'The character encoding used by the input file.  Options include:'
         '\n ISO-8859-1 (also known as Latin-1)'
-        '\n UTF-8',
+        '\n UTF-8'
+        ,
         short_name='E',
         flag_values=fv)
     flags.DEFINE_integer(
@@ -1969,6 +1977,9 @@ class _Query(BigqueryCmd):
     if self.destination_schema and not self.destination_table:
       raise app.UsageError(
           'destination_schema can only be used with destination_table.')
+    read_schema = None
+    if self.destination_schema:
+      read_schema = BigqueryClient.ReadSchema(self.destination_schema)
     if self.destination_kms_key:
       kwds['destination_encryption_configuration'] = {
           'kmsKeyName': self.destination_kms_key
@@ -2123,10 +2134,10 @@ class _Query(BigqueryCmd):
         self.PrintJobStartInfo(job)
       else:
         self._PrintQueryJobResults(client, job)
-    if self.destination_schema:
+    if read_schema:
       client.UpdateTable(
           client.GetTableReference(self.destination_table),
-          BigqueryClient.ReadSchema(self.destination_schema))
+          read_schema)
 
   def _PrintQueryJobResults(self, client, job):
     """Prints the results of a successful query job.
@@ -4357,6 +4368,8 @@ class _Make(BigqueryCmd):
             created_connection, flag_format=FLAGS.format)
     elif self.d or not identifier:
       reference = client.GetDatasetReference(identifier)
+      if reference.datasetId and identifier:
+        ValidateDatasetName(reference.datasetId)
     else:
       reference = client.GetReference(identifier)
       _Typecheck(reference, (DatasetReference, TableReference),
@@ -7264,6 +7277,24 @@ def _ParseUdfResources(udf_resources):
     for uri in external_udf_resources:
       udfs.append({'resourceUri': uri})
   return udfs
+
+
+def ValidateDatasetName(dataset_name):
+  """A regex to ensure the dataset name is valid.
+
+
+   Args:
+     dataset_name: string name of the dataset to be validated.
+
+   Raises:
+     UsageError: An error occurred due to invalid dataset string.
+  """
+  is_valid = re.fullmatch(r'[a-zA-Z0-9\_]{1,1024}', dataset_name)
+  if not is_valid:
+    raise app.UsageError(
+        'Dataset name: %s is invalid, must be letters '
+        '(uppercase or lowercase), numbers, and underscores up to '
+        '1024 characters.' % dataset_name)
 
 
 def _ParseParameters(parameters):

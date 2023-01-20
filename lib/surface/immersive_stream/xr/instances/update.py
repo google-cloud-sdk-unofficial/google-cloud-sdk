@@ -36,9 +36,12 @@ class Update(base.Command):
   detailed_help = {
       'DESCRIPTION': ("""
           Update an Immersive Stream for XR service instance.
-          This command can either be used to update the capacity for an existing
-          region of the service instance or to update the content build version
-          served by the instance.
+          This command can be used to update one of the following:
+            - the capacity for an existing region of the service instance
+            - the content build version served by the instance
+            - the fallback url to redirect users to when the service instance is
+              unable to provide the streaming experience
+
           If updating the capacity, only one region may be updated for each
           command execution, and the new capacity may not be 0 or exceed the
           quota limit.
@@ -63,8 +66,36 @@ class Update(base.Command):
           `my-version`, run:
 
             $ {command} my-instance --version=my-version
+
+          To update the service instance 'my-instance' to use fallback url
+          'https://www.google.com', run:
+
+            $ {command} my-instance --fallback-url='https://www.google.com'
       """)
   }
+
+  @staticmethod
+  def __ValidateArgs(args):
+    if args.add_region:
+      regions = {region_config['region'] for region_config in args.add_region}
+      if len(regions) < len(args.add_region):
+        log.error('Duplicate regions in --add-region arguments.')
+        return False
+
+    if args.remove_region:
+      if len(set(args.remove_region)) < len(args.remove_region):
+        log.error('Duplicate regions in --remove-region arguments.')
+        return False
+
+    if args.update_region:
+      regions = {
+          region_config['region'] for region_config in args.update_region
+      }
+      if len(regions) < len(args.update_region):
+        log.error('Duplicate regions in --update-region arguments.')
+        return False
+
+    return True
 
   @staticmethod
   def Args(parser):
@@ -73,6 +104,10 @@ class Update(base.Command):
     group.add_argument(
         '--version',
         help='Build version tag of the content served by this instance')
+    group.add_argument(
+        '--fallback-url',
+        help='Fallback url to redirect users to when this service instance is unable to provide the streaming experience'
+    )
     flags.AddRegionConfigArg(
         '--add-region', group, repeatable=False, required=False)
     flags.AddRegionConfigArg(
@@ -82,7 +117,11 @@ class Update(base.Command):
     base.ASYNC_FLAG.AddToParser(parser)
 
   def Run(self, args):
+    if not Update.__ValidateArgs(args):
+      return
+
     version = args.version
+    fallback_url = args.fallback_url
     add_region_configs = args.add_region
     remove_regions = args.remove_region
     update_region_configs = args.update_region
@@ -101,24 +140,26 @@ class Update(base.Command):
     if version:
       result_operation = instances.UpdateContentBuildVersion(
           instance_ref, version)
+    elif fallback_url:
+      if not flags.ValidateUrl(fallback_url):
+        return
+      result_operation = instances.UpdateFallbackUrl(instance_ref, fallback_url)
     else:
       # We limit to one update per call.
       if add_region_configs:
         if len(add_region_configs) > 1:
-          log.status.Print(('Only one region may be added at a time. Please '
-                            'try again with only one --add-region argument.'))
+          log.error(('Only one region may be added at a time. Please try again '
+                     'with only one --add-region argument.'))
           return
       elif remove_regions:
         if len(remove_regions) > 1:
-          log.status.Print(
-              ('Only one region may be removed at a time. Please '
-               'try again with only one --remove-region argument.'))
+          log.error(('Only one region may be removed at a time. Please try '
+                     'again with only one --remove-region argument.'))
           return
       elif update_region_configs:
         if len(update_region_configs) > 1:
-          log.status.Print(
-              ('Only one region may be updated at a time. Please '
-               'try again with only one --update-region argument.'))
+          log.error(('Only one region may be updated at a time. Please try '
+                     'again with only one --update-region argument.'))
           return
 
       current_instance = instances.Get(instance_ref.RelativeName())

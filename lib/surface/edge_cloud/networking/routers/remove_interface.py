@@ -24,9 +24,8 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.edge_cloud.networking import resource_args
 from googlecloudsdk.core import log
 
-DESCRIPTION = (
-    'Remove an interface on a Distributed Cloud Edge '
-    'Network router.')
+DESCRIPTION = ('Remove an interface on a Distributed Cloud Edge '
+               'Network router.')
 EXAMPLES = """\
     To remove the interface 'my-int-r1' on Distributed Cloud Edge Network router 'my-router' in edge zone 'us-central1-edge-den1' , run:
 
@@ -45,8 +44,9 @@ class RemoveInterface(base.UpdateCommand):
 
   @staticmethod
   def Args(parser):
-    resource_args.AddRouterResourceArg(
-        parser, 'from which we remove an interface', True)
+    resource_args.AddRouterResourceArg(parser,
+                                       'from which we remove an interface',
+                                       True)
     interface_parser = parser.add_mutually_exclusive_group(required=True)
     interface_parser.add_argument(
         '--interface-names',
@@ -54,20 +54,20 @@ class RemoveInterface(base.UpdateCommand):
         metavar='INTERFACE_NAME',
         help='The list of names for interfaces being removed.')
     interface_parser.add_argument(
-        '--interface-name',
-        help='The name of the interface being removed.')
+        '--interface-name', help='The name of the interface being removed.')
     base.ASYNC_FLAG.AddToParser(parser)
 
   def Run(self, args):
-    routers_client = routers.RoutersClient()
+    routers_client = routers.RoutersClient(self.ReleaseTrack())
     router_ref = args.CONCEPTS.router.Parse()
     update_req_op = routers_client.RemoveInterface(router_ref, args)
 
     async_ = getattr(args, 'async_', False)
     if not async_:
       response = routers_client.WaitForOperation(update_req_op)
-      log.UpdatedResource(router_ref, details='Operation was successful.')
+      log.UpdatedResource(
+          router_ref.RelativeName(), details='Operation was successful.')
       return response
 
     log.status.Print('Updating [{0}] with operation [{1}].'.format(
-        router_ref, update_req_op.name))
+        router_ref.RelativeName(), update_req_op.name))

@@ -32,7 +32,7 @@ DETAILED_HELP = {
         """
     To delete a runtime, run:
 
-        $ {command} example-runtime --location=us-central1-b
+        $ {command} example-runtime --location=us-central1
     """,
 }
 

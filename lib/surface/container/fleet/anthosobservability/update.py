@@ -101,7 +101,7 @@ class Update(base.UpdateCommand):
           --enable-optimized-metrics
           --disable-optimized-metrics""")
 
-    membership = base.ParseMembership(args)
+    membership = base.ParseMembership(args, search=True)
     resource_name = membership
     old_feature = self.GetFeature(v1alpha1=True)
 

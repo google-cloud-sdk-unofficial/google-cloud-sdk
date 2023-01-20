@@ -18,11 +18,13 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+from googlecloudsdk.api_lib.storage import api_factory
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.storage import errors_util
+from googlecloudsdk.command_lib.storage import iam_command_util
+from googlecloudsdk.command_lib.storage import storage_url
 
 
-@base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class GetIamPolicy(base.Command):
   """Get the IAM policy for a bucket."""
 
@@ -35,23 +37,24 @@ class GetIamPolicy(base.Command):
       """,
       'EXAMPLES':
           """
-      To get the IAM policy for BUCKET-1:
+      To get the IAM policy for BUCKET:
 
-        $ {command} gs://BUCKET-1
+        $ {command} gs://BUCKET
 
-      To output the IAM policy for BUCKET-1 to a file:
+      To output the IAM policy for BUCKET to a file:
 
-        $ {command} gs://BUCKET-1 > policy.txt
+        $ {command} gs://BUCKET > policy.txt
       """,
   }
 
   @staticmethod
   def Args(parser):
-    parser.add_argument(
-        'url',
-        nargs='+',
-        help='URLs for buckets whose IAM policies are being requested.')
+    parser.add_argument('url', help='Request IAM policy for this bucket.')
 
   def Run(self, args):
-    del args  # Unused.
-    raise NotImplementedError
+    url_object = storage_url.storage_url_from_string(args.url)
+    errors_util.raise_error_if_not_bucket(args.command_path, url_object)
+    errors_util.raise_error_if_not_gcs(args.command_path, url_object)
+    matching_url = iam_command_util.get_single_matching_url(args.url)
+    return api_factory.get_api(matching_url.scheme).get_bucket_iam_policy(
+        matching_url.bucket_name)

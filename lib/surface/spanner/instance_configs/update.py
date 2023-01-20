@@ -93,6 +93,11 @@ class Update(base.UpdateCommand):
       Instance config update response.
     """
     op = instance_configs.Patch(args)
-    if args.async_:
+
+    # Return immediately when --validate-only is specified. The backend
+    # implementation returns a fake operation id (0) in case of --validate-only
+    # flag. Waiting for the operation to complete will result in a NOT_FOUND
+    # error. As a result, misleading message for users.
+    if args.async_ or args.validate_only:
       return op
     return instance_config_operations.Await(op, 'Updating instance-config')

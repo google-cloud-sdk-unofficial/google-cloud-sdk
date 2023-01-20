@@ -30,7 +30,6 @@ $ {command} my-node-pool --cluster=my-cluster --location=us-west1
 """
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Describe(base.DescribeCommand):
   """Describe a node pool in an Anthos cluster on VMware."""

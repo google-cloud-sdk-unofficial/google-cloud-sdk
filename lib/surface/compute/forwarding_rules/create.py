@@ -263,12 +263,6 @@ class CreateHelper(object):
 
     protocol = self.ConstructProtocol(client.messages, args)
 
-    if args.address is None or args.ip_version:
-      ip_version = client.messages.ForwardingRule.IpVersionValueValuesEnum(
-          args.ip_version or 'IPV4')
-    else:
-      ip_version = None
-
     address = self._ResolveAddress(resources, args,
                                    compute_flags.compute_scope.ScopeEnum.GLOBAL,
                                    forwarding_rule_ref)
@@ -279,15 +273,13 @@ class CreateHelper(object):
         IPProtocol=protocol,
         portRange=port_range,
         target=target_as_str,
-        ipVersion=ip_version,
         networkTier=_ConstructNetworkTier(client.messages, args),
         loadBalancingScheme=load_balancing_scheme)
 
+    self._ProcessCommonArgs(client, resources, args, forwarding_rule_ref,
+                            forwarding_rule)
     if sd_registration:
       forwarding_rule.serviceDirectoryRegistrations.append(sd_registration)
-    if args.IsSpecified('network'):
-      forwarding_rule.network = flags.NetworkArg().ResolveAsResource(
-          args, resources).SelfLink()
 
     if self._support_global_access and args.IsSpecified('allow_global_access'):
       forwarding_rule.allowGlobalAccess = args.allow_global_access
@@ -352,12 +344,6 @@ class CreateHelper(object):
           'You cannot specify an INTERNAL_SELF_MANAGED '
           '[--load-balancing-scheme] for a regional forwarding rule.')
 
-    if args.ip_version:
-      ip_version = client.messages.ForwardingRule.IpVersionValueValuesEnum(
-          args.ip_version)
-    else:
-      ip_version = None
-
     forwarding_rule = client.messages.ForwardingRule(
         description=args.description,
         name=forwarding_rule_ref.Name(),
@@ -365,31 +351,11 @@ class CreateHelper(object):
         IPProtocol=protocol,
         networkTier=_ConstructNetworkTier(client.messages, args),
         loadBalancingScheme=load_balancing_scheme)
-    if ip_version:
-      forwarding_rule.ipVersion = ip_version
-
     if self._support_source_ip_range and args.source_ip_ranges:
       forwarding_rule.sourceIpRanges = args.source_ip_ranges
 
-    if args.subnet is not None:
-      # Subnet arg needed for:
-      # - L4ILB and internal protocol forwarding (scheme INTERNAL, target BES
-      # or target instance)
-      # - L7ILB (scheme INTERNAL_MANAGED)
-      # - NetLB or external protocol forwarding when using IPv6 (scheme
-      # EXTERNAL target BES or target instance)
-      if not args.subnet_region:
-        args.subnet_region = forwarding_rule_ref.region
-      forwarding_rule.subnetwork = flags.SUBNET_ARG.ResolveAsResource(
-          args, resources).SelfLink()
-    if args.network is not None:
-      # Network arg needed for:
-      # - L4ILB and internal protocol forwarding (scheme INTERNAL, target BES
-      # or target instance)
-      # - L7ILB (scheme INTERNAL_MANAGED)
-      # - PSC forwarding rules (no scheme)
-      forwarding_rule.network = flags.NetworkArg().ResolveAsResource(
-          args, resources).SelfLink()
+    self._ProcessCommonArgs(client, resources, args, forwarding_rule_ref,
+                            forwarding_rule)
 
     ports_all_specified, range_list = _ExtractPortsAndAll(args.ports)
 
@@ -583,6 +549,32 @@ class CreateHelper(object):
         address = address_ref.SelfLink()
 
     return address
+
+  def _ProcessCommonArgs(self, client, resources, args, forwarding_rule_ref,
+                         forwarding_rule):
+    """Processes common arguments for global and regional commands.
+
+    Args:
+      client: The client used by gcloud.
+      resources: The resource parser.
+      args: The arguments passed to the gcloud command.
+      forwarding_rule_ref: The forwarding rule reference.
+      forwarding_rule: The forwarding rule to set properties on.
+    """
+
+    if args.ip_version:
+      forwarding_rule.ipVersion = (
+          client.messages.ForwardingRule.IpVersionValueValuesEnum(
+              args.ip_version))
+    if args.network:
+      forwarding_rule.network = flags.NetworkArg().ResolveAsResource(
+          args, resources).SelfLink()
+    if args.subnet:
+      if (not args.subnet_region and
+          forwarding_rule_ref.Collection() == 'compute.forwardingRules'):
+        args.subnet_region = forwarding_rule_ref.region
+      forwarding_rule.subnetwork = flags.SUBNET_ARG.ResolveAsResource(
+          args, resources).SelfLink()
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)

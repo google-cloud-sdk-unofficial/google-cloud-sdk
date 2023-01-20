@@ -34,7 +34,7 @@ DETAILED_HELP = {
         """
     To create a runtime, run:
 
-      $ {command} example-runtime --runtime-access-type=SINGLE_USER --runtime-owner=example@google.com --machine-type=n1-standard-4 --location=us-central1-b
+      $ {command} example-runtime --runtime-access-type=SINGLE_USER --runtime-owner=example@google.com --machine-type=n1-standard-4 --location=us-central1
 
     """,
 }

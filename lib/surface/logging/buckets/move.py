@@ -25,14 +25,21 @@ from googlecloudsdk.core.console import console_io
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.Hidden
 class Move(base.Command):
-  """Moves a bucket.
+  """Move a bucket.
+
+  In order to be movable, a bucket must satisfy the following restrictions:
+
+   - Be a ```_Default``` or ```_Required``` bucket
+   - Have a location of global
+   - Have a non-project parent when it is a ```_Default``` bucket
 
   ## EXAMPLES
 
-  To move a bucket from one location to another location, run:
+  To move the ```_Required``` bucket from `global` to another location, run:
 
-    $ {command} my-bucket --location=global --new-location=us-central1
+    $ {command} _Required --location=global --new-location=us-central1
   """
 
   @staticmethod
@@ -45,7 +52,7 @@ class Move(base.Command):
         help='New location to move the bucket to.')
     util.AddBucketLocationArg(
         parser, True, 'Location of the bucket.')
-    util.AddParentArgs(parser, 'Move a bucket')
+    util.AddParentArgs(parser, 'bucket to move')
     parser.display_info.AddCacheUpdater(None)
 
   def Run(self, args):
@@ -71,7 +78,5 @@ class Move(base.Command):
         cancel_on_no=True)
 
     return util.GetClient().projects_locations_buckets.Move(
-        util.GetMessages().LoggingProjectsLocationsBucketsMoveRequest(
-            name=source_bucket,
-            moveBucketRequest=util.GetMessages().MoveBucketRequest(
-                newName=new_bucket)))
+        util.GetMessages().MoveBucketRequest(
+            name=source_bucket, newName=new_bucket))

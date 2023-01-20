@@ -23,7 +23,6 @@ from googlecloudsdk.command_lib.projects import util
 from googlecloudsdk.core import log
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class NodePools(base.Group):
   """Create and manage node pools in an Anthos cluster on VMware."""

@@ -31,7 +31,7 @@ from googlecloudsdk.command_lib.resource_manager import completers
                     base.ReleaseTrack.GA)
 class Update(base.Command):
   # pylint: disable=line-too-long
-  """Updates the settings for the Cloud Logging Logs Router.
+  """Update the settings for the Cloud Logging Logs Router.
 
   Use this command to update the *--kms-key-name, --storage-location and
   --disable-default-sink* associated with the Cloud Logging Logs Router.
@@ -94,16 +94,16 @@ class Update(base.Command):
     parser.add_argument(
         '--storage-location',
         required=False,
-        help='Update the storage location for _Default bucket and _Required '
-        'bucket. Note: It only applies to the newly created projects and '
-        'will not affect the projects created before.')
+        help='Update the storage location for ```_Default``` bucket and '
+        '```_Required``` bucket. Note: It only applies to the newly created '
+        'projects and will not affect the projects created before.')
     parser.add_argument(
         '--disable-default-sink',
         action='store_true',
-        help='Enable or disable _Default sink for the _Default bucket. '
-        'Specify --no-disable-default-sink to enable a disabled _Default sink. '
-        'Note: It only applies to the newly created projects and '
-        'will not affect the projects created before.')
+        help='Enable or disable ```_Default``` sink for the ```_Default``` '
+        'bucket. Specify --no-disable-default-sink to enable a disabled '
+        '```_Default``` sink. Note: It only applies to the newly created '
+        'projects and will not affect the projects created before.')
 
     group = parser.add_mutually_exclusive_group(required=False)
 

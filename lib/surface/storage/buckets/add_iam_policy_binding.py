@@ -18,12 +18,15 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+from googlecloudsdk.api_lib.storage import api_factory
+from googlecloudsdk.api_lib.util import apis
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.iam import iam_util
+from googlecloudsdk.command_lib.storage import errors_util
+from googlecloudsdk.command_lib.storage import iam_command_util
+from googlecloudsdk.command_lib.storage import storage_url
 
 
-@base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class AddIamPolicyBinding(base.Command):
   """Add an IAM policy binding to a bucket."""
 
@@ -36,28 +39,32 @@ class AddIamPolicyBinding(base.Command):
       """,
       'EXAMPLES':
           """
-      To grant a single role to a single principal for BUCKET-1:
+      To grant a single role to a single principal for BUCKET:
 
-        $ {command} gs://BUCKET-1 --member=user:john.doe@example.com --role=roles/storage.objectCreator
+        $ {command} gs://BUCKET --member=user:john.doe@example.com --role=roles/storage.objectCreator
 
-      To make objects in BUCKET-1 publicly readable:
+      To make objects in BUCKET publicly readable:
 
-        $ {command} gs://BUCKET-1 --member=AllUsers --role=roles/storage.objectViewer
+        $ {command} gs://BUCKET --member=AllUsers --role=roles/storage.objectViewer
 
-      To specify a custom role for a principal on BUCKET-1:
+      To specify a custom role for a principal on BUCKET:
 
-        $ {command} gs://BUCKET-1 --member=user:john.doe@example.com --role=roles/customRoleName
+        $ {command} gs://BUCKET --member=user:john.doe@example.com --role=roles/customRoleName
       """,
   }
 
   @staticmethod
   def Args(parser):
     parser.add_argument(
-        'url',
-        nargs='+',
-        help='URLs for buckets that gain the IAM policy binding.')
-    iam_util.AddArgsForAddIamPolicyBinding(parser)
+        'url', help='URL of bucket to add IAM policy binding to.')
+    iam_util.AddArgsForAddIamPolicyBinding(parser, add_condition=True)
 
   def Run(self, args):
-    del args  # Unused.
-    raise NotImplementedError
+    url_object = storage_url.storage_url_from_string(args.url)
+    errors_util.raise_error_if_not_bucket(args.command_path, url_object)
+    errors_util.raise_error_if_not_gcs(args.command_path, url_object)
+
+    policy = api_factory.get_api(url_object.scheme).get_bucket_iam_policy(
+        url_object.bucket_name)
+    return iam_command_util.add_iam_binding_to_resource(
+        args, url_object, apis.GetMessagesModule('storage', 'v1'), policy)

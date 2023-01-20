@@ -28,7 +28,7 @@ class Vmware(base.Group):
   category = base.COMPUTE_CATEGORY
 
 
+@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class VmwareAlpha(Vmware):
   """Manage Google Cloud VMware Engine resources."""
-  _is_hidden = False

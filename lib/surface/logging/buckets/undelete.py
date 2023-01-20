@@ -40,7 +40,7 @@ class Undelete(base.RestoreCommand):
         'BUCKET_ID', help='ID of the bucket to undelete.')
     util.AddBucketLocationArg(
         parser, True, 'Location of the bucket.')
-    util.AddParentArgs(parser, 'Undelete a bucket')
+    util.AddParentArgs(parser, 'bucket to undelete')
 
   def Run(self, args):
     """This is what gets called when the user runs this command.

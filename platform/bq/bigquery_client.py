@@ -978,6 +978,7 @@ class BigqueryModel(model.JsonModel):
   # pylint: disable=g-bad-name
   def response(self, resp, content):
     """Convert the response wire format into a Python object."""
+    logging.info('Response from server with status code: %s', resp['status'])
     return super(BigqueryModel, self).response(resp, content)
 
   # pylint: enable=g-bad-name
@@ -988,6 +989,8 @@ class BigqueryHttp(http_request.HttpRequest):
 
   def __init__(self, bigquery_model, *args, **kwds):
     super(BigqueryHttp, self).__init__(*args, **kwds)
+    logging.info('URL being requested from BQ client: %s %s', kwds['method'],
+                 args[2])
     self._model = bigquery_model
 
   @staticmethod
@@ -1340,7 +1343,7 @@ class BigqueryClient(object):
     try:
       client_options = discovery.get_client_options()
       if (not flags.FLAGS['api'].using_default_value
-          ):
+         ):
         client_options.api_endpoint = _BuildApiEndpointFromApiFlag(
             flags.FLAGS.api,
             _ParseDiscoveryDoc(discovery_document_to_build_client))
@@ -1938,7 +1941,8 @@ class BigqueryClient(object):
                                      default_location=None,
                                      default_capacity_commitment_id=None,
                                      allow_commas=None):
-    """Determine a CapacityCommitmentReference from an identifier and location."""
+    """Determine a CapacityCommitmentReference from an identifier and location.
+    """
     if identifier is not None:
       project_id, location, capacity_commitment_id = _ParseCapacityCommitmentIdentifier(
           identifier, allow_commas)
@@ -1974,7 +1978,8 @@ class BigqueryClient(object):
                                         default_location=None,
                                         default_reservation_id=None,
                                         default_reservation_assignment_id=None):
-    """Determine a ReservationAssignmentReference from an identifier and location."""
+    """Determine a ReservationAssignmentReference from an identifier and location.
+    """
     if identifier is not None:
       (project_id, location, reservation_id, reservation_assignment_id
       ) = _ParseReservationAssignmentIdentifier(identifier)
@@ -3209,15 +3214,9 @@ class BigqueryClient(object):
     elif reference_type == ApiClientHelper.EncryptionServiceAccount:
       formatter.AddColumns(list(object_info.keys()))
     elif reference_type == ApiClientHelper.ReservationReference:
-      formatter.AddColumns((
-          'name',
-          'slotCapacity',
-          'targetJobConcurrency',
-          'ignoreIdleSlots',
-          'creationTime',
-          'updateTime',
-          'multiRegionAuxiliary'
-      ))
+      formatter.AddColumns(
+          ('name', 'slotCapacity', 'targetJobConcurrency', 'ignoreIdleSlots',
+           'creationTime', 'updateTime', 'multiRegionAuxiliary'))
     elif reference_type == ApiClientHelper.BetaReservationReference:
       formatter.AddColumns((
           'name',
@@ -3227,20 +3226,12 @@ class BigqueryClient(object):
           'enableQueuingAndPriorities',
           'creationTime',
           'updateTime',
-          'multiRegionAuxiliary'
-      ))
+          'multiRegionAuxiliary'))
     elif reference_type == ApiClientHelper.AutoscaleAlphaReservationReference:
-      formatter.AddColumns((
-          'name',
-          'slotCapacity',
-          'targetJobConcurrency',
-          'ignoreIdleSlots',
-          'autoscaleMaxSlots',
-          'autoscaleCurrentSlots',
-          'creationTime',
-          'updateTime',
-          'multiRegionAuxiliary'
-      ))
+      formatter.AddColumns(
+          ('name', 'slotCapacity', 'targetJobConcurrency', 'ignoreIdleSlots',
+           'autoscaleMaxSlots', 'autoscaleCurrentSlots', 'creationTime',
+           'updateTime', 'multiRegionAuxiliary'))
     elif reference_type == ApiClientHelper.AutoscalePreviewReservationReference:
       formatter.AddColumns(
           ('name', 'slotCapacity', 'targetJobConcurrency', 'ignoreIdleSlots',
@@ -4912,7 +4903,7 @@ class BigqueryClient(object):
         value can be from 48 to 168 hours (2 to 7 days). The default value is
         168 hours if this is not set.
       storage_billing_model: Optional. Sets the storage billing model for the
-      dataset.
+        dataset.
 
     Raises:
       TypeError: if reference is not an ApiClientHelper.DatasetReference
@@ -4966,29 +4957,28 @@ class BigqueryClient(object):
       if not ignore_existing:
         raise
 
-  def CreateTable(
-      self,
-      reference,
-      ignore_existing=False,
-      schema=None,
-      description=None,
-      display_name=None,
-      expiration=None,
-      view_query=None,
-      materialized_view_query=None,
-      enable_refresh=None,
-      refresh_interval_ms=None,
-      max_staleness=None,
-      external_data_config=None,
-      view_udf_resources=None,
-      use_legacy_sql=None,
-      labels=None,
-      time_partitioning=None,
-      clustering=None,
-      range_partitioning=None,
-      require_partition_filter=None,
-      destination_kms_key=None,
-      location=None):
+  def CreateTable(self,
+                  reference,
+                  ignore_existing=False,
+                  schema=None,
+                  description=None,
+                  display_name=None,
+                  expiration=None,
+                  view_query=None,
+                  materialized_view_query=None,
+                  enable_refresh=None,
+                  refresh_interval_ms=None,
+                  max_staleness=None,
+                  external_data_config=None,
+                  view_udf_resources=None,
+                  use_legacy_sql=None,
+                  labels=None,
+                  time_partitioning=None,
+                  clustering=None,
+                  range_partitioning=None,
+                  require_partition_filter=None,
+                  destination_kms_key=None,
+                  location=None):
     """Create a table corresponding to TableReference.
 
     Args:
@@ -5327,7 +5317,6 @@ class BigqueryClient(object):
       refresh window days flag.
     Raises:
       BigqueryError: If the data source does not support (custom) window days.
-
     """
     if 'dataRefreshType' in data_source_info:
       if data_source_info['dataRefreshType'] == 'CUSTOM_SLIDING_WINDOW':
@@ -5341,31 +5330,30 @@ class BigqueryClient(object):
       raise BigqueryError('Data source \'%s\' does not'
                           ' support refresh window days.' % data_source)
 
-  def UpdateTable(
-      self,
-      reference,
-      schema=None,
-      description=None,
-      display_name=None,
-      expiration=None,
-      view_query=None,
-      materialized_view_query=None,
-      enable_refresh=None,
-      refresh_interval_ms=None,
-      max_staleness=None,
-      external_data_config=None,
-      view_udf_resources=None,
-      use_legacy_sql=None,
-      labels_to_set=None,
-      label_keys_to_remove=None,
-      time_partitioning=None,
-      range_partitioning=None,
-      clustering=None,
-      require_partition_filter=None,
-      etag=None,
-      encryption_configuration=None,
-      location=None,
-      autodetect_schema=False):
+  def UpdateTable(self,
+                  reference,
+                  schema=None,
+                  description=None,
+                  display_name=None,
+                  expiration=None,
+                  view_query=None,
+                  materialized_view_query=None,
+                  enable_refresh=None,
+                  refresh_interval_ms=None,
+                  max_staleness=None,
+                  external_data_config=None,
+                  view_udf_resources=None,
+                  use_legacy_sql=None,
+                  labels_to_set=None,
+                  label_keys_to_remove=None,
+                  time_partitioning=None,
+                  range_partitioning=None,
+                  clustering=None,
+                  require_partition_filter=None,
+                  etag=None,
+                  encryption_configuration=None,
+                  location=None,
+                  autodetect_schema=False):
     """Updates a table.
 
     Args:
@@ -5580,7 +5568,7 @@ class BigqueryClient(object):
         value can be from 48 to 168 hours (2 to 7 days). The default value is
         168 hours if this is not set.
       storage_billing_model: Optional. Sets the storage billing model for the
-      dataset.
+        dataset.
 
     Raises:
       TypeError: if reference is not a DatasetReference.
@@ -5875,7 +5863,7 @@ class BigqueryClient(object):
         job_reference['location'] = location
     media_upload = ''
     if upload_file:
-      resumable = True
+      resumable = self.enable_resumable_uploads
       # There is a bug in apiclient http lib that make uploading resumable files
       # with 0 length broken.
       if os.stat(upload_file).st_size == 0:
@@ -6352,7 +6340,6 @@ class BigqueryClient(object):
         after FormatJobInfo().
         For dry run queries schema and rows are empty, the execution metadata
         dict contains statistics
-
     """
     if not self.sync:
       raise BigqueryClientError('Running RPC-style query asynchronously is '
@@ -6676,12 +6663,12 @@ class BigqueryClient(object):
         file with the reader schema, enabled for the format: AVRO, PARQUET, ORC.
       range_partitioning: Optional. Provides range partitioning specification
         for the destination table.
-      hive_partitioning_options: (experimental) Options for configuring hive
-        is picked if it is in the specified list and if it supports the
-        precision and the scale. STRING supports all precision and scale values.
-        If none of the listed types supports the precision and the scale, the
-        type supporting the widest range in the specified list is picked, and if
-        a value exceeds the supported range when reading the data, an error will
+      hive_partitioning_options: (experimental) Options for configuring hive is
+        picked if it is in the specified list and if it supports the precision
+        and the scale. STRING supports all precision and scale values. If none
+        of the listed types supports the precision and the scale, the type
+        supporting the widest range in the specified list is picked, and if a
+        value exceeds the supported range when reading the data, an error will
         be returned. This field cannot contain duplicate types. The order of the
       decimal_target_types: (experimental) Defines the list of possible SQL data
         types to which the source decimal values are converted. This list and
@@ -7257,15 +7244,18 @@ class ApiClientHelper(object):
     pass
 
   class AutoscaleAlphaReservationReference(ReservationReference):
-    """Reference for autoscale_alpha, which has more features than stable versions."""
+    """Reference for autoscale_alpha, which has more features than stable versions.
+    """
     pass
 
   class AutoscalePreviewReservationReference(ReservationReference):
-    """Reference for autoscale_preview, which has more features than stable versions."""
+    """Reference for autoscale_preview, which has more features than stable versions.
+    """
     pass
 
   class EditionPreviewReservationReference(ReservationReference):
-    """Reference for edition_preview, which has more features than stable versions."""
+    """Reference for edition_preview, which has more features than stable versions.
+    """
 
   class CapacityCommitmentReference(Reference):
     """Helper class to provide a reference to capacity commitment."""
@@ -7279,7 +7269,8 @@ class ApiClientHelper(object):
       return self._path_str % dict(self)
 
   class EditionPreviewCapacityCommitmentReference(CapacityCommitmentReference):
-    """Reference for edition_preview, which has more features than stable versions."""
+    """Reference for edition_preview, which has more features than stable versions.
+    """
 
   class ReservationAssignmentReference(Reference):
     """Helper class to provide a reference to reservation assignment."""

@@ -24,7 +24,7 @@ from googlecloudsdk.calliope import base
 
 DETAILED_HELP = {
     'DESCRIPTION': """
-        Lists the buckets for a project.
+        List the buckets for a project.
     """,
     'EXAMPLES': """
      To list the buckets in a project, run:
@@ -35,12 +35,12 @@ DETAILED_HELP = {
 
 
 class List(base.ListCommand):
-  """Lists the defined buckets."""
+  """List the defined buckets."""
 
   @staticmethod
   def Args(parser):
     """Register flags for this command."""
-    util.AddParentArgs(parser, 'List buckets')
+    util.AddParentArgs(parser, 'buckets to list')
     util.AddBucketLocationArg(
         parser, False,
         'Location from which to list buckets. By default, buckets in all '

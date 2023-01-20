@@ -68,7 +68,7 @@ class Update(base.Command):
         metavar='METADATA_FIELDS',
         type=arg_parsers.ArgList(
             choices=flags.OPTIONAL_INVENTORY_REPORTS_METADATA_FIELDS),
-        help='Adds fields to the metadata_fields list.')
+        help='Removes fields from the metadata_fields list.')
     # We don't addd --clear-metadata-fields because certain metadata-fields
     # like name and project must be always present.
 
@@ -85,6 +85,7 @@ class Update(base.Command):
       if args.add_metadata_fields is not None:
         for field in args.add_metadata_fields:
           metadata_fields.add(field)
+
       if args.remove_metadata_fields is not None:
         for field in args.remove_metadata_fields:
           if field not in metadata_fields:
@@ -93,9 +94,7 @@ class Update(base.Command):
           metadata_fields.remove(field)
       metadata_fields_list = list(metadata_fields)
     elif args.metadata_fields:
-      metadata_fields_list = (
-          list(flags.REQUIRED_INVENTORY_REPORTS_METADATA_FIELDS) +
-          args.metadata_fields)
+      metadata_fields_list = list(args.metadata_fields)
     else:
       # messages.ReportConfig does not accept None value.
       # This should be safe, as an empty list has no effect unless we add

@@ -91,6 +91,12 @@ class CreateCredConfig(base.CreateCommand):
         help='The type of token being used for authorization. ' +
         'This defaults to urn:ietf:params:oauth:token-type:id_token.')
 
+    parser.add_argument(
+        '--enable-mtls',
+        help='Use mTLS for STS endpoints.',
+        action='store_true',
+        hidden=True)
+
   def Run(self, args):
     cred_config.create_credential_config(args,
                                          cred_config.ConfigType.WORKFORCE_POOLS)

@@ -91,7 +91,7 @@ class TestingArgFiles(base.TopicCommand):
           """\
 
           Here are the contents of a very simple YAML argument file which
-          we'll assume is stored in a file named excelsior_args.yaml:
+          is assumed to be stored in a file named excelsior_args.yaml:
 
             # Run a quick 'robo' test on the 'Excelsior' app for
             # 90 seconds using only the default Test Lab device.

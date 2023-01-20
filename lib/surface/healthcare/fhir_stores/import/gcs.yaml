@@ -6,11 +6,11 @@
     examples: |
       To import the FHIR resources from the existing bucket 'testGcsBucket' in the folder 'someFolder' into the FHIR store 'test-fhir-store', run:
 
-        $ {command} test-fhir-store --gcs-uri=gs://testGcsBucket/someFolder --dataset=test-dataset
+        $ {command} test-fhir-store --gcs-uri=gs://testGcsBucket/someFolder/* --dataset=test-dataset
 
       To perform the same import, but importing resources with the content structure of 'RESOURCE', run:
 
-        $ {command} test-fhir-store --gcs-uri=gs://testGcsBucket/someFolder --dataset=test-dataset --content-structure=RESOURCE
+        $ {command} test-fhir-store --gcs-uri=gs://testGcsBucket/someFolder/* --dataset=test-dataset --content-structure=RESOURCE
 
   request:
     collection: healthcare.projects.locations.datasets.fhirStores
@@ -31,10 +31,21 @@
     - arg_name: gcs-uri
       api_field: importResourcesRequest.gcsSource.uri
       required: true
-      help_text: |
+      help_text: |-
         Cloud Storage source data locations. Each Cloud Storage object
         should be a text file that contains newline-delimited JSON structures conforming
-        to the FHIR standard.
+        to the FHIR standard. You can use wildcards to import multiple files from one or more
+        directories.
+        - Use * to match 0 or more non-separator characters. For example,
+        gs://BUCKET/DIRECTORY/Example```*```.ndjson matches Example.ndjson and Example22.ndjson in
+        DIRECTORY.
+        - Use ** to match 0 or more characters (including separators). Must be used at the
+        end of a path and with no other wildcards in the path. Can also be used with a filename
+        extension (such as .ndjson), which imports all files with the filename extension in the
+        specified directory and its subdirectories. For example, gs://BUCKET/DIRECTORY/**.ndjson
+        imports all files with the .ndjson filename extension in DIRECTORY and its subdirectories.
+        - Use ? to match 1 character. For example, gs://BUCKET/DIRECTORY/Example?.ndjson matches
+        Example1.ndjson but does not match Example.ndjson or Example01.ndjson.
     - arg_name: content-structure
       api_field: importResourcesRequest.contentStructure
       choices:

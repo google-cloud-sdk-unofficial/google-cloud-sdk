@@ -19,7 +19,7 @@ from __future__ import division
 from __future__ import unicode_literals
 
 from apitools.base.py import exceptions as apitools_exceptions
-from googlecloudsdk.api_lib.functions.v1 import util
+from googlecloudsdk.api_lib.functions.v1 import util as util_v1
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.functions import flags
 from googlecloudsdk.command_lib.functions.v1.describe import command as command_v1
@@ -28,10 +28,10 @@ from googlecloudsdk.core import log
 import six.moves.http_client
 
 
-def _CommonArgs(parser, track):
+def _CommonArgs(parser):
   """Registers flags for this command."""
   flags.AddFunctionResourceArg(parser, 'to describe')
-  flags.AddGen2Flag(parser, track)
+  flags.AddGen2Flag(parser)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
@@ -41,9 +41,9 @@ class Describe(base.DescribeCommand):
   @staticmethod
   def Args(parser):
     """Register flags for this command."""
-    _CommonArgs(parser, base.ReleaseTrack.GA)
+    _CommonArgs(parser)
 
-  @util.CatchHTTPErrorRaiseHTTPException
+  @util_v1.CatchHTTPErrorRaiseHTTPException
   def Run(self, args):
     """This is what gets called when the user runs this command.
 
@@ -56,6 +56,13 @@ class Describe(base.DescribeCommand):
     """
     if flags.ShouldUseGen2():
       return command_v2.Run(args, self.ReleaseTrack())
+
+    # immediately fallback to v2 for v2-only regions.
+    parsed_region = args.CONCEPTS.name.Parse().locationsId
+    v1_regions = [r.locationId for r in util_v1.ListRegions()]
+    if parsed_region not in v1_regions:
+      return command_v2.Run(args, self.ReleaseTrack())
+
     try:
       return command_v1.Run(args)
     except apitools_exceptions.HttpError as error:
@@ -71,16 +78,7 @@ class Describe(base.DescribeCommand):
 class DescribeBeta(Describe):
   """Display details of a Google Cloud Function."""
 
-  @staticmethod
-  def Args(parser):
-    _CommonArgs(parser, base.ReleaseTrack.BETA)
-
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class DescribeAlpha(DescribeBeta):
   """Display details of a Google Cloud Function."""
-
-  @staticmethod
-  def Args(parser):
-    """Register flags for this command."""
-    _CommonArgs(parser, base.ReleaseTrack.ALPHA)

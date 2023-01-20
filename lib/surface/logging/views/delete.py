@@ -50,7 +50,7 @@ class Delete(base.DeleteCommand):
         'VIEW_ID', help='ID of the view to delete.')
     util.AddBucketLocationArg(
         parser, True, 'Location of the bucket.')
-    util.AddParentArgs(parser, 'Delete a bucket')
+    util.AddParentArgs(parser, 'view to delete')
     parser.add_argument(
         '--bucket',
         required=True,

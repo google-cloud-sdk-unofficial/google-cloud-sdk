@@ -38,7 +38,6 @@ $ gcloud container fleet memberships list --filter='endpoint.onPremCluster.admin
 """
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class List(base.ListCommand):
   """List Anthos on bare metal admin clusters."""
@@ -68,5 +67,6 @@ class List(base.ListCommand):
     client = apis.AdminClustersClient()
     return client.List(args)
 
-  def Epilog(self, unused_resources_were_displayed):
+  def Epilog(self, resources_were_displayed):
+    super(List, self).Epilog(resources_were_displayed)
     log.status.Print(_EPILOG)

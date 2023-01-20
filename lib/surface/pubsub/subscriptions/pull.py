@@ -53,10 +53,7 @@ table[box](
 """
 
 
-def _Run(args,
-         max_messages,
-         return_immediately=True,
-         exactly_once_failure_handling=False):
+def _Run(args, max_messages, return_immediately=True):
   """Pulls messages from a subscription."""
   client = subscriptions.SubscriptionsClient()
 
@@ -71,9 +68,6 @@ def _Run(args,
     try:
       client.Ack(ack_ids, subscription_ref)
     except api_ex.HttpError as error:
-      if not exactly_once_failure_handling:
-        raise error
-
       exc = util_ex.HttpException(error)
       ack_ids_and_failure_reasons = util.ParseExactlyOnceErrorInfo(
           exc.payload.details)
@@ -88,9 +82,6 @@ def _Run(args,
       for ack_ids_and_failure_reason in ack_ids_and_failure_reasons:
         failed_ack_ids[ack_ids_and_failure_reason[
             'AckId']] = ack_ids_and_failure_reason['FailureReason']
-
-  if not exactly_once_failure_handling:
-    return pull_response.receivedMessages
 
   if not args.auto_ack:
     return pull_response.receivedMessages
@@ -134,7 +125,7 @@ class Pull(base.ListCommand):
 
   @staticmethod
   def Args(parser):
-    parser.display_info.AddFormat(MESSAGE_FORMAT)
+    parser.display_info.AddFormat(MESSAGE_FORMAT_WITH_ACK_STATUS)
     resource_args.AddSubscriptionResourceArg(parser, 'to pull messages from.')
     flags.AddPullFlags(parser)
 
@@ -163,8 +154,4 @@ class PullBeta(Pull):
     else:
       max_messages = args.max_messages
     return_immediately = not args.wait if args.IsSpecified('wait') else True
-    return _Run(
-        args,
-        max_messages,
-        return_immediately,
-        exactly_once_failure_handling=True)
+    return _Run(args, max_messages, return_immediately)

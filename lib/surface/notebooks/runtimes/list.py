@@ -35,7 +35,7 @@ DETAILED_HELP = {
         """
     To list runtimes in a particular location, run:
 
-        $ {command} --location=us-central1-a
+        $ {command} --location=us-central1
     """,
 }
 

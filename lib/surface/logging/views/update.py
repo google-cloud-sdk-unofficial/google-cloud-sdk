@@ -54,7 +54,7 @@ class Update(base.UpdateCommand):
     parser.add_argument(
         '--log-filter',
         help='New filter for the view.')
-    util.AddParentArgs(parser, 'Update view')
+    util.AddParentArgs(parser, 'view to update')
     util.AddBucketLocationArg(
         parser, True, 'Location of the bucket that contains the view.')
     parser.add_argument(

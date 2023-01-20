@@ -8,7 +8,7 @@ help_text:
   examples: |
       To list GatewaySecurityPolicyRules in the current project, run:
 
-        $ {command} --location=global
+        $ {command} --location={region} --gateway-security-policy={policy-name}
 
 request: &request
   api_version: v1alpha1
@@ -19,6 +19,7 @@ arguments:
     spec: !REF googlecloudsdk.command_lib.network_security.resources:gatewaySecurityPolicy
     help_text: |
       The project of the GatewaySecurityPolicyRules to display.
+    is_positional: false
 
 response:
   id_field: name

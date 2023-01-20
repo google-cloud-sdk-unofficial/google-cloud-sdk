@@ -47,6 +47,6 @@ class GetStatus(base.Command):
     resource_args.AddNetworkResourceArg(parser, 'to get status', True)
 
   def Run(self, args):
-    networks_client = networks.NetworksClient()
+    networks_client = networks.NetworksClient(self.ReleaseTrack())
     network_ref = args.CONCEPTS.network.Parse()
     return networks_client.GetStatus(network_ref)

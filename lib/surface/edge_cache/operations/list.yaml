@@ -3,7 +3,7 @@
   help_text:
     brief: List long-running operations.
     description: |
-      List Edge Cache long-running operations.
+      List long-running operations.
 
       ## EXAMPLES
 

@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""The operations command group for the Certificate Manager."""
+"""The operations command group for Media CDN."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -23,7 +23,7 @@ from googlecloudsdk.calliope import base
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.GA)
 class Operations(base.Group):
-  """Manage Edge Cache operations.
+  """Manage EdgeCache operations.
 
   Commands for managing long-running operations.
   """

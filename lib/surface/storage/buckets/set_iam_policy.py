@@ -18,11 +18,26 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+from googlecloudsdk.api_lib.storage import cloud_api
+from googlecloudsdk.api_lib.storage import gcs_metadata_field_converters
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.iam import iam_util
+from googlecloudsdk.command_lib.storage import errors_util
+from googlecloudsdk.command_lib.storage import flags
+from googlecloudsdk.command_lib.storage import iam_command_util
+from googlecloudsdk.command_lib.storage import storage_url
+from googlecloudsdk.command_lib.storage import wildcard_iterator
+from googlecloudsdk.command_lib.storage.tasks import set_iam_policy_task
 
 
-@base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+def _set_iam_policy_task_iterator(url_strings, policy):
+  """Generates SetIamPolicyTask's for execution."""
+  for url_string in url_strings:
+    for resource in wildcard_iterator.get_wildcard_iterator(
+        url_string, fields_scope=cloud_api.FieldsScope.SHORT):
+      yield set_iam_policy_task.SetIamPolicyTask(resource.storage_url, policy)
+
+
 class SetIamPolicy(base.Command):
   """Set the IAM policy for a bucket."""
 
@@ -35,24 +50,43 @@ class SetIamPolicy(base.Command):
       """,
       'EXAMPLES':
           """
-      To set the iam policy for BUCKET-1 to the policy defined in POLICY-FILE-1
-      run:
+      To set the IAM policy in POLICY-FILE on BUCKET:
 
-        $ {command} gs://BUCKET-1 POLICY-FILE-1
+        $ {command} gs://BUCKET POLICY-FILE
+
+      To set the IAM policy in POLICY-FILE on all buckets beginning with "b":
+
+        $ {command} gs://b* POLICY-FILE
       """,
   }
 
   @staticmethod
   def Args(parser):
     parser.add_argument(
-        'url',
+        'urls',
         nargs='+',
-        help='URLs for buckets to apply the IAM policy to.')
+        help='URLs for buckets to apply the IAM policy to.'
+        ' Can include wildcards.')
     parser.add_argument(
-        'policy_file',
-        help='Path to a local JSON or YAML formatted file containing a valid'
-        ' IAM policy.')
+        '-e',
+        '--etag',
+        help='Custom etag to set on IAM policy. API will reject etags that do'
+        ' not match this value, making it useful as a precondition during'
+        ' concurrent operations.')
+    iam_util.AddArgForPolicyFile(parser)
+    flags.add_continue_on_error_flag(parser)
 
   def Run(self, args):
-    del args  # Unused.
-    raise NotImplementedError
+    for url_string in args.urls:
+      url = storage_url.storage_url_from_string(url_string)
+      errors_util.raise_error_if_not_bucket(args.command_path, url)
+      errors_util.raise_error_if_not_gcs(args.command_path, url)
+
+    policy = gcs_metadata_field_converters.process_iam_file(
+        args.policy_file, custom_etag=args.etag)
+    exit_code, output = iam_command_util.execute_set_iam_task_iterator(
+        _set_iam_policy_task_iterator(args.urls, policy),
+        args.continue_on_error)
+
+    self.exit_code = exit_code
+    return output

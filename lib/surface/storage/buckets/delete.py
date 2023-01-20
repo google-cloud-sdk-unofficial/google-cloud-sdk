@@ -21,7 +21,7 @@ from __future__ import unicode_literals
 import multiprocessing
 
 from googlecloudsdk.calliope import base
-from googlecloudsdk.command_lib.storage import errors
+from googlecloudsdk.command_lib.storage import errors_util
 from googlecloudsdk.command_lib.storage import flags
 from googlecloudsdk.command_lib.storage import name_expansion
 from googlecloudsdk.command_lib.storage import plurality_checkable_iterator
@@ -61,7 +61,7 @@ class Delete(base.Command):
   def Run(self, args):
     for url_string in args.urls:
       url = storage_url.storage_url_from_string(url_string)
-      errors.raise_error_if_not_bucket(args.command_path, url)
+      errors_util.raise_error_if_not_bucket(args.command_path, url)
 
     task_status_queue = multiprocessing.Queue()
 

@@ -34,6 +34,9 @@ _DETAILED_HELP = {
 
           $ {command} --split-health-checks
 
+        To update the app-level service account on an application:
+
+          $ {command} --service-account=SERVICE_ACCOUNT
         """,
 }
 

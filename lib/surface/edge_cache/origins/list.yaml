@@ -1,11 +1,11 @@
 - release_tracks: [ALPHA, GA]
 
   help_text:
-    brief: List all EdgeCacheOrigins in a project.
+    brief: List all EdgeCacheOrigin resources in a project.
     description: |
-      List EdgeCacheOrigins.
+      List EdgeCacheOrigin resources.
     examples: |
-      To list existing origins, run:
+      To list existing EdgeCacheOrigin resources, run:
 
         $ {command}
 

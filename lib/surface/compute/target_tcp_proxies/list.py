@@ -130,8 +130,34 @@ class List(base.ListCommand):
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
-class ListAlphaBeta(List):
-  _enable_region_target_tcp_proxy = True
+class ListAlphaBeta(base.ListCommand):
+  """List target TCP proxies."""
+
+  @staticmethod
+  def Args(parser):
+    parser.display_info.AddFormat("""
+          table(
+            name,
+            region.basename(),
+            proxyHeader,
+            service.basename()
+          )
+      """)
+    lister.AddMultiScopeListerFlags(parser, regional=True, global_=True)
+
+  def Run(self, args):
+    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    client = holder.client
+
+    request_data = lister.ParseMultiScopeFlags(args, holder.resources)
+
+    list_implementation = lister.MultiScopeLister(
+        client,
+        regional_service=client.apitools_client.regionTargetTcpProxies,
+        global_service=client.apitools_client.targetTcpProxies,
+        aggregation_service=client.apitools_client.targetTcpProxies)
+
+    return lister.Invoke(request_data, list_implementation)
 
 
 List.detailed_help = base_classes.GetGlobalListerHelp('target TCP proxies')

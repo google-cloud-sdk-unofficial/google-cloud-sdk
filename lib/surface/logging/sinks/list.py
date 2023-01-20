@@ -24,16 +24,15 @@ from googlecloudsdk.calliope import base
 
 
 class List(base.ListCommand):
-  """Lists the defined sinks.
+  """List the defined sinks.
 
-  Lists the defined sinks.
+  List the defined sinks.
 
   ## EXAMPLES
 
   To list all defined sinks:
 
     $ {command} --limit=10
-
   """
 
   @staticmethod
@@ -41,7 +40,7 @@ class List(base.ListCommand):
     """Register flags for this command."""
     base.PAGE_SIZE_FLAG.RemoveFromParser(parser)
     base.URI_FLAG.RemoveFromParser(parser)
-    util.AddParentArgs(parser, 'List sinks')
+    util.AddParentArgs(parser, 'sinks to list')
     parser.display_info.AddFormat('table(name, destination, filter)')
     parser.display_info.AddCacheUpdater(None)
 

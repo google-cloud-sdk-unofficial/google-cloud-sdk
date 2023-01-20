@@ -56,5 +56,10 @@
                 recurrence rule for how the cluster maintenance window recurs. They go
                 on for the span of time between the start and the end time.
 
+  response:
+    modify_response_hooks:
+    - googlecloudsdk.command_lib.edge_cloud.container.print_warning:PrintWarning
+
   async:
     collection: edgecontainer.projects.locations.operations
+    extract_resource_result: false

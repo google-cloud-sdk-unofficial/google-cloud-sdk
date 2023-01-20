@@ -1,11 +1,11 @@
 - release_tracks: [ALPHA, GA]
 
   help_text:
-    brief: Delete an EdgeCacheOrigin.
+    brief: Delete an EdgeCacheOrigin resource.
     description: |
-      Delete a EdgeCacheOrigin.
+      Delete a EdgeCacheOrigin resource.
     examples: |
-      To delete a EdgeCacheOrigin called 'my-origin', run:
+      To delete a EdgeCacheOrigin resource called 'my-origin', run:
 
         $ {command} my-origin
 
@@ -21,5 +21,5 @@
 
   arguments:
     resource:
-      help_text: The name of the EdgeCacheOrigin to delete.
+      help_text: The name of the EdgeCacheOrigin resource to delete.
       spec: !REF googlecloudsdk.command_lib.edge_cache.resources:edgeCacheOrigin

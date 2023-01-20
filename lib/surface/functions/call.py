@@ -43,15 +43,15 @@ _DETAILED_HELP = {
 }
 
 
-def _CommonArgs(parser, track):
+def _CommonArgs(parser):
   """Registers flags for this command."""
   flags.AddFunctionResourceArg(parser, 'to execute')
   data_flag_group = parser.add_mutually_exclusive_group()
   flags.AddDataFlag(data_flag_group)
 
   # Flags for GCFv2
-  flags.AddGen2Flag(parser, track)
-  flags.AddCloudEventsFlag(data_flag_group, track)
+  flags.AddGen2Flag(parser)
+  flags.AddCloudEventsFlag(data_flag_group)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
@@ -63,7 +63,7 @@ class Call(base.Command):
   @staticmethod
   def Args(parser):
     """Registers flags for this command."""
-    _CommonArgs(parser, base.ReleaseTrack.GA)
+    _CommonArgs(parser)
 
   @util.CatchHTTPErrorRaiseHTTPException
   def Run(self, args):
@@ -86,17 +86,7 @@ class Call(base.Command):
 class CallBeta(Call):
   """Triggers execution of a Google Cloud Function."""
 
-  detailed_help = _DETAILED_HELP
-
-  @staticmethod
-  def Args(parser):
-    _CommonArgs(parser, base.ReleaseTrack.BETA)
-
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class CallAlpha(CallBeta):
   """Triggers execution of a Google Cloud Function."""
-
-  @staticmethod
-  def Args(parser):
-    _CommonArgs(parser, base.ReleaseTrack.ALPHA)

@@ -30,7 +30,6 @@ $ {command} my-cluster --location=us-west1
 """
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Describe(base.DescribeCommand):
   """Describe an Anthos cluster on bare metal."""
@@ -40,7 +39,7 @@ class Describe(base.DescribeCommand):
   @staticmethod
   def Args(parser):
     """Registers flags for this command."""
-    flags.AddClusterResourceArg(parser, 'to describe')
+    flags.AddClusterResourceArg(parser, verb='to describe')
 
   def Run(self, args):
     """Runs the describe command."""

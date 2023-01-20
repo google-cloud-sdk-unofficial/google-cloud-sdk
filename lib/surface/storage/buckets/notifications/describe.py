@@ -21,6 +21,7 @@ from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.storage import api_factory
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.storage import errors
 from googlecloudsdk.command_lib.storage import notification_configuration_iterator
 from googlecloudsdk.command_lib.storage import storage_url
 from googlecloudsdk.core.resource import resource_projector
@@ -52,8 +53,8 @@ class Describe(base.DescribeCommand):
         notification_configuration_iterator
         .get_bucket_url_and_notification_id_from_url(args.url))
     if not (bucket_url and notification_id):
-      raise ValueError('Received invalid notification configuration URL: ' +
-                       args.url)
+      raise errors.InvalidUrlError(
+          'Received invalid notification configuration URL: ' + args.url)
     return resource_projector.MakeSerializable(
         api_factory.get_api(
             storage_url.ProviderPrefix.GCS).get_notification_configuration(

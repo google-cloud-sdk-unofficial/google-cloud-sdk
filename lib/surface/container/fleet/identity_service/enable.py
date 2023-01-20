@@ -32,8 +32,7 @@ EXAMPLES = """\
 """
 
 
-@calliope_base.ReleaseTracks(calliope_base.ReleaseTrack.ALPHA)
-class EnableAlpha(base.EnableCommand):
+class Enable(base.EnableCommand):
   """Enable Identity Service Feature.
 
   This command enables the Identity Service Feature in a fleet.
@@ -43,8 +42,16 @@ class EnableAlpha(base.EnableCommand):
 
   feature_name = 'identityservice'
 
+  _fleet_default_member_config_supported_tracks = [
+      calliope_base.ReleaseTrack.ALPHA, calliope_base.ReleaseTrack.BETA
+  ]
+
   @classmethod
   def Args(cls, parser):
+    if cls.ReleaseTrack(
+    ) not in cls._fleet_default_member_config_supported_tracks:
+      return
+
     parser.add_argument(
         '--fleet-default-member-config',
         type=str,
@@ -62,9 +69,16 @@ class EnableAlpha(base.EnableCommand):
     )
 
   def Run(self, args):
-    # run the base enable flow if default config is not specified
+    empty_feature = self.messages.Feature()
+    if self.ReleaseTrack(
+    ) not in self._fleet_default_member_config_supported_tracks:
+      return self.Enable(empty_feature)
+
+    # run enable with an empty feature if the fleet_default_member_config
+    # is not specified
     if not args.fleet_default_member_config:
-      return self.Enable(self.messages.Feature())
+      return self.Enable(empty_feature)
+
     # Load config YAML file.
     loaded_config = file_parsers.YamlConfigFile(
         file_path=args.fleet_default_member_config,
@@ -79,20 +93,3 @@ class EnableAlpha(base.EnableCommand):
         .CommonFleetDefaultMemberConfigSpec(identityservice=member_config))
 
     return self.Enable(feature)
-
-
-@calliope_base.ReleaseTracks(calliope_base.ReleaseTrack.GA,
-                             calliope_base.ReleaseTrack.BETA)
-class Enable(base.EnableCommand):
-  """Enable Identity Service Feature.
-
-  This command enables the Identity Service Feature in a fleet.
-
-  ## EXAMPLES
-
-  To enable the Identity Service Feature, run:
-
-    $ {command}
-  """
-
-  feature_name = 'identityservice'

@@ -23,9 +23,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.edge_cloud.networking import resource_args
 from googlecloudsdk.core import log
 
-
-DESCRIPTION = (
-    'Initialize a specified Distributed Cloud Edge Network zone.')
+DESCRIPTION = ('Initialize a specified Distributed Cloud Edge Network zone.')
 EXAMPLES = """\
     To initialize a Distributed Cloud Edge Network zone called
     'us-central1-edge-den1', run:
@@ -49,7 +47,7 @@ class InitialzeZone(base.Command):
     resource_args.AddZoneResourceArg(parser, 'to initialize', True)
 
   def Run(self, args):
-    zones_client = zones.ZonesClient()
+    zones_client = zones.ZonesClient(self.ReleaseTrack())
     zone_ref = args.CONCEPTS.zone.Parse()
     zones_client.InitializeZone(zone_ref)
-    log.status.Print('Initialized zone [{0}].'.format(zone_ref))
+    log.status.Print('Initialized zone [{0}].'.format(zone_ref.RelativeName()))

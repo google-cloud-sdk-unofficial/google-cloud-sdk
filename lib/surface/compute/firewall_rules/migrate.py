@@ -518,18 +518,30 @@ class Migrate(base.CreateCommand):
         'Creating new Network Firewall Policy \'{}\''.format(policy_name))
 
     # Add migrated rules to newly created policy
-    log.status.Print('Successfully migrated the following VPC Firewalls:')
+    log.status.Print('Migrating the following VPC Firewalls:')
     log.status.Print('old-priority: rule-name \'rule-description\'')
+    responses = []
     for (rule, firewall) in migrated_rules:
-      client.networkFirewallPolicies.AddRule(
-          messages.ComputeNetworkFirewallPoliciesAddRuleRequest(
-              firewallPolicy=policy_name,
-              firewallPolicyRule=rule,
-              project=project))
+      responses.append(
+          client.networkFirewallPolicies.AddRule(
+              messages.ComputeNetworkFirewallPoliciesAddRuleRequest(
+                  firewallPolicy=policy_name,
+                  firewallPolicyRule=rule,
+                  project=project)))
       if firewall:
         log.status.Print('{}: {} \'{}\''.format(firewall.priority,
                                                 firewall.name,
                                                 firewall.description))
+    # Wait until rules are added
+    operation_poller = poller.BatchPoller(holder.client,
+                                          client.networkFirewallPolicies)
+    operation_refs = [
+        holder.resources.Parse(
+            response.selfLink, collection='compute.globalOperations')
+        for response in responses
+    ]
+    waiter.WaitFor(operation_poller, poller.OperationBatch(operation_refs),
+                   'Migrating')
 
 
 Migrate.detailed_help = {

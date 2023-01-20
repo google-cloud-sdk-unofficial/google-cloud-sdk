@@ -50,7 +50,7 @@ class Write(base.SilentCommand):
         choices=Write.SEVERITY_ENUM, default='DEFAULT',
         help='Severity level of the log entry.')
 
-    util.AddParentArgs(parser, 'Write log entries')
+    util.AddParentArgs(parser, 'log entries to write')
 
   def Run(self, args):
     """This is what gets called when the user runs this command.

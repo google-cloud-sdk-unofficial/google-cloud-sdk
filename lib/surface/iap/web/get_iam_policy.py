@@ -121,6 +121,5 @@ class GetIamPolicyALPHA(GetIamPolicy):
       parser: An argparse.ArgumentParser-like object. It is mocked out in order
         to capture some information, but behaves like an ArgumentParser.
     """
-    iap_util.AddIapIamResourceArgs(
-        parser, use_region_arg=True, use_iap_gateway=True)
+    iap_util.AddIapIamResourceArgs(parser, use_region_arg=True)
     base.URI_FLAG.RemoveFromParser(parser)

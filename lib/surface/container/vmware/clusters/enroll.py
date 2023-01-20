@@ -21,7 +21,6 @@ from __future__ import unicode_literals
 from googlecloudsdk.api_lib.container.gkeonprem import operations
 from googlecloudsdk.api_lib.container.gkeonprem import vmware_clusters as apis
 from googlecloudsdk.calliope import base
-from googlecloudsdk.command_lib.container.gkeonprem import flags
 from googlecloudsdk.command_lib.container.vmware import flags as vmware_flags
 
 _EXAMPLES = """
@@ -34,15 +33,14 @@ $ {command} my-cluster --location=us-west1 --admin-cluster-membership=projects/m
 """
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Enroll(base.Command):
   """Enroll an Anthos cluster on VMware."""
 
   @staticmethod
   def Args(parser):
-    flags.AddAdminClusterMembershipResourceArg(parser, positional=False)
-    vmware_flags.AddClusterResourceArg(parser, 'to enroll')
+    vmware_flags.AddClusterResourceArg(parser, verb='to enroll')
+    vmware_flags.AddAdminClusterMembershipResourceArg(parser, positional=False)
     base.ASYNC_FLAG.AddToParser(parser)
 
   def Run(self, args):

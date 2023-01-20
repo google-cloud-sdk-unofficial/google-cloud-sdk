@@ -42,6 +42,11 @@
       default: current
       help_text: |
         The release channel of the worker pool.
+    - api_field: workerPool.workerConfig.vmImage
+      arg_name: vm-image
+      required: false
+      help_text: |
+        The VM image used by RBE workers. This field should only be set when channel is set to manual.
     - api_field: workerPool.workerConfig.diskSizeGb
       arg_name: disk-size
       required: false

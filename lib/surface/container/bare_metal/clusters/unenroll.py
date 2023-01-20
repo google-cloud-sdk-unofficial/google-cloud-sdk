@@ -41,7 +41,7 @@ class Unenroll(base.Command):
   @staticmethod
   def Args(parser):
     """Registers flags for this command."""
-    flags.AddClusterResourceArg(parser, 'to unenroll')
+    flags.AddClusterResourceArg(parser, verb='to unenroll')
     flags.AddForceCluster(parser)
     flags.AddAllowMissingCluster(parser)
     base.ASYNC_FLAG.AddToParser(parser)

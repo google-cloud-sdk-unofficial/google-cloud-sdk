@@ -1,11 +1,11 @@
 - release_tracks: [ALPHA, GA]
 
   help_text:
-    brief: Create an EdgeCacheOrigin.
+    brief: Create an EdgeCacheOrigin resource.
     description: |
-      Create a new EdgeCacheOrigin.
+      Create a new EdgeCacheOrigin resource.
     examples: |
-      To create a EdgeCacheOrigin called 'my-origin', run:
+      To create a EdgeCacheOrigin resource called 'my-origin', run:
 
         $ {command} my-origin --origin-address="origin.example.com"
 
@@ -23,7 +23,7 @@
 
   arguments:
     resource:
-      help_text: The name of the EdgeCacheOrigin to create.
+      help_text: The name of the EdgeCacheOrigin resource to create.
       spec: !REF googlecloudsdk.command_lib.edge_cache.resources:edgeCacheOrigin
 
     params:

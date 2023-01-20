@@ -34,6 +34,7 @@
     modify_request_hooks:
     - googlecloudsdk.command_lib.beyondcorp.app.connections.hooks:ValidateAndParseAppEndpoint
     - googlecloudsdk.command_lib.beyondcorp.app.connections.hooks:SetConnectors
+    - googlecloudsdk.command_lib.beyondcorp.app.connections.hooks:SetAppGateway
 
 
   response:

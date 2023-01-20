@@ -26,7 +26,7 @@ from googlecloudsdk.core.console import console_io
 
 
 class Delete(base.DeleteCommand):
-  """Deletes a logs-based metric."""
+  """Delete a logs-based metric."""
 
   @staticmethod
   def Args(parser):
@@ -53,7 +53,7 @@ class Delete(base.DeleteCommand):
 
 Delete.detailed_help = {
     'DESCRIPTION': """\
-        Deletes a logs-based metric called high_severity_count.
+        Delete a logs-based metric called high_severity_count.
     """,
     'EXAMPLES': """\
         To delete a metric called high_severity_count, run:

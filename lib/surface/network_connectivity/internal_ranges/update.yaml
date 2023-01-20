@@ -1,10 +1,10 @@
-- release_tracks: [ALPHA]
+- release_tracks: [ALPHA, GA]
 
   help_text:
     brief: |
       Update an internal range.
     description: |
-      Update the detail of an internal range.
+      Update the details of an internal range.
     examples: |
       Update ip-cidr-range of an internal range named ``my-range'':
 
@@ -41,6 +41,9 @@
     collection: networkconnectivity.projects.locations.operations
 
   request:
-    api_version: v1alpha1
+    ALPHA:
+      api_version: v1alpha1
+    GA:
+      api_version: v1
     collection: networkconnectivity.projects.locations.internalRanges
     method: patch

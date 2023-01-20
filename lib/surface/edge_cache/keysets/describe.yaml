@@ -1,10 +1,9 @@
 - release_tracks: [ALPHA, GA]
-  hidden: true
   help_text:
-    brief: Show details about an EdgeCacheKeyset.
-    description: Show details about an EdgeCacheKeyset.
+    brief: Show details about an EdgeCacheKeyset resource.
+    description: Show details about an EdgeCacheKeyset resource.
     examples: |
-      To show details a keyset, run:
+      To show details for an EdgeCacheKeyset resource named 'my-keyset', run:
 
         $ {command} my-keyset
 
@@ -17,5 +16,5 @@
 
   arguments:
     resource:
-      help_text: The EdgeCacheKeyset you want to describe.
+      help_text: The EdgeCacheKeyset resource you want to describe.
       spec: !REF googlecloudsdk.command_lib.edge_cache.resources:edgeCacheKeyset

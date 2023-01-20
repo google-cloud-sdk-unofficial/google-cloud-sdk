@@ -22,7 +22,7 @@ from googlecloudsdk.api_lib.storage import cloud_api
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.storage import encryption_util
-from googlecloudsdk.command_lib.storage import errors
+from googlecloudsdk.command_lib.storage import errors_util
 from googlecloudsdk.command_lib.storage import flags
 from googlecloudsdk.command_lib.storage import stdin_iterator
 from googlecloudsdk.command_lib.storage import storage_url
@@ -61,8 +61,8 @@ def _get_task_iterator(args):
       potentially_recursive_url = url.join('**')
     else:
       potentially_recursive_url = url
-    errors.raise_error_if_not_cloud_object(args.command_path,
-                                           potentially_recursive_url)
+    errors_util.raise_error_if_not_cloud_object(args.command_path,
+                                                potentially_recursive_url)
     for object_resource in wildcard_iterator.get_wildcard_iterator(
         potentially_recursive_url.url_string, fields_scope=fields_scope):
       yield task_type(object_resource, user_request_args=user_request_args)
@@ -115,6 +115,13 @@ def _add_alpha_args(parser):
   Returns:
     objects update flag group
   """
+  parser.add_argument(
+      '--acl-file',
+      hidden=True,
+      help='Path to a local JSON or YAML formatted file containing a valid'
+      ' policy. The output of `gcloud storage objects describe'
+      '--format="multi(acl:format=json)"` is a valid file and can be edited'
+      ' for more fine-grained control.')
   parser.add_argument(
       '--add-acl-grant',
       hidden=True,

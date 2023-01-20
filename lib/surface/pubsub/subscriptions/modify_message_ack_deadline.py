@@ -101,7 +101,10 @@ class ModifyMessageAckDeadline(base.Command):
     flags.AddAckDeadlineFlag(parser, required=True)
 
   def Run(self, args):
-    result, _ = _Run(args, args.ack_ids)
+    result, ack_ids_and_failure_reasons = _Run(
+        args, args.ack_ids, capture_failures=True)
+    if ack_ids_and_failure_reasons:
+      return ack_ids_and_failure_reasons
     return result
 
 

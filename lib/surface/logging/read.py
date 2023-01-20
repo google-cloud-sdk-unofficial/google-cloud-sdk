@@ -65,7 +65,7 @@ class Read(base.Command):
         required=True,
         help='Id of the view. If this argument is provided then '
         '`--location` and `--bucket` must also be specified.')
-    util.AddParentArgs(parser, 'Read log entries')
+    util.AddParentArgs(parser, 'log entries to read')
 
   def _Run(self, args):
     filter_clauses = read_logs_lib.MakeTimestampFilters(args)
@@ -141,11 +141,11 @@ Read.detailed_help = {
 
           $ {command} --bucket=<bucket-id> --location=[LOCATION] --limit=1
 
-        To read a log entry from the global _Required log bucket using the bucket's _Default log view:
+        To read a log entry from the global ```_Required``` log bucket using the bucket's ```_Default``` log view:
 
           $ {command} "" --bucket=_Required --location=global --view=_Default --limit=1
 
-        To read a log entry from a log bucket using the bucket's _AllLogs log view:
+        To read a log entry from a log bucket using the bucket's ```_AllLogs``` log view:
 
           $ {command} "" --bucket=[BUCKET_ID] --location=[LOCATION] --view=_AllLogs --limit=1
 

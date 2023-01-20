@@ -24,23 +24,22 @@ from googlecloudsdk.calliope import base
 
 
 class Describe(base.DescribeCommand):
-  """Displays information about a sink.
+  """Display information about a sink.
 
-  Displays information about a sink.
+  Display information about a sink.
 
   ## EXAMPLES
 
   To describe a sync 'my-bq-sync':
 
     $ {command} my-bq-sink
-
   """
 
   @staticmethod
   def Args(parser):
     """Register flags for this command."""
     parser.add_argument('sink_name', help='The name of the sink to describe.')
-    util.AddParentArgs(parser, 'Describe a sink')
+    util.AddParentArgs(parser, 'sink to describe')
 
   def Run(self, args):
     """This is what gets called when the user runs this command.

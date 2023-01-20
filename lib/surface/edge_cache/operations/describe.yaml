@@ -3,9 +3,9 @@
   help_text:
     brief: Describe a long-running operation.
     description: |
-      Describe an Edge Cache long-running operation. You can use
+      Describe a long-running operation. You can use
       this to inspect whether a create or update operation was
-      successful and/or if it returned any errors.
+      successful or the operation returned any errors.
 
       ## EXAMPLES
 
@@ -22,7 +22,7 @@
 
   arguments:
     resource:
-      help_text: Edge Cache operation to describe.
+      help_text: operation to describe.
       spec: !REF googlecloudsdk.command_lib.edge_cache.resources:operation
       removed_flags:
       - location

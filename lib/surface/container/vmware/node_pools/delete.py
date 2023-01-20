@@ -33,7 +33,6 @@ $ {command} my-node-pool --cluster=my-cluster --location=us-west1
 """
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Delete(base.DeleteCommand):
   """Delete a node pool in an Anthos cluster on VMware."""

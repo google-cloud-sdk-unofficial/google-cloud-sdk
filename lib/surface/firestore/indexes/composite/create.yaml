@@ -10,6 +10,10 @@
             --field-config=field-path=user-id,order=descending \
             --field-config=field-path=timestamp,order=descending
 
+        $ {command} --database=(default) --collection-group=Events \
+            --field-config=field-path=user-id,order=descending \
+            --field-config=field-path=timestamp,order=descending
+
   request:
     collection: firestore.projects.databases.collectionGroups.indexes
     display_resource_type: index
@@ -35,8 +39,6 @@
       help_text: Collection group of the index.
       is_positional: false
       is_parent_resource: true
-      removed_flags:
-      - database
       spec: !REF googlecloudsdk.command_lib.firestore.resources:collection_group
 
     params:

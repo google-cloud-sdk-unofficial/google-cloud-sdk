@@ -128,19 +128,6 @@ You can find the list of allowed versions for upgrades by running:
   flags.AddImageProjectFlag(parser, hidden=True)
 
 
-def MaybeLogDataplaneV2ScaleWarning(cluster):
-  if (cluster.networkConfig is not None and
-      cluster.networkConfig.datapathProvider is not None and
-      cluster.networkConfig.datapathProvider.name == 'ADVANCED_DATAPATH'):
-    # TODO(b/177430844): Remove once scale limits are gone
-    log.status.Print(
-        'Note: GKE Dataplane V2 has been certified to run up to 500 nodes per '
-        'cluster, including node autoscaling and surge upgrades. You '
-        'may request a cluster size of up to 1000 nodes by filing a '
-        'support ticket with GCP. For more information, please see '
-        'https://cloud.google.com/kubernetes-engine/docs/concepts/dataplane-v2')
-
-
 def MaybeLog122UpgradeWarning(cluster):
   """Logs deprecation warning for GKE v1.22 upgrades."""
   if cluster is not None:
@@ -186,7 +173,6 @@ class Upgrade(base.Command):
 
     try:
       cluster = adapter.GetCluster(cluster_ref)
-      MaybeLogDataplaneV2ScaleWarning(cluster)
     except (exceptions.HttpException, apitools_exceptions.HttpForbiddenError,
             util.Error) as error:
       log.warning(('Problem loading details of cluster to upgrade:\n\n{}\n\n'

@@ -32,7 +32,7 @@ DETAILED_HELP = {
         """
     To reset a runtime, run:
 
-        $ {command} example-runtime --location=us-central1-a
+        $ {command} example-runtime --location=us-central1
     """,
 }
 

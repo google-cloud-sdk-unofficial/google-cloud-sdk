@@ -42,7 +42,7 @@ class Delete(base.DeleteCommand):
         'BUCKET_ID', help='ID of the bucket to delete.')
     util.AddBucketLocationArg(
         parser, True, 'Location of the bucket.')
-    util.AddParentArgs(parser, 'Delete a bucket')
+    util.AddParentArgs(parser, 'bucket to delete')
     parser.display_info.AddCacheUpdater(None)
 
   def Run(self, args):
