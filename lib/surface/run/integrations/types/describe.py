@@ -87,10 +87,9 @@ class Describe(base.DescribeCommand):
 
       return {
           'description':
-              type_def['description'],
+              type_def.description,
           'example_command':
-              type_def['example_command'].format(
-                  track=self.ReleaseTrack().prefix),
+              type_def.example_command.format(track=self.ReleaseTrack().prefix),
           'parameters':
               self._GetParams(type_def),
       }
@@ -99,21 +98,23 @@ class Describe(base.DescribeCommand):
     required_params = []
     optional_params = []
     # Per the PRD, required parameters should come first.
-    for name, param in type_def['parameters'].items():
-      hidden = param.get('hidden', False)
-      required = param.get('required', False)
+    for param in type_def.parameters:
+      hidden = param.hidden
+      required = param.required
       if hidden:
         continue
       if required:
-        required_params.append(frozendict({
-            'name': name,
-            'description': param['description']
-        }))
+        required_params.append(
+            frozendict({
+                'name': param.name,
+                'description': param.description
+            }))
       else:
-        optional_params.append(frozendict({
-            'name': name,
-            'description': param['description']
-        }))
+        optional_params.append(
+            frozendict({
+                'name': param.name,
+                'description': param.description
+            }))
 
     # sorting the parameters based on name to guarantee the same ordering
     # for scenario tests.

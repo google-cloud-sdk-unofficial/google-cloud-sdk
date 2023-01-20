@@ -65,5 +65,5 @@ class List(base.ListCommand):
       # Output is sorted by the integration name to guarantee the same ordering
       # for scenario tests.
       result = sorted(client.ListIntegrationTypes(),
-                      key=lambda t: t['integration_type'])
+                      key=lambda t: t.integration_type)
       return list(result)

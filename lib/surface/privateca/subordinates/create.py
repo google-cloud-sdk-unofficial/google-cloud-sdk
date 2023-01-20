@@ -443,15 +443,16 @@ class Create(base.CreateCommand):
     return self.client.projects_locations_caPools_certificates.Create(
         cert_request)
 
-  def _ActivateCertificateAuthority(self, ca_name, pem_cert, issuer_ca_name):
-    """Activates the given CA using the given certificate and issuing Certificate Authority."""
+  def _ActivateCertificateAuthority(self, ca_name, pem_cert, issuer_chain):
+    """Activates the given CA using the given certificate and issuing CA chain."""
     activate_request = self.messages.PrivatecaProjectsLocationsCaPoolsCertificateAuthoritiesActivateRequest(
         name=ca_name,
         activateCertificateAuthorityRequest=self.messages
         .ActivateCertificateAuthorityRequest(
             pemCaCertificate=pem_cert,
             subordinateConfig=self.messages.SubordinateConfig(
-                certificateAuthority=issuer_ca_name)))
+                pemIssuerChain=self.messages.SubordinateConfigChain(
+                    pemCertificates=issuer_chain))))
     operation = self.client.projects_locations_caPools_certificateAuthorities.Activate(
         activate_request)
     return operations.Await(operation, 'Activating CA.', api_version='v1')
@@ -524,7 +525,7 @@ class Create(base.CreateCommand):
                                      issuer_ca)
       self._ActivateCertificateAuthority(
           ca_ref.RelativeName(), ca_certificate.pemCertificate,
-          ca_certificate.issuerCertificateAuthority)
+          ca_certificate.pemCertificateChain)
       log.status.Print('Created Certificate Authority [{}].'.format(
           ca_ref.RelativeName()))
       if self._ShouldEnableCa(args, ca_ref):

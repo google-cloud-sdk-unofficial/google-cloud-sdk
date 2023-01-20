@@ -61,7 +61,7 @@ class List(base.ListCommand):
   def Run(self, args):
     region = args.CONCEPTS.region.Parse()
     client = PrivatecloudsClient()
-    return client.List(region, limit=args.limit)
+    return client.List(region)
 
 
 List.detailed_help = DETAILED_HELP

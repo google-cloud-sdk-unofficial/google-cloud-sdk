@@ -147,11 +147,19 @@ class Create(base.CreateCommand):
     is_async = args.async_
 
     operation = client.Create(
-        peering, args.description, args.vmware_engine_network,
-        args.peer_network, args.peer_network_type, args.peer_project,
-        args.peer_mtu, args.export_custom_routes, args.import_custom_routes,
-        args.export_custom_routes_with_public_ip,
-        args.import_custom_routes_with_public_ip, args.exchange_subnet_routes)
+        peering,
+        vmware_engine_network_id=args.vmware_engine_network,
+        peer_network_id=args.peer_network,
+        peer_network_type=args.peer_network_type,
+        description=args.description,
+        peer_project=args.peer_project,
+        peer_mtu=args.peer_mtu,
+        export_custom_routes=args.export_custom_routes,
+        import_custom_routes=args.import_custom_routes,
+        export_custom_routes_with_public_ip=args.export_custom_routes_with_public_ip,
+        import_custom_routes_with_public_ip=args.import_custom_routes_with_public_ip,
+        exchange_subnet_routes=args.exchange_subnet_routes
+    )
     if is_async:
       log.CreatedResource(
           operation.name, kind='VPC network peering', is_async=True)

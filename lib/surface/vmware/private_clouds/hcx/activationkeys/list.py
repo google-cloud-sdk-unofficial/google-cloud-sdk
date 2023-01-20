@@ -60,4 +60,4 @@ class List(base.ListCommand):
   def Run(self, args):
     privatecloud = args.CONCEPTS.private_cloud.Parse()
     client = HcxActivationKeysClient()
-    return client.List(privatecloud, limit=args.limit)
+    return client.List(privatecloud)

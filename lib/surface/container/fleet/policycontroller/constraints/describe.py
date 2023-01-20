@@ -45,6 +45,7 @@ def FormatViolation(violation, include_membership=False):
   return formatted_violation
 
 
+@calliope_base.Hidden
 @calliope_base.ReleaseTracks(calliope_base.ReleaseTrack.ALPHA)
 class Describe(calliope_base.DescribeCommand):
   """Describe a Policy Controller constraint from the Policy Library.

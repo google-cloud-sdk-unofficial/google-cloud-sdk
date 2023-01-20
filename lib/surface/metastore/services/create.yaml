@@ -105,7 +105,6 @@
       default: stable
       api_field: service.releaseChannel
     - arg_name: database-type
-      release_tracks: [ALPHA, BETA]
       help_text: |
         The type of database the Dataproc Metastore service will store data in.
       choices:

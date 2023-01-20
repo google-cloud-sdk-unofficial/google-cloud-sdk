@@ -26,6 +26,7 @@ from googlecloudsdk.core import properties
 from surface.container.fleet.policycontroller import violations
 
 
+@calliope_base.Hidden
 @calliope_base.ReleaseTracks(calliope_base.ReleaseTrack.ALPHA)
 class Describe(calliope_base.DescribeCommand):
   """Describe Policy Controller audit violations of a constraint.

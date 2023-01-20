@@ -140,10 +140,15 @@ class Create(base.CreateCommand):
     private_connection = args.CONCEPTS.private_connection.Parse()
     client = PrivateConnectionsClient()
     is_async = args.async_
-    operation = client.Create(private_connection, args.vmware_engine_network,
-                              args.service_project, args.type,
-                              args.routing_mode, args.description,
-                              args.service_network)
+    operation = client.Create(
+        private_connection,
+        vmware_engine_network=args.vmware_engine_network,
+        service_project=args.service_project,
+        private_connection_type=args.type,
+        routing_mode=args.routing_mode,
+        description=args.description,
+        service_network=args.service_network,
+    )
     if is_async:
       log.CreatedResource(
           operation.name, kind='Private Connection', is_async=True)

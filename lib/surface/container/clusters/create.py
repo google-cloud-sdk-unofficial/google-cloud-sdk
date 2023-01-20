@@ -1260,6 +1260,7 @@ class CreateBeta(Create):
     ops.enable_cost_allocation = get_default('enable_cost_allocation')
     ops.managed_config = get_default('managed_config')
     ops.fleet_project = get_default('fleet_project')
+    ops.enable_fleet = get_default('enable_fleet')
     ops.enable_multi_networking = get_default('enable_multi_networking')
     return ops
 
@@ -1350,5 +1351,6 @@ class CreateAlpha(Create):
         'enable_workload_vulnerability_scanning')
     ops.managed_config = get_default('managed_config')
     ops.fleet_project = get_default('fleet_project')
+    ops.enable_fleet = get_default('enable_fleet')
     ops.enable_multi_networking = get_default('enable_multi_networking')
     return ops

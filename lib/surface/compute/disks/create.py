@@ -123,8 +123,11 @@ def _SourceArgs(parser,
     disks_flags.SOURCE_INSTANT_SNAPSHOT_ARG.AddArgument(source_group)
   disks_flags.SOURCE_DISK_ARG.AddArgument(parser, mutex_group=source_group)
   if support_async_pd:
+    async_pd_category = 'ASYNC PD'
     disks_flags.ASYNC_PRIMARY_DISK_ARG.AddArgument(
-        parser, mutex_group=source_group)
+        parser, mutex_group=source_group, category=async_pd_category
+    )
+    disks_flags.AddPrimaryDiskProject(parser, async_pd_category)
 
   disks_flags.AddLocationHintArg(parser)
 
@@ -390,8 +393,10 @@ class Create(base.Command):
   def GetAsyncPrimaryDiskUri(self, args, compute_holder):
     primary_disk_ref = None
     if args.primary_disk:
+      primary_disk_project = getattr(args, 'primary_disk_project', None)
       primary_disk_ref = disks_flags.ASYNC_PRIMARY_DISK_ARG.ResolveAsResource(
-          args, compute_holder.resources)
+          args, compute_holder.resources, source_project=primary_disk_project
+      )
       if primary_disk_ref:
         return primary_disk_ref.SelfLink()
     return None

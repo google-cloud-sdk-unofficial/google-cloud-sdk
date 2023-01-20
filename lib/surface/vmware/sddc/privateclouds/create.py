@@ -87,9 +87,14 @@ class Create(base.CreateCommand):
   def Run(self, args):
     privatecloud = args.CONCEPTS.privatecloud.Parse()
     client = PrivatecloudsClient()
-    operation = client.Create(privatecloud, args.labels, args.description,
-                              args.vpc_network, args.management_ip_range,
-                              args.workload_ip_range)
+    operation = client.Create(
+        privatecloud,
+        vpc_network=args.vpc_network,
+        management_ip_range=args.management_ip_range,
+        workload_ip_range=args.workload_ip_range,
+        labels=args.labels,
+        description=args.description,
+    )
     return client.WaitForOperation(
         operation,
         'waiting for privatecloud [{}] to be created'.format(privatecloud))

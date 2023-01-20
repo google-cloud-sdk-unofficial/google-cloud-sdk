@@ -39,8 +39,6 @@
   arguments:
     resource:
       help_text: Field to update.
-      removed_flags:
-      - database
       # The field is strictly required for TTLs, so we use 'field'.
       spec: !REF googlecloudsdk.command_lib.firestore.resources:field
 

@@ -10,6 +10,8 @@
 
         $ {command}
 
+        $ {command} --database=(default)
+
       The following command lists fields with custom index settings in the `Events` collection
       group:
 
@@ -39,8 +41,6 @@
       # By using collection_group_with_default this resource arg is correctly determined to be
       # optional and can use the special '-' collection group if it's not specified.
       spec: !REF googlecloudsdk.command_lib.firestore.resources:collection_group_with_default
-      removed_flags:
-      - database
 
   output:
     format: yaml(name)

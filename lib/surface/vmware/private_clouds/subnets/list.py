@@ -54,4 +54,4 @@ class List(base.ListCommand):
   def Run(self, args):
     privatecloud = args.CONCEPTS.private_cloud.Parse()
     client = SubnetsClient()
-    return client.List(privatecloud, page_size=args.page_size)
+    return client.List(privatecloud)

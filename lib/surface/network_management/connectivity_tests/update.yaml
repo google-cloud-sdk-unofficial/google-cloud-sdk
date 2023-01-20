@@ -93,7 +93,6 @@
           help_text: |
             Clear existing source Cloud function.
     - group:
-        release_tracks: [BETA]
         mutex: true
         params:
         - arg_name: source-app-engine-version
@@ -105,7 +104,6 @@
           help_text: |
             Clear existing source App Engine version.
     - group:
-        release_tracks: [BETA]
         mutex: true
         params:
         - arg_name: source-cloud-run-revision

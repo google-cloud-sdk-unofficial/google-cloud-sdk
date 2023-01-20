@@ -85,7 +85,7 @@ DETAILED_HELP = {
 
           $ {command} instance-1 --zone=central2-a --shielded-secure-boot --shielded-vtpm --shielded-integrity-monitoring
 
-        To create an preemptible instance called 'instance-1', run:
+        To create a preemptible instance called 'instance-1', run:
 
           $ {command} instance-1 --machine-type=n1-standard-1 --zone=us-central1-b --preemptible --no-restart-on-failure --maintenance-policy=terminate
 
@@ -171,6 +171,8 @@ def _CommonArgs(parser,
   instances_flags.AddNetworkPerformanceConfigsArgs(parser)
   instances_flags.AddProvisioningModelVmArgs(parser)
   instances_flags.AddInstanceTerminationActionVmArgs(parser)
+  instances_flags.AddIPv6AddressArgs(parser)
+  instances_flags.AddIPv6PrefixLengthArgs(parser)
 
   instances_flags.AddReservationAffinityGroup(
       parser,
@@ -788,8 +790,8 @@ class CreateAlpha(CreateBeta):
     instances_flags.AddSecureTagsArgs(parser)
     instances_flags.AddVisibleCoreCountArgs(parser)
     instances_flags.AddKeyRevocationActionTypeArgs(parser)
-    instances_flags.AddIPv6AddressArgs(parser)
-    instances_flags.AddIPv6PrefixLengthArgs(parser)
+    instances_flags.AddIPv6AddressAlphaArgs(parser)
+    instances_flags.AddIPv6PrefixLengthAlphaArgs(parser)
     instances_flags.AddInternalIPv6AddressArgs(parser)
     instances_flags.AddInternalIPv6PrefixLengthArgs(parser)
 

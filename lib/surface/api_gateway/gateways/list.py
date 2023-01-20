@@ -20,6 +20,7 @@ from __future__ import division
 from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.api_gateway import gateways
+from googlecloudsdk.api_lib.util import common_args
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.api_gateway import resource_args
 
@@ -66,9 +67,10 @@ class List(base.ListCommand):
 
   def Run(self, args):
     parent_ref = args.CONCEPTS.location.Parse()
+    sort_by = common_args.ParseSortByArg(args.sort_by)
 
     return gateways.GatewayClient().List(parent_ref.RelativeName(),
                                          filters=args.filter,
                                          limit=args.limit,
                                          page_size=args.page_size,
-                                         sort_by=args.sort_by)
+                                         sort_by=sort_by)

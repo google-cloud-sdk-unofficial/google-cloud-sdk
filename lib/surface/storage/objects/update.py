@@ -23,12 +23,10 @@ from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.storage import encryption_util
 from googlecloudsdk.command_lib.storage import errors
-from googlecloudsdk.command_lib.storage import errors_util
 from googlecloudsdk.command_lib.storage import flags
+from googlecloudsdk.command_lib.storage import name_expansion
 from googlecloudsdk.command_lib.storage import stdin_iterator
-from googlecloudsdk.command_lib.storage import storage_url
 from googlecloudsdk.command_lib.storage import user_request_args_factory
-from googlecloudsdk.command_lib.storage import wildcard_iterator
 from googlecloudsdk.command_lib.storage.tasks import task_executor
 from googlecloudsdk.command_lib.storage.tasks import task_graph_executor
 from googlecloudsdk.command_lib.storage.tasks import task_status
@@ -36,7 +34,7 @@ from googlecloudsdk.command_lib.storage.tasks.objects import patch_object_task
 from googlecloudsdk.command_lib.storage.tasks.objects import rewrite_object_task
 
 
-def _get_task_iterator(args):
+def _get_task_iterator(urls, args):
   """Yields PatchObjectTask's or RewriteObjectTask's."""
   requires_rewrite = (
       args.encryption_key or args.clear_encryption_key or args.storage_class)
@@ -65,20 +63,20 @@ def _get_task_iterator(args):
     raise errors.Error(
         '--all_versions flag is only allowed for ACL modifier flags.')
 
-  urls = stdin_iterator.get_urls_iterable(args.url, args.read_paths_from_stdin)
-  for url_string in urls:
-    url = storage_url.storage_url_from_string(url_string)
-    if args.recursive:
-      potentially_recursive_url = url.join('**')
-    else:
-      potentially_recursive_url = url
-    errors_util.raise_error_if_not_cloud_object(args.command_path,
-                                                potentially_recursive_url)
-    for object_resource in wildcard_iterator.get_wildcard_iterator(
-        potentially_recursive_url.url_string,
-        all_versions=all_versions,
-        fields_scope=fields_scope):
-      yield task_type(object_resource, user_request_args=user_request_args)
+  if args.recursive:
+    recursion_setting = name_expansion.RecursionSetting.YES
+  else:
+    recursion_setting = name_expansion.RecursionSetting.NO
+  for name_expansion_result in name_expansion.NameExpansionIterator(
+      urls,
+      all_versions=all_versions,
+      fields_scope=fields_scope,
+      include_buckets=name_expansion.BucketSetting.NO_WITH_ERROR,
+      recursion_requested=recursion_setting,
+  ):
+    yield task_type(
+        name_expansion_result.resource, user_request_args=user_request_args
+    )
 
 
 def _add_common_args(parser):
@@ -92,6 +90,17 @@ def _add_common_args(parser):
   """
   parser.add_argument(
       'url', nargs='*', help='Specifies URLs of objects to update.')
+
+  parser.add_argument(
+      '--all-versions',
+      action='store_true',
+      help='Perform the operation on all object versions.',
+  )
+
+  acl_flags_group = parser.add_group()
+  flags.add_acl_modifier_flags(acl_flags_group)
+  flags.add_preserve_acl_flag(acl_flags_group)
+
   parser.add_argument(
       '--event-based-hold',
       action=arg_parsers.StoreTrueFalseAction,
@@ -124,7 +133,6 @@ def _add_common_args(parser):
   flags.add_continue_on_error_flag(parser)
   flags.add_encryption_flags(parser, allow_patch=True)
   flags.add_precondition_flags(parser)
-  flags.add_object_acl_setter_flags(parser)
   flags.add_object_metadata_flags(parser, allow_patch=True)
 
 
@@ -137,33 +145,7 @@ def _add_alpha_args(parser):
   Returns:
     objects update flag group
   """
-  parser.add_argument(
-      '--acl-file',
-      hidden=True,
-      help='Path to a local JSON or YAML formatted file containing a valid'
-      ' policy. The output of `gcloud storage objects describe'
-      '--format="multi(acl:format=json)"` is a valid file and can be edited'
-      ' for more fine-grained control.')
-  parser.add_argument(
-      '--add-acl-grant',
-      metavar='ACL_GRANT',
-      type=arg_parsers.ArgDict(),
-      hidden=True,
-      help='JSON object in the format accepted by your cloud provider.'
-      ' For example, for GCS, `--add-acl-grant=entity=user-tim@gmail.com,'
-      'role=OWNER`')
-  parser.add_argument(
-      '--remove-acl-grant',
-      hidden=True,
-      help='JSON object in the format accepted by your cloud provider.'
-      ' For example, for GCS, `--remove-acl-grant=ENTITY`, where `ENTITY`'
-      ' has a valid ACL entity format, such as `user-tim@gmail.com`,'
-      ' `group-admins`, `allUsers`, etc.')
-  parser.add_argument(
-      '--all-versions',
-      hidden=True,
-      action='store_true',
-      help='Perform the operation on all object versions.')
+  del parser  # Unused.
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
@@ -202,7 +184,11 @@ class Update(base.Command):
     if not args.predefined_acl and args.preserve_acl is None:
       # Preserve ACLs by default if nothing set by user.
       args.preserve_acl = True
-    task_iterator = _get_task_iterator(args)
+
+    urls = stdin_iterator.get_urls_iterable(
+        args.url, args.read_paths_from_stdin
+    )
+    task_iterator = _get_task_iterator(urls, args)
 
     task_status_queue = task_graph_executor.multiprocessing_context.Queue()
     self.exit_code = task_executor.execute_tasks(

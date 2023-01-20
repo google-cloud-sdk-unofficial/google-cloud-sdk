@@ -27,7 +27,7 @@ from googlecloudsdk.core import properties
 
 
 class Import(base.Command):
-  """import Cloud Firestore documents from Google Cloud Storage"""
+  """import Cloud Firestore documents from Google Cloud Storage."""
 
   detailed_help = {
       'EXAMPLES':
@@ -39,6 +39,10 @@ class Import(base.Command):
           To import a specific set of collections groups asynchronously, run:
 
             $ {command} gs://mybucket/my/path --collection-ids='specific collection group1','specific collection group2' --async
+
+          To import all collection groups from certain namespace, run:
+
+            $ {command} gs://mybucket/my/path --namespace-ids='specific namespace id'
       """
   }
 
@@ -46,6 +50,8 @@ class Import(base.Command):
   def Args(parser):
     """Register flags for this command."""
     flags.AddCollectionIdsFlag(parser)
+    flags.AddNamespaceIdsFlag(parser)
+    flags.AddDatabaseIdFlag(parser)
     parser.add_argument(
         'INPUT_URI_PREFIX',
         help="""
@@ -63,7 +69,9 @@ class Import(base.Command):
 
     response = admin_api.Import(
         project,
+        args.database,
         object_ref.ToUrl().rstrip('/'),
+        namespace_ids=args.namespace_ids,
         collection_ids=args.collection_ids)
 
     if not args.async_:

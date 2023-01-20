@@ -50,5 +50,6 @@ class InitialzeZone(base.Command):
   def Run(self, args):
     zones_client = zones.ZonesClient(self.ReleaseTrack())
     zone_ref = args.CONCEPTS.zone.Parse()
+    log.status.Print('Starting to initialize the zone...')
     zones_client.InitializeZone(zone_ref)
     log.status.Print('Initialized zone [{0}].'.format(zone_ref.RelativeName()))

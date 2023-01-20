@@ -55,4 +55,4 @@ class List(base.ListCommand):
   def Run(self, args):
     project = args.CONCEPTS.project.Parse()
     client = LocationsClient()
-    return client.List(project, limit=args.limit)
+    return client.List(project)

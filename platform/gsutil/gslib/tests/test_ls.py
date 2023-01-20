@@ -202,6 +202,7 @@ class TestLsUnit(testcase.GsUtilUnitTestCase):
                                            return_log_handler=True)
         self.assertIn(
             'Gcloud Storage Command: {} alpha storage ls'
+            ' --fetch-encrypted-object-hashes'
             ' -r -r -l -L -b -e -a --readable-sizes --project  foo'.format(
                 os.path.join('fake_dir', 'bin', 'gcloud')),
             mock_log_handler.messages['info'])
@@ -1154,11 +1155,11 @@ class TestLs(testcase.GsUtilIntegrationTestCase):
     bucket_uri = self.CreateBucket()
     stdout = self.RunGsUtil(['ls', '-Lb', suri(bucket_uri)], return_stdout=True)
     self.assertRegex(stdout,
-                     r'Public access prevention:\t*(unspecified|inherited)')
+                     r'Public access prevention:\s*(unspecified|inherited)')
     # Enforce public access prevention.
     self.RunGsUtil(['pap', 'set', 'enforced', suri(bucket_uri)])
     stdout = self.RunGsUtil(['ls', '-Lb', suri(bucket_uri)], return_stdout=True)
-    self.assertRegex(stdout, r'Public access prevention:\t*enforced')
+    self.assertRegex(stdout, r'Public access prevention:\s*enforced')
 
   @SkipForXML('RPO is not supported for the XML API.')
   @SkipForS3('RPO is not supported for S3 buckets.')

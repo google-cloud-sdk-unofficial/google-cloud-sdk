@@ -52,7 +52,7 @@ class List(base.ListCommand):
   def Run(self, args):
     privatecloud = args.CONCEPTS.privatecloud.Parse()
     client = ClustersClient()
-    return client.List(privatecloud, limit=args.limit)
+    return client.List(privatecloud)
 
 
 List.detailed_help = DETAILED_HELP

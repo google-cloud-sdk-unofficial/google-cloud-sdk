@@ -43,12 +43,10 @@
           help_text: |
             A Cloud function URI as the source endpoint.
         - arg_name: source-app-engine-version
-          release_tracks: [BETA]
           api_field: connectivityTest.source.appEngineVersion.uri
           help_text: |
             App Engine version URI as the source endpoint.
         - arg_name: source-cloud-run-revision
-          release_tracks: [BETA]
           api_field: connectivityTest.source.cloudRunRevision.uri
           help_text: |
             Cloud Run revision URI as the source endpoint.

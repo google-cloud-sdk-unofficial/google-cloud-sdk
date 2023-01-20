@@ -62,4 +62,4 @@ class List(base.ListCommand):
     location = args.CONCEPTS.location.Parse()
 
     client = PrivateCloudsClient()
-    return client.List(location, limit=args.limit)
+    return client.List(location)

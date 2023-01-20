@@ -90,7 +90,7 @@ class Create(base.CreateCommand):
     network = args.CONCEPTS.vmware_engine_network.Parse()
     client = NetworksClient()
     is_async = args.async_
-    operation = client.Create(network, args.description, args.type)
+    operation = client.Create(network, args.type, args.description)
     if is_async:
       log.CreatedResource(
           operation.name, kind='VMware Engine network', is_async=True)

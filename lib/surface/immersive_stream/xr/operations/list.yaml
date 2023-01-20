@@ -1,5 +1,4 @@
-- release_tracks: [ALPHA]
-
+- release_tracks: [ALPHA, GA]
   help_text:
     brief: List Immersive Stream for XR operations.
     description: |
@@ -11,7 +10,10 @@
 
   request:
     collection: stream.projects.locations.operations
-    api_version: v1alpha1
+    ALPHA:
+      api_version: v1alpha1
+    GA:
+      api_version: v1
 
   response:
     id_field: name

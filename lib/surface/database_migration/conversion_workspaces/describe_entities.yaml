@@ -1,0 +1,51 @@
+- release_tracks: [GA]
+  help_text:
+    brief: Describe database entities in the conversion workspaces.
+    description: Describe database entities (SOURCE/DRAFT/DESTINATION) in the conversion workspaces.
+    examples: |
+      To describe the source entities in a conversion workspaces in a project and location `us-central1`, run:
+
+        $ {command} my-conversion-workspace --region=us-central1 --tree-type=SOURCE
+
+  request:
+    collection: datamigration.projects.locations.conversionWorkspaces
+    api_version: v1
+    method: describeDatabaseEntities
+
+  response:
+    result_attribute: databaseEntities
+
+  arguments:
+    resource:
+      help_text: The conversion workspace you want to get the details of.
+      spec: !REF googlecloudsdk.command_lib.database_migration.resources:conversion_workspace
+
+    params:
+    - api_field: uncommitted
+      arg_name: uncommitted
+      help_text: |
+        Whether to retrieve the latest committed version of the entities or the latest version. This
+        field is ignored if a specific commit_id is specified.
+    - api_field: commitId
+      arg_name: commit-id
+      help_text: |
+        Request a specific commit id. If not specified, the entities from the latest commit are
+        returned.
+    - api_field: filter
+      arg_name: filter-string
+      help_text: |
+        Filter the returned entities based on AIP-160 standard.
+    - api_field: tree
+      arg_name: tree-type
+      required: true
+      help_text: |
+        The type of tree to return.
+
+  output:
+    format: |
+      table(
+        parentEntity:label=PARENT,
+        shortName:label=NAME,
+        tree:label=TREE_TYPE,
+        entityType:label=ENTITY_TYPE
+      )

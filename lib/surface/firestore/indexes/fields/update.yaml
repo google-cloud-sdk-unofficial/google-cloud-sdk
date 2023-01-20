@@ -17,6 +17,11 @@
             --collection-group=Events
             --disable-indexes
 
+        $ {command} timestamp \
+            --database=(default)
+            --collection-group=Events
+            --disable-indexes
+
       The following command creates an exemption for the `timestamp` field in the `Events`
       collection group, in which the list of indexes is explicitly set to [ASCENDING, DESCENDING]:
 
@@ -50,8 +55,6 @@
   arguments:
     resource:
       help_text: Field to update.
-      removed_flags:
-      - database
       # Since it's currently not possible to update database default or collection group default
       # index settings, we use 'field' here instead of 'field_with_default'
       spec: !REF googlecloudsdk.command_lib.firestore.resources:field

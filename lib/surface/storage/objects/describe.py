@@ -67,13 +67,17 @@ class Describe(base.DescribeCommand):
           'Describe does not accept wildcards because it returns a single'
           ' resource. Please use the `ls` or `objects list` command for'
           ' retrieving multiple resources.')
+
     url = storage_url.storage_url_from_string(args.url)
     errors_util.raise_error_if_not_cloud_object(args.command_path, url)
+
     client = api_factory.get_api(url.scheme)
     resource = client.get_object_metadata(
         url.bucket_name,
         url.object_name,
-        fields_scope=cloud_api.FieldsScope.FULL)
+        generation=url.generation,
+        fields_scope=cloud_api.FieldsScope.FULL,
+    )
 
     if (args.fetch_encrypted_object_hashes and
         cloud_api.Capability.ENCRYPTION in client.capabilities and
@@ -88,6 +92,9 @@ class Describe(base.DescribeCommand):
               resource.bucket,
               resource.name,
               fields_scope=cloud_api.FieldsScope.FULL,
-              request_config=request_config))
+              generation=resource.generation,
+              request_config=request_config,
+          )
+      )
     # MakeSerializable will omit all the None values.
     return resource_projector.MakeSerializable(resource.metadata)

@@ -497,7 +497,7 @@ class TensorFlowModel(prediction_utils.BaseModel):
       # TODO(b/34686738): verify this behavior is correct.
       def listify(value):
         if not hasattr(value, "shape"):
-          return np.asarray([value], dtype=np.object)
+          return np.asarray([value], dtype=object)
         elif not value.shape:
           # TODO(b/34686738): pretty sure this is a bug that only exists because
           # samples like iris have a bug where they use tf.squeeze which removes

@@ -74,6 +74,8 @@ def _Args(parser,
                                              support_confidential_compute_type)
   instances_flags.AddNestedVirtualizationArgs(parser)
   instances_flags.AddThreadsPerCoreArgs(parser)
+  instances_flags.AddIPv6AddressArgs(parser)
+  instances_flags.AddIPv6PrefixLengthArgs(parser)
   labels_util.AddCreateLabelsFlags(parser)
 
   parser.add_argument(
@@ -393,8 +395,8 @@ class CreateWithContainerAlpha(CreateWithContainerBeta):
     instances_flags.AddHostErrorTimeoutSecondsArgs(parser)
     instances_flags.AddNumaNodeCountArgs(parser)
     instances_flags.AddVisibleCoreCountArgs(parser)
-    instances_flags.AddIPv6AddressArgs(parser)
-    instances_flags.AddIPv6PrefixLengthArgs(parser)
+    instances_flags.AddIPv6AddressAlphaArgs(parser)
+    instances_flags.AddIPv6PrefixLengthAlphaArgs(parser)
     instances_flags.AddInternalIPv6AddressArgs(parser)
     instances_flags.AddInternalIPv6PrefixLengthArgs(parser)
 

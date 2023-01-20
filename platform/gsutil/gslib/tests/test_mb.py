@@ -134,12 +134,7 @@ class TestMb(testcase.GsUtilIntegrationTestCase):
                              suri(bucket_uri)],
                             expected_status=1,
                             return_stderr=True)
-    if self._use_gcloud_storage:
-      # The "s" from "second" is cut b/c "s" is a valid unit.
-      self.assertIn("Duration unit 'econd' must be preceded by a number",
-                    stderr)
-    else:
-      self.assertRegexpMatches(stderr, r'Incorrect retention period specified')
+    self.assertRegexpMatches(stderr, r'Incorrect retention period specified')
 
   def test_create_with_retention_on_s3_urls_fails(self):
     bucket_name = self.MakeTempName('bucket')
@@ -185,8 +180,8 @@ class TestMb(testcase.GsUtilIntegrationTestCase):
                             expected_status=1,
                             return_stderr=True)
     if self._use_gcloud_storage:
-      self.assertIn('Flag value not in translation map for --pap: invalid_arg',
-                    stderr)
+      self.assertIn(
+          'Flag value not in translation map for "--pap": invalid_arg', stderr)
     else:
       self.assertRegexpMatches(stderr, r'invalid_arg is not a valid value')
 
@@ -231,15 +226,22 @@ class TestMb(testcase.GsUtilIntegrationTestCase):
     bucket_name = self.MakeTempName('bucket')
     bucket_uri = boto.storage_uri('gs://%s' % (bucket_name.lower()),
                                   suppress_consec_slashes=False)
+    expected_status = 2 if self._use_gcloud_storage else 1
     # Location nam4 is used for dual-region.
     stderr = self.RunGsUtil(
         ['mb', '-l', 'nam4', '--rpo', 'incorrect_value',
          suri(bucket_uri)],
         return_stderr=True,
-        expected_status=1)
-    self.assertIn(
-        'Invalid value for --rpo. Must be one of: (ASYNC_TURBO|DEFAULT),'
-        ' provided: incorrect_value', stderr)
+        expected_status=expected_status)
+
+    if self._use_gcloud_storage:
+      self.assertIn(
+          '--recovery-point-objective: Invalid choice: \'incorrect_value\'',
+          stderr)
+    else:
+      self.assertIn(
+          'Invalid value for --rpo. Must be one of: (ASYNC_TURBO|DEFAULT),'
+          ' provided: incorrect_value', stderr)
 
   @SkipForXML(KMS_SKIP_MSG)
   @SkipForS3(KMS_SKIP_MSG)
@@ -308,7 +310,7 @@ class TestMb(testcase.GsUtilIntegrationTestCase):
                                   suppress_consec_slashes=False)
     self.RunGsUtil(['mb', '-l', 'us-east1+us-east4', suri(bucket_uri)])
     stdout = self.RunGsUtil(['ls', '-Lb', suri(bucket_uri)], return_stdout=True)
-    self.assertRegex(stdout, r"locations:\t\t\[\'US-EAST1\', \'US-EAST4")
+    self.assertRegex(stdout, r"ocations:\s*\[\s*.US-EAST1.,\s*.US-EAST4")
 
   @SkipForXML('Custom Dual Region is not supported for the XML API.')
   @SkipForS3('Custom Dual Region is not supported for S3 buckets.')
@@ -332,8 +334,7 @@ class TestMb(testcase.GsUtilIntegrationTestCase):
         ['mb', '--placement', 'us-central1,us-west1',
          suri(bucket_uri)])
     stdout = self.RunGsUtil(['ls', '-Lb', suri(bucket_uri)], return_stdout=True)
-    self.assertRegex(stdout,
-                     r"Placement locations:\t\t\['US-CENTRAL1', 'US-WEST1'\]")
+    self.assertRegex(stdout, r"ocations:\s*\[\s*.US-CENTRAL1.,\s*.US-WEST1")
 
   @SkipForXML('The --placement flag only works for GCS JSON API.')
   def test_create_with_invalid_placement_flag_raises_error(self):
@@ -346,7 +347,7 @@ class TestMb(testcase.GsUtilIntegrationTestCase):
         return_stderr=True,
         expected_status=1)
     self.assertRegex(
-        stderr, r'.*BadRequestException: 400 (Invalid custom placement config|'
+        stderr, r'.*400.*(Invalid custom placement config|'
         r'One or more unrecognized regions in dual-region, received:'
         r' INVALID_REG1, INVALID_REG2).*')
 
@@ -356,14 +357,18 @@ class TestMb(testcase.GsUtilIntegrationTestCase):
     bucket_uri = boto.storage_uri('gs://%s' % (bucket_name.lower()),
                                   suppress_consec_slashes=False)
     # Location nam4 is used for dual-region.
+    expected_status = 2 if self._use_gcloud_storage else 1
     stderr = self.RunGsUtil(
         ['mb', '--placement', 'val1,val2,val3',
          suri(bucket_uri)],
         return_stderr=True,
-        expected_status=1)
-    self.assertIn(
-        'CommandException: Please specify two regions separated by comma'
-        ' without space. Specified: val1,val2,val3', stderr)
+        expected_status=expected_status)
+    if self._use_gcloud_storage:
+      self.assertIn('--placement: too many args', stderr)
+    else:
+      self.assertIn(
+          'CommandException: Please specify two regions separated by comma'
+          ' without space. Specified: val1,val2,val3', stderr)
 
   @SkipForJSON('Testing XML only behavior.')
   def test_single_json_only_flag_raises_error_with_xml_api(self):
@@ -418,3 +423,23 @@ class TestMbUnitTests(testcase.GsUtilUnitTestCase):
                        ' --retention-period 31557600s gs://fake-bucket').format(
                            os.path.join('fake_dir', 'bin', 'gcloud')),
                       info_lines)
+
+  @SkipForXML('The --rpo flag only works for GCS JSON API.')
+  def test_shim_translates_recovery_point_objective_flag(self):
+    fake_cloudsdk_dir = 'fake_dir'
+    with SetBotoConfigForTest([('GSUtil', 'use_gcloud_storage', 'True'),
+                               ('GSUtil', 'hidden_shim_mode', 'dry_run')]):
+      with SetEnvironmentForTest({
+          'CLOUDSDK_CORE_PASS_CREDENTIALS_TO_GSUTIL': 'True',
+          'CLOUDSDK_ROOT_DIR': fake_cloudsdk_dir,
+      }):
+        mock_log_handler = self.RunCommand(
+            'mb',
+            args=['--rpo', 'DEFAULT', 'gs://fake-bucket-1'],
+            return_log_handler=True)
+
+        info_lines = '\n'.join(mock_log_handler.messages['info'])
+        self.assertIn(
+            ('Gcloud Storage Command: {} alpha storage'
+             ' buckets create --recovery-point-objective DEFAULT').format(
+                 os.path.join('fake_dir', 'bin', 'gcloud')), info_lines)

@@ -157,6 +157,7 @@ information on how to structure KEYs and VALUEs, run
       help="""Version of Apache Airflow to run in the environment.
 
       Must be of the form `X[.Y[.Z]]`, where `[]` denotes optional fragments.
+      Examples: `2`, `2.3`, `2.3.4`.
 
       The current Cloud Composer version will be used within the created
       environment. The Apache Airflow version is a semantic version or an alias
@@ -179,6 +180,9 @@ information on how to structure KEYs and VALUEs, run
       and Apache Airflow. Must be of the form
       `composer-A[.B.C[-D.E]]-airflow-X[.Y[.Z]]`, where `[]` denotes optional
       fragments.
+
+      Examples: `composer-2-airflow-2`, `composer-2-airflow-2.2`,
+      `composer-2.1.2-airflow-2.3.4`.
 
       The Cloud Composer portion of the image version is a semantic version or
       an alias in the form of major version number or `latest`, resolved to the

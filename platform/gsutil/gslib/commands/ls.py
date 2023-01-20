@@ -77,7 +77,7 @@ ordered in the list lexicographically by name.
   gsutil currently supports ``gs://`` and ``s3://`` as valid providers
 
   If you specify bucket URLs, or use `URI wildcards
-  <https://cloud.google.com/storage/docs/wildcards>`_. to capture a set of
+  <https://cloud.google.com/storage/docs/wildcards>`_ to capture a set of
   buckets, ``gsutil ls`` lists objects at the top level of each bucket, along
   with the names of each subdirectory. For example:
 
@@ -333,7 +333,9 @@ class LsCommand(Command):
 
   # TODO(b/206151616) Add mappings for remaining flags.
   gcloud_storage_map = GcloudStorageMap(
-      gcloud_command=['alpha', 'storage', 'ls'],
+      gcloud_command=[
+          'alpha', 'storage', 'ls', '--fetch-encrypted-object-hashes'
+      ],
       flag_map={
           '-r': GcloudStorageFlag('-r'),
           '-R': GcloudStorageFlag('-r'),

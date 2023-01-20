@@ -32,20 +32,3 @@ class Transcoder(base.Group):
     base.RequireProjectID(args)
     del context, args
     base.DisableUserProjectQuota()
-
-
-@base.Deprecate(
-    is_removed=True,
-    warning='This command group is deprecated. Use the `gcloud transcoder` command group instead.',
-    error='This command has been removed. Please use `gcloud transcoder` instead.'
-)
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
-class TranscoderDeprecated(base.Group):
-  """Manage Transcoder jobs and job templates."""
-  category = base.SOLUTIONS_CATEGORY
-
-  def Filter(self, context, args):
-    # TODO(b/190541550):  Determine if command group works with project number
-    base.RequireProjectID(args)
-    del context, args
-    base.DisableUserProjectQuota()

@@ -27,7 +27,7 @@ from googlecloudsdk.core import properties
 
 
 class Export(base.Command):
-  """export Cloud Firestore documents to Google Cloud Storage"""
+  """export Cloud Firestore documents to Google Cloud Storage."""
 
   detailed_help = {
       'EXAMPLES':
@@ -39,6 +39,10 @@ class Export(base.Command):
           To export a specific set of collections groups asynchronously, run:
 
             $ {command} gs://mybucket/my/path --collection-ids='specific collection group1','specific collection group2' --async
+
+          To export all collection groups from certain namespace, run:
+
+            $ {command} gs://mybucket/my/path --namespace-ids='specific namespace id'
       """
   }
 
@@ -46,6 +50,8 @@ class Export(base.Command):
   def Args(parser):
     """Register flags for this command."""
     flags.AddCollectionIdsFlag(parser)
+    flags.AddNamespaceIdsFlag(parser)
+    flags.AddDatabaseIdFlag(parser)
     parser.add_argument(
         'OUTPUT_URI_PREFIX',
         help="""
@@ -68,8 +74,10 @@ class Export(base.Command):
 
     response = admin_api.Export(
         project,
+        args.database,
         # use join and filter to avoid trailing '/'.
         object_ref.ToUrl().rstrip('/'),
+        namespace_ids=args.namespace_ids,
         collection_ids=args.collection_ids)
 
     if not args.async_:

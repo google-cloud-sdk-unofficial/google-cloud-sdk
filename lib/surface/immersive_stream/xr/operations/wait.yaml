@@ -1,4 +1,4 @@
-- release_tracks: [ALPHA]
+- release_tracks: [ALPHA, GA]
   help_text:
     brief: Poll long-running Immersive Stream for XR operation until it completes.
     description: |
@@ -6,7 +6,7 @@
       the operation is complete, this command will display the results of the
       analysis.
     examples: |
-      To poll a long-running Immersive Stream for XR operation named 'projects/my-project/locations/global/operations/operation-123' until it completes, run the following:
+      To poll a long-running Immersive Stream for XR operation named `projects/my-project/locations/global/operations/operation-123` until it completes, run the following:
 
         $ {command} projects/my-project/locations/global/operations/operation-123
 
@@ -16,7 +16,10 @@
 
   request:
     collection: stream.projects.locations.operations
-    api_version: v1alpha1
+    ALPHA:
+      api_version: v1alpha1
+    GA:
+      api_version: v1
 
   arguments:
     resource:

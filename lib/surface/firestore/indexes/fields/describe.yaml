@@ -7,6 +7,8 @@
 
         $ {command}
 
+        $ {command} --database=(default)
+
       The following command describes the index configuration of the `timestamp` field in the
       `Events` collection group.
 
@@ -24,8 +26,6 @@
 
         This can be omitted to describe the database-wide default index settings.
       spec: !REF googlecloudsdk.command_lib.firestore.resources:field_with_default
-      removed_flags:
-      - database
 
   output:
     # Note the .yesno() here allows us to handle a field with all indexes disabled by explicitly

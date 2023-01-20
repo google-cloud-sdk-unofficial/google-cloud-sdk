@@ -87,18 +87,38 @@ def _add_common_args(parser):
   """
   parser.add_argument(
       'url', nargs='+', type=str, help='URLs of the buckets to update.')
-  parser.add_argument(
+
+  acl_flags_group = parser.add_group()
+  flags.add_acl_modifier_flags(acl_flags_group)
+
+  default_acl_flags_group = parser.add_group()
+  default_acl_flags_group.add_argument(
+      '--default-object-acl-file',
+      help='Sets the default object ACL from file for the bucket.',
+  )
+  default_acl_flags_group.add_argument(
+      '--predefined-default-object-acl',
+      help='Apply a predefined set of default object access controls tobuckets',
+  )
+  default_acl_flags_group.add_argument(
       '--add-default-object-acl-grant',
       action='append',
       metavar='DEFAULT_OBJECT_ACL_GRANT',
       type=arg_parsers.ArgDict(),
-      help='Adds default object ACL grant.',
-      hidden=True)
-  parser.add_argument(
+      help=(
+          'Adds default object ACL grant. See --add-acl-grant help text for'
+          ' more details.'
+      ),
+  )
+  default_acl_flags_group.add_argument(
       '--remove-default-object-acl-grant',
       action='append',
-      help='Removes default object ACL grant.',
-      hidden=True)
+      help=(
+          'Removes default object ACL grant. See --remove-acl-grant help text'
+          ' for more details.'
+      ),
+  )
+
   cors = parser.add_mutually_exclusive_group()
   cors.add_argument('--cors-file', help=_CORS_HELP_TEXT)
   cors.add_argument(
@@ -106,12 +126,10 @@ def _add_common_args(parser):
       action='store_true',
       help="Clears the bucket's CORS settings.")
   parser.add_argument(
-      '--default-object-acl-file',
-      help='Sets the default object ACL from file for the bucket.',
-      hidden=True)
-  parser.add_argument(
       '--default-storage-class',
-      help='Sets the default storage class for the bucket.')
+      hidden=True,
+      help='Sets the default storage class for the bucket.',
+  )
   default_encryption_key = parser.add_mutually_exclusive_group()
   default_encryption_key.add_argument(
       '--default-encryption-key',
@@ -257,8 +275,6 @@ def _add_common_args(parser):
       help='Clear website error page if bucket is hosting website.')
   flags.add_additional_headers_flag(parser)
   flags.add_continue_on_error_flag(parser)
-  flags.add_predefined_acl_flag(parser)
-  flags.add_predefined_default_object_acl_flag(parser)
   flags.add_recovery_point_objective_flag(parser)
 
 
@@ -271,30 +287,7 @@ def _add_alpha_args(parser):
   Returns:
     buckets update flag group
   """
-  parser.add_argument(
-      '--acl-file',
-      hidden=True,
-      help='Path to a local JSON or YAML formatted file containing a valid'
-      ' policy. The output of `gcloud storage buckets describe`'
-      ' `--format="multi(acl:format=json)"` is a valid file and can be edited'
-      ' for more fine-grained control.')
-  parser.add_argument(
-      '--add-acl-grant',
-      action='append',
-      metavar='ACL_GRANT',
-      type=arg_parsers.ArgDict(),
-      hidden=True,
-      help='JSON object in the format accepted by your cloud provider.'
-      ' For example, for GCS, `--add-acl-grant=entity=user-tim@gmail.com,'
-      'role=OWNER`')
-  parser.add_argument(
-      '--remove-acl-grant',
-      action='append',
-      hidden=True,
-      help='JSON object in the format accepted by your cloud provider.'
-      ' For example, for GCS, `--remove-acl-grant=ENTITY`, where `ENTITY`'
-      ' has a valid ACL entity format, such as `user-tim@gmail.com`,'
-      ' `group-admins`, `allUsers`, etc.')
+  del parser  # Unused.
 
 
 def _is_initial_bucket_metadata_needed(user_request_args):

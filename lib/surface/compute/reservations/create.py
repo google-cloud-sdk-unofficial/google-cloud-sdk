@@ -57,7 +57,7 @@ class Create(base.CreateCommand):
   """Create a Compute Engine reservation."""
   _support_share_setting = True
   _support_resource_policies = False
-  _support_instance_template = False
+  _support_instance_template = True
 
   @classmethod
   def Args(cls, parser):
@@ -65,7 +65,8 @@ class Create(base.CreateCommand):
         parser, operation_type='create')
     flags.AddCreateFlags(
         parser, support_share_setting=cls._support_share_setting,
-        support_resource_policies=cls._support_resource_policies)
+        support_resource_policies=cls._support_resource_policies,
+        support_instance_template=cls._support_instance_template)
 
   def Run(self, args):
     return _RunCreate(base_classes.ComputeApiHolder(base.ReleaseTrack.GA), args)
@@ -76,7 +77,7 @@ class CreateBeta(Create):
   """Create a Compute Engine reservation."""
   _support_share_setting = True
   _support_resource_policies = True
-  _support_instance_template = False
+  _support_instance_template = True
   _support_ssd_count = False
 
   @classmethod
@@ -85,7 +86,8 @@ class CreateBeta(Create):
         parser, operation_type='create')
     flags.AddCreateFlags(
         parser, support_share_setting=cls._support_share_setting,
-        support_resource_policies=cls._support_resource_policies)
+        support_resource_policies=cls._support_resource_policies,
+        support_instance_template=cls._support_instance_template)
 
   def Run(self, args):
     return _RunCreate(

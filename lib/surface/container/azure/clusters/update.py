@@ -42,7 +42,12 @@ class Update(base.UpdateCommand):
 
   @staticmethod
   def Args(parser):
-    resource_args.AddAzureClusterAndClientResourceArgs(parser, update=True)
+    auth_config_group = parser.add_argument_group(
+        'Authentication configuration', mutex=True)
+    resource_args.AddAzureClusterAndClientResourceArgs(parser,
+                                                       auth_config_group,
+                                                       update=True)
+    flags.AddAzureServicesAuthentication(auth_config_group, create=False)
     flags.AddClusterVersion(parser, required=False)
     flags.AddVMSize(parser)
     flags.AddAdminUsers(parser, create=False)

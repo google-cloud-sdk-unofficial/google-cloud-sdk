@@ -61,4 +61,4 @@ class List(base.ListCommand):
   def Run(self, args):
     network_policy = args.CONCEPTS.network_policy.Parse()
     client = ExternalAccessRulesClient()
-    return client.List(network_policy, limit=args.limit)
+    return client.List(network_policy)

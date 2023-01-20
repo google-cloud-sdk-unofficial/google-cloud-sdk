@@ -77,23 +77,35 @@ class Describe(base.DescribeCommand):
 
     result = apigee.APIsClient.Describe(identifiers)
 
-    if args.verbose or args.revision is not None:
-      revisions = []
-      rev_nums = result["revision"]
-      if args.revision is not None:
-        if args.revision not in rev_nums:
-          message = "No revision %r among API %s's revisions: %s"%(
-              args.revision, identifiers["apisId"], rev_nums)
-          raise exceptions.InvalidArgumentException("--revision", message)
-        rev_nums = [args.revision]
-        # No need to check whether the provided revision exists; RevisionsClient
-        # will raise an appropriate error should it not.
-      for revision in rev_nums:
-        identifiers["revisionsId"] = revision
-        revision_result = apigee.RevisionsClient.Describe(identifiers)
-        del revision_result["name"]
-        revisions.append(revision_result)
-      del result["revision"]
-      result["revisions"] = revisions
+    # Must use vars(args) to check whether there's even a revision field in the
+    # parsed args namespace. It's only present for ALPHA track.
+    requested_revision = None
+    if "revision" in vars(args):
+      requested_revision = args.revision
+
+    # If the user didn't ask for revision data, the response from
+    # APIsClient.Describe() is good enough.
+    if requested_revision is None and not args.verbose:
+      return result
+
+    rev_nums = result["revision"]
+    if requested_revision is not None:
+      if requested_revision not in rev_nums:
+        message = "No revision %r among API %s's revisions: %s"%(
+            requested_revision, identifiers["apisId"], rev_nums)
+        raise exceptions.InvalidArgumentException("--revision", message)
+      # No need to check whether this revision exists within the original list;
+      # if there's no such revision, RevisionsClient will raise an appropriate
+      # error.
+      rev_nums = [requested_revision]
+
+    revisions = []
+    for revision in rev_nums:
+      identifiers["revisionsId"] = revision
+      revision_result = apigee.RevisionsClient.Describe(identifiers)
+      del revision_result["name"]
+      revisions.append(revision_result)
+    del result["revision"]
+    result["revisions"] = revisions
 
     return result

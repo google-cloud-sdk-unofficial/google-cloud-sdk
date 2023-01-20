@@ -35,6 +35,7 @@ class Update(base.UpdateCommand):
   """Update a NAT on a Compute Engine router."""
   with_private_nat = False
   with_subnet_all = False
+  with_auto_network_tier = False
 
   @classmethod
   def Args(cls, parser):
@@ -50,7 +51,8 @@ class Update(base.UpdateCommand):
         parser,
         for_create=False,
         with_private_nat=cls.with_private_nat,
-        with_subnet_all=cls.with_subnet_all)
+        with_subnet_all=cls.with_subnet_all,
+        with_auto_network_tier=cls.with_auto_network_tier)
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
@@ -66,7 +68,8 @@ class Update(base.UpdateCommand):
     existing_nat = nats_utils.FindNatOrRaise(replacement, args.name)
     nat = nats_utils.UpdateNatMessage(existing_nat, args, holder,
                                       self.with_private_nat,
-                                      self.with_subnet_all)
+                                      self.with_subnet_all,
+                                      self.with_auto_network_tier)
 
     request_type = messages.ComputeRoutersPatchRequest
     result = service.Patch(
@@ -113,6 +116,7 @@ class UpdateAlpha(Update):
   """Update a NAT on a Compute Engine router."""
   with_private_nat = True
   with_subnet_all = True
+  with_auto_network_tier = True
 
 
 Update.detailed_help = {
@@ -148,7 +152,7 @@ Update.detailed_help = {
             --clear-tcp-transitory-connection-idle-timeout
         """,
     'API REFERENCE':
-    """\
+        """\
     This command, when specified without alpha or beta, uses the compute/v1/routers API. The full documentation
     for this API can be found at: https://cloud.google.com/compute/docs/reference/rest/v1/routers/
 

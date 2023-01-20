@@ -114,13 +114,19 @@ class Rm(base.Command):
     flags.add_continue_on_error_flag(parser)
 
   def Run(self, args):
+    if args.recursive:
+      bucket_setting = name_expansion.BucketSetting.YES
+      recursion_setting = name_expansion.RecursionSetting.YES
+    else:
+      bucket_setting = name_expansion.BucketSetting.NO
+      recursion_setting = name_expansion.RecursionSetting.NO_WITH_WARNING
     name_expansion_iterator = name_expansion.NameExpansionIterator(
         stdin_iterator.get_urls_iterable(args.urls, args.read_paths_from_stdin),
         all_versions=args.all_versions or args.recursive,
         fields_scope=cloud_api.FieldsScope.SHORT,
-        include_buckets=args.recursive,
-        recursion_requested=name_expansion.RecursionSetting.YES
-        if args.recursive else name_expansion.RecursionSetting.NO_WITH_WARNING)
+        include_buckets=bucket_setting,
+        recursion_requested=recursion_setting,
+    )
 
     user_request_args = (
         user_request_args_factory.get_user_request_args_from_command_args(args))

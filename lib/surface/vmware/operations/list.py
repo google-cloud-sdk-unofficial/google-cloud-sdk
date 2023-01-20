@@ -64,4 +64,4 @@ class List(base.ListCommand):
   def Run(self, args):
     location = args.CONCEPTS.location.Parse()
     client = OperationsClient()
-    return client.List(location, limit=args.limit)
+    return client.List(location)

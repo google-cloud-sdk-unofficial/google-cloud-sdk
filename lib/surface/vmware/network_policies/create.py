@@ -89,9 +89,14 @@ class Create(base.CreateCommand):
     network_policy = args.CONCEPTS.network_policy.Parse()
     client = NetworkPoliciesClient()
     is_async = args.async_
-    operation = client.Create(network_policy, args.vmware_engine_network,
-                              args.description, args.edge_services_cidr,
-                              args.internet_access, args.external_ip_access)
+    operation = client.Create(
+        network_policy,
+        vmware_engine_network_id=args.vmware_engine_network,
+        edge_services_cidr=args.edge_services_cidr,
+        description=args.description,
+        internet_access=args.internet_access,
+        external_ip_access=args.external_ip_access,
+    )
     if is_async:
       log.CreatedResource(
           operation.name, kind='VMware Engine network policy', is_async=True)

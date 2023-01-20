@@ -32,6 +32,5 @@
         name.basename():label=NAME,
         network.basename():label=NETWORK,
         bgp.asn:label=ASN,
-        bgp.keepaliveIntervalInSeconds:label=KEEPALIVEINTERVAL,
         state.sub("STATE_", ""):label=STATE
       )

@@ -45,11 +45,12 @@ class Create(base.CreateCommand):
             $ {command} wp1 --region=us-central1
 
           To create a worker pool in project `p1` in region `us-central1` where workers are of machine type
-          `e2-standard-2` and are peered to the VPC network `projects/123/global/networks/default` and have a disk size of
-          64GB, run:
+          `e2-standard-2` and are peered to the VPC network `projects/123/global/networks/default` within the IP range `192.168.0.0/28`
+          and have a disk size of 64GB, run:
 
             $ {command} wp1 --project=p1 --region=us-central1 \
                 --peered-network=projects/123/global/networks/default \
+                --peered-network-ip-range=192.168.0.0/28
                 --worker-machine-type=e2-standard-2 \
                 --worker-disk-size=64GB
           """,
@@ -114,6 +115,8 @@ class Create(base.CreateCommand):
       network_config = messages.NetworkConfig()
       if args.peered_network is not None:
         network_config.peeredNetwork = args.peered_network
+        if args.peered_network_ip_range is not None:
+          network_config.peeredNetworkIpRange = args.peered_network_ip_range
       # All of the egress flags are mutually exclusive with each other.
       if args.no_public_egress or (release_track == base.ReleaseTrack.GA and
                                    args.no_external_ip):
@@ -206,10 +209,10 @@ class CreateAlpha(Create):
           $ {command} pwp1 --region=us-central1
 
         To create a private pool in project `p1` in region `us-central1` where workers are of machine type
-        `e2-standard-2` and are peered to the VPC network `projects/123/global/networks/default` and have a disk size of
-        64GB, run:
+        `e2-standard-2` and are peered to the VPC network `projects/123/global/networks/default` within the IP range `192.168.0.0/28`
+        and have a disk size of 64GB, run:
 
-          $ {command} pwp1 --project=p1 --region=us-central1 --peered-network=projects/123/global/networks/default --worker-machine-type=e2-standard-2 --worker-disk-size=64GB
+          $ {command} pwp1 --project=p1 --region=us-central1 --peered-network=projects/123/global/networks/default --peered-network-ip-range=192.168.0.0/28 --worker-machine-type=e2-standard-2 --worker-disk-size=64GB
 
         * Hybrid pools
 
@@ -296,6 +299,8 @@ class CreateAlpha(Create):
         network_config = messages.NetworkConfig()
         if args.peered_network is not None:
           network_config.peeredNetwork = args.peered_network
+          if args.peered_network_ip_range is not None:
+            network_config.peeredNetworkIpRange = args.peered_network_ip_range
         # All of the egress flags are mutually exclusive with each other.
         if args.no_public_egress or (release_track == base.ReleaseTrack.GA and
                                      args.no_external_ip):

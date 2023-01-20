@@ -41,6 +41,7 @@ auto_flags = [
     'privateEndpointSubnetwork',
     'managedConfig',
     'fleetProject',
+    'enableFleet',
 ]
 
 # Change default flag values in create-auto

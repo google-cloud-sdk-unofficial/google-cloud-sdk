@@ -102,6 +102,8 @@ def _CommonArgs(parser,
                                             'instance-template')
   instances_flags.AddProvisioningModelVmArgs(parser)
   instances_flags.AddInstanceTerminationActionVmArgs(parser)
+  instances_flags.AddIPv6AddressArgs(parser)
+  instances_flags.AddIPv6PrefixLengthArgs(parser)
 
   if support_max_run_duration:
     instances_flags.AddMaxRunDurationVmArgs(parser)
@@ -542,6 +544,9 @@ def _RunCreate(compute_api,
     network_tier = getattr(args, 'network_tier', None)
     stack_type = getattr(args, 'stack_type', None)
     ipv6_network_tier = getattr(args, 'ipv6_network_tier', None)
+    external_ipv6_address = getattr(args, 'external_ipv6_address', None)
+    external_ipv6_prefix_length = getattr(args, 'external_ipv6_prefix_length',
+                                          None)
     ipv6_address = None
     ipv6_prefix_length = None
     internal_ipv6_address = None
@@ -556,6 +561,7 @@ def _RunCreate(compute_api,
     if support_ipv6_reservation:
       ipv6_address = getattr(args, 'ipv6_address', None)
       ipv6_prefix_length = getattr(args, 'ipv6_prefix_length', None)
+
     if support_internal_ipv6_reservation:
       internal_ipv6_address = getattr(args, 'internal_ipv6_address', None)
       internal_ipv6_prefix_length = getattr(args, 'internal_ipv6_prefix_length',
@@ -578,6 +584,8 @@ def _RunCreate(compute_api,
             ipv6_network_tier=ipv6_network_tier,
             ipv6_address=ipv6_address,
             ipv6_prefix_length=ipv6_prefix_length,
+            external_ipv6_address=external_ipv6_address,
+            external_ipv6_prefix_length=external_ipv6_prefix_length,
             internal_ipv6_address=internal_ipv6_address,
             internal_ipv6_prefix_length=internal_ipv6_prefix_length)
     ]
@@ -1033,8 +1041,8 @@ class CreateAlpha(Create):
     instances_flags.AddPrivateIpv6GoogleAccessArgForTemplate(
         parser, utils.COMPUTE_ALPHA_API_VERSION)
     instances_flags.AddPostKeyRevocationActionTypeArgs(parser)
-    instances_flags.AddIPv6AddressArgs(parser)
-    instances_flags.AddIPv6PrefixLengthArgs(parser)
+    instances_flags.AddIPv6AddressAlphaArgs(parser)
+    instances_flags.AddIPv6PrefixLengthAlphaArgs(parser)
     instances_flags.AddInternalIPv6AddressArgs(parser)
     instances_flags.AddInternalIPv6PrefixLengthArgs(parser)
     instance_templates_flags.AddKeyRevocationActionTypeArgs(parser)

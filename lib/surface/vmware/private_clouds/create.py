@@ -103,9 +103,14 @@ class Create(base.CreateCommand):
     privatecloud = args.CONCEPTS.private_cloud.Parse()
     client = PrivateCloudsClient()
     is_async = args.async_
-    operation = client.Create(privatecloud, args.description, args.cluster,
-                              args.node_type_config, args.management_range,
-                              args.vmware_engine_network)
+    operation = client.Create(
+        privatecloud,
+        cluster_id=args.cluster,
+        nodes_configs=args.node_type_config,
+        network_cidr=args.management_range,
+        vmware_engine_network_id=args.vmware_engine_network,
+        description=args.description,
+    )
     if is_async:
       log.CreatedResource(operation.name, kind='private cloud', is_async=True)
       return operation

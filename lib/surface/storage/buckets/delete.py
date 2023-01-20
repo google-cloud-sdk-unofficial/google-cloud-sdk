@@ -67,8 +67,11 @@ class Delete(base.Command):
     task_status_queue = multiprocessing.Queue()
 
     bucket_iterator = delete_task_iterator_factory.DeleteTaskIteratorFactory(
-        name_expansion.NameExpansionIterator(args.urls, include_buckets=True),
-        task_status_queue=task_status_queue).bucket_iterator()
+        name_expansion.NameExpansionIterator(
+            args.urls, include_buckets=name_expansion.BucketSetting.YES
+        ),
+        task_status_queue=task_status_queue,
+    ).bucket_iterator()
     plurality_checkable_bucket_iterator = (
         plurality_checkable_iterator.PluralityCheckableIterator(
             bucket_iterator))

@@ -25,6 +25,7 @@ from googlecloudsdk.calliope import base as calliope_base
 from googlecloudsdk.core import log
 
 
+@calliope_base.Hidden
 @calliope_base.ReleaseTracks(calliope_base.ReleaseTrack.ALPHA)
 class Policycontroller(calliope_base.Group):
   """Get Policy Controller audit violations."""

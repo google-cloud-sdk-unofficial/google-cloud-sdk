@@ -80,8 +80,12 @@ class Create(base.CreateCommand):
     mdzb = args.CONCEPTS.management_dns_zone_binding.Parse()
     client = ManagementDNSZoneBindingClient()
     is_async = args.async_
-    operation = client.Create(mdzb, args.vpc_network,
-                              args.vmware_engine_network, args.description)
+    operation = client.Create(
+        mdzb,
+        vpc_network=args.vpc_network,
+        vmware_engine_network=args.vmware_engine_network,
+        description=args.description,
+    )
     if is_async:
       log.CreatedResource(
           operation.name, kind='management DNS zone binding', is_async=True)

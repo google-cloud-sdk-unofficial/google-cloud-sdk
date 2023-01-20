@@ -48,7 +48,8 @@ def _Args(parser,
   instances_flags.AddDiskArgs(
       parser, container_mount_enabled=container_mount_enabled)
   instances_flags.AddCreateDiskArgs(
-      parser, container_mount_enabled=container_mount_enabled,
+      parser,
+      container_mount_enabled=container_mount_enabled,
       support_multi_writer=support_multi_writer)
   if release_track == base.ReleaseTrack.ALPHA:
     instances_flags.AddLocalSsdArgsWithSize(parser)
@@ -72,6 +73,8 @@ def _Args(parser,
   instances_flags.AddNetworkTierArgs(parser, instance=True)
   instances_flags.AddConfidentialComputeArgs(parser)
   instances_flags.AddShieldedInstanceConfigArgs(parser)
+  instances_flags.AddIPv6AddressArgs(parser)
+  instances_flags.AddIPv6PrefixLengthArgs(parser)
   labels_util.AddCreateLabelsFlags(parser)
   instances_flags.AddPrivateNetworkIpArgs(parser)
 
@@ -153,6 +156,9 @@ class CreateWithContainer(base.CreateCommand):
     ipv6_network_tier = getattr(args, 'ipv6_network_tier', None)
     ipv6_address = getattr(args, 'ipv6_address', None)
     ipv6_prefix_length = getattr(args, 'ipv6_prefix_length', None)
+    external_ipv6_address = getattr(args, 'external_ipv6_address', None)
+    external_ipv6_prefix_length = getattr(args, 'external_ipv6_prefix_length',
+                                          None)
     internal_ipv6_address = getattr(args, 'internal_ipv6_address', None)
     internal_ipv6_prefix_length = getattr(args, 'internal_ipv6_prefix_length',
                                           None)
@@ -173,6 +179,8 @@ class CreateWithContainer(base.CreateCommand):
             ipv6_network_tier=ipv6_network_tier,
             ipv6_address=ipv6_address,
             ipv6_prefix_length=ipv6_prefix_length,
+            external_ipv6_address=external_ipv6_address,
+            external_ipv6_prefix_length=external_ipv6_prefix_length,
             internal_ipv6_address=internal_ipv6_address,
             internal_ipv6_prefix_length=internal_ipv6_prefix_length)
     ]
@@ -448,8 +456,8 @@ class CreateWithContainerAlpha(CreateWithContainerBeta):
         parser, utils.COMPUTE_ALPHA_API_VERSION)
     instances_flags.AddStackTypeArgs(parser)
     instances_flags.AddIpv6NetworkTierArgs(parser)
-    instances_flags.AddIPv6AddressArgs(parser)
-    instances_flags.AddIPv6PrefixLengthArgs(parser)
+    instances_flags.AddIPv6AddressAlphaArgs(parser)
+    instances_flags.AddIPv6PrefixLengthAlphaArgs(parser)
     instances_flags.AddInternalIPv6AddressArgs(parser)
     instances_flags.AddInternalIPv6PrefixLengthArgs(parser)
 

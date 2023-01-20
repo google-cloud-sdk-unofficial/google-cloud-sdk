@@ -63,10 +63,11 @@ _DETAILED_HELP_TEXT = ("""
   True. If using the pure-Python version, the value will be False.
 
   To control gsutil's behavior in response to crcmod's status, you can set the
-  "check_hashes" configuration variable. For details on this variable, see the
-  surrounding comments in your boto configuration file. If "check_hashes"
-  is not present in your configuration file, rerun ``gsutil config`` to
-  regenerate the file.
+  ``check_hashes`` variable in your `boto configuration file
+  <https://cloud.google.com/storage/docs/boto-gsutil>`_. For details on this
+  variable, see the surrounding comments in your boto configuration file. If
+  ``check_hashes`` is not present in your configuration file, rerun
+  ``gsutil config`` to regenerate the file.
 
 
 <B>INSTALLATION</B>
@@ -128,7 +129,7 @@ _DETAILED_HELP_TEXT = ("""
   (see ``gsutil help support``).
 
   To compile manually on macOS, you will first need to install
-  `XCode <https://developer.apple.com/xcode/>`_ and then run:
+  `Xcode <https://developer.apple.com/xcode/>`_ and then run:
 
     pip3 install -U crcmod
 

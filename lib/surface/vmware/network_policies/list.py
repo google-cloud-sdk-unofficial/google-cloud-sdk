@@ -70,4 +70,4 @@ class List(base.ListCommand):
   def Run(self, args):
     location = args.CONCEPTS.location.Parse()
     client = NetworkPoliciesClient()
-    return client.List(location, limit=args.limit)
+    return client.List(location)

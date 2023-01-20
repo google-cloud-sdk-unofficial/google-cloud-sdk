@@ -922,6 +922,7 @@ class UpdateBeta(Update):
     opts.removed_additional_pod_ipv4_ranges = args.remove_additional_pod_ipv4_ranges
     opts.gateway_api = args.gateway_api
     opts.fleet_project = args.fleet_project
+    opts.enable_fleet = args.enable_fleet
     opts.clear_fleet_project = args.clear_fleet_project
     return opts
 
@@ -1106,5 +1107,6 @@ class UpdateAlpha(Update):
     opts.additional_pod_ipv4_ranges = args.additional_pod_ipv4_ranges
     opts.removed_additional_pod_ipv4_ranges = args.remove_additional_pod_ipv4_ranges
     opts.fleet_project = args.fleet_project
+    opts.enable_fleet = args.enable_fleet
     opts.clear_fleet_project = args.clear_fleet_project
     return opts

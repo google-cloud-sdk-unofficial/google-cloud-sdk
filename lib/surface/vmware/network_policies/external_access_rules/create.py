@@ -117,11 +117,17 @@ class Create(base.CreateCommand):
     external_access_rule = args.CONCEPTS.external_access_rule.Parse()
     client = ExternalAccessRulesClient()
     is_async = args.async_
-    operation = client.Create(external_access_rule, args.priority,
-                              args.ip_protocol, args.source_ranges,
-                              args.destination_ranges, args.source_ports,
-                              args.destination_ports, args.description,
-                              args.action)
+    operation = client.Create(
+        external_access_rule,
+        priority=args.priority,
+        ip_protocol=args.ip_protocol,
+        source_ranges=args.source_ranges,
+        destination_ranges=args.destination_ranges,
+        source_ports=args.source_ports,
+        destination_ports=args.destination_ports,
+        description=args.description,
+        action=args.action,
+    )
     if is_async:
       log.CreatedResource(
           operation.name,
