@@ -46,7 +46,6 @@
         enum_value: AVRO
         help_text: |
           Database dump contains AVRO files.
-        release_tracks: [ALPHA, BETA]
       default: mysql
     - arg_name: destination-folder
       api_field: exportMetadataRequest.destinationGcsFolder

@@ -36,6 +36,7 @@ EXAMPLES = """\
    """
 
 
+@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Delete(base.Command):
   """Delete a Database Migration private connection."""

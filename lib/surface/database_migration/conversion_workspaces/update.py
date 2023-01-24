@@ -40,6 +40,7 @@ DETAILED_HELP = {
 }
 
 
+@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Update(base.Command):
   """Update a Database Migration Service conversion workspace."""

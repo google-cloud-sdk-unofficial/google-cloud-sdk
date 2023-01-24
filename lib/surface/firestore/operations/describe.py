@@ -18,9 +18,9 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
-from googlecloudsdk.api_lib.firestore import admin_api
 from googlecloudsdk.api_lib.firestore import operations
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.firestore import flags
 from googlecloudsdk.core import properties
 from googlecloudsdk.core import resources
 
@@ -54,13 +54,14 @@ class Describe(base.DescribeCommand):
 
           foo
         """)
+    flags.AddDatabaseIdFlag(parser)
 
   def Run(self, args):
     name = resources.REGISTRY.Parse(
         args.name,
         params={
             'projectsId': properties.VALUES.core.project.GetOrFail,
-            'databasesId': admin_api.DEFAULT_DATABASE,
+            'databasesId': args.database,
         },
         api_version=operations.OPERATIONS_API_VERSION,
         collection='firestore.projects.databases.operations').RelativeName()

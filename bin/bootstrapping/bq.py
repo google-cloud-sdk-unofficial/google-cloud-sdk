@@ -2,7 +2,6 @@
 #
 # Copyright 2013 Google Inc. All Rights Reserved.
 #
-
 """A convenience wrapper for starting bq."""
 
 from __future__ import absolute_import
@@ -11,6 +10,7 @@ import os
 
 import bootstrapping
 
+from googlecloudsdk.api_lib.iamcredentials import util as iamcred_util
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.core import config
 from googlecloudsdk.core import properties
@@ -38,6 +38,8 @@ def main():
   args = []
   if cmd_args and cmd_args[0] not in ('version', 'help'):
     # Check for credentials only if they are needed.
+    store.IMPERSONATION_TOKEN_PROVIDER = iamcred_util.ImpersonationAccessTokenProvider(
+    )
     store.Load()  # Checks if there are active credentials
 
     project, account = bootstrapping.GetActiveProjectAndAccount()
@@ -48,14 +50,23 @@ def main():
     if gce_metadata and account in gce_metadata.Accounts():
       args = ['--use_gce_service_account']
     elif os.path.isfile(adc_path):
-      args = ['--application_default_credential_file', adc_path,
-              '--credential_file', single_store_path]
+      args = [
+          '--application_default_credential_file',
+          adc_path,
+          '--credential_file',
+          single_store_path,
+      ]
     else:
       p12_key_path = config.Paths().LegacyCredentialsP12KeyPath(account)
       if os.path.isfile(p12_key_path):
-        args = ['--service_account', account,
-                '--service_account_credential_file', single_store_path,
-                '--service_account_private_key_file', p12_key_path]
+        args = [
+            '--service_account',
+            account,
+            '--service_account_credential_file',
+            single_store_path,
+            '--service_account_private_key_file',
+            p12_key_path,
+        ]
       else:
         # Don't have any credentials we can pass.
         raise store.NoCredentialsForAccountException(account)
@@ -78,10 +89,9 @@ def main():
   _MaybeAddOption(args, 'disable_ssl_validation',
                   properties.VALUES.auth.disable_ssl_validation.GetBool())
   _MaybeAddOption(args, 'ca_certificates_file',
-                  properties.VALUES.core.custom_ca_certs_file .Get())
+                  properties.VALUES.core.custom_ca_certs_file.Get())
 
-  bootstrapping.ExecutePythonTool(
-      'platform/bq', 'bq.py', *args)
+  bootstrapping.ExecutePythonTool('platform/bq', 'bq.py', *args)
 
 
 if __name__ == '__main__':

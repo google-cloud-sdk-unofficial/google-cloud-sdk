@@ -36,6 +36,7 @@ EXAMPLES = """\
    """
 
 
+@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Create(base.Command):
   """Create a Database Migration private connection."""

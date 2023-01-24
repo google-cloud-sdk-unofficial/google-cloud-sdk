@@ -23,7 +23,8 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.recommender import flags
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
+                    base.ReleaseTrack.GA)
 class MarkDismissed(base.Command):
   r"""Mark recommendation's state as DISMISSED.
 
@@ -51,7 +52,7 @@ class MarkDismissed(base.Command):
     parser.add_argument(
         'RECOMMENDATION',
         type=str,
-        help='Recommendation id which will be marked as dismissed',
+        help='Recommendation ID which will be marked as dismissed',
     )
     parser.add_argument(
         '--location', metavar='LOCATION', required=True, help='Location')

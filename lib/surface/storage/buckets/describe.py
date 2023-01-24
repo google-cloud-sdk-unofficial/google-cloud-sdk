@@ -54,6 +54,7 @@ class Describe(base.DescribeCommand):
   def Args(parser):
     parser.add_argument('url', help='Specifies URL of bucket to describe.')
     flags.add_additional_headers_flag(parser)
+    flags.add_raw_display_flag(parser)
 
   def Run(self, args):
     if wildcard_iterator.contains_wildcard(args.url):
@@ -66,4 +67,9 @@ class Describe(base.DescribeCommand):
     bucket_resource = api_factory.get_api(url.scheme).get_bucket(
         url.bucket_name, fields_scope=cloud_api.FieldsScope.FULL)
     # MakeSerializable will omit all the None values.
-    return resource_projector.MakeSerializable(bucket_resource.metadata)
+    serialized_metadata = resource_projector.MakeSerializable(
+        bucket_resource.metadata
+    )
+    return serialized_metadata
+
+    # TODO(b/249985723): Return standardized resource if not args.raw.

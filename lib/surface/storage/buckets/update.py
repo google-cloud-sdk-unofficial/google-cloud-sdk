@@ -339,8 +339,7 @@ class Update(base.Command):
     user_request_args = (
         user_request_args_factory.get_user_request_args_from_command_args(
             args, metadata_type=user_request_args_factory.MetadataType.BUCKET))
-    if user_request_args_factory.modifies_full_acl_policy(user_request_args):
-      # TODO(b/244621490): Add test when ACL flags are exposed.
+    if user_request_args_factory.adds_or_removes_acls(user_request_args):
       fields_scope = cloud_api.FieldsScope.FULL
     else:
       fields_scope = cloud_api.FieldsScope.NO_ACL

@@ -349,6 +349,7 @@ class CreateBeta(Create):
     flags.AddEnableFastSocketFlag(parser)
     flags.AddLoggingVariantFlag(parser, for_node_pool=True)
     flags.AddWindowsOsVersionFlag(parser)
+    flags.AddQueuedProvisioningFlag(parser, hidden=True)
 
   def ParseCreateNodePoolOptions(self, args):
     ops = ParseCreateNodePoolOptionsBase(args)
@@ -373,6 +374,7 @@ class CreateBeta(Create):
     ops.enable_confidential_nodes = args.enable_confidential_nodes
     ops.disable_pod_cidr_overprovision = args.disable_pod_cidr_overprovision
     ops.enable_fast_socket = args.enable_fast_socket
+    ops.enable_queued_provisioning = args.enable_queued_provisioning
     return ops
 
 
@@ -405,6 +407,7 @@ class CreateAlpha(Create):
     ops.enable_confidential_nodes = args.enable_confidential_nodes
     ops.disable_pod_cidr_overprovision = args.disable_pod_cidr_overprovision
     ops.enable_fast_socket = args.enable_fast_socket
+    ops.enable_queued_provisioning = args.enable_queued_provisioning
     return ops
 
   @staticmethod
@@ -453,6 +456,7 @@ class CreateAlpha(Create):
     flags.AddEnableFastSocketFlag(parser)
     flags.AddLoggingVariantFlag(parser, for_node_pool=True)
     flags.AddWindowsOsVersionFlag(parser)
+    flags.AddQueuedProvisioningFlag(parser, hidden=True)
 
 
 Create.detailed_help = DETAILED_HELP

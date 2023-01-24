@@ -40,6 +40,7 @@ DETAILED_HELP = {
 }
 
 
+@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Commit(base.Command):
   """Commit a Database Migration Service conversion workspace."""

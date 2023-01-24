@@ -1,5 +1,4 @@
-- release_tracks: [ALPHA, BETA]
-  hidden: true
+- release_tracks: [GA, ALPHA, BETA]
   help_text:
     brief: List revisions of a Pub/Sub schema.
     description: |

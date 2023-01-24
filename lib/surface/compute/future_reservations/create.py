@@ -88,10 +88,13 @@ class CreateAlpha(base.CreateCommand):
 CreateAlpha.detailed_help = {
     'brief':
         'Create a Compute Engine future reservation.',
-    'EXAMPLES':
-        """
-        To create a Compute Engine future reservation, run:
+    'EXAMPLES': """
+        To create a Compute Engine future reservation by specifying VM properties using an instance template, run:
 
-            $ {command} my-future-reservation --total-count=1000 --machine-type=n1-standard-1 --min-cpu-platform="Intel Haswell" --project=project-01 --zone=fake-zone
+            $ {command} my-future-reservation --total-count=1000 --start-time=2022-11-10 --end-time=2022-12-10 --name-prefix=prefix-reservation --source-instance-template=example-instance-template --zone=fake-zone
+
+        To create a Compute Engine future reservation by directly specifying VM properties, run:
+
+            $ {command} my-future-reservation --total-count=1000 --start-time=2022-11-10 --end-time=2022-12-10 --name-prefix=prefix-reservation --machine-type=custom-8-10240 --min-cpu-platform="Intel Haswell" --accelerator=count=2,type=nvidia-tesla-v100 --local-ssd=size=375,interface=scsi
         """
 }

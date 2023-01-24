@@ -33,7 +33,7 @@ _KMS_FLAG_OVERRIDES = {
     'kms-key': '--topic-encryption-key',
     'kms-keyring': '--topic-encryption-key-keyring',
     'kms-location': '--topic-encryption-key-location',
-    'kms-project': '--topic-encryption-key-project'
+    'kms-project': '--topic-encryption-key-project',
 }
 
 _KMS_PERMISSION_INFO = """
@@ -61,12 +61,15 @@ def _GetKmsKeyNameFromArgs(args):
 
   # Check whether the user specified any topic-encryption-key flags.
   for keyword in [
-      'topic-encryption-key', 'topic-encryption-key-project',
-      'topic-encryption-key-location', 'topic-encryption-key-keyring'
+      'topic-encryption-key',
+      'topic-encryption-key-project',
+      'topic-encryption-key-location',
+      'topic-encryption-key-keyring',
   ]:
     if args.IsSpecified(keyword.replace('-', '_')):
       raise core_exceptions.Error(
-          '--topic-encryption-key was not fully specified.')
+          '--topic-encryption-key was not fully specified.'
+      )
 
   return None
 
@@ -76,8 +79,7 @@ class Update(base.UpdateCommand):
   """Updates an existing Cloud Pub/Sub topic."""
 
   detailed_help = {
-      'EXAMPLES':
-          """\
+      'EXAMPLES': """\
           To update existing labels on a Cloud Pub/Sub topic, run:
 
               $ {command} mytopic --update-labels=KEY1=VAL1,KEY2=VAL2
@@ -117,28 +119,40 @@ class Update(base.UpdateCommand):
     """Registers flags for this command."""
     resource_args.AddTopicResourceArg(parser, 'to update.')
     labels_util.AddUpdateLabelsFlags(parser)
-    resource_args.AddResourceArgs(parser, [
-        kms_resource_args.GetKmsKeyPresentationSpec(
-            'topic',
-            flag_overrides=_KMS_FLAG_OVERRIDES,
-            permission_info=_KMS_PERMISSION_INFO)
-    ])
+    resource_args.AddResourceArgs(
+        parser,
+        [
+            kms_resource_args.GetKmsKeyPresentationSpec(
+                'topic',
+                flag_overrides=_KMS_FLAG_OVERRIDES,
+                permission_info=_KMS_PERMISSION_INFO,
+            )
+        ],
+    )
     flags.AddTopicMessageRetentionFlags(parser, is_update=True)
 
     msp_group = parser.add_group(
-        mutex=True, help='Message storage policy options.')
+        mutex=True, help='Message storage policy options.'
+    )
     msp_group.add_argument(
         '--recompute-message-storage-policy',
         action='store_true',
-        help='If given, Cloud Pub/Sub will recompute the regions where messages'
-        ' can be stored at rest, based on your organization\'s "Resource '
-        ' Location Restriction" policy.')
+        help=(
+            'If given, Cloud Pub/Sub will recompute the regions where messages'
+            ' can be stored at rest, based on your organization\'s "Resource '
+            ' Location Restriction" policy.'
+        ),
+    )
     msp_group.add_argument(
         '--message-storage-policy-allowed-regions',
         metavar='REGION',
         type=arg_parsers.ArgList(),
-        help='A list of one or more Cloud regions where messages are allowed to'
-        ' be stored at rest.')
+        help=(
+            'A list of one or more Cloud regions where messages are allowed to'
+            ' be stored at rest.'
+        ),
+    )
+    flags.AddSchemaSettingsFlags(parser, is_update=True)
 
   def Run(self, args):
     """This is what gets called when the user runs this command.
@@ -157,18 +171,22 @@ class Update(base.UpdateCommand):
     client = topics.TopicsClient()
     topic_ref = args.CONCEPTS.topic.Parse()
 
-    message_retention_duration = getattr(args, 'message_retention_duration',
-                                         None)
+    message_retention_duration = getattr(
+        args, 'message_retention_duration', None
+    )
     if message_retention_duration:
       message_retention_duration = util.FormatDuration(
-          message_retention_duration)
+          message_retention_duration
+      )
     clear_message_retention_duration = getattr(
-        args, 'clear_message_retention_duration', None)
+        args, 'clear_message_retention_duration', None
+    )
 
     labels_update = labels_util.ProcessUpdateArgsLazy(
         args,
         client.messages.Topic.LabelsValue,
-        orig_labels_thunk=lambda: client.Get(topic_ref).labels)
+        orig_labels_thunk=lambda: client.Get(topic_ref).labels,
+    )
 
     schema = getattr(args, 'schema', None)
     if schema:
@@ -198,9 +216,11 @@ class Update(base.UpdateCommand):
       )
     except topics.NoFieldsSpecifiedError:
       operations = [
-          'clear_labels', 'update_labels', 'remove_labels',
+          'clear_labels',
+          'update_labels',
+          'remove_labels',
           'recompute_message_storage_policy',
-          'message_storage_policy_allowed_regions'
+          'message_storage_policy_allowed_regions',
       ]
       if not any(args.IsSpecified(arg) for arg in operations):
         raise
@@ -213,11 +233,6 @@ class Update(base.UpdateCommand):
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class UpdateBeta(Update):
   """Updates an existing Cloud Pub/Sub topic."""
-
-  @staticmethod
-  def Args(parser):
-    flags.AddSchemaSettingsFlags(parser, with_revisions=True, is_update=True)
-    return Update.Args(parser)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)

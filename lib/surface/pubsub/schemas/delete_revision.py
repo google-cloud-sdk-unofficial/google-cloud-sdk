@@ -28,14 +28,11 @@ from googlecloudsdk.command_lib.pubsub import util
 from googlecloudsdk.core import log
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
-@base.Hidden
 class DeleteRevision(base.Command):
   """Delete a Pub/Sub schema revision."""
 
   detailed_help = {
-      'EXAMPLES':
-          """\
+      'EXAMPLES': """\
           To roll back to an existing schema revision called "key-schema" with revision_id: "0a0b0c0d", run:
           \
           \n$ {command} key-schema@0a0b0c0d
@@ -61,7 +58,6 @@ class DeleteRevision(base.Command):
 
     Raises:
       util.RequestFailedError: if any of the requests to the API failed.
-
     """
     client = schemas.SchemasClient()
     schema_ref = util.ParseSchemaName(args.schema)
@@ -70,7 +66,8 @@ class DeleteRevision(base.Command):
     except api_ex.HttpError as error:
       exc = exceptions.HttpException(error)
       log.DeletedResource(
-          schema_ref, kind='schema revision', failed=exc.payload.status_message)
+          schema_ref, kind='schema revision', failed=exc.payload.status_message
+      )
       return
 
     log.DeletedResource(result.name, kind='schema revision')

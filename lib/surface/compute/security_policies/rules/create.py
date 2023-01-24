@@ -46,9 +46,17 @@ class CreateHelper(object):
   """
 
   @classmethod
-  def Args(cls, parser, support_redirect, support_rate_limit,
-           support_header_action, support_tcp_ssl, support_fairshare,
-           support_regional_security_policy):
+  def Args(
+      cls,
+      parser,
+      support_redirect,
+      support_rate_limit,
+      support_header_action,
+      support_tcp_ssl,
+      support_fairshare,
+      support_regional_security_policy,
+      support_multiple_rate_limit_keys,
+  ):
     """Generates the flagset for a Create command."""
     flags.AddPriority(parser, 'add')
     if support_regional_security_policy:
@@ -76,7 +84,9 @@ class CreateHelper(object):
           parser,
           support_tcp_ssl=support_tcp_ssl,
           support_exceed_redirect=support_redirect,
-          support_fairshare=support_fairshare)
+          support_fairshare=support_fairshare,
+          support_multiple_rate_limit_keys=support_multiple_rate_limit_keys,
+      )
     if support_header_action:
       flags.AddRequestHeadersToAdd(parser)
     if support_regional_security_policy:
@@ -87,9 +97,17 @@ class CreateHelper(object):
           security_policies_flags.GlobalSecurityPoliciesCompleter)
 
   @classmethod
-  def Run(cls, release_track, args, support_redirect, support_rate_limit,
-          support_header_action, support_fairshare,
-          support_regional_security_policy):
+  def Run(
+      cls,
+      release_track,
+      args,
+      support_redirect,
+      support_rate_limit,
+      support_header_action,
+      support_fairshare,
+      support_regional_security_policy,
+      support_multiple_rate_limit_keys,
+  ):
     """Validates arguments and creates a security policy rule."""
     holder = base_classes.ComputeApiHolder(release_track)
     ref = None
@@ -130,9 +148,12 @@ class CreateHelper(object):
       redirect_options = (
           security_policies_utils.CreateRedirectOptions(holder.client, args))
     if support_rate_limit:
-      rate_limit_options = (
-          security_policies_utils.CreateRateLimitOptions(
-              holder.client, args, support_fairshare))
+      rate_limit_options = security_policies_utils.CreateRateLimitOptions(
+          holder.client,
+          args,
+          support_fairshare,
+          support_multiple_rate_limit_keys,
+      )
 
     request_headers_to_add = None
     if support_header_action:
@@ -171,6 +192,7 @@ class CreateGA(base.CreateCommand):
 
   _support_redirect = True
   _support_rate_limit = True
+  _support_multiple_rate_limit_keys = False
   _support_header_action = True
   _support_tcl_ssl = False
   _support_fairshare = False
@@ -185,7 +207,9 @@ class CreateGA(base.CreateCommand):
         support_header_action=cls._support_header_action,
         support_tcp_ssl=cls._support_tcl_ssl,
         support_fairshare=cls._support_fairshare,
-        support_regional_security_policy=cls._support_regional_security_policy)
+        support_regional_security_policy=cls._support_regional_security_policy,
+        support_multiple_rate_limit_keys=cls._support_multiple_rate_limit_keys,
+    )
 
   def Run(self, args):
     return CreateHelper.Run(
@@ -195,7 +219,9 @@ class CreateGA(base.CreateCommand):
         support_rate_limit=self._support_rate_limit,
         support_header_action=self._support_header_action,
         support_fairshare=self._support_fairshare,
-        support_regional_security_policy=self._support_regional_security_policy)
+        support_regional_security_policy=self._support_regional_security_policy,
+        support_multiple_rate_limit_keys=self._support_multiple_rate_limit_keys,
+    )
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
@@ -220,6 +246,7 @@ class CreateBeta(base.CreateCommand):
 
   _support_redirect = True
   _support_rate_limit = True
+  _support_multiple_rate_limit_keys = True
   _support_header_action = True
   _support_tcl_ssl = False
   _support_fairshare = False
@@ -234,7 +261,9 @@ class CreateBeta(base.CreateCommand):
         support_header_action=cls._support_header_action,
         support_tcp_ssl=cls._support_tcl_ssl,
         support_fairshare=cls._support_fairshare,
-        support_regional_security_policy=cls._support_regional_security_policy)
+        support_regional_security_policy=cls._support_regional_security_policy,
+        support_multiple_rate_limit_keys=cls._support_multiple_rate_limit_keys,
+    )
 
   def Run(self, args):
     return CreateHelper.Run(
@@ -244,7 +273,9 @@ class CreateBeta(base.CreateCommand):
         support_rate_limit=self._support_rate_limit,
         support_header_action=self._support_header_action,
         support_fairshare=self._support_fairshare,
-        support_regional_security_policy=self._support_regional_security_policy)
+        support_regional_security_policy=self._support_regional_security_policy,
+        support_multiple_rate_limit_keys=self._support_multiple_rate_limit_keys,
+    )
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -269,6 +300,7 @@ class CreateAlpha(base.CreateCommand):
 
   _support_redirect = True
   _support_rate_limit = True
+  _support_multiple_rate_limit_keys = True
   _support_header_action = True
   _support_tcl_ssl = True
   _support_fairshare = True
@@ -283,7 +315,9 @@ class CreateAlpha(base.CreateCommand):
         support_header_action=cls._support_header_action,
         support_tcp_ssl=cls._support_tcl_ssl,
         support_fairshare=cls._support_fairshare,
-        support_regional_security_policy=cls._support_regional_security_policy)
+        support_regional_security_policy=cls._support_regional_security_policy,
+        support_multiple_rate_limit_keys=cls._support_multiple_rate_limit_keys,
+    )
 
   def Run(self, args):
     return CreateHelper.Run(
@@ -293,4 +327,6 @@ class CreateAlpha(base.CreateCommand):
         support_rate_limit=self._support_rate_limit,
         support_header_action=self._support_header_action,
         support_fairshare=self._support_fairshare,
-        support_regional_security_policy=self._support_regional_security_policy)
+        support_regional_security_policy=self._support_regional_security_policy,
+        support_multiple_rate_limit_keys=self._support_multiple_rate_limit_keys,
+    )

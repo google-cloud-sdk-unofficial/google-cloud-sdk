@@ -85,6 +85,7 @@ class List(base.ListCommand):
     flags.add_additional_headers_flag(parser)
     flags.add_encryption_flags(parser, command_only_reads_data=True)
     flags.add_fetch_encrypted_object_hashes_flag(parser, is_list=True)
+    flags.add_raw_display_flag(parser)
 
   def Display(self, args, resources):
     if args.stat:
@@ -130,4 +131,9 @@ class List(base.ListCommand):
             all_versions=True,
             fetch_encrypted_object_hashes=args.fetch_encrypted_object_hashes):
           # MakeSerializable will omit all the None values.
-          yield resource_projector.MakeSerializable(resource.metadata)
+          serialized_metadata = resource_projector.MakeSerializable(
+              resource.metadata
+          )
+          yield serialized_metadata
+
+          # TODO(b/249985723): Return standardized resource if not args.raw.

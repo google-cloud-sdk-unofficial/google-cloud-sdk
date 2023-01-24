@@ -1,5 +1,4 @@
-- release_tracks: [ALPHA]
-  hidden: true
+- release_tracks: [ALPHA, BETA]
   help_text:
     brief: List all Cloud Build repositories in a connection.
     description: List all Cloud Build repositories in a connection.

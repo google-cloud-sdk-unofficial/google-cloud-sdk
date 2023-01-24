@@ -43,6 +43,8 @@ class Create(base.CreateCommand):
   # pylint: disable=line-too-long
   r"""Create a new root certificate authority.
 
+  TIP: Consider setting a [project lien](https://cloud.google.com/resource-manager/docs/project-liens) on the project to prevent it from accidental deletion.
+
   ## EXAMPLES
 
   To create a root CA that supports one layer of subordinates:
@@ -191,6 +193,13 @@ class Create(base.CreateCommand):
                                            self.messages.CertificateAuthority)
 
     log.status.Print('Created Certificate Authority [{}].'.format(ca.name))
+    log.status.Print(
+        'TIP: To avoid accidental deletion, '
+        'please consider adding a project lien on this project. To find out '
+        'more, see the following doc: '
+        'https://cloud.google.com/resource-manager/docs/project-liens.'
+    )
+
     if self._ShouldEnableCa(args, ca_ref):
       self._EnableCertificateAuthority(ca_ref.RelativeName())
 

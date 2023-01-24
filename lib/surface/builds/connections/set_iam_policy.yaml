@@ -1,5 +1,4 @@
-- release_tracks: [ALPHA]
-  hidden: true
+- release_tracks: [ALPHA, BETA]
   help_text:
     brief: Set the IAM policy for a Cloud Build connection.
     description: |

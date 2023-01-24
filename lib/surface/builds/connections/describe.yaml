@@ -1,5 +1,4 @@
-- release_tracks: [ALPHA]
-  hidden: true
+- release_tracks: [ALPHA, BETA]
   help_text:
     brief: Describe a Cloud Build Connection
     description: Describe a Cloud Build Connection.

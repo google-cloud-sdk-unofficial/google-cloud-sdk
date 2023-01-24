@@ -40,6 +40,10 @@ class Instances(base.Group):
 
     $ {command} describe my-looker-instance
 
+  To restart an instance with the name `my-looker-instance`, run:
+
+    $ {command} restart my-looker-instance
+
   To list all the instances, run:
 
     $ {command} list

@@ -57,7 +57,8 @@ class Create(base.CreateCommand):
         dataproc,
         cls.BETA,
         include_ttl_config=True,
-        include_gke_platform_args=cls.BETA)
+        include_gke_platform_args=cls.BETA,
+        include_driver_pool_args=True)
     # Add arguments for failure action for primary workers
     if not cls.BETA:
       parser.add_argument(

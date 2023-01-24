@@ -120,12 +120,16 @@ class CreateAlpha(CreateBeta):
 
 
 Create.detailed_help = {
-    'brief':
-        'Create a Compute Engine reservation.',
-    'EXAMPLES':
-        """
-        To create a Compute Engine reservation, run:
+    'brief': (
+        'Create a Compute Engine reservation.'
+    ),
+    'EXAMPLES': """
+        To create a Compute Engine reservation by specifying VM properties using an instance template, run:
 
-            $ {command} my-reservation --zone=fake-zone --vm-count=1 --machine-type=n1-standard-1 --min-cpu-platform="Intel Haswell"
+            $ {command} my-reservation --vm-count=1 --source-instance-template=example-instance-template --zone=fake-zone
+
+        To create a Compute Engine reservation by directly specifying VM properties, run:
+
+            $ {command} my-reservation --vm-count=1 --machine-type=custom-8-10240 --min-cpu-platform="Intel Haswell" --accelerator=count=2,type=nvidia-tesla-v100 --local-ssd=size=375,interface=scsi --zone=fake-zone
         """
 }

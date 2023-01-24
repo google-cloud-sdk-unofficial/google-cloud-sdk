@@ -40,6 +40,7 @@ class UpdateGA(base.UpdateCommand):
   r"""Update a Compute Engine managed instance group."""
 
   support_any_single_zone = False
+  support_update_policy_min_ready_flag = False
 
   @classmethod
   def Args(cls, parser):
@@ -62,6 +63,8 @@ class UpdateGA(base.UpdateCommand):
     managed_flags.AddMigDistributionPolicyTargetShapeFlag(
         parser, cls.support_any_single_zone)
     managed_flags.AddMigListManagedInstancesResultsFlag(parser)
+    managed_flags.AddMigUpdatePolicyFlags(
+        parser, support_min_ready_flag=cls.support_update_policy_min_ready_flag)
     # When adding RMIG-specific flag, update REGIONAL_FLAGS constant.
 
   def _GetUpdatedStatefulPolicyForDisks(self,
@@ -156,13 +159,6 @@ class UpdateGA(base.UpdateCommand):
         auto_healing_policies)
     return auto_healing_policies
 
-  def _PatchRedistributionType(self, igm_patch, args, igm_resource, client):
-    igm_patch.updatePolicy = (managed_instance_groups_utils
-                              .ApplyInstanceRedistributionTypeToUpdatePolicy)(
-                                  client,
-                                  args.GetValue('instance_redistribution_type'),
-                                  igm_resource.updatePolicy)
-
   def _PatchTargetDistributionShape(self, patch_instance_group_manager,
                                     target_distribution_shape, igm_resource,
                                     client):
@@ -200,9 +196,12 @@ class UpdateGA(base.UpdateCommand):
         holder, client, args, igm_resource)
     if auto_healing_policies is not None:
       patch_instance_group_manager.autoHealingPolicies = auto_healing_policies
-    if args.IsSpecified('instance_redistribution_type'):
-      self._PatchRedistributionType(patch_instance_group_manager, args,
-                                    igm_resource, client)
+
+    update_policy = managed_instance_groups_utils.PatchUpdatePolicy(
+        client, args, igm_resource.updatePolicy)
+    if update_policy is not None:
+      patch_instance_group_manager.updatePolicy = update_policy
+
     if self._StatefulArgsSet(args):
       patch_instance_group_manager = (
           self._PatchStatefulPolicy(patch_instance_group_manager, args,
@@ -251,8 +250,15 @@ UpdateGA.detailed_help = {
         """\
       Update a Compute Engine managed instance group.
 
-      *{command}* allows you to specify or modify the stateful policy and
-      autohealing policy for an existing managed instance group.
+      *{command}* allows you to specify or modify the description and group
+      policies for an existing managed instance group, including the group's
+      update policy and optional autohealing and stateful policies
+
+      The group's update policy defines how an updated VM configuration is
+      applied to existing VMs in the group. For more information, see
+      [Applying new configurations]
+      (https://cloud.google.com/compute/docs/instance-groups/updating-migs)
+      to VMs in a MIG.
 
       A stateful policy defines which resources should be preserved across the
       group. When instances in the group are recreated, stateful resources are
@@ -276,6 +282,7 @@ class UpdateBeta(UpdateGA):
   """Update a Compute Engine managed instance group."""
 
   support_any_single_zone = True
+  support_update_policy_min_ready_flag = True
 
   @classmethod
   def Args(cls, parser):
@@ -289,10 +296,8 @@ class UpdateBeta(UpdateGA):
                                          self)._CreateInstanceGroupManagerPatch(
                                              args, igm_ref, igm_resource,
                                              client, holder)
-
     patch_instance_group_manager.instanceLifecyclePolicy = self._GetUpdatedInstanceLifecyclePolicy(
         args, client)
-
     return patch_instance_group_manager
 
   def _StatefulArgsSet(self, args):

@@ -40,6 +40,7 @@ DETAILED_HELP = {
 }
 
 
+@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Seed(base.Command):
   """Seed a Database Migration Service conversion workspace."""
@@ -71,9 +72,11 @@ class Seed(base.Command):
     """
     conversion_workspace_ref = args.CONCEPTS.conversion_workspace.Parse()
 
-    source_connection_profile_ref = args.CONCEPTS.source_connection_profile.Parse(
+    source_connection_profile_ref = (
+        args.CONCEPTS.source_connection_profile.Parse()
     )
-    destination_connection_profile_ref = args.CONCEPTS.destination_connection_profile.Parse(
+    destination_connection_profile_ref = (
+        args.CONCEPTS.destination_connection_profile.Parse()
     )
 
     cw_client = conversion_workspaces.ConversionWorkspacesClient(

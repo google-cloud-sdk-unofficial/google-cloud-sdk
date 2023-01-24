@@ -20,6 +20,7 @@ from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import filter_rewrite
+from googlecloudsdk.api_lib.compute import utils
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.compute import scope as compute_scopes
@@ -78,28 +79,30 @@ def _GetResult(compute_client, request, operation_group_id):
 
   operations_response, errors = _GetOperations(compute_client, request.project,
                                                operation_group_id)
+  if errors:
+    utils.RaiseToolException(errors, error_message='Could not fetch resource:')
   result = {'operationGroupId': operation_group_id, 'instances': []}
-  if not errors:
-    successful = [
-        op for op in operations_response if op.operationType == 'insert' and
-        str(op.status) == 'DONE' and op.error is None
-    ]
-    num_successful = len(successful)
-    num_unsuccessful = request.bulkInsertInstanceResource.count - num_successful
 
-    def GetInstanceStatus(op):
-      return {
-          'id': op.targetId,
-          'name': op.targetLink.split('/')[-1],
-          'zone': op.zone,
-          'selfLink': op.targetLink
-      }
+  successful = [
+      op for op in operations_response if op.operationType == 'insert' and
+      str(op.status) == 'DONE' and op.error is None
+  ]
+  num_successful = len(successful)
+  num_unsuccessful = request.bulkInsertInstanceResource.count - num_successful
 
-    instances_status = [GetInstanceStatus(op) for op in successful]
+  def GetInstanceStatus(op):
+    return {
+        'id': op.targetId,
+        'name': op.targetLink.split('/')[-1],
+        'zone': op.zone,
+        'selfLink': op.targetLink
+    }
 
-    result['createdInstanceCount'] = num_successful
-    result['failedInstanceCount'] = num_unsuccessful
-    result['instances'] = instances_status
+  instances_status = [GetInstanceStatus(op) for op in successful]
+
+  result['createdInstanceCount'] = num_successful
+  result['failedInstanceCount'] = num_unsuccessful
+  result['instances'] = instances_status
 
   return result
 
@@ -264,8 +267,8 @@ class Create(base.Command):
     if response:
       operation_group_id = response[0].operationGroupId
       result = _GetResult(compute_client, request, operation_group_id)
-      if result['createdInstanceCount'] is not None and result[
-          'failedInstanceCount'] is not None:
+      if (result.get('createdInstanceCount') is not None and
+          result.get('failedInstanceCount') is not None):
         self._status_message = 'VM instances created: {}, failed: {}.'.format(
             result['createdInstanceCount'], result['failedInstanceCount'])
       return result

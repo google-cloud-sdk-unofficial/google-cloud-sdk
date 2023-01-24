@@ -54,7 +54,7 @@ class UpdateAlpha(base.UpdateCommand):
         domain=args.domain,
         site=args.site,
         dns=args.dns,
-        net_bios=args.net_bios,
+        net_bios_prefix=args.net_bios_prefix,
         organizational_unit=args.organizational_unit,
         aes_encryption=args.enable_aes,
         username=args.username,
@@ -77,8 +77,8 @@ class UpdateAlpha(base.UpdateCommand):
       updated_fields.append('site')
     if args.IsSpecified('dns'):
       updated_fields.append('dns')
-    if args.IsSpecified('net_bios'):
-      updated_fields.append('netBios')
+    if args.IsSpecified('net_bios_prefix'):
+      updated_fields.append('netBiosPrefix')
     if args.IsSpecified('organizational_unit'):
       updated_fields.append('organizationalUnit')
     if args.IsSpecified('enable_aes'):
@@ -114,7 +114,8 @@ class UpdateAlpha(base.UpdateCommand):
       command = 'gcloud {} netapp active-directories list'.format(
           self.ReleaseTrack().prefix)
       log.status.Print(
-          'Check the status of the updated active directory by listing all active directories:\n  '
-          '$ {} '.format(command))
+          'Check the status of the updated active directory by listing all'
+          ' active directories:\n  $ {} '.format(command)
+      )
     return result
 

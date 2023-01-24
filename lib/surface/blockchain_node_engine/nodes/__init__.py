@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Commands for reading and manipulating blockchain nodes."""
+"""Commands for viewing and manipulating blockchain nodes."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -23,13 +23,13 @@ from googlecloudsdk.calliope import base
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class BlockchainNodes(base.Group):
-  """List blockchain nodes."""
+  """Commands for viewing and manipulating blockchain nodes."""
 
 
 BlockchainNodes.category = base.WEB3_CATEGORY
 
 BlockchainNodes.detailed_help = {
     'DESCRIPTION': """
-        List blockchain nodes.
+        Commands for viewing and manipulating blockchain nodes.
     """,
 }

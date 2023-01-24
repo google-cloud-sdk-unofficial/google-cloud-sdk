@@ -40,6 +40,7 @@ DETAILED_HELP = {
 }
 
 
+@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Oracle(base.Command):
   """Create a Database Migration Service connection profile for Oracle."""

@@ -48,7 +48,7 @@ class CreateAlpha(base.CreateCommand):
         domain=args.domain,
         site=args.site,
         dns=args.dns,
-        net_bios=args.net_bios,
+        net_bios_prefix=args.net_bios_prefix,
         organizational_unit=args.organizational_unit,
         aes_encryption=args.enable_aes,
         username=args.username,
@@ -70,6 +70,7 @@ class CreateAlpha(base.CreateCommand):
       command = 'gcloud {} netapp active-directories list'.format(
           self.ReleaseTrack().prefix)
       log.status.Print(
-          'Check the status of the new active directory by listing all active directories:\n  '
-          '$ {} '.format(command))
+          'Check the status of the new active directory by listing all active'
+          ' directories:\n  $ {} '.format(command)
+      )
     return result

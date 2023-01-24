@@ -46,18 +46,17 @@ def _get_task_iterator(urls, args):
   user_request_args = (
       user_request_args_factory.get_user_request_args_from_command_args(
           args, metadata_type=user_request_args_factory.MetadataType.OBJECT))
-  modifies_full_acl_policy = user_request_args_factory.modifies_full_acl_policy(
-      user_request_args)
-  if (requires_rewrite or modifies_full_acl_policy):
-    # TODO(b/244621490): Add test when ACL flags are exposed.
+  adds_or_removes_acls = user_request_args_factory.adds_or_removes_acls(
+      user_request_args
+  )
+  if requires_rewrite or adds_or_removes_acls:
     fields_scope = cloud_api.FieldsScope.FULL
   else:
     fields_scope = cloud_api.FieldsScope.SHORT
 
-  # TODO(b/264409686) Remove getattr once flag is moved to GA.
-  all_versions = getattr(args, 'all_versions', False)
-
-  if all_versions and not (args.predefined_acl or modifies_full_acl_policy):
+  if args.all_versions and not (
+      args.predefined_acl or args.acl_file or adds_or_removes_acls
+  ):
     # TODO(b/264282236) Stop raising error once we confirm that this flag
     # works fine with all types of object update operations.
     raise errors.Error(
@@ -69,7 +68,7 @@ def _get_task_iterator(urls, args):
     recursion_setting = name_expansion.RecursionSetting.NO
   for name_expansion_result in name_expansion.NameExpansionIterator(
       urls,
-      all_versions=all_versions,
+      all_versions=args.all_versions,
       fields_scope=fields_scope,
       include_buckets=name_expansion.BucketSetting.NO_WITH_ERROR,
       recursion_requested=recursion_setting,

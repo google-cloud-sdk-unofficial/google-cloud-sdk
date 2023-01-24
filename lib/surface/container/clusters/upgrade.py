@@ -98,9 +98,9 @@ def _Args(parser):
   flags.AddClusterVersionFlag(
       parser,
       help="""\
-The Kubernetes release version to which to upgrade the cluster's nodes.
+The GKE release version to which to upgrade the cluster's node pools or master.
 
-If desired cluster version is omitted, *node* upgrades default to the current
+If desired cluster version is omitted, *node pool* upgrades default to the current
 *master* version and *master* upgrades default to the default cluster version,
 which can be found in the server config.
 
@@ -111,10 +111,12 @@ You can find the list of allowed versions for upgrades by running:
   parser.add_argument('--node-pool', help='The node pool to upgrade.')
   parser.add_argument(
       '--master',
-      help='Upgrade the cluster\'s master to the latest version of Kubernetes'
-      ' supported on Kubernetes Engine. Nodes cannot be upgraded at the same'
-      ' time as the master.',
-      action='store_true')
+      help=(
+          "Upgrade the cluster's master. Node pools cannot be upgraded at the "
+          ' same time as the master.'
+      ),
+      action='store_true',
+  )
   # Timeout in seconds for the operation, default 3600 seconds (60 minutes)
   parser.add_argument(
       '--timeout',
@@ -225,38 +227,39 @@ Upgrade.detailed_help = {
         """\
       Upgrades the Kubernetes version of an existing container cluster.
 
-      This command upgrades the Kubernetes version of the *nodes* or *master* of
+      This command upgrades the Kubernetes version of the *node pools* or *master* of
       a cluster. Note that the Kubernetes version of the cluster's *master* is
       also periodically upgraded automatically as new releases are available.
 
-      If desired cluster version is omitted, *node* upgrades default to the
+      If desired cluster version is omitted, *node pool* upgrades default to the
       current *master* version and *master* upgrades default to the default
       cluster version, which can be found in the server config.
 
-      *By running this command, all of the cluster's nodes will be deleted and*
-      *recreated one at a time.* While persistent Kubernetes resources, such as
-      pods backed by replication controllers, will be rescheduled onto new
+      *During node pool upgrades, nodes will be deleted and recreated.* While
+      persistent Kubernetes resources, such as
+      Pods backed by replication controllers, will be rescheduled onto new
       nodes, a small cluster may experience a few minutes where there are
       insufficient nodes available to run all of the scheduled Kubernetes
       resources.
 
       *Please ensure that any data you wish to keep is stored on a persistent*
       *disk before upgrading the cluster.* Ephemeral Kubernetes resources--in
-      particular, pods without replication controllers--will be lost, while
+      particular, Pods without replication controllers--will be lost, while
       persistent Kubernetes resources will get rescheduled.
     """,
     'EXAMPLES':
         """\
-      Upgrade the nodes of sample-cluster to the Kubernetes version of the
-      cluster's master.
+      Upgrade the node pool `pool-1` of `sample-cluster` to the Kubernetes
+      version of the cluster's master.
 
-        $ {command} sample-cluster
+        $ {command} sample-cluster --node-pool=pool-1
 
-      Upgrade the nodes of sample-cluster to Kubernetes version 1.14.7-gke.14:
+      Upgrade the node pool `pool-1` of `sample-cluster` to Kubernetes version
+      1.14.7-gke.14:
 
-        $ {command} sample-cluster --cluster-version="1.14.7-gke.14"
+        $ {command} sample-cluster --node-pool=pool-1 --cluster-version="1.14.7-gke.14"
 
-      Upgrade the master of sample-cluster to the default cluster version:
+      Upgrade the master of `sample-cluster` to the default cluster version:
 
         $ {command} sample-cluster --master
 """,

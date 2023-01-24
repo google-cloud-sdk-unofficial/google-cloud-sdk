@@ -148,6 +148,10 @@ def _get_executed_command():
   return ' '.join(sys.argv)
 
 
+def _log_created_agent(docker_command):
+  log.info('Created agent with command:\n{}'.format(' '.join(docker_command)))
+
+
 def _authenticate_and_get_creds_file_path(existing_creds_file=None):
   """Ensures agent will be able to authenticate and returns creds."""
   # Can't disable near "else" (https://github.com/PyCQA/pylint/issues/872).
@@ -276,9 +280,12 @@ def _execute_and_return_docker_command(args, project, creds_file_path):
     if sudo_completed_process.returncode != 0:
       raise OSError('Error executing Docker command:\n{}'.format(
           ' '.join(full_docker_command)))
-    return sudo_full_docker_command
+    executed_docker_command = sudo_full_docker_command
+  else:
+    executed_docker_command = full_docker_command
 
-  return full_docker_command
+  _log_created_agent(executed_docker_command)
+  return executed_docker_command
 
 
 def _create_additional_agents(agent_count, agent_id_prefix, docker_command):
@@ -295,6 +302,7 @@ def _create_additional_agents(agent_count, agent_id_prefix, docker_command):
 
     # Less error handling than before. Just propogate any process errors.
     subprocess.run(docker_command_to_run, check=True)
+    _log_created_agent(docker_command_to_run)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)

@@ -21,8 +21,7 @@ from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-@base.Hidden
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Create(base.Group):
   """Create Connections in Google Cloud Build."""
   category = base.CI_CD_CATEGORY

@@ -39,6 +39,7 @@ DETAILED_HELP = {
 }
 
 
+@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Rollback(base.Command):
   """Rollback a Database Migration Service conversion workspace."""

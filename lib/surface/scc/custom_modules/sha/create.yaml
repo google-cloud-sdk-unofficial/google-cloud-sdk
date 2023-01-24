@@ -17,7 +17,7 @@
             --enablement-state="ENABLED"
             --custom-config-from-file=custom_config.yaml
 
-      To create a Security Health Analytics custom module for given folder `123`, run:
+      To create a Security Health Analytics custom module for given folder `456`, run:
 
         $ {command} --folder=folders/456 \
             --description="This is a test custom module" \
@@ -30,7 +30,7 @@
             --enablement-state="ENABLED"
             --custom-config-from-file=custom_config.yaml
 
-      To create a Security Health Analytics custom module for given project `123`, run:
+      To create a Security Health Analytics custom module for given project `789`, run:
 
         $ {command} --project=projects/789 \
             --description="This is a test custom module" \

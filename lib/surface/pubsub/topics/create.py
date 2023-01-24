@@ -37,7 +37,7 @@ _KMS_FLAG_OVERRIDES = {
     'kms-key': '--topic-encryption-key',
     'kms-keyring': '--topic-encryption-key-keyring',
     'kms-location': '--topic-encryption-key-location',
-    'kms-project': '--topic-encryption-key-project'
+    'kms-project': '--topic-encryption-key-project',
 }
 
 _KMS_PERMISSION_INFO = """
@@ -53,15 +53,17 @@ def _GetKmsKeyPresentationSpec():
   return kms_resource_args.GetKmsKeyPresentationSpec(
       'topic',
       flag_overrides=_KMS_FLAG_OVERRIDES,
-      permission_info=_KMS_PERMISSION_INFO)
+      permission_info=_KMS_PERMISSION_INFO,
+  )
 
 
 def _GetTopicPresentationSpec():
   return resource_args.CreateTopicResourceArg(
-      'to create.', positional=True, plural=True)
+      'to create.', positional=True, plural=True
+  )
 
 
-def _Run(args, legacy_output=False, with_revisions=False):
+def _Run(args, legacy_output=False):
   """Creates one or more topics."""
   client = topics.TopicsClient()
 
@@ -74,27 +76,31 @@ def _Run(args, legacy_output=False, with_revisions=False):
   else:
     # Did user supply any topic-encryption-key flags?
     for keyword in [
-        'topic-encryption-key', 'topic-encryption-key-project',
-        'topic-encryption-key-location', 'topic-encryption-key-keyring'
+        'topic-encryption-key',
+        'topic-encryption-key-project',
+        'topic-encryption-key-location',
+        'topic-encryption-key-keyring',
     ]:
       if args.IsSpecified(keyword.replace('-', '_')):
         raise core_exceptions.Error(
-            '--topic-encryption-key was not fully specified.')
+            '--topic-encryption-key was not fully specified.'
+        )
 
   retention_duration = getattr(args, 'message_retention_duration', None)
   if args.IsSpecified('message_retention_duration'):
     retention_duration = util.FormatDuration(retention_duration)
 
-  message_storage_policy_allowed_regions = args.message_storage_policy_allowed_regions
+  message_storage_policy_allowed_regions = (
+      args.message_storage_policy_allowed_regions
+  )
 
   schema = getattr(args, 'schema', None)
   first_revision_id = None
   last_revision_id = None
   if schema:
     schema = args.CONCEPTS.schema.Parse().RelativeName()
-    if with_revisions:
-      first_revision_id = getattr(args, 'first_revision_id', None)
-      last_revision_id = getattr(args, 'last_revision_id', None)
+    first_revision_id = getattr(args, 'first_revision_id', None)
+    last_revision_id = getattr(args, 'last_revision_id', None)
   message_encoding_list = getattr(args, 'message_encoding', None)
   message_encoding = None
   if message_encoding_list:
@@ -133,21 +139,18 @@ def _Run(args, legacy_output=False, with_revisions=False):
     raise util.RequestsFailedError(failed, 'create')
 
 
-def _Args(parser, with_revisions=False):
+def _Args(parser):
   """Custom args implementation.
 
   Args:
     parser: The current parser.
-    with_revisions: (bool) Whether to add revision-id args.
   """
 
   resource_args.AddResourceArgs(
       parser, [_GetKmsKeyPresentationSpec(), _GetTopicPresentationSpec()]
   )
   # This group should not be hidden
-  flags.AddSchemaSettingsFlags(
-      parser, with_revisions=with_revisions, group_hidden=False
-  )
+  flags.AddSchemaSettingsFlags(parser, is_update=False)
   labels_util.AddCreateLabelsFlags(parser)
   flags.AddTopicMessageRetentionFlags(parser, is_update=False)
 
@@ -167,8 +170,7 @@ class Create(base.CreateCommand):
   """Creates one or more Cloud Pub/Sub topics."""
 
   detailed_help = {
-      'EXAMPLES':
-          """\
+      'EXAMPLES': """\
           To create a Cloud Pub/Sub topic, run:
 
               $ {command} mytopic"""
@@ -188,11 +190,11 @@ class CreateBeta(Create):
 
   @staticmethod
   def Args(parser):
-    _Args(parser, with_revisions=True)
+    _Args(parser)
 
   def Run(self, args):
     legacy_output = properties.VALUES.pubsub.legacy_output.GetBool()
-    return _Run(args, legacy_output=legacy_output, with_revisions=True)
+    return _Run(args, legacy_output=legacy_output)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)

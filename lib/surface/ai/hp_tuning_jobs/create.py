@@ -90,6 +90,7 @@ class CreateGa(base.CreateCommand):
           network=args.network,
           service_account=args.service_account,
           enable_web_access=args.enable_web_access,
+          enable_dashboard_access=args.enable_dashboard_access,
           labels=labels)
 
       log.status.Print(

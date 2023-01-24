@@ -1,7 +1,7 @@
 - release_tracks: [ALPHA, GA]
   help_text:
     brief: List authorized organizations descriptions.
-    description: List all service access zones in an access policy object.
+    description: List all authorized organizations descriptions in an access policy object.
     GA:
       examples: |
         To list authorized organizations description in an access policy, run:

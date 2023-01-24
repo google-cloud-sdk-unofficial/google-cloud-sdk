@@ -35,10 +35,8 @@ from googlecloudsdk.core import resources
 from googlecloudsdk.core.console import console_io
 
 _DETAILED_HELP = {
-    'DESCRIPTION':
-        '{description}',
-    'EXAMPLES':
-        """ \
+    'DESCRIPTION': '{description}',
+    'EXAMPLES': """ \
   To redeploy a target `prod` for delivery pipeline `test-pipeline` in region `us-central1`, run:
 
   $ {command} prod --delivery-pipeline=test-pipeline --region=us-central1
@@ -48,8 +46,9 @@ _DETAILED_HELP = {
 _ROLLOUT = 'rollout'
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
-                    base.ReleaseTrack.GA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
+)
 class Redeploy(base.CreateCommand):
   """Redeploy the last release to a target.
 
@@ -57,6 +56,7 @@ class Redeploy(base.CreateCommand):
   target.
   If rollout-id is not specified, a rollout ID will be generated.
   """
+
   detailed_help = _DETAILED_HELP
 
   @staticmethod
@@ -80,28 +80,35 @@ class Redeploy(base.CreateCommand):
             'projectsId': ref_dict['projectsId'],
             'locationsId': ref_dict['locationsId'],
             'deliveryPipelinesId': args.delivery_pipeline,
-        })
+        },
+    )
     pipeline_obj = delivery_pipeline_util.GetPipeline(
-        pipeline_ref.RelativeName())
+        pipeline_ref.RelativeName()
+    )
     failed_redeploy_prefix = 'Cannot perform redeploy.'
     # Check is the pipeline is suspended.
-    delivery_pipeline_util.ThrowIfPipelineSuspended(pipeline_obj,
-                                                    failed_redeploy_prefix)
+    delivery_pipeline_util.ThrowIfPipelineSuspended(
+        pipeline_obj, failed_redeploy_prefix
+    )
     current_release_ref = _GetCurrentRelease(
-        pipeline_ref, target_ref,
-        rollout_util.ROLLOUT_IN_TARGET_FILTER_TEMPLATE)
+        pipeline_ref, target_ref, rollout_util.ROLLOUT_IN_TARGET_FILTER_TEMPLATE
+    )
     try:
       release_obj = release.ReleaseClient().Get(
-          current_release_ref.RelativeName())
+          current_release_ref.RelativeName()
+      )
     except apitools_exceptions.HttpError as error:
       raise exceptions.HttpException(error)
     # Check if the release is abandoned.
     if release_obj.abandoned:
       raise deploy_exceptions.AbandonedReleaseError(
-          failed_redeploy_prefix, current_release_ref.RelativeName())
+          failed_redeploy_prefix, current_release_ref.RelativeName()
+      )
     prompt = (
         'Are you sure you want to redeploy release {} to target {}?'.format(
-            current_release_ref.Name(), target_ref.Name()))
+            current_release_ref.Name(), target_ref.Name()
+        )
+    )
     console_io.PromptContinue(prompt, cancel_on_no=True)
 
     promote_util.Promote(
@@ -112,7 +119,8 @@ class Redeploy(base.CreateCommand):
         args.rollout_id,
         args.annotations,
         args.labels,
-        description=args.description)
+        description=args.description,
+    )
 
 
 def _GetCurrentRelease(pipeline_ref, target_ref, filter_str):
@@ -141,23 +149,37 @@ def _GetCurrentRelease(pipeline_ref, target_ref, filter_str):
           pipeline_ref=pipeline_ref,
           filter_str=filter_str,
           order_by=rollout_util.ENQUEUETIME_ROLLOUT_ORDERBY,
-          limit=1))
+          limit=1,
+      )
+  )
   if len(prior_rollouts) < 1:
     raise core_exceptions.Error(
         'unable to redeploy to target {}. Target has no rollouts.'.format(
-            target_ref.Name()))
+            target_ref.Name()
+        )
+    )
   prior_rollout = prior_rollouts[0]
   messages = core_apis.GetMessagesModule('clouddeploy', 'v1')
-  if (prior_rollout.state != messages.Rollout.StateValueValuesEnum.SUCCEEDED and
-      prior_rollout.state != messages.Rollout.StateValueValuesEnum.FAILED):
-    raise deploy_exceptions.RedeployRolloutError(target_ref.Name(),
-                                                 prior_rollout.name,
-                                                 prior_rollout.state)
+  redeployable_states = [
+      messages.Rollout.StateValueValuesEnum.SUCCEEDED,
+      messages.Rollout.StateValueValuesEnum.FAILED,
+      messages.Rollout.StateValueValuesEnum.CANCELLED,
+  ]
+  if prior_rollout.state not in redeployable_states:
+    raise deploy_exceptions.RedeployRolloutError(
+        target_ref.Name(), prior_rollout.name, prior_rollout.state
+    )
 
   current_release_ref = resources.REGISTRY.ParseRelativeName(
       resources.REGISTRY.Parse(
           prior_rollout.name,
-          collection='clouddeploy.projects.locations.deliveryPipelines'
-          '.releases.rollouts').Parent().RelativeName(),
-      collection='clouddeploy.projects.locations.deliveryPipelines.releases')
+          collection=(
+              'clouddeploy.projects.locations.deliveryPipelines'
+              '.releases.rollouts'
+          ),
+      )
+      .Parent()
+      .RelativeName(),
+      collection='clouddeploy.projects.locations.deliveryPipelines.releases',
+  )
   return current_release_ref

@@ -28,26 +28,27 @@ from googlecloudsdk.command_lib.pubsub import util
 from googlecloudsdk.core import log
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
-@base.Hidden
 class Rollback(base.Command):
   """Roll back a Pub/Sub schema to a specified revision."""
 
   detailed_help = {
-      'EXAMPLES':
-          """\
+      'EXAMPLES': """\
           To roll back to an existing schema revision called "key-schema" with revision_id: "0a0b0c0d", run:
           \
-          \n$ {command} key-schema@0a0b0c0d
+          \n$ {command} key-schema --revision-id=0a0b0c0d
           """
   }
 
   @staticmethod
   def Args(parser):
     # The flag name is 'schema'.
-    resource_args.AddSchemaResourceArg(
-        parser,
-        'revision to which the schema rolls back (SCHEMA_NAME@REVISION_ID).\n')
+    resource_args.AddSchemaResourceArg(parser, 'to rollback.')
+    parser.add_argument(
+        '--revision-id',
+        type=str,
+        help='The revision to roll back to.',
+        required=True,
+    )
 
   def Run(self, args):
     """This is what gets called when the user runs this command.
@@ -63,16 +64,17 @@ class Rollback(base.Command):
 
     Raises:
       util.RequestFailedError: if any of the requests to the API failed.
-
     """
     client = schemas.SchemasClient()
     schema_ref = util.ParseSchemaName(args.schema)
+    revision_id = getattr(args, 'revision_id', None)
     try:
-      result = client.Rollback(schema_ref=schema_ref)
+      result = client.Rollback(schema_ref=schema_ref, revision_id=revision_id)
     except api_ex.HttpError as error:
       exc = exceptions.HttpException(error)
       log.CreatedResource(
-          schema_ref, kind='schema revision', failed=exc.payload.status_message)
+          schema_ref, kind='schema revision', failed=exc.payload.status_message
+      )
       return
 
     log.CreatedResource(result.name, kind='schema revision')

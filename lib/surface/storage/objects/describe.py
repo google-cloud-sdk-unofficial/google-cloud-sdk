@@ -59,6 +59,7 @@ class Describe(base.DescribeCommand):
     flags.add_additional_headers_flag(parser)
     flags.add_encryption_flags(parser, command_only_reads_data=True)
     flags.add_fetch_encrypted_object_hashes_flag(parser, is_list=False)
+    flags.add_raw_display_flag(parser)
 
   def Run(self, args):
     encryption_util.initialize_key_store(args)
@@ -87,14 +88,20 @@ class Describe(base.DescribeCommand):
           resource.storage_url,
           decryption_key_hash_sha256=resource.decryption_key_hash_sha256,
           error_on_missing_key=True)
-      return resource_projector.MakeSerializable(
-          client.get_object_metadata(
-              resource.bucket,
-              resource.name,
-              fields_scope=cloud_api.FieldsScope.FULL,
-              generation=resource.generation,
-              request_config=request_config,
-          )
+      final_resource = client.get_object_metadata(
+          resource.bucket,
+          resource.name,
+          fields_scope=cloud_api.FieldsScope.FULL,
+          generation=resource.generation,
+          request_config=request_config,
       )
+    else:
+      final_resource = resource
+
     # MakeSerializable will omit all the None values.
-    return resource_projector.MakeSerializable(resource.metadata)
+    serialized_resource = resource_projector.MakeSerializable(
+        final_resource.metadata
+    )
+    return serialized_resource
+
+    # TODO(b/249985723): Return standardized resource.

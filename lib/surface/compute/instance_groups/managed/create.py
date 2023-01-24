@@ -108,6 +108,7 @@ class CreateGA(base.CreateCommand):
   """Create Compute Engine managed instance groups."""
 
   support_any_single_zone = False
+  support_update_policy_min_ready_flag = False
 
   @classmethod
   def Args(cls, parser):
@@ -122,6 +123,8 @@ class CreateGA(base.CreateCommand):
     managed_flags.AddMigDistributionPolicyTargetShapeFlag(
         parser, cls.support_any_single_zone)
     managed_flags.AddMigListManagedInstancesResultsFlag(parser)
+    managed_flags.AddMigUpdatePolicyFlags(
+        parser, support_min_ready_flag=cls.support_update_policy_min_ready_flag)
     # When adding RMIG-specific flag, update REGIONAL_FLAGS constant.
 
   def _HandleStatefulArgs(self, instance_group_manager, args, client):
@@ -247,10 +250,8 @@ class CreateGA(base.CreateCommand):
             client.messages, health_check, args.initial_delay))
     managed_instance_groups_utils.ValidateAutohealingPolicies(
         auto_healing_policies)
-    update_policy = (managed_instance_groups_utils
-                     .ApplyInstanceRedistributionTypeToUpdatePolicy)(
-                         client, args.GetValue('instance_redistribution_type'),
-                         None)
+    update_policy = managed_instance_groups_utils.PatchUpdatePolicy(
+        client, args, None)
 
     instance_group_manager = client.messages.InstanceGroupManager(
         name=group_ref.Name(),
@@ -348,6 +349,7 @@ class CreateBeta(CreateGA):
   """Create Compute Engine managed instance groups."""
 
   support_any_single_zone = True
+  support_update_policy_min_ready_flag = True
 
   @classmethod
   def Args(cls, parser):

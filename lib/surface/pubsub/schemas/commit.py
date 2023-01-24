@@ -29,14 +29,11 @@ from googlecloudsdk.command_lib.pubsub import util
 from googlecloudsdk.core import log
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
-@base.Hidden
 class Commit(base.Command):
   """Commit a Pub/Sub schema revision."""
 
   detailed_help = {
-      'EXAMPLES':
-          """\
+      'EXAMPLES': """\
           To commit a PROTOCOL_BUFFER schema revision called "key-schema" that requires exactly one-string field named "key", run:
           \
           \n$ {command} key-schema --definition="syntax = 'proto3'; message Message { optional string key = 1; }" --type=protocol-buffer
@@ -67,7 +64,6 @@ class Commit(base.Command):
 
     Raises:
       util.RequestFailedError: if any of the requests to the API failed.
-
     """
     client = schemas.SchemasClient()
     schema_ref = util.ParseSchemaName(args.schema)
@@ -80,11 +76,13 @@ class Commit(base.Command):
       result = client.Commit(
           schema_ref=schema_ref,
           schema_definition=definition,
-          schema_type=args.type)
+          schema_type=args.type,
+      )
     except api_ex.HttpError as error:
       exc = exceptions.HttpException(error)
       log.CreatedResource(
-          schema_ref, kind='schema revision', failed=exc.payload.status_message)
+          schema_ref, kind='schema revision', failed=exc.payload.status_message
+      )
       return
 
     log.CreatedResource(result.name, kind='schema revision')

@@ -18,10 +18,10 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
-from googlecloudsdk.api_lib.firestore import admin_api
 from googlecloudsdk.api_lib.firestore import operations
 from googlecloudsdk.api_lib.firestore import rewrite_backend
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.firestore import flags
 from googlecloudsdk.core import properties
 from googlecloudsdk.core.resource import resource_projection_spec
 
@@ -56,6 +56,7 @@ class List(base.ListCommand):
     """Register flags for this command."""
     base.PAGE_SIZE_FLAG.SetDefault(parser, operations.DEFAULT_PAGE_SIZE)
     base.LIMIT_FLAG.SetDefault(parser, operations.DEFAULT_PAGE_SIZE)
+    flags.AddDatabaseIdFlag(parser)
 
   def Run(self, args):
     frontend_filter, backend_filter = self._ConvertFilter(args.filter, args)
@@ -63,7 +64,7 @@ class List(base.ListCommand):
     args.filter = frontend_filter
     return operations.ListOperations(
         project=properties.VALUES.core.project.Get(required=True),
-        database=admin_api.DEFAULT_DATABASE,
+        database=args.database,
         limit=args.limit,
         operation_filter=backend_filter)
 

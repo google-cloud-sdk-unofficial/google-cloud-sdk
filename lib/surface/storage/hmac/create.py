@@ -18,7 +18,9 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+from googlecloudsdk.api_lib.storage import api_factory
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.storage import storage_url
 
 
 class Create(base.Command):
@@ -44,4 +46,7 @@ class Create(base.Command):
         'service_account', type=str, help='The service account email.')
 
   def Run(self, args):
-    raise NotImplementedError
+    service_account = args.service_account
+    api = api_factory.get_api(storage_url.ProviderPrefix.GCS)
+    response = api.create_hmac_key(service_account)
+    return response.metadata

@@ -39,6 +39,7 @@ DETAILED_HELP = {
 }
 
 
+@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Convert(base.Command):
   """Convert a Database Migration Service conversion workspace."""
