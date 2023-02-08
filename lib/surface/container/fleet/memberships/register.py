@@ -123,8 +123,8 @@ class Register(base.CreateCommand):
       $ {command} my-cluster \
         --gke-uri=my-cluster-gke-uri
 
-   Register a GKE cluster referenced from a GKE URI, and install the Connect
-   agent using service account key file:
+    Register a GKE cluster referenced from a GKE URI, and install the Connect
+    agent using service account key file:
 
       $ {command} my-cluster \
         --gke-uri=my-cluster-gke-uri \

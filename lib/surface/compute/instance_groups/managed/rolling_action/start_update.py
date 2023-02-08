@@ -29,6 +29,8 @@ from googlecloudsdk.command_lib.compute.instance_groups.managed import flags as 
 from googlecloudsdk.command_lib.compute.instance_groups.managed import rolling_action
 from googlecloudsdk.command_lib.compute.managed_instance_groups import update_instances_utils
 
+TEMPLATE_NAME_KEY = 'template'
+
 
 def _AddArgs(parser, supports_min_ready=False):
   """Adds args."""
@@ -64,11 +66,13 @@ def _AddArgs(parser, supports_min_ready=False):
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
-class StartUpdate(base.Command):
+class StartUpdateGA(base.Command):
   """Start update instances of managed instance group."""
 
-  @staticmethod
-  def Args(parser):
+  region_instance_template_enabled = False
+
+  @classmethod
+  def Args(cls, parser):
     _AddArgs(parser=parser)
     instance_groups_flags.MULTISCOPE_INSTANCE_GROUP_MANAGER_ARG.AddArgument(
         parser)
@@ -105,18 +109,44 @@ class StartUpdate(base.Command):
 
     igm_info = managed_instance_groups_utils.GetInstanceGroupManagerOrThrow(
         igm_ref, client)
-
+    # Value of instance template's name in args.version is a string, so we add
+    # it as a separate argument args.template, which will be parsed as a
+    # ResourceArgument that will make parsing regional instance templates
+    # possible.
+    if (
+        TEMPLATE_NAME_KEY in args.version
+        and self.region_instance_template_enabled
+    ):
+      args.template = args.version[TEMPLATE_NAME_KEY]
     versions = []
     versions.append(
-        update_instances_utils.ParseVersion(igm_ref.project, '--version',
-                                            args.version, resources,
-                                            client.messages))
+        update_instances_utils.ParseVersion(
+            args,
+            igm_ref.project,
+            '--version',
+            args.version,
+            resources,
+            client.messages,
+            region_instance_template_enabled=self.region_instance_template_enabled,
+        )
+    )
     if args.canary_version:
+      if (
+          TEMPLATE_NAME_KEY in args.canary_version
+          and self.region_instance_template_enabled
+      ):
+        args.template = args.canary_version[TEMPLATE_NAME_KEY]
       versions.append(
-          update_instances_utils.ParseVersion(igm_ref.project,
-                                              '--canary-version',
-                                              args.canary_version, resources,
-                                              client.messages))
+          update_instances_utils.ParseVersion(
+              args,
+              igm_ref.project,
+              '--canary-version',
+              args.canary_version,
+              resources,
+              client.messages,
+              region_instance_template_enabled=self.region_instance_template_enabled,
+          )
+      )
     managed_instance_groups_utils.ValidateVersions(igm_info, versions,
                                                    resources, args.force)
 
@@ -180,9 +210,25 @@ class StartUpdate(base.Command):
     return service, 'Patch', request
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
-class StartUpdateBeta(StartUpdate):
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class StartUpdateBeta(StartUpdateGA):
   """Start update instances of managed instance group."""
+
+  region_instance_template_enabled = False
+
+  @classmethod
+  def Args(cls, parser):
+    _AddArgs(parser=parser, supports_min_ready=True)
+    instance_groups_flags.MULTISCOPE_INSTANCE_GROUP_MANAGER_ARG.AddArgument(
+        parser
+    )
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class StartUpdateAlpha(StartUpdateBeta):
+  """Start update instances of managed instance group."""
+
+  region_instance_template_enabled = True
 
   @staticmethod
   def Args(parser):
@@ -191,13 +237,40 @@ class StartUpdateBeta(StartUpdate):
         parser)
 
 
-StartUpdate.detailed_help = {
-    'brief':
-        'Updates instances in a managed instance group',
-    'DESCRIPTION':
-        """\
+StartUpdateGA.detailed_help = {
+    'brief': 'Updates instances in a managed instance group',
+    'DESCRIPTION': """\
         *{command}* updates instances in a managed instance group,
-        according to the given versions and the given update policy."""
+        according to the given versions and the given update policy.""",
 }
 
-StartUpdateBeta.detailed_help = StartUpdate.detailed_help
+StartUpdateBeta.detailed_help = StartUpdateGA.detailed_help
+
+StartUpdateAlpha.detailed_help = {
+    'brief': 'Updates instances in a managed instance group',
+    'DESCRIPTION': """\
+        *{command}* updates instances in a managed instance group,
+        according to the given versions and the given update policy.
+
+        An instance template version can be either a global or regional resource.
+        """,
+    'EXAMPLES': """
+      Running:
+
+            {command} example-managed-instance-group \\
+            --version='template=example-global-instance-template'
+
+      Sets the group's instance template version to a global instance template
+      resource: 'example-global-instance-template'.
+
+      To use a regional instance template, specify its full URL.
+
+      Running:
+
+            {command} example-managed-instance-group \\
+            --version='template=https://www.googleapis.com/compute/alpha/projects/example-project/regions/us-central1/instanceTemplates/example-regional-instance-template'
+
+      Sets the group's instance template version to a regional instance template
+      resource: 'example-regional-instance-template'.
+      """,
+}

@@ -67,15 +67,21 @@ class Create(base.CreateCommand):
         type=bool,
         help='Membership Binding is created for all the Scopes in the Fleet for given Membership.',
     )
-    group.add_argument(
-        '--scope',
-        type=str,
-        help='Scope to assign.',
+    resources.AddScopeResourceArg(
+        parser,
+        flag_name='--scope',
+        api_version=util.VERSION_MAP[cls.ReleaseTrack()],
+        scope_help='The Fleet Scope to bind the membership to.',
+        group=group,
     )
 
   def Run(self, args):
     fleetclient = client.FleetClient(release_track=self.ReleaseTrack())
+    scope = None
+    if args.CONCEPTS.scope.Parse() is not None:
+      scope = args.CONCEPTS.scope.Parse().RelativeName()
     return fleetclient.CreateMembershipBinding(
         resources.MembershipBindingResourceName(args),
         fleet=args.fleet,
-        scope=args.scope)
+        scope=scope,
+    )

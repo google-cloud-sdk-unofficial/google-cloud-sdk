@@ -54,8 +54,6 @@
       help_text: |
         The project of the VPC network. Required if the project of VPC network differs from the
         project of the cluster.
-      GA:
-        hidden: true
 
     labels:
       api_field: vpnConnection.labels

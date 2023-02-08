@@ -350,6 +350,7 @@ class CreateBeta(Create):
     flags.AddLoggingVariantFlag(parser, for_node_pool=True)
     flags.AddWindowsOsVersionFlag(parser)
     flags.AddQueuedProvisioningFlag(parser, hidden=True)
+    flags.AddTPUTopologyFlag(parser, hidden=True)
 
   def ParseCreateNodePoolOptions(self, args):
     ops = ParseCreateNodePoolOptionsBase(args)
@@ -375,6 +376,7 @@ class CreateBeta(Create):
     ops.disable_pod_cidr_overprovision = args.disable_pod_cidr_overprovision
     ops.enable_fast_socket = args.enable_fast_socket
     ops.enable_queued_provisioning = args.enable_queued_provisioning
+    ops.tpu_topology = args.tpu_topology
     return ops
 
 
@@ -408,6 +410,7 @@ class CreateAlpha(Create):
     ops.disable_pod_cidr_overprovision = args.disable_pod_cidr_overprovision
     ops.enable_fast_socket = args.enable_fast_socket
     ops.enable_queued_provisioning = args.enable_queued_provisioning
+    ops.tpu_topology = args.tpu_topology
     return ops
 
   @staticmethod
@@ -457,6 +460,6 @@ class CreateAlpha(Create):
     flags.AddLoggingVariantFlag(parser, for_node_pool=True)
     flags.AddWindowsOsVersionFlag(parser)
     flags.AddQueuedProvisioningFlag(parser, hidden=True)
-
+    flags.AddTPUTopologyFlag(parser, hidden=True)
 
 Create.detailed_help = DETAILED_HELP

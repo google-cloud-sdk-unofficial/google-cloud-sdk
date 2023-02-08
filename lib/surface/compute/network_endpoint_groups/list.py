@@ -34,7 +34,6 @@ class List(base.ListCommand):
           base_classes.ScopeType.regional_scope,
           base_classes.ScopeType.global_scope
       ])
-  support_global_scope = True
   support_regional_scope = True
 
   @classmethod
@@ -51,7 +50,7 @@ class List(base.ListCommand):
         parser,
         zonal=True,
         regional=cls.support_regional_scope,
-        global_=cls.support_global_scope)
+        global_=True)
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
@@ -63,8 +62,7 @@ class List(base.ListCommand):
         zonal_service=client.apitools_client.networkEndpointGroups,
         regional_service=client.apitools_client.regionNetworkEndpointGroups
         if self.support_regional_scope else None,
-        global_service=client.apitools_client.globalNetworkEndpointGroups
-        if self.support_global_scope else None,
+        global_service=client.apitools_client.globalNetworkEndpointGroups,
         aggregation_service=client.apitools_client.networkEndpointGroups)
 
     return lister.Invoke(request_data, list_implementation)

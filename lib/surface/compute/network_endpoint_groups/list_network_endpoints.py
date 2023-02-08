@@ -48,7 +48,6 @@ class ListNetworkEndpoints(base.ListCommand):
           networkEndpoint.port,
           networkEndpoint.fqdn
         )"""
-  support_global_scope = True
   support_regional_scope = False
 
   @classmethod
@@ -56,7 +55,6 @@ class ListNetworkEndpoints(base.ListCommand):
     parser.display_info.AddFormat(cls.display_info_format)
     base.URI_FLAG.RemoveFromParser(parser)
     flags.MakeNetworkEndpointGroupsArg(
-        support_global_scope=cls.support_global_scope,
         support_regional_scope=cls.support_regional_scope).AddArgument(parser)
 
   def Run(self, args):
@@ -65,7 +63,6 @@ class ListNetworkEndpoints(base.ListCommand):
     messages = client.messages
 
     neg_ref = flags.MakeNetworkEndpointGroupsArg(
-        support_global_scope=self.support_global_scope,
         support_regional_scope=self.support_regional_scope).ResolveAsResource(
             args,
             holder.resources,
@@ -78,11 +75,12 @@ class ListNetworkEndpoints(base.ListCommand):
         args.filter, defaults=defaults)
 
     if hasattr(neg_ref, 'zone'):
-      request = messages.ComputeNetworkEndpointGroupsListNetworkEndpointsRequest(
-          networkEndpointGroup=neg_ref.Name(),
-          project=neg_ref.project,
-          zone=neg_ref.zone,
-          filter=filter_expr)
+      request = (
+          messages.ComputeNetworkEndpointGroupsListNetworkEndpointsRequest(
+              networkEndpointGroup=neg_ref.Name(),
+              project=neg_ref.project,
+              zone=neg_ref.zone,
+              filter=filter_expr))
       service = client.apitools_client.networkEndpointGroups
     elif self.support_regional_scope and hasattr(neg_ref, 'region'):
       request = messages.ComputeRegionNetworkEndpointGroupsListNetworkEndpointsRequest(

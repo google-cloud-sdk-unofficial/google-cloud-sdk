@@ -57,7 +57,13 @@ class CheckUpgrade(base.Command):
 
   def Run(self, args):
     env_resource = args.CONCEPTS.environment.Parse()
-
+    if (
+        args.airflow_version or args.image_version
+    ) and image_versions_command_util.IsDefaultImageVersion(args.image_version):
+      message = image_versions_command_util.BuildDefaultComposerVersionWarning(
+          args.image_version, args.airflow_version
+      )
+      log.warning(message)
     if args.airflow_version:
       # Converts airflow_version arg to image_version arg
       args.image_version = (

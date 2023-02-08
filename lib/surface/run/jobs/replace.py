@@ -42,16 +42,16 @@ from googlecloudsdk.core.console import progress_tracker
 
 
 class Replace(base.Command):
-  """Creates or replaces a job from a YAML Job specification."""
+  """Create or replace a job from a YAML job specification."""
 
   detailed_help = {
       'DESCRIPTION':
           """\
-          {description}
+          Creates or replaces a job from a YAML job specification.
           """,
       'EXAMPLES':
           """\
-          To replace the specification for myjob
+          To replace the specification for a job defined in myjob.yaml
 
               $ {command} myjob.yaml
 

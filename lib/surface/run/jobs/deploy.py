@@ -47,7 +47,7 @@ class BuildType(enum.Enum):
   BUILDPACKS = 'Buildpacks'
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Deploy(base.Command):
   """Create or update a Cloud Run job."""
 
@@ -127,8 +127,12 @@ class Deploy(base.Command):
         include_build = True
       else:
         raise c_exceptions.RequiredArgumentException(
-            '--image', 'Requires a container image to deploy (e.g. '
-            '`us-docker.pkg.dev/cloudrun/container/job:latest`) if no build source is provided.'
+            '--image',
+            (
+                'Requires a container image to deploy (e.g.'
+                ' `us-docker.pkg.dev/cloudrun/container/job:latest`) if no'
+                ' build source is provided.'
+            ),
         )
 
     job_ref = args.CONCEPTS.job.Parse()

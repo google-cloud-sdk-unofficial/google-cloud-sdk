@@ -25,6 +25,7 @@ from googlecloudsdk.command_lib.composer import flags
 from googlecloudsdk.command_lib.composer import image_versions_util as image_versions_command_util
 from googlecloudsdk.command_lib.composer import resource_args
 from googlecloudsdk.command_lib.composer import util as command_util
+from googlecloudsdk.core import log
 
 DETAILED_HELP = {
     'EXAMPLES':
@@ -320,7 +321,13 @@ class UpdateBeta(Update):
 
   def Run(self, args):
     env_ref = args.CONCEPTS.environment.Parse()
-
+    if (
+        args.airflow_version or args.image_version
+    ) and image_versions_command_util.IsDefaultImageVersion(args.image_version):
+      message = image_versions_command_util.BuildDefaultComposerVersionWarning(
+          args.image_version, args.airflow_version
+      )
+      log.warning(message)
     if args.airflow_version:
       # Converts airflow_version arg to image_version arg
       args.image_version = (

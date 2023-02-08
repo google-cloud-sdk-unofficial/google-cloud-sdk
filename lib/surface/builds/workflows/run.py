@@ -103,9 +103,12 @@ class Create(base.CreateCommand):
 
     # Log ran/created resources and return Done RunWorkflow LRO.
     log.status.Print(
-        'View run: https://console.cloud.google.com/cloud-build/runs/{region}/{run}?project={project}'
+        'View run:'
+        ' https://console.cloud.google.com/cloud-build/runs/{region}/{run}?project={project}'
         .format(
-            region=args.region,
+            region=region_ref.Name(),
             run=pipeline_run_id,
-            project=properties.VALUES.core.project.Get(required=True)))
+            project=properties.VALUES.core.project.Get(required=True),
+        )
+    )
     return run_workflow_operation_done

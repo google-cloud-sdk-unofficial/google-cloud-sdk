@@ -45,19 +45,22 @@ from googlecloudsdk.core import log
 import six
 
 
-def _CommonArgs(parser,
-                release_track,
-                support_source_instance,
-                support_local_ssd_size=False,
-                support_kms=False,
-                support_multi_writer=False,
-                support_mesh=False,
-                support_host_error_timeout_seconds=False,
-                support_numa_node_count=False,
-                support_visible_core_count=False,
-                support_max_run_duration=False,
-                support_region_instance_template=False,
-                support_provisioned_throughput=False):
+def _CommonArgs(
+    parser,
+    release_track,
+    support_source_instance,
+    support_local_ssd_size=False,
+    support_kms=False,
+    support_multi_writer=False,
+    support_mesh=False,
+    support_host_error_timeout_seconds=False,
+    support_numa_node_count=False,
+    support_visible_core_count=False,
+    support_max_run_duration=False,
+    support_region_instance_template=False,
+    support_provisioned_throughput=False,
+    support_network_attachments=False,
+):
   """Adding arguments applicable for creating instance templates."""
   parser.display_info.AddFormat(instance_templates_flags.DEFAULT_LIST_FORMAT)
   metadata_utils.AddMetadataArgs(parser)
@@ -73,7 +76,11 @@ def _CommonArgs(parser,
   else:
     instances_flags.AddLocalSsdArgs(parser)
   instances_flags.AddCanIpForwardArgs(parser)
-  instances_flags.AddAddressArgs(parser, instances=False)
+  instances_flags.AddAddressArgs(
+      parser,
+      instances=False,
+      support_network_attachments=support_network_attachments,
+  )
   instances_flags.AddAcceleratorArgs(parser)
   instances_flags.AddMachineTypeArgs(parser)
   deprecate_maintenance_policy = release_track in [base.ReleaseTrack.ALPHA]
@@ -866,6 +873,7 @@ class Create(base.CreateCommand):
   _support_max_run_duration = False
   _support_region_instance_template = False
   _support_provisioned_throughput = False
+  _support_network_attachments = False
 
   @classmethod
   def Args(cls, parser):
@@ -880,7 +888,8 @@ class Create(base.CreateCommand):
         support_visible_core_count=cls._support_visible_core_count,
         support_max_run_duration=cls._support_max_run_duration,
         support_region_instance_template=cls._support_region_instance_template,
-        support_provisioned_throughput=cls._support_provisioned_throughput)
+        support_provisioned_throughput=cls._support_provisioned_throughput,
+        support_network_attachments=cls._support_network_attachments)
     instances_flags.AddMinCpuPlatformArgs(parser, base.ReleaseTrack.GA)
     instances_flags.AddPrivateIpv6GoogleAccessArgForTemplate(
         parser, utils.COMPUTE_GA_API_VERSION)
@@ -938,6 +947,7 @@ class CreateBeta(Create):
   _support_max_run_duration = True
   _support_region_instance_template = False
   _support_provisioned_throughput = False
+  _support_network_attachments = False
 
   @classmethod
   def Args(cls, parser):
@@ -954,7 +964,8 @@ class CreateBeta(Create):
         support_visible_core_count=cls._support_visible_core_count,
         support_max_run_duration=cls._support_max_run_duration,
         support_region_instance_template=cls._support_region_instance_template,
-        support_provisioned_throughput=cls._support_provisioned_throughput)
+        support_provisioned_throughput=cls._support_provisioned_throughput,
+        support_network_attachments=cls._support_network_attachments)
     instances_flags.AddMinCpuPlatformArgs(parser, base.ReleaseTrack.BETA)
     instances_flags.AddPrivateIpv6GoogleAccessArgForTemplate(
         parser, utils.COMPUTE_BETA_API_VERSION)
@@ -1016,6 +1027,7 @@ class CreateAlpha(Create):
   _support_region_instance_template = True
   _support_confidential_compute_type = True
   _support_provisioned_throughput = True
+  _support_network_attachments = True
 
   @classmethod
   def Args(cls, parser):
@@ -1033,7 +1045,8 @@ class CreateAlpha(Create):
         support_visible_core_count=cls._support_visible_core_count,
         support_max_run_duration=cls._support_max_run_duration,
         support_region_instance_template=cls._support_region_instance_template,
-        support_provisioned_throughput=cls._support_provisioned_throughput)
+        support_provisioned_throughput=cls._support_provisioned_throughput,
+        support_network_attachments=cls._support_network_attachments)
     instances_flags.AddLocalNvdimmArgs(parser)
     instances_flags.AddMinCpuPlatformArgs(parser, base.ReleaseTrack.ALPHA)
     instances_flags.AddConfidentialComputeArgs(

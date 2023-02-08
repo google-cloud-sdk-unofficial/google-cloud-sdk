@@ -21,7 +21,6 @@ from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class WorkforcePoolSubjects(base.Group):
   """Create and manage workforce pool subjects.

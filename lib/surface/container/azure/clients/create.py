@@ -21,10 +21,10 @@ from __future__ import unicode_literals
 from googlecloudsdk.api_lib.container.gkemulticloud import azure as api_util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.container.azure import resource_args
+from googlecloudsdk.command_lib.container.gkemulticloud import command_util
 from googlecloudsdk.command_lib.container.gkemulticloud import constants
 from googlecloudsdk.command_lib.container.gkemulticloud import endpoint_util
 from googlecloudsdk.command_lib.container.gkemulticloud import flags
-from googlecloudsdk.core import log
 
 
 # Command needs to be in one line for the docgen tool to format properly.
@@ -55,6 +55,7 @@ class Create(base.CreateCommand):
         required=True,
         dest="app_id",
         help="Azure Active Directory (AAD) Application/Client ID (GUID).")
+    base.ASYNC_FLAG.AddToParser(parser)
     flags.AddValidateOnly(parser, "creation of the client")
     parser.display_info.AddFormat(constants.AZURE_CLIENT_FORMAT)
 
@@ -64,5 +65,12 @@ class Create(base.CreateCommand):
     with endpoint_util.GkemulticloudEndpointOverride(location):
       client_ref = resource_args.ParseAzureClientResourceArg(args)
       api_client = api_util.ClientsClient()
-      api_client.Create(client_ref, args)
-      log.CreatedResource(client_ref, kind=constants.AZURE_CLIENT_KIND)
+      message = command_util.ClientMessage(
+          client_ref.azureClientsId,
+          action="Creating")
+      return command_util.Create(
+          resource_ref=client_ref,
+          resource_client=api_client,
+          message=message,
+          args=args,
+          kind=constants.AZURE_CLIENT_KIND)

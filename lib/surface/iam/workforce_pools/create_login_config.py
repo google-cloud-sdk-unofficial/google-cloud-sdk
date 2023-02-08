@@ -78,5 +78,7 @@ class CreateLoginConfig(base.CreateCommand):
     log.CreatedResource(args.output_file, RESOURCE_TYPE)
 
     if args.activate:
-      properties.VALUES.auth.login_config_file.Set(
-          os.path.abspath(args.output_file))
+      properties.PersistProperty(
+          properties.VALUES.auth.login_config_file,
+          os.path.abspath(args.output_file),
+      )

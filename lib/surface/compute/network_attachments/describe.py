@@ -24,9 +24,18 @@ from googlecloudsdk.command_lib.compute import scope as compute_scope
 from googlecloudsdk.command_lib.compute.network_attachments import flags
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
+)
 class Describe(base.DescribeCommand):
   """Describes a Google Compute Engine network attachment."""
+
+  detailed_help = {
+      'EXAMPLES': """\
+          To describe a network attachment, run:
+
+              $ {command} NETWORK_ATTACHMENT_NAME --region=us-central1"""
+  }
 
   ARG = None
 

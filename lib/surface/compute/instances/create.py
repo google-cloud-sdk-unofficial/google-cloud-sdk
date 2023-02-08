@@ -108,7 +108,8 @@ def _CommonArgs(parser,
                 support_network_queue_count=False,
                 support_instance_kms=False,
                 support_max_run_duration=False,
-                support_provisioned_throughput=False):
+                support_provisioned_throughput=False,
+                support_network_attachments=False):
   """Register parser args common to all tracks."""
   metadata_utils.AddMetadataArgs(parser)
   instances_flags.AddDiskArgs(parser, enable_regional, enable_kms=enable_kms)
@@ -128,7 +129,8 @@ def _CommonArgs(parser,
       instances=True,
       support_subinterface=support_subinterface,
       instance_create=True,
-      support_network_queue_count=support_network_queue_count)
+      support_network_queue_count=support_network_queue_count,
+      support_network_attachments=support_network_attachments)
   instances_flags.AddAcceleratorArgs(parser)
   instances_flags.AddMachineTypeArgs(parser)
   instances_flags.AddMaintenancePolicyArgs(
@@ -246,6 +248,7 @@ class Create(base.CreateCommand):
   _support_max_run_duration = False
   _support_ipv6_assignment = False
   _support_confidential_compute_type = False
+  _support_network_attachments = False
 
   @classmethod
   def Args(cls, parser):
@@ -262,7 +265,8 @@ class Create(base.CreateCommand):
         support_instance_kms=cls._support_instance_kms,
         support_max_run_duration=cls._support_max_run_duration,
         support_provisioned_throughput=cls._support_provisioned_throughput,
-        supports_erase_vss=cls._support_erase_vss)
+        supports_erase_vss=cls._support_erase_vss,
+        support_network_attachments=cls._support_network_attachments)
     cls.SOURCE_INSTANCE_TEMPLATE = (
         instances_flags.MakeSourceInstanceTemplateArg())
     cls.SOURCE_INSTANCE_TEMPLATE.AddArgument(parser)
@@ -669,6 +673,7 @@ class CreateBeta(Create):
   _support_instance_kms = False
   _support_max_run_duration = True
   _support_ipv6_assignment = False
+  _support_network_attachments = False
 
   def GetSourceMachineImage(self, args, resources):
     """Retrieves the specified source machine image's selflink.
@@ -701,7 +706,8 @@ class CreateBeta(Create):
         support_numa_node_count=cls._support_numa_node_count,
         support_instance_kms=cls._support_instance_kms,
         support_max_run_duration=cls._support_max_run_duration,
-        support_provisioned_throughput=cls._support_provisioned_throughput)
+        support_provisioned_throughput=cls._support_provisioned_throughput,
+        support_network_attachments=cls._support_network_attachments)
     cls.SOURCE_INSTANCE_TEMPLATE = (
         instances_flags.MakeSourceInstanceTemplateArg())
     cls.SOURCE_INSTANCE_TEMPLATE.AddArgument(parser)
@@ -749,6 +755,7 @@ class CreateAlpha(CreateBeta):
   _support_max_run_duration = True
   _support_ipv6_assignment = True
   _support_confidential_compute_type = True
+  _support_network_attachments = True
 
   @classmethod
   def Args(cls, parser):
@@ -769,7 +776,8 @@ class CreateAlpha(CreateBeta):
         support_network_queue_count=cls._support_network_queue_count,
         support_instance_kms=cls._support_instance_kms,
         support_max_run_duration=cls._support_max_run_duration,
-        support_provisioned_throughput=cls._support_provisioned_throughput)
+        support_provisioned_throughput=cls._support_provisioned_throughput,
+        support_network_attachments=cls._support_network_attachments)
 
     CreateAlpha.SOURCE_INSTANCE_TEMPLATE = (
         instances_flags.MakeSourceInstanceTemplateArg())

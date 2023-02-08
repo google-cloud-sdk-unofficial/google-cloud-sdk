@@ -36,7 +36,7 @@ $ {command} --admin-cluster=my-admin-cluster
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class QueryVersionConfig(base.Command):
-  """Query Anthos on bare metal admin cluster version configuration."""
+  """Query versions for creating or upgrading an Anthos on bare metal admin cluster."""
 
   detailed_help = {'EXAMPLES': _EXAMPLES}
 

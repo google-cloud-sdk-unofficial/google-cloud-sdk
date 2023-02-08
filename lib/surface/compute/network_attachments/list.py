@@ -24,9 +24,22 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute.network_attachments import flags
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
+)
 class List(base.ListCommand):
   """List Google Compute Engine network attachments."""
+
+  detailed_help = {
+      'EXAMPLES': """\
+          To list all the network attachments, run:
+
+              $ {command}
+
+          To list the network attachments in given region(s), run:
+
+              $ {command} --regions=region-1,region-2"""
+  }
 
   @classmethod
   def Args(cls, parser):

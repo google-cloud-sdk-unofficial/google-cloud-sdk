@@ -67,6 +67,7 @@ class Redeploy(base.CreateCommand):
     flags.AddDescriptionFlag(parser)
     flags.AddAnnotationsFlag(parser, _ROLLOUT)
     flags.AddLabelsFlag(parser, _ROLLOUT)
+    flags.AddStartingPhaseId(parser)
 
   def Run(self, args):
     target_ref = args.CONCEPTS.target.Parse()
@@ -116,10 +117,11 @@ class Redeploy(base.CreateCommand):
         release_obj,
         target_ref.Name(),
         False,
-        args.rollout_id,
-        args.annotations,
-        args.labels,
+        rollout_id=args.rollout_id,
+        annotations=args.annotations,
+        labels=args.labels,
         description=args.description,
+        starting_phase_id=args.starting_phase_id,
     )
 
 

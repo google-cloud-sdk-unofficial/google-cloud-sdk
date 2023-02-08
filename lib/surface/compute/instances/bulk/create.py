@@ -391,7 +391,7 @@ class CreateAlpha(Create):
     # Flags specific to Alpha release track
     instances_flags.AddSecureTagsArgs(parser)
     instances_flags.AddHostErrorTimeoutSecondsArgs(parser)
-
+    instances_flags.AddMaintenanceInterval().AddToParser(parser)
   # LINT.ThenChange(../../queued_resources/create.py:alpha_spec)
 
 

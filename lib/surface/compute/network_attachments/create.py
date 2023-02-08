@@ -36,9 +36,30 @@ def GetConnectionPreference(args, messages):
   return None
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
+)
 class Create(base.CreateCommand):
   """Create a Google Compute Engine network attachment."""
+
+  detailed_help = {
+      'brief': 'Create a Google Compute Engine network attachment.',
+      'DESCRIPTION': """\
+      *{command}* is used to create network attachments. A service consumer
+      creates network attachments and makes it available to producers.
+      Service producers then use a multi-NIC VM to form a bi-directional,
+      non-NAT'd communication channel.
+      """,
+      'EXAMPLES': """\
+
+        $ {command} NETWORK_ATTACHMENT_NAME --region=us-central1 --subnets=MY_SUBNET --connection-preference=ACCEPT_MANUAL --producer-accept-list=PROJECT1,PROJECT2 --producer-reject-list=PROJECT3,PROJECT4
+
+      To create a network attachment with a textual description, run:
+
+        $ {command} NETWORK_ATTACHMENT_NAME --region=us-central1 --subnets=MY_SUBNET --connection-preference=ACCEPT_MANUAL --producer-accept-list=PROJECT1,PROJECT2 --producer-reject-list=PROJECT3,PROJECT4 --description='default network attachment'
+
+      """,
+  }
 
   NETWORK_ATTACHMENT_ARG = None
   SUBNETWORK_ARG = None

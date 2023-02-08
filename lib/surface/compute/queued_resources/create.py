@@ -97,6 +97,7 @@ class Create(base.CreateCommand):
     cls.AddSourceInstanceTemplate(parser)
     instances_flags.AddSecureTagsArgs(parser)
     instances_flags.AddHostErrorTimeoutSecondsArgs(parser)
+    instances_flags.AddMaintenanceInterval().AddToParser(parser)
     # LINT.ThenChange(../instances/bulk/create.py:alpha_spec)
     # Queued resource specific flags
     valid_until_group = parser.add_group(mutex=True, required=True)

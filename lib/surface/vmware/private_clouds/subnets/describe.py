@@ -28,7 +28,7 @@ DETAILED_HELP = {
         """,
     'EXAMPLES':
         """
-          To get the information about a subnet resource called ``my-subnet'', which is in private cloud ``my-private-cloud'' in project ``my-project'' and zone ``us-west1-a'', run:
+          To get the information about a subnet resource called `my-subnet`, that belongs to the private cloud `my-private-cloud` in project `my-project` and zone `us-west1-a`, run:
 
             $ {command} my-subnet --private-cloud=my-private-cloud --location=us-west1-a --project=my-project
 
@@ -36,7 +36,7 @@ DETAILED_HELP = {
 
             $ {command} my-subnet --private-cloud=my-private-cloud
 
-          In the second example, the project and location are taken from gcloud properties core/project and compute/zone, respectively.
+          In the second example, the project and location are taken from gcloud properties `core/project` and `compute/zone`, respectively.
         """
 }
 

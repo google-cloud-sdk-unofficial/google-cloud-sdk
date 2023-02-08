@@ -43,21 +43,20 @@ class Update(base.UpdateCommand):
   """Update a Compute Engine network endpoint group."""
 
   detailed_help = DETAILED_HELP
-  support_global_scope = True
+  support_regional_scope = False
   support_hybrid_neg = True
   support_l4ilb_neg = False
-  support_vm_ip_neg = True
 
   @classmethod
   def Args(cls, parser):
     flags.MakeNetworkEndpointGroupsArg(
-        support_global_scope=cls.support_global_scope).AddArgument(parser)
+        support_regional_scope=cls.support_regional_scope,
+    ).AddArgument(parser)
     flags.AddUpdateNegArgsToParser(
         parser,
-        support_global_scope=cls.support_global_scope,
         support_hybrid_neg=cls.support_hybrid_neg,
         support_l4ilb_neg=cls.support_l4ilb_neg,
-        support_vm_ip_neg=cls.support_vm_ip_neg)
+    )
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
@@ -66,10 +65,12 @@ class Update(base.UpdateCommand):
     resources = holder.resources
 
     neg_ref = flags.MakeNetworkEndpointGroupsArg(
-        support_global_scope=self.support_global_scope).ResolveAsResource(
-            args,
-            resources,
-            scope_lister=compute_flags.GetDefaultScopeLister(holder.client))
+        support_regional_scope=self.support_regional_scope,
+    ).ResolveAsResource(
+        args,
+        resources,
+        scope_lister=compute_flags.GetDefaultScopeLister(holder.client),
+    )
 
     client = network_endpoint_groups.NetworkEndpointGroupsClient(client,
                                                                  messages,
@@ -86,5 +87,5 @@ class Update(base.UpdateCommand):
 class AlphaUpdate(Update):
   """Update a Compute Engine network endpoint group."""
 
-  support_vm_ip_neg = True
   support_l4ilb_neg = True
+  support_regional_scope = True

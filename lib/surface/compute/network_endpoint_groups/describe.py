@@ -39,13 +39,11 @@ class Describe(base.DescribeCommand):
   """Describe a Compute Engine network endpoint group."""
 
   detailed_help = DETAILED_HELP
-  support_global_scope = True
   support_regional_scope = True
 
   @classmethod
   def Args(cls, parser):
     flags.MakeNetworkEndpointGroupsArg(
-        support_global_scope=cls.support_global_scope,
         support_regional_scope=cls.support_regional_scope).AddArgument(parser)
 
   def Run(self, args):
@@ -53,7 +51,6 @@ class Describe(base.DescribeCommand):
     client = holder.client
 
     neg_ref = flags.MakeNetworkEndpointGroupsArg(
-        support_global_scope=self.support_global_scope,
         support_regional_scope=self.support_regional_scope).ResolveAsResource(
             args,
             holder.resources,

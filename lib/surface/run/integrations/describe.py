@@ -75,12 +75,11 @@ class Describe(base.DescribeCommand):
       resource_status = client.GetIntegrationStatus(name)
       integration_type = types_utils.GetIntegrationType(resource_config)
 
-      # TODO(b/244491059) Return a class to avoid hardcoded strings for keys.
-      return {
-          'name': name,
-          'region': conn_context.region,
-          'type': integration_type,
-          'config': resource_config,
-          'status': resource_status,
-          types_utils.LATEST_DEPLOYMENT_FIELD: latest_deployment,
-      }
+      return integration_printer.Record(
+          name=name,
+          region=conn_context.region,
+          integration_type=integration_type,
+          config=resource_config,
+          status=resource_status,
+          latest_deployment=latest_deployment,
+      )

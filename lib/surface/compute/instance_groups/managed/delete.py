@@ -169,7 +169,8 @@ class Delete(base.DeleteCommand):
         autotick=False,
     ) as tracker:
       resources += holder.client.MakeRequests(
-          requests, errors, progress_tracker=tracker)
+          requests, errors, progress_tracker=tracker, enable_single_request=True
+      )
     if errors:
       utils.RaiseToolException(errors)
     return resources

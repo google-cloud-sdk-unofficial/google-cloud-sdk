@@ -263,6 +263,11 @@ class Create(base.Command):
     _CommonArgs(parser, cls._support_max_pods_per_node, release_track)
 
   def Run(self, args):
+    if image_versions_util.IsDefaultImageVersion(args.image_version):
+      message = image_versions_util.BuildDefaultComposerVersionWarning(
+          args.image_version, args.airflow_version
+      )
+      log.warning(message)
     self.image_version = None
     if args.airflow_version:
       self.image_version = image_versions_util.ImageVersionFromAirflowVersion(
@@ -275,7 +280,7 @@ class Create(base.Command):
     self.ParsePrivateEnvironmentWebServerCloudSqlRanges(args,
                                                         self.image_version,
                                                         self.ReleaseTrack())
-    self.ParseWebServerAccessControlConfigOptions(args, self.image_version)
+    self.ParseWebServerAccessControlConfigOptions(args)
     self.ParseMasterAuthorizedNetworksConfigOptions(args, self.ReleaseTrack())
     self.ValidateTriggererFlags(args)
     self.ValidateFlagsAddedInComposer2(
@@ -442,7 +447,7 @@ class Create(base.Command):
               prerequisite='enable-private-environment',
               opt='composer-network-ipv4-cidr'))
 
-  def ParseWebServerAccessControlConfigOptions(self, args, image_version):
+  def ParseWebServerAccessControlConfigOptions(self, args):
     if (args.enable_private_environment and not args.web_server_allow_ip and
         not args.web_server_allow_all and not args.web_server_deny_all):
       raise command_util.InvalidUserInputError(

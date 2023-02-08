@@ -13,7 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 - release_tracks: [GA]
-  hidden: true
   command_type: CREATE
   help_text:
     brief: Create a new SAML workforce pool provider.

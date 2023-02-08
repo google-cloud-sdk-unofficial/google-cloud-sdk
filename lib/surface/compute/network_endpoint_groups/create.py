@@ -30,7 +30,8 @@ from googlecloudsdk.command_lib.compute.network_endpoint_groups import flags
 from googlecloudsdk.core import log
 
 DETAILED_HELP = {
-    'EXAMPLES': """
+    'EXAMPLES':
+        """
 To create a network endpoint group:
 
   $ {command} my-neg --zone=us-central1-a --network=my-network --subnet=my-subnetwork
@@ -73,30 +74,28 @@ class Create(base.CreateCommand):
   """Create a Compute Engine network endpoint group."""
 
   detailed_help = DETAILED_HELP
-  support_global_scope = True
   support_regional_scope = True
   support_neg_type = False
   support_hybrid_neg = True
   support_l4ilb_neg = False
-  support_vm_ip_neg = True
   support_serverless_deployment = False
   support_l7psc_neg = True
+  support_regional_internet_neg = False
 
   @classmethod
   def Args(cls, parser):
     flags.MakeNetworkEndpointGroupsArg(
-        support_global_scope=cls.support_global_scope,
         support_regional_scope=cls.support_regional_scope).AddArgument(parser)
     flags.AddCreateNegArgsToParser(
         parser,
         support_neg_type=cls.support_neg_type,
-        support_global_scope=cls.support_global_scope,
         support_hybrid_neg=cls.support_hybrid_neg,
         support_l4ilb_neg=cls.support_l4ilb_neg,
         support_regional_scope=cls.support_regional_scope,
-        support_vm_ip_neg=cls.support_vm_ip_neg,
         support_serverless_deployment=cls.support_serverless_deployment,
-        support_l7psc_neg=cls.support_l7psc_neg)
+        support_l7psc_neg=cls.support_l7psc_neg,
+        support_regional_internet_neg=cls.support_regional_internet_neg,
+    )
 
   def Run(self, args):
     """Issues the request necessary for adding the network endpoint group."""
@@ -107,7 +106,6 @@ class Create(base.CreateCommand):
     neg_client = network_endpoint_groups.NetworkEndpointGroupsClient(
         client, messages, resources)
     neg_ref = flags.MakeNetworkEndpointGroupsArg(
-        support_global_scope=self.support_global_scope,
         support_regional_scope=self.support_regional_scope).ResolveAsResource(
             args,
             holder.resources,
@@ -190,8 +188,14 @@ class Create(base.CreateCommand):
 
     valid_scopes = collections.OrderedDict()
     valid_scopes['gce-vm-ip-port'] = ['zonal']
-    valid_scopes['internet-ip-port'] = ['global']
-    valid_scopes['internet-fqdn-port'] = ['global']
+
+    if self.support_regional_internet_neg:
+      valid_scopes['internet-ip-port'] = ['global', 'regional']
+      valid_scopes['internet-fqdn-port'] = ['global', 'regional']
+    else:
+      valid_scopes['internet-ip-port'] = ['global']
+      valid_scopes['internet-fqdn-port'] = ['global']
+
     valid_scopes['serverless'] = ['regional']
     valid_scopes['private-service-connect'] = ['regional']
 
@@ -199,8 +203,8 @@ class Create(base.CreateCommand):
       valid_scopes['non-gcp-private-ip-port'] = ['zonal']
     if self.support_l4ilb_neg:
       valid_scopes['gce-vm-primary-ip'] = ['zonal']
-    if self.support_vm_ip_neg:
-      valid_scopes['gce-vm-ip'] = ['zonal']
+
+    valid_scopes['gce-vm-ip'] = ['zonal']
 
     valid_scopes_inverted = _Invert(valid_scopes)
 
@@ -224,12 +228,14 @@ class Create(base.CreateCommand):
                 _GetValidScopesErrorMessage(network_endpoint_type,
                                             valid_scopes)))
 
-      if network_endpoint_type == 'private-service-connect' and not args.psc_target_service:
+      if (
+          network_endpoint_type == 'private-service-connect'
+          and not args.psc_target_service
+      ):
         raise exceptions.InvalidArgumentException(
             '--private-service-connect',
             'Network endpoint type private-service-connect must specify '
-            '--psc-target-service for private service NEG.'
-        )
+            '--psc-target-service for private service NEG.')
 
     else:
       valid_global_types = valid_scopes_inverted['global']
@@ -250,6 +256,7 @@ class CreateBeta(Create):
   """Create a Google Compute Engine network endpoint group."""
 
   support_serverless_deployment = True
+  support_regional_internet_neg = False
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -258,3 +265,4 @@ class CreateAlpha(CreateBeta):
 
   support_l4ilb_neg = True
   support_neg_type = True
+  support_regional_internet_neg = True

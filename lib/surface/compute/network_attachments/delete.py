@@ -25,9 +25,18 @@ from googlecloudsdk.command_lib.compute import scope as compute_scope
 from googlecloudsdk.command_lib.compute.network_attachments import flags
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
+)
 class Delete(base.DeleteCommand):
   """Delete one or more Google Compute Engine network attachments."""
+
+  detailed_help = {
+      'EXAMPLES': """\
+          To delete a network attachment, run:
+
+              $ {command} NETWORK_ATTACHMENT_NAME --region=us-central1"""
+  }
 
   ARG = None
 

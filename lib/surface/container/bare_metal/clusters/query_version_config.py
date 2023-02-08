@@ -23,10 +23,11 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.container.bare_metal import cluster_flags as flags
 
 _EXAMPLES = """
-To query versions for creating a cluster with an admin cluster membership named `my-admin-cluster-membership`,
+To query versions for creating a cluster with an admin cluster membership named
+`my-admin-cluster-membership` managed in project `my-admin-cluster-project`
 run:
 
-$ {command} --admin-cluster-membership=my-admin-cluster-membership
+$ {command} --admin-cluster-membership=my-admin-cluster-membership --admin-cluster-membership-project=my-admin-cluster-project
 
 To query versions for upgrading a user cluster named `my-user-cluster`,
 run:
@@ -37,7 +38,7 @@ $ {command} --cluster=my-user-cluster
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class QueryVersionConfig(base.Command):
-  """Query Anthos on bare metal version configuration."""
+  """Query versions for creating or upgrading an Anthos on bare metal user cluster."""
 
   detailed_help = {'EXAMPLES': _EXAMPLES}
 

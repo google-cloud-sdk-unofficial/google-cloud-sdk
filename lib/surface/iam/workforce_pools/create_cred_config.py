@@ -33,22 +33,23 @@ class CreateCredConfig(base.CreateCommand):
   """
 
   detailed_help = {
-      'EXAMPLES':
-          textwrap.dedent("""\
+      'EXAMPLES': textwrap.dedent(
+          """\
           To create a file-sourced credential configuration for your project, run:
 
-            $ {command} locations/$REGION/workforcePools/$WORKFORCE_POOL_ID/providers/$PROVIDER_ID --credential-source-file=$PATH_TO_OIDC_ID_TOKEN --workforce-pool-user-project $PROJECT_NUMBER --output-file=credentials.json
+            $ {command} locations/$REGION/workforcePools/$WORKFORCE_POOL_ID/providers/$PROVIDER_ID --credential-source-file=$PATH_TO_OIDC_ID_TOKEN --workforce-pool-user-project=$PROJECT_NUMBER --output-file=credentials.json
 
           To create a URL-sourced credential configuration for your project, run:
 
-            $ {command} locations/$REGION/workforcePools/$WORKFORCE_POOL_ID/providers/$PROVIDER_ID --credential-source-url=$URL_FOR_OIDC_TOKEN --credential-source-headers=Key=Value --workforce-pool-user-project $PROJECT_NUMBER --output-file=credentials.json
+            $ {command} locations/$REGION/workforcePools/$WORKFORCE_POOL_ID/providers/$PROVIDER_ID --credential-source-url=$URL_FOR_OIDC_TOKEN --credential-source-headers=Key=Value --workforce-pool-user-project=$PROJECT_NUMBER --output-file=credentials.json
 
           To create an executable-source credential configuration for your project, run the following command:
 
-            $ {command} locations/$REGION/workforcePools/$WORKFORCE_POOL_ID/providers/$PROVIDER_ID --executable-command=$EXECUTABLE_COMMAND --executable-timeout-millis=30000 --executable-output-file=$CACHE_FILE --workforce-pool-user-project $PROJECT_NUMBER --output-file=credentials.json
+            $ {command} locations/$REGION/workforcePools/$WORKFORCE_POOL_ID/providers/$PROVIDER_ID --executable-command=$EXECUTABLE_COMMAND --executable-timeout-millis=30000 --executable-output-file=$CACHE_FILE --workforce-pool-user-project=$PROJECT_NUMBER --output-file=credentials.json
 
           To use the resulting file for any of these commands, set the GOOGLE_APPLICATION_CREDENTIALS environment variable to point to the generated file.
-          """),
+          """
+      ),
   }
 
   _use_pluggable_auth = False
@@ -74,7 +75,10 @@ class CreateCredConfig(base.CreateCommand):
         help='The URL to obtain the credential from.')
     credential_types.add_argument(
         '--executable-command',
-        help='The full command to run to retrieve the credential. Must be an absolute path for the program including arguments.'
+        help=(
+            'The full command to run to retrieve the credential. Must be an'
+            ' absolute path for the program including arguments.'
+        ),
     )
 
     parser.add_argument(

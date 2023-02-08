@@ -21,8 +21,7 @@ from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
-                    base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Notebooks(base.Group):
   """Notebooks Command Group."""
 
@@ -32,3 +31,13 @@ class Notebooks(base.Group):
     # TODO(b/190538034):  Determine if command group works with project number
     base.RequireProjectID(args)
     del context, args
+
+
+@base.Deprecate(
+    is_removed=False,
+    warning=('This command is deprecated. '
+             'Please use `gcloud notebooks` instead.'))
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+class NotebooksNonProd(Notebooks):
+  """Notebooks Command Group."""
+  pass

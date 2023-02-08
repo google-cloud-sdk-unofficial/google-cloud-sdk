@@ -259,7 +259,17 @@ class Login(base.Command):
         no_browser=args.no_browser,
         remote_bootstrap=args.remote_bootstrap)
 
-    # First try third party web flow.
+    # 1. Try the 3PI web flow with --no-browser:
+    #    This could be a 3PI flow initiated via --no-browser.
+    #    If provider_name is present, then this is the 3PI flow.
+    #    We can start the flow as is as the remote_bootstrap value will be used.
+    if args.remote_bootstrap and 'provider_name' in args.remote_bootstrap:
+      auth_util.DoInstalledAppBrowserFlowGoogleAuth(
+          config.CLOUDSDK_EXTERNAL_ACCOUNT_SCOPES,
+          auth_proxy_redirect_uri='https://sdk.cloud.google/authcode.html',
+          **flow_params)
+      return
+    # 2. Try the 3PI web flow with a login configuration file.
     login_config_file = workforce_login_config_util.GetWorkforceLoginConfig()
     if login_config_file:
       if args.update_adc:
@@ -280,7 +290,7 @@ class Login(base.Command):
       return LoginAs(account, creds, args.project, args.activate, args.brief,
                      args.update_adc, args.add_quota_project_to_adc)
 
-    # Then try first party web flow
+    # 3. Try the 1P web flow.
     creds = auth_util.DoInstalledAppBrowserFlowGoogleAuth(
         scopes,
         auth_proxy_redirect_uri='https://sdk.cloud.google.com/authcode.html',

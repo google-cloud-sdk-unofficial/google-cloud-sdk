@@ -17,7 +17,7 @@
     brief: Describe a workforce pool provider operation.
     description: Describe a workforce pool provider operation.
     examples: |
-      To describe the long-running workforce pool provider operation with the ID ``my-operation``, run:
+      To describe the long-running workforce pool provider operation with the ID ``my-operation'', run:
 
         $ {command} my-operation --workforce-pool="my-workforce-pool" --provider="my-provider" --location="global"
 

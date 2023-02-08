@@ -31,10 +31,8 @@ from googlecloudsdk.command_lib.deploy import resource_args
 from googlecloudsdk.core.console import console_io
 
 _DETAILED_HELP = {
-    'DESCRIPTION':
-        '{description}',
-    'EXAMPLES':
-        """ \
+    'DESCRIPTION': '{description}',
+    'EXAMPLES': """ \
   To promote a release called 'test-release' for delivery pipeline 'test-pipeline' in region 'us-central1' to target 'prod', run:
 
   $ {command} --release=test-release --delivery-pipeline=test-pipeline --region=us-central1 --to-target=prod
@@ -57,10 +55,12 @@ def _CommonArgs(parser):
   flags.AddRolloutID(parser)
   flags.AddAnnotationsFlag(parser, _ROLLOUT)
   flags.AddLabelsFlag(parser, _ROLLOUT)
+  flags.AddStartingPhaseId(parser)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
-                    base.ReleaseTrack.GA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
+)
 class Promote(base.CreateCommand):
   """Promotes a release from one target (source), to another (destination).
 
@@ -68,6 +68,7 @@ class Promote(base.CreateCommand):
   that is farthest along in the promotion sequence to its next stage in the
   promotion sequence.
   """
+
   detailed_help = _DETAILED_HELP
 
   @staticmethod
@@ -77,19 +78,23 @@ class Promote(base.CreateCommand):
   def Run(self, args):
     release_ref = args.CONCEPTS.release.Parse()
     pipeline_obj = delivery_pipeline_util.GetPipeline(
-        release_ref.Parent().RelativeName())
+        release_ref.Parent().RelativeName()
+    )
     failed_activity_msg = 'Cannot promote release {}.'.format(
-        release_ref.RelativeName())
-    delivery_pipeline_util.ThrowIfPipelineSuspended(pipeline_obj,
-                                                    failed_activity_msg)
+        release_ref.RelativeName()
+    )
+    delivery_pipeline_util.ThrowIfPipelineSuspended(
+        pipeline_obj, failed_activity_msg
+    )
     try:
       release_obj = release.ReleaseClient().Get(release_ref.RelativeName())
     except apitools_exceptions.HttpError as error:
       raise exceptions.HttpException(error)
 
     if release_obj.abandoned:
-      raise deploy_exceptions.AbandonedReleaseError('Cannot promote release.',
-                                                    release_ref.RelativeName())
+      raise deploy_exceptions.AbandonedReleaseError(
+          'Cannot promote release.', release_ref.RelativeName()
+      )
 
     # Get the to_target id if the argument is not specified.
     to_target_id = args.to_target
@@ -98,17 +103,27 @@ class Promote(base.CreateCommand):
 
       # If there are any rollouts in progress for the given release, and no
       # to-target was given throw an exception.
-      promote_util.CheckIfInProgressRollout(release_ref, release_obj,
-                                            to_target_id)
+      promote_util.CheckIfInProgressRollout(
+          release_ref, release_obj, to_target_id
+      )
 
     release_util.PrintDiff(release_ref, release_obj, args.to_target)
 
     console_io.PromptContinue(
-        'Promoting release {} to target {}.'.format(release_ref.Name(),
-                                                    to_target_id),
-        cancel_on_no=True)
-    rollout_resource = promote_util.Promote(release_ref, release_obj,
-                                            to_target_id, False,
-                                            args.rollout_id, args.annotations,
-                                            args.labels)
+        'Promoting release {} to target {}.'.format(
+            release_ref.Name(), to_target_id
+        ),
+        cancel_on_no=True,
+    )
+
+    rollout_resource = promote_util.Promote(
+        release_ref,
+        release_obj,
+        to_target_id,
+        False,
+        rollout_id=args.rollout_id,
+        annotations=args.annotations,
+        labels=args.labels,
+        starting_phase_id=args.starting_phase_id,
+    )
     return rollout_resource

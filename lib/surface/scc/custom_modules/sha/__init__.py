@@ -21,7 +21,6 @@ from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class SecurityHealthAnalyticsCustomModules(base.Group):
-  """Manage Security Health Analytics custom modules."""
+  """Manage custom modules."""

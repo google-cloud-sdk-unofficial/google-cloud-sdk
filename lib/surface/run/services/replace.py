@@ -46,16 +46,16 @@ from googlecloudsdk.core.console import progress_tracker
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
                     base.ReleaseTrack.GA)
 class Replace(base.Command):
-  """Creates or replaces a service from a YAML Service specification."""
+  """Create or replace a service from a YAML service specification."""
 
   detailed_help = {
       'DESCRIPTION':
           """\
-          {description}
+          Creates or replaces a service from a YAML service specification.
           """,
       'EXAMPLES':
           """\
-          To replace the specification for myservice
+          To replace the specification for a service defined in myservice.yaml
 
               $ {command} myservice.yaml
 

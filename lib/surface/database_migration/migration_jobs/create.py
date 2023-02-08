@@ -26,17 +26,15 @@ from googlecloudsdk.command_lib.database_migration import flags
 from googlecloudsdk.command_lib.database_migration.migration_jobs import flags as mj_flags
 from googlecloudsdk.core import log
 
-DETAILED_HELP = {
-    'DESCRIPTION':
-        """
+DETAILED_HELP_ALPHA = {
+    'DESCRIPTION': """
         Create a Database Migration Service migration job.
         Recommended steps before creating the migration job:
         - Create a source connection profile. See prerequisites [here](https://cloud.google.com/database-migration/docs/mysql/configure-source-database).
         - Create a destination connection profile.
         - Configure the connectivity method. See prerequisites [here](https://cloud.google.com/database-migration/docs/mysql/configure-connectivity).
         """,
-    'EXAMPLES':
-        """\
+    'EXAMPLES': """\
         To create a continuous migration job with IP allowlist connectivity:
 
             $ {command} my-migration-job --region=us-central1 --type=CONTINUOUS
@@ -56,12 +54,43 @@ DETAILED_HELP = {
         """,
 }
 
+DETAILED_HELP_GA = {
+    'DESCRIPTION': """
+        Create a Database Migration Service migration job.
+        Recommended steps before creating the migration job:
+        - Create a source connection profile. See prerequisites [here](https://cloud.google.com/database-migration/docs/mysql/configure-source-database).
+        - Create a destination connection profile.
+        - Create a conversion workspace in case the migration is heterogeneous.
+        - Configure the connectivity method. See prerequisites [here](https://cloud.google.com/database-migration/docs/mysql/configure-connectivity).
+        """,
+    'EXAMPLES': """\
+        To create a continuous migration job with IP allowlist connectivity:
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.GA)
-class Create(base.Command):
+            $ {command} my-migration-job --region=us-central1 --type=CONTINUOUS
+            --source=cp1 --destination=cp2
+
+        To create a continuous migration job with VPC peering connectivity:
+
+            $ {command} my-migration-job --region=us-central1 --type=CONTINUOUS
+            --source=cp1 --destination=cp2
+            --peer-vpc=projects/my-project/global/networks/my-network
+
+        To create a one-time migration job with reverse-SSH tunnel connectivity:
+
+            $ {command} my-migration-job --region=us-central1 --type=ONE_TIME
+            --source=cp1 --destination=cp2 --vm=vm1 --vm-ip=1.1.1.1
+            --vm-port=1111 --vpc=projects/my-project/global/networks/my-network
+
+        To create a heterogeneous continuous migration job:
+
+            $ {command} my-migration-job --region=us-central1 --type=CONTINUOUS
+            --source=cp1 --destination=cp2 --conversion-workspace=cw
+        """,
+}
+
+
+class _Create(object):
   """Create a Database Migration Service migration job."""
-
-  detailed_help = DETAILED_HELP
 
   @staticmethod
   def Args(parser):
@@ -71,14 +100,13 @@ class Create(base.Command):
       parser: An argparse parser that you can use to add arguments that go on
         the command line after this command. Positional arguments are allowed.
     """
-    resource_args.AddMigrationJobResourceArgs(
-        parser, 'to create', required=True)
     mj_flags.AddNoAsyncFlag(parser)
     mj_flags.AddDisplayNameFlag(parser)
     mj_flags.AddTypeFlag(parser, required=True)
     mj_flags.AddDumpPathFlag(parser)
     mj_flags.AddConnectivityGroupFlag(
-        parser, mj_flags.ApiType.CREATE, required=True)
+        parser, mj_flags.ApiType.CREATE, required=True
+    )
     flags.AddLabelsCreateFlags(parser)
 
   def Run(self, args):
@@ -97,11 +125,20 @@ class Create(base.Command):
 
     source_ref = args.CONCEPTS.source.Parse()
     destination_ref = args.CONCEPTS.destination.Parse()
+    if self.ReleaseTrack() == base.ReleaseTrack.GA:
+      conversion_workspace_ref = args.CONCEPTS.conversion_workspace.Parse()
+    else:
+      conversion_workspace_ref = None
 
     cp_client = migration_jobs.MigrationJobsClient(self.ReleaseTrack())
-    result_operation = cp_client.Create(parent_ref,
-                                        migration_job_ref.migrationJobsId,
-                                        source_ref, destination_ref, args)
+    result_operation = cp_client.Create(
+        parent_ref,
+        migration_job_ref.migrationJobsId,
+        source_ref,
+        destination_ref,
+        conversion_workspace_ref,
+        args,
+    )
 
     client = api_util.GetClientInstance(self.ReleaseTrack())
     messages = api_util.GetMessagesModule(self.ReleaseTrack())
@@ -128,3 +165,47 @@ class Create(base.Command):
     return client.projects_locations_operations.Get(
         messages.DatamigrationProjectsLocationsOperationsGetRequest(
             name=operation_ref.operationsId))
+
+
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class CreateGA(_Create, base.Command):
+  """Create a Database Migration Service migration job."""
+
+  # TODO(b/267338689): Replace this with DETAILED_HELP_GA once conversion
+  # workspace gcloud support is not hidden.
+  detailed_help = DETAILED_HELP_ALPHA
+
+  @staticmethod
+  def Args(parser):
+    """Args is called by calliope to gather arguments for this command.
+
+    Args:
+      parser: An argparse parser that you can use to add arguments that go on
+        the command line after this command. Positional arguments are allowed.
+    """
+    resource_args.AddHeterogeneousMigrationJobResourceArgs(
+        parser, 'to create', required=True
+    )
+    _Create.Args(parser)
+    mj_flags.AddFilterFlag(parser)
+    mj_flags.AddCommitIdFlag(parser)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class CreateAlpha(_Create, base.Command):
+  """Create a Database Migration Service migration job."""
+
+  detailed_help = DETAILED_HELP_ALPHA
+
+  @staticmethod
+  def Args(parser):
+    """Args is called by calliope to gather arguments for this command.
+
+    Args:
+      parser: An argparse parser that you can use to add arguments that go on
+        the command line after this command. Positional arguments are allowed.
+    """
+    resource_args.AddMigrationJobResourceArgs(
+        parser, 'to create', required=True
+    )
+    _Create.Args(parser)

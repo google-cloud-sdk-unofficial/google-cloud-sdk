@@ -26,9 +26,13 @@ from googlecloudsdk.command_lib.resource_manager import completers
 class SetQuotaProject(base.SilentCommand):
   """Update or add a quota project in application default credentials (ADC).
 
+  A quota project is a Google Cloud Project that will be used for billing
+  and quota limits.
+
   Before running this command, an ADC must already be generated using
   $ gcloud auth application-default login.
-  The quota project can be used by client libraries for the billing purpose.
+  The quota project defined in the ADC will be used by the Google client
+  libraries.
   The existing application default credentials must have the
   `serviceusage.services.use` permission on the given project.
 

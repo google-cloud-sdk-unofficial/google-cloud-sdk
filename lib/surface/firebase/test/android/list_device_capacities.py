@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*- #
-# Copyright 2022 Google LLC. All Rights Reserved.
+# Copyright 2023 Google LLC. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -27,34 +27,34 @@ from googlecloudsdk.calliope import base
 DETAILED_HELP = {
     'EXAMPLES':
         """
-    To list capacity information for all online devices which are available for
-    testing, run:
+    To list all published capacity information for Android devices, run:
 
       $ {command}
 
-    To list capacity only for model named redfin, run:
+    To list capacity only for the model named 'redfin', run:
 
       $ {command} --filter=redfin
 
-    To list capacity only for API version 30, run:
+    To list capacities only for models that support API version 30, run:
 
       $ {command} --filter=30
     """,
 }
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class ListDeviceCapacities(base.ListCommand, DeviceCapacities):
-  """List capacity information for all supported Android models & versions.
+  """List capacity information for Android models & versions.
 
-    List device capacity (high/medium/low/none) for all Android models &
-    versions.
+    List device capacity information (high/medium/low/none) for all Android
+    models & versions which are available for testing and have capacity
+    information published.
 
     Device capacity is the number of online devices in Firebase Test Lab. For
     physical devices, the number is the average of online devices in the last 30
     days. It's important to note that device capacity does not directly reflect
-    any real-time data, like the length of the test queue, traffic, or the
-    available/busy state of the devices.
+    any real-time data, like the length of the test queue, or the
+    available/busy state of the devices based on current test traffic.
   """
 
   @staticmethod

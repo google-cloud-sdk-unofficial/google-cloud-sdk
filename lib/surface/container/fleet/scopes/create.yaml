@@ -32,6 +32,7 @@
       help_text: The fleet scope resourse to be created.
       spec: !REF googlecloudsdk.command_lib.container.fleet.resources:scope
       arg_name: scope
+      removed_flags: ['location']
 
     params:
     - group:

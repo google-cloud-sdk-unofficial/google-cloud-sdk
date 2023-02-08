@@ -89,5 +89,7 @@ class AddInstances(base.SilentCommand):
         project=group_ref.project
     )
 
-    return client.MakeRequests([(client.apitools_client.instanceGroups,
-                                 'AddInstances', request)])
+    return client.MakeRequests(
+        [(client.apitools_client.instanceGroups, 'AddInstances', request)],
+        enable_single_request=True,
+    )

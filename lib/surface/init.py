@@ -21,7 +21,6 @@ from __future__ import unicode_literals
 
 import os
 
-from googlecloudsdk.calliope import actions
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions as c_exc
 from googlecloudsdk.calliope import usage_text
@@ -94,20 +93,24 @@ class Init(base.Command):
     parser.add_argument(
         '--console-only',
         '--no-launch-browser',
-        help=('Prevent the command from launching a browser for '
-              'authorization.'),
-        action=actions.DeprecationAction(
-            '--console-only',
-            warn='The `--console-only/--no-launch-browser` are deprecated '
-            'and will be removed in future updates. '
-            'Use `--no-browser` as a replacement.',
-            removed=False,
-            action='store_true'))
+        help=(
+            'Prevent the command from launching a browser for '
+            'authorization. Use this flag if you are on a machine that '
+            'does not have a browser and you cannot install the '
+            'gcloud CLI on another machine with a browser.'
+        ),
+        action='store_true',
+    )
     parser.add_argument(
         '--no-browser',
-        help=('Prevent the command from launching a browser for '
-              'authorization.'),
-        action='store_true')
+        help=(
+            'Prevent the command from launching a browser for '
+            'authorization. Use this flag if you are on a machine that '
+            'does not have a browser but you can install the '
+            'gcloud CLI on another machine with a browser.'
+        ),
+        action='store_true',
+    )
     parser.add_argument(
         '--skip-diagnostics',
         action='store_true',

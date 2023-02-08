@@ -18,15 +18,13 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
-from googlecloudsdk.api_lib.container import util as gke_util
 from googlecloudsdk.api_lib.container.gkemulticloud import azure as api_util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.container.azure import resource_args
+from googlecloudsdk.command_lib.container.gkemulticloud import command_util
 from googlecloudsdk.command_lib.container.gkemulticloud import constants
 from googlecloudsdk.command_lib.container.gkemulticloud import endpoint_util
 from googlecloudsdk.command_lib.container.gkemulticloud import flags
-from googlecloudsdk.core import log
-from googlecloudsdk.core.console import console_io
 
 _EXAMPLES = """
 To delete an Azure client named ``my-client'' in location ``us-west1'', run:
@@ -45,6 +43,7 @@ class Delete(base.DeleteCommand):
   def Args(parser):
     resource_args.AddAzureClientResourceArg(parser, 'to delete')
 
+    base.ASYNC_FLAG.AddToParser(parser)
     flags.AddAllowMissing(parser)
 
   def Run(self, args):
@@ -53,17 +52,12 @@ class Delete(base.DeleteCommand):
     with endpoint_util.GkemulticloudEndpointOverride(location):
       client_ref = resource_args.ParseAzureClientResourceArg(args)
       api_client = api_util.ClientsClient()
-      api_client.Delete(client_ref, validate_only=True)
-
-      console_io.PromptContinue(
-          message=gke_util.ConstructList(
-              'The following Azure clients will be deleted:', [
-                  '[{name}] in [{region}]'.format(
-                      name=client_ref.azureClientsId,
-                      region=client_ref.locationsId) for ref in [client_ref]
-              ]),
-          throw_if_unattended=True,
-          cancel_on_no=True)
-
-      api_client.Delete(client_ref)
-      log.DeletedResource(client_ref, kind=constants.AZURE_CLIENT_KIND)
+      message = command_util.ClientMessage(
+          client_ref.azureClientsId,
+          region=location)
+      return command_util.Delete(
+          resource_ref=client_ref,
+          resource_client=api_client,
+          message=message,
+          args=args,
+          kind=constants.AZURE_CLIENT_KIND)

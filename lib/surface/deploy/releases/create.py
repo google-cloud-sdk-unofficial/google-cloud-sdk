@@ -36,10 +36,8 @@ from googlecloudsdk.core import resources
 from googlecloudsdk.core.util import files
 
 _DETAILED_HELP = {
-    'DESCRIPTION':
-        '{description}',
-    'EXAMPLES':
-        """ \
+    'DESCRIPTION': '{description}',
+    'EXAMPLES': """ \
     To create a release with source located at storage URL `gs://bucket/object.zip`
     and the first rollout in the first target of the promotion sequence:
 
@@ -90,8 +88,9 @@ def _CommonArgs(parser):
   flags.AddInitialRolloutGroup(parser)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
-                    base.ReleaseTrack.GA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
+)
 class Create(base.CreateCommand):
   """Creates a new release, delivery pipeline qualified."""
 
@@ -105,16 +104,21 @@ class Create(base.CreateCommand):
     """This is what gets called when the user runs this command."""
     if args.disable_initial_rollout and args.to_target:
       raise c_exceptions.ConflictingArgumentsException(
-          '--disable-initial-rollout', '--to-target')
+          '--disable-initial-rollout', '--to-target'
+      )
     args.CONCEPTS.parsed_args.release = release_util.RenderPattern(
-        args.CONCEPTS.parsed_args.release)
+        args.CONCEPTS.parsed_args.release
+    )
     release_ref = args.CONCEPTS.release.Parse()
     pipeline_obj = delivery_pipeline_util.GetPipeline(
-        release_ref.Parent().RelativeName())
+        release_ref.Parent().RelativeName()
+    )
     failed_activity_msg = 'Cannot create release {}.'.format(
-        release_ref.RelativeName())
-    delivery_pipeline_util.ThrowIfPipelineSuspended(pipeline_obj,
-                                                    failed_activity_msg)
+        release_ref.RelativeName()
+    )
+    delivery_pipeline_util.ThrowIfPipelineSuspended(
+        pipeline_obj, failed_activity_msg
+    )
 
     if args.skaffold_file:
       # Only when skaffold is absolute path need to be handled here
@@ -127,28 +131,46 @@ class Create(base.CreateCommand):
           source_description = 'source'
         if not files.IsDirAncestorOf(source, args.skaffold_file):
           raise core_exceptions.Error(
-              'The skaffold file {} could not be found in the {}. Please enter a valid Skaffold file path.'
-              .format(args.skaffold_file, source_description))
+              'The skaffold file {} could not be found in the {}. Please enter'
+              ' a valid Skaffold file path.'.format(
+                  args.skaffold_file, source_description
+              )
+          )
         args.skaffold_file = os.path.relpath(
-            os.path.abspath(args.skaffold_file), os.path.abspath(source))
+            os.path.abspath(args.skaffold_file), os.path.abspath(source)
+        )
     client = release.ReleaseClient()
     # Create the release create request.
     release_config = release_util.CreateReleaseConfig(
-        args.source, args.gcs_source_staging_dir, args.ignore_file, args.images,
-        args.build_artifacts, args.description, args.skaffold_version,
+        args.source,
+        args.gcs_source_staging_dir,
+        args.ignore_file,
+        args.images,
+        args.build_artifacts,
+        args.description,
+        args.skaffold_version,
         args.skaffold_file,
-        release_ref.AsDict()['locationsId'], pipeline_obj.uid,
-        args.from_k8s_manifest, args.from_run_manifest)
-    deploy_util.SetMetadata(client.messages, release_config,
-                            deploy_util.ResourceType.RELEASE, args.annotations,
-                            args.labels)
+        release_ref.AsDict()['locationsId'],
+        pipeline_obj.uid,
+        args.from_k8s_manifest,
+        args.from_run_manifest,
+    )
+    deploy_util.SetMetadata(
+        client.messages,
+        release_config,
+        deploy_util.ResourceType.RELEASE,
+        args.annotations,
+        args.labels,
+    )
     operation = client.Create(release_ref, release_config)
     operation_ref = resources.REGISTRY.ParseRelativeName(
-        operation.name, collection='clouddeploy.projects.locations.operations')
+        operation.name, collection='clouddeploy.projects.locations.operations'
+    )
     client_util.OperationsClient().WaitForOperation(operation, operation_ref)
 
-    log.status.Print('Created Cloud Deploy release {}.'.format(
-        release_ref.Name()))
+    log.status.Print(
+        'Created Cloud Deploy release {}.'.format(release_ref.Name())
+    )
 
     release_obj = release.ReleaseClient().Get(release_ref.RelativeName())
     if args.disable_initial_rollout:
@@ -159,6 +181,8 @@ class Create(base.CreateCommand):
         args.to_target,
         is_create=True,
         labels=args.initial_rollout_labels,
-        annotations=args.initial_rollout_annotations)
+        annotations=args.initial_rollout_annotations,
+        starting_phase_id=args.initial_rollout_phase_id,
+    )
 
     return release_obj, rollout_resource

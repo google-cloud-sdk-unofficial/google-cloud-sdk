@@ -36,12 +36,12 @@ from googlecloudsdk.core.console import progress_tracker
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class Create(base.Command):
-  """Deploy a new job to Cloud Run."""
+  """Create a Cloud Run job."""
 
   detailed_help = {
       'DESCRIPTION':
           """\
-          Deploys a new job to Google Cloud Run.
+          Creates a new Cloud Run job.
           """,
       'EXAMPLES':
           """\
