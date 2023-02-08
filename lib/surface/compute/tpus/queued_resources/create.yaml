@@ -3,14 +3,14 @@
     brief: Create a Queued Resource.
     description: Create a new Queued Resource with the specified attributes.
     examples: |
-        To create a Queued Resource with ID `my-queued-resource` in zone `us-central1-b`
+        To create a Queued Resource with ID `my-queued-resource` in zone `us-central2-b`
         and project `my-project`, run:
 
-        $ {command} my-queued-resource --accelerator-type=v2-8 --runtime-version=v2-alpha --node-id=my-node-001 --zone=us-central1-b --project=my-project
+        $ {command} my-queued-resource --accelerator-type=v4-8 --runtime-version=v2-alpha-tpuv4 --node-id=my-node-001 --zone=us-central2-b --project=my-project
 
         To create a Queued Resource with multiple nodes, run:
 
-        $ {command} my-queued-resource --accelerator-type=v2-8 --runtime-version=v2-alpha --node-id=my-node-001,my-node-002 --zone=us-central1-b --project=my-project
+        $ {command} my-queued-resource --accelerator-type=v4-8 --runtime-version=v2-alpha-tpuv4 --node-prefix=my-node --node-count=2 --zone=us-central2-b --project=my-project
 
   request:
     collection: tpu.projects.locations.queuedResources
@@ -24,6 +24,7 @@
     - googlecloudsdk.command_lib.compute.tpus.queued_resources.util:SetBestEffort
     - googlecloudsdk.command_lib.compute.tpus.queued_resources.util:SetGuaranteed
     - googlecloudsdk.command_lib.compute.tpus.queued_resources.util:SetValidInterval
+    - googlecloudsdk.command_lib.compute.tpus.queued_resources.util:VerifyNodeCount
 
   async:
     collection: tpu.projects.locations.operations
@@ -36,7 +37,24 @@
       spec: !REF googlecloudsdk.command_lib.compute.tpus.queued_resources.resources:queuedresource
 
     params:
-    - _REF_: googlecloudsdk.command_lib.compute.tpus.queued_resources.flags:node_id
+    - group:
+        help_text: Specify TPU node(s) with either a single node id, or a node prefix and node count combination
+        mutex: true
+        required: true
+        params:
+        - group:
+            help_text: Single node creation
+            params:
+            - _REF_: googlecloudsdk.command_lib.compute.tpus.queued_resources.flags:node_id
+              required: true
+        - group:
+            help_text: Multinode creation
+            mutex: false
+            params:
+            - _REF_: googlecloudsdk.command_lib.compute.tpus.queued_resources.flags:node_prefix
+              required: true
+            - _REF_: googlecloudsdk.command_lib.compute.tpus.queued_resources.flags:node_count
+              required: true
     - _REF_: googlecloudsdk.command_lib.compute.tpus.queued_resources.flags:accelerator_type
     - _REF_: googlecloudsdk.command_lib.compute.tpus.queued_resources.flags:runtime_version
 

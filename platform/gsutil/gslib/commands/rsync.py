@@ -532,7 +532,7 @@ _DETAILED_HELP_TEXT = ("""
   -y pattern     Similar to the -x option, but the command will first skip
                  directories/prefixes using the provided pattern and then
                  exclude files/objects using the same pattern. This is usually
-                 much faster, but won't work as intended with with negative
+                 much faster, but won't work as intended with negative
                  lookahead patterns. For example, if you run the command:
 
                    gsutil rsync -y "^(?!.*\.txt$).*" dir gs://my-bucket
@@ -541,7 +541,7 @@ _DETAILED_HELP_TEXT = ("""
                  .txt before excluding all files except those ending in .txt.
                  Running the same command with the -x option would result in all
                  .txt files being included, regardless of whether they appear in
-                 subdirectories.
+                 subdirectories that end in .txt.
 
 """)
 # pylint: enable=anomalous-backslash-in-string
@@ -1696,10 +1696,15 @@ class RsyncCommand(Command):
     for signal_num in GetCaughtSignals():
       RegisterSignalHandler(signal_num, _HandleSignals)
 
+    process_count, thread_count = self._GetProcessAndThreadCount(
+        process_count=None,
+        thread_count=None,
+        parallel_operations_override=self.ParallelOverrideReason.SPEED,
+        print_macos_warning=False)
     copy_helper.TriggerReauthForDestinationProviderIfNecessary(
         dst_url,
         self.gsutil_api,
-        parallelism_requested=True,  # rsync uses parallel_operations_override.
+        worker_count=process_count * thread_count,
     )
 
     # Perform sync requests in parallel (-m) mode, if requested, using

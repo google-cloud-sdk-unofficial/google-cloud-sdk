@@ -130,7 +130,7 @@ class CreateBeta(Create):
           """\
     The following command creates a Filestore instance named NAME with a single volume.
 
-      $ {command} NAME --description=DESCRIPTION --tier=TIER --file-share=name=VOLUME_NAME,capacity=CAPACITY --network=name=NETWORK_NAME,reserved-ip-range=RESERVED_IP_RANGE,connect-mode=CONNECT_MODE --zone=ZONE --kms-key=KMS-KEY --kms-keyring=KMS_KEYRING --kms-location=KMS_LOCATION --kms-project=KMS_PROJECT --flags-file=FLAGS_FILE
+      $ {command} NAME --description=DESCRIPTION --tier=TIER --protocol=PROTOCOL --file-share=name=VOLUME_NAME,capacity=CAPACITY --network=name=NETWORK_NAME,reserved-ip-range=RESERVED_IP_RANGE,connect-mode=CONNECT_MODE --zone=ZONE --kms-key=KMS-KEY --kms-keyring=KMS_KEYRING --kms-location=KMS_LOCATION --kms-project=KMS_PROJECT --flags-file=FLAGS_FILE
 
     Example json configuration file:
   {
@@ -166,6 +166,49 @@ class CreateBeta(Create):
   def Args(parser):
     _CommonArgs(parser, CreateBeta._API_VERSION)
 
+  def Run(self, args):
+    """Creates a Filestore instance in the current project.
+
+    This is a copied code from Run() of base.ReleaseTrack.GA.
+    """
+    instance_ref = args.CONCEPTS.instance.Parse()
+    client = filestore_client.FilestoreClient(self._API_VERSION)
+    tier = instances_flags.GetTierArg(client.messages).GetEnumForChoice(
+        args.tier
+    )
+    protocol = None
+    if args.protocol is not None:
+      protocol = instances_flags.GetProtocolArg(client.messages
+      ).GetEnumForChoice(args.protocol)
+    labels = labels_util.ParseCreateArgs(
+        args, client.messages.Instance.LabelsValue)
+    try:
+      nfs_export_options = client.MakeNFSExportOptionsMsg(
+          messages=client.messages,
+          nfs_export_options=args.file_share.get('nfs-export-options', []))
+    except KeyError as err:
+      raise exceptions.InvalidArgumentException('--file-share',
+                                                six.text_type(err))
+    instance = client.ParseFilestoreConfig(
+        tier=tier,
+        protocol=protocol,
+        description=args.description,
+        file_share=args.file_share,
+        network=args.network,
+        labels=labels,
+        zone=instance_ref.locationsId,
+        nfs_export_options=nfs_export_options,
+        kms_key_name=instances_flags.GetAndValidateKmsKeyName(args))
+
+    result = client.CreateInstance(instance_ref, args.async_, instance)
+    if args.async_:
+      command = properties.VALUES.metrics.command_name.Get().split('.')
+      if command:
+        command[-1] = 'list'
+      log.status.Print(
+          'Check the status of the new instance by listing all instances:\n  '
+          '$ {} '.format(' '.join(command)))
+    return result
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class CreateAlpha(Create):

@@ -21,48 +21,19 @@ from __future__ import unicode_literals
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import lister
 from googlecloudsdk.api_lib.compute import utils
-from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
-from googlecloudsdk.command_lib.compute import completers as compute_completers
 from googlecloudsdk.command_lib.compute.queued_resources import flags
 
-DETAILED_HELP = {
-    'DESCRIPTION':
-        """\
-        {command} displays all Compute Engine queued resources in a project
-        in given zones.
-      """,
-    'EXAMPLES':
-        """\
-        To list all queued resources in a project in table form in specified zones, run:
 
-        $ {command} --zones=us-central1-a,us-central1-b
-
-        To list the URIs of all queued resources in a project in specified zones, run:
-
-        $ {command} --zones=us-central1-a,us-central1-b --uri
-    """
-}
-
-
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class List(base.ListCommand):
   """List Compute Engine queued resources."""
-
-  detailed_help = DETAILED_HELP
 
   @staticmethod
   def Args(parser):
     flags.AddOutputFormat(parser)
     parser.display_info.AddUriFunc(utils.MakeGetUriFunc())
-    # TODO(b/212438138) Use lister.AddZonalListerArgs(parser).
-    parser.add_argument(
-        '--zones',
-        metavar='ZONE',
-        help='Only resources from the given zones are queried.',
-        type=arg_parsers.ArgList(min_length=1),
-        required=True,
-        completer=compute_completers.ZonesCompleter,
-        default=[])
+    lister.AddZonalListerArgs(parser)
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
@@ -74,3 +45,5 @@ class List(base.ListCommand):
         client, client.apitools_client.zoneQueuedResources)
 
     return lister.Invoke(request_data, list_implementation)
+
+List.detailed_help = base_classes.GetZonalListerHelp('queued resources')

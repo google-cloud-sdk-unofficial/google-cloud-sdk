@@ -29,7 +29,7 @@ from googlecloudsdk.core import log
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Read(base.Command):
-  """Read logs for a revision."""
+  """Read logs for a Cloud Run revision."""
 
   detailed_help = {
       'DESCRIPTION':

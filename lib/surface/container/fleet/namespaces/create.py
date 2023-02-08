@@ -19,7 +19,9 @@ from __future__ import division
 from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.container.fleet import client
+from googlecloudsdk.api_lib.container.fleet import util
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.container.fleet import resources
 from googlecloudsdk.command_lib.util.apis import arg_utils
 
 
@@ -39,21 +41,32 @@ class Create(base.CreateCommand):
 
     $ {command} NAMESPACE
 
-  To create a fleet namespace in project `PROJECT_ID` with name
+  To create a fleet namespace in fleet scope `SCOPE` in project `PROJECT_ID`
+  with name
   `NAMESPACE`, run:
 
-    $ {command} NAMESPACE --project=PROJECT_ID
+    $ {command} NAMESPACE --scope=SCOPE --project=PROJECT_ID
   """
 
-  @staticmethod
-  def Args(parser):
+  @classmethod
+  def Args(cls, parser):
     parser.add_argument(
         'NAME',
         type=str,
         help='Name of the fleet namespace to be created. Must comply with'
         ' RFC 1123 (up to 63 characters, alphanumeric and \'-\')')
+    resources.AddScopeResourceArg(
+        parser,
+        '--scope',
+        util.VERSION_MAP[cls.ReleaseTrack()],
+        scope_help='Name of the fleet scope to create the fleet namespace in.',
+    )
 
   def Run(self, args):
+    scope = None
+    scope_arg = args.CONCEPTS.scope.Parse()
+    if scope_arg is not None:
+      scope = scope_arg.RelativeName()
     project = arg_utils.GetFromNamespace(args, '--project', use_defaults=True)
-    fleetclient = client.FleetClient(release_track=base.ReleaseTrack.ALPHA)
-    return fleetclient.CreateNamespace(args.NAME, project)
+    fleetclient = client.FleetClient(release_track=self.ReleaseTrack())
+    return fleetclient.CreateNamespace(args.NAME, scope, project)

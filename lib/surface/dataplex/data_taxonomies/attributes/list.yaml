@@ -5,7 +5,7 @@
     examples: |
       To List Data Attribute `test-attribute` for Data Taxonomy `test-datataxonomy` in project `test-dataplex` at location `us-central1`, run:
 
-        $ {command} test-attribute --location=us-central1 --project test-dataplex --data_taxonomy=test-datataxonomy
+        $ {command} test-attribute --location=us-central1 --project=test-dataplex --data_taxonomy=test-datataxonomy
 
   request:
     collection: dataplex.projects.locations.dataTaxonomies.attributes

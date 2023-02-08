@@ -116,6 +116,9 @@ def _GetConfirmedClearedFields(args, patch_instance, original_instance):
     cleared_fields.append('settings.denyMaintenancePeriods')
   if args.clear_password_policy:
     cleared_fields.append('settings.passwordValidationPolicy')
+  if args.IsKnownAndSpecified('clear_allowed_psc_projects'):
+    cleared_fields.append(
+        'settings.ipConfiguration.pscConfig.allowedConsumerProjects')
 
   log.status.write(
       'The following message will be used for the patch API method.\n')
@@ -254,6 +257,9 @@ def AddBetaArgs(parser):
   flags.AddInstanceResizeLimit(parser)
   flags.AddAllocatedIpRangeName(parser)
   labels_util.AddUpdateLabelsFlags(parser, enable_clear=True)
+  psc_update_group = parser.add_mutually_exclusive_group(hidden=True)
+  flags.AddAllowedPscProjects(psc_update_group)
+  flags.AddClearAllowedPscProjects(psc_update_group)
 
 
 def AddAlphaArgs(unused_parser):

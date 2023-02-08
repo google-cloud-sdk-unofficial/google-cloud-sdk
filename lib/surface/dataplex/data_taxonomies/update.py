@@ -39,7 +39,7 @@ class Update(base.Command):
           To update Data Taxonomy `test-taxonomy` in project `test-dataplex` at location `us-central1`,
           with description `updated description` and displayName `displayName`
 
-            $ {command} test-taxonomy --location=us-central1 --project test-dataplex --description='updated description'
+            $ {command} test-taxonomy --location=us-central1 --project=test-dataplex --description='updated description'
 
           """,
   }

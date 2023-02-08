@@ -6,7 +6,7 @@
     examples: |
       To List Data Taxonomies in project `test-dataplex` at location `us-central1`
 
-          $ {command} --location=us-central1 --project test-dataplex
+          $ {command} --location=us-central1 --project=test-dataplex
 
   request:
     collection: dataplex.projects.locations.dataTaxonomies

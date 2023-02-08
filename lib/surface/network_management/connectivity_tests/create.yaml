@@ -151,5 +151,8 @@
       - googlecloudsdk.command_lib.network_management.util:AppendLocationsGlobalToParent
       - googlecloudsdk.command_lib.network_management.util:ValidateGKEMasterClustersURIs
       - googlecloudsdk.command_lib.network_management.util:ValidateCloudSQLInstancesURIs
+      - googlecloudsdk.command_lib.network_management.util:ValidateCloudFunctionsURIs
+      - googlecloudsdk.command_lib.network_management.util:ValidateAppEngineVersionsURIs
+      - googlecloudsdk.command_lib.network_management.util:ValidateCloudRunRevisionsURIs
     collection: networkmanagement.projects.locations.global.connectivityTests
     method: create

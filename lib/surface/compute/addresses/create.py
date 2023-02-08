@@ -25,6 +25,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.compute import flags as compute_flags
 from googlecloudsdk.command_lib.compute.addresses import flags
+import ipaddr
 from six.moves import zip  # pylint: disable=redefined-builtin
 
 
@@ -189,7 +190,34 @@ class Create(base.CreateCommand):
           'must be GCE_ENDPOINT or SHARED_LOADBALANCER_VIP for regional '
           'internal addresses.')
 
+  # TODO(b/266237285): Need to remove exceptions and break down function.
   def GetAddress(self, messages, args, address, address_ref, resource_parser):
+    """Get and validate address setting.
+
+    Retrieve address resource from input arguments and validate the address
+    configuration for both external/internal IP address reservation/promotion.
+
+    Args:
+      messages: The client message proto includes all required GCE API fields.
+      args: argparse.Namespace, An object that contains the values for the
+        arguments specified in the .Args() method.
+      address: Address object.
+      address_ref: Reference of the address.
+      resource_parser: A resource parser used to parse resource name into url.
+
+    Returns:
+      An address resource proto message.
+
+    Raises:
+      ConflictingArgumentsException: If both network and subnetwork fields are
+      set.
+      MinimumArgumentException: Missing network or subnetwork with purpose
+      field.
+      InvalidArgumentException: The input argument is not set correctly or
+      unable to be parsed.
+      RequiredArgumentException: The required argument is missing from user
+      input.
+    """
     network_tier = self.ConstructNetworkTier(messages, args)
 
     if args.ip_version or (address is None and address_ref.Collection()
@@ -242,8 +270,9 @@ class Create(base.CreateCommand):
             'VPC_PEERING': messages.Address.PurposeValueValuesEnum.VPC_PEERING
         }
         if self._support_psc_google_apis:
-          supported_purposes[
-              'PRIVATE_SERVICE_CONNECT'] = messages.Address.PurposeValueValuesEnum.PRIVATE_SERVICE_CONNECT
+          supported_purposes['PRIVATE_SERVICE_CONNECT'] = (
+              messages.Address.PurposeValueValuesEnum.PRIVATE_SERVICE_CONNECT
+          )
 
         if purpose not in supported_purposes.values():
           raise exceptions.InvalidArgumentException(
@@ -262,17 +291,31 @@ class Create(base.CreateCommand):
     elif subnetwork_url or network_url:
       address_type = messages.Address.AddressTypeValueValuesEnum.INTERNAL
 
+    if address is not None:
+      try:
+        ip_address = ipaddr.IPAddress(address)
+      except ValueError:
+        raise exceptions.InvalidArgumentException(
+            '--addresses', 'Invalid IP address {e}'.format(e=address)
+        )
+
     if args.prefix_length:
       if address and not address_type:
         # This is address promotion.
         address_type = messages.Address.AddressTypeValueValuesEnum.EXTERNAL
-      elif (purpose != messages.Address.PurposeValueValuesEnum.VPC_PEERING and
-            purpose !=
-            messages.Address.PurposeValueValuesEnum.IPSEC_INTERCONNECT):
+      elif (
+          (address is None or ip_address.version != 6)
+          and purpose != messages.Address.PurposeValueValuesEnum.VPC_PEERING
+          and purpose
+          != messages.Address.PurposeValueValuesEnum.IPSEC_INTERCONNECT
+      ):
         raise exceptions.InvalidArgumentException(
-            '--prefix-length', 'can only be used with '
-            '[--purpose VPC_PEERING/IPSEC_INTERCONNECT] or External IPv6 reservation. Found {e}'
-            .format(e=purpose))
+            '--prefix-length',
+            'can only be used with [--purpose VPC_PEERING/IPSEC_INTERCONNECT]'
+            ' or Internal/External IPv6 reservation. Found {e}'.format(
+                e=purpose
+            ),
+        )
 
     if not args.prefix_length:
       if purpose == messages.Address.PurposeValueValuesEnum.VPC_PEERING:

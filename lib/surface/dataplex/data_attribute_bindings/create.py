@@ -43,8 +43,8 @@ class Create(base.Command):
             $ {command} test-attribute-binding --project=test-dataplex --location=us-central1
             --resource='projects/test-dataplex/locations/us-central1/lakes/my-lake/zones/test-zone/entities/testResource'
             --resource-attributes='a1,a2'
-            --paths ^:^name="testColumn1":attributes=a1
-            --paths ^:^name="testColumn2":attributes=a2
+            --paths=name=testColumn1,attributes=a1
+            --paths=name=testColumn2,attributes=a2
 
           """
   }

@@ -40,11 +40,14 @@ class ListPreconfiguredExpressionSets(base.ListCommand):
   def Args(parser):
     """Set up arguments for this command."""
     base.URI_FLAG.RemoveFromParser(parser)
-    parser.display_info.AddFormat("""
+    parser.display_info.AddFormat(
+        """
         table(id:label=EXPRESSION_SET,
               aliases:format="get([])",
-              expressions:format="table(id:label=RULE_ID)")
-    """)
+              expressions:format="table(id:label=RULE_ID,
+                                        sensitivity:label=SENSITIVITY)")
+    """
+    )
 
   def Run(self, args):
     """Issues the request to list available preconfigured expression sets."""

@@ -25,6 +25,12 @@
       api_field: cluster.displayName
       help_text: |
         A human-readable name for the cluster.
+    - arg_name: replica-count
+      api_field: cluster.replicaCount
+      type: int
+      hidden: true
+      help_text: |
+        The replica count of each shard.
     - arg_name: total-memory-size-gb
       api_field: cluster.totalMemorySizeGb
       help_text: |
@@ -39,6 +45,7 @@
       modify_request_hooks:
       - googlecloudsdk.command_lib.redis.clusters_update_util:UpdateDisplayName
       - googlecloudsdk.command_lib.redis.clusters_update_util:UpdateTotalMemorySizeGb
+      - googlecloudsdk.command_lib.redis.clusters_update_util:UpdateReplicaCount
     collection: redis.projects.locations.clusters
 
   update:

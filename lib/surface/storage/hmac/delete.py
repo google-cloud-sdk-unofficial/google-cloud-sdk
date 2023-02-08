@@ -20,7 +20,9 @@ from __future__ import unicode_literals
 
 import textwrap
 
+from googlecloudsdk.api_lib.storage import api_factory
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.storage import storage_url
 
 
 class Delete(base.Command):
@@ -46,11 +48,11 @@ class Delete(base.Command):
   @staticmethod
   def Args(parser):
     parser.add_argument(
-        'hmac',
-        nargs='*',
+        'access_id',
         help=textwrap.dedent("""\
-            Zero or more HMAC keys to remove. If none are given, a prompt will
-            provide a choice of inactive HMAC keys to remove."""))
+            Access ID for HMAC key to delete."""))
 
   def Run(self, args):
-    raise NotImplementedError
+    api = api_factory.get_api(storage_url.ProviderPrefix.GCS)
+    response = api.delete_hmac_key(args.access_id)
+    return response

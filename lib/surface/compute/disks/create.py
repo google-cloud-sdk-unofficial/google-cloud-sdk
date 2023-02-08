@@ -600,6 +600,9 @@ class Create(base.Command):
       if support_user_licenses and args.IsSpecified('user_licenses'):
         disk.userLicenses = args.user_licenses
 
+      if args.IsSpecified('location_hint'):
+        disk.locationHint = args.location_hint
+
       if disk_ref.Collection() == 'compute.disks':
         request = client.messages.ComputeDisksInsertRequest(
             disk=disk, project=disk_ref.project, zone=disk_ref.zone)

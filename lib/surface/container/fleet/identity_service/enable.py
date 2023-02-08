@@ -55,15 +55,14 @@ class Enable(base.EnableCommand):
     parser.add_argument(
         '--fleet-default-member-config',
         type=str,
-        hidden=True,
-        help="""The path to an identity-service.yaml identity configuration file.
-        This configuration would automatically get applied to every cluster that
-        gets registered to the fleet and would act as the "source of truth" for
-        such clusters. Any local authentication configuration found on any
-        registered cluster would get overwritten by this configuration, including
-        any local updates made after running this command with this flag.
+        help="""The path to an identity-service.yaml identity configuration
+        file. If specified, this configuration would be the default Identity
+        Service configuration for all memberships in your fleet. It could be
+        overridden with a membership-specific configuration by using the
+        the `Apply` command with the `--config` argument.
 
-        To enable the Identity Service with a default fleet level authentication configuration, run:
+        To enable the Identity Service Feature with a fleet-level default
+        membership configuration, run:
 
           $ {command} --fleet-default-member-config=/path/to/identity-service.yaml""",
     )

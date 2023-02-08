@@ -171,6 +171,9 @@ def AddBetaArgs(parser):
   flags.AddInstanceResizeLimit(parser)
   flags.AddAllocatedIpRangeName(parser)
   labels_util.AddCreateLabelsFlags(parser)
+  psc_setup_group = parser.add_group(hidden=True)
+  flags.AddEnablePrivateServiceConnect(psc_setup_group)
+  flags.AddAllowedPscProjects(psc_setup_group)
 
 
 def AddAlphaArgs(unused_parser):
@@ -279,6 +282,13 @@ def RunBaseCreateCommand(args, release_track):
       raise sql_exceptions.ArgumentError(
           '`--enable-point-in-time-recovery` cannot be specified when '
           '--no-backup is specified')
+
+  if (args.IsKnownAndSpecified('allowed_psc_projects') and
+      not args.IsKnownAndSpecified('enable_private_service_connect')):
+    raise sql_exceptions.ArgumentError(
+        '`--allowed-psc-projects` requires '
+        '`--enable-private-service-connect`')
+
   if release_track == base.ReleaseTrack.ALPHA:
     if args.IsSpecified('workload_tier'):
       if not (args.IsSpecified('cpu') and args.IsSpecified('memory')):

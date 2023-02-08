@@ -20,7 +20,10 @@ from __future__ import unicode_literals
 
 import textwrap
 
+from googlecloudsdk.api_lib.storage import api_factory
+from googlecloudsdk.api_lib.storage import cloud_api
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.storage import storage_url
 
 
 class Update(base.Command):
@@ -48,7 +51,7 @@ class Update(base.Command):
 
   @staticmethod
   def Args(parser):
-    parser.add_argument('hmac', help='The HMAC key to update.')
+    parser.add_argument('access_id', help='Access ID for HMAC key to update.')
     parser.add_argument(
         '-e',
         '--etag',
@@ -66,4 +69,12 @@ class Update(base.Command):
         help='Sets the state of the specified key to ``INACTIVE\'\'.')
 
   def Run(self, args):
-    raise NotImplementedError
+    api = api_factory.get_api(storage_url.ProviderPrefix.GCS)
+    access_id = args.access_id
+    etag = args.etag
+    if args.activate:
+      state = cloud_api.HmacKeyState.ACTIVE
+    elif args.deactivate:
+      state = cloud_api.HmacKeyState.INACTIVE
+    response = api.patch_hmac_key(access_id, etag, state)
+    return response.metadata

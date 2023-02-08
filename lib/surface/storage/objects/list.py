@@ -110,6 +110,9 @@ class List(base.ListCommand):
       else:
         urls.append(url)
 
+    stat_formatter = (
+        gsutil_full_resource_formatter.GsutilFullResourceFormatter()
+    )
     for url in urls:
       if args.stat:
         # Replicating gsutil "stat" command behavior.
@@ -119,9 +122,7 @@ class List(base.ListCommand):
             all_versions=False,
             fetch_encrypted_object_hashes=args.fetch_encrypted_object_hashes):
           found_match = True
-          yield resource.get_full_metadata_string(
-              gsutil_full_resource_formatter.GsutilFullResourceFormatter(),
-              show_acl=False)
+          yield stat_formatter.format_object(resource, show_acl=False)
         if not found_match:
           log.error('No URLs matched: ' + url.url_string)
           self.exit_code = 1

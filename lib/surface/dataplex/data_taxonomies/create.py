@@ -41,7 +41,7 @@ class Create(base.Command):
           To create Data Taxonomy `test-taxonomy` in project `test-dataplex` at location `us-central1`,
           with description `test description` and displayName `displayName` , run:
 
-            $ {command} test-taxonomy --location=us-central1 --project test-dataplex --description='test description' --display-name='displayName'
+            $ {command} test-taxonomy --location=us-central1 --project=test-dataplex --description='test description' --display-name='displayName'
 
           """,
   }

@@ -42,9 +42,8 @@ Start time for the disk snapshot schedule in UTC. For example, `--start-time="15
   flags.AddSnapshotLabelArgs(parser)
 
 
-@base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class UpdateSnapshotScheduleAlpha(base.UpdateCommand):
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+class UpdateSnapshotSchedule(base.UpdateCommand):
   """Update a Compute Engine Snapshot Schedule Resource Policy."""
 
   @staticmethod
@@ -71,14 +70,14 @@ class UpdateSnapshotScheduleAlpha(base.UpdateCommand):
     service = holder.client.apitools_client.resourcePolicies
     return client.MakeRequests([(service, 'Patch', patch_request)])
 
-UpdateSnapshotScheduleAlpha.detailed_help = {
+UpdateSnapshotSchedule.detailed_help = {
     'DESCRIPTION':
         """\
 Update a Compute Engine Snapshot Schedule Resource Policy.
 """,
     'EXAMPLES':
         """\
-The following command update a Compute Engine Snapshot Schedule Resource Policy with a daily snapshot taken at 13:00Z
+The following command updates a Compute Engine Snapshot Schedule Resource Policy to take a daily snapshot taken at 13:00 UTC
 
   $ {command} my-resource-policy --region=REGION --start-time=13:00 --daily-schedule
 """

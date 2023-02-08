@@ -42,6 +42,7 @@ class Unenroll(base.Command):
   def Args(parser):
     """Registers flags for this command."""
     cluster_flags.AddAdminClusterResourceArg(parser, 'to unenroll')
+    cluster_flags.AddAllowMissingCluster(parser)
     base.ASYNC_FLAG.AddToParser(parser)
 
   def Run(self, args):

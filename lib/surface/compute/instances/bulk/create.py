@@ -134,6 +134,7 @@ class Create(base.Command):
   _support_confidential_compute_type = False
   _support_provisioned_throughput = False
   _support_no_address_in_networking = False
+  _support_max_count_per_zone = False
 
   _log_async = False
 
@@ -153,10 +154,11 @@ class Create(base.Command):
         support_visible_core_count=cls._support_visible_core_count,
         support_max_run_duration=cls._support_max_run_duration,
         support_enable_target_shape=cls._support_enable_target_shape,
-        support_confidential_compute_type=cls
-        ._support_confidential_compute_type,
+        support_confidential_compute_type=cls._support_confidential_compute_type,
         support_provisioned_throughput=cls._support_provisioned_throughput,
-        support_no_address_in_networking=cls._support_no_address_in_networking)
+        support_no_address_in_networking=cls._support_no_address_in_networking,
+        support_max_count_per_zone=cls._support_max_count_per_zone,
+    )
     cls.AddSourceInstanceTemplate(parser)
 
   # LINT.IfChange(instance_template)
@@ -174,18 +176,30 @@ class Create(base.Command):
   def _CreateRequests(self, args, holder, compute_client, resource_parser,
                       project, location, scope):
     supported_features = bulk_util.SupportedFeatures(
-        self._support_nvdimm, self._support_public_dns, self._support_erase_vss,
-        self._support_min_node_cpu, self._support_source_snapshot_csek,
-        self._support_image_csek, self._support_confidential_compute,
+        self._support_nvdimm,
+        self._support_public_dns,
+        self._support_erase_vss,
+        self._support_min_node_cpu,
+        self._support_source_snapshot_csek,
+        self._support_image_csek,
+        self._support_confidential_compute,
         self._support_post_key_revocation_action_type,
-        self._support_rsa_encrypted, self._deprecate_maintenance_policy,
-        self._support_create_disk_snapshots, self._support_boot_snapshot_uri,
-        self._support_display_device, self._support_local_ssd_size,
-        self._support_secure_tags, self._support_host_error_timeout_seconds,
-        self._support_numa_node_count, self._support_visible_core_count,
-        self._support_max_run_duration, self._support_enable_target_shape,
+        self._support_rsa_encrypted,
+        self._deprecate_maintenance_policy,
+        self._support_create_disk_snapshots,
+        self._support_boot_snapshot_uri,
+        self._support_display_device,
+        self._support_local_ssd_size,
+        self._support_secure_tags,
+        self._support_host_error_timeout_seconds,
+        self._support_numa_node_count,
+        self._support_visible_core_count,
+        self._support_max_run_duration,
+        self._support_enable_target_shape,
         self._support_confidential_compute_type,
-        self._support_provisioned_throughput)
+        self._support_provisioned_throughput,
+        self._support_max_count_per_zone,
+    )
     bulk_instance_resource = bulk_util.CreateBulkInsertInstanceResource(
         args, holder, compute_client, resource_parser, project, location, scope,
         self.SOURCE_INSTANCE_TEMPLATE, supported_features)
@@ -220,7 +234,9 @@ class Create(base.Command):
         support_enable_target_shape=self._support_enable_target_shape,
         support_max_run_duration=self._support_max_run_duration,
         support_image_csek=self._support_image_csek,
-        support_source_snapshot_csek=self._support_source_snapshot_csek)
+        support_source_snapshot_csek=self._support_source_snapshot_csek,
+        support_max_count_per_zone=self._support_max_count_per_zone,
+    )
 
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     compute_client = holder.client
@@ -302,6 +318,7 @@ class CreateBeta(Create):
   _support_enable_target_shape = True
   _support_provisioned_throughput = False
   _support_no_address_in_networking = False
+  _support_max_count_per_zone = False
 
   @classmethod
   def Args(cls, parser):
@@ -320,7 +337,9 @@ class CreateBeta(Create):
         support_max_run_duration=cls._support_max_run_duration,
         support_enable_target_shape=cls._support_enable_target_shape,
         support_provisioned_throughput=cls._support_provisioned_throughput,
-        support_no_address_in_networking=cls._support_no_address_in_networking)
+        support_no_address_in_networking=cls._support_no_address_in_networking,
+        support_max_count_per_zone=cls._support_max_count_per_zone,
+    )
     cls.AddSourceInstanceTemplate(parser)
 
     # Flags specific to Beta release track
@@ -343,6 +362,7 @@ class CreateAlpha(Create):
   _support_confidential_compute_type = True
   _support_provisioned_throughput = True
   _support_no_address_in_networking = True
+  _support_max_count_per_zone = True
 
   @classmethod
   def Args(cls, parser):
@@ -360,10 +380,11 @@ class CreateAlpha(Create):
         support_visible_core_count=cls._support_visible_core_count,
         support_max_run_duration=cls._support_max_run_duration,
         support_enable_target_shape=cls._support_enable_target_shape,
-        support_confidential_compute_type=cls
-        ._support_confidential_compute_type,
+        support_confidential_compute_type=cls._support_confidential_compute_type,
         support_provisioned_throughput=cls._support_provisioned_throughput,
-        support_no_address_in_networking=cls._support_no_address_in_networking)
+        support_no_address_in_networking=cls._support_no_address_in_networking,
+        support_max_count_per_zone=cls._support_max_count_per_zone,
+    )
 
     cls.AddSourceInstanceTemplate(parser)
 

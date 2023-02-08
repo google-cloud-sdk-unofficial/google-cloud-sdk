@@ -27,9 +27,9 @@
 
   output:
     format: table(
-           name.basename():label=QUEUED_RESOURCE_NAME,
+           name.basename():label=NAME,
            name.segment(-3):label=ZONE,
-           tpu.nodeSpec.len():label=NUM_NODES,
+           tpu.nodeSpec.len():label=NODE_COUNT,
            tpu.nodeSpec[0].node.acceleratorType.basename():label=ACCELERATOR_TYPE,
-           state.state:label=QUEUED_RESOURCE_STATE
+           state.state:label=STATE
            )

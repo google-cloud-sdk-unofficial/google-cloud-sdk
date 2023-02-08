@@ -30,7 +30,8 @@ def AddBaseArgs(parser):
   flags.AddHost(parser)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
+                    base.ReleaseTrack.GA)
 class Get(base.DescribeCommand):
   """Retrieves information about a Cloud SQL user in a given instance."""
 

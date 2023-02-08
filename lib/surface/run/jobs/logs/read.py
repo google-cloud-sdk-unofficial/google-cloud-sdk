@@ -27,9 +27,9 @@ from googlecloudsdk.command_lib.run import flags
 from googlecloudsdk.core import log
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Read(base.Command):
-  """Read logs for a job."""
+  """Read logs for Cloud Run jobs."""
 
   detailed_help = {
       'DESCRIPTION':
@@ -41,7 +41,7 @@ class Read(base.Command):
           """,
       'EXAMPLES':
           """\
-          To read log entries from for a Cloud Run Job, run:
+          To read log entries from for a Cloud Run job, run:
 
             $ {command} my-job
 

@@ -24,9 +24,9 @@ from googlecloudsdk.command_lib.run import platforms
 from googlecloudsdk.core import properties
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Logs(base.Group):
-  """Read logs for Cloud Run (fully managed) services."""
+  """Read logs for Cloud Run jobs."""
 
   detailed_help = {
       'EXAMPLES':

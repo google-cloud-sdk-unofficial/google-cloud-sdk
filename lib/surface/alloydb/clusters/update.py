@@ -107,7 +107,7 @@ class UpdateAlphaBeta(Update):
     super(UpdateAlphaBeta, self).__init__(*args, **kwargs)
     self.parameters = [(
         '--automated-backup-* | --disable-automated-backup | '
-        '--clear-automated-backup | --disable-continuous-backup | '
+        '--clear-automated-backup | --enable-continuous-backup | '
         '--continuous-backup-*'
     )]
 

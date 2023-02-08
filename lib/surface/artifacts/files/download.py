@@ -18,11 +18,18 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+import os
+import shutil
+import tempfile
+
+from apitools.base.py import exceptions
 from apitools.base.py import transfer
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.artifacts import flags
 from googlecloudsdk.command_lib.artifacts import requests
+from googlecloudsdk.command_lib.artifacts import util
 from googlecloudsdk.core import log
+from googlecloudsdk.core.credentials import transports
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
@@ -64,12 +71,41 @@ class Download(base.Command):
     """Run the file download command."""
     log.status.Print('Downloading the file.')
     client = requests.GetClientV1beta2()
-    file = args.CONCEPTS.file.Parse()
-    download_path = args.destination
+
+    # Escape all slashes in the file name so they are not seen as directories.
+    file_escaped = util.EscapeFileNameName(args.CONCEPTS.file.Parse())
+    file_path = os.path.join(args.destination, file_escaped.filesId)
+
     request = requests.GetMessagesV1beta2(
-    ).ArtifactregistryMediaDownloadRequest(name=file.RelativeName())
+    ).ArtifactregistryMediaDownloadRequest(name=file_escaped.RelativeName())
+
+    # Only move the file to the user specified path if overwrites are allowed.
+    if (os.path.exists(file_path) and not args.allow_overwrite):
+      raise exceptions.InvalidUserInputError(
+          'File %s exists and overwrite not specified.' % file_path
+      )
+    # Allow overwrites in /tmp
     download_object = transfer.Download.FromFile(
-        download_path + '/' + file.filesId, args.allow_overwrite)
-    client.media.Download(request, download=download_object)
+        os.path.join(tempfile.gettempdir(), file_escaped.filesId), True
+        )
+    download_object.bytes_http = transports.GetApitoolsTransport(
+        response_encoding=None
+    )
+
+    try:
+      client.media.Download(request, download=download_object)
+    except exceptions.HttpError as err:
+      # If an exception was raised, we do not move the file.
+      raise err
+    finally:
+      download_object.stream.close()
+
+    try:
+      shutil.move(
+          os.path.join(tempfile.gettempdir(), file_escaped.filesId), file_path
+      )
+    except OSError as err:
+      raise err
+
     log.status.Print(
-        'Successfully downloaded the file to ' + download_path)
+        'Successfully downloaded the file to ' + args.destination)

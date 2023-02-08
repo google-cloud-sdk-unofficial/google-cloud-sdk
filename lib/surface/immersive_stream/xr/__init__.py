@@ -22,14 +22,13 @@ from googlecloudsdk.calliope import base
 
 
 @base.ReleaseTracks(
-    base.ReleaseTrack.ALPHA,)
+    base.ReleaseTrack.ALPHA)
 class XrAlpha(base.Group):
   """Manage Immersive Stream for XR resources."""
   category = base.UNCATEGORIZED_CATEGORY
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
-@base.Hidden
 class Xr(base.Group):
   """Manage Immersive Stream resources."""
   category = base.UNCATEGORIZED_CATEGORY

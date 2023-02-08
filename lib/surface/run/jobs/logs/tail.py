@@ -25,9 +25,9 @@ from googlecloudsdk.command_lib.run import streaming
 from googlecloudsdk.core import properties
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Tail(base.BinaryBackedCommand):
-  """Tail logs for a job."""
+  """Tail logs for Cloud Run jobs."""
 
   detailed_help = {
       'DESCRIPTION':

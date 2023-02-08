@@ -617,7 +617,7 @@ class Create(base.CreateCommand):
 class CreateBeta(Create):
   """Create a forwarding rule to direct network traffic to a load balancer."""
   _support_global_access = True
-  _support_psc_global_access = False
+  _support_psc_global_access = True
   _support_all_protocol = False
   _support_target_service_attachment = True
   _support_sd_registration_for_regional = True

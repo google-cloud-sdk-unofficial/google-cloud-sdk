@@ -24,7 +24,7 @@ from googlecloudsdk.command_lib.run import platforms
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Logs(base.Group):
-  """Read logs for Cloud Run (fully managed) revisions."""
+  """Read logs for Cloud Run revisions."""
 
   def _CheckPlatform(self):
     if platforms.GetPlatform() != platforms.PLATFORM_MANAGED:

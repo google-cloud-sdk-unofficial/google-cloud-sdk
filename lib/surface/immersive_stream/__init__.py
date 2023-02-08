@@ -28,7 +28,6 @@ class ImmersiveStreamAlpha(base.Group):
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
-@base.Hidden
 class ImmersiveStream(base.Group):
   """Manage Immersive Stream resources."""
   category = base.UNCATEGORIZED_CATEGORY

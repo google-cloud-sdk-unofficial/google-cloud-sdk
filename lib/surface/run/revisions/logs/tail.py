@@ -27,7 +27,7 @@ from googlecloudsdk.core import properties
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Tail(base.BinaryBackedCommand):
-  """Tail logs for a revision."""
+  """Tail logs for a Cloud Run revision."""
 
   detailed_help = {
       'DESCRIPTION':

@@ -53,17 +53,14 @@ class Delete(base.UpdateCommand):
 
     parser.add_argument(
         '--fleet-default-member-config',
-        type=bool,
-        hidden=True,
-        help="""If true, delete the fleet default membership config.
+        action='store_true',
+        help="""If specified, deletes the default membership
+        configuration present in your fleet.
 
-        To simply delete the fleet default membership config, while keeping the membership specific config unchanged, run:
+        To delete the default membership configuration present in your
+        fleet, run:
 
-          $ {command} --fleet-default-member-config=true
-
-        To delete the fleet default membership config as well as the membership specific config, run:
-
-          $ {command} --fleet-default-member-config=true --membership=<membership-name>""",
+          $ {command} --fleet-default-member-config""",
     )
 
   def Run(self, args):

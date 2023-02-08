@@ -8,7 +8,7 @@
     examples: |
       To Delete Data Taxonomy `test-taxonomy` in project `test-dataplex` at location `us-central1`, run:
 
-          $ {command} test-taxonomy --location=us-central1 --project test-dataplex
+          $ {command} test-taxonomy --location=us-central1 --project=test-dataplex
   request:
     ALPHA:
       api_version: v1

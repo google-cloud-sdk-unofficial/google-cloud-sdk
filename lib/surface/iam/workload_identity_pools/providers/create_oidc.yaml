@@ -58,3 +58,5 @@
     - _REF_: googlecloudsdk.command_lib.iam.flags:workload_identity_pool_provider.oidc_issuer_uri
       required: true
     - _REF_: googlecloudsdk.command_lib.iam.flags:workload_identity_pool_provider.oidc_allowed_audiences
+    - _REF_: googlecloudsdk.command_lib.iam.flags:workload_identity_pool_provider.oidc_jwks_json_path
+      hidden: true
