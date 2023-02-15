@@ -66,6 +66,14 @@ class Create(base.CreateCommand):
     flags.AddCPUCount(parser)
     flags.AddReadPoolNodeCount(parser)
     flags.AddRegion(parser)
+    flags.AddInsightsConfigQueryStringLength(parser)
+    flags.AddInsightsConfigQueryPlansPerMinute(parser)
+    flags.AddInsightsConfigRecordApplicationTags(
+        parser, show_negated_in_help=True
+    )
+    flags.AddInsightsConfigRecordClientAddress(
+        parser, show_negated_in_help=True
+    )
     # TODO(b/185795425): Add --ssl-required and --labels later once we
     # understand the use cases
 

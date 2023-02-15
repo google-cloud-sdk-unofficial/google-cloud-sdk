@@ -30,5 +30,7 @@
         name.basename():label=NAME,
         endpoint:label=ENDPOINT,
         labels:label=LABELS,
+        controlPlaneVersion:label=CONTROL_PLANE_VERSION,
+        nodeVersion:label=NODE_VERSION,
         createTime.date():label=CREATED
       )

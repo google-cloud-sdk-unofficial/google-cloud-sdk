@@ -184,6 +184,7 @@ class Update(base.Command):
     self._addScheduledSnapshotFields(params, args, is_composer_v1)
 
     if self._support_triggerer and (args.triggerer_cpu or args.triggerer_memory
+                                    or args.triggerer_count is not None
                                     or args.enable_triggerer or
                                     args.disable_triggerer):
       self._addTriggererFields(params, args, env_obj)
@@ -249,6 +250,8 @@ class Update(base.Command):
       triggerer_cpu = env_obj.config.workloadsConfig.triggerer.cpu
     if args.disable_triggerer or args.enable_triggerer:
       triggerer_count = 1 if args.enable_triggerer else 0
+    if args.triggerer_count is not None:
+      triggerer_count = args.triggerer_count
     if args.triggerer_cpu:
       triggerer_cpu = args.triggerer_cpu
     if args.triggerer_memory:
@@ -276,9 +279,10 @@ class Update(base.Command):
     if triggerer_count == 1 and not (triggerer_memory_gb and triggerer_cpu):
       raise command_util.InvalidUserInputError(
           'Cannot enable triggerer without providing triggerer memory and cpu.')
-    params['triggerer_cpu'] = triggerer_cpu
     params['triggerer_count'] = triggerer_count
-    params['triggerer_memory_gb'] = triggerer_memory_gb
+    if triggerer_count:
+      params['triggerer_cpu'] = triggerer_cpu
+      params['triggerer_memory_gb'] = triggerer_memory_gb
 
   def Run(self, args):
     env_ref = args.CONCEPTS.environment.Parse()

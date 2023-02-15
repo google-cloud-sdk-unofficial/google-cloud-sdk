@@ -56,7 +56,6 @@ def _RunCreate(compute_api, args):
 class Create(base.CreateCommand):
   """Create a Compute Engine reservation."""
   _support_share_setting = True
-  _support_resource_policies = False
   _support_instance_template = True
 
   @classmethod
@@ -65,7 +64,6 @@ class Create(base.CreateCommand):
         parser, operation_type='create')
     flags.AddCreateFlags(
         parser, support_share_setting=cls._support_share_setting,
-        support_resource_policies=cls._support_resource_policies,
         support_instance_template=cls._support_instance_template)
 
   def Run(self, args):
@@ -76,7 +74,6 @@ class Create(base.CreateCommand):
 class CreateBeta(Create):
   """Create a Compute Engine reservation."""
   _support_share_setting = True
-  _support_resource_policies = True
   _support_instance_template = True
   _support_ssd_count = False
 
@@ -86,7 +83,6 @@ class CreateBeta(Create):
         parser, operation_type='create')
     flags.AddCreateFlags(
         parser, support_share_setting=cls._support_share_setting,
-        support_resource_policies=cls._support_resource_policies,
         support_instance_template=cls._support_instance_template)
 
   def Run(self, args):
@@ -98,7 +94,6 @@ class CreateBeta(Create):
 class CreateAlpha(CreateBeta):
   """Create a Compute Engine reservation."""
   _support_share_setting = True
-  _support_resource_policies = True
   _support_instance_template = True
   _support_ssd_count = True
 
@@ -110,7 +105,6 @@ class CreateAlpha(CreateBeta):
         parser,
         support_share_setting=cls._support_share_setting,
         support_fleet=True,
-        support_resource_policies=cls._support_resource_policies,
         support_instance_template=cls._support_instance_template,
         support_ssd_count=cls._support_ssd_count)
 

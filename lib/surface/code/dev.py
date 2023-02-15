@@ -30,6 +30,7 @@ from googlecloudsdk.command_lib.code import local_files
 from googlecloudsdk.command_lib.code import run_subprocess
 from googlecloudsdk.command_lib.code import skaffold
 from googlecloudsdk.command_lib.code import yaml_helper
+from googlecloudsdk.command_lib.code.cloud import artifact_registry
 from googlecloudsdk.command_lib.code.cloud import cloud
 from googlecloudsdk.command_lib.code.cloud import cloud_files
 from googlecloudsdk.core import config
@@ -202,6 +203,7 @@ class Dev(base.Command):
     settings = cloud.AssembleSettings(args)
     cloud_file_generator = cloud_files.CloudRuntimeFiles(settings)
     kubernetes_config = six.ensure_text(cloud_file_generator.KubernetesConfig())
+    artifact_registry.CreateIfNeeded(settings.ar_repo)
     with _DeployTempFile(kubernetes_config) as kubernetes_file:
       skaffold_config = six.ensure_text(
           cloud_file_generator.SkaffoldConfig(kubernetes_file.name))

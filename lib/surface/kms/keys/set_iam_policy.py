@@ -23,6 +23,7 @@ from googlecloudsdk.api_lib.cloudkms import iam
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.iam import iam_util
 from googlecloudsdk.command_lib.kms import flags
+from googlecloudsdk.command_lib.kms import resource_args
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
@@ -47,7 +48,7 @@ class SetIamPolicy(base.Command):
 
   @staticmethod
   def Args(parser):
-    flags.AddKeyResourceArgument(parser, 'whose IAM policy to update')
+    resource_args.AddKmsKeyResourceArgForKMS(parser, True, 'key')
     parser.add_argument('policy_file', help=('JSON or YAML '
                                              'file with the IAM policy'))
 

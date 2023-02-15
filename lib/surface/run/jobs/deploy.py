@@ -180,7 +180,7 @@ class Deploy(base.Command):
                            ' to').format(build_type=build_type.value)
       pretty_print.Info(
           messages_util.GetBuildEquivalentForSourceRunMessage(
-              job_ref.jobsId, pack, source))
+              job_ref.jobsId, pack, source, is_job=True))
 
     changes = flags.GetJobConfigurationChanges(args)
     changes.append(

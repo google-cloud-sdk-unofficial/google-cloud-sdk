@@ -21,6 +21,7 @@ from __future__ import unicode_literals
 from googlecloudsdk.api_lib.cloudkms import base as cloudkms_base
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.kms import flags
+from googlecloudsdk.command_lib.kms import resource_args
 
 
 class SetPrimaryVersion(base.Command):
@@ -39,7 +40,7 @@ class SetPrimaryVersion(base.Command):
 
   @staticmethod
   def Args(parser):
-    flags.AddKeyResourceArgument(parser, 'to modify')
+    resource_args.AddKmsKeyResourceArgForKMS(parser, True, 'key')
     flags.AddCryptoKeyVersionFlag(parser, 'to make primary', required=True)
 
   def Run(self, args):

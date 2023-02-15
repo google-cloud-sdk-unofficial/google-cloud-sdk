@@ -42,10 +42,8 @@ class AddIamPolicyBinding(base.Command):
   """Adds an IAM policy binding for a Google Cloud Function."""
 
   detailed_help = {
-      'DESCRIPTION':
-          '{description}',
-      'EXAMPLES':
-          """\
+      'DESCRIPTION': '{description}',
+      'EXAMPLES': """\
           To add the iam policy binding for `FUNCTION-1` to role
           `ROLE-1` for member `MEMBER-1` run:
 

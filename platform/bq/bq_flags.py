@@ -39,8 +39,11 @@ flags.DEFINE_string(
     'flag on the command line. If the --bigqueryrc flag is not specified, the '
     'BIGQUERYRC environment variable is used. If that is not specified, the '
     'path "~/.bigqueryrc" is used.')
-flags.DEFINE_string('discovery_file', '',
-                    'Filename for JSON document to read for discovery.')
+flags.DEFINE_string(
+    'discovery_file', '',
+    'Filename for JSON document to read for the base BigQuery '
+    'API discovery, excluding Model, Routine, RowAccessPolicy, '
+    'and IAMPolicy APIs.')
 
 flags.DEFINE_boolean(
     'disable_ssl_validation', False,
@@ -119,7 +122,8 @@ flags.DEFINE_multi_string(
     'Additional key-value pairs to include in the properties field of '
     'the job configuration')  # No period: Multistring adds flagspec suffix.
 flags.DEFINE_boolean(
-    'enable_resumable_uploads', None,
+    'enable_resumable_uploads',
+    None,
     'Enables resumable uploads over HTTP (Only applies to load jobs that load '
     'data from local files.). Defaults to True.'
 )

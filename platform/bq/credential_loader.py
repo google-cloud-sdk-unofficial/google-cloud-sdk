@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 """Credential-related classes and functions for bq cli."""
+
 import argparse
 import json
 import os

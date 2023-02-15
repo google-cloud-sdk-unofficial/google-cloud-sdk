@@ -58,7 +58,6 @@
     - arg_name: mode
       api_field: repository.mode
       default: NONE
-      hidden: true
       help_text: |
         Mode is the type of the repository - Standard, Virtual or Remote.
       choices:
@@ -76,12 +75,10 @@
         help_text: Remote repository mode - fetches data from upstream and caches it.
     - arg_name: remote-repo-config-desc
       api_field: repository.remoteRepositoryConfig.description
-      hidden: true
       help_text: |
         The description for the remote repository config.
     - arg_name: remote-mvn-repo
       api_field: repository.remoteRepositoryConfig.mavenRepository.publicRepository
-      hidden: true
       help_text: |
         (Maven only) Repo upstream for maven remote repository.
       choices:
@@ -91,7 +88,6 @@
         enum_value: MAVEN_CENTRAL
     - arg_name: remote-docker-repo
       api_field: repository.remoteRepositoryConfig.dockerRepository.publicRepository
-      hidden: true
       help_text: |
         (Docker only) Repo upstream for docker remote repository.
       choices:
@@ -101,7 +97,6 @@
         enum_value: DOCKER_HUB
     - arg_name: remote-npm-repo
       api_field: repository.remoteRepositoryConfig.npmRepository.publicRepository
-      hidden: true
       help_text: |
         (npm only) Repo upstream for npm remote repository.
       choices:
@@ -111,7 +106,6 @@
         enum_value: NPMJS
     - arg_name: remote-python-repo
       api_field: repository.remoteRepositoryConfig.pythonRepository.publicRepository
-      hidden: true
       help_text: |
         (Python only) Repo upstream for python remote repository.
       choices:
@@ -119,6 +113,12 @@
         enum_value: PUBLIC_REPOSITORY_UNSPECIFIED
       - arg_value: PYPI
         enum_value: PYPI
+    - arg_name: immutable-tags
+      type: bool
+      api_field: repository.dockerConfig.immutableTags
+      hidden: true
+      help_text: |
+        (Docker only) Prevent tag mutations on any image in this repository.
     labels:
       api_field: repository.labels
     additional_arguments_hook: googlecloudsdk.command_lib.artifacts.util:AddAdditionalArgs

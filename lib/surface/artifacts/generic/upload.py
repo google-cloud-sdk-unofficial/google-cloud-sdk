@@ -23,6 +23,7 @@ from googlecloudsdk.api_lib.util import apis
 from googlecloudsdk.api_lib.util import waiter
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.artifacts import flags
+from googlecloudsdk.command_lib.artifacts import util
 from googlecloudsdk.core import resources
 
 
@@ -90,7 +91,9 @@ class Upload(base.Command):
             versionId=args.version,
             filename=file_name),
         parent=repo_ref.RelativeName())
-    upload = transfer.Upload.FromFile(args.source)
+
+    mime_type = util.GetMimetype(args.source)
+    upload = transfer.Upload.FromFile(args.source, mime_type=mime_type)
     op_obj = client.projects_locations_repositories_genericArtifacts.Upload(
         request, upload=upload)
     op = op_obj.operation
@@ -104,5 +107,5 @@ class Upload(base.Command):
       result = waiter.WaitFor(
           waiter.CloudOperationPollerNoResources(
               client.projects_locations_operations), op_ref,
-          'Uploading package')
+          'Uploading file')
       return result

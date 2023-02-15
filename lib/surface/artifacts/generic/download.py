@@ -19,6 +19,7 @@ from __future__ import division
 from __future__ import unicode_literals
 
 import os
+import shutil
 import tempfile
 
 from apitools.base.py import exceptions
@@ -85,7 +86,7 @@ class Download(base.Command):
 
   def Run(self, args):
     """Run the generic artifact download command."""
-    log.status.Print('Downloading the file.')
+
     client = requests.GetClientV1beta2()
     repo_ref = args.CONCEPTS.repository.Parse()
     file_name = args.name
@@ -93,9 +94,10 @@ class Download(base.Command):
     file_path = os.path.join(args.destination, file_name)
 
     if os.path.exists(file_path):
-      raise exceptions.InvalidUserInputError(
-          'File {} already exists.'.format(file_path)
-      )
+      log.err.Print('File {} already exists.'.format(file_path))
+      return
+
+    log.status.Print('Downloading the file.')
 
     request = (
         requests.GetMessagesV1beta2().ArtifactregistryMediaDownloadRequest(
@@ -121,8 +123,10 @@ class Download(base.Command):
 
     try:
       # Only move the file to the user specified path if no exception occured.
-      os.rename(os.path.join(tempfile.gettempdir(), file_name), file_path)
+      shutil.move(os.path.join(tempfile.gettempdir(), file_name), file_path)
     except OSError as err:
       raise err
 
-    log.status.Print('Successfully downloaded the file to ' + args.destination)
+    log.status.Print(
+        'Successfully downloaded the file to {}'.format(args.destination)
+    )

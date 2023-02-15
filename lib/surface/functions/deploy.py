@@ -48,7 +48,8 @@ def _CommonArgs(parser, track):
   args_labels_util.AddUpdateLabelsFlags(
       parser,
       extra_update_message=labels_util.NO_LABELS_STARTING_WITH_DEPLOY_MESSAGE,
-      extra_remove_message=labels_util.NO_LABELS_STARTING_WITH_DEPLOY_MESSAGE)
+      extra_remove_message=labels_util.NO_LABELS_STARTING_WITH_DEPLOY_MESSAGE,
+  )
 
   # Add args for specifying the function source code
   flags.AddSourceFlag(parser)
@@ -134,8 +135,7 @@ class DeployAlpha(DeployBeta):
 
 
 DETAILED_HELP = {
-    'EXAMPLES':
-        """\
+    'EXAMPLES': """\
         To deploy a function that is triggered by write events on the document
         ``/messages/{pushId}'', run:
 

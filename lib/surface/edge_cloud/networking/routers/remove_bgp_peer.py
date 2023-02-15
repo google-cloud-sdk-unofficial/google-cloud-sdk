@@ -12,8 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Command to remove a list of BGP peers from a Distributed Cloud Edge Network router.
-"""
+"""Command to remove a BGP peer from a Distributed Cloud Edge Network router."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -25,22 +24,22 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.edge_cloud.networking import resource_args
 from googlecloudsdk.core import log
 
-DESCRIPTION = ('Delete a list of BGP peers from a Distributed Cloud Edge '
-               'Network router')
+DESCRIPTION = (
+    'Delete a list of BGP peer from a Distributed Cloud Edge Network router'
+)
 EXAMPLES = """\
-    To delete a list of BGP peers contains 'peer1' and 'peer2' from the
-    Distributed Cloud Edge Network router 'my-router' in edge zone 'us-central1-edge-den1' , run:
+    To delete a BGP peer 'peer1' from the Distributed Cloud Edge Network router 'my-router' in edge zone 'us-central1-edge-den1' , run:
 
-        $ {command} my-router --peer-names=peer1,peer2 --location=us-central1 --zone=us-central1-edge-den1
+        $ {command} my-router --peer-name=peer1 --location=us-central1 --zone=us-central1-edge-den1
 
    """
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.GA)
 class RemoveBgpPeer(base.UpdateCommand):
-  """Remove a list of BGP peers from a Distributed Cloud Edge Network router.
+  """Remove a BGP peer from a Distributed Cloud Edge Network router.
 
-  *{command}* is used to delete a list of BGP peers from a Distributed Cloud
+  *{command}* is used to delete a BGP peer from a Distributed Cloud
   Edge
   Network router.
   """
@@ -50,15 +49,20 @@ class RemoveBgpPeer(base.UpdateCommand):
   @staticmethod
   def Args(parser):
     resource_args.AddRouterResourceArg(
-        parser, 'from which we delete a list of bgp peers', True)
-    parser.add_argument(
+        parser, 'from which we delete a BGP peer', True
+    )
+    bgp_peer_parser = parser.add_mutually_exclusive_group(required=True)
+    bgp_peer_parser.add_argument(
         '--peer-names',
         type=arg_parsers.ArgList(),
-        required=True,
-        metavar='BGP_PEER_NAME',
+        metavar='PEER_NAME',
         help="""The list of names for peers being removed.
         Only single value allowed currently.
-        """)
+        """,
+    )
+    bgp_peer_parser.add_argument(
+        '--peer-name', help='The name of the BGP peer being removed.'
+    )
     base.ASYNC_FLAG.AddToParser(parser)
 
   def Run(self, args):
@@ -70,8 +74,12 @@ class RemoveBgpPeer(base.UpdateCommand):
     if not async_:
       response = routers_client.WaitForOperation(update_req_op)
       log.UpdatedResource(
-          router_ref.RelativeName(), details='Operation was successful.')
+          router_ref.RelativeName(), details='Operation was successful.'
+      )
       return response
 
-    log.status.Print('Updating [{0}] with operation [{1}].'.format(
-        router_ref.RelativeName(), update_req_op.name))
+    log.status.Print(
+        'Updating [{0}] with operation [{1}].'.format(
+            router_ref.RelativeName(), update_req_op.name
+        )
+    )

@@ -82,6 +82,17 @@ install an endpoint verification agent to devices:
     (https://support.google.com/a/users/answer/9018161#install)
     * Users would also be prompted to install the Native Helper as well
 
+For a greater level of security, operating system key stores can be used to store client
+certificate objects. This feature is enabled by using [enterprise-certificate-proxy](https://github.com/googleapis/enterprise-certificate-proxy).
+
+enterprise-certificate-proxy can be installed by running `$ gcloud components install enterprise-certificate-proxy`.
+
+In order to use enterprise-certificate-proxy it must first be configured. By default the configuration should be written to `~/.config/gcloud/certificate_config.json`.
+
+The enterprise-certificate-proxy schema is documented on the [GitHub project page](https://github.com/googleapis/enterprise-certificate-proxy#certificate-configuration). Each operating system that gcloud supports uses a different key store. The certificate_config may contain multiple OS configurations.
+
+Provisioning the key stores is not in scope for this document.
+
 Run ``$ gcloud config set context_aware/use_client_certificate True''
 so that the gcloud CLI will load the certificate and send it to services.
 Some services do not support client certificate authorization yet.

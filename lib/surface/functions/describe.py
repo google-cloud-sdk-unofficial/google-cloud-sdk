@@ -68,7 +68,8 @@ class Describe(base.DescribeCommand):
     except apitools_exceptions.HttpError as error:
       if error.status_code == six.moves.http_client.NOT_FOUND:
         log.debug(
-            '1st Gen Cloud Function not found, looking for 2nd Gen Cloud Function ...'
+            '1st Gen Cloud Function not found, looking for 2nd Gen Cloud'
+            ' Function ...'
         )
         return command_v2.Run(args, self.ReleaseTrack())
       raise

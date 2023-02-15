@@ -38,36 +38,48 @@ def _CommonArgs(parser):
   parser.add_argument(
       'name',
       nargs='?',
-      help=('Name of the function which logs are to be displayed. If no name '
-            'is specified, logs from all functions are displayed.'))
+      help=(
+          'Name of the function which logs are to be displayed. If no name '
+          'is specified, logs from all functions are displayed.'
+      ),
+  )
   parser.add_argument(
-      '--execution-id',
-      help=('Execution ID for which logs are to be displayed.'))
+      '--execution-id', help='Execution ID for which logs are to be displayed.'
+  )
   parser.add_argument(
       '--start-time',
       required=False,
       type=arg_parsers.Datetime.Parse,
-      help=('Return only log entries in which timestamps are not earlier '
-            'than the specified time. If *--start-time* is not specified, a '
-            'default start time of 1 week ago is assumed. See $ gcloud '
-            'topic datetimes for information on time formats.'))
+      help=(
+          'Return only log entries in which timestamps are not earlier '
+          'than the specified time. If *--start-time* is not specified, a '
+          'default start time of 1 week ago is assumed. See $ gcloud '
+          'topic datetimes for information on time formats.'
+      ),
+  )
   parser.add_argument(
       '--end-time',
       required=False,
       type=arg_parsers.Datetime.Parse,
-      help=('Return only log entries which timestamps are not later than '
-            'the specified time. If *--end-time* is specified but '
-            '*--start-time* is not, the command returns *--limit* latest '
-            'log entries which appeared before --end-time. See '
-            '*$ gcloud topic datetimes* for information on time formats.'))
+      help=(
+          'Return only log entries which timestamps are not later than '
+          'the specified time. If *--end-time* is specified but '
+          '*--start-time* is not, the command returns *--limit* latest '
+          'log entries which appeared before --end-time. See '
+          '*$ gcloud topic datetimes* for information on time formats.'
+      ),
+  )
   parser.add_argument(
       '--limit',
       required=False,
       type=arg_parsers.BoundedInt(1, 1000),
       default=20,
-      help=('Number of log entries to be fetched; must not be greater than '
-            '1000. Note that the most recent entries in the specified time '
-            'range are returned, rather than the earliest.'))
+      help=(
+          'Number of log entries to be fetched; must not be greater than '
+          '1000. Note that the most recent entries in the specified time '
+          'range are returned, rather than the earliest.'
+      ),
+  )
   flags.AddMinLogLevelFlag(parser)
   parser.display_info.AddCacheUpdater(None)
 

@@ -26,10 +26,17 @@
       required: true
       help_text: |
         Name of the Filestore instance the snapshot belongs to.
-    - arg_name: instance-region
-      required: true
-      help_text: |
-        Region of the Filestore instance.
+    - group:
+        mutex: true
+        required: true
+        params:
+        - arg_name: instance-region
+          help_text: |
+            Region of the Filestore instance.
+        - arg_name: instance-location
+          hidden: true
+          help_text: |
+            Location of the Filestore instance.
 
   request:
     BETA:

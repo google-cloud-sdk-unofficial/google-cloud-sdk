@@ -105,11 +105,16 @@ class UpdateAlphaBeta(Update):
 
   def __init__(self, *args, **kwargs):
     super(UpdateAlphaBeta, self).__init__(*args, **kwargs)
-    self.parameters = [(
-        '--automated-backup-* | --disable-automated-backup | '
-        '--clear-automated-backup | --enable-continuous-backup | '
-        '--continuous-backup-*'
-    )]
+    self.parameters = [
+        (
+            '--automated-backup-* | --disable-automated-backup | '
+            '--clear-automated-backup'
+        ),
+        (
+            '--enable-continuous-backup | '
+            '--continuous-backup-* | --clear-continuous-backup-encryption-key'
+        ),
+    ]
 
   def ConstructPatchRequestFromArgs(self, alloydb_messages, cluster_ref, args):
     return cluster_helper.ConstructPatchRequestFromArgsAlphaBeta(
@@ -118,4 +123,4 @@ class UpdateAlphaBeta(Update):
   @classmethod
   def Args(cls, parser):
     super(UpdateAlphaBeta, cls).Args(parser)
-    flags.AddContinuousBackupConfigFlags(parser)
+    flags.AddContinuousBackupConfigFlags(parser, update=True)

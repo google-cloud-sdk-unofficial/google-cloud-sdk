@@ -31,6 +31,7 @@
         name.scope(clusters).segment(0):label=CLUSTER,
         nodeCount:label=NODE_COUNT,
         nodeLocation:label=NODE_LOCATION,
+        nodeVersion:label=NODE_VERSION,
         labels:label=LABELS,
         createTime.date():label=CREATED
       )

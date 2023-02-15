@@ -25,10 +25,8 @@ from googlecloudsdk.command_lib.functions.v2.remove_iam_policy_binding import co
 from googlecloudsdk.command_lib.iam import iam_util
 
 _DETAILED_HELP = {
-    'DESCRIPTION':
-        '{description}',
-    'EXAMPLES':
-        """\
+    'DESCRIPTION': '{description}',
+    'EXAMPLES': """\
           To remove the iam policy binding for `FUNCTION-1` from role
           `ROLE-1` for member `MEMBER-1` run:
 

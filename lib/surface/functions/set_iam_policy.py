@@ -36,10 +36,8 @@ class SetIamPolicy(base.Command):
   """Sets IAM policy for a Google Cloud Function."""
 
   detailed_help = {
-      'DESCRIPTION':
-          '{description}',
-      'EXAMPLES':
-          """\
+      'DESCRIPTION': '{description}',
+      'EXAMPLES': """\
           To set the iam policy for `FUNCTION-1` to the policy defined in `POLICY-FILE-1` run:
 
             $ {command} FUNCTION-1 POLICY-FILE-1

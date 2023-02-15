@@ -45,6 +45,9 @@ class Auth(base.Group):
   CLI global flags, see the
   [gcloud CLI overview](https://cloud.google.com/sdk/gcloud/reference).
 
+  See `$ gcloud topic client-certificate` to learn how to use Mutual TLS when using gcloud.
+  Mutual TLS can be used for [certificate based access](https://cloud.google.com/beyondcorp-enterprise/docs/securing-resources-with-certificate-based-access) with gcloud.
+
   ## EXAMPLES
 
   To authenticate a user account with `gcloud` and minimal user output, run:

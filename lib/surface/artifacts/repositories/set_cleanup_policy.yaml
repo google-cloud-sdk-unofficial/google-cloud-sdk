@@ -53,7 +53,7 @@
 
   response:
     modify_response_hooks:
-    - googlecloudsdk.command_lib.artifacts.cleanup_policy_util:RepositoryToSetCleanupPolicyResponse
+    - googlecloudsdk.command_lib.artifacts.cleanup_policy_util:RepositoryToCleanupPoliciesResponse
 
   output:
     format: |

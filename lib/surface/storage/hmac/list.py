@@ -20,10 +20,13 @@ from __future__ import unicode_literals
 
 import textwrap
 
+from googlecloudsdk.api_lib.storage import api_factory
+from googlecloudsdk.api_lib.storage import cloud_api
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.storage import storage_url
 
 
-class List(base.Command):
+class List(base.ListCommand):
   """List service account HMAC keys."""
 
   detailed_help = {
@@ -62,4 +65,15 @@ class List(base.Command):
         help='Filter keys for the provided service account email.')
 
   def Run(self, args):
-    raise NotImplementedError
+    if args.long:
+      fields_scope = cloud_api.FieldsScope.FULL
+    else:
+      fields_scope = cloud_api.FieldsScope.SHORT
+
+    api = api_factory.get_api(storage_url.ProviderPrefix.GCS)
+    for hmac_key in api.list_hmac_keys(
+        service_account_email=args.service_account,
+        show_deleted_keys=args.all,
+        fields_scope=fields_scope
+    ):
+      yield hmac_key.metadata

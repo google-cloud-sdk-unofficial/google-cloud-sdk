@@ -42,6 +42,7 @@ auto_flags = [
     'managedConfig',
     'fleetProject',
     'enableFleet',
+    'enableSecurityPosture',
 ]
 
 # Change default flag values in create-auto

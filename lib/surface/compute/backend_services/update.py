@@ -74,8 +74,6 @@ class UpdateHelper(object):
       parser,
       support_failover,
       support_logging,
-      support_tcp_ssl_logging,
-      support_net_lb_ilb_logging,
       support_logging_optional_fields,
       support_client_only,
       support_subsetting,
@@ -147,45 +145,11 @@ class UpdateHelper(object):
       flags.AddFailoverRatio(parser)
 
     if support_logging:
-      if support_net_lb_ilb_logging and support_tcp_ssl_logging:
-        flags.AddEnableLoggingProtocols(
-            parser, 'HTTP, HTTPS, HTTP2, TCP, SSL, UDP, or UNSPECIFIED')
-        flags.AddLoggingSampleRateProtocols(
-            parser, 'HTTP, HTTPS, HTTP2, TCP, SSL, UDP, or UNSPECIFIED')
-        if support_logging_optional_fields:
-          flags.AddLoggingOptionalProtocols(
-              parser, 'HTTP, HTTPS, HTTP2, TCP, SSL, UDP, or UNSPECIFIED'
-          )
-          flags.AddLoggingOptionalFieldsProtocols(
-              parser, 'HTTP, HTTPS, HTTP2, TCP, SSL, UDP, or UNSPECIFIED'
-          )
-      elif support_net_lb_ilb_logging:
-        flags.AddEnableLoggingProtocols(
-            parser, 'HTTP, HTTPS, HTTP2, TCP, UDP, or UNSPECIFIED')
-        flags.AddLoggingSampleRateProtocols(
-            parser, 'HTTP, HTTPS, HTTP2, TCP, UDP, or UNSPECIFIED')
-        if support_logging_optional_fields:
-          flags.AddLoggingOptionalProtocols(
-              parser, 'HTTP, HTTPS, HTTP2, TCP, UDP, or UNSPECIFIED'
-          )
-          flags.AddLoggingOptionalFieldsProtocols(
-              parser, 'HTTP, HTTPS, HTTP2, TCP, UDP, or UNSPECIFIED'
-          )
-      elif support_tcp_ssl_logging:
-        flags.AddEnableLoggingProtocols(parser,
-                                        'HTTP, HTTPS, HTTP2, TCP, or SSL')
-        flags.AddLoggingSampleRateProtocols(parser,
-                                            'HTTP, HTTPS, HTTP2, TCP, or SSL')
-        if support_logging_optional_fields:
-          flags.AddLoggingOptionalProtocols(
-              parser, 'HTTP, HTTPS, HTTP2, TCP, or SSL'
-          )
-          flags.AddLoggingOptionalFieldsProtocols(
-              parser, 'HTTP, HTTPS, HTTP2, TCP, or SSL'
-          )
-      else:
-        flags.AddEnableLogging(parser)
-        flags.AddLoggingSampleRate(parser)
+      flags.AddEnableLogging(parser)
+      flags.AddLoggingSampleRate(parser)
+      if support_logging_optional_fields:
+        flags.AddLoggingOptional(parser)
+        flags.AddLoggingOptionalFields(parser)
 
     AddIapFlag(parser)
     flags.AddCustomRequestHeaders(parser, remove_all_flag=True, default=None)
@@ -210,7 +174,6 @@ class UpdateHelper(object):
       support_failover,
       support_logging,
       support_tcp_ssl_logging,
-      support_net_lb_ilb_logging,
       support_logging_optional_fields,
       support_subsetting,
       support_subsetting_subset_size,
@@ -221,7 +184,6 @@ class UpdateHelper(object):
     self._support_failover = support_failover
     self._support_logging = support_logging
     self._support_tcp_ssl_logging = support_tcp_ssl_logging
-    self._support_net_lb_ilb_logging = support_net_lb_ilb_logging
     self._support_logging_optional_fields = support_logging_optional_fields
     self._support_subsetting = support_subsetting
     self._support_subsetting_subset_size = support_subsetting_subset_size
@@ -338,7 +300,6 @@ class UpdateHelper(object):
         replacement,
         support_logging=self._support_logging,
         support_tcp_ssl_logging=self._support_tcp_ssl_logging,
-        support_net_lb_ilb_logging=self._support_net_lb_ilb_logging,
         support_logging_optional_fields=self._support_logging_optional_fields,
         cleared_fields=cleared_fields,
     )
@@ -610,7 +571,6 @@ class UpdateGA(base.UpdateCommand):
 
   _support_logging = True
   _support_tcp_ssl_logging = False
-  _support_net_lb_ilb_logging = False
   _support_logging_optional_fields = False
   _support_failover = True
   _support_client_only = True
@@ -627,8 +587,6 @@ class UpdateGA(base.UpdateCommand):
         parser,
         support_failover=cls._support_failover,
         support_logging=cls._support_logging,
-        support_tcp_ssl_logging=cls._support_tcp_ssl_logging,
-        support_net_lb_ilb_logging=cls._support_net_lb_ilb_logging,
         support_logging_optional_fields=cls._support_logging_optional_fields,
         support_client_only=cls._support_client_only,
         support_subsetting=cls._support_subsetting,
@@ -646,7 +604,6 @@ class UpdateGA(base.UpdateCommand):
         self._support_failover,
         self._support_logging,
         self._support_tcp_ssl_logging,
-        self._support_net_lb_ilb_logging,
         self._support_logging_optional_fields,
         self._support_subsetting,
         self._support_subsetting_subset_size,
@@ -670,9 +627,8 @@ class UpdateBeta(UpdateGA):
   _support_advanced_load_balancing = False
   _support_weighted_lb = True
   _support_tcp_ssl_logging = True
-  _support_net_lb_ilb_logging = True
   _support_regional_security_policy = False
-  _support_logging_optional_fields = False
+  _support_logging_optional_fields = True
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -689,6 +645,5 @@ class UpdateAlpha(UpdateBeta):
   _support_advanced_load_balancing = True
   _support_weighted_lb = True
   _support_tcp_ssl_logging = True
-  _support_net_lb_ilb_logging = True
   _support_regional_security_policy = True
   _support_logging_optional_fields = True

@@ -96,8 +96,11 @@ class Update(base.UpdateCommand):
         collection='dns.responsePolicies')
     to_update = self._FetchResponsePolicy(response_policy_ref, api_version)
 
-    if not (args.IsSpecified('networks') or args.IsSpecified('description') or
-            (self._BetaOrAlpha() and args.IsSpecified('gkeclusters'))):
+    if not (
+        args.IsSpecified('networks')
+        or args.IsSpecified('description')
+        or args.IsSpecified('gkeclusters')
+    ):
       log.status.Print('Nothing to update.')
       return to_update
 

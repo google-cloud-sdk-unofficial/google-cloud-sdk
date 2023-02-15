@@ -38,19 +38,24 @@ class List(base.ListCommand):
     parser.add_argument(
         '--regions',
         metavar='REGION',
-        help=('Regions containing functions to list. By default, functions '
-              'from the region configured in [functions/region] property are '
-              'listed.'),
+        help=(
+            'Regions containing functions to list. By default, functions '
+            'from the region configured in [functions/region] property are '
+            'listed.'
+        ),
         type=arg_parsers.ArgList(min_length=1),
-        default=['-'])
-    parser.display_info.AddFormat("""
+        default=['-'],
+    )
+    parser.display_info.AddFormat(
+        """
         table(
           name.basename():sort=1,
           state():label=STATE,
           trigger():label=TRIGGER,
           name.scope("locations").segment(0):label=REGION,
           generation():label=ENVIRONMENT
-        )""")
+        )"""
+    )
 
     base.URI_FLAG.RemoveFromParser(parser)
 
@@ -61,7 +66,8 @@ class List(base.ListCommand):
     # '-' is the default value, which corresponds to all regions.
     list_v1_args = parser_extensions.Namespace(
         limit=args.limit,
-        regions=[r for r in args.regions if r == '-' or r in v1_regions])
+        regions=[r for r in args.regions if r == '-' or r in v1_regions],
+    )
     list_v1_generator = command_v1.Run(list_v1_args)
 
     # v1 autopush and staging are the same in routing perspective, they share

@@ -23,14 +23,14 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.container.bare_metal import cluster_flags as flags
 
 _EXAMPLES = """
-To query versions for creating an admin cluster, run:
+To query versions for creating an admin cluster in location `us-west1`, run:
 
-$ {command}
+$ {command} --location=us-west1
 
-To query versions for upgrading an admin cluster named `my-admin-cluster`,
-run:
+To query versions for upgrading an admin cluster named `my-admin-cluster` in
+location `us-west1`, run:
 
-$ {command} --admin-cluster=my-admin-cluster
+$ {command} --location=us-west1 --admin-cluster=my-admin-cluster
 """
 
 
@@ -43,7 +43,7 @@ class QueryVersionConfig(base.Command):
   @staticmethod
   def Args(parser):
     """Registers flags for this command."""
-    flags.AddLocationResourceArg(parser, 'to query version configuration')
+    flags.AddLocationResourceArg(parser, 'to query versions')
     flags.AddAdminConfigType(parser)
 
   def Run(self, args):

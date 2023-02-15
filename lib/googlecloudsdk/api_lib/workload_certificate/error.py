@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*- #
-# Copyright 2022 Google LLC. All Rights Reserved.
+# Copyright 2023 Google LLC. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,27 +12,20 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""The command to disable the Workload Certificate Feature."""
+"""Worklad Certificate API errors."""
 
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
-from googlecloudsdk.command_lib.container.fleet.features import base
+from googlecloudsdk.core import exceptions
+from googlecloudsdk.core import properties
 
 
-class Disable(base.DisableCommand):
-  """Disable Workload Certificate Feature.
-
-  Disable the Workload Certificate Feature in a fleet.
-
-  ## Examples
-
-  To disable Workload Certificate Feature, run:
-
-    $ {command}
-  """
-
-  feature_name = 'workloadcertificate'
-  feature_display_name = 'Workload Certificate'
-  feature_api = 'workloadcertificate.googleapis.com'
+def ConstructNotAuthorizedError(project=None):
+  """Constructs a new Error for reporting when accessing this Feature is not authorized."""
+  project = project or properties.VALUES.core.project.GetOrFail()
+  return exceptions.Error(
+      'Not authorized to access workloadcertificate Feature for project [{}]'
+      .format(project)
+  )

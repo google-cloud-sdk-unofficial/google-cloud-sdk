@@ -60,7 +60,10 @@ class CreateGitHub(base.CreateCommand):
     gen_config = flag_config.add_mutually_exclusive_group(required=True)
     gen_config.add_argument(
         '--repository',
-        help='Repository resource (2nd gen) to use, in the format "projects/*/locations/*/connections/*/repositories/*".',
+        help=("""\
+Repository resource (2nd gen) to use, in the format
+"projects/*/locations/*/connections/*/repositories/*".
+"""),
     )
     v1_config = gen_config.add_argument_group(
         help='1st-gen repository settings.')
@@ -100,18 +103,20 @@ For example, --pull-request-pattern=foo will match "foo", "foobar", and "barfoo"
 The syntax of the regular expressions accepted is the syntax accepted by
 RE2 and described at https://github.com/google/re2/wiki/Syntax.
 """)
+    comment_control_choices = {
+        'COMMENTS_DISABLED': """Do not require comments on Pull Requests before builds are triggered.""",
+        'COMMENTS_ENABLED': """Enforce that repository owners or collaborators must comment on Pull Requests before builds are triggered.""",
+        'COMMENTS_ENABLED_FOR_EXTERNAL_CONTRIBUTORS_ONLY': """Enforce that repository owners or collaborators must comment on external contributors' Pull Requests before builds are triggered.""",
+    }
+
     pr_config.add_argument(
         '--comment-control',
-        choices={
-            'COMMENTS_DISABLED':
-                'Do not require comments on Pull Requests before builds are triggered.',
-            'COMMENTS_ENABLED':
-                'Enforce that repository owners or collaborators must comment on Pull Requests before builds are triggered.',
-            'COMMENTS_ENABLED_FOR_EXTERNAL_CONTRIBUTORS_ONLY':
-                'Enforce that repository owners or collaborators must comment on external contributors\' Pull Requests before builds are triggered.'
-        },
+        choices=comment_control_choices,
         default='COMMENTS_ENABLED',
-        help='Require a repository collaborator or owner to comment \'/gcbrun\' on a pull request before running the build.'
+        help=("""\
+Require a repository collaborator or owner to comment '/gcbrun' on a pull
+request before running the build.
+"""),
     )
 
     trigger_utils.AddBuildConfigArgs(flag_config)
@@ -153,8 +158,11 @@ RE2 and described at https://github.com/google/re2/wiki/Syntax.
       rcfg.pullRequest = messages.PullRequestFilter(
           branch=args.pull_request_pattern)
       if args.comment_control:
-        rcfg.pullRequest.commentControl = messages.PullRequestFilter.CommentControlValueValuesEnum(
-            args.comment_control)
+        rcfg.pullRequest.commentControl = (
+            messages.PullRequestFilter.CommentControlValueValuesEnum(
+                args.comment_control
+            )
+        )
     else:
       # Push event
       rcfg.push = messages.PushFilter(

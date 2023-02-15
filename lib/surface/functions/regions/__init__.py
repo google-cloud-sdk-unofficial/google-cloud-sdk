@@ -24,4 +24,5 @@ from googlecloudsdk.calliope import base
 
 class Regions(base.Group):
   """List regions available to Google Cloud Functions."""
+
   pass

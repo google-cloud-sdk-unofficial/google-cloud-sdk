@@ -25,5 +25,6 @@
           name.basename():label=POLICY_ID,
           description:label=DESCRIPTION,
           path:label=PATH,
+          condition:label=CONDITION,
           actions:label=ACTIONS
       )

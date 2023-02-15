@@ -22,8 +22,15 @@ from __future__ import unicode_literals
 from googlecloudsdk.api_lib.debug import transforms
 from googlecloudsdk.calliope import base
 
+_DEPRECATION_WARNING = """\
+Cloud Debugger is deprecated and will be shutdown May 31, 2023.
+
+See: https://cloud.google.com/debugger/docs/deprecations
+"""
+
 
 @base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
+@base.Deprecate(is_removed=False, warning=_DEPRECATION_WARNING)
 class Debug(base.Group):
   """Commands for interacting with the Cloud Debugger.
 

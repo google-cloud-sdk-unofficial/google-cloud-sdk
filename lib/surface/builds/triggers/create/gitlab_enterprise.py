@@ -30,13 +30,12 @@ class CreateGitLab(base.CreateCommand):
   """Create a build trigger for a GitLab Enterprise repository."""
 
   detailed_help = {
-      'EXAMPLES':
-          """\
-            To create a push trigger for all branches:
+      'EXAMPLES': """\
+            To create a push trigger with a 1st-gen repository for all branches:
 
               $ {command} --name="my-trigger" --service-account="projects/my-project/serviceAccounts/my-byosa@my-project.iam.gserviceaccount.com" --project-namespace="cloud-builders" --gitlab-config-resource="projects/1234/locations/global/gitLabConfigs/5678" --branch-pattern=".*" --build-config="cloudbuild.yaml"
 
-            To create a pull request trigger for main:
+            To create a pull request trigger with a 1st-gen repository for main:
 
               $ {command} --name="my-trigger" --service-account="projects/my-project/serviceAccounts/my-byosa@my-project.iam.gserviceaccount.com" --project-namespace="cloud-builders" --gitlab-config-resource="projects/1234/locations/global/gitLabConfigs/5678" --pull-request-pattern="^main$" --build-config="cloudbuild.yaml"
           """,
@@ -52,12 +51,26 @@ class CreateGitLab(base.CreateCommand):
     """
     messages = cloudbuild_util.GetMessagesModule()
     flag_config = trigger_utils.AddGitLabEnterpriseTriggerArgs(parser)
-    flag_config.add_argument(
-        '--project-namespace', help='GitLab project namespace.', required=True)
-    flag_config.add_argument(
+    gen_config = flag_config.add_mutually_exclusive_group(required=True)
+    gen_config.add_argument(
+        '--repository',
+        hidden=True,
+        help=(
+            'Repository resource (2nd gen) to use, in the format'
+            ' "projects/*/locations/*/connections/*/repositories/*".'
+        ),
+    )
+    v1_config = gen_config.add_argument_group(
+        help='1st-gen repository settings.'
+    )
+    v1_config.add_argument(
+        '--project-namespace', help='GitLab project namespace.', required=True
+    )
+    v1_config.add_argument(
         '--gitlab-config-resource',
         help='GitLab config resource name.',
-        required=True)
+        required=True,
+    )
     ref_config = flag_config.add_mutually_exclusive_group(required=True)
     trigger_utils.AddBranchPattern(ref_config)
     trigger_utils.AddTagPattern(ref_config)
@@ -107,24 +120,38 @@ RE2 and described at https://github.com/google/re2/wiki/Syntax.
     if done:
       return trigger
 
-    # GitLab Enterprise config
-    gl = messages.GitLabEventsConfig(
-        projectNamespace=args.project_namespace,
-        gitlabConfigResource=args.gitlab_config_resource)
+    if args.repository:  # 2nd-gen (Repos API) config
+      trigger.repositoryEventConfig = messages.RepositoryEventConfig(
+          repository=args.repository
+      )
+      cfg = trigger.repositoryEventConfig
+    else:  # v1 GitLab Enterprise config
+      trigger.gitlabEnterpriseEventsConfig = messages.GitLabEventsConfig(
+          projectNamespace=args.project_namespace,
+          gitlabConfigResource=args.gitlab_config_resource,
+      )
+      cfg = trigger.gitlabEnterpriseEventsConfig
+
     if args.pull_request_pattern:
-      gl.pullRequest = messages.PullRequestFilter(
-          branch=args.pull_request_pattern)
+      cfg.pullRequest = messages.PullRequestFilter(
+          branch=args.pull_request_pattern
+      )
       if args.comment_control:
-        gl.pullRequest.commentControl = messages.PullRequestFilter.CommentControlValueValuesEnum(
-            args.comment_control)
+        cfg.pullRequest.commentControl = (
+            messages.PullRequestFilter.CommentControlValueValuesEnum(
+                args.comment_control
+            )
+        )
     else:
       # Push event
-      gl.push = messages.PushFilter(
-          branch=args.branch_pattern, tag=args.tag_pattern)
-    trigger.gitlabEnterpriseEventsConfig = gl
+      cfg.push = messages.PushFilter(
+          branch=args.branch_pattern, tag=args.tag_pattern
+      )
 
-    default_image = 'gcr.io/%s/gitlab-%s:$COMMIT_SHA' % (project,
-                                                         args.project_namespace)
+    default_image = 'gcr.io/%s/gitlab-%s:$COMMIT_SHA' % (
+        project,
+        args.project_namespace,
+    )
     trigger_utils.ParseBuildConfigArgs(trigger, args, messages, default_image)
     trigger_utils.ParseRepoEventArgs(trigger, args)
 

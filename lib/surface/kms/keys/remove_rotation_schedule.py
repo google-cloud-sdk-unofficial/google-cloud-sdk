@@ -21,6 +21,7 @@ from __future__ import unicode_literals
 from googlecloudsdk.api_lib.cloudkms import base as cloudkms_base
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.kms import flags
+from googlecloudsdk.command_lib.kms import resource_args
 
 
 class RemoveRotationSchedule(base.UpdateCommand):
@@ -40,8 +41,7 @@ class RemoveRotationSchedule(base.UpdateCommand):
 
   @staticmethod
   def Args(parser):
-    flags.AddKeyResourceArgument(parser,
-                                 'from which to clear the rotation schedule')
+    resource_args.AddKmsKeyResourceArgForKMS(parser, True, 'key')
 
   def Run(self, args):
     client = cloudkms_base.GetClientInstance()

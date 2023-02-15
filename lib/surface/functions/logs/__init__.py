@@ -24,4 +24,5 @@ from googlecloudsdk.calliope import base
 
 class Logs(base.Group):
   """Display log entries produced by Google Cloud Functions."""
+
   pass

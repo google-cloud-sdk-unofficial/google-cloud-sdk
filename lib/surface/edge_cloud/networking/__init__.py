@@ -30,7 +30,6 @@ class EdgeNetworkAlpha(base.Group):
     del context, args
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class EdgeNetwork(base.Group):
   """Manage Distributed Cloud Edge Network resources."""

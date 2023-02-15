@@ -96,8 +96,6 @@ ReservationReference = bigquery_client.ApiClientHelper.ReservationReference
 AutoscaleAlphaReservationReference = bigquery_client.ApiClientHelper.AutoscaleAlphaReservationReference
 AutoscalePreviewReservationReference = bigquery_client.ApiClientHelper.AutoscalePreviewReservationReference
 BetaReservationReference = bigquery_client.ApiClientHelper.BetaReservationReference
-EditionPreviewReservationReference = bigquery_client.ApiClientHelper.EditionPreviewReservationReference
-EditionPreviewCapacityCommitmentReference = bigquery_client.ApiClientHelper.EditionPreviewCapacityCommitmentReference
 CapacityCommitmentReference = bigquery_client.ApiClientHelper.CapacityCommitmentReference  # pylint: disable=line-too-long
 ReservationAssignmentReference = bigquery_client.ApiClientHelper.ReservationAssignmentReference  # pylint: disable=line-too-long
 BetaReservationAssignmentReference = bigquery_client.ApiClientHelper.BetaReservationAssignmentReference  # pylint: disable=line-too-long
@@ -1890,6 +1888,12 @@ class _Query(BigqueryCmd):
         'https://cloud.google.com/appengine/docs/flexible/python/scheduling-jobs-with-cron-yaml#the_schedule_format '  # pylint: disable=line-too-long
         'for the schedule format',
         flag_values=fv)
+    flags.DEFINE_bool(
+        'no_auto_scheduling',
+        False,
+        'Create a scheduled query configuration with automatic scheduling '
+        'disabled.',
+        flag_values=fv)
     flags.DEFINE_string(
         'display_name',
         '',
@@ -2003,7 +2007,7 @@ class _Query(BigqueryCmd):
           if value is not None
       }
 
-    if self.schedule:
+    if self.schedule or self.no_auto_scheduling:
       transfer_client = client.GetTransferV1ApiClient()
       reference = 'projects/' + (client.GetProjectReference().projectId)
       scheduled_queries_reference = (reference + '/dataSources/scheduled_query')
@@ -2027,7 +2031,8 @@ class _Query(BigqueryCmd):
         auth_info = RetrieveAuthorizationInfo(reference, 'scheduled_query',
                                               transfer_client)
       schedule_args = bigquery_client.TransferScheduleArgs(
-          schedule=self.schedule)
+          schedule=self.schedule,
+          disable_auto_scheduling=self.no_auto_scheduling)
       params = {
           'query': query,
       }
@@ -2944,8 +2949,6 @@ class _List(BigqueryCmd):  # pylint: disable=missing-docstring
     elif self.capacity_commitment:
       try:
         object_type = CapacityCommitmentReference
-        if FLAGS.api_version == 'edition_preview':
-          object_type = EditionPreviewCapacityCommitmentReference
         reference = client.GetCapacityCommitmentReference(
             identifier=identifier,
             default_location=FLAGS.location,
@@ -2962,16 +2965,13 @@ class _List(BigqueryCmd):  # pylint: disable=missing-docstring
         raise bigquery_client.BigqueryError(
             "Failed to list capacity commitments '%s': %s" % (identifier, e))
     elif self.reservation:
-      has_bi_response = None
-      response = []
+      response = None
       if FLAGS.api_version == 'autoscale_alpha':
         object_type = AutoscaleAlphaReservationReference
       elif FLAGS.api_version == 'autoscale_preview':
         object_type = AutoscalePreviewReservationReference
       elif FLAGS.api_version == 'v1beta1':
         object_type = BetaReservationReference
-      elif FLAGS.api_version == 'edition_preview':
-        object_type = EditionPreviewReservationReference
       else:
         object_type = ReservationReference
       reference = client.GetReservationReference(
@@ -2979,14 +2979,13 @@ class _List(BigqueryCmd):  # pylint: disable=missing-docstring
           default_location=FLAGS.location,
           default_reservation_id=' ')
       try:
-        list_bi_reservations = True
-        if list_bi_reservations:
-          bi_response = client.ListBiReservations(reference)
-          has_bi_response = 'size' in bi_response
-          if has_bi_response:
-            size_in_bytes = int(bi_response['size'])
-            size_in_gbytes = size_in_bytes / (1024 * 1024 * 1024)
-            print('BI Engine reservation: %sGB' % size_in_gbytes)
+        if True:
+          response = client.ListBiReservations(reference)
+          results = [response]
+        if response and 'size' in response:
+          size_in_bytes = int(response['size'])
+          size_in_gbytes = size_in_bytes / (1024 * 1024 * 1024)
+          print('BI Engine reservation: %sGB' % size_in_gbytes)
       except bigquery_client.BigqueryNotFoundError:
         pass
       except BaseException as e:
@@ -2994,21 +2993,19 @@ class _List(BigqueryCmd):  # pylint: disable=missing-docstring
             "Failed to list BI reservations '%s': %s" % (identifier, e))
 
       try:
-        list_slot_reservations = True
-        if list_slot_reservations:
+        if True:
           response = client.ListReservations(
               reference=reference,
               page_size=self.max_results,
               page_token=self.page_token)
+          results = (response['reservations'] if 'reservations' in response
+                     else [])
       except BaseException as e:
         raise bigquery_client.BigqueryError(
             "Failed to list reservations '%s': %s" % (identifier, e))
-      if 'reservations' in response:
-        results = response['reservations']
-      else:
-        if not has_bi_response:
-          print('No reservations found.')
-      if 'nextPageToken' in response:
+      if not results:
+        print('No reservations found.')
+      if response and 'nextPageToken' in response:
         _PrintPageToken(response)
     elif self.transfer_config:
       object_type = TransferConfigReference
@@ -3890,19 +3887,19 @@ class _Make(BigqueryCmd):
         flag_values=fv)
     flags.DEFINE_enum(
         'renewal_plan',
-        None, [
+        None,
+        [
             'FLEX',
             'MONTHLY',
             'ANNUAL',
-            'NONE',
-        ], 'The plan this capacity commitment is converted to after committed '
+        ],
+        'The plan this capacity commitment is converted to after committed '
         'period ends. Options include:'
         '\n NONE'
         '\n FLEX'
         '\n MONTHLY'
         '\n ANNUAL'
-        '\n NONE can only be used in conjunction with --edition, '
-        '\n while FLEX and MONTHLY cannot be used together with --edition.',
+        ,
         flag_values=fv)
     flags.DEFINE_integer(
         'slots',
@@ -3970,7 +3967,7 @@ class _Make(BigqueryCmd):
         flag_values=fv)
     flags.DEFINE_enum(
         'job_type',
-        None, ['QUERY', 'PIPELINE', 'ML_EXTERNAL', 'BACKGROUND'],
+        None, ['QUERY', 'PIPELINE', 'ML_EXTERNAL', 'BACKGROUND', 'SPARK'],
         'Type of jobs to create reservation assignment for. Options include:'
         '\n QUERY'
         '\n PIPELINE'
@@ -3985,7 +3982,13 @@ class _Make(BigqueryCmd):
         'from other reservations.'
         '\n BACKGROUND'
         '\n BigQuery CDC background merge will use BACKGROUND reservations to '
-        'execute if created.',
+        'execute if created.'
+        '\n SPARK'
+        '\n BigQuery Spark jobs that use services external to BQ for executing '
+        'SPARK procedure job. Slots used by these jobs are not preemptible, '
+        'i.e., they are not available for other jobs running in the '
+        'reservation. These jobs will not utilize idle slots from other '
+        'reservations.',
         flag_values=fv)
     flags.DEFINE_enum(
         'priority',
@@ -4023,17 +4026,6 @@ class _Make(BigqueryCmd):
         None,
         'Project/folder/organization ID, to which the reservation is assigned. '
         'Used in conjunction with --reservation_assignment.',
-        flag_values=fv)
-    flags.DEFINE_enum(
-        'edition',
-        None, ['STANDARD', 'ENTERPRISE', 'ENTERPRISE_PLUS'],
-        'Type of editions for the reservation or capacity commitment. '
-        'Options include:'
-        '\n STANDARD'
-        '\n ENTERPRISE'
-        '\n ENTERPRISE_PLUS'
-        '\n Used in conjunction with --reservation or --capacity_commitment.'
-        '\n STANDARD cannot be used together with --capacity_commitment.',
         flag_values=fv)
     flags.DEFINE_boolean(
         'connection', None, 'Create a connection.', flag_values=fv)
@@ -4214,7 +4206,6 @@ class _Make(BigqueryCmd):
             reference=reference,
             slots=self.slots,
             ignore_idle_slots=ignore_idle_arg,
-            edition=self.edition,
             target_job_concurrency=concurrency,
             enable_queuing_and_priorities=self.enable_queuing_and_priorities,
             multi_region_auxiliary=self.multi_region_auxiliary,
@@ -4233,7 +4224,6 @@ class _Make(BigqueryCmd):
       try:
         object_info = client.CreateCapacityCommitment(
             reference,
-            self.edition,
             self.slots,
             self.plan,
             self.renewal_plan,
@@ -5820,12 +5810,13 @@ class _Show(BigqueryCmd):
         flag_values=fv)
     flags.DEFINE_enum(
         'job_type',
-        None, ['QUERY', 'PIPELINE', 'ML_EXTERNAL', 'BACKGROUND'],
+        None, ['QUERY', 'PIPELINE', 'ML_EXTERNAL', 'BACKGROUND', 'SPARK'],
         'Type of jobs to search reservation assignment for. Options include:'
         '\n QUERY'
         '\n PIPELINE'
         '\n ML_EXTERNAL'
         '\n BACKGROUND'
+        '\n SPARK'
         '\n Used in conjunction with --reservation_assignment.',
         flag_values=fv)
     flags.DEFINE_enum(
@@ -6294,7 +6285,10 @@ class _Insert(BigqueryCmd):
     flags.DEFINE_string(
         'insert_id',
         None,
-        'A unique insert_id to use for the request.',
+        'Used to ensure repeat executions do not add unintended data. '
+        'A present insert_id value will be appended to the row number of '
+        'each row to be inserted and used as the insertId field for the row. '
+        'Internally the insertId field is used for deduping of inserted rows.',
         flag_values=fv)
     self._ProcessCommandRc(fv)
 

@@ -58,6 +58,20 @@
       type: bool
       help_text: |
         This specifies whether private IP is enabled on the Looker instance.
+    - group:
+        required: false
+        help_text: |
+          Key resource - The Cloud KMS (Key Management Service) cryptokey that will be used to
+          protect the Looker instance and backups. The 'Looker Service Agent' service account must hold
+          permission 'Cloud KMS CryptoKey Encrypter/Decrypter'. The arguments in this group can
+          be used to specify the attributes of this resource.
+        params:
+        - api_field: instance.encryptionConfig.kmsKeyName
+          arg_name: kms-key
+          help_text: |
+            ID of the key or fully qualified identifier for the key. To
+            set the *kms-key* attribute:
+            * provide the argument *--kms-key* on the command line.
 
   request:
     ALPHA:

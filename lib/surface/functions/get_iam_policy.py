@@ -35,10 +35,8 @@ class GetIamPolicy(base.ListCommand):
   """Get IAM policy for a Google Cloud Function."""
 
   detailed_help = {
-      'DESCRIPTION':
-          '{description}',
-      'EXAMPLES':
-          """\
+      'DESCRIPTION': '{description}',
+      'EXAMPLES': """\
           To get the iam policy for `FUNCTION-1` run:
 
             $ {command} FUNCTION-1

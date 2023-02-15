@@ -25,8 +25,7 @@ from googlecloudsdk.command_lib.functions.v1.call import command as command_v1
 from googlecloudsdk.command_lib.functions.v2.call import command as command_v2
 
 _DETAILED_HELP = {
-    'EXAMPLES':
-        """
+    'EXAMPLES': """
         To call a function, giving it 'Hello World!' in the message field of its event
         argument (depending on your environment you might need to escape
         characters in `--data` flag value differently), run:

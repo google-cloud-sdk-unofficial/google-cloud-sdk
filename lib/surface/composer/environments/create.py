@@ -620,6 +620,7 @@ class CreateBeta(Create):
     triggerer_params_group = parser.add_argument_group(
         flags.TRIGGERER_PARAMETERS_FLAG_GROUP_DESCRIPTION)
     flags.TRIGGERER_CPU.AddToParser(triggerer_params_group)
+    flags.TRIGGERER_COUNT.AddToParser(triggerer_params_group)
     flags.TRIGGERER_MEMORY.AddToParser(triggerer_params_group)
     flags.ENABLE_TRIGGERER.AddToParser(triggerer_params_group)
 
@@ -667,6 +668,7 @@ class CreateBeta(Create):
         web_server_machine_type=args.web_server_machine_type,
         scheduler_cpu=args.scheduler_cpu,
         triggerer_cpu=args.triggerer_cpu,
+        triggerer_count=args.triggerer_count,
         worker_cpu=args.worker_cpu,
         web_server_cpu=args.web_server_cpu,
         scheduler_memory_gb=environments_api_util.MemorySizeBytesToGB(
@@ -713,9 +715,9 @@ class CreateBeta(Create):
       possible_args = {
           'enable-triggerer': args.enable_triggerer,
           'triggerer-cpu': args.triggerer_cpu,
-          'triggerer-memory': args.triggerer_memory
+          'triggerer-memory': args.triggerer_memory,
+          'triggerer-count': args.triggerer_count,
       }
-
       for k, v in possible_args.items():
         if v and not triggerer_supported:
           raise command_util.InvalidUserInputError(
@@ -723,15 +725,16 @@ class CreateBeta(Create):
                   opt=k,
                   composer_version=flags.MIN_TRIGGERER_COMPOSER_VERSION,
                   airflow_version=flags.MIN_TRIGGERER_AIRFLOW_VERSION))
-    if not args.enable_triggerer:
+    if not (args.enable_triggerer or (args.triggerer_count and
+                                      args.triggerer_count > 0)):
       if args.triggerer_cpu:
         raise command_util.InvalidUserInputError(
-            flags.PREREQUISITE_OPTION_ERROR_MSG.format(
-                opt='triggerer-cpu', prerequisite='enable-triggerer'))
+            flags.ENABLED_TRIGGERER_IS_REQUIRED_MSG.format(
+                opt='triggerer-cpu'))
       if args.triggerer_memory:
         raise command_util.InvalidUserInputError(
-            flags.PREREQUISITE_OPTION_ERROR_MSG.format(
-                opt='triggerer-memory', prerequisite='enable-triggerer'))
+            flags.ENABLED_TRIGGERER_IS_REQUIRED_MSG.format(
+                opt='triggerer-memory'))
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -804,6 +807,7 @@ class CreateAlpha(CreateBeta):
         web_server_machine_type=args.web_server_machine_type,
         scheduler_cpu=args.scheduler_cpu,
         triggerer_cpu=args.triggerer_cpu,
+        triggerer_count=args.triggerer_count,
         worker_cpu=args.worker_cpu,
         web_server_cpu=args.web_server_cpu,
         scheduler_memory_gb=environments_api_util.MemorySizeBytesToGB(

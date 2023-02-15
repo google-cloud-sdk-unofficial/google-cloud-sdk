@@ -25,6 +25,7 @@ from googlecloudsdk.api_lib.dataproc import dataproc as dp
 from googlecloudsdk.api_lib.dataproc import exceptions
 from googlecloudsdk.api_lib.dataproc import storage_helpers
 from googlecloudsdk.api_lib.dataproc import util
+from googlecloudsdk.calliope import actions
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.dataproc import flags
 from googlecloudsdk.command_lib.util.apis import arg_utils
@@ -80,16 +81,44 @@ class Diagnose(base.Command):
     parser.add_argument(
         '--job-id',
         hidden=True,
-        help='The job on which to perform the diagnosis.')
+        help='The job on which to perform the diagnosis.',
+        action=actions.DeprecationAction(
+            '--job-id',
+            warn=(
+                'The {flag_name} option is deprecated and will be removed in'
+                ' upcoming release; use --job-ids instead.'
+            ),
+            removed=False,
+        ),
+    )
     parser.add_argument(
         '--yarn-application-id',
         hidden=True,
-        help='The yarn application on which to perform the diagnosis.')
+        help='The yarn application on which to perform the diagnosis.',
+        action=actions.DeprecationAction(
+            '--yarn-application-id',
+            warn=(
+                'The {flag_name} option is deprecated and will be removed in'
+                ' upcoming release; use --yarn-application-ids instead.'
+            ),
+            removed=False,
+        ),
+    )
     parser.add_argument(
         '--workers',
         hidden=True,
         help='A list of workers in the cluster to run the diagnostic script ' +
         'on.')
+    parser.add_argument(
+        '--job-ids',
+        hidden=True,
+        help='A list of jobs on which to perform the diagnosis.',
+    )
+    parser.add_argument(
+        '--yarn-application-ids',
+        hidden=True,
+        help='A list of yarn applications on which to perform the diagnosis.',
+    )
 
   def Run(self, args):
     dataproc = dp.Dataproc(self.ReleaseTrack())
@@ -98,13 +127,17 @@ class Diagnose(base.Command):
 
     request = None
     diagnose_request = dataproc.messages.DiagnoseClusterRequest(
-        job=args.job_id,
-        yarnApplicationId=args.yarn_application_id
+        job=args.job_id, yarnApplicationId=args.yarn_application_id
     )
     diagnose_request.diagnosisInterval = dataproc.messages.Interval(
         startTime=args.start_time,
         endTime=args.end_time
     )
+    if args.job_ids is not None:
+      diagnose_request.jobs.extend(args.job_ids.split(','))
+    if args.yarn_application_ids is not None:
+      diagnose_request.yarnApplicationIds.extend(
+          args.yarn_application_ids.split(','))
     if args.workers is not None:
       diagnose_request.workers.extend(args.workers.split(','))
     if args.tarball_access is not None:

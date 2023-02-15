@@ -39,8 +39,7 @@ _DISPLAY_INFO_V2_FORMAT = """
 """
 
 _DETAILED_HELP = {
-    'DESCRIPTION':
-        """
+    'DESCRIPTION': """
         `{command}` displays types of events that can be a trigger for a Google Cloud
         Function.
 

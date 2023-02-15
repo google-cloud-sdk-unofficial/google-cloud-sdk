@@ -30,8 +30,54 @@ from googlecloudsdk.command_lib.ai import operations_util
 from googlecloudsdk.command_lib.ai import region_util
 
 
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class CopyV1(base.CreateCommand):
+  """Copy a model.
+
+  ## EXAMPLES
+
+  To copy a model `123` of project `example` from region `us-central1` to region
+  `europe-west4`, run:
+
+    $ {command} --source-model=projects/example/locations/us-central1/models/123
+      --region=projects/example/locations/europe-west4
+  """
+
+  def __init__(self, *args, **kwargs):
+    super(CopyV1, self).__init__(*args, **kwargs)
+    client_instance = apis.GetClientInstance(
+        constants.AI_PLATFORM_API_NAME,
+        constants.AI_PLATFORM_API_VERSION[constants.GA_VERSION])
+    self.messages = client.ModelsClient(
+        client=client_instance,
+        messages=client_instance.MESSAGES_MODULE).messages
+
+  @staticmethod
+  def Args(parser):
+    flags.AddCopyModelFlags(parser, region_util.PromptForOpRegion)
+
+  def Run(self, args):
+    destination_region_ref = args.CONCEPTS.region.Parse()
+    destination_region = destination_region_ref.AsDict()['locationsId']
+    with endpoint_util.AiplatformEndpointOverrides(
+        version=constants.GA_VERSION, region=destination_region):
+      client_instance = apis.GetClientInstance(
+          constants.AI_PLATFORM_API_NAME,
+          constants.AI_PLATFORM_API_VERSION[constants.GA_VERSION])
+      operation = client.ModelsClient(
+          client=client_instance,
+          messages=client_instance.MESSAGES_MODULE).CopyV1(
+              destination_region_ref, args.source_model, args.kms_key_name,
+              args.destination_model_id, args.destination_parent_model)
+      return operations_util.WaitForOpMaybe(
+          operations_client=operations.OperationsClient(
+              client=client_instance, messages=client_instance.MESSAGES_MODULE),
+          op=operation,
+          op_ref=models_util.ParseModelOperation(operation.name))
+
+
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
-class CopyV1Beta1(base.CreateCommand):
+class CopyV1Beta1(CopyV1):
   """Copy a model.
 
   ## EXAMPLES
@@ -45,12 +91,7 @@ class CopyV1Beta1(base.CreateCommand):
 
   def __init__(self, *args, **kwargs):
     super(CopyV1Beta1, self).__init__(*args, **kwargs)
-    client_instance = apis.GetClientInstance(
-        constants.AI_PLATFORM_API_NAME,
-        constants.AI_PLATFORM_API_VERSION[constants.BETA_VERSION])
-    self.messages = client.ModelsClient(
-        client=client_instance,
-        messages=client_instance.MESSAGES_MODULE).messages
+    self.messages = client.ModelsClient().messages
 
   @staticmethod
   def Args(parser):

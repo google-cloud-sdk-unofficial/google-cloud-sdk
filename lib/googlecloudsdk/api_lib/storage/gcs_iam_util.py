@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*- #
-# Copyright 2022 Google LLC. All Rights Reserved.
+# Copyright 2023 Google LLC. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,17 +12,14 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Command group for Workload Certificate Feature."""
+"""Utilities for GCS IAM Policies."""
 
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
-from googlecloudsdk.calliope import base as calliope_base
 
+# Determines which IAM format to use as new features are added. This is shared
+# among enough files that it should live here to avoid circular dependencies.
+IAM_POLICY_VERSION = 3
 
-@calliope_base.ReleaseTracks(calliope_base.ReleaseTrack.ALPHA)
-@calliope_base.Hidden
-class WorkloadCertificate(calliope_base.Group):
-  """Manage Workload Certificate Feature."""
-  pass

@@ -52,6 +52,14 @@ def _GetCertProviderCommand(context_config):
 def _AddContextAwareOptions(args):
   """Adds device certificate settings for mTLS."""
   context_config = context_aware.Config()
+  # Enterprise certificate is not yet supported for gsutil.
+  if (
+      context_config
+      and context_config.config_type
+      == context_aware.ConfigType.ENTERPRISE_CERTIFICATE
+  ):
+    return
+
   # TODO(b/190102217) - Cleanup code that handles both version of context_config
   use_client_certificate = (
       context_config and

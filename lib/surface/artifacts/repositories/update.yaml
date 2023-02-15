@@ -24,6 +24,12 @@
       api_field: repository.description
       help_text: |
         Description for the repository.
+    - arg_name: immutable-tags
+      type: bool
+      api_field: repository.dockerConfig.immutableTags
+      hidden: true
+      help_text: |
+        (Docker only) Prevent tag mutations on any image in this repository.
     labels:
       api_field: repository.labels
     additional_arguments_hook: googlecloudsdk.command_lib.artifacts.util:UpstreamsArgs

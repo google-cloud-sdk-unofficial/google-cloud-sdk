@@ -23,6 +23,7 @@ from googlecloudsdk.calliope import base
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
                     base.ReleaseTrack.GA)
-@base.Hidden
 class Generic(base.Group):
-  """Manage Artifact Registry VPC SC Config for Remote Repositories."""
+  """Manage Artifact Registry VPC Service Controls configuration for remote repositories."""
+
+  category = base.CI_CD_CATEGORY

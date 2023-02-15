@@ -341,7 +341,8 @@ def ParseCreateOptionsBase(args, is_autopilot, get_default, location,
       logging_variant=get_default('logging_variant'),
       enable_cost_allocation=get_default('enable_cost_allocation'),
       enable_multi_networking=get_default('enable_multi_networking'),
-      placement_type=get_default('placement_type'))
+      placement_type=get_default('placement_type'),
+      enable_security_posture=get_default('enable_security_posture'))
 
 
 GA = 'ga'
@@ -584,6 +585,8 @@ flags_to_add = {
             flags.AddLoggingVariantFlag,
         'enableMultiNetworking':
             flags.AddEnableMultiNetworkingFlag,
+        'enableSecurityPosture':
+            flags.AddSecurityPostureFlag,
     },
     BETA: {
         'accelerator': (lambda p: AddAcceleratorFlag(p, True, True, True)),
@@ -795,6 +798,8 @@ flags_to_add = {
             flags.AddLoggingVariantFlag,
         'enableMultiNetworking':
             flags.AddEnableMultiNetworkingFlag,
+        'enableSecurityPosture':
+            flags.AddSecurityPostureFlag,
     },
     ALPHA: {
         'accelerator': (lambda p: AddAcceleratorFlag(p, True, True, True)),
@@ -1015,6 +1020,8 @@ flags_to_add = {
             flags.AddLoggingVariantFlag,
         'enableMultiNetworking':
             flags.AddEnableMultiNetworkingFlag,
+        'enableSecurityPosture':
+            flags.AddSecurityPostureFlag,
     },
 }
 
@@ -1262,6 +1269,7 @@ class CreateBeta(Create):
     ops.fleet_project = get_default('fleet_project')
     ops.enable_fleet = get_default('enable_fleet')
     ops.enable_multi_networking = get_default('enable_multi_networking')
+    ops.enable_security_posture = get_default('enable_security_posture')
     return ops
 
 
@@ -1353,4 +1361,5 @@ class CreateAlpha(Create):
     ops.fleet_project = get_default('fleet_project')
     ops.enable_fleet = get_default('enable_fleet')
     ops.enable_multi_networking = get_default('enable_multi_networking')
+    ops.enable_security_posture = get_default('enable_security_posture')
     return ops

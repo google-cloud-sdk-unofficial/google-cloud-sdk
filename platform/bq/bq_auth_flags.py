@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 """Auth flags for calling BigQuery."""
 
-
 import os
 
 
