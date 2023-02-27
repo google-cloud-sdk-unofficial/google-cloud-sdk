@@ -79,5 +79,4 @@ class List(base.ListCommand):
     return list_pager.YieldFromList(
         sql_client.backupRuns,
         sql_messages.SqlBackupRunsListRequest(
-            project=instance_ref.project, instance=instance_ref.instance),
-        limit=args.limit)
+            project=instance_ref.project, instance=instance_ref.instance))

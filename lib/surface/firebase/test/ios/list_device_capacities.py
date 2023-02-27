@@ -40,7 +40,6 @@ DETAILED_HELP = {
 }
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
 class ListDeviceCapacities(base.ListCommand, DeviceCapacities):
   """List capacity information for iOS models & versions.
 

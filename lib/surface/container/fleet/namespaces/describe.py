@@ -24,7 +24,7 @@ from googlecloudsdk.command_lib.util.apis import arg_utils
 
 
 @base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Describe(base.DescribeCommand):
   """Show fleet namespace info.
 
@@ -53,5 +53,5 @@ class Describe(base.DescribeCommand):
 
   def Run(self, args):
     project = arg_utils.GetFromNamespace(args, '--project', use_defaults=True)
-    fleetclient = client.FleetClient(release_track=base.ReleaseTrack.ALPHA)
+    fleetclient = client.FleetClient(release_track=self.ReleaseTrack())
     return fleetclient.GetNamespace(project, args.NAME)

@@ -98,6 +98,18 @@ class Create(base.CreateCommand):
         run the gcloud vmware node-types describe command and reference the
         availableCustomCoreCounts field in the output.
         """)
+    parser.add_argument(
+        '--type',
+        required=False,
+        hidden=True,
+        default='STANDARD',
+        choices={
+            'STANDARD': """Standard private is a zonal resource, with 3 or more nodes nodes. Default type.""",
+            'TIME_LIMITED': """Time limited private cloud is a zonal resource, can have only 1 node and
+            has limited life span. Will be deleted after defined period of time,
+            can be converted into standard private cloud by expanding it up to 3
+            or more nodes"""},
+        help='Type of the private cloud')
 
   def Run(self, args):
     privatecloud = args.CONCEPTS.private_cloud.Parse()
@@ -110,6 +122,7 @@ class Create(base.CreateCommand):
         network_cidr=args.management_range,
         vmware_engine_network_id=args.vmware_engine_network,
         description=args.description,
+        private_cloud_type=args.type,
     )
     if is_async:
       log.CreatedResource(operation.name, kind='private cloud', is_async=True)
@@ -118,7 +131,9 @@ class Create(base.CreateCommand):
     resource = client.WaitForOperation(
         operation_ref=client.GetOperationRef(operation),
         message='waiting for private cloud [{}] to be created'.format(
-            privatecloud.RelativeName()))
+            privatecloud.RelativeName()
+        ),
+    )
     log.CreatedResource(resource, kind='private cloud')
 
     return resource

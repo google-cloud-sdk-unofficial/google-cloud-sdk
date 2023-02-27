@@ -19,12 +19,13 @@ from __future__ import division
 from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.container.fleet import client
+from googlecloudsdk.api_lib.container.fleet import util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.container.fleet import resources
 
 
 @base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Describe(base.DescribeCommand):
   """Show fleet namespace RBAC RoleBinding information.
 
@@ -40,15 +41,18 @@ class Describe(base.DescribeCommand):
     $ {command} RBRB --namespace=NAMESPACE
   """
 
-  @staticmethod
-  def Args(parser):
+  @classmethod
+  def Args(cls, parser):
     resources.AddRBACResourceArg(
         parser,
-        api_version='v1alpha',
-        rbacrb_help=('Name of the RBAC RoleBinding to be created. '
-                     'Must comply with RFC 1123 (up to 63 characters, '
-                     'alphanumeric and \'-\')'))
+        api_version=util.VERSION_MAP[cls.ReleaseTrack()],
+        rbacrb_help=(
+            'Name of the RBAC RoleBinding to be created. '
+            'Must comply with RFC 1123 (up to 63 characters, '
+            "alphanumeric and '-')"
+        ),
+    )
 
   def Run(self, args):
-    fleetclient = client.FleetClient(release_track=base.ReleaseTrack.ALPHA)
+    fleetclient = client.FleetClient(release_track=self.ReleaseTrack())
     return fleetclient.GetRBACRoleBinding(resources.RBACResourceName(args))

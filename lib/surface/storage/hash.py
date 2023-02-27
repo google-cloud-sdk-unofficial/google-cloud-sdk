@@ -84,8 +84,6 @@ def _get_resource_iterator(url_strings):
     raise errors.InvalidUrlError('No URLS matched.')
 
 
-@base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Hash(base.Command):
   """Calculates hashes on local or cloud files."""
 
@@ -133,7 +131,7 @@ class Hash(base.Command):
     skip_flags_group.add_argument(
         '--skip-md5',
         action='store_true',
-        help='Skip Md5 hash calculation. Useful if command is running slow.')
+        help='Skip MD5 hash calculation. Useful if command is running slow.')
     flags.add_encryption_flags(parser, command_only_reads_data=True)
 
     flags.add_additional_headers_flag(parser)

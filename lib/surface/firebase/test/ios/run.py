@@ -42,8 +42,7 @@ class Run(base.ListCommand):
   """Invoke a test in Firebase Test Lab for iOS and view test results."""
 
   detailed_help = {
-      'DESCRIPTION':
-          """\
+      'DESCRIPTION': """\
           *{command}* invokes and monitors tests in Firebase Test Lab for iOS.
 
           The currently supported iOS test frameworks are XCTest and XCUITest.
@@ -59,8 +58,12 @@ class Run(base.ListCommand):
           and/or within an argument file. Run *$ gcloud topic arg-files* for
           more information about argument files.
           """,
-      'EXAMPLES':
-          """\
+      'EXAMPLES': """\
+          To help you identify and locate your test matrix in the Firebase
+          console, run:
+
+            $ {command} --test=XCTEST_ZIP --client-details=matrixLabel="Example matrix label"
+
           To invoke an XCTest lasting up to five minutes against the default
           device environment, run:
 
@@ -222,8 +225,7 @@ def PickHistoryName(args):
 class RunBeta(Run):
   """Invoke a test in Firebase Test Lab for iOS and view test results."""
   detailed_help = {
-      'DESCRIPTION':
-          """\
+      'DESCRIPTION': """\
           *{command}* invokes and monitors tests in Firebase Test Lab for iOS.
 
           Two types of iOS tests are currently supported:
@@ -246,8 +248,12 @@ class RunBeta(Run):
           and/or within an argument file. Run *$ gcloud topic arg-files* for
           more information about argument files.
         """,
-      'EXAMPLES':
-          """\
+      'EXAMPLES': """\
+          To help you identify and locate your test matrix in the Firebase
+          console, run:
+
+            $ {command} --test=XCTEST_ZIP --client-details=matrixLabel="Example matrix label"
+
           To invoke an XCTest lasting up to five minutes against the default
           device environment, run:
 

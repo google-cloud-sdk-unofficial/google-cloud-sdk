@@ -25,7 +25,8 @@
     format: |
       table(
         name.basename():label=NAME,
-        createTime:label=CREATETIME,
-        labels:label=LABELS,
-        updateTime:label=UPDATETIME
+        createTime.date("%Y-%m-%dT%H:%M:%SZ"):label=CREATETIME,
+        updateTime.date("%Y-%m-%dT%H:%M:%SZ"):label=UPDATETIME,
+        state:label=STATE,
+        tnaVersion:label=TNAVERSION
       )

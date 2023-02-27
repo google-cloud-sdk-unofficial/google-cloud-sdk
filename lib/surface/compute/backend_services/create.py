@@ -95,7 +95,6 @@ class CreateHelper(object):
       parser,
       support_failover,
       support_logging,
-      support_logging_optional_fields,
       support_multinic,
       support_client_only,
       support_unspecified_protocol,
@@ -155,9 +154,8 @@ class CreateHelper(object):
     if support_logging:
       flags.AddEnableLogging(parser)
       flags.AddLoggingSampleRate(parser)
-      if support_logging_optional_fields:
-        flags.AddLoggingOptional(parser)
-        flags.AddLoggingOptionalFields(parser)
+      flags.AddLoggingOptional(parser)
+      flags.AddLoggingOptionalFields(parser)
 
     if support_multinic:
       flags.AddNetwork(parser)
@@ -176,7 +174,6 @@ class CreateHelper(object):
       support_failover,
       support_logging,
       support_tcp_ssl_logging,
-      support_logging_optional_fields,
       support_multinic,
       support_subsetting,
       support_subsetting_subset_size,
@@ -186,7 +183,6 @@ class CreateHelper(object):
     self._support_failover = support_failover
     self._support_logging = support_logging
     self._support_tcp_ssl_logging = support_tcp_ssl_logging
-    self._support_logging_optional_fields = support_logging_optional_fields
     self._support_multinic = support_multinic
     self._support_subsetting = support_subsetting
     self._support_subsetting_subset_size = support_subsetting_subset_size
@@ -276,7 +272,6 @@ class CreateHelper(object):
         backend_service,
         support_logging=self._support_logging,
         support_tcp_ssl_logging=self._support_tcp_ssl_logging,
-        support_logging_optional_fields=self._support_logging_optional_fields,
     )
 
     request = client.messages.ComputeBackendServicesInsertRequest(
@@ -361,7 +356,6 @@ class CreateHelper(object):
         backend_service,
         support_logging=self._support_logging,
         support_tcp_ssl_logging=self._support_tcp_ssl_logging,
-        support_logging_optional_fields=self._support_logging_optional_fields,
     )
 
     request = client.messages.ComputeRegionBackendServicesInsertRequest(
@@ -446,7 +440,6 @@ class CreateGA(base.CreateCommand):
   _support_failover = True
   _support_logging = True
   _support_tcp_ssl_logging = False
-  _support_logging_optional_fields = False
   _support_multinic = True
   _support_client_only = True
   _support_unspecified_protocol = True
@@ -461,7 +454,6 @@ class CreateGA(base.CreateCommand):
         parser,
         support_failover=cls._support_failover,
         support_logging=cls._support_logging,
-        support_logging_optional_fields=cls._support_logging_optional_fields,
         support_multinic=cls._support_multinic,
         support_client_only=cls._support_client_only,
         support_unspecified_protocol=cls._support_unspecified_protocol,
@@ -479,7 +471,6 @@ class CreateGA(base.CreateCommand):
         support_failover=self._support_failover,
         support_logging=self._support_logging,
         support_tcp_ssl_logging=self._support_tcp_ssl_logging,
-        support_logging_optional_fields=self._support_logging_optional_fields,
         support_multinic=self._support_multinic,
         support_subsetting=self._support_subsetting,
         support_subsetting_subset_size=self._support_subsetting_subset_size,
@@ -514,7 +505,6 @@ class CreateBeta(CreateGA):
   _support_advanced_load_balancing = False
   _support_weighted_lb = True
   _support_tcp_ssl_logging = True
-  _support_logging_optional_fields = True
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -542,4 +532,3 @@ class CreateAlpha(CreateBeta):
   _support_advanced_load_balancing = True
   _support_weighted_lb = True
   _support_tcp_ssl_logging = True
-  _support_logging_optional_fields = True

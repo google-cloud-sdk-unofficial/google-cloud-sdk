@@ -26,7 +26,7 @@ from googlecloudsdk.core import properties
 
 
 @base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class List(base.ListCommand):
   """List RBAC RoleBindings in a fleet namespace.
 
@@ -54,7 +54,7 @@ class List(base.ListCommand):
         help='Name of the fleet namespace to list RBAC RoleBindings from.')
 
   def Run(self, args):
-    fleetclient = client.FleetClient(release_track=base.ReleaseTrack.ALPHA)
+    fleetclient = client.FleetClient(release_track=self.ReleaseTrack())
     project = args.project
     if project is None:
       project = properties.VALUES.core.project.Get()

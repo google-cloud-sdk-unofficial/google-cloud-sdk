@@ -39,6 +39,7 @@
     collection: artifactregistry.projects.locations.repositories
     modify_request_hooks:
     - googlecloudsdk.command_lib.artifacts.util:AppendUpstreamPoliciesToRequest
+    - googlecloudsdk.command_lib.artifacts.repository_util:RetainFormatConfigHook
 
   update:
     read_modify_update: true

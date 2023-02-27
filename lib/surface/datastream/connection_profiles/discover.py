@@ -31,7 +31,7 @@ DESCRIPTION = (
 EXAMPLES = """\
     To discover an existing connection profile:
 
-        $ {command} CONNECTION_PROFILE --location=us-central1 --connection-profile-name=some-cp --recursive
+        $ {command} CONNECTION_PROFILE --location=us-central1 --connection-profile-name=some-cp --recursive=true
 
     To discover a non-existing connection profile:
 
@@ -61,6 +61,7 @@ class _Discover:
     resource_args.AddConnectionProfileDiscoverResourceArg(parser)
     cp_flags.AddDepthGroup(parser)
     cp_flags.AddRdbmsGroup(parser)
+    cp_flags.AddHierarchyGroup(parser)
 
   def Run(self, args):
     """Discover a Datastream connection profile.

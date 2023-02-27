@@ -119,6 +119,11 @@ class Diagnose(base.Command):
         hidden=True,
         help='A list of yarn applications on which to perform the diagnosis.',
     )
+    parser.add_argument(
+        '--tarball-gcs-dir',
+        hidden=True,
+        help='GCS Bucket location to store the results.',
+    )
 
   def Run(self, args):
     dataproc = dp.Dataproc(self.ReleaseTrack())
@@ -145,6 +150,8 @@ class Diagnose(base.Command):
           args.tarball_access,
           dataproc.messages.DiagnoseClusterRequest.TarballAccessValueValuesEnum)
       diagnose_request.tarballAccess = tarball_access
+    if args.tarball_gcs_dir is not None:
+      diagnose_request.tarballGcsDir = args.tarball_gcs_dir
 
     request = dataproc.messages.DataprocProjectsRegionsClustersDiagnoseRequest(
         clusterName=cluster_ref.clusterName,

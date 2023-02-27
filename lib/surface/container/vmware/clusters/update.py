@@ -62,6 +62,7 @@ class Update(base.UpdateCommand):
     flags.AddEnableVmwareTracking(parser, for_update=True)
     flags.AddVmwareAutoRepairConfig(parser, for_update=True)
     flags.AddAuthorization(parser)
+    flags.AddUpdateAnnotations(parser)
 
   def Run(self, args):
     """Runs the update command.

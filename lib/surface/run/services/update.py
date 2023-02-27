@@ -199,6 +199,8 @@ class AlphaUpdate(Update):
     flags.AddVpcNetworkFlags(managed_group)
     flags.AddVpcSubnetFlags(managed_group)
     flags.AddVpcNetworkTagsFlags(managed_group)
+    flags.AddRuntimeFlag(managed_group)
+    flags.AddDescriptionFlag(managed_group)
 
 
 AlphaUpdate.__doc__ = Update.__doc__

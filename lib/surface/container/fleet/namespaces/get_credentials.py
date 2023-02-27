@@ -26,7 +26,9 @@ from googlecloudsdk.command_lib.container.fleet import resources
 
 
 @calliope_base.Hidden
-@calliope_base.ReleaseTracks(calliope_base.ReleaseTrack.ALPHA)
+@calliope_base.ReleaseTracks(
+    calliope_base.ReleaseTrack.ALPHA, calliope_base.ReleaseTrack.BETA
+)
 class GetCredentials(cg_util.GetCredentialsCommand):
   """Fetch credentials for a membership with a particular namespace.
 

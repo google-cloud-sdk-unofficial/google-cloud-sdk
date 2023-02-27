@@ -58,6 +58,8 @@ class Apply(base.UpdateCommand):
         '--version', type=str, help='The version of ACM to install.')
 
   def Run(self, args):
+    utils.enable_poco_api_if_disabled(self.Project())
+
     # check static yaml fields before query membership
     try:
       loaded_cm = yaml.load_path(args.config)

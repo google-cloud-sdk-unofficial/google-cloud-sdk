@@ -24,7 +24,7 @@ from googlecloudsdk.command_lib.util.apis import arg_utils
 
 
 @base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Delete(base.DeleteCommand):
   """Delete a fleet namespace.
 
@@ -52,5 +52,5 @@ class Delete(base.DeleteCommand):
 
   def Run(self, args):
     project = arg_utils.GetFromNamespace(args, '--project', use_defaults=True)
-    fleetclient = client.FleetClient(release_track=base.ReleaseTrack.ALPHA)
+    fleetclient = client.FleetClient(release_track=self.ReleaseTrack())
     return fleetclient.DeleteNamespace(project, args.NAME)

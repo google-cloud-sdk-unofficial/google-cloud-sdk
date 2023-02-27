@@ -140,13 +140,27 @@ class Login(base.Command):
     # This reauth scope is only used here and when refreshing the access token.
     scopes = (args.scopes or auth_util.DEFAULT_SCOPES) + [config.REAUTH_SCOPE]
 
-    # Check for a Workforce Identity Federation login configuration.
-    login_config_file = workforce_login_config_util.GetWorkforceLoginConfig()
     flow_params = dict(
         no_launch_browser=not args.launch_browser,
         no_browser=args.no_browser,
         remote_bootstrap=args.remote_bootstrap)
-    # If a login configuration is provided, do the 3PI headful flow.
+
+    # 1. Try the 3PI web flow with --no-browser:
+    #    This could be a 3PI flow initiated via --no-browser.
+    #    If provider_name is present, then this is the 3PI flow.
+    #    We can start the flow as is as the remote_bootstrap value will be used.
+    if args.remote_bootstrap and 'provider_name' in args.remote_bootstrap:
+      auth_util.DoInstalledAppBrowserFlowGoogleAuth(
+          config.CLOUDSDK_EXTERNAL_ACCOUNT_SCOPES,
+          auth_proxy_redirect_uri=(
+              'https://sdk.cloud.google/applicationdefaultauthcode.html'
+          ),
+          **flow_params
+      )
+      return
+
+    # 2. Try the 3PI web flow with a login configuration file.
+    login_config_file = workforce_login_config_util.GetWorkforceLoginConfig()
     if login_config_file:
       if args.client_id_file:
         raise c_exc.ConflictingArgumentsException(
@@ -158,9 +172,14 @@ class Login(base.Command):
       # Redirect URI must be sdk.cloud.google for 3PI.
       creds = workforce_login_config_util.DoWorkforceHeadfulLogin(
           login_config_file,
-          auth_proxy_redirect_uri='https://sdk.cloud.google/applicationdefaultauthcode.html',
-          **flow_params)
+          True,
+          auth_proxy_redirect_uri=(
+              'https://sdk.cloud.google/applicationdefaultauthcode.html'
+          ),
+          **flow_params
+      )
     else:
+      # 3. Try the 1P web flow.
       properties.VALUES.auth.client_id.Set(
           auth_util.DEFAULT_CREDENTIALS_DEFAULT_CLIENT_ID)
       properties.VALUES.auth.client_secret.Set(

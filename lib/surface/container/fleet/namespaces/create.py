@@ -26,7 +26,7 @@ from googlecloudsdk.command_lib.util.apis import arg_utils
 
 
 @base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Create(base.CreateCommand):
   """Create a fleet namespace.
 

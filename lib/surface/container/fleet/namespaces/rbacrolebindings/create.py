@@ -19,12 +19,13 @@ from __future__ import division
 from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.container.fleet import client
+from googlecloudsdk.api_lib.container.fleet import util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.container.fleet import resources
 
 
 @base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Create(base.CreateCommand):
   """Create an RBAC RoleBinding.
 
@@ -47,14 +48,17 @@ class Create(base.CreateCommand):
     --group=people@google.com
   """
 
-  @staticmethod
-  def Args(parser):
+  @classmethod
+  def Args(cls, parser):
     resources.AddRBACResourceArg(
         parser,
-        api_version='v1alpha',
-        rbacrb_help=('Name of the RBAC RoleBinding to be created. '
-                     'Must comply with RFC 1123 (up to 63 characters, '
-                     'alphanumeric and \'-\')'))
+        api_version=util.VERSION_MAP[cls.ReleaseTrack()],
+        rbacrb_help=(
+            'Name of the RBAC RoleBinding to be created. '
+            'Must comply with RFC 1123 (up to 63 characters, '
+            "alphanumeric and '-')"
+        ),
+    )
     group = parser.add_mutually_exclusive_group(required=True)
     group.add_argument(
         '--user',
@@ -74,7 +78,7 @@ class Create(base.CreateCommand):
     )
 
   def Run(self, args):
-    fleetclient = client.FleetClient(release_track=base.ReleaseTrack.ALPHA)
+    fleetclient = client.FleetClient(release_track=self.ReleaseTrack())
     return fleetclient.CreateRBACRoleBinding(
         resources.RBACResourceName(args),
         role=args.role,

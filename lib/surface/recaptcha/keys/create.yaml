@@ -45,6 +45,10 @@
             arg_value: ca
             help_text: |
               Cloud Armor
+          - enum_value: FASTLY
+            arg_value: fastly
+            help_text: |
+              Fastly
         - arg_name: waf-feature
           required: true
           api_field: googleCloudRecaptchaenterpriseV1Key.wafSettings.wafFeature

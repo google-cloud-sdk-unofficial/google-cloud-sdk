@@ -74,7 +74,6 @@ class UpdateHelper(object):
       parser,
       support_failover,
       support_logging,
-      support_logging_optional_fields,
       support_client_only,
       support_subsetting,
       support_subsetting_subset_size,
@@ -147,9 +146,8 @@ class UpdateHelper(object):
     if support_logging:
       flags.AddEnableLogging(parser)
       flags.AddLoggingSampleRate(parser)
-      if support_logging_optional_fields:
-        flags.AddLoggingOptional(parser)
-        flags.AddLoggingOptionalFields(parser)
+      flags.AddLoggingOptional(parser)
+      flags.AddLoggingOptionalFields(parser)
 
     AddIapFlag(parser)
     flags.AddCustomRequestHeaders(parser, remove_all_flag=True, default=None)
@@ -174,7 +172,6 @@ class UpdateHelper(object):
       support_failover,
       support_logging,
       support_tcp_ssl_logging,
-      support_logging_optional_fields,
       support_subsetting,
       support_subsetting_subset_size,
       support_advanced_load_balancing=False,
@@ -184,7 +181,6 @@ class UpdateHelper(object):
     self._support_failover = support_failover
     self._support_logging = support_logging
     self._support_tcp_ssl_logging = support_tcp_ssl_logging
-    self._support_logging_optional_fields = support_logging_optional_fields
     self._support_subsetting = support_subsetting
     self._support_subsetting_subset_size = support_subsetting_subset_size
     self._support_advanced_load_balancing = support_advanced_load_balancing
@@ -300,7 +296,6 @@ class UpdateHelper(object):
         replacement,
         support_logging=self._support_logging,
         support_tcp_ssl_logging=self._support_tcp_ssl_logging,
-        support_logging_optional_fields=self._support_logging_optional_fields,
         cleared_fields=cleared_fields,
     )
 
@@ -363,10 +358,10 @@ class UpdateHelper(object):
         if self._support_logging
         else False,
         args.IsSpecified('logging_optional')
-        if self._support_logging and self._support_logging_optional_fields
+        if self._support_logging
         else False,
         args.IsSpecified('logging_optional_fields')
-        if self._support_logging and self._support_logging_optional_fields
+        if self._support_logging
         else False,
         args.IsSpecified('health_checks'),
         args.IsSpecified('https_health_checks'),
@@ -571,7 +566,6 @@ class UpdateGA(base.UpdateCommand):
 
   _support_logging = True
   _support_tcp_ssl_logging = False
-  _support_logging_optional_fields = False
   _support_failover = True
   _support_client_only = True
   _support_unspecified_protocol = True
@@ -587,7 +581,6 @@ class UpdateGA(base.UpdateCommand):
         parser,
         support_failover=cls._support_failover,
         support_logging=cls._support_logging,
-        support_logging_optional_fields=cls._support_logging_optional_fields,
         support_client_only=cls._support_client_only,
         support_subsetting=cls._support_subsetting,
         support_subsetting_subset_size=cls._support_subsetting_subset_size,
@@ -604,7 +597,6 @@ class UpdateGA(base.UpdateCommand):
         self._support_failover,
         self._support_logging,
         self._support_tcp_ssl_logging,
-        self._support_logging_optional_fields,
         self._support_subsetting,
         self._support_subsetting_subset_size,
         self._support_advanced_load_balancing,
@@ -628,7 +620,6 @@ class UpdateBeta(UpdateGA):
   _support_weighted_lb = True
   _support_tcp_ssl_logging = True
   _support_regional_security_policy = False
-  _support_logging_optional_fields = True
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -646,4 +637,3 @@ class UpdateAlpha(UpdateBeta):
   _support_weighted_lb = True
   _support_tcp_ssl_logging = True
   _support_regional_security_policy = True
-  _support_logging_optional_fields = True

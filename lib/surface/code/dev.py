@@ -303,11 +303,14 @@ def _EnsureComponentsInstalled(args):
     return
 
   components = ['skaffold']
-
-  if args.IsSpecified('kube_context'):
-    pass
+  if args.IsKnownAndSpecified('cloud'):
+    components.append('cloud-run-proxy')
+    components.append('log-streaming')
   else:
-    components.append('minikube')
+    if args.IsSpecified('kube_context'):
+      pass
+    else:
+      components.append('minikube')
 
   update_manager.UpdateManager.EnsureInstalledAndRestart(components)
 

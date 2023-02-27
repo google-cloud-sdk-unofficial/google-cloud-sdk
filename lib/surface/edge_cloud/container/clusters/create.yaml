@@ -19,6 +19,7 @@
     modify_request_hooks:
     - googlecloudsdk.command_lib.edge_cloud.container.fleet:SetFleetProjectPath
     - googlecloudsdk.command_lib.edge_cloud.container.admin_users:SetAdminUsers
+    - googlecloudsdk.command_lib.edge_cloud.container.resource_args:SetSystemAddonsConfig
 
   arguments:
     resource:
@@ -88,6 +89,25 @@
         An [RFC 5545](https://tools.ietf.org/html/rfc5545#section-3.8.5.3)
         recurrence rule for how the cluster maintenance window recurs. They go
         on for the span of time between the start and the end time.
+    - arg_name: system-addons-config
+      type: "googlecloudsdk.calliope.arg_parsers:YAMLFileContents:"
+      repeated: false
+      release_tracks: [ALPHA]
+      hidden: true
+      help_text: |
+        If specified as a YAML/JSON file, customized configuration in this file
+        will be applied to the system add-ons.
+
+        For example,
+
+        {
+          "systemAddonsConfig": {
+            "ingress": {
+              "disabled": true
+            }
+          }
+        }
+
     labels:
       api_field: cluster.labels
 

@@ -236,6 +236,8 @@ information on how to structure KEYs and VALUEs, run
   flags.MASTER_AUTHORIZED_NETWORKS_FLAG.AddToParser(
       master_authorized_networks_group)
 
+  flags.ENABLE_HIGH_RESILIENCE.AddToParser(parser)
+
   scheduled_snapshots_params_group = parser.add_argument_group(
       flags.SCHEDULED_SNAPSHOTS_GROUP_DESCRIPTION)
   flags.ENABLE_SCHEDULED_SNAPSHOT_CREATION.AddToParser(
@@ -494,6 +496,9 @@ class Create(base.Command):
       raise command_util.InvalidUserInputError(
           'Workloads Config flags introduced in Composer 2.X'
           ' cannot be used when creating Composer 1.X environments.')
+    if args.enable_high_resilience and is_composer_v1:
+      raise command_util.InvalidUserInputError(
+          _INVALID_OPTION_FOR_V1_ERROR_MSG.format(opt='enable-high-resilience'))
     if args.connection_subnetwork and is_composer_v1:
       raise command_util.InvalidUserInputError(
           _INVALID_OPTION_FOR_V1_ERROR_MSG.format(opt='connection-subnetwork'))
@@ -596,6 +601,7 @@ class Create(base.Command):
         snapshot_creation_schedule=args.snapshot_creation_schedule,
         snapshot_location=args.snapshot_location,
         snapshot_schedule_timezone=args.snapshot_schedule_timezone,
+        enable_high_resilience=args.enable_high_resilience,
         release_track=self.ReleaseTrack())
     return environments_api_util.Create(self.env_ref, create_flags,
                                         is_composer_v1)
@@ -703,6 +709,7 @@ class CreateBeta(Create):
         snapshot_schedule_timezone=args.snapshot_schedule_timezone,
         enable_cloud_data_lineage_integration=args
         .enable_cloud_data_lineage_integration,
+        enable_high_resilience=args.enable_high_resilience,
         release_track=self.ReleaseTrack())
 
     return environments_api_util.Create(self.env_ref, create_flags,
@@ -842,6 +849,7 @@ class CreateAlpha(CreateBeta):
         snapshot_schedule_timezone=args.snapshot_schedule_timezone,
         enable_cloud_data_lineage_integration=args
         .enable_cloud_data_lineage_integration,
+        enable_high_resilience=args.enable_high_resilience,
         release_track=self.ReleaseTrack())
 
     return environments_api_util.Create(self.env_ref, create_flags,

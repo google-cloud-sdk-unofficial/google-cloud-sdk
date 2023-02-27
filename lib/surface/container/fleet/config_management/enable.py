@@ -18,6 +18,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+from googlecloudsdk.command_lib.container.fleet.config_management import utils
 from googlecloudsdk.command_lib.container.fleet.features import base
 
 
@@ -34,3 +35,7 @@ class Enable(base.EnableCommand):
   """
 
   feature_name = 'configmanagement'
+
+  def Run(self, args):
+    utils.enable_poco_api_if_disabled(self.Project())
+    self.Enable(self.messages.Feature())

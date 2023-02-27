@@ -170,3 +170,4 @@ class AlphaUpdate(Update):
     flags.AddVpcNetworkFlags(parser, resource_kind='Job')
     flags.AddVpcSubnetFlags(parser, resource_kind='Job')
     flags.AddVpcNetworkTagsFlags(parser, resource_kind='Job')
+    flags.AddRuntimeFlag(parser)
