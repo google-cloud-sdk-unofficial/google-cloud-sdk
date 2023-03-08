@@ -109,7 +109,8 @@ def _CommonArgs(parser,
                 support_instance_kms=False,
                 support_max_run_duration=False,
                 support_provisioned_throughput=False,
-                support_network_attachments=False):
+                support_network_attachments=False,
+                support_local_ssd_recovery_timeout=False):
   """Register parser args common to all tracks."""
   metadata_utils.AddMetadataArgs(parser)
   instances_flags.AddDiskArgs(parser, enable_regional, enable_kms=enable_kms)
@@ -210,6 +211,9 @@ def _CommonArgs(parser,
   if support_host_error_timeout_seconds:
     instances_flags.AddHostErrorTimeoutSecondsArgs(parser)
 
+  if support_local_ssd_recovery_timeout:
+    instances_flags.AddLocalSsdRecoveryTimeoutArgs(parser)
+
   if support_instance_kms:
     instances_flags.AddInstanceKmsArgs(parser)
 
@@ -249,6 +253,7 @@ class Create(base.CreateCommand):
   _support_ipv6_assignment = False
   _support_confidential_compute_type = False
   _support_network_attachments = False
+  _support_local_ssd_recovery_timeout = False
 
   @classmethod
   def Args(cls, parser):
@@ -266,7 +271,8 @@ class Create(base.CreateCommand):
         support_max_run_duration=cls._support_max_run_duration,
         support_provisioned_throughput=cls._support_provisioned_throughput,
         supports_erase_vss=cls._support_erase_vss,
-        support_network_attachments=cls._support_network_attachments)
+        support_network_attachments=cls._support_network_attachments,
+        support_local_ssd_recovery_timeout=cls._support_local_ssd_recovery_timeout)
     cls.SOURCE_INSTANCE_TEMPLATE = (
         instances_flags.MakeSourceInstanceTemplateArg())
     cls.SOURCE_INSTANCE_TEMPLATE.AddArgument(parser)
@@ -329,7 +335,8 @@ class Create(base.CreateCommand):
         support_node_project=True,
         support_host_error_timeout_seconds=self
         ._support_host_error_timeout_seconds,
-        support_max_run_duration=self._support_max_run_duration)
+        support_max_run_duration=self._support_max_run_duration,
+        support_local_ssd_recovery_timeout=self._support_local_ssd_recovery_timeout)
     tags = instance_utils.GetTags(args, compute_client)
     labels = instance_utils.GetLabels(args, compute_client)
     metadata = instance_utils.GetMetadata(args, compute_client, skip_defaults)
@@ -681,6 +688,7 @@ class CreateBeta(Create):
   _support_max_run_duration = True
   _support_ipv6_assignment = False
   _support_network_attachments = False
+  _support_local_ssd_recovery_timeout = False
 
   def GetSourceMachineImage(self, args, resources):
     """Retrieves the specified source machine image's selflink.
@@ -715,7 +723,7 @@ class CreateBeta(Create):
         support_provisioned_throughput=cls._support_provisioned_throughput,
         support_network_attachments=cls._support_network_attachments,
         support_network_queue_count=cls._support_network_queue_count,
-    )
+        support_local_ssd_recovery_timeout=cls._support_local_ssd_recovery_timeout)
     cls.SOURCE_INSTANCE_TEMPLATE = (
         instances_flags.MakeSourceInstanceTemplateArg())
     cls.SOURCE_INSTANCE_TEMPLATE.AddArgument(parser)
@@ -764,6 +772,7 @@ class CreateAlpha(CreateBeta):
   _support_ipv6_assignment = True
   _support_confidential_compute_type = True
   _support_network_attachments = True
+  _support_local_ssd_recovery_timeout = True
 
   @classmethod
   def Args(cls, parser):
@@ -785,7 +794,8 @@ class CreateAlpha(CreateBeta):
         support_instance_kms=cls._support_instance_kms,
         support_max_run_duration=cls._support_max_run_duration,
         support_provisioned_throughput=cls._support_provisioned_throughput,
-        support_network_attachments=cls._support_network_attachments)
+        support_network_attachments=cls._support_network_attachments,
+        support_local_ssd_recovery_timeout=cls._support_local_ssd_recovery_timeout)
 
     CreateAlpha.SOURCE_INSTANCE_TEMPLATE = (
         instances_flags.MakeSourceInstanceTemplateArg())

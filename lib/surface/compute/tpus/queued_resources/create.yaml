@@ -16,7 +16,7 @@
     collection: tpu.projects.locations.queuedResources
     api_version: v2alpha1
     resource_method_params:
-      queuedResourceId: queuedResourcesId
+      queuedResourceId: '{queuedResourcesId}'
     use_relative_name: false
     modify_request_hooks:
     - googlecloudsdk.command_lib.util.hooks.request_modifiers:SetParentRequestHook

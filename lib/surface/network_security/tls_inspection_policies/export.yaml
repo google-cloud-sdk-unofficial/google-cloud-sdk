@@ -1,0 +1,19 @@
+release_tracks: [ALPHA]
+help_text:
+  brief: |
+    Export TLS Inspection Policy.
+  description: |
+    Export a TLS Inspection Policy.
+  examples: |
+      To export a TLS Inspection Policy, run:
+
+        $ {command} my-tls-inspection-policy --destination=my-tls-inspection-policy.yaml --location=$REGION
+
+request:
+  collection: networksecurity.projects.locations.tlsInspectionPolicies
+  api_version: v1alpha1
+
+arguments:
+  resource:
+    spec: !REF googlecloudsdk.command_lib.network_security.resources:tlsInspectionPolicy
+    help_text: |

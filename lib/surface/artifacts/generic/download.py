@@ -88,7 +88,6 @@ class Download(base.Command):
     final_path = os.path.join(args.destination, args.name)
     file_res_name = '{}/files/{}'.format(repo_ref.RelativeName(), file_id)
 
-    log.status.Print('Downloading the file.')
     download_util.Download(tmp_path, final_path, file_res_name, False)
     log.status.Print(
         'Successfully downloaded the file to {}'.format(args.destination)

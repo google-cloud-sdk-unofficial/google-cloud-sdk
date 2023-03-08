@@ -178,6 +178,16 @@ def _get_external_account_credentials_from_file(filename):
 
 
 def _get_external_account_authorized_user_credentials_from_info(info):
+  """Create External Account Authorized User Credentials using the mapping provided as json data.
+
+  Args:
+      info: dict, A deserialized JSON object.
+
+  Returns:
+      An instance of a Credentials class
+  """
+  scopes = bq_utils.GetClientScopesFor3pi()
+  info.update(scopes=scopes)
   return external_account_authorized_user.Credentials.from_info(info)
 
 

@@ -25,6 +25,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute.instances import flags
 from googlecloudsdk.command_lib.compute.sole_tenancy import flags as sole_tenancy_flags
 from googlecloudsdk.command_lib.compute.sole_tenancy import util as sole_tenancy_util
+from googlecloudsdk.core.util import times
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
@@ -46,6 +47,7 @@ class SetSchedulingInstances(base.SilentCommand):
   }
 
   _support_host_error_timeout_seconds = False
+  _support_local_ssd_recovery_timeout = False
 
   @classmethod
   def Args(cls, parser):
@@ -87,6 +89,12 @@ class SetSchedulingInstances(base.SilentCommand):
         args, 'host_error_timeout_seconds'):
       scheduling_options.hostErrorTimeoutSeconds = args.host_error_timeout_seconds
 
+    if self._support_local_ssd_recovery_timeout and hasattr(
+        args, 'local_ssd_recovery_timeout') and args.IsSpecified(
+            'local_ssd_recovery_timeout'):
+      scheduling_options.localSsdRecoveryTimeout = client.messages.Duration(
+          seconds=args.local_ssd_recovery_timeout)
+
     if (hasattr(args, 'provisioning_model') and
         args.IsSpecified('provisioning_model')):
       scheduling_options.provisioningModel = (
@@ -115,6 +123,30 @@ class SetSchedulingInstances(base.SilentCommand):
       scheduling_options.onHostMaintenance = (
           client.messages.Scheduling.OnHostMaintenanceValueValuesEnum(
               args.maintenance_policy))
+
+    if hasattr(args, 'max_run_duration') and args.IsSpecified(
+        'max_run_duration'
+    ):
+      scheduling_options.maxRunDuration = client.messages.Duration(
+          seconds=args.max_run_duration
+      )
+    elif hasattr(args, 'clear_max_run_duration') and args.IsSpecified(
+        'clear_max_run_duration'
+    ):
+      scheduling_options.maxRunDuration = None
+      cleared_fields.append('maxRunDuration')
+
+    if hasattr(args, 'termination_time') and args.IsSpecified(
+        'termination_time'
+    ):
+      scheduling_options.terminationTime = times.FormatDateTime(
+          args.termination_time
+      )
+    elif hasattr(args, 'clear_termination_time') and args.IsSpecified(
+        'clear_termination_time'
+    ):
+      scheduling_options.terminationTime = None
+      cleared_fields.append('terminationTime')
 
     if instance_utils.IsAnySpecified(args, 'node', 'node_affinity_file',
                                      'node_group'):
@@ -168,6 +200,7 @@ class SetSchedulingInstancesBeta(SetSchedulingInstances):
     flags.INSTANCE_ARG.AddArgument(parser)
     flags.AddMinNodeCpuArg(parser, is_update=True)
     flags.AddHostErrorTimeoutSecondsArgs(parser)
+    flags.AddMaxRunDurationVmArgs(parser, is_update=True)
 
   def Run(self, args):
     return self._Run(args)
@@ -182,6 +215,7 @@ class SetSchedulingInstancesAlpha(SetSchedulingInstancesBeta):
     (a VM instance in a `TERMINATED` state).
   """
   _support_host_error_timeout_seconds = True
+  _support_local_ssd_recovery_timeout = True
 
   @classmethod
   def Args(cls, parser):
@@ -203,3 +237,5 @@ class SetSchedulingInstancesAlpha(SetSchedulingInstancesBeta):
     flags.INSTANCE_ARG.AddArgument(parser)
     flags.AddMinNodeCpuArg(parser, is_update=True)
     flags.AddHostErrorTimeoutSecondsArgs(parser)
+    flags.AddLocalSsdRecoveryTimeoutArgs(parser)
+    flags.AddMaxRunDurationVmArgs(parser, is_update=True)

@@ -57,6 +57,7 @@ class Update(base.UpdateCommand):
     flags.AddVersion(parser, is_update=True)
     flags.AddSecurityConfig(parser, is_update=True)
     flags.AddMaintenanceConfig(parser, is_update=True)
+    flags.AddNetworkConfig(parser, is_update=True)
     flags.AddDescription(parser)
     flags.AddClusterOperationsConfig(parser)
     flags.AddNodeAccessConfig(parser)

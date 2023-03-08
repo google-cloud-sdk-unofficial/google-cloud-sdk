@@ -232,6 +232,21 @@ class TestCredentials(object):
             interactive=interactive,
         )
 
+    def test_from_constructor_and_injection(self):
+        credentials = pluggable.Credentials(
+            audience=AUDIENCE,
+            subject_token_type=SUBJECT_TOKEN_TYPE,
+            token_url=TOKEN_URL,
+            token_info_url=TOKEN_INFO_URL,
+            credential_source=self.CREDENTIAL_SOURCE,
+            interactive=True,
+        )
+        setattr(credentials, "_tokeninfo_username", "mock_external_account_id")
+
+        assert isinstance(credentials, pluggable.Credentials)
+        assert credentials.interactive
+        assert credentials.external_account_id == "mock_external_account_id"
+
     @mock.patch.object(pluggable.Credentials, "__init__", return_value=None)
     def test_from_info_full_options(self, mock_init):
         credentials = pluggable.Credentials.from_info(
@@ -398,16 +413,6 @@ class TestCredentials(object):
 
             assert credentials.token_info_url == url + "/introspect"
 
-    def test_token_info_url_bad(self):
-        for url in INVALID_TOKEN_URLS:
-            with pytest.raises(ValueError) as excinfo:
-                self.make_pluggable(
-                    credential_source=self.CREDENTIAL_SOURCE.copy(),
-                    token_info_url=(url + "/introspect"),
-                )
-
-            assert excinfo.match(r"The provided token info URL is invalid.")
-
     def test_token_info_url_negative(self):
         credentials = self.make_pluggable(
             credential_source=self.CREDENTIAL_SOURCE.copy(), token_info_url=None
@@ -424,16 +429,6 @@ class TestCredentials(object):
 
             assert credentials._token_url == (url + "/token")
 
-    def test_token_url_bad(self):
-        for url in INVALID_TOKEN_URLS:
-            with pytest.raises(ValueError) as excinfo:
-                self.make_pluggable(
-                    credential_source=self.CREDENTIAL_SOURCE.copy(),
-                    token_url=(url + "/token"),
-                )
-
-            assert excinfo.match(r"The provided token URL is invalid\.")
-
     def test_service_account_impersonation_url_custom(self):
         for url in VALID_SERVICE_ACCOUNT_IMPERSONATION_URLS:
             credentials = self.make_pluggable(
@@ -445,20 +440,6 @@ class TestCredentials(object):
 
             assert credentials._service_account_impersonation_url == (
                 url + SERVICE_ACCOUNT_IMPERSONATION_URL_ROUTE
-            )
-
-    def test_service_account_impersonation_url_bad(self):
-        for url in INVALID_SERVICE_ACCOUNT_IMPERSONATION_URLS:
-            with pytest.raises(ValueError) as excinfo:
-                self.make_pluggable(
-                    credential_source=self.CREDENTIAL_SOURCE.copy(),
-                    service_account_impersonation_url=(
-                        url + SERVICE_ACCOUNT_IMPERSONATION_URL_ROUTE
-                    ),
-                )
-
-            assert excinfo.match(
-                r"The provided service account impersonation URL is invalid\."
             )
 
     @mock.patch.dict(os.environ, {"GOOGLE_EXTERNAL_ACCOUNT_ALLOW_EXECUTABLES": "1"})
@@ -1065,23 +1046,6 @@ class TestCredentials(object):
         assert excinfo.match(r"Timeout must be between 5 and 120 seconds.")
 
     @mock.patch.dict(os.environ, {"GOOGLE_EXTERNAL_ACCOUNT_ALLOW_EXECUTABLES": "1"})
-    def test_credential_source_interactive_timeout_missing_will_use_default_interactive_timeout_value(
-        self
-    ):
-        CREDENTIAL_SOURCE = {
-            "executable": {
-                "command": self.CREDENTIAL_SOURCE_EXECUTABLE_COMMAND,
-                "output_file": self.CREDENTIAL_SOURCE_EXECUTABLE_OUTPUT_FILE,
-            }
-        }
-        credentials = self.make_pluggable(credential_source=CREDENTIAL_SOURCE)
-
-        assert (
-            credentials._credential_source_executable_interactive_timeout_millis
-            == pluggable.EXECUTABLE_INTERACTIVE_TIMEOUT_MILLIS_DEFAULT
-        )
-
-    @mock.patch.dict(os.environ, {"GOOGLE_EXTERNAL_ACCOUNT_ALLOW_EXECUTABLES": "1"})
     def test_credential_source_interactive_timeout_small(self):
         with pytest.raises(ValueError) as excinfo:
             CREDENTIAL_SOURCE = {
@@ -1093,7 +1057,9 @@ class TestCredentials(object):
             }
             _ = self.make_pluggable(credential_source=CREDENTIAL_SOURCE)
 
-        assert excinfo.match(r"Interactive timeout must be between 5 and 30 minutes.")
+        assert excinfo.match(
+            r"Interactive timeout must be between 30 seconds and 30 minutes."
+        )
 
     @mock.patch.dict(os.environ, {"GOOGLE_EXTERNAL_ACCOUNT_ALLOW_EXECUTABLES": "1"})
     def test_credential_source_interactive_timeout_large(self):
@@ -1107,7 +1073,9 @@ class TestCredentials(object):
             }
             _ = self.make_pluggable(credential_source=CREDENTIAL_SOURCE)
 
-        assert excinfo.match(r"Interactive timeout must be between 5 and 30 minutes.")
+        assert excinfo.match(
+            r"Interactive timeout must be between 30 seconds and 30 minutes."
+        )
 
     @mock.patch.dict(os.environ, {"GOOGLE_EXTERNAL_ACCOUNT_ALLOW_EXECUTABLES": "1"})
     def test_retrieve_subject_token_executable_fail(self):
@@ -1135,6 +1103,25 @@ class TestCredentials(object):
             _ = credentials.retrieve_subject_token(None)
 
         assert excinfo.match(r"Interactive mode is only enabled for workforce pool.")
+
+    @mock.patch.dict(os.environ, {"GOOGLE_EXTERNAL_ACCOUNT_ALLOW_EXECUTABLES": "1"})
+    def test_retrieve_subject_token_fail_on_validation_missing_interactive_timeout(
+        self
+    ):
+        CREDENTIAL_SOURCE_EXECUTABLE = {
+            "command": self.CREDENTIAL_SOURCE_EXECUTABLE_COMMAND,
+            "output_file": self.CREDENTIAL_SOURCE_EXECUTABLE_OUTPUT_FILE,
+        }
+        CREDENTIAL_SOURCE = {"executable": CREDENTIAL_SOURCE_EXECUTABLE}
+        credentials = self.make_pluggable(
+            credential_source=CREDENTIAL_SOURCE, interactive=True
+        )
+        with pytest.raises(ValueError) as excinfo:
+            _ = credentials.retrieve_subject_token(None)
+
+        assert excinfo.match(
+            r"Interactive mode cannot run without an interactive timeout."
+        )
 
     @mock.patch.dict(os.environ, {"GOOGLE_EXTERNAL_ACCOUNT_ALLOW_EXECUTABLES": "1"})
     def test_retrieve_subject_token_executable_fail_interactive_mode(self):

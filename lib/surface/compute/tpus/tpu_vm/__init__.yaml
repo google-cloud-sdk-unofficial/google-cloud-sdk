@@ -19,7 +19,7 @@ create_request:
   GA:
     api_version: v2
   resource_method_params:
-    nodeId: nodesId
+    nodeId: '{nodesId}'
   use_relative_name: false
   modify_request_hooks:
   - googlecloudsdk.command_lib.util.hooks.request_modifiers:SetParentRequestHook

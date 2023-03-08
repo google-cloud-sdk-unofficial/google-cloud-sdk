@@ -24,10 +24,10 @@ from googlecloudsdk.calliope import base
 
 DETAILED_HELP = {
     'DESCRIPTION': """
-        Displays information about a link.
+        Display information about a linked dataset.
     """,
     'EXAMPLES': """
-     To describe a link in a project, run:
+     To describe a linked dataset in a project, run:
 
         $ {command} my-link --bucket=my-bucket --location=global
     """,
@@ -35,13 +35,13 @@ DETAILED_HELP = {
 
 
 class Describe(base.DescribeCommand):
-  """Display information about a link."""
+  """Display information about a linked dataset."""
 
   @staticmethod
   def Args(parser):
     """Register flags for this command."""
-    parser.add_argument('LINK_ID', help='Id of the link to describe.')
-    util.AddParentArgs(parser, 'link to describe')
+    parser.add_argument('LINK_ID', help='Id of the linked dataset to describe.')
+    util.AddParentArgs(parser, 'linked dataset to describe')
     util.AddBucketLocationArg(parser, True, 'Location of the bucket.')
     parser.add_argument(
         '--bucket',
@@ -58,7 +58,7 @@ class Describe(base.DescribeCommand):
         command invocation.
 
     Returns:
-      The specified link
+      The specified linked dataset
     """
     return util.GetClient().projects_locations_buckets_links.Get(
         util.GetMessages().LoggingProjectsLocationsBucketsLinksGetRequest(

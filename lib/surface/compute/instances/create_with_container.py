@@ -101,6 +101,7 @@ class CreateWithContainer(base.CreateCommand):
   _support_numa_node_count = False
   _support_visible_core_count = True
   _support_confidential_compute_type = False
+  _support_local_ssd_recovery_timeout = False
 
   @staticmethod
   def Args(parser):
@@ -198,7 +199,8 @@ class CreateWithContainer(base.CreateCommand):
         skip_defaults,
         support_min_node_cpu=False,
         support_host_error_timeout_seconds=self
-        ._support_host_error_timeout_seconds)
+        ._support_host_error_timeout_seconds,
+        support_local_ssd_recovery_timeout=self._support_local_ssd_recovery_timeout)
     service_accounts = instance_utils.GetServiceAccounts(
         args, compute_client, skip_defaults)
     user_metadata = instance_utils.GetValidatedMetadata(args, compute_client)
@@ -345,6 +347,7 @@ class CreateWithContainerBeta(CreateWithContainer):
   _support_visible_core_count = True
   _support_host_error_timeout_seconds = True
   _support_numa_node_count = False
+  _support_local_ssd_recovery_timeout = False
 
   @staticmethod
   def Args(parser):
@@ -374,6 +377,7 @@ class CreateWithContainerAlpha(CreateWithContainerBeta):
   _support_numa_node_count = True
   _support_visible_core_count = True
   _support_confidential_compute_type = True
+  _support_local_ssd_recovery_timeout = True
 
   @staticmethod
   def Args(parser):
@@ -393,6 +397,7 @@ class CreateWithContainerAlpha(CreateWithContainerBeta):
     instances_flags.AddStackTypeArgs(parser)
     instances_flags.AddIpv6NetworkTierArgs(parser)
     instances_flags.AddHostErrorTimeoutSecondsArgs(parser)
+    instances_flags.AddLocalSsdRecoveryTimeoutArgs(parser)
     instances_flags.AddNumaNodeCountArgs(parser)
     instances_flags.AddVisibleCoreCountArgs(parser)
     instances_flags.AddIPv6AddressAlphaArgs(parser)

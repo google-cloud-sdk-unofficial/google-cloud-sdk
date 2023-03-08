@@ -1,0 +1,26 @@
+release_tracks: [ALPHA]
+help_text:
+  brief: |
+    Import TLS Inspection Policy.
+  description: |
+    Import a TLS Inspection Policy.
+  examples: |
+      To import a TLS Inspection Policy from a YAML file, run:
+        $ {command} my-tls-inspection-policy --source=my-tls-inspection-policy.yaml --location=$REGION
+request:
+  collection: networksecurity.projects.locations.tlsInspectionPolicies
+  api_version: v1alpha1
+arguments:
+  resource:
+    spec: !REF googlecloudsdk.command_lib.network_security.resources:tlsInspectionPolicy
+    help_text: |
+      Name of the TLS Inspection Policy to import.
+async:
+  collection: networksecurity.projects.locations.operations
+import:
+  abort_if_equivalent: true
+  create_if_not_exists: true
+  create_request:
+    collection: networksecurity.projects.locations.tlsInspectionPolicies
+    api_version: v1alpha1
+    method: create

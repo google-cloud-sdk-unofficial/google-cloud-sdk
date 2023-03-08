@@ -22,6 +22,17 @@ For more information on setting up your Python development environment, please r
 
 .. _`Python Development Environment Setup Guide`: https://cloud.google.com/python/setup
 
+Extras
+------
+
+google-auth has few extras that you can install. For example::
+
+    $ pip install google-auth[pyopenssl]
+
+Note that the extras pyopenssl and enterprise_cert should not be used together because they use conflicting versions of `cryptography`_.
+
+.. _`cryptography`: https://cryptography.io/en/latest/
+
 Supported Python Versions
 ^^^^^^^^^^^^^^^^^^^^^^^^^
 Python >= 3.6
@@ -41,7 +52,7 @@ Google Auth Python Library has usage and reference documentation at https://goog
 
 Current Maintainers
 -------------------
-- `@busunkim96 <https://github.com/busunkim96>`_ (Bu Sun Kim)
+- googleapis-auth@google.com
 
 Authors
 -------
@@ -49,6 +60,7 @@ Authors
 - `@theacodes <https://github.com/theacodes>`_ (Thea Flowers)
 - `@dhermes <https://github.com/dhermes>`_ (Danny Hermes)
 - `@lukesneeringer <https://github.com/lukesneeringer>`_ (Luke Sneeringer)
+- `@busunkim96 <https://github.com/busunkim96>`_ (Bu Sun Kim)
 
 Contributing
 ------------

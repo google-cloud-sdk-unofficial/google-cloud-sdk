@@ -1,0 +1,24 @@
+release_tracks: [ALPHA]
+help_text:
+  brief: |
+    List TLS Inspection Policies.
+  description: |
+    List all TLS Inspection Policies in the specified location of the current project.
+  examples: |
+      To list TLS Inspection Policies in the current project, run:
+        $ {command} --location=$REGION
+request: &request
+  api_version: v1alpha1
+  collection: networksecurity.projects.locations.tlsInspectionPolicies
+arguments:
+  resource:
+    spec: !REF googlecloudsdk.command_lib.network_security.resources:location
+    help_text: |
+      The project of the TLS Inspection Policies to display.
+response:
+  id_field: name
+output:
+  format: |
+     table(
+        name.basename():label=NAME
+      )

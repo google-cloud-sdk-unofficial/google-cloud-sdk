@@ -52,7 +52,7 @@ class List(base.ListCommand):
     return client.List(
         region_ref,
         limit=args.limit,
-        filter_expression=args.filter,
+        filter_expression=None,  # Do all filtering client-side.
         order_by=args.sort_by,
         page_size=args.page_size)
 

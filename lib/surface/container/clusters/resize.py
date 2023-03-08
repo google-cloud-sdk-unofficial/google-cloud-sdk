@@ -90,7 +90,7 @@ class Resize(base.Command):
 
     console_io.PromptContinue(
         message=('Pool [{pool}] for [{cluster_name}] will be resized to '
-                 '{new_size}.').format(
+                 '{new_size} node(s) in each zone it spans.').format(
                      pool=pool_name,
                      cluster_name=cluster_name,
                      new_size=args.num_nodes),

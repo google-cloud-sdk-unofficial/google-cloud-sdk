@@ -39,7 +39,7 @@ class Restart(base.SilentCommand):
           '{description}',
       'EXAMPLES':
           """\
-        To describe an instance, run:
+        To restart an instance, run:
 
           $ {command} my-instance --cluster=my-cluster --region=us-central1
         """,

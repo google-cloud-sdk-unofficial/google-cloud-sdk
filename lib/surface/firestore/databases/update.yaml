@@ -15,8 +15,8 @@
 
   request:
     collection: firestore.projects.databases
-    modify_request_hooks:
-    - googlecloudsdk.command_lib.firestore.util:ModifyDatabaseUpdateRequest
+    resource_method_params:
+      googleFirestoreAdminV1Database.name: '{__relative_name__}'
 
   arguments:
     resource:

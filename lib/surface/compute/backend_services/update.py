@@ -79,7 +79,6 @@ class UpdateHelper(object):
       support_subsetting_subset_size,
       support_unspecified_protocol,
       support_advanced_load_balancing,
-      support_weighted_lb,
       support_regional_security_policy,
   ):
     """Add all arguments for updating a backend service."""
@@ -164,8 +163,7 @@ class UpdateHelper(object):
 
     flags.AddServiceBindings(parser, required=False, is_update=True)
 
-    if support_weighted_lb:
-      flags.AddLocalityLbPolicy(parser)
+    flags.AddLocalityLbPolicy(parser)
 
   def __init__(
       self,
@@ -175,7 +173,6 @@ class UpdateHelper(object):
       support_subsetting,
       support_subsetting_subset_size,
       support_advanced_load_balancing=False,
-      support_weighted_lb=False,
       support_regional_security_policy=False,
   ):
     self._support_failover = support_failover
@@ -184,7 +181,6 @@ class UpdateHelper(object):
     self._support_subsetting = support_subsetting
     self._support_subsetting_subset_size = support_subsetting_subset_size
     self._support_advanced_load_balancing = support_advanced_load_balancing
-    self._support_weighted_lb = support_weighted_lb
     self._support_regional_security_policy = support_regional_security_policy
 
   def Modify(self, client, resources, args, existing, backend_service_ref):
@@ -261,7 +257,7 @@ class UpdateHelper(object):
       backend_services_utils.ApplySubsettingArgs(
           client, args, replacement, self._support_subsetting_subset_size)
 
-    if self._support_weighted_lb and args.locality_lb_policy is not None:
+    if args.locality_lb_policy is not None:
       replacement.localityLbPolicy = (
           client.messages.BackendService.LocalityLbPolicyValueValuesEnum(
               args.locality_lb_policy))
@@ -403,8 +399,6 @@ class UpdateHelper(object):
         args.IsSpecified('service_bindings'),
         args.IsSpecified('no_service_bindings'),
         args.IsSpecified('locality_lb_policy')
-        if self._support_weighted_lb
-        else False,
     ]):
       raise compute_exceptions.UpdatePropertyError(
           'At least one property must be modified.')
@@ -572,7 +566,6 @@ class UpdateGA(base.UpdateCommand):
   _support_subsetting = True
   _support_subsetting_subset_size = False
   _support_advanced_load_balancing = False
-  _support_weighted_lb = False
   _support_regional_security_policy = False
 
   @classmethod
@@ -586,7 +579,6 @@ class UpdateGA(base.UpdateCommand):
         support_subsetting_subset_size=cls._support_subsetting_subset_size,
         support_unspecified_protocol=cls._support_unspecified_protocol,
         support_advanced_load_balancing=cls._support_advanced_load_balancing,
-        support_weighted_lb=cls._support_weighted_lb,
         support_regional_security_policy=cls._support_regional_security_policy,
     )
 
@@ -600,7 +592,6 @@ class UpdateGA(base.UpdateCommand):
         self._support_subsetting,
         self._support_subsetting_subset_size,
         self._support_advanced_load_balancing,
-        self._support_weighted_lb,
         self._support_regional_security_policy,
     ).Run(args, holder)
 
@@ -617,7 +608,6 @@ class UpdateBeta(UpdateGA):
   _support_subsetting = True
   _support_subsetting_subset_size = True
   _support_advanced_load_balancing = False
-  _support_weighted_lb = True
   _support_tcp_ssl_logging = True
   _support_regional_security_policy = False
 
@@ -634,6 +624,5 @@ class UpdateAlpha(UpdateBeta):
   _support_subsetting = True
   _support_subsetting_subset_size = True
   _support_advanced_load_balancing = True
-  _support_weighted_lb = True
   _support_tcp_ssl_logging = True
   _support_regional_security_policy = True

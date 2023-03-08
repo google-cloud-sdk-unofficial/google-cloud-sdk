@@ -70,8 +70,11 @@ class List(commands.List):
         'service_name:label=SERVICE:sort=1,'
         'creation_timestamp.date("%Y-%m-%d %H:%M:%S %Z"):'
         'label=DEPLOYED:sort=2:reverse,'
-        'author:label="DEPLOYED BY")'.format(
-            ready_column=pretty_print.READY_COLUMN))
+        'author:label="DEPLOYED BY"):({alias})'.format(
+            ready_column=pretty_print.READY_COLUMN,
+            alias=commands.SATISFIES_PZS_ALIAS,
+        )
+    )
     parser.display_info.AddUriFunc(cls._GetResourceUri)
 
   @classmethod

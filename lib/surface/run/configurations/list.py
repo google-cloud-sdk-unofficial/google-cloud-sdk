@@ -62,14 +62,6 @@ class List(commands.List):
     concept_parsers.ConceptParser(
         [namespace_presentation]).AddToParser(cluster_group)
 
-    parser.display_info.AddFormat(
-        'table('
-        '{ready_column},'
-        'metadata.name:label=CONFIGURATION,'
-        'region:label=REGION,'
-        'status.latestCreatedRevisionName:label="LATEST REVISION",'
-        'status.latestReadyRevisionName:label="READY REVISION")'.format(
-            ready_column=pretty_print.READY_COLUMN))
     parser.display_info.AddUriFunc(cls._GetResourceUri)
 
   @classmethod
@@ -97,7 +89,10 @@ class List(commands.List):
         'status.latestReadyRevisionName:label="READY REVISION"',
     ])
     args.GetDisplayInfo().AddFormat(
-        'table({})'.format(','.join(columns)))
+        'table({columns}):({alias})'.format(
+            columns=','.join(columns), alias=commands.SATISFIES_PZS_ALIAS
+        )
+    )
 
   def Run(self, args):
     """List available configurations."""

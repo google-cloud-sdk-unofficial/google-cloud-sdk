@@ -304,3 +304,39 @@
       help_text: |
         Defines whether Windows actions and worker pools are allowed and how they can be configured
         to support various levels of isolation.
+    - api_field: googleDevtoolsRemotebuildexecutionAdminV1alphaInstance.featurePolicy.actionIsolation
+      arg_name: action-isolation
+      required: false
+      choices:
+      - arg_value: enforced
+        enum_value: ACTION_ISOLATION_ENFORCED
+        help_text: |
+          Isolation of actions is enforced.
+      - arg_value: 'off'
+        enum_value: ACTION_ISOLATION_OFF
+        help_text: |
+          No enforcement of isolation for actions.
+      help_text: |
+        Defines levels of isolation of actions executed on this instance by requiring other
+        isolation related feature policies like linux-execution, windows-execution, etc to be set
+        a certain way.
+    - api_field: googleDevtoolsRemotebuildexecutionAdminV1alphaInstance.featurePolicy.actionHermeticity
+      arg_name: action-hermeticity
+      required: false
+      choices:
+      - arg_value: enforced
+        enum_value: ACTION_HERMETICITY_ENFORCED
+        help_text: |
+          Hermeticity of actions is enforced.
+      - arg_value: best-effort
+        enum_value: ACTION_HERMETICITY_BEST_EFFORT
+        help_text: |
+          Hermeticity of actions is best effort.
+      - arg_value: 'off'
+        enum_value: ACTION_HERMETICITY_OFF
+        help_text: |
+          No Hermeticity restrictions for actions.
+      help_text: |
+        Defines levels of hermeticity for actions executed on this instance by requiring other
+        isolation and hermeticity related feature policies like linux-execution, windows-execution,
+        etc to be set a certain way.

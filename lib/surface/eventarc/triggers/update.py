@@ -116,7 +116,7 @@ class Update(base.UpdateCommand):
           trigger_ref.Parent().Parent().Name(), function, location)
     trigger_message = client.BuildTriggerMessage(trigger_ref, event_filters,
                                                  event_filters_path_pattern,
-                                                 args.service_account,
+                                                 None, args.service_account,
                                                  destination_message, None,
                                                  None)
     operation = client.Patch(trigger_ref, trigger_message, update_mask)
@@ -193,7 +193,8 @@ class UpdateBeta(Update):
         args.destination_run_service, None, args.destination_run_path,
         args.destination_run_region)
     trigger_message = client.BuildTriggerMessage(trigger_ref, event_filters,
-                                                 None, args.service_account,
+                                                 None, None,
+                                                 args.service_account,
                                                  destination_message, None,
                                                  None)
     operation = client.Patch(trigger_ref, trigger_message, update_mask)

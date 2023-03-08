@@ -68,6 +68,7 @@ class Create(base.CreateCommand):
     flags.AddCreateTrigerResourceArgs(parser, cls.ReleaseTrack())
     flags.AddEventFiltersArg(parser, cls.ReleaseTrack(), required=True)
     flags.AddEventFiltersPathPatternArg(parser, cls.ReleaseTrack())
+    flags.AddEventDataContentTypeArg(parser, cls.ReleaseTrack())
     flags.AddServiceAccountArg(parser)
     flags.AddCreateDestinationArgs(parser, cls.ReleaseTrack(), required=True)
     flags.AddTransportTopicResourceArg(parser)
@@ -81,69 +82,99 @@ class Create(base.CreateCommand):
     transport_topic_ref = args.CONCEPTS.transport_topic.Parse()
     event_filters = flags.GetEventFiltersArg(args, self.ReleaseTrack())
     event_filters_path_pattern = flags.GetEventFiltersPathPatternArg(
-        args, self.ReleaseTrack())
+        args, self.ReleaseTrack()
+    )
+    event_data_content_type = flags.GetEventDataContentTypeArg(
+        args, self.ReleaseTrack()
+    )
 
     destination_message = None
     # destination Cloud Run
     if args.IsSpecified('destination_run_service') or args.IsKnownAndSpecified(
-        'destination_run_job'):
-      resource_type = 'service' if args.IsSpecified(
-          'destination_run_service') else 'job'
+        'destination_run_job'
+    ):
+      resource_type = (
+          'service' if args.IsSpecified('destination_run_service') else 'job'
+      )
       destination_run_region = self.GetDestinationLocation(
-          args, trigger_ref, 'destination_run_region',
-          'Cloud Run {}'.format(resource_type))
+          args,
+          trigger_ref,
+          'destination_run_region',
+          'Cloud Run {}'.format(resource_type),
+      )
 
       # Jobs only exist in the v1 API and thus only in the GA track.
       # This extra check is needed so we don't throw trying to access a flag
       # which doesn't exist.
-      run_job = args.destination_run_job if 'destination_run_job' in args else None
+      run_job = (
+          args.destination_run_job if 'destination_run_job' in args else None
+      )
       destination_message = client.BuildCloudRunDestinationMessage(
-          args.destination_run_service, run_job, args.destination_run_path,
-          destination_run_region)
+          args.destination_run_service,
+          run_job,
+          args.destination_run_path,
+          destination_run_region,
+      )
       dest_str = 'Cloud Run {} [{}]'.format(
-          resource_type, args.destination_run_service or run_job)
+          resource_type, args.destination_run_service or run_job
+      )
       loading_msg = ''
     # destination GKE service
     elif args.IsSpecified('destination_gke_service'):
       destination_gke_location = self.GetDestinationLocation(
-          args, trigger_ref, 'destination_gke_location', 'GKE service')
+          args, trigger_ref, 'destination_gke_location', 'GKE service'
+      )
       destination_gke_namespace = args.destination_gke_namespace or 'default'
 
       destination_message = client.BuildGKEDestinationMessage(
-          args.destination_gke_cluster, destination_gke_location,
-          destination_gke_namespace, args.destination_gke_service,
-          args.destination_gke_path)
+          args.destination_gke_cluster,
+          destination_gke_location,
+          destination_gke_namespace,
+          args.destination_gke_service,
+          args.destination_gke_path,
+      )
       dest_str = 'GKE service [{}] in cluster [{}]'.format(
-          args.destination_gke_service, args.destination_gke_cluster)
+          args.destination_gke_service, args.destination_gke_cluster
+      )
       loading_msg = 'this operation may take several minutes'
     # destination Workflow
     elif args.IsSpecified('destination_workflow'):
       destination_workflow_location = self.GetDestinationLocation(
-          args, trigger_ref, 'destination_workflow_location', 'Workflow')
+          args, trigger_ref, 'destination_workflow_location', 'Workflow'
+      )
 
       destination_message = client.BuildWorkflowDestinationMessage(
-          trigger_ref.Parent().Parent().Name(), args.destination_workflow,
-          destination_workflow_location)
+          trigger_ref.Parent().Parent().Name(),
+          args.destination_workflow,
+          destination_workflow_location,
+      )
       dest_str = 'Workflow [{}]'.format(args.destination_workflow)
       loading_msg = ''
     # Destination Cloud Function
     elif args.IsSpecified('destination_function'):
       destination_function_location = self.GetDestinationLocation(
-          args, trigger_ref, 'destination_function_location', 'Function')
+          args, trigger_ref, 'destination_function_location', 'Function'
+      )
 
       destination_message = client.BuildFunctionDestinationMessage(
-          trigger_ref.Parent().Parent().Name(), args.destination_function,
-          destination_function_location)
+          trigger_ref.Parent().Parent().Name(),
+          args.destination_function,
+          destination_function_location,
+      )
       dest_str = 'Cloud Function [{}]'.format(args.destination_function)
       loading_msg = ''
     else:
       raise UnsupportedDestinationError('Must specify a valid destination.')
-    trigger_message = client.BuildTriggerMessage(trigger_ref, event_filters,
-                                                 event_filters_path_pattern,
-                                                 args.service_account,
-                                                 destination_message,
-                                                 transport_topic_ref,
-                                                 channel_ref)
+    trigger_message = client.BuildTriggerMessage(
+        trigger_ref,
+        event_filters,
+        event_filters_path_pattern,
+        event_data_content_type,
+        args.service_account,
+        destination_message,
+        transport_topic_ref,
+        channel_ref,
+    )
     operation = client.Create(trigger_ref, trigger_message)
     self._event_type = event_filters['type']
     if args.async_:

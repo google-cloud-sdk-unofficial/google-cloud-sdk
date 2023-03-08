@@ -25,10 +25,10 @@ from googlecloudsdk.calliope import base
 
 DETAILED_HELP = {
     'DESCRIPTION': """
-        Lists the links created for a bucket.
+        List the linked datasets created for a bucket.
     """,
     'EXAMPLES': """
-     To list the links created for a bucket, run:
+     To list the linked datasets created for a bucket, run:
 
         $ {command}
     """,
@@ -36,13 +36,13 @@ DETAILED_HELP = {
 
 
 class List(base.ListCommand):
-  """List created links on the specified bucket."""
+  """List created linked datasets on the specified bucket."""
 
   @staticmethod
   def Args(parser):
     """Register flags for this command."""
 
-    util.AddParentArgs(parser, 'links to list')
+    util.AddParentArgs(parser, 'linked datasets to list')
     util.AddBucketLocationArg(parser, True, 'Location of the specified bucket')
     parser.add_argument(
         '--bucket',
@@ -62,7 +62,7 @@ class List(base.ListCommand):
         command invocation.
 
     Yields:
-      The list of links.
+      The list of linked datasets.
     """
     result = util.GetClient().projects_locations_buckets_links.List(
         util.GetMessages().LoggingProjectsLocationsBucketsLinksListRequest(

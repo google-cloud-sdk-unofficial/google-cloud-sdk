@@ -28,10 +28,10 @@ from googlecloudsdk.core import resources
 
 DETAILED_HELP = {
     'DESCRIPTION': """
-        Deletes a bucket's link.
+        Delete a bucket's linked dataset.
     """,
     'EXAMPLES': """
-     To delete a bucket's link, run:
+     To delete a bucket's linked dataset, run:
 
         $ {command} my-link --bucket=my-bucket --location=global
     """,
@@ -39,14 +39,14 @@ DETAILED_HELP = {
 
 
 class Delete(base.DeleteCommand):
-  """Delete a link."""
+  """Delete a linked dataset."""
 
   @staticmethod
   def Args(parser):
     """Register flags for this command."""
-    parser.add_argument('LINK_ID', help='ID of the link to delete.')
+    parser.add_argument('LINK_ID', help='ID of the linked dataset to delete.')
     util.AddBucketLocationArg(parser, True, 'Location of the bucket.')
-    util.AddParentArgs(parser, 'link to delete')
+    util.AddParentArgs(parser, 'linked dataset to delete')
     parser.add_argument(
         '--bucket',
         required=True,
@@ -64,7 +64,7 @@ class Delete(base.DeleteCommand):
         command invocation.
 
     Returns:
-      Link delete operation.
+      Linked dataset delete operation.
     """
     client = util.GetClient()
     delete_op = client.projects_locations_buckets_links.Delete(

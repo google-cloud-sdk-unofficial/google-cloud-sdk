@@ -43,6 +43,7 @@ class Delete(base.DeleteCommand):
     flags.AddValidationOnly(parser)
     flags.AddForceCluster(parser)
     flags.AddAllowMissingCluster(parser)
+    flags.AddIgnoreErrors(parser)
     base.ASYNC_FLAG.AddToParser(parser)
 
   def Run(self, args):

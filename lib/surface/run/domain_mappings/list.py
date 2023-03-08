@@ -67,7 +67,11 @@ class List(commands.List):
         {ready_column},
         metadata.name:label=DOMAIN,
         route_name:label=SERVICE,
-        region:label=REGION)""".format(ready_column=pretty_print.READY_COLUMN))
+        region:label=REGION):({alias})""".format(
+            ready_column=pretty_print.READY_COLUMN,
+            alias=commands.SATISFIES_PZS_ALIAS,
+        )
+    )
     parser.display_info.AddUriFunc(cls._GetResourceUri)
 
   @classmethod

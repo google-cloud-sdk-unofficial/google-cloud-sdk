@@ -61,6 +61,7 @@ def _CommonArgs(
     support_provisioned_throughput=False,
     support_network_attachments=False,
     support_replica_zones=False,
+    support_local_ssd_recovery_timeout=False,
 ):
   """Adding arguments applicable for creating instance templates."""
   parser.display_info.AddFormat(instance_templates_flags.DEFAULT_LIST_FORMAT)
@@ -165,6 +166,9 @@ The type of reservation for instances created from this template.
   parser.display_info.AddCacheUpdater(completers.InstanceTemplatesCompleter)
   if support_host_error_timeout_seconds:
     instances_flags.AddHostErrorTimeoutSecondsArgs(parser)
+
+  if support_local_ssd_recovery_timeout:
+    instances_flags.AddLocalSsdRecoveryTimeoutArgs(parser)
 
 
 def _ValidateInstancesFlags(args,
@@ -489,7 +493,7 @@ def _RunCreate(compute_api,
                support_ipv6_reservation=False,
                support_internal_ipv6_reservation=False,
                support_replica_zones=False,
-               ):
+               support_local_ssd_recovery_timeout=False):
   """Common routine for creating instance template.
 
   This is shared between various release tracks.
@@ -523,7 +527,8 @@ def _RunCreate(compute_api,
         supported.
       support_replica_zones: Indicate the replicaZones param is supported for
         create-on-create disk.
-
+      support_local_ssd_recovery_timeout: Indicate whether the local SSD
+        recovery timeout is set.
   Returns:
       A resource object dispatched by display.Displayer().
   """
@@ -662,6 +667,11 @@ def _RunCreate(compute_api,
   if support_host_error_timeout_seconds and args.IsSpecified(
       'host_error_timeout_seconds'):
     host_error_timeout_seconds = args.host_error_timeout_seconds
+
+  local_ssd_recovery_timeout = None
+  if support_local_ssd_recovery_timeout and args.IsSpecified(
+      'local_ssd_recovery_timeout'):
+    local_ssd_recovery_timeout = args.local_ssd_recovery_timeout
   scheduling = instance_utils.CreateSchedulingMessage(
       messages=client.messages,
       maintenance_policy=args.maintenance_policy,
@@ -674,7 +684,8 @@ def _RunCreate(compute_api,
       instance_termination_action=termination_action,
       host_error_timeout_seconds=host_error_timeout_seconds,
       max_run_duration=max_run_duration,
-      termination_time=termination_time)
+      termination_time=termination_time,
+      local_ssd_recovery_timeout=local_ssd_recovery_timeout)
 
   if args.no_service_account:
     service_account = None
@@ -989,6 +1000,7 @@ class CreateBeta(Create):
   _support_provisioned_throughput = False
   _support_network_attachments = False
   _support_replica_zones = False
+  _support_local_ssd_recovery_timeout = False
 
   @classmethod
   def Args(cls, parser):
@@ -1007,7 +1019,7 @@ class CreateBeta(Create):
         support_provisioned_throughput=cls._support_provisioned_throughput,
         support_network_attachments=cls._support_network_attachments,
         support_replica_zones=cls._support_replica_zones,
-    )
+        support_local_ssd_recovery_timeout=cls._support_local_ssd_recovery_timeout)
     instances_flags.AddMinCpuPlatformArgs(parser, base.ReleaseTrack.BETA)
     instances_flags.AddPrivateIpv6GoogleAccessArgForTemplate(
         parser, utils.COMPUTE_BETA_API_VERSION)
@@ -1040,7 +1052,7 @@ class CreateBeta(Create):
         support_region_instance_template=self._support_region_instance_template,
         support_provisioned_throughput=self._support_provisioned_throughput,
         support_replica_zones=self._support_replica_zones,
-    )
+        support_local_ssd_recovery_timeout=self._support_local_ssd_recovery_timeout)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -1071,6 +1083,7 @@ class CreateAlpha(Create):
   _support_provisioned_throughput = True
   _support_network_attachments = True
   _support_replica_zones = True
+  _support_local_ssd_recovery_timeout = True
 
   @classmethod
   def Args(cls, parser):
@@ -1090,7 +1103,7 @@ class CreateAlpha(Create):
         support_provisioned_throughput=cls._support_provisioned_throughput,
         support_network_attachments=cls._support_network_attachments,
         support_replica_zones=cls._support_replica_zones,
-    )
+        support_local_ssd_recovery_timeout=cls._support_local_ssd_recovery_timeout)
     instances_flags.AddLocalNvdimmArgs(parser)
     instances_flags.AddMinCpuPlatformArgs(parser, base.ReleaseTrack.ALPHA)
     instances_flags.AddConfidentialComputeArgs(
@@ -1127,10 +1140,11 @@ class CreateAlpha(Create):
         support_visible_core_count=self._support_visible_core_count,
         support_max_run_duration=self._support_max_run_duration,
         support_region_instance_template=self._support_region_instance_template,
-        support_confidential_compute_type=self._support_confidential_compute_type,
+        support_confidential_compute_type=self
+        ._support_confidential_compute_type,
         support_provisioned_throughput=self._support_provisioned_throughput,
         support_replica_zones=self._support_replica_zones,
-    )
+        support_local_ssd_recovery_timeout=self._support_local_ssd_recovery_timeout)
 
 
 DETAILED_HELP = {

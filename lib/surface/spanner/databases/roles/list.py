@@ -26,7 +26,7 @@ from googlecloudsdk.command_lib.spanner import resource_args
 
 
 class List(base.ListCommand):
-  """List the Cloud Spanner database roles contained within the given database."""
+  """List the Cloud Spanner database roles defined in the given database."""
 
   detailed_help = {
       'EXAMPLES':

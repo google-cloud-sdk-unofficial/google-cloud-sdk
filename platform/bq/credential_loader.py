@@ -128,7 +128,10 @@ class CachedCredentialLoader(CredentialLoader):
     if not creds:
       return None  # Nothing cached.
 
-    scopes = bq_utils.GetClientScopeFromFlags()
+    if isinstance(creds, wrapped_credentials.WrappedCredentials):
+      scopes = bq_utils.GetClientScopesFor3pi()
+    else:
+      scopes = bq_utils.GetClientScopeFromFlags()
     if not creds.has_scopes(scopes):
       # Our cached credentials do not cover the required scopes.
       return None

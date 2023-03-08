@@ -40,6 +40,8 @@
     collection: firestore.projects.databases.collectionGroups.fields
     static_fields:
       updateMask: indexConfig
+    resource_method_params:
+      googleFirestoreAdminV1Field.name: '{__relative_name__}'
     modify_request_hooks:
     - googlecloudsdk.command_lib.firestore.util:ValidateFieldUpdateRequest
     - googlecloudsdk.command_lib.firestore.util:AddIndexConfigToUpdateRequest

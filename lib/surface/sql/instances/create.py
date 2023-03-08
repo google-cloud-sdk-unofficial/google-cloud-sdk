@@ -162,7 +162,7 @@ def AddBaseArgs(parser, is_alpha=False):
   flags.AddSqlServerTimeZone(parser)
   flags.AddConnectorEnforcement(parser)
   flags.AddTimeout(parser, _INSTANCE_CREATION_TIMEOUT_SECONDS)
-  flags.AddEnableGooglePrivatePath(parser)
+  flags.AddEnableGooglePrivatePath(parser, show_negated_in_help=False)
 
 
 def AddBetaArgs(parser):
@@ -176,9 +176,9 @@ def AddBetaArgs(parser):
   flags.AddAllowedPscProjects(psc_setup_group)
 
 
-def AddAlphaArgs(unused_parser):
+def AddAlphaArgs(parser):
   """Declare alpha flags for this command parser."""
-  pass
+  flags.AddThreadsPerCore(parser)
 
 
 def RunBaseCreateCommand(args, release_track):

@@ -4417,8 +4417,17 @@ class BigqueryClient(object):
   def ListProjects(self, max_results=None, page_token=None):
     """List the projects this user has access to."""
     request = self._PrepareListRequest({}, max_results, page_token)
-    result = self.apiclient.projects().list(**request).execute()
-    return result.get('projects', [])
+    result = self._ExecuteListProjectsRequest(request)
+    results = result.get('projects', [])
+    while 'nextPageToken' in result and (max_results is None or
+                                         len(results) < max_results):
+      request['pageToken'] = result['nextPageToken']
+      result = self._ExecuteListProjectsRequest(request)
+      results.extend(result.get('projects', []))
+    return results
+
+  def _ExecuteListProjectsRequest(self, request):
+    return self.apiclient.projects().list(**request).execute()
 
   def ListDatasetRefs(self, **kwds):
     return list(

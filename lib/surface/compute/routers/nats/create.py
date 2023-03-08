@@ -37,7 +37,6 @@ class Create(base.CreateCommand):
   with_private_nat = False
   with_subnet_all = False
   with_auto_network_tier = False
-  with_endpoint_types = False
 
   @classmethod
   def Args(cls, parser):
@@ -51,8 +50,8 @@ class Create(base.CreateCommand):
     nats_flags.AddNatNameArg(parser, operation_type='create')
     if cls.with_private_nat:
       nats_flags.AddTypeArg(parser)
-    if cls.with_endpoint_types:
-      nats_flags.AddEndpointTypesArg(parser)
+
+    nats_flags.AddEndpointTypesArg(parser)
     nats_flags.AddCommonNatArgs(
         parser,
         for_create=True,
@@ -78,7 +77,6 @@ class Create(base.CreateCommand):
         self.with_private_nat,
         self.with_subnet_all,
         self.with_auto_network_tier,
-        self.with_endpoint_types,
     )
 
     replacement.nats.append(nat)
@@ -171,4 +169,3 @@ class CreateAlpha(Create):
   with_private_nat = True
   with_subnet_all = True
   with_auto_network_tier = True
-  with_endpoint_types = True

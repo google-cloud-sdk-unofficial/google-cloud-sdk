@@ -96,7 +96,11 @@ class List(commands.List):
         'last_modifier:label="LAST DEPLOYED BY"',
         'last_transition_time:label="LAST DEPLOYED AT"',
     ])
-    args.GetDisplayInfo().AddFormat('table({})'.format(','.join(columns)))
+    args.GetDisplayInfo().AddFormat(
+        'table({columns}):({alias})'.format(
+            columns=','.join(columns), alias=commands.SATISFIES_PZS_ALIAS
+        )
+    )
 
   def Run(self, args):
     """List available services."""

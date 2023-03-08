@@ -6,17 +6,17 @@
     brief: List Effective Security Health Analytics custom modules.
     description: List Effective Security Health Analytics custom modules.
     examples: |
-      List Effective Security Health Analytics custom modules under organization `123`:
+      To list Effective Security Health Analytics custom modules under organization `123`, run:
 
         $ {command} --organization=organizations/123
         $ {command} --organization=123
 
-      List Effective Security Health Analytics custom modules under folder `456`:
+      To list Effective Security Health Analytics custom modules under folder `456`, run:
 
         $ {command} --folder=folders/456
         $ {command} --folder=456
 
-      List Effective Security Health Analytics custom modules under project `789`:
+      To list Effective Security Health Analytics custom modules under project `789`, run:
 
         $ {command} --project=projects/789
         $ {command} --project=789

@@ -24,6 +24,16 @@ from googlecloudsdk.core import properties
 from googlecloudsdk.core import resources
 
 
+def _GetWorkerPoolURI(resource):
+  if isinstance(resource, dict):
+    resource = resource['wp']
+  wp = resources.REGISTRY.ParseRelativeName(
+      resource.name,
+      collection='cloudbuild.projects.locations.workerPools',
+      api_version='v1')
+  return wp.SelfLink()
+
+
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class List(base.ListCommand):
   """List all worker pools in a Google Cloud project."""
@@ -54,11 +64,12 @@ class List(base.ListCommand):
         help='The Cloud region to list worker pools in.')
     parser.display_info.AddFormat("""
           table(
-            name,
+            name.segment(-1),
             createTime.date('%Y-%m-%dT%H:%M:%S%Oz', undefined='-'),
             state
           )
         """)
+    parser.display_info.AddUriFunc(_GetWorkerPoolURI)
 
   def Run(self, args):
     """This is what gets called when the user runs this command.
@@ -95,10 +106,6 @@ class List(base.ListCommand):
       if release_track != base.ReleaseTrack.ALPHA:
         if wp.hybridPoolConfig is not None:
           wp_list.remove(wp)
-      try:
-        wp.name = cloudbuild_util.WorkerPoolShortName(wp.name)
-      except ValueError:
-        pass  # Must be an old version.
 
     return wp_list
 
@@ -157,12 +164,13 @@ class ListAlpha(List):
         help='The Cloud region to list worker pools in.')
     parser.display_info.AddFormat("""
             table[all-box](
-            wp.name,
+            wp.name.segment(-1),
             type:label="TYPE",
             wp.createTime.date('%Y-%m-%dT%H:%M:%S%Oz', undefined='-'),
             wp.state
           )
         """)
+    parser.display_info.AddUriFunc(_GetWorkerPoolURI)
 
   def Run(self, args):
     """This is what gets called when the user runs this command.
@@ -202,10 +210,6 @@ class ListAlpha(List):
         wp_type = cloudbuild_util.WorkerpoolTypes.PRIVATE.name.capitalize()
       elif wp.hybridPoolConfig is not None:
         wp_type = cloudbuild_util.WorkerpoolTypes.HYBRID.name.capitalize()
-      try:
-        wp.name = cloudbuild_util.WorkerPoolShortName(wp.name)
-      except ValueError:
-        pass  # Must be an old version.
       wp_out.append({'wp': wp, 'type': wp_type})
 
     return wp_out

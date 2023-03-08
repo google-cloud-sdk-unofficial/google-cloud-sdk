@@ -48,9 +48,21 @@ class Run(base.Command):
   and its flags with ``--''. This command waits for the sub-command to
   complete; its exit code will match the sub-command's exit code.
 
+  Note: Airflow CLI sub-command syntax differs between Airflow 1 and Airflow 2.
+  Refer to the Airflow CLI reference documentation for more details.
+
   ## EXAMPLES
 
-    The following command:
+    The following command in environments with Airflow 2:
+
+    {command} myenv dags trigger -- some_dag --run_id=foo
+
+  is equivalent to running the following command from a shell inside the
+  *my-environment* environment:
+
+    airflow dags trigger --run_id=foo some_dag
+
+  The same command, but for environments with Airflow 1.10.14+:
 
     {command} myenv trigger_dag -- some_dag --run_id=foo
 

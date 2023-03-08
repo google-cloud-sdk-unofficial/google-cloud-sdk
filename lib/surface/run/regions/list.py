@@ -41,7 +41,11 @@ class List(commands.List):
 
   @classmethod
   def CommonArgs(cls, parser):
-    parser.display_info.AddFormat("""table(locationId:label=NAME:sort=1)""")
+    parser.display_info.AddFormat(
+        'table(locationId:label=NAME:sort=1):({alias})'.format(
+            alias=commands.SUPPORTS_PZS_ALIAS
+        )
+    )
     parser.display_info.AddUriFunc(cls._GetResourceUri)
 
   @classmethod

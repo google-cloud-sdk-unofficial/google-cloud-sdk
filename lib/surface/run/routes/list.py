@@ -60,10 +60,15 @@ class List(commands.List):
     concept_parsers.ConceptParser(
         [namespace_presentation]).AddToParser(cluster_group)
 
-    parser.display_info.AddFormat("""table(
+    parser.display_info.AddFormat(
+        """table(
     {ready_column},
-    metadata.name:label=ROUTE)
-    """.format(ready_column=pretty_print.READY_COLUMN))
+    metadata.name:label=ROUTE):({alias})
+    """.format(
+            ready_column=pretty_print.READY_COLUMN,
+            alias=commands.SATISFIES_PZS_ALIAS,
+        )
+    )
     parser.display_info.AddUriFunc(cls._GetResourceUri)
 
   @classmethod

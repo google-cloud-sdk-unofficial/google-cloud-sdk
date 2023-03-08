@@ -32,22 +32,31 @@ OP_WAIT_CMD = OP_BASE_CMD + 'wait {0}'
 class Undelete(base.RestoreCommand):
   """Undelete an API key.
 
-    API Keys that are deleted will be retained in the system for 30 days. If a
-    key is still within this retention window, it can be undeleted with this
-    command.
+  API Keys that are deleted will be retained in the system for 30 days. If a
+  key is still within this retention window, it can be undeleted with this
+  command.
 
-    ## EXAMPLES
-      UnDelete an API Key :
+  ## EXAMPLES
+  UnDelete an API Key (Key or key-string should be specified):
 
-     $ {command} projects/myproject/locations/global/keys/1234
+    To undelete with key `1234`, run:
 
-     $ {command} 1234
+      $ {command} 1234
+
+    To undelete with `1234` in project
+      `myproject` using the fully qualified API key name, run:
+
+      $ {command} projects/myproject/locations/global/keys/1234
+
+    To undelete using a Key-string, run:
+
+    ${command} --key-string='my-key-string'
   """
 
   @staticmethod
   def Args(parser):
 
-    common_flags.key_flag(parser=parser, suffix='to undelete')
+    common_flags.add_key_undelete_args(parser)
     base.ASYNC_FLAG.AddToParser(parser)
 
   def Run(self, args):
@@ -64,9 +73,20 @@ class Undelete(base.RestoreCommand):
     client = apikeys.GetClientInstance()
     messages = client.MESSAGES_MODULE
 
-    key_ref = args.CONCEPTS.key.Parse()
+    if args.IsSpecified('key'):
+      key_ref = args.CONCEPTS.key.Parse()
+      key_name = key_ref.RelativeName()
+
+    if args.IsSpecified('key_string'):
+      lookup_request = messages.ApikeysKeysLookupKeyRequest(
+          keyString=args.key_string
+      )
+      response = client.keys.LookupKey(lookup_request)
+      key_name = response.name
+
     request = messages.ApikeysProjectsLocationsKeysUndeleteRequest(
-        name=key_ref.RelativeName())
+        name=key_name
+    )
     op = client.projects_locations_keys.Undelete(request)
     if not op.done:
       if args.async_:

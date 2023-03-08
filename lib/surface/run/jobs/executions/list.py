@@ -88,7 +88,11 @@ class List(commands.List):
         'status.runningCount.yesno(no="0"):label=RUNNING,'
         'succeeded_status():label=COMPLETE,'
         'creation_timestamp.date("%Y-%m-%d %H:%M:%S %Z"):label=CREATED,'
-        'author:label="RUN BY")'.format(ready_column=pretty_print.READY_COLUMN))
+        'author:label="RUN BY"):({alias})'.format(
+            ready_column=pretty_print.READY_COLUMN,
+            alias=commands.SATISFIES_PZS_ALIAS,
+        )
+    )
     parser.display_info.AddUriFunc(cls._GetResourceUri)
     parser.display_info.AddTransforms({
         'succeeded_status': _SucceededStatus,

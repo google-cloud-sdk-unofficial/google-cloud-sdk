@@ -68,10 +68,13 @@ class Cancel(base.Command):
     ex_ref = args.CONCEPTS.execution.Parse()
 
     console_io.PromptContinue(
-        message='Execution [{}] will be canceled.'.format(ex_ref.executionsId),
+        message='Execution [{}] will be cancelled.'.format(ex_ref.executionsId),
         throw_if_unattended=True,
-        cancel_on_no=True)
+        cancel_on_no=True,
+    )
 
     with serverless_operations.Connect(conn_context) as client:
       client.CancelExecution(ex_ref)
-    pretty_print.Success('Canceled execution [{}].'.format(ex_ref.executionsId))
+    pretty_print.Success(
+        'Cancelled execution [{}].'.format(ex_ref.executionsId)
+    )

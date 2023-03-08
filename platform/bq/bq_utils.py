@@ -234,10 +234,6 @@ def ProcessError(
     response.append('Unexpected exception in %s operation: %s' %
                     (name, message))
 
-  if not FLAGS.apilog:
-    response.append(
-        'If the error provided does not help solve your issue, please run the '
-        'command again with the `--apilog=stderr flag`.')
   response_message = '\n'.join(response)
   wrap_error_message = True
   if wrap_error_message:
@@ -278,3 +274,7 @@ def GetClientScopeFromFlags():
     client_scope.append(_GDRIVE_SCOPE)
   client_scope.append(_REAUTH_SCOPE)
   return client_scope
+
+
+def GetClientScopesFor3pi():
+  return [_CLOUD_PLATFORM_SCOPE]

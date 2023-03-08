@@ -99,7 +99,6 @@ def _ArgsAlpha(parser):
       required=True,
       metavar='PERMISSION',
       type=str,
-      default='',
       help="""Cloud IAM permission to check. This can be a V1 or V2 permission, e.g. `resourcemanager.projects.get` or `cloudresourcemanager.googleapis.com/projects.get`.
       See: https://cloud.google.com/iam/docs/permissions-reference and https://cloud.google.com/iam/docs/deny-permissions-support
       """,
@@ -108,7 +107,6 @@ def _ArgsAlpha(parser):
       '--resource-service',
       required=False,
       type=str,
-      default='',
       help="""The resource service value to use when checking conditional bindings.
       See: https://cloud.google.com/iam/docs/conditions-resource-attributes#resource-service
       """,
@@ -117,7 +115,6 @@ def _ArgsAlpha(parser):
       '--resource-type',
       required=False,
       type=str,
-      default='',
       help="""The resource type value to use when checking conditional bindings.
       See: https://cloud.google.com/iam/docs/conditions-resource-attributes#resource-type
       """,
@@ -126,7 +123,6 @@ def _ArgsAlpha(parser):
       '--resource-name',
       required=False,
       type=str,
-      default='',
       help="""The resource name value to use when checking conditional bindings.
       See:  https://cloud.google.com/iam/docs/conditions-resource-attributes#resource-name.
       """,
@@ -135,7 +131,6 @@ def _ArgsAlpha(parser):
       '--request-time',
       required=False,
       type=str,
-      default='',
       help="""The request timestamp to use when checking conditional bindings. This string must adhere to UTC format
       (RFC 3339). For example,2021-01-01T00:00:00Z. See:
       https://tools.ietf.org/html/rfc3339
@@ -145,7 +140,6 @@ def _ArgsAlpha(parser):
       '--destination-ip',
       required=False,
       type=str,
-      default='',
       help="""The request destination IP address to use when checking conditional bindings. For example, `198.1.1.1`.
       """,
   )
@@ -153,7 +147,6 @@ def _ArgsAlpha(parser):
       '--destination-port',
       required=False,
       type=int,
-      default=8080,
       help="""The request destination port to use when checking conditional bindings. For example, 8080.
       """,
   )

@@ -135,6 +135,7 @@ class Create(base.Command):
   _support_provisioned_throughput = False
   _support_no_address_in_networking = False
   _support_max_count_per_zone = False
+  _support_local_ssd_recovery_timeout = False
 
   _log_async = False
 
@@ -195,6 +196,7 @@ class Create(base.Command):
         self._support_numa_node_count,
         self._support_visible_core_count,
         self._support_max_run_duration,
+        self._support_local_ssd_recovery_timeout,
         self._support_enable_target_shape,
         self._support_confidential_compute_type,
         self._support_provisioned_throughput,
@@ -333,6 +335,7 @@ class CreateBeta(Create):
   _support_provisioned_throughput = False
   _support_no_address_in_networking = False
   _support_max_count_per_zone = False
+  _support_local_ssd_recovery_timeout = False
 
   @classmethod
   def Args(cls, parser):
@@ -377,6 +380,7 @@ class CreateAlpha(Create):
   _support_provisioned_throughput = True
   _support_no_address_in_networking = True
   _support_max_count_per_zone = True
+  _support_local_ssd_recovery_timeout = True
 
   @classmethod
   def Args(cls, parser):
@@ -406,6 +410,7 @@ class CreateAlpha(Create):
     instances_flags.AddSecureTagsArgs(parser)
     instances_flags.AddHostErrorTimeoutSecondsArgs(parser)
     instances_flags.AddMaintenanceInterval().AddToParser(parser)
+    instances_flags.AddLocalSsdRecoveryTimeoutArgs(parser)
   # LINT.ThenChange(../../queued_resources/create.py:alpha_spec)
 
 

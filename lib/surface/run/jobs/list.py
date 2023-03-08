@@ -61,8 +61,11 @@ class List(commands.List):
         'status.latestCreatedExecution.creationTimestamp'
         '.date("%Y-%m-%d %H:%M:%S %Z"):label="LAST RUN AT",'
         'creation_timestamp.date("%Y-%m-%d %H:%M:%S %Z"):label=CREATED,'
-        'author:label="CREATED BY")'.format(
-            ready_column=pretty_print.READY_COLUMN))
+        'author:label="CREATED BY"):({alias})'.format(
+            ready_column=pretty_print.READY_COLUMN,
+            alias=commands.SATISFIES_PZS_ALIAS,
+        )
+    )
     parser.display_info.AddUriFunc(cls._GetResourceUri)
 
   @classmethod

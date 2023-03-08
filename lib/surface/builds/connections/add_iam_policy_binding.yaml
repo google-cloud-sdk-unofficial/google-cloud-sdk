@@ -20,8 +20,3 @@
     resource:
       help_text: Cloud Build Connection for which to add the IAM policy binding.
       spec: !REF googlecloudsdk.command_lib.cloudbuild.resources_v2:connection
-
-  iam:
-    enable_condition: true
-    policy_version: 3
-    get_iam_policy_version_path: options_requestedPolicyVersion

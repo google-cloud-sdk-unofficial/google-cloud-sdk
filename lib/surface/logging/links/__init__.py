@@ -26,8 +26,8 @@ from googlecloudsdk.calliope import base
     base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
 )
 class Links(base.Group):
-  """Manage log links.
+  """Manage linked datasets.
 
-  Commands for managing links. A log link represents a linked BigQuery dataset
-  that contains log data for the link's parent log bucket.
+  Commands for managing linked datasets. A linked BigQuery dataset contains log
+  data for the linked dataset's parent log bucket.
   """

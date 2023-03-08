@@ -34,7 +34,6 @@
           help_text: |
             Region of the Filestore instance.
         - arg_name: instance-location
-          hidden: true
           help_text: |
             Location of the Filestore instance.
 

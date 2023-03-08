@@ -249,7 +249,7 @@ def AddBaseArgs(parser, is_alpha=False):
   flags.AddSqlServerAudit(parser)
   flags.AddDeletionProtection(parser)
   flags.AddConnectorEnforcement(parser)
-  flags.AddEnableGooglePrivatePath(parser)
+  flags.AddEnableGooglePrivatePath(parser, show_negated_in_help=True)
 
 
 def AddBetaArgs(parser):
@@ -262,9 +262,9 @@ def AddBetaArgs(parser):
   flags.AddClearAllowedPscProjects(psc_update_group)
 
 
-def AddAlphaArgs(unused_parser):
+def AddAlphaArgs(parser):
   """Adds alpha args and flags to the parser."""
-  pass
+  flags.AddThreadsPerCore(parser)
 
 
 def RunBasePatchCommand(args, release_track):

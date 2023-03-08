@@ -28,10 +28,10 @@ from googlecloudsdk.core import resources
 
 DETAILED_HELP = {
     'DESCRIPTION': """
-        Create a link for a log bucket.
+        Create a linked dataset for a log bucket.
     """,
     'EXAMPLES': """
-     To create a link in a project, run:
+     To create a linked dataset in a project, run:
 
         $ {command} my-link --bucket=my-bucket --location=global
     """,
@@ -39,24 +39,26 @@ DETAILED_HELP = {
 
 
 class Create(base.CreateCommand):
-  """Create a link on an analytics log bucket."""
+  """Create a linked dataset on an analytics log bucket."""
 
   @staticmethod
   def Args(parser):
     """Register flags for this command."""
-    parser.add_argument('LINK_ID', help='ID of the link to create.')
+    parser.add_argument('LINK_ID', help='ID of the linked dataset to create.')
     parser.add_argument(
-        '--description', help='A textual description for the link.'
+        '--description', help='A textual description for the linked dataset.'
     )
-    util.AddParentArgs(parser, 'link to create')
+    util.AddParentArgs(parser, 'linked dataset to create')
     util.AddBucketLocationArg(
-        parser, True, 'Location of the bucket that will hold the link.'
+        parser,
+        True,
+        'Location of the bucket that will hold the linked datasert.',
     )
     parser.add_argument(
         '--bucket',
         required=True,
         type=arg_parsers.RegexpValidator(r'.+', 'must be non-empty'),
-        help='ID of the bucket that will hold the link',
+        help='ID of the bucket that will hold the linked dataset',
     )
     base.ASYNC_FLAG.AddToParser(parser)
 
@@ -68,7 +70,7 @@ class Create(base.CreateCommand):
         command invocation.
 
     Returns:
-      Link creation operation.
+      Linked dataset creation operation.
     """
     link_data = {}
     if args.IsSpecified('description'):

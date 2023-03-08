@@ -41,6 +41,16 @@
         help_text: |
           Log when a call is stopped due to an exception.
       default: none
+    - arg_name: labels
+      api_field: execution.labels
+      help_text: |
+        List of label KEY=VALUE pairs to add.
+
+        Keys must start with a lowercase character and contain only hyphens, underscores,
+        lowercase characters, and numbers. Values must contain only hyphens, underscores,
+        lowercase characters, and numbers.
+      release_tracks: [GA]
+      type: 'googlecloudsdk.calliope.arg_parsers:ArgDict:'
 
   request:
     ALPHA:

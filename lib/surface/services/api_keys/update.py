@@ -37,7 +37,7 @@ DETAILED_HELP = {
 
           $ {command} projects/myproject/keys/my-key-id --display-name="test name" --allowed-ips=2620:15c:2c4:203:2776:1f90:6b3b:217,104.133.8.78
 
-        To update annoatations:
+        To update annotations:
 
           $ {command} projects/myproject/keys/my-key-id --annotations=foo=bar,abc=def
 

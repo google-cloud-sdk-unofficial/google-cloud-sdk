@@ -76,7 +76,6 @@ class Download(base.Command):
 
   def Run(self, args):
     """Run the file download command."""
-    log.status.Print('Downloading the file.')
 
     # Escape slashes in the filesId.
     file_escaped = file_util.EscapeFileName(args.CONCEPTS.file.Parse())

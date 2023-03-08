@@ -38,6 +38,7 @@
       api_version: v1
       modify_request_hooks:
       - googlecloudsdk.command_lib.metastore.services.util:GenerateNetworkConfigFromSubnetList
+      - googlecloudsdk.command_lib.metastore.services.util:GenerateAuxiliaryVersionsConfigFromList
       - googlecloudsdk.command_lib.metastore.validators:ValidateServiceMutexConfigForV1
     collection: metastore.projects.locations.services
 
@@ -55,22 +56,60 @@
       help_text: |
         The TCP port on which the Metastore service will listen.
         If unspecified, the default port 9083 will be used.
-    - arg_name: tier
-      api_field: service.tier
-      help_text: |
-        The tier of the service.
-      choices:
-      - arg_value: enterprise
-        enum_value: ENTERPRISE
-        help_text:  |
-          The enterprise tier provides multi-zone high availability, and sufficient
-          scalability for enterprise-level Dataproc Metastore workloads.
-      - arg_value: developer
-        enum_value: DEVELOPER
-        help_text:  |
-          The developer tier provides limited scalability and no fault tolerance.
-          Good for low-cost proof-of-concept.
-      fallback: googlecloudsdk.core.properties:VALUES.metastore.tier.Get
+    - group:
+        help_text: |
+          The instance size of the Dataproc Metastore instance.
+        mutex: true
+        params:
+        - arg_name: tier
+          api_field: service.tier
+          help_text: |
+            The tier of the service.
+          choices:
+          - arg_value: enterprise
+            enum_value: ENTERPRISE
+            help_text:  |
+              The enterprise tier provides multi-zone high availability, and sufficient
+              scalability for enterprise-level Dataproc Metastore workloads.
+          - arg_value: developer
+            enum_value: DEVELOPER
+            help_text:  |
+              The developer tier provides limited scalability and no fault tolerance.
+              Good for low-cost proof-of-concept.
+          fallback: googlecloudsdk.core.properties:VALUES.metastore.tier.Get
+        - arg_name: scaling-factor
+          api_field: service.scalingConfig.scalingFactor
+          help_text: |
+            The scaling factor of the service. This should be a float in the range [0.1,6.0].
+            If the value is less than 1.0, then it should be a multiple of 0.1.
+            If the value is greater than 1.0, then it should be a whole number.
+            Float values should be formatted as `x.y`.
+          processor: googlecloudsdk.command_lib.metastore.validators:ValidateScalingFactor
+        - arg_name: instance-size
+          api_field: service.scalingConfig.instanceSize
+          help_text: |
+            The instance size of the service.
+          choices:
+          - arg_value: extra_small
+            enum_value: EXTRA_SMALL
+            help_text:  |
+              Extra small instance size, maps to a scaling factor of 0.1.
+          - arg_value: small
+            enum_value: SMALL
+            help_text:  |
+              Small instance size, maps to a scaling factor of 0.5.
+          - arg_value: medium
+            enum_value: MEDIUM
+            help_text:  |
+              Medium instance size, maps to a scaling factor of 1.0.
+          - arg_value: large
+            enum_value: LARGE
+            help_text:  |
+              Large instance size, maps to a scaling factor of 3.0.
+          - arg_value: extra_large
+            enum_value: EXTRA_LARGE
+            help_text:  |
+              Extra large instance size, maps to a scaling factor of 6.0.
     - arg_name: hive-metastore-version
       api_field: service.hiveMetastoreConfig.version
       help_text: |
@@ -261,7 +300,6 @@
           Auxiliary versions configuration for the Dataproc Metastore service. When specified,
           a secondary Hive metastore service is created along with the primary service.
         mutex: true
-        release_tracks: [ALPHA, BETA]
         params:
         - arg_name: auxiliary-versions
           type: "arg_list"

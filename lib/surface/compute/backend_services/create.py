@@ -101,7 +101,6 @@ class CreateHelper(object):
       support_subsetting,
       support_subsetting_subset_size,
       support_advanced_load_balancing,
-      support_weighted_lb,
   ):
     """Add flags to create a backend service to the parser."""
 
@@ -160,8 +159,7 @@ class CreateHelper(object):
     if support_multinic:
       flags.AddNetwork(parser)
 
-    if support_weighted_lb:
-      flags.AddLocalityLbPolicy(parser)
+    flags.AddLocalityLbPolicy(parser)
 
     cdn_flags.AddCdnPolicyArgs(parser, 'backend service')
 
@@ -178,7 +176,6 @@ class CreateHelper(object):
       support_subsetting,
       support_subsetting_subset_size,
       support_advanced_load_balancing,
-      support_weighted_lb,
   ):
     self._support_failover = support_failover
     self._support_logging = support_logging
@@ -187,7 +184,6 @@ class CreateHelper(object):
     self._support_subsetting = support_subsetting
     self._support_subsetting_subset_size = support_subsetting_subset_size
     self._support_advanced_load_balancing = support_advanced_load_balancing
-    self._support_weighted_lb = support_weighted_lb
 
   def _CreateGlobalRequests(self, holder, args, backend_services_ref):
     """Returns a global backend service create request."""
@@ -254,7 +250,7 @@ class CreateHelper(object):
         backend_service.cdnPolicy.cacheMode and args.enable_cdn is not False):  # pylint: disable=g-bool-id-comparison
       backend_service.enableCDN = True
 
-    if self._support_weighted_lb and args.locality_lb_policy is not None:
+    if args.locality_lb_policy is not None:
       backend_service.localityLbPolicy = (
           client.messages.BackendService.LocalityLbPolicyValueValuesEnum(
               args.locality_lb_policy))
@@ -345,7 +341,7 @@ class CreateHelper(object):
       backend_service.network = flags.NETWORK_ARG.ResolveAsResource(
           args, holder.resources).SelfLink()
 
-    if self._support_weighted_lb and args.locality_lb_policy is not None:
+    if args.locality_lb_policy is not None:
       backend_service.localityLbPolicy = (
           client.messages.BackendService.LocalityLbPolicyValueValuesEnum(
               args.locality_lb_policy))
@@ -446,7 +442,6 @@ class CreateGA(base.CreateCommand):
   _support_subsetting = True
   _support_subsetting_subset_size = False
   _support_advanced_load_balancing = False
-  _support_weighted_lb = False
 
   @classmethod
   def Args(cls, parser):
@@ -460,7 +455,6 @@ class CreateGA(base.CreateCommand):
         support_subsetting=cls._support_subsetting,
         support_subsetting_subset_size=cls._support_subsetting_subset_size,
         support_advanced_load_balancing=cls._support_advanced_load_balancing,
-        support_weighted_lb=cls._support_weighted_lb,
     )
 
   def Run(self, args):
@@ -475,7 +469,6 @@ class CreateGA(base.CreateCommand):
         support_subsetting=self._support_subsetting,
         support_subsetting_subset_size=self._support_subsetting_subset_size,
         support_advanced_load_balancing=self._support_advanced_load_balancing,
-        support_weighted_lb=self._support_weighted_lb,
     ).Run(args, holder)
 
 
@@ -503,7 +496,6 @@ class CreateBeta(CreateGA):
   _support_subsetting = True
   _support_subsetting_subset_size = True
   _support_advanced_load_balancing = False
-  _support_weighted_lb = True
   _support_tcp_ssl_logging = True
 
 
@@ -530,5 +522,4 @@ class CreateAlpha(CreateBeta):
   _support_subsetting = True
   _support_subsetting_subset_size = True
   _support_advanced_load_balancing = True
-  _support_weighted_lb = True
   _support_tcp_ssl_logging = True

@@ -70,6 +70,7 @@ class Create(base.CreateCommand):
   _support_provisioned_throughput = True
   _support_no_address_in_networking = True
   _support_max_count_per_zone = False
+  _support_local_ssd_recovery_timeout = True
 
   @classmethod
   def Args(cls, parser):
@@ -97,6 +98,7 @@ class Create(base.CreateCommand):
     cls.AddSourceInstanceTemplate(parser)
     instances_flags.AddSecureTagsArgs(parser)
     instances_flags.AddHostErrorTimeoutSecondsArgs(parser)
+    instances_flags.AddLocalSsdRecoveryTimeoutArgs(parser)
     instances_flags.AddMaintenanceInterval().AddToParser(parser)
     # LINT.ThenChange(../instances/bulk/create.py:alpha_spec)
     # Queued resource specific flags
@@ -166,6 +168,7 @@ class Create(base.CreateCommand):
         self._support_numa_node_count,
         self._support_visible_core_count,
         self._support_max_run_duration,
+        self._support_local_ssd_recovery_timeout,
         self._support_enable_target_shape,
         self._support_confidential_compute_type,
         self._support_provisioned_throughput,

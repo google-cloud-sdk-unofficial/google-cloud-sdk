@@ -62,7 +62,11 @@ class List(commands.List):
         'name:label=TASK,'
         'start_time.date("%Y-%m-%d %H:%M:%S %Z"):label=STARTED,'
         'completion_time.date("%Y-%m-%d %H:%M:%S %Z"):label=COMPLETED,'
-        'retries)'.format(ready_column=pretty_print.READY_COLUMN))
+        'retries):({alias})'.format(
+            ready_column=pretty_print.READY_COLUMN,
+            alias=commands.SATISFIES_PZS_ALIAS,
+        )
+    )
 
   @classmethod
   def Args(cls, parser):

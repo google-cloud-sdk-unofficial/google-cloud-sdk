@@ -10,7 +10,7 @@
         $ {command} 123456 --organization=123
         $ {command} organizations/123/securityHealthAnalyticsSettings/customModules/123456
 
-      To delete a Security Health Analytics custom module with id `123456` for folder `456` , run:
+      To delete a Security Health Analytics custom module with id `123456` for folder `456`, run:
 
         $ {command} 123456 --folder=folders/456
         $ {command} 123456 --folder=456

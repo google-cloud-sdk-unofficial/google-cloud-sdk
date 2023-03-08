@@ -24,7 +24,7 @@
     ALPHA:
       api_version: v1alpha
     resource_method_params:
-      parent: ''
+      parent: '{__relative_name__}'
 
   arguments:
     resource:

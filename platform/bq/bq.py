@@ -885,16 +885,19 @@ class _Load(BigqueryCmd):
     flags.DEFINE_enum(
         'encoding',
         None,
-        [
-            'UTF-8',
-            'ISO-8859-1',
-        ],
-        'The character encoding used by the input file.  Options include:'
-        '\n ISO-8859-1 (also known as Latin-1)'
-        '\n UTF-8'
-        ,
+        ['UTF-8', 'ISO-8859-1', 'UTF-16BE', 'UTF-16LE', 'UTF-32BE', 'UTF-32LE'],
+        (
+            'The character encoding used by the input file.  Options include:'
+            '\n ISO-8859-1 (also known as Latin-1)'
+            '\n UTF-8'
+            '\n UTF-16BE (UTF-16 BigEndian)'
+            '\n UTF-16LE (UTF-16 LittleEndian)'
+            '\n UTF-32BE (UTF-32 BigEndian)'
+            '\n UTF-32LE (UTF-32 LittleEndian)'
+        ),
         short_name='E',
-        flag_values=fv)
+        flag_values=fv,
+    )
     flags.DEFINE_integer(
         'skip_leading_rows',
         None,
@@ -1317,8 +1320,9 @@ def _CreateExternalTableDefinition(
     object_metadata=None,
     preserve_ascii_control_characters=False,
     reference_file_schema_uri=None,
+    encoding=None,
 ):
-  """Create an external table definition with the given URIs and the schema.
+  """Creates an external table definition with the given URIs and the schema.
 
   Arguments:
     source_format: Format of source data. For CSV files, specify 'CSV'. For
@@ -1351,7 +1355,10 @@ def _CreateExternalTableDefinition(
     metadata_cache_mode: Enables metadata cache for an external table with a
       connection. Specify 'AUTOMATIC' to automatically refresh the cached
       metadata. Specify 'MANUAL' to stop the automatic refresh.
-    object_metadata: Object Metadata Type
+    object_metadata: Object Metadata Type.
+    encoding: Encoding types for CSV files. Available options are: 'UTF-8',
+    'ISO-8859-1', 'UTF-16BE', 'UTF-16LE', 'UTF-32BE', and 'UTF-32LE'.
+    The default value is 'UTF-8'.
 
   Returns:
     A python dictionary that contains a external table definition for the given
@@ -1408,6 +1415,7 @@ def _CreateExternalTableDefinition(
         """)
       external_table_def['csvOptions'][
           'preserveAsciiControlCharacters'] = preserve_ascii_control_characters
+      external_table_def['csvOptions']['encoding'] = encoding or 'UTF-8'
     elif external_table_def['sourceFormat'] == 'NEWLINE_DELIMITED_JSON':
       if autodetect is None or autodetect:
         external_table_def['autodetect'] = True
@@ -1583,6 +1591,19 @@ class _MakeExternalTableDefinition(BigqueryCmd):
         'provide a referencing file with the expected table schema, currently '
         'enabled for the formats: AVRO, PARQUET, ORC.',
         flag_values=fv)
+    flags.DEFINE_enum(
+        'encoding',
+        None,
+        ['UTF-8', 'ISO-8859-1', 'UTF-16BE', 'UTF-16LE', 'UTF-32BE', 'UTF-32LE'],
+        'The character encoding used by the input file.  Options include:'
+        '\n ISO-8859-1 (also known as Latin-1)'
+        '\n UTF-8'
+        '\n UTF-16BE (UTF-16 BigEndian)'
+        '\n UTF-16LE (UTF-16 LittleEndian)'
+        '\n UTF-32BE (UTF-32 BigEndian)'
+        '\n UTF-32LE (UTF-16 LittleEndian)',
+        short_name='E',
+        flag_values=fv)
     self._ProcessCommandRc(fv)
 
   def RunWithArgs(self, source_uris, schema=None):
@@ -1643,7 +1664,8 @@ class _MakeExternalTableDefinition(BigqueryCmd):
             preserve_ascii_control_characters=self
             .preserve_ascii_control_characters,
             reference_file_schema_uri=self.reference_file_schema_uri,
-        ),
+            encoding=self.encoding,
+            ),
         sys.stdout,
         sort_keys=True,
         indent=2)

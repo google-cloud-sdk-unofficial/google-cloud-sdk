@@ -114,21 +114,12 @@ def AddBaseArgs(parser):
       '--read-timestamp',
       metavar='TIMESTAMP',
       help='Perform a query at the given timestamp.')
-
-
-def AddBetaArgs(parser):
-  """Parses provided arguments to add arguments for Beta.
-
-  Args:
-    parser: an argparse argument parser.
-  """
   parser.add_argument(
       '--database-role',
       help='Database role user assumes while accessing the database.')
 
 
 @base.UnicodeIsSupported
-@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Query(base.Command):
   """Executes a SQL query against a Cloud Spanner database."""
   detailed_help = DETAILED_HELP
@@ -149,7 +140,7 @@ class Query(base.Command):
       Some value that we want to have printed later.
     """
     read_only_options = self.ParseReadOnlyOptions(args)
-    session = CreateSession(args)
+    session = CreateSession(args, args.database_role)
     try:
       return database_sessions.ExecuteSql(
           args.sql,
@@ -226,36 +217,3 @@ class Query(base.Command):
       sql.DisplayQueryResults(result, log.status)
     else:
       raise ValueError('Invalid query mode: {}'.format(args.query_mode))
-
-
-@base.UnicodeIsSupported
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
-class QueryBeta(Query):
-  """Executes a SQL query against a Cloud Spanner database."""
-  detailed_help = DETAILED_HELP
-
-  @staticmethod
-  def Args(parser):
-    """See base class."""
-    AddBaseArgs(parser)
-    AddBetaArgs(parser)
-
-  def Run(self, args):
-    """Runs this command.
-
-    Args:
-      args: an argparse namespace. All the arguments that were provided to this
-        command invocation.
-
-    Returns:
-      Some value that we want to have printed later.
-    """
-    read_only_options = self.ParseReadOnlyOptions(args)
-    session = CreateSession(args, args.database_role)
-    try:
-      return database_sessions.ExecuteSql(args.sql, args.query_mode, session,
-                                          read_only_options,
-                                          args.enable_partitioned_dml,
-                                          args.timeout)
-    finally:
-      database_sessions.Delete(session)

@@ -4,7 +4,7 @@
     brief: Get a Security Health Analytics custom module.
     description: Get a Security Health Analytics custom module.
     examples: |
-      To get a Security Health Analytics custom module with id `123456` for organization `123` , run:
+      To get a Security Health Analytics custom module with id `123456` for organization `123`, run:
 
         $ {command} 123456 --organization=organizations/123
         $ {command} 123456 --organization=123

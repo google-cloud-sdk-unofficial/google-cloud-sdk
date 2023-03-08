@@ -4,62 +4,53 @@
     brief: Update a Security Health Analytics custom module.
     description: Update a Security Health Analytics custom module.
     examples: |
-      Update a Security Health Analytics custom module with id `123456` for organization `123`:
+      To update a Security Health Analytics custom module with id `123456` for organization `123, run`:
 
         $ {command} 123456 \
             --organization=organizations/123 \
-            --description="This is a test custom module" \
             --display-name="Test display name" \
             --enablement-state="ENABLED"
             --custom-config-from-file=custom_config.yaml
         $ {command} 123456 \
             --organization=123 \
-            --description="This is a test custom module" \
             --display-name="Test display name" \
             --enablement-state="ENABLED"
             --custom-config-from-file=custom_config.yaml
         $ {command} organizations/123/securityHealthAnalyticsSettings/customModules/123456 \
-            --description="This is a test custom module" \
             --display-name="Test display name" \
             --enablement-state="ENABLED"
             --custom-config-from-file=custom_config.yaml
 
-      Update a Security Health Analytics custom module with id `123456` for folder `456`:
+      To update a Security Health Analytics custom module with id `123456` for folder `456`, run:
 
         $ {command} 123456 \
             --folder=folders/456 \
-            --description="This is a test custom module" \
             --display-name="Test display name" \
             --enablement-state="ENABLED"
             --custom-config-from-file=custom_config.yaml
         $ {command} 123456 \
             --folder=456 \
-            --description="This is a test custom module" \
             --display-name="Test display name" \
             --enablement-state="ENABLED"
             --custom-config-from-file=custom_config.yaml
         $ {command} folders/456/securityHealthAnalyticsSettings/customModules/123456 \
-            --description="This is a test custom module" \
             --display-name="Test display name" \
             --enablement-state="ENABLED"
             --custom-config-from-file=custom_config.yaml
 
-      Update a Security Health Analytics custom module with id `123456` for project `789`:
+      To update a Security Health Analytics custom module with id `123456` for project `789`, run:
 
         $ {command} 123456 \
             --project=projects/789 \
-            --description="This is a test custom module" \
             --display-name="Test display name" \
             --enablement-state="ENABLED"
             --custom-config-from-file=custom_config.yaml
         $ {command} 123456 \
             --project=789 \
-            --description="This is a test custom module" \
             --display-name="Test display name" \
             --enablement-state="ENABLED"
             --custom-config-from-file=custom_config.yaml
         $ {command} projects/789/securityHealthAnalyticsSettings/customModules/123456 \
-            --description="This is a test custom module" \
             --display-name="Test display name" \
             --enablement-state="ENABLED"
             --custom-config-from-file=custom_config.yaml
@@ -106,13 +97,6 @@
       required: false
       help_text: |
         The text that will be used to represent a Security Health Analytics custom module display name. Display name must be at most 64 characters
-
-    - arg_name: description
-      api_field: googleCloudSecuritycenterV1SecurityHealthAnalyticsCustomModule.description
-      is_positional: false
-      required: false
-      help_text: |
-        The text that will be used to describe a Security Health Analytics custom module. Description must be at most 1024 characters
 
     - arg_name: enablement-state
       api_field: googleCloudSecuritycenterV1SecurityHealthAnalyticsCustomModule.enablementState

@@ -18,3 +18,15 @@
       help_text: The WasmPluginVersion you want to describe.
       spec: !REF googlecloudsdk.command_lib.network_actions.resources:wasmPluginVersion
       is_positional: true
+
+  output:
+    format: |
+      default(
+        name,
+        imageUri,
+        imageDigest,
+        pluginConfigData.trailoff(80),
+        pluginConfigUri,
+        pluginConfigDigest,
+        updateTime
+      )
