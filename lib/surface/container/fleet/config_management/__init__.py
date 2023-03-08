@@ -25,4 +25,5 @@ from googlecloudsdk.calliope import base as calliope_base
                              calliope_base.ReleaseTrack.BETA)
 class Configmanagement(calliope_base.Group):
   """Manage Config Management Feature."""
-  pass
+
+  category = calliope_base.COMPUTE_CATEGORY

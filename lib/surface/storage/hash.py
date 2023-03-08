@@ -32,7 +32,6 @@ from googlecloudsdk.command_lib.storage import wildcard_iterator
 from googlecloudsdk.command_lib.storage.resources import resource_reference
 from googlecloudsdk.command_lib.util import crc32c
 from googlecloudsdk.core import log
-from googlecloudsdk.core.util import files
 
 _DIGEST_FORMAT_KEY = 'digest_format'
 _CRC32C_HASH_KEY = 'crc32c_hash'
@@ -172,14 +171,17 @@ class Hash(base.Command):
           output_dict[_MD5_HASH_KEY] = format_cloud_digest(resource.md5_hash)
       else:  # FileObjectResource
         output_dict[_URL_KEY] = resource.storage_url.object_name
-        with files.BinaryFileReader(
-            resource.storage_url.object_name) as file_reader:
-          if not args.skip_crc32c:
-            output_dict[_CRC32C_HASH_KEY] = format_file_hash_object(
-                hash_util.get_hash_from_file_stream(
-                    file_reader, hash_util.HashAlgorithm.CRC32C))
-          if not args.skip_md5:
-            output_dict[_MD5_HASH_KEY] = format_file_hash_object(
-                hash_util.get_hash_from_file_stream(
-                    file_reader, hash_util.HashAlgorithm.MD5))
+        if not args.skip_crc32c:
+          output_dict[_CRC32C_HASH_KEY] = format_file_hash_object(
+              hash_util.get_hash_from_file(
+                  resource.storage_url.object_name,
+                  hash_util.HashAlgorithm.CRC32C,
+              )
+          )
+        if not args.skip_md5:
+          output_dict[_MD5_HASH_KEY] = format_file_hash_object(
+              hash_util.get_hash_from_file(
+                  resource.storage_url.object_name, hash_util.HashAlgorithm.MD5
+              )
+          )
       yield output_dict

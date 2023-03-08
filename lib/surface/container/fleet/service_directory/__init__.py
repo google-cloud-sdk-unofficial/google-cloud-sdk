@@ -24,4 +24,5 @@ from googlecloudsdk.calliope import base as calliope_base
 @calliope_base.ReleaseTracks(calliope_base.ReleaseTrack.ALPHA)
 class ServiceDirectory(calliope_base.Group):
   """Manage the Service Directory Feature."""
-  pass
+
+  category = calliope_base.COMPUTE_CATEGORY

@@ -41,8 +41,7 @@ class _BaseRun(object):
   """Invoke a test in Firebase Test Lab for Android and view test results."""
 
   detailed_help = {
-      'DESCRIPTION':
-          """
+      'DESCRIPTION': """
           *{command}* invokes and monitors tests in Firebase Test Lab for
           Android.
 
@@ -72,8 +71,7 @@ class _BaseRun(object):
           and/or within an argument file. Run *$ gcloud topic arg-files* for
           more information about argument files.
           """,
-      'EXAMPLES':
-          """
+      'EXAMPLES': """
           To invoke a robo test lasting 100 seconds against the default device
           environment, run:
 
@@ -115,6 +113,11 @@ class _BaseRun(object):
           The above command will generate a test matrix with a total of 300 test
           executions, but only the subset of executions with valid dimension
           combinations will actually run your tests.
+
+          To help you identify and locate your test matrix in the Firebase
+          console, run:
+
+            $ {command} --app=APP_APK --client-details=matrixLabel="Example matrix label"
 
           Controlling Results Storage
 

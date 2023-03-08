@@ -20,7 +20,7 @@ from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.container.gkeonprem import bare_metal_admin_clusters as apis
 from googlecloudsdk.calliope import base
-from googlecloudsdk.command_lib.container.bare_metal import cluster_flags as flags
+from googlecloudsdk.command_lib.container.bare_metal import admin_cluster_flags as flags
 
 _EXAMPLES = """
 To query versions for creating an admin cluster in location `us-west1`, run:

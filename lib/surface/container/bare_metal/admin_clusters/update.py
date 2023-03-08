@@ -21,7 +21,7 @@ from __future__ import unicode_literals
 from googlecloudsdk.api_lib.container.gkeonprem import bare_metal_admin_clusters as apis
 from googlecloudsdk.api_lib.container.gkeonprem import operations
 from googlecloudsdk.calliope import base
-from googlecloudsdk.command_lib.container.bare_metal import cluster_flags
+from googlecloudsdk.command_lib.container.bare_metal import admin_cluster_flags as cluster_flags
 from googlecloudsdk.command_lib.container.bare_metal import constants as bare_metal_constants
 from googlecloudsdk.command_lib.container.gkeonprem import constants
 from googlecloudsdk.core import log
@@ -49,8 +49,16 @@ class Update(base.UpdateCommand):
     parser.display_info.AddFormat(
         bare_metal_constants.BARE_METAL_ADMIN_CLUSTERS_FORMAT)
     cluster_flags.AddAdminClusterResourceArg(parser, 'to update', True)
-    cluster_flags.AddVersion(parser, is_update=True)
     base.ASYNC_FLAG.AddToParser(parser)
+    cluster_flags.AddValidationOnly(parser)
+    cluster_flags.AddDescription(parser)
+    cluster_flags.AddVersion(parser, is_update=True)
+    cluster_flags.AddControlPlaneConfig(parser, is_update=True)
+    cluster_flags.AddProxyConfig(parser, is_update=True)
+    cluster_flags.AddClusterOperationsConfig(parser)
+    cluster_flags.AddMaintenanceConfig(parser, is_update=True)
+    cluster_flags.AddAdminWorkloadNodeConfig(parser)
+    cluster_flags.AddNodeAccessConfig(parser)
 
   def Run(self, args):
     """Runs the update command.

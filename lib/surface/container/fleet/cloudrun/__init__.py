@@ -26,4 +26,5 @@ from googlecloudsdk.calliope import base as calliope_base
                              calliope_base.ReleaseTrack.GA)
 class CloudRun(calliope_base.Group):
   """Manage the CloudRun feature."""
-  pass
+
+  category = calliope_base.COMPUTE_CATEGORY

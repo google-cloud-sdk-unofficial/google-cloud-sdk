@@ -53,6 +53,7 @@ class Create(base.CreateCommand):
     flags.AddTargetServiceAccounts(parser)
     if cls.ReleaseTrack() == base.ReleaseTrack.ALPHA:
       flags.AddSecurityProfileGroup(parser)
+      flags.AddTlsInspect(parser)
     if cls.ReleaseTrack() in [base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA]:
       flags.AddSrcAddressGroups(parser)
       flags.AddDestAddressGroups(parser)
@@ -94,6 +95,7 @@ class Create(base.CreateCommand):
     src_threat_intelligence = []
     dest_threat_intelligence = []
     security_profile_group = None
+    tls_inspect = None
     enable_logging = False
     disabled = False
     if args.IsSpecified('src_ip_ranges'):
@@ -113,6 +115,8 @@ class Create(base.CreateCommand):
             optional_organization=args.organization,
             firewall_policy_client=org_firewall_policy,
             firewall_policy_id=args.firewall_policy)
+      if args.IsSpecified('tls_inspect'):
+        tls_inspect = args.tls_inspect
     if self.ReleaseTrack() in [base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA]:
       if args.IsSpecified('src_address_groups'):
         src_address_groups = [
@@ -192,9 +196,11 @@ class Create(base.CreateCommand):
           targetResources=target_resources,
           targetServiceAccounts=target_service_accounts,
           securityProfileGroup=security_profile_group,
+          tlsInspect=tls_inspect,
           description=args.description,
           enableLogging=enable_logging,
-          disabled=disabled)
+          disabled=disabled,
+      )
     else:
       firewall_policy_rule = holder.client.messages.FirewallPolicyRule(
           priority=rule_utils.ConvertPriorityToInt(ref.Name()),

@@ -74,16 +74,16 @@ DETAILED_HELP = {
           $ {command} example-instance-1 example-instance-2 example-instance-3 --zone=us-central1-a
 
         To create an instance called 'instance-1' from a source snapshot called
-        'instance-snapshot' in zone 'us-central2-a' and attached regional disk
+        'instance-snapshot' in zone 'us-central1-a' and attached regional disk
         'disk-1', run:
 
-          $ {command} instance-1 --source-snapshot=https://compute.googleapis.com/compute/v1/projects/myproject/global/snapshots/instance-snapshot --zone=central2-a --disk=name=disk1,scope=regional
+          $ {command} instance-1 --source-snapshot=https://compute.googleapis.com/compute/v1/projects/myproject/global/snapshots/instance-snapshot --zone=us-central1-a --disk=name=disk1,scope=regional
 
         To create an instance called instance-1 as a Shielded VM instance with
         Secure Boot, virtual trusted platform module (vTPM) enabled and
         integrity monitoring, run:
 
-          $ {command} instance-1 --zone=central2-a --shielded-secure-boot --shielded-vtpm --shielded-integrity-monitoring
+          $ {command} instance-1 --zone=us-central1-a --shielded-secure-boot --shielded-vtpm --shielded-integrity-monitoring
 
         To create a preemptible instance called 'instance-1', run:
 
@@ -463,8 +463,11 @@ class Create(base.CreateCommand):
         instance.secureTags = secure_tags_utils.GetSecureTags(args.secure_tags)
 
       if args.resource_manager_tags:
-        ret_resource_manager_tags = resource_manager_tags_utils.GetResourceManagerTags(
-            args.resource_manager_tags)
+        ret_resource_manager_tags = (
+            resource_manager_tags_utils.GetResourceManagerTags(
+                args.resource_manager_tags
+            )
+        )
         if ret_resource_manager_tags is not None:
           params = compute_client.messages.InstanceParams
           instance.params = params(
@@ -488,7 +491,9 @@ class Create(base.CreateCommand):
           args.threads_per_core is not None or
           (self._support_numa_node_count and args.numa_node_count is not None)
           or has_visible_core_count or args.enable_uefi_networking is not None):
-        visible_core_count = args.visible_core_count if has_visible_core_count else None
+        visible_core_count = (
+            args.visible_core_count if has_visible_core_count else None
+        )
         instance.advancedMachineFeatures = (
             instance_utils.CreateAdvancedMachineFeaturesMessage(
                 compute_client.messages, args.enable_nested_virtualization,
@@ -530,8 +535,9 @@ class Create(base.CreateCommand):
             .KeyRevocationActionTypeValueValuesEnum)
 
       if args.IsSpecified('network_performance_configs'):
-        instance.networkPerformanceConfig = instance_utils.GetNetworkPerformanceConfig(
-            args, compute_client)
+        instance.networkPerformanceConfig = (
+            instance_utils.GetNetworkPerformanceConfig(args, compute_client)
+        )
 
       request = compute_client.messages.ComputeInstancesInsertRequest(
           instance=instance,
@@ -560,8 +566,9 @@ class Create(base.CreateCommand):
         request.instance.displayDevice = compute_client.messages.DisplayDevice(
             enableDisplay=args.enable_display_device)
 
-      request.instance.reservationAffinity = instance_utils.GetReservationAffinity(
-          args, compute_client)
+      request.instance.reservationAffinity = (
+          instance_utils.GetReservationAffinity(args, compute_client)
+      )
 
       requests.append(
           (compute_client.apitools_client.instances, 'Insert', request))
@@ -669,7 +676,7 @@ class CreateBeta(Create):
   _support_host_error_timeout_seconds = True
   _support_numa_node_count = False
   _support_visible_core_count = True
-  _support_network_queue_count = False
+  _support_network_queue_count = True
   _support_instance_kms = False
   _support_max_run_duration = True
   _support_ipv6_assignment = False
@@ -701,13 +708,14 @@ class CreateBeta(Create):
         support_replica_zones=cls._support_replica_zones,
         support_multi_writer=cls._support_multi_writer,
         support_subinterface=cls._support_subinterface,
-        support_host_error_timeout_seconds=cls
-        ._support_host_error_timeout_seconds,
+        support_host_error_timeout_seconds=cls._support_host_error_timeout_seconds,
         support_numa_node_count=cls._support_numa_node_count,
         support_instance_kms=cls._support_instance_kms,
         support_max_run_duration=cls._support_max_run_duration,
         support_provisioned_throughput=cls._support_provisioned_throughput,
-        support_network_attachments=cls._support_network_attachments)
+        support_network_attachments=cls._support_network_attachments,
+        support_network_queue_count=cls._support_network_queue_count,
+    )
     cls.SOURCE_INSTANCE_TEMPLATE = (
         instances_flags.MakeSourceInstanceTemplateArg())
     cls.SOURCE_INSTANCE_TEMPLATE.AddArgument(parser)

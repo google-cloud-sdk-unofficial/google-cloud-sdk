@@ -24,9 +24,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.container.fleet import resources
 
 
-@base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
-                    base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Create(base.CreateCommand):
   """Create a Membership Binding.
 
@@ -42,14 +40,14 @@ class Create(base.CreateCommand):
   To create a membership binding `BINDING_NAME` in global membership
   `MEMBERSHIP_NAME` for scope `SCOPE_NAME`, run:
 
-    $ {command} BINDING_NAME --membership MEMBERSHIP_NAME --scope SCOPE_NAME
+    $ {command} BINDING_NAME --membership=MEMBERSHIP_NAME --scope=SCOPE_NAME
 
   To create a Binding `BINDING_NAME` associated with regional membership
   `MEMBERSHIP_NAME`, provide the location LOCATION_NAME for the Membership where
   the Binding belongs along with membership name and associated
   Scope `SCOPE_NAME`.
 
-  $ {command} BINDING_NAME --membership MEMBERSHIP_NAME --scope SCOPE_NAME
+  $ {command} BINDING_NAME --membership=MEMBERSHIP_NAME --scope=SCOPE_NAME
     --location=LOCATION_NAME
   """
 
@@ -85,3 +83,10 @@ class Create(base.CreateCommand):
         fleet=args.fleet,
         scope=scope,
     )
+
+
+@base.Hidden
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class CreateGA(Create):
+  pass
+

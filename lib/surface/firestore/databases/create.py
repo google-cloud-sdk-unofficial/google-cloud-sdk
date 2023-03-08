@@ -30,41 +30,47 @@ LOCATION_HELP_TEXT = (
     'The location to create the {product_name} database within. Available '
     'locations are listed at '
     'https://cloud.google.com/firestore/docs/locations.'.format(
-        product_name=PRODUCT_NAME))
+        product_name=PRODUCT_NAME
+    )
+)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class CreateAlpha(base.Command):
-  """Create a Google Cloud Firestore Native database via Firestore API.
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+class CreateFirestoreAPI(base.Command):
+  """Create a Google Cloud Firestore database via Firestore API.
 
-  'EXAMPLES':
-  To create Cloud Firestore Native database in nam5.
+  ## EXAMPLES
+
+  To create Firestore Native database in nam5.
 
       $ {command} --location=nam5
 
-  To create Cloud Datastore Mode database in us-east1.
+  To create Datastore Mode database in us-east1.
 
       $ {command} --location=us-east1 --type=datastore-mode
 
-  To create Cloud Datastore Mode database in us-east1 with a databaseId foo.
+  To create Datastore Mode database in us-east1 with a databaseId foo.
 
-      $ {command} foo --location=us-east1 --type=datastore-mode
+      $ {command} --database=mytest --location=us-east1 --type=datastore-mode
   """
 
   def DatabaseType(self, database_type):
     if database_type == 'firestore-native':
-      return admin_api.GetMessages(
-      ).GoogleFirestoreAdminV1Database.TypeValueValuesEnum.FIRESTORE_NATIVE
+      return (
+          admin_api.GetMessages().GoogleFirestoreAdminV1Database.TypeValueValuesEnum.FIRESTORE_NATIVE
+      )
     elif database_type == 'datastore-mode':
-      return admin_api.GetMessages(
-      ).GoogleFirestoreAdminV1Database.TypeValueValuesEnum.DATASTORE_MODE
+      return (
+          admin_api.GetMessages().GoogleFirestoreAdminV1Database.TypeValueValuesEnum.DATASTORE_MODE
+      )
     else:
       raise ValueError('invalid database type: {}'.format(database_type))
 
   def Run(self, args):
     project = properties.VALUES.core.project.Get(required=True)
-    return admin_api.CreateDatabase(project, args.location, args.database,
-                                    self.DatabaseType(args.type))
+    return admin_api.CreateDatabase(
+        project, args.location, args.database, self.DatabaseType(args.type)
+    )
 
   @staticmethod
   def Args(parser):
@@ -92,18 +98,18 @@ class CreateAlpha(base.Command):
     )
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Create(base.Command):
   """Create a Google Cloud Firestore Native database."""
+
   enum_value = core_apis.GetMessagesModule(
-      'appengine', 'v1').Application.DatabaseTypeValueValuesEnum.CLOUD_FIRESTORE
+      'appengine', 'v1'
+  ).Application.DatabaseTypeValueValuesEnum.CLOUD_FIRESTORE
   detailed_help = {
-      'DESCRIPTION':
-          """\
+      'DESCRIPTION': """\
           {description}
           """,
-      'EXAMPLES':
-          """\
+      'EXAMPLES': """\
           To create Google Cloud Firestore Native database
 
               $ {command}
@@ -122,10 +128,12 @@ class Create(base.Command):
     if args.region:
       location_map = {'us-central': 'nam5', 'europe-west': 'eur3'}
       if args.region in location_map:
-        logging.warning('Warning: {region} is not a valid Firestore location. '
-                        'Please use {location} instead.'.format(
-                            region=args.region,
-                            location=location_map[args.region]))
+        logging.warning(
+            'Warning: {region} is not a valid Firestore location. '
+            'Please use {location} instead.'.format(
+                region=args.region, location=location_map[args.region]
+            )
+        )
 
     region = args.region
     if args.region == 'nam5':
@@ -141,5 +149,6 @@ class Create(base.Command):
         '--region',
         help=(
             'The region to create the {product_name} database within. '
-            'Use `gcloud app regions list` to list available regions.').format(
-                product_name=PRODUCT_NAME))
+            'Use `gcloud app regions list` to list available regions.'
+        ).format(product_name=PRODUCT_NAME),
+    )

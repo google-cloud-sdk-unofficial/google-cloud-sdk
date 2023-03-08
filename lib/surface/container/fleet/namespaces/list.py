@@ -24,7 +24,6 @@ from googlecloudsdk.command_lib.container.fleet import util
 from googlecloudsdk.core import properties
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class List(base.ListCommand):
   """List fleet namespaces in a project.

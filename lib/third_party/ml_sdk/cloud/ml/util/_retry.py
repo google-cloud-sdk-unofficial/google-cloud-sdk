@@ -25,9 +25,9 @@ import sys
 import time
 import traceback
 
-from future.utils import raise_with_traceback
-
 from google.cloud.ml.util import _exceptions
+
+from six import reraise
 
 
 class FuzzedExponentialIntervals(object):
@@ -159,7 +159,7 @@ def with_exponential_backoff(num_retries=10,
               sleep_interval = next(retry_intervals)
             except StopIteration:
               # Re-raise the original exception since we finished the retries.
-              raise_with_traceback(exn, exn_traceback)
+              reraise(type(exn), exn, exn_traceback)
 
             logger(
                 'Retry with exponential backoff: waiting for %s seconds before '

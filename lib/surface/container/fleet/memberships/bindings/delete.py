@@ -24,9 +24,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.container.fleet import resources
 
 
-@base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
-                    base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Delete(base.DeleteCommand):
   """Delete a Membership Binding.
 
@@ -42,13 +40,13 @@ class Delete(base.DeleteCommand):
   To delete Membership Binding `BINDING_NAME` in global Membership
   `MEMBERSHIP_NAME` for a global membership:
 
-    $ {command} BINDING_NAME --membership MEMBERSHIP_NAME
+    $ {command} BINDING_NAME --membership=MEMBERSHIP_NAME
 
   To delete a Binding `BINDING_NAME` associated with regional membership
   `MEMBERSHIP_NAME`, provide the location LOCATION_NAME for the Membership where
   the Binding belongs along with the membership name.
 
-  $ {command} BINDING_NAME --membership MEMBERSHIP_NAME --location=LOCATION_NAME
+  $ {command} BINDING_NAME --membership=MEMBERSHIP_NAME --location=LOCATION_NAME
   """
 
   @classmethod
@@ -64,3 +62,9 @@ class Delete(base.DeleteCommand):
     fleetclient = client.FleetClient(release_track=self.ReleaseTrack())
     return fleetclient.DeleteMembershipBinding(
         resources.MembershipBindingResourceName(args))
+
+
+@base.Hidden
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class DeleteGA(Delete):
+  pass

@@ -4,6 +4,7 @@
 import codecs
 import http.client
 import json
+import logging
 import os
 import pkgutil
 import platform
@@ -124,7 +125,10 @@ def ProcessError(
     message_prefix='You have encountered a bug in the BigQuery CLI.'):
   """Translate an error message into some printing and a return code."""
 
+  logger = logging.getLogger(__name__)
+
   if isinstance(err, SystemExit):
+    logger.exception('An error has caused the tool to exit', exc_info=err)
     return err.code  # sys.exit called somewhere, hopefully intentionally.
 
   response = []
@@ -230,10 +234,15 @@ def ProcessError(
     response.append('Unexpected exception in %s operation: %s' %
                     (name, message))
 
+  if not FLAGS.apilog:
+    response.append(
+        'If the error provided does not help solve your issue, please run the '
+        'command again with the `--apilog=stderr flag`.')
   response_message = '\n'.join(response)
   wrap_error_message = True
   if wrap_error_message:
     response_message = flags.text_wrap(response_message)
+  logger.exception(response_message, exc_info=err)
   print(response_message)
   return retcode
 

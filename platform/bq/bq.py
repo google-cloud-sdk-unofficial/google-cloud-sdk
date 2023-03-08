@@ -3,6 +3,7 @@
 # Copyright 2012 Google Inc. All Rights Reserved.
 """Python script for interacting with BigQuery."""
 
+
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
@@ -1779,8 +1780,10 @@ class _Query(BigqueryCmd):
     flags.DEFINE_boolean(
         'use_legacy_sql',
         None,
-        ('Whether to use Legacy SQL for the query. If not set, the default '
-         'value is true.'),
+        ('The choice of using Legacy SQL for the query is optional. If not '
+         'specified, the server will automatically determine the dialect based '
+         'on query information, such as dialect prefixes. If no prefixes are '
+         'found, it will default to Legacy SQL.'),
         flag_values=fv)
     flags.DEFINE_multi_string(
         'schema_update_option',
@@ -3805,8 +3808,10 @@ class _Make(BigqueryCmd):
     flags.DEFINE_boolean(
         'use_legacy_sql',
         None,
-        ('Whether to use Legacy SQL for the view. If not set, the default '
-         'behavior is true.'),
+        ('The choice of using Legacy SQL for the query is optional. If not '
+         'specified, the server will automatically determine the dialect based '
+         'on query information, such as dialect prefixes. If no prefixes are '
+         'found, it will default to Legacy SQL.'),
         flag_values=fv)
     flags.DEFINE_string(
         'time_partitioning_type',
@@ -4467,6 +4472,7 @@ class _Make(BigqueryCmd):
             self.reference_file_schema_uri,
         )
 
+
       view_udf_resources = None
       if self.view_udf_resource:
         view_udf_resources = _ParseUdfResources(self.view_udf_resource)
@@ -5098,8 +5104,10 @@ class _Update(BigqueryCmd):
     flags.DEFINE_boolean(
         'use_legacy_sql',
         None,
-        ('Whether to use Legacy SQL for the view. If not set, the default '
-         'behavior is true.'),
+        ('The choice of using Legacy SQL for the query is optional. If not '
+         'specified, the server will automatically determine the dialect based '
+         'on query information, such as dialect prefixes. If no prefixes are '
+         'found, it will default to Legacy SQL.'),
         flag_values=fv)
     flags.DEFINE_string(
         'time_partitioning_type',

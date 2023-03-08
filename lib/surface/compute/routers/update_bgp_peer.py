@@ -36,18 +36,34 @@ class UpdateBgpPeer(base.UpdateCommand):
   ROUTER_ARG = None
 
   @classmethod
-  def _Args(cls, parser):
+  def _Args(cls, parser, support_custom_learned_routes=False):
     cls.ROUTER_ARG = flags.RouterArgument()
     cls.ROUTER_ARG.AddArgument(parser)
     base.ASYNC_FLAG.AddToParser(parser)
     flags.AddBgpPeerArgs(parser, for_add_bgp_peer=False, is_update=True)
     flags.AddUpdateCustomAdvertisementArgs(parser, 'peer')
+    if support_custom_learned_routes:
+      flags.AddUpdateCustomLearnedRoutesArgs(parser)
 
   @classmethod
   def Args(cls, parser):
     cls._Args(parser)
 
-  def _Run(self, args, support_bfd_mode=False):
+  def _Run(
+      self, args, support_bfd_mode=False, support_custom_learned_routes=False
+  ):
+    """Runs the command.
+
+    Args:
+      args: contains arguments passed to the command.
+      support_bfd_mode: The flag to indicate whether bfd mode is supported.
+      support_custom_learned_routes: The flag to indicate whether custom learned
+        routes are supported.
+
+    Returns:
+      The result of patching the router updating the bgp peer with the
+      information provided in the arguments.
+    """
     # Manually ensure replace/incremental flags are mutually exclusive.
     router_utils.CheckIncompatibleFlagsOrRaise(args)
 
@@ -93,7 +109,9 @@ class UpdateBgpPeer(base.UpdateCommand):
         messages,
         args,
         md5_authentication_key_name=md5_authentication_key_name,
-        support_bfd_mode=support_bfd_mode)
+        support_bfd_mode=support_bfd_mode,
+        support_custom_learned_routes=support_custom_learned_routes,
+    )
 
     if router_utils.HasReplaceAdvertisementFlags(args):
       mode, groups, ranges = router_utils.ParseAdvertisements(
@@ -151,6 +169,26 @@ class UpdateBgpPeer(base.UpdateCommand):
             resource=peer,
             ip_ranges=args.remove_advertisement_ranges)
 
+    if support_custom_learned_routes:
+      if args.set_custom_learned_route_ranges is not None:
+        peer.customLearnedIpRanges = routers_utils.ParseCustomLearnedIpRanges(
+            messages=messages, ip_ranges=args.set_custom_learned_route_ranges
+        )
+
+      # These arguments are guaranteed to be mutually exclusive in args.
+      if args.add_custom_learned_route_ranges:
+        ip_ranges_to_add = routers_utils.ParseCustomLearnedIpRanges(
+            messages=messages, ip_ranges=args.add_custom_learned_route_ranges
+        )
+        peer.customLearnedIpRanges.extend(ip_ranges_to_add)
+
+      if args.remove_custom_learned_route_ranges:
+        router_utils.RemoveIpRangesFromCustomLearnedRoutes(
+            messages=messages,
+            peer=peer,
+            ip_ranges=args.remove_custom_learned_route_ranges,
+        )
+
     request_type = messages.ComputeRoutersPatchRequest
     with holder.client.apitools_client.IncludeFields(cleared_fields):
       result = service.Patch(
@@ -205,10 +243,21 @@ class UpdateBgpPeerBeta(UpdateBgpPeer):
 
   @classmethod
   def Args(cls, parser):
-    cls._Args(parser)
+    cls._Args(parser, support_custom_learned_routes=False)
 
   def Run(self, args):
-    return self._Run(args, support_bfd_mode=False)
+    """Runs the command.
+
+    Args:
+      args: contains arguments passed to the command.
+
+    Returns:
+      The result of patching the router updating the bgp peer with the
+      information provided in the arguments.
+    """
+    return self._Run(
+        args, support_bfd_mode=False, support_custom_learned_routes=False
+    )
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -219,17 +268,31 @@ class UpdateBgpPeerAlpha(UpdateBgpPeerBeta):
 
   @classmethod
   def Args(cls, parser):
-    cls._Args(parser)
+    cls._Args(parser, support_custom_learned_routes=True)
 
   def Run(self, args):
-    return self._Run(args, support_bfd_mode=True)
+    """Runs the command.
+
+    Args:
+      args: contains arguments passed to the command.
+
+    Returns:
+      The result of patching the router updating the bgp peer with the
+      information provided in the arguments.
+    """
+    return self._Run(
+        args, support_bfd_mode=True, support_custom_learned_routes=True
+    )
 
 
-def _UpdateBgpPeerMessage(peer,
-                          messages,
-                          args,
-                          md5_authentication_key_name,
-                          support_bfd_mode=False):
+def _UpdateBgpPeerMessage(
+    peer,
+    messages,
+    args,
+    md5_authentication_key_name,
+    support_bfd_mode=False,
+    support_custom_learned_routes=False,
+):
   """Updates base attributes of a BGP peer based on flag arguments."""
 
   attrs = {
@@ -251,6 +314,11 @@ def _UpdateBgpPeerMessage(peer,
     attrs['ipv6NexthopAddress'] = args.ipv6_nexthop_address
   if args.peer_ipv6_nexthop_address is not None:
     attrs['peerIpv6NexthopAddress'] = args.peer_ipv6_nexthop_address
+  if support_custom_learned_routes:
+    if args.set_custom_learned_route_priority is not None:
+      attrs['customLearnedRoutePriority'] = (
+          args.set_custom_learned_route_priority
+      )
   if args.md5_authentication_key is not None:
     attrs['md5AuthenticationKeyName'] = md5_authentication_key_name
   for attr, value in attrs.items():

@@ -24,9 +24,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.container.fleet import resources
 
 
-@base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
-                    base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Describe(base.DescribeCommand):
   """Show Membership-Binding info.
 
@@ -42,13 +40,13 @@ class Describe(base.DescribeCommand):
   To print metadata for the membership Binding `BINDING_NAME` in a global
   membership `MEMBERSHIP_NAME`, run:
 
-    $ {command} BINDING_NAME --membership MEMBERSHIP_NAME
+    $ {command} BINDING_NAME --membership=MEMBERSHIP_NAME
 
   To print metadata for the Binding `BINDING_NAME` associated with regional
   membership `MEMBERSHIP_NAME`, provide the location LOCATION_NAME for the
   Membership where the Binding belongs along with membership name.
 
-  $ {command} BINDING_NAME --membership MEMBERSHIP_NAME --location=LOCATION_NAME
+  $ {command} BINDING_NAME --membership=MEMBERSHIP_NAME --location=LOCATION_NAME
   """
 
   @classmethod
@@ -64,3 +62,9 @@ class Describe(base.DescribeCommand):
     fleetclient = client.FleetClient(release_track=self.ReleaseTrack())
     return fleetclient.GetMembershipBinding(
         resources.MembershipBindingResourceName(args))
+
+
+@base.Hidden
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class DescribeGA(Describe):
+  pass

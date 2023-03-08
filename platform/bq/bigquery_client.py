@@ -915,47 +915,38 @@ class BigqueryServiceError(BigqueryError):
 
 class BigqueryNotFoundError(BigqueryServiceError):
   """The requested resource or identifier was not found."""
-  pass
 
 
 class BigqueryDuplicateError(BigqueryServiceError):
   """The requested resource or identifier already exists."""
-  pass
 
 
 class BigqueryAccessDeniedError(BigqueryServiceError):
   """The user does not have access to the requested resource."""
-  pass
 
 
 class BigqueryInvalidQueryError(BigqueryServiceError):
   """The SQL statement is invalid."""
-  pass
 
 
 class BigqueryTermsOfServiceError(BigqueryAccessDeniedError):
   """User has not ACK'd ToS."""
-  pass
 
 
 class BigqueryBackendError(BigqueryServiceError):
   """A backend error typically corresponding to retriable HTTP 5xx failures."""
-  pass
 
 
 class BigqueryClientError(BigqueryError):
   """Invalid use of BigqueryClient."""
-  pass
 
 
 class BigqueryClientConfigurationError(BigqueryClientError):
   """Invalid configuration of BigqueryClient."""
-  pass
 
 
 class BigquerySchemaError(BigqueryClientError):
   """Error in locating or parsing the schema."""
-  pass
 
 
 class BigqueryModel(model.JsonModel):
@@ -2318,6 +2309,7 @@ class BigqueryClient(object):
     return client.projects().locations().updateBiReservation(
         name=reference.path(), updateMask=update_mask,
         body=bi_reservation).execute()
+
 
   def GetParamsForUpdateReservation(
       self,
@@ -4980,8 +4972,10 @@ class BigqueryClient(object):
         an external table. For example, a BigQuery table backed by CSV files in
         GCS.
       view_udf_resources: optional UDF resources used in a view.
-      use_legacy_sql: Whether to use Legacy SQL. If not set, the default
-        behavior is true.
+      use_legacy_sql: The choice of using Legacy SQL for the query is optional.
+        If not specified, the server will automatically determine the dialect
+        based on query information, such as dialect prefixes. If no prefixes are
+        found, it will default to Legacy SQL.
       labels: an optional dict of labels to set on the table.
       time_partitioning: if set, enables time based partitioning on the table
         and configures the partitioning.
@@ -5048,6 +5042,20 @@ class BigqueryClient(object):
       if not ignore_existing:
         raise
 
+  def _FetchDataSource(self, project_reference, data_source_id):
+    transfer_client = self.GetTransferV1ApiClient()
+    data_source_retrieval = (
+        project_reference + '/locations/-/dataSources/' + data_source_id
+    )
+
+    return (
+        transfer_client.projects()
+        .locations()
+        .dataSources()
+        .get(name=data_source_retrieval)
+        .execute()
+    )
+
   def UpdateTransferConfig(self,
                            reference,
                            target_dataset=None,
@@ -5107,23 +5115,22 @@ class BigqueryClient(object):
       update_mask.append('transfer_config.display_name')
       update_items['displayName'] = display_name
 
-    data_source_retrieval = (
-        project_reference + '/locations/-/dataSources/' +
-        current_config['dataSourceId'])
-    data_source_info = transfer_client.projects().locations().dataSources().get(
-        name=data_source_retrieval).execute()
-
     if params:
       update_items = self.ProcessParamsFlag(params, update_items)
       update_mask.append('transfer_config.params')
 
     # if refresh window provided, check that data source supports it
     if refresh_window_days:
-      if refresh_window_days:
-        update_items = self.ProcessRefreshWindowDaysFlag(
-            refresh_window_days, data_source_info, update_items,
-            current_config['dataSourceId'])
-        update_mask.append('transfer_config.data_refresh_window_days')
+      data_source_info = self._FetchDataSource(
+          project_reference, current_config['dataSourceId']
+      )
+      update_items = self.ProcessRefreshWindowDaysFlag(
+          refresh_window_days,
+          data_source_info,
+          update_items,
+          current_config['dataSourceId'],
+      )
+      update_mask.append('transfer_config.data_refresh_window_days')
 
     if schedule_args:
       if schedule_args.schedule is not None:
@@ -5210,14 +5217,12 @@ class BigqueryClient(object):
       create_items['displayName'] = display_name
     else:
       raise BigqueryError('A display name must be provided.')
-    data_sources_reference = (
-        reference + '/locations/-/dataSources/' + data_source)
-    data_source_info = transfer_client.projects().locations().dataSources().get(
-        name=data_sources_reference).execute()
+
     create_items['dataSourceId'] = data_source
 
     # if refresh window provided, check that data source supports it
     if refresh_window_days:
+      data_source_info = self._FetchDataSource(reference, data_source)
       create_items = self.ProcessRefreshWindowDaysFlag(refresh_window_days,
                                                        data_source_info,
                                                        create_items,
@@ -5353,8 +5358,10 @@ class BigqueryClient(object):
         an external table. For example, a BigQuery table backed by CSV files in
         GCS.
       view_udf_resources: optional UDF resources used in a view.
-      use_legacy_sql: Whether to use Legacy SQL. If not set, the default
-        behavior is true.
+      use_legacy_sql: The choice of using Legacy SQL for the query is optional.
+        If not specified, the server will automatically determine the dialect
+        based on query information, such as dialect prefixes. If no prefixes are
+        found, it will default to Legacy SQL.
       labels_to_set: an optional dict of labels to set on this table.
       label_keys_to_remove: an optional list of label keys to remove from this
         table.
@@ -5895,8 +5902,10 @@ class BigqueryClient(object):
       external_table_definitions_json: Json representation of external table
         definitions.
       udf_resources: Array of inline and external UDF code resources.
-      use_legacy_sql: Whether to use Legacy SQL. If not set, the default value
-        is true.
+      use_legacy_sql: The choice of using Legacy SQL for the query is optional.
+        If not specified, the server will automatically determine the dialect
+        based on query information, such as dialect prefixes. If no prefixes are
+        found, it will default to Legacy SQL.
       location: Optional. The geographic location where the job should run.
       connection_properties: Optional. Connection properties to use when running
         the query, presented as a list of key/value pairs. A key of "time_zone"
@@ -6480,8 +6489,10 @@ class BigqueryClient(object):
       udf_resources: Array of inline and remote UDF resources.
       maximum_billing_tier: Upper limit for billing tier.
       maximum_bytes_billed: Upper limit for bytes billed.
-      use_legacy_sql: Whether to use Legacy SQL. If not set, the default value
-        is true.
+      use_legacy_sql: The choice of using Legacy SQL for the query is optional.
+        If not specified, the server will automatically determine the dialect
+        based on query information, such as dialect prefixes. If no prefixes are
+        found, it will default to Legacy SQL.
       schema_update_options: schema update options when appending to the
         destination table or truncating a table partition.
       labels: an optional dict of labels to set on the query job.

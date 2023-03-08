@@ -26,4 +26,5 @@ from googlecloudsdk.calliope import base as calliope_base
                              calliope_base.ReleaseTrack.GA)
 class Memberships(calliope_base.Group):
   """Manage memberships of all your GKE and other Kubernetes clusters with fleets."""
-  pass
+
+  category = calliope_base.COMPUTE_CATEGORY

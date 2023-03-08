@@ -40,6 +40,7 @@ class Create(base.CreateCommand):
   _support_geo = False
   _support_nti = False
   _support_ips = False
+  _support_ips_with_tls = False
 
   @classmethod
   def Args(cls, parser):
@@ -72,6 +73,8 @@ class Create(base.CreateCommand):
       flags.AddDestThreatIntelligence(parser)
     if cls._support_ips:
       flags.AddSecurityProfileGroup(parser)
+      if cls._support_ips_with_tls:
+        flags.AddTlsInspect(parser)
     parser.display_info.AddCacheUpdater(flags.NetworkFirewallPoliciesCompleter)
 
   def Run(self, args):
@@ -89,6 +92,7 @@ class Create(base.CreateCommand):
     layer4_configs = []
     target_service_accounts = []
     security_profile_group = None
+    tls_inspect = None
     enable_logging = False
     disabled = False
     src_secure_tags = []
@@ -113,6 +117,12 @@ class Create(base.CreateCommand):
           holder.client, args.target_secure_tags)
     if self._support_ips and args.IsSpecified('security_profile_group'):
       security_profile_group = args.security_profile_group
+    if (
+        self._support_ips
+        and self._support_ips_with_tls
+        and args.IsSpecified('tls_inspect')
+    ):
+      tls_inspect = args.tls_inspect
     layer4_config_list = rule_utils.ParseLayer4Configs(layer4_configs,
                                                        holder.client.messages)
     matcher = holder.client.messages.FirewallPolicyRuleMatcher(
@@ -150,17 +160,33 @@ class Create(base.CreateCommand):
             .EGRESS)
 
     if self._support_ips:
-      firewall_policy_rule = holder.client.messages.FirewallPolicyRule(
-          priority=rule_utils.ConvertPriorityToInt(args.priority),
-          action=args.action,
-          match=matcher,
-          direction=traffic_direct,
-          targetServiceAccounts=target_service_accounts,
-          description=args.description,
-          enableLogging=enable_logging,
-          disabled=disabled,
-          targetSecureTags=target_secure_tags,
-          securityProfileGroup=security_profile_group)
+      if self._support_ips_with_tls:
+        firewall_policy_rule = holder.client.messages.FirewallPolicyRule(
+            priority=rule_utils.ConvertPriorityToInt(args.priority),
+            action=args.action,
+            match=matcher,
+            direction=traffic_direct,
+            targetServiceAccounts=target_service_accounts,
+            description=args.description,
+            enableLogging=enable_logging,
+            disabled=disabled,
+            targetSecureTags=target_secure_tags,
+            securityProfileGroup=security_profile_group,
+            tlsInspect=tls_inspect,
+        )
+      else:
+        firewall_policy_rule = holder.client.messages.FirewallPolicyRule(
+            priority=rule_utils.ConvertPriorityToInt(args.priority),
+            action=args.action,
+            match=matcher,
+            direction=traffic_direct,
+            targetServiceAccounts=target_service_accounts,
+            description=args.description,
+            enableLogging=enable_logging,
+            disabled=disabled,
+            targetSecureTags=target_secure_tags,
+            securityProfileGroup=security_profile_group,
+        )
     else:
       firewall_policy_rule = holder.client.messages.FirewallPolicyRule(
           priority=rule_utils.ConvertPriorityToInt(args.priority),
@@ -201,6 +227,7 @@ class CreateAlpha(Create):
   _support_geo = True
   _support_nti = True
   _support_ips = True
+  _support_ips_with_tls = True
 
 
 Create.detailed_help = {

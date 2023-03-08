@@ -54,6 +54,7 @@ class Update(base.UpdateCommand):
     flags.AddTargetServiceAccounts(parser)
     if is_alpha:
       flags.AddSecurityProfileGroup(parser)
+      flags.AddTlsInspect(parser)
     if is_alpha or is_beta:
       flags.AddSrcAddressGroups(parser)
       flags.AddDestAddressGroups(parser)
@@ -101,6 +102,7 @@ class Update(base.UpdateCommand):
     traffic_direct = None
     matcher = None
     security_profile_group = None
+    tls_inspect = None
     if args.IsSpecified('src_ip_ranges'):
       src_ip_ranges = args.src_ip_ranges
       should_setup_match = True
@@ -122,6 +124,8 @@ class Update(base.UpdateCommand):
             optional_organization=args.organization,
             firewall_policy_client=org_firewall_policy,
             firewall_policy_id=args.firewall_policy)
+      if args.IsSpecified('tls_inspect'):
+        tls_inspect = args.tls_inspect
     if self.ReleaseTrack() in [base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA]:
       if args.IsSpecified('src_address_groups'):
         src_address_groups = [
@@ -214,7 +218,9 @@ class Update(base.UpdateCommand):
           description=args.description,
           enableLogging=enable_logging,
           disabled=disabled,
-          securityProfileGroup=security_profile_group)
+          securityProfileGroup=security_profile_group,
+          tlsInspect=tls_inspect,
+      )
     else:
       firewall_policy_rule = holder.client.messages.FirewallPolicyRule(
           priority=new_priority,

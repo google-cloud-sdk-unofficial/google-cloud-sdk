@@ -198,7 +198,7 @@ def _CommonArgs(messages,
 
   _SourceArgs(parser, source_instant_snapshot_enabled, support_async_pd)
 
-  disks_flags.AddProvisionedIopsFlag(parser, arg_parsers, constants)
+  disks_flags.AddProvisionedIopsFlag(parser, arg_parsers)
   disks_flags.AddArchitectureFlag(parser, messages)
 
   if support_provisioned_throughput:

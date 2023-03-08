@@ -135,7 +135,6 @@ class Create(base.Command):
   _support_provisioned_throughput = False
   _support_no_address_in_networking = False
   _support_max_count_per_zone = False
-  _support_stack_type = False
 
   _log_async = False
 
@@ -159,7 +158,6 @@ class Create(base.Command):
         support_provisioned_throughput=cls._support_provisioned_throughput,
         support_no_address_in_networking=cls._support_no_address_in_networking,
         support_max_count_per_zone=cls._support_max_count_per_zone,
-        support_stack_type=cls._support_stack_type,
     )
     cls.AddSourceInstanceTemplate(parser)
 
@@ -201,24 +199,37 @@ class Create(base.Command):
         self._support_confidential_compute_type,
         self._support_provisioned_throughput,
         self._support_max_count_per_zone,
-        self._support_stack_type,
     )
     bulk_instance_resource = bulk_util.CreateBulkInsertInstanceResource(
-        args, holder, compute_client, resource_parser, project, location, scope,
-        self.SOURCE_INSTANCE_TEMPLATE, supported_features)
+        args,
+        holder,
+        compute_client,
+        resource_parser,
+        project,
+        location,
+        scope,
+        self.SOURCE_INSTANCE_TEMPLATE,
+        supported_features,
+    )
 
     if scope == compute_scopes.ScopeEnum.ZONE:
       instance_service = compute_client.apitools_client.instances
-      request_message = compute_client.messages.ComputeInstancesBulkInsertRequest(
-          bulkInsertInstanceResource=bulk_instance_resource,
-          project=project,
-          zone=location)
+      request_message = (
+          compute_client.messages.ComputeInstancesBulkInsertRequest(
+              bulkInsertInstanceResource=bulk_instance_resource,
+              project=project,
+              zone=location,
+          )
+      )
     elif scope == compute_scopes.ScopeEnum.REGION:
       instance_service = compute_client.apitools_client.regionInstances
-      request_message = compute_client.messages.ComputeRegionInstancesBulkInsertRequest(
-          bulkInsertInstanceResource=bulk_instance_resource,
-          project=project,
-          region=location)
+      request_message = (
+          compute_client.messages.ComputeRegionInstancesBulkInsertRequest(
+              bulkInsertInstanceResource=bulk_instance_resource,
+              project=project,
+              region=location,
+          )
+      )
 
     return instance_service, request_message
 
@@ -366,7 +377,6 @@ class CreateAlpha(Create):
   _support_provisioned_throughput = True
   _support_no_address_in_networking = True
   _support_max_count_per_zone = True
-  _support_stack_type = True
 
   @classmethod
   def Args(cls, parser):
@@ -388,7 +398,6 @@ class CreateAlpha(Create):
         support_provisioned_throughput=cls._support_provisioned_throughput,
         support_no_address_in_networking=cls._support_no_address_in_networking,
         support_max_count_per_zone=cls._support_max_count_per_zone,
-        support_stack_type=cls._support_stack_type,
     )
 
     cls.AddSourceInstanceTemplate(parser)

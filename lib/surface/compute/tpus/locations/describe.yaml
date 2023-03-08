@@ -11,7 +11,7 @@
     examples: |
       The following command describes the TPUs running in zone `us-central1-b`:
 
-        $ {command} zone=us-central1-b
+        $ {command} us-central1-b
 
   request:
     collection: tpu.projects.locations

@@ -59,11 +59,6 @@ class Run(base.ListCommand):
           more information about argument files.
           """,
       'EXAMPLES': """\
-          To help you identify and locate your test matrix in the Firebase
-          console, run:
-
-            $ {command} --test=XCTEST_ZIP --client-details=matrixLabel="Example matrix label"
-
           To invoke an XCTest lasting up to five minutes against the default
           device environment, run:
 
@@ -81,6 +76,11 @@ class Run(base.ListCommand):
           To run your XCTest using a specific version of Xcode, say 9.4.1, run:
 
             $ {command} --test=XCTEST_ZIP --xcode-version=9.4.1
+
+          To help you identify and locate your test matrix in the Firebase
+          console, run:
+
+            $ {command} --test=XCTEST_ZIP --client-details=matrixLabel="Example matrix label"
 
           All test arguments for a given test may alternatively be stored in an
           argument group within a YAML-formatted argument file. The _ARG_FILE_
@@ -271,6 +271,11 @@ class RunBeta(Run):
           To run your XCTest using a specific version of Xcode, say 9.4.1, run:
 
             $ {command} --test=XCTEST_ZIP --xcode-version=9.4.1
+
+          To help you identify and locate your test matrix in the Firebase
+          console, run:
+
+            $ {command} --test=XCTEST_ZIP --client-details=matrixLabel="Example matrix label"
 
           To run an iOS game loop, specify the *--type* and *--app* flags:
 

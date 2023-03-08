@@ -237,7 +237,7 @@ class ConnectToSerialPort(base.Command):
     try:
       return_code = cmd.Run(
           ssh_helper.env,
-          force_connect=properties.VALUES.ssh.putty_force_connect.GetBool())
+          putty_force_connect=properties.VALUES.ssh.putty_force_connect.GetBool())
     except ssh.CommandError:
       return_code = 255
     if return_code:

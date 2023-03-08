@@ -28,23 +28,12 @@
     - arg_name: replica-count
       api_field: cluster.replicaCount
       type: int
-      hidden: true
       help_text: |
         The replica count of each shard.
-    - group:
-        mutex: true
-        params:
-        - arg_name: total-memory-size-gb
-          api_field: cluster.totalMemorySizeGb
-          help_text: |
-            The memory size of the cluster in GiB.
-          action:
-            deprecated:
-              warn: Flag {flag_name} is deprecated. Use --size-gb instead.
-        - arg_name: size-gb
-          api_field: cluster.sizeGb
-          help_text: |
-            The memory size of the cluster in GiB.
+    - arg_name: size-gb
+      api_field: cluster.sizeGb
+      help_text: |
+        The memory size of the cluster in GiB.
 
   async:
     collection: redis.projects.locations.operations
@@ -54,7 +43,6 @@
       api_version: v1alpha1
       modify_request_hooks:
       - googlecloudsdk.command_lib.redis.clusters_update_util:UpdateDisplayName
-      - googlecloudsdk.command_lib.redis.clusters_update_util:UpdateTotalMemorySizeGb
       - googlecloudsdk.command_lib.redis.clusters_update_util:UpdateSizeGb
       - googlecloudsdk.command_lib.redis.clusters_update_util:UpdateReplicaCount
     collection: redis.projects.locations.clusters

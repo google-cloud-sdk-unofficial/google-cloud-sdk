@@ -70,7 +70,6 @@ class Create(base.CreateCommand):
   _support_provisioned_throughput = True
   _support_no_address_in_networking = True
   _support_max_count_per_zone = False
-  _support_stack_type = True
 
   @classmethod
   def Args(cls, parser):
@@ -94,7 +93,6 @@ class Create(base.CreateCommand):
         support_provisioned_throughput=cls._support_provisioned_throughput,
         support_no_address_in_networking=cls._support_no_address_in_networking,
         support_max_count_per_zone=cls._support_max_count_per_zone,
-        support_stack_type=cls._support_stack_type,
     )
     cls.AddSourceInstanceTemplate(parser)
     instances_flags.AddSecureTagsArgs(parser)
@@ -172,7 +170,6 @@ class Create(base.CreateCommand):
         self._support_confidential_compute_type,
         self._support_provisioned_throughput,
         self._support_max_count_per_zone,
-        self._support_stack_type,
     )
     bulk_insert_instance_resource = bulk_util.CreateBulkInsertInstanceResource(
         args, holder, client, holder.resources, queued_resource_ref.project,

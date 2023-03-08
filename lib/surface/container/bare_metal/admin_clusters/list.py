@@ -21,7 +21,7 @@ from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.container.gkeonprem import bare_metal_admin_clusters as apis
 from googlecloudsdk.calliope import base
-from googlecloudsdk.command_lib.container.bare_metal import cluster_flags
+from googlecloudsdk.command_lib.container.bare_metal import admin_cluster_flags as cluster_flags
 from googlecloudsdk.command_lib.container.bare_metal import constants
 from googlecloudsdk.core import log
 

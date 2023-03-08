@@ -25,18 +25,21 @@ from googlecloudsdk.command_lib.resource_manager import completers
 
 DETAILED_HELP = {
     'DESCRIPTION': """
-         TODO
+         *{command}* returns a list of the resources a key is protecting
+         within the specified organization.
        """,
     'EXAMPLES': """
-         TODO
+         To view the protected resources for the key `puppy` and organization
+         number `1234` run:
+
+           $ {command} --keyname=puppy --scope=1234
        """,
 }
 
 
 class SearchProtectedResources(base.ListCommand):
   """Searches the resources protected by a key."""
-  # TODO(b/255752383) finish writing help text
-  # detailed_help = DETAILED_HELP
+  detailed_help = DETAILED_HELP
 
   @staticmethod
   def Args(parser):

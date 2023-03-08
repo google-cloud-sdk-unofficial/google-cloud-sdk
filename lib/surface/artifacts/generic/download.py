@@ -19,17 +19,12 @@ from __future__ import division
 from __future__ import unicode_literals
 
 import os
-import shutil
 import tempfile
 
-from apitools.base.py import exceptions
-from apitools.base.py import transfer
-
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.artifacts import download_util
 from googlecloudsdk.command_lib.artifacts import flags
-from googlecloudsdk.command_lib.artifacts import requests
 from googlecloudsdk.core import log
-from googlecloudsdk.core.credentials import transports
 
 
 @base.ReleaseTracks(
@@ -87,46 +82,14 @@ class Download(base.Command):
   def Run(self, args):
     """Run the generic artifact download command."""
 
-    client = requests.GetClientV1beta2()
     repo_ref = args.CONCEPTS.repository.Parse()
-    file_name = args.name
-    file_id = '{}:{}:{}'.format(args.package, args.version, file_name)
-    file_path = os.path.join(args.destination, file_name)
-
-    if os.path.exists(file_path):
-      log.err.Print('File {} already exists.'.format(file_path))
-      return
+    file_id = '{}:{}:{}'.format(args.package, args.version, args.name)
+    tmp_path = os.path.join(tempfile.gettempdir(), args.name)
+    final_path = os.path.join(args.destination, args.name)
+    file_res_name = '{}/files/{}'.format(repo_ref.RelativeName(), file_id)
 
     log.status.Print('Downloading the file.')
-
-    request = (
-        requests.GetMessagesV1beta2().ArtifactregistryMediaDownloadRequest(
-            name='{}/files/{}'.format(repo_ref.RelativeName(), file_id)
-        )
-    )
-    # Allow overwrites in /tmp
-    download_object = transfer.Download.FromFile(
-        os.path.join(tempfile.gettempdir(), file_name), True
-    )
-    download_object.bytes_http = transports.GetApitoolsTransport(
-        response_encoding=None
-    )
-
-    try:
-      client.media.Download(request, download=download_object)
-    except exceptions.HttpError as err:
-      # If an exception was raised, we do not move the file.
-      raise err
-
-    finally:
-      download_object.stream.close()
-
-    try:
-      # Only move the file to the user specified path if no exception occured.
-      shutil.move(os.path.join(tempfile.gettempdir(), file_name), file_path)
-    except OSError as err:
-      raise err
-
+    download_util.Download(tmp_path, final_path, file_res_name, False)
     log.status.Print(
         'Successfully downloaded the file to {}'.format(args.destination)
     )

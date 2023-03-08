@@ -25,3 +25,5 @@ from googlecloudsdk.calliope import base
 @base.Hidden
 class AnthosObservability(base.Group):
   """Anthos Observability Feature."""
+
+  category = base.COMPUTE_CATEGORY

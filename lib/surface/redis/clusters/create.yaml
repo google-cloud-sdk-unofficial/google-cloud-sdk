@@ -25,7 +25,6 @@
     params:
     - arg_name: auth-mode
       api_field: cluster.authorizationMode
-      hidden: true
       help_text: |
         Available authorization mode of a Redis cluster.
       choices:
@@ -44,26 +43,14 @@
     - arg_name: replica-count
       api_field: cluster.replicaCount
       type: int
-      hidden: true
       help_text: |
         The replica count of each shard.
-    - group:
-        mutex: true
-        params:
-        - arg_name: total-memory-size-gb
-          api_field: cluster.totalMemorySizeGb
-          help_text: |
-            The memory size of the cluster in GiB.
-          action:
-            deprecated:
-              warn: Flag {flag_name} is deprecated. Use --size-gb instead.
-        - arg_name: size-gb
-          api_field: cluster.sizeGb
-          help_text: |
-            The memory size of the cluster in GiB.
+    - arg_name: size-gb
+      api_field: cluster.sizeGb
+      help_text: |
+        The memory size of the cluster in GiB.
     - arg_name: transit-encryption-mode
       api_field: cluster.transitEncryptionMode
-      hidden: true
       help_text: |
         Transit encryption mode used for the Redis cluster.
         If not provided, encryption is disabled for the cluster.

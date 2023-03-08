@@ -33,7 +33,6 @@ def _CommonArgs(messages,
                 cls,
                 parser,
                 support_user_licenses=False,
-                support_provisioned_iops=False,
                 support_provisioned_throughput=False):
   """Add arguments used for parsing in all command tracks."""
   cls.DISK_ARG = disks_flags.MakeDiskArg(plural=False)
@@ -74,13 +73,15 @@ def _CommonArgs(messages,
       help='Removes the architecture or processor type annotation from the disk.'
   )
 
-  if support_provisioned_iops:
-    parser.add_argument('--provisioned-iops',
-                        type=arg_parsers.BoundedInt(),
-                        help=(
-                            'Provisioned IOPS of disk to update. '
-                            'Only for use with disks of type '
-                            'hyperdisk-extreme.'))
+  parser.add_argument(
+      '--provisioned-iops',
+      type=arg_parsers.BoundedInt(),
+      help=(
+          'Provisioned IOPS of disk to update. '
+          'Only for use with disks of type '
+          'hyperdisk-extreme.'
+      ),
+  )
 
   if support_provisioned_throughput:
     parser.add_argument('--provisioned-throughput',
@@ -135,13 +136,11 @@ class Update(base.UpdateCommand):
     return self._Run(
         args,
         support_user_licenses=False,
-        support_provisioned_iops=False,
         support_provisioned_throughput=False)
 
   def _Run(self,
            args,
            support_user_licenses=False,
-           support_provisioned_iops=False,
            support_provisioned_throughput=False):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     client = holder.client.apitools_client
@@ -153,10 +152,15 @@ class Update(base.UpdateCommand):
     disk_info = api_util.GetDiskInfo(disk_ref, client, messages)
     service = disk_info.GetService()
 
-    if (support_provisioned_iops and _ProvisionedIopsIncluded(args)) or (
-        support_provisioned_throughput and _ProvisionedThroughputIncluded(args)
-    ) or _ArchitectureFlagsIncluded(args) or (
-        support_user_licenses and _UserLicensesFlagsIncluded(args)):
+    if (
+        _ProvisionedIopsIncluded(args)
+        or (
+            support_provisioned_throughput
+            and _ProvisionedThroughputIncluded(args)
+        )
+        or _ArchitectureFlagsIncluded(args)
+        or (support_user_licenses and _UserLicensesFlagsIncluded(args))
+    ):
       disk_res = messages.Disk(name=disk_ref.Name())
       disk_update_request = None
       if disk_ref.Collection() == 'compute.disks':
@@ -185,7 +189,7 @@ class Update(base.UpdateCommand):
               args.update_architecture)
         disk_update_request.paths.append('architecture')
 
-      if support_provisioned_iops and _ProvisionedIopsIncluded(args):
+      if _ProvisionedIopsIncluded(args):
         if args.provisioned_iops:
           disk_res.provisionedIops = args.provisioned_iops
           disk_update_request.paths.append('provisionedIops')
@@ -241,7 +245,7 @@ class UpdateBeta(Update):
     messages = cls._GetApiHolder(no_http=True).client.messages
     _CommonArgs(
         messages, cls, parser, support_user_licenses=True,
-        support_provisioned_iops=False, support_provisioned_throughput=False)
+        support_provisioned_throughput=False)
 
   @classmethod
   def _GetApiHolder(cls, no_http=False):
@@ -251,7 +255,6 @@ class UpdateBeta(Update):
     return self._Run(
         args,
         support_user_licenses=True,
-        support_provisioned_iops=False,
         support_provisioned_throughput=False)
 
 
@@ -265,8 +268,12 @@ class UpdateAlpha(UpdateBeta):
   def Args(cls, parser):
     messages = cls._GetApiHolder(no_http=True).client.messages
     _CommonArgs(
-        messages, cls, parser, support_user_licenses=True,
-        support_provisioned_iops=True, support_provisioned_throughput=True)
+        messages,
+        cls,
+        parser,
+        support_user_licenses=True,
+        support_provisioned_throughput=True,
+    )
 
   @classmethod
   def _GetApiHolder(cls, no_http=False):
@@ -276,7 +283,6 @@ class UpdateAlpha(UpdateBeta):
     return self._Run(
         args,
         support_user_licenses=True,
-        support_provisioned_iops=True,
         support_provisioned_throughput=True)
 
 

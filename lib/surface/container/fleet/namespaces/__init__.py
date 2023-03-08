@@ -21,7 +21,6 @@ from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Namespace(base.Group):
   """Fleet namespaces are the fleet equivalent of k8s cluster namespaces.
@@ -39,4 +38,5 @@ class Namespace(base.Group):
     $ {command} rbacrolebindings --help
 
   """
-  pass
+
+  category = base.COMPUTE_CATEGORY

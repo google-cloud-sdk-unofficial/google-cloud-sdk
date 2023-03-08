@@ -21,10 +21,13 @@ from __future__ import unicode_literals
 from googlecloudsdk.api_lib.logging import util
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
+from googlecloudsdk.core import log
 from googlecloudsdk.core.console import console_io
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
+)
 class Create(base.CreateCommand):
   """Create a bucket.
 
@@ -53,6 +56,10 @@ class Create(base.CreateCommand):
 
     $ {command} my-bucket --location=us-central1
       --cmek-kms-key-name=CMEK_KMS_KEY_NAME
+
+  To asynchronously create a bucket enrolled into Log Analytics, run:
+
+    $ {command} my-bucket --location=global --async --enable-analytics
   """
 
   @staticmethod
@@ -102,12 +109,22 @@ class Create(base.CreateCommand):
     parser.add_argument(
         '--cmek-kms-key-name',
         help='A valid `kms_key_name` will enable CMEK for the bucket.')
+    parser.add_argument(
+        '--enable-analytics',
+        action='store_true',
+        default=None,
+        help=(
+            'Whether to opt the bucket into Log Analytics. Once opted in, the'
+            ' bucket cannot be opted out of Log Analytics.'
+        ),
+    )
+    base.ASYNC_FLAG.AddToParser(parser)
     util.AddBucketLocationArg(
         parser, True,
         'Location in which to create the bucket. Once the bucket is created, '
         'the location cannot be changed.')
 
-  def _Run(self, args, is_alpha=False):
+  def _Run(self, args):
     bucket_data = {}
     if args.IsSpecified('retention_days'):
       bucket_data['retentionDays'] = args.retention_days
@@ -118,7 +135,7 @@ class Create(base.CreateCommand):
     if args.IsSpecified('index'):
       bucket_data['indexConfigs'] = args.index
 
-    if is_alpha and args.IsSpecified('enable_analytics'):
+    if args.IsSpecified('enable_analytics'):
       bucket_data['analyticsEnabled'] = args.enable_analytics
 
     if args.IsSpecified('cmek_kms_key_name'):
@@ -129,13 +146,32 @@ class Create(base.CreateCommand):
           kmsKeyName=args.cmek_kms_key_name)
       bucket_data['cmekSettings'] = cmek_settings
 
-    return util.GetClient().projects_locations_buckets.Create(
-        util.GetMessages().LoggingProjectsLocationsBucketsCreateRequest(
-            bucketId=args.BUCKET_ID,
-            parent=util.CreateResourceName(
-                util.GetProjectResource(args.project).RelativeName(),
-                'locations', args.location),
-            logBucket=util.GetMessages().LogBucket(**bucket_data)))
+    if args.async_:
+      result = util.GetClient().projects_locations_buckets.CreateAsync(
+          util.GetMessages().LoggingProjectsLocationsBucketsCreateAsyncRequest(
+              bucketId=args.BUCKET_ID,
+              parent=util.CreateResourceName(
+                  util.GetProjectResource(args.project).RelativeName(),
+                  'locations',
+                  args.location,
+              ),
+              logBucket=util.GetMessages().LogBucket(**bucket_data),
+          )
+      )
+      log.CreatedResource(result.name, 'bucket', is_async=True)
+      return result
+    else:
+      return util.GetClient().projects_locations_buckets.Create(
+          util.GetMessages().LoggingProjectsLocationsBucketsCreateRequest(
+              bucketId=args.BUCKET_ID,
+              parent=util.CreateResourceName(
+                  util.GetProjectResource(args.project).RelativeName(),
+                  'locations',
+                  args.location,
+              ),
+              logBucket=util.GetMessages().LogBucket(**bucket_data),
+          )
+      )
 
   def Run(self, args):
     """This is what gets called when the user runs this command.
@@ -148,22 +184,3 @@ class Create(base.CreateCommand):
       The created bucket.
     """
     return self._Run(args)
-
-
-# pylint: disable=missing-docstring
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class CreateAlpha(Create):
-  __doc__ = Create.__doc__
-
-  @staticmethod
-  def Args(parser):
-    Create.Args(parser)
-    parser.add_argument(
-        '--enable-analytics',
-        action='store_true',
-        default=None,
-        help='Whether to opt the bucket into advanced log analytics. This '
-        'field may only be set at bucket creation and cannot be changed later.')
-
-  def Run(self, args):
-    return self._Run(args, is_alpha=True)

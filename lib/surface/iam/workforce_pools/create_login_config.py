@@ -31,7 +31,6 @@ from googlecloudsdk.core.util import files
 RESOURCE_TYPE = 'login configuration file'
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class CreateLoginConfig(base.CreateCommand):
   """Create a login configuration file to enable sign-in via a web-based authorization flow using Workforce Identity Federation.
 

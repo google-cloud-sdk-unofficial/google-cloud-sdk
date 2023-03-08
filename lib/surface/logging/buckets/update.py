@@ -22,15 +22,14 @@ from googlecloudsdk.api_lib.logging import util
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions as calliope_exceptions
+from googlecloudsdk.core import log
 from googlecloudsdk.core.console import console_io
 
 DETAILED_HELP = {
-    'DESCRIPTION':
-        """
+    'DESCRIPTION': """
         Update the properties of a bucket.
     """,
-    'EXAMPLES':
-        """
+    'EXAMPLES': """
      To update a bucket in your project, run:
 
         $ {command} my-bucket --location=global --description=my-new-description
@@ -54,11 +53,17 @@ DETAILED_HELP = {
      To update a bucket in your project and update existing cmek, run:
 
         $ {command} my-bucket --location=global --cmek-kms-key-name=CMEK_KEY_NAME
+
+     To asynchronously enroll a bucket in your project into Log Analytics, run:
+
+        $ {command} my-bucket --location=global --async --enable-analytics
     """,
 }
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
+)
 class Update(base.UpdateCommand):
   """Update a bucket.
 
@@ -147,8 +152,18 @@ class Update(base.UpdateCommand):
             'For example: INDEX_TYPE_STRING '
             'Supported types are strings and integers. '))
     parser.add_argument(
+        '--enable-analytics',
+        action='store_true',
+        default=None,
+        help=(
+            'Whether to opt the bucket into Log Analytics. Once opted in, the'
+            ' bucket cannot be opted out of Log Analytics.'
+        ),
+    )
+    parser.add_argument(
         '--cmek-kms-key-name',
         help='A valid `kms_key_name` will enable CMEK for the bucket.')
+    base.ASYNC_FLAG.AddToParser(parser)
 
   def GetCurrentBucket(self, args):
     """Returns a bucket specified by the arguments.
@@ -169,7 +184,7 @@ class Update(base.UpdateCommand):
                       'locations', args.location), 'buckets', args.BUCKET_ID)))
     return self._current_bucket
 
-  def _Run(self, args, is_alpha=False):
+  def _Run(self, args):
     bucket_data = {}
     update_mask = []
     parameter_names = ['--retention-days', '--description', '--locked']
@@ -191,9 +206,9 @@ class Update(base.UpdateCommand):
       bucket_data['restrictedFields'] = args.restricted_fields
       update_mask.append('restricted_fields')
 
-    if is_alpha and args.enable_loglink is not None:
-      bucket_data['logLink'] = {'enabled': args.enable_loglink}
-      update_mask.append('log_link.enabled')
+    if args.IsSpecified('enable_analytics'):
+      bucket_data['analyticsEnabled'] = args.enable_analytics
+      update_mask.append('analytics_enabled')
 
     if (args.IsSpecified('clear_indexes') or
         args.IsSpecified('remove_indexes') or args.IsSpecified('add_index') or
@@ -252,14 +267,40 @@ class Update(base.UpdateCommand):
       raise calliope_exceptions.MinimumArgumentException(
           parameter_names, 'Please specify at least one property to update')
 
-    return util.GetClient().projects_locations_buckets.Patch(
-        util.GetMessages().LoggingProjectsLocationsBucketsPatchRequest(
-            name=util.CreateResourceName(
-                util.CreateResourceName(
-                    util.GetProjectResource(args.project).RelativeName(),
-                    'locations', args.location), 'buckets', args.BUCKET_ID),
-            logBucket=util.GetMessages().LogBucket(**bucket_data),
-            updateMask=','.join(update_mask)))
+    if args.async_:
+      result = util.GetClient().projects_locations_buckets.UpdateAsync(
+          util.GetMessages().LoggingProjectsLocationsBucketsUpdateAsyncRequest(
+              name=util.CreateResourceName(
+                  util.CreateResourceName(
+                      util.GetProjectResource(args.project).RelativeName(),
+                      'locations',
+                      args.location,
+                  ),
+                  'buckets',
+                  args.BUCKET_ID,
+              ),
+              logBucket=util.GetMessages().LogBucket(**bucket_data),
+              updateMask=','.join(update_mask),
+          )
+      )
+      log.UpdatedResource(result.name, 'bucket', is_async=True)
+      return result
+    else:
+      return util.GetClient().projects_locations_buckets.Patch(
+          util.GetMessages().LoggingProjectsLocationsBucketsPatchRequest(
+              name=util.CreateResourceName(
+                  util.CreateResourceName(
+                      util.GetProjectResource(args.project).RelativeName(),
+                      'locations',
+                      args.location,
+                  ),
+                  'buckets',
+                  args.BUCKET_ID,
+              ),
+              logBucket=util.GetMessages().LogBucket(**bucket_data),
+              updateMask=','.join(update_mask),
+          )
+      )
 
   def Run(self, args):
     """This is what gets called when the user runs this command.
@@ -275,25 +316,3 @@ class Update(base.UpdateCommand):
 
 
 Update.detailed_help = DETAILED_HELP
-
-
-# pylint: disable=missing-docstring
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class UpdateAlpha(Update):
-  __doc__ = Update.__doc__
-
-  @staticmethod
-  def Args(parser):
-    Update.Args(parser)
-    parser.add_argument(
-        '--enable-loglink',
-        action='store_true',
-        default=None,
-        help="""Enables a linked dataset in BigQuery corresponding to
-        this log bucket. The linked dataset contains authorized views
-        which give a ready-only access to logs in BigQuery. This option can
-        only be enabled in a log bucket with advanced log analytics enabled.
-        Use --no-enable-loglink to disable the linked dataset.""")
-
-  def Run(self, args):
-    return self._Run(args, is_alpha=True)

@@ -24,7 +24,8 @@ from googlecloudsdk.calliope import base
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Policycontroller(base.Group):
   """Manage Policy Controller Feature."""
-  pass
+
+  category = base.COMPUTE_CATEGORY
 
 
 @base.Hidden

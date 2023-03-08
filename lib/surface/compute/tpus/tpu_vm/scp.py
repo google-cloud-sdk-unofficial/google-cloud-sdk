@@ -66,7 +66,9 @@ def AddSCPArgs(parser):
 def SCPRunCmd(env, cmd, *args):
   """Returns a function to run."""
   del args
-  return cmd.Run(env, force_connect=True)
+  return cmd.Run(
+      env,
+      putty_force_connect=properties.VALUES.ssh.putty_force_connect.GetBool())
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)

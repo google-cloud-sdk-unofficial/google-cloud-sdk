@@ -24,18 +24,25 @@ from googlecloudsdk.command_lib.kms import resource_args
 
 DETAILED_HELP = {
     'DESCRIPTION': """
-         TODO
+         *{command}* returns a summary of the resources a key is protecting.
+
+         The summary includes:
+            How many projects contain protected resources
+            How many protected resources there are
+            What types of protected resources
+            The count for each type of protected resource
        """,
     'EXAMPLES': """
-         TODO
+         To view the summary of protected resources for the key `puppy`, run:
+
+           $ {command} --keyname=puppy
        """,
 }
 
 
 class GetProtectedResourcesSummary(base.Command):
   """Gets the protected resources summary."""
-  # TODO(b/255752383) finish writing help text
-  # detailed_help = DETAILED_HELP
+  detailed_help = DETAILED_HELP
 
   @staticmethod
   def Args(parser):

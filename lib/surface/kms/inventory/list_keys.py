@@ -25,18 +25,23 @@ from googlecloudsdk.core import properties
 
 DETAILED_HELP = {
     'DESCRIPTION': """
-         TODO
+         *{command}* lists the keys in the specified project.
        """,
     'EXAMPLES': """
-         TODO
+        To view the keys in the default project, run:
+
+           $ {command}
+
+        To view the keys in project `jellyfish`, run:
+
+           $ {command} --project=jellyfish
        """,
 }
 
 
 class ListKeys(base.ListCommand):
   """Lists the keys in a project."""
-  # TODO(b/255752383) finish writing help text
-  # detailed_help = DETAILED_HELP
+  detailed_help = DETAILED_HELP
 
   @staticmethod
   def Args(parser):

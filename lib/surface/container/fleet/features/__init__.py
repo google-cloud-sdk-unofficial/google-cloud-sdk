@@ -33,3 +33,5 @@ class Features(base.Group):
   commands under dedicated sub-groups that may be more effective for that
   specific Feature.
   """
+
+  category = base.COMPUTE_CATEGORY

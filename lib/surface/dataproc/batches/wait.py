@@ -57,7 +57,7 @@ class Wait(base.Command):
         poller,
         batch_id.RelativeName(),
         max_wait_ms=sys.maxsize,
-        sleep_ms=1000,
+        sleep_ms=5000,
         wait_ceiling_ms=5000,
         exponential_sleep_multiplier=1.3,
         custom_tracker=None,

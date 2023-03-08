@@ -411,7 +411,7 @@ class Ssh(base.Command):
       try:
         poller.Poll(
             ssh_helper.env,
-            force_connect=properties.VALUES.ssh.putty_force_connect.GetBool())
+            putty_force_connect=properties.VALUES.ssh.putty_force_connect.GetBool())
       except retry.WaitException:
         raise ssh_utils.NetworkError()
 
@@ -423,7 +423,7 @@ class Ssh(base.Command):
     try:
       return_code = cmd.Run(
           ssh_helper.env,
-          force_connect=properties.VALUES.ssh.putty_force_connect.GetBool())
+          putty_force_connect=properties.VALUES.ssh.putty_force_connect.GetBool())
     except ssh.CommandError as e:
       if not on_prem:
         log.status.Print(self.createRecommendMessage(args, instance_name,

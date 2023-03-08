@@ -19,17 +19,13 @@ from __future__ import division
 from __future__ import unicode_literals
 
 import os
-import shutil
 import tempfile
 
-from apitools.base.py import exceptions
-from apitools.base.py import transfer
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.artifacts import download_util
+from googlecloudsdk.command_lib.artifacts import file_util
 from googlecloudsdk.command_lib.artifacts import flags
-from googlecloudsdk.command_lib.artifacts import requests
-from googlecloudsdk.command_lib.artifacts import util
 from googlecloudsdk.core import log
-from googlecloudsdk.core.credentials import transports
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
@@ -65,47 +61,43 @@ class Download(base.Command):
         metavar='DESTINATION',
         required=True,
         help="""\
-            The path where you want to download the file.""")
+            The path where you want to download the file.""",
+    )
+    parser.add_argument(
+        '--local-filename',
+        metavar='LOCAL_FILENAME',
+        help=(
+            'If specified, the name of the downloaded file on the local system'
+            ' is set to the value you use for LOCAL_FILENAME. Otherwise the'
+            ' name of the downloaded file is based on the file name in the'
+            ' registry.'
+        ),
+    )
 
   def Run(self, args):
     """Run the file download command."""
     log.status.Print('Downloading the file.')
-    client = requests.GetClientV1beta2()
 
-    # Escape all slashes in the file name so they are not seen as directories.
-    file_escaped = util.EscapeFileNameName(args.CONCEPTS.file.Parse())
-    file_path = os.path.join(args.destination, file_escaped.filesId)
-
-    request = requests.GetMessagesV1beta2(
-    ).ArtifactregistryMediaDownloadRequest(name=file_escaped.RelativeName())
-
-    # Only move the file to the user specified path if overwrites are allowed.
-    if (os.path.exists(file_path) and not args.allow_overwrite):
-      raise exceptions.InvalidUserInputError(
-          'File %s exists and overwrite not specified.' % file_path
-      )
-    # Allow overwrites in /tmp
-    download_object = transfer.Download.FromFile(
-        os.path.join(tempfile.gettempdir(), file_escaped.filesId), True
-        )
-    download_object.bytes_http = transports.GetApitoolsTransport(
-        response_encoding=None
+    # Escape slashes in the filesId.
+    file_escaped = file_util.EscapeFileName(args.CONCEPTS.file.Parse())
+    filename = (
+        args.local_filename
+        if args.local_filename
+        else self.os_friendly_filename(file_escaped.filesId)
     )
+    tmp_path = os.path.join(tempfile.gettempdir(), filename)
+    final_path = os.path.join(args.destination, filename)
+    download_util.Download(
+        tmp_path, final_path, file_escaped.RelativeName(), args.allow_overwrite
+    )
+    log.status.Print('Successfully downloaded the file to ' + args.destination)
 
-    try:
-      client.media.Download(request, download=download_object)
-    except exceptions.HttpError as err:
-      # If an exception was raised, we do not move the file.
-      raise err
-    finally:
-      download_object.stream.close()
-
-    try:
-      shutil.move(
-          os.path.join(tempfile.gettempdir(), file_escaped.filesId), file_path
-      )
-    except OSError as err:
-      raise err
-
-    log.status.Print(
-        'Successfully downloaded the file to ' + args.destination)
+  def os_friendly_filename(self, file_id):
+    filename = file_id.replace(':', '%3A')
+    filename = filename.replace('\\', '%5C')
+    filename = filename.replace('*', '%3F')
+    filename = filename.replace('?', '%22')
+    filename = filename.replace('<', '%3C')
+    filename = filename.replace('>', '%2E')
+    filename = filename.replace('|', '%7C')
+    return filename

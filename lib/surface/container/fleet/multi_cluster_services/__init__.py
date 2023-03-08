@@ -26,4 +26,5 @@ from googlecloudsdk.calliope import base as calliope_base
                              calliope_base.ReleaseTrack.GA)
 class MultiClusterServiceDiscovery(calliope_base.Group):
   """Manage Multi-cluster Services Feature."""
-  pass
+
+  category = calliope_base.COMPUTE_CATEGORY

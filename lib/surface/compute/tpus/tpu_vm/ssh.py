@@ -116,7 +116,7 @@ def SSHRunCmd(env, cmd, output_file_writer):
   """Returns a function to run."""
   return cmd.Run(
       env,
-      force_connect=True,
+      putty_force_connect=properties.VALUES.ssh.putty_force_connect.GetBool(),
       explicit_output_file=output_file_writer,
       explicit_error_file=output_file_writer)
 

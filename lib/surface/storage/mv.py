@@ -42,7 +42,7 @@ class Mv(base.Command):
       under gs://my_bucket/oldprefix to be under gs://my_bucket/newprefix,
       otherwise preserving the naming structure:
 
-        $ {command}  mv gs://my_bucket/oldprefix gs://my_bucket/newprefix
+        $ {command} gs://my_bucket/oldprefix gs://my_bucket/newprefix
 
       Note that when using mv to rename groups of objects with a common prefix,
       you cannot specify the source URL using wildcards; you must spell out the

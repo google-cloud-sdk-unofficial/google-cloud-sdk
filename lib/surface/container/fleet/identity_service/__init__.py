@@ -26,3 +26,5 @@ from googlecloudsdk.calliope import base as calliope_base
                              calliope_base.ReleaseTrack.GA)
 class Identityservice(calliope_base.Group):
   """Manage Identity Service Feature."""
+
+  category = calliope_base.COMPUTE_CATEGORY

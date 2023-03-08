@@ -40,6 +40,7 @@ class Update(base.UpdateCommand):
   _support_geo = False
   _support_nti = False
   _support_ips = False
+  _support_ips_with_tls = False
 
   @classmethod
   def Args(cls, parser):
@@ -73,6 +74,8 @@ class Update(base.UpdateCommand):
       flags.AddDestThreatIntelligence(parser)
     if cls._support_ips:
       flags.AddSecurityProfileGroup(parser)
+      if cls._support_ips_with_tls:
+        flags.AddTlsInspect(parser)
 
   def Run(self, args):
     clearable_arg_name_to_field_name = {
@@ -103,6 +106,7 @@ class Update(base.UpdateCommand):
     layer4_config_list = []
     target_service_accounts = []
     security_profile_group = None
+    tls_inspect = None
     enable_logging = False
     disabled = False
     should_setup_match = False
@@ -169,8 +173,11 @@ class Update(base.UpdateCommand):
     if self._support_nti and args.IsSpecified('dest_threat_intelligence'):
       matcher.destThreatIntelligences = args.dest_threat_intelligence
       should_setup_match = True
-    if self._support_ips and args.IsSpecified('security_profile_group'):
-      security_profile_group = args.security_profile_group
+    if self._support_ips:
+      if args.IsSpecified('security_profile_group'):
+        security_profile_group = args.security_profile_group
+      if self._support_ips_with_tls and args.IsSpecified('tls_inspect'):
+        tls_inspect = args.tls_inspect
     # If not need to construct a new matcher.
     if not should_setup_match:
       matcher = None
@@ -186,17 +193,33 @@ class Update(base.UpdateCommand):
             .EGRESS)
 
     if self._support_ips:
-      firewall_policy_rule = holder.client.messages.FirewallPolicyRule(
-          priority=new_priority,
-          action=args.action,
-          match=matcher,
-          direction=traffic_direct,
-          targetServiceAccounts=target_service_accounts,
-          description=args.description,
-          enableLogging=enable_logging,
-          disabled=disabled,
-          targetSecureTags=target_secure_tags,
-          securityProfileGroup=security_profile_group)
+      if self._support_ips_with_tls:
+        firewall_policy_rule = holder.client.messages.FirewallPolicyRule(
+            priority=new_priority,
+            action=args.action,
+            match=matcher,
+            direction=traffic_direct,
+            targetServiceAccounts=target_service_accounts,
+            description=args.description,
+            enableLogging=enable_logging,
+            disabled=disabled,
+            targetSecureTags=target_secure_tags,
+            securityProfileGroup=security_profile_group,
+            tlsInspect=tls_inspect,
+        )
+      else:
+        firewall_policy_rule = holder.client.messages.FirewallPolicyRule(
+            priority=new_priority,
+            action=args.action,
+            match=matcher,
+            direction=traffic_direct,
+            targetServiceAccounts=target_service_accounts,
+            description=args.description,
+            enableLogging=enable_logging,
+            disabled=disabled,
+            targetSecureTags=target_secure_tags,
+            securityProfileGroup=security_profile_group,
+        )
     else:
       firewall_policy_rule = holder.client.messages.FirewallPolicyRule(
           priority=new_priority,
@@ -240,6 +263,7 @@ class UpdateAlpha(Update):
   _support_geo = True
   _support_nti = True
   _support_ips = True
+  _support_ips_with_tls = True
 
 
 Update.detailed_help = {
