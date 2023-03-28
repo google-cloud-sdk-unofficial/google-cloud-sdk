@@ -21,6 +21,8 @@ from __future__ import unicode_literals
 from googlecloudsdk.api_lib.container.gkeonprem import operations
 from googlecloudsdk.api_lib.container.gkeonprem import vmware_clusters as apis
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.container.gkeonprem import constants
+from googlecloudsdk.command_lib.container.vmware import constants as vmware_constants
 from googlecloudsdk.command_lib.container.vmware import flags as vmware_flags
 
 _EXAMPLES = """
@@ -39,16 +41,24 @@ class Enroll(base.Command):
 
   @staticmethod
   def Args(parser):
+    parser.display_info.AddFormat(vmware_constants.VMWARE_CLUSTERS_FORMAT)
     vmware_flags.AddClusterResourceArg(parser, verb='to enroll')
     vmware_flags.AddAdminClusterMembershipResourceArg(parser, positional=False)
     base.ASYNC_FLAG.AddToParser(parser)
 
   def Run(self, args):
     cluster_client = apis.ClustersClient()
+    cluster_ref = args.CONCEPTS.cluster.Parse()
     operation = cluster_client.Enroll(args)
 
+    if args.async_ and not args.IsSpecified('format'):
+      args.format = constants.OPERATIONS_FORMAT
+
     if args.async_:
+      operations.log_enroll(cluster_ref, args.async_)
       return operation
     else:
       operation_client = operations.OperationsClient()
-      return operation_client.Wait(operation)
+      operation_response = operation_client.Wait(operation)
+      operations.log_enroll(cluster_ref, args.async_)
+      return operation_response

@@ -342,7 +342,9 @@ def ParseCreateOptionsBase(args, is_autopilot, get_default, location,
       enable_cost_allocation=get_default('enable_cost_allocation'),
       enable_multi_networking=get_default('enable_multi_networking'),
       placement_type=get_default('placement_type'),
-      enable_security_posture=get_default('enable_security_posture'))
+      enable_security_posture=get_default('enable_security_posture'),
+      network_performance_config=get_default(
+          'network_performance_configs'))
 
 
 GA = 'ga'
@@ -587,6 +589,8 @@ flags_to_add = {
             flags.AddEnableMultiNetworkingFlag,
         'enableSecurityPosture':
             flags.AddSecurityPostureFlag,
+        'clusterNetworkPerformanceConfig':
+            flags.AddClusterNetworkPerformanceConfigFlags
     },
     BETA: {
         'accelerator': (lambda p: AddAcceleratorFlag(p, True, True, True)),
@@ -802,6 +806,8 @@ flags_to_add = {
             flags.AddEnableMultiNetworkingFlag,
         'enableSecurityPosture':
             flags.AddSecurityPostureFlag,
+        'clusterNetworkPerformanceConfig':
+            flags.AddClusterNetworkPerformanceConfigFlags
     },
     ALPHA: {
         'accelerator': (lambda p: AddAcceleratorFlag(p, True, True, True)),
@@ -1026,6 +1032,8 @@ flags_to_add = {
             flags.AddEnableMultiNetworkingFlag,
         'enableSecurityPosture':
             flags.AddSecurityPostureFlag,
+        'clusterNetworkPerformanceConfig':
+            flags.AddClusterNetworkPerformanceConfigFlags
     },
 }
 

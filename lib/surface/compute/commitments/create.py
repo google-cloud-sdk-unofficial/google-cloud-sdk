@@ -25,6 +25,7 @@ from googlecloudsdk.api_lib.compute import request_helper
 from googlecloudsdk.api_lib.compute import utils
 from googlecloudsdk.api_lib.util import apis
 from googlecloudsdk.calliope import base
+from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.compute import flags as compute_flags
 from googlecloudsdk.command_lib.compute.commitments import flags
 from googlecloudsdk.command_lib.compute.commitments import reservation_helper
@@ -68,16 +69,31 @@ class Create(base.Command):
 
   def _MakeCreateRequest(
       self, args, messages, project, region, commitment_ref, holder):
+
+    if (
+        args.split_source_commitment is not None
+        and args.merge_source_commitments is not None
+    ):
+      raise exceptions.ConflictingArgumentsException(
+          "It's not possible to merge and split in one request"
+      )
+
     commitment_type_flag = flags.GetTypeMapperFlag(messages)
     commitment_type = commitment_type_flag.GetEnumForChoice(args.type)
     commitment = messages.Commitment(
         reservations=reservation_helper.MakeReservations(
-            args, messages, holder),
+            args, messages, holder
+        ),
         name=commitment_ref.Name(),
         plan=flags.TranslatePlanArg(messages, args.plan),
         resources=flags.TranslateResourcesArgGroup(messages, args),
         type=commitment_type,
-        autoRenew=flags.TranslateAutoRenewArgForCreate(args))
+        autoRenew=flags.TranslateAutoRenewArgForCreate(args),
+        splitSourceCommitment=args.split_source_commitment,
+        mergeSourceCommitments=flags.TranslateMergeArg(
+            args.merge_source_commitments
+        ),
+    )
     return messages.ComputeRegionCommitmentsInsertRequest(
         commitment=commitment,
         project=project,
@@ -152,7 +168,9 @@ class CreateAlpha(CreateBeta):
 
     if (args.split_source_commitment is not None and
         args.merge_source_commitments is not None):
-      raise Exception('It is not possible to merge and split in one request')
+      raise exceptions.ConflictingArgumentsException(
+          "It's not possible to merge and split in one request"
+      )
 
     commitment_type_flag = flags.GetTypeMapperFlag(messages)
     commitment_type = commitment_type_flag.GetEnumForChoice(args.type)

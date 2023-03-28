@@ -13,10 +13,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Command to submit a specified Batch job."""
-
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
+
 
 from apitools.base.py import encoding
 from googlecloudsdk.api_lib.batch import jobs
@@ -29,6 +29,213 @@ from googlecloudsdk.core import log
 from googlecloudsdk.core.util import files
 
 
+def _CommonArgs(parser):
+  """Register flags for this command.
+
+  Args:
+    parser: An argparse.ArgumentParser-like object. It is mocked out in order to
+      capture some information, but behaves like an ArgumentParser.
+
+  Returns:
+    network_group flag groups.
+  """
+  resource_args.AddJobResourceArgs(parser)
+  network_group = parser.add_group()
+  network_group.add_argument(
+      '--network',
+      required=True,
+      type=str,
+      help="""The URL for the network resource.
+        Must specify subnetwork as well if network is specified""",
+  )
+  network_group.add_argument(
+      '--subnetwork',
+      required=True,
+      type=str,
+      help="""The URL for the subnetwork resource.
+        Must specify network as well if subnetwork is specified""",
+  )
+
+  task_spec_group = parser.add_group(required=True)
+  task_spec_group.add_argument(
+      '--config',
+      type=arg_parsers.FileContents(),
+      help="""The file path of the JSON job config JSON. It also supports direct
+        input from stdin with '-' or HereDoc (in shells with HereDoc support like
+        Bash) with '- <<DELIMITER'. """,
+  )
+
+  runnable_group = task_spec_group.add_group(
+      mutex=True,
+      help="""Either specify the config file for the job or
+        the first runnable in the task spec. Specify either a script file or
+        container arguments for the first runnable in the task spec.""",
+  )
+
+  script_group = runnable_group.add_group(
+      mutex=True,
+      help="""Either specify a path to a script file to run or provide
+        inline text to execute directly.""",
+  )
+  script_group.add_argument(
+      '--script-file-path',
+      help="""Path to script file to run as first runnable in task spec.
+        File path should be a valid path on the instance volume.""",
+  )
+  script_group.add_argument(
+      '--script-text',
+      type=str,
+      help="""Text to run as first runnable in task spec.""",
+  )
+
+  container_group = runnable_group.add_group(
+      help="""Options to specify the container arguments for the first
+        runnable in the task spec."""
+  )
+  container_group.add_argument(
+      '--container-image-uri',
+      help="""The URI to pull the container image from.""",
+  )
+  container_group.add_argument(
+      '--container-entrypoint',
+      help="""Overrides the `ENTRYPOINT` specified in the container.""",
+  )
+  container_group.add_argument(
+      '--container-commands-file',
+      help="""Overrides the `CMD` specified in the container. If there is an
+      ENTRYPOINT (either in the container image or with the entrypoint field
+      below) then commands are appended as arguments to the ENTRYPOINT.""",
+  )
+
+  parser.add_argument(
+      '--priority',
+      type=arg_parsers.BoundedInt(0, 99),
+      help='Job priority [0-99] 0 is the lowest priority.',
+  )
+  parser.add_argument(
+      '--provisioning-model',
+      choices={
+          'STANDARD': 'The STANDARD VM provisioning model',
+          'SPOT': """The SPOT VM provisioning model. Ideal for fault-tolerant
+            workloads that can withstand preemption.""",
+      },
+      type=arg_utils.ChoiceToEnumName,
+      help='Specify the allowed provisioning model for the compute instances',
+  )
+  parser.add_argument(
+      '--machine-type',
+      type=str,
+      help="""Specify the Compute Engine machine type, for
+      example, e2-standard-4. Currently only one machine type is supported.""",
+  )
+
+  return network_group
+
+
+def _BuildJobMsg(args, job_msg, batch_msgs):
+  """Build the job API message from the args.
+
+  Args:
+    args: the args from the parser.
+    job_msg: the output job message.
+    batch_msgs: the related version of the batch message.
+  """
+
+  if job_msg.taskGroups is None:
+    job_msg.taskGroups = []
+  if not job_msg.taskGroups:
+    job_msg.taskGroups.insert(
+        0, batch_msgs.TaskGroup(taskSpec=batch_msgs.TaskSpec(runnables=[]))
+    )
+  if args.script_file_path:
+    job_msg.taskGroups[0].taskSpec.runnables.insert(
+        0,
+        batch_msgs.Runnable(
+            script=batch_msgs.Script(path=args.script_file_path)
+        ),
+    )
+  if args.script_text:
+    job_msg.taskGroups[0].taskSpec.runnables.insert(
+        0, batch_msgs.Runnable(script=batch_msgs.Script(text=args.script_text))
+    )
+  if (
+      args.container_commands_file
+      or args.container_image_uri
+      or args.container_entrypoint
+  ):
+    container_cmds = []
+    if args.container_commands_file:
+      container_cmds = files.ReadFileContents(
+          args.container_commands_file
+      ).splitlines()
+    job_msg.taskGroups[0].taskSpec.runnables.insert(
+        0,
+        batch_msgs.Runnable(
+            container=batch_msgs.Container(
+                entrypoint=args.container_entrypoint,
+                imageUri=args.container_image_uri,
+                commands=container_cmds,
+            )
+        ),
+    )
+
+  if args.priority:
+    job_msg.priority = args.priority
+
+  if job_msg.allocationPolicy is None:
+    job_msg.allocationPolicy = batch_msgs.AllocationPolicy()
+
+  if args.machine_type:
+    if job_msg.allocationPolicy.instances is None:
+      job_msg.allocationPolicy.instances = []
+    if not job_msg.allocationPolicy.instances:
+      job_msg.allocationPolicy.instances.insert(
+          0, batch_msgs.InstancePolicyOrTemplate()
+      )
+    if job_msg.allocationPolicy.instances[0].policy is None:
+      job_msg.allocationPolicy.instances[0].policy = batch_msgs.InstancePolicy()
+    job_msg.allocationPolicy.instances[0].policy.machineType = args.machine_type
+
+  if args.network and args.subnetwork:
+    if job_msg.allocationPolicy.network is None:
+      job_msg.allocationPolicy.network = batch_msgs.NetworkPolicy(
+          networkInterfaces=[]
+      )
+    job_msg.allocationPolicy.network.networkInterfaces.insert(
+        0,
+        batch_msgs.NetworkInterface(
+            network=args.network,
+            subnetwork=args.subnetwork,
+            noExternalIpAddress=args.no_external_ip_address,
+        ),
+    )
+
+  if args.provisioning_model:
+    if job_msg.allocationPolicy.instances is None:
+      job_msg.allocationPolicy.instances = []
+    if not job_msg.allocationPolicy.instances:
+      job_msg.allocationPolicy.instances.insert(
+          0, batch_msgs.InstancePolicyOrTemplate()
+      )
+    if job_msg.allocationPolicy.instances[0].policy is None:
+      job_msg.allocationPolicy.instances[0].policy = batch_msgs.InstancePolicy()
+    job_msg.allocationPolicy.instances[0].policy.provisioningModel = (
+        arg_utils.ChoiceToEnum(
+            args.provisioning_model,
+            batch_msgs.InstancePolicy.ProvisioningModelValueValuesEnum,
+        )
+    )
+
+
+def _CreateJobMessage(batch_msgs, config):
+  """Construct the job proto with the config input."""
+  try:
+    return encoding.JsonToMessage(batch_msgs.Job, config)
+  except Exception as e:
+    raise exceptions.Error('Unable to parse config file: {}'.format(e))
+
+
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Submit(base.Command):
   """Submit a Batch job.
 
@@ -65,83 +272,17 @@ class Submit(base.Command):
 
   @staticmethod
   def Args(parser):
-    resource_args.AddJobResourceArgs(parser)
-    network_group = parser.add_group()
+    network_group = _CommonArgs(parser)
     network_group.add_argument(
-        '--network',
-        required=True,
-        type=str,
-        help="""The URL for the network resource.
-        Must specify subnetwork as well if network is specified""")
-    network_group.add_argument(
-        '--subnetwork',
-        required=True,
-        type=str,
-        help="""The URL for the subnetwork resource.
-        Must specify network as well if subnetwork is specified""")
-
-    task_spec_group = parser.add_group(required=True)
-    task_spec_group.add_argument(
-        '--config',
-        type=arg_parsers.FileContents(),
-        help="""The file path of the JSON job config JSON. It also supports direct
-        input from stdin with '-' or HereDoc (in shells with HereDoc support like
-        Bash) with '- <<DELIMITER'. """)
-    runnable_group = task_spec_group.add_group(
-        mutex=True,
-        help="""Either specify the config file for the job or
-        the first runnable in the task spec. Specify either a script file or
-        container arguments for the first runnable in the task spec.""")
-
-    script_group = runnable_group.add_group(
-        mutex=True,
-        help="""Either specify a path to a script file to run or provide
-        inline text to execute directly.""")
-    script_group.add_argument(
-        '--script-file-path',
-        help="""Path to script file to run as first runnable in task spec.
-        File path should be a valid path on the instance volume.""")
-    script_group.add_argument(
-        '--script-text',
-        type=str,
-        help="""Text to run as first runnable in task spec.""")
-
-    container_group = runnable_group.add_group(
-        help="""Options to specify the container arguments for the first
-        runnable in the task spec.""")
-    container_group.add_argument(
-        '--container-image-uri',
-        help="""The URI to pull the container image from.""")
-    container_group.add_argument(
-        '--container-entrypoint',
-        help="""Overrides the `ENTRYPOINT` specified in the container.""")
-    container_group.add_argument(
-        '--container-commands-file',
-        help="""Overrides the `CMD` specified in the container. If there is an
-      ENTRYPOINT (either in the container image or with the entrypoint field
-      below) then commands are appended as arguments to the ENTRYPOINT.""")
-
-    parser.add_argument(
-        '--priority',
-        type=arg_parsers.BoundedInt(0, 99),
-        help='Job priority [0-99] 0 is the lowest priority.')
-
-    parser.add_argument(
-        '--provisioning-model',
-        choices={
-            'STANDARD': 'The STANDARD VM provisioning model',
-            'SPOT': """The SPOT VM provisioning model. Ideal for fault-tolerant
-            workloads that can withstand preemption."""
-        },
-        type=arg_utils.ChoiceToEnumName,
-        help=(
-            'Specify the allowed provisioning model for the compute instances'))
-
-    parser.add_argument(
-        '--machine-type',
-        type=str,
-        help="""Specify the Compute Engine machine type, for
-      example, e2-standard-4. Currently only one machine type is supported.""")
+        '--no-external-ip-address',
+        action='store_true',
+        default=False,
+        hidden=True,
+        help="""Required if no external public IP address
+        is attached to the VM. If no external public IP address,
+        additional configuration is required to allow the VM
+        to access Google Services.""",
+    )
 
   def Run(self, args):
     job_ref = args.CONCEPTS.job.Parse()
@@ -155,86 +296,97 @@ class Submit(base.Command):
     job_msg = batch_msgs.Job()
 
     if args.config:
-      job_msg = self._CreateJobMessage(batch_msgs, args.config)
+      job_msg = _CreateJobMessage(batch_msgs, args.config)
 
-    if job_msg.taskGroups is None:
-      job_msg.taskGroups = []
-    if not job_msg.taskGroups:
-      job_msg.taskGroups.insert(
-          0, batch_msgs.TaskGroup(taskSpec=batch_msgs.TaskSpec(runnables=[])))
-    if args.script_file_path:
-      job_msg.taskGroups[0].taskSpec.runnables.insert(
-          0,
-          batch_msgs.Runnable(
-              script=batch_msgs.Script(path=args.script_file_path)))
-    if args.script_text:
-      job_msg.taskGroups[0].taskSpec.runnables.insert(
-          0,
-          batch_msgs.Runnable(script=batch_msgs.Script(text=args.script_text)))
-    if args.container_commands_file or args.container_image_uri or args.container_entrypoint:
-      container_cmds = []
-      if args.container_commands_file:
-        container_cmds = files.ReadFileContents(
-            args.container_commands_file).splitlines()
-      job_msg.taskGroups[0].taskSpec.runnables.insert(
-          0,
-          batch_msgs.Runnable(
-              container=batch_msgs.Container(
-                  entrypoint=args.container_entrypoint,
-                  imageUri=args.container_image_uri,
-                  commands=container_cmds)))
-
-    if args.priority:
-      job_msg.priority = args.priority
-
-    if job_msg.allocationPolicy is None:
-      job_msg.allocationPolicy = batch_msgs.AllocationPolicy()
-
-    if args.machine_type:
-      if job_msg.allocationPolicy.instances is None:
-        job_msg.allocationPolicy.instances = []
-      if not job_msg.allocationPolicy.instances:
-        job_msg.allocationPolicy.instances.insert(
-            0,
-            batch_msgs.InstancePolicyOrTemplate())
-      if job_msg.allocationPolicy.instances[0].policy is None:
-        job_msg.allocationPolicy.instances[
-            0].policy = batch_msgs.InstancePolicy()
-      job_msg.allocationPolicy.instances[
-          0].policy.machineType = args.machine_type
-
-    if args.network and args.subnetwork:
-      if job_msg.allocationPolicy.network is None:
-        job_msg.allocationPolicy.network = batch_msgs.NetworkPolicy(
-            networkInterfaces=[])
-      job_msg.allocationPolicy.network.networkInterfaces.insert(
-          0,
-          batch_msgs.NetworkInterface(
-              network=args.network, subnetwork=args.subnetwork))
-
-    if args.provisioning_model:
-      if job_msg.allocationPolicy.instances is None:
-        job_msg.allocationPolicy.instances = []
-      if not job_msg.allocationPolicy.instances:
-        job_msg.allocationPolicy.instances.insert(
-            0,
-            batch_msgs.InstancePolicyOrTemplate())
-      if job_msg.allocationPolicy.instances[0].policy is None:
-        job_msg.allocationPolicy.instances[
-            0].policy = batch_msgs.InstancePolicy()
-      job_msg.allocationPolicy.instances[
-          0].policy.provisioningModel = arg_utils.ChoiceToEnum(
-              args.provisioning_model,
-              batch_msgs.InstancePolicy.ProvisioningModelValueValuesEnum)
+    _BuildJobMsg(args, job_msg, batch_msgs)
 
     resp = batch_client.Create(job_id, location_ref, job_msg)
     log.status.Print(
-        'Job {jobName} was successfully submitted.'.format(jobName=resp.uid))
+        'Job {jobName} was successfully submitted.'.format(jobName=resp.uid)
+    )
     return resp
 
-  def _CreateJobMessage(self, batch_msgs, config):
-    """Construct the job proto with the config input."""
-    try:
-      return encoding.JsonToMessage(batch_msgs.Job, config)
-    except Exception as e:
-      raise exceptions.Error('Unable to parse config file: {}'.format(e))
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class SubmitBeta(Submit):
+  """Submit a Batch job.
+
+  This command can fail for the following reasons:
+  * The active account does not have permission to create the Batch job.
+
+  ## EXAMPLES
+
+  To submit the job with config.json sample config file and name
+  `projects/foo/locations/us-central1/jobs/bar`, run:
+
+    $ {command} projects/foo/locations/us-central1/jobs/bar --config=config.json
+
+  To submit the job through stdin with json job config and name
+  `projects/foo/locations/us-central1/jobs/bar`, run:
+
+    $ {command} projects/foo/locations/us-central1/jobs/bar --config=-
+
+      then input json job config via stdin
+      {
+        json job config
+      }
+
+  To submit the job through HereDoc with json job config and name
+  `projects/foo/locations/us-central1/jobs/bar`, run:
+
+    $ {command} projects/foo/locations/us-central1/jobs/bar --config=- << EOF
+
+      {
+        json job config
+      }
+      EOF
+  """
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class SubmitAlpha(SubmitBeta):
+  """Submit a Batch job.
+
+  This command can fail for the following reasons:
+  * The active account does not have permission to create the Batch job.
+
+  ## EXAMPLES
+
+  To submit the job with config.json sample config file and name
+  `projects/foo/locations/us-central1/jobs/bar`, run:
+
+    $ {command} projects/foo/locations/us-central1/jobs/bar --config=config.json
+
+  To submit the job through stdin with json job config and name
+  `projects/foo/locations/us-central1/jobs/bar`, run:
+
+    $ {command} projects/foo/locations/us-central1/jobs/bar --config=-
+
+      then input json job config via stdin
+      {
+        json job config
+      }
+
+  To submit the job through HereDoc with json job config and name
+  `projects/foo/locations/us-central1/jobs/bar`, run:
+
+    $ {command} projects/foo/locations/us-central1/jobs/bar --config=- << EOF
+
+      {
+        json job config
+      }
+      EOF
+  """
+
+  @staticmethod
+  def Args(parser):
+    network_group = _CommonArgs(parser)
+    network_group.add_argument(
+        '--no-external-ip-address',
+        action='store_true',
+        default=False,
+        help="""Required if no external public IP address
+        is attached to the VM. If no external public IP address,
+        additional configuration is required to allow the VM
+        to access Google Services.""",
+    )

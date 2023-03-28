@@ -27,7 +27,9 @@ from googlecloudsdk.command_lib.compute.sole_tenancy.node_groups import flags
 from googlecloudsdk.core import log
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
+)
 class SimulateMaintenanceEvent(base.UpdateCommand):
   """Simulate maintenance of a Compute Engine node group."""
 

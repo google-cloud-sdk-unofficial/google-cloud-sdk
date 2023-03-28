@@ -22,6 +22,8 @@ from googlecloudsdk.api_lib.container.gkeonprem import bare_metal_clusters as ap
 from googlecloudsdk.api_lib.container.gkeonprem import operations
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.container.bare_metal import cluster_flags as flags
+from googlecloudsdk.command_lib.container.bare_metal import constants as bare_metal_constants
+from googlecloudsdk.command_lib.container.gkeonprem import constants
 
 _EXAMPLES = """
 To unenroll a cluster named `my-cluster` managed in location `us-west1`,
@@ -41,6 +43,9 @@ class Unenroll(base.Command):
   @staticmethod
   def Args(parser):
     """Registers flags for this command."""
+    parser.display_info.AddFormat(
+        bare_metal_constants.BARE_METAL_CLUSTERS_FORMAT
+    )
     flags.AddClusterResourceArg(parser, verb='to unenroll')
     flags.AddForceCluster(parser)
     flags.AddAllowMissingCluster(parser)
@@ -49,10 +54,17 @@ class Unenroll(base.Command):
   def Run(self, args):
     """Runs the unenroll command."""
     cluster_client = apis.ClustersClient()
+    cluster_ref = args.CONCEPTS.cluster.Parse()
     operation = cluster_client.Unenroll(args)
 
+    if args.async_ and not args.IsSpecified('format'):
+      args.format = constants.OPERATIONS_FORMAT
+
     if args.async_:
+      operations.log_unenroll(cluster_ref, args.async_)
       return operation
     else:
       operation_client = operations.OperationsClient()
-      return operation_client.Wait(operation)
+      operation_response = operation_client.Wait(operation)
+      operations.log_unenroll(cluster_ref, args.async_)
+      return operation_response

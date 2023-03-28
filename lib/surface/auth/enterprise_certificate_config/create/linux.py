@@ -54,7 +54,6 @@ class CreateLinuxConfig(base.CreateCommand):
     parser.add_argument(
         '--slot',
         help='The PKCS #11 slot containing the target credentials.',
-        type=int,
         required=True,
     )
 

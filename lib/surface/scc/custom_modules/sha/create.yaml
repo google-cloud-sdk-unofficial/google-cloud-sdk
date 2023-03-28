@@ -86,3 +86,6 @@
       required: true
       help_text: |
         Path to a yaml file containing the custom configuration for the Security Health Analytics custom module.
+
+  output:
+    format: yaml

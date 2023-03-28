@@ -926,6 +926,7 @@ class Create(base.CreateCommand):
   _support_provisioned_throughput = False
   _support_network_attachments = False
   _support_replica_zones = False
+  _support_local_ssd_size = True
 
   @classmethod
   def Args(cls, parser):
@@ -943,6 +944,7 @@ class Create(base.CreateCommand):
         support_provisioned_throughput=cls._support_provisioned_throughput,
         support_network_attachments=cls._support_network_attachments,
         support_replica_zones=cls._support_replica_zones,
+        support_local_ssd_size=cls._support_local_ssd_size
     )
     instances_flags.AddMinCpuPlatformArgs(parser, base.ReleaseTrack.GA)
     instances_flags.AddPrivateIpv6GoogleAccessArgForTemplate(
@@ -1005,13 +1007,14 @@ class CreateBeta(Create):
   _support_network_attachments = False
   _support_replica_zones = False
   _support_local_ssd_recovery_timeout = False
+  _support_local_ssd_size = True
 
   @classmethod
   def Args(cls, parser):
     _CommonArgs(
         parser,
         release_track=base.ReleaseTrack.BETA,
-        support_local_ssd_size=False,
+        support_local_ssd_size=cls._support_local_ssd_size,
         support_source_instance=cls._support_source_instance,
         support_kms=cls._support_kms,
         support_multi_writer=cls._support_multi_writer,
@@ -1089,13 +1092,14 @@ class CreateAlpha(Create):
   _support_replica_zones = True
   _support_local_ssd_recovery_timeout = True
   _support_network_queue_count = True
+  _support_local_ssd_size = True
 
   @classmethod
   def Args(cls, parser):
     _CommonArgs(
         parser,
         release_track=base.ReleaseTrack.ALPHA,
-        support_local_ssd_size=True,
+        support_local_ssd_size=cls._support_local_ssd_size,
         support_source_instance=cls._support_source_instance,
         support_kms=cls._support_kms,
         support_multi_writer=cls._support_multi_writer,

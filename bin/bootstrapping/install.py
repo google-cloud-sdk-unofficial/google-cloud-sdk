@@ -266,6 +266,8 @@ def MaybeInstallPythonOnMac():
 
 
 def main():
+  properties.VALUES.context_aware.use_client_certificate.Set(False)
+
   pargs = ParseArgs()
   if pargs.screen_reader is not None:
     properties.PersistProperty(properties.VALUES.accessibility.screen_reader,

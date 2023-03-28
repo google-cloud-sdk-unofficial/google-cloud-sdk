@@ -22,7 +22,10 @@ from googlecloudsdk.api_lib.container.gkeonprem import bare_metal_admin_clusters
 from googlecloudsdk.api_lib.container.gkeonprem import operations
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.container.bare_metal import admin_cluster_flags as cluster_flags
+from googlecloudsdk.command_lib.container.bare_metal import constants as bare_metal_constants
+from googlecloudsdk.command_lib.container.gkeonprem import constants
 from googlecloudsdk.command_lib.container.gkeonprem import flags
+
 
 _EXAMPLES = """
 To enroll a cluster named ``my-cluster'' managed in location ``us-west1''
@@ -40,16 +43,26 @@ class Enroll(base.Command):
 
   @staticmethod
   def Args(parser):
+    parser.display_info.AddFormat(
+        bare_metal_constants.BARE_METAL_ADMIN_CLUSTERS_FORMAT
+    )
     flags.AddAdminClusterMembershipResourceArg(parser, positional=False)
     cluster_flags.AddAdminClusterResourceArg(parser, 'to enroll')
     base.ASYNC_FLAG.AddToParser(parser)
 
   def Run(self, args):
     cluster_client = apis.AdminClustersClient()
+    cluster_ref = args.CONCEPTS.admin_cluster.Parse()
     operation = cluster_client.Enroll(args)
 
+    if args.async_ and not args.IsSpecified('format'):
+      args.format = constants.OPERATIONS_FORMAT
+
     if args.async_:
+      operations.log_enroll(cluster_ref, args.async_)
       return operation
     else:
       operation_client = operations.OperationsClient()
-      return operation_client.Wait(operation)
+      operation_response = operation_client.Wait(operation)
+      operations.log_enroll(cluster_ref, args.async_)
+      return operation_response

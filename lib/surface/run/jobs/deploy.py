@@ -52,12 +52,10 @@ class Deploy(base.Command):
   """Create or update a Cloud Run job."""
 
   detailed_help = {
-      'DESCRIPTION':
-          """\
+      'DESCRIPTION': """\
           Creates or updates a Cloud Run job.
           """,
-      'EXAMPLES':
-          """\
+      'EXAMPLES': """\
           To deploy a new job `my-data-transformation` to Cloud Run:
 
               $ {command} my-data-transformation --image=us-docker.pkg.dev/project/image
@@ -76,7 +74,8 @@ class Deploy(base.Command):
         resource_args.GetJobResourceSpec(prompt=True),
         'Job to deploy.',
         required=True,
-        prefixes=False)
+        prefixes=False,
+    )
     flags.AddLabelsFlag(parser)
     flags.AddParallelismFlag(parser)
     flags.AddTasksFlag(parser)
@@ -102,7 +101,8 @@ class Deploy(base.Command):
     flags.AddVpcSubnetFlags(parser, resource_kind='Job')
     flags.AddVpcNetworkTagsFlags(parser, resource_kind='Job')
     flags.AddSourceAndImageFlags(
-        parser, image='us-docker.pkg.dev/cloudrun/container/job:latest')
+        parser, image='us-docker.pkg.dev/cloudrun/container/job:latest'
+    )
 
     polling_group = parser.add_mutually_exclusive_group()
     flags.AddAsyncFlag(polling_group)
@@ -139,7 +139,8 @@ class Deploy(base.Command):
     flags.ValidateResource(job_ref)
 
     conn_context = connection_context.GetConnectionContext(
-        args, flags.Product.RUN, self.ReleaseTrack())
+        args, flags.Product.RUN, self.ReleaseTrack()
+    )
 
     build_type = None
     image = None
@@ -154,13 +155,15 @@ class Deploy(base.Command):
       ar_repo = docker_util.DockerRepo(
           project_id=properties.VALUES.core.project.Get(required=True),
           location_id=artifact_registry.RepoRegion(args),
-          repo_id='cloud-run-source-deploy')
+          repo_id='cloud-run-source-deploy',
+      )
       if artifact_registry.ShouldCreateRepository(ar_repo):
         repo_to_create = ar_repo
       # The image is built with latest tag. After build, the image digest
       # from the build result will be added to the image of the job spec.
       args.image = '{repo}/{job}'.format(
-          repo=ar_repo.GetDockerString(), job=job_ref.jobsId)
+          repo=ar_repo.GetDockerString(), job=job_ref.jobsId
+      )
       # Use GCP Buildpacks if Dockerfile doesn't exist
       docker_file = source + '/Dockerfile'
       if os.path.exists(docker_file):
@@ -171,20 +174,24 @@ class Deploy(base.Command):
           command_arg = getattr(args, 'command', None)
           if command_arg is not None:
             command = ' '.join(command_arg)
-            pack[0].update({
-                'env': 'GOOGLE_ENTRYPOINT="{command}"'.format(command=command)
-            })
+            pack[0].update(
+                {'env': 'GOOGLE_ENTRYPOINT="{command}"'.format(command=command)}
+            )
         build_type = BuildType.BUILDPACKS
       image = None if pack else args.image
-      operation_message = ('Building using {build_type} and deploying container'
-                           ' to').format(build_type=build_type.value)
+      operation_message = (
+          'Building using {build_type} and deploying container to'
+      ).format(build_type=build_type.value)
       pretty_print.Info(
           messages_util.GetBuildEquivalentForSourceRunMessage(
-              job_ref.jobsId, pack, source, is_job=True))
+              job_ref.jobsId, pack, source, is_job=True
+          )
+      )
 
     changes = flags.GetJobConfigurationChanges(args)
     changes.append(
-        config_changes.SetLaunchStageAnnotationChange(self.ReleaseTrack()))
+        config_changes.SetLaunchStageAnnotationChange(self.ReleaseTrack())
+    )
 
     execute_now = args.execute_now or args.wait
     execution = None
@@ -192,10 +199,12 @@ class Deploy(base.Command):
     with serverless_operations.Connect(conn_context) as operations:
       job_obj = operations.GetJob(job_ref)
       pretty_print.Info(
-          messages_util.GetStartDeployMessage(conn_context, job_ref,
-                                              operation_message, 'job'))
+          messages_util.GetStartDeployMessage(
+              conn_context, job_ref, operation_message, 'job'
+          )
+      )
       header_msg = None
-      operation = ('Creating' if job_obj is None else 'Updating')
+      operation = 'Creating' if job_obj is None else 'Updating'
       if include_build and execute_now:
         header_msg = 'Building, {} and running job...'.format(operation.lower())
       elif include_build:
@@ -213,7 +222,8 @@ class Deploy(base.Command):
               include_create_repo=repo_to_create is not None,
           ),
           failure_message='Job failed to deploy',
-          suppress_output=args.async_) as tracker:
+          suppress_output=args.async_,
+      ) as tracker:
         job = operations.DeployJob(
             job_ref,
             changes,
@@ -223,14 +233,18 @@ class Deploy(base.Command):
             build_pack=pack,
             build_source=source,
             repo_to_create=repo_to_create,
-            prefetch=job_obj)
+            prefetch=job_obj,
+        )
         if execute_now:
-          execution = operations.RunJob(job_ref, args.wait, tracker,
-                                        args.async_, self.ReleaseTrack())
+          execution = operations.RunJob(
+              job_ref, args, tracker, self.ReleaseTrack()
+          )
 
       if args.async_ and not execute_now:
-        pretty_print.Success('Job [{{bold}}{job}{{reset}}] is being deployed '
-                             'asynchronously.'.format(job=job.name))
+        pretty_print.Success(
+            'Job [{{bold}}{job}{{reset}}] is being deployed '
+            'asynchronously.'.format(job=job.name)
+        )
       else:
         job = operations.GetJob(job_ref)
         operation = 'been deployed'
@@ -238,18 +252,23 @@ class Deploy(base.Command):
           operation += ' and completed execution [{}]'.format(execution.name)
         elif execute_now:
           operation += ' and started running execution [{}]'.format(
-              execution.name)
+              execution.name
+          )
 
-        pretty_print.Success('Job [{{bold}}{job}{{reset}}] has successfully '
-                             '{operation}.'.format(
-                                 job=job.name, operation=operation))
+        pretty_print.Success(
+            'Job [{{bold}}{job}{{reset}}] has successfully {operation}.'.format(
+                job=job.name, operation=operation
+            )
+        )
 
       msg = ''
       if execute_now:
-        msg += messages_util.GetExecutionCreatedMessage(self.ReleaseTrack(),
-                                                        execution)
+        msg += messages_util.GetExecutionCreatedMessage(
+            self.ReleaseTrack(), execution
+        )
         msg += '\n'
       msg += messages_util.GetRunJobMessage(
-          self.ReleaseTrack(), job.name, repeat=execute_now)
+          self.ReleaseTrack(), job.name, repeat=execute_now
+      )
       log.status.Print(msg)
       return job

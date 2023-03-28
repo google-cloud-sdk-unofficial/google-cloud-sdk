@@ -39,12 +39,10 @@ class Update(base.Command):
   """Update a Cloud Run Job."""
 
   detailed_help = {
-      'DESCRIPTION':
-          """\
+      'DESCRIPTION': """\
           Updates a Cloud Run job.
           """,
-      'EXAMPLES':
-          """\
+      'EXAMPLES': """\
           To update the container image of Cloud Run job `my-job`:
 
               $ {command} my-job --image=us-docker.pkg.dev/project/image
@@ -59,11 +57,13 @@ class Update(base.Command):
         resource_args.GetJobResourceSpec(prompt=True),
         'Job to update.',
         required=True,
-        prefixes=False)
+        prefixes=False,
+    )
     flags.AddImageArg(
         parser,
         required=False,
-        image='us-docker.pkg.dev/cloudrun/container/job:latest')
+        image='us-docker.pkg.dev/cloudrun/container/job:latest',
+    )
     flags.AddLabelsFlags(parser)
     flags.AddParallelismFlag(parser)
     flags.AddTasksFlag(parser)
@@ -106,18 +106,22 @@ class Update(base.Command):
     flags.ValidateResource(job_ref)
 
     conn_context = connection_context.GetConnectionContext(
-        args, flags.Product.RUN, self.ReleaseTrack())
+        args, flags.Product.RUN, self.ReleaseTrack()
+    )
     changes = flags.GetJobConfigurationChanges(args)
     changes.append(
-        config_changes.SetLaunchStageAnnotationChange(self.ReleaseTrack()))
+        config_changes.SetLaunchStageAnnotationChange(self.ReleaseTrack())
+    )
 
     execute_now = args.execute_now or args.wait
     execution = None
 
     with serverless_operations.Connect(conn_context) as operations:
       pretty_print.Info(
-          messages_util.GetStartDeployMessage(conn_context, job_ref, 'Updating',
-                                              'job'))
+          messages_util.GetStartDeployMessage(
+              conn_context, job_ref, 'Updating', 'job'
+          )
+      )
       if execute_now:
         header_msg = 'Updating and running job...'
       else:
@@ -125,17 +129,22 @@ class Update(base.Command):
       with progress_tracker.StagedProgressTracker(
           header_msg,
           stages.JobStages(
-              execute_now=execute_now, include_completion=args.wait),
+              execute_now=execute_now, include_completion=args.wait
+          ),
           failure_message='Job failed to deploy',
-          suppress_output=args.async_) as tracker:
+          suppress_output=args.async_,
+      ) as tracker:
         job = operations.UpdateJob(job_ref, changes, tracker, asyn=args.async_)
         if execute_now:
-          execution = operations.RunJob(job_ref, args.wait, tracker,
-                                        args.async_, self.ReleaseTrack())
+          execution = operations.RunJob(
+              job_ref, args, tracker, self.ReleaseTrack()
+          )
 
       if args.async_ and not execute_now:
-        pretty_print.Success('Job [{{bold}}{job}{{reset}}] is being updated '
-                             'asynchronously.'.format(job=job.name))
+        pretty_print.Success(
+            'Job [{{bold}}{job}{{reset}}] is being updated '
+            'asynchronously.'.format(job=job.name)
+        )
       else:
         job = operations.GetJob(job_ref)
         operation = 'been updated'
@@ -143,19 +152,24 @@ class Update(base.Command):
           operation += ' and completed execution [{}]'.format(execution.name)
         elif execute_now:
           operation += ' and started running execution [{}]'.format(
-              execution.name)
+              execution.name
+          )
 
-        pretty_print.Success('Job [{{bold}}{job}{{reset}}] has successfully '
-                             '{operation}.'.format(
-                                 job=job.name, operation=operation))
+        pretty_print.Success(
+            'Job [{{bold}}{job}{{reset}}] has successfully {operation}.'.format(
+                job=job.name, operation=operation
+            )
+        )
 
       msg = ''
       if execute_now:
-        msg += messages_util.GetExecutionCreatedMessage(self.ReleaseTrack(),
-                                                        execution)
+        msg += messages_util.GetExecutionCreatedMessage(
+            self.ReleaseTrack(), execution
+        )
         msg += '\n'
       msg += messages_util.GetRunJobMessage(
-          self.ReleaseTrack(), job.name, repeat=execute_now)
+          self.ReleaseTrack(), job.name, repeat=execute_now
+      )
       log.status.Print(msg)
       return job
 

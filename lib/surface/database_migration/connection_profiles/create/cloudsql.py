@@ -73,6 +73,7 @@ class CloudSQL(base.Command):
     cs_flags.AddDatabaseFlagsFlag(parser)
     cs_flags.AddDataDiskSizeFlag(parser)
     cs_flags.AddDataDiskTypeFlag(parser)
+    cs_flags.AddAvailabilityTypeFlag(parser)
     cs_flags.AddEnableIpv4Flag(parser)
     cs_flags.AddPrivateNetworkFlag(parser)
     cs_flags.AddRequireSslFlag(parser)
@@ -80,6 +81,7 @@ class CloudSQL(base.Command):
     cs_flags.AddStorageAutoResizeLimitFlag(parser)
     cs_flags.AddTierFlag(parser)
     cs_flags.AddZoneFlag(parser)
+    cs_flags.AddSecondaryZoneFlag(parser)
     cs_flags.AddRootPassword(parser)
     flags.AddLabelsCreateFlags(parser)
 

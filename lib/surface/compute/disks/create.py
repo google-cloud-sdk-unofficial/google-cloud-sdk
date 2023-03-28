@@ -450,16 +450,19 @@ class Create(base.Command):
   def Run(self, args):
     return self._Run(args, supports_kms_keys=True)
 
-  def _Run(self,
-           args,
-           supports_kms_keys=False,
-           supports_physical_block=False,
-           support_multiwriter_disk=False,
-           support_vss_erase=False,
-           support_pd_interface=False,
-           support_user_licenses=False,
-           support_async_pd=False,
-           support_provisioned_throughput=False):
+  def _Run(
+      self,
+      args,
+      supports_kms_keys=False,
+      supports_physical_block=False,
+      support_multiwriter_disk=False,
+      support_vss_erase=False,
+      support_pd_interface=False,
+      support_user_licenses=False,
+      support_async_pd=False,
+      support_provisioned_throughput=False,
+      support_enable_confidential_compute=False,
+  ):
     compute_holder = self._GetApiHolder()
     client = compute_holder.client
 
@@ -567,6 +570,11 @@ class Create(base.Command):
           disk_ref.Collection() in ['compute.disks', 'compute.regionDisks'] and
           args.IsSpecified('multi_writer')):
         disk.multiWriter = args.multi_writer
+
+      if support_enable_confidential_compute and args.IsSpecified(
+          'enable_confidential_compute'
+      ):
+        disk.enableConfidentialCompute = args.enable_confidential_compute
 
       if guest_os_feature_messages:
         disk.guestOsFeatures = guest_os_feature_messages
@@ -688,6 +696,7 @@ class CreateAlpha(CreateBeta):
     kms_resource_args.AddKmsKeyResourceArg(
         parser, 'disk', region_fallthrough=True)
     disks_flags.AddMultiWriterFlag(parser)
+    disks_flags.AddEnableConfidentialComputeFlag(parser)
 
   def Run(self, args):
     return self._Run(
@@ -699,7 +708,9 @@ class CreateAlpha(CreateBeta):
         support_pd_interface=True,
         support_user_licenses=True,
         support_async_pd=True,
-        support_provisioned_throughput=True)
+        support_provisioned_throughput=True,
+        support_enable_confidential_compute=True,
+    )
 
 
 def _ValidateAndParseDiskRefsRegionalReplica(args, compute_holder):

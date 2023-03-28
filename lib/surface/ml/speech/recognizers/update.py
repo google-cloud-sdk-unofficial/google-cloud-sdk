@@ -24,12 +24,6 @@ from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.ml.speech import flags_v2
 from googlecloudsdk.core import log
 
-public_allowed_locations = ('us', 'eu', 'global')
-private_allowed_locations = frozenset(public_allowed_locations) | {
-    # TODO(b/246590388): Remove when multiregion support is complete.
-    'us-central1'
-}
-
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Create(base.Command):
@@ -42,19 +36,45 @@ class Create(base.Command):
 
   def Run(self, args):
     recognizer = args.CONCEPTS.recognizer.Parse()
-    if args.location not in private_allowed_locations:
+
+    # TODO(b/272527653) Change errors to Actionable Error response type.
+    if args.location not in client.PUBLIC_ALLOWED_LOCATIONS:
       raise exceptions.InvalidArgumentException(
-          '--location', '[--location] must be set to one of ' +
-          ', '.join(public_allowed_locations) + '.')
+          '--location',
+          '[--location] must be set to one of '
+          + ', '.join(client.PUBLIC_ALLOWED_LOCATIONS)
+          + '.',
+      )
 
     speech_client = client.SpeechV2Client()
     is_async = args.async_
+
+    if (
+        args.encoding is not None
+        and args.encoding not in client.ENCODING_OPTIONS
+    ):
+      raise exceptions.InvalidArgumentException(
+          '--encoding',
+          '[--encoding] must be set to LINEAR16, MULAW, ALAW, or AUTO.',
+      )
+
     operation = speech_client.UpdateRecognizer(
-        recognizer, args.display_name, args.model, args.language_codes,
-        args.profanity_filter, args.enable_word_time_offsets,
-        args.enable_word_confidence, args.enable_automatic_punctuation,
-        args.enable_spoken_punctuation, args.enable_spoken_emojis,
-        args.min_speaker_count, args.max_speaker_count)
+        recognizer,
+        args.display_name,
+        args.model,
+        args.language_codes,
+        args.profanity_filter,
+        args.enable_word_time_offsets,
+        args.enable_word_confidence,
+        args.enable_automatic_punctuation,
+        args.enable_spoken_punctuation,
+        args.enable_spoken_emojis,
+        args.min_speaker_count,
+        args.max_speaker_count,
+        args.encoding,
+        args.sample_rate,
+        args.audio_channel_count,
+    )
 
     if is_async:
       log.UpdatedResource(

@@ -89,6 +89,16 @@
         An [RFC 5545](https://tools.ietf.org/html/rfc5545#section-3.8.5.3)
         recurrence rule for how the cluster maintenance window recurs. They go
         on for the span of time between the start and the end time.
+    - arg_name: control-plane-kms-key
+      api_field: cluster.controlPlaneEncryption.kmsKey
+      hidden: true
+      repeated: false
+      help_text: |
+        Google Cloud KMS key that will be used to secure persistent disks of the control plane VMs
+        of a remote control plane cluster. The Edge Container service account for this project must
+        have `roles/cloudkms.cryptoKeyEncrypterDecrypter` on the key.
+
+        If not provided, a Google-managed key will be used by default.
     - arg_name: system-addons-config
       type: "googlecloudsdk.calliope.arg_parsers:YAMLFileContents:"
       repeated: false
@@ -108,8 +118,8 @@
             }
           }
         }
-    - arg_name: ipv4-address-pools
-      api_field: "cluster.dataPlaneLoadBalancerIpv4AddressPools"
+    - arg_name: external-lb-ipv4-address-pools
+      api_field: "cluster.externalLoadBalancerIpv4AddressPools"
       repeated: true
       hidden: true
       release_tracks: [ALPHA]
@@ -121,7 +131,7 @@
           2. A IPv4 address range, for example, "10.0.0.1-10.0.0.10",
           3. A IPv4 CIDR block, for example, "10.0.0.1/24"
         Use comma when specifying multiple address pools, for example:
-          --ipv4-address-pools 10.0.0.1,10.0.0.1-10.0.0.10,10.0.0.1/24
+          --external-lb-ipv4-address-pools 10.0.0.1,10.0.0.1-10.0.0.10,10.0.0.1/24
     - arg_name: control-plane-node-location
       api_field: "cluster.controlPlane.local.nodeLocation"
       repeated: false
@@ -147,7 +157,17 @@
         Only machines matching this filter will be allowed to host local control plane nodes.
         The filtering language accepts strings like "name=<name>",
         and is documented here: [AIP-160](https://google.aip.dev/160).
-    # TODO (b/269794568) Add control-plane-node-isolation for LCP cluster isolated and shared mode.
+    - arg_name: control-plane-shared-deployment-policy
+      api_field: "cluster.controlPlane.local.sharedDeploymentPolicy"
+      repeated: false
+      hidden: true
+      release_tracks: [ALPHA]
+      help_text: |
+        Policy configuration about how user application is deployed for local control plane cluster.
+        It supports two values, ALLOWED and DISALLOWED. ALLOWED means that user application can be
+        deployed on control plane nodes. DISALLOWED means that user application can not be deployed
+        on control plane nodes. Instead, it can only be deployed on worker nodes. By default, this
+        value is DISALLOWED.
 
     labels:
       api_field: cluster.labels

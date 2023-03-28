@@ -41,7 +41,7 @@ DETAILED_HELP = {
 }
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.GA)
 class List(six.with_metaclass(abc.ABCMeta, base.CacheCommand)):
   """List the SSH keys added to the project in Bare Metal Solution."""
 

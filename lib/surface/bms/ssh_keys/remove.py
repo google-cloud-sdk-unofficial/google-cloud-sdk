@@ -38,7 +38,7 @@ DETAILED_HELP = {
 }
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.GA)
 class Remove(base.DeleteCommand):
   """Remove an SSH key in Bare Metal Solution given its name."""
 

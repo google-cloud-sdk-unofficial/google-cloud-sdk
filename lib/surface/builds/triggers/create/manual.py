@@ -35,6 +35,10 @@ class CreateManual(base.CreateCommand):
             To create a manual trigger that builds off branch `my-branch` in a GitHub repository named `my-repo`:
 
               $ {command} --name=my-manual-trigger --build-config=cloudbuild.yaml --repo=https://www.github.com/owner/repo --repo-type=GITHUB --branch=my-branch
+
+            To create a manual trigger that builds off branch `my-branch` in a 2nd-gen GitHub repository resource:
+
+              $ {command} --name=my-manual-trigger --build-config=cloudbuild.yaml --repository=projects/my-proj/locations/us-west1/connections/my-conn/repositories/my-repo --branch=my-branch
           """,
   }
 

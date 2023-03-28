@@ -49,3 +49,5 @@ class Tags(base.Group):
 
     $ {command} us-west1-docker.pkg.dev/my-project/my-repository/busy-box
   """
+
+  category = base.CI_CD_CATEGORY

@@ -124,7 +124,7 @@ class Create(base.Command):
   _support_create_disk_snapshots = True
   _support_boot_snapshot_uri = True
   _support_display_device = False
-  _support_local_ssd_size = False
+  _support_local_ssd_size = True
   _support_secure_tags = False
   _support_host_error_timeout_seconds = False
   _support_numa_node_count = False
@@ -338,6 +338,7 @@ class CreateBeta(Create):
   _support_max_count_per_zone = False
   _support_local_ssd_recovery_timeout = False
   _support_network_queue_count = False
+  _support_local_ssd_size = True
 
   @classmethod
   def Args(cls, parser):

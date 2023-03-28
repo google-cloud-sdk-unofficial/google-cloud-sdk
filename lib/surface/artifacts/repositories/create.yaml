@@ -116,9 +116,8 @@
     - arg_name: immutable-tags
       type: bool
       api_field: repository.dockerConfig.immutableTags
-      hidden: true
       help_text: |
-        (Docker only) Prevent tag mutations on any image in this repository.
+        (Docker only) Prevent changes to tagged images in the repository. Tags cannot be deleted or moved to a different image digest, and tagged images cannot be deleted.
     labels:
       api_field: repository.labels
     additional_arguments_hook: googlecloudsdk.command_lib.artifacts.util:AddAdditionalArgs

@@ -262,7 +262,7 @@ def _CreateBgpPeerMessage(
       ipv6NexthopAddress=ipv6_nexthop_address,
       peerIpv6NexthopAddress=peer_ipv6_nexthop_address)
   if support_custom_learned_routes:
-    result.customLearnedRoutePriority = args.set_custom_learned_route_priority
+    result.customLearnedRoutePriority = args.custom_learned_route_priority
   if instance_ref is not None:
     result.routerApplianceInstance = instance_ref.SelfLink()
   if args.md5_authentication_key is not None:

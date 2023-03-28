@@ -31,8 +31,8 @@
     format: |
       table(
         name.basename():label=CLUSTER_NAME:sort=2,
-        redisVersion:label=VERSION,
-        sizeGb:label=SIZE_GB,
         state:label=STATUS,
+        sizeGb:label=SIZE_GB,
+        replicaCount:label=REPLICA_COUNT,
         createTime.date()
       )

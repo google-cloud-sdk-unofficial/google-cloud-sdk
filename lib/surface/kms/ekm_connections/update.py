@@ -24,6 +24,7 @@ from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.kms import certs
 from googlecloudsdk.command_lib.kms import exceptions as kms_exceptions
 from googlecloudsdk.command_lib.kms import flags
+from googlecloudsdk.command_lib.kms import maps
 from googlecloudsdk.command_lib.kms import resource_args
 
 
@@ -39,7 +40,7 @@ class Update(base.UpdateCommand):
   resolver's hostname within location `us-east1`:
 
   $ {command} laplace --location=us-east1 \
-                      --hostname=newhostname.foo \
+                      --hostname=newhostname.foo
 
   The following command updates an ekm-connection named `laplace` service
   resolver's service_directory_service, endpoint_filter, hostname, and
@@ -51,6 +52,12 @@ class Update(base.UpdateCommand):
         --hostname="newhostname.foo" \
         --server-certificates-files=foo.pem,bar.pem
 
+  The following command updates an ekm-connection named `laplace`
+  key_management_mode within location `us-east1`:
+
+  $ {command} laplace --location=us-east1 \
+                      --key-management-mode=manual
+
   """
 
   @staticmethod
@@ -60,11 +67,23 @@ class Update(base.UpdateCommand):
     flags.AddServiceDirectoryServiceFlag(parser)
     flags.AddEndpointFilterFlag(parser)
     flags.AddHostnameFlag(parser)
+    flags.AddKeyManagementModeFlags(parser)
     flags.AddServerCertificatesFilesFlag(parser)
 
-  def CreateRequest(self, args, messages, previous_ekm_connection):
+  def CreateUpdateMask(self, args):
+    update_mask = []
+    if (args.service_directory_service or args.endpoint_filter or
+        args.hostname or args.server_certificates_files):
+      update_mask.append('serviceResolvers')
+    if args.key_management_mode:
+      update_mask.append('keyManagementMode')
+    if args.crypto_space_path:
+      update_mask.append('cryptoSpacePath')
+    return ','.join(update_mask)
+
+  def CreateRequest(self, args, messages, ekm_connection_to_update):
     ec_ref = flags.ParseEkmConnectionName(args)
-    service_resolver_to_update = previous_ekm_connection.serviceResolvers[0]
+    service_resolver_to_update = ekm_connection_to_update.serviceResolvers[0]
 
     if args.service_directory_service:
       service_resolver_to_update.serviceDirectoryService = args.service_directory_service
@@ -74,6 +93,14 @@ class Update(base.UpdateCommand):
 
     if args.hostname:
       service_resolver_to_update.hostname = args.hostname
+
+    if args.key_management_mode:
+      ekm_connection_to_update.keyManagementMode = (
+          maps.KEY_MANAGEMENT_MODE_MAPPER.GetEnumForChoice(
+              args.key_management_mode))
+
+    if args.crypto_space_path:
+      ekm_connection_to_update.cryptoSpacePath = args.crypto_space_path
 
     certificate_list = []
     if args.server_certificates_files:
@@ -89,21 +116,20 @@ class Update(base.UpdateCommand):
       service_resolver_to_update.serverCertificates = certificate_list
 
     req = messages.CloudkmsProjectsLocationsEkmConnectionsPatchRequest(
-        name=ec_ref.RelativeName(),
-        ekmConnection=messages.EkmConnection(
-            serviceResolvers=[service_resolver_to_update]))
+        name=ec_ref.RelativeName(), ekmConnection=ekm_connection_to_update)
 
-    req.updateMask = 'serviceResolvers'
+    req.updateMask = self.CreateUpdateMask(args)
 
     return req
 
   def Run(self, args):
     if not (args.service_directory_service or args.endpoint_filter or
-            args.hostname or args.server_certificates_files):
+            args.hostname or args.server_certificates_files or
+            args.key_management_mode or args.crypto_space_path):
       raise kms_exceptions.UpdateError(
           'An error occured: At least one of --service-directory-service or '
-          '--endpoint-filter or --hostname or --server-certificates-files '
-          'must be specified.')
+          '--endpoint-filter or --hostname or --server-certificates-files or '
+          '--key-management-mode or --crypto-space-path must be specified.')
 
     client = cloudkms_base.GetClientInstance()
     messages = cloudkms_base.GetMessagesModule()

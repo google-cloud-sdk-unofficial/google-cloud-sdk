@@ -76,12 +76,5 @@ class Create(base.CreateCommand):
         update_operation_ref,
         'Applying {file} as workflow {name}'.format(file=args.file, name=name))
 
-    updated_workflow_ref = resources.REGISTRY.Parse(
-        updated_workflow.name,
-        collection='cloudbuild.projects.locations.workflows',
-        api_version=client_util.RELEASE_TRACK_TO_API_VERSION[
-            self.ReleaseTrack()],
-    )
-
-    log.status.Print('View workflow: {}'.format(updated_workflow_ref))
+    log.status.Print('Applied workflow {}.'.format(updated_workflow.name))
     return updated_workflow

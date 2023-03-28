@@ -85,6 +85,7 @@ class SshGa(base.Command):
   def Args(parser):
     flags.AddServiceVersionSelectArgs(parser)
     _ArgsCommon(parser)
+    iap_tunnel.AddSshTunnelArgs(parser)
 
   def Run(self, args):
     """Connect to a running App Engine flexible instance.
@@ -136,14 +137,32 @@ class SshGa(base.Command):
     except apitools_exceptions.HttpNotFoundError:
       raise command_exceptions.MissingVersionError('{}/{}'.format(
           service, version))
-    if version_resource.network.instanceIpMode is api_client.messages.Network.InstanceIpModeValueValuesEnum.INTERNAL:
-      raise command_exceptions.InvalidInstanceIpModeError(
-          version_resource.network.instanceIpMode)
-    cmd = ssh.SSHCommand(
+
+    project = properties.VALUES.core.project.GetOrFail()
+    res = resources.REGISTRY.Parse(
+        instance,
+        params={
+            'appsId': project,
+            'versionsId': version,
+            'instancesId': instance,
+            'servicesId': service,
+        },
+        collection='appengine.apps.services.versions.instances')
+    try:
+      instance_resource = api_client.GetInstanceResource(res)
+    except apitools_exceptions.HttpNotFoundError:
+      raise command_exceptions.MissingInstanceError(res.RelativeName())
+    iap_tunnel_args = iap_tunnel.CreateSshTunnelArgs(args, api_client,
+                                                     self.ReleaseTrack(),
+                                                     project, version_resource,
+                                                     instance_resource)
+    return ssh.SSHCommand(
         connection_details.remote,
-        identity_file=keys.key_file, tty=tty,
-        remote_command=remote_command, options=connection_details.options)
-    return cmd.Run(env)
+        identity_file=keys.key_file,
+        tty=tty,
+        remote_command=remote_command,
+        options=connection_details.options,
+        iap_tunnel_args=iap_tunnel_args).Run(env)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)

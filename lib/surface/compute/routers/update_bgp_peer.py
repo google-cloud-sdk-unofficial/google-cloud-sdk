@@ -315,10 +315,8 @@ def _UpdateBgpPeerMessage(
   if args.peer_ipv6_nexthop_address is not None:
     attrs['peerIpv6NexthopAddress'] = args.peer_ipv6_nexthop_address
   if support_custom_learned_routes:
-    if args.set_custom_learned_route_priority is not None:
-      attrs['customLearnedRoutePriority'] = (
-          args.set_custom_learned_route_priority
-      )
+    if args.custom_learned_route_priority is not None:
+      attrs['customLearnedRoutePriority'] = args.custom_learned_route_priority
   if args.md5_authentication_key is not None:
     attrs['md5AuthenticationKeyName'] = md5_authentication_key_name
   for attr, value in attrs.items():

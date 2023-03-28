@@ -260,6 +260,7 @@ def AddBetaArgs(parser):
   psc_update_group = parser.add_mutually_exclusive_group(hidden=True)
   flags.AddAllowedPscProjects(psc_update_group)
   flags.AddClearAllowedPscProjects(psc_update_group)
+  flags.AddRecreateReplicasOnPrimaryCrash(parser)
 
 
 def AddAlphaArgs(parser):

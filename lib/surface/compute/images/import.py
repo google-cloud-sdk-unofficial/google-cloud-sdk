@@ -181,38 +181,26 @@ class Import(base.CreateCommand):
         'in your project for the import process. Use this flag to '
         'specify the zone to use for these temporary VMs.')
 
-    if cls.ReleaseTrack() == base.ReleaseTrack.GA:
-      source = parser.add_mutually_exclusive_group(required=True)
-      source.add_argument(
-          '--source-file',
-          help=("""A local file, or the Cloud Storage URI of the virtual
+    source = parser.add_mutually_exclusive_group(required=True)
+
+    import_from_local_or_gcs = source.add_mutually_exclusive_group(
+        help='Image import from local file, Cloud Storage or '
+        'Compute Engine image.'
+    )
+    import_from_local_or_gcs.add_argument(
+        '--source-file',
+        help=("""A local file, or the Cloud Storage URI of the virtual
               disk file to import. For example: ``gs://my-bucket/my-image.vmdk''
               or ``./my-local-image.vmdk''. For more information about Cloud
-              Storage URIs, see
-              https://cloud.google.com/storage/docs/request-endpoints#json-api.
-              """),
-      )
-      flags.SOURCE_IMAGE_ARG.AddArgument(source, operation_type='import')
-    else:
-      source = parser.add_mutually_exclusive_group(required=True)
+            Storage URIs, see
+            https://cloud.google.com/storage/docs/request-endpoints#json-api.
+            """),
+    )
+    flags.SOURCE_IMAGE_ARG.AddArgument(
+        import_from_local_or_gcs, operation_type='import')
 
-      import_from_local_or_gcs = source.add_mutually_exclusive_group(
-          help='Image import from local file, Cloud Storage or Compute Engine image.'
-      )
-      import_from_local_or_gcs.add_argument(
-          '--source-file',
-          help=("""A local file, or the Cloud Storage URI of the virtual
-                disk file to import. For example: ``gs://my-bucket/my-image.vmdk''
-                or ``./my-local-image.vmdk''. For more information about Cloud
-              Storage URIs, see
-              https://cloud.google.com/storage/docs/request-endpoints#json-api.
-              """),
-      )
-      flags.SOURCE_IMAGE_ARG.AddArgument(
-          import_from_local_or_gcs, operation_type='import')
-
-      import_from_aws = source.add_group(help='Image import from AWS.')
-      daisy_utils.AddAWSImageImportSourceArgs(import_from_aws)
+    import_from_aws = source.add_group(help='Image import from AWS.')
+    daisy_utils.AddAWSImageImportSourceArgs(import_from_aws)
 
     image_utils.AddGuestOsFeaturesArgForImport(parser, messages)
 
@@ -334,17 +322,30 @@ class Import(base.CreateCommand):
     return self._RunImageImport(args, import_metadata, tags, _OUTPUT_FILTER)
 
   def _RunImageImport(self, args, import_args, tags, output_filter):
+    image_tag = daisy_utils.GetDefaultBuilderVersion()
+    if hasattr(args, 'docker_image_tag'):
+      image_tag = args.docker_image_tag
+
+    if _HasExternalCloudProvider(args):
+      return daisy_utils.RunOnestepImageImport(
+          args,
+          import_args,
+          tags,
+          _OUTPUT_FILTER,
+          release_track=self.ReleaseTrack().id.lower()
+          if self.ReleaseTrack() else None,
+          docker_image_tag=image_tag)
     return daisy_utils.RunImageImport(
         args,
         import_args,
         tags,
         _OUTPUT_FILTER,
         release_track=self.ReleaseTrack().id.lower()
-        if self.ReleaseTrack() else None)
+        if self.ReleaseTrack() else None,
+        docker_image_tag=image_tag)
 
   def _CreateImportStager(self, args, compute_holder):
-    if (self.ReleaseTrack() != base.ReleaseTrack.GA and
-        _HasExternalCloudProvider(args)):
+    if _HasExternalCloudProvider(args):
       return ImportFromExternalCloudProviderStager(self.storage_client,
                                                    compute_holder, args)
 
@@ -606,25 +607,6 @@ class ImportBeta(Import):
   def Args(cls, parser):
     super(ImportBeta, cls).Args(parser)
     daisy_utils.AddExtraCommonDaisyArgs(parser)
-
-  def _RunImageImport(self, args, import_args, tags, output_filter):
-    if _HasExternalCloudProvider(args):
-      return daisy_utils.RunOnestepImageImport(
-          args,
-          import_args,
-          tags,
-          _OUTPUT_FILTER,
-          release_track=self.ReleaseTrack().id.lower()
-          if self.ReleaseTrack() else None,
-          docker_image_tag=args.docker_image_tag)
-    return daisy_utils.RunImageImport(
-        args,
-        import_args,
-        tags,
-        _OUTPUT_FILTER,
-        release_track=self.ReleaseTrack().id.lower()
-        if self.ReleaseTrack() else None,
-        docker_image_tag=args.docker_image_tag)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)

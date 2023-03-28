@@ -204,25 +204,30 @@ RE2 and described at https://github.com/google/re2/wiki/Syntax.
             'locationsId': location,
             'triggersId': triggerid,
         },
-        collection='cloudbuild.projects.locations.triggers').RelativeName()
+        collection='cloudbuild.projects.locations.triggers',
+    ).RelativeName()
 
     old_trigger = client.projects_locations_triggers.Get(
         client.MESSAGES_MODULE.CloudbuildProjectsLocationsTriggersGetRequest(
-            name=name, triggerId=triggerid))
+            name=name, triggerId=triggerid
+        )
+    )
 
     trigger = self.ParseTriggerFromFlags(args, old_trigger)
 
     # Overwrite the substitutions.additionalProperties in updateMask.
     sub = 'substitutions'
     update_mask = cloudbuild_util.MessageToFieldPaths(trigger)
-    update_mask = list(
-        set(map(lambda m: sub if m.startswith(sub) else m, update_mask)))
+    update_mask = set(
+        map(lambda m: sub if m.startswith(sub) else m, update_mask)
+    )
 
     req = messages.CloudbuildProjectsLocationsTriggersPatchRequest(
         resourceName=name,
         triggerId=triggerid,
         buildTrigger=trigger,
-        updateMask=','.join(update_mask))
+        updateMask=','.join(update_mask),
+    )
 
     updated_trigger = client.projects_locations_triggers.Patch(req)
     log.UpdatedResource(triggerid, kind='build_trigger')

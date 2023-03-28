@@ -25,16 +25,68 @@ from googlecloudsdk.command_lib.edge_cloud.networking.routers import flags as ro
 from googlecloudsdk.core import log
 
 DESCRIPTION = ('Create a BGP peer to a Distributed Cloud Edge Network router')
-EXAMPLES = """\
+
+EXAMPLES_GA = """\
+    To create and add a BGP peer for the Distributed Cloud Edge Network router
+    'my-router' in edge zone 'us-central1-edge-den1' , run:
+
+        $ {command} my-router --interface=my-int-r1 --peer-asn=33333 --peer-name=peer1 --peer-ipv4-range=208.117.254.232/31 --location=us-central1 --zone=us-central1-edge-den1
+   """
+
+EXAMPLES_ALPHA = """\
     To create and add a BGP peer for the Distributed Cloud Edge Network router
     'my-router' in edge zone 'us-central1-edge-den1' , run:
 
         $ {command} my-router --interface=my-int-r1 --peer-asn=33333 --peer-name=peer1 --peer-ipv4-range=208.117.254.232/31 --location=us-central1 --zone=us-central1-edge-den1
 
+        $ {command} my-router --interface=my-int-r1 --peer-asn=33333 --peer-name=peer1 --peer-ipv6-range=2001:0db8:85a3:0000:0000:8a2e:0370:7334/126 --location=us-central1 --zone=us-central1-edge-den1
    """
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class AddBgpPeerAlpha(base.UpdateCommand):
+  """Add a BGP peer to a Distributed Cloud Edge Network router.
+
+  *{command}* is used to add a BGP peer to a Distributed Cloud Edge Network
+  router.
+  """
+
+  detailed_help = {'DESCRIPTION': DESCRIPTION, 'EXAMPLES': EXAMPLES_ALPHA}
+
+  @classmethod
+  def Args(cls, parser):
+    resource_args.AddRouterResourceArg(
+        parser, 'to which we add a bgp peer', True
+    )
+
+    routers_flags.AddBgpPeerArgs(
+        parser,
+        for_update=False,
+        enable_peer_ipv6_range=True,
+    )
+    base.ASYNC_FLAG.AddToParser(parser)
+
+  def Run(self, args):
+    routers_client = routers.RoutersClient(self.ReleaseTrack())
+    router_ref = args.CONCEPTS.router.Parse()
+    update_req_op = routers_client.AddBgpPeer(router_ref, args)
+
+    async_ = args.async_
+    if not async_:
+      response = routers_client.WaitForOperation(update_req_op)
+      log.UpdatedResource(
+          router_ref.RelativeName(), details='Operation was successful.'
+      )
+      return response
+
+    log.status.Print(
+        'Updating [{0}] with operation [{1}].'.format(
+            router_ref.RelativeName(), update_req_op.name
+        )
+    )
+
+
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class AddBgpPeer(base.UpdateCommand):
   """Add a BGP peer to a Distributed Cloud Edge Network router.
 
@@ -42,12 +94,14 @@ class AddBgpPeer(base.UpdateCommand):
   router.
   """
 
-  detailed_help = {'DESCRIPTION': DESCRIPTION, 'EXAMPLES': EXAMPLES}
+  detailed_help = {'DESCRIPTION': DESCRIPTION, 'EXAMPLES': EXAMPLES_GA}
 
-  @staticmethod
-  def Args(parser):
-    resource_args.AddRouterResourceArg(parser, 'to which we add a bgp peer',
-                                       True)
+  @classmethod
+  def Args(cls, parser):
+    resource_args.AddRouterResourceArg(
+        parser, 'to which we add a bgp peer', True
+    )
+
     routers_flags.AddBgpPeerArgs(parser)
     base.ASYNC_FLAG.AddToParser(parser)
 

@@ -23,8 +23,8 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.kms import certs
 from googlecloudsdk.command_lib.kms import flags
+from googlecloudsdk.command_lib.kms import maps
 from googlecloudsdk.command_lib.kms import resource_args
-from googlecloudsdk.core.util import files
 
 
 class Create(base.CreateCommand):
@@ -43,6 +43,19 @@ class Create(base.CreateCommand):
         --endpoint-filter="foo > bar" \
         --hostname="hostname.foo" \
         --server-certificates-files=foo.pem,bar.pem
+
+  The following command creates an ekm connection named `laplace` within the
+  location `us-central1` in `cloud-kms` key management mode with the required
+  crypto-space-path :
+
+    $ {command} laplace \
+        --location=us-central1 \
+        --service-directory-service="foo" \
+        --endpoint-filter="foo > bar" \
+        --hostname="hostname.foo" \
+        --key-management-mode=cloud-kms
+        --crypto-space-path="foo"
+        --server-certificates-files=foo.pem,bar.pem
   """
 
   @staticmethod
@@ -53,6 +66,7 @@ class Create(base.CreateCommand):
     flags.AddEndpointFilterFlag(parser)
     flags.AddHostnameFlag(parser, True)
     flags.AddServerCertificatesFilesFlag(parser, True)
+    flags.AddKeyManagementModeFlags(parser)
     parser.display_info.AddCacheUpdater(flags.EkmConnectionCompleter)
 
   def _CreateRequest(self, args):
@@ -60,6 +74,12 @@ class Create(base.CreateCommand):
 
     ekm_connection_ref = args.CONCEPTS.ekm_connection.Parse()
     parent_ref = ekm_connection_ref.Parent()
+
+    if args.key_management_mode == 'cloud-kms':
+      if not args.crypto_space_path:
+        raise exceptions.RequiredArgumentException(
+            '--crypto-space-path',
+            'Must be supplied when --key-management-mode is cloud-kms.')
 
     certificate_list = []
     for cert_file in args.server_certificates_files:
@@ -74,13 +94,17 @@ class Create(base.CreateCommand):
     req = messages.CloudkmsProjectsLocationsEkmConnectionsCreateRequest(
         parent=parent_ref.RelativeName(),
         ekmConnectionId=ekm_connection_ref.Name(),
-        ekmConnection=messages.EkmConnection(serviceResolvers=[
-            messages.ServiceResolver(
-                serviceDirectoryService=args.service_directory_service,
-                endpointFilter=args.endpoint_filter,
-                hostname=args.hostname,
-                serverCertificates=certificate_list)
-        ]))
+        ekmConnection=messages.EkmConnection(
+            keyManagementMode=maps.KEY_MANAGEMENT_MODE_MAPPER.GetEnumForChoice(
+                args.key_management_mode),
+            cryptoSpacePath=args.crypto_space_path,
+            serviceResolvers=[
+                messages.ServiceResolver(
+                    serviceDirectoryService=args.service_directory_service,
+                    endpointFilter=args.endpoint_filter,
+                    hostname=args.hostname,
+                    serverCertificates=certificate_list)
+            ]))
 
     return req
 

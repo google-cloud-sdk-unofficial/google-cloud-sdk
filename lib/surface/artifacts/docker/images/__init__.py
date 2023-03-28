@@ -65,3 +65,5 @@ class Images(base.Group):
       $ {command} delete
       us-west1-docker.pkg.dev/my-project/my-repository/busy-box:my-tag
   """
+
+  category = base.CI_CD_CATEGORY

@@ -59,6 +59,7 @@ class ScpGa(base.Command):
   @staticmethod
   def Args(parser):
     flags.AddServiceVersionSelectArgs(parser)
+    iap_tunnel.AddSshTunnelArgs(parser)
 
     parser.add_argument(
         '--recurse',
@@ -111,6 +112,7 @@ class ScpGa(base.Command):
     ssh.SCPCommand.Verify(srcs, dst, single_remote=True)
 
     remote = dst.remote or srcs[0].remote
+    instance = remote.host
     if not dst.remote:  # Make sure all remotes point to the same ref
       for src in srcs:
         src.remote = remote
@@ -123,10 +125,44 @@ class ScpGa(base.Command):
     remote.host = connection_details.remote.host
     remote.user = connection_details.remote.user
 
-    cmd = ssh.SCPCommand(srcs, dst, identity_file=keys.key_file,
-                         compress=args.compress, recursive=args.recurse,
-                         options=connection_details.options)
-    return cmd.Run(env)
+    try:
+      version_resource = api_client.GetVersionResource(args.service,
+                                                       args.version)
+    except apitools_exceptions.HttpNotFoundError:
+      raise command_exceptions.MissingVersionError('{}/{}'.format(
+          args.service, args.version))
+
+    project = properties.VALUES.core.project.GetOrFail()
+    res = resources.REGISTRY.Parse(
+        instance,
+        params={
+            'appsId': project,
+            'versionsId': args.version,
+            'instancesId': instance,
+            'servicesId': args.service,
+        },
+        collection='appengine.apps.services.versions.instances')
+    instance_name = res.RelativeName()
+    try:
+      instance_resource = api_client.GetInstanceResource(res)
+    except apitools_exceptions.HttpNotFoundError:
+      raise command_exceptions.MissingInstanceError(instance_name)
+    iap_tunnel_args = iap_tunnel.CreateSshTunnelArgs(
+        args=args,
+        api_client=api_client,
+        track=self.ReleaseTrack(),
+        project=project,
+        version=version_resource,
+        instance=instance_resource)
+
+    return ssh.SCPCommand(
+        srcs,
+        dst,
+        identity_file=keys.key_file,
+        compress=args.compress,
+        recursive=args.recurse,
+        options=connection_details.options,
+        iap_tunnel_args=iap_tunnel_args).Run(env)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)

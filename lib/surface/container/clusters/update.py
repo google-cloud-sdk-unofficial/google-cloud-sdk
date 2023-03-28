@@ -354,6 +354,7 @@ class Update(base.UpdateCommand):
     flags.AddGatewayFlags(group, hidden=False)
     flags.AddManagedPrometheusFlags(group)
     flags.AddSecurityPostureFlag(group)
+    flags.AddClusterNetworkPerformanceConfigFlags(group)
 
   def ParseUpdateOptions(self, args, locations):
     get_default = lambda key: getattr(args, key)
@@ -424,6 +425,7 @@ class Update(base.UpdateCommand):
     opts.enable_managed_prometheus = args.enable_managed_prometheus
     opts.disable_managed_prometheus = args.disable_managed_prometheus
     opts.enable_security_posture = args.enable_security_posture
+    opts.network_performance_config = args.network_performance_configs
     return opts
 
   def Run(self, args):
@@ -827,6 +829,7 @@ class UpdateBeta(Update):
     flags.AddGatewayFlags(group, hidden=False)
     flags.AddFleetProjectFlag(group, is_update=True)
     flags.AddSecurityPostureFlag(group)
+    flags.AddClusterNetworkPerformanceConfigFlags(group)
 
   def ParseUpdateOptions(self, args, locations):
     get_default = lambda key: getattr(args, key)
@@ -930,6 +933,7 @@ class UpdateBeta(Update):
     opts.enable_fleet = args.enable_fleet
     opts.clear_fleet_project = args.clear_fleet_project
     opts.enable_security_posture = args.enable_security_posture
+    opts.network_performance_config = args.network_performance_configs
     return opts
 
 
@@ -1021,6 +1025,7 @@ class UpdateAlpha(Update):
     flags.AddRemoveAdditionalPodIpv4RangesFlag(group_add_pod_ipv4_ranges)
     flags.AddFleetProjectFlag(group, is_update=True)
     flags.AddSecurityPostureFlag(group)
+    flags.AddClusterNetworkPerformanceConfigFlags(group)
 
   def ParseUpdateOptions(self, args, locations):
     get_default = lambda key: getattr(args, key)
@@ -1118,4 +1123,5 @@ class UpdateAlpha(Update):
     opts.enable_fleet = args.enable_fleet
     opts.clear_fleet_project = args.clear_fleet_project
     opts.enable_security_posture = args.enable_security_posture
+    opts.network_performance_config = args.network_performance_configs
     return opts

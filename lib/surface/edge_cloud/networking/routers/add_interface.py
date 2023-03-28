@@ -48,11 +48,13 @@ class AddInterface(base.UpdateCommand):
 
   detailed_help = {'DESCRIPTION': DESCRIPTION, 'EXAMPLES': EXAMPLES}
 
-  @staticmethod
-  def Args(parser):
+  @classmethod
+  def Args(cls, parser):
     resource_args.AddRouterResourceArg(parser, 'to which we add an interface',
                                        True)
-    routers_flags.AddInterfaceArgs(parser)
+    routers_flags.AddInterfaceArgs(
+        parser, is_alpha=cls.ReleaseTrack() == base.ReleaseTrack.ALPHA
+    )
     base.ASYNC_FLAG.AddToParser(parser)
 
   def Run(self, args):

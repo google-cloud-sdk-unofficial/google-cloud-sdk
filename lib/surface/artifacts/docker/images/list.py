@@ -114,10 +114,14 @@ class List(base.ListCommand):
     # Retrieve images.
     repo_or_image = docker_util.ParseDockerImagePath(args.IMAGE_PATH)
     images = docker_util.GetDockerImages(repo_or_image, args)
+    default_occ_filter = 'kind="BUILD" OR kind="IMAGE" OR kind="DISCOVERY"'
 
     # Retrieve containeranalysis metadata for images.
     most_recent_images = []
-    if args.show_occurrences:
+    # Assume the user wants to see occurrences if they explicitly filter.
+    if args.show_occurrences or (
+        args.occurrence_filter and args.occurrence_filter != default_occ_filter
+    ):
       if args.show_occurrences_from:
         images = heapq.nlargest(
             args.show_occurrences_from,
