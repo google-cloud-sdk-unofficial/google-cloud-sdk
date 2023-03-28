@@ -1,0 +1,28 @@
+release_tracks: [ALPHA]
+
+help_text:
+  brief: |
+    Update a Security Profile Group.
+  description: |
+    Update the details of a Security Profile Group.
+  examples: |
+    To update an SPG with new Threat prevention profile `my-new-security-profile` (Either a fully specified path or --location and --organization flags for SPG should be specified), run:
+
+      $ {command} my-security-profile-group --organization=1234 --location=global --threat-prevention-profile=`organizations/1234/locations/global/securityProfiles/my-new-security-profile` --description='New Security Profile of type threat prevention'
+
+arguments:
+  resource:
+    spec: !REF googlecloudsdk.command_lib.network_security.resources:securityProfileGroup
+    help_text: Name of the Security Profile Group to be updated.
+  params:
+  - arg_name: threat_prevention_profile
+    api_field: securityProfileGroup.threatPreventionProfile
+    help_text: Name of the security profile of type threat prevention.
+  - arg_name: description
+    api_field: securityProfileGroup.description
+    help_text: New description of the Security Profile Group.
+
+request: &request
+  api_version: v1alpha1
+  collection: networksecurity.organizations.locations.securityProfileGroups
+  method: patch

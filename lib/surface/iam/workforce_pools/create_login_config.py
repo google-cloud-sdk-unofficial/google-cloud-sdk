@@ -24,9 +24,11 @@ import os
 import textwrap
 
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.iam.byoid_utilities import cred_config
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 from googlecloudsdk.core.util import files
+
 
 RESOURCE_TYPE = 'login configuration file'
 
@@ -64,14 +66,21 @@ class CreateLoginConfig(base.CreateCommand):
         help='Sets the property `auth/login_config_file` to the created login '
         'configuration file. Calling `gcloud auth login` will automatically '
         'use this login configuration unless it is explicitly unset.')
+    parser.add_argument(
+        '--enable-mtls',
+        help='Use mTLS for STS endpoints.',
+        action='store_true',
+        hidden=True)
 
   def Run(self, args):
+    enable_mtls = getattr(args, 'enable_mtls', False)
+    token_endpoint_builder = cred_config.StsEndpoints(enable_mtls=enable_mtls)
     output = {
         'type': 'external_account_authorized_user_login_config',
         'audience': '//iam.googleapis.com/' + args.audience,
         'auth_url': 'https://auth.cloud.google/authorize',
-        'token_url': 'https://sts.googleapis.com/v1/oauthtoken',
-        'token_info_url': 'https://sts.googleapis.com/v1/introspect',
+        'token_url': token_endpoint_builder.oauth_token_url,
+        'token_info_url': token_endpoint_builder.token_info_url,
     }
     files.WriteFileContents(args.output_file, json.dumps(output, indent=2))
     log.CreatedResource(args.output_file, RESOURCE_TYPE)

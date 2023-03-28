@@ -136,6 +136,7 @@ class Create(base.Command):
   _support_no_address_in_networking = False
   _support_max_count_per_zone = False
   _support_local_ssd_recovery_timeout = False
+  _support_network_queue_count = False
 
   _log_async = False
 
@@ -336,6 +337,7 @@ class CreateBeta(Create):
   _support_no_address_in_networking = False
   _support_max_count_per_zone = False
   _support_local_ssd_recovery_timeout = False
+  _support_network_queue_count = False
 
   @classmethod
   def Args(cls, parser):
@@ -381,6 +383,7 @@ class CreateAlpha(Create):
   _support_no_address_in_networking = True
   _support_max_count_per_zone = True
   _support_local_ssd_recovery_timeout = True
+  _support_network_queue_count = True
 
   @classmethod
   def Args(cls, parser):
@@ -402,6 +405,7 @@ class CreateAlpha(Create):
         support_provisioned_throughput=cls._support_provisioned_throughput,
         support_no_address_in_networking=cls._support_no_address_in_networking,
         support_max_count_per_zone=cls._support_max_count_per_zone,
+        support_network_queue_count=cls._support_network_queue_count,
     )
 
     cls.AddSourceInstanceTemplate(parser)

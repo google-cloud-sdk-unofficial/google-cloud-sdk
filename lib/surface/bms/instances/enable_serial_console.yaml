@@ -1,4 +1,4 @@
-- release_tracks: [ALPHA]
+- release_tracks: [ALPHA, GA]
   help_text:
     brief: |
       Enable interactive serial console for a Bare Metal Solution instance.

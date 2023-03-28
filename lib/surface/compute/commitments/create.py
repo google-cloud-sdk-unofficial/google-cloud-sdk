@@ -77,7 +77,7 @@ class Create(base.Command):
         plan=flags.TranslatePlanArg(messages, args.plan),
         resources=flags.TranslateResourcesArgGroup(messages, args),
         type=commitment_type,
-        autoRenew=flags.TranslateAutoRenewArg(args))
+        autoRenew=flags.TranslateAutoRenewArgForCreate(args))
     return messages.ComputeRegionCommitmentsInsertRequest(
         commitment=commitment,
         project=project,
@@ -163,7 +163,7 @@ class CreateAlpha(CreateBeta):
         plan=flags.TranslatePlanArg(messages, args.plan),
         resources=flags.TranslateResourcesArgGroup(messages, args),
         type=commitment_type,
-        autoRenew=flags.TranslateAutoRenewArg(args),
+        autoRenew=flags.TranslateAutoRenewArgForCreate(args),
         splitSourceCommitment=args.split_source_commitment,
         mergeSourceCommitments=flags.TranslateMergeArg(
             args.merge_source_commitments))

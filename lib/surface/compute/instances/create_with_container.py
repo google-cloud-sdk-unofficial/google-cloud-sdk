@@ -102,6 +102,7 @@ class CreateWithContainer(base.CreateCommand):
   _support_visible_core_count = True
   _support_confidential_compute_type = False
   _support_local_ssd_recovery_timeout = False
+  _support_internal_ipv6_reservation = False
 
   @staticmethod
   def Args(parser):
@@ -164,7 +165,9 @@ class CreateWithContainer(base.CreateCommand):
           network_interface_arg=args.network_interface,
           project=project,
           location=location,
-          scope=scope)
+          scope=scope,
+          support_internal_ipv6_reservation=self._support_internal_ipv6_reservation,
+      )
     return self._GetNetworkInterfaces(args, client, holder, project, location,
                                       scope, skip_defaults)
 

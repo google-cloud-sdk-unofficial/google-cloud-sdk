@@ -52,6 +52,7 @@ class Update(base.UpdateCommand):
 
   _include_alpha_logging = False
   _include_reserved_internal_range = False
+  _include_external_ipv6_prefix = False
   _api_version = compute_api.COMPUTE_GA_API_VERSION
   detailed_help = _DetailedHelp()
 
@@ -66,7 +67,8 @@ class Update(base.UpdateCommand):
     cls.SUBNETWORK_ARG.AddArgument(parser, operation_type='update')
 
     flags.AddUpdateArgs(parser, cls._include_alpha_logging,
-                        cls._include_reserved_internal_range, cls._api_version)
+                        cls._include_reserved_internal_range,
+                        cls._include_external_ipv6_prefix, cls._api_version)
 
   def Run(self, args):
     """Issues requests necessary to update Subnetworks."""
@@ -105,6 +107,8 @@ class Update(base.UpdateCommand):
     reserved_internal_ranges = getattr(
         args, 'add_secondary_ranges_with_reserved_internal_range', None)
 
+    external_ipv6_prefix = getattr(args, 'external_ipv6_prefix', None)
+
     return subnets_utils.MakeSubnetworkUpdateRequest(
         client,
         subnet_ref,
@@ -124,6 +128,7 @@ class Update(base.UpdateCommand):
         private_ipv6_google_access_type=private_ipv6_google_access_type,
         stack_type=stack_type,
         ipv6_access_type=ipv6_access_type,
+        external_ipv6_prefix=external_ipv6_prefix,
     )
 
 
@@ -132,6 +137,7 @@ class UpdateBeta(Update):
   """Updates properties of an existing Compute Engine subnetwork."""
 
   _include_reserved_internal_range = True
+  _include_external_ipv6_prefix = False
   _api_version = compute_api.COMPUTE_BETA_API_VERSION
 
 
@@ -141,4 +147,5 @@ class UpdateAlpha(UpdateBeta):
 
   _include_alpha_logging = True
   _include_reserved_internal_range = True
+  _include_external_ipv6_prefix = True
   _api_version = compute_api.COMPUTE_ALPHA_API_VERSION

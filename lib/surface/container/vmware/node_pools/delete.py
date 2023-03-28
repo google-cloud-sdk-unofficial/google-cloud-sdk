@@ -45,6 +45,7 @@ class Delete(base.DeleteCommand):
     flags.AddAllowMissingDeleteNodePool(parser)
     flags.AddValidationOnly(parser, hidden=True)
     base.ASYNC_FLAG.AddToParser(parser)
+    flags.AddNodePoolIgnoreErrors(parser)
 
   def Run(self, args):
     """Runs the delete command."""

@@ -176,6 +176,8 @@ def _CommonArgs(parser,
   instances_flags.AddInstanceTerminationActionVmArgs(parser)
   instances_flags.AddIPv6AddressArgs(parser)
   instances_flags.AddIPv6PrefixLengthArgs(parser)
+  instances_flags.AddInternalIPv6AddressArgs(parser)
+  instances_flags.AddInternalIPv6PrefixLengthArgs(parser)
 
   instances_flags.AddReservationAffinityGroup(
       parser,
@@ -247,13 +249,14 @@ class Create(base.CreateCommand):
   _support_host_error_timeout_seconds = False
   _support_numa_node_count = False
   _support_visible_core_count = True
-  _support_network_queue_count = False
+  _support_network_queue_count = True
   _support_instance_kms = False
   _support_max_run_duration = False
   _support_ipv6_assignment = False
   _support_confidential_compute_type = False
   _support_network_attachments = False
   _support_local_ssd_recovery_timeout = False
+  _support_internal_ipv6_reservation = True
 
   @classmethod
   def Args(cls, parser):
@@ -272,7 +275,8 @@ class Create(base.CreateCommand):
         support_provisioned_throughput=cls._support_provisioned_throughput,
         supports_erase_vss=cls._support_erase_vss,
         support_network_attachments=cls._support_network_attachments,
-        support_local_ssd_recovery_timeout=cls._support_local_ssd_recovery_timeout)
+        support_local_ssd_recovery_timeout=cls._support_local_ssd_recovery_timeout,
+        support_network_queue_count=cls._support_network_queue_count)
     cls.SOURCE_INSTANCE_TEMPLATE = (
         instances_flags.MakeSourceInstanceTemplateArg())
     cls.SOURCE_INSTANCE_TEMPLATE.AddArgument(parser)
@@ -352,7 +356,9 @@ class Create(base.CreateCommand):
         scope=compute_scopes.ScopeEnum.ZONE,
         skip_defaults=skip_defaults,
         support_public_dns=self._support_public_dns,
-        support_ipv6_assignment=self._support_ipv6_assignment)
+        support_ipv6_assignment=self._support_ipv6_assignment,
+        support_internal_ipv6_reservation=self._support_internal_ipv6_reservation,
+    )
 
     confidential_vm = (
         args.IsSpecified('confidential_compute') and args.confidential_compute)
@@ -818,8 +824,6 @@ class CreateAlpha(CreateBeta):
     instances_flags.AddKeyRevocationActionTypeArgs(parser)
     instances_flags.AddIPv6AddressAlphaArgs(parser)
     instances_flags.AddIPv6PrefixLengthAlphaArgs(parser)
-    instances_flags.AddInternalIPv6AddressArgs(parser)
-    instances_flags.AddInternalIPv6PrefixLengthArgs(parser)
 
 
 Create.detailed_help = DETAILED_HELP

@@ -48,6 +48,7 @@ class SetSchedulingInstances(base.SilentCommand):
 
   _support_host_error_timeout_seconds = False
   _support_local_ssd_recovery_timeout = False
+  _support_max_run_duration = False
 
   @classmethod
   def Args(cls, parser):
@@ -105,7 +106,7 @@ class SetSchedulingInstances(base.SilentCommand):
 
     if (hasattr(args, 'instance_termination_action') and
         args.IsSpecified('instance_termination_action')):
-      flags.ValidateInstanceScheduling(args)
+      flags.ValidateInstanceScheduling(args, self._support_max_run_duration)
       scheduling_options.instanceTerminationAction = (
           client.messages.Scheduling.InstanceTerminationActionValueValuesEnum(
               args.instance_termination_action))
@@ -180,6 +181,7 @@ class SetSchedulingInstancesBeta(SetSchedulingInstances):
     (a VM instance in a `TERMINATED` state).
   """
   _support_host_error_timeout_seconds = True
+  _support_max_run_duration = True
 
   @classmethod
   def Args(cls, parser):
@@ -216,6 +218,7 @@ class SetSchedulingInstancesAlpha(SetSchedulingInstancesBeta):
   """
   _support_host_error_timeout_seconds = True
   _support_local_ssd_recovery_timeout = True
+  _support_max_run_duration = True
 
   @classmethod
   def Args(cls, parser):

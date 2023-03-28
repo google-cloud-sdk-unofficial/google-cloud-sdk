@@ -91,7 +91,7 @@ class Compose(base.Command):
 
     source_expansion_iterator = name_expansion.NameExpansionIterator(
         args.source,
-        fields_scope=cloud_api.FieldsScope.SHORT,
+        fields_scope=cloud_api.FieldsScope.NO_ACL,
         recursion_requested=name_expansion.RecursionSetting.NO)
 
     objects_to_compose = [

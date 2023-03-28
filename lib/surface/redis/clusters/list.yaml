@@ -32,7 +32,7 @@
       table(
         name.basename():label=CLUSTER_NAME:sort=2,
         redisVersion:label=VERSION,
-        totalMemorySizeGb:label=SIZE_GB,
+        sizeGb:label=SIZE_GB,
         state:label=STATUS,
         createTime.date()
       )

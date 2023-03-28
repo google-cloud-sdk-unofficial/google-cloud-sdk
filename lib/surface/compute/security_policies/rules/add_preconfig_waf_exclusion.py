@@ -269,6 +269,59 @@ class AddPreconfigWafExclusionHelper(object):
         preconfig_waf_config=new_preconfig_waf_config)
 
 
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class AddPreconfigWafExclusionGA(base.UpdateCommand):
+  r"""Add an exclusion configuration for preconfigured WAF evaluation into a security policy rule.
+
+  *{command}* is used to add an exclusion configuration for preconfigured WAF
+  evaluation into a security policy rule.
+
+  Note that request field exclusions are associated with a target, which can be
+  a single rule set, or a rule set plus a list of rule IDs under the rule set.
+
+  ## EXAMPLES
+
+  To add specific request field exclusions that are associated with the target
+  of 'sqli-stable': ['owasp-crs-v030001-id942110-sqli',
+  'owasp-crs-v030001-id942120-sqli'], run:
+
+    $ {command} 1000 \
+       --security-policy=my-policy \
+       --target-rule-set=sqli-stable \
+       --target-rule-ids=owasp-crs-v030001-id942110-sqli,owasp-crs-v030001-id942120-sqli
+       \
+       --request-header-to-exclude=op=EQUALS,val=abc \
+       --request-header-to-exclude=op=STARTS_WITH,val=xyz \
+       --request-uri-to-exclude=op=EQUALS_ANY
+
+  To add specific request field exclusions that are associated with the target
+  of 'sqli-stable': [], run:
+
+    $ {command} 1000 \
+       --security-policy=my-policy \
+       --target-rule-set=sqli-stable \
+       --request-cookie-to-exclude=op=EQUALS_ANY
+  """
+
+  SECURITY_POLICY_ARG = None
+
+  _support_regional_security_policy = False
+
+  @classmethod
+  def Args(cls, parser):
+    AddPreconfigWafExclusionHelper.Args(
+        parser,
+        support_regional_security_policy=cls._support_regional_security_policy,
+    )
+
+  def Run(self, args):
+    return AddPreconfigWafExclusionHelper.Run(
+        self.ReleaseTrack(),
+        args,
+        support_regional_security_policy=self._support_regional_security_policy,
+    )
+
+
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class AddPreconfigWafExclusionBeta(base.UpdateCommand):
   r"""Add an exclusion configuration for preconfigured WAF evaluation into a security policy rule.
@@ -311,13 +364,15 @@ class AddPreconfigWafExclusionBeta(base.UpdateCommand):
   def Args(cls, parser):
     AddPreconfigWafExclusionHelper.Args(
         parser,
-        support_regional_security_policy=cls._support_regional_security_policy)
+        support_regional_security_policy=cls._support_regional_security_policy,
+    )
 
   def Run(self, args):
     return AddPreconfigWafExclusionHelper.Run(
         self.ReleaseTrack(),
         args,
-        support_regional_security_policy=self._support_regional_security_policy)
+        support_regional_security_policy=self._support_regional_security_policy,
+    )
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)

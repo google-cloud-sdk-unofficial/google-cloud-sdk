@@ -1,0 +1,22 @@
+release_tracks: [ALPHA]
+
+help_text:
+  brief: |
+    Delete a Security Profile Group.
+  description: |
+    Delete the specified Security Profile Group.
+  examples: |
+    To delete an Security Profile Group called `my-security-profile-group` (Either a fully specified path or --location and --organization flags for SPG should be specified) run:
+
+      $ {command} my-security-profile-group --organization=1234 --location=global
+
+arguments:
+  resource:
+    spec: !REF googlecloudsdk.command_lib.network_security.resources:securityProfileGroup
+    help_text: |
+      Name of the Security Profile Group you want to delete.
+
+request: &request
+  api_version: v1alpha1
+  collection: networksecurity.organizations.locations.securityProfileGroups
+  method: delete

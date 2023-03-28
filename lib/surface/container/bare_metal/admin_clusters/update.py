@@ -57,6 +57,7 @@ class Update(base.UpdateCommand):
     cluster_flags.AddProxyConfig(parser, is_update=True)
     cluster_flags.AddClusterOperationsConfig(parser)
     cluster_flags.AddMaintenanceConfig(parser, is_update=True)
+    cluster_flags.AddNetworkConfig(parser, is_update=True)
     cluster_flags.AddAdminWorkloadNodeConfig(parser)
     cluster_flags.AddNodeAccessConfig(parser)
 

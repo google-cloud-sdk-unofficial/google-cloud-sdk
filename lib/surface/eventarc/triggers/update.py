@@ -48,6 +48,7 @@ class Update(base.UpdateCommand):
     flags.AddTriggerResourceArg(parser, 'The trigger to update.', required=True)
     flags.AddEventFiltersArg(parser, cls.ReleaseTrack())
     flags.AddEventFiltersPathPatternArg(parser, cls.ReleaseTrack())
+    flags.AddEventDataContentTypeArg(parser, cls.ReleaseTrack())
     flags.AddUpdateDestinationArgs(parser, cls.ReleaseTrack())
     base.ASYNC_FLAG.AddToParser(parser)
 
@@ -62,26 +63,33 @@ class Update(base.UpdateCommand):
     event_filters = flags.GetEventFiltersArg(args, self.ReleaseTrack())
     event_filters_path_pattern = flags.GetEventFiltersPathPatternArg(
         args, self.ReleaseTrack())
+    event_data_content_type = flags.GetEventDataContentTypeArg(
+        args, self.ReleaseTrack()
+    )
     update_mask = client.BuildUpdateMask(
         event_filters=event_filters is not None,
         event_filters_path_pattern=event_filters_path_pattern is not None,
-        service_account=args.IsSpecified('service_account') or
-        args.clear_service_account,
+        event_data_content_type=event_data_content_type is not None,
+        service_account=args.IsSpecified('service_account')
+        or args.clear_service_account,
         destination_run_service=args.IsSpecified('destination_run_service'),
         destination_run_job=args.IsSpecified('destination_run_job'),
-        destination_run_path=args.IsSpecified('destination_run_path') or
-        args.clear_destination_run_path,
+        destination_run_path=args.IsSpecified('destination_run_path')
+        or args.clear_destination_run_path,
         destination_run_region=args.IsSpecified('destination_run_region'),
         destination_gke_namespace=args.IsSpecified('destination_gke_namespace'),
         destination_gke_service=args.IsSpecified('destination_gke_service'),
-        destination_gke_path=args.IsSpecified('destination_gke_path') or
-        args.clear_destination_gke_path,
+        destination_gke_path=args.IsSpecified('destination_gke_path')
+        or args.clear_destination_gke_path,
         destination_workflow=args.IsSpecified('destination_workflow'),
         destination_workflow_location=args.IsSpecified(
-            'destination_workflow_location'),
+            'destination_workflow_location'
+        ),
         destination_function=args.IsSpecified('destination_function'),
         destination_function_location=args.IsSpecified(
-            'destination_function_location'))
+            'destination_function_location'
+        ),
+    )
     old_trigger = client.Get(trigger_ref)
     # The type can't be updated, so it's safe to use the old trigger's type.
     # In the async case, this is the only way to get the type.
@@ -114,11 +122,16 @@ class Update(base.UpdateCommand):
       function = self.GetFunctionDestination(args, old_trigger)
       destination_message = client.BuildFunctionDestinationMessage(
           trigger_ref.Parent().Parent().Name(), function, location)
-    trigger_message = client.BuildTriggerMessage(trigger_ref, event_filters,
-                                                 event_filters_path_pattern,
-                                                 None, args.service_account,
-                                                 destination_message, None,
-                                                 None)
+    trigger_message = client.BuildTriggerMessage(
+        trigger_ref,
+        event_filters,
+        event_filters_path_pattern,
+        event_data_content_type,
+        args.service_account,
+        destination_message,
+        None,
+        None,
+    )
     operation = client.Patch(trigger_ref, trigger_message, update_mask)
     if args.async_:
       return operation
@@ -178,13 +191,15 @@ class UpdateBeta(Update):
     event_filters = flags.GetEventFiltersArg(args, self.ReleaseTrack())
     update_mask = client.BuildUpdateMask(
         event_filters=event_filters is not None,
-        service_account=args.IsSpecified('service_account') or
-        args.clear_service_account,
+        event_data_content_type=None,
+        service_account=args.IsSpecified('service_account')
+        or args.clear_service_account,
         destination_run_service=args.IsSpecified('destination_run_service'),
         destination_run_job=None,  # Not supported in BETA release track or API
-        destination_run_path=args.IsSpecified('destination_run_path') or
-        args.clear_destination_run_path,
-        destination_run_region=args.IsSpecified('destination_run_region'))
+        destination_run_path=args.IsSpecified('destination_run_path')
+        or args.clear_destination_run_path,
+        destination_run_region=args.IsSpecified('destination_run_region'),
+    )
     old_trigger = client.Get(trigger_ref)
     # The type can't be updated, so it's safe to use the old trigger's type.
     # In the async case, this is the only way to get the type.

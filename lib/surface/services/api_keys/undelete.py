@@ -39,18 +39,18 @@ class Undelete(base.RestoreCommand):
   ## EXAMPLES
   UnDelete an API Key (Key or key-string should be specified):
 
-    To undelete with key `1234`, run:
+  To undelete with key `1234`, run:
 
       $ {command} 1234
 
-    To undelete with `1234` in project
-      `myproject` using the fully qualified API key name, run:
+  To undelete with `1234` in project `myproject` using the fully qualified API
+  key name, run:
 
       $ {command} projects/myproject/locations/global/keys/1234
 
-    To undelete using a Key-string, run:
+  To undelete using a Key-string, run:
 
-    ${command} --key-string='my-key-string'
+    $ {command} --key-string='my-key-string'
   """
 
   @staticmethod

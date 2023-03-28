@@ -36,11 +36,14 @@
           https://cloud.google.com/recaptcha-enterprise/docs/integration-overview.
         params:
         - arg_name: waf-service
-          required: true
           api_field: googleCloudRecaptchaenterpriseV1Key.wafSettings.wafService
           help_text: |
             The WAF service provider to use.
           choices:
+          - enum_value: WAF_SERVICE_UNSPECIFIED
+            arg_value: unspecified
+            help_text: |
+              No specified WAF service
           - enum_value: CA
             arg_value: ca
             help_text: |
@@ -69,6 +72,10 @@
             help_text: |
               Use reCAPTCHA session-tokens to protect the whole user session on the
               site's domain.
+          - enum_value: EXPRESS
+            arg_value: express
+            help_text: |
+              Assesses requests without tokens or frontend integration.
     - group:
         mutex: true
         required: true

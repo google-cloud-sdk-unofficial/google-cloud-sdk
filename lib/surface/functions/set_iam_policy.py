@@ -24,13 +24,6 @@ from googlecloudsdk.command_lib.functions.v1.set_iam_policy import command as co
 from googlecloudsdk.command_lib.functions.v2.set_iam_policy import command as command_v2
 
 
-def _CommonArgs(parser):
-  """Registers flags for this command."""
-  flags.AddFunctionResourceArg(parser, 'to get IAM policy for')
-  flags.AddIAMPolicyFileArg(parser)
-  flags.AddGen2Flag(parser)
-
-
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class SetIamPolicy(base.Command):
   """Sets IAM policy for a Google Cloud Function."""
@@ -47,7 +40,9 @@ class SetIamPolicy(base.Command):
   @staticmethod
   def Args(parser):
     """Register flags for this command."""
-    _CommonArgs(parser)
+    flags.AddFunctionResourceArg(parser, 'to get IAM policy for')
+    flags.AddIAMPolicyFileArg(parser)
+    flags.AddGen2Flag(parser)
 
   def Run(self, args):
     """Runs the command.

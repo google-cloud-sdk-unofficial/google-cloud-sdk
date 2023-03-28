@@ -35,12 +35,6 @@ _DETAILED_HELP = {
 }
 
 
-def _CommonArgs(parser):
-  """Registers flags for this command."""
-  flags.AddFunctionResourceArg(parser, 'to remove the invoker binding from')
-  iam_util.AddMemberFlag(parser, 'to remove from the IAM policy', False)
-
-
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class RemoveInvokerPolicyBinding(base.Command):
   """Removes an invoker binding from the IAM policy of a Google Cloud Function.
@@ -53,7 +47,8 @@ class RemoveInvokerPolicyBinding(base.Command):
   @staticmethod
   def Args(parser):
     """Registers flags for this command."""
-    _CommonArgs(parser)
+    flags.AddFunctionResourceArg(parser, 'to remove the invoker binding from')
+    iam_util.AddMemberFlag(parser, 'to remove from the IAM policy', False)
 
   def Run(self, args):
     """Runs the command.

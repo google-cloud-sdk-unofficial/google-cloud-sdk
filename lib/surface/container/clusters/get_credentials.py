@@ -44,8 +44,10 @@ def _BaseRun(args, context):
   # api_lib/container/kubeconfig.py.
   missing_creds = not (auth and auth.clientCertificate and auth.clientKey)
   if missing_creds and not util.ClusterConfig.UseGCPAuthProvider():
-    raise util.Error('get-credentials requires edit permission on {0}'.format(
-        cluster_ref.projectId))
+    raise util.Error(
+        'get-credentials requires `container.clusters.getCredentials`'
+        ' permission on {0}'.format(cluster_ref.projectId)
+    )
   if not adapter.IsRunning(cluster):
     log.warning(NOT_RUNNING_MSG.format(cluster_ref.clusterId))
 

@@ -136,8 +136,8 @@ class SamlChallenge(ReauthChallenge):
         return True
 
     def obtain_challenge_input(self, metadata):
-        # Magic Arch has not fully supported returning a proper dedirect URL
-        # for programmatic SAML users today. So we error our here and request
+        # Magic Arch does not fully support returning a proper redirect URL
+        # for programmatic SAML users today. So we error out here and request
         # users to complete a web login.
         raise errors.ReauthSamlLoginRequiredError()
 

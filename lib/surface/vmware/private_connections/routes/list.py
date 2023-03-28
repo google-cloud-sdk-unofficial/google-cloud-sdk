@@ -81,5 +81,7 @@ class List(base.ListCommand):
     for item in items:
       route = resource_projector.MakeSerializable(item)
       # Set "status" to "Imported" or "Imported by peer" based on direction.
-      route['status'] = _TransformStatus(route['direction'], route['imported'])
+      route['status'] = _TransformStatus(
+          route['direction'], route.get('imported', False)
+      )
       yield route

@@ -173,29 +173,29 @@ class Update(base.UpdateCommand):
         """,
       )
 
-      parser.add_argument(
-          '--internal-ipv6-address',
-          type=str,
-          help="""
-          Assigns the given internal IPv6 address or range to an instance.
-          The address must be the first IP in the range or a IP range with
-          /96. This option can only be used on a dual stack instance network
-          interface.
-        """,
-      )
+    parser.add_argument(
+        '--internal-ipv6-address',
+        type=str,
+        help="""
+        Assigns the given internal IPv6 address or range to an instance.
+        The address must be the first IP address in the range or a /96 IP
+        address range. This option can only be used on a dual stack instance
+        network interface.
+      """,
+    )
 
-      parser.add_argument(
-          '--internal-ipv6-prefix-length',
-          type=int,
-          help="""
-          Optional field that indicates the prefix length of the internal IPv6
-          address range, should be used together with
-          `--internal-ipv6-address=fd20::`. Currently only /96 is supported and
-          the default value is 96. If not set, the prefix length from
-          `--internal-ipv6-address=fd20::/96` will be used or assigned a
-          default value of 96.
-        """,
-      )
+    parser.add_argument(
+        '--internal-ipv6-prefix-length',
+        type=int,
+        help="""
+        Optional field that indicates the prefix length of the internal IPv6
+        address range, should be used together with
+        `--internal-ipv6-address=fd20::`. Only /96 IP address range is supported
+        and the default value is 96. If not set, then  either the prefix length
+        from `--internal-ipv6-address=fd20::/96` will be used or the default
+        value of 96 will be assigned.
+      """,
+    )
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())

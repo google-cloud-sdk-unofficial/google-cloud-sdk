@@ -123,15 +123,41 @@ class Unregister(calliope_base.DeleteCommand):
 
   def Run(self, args):
     project = arg_utils.GetFromNamespace(args, '--project', use_defaults=True)
-    membership = resources.ParseMembershipArg(args)
-    membership_id = util.MembershipShortname(membership)
-    location = util.MembershipLocation(membership)
+    gke_cluster_resource_link, gke_cluster_uri = (
+        gke_util.GetGKEClusterResoureLinkAndURI(
+            gke_uri=args.GetValue('gke_uri'),
+            gke_cluster=args.GetValue('gke_cluster'),
+        )
+    )
+    location = 'global'
+    membership_id = args.MEMBERSHIP_NAME
+    if resources.MembershipLocationSpecified(args):
+      membership = resources.MembershipResourceName(args)
+      membership_id = util.MembershipShortname(membership)
+      location = util.MembershipLocation(membership)
+    # If this is a gke cluster and location is ambiguous, then we'll check for
+    # the existence of a regional membership. Non-gke clusters can only be
+    # registered as 'global' memberships right now.
+    elif gke_cluster_resource_link:
+      cluster_location = hub_util.LocationFromGKEArgs(args)
+      regional_name = 'projects/{}/locations/{}/memberships/{}'.format(
+          project, cluster_location, membership_id
+      )
+      try:
+        regional_obj = api_util.GetMembership(
+            regional_name, self.ReleaseTrack()
+        )
+        if (
+            regional_obj.endpoint
+            and regional_obj.endpoint.gkeCluster.resourceLink
+            == gke_cluster_resource_link
+        ):
+          location = cluster_location
+      except apitools_exceptions.HttpError:
+        pass
 
     # Unregister GKE cluster with simple Add-to-Hub API call. Connect agent will
     # not be uninstalled. And Kubernetes Client is not needed.
-    gke_cluster_resource_link, gke_cluster_uri = gke_util.GetGKEClusterResoureLinkAndURI(
-        gke_uri=args.GetValue('gke_uri'),
-        gke_cluster=args.GetValue('gke_cluster'))
     if gke_cluster_resource_link and not args.GetValue(
         'uninstall_connect_agent'):
       return self._UnregisterGKE(gke_cluster_resource_link, gke_cluster_uri,
@@ -173,7 +199,7 @@ class Unregister(calliope_base.DeleteCommand):
         raise exceptions.Error(
             'Membership [{}] is not associated with the cluster you are trying'
             ' to unregister. Please double check the cluster identifier that you'
-            ' have supplied.'.format(membership_id))
+            ' have supplied.'.format(name))
 
       api_util.DeleteMembership(name, self.ReleaseTrack())
     except apitools_exceptions.HttpUnauthorizedError as e:
@@ -182,9 +208,9 @@ class Unregister(calliope_base.DeleteCommand):
           'Underlying error: {}'.format(project, e))
     except apitools_exceptions.HttpNotFoundError:
       log.status.Print(
-          'Membership [{}] for the cluster [{}] was not found on the fleet. '
+          'Membership [{}] for the cluster was not found on the fleet. '
           'It may already have been deleted, or it may never have existed.'
-          .format(name, args.MEMBERSHIP_NAME))
+          .format(name))
 
     # Get namespace for the connect resource label.
     selector = '{}={}'.format(agent_util.CONNECT_RESOURCE_LABEL, project)
@@ -238,9 +264,9 @@ class Unregister(calliope_base.DeleteCommand):
       obj = api_util.GetMembership(name, self.ReleaseTrack())
       if obj.endpoint.gkeCluster.resourceLink != gke_cluster_resource_link:
         raise exceptions.Error(
-            'membership {0} is associated with a different GKE cluster link '
+            'membership [{0}] is associated with a different GKE cluster link '
             '{1}. You may be unregistering the wrong membership.'.format(
-                args.MEMBERSHIP_NAME, obj.endpoint.gkeCluster.resourceLink))
+                name, obj.endpoint.gkeCluster.resourceLink))
 
       api_util.DeleteMembership(name, self.ReleaseTrack())
     except apitools_exceptions.HttpUnauthorizedError as e:
@@ -249,6 +275,6 @@ class Unregister(calliope_base.DeleteCommand):
           'Underlying error: {}'.format(project, e))
     except apitools_exceptions.HttpNotFoundError:
       log.status.Print(
-          'Membership [{}] for the cluster [{}] was not found on the fleet. '
+          'Membership [{}] for the cluster was not found on the fleet. '
           'It may already have been deleted, or it may never have existed.'
-          .format(name, args.MEMBERSHIP_NAME))
+          .format(name))

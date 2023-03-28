@@ -62,6 +62,7 @@ def _CommonArgs(
     support_network_attachments=False,
     support_replica_zones=False,
     support_local_ssd_recovery_timeout=False,
+    support_network_queue_count=False,
 ):
   """Adding arguments applicable for creating instance templates."""
   parser.display_info.AddFormat(instance_templates_flags.DEFAULT_LIST_FORMAT)
@@ -84,6 +85,7 @@ def _CommonArgs(
       parser,
       instances=False,
       support_network_attachments=support_network_attachments,
+      support_network_queue_count=support_network_queue_count,
   )
   instances_flags.AddAcceleratorArgs(parser)
   instances_flags.AddMachineTypeArgs(parser)
@@ -115,6 +117,8 @@ def _CommonArgs(
   instances_flags.AddInstanceTerminationActionVmArgs(parser)
   instances_flags.AddIPv6AddressArgs(parser)
   instances_flags.AddIPv6PrefixLengthArgs(parser)
+  instances_flags.AddInternalIPv6AddressArgs(parser)
+  instances_flags.AddInternalIPv6PrefixLengthArgs(parser)
 
   if support_max_run_duration:
     instances_flags.AddMaxRunDurationVmArgs(parser)
@@ -1084,6 +1088,7 @@ class CreateAlpha(Create):
   _support_network_attachments = True
   _support_replica_zones = True
   _support_local_ssd_recovery_timeout = True
+  _support_network_queue_count = True
 
   @classmethod
   def Args(cls, parser):
@@ -1103,7 +1108,8 @@ class CreateAlpha(Create):
         support_provisioned_throughput=cls._support_provisioned_throughput,
         support_network_attachments=cls._support_network_attachments,
         support_replica_zones=cls._support_replica_zones,
-        support_local_ssd_recovery_timeout=cls._support_local_ssd_recovery_timeout)
+        support_local_ssd_recovery_timeout=cls._support_local_ssd_recovery_timeout,
+        support_network_queue_count=cls._support_network_queue_count)
     instances_flags.AddLocalNvdimmArgs(parser)
     instances_flags.AddMinCpuPlatformArgs(parser, base.ReleaseTrack.ALPHA)
     instances_flags.AddConfidentialComputeArgs(
@@ -1113,8 +1119,6 @@ class CreateAlpha(Create):
     instances_flags.AddPostKeyRevocationActionTypeArgs(parser)
     instances_flags.AddIPv6AddressAlphaArgs(parser)
     instances_flags.AddIPv6PrefixLengthAlphaArgs(parser)
-    instances_flags.AddInternalIPv6AddressArgs(parser)
-    instances_flags.AddInternalIPv6PrefixLengthArgs(parser)
     instance_templates_flags.AddKeyRevocationActionTypeArgs(parser)
 
   def Run(self, args):

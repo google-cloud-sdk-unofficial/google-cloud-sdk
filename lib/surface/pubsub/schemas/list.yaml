@@ -39,9 +39,9 @@
   output:
     format: |
       table(
-        name.basename():label=NAME,
-        type:label=TYPE,
-        revisionId:label=REVISION_ID,
+        name.basename(),
+        type,
+        revisionId,
         revisionCreateTime:label=CREATE_TIME,
-        definition:label=DEFINITION
+        definition:optional
       )

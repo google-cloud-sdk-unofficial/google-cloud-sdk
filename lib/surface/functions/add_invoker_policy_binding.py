@@ -35,12 +35,6 @@ _DETAILED_HELP = {
 }
 
 
-def _CommonArgs(parser):
-  """Registers flags for this command."""
-  flags.AddFunctionResourceArg(parser, 'to add the invoker binding to')
-  iam_util.AddMemberFlag(parser, 'to add to the IAM policy', False)
-
-
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class AddInvokerPolicyBinding(base.Command):
   """Adds an invoker binding to the IAM policy of a Google Cloud Function.
@@ -53,7 +47,8 @@ class AddInvokerPolicyBinding(base.Command):
   @staticmethod
   def Args(parser):
     """Registers flags for this command."""
-    _CommonArgs(parser)
+    flags.AddFunctionResourceArg(parser, 'to add the invoker binding to')
+    iam_util.AddMemberFlag(parser, 'to add to the IAM policy', False)
 
   def Run(self, args):
     """Runs the command.

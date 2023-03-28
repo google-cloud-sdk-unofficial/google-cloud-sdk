@@ -22,6 +22,7 @@ import textwrap
 
 from googlecloudsdk.api_lib.spanner import databases
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.spanner import flags
 from googlecloudsdk.command_lib.spanner import resource_args
 
 
@@ -43,6 +44,12 @@ class Describe(base.ListCommand):
     resource_args.AddDatabaseResourceArg(parser, 'of which the ddl to describe')
     parser.display_info.AddCacheUpdater(None)
     parser.display_info.AddFormat('value(format("{0};\n"))')
+    flags.IncludeProtoDescriptors(
+        help_text=(
+            'Include debug string of proto bundle descriptors in output. Output'
+            ' is information only and not meant to be parsed.'
+        )
+    ).AddToParser(parser)
 
   def Run(self, args):
     """This is what gets called when the user runs this command.
@@ -54,4 +61,4 @@ class Describe(base.ListCommand):
     Returns:
       Some value that we want to have printed later.
     """
-    return databases.GetDdl(args.CONCEPTS.database.Parse())
+    return databases.GetDdlWithDescriptors(args.CONCEPTS.database.Parse(), args)

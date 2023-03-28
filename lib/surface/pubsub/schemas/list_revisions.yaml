@@ -40,8 +40,8 @@
   output:
     format: |
       table(
-        revisionId:label=REVISION_ID,
+        revisionId,
         revisionCreateTime:label=CREATE_TIME,
         type:label=TYPE,
-        definition:label=DEFINITION
+        definition:optional
       )

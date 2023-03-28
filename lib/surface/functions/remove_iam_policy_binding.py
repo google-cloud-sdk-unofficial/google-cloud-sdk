@@ -35,12 +35,6 @@ _DETAILED_HELP = {
 }
 
 
-def _CommonArgs(parser):
-  flags.AddFunctionResourceArg(parser, 'to remove IAM policy binding from')
-  iam_util.AddArgsForRemoveIamPolicyBinding(parser)
-  flags.AddGen2Flag(parser)
-
-
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class RemoveIamPolicyBinding(base.Command):
   """Removes an IAM policy binding from a Google Cloud Function."""
@@ -50,7 +44,9 @@ class RemoveIamPolicyBinding(base.Command):
   @staticmethod
   def Args(parser):
     """Registers flags for this command."""
-    _CommonArgs(parser)
+    flags.AddFunctionResourceArg(parser, 'to remove IAM policy binding from')
+    iam_util.AddArgsForRemoveIamPolicyBinding(parser)
+    flags.AddGen2Flag(parser)
 
   def Run(self, args):
     """This is what gets called when the user runs this command.

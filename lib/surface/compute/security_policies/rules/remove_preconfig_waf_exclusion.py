@@ -307,6 +307,82 @@ class RemovePreconfigWafExclusionHelper(object):
         preconfig_waf_config=new_preconfig_waf_config)
 
 
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class RemovePreconfigWafExclusionGA(base.UpdateCommand):
+  r"""Remove an exclusion configuration for preconfigured WAF evaluation from a security policy rule.
+
+  *{command}* is used to remove an exclusion configuration for preconfigured WAF
+  evaluation from a security policy rule.
+
+  Note that request field exclusions are associated with a target, which can be
+  a single rule set, or a rule set plus a list of rule IDs under the rule set.
+
+  It is possible to remove request field exclusions at 3 levels:
+  - Remove specific request field exclusions that are associated with a matching
+    target.
+  - Remove all the request field exclusions that are associated with a matching
+    target.
+  - Remove all the request field exclusions that are configured under the
+    security policy rule, regardless of the target.
+
+  ## EXAMPLES
+
+  To remove specific request field exclusions that are associated with the
+  target of 'sqli-stable': ['owasp-crs-v030001-id942110-sqli',
+  'owasp-crs-v030001-id942120-sqli'], run:
+
+    $ {command} 1000 \
+       --security-policy=my-policy \
+       --target-rule-set=sqli-stable \
+       --target-rule-ids=owasp-crs-v030001-id942110-sqli,owasp-crs-v030001-id942120-sqli
+       \
+       --request-header-to-exclude=op=EQUALS,val=abc \
+       --request-header-to-exclude=op=STARTS_WITH,val=xyz \
+       --request-uri-to-exclude=op=EQUALS_ANY
+
+  To remove all the request field exclusions that are associated with the target
+  of 'sqli-stable': ['owasp-crs-v030001-id942110-sqli',
+  'owasp-crs-v030001-id942120-sqli'], run:
+
+    $ {command} 1000 \
+       --security-policy=my-policy \
+       --target-rule-set=sqli-stable \
+       --target-rule-ids=owasp-crs-v030001-id942110-sqli,owasp-crs-v030001-id942120-sqli
+
+  To remove all the request field exclusions that are associated with the target
+  of 'sqli-stable': [], run:
+
+    $ {command} 1000 \
+       --security-policy=my-policy \
+       --target-rule-set=sqli-stable
+
+  To remove all the request field exclusions that are configured under the
+  security policy rule, regardless of the target, run:
+
+    $ {command} 1000 \
+       --security-policy=my-policy \
+       --target-rule-set=*
+  """
+
+  SECURITY_POLICY_ARG = None
+
+  _support_regional_security_policy = False
+
+  @classmethod
+  def Args(cls, parser):
+    RemovePreconfigWafExclusionHelper.Args(
+        parser,
+        support_regional_security_policy=cls._support_regional_security_policy,
+    )
+
+  def Run(self, args):
+    return RemovePreconfigWafExclusionHelper.Run(
+        self.ReleaseTrack(),
+        args,
+        support_regional_security_policy=self._support_regional_security_policy,
+    )
+
+
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class RemovePreconfigWafExclusionBeta(base.UpdateCommand):
   r"""Remove an exclusion configuration for preconfigured WAF evaluation from a security policy rule.
@@ -372,13 +448,15 @@ class RemovePreconfigWafExclusionBeta(base.UpdateCommand):
   def Args(cls, parser):
     RemovePreconfigWafExclusionHelper.Args(
         parser,
-        support_regional_security_policy=cls._support_regional_security_policy)
+        support_regional_security_policy=cls._support_regional_security_policy,
+    )
 
   def Run(self, args):
     return RemovePreconfigWafExclusionHelper.Run(
         self.ReleaseTrack(),
         args,
-        support_regional_security_policy=self._support_regional_security_policy)
+        support_regional_security_policy=self._support_regional_security_policy,
+    )
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -453,4 +531,3 @@ class RemovePreconfigWafExclusionAlpha(base.UpdateCommand):
         self.ReleaseTrack(),
         args,
         support_regional_security_policy=self._support_regional_security_policy)
-

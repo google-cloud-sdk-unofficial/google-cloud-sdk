@@ -3,18 +3,13 @@
     brief: Remove IAM policy binding of a Cloud Run job.
     description: |
       Remove an IAM policy binding from the IAM policy of a job. One binding consists of a member,
-      a role, and an optional condition.
+      and a role.
 
     examples: |
       To remove an IAM policy binding for the role of 'roles/run.invoker' for the user 'test-user@gmail.com'
       with servcie 'my-job' and region 'us-central1', run:
 
         $ {command} my-job --region='us-central1' --member='user:test-user@gmail.com' --role='roles/run.invoker'
-
-      To remove an IAM policy binding which expires at the end of the year 2019 for the role of
-      'roles/run.invoker' and the user 'test-user@gmail.com' with job 'my-job' and region 'us-central1', run:
-
-        $ {command} my-job --region='us-central1' --member='user:test-user@gmail.com' --role='roles/run.invoker' --condition='expression=request.time < timestamp("2020-01-01T00:00:00Z"),title=expires_end_of_2019,description=Expires at midnight on 2019-12-31'
 
       See https://cloud.google.com/iam/docs/managing-policies for details of
       policy role and member types.
@@ -35,4 +30,4 @@
         - arg_name: 'region'
 
   iam:
-    enable_condition: true
+    enable_condition: false

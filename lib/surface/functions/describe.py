@@ -28,12 +28,6 @@ from googlecloudsdk.core import log
 import six.moves.http_client
 
 
-def _CommonArgs(parser):
-  """Registers flags for this command."""
-  flags.AddFunctionResourceArg(parser, 'to describe')
-  flags.AddGen2Flag(parser)
-
-
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Describe(base.DescribeCommand):
   """Display details of a Google Cloud Function."""
@@ -41,7 +35,8 @@ class Describe(base.DescribeCommand):
   @staticmethod
   def Args(parser):
     """Register flags for this command."""
-    _CommonArgs(parser)
+    flags.AddFunctionResourceArg(parser, 'to describe')
+    flags.AddGen2Flag(parser)
 
   @util_v1.CatchHTTPErrorRaiseHTTPException
   def Run(self, args):

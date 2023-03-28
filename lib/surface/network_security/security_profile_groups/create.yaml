@@ -1,0 +1,28 @@
+release_tracks: [ALPHA]
+help_text:
+  brief: |
+    Create a new Security Profile Group
+  description: |
+    Create a new Security Profile Group with the given name.
+  examples: |
+    To create a Security Profile Group with the name `my-security-profile-group` (Either a fully specified path or --location and --organization flags for SPG should be specified), threat-prevention-profile `my-security-profile` and optional description as `optional description`, run:
+
+      $ {command} my-security-profile-group --organization=1234 --location=global --threat-prevention-profile=`organizations/1234/locations/global/securityProfiles/my-security-profile` --description='optional description'
+arguments:
+  resource:
+    spec: !REF googlecloudsdk.command_lib.network_security.resources:securityProfileGroup
+    help_text: |
+      Name of the security profile group to be created.
+  params:
+  - arg_name: threat_prevention_profile
+    required: true
+    api_field: securityProfileGroup.threatPreventionProfile
+    help_text: Name of the security profile of type threat prevention.
+  - arg_name: description
+    api_field: securityProfileGroup.description
+    help_text: Description of the security profile group.
+
+request: &request
+  api_version: v1alpha1
+  collection: networksecurity.organizations.locations.securityProfileGroups
+  method: create

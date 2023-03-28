@@ -71,6 +71,7 @@ class Create(base.CreateCommand):
   _support_no_address_in_networking = True
   _support_max_count_per_zone = False
   _support_local_ssd_recovery_timeout = True
+  _support_network_queue_count = True
 
   @classmethod
   def Args(cls, parser):
@@ -94,6 +95,7 @@ class Create(base.CreateCommand):
         support_provisioned_throughput=cls._support_provisioned_throughput,
         support_no_address_in_networking=cls._support_no_address_in_networking,
         support_max_count_per_zone=cls._support_max_count_per_zone,
+        support_network_queue_count=cls._support_network_queue_count,
     )
     cls.AddSourceInstanceTemplate(parser)
     instances_flags.AddSecureTagsArgs(parser)

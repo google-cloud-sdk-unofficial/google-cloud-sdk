@@ -351,6 +351,8 @@ class CreateBeta(Create):
     flags.AddWindowsOsVersionFlag(parser)
     flags.AddQueuedProvisioningFlag(parser, hidden=True)
     flags.AddTPUTopologyFlag(parser, hidden=True)
+    flags.AddEnableNestedVirtualizationFlag(
+        parser, for_node_pool=True, hidden=True)
 
   def ParseCreateNodePoolOptions(self, args):
     ops = ParseCreateNodePoolOptionsBase(args)
@@ -377,6 +379,7 @@ class CreateBeta(Create):
     ops.enable_fast_socket = args.enable_fast_socket
     ops.enable_queued_provisioning = args.enable_queued_provisioning
     ops.tpu_topology = args.tpu_topology
+    ops.enable_nested_virtualization = args.enable_nested_virtualization
     return ops
 
 
@@ -411,6 +414,7 @@ class CreateAlpha(Create):
     ops.enable_fast_socket = args.enable_fast_socket
     ops.enable_queued_provisioning = args.enable_queued_provisioning
     ops.tpu_topology = args.tpu_topology
+    ops.enable_nested_virtualization = args.enable_nested_virtualization
     return ops
 
   @staticmethod
@@ -461,5 +465,6 @@ class CreateAlpha(Create):
     flags.AddWindowsOsVersionFlag(parser)
     flags.AddQueuedProvisioningFlag(parser, hidden=True)
     flags.AddTPUTopologyFlag(parser, hidden=True)
+    flags.AddEnableNestedVirtualizationFlag(parser, hidden=True)
 
 Create.detailed_help = DETAILED_HELP

@@ -41,6 +41,16 @@ class Update(base.UpdateCommand):
         region, run:
 
           $ {command} commitment-1 --auto-renew --region=us-central1
+
+        To disable auto renewal on a commitment called ``commitment-1''
+        in the ``us-central1'' region, run:
+
+          $ {command} commitment-1 --no-auto-renew --region=us-central1
+
+        To upgrade the term of a commitment called ``commitment-1''
+        from  12-month to 36-month, in the ``us-central1'' region, run:
+
+          $ {command} commitment-1 --plan=36-month --region=us-central1
       """
   }
 
@@ -54,15 +64,20 @@ class Update(base.UpdateCommand):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     client = holder.client
     resources = holder.resources
-    commitment_ref = self.CreateReference(client, resources, args)
+    commitment_ref = self._CreateReference(client, resources, args)
 
     messages = holder.client.messages
     service = holder.client.apitools_client.regionCommitments
 
     commitment_resource = messages.Commitment(name=commitment_ref.Name())
-    commitment_resource.autoRenew = args.auto_renew
-    commitment_update_request = self.GetUpdateRequest(messages, commitment_ref,
-                                                      commitment_resource)
+
+    commitment_resource.autoRenew = flags.TranslateAutoRenewArgForUpdate(args)
+    commitment_resource.plan = self._TranslatePlanArgForUpdate(
+        messages=messages, plan=args.plan
+    )
+    commitment_update_request = self._GetUpdateRequest(
+        messages, commitment_ref, commitment_resource
+    )
 
     batch_url = holder.client.batch_url
     http = holder.client.apitools_client.http
@@ -83,16 +98,30 @@ class Update(base.UpdateCommand):
       utils.RaiseToolException(errors)
     return result
 
-  def CreateReference(self, client, resources, args):
+  def _CreateReference(self, client, resources, args):
     return flags.MakeCommitmentArg(False).ResolveAsResource(
         args,
         resources,
         scope_lister=compute_flags.GetDefaultScopeLister(client))
 
-  def GetUpdateRequest(self, messages, commitment_ref, commitment_resource):
+  def _GetUpdateRequest(self, messages, commitment_ref, commitment_resource):
     return messages.ComputeRegionCommitmentsUpdateRequest(
         commitment=commitment_ref.Name(),
         commitmentResource=commitment_resource,
-        paths=['autoRenew'],
+        paths=self._GetPaths(commitment_resource),
         project=commitment_ref.project,
         region=commitment_ref.region)
+
+  def _GetPaths(self, commitment_resource):
+    paths = []
+    if commitment_resource.autoRenew is not None:
+      paths.append('autoRenew')
+    if commitment_resource.plan is not None:
+      paths.append('plan')
+    return paths
+
+  def _TranslatePlanArgForUpdate(self, messages=None, plan=None):
+    if plan is None:
+      return None
+    else:
+      return flags.TranslatePlanArg(messages, plan)

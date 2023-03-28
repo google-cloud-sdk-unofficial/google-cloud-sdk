@@ -154,7 +154,7 @@ class UpdateBeta(UpdateGa):
     flags.AddCloudArmorAdaptiveProtectionAutoDeploy(parser)
     flags.AddAdvancedOptions(parser)
     flags.AddRecaptchaOptions(parser)
-    flags.AddDdosProtectionConfig(parser)
+    flags.AddDdosProtectionConfigWithAdvancedPreview(parser)
 
   def _ValidateArgs(self, args):
     """Validates that at least one field to update is specified.
@@ -270,7 +270,7 @@ class UpdateAlpha(UpdateBeta):
     flags.AddCloudArmorAdaptiveProtectionAutoDeploy(parser)
     flags.AddAdvancedOptions(parser)
     flags.AddRecaptchaOptions(parser)
-    flags.AddDdosProtectionConfig(parser)
+    flags.AddDdosProtectionConfigWithAdvancedPreview(parser)
     flags.AddDdosProtectionConfigOld(parser)
 
     parser.add_argument(
