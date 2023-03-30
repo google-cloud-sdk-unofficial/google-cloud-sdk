@@ -76,11 +76,4 @@ class Describe(base.DescribeCommand):
     return org_policy_api.GetPolicy(policy_name)
 
 
-@base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class DescribeALPHA(Describe):
-  """Describe an organization policy."""
-  pass
-
-
 Describe.detailed_help = DETAILED_HELP

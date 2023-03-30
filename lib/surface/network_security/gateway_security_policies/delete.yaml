@@ -1,12 +1,12 @@
-release_tracks: [ALPHA]
+release_tracks: [BETA, ALPHA]
 
 help_text:
   brief: |
-    Delete GatewaySecurityPolicy.
+    Delete Gateway Security Policy.
   description: |
-    Delete the specified GatewaySecurityPolicy.
+    Delete the specified Gateway Security Policy.
   examples: |
-      To delete a GatewaySecurityPolicy called 'my-gateway-security-policy', run:
+      To delete a Gateway Security Policy called 'my-gateway-security-policy', run:
 
         $ {command} my-gateway-security-policy --location=global
 
@@ -14,11 +14,14 @@ arguments:
   resource:
     spec: !REF googlecloudsdk.command_lib.network_security.resources:gatewaySecurityPolicy
     help_text: |
-      Name of the GatewaySecurityPolicy you want to delete.
+      Name of the Gateway Security Policy you want to delete.
 
 async:
   collection: networksecurity.projects.locations.operations
 
 request: &request
-  api_version: v1alpha1
+  ALPHA:
+    api_version: v1alpha1
+  BETA:
+    api_version: v1beta1
   collection: networksecurity.projects.locations.gatewaySecurityPolicies

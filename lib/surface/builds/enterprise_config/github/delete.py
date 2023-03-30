@@ -21,6 +21,7 @@ from __future__ import unicode_literals
 from googlecloudsdk.api_lib.cloudbuild import cloudbuild_util
 from googlecloudsdk.api_lib.util import waiter
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.builds import flags as build_flags
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 from googlecloudsdk.core import resources
@@ -39,6 +40,7 @@ class DeleteAlpha(base.DeleteCommand):
         to capture some information, but behaves like an ArgumentParser.
     """
     parser.add_argument('CONFIG', help='The id of the GitHub Enterprise Config')
+    build_flags.AddRegionFlag(parser, hidden=False, required=False)
 
   def Run(self, args):
     """This is what gets called when the user runs this command.
@@ -55,23 +57,28 @@ class DeleteAlpha(base.DeleteCommand):
     messages = cloudbuild_util.GetMessagesModule()
 
     parent = properties.VALUES.core.project.Get(required=True)
+    regionprop = properties.VALUES.builds.region.Get()
+    location = args.region or regionprop or cloudbuild_util.DEFAULT_REGION
 
     config_id = args.CONFIG
 
     # Get the github enterprise config ref
     ghe_resource = resources.REGISTRY.Parse(
         None,
-        collection='cloudbuild.projects.githubEnterpriseConfigs',
+        collection='cloudbuild.projects.locations.githubEnterpriseConfigs',
         api_version='v1',
         params={
             'projectsId': parent,
             'githubEnterpriseConfigsId': config_id,
+            'locationsId': location,
         })
 
     # Send the Delete request
-    deleted_op = client.projects_githubEnterpriseConfigs.Delete(
-        messages.CloudbuildProjectsGithubEnterpriseConfigsDeleteRequest(
-            name=ghe_resource.RelativeName()))
+    deleted_op = client.projects_locations_githubEnterpriseConfigs.Delete(
+        messages.CloudbuildProjectsLocationsGithubEnterpriseConfigsDeleteRequest(
+            name=ghe_resource.RelativeName(),
+            configId=config_id,
+            projectId=parent))
     op_resource = resources.REGISTRY.ParseRelativeName(
         deleted_op.name, collection='cloudbuild.projects.locations.operations')
     waiter.WaitFor(

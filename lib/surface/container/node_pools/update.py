@@ -226,6 +226,8 @@ class UpdateBeta(Update):
     node_management_group = group.add_argument_group('Node management')
     flags.AddEnableAutoRepairFlag(node_management_group, for_node_pool=True)
     flags.AddEnableAutoUpgradeFlag(node_management_group, for_node_pool=True)
+    flags.AddAcceleratorArgs(
+        group, enable_gpu_partition=True, enable_gpu_sharing=True, hidden=True)
 
     autoscaling_group = flags.AddClusterAutoscalingFlags(group)
     flags.AddNodePoolAutoprovisioningFlag(autoscaling_group, hidden=False)
@@ -268,6 +270,7 @@ class UpdateBeta(Update):
     flags.WarnForLocationPolicyDefault(args)
 
     ops = api_adapter.UpdateNodePoolOptions(
+        accelerators=args.accelerator,
         enable_autorepair=args.enable_autorepair,
         enable_autoupgrade=args.enable_autoupgrade,
         enable_autoscaling=args.enable_autoscaling,
@@ -315,6 +318,8 @@ class UpdateAlpha(Update):
     node_management_group = group.add_argument_group('Node management')
     flags.AddEnableAutoRepairFlag(node_management_group, for_node_pool=True)
     flags.AddEnableAutoUpgradeFlag(node_management_group, for_node_pool=True)
+    flags.AddAcceleratorArgs(
+        group, enable_gpu_partition=True, enable_gpu_sharing=True, hidden=True)
 
     autoscaling_group = flags.AddClusterAutoscalingFlags(group)
     flags.AddNodePoolAutoprovisioningFlag(autoscaling_group, hidden=False)
@@ -357,6 +362,7 @@ class UpdateAlpha(Update):
     flags.WarnForLocationPolicyDefault(args)
 
     ops = api_adapter.UpdateNodePoolOptions(
+        accelerators=args.accelerator,
         enable_autorepair=args.enable_autorepair,
         enable_autoupgrade=args.enable_autoupgrade,
         enable_autoscaling=args.enable_autoscaling,

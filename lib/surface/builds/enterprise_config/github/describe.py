@@ -20,6 +20,7 @@ from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.cloudbuild import cloudbuild_util
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.builds import flags as build_flags
 from googlecloudsdk.core import properties
 from googlecloudsdk.core import resources
 
@@ -39,6 +40,7 @@ class DescribeAlpha(base.DescribeCommand):
     """
     parser.add_argument('CONFIG',
                         help='The id of the GitHub Enterprise Config')
+    build_flags.AddRegionFlag(parser, hidden=False, required=False)
 
   def Run(self, args):
     """This is what gets called when the user runs this command.
@@ -57,20 +59,25 @@ class DescribeAlpha(base.DescribeCommand):
     parent = properties.VALUES.core.project.Get(required=True)
 
     config_id = args.CONFIG
+    regionprop = properties.VALUES.builds.region.Get()
+    location = args.region or regionprop or cloudbuild_util.DEFAULT_REGION
 
     # Get the github enterprise config ref
     ghe_resource = resources.REGISTRY.Parse(
         None,
-        collection='cloudbuild.projects.githubEnterpriseConfigs',
+        collection='cloudbuild.projects.locations.githubEnterpriseConfigs',
         api_version='v1',
         params={
             'projectsId': parent,
             'githubEnterpriseConfigsId': config_id,
+            'locationsId': location,
         })
 
     # Send the Get request
-    ghe = client.projects_githubEnterpriseConfigs.Get(
-        messages.CloudbuildProjectsGithubEnterpriseConfigsGetRequest(
-            name=ghe_resource.RelativeName()))
+    ghe = client.projects_locations_githubEnterpriseConfigs.Get(
+        messages.CloudbuildProjectsLocationsGithubEnterpriseConfigsGetRequest(
+            name=ghe_resource.RelativeName(),
+            configId=config_id,
+            projectId=parent))
 
     return ghe

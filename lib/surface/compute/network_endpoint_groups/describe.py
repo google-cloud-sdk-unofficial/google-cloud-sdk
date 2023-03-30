@@ -33,8 +33,9 @@ To describe a network endpoint group:
 }
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
-                    base.ReleaseTrack.GA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
+)
 class Describe(base.DescribeCommand):
   """Describe a Compute Engine network endpoint group."""
 
@@ -44,35 +45,41 @@ class Describe(base.DescribeCommand):
   @classmethod
   def Args(cls, parser):
     flags.MakeNetworkEndpointGroupsArg(
-        support_regional_scope=cls.support_regional_scope).AddArgument(parser)
+        support_regional_scope=cls.support_regional_scope
+    ).AddArgument(parser)
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     client = holder.client
 
     neg_ref = flags.MakeNetworkEndpointGroupsArg(
-        support_regional_scope=self.support_regional_scope).ResolveAsResource(
-            args,
-            holder.resources,
-            default_scope=compute_scope.ScopeEnum.ZONE,
-            scope_lister=compute_flags.GetDefaultScopeLister(holder.client))
+        support_regional_scope=self.support_regional_scope
+    ).ResolveAsResource(
+        args,
+        holder.resources,
+        default_scope=compute_scope.ScopeEnum.ZONE,
+        scope_lister=compute_flags.GetDefaultScopeLister(holder.client),
+    )
 
     messages = holder.client.messages
     if hasattr(neg_ref, 'zone'):
       request = messages.ComputeNetworkEndpointGroupsGetRequest(
           networkEndpointGroup=neg_ref.Name(),
           project=neg_ref.project,
-          zone=neg_ref.zone)
+          zone=neg_ref.zone,
+      )
       service = holder.client.apitools_client.networkEndpointGroups
     elif hasattr(neg_ref, 'region'):
       request = messages.ComputeRegionNetworkEndpointGroupsGetRequest(
           networkEndpointGroup=neg_ref.Name(),
           project=neg_ref.project,
-          region=neg_ref.region)
+          region=neg_ref.region,
+      )
       service = holder.client.apitools_client.regionNetworkEndpointGroups
     else:
       request = messages.ComputeGlobalNetworkEndpointGroupsGetRequest(
-          networkEndpointGroup=neg_ref.Name(), project=neg_ref.project)
+          networkEndpointGroup=neg_ref.Name(), project=neg_ref.project
+      )
       service = holder.client.apitools_client.globalNetworkEndpointGroups
 
     return client.MakeRequests([(service, 'Get', request)])[0]

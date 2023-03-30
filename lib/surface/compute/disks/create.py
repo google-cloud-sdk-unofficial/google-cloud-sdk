@@ -123,11 +123,10 @@ def _SourceArgs(parser,
     disks_flags.SOURCE_INSTANT_SNAPSHOT_ARG.AddArgument(source_group)
   disks_flags.SOURCE_DISK_ARG.AddArgument(parser, mutex_group=source_group)
   if support_async_pd:
-    async_pd_category = 'ASYNC PD'
     disks_flags.ASYNC_PRIMARY_DISK_ARG.AddArgument(
-        parser, mutex_group=source_group, category=async_pd_category
+        parser, mutex_group=source_group
     )
-    disks_flags.AddPrimaryDiskProject(parser, async_pd_category)
+    disks_flags.AddPrimaryDiskProject(parser)
 
   disks_flags.AddLocationHintArg(parser)
 
@@ -654,6 +653,7 @@ class CreateBeta(Create):
         parser,
         include_physical_block_size_support=True,
         vss_erase_enabled=True,
+        support_async_pd=True,
         support_pd_interface=True)
     image_utils.AddGuestOsFeaturesArg(parser, messages)
     _AddReplicaZonesArg(parser)
@@ -668,6 +668,7 @@ class CreateBeta(Create):
         supports_physical_block=True,
         support_vss_erase=True,
         support_multiwriter_disk=True,
+        support_async_pd=True,
         support_pd_interface=True)
 
 

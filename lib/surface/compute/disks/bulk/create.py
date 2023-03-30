@@ -33,9 +33,8 @@ DETAILED_HELP = {
     'DESCRIPTION':
         """
         *{command}* facilitates the creation of multiple Compute Engine
-        disks with a single command. Currently, this includes the
-        ability to consistently clone a set of Async PD secondary disks with
-        the same consistency group policy.
+        disks with a single command. This includes cloning a set of Async PD
+        secondary disks with the same consistency group policy.
         """,
     'EXAMPLES':
         """
@@ -105,7 +104,7 @@ def _GetResult(compute_client, request, operation_group_id, parent_errors):
   return result
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
 class BulkCreate(base.Command):
   """Create multiple Compute Engine disks."""
 
@@ -176,3 +175,17 @@ class BulkCreate(base.Command):
       log.error(self._errors[0][1])
 
 BulkCreate.detailed_help = DETAILED_HELP
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class BulkCreateAlpha(BulkCreate):
+  """Create multiple Compute Engine disks."""
+
+  @classmethod
+  def Args(cls, parser):
+    _CommonArgs(parser)
+
+  def Run(self, args):
+    return self._Run(args)
+
+BulkCreateAlpha.detailed_help = DETAILED_HELP

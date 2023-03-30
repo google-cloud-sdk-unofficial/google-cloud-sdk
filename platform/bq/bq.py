@@ -1444,7 +1444,14 @@ def _CreateExternalTableDefinition(
     elif external_table_def['sourceFormat'] == 'ORC':
       if reference_file_schema_uri is not None:
         external_table_def['referenceFileSchemaUri'] = reference_file_schema_uri
-    elif external_table_def['sourceFormat'] == 'ICEBERG':
+    elif (
+        external_table_def['sourceFormat'] == 'ICEBERG'
+    ):
+      source_format = (
+          'Iceberg'
+          if external_table_def['sourceFormat'] == 'ICEBERG'
+          else 'Delta Lake'
+      )
       if autodetect is not None and not autodetect or schema:
         raise app.UsageError(
             'Cannot create Iceberg table from user-specified schema.')
@@ -1453,6 +1460,7 @@ def _CreateExternalTableDefinition(
       if len(source_uris.split(',')) != 1:
         raise app.UsageError(
             'Must provide only one source_uri for Iceberg table.')
+
 
     if ignore_unknown_values:
       external_table_def['ignoreUnknownValues'] = True
@@ -3905,12 +3913,14 @@ class _Make(BigqueryCmd):
             'FLEX',
             'MONTHLY',
             'ANNUAL',
+            'THREE_YEAR',
         ],
         'Commitment plan for this capacity commitment. Plans cannot be deleted '
         'before their commitment period is over. Options include:'
         '\n FLEX'
         '\n MONTHLY'
-        '\n ANNUAL',
+        '\n ANNUAL'
+        '\n THREE_YEAR',
         flag_values=fv)
     flags.DEFINE_enum(
         'renewal_plan',
@@ -3919,6 +3929,8 @@ class _Make(BigqueryCmd):
             'FLEX',
             'MONTHLY',
             'ANNUAL',
+            'THREE_YEAR',
+            'NONE',
         ],
         'The plan this capacity commitment is converted to after committed '
         'period ends. Options include:'
@@ -3926,7 +3938,9 @@ class _Make(BigqueryCmd):
         '\n FLEX'
         '\n MONTHLY'
         '\n ANNUAL'
-        ,
+        '\n THREE_YEAR'
+        '\n NONE can only be used in conjunction with --edition, '
+        '\n while FLEX and MONTHLY cannot be used together with --edition.',
         flag_values=fv)
     flags.DEFINE_integer(
         'slots',
@@ -4053,6 +4067,17 @@ class _Make(BigqueryCmd):
         None,
         'Project/folder/organization ID, to which the reservation is assigned. '
         'Used in conjunction with --reservation_assignment.',
+        flag_values=fv)
+    flags.DEFINE_enum(
+        'edition',
+        None, ['STANDARD', 'ENTERPRISE', 'ENTERPRISE_PLUS'],
+        'Type of editions for the reservation or capacity commitment. '
+        'Options include:'
+        '\n STANDARD'
+        '\n ENTERPRISE'
+        '\n ENTERPRISE_PLUS'
+        '\n Used in conjunction with --reservation or --capacity_commitment.'
+        '\n STANDARD cannot be used together with --capacity_commitment.',
         flag_values=fv)
     flags.DEFINE_boolean(
         'connection', None, 'Create a connection.', flag_values=fv)
@@ -4233,11 +4258,13 @@ class _Make(BigqueryCmd):
             reference=reference,
             slots=self.slots,
             ignore_idle_slots=ignore_idle_arg,
+            edition=self.edition,
             target_job_concurrency=concurrency,
             enable_queuing_and_priorities=self.enable_queuing_and_priorities,
             multi_region_auxiliary=self.multi_region_auxiliary,
             autoscale_max_slots=self.autoscale_max_slots,
-            autoscale_budget_slot_hours=self.autoscale_budget_slot_hours)
+            autoscale_budget_slot_hours=self.autoscale_budget_slot_hours,
+        )
       except BaseException as e:
         raise bigquery_client.BigqueryError(
             "Failed to create reservation '%s': %s" % (identifier, e))
@@ -4251,10 +4278,12 @@ class _Make(BigqueryCmd):
       try:
         object_info = client.CreateCapacityCommitment(
             reference,
+            self.edition,
             self.slots,
             self.plan,
             self.renewal_plan,
-            self.multi_region_auxiliary)
+            self.multi_region_auxiliary,
+        )
       except BaseException as e:
         raise bigquery_client.BigqueryError(
             "Failed to create capacity commitment in '%s': %s" %
@@ -4822,11 +4851,12 @@ class _Update(BigqueryCmd):
         flag_values=fv)
     flags.DEFINE_enum(
         'plan',
-        None, ['MONTHLY', 'ANNUAL'],
+        None, ['MONTHLY', 'ANNUAL', 'THREE_YEAR'],
         'Commitment plan for this capacity commitment. Plan can only be '
         'updated to the one with longer committed period. Options include:'
         '\n MONTHLY'
-        '\n ANNUAL',
+        '\n ANNUAL'
+        '\n THREE_YEAR',
         flag_values=fv)
     flags.DEFINE_enum(
         'renewal_plan',
@@ -4835,12 +4865,18 @@ class _Update(BigqueryCmd):
             'FLEX',
             'MONTHLY',
             'ANNUAL',
+            'THREE_YEAR',
+            'NONE',
         ],
         'The plan this capacity commitment is converted to after committed '
         'period ends. Options include:'
+        '\n NONE'
         '\n FLEX'
         '\n MONTHLY'
-        '\n ANNUAL',
+        '\n ANNUAL'
+        '\n THREE_YEAR'
+        '\n NONE can only be used in conjunction with --edition, '
+        '\n while FLEX and MONTHLY cannot be used together with --edition.',
         flag_values=fv)
     flags.DEFINE_boolean(
         'split',

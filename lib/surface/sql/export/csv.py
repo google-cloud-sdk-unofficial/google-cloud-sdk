@@ -52,7 +52,9 @@ class Csv(base.Command):
         '--query',
         required=True,
         help='A SQL SELECT query (e.g., SELECT * FROM table) that specifies '
-             'the data to export.')
+             'the data to export. WARNING: While in-transit, the query might '
+             'be processed in intermediate locations other than the location '
+             'of the target instance.')
     flags.AddQuoteArgument(parser)
     flags.AddEscapeArgument(parser)
     flags.AddFieldsDelimiterArgument(parser)

@@ -25,8 +25,7 @@ from googlecloudsdk.command_lib.compute import flags as compute_flags
 from googlecloudsdk.command_lib.compute.network_endpoint_groups import flags
 
 
-DETAILED_HELP = {
-    'EXAMPLES': """
+DETAILED_HELP = {'EXAMPLES': """
 To add two endpoints to a network endpoint group:
 
   $ {command} my-neg --zone=us-central1-a --add-endpoint=instance=my-instance1,ip=127.0.0.1,port=1234 --add-endpoint=instance=my-instance2
@@ -34,8 +33,7 @@ To add two endpoints to a network endpoint group:
 To remove two endpoints from a network endpoint group:
 
   $ {command} my-neg --zone=us-central1-a --remove-endpoint=instance=my-instance1,ip=127.0.0.1,port=1234 --remove-endpoint=instance=my-instance2
-"""
-}
+"""}
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
@@ -72,15 +70,18 @@ class Update(base.UpdateCommand):
         scope_lister=compute_flags.GetDefaultScopeLister(holder.client),
     )
 
-    client = network_endpoint_groups.NetworkEndpointGroupsClient(client,
-                                                                 messages,
-                                                                 resources)
+    client = network_endpoint_groups.NetworkEndpointGroupsClient(
+        client, messages, resources
+    )
     add_endpoints = (
-        args.add_endpoint if args.IsSpecified('add_endpoint') else None)
+        args.add_endpoint if args.IsSpecified('add_endpoint') else None
+    )
     remove_endpoints = (
-        args.remove_endpoint if args.IsSpecified('remove_endpoint') else None)
+        args.remove_endpoint if args.IsSpecified('remove_endpoint') else None
+    )
     return client.Update(
-        neg_ref, add_endpoints=add_endpoints, remove_endpoints=remove_endpoints)
+        neg_ref, add_endpoints=add_endpoints, remove_endpoints=remove_endpoints
+    )
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)

@@ -66,35 +66,47 @@ class UpdateAlpha(base.UpdateCommand):
 
     config_id = args.CONFIG
     ghe = cloudbuild_util.GitHubEnterpriseConfigFromArgs(args, True)
+    regionprop = properties.VALUES.builds.region.Get()
+    location = args.region or regionprop or cloudbuild_util.DEFAULT_REGION
 
     parent = properties.VALUES.core.project.Get(required=True)
 
     # Get the github enterprise config ref
     ghe_resource = resources.REGISTRY.Parse(
         None,
-        collection='cloudbuild.projects.githubEnterpriseConfigs',
+        collection='cloudbuild.projects.locations.githubEnterpriseConfigs',
         api_version='v1',
         params={
             'projectsId': parent,
             'githubEnterpriseConfigsId': config_id,
-        })
+            'locationsId': location,
+        },
+    )
 
-    ghe.name = ghe_resource.RelativeName()
     update_mask = cloudbuild_util.MessageToFieldPaths(ghe)
-    req = messages.CloudbuildProjectsGithubEnterpriseConfigsPatchRequest(
-        name=ghe.name,
-        gitHubEnterpriseConfig=ghe,
-        updateMask=','.join(update_mask))
+    update_mask.sort()
+    req = (
+        messages.CloudbuildProjectsLocationsGithubEnterpriseConfigsPatchRequest(
+            name=ghe_resource.RelativeName(),
+            gitHubEnterpriseConfig=ghe,
+            updateMask=','.join(update_mask),
+        )
+    )
     # Send the Update request
-    updated_op = client.projects_githubEnterpriseConfigs.Patch(req)
+    updated_op = client.projects_locations_githubEnterpriseConfigs.Patch(req)
 
     op_resource = resources.REGISTRY.ParseRelativeName(
-        updated_op.name, collection='cloudbuild.projects.locations.operations')
+        updated_op.name, collection='cloudbuild.projects.locations.operations'
+    )
 
     updated_ghe = waiter.WaitFor(
-        waiter.CloudOperationPoller(client.projects_githubEnterpriseConfigs,
-                                    client.projects_locations_operations),
-        op_resource, 'Updating GitHub Enterprise Config')
+        waiter.CloudOperationPoller(
+            client.projects_locations_githubEnterpriseConfigs,
+            client.projects_locations_operations,
+        ),
+        op_resource,
+        'Updating GitHub Enterprise Config',
+    )
 
     log.UpdatedResource(ghe_resource)
 

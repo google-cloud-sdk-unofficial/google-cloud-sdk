@@ -35,10 +35,10 @@ _DETAILED_HELP = {
 }
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Terminate(base.UpdateCommand):
   """Terminates a Cloud Deploy job run."""
+  detailed_help = _DETAILED_HELP
 
   @staticmethod
   def Args(parser):

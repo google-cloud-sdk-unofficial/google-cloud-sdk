@@ -64,15 +64,22 @@ class CreateAlpha(base.CreateCommand):
     client = cloudbuild_util.GetClientInstance()
     messages = cloudbuild_util.GetMessagesModule()
     ghe = cloudbuild_util.GitHubEnterpriseConfigFromArgs(args, False)
+    regionprop = properties.VALUES.builds.region.Get()
+    location = args.region or regionprop or cloudbuild_util.DEFAULT_REGION
 
     parent = properties.VALUES.core.project.Get(required=True)
     # Get the parent project ref
     parent_resource = resources.REGISTRY.Create(
-        collection='cloudbuild.projects', projectId=parent)
+        collection='cloudbuild.projects.locations',
+        projectsId=parent,
+        locationsId=location)
     # Send the Create request
-    created_op = client.projects_githubEnterpriseConfigs.Create(
-        messages.CloudbuildProjectsGithubEnterpriseConfigsCreateRequest(
-            parent=parent_resource.RelativeName(), gitHubEnterpriseConfig=ghe))
+    created_op = client.projects_locations_githubEnterpriseConfigs.Create(
+        messages.CloudbuildProjectsLocationsGithubEnterpriseConfigsCreateRequest(
+            parent=parent_resource.RelativeName(),
+            gheConfigId=args.name,
+            gitHubEnterpriseConfig=ghe,
+            projectId=parent))
     op_resource = resources.REGISTRY.ParseRelativeName(
         created_op.name, collection='cloudbuild.projects.locations.operations')
     created_config = waiter.WaitFor(
@@ -81,11 +88,12 @@ class CreateAlpha(base.CreateCommand):
         op_resource, 'Creating github enterprise config')
     ghe_resource = resources.REGISTRY.Parse(
         None,
-        collection='cloudbuild.projects.githubEnterpriseConfigs',
+        collection='cloudbuild.projects.locations.githubEnterpriseConfigs',
         api_version='v1',
         params={
             'projectsId': parent,
             'githubEnterpriseConfigsId': created_config.name,
+            'locationsId': location,
         })
 
     log.CreatedResource(ghe_resource)

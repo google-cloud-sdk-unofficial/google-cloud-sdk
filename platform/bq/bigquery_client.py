@@ -2105,6 +2105,7 @@ class BigqueryClient(object):
       self,
       slots,
       ignore_idle_slots,
+      edition,
     target_job_concurrency,
     enable_queuing_and_priorities,
     multi_region_auxiliary,
@@ -2116,6 +2117,7 @@ class BigqueryClient(object):
       slots: Number of slots allocated to this reservation subtree.
       ignore_idle_slots: Specifies whether queries should ignore idle slots from
         other reservations.
+      edition: The edition for this reservation.
       target_job_concurrency: Job concurrency target.
       enable_queuing_and_priorities: Whether queuing and new prioritization
         behavior should be enabled for the reservation.
@@ -2163,6 +2165,9 @@ class BigqueryClient(object):
           'budget_slot_hours'] = autoscale_budget_slot_hours
 
 
+    if edition is not None:
+      reservation['edition'] = edition
+
     return reservation
 
   def CreateReservation(
@@ -2170,6 +2175,7 @@ class BigqueryClient(object):
       reference,
       slots,
       ignore_idle_slots,
+      edition,
     target_job_concurrency,
     enable_queuing_and_priorities,
     multi_region_auxiliary,
@@ -2182,6 +2188,7 @@ class BigqueryClient(object):
       slots: Number of slots allocated to this reservation subtree.
       ignore_idle_slots: Specifies whether queries should ignore idle slots from
         other reservations.
+      edition: The edition for this reservation.
       target_job_concurrency: Job concurrency target.
       enable_queuing_and_priorities: Whether queuing and new prioritization
         behavior should be enabled for the reservation.
@@ -2200,11 +2207,13 @@ class BigqueryClient(object):
     reservation = self.GetBodyForCreateReservation(
         slots,
         ignore_idle_slots,
+        edition,
         target_job_concurrency,
         enable_queuing_and_priorities,
         multi_region_auxiliary,
         autoscale_max_slots,
-        autoscale_budget_slot_hours)
+        autoscale_budget_slot_hours,
+    )
     client = self.GetReservationApiClient()
     parent = 'projects/%s/locations/%s' % (reference.projectId,
                                            reference.location)
@@ -2433,6 +2442,7 @@ class BigqueryClient(object):
   def CreateCapacityCommitment(
       self,
       reference,
+      edition,
     slots,
     plan,
     renewal_plan,
@@ -2441,6 +2451,7 @@ class BigqueryClient(object):
 
     Arguments:
       reference: Project to create a capacity commitment within.
+      edition: The edition for this capacity commitment.
       slots: Number of slots in this commitment.
       plan: Commitment plan for this capacity commitment.
       renewal_plan: Renewal plan for this capacity commitment.
@@ -2456,6 +2467,8 @@ class BigqueryClient(object):
     capacity_commitment['renewal_plan'] = renewal_plan
     if multi_region_auxiliary is not None:
       capacity_commitment['multi_region_auxiliary'] = multi_region_auxiliary
+    if edition is not None:
+      capacity_commitment['edition'] = edition
     client = self.GetReservationApiClient()
     parent = 'projects/%s/locations/%s' % (reference.projectId,
                                            reference.location)
@@ -3195,6 +3208,7 @@ class BigqueryClient(object):
           'creationTime',
           'updateTime',
           'multiRegionAuxiliary',
+          'edition',
           'autoscaleMaxSlots',
           'autoscaleCurrentSlots'))
     elif reference_type == ApiClientHelper.BetaReservationReference:
@@ -3226,7 +3240,8 @@ class BigqueryClient(object):
           'state',
           'commitmentStartTime',
           'commitmentEndTime',
-          'multiRegionAuxiliary'
+          'multiRegionAuxiliary',
+          'edition',
       ))
     elif reference_type == ApiClientHelper.BetaReservationAssignmentReference:
       formatter.AddColumns(('name', 'jobType', 'assignee', 'priority'))

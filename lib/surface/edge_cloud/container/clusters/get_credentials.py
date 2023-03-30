@@ -63,5 +63,11 @@ class GetCredentials(base.Command):
         self.ReleaseTrack(), cluster_ref.clustersId,
         cluster_ref.projectsId, cluster_ref.locationsId)
 
+    exec_auth_args = kubeconfig.GenerateExecAuthCmdArgs(
+        cluster_ref.clustersId,
+        cluster_ref.projectsId,
+        cluster_ref.locationsId,
+    )
+
     kubeconfig.GenerateKubeconfig(resp, context, args.auth_provider_cmd_path,
-                                  cmd_args)
+                                  cmd_args, exec_auth_args)

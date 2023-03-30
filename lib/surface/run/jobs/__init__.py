@@ -25,7 +25,6 @@ from googlecloudsdk.command_lib.run import platforms
 from googlecloudsdk.core import properties
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Jobs(base.Group):
   """View and manage your Cloud Run jobs.
 

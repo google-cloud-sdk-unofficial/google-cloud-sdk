@@ -23,17 +23,20 @@ from googlecloudsdk.api_lib.compute import lister
 from googlecloudsdk.calliope import base
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA,
-                    base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.GA, base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA
+)
 class List(base.ListCommand):
   """Lists Compute Engine network endpoint groups."""
 
   detailed_help = base_classes.GetMultiScopeListerHelp(
-      'network endpoint groups', [
+      'network endpoint groups',
+      [
           base_classes.ScopeType.zonal_scope,
           base_classes.ScopeType.regional_scope,
-          base_classes.ScopeType.global_scope
-      ])
+          base_classes.ScopeType.global_scope,
+      ],
+  )
   support_regional_scope = True
 
   @classmethod
@@ -47,10 +50,8 @@ class List(base.ListCommand):
         )
         """)
     lister.AddMultiScopeListerFlags(
-        parser,
-        zonal=True,
-        regional=cls.support_regional_scope,
-        global_=True)
+        parser, zonal=True, regional=cls.support_regional_scope, global_=True
+    )
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
@@ -61,8 +62,10 @@ class List(base.ListCommand):
         client,
         zonal_service=client.apitools_client.networkEndpointGroups,
         regional_service=client.apitools_client.regionNetworkEndpointGroups
-        if self.support_regional_scope else None,
+        if self.support_regional_scope
+        else None,
         global_service=client.apitools_client.globalNetworkEndpointGroups,
-        aggregation_service=client.apitools_client.networkEndpointGroups)
+        aggregation_service=client.apitools_client.networkEndpointGroups,
+    )
 
     return lister.Invoke(request_data, list_implementation)

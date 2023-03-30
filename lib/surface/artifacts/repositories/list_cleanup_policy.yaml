@@ -34,4 +34,8 @@
 
   output:
     format: |
-      table(value.id,value.action,value.condition:format=flattened)
+      table(
+        value.id:sort=1,
+        value.action,
+        value.condition:format=yaml,
+        value.mostRecentVersions:format=yaml)

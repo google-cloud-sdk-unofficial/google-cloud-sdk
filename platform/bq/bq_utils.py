@@ -110,7 +110,10 @@ def ProcessBigqueryrcSection(section_name, flag_values):
             'Unknown flag %s found in bigqueryrc file in section %s' %
             (flag, section_name if section_name else 'global'))
       if not flag_values[flag].present:
+        # This updates the .value and .present attributes.
         flag_values[flag].parse(value)
+        # This updates the .using_default_value attribute in addition.
+        setattr(flag_values, flag, getattr(flag_values, flag))
       else:
         flag_type = flag_values[flag].flag_type()
         if flag_type.startswith('multi'):

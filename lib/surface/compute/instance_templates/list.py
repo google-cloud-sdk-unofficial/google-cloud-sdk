@@ -25,6 +25,7 @@ from googlecloudsdk.command_lib.compute import completers
 from googlecloudsdk.command_lib.compute.instance_templates import flags
 
 
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
 class List(base.ListCommand):
   """List Compute Engine virtual machine instance templates."""
 
@@ -34,16 +35,50 @@ class List(base.ListCommand):
     lister.AddBaseListerArgs(parser)
     parser.display_info.AddCacheUpdater(completers.InstanceTemplatesCompleter)
 
+  def ParseFlags(self, args, resources):
+    return lister.ParseNamesAndRegexpFlags(args, resources)
+
+  def GetListImplementation(self, client):
+    return lister.GlobalLister(
+        client,
+        service=client.apitools_client.instanceTemplates,
+    )
+
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     client = holder.client
 
-    request_data = lister.ParseNamesAndRegexpFlags(args, holder.resources)
-
-    list_implementation = lister.GlobalLister(
-        client, client.apitools_client.instanceTemplates)
+    request_data = self.ParseFlags(args, holder.resources)
+    list_implementation = self.GetListImplementation(client)
 
     return lister.Invoke(request_data, list_implementation)
 
 
-List.detailed_help = base_classes.GetZonalListerHelp('instance templates')
+List.detailed_help = base_classes.GetGlobalListerHelp('instance templates')
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class ListAlpha(List):
+  """List Compute Engine virtual machine instance templates."""
+
+  @staticmethod
+  def Args(parser):
+    parser.display_info.AddFormat(flags.DEFAULT_LIST_FORMAT)
+    lister.AddMultiScopeListerFlags(parser, regional=True, global_=True)
+    parser.display_info.AddCacheUpdater(completers.InstanceTemplatesCompleter)
+
+  def ParseFlags(self, args, resources):
+    return lister.ParseMultiScopeFlags(args, resources)
+
+  def GetListImplementation(self, client):
+    return lister.MultiScopeLister(
+        client,
+        regional_service=client.apitools_client.regionInstanceTemplates,
+        global_service=client.apitools_client.instanceTemplates,
+        aggregation_service=client.apitools_client.instanceTemplates,
+    )
+
+
+ListAlpha.detailed_help = base_classes.GetGlobalRegionalListerHelp(
+    'instance templates'
+)

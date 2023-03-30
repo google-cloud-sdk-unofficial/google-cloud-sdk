@@ -190,7 +190,6 @@
               help_text: |
                 Creates a Key configured for Android devices.
             - arg_name: support-non-google-app-store-distribution
-              release_tracks: [ALPHA]
               api_field:
                 googleCloudRecaptchaenterpriseV1Key.androidSettings.supportNonGoogleAppStoreDistribution
               help_text: |
@@ -198,7 +197,7 @@
                 available for download in app stores other than the Google Play Store.
 
                 This setting allows your key to accept traffic from devices without Google
-                Mobility Services (GMS) installed.
+                Mobile Services (GMS) installed.
             - group:
                 mutex: true
                 required: true

@@ -21,6 +21,6 @@ from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class GatewaySecurityPolicies(base.Group):
-  """Manage Network Security GatewaySecurityPolicies."""
+  """Manage Network Security Gateway Security Policies."""

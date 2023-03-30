@@ -20,15 +20,25 @@ from __future__ import unicode_literals
 
 from googlecloudsdk.calliope import base
 
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class Bulk(base.Group):
-  """Manipulate multiple Compute Engine disks with single command executions."""
-
-
-Bulk.detailed_help = {
+DETAILED_HELP = {
     'DESCRIPTION':
         """
       Manipulate multiple Compute Engine disks with single command executions.
     """,
 }
+
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class Bulk(base.Group):
+  """Manipulate multiple Compute Engine disks with single command executions."""
+
+
+Bulk.detailed_help = DETAILED_HELP
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class BulkAlpha(Bulk):
+  """Manipulate multiple Compute Engine disks with single command executions."""
+
+
+BulkAlpha.detailed_help = DETAILED_HELP

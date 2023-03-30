@@ -10,7 +10,7 @@
 
         $ {command} --sort-by="~display_name"
 
-      To return results with past, i.e. historical, snoozes only:
+      To return results with expired snoozes only:
 
         $ {command} --filter="interval.end_time<+PT1S"
 

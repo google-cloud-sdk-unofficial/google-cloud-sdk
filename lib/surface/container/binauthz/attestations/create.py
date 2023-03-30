@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*- #
-# Copyright 2017 Google LLC. All Rights Reserved.
+# Copyright 2023 Google LLC. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -128,14 +128,16 @@ class Create(base.CreateCommand):
         properties.VALUES.core.project.Get(required=True),
         collection='cloudresourcemanager.projects',
     )
-    normalized_artifact_url = binauthz_command_util.NormalizeArtifactUrl(
-        args.artifact_url)
+    artifact_url_without_scheme = binauthz_command_util.RemoveArtifactUrlScheme(
+        args.artifact_url
+    )
     signature = console_io.ReadFromFileOrStdin(args.signature_file, binary=True)
     if args.payload_file:
       payload = files.ReadBinaryFileContents(args.payload_file)
     else:
       payload = binauthz_command_util.MakeSignaturePayload(
-          normalized_artifact_url)
+          artifact_url_without_scheme
+      )
 
     attestor_ref = args.CONCEPTS.attestor.Parse()
     api_version = apis.GetApiVersion(self.ReleaseTrack())
@@ -155,12 +157,13 @@ class Create(base.CreateCommand):
     return containeranalysis.Client().CreateAttestationOccurrence(
         project_ref=project_ref,
         note_ref=note_ref,
-        artifact_url=normalized_artifact_url,
+        artifact_url=artifact_url_without_scheme,
         public_key_id=args.public_key_id,
         signature=signature,
         plaintext=payload,
-        validation_callback=(validation_callback
-                             if validation_enabled else None),
+        validation_callback=(
+            validation_callback if validation_enabled else None
+        ),
     )
 
 
@@ -259,14 +262,16 @@ class CreateWithPkixSupport(base.CreateCommand):
         properties.VALUES.core.project.Get(required=True),
         collection='cloudresourcemanager.projects',
     )
-    normalized_artifact_url = binauthz_command_util.NormalizeArtifactUrl(
-        args.artifact_url)
+    artifact_url_without_scheme = binauthz_command_util.RemoveArtifactUrlScheme(
+        args.artifact_url
+    )
     signature = console_io.ReadFromFileOrStdin(args.signature_file, binary=True)
     if args.payload_file:
       payload = files.ReadBinaryFileContents(args.payload_file)
     else:
       payload = binauthz_command_util.MakeSignaturePayload(
-          normalized_artifact_url)
+          artifact_url_without_scheme
+      )
 
     attestor_ref = args.CONCEPTS.attestor.Parse()
     api_version = apis.GetApiVersion(self.ReleaseTrack())
@@ -287,10 +292,11 @@ class CreateWithPkixSupport(base.CreateCommand):
     return client.CreateAttestationOccurrence(
         project_ref=project_ref,
         note_ref=note_ref,
-        artifact_url=normalized_artifact_url,
+        artifact_url=artifact_url_without_scheme,
         public_key_id=args.public_key_id,
         signature=signature,
         plaintext=payload,
-        validation_callback=(validation_callback
-                             if validation_enabled else None),
+        validation_callback=(
+            validation_callback if validation_enabled else None
+        ),
     )

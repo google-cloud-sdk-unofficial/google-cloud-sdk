@@ -333,9 +333,13 @@ def RunProxyConnectCommand(args,
   exe = files.FindExecutableOnPath('cloud_sql_proxy')
   if not exe:
     raise exceptions.CloudSqlProxyError(
-        'Cloud SQL Proxy could not be found in PATH. See '
-        'https://cloud.google.com/sql/docs/mysql/sql-proxy#install for '
-        'information on installing.')
+        'Cloud SQL Proxy (v1) couldn\'t be found in PATH. Either install '
+        'the component with `gcloud components install cloud_sql_proxy` or see '
+        'https://github.com/GoogleCloudPlatform/cloud-sql-proxy/releases '
+        'to install the v1 Cloud SQL Proxy. '
+        'The v2 Cloud SQL Proxy is currently not supported by the '
+        'connect command. You need to install the v1 Cloud SQL Proxy binary '
+        'to use the connect command.')
 
   # Check for the executable based on the db version.
   db_type = instance_info.databaseVersion.name.split('_')[0]

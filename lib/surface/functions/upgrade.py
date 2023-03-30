@@ -32,7 +32,6 @@ import six
 UpgradeAction = collections.namedtuple(
     'UpgradeAction',
     [
-        'eligible_initial_states',  # See http://cs/f:FunctionUpgradeStates.java
         'target_state',
         'prompt_msg',
         'op_description',
@@ -42,10 +41,6 @@ UpgradeAction = collections.namedtuple(
 
 # TODO(b/272771821): Standardize upgrade related strings.
 _SETUP_CONFIG_ACTION = UpgradeAction(
-    eligible_initial_states=[
-        'ELIGIBLE_FOR_2ND_GEN_UPGRADE',
-        'SETUP_FUNCTION_UPGRADE_CONFIG_ERROR',
-    ],
     target_state='SETUP_FUNCTION_UPGRADE_CONFIG_SUCCESSFUL',
     prompt_msg=(
         'This will duplicate the code and configuration of 1st gen function'
@@ -65,17 +60,11 @@ _SETUP_CONFIG_ACTION = UpgradeAction(
         ' function before redirecting production traffic to it.'
         # TODO(b/265016036): Link to the user test guide for upgrade.
         '\n\nOnce you are ready to redirect production traffic, rerun this'
-        ' command with the --redirect-traffic flag. Otherwise, you can'
-        ' abort the upgrade process by rerunning this command with the --abort'
-        ' flag.'
+        ' command with the --redirect-traffic flag.'
     ),
 )
 
 _REDIRECT_TRAFFIC_ACTION = UpgradeAction(
-    eligible_initial_states=[
-        'SETUP_FUNCTION_UPGRADE_CONFIG_SUCCESSFUL',
-        'REDIRECT_FUNCTION_UPGRADE_TRAFFIC_ERROR',
-    ],
     target_state='REDIRECT_FUNCTION_UPGRADE_TRAFFIC_SUCCESSFUL',
     prompt_msg=(
         'This will redirect all production traffic from 1st gen function [{}]'
@@ -92,11 +81,6 @@ _REDIRECT_TRAFFIC_ACTION = UpgradeAction(
 )
 
 _ROLLBACK_TRAFFIC_ACTION = UpgradeAction(
-    eligible_initial_states=[
-        'REDIRECT_FUNCTION_UPGRADE_TRAFFIC_ERROR',
-        'REDIRECT_FUNCTION_UPGRADE_TRAFFIC_SUCCESSFUL',
-        'ROLLBACK_FUNCTION_UPGRADE_TRAFFIC_ERROR',
-    ],
     target_state='SETUP_FUNCTION_UPGRADE_CONFIG_SUCCESSFUL',
     prompt_msg=(
         'This will rollback all production traffic from 2nd gen function [{}]'
@@ -107,18 +91,11 @@ _ROLLBACK_TRAFFIC_ACTION = UpgradeAction(
     success_msg=(
         'Your 1st gen function is now serving all of your production traffic.'
         ' Once you are ready to redirect traffic to the 2nd gen function copy,'
-        ' rerun this command with the --redirect-traffic flag. Otherwise, you'
-        ' can abort the upgrade process by rerunning this command with the'
-        ' --abort flag.'
+        ' rerun this command with the --redirect-traffic flag.'
     ),
 )
 
 _ABORT_ACTION = UpgradeAction(
-    eligible_initial_states=[
-        'SETUP_FUNCTION_UPGRADE_CONFIG_ERROR',
-        'SETUP_FUNCTION_UPGRADE_CONFIG_SUCCESSFUL',
-        'ABORT_FUNCTION_UPGRADE_ERROR',
-    ],
     target_state='ELIGIBLE_FOR_2ND_GEN_UPGRADE',
     prompt_msg=(
         'This will abort the generation upgrade process and delete the 2nd gen'
@@ -131,10 +108,6 @@ _ABORT_ACTION = UpgradeAction(
 )
 
 _COMMIT_ACTION = UpgradeAction(
-    eligible_initial_states=[
-        'REDIRECT_FUNCTION_UPGRADE_TRAFFIC_SUCCESSFUL',
-        'COMMIT_FUNCTION_UPGRADE_ERROR',
-    ],
     target_state=None,
     prompt_msg=(
         'This will finish the upgrade process for function [{}] and permanently'
@@ -149,23 +122,58 @@ _COMMIT_ACTION = UpgradeAction(
     ),
 )
 
+# Source: http://cs/f:UpgradeStateMachine.java
+_VALID_TRANSITION_ACTIONS = {
+    'ELIGIBLE_FOR_2ND_GEN_UPGRADE': [_SETUP_CONFIG_ACTION],
+    'UPGRADE_OPERATION_IN_PROGRESS': [],
+    'SETUP_FUNCTION_UPGRADE_CONFIG_SUCCESSFUL': [
+        _REDIRECT_TRAFFIC_ACTION,
+        _ABORT_ACTION,
+    ],
+    'SETUP_FUNCTION_UPGRADE_CONFIG_ERROR': [
+        _SETUP_CONFIG_ACTION,
+        _ABORT_ACTION,
+    ],
+    'ABORT_FUNCTION_UPGRADE_ERROR': [_ABORT_ACTION],
+    'REDIRECT_FUNCTION_UPGRADE_TRAFFIC_SUCCESSFUL': [
+        _COMMIT_ACTION,
+        _ROLLBACK_TRAFFIC_ACTION,
+        _ABORT_ACTION,
+    ],
+    'REDIRECT_FUNCTION_UPGRADE_TRAFFIC_ERROR': [
+        _REDIRECT_TRAFFIC_ACTION,
+        _ABORT_ACTION,
+    ],
+    'ROLLBACK_FUNCTION_UPGRADE_TRAFFIC_ERROR': [
+        _ROLLBACK_TRAFFIC_ACTION,
+        _ABORT_ACTION,
+    ],
+    'COMMIT_FUNCTION_UPGRADE_SUCCESSFUL': [],
+    'COMMIT_FUNCTION_UPGRADE_ERROR': [_COMMIT_ACTION, _ABORT_ACTION],
+}  # type: dict[str, UpgradeAction]
+
 
 def _ValidateStateTransition(upgrade_state, action):
   # type: (_,UpgradeAction) -> None
-  if six.text_type(upgrade_state) == action.target_state:
+  """Validates whether the action is a valid action for the given upgrade state."""
+  upgrade_state_str = six.text_type(upgrade_state)
+  if upgrade_state_str == 'UPGRADE_OPERATION_IN_PROGRESS':
+    raise exceptions.FunctionsError(
+        'An upgrade operation is already in progress for this function.'
+        ' Please try again later.'
+    )
+
+  if upgrade_state_str == action.target_state:
     raise exceptions.FunctionsError(
         'This function is already in the desired upgrade state: {}'.format(
             upgrade_state
         )
     )
 
-  if six.text_type(upgrade_state) not in action.eligible_initial_states:
+  if action not in _VALID_TRANSITION_ACTIONS[upgrade_state_str]:
     raise exceptions.FunctionsError(
         'This function is not eligible for this operation. Its current upgrade'
-        " state '{}' is not one of: {}.".format(
-            upgrade_state,
-            action.eligible_initial_states,
-        )
+        " state is '{}'.".format(upgrade_state)
     )
 
 
@@ -184,16 +192,16 @@ class UpgradeAlpha(base.Command):
 
             $ {command} foo --redirect-traffic
 
-          Once you're ready to finish upgrading and delete the 1st gen function copy, run:
-
-            $ {command} foo --commit
-
-          Before committing, if you find you need to do more local testing you can rollback
+          If you find you need to do more local testing you can rollback
           production traffic to the 1st gen function copy:
 
             $ {command} foo --rollback-traffic
 
-          With traffic going to the 1st gen function copy, you can abort the generation upgrade process by running:
+          Once you're ready to finish upgrading and delete the 1st gen function copy, run:
+
+            $ {command} foo --commit
+
+          You can abort the generation upgrade process at any time by running:
 
             $ {command} foo --abort
           """,
@@ -226,14 +234,6 @@ class UpgradeAlpha(base.Command):
       )
 
     upgrade_state = function.upgradeInfo.upgradeState
-    if (
-        upgrade_state
-        == client.messages.UpgradeInfo.UpgradeStateValueValuesEnum.UPGRADE_OPERATION_IN_PROGRESS
-    ):
-      raise exceptions.FunctionsError(
-          'An upgrade operation is already in progress for this function.'
-          ' Please try again later.'
-      )
 
     action = None
     action_fn = None
@@ -267,3 +267,7 @@ class UpgradeAlpha(base.Command):
 
     log.status.Print()
     log.status.Print(action.success_msg)
+    log.status.Print(
+        'You can abort the upgrade process at any time by rerunning this'
+        ' command with the --abort flag.'
+    )

@@ -30,8 +30,7 @@ from googlecloudsdk.command_lib.compute.network_endpoint_groups import flags
 from googlecloudsdk.core import log
 
 DETAILED_HELP = {
-    'EXAMPLES':
-        """
+    'EXAMPLES': """
 To create a network endpoint group:
 
   $ {command} my-neg --zone=us-central1-a --network=my-network --subnet=my-subnetwork
@@ -43,9 +42,10 @@ def _GetValidScopesErrorMessage(network_endpoint_type, valid_scopes):
   valid_scopes_error_message = ''
   if network_endpoint_type in valid_scopes:
     valid_scopes_error_message = (
-        ' Type {0} must be specified in the {1} scope.').format(
-            network_endpoint_type,
-            _JoinWithOr(valid_scopes[network_endpoint_type]))
+        ' Type {0} must be specified in the {1} scope.'
+    ).format(
+        network_endpoint_type, _JoinWithOr(valid_scopes[network_endpoint_type])
+    )
   return valid_scopes_error_message
 
 
@@ -85,7 +85,8 @@ class Create(base.CreateCommand):
   @classmethod
   def Args(cls, parser):
     flags.MakeNetworkEndpointGroupsArg(
-        support_regional_scope=cls.support_regional_scope).AddArgument(parser)
+        support_regional_scope=cls.support_regional_scope
+    ).AddArgument(parser)
     flags.AddCreateNegArgsToParser(
         parser,
         support_neg_type=cls.support_neg_type,
@@ -104,13 +105,16 @@ class Create(base.CreateCommand):
     messages = holder.client.messages
     resources = holder.resources
     neg_client = network_endpoint_groups.NetworkEndpointGroupsClient(
-        client, messages, resources)
+        client, messages, resources
+    )
     neg_ref = flags.MakeNetworkEndpointGroupsArg(
-        support_regional_scope=self.support_regional_scope).ResolveAsResource(
-            args,
-            holder.resources,
-            default_scope=compute_scope.ScopeEnum.ZONE,
-            scope_lister=compute_flags.GetDefaultScopeLister(holder.client))
+        support_regional_scope=self.support_regional_scope
+    ).ResolveAsResource(
+        args,
+        holder.resources,
+        default_scope=compute_scope.ScopeEnum.ZONE,
+        scope_lister=compute_flags.GetDefaultScopeLister(holder.client),
+    )
 
     self._ValidateNEG(args, neg_ref)
 
@@ -135,7 +139,8 @@ class Create(base.CreateCommand):
             serverless_deployment_resource=args.serverless_deployment_resource,
             serverless_deployment_version=args.serverless_deployment_version,
             serverless_deployment_url_mask=args.serverless_deployment_url_mask,
-            psc_target_service=args.psc_target_service)
+            psc_target_service=args.psc_target_service,
+        )
 
       elif self.support_l7psc_neg:
         result = neg_client.Create(
@@ -153,7 +158,8 @@ class Create(base.CreateCommand):
             app_engine_url_mask=args.app_engine_url_mask,
             cloud_function_name=args.cloud_function_name,
             cloud_function_url_mask=args.cloud_function_url_mask,
-            psc_target_service=args.psc_target_service)
+            psc_target_service=args.psc_target_service,
+        )
       else:
         result = neg_client.Create(
             neg_ref,
@@ -169,14 +175,16 @@ class Create(base.CreateCommand):
             app_engine_version=args.app_engine_version,
             app_engine_url_mask=args.app_engine_url_mask,
             cloud_function_name=args.cloud_function_name,
-            cloud_function_url_mask=args.cloud_function_url_mask)
+            cloud_function_url_mask=args.cloud_function_url_mask,
+        )
     else:
       result = neg_client.Create(
           neg_ref,
           args.network_endpoint_type,
           default_port=args.default_port,
           network=args.network,
-          subnet=args.subnet)
+          subnet=args.subnet,
+      )
     log.CreatedResource(neg_ref.Name(), 'network endpoint group')
     return result
 
@@ -215,8 +223,11 @@ class Create(base.CreateCommand):
             '--network-endpoint-type',
             'Zonal NEGs only support network endpoints of type {0}.{1}'.format(
                 _JoinWithOr(valid_zonal_types),
-                _GetValidScopesErrorMessage(network_endpoint_type,
-                                            valid_scopes)))
+                _GetValidScopesErrorMessage(
+                    network_endpoint_type, valid_scopes
+                ),
+            ),
+        )
     elif is_regional:
       valid_regional_types = valid_scopes_inverted['regional']
       if network_endpoint_type not in valid_regional_types:
@@ -225,8 +236,11 @@ class Create(base.CreateCommand):
             'Regional NEGs only support network endpoints of type {0}.{1}'
             .format(
                 _JoinWithOr(valid_regional_types),
-                _GetValidScopesErrorMessage(network_endpoint_type,
-                                            valid_scopes)))
+                _GetValidScopesErrorMessage(
+                    network_endpoint_type, valid_scopes
+                ),
+            ),
+        )
 
       if (
           network_endpoint_type == 'private-service-connect'
@@ -234,8 +248,11 @@ class Create(base.CreateCommand):
       ):
         raise exceptions.InvalidArgumentException(
             '--private-service-connect',
-            'Network endpoint type private-service-connect must specify '
-            '--psc-target-service for private service NEG.')
+            (
+                'Network endpoint type private-service-connect must specify '
+                '--psc-target-service for private service NEG.'
+            ),
+        )
 
     else:
       valid_global_types = valid_scopes_inverted['global']
@@ -244,11 +261,15 @@ class Create(base.CreateCommand):
             '--network-endpoint-type',
             'Global NEGs only support network endpoints of type {0}.{1}'.format(
                 _JoinWithOr(valid_global_types),
-                _GetValidScopesErrorMessage(network_endpoint_type,
-                                            valid_scopes)))
+                _GetValidScopesErrorMessage(
+                    network_endpoint_type, valid_scopes
+                ),
+            ),
+        )
       if args.network is not None:
         raise exceptions.InvalidArgumentException(
-            '--network', 'Global NEGs cannot specify network.')
+            '--network', 'Global NEGs cannot specify network.'
+        )
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)

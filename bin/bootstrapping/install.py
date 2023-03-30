@@ -42,52 +42,102 @@ def ParseArgs():
 
   parser = argparse.ArgumentParser()
 
-  parser.add_argument('--usage-reporting',
-                      default=None, type=Bool,
-                      help='(true/false) Enable anonymous usage reporting.')
-  parser.add_argument('--screen-reader',
-                      default=None, type=Bool,
-                      help='(true/false) Enable screen reader mode.')
-  parser.add_argument('--rc-path',
-                      help=('Profile to update with PATH and completion. If'
-                            ' given without --command-completion or'
-                            ' --path-update in "quiet" mode, a line will be'
-                            ' added to this profile for both command completion'
-                            ' and path updating.'))
-  parser.add_argument('--command-completion', '--bash-completion',
-                      default=None, type=Bool,
-                      help=('(true/false) Add a line for command completion in'
-                            ' the profile. In "quiet" mode, if True and you do'
-                            ' not provide--rc-path, the default profile'
-                            ' will be updated.'))
-  parser.add_argument('--path-update',
-                      default=None, type=Bool,
-                      help=('(true/false) Add a line for path updating in the'
-                            ' profile. In "quiet" mode, if True and you do not'
-                            ' provide --rc-path, the default profile will be'
-                            ' updated.'))
-  parser.add_argument('--disable-installation-options', action='store_true',
-                      help='DEPRECATED.  This flag is no longer used.')
-  parser.add_argument('--override-components', nargs='*',
-                      help='Override the components that would be installed by '
-                      'default and install these instead.')
-  parser.add_argument('--additional-components', nargs='+',
-                      help='Additional components to install by default.  These'
-                      ' components will either be added to the default install '
-                      'list, or to the override-components (if provided).')
+  parser.add_argument(
+      '--usage-reporting',
+      default=None,
+      type=Bool,
+      help='(true/false) Enable anonymous usage reporting.',
+  )
+  parser.add_argument(
+      '--screen-reader',
+      default=None,
+      type=Bool,
+      help='(true/false) Enable screen reader mode.',
+  )
+  parser.add_argument(
+      '--rc-path',
+      help=(
+          'Profile to update with PATH and completion. If'
+          ' given without --command-completion or'
+          ' --path-update in "quiet" mode, a line will be'
+          ' added to this profile for both command completion'
+          ' and path updating.'
+      ),
+  )
+  parser.add_argument(
+      '--command-completion',
+      '--bash-completion',
+      default=None,
+      type=Bool,
+      help=(
+          '(true/false) Add a line for command completion in'
+          ' the profile. In "quiet" mode, if True and you do'
+          ' not provide--rc-path, the default profile'
+          ' will be updated.'
+      ),
+  )
+  parser.add_argument(
+      '--path-update',
+      default=None,
+      type=Bool,
+      help=(
+          '(true/false) Add a line for path updating in the'
+          ' profile. In "quiet" mode, if True and you do not'
+          ' provide --rc-path, the default profile will be'
+          ' updated.'
+      ),
+  )
+  parser.add_argument(
+      '--disable-installation-options',
+      action='store_true',
+      help='DEPRECATED.  This flag is no longer used.',
+  )
+  parser.add_argument(
+      '--override-components',
+      nargs='*',
+      help=(
+          'Override the components that would be installed by '
+          'default and install these instead.'
+      ),
+  )
+  parser.add_argument(
+      '--additional-components',
+      nargs='+',
+      help=(
+          'Additional components to install by default.  These'
+          ' components will either be added to the default install '
+          'list, or to the override-components (if provided).'
+      ),
+  )
   # Must have a None default so properties are not always overridden when the
   # arg is not provided.
-  parser.add_argument('--quiet', '-q', default=None,
-                      action=actions.StoreConstProperty(
-                          properties.VALUES.core.disable_prompts, True),
-                      help='Disable all interactive prompts. If input is '
-                      'required, defaults will be used or an error will be '
-                      'raised')
+  parser.add_argument(
+      '--quiet',
+      '-q',
+      default=None,
+      action=actions.StoreConstProperty(
+          properties.VALUES.core.disable_prompts, True
+      ),
+      help=(
+          'Disable all interactive prompts. If input is '
+          'required, defaults will be used or an error will be '
+          'raised'
+      ),
+  )
   parser.add_argument(
       '--install-python',
       default=True,
       type=Bool,
-      help='(true/false) Attempt to install Python. MacOs only.')
+      help='(true/false) Attempt to install Python. MacOs only.',
+  )
+  parser.add_argument(
+      '--no-compile-python',
+      action='store_false',
+      help=(
+          'False. If set, skips python compilation after component'
+          ' installation.'
+      ),
+  )
 
   return parser.parse_args(bootstrapping.GetDecodedArgv()[1:])
 
@@ -134,7 +184,7 @@ future by running the following command:
       scope=properties.Scope.INSTALLATION)
 
 
-def Install(override_components, additional_components):
+def Install(override_components, additional_components, compile_python):
   """Do the normal installation of the Cloud SDK."""
   # Install the OS specific wrapper scripts for gcloud and any pre-configured
   # components for the SDK.
@@ -152,32 +202,34 @@ def Install(override_components, additional_components):
   if additional_components:
     to_install.extend(additional_components)
 
-  InstallOrUpdateComponents(to_install, update=update)
+  InstallOrUpdateComponents(to_install, compile_python, update=update)
 
   # Show the list of components if there were no pre-configured ones.
   if not to_install:
     _CLI.Execute(['--quiet', 'components', 'list'])
 
 
-def ReInstall(component_ids):
+def ReInstall(component_ids, compile_python):
   """Do a forced reinstallation of the Cloud SDK.
 
   Args:
     component_ids: [str], The components that should be automatically installed.
+    compile_python: bool, False if we skip compile python
   """
   to_install = bootstrapping.GetDefaultInstalledComponents()
   to_install.extend(component_ids)
 
   # We always run in update mode here because we are reinstalling and trying
   # to get the latest version anyway.
-  InstallOrUpdateComponents(component_ids, update=True)
+  InstallOrUpdateComponents(component_ids, compile_python, update=True)
 
 
-def InstallOrUpdateComponents(component_ids, update):
+def InstallOrUpdateComponents(component_ids, compile_python, update):
   """Installs or updates the given components.
 
   Args:
     component_ids: [str], The components to install or update.
+    compile_python: bool, False if we skip compile python
     update: bool, True if we should run update, False to run install.  If there
       are no components to install, this does nothing unless in update mode (in
       which case everything gets updated).
@@ -188,19 +240,29 @@ def InstallOrUpdateComponents(component_ids, update):
   if not update and not component_ids:
     return
 
-  print("""
+  print(
+      """
 This will install all the core command line tools necessary for working with
 the Google Cloud Platform.
-""")
+"""
+  )
 
   verb = 'update' if update else 'install'
+  execute_arg_list = ['--quiet', 'components', verb, '--allow-no-backup']
+  if not compile_python:
+    execute_arg_list.append('--no-compile-python')
+  else:
+    execute_arg_list.append('--compile-python')
   _CLI.Execute(
-      ['--quiet', 'components', verb, '--allow-no-backup'] + component_ids)
+      execute_arg_list + component_ids
+  )
 
 
 MACOS_PYTHON_INSTALL_PATH = '/Library/Frameworks/Python.framework/Versions/3.7/'
 MACOS_PYTHON = 'macos_python-3.7.9.tar.gz'
-MACOS_PYTHON_URL = 'https://dl.google.com/dl/cloudsdk/channels/rapid/' + MACOS_PYTHON
+MACOS_PYTHON_URL = (
+    'https://dl.google.com/dl/cloudsdk/channels/rapid/' + MACOS_PYTHON
+)
 PYTHON_VERSION = '3.7'
 
 
@@ -279,12 +341,16 @@ def main():
       os.environ, 'CLOUDSDK_REINSTALL_COMPONENTS')
   try:
     if reinstall_components:
-      ReInstall(reinstall_components.split(','))
+      ReInstall(reinstall_components.split(','), pargs.no_compile_python)
     else:
       Prompts(pargs.usage_reporting)
       bootstrapping.CommandStart('INSTALL', component_id='core')
       if not config.INSTALLATION_CONFIG.disable_updater:
-        Install(pargs.override_components, pargs.additional_components)
+        Install(
+            pargs.override_components,
+            pargs.additional_components,
+            pargs.no_compile_python,
+        )
 
       platforms_install.UpdateRC(
           completion_update=pargs.command_completion,

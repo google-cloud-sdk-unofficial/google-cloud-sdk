@@ -25,6 +25,7 @@
     - googlecloudsdk.command_lib.compute.tpus.queued_resources.util:SetGuaranteed
     - googlecloudsdk.command_lib.compute.tpus.queued_resources.util:SetValidInterval
     - googlecloudsdk.command_lib.compute.tpus.queued_resources.util:VerifyNodeCount
+    - googlecloudsdk.command_lib.compute.tpus.queued_resources.util:CreateReservationName
 
   async:
     collection: tpu.projects.locations.operations
@@ -68,3 +69,6 @@
     - _REF_: googlecloudsdk.command_lib.compute.tpus.queued_resources.flags:valid_until_duration
     - _REF_: googlecloudsdk.command_lib.compute.tpus.queued_resources.flags:valid_until_time
     - _REF_: googlecloudsdk.command_lib.compute.tpus.queued_resources.flags:internal_ips
+    - _REF_: googlecloudsdk.command_lib.compute.tpus.queued_resources.flags:reservation_host_project
+    - _REF_: googlecloudsdk.command_lib.compute.tpus.queued_resources.flags:reservation_host_folder
+    - _REF_: googlecloudsdk.command_lib.compute.tpus.queued_resources.flags:reservation_host_organization

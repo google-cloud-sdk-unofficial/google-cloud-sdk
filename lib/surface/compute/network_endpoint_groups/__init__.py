@@ -21,11 +21,14 @@ from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
-                    base.ReleaseTrack.GA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
+)
 class NetworkEndpointGroups(base.Group):
   """Read and manipulate Compute Engine network endpoint groups."""
+
   category = base.NETWORKING_CATEGORY
+
 
 NetworkEndpointGroups.detailed_help = {
     'DESCRIPTION': """
@@ -37,4 +40,3 @@ NetworkEndpointGroups.detailed_help = {
         See also: [Network endpoint groups API](https://cloud.google.com/compute/docs/reference/rest/v1/networkEndpointGroups).
     """,
 }
-

@@ -71,15 +71,9 @@ class Cp(base.Command):
 
   @staticmethod
   def Args(parser):
-    parser.add_argument(
-        '-R',
-        '-r',
-        '--recursive',
-        action='store_true',
-        help='Recursively copy the contents of any directories that match the'
-        ' source path expression.')
     flags.add_additional_headers_flag(parser)
-    cp_command_util.add_cp_flags(parser)
+    cp_command_util.add_cp_and_mv_flags(parser)
+    cp_command_util.add_recursion_flag(parser)
 
   def Run(self, args):
     self.exit_code = cp_command_util.run_cp(args)

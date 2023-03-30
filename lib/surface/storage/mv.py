@@ -84,7 +84,7 @@ class Mv(base.Command):
   @staticmethod
   def Args(parser):
     flags.add_additional_headers_flag(parser)
-    cp_command_util.add_cp_flags(parser)
+    cp_command_util.add_cp_and_mv_flags(parser)
 
   def Run(self, args):
     for url_string in args.source:

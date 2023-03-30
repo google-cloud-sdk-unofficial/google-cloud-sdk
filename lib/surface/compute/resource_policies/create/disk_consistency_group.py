@@ -24,6 +24,17 @@ from googlecloudsdk.command_lib.compute import flags as compute_flags
 from googlecloudsdk.command_lib.compute.resource_policies import flags
 from googlecloudsdk.command_lib.compute.resource_policies import util
 
+DETAILED_HELP = {
+    'DESCRIPTION': """\
+        Create a Compute Engine disk consistency group resource policy.
+        """,
+    'EXAMPLES': """\
+        Create a disk consistency group policy:
+
+          $ {command} my-resource-policy --region=REGION
+        """
+}
+
 
 def _CommonArgs(parser):
   """A helper function to build args based on different API version."""
@@ -32,7 +43,7 @@ def _CommonArgs(parser):
   parser.display_info.AddCacheUpdater(None)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
 class CreateDiskConsistencyGroup(base.CreateCommand):
   """Create a Compute Engine Disk Consistency Group resource policy."""
 
@@ -43,6 +54,9 @@ class CreateDiskConsistencyGroup(base.CreateCommand):
     _CommonArgs(parser)
 
   def Run(self, args):
+    return self._Run(args)
+
+  def _Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     client = holder.client
 
@@ -63,14 +77,21 @@ class CreateDiskConsistencyGroup(base.CreateCommand):
     return client.MakeRequests([(service, 'Insert', create_request)])[0]
 
 
-CreateDiskConsistencyGroup.detailed_help = {
-    'DESCRIPTION':
-        """\
-Create a Compute Engine Disk Consistency Group Resource Policy.
-""",
-    'EXAMPLES':
-        """\
-To create a Compute Engine Disk Consistency Group policy, run:\
-  $ {command} my-resource-policy --region=REGION
-"""
-}
+CreateDiskConsistencyGroup.detailed_help = DETAILED_HELP
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class CreateDiskConsistencyGroupAlpha(CreateDiskConsistencyGroup):
+  """Create a Compute Engine Disk Consistency Group resource policy."""
+
+  @staticmethod
+  def Args(parser):
+    CreateDiskConsistencyGroup.resource_policy_arg = (
+        flags.MakeResourcePolicyArg())
+    _CommonArgs(parser)
+
+  def Run(self, args):
+    return self._Run(args)
+
+
+CreateDiskConsistencyGroupAlpha.detailed_help = DETAILED_HELP

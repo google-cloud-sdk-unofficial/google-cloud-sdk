@@ -63,6 +63,7 @@ def _CommonArgs(parser):
   flags.AddMachineTypeFlag(parser)
   flags.AddDiskSizeFlag(parser)
   flags.AddSubstitutionsFlag(parser)
+  flags.AddDefaultBucketsBehaviorFlag(parser)
   worker_pools = flags.AddWorkerPoolFlag(parser)
 
   flags.AddNoCacheFlag(parser)
@@ -147,13 +148,42 @@ class Submit(base.CreateCommand):
 
     # Create the build request.
     build_config = submit_util.CreateBuildConfig(
-        args.tag, args.no_cache, messages, args.substitutions, args.config,
-        args.IsSpecified('source'), args.no_source, args.source,
-        args.gcs_source_staging_dir, args.ignore_file, args.gcs_log_dir,
-        args.machine_type, args.disk_size, args.worker_pool, args.pack)
+        args.tag,
+        args.no_cache,
+        messages,
+        args.substitutions,
+        args.config,
+        args.IsSpecified('source'),
+        args.no_source,
+        args.source,
+        args.gcs_source_staging_dir,
+        args.ignore_file,
+        args.gcs_log_dir,
+        args.machine_type,
+        args.disk_size,
+        args.worker_pool,
+        args.pack,
+        False,
+        args.default_buckets_behavior,
+        skip_set_source=True,
+    )
 
     build_region = submit_util.DetermineBuildRegion(build_config, build_region)
     build_region = build_region or cloudbuild_util.DEFAULT_REGION
+
+    # Set build_config source with updated build_region.
+    build_config = submit_util.SetSource(
+        build_config,
+        messages,
+        args.IsSpecified('source'),
+        args.no_source,
+        args.source,
+        args.gcs_source_staging_dir,
+        args.ignore_file,
+        False,
+        build_region,
+        args.default_buckets_behavior,
+    )
 
     # Start the build.
     build, _ = submit_util.Build(
@@ -207,14 +237,44 @@ class SubmitAlpha(SubmitBeta):
 
     # Create the build request.
     build_config = submit_util.CreateBuildConfigAlpha(
-        args.tag, args.no_cache, messages, args.substitutions, args.config,
-        args.IsSpecified('source'), args.no_source, args.source,
-        args.gcs_source_staging_dir, args.ignore_file, args.gcs_log_dir,
-        args.machine_type, args.disk_size, args.memory, args.vcpu_count,
-        args.worker_pool, args.pack)
+        args.tag,
+        args.no_cache,
+        messages,
+        args.substitutions,
+        args.config,
+        args.IsSpecified('source'),
+        args.no_source,
+        args.source,
+        args.gcs_source_staging_dir,
+        args.ignore_file,
+        args.gcs_log_dir,
+        args.machine_type,
+        args.disk_size,
+        args.memory,
+        args.vcpu_count,
+        args.worker_pool,
+        args.pack,
+        False,
+        args.default_buckets_behavior,
+        skip_set_source=True,
+    )
 
     build_region = submit_util.DetermineBuildRegion(build_config, build_region)
     build_region = build_region or cloudbuild_util.DEFAULT_REGION
+
+    # Set build_config source with updated build_region.
+    build_config = submit_util.SetSource(
+        build_config,
+        messages,
+        args.IsSpecified('source'),
+        args.no_source,
+        args.source,
+        args.gcs_source_staging_dir,
+        args.ignore_file,
+        False,
+        build_region,
+        args.default_buckets_behavior,
+    )
 
     # Start the build.
     build, _ = submit_util.Build(

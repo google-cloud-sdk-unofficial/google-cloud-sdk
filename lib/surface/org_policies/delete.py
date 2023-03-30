@@ -68,11 +68,4 @@ class Delete(base.Command):
     return delete_response
 
 
-@base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class DeleteAlpha(Delete):
-  """Delete an organization policy."""
-  pass
-
-
 Delete.detailed_help = DETAILED_HELP

@@ -49,8 +49,57 @@ def _CommonArgs(parser):
   # StopAsyncReplication.secondary_disk_arg.AddArgument(parser)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
 class StopAsyncReplication(base.Command):
+  """Stop Async Replication on Compute Engine persistent disks."""
+
+  @classmethod
+  def Args(cls, parser):
+    StopAsyncReplication.disks_arg = disks_flags.MakeDiskArg(plural=False)
+    _CommonArgs(parser)
+
+  @classmethod
+  def _GetApiHolder(cls, no_http=False):
+    return base_classes.ComputeApiHolder(cls.ReleaseTrack(), no_http)
+
+  def Run(self, args):
+    return self._Run(args)
+
+  def _Run(self, args):
+    compute_holder = self._GetApiHolder()
+    client = compute_holder.client
+
+    disk_ref = StopAsyncReplication.disks_arg.ResolveAsResource(
+        args,
+        compute_holder.resources,
+        scope_lister=flags.GetDefaultScopeLister(client))
+
+    request = None
+    if disk_ref.Collection() == 'compute.disks':
+      request = client.messages.ComputeDisksStopAsyncReplicationRequest(
+          disk=disk_ref.Name(),
+          project=disk_ref.project,
+          zone=disk_ref.zone,
+      )
+      request = (client.apitools_client.disks, 'StopAsyncReplication', request)
+    elif disk_ref.Collection() == 'compute.regionDisks':
+      request = client.messages.ComputeRegionDisksStopAsyncReplicationRequest(
+          disk=disk_ref.Name(),
+          project=disk_ref.project,
+          region=disk_ref.region,
+      )
+      request = (client.apitools_client.regionDisks, 'StopAsyncReplication',
+                 request)
+    return client.MakeRequests([request])
+
+
+StopAsyncReplication.detailed_help = DETAILED_HELP
+
+
+# TODO(b/272043363): Extend from StopAsyncReplication and remove duplicate
+# implementations once the deprecated secondary disk URL argument is removed.
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class StopAsyncReplicationAlpha(base.Command):
   """Stop Async Replication on Compute Engine persistent disks."""
 
   @classmethod
@@ -98,4 +147,4 @@ class StopAsyncReplication(base.Command):
     return client.MakeRequests([request])
 
 
-StopAsyncReplication.detailed_help = DETAILED_HELP
+StopAsyncReplicationAlpha.detailed_help = DETAILED_HELP

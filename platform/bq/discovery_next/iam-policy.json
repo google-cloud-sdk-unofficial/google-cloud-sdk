@@ -2264,7 +2264,7 @@
       "type": "object",
       "properties": {
         "typeKind": {
-          "description": "Required. The top level type of this field. Can be any standard SQL data type (e.g., \"INT64\", \"DATE\", \"ARRAY\").",
+          "description": "Required. The top level type of this field. Can be any GoogleSQL data type (e.g., \"INT64\", \"DATE\", \"ARRAY\").",
           "type": "string",
           "enumDescriptions": [
             "Invalid type.",
@@ -2764,7 +2764,7 @@
       "type": "object",
       "properties": {
         "query": {
-          "description": "[Required] SQL query text to execute. The useLegacySql field can be used to indicate whether the query uses legacy SQL or standard SQL.",
+          "description": "[Required] SQL query text to execute. The useLegacySql field can be used to indicate whether the query uses legacy SQL or GoogleSQL.",
           "type": "string"
         },
         "destinationTable": {
@@ -2806,7 +2806,7 @@
           "type": "boolean"
         },
         "allowLargeResults": {
-          "description": "Optional. If true and query uses legacy SQL dialect, allows the query to produce arbitrarily large result tables at a slight cost in performance. Requires destinationTable to be set. For standard SQL queries, this flag is ignored and large results are always allowed. However, you must still set destinationTable when result size exceeds the allowed maximum response size.",
+          "description": "Optional. If true and query uses legacy SQL dialect, allows the query to produce arbitrarily large result tables at a slight cost in performance. Requires destinationTable to be set. For GoogleSQL queries, this flag is ignored and large results are always allowed. However, you must still set destinationTable when result size exceeds the allowed maximum response size.",
           "default": "false",
           "type": "boolean"
         },
@@ -2816,7 +2816,7 @@
           "type": "boolean"
         },
         "flattenResults": {
-          "description": "Optional. If true and query uses legacy SQL dialect, flattens all nested and repeated fields in the query results. allowLargeResults must be true if this is set to false. For standard SQL queries, this flag is ignored and results are never flattened.",
+          "description": "Optional. If true and query uses legacy SQL dialect, flattens all nested and repeated fields in the query results. allowLargeResults must be true if this is set to false. For GoogleSQL queries, this flag is ignored and results are never flattened.",
           "default": "true",
           "type": "boolean"
         },
@@ -2832,23 +2832,23 @@
           "format": "int64"
         },
         "useLegacySql": {
-          "description": "Optional. Specifies whether to use BigQuery's legacy SQL dialect for this query. The default value is true. If set to false, the query will use BigQuery's standard SQL: https:\/\/cloud.google.com\/bigquery\/sql-reference\/ When useLegacySql is set to false, the value of flattenResults is ignored; query will be run as if flattenResults is false.",
+          "description": "Optional. Specifies whether to use BigQuery's legacy SQL dialect for this query. The default value is true. If set to false, the query will use BigQuery's GoogleSQL: https:\/\/cloud.google.com\/bigquery\/sql-reference\/ When useLegacySql is set to false, the value of flattenResults is ignored; query will be run as if flattenResults is false.",
           "default": "true",
           "type": "boolean"
         },
         "parameterMode": {
-          "description": "Standard SQL only. Set to POSITIONAL to use positional (?) query parameters or to NAMED to use named (@myparam) query parameters in this query.",
+          "description": "GoogleSQL only. Set to POSITIONAL to use positional (?) query parameters or to NAMED to use named (@myparam) query parameters in this query.",
           "type": "string"
         },
         "queryParameters": {
-          "description": "Query parameters for standard SQL queries.",
+          "description": "Query parameters for GoogleSQL queries.",
           "type": "array",
           "items": {
             "$ref": "QueryParameter"
           }
         },
         "systemVariables": {
-          "description": "Output only. System variables for standard SQL queries. A system variable is output if the variable is settable and its value differs from the system default. \"@@\" prefix is not included in the name of the System variables.",
+          "description": "Output only. System variables for GoogleSQL queries. A system variable is output if the variable is settable and its value differs from the system default. \"@@\" prefix is not included in the name of the System variables.",
           "readOnly": true,
           "$ref": "SystemVariables"
         },
@@ -3318,7 +3318,7 @@
     },
     "UserDefinedFunctionResource": {
       "id": "UserDefinedFunctionResource",
-      "description": " This is used for defining User Defined Function (UDF) resources only when using legacy SQL. Users of Standard SQL should leverage either DDL (e.g. CREATE [TEMPORARY] FUNCTION ... ) or the Routines API to define UDF resources. For additional information on migrating, see: https:\/\/cloud.google.com\/bigquery\/docs\/reference\/standard-sql\/migrating-from-legacy-sql#differences_in_user-defined_javascript_functions",
+      "description": " This is used for defining User Defined Function (UDF) resources only when using legacy SQL. Users of GoogleSQL should leverage either DDL (e.g. CREATE [TEMPORARY] FUNCTION ... ) or the Routines API to define UDF resources. For additional information on migrating, see: https:\/\/cloud.google.com\/bigquery\/docs\/reference\/standard-sql\/migrating-from-legacy-sql#differences_in_user-defined_javascript_functions",
       "type": "object",
       "properties": {
         "resourceUri": {
@@ -4206,7 +4206,7 @@
           "$ref": "DmlStats"
         },
         "undeclaredQueryParameters": {
-          "description": "Output only. Standard SQL only: list of undeclared query parameters detected during a dry run validation.",
+          "description": "Output only. GoogleSQL only: list of undeclared query parameters detected during a dry run validation.",
           "readOnly": true,
           "type": "array",
           "items": {
@@ -5469,7 +5469,7 @@
           "type": "string"
         },
         "query": {
-          "description": "Required. A query string to execute, using Google Standard SQL or legacy SQL syntx. Example: \"SELECT COUNT(f1) FROM myProjectId.myDatasetId.myTableId\".",
+          "description": "Required. A query string to execute, using Google Standard SQL or legacy SQL syntax. Example: \"SELECT COUNT(f1) FROM myProjectId.myDatasetId.myTableId\".",
           "type": "string"
         },
         "maxResults": {
@@ -5500,16 +5500,16 @@
           "type": "boolean"
         },
         "useLegacySql": {
-          "description": "Specifies whether to use BigQuery's legacy SQL dialect for this query. The default value is true. If set to false, the query will use BigQuery's standard SQL: https:\/\/cloud.google.com\/bigquery\/sql-reference\/ When useLegacySql is set to false, the value of flattenResults is ignored; query will be run as if flattenResults is false.",
+          "description": "Specifies whether to use BigQuery's legacy SQL dialect for this query. The default value is true. If set to false, the query will use BigQuery's GoogleSQL: https:\/\/cloud.google.com\/bigquery\/sql-reference\/ When useLegacySql is set to false, the value of flattenResults is ignored; query will be run as if flattenResults is false.",
           "default": "true",
           "type": "boolean"
         },
         "parameterMode": {
-          "description": "Standard SQL only. Set to POSITIONAL to use positional (?) query parameters or to NAMED to use named (@myparam) query parameters in this query.",
+          "description": "GoogleSQL only. Set to POSITIONAL to use positional (?) query parameters or to NAMED to use named (@myparam) query parameters in this query.",
           "type": "string"
         },
         "queryParameters": {
-          "description": "Query parameters for Standard SQL queries.",
+          "description": "Query parameters for GoogleSQL queries.",
           "type": "array",
           "items": {
             "$ref": "QueryParameter"
@@ -5767,13 +5767,17 @@
             "",
             "SQL language.",
             "JavaScript language.",
-            "Python language."
+            "Python language.",
+            "Java language.",
+            "Scala language."
           ],
           "enum": [
             "LANGUAGE_UNSPECIFIED",
             "SQL",
             "JAVASCRIPT",
-            "PYTHON"
+            "PYTHON",
+            "JAVA",
+            "SCALA"
           ]
         },
         "arguments": {
@@ -5938,14 +5942,14 @@
           "type": "string"
         },
         "properties": {
-          "description": "Configuration properties as a set of key\/value pairs, which will be passed on to the Spark application. For more information, see [Apache Spark](https:\/\/spark.apache.org\/docs\/latest\/index.html).",
+          "description": "Configuration properties as a set of key\/value pairs, which will be passed on to the Spark application. For more information, see [Apache Spark](https:\/\/spark.apache.org\/docs\/latest\/index.html) and the [procedure option list](https:\/\/cloud.google.com\/bigquery\/docs\/reference\/standard-sql\/data-definition-language#procedure_option_list).",
           "type": "object",
           "additionalProperties": {
             "type": "string"
           }
         },
         "mainFileUri": {
-          "description": "The main file\/jar URI of the Spark application. Exactly one of the definition_body field and the main_file_uri field must be set for Python. Exactly one of main_class and main_file_uri field should be set for Java\/Scala language type.",
+          "description": "The main file\/jar URI of the Spark application. Exactly one of the definition_body field and the main_file_uri field must be set for Python.",
           "type": "string"
         },
         "pyFileUris": {
@@ -5975,6 +5979,10 @@
           "items": {
             "type": "string"
           }
+        },
+        "mainClass": {
+          "description": "The fully qualified name of a class in jar_uris, for example, com.example.wordcount. Exactly one of main_class and main_jar_uri field should be set for Java\/Scala language type.",
+          "type": "string"
         }
       }
     },
@@ -6284,7 +6292,7 @@
           }
         },
         "useLegacySql": {
-          "description": "Specifies whether to use BigQuery's legacy SQL for this view. The default value is true. If set to false, the view will use BigQuery's standard SQL: https:\/\/cloud.google.com\/bigquery\/sql-reference\/ Queries and views that reference this view must use the same flag value. A wrapper is used here because the default value is True.",
+          "description": "Specifies whether to use BigQuery's legacy SQL for this view. The default value is true. If set to false, the view will use BigQuery's GoogleSQL: https:\/\/cloud.google.com\/bigquery\/sql-reference\/ Queries and views that reference this view must use the same flag value. A wrapper is used here because the default value is True.",
           "type": "boolean"
         },
         "useExplicitColumnNames": {
@@ -6464,7 +6472,7 @@
                 "type": "object",
                 "properties": {
                   "useLegacySql": {
-                    "description": "True if view is defined in legacy SQL dialect, false if in standard SQL.",
+                    "description": "True if view is defined in legacy SQL dialect, false if in GoogleSQL.",
                     "type": "boolean"
                   }
                 }

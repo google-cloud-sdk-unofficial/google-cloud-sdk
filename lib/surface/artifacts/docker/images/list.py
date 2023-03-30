@@ -25,6 +25,7 @@ from googlecloudsdk.command_lib.artifacts import containeranalysis_util as ca_ut
 from googlecloudsdk.command_lib.artifacts import docker_util
 from googlecloudsdk.command_lib.artifacts import flags
 from googlecloudsdk.command_lib.artifacts import format_util
+from googlecloudsdk.core import log
 
 
 DEFAULT_LIST_FORMAT = """\
@@ -106,22 +107,23 @@ class List(base.ListCommand):
     Returns:
       A list of Docker images.
     """
-    if args.include_tags:
-      args.GetDisplayInfo().AddFormat(EXTENDED_LIST_FORMAT)
+    if _IncludeMetadata(args):
+      log.status.Print(
+          "Note: The '--format' flag can be used to change the output format."
+      )
     else:
-      args.GetDisplayInfo().AddFormat(DEFAULT_LIST_FORMAT)
+      if args.include_tags:
+        args.GetDisplayInfo().AddFormat(EXTENDED_LIST_FORMAT)
+      else:
+        args.GetDisplayInfo().AddFormat(DEFAULT_LIST_FORMAT)
 
     # Retrieve images.
     repo_or_image = docker_util.ParseDockerImagePath(args.IMAGE_PATH)
     images = docker_util.GetDockerImages(repo_or_image, args)
-    default_occ_filter = 'kind="BUILD" OR kind="IMAGE" OR kind="DISCOVERY"'
 
     # Retrieve containeranalysis metadata for images.
     most_recent_images = []
-    # Assume the user wants to see occurrences if they explicitly filter.
-    if args.show_occurrences or (
-        args.occurrence_filter and args.occurrence_filter != default_occ_filter
-    ):
+    if _IncludeMetadata(args):
       if args.show_occurrences_from:
         images = heapq.nlargest(
             args.show_occurrences_from,
@@ -139,3 +141,11 @@ class List(base.ListCommand):
         img_metadata = metadata[image_path].ImagesListView()
         image.update(img_metadata)
     return images
+
+
+def _IncludeMetadata(args):
+  default_occ_filter = 'kind="BUILD" OR kind="IMAGE" OR kind="DISCOVERY"'
+  return args.show_occurrences or (
+      # Assume the user wants to see occurrences if they explicitly filter.
+      args.occurrence_filter and args.occurrence_filter != default_occ_filter
+  )

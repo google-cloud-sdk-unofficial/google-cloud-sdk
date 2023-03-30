@@ -34,9 +34,8 @@ DETAILED_HELP = {
         """,
     'EXAMPLES':
         """\
-        Replication can only be started from the primary scope. To start
-        replication from the primary disk 'my-disk-1' in zone us-east1-a to
-        the secondary disk 'my-disk-2' in zone us-west1-a:
+        Start replication from the primary disk 'my-disk-1' in zone us-east1-a
+        to the secondary disk 'my-disk-2' in zone us-west1-a:
 
           $ {command} my-disk-1 --zone=us-east1-a --secondary-disk=my-disk-2 --secondary-disk-zone=us-west1-a
         """,
@@ -53,7 +52,7 @@ def _CommonArgs(parser):
   disks_flags.AddSecondaryDiskProject(parser, secondary_disk_category)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
 class StartAsyncReplication(base.Command):
   """Start Async Replication on Compute Engine persistent disks."""
 
@@ -116,3 +115,21 @@ class StartAsyncReplication(base.Command):
 
 
 StartAsyncReplication.detailed_help = DETAILED_HELP
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class StartAsyncReplicationAlpha(StartAsyncReplication):
+  """Start Async Replication on Compute Engine persistent disks."""
+
+  @classmethod
+  def Args(cls, parser):
+    StartAsyncReplication.disks_arg = disks_flags.MakeDiskArg(plural=False)
+    StartAsyncReplication.secondary_disk_arg = disks_flags.MakeSecondaryDiskArg(
+        required=True)
+    _CommonArgs(parser)
+
+  def Run(self, args):
+    return self._Run(args)
+
+
+StartAsyncReplicationAlpha.detailed_help = DETAILED_HELP

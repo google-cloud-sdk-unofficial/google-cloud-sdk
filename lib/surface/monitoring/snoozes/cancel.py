@@ -31,15 +31,15 @@ class Cancel(base.UpdateCommand):
 
   detailed_help = {
       'DESCRIPTION': """\
-          Cancels a snooze.
+          Cancel a snooze.
 
-          If the snooze is upcoming, i.e. the start time is in the future, then
+          If the start time is in the future, then
           this command is equivalent to:
 
             * update --start-time="+PT1S" --end-time="+PT1S
 
-          Otherwise, if the snooze is active, i.e. the start time is past and
-          the ending time is in the future, then this command is equivalent to:
+          Otherwise, if the start time is past and the ending time is in the
+          future, then this command is equivalent to:
 
             * update --end-time="+PT1S
 

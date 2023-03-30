@@ -36,7 +36,6 @@ _DETAILED_HELP = {
 }
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class IgnoreJob(base.CreateCommand):
   """Ignores a specified job and phase combination on a rollout."""

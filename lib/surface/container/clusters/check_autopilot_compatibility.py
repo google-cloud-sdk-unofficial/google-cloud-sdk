@@ -19,6 +19,7 @@ from __future__ import division
 from __future__ import unicode_literals
 
 from googlecloudsdk.calliope import base
+from googlecloudsdk.core import log
 
 
 @base.Hidden
@@ -57,9 +58,13 @@ class CheckAutopliotCompatibility(base.ListCommand):
     def sort_key(issue):
       return (issue.type, issue.issueId)
 
-    issues = adapter.CheckAutopilotCompatibility(
+    resp = adapter.CheckAutopilotCompatibility(
         adapter.ParseCluster(args.name, location))
-    issues.issues = sorted(issues.issues, key=sort_key)
+    resp.issues = sorted(resp.issues, key=sort_key)
+    self._summary = resp.summary
 
-    return issues.issues
+    return resp.issues
 
+  def Epilog(self, results_were_displayed):
+    if self._summary:
+      log.out.Print('\nSummary:\n' + self._summary)

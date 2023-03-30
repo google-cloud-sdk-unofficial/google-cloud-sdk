@@ -90,7 +90,7 @@
           help_text: |
             The instance size of the service.
           choices:
-          - arg_value: extra_small
+          - arg_value: extra-small
             enum_value: EXTRA_SMALL
             help_text:  |
               Extra small instance size, maps to a scaling factor of 0.1.
@@ -106,7 +106,7 @@
             enum_value: LARGE
             help_text:  |
               Large instance size, maps to a scaling factor of 3.0.
-          - arg_value: extra_large
+          - arg_value: extra-large
             enum_value: EXTRA_LARGE
             help_text:  |
               Extra large instance size, maps to a scaling factor of 6.0.

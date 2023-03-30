@@ -31,17 +31,16 @@ class Update(base.UpdateCommand):
 
   detailed_help = {
       'DESCRIPTION': """\
-          Updates a snooze.
+          Update a snooze.
 
-          ```
-          If `--snooze-from-file` is specified:
+          If `--snooze-from-file` is specified, then the update rules depend on
+          the value of the (optional) `--fields` flag:
 
-            * If `--fields` is specified, then only the specified fields will be
-              updated.
-            * Else, the snooze will be replaced with the provided snooze. The
-              snooze can be modified further using the flags from the Snooze
+            * If `--fields` is specified, then only the specified fields of the
+              snooze are updated.
+            * Else, all fields of the snooze are replaced. The updated snooze
+              can be modified further using the flags from the Snooze
               Settings group below.
-          ```
 
           Otherwise, the snooze will be updated with the values specified in
           the flags from the Snooze Settings group.

@@ -1,4 +1,4 @@
-release_tracks: [ALPHA]
+release_tracks: [BETA, ALPHA]
 
 help_text:
   brief: |
@@ -11,7 +11,10 @@ help_text:
         $ {command} --location={region} --gateway-security-policy={policy-name}
 
 request: &request
-  api_version: v1alpha1
+  ALPHA:
+    api_version: v1alpha1
+  BETA:
+    api_version: v1beta1
   collection: networksecurity.projects.locations.gatewaySecurityPolicies.rules
 
 arguments:

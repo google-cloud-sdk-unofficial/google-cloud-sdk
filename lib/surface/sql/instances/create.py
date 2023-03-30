@@ -276,9 +276,12 @@ def RunBaseCreateCommand(args, release_track):
 
   if not args.backup:
     if args.IsSpecified('enable_bin_log'):
-      raise sql_exceptions.ArgumentError(
-          '`--enable-bin-log` cannot be specified when --no-backup is '
-          'specified')
+      if not args.IsSpecified('master_instance_name'):
+        # if we are creating a replica, we allow enable_bin_log with no_backup,
+        # otherwise no_backup is not allowed with enable_bin_log
+        raise sql_exceptions.ArgumentError(
+            '`--enable-bin-log` cannot be specified when --no-backup is '
+            'specified')
     elif args.IsSpecified('enable_point_in_time_recovery'):
       raise sql_exceptions.ArgumentError(
           '`--enable-point-in-time-recovery` cannot be specified when '

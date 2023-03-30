@@ -81,8 +81,6 @@
 
                      $ {command} --dns-authorizations=api-example-com,www-example-com
                 - arg_name: issuance-config
-                  hidden: true
-                  release_tracks: [ALPHA, BETA]
                   api_field: certificate.managed.issuanceConfig
                   help_text: |
                     Name of the Certificate Issuance Config to use for issuance.

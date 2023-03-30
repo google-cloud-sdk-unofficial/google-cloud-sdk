@@ -32,25 +32,14 @@
       is_positional: false
 
   output:
-    ALPHA:
-      format: |
-        table(
-        name.basename(),
-        name.segment(-3):label=ZONE,
-        acceleratorType.basename():label=ACCELERATOR_TYPE,
-        acceleratorConfig.type.basename():label=TYPE,
-        acceleratorConfig.topology.basename():label=TOPOLOGY,
-        networkConfig.network.basename():label=NETWORK,
-        cidrBlock:label=RANGE,
-        state:label=STATUS
-        )
-    GA:
-      format: |
-        table(
-        name.basename(),
-        name.segment(-3):label=ZONE,
-        acceleratorType.basename():label=ACCELERATOR_TYPE,
-        networkConfig.network.basename():label=NETWORK,
-        cidrBlock:label=RANGE,
-        state:label=STATUS
-        )
+    format: |
+      table(
+      name.basename(),
+      name.segment(-3):label=ZONE,
+      acceleratorType.basename():label=ACCELERATOR_TYPE,
+      acceleratorConfig.type.basename():label=TYPE,
+      acceleratorConfig.topology.basename():label=TOPOLOGY,
+      networkConfig.network.basename():label=NETWORK,
+      cidrBlock:label=RANGE,
+      state:label=STATUS
+      )

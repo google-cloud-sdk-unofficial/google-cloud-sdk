@@ -5,7 +5,7 @@
     examples: |
         To update the information of a reCAPTCHA firewall policy, run:
 
-          $ {command} policy-id --description='updated description' --actions block
+          $ {command} policy-id --description='updated description' --actions=block
 
   request:
     collection: recaptchaenterprise.projects.firewallpolicies

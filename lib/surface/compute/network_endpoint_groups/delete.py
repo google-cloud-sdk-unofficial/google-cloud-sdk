@@ -35,8 +35,9 @@ To delete a network endpoint group named ``my-neg'':
 }
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
-                    base.ReleaseTrack.GA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
+)
 class Delete(base.DeleteCommand):
   """Delete a Compute Engine network endpoint group."""
 
@@ -46,22 +47,28 @@ class Delete(base.DeleteCommand):
   @classmethod
   def Args(cls, parser):
     flags.MakeNetworkEndpointGroupsArg(
-        support_regional_scope=cls.support_regional_scope).AddArgument(parser)
+        support_regional_scope=cls.support_regional_scope
+    ).AddArgument(parser)
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     client = holder.client
 
     neg_ref = flags.MakeNetworkEndpointGroupsArg(
-        support_regional_scope=self.support_regional_scope).ResolveAsResource(
-            args,
-            holder.resources,
-            default_scope=compute_scope.ScopeEnum.ZONE,
-            scope_lister=compute_flags.GetDefaultScopeLister(holder.client))
+        support_regional_scope=self.support_regional_scope
+    ).ResolveAsResource(
+        args,
+        holder.resources,
+        default_scope=compute_scope.ScopeEnum.ZONE,
+        scope_lister=compute_flags.GetDefaultScopeLister(holder.client),
+    )
     console_io.PromptContinue(
         'You are about to delete network endpoint group: [{}]'.format(
-            neg_ref.Name()),
-        throw_if_unattended=True, cancel_on_no=True)
+            neg_ref.Name()
+        ),
+        throw_if_unattended=True,
+        cancel_on_no=True,
+    )
 
     messages = holder.client.messages
 
@@ -69,17 +76,20 @@ class Delete(base.DeleteCommand):
       request = messages.ComputeNetworkEndpointGroupsDeleteRequest(
           networkEndpointGroup=neg_ref.Name(),
           project=neg_ref.project,
-          zone=neg_ref.zone)
+          zone=neg_ref.zone,
+      )
       service = holder.client.apitools_client.networkEndpointGroups
     elif hasattr(neg_ref, 'region'):
       request = messages.ComputeRegionNetworkEndpointGroupsDeleteRequest(
           networkEndpointGroup=neg_ref.Name(),
           project=neg_ref.project,
-          region=neg_ref.region)
+          region=neg_ref.region,
+      )
       service = holder.client.apitools_client.regionNetworkEndpointGroups
     else:
       request = messages.ComputeGlobalNetworkEndpointGroupsDeleteRequest(
-          networkEndpointGroup=neg_ref.Name(), project=neg_ref.project)
+          networkEndpointGroup=neg_ref.Name(), project=neg_ref.project
+      )
       service = holder.client.apitools_client.globalNetworkEndpointGroups
 
     result = client.MakeRequests([(service, 'Delete', request)])

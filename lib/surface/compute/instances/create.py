@@ -111,7 +111,8 @@ def _CommonArgs(parser,
                 support_provisioned_throughput=False,
                 support_network_attachments=False,
                 support_local_ssd_recovery_timeout=False,
-                support_local_ssd_size=False):
+                support_local_ssd_size=False,
+                support_vlan_nic=False):
   """Register parser args common to all tracks."""
   metadata_utils.AddMetadataArgs(parser)
   instances_flags.AddDiskArgs(parser, enable_regional, enable_kms=enable_kms)
@@ -132,7 +133,8 @@ def _CommonArgs(parser,
       support_subinterface=support_subinterface,
       instance_create=True,
       support_network_queue_count=support_network_queue_count,
-      support_network_attachments=support_network_attachments)
+      support_network_attachments=support_network_attachments,
+      support_vlan_nic=support_vlan_nic)
   instances_flags.AddAcceleratorArgs(parser)
   instances_flags.AddMachineTypeArgs(parser)
   instances_flags.AddMaintenancePolicyArgs(
@@ -265,6 +267,7 @@ class Create(base.CreateCommand):
   _support_internal_ipv6_reservation = True
   _support_regional_instance_template = False
   _support_local_ssd_size = True
+  _support_vlan_nic = False
 
   @classmethod
   def Args(cls, parser):
@@ -285,7 +288,8 @@ class Create(base.CreateCommand):
         support_network_attachments=cls._support_network_attachments,
         support_local_ssd_recovery_timeout=cls._support_local_ssd_recovery_timeout,
         support_local_ssd_size=cls._support_local_ssd_size,
-        support_network_queue_count=cls._support_network_queue_count)
+        support_network_queue_count=cls._support_network_queue_count,
+        support_vlan_nic=cls._support_vlan_nic)
     cls.SOURCE_INSTANCE_TEMPLATE = instances_flags.MakeSourceInstanceTemplateArg(
         support_regional_instance_template=cls._support_regional_instance_template
     )
@@ -708,6 +712,7 @@ class CreateBeta(Create):
   _support_local_ssd_recovery_timeout = False
   _support_regional_instance_template = False
   _support_local_ssd_size = True
+  _support_vlan_nic = False
 
   def GetSourceMachineImage(self, args, resources):
     """Retrieves the specified source machine image's selflink.
@@ -743,7 +748,8 @@ class CreateBeta(Create):
         support_network_attachments=cls._support_network_attachments,
         support_network_queue_count=cls._support_network_queue_count,
         support_local_ssd_recovery_timeout=cls._support_local_ssd_recovery_timeout,
-        support_local_ssd_size=cls._support_local_ssd_size)
+        support_local_ssd_size=cls._support_local_ssd_size,
+        support_vlan_nic=cls._support_vlan_nic)
     cls.SOURCE_INSTANCE_TEMPLATE = instances_flags.MakeSourceInstanceTemplateArg(
         support_regional_instance_template=cls._support_regional_instance_template
     )
@@ -795,6 +801,7 @@ class CreateAlpha(CreateBeta):
   _support_local_ssd_recovery_timeout = True
   _support_regional_instance_template = True
   _support_local_ssd_size = True
+  _support_vlan_nic = True
 
   @classmethod
   def Args(cls, parser):
@@ -818,7 +825,8 @@ class CreateAlpha(CreateBeta):
         support_provisioned_throughput=cls._support_provisioned_throughput,
         support_network_attachments=cls._support_network_attachments,
         support_local_ssd_recovery_timeout=cls._support_local_ssd_recovery_timeout,
-        support_local_ssd_size=cls._support_local_ssd_size)
+        support_local_ssd_size=cls._support_local_ssd_size,
+        support_vlan_nic=cls._support_vlan_nic)
 
     CreateAlpha.SOURCE_INSTANCE_TEMPLATE = instances_flags.MakeSourceInstanceTemplateArg(
         support_regional_instance_template=cls._support_regional_instance_template

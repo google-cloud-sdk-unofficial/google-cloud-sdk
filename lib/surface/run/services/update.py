@@ -68,6 +68,7 @@ class Update(base.Command):
     flags.AddEgressSettingsFlag(managed_group)
     flags.AddCmekKeyFlag(managed_group)
     flags.AddCmekKeyRevocationActionTypeFlag(managed_group)
+    flags.AddEncryptionKeyShutdownHoursFlag(managed_group)
 
     # Flags specific to connecting to a cluster
     cluster_group = flags.GetClusterArgGroup(parser)
@@ -179,7 +180,6 @@ class BetaUpdate(Update):
     managed_group = flags.GetManagedArgGroup(parser)
     flags.AddSessionAffinityFlag(managed_group)
     flags.AddStartupCpuBoostFlag(managed_group)
-    flags.AddEncryptionKeyShutdownHoursFlag(managed_group)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -195,7 +195,6 @@ class AlphaUpdate(Update):
     flags.AddCustomAudiencesFlag(managed_group)
     flags.AddSessionAffinityFlag(managed_group)
     flags.AddStartupCpuBoostFlag(managed_group)
-    flags.AddEncryptionKeyShutdownHoursFlag(managed_group)
     flags.AddVpcNetworkFlags(managed_group)
     flags.AddVpcSubnetFlags(managed_group)
     flags.AddVpcNetworkTagsFlags(managed_group)

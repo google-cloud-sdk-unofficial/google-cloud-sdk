@@ -927,6 +927,7 @@ class Create(base.CreateCommand):
   _support_network_attachments = False
   _support_replica_zones = False
   _support_local_ssd_size = True
+  _support_network_queue_count = True
 
   @classmethod
   def Args(cls, parser):
@@ -944,7 +945,8 @@ class Create(base.CreateCommand):
         support_provisioned_throughput=cls._support_provisioned_throughput,
         support_network_attachments=cls._support_network_attachments,
         support_replica_zones=cls._support_replica_zones,
-        support_local_ssd_size=cls._support_local_ssd_size
+        support_local_ssd_size=cls._support_local_ssd_size,
+        support_network_queue_count=cls._support_network_queue_count,
     )
     instances_flags.AddMinCpuPlatformArgs(parser, base.ReleaseTrack.GA)
     instances_flags.AddPrivateIpv6GoogleAccessArgForTemplate(
@@ -1008,6 +1010,7 @@ class CreateBeta(Create):
   _support_replica_zones = False
   _support_local_ssd_recovery_timeout = False
   _support_local_ssd_size = True
+  _support_network_queue_count = True
 
   @classmethod
   def Args(cls, parser):
@@ -1026,7 +1029,8 @@ class CreateBeta(Create):
         support_provisioned_throughput=cls._support_provisioned_throughput,
         support_network_attachments=cls._support_network_attachments,
         support_replica_zones=cls._support_replica_zones,
-        support_local_ssd_recovery_timeout=cls._support_local_ssd_recovery_timeout)
+        support_local_ssd_recovery_timeout=cls._support_local_ssd_recovery_timeout,
+        support_network_queue_count=cls._support_network_queue_count)
     instances_flags.AddMinCpuPlatformArgs(parser, base.ReleaseTrack.BETA)
     instances_flags.AddPrivateIpv6GoogleAccessArgForTemplate(
         parser, utils.COMPUTE_BETA_API_VERSION)

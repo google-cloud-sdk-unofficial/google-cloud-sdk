@@ -206,6 +206,8 @@ def ParseCreateOptionsBase(args, is_autopilot, get_default, location,
       create_subnetwork=get_default('create_subnetwork'),
       disable_default_snat=get_default('disable_default_snat'),
       dataplane_v2=get_default('enable_dataplane_v2'),
+      enable_dataplane_v2_metrics=get_default('enable_dataplane_v2_metrics'),
+      disable_dataplane_v2_metrics=get_default('disable_dataplane_v2_metrics'),
       disk_type=get_default('disk_type'),
       enable_autorepair=enable_autorepair,
       enable_autoscaling=get_default('enable_autoscaling'),
@@ -643,6 +645,8 @@ flags_to_add = {
         'datapath': (lambda p: flags.AddDatapathProviderFlag(p, hidden=True)),
         'dataplanev2':
             flags.AddDataplaneV2Flag,
+        'dataplanev2metrics':
+            flags.AddDataplaneV2MetricsFlag,
         'disabledefaultsnat':
             AddDisableDefaultSnatFlagForClusterCreate,
         'disksize':
@@ -861,6 +865,8 @@ flags_to_add = {
             lambda p: flags.AddDatapathProviderFlag(p, hidden=True),
         'dataplanev2':
             flags.AddDataplaneV2Flag,
+        'dataplanev2metrics':
+            flags.AddDataplaneV2MetricsFlag,
         'disabledefaultsnat':
             AddDisableDefaultSnatFlagForClusterCreate,
         'disksize':

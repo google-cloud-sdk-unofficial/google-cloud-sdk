@@ -27,8 +27,7 @@ from googlecloudsdk.command_lib.compute.sole_tenancy.node_groups import flags
 from googlecloudsdk.command_lib.compute.sole_tenancy.node_groups import util
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA,
-                    base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Create(base.CreateCommand):
   """Create a Compute Engine node group."""
 
@@ -74,6 +73,11 @@ class Create(base.CreateCommand):
       maintenance_policy = mapper.GetEnumForChoice(args.maintenance_policy)
       node_group.maintenancePolicy = maintenance_policy
 
+    if hasattr(args, 'maintenance_interval'):
+      mapper = flags.GetMaintenanceIntervalEnumMapper(messages)
+      maintenance_interval = mapper.GetEnumForChoice(args.maintenance_interval)
+      node_group.maintenanceInterval = maintenance_interval
+
     if hasattr(args, 'autoscaler_mode') and args.autoscaler_mode:
       if args.autoscaler_mode != 'off' and args.max_nodes is None:
         raise exceptions.RequiredArgumentException('--max-nodes',
@@ -99,3 +103,18 @@ class Create(base.CreateCommand):
 
     service = holder.client.apitools_client.nodeGroups
     return client.MakeRequests([(service, 'Insert', request)])[0]
+
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class CreateBeta(Create):
+  """Create a Compute Engine node group."""
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class CreateAlpha(CreateBeta):
+  """Create a Compute Engine node group."""
+
+  @staticmethod
+  def Args(parser):
+    Create.Args(parser)
+    flags.AddMaintenanceIntervalArgToParser(parser)

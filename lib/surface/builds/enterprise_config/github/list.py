@@ -20,6 +20,7 @@ from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.cloudbuild import cloudbuild_util
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.builds import flags as build_flags
 from googlecloudsdk.core import properties
 from googlecloudsdk.core import resources
 
@@ -46,6 +47,7 @@ class ListAlpha(base.ListCommand):
             app_id
           )
         """)
+    build_flags.AddRegionFlag(parser, hidden=False, required=False)
 
   def Run(self, args):
     """This is what gets called when the user runs this command.
@@ -62,13 +64,19 @@ class ListAlpha(base.ListCommand):
     messages = cloudbuild_util.GetMessagesModule()
 
     parent = properties.VALUES.core.project.Get(required=True)
+    regionprop = properties.VALUES.builds.region.Get()
+    location = args.region or regionprop or cloudbuild_util.DEFAULT_REGION
+
     # Get the parent project ref
     parent_resource = resources.REGISTRY.Create(
-        collection='cloudbuild.projects', projectId=parent)
+        collection='cloudbuild.projects.locations',
+        projectsId=parent,
+        locationsId=location)
 
     # Send the List request
-    ghe_list = client.projects_githubEnterpriseConfigs.List(
-        messages.CloudbuildProjectsGithubEnterpriseConfigsListRequest(
-            parent=parent_resource.RelativeName())).configs
+    ghe_list = client.projects_locations_githubEnterpriseConfigs.List(
+        messages.CloudbuildProjectsLocationsGithubEnterpriseConfigsListRequest(
+            parent=parent_resource.RelativeName(),
+            projectId=parent)).configs
 
     return ghe_list

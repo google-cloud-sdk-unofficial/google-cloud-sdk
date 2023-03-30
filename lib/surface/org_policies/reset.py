@@ -66,11 +66,4 @@ class Reset(interfaces.OrgPolicyGetAndUpdateCommand):
     return new_policy
 
 
-@base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class ResetALPHA(Reset):
-  """Reset the policy to the default for the constraint."""
-  pass
-
-
 Reset.detailed_help = DETAILED_HELP

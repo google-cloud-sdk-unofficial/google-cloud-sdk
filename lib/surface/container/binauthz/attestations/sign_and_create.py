@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*- #
-# Copyright 2019 Google LLC. All Rights Reserved.
+# Copyright 2023 Google LLC. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -115,8 +115,9 @@ class SignAndCreate(base.CreateCommand):
         properties.VALUES.core.project.Get(required=True),
         collection='cloudresourcemanager.projects',
     )
-    normalized_artifact_url = binauthz_command_util.NormalizeArtifactUrl(
-        args.artifact_url)
+    artifact_url_without_scheme = binauthz_command_util.RemoveArtifactUrlScheme(
+        args.artifact_url
+    )
 
     attestor_ref = args.CONCEPTS.attestor.Parse()
     key_ref = args.CONCEPTS.keyversion.Parse()
@@ -162,10 +163,11 @@ class SignAndCreate(base.CreateCommand):
     return client.CreateAttestationOccurrence(
         project_ref=project_ref,
         note_ref=note_ref,
-        artifact_url=normalized_artifact_url,
+        artifact_url=artifact_url_without_scheme,
         public_key_id=key_id,
         signature=sign_response.signature,
         plaintext=payload,
-        validation_callback=(validation_callback
-                             if validation_enabled else None),
+        validation_callback=(
+            validation_callback if validation_enabled else None
+        ),
     )

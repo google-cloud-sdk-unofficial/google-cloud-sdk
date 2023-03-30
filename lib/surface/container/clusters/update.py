@@ -815,6 +815,7 @@ class UpdateBeta(Update):
     flags.AddEnableImageStreamingFlag(group)
     flags.AddMaintenanceIntervalFlag(group)
     flags.AddDataplaneV2Flag(group, hidden=True)
+    flags.AddDataplaneV2MetricsFlag(group)
     flags.AddWorkloadConfigAuditFlag(group)
     flags.AddPodAutoscalingDirectMetricsOptInFlag(group)
     flags.AddWorkloadVulnScanningFlag(group)
@@ -916,6 +917,8 @@ class UpdateBeta(Update):
     opts.enable_image_streaming = args.enable_image_streaming
     opts.maintenance_interval = args.maintenance_interval
     opts.dataplane_v2 = args.enable_dataplane_v2
+    opts.enable_dataplane_v2_metrics = args.enable_dataplane_v2_metrics
+    opts.disable_dataplane_v2_metrics = args.disable_dataplane_v2_metrics
     opts.enable_workload_config_audit = args.enable_workload_config_audit
     opts.pod_autoscaling_direct_metrics_opt_in = args.pod_autoscaling_direct_metrics_opt_in
     opts.enable_workload_vulnerability_scanning = args.enable_workload_vulnerability_scanning
@@ -1012,6 +1015,7 @@ class UpdateAlpha(Update):
     flags.AddEnableImageStreamingFlag(group)
     flags.AddMaintenanceIntervalFlag(group)
     flags.AddDataplaneV2Flag(group, hidden=True)
+    flags.AddDataplaneV2MetricsFlag(group)
     flags.AddWorkloadConfigAuditFlag(group)
     flags.AddPodAutoscalingDirectMetricsOptInFlag(group)
     flags.AddWorkloadVulnScanningFlag(group)
@@ -1107,6 +1111,8 @@ class UpdateAlpha(Update):
     opts.enable_image_streaming = args.enable_image_streaming
     opts.maintenance_interval = args.maintenance_interval
     opts.dataplane_v2 = args.enable_dataplane_v2
+    opts.enable_dataplane_v2_metrics = args.enable_dataplane_v2_metrics
+    opts.disable_dataplane_v2_metrics = args.disable_dataplane_v2_metrics
     opts.enable_workload_config_audit = args.enable_workload_config_audit
     opts.pod_autoscaling_direct_metrics_opt_in = args.pod_autoscaling_direct_metrics_opt_in
     opts.enable_workload_vulnerability_scanning = args.enable_workload_vulnerability_scanning
