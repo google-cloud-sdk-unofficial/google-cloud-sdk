@@ -38,7 +38,6 @@ from googlecloudsdk.command_lib.compute.backend_services import flags
 from googlecloudsdk.command_lib.compute.security_policies import (
     flags as security_policy_flags)
 from googlecloudsdk.core import log
-from googlecloudsdk.core import resources as resources_exceptions
 
 
 def AddIapFlag(parser):
@@ -80,6 +79,7 @@ class UpdateHelper(object):
       support_unspecified_protocol,
       support_advanced_load_balancing,
       support_regional_security_policy,
+      support_ip_address_selection_policy,
   ):
     """Add all arguments for updating a backend service."""
 
@@ -165,6 +165,9 @@ class UpdateHelper(object):
 
     flags.AddLocalityLbPolicy(parser)
 
+    if support_ip_address_selection_policy:
+      flags.AddIpAddressSelectionPolicy(parser)
+
   def __init__(
       self,
       support_failover,
@@ -172,6 +175,7 @@ class UpdateHelper(object):
       support_tcp_ssl_logging,
       support_subsetting,
       support_subsetting_subset_size,
+      support_ip_address_selection_policy,
       support_advanced_load_balancing=False,
       support_regional_security_policy=False,
   ):
@@ -180,6 +184,9 @@ class UpdateHelper(object):
     self._support_tcp_ssl_logging = support_tcp_ssl_logging
     self._support_subsetting = support_subsetting
     self._support_subsetting_subset_size = support_subsetting_subset_size
+    self._support_ip_address_selection_policy = (
+        support_ip_address_selection_policy
+    )
     self._support_advanced_load_balancing = support_advanced_load_balancing
     self._support_regional_security_policy = support_regional_security_policy
 
@@ -315,6 +322,11 @@ class UpdateHelper(object):
       replacement.serviceBindings = []
       cleared_fields.append('serviceBindings')
 
+    if self._support_ip_address_selection_policy:
+      backend_services_utils.ApplyIpAddressSelectionPolicyArgs(
+          client, args, replacement
+      )
+
     return replacement, cleared_fields
 
   def ValidateArgs(self, args):
@@ -398,7 +410,10 @@ class UpdateHelper(object):
         else False,
         args.IsSpecified('service_bindings'),
         args.IsSpecified('no_service_bindings'),
-        args.IsSpecified('locality_lb_policy')
+        args.IsSpecified('locality_lb_policy'),
+        args.IsSpecified('ip_address_selection_policy')
+        if self._support_ip_address_selection_policy
+        else False,
     ]):
       raise compute_exceptions.UpdatePropertyError(
           'At least one property must be modified.')
@@ -520,11 +535,11 @@ class UpdateHelper(object):
 
     # Empty string is a valid value.
     if getattr(args, 'security_policy', None) is not None:
-      try:
+      if getattr(args, 'security_policy', None):
         security_policy_ref = self.SECURITY_POLICY_ARG.ResolveAsResource(
             args, holder.resources).SelfLink()
       # If security policy is an empty string we should clear the current policy
-      except resources_exceptions.InvalidResourceException:
+      else:
         security_policy_ref = None
       security_policy_request = self._GetSetSecurityPolicyRequest(
           client, backend_service_ref, security_policy_ref)
@@ -534,11 +549,11 @@ class UpdateHelper(object):
 
     # Empty string is a valid value.
     if getattr(args, 'edge_security_policy', None) is not None:
-      try:
+      if getattr(args, 'edge_security_policy', None):
         security_policy_ref = self.EDGE_SECURITY_POLICY_ARG.ResolveAsResource(
             args, holder.resources).SelfLink()
       # If security policy is an empty string we should clear the current policy
-      except resources_exceptions.InvalidResourceException:
+      else:
         security_policy_ref = None
       edge_security_policy_request = self._GetSetEdgeSecurityPolicyRequest(
           client, backend_service_ref, security_policy_ref)
@@ -567,6 +582,7 @@ class UpdateGA(base.UpdateCommand):
   _support_subsetting_subset_size = False
   _support_advanced_load_balancing = False
   _support_regional_security_policy = False
+  _support_ip_address_selection_policy = False
 
   @classmethod
   def Args(cls, parser):
@@ -580,6 +596,9 @@ class UpdateGA(base.UpdateCommand):
         support_unspecified_protocol=cls._support_unspecified_protocol,
         support_advanced_load_balancing=cls._support_advanced_load_balancing,
         support_regional_security_policy=cls._support_regional_security_policy,
+        support_ip_address_selection_policy=(
+            cls._support_ip_address_selection_policy
+        ),
     )
 
   def Run(self, args):
@@ -593,6 +612,7 @@ class UpdateGA(base.UpdateCommand):
         self._support_subsetting_subset_size,
         self._support_advanced_load_balancing,
         self._support_regional_security_policy,
+        self._support_ip_address_selection_policy,
     ).Run(args, holder)
 
 
@@ -626,3 +646,4 @@ class UpdateAlpha(UpdateBeta):
   _support_advanced_load_balancing = True
   _support_tcp_ssl_logging = True
   _support_regional_security_policy = True
+  _support_ip_address_selection_policy = True

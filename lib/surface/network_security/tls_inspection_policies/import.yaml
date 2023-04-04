@@ -1,4 +1,4 @@
-release_tracks: [ALPHA]
+release_tracks: [BETA, ALPHA]
 help_text:
   brief: |
     Import TLS Inspection Policy.
@@ -9,7 +9,10 @@ help_text:
         $ {command} my-tls-inspection-policy --source=my-tls-inspection-policy.yaml --location=$REGION
 request:
   collection: networksecurity.projects.locations.tlsInspectionPolicies
-  api_version: v1alpha1
+  ALPHA:
+    api_version: v1alpha1
+  BETA:
+    api_version: v1beta1
 arguments:
   resource:
     spec: !REF googlecloudsdk.command_lib.network_security.resources:tlsInspectionPolicy
@@ -22,5 +25,8 @@ import:
   create_if_not_exists: true
   create_request:
     collection: networksecurity.projects.locations.tlsInspectionPolicies
-    api_version: v1alpha1
+    ALPHA:
+      api_version: v1alpha1
+    BETA:
+      api_version: v1beta1
     method: create

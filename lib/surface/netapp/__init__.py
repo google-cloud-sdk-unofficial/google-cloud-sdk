@@ -43,3 +43,11 @@ class Netapp(base.Group):
   """Create and manipulate Cloud NetApp Files resources."""
   detailed_help = DETAILED_HELP
   category = base.STORAGE_CATEGORY
+
+
+@base.Hidden
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class NetappBeta(base.Group):
+  """Create and manipulate Cloud NetApp Files resources."""
+  detailed_help = DETAILED_HELP
+  category = base.STORAGE_CATEGORY

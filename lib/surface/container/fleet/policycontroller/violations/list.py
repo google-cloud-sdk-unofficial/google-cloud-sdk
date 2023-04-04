@@ -49,7 +49,6 @@ class List(calliope_base.ListCommand):
 
       $ {command}
       --memberships=MEMBERSHIP
-
   """
 
   @classmethod
@@ -59,32 +58,37 @@ class List(calliope_base.ListCommand):
         '--verbose',
         action='store_true',
         help='Include error message with violations.',
-        default=False)
+        default=False,
+    )
     parser.add_argument(
         '--group-by',
         type=str,
-        help='If set, returns violations grouped by a common attribute. Options: constraint, membership',
-        default=''
+        help=(
+            'If set, returns violations grouped by a common attribute. Options:'
+            ' constraint, membership'
+        ),
+        default='',
     )
     resources.AddMembershipResourceArg(
         parser,
         plural=True,
         membership_help=(
             'The membership names from which to return violations, separated '
-            'by commas if multiple are supplied.'))
+            'by commas if multiple are supplied.'
+        ),
+    )
 
   def Run(self, args):
     calliope_base.EnableUserProjectQuota()
 
     if args.group_by not in ['constraint', 'membership', '']:
       raise exceptions.Error(
-          'Invalid group-by parameter "{}"'.format(args.group_by))
+          'Invalid group-by parameter "{}"'.format(args.group_by)
+      )
     project_id = properties.VALUES.core.project.Get(required=True)
 
-    client = status_api_utils.GetClientInstance(
-        self.ReleaseTrack())
-    messages = status_api_utils.GetMessagesModule(
-        self.ReleaseTrack())
+    client = status_api_utils.GetClientInstance(self.ReleaseTrack())
+    messages = status_api_utils.GetMessagesModule(self.ReleaseTrack())
 
     if args.memberships is not None:
       memberships = args.memberships
@@ -98,4 +102,5 @@ class List(calliope_base.ListCommand):
         verbose=args.verbose,
         group_by=args.group_by,
         memberships=memberships,
-        constraint_filter=None)
+        constraint_filter=None,
+    )

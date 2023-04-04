@@ -18,18 +18,15 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
-from apitools.base.py import exceptions as apitools_exceptions
-from googlecloudsdk.api_lib.functions.v1 import util as util_v1
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.functions import flags
+from googlecloudsdk.command_lib.functions import util
 from googlecloudsdk.command_lib.functions.v1.describe import command as command_v1
 from googlecloudsdk.command_lib.functions.v2.describe import command as command_v2
-from googlecloudsdk.core import log
-import six.moves.http_client
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
-class Describe(base.DescribeCommand):
+class Describe(util.FunctionResourceCommand, base.DescribeCommand):
   """Display details of a Google Cloud Function."""
 
   @staticmethod
@@ -38,36 +35,11 @@ class Describe(base.DescribeCommand):
     flags.AddFunctionResourceArg(parser, 'to describe')
     flags.AddGen2Flag(parser)
 
-  @util_v1.CatchHTTPErrorRaiseHTTPException
-  def Run(self, args):
-    """This is what gets called when the user runs this command.
+  def _RunV1(self, args):
+    return command_v1.Run(args)
 
-    Args:
-      args: an argparse namespace. All the arguments that were provided to this
-        command invocation.
-
-    Returns:
-      The specified function with its description and configured filter.
-    """
-    if flags.ShouldUseGen2():
-      return command_v2.Run(args, self.ReleaseTrack())
-
-    # immediately fallback to v2 for v2-only regions.
-    parsed_region = args.CONCEPTS.name.Parse().locationsId
-    v1_regions = [r.locationId for r in util_v1.ListRegions()]
-    if parsed_region not in v1_regions:
-      return command_v2.Run(args, self.ReleaseTrack())
-
-    try:
-      return command_v1.Run(args)
-    except apitools_exceptions.HttpError as error:
-      if error.status_code == six.moves.http_client.NOT_FOUND:
-        log.debug(
-            '1st Gen Cloud Function not found, looking for 2nd Gen Cloud'
-            ' Function ...'
-        )
-        return command_v2.Run(args, self.ReleaseTrack())
-      raise
+  def _RunV2(self, args):
+    return command_v2.Run(args, self.ReleaseTrack())
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)

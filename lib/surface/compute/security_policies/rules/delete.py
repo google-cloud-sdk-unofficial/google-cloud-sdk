@@ -45,28 +45,34 @@ class DeleteHelper(object):
   SECURITY_POLICY_ARG = None
 
   @classmethod
-  def Args(cls, parser, support_regional_security_policy):
+  def Args(cls, parser, support_regional_security_policy, support_net_lb):
     """Generates the flagset for a Delete command."""
     flags.AddPriority(parser, 'delete', is_plural=True)
-    if support_regional_security_policy:
+    if support_regional_security_policy or support_net_lb:
       flags.AddRegionFlag(parser, 'delete')
       cls.SECURITY_POLICY_ARG = (
-          security_policies_flags.SecurityPolicyMultiScopeArgumentForRules())
+          security_policies_flags.SecurityPolicyMultiScopeArgumentForRules()
+      )
     else:
       cls.SECURITY_POLICY_ARG = (
-          security_policies_flags.SecurityPolicyArgumentForRules())
+          security_policies_flags.SecurityPolicyArgumentForRules()
+      )
     cls.SECURITY_POLICY_ARG.AddArgument(parser)
     parser.display_info.AddCacheUpdater(
-        security_policies_flags.SecurityPoliciesCompleter)
+        security_policies_flags.SecurityPoliciesCompleter
+    )
 
   @classmethod
-  def Run(cls, release_track, args, support_regional_security_policy):
+  def Run(
+      cls, release_track, args, support_regional_security_policy, support_net_lb
+  ):
     """Validates arguments and deletes security policy rule(s)."""
     holder = base_classes.ComputeApiHolder(release_track)
     refs = []
-    if support_regional_security_policy:
+    if support_regional_security_policy or support_net_lb:
       security_policy_ref = cls.SECURITY_POLICY_ARG.ResolveAsResource(
-          args, holder.resources, default_scope=compute_scope.ScopeEnum.GLOBAL)
+          args, holder.resources, default_scope=compute_scope.ScopeEnum.GLOBAL
+      )
       if getattr(security_policy_ref, 'region', None) is not None:
         for name in args.names:
           refs.append(
@@ -124,18 +130,21 @@ class DescribeGABeta(base.DeleteCommand):
   SECURITY_POLICY_ARG = None
 
   _support_regional_security_policy = False
+  _support_net_lb = False
 
   @classmethod
   def Args(cls, parser):
     DeleteHelper.Args(
         parser,
-        support_regional_security_policy=cls._support_regional_security_policy)
+        support_regional_security_policy=cls._support_regional_security_policy,
+        support_net_lb=cls._support_net_lb)
 
   def Run(self, args):
     return DeleteHelper.Run(
         self.ReleaseTrack(),
         args,
-        support_regional_security_policy=self._support_regional_security_policy)
+        support_regional_security_policy=self._support_regional_security_policy,
+        support_net_lb=self._support_net_lb)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -155,15 +164,18 @@ class DeleteAlpha(base.DeleteCommand):
   SECURITY_POLICY_ARG = None
 
   _support_regional_security_policy = True
+  _support_net_lb = True
 
   @classmethod
   def Args(cls, parser):
     DeleteHelper.Args(
         parser,
-        support_regional_security_policy=cls._support_regional_security_policy)
+        support_regional_security_policy=cls._support_regional_security_policy,
+        support_net_lb=cls._support_net_lb)
 
   def Run(self, args):
     return DeleteHelper.Run(
         self.ReleaseTrack(),
         args,
-        support_regional_security_policy=self._support_regional_security_policy)
+        support_regional_security_policy=self._support_regional_security_policy,
+        support_net_lb=self._support_net_lb)

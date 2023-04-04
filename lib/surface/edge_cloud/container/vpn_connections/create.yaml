@@ -22,11 +22,9 @@
     - googlecloudsdk.command_lib.edge_cloud.container.vpn:SetVPNClusterPath
 
   arguments:
-    resource:
-      help_text: VPN connection to create.
-      spec: !REF googlecloudsdk.command_lib.edge_cloud.container.resources:vpnConnection
-
     params:
+    - help_text: VPN connection to create.
+      resource_spec: !REF googlecloudsdk.command_lib.edge_cloud.container.resources:vpnConnection
     - arg_name: cluster
       api_field: vpnConnection.cluster
       help_text: |

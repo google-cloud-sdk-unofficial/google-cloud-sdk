@@ -1,9 +1,13 @@
-release_tracks: [ALPHA]
+release_tracks: [ALPHA, BETA]
 help_text:
   brief: |
     Export TrustConfig.
   description: |
     Export a TrustConfig.
+  examples: |
+      To export a TrustConfig, run:
+
+        $ {command} my-trust-config --destination=my-trust-config.yaml --location=global
 
 request:
   collection: certificatemanager.projects.locations.trustConfigs

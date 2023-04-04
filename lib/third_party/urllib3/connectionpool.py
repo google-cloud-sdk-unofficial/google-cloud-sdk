@@ -926,6 +926,7 @@ class HTTPSConnectionPool(HTTPConnectionPool):
         cert_reqs=None,
         key_password=None,
         ca_certs=None,
+        ca_cert_data=None,
         ssl_version=None,
         assert_hostname=None,
         assert_fingerprint=None,
@@ -953,6 +954,7 @@ class HTTPSConnectionPool(HTTPConnectionPool):
         self.cert_reqs = cert_reqs
         self.key_password = key_password
         self.ca_certs = ca_certs
+        self.ca_cert_data = ca_cert_data
         self.ca_cert_dir = ca_cert_dir
         self.ssl_version = ssl_version
         self.assert_hostname = assert_hostname
@@ -971,6 +973,7 @@ class HTTPSConnectionPool(HTTPConnectionPool):
                 cert_file=self.cert_file,
                 cert_reqs=self.cert_reqs,
                 ca_certs=self.ca_certs,
+                ca_cert_data=self.ca_cert_data,
                 ca_cert_dir=self.ca_cert_dir,
                 assert_hostname=self.assert_hostname,
                 assert_fingerprint=self.assert_fingerprint,

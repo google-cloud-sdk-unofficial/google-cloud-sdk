@@ -32,63 +32,82 @@ def GetFleetTemplate(client, messages, project_id, template_name):
   try:
     fleet_template_request = messages.AnthospolicycontrollerstatusPaProjectsFleetConstraintTemplatesGetRequest(
         name='projects/{}/fleetConstraintTemplates/{}'.format(
-            project_id, template_name))
+            project_id, template_name
+        )
+    )
     fleet_template_response = client.projects_fleetConstraintTemplates.Get(
-        fleet_template_request)
+        fleet_template_request
+    )
   except apitools_exceptions.HttpNotFoundError:
     raise exceptions.Error(
-        'Constraint template [{}] was not found in the fleet.'
-        .format(template_name))
+        'Constraint template [{}] was not found in the fleet.'.format(
+            template_name
+        )
+    )
   formatted_template = {
       'name': fleet_template_response.ref.name,
       'constraints': [],
-      'memberships': []
+      'memberships': [],
   }
 
   fleet_constraints_request = messages.AnthospolicycontrollerstatusPaProjectsFleetConstraintsListRequest(
-      parent='projects/{}'.format(project_id))
+      parent='projects/{}'.format(project_id)
+  )
   fleet_constraints_response = client.projects_fleetConstraints.List(
-      fleet_constraints_request)
+      fleet_constraints_request
+  )
 
   for fleet_constraint in fleet_constraints_response.fleetConstraints:
     if template_name == fleet_constraint.ref.constraintTemplateName:
-      formatted_template['constraints'].append(
-          fleet_constraint.ref.name)
+      formatted_template['constraints'].append(fleet_constraint.ref.name)
 
   membership_templates_request = messages.AnthospolicycontrollerstatusPaProjectsMembershipConstraintTemplatesListRequest(
-      parent='projects/{}'.format(project_id))
-  membership_templates_response = client.projects_membershipConstraintTemplates.List(
-      membership_templates_request)
+      parent='projects/{}'.format(project_id)
+  )
+  membership_templates_response = (
+      client.projects_membershipConstraintTemplates.List(
+          membership_templates_request
+      )
+  )
 
-  for membership_template in membership_templates_response.membershipConstraintTemplates:
+  for (
+      membership_template
+  ) in membership_templates_response.membershipConstraintTemplates:
     if template_name == membership_template.constraintTemplateRef.name:
       formatted_template['memberships'].append(
-          membership_template.membershipRef.name)
+          membership_template.membershipRef.name
+      )
 
   return formatted_template
 
 
-def GetMembershipTemplate(client, messages, project_id, membership,
-                          template_name, release_track):
+def GetMembershipTemplate(
+    client, messages, project_id, membership, template_name, release_track
+):
   """Returns a formatted membership template."""
   try:
-    membership_obj = fleet_api_util.GetMembership(membership,
-                                                  release_track)
+    membership_obj = fleet_api_util.GetMembership(membership, release_track)
   except apitools_exceptions.HttpNotFoundError:
     raise exceptions.Error(
-        'Membership [{}] was not found in the fleet.'
-        .format(membership))
+        'Membership [{}] was not found in the fleet.'.format(membership)
+    )
 
   try:
     membership_template_request = messages.AnthospolicycontrollerstatusPaProjectsMembershipConstraintTemplatesGetRequest(
         name='projects/{}/membershipConstraintTemplates/{}/{}'.format(
-            project_id, template_name, membership_obj.uniqueId))
-    membership_template_response = client.projects_membershipConstraintTemplates.Get(
-        membership_template_request)
+            project_id, template_name, membership_obj.uniqueId
+        )
+    )
+    membership_template_response = (
+        client.projects_membershipConstraintTemplates.Get(
+            membership_template_request
+        )
+    )
   except apitools_exceptions.HttpNotFoundError:
     raise exceptions.Error(
         'Constraint template [{}] was not found in Fleet membership [{}].'
-        .format(template_name, membership))
+        .format(template_name, membership)
+    )
 
   formatted_template = {
       'membership': membership_template_response.membershipRef.name,
@@ -96,7 +115,7 @@ def GetMembershipTemplate(client, messages, project_id, membership,
       'description': membership_template_response.description,
       'schema': membership_template_response.spec.properties or {},
       'policy_code': '',
-      'constraints': []
+      'constraints': [],
   }
 
   for target in membership_template_response.spec.targets:
@@ -104,18 +123,19 @@ def GetMembershipTemplate(client, messages, project_id, membership,
       formatted_template['policy_code'] = target.regoPolicy.policy
       break
 
-  membership_constraints_request = (
-      messages.
-      AnthospolicycontrollerstatusPaProjectsMembershipConstraintsListRequest(
-          parent='projects/{}'.format(project_id)))
+  membership_constraints_request = messages.AnthospolicycontrollerstatusPaProjectsMembershipConstraintsListRequest(
+      parent='projects/{}'.format(project_id)
+  )
   membership_constraints_response = client.projects_membershipConstraints.List(
-      request=membership_constraints_request)
+      request=membership_constraints_request
+  )
   for constraint in membership_constraints_response.membershipConstraints:
-    if constraint.membershipRef.name == formatted_template[
-        'membership'] and constraint.constraintRef.constraintTemplateName != formatted_template[
-            'name']:
-      formatted_template['constraints'].append(
-          constraint.constraintRef.name)
+    if (
+        constraint.membershipRef.name == formatted_template['membership']
+        and constraint.constraintRef.constraintTemplateName
+        != formatted_template['name']
+    ):
+      formatted_template['constraints'].append(constraint.constraintRef.name)
   return formatted_template
 
 
@@ -139,24 +159,22 @@ class Describe(calliope_base.DescribeCommand):
   @classmethod
   def Args(cls, parser):
     parser.add_argument(
-        'TEMPLATE_NAME',
-        type=str,
-        help='The constraint template name.'
+        'TEMPLATE_NAME', type=str, help='The constraint template name.'
     )
     resources.AddMembershipResourceArg(
         parser,
         plural=True,
         membership_help=(
             'A single membership name for which to describe a membership '
-            'constraint template.'))
+            'constraint template.'
+        ),
+    )
 
   def Run(self, args):
     calliope_base.EnableUserProjectQuota()
     project_id = properties.VALUES.core.project.Get(required=True)
-    client = status_api_utils.GetClientInstance(
-        self.ReleaseTrack())
-    messages = status_api_utils.GetMessagesModule(
-        self.ReleaseTrack())
+    client = status_api_utils.GetClientInstance(self.ReleaseTrack())
+    messages = status_api_utils.GetMessagesModule(self.ReleaseTrack())
 
     template_name = args.TEMPLATE_NAME.lower()
 
@@ -166,9 +184,13 @@ class Describe(calliope_base.DescribeCommand):
         raise exceptions.Error('Please specify a single membership name.')
       membership_name = memberships[0]
 
-      return GetMembershipTemplate(client, messages, project_id,
-                                   membership_name, template_name,
-                                   self.ReleaseTrack())
+      return GetMembershipTemplate(
+          client,
+          messages,
+          project_id,
+          membership_name,
+          template_name,
+          self.ReleaseTrack(),
+      )
     else:
-      return GetFleetTemplate(client, messages, project_id,
-                              template_name)
+      return GetFleetTemplate(client, messages, project_id, template_name)

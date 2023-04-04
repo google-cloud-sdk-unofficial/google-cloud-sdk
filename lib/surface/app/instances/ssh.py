@@ -101,8 +101,6 @@ class SshGa(base.Command):
       OperationCancelledError: User cancelled the operation.
       ssh.CommandError: The SSH command exited with SSH exit code, which
         usually implies that a connection problem occurred.
-      InvalidInstanceNetworkIpModeTypeError: Network IP mode is not supported
-        for SSH.
 
     Returns:
       int, The exit code of the SSH command.
@@ -189,8 +187,6 @@ class SshBeta(SshGa):
       OperationCancelledError: User cancelled the operation.
       ssh.CommandError: The SSH command exited with SSH exit code, which
         usually implies that a connection problem occurred.
-      InvalidInstanceNetworkIpModeTypeError: Network IP mode is not supported
-        for SSH.
 
     Returns:
       int, The exit code of the SSH command.
@@ -241,21 +237,18 @@ class SshBeta(SshGa):
             'servicesId': service,
         },
         collection='appengine.apps.services.versions.instances')
-    instance_name = res.RelativeName()
     try:
       instance_resource = api_client.GetInstanceResource(res)
     except apitools_exceptions.HttpNotFoundError:
-      raise command_exceptions.MissingInstanceError(instance_name)
+      raise command_exceptions.MissingInstanceError(res.RelativeName())
     iap_tunnel_args = iap_tunnel.CreateSshTunnelArgs(args, api_client,
                                                      self.ReleaseTrack(),
                                                      project, version_resource,
                                                      instance_resource)
-    cmd = ssh.SSHCommand(
+    return ssh.SSHCommand(
         connection_details.remote,
         identity_file=keys.key_file,
         tty=tty,
         remote_command=remote_command,
         options=connection_details.options,
-        iap_tunnel_args=iap_tunnel_args)
-
-    return cmd.Run(env)
+        iap_tunnel_args=iap_tunnel_args).Run(env)

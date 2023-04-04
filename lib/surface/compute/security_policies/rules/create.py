@@ -56,10 +56,11 @@ class CreateHelper(object):
       support_fairshare,
       support_regional_security_policy,
       support_multiple_rate_limit_keys,
+      support_net_lb,
   ):
     """Generates the flagset for a Create command."""
     flags.AddPriority(parser, 'add')
-    if support_regional_security_policy:
+    if support_regional_security_policy or support_net_lb:
       flags.AddRegionFlag(parser, 'add')
       cls.SECURITY_POLICY_ARG = (
           security_policies_flags.SecurityPolicyMultiScopeArgumentForRules())
@@ -68,7 +69,10 @@ class CreateHelper(object):
           security_policies_flags.SecurityPolicyArgumentForRules())
 
     cls.SECURITY_POLICY_ARG.AddArgument(parser)
-    flags.AddMatcher(parser)
+    if support_net_lb:
+      flags.AddMatcherAndNetworkMatcher(parser)
+    else:
+      flags.AddMatcher(parser)
     flags.AddAction(
         parser,
         support_redirect=support_redirect,
@@ -107,11 +111,12 @@ class CreateHelper(object):
       support_fairshare,
       support_regional_security_policy,
       support_multiple_rate_limit_keys,
+      support_net_lb,
   ):
     """Validates arguments and creates a security policy rule."""
     holder = base_classes.ComputeApiHolder(release_track)
     ref = None
-    if support_regional_security_policy:
+    if support_regional_security_policy or support_net_lb:
       security_policy_ref = cls.SECURITY_POLICY_ARG.ResolveAsResource(
           args, holder.resources, default_scope=compute_scope.ScopeEnum.GLOBAL)
       if getattr(security_policy_ref, 'region', None) is not None:
@@ -159,9 +164,16 @@ class CreateHelper(object):
     if support_header_action:
       request_headers_to_add = args.request_headers_to_add
 
+    network_matcher = None
+    if support_net_lb:
+      network_matcher = security_policies_utils.CreateNetworkMatcher(
+          holder.client, args
+      )[0]
+
     return security_policy_rule.Create(
         src_ip_ranges=args.src_ip_ranges,
         expression=args.expression,
+        network_matcher=network_matcher,
         action=args.action,
         description=args.description,
         preview=args.preview,
@@ -197,6 +209,7 @@ class CreateGA(base.CreateCommand):
   _support_tcl_ssl = False
   _support_fairshare = False
   _support_regional_security_policy = False
+  _support_net_lb = False
 
   @classmethod
   def Args(cls, parser):
@@ -209,6 +222,7 @@ class CreateGA(base.CreateCommand):
         support_fairshare=cls._support_fairshare,
         support_regional_security_policy=cls._support_regional_security_policy,
         support_multiple_rate_limit_keys=cls._support_multiple_rate_limit_keys,
+        support_net_lb=cls._support_net_lb,
     )
 
   def Run(self, args):
@@ -221,6 +235,7 @@ class CreateGA(base.CreateCommand):
         support_fairshare=self._support_fairshare,
         support_regional_security_policy=self._support_regional_security_policy,
         support_multiple_rate_limit_keys=self._support_multiple_rate_limit_keys,
+        support_net_lb=self._support_net_lb,
     )
 
 
@@ -251,6 +266,7 @@ class CreateBeta(base.CreateCommand):
   _support_tcl_ssl = False
   _support_fairshare = False
   _support_regional_security_policy = False
+  _support_net_lb = False
 
   @classmethod
   def Args(cls, parser):
@@ -263,6 +279,7 @@ class CreateBeta(base.CreateCommand):
         support_fairshare=cls._support_fairshare,
         support_regional_security_policy=cls._support_regional_security_policy,
         support_multiple_rate_limit_keys=cls._support_multiple_rate_limit_keys,
+        support_net_lb=cls._support_net_lb,
     )
 
   def Run(self, args):
@@ -275,6 +292,7 @@ class CreateBeta(base.CreateCommand):
         support_fairshare=self._support_fairshare,
         support_regional_security_policy=self._support_regional_security_policy,
         support_multiple_rate_limit_keys=self._support_multiple_rate_limit_keys,
+        support_net_lb=self._support_net_lb,
     )
 
 
@@ -305,6 +323,7 @@ class CreateAlpha(base.CreateCommand):
   _support_tcl_ssl = True
   _support_fairshare = True
   _support_regional_security_policy = True
+  _support_net_lb = True
 
   @classmethod
   def Args(cls, parser):
@@ -317,6 +336,7 @@ class CreateAlpha(base.CreateCommand):
         support_fairshare=cls._support_fairshare,
         support_regional_security_policy=cls._support_regional_security_policy,
         support_multiple_rate_limit_keys=cls._support_multiple_rate_limit_keys,
+        support_net_lb=cls._support_net_lb,
     )
 
   def Run(self, args):
@@ -329,4 +349,5 @@ class CreateAlpha(base.CreateCommand):
         support_fairshare=self._support_fairshare,
         support_regional_security_policy=self._support_regional_security_policy,
         support_multiple_rate_limit_keys=self._support_multiple_rate_limit_keys,
+        support_net_lb=self._support_net_lb,
     )

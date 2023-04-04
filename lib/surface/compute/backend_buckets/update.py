@@ -31,7 +31,6 @@ from googlecloudsdk.command_lib.compute.backend_buckets import flags as backend_
 from googlecloudsdk.command_lib.compute.security_policies import (
     flags as security_policy_flags)
 from googlecloudsdk.core import log
-from googlecloudsdk.core import resources as resources_exceptions
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
@@ -188,11 +187,11 @@ class Update(base.UpdateCommand):
 
     # Empty string is a valid value.
     if getattr(args, 'edge_security_policy', None) is not None:
-      try:
+      if getattr(args, 'edge_security_policy', None):
         security_policy_ref = self.EDGE_SECURITY_POLICY_ARG.ResolveAsResource(
             args, holder.resources).SelfLink()
       # If security policy is an empty string we should clear the current policy
-      except resources_exceptions.InvalidResourceException:
+      else:
         security_policy_ref = None
       edge_security_policy_request = self.GetSetEdgeSecurityPolicyRequest(
           client, backend_bucket_ref, security_policy_ref)

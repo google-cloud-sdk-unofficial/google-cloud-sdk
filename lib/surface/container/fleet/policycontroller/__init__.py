@@ -32,4 +32,5 @@ class Policycontroller(base.Group):
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class PolicycontrollerBeta(base.Group):
   """Manage Policy Controller Feature."""
+
   pass

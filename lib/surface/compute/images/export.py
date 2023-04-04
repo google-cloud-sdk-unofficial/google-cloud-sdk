@@ -174,8 +174,10 @@ class Export(base.CreateCommand):
     storage_client = storage_api.StorageClient()
     bucket_location = storage_client.GetBucketLocationForFile(
         args.destination_uri)
-    return daisy_utils.CreateDaisyBucketInProject(bucket_location,
-                                                  storage_client)
+    return daisy_utils.CreateDaisyBucketInProject(
+        bucket_location,
+        storage_client,
+        enable_uniform_level_access=True)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)

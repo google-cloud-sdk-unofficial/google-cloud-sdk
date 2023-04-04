@@ -29,6 +29,7 @@ from googlecloudsdk.core import log
 @calliope_base.ReleaseTracks(calliope_base.ReleaseTrack.ALPHA)
 class Policycontroller(calliope_base.Group):
   """Get Policy Controller audit violations."""
+
   pass
 
 
@@ -45,41 +46,44 @@ class ViolationCounter:
       membership_name: membership name string
       constraint_label: tuple of template name and constraint name strings
     """
-    self.membership_constraints.append(
-        (membership_name, constraint_label))
+    self.membership_constraints.append((membership_name, constraint_label))
 
   def CheckForMaxConstraintViolations(self):
-    """Displays a warning if any membership constraints have >=20 violations.
-
-    """
+    """Displays a warning if any membership constraints have >=20 violations."""
     membership_constraint_counts = collections.Counter(
-        self.membership_constraints)
+        self.membership_constraints
+    )
     max_violation_constraints = [
-        mc for mc, count in membership_constraint_counts.items()
-        if count >= 20
+        mc for mc, count in membership_constraint_counts.items() if count >= 20
     ]
 
     if max_violation_constraints:
       warning_constraint_list = ''.join(
-          '\n{}\t{}'.format(mc[0], mc[1]) for mc in max_violation_constraints)
+          '\n{}\t{}'.format(mc[0], mc[1]) for mc in max_violation_constraints
+      )
 
       if len(max_violation_constraints) == 1:
         constraint_noun = 'constraint'
       else:
         constraint_noun = 'constraints'
-      log.warning('Maximum of 20 violations returned for the following %s. '
-                  + 'There may be additional violations which can be found in '
-                  + 'the audit Pod logs.%s',
-                  constraint_noun, warning_constraint_list)
+      log.warning(
+          'Maximum of 20 violations returned for the following %s. '
+          + 'There may be additional violations which can be found in '
+          + 'the audit Pod logs.%s',
+          constraint_noun,
+          warning_constraint_list,
+      )
 
 
-def ListMembershipViolations(messages,
-                             client,
-                             project_id,
-                             verbose=False,
-                             group_by=None,
-                             memberships=None,
-                             constraint_filter=None):
+def ListMembershipViolations(
+    messages,
+    client,
+    project_id,
+    verbose=False,
+    group_by=None,
+    memberships=None,
+    constraint_filter=None,
+):
   """Lists membership constraint audit violations."""
   formatted_violations = []
   violation_counter = ViolationCounter()
@@ -98,11 +102,9 @@ def ListMembershipViolations(messages,
       continue
 
     formatted_violation = {
-        'constraint':
-            constraint_label,
+        'constraint': constraint_label,
         'membership': violation.membershipRef.name,
-        'resource_kind':
-            violation.resourceRef.groupKind.kind,
+        'resource_kind': violation.resourceRef.groupKind.kind,
         'resource_name': violation.resourceRef.name,
         'resource_namespace': violation.resourceRef.resourceNamespace or 'N/A',
     }
@@ -131,12 +133,12 @@ def GroupViolations(formatted_violations, group_attribute):
   for formatted_violation in formatted_violations:
     if formatted_violation[group_attribute] not in group_map:
       group_map[formatted_violation[group_attribute]] = {
-          group_attribute:
-              formatted_violation[group_attribute],
+          group_attribute: formatted_violation[group_attribute],
           'violations': [],
       }
 
     group_map[formatted_violation[group_attribute]]['violations'].append(
-        formatted_violation)
+        formatted_violation
+    )
 
   return [v for _, v in sorted(group_map.items())]

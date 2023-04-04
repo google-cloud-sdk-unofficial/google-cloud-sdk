@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Create node group command."""
+"""Simulate maintenance event command."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -47,7 +47,7 @@ class SimulateMaintenanceEvent(base.UpdateCommand):
   @staticmethod
   def Args(parser):
     flags.MakeNodeGroupArg().AddArgument(parser)
-    flags.AddNodesArgToParser(parser)
+    flags.AddSimulateMaintenanceEventNodesArgToParser(parser)
     base.ASYNC_FLAG.AddToParser(parser)
 
   def Run(self, args):

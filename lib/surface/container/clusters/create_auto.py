@@ -43,6 +43,7 @@ auto_flags = [
     'fleetProject',
     'enableFleet',
     'enableSecurityPosture',
+    'enableKubeletReadonlyPort',
 ]
 
 # Change default flag values in create-auto

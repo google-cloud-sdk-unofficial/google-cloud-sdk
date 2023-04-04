@@ -72,3 +72,7 @@
     - _REF_: googlecloudsdk.command_lib.compute.tpus.queued_resources.flags:reservation_host_project
     - _REF_: googlecloudsdk.command_lib.compute.tpus.queued_resources.flags:reservation_host_folder
     - _REF_: googlecloudsdk.command_lib.compute.tpus.queued_resources.flags:reservation_host_organization
+    - _REF_: googlecloudsdk.command_lib.compute.tpus.queued_resources.flags:network
+    - _REF_: googlecloudsdk.command_lib.compute.tpus.queued_resources.flags:subnetwork
+    - _REF_: googlecloudsdk.command_lib.compute.tpus.queued_resources.flags:service_account
+    - _REF_: googlecloudsdk.command_lib.compute.tpus.queued_resources.flags:service_account_scopes

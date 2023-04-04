@@ -74,7 +74,12 @@ class CreateFirestoreAPI(base.Command):
 
   @staticmethod
   def Args(parser):
-    parser.add_argument('--location', help=LOCATION_HELP_TEXT, required=True)
+    parser.add_argument(
+        '--location',
+        help=LOCATION_HELP_TEXT,
+        required=True,
+        suggestion_aliases=['--region'],
+    )
     parser.add_argument(
         '--type',
         help='The type of the database.',

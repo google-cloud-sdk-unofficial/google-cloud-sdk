@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*- #
-# Copyright 2020 Google LLC. All Rights Reserved.
+# Copyright 2023 Google LLC. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -34,14 +34,14 @@ from apitools.base.py import list_pager
 from apitools.base.py import transfer as apitools_transfer
 from googlecloudsdk.api_lib.storage import cloud_api
 from googlecloudsdk.api_lib.storage import errors as cloud_errors
-from googlecloudsdk.api_lib.storage import gcs_download
-from googlecloudsdk.api_lib.storage import gcs_error_util
 from googlecloudsdk.api_lib.storage import gcs_iam_util
-from googlecloudsdk.api_lib.storage import gcs_metadata_util
-from googlecloudsdk.api_lib.storage import gcs_upload
-from googlecloudsdk.api_lib.storage import grpc_util
 from googlecloudsdk.api_lib.storage import headers_util
-from googlecloudsdk.api_lib.storage import patch_gcs_messages
+from googlecloudsdk.api_lib.storage.gcs_grpc import grpc_util
+from googlecloudsdk.api_lib.storage.gcs_json import download
+from googlecloudsdk.api_lib.storage.gcs_json import error_util
+from googlecloudsdk.api_lib.storage.gcs_json import metadata_util
+from googlecloudsdk.api_lib.storage.gcs_json import patch_apitools_messages
+from googlecloudsdk.api_lib.storage.gcs_json import upload
 from googlecloudsdk.api_lib.util import apis as core_apis
 from googlecloudsdk.command_lib.storage import encryption_util
 from googlecloudsdk.command_lib.storage import errors as command_errors
@@ -63,7 +63,7 @@ import six
 
 
 # TODO(b/171296237): Remove this when fixes are submitted in apitools.
-patch_gcs_messages.patch()
+patch_apitools_messages.patch()
 
 
 # Call the progress callback every PROGRESS_CALLBACK_THRESHOLD bytes to
@@ -225,7 +225,7 @@ def _update_api_version_for_uploads_if_needed(client):
       'v1', api_version)
 
 
-class GcsApi(cloud_api.CloudApi):
+class JsonClient(cloud_api.CloudApi):
   """Client for Google Cloud Storage API."""
 
   capabilities = {
@@ -241,7 +241,7 @@ class GcsApi(cloud_api.CloudApi):
   MAX_OBJECTS_PER_COMPOSE_CALL = 32
 
   def __init__(self):
-    super(GcsApi, self).__init__()
+    super(JsonClient, self).__init__()
     self.client = core_apis.GetClientInstance('storage', 'v1')
 
     _update_api_version_for_uploads_if_needed(self.client)
@@ -319,7 +319,7 @@ class GcsApi(cloud_api.CloudApi):
       return projection_enum.full
     return projection_enum.noAcl
 
-  @gcs_error_util.catch_http_error_raise_gcs_api_error()
+  @error_util.catch_http_error_raise_gcs_api_error()
   def create_bucket(self,
                     bucket_resource,
                     request_config,
@@ -330,7 +330,7 @@ class GcsApi(cloud_api.CloudApi):
 
     bucket_metadata = self.messages.Bucket(
         name=bucket_resource.storage_url.bucket_name)
-    gcs_metadata_util.update_bucket_metadata_from_request_config(
+    metadata_util.update_bucket_metadata_from_request_config(
         bucket_metadata, request_config)
 
     request = self.messages.StorageBucketsInsertRequest(
@@ -339,10 +339,10 @@ class GcsApi(cloud_api.CloudApi):
         projection=projection)
 
     created_bucket_metadata = self.client.buckets.Insert(request)
-    return gcs_metadata_util.get_bucket_resource_from_metadata(
+    return metadata_util.get_bucket_resource_from_metadata(
         created_bucket_metadata)
 
-  @gcs_error_util.catch_http_error_raise_gcs_api_error()
+  @error_util.catch_http_error_raise_gcs_api_error()
   def delete_bucket(self, bucket_name, request_config):
     """See super class."""
     request = self.messages.StorageBucketsDeleteRequest(
@@ -352,7 +352,7 @@ class GcsApi(cloud_api.CloudApi):
     # https://cloud.google.com/storage/docs/json_api/v1/buckets/delete
     self.client.buckets.Delete(request)
 
-  @gcs_error_util.catch_http_error_raise_gcs_api_error()
+  @error_util.catch_http_error_raise_gcs_api_error()
   def get_bucket(self, bucket_name, fields_scope=cloud_api.FieldsScope.NO_ACL):
     """See super class."""
     projection = self._get_projection(fields_scope,
@@ -362,9 +362,9 @@ class GcsApi(cloud_api.CloudApi):
         projection=projection)
 
     metadata = self.client.buckets.Get(request)
-    return gcs_metadata_util.get_bucket_resource_from_metadata(metadata)
+    return metadata_util.get_bucket_resource_from_metadata(metadata)
 
-  @gcs_error_util.catch_http_error_raise_gcs_api_error()
+  @error_util.catch_http_error_raise_gcs_api_error()
   def get_bucket_iam_policy(self, bucket_name):
     """See super class."""
     global_params = self.messages.StandardQueryParameters(
@@ -395,12 +395,12 @@ class GcsApi(cloud_api.CloudApi):
         global_params=global_params)
     try:
       for bucket in bucket_iter:
-        yield gcs_metadata_util.get_bucket_resource_from_metadata(bucket)
+        yield metadata_util.get_bucket_resource_from_metadata(bucket)
     except apitools_exceptions.HttpError as e:
       core_exceptions.reraise(
-          cloud_errors.translate_error(e, gcs_error_util.ERROR_TRANSLATION))
+          cloud_errors.translate_error(e, error_util.ERROR_TRANSLATION))
 
-  @gcs_error_util.catch_http_error_raise_gcs_api_error()
+  @error_util.catch_http_error_raise_gcs_api_error()
   def lock_bucket_retention_policy(self, bucket_resource, request_config):
     metageneration_precondition = (
         request_config.precondition_metageneration_match or
@@ -408,10 +408,10 @@ class GcsApi(cloud_api.CloudApi):
     request = self.messages.StorageBucketsLockRetentionPolicyRequest(
         bucket=bucket_resource.storage_url.bucket_name,
         ifMetagenerationMatch=metageneration_precondition)
-    return gcs_metadata_util.get_bucket_resource_from_metadata(
+    return metadata_util.get_bucket_resource_from_metadata(
         self.client.buckets.LockRetentionPolicy(request))
 
-  @gcs_error_util.catch_http_error_raise_gcs_api_error()
+  @error_util.catch_http_error_raise_gcs_api_error()
   def patch_bucket(self,
                    bucket_resource,
                    request_config,
@@ -421,14 +421,14 @@ class GcsApi(cloud_api.CloudApi):
                                       self.messages.StorageBucketsPatchRequest)
     metadata = getattr(
         bucket_resource, 'metadata',
-        None) or (gcs_metadata_util.get_apitools_metadata_from_url(
+        None) or (metadata_util.get_apitools_metadata_from_url(
             bucket_resource.storage_url))
-    gcs_metadata_util.update_bucket_metadata_from_request_config(
+    metadata_util.update_bucket_metadata_from_request_config(
         metadata, request_config)
 
-    cleared_fields = gcs_metadata_util.get_cleared_bucket_fields(request_config)
+    cleared_fields = metadata_util.get_cleared_bucket_fields(request_config)
     if (metadata.defaultObjectAcl and metadata.defaultObjectAcl[0]
-        == gcs_metadata_util.PRIVATE_DEFAULT_OBJECT_ACL):
+        == metadata_util.PRIVATE_DEFAULT_OBJECT_ACL):
       cleared_fields.append('defaultObjectAcl')
       metadata.defaultObjectAcl = []
 
@@ -460,17 +460,17 @@ class GcsApi(cloud_api.CloudApi):
 
     with self.client.IncludeFields(cleared_fields):
       # IncludeFields nulls out field in Apitools (does not just edit them).
-      return gcs_metadata_util.get_bucket_resource_from_metadata(
+      return metadata_util.get_bucket_resource_from_metadata(
           self.client.buckets.Patch(apitools_request))
 
-  @gcs_error_util.catch_http_error_raise_gcs_api_error()
+  @error_util.catch_http_error_raise_gcs_api_error()
   def set_bucket_iam_policy(self, bucket_name, policy):
     """See super class."""
     return self.client.buckets.SetIamPolicy(
         self.messages.StorageBucketsSetIamPolicyRequest(
             bucket=bucket_name, policy=policy))
 
-  @gcs_error_util.catch_http_error_raise_gcs_api_error()
+  @error_util.catch_http_error_raise_gcs_api_error()
   def create_hmac_key(self, service_account_email):
     """See super class."""
     request = self.messages.StorageProjectsHmacKeysCreateRequest(
@@ -479,7 +479,7 @@ class GcsApi(cloud_api.CloudApi):
     return gcs_resource_reference.GcsHmacKeyResource(
         self.client.projects_hmacKeys.Create(request))
 
-  @gcs_error_util.catch_http_error_raise_gcs_api_error()
+  @error_util.catch_http_error_raise_gcs_api_error()
   def delete_hmac_key(self, access_id):
     """See super class."""
     request = self.messages.StorageProjectsHmacKeysDeleteRequest(
@@ -487,7 +487,7 @@ class GcsApi(cloud_api.CloudApi):
         accessId=access_id)
     self.client.projects_hmacKeys.Delete(request)
 
-  @gcs_error_util.catch_http_error_raise_gcs_api_error()
+  @error_util.catch_http_error_raise_gcs_api_error()
   def get_hmac_key(self, access_id):
     """See super class."""
 
@@ -528,9 +528,9 @@ class GcsApi(cloud_api.CloudApi):
         yield gcs_resource_reference.GcsHmacKeyResource(hmac_key)
     except apitools_exceptions.HttpError as e:
       core_exceptions.reraise(
-          cloud_errors.translate_error(e, gcs_error_util.ERROR_TRANSLATION))
+          cloud_errors.translate_error(e, error_util.ERROR_TRANSLATION))
 
-  @gcs_error_util.catch_http_error_raise_gcs_api_error()
+  @error_util.catch_http_error_raise_gcs_api_error()
   def patch_hmac_key(self, access_id, etag, state):
     """See super class."""
     updated_metadata = self.messages.HmacKeyMetadata(state=state.value)
@@ -543,7 +543,7 @@ class GcsApi(cloud_api.CloudApi):
     return gcs_resource_reference.GcsHmacKeyResource(
         self.client.projects_hmacKeys.Update(request))
 
-  @gcs_error_util.catch_http_error_raise_gcs_api_error()
+  @error_util.catch_http_error_raise_gcs_api_error()
   def compose_objects(self,
                       source_resources,
                       destination_resource,
@@ -569,10 +569,10 @@ class GcsApi(cloud_api.CloudApi):
         source_message.generation = generation
       source_messages.append(source_message)
 
-    base_destination_metadata = gcs_metadata_util.get_apitools_metadata_from_url(
+    base_destination_metadata = metadata_util.get_apitools_metadata_from_url(
         destination_resource.storage_url)
     if getattr(source_resources[0], 'metadata', None):
-      final_destination_metadata = gcs_metadata_util.copy_object_metadata(
+      final_destination_metadata = metadata_util.copy_object_metadata(
           source_resources[0].metadata, base_destination_metadata,
           request_config)
     else:
@@ -583,7 +583,7 @@ class GcsApi(cloud_api.CloudApi):
           original_source_resource.storage_url.object_name)
     else:
       original_source_file_path = None
-    gcs_metadata_util.update_object_metadata_from_request_config(
+    metadata_util.update_object_metadata_from_request_config(
         final_destination_metadata, request_config, original_source_file_path)
 
     compose_request_payload = self.messages.ComposeRequest(
@@ -612,10 +612,10 @@ class GcsApi(cloud_api.CloudApi):
     encryption_key = getattr(request_config.resource_args, 'encryption_key',
                              None)
     with self._encryption_headers_context(encryption_key):
-      return gcs_metadata_util.get_object_resource_from_metadata(
+      return metadata_util.get_object_resource_from_metadata(
           self.client.objects.Compose(compose_request))
 
-  @gcs_error_util.catch_http_error_raise_gcs_api_error()
+  @error_util.catch_http_error_raise_gcs_api_error()
   def copy_object(self,
                   source_resource,
                   destination_resource,
@@ -625,15 +625,15 @@ class GcsApi(cloud_api.CloudApi):
     """See super class."""
     destination_metadata = getattr(destination_resource, 'metadata', None)
     if not destination_metadata:
-      destination_metadata = gcs_metadata_util.get_apitools_metadata_from_url(
+      destination_metadata = metadata_util.get_apitools_metadata_from_url(
           destination_resource.storage_url)
     if source_resource.metadata:
-      destination_metadata = gcs_metadata_util.copy_object_metadata(
+      destination_metadata = metadata_util.copy_object_metadata(
           source_resource.metadata,
           destination_metadata,
           request_config,
           should_deep_copy=should_deep_copy_metadata)
-    gcs_metadata_util.update_object_metadata_from_request_config(
+    metadata_util.update_object_metadata_from_request_config(
         destination_metadata, request_config)
 
     if request_config.predefined_acl_string:
@@ -653,11 +653,14 @@ class GcsApi(cloud_api.CloudApi):
         destination_resource.storage_url,
         tracker_file_util.TrackerFileType.REWRITE,
         source_url=source_resource.storage_url)
-    rewrite_parameters_hash = tracker_file_util.hash_gcs_rewrite_parameters_for_tracker_file(
-        source_resource,
-        destination_resource,
-        destination_metadata,
-        request_config=request_config)
+    rewrite_parameters_hash = (
+        tracker_file_util.hash_gcs_rewrite_parameters_for_tracker_file(
+            source_resource,
+            destination_resource,
+            destination_metadata,
+            request_config=request_config,
+        )
+    )
 
     resume_rewrite_token = (
         tracker_file_util.get_rewrite_token_from_tracker_file(
@@ -714,10 +717,10 @@ class GcsApi(cloud_api.CloudApi):
                 rewrite_response.rewriteToken)
 
     tracker_file_util.delete_tracker_file(tracker_file_path)
-    return gcs_metadata_util.get_object_resource_from_metadata(
+    return metadata_util.get_object_resource_from_metadata(
         rewrite_response.resource)
 
-  @gcs_error_util.catch_http_error_raise_gcs_api_error()
+  @error_util.catch_http_error_raise_gcs_api_error()
   def delete_object(self, object_url, request_config):
     """See super class."""
     # S3 requires a string, but GCS uses an int for generation.
@@ -736,7 +739,7 @@ class GcsApi(cloud_api.CloudApi):
     # https://cloud.google.com/storage/docs/json_api/v1/objects/delete
     self.client.objects.Delete(request)
 
-  @gcs_error_util.catch_http_error_raise_gcs_api_error()
+  @error_util.catch_http_error_raise_gcs_api_error()
   def download_object(self,
                       cloud_resource,
                       download_stream,
@@ -799,13 +802,13 @@ class GcsApi(cloud_api.CloudApi):
     additional_headers.update(_get_encryption_headers(decryption_key))
 
     if download_strategy == cloud_api.DownloadStrategy.ONE_SHOT:
-      server_reported_encoding = gcs_download.launch(
+      server_reported_encoding = download.launch(
           apitools_download,
           start_byte=start_byte,
           end_byte=end_byte,
           additional_headers=additional_headers)
     else:
-      server_reported_encoding = gcs_download.launch_retriable(
+      server_reported_encoding = download.launch_retriable(
           download_stream,
           apitools_download,
           start_byte=start_byte,
@@ -814,7 +817,7 @@ class GcsApi(cloud_api.CloudApi):
 
     return server_reported_encoding
 
-  @gcs_error_util.catch_http_error_raise_gcs_api_error()
+  @error_util.catch_http_error_raise_gcs_api_error()
   def get_object_iam_policy(self, bucket_name, object_name, generation=None):
     """See super class."""
     if generation:
@@ -827,7 +830,7 @@ class GcsApi(cloud_api.CloudApi):
             bucket=bucket_name, object=object_name, generation=generation),
         global_params=global_params)
 
-  @gcs_error_util.catch_http_error_raise_gcs_api_error()
+  @error_util.catch_http_error_raise_gcs_api_error()
   def get_object_metadata(self,
                           bucket_name,
                           object_name,
@@ -860,7 +863,7 @@ class GcsApi(cloud_api.CloudApi):
           ),
           global_params=global_params,
       )
-    return gcs_metadata_util.get_object_resource_from_metadata(object_metadata)
+    return metadata_util.get_object_resource_from_metadata(object_metadata)
 
   def list_objects(self,
                    bucket_name,
@@ -893,13 +896,13 @@ class GcsApi(cloud_api.CloudApi):
             apitools_request, global_params=global_params)
       except apitools_exceptions.HttpError as e:
         core_exceptions.reraise(
-            cloud_errors.translate_error(e, gcs_error_util.ERROR_TRANSLATION))
+            cloud_errors.translate_error(e, error_util.ERROR_TRANSLATION))
 
       # Yield objects.
       # TODO(b/160238394) Decrypt metadata fields if necessary.
       for object_metadata in object_list.items:
         object_metadata.bucket = bucket_name
-        yield gcs_metadata_util.get_object_resource_from_metadata(
+        yield metadata_util.get_object_resource_from_metadata(
             object_metadata)
 
       # Yield prefixes.
@@ -914,7 +917,7 @@ class GcsApi(cloud_api.CloudApi):
       if not object_list.nextPageToken:
         break
 
-  @gcs_error_util.catch_http_error_raise_gcs_api_error()
+  @error_util.catch_http_error_raise_gcs_api_error()
   def patch_object_metadata(self,
                             bucket_name,
                             object_name,
@@ -937,10 +940,10 @@ class GcsApi(cloud_api.CloudApi):
                                       self.messages.StorageObjectsPatchRequest)
 
     object_metadata = object_resource.metadata or (
-        gcs_metadata_util.get_apitools_metadata_from_url(
+        metadata_util.get_apitools_metadata_from_url(
             object_resource.storage_url))
 
-    gcs_metadata_util.update_object_metadata_from_request_config(
+    metadata_util.update_object_metadata_from_request_config(
         object_metadata, request_config)
 
     request = self.messages.StorageObjectsPatchRequest(
@@ -954,9 +957,9 @@ class GcsApi(cloud_api.CloudApi):
         projection=projection)
 
     updated_metadata = self.client.objects.Patch(request)
-    return gcs_metadata_util.get_object_resource_from_metadata(updated_metadata)
+    return metadata_util.get_object_resource_from_metadata(updated_metadata)
 
-  @gcs_error_util.catch_http_error_raise_gcs_api_error()
+  @error_util.catch_http_error_raise_gcs_api_error()
   def set_object_iam_policy(self,
                             bucket_name,
                             object_name,
@@ -972,7 +975,7 @@ class GcsApi(cloud_api.CloudApi):
             generation=generation,
             policy=policy))
 
-  @gcs_error_util.catch_http_error_raise_gcs_api_error()
+  @error_util.catch_http_error_raise_gcs_api_error()
   def upload_object(self,
                     source_stream,
                     destination_resource,
@@ -1006,21 +1009,37 @@ class GcsApi(cloud_api.CloudApi):
       log.info(
           'Using compressed transport encoding for {}.'.format(source_path))
     if upload_strategy == cloud_api.UploadStrategy.SIMPLE:
-      upload = gcs_upload.SimpleUpload(self, self._upload_http_client,
-                                       source_stream, destination_resource,
-                                       should_gzip_in_flight, request_config,
-                                       source_resource)
+      uploader = upload.SimpleUpload(
+          self,
+          self._upload_http_client,
+          source_stream,
+          destination_resource,
+          should_gzip_in_flight,
+          request_config,
+          source_resource,
+      )
     elif upload_strategy == cloud_api.UploadStrategy.RESUMABLE:
-      upload = gcs_upload.ResumableUpload(self, self._upload_http_client,
-                                          source_stream, destination_resource,
-                                          should_gzip_in_flight, request_config,
-                                          source_resource, serialization_data,
-                                          tracker_callback)
+      uploader = upload.ResumableUpload(
+          self,
+          self._upload_http_client,
+          source_stream,
+          destination_resource,
+          should_gzip_in_flight,
+          request_config,
+          source_resource,
+          serialization_data,
+          tracker_callback,
+      )
     elif upload_strategy == cloud_api.UploadStrategy.STREAMING:
-      upload = gcs_upload.StreamingUpload(self, self._upload_http_client,
-                                          source_stream, destination_resource,
-                                          should_gzip_in_flight, request_config,
-                                          source_resource)
+      uploader = upload.StreamingUpload(
+          self,
+          self._upload_http_client,
+          source_stream,
+          destination_resource,
+          should_gzip_in_flight,
+          request_config,
+          source_resource,
+      )
     else:
       raise command_errors.Error('Invalid upload strategy: {}.'.format(
           upload_strategy.value))
@@ -1029,7 +1048,7 @@ class GcsApi(cloud_api.CloudApi):
                              None)
     try:
       with self._encryption_headers_context(encryption_key):
-        metadata = upload.run()
+        metadata = uploader.run()
     except (
         apitools_exceptions.StreamExhausted,
         apitools_exceptions.TransferError,
@@ -1041,9 +1060,9 @@ class GcsApi(cloud_api.CloudApi):
               str(error),
               properties.VALUES.storage.tracker_files_directory.Get()))
 
-    return gcs_metadata_util.get_object_resource_from_metadata(metadata)
+    return metadata_util.get_object_resource_from_metadata(metadata)
 
-  @gcs_error_util.catch_http_error_raise_gcs_api_error()
+  @error_util.catch_http_error_raise_gcs_api_error()
   def get_service_agent(self, project_id=None, project_number=None):
     """See CloudApi class for doc strings."""
     if project_id:
@@ -1056,7 +1075,7 @@ class GcsApi(cloud_api.CloudApi):
         self.messages.StorageProjectsServiceAccountGetRequest(
             projectId=project_identifier)).email_address
 
-  @gcs_error_util.catch_http_error_raise_gcs_api_error()
+  @error_util.catch_http_error_raise_gcs_api_error()
   def create_notification_configuration(
       self,
       url,
@@ -1096,7 +1115,7 @@ class GcsApi(cloud_api.CloudApi):
             notification=notification_configuration,
             userProject=properties.VALUES.core.project.GetOrFail()))
 
-  @gcs_error_util.catch_http_error_raise_gcs_api_error()
+  @error_util.catch_http_error_raise_gcs_api_error()
   def delete_notification_configuration(self, url, notification_id):
     """See CloudApi class for doc strings."""
     if not url.is_bucket():
@@ -1109,7 +1128,7 @@ class GcsApi(cloud_api.CloudApi):
             notification=notification_id,
             userProject=properties.VALUES.core.project.GetOrFail()))
 
-  @gcs_error_util.catch_http_error_raise_gcs_api_error()
+  @error_util.catch_http_error_raise_gcs_api_error()
   def get_notification_configuration(self, url, notification_id):
     """See CloudApi class for doc strings."""
     if not url.is_bucket():
@@ -1121,7 +1140,7 @@ class GcsApi(cloud_api.CloudApi):
             notification=notification_id,
             userProject=properties.VALUES.core.project.GetOrFail()))
 
-  @gcs_error_util.catch_http_error_raise_gcs_api_error()
+  @error_util.catch_http_error_raise_gcs_api_error()
   def list_notification_configurations(self, url):
     """See CloudApi class for function doc strings."""
     if not url.is_bucket():

@@ -23,7 +23,21 @@ from googlecloudsdk.calliope import base
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 @base.Hidden
-class Simulate(base.Group):
+class SimulateAlpha(base.Group):
+  """Simulate changes to Organization Policies."""
+  detailed_help = {
+      'DESCRIPTION': """\
+          Simulate Org policies.
+
+          More information can be found here:
+          https://cloud.google.com/iam/docs.
+      """
+  }
+
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.Hidden
+class SimulateBeta(base.Group):
   """Simulate changes to Organization Policies."""
   detailed_help = {
       'DESCRIPTION': """\

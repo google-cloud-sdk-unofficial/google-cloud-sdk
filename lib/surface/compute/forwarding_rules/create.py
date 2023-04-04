@@ -588,7 +588,7 @@ class Create(base.CreateCommand):
   _support_target_service_attachment = True
   _support_sd_registration_for_regional = False
   _support_l3_default = True
-  _support_source_ip_range = False
+  _support_source_ip_range = True
   _support_disable_automate_dns_zone = True
   _support_regional_tcp_proxy = True
 

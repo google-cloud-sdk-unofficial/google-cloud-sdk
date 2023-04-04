@@ -49,85 +49,122 @@ class Enable(base.UpdateCommand, base.EnableCommand):
             'The membership names to update, separated by commas if multiple '
             'are supplied. Ignored if --all-memberships is supplied; if '
             'neither is supplied, a prompt will appear with all available '
-            'memberships.'))
+            'memberships.'
+        ),
+    )
     parser.add_argument(
         '--all-memberships',
         action='store_true',
-        help='If supplied, enable Policy Controller for all memberships in the fleet.',
-        default=False)
+        help=(
+            'If supplied, enable Policy Controller for all memberships in the'
+            ' fleet.'
+        ),
+        default=False,
+    )
     parser.add_argument(
         '--audit-interval-seconds',
         type=int,
         help='How often Policy Controller will audit resources, in seconds.',
-        default=60)
+        default=60,
+    )
     parser.add_argument(
         '--exemptable-namespaces',
         type=str,
-        help='Namespaces that Policy Controller should ignore, separated by commas if multiple are supplied.'
+        help=(
+            'Namespaces that Policy Controller should ignore, separated by'
+            ' commas if multiple are supplied.'
+        ),
     )
     parser.add_argument(
         '--no-exemptable-namespaces',
         action='store_true',
-        help='Disables any namespace exemptions, enabling Policy Controller on all namespaces.'
+        help=(
+            'Disables any namespace exemptions, enabling Policy Controller on'
+            ' all namespaces.'
+        ),
     )
     parser.add_argument(
         '--log-denies-enabled',
         action='store_true',
         help='Log all denies and dry run failures.',
-        default=False)
+        default=False,
+    )
     parser.add_argument(
         '--mutation-enabled',
         action='store_true',
         help='Enable support for mutation.',
-        default=False)
+        default=False,
+    )
     parser.add_argument(
         '--referential-rules-enabled',
         action='store_true',
         help='Enable support for referential constraints.',
-        default=False)
+        default=False,
+    )
     parser.add_argument(
         '--template-library-installed',
         action='store_true',
-        help='Install a library of constraint templates for common policy types.',
-        default=False)
+        help=(
+            'Install a library of constraint templates for common policy types.'
+        ),
+        default=True,
+    )
     parser.add_argument(
         '--monitoring',
         type=str,
-        help='Monitoring backend options Policy Controller should export metrics to, separated by commas if multiple are supplied. Options: prometheus, cloudmonitoring'
+        help=(
+            'Monitoring backend options Policy Controller should export metrics'
+            ' to, separated by commas if multiple are supplied. Options:'
+            ' prometheus, cloudmonitoring'
+        ),
     )
     parser.add_argument(
         '--no-monitoring',
         action='store_true',
-        help='Include this flag to disable the monitoring configuration of Policy Controller'
+        help=(
+            'Include this flag to disable the monitoring configuration of'
+            ' Policy Controller'
+        ),
     )
     parser.add_argument(
         '--version',
         type=str,
-        help='The version of Policy Controller to install; defaults to latest version.'
+        help=(
+            'The version of Policy Controller to install; defaults to latest'
+            ' version.'
+        ),
     )
 
   def Run(self, args):
     membership_specs = {}
     poco_hub_config = utils.set_poco_hub_config_parameters_from_args(
-        args, self.messages)
+        args, self.messages
+    )
+    # pylint: disable=line-too-long
+    # TODO(b/275747711): Get rid of the pylint exemption and format all of this
+    # automagically.
     poco_hub_config.installSpec = self.messages.PolicyControllerHubConfig.InstallSpecValueValuesEnum(
-        self.messages.PolicyControllerHubConfig.InstallSpecValueValuesEnum
-        .INSTALL_SPEC_ENABLED)
+        self.messages.PolicyControllerHubConfig.InstallSpecValueValuesEnum.INSTALL_SPEC_ENABLED
+    )
 
     memberships = base.ParseMembershipsPlural(
-        args, prompt=True, prompt_cancel=False, search=True)
+        args, prompt=True, prompt_cancel=False, search=True
+    )
     for membership in memberships:
       poco_membership_spec = self.messages.PolicyControllerMembershipSpec(
-          policyControllerHubConfig=poco_hub_config)
+          policyControllerHubConfig=poco_hub_config
+      )
       if args.version:
         poco_membership_spec.version = args.version
 
       membership_path = membership
       membership_specs[membership_path] = self.messages.MembershipFeatureSpec(
-          policycontroller=poco_membership_spec)
+          policycontroller=poco_membership_spec
+      )
 
     f = self.messages.Feature(
-        membershipSpecs=self.hubclient.ToMembershipSpecs(membership_specs))
+        membershipSpecs=self.hubclient.ToMembershipSpecs(membership_specs)
+    )
 
     try:
       return self.Update(['membership_specs'], f)

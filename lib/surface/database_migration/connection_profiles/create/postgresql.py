@@ -63,12 +63,10 @@ class PostgreSQL(base.Command):
 
     cp_flags.AddNoAsyncFlag(parser)
     cp_flags.AddDisplayNameFlag(parser)
-    cp_flags.AddUsernameFlag(parser, required=True)
-    cp_flags.AddPasswordFlagGroup(parser, required=True)
-    cp_flags.AddHostFlag(parser, required=True)
-    cp_flags.AddPortFlag(parser, required=True)
+    cp_flags.AddDatabaseParamsFlags(parser)
     cp_flags.AddSslConfigGroup(parser, base.ReleaseTrack.GA)
     cp_flags.AddCloudSQLInstanceFlag(parser)
+    cp_flags.AddAlloydbClusterFlag(parser)
     flags.AddLabelsCreateFlags(parser)
 
   def Run(self, args):

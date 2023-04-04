@@ -208,6 +208,8 @@ def ParseCreateOptionsBase(args, is_autopilot, get_default, location,
       dataplane_v2=get_default('enable_dataplane_v2'),
       enable_dataplane_v2_metrics=get_default('enable_dataplane_v2_metrics'),
       disable_dataplane_v2_metrics=get_default('disable_dataplane_v2_metrics'),
+      dataplane_v2_observability_mode=get_default(
+          'dataplane_v2_observability_mode'),
       disk_type=get_default('disk_type'),
       enable_autorepair=enable_autorepair,
       enable_autoscaling=get_default('enable_autoscaling'),
@@ -346,7 +348,9 @@ def ParseCreateOptionsBase(args, is_autopilot, get_default, location,
       placement_type=get_default('placement_type'),
       enable_security_posture=get_default('enable_security_posture'),
       network_performance_config=get_default(
-          'network_performance_configs'))
+          'network_performance_configs'),
+      enble_insecure_kubelet_readonly_port=get_default(
+          'enble_insecure_kubelet_readonly_port'))
 
 
 GA = 'ga'
@@ -647,6 +651,8 @@ flags_to_add = {
             flags.AddDataplaneV2Flag,
         'dataplanev2metrics':
             flags.AddDataplaneV2MetricsFlag,
+        'dataplanev2obsmode':
+            flags.AddDataplaneV2ObservabilityModeFlag,
         'disabledefaultsnat':
             AddDisableDefaultSnatFlagForClusterCreate,
         'disksize':
@@ -811,7 +817,9 @@ flags_to_add = {
         'enableSecurityPosture':
             flags.AddSecurityPostureFlag,
         'clusterNetworkPerformanceConfig':
-            flags.AddClusterNetworkPerformanceConfigFlags
+            flags.AddClusterNetworkPerformanceConfigFlags,
+        'enableKubeletReadonlyPort':
+            flags.AddEnableKubeletReadonlyPortFlag
     },
     ALPHA: {
         'accelerator': (lambda p: AddAcceleratorFlag(p, True, True, True)),
@@ -867,6 +875,8 @@ flags_to_add = {
             flags.AddDataplaneV2Flag,
         'dataplanev2metrics':
             flags.AddDataplaneV2MetricsFlag,
+        'dataplanev2obsmode':
+            flags.AddDataplaneV2ObservabilityModeFlag,
         'disabledefaultsnat':
             AddDisableDefaultSnatFlagForClusterCreate,
         'disksize':
@@ -1039,7 +1049,9 @@ flags_to_add = {
         'enableSecurityPosture':
             flags.AddSecurityPostureFlag,
         'clusterNetworkPerformanceConfig':
-            flags.AddClusterNetworkPerformanceConfigFlags
+            flags.AddClusterNetworkPerformanceConfigFlags,
+        'enableKubeletReadonlyPort':
+            flags.AddEnableKubeletReadonlyPortFlag
     },
 }
 
@@ -1290,6 +1302,8 @@ class CreateBeta(Create):
     ops.enable_fleet = get_default('enable_fleet')
     ops.enable_multi_networking = get_default('enable_multi_networking')
     ops.enable_security_posture = get_default('enable_security_posture')
+    ops.enble_insecure_kubelet_readonly_port = get_default(
+        'enble_insecure_kubelet_readonly_port')
     return ops
 
 
@@ -1384,4 +1398,6 @@ class CreateAlpha(Create):
     ops.enable_fleet = get_default('enable_fleet')
     ops.enable_multi_networking = get_default('enable_multi_networking')
     ops.enable_security_posture = get_default('enable_security_posture')
+    # pylint: disable=line-too-long
+    ops.enble_insecure_kubelet_readonly_port = get_default('enble_insecure_kubelet_readonly_port')
     return ops

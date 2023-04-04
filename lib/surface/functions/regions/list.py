@@ -29,7 +29,7 @@ from googlecloudsdk.command_lib.functions.v2.regions.list import command as comm
 def _CommonArgs(parser):
   parser.display_info.AddFormat('table(name)')
   parser.display_info.AddUriFunc(flags.GetLocationsUri)
-  flags.AddGen2Flag(parser)
+  flags.AddGen2Flag(parser, operates_on_existing_function=False)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*- #
-# Copyright 2022 Google LLC. All Rights Reserved.
+# Copyright 2023 Google LLC. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,11 +14,13 @@
 # limitations under the License.
 """Helper functions for making gRPC API calls."""
 
+# TODO(b/271932922): Move functions from here to its own client class.
+
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
-from googlecloudsdk.api_lib.storage import grpc_metadata_util
+from googlecloudsdk.api_lib.storage.gcs_grpc import metadata_util
 from googlecloudsdk.command_lib.storage import hash_util
 
 
@@ -116,6 +118,6 @@ def upload_object(gapic_client,
           source_stream,
           destination_resource,
           request_config.resource_args))
-  return grpc_metadata_util.get_object_resource_from_grpc_object(
+  return metadata_util.get_object_resource_from_grpc_object(
       response.resource)
 

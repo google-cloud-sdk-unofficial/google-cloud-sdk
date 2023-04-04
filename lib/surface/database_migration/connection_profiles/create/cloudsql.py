@@ -47,11 +47,8 @@ DETAILED_HELP = {
 }
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.GA)
-class CloudSQL(base.Command):
+class _CloudSQL(object):
   """Create a Database Migration Service connection profile for Cloud SQL."""
-
-  detailed_help = DETAILED_HELP
 
   @staticmethod
   def Args(parser):
@@ -102,3 +99,27 @@ class CloudSQL(base.Command):
     helper = create_helper.CreateHelper()
     return helper.create(self.ReleaseTrack(), parent_ref,
                          connection_profile_ref, args, 'CLOUDSQL')
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class CloudSQLAlpha(_CloudSQL, base.Command):
+  """Create a Database Migration Service connection profile for Cloud SQL."""
+
+  detailed_help = DETAILED_HELP
+
+  @staticmethod
+  def Args(parser):
+    _CloudSQL.Args(parser)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class CloudSQLGA(_CloudSQL, base.Command):
+  """Create a Database Migration Service connection profile for Cloud SQL."""
+
+  detailed_help = DETAILED_HELP
+
+  @staticmethod
+  def Args(parser):
+    _CloudSQL.Args(parser)
+    cs_flags.AddAllocatedIpRangeFlag(parser)
+

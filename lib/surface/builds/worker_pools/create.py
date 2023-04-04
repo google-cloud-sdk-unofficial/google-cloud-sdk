@@ -151,7 +151,8 @@ class Create(base.CreateCommand):
     created_wp = waiter.WaitFor(
         waiter.CloudOperationPoller(client.projects_locations_workerPools,
                                     client.projects_locations_operations),
-        op_resource, 'Creating worker pool')
+        op_resource, 'Creating worker pool',
+        max_wait_ms=3600000)  # 1 hour
 
     # Get the workerpool ref
     wp_resource = resources.REGISTRY.Parse(

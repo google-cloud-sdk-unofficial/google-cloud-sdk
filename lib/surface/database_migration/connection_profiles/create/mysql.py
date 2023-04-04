@@ -56,10 +56,7 @@ class _MySQL(object):
 
     cp_flags.AddNoAsyncFlag(parser)
     cp_flags.AddDisplayNameFlag(parser)
-    cp_flags.AddUsernameFlag(parser, required=True)
-    cp_flags.AddPasswordFlagGroup(parser, required=True)
-    cp_flags.AddHostFlag(parser, required=True)
-    cp_flags.AddPortFlag(parser, required=True)
+    cp_flags.AddDatabaseParamsFlags(parser)
     cp_flags.AddProviderFlag(parser)
     flags.AddLabelsCreateFlags(parser)
 

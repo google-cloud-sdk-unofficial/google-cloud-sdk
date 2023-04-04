@@ -112,4 +112,5 @@ class Update(base.Command):
         csv_separator=args.csv_separator,
         csv_delimiter=args.csv_delimiter,
         csv_header=args.csv_header,
+        parquet=args.parquet,
         display_name=args.display_name)

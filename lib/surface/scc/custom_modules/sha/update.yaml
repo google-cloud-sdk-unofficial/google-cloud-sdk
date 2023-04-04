@@ -8,16 +8,13 @@
 
         $ {command} 123456 \
             --organization=organizations/123 \
-            --display-name="test_display_name" \
             --enablement-state="ENABLED"
             --custom-config-from-file=custom_config.yaml
         $ {command} 123456 \
             --organization=123 \
-            --display-name="test_display_name" \
             --enablement-state="ENABLED"
             --custom-config-from-file=custom_config.yaml
         $ {command} organizations/123/securityHealthAnalyticsSettings/customModules/123456 \
-            --display-name="test_display_name" \
             --enablement-state="ENABLED"
             --custom-config-from-file=custom_config.yaml
 
@@ -25,16 +22,13 @@
 
         $ {command} 123456 \
             --folder=folders/456 \
-            --display-name="test_display_name" \
             --enablement-state="ENABLED"
             --custom-config-from-file=custom_config.yaml
         $ {command} 123456 \
             --folder=456 \
-            --display-name="test_display_name" \
             --enablement-state="ENABLED"
             --custom-config-from-file=custom_config.yaml
         $ {command} folders/456/securityHealthAnalyticsSettings/customModules/123456 \
-            --display-name="test_display_name" \
             --enablement-state="ENABLED"
             --custom-config-from-file=custom_config.yaml
 
@@ -42,16 +36,13 @@
 
         $ {command} 123456 \
             --project=projects/789 \
-            --display-name="test_display_name" \
             --enablement-state="ENABLED"
             --custom-config-from-file=custom_config.yaml
         $ {command} 123456 \
             --project=789 \
-            --display-name="test_display_name" \
             --enablement-state="ENABLED"
             --custom-config-from-file=custom_config.yaml
         $ {command} projects/789/securityHealthAnalyticsSettings/customModules/123456 \
-            --display-name="test_display_name" \
             --enablement-state="ENABLED"
             --custom-config-from-file=custom_config.yaml
 
@@ -90,13 +81,6 @@
           help_text: |
             Project (id or number) where the Security Health Analytics custom module resides. Formatted as `projects/789` or just `789`.
 
-
-    - arg_name: display-name
-      api_field: googleCloudSecuritycenterV1SecurityHealthAnalyticsCustomModule.displayName
-      is_positional: false
-      required: false
-      help_text: |
-        The text that will be used to represent a Security Health Analytics custom module display name. Display name must be at most 64 characters
 
     - arg_name: enablement-state
       api_field: googleCloudSecuritycenterV1SecurityHealthAnalyticsCustomModule.enablementState

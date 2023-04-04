@@ -128,3 +128,4 @@ class UpdateGA(_Update, base.Command):
     _Update.Args(parser)
     cp_flags.AddClientCertificateFlag(parser)
     cp_flags.AddCloudSQLInstanceFlag(parser)
+    cp_flags.AddAlloydbClusterFlag(parser)

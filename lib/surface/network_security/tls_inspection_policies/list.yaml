@@ -1,4 +1,4 @@
-release_tracks: [ALPHA]
+release_tracks: [BETA, ALPHA]
 help_text:
   brief: |
     List TLS Inspection Policies.
@@ -8,7 +8,10 @@ help_text:
       To list TLS Inspection Policies in the current project, run:
         $ {command} --location=$REGION
 request: &request
-  api_version: v1alpha1
+  ALPHA:
+    api_version: v1alpha1
+  BETA:
+    api_version: v1beta1
   collection: networksecurity.projects.locations.tlsInspectionPolicies
 arguments:
   resource:

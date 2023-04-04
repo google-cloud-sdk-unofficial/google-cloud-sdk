@@ -9,18 +9,15 @@
         $ {command} 123456 \
             --organization=organizations/123 \
             --display-name="test_display_name"\
-            --enablement-state="ENABLED" \
             --custom-config-from-file=/tmp/custom_config.yaml \
             --test-data-from-file=/tmp/test_data.yaml
         $ {command} 123456 \
             --organization=123 \
             --display-name="test_display_name"\
-            --enablement-state="ENABLED" \
             --custom-config-from-file=/tmp/custom_config.yaml \
             --test-data-from-file=/tmp/test_data.yaml
         $ {command} organizations/123/securityHealthAnalyticsSettings/customModules/123456 \
             --display-name="test_display_name"\
-            --enablement-state="ENABLED" \
             --custom-config-from-file=/tmp/custom_config.yaml \
             --test-data-from-file=/tmp/test_data.yaml
 
@@ -29,18 +26,15 @@
         $ {command} 123456 \
             --folder=folders/456 \
             --display-name="test_display_name"\
-            --enablement-state="ENABLED" \
             --custom-config-from-file=/tmp/custom_config.yaml \
             --test-data-from-file=/tmp/test_data.yaml
         $ {command} 123456 \
             --folder=456 \
             --display-name="test_display_name"\
-            --enablement-state="ENABLED" \
             --custom-config-from-file=/tmp/custom_config.yaml \
             --test-data-from-file=/tmp/test_data.yaml
         $ {command} folders/456/securityHealthAnalyticsSettings/customModules/123456 \
             --display-name="test_display_name"\
-            --enablement-state="ENABLED" \
             --custom-config-from-file=/tmp/custom_config.yaml \
             --test-data-from-file=/tmp/test_data.yaml
 
@@ -49,18 +43,15 @@
         $ {command} 123456 \
             --project=projects/789 \
             --display-name="test_display_name"\
-            --enablement-state="ENABLED" \
             --custom-config-from-file=/tmp/custom_config.yaml \
             --test-data-from-file=/tmp/test_data.yaml
         $ {command} 123456 \
             --project=789 \
             --display-name="test_display_name"\
-            --enablement-state="ENABLED" \
             --custom-config-from-file=/tmp/custom_config.yaml \
             --test-data-from-file=/tmp/test_data.yaml
         $ {command} projects/789/securityHealthAnalyticsSettings/customModules/123456 \
             --display-name="test_display_name"\
-            --enablement-state="ENABLED" \
             --custom-config-from-file=/tmp/custom_config.yaml \
             --test-data-from-file=/tmp/test_data.yaml
 
@@ -104,14 +95,7 @@
       is_positional: false
       required: false
       help_text: |
-        The text that will be used to represent a Security Health Analytics custom module display name. Display name must be at most 64 characters.
-
-    - arg_name: enablement-state
-      api_field: testSecurityHealthAnalyticsCustomModuleRequest.securityHealthAnalyticsCustomModule.enablementState
-      is_positional: false
-      required: false
-      help_text: |
-        The enablement state of the Security Health Analytics custom module.
+        Display name of the Security Health Analytics custom module. Display name must be at most 64 characters. Only relevant when `--custom-config-from-file` is also specified.
 
     - arg_name: custom-config-from-file
       api_field: testSecurityHealthAnalyticsCustomModuleRequest.securityHealthAnalyticsCustomModule.customConfig
@@ -120,7 +104,7 @@
       is_positional: false
       required: false
       help_text: |
-        Path to a yaml file containing the custom configuration for the Security Health Analytics custom module.
+        Path to a YAML file containing the custom configuration for the Security Health Analytics custom module. If not specified, the existing module with the given ID or resource name is used.
 
     - arg_name: test-data-from-file
       api_field: testSecurityHealthAnalyticsCustomModuleRequest.testData
@@ -130,4 +114,4 @@
       required: true
       repeated: false
       help_text: |
-        Path to a yaml file containing the resource data to test the Security Health Analytics custom module against.
+        Path to a YAML file containing the resource data to test the Security Health Analytics custom module against.

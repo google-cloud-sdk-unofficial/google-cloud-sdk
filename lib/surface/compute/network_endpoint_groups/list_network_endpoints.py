@@ -119,4 +119,12 @@ class ListNetworkEndpoints(base.ListCommand):
 class AlphaListNetworkEndpoints(ListNetworkEndpoints):
   """List network endpoints in a network endpoint group."""
 
+  display_info_format = """\
+      table(
+        networkEndpoint.instance,
+        networkEndpoint.ipAddress,
+        networkEndpoint.ipv6Address,
+        networkEndpoint.port,
+        networkEndpoint.fqdn
+      )"""
   support_regional_scope = True

@@ -55,6 +55,12 @@ class Update(base.UpdateCommand):
 
     attachment_point = args.attachment_point.replace('/', '%2F')
 
+    kinds = {
+        'denypolicies': 'denyPolicy',
+        'principalaccessboundarypolicies': 'principalAccessBoundaryPolicy',
+        'accessboundarypolicies': 'accessboundaryPolicy',
+    }
+
     if release_track == base.ReleaseTrack.ALPHA:
       policy = apis.ParseYamlOrJsonPolicyFile(args.policy_file,
                                               messages.GoogleIamV2alphaPolicy)
@@ -70,5 +76,5 @@ class Update(base.UpdateCommand):
                                              args.policy_id)
 
     result = client.policies.Update(policy)
-    log.UpdatedResource(result.name, 'denyPolicy', is_async=True)
+    log.UpdatedResource(result.name, kinds[args.kind], is_async=True)
     return result

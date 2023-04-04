@@ -44,6 +44,7 @@ class Update(base.UpdateCommand):
   support_regional_scope = False
   support_hybrid_neg = True
   support_l4ilb_neg = False
+  support_ipv6 = False
 
   @classmethod
   def Args(cls, parser):
@@ -54,6 +55,7 @@ class Update(base.UpdateCommand):
         parser,
         support_hybrid_neg=cls.support_hybrid_neg,
         support_l4ilb_neg=cls.support_l4ilb_neg,
+        support_ipv6=cls.support_ipv6,
     )
 
   def Run(self, args):
@@ -90,3 +92,4 @@ class AlphaUpdate(Update):
 
   support_l4ilb_neg = True
   support_regional_scope = True
+  support_ipv6 = True

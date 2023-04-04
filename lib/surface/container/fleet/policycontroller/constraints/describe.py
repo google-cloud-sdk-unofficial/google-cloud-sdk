@@ -28,16 +28,14 @@ from googlecloudsdk.core import properties
 def FormatViolation(violation, include_membership=False):
   """Returns formatted violation from API response."""
   formatted_violation = {
-      'resource_name':
-          violation.resourceRef.name,
-      'resource_api_group':
-          violation.resourceRef.groupKind.apiGroup,
-      'resource_kind':
-          violation.resourceRef.groupKind.kind
+      'resource_name': violation.resourceRef.name,
+      'resource_api_group': violation.resourceRef.groupKind.apiGroup,
+      'resource_kind': violation.resourceRef.groupKind.kind,
   }
   if violation.resourceRef.resourceNamespace is not None:
     formatted_violation['resource_namespace'] = (
-        violation.resourceRef.resourceNamespace)
+        violation.resourceRef.resourceNamespace
+    )
   else:
     formatted_violation['resource_namespace'] = 'N/A'
   if include_membership:
@@ -62,7 +60,6 @@ class Describe(calliope_base.DescribeCommand):
 
       $ {command} k8srequiredlabels/all-must-have-owner
       --memberships=MEMBERSHIP
-
   """
 
   @classmethod
@@ -70,23 +67,26 @@ class Describe(calliope_base.DescribeCommand):
     parser.add_argument(
         'CONSTRAINT_NAME',
         type=str,
-        help='The constraint template name and constraint name joined by a slash, e.g. "k8srequiredlabels/all-must-have-owner".'
+        help=(
+            'The constraint template name and constraint name joined by a'
+            ' slash, e.g. "k8srequiredlabels/all-must-have-owner".'
+        ),
     )
     resources.AddMembershipResourceArg(
         parser,
         plural=True,
         membership_help=(
             'A single membership name for which to describe a membership '
-            'constraint.'))
+            'constraint.'
+        ),
+    )
 
   def Run(self, args):
     calliope_base.EnableUserProjectQuota()
     project_id = properties.VALUES.core.project.Get(required=True)
 
-    client = status_api_utils.GetClientInstance(
-        self.ReleaseTrack())
-    messages = status_api_utils.GetMessagesModule(
-        self.ReleaseTrack())
+    client = status_api_utils.GetClientInstance(self.ReleaseTrack())
+    messages = status_api_utils.GetMessagesModule(self.ReleaseTrack())
 
     constraint_name = args.CONSTRAINT_NAME.lower()
 
@@ -96,33 +96,48 @@ class Describe(calliope_base.DescribeCommand):
         raise exceptions.Error('Please specify a single membership name.')
       membership_name = memberships[0]
       constraint = status_api_utils.GetMembershipConstraint(
-          client, messages, constraint_name, project_id, membership_name,
-          self.ReleaseTrack())
+          client,
+          messages,
+          constraint_name,
+          project_id,
+          membership_name,
+          self.ReleaseTrack(),
+      )
     else:
-      constraint = status_api_utils.GetFleetConstraint(client, messages,
-                                                       constraint_name,
-                                                       project_id)
+      constraint = status_api_utils.GetFleetConstraint(
+          client, messages, constraint_name, project_id
+      )
 
     violations_request = messages.AnthospolicycontrollerstatusPaProjectsMembershipConstraintAuditViolationsListRequest(
-        parent='projects/{}'.format(project_id))
-    violations_response = client.projects_membershipConstraintAuditViolations.List(
-        violations_request)
+        parent='projects/{}'.format(project_id)
+    )
+    violations_response = (
+        client.projects_membershipConstraintAuditViolations.List(
+            violations_request
+        )
+    )
 
     # Add violations to constraint.
     if args.memberships:
       for violation in violations_response.membershipConstraintAuditViolations:
-        if constraint_name == '{}/{}'.format(
-            violation.constraintRef.constraintTemplateName,
-            violation.constraintRef.name
-        ) and violation.membershipRef.name == membership_name:
+        if (
+            constraint_name
+            == '{}/{}'.format(
+                violation.constraintRef.constraintTemplateName,
+                violation.constraintRef.name,
+            )
+            and violation.membershipRef.name == membership_name
+        ):
           constraint['violations'].append(FormatViolation(violation))
       return constraint
     else:
       for violation in violations_response.membershipConstraintAuditViolations:
         if constraint_name == '{}/{}'.format(
             violation.constraintRef.constraintTemplateName,
-            violation.constraintRef.name):
+            violation.constraintRef.name,
+        ):
           constraint['violations'].append(
-              FormatViolation(violation, include_membership=True))
+              FormatViolation(violation, include_membership=True)
+          )
 
     return constraint

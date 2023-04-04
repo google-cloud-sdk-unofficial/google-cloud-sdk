@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*- #
-# Copyright 2021 Google LLC. All Rights Reserved.
+# Copyright 2023 Google LLC. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -24,8 +24,8 @@ import json
 from apitools.base.py import encoding_helper
 from apitools.base.py import transfer
 from googlecloudsdk.api_lib.storage import errors
-from googlecloudsdk.api_lib.storage import gcs_metadata_util
 from googlecloudsdk.api_lib.storage import retry_util
+from googlecloudsdk.api_lib.storage.gcs_json import metadata_util
 from googlecloudsdk.api_lib.util import apis
 from googlecloudsdk.command_lib.storage.resources import resource_reference
 from googlecloudsdk.command_lib.storage.tasks.cp import copy_util
@@ -93,11 +93,14 @@ class _Upload(six.with_metaclass(abc.ABCMeta, object)):
 
     if (isinstance(self._source_resource, resource_reference.ObjectResource) and
         self._source_resource.custom_fields):
-      object_metadata.metadata = encoding_helper.DictToAdditionalPropertyMessage(
-          self._source_resource.custom_fields,
-          self._messages.Object.MetadataValue)
+      object_metadata.metadata = (
+          encoding_helper.DictToAdditionalPropertyMessage(
+              self._source_resource.custom_fields,
+              self._messages.Object.MetadataValue,
+          )
+      )
 
-    gcs_metadata_util.update_object_metadata_from_request_config(
+    metadata_util.update_object_metadata_from_request_config(
         object_metadata, self._request_config, source_file_path)
 
     return self._messages.StorageObjectsInsertRequest(

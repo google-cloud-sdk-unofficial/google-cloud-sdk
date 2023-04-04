@@ -437,8 +437,10 @@ class BaseImportStager(object):
     return import_args
 
   def GetAndCreateDaisyBucket(self):
-    return daisy_utils.CreateDaisyBucketInProject(self.GetBucketLocation(),
-                                                  self.storage_client)
+    return daisy_utils.CreateDaisyBucketInProject(
+        self.GetBucketLocation(),
+        self.storage_client,
+        enable_uniform_level_access=True)
 
   def GetBucketLocation(self):
     if self.args.storage_location:

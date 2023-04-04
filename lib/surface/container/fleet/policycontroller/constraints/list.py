@@ -33,12 +33,13 @@ def ListFleetConstraints(client, messages, project_id, verbose):
   """Generates list of fleet constraints."""
   formatted_constraints = {}
 
-  fleet_constraints = status_api_utils.ListFleetConstraints(client, messages,
-                                                            project_id)
+  fleet_constraints = status_api_utils.ListFleetConstraints(
+      client, messages, project_id
+  )
   for constraint in fleet_constraints:
     constraint_label = MakeConstraintLabel(
-        constraint.ref.constraintTemplateName,
-        constraint.ref.name)
+        constraint.ref.constraintTemplateName, constraint.ref.name
+    )
 
     formatted_constraint = {
         'constraint': constraint_label,
@@ -55,66 +56,74 @@ def ListFleetConstraints(client, messages, project_id, verbose):
   # Add membership names and violations to verbose output
   if verbose:
     membership_constraints = status_api_utils.ListMembershipConstraints(
-        client, messages, project_id)
+        client, messages, project_id
+    )
     for constraint in membership_constraints:
       constraint_label = MakeConstraintLabel(
           constraint.constraintRef.constraintTemplateName,
-          constraint.constraintRef.name)
+          constraint.constraintRef.name,
+      )
       if constraint_label in formatted_constraints:
         formatted_constraints[constraint_label]['memberships'].append(
-            constraint.membershipRef.name)
+            constraint.membershipRef.name
+        )
 
     violations = status_api_utils.ListViolations(client, messages, project_id)
     for violation in violations:
       constraint_label = MakeConstraintLabel(
           violation.constraintRef.constraintTemplateName,
-          violation.constraintRef.name)
+          violation.constraintRef.name,
+      )
       if constraint_label in formatted_constraints:
         formatted_constraints[constraint_label]['violations'].append({
-            'membership':
-                violation.membershipRef.name,
-            'resource_name':
-                violation.resourceRef.name,
-            'resource_namespace':
-                violation.resourceRef.resourceNamespace or 'N/A',
-            'resource_api_group':
-                violation.resourceRef.groupKind.apiGroup,
-            'resource_kind':
-                violation.resourceRef.groupKind.kind
+            'membership': violation.membershipRef.name,
+            'resource_name': violation.resourceRef.name,
+            'resource_namespace': (
+                violation.resourceRef.resourceNamespace or 'N/A'
+            ),
+            'resource_api_group': violation.resourceRef.groupKind.apiGroup,
+            'resource_kind': violation.resourceRef.groupKind.kind,
         })
   return [v for _, v in sorted(formatted_constraints.items())]
 
 
-def ListMembershipConstraints(client, messages, project_id, memberships,
-                              verbose):
+def ListMembershipConstraints(
+    client, messages, project_id, memberships, verbose
+):
   """Generates list of membership constraints."""
   formatted_constraints = {}
 
   membership_constraints = status_api_utils.ListMembershipConstraints(
-      client, messages, project_id)
+      client, messages, project_id
+  )
   for constraint in membership_constraints:
     if memberships and constraint.membershipRef.name not in memberships:
       continue
 
     constraint_label = MakeConstraintLabel(
         constraint.constraintRef.constraintTemplateName,
-        constraint.constraintRef.name)
-    membership_constraint_key = (constraint.membershipRef.name,
-                                 constraint_label)
+        constraint.constraintRef.name,
+    )
+    membership_constraint_key = (
+        constraint.membershipRef.name,
+        constraint_label,
+    )
     formatted_constraint = {
         'constraint': constraint_label,
         'membership': constraint.membershipRef.name,
-        'violations': constraint.status.numViolations or 0
+        'violations': constraint.status.numViolations or 0,
     }
     if verbose:
       formatted_constraint['violations'] = []
       formatted_constraint['match'] = constraint.spec.kubernetesMatch or {}
       formatted_constraint['parameters'] = constraint.spec.parameters or {}
-      formatted_constraint[
-          'enforcementAction'] = utils.get_enforcement_action_label(
-              messages.MembershipConstraintSpec
-              .EnforcementActionValueValuesEnum(
-                  constraint.spec.enforcementAction).name),
+      formatted_constraint['enforcementAction'] = (
+          utils.get_enforcement_action_label(
+              messages.MembershipConstraintSpec.EnforcementActionValueValuesEnum(
+                  constraint.spec.enforcementAction
+              ).name
+          ),
+      )
     formatted_constraints[membership_constraint_key] = formatted_constraint
 
   # Add violations to verbose output.
@@ -125,19 +134,20 @@ def ListMembershipConstraints(client, messages, project_id, memberships,
         continue
       constraint_label = MakeConstraintLabel(
           violation.constraintRef.constraintTemplateName,
-          violation.constraintRef.name)
-      membership_constraint_key = (violation.membershipRef.name,
-                                   constraint_label)
+          violation.constraintRef.name,
+      )
+      membership_constraint_key = (
+          violation.membershipRef.name,
+          constraint_label,
+      )
       if membership_constraint_key in formatted_constraints:
         formatted_constraints[membership_constraint_key]['violations'].append({
-            'resource_name':
-                violation.resourceRef.name,
-            'resource_namespace':
-                violation.resourceRef.resourceNamespace or 'N/A',
-            'resource_api_group':
-                violation.resourceRef.groupKind.apiGroup,
-            'resource_kind':
-                violation.resourceRef.groupKind.kind
+            'resource_name': violation.resourceRef.name,
+            'resource_namespace': (
+                violation.resourceRef.resourceNamespace or 'N/A'
+            ),
+            'resource_api_group': violation.resourceRef.groupKind.apiGroup,
+            'resource_kind': violation.resourceRef.groupKind.kind,
         })
   return [v for _, v in sorted(formatted_constraints.items())]
 
@@ -171,22 +181,23 @@ class List(calliope_base.ListCommand):
         '--verbose',
         action='store_true',
         help='Include extended information about constraints.',
-        default=False)
+        default=False,
+    )
     resources.AddMembershipResourceArg(
         parser,
         plural=True,
         membership_help=(
             'The membership names for which to list constraint templates, '
-            'separated by commas if multiple are supplied.'))
+            'separated by commas if multiple are supplied.'
+        ),
+    )
 
   def Run(self, args):
     calliope_base.EnableUserProjectQuota()
     project_id = properties.VALUES.core.project.Get(required=True)
 
-    client = status_api_utils.GetClientInstance(
-        self.ReleaseTrack())
-    messages = status_api_utils.GetMessagesModule(
-        self.ReleaseTrack())
+    client = status_api_utils.GetClientInstance(self.ReleaseTrack())
+    messages = status_api_utils.GetMessagesModule(self.ReleaseTrack())
 
     if args.memberships is not None:
       memberships = args.memberships
@@ -195,8 +206,6 @@ class List(calliope_base.ListCommand):
 
     if memberships:
       return ListMembershipConstraints(
-          client, messages, project_id,
-          memberships, args.verbose)
-    return ListFleetConstraints(
-        client, messages, project_id, args.verbose
-    )
+          client, messages, project_id, memberships, args.verbose
+      )
+    return ListFleetConstraints(client, messages, project_id, args.verbose)

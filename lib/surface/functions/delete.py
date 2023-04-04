@@ -19,15 +19,15 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
-from googlecloudsdk.api_lib.functions.v1 import util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.functions import flags
+from googlecloudsdk.command_lib.functions import util
 from googlecloudsdk.command_lib.functions.v1.delete import command as command_v1
 from googlecloudsdk.command_lib.functions.v2.delete import command as command_v2
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
-class Delete(base.DeleteCommand):
+class Delete(base.DeleteCommand, util.FunctionResourceCommand):
   """Delete a Google Cloud Function."""
 
   @staticmethod
@@ -38,24 +38,11 @@ class Delete(base.DeleteCommand):
 
     flags.AddGen2Flag(parser)
 
-  @util.CatchHTTPErrorRaiseHTTPException
-  def Run(self, args):
-    """This is what gets called when the user runs this command.
+  def _RunV1(self, args):
+    return command_v1.Run(args)
 
-    Args:
-      args: an argparse namespace. All the arguments that were provided to this
-        command invocation.
-
-    Returns:
-      None
-
-    Raises:
-      FunctionsError: If the user doesn't confirm on prompt.
-    """
-    if flags.ShouldUseGen2():
-      return command_v2.Run(args, self.ReleaseTrack())
-    else:
-      return command_v1.Run(args)
+  def _RunV2(self, args):
+    return command_v2.Run(args, self.ReleaseTrack())
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)

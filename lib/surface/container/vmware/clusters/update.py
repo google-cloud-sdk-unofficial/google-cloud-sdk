@@ -49,7 +49,7 @@ class Update(base.UpdateCommand):
     parser.display_info.AddFormat(vmware_constants.VMWARE_CLUSTERS_FORMAT)
     flags.AddClusterResourceArg(parser, 'to update', True)
     base.ASYNC_FLAG.AddToParser(parser)
-    flags.AddValidationOnly(parser, True)
+    flags.AddValidationOnly(parser)
     flags.AddAllowMissingUpdateCluster(parser)
     flags.AddDescription(parser)
     flags.AddVersion(parser)

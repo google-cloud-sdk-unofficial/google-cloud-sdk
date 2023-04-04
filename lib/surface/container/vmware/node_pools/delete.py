@@ -43,7 +43,7 @@ class Delete(base.DeleteCommand):
   def Args(parser):
     flags.AddNodePoolResourceArg(parser, 'to delete')
     flags.AddAllowMissingDeleteNodePool(parser)
-    flags.AddValidationOnly(parser, hidden=True)
+    flags.AddValidationOnly(parser)
     base.ASYNC_FLAG.AddToParser(parser)
     flags.AddNodePoolIgnoreErrors(parser)
 

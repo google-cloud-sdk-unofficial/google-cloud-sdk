@@ -19,8 +19,6 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
-
-from apitools.base.py import list_pager
 from googlecloudsdk.api_lib.alloydb import api_util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.core import properties
@@ -92,7 +90,7 @@ class List(base.ListCommand):
         locationsId=args.region,
         clustersId=args.cluster)
 
-    result = list_pager.YieldFromList(
+    result = api_util.YieldFromListHandlingUnreachable(
         alloydb_client.projects_locations_clusters_instances,
         alloydb_messages
         .AlloydbProjectsLocationsClustersInstancesListRequest(

@@ -56,6 +56,5 @@ class SetServiceAccount(base.UpdateCommand):
     # TODO(b/271293873):Remove no_followup=True once singleton support is added.
     return client.MakeRequests(
         [(service, 'Patch', request)],
-        enable_single_request=True,
         no_followup=True,
     )[0]

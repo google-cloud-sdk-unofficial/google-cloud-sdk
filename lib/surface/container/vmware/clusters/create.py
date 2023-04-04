@@ -63,6 +63,7 @@ class Create(base.CreateCommand):
     vmware_flags.AddEnableVmwareTracking(parser)
     vmware_flags.AddVmwareAutoRepairConfig(parser)
     vmware_flags.AddAuthorization(parser)
+    vmware_flags.AddEnableControlPlaneV2(parser)
 
   def Run(self, args):
     """Runs the create command.

@@ -55,7 +55,7 @@ class UpdateGA(base.UpdateCommand):
   _support_global_access = True
   _support_psc_global_access = False
   _support_network_tier = False
-  _support_source_ip_range = False
+  _support_source_ip_range = True
   _support_labels = True
 
   @classmethod

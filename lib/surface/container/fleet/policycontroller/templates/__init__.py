@@ -25,4 +25,5 @@ from googlecloudsdk.calliope import base as calliope_base
 @calliope_base.ReleaseTracks(calliope_base.ReleaseTrack.ALPHA)
 class Policycontroller(calliope_base.Group):
   """Get Policy Controller constraint templates."""
+
   pass

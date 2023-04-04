@@ -50,6 +50,4 @@ class Describe(base.DescribeCommand):
         project=properties.VALUES.core.project.GetOrFail(), zone=args.zone
     )
 
-    return client.MakeRequests(
-        [(service, 'Get', request)], enable_single_request=True
-    )[0]
+    return client.MakeRequests([(service, 'Get', request)])[0]

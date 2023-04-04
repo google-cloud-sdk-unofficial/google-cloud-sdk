@@ -30,4 +30,5 @@ import six
 @calliope_base.ReleaseTracks(calliope_base.ReleaseTrack.ALPHA)
 class Policycontroller(calliope_base.Group):
   """Get Policy Controller constraints."""
+
   pass

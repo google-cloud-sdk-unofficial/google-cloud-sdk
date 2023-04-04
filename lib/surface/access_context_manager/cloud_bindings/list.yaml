@@ -3,26 +3,15 @@
   help_text:
     brief: List cloud access bindings under an organization.
     description: List cloud access bindings.
-    GA:
-      examples: |
-        To list cloud access bindings, run:
+    examples: |
+      To list cloud access bindings, run:
 
-          $ {command}
+        $ {command}
 
-        This will print out a list of gcpUserAccessBindings in a tabular form:
+      This command prints a list of gcpUserAccessBindings in a tabular form:
 
-          NAME                                                  GROUP_KEY    ACCESS_LEVEL
-          organizations/256/gcpUserAccessBindings/b3-BhcX_Ud5N  a3dad        accessPolicies/9522/accessLevels/device_trusted
-    ALPHA:
-      examples: |
-        To list cloud access bindings, run:
-
-          $ {command}
-
-        This will print out a list of gcpUserAccessBindings in a tabular form:
-
-          NAME                                                  GROUP_KEY    ACCESS_LEVEL                                     DRY_RUN_ACCESS_LEVEL
-          organizations/256/gcpUserAccessBindings/b3-BhcX_Ud5N  a3dad        accessPolicies/9522/accessLevels/device_trusted  accessPolicies/9522/accessLevels/specific_location
+        NAME                                                  GROUP_KEY    ACCESS_LEVEL                                     DRY_RUN_ACCESS_LEVEL
+        organizations/256/gcpUserAccessBindings/b3-BhcX_Ud5N  a3dad        accessPolicies/9522/accessLevels/device_trusted  accessPolicies/9522/accessLevels/specific_location
 
   request:
     collection: accesscontextmanager.organizations.gcpUserAccessBindings
@@ -36,18 +25,10 @@
       spec: !REF googlecloudsdk.command_lib.accesscontextmanager.resources:organization
 
   output:
-    GA:
-      format: |
-        table(
-            name,
-            groupKey:label=GROUP_KEY,
-            accessLevels.join(","):label=ACCESS_LEVEL
-        )
-    ALPHA:
-      format: |
-        table(
-            name,
-            groupKey:label=GROUP_KEY,
-            accessLevels.join(","):label=ACCESS_LEVEL,
-            dryRunAccessLevels.join(","):label=DRY_RUN_ACCESS_LEVEL
-        )
+    format: |
+      table(
+          name,
+          groupKey:label=GROUP_KEY,
+          accessLevels.join(","):label=ACCESS_LEVEL,
+          dryRunAccessLevels.join(","):label=DRY_RUN_ACCESS_LEVEL
+      )

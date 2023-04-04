@@ -41,7 +41,7 @@ class Delete(base.DeleteCommand):
   @staticmethod
   def Args(parser):
     flags.AddClusterResourceArg(parser, 'to delete', True)
-    flags.AddValidationOnly(parser, hidden=True)
+    flags.AddValidationOnly(parser)
     flags.AddForceDeleteCluster(parser)
     flags.AddAllowMissingDeleteCluster(parser)
     flags.AddIgnoreErrors(parser)

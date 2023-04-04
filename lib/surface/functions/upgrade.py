@@ -19,11 +19,14 @@ from __future__ import unicode_literals
 
 import collections
 
+from googlecloudsdk.api_lib.functions import api_enablement
 from googlecloudsdk.api_lib.functions.v2 import client as client_v2
 from googlecloudsdk.api_lib.functions.v2 import exceptions
 from googlecloudsdk.api_lib.functions.v2 import util as api_util
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.eventarc import types as trigger_types
 from googlecloudsdk.command_lib.functions import flags
+from googlecloudsdk.command_lib.functions.v2 import deploy_util
 from googlecloudsdk.core import log
 from googlecloudsdk.core.console import console_io
 
@@ -258,6 +261,19 @@ class UpgradeAlpha(base.Command):
     message = action.prompt_msg.format(function_name)
     if not console_io.PromptContinue(message, default=True):
       return
+
+    if action == _SETUP_CONFIG_ACTION:
+      # Preliminary checks to ensure APIs and permissions are set up in case
+      # this is the user's first time deploying a 2nd gen function.
+      api_enablement.PromptToEnableApiIfDisabled('cloudbuild.googleapis.com')
+      api_enablement.PromptToEnableApiIfDisabled(
+          'artifactregistry.googleapis.com'
+      )
+      trigger = function.eventTrigger
+      if trigger and trigger_types.IsPubsubType(trigger.eventType):
+        deploy_util.ensure_pubsub_sa_has_token_creator_role()
+      if trigger and trigger_types.IsAuditLogType(trigger.eventType):
+        deploy_util.ensure_data_access_logs_are_enabled(trigger.eventFilters)
 
     operation = action_fn(function_name)
     description = action.op_description

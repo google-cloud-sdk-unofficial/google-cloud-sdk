@@ -60,7 +60,7 @@ class List(base.Command):
 
   @staticmethod
   def Args(parser):
-    flags.AddGen2Flag(parser)
+    flags.AddGen2Flag(parser, operates_on_existing_function=False)
 
   def Run(self, args):
     if flags.ShouldUseGen2():

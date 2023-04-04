@@ -74,6 +74,7 @@ class Create(base.CreateCommand):
     workstations_flags.AddContainerEnvField(parser)
     workstations_flags.AddContainerWorkingDirField(parser)
     workstations_flags.AddContainerRunAsUserField(parser)
+    workstations_flags.AddEncryptionKeyFields(parser)
 
   def Collection(self):
     return 'workstations.projects.locations.workstationClusters.workstationConfigs'

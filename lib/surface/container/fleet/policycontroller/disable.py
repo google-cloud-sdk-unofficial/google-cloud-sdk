@@ -48,31 +48,42 @@ class Disable(base.UpdateCommand):
             'Controller, separated by commas if multiple are '
             'supplied. Ignored if --all-memberships is supplied; '
             'if neither is supplied, a prompt will appear with all '
-            'available memberships.'))
+            'available memberships.'
+        ),
+    )
     parser.add_argument(
         '--all-memberships',
         action='store_true',
-        help='If supplied, uninstall Policy Controller for all memberships in the fleet.',
-        default=False)
+        help=(
+            'If supplied, uninstall Policy Controller for all memberships in'
+            ' the fleet.'
+        ),
+        default=False,
+    )
 
   def Run(self, args):
     membership_specs = {}
     poco_not_installed = self.messages.PolicyControllerHubConfig.InstallSpecValueValuesEnum(
-        self.messages.PolicyControllerHubConfig.InstallSpecValueValuesEnum
-        .INSTALL_SPEC_NOT_INSTALLED)
+        self.messages.PolicyControllerHubConfig.InstallSpecValueValuesEnum.INSTALL_SPEC_NOT_INSTALLED
+    )
 
     poco_hub_config = self.messages.PolicyControllerHubConfig(
-        installSpec=poco_not_installed)
+        installSpec=poco_not_installed
+    )
 
     memberships = base.ParseMembershipsPlural(
-        args, prompt=True, prompt_cancel=False, search=True)
+        args, prompt=True, prompt_cancel=False, search=True
+    )
 
     for membership in memberships:
       membership_path = membership
       membership_specs[membership_path] = self.messages.MembershipFeatureSpec(
           policycontroller=self.messages.PolicyControllerMembershipSpec(
-              policyControllerHubConfig=poco_hub_config))
+              policyControllerHubConfig=poco_hub_config
+          )
+      )
 
     patch = self.messages.Feature(
-        membershipSpecs=self.hubclient.ToMembershipSpecs(membership_specs))
+        membershipSpecs=self.hubclient.ToMembershipSpecs(membership_specs)
+    )
     return self.Update(['membership_specs'], patch)

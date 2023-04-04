@@ -30,6 +30,9 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.compute import flags
 from googlecloudsdk.command_lib.compute.instances import flags as instances_flags
+from googlecloudsdk.command_lib.compute.security_policies import (
+    flags as security_policy_flags,
+)
 from googlecloudsdk.command_lib.util.apis import arg_utils
 import six
 
@@ -48,6 +51,9 @@ class Update(base.UpdateCommand):
   """
 
   support_ipv6_assignment = False
+  support_set_security_policy = False
+
+  SECURITY_POLICY_ARG = None
 
   @classmethod
   def Args(cls, parser):
@@ -197,6 +203,14 @@ class Update(base.UpdateCommand):
       """,
     )
 
+    if cls.support_set_security_policy:
+      cls.SECURITY_POLICY_ARG = (
+          security_policy_flags.SecurityPolicyRegionalArgumentForTargetResource(
+              resource='instance network interface'
+          )
+      )
+      cls.SECURITY_POLICY_ARG.AddArgument(parser)
+
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     client = holder.client.apitools_client
@@ -224,6 +238,37 @@ class Update(base.UpdateCommand):
               args.network_interface,
               ', '.join([i.name for i in instance.networkInterfaces]),
           ),
+      )
+
+    # Empty string is a valid value.
+    if getattr(args, 'security_policy', None) is not None:
+      if getattr(args, 'security_policy', None):
+        security_policy_ref = self.SECURITY_POLICY_ARG.ResolveAsResource(
+            args, holder.resources).SelfLink()
+      # If security policy is an empty string we should clear the current policy
+      else:
+        security_policy_ref = None
+      request_body = messages.InstancesSetSecurityPolicyRequest(
+          networkInterfaces=[args.network_interface],
+          securityPolicy=security_policy_ref,
+      )
+      request = messages.ComputeInstancesSetSecurityPolicyRequest(
+          project=instance_ref.project,
+          instance=instance_ref.instance,
+          zone=instance_ref.zone,
+          instancesSetSecurityPolicyRequest=request_body,
+      )
+      operation = client.instances.SetSecurityPolicy(request)
+      operation_ref = holder.resources.Parse(
+          operation.selfLink, collection='compute.zoneOperations'
+      )
+
+      operation_poller = poller.Poller(client.instances)
+      return waiter.WaitFor(
+          operation_poller,
+          operation_ref,
+          'Setting security policy for network interface [{0}] of instance'
+          ' [{1}]'.format(args.network_interface, instance_ref.Name()),
       )
 
     network_uri = None
@@ -376,3 +421,4 @@ class UpdateAlpha(Update):
   """
 
   support_ipv6_assignment = True
+  support_set_security_policy = True

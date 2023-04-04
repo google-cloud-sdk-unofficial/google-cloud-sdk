@@ -54,10 +54,15 @@ class Delete(base.DeleteCommand):
     client = apis.GetClientInstance(release_track)
     messages = apis.GetMessagesModule(release_track)
     attachment_point = args.attachment_point.replace('/', '%2F')
+    kinds = {
+        'denypolicies': 'denyPolicy',
+        'principalaccessboundarypolicies': 'principalAccessBoundaryPolicy',
+        'accessboundarypolicies': 'accessboundaryPolicy',
+    }
     result = client.policies.Delete(
         messages.IamPoliciesDeleteRequest(
             name='policies/{}/{}/{}'.format(attachment_point, args.kind,
                                             args.policy_id),
             etag=args.etag))
-    log.DeletedResource(result.name, 'denyPolicy', is_async=True)
+    log.DeletedResource(result.name, kinds[args.kind], is_async=True)
     return result

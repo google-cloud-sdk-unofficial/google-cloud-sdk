@@ -43,21 +43,33 @@
           This edition provides a full-feature edition for product exploration and development.
           Drive your business through operational analytics.
       default: standard
-    - arg_name: consumer-network
-      api_field: instance.consumerNetwork
-      help_text: |
-        The network name within the consumer project. This MUST be delared if enabling private IP
     - arg_name: enable-public-ip
       api_field: instance.enablePublicIp
       type: bool
       help_text: |
         This specifies whether public IP is enabled on the Looker instance.
       default: true
-    - arg_name: enable-private-ip
-      api_field: instance.enablePrivateIp
-      type: bool
-      help_text: |
-        This specifies whether private IP is enabled on the Looker instance.
+    - group:
+        required: false
+        help_text: |
+          Private IP - Assigns an internal, Google-hosted VPC IP address. Private IP
+          connectivity requires additional APIs and permissions. Private IP cannot be disabled once it
+          has been enabled. If enabled, *consumer-network* must be assigned.
+        params:
+        - api_field: instance.enablePrivateIp
+          arg_name: enable-private-ip
+          type: bool
+          help_text: |
+            This specifies whether private IP is enabled on the Looker instance.
+        - api_field: instance.consumerNetwork
+          arg_name: consumer-network
+          help_text: |
+            The network name within the consumer project. This MUST be delared if enabling private IP.
+        - api_field: instance.reservedRange
+          arg_name: reserved-range
+          help_text: |
+            The name of a reserved IP address range within the consumer network to be used for private
+            service access connection.
     - group:
         required: false
         help_text: |

@@ -18,11 +18,12 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
-from googlecloudsdk.api_lib.functions.v1 import util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.functions import flags
+from googlecloudsdk.command_lib.functions import util
 from googlecloudsdk.command_lib.functions.v1.call import command as command_v1
 from googlecloudsdk.command_lib.functions.v2.call import command as command_v2
+
 
 _DETAILED_HELP = {
     'EXAMPLES': """
@@ -43,7 +44,7 @@ _DETAILED_HELP = {
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
-class Call(base.Command):
+class Call(util.FunctionResourceCommand):
   """Triggers execution of a Google Cloud Function."""
 
   detailed_help = _DETAILED_HELP
@@ -59,21 +60,11 @@ class Call(base.Command):
     flags.AddGen2Flag(parser)
     flags.AddCloudEventsFlag(data_flag_group)
 
-  @util.CatchHTTPErrorRaiseHTTPException
-  def Run(self, args):
-    """Runs the command.
+  def _RunV1(self, args):
+    return command_v1.Run(args)
 
-    Args:
-      args: an argparse namespace. All the arguments that were provided to this
-        command invocation.
-
-    Returns:
-      Function call results (error or result with execution id)
-    """
-    if flags.ShouldUseGen2():
-      return command_v2.Run(args, self.ReleaseTrack())
-    else:
-      return command_v1.Run(args)
+  def _RunV2(self, args):
+    return command_v2.Run(args, self.ReleaseTrack())
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)

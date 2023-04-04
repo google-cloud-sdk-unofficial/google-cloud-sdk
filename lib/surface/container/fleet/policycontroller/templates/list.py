@@ -24,23 +24,24 @@ from googlecloudsdk.command_lib.container.fleet import resources
 from googlecloudsdk.core import properties
 
 
-def ListMembershipTemplates(project_id,
-                            messages,
-                            client,
-                            memberships=None,
-                            verbose=False):
+def ListMembershipTemplates(
+    project_id, messages, client, memberships=None, verbose=False
+):
   """Generate list of formatted membership templates."""
 
   formatted_templates = {}
 
   membership_templates = status_api_utils.ListMembershipConstraintTemplates(
-      client, messages, project_id)
+      client, messages, project_id
+  )
   for template in membership_templates:
     if memberships and template.membershipRef.name not in memberships:
       continue
 
-    membership_template_key = (template.membershipRef.name,
-                               template.constraintTemplateRef.name)
+    membership_template_key = (
+        template.membershipRef.name,
+        template.constraintTemplateRef.name,
+    )
 
     formatted_template = {
         'membership': template.membershipRef.name,
@@ -65,15 +66,18 @@ def ListMembershipTemplates(project_id,
 
   if formatted_templates:
     membership_constraints = status_api_utils.ListMembershipConstraints(
-        client, messages, project_id)
+        client, messages, project_id
+    )
     for constraint in membership_constraints:
       membership_template_key = (
           constraint.membershipRef.name,
-          constraint.constraintRef.constraintTemplateName)
+          constraint.constraintRef.constraintTemplateName,
+      )
       if membership_template_key in formatted_templates:
         if verbose:
           formatted_templates[membership_template_key]['constraints'].append(
-              constraint.constraintRef.name)
+              constraint.constraintRef.name
+          )
         else:
           formatted_templates[membership_template_key]['constraints'] += 1
 
@@ -86,38 +90,41 @@ def ListFleetTemplates(project_id, messages, client, verbose=False):
   formatted_templates = {}
 
   fleet_templates = status_api_utils.ListFleetConstraintTemplates(
-      client, messages, project_id)
+      client, messages, project_id
+  )
   for template in fleet_templates:
     if verbose:
       formatted_template = {
           'name': template.ref.name,
           'constraints': [],
-          'memberships': []
+          'memberships': [],
       }
     else:
       formatted_template = {
           'name': template.ref.name,
           'constraints': template.numConstraints or 0,
-          'memberships': template.numMemberships or 0
+          'memberships': template.numMemberships or 0,
       }
     formatted_templates[template.ref.name] = formatted_template
 
   if verbose:
     membership_templates = status_api_utils.ListMembershipConstraintTemplates(
-        client, messages, project_id)
+        client, messages, project_id
+    )
     for template in membership_templates:
       if template.constraintTemplateRef.name in formatted_templates:
-        formatted_templates[
-            template.constraintTemplateRef.name]['memberships'].append(
-                template.membershipRef.name)
+        formatted_templates[template.constraintTemplateRef.name][
+            'memberships'
+        ].append(template.membershipRef.name)
 
     fleet_constraints = status_api_utils.ListFleetConstraints(
-        client, messages, project_id)
+        client, messages, project_id
+    )
     for constraint in fleet_constraints:
       if constraint.ref.constraintTemplateName in formatted_templates:
-        formatted_templates[constraint.ref
-                            .constraintTemplateName]['constraints'].append(
-                                constraint.ref.name)
+        formatted_templates[constraint.ref.constraintTemplateName][
+            'constraints'
+        ].append(constraint.ref.name)
 
   return [v for _, v in sorted(formatted_templates.items())]
 
@@ -150,28 +157,31 @@ class List(calliope_base.ListCommand):
         '--verbose',
         action='store_true',
         help='Include extended information about constraint templates.',
-        default=False)
+        default=False,
+    )
     resources.AddMembershipResourceArg(
         parser,
         plural=True,
         membership_help=(
             'The membership names for which to list constraint templates, '
-            'separated by commas if multiple are supplied.'))
+            'separated by commas if multiple are supplied.'
+        ),
+    )
 
   def Run(self, args):
     calliope_base.EnableUserProjectQuota()
 
     project_id = properties.VALUES.core.project.Get(required=True)
 
-    client = status_api_utils.GetClientInstance(
-        self.ReleaseTrack())
-    messages = status_api_utils.GetMessagesModule(
-        self.ReleaseTrack())
+    client = status_api_utils.GetClientInstance(self.ReleaseTrack())
+    messages = status_api_utils.GetMessagesModule(self.ReleaseTrack())
 
     if args.memberships is not None:
       memberships = args.memberships
       return ListMembershipTemplates(
-          project_id, messages, client, memberships, verbose=args.verbose)
+          project_id, messages, client, memberships, verbose=args.verbose
+      )
 
     return ListFleetTemplates(
-        project_id, messages, client, verbose=args.verbose)
+        project_id, messages, client, verbose=args.verbose
+    )

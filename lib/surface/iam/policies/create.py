@@ -54,7 +54,11 @@ class Create(base.CreateCommand):
     release_track = args.calliope_command.ReleaseTrack()
     client = apis.GetClientInstance(release_track)
     messages = apis.GetMessagesModule(release_track)
-
+    kinds = {
+        'denypolicies': 'denyPolicy',
+        'principalaccessboundarypolicies': 'principalAccessBoundaryPolicy',
+        'accessboundarypolicies': 'accessboundaryPolicy',
+    }
     attachment_point = args.attachment_point.replace('/', '%2F')
 
     if release_track == base.ReleaseTrack.ALPHA:
@@ -79,5 +83,5 @@ class Create(base.CreateCommand):
               policyId=args.policy_id,
               googleIamV2Policy=apis.ParseYamlOrJsonPolicyFile(
                   args.policy_file, messages.GoogleIamV2Policy)))
-    log.CreatedResource(result.name, 'denyPolicy', is_async=True)
+    log.CreatedResource(result.name, kinds[args.kind], is_async=True)
     return result

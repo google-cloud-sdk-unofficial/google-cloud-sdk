@@ -46,8 +46,7 @@ An example CORS JSON document looks like the following:
   ]
 
 For more information about supported endpoints for CORS, see
-[Cloud Storage CORS support]
-(https://cloud.google.com/storage/docs/cross-origin#server-side-support).
+[Cloud Storage CORS support](https://cloud.google.com/storage/docs/cross-origin#server-side-support).
 """
 _LABELS_HELP_TEXT = """
 Sets the label configuration for the bucket. An example label JSON document
@@ -203,10 +202,9 @@ def _add_common_args(parser):
       '--public-access-prevention',
       '--pap',
       action=arg_parsers.StoreTrueFalseAction,
-      help='If True, sets public access prevention to "enforced".'
-      ' If False, sets public access prevention to "inherited".'
-      ' For details on how exactly public access is blocked, see:'
-      ' http://cloud.google.com/storage/docs/public-access-prevention')
+      help='If True, sets [public access prevention](https://cloud.google.com'
+      '/storage/docs/public-access-prevention) to "enforced".'
+      ' If False, sets public access prevention to "inherited".')
   public_access_prevention.add_argument(
       '--clear-public-access-prevention',
       '--clear-pap',
@@ -310,7 +308,7 @@ class Update(base.Command):
   detailed_help = {
       'DESCRIPTION':
           """
-      Update a bucket.
+      Update the settings for a bucket.
       """,
       'EXAMPLES':
           """

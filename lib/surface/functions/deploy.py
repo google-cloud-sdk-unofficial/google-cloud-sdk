@@ -89,7 +89,8 @@ def _CommonArgs(parser, track):
   flags.AddRunServiceAccountFlag(parser)
   flags.AddTriggerLocationFlag(parser)
   flags.AddTriggerServiceAccountFlag(parser)
-  flags.AddGen2Flag(parser)
+  # TODO(b/263151839): Update --gen2 behavior for existing functions for deploy.
+  flags.AddGen2Flag(parser, operates_on_existing_function=False)
   flags.AddServeAllTrafficLatestRevisionFlag(parser)
   flags.AddConcurrencyFlag(parser, track)
 

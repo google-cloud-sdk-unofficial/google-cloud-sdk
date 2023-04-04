@@ -22,7 +22,7 @@
 
         $ {command}  \
            --workload-identity-pool="my-workload-identity-pool" \
-           --providers="my-provider" \
+           --provider="my-provider" \
            --location="global" \
            --show-deleted
 

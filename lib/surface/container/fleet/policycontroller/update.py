@@ -41,6 +41,7 @@ class Update(base.UpdateCommand):
 
     $ {command} --audit-interval-seconds=120
   """
+
   feature_name = 'policycontroller'
 
   @classmethod
@@ -52,96 +53,141 @@ class Update(base.UpdateCommand):
             'The membership names to update, separated by commas if multiple '
             'are supplied. Ignored if --all-memberships is supplied; if '
             'neither is supplied, a prompt will appear with all available '
-            'memberships.'))
+            'memberships.'
+        ),
+    )
     parser.add_argument(
         '--all-memberships',
         action='store_true',
-        help='If supplied, update Policy Controller for all memberships in the fleet.',
+        help=(
+            'If supplied, update Policy Controller for all memberships in the'
+            ' fleet.'
+        ),
         default=False,
     )
     parser.add_argument(
         '--audit-interval-seconds',
         type=int,
         help='How often Policy Controller will audit resources, in seconds.',
-        default=60)
+        default=60,
+    )
     parser.add_argument(
         '--exemptable-namespaces',
         type=str,
-        help='Namespaces that Policy Controller should ignore, separated by commas if multiple are supplied.'
+        help=(
+            'Namespaces that Policy Controller should ignore, separated by'
+            ' commas if multiple are supplied.'
+        ),
     )
     parser.add_argument(
         '--no-exemptable-namespaces',
         action='store_true',
-        help='Disables any namespace exemptions, enabling Policy Controller on all namespaces.'
+        help=(
+            'Disables any namespace exemptions, enabling Policy Controller on'
+            ' all namespaces.'
+        ),
     )
     parser.add_argument(
         '--log-denies-enabled',
         action=utils.BooleanOptionalAction,
         const=None,
-        help='If set, log all denies and dry run failures. (To disable, use --no-log-denies-enabled)'
+        help=(
+            'If set, log all denies and dry run failures. (To disable, use'
+            ' --no-log-denies-enabled)'
+        ),
     )
     parser.add_argument(
         '--mutation-enabled',
         action=utils.BooleanOptionalAction,
-        help='If set, enable support for mutation. (To disable, use --no-mutation-enabled)'
+        help=(
+            'If set, enable support for mutation. (To disable, use'
+            ' --no-mutation-enabled)'
+        ),
     )
     parser.add_argument(
         '--referential-rules-enabled',
         action=utils.BooleanOptionalAction,
-        help='If set, enable support for referential constraints. (To disable, use --no-referential-rules-enabled)'
+        help=(
+            'If set, enable support for referential constraints. (To disable,'
+            ' use --no-referential-rules-enabled)'
+        ),
     )
     parser.add_argument(
         '--template-library-installed',
         action=utils.BooleanOptionalAction,
-        help='If set, install a library of constraint templates for common policy types. (To disable, use --no-template-library-installed)'
+        help=(
+            'If set, install a library of constraint templates for common'
+            ' policy types. (To disable, use --no-template-library-installed)'
+        ),
     )
     parser.add_argument(
         '--monitoring',
         type=str,
-        help='Monitoring backend options Policy Controller should export metrics to, separated by commas if multiple are supplied. Options: prometheus, cloudmonitoring'
+        help=(
+            'Monitoring backend options Policy Controller should export metrics'
+            ' to, separated by commas if multiple are supplied. Options:'
+            ' prometheus, cloudmonitoring'
+        ),
     )
     parser.add_argument(
         '--no-monitoring',
         action='store_true',
-        help='Include this flag to disable the monitoring configuration of Policy Controller'
+        help=(
+            'Include this flag to disable the monitoring configuration of'
+            ' Policy Controller'
+        ),
     )
     parser.add_argument(
         '--version',
         type=str,
-        help='The version of Policy Controller to install.')
+        help='The version of Policy Controller to install.',
+    )
     parser.add_argument(
         '--suspend',
         action=utils.BooleanOptionalAction,
-        help='If set, suspend Policy Controller webhooks and only preserve the audit functionality. (To resume normal operation, use --no-suspend)'
+        help=(
+            'If set, suspend Policy Controller webhooks and only preserve the'
+            ' audit functionality. (To resume normal operation, use'
+            ' --no-suspend)'
+        ),
     )
 
   def Run(self, args):
     membership_specs = self.hubclient.ToPyDict(
-        self.GetFeature().membershipSpecs)
+        self.GetFeature().membershipSpecs
+    )
     poco_hub_config = utils.set_poco_hub_config_parameters_from_args(
-        args, self.messages)
+        args, self.messages
+    )
     memberships = base.ParseMembershipsPlural(
-        args, search=True, prompt=True, prompt_cancel=False, autoselect=True)
+        args, search=True, prompt=True, prompt_cancel=False, autoselect=True
+    )
     membership_specs_short_path = {
         fleet_util.MembershipPartialName(full_path): ms
         for full_path, ms in membership_specs.items()
     }
+
     for membership in memberships:
       short_membership = fleet_util.MembershipPartialName(membership)
       if short_membership not in membership_specs_short_path:
         raise exceptions.Error(
             'Policy Controller is not enabled for membership {}'.format(
-                membership))
+                membership
+            )
+        )
       # make changes to membership spec in place, so that we don't have to deal
       # with project ID/number conversion.
       current_poco_membership_spec = membership_specs_short_path[
-          short_membership].policycontroller
+          short_membership
+      ].policycontroller
       poco_hub_config = current_poco_membership_spec.policyControllerHubConfig
-      utils.merge_args_with_poco_hub_config(args, poco_hub_config,
-                                            self.messages)
+      utils.merge_args_with_poco_hub_config(
+          args, poco_hub_config, self.messages
+      )
       if args.version:
         current_poco_membership_spec.version = args.version
 
     patch = self.messages.Feature(
-        membershipSpecs=self.hubclient.ToMembershipSpecs(membership_specs))
+        membershipSpecs=self.hubclient.ToMembershipSpecs(membership_specs)
+    )
     return self.Update(['membership_specs'], patch)

@@ -25,3 +25,6 @@
     resource:
       help_text: The Queued Resource you want to delete.
       spec: !REF googlecloudsdk.command_lib.compute.tpus.queued_resources.resources:queuedresource
+
+    params:
+    - _REF_: googlecloudsdk.command_lib.compute.tpus.queued_resources.flags:force

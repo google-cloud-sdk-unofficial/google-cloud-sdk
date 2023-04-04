@@ -816,6 +816,7 @@ class UpdateBeta(Update):
     flags.AddMaintenanceIntervalFlag(group)
     flags.AddDataplaneV2Flag(group, hidden=True)
     flags.AddDataplaneV2MetricsFlag(group)
+    flags.AddDataplaneV2ObservabilityModeFlag(group)
     flags.AddWorkloadConfigAuditFlag(group)
     flags.AddPodAutoscalingDirectMetricsOptInFlag(group)
     flags.AddWorkloadVulnScanningFlag(group)
@@ -831,6 +832,7 @@ class UpdateBeta(Update):
     flags.AddFleetProjectFlag(group, is_update=True)
     flags.AddSecurityPostureFlag(group)
     flags.AddClusterNetworkPerformanceConfigFlags(group)
+    flags.AddEnableKubeletReadonlyPortFlag(group)
 
   def ParseUpdateOptions(self, args, locations):
     get_default = lambda key: getattr(args, key)
@@ -919,6 +921,7 @@ class UpdateBeta(Update):
     opts.dataplane_v2 = args.enable_dataplane_v2
     opts.enable_dataplane_v2_metrics = args.enable_dataplane_v2_metrics
     opts.disable_dataplane_v2_metrics = args.disable_dataplane_v2_metrics
+    opts.dataplane_v2_observability_mode = args.dataplane_v2_observability_mode
     opts.enable_workload_config_audit = args.enable_workload_config_audit
     opts.pod_autoscaling_direct_metrics_opt_in = args.pod_autoscaling_direct_metrics_opt_in
     opts.enable_workload_vulnerability_scanning = args.enable_workload_vulnerability_scanning
@@ -937,6 +940,8 @@ class UpdateBeta(Update):
     opts.clear_fleet_project = args.clear_fleet_project
     opts.enable_security_posture = args.enable_security_posture
     opts.network_performance_config = args.network_performance_configs
+    # pylint: disable=line-too-long
+    opts.enble_insecure_kubelet_readonly_port = args.enble_insecure_kubelet_readonly_port
     return opts
 
 
@@ -1016,6 +1021,7 @@ class UpdateAlpha(Update):
     flags.AddMaintenanceIntervalFlag(group)
     flags.AddDataplaneV2Flag(group, hidden=True)
     flags.AddDataplaneV2MetricsFlag(group)
+    flags.AddDataplaneV2ObservabilityModeFlag(group)
     flags.AddWorkloadConfigAuditFlag(group)
     flags.AddPodAutoscalingDirectMetricsOptInFlag(group)
     flags.AddWorkloadVulnScanningFlag(group)
@@ -1030,6 +1036,7 @@ class UpdateAlpha(Update):
     flags.AddFleetProjectFlag(group, is_update=True)
     flags.AddSecurityPostureFlag(group)
     flags.AddClusterNetworkPerformanceConfigFlags(group)
+    flags.AddEnableKubeletReadonlyPortFlag(group)
 
   def ParseUpdateOptions(self, args, locations):
     get_default = lambda key: getattr(args, key)
@@ -1113,6 +1120,7 @@ class UpdateAlpha(Update):
     opts.dataplane_v2 = args.enable_dataplane_v2
     opts.enable_dataplane_v2_metrics = args.enable_dataplane_v2_metrics
     opts.disable_dataplane_v2_metrics = args.disable_dataplane_v2_metrics
+    opts.dataplane_v2_observability_mode = args.dataplane_v2_observability_mode
     opts.enable_workload_config_audit = args.enable_workload_config_audit
     opts.pod_autoscaling_direct_metrics_opt_in = args.pod_autoscaling_direct_metrics_opt_in
     opts.enable_workload_vulnerability_scanning = args.enable_workload_vulnerability_scanning
@@ -1130,4 +1138,6 @@ class UpdateAlpha(Update):
     opts.clear_fleet_project = args.clear_fleet_project
     opts.enable_security_posture = args.enable_security_posture
     opts.network_performance_config = args.network_performance_configs
+    # pylint: disable=line-too-long
+    opts.enble_insecure_kubelet_readonly_port = args.enble_insecure_kubelet_readonly_port
     return opts

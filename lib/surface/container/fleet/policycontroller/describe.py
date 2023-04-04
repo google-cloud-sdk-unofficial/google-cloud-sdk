@@ -25,8 +25,9 @@ from googlecloudsdk.command_lib.container.fleet.features import base
 
 
 @calliope_base.Hidden
-@calliope_base.ReleaseTracks(calliope_base.ReleaseTrack.ALPHA,
-                             calliope_base.ReleaseTrack.BETA)
+@calliope_base.ReleaseTracks(
+    calliope_base.ReleaseTrack.ALPHA, calliope_base.ReleaseTrack.BETA
+)
 class Describe(base.DescribeCommand):
   """Describe Policy Controller feature.
 
@@ -36,6 +37,7 @@ class Describe(base.DescribeCommand):
 
       $ {command}
   """
+
   feature_name = 'policycontroller'
 
   @classmethod
@@ -45,7 +47,9 @@ class Describe(base.DescribeCommand):
         plural=True,
         membership_help=(
             'The membership names for which to display Policy Controller '
-            'feature information.'))
+            'feature information.'
+        ),
+    )
 
   def Run(self, args):
     feature = self.GetFeature()
@@ -58,7 +62,8 @@ class Describe(base.DescribeCommand):
           if membership_name in memberships_filter:
             filtered_specs[membership_name] = specs[membership_name]
         feature.membershipSpecs = client.HubClient.ToProtoMap(
-            self.messages.Feature.MembershipSpecsValue, filtered_specs)
+            self.messages.Feature.MembershipSpecsValue, filtered_specs
+        )
 
       if feature.membershipStates:
         states = client.HubClient.ToPyDict(feature.membershipStates)
@@ -67,6 +72,7 @@ class Describe(base.DescribeCommand):
           if membership_name in memberships_filter:
             filtered_states[membership_name] = states[membership_name]
         feature.membershipStates = client.HubClient.ToProtoMap(
-            self.messages.Feature.MembershipStatesValue, filtered_states)
+            self.messages.Feature.MembershipStatesValue, filtered_states
+        )
 
     return feature

@@ -94,6 +94,7 @@ class Create(base.Command):
         csv_delimiter=args.csv_delimiter,
         csv_separator=args.csv_separator,
         csv_header=args.csv_header,
+        parquet=args.parquet,
         display_name=args.display_name)
     log.status.Print(
         'Created report configuration: {}'.format(report_config.name))

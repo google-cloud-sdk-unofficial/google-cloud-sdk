@@ -101,6 +101,7 @@ class CreateHelper(object):
       support_subsetting,
       support_subsetting_subset_size,
       support_advanced_load_balancing,
+      support_ip_address_selection_policy,
   ):
     """Add flags to create a backend service to the parser."""
 
@@ -167,6 +168,9 @@ class CreateHelper(object):
 
     flags.AddCompressionMode(parser)
 
+    if support_ip_address_selection_policy:
+      flags.AddIpAddressSelectionPolicy(parser)
+
   def __init__(
       self,
       support_failover,
@@ -176,6 +180,7 @@ class CreateHelper(object):
       support_subsetting,
       support_subsetting_subset_size,
       support_advanced_load_balancing,
+      support_ip_address_selection_policy,
   ):
     self._support_failover = support_failover
     self._support_logging = support_logging
@@ -184,6 +189,9 @@ class CreateHelper(object):
     self._support_subsetting = support_subsetting
     self._support_subsetting_subset_size = support_subsetting_subset_size
     self._support_advanced_load_balancing = support_advanced_load_balancing
+    self._support_ip_address_selection_policy = (
+        support_ip_address_selection_policy
+    )
 
   def _CreateGlobalRequests(self, holder, args, backend_services_ref):
     """Returns a global backend service create request."""
@@ -270,6 +278,11 @@ class CreateHelper(object):
         support_tcp_ssl_logging=self._support_tcp_ssl_logging,
     )
 
+    if self._support_ip_address_selection_policy:
+      backend_services_utils.ApplyIpAddressSelectionPolicyArgs(
+          client, args, backend_service
+      )
+
     request = client.messages.ComputeBackendServicesInsertRequest(
         backendService=backend_service, project=backend_services_ref.project)
 
@@ -353,6 +366,11 @@ class CreateHelper(object):
         support_logging=self._support_logging,
         support_tcp_ssl_logging=self._support_tcp_ssl_logging,
     )
+
+    if self._support_ip_address_selection_policy:
+      backend_services_utils.ApplyIpAddressSelectionPolicyArgs(
+          client, args, backend_service
+      )
 
     request = client.messages.ComputeRegionBackendServicesInsertRequest(
         backendService=backend_service,
@@ -442,6 +460,7 @@ class CreateGA(base.CreateCommand):
   _support_subsetting = True
   _support_subsetting_subset_size = False
   _support_advanced_load_balancing = False
+  _support_ip_address_selection_policy = False
 
   @classmethod
   def Args(cls, parser):
@@ -455,6 +474,9 @@ class CreateGA(base.CreateCommand):
         support_subsetting=cls._support_subsetting,
         support_subsetting_subset_size=cls._support_subsetting_subset_size,
         support_advanced_load_balancing=cls._support_advanced_load_balancing,
+        support_ip_address_selection_policy=(
+            cls._support_ip_address_selection_policy
+        ),
     )
 
   def Run(self, args):
@@ -469,6 +491,9 @@ class CreateGA(base.CreateCommand):
         support_subsetting=self._support_subsetting,
         support_subsetting_subset_size=self._support_subsetting_subset_size,
         support_advanced_load_balancing=self._support_advanced_load_balancing,
+        support_ip_address_selection_policy=(
+            self._support_ip_address_selection_policy
+        ),
     ).Run(args, holder)
 
 
@@ -523,3 +548,4 @@ class CreateAlpha(CreateBeta):
   _support_subsetting_subset_size = True
   _support_advanced_load_balancing = True
   _support_tcp_ssl_logging = True
+  _support_ip_address_selection_policy = True

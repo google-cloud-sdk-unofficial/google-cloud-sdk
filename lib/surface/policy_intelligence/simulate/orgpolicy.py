@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*- #
-# Copyright 2022 Google LLC. All Rights Reserved.
+# Copyright 2023 Google LLC. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -29,7 +29,7 @@ from googlecloudsdk.command_lib.policy_intelligence.simulator.orgpolicy import u
 from googlecloudsdk.core import log
 
 
-_DETAILED_HELP_ALPHA = {
+_DETAILED_HELP_ALPHA_BETA = {
     'brief':
         """\
       Preview of Violations Service for OrgPolicy Simulator.
@@ -54,7 +54,7 @@ _DETAILED_HELP_ALPHA = {
 }
 
 
-def _ArgsAlpha(parser):
+def _ArgsAlphaBeta(parser):
   """Parses arguments for the commands."""
   parser.add_argument(
       '--organization',
@@ -85,100 +85,119 @@ def _ArgsAlpha(parser):
       """)
 
 
+def _Run(args, version):
+  """Run the workflow for the OrgPolicy simulator."""
+  if not args.policies and not args.custom_constraints:
+    raise exceptions.ConflictingArgumentsException(
+        'Must specify either --policies or --custom-constraints or both.')
+  op_api = orgpolicy_simulator.OrgPolicySimulatorApi(
+      version)
+
+  # Parse files and get Policy Overlay
+  policies = []
+  if args.policies:
+    for policy_file in args.policies:
+      policy = utils.GetPolicyMessageFromFile(policy_file,
+                                              version)
+      if not policy.name:
+        raise exceptions.InvalidArgumentException(
+            'Policy name',
+            "'name' field not present in the organization policy.")
+      policy_parent = orgpolicy_utils.GetResourceFromPolicyName(
+          policy.name)
+      policy_overlay = op_api.GetOrgPolicyPolicyOverlay(
+          policy=policy,
+          policy_parent=policy_parent)
+      policies.append(policy_overlay)
+
+  # Parse files and get Custom Constraints Overlay
+  custom_constraints = []
+  if args.custom_constraints:
+    for custom_constraint_file in args.custom_constraints:
+      custom_constraint = utils.GetCustomConstraintMessageFromFile(
+          custom_constraint_file,
+          version)
+      if not custom_constraint.name:
+        raise exceptions.InvalidArgumentException(
+            'Custom constraint name',
+            "'name' field not present in the custom constraint.")
+      custom_constraint_parent = orgpolicy_utils.GetResourceFromPolicyName(
+          custom_constraint.name)
+      constraint_overlay = op_api.GetOrgPolicyCustomConstraintOverlay(
+          custom_constraint=custom_constraint,
+          custom_constraint_parent=custom_constraint_parent)
+      custom_constraints.append(constraint_overlay)
+
+  overlay = op_api.GetOrgPolicyOverlay(
+      policies=policies, custom_constraints=custom_constraints)
+
+  # Generate Violations Preview and get long operation id
+  organization_resource = 'organizations/' + args.organization
+  parent = utils.GetParentFromOrganization(organization_resource)
+  violations = op_api.GetPolicysimulatorOrgPolicyViolationsPreview(
+      overlay=overlay)
+  request = op_api.GenerateOrgPolicyViolationsPreviewRequest(
+      violations_preview=violations,
+      parent=parent)
+  op_service = op_api.client.OrganizationsLocationsService(
+      op_api.client)
+  violations_preview_operation = op_service.OrgPolicyViolationsPreviews(
+      request=request)
+
+  # Poll Long Running Operation and get Violations Preview
+  operation_response_raw = op_api.WaitForOperation(
+      violations_preview_operation,
+      'Waiting for operation [{}] to complete'.format(
+          violations_preview_operation.name))
+
+  preview = encoding_helper.JsonToMessage(
+      op_api.GetOrgPolicyViolationsPreviewMessage(),
+      encoding_helper.MessageToJson(operation_response_raw))
+
+  if not preview.violationsCount or not preview.resourceCounts:
+    log.err.Print('No violations found in the violations preview.\n')
+
+  # List results of the Violations under Violations Preview.
+  list_violations_request = op_api.messages.PolicysimulatorOrganizationsLocationsOrgPolicyViolationsPreviewsOrgPolicyViolationsListRequest(
+      parent=preview.name)
+  pov_service = op_api.client.OrganizationsLocationsOrgPolicyViolationsPreviewsOrgPolicyViolationsService(
+      op_api.client)
+
+  return list_pager.YieldFromList(
+      pov_service,
+      list_violations_request,
+      batch_size=1000,
+      field='orgPolicyViolations',
+      batch_size_attribute='pageSize')
+
+
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 @base.Hidden
 class SimulateAlpha(base.Command):
   """Simulate the Org Policies."""
 
-  detailed_help = _DETAILED_HELP_ALPHA
+  detailed_help = _DETAILED_HELP_ALPHA_BETA
 
   @staticmethod
   def Args(parser):
     """Parses arguments for the commands."""
-    _ArgsAlpha(parser)
+    _ArgsAlphaBeta(parser)
 
   def Run(self, args):
-    if not args.policies and not args.custom_constraints:
-      raise exceptions.ConflictingArgumentsException(
-          'Must specify either --policies or --custom-constraints or both.')
+    return _Run(args, self.ReleaseTrack())
 
-    orgpolicy_simulator_api = orgpolicy_simulator.OrgPolicySimulatorApi(
-        self.ReleaseTrack())
-    # Parse files and get Policy Overlay
-    policies = []
-    if args.policies:
-      for policy_file in args.policies:
-        policy = utils.GetPolicyMessageFromFile(policy_file,
-                                                self.ReleaseTrack())
-        if not policy.name:
-          raise exceptions.InvalidArgumentException(
-              'Policy name',
-              "'name' field not present in the organization policy.")
-        policy_parent = orgpolicy_utils.GetResourceFromPolicyName(
-            policy.name)
-        policy_overlay = orgpolicy_simulator_api.GetOrgPolicyPolicyOverlay(
-            policy=policy,
-            policy_parent=policy_parent)
-        policies.append(policy_overlay)
 
-    # Parse files and get Custom Constraints Overlay
-    custom_constraints = []
-    if args.custom_constraints:
-      for custom_constraint_file in args.custom_constraints:
-        custom_constraint = utils.GetCustomConstraintMessageFromFile(
-            custom_constraint_file,
-            self.ReleaseTrack())
-        if not custom_constraint.name:
-          raise exceptions.InvalidArgumentException(
-              'Custom constraint name',
-              "'name' field not present in the custom constraint.")
-        custom_constraint_parent = orgpolicy_utils.GetResourceFromPolicyName(
-            custom_constraint.name)
-        constraint_overlay = orgpolicy_simulator_api.GetOrgPolicyCustomConstraintOverlay(
-            custom_constraint=custom_constraint,
-            custom_constraint_parent=custom_constraint_parent)
-        custom_constraints.append(constraint_overlay)
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.Hidden
+class SimulateBeta(base.Command):
+  """Simulate the Org Policies."""
 
-    overlay = orgpolicy_simulator_api.GetOrgPolicyOverlay(
-        policies=policies, custom_constraints=custom_constraints)
+  detailed_help = _DETAILED_HELP_ALPHA_BETA
 
-    # Generate Violations Preview and get long operation id
-    organization_resource = 'organizations/' + args.organization
-    parent = utils.GetParentFromOrganization(organization_resource)
-    violations = orgpolicy_simulator_api.GetPolicysimulatorOrgPolicyViolationsPreview(
-        overlay=overlay)
-    request = orgpolicy_simulator_api.GenerateOrgPolicyViolationsPreviewRequest(
-        violations_preview=violations,
-        parent=parent)
-    op_simulator_service = orgpolicy_simulator_api.client.OrganizationsLocationsService(
-        orgpolicy_simulator_api.client)
-    violations_preview_operation = op_simulator_service.OrgPolicyViolationsPreviews(
-        request=request)
+  @staticmethod
+  def Args(parser):
+    """Parses arguments for the commands."""
+    _ArgsAlphaBeta(parser)
 
-    # Poll Long Running Operation and get Violations Preview
-    operation_response_raw = orgpolicy_simulator_api.WaitForOperation(
-        violations_preview_operation,
-        'Waiting for operation [{}] to complete'.format(
-            violations_preview_operation.name))
-
-    violations_preview = encoding_helper.JsonToMessage(
-        orgpolicy_simulator_api.messages
-        .GoogleCloudPolicysimulatorV1alphaOrgPolicyViolationsPreview,
-        encoding_helper.MessageToJson(operation_response_raw))
-
-    if not violations_preview.violationsCount or not violations_preview.resourceCounts:
-      log.err.Print('No violations found in the violations preview.\n')
-
-    # List results of the Violations under Violations Preview.
-    list_violations_request = orgpolicy_simulator_api.messages.PolicysimulatorOrganizationsLocationsOrgPolicyViolationsPreviewsOrgPolicyViolationsListRequest(
-        parent=violations_preview.name)
-    pov_service = orgpolicy_simulator_api.client.OrganizationsLocationsOrgPolicyViolationsPreviewsOrgPolicyViolationsService(
-        orgpolicy_simulator_api.client)
-
-    return list_pager.YieldFromList(
-        pov_service,
-        list_violations_request,
-        batch_size=1000,
-        field='orgPolicyViolations',
-        batch_size_attribute='pageSize')
-
+  def Run(self, args):
+    return _Run(args, self.ReleaseTrack())

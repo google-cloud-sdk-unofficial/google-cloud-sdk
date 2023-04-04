@@ -19,10 +19,13 @@ from __future__ import division
 from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.composer import environments_util as environments_api_util
+from googlecloudsdk.api_lib.composer import operations_util as operations_api_util
 from googlecloudsdk.api_lib.composer import util as api_util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.composer import resource_args
 from googlecloudsdk.command_lib.composer import util as command_util
+from googlecloudsdk.core import log
+import six
 
 DETAILED_HELP = {
     'EXAMPLES': """\
@@ -42,6 +45,7 @@ class DatabaseFailover(base.Command):
     resource_args.AddEnvironmentResourceArg(
         parser, 'for which to trigger a database failover'
     )
+    base.ASYNC_FLAG.AddToParser(parser)
 
   @staticmethod
   def _ValidateEnvironment(env_obj, release_track):
@@ -61,6 +65,37 @@ class DatabaseFailover(base.Command):
     release_track = self.ReleaseTrack()
     env_obj = environments_api_util.Get(env_ref, release_track=release_track)
     self._ValidateEnvironment(env_obj, release_track)
-    return environments_api_util.DatabaseFailover(
+
+    operation = environments_api_util.DatabaseFailover(
         env_ref, release_track=release_track
     )
+    if args.async_:
+      return self._AsynchronousExecution(env_ref, operation)
+    else:
+      return self._SynchronousExecution(env_ref, operation)
+
+  def _AsynchronousExecution(self, env_resource, operation):
+    details = 'with operation [{0}]'.format(operation.name)
+    log.UpdatedResource(
+        env_resource.RelativeName(),
+        kind='environment',
+        is_async=True,
+        details=details,
+    )
+    return operation
+
+  def _SynchronousExecution(self, env_resource, operation):
+    try:
+      operations_api_util.WaitForOperation(
+          operation,
+          'Waiting for [{}] to be updated with [{}]'.format(
+              env_resource.RelativeName(), operation.name
+          ),
+          release_track=self.ReleaseTrack(),
+      )
+    except command_util.Error as e:
+      raise command_util.Error(
+          'Error triggerering a database failover [{}]: {}'.format(
+              env_resource.RelativeName(), six.text_type(e)
+          )
+      )

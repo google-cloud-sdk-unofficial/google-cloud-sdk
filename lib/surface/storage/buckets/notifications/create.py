@@ -26,7 +26,7 @@ from apitools.base.py import exceptions as apitools_exceptions
 from googlecloudsdk.api_lib.storage import api_factory
 from googlecloudsdk.api_lib.storage import cloud_api
 from googlecloudsdk.api_lib.storage import errors as api_errors
-from googlecloudsdk.api_lib.storage import gcs_error_util
+from googlecloudsdk.api_lib.storage.gcs_json import error_util
 from googlecloudsdk.api_lib.util import apis
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
@@ -36,7 +36,7 @@ from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 
 
-@gcs_error_util.catch_http_error_raise_gcs_api_error()
+@error_util.catch_http_error_raise_gcs_api_error()
 def _maybe_create_or_modify_topic(topic_name, service_account_email):
   """Ensures that topic with SA permissions exists, creating it if needed.
 

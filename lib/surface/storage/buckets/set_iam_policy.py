@@ -19,7 +19,7 @@ from __future__ import division
 from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.storage import cloud_api
-from googlecloudsdk.api_lib.storage import gcs_metadata_field_converters
+from googlecloudsdk.api_lib.storage.gcs_json import metadata_field_converters
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.iam import iam_util
 from googlecloudsdk.command_lib.storage import errors_util
@@ -82,7 +82,7 @@ class SetIamPolicy(base.Command):
       errors_util.raise_error_if_not_bucket(args.command_path, url)
       errors_util.raise_error_if_not_gcs(args.command_path, url)
 
-    policy = gcs_metadata_field_converters.process_iam_file(
+    policy = metadata_field_converters.process_iam_file(
         args.policy_file, custom_etag=args.etag)
     exit_code, output = iam_command_util.execute_set_iam_task_iterator(
         _set_iam_policy_task_iterator(args.urls, policy),

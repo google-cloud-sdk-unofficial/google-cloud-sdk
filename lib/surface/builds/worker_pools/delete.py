@@ -110,7 +110,8 @@ class Delete(base.DeleteCommand):
     waiter.WaitFor(
         waiter.CloudOperationPollerNoResources(
             client.projects_locations_operations), op_resource,
-        'Deleting worker pool')
+        'Deleting worker pool',
+        max_wait_ms=3600000)  # 1 hour
 
     log.DeletedResource(wp_resource)
 

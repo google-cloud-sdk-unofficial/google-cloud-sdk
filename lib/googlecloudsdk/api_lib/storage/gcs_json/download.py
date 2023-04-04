@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*- #
-# Copyright 2022 Google LLC. All Rights Reserved.
+# Copyright 2023 Google LLC. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -108,6 +108,5 @@ def launch_retriable(download_stream,
         end_byte=end_byte,
         additional_headers=additional_headers)
 
-  # Convert seconds to miliseconds by multiplying by 1000.
   return retry_util.retryer(
       target=_call_launch, should_retry_if=_should_retry_resumable_download)

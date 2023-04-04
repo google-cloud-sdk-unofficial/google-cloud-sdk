@@ -17,7 +17,7 @@
     brief: Describe a workload identity pool provider key operation.
     description: Describe a workload identity pool provider key operation.
     examples: |
-      To describe the long-running workload identity pool provider key operation with the ID ``my-operation``, run:
+      To describe the long-running workload identity pool provider key operation with the ID ``my-operation'', run:
 
         $ {command} my-operation --workload-identity-pool="my-pool" --provider="my-provider" --key="my-key" --location="global"
 

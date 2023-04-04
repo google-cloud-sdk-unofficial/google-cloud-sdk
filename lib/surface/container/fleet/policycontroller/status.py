@@ -39,6 +39,7 @@ class Status(base.DescribeCommand):
 
       $ {command}
   """
+
   feature_name = 'policycontroller'
 
   @classmethod
@@ -48,17 +49,17 @@ class Status(base.DescribeCommand):
         plural=True,
         membership_help=(
             'The membership names for which to display the Policy Controller '
-            'runtime status.'))
+            'runtime status.'
+        ),
+    )
 
   def Run(self, args):
     calliope_base.EnableUserProjectQuota()
     project_id = properties.VALUES.core.project.Get(required=True)
     feature = self.GetFeature()
 
-    status_client = status_api_utils.GetClientInstance(
-        self.ReleaseTrack())
-    status_messages = status_api_utils.GetMessagesModule(
-        self.ReleaseTrack())
+    status_client = status_api_utils.GetClientInstance(self.ReleaseTrack())
+    status_messages = status_api_utils.GetMessagesModule(self.ReleaseTrack())
 
     status = {}
 
@@ -67,28 +68,30 @@ class Status(base.DescribeCommand):
     else:
       memberships_filter = None
 
-    memberships = status_api_utils.ListMemberships(status_client,
-                                                   status_messages, project_id)
+    memberships = status_api_utils.ListMemberships(
+        status_client, status_messages, project_id
+    )
     for membership in memberships:
       if memberships_filter and membership.ref.name not in memberships_filter:
         continue
 
-      status[membership.ref.name] = {
-          'status': {}
-      }
+      status[membership.ref.name] = {'status': {}}
       if membership.runtimeStatus.numConstraintTemplates:
         status[membership.ref.name]['status'][
-            'templates'] = membership.runtimeStatus.numConstraintTemplates
+            'templates'
+        ] = membership.runtimeStatus.numConstraintTemplates
       else:
         status[membership.ref.name]['status']['templates'] = 0
       if membership.runtimeStatus.numConstraints:
         status[membership.ref.name]['status'][
-            'constraints'] = membership.runtimeStatus.numConstraints
+            'constraints'
+        ] = membership.runtimeStatus.numConstraints
       else:
         status[membership.ref.name]['status']['constraints'] = 0
       if membership.runtimeStatus.numConstraintViolations:
         status[membership.ref.name]['status'][
-            'violations'] = membership.runtimeStatus.numConstraintViolations
+            'violations'
+        ] = membership.runtimeStatus.numConstraintViolations
       else:
         status[membership.ref.name]['status']['violations'] = 0
 
@@ -99,20 +102,22 @@ class Status(base.DescribeCommand):
 
       if membership not in status:
         status[membership] = {
-            'status': {
-                'constraints': 0,
-                'templates': 0,
-                'violations': 0
-            }
+            'status': {'constraints': 0, 'templates': 0, 'violations': 0}
         }
 
-      if spec.policycontroller.policyControllerHubConfig.installSpec == self.messages.PolicyControllerHubConfig.InstallSpecValueValuesEnum(
-          self.messages.PolicyControllerHubConfig.InstallSpecValueValuesEnum
-          .INSTALL_SPEC_ENABLED):
+      if (
+          spec.policycontroller.policyControllerHubConfig.installSpec
+          == self.messages.PolicyControllerHubConfig.InstallSpecValueValuesEnum(
+              self.messages.PolicyControllerHubConfig.InstallSpecValueValuesEnum.INSTALL_SPEC_ENABLED
+          )
+      ):
         version = spec.policycontroller.version
       else:
-        version = utils.get_install_spec_label(six.text_type(
-            spec.policycontroller.policyControllerHubConfig.installSpec))
+        version = utils.get_install_spec_label(
+            six.text_type(
+                spec.policycontroller.policyControllerHubConfig.installSpec
+            )
+        )
       status[membership]['version'] = version
 
     return status

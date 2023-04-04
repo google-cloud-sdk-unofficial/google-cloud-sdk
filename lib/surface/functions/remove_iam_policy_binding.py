@@ -20,6 +20,7 @@ from __future__ import unicode_literals
 
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.functions import flags
+from googlecloudsdk.command_lib.functions import util
 from googlecloudsdk.command_lib.functions.v1.remove_iam_policy_binding import command as command_v1
 from googlecloudsdk.command_lib.functions.v2.remove_iam_policy_binding import command as command_v2
 from googlecloudsdk.command_lib.iam import iam_util
@@ -36,7 +37,7 @@ _DETAILED_HELP = {
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
-class RemoveIamPolicyBinding(base.Command):
+class RemoveIamPolicyBinding(util.FunctionResourceCommand):
   """Removes an IAM policy binding from a Google Cloud Function."""
 
   detailed_help = _DETAILED_HELP
@@ -48,20 +49,11 @@ class RemoveIamPolicyBinding(base.Command):
     iam_util.AddArgsForRemoveIamPolicyBinding(parser)
     flags.AddGen2Flag(parser)
 
-  def Run(self, args):
-    """This is what gets called when the user runs this command.
+  def _RunV1(self, args):
+    return command_v1.Run(args)
 
-    Args:
-      args: an argparse namespace. All the arguments that were provided to this
-        command invocation.
-
-    Returns:
-      The updated IAM policy.
-    """
-    if flags.ShouldUseGen2():
-      return command_v2.Run(args, self.ReleaseTrack())
-    else:
-      return command_v1.Run(args)
+  def _RunV2(self, args):
+    return command_v2.Run(args, self.ReleaseTrack())
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)

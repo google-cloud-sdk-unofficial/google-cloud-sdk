@@ -48,24 +48,26 @@ class Describe(calliope_base.DescribeCommand):
     parser.add_argument(
         'CONSTRAINT_NAME',
         type=str,
-        help=('The constraint template name and constraint name joined '
-              + 'by a slash, e.g. "k8srequiredlabels/all-must-have-owner".')
+        help=(
+            'The constraint template name and constraint name joined '
+            + 'by a slash, e.g. "k8srequiredlabels/all-must-have-owner".'
+        ),
     )
     resources.AddMembershipResourceArg(
         parser,
         plural=True,
         membership_help=(
             'The membership names from which to return violations, separated '
-            'by commas if multiple are supplied.'))
+            'by commas if multiple are supplied.'
+        ),
+    )
 
   def Run(self, args):
     calliope_base.EnableUserProjectQuota()
     project_id = properties.VALUES.core.project.Get(required=True)
 
-    client = status_api_utils.GetClientInstance(
-        self.ReleaseTrack())
-    messages = status_api_utils.GetMessagesModule(
-        self.ReleaseTrack())
+    client = status_api_utils.GetClientInstance(self.ReleaseTrack())
+    messages = status_api_utils.GetMessagesModule(self.ReleaseTrack())
 
     constraint_name = args.CONSTRAINT_NAME.lower()
 
@@ -75,14 +77,19 @@ class Describe(calliope_base.DescribeCommand):
         raise exceptions.Error('Please specify a single membership name.')
       # Look up membership constraint; exception will be thrown if not found.
       constraint = status_api_utils.GetMembershipConstraint(
-          client, messages, constraint_name, project_id, memberships[0],
-          self.ReleaseTrack())
+          client,
+          messages,
+          constraint_name,
+          project_id,
+          memberships[0],
+          self.ReleaseTrack(),
+      )
     else:
       memberships = []
       # Look up fleet constraint; exception will be thrown if not found.
-      constraint = status_api_utils.GetFleetConstraint(client, messages,
-                                                       constraint_name,
-                                                       project_id)
+      constraint = status_api_utils.GetFleetConstraint(
+          client, messages, constraint_name, project_id
+      )
 
     if constraint['violationCount'] == 0:
       return None
@@ -93,4 +100,5 @@ class Describe(calliope_base.DescribeCommand):
         project_id,
         args,
         memberships=memberships,
-        constraint_filter=constraint_name)
+        constraint_filter=constraint_name,
+    )

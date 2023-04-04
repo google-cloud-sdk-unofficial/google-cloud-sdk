@@ -56,10 +56,11 @@ class UpdateHelper(object):
       support_fairshare,
       support_regional_security_policy,
       support_multiple_rate_limit_keys,
+      support_net_lb,
   ):
     """Generates the flagset for an Update command."""
     flags.AddPriority(parser, 'update')
-    if support_regional_security_policy:
+    if support_regional_security_policy or support_net_lb:
       flags.AddRegionFlag(parser, 'update')
       cls.SECURITY_POLICY_ARG = (
           security_policy_flags.SecurityPolicyMultiScopeArgumentForRules())
@@ -67,7 +68,10 @@ class UpdateHelper(object):
       cls.SECURITY_POLICY_ARG = (
           security_policy_flags.SecurityPolicyArgumentForRules())
     cls.SECURITY_POLICY_ARG.AddArgument(parser)
-    flags.AddMatcher(parser, required=False)
+    if support_net_lb:
+      flags.AddMatcherAndNetworkMatcher(parser, required=False)
+    else:
+      flags.AddMatcher(parser, required=False)
     flags.AddAction(
         parser,
         required=False,
@@ -101,15 +105,21 @@ class UpdateHelper(object):
       support_fairshare,
       support_regional_security_policy,
       support_multiple_rate_limit_keys,
+      support_net_lb,
   ):
     """Validates arguments and patches a security policy rule."""
     modified_fields = [
-        args.description, args.src_ip_ranges, args.expression, args.action,
-        args.preview is not None
+        args.description,
+        args.src_ip_ranges,
+        args.action,
+        args.preview is not None,
     ]
     min_args = [
-        '--description', '--src-ip-ranges', '--expression', '--action',
-        '--preview'
+        '--description',
+        '--src-ip-ranges',
+        '--expression',
+        '--action',
+        '--preview',
     ]
     if support_redirect:
       modified_fields.extend([args.redirect_type, args.redirect_target])
@@ -141,13 +151,35 @@ class UpdateHelper(object):
             '--exceed-action-rpc-status-code',
             '--exceed-action-rpc-status-message'
         ])
-    if not any(modified_fields):
+    if support_net_lb:
+      modified_fields.extend([
+          args.network_user_defined_fields,
+          args.network_src_ip_ranges,
+          args.network_dest_ip_ranges,
+          args.network_ip_protocols,
+          args.network_src_ports,
+          args.network_dest_ports,
+          args.network_src_region_codes,
+          args.network_src_asns
+      ])
+      min_args.extend([
+          '--network-user-defined-fields',
+          '--network-src-ip-ranges',
+          '--network-dest-ip-ranges',
+          '--network-ip-protocols',
+          '--network-src-ports',
+          '--network-dest-ports',
+          '--network-src-region-codes',
+          '--network-src-asns'
+      ])
+    if not any(
+        [args.IsSpecified(field[2:].replace('-', '_')) for field in min_args]):
       raise exceptions.MinimumArgumentException(
           min_args, 'At least one property must be modified.')
 
     holder = base_classes.ComputeApiHolder(release_track)
     ref = None
-    if support_regional_security_policy:
+    if support_regional_security_policy or support_net_lb:
       security_policy_ref = cls.SECURITY_POLICY_ARG.ResolveAsResource(
           args, holder.resources, default_scope=compute_scope.ScopeEnum.GLOBAL)
       if getattr(security_policy_ref, 'region', None) is not None:
@@ -195,15 +227,26 @@ class UpdateHelper(object):
     if support_header_action:
       request_headers_to_add = args.request_headers_to_add
 
+    network_matcher = None
+    update_mask = None
+    if support_net_lb:
+      result = security_policies_utils.CreateNetworkMatcher(
+          holder.client, args
+      )
+      network_matcher = result[0]
+      update_mask = result[1]
+
     return security_policy_rule.Patch(
         src_ip_ranges=args.src_ip_ranges,
         expression=args.expression,
+        network_matcher=network_matcher,
         action=args.action,
         description=args.description,
         preview=args.preview,
         redirect_options=redirect_options,
         rate_limit_options=rate_limit_options,
-        request_headers_to_add=request_headers_to_add)
+        request_headers_to_add=request_headers_to_add,
+        update_mask=update_mask)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
@@ -232,6 +275,7 @@ class UpdateGA(base.UpdateCommand):
   _support_tcl_ssl = False
   _support_fairshare = False
   _support_regional_security_policy = False
+  _support_net_lb = False
 
   @classmethod
   def Args(cls, parser):
@@ -244,6 +288,7 @@ class UpdateGA(base.UpdateCommand):
         support_fairshare=cls._support_fairshare,
         support_regional_security_policy=cls._support_regional_security_policy,
         support_multiple_rate_limit_keys=cls._support_multiple_rate_limit_keys,
+        support_net_lb=cls._support_net_lb,
     )
 
   def Run(self, args):
@@ -256,6 +301,7 @@ class UpdateGA(base.UpdateCommand):
         self._support_fairshare,
         self._support_regional_security_policy,
         self._support_multiple_rate_limit_keys,
+        self._support_net_lb,
     )
 
 
@@ -285,6 +331,7 @@ class UpdateBeta(base.UpdateCommand):
   _support_tcl_ssl = False
   _support_fairshare = False
   _support_regional_security_policy = False
+  _support_net_lb = False
 
   @classmethod
   def Args(cls, parser):
@@ -297,6 +344,7 @@ class UpdateBeta(base.UpdateCommand):
         support_fairshare=cls._support_fairshare,
         support_regional_security_policy=cls._support_regional_security_policy,
         support_multiple_rate_limit_keys=cls._support_multiple_rate_limit_keys,
+        support_net_lb=cls._support_net_lb,
     )
 
   def Run(self, args):
@@ -309,6 +357,7 @@ class UpdateBeta(base.UpdateCommand):
         self._support_fairshare,
         self._support_regional_security_policy,
         self._support_multiple_rate_limit_keys,
+        self._support_net_lb,
     )
 
 
@@ -338,6 +387,7 @@ class UpdateAlpha(base.UpdateCommand):
   _support_tcl_ssl = True
   _support_fairshare = True
   _support_regional_security_policy = True
+  _support_net_lb = True
 
   @classmethod
   def Args(cls, parser):
@@ -350,6 +400,7 @@ class UpdateAlpha(base.UpdateCommand):
         support_fairshare=cls._support_fairshare,
         support_regional_security_policy=cls._support_regional_security_policy,
         support_multiple_rate_limit_keys=cls._support_multiple_rate_limit_keys,
+        support_net_lb=cls._support_net_lb,
     )
 
   def Run(self, args):
@@ -362,4 +413,5 @@ class UpdateAlpha(base.UpdateCommand):
         self._support_fairshare,
         self._support_regional_security_policy,
         self._support_multiple_rate_limit_keys,
+        self._support_net_lb,
     )

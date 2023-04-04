@@ -49,7 +49,7 @@ class Create(base.CreateCommand):
     """
     parser.display_info.AddFormat(vmware_constants.VMWARE_NODEPOOLS_FORMAT)
     flags.AddNodePoolResourceArg(parser, 'to create')
-    flags.AddValidationOnly(parser, hidden=True)
+    flags.AddValidationOnly(parser)
     base.ASYNC_FLAG.AddToParser(parser)
     flags.AddNodePoolDisplayName(parser)
     flags.AddNodePoolAnnotations(parser)

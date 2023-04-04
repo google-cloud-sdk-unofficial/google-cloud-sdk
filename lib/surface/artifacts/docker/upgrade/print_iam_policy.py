@@ -23,8 +23,7 @@ from googlecloudsdk.command_lib.artifacts import upgrade_util
 from googlecloudsdk.command_lib.artifacts import util
 
 
-@base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
 class PrintIamPolicy(base.Command):
   """Print an Artifact Registry IAM policy for Container Registry to Artifact Registry upgrade.
 
@@ -69,7 +68,7 @@ class PrintIamPolicy(base.Command):
         metavar='ORGANIZATION_ID',
         help=(
             'Organization ID on which to scope IAM analysis. Only policies'
-            ' defined at or below this organization will be targeted in the'
+            ' defined at or below this organization will be included in the'
             ' analysis.'
         ),
     )
@@ -78,7 +77,7 @@ class PrintIamPolicy(base.Command):
         metavar='FOLDER_ID',
         help=(
             'Folder ID on which to scope IAM analysis. Only policies defined at'
-            ' or below this folder will be targeted in the analysis.'
+            ' or below this folder will be included in the analysis.'
         ),
     )
 

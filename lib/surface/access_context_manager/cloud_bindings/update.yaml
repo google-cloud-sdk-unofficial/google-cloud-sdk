@@ -3,25 +3,17 @@
   help_text:
     brief: Update a existing cloud access binding under an organization.
     description: |
-      Update a existing cloud access binding. You can only update the level.
+      Update an existing cloud access binding. You can update the level, dry run level or both.
+      They can't be both empty after update.
     examples: |
-      To update a existing cloud access binding, run:
+      To update an existing cloud access binding, run:
 
-            $ {command} --binding=my-binding-id --level=accessPolicies/123/accessLevels/new-abc
-    ALPHA:
-      description: |
-        Update an existing cloud access binding. You can only update the level and dry run level.
-        For level and dry run level, you can update one of these two or both. They can't be both
-        empty after update.
-      examples: |
-        To update an existing cloud access binding, run:
+        $ {command} --binding=my-binding-id --level=accessPolicies/123/accessLevels/new-abc
 
-          $ {command} --binding=my-binding-id --level=accessPolicies/123/accessLevels/new-abc
+      To remove level and add dry run level, run:
 
-        To update level to empty and add dry run level, run:
-
-          $ {command} --binding=my-binding-id --level=  \
-            --dry-run-level=accessPolicies/123/accessLevels/new-def
+        $ {command} --binding=my-binding-id --level=  \
+          --dry-run-level=accessPolicies/123/accessLevels/new-def
 
 
   request:
@@ -44,18 +36,15 @@
       arg_name: level
       type: str
       help_text: |
-        The access level that will replace the existing level for the given binding. The input must
-        be the full identifier for the access level, such as
+        The access level that replaces the existing level for the given binding. The input must
+        be the full identifier of an access level, such as
         `accessPolicies/123/accessLevels/new-abc`.
-      GA:
-        required: true
     - api_field: gcpUserAccessBinding.dryRunAccessLevels
       arg_name: dry-run-level
-      release_tracks: [ALPHA]
       type: str
       help_text: |
-        The dry run access level that will replace the dry run existing level for the given binding.
-        The input must be the full identifier for access level, such as
+        The dry run access level that replaces the existing dry run level for the given binding.
+        The input must be the full identifier of an access level, such as
         `accessPolicies/123/accessLevels/new-def`.
     - arg_name: policy
       type: str

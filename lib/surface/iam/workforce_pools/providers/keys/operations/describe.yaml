@@ -11,13 +11,13 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-- release_tracks: [ALPHA]
+- release_tracks: [ALPHA, BETA, GA]
 
   help_text:
     brief: Describe a workforce pool provider key operation.
     description: Describe a workforce pool provider key operation.
     examples: |
-      To describe the long-running workforce pool provider key operation with the ID ``my-operation``, run:
+      To describe the long-running workforce pool provider key operation with the ID ``my-operation'', run:
 
         $ {command} my-operation --workforce-pool="my-workforce-pool" --provider="my-provider" --key="my-key" --location="global"
 
