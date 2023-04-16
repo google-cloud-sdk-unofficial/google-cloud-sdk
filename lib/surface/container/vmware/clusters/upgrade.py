@@ -38,7 +38,7 @@ $ {command} my-cluster --location=us-west1 --version=1.13.0-gke.1000
 """
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Upgrade(base.Command):
   """Centrally upgrade an Anthos cluster on VMware."""
 

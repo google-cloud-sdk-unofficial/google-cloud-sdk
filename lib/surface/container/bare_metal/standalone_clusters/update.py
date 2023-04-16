@@ -61,6 +61,7 @@ class Update(base.UpdateCommand):
     standalone_flags.AddSecurityConfig(parser, is_update=True)
     standalone_flags.AddMaintenanceConfig(parser, is_update=True)
     standalone_flags.AddNetworkConfig(parser, is_update=True)
+    standalone_flags.AddLoadBalancerConfig(parser, is_update=True)
     standalone_flags.AddDescription(parser)
     standalone_flags.AddClusterOperationsConfig(parser)
     standalone_flags.AddNodeAccessConfig(parser)

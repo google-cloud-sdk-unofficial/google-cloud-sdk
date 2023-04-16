@@ -250,9 +250,31 @@ class ApplicationDefaultCredentialFileLoader(CachedCredentialLoader):
       return service_account_credentials
 
 
+class AccessTokenCredentialLoader(CredentialLoader):
+  """Credential loader for OAuth access token."""
+
+  def __init__(self, access_token, *args, **kwargs):
+    """Creates ApplicationDefaultCredentialFileLoader instance.
+
+    Args:
+      access_token: OAuth access token.
+      *args: additional arguments to apply to base class.
+      **kwargs: additional keyword arguments to apply to base class.
+    """
+    super(AccessTokenCredentialLoader, self).__init__(*args, **kwargs)
+    self._access_token = access_token
+
+  def _Load(self):
+    return oauth2client_4_0.client.AccessTokenCredentials(
+        self._access_token, _CLIENT_USER_AGENT
+    )
+
+
 def _GetCredentialsLoaderFromFlags():
   """Returns a CredentialsLoader based on user-supplied flags."""
-
+  # TODO(b/274926222): Add e2e test for --oauth_access_token.
+  if FLAGS.oauth_access_token:
+    return AccessTokenCredentialLoader(access_token=FLAGS.oauth_access_token)
   if FLAGS.service_account:
     if not FLAGS.service_account_credential_file:
       raise app.UsageError(

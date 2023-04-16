@@ -55,6 +55,15 @@ def _CommonArgs(parser):
       help="""The URL for the subnetwork resource.
         Must specify network as well if subnetwork is specified""",
   )
+  network_group.add_argument(
+      '--no-external-ip-address',
+      action='store_true',
+      default=False,
+      help="""Required if no external public IP address
+        is attached to the VM. If no external public IP address,
+        additional configuration is required to allow the VM
+        to access Google Services.""",
+  )
 
   task_spec_group = parser.add_group(required=True)
   task_spec_group.add_argument(
@@ -272,17 +281,7 @@ class Submit(base.Command):
 
   @staticmethod
   def Args(parser):
-    network_group = _CommonArgs(parser)
-    network_group.add_argument(
-        '--no-external-ip-address',
-        action='store_true',
-        default=False,
-        hidden=True,
-        help="""Required if no external public IP address
-        is attached to the VM. If no external public IP address,
-        additional configuration is required to allow the VM
-        to access Google Services.""",
-    )
+    _CommonArgs(parser)
 
   def Run(self, args):
     job_ref = args.CONCEPTS.job.Parse()
@@ -377,16 +376,3 @@ class SubmitAlpha(SubmitBeta):
       }
       EOF
   """
-
-  @staticmethod
-  def Args(parser):
-    network_group = _CommonArgs(parser)
-    network_group.add_argument(
-        '--no-external-ip-address',
-        action='store_true',
-        default=False,
-        help="""Required if no external public IP address
-        is attached to the VM. If no external public IP address,
-        additional configuration is required to allow the VM
-        to access Google Services.""",
-    )

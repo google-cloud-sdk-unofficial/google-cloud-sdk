@@ -27,5 +27,8 @@
         blockchainType:label=NETWORK,
         ethereumDetails.network:label=CHAIN,
         ethereumDetails.nodeType:label=TYPE,
+        ethereumDetails.executionClient:label=EXECUTION,
+        ethereumDetails.consensusClient:label=CONSENSUS,
+        connectionInfo.endpointInfo.jsonRpcApiEndpoint:label=JSON-RPC,
         state:label=STATUS
       )

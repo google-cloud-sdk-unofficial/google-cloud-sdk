@@ -32,7 +32,7 @@ $ {command} --cluster=my-cluster --location=us-west1
 """
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class List(base.ListCommand):
   """List node pools in an Anthos cluster on bare metal."""
 

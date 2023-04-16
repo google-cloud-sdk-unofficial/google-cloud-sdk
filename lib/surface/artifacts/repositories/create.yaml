@@ -118,6 +118,46 @@
       api_field: repository.dockerConfig.immutableTags
       help_text: |
         (Docker only) Prevent changes to tagged images in the repository. Tags cannot be deleted or moved to a different image digest, and tagged images cannot be deleted.
+    - arg_name: remote-apt-repo
+      api_field: repository.remoteRepositoryConfig.aptRepository.publicRepository.repositoryBase
+      hidden: true
+      help_text: |
+        (Apt only) Public repository base for apt remote repository.
+      choices:
+      - arg_value: NONE
+        enum_value: REPOSITORY_BASE_UNSPECIFIED
+      - arg_value: DEBIAN
+        enum_value: DEBIAN
+      - arg_value: UBUNTU
+        enum_value: UBUNTU
+    - arg_name: remote-apt-repo-path
+      api_field: repository.remoteRepositoryConfig.aptRepository.publicRepository.repositoryPath
+      hidden: true
+      help_text: |
+        (Apt only) Remaining URL path to apt remote repository.
+    - arg_name: remote-yum-repo
+      api_field: repository.remoteRepositoryConfig.yumRepository.publicRepository.repositoryBase
+      hidden: true
+      help_text: |
+        (Yum only) Public repository base for yum remote repository.
+      choices:
+      - arg_value: NONE
+        enum_value: REPOSITORY_BASE_UNSPECIFIED
+      - arg_value: CENTOS
+        enum_value: CENTOS
+      - arg_value: CENTOS-DEBUG
+        enum_value: CENTOS_DEBUG
+      - arg_value: CENTOS-VAULT
+        enum_value: CENTOS_VAULT
+      - arg_value: CENTOS-STREAM
+        enum_value: CENTOS_STREAM
+      - arg_value: ROCKY
+        enum_value: ROCKY
+    - arg_name: remote-yum-repo-path
+      api_field: repository.remoteRepositoryConfig.yumRepository.publicRepository.repositoryPath
+      hidden: true
+      help_text: |
+        (Yum only) Remaining URL path to yum remote repository.
     labels:
       api_field: repository.labels
     additional_arguments_hook: googlecloudsdk.command_lib.artifacts.util:AddAdditionalArgs

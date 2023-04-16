@@ -25,6 +25,10 @@ from googlecloudsdk.core import log
 from googlecloudsdk.core.console import console_io
 
 
+# TODO(b/239613419):
+# Keep gcloud beta netapp group hidden until v1beta1 API stable
+# also restructure release tracks that GA \subset BETA \subset ALPHA once
+# BETA is public.
 @base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class DeleteBeta(base.DeleteCommand):

@@ -97,16 +97,34 @@ class Create(base.CreateCommand):
     return op
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
-class CreateAlphaBeta(Create):
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class CreateBeta(Create):
   """Create a new AlloyDB cluster within a given project."""
 
   @classmethod
   def Args(cls, parser):
-    super(CreateAlphaBeta, cls).Args(parser)
+    super(CreateBeta, cls).Args(parser)
     flags.AddContinuousBackupConfigFlags(parser)
 
   def ConstructCreateRequestFromArgs(self, alloydb_messages, location_ref,
                                      args):
-    return cluster_helper.ConstructCreateRequestFromArgsAlphaBeta(
-        alloydb_messages, location_ref, args)
+    return cluster_helper.ConstructCreateRequestFromArgsBeta(
+        alloydb_messages, location_ref, args
+    )
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class CreateAlpha(CreateBeta):
+  """Create a new AlloyDB cluster within a given project."""
+
+  @classmethod
+  def Args(cls, parser):
+    super(CreateAlpha, cls).Args(parser)
+    flags.AddAllocatedIPRangeName(parser)
+
+  def ConstructCreateRequestFromArgs(
+      self, alloydb_messages, location_ref, args
+  ):
+    return cluster_helper.ConstructCreateRequestFromArgsAlpha(
+        alloydb_messages, location_ref, args
+    )

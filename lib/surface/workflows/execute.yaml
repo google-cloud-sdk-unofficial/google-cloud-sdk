@@ -26,7 +26,7 @@
       api_field: execution.callLogLevel
       help_text: |
         Level of call logging to apply during execution.
-      release_tracks: [BETA, GA]
+      release_tracks: [BETA]
       choices:
       - enum_value: CALL_LOG_LEVEL_UNSPECIFIED
         arg_value: none
@@ -40,6 +40,29 @@
         arg_value: log-errors-only
         help_text: |
           Log when a call is stopped due to an exception.
+      default: none
+    - arg_name: call-log-level
+      api_field: execution.callLogLevel
+      help_text: |
+        Level of call logging to apply during execution.
+      release_tracks: [GA]
+      choices:
+      - enum_value: CALL_LOG_LEVEL_UNSPECIFIED
+        arg_value: none
+        help_text: |
+          No call logging level specified.
+      - enum_value: LOG_ALL_CALLS
+        arg_value: log-all-calls
+        help_text: |
+          Log all calls to subworkflows or library functions and their results.
+      - enum_value: LOG_ERRORS_ONLY
+        arg_value: log-errors-only
+        help_text: |
+          Log when a call is stopped due to an exception.
+      - enum_value: LOG_NONE
+        arg_value: log-none
+        help_text: |
+          Perform no call logging.
       default: none
     - arg_name: labels
       api_field: execution.labels

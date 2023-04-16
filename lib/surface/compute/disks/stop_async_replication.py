@@ -46,7 +46,6 @@ def _CommonArgs(parser):
   """Add arguments used for parsing in all command tracks."""
   StopAsyncReplication.disks_arg.AddArgument(
       parser, operation_type='stop async replication')
-  # StopAsyncReplication.secondary_disk_arg.AddArgument(parser)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
@@ -105,9 +104,6 @@ class StopAsyncReplicationAlpha(base.Command):
   @classmethod
   def Args(cls, parser):
     StopAsyncReplication.disks_arg = disks_flags.MakeDiskArg(plural=False)
-    StopAsyncReplication.secondary_disk_arg = (
-        disks_flags.MakeDeprecatedSecondaryDiskArg(parser)
-    )
     _CommonArgs(parser)
 
   @classmethod

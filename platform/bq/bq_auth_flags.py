@@ -43,3 +43,8 @@ flags.DEFINE_string(
     'service_account_credential_file', None,
     'Only for the gcloud wrapper use.'
 )
+flags.DEFINE_string(
+    'oauth_access_token',
+    '',
+    'Only for the gcloud wrapper use.'
+)

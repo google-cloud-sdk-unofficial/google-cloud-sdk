@@ -22,7 +22,7 @@ from googlecloudsdk.calliope import base
 
 
 @base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.GA)
 class Looker(base.Group):
   """Manage Looker resources."""
   # See third_party/py/googlecloudsdk/calliope/base.py for a list of categories.

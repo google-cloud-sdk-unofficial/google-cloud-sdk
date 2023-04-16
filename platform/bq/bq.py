@@ -1454,12 +1454,14 @@ def _CreateExternalTableDefinition(
       )
       if autodetect is not None and not autodetect or schema:
         raise app.UsageError(
-            'Cannot create Iceberg table from user-specified schema.')
+            'Cannot create %s table from user-specified schema.'
+            % (source_format,)
+        )
       # Always autodetect schema for ICEBERG from manifest
       external_table_def['autodetect'] = True
       if len(source_uris.split(',')) != 1:
         raise app.UsageError(
-            'Must provide only one source_uri for Iceberg table.')
+            'Must provide only one source_uri for %s table.' % (source_format,))
 
 
     if ignore_unknown_values:

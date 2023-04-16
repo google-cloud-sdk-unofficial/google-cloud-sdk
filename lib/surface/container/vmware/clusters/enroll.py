@@ -35,9 +35,11 @@ $ {command} my-cluster --location=us-west1 --admin-cluster-membership=projects/m
 """
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Enroll(base.Command):
   """Enroll an Anthos cluster on VMware."""
+
+  detailed_help = {'EXAMPLES': _EXAMPLES}
 
   @staticmethod
   def Args(parser):
@@ -45,6 +47,8 @@ class Enroll(base.Command):
     vmware_flags.AddClusterResourceArg(parser, verb='to enroll')
     vmware_flags.AddAdminClusterMembershipResourceArg(parser, positional=False)
     base.ASYNC_FLAG.AddToParser(parser)
+    vmware_flags.AddValidationOnly(parser)
+    vmware_flags.AddUserClusterLocalName(parser)
 
   def Run(self, args):
     cluster_client = apis.ClustersClient()
@@ -53,6 +57,9 @@ class Enroll(base.Command):
 
     if args.async_ and not args.IsSpecified('format'):
       args.format = constants.OPERATIONS_FORMAT
+
+    if args.validate_only:
+      return None
 
     if args.async_:
       operations.log_enroll(cluster_ref, args.async_)

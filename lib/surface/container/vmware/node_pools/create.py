@@ -34,7 +34,7 @@ $ {command} my-node-pool --cluster=my-cluster --location=us-west1
 """
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Create(base.CreateCommand):
   """Create a node pool in an Anthos cluster on VMware."""
 
@@ -55,6 +55,7 @@ class Create(base.CreateCommand):
     flags.AddNodePoolAnnotations(parser)
     flags.AddVmwareNodePoolAutoscalingConfig(parser, for_update=False)
     flags.AddVmwareNodeConfig(parser, for_update=False)
+    flags.AddNodePoolVersion(parser)
 
   def Run(self, args):
     """Runs the create command.

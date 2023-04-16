@@ -38,7 +38,7 @@ $ gcloud container fleet memberships list --filter='endpoint.onPremCluster.admin
 """
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class List(base.ListCommand):
   """List Anthos on bare metal admin clusters."""
 

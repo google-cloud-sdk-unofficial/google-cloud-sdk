@@ -1,4 +1,4 @@
-- release_tracks: [ALPHA]
+- release_tracks: [ALPHA, GA]
 
   help_text:
     brief: |
@@ -19,7 +19,10 @@
         The region of the instances to display.
 
   request:
-    api_version: v1alpha1
+    ALPHA:
+      api_version: v1alpha1
+    GA:
+      api_version: v1
     collection: looker.projects.locations.instances
 
   response:

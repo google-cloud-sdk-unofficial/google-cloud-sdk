@@ -25,16 +25,16 @@ from googlecloudsdk.command_lib.container.bare_metal import admin_cluster_flags 
 _EXAMPLES = """
 To query versions for creating an admin cluster in location `us-west1`, run:
 
-$ {command} --location=us-west1
+  $ {command} --location=us-west1
 
 To query versions for upgrading an admin cluster named `my-admin-cluster` in
 location `us-west1`, run:
 
-$ {command} --location=us-west1 --admin-cluster=my-admin-cluster
+  $ {command} --location=us-west1 --admin-cluster=my-admin-cluster
 """
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class QueryVersionConfig(base.Command):
   """Query versions for creating or upgrading an Anthos on bare metal admin cluster."""
 

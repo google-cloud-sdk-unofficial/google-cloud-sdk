@@ -31,8 +31,6 @@ from googlecloudsdk.core import resources
 class Upload(base.Command):
   """Upload a GooGet package to an artifact repository."""
 
-  api_version = 'v1alpha1'
-
   @staticmethod
   def Args(parser):
     """Set up arguements for this command.
@@ -52,27 +50,22 @@ class Upload(base.Command):
 
   def Run(self, args):
     """Run package import command."""
-    client = apis.GetClientInstance('artifactregistry', self.api_version)
-    betaclient = apis.GetClientInstance('artifactregistry', 'v1beta2')
+    client = apis.GetClientInstance('artifactregistry', 'v1')
     messages = client.MESSAGES_MODULE
 
     client.additional_http_headers['X-Goog-Upload-Protocol'] = 'multipart'
 
     repo_ref = args.CONCEPTS.repository.Parse()
 
-    upload_req = messages.GoogleDevtoolsArtifactregistryV1alpha1UploadGoogetArtifactRequest
-    upload_request = upload_req()
-
     request = messages.ArtifactregistryProjectsLocationsRepositoriesGoogetArtifactsUploadRequest(
-        googleDevtoolsArtifactregistryV1alpha1UploadGoogetArtifactRequest=upload_request,
         parent=repo_ref.RelativeName())
 
     upload = transfer.Upload.FromFile(args.source, mime_type='application/gzip')
 
-    op_obj = client.projects_locations_repositories_googetArtifacts.Upload(
+    response = client.projects_locations_repositories_googetArtifacts.Upload(
         request, upload=upload)
 
-    op = op_obj.operation
+    op = response.operation
     op_ref = resources.REGISTRY.ParseRelativeName(
         op.name, collection='artifactregistry.projects.locations.operations')
 
@@ -81,7 +74,7 @@ class Upload(base.Command):
     else:
       result = waiter.WaitFor(
           waiter.CloudOperationPollerNoResources(
-              betaclient.projects_locations_operations),
+              client.projects_locations_operations),
           op_ref, 'Uploading package')
 
       return result

@@ -33,7 +33,7 @@ $ {command} my-node-pool --cluster=my-cluster --location=us-west1
 """
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Enroll(base.Command):
   """Enroll a node pool in an Anthos cluster on VMware."""
 

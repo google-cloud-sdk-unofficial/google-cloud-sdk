@@ -1,4 +1,4 @@
-- release_tracks: [BETA]
+- release_tracks: [BETA, GA]
   help_text:
     brief: Revert a Filestore instance.
     description: |
@@ -27,7 +27,10 @@
         Name of the Filestore snapshot to revert to.
 
   request:
-    api_version: v1beta1
+    BETA:
+      api_version: v1beta1
+    GA:
+      api_version: v1
     collection: file.projects.locations.instances
     method: revert
 

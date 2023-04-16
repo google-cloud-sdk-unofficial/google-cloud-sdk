@@ -61,14 +61,15 @@ class Update(base.Command):
     flags.AddBinAuthzPolicyFlags(managed_group)
     flags.AddBinAuthzBreakglassFlag(managed_group)
     flags.AddCloudSQLFlags(managed_group)
-    flags.AddCpuThrottlingFlag(managed_group)
-    flags.AddRevisionSuffixArg(managed_group)
-    flags.AddSandboxArg(managed_group)
-    flags.AddVpcConnectorArgs(managed_group)
-    flags.AddEgressSettingsFlag(managed_group)
     flags.AddCmekKeyFlag(managed_group)
     flags.AddCmekKeyRevocationActionTypeFlag(managed_group)
+    flags.AddCpuThrottlingFlag(managed_group)
+    flags.AddEgressSettingsFlag(managed_group)
     flags.AddEncryptionKeyShutdownHoursFlag(managed_group)
+    flags.AddRevisionSuffixArg(managed_group)
+    flags.AddSandboxArg(managed_group)
+    flags.AddStartupCpuBoostFlag(managed_group)
+    flags.AddVpcConnectorArgs(managed_group)
 
     # Flags specific to connecting to a cluster
     cluster_group = flags.GetClusterArgGroup(parser)
@@ -179,7 +180,6 @@ class BetaUpdate(Update):
     # Flags specific to managed CR
     managed_group = flags.GetManagedArgGroup(parser)
     flags.AddSessionAffinityFlag(managed_group)
-    flags.AddStartupCpuBoostFlag(managed_group)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -194,7 +194,6 @@ class AlphaUpdate(Update):
     managed_group = flags.GetManagedArgGroup(parser)
     flags.AddCustomAudiencesFlag(managed_group)
     flags.AddSessionAffinityFlag(managed_group)
-    flags.AddStartupCpuBoostFlag(managed_group)
     flags.AddVpcNetworkFlags(managed_group)
     flags.AddVpcSubnetFlags(managed_group)
     flags.AddVpcNetworkTagsFlags(managed_group)

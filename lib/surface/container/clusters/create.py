@@ -1170,12 +1170,6 @@ class Create(base.CreateCommand):
           'https://cloud.google.com/kubernetes-engine/docs/how-to/pod-security-policies'
       )
 
-    # TODO(b/201956384): Remove when cluster scope flag is released to GA.
-    ga_track = (self.ReleaseTrack() == base.ReleaseTrack.GA)
-    if ga_track and options.cluster_dns and options.cluster_dns.lower(
-    ) == 'clouddns' and options.cluster_dns_scope == 'cluster':
-      options.cluster_dns_scope = None
-
     if options.enable_kubernetes_alpha:
       console_io.PromptContinue(
           message=constants.KUBERNETES_ALPHA_PROMPT,

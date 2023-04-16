@@ -1,23 +1,25 @@
-- release_tracks: [ALPHA]
+- release_tracks: [ALPHA, GA]
 
   help_text:
-    brief: List Security Health Analytics custom modules.
-    description: List Security Health Analytics custom modules.
+    brief: List the details of Security Health Analytics custom modules.
+    description: |
+      List the details of the resident and inherited Security Health Analytics custom modules for
+      the specified folder or project. For an organization, this command lists only the custom
+      modules that are created at the organization level. Custom modules created in child folders
+      or projects are not included in the list. To list the resident custom modules and the modules
+      that are created in child folders or projects, use `gcloud scc custom-modules sha list-descendant`.
     examples: |
-      To list Security Health Analytics custom modules under organization `123`, run:
+      To list resident and inherited Security Health Analytics custom modules for organization `123`, run:
 
         $ {command} --organization=organizations/123
-        $ {command} --organization=123
 
-      To list Security Health Analytics custom modules under folder `456`, run:
+      To list resident and inherited Security Health Analytics custom modules for folder `456`, run:
 
         $ {command} --folder=folders/456
-        $ {command} --folder=456
 
-      To list Security Health Analytics custom modules under project `789`, run:
+      To list resident and inherited Security Health Analytics custom modules for project `789`, run:
 
         $ {command} --project=projects/789
-        $ {command} --project=789
 
   request:
     collection: securitycenter.organizations.securityHealthAnalyticsSettings.customModules
@@ -36,14 +38,19 @@
         - arg_name: organization
           api_field: parent
           help_text: |
-            Organization where the Security Health Analytics custom modules resides. Formatted as `organizations/123` or just `123`.
+            Organization for listing the Security Health Analytics custom modules created at the
+            organization level. Formatted as `organizations/123` or just `123`.
 
         - arg_name: folder
           api_field: parent
           help_text: |
-            Folder where the Security Health Analytics custom modules resides. Formatted as `folders/456` or just `456`.
+            Folder for listing the Security Health Analytics custom modules created at the current
+            folder level and inherited modules from CRM ancestors. Formatted as `folders/456` or
+            just `456`.
 
         - arg_name: project
           api_field: parent
           help_text: |
-            Project (id or number) where the Security Health Analytics custom modules resides. Formatted as `projects/789` or just `789`.
+            ID or number of the project for listing the Security Health Analytics custom modules created
+            at current project level and inherited modules from CRM ancestors. Formatted as
+            `projects/789` or just `789`.

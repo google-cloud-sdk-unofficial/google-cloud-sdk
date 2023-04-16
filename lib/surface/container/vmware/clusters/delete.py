@@ -32,7 +32,7 @@ $ {command} my-cluster --location=us-west1
 """
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Delete(base.DeleteCommand):
   """Delete an Anthos cluster on VMware."""
 
@@ -59,13 +59,13 @@ class Delete(base.DeleteCommand):
     operation = client.Delete(args)
 
     if args.validate_only:
-      return
+      return None
 
     # when using --allow-missing without --async on a non-existing resource,
     # it would return an operation object with an empty name.
     # return early to avoid potential polling error.
     if operation.name is None:
-      return operation
+      return None
 
     if args.async_:
       log.DeletedResource(cluster_ref, 'Anthos Cluster on VMware', args.async_)

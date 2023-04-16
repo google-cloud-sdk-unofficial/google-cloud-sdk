@@ -728,6 +728,8 @@ def ConfigurePythonLogger(apilog=None):
   """
   if apilog is None:
     # Effectively turn off logging.
+    logging.warning(
+        'There is no apilog flag so non-critical logging is disabled.')
     logging.disable(logging.CRITICAL)
   else:
     if apilog in ('', '-', '1', 'true', 'stdout'):

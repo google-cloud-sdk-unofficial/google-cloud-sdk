@@ -33,8 +33,7 @@ class UpdateAppProfile(base.CreateCommand):
   """Update a Bigtable app profile."""
 
   detailed_help = {
-      'EXAMPLES':
-          textwrap.dedent("""\
+      'EXAMPLES': textwrap.dedent("""\
           To update an app profile to use a multi-cluster routing policy, run:
 
             $ {command} my-app-profile-id --instance=my-instance-id --route-any
@@ -55,9 +54,13 @@ class UpdateAppProfile(base.CreateCommand):
   @staticmethod
   def Args(parser):
     arguments.AddAppProfileResourceArg(parser, 'to update')
-    (arguments.ArgAdder(parser).AddDescription(
-        'app profile', required=False).AddAppProfileRouting(
-            required=False).AddForce('update').AddAsync())
+    (
+        arguments.ArgAdder(parser)
+        .AddDescription('app profile', required=False)
+        .AddAppProfileRouting(required=False, is_update=True)
+        .AddForce('update')
+        .AddAsync()
+    )
 
   def _UpdateAppProfile(self, app_profile_ref, args):
     """Updates an AppProfile with the given arguments.
@@ -85,7 +88,8 @@ class UpdateAppProfile(base.CreateCommand):
         multi_cluster=args.route_any,
         restrict_to=args.restrict_to,
         transactional_writes=args.transactional_writes,
-        force=args.force)
+        force=args.force,
+    )
 
   def Run(self, args):
     """This is what gets called when the user runs this command.
@@ -116,12 +120,14 @@ class UpdateAppProfile(base.CreateCommand):
         log.UpdatedResource(
             operation_ref,
             kind='bigtable app profile {0}'.format(app_profile_ref.Name()),
-            is_async=True)
+            is_async=True,
+        )
         return result
 
       return util.AwaitAppProfile(
           operation_ref,
-          'Updating bigtable app profile {0}'.format(app_profile_ref.Name()))
+          'Updating bigtable app profile {0}'.format(app_profile_ref.Name()),
+      )
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -131,10 +137,16 @@ class UpdateAppProfileAlpha(UpdateAppProfile):
   @staticmethod
   def Args(parser):
     arguments.AddAppProfileResourceArg(parser, 'to update')
-    (arguments.ArgAdder(parser).AddDescription(
-        'app profile', required=False).AddAppProfileRouting(
-            required=False, allow_failover_radius=True).AddForce(
-                'update').AddRequestPriority().AddAsync())
+    (
+        arguments.ArgAdder(parser)
+        .AddDescription('app profile', required=False)
+        .AddAppProfileRouting(
+            required=False, allow_failover_radius=True, is_update=True
+        )
+        .AddForce('update')
+        .AddRequestPriority()
+        .AddAsync()
+    )
 
   def _UpdateAppProfile(self, app_profile_ref, args):
     """Updates an AppProfile with the given arguments.
@@ -165,4 +177,5 @@ class UpdateAppProfileAlpha(UpdateAppProfile):
         failover_radius=args.failover_radius,
         transactional_writes=args.transactional_writes,
         force=args.force,
-        priority=args.priority)
+        priority=args.priority,
+    )

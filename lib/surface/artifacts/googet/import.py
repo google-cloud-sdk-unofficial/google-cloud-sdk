@@ -32,8 +32,6 @@ from googlecloudsdk.core import resources
 class Import(base.Command):
   """Import one or more GooGet packages into an artifact repository."""
 
-  api_version = 'v1alpha1'
-
   @staticmethod
   def Args(parser):
     """Set up arguements for this command.
@@ -55,24 +53,26 @@ class Import(base.Command):
 
   def Run(self, args):
     """Run package import command."""
-    client = apis.GetClientInstance('artifactregistry', self.api_version)
-    betaclient = apis.GetClientInstance('artifactregistry', 'v1beta2')
+    client = apis.GetClientInstance('artifactregistry', 'v1')
     messages = client.MESSAGES_MODULE
 
+    use_wildcard = False
     for gcs_source in args.gcs_source:
-      if '*' in gcs_source and not gcs_source.endswith('*'):
-        raise exceptions.InvalidArgumentException(
-            'GCS_SOURCE', 'Wildcards must be at the end of the GCS path.')
+      if '*' in gcs_source:
+        use_wildcard = True
+        if not gcs_source.endswith('*'):
+          raise exceptions.InvalidArgumentException(
+              'GCS_SOURCE', 'Wildcards must be at the end of the GCS path.')
 
     repo_ref = args.CONCEPTS.repository.Parse()
-    gcs_source = messages.GoogleDevtoolsArtifactregistryV1alpha1ImportGoogetArtifactsGcsSource(
-        uris=args.gcs_source,
-        useWildcards=True)
-    import_request = messages.GoogleDevtoolsArtifactregistryV1alpha1ImportGoogetArtifactsRequest(
-        gcsSource=gcs_source)
 
     request = messages.ArtifactregistryProjectsLocationsRepositoriesGoogetArtifactsImportRequest(
-        googleDevtoolsArtifactregistryV1alpha1ImportGoogetArtifactsRequest=import_request,
+        importGoogetArtifactsRequest=messages.ImportGoogetArtifactsRequest(
+            gcsSource=messages.ImportGoogetArtifactsGcsSource(
+                uris=args.gcs_source,
+                useWildcards=use_wildcard,
+            ),
+        ),
         parent=repo_ref.RelativeName())
 
     op = client.projects_locations_repositories_googetArtifacts.Import(request)
@@ -85,7 +85,7 @@ class Import(base.Command):
     else:
       result = waiter.WaitFor(
           waiter.CloudOperationPollerNoResources(
-              betaclient.projects_locations_operations),
+              client.projects_locations_operations),
           op_ref, 'Importing package(s)')
 
       return result

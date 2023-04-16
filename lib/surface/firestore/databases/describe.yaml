@@ -1,4 +1,3 @@
-# TODO(zixuanliu): format the version_retention_period and earliest_version_time.
 - release_tracks: [ALPHA]
   help_text:
     brief: Describe a Google Cloud Firestore database.

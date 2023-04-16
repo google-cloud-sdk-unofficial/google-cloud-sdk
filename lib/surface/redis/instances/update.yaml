@@ -107,9 +107,9 @@
       help_text: |
         Specifies which maintenance version to apply to your instance during self-service maintenance.
         To view the available maintenance versions for your instance, run `gcloud redis
-        instances describe [INSTANCE_ID]`. Acceptable values for this flag are either `latest` or
+        instances describe [INSTANCE_ID]`. Acceptable values for this flag are either `current_default` or
         one of the specific versions listed by the describe command. If you pass the value
-        `latest`, the Memorystore updates to the most recent available maintenance version during self service maintenance.
+        `current_default`, the Memorystore updates to the most recent available maintenance version during self service maintenance.
     - group:
         mutex: true
         params:

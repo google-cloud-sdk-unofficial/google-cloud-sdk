@@ -23,5 +23,8 @@
         want to describe.
 
   request:
-    api_version: v1alpha1
+    ALPHA:
+      api_version: v1alpha1
+    GA:
+      api_version: v1
     collection: looker.projects.locations.operations

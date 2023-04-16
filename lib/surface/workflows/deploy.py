@@ -61,6 +61,7 @@ class Deploy(base.CacheCommand):
     flags.AddServiceAccountArg(parser)
     if cls.ReleaseTrack() is base.ReleaseTrack.GA:
       flags.AddKmsKeyFlags(parser)
+      flags.AddWorkflowLoggingArg(parser)
 
   def Run(self, args):
     """Deploy a workflow."""

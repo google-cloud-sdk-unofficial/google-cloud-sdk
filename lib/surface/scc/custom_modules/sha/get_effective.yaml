@@ -1,26 +1,28 @@
-- release_tracks: [ALPHA]
+- release_tracks: [ALPHA, GA]
 
   help_text:
-    brief: Get an effective Security Health Analytics custom module.
-    description: Get an effective Security Health Analytics custom module.
+    brief: Get the details of a Security Health Analytics custom module with effective enablement state.
+    description: |
+      Get the details of a Security Health Analytics custom module. For inherited custom modules,
+      the get-effective command resolves INHERITED enablement states to ENABLED or DISABLED.
+      For example, if an inherited custom module is enabled at the ancestor level, then the
+      get-effective command displays the enablement state as ENABLED instead of INHERITED in a
+      child folder or project.
     examples: |
-      To get an effective Security Health Analytics custom module with id `123456` for organization `123`, run:
+      To get the details of a Security Health Analytics custom module 123456 with its effective enablement state
+      from organization `123`, run:
 
         $ {command} 123456 --organization=organizations/123
-        $ {command} 123456 --organization=123
-        $ {command} organizations/123/securityHealthAnalyticsSettings/effectiveCustomModules/123456
 
-      To get an effective Security Health Analytics custom module with id `123456` for folder `456`, run:
+      To get the details of a Security Health Analytics custom module 123456 with its effective enablement state
+      from folder `456`, run:
 
         $ {command} 123456 --folder=folders/456
-        $ {command} 123456 --folder=456
-        $ {command} folders/456/securityHealthAnalyticsSettings/effectiveCustomModules/123456
 
-      To get an effective Security Health Analytics custom module with id `123456` for project `789`, run:
+      To get the details of a Security Health Analytics custom module 123456 with its effective enablement state
+      from project `789`, run:
 
         $ {command} 123456 --project=projects/789
-        $ {command} 123456 --project=789
-        $ {command} projects/789/securityHealthAnalyticsSettings/effectiveCustomModules/123456
 
   request:
     collection: securitycenter.organizations.securityHealthAnalyticsSettings.effectiveCustomModules
@@ -38,7 +40,7 @@
       is_positional: true
       required: true
       help_text: |
-        Id or the full resource name of the effective Security Health Analytics custom module.
+        ID or the full resource name of the effective Security Health Analytics custom module. If you specify the full resource name, you do not need to specify the --organization, --folder, or --project flags.
 
     - group:
         mutex: true
@@ -46,14 +48,17 @@
         - arg_name: organization
           api_field: name
           help_text: |
-            Organization where the effective Security Health Analytics custom module resides. Formatted as `organizations/123` or just `123`.
+            Organization from which to get the custom module details. Formatted as
+            `organizations/123` or just `123`.
 
         - arg_name: folder
           api_field: name
           help_text: |
-            Folder where the effective Security Health Analytics custom module resides. Formatted as `folders/456` or just `456`.
+            Folder from which to get the custom module details. Formatted as `folders/456`
+            or just `456`.
 
         - arg_name: project
           api_field: name
           help_text: |
-            Project (id or number) where the effective Security Health Analytics custom module resides. Formatted as `projects/789` or just `789`.
+            ID or number of the project from which to get the custom module details. Formatted as
+            `projects/789` or just `789`.

@@ -26,6 +26,44 @@ from googlecloudsdk.core import log
 from googlecloudsdk.core.console import console_io
 
 
+# TODO(b/239613419):
+# Keep gcloud beta netapp group hidden until v1beta1 API stable
+# also restructure release tracks that GA \subset BETA \subset ALPHA once
+# BETA is public.
+@base.Hidden
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class DeleteBeta(base.DeleteCommand):
+  """Delete a Cloud NetApp Active Directory."""
+
+  _RELEASE_TRACK = base.ReleaseTrack.BETA
+
+  @staticmethod
+  def Args(parser):
+    activedirectories_flags.AddActiveDirectoryDeleteArgs(parser)
+
+  def Run(self, args):
+    """Delete a Cloud NetApp Active Directory."""
+
+    activedirectory_ref = args.CONCEPTS.active_directory.Parse()
+    if not args.quiet:
+      delete_warning = ('You are about to delete an Active Directory {}.\n'
+                        'Are you sure?'.format(
+                            activedirectory_ref.RelativeName()))
+      if not console_io.PromptContinue(message=delete_warning):
+        return None
+    client = ad_client.ActiveDirectoriesClient(
+        release_track=self._RELEASE_TRACK)
+    result = client.DeleteActiveDirectory(activedirectory_ref, args.async_)
+
+    if args.async_:
+      command = 'gcloud {} netapp active-directories list'.format(
+          self.ReleaseTrack().prefix)
+      log.status.Print(
+          'Check the status of the deletion by listing all active directories:'
+          '\n $ {} '.format(command))
+    return result
+
+
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class DeleteAlpha(base.DeleteCommand):
   """Delete a Cloud NetApp Active Directory."""

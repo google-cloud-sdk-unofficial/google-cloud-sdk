@@ -15,7 +15,7 @@
 """
 import logging
 
-from bqml_xgboost_predictor import Predictor
+from bigquery_ml_utils.inference.xgboost_predictor import Predictor
 from google.cloud.ml.prediction import copy_model_to_local
 from google.cloud.ml.prediction import ENGINE
 from google.cloud.ml.prediction import ENGINE_RUN_TIME

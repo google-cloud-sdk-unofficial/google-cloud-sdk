@@ -76,5 +76,7 @@ class Cancel(base.Command):
     with serverless_operations.Connect(conn_context) as client:
       client.CancelExecution(ex_ref)
     pretty_print.Success(
-        'Cancelled execution [{}].'.format(ex_ref.executionsId)
+        'Execution [{}] is being cancelled asynchronously.'.format(
+            ex_ref.executionsId
+        )
     )

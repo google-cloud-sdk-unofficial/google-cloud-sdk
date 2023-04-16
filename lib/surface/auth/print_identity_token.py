@@ -65,12 +65,14 @@ def _Run(args):
           'Invalid account type for `--include-email`. '
           'Requires an impersonate service account.')
 
-  c_store.Refresh(
+  c_store._RefreshGoogleAuthIdToken(  # pylint: disable=protected-access
       cred,
       is_impersonated_credential=is_impersonated_account,
       include_email=args.include_email,
       gce_token_format=args.token_format,
-      gce_include_license=args.include_license)
+      gce_include_license=args.include_license,
+      refresh_user_account_credentials=True,
+  )
 
   credential = config_helper.Credential(cred)
   if not credential.id_token:

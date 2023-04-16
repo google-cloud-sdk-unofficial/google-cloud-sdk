@@ -336,7 +336,7 @@ class CreateBeta(Create):
   _support_enable_target_shape = True
   _support_provisioned_throughput = False
   _support_no_address_in_networking = False
-  _support_max_count_per_zone = False
+  _support_max_count_per_zone = True
   _support_local_ssd_recovery_timeout = False
   _support_network_queue_count = True
   _support_local_ssd_size = True

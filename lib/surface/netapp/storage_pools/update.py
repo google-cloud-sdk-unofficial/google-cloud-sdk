@@ -26,6 +26,70 @@ from googlecloudsdk.command_lib.util.args import labels_util
 from googlecloudsdk.core import log
 
 
+# TODO(b/239613419):
+# Keep gcloud beta netapp group hidden until v1beta1 API stable
+# also restructure release tracks that GA \subset BETA \subset ALPHA once
+# BETA is public.
+@base.Hidden
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class UpdateBeta(base.UpdateCommand):
+  """Update a Cloud NetApp Storage Pool."""
+
+  _RELEASE_TRACK = base.ReleaseTrack.BETA
+
+  @staticmethod
+  def Args(parser):
+    storagepools_flags.AddStoragePoolUpdateArgs(parser)
+
+  def Run(self, args):
+    """Update a Cloud NetApp Storage Pool in the current project."""
+    storagepool_ref = args.CONCEPTS.storage_pool.Parse()
+    client = storagepools_client.StoragePoolsClient(self._RELEASE_TRACK)
+    labels_diff = labels_util.Diff.FromUpdateArgs(args)
+    orig_storagepool = client.GetStoragePool(storagepool_ref)
+    capacity_in_gib = args.capacity >> 30 if args.capacity else None
+    ## Update labels
+    if labels_diff.MayHaveUpdates():
+      labels = labels_diff.Apply(
+          client.messages.StoragePool.LabelsValue, orig_storagepool.labels
+      ).GetOrNone()
+    else:
+      labels = None
+
+    storage_pool = client.ParseUpdatedStoragePoolConfig(
+        orig_storagepool,
+        capacity=capacity_in_gib,
+        description=args.description,
+        labels=labels,
+    )
+
+    updated_fields = []
+    if args.IsSpecified('capacity'):
+      updated_fields.append('capacityGib')
+    if args.IsSpecified('description'):
+      updated_fields.append('description')
+    if (
+        args.IsSpecified('update_labels')
+        or args.IsSpecified('remove_labels')
+        or args.IsSpecified('clear_labels')
+    ):
+      updated_fields.append('labels')
+    update_mask = ','.join(updated_fields)
+
+    result = client.UpdateStoragePool(
+        storagepool_ref, storage_pool, update_mask, args.async_
+    )
+    if args.async_:
+      command = 'gcloud {} netapp storage-pools list'.format(
+          self.ReleaseTrack().prefix
+      )
+      log.status.Print(
+          'Check the status of the updated storage pool by listing all storage'
+          ' pools:\n  $ {} '.format(command)
+      )
+    return result
+
+
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class UpdateAlpha(base.UpdateCommand):
   """Update a Cloud NetApp Storage Pool."""
@@ -45,8 +109,9 @@ class UpdateAlpha(base.UpdateCommand):
     capacity_in_gib = args.capacity >> 30 if args.capacity else None
     ## Update labels
     if labels_diff.MayHaveUpdates():
-      labels = labels_diff.Apply(client.messages.StoragePool.LabelsValue,
-                                 orig_storagepool.labels).GetOrNone()
+      labels = labels_diff.Apply(
+          client.messages.StoragePool.LabelsValue, orig_storagepool.labels
+      ).GetOrNone()
     else:
       labels = None
 
@@ -54,25 +119,32 @@ class UpdateAlpha(base.UpdateCommand):
         orig_storagepool,
         capacity=capacity_in_gib,
         description=args.description,
-        labels=labels)
+        labels=labels,
+    )
 
     updated_fields = []
     if args.IsSpecified('capacity'):
       updated_fields.append('capacityGib')
     if args.IsSpecified('description'):
       updated_fields.append('description')
-    if (args.IsSpecified('update_labels') or
-        args.IsSpecified('remove_labels') or args.IsSpecified('clear_labels')):
+    if (
+        args.IsSpecified('update_labels')
+        or args.IsSpecified('remove_labels')
+        or args.IsSpecified('clear_labels')
+    ):
       updated_fields.append('labels')
     update_mask = ','.join(updated_fields)
 
-    result = client.UpdateStoragePool(storagepool_ref,
-                                      storage_pool, update_mask,
-                                      args.async_)
+    result = client.UpdateStoragePool(
+        storagepool_ref, storage_pool, update_mask, args.async_
+    )
     if args.async_:
       command = 'gcloud {} netapp storage-pools list'.format(
-          self.ReleaseTrack().prefix)
+          self.ReleaseTrack().prefix
+      )
       log.status.Print(
-          'Check the status of the updated storage pool by listing all storage pools:\n  '
-          '$ {} '.format(command))
+          'Check the status of the updated storage pool by listing all storage'
+          ' pools:\n  $ {} '.format(command)
+      )
     return result
+

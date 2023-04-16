@@ -1,49 +1,28 @@
-- release_tracks: [ALPHA]
+- release_tracks: [ALPHA, GA]
 
   help_text:
     brief: Update a Security Health Analytics custom module.
     description: Update a Security Health Analytics custom module.
     examples: |
-      To update a Security Health Analytics custom module with id `123456` for organization `123, run`:
+      To update a Security Health Analytics custom module with ID `123456` for organization `123, run`:
 
         $ {command} 123456 \
             --organization=organizations/123 \
-            --enablement-state="ENABLED"
-            --custom-config-from-file=custom_config.yaml
-        $ {command} 123456 \
-            --organization=123 \
-            --enablement-state="ENABLED"
-            --custom-config-from-file=custom_config.yaml
-        $ {command} organizations/123/securityHealthAnalyticsSettings/customModules/123456 \
-            --enablement-state="ENABLED"
+            --enablement-state="ENABLED" \
             --custom-config-from-file=custom_config.yaml
 
-      To update a Security Health Analytics custom module with id `123456` for folder `456`, run:
+      To update a Security Health Analytics custom module with ID `123456` for folder `456`, run:
 
         $ {command} 123456 \
             --folder=folders/456 \
-            --enablement-state="ENABLED"
-            --custom-config-from-file=custom_config.yaml
-        $ {command} 123456 \
-            --folder=456 \
-            --enablement-state="ENABLED"
-            --custom-config-from-file=custom_config.yaml
-        $ {command} folders/456/securityHealthAnalyticsSettings/customModules/123456 \
-            --enablement-state="ENABLED"
+            --enablement-state="ENABLED" \
             --custom-config-from-file=custom_config.yaml
 
-      To update a Security Health Analytics custom module with id `123456` for project `789`, run:
+      To update a Security Health Analytics custom module with ID `123456` for project `789`, run:
 
         $ {command} 123456 \
             --project=projects/789 \
-            --enablement-state="ENABLED"
-            --custom-config-from-file=custom_config.yaml
-        $ {command} 123456 \
-            --project=789 \
-            --enablement-state="ENABLED"
-            --custom-config-from-file=custom_config.yaml
-        $ {command} projects/789/securityHealthAnalyticsSettings/customModules/123456 \
-            --enablement-state="ENABLED"
+            --enablement-state="ENABLED" \
             --custom-config-from-file=custom_config.yaml
 
   request:
@@ -61,7 +40,7 @@
       is_positional: true
       required: true
       help_text: |
-        Id or the full resource name of the Security Health Analytics custom module.
+        ID or the full resource name of the Security Health Analytics custom module. If you specify the full resource name, you do not need to specify the --organization, --folder, or --project flags.
 
     - group:
         mutex: true
@@ -79,7 +58,7 @@
         - arg_name: project
           api_field: name
           help_text: |
-            Project (id or number) where the Security Health Analytics custom module resides. Formatted as `projects/789` or just `789`.
+            ID or number of the project where the Security Health Analytics custom module resides. Formatted as `projects/789` or just `789`.
 
 
     - arg_name: enablement-state
@@ -87,7 +66,7 @@
       is_positional: false
       required: false
       help_text: |
-        The enablement state of the Security Health Analytics custom module.
+        Sets the enablement state of the Security Health Analytics custom module. From the following list of possible enablement states, specify either enabled, disabled or inherited only
 
     - arg_name: custom-config-from-file
       api_field: googleCloudSecuritycenterV1SecurityHealthAnalyticsCustomModule.customConfig
@@ -95,7 +74,7 @@
       processor: googlecloudsdk.command_lib.scc.hooks:ProcessCustomConfigFile
       is_positional: false
       help_text: |
-        Path to a yaml file containing the custom configuration for the Security Health Analytics custom module.
+        Path to a YAML file that contains the configuration for the Security Health Analytics custom module.
 
     - arg_name: update-mask
       api_field: updateMask

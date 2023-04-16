@@ -33,8 +33,7 @@ class CreateAppProfile(base.CreateCommand):
   """Create a new Bigtable app profile."""
 
   detailed_help = {
-      'EXAMPLES':
-          textwrap.dedent("""\
+      'EXAMPLES': textwrap.dedent("""\
           To create an app profile with a multi-cluster routing policy, run:
 
             $ {command} my-app-profile-id --instance=my-instance-id --route-any
@@ -54,9 +53,12 @@ class CreateAppProfile(base.CreateCommand):
   @staticmethod
   def Args(parser):
     arguments.AddAppProfileResourceArg(parser, 'to create')
-    (arguments.ArgAdder(parser).AddDescription(
-        'app profile', required=False).AddForce(
-            'create').AddAppProfileRouting())
+    (
+        arguments.ArgAdder(parser)
+        .AddDescription('app profile', required=False)
+        .AddForce('create')
+        .AddAppProfileRouting(is_update=False)
+    )
 
   def _CreateAppProfile(self, app_profile_ref, args):
     """Creates an AppProfile with the given arguments.
@@ -84,7 +86,8 @@ class CreateAppProfile(base.CreateCommand):
         multi_cluster=args.route_any,
         restrict_to=args.restrict_to,
         transactional_writes=args.transactional_writes,
-        force=args.force)
+        force=args.force,
+    )
 
   def Run(self, args):
     """This is what gets called when the user runs this command.
@@ -120,9 +123,13 @@ class CreateAppProfileAlpha(CreateAppProfile):
   @staticmethod
   def Args(parser):
     arguments.AddAppProfileResourceArg(parser, 'to create')
-    (arguments.ArgAdder(parser).AddDescription(
-        'app profile', required=False).AddForce('create').AddRequestPriority()
-     .AddAppProfileRouting(allow_failover_radius=True))
+    (
+        arguments.ArgAdder(parser)
+        .AddDescription('app profile', required=False)
+        .AddForce('create')
+        .AddRequestPriority()
+        .AddAppProfileRouting(allow_failover_radius=True, is_update=False)
+    )
 
   def _CreateAppProfile(self, app_profile_ref, args):
     """Creates an AppProfile with the given arguments.
@@ -153,4 +160,5 @@ class CreateAppProfileAlpha(CreateAppProfile):
         failover_radius=args.failover_radius,
         transactional_writes=args.transactional_writes,
         force=args.force,
-        priority=args.priority)
+        priority=args.priority,
+    )

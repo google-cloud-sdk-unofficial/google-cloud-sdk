@@ -30,7 +30,7 @@ $ {command} OPERATION_ID --location=us-west1
 """
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Describe(base.DescribeCommand):
   """Describe an operation."""
   detailed_help = {'EXAMPLES': _EXAMPLES}

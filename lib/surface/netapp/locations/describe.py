@@ -24,6 +24,41 @@ from googlecloudsdk.command_lib.netapp import flags
 from googlecloudsdk.command_lib.util.concepts import concept_parsers
 
 
+# TODO(b/239613419):
+# Keep gcloud beta netapp group hidden until v1beta1 API stable
+# also restructure release tracks that GA \subset BETA \subset ALPHA once
+# BETA is public.
+@base.Hidden
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class DescribeBeta(base.DescribeCommand):
+  """Describe a Cloud NetApp Files location."""
+
+  _RELEASE_TRACK = base.ReleaseTrack.BETA
+
+  detailed_help = {
+      'DESCRIPTION':
+          'Describe a Cloud NetApp Files location.',
+      'EXAMPLES':
+          """\
+The following command shows the details for the NetApp Files location named NAME.
+
+  $ {command} NAME
+"""
+  }
+
+  @staticmethod
+  def Args(parser):
+    concept_parsers.ConceptParser([
+        flags.GetLocationPresentationSpec('The location to describe.')
+    ]).AddToParser(parser)
+
+  def Run(self, args):
+    """Run the describe command."""
+    location_ref = args.CONCEPTS.location.Parse().RelativeName()
+    client = netapp_client.NetAppClient(release_track=self._RELEASE_TRACK)
+    return client.GetLocation(location_ref)
+
+
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class DescribeAlpha(base.DescribeCommand):
   """Describe a Cloud NetApp Files location."""

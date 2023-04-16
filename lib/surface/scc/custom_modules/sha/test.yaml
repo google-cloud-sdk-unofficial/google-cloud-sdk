@@ -4,54 +4,27 @@
     brief: Test a Security Health Analytics custom module.
     description: Test a Security Health Analytics custom module.
     examples: |
-      To test a Security Health Analytics custom module with id `123456` for organization `123`, run:
+      To test a Security Health Analytics custom module with ID `123456` for organization `123`, run:
 
         $ {command} 123456 \
             --organization=organizations/123 \
-            --display-name="test_display_name"\
-            --custom-config-from-file=/tmp/custom_config.yaml \
-            --test-data-from-file=/tmp/test_data.yaml
-        $ {command} 123456 \
-            --organization=123 \
-            --display-name="test_display_name"\
-            --custom-config-from-file=/tmp/custom_config.yaml \
-            --test-data-from-file=/tmp/test_data.yaml
-        $ {command} organizations/123/securityHealthAnalyticsSettings/customModules/123456 \
-            --display-name="test_display_name"\
+            --display-name="test_display_name" \
             --custom-config-from-file=/tmp/custom_config.yaml \
             --test-data-from-file=/tmp/test_data.yaml
 
-      To test a Security Health Analytics custom module with id `123456` for folder `456`, run:
+      To test a Security Health Analytics custom module with ID `123456` for folder `456`, run:
 
         $ {command} 123456 \
             --folder=folders/456 \
-            --display-name="test_display_name"\
-            --custom-config-from-file=/tmp/custom_config.yaml \
-            --test-data-from-file=/tmp/test_data.yaml
-        $ {command} 123456 \
-            --folder=456 \
-            --display-name="test_display_name"\
-            --custom-config-from-file=/tmp/custom_config.yaml \
-            --test-data-from-file=/tmp/test_data.yaml
-        $ {command} folders/456/securityHealthAnalyticsSettings/customModules/123456 \
-            --display-name="test_display_name"\
+            --display-name="test_display_name" \
             --custom-config-from-file=/tmp/custom_config.yaml \
             --test-data-from-file=/tmp/test_data.yaml
 
-      To test a Security Health Analytics custom module with id `123456` for project `789`, run:
+      To test a Security Health Analytics custom module with ID `123456` for project `789`, run:
 
         $ {command} 123456 \
             --project=projects/789 \
-            --display-name="test_display_name"\
-            --custom-config-from-file=/tmp/custom_config.yaml \
-            --test-data-from-file=/tmp/test_data.yaml
-        $ {command} 123456 \
-            --project=789 \
-            --display-name="test_display_name"\
-            --custom-config-from-file=/tmp/custom_config.yaml \
-            --test-data-from-file=/tmp/test_data.yaml
-        $ {command} projects/789/securityHealthAnalyticsSettings/customModules/123456 \
-            --display-name="test_display_name"\
+            --display-name="test_display_name" \
             --custom-config-from-file=/tmp/custom_config.yaml \
             --test-data-from-file=/tmp/test_data.yaml
 
@@ -70,7 +43,7 @@
       is_positional: true
       required: false
       help_text: |
-        Id or the full resource name of the Security Health Analytics custom module.
+        ID or the full resource name of the Security Health Analytics custom module. If you specify the full resource name, you do not need to specify the --organization, --folder, or --project flags.
 
     - group:
         mutex: true
@@ -88,14 +61,14 @@
         - arg_name: project
           api_field: name
           help_text: |
-            Project (id or number) where the Security Health Analytics custom module resides. Formatted as `projects/789` or just `789`.
+            ID or number of the project where the Security Health Analytics custom module resides. Formatted as `projects/789` or just `789`.
 
     - arg_name: display-name
       api_field: testSecurityHealthAnalyticsCustomModuleRequest.securityHealthAnalyticsCustomModule.displayName
       is_positional: false
       required: false
       help_text: |
-        Display name of the Security Health Analytics custom module. Display name must be at most 64 characters. Only relevant when `--custom-config-from-file` is also specified.
+        Sets the display name of the Security Health Analytics custom module. This display name becomes the finding category for all findings that are returned by this the custom module. The display name must be between 1 and 128 characters, start with a lowercase letter, and contain alphanumeric characters or underscores only. Only relevant when `--custom-config-from-file` is also specified.
 
     - arg_name: custom-config-from-file
       api_field: testSecurityHealthAnalyticsCustomModuleRequest.securityHealthAnalyticsCustomModule.customConfig
@@ -104,7 +77,7 @@
       is_positional: false
       required: false
       help_text: |
-        Path to a YAML file containing the custom configuration for the Security Health Analytics custom module. If not specified, the existing module with the given ID or resource name is used.
+        Path to a YAML file that contains the configuration for the Security Health Analytics custom module. If not specified, the existing module with the given ID or resource name is used.
 
     - arg_name: test-data-from-file
       api_field: testSecurityHealthAnalyticsCustomModuleRequest.testData
@@ -114,4 +87,4 @@
       required: true
       repeated: false
       help_text: |
-        Path to a YAML file containing the resource data to test the Security Health Analytics custom module against.
+        Path to a YAML file that contains the resource data to test the Security Health Analytics custom module against.

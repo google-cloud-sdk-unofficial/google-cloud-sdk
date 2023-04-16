@@ -1,26 +1,20 @@
-- release_tracks: [ALPHA]
+- release_tracks: [ALPHA, GA]
 
   help_text:
     brief: Delete a Security Health Analytics custom module.
     description: Delete a Security Health Analytics custom module.
     examples: |
-      To delete a Security Health Analytics custom module with id `123456` for organization `123`, run:
+      To delete a Security Health Analytics custom module with ID `123456` for organization `123`, run:
 
         $ {command} 123456 --organization=organizations/123
-        $ {command} 123456 --organization=123
-        $ {command} organizations/123/securityHealthAnalyticsSettings/customModules/123456
 
-      To delete a Security Health Analytics custom module with id `123456` for folder `456`, run:
+      To delete a Security Health Analytics custom module with ID `123456` for folder `456`, run:
 
         $ {command} 123456 --folder=folders/456
-        $ {command} 123456 --folder=456
-        $ {command} folders/456/securityHealthAnalyticsSettings/customModules/123456
 
-      To delete a Security Health Analytics custom module with id `123456` for project `789`, run:
+      To delete a Security Health Analytics custom module with ID `123456` for project `789`, run:
 
         $ {command} 123456 --project=projects/789
-        $ {command} 123456 --project=789
-        $ {command} projects/789/securityHealthAnalyticsSettings/customModules/123456
 
   request:
     collection: securitycenter.organizations.securityHealthAnalyticsSettings.customModules
@@ -37,7 +31,7 @@
       is_positional: true
       required: true
       help_text: |
-        Id or the full resource name of the Security Health Analytics custom module.
+        ID or the full resource name of the Security Health Analytics custom module. If you specify the full resource name, you do not need to specify the --organization, --folder, or --project flags.
 
     - group:
         mutex: true
@@ -55,7 +49,7 @@
         - arg_name: project
           api_field: name
           help_text: |
-            Project (id or number) where the Security Health Analytics custom module resides. Formatted as `projects/789` or just `789`.
+            ID or number of the project where the Security Health Analytics custom module resides. Formatted as `projects/789` or just `789`.
 
   input:
     confirmation_prompt: |

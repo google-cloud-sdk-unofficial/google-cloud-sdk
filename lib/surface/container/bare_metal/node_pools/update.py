@@ -35,7 +35,7 @@ $ {command} my-node-pool --cluster=my-cluster --location=us-west1
 """
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Update(base.UpdateCommand):
   """Update a node pool in an Anthos cluster on bare metal."""
 

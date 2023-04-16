@@ -53,6 +53,10 @@
       type: bool
       help_text: |
         This specifies whether public IP is enabled on the Looker instance.
+    - arg_name: allowed-email-domains
+      api_field: instance.adminSettings.allowedEmailDomains
+      help_text: |
+        This specifies the entire allowed email domain list.
     - arg_name: consumer-network
       api_field: instance.consumerNetwork
       help_text: |
@@ -61,6 +65,8 @@
   request:
     ALPHA:
       api_version: v1alpha1
+      modify_request_hooks:
+      - googlecloudsdk.command_lib.looker.instances_update_util:ModifyAllowedEmailDomains
     collection: looker.projects.locations.instances
 
   output:

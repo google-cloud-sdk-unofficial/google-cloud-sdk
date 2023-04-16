@@ -26,6 +26,61 @@ from googlecloudsdk.command_lib.util.args import labels_util
 from googlecloudsdk.core import log
 
 
+# TODO(b/239613419):
+# Keep gcloud beta netapp group hidden until v1beta1 API stable
+# also restructure release tracks that GA \subset BETA \subset ALPHA once
+# BETA is public.
+@base.Hidden
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class CreateBeta(base.CreateCommand):
+  """Create a Cloud NetApp Active Directory."""
+
+  _RELEASE_TRACK = base.ReleaseTrack.BETA
+
+  @staticmethod
+  def Args(parser):
+    activedirectories_flags.AddActiveDirectoryCreateArgs(parser)
+
+  def Run(self, args):
+    """Create a Cloud NetApp Active Directory in the current project."""
+    activedirectory_ref = args.CONCEPTS.active_directory.Parse()
+    client = ad_client.ActiveDirectoriesClient(self._RELEASE_TRACK)
+    labels = labels_util.ParseCreateArgs(
+        args, client.messages.ActiveDirectory.LabelsValue)
+
+    active_directory = client.ParseActiveDirectoryConfig(
+        name=activedirectory_ref.RelativeName(),
+        domain=args.domain,
+        site=args.site,
+        dns=args.dns,
+        net_bios_prefix=args.net_bios_prefix,
+        organizational_unit=args.organizational_unit,
+        aes_encryption=args.enable_aes,
+        username=args.username,
+        password=args.password,
+        backup_operators=args.backup_operators,
+        security_operators=args.security_operators,
+        kdc_hostname=args.kdc_hostname,
+        kdc_ip=args.kdc_ip,
+        nfs_users_with_ldap=args.nfs_users_with_ldap,
+        ldap_signing=args.enable_ldap_signing,
+        encrypt_dc_connections=args.encrypt_dc_connections,
+        description=args.description,
+        labels=labels,
+    )
+    result = client.CreateActiveDirectory(activedirectory_ref,
+                                          args.async_,
+                                          active_directory)
+    if args.async_:
+      command = 'gcloud {} netapp active-directories list'.format(
+          self.ReleaseTrack().prefix)
+      log.status.Print(
+          'Check the status of the new active directory by listing all active'
+          ' directories:\n  $ {} '.format(command)
+      )
+    return result
+
+
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class CreateAlpha(base.CreateCommand):
   """Create a Cloud NetApp Active Directory."""

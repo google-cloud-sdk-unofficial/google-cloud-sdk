@@ -22,5 +22,13 @@ from googlecloudsdk.calliope import base
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class StoragePools(base.Group):
+class StoragePoolsAlpha(base.Group):
+  """Create and manage Cloud NetApp Storage Pools."""
+
+
+# TODO(b/239613419):
+# Keep gcloud beta netapp group hidden until v1beta1 API stable
+@base.Hidden
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class StoragePoolsBeta(base.Group):
   """Create and manage Cloud NetApp Storage Pools."""

@@ -21,6 +21,7 @@ from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.functions import flags
 from googlecloudsdk.command_lib.functions import secrets_config
+from googlecloudsdk.command_lib.functions import util
 from googlecloudsdk.command_lib.functions.v1.deploy import command as command_v1
 from googlecloudsdk.command_lib.functions.v1.deploy import labels_util
 from googlecloudsdk.command_lib.functions.v2.deploy import command as command_v2
@@ -89,27 +90,24 @@ def _CommonArgs(parser, track):
   flags.AddRunServiceAccountFlag(parser)
   flags.AddTriggerLocationFlag(parser)
   flags.AddTriggerServiceAccountFlag(parser)
-  # TODO(b/263151839): Update --gen2 behavior for existing functions for deploy.
-  flags.AddGen2Flag(parser, operates_on_existing_function=False)
+  flags.AddGen2Flag(parser)
   flags.AddServeAllTrafficLatestRevisionFlag(parser)
   flags.AddConcurrencyFlag(parser, track)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
-class Deploy(base.Command):
+class Deploy(util.FunctionResourceCommand, base.Command):
   """Create or update a Google Cloud Function."""
 
   @staticmethod
   def Args(parser):
     _CommonArgs(parser, base.ReleaseTrack.GA)
 
-  def Run(self, args):
-    if flags.ShouldUseGen2():
-      return command_v2.Run(args, self.ReleaseTrack())
-    else:
-      # For v1 convert args.memory from str to number of bytes in int
-      args.memory = flags.ParseMemoryStrToNumBytes(args.memory)
-      return command_v1.Run(args, track=self.ReleaseTrack())
+  def _RunV1(self, args):
+    return command_v1.Run(args, track=self.ReleaseTrack())
+
+  def _RunV2(self, args):
+    return command_v2.Run(args, self.ReleaseTrack())
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)

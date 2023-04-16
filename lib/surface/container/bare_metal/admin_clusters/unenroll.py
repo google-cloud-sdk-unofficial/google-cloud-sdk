@@ -49,6 +49,7 @@ class Unenroll(base.Command):
     cluster_flags.AddAdminClusterResourceArg(parser, 'to unenroll')
     cluster_flags.AddAllowMissingCluster(parser)
     base.ASYNC_FLAG.AddToParser(parser)
+    cluster_flags.AddValidationOnly(parser)
 
   def Run(self, args):
     """Runs the unenroll command."""
@@ -58,6 +59,9 @@ class Unenroll(base.Command):
 
     if args.async_ and not args.IsSpecified('format'):
       args.format = constants.OPERATIONS_FORMAT
+
+    if args.validate_only:
+      return
 
     if args.async_:
       operations.log_unenroll(cluster_ref, args.async_)

@@ -22,7 +22,7 @@ from googlecloudsdk.calliope import base
 
 
 @base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.GA)
 class Instances(base.Group):
   """Manage Looker instances.
 
@@ -43,6 +43,10 @@ class Instances(base.Group):
   To restart an instance with the name `my-looker-instance`, run:
 
     $ {command} restart my-looker-instance
+
+  To update an instance with the name `my-looker-instance`, run:
+
+    $ {command} update my-looker-instance
 
   To list all the instances, run:
 

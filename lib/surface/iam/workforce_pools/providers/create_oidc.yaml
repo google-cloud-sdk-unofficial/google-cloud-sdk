@@ -53,6 +53,10 @@
       required: true
     - _REF_: googlecloudsdk.command_lib.iam.flags:workforce_pool_provider.oidc_client_id
       required: true
+    - _REF_: googlecloudsdk.command_lib.iam.flags:workforce_pool_provider.oidc_web_sso_response_type
+      hidden: true
+    - _REF_: googlecloudsdk.command_lib.iam.flags:workforce_pool_provider.oidc_web_sso_assertion_claims_behavior
+      hidden: true
 
   async:
     collection: iam.locations.workforcePools.providers.operations

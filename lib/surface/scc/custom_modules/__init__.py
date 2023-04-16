@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Command group for Security Health Analytics custom modules."""
+"""Command group for Cloud SCC custom modules."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -21,6 +21,6 @@ from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.GA)
 class CustomModules(base.Group):
-  """Manage custom modules."""
+  """Manage Cloud SCC (Security Command Center) custom modules."""

@@ -27,6 +27,46 @@ from googlecloudsdk.core import log
 from googlecloudsdk.core.console import console_io
 
 
+# TODO(b/239613419):
+# Keep gcloud beta netapp group hidden until v1beta1 API stable
+# also restructure release tracks that GA \subset BETA \subset ALPHA once
+# BETA is public.
+@base.Hidden
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class RevertBeta(base.Command):
+  """Revert a Cloud NetApp Volume back to a specified Snapshot."""
+
+  _RELEASE_TRACK = base.ReleaseTrack.BETA
+
+  @staticmethod
+  def Args(parser):
+    concept_parsers.ConceptParser([flags.GetVolumePresentationSpec(
+        'The Volume to revert.')]).AddToParser(parser)
+    volumes_flags.AddVolumeRevertSnapshotArg(parser)
+    flags.AddResourceAsyncFlag(parser)
+
+  def Run(self, args):
+    """Run the revert command."""
+    volume_ref = args.CONCEPTS.volume.Parse()
+    client = volumes_client.VolumesClient(release_track=self._RELEASE_TRACK)
+    revert_warning = (
+        'You are about to revert Volume {} back to Snapshot {}.\n'
+        'Are you sure?'.format(volume_ref.RelativeName(), args.snapshot)
+    )
+    if not console_io.PromptContinue(message=revert_warning):
+      return None
+    result = client.RevertVolume(volume_ref, args.snapshot, args.async_)
+    if args.async_:
+      command = 'gcloud {} netapp volumes list'.format(
+          self.ReleaseTrack().prefix
+      )
+      log.status.Print(
+          'Check the status of the volume being reverted by listing all'
+          ' volumes:\n$ {}'.format(command)
+      )
+    return result
+
+
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class RevertAlpha(base.Command):
   """Revert a Cloud NetApp Volume back to a specified Snapshot."""
@@ -60,3 +100,4 @@ class RevertAlpha(base.Command):
           ' volumes:\n  $ {} '.format(command)
       )
     return result
+

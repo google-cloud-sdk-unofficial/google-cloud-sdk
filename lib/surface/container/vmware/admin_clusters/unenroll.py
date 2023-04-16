@@ -46,6 +46,8 @@ class Unenroll(base.Command):
     parser.display_info.AddFormat(vmware_constants.VMWARE_CLUSTERS_FORMAT)
     flags.AddAdminClusterResourceArg(parser, 'to unenroll')
     base.ASYNC_FLAG.AddToParser(parser)
+    flags.AddValidationOnly(parser)
+    flags.AddAllowMissingUnenrollCluster(parser)
 
   def Run(self, args):
     """Runs the unenroll command."""
@@ -55,6 +57,15 @@ class Unenroll(base.Command):
 
     if args.async_ and not args.IsSpecified('format'):
       args.format = constants.OPERATIONS_FORMAT
+
+    if args.validate_only:
+      return None
+
+    # when using --allow-missing without --async on a non-existing resource,
+    # it would return an operation object with an empty name.
+    # return early to avoid potential polling error.
+    if operation.name is None:
+      return None
 
     if args.async_:
       operations.log_unenroll(admin_cluster_ref, args.async_)

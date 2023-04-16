@@ -22,5 +22,13 @@ from googlecloudsdk.calliope import base
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class ActiveDirectories(base.Group):
+class ActiveDirectoriesAlpha(base.Group):
+  """Create and manage Cloud NetApp Active Directories."""
+
+
+# TODO(b/239613419):
+# Keep gcloud beta netapp group hidden until v1beta1 API stablev
+@base.Hidden
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class ActiveDirectoriesBeta(base.Group):
   """Create and manage Cloud NetApp Active Directories."""

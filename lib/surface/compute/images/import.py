@@ -181,7 +181,7 @@ class Import(base.CreateCommand):
         'in your project for the import process. Use this flag to '
         'specify the zone to use for these temporary VMs.')
 
-    source = parser.add_mutually_exclusive_group(required=True)
+    source = parser.add_mutually_exclusive_group(required=True, sort_args=False)
 
     import_from_local_or_gcs = source.add_mutually_exclusive_group(
         help='Image import from local file, Cloud Storage or '

@@ -3045,7 +3045,7 @@
           "type": "string"
         },
         "type": {
-          "description": "Required. The field data type. Possible values include: * STRING * BYTES * INTEGER (or INT64) * FLOAT (or FLOAT64) * BOOLEAN (or BOOL) * TIMESTAMP * DATE * TIME * DATETIME * GEOGRAPHY, * NUMERIC * BIGNUMERIC * RECORD (or STRUCT) Use of RECORD\/STRUCT indicates that the field contains a nested schema.",
+          "description": "Required. The field data type. Possible values include: * STRING * BYTES * INTEGER (or INT64) * FLOAT (or FLOAT64) * BOOLEAN (or BOOL) * TIMESTAMP * DATE * TIME * DATETIME * GEOGRAPHY * NUMERIC * BIGNUMERIC * JSON * RECORD (or STRUCT) Use of RECORD\/STRUCT indicates that the field contains a nested schema.",
           "type": "string"
         },
         "mode": {
@@ -4214,7 +4214,7 @@
           }
         },
         "statementType": {
-          "description": "Output only. The type of query statement, if valid. Possible values: * `SELECT`: [SELECT](\/bigquery\/docs\/reference\/standard-sql\/query-syntax#select_list) statement. * `INSERT`: [INSERT](\/bigquery\/docs\/reference\/standard-sql\/dml-syntax#insert_statement) statement. * `UPDATE`: [UPDATE](\/bigquery\/docs\/reference\/standard-sql\/query-syntax#update_statement) statement. * `DELETE`: [DELETE](\/bigquery\/docs\/reference\/standard-sql\/data-manipulation-language) statement. * `MERGE`: [MERGE](\/bigquery\/docs\/reference\/standard-sql\/data-manipulation-language) statement. * `ALTER_TABLE`: [ALTER TABLE](\/bigquery\/docs\/reference\/standard-sql\/data-definition-language#alter_table_set_options_statement) statement. * `ALTER_VIEW`: [ALTER VIEW](\/bigquery\/docs\/reference\/standard-sql\/data-definition-language#alter_view_set_options_statement) statement. * `ASSERT`: [ASSERT](\/bigquery\/docs\/reference\/standard-sql\/debugging-statements#assert) statement. * `CREATE_FUNCTION`: [CREATE FUNCTION](\/bigquery\/docs\/reference\/standard-sql\/data-definition-language#create_function_statement) statement. * `CREATE_MODEL`: [CREATE MODEL](\/bigquery-ml\/docs\/reference\/standard-sql\/bigqueryml-syntax-create#create_model_statement) statement. * `CREATE_PROCEDURE`: [CREATE PROCEDURE](\/bigquery\/docs\/reference\/standard-sql\/data-definition-language#create_procedure) statement. * `CREATE_ROW_ACCESS_POLICY`: [CREATE ROW ACCESS POLICY](\/bigquery\/docs\/reference\/standard-sql\/data-definition-language#create_row_access_policy_statement) statement. * `CREATE_TABLE`: [CREATE TABLE](\/bigquery\/docs\/reference\/standard-sql\/data-definition-language#create_table_statement) statement, without AS SELECT. * `CREATE_TABLE_AS_SELECT`: [CREATE TABLE AS SELECT](\/bigquery\/docs\/reference\/standard-sql\/data-definition-language#query_statement) statement. * `CREATE_VIEW`: [CREATE VIEW](\/bigquery\/docs\/reference\/standard-sql\/data-definition-language#create_view_statement) statement. * `DROP_FUNCTION` : [DROP FUNCTION](\/bigquery\/docs\/reference\/standard-sql\/data-definition-language#drop_function_statement) statement. * `DROP_PROCEDURE`: [DROP PROCEDURE](\/bigquery\/docs\/reference\/standard-sql\/data-definition-language#drop_procedure_statement) statement. * `DROP_ROW_ACCESS_POLICY`: [DROP [ALL] ROW ACCESS POLICY|POLICIES](\/bigquery\/docs\/reference\/standard-sql\/data-definition-language#drop_row_access_policy_statement) statement. * `DROP_TABLE`: [DROP TABLE](\/bigquery\/docs\/reference\/standard-sql\/data-definition-language#drop_table_statement) statement. * `DROP_VIEW`: [DROP VIEW](\/bigquery\/docs\/reference\/standard-sql\/data-definition-language#drop_view_statement) statement. * `EXPORT_MODEL`: [EXPORT MODEL](\/bigquery-ml\/docs\/reference\/standard-sql\/bigqueryml-syntax-export-model) statement.",
+          "description": "Output only. The type of query statement, if valid. Possible values: * `SELECT`: [SELECT](\/bigquery\/docs\/reference\/standard-sql\/query-syntax#select_list) statement. * `INSERT`: [INSERT](\/bigquery\/docs\/reference\/standard-sql\/dml-syntax#insert_statement) statement. * `UPDATE`: [UPDATE](\/bigquery\/docs\/reference\/standard-sql\/query-syntax#update_statement) statement. * `DELETE`: [DELETE](\/bigquery\/docs\/reference\/standard-sql\/data-manipulation-language) statement. * `MERGE`: [MERGE](\/bigquery\/docs\/reference\/standard-sql\/data-manipulation-language) statement. * `ALTER_TABLE`: [ALTER TABLE](\/bigquery\/docs\/reference\/standard-sql\/data-definition-language#alter_table_set_options_statement) statement. * `ALTER_VIEW`: [ALTER VIEW](\/bigquery\/docs\/reference\/standard-sql\/data-definition-language#alter_view_set_options_statement) statement. * `ASSERT`: [ASSERT](\/bigquery\/docs\/reference\/standard-sql\/debugging-statements#assert) statement. * `CREATE_FUNCTION`: [CREATE FUNCTION](\/bigquery\/docs\/reference\/standard-sql\/data-definition-language#create_function_statement) statement. * `CREATE_MODEL`: [CREATE MODEL](\/bigquery-ml\/docs\/reference\/standard-sql\/bigqueryml-syntax-create#create_model_statement) statement. * `CREATE_PROCEDURE`: [CREATE PROCEDURE](\/bigquery\/docs\/reference\/standard-sql\/data-definition-language#create_procedure) statement. * `CREATE_ROW_ACCESS_POLICY`: [CREATE ROW ACCESS POLICY](\/bigquery\/docs\/reference\/standard-sql\/data-definition-language#create_row_access_policy_statement) statement. * `CREATE_TABLE`: [CREATE TABLE](\/bigquery\/docs\/reference\/standard-sql\/data-definition-language#create_table_statement) statement, without AS SELECT. * `CREATE_TABLE_AS_SELECT`: [CREATE TABLE AS SELECT](\/bigquery\/docs\/reference\/standard-sql\/data-definition-language#query_statement) statement. * `CREATE_VIEW`: [CREATE VIEW](\/bigquery\/docs\/reference\/standard-sql\/data-definition-language#create_view_statement) statement. * `DROP_FUNCTION` : [DROP FUNCTION](\/bigquery\/docs\/reference\/standard-sql\/data-definition-language#drop_function_statement) statement. * `DROP_PROCEDURE`: [DROP PROCEDURE](\/bigquery\/docs\/reference\/standard-sql\/data-definition-language#drop_procedure_statement) statement. * `DROP_ROW_ACCESS_POLICY`: [DROP [ALL] ROW ACCESS POLICY|POLICIES](\/bigquery\/docs\/reference\/standard-sql\/data-definition-language#drop_row_access_policy_statement) statement. * `DROP_TABLE`: [DROP TABLE](\/bigquery\/docs\/reference\/standard-sql\/data-definition-language#drop_table_statement) statement. * `DROP_VIEW`: [DROP VIEW](\/bigquery\/docs\/reference\/standard-sql\/data-definition-language#drop_view_statement) statement. * `EXPORT_MODEL`: [EXPORT MODEL](\/bigquery-ml\/docs\/reference\/standard-sql\/bigqueryml-syntax-export-model) statement. * `LOAD_DATA`: [LOAD DATA](\/bigquery\/docs\/reference\/standard-sql\/other-statements#load_data_statement) statement.",
           "readOnly": true,
           "type": "string"
         },
@@ -4900,6 +4900,7 @@
             "Indicates the base table is too small (below a certain threshold). The index does not provide noticeable search performance gains when the base table is too small.",
             "Indicates that the total size of indexed base tables in your organization exceeds your region's limit and the index is not used in the query. To index larger base tables, you can use your own reservation for index-management jobs.",
             "Indicates that the esitmated performance gain from using the search index is too low for the given search query.",
+            "Indicates that search indexes can not be used for search query with STANDARD edition.",
             "Indicates an internal error that causes the search index to be unused.",
             "Indicates that the reason search indexes cannot be used in the query is not covered by any of the other IndexUnusedReason options."
           ],
@@ -4919,6 +4920,7 @@
             "BASE_TABLE_TOO_SMALL",
             "BASE_TABLE_TOO_LARGE",
             "ESTIMATED_PERFORMANCE_GAIN_TOO_LOW",
+            "NOT_SUPPORTED_IN_STANDARD_EDITION",
             "INTERNAL_ERROR",
             "OTHER_REASON"
           ]
@@ -5026,12 +5028,12 @@
       "type": "object",
       "properties": {
         "sparkJobId": {
-          "description": "Output only. Spark job id if a Spark job is created successfully.",
+          "description": "Output only. Spark job ID if a Spark job is created successfully.",
           "readOnly": true,
           "type": "string"
         },
         "sparkJobLocation": {
-          "description": "Output only. Location where the Spark job is executed. A location is selected by BigQueury for jobs configured to run in multi-region.",
+          "description": "Output only. Location where the Spark job is executed. A location is selected by BigQueury for jobs configured to run in a multi-region.",
           "readOnly": true,
           "type": "string"
         },
@@ -5061,7 +5063,7 @@
           "type": "string"
         },
         "projectId": {
-          "description": "Output only. Project ID used for logging. It is either tenant project ID where the Spark job is executed, or the user project id.",
+          "description": "Output only. Project ID where the Spark logs were written.",
           "readOnly": true,
           "type": "string"
         }
@@ -5949,7 +5951,7 @@
           }
         },
         "mainFileUri": {
-          "description": "The main file\/jar URI of the Spark application. Exactly one of the definition_body field and the main_file_uri field must be set for Python.",
+          "description": "The main file\/jar URI of the Spark application. Exactly one of the definition_body field and the main_file_uri field must be set for Python. Exactly one of main_class and main_file_uri field should be set for Java\/Scala language type.",
           "type": "string"
         },
         "pyFileUris": {

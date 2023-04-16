@@ -99,7 +99,7 @@ class BetaRun(Run):
   @staticmethod
   def Args(parser):
     Run.CommonArgs(parser)
-    flags.AddLoggingArg(parser)
+    flags.AddBetaLoggingArg(parser)
 
   def CallLogLevel(self, args):
     return args.call_log_level

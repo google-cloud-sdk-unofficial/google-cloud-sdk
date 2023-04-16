@@ -22,6 +22,7 @@ import textwrap
 
 from googlecloudsdk.api_lib.util import apis
 from googlecloudsdk.api_lib.util import waiter
+from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope.concepts import concepts
 from googlecloudsdk.command_lib.network_actions import flags
@@ -38,6 +39,39 @@ def _GetApiVersion(track):
     return 'v1alpha1'
   else:
     raise ValueError('Unsupported Release Track: {}'.format(track))
+
+
+def _GetPossibleValuesOfSupportedEvents():
+  """Returns the possible values of the --supported-events flag.
+
+  Returns:
+    List of strings.
+  """
+  return ['request-headers', 'response-headers']
+
+
+def _ConvertStringSupportedEventToEnum(messages, supported_event):
+  """Converts the text representation of an event to enum.
+
+  Args:
+    messages: module containing the definitions of messages for the API.
+    supported_event: string, for example 'request_headers'.
+
+  Returns:
+    a value of messages.WasmAction.SupportedEventsValueListEntryValuesEnum,
+    for example
+    messages.WasmAction.SupportedEventsValueListEntryValuesEnum.REQUEST_HEADERS
+  """
+  uppercase_event = supported_event.upper().replace('-', '_')
+  if not hasattr(messages.WasmAction.SupportedEventsValueListEntryValuesEnum,
+                 uppercase_event):
+    # This is theoretically possible if the list of allowed values of
+    # --supported-events (returned by _GetPossibleValuesOfSupportedEvents())
+    # contains values from the v1alpha1 version that are not yet visible
+    # in v1.
+    raise ValueError('Unsupported value: ' + supported_event)
+  return getattr(messages.WasmAction.SupportedEventsValueListEntryValuesEnum,
+                 uppercase_event)
 
 
 @base.Hidden
@@ -93,6 +127,17 @@ class Create(base.CreateCommand):
         command_level_fallthroughs={
             '--wasm-plugin.location': ['wasm_action.location']
         }).AddToParser(parser)
+
+    parser.add_argument(
+        '--supported-events',
+        type=arg_parsers.ArgList(choices=_GetPossibleValuesOfSupportedEvents()),
+        required=False,
+        metavar='EVENT',
+        default=[],
+        help=textwrap.dedent("""\
+          Specify the portion of the request/response payload to be processed by
+          the Plugin."""),
+    )
     base.ASYNC_FLAG.AddToParser(parser)
     labels_util.AddCreateLabelsFlags(parser)
     flags.AddDescriptionFlag(parser)
@@ -105,13 +150,20 @@ class Create(base.CreateCommand):
     wasm_plugin_ref = args.CONCEPTS.wasm_plugin.Parse()
     labels = labels_util.ParseCreateArgs(args, messages.WasmAction.LabelsValue)
 
+    converted_events = [
+        _ConvertStringSupportedEventToEnum(messages, event)
+        for event in args.supported_events]
+
     request = messages.NetworkservicesProjectsLocationsWasmActionsCreateRequest(
         parent=wasm_action_ref.Parent().RelativeName(),
         wasmActionId=wasm_action_ref.Name(),
         wasmAction=messages.WasmAction(
             wasmPlugin=wasm_plugin_ref.RelativeName(),
             description=args.description,
-            labels=labels))
+            labels=labels,
+            supportedEvents=converted_events,
+        ),
+    )
 
     # Issue the create request, which returns an operation.
     client = apis.GetClientInstance('networkservices', api_version)

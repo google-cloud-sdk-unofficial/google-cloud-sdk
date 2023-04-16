@@ -27,20 +27,20 @@ from googlecloudsdk.core import properties
 from googlecloudsdk.core.console import console_io
 
 
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
 class Create(base.Command):
   """Create Cloud Datastore indexes."""
-  # pylint:disable=line-too-long
+
   detailed_help = {
-      'brief':
+      'brief': (
           'Create new datastore indexes based on your local index '
-          'configuration.',
-      'DESCRIPTION':
-          """
+          'configuration.'
+      ),
+      'DESCRIPTION': """
 Create new datastore indexes based on your local index configuration.
 Any indexes in your index file that do not exist will be created.
       """,
-      'EXAMPLES':
-          """\
+      'EXAMPLES': """\
           To create new indexes based on your local configuration, run:
 
             $ {command} ~/myapp/index.yaml
@@ -48,7 +48,7 @@ Any indexes in your index file that do not exist will be created.
           Detailed information about index configuration can be found at the
           [index.yaml reference](https://cloud.google.com/appengine/docs/standard/python/config/indexref).
           """,
-  }
+      }
 
   @staticmethod
   def Args(parser):
@@ -63,15 +63,58 @@ Any indexes in your index file that do not exist will be created.
         The path to your `index.yaml` file. For a detailed look into defining
         your `index.yaml` file, refer to this configuration guide:
         https://cloud.google.com/datastore/docs/tools/indexconfig#Datastore_About_index_yaml
-        """)
+        """,
+    )
 
   def Run(self, args):
+    return self.CreateIndexes(index_file=args.index_file)
+
+  def CreateIndexes(self, index_file, database=None):
     project = properties.VALUES.core.project.Get(required=True)
-    info = yaml_parsing.ConfigYamlInfo.FromFile(args.index_file)
+    info = yaml_parsing.ConfigYamlInfo.FromFile(index_file)
     if not info or info.name != yaml_parsing.ConfigYamlInfo.INDEX:
       raise exceptions.InvalidArgumentException(
-          'index_file', 'You must provide the path to a valid index.yaml file.')
+          'index_file', 'You must provide the path to a valid index.yaml file.'
+      )
     output_helpers.DisplayProposedConfigDeployments(project, [info])
     console_io.PromptContinue(
-        default=True, throw_if_unattended=False, cancel_on_no=True)
-    index_api.CreateMissingIndexes(project, info.parsed)
+        default=True, throw_if_unattended=False, cancel_on_no=True
+    )
+
+    if database:
+      # Use Firestore Admin for non (default) database.
+      index_api.CreateIndexesViaFirestoreApi(project, database, info.parsed)
+    else:
+      # Use Datastore Admin for the (default) database.
+      index_api.CreateMissingIndexes(project, info.parsed)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class CreateFirestoreAPI(Create):
+  """Create Cloud Datastore indexes with Firestore API."""
+
+  @staticmethod
+  def Args(parser):
+    """Get arguments for this command.
+
+    Args:
+      parser: argparse.ArgumentParser, the parser for this command.
+    """
+    parser.add_argument(
+        'index_file',
+        help="""
+        The path to your `index.yaml` file. For a detailed look into defining
+        your `index.yaml` file, refer to this configuration guide:
+        https://cloud.google.com/datastore/docs/tools/indexconfig#Datastore_About_index_yaml
+        """,
+    )
+    parser.add_argument(
+        '--database',
+        help='The database to operate on.',
+        type=str,
+    )
+
+  def Run(self, args):
+    return self.CreateIndexes(
+        index_file=args.index_file, database=args.database
+    )

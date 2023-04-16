@@ -33,7 +33,7 @@ $ {command} my-cluster --location=us-west1
 """
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Create(base.CreateCommand):
   """Create an Anthos on bare metal admin cluster."""
 
@@ -64,6 +64,7 @@ class Create(base.CreateCommand):
     bare_metal_flags.AddMaintenanceConfig(parser)
     bare_metal_flags.AddAdminWorkloadNodeConfig(parser)
     bare_metal_flags.AddNodeAccessConfig(parser)
+    bare_metal_flags.AddSecurityConfig(parser)
 
   def Run(self, args):
     """Runs the create command.

@@ -18,18 +18,20 @@
       api_version: v1alpha
     GA:
       api_version: v1
-    modify_request_hooks:
-    - googlecloudsdk.command_lib.edge_cloud.container.vpn:SetVPNClusterPath
 
   arguments:
     params:
-    - help_text: VPN connection to create.
+    - arg_name: vpn_connection
+      help_text: VPN connection to create.
+      is_primary_resource: true
       resource_spec: !REF googlecloudsdk.command_lib.edge_cloud.container.resources:vpnConnection
     - arg_name: cluster
-      api_field: vpnConnection.cluster
       help_text: |
         The name of the cluster to be connected under current project.
-      required: true
+      is_positional: false
+      resource_spec: !REF googlecloudsdk.command_lib.edge_cloud.container.resources:cluster
+      resource_method_params:
+        vpnConnection.cluster: "{__relative_name__}"
     - arg_name: vpc-network
       api_field: vpnConnection.vpc
       help_text: |

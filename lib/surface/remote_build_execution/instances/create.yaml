@@ -291,6 +291,12 @@
         help_text: |
           Linux actions will be hardened with gVisor. Actions incompatible with gVisor hardening
           will be rejected.
+      - arg_value: hardened-gvisor-or-terminal
+        enum_value: LINUX_EXECUTION_HARDENED_GVISOR_OR_TERMINAL
+        help_text: |
+          Linux actions will be hardened with gVisor. Actions incompatible with gVisor hardening
+          will be made terminal, i.e., the worker that ran the action will be terminated after the
+          action completes.
       help_text: |
         Defines whether Linux actions and worker pools are allowed and how they can be configured
         to support various levels of isolation.
@@ -306,6 +312,10 @@
         enum_value: WINDOWS_EXECUTION_UNRESTRICTED
         help_text: |
           No additional restrictions imposed on Windows actions or worker pools by this policy.
+      - arg_value: terminal
+        enum_value: WINDOWS_EXECUTION_TERMINAL
+        help_text: |
+          Windows workers will be terminated after they finish running an action.
       help_text: |
         Defines whether Windows actions and worker pools are allowed and how they can be configured
         to support various levels of isolation.

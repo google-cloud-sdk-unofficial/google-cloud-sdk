@@ -400,10 +400,7 @@ class Update(base.UpdateCommand):
     opts.cluster_dns = args.cluster_dns
     opts.cluster_dns_scope = args.cluster_dns_scope
     opts.cluster_dns_domain = args.cluster_dns_domain
-    # TODO(b/201956384): Remove when cluster scope flag is released to GA.
     if opts.cluster_dns and opts.cluster_dns.lower() == 'clouddns':
-      if opts.cluster_dns_scope == 'cluster':
-        opts.cluster_dns_scope = None
       console_io.PromptContinue(
           message='All the node-pools in the cluster need to be re-created '
           'by the user to start using Cloud DNS for DNS lookups. It is '

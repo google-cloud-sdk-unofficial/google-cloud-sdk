@@ -141,12 +141,12 @@ class Regen(base.Command):
           .format(api_name,
                   api_version,
                   os.path.join(root_dir, api_config['discovery_doc'])))
-      generate.GenerateApi(base_dir, root_dir,
-                           api_name, api_version, api_config)
-      generate.GenerateResourceModule(base_dir, root_dir,
-                                      api_name, api_version,
-                                      api_config['discovery_doc'],
-                                      api_config.get('resources', {}))
+      generate.GenerateApitoolsApi(base_dir, root_dir,
+                                   api_name, api_version, api_config)
+      generate.GenerateApitoolsResourceModule(base_dir, root_dir,
+                                              api_name, api_version,
+                                              api_config['discovery_doc'],
+                                              api_config.get('resources', {}))
 
     generate.GenerateApiMap(base_dir, root_dir, config['apis'])
 

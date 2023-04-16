@@ -21,6 +21,14 @@ from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 
 
+# TODO(b/239613419):
+# Keep gcloud beta netapp group hidden until v1beta1 API stable
+@base.Hidden
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class LocationsBeta(base.Group):
+  """Get and list locations where Cloud NetApp Files is available."""
+
+
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class Locations(base.Group):
+class LocationsAlpha(base.Group):
   """Get and list locations where Cloud NetApp Files is available."""
