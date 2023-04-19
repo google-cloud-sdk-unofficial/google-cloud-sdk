@@ -18,16 +18,10 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
-import textwrap
 
 from googlecloudsdk.api_lib.firestore import admin_api
-from googlecloudsdk.api_lib.util import apis as core_apis
-from googlecloudsdk.calliope import actions
 from googlecloudsdk.calliope import base
-from googlecloudsdk.command_lib.firestore import create_util
-from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
-from googlecloudsdk.core.log import logging
 
 PRODUCT_NAME = 'Google Cloud Firestore Native'
 LOCATION_HELP_TEXT = (
@@ -37,11 +31,11 @@ LOCATION_HELP_TEXT = (
         product_name=PRODUCT_NAME
     )
 )
-FIRESTORE_TO_GAE_REGION = {'nam5': 'us-central', 'eur3': 'europe-west'}
-GAE_TO_FIRESTORE_LOCATION = {'us-central': 'nam5', 'europe-west': 'eur3'}
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
+)
 class CreateFirestoreAPI(base.Command):
   """Create a Google Cloud Firestore database via Firestore API.
 
@@ -107,75 +101,3 @@ class CreateFirestoreAPI(base.Command):
         type=str,
         default='(default)',
     )
-
-
-@base.ReleaseTracks(base.ReleaseTrack.GA)
-class Create(base.Command):
-  """Create a Google Cloud Firestore Native database."""
-
-  enum_value = core_apis.GetMessagesModule(
-      'appengine', 'v1'
-  ).Application.DatabaseTypeValueValuesEnum.CLOUD_FIRESTORE
-  detailed_help = {
-      'DESCRIPTION': """\
-          {description}
-          """,
-      'EXAMPLES': """\
-          To create Google Cloud Firestore Native database
-
-              $ {command}
-
-          To create an app in the nam5 region (multi-region), run:
-
-              $ {command} --location=nam5
-
-          To create an app in the us-east1 region,  run:
-
-              $ {command} --location=us-east1
-          """,
-  }
-
-  def Run(self, args):
-    if args.region:
-      if args.region in GAE_TO_FIRESTORE_LOCATION:
-        logging.warning(
-            'Warning: {region} is not a valid Firestore location. '
-            'Please use {location} instead.'.format(
-                region=args.region,
-                location=GAE_TO_FIRESTORE_LOCATION[args.region],
-            )
-        )
-
-    region = args.region
-    if args.location:
-      region = args.location
-
-    app_region = FIRESTORE_TO_GAE_REGION.get(region, region)
-
-    create_util.create(app_region, PRODUCT_NAME, self.enum_value)
-
-  def Epilog(self, resources_were_displayed=True):
-    message = """firestore database create` will switch to use Firestore API
-    after 427.0.0 (see more detail in https://cloud.google.com/firestore/docs/app-engine-requirement#api_requirement).
-    Please enable Firestore API before running the command and switch to
-    `--location` flag."""
-    log.warning(textwrap.dedent(message))
-
-  @staticmethod
-  def Args(parser):
-    parser.add_argument(
-        '--region',
-        help=(
-            'The region to create the {product_name} database within. '
-            'Use `gcloud app regions list` to list available regions.'
-        ).format(product_name=PRODUCT_NAME),
-        action=actions.DeprecationAction(
-            '--region',
-            warn=(
-                'The `--region` option is deprecated; use `--location` instead.'
-            ),
-            removed=False,
-            action=actions.StoreProperty(properties.VALUES.functions.region),
-        ),
-    )
-    parser.add_argument('--location', help=LOCATION_HELP_TEXT)

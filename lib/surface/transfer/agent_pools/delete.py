@@ -53,8 +53,8 @@ class Delete(base.Command):
     parser.add_argument('name', help='The name of the job you want to delete.')
 
   def Run(self, args):
-    client = apis.GetClientInstance('storagetransfer', 'v1')
-    messages = apis.GetMessagesModule('storagetransfer', 'v1')
+    client = apis.GetClientInstance('transfer', 'v1')
+    messages = apis.GetMessagesModule('transfer', 'v1')
 
     formatted_agent_pool_name = name_util.add_agent_pool_prefix(args.name)
 

@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Command to deauthorize a P4SA service account from a resource."""
+"""Command to deauthorize a service agent from managing resources."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -30,25 +30,24 @@ from googlecloudsdk.command_lib.projects import util as project_util
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.GA)
 class DeauthorizeLake(base.Command):
-  """Deauthorize a project service account from managing given resource.
+  """Deauthorize a service agent from managing resources.
 
-  Remove IAM Bindings for the service account of the primary project from a
-  secondary project, a storage bucket, or BigQuery dataset.
+  The service agent for the primary project will have its IAM role revoked from
+  a secondary project, a Cloud Storage bucket, or a BigQuery dataset.
   """
   detailed_help = {
-      'EXAMPLES':
-          """\
-          To deauthorize the service account in project `test-project` from
-          managing another project `test-project2`, run:
+      'EXAMPLES': """\
+          To deauthorize the service agent in project `test-project` from
+          managing resources in the project `test-project2`, run:
 
             $ {command} --project=test-project --project-resource=test-project2
 
-          To deauthorize the service account in project `test-project` from
-          managing the storage bucket `dataplex-storage-bucket`, run:
+          To deauthorize the service agent in project `test-project` from
+          managing the Cloud Storage bucket `dataplex-storage-bucket`, run:
 
             $ {command} --project=test-project --storage-bucket-resource=dataplex-storage-bucket
 
-          To deauthorize the service account in project `test-project` from
+          To deauthorize the service agent in project `test-project` from
           managing the BigQuery dataset `test-dataset` in project
           `test-project2`, run:
 
@@ -59,27 +58,41 @@ class DeauthorizeLake(base.Command):
   @staticmethod
   def Args(parser):
     resource_args.AddProjectArg(
-        parser, 'to remove service agent IAM policy binding from.')
+        parser,
+        'to revoke a role from the service agent in.',
+    )
     data_group = parser.add_group(
-        mutex=True, required=True, help='Container or Object to unbind p4sa')
+        mutex=True,
+        required=True,
+        help="The resource for which the service agent's role will be revoked.",
+    )
     data_group.add_argument(
         '--storage-bucket-resource',
-        help="""The identifier of the Cloud Storage bucket to deauthorize the
-                project from."""
+        help="""The identifier of the Cloud Storage bucket that the service agent will no longer manage.""",
     )
     data_group.add_argument(
         '--project-resource',
-        help='The identifier of the project to deauthorize.')
+        help=(
+            'The identifier of the project whose resources the service agent'
+            ' will no longer manage.'
+        ),
+    )
     dataset_group = data_group.add_group(
-        help='Fields to help identify the BigQuery Dataset.')
+        help='Fields to identify the BigQuery dataset.'
+    )
     dataset_group.add_argument(
         '--bigquery-dataset-resource',
         required=True,
-        help="""The identifier of the BigQuery dataset to deauthorize the
-                project from.""")
+        help="""The identifier of the BigQuery dataset that the service agent will no longer manage.""",
+    )
     dataset_group.add_argument(
-        '--secondary-project', required=True,
-        help='The identifier of the Project where BigQuery dataset resides')
+        '--secondary-project',
+        required=True,
+        help=(
+            'The identifier of the project where the BigQuery dataset is'
+            ' located.'
+        ),
+    )
 
   @gcloud_exception.CatchHTTPErrorRaiseHTTPException(
       'Status code: {status_code}. {status_message}.')

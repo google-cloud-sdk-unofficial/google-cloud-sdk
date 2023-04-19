@@ -40,14 +40,15 @@ def main():
     # Check for credentials only if they are needed.
     store.IMPERSONATION_TOKEN_PROVIDER = iamcred_util.ImpersonationAccessTokenProvider(
     )
-    store.Load()  # Checks if there are active credentials
+    creds = store.Load()  # Checks if there are active credentials
 
     project, account = bootstrapping.GetActiveProjectAndAccount()
     adc_path = config.Paths().LegacyCredentialsAdcPath(account)
     single_store_path = config.Paths().LegacyCredentialsBqPath(account)
 
-    gce_metadata = gce.Metadata()
-    if gce_metadata and account in gce_metadata.Accounts():
+    if bootstrapping.GetActiveImpersonateServiceAccount():
+      args = ['--oauth_access_token', creds.token]
+    elif gce.Metadata() and account in gce.Metadata().Accounts():
       args = ['--use_gce_service_account']
     elif os.path.isfile(adc_path):
       args = [

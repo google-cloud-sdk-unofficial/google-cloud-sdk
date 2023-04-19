@@ -61,8 +61,8 @@ class Create(base.Command):
         ' created. If not included, pool creation will run asynchronously.')
 
   def Run(self, args):
-    client = apis.GetClientInstance('storagetransfer', 'v1')
-    messages = apis.GetMessagesModule('storagetransfer', 'v1')
+    client = apis.GetClientInstance('transfer', 'v1')
+    messages = apis.GetMessagesModule('transfer', 'v1')
     formatted_agent_pool_name = name_util.add_agent_pool_prefix(args.name)
     agent_pool_id = name_util.remove_agent_pool_prefix(args.name)
     agent_pool_project = name_util.get_agent_pool_project_from_string(

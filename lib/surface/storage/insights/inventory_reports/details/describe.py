@@ -24,7 +24,6 @@ from googlecloudsdk.command_lib.storage.insights.inventory_reports import resour
 from googlecloudsdk.core import log
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Describe(base.DescribeCommand):
   """Describe inventory reports detail."""
 
@@ -37,18 +36,18 @@ class Describe(base.DescribeCommand):
           """
 
       To describe an inventory report detail with ID=4568,
-      location=us, project=foo, and report config ID=1234:
+      location=us-central1, project=foo, and report config ID=1234:
 
-        $ {command} 1234 --location=us --project=foo --report-config=1234
+        $ {command} 1234 --location=us-central1 --project=foo --report-config=1234
 
       To describe the same inventory report detail with fully specified name:
 
-        $ {command} /projects/foo/locations/us/reportConfigs/1234/reportDetails/5678
+        $ {command} /projects/foo/locations/us-central1/reportConfigs/1234/reportDetails/5678
 
       To describe the same inventory report detail with JSON formatting, only returning
       the "status" field:
 
-        $ {command} /projects/foo/locations/us/reportConfigs/1234/reportDetails/5678 --format="json(status)"
+        $ {command} /projects/foo/locations/us-central1/reportConfigs/1234/reportDetails/5678 --format="json(status)"
       """,
   }
 

@@ -23,7 +23,6 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.storage.insights.inventory_reports import resource_args
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Describe(base.DescribeCommand):
   """Describe an inventory report config."""
 
@@ -36,18 +35,18 @@ class Describe(base.DescribeCommand):
           """
 
       To describe an inventory report config with ID=1234,
-      location=us, and project=foo:
+      location=us-central1, and project=foo:
 
-        $ {command} 1234 --location=us --project=foo
+        $ {command} 1234 --location=us-central1 --project=foo
 
       To describe the same inventory report config with fully specified name:
 
-        $ {command} /projects/foo/locations/us/reportConfigs/1234
+        $ {command} /projects/foo/locations/us-central1/reportConfigs/1234
 
       Describe the same inventory report config with JSON formatting, only
       returning the "displayName" field:
 
-        $ {command} /projects/foo/locations/us/reportConfigs/1234 --format="json(displayName)"
+        $ {command} /projects/foo/locations/us-central1/reportConfigs/1234 --format="json(displayName)"
       """,
   }
 

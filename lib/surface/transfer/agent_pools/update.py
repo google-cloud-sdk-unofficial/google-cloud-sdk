@@ -68,8 +68,8 @@ class Update(base.Command):
         ' agents to use all bandwidth available to them.')
 
   def Run(self, args):
-    client = apis.GetClientInstance('storagetransfer', 'v1')
-    messages = apis.GetMessagesModule('storagetransfer', 'v1')
+    client = apis.GetClientInstance('transfer', 'v1')
+    messages = apis.GetMessagesModule('transfer', 'v1')
 
     agent_pool_object = messages.AgentPool()
     update_mask_list = []

@@ -70,6 +70,7 @@ class Describe(base.DescribeCommand):
     conn_context = connection_context.GetConnectionContext(
         args, run_flags.Product.RUN_APPS, release_track)
     with run_apps_operations.Connect(conn_context, release_track) as client:
+      client.VerifyLocation()
       resource_config = client.GetIntegration(name)
       latest_deployment = client.GetLatestDeployment(resource_config)
       resource_status = client.GetIntegrationStatus(name)

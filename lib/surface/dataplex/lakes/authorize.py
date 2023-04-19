@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Command to authorize a P4SA service account to another resource."""
+"""Command to authorize a service agent to manage other resources."""
 
 
 from __future__ import absolute_import
@@ -32,28 +32,26 @@ from googlecloudsdk.command_lib.projects import util as project_util
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.GA)
 class Authorize(base.Command):
-  """Authorize a project service account to manage given resource.
+  """Authorize a service agent to manage resources.
 
-  IAM Bindings for the service account of the primary project will be added to
-  a secondary project, a storage bucket, or BigQuery dataset.
+  The service agent for the primary project will be granted an IAM role on a
+  secondary project, a Cloud Storage bucket, or a BigQuery dataset.
   """
 
   detailed_help = {
-      'EXAMPLES':
-          """\
-          To authorize the service account in project `test-project` to
-          manage another project `test-project2`, run:
+      'EXAMPLES': """\
+          To authorize the service agent in project `test-project` to manage
+          resources in the project `test-project2`, run:
 
             $ {command} --project=test-project --project-resource=test-project2
 
-          To authorize the service account in project `test-project` to
-          manage the storage bucket `dataplex-storage-bucket`, run:
+          To authorize the service agent in project `test-project` to manage the
+          Cloud Storage bucket `dataplex-storage-bucket`, run:
 
             $ {command} --project=test-project --storage-bucket-resource=dataplex-storage-bucket
 
-          To authorize the service account in project `test-project` to
-          manage the BigQuery dataset `test-dataset` in project `test-project2`,
-          run:
+          To authorize the service agent in project `test-project` to manage the
+          BigQuery dataset `test-dataset` in project `test-project2`, run:
 
             $ {command} --project=test-project --bigquery-dataset-resource=test-dataset --secondary-project=test-project2
           """,
@@ -61,28 +59,44 @@ class Authorize(base.Command):
 
   @staticmethod
   def Args(parser):
-    resource_args.AddProjectArg(parser,
-                                'to add service agent IAM policy binding to.')
+    resource_args.AddProjectArg(
+        parser, 'to grant a role to the service agent in.'
+    )
     data_group = parser.add_group(
-        mutex=True, required=True, help='Container or Object to bind P4SA.')
+        mutex=True,
+        required=True,
+        help='The resource on which to grant a role to the service agent.',
+    )
     data_group.add_argument(
         '--storage-bucket-resource',
-        help="""The identifier of the Cloud Storage bucket to authorize the
-                project on.""")
+        help="""The identifier of the Cloud Storage bucket that the service agent will manage.""",
+    )
     data_group.add_argument(
         '--project-resource',
-        help='The identifier of the project to authorize.')
+        help=(
+            'The identifier of the project whose resources the service agent'
+            ' will manage.'
+        ),
+    )
     dataset_group = data_group.add_group(
-        help='Fields to help identify the BigQuery Dataset.')
+        help='Fields to identify the BigQuery dataset.'
+    )
     dataset_group.add_argument(
         '--bigquery-dataset-resource',
         required=True,
-        help='The identifier of the BigQuery dataset to authorize.'
+        help=(
+            'The identifier of the BigQuery dataset that the service agent will'
+            ' manage.'
+        ),
     )
     dataset_group.add_argument(
         '--secondary-project',
         required=True,
-        help='The identifier of the Project where BigQuery dataset resides.')
+        help=(
+            'The identifier of the project where the BigQuery dataset is'
+            ' located.'
+        ),
+    )
 
   @gcloud_exception.CatchHTTPErrorRaiseHTTPException(
       'Status code: {status_code}. {status_message}.')

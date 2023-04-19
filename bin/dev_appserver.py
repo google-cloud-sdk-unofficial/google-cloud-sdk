@@ -8,7 +8,6 @@
 from __future__ import absolute_import
 from __future__ import unicode_literals
 import os
-import subprocess
 import sys
 
 from bootstrapping import bootstrapping
@@ -64,18 +63,8 @@ def main():
       os.path.join('platform', 'google_appengine'), 'dev_appserver.py', *args)
 
 
-def _IsSpecifiedPython2():
-  cloudsdk_python = os.environ.get('CLOUDSDK_PYTHON', None)
-  if not cloudsdk_python:
-    return False
-  version_string = subprocess.check_output([
-      cloudsdk_python, '-c', 'import sys;print(sys.version_info[0])'])
-  return 2 == int(version_string.strip())
-
-
 if __name__ == '__main__':
-  if not _IsSpecifiedPython2():
-    bootstrapping.DisallowIncompatiblePythonVersions()
+  bootstrapping.DisallowIncompatiblePythonVersions()
   try:
     bootstrapping.CommandStart('dev_appserver', component_id='core')
     bootstrapping.CheckUpdates('dev_appserver')

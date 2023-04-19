@@ -69,6 +69,7 @@ class Apply(base.Command):
     conn_context = connection_context.GetConnectionContext(
         args, run_flags.Product.RUN_APPS, release_track)
     with run_apps_operations.Connect(conn_context, release_track) as client:
+      client.VerifyLocation()
 
       with progress_tracker.StagedProgressTracker(
           'Applying Configuration...',

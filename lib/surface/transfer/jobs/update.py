@@ -159,8 +159,8 @@ class Update(base.Command):
     jobs_flag_util.setup_parser(parser, is_update=True)
 
   def Run(self, args):
-    client = apis.GetClientInstance('storagetransfer', 'v1')
-    messages = apis.GetMessagesModule('storagetransfer', 'v1')
+    client = apis.GetClientInstance('transfer', 'v1')
+    messages = apis.GetMessagesModule('transfer', 'v1')
 
     existing_job = jobs_util.api_get(args.name)
     _clear_fields(args, messages, existing_job)

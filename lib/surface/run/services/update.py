@@ -68,6 +68,7 @@ class Update(base.Command):
     flags.AddEncryptionKeyShutdownHoursFlag(managed_group)
     flags.AddRevisionSuffixArg(managed_group)
     flags.AddSandboxArg(managed_group)
+    flags.AddSessionAffinityFlag(managed_group)
     flags.AddStartupCpuBoostFlag(managed_group)
     flags.AddVpcConnectorArgs(managed_group)
 
@@ -179,7 +180,7 @@ class BetaUpdate(Update):
 
     # Flags specific to managed CR
     managed_group = flags.GetManagedArgGroup(parser)
-    flags.AddSessionAffinityFlag(managed_group)
+    flags.AddCustomAudiencesFlag(managed_group)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -193,7 +194,6 @@ class AlphaUpdate(Update):
     # Flags specific to managed CR
     managed_group = flags.GetManagedArgGroup(parser)
     flags.AddCustomAudiencesFlag(managed_group)
-    flags.AddSessionAffinityFlag(managed_group)
     flags.AddVpcNetworkFlags(managed_group)
     flags.AddVpcSubnetFlags(managed_group)
     flags.AddVpcNetworkTagsFlags(managed_group)

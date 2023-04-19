@@ -23,7 +23,6 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.storage.insights.inventory_reports import resource_args
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class List(base.ListCommand):
   """List inventory report details."""
 
@@ -37,14 +36,14 @@ class List(base.ListCommand):
           """
 
       To list all inventory report details for report config ID=1234,
-      location=us, and project=foo:
+      location=us-central1, and project=foo:
 
-        $ {command} 1234 --location=us --project=foo
+        $ {command} 1234 --location=us-central1 --project=foo
 
       To list all the same inventory report details with fully specified name
       of the report config:
 
-        $ {command} /projects/foo/locations/us/reportConfigs/1234
+        $ {command} /projects/foo/locations/us-central1/reportConfigs/1234
 
       To list all inventory reports, only returning the "status" key:
 

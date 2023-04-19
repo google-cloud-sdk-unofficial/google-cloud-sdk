@@ -27,7 +27,6 @@ from googlecloudsdk.command_lib.storage import storage_url
 from googlecloudsdk.command_lib.storage.insights.inventory_reports import resource_args
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Update(base.Command):
   """Update an inventory report config."""
 
@@ -38,13 +37,13 @@ class Update(base.Command):
       'EXAMPLES': """
 
       To update the display-name of an inventory report config with ID=1234,
-      location=us, and project=foo:
+      location=us-central1, and project=foo:
 
-        $ {command} 1234 --location=us --project=foo --display-name=bar
+        $ {command} 1234 --location=us-central1 --project=foo --display-name=bar
 
       To update the same inventory report config with fully specified name:
 
-        $ {command} /projects/foo/locations/us/reportConfigs/1234 --display-name=bar
+        $ {command} /projects/foo/locations/us-central1/reportConfigs/1234 --display-name=bar
       """,
   }
 

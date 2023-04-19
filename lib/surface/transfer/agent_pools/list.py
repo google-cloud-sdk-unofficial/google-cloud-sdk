@@ -74,8 +74,8 @@ class List(base.Command):
 
   def Run(self, args):
     """Command execution logic."""
-    client = apis.GetClientInstance('storagetransfer', 'v1')
-    messages = apis.GetMessagesModule('storagetransfer', 'v1')
+    client = apis.GetClientInstance('transfer', 'v1')
+    messages = apis.GetMessagesModule('transfer', 'v1')
 
     if args.names:
       formatted_agent_pool_names = name_util.add_agent_pool_prefix(args.names)

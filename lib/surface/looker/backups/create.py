@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Creates a backup of a Looker instance."""
+"""Create a backup of a Looker instance."""
 
 from googlecloudsdk.api_lib.looker import backups
 from googlecloudsdk.calliope import base
@@ -22,7 +22,7 @@ from googlecloudsdk.core import resources
 
 _DETAILED_HELP = {
     'DESCRIPTION':
-        'Creates a backup of a Looker instance.',
+        'Create a backup of a Looker instance.',
     'EXAMPLES':
         """ \
         To create a backup of an instance with the name my-looker-instance, in
@@ -35,7 +35,7 @@ _DETAILED_HELP = {
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class CreateInstanceBackup(base.CreateCommand):
-  """Creates a backup of a Looker instance."""
+  """Create a backup of a Looker instance."""
 
   detailed_help = _DETAILED_HELP
 

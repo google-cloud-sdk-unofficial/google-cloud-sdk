@@ -123,7 +123,13 @@ class UpdateAlpha(base.UpdateCommand):
     group.add_argument(
         '--control-plane',
         choices=['automatic', 'manual'],
-        help='The control plane management to update to.')
+        help='The control plane management to update to.',
+        action=actions.DeprecationAction(
+            '--control-plane',
+            warn='The {flag_name} flag is now '
+            'deprecated. Please use `--management` '
+            'instead. '
+            'See https://cloud.google.com/service-mesh/docs/managed/provision-managed-anthos-service-mesh'))
 
   def Run(self, args):
     _RunUpdate(self, args)
@@ -163,7 +169,13 @@ class UpdateGA(base.UpdateCommand):
     group.add_argument(
         '--control-plane',
         choices=['automatic', 'manual'],
-        help='Control plane management to update to.')
+        help='Control plane management to update to.',
+        action=actions.DeprecationAction(
+            '--control-plane',
+            warn='The {flag_name} flag is now '
+            'deprecated. Please use `--management` '
+            'instead. '
+            'See https://cloud.google.com/service-mesh/docs/managed/provision-managed-anthos-service-mesh'))
 
   def Run(self, args):
     _RunUpdate(self, args)

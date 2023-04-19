@@ -44,10 +44,10 @@ DETAILED_HELP = {
 
 def _CommonArgs(parser):
   """Add arguments used for parsing in all command tracks."""
-  StartAsyncReplication.disks_arg.AddArgument(parser)
+  StartAsyncReplication.disks_arg.AddArgument(parser, scope_required=True)
   secondary_disk_category = 'SECONDARY DISK'
   StartAsyncReplication.secondary_disk_arg.AddArgument(
-      parser, category=secondary_disk_category
+      parser, category=secondary_disk_category, scope_required=True
   )
   disks_flags.AddSecondaryDiskProject(parser, secondary_disk_category)
 

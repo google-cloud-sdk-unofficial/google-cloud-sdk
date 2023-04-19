@@ -15,6 +15,8 @@
   request:
     collection: tpu.projects.locations.queuedResources
     api_version: v2alpha1
+    modify_request_hooks:
+    - googlecloudsdk.command_lib.compute.tpus.queued_resources.util:SetForce
 
   async:
     collection: tpu.projects.locations.operations

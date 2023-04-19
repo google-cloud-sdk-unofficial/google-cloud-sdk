@@ -20,28 +20,30 @@ from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.util import apis as core_apis
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib import deprecation_utils
 from googlecloudsdk.command_lib.firestore import create_util
 
 
-@base.Deprecate(
-    is_removed=False,
-    warning=(
-        'This command is deprecated. '
-        'Please use `gcloud alpha firestore database update --type=datastore-mode` instead.'
-    ))
+@deprecation_utils.DeprecateCommandAtVersion(
+    remove_version='427.0.0',
+    remove=True,
+    alt_command="""
+    This command is deprecated.
+    Please use `gcloud firestore database update --type=datastore-mode` instead.
+    """,
+)
 class Create(base.Command):
   """Create a Google Cloud Firestore in Datastore Mode database."""
+
   product_name = 'Google Cloud Firestore in Datastore Mode'
   enum_value = core_apis.GetMessagesModule(
       'appengine', 'v1'
   ).Application.DatabaseTypeValueValuesEnum.CLOUD_DATASTORE_COMPATIBILITY
   detailed_help = {
-      'DESCRIPTION':
-          """\
+      'DESCRIPTION': """\
           {description}
           """,
-      'EXAMPLES':
-          """\
+      'EXAMPLES': """\
           To create Google Cloud Firestore in Datastore Mode database
 
               $ {command}
@@ -62,5 +64,6 @@ class Create(base.Command):
         '--region',
         help=(
             'The region to create the {product_name} database within. '
-            'Use `gcloud app regions list` to list available regions.').format(
-                product_name=Create.product_name))
+            'Use `gcloud app regions list` to list available regions.'
+        ).format(product_name=Create.product_name),
+    )

@@ -43,7 +43,7 @@ class Create(base.CreateCommand):
   detailed_help = {'EXAMPLES': _EXAMPLES}
 
   @staticmethod
-  def Args(parser):
+  def Args(parser, track=base.ReleaseTrack.GA):
     resource_args.AddAwsNodePoolResourceArg(parser, 'to create')
     flags.AddNodeVersion(parser)
     flags.AddSubnetID(parser, 'the node pool')
@@ -56,7 +56,7 @@ class Create(base.CreateCommand):
     flags.AddNodeTaints(parser)
     flags.AddAnnotations(parser, 'node pool')
 
-    aws_flags.AddInstanceType(parser, kind='node pool')
+    aws_flags.AddOnDemandOrSpotInstanceType(parser, track, kind='node pool')
     aws_flags.AddSshEC2KeyPair(parser, kind='node pool')
     aws_flags.AddIamInstanceProfile(parser, kind='node pool')
     aws_flags.AddSecurityGroupIds(parser, kind='node pool')
@@ -94,8 +94,8 @@ class CreateAlpha(Create):
   """Create a node pool in an Anthos cluster on AWS."""
 
   @staticmethod
-  def Args(parser, track=base.ReleaseTrack.ALPHA):
+  def Args(parser):
     """Registers alpha track flags for this command."""
-    Create.Args(parser)
+    Create.Args(parser, base.ReleaseTrack.ALPHA)
     aws_flags.AddInstancePlacement(parser)
     flags.AddImageType(parser)

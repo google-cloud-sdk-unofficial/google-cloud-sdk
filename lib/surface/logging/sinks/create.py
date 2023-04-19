@@ -39,7 +39,7 @@ class Create(base.CreateCommand):
   [](https://cloud.google.com/logging/docs/view/logging-query-language)
 
   The sink's destination can be a Cloud Logging log bucket, a Cloud Storage
-  bucket, a BigQuery dataset, or a Cloud Pub/Sub topic.
+  bucket, a BigQuery dataset, a Cloud Pub/Sub topic, or a Google Cloud project.
 
   The destination must already exist.
 
@@ -224,7 +224,7 @@ class CreateAlpha(Create):
   [](https://cloud.google.com/logging/docs/view/logging-query-language)
 
   The sink's destination can be a Cloud Logging log bucket, a Cloud Storage
-  bucket, a BigQuery dataset, or a Cloud Pub/Sub topic.
+  bucket, a BigQuery dataset, a Cloud Pub/Sub topic, or a Google Cloud project.
 
   The destination must already exist.
 

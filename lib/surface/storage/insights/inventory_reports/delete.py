@@ -24,7 +24,6 @@ from googlecloudsdk.command_lib.storage.insights.inventory_reports import resour
 from googlecloudsdk.core import log
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Delete(base.Command):
   """Delete an inventory report config."""
 
@@ -36,17 +35,17 @@ class Delete(base.Command):
       'EXAMPLES':
           """
       To delete an inventory report config with ID=1234,
-      location=us and project=foo:
+      location=us-central1 and project=foo:
 
-        $ {command} 1234 --location=us --project=foo
+        $ {command} 1234 --location=us-central1 --project=foo
 
       To delete the same inventory report config with fully specified name:
 
-        $ {command} /projects/foo/locations/us/reportConfigs/1234
+        $ {command} /projects/foo/locations/us-central1/reportConfigs/1234
 
       To delete the report config with all generated report details:
 
-        $ {command} /projects/foo/locations/us/reportConfigs/1234 --force
+        $ {command} /projects/foo/locations/us-central1/reportConfigs/1234 --force
       """,
   }
 

@@ -48,7 +48,8 @@ class List(base.ListCommand):
             state,
             version_retention_period,
             earliest_version_time,
-            encryptionConfig.kmsKeyName
+            encryptionConfig.kmsKeyName,
+            enable_drop_protection
           )
         """)
 

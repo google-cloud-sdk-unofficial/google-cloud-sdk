@@ -42,6 +42,7 @@ if 'google' in sys.modules:
     import imp
     imp.reload(google)
 
+
 from absl import app
 from absl import flags
 
@@ -105,6 +106,7 @@ ConnectionReference = bigquery_client.ApiClientHelper.ConnectionReference
 # pylint: enable=g-bad-name
 
 CONNECTION_ID_PATTERN = re.compile(r'[\w-]+')
+_RANGE_PATTERN = re.compile(r'^\[(\S+.+\S+), (\S+.+\S+)\)$')
 
 if os.environ.get('CLOUDSDK_WRAPPER') == '1':
   _CLIENT_ID = '32555940559.apps.googleusercontent.com'
@@ -444,9 +446,24 @@ class TablePrinter(object):
     except ValueError:
       return '<date out of range for display>'
 
+  @staticmethod
+  def _NormalizeRange(field, value):
+    """Returns bq-specific formatting of a RANGE type."""
+    if field.get('rangeElementType').get('type').upper() != 'TIMESTAMP':
+      # Do nothing; this type of RANGE does not need formatting.
+      return value
+    match = _RANGE_PATTERN.match(value)
+    if not match:
+      return '<invalid range>'
+    start, end = match.groups()
+    normalized_start = TablePrinter._NormalizeTimestamp(field, start)
+    normalized_end = TablePrinter._NormalizeTimestamp(field, end)
+    return '[%s, %s)' % (normalized_start, normalized_end)
+
   _FIELD_NORMALIZERS = {
       'RECORD': _NormalizeRecord.__func__,
       'TIMESTAMP': _NormalizeTimestamp.__func__,
+      'RANGE': _NormalizeRange.__func__,
   }
 
   @staticmethod
@@ -3947,8 +3964,7 @@ class _Make(BigqueryCmd):
     flags.DEFINE_integer(
         'slots',
         0,
-        'The number of slots associated with the reservation subtree rooted at '
-        'this reservation node.',
+        'The number of baseline slots associated with the reservation.',
         flag_values=fv)
     flags.DEFINE_boolean(
         'multi_region_auxiliary',
@@ -4843,8 +4859,7 @@ class _Update(BigqueryCmd):
     flags.DEFINE_integer(
         'slots',
         None,
-        'The number of slots associated with the reservation subtree rooted at '
-        'this reservation node.',
+        'The number of baseline slots associated with the reservation.',
         flag_values=fv)
     flags.DEFINE_boolean(
         'capacity_commitment',

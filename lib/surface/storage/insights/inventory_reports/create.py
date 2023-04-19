@@ -28,7 +28,6 @@ from googlecloudsdk.command_lib.storage import storage_url
 from googlecloudsdk.core import log
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Create(base.Command):
   """Create a new inventory report config."""
 

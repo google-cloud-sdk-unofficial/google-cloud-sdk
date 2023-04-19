@@ -38,7 +38,7 @@
     - group:
         required: true
         params:
-        - arg_name: psc-subnetworks
+        - arg_name: subnets
           required: true
           api_field: serviceConnectionPolicy.pscConfig.subnetworks
           type: arg_list

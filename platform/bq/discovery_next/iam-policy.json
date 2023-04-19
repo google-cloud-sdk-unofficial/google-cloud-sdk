@@ -3197,7 +3197,7 @@
           "type": "string"
         },
         "type": {
-          "description": "Optional. The type to convert the value in cells of this column family. The values are expected to be encoded using HBase Bytes.toBytes function when using the BINARY encoding value. Following BigQuery types are allowed (case-sensitive) - BYTES STRING INTEGER FLOAT BOOLEAN Default type is BYTES. This can be overridden for a specific column by listing that column in 'columns' and specifying a type for it.",
+          "description": "Optional. The type to convert the value in cells of this column family. The values are expected to be encoded using HBase Bytes.toBytes function when using the BINARY encoding value. Following BigQuery types are allowed (case-sensitive): * BYTES * STRING * INTEGER * FLOAT * BOOLEAN * JSON Default type is BYTES. This can be overridden for a specific column by listing that column in 'columns' and specifying a type for it.",
           "type": "string"
         },
         "encoding": {
@@ -3234,7 +3234,7 @@
           "type": "string"
         },
         "type": {
-          "description": "Optional. The type to convert the value in cells of this column. The values are expected to be encoded using HBase Bytes.toBytes function when using the BINARY encoding value. Following BigQuery types are allowed (case-sensitive) - BYTES STRING INTEGER FLOAT BOOLEAN Default type is BYTES. 'type' can also be set at the column family level. However, the setting at this level takes precedence if 'type' is set at both levels.",
+          "description": "Optional. The type to convert the value in cells of this column. The values are expected to be encoded using HBase Bytes.toBytes function when using the BINARY encoding value. Following BigQuery types are allowed (case-sensitive): * BYTES * STRING * INTEGER * FLOAT * BOOLEAN * JSON Default type is BYTES. 'type' can also be set at the column family level. However, the setting at this level takes precedence if 'type' is set at both levels.",
           "type": "string"
         },
         "encoding": {
@@ -4312,6 +4312,11 @@
           "readOnly": true,
           "type": "string",
           "format": "int64"
+        },
+        "materializedViewStatistics": {
+          "description": "Output only. Statistics of materialized views of a query job.",
+          "readOnly": true,
+          "$ref": "MaterializedViewStatistics"
         }
       }
     },
@@ -5066,6 +5071,68 @@
           "description": "Output only. Project ID where the Spark logs were written.",
           "readOnly": true,
           "type": "string"
+        }
+      }
+    },
+    "MaterializedViewStatistics": {
+      "id": "MaterializedViewStatistics",
+      "description": "Statistics of materialized views for a query job.",
+      "type": "object",
+      "properties": {
+        "materializedView": {
+          "description": "Materialized views considereed for the query job. Only a few of them are used by the query while the others are rejected. More details can be found in the child message. It might not be a complete list if there are too many of them.",
+          "type": "array",
+          "items": {
+            "$ref": "MaterializedView"
+          }
+        }
+      }
+    },
+    "MaterializedView": {
+      "id": "MaterializedView",
+      "description": "A materialized view considered for a query job.",
+      "type": "object",
+      "properties": {
+        "tableReference": {
+          "description": "The candidate materialized view.",
+          "$ref": "TableReference"
+        },
+        "chosen": {
+          "description": "Whether the materialized view is chosen by the query. Note a materialized view can be candidate data source of multiple queried tables, it is set as true if chosen as the source of any of them.",
+          "type": "boolean"
+        },
+        "estimatedBytesSaved": {
+          "description": "If set, the estimated bytes saved by using the materialized view rather than the base tables. Provided at best effort.",
+          "type": "string",
+          "format": "int64"
+        },
+        "rejectedReason": {
+          "description": "If set, the rejected reason why the materialized view is not chosen for the query.",
+          "type": "string",
+          "enumDescriptions": [
+            "Default unspecified value.",
+            "View has no cached data because it is not refreshed yet.",
+            "The estimated cost of the view is more expensive than some other view or the base table. Note that the estimate cost may not match the actual billed cost.",
+            "View has no cached data because a base table is truncated.",
+            "View is invalidated because of a data change in one or more base tables.",
+            "View is invalidated because a base table's partition expiration has changed.",
+            "View is invalidated because a base table's partition expires.",
+            "View is invalidated because a base table has incompatible metadata change.",
+            "View is invalidated because it was refreshed using a different time zone than the current one of the job.",
+            "View is outside of time travel window."
+          ],
+          "enum": [
+            "REJECTED_REASON_UNSPECIFIED",
+            "NO_DATA",
+            "COST",
+            "BASE_TABLE_TRUNCATED",
+            "BASE_TABLE_DATA_CHANGE",
+            "BASE_TABLE_PARTITION_EXPIRATION_CHANGE",
+            "BASE_TABLE_EXPIRED_PARTITION",
+            "BASE_TABLE_INCOMPATIBLE_METADATA_CHANGE",
+            "TIME_ZONE",
+            "OUT_OF_TIME_TRAVEL_WINDOW"
+          ]
         }
       }
     },

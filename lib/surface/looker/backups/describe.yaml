@@ -15,15 +15,15 @@
         * The active account does not have permission to access the given
           instance and backups.
     examples: |
-      To display the metadata for a backup with id of `backup-instance` in the default region, run:
+      To display the metadata for a backup with id of `c24ad631-ad83-42f0-9f98-41e2b493263e` on instance with name `my-looker-instance`, run:
 
-        $ {command} backup-instance "
+        $ {command} c24ad631-ad83-42f0-9f98-41e2b493263e  --instance='my-looker-instance'
 
   arguments:
     resource:
       spec: !REF googlecloudsdk.command_lib.looker.resources:backup
       help_text: |
-        The instance of the backups to describe.
+        The instance of the backup to describe.
 
   request:
     ALPHA:

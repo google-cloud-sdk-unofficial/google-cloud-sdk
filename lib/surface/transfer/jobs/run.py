@@ -53,8 +53,8 @@ class Run(base.Command):
             ' has completed. If not included, tasks will run asynchronously.'))
 
   def Run(self, args):
-    client = apis.GetClientInstance('storagetransfer', 'v1')
-    messages = apis.GetMessagesModule('storagetransfer', 'v1')
+    client = apis.GetClientInstance('transfer', 'v1')
+    messages = apis.GetMessagesModule('transfer', 'v1')
 
     formatted_name = name_util.add_job_prefix(args.name)
 

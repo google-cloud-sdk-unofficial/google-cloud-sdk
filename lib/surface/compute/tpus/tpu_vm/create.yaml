@@ -68,13 +68,15 @@
     - _REF_: googlecloudsdk.command_lib.compute.tpus.tpu_vm.flags:enable_external_ips
     - _REF_: googlecloudsdk.command_lib.compute.tpus.tpu_vm.flags:version
     - _REF_: googlecloudsdk.command_lib.compute.tpus.tpu_vm.flags:preemptible
+    - _REF_: googlecloudsdk.command_lib.compute.tpus.tpu_vm.flags:spot
+      release_tracks: [ALPHA]
     - _REF_: googlecloudsdk.command_lib.compute.tpus.tpu_vm.flags:reserved
     - _REF_: googlecloudsdk.command_lib.compute.tpus.tpu_vm.flags:range
     - _REF_: googlecloudsdk.command_lib.compute.tpus.tpu_vm.flags:service_account
     - _REF_: googlecloudsdk.command_lib.compute.tpus.tpu_vm.flags:service_account_scopes
     - _REF_: googlecloudsdk.command_lib.compute.tpus.tpu_vm.flags:labels
-    - _REF_: googlecloudsdk.command_lib.compute.tpus.tpu_vm.flags:metadata
-    - _REF_: googlecloudsdk.command_lib.compute.tpus.tpu_vm.flags:metadata_from_file
+    - _REF_: googlecloudsdk.command_lib.compute.tpus.flags:metadata
+    - _REF_: googlecloudsdk.command_lib.compute.tpus.flags:metadata_from_file
     - _REF_: googlecloudsdk.command_lib.compute.tpus.tpu_vm.flags:tags
     - _REF_: googlecloudsdk.command_lib.compute.tpus.tpu_vm.flags:data_disks
     - _REF_: googlecloudsdk.command_lib.compute.tpus.tpu_vm.flags:enable_secure_boot

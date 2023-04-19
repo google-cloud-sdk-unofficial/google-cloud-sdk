@@ -46,8 +46,8 @@ class Delete(base.Command):
     parser.add_argument('name', help='The name of the job you want to delete.')
 
   def Run(self, args):
-    client = apis.GetClientInstance('storagetransfer', 'v1')
-    messages = apis.GetMessagesModule('storagetransfer', 'v1')
+    client = apis.GetClientInstance('transfer', 'v1')
+    messages = apis.GetMessagesModule('transfer', 'v1')
 
     formatted_job_name = name_util.add_job_prefix(args.name)
     client.transferJobs.Delete(

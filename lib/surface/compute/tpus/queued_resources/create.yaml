@@ -10,7 +10,7 @@
 
         To create a Queued Resource with multiple nodes, run:
 
-        $ {command} my-queued-resource --accelerator-type=v4-8 --runtime-version=v2-alpha-tpuv4 --node-prefix=my-node --node-count=2 --zone=us-central2-b --project=my-project
+        $ {command} my-queued-resource --accelerator-type=v4-8 --runtime-version=v2-alpha-tpuv4 --node-count=2 --zone=us-central2-b --project=my-project
 
   request:
     collection: tpu.projects.locations.queuedResources
@@ -39,7 +39,7 @@
 
     params:
     - group:
-        help_text: Specify TPU node(s) with either a single node id, or a node prefix and node count combination
+        help_text: Specify TPU node(s) with either a single node id or a node count and an optional node prefix
         mutex: true
         required: true
         params:
@@ -50,12 +50,10 @@
               required: true
         - group:
             help_text: Multinode creation
-            mutex: false
             params:
-            - _REF_: googlecloudsdk.command_lib.compute.tpus.queued_resources.flags:node_prefix
-              required: true
             - _REF_: googlecloudsdk.command_lib.compute.tpus.queued_resources.flags:node_count
               required: true
+            - _REF_: googlecloudsdk.command_lib.compute.tpus.queued_resources.flags:node_prefix
     - _REF_: googlecloudsdk.command_lib.compute.tpus.queued_resources.flags:accelerator_type
     - _REF_: googlecloudsdk.command_lib.compute.tpus.queued_resources.flags:runtime_version
 
@@ -76,5 +74,6 @@
     - _REF_: googlecloudsdk.command_lib.compute.tpus.queued_resources.flags:subnetwork
     - _REF_: googlecloudsdk.command_lib.compute.tpus.queued_resources.flags:service_account
     - _REF_: googlecloudsdk.command_lib.compute.tpus.queued_resources.flags:service_account_scopes
-    - _REF_: googlecloudsdk.command_lib.compute.tpus.queued_resources.flags:metadata
-    - _REF_: googlecloudsdk.command_lib.compute.tpus.queued_resources.flags:metadata_from_file
+    - _REF_: googlecloudsdk.command_lib.compute.tpus.flags:metadata
+    - _REF_: googlecloudsdk.command_lib.compute.tpus.flags:metadata_from_file
+    - _REF_: googlecloudsdk.command_lib.compute.tpus.queued_resources.flags:tags

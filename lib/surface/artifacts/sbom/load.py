@@ -63,9 +63,12 @@ class Load(base.Command):
     s = sbom_util.ParseJsonSbom(args.source)
     log.info('Successfully loaded the sbom file. Format: {0}-{1}.'.format(
         s.sbom_format, s.version))
-    # Validate the artifact, and get resourceURI we will use
 
-    # Get project & location information from the artifact.
+    # Get information from the artifact.
+    a = sbom_util.ProcessArtifact(args.uri)
+    log.info(('Processed artifact. ' +
+              'Project: {0}, Location: {1}, URI: {2}, Digest {3}.').format(
+                  a.project, a.location, a.resource_uri, a.digest))
 
     # Find the bucket for uploading.
 

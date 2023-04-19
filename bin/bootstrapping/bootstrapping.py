@@ -319,6 +319,18 @@ def GetActiveProjectAndAccount():
   return (project_name, account)
 
 
+def GetActiveImpersonateServiceAccount():
+  """Get the active impersonate_service_account property.
+
+  For use with wrapping legacy tools that take impersonate_service_account on
+  the command line.
+
+  Returns:
+    str, The name of the service account to impersonate.
+  """
+  return properties.VALUES.auth.impersonate_service_account.Get(validate=False)
+
+
 def ReadFileContents(*path_parts):
   """Returns file content at specified relative path wrt SDK root path."""
   return files.ReadFileContents(os.path.join(SDK_ROOT, *path_parts)).strip()

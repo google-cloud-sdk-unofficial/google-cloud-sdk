@@ -25,6 +25,7 @@ import time
 import traceback
 import uuid
 
+
 # To configure apiclient logging.
 from absl import flags
 from absl import logging as absl_logging
@@ -84,8 +85,6 @@ VERSION_INFO = 'version_info'
 
 # IAM role name that represents being a grantee on a row access policy.
 _FILTERED_DATA_VIEWER_ROLE = 'roles/bigquery.filteredDataViewer'
-
-VALID_REGIONAL_ENDPOINT_LOCATIONS = ['us-east4', 'us-west1']
 
 
 def MakeAccessRolePropertiesJson(iam_role_id):
@@ -728,7 +727,7 @@ def ConfigurePythonLogger(apilog=None):
   """
   if apilog is None:
     # Effectively turn off logging.
-    logging.warning(
+    logging.info(
         'There is no apilog flag so non-critical logging is disabled.')
     logging.disable(logging.CRITICAL)
   else:
@@ -1524,7 +1523,6 @@ class BigqueryClient(object):
       discovery_document = json.loads(discovery_document.decode('utf-8'))
 
     if flags.FLAGS.use_regional_endpoints and flags.FLAGS.location:
-      self.ValidateRegionalEndpointLocation(flags.FLAGS.location)
       regional_endpoint = self._GetRegionalEndpointUrl(
           discovery_document['rootUrl'])
       discovery_document['rootUrl'] = regional_endpoint
@@ -1534,22 +1532,6 @@ class BigqueryClient(object):
 
 
     return json.dumps(discovery_document)
-
-  def ValidateRegionalEndpointLocation(self, location):
-    """Check that the given location is valid for regional endpoint use.
-
-    Args:
-      location: The location to check. e.g. us-east4
-
-    Raises:
-      BigqueryClientError: If the location is not valid.
-    """
-    if location.lower() not in VALID_REGIONAL_ENDPOINT_LOCATIONS:
-      raise BigqueryClientError(
-          ('Invalid regional endpoints location %s. '
-           '--use_regional_endpoints is currently only supported '
-           'for regions: %s') %
-          (location, ', '.join(VALID_REGIONAL_ENDPOINT_LOCATIONS)))
 
   def _GetRegionalEndpointUrl(self, discovery_document_root_url):
     """Returns regional endpoint."""

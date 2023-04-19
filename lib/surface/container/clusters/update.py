@@ -99,6 +99,7 @@ def _AddMutuallyExclusiveArgs(mutex_group, release_track):
                     api_adapter.NODELOCALDNS: _ParseAddonDisabled,
                     api_adapter.GCEPDCSIDRIVER: _ParseAddonDisabled,
                     api_adapter.GCPFILESTORECSIDRIVER: _ParseAddonDisabled,
+                    api_adapter.GCSFUSECSIDRIVER: _ParseAddonDisabled,
                     api_adapter.CONFIGCONNECTOR: _ParseAddonDisabled,
                 },
                 **{k: _ParseAddonDisabled for k in api_adapter.CLOUDRUN_ADDONS
@@ -117,7 +118,8 @@ def _AddMutuallyExclusiveArgs(mutex_group, release_track):
 {configconnector}=ENABLED|DISABLED
 {nodelocaldns}=ENABLED|DISABLED
 {gcepdcsidriver}=ENABLED|DISABLED
-{gcpfilestoredriver}=ENABLED|DISABLED""".format(
+{gcpfilestoredriver}=ENABLED|DISABLED
+{gcsfusecsidriver}=ENABLED|DISABLED""".format(
     hpa=api_adapter.HPA,
     ingress=api_adapter.INGRESS,
     dashboard=api_adapter.DASHBOARD,
@@ -130,6 +132,7 @@ def _AddMutuallyExclusiveArgs(mutex_group, release_track):
     nodelocaldns=api_adapter.NODELOCALDNS,
     gcepdcsidriver=api_adapter.GCEPDCSIDRIVER,
     gcpfilestoredriver=api_adapter.GCPFILESTORECSIDRIVER,
+    gcsfusecsidriver=api_adapter.GCSFUSECSIDRIVER,
     ))
 
   elif release_track == base.ReleaseTrack.BETA:
@@ -148,6 +151,7 @@ def _AddMutuallyExclusiveArgs(mutex_group, release_track):
                     api_adapter.NODELOCALDNS: _ParseAddonDisabled,
                     api_adapter.GCEPDCSIDRIVER: _ParseAddonDisabled,
                     api_adapter.GCPFILESTORECSIDRIVER: _ParseAddonDisabled,
+                    api_adapter.GCSFUSECSIDRIVER: _ParseAddonDisabled,
                     api_adapter.CONFIGCONNECTOR: _ParseAddonDisabled,
                 },
                 **{k: _ParseAddonDisabled for k in api_adapter.CLOUDRUN_ADDONS
@@ -165,7 +169,8 @@ def _AddMutuallyExclusiveArgs(mutex_group, release_track):
 {configconnector}=ENABLED|DISABLED
 {nodelocaldns}=ENABLED|DISABLED
 {gcepdcsidriver}=ENABLED|DISABLED
-{gcpfilestoredriver}=ENABLED|DISABLED""".format(
+{gcpfilestoredriver}=ENABLED|DISABLED
+{gcsfusecsidriver}=ENABLED|DISABLED""".format(
     hpa=api_adapter.HPA,
     ingress=api_adapter.INGRESS,
     dashboard=api_adapter.DASHBOARD,
@@ -177,6 +182,7 @@ def _AddMutuallyExclusiveArgs(mutex_group, release_track):
     nodelocaldns=api_adapter.NODELOCALDNS,
     gcepdcsidriver=api_adapter.GCEPDCSIDRIVER,
     gcpfilestoredriver=api_adapter.GCPFILESTORECSIDRIVER,
+    gcsfusecsidriver=api_adapter.GCSFUSECSIDRIVER,
     ))
 
   else:
@@ -209,7 +215,8 @@ def _AddMutuallyExclusiveArgs(mutex_group, release_track):
 {configconnector}=ENABLED|DISABLED
 {nodelocaldns}=ENABLED|DISABLED
 {gcepdcsidriver}=ENABLED|DISABLED
-{gcpfilestoredriver}=ENABLED|DISABLED""".format(
+{gcpfilestoredriver}=ENABLED|DISABLED
+""".format(
     hpa=api_adapter.HPA,
     ingress=api_adapter.INGRESS,
     dashboard=api_adapter.DASHBOARD,
@@ -317,6 +324,7 @@ class Update(base.UpdateCommand):
     group_logging_monitoring_config = group.add_group()
     flags.AddLoggingFlag(group_logging_monitoring_config)
     flags.AddMonitoringFlag(group_logging_monitoring_config)
+    flags.AddManagedPrometheusFlags(group_logging_monitoring_config)
     flags.AddBinauthzFlags(group, release_track=base.ReleaseTrack.GA)
     flags.AddEnableStackdriverKubernetesFlag(group)
     flags.AddDailyMaintenanceWindowFlag(group, add_unset_text=True)
@@ -346,13 +354,12 @@ class Update(base.UpdateCommand):
     flags.AddEnablePrivateEndpoint(group)
     flags.AddEnableGoogleCloudAccess(group)
     flags.AddLoggingVariantFlag(group)
-    group_add_pod_ipv4_ranges = group.add_group(hidden=True)
+    group_add_pod_ipv4_ranges = group.add_group(hidden=False)
     flags.AddAdditionalPodIpv4RangesFlag(group_add_pod_ipv4_ranges)
     flags.AddRemoveAdditionalPodIpv4RangesFlag(group_add_pod_ipv4_ranges)
     flags.AddStackTypeFlag(group)
     flags.AddCostManagementConfigFlag(group, is_update=True)
     flags.AddGatewayFlags(group, hidden=False)
-    flags.AddManagedPrometheusFlags(group)
     flags.AddSecurityPostureFlag(group)
     flags.AddClusterNetworkPerformanceConfigFlags(group)
 
@@ -758,10 +765,10 @@ class UpdateBeta(Update):
     group_logging_monitoring_config = group.add_group()
     flags.AddLoggingFlag(group_logging_monitoring_config)
     flags.AddMonitoringFlag(group_logging_monitoring_config)
+    flags.AddManagedPrometheusFlags(group_logging_monitoring_config)
     flags.AddEnableStackdriverKubernetesFlag(group)
     flags.AddEnableLoggingMonitoringSystemOnlyFlag(group)
     flags.AddEnableWorkloadMonitoringEapFlag(group)
-    flags.AddManagedPrometheusFlags(group)
     flags.AddEnableMasterSignalsFlags(group)
     flags.AddMasterAuthorizedNetworksFlags(
         parser, enable_group_for_update=group)
@@ -822,7 +829,7 @@ class UpdateBeta(Update):
     flags.AddCostManagementConfigFlag(group, is_update=True)
     flags.AddStackTypeFlag(group)
     flags.AddLoggingVariantFlag(group)
-    group_add_pod_ipv4_ranges = group.add_group(hidden=True)
+    group_add_pod_ipv4_ranges = group.add_group(hidden=False)
     flags.AddAdditionalPodIpv4RangesFlag(group_add_pod_ipv4_ranges)
     flags.AddRemoveAdditionalPodIpv4RangesFlag(group_add_pod_ipv4_ranges)
     flags.AddGatewayFlags(group, hidden=False)
@@ -961,10 +968,10 @@ class UpdateAlpha(Update):
     group_logging_monitoring_config = group.add_group()
     flags.AddLoggingFlag(group_logging_monitoring_config)
     flags.AddMonitoringFlag(group_logging_monitoring_config)
+    flags.AddManagedPrometheusFlags(group_logging_monitoring_config)
     flags.AddEnableStackdriverKubernetesFlag(group)
     flags.AddEnableLoggingMonitoringSystemOnlyFlag(group)
     flags.AddEnableWorkloadMonitoringEapFlag(group)
-    flags.AddManagedPrometheusFlags(group)
     flags.AddEnableMasterSignalsFlags(group)
     flags.AddMasterAuthorizedNetworksFlags(
         parser, enable_group_for_update=group)
@@ -1027,7 +1034,7 @@ class UpdateAlpha(Update):
     flags.AddStackTypeFlag(group)
     flags.AddGatewayFlags(group, hidden=False)
     flags.AddLoggingVariantFlag(group)
-    group_add_pod_ipv4_ranges = group.add_group(hidden=True)
+    group_add_pod_ipv4_ranges = group.add_group(hidden=False)
     flags.AddAdditionalPodIpv4RangesFlag(group_add_pod_ipv4_ranges)
     flags.AddRemoveAdditionalPodIpv4RangesFlag(group_add_pod_ipv4_ranges)
     flags.AddFleetProjectFlag(group, is_update=True)

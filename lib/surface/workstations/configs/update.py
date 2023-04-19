@@ -66,6 +66,7 @@ class Update(base.UpdateCommand):
     workstations_flags.AddContainerEnvField(parser)
     workstations_flags.AddContainerWorkingDirField(parser)
     workstations_flags.AddContainerRunAsUserField(parser)
+    workstations_flags.AddLabelsField(parser)
 
   def Collection(self):
     return (

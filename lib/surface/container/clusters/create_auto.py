@@ -44,6 +44,7 @@ auto_flags = [
     'enableFleet',
     'enableSecurityPosture',
     'enableKubeletReadonlyPort',
+    'dataplanev2obsmode',
 ]
 
 # Change default flag values in create-auto

@@ -88,8 +88,8 @@ class Create(base.Command):
       raise ValueError('Missing intermediate storage path.'
                        ' Please add --intermediate-storage-path flag.')
 
-    client = apis.GetClientInstance('storagetransfer', 'v1')
-    messages = apis.GetMessagesModule('storagetransfer', 'v1')
+    client = apis.GetClientInstance('transfer', 'v1')
+    messages = apis.GetMessagesModule('transfer', 'v1')
 
     result = client.transferJobs.Create(
         jobs_apitools_util.generate_transfer_job_message(args, messages))

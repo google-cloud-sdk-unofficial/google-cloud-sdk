@@ -390,7 +390,7 @@ class Install(base.Command):
     if not project:
       raise ValueError(MISSING_PROJECT_ERROR_TEXT)
 
-    messages = apis.GetMessagesModule('storagetransfer', 'v1')
+    messages = apis.GetMessagesModule('transfer', 'v1')
     if (agent_pools_util.api_get(args.pool).state !=
         messages.AgentPool.StateValueValuesEnum.CREATED):
       raise ValueError('Agent pool not found: ' + args.pool)

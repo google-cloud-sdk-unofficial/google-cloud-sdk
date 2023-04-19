@@ -26,8 +26,7 @@ from googlecloudsdk.core import log
 
 
 def _CommonArgs(parser, release_track):
-  return volumes_flags.AddVolumeUpdateArgs(
-      parser, release_track=release_track)
+  volumes_flags.AddVolumeUpdateArgs(parser, release_track=release_track)
 
 
 # TODO(b/239613419):

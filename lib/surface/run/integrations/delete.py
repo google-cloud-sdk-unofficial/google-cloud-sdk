@@ -74,6 +74,7 @@ class Delete(base.Command):
         cancel_on_no=True)
 
     with run_apps_operations.Connect(conn_context, release_track) as client:
+      client.VerifyLocation()
       try:
         integration_type = client.DeleteIntegration(name=integration_name)
       except exceptions.IntegrationsOperationError as err:

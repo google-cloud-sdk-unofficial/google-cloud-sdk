@@ -69,7 +69,9 @@ removed.
     if not info or info.name != yaml_parsing.ConfigYamlInfo.INDEX:
       raise exceptions.InvalidArgumentException(
           'index_file', 'You must provide the path to a valid index.yaml file.')
-    output_helpers.DisplayProposedConfigDeployments(project, [info])
+    output_helpers.DisplayProposedConfigDeployments(
+        project=project, configs=[info]
+    )
     console_io.PromptContinue(
         default=True, throw_if_unattended=False, cancel_on_no=True)
     received_indexes = index_api.NormalizeIndexes(info.parsed.indexes or [])

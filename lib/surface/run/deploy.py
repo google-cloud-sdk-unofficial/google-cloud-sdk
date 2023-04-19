@@ -58,7 +58,7 @@ def GetAllowUnauth(args, operations, service_ref, service_exists):
 
   Returns:
     allow_unauth value where
-     True means to enable unauthenticated acess for the service.
+     True means to enable unauthenticated access for the service.
      False means to disable unauthenticated access for the service.
      None means to retain the current value for the service.
   """
@@ -120,6 +120,7 @@ class Deploy(base.Command):
     flags.AddEncryptionKeyShutdownHoursFlag(managed_group)
     flags.AddRevisionSuffixArg(managed_group)
     flags.AddSandboxArg(managed_group)
+    flags.AddSessionAffinityFlag(managed_group)
     flags.AddStartupCpuBoostFlag(managed_group)
     flags.AddVpcConnectorArgs(managed_group)
 
@@ -305,7 +306,7 @@ class BetaDeploy(Deploy):
 
     # Flags specific to managed CR
     managed_group = flags.GetManagedArgGroup(parser)
-    flags.AddSessionAffinityFlag(managed_group)
+    flags.AddCustomAudiencesFlag(managed_group)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -319,7 +320,6 @@ class AlphaDeploy(Deploy):
     # Flags specific to managed CR
     managed_group = flags.GetManagedArgGroup(parser)
     flags.AddCustomAudiencesFlag(managed_group)
-    flags.AddSessionAffinityFlag(managed_group)
     flags.AddVpcNetworkFlags(managed_group)
     flags.AddVpcSubnetFlags(managed_group)
     flags.AddVpcNetworkTagsFlags(managed_group)

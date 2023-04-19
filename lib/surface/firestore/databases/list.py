@@ -23,9 +23,18 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.core import properties
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
+)
 class ListAlpha(base.ListCommand):
-  """Lists all Firestore databases under the project."""
+  """Lists all Firestore databases under the project.
+
+  ## EXAMPLES
+
+  To list all Firestore databases.
+
+      $ {command}
+  """
 
   def Run(self, args):
     project = properties.VALUES.core.project.Get(required=True)

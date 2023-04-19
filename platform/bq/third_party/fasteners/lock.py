@@ -39,7 +39,7 @@ except ImportError:
 def read_locked(*args, **kwargs):
     """Acquires & releases a read lock around call into decorated method.
 
-    NOTE(user): if no attribute name is provided then by default the
+    NOTE(harlowja): if no attribute name is provided then by default the
     attribute named '_lock' is looked for (this attribute is expected to be
     a :py:class:`.ReaderWriterLock`) in the instance object this decorator
     is attached to.
@@ -70,7 +70,7 @@ def read_locked(*args, **kwargs):
 def write_locked(*args, **kwargs):
     """Acquires & releases a write lock around call into decorated method.
 
-    NOTE(user): if no attribute name is provided then by default the
+    NOTE(harlowja): if no attribute name is provided then by default the
     attribute named '_lock' is looked for (this attribute is expected to be
     a :py:class:`.ReaderWriterLock` object) in the instance object this
     decorator is attached to.
@@ -255,7 +255,7 @@ class ReaderWriterLock(object):
 @contextlib.contextmanager
 def try_lock(lock):
     """Attempts to acquire a lock, and auto releases if acquired (on exit)."""
-    # NOTE(user): the keyword argument for 'blocking' does not work
+    # NOTE(harlowja): the keyword argument for 'blocking' does not work
     # in py2.x and only is fixed in py3.x (this adjustment is documented
     # and/or debated in http://bugs.python.org/issue10789); so we'll just
     # stick to the format that works in both (oddly the keyword argument
@@ -277,12 +277,12 @@ def locked(*args, **kwargs):
     activates the given lock or list of locks as a context manager,
     automatically releasing that lock on exit.
 
-    NOTE(user): if no attribute name is provided then by default the
+    NOTE(harlowja): if no attribute name is provided then by default the
     attribute named '_lock' is looked for (this attribute is expected to be
     the lock/list of locks object/s) in the instance object this decorator
     is attached to.
 
-    NOTE(user): a custom logger (which will be used if lock release
+    NOTE(harlowja): a custom logger (which will be used if lock release
     failures happen) can be provided by passing a logger instance for keyword
     argument ``logger``.
     """

@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""'Marketplace Solutions Converge instances describe command."""
+"""'Marketplace Solutions instances describe command."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -25,12 +25,10 @@ from googlecloudsdk.core import properties
 
 
 DETAILED_HELP = {
-    'DESCRIPTION':
-        """
-          Describe a Marketplace Solutions Converge instance.
+    'DESCRIPTION': """
+          Describe a Marketplace Solutions instance.
         """,
-    'EXAMPLES':
-        """
+    'EXAMPLES': """
           To get a description of an instance called ``my-instance'' in
           project ``my-project'' and region ``us-central1'', run:
 
@@ -40,9 +38,9 @@ DETAILED_HELP = {
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-@base.Hidden
 class Describe(base.DescribeCommand):
-  """Describe a Marketplace Solutions Converge instance."""
+  """Describe a Marketplace Solutions instance."""
+  detailed_help = DETAILED_HELP
 
   @staticmethod
   def Args(parser):
@@ -54,7 +52,3 @@ class Describe(base.DescribeCommand):
     vendor = properties.VALUES.mps.vendor.Get(required=True)
     client = MpsClient()
     return client.GetInstance(vendor, instance)
-
-
-Describe.detailed_help = DETAILED_HELP
-

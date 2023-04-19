@@ -120,8 +120,8 @@ class List(base.Command):
 
   def Run(self, args):
     """Command execution logic."""
-    client = apis.GetClientInstance('storagetransfer', 'v1')
-    messages = apis.GetMessagesModule('storagetransfer', 'v1')
+    client = apis.GetClientInstance('transfer', 'v1')
+    messages = apis.GetMessagesModule('transfer', 'v1')
 
     if args.job_names:
       formatted_job_names = name_util.add_job_prefix(args.job_names)

@@ -48,7 +48,7 @@ Any indexes in your index file that do not exist will be created.
           Detailed information about index configuration can be found at the
           [index.yaml reference](https://cloud.google.com/appengine/docs/standard/python/config/indexref).
           """,
-      }
+  }
 
   @staticmethod
   def Args(parser):
@@ -76,17 +76,25 @@ Any indexes in your index file that do not exist will be created.
       raise exceptions.InvalidArgumentException(
           'index_file', 'You must provide the path to a valid index.yaml file.'
       )
-    output_helpers.DisplayProposedConfigDeployments(project, [info])
+    output_helpers.DisplayProposedConfigDeployments(
+        project=project, configs=[info]
+    )
     console_io.PromptContinue(
         default=True, throw_if_unattended=False, cancel_on_no=True
     )
 
     if database:
       # Use Firestore Admin for non (default) database.
-      index_api.CreateIndexesViaFirestoreApi(project, database, info.parsed)
+      index_api.CreateMissingIndexesViaFirestoreApi(
+          project_id=project,
+          database_id=database,
+          index_definitions=info.parsed,
+      )
     else:
       # Use Datastore Admin for the (default) database.
-      index_api.CreateMissingIndexes(project, info.parsed)
+      index_api.CreateMissingIndexes(
+          project_id=project, index_definitions=info.parsed
+      )
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)

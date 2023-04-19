@@ -162,29 +162,19 @@ class Register(base.CreateCommand):
 
   @classmethod
   def Args(cls, parser):
-    if cls.ReleaseTrack() is base.ReleaseTrack.ALPHA:
-      resources.AddMembershipResourceArg(
-          parser,
-          membership_help=textwrap.dedent("""\
-            The membership name that you choose to uniquely represents the cluster
-            being registered in the fleet.
-          """),
-          location_help=textwrap.dedent("""\
-            The location for the membership resource, e.g. `us-central1`.
-            If not specified, defaults to `global`. Not supported for GKE clusters,
-            whose membership location will be the location of the cluster.
-          """),
-          membership_required=True,
-          positional=True)
-    else:
-      parser.add_argument(
-          'MEMBERSHIP_NAME',
-          type=str,
-          help=textwrap.dedent("""\
-            The membership name that you choose to uniquely represents the cluster
-            being registered on the fleet.
-          """),
-      )
+    resources.AddMembershipResourceArg(
+        parser,
+        membership_help=textwrap.dedent("""\
+          The membership name that you choose to uniquely represents the cluster
+          being registered in the fleet.
+        """),
+        location_help=textwrap.dedent("""\
+          The location for the membership resource, e.g. `us-central1`.
+          If not specified, defaults to `global`. Not supported for GKE clusters,
+          whose membership location will be the location of the cluster.
+        """),
+        membership_required=True,
+        positional=True)
     hub_util.AddClusterConnectionCommonArgs(parser)
     parser.add_argument(
         '--install-connect-agent',
@@ -339,23 +329,12 @@ class Register(base.CreateCommand):
 
     location = 'global'
 
-    # if we are using alpha + autopush or using an allowlisted project, use the
-    # final regional behavior that assumes membership region based on cluster
-    # region.
-    if resources.UseRegionalMemberships(
-        self.ReleaseTrack()) or (resources.InProdRegionalAllowlist(
-            project, self.ReleaseTrack())):
-      # Allow attempting to override location for register
-      # e.g. in case of global GKE cluster memberships
-      if args.location:
-        location = args.location
-      elif hub_util.LocationFromGKEArgs(args):
-        location = hub_util.LocationFromGKEArgs(args)
-    # if we are using alpha + staging or alpha + prod, use the --location flag
-    # if provided, else still default to global
-    elif self.ReleaseTrack() is base.ReleaseTrack.ALPHA:
-      if args.location:
-        location = args.location
+    # Allow attempting to override location for register
+    # e.g. in case of global GKE cluster memberships
+    if args.location:
+      location = args.location
+    elif hub_util.LocationFromGKEArgs(args):
+      location = hub_util.LocationFromGKEArgs(args)
 
     # Register GKE cluster with simple Add-to-Hub API call. Connect agent will
     # not get installed. And Kubernetes Client is not needed.

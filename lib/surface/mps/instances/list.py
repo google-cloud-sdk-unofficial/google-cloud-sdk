@@ -19,11 +19,13 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+import json
+
 from googlecloudsdk.api_lib.mps.mps_client import MpsClient
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.mps import flags
 from googlecloudsdk.core import properties
-
+from googlecloudsdk.core.resource import resource_projector
 
 DETAILED_HELP = {
     'DESCRIPTION':
@@ -48,16 +50,18 @@ INSTANCE_LIST_FORMAT = """ table(
         name.segment(-1):label=NAME,
         name.segment(-5):label=PROJECT,
         name.segment(-3):label=REGION,
-        machineType,
+        systemType,
+        virtualCpuCores,
+        memoryGib,
         osImage,
-        status
+        state
     )"""
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-@base.Hidden
 class List(base.ListCommand):
   """List Marketplace Solution instances in a project."""
+  detailed_help = DETAILED_HELP
 
   @staticmethod
   def Args(parser):
@@ -76,14 +80,23 @@ class List(base.ListCommand):
     parser.display_info.AddFormat(INSTANCE_LIST_FORMAT)
 
   def Run(self, args):
+
     region = args.CONCEPTS.region.Parse()
     client = MpsClient()
     vendor = properties.VALUES.mps.vendor.Get(required=True)
 
     if region is None:
       project = properties.VALUES.core.project.Get(required=True)
-      return client.AggregateListInstances(project, vendor, limit=args.limit)
-    return client.ListInstances(vendor, region)
+      return (self.synthesizesInstanceInfo(ins)
+              for ins in client.AggregateListInstances(
+                  project, vendor, limit=args.limit))
+    return (self.synthesizesInstanceInfo(ins)
+            for ins in client.ListInstances(vendor, region))
 
-List.detailed_help = DETAILED_HELP
-
+  def synthesizesInstanceInfo(self, ins):
+    out = resource_projector.MakeSerializable(ins)
+    out['osImage'] = ins.osImage.version
+    # We dump jsons here because when we use the built-in serialization, it
+    # sometimes adds a 'u' character before the strings and the tests break.
+    out['osImage'] = json.dumps(out['osImage'])
+    return out

@@ -82,6 +82,18 @@ class AccessToken(base.Command):
         help=('Account to get the access token for. If not specified, '
               'the current active account will be used.'))
     parser.add_argument(
+        '--lifetime',
+        type=arg_parsers.Duration(upper_bound='43200s'),
+        help=('Access token lifetime. The default access token '
+              'lifetime is 3600 seconds, but you can use this flag to reduce '
+              'the lifetime or extend it up to 43200 seconds (12 hours). The '
+              'org policy constraint '
+              '`constraints/iam.allowServiceAccountCredentialLifetimeExtension`'
+              ' must be set if you want to extend the lifetime beyond 3600 '
+              'seconds. Note that this flag is for service account '
+              'impersonation only, so it must be used together with the '
+              '`--impersonate-service-account` flag.'))
+    parser.add_argument(
         '--scopes',
         hidden=True,
         type=arg_parsers.ArgList(min_length=1),
@@ -98,6 +110,12 @@ class AccessToken(base.Command):
                              google_auth_exceptions.GoogleAuthError)
   def Run(self, args):
     """Run the helper command."""
+    if args.lifetime and not args.impersonate_service_account:
+      raise c_exc.InvalidArgumentException(
+          '--lifetime',
+          'Lifetime flag is for service account impersonation only. It must be '
+          'used together with the --impersonate-service-account flag.')
+
     # Do not auto cache the custom scoped access token. Otherwise, it'll
     # affect other gcloud CLIs that depends on cloud-platform scopes.
     with_access_token_cache = not args.scopes
@@ -132,6 +150,9 @@ class AccessToken(base.Command):
               .format(config.CLOUDSDK_SCOPES))
         # pylint:disable=protected-access
         cred._scopes = scopes
+
+    if c_creds.IsImpersonatedAccountCredentials(cred) and args.lifetime:
+      cred._lifetime = args.lifetime  # pylint: disable=protected-access
 
     c_store.Refresh(cred)
     if c_creds.IsOauth2ClientCredentials(cred):

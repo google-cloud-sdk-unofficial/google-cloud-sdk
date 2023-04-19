@@ -45,8 +45,8 @@ class Cancel(base.Command):
         'name', help='The name of the transfer operation you want to cancel.')
 
   def Run(self, args):
-    client = apis.GetClientInstance('storagetransfer', 'v1')
-    messages = apis.GetMessagesModule('storagetransfer', 'v1')
+    client = apis.GetClientInstance('transfer', 'v1')
+    messages = apis.GetMessagesModule('transfer', 'v1')
 
     formatted_name = name_util.add_operation_prefix(args.name)
     client.transferOperations.Cancel(

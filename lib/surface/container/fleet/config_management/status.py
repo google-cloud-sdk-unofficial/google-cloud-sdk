@@ -168,8 +168,7 @@ class ConfigmanagementFeatureState(object):
       self.config_sync = 'PENDING'
     if self.policy_controller_state.__str__() in [
         'INSTALLED', 'GatekeeperAudit NOT_INSTALLED', NA
-    ] and (feature_state_pending or feature_spec_mc.policyController !=
-           feature_state_mc.policyController):
+    ] and feature_state_pending:
       self.policy_controller_state = 'PENDING'
     if (self.hierarchy_controller_state.__str__() != 'ERROR' and
         feature_state_pending or feature_spec_mc.hierarchyController !=

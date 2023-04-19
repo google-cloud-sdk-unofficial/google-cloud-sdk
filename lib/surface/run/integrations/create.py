@@ -78,6 +78,7 @@ class Create(base.Command):
     conn_context = connection_context.GetConnectionContext(
         args, run_flags.Product.RUN_APPS, release_track)
     with run_apps_operations.Connect(conn_context, release_track) as client:
+      client.VerifyLocation()
       self._validateServiceNameAgainstIntegrations(
           client,
           integration_type=integration_type,

@@ -77,7 +77,7 @@ classes inherit from. Use the docstrings for examples of how to:
 
 __version__ = "2.2.2"
 __versionTime__ = "29 Sep 2018 15:58 UTC"
-__author__ = "Paul McGuire <ptmcg@users.sourceforge.net>"
+
 
 import string
 from weakref import ref as wkref
