@@ -85,7 +85,9 @@ class Create(base.CreateCommand):
           rate_limits=queue_config.rateLimits,
           app_engine_http_queue=queue_config.appEngineHttpQueue,
           stackdriver_logging_config=queue_config.stackdriverLoggingConfig,
-          queue_type=queue_config.type)
+          http_target=queue_config.httpTarget,
+          queue_type=queue_config.type,
+      )
     else:
       create_response = queues_client.Create(
           location_ref,

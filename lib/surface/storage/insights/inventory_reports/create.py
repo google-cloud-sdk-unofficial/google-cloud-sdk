@@ -56,7 +56,8 @@ class Create(base.Command):
     flags.add_inventory_reports_flags(parser, require_create_flags=True)
 
   def Run(self, args):
-    source_bucket = storage_url.storage_url_from_string(args.source_bucket_url)
+    source_bucket = storage_url.storage_url_from_string(
+        storage_url.add_gcs_scheme_if_missing(args.source_bucket_url))
     if (not isinstance(source_bucket, storage_url.CloudUrl) or
         not source_bucket.is_bucket()):
       raise errors.InvalidUrlError(
@@ -65,7 +66,8 @@ class Create(base.Command):
               args.source_bucket_url))
 
     if args.destination is not None:
-      destination = storage_url.storage_url_from_string(args.destination)
+      destination = storage_url.storage_url_from_string(
+          storage_url.add_gcs_scheme_if_missing(args.destination))
     else:
       destination = storage_url.CloudUrl(
           scheme=source_bucket.scheme,

@@ -28,9 +28,11 @@ class Instances(base.Group):
 
   ## EXAMPLES
 
-  To create an instance with the name `my-looker-instance`, run:
+  To create an instance with the name `my-looker-instance`, with an edition of
+  "LOOKER_CORE_STANDARD", run:
 
-    $ {command} create my-looker-instance
+    $ {command} create my-looker-instance --ouath-client-id='looker'
+    --ouath-client-secret='looker' --edition="core-standard"
 
   To delete an instance with the name `my-looker-instance`, run:
 
@@ -51,6 +53,6 @@ class Instances(base.Group):
   To list all the instances, run:
 
     $ {command} list
-
   """
+
   pass

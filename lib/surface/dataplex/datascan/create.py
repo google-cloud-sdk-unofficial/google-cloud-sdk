@@ -32,8 +32,7 @@ class Create(base.Command):
   """Create a Dataplex Datascan."""
 
   detailed_help = {
-      'EXAMPLES':
-          """\
+      'EXAMPLES': """\
 
             Create a Dataplex datascan job.
 
@@ -52,74 +51,120 @@ class Create(base.Command):
   def Args(parser):
     resource_args.AddDatascanResourceArg(parser, 'to create a Datascan for.')
     parser.add_argument(
-        '--description', required=False, help='Description of the Datascan')
+        '--description', required=False, help='Description of the Datascan'
+    )
     parser.add_argument(
-        '--display-name', required=False, help='Display name of the Datascan')
+        '--display-name', required=False, help='Display name of the Datascan'
+    )
     parser.add_argument(
         '--scan-type',
         choices=['PROFILE', 'QUALITY'],
         required=True,
-        help='Specify the type of scan')
+        help='Specify the type of scan',
+    )
     data_source = parser.add_group(
-        required=True, help='Data source for the Datascan.')
+        mutex=True, required=True, help='Data source for the Datascan.'
+    )
     data_source.add_argument(
         '--data-source-entity',
-        required=True,
-        help='Dataplex entity that contains the data for the Datascan, of the form: `projects/{project_number}/locations/{location_id}/lakes/{lake_id}/zones/{zone_id}/entities/{entity_id}`.'
+        help=(
+            'Dataplex entity that contains the data for the Datascan, of the'
+            ' form:'
+            ' `projects/{project_number}/locations/{location_id}/lakes/{lake_id}/zones/{zone_id}/entities/{entity_id}`.'
+        ),
     )
+    data_source.add_argument(
+        '--data-source-resource',
+        help=(
+            'Service-qualified full resource name of the cloud resource that'
+            ' contains the data for the Datascan, of the form:'
+            ' `//bigquery.googleapis.com/projects/{project_number}/datasets/{dataset_id}/tables/{table_id}`.'
+        ),
+    )
+
     data_spec = parser.add_group(
-        help='Additional configuration arguments for the scan.')
+        help='Additional configuration arguments for the scan.'
+    )
     data_quality = data_spec.add_group(help='DataQualityScan related setting.')
     data_quality.add_argument(
         '--data-quality-spec-file',
-        help='path to the JSON file containing the Data Quality Spec for the Data Quality Scan'
+        help=(
+            'path to the JSON file containing the Data Quality Spec for the'
+            ' Data Quality Scan'
+        ),
     )
     execution_spec = parser.add_group(
-        help='Datascan execution settings. If not specified, the fields under it will use their default values.'
+        help=(
+            'Datascan execution settings. If not specified, the fields under it'
+            ' will use their default values.'
+        )
     )
     execution_spec.add_argument(
         '--field',
-        help='Field that contains values that monotonically increase over time (e.g. timestamp).'
+        help=(
+            'Field that contains values that monotonically increase over time'
+            ' (e.g. timestamp).'
+        ),
     )
     trigger = execution_spec.add_group(
-        help='Datascan scheduling and trigger settings')
+        help='Datascan scheduling and trigger settings'
+    )
     trigger.add_argument(
         '--disabled',
         type=bool,
-        help='Prevent the scan from executing (including both scheduled scans and scans triggered via RunDataScan API). This does not cancel currently running scan jobs. If not specified, the default is false.'
+        help=(
+            'Prevent the scan from executing (including both scheduled scans'
+            ' and scans triggered via RunDataScan API). This does not cancel'
+            ' currently running scan jobs. If not specified, the default is'
+            ' false.'
+        ),
     )
     trigger.add_argument(
         '--on-demand',
         type=bool,
-        help='If set, the scan runs one-time shortly after Datascan Creation.')
+        help='If set, the scan runs one-time shortly after Datascan Creation.',
+    )
     trigger.add_argument(
         '--schedule',
-        help='Cron schedule (https://en.wikipedia.org/wiki/Cron) for running scans periodically. To explicitly set a timezone to the cron tab, apply a prefix in the cron tab: "CRON_TZ=${IANA_TIME_ZONE}" or "TZ=${IANA_TIME_ZONE}". The ${IANA_TIME_ZONE} may only be a valid string from IANA time zone database. For example, `CRON_TZ=America/New_York 1 * * * *` or `TZ=America/New_York 1 * * * *`. This field is required for RECURRING scans.'
+        help=(
+            'Cron schedule (https://en.wikipedia.org/wiki/Cron) for running'
+            ' scans periodically. To explicitly set a timezone to the cron tab,'
+            ' apply a prefix in the cron tab: "CRON_TZ=${IANA_TIME_ZONE}" or'
+            ' "TZ=${IANA_TIME_ZONE}". The ${IANA_TIME_ZONE} may only be a valid'
+            ' string from IANA time zone database. For example,'
+            ' `CRON_TZ=America/New_York 1 * * * *` or `TZ=America/New_York 1 *'
+            ' * * *`. This field is required for RECURRING scans.'
+        ),
     )
     async_group = parser.add_group(
         mutex=True,
         required=False,
-        help='At most one of --async | --validate-only can be specified.')
+        help='At most one of --async | --validate-only can be specified.',
+    )
     async_group.add_argument(
         '--validate-only',
         action='store_true',
         default=False,
-        help='Validate the create action, but don\'t actually perform it.')
+        help="Validate the create action, but don't actually perform it.",
+    )
     base.ASYNC_FLAG.AddToParser(async_group)
     labels_util.AddCreateLabelsFlags(parser)
 
   @gcloud_exception.CatchHTTPErrorRaiseHTTPException(
-      'Status code: {status_code}. {status_message}.')
+      'Status code: {status_code}. {status_message}.'
+  )
   def Run(self, args):
     datascan_ref = args.CONCEPTS.datascan.Parse()
     dataplex_client = dataplex_util.GetClientInstance()
     create_req_op = dataplex_client.projects_locations_dataScans.Create(
-        dataplex_util.GetMessageModule(
-        ).DataplexProjectsLocationsDataScansCreateRequest(
+        dataplex_util.GetMessageModule().DataplexProjectsLocationsDataScansCreateRequest(
             dataScanId=datascan_ref.Name(),
             parent=datascan_ref.Parent().RelativeName(),
-            googleCloudDataplexV1DataScan=datascan
-            .GenerateDatascanForCreateRequest(args)))
+            googleCloudDataplexV1DataScan=datascan.GenerateDatascanForCreateRequest(
+                args
+            ),
+        )
+    )
 
     validate_only = getattr(args, 'validate_only', False)
     if validate_only:
@@ -131,11 +176,17 @@ class Create(base.Command):
       response = datascan.WaitForOperation(create_req_op)
       log.CreatedResource(
           response.name,
-          details='Datascan created in project [{0}] with location [{1}]'
-          .format(datascan_ref.projectsId, datascan_ref.locationsId))
+          details=(
+              'Datascan created in project [{0}] with location [{1}]'.format(
+                  datascan_ref.projectsId, datascan_ref.locationsId
+              )
+          ),
+      )
       return response
 
     log.status.Print(
         'Creating Datascan with path [{0}] and operation [{1}].'.format(
-            datascan_ref, create_req_op.name))
+            datascan_ref, create_req_op.name
+        )
+    )
     return create_req_op

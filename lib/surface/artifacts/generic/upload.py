@@ -18,6 +18,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+from apitools.base.py import exceptions as apitools_exceptions
 from apitools.base.py import transfer
 from googlecloudsdk.api_lib.util import apis
 from googlecloudsdk.api_lib.util import waiter
@@ -81,7 +82,14 @@ class Upload(base.Command):
     client.additional_http_headers['X-Goog-Upload-Protocol'] = 'multipart'
     messages = client.MESSAGES_MODULE
 
-    # Upload the generic artifact.
+    try:
+      return self.uploadArtifact(args, client, messages)
+    except apitools_exceptions.HttpError:
+      # Retrying without the header for scotty resumable uploads.
+      client = apis.GetClientInstance('artifactregistry', self.api_version)
+      return self.uploadArtifact(args, client, messages)
+
+  def uploadArtifact(self, args, client, messages):
     repo_ref = args.CONCEPTS.repository.Parse()
     file_name = args.source.split('/')[-1]
 

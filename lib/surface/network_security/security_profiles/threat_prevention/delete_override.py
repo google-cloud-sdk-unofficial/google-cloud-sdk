@@ -34,7 +34,7 @@ DETAILED_HELP = {
 
         """,
     'EXAMPLES': """
-            To update an override, run:
+            To delete an override, run:
 
               $ {command} my-security-profile --severities=MEDIUM
 

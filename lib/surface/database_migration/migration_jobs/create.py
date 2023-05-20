@@ -31,7 +31,7 @@ DETAILED_HELP_ALPHA = {
         Create a Database Migration Service migration job.
         Recommended steps before creating the migration job:
         - Create a source connection profile. See prerequisites [here](https://cloud.google.com/database-migration/docs/mysql/configure-source-database).
-        - Create a destination connection profile.
+        - Create a destination connection profile. For MySQL and PostgreSQL migrations, use the cloudsql connection profile for DMS to create the CloudSQL replica for you.
         - Configure the connectivity method. See prerequisites [here](https://cloud.google.com/database-migration/docs/mysql/configure-connectivity).
         """,
     'EXAMPLES': """\
@@ -59,7 +59,7 @@ DETAILED_HELP_GA = {
         Create a Database Migration Service migration job.
         Recommended steps before creating the migration job:
         - Create a source connection profile. See prerequisites [here](https://cloud.google.com/database-migration/docs/mysql/configure-source-database).
-        - Create a destination connection profile.
+        - Create a destination connection profile. For MySQL and PostgreSQL migrations, use the cloudsql connection profile for DMS to create the CloudSQL replica for you.
         - Create a conversion workspace in case the migration is heterogeneous.
         - Configure the connectivity method. See prerequisites [here](https://cloud.google.com/database-migration/docs/mysql/configure-connectivity).
         """,

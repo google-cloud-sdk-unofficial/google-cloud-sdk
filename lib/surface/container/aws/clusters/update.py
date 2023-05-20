@@ -52,6 +52,7 @@ class Update(base.UpdateCommand):
     flags.AddAnnotationsForUpdate(parser, 'cluster')
     flags.AddTagsForUpdate(parser, 'control plane')
     flags.AddLogging(parser)
+    flags.AddMonitoringConfig(parser)
     aws_flags.AddInstanceType(parser)
     aws_flags.AddRoleArn(parser, required=False)
     aws_flags.AddRoleSessionName(parser)
@@ -91,4 +92,3 @@ class UpdateAlpha(Update):
   def Args(parser, track=base.ReleaseTrack.ALPHA):
     """Registers alpha track flags for this command."""
     Update.Args(parser)
-    flags.AddMonitoringConfig(parser)

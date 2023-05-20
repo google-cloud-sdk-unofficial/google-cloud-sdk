@@ -30,7 +30,6 @@ $ {command} --location=us-west1
 """
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class List(base.ListCommand):
   """List Anthos on bare metal standalone clusters."""

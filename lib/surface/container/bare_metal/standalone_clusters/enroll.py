@@ -35,7 +35,6 @@ $ {command} my-cluster --location=us-west1 --membership=projects/my-project/loca
 """
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Enroll(base.Command):
   """Enroll an Anthos on bare metal standalone cluster."""

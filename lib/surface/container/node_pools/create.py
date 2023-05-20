@@ -349,6 +349,7 @@ class CreateBeta(Create):
     flags.AddEnableFastSocketFlag(parser)
     flags.AddLoggingVariantFlag(parser, for_node_pool=True)
     flags.AddWindowsOsVersionFlag(parser)
+    flags.AddBestEffortProvisionFlags(parser, hidden=True)
     flags.AddQueuedProvisioningFlag(parser, hidden=True)
     flags.AddTPUTopologyFlag(parser, hidden=True)
     flags.AddEnableNestedVirtualizationFlag(
@@ -380,6 +381,8 @@ class CreateBeta(Create):
     ops.enable_queued_provisioning = args.enable_queued_provisioning
     ops.tpu_topology = args.tpu_topology
     ops.enable_nested_virtualization = args.enable_nested_virtualization
+    ops.enable_best_effort_provision = args.enable_best_effort_provision
+    ops.min_provision_nodes = args.min_provision_nodes
     return ops
 
 
@@ -415,6 +418,8 @@ class CreateAlpha(Create):
     ops.enable_queued_provisioning = args.enable_queued_provisioning
     ops.tpu_topology = args.tpu_topology
     ops.enable_nested_virtualization = args.enable_nested_virtualization
+    ops.enable_best_effort_provision = args.enable_best_effort_provision
+    ops.min_provision_nodes = args.min_provision_nodes
     return ops
 
   @staticmethod
@@ -463,6 +468,7 @@ class CreateAlpha(Create):
     flags.AddEnableFastSocketFlag(parser)
     flags.AddLoggingVariantFlag(parser, for_node_pool=True)
     flags.AddWindowsOsVersionFlag(parser)
+    flags.AddBestEffortProvisionFlags(parser, hidden=True)
     flags.AddQueuedProvisioningFlag(parser, hidden=True)
     flags.AddTPUTopologyFlag(parser, hidden=True)
     flags.AddEnableNestedVirtualizationFlag(parser, hidden=True)

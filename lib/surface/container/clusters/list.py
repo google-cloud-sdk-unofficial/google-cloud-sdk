@@ -35,15 +35,13 @@ class List(base.ListCommand):
   """List existing clusters for running containers."""
 
   detailed_help = {
-      'DESCRIPTION':
-          """\
+      'DESCRIPTION': """\
           {description}
 
           This command queries cluster across all locations unless either
-          '--region' or '--zone' are specified.
+          '--location', '--region', or '--zone' are specified.
       """,
-      'EXAMPLES':
-          """\
+      'EXAMPLES': """\
           To list existing clusters in all locations, run:
 
             $ {command}

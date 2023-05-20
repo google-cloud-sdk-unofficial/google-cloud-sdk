@@ -1,11 +1,11 @@
-release_tracks: [BETA, ALPHA]
+release_tracks: [GA, BETA, ALPHA]
 help_text:
   brief: |
-    Import GatewaySecurityPolicy.
+    Import Gateway Security Policy Rule.
   description: |
-    Import a GatewaySecurityPolicy.
+    Import a Gateway Security Policy Rule.
   examples: |
-      To import a GatewaySecurityPolicy from a YAML file, run:
+      To import a Gateway Security Policy Rule from a YAML file, run:
 
         $ {command} my-rule --source=my-rule.yaml --location={region} --gateway-security-policy={policy-name}
 
@@ -15,6 +15,8 @@ request:
     api_version: v1alpha1
   BETA:
     api_version: v1beta1
+  GA:
+    api_version: v1
   modify_request_hooks:
   - googlecloudsdk.command_lib.network_security.hooks:SetUpdateMask
 
@@ -22,7 +24,7 @@ arguments:
   resource:
     spec: !REF googlecloudsdk.command_lib.network_security.resources:gatewaySecurityPolicyRule
     help_text: |
-      Name of the GatewaySecurityPolicy to import.
+      Name of the Gateway Security Policy Rule to import.
     is_positional: true
 
 async:
@@ -37,4 +39,6 @@ import:
       api_version: v1alpha1
     BETA:
       api_version: v1beta1
+    GA:
+      api_version: v1
     method: create

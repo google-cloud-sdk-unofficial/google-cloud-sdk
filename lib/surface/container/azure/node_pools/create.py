@@ -91,3 +91,4 @@ class CreateAlpha(Create):
     """Registers alpha track flags for this command."""
     Create.Args(parser)
     flags.AddImageType(parser)
+    flags.AddEnableAutoRepair(parser, True)

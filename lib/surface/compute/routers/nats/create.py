@@ -30,7 +30,7 @@ from googlecloudsdk.core import log
 from googlecloudsdk.core import resources
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Create(base.CreateCommand):
   """Add a NAT to a Compute Engine router."""
 
@@ -160,6 +160,15 @@ Create.detailed_help = {
     The alpha command uses the compute/alpha/routers API. Full documentation is not available for the alpha API.
     """
 }
+
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class CreateBeta(Create):
+  """Add a NAT to a Compute Engine router."""
+
+  with_private_nat = False
+  with_subnet_all = False
+  with_auto_network_tier = True
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)

@@ -31,7 +31,7 @@ from googlecloudsdk.core import properties
 
 
 @base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Create(base.CreateCommand):
   """Creates a user in a given cluster.
 
@@ -60,7 +60,7 @@ class Create(base.CreateCommand):
     flags.AddRegion(parser)
     flags.AddUserPassword(parser)
     flags.AddUserType(parser)
-    flags.AddSuperuser(parser)
+    flags.AddCreateSuperuser(parser)
     flags.AddDBRoles(parser)
 
   def Run(self, args):

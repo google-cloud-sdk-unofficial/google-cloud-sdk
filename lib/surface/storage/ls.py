@@ -56,41 +56,32 @@ class Ls(base.Command):
 
         $ {command} gs://my-bucket
 
-      You can use wildcards to match multiple paths (including multiple
-      buckets). Bucket wildcards are expanded to match only buckets contained in
-      your current project. The following command matches ``.txt'' objects that
-      begin with ``log'' and that are stored in buckets in your project that
-      begin with ``my-b'':
+      You can use [wildcards](https://cloud.google.com/storage/docs/wildcards)
+      to match multiple paths (including multiple buckets). Bucket wildcards are
+      expanded to match only buckets contained in your current project. The
+      following command matches ``.txt'' objects that begin with ``log'' and
+      that are stored in buckets in your project that begin with ``my-b'':
 
         $ {command} gs://my-b*/log*.txt
-
-      The following wildcards are valid and match only within the current
-      directory:
-
-        *: Matches zero or more characters
-        ?: Matches zero or one characters
-        []: Matches a character range (ex. [a-z] or [0-9])
 
       You can use double-star wildcards to match zero or more directory levels
       in a path. The following command matches all ``.txt'' objects in a bucket.
 
         $ {command} gs://my-bucket/**/*.txt
 
-      `**` retrieves a flat list of objects in a single API call and will not
-      match prefixes. The following command would not match
-      ``gs://my-bucket/dir/log.txt'':
+      The wildcard `**` retrieves a flat list of objects in a single API call
+      and does not match prefixes. The following command would not match
+      `gs://my-bucket/dir/log.txt`:
 
         $ {command} gs://my-bucket/**/dir
 
       Double-star expansion also can not be combined with other expressions in a
       given path segment and operates as a single star in that context. For
-      example:
+      example, the command `gs://my-bucket/dir**/log.txt` is treated as
+      `gs://my-bucket/dir*/log.txt`. To get the recursive behavior, the command
+      should instead be written the following way:
 
-        gs://my-bucket/dir**/log.txt      is treated as:
-
-        gs://my-bucket/dir*/log.txt       and instead should be written as:
-
-        gs://my-bucket/dir*/**/log.txt    to get the recursive behavior.
+        gs://my-bucket/dir*/**/log.txt
 
       The following command lists all items recursively with formatting by
       using `--recursive`:

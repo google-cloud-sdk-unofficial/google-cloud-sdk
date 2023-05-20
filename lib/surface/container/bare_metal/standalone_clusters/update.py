@@ -33,7 +33,6 @@ $ {command} my-cluster --location=us-west1
 """
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Update(base.UpdateCommand):
   """Update an Anthos on bare metal standalone cluster."""
@@ -65,6 +64,7 @@ class Update(base.UpdateCommand):
     standalone_flags.AddDescription(parser)
     standalone_flags.AddClusterOperationsConfig(parser)
     standalone_flags.AddNodeAccessConfig(parser)
+    standalone_flags.AddUpdateAnnotations(parser)
 
   def Run(self, args):
     """Runs the update command.

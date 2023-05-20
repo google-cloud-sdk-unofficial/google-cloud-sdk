@@ -97,5 +97,6 @@ class CreateAlpha(Create):
   def Args(parser):
     """Registers alpha track flags for this command."""
     Create.Args(parser, base.ReleaseTrack.ALPHA)
+    flags.AddEnableAutoRepair(parser, True)
     aws_flags.AddInstancePlacement(parser)
     flags.AddImageType(parser)

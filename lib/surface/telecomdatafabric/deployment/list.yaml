@@ -1,0 +1,30 @@
+- release_tracks: [ALPHA]
+
+  help_text:
+    brief: list deployments
+    description: list all deployments
+    examples: |
+      To list all deployments in region `us-central1`, run:
+
+        $ {command} --location=us-central1
+
+  request:
+    collection: telecomdatafabric.projects.locations.deployments
+    api_version: v1alpha
+
+  arguments:
+    resource:
+      help_text: TelecomDataFabric deployment's location
+      spec: !REF googlecloudsdk.command_lib.telecomdatafabric.resources:location
+
+  response:
+    id_field: name
+
+  output:
+    format: |
+      table(
+        name.basename():label=NAME,
+        createTime.date("%Y-%m-%dT%H:%M:%SZ"):label=CREATETIME,
+        updateTime.date("%Y-%m-%dT%H:%M:%SZ"):label=UPDATETIME,
+        state:label=STATE
+      )

@@ -47,7 +47,7 @@ class Clusters(base.Group):
         which you can register arguments.  See the public argparse documentation
         for its capabilities.
     """
-    flags.AddZoneAndRegionFlags(parser)
+    flags.AddLocationFlags(parser)
     parser.display_info.AddTransforms(transforms.GetTransforms())
 
   def Filter(self, context, args):

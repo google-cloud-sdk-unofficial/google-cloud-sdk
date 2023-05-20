@@ -25,7 +25,11 @@ from googlecloudsdk.command_lib.datastream import flags
 from googlecloudsdk.command_lib.datastream import resource_args
 from googlecloudsdk.command_lib.datastream.streams import flags as streams_flags
 
-DESCRIPTION = ('Create a Datastream stream')
+DESCRIPTION = """\
+    Create a Datastream stream. If successful, the response body contains a newly created instance of Operation.
+    To get the operation result, call: describe OPERATION
+    """
+
 EXAMPLES = """\
     To create a stream with an Oracle source and a Google Cloud Storage destination:
 

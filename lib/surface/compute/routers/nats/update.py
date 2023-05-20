@@ -30,7 +30,7 @@ from googlecloudsdk.core import log
 from googlecloudsdk.core import resources
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Update(base.UpdateCommand):
   """Update a NAT on a Compute Engine router."""
   with_private_nat = False
@@ -109,6 +109,14 @@ class Update(base.UpdateCommand):
         operation_poller, operation_ref,
         'Updating nat [{0}] in router [{1}]'.format(nat.name,
                                                     router_ref.Name()))
+
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class UpdateBeta(Update):
+  """Update a NAT on a Compute Engine router."""
+  with_private_nat = False
+  with_subnet_all = False
+  with_auto_network_tier = True
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)

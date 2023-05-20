@@ -22,6 +22,7 @@ from __future__ import unicode_literals
 
 from google.auth import credentials
 from google.auth import exceptions as google_auth_exceptions
+from google.auth import impersonated_credentials
 from google.oauth2 import credentials as google_auth_creds
 from googlecloudsdk.api_lib.auth import util as auth_util
 from googlecloudsdk.calliope import arg_parsers
@@ -35,6 +36,8 @@ from googlecloudsdk.core.credentials import exceptions as creds_exceptions
 from googlecloudsdk.core.credentials import google_auth_credentials as c_google_auth
 from googlecloudsdk.core.credentials import store as c_store
 import six
+
+_DEFAULT_TOKEN_LIFETIME_SECS = 3600  # 1 hour in seconds
 
 
 class PrintAccessToken(base.Command):
@@ -78,6 +81,22 @@ class PrintAccessToken(base.Command):
   @staticmethod
   def Args(parser):
     parser.add_argument(
+        '--lifetime',
+        type=arg_parsers.Duration(upper_bound='43200s'),
+        help=(
+            'Access token lifetime. The default access token lifetime is 3600'
+            ' seconds, but you can use this flag to reduce the lifetime or'
+            ' extend it up to 43200 seconds (12 hours). The org policy'
+            ' constraint'
+            ' `constraints/iam.allowServiceAccountCredentialLifetimeExtension`'
+            ' must be set if you want to extend the lifetime beyond 3600'
+            ' seconds. Note that this flag is for service account impersonation'
+            ' only, so it only works when either'
+            ' `--impersonate-service-account` flag or'
+            ' `auth/impersonate_service_account` property is set.'
+        ),
+    )
+    parser.add_argument(
         '--scopes',
         type=arg_parsers.ArgList(min_length=1),
         metavar='SCOPE',
@@ -93,15 +112,7 @@ class PrintAccessToken(base.Command):
 
   def Run(self, args):
     """Run the helper command."""
-    impersonate_service_account = (
-        properties.VALUES.auth.impersonate_service_account.Get())
-    if impersonate_service_account:
-      log.warning(
-          "Impersonate service account '{}' is detected. This command cannot be"
-          ' used to print the access token for an impersonate account. The '
-          "token below is still the application default credentials' access "
-          'token.'.format(impersonate_service_account))
-
+    # Create the ADC cred.
     try:
       creds, _ = c_creds.GetGoogleAuthDefault().default(
           scopes=args.scopes or [auth_util.CLOUD_PLATFORM_SCOPE])
@@ -109,7 +120,45 @@ class PrintAccessToken(base.Command):
       log.debug(e, exc_info=True)
       raise c_exc.ToolException(six.text_type(e))
 
-    if args.scopes:
+    # Check if impersonation is used. There are two scenarios:
+    # (1) the ADC file is not an impersonated credential json file, and either
+    # --impersonate-service-account flag or auth/impersonate_service_account
+    # property is set. In this case, we will create a new impersonated cred,
+    # using the ADC cred as the source cred. The impersonated service account
+    # value will be parsed and used as target principal and delegates.
+    # (2) the ADC file is impersonated cred json file, then the ADC cred
+    # created above is an impersonated cred. If users provided impersonated
+    # service account via flag or property, we also need to parse the value to
+    # target principal and delegates, and override them in the cred.
+    is_adc_cred_impersonated = c_creds.IsImpersonatedAccountCredentials(creds)
+    impersonation_service_accounts = (
+        properties.VALUES.auth.impersonate_service_account.Get()
+    )
+    is_impersonation_used = is_adc_cred_impersonated or (
+        impersonation_service_accounts is not None
+    )
+    if args.lifetime and not is_impersonation_used:
+      raise c_exc.InvalidArgumentException(
+          '--lifetime',
+          (
+              'Lifetime flag is for service account impersonation only. It must'
+              ' be used together with either --impersonate-service-account flag'
+              ' or auth/impersonate_service_account property, or the'
+              ' application default credential json file must have'
+              ' `impersonated_service_account` type.'
+          ),
+      )
+    if impersonation_service_accounts:
+      (target_principal, delegates) = c_store.ParseImpersonationAccounts(
+          impersonation_service_accounts
+      )
+
+    # Add scopes to the ADC cred. We don't do so for impersonated cred since
+    # for scenario (1): the ADC cred is the source cred, the scopes should be
+    # added to the impersonated cred not the source cred
+    # for scenario (2): the ADC cred is the impersonated cred, we already added
+    # the scope during the cred creation
+    if args.scopes and not is_impersonation_used:
       cred_type = c_creds.CredentialTypeGoogleAuth.FromCredentials(creds)
       if cred_type not in [
           c_creds.CredentialTypeGoogleAuth.USER_ACCOUNT,
@@ -129,14 +178,27 @@ class PrintAccessToken(base.Command):
       else:
         creds._scopes = scopes
 
-    # Converts the user credentials so that it can handle reauth during refresh.
+    # Make adjustments to the ADC cred.
+    # - if it's user credentials, convert it so that it can handle reauth
+    # during refresh.
+    # - if it's impersonated cred, override the target principal and delegates
+    # if impersonated service account flag/property is provided, and set
+    # lifetime if lifetime flag is provided.
     if isinstance(creds, google_auth_creds.Credentials):
       creds = c_google_auth.Credentials.FromGoogleAuthUserCredentials(
           creds)
+    if is_adc_cred_impersonated:
+      if impersonation_service_accounts:
+        creds._target_principal = target_principal  # pylint: disable=protected-access
+        creds._delegates = delegates  # pylint: disable=protected-access
+      if args.lifetime:
+        creds._lifetime = args.lifetime  # pylint: disable=protected-access
+
+    # Refresh the ADC cred.
+    req = requests.GoogleAuthRequest()
     try:
       with c_store.HandleGoogleAuthCredentialsRefreshError(for_adc=True):
-        creds.refresh(requests.GoogleAuthRequest())
-      return creds
+        creds.refresh(req)
     except creds_exceptions.TokenRefreshError as e:
       if args.scopes:
         raise c_exc.InvalidArgumentException(
@@ -147,3 +209,20 @@ class PrintAccessToken(base.Command):
             .format(', '.join(map('`{}`'.format, auth_util.DEFAULT_SCOPES))))
       else:
         raise e
+
+    # If impersonation is not needed, or the ADC cred is already an impersonated
+    # cred, since we already did refresh above, we can return the cred.
+    # Otherwise, we need to create an impersonated cred using the ADC cred as
+    # the source cred and the provided target principal, delegates and lifetime.
+    # We then do a refresh and return the cred.
+    if not is_impersonation_used or is_adc_cred_impersonated:
+      return creds
+    impersonated_creds = impersonated_credentials.Credentials(
+        source_credentials=creds,
+        target_principal=target_principal,
+        delegates=delegates,
+        target_scopes=args.scopes or [auth_util.CLOUD_PLATFORM_SCOPE],
+        lifetime=args.lifetime or _DEFAULT_TOKEN_LIFETIME_SECS,
+    )
+    impersonated_creds.refresh(req)
+    return impersonated_creds

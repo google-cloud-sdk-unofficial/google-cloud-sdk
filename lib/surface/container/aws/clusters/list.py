@@ -48,4 +48,5 @@ class Describe(base.ListCommand):
     location_ref = args.CONCEPTS.location.Parse()
     with endpoint_util.GkemulticloudEndpointOverride(location_ref.locationsId):
       cluster_client = api_util.ClustersClient()
-      return cluster_client.List(location_ref, args.page_size, args.limit)
+      items, _ = cluster_client.List(location_ref, args.page_size, args.limit)
+      return items

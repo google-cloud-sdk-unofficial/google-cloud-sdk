@@ -84,11 +84,10 @@ class GetCredentials(base.Command):
   kubectl documentation.
   """
   detailed_help = {
-      'EXAMPLES':
-          """\
+      'EXAMPLES': """\
           To switch to working on your cluster 'sample-cluster', run:
 
-            $ {command} sample-cluster --zone=us-central1-f
+            $ {command} sample-cluster --location=us-central1-f
       """,
   }
 
@@ -146,11 +145,10 @@ class GetCredentialsBeta(base.Command):
   kubectl documentation.
   """
   detailed_help = {
-      'EXAMPLES':
-          """\
+      'EXAMPLES': """\
           To switch to working on your cluster 'sample-cluster', run:
 
-            $ {command} sample-cluster --zone=us-central1-f
+            $ {command} sample-cluster --location=us-central1-f
       """,
   }
 
@@ -208,11 +206,10 @@ class GetCredentialsAlpha(base.Command):
   kubectl documentation.
   """
   detailed_help = {
-      'EXAMPLES':
-          """\
+      'EXAMPLES': """\
           To switch to working on your cluster 'sample-cluster', run:
 
-            $ {command} sample-cluster --zone=us-central1-f
+            $ {command} sample-cluster --location=us-central1-f
       """,
   }
 

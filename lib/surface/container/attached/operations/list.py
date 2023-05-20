@@ -40,9 +40,6 @@ class List(base.ListCommand):
   def Args(parser):
     """Registers flags for this command."""
     resource_args.AddLocationResourceArg(parser, 'to list operations')
-    # ListOperations returns Attached, AWS, and Azure operations.
-    # Add a filter for Attached operations.
-    operations.AddFilter(parser, 'attached')
     operations.AddFormat(parser)
 
   def Run(self, args):
@@ -52,5 +49,10 @@ class List(base.ListCommand):
     with endpoint_util.GkemulticloudEndpointOverride(location_ref.locationsId,
                                                      release_track):
       op_client = op_api_util.OperationsClient()
-      return op_client.List(
+      items, empty = op_client.List(
           location_ref, args.page_size, args.limit, parent_field='name')
+      if not empty:
+        # ListOperations returns AWS, Azure, and attached operations.
+        # Add a filter for attached operations.
+        operations.AddFilter(args, 'attached')
+      return items

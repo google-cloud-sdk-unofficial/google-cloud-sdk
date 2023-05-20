@@ -574,20 +574,20 @@ completion."""
 cluster [{name}]. The master will be updated to stop serving on the old IP \
 address and only serve on the new IP address. Make sure all API clients have \
 been updated to communicate with the new IP address (e.g. by running `gcloud \
-container clusters get-credentials --project {project} --zone {zone} {name}`). \
-If maintenence window is used, nodes are not recreated until a maintenance \
-window occurs. See documentation \
+container clusters get-credentials --project {project} --location {zone} \
+{name}`). If maintenence window is used, nodes are not recreated until a \
+maintenance window occurs. See documentation \
 https://cloud.google.com/kubernetes-engine/docs/how-to/ip-rotation on how to \
-manually update nodes. \
-This operation is long-running and will block other operations on the cluster \
-(including delete) until it has run to completion."""
+manually update nodes. This operation is long-running and will block other \
+operations on the cluster (including delete) until it has run to \
+completion."""
       elif args.complete_credential_rotation:
         msg_tmpl = """This will complete the in-progress Credential Rotation on\
  cluster [{name}]. The master will be updated to stop serving on the old IP \
 address and only serve on the new IP address. Old cluster credentials will be \
 invalidated. Make sure all API clients have been updated to communicate with \
 the new IP address (e.g. by running `gcloud container clusters get-credentials \
---project {project} --zone {zone} {name}`). If maintenence window is used, \
+--project {project} --location {zone} {name}`). If maintenence window is used, \
 nodes are not recreated until a maintenance window occurs. See documentation \
 https://cloud.google.com/kubernetes-engine/docs/how-to/credential-rotation \
 on how to manually update nodes. This operation is long-running and \

@@ -15,6 +15,13 @@
       spec: !REF googlecloudsdk.command_lib.workstations.resources:workstation
       help_text: |
         Arguments and flags that specify the workstation to create.
+    params:
+    - arg_name: labels
+      api_field: workstation.labels
+      type: "googlecloudsdk.calliope.arg_parsers:ArgDict:"
+      help_text: |
+        Labels that are applied to the workstation and propagated to the underlying Compute Engine
+        resources.
 
   request:
     api_version: v1beta

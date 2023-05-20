@@ -30,8 +30,7 @@ from googlecloudsdk.command_lib.util.args import labels_util
 class Create(base.CreateCommand):
   """Create Transcoder jobs."""
 
-  detailed_help = {
-      'EXAMPLES': """
+  detailed_help = {'EXAMPLES': """
         To create a transcoder job with default template, input URI, and output URI:
 
           $ {command} --location=us-central1 --input-uri="gs://bucket/input.mp4" --output-uri="gs://bucket/output/"
@@ -48,11 +47,13 @@ class Create(base.CreateCommand):
 
           $ {command} --location=us-central1 --file="config.json"
 
-        To Create a transcoder job with labels:
+        To create a transcoder job with labels:
 
           $ {command} --location=us-central1 --file="config.json" --labels=key=value
-      """
-  }
+
+        To create a transcoder job in batch mode:
+          $ {command} --location=us-central1 --file="config.json" --mode=PROCESSING_MODE_BATCH
+      """}
 
   @staticmethod
   def Args(parser):

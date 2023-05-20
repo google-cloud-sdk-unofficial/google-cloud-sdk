@@ -62,7 +62,11 @@ class UpdateAppEngine(base.UpdateCommand):
     flags.AddQueueResourceArg(parser, 'to update')
     flags.AddLocationFlag(parser)
     flags.AddUpdatePushQueueFlags(
-        parser, release_track=base.ReleaseTrack.BETA, app_engine_queue=True)
+        parser,
+        release_track=base.ReleaseTrack.BETA,
+        app_engine_queue=True,
+        http_queue=False,
+    )
 
   def Run(self, args):
     parsers.CheckUpdateArgsSpecified(args,
@@ -76,7 +80,9 @@ class UpdateAppEngine(base.UpdateCommand):
         constants.PUSH_QUEUE,
         api.messages,
         is_update=True,
-        release_track=self.ReleaseTrack())
+        release_track=self.ReleaseTrack(),
+        http_queue=False,
+    )
     updated_fields = parsers.GetSpecifiedFieldsMask(
         args, constants.PUSH_QUEUE, release_track=self.ReleaseTrack())
     if not self.is_alpha:
@@ -143,4 +149,8 @@ class AlphaUpdateAppEngine(UpdateAppEngine):
     flags.AddQueueResourceArg(parser, 'to update')
     flags.AddLocationFlag(parser)
     flags.AddUpdatePushQueueFlags(
-        parser, release_track=base.ReleaseTrack.ALPHA, app_engine_queue=True)
+        parser,
+        release_track=base.ReleaseTrack.ALPHA,
+        app_engine_queue=True,
+        http_queue=False,
+    )

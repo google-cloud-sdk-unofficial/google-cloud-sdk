@@ -22,6 +22,7 @@ from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import target_proxies_utils
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.certificate_manager import resource_args
+from googlecloudsdk.command_lib.compute import reference_utils
 from googlecloudsdk.command_lib.compute import scope as compute_scope
 from googlecloudsdk.command_lib.compute.ssl_certificates import (
     flags as ssl_certificates_flags)
@@ -90,24 +91,34 @@ def _Args(parser,
         with_location=False)
 
 
-def _Run(args, holder, target_https_proxy_ref, url_map_ref, ssl_cert_refs,
-         ssl_policy_ref, traffic_director_security, certificate_map_ref):
+def _Run(
+    args,
+    holder,
+    proxy_ref,
+    url_map_ref,
+    ssl_certificates,
+    ssl_policy_ref,
+    traffic_director_security,
+    certificate_map_ref,
+):
   """Issues requests necessary to create Target HTTPS Proxies."""
   client = holder.client
 
   if traffic_director_security and args.proxy_bind:
     target_https_proxy = client.messages.TargetHttpsProxy(
         description=args.description,
-        name=target_https_proxy_ref.Name(),
+        name=proxy_ref.Name(),
         urlMap=url_map_ref.SelfLink(),
-        sslCertificates=[ref.SelfLink() for ref in ssl_cert_refs],
-        proxyBind=args.proxy_bind)
+        sslCertificates=ssl_certificates,
+        proxyBind=args.proxy_bind,
+    )
   else:
     target_https_proxy = client.messages.TargetHttpsProxy(
         description=args.description,
-        name=target_https_proxy_ref.Name(),
+        name=proxy_ref.Name(),
         urlMap=url_map_ref.SelfLink(),
-        sslCertificates=[ref.SelfLink() for ref in ssl_cert_refs])
+        sslCertificates=ssl_certificates,
+    )
 
   if args.IsSpecified('quic_override'):
     quic_enum = client.messages.TargetHttpsProxy.QuicOverrideValueValuesEnum
@@ -119,17 +130,17 @@ def _Run(args, holder, target_https_proxy_ref, url_map_ref, ssl_cert_refs,
   if certificate_map_ref:
     target_https_proxy.certificateMap = certificate_map_ref.SelfLink()
 
-  if target_https_proxies_utils.IsRegionalTargetHttpsProxiesRef(
-      target_https_proxy_ref):
+  if target_https_proxies_utils.IsRegionalTargetHttpsProxiesRef(proxy_ref):
     request = client.messages.ComputeRegionTargetHttpsProxiesInsertRequest(
-        project=target_https_proxy_ref.project,
-        region=target_https_proxy_ref.region,
-        targetHttpsProxy=target_https_proxy)
+        project=proxy_ref.project,
+        region=proxy_ref.region,
+        targetHttpsProxy=target_https_proxy,
+    )
     collection = client.apitools_client.regionTargetHttpsProxies
   else:
     request = client.messages.ComputeTargetHttpsProxiesInsertRequest(
-        project=target_https_proxy_ref.project,
-        targetHttpsProxy=target_https_proxy)
+        project=proxy_ref.project, targetHttpsProxy=target_https_proxy
+    )
     collection = client.apitools_client.targetHttpsProxies
 
   return client.MakeRequests([(collection, 'Insert', request)])
@@ -151,10 +162,24 @@ class Create(base.CreateCommand):
 
   @classmethod
   def Args(cls, parser):
+    certificate_group = parser.add_mutually_exclusive_group()
     cls.SSL_CERTIFICATES_ARG = (
         ssl_certificates_flags.SslCertificatesArgumentForOtherResource(
             'target HTTPS proxy', required=False))
-    cls.SSL_CERTIFICATES_ARG.AddArgument(parser, cust_metavar='SSL_CERTIFICATE')
+    cls.SSL_CERTIFICATES_ARG.AddArgument(
+        parser, mutex_group=certificate_group, cust_metavar='SSL_CERTIFICATE'
+    )
+    resource_args.AddCertificateResourceArg(
+        parser,
+        'to attach',
+        noun='certificate-manager-certificates',
+        name='certificate-manager-certificates',
+        positional=False,
+        required=False,
+        plural=True,
+        group=certificate_group,
+        with_location=False,
+    )
 
     cls.TARGET_HTTPS_PROXY_ARG = flags.TargetHttpsProxyArgument()
     cls.TARGET_HTTPS_PROXY_ARG.AddArgument(parser, operation_type='create')
@@ -175,23 +200,43 @@ class Create(base.CreateCommand):
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
-    target_https_proxy_ref = self.TARGET_HTTPS_PROXY_ARG.ResolveAsResource(
-        args, holder.resources, default_scope=compute_scope.ScopeEnum.GLOBAL)
+    proxy_ref = self.TARGET_HTTPS_PROXY_ARG.ResolveAsResource(
+        args, holder.resources, default_scope=compute_scope.ScopeEnum.GLOBAL
+    )
     url_map_ref = target_https_proxies_utils.ResolveTargetHttpsProxyUrlMap(
-        args, self.URL_MAP_ARG, target_https_proxy_ref, holder.resources)
-    ssl_cert_refs = target_https_proxies_utils.ResolveSslCertificates(
-        args, self.SSL_CERTIFICATES_ARG, target_https_proxy_ref,
-        holder.resources)
+        args, self.URL_MAP_ARG, proxy_ref, holder.resources
+    )
+    ssl_certificates = target_https_proxies_utils.ResolveSslCertificates(
+        args, self.SSL_CERTIFICATES_ARG, proxy_ref, holder.resources
+    )
+    if ssl_certificates:
+      ssl_certificates = [ref.SelfLink() for ref in ssl_certificates]
+    elif args.certificate_manager_certificates:
+      location = target_https_proxies_utils.GetLocation(proxy_ref)
+      ssl_certificates = [
+          reference_utils.BuildCcmCertificateUrl(
+              proxy_ref.project, location, certificate_name
+          )
+          for certificate_name in args.certificate_manager_certificates
+      ]
     if args.ssl_policy:
       ssl_policy_ref = target_https_proxies_utils.ResolveSslPolicy(
-          args, self.SSL_POLICY_ARG, target_https_proxy_ref, holder.resources)
+          args, self.SSL_POLICY_ARG, proxy_ref, holder.resources
+      )
     else:
       ssl_policy_ref = None
     certificate_map_ref = args.CONCEPTS.certificate_map.Parse(
     ) if self._certificate_map else None
-    return _Run(args, holder, target_https_proxy_ref, url_map_ref,
-                ssl_cert_refs, ssl_policy_ref, self._traffic_director_security,
-                certificate_map_ref)
+    return _Run(
+        args,
+        holder,
+        proxy_ref,
+        url_map_ref,
+        ssl_certificates,
+        ssl_policy_ref,
+        self._traffic_director_security,
+        certificate_map_ref,
+    )
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)

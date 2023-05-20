@@ -36,3 +36,8 @@ arguments:
   resource:
     help_text: Cluster to export the configuration for.
     spec: !REF googlecloudsdk.command_lib.container.clusters.resources:cluster
+    # Inherited from clusters command.
+    removed_flags: ['location']
+    command_level_fallthroughs:
+      location:
+      - arg_name: 'location'

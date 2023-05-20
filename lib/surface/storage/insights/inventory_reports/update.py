@@ -100,10 +100,15 @@ class Update(base.Command):
       # the field to the updateMask.
       metadata_fields_list = []
 
+    if args.destination is not None:
+      destination_url = storage_url.storage_url_from_string(
+          storage_url.add_gcs_scheme_if_missing(args.destination))
+    else:
+      destination_url = None
+
     return client.update(
         report_config_name,
-        destination_url=storage_url.storage_url_from_string(
-            args.destination) if args.destination is not None else None,
+        destination_url=destination_url,
         metadata_fields=metadata_fields_list,
         start_date=args.schedule_starts,
         end_date=args.schedule_repeats_until,

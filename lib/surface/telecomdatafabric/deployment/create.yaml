@@ -1,0 +1,30 @@
+- release_tracks: [ALPHA]
+
+  help_text:
+    brief: create deployment
+    description: creates a deployment
+    examples: |
+      To create a deployment `test-deployment` in location `us-central1`, run:
+
+      $ {command} test-deployment --location=us-central1
+
+  request:
+    collection: telecomdatafabric.projects.locations.deployments
+    api_version: v1alpha
+
+  arguments:
+    resource:
+      help_text: TelecomDataFabric deployment
+      spec: !REF googlecloudsdk.command_lib.telecomdatafabric.resources:deployment
+    params:
+    - arg_name: template-id
+      api_field: deployment.templateId
+      required: true
+      help_text: Template name.
+    - arg_name: parameters
+      type: 'googlecloudsdk.calliope.arg_parsers:ArgDict:'
+      api_field: deployment.parameters
+      help_text: Deployment parameters which is map of string key value pair, eg- --parameters data_adapter=METRICS_TRANSFORMER,parser_details="{\"format\":\"JSON\"}".
+
+  async:
+    collection: telecomdatafabric.projects.locations.operations

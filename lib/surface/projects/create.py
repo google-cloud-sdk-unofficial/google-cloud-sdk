@@ -83,7 +83,15 @@ class Create(base.CreateCommand):
     """Default argument specification."""
 
     labels_util.AddCreateLabelsFlags(parser)
-    type_ = arg_parsers.RegexpValidator(r'[a-z][a-z0-9-]{5,29}', ID_DESCRIPTION)
+    if properties.IsDefaultUniverse():
+      type_ = arg_parsers.RegexpValidator(
+          r'[a-z][a-z0-9-]{5,29}', ID_DESCRIPTION
+      )
+    else:
+      type_ = arg_parsers.RegexpValidator(
+          r'^(?!.*-$)(((?:[a-z][\.a-z0-9-]{5,29})\:?)?(?:[a-z][a-z0-9-]{5,29})$)',
+          ID_DESCRIPTION,
+      )
     parser.add_argument(
         'id',
         metavar='PROJECT_ID',

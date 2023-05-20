@@ -42,11 +42,11 @@ class List(base.ListCommand):
 
         $ {command}
 
-      List buckets beginning with "b":
+      List buckets beginning with ``b'':
 
         $ {command} gs://b*
 
-      List buckets with JSON formatting, only returning the "name" key:
+      List buckets with JSON formatting, only returning the ``name'' key:
 
         $ {command} --format="json(name)"
       """,

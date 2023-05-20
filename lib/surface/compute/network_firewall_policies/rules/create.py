@@ -35,17 +35,18 @@ class Create(base.CreateCommand):
   """
 
   NETWORK_FIREWALL_POLICY_ARG = None
-  _support_address_group = False
-  _support_fqdn = False
-  _support_geo = False
-  _support_nti = False
+  _support_address_group = True
+  _support_fqdn = True
+  _support_geo = True
+  _support_nti = True
   _support_ips = False
   _support_ips_with_tls = False
 
   @classmethod
   def Args(cls, parser):
     cls.NETWORK_FIREWALL_POLICY_ARG = flags.NetworkFirewallPolicyRuleArgument(
-        required=True, operation='create')
+        required=True, operation='create'
+    )
     cls.NETWORK_FIREWALL_POLICY_ARG.AddArgument(parser, operation_type='create')
     flags.AddAction(parser, support_ips=cls._support_ips)
     flags.AddRulePriority(parser, operation='inserted')
@@ -80,12 +81,17 @@ class Create(base.CreateCommand):
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     ref = self.NETWORK_FIREWALL_POLICY_ARG.ResolveAsResource(
-        args, holder.resources)
+        args, holder.resources
+    )
     network_firewall_policy_rule_client = client.NetworkFirewallPolicyRule(
-        ref=ref, compute_client=holder.client)
+        ref=ref, compute_client=holder.client
+    )
     if hasattr(ref, 'region'):
-      network_firewall_policy_rule_client = region_client.RegionNetworkFirewallPolicyRule(
-          ref, compute_client=holder.client)
+      network_firewall_policy_rule_client = (
+          region_client.RegionNetworkFirewallPolicyRule(
+              ref, compute_client=holder.client
+          )
+      )
 
     src_ip_ranges = []
     dest_ip_ranges = []
@@ -111,10 +117,14 @@ class Create(base.CreateCommand):
       disabled = args.disabled
     if args.IsSpecified('src_secure_tags'):
       src_secure_tags = secure_tags_utils.TranslateSecureTagsForFirewallPolicy(
-          holder.client, args.src_secure_tags)
+          holder.client, args.src_secure_tags
+      )
     if args.IsSpecified('target_secure_tags'):
-      target_secure_tags = secure_tags_utils.TranslateSecureTagsForFirewallPolicy(
-          holder.client, args.target_secure_tags)
+      target_secure_tags = (
+          secure_tags_utils.TranslateSecureTagsForFirewallPolicy(
+              holder.client, args.target_secure_tags
+          )
+      )
     if self._support_ips and args.IsSpecified('security_profile_group'):
       security_profile_group = args.security_profile_group
     if (
@@ -123,13 +133,15 @@ class Create(base.CreateCommand):
         and args.IsSpecified('tls_inspect')
     ):
       tls_inspect = args.tls_inspect
-    layer4_config_list = rule_utils.ParseLayer4Configs(layer4_configs,
-                                                       holder.client.messages)
+    layer4_config_list = rule_utils.ParseLayer4Configs(
+        layer4_configs, holder.client.messages
+    )
     matcher = holder.client.messages.FirewallPolicyRuleMatcher(
         srcIpRanges=src_ip_ranges,
         destIpRanges=dest_ip_ranges,
         layer4Configs=layer4_config_list,
-        srcSecureTags=src_secure_tags)
+        srcSecureTags=src_secure_tags,
+    )
     if self._support_address_group and args.IsSpecified('src_address_groups'):
       matcher.srcAddressGroups = args.src_address_groups
     if self._support_address_group and args.IsSpecified('dest_address_groups'):
@@ -147,17 +159,17 @@ class Create(base.CreateCommand):
     if self._support_nti and args.IsSpecified('dest_threat_intelligence'):
       matcher.destThreatIntelligences = args.dest_threat_intelligence
     traffic_direct = (
-        holder.client.messages.FirewallPolicyRule.DirectionValueValuesEnum
-        .INGRESS)
+        holder.client.messages.FirewallPolicyRule.DirectionValueValuesEnum.INGRESS
+    )
     if args.IsSpecified('direction'):
       if args.direction == 'INGRESS':
         traffic_direct = (
-            holder.client.messages.FirewallPolicyRule.DirectionValueValuesEnum
-            .INGRESS)
+            holder.client.messages.FirewallPolicyRule.DirectionValueValuesEnum.INGRESS
+        )
       else:
         traffic_direct = (
-            holder.client.messages.FirewallPolicyRule.DirectionValueValuesEnum
-            .EGRESS)
+            holder.client.messages.FirewallPolicyRule.DirectionValueValuesEnum.EGRESS
+        )
 
     if self._support_ips:
       if self._support_ips_with_tls:
@@ -197,11 +209,13 @@ class Create(base.CreateCommand):
           description=args.description,
           enableLogging=enable_logging,
           disabled=disabled,
-          targetSecureTags=target_secure_tags)
+          targetSecureTags=target_secure_tags,
+      )
 
     return network_firewall_policy_rule_client.Create(
         firewall_policy=args.firewall_policy,
-        firewall_policy_rule=firewall_policy_rule)
+        firewall_policy_rule=firewall_policy_rule,
+    )
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
@@ -231,8 +245,7 @@ class CreateAlpha(Create):
 
 
 Create.detailed_help = {
-    'EXAMPLES':
-        """\
+    'EXAMPLES': """\
     To create a rule with priority ``10'' in a global network firewall policy
     with name ``my-policy'' and description ``example rule'', run:
 

@@ -33,10 +33,9 @@ $ {command} my-cluster --location=us-west1
 """
 
 
-@base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Unenroll(base.Command):
-  """Unenroll an Anthos on bare metal admin cluster."""
+  """Unenroll an Anthos on bare metal admin cluster so that it is no longer managed by the Anthos On-Prem API."""
 
   detailed_help = {'EXAMPLES': _EXAMPLES}
 

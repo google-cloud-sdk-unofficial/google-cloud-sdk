@@ -25,11 +25,10 @@ from googlecloudsdk.command_lib.tasks import parsers
 from googlecloudsdk.core import log
 
 
-@base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Buffer(base.Command):
-  """Buffers a task into a queue.
-  """
+  """Buffers a task into a queue."""
+
   detailed_help = {
       'DESCRIPTION': """\
           {description}
@@ -37,7 +36,7 @@ class Buffer(base.Command):
       'EXAMPLES': """\
           To buffer into a queue:
 
-              $ {command} my-queue
+              $ {command} --queue=my-queue --location=us-central1
          """,
   }
 
@@ -45,7 +44,8 @@ class Buffer(base.Command):
   def Args(parser):
     flags.AddQueueResourceFlag(parser, required=True)
     flags.AddLocationFlag(
-        parser, required=True, helptext='The location where the queue exists.')
+        parser, required=True, helptext='The location where the queue exists.'
+    )
     flags.AddTaskIdFlag(parser)
 
   def Run(self, args):
@@ -54,6 +54,10 @@ class Buffer(base.Command):
     queue_ref = parsers.ParseQueue(args.queue, args.location)
     task_id = parsers.ParseTaskId(args)
 
+    task_id = '' if task_id is None else task_id
     tasks_client.Buffer(queue_ref, task_id)
-    log.status.Print('Buffered task in queue [{}].'.format(
-        parsers.GetConsolePromptString(queue_ref.RelativeName())))
+    log.status.Print(
+        'Buffered task in queue [{}].'.format(
+            parsers.GetConsolePromptString(queue_ref.RelativeName())
+        )
+    )

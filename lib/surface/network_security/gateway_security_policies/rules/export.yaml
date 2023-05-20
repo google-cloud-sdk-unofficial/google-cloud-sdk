@@ -1,11 +1,11 @@
-release_tracks: [BETA, ALPHA]
+release_tracks: [GA, BETA, ALPHA]
 help_text:
   brief: |
-    Export GatewaySecurityPolicyRule.
+    Export Gateway Security Policy Rule.
   description: |
-    Export a GatewaySecurityPolicyRule.
+    Export a Gateway Security Policy Rule.
   examples: |
-      To export a GatewaySecurityPolicyRule, run:
+      To export a Gateway Security Policy Rule, run:
 
         $ {command} my-rule --destination=my-rule.yaml --location={region} --gateway-security-policy={policy-name}
 
@@ -15,10 +15,12 @@ request:
     api_version: v1alpha1
   BETA:
     api_version: v1beta1
+  GA:
+    api_version: v1
 
 arguments:
   resource:
     spec: !REF googlecloudsdk.command_lib.network_security.resources:gatewaySecurityPolicyRule
     help_text: |
-      Name of the GatewaySecurityPolicyRule to export.
+      Name of the Gateway Security Policy Rule to export.
     is_positional: true

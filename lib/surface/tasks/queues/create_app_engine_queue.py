@@ -63,7 +63,11 @@ class CreateAppEngine(base.CreateCommand):
     flags.AddQueueResourceArg(parser, 'to create')
     flags.AddLocationFlag(parser)
     flags.AddCreatePushQueueFlags(
-        parser, release_track=base.ReleaseTrack.BETA, app_engine_queue=True)
+        parser,
+        release_track=base.ReleaseTrack.BETA,
+        app_engine_queue=True,
+        http_queue=False,
+    )
 
   def Run(self, args):
     api = GetApiAdapter(self.ReleaseTrack())
@@ -71,8 +75,12 @@ class CreateAppEngine(base.CreateCommand):
     queue_ref = parsers.ParseQueue(args.queue, args.location)
     location_ref = parsers.ExtractLocationRefFromQueueRef(queue_ref)
     queue_config = parsers.ParseCreateOrUpdateQueueArgs(
-        args, constants.PUSH_QUEUE, api.messages,
-        release_track=self.ReleaseTrack())
+        args,
+        constants.PUSH_QUEUE,
+        api.messages,
+        release_track=self.ReleaseTrack(),
+        http_queue=False,
+    )
     if not self.is_alpha:
       create_response = queues_client.Create(
           location_ref,
@@ -130,4 +138,8 @@ class AlphaCreateAppEngine(CreateAppEngine):
     flags.AddQueueResourceArg(parser, 'to create')
     flags.AddLocationFlag(parser)
     flags.AddCreatePushQueueFlags(
-        parser, release_track=base.ReleaseTrack.ALPHA, app_engine_queue=True)
+        parser,
+        release_track=base.ReleaseTrack.ALPHA,
+        app_engine_queue=True,
+        http_queue=False,
+    )

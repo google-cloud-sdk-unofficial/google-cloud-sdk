@@ -52,22 +52,22 @@ class List(base.ListCommand):
           """
       List Cloud Storage objects.
 
-      Bucket URLs like "gs://bucket" will match all the objects inside a bucket,
-      but "gs://b*" will error because it matches a list of buckets.
+      Bucket URLs like `gs://bucket` match all the objects inside a bucket,
+      but `gs://b*` fails because it matches a list of buckets.
       """,
       'EXAMPLES':
           """
 
-      List all objects in bucket "my-bucket":
+      List all objects in bucket ``my-bucket'':
 
         $ {command} gs://my-bucket
 
-      List all objects in bucket beginning with "o":
+      List all objects in bucket beginning with ``o'':
 
         $ {command} gs://my-bucket/o*
 
       List all objects in bucket with JSON formatting, only returning the
-      value of the "name" metadata field:
+      value of the ``name'' metadata field:
 
         $ {command} gs://my-bucket --format="json(name)"
       """,

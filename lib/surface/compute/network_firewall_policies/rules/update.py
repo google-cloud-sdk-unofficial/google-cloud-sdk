@@ -35,17 +35,18 @@ class Update(base.UpdateCommand):
   """
 
   NETWORK_FIREWALL_POLICY_ARG = None
-  _support_address_group = False
-  _support_fqdn = False
-  _support_geo = False
-  _support_nti = False
+  _support_address_group = True
+  _support_fqdn = True
+  _support_geo = True
+  _support_nti = True
   _support_ips = False
   _support_ips_with_tls = False
 
   @classmethod
   def Args(cls, parser):
     cls.NETWORK_FIREWALL_POLICY_ARG = flags.NetworkFirewallPolicyRuleArgument(
-        required=True, operation='update')
+        required=True, operation='update'
+    )
     cls.NETWORK_FIREWALL_POLICY_ARG.AddArgument(parser)
     flags.AddAction(parser, required=False, support_ips=cls._support_ips)
     flags.AddRulePriority(parser, operation='updated')
@@ -88,17 +89,21 @@ class Update(base.UpdateCommand):
         'src_address_groups': 'match.srcAddressGroups',
         'dest_address_groups': 'match.destAddressGroups',
         'src_threat_intelligence': 'match.srcThreatIntelligences',
-        'dest_threat_intelligence': 'match.destThreatIntelligences'
+        'dest_threat_intelligence': 'match.destThreatIntelligences',
     }
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     ref = self.NETWORK_FIREWALL_POLICY_ARG.ResolveAsResource(
-        args, holder.resources)
+        args, holder.resources
+    )
     network_firewall_policy_rule_client = client.NetworkFirewallPolicyRule(
-        ref=ref, compute_client=holder.client)
+        ref=ref, compute_client=holder.client
+    )
     if hasattr(ref, 'region'):
       network_firewall_policy_rule_client = (
           region_client.RegionNetworkFirewallPolicyRule(
-              ref, compute_client=holder.client))
+              ref, compute_client=holder.client
+          )
+      )
 
     priority = rule_utils.ConvertPriorityToInt(args.priority)
     src_ip_ranges = []
@@ -126,7 +131,8 @@ class Update(base.UpdateCommand):
     if args.IsSpecified('layer4_configs'):
       should_setup_match = True
       layer4_config_list = rule_utils.ParseLayer4Configs(
-          args.layer4_configs, holder.client.messages)
+          args.layer4_configs, holder.client.messages
+      )
     if args.IsSpecified('target_service_accounts'):
       target_service_accounts = args.target_service_accounts
     if args.IsSpecified('enable_logging'):
@@ -139,16 +145,21 @@ class Update(base.UpdateCommand):
       new_priority = priority
     if args.IsSpecified('src_secure_tags'):
       src_secure_tags = secure_tags_utils.TranslateSecureTagsForFirewallPolicy(
-          holder.client, args.src_secure_tags)
+          holder.client, args.src_secure_tags
+      )
       should_setup_match = True
     if args.IsSpecified('target_secure_tags'):
-      target_secure_tags = secure_tags_utils.TranslateSecureTagsForFirewallPolicy(
-          holder.client, args.target_secure_tags)
+      target_secure_tags = (
+          secure_tags_utils.TranslateSecureTagsForFirewallPolicy(
+              holder.client, args.target_secure_tags
+          )
+      )
     matcher = holder.client.messages.FirewallPolicyRuleMatcher(
         srcIpRanges=src_ip_ranges,
         destIpRanges=dest_ip_ranges,
         layer4Configs=layer4_config_list,
-        srcSecureTags=src_secure_tags)
+        srcSecureTags=src_secure_tags,
+    )
     if self._support_address_group and args.IsSpecified('src_address_groups'):
       matcher.srcAddressGroups = args.src_address_groups
       should_setup_match = True
@@ -185,12 +196,12 @@ class Update(base.UpdateCommand):
     if args.IsSpecified('direction'):
       if args.direction == 'INGRESS':
         traffic_direct = (
-            holder.client.messages.FirewallPolicyRule.DirectionValueValuesEnum
-            .INGRESS)
+            holder.client.messages.FirewallPolicyRule.DirectionValueValuesEnum.INGRESS
+        )
       else:
         traffic_direct = (
-            holder.client.messages.FirewallPolicyRule.DirectionValueValuesEnum
-            .EGRESS)
+            holder.client.messages.FirewallPolicyRule.DirectionValueValuesEnum.EGRESS
+        )
 
     if self._support_ips:
       if self._support_ips_with_tls:
@@ -230,14 +241,16 @@ class Update(base.UpdateCommand):
           description=args.description,
           enableLogging=enable_logging,
           disabled=disabled,
-          targetSecureTags=target_secure_tags)
+          targetSecureTags=target_secure_tags,
+      )
 
     with holder.client.apitools_client.IncludeFields(cleared_fields):
       return network_firewall_policy_rule_client.Update(
           priority=priority,
           firewall_policy=args.firewall_policy,
           firewall_policy_rule=firewall_policy_rule,
-          only_generate_request=False)
+          only_generate_request=False,
+      )
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
@@ -267,8 +280,7 @@ class UpdateAlpha(Update):
 
 
 Update.detailed_help = {
-    'EXAMPLES':
-        """\
+    'EXAMPLES': """\
     To update a rule with priority ``10'' in a global network firewall policy
     with name ``my-policy'' to change the action to ``allow'' and description to
     ``new example rule'', run:

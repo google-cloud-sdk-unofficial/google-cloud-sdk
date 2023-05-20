@@ -53,7 +53,7 @@ class GetServerConfig(base.Command):
         which you can register arguments.  See the public argparse documentation
         for its capabilities.
     """
-    flags.AddZoneAndRegionFlags(parser)
+    flags.AddLocationFlags(parser)
     base.FILTER_FLAG.AddToParser(parser)
     base.LIMIT_FLAG.AddToParser(parser)
     base.SORT_BY_FLAG.AddToParser(parser)

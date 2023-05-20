@@ -61,6 +61,7 @@ class Update(base.UpdateCommand):
     flags.AddDescription(parser)
     flags.AddClusterOperationsConfig(parser)
     flags.AddNodeAccessConfig(parser)
+    flags.AddUpdateAnnotations(parser)
 
   def Run(self, args):
     """Runs the update command.

@@ -30,6 +30,12 @@
       api_field: workstationCluster.subnetwork
       help_text: |
         The subnetwork that instances created under the cluster will be associated with.
+    - arg_name: labels
+      api_field: workstationCluster.labels
+      type: "googlecloudsdk.calliope.arg_parsers:ArgDict:"
+      help_text: |
+        Labels that are applied to the cluster and propagated to the underlying Compute Engine
+        resources.
     - arg_name: enable-private-endpoint
       api_field: workstationCluster.privateClusterConfig.enablePrivateEndpoint
       type: bool

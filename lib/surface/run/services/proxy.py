@@ -23,13 +23,14 @@ from googlecloudsdk.command_lib.config import config_helper
 from googlecloudsdk.command_lib.run import connection_context
 from googlecloudsdk.command_lib.run import exceptions
 from googlecloudsdk.command_lib.run import flags
+from googlecloudsdk.command_lib.run import messages_util
 from googlecloudsdk.command_lib.run import platforms
+from googlecloudsdk.command_lib.run import pretty_print
 from googlecloudsdk.command_lib.run import proxy
 from googlecloudsdk.command_lib.run import resource_args
 from googlecloudsdk.command_lib.run import serverless_operations
 from googlecloudsdk.command_lib.util.concepts import concept_parsers
 from googlecloudsdk.command_lib.util.concepts import presentation_specs
-from googlecloudsdk.core import log
 from googlecloudsdk.core.credentials import store
 
 
@@ -97,16 +98,22 @@ class Proxy(base.BinaryBackedCommand):
     with serverless_operations.Connect(conn_context) as client:
       serv = client.GetService(service_ref)
     if not serv:
-      raise exceptions.ArgumentError('Cannot find service [{}]'.format(
-          service_ref.servicesId))
+      raise exceptions.ArgumentError(
+          messages_util.GetNotFoundMessage(conn_context, service_ref)
+      )
 
     bind = '127.0.0.1:' + (args.port if args.port else '8080')
     host = self._GetUrl(serv, args.tag, service_ref.servicesId)
 
     command_executor = proxy.ProxyWrapper()
-    log.Print('Proxying service [{}] in region [{}] locally...'.format(
-        service_ref.servicesId, serv.region))
-    log.Print('http://{} proxies to {}'.format(bind, host))
+    pretty_print.Info(
+        messages_util.GetStartDeployMessage(
+            conn_context,
+            service_ref,
+            'Proxying to',
+        )
+    )
+    pretty_print.Info('http://{} proxies to {}'.format(bind, host))
 
     if args.token:
       response = command_executor(host=host, token=args.token, bind=bind)

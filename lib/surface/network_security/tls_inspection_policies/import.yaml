@@ -1,4 +1,4 @@
-release_tracks: [BETA, ALPHA]
+release_tracks: [GA, BETA, ALPHA]
 help_text:
   brief: |
     Import TLS Inspection Policy.
@@ -13,6 +13,8 @@ request:
     api_version: v1alpha1
   BETA:
     api_version: v1beta1
+  GA:
+    api_version: v1
 arguments:
   resource:
     spec: !REF googlecloudsdk.command_lib.network_security.resources:tlsInspectionPolicy
@@ -29,4 +31,6 @@ import:
       api_version: v1alpha1
     BETA:
       api_version: v1beta1
+    GA:
+      api_version: v1
     method: create

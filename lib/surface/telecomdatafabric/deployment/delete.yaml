@@ -1,0 +1,20 @@
+- release_tracks: [ALPHA]
+
+  help_text:
+    brief: deletes a deployment
+    description: deletes a deployment
+    examples: |
+      To deletes a deployment `test-deployment', run:
+
+      $ {command} test-deployment
+
+  request:
+    collection: telecomdatafabric.projects.locations.deployments
+
+  arguments:
+    resource:
+      help_text: TelecomDataFabric deployment
+      spec: !REF googlecloudsdk.command_lib.telecomdatafabric.resources:deployment
+
+  async:
+    collection: telecomdatafabric.projects.locations.operations

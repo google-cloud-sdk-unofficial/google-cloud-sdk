@@ -1,11 +1,11 @@
-release_tracks: [BETA, ALPHA]
+release_tracks: [GA, BETA, ALPHA]
 help_text:
   brief: |
-    Import UrlList.
+    Import Url List.
   description: |
-    Import a UrlList.
+    Import a Url List.
   examples: |
-      To import a UrlList from a YAML file, run:
+      To import a Url List from a YAML file, run:
 
         $ {command} my-url-list --source=my-url-list.yaml --location=global
 
@@ -15,6 +15,8 @@ request:
     api_version: v1alpha1
   BETA:
     api_version: v1beta1
+  GA:
+    api_version: v1
   modify_request_hooks:
   - googlecloudsdk.command_lib.network_security.hooks:SetUpdateMask
 
@@ -22,7 +24,7 @@ arguments:
   resource:
     spec: !REF googlecloudsdk.command_lib.network_security.resources:urlList
     help_text: |
-      Name of the UrlList to import.
+      Name of the Url List to import.
 
 async:
   collection: networksecurity.projects.locations.operations
@@ -36,4 +38,6 @@ import:
       api_version: v1alpha1
     BETA:
       api_version: v1beta1
+    GA:
+      api_version: v1
     method: create

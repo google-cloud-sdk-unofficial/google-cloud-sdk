@@ -35,11 +35,17 @@ import six
 from six.moves import range  # pylint: disable=redefined-builtin
 
 
-def _Args(parser, support_global_access, support_psc_global_access,
-          support_psc_google_apis, support_all_protocol,
-          support_target_service_attachment, support_l3_default,
-          support_source_ip_range, support_disable_automate_dns_zone,
-          support_regional_tcp_proxy):
+def _Args(
+    parser,
+    support_global_access,
+    support_psc_google_apis,
+    support_all_protocol,
+    support_target_service_attachment,
+    support_l3_default,
+    support_source_ip_range,
+    support_disable_automate_dns_zone,
+    support_regional_tcp_proxy,
+):
   """Add the flags to create a forwarding rule."""
 
   flags.AddCreateArgs(
@@ -56,8 +62,7 @@ def _Args(parser, support_global_access, support_psc_global_access,
   if support_global_access:
     flags.AddAllowGlobalAccess(parser)
 
-  if support_psc_global_access:
-    flags.AddAllowPscGlobalAccess(parser)
+  flags.AddAllowPscGlobalAccess(parser)
 
   if support_source_ip_range:
     flags.AddSourceIpRanges(parser)
@@ -91,36 +96,57 @@ class CreateHelper(object):
 
   FORWARDING_RULE_ARG = None
 
-  def __init__(self, holder, support_global_access, support_psc_global_access,
-               support_psc_google_apis, support_all_protocol,
-               support_target_service_attachment,
-               _support_sd_registration_for_regional, support_l3_default,
-               support_source_ip_range, support_disable_automate_dns_zone,
-               support_regional_tcp_proxy):
+  def __init__(
+      self,
+      holder,
+      support_global_access,
+      support_psc_google_apis,
+      support_all_protocol,
+      support_target_service_attachment,
+      support_sd_registration_for_regional,
+      support_l3_default,
+      support_source_ip_range,
+      support_disable_automate_dns_zone,
+      support_regional_tcp_proxy,
+  ):
     self._holder = holder
     self._support_global_access = support_global_access
-    self._support_psc_global_access = support_psc_global_access
     self._support_psc_google_apis = support_psc_google_apis
     self._support_all_protocol = support_all_protocol
     self._support_target_service_attachment = support_target_service_attachment
-    self._support_sd_registration_for_regional = _support_sd_registration_for_regional
+    self._support_sd_registration_for_regional = (
+        support_sd_registration_for_regional
+    )
     self._support_l3_default = support_l3_default
     self._support_source_ip_range = support_source_ip_range
     self._support_disable_automate_dns_zone = support_disable_automate_dns_zone
     self._support_regional_tcp_proxy = support_regional_tcp_proxy
 
   @classmethod
-  def Args(cls, parser, support_global_access, support_psc_global_access,
-           support_psc_google_apis, support_all_protocol,
-           support_target_service_attachment, support_l3_default,
-           support_source_ip_range, support_disable_automate_dns_zone,
-           support_regional_tcp_proxy):
+  def Args(
+      cls,
+      parser,
+      support_global_access,
+      support_psc_google_apis,
+      support_all_protocol,
+      support_target_service_attachment,
+      support_l3_default,
+      support_source_ip_range,
+      support_disable_automate_dns_zone,
+      support_regional_tcp_proxy,
+  ):
+    """Inits the class args for supported features."""
     cls.FORWARDING_RULE_ARG = _Args(
-        parser, support_global_access, support_psc_global_access,
-        support_psc_google_apis, support_all_protocol,
-        support_target_service_attachment, support_l3_default,
-        support_source_ip_range, support_disable_automate_dns_zone,
-        support_regional_tcp_proxy)
+        parser,
+        support_global_access,
+        support_psc_google_apis,
+        support_all_protocol,
+        support_target_service_attachment,
+        support_l3_default,
+        support_source_ip_range,
+        support_disable_automate_dns_zone,
+        support_regional_tcp_proxy,
+    )
 
   def ConstructProtocol(self, messages, args):
     if args.ip_protocol:
@@ -454,8 +480,7 @@ class CreateHelper(object):
     if self._support_global_access and args.IsSpecified('allow_global_access'):
       forwarding_rule.allowGlobalAccess = args.allow_global_access
 
-    if self._support_psc_global_access and args.IsSpecified(
-        'allow_psc_global_access'):
+    if args.IsSpecified('allow_psc_global_access'):
       forwarding_rule.allowPscGlobalAccess = args.allow_psc_global_access
 
     if self._support_disable_automate_dns_zone and args.IsSpecified(
@@ -582,7 +607,6 @@ class Create(base.CreateCommand):
   """Create a forwarding rule to direct network traffic to a load balancer."""
 
   _support_global_access = True
-  _support_psc_global_access = False
   _support_psc_google_apis = True
   _support_all_protocol = False
   _support_target_service_attachment = True
@@ -595,7 +619,6 @@ class Create(base.CreateCommand):
   @classmethod
   def Args(cls, parser):
     CreateHelper.Args(parser, cls._support_global_access,
-                      cls._support_psc_global_access,
                       cls._support_psc_google_apis, cls._support_all_protocol,
                       cls._support_target_service_attachment,
                       cls._support_l3_default, cls._support_source_ip_range,
@@ -605,19 +628,23 @@ class Create(base.CreateCommand):
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     return CreateHelper(
-        holder, self._support_global_access, self._support_psc_global_access,
-        self._support_psc_google_apis, self._support_all_protocol,
+        holder,
+        self._support_global_access,
+        self._support_psc_google_apis,
+        self._support_all_protocol,
         self._support_target_service_attachment,
-        self._support_sd_registration_for_regional, self._support_l3_default,
-        self._support_source_ip_range, self._support_disable_automate_dns_zone,
-        self._support_regional_tcp_proxy).Run(args)
+        self._support_sd_registration_for_regional,
+        self._support_l3_default,
+        self._support_source_ip_range,
+        self._support_disable_automate_dns_zone,
+        self._support_regional_tcp_proxy,
+    ).Run(args)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class CreateBeta(Create):
   """Create a forwarding rule to direct network traffic to a load balancer."""
   _support_global_access = True
-  _support_psc_global_access = True
   _support_all_protocol = False
   _support_target_service_attachment = True
   _support_sd_registration_for_regional = True
@@ -631,7 +658,6 @@ class CreateBeta(Create):
 class CreateAlpha(CreateBeta):
   """Create a forwarding rule to direct network traffic to a load balancer."""
   _support_global_access = True
-  _support_psc_global_access = True
   _support_all_protocol = True
   _support_target_service_attachment = True
   _support_sd_registration_for_regional = True

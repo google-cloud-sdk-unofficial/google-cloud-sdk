@@ -1,4 +1,4 @@
-- release_tracks: [ALPHA]
+- release_tracks: [ALPHA, GA]
   help_text:
     brief: |
       Cancel a Looker import or export operation.
@@ -18,7 +18,10 @@
         want to describe.
 
   request:
-    api_version: v1alpha1
+    ALPHA:
+      api_version: v1alpha1
+    GA:
+      api_version: v1
     collection: looker.projects.locations.operations
     method: cancel
 

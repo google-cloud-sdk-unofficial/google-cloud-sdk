@@ -1,8 +1,8 @@
-- release_tracks: [ALPHA]
+- release_tracks: [ALPHA, GA]
 
   help_text:
     brief: |
-      Update Looker instances.
+      Update a Looker instance.
     description: |
       Update the metadata and/or configuration parameters of a Looker instance.
 
@@ -11,10 +11,9 @@
         * The active account does not have permission to update the given
           instance.
     examples: |
-      To update a Looker instance with the name `my-looker-instance` to update from standard
-      edition to advanced, run:
+      To update a Looker instance with the name `my-looker-instance` to `LOOKER_CORE_STANDARD`, run:
 
-        $ {command} my-looker-instance --edition="advanced"
+        $ {command} my-looker-instance --edition="core-standard"
 
   arguments:
     resource:
@@ -23,48 +22,193 @@
         Arguments and flags that specify the Looker instance you want
         to update.
     params:
+    # Edition Flag
     - arg_name: edition
       api_field: instance.platformEdition
       help_text: |
-        The edition of the instance. Options are: STANDARD, ADVANCED, and ELITE
+        Edition of the instance.
       choices:
       - enum_value: STANDARD
         arg_value: standard
+        release_tracks: [ALPHA]
         help_text:  |
           This edition provides a full-feature edition for product exploration
           and development. Exceptional for all your Analytics.
       - enum_value: ADVANCED
         arg_value: advanced
+        release_tracks: [ALPHA]
         help_text: |
           This edition provides a full-feature edition for product exploration and development.
           Scales as your organization and data add complexity.
       - enum_value: ELITE
         arg_value: elite
+        release_tracks: [ALPHA]
         help_text: |
           This edition provides a full-feature edition for product exploration and development.
           Drive your business through operational analytics.
+      - enum_value: LOOKER_CORE_TRIAL
+        arg_value: core-trial
+        release_tracks: [ALPHA, GA]
+        help_text: |
+          Trial edition of Looker.
+      - enum_value: LOOKER_CORE_STANDARD
+        arg_value: core-standard
+        release_tracks: [GA]
+        help_text: |
+          A Looker (Google Cloud core) product for small organizations or teams with fewer than 50
+          users. This will be billed monthly while the instance is active.
+      - enum_value:  LOOKER_CORE_STANDARD_ANNUAL
+        arg_value: core-standard-annual
+        release_tracks: [GA]
+        help_text: |
+          A Looker (Google Cloud core) product for small organizations or teams with fewer than 50
+          users. This can be purchased via an annual contract.
+      - enum_value:  LOOKER_CORE_ENTERPRISE_ANNUAL
+        arg_value: core-enterprise-annual
+        release_tracks: [GA]
+        help_text: |
+          A Looker (Google Cloud core) product with enhanced security features for a wide variety of
+          internal BI and analytics use cases. This can be purchased via an annual contract.
+      - enum_value:  LOOKER_CORE_EMBED_ANNUAL
+        arg_value: core-embed-annual
+        release_tracks: [GA]
+        help_text: |
+          A Looker (Google Cloud core) product for deploying and maintaining external analytics and
+          custom applications at scale. This can be purchased via an annual contract.
+      - enum_value:  LOOKER_MODELER
+        arg_value: looker-modeler
+        release_tracks: [ALPHA]
+        help_text: |
+          Standalone Model Service.
+    # Public Enabled Flags
     - arg_name: enable-public-ip
       api_field: instance.enablePublicIp
+      release_tracks: [ALPHA]
       type: bool
       help_text: |
         This specifies whether public IP is enabled on the Looker instance.
-    - arg_name: enable-private-ip
-      api_field: instance.enablePrivateIp
+    - arg_name: public-ip-enabled
+      api_field: instance.publicIpEnabled
+      release_tracks: [GA]
       type: bool
       help_text: |
         This specifies whether public IP is enabled on the Looker instance.
-    - arg_name: allowed-email-domains
-      api_field: instance.adminSettings.allowedEmailDomains
+    # Oauth Flags
+    - api_field: instance.oauthConfig.clientId
+      arg_name: oauth-client-id
       help_text: |
-        This specifies the entire allowed email domain list.
-    - arg_name: consumer-network
-      api_field: instance.consumerNetwork
+          The client ID from an external OAuth application.
+
+          OAuth Application Credentials - Looker Instance OAuth login settings. Setup an OAuth
+          app that will allow users to authenticate and access the instance. For more
+          information see: https://developers.google.com/identity/protocols/oauth2/web-server#creatingcred
+    - api_field: instance.oauthConfig.clientSecret
+      arg_name: oauth-client-secret
       help_text: |
-        The network name within the consumer project. This MUST be delared if enabling private IP
+          The client secret from an external OAuth application.
+
+          OAuth Application Credentials - Looker Instance OAuth login settings. Setup an OAuth
+          app that will allow users to authenticate and access the instance. For more
+          information see: https://developers.google.com/identity/protocols/oauth2/web-server#creatingcred
+
+    # Group for Maintanence Windows
+    - group:
+        required: false
+        help_text: |
+          Maintenance Window - Maintenance typically only takes place once every few months, and requires your instance
+          to be restarted while updates are made, which disrupts service briefly.
+        params:
+        - api_field: instance.maintenanceWindow.dayOfWeek
+          required: true
+          arg_name: maintenance-window-day
+          choices:
+          - arg_value: monday
+            enum_value: MONDAY
+          - arg_value: tuesday
+            enum_value: TUESDAY
+          - arg_value: wednesday
+            enum_value: WEDNESDAY
+          - arg_value: thursday
+            enum_value: THURSDAY
+          - arg_value: friday
+            enum_value: FRIDAY
+          - arg_value: saturday
+            enum_value: SATURDAY
+          - arg_value: sunday
+            enum_value: SUNDAY
+          help_text: |
+            Day of the week for the maintenance window, in UTC time zone.
+        - api_field: instance.maintenanceWindow.startTime
+          arg_name: maintenance-window-time
+          required: true
+          ALPHA:
+            processor: googlecloudsdk.command_lib.looker.instances_util:ParseTimeOfDayMainWindowV1Alpha1
+          GA:
+            processor: googlecloudsdk.command_lib.looker.instances_util:ParseTimeOfDayMainWindowV1
+          help_text: |
+            Hour of day for maintenance window, in UTC time zone. A valid time of day must be
+            specified in 24hr format (ex: 13:00, 17:30, 23:45). Maintenance will be scheduled
+            within 60 minutes. To set the maintenance-window-time* attribute:
+            * provide the argument *--maintenance-window-time* on the command line.
+    # Group for Deny Maintanence period
+    - group:
+        required: false
+        help_text: |
+              Deny Maintanence Period - You must allow at least 48 hours of maintenance availability in
+              a 60-day rolling window. Only contiguous availability windows of at least two hours are
+              considered. When setting a maintenance exclusion please be aware that excluding
+              application upgrades cannot exceed 60-days and excluding infrastructure upgrades cannot
+              exceed 90-days.
+        params:
+        - api_field: instance.denyMaintenancePeriod.startDate
+          arg_name: deny-maintenance-period-start-date
+          required: true
+          GA:
+            processor: googlecloudsdk.command_lib.looker.instances_util:ParseToDateTypeV1
+          ALPHA:
+            processor: googlecloudsdk.command_lib.looker.instances_util:ParseToDateTypeV1Alpha1
+          help_text: |
+                Start date of the deny maintenance period in format: YYYY-MM-DD
+        - api_field: instance.denyMaintenancePeriod.endDate
+          arg_name: deny-maintenance-period-end-date
+          required: true
+          GA:
+            processor: googlecloudsdk.command_lib.looker.instances_util:ParseToDateTypeV1
+          ALPHA:
+            processor: googlecloudsdk.command_lib.looker.instances_util:ParseToDateTypeV1Alpha1
+          help_text: |
+                End date of the deny maintenance period in format: YYYY-MM-DD
+        - api_field: instance.denyMaintenancePeriod.time
+          required: true
+          arg_name: deny-maintenance-period-time
+          GA:
+            processor: googlecloudsdk.command_lib.looker.instances_util:ParseTimeOfDayDenyPeriodV1
+          ALPHA:
+            processor: googlecloudsdk.command_lib.looker.instances_util:ParseTimeOfDayDenyPeriodV1Alpha1
+          help_text: |
+                Time in UTC when the period starts and ends.  A valid time of day must be
+                specified in 24hr format (ex: 13:00, 17:30, 23:45).
+    # Group for Admin Setting
+    - group:
+        required: false
+        help_text: |
+          Email Domain Allowlist for Scheduled Content - Define the email domains to which your
+          users can deliver Looker (Google Cloud core) content.
+        params:
+        - arg_name: allowed-email-domains
+          api_field: instance.adminSettings.allowedEmailDomains
+          required: true
+          help_text: |
+            This specifies the entire allowed email domain list.
+
 
   request:
     ALPHA:
       api_version: v1alpha1
+      modify_request_hooks:
+      - googlecloudsdk.command_lib.looker.instances_update_util:ModifyAllowedEmailDomains
+    GA:
+      api_version: v1
       modify_request_hooks:
       - googlecloudsdk.command_lib.looker.instances_update_util:ModifyAllowedEmailDomains
     collection: looker.projects.locations.instances

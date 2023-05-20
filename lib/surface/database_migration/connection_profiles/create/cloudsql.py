@@ -28,7 +28,8 @@ from googlecloudsdk.command_lib.database_migration.connection_profiles import fl
 DETAILED_HELP = {
     'DESCRIPTION':
         'Create a Database Migration Service destination connection profile '
-        'for Cloud SQL. This will create a Cloud SQL replica.',
+        'for Cloud SQL. This will create a Cloud SQL replica. '
+        'Used for PostgreSQL and MySQL migrations.',
     'EXAMPLES':
         """\
           To create a connection profile for Cloud SQL with database version

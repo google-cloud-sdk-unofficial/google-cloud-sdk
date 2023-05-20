@@ -186,14 +186,17 @@ class Login(base.Command):
       creds = auth_util.DoInstalledAppBrowserFlowGoogleAuth(
           scopes,
           client_id_file=args.client_id_file,
-          auth_proxy_redirect_uri='https://sdk.cloud.google.com/applicationdefaultauthcode.html',
+          auth_proxy_redirect_uri=(
+              'https://sdk.cloud.google.com/applicationdefaultauthcode.html'
+          ),
           **flow_params
       )
     if not creds:
       return
 
     target_impersonation_principal, delegates = None, None
-    impersonation_service_accounts = properties.VALUES.auth.impersonate_service_account.Get(
+    impersonation_service_accounts = (
+        properties.VALUES.auth.impersonate_service_account.Get()
     )
     if impersonation_service_accounts:
       (target_impersonation_principal, delegates

@@ -26,4 +26,5 @@
     params:
     - _REF_: googlecloudsdk.command_lib.network_actions.flags:wasmPlugin.mainVersion
     - _REF_: googlecloudsdk.command_lib.network_actions.flags:wasmPlugin.description
+    - _REF_: googlecloudsdk.command_lib.network_actions.flags:wasmPlugin.logConfig
     - _REF_: googlecloudsdk.command_lib.network_actions.flags:wasmPlugin.labels

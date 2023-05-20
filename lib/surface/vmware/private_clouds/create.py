@@ -55,7 +55,8 @@ class Create(base.CreateCommand):
   def Args(parser):
     """Register flags for this command."""
     flags.AddPrivatecloudArgToParser(parser, positional=True)
-    flags.AddClusterArgToParser(parser, positional=False)
+    flags.AddClusterArgToParser(parser, positional=False,
+                                hide_resource_argument_flags=True)
     base.ASYNC_FLAG.AddToParser(parser)
     base.ASYNC_FLAG.SetDefault(parser, True)
     parser.add_argument(

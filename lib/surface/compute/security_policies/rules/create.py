@@ -204,7 +204,7 @@ class CreateGA(base.CreateCommand):
 
   _support_redirect = True
   _support_rate_limit = True
-  _support_multiple_rate_limit_keys = False
+  _support_multiple_rate_limit_keys = True
   _support_header_action = True
   _support_tcl_ssl = False
   _support_fairshare = False

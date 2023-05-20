@@ -28,8 +28,14 @@ from googlecloudsdk.command_lib.compute.forwarding_rules import flags
 from googlecloudsdk.command_lib.util.args import labels_util
 
 
-def _Args(cls, parser, support_network_tier, support_global_access,
-          support_psc_global_access, support_labels, support_source_ip_range):
+def _Args(
+    cls,
+    parser,
+    support_network_tier,
+    support_global_access,
+    support_labels,
+    support_source_ip_range,
+):
   """Add the flags to create a forwarding rule."""
   cls.FORWARDING_RULE_ARG = flags.ForwardingRuleArgument()
   cls.FORWARDING_RULE_ARG.AddArgument(parser)
@@ -42,8 +48,7 @@ def _Args(cls, parser, support_network_tier, support_global_access,
     flags.AddSourceIpRanges(parser)
   if support_global_access:
     flags.AddAllowGlobalAccess(parser)
-  if support_psc_global_access:
-    flags.AddAllowPscGlobalAccess(parser)
+  flags.AddAllowPscGlobalAccess(parser)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
@@ -53,7 +58,6 @@ class UpdateGA(base.UpdateCommand):
   FORWARDING_RULE_ARG = None
 
   _support_global_access = True
-  _support_psc_global_access = False
   _support_network_tier = False
   _support_source_ip_range = True
   _support_labels = True
@@ -65,7 +69,6 @@ class UpdateGA(base.UpdateCommand):
         parser,
         support_network_tier=cls._support_network_tier,
         support_global_access=cls._support_global_access,
-        support_psc_global_access=cls._support_psc_global_access,
         support_labels=cls._support_labels,
         support_source_ip_range=cls._support_source_ip_range)
 
@@ -112,8 +115,7 @@ class UpdateGA(base.UpdateCommand):
         'allow_global_access')
 
   def _HasPscGlobalAccessChange(self, args):
-    return self._support_psc_global_access and args.IsSpecified(
-        'allow_psc_global_access')
+    return args.IsSpecified('allow_psc_global_access')
 
   def Modify(self, messages, args, existing):
     """Returns a modified forwarding rule message and included fields."""
@@ -232,7 +234,6 @@ class UpdateBeta(UpdateGA):
   """Update a Compute Engine forwarding rule."""
 
   _support_global_access = True
-  _support_psc_global_access = True
   _support_network_tier = False
   _support_labels = True
   _support_source_ip_range = True
@@ -243,7 +244,6 @@ class UpdateAlpha(UpdateBeta):
   """Update a Compute Engine forwarding rule."""
 
   _support_global_access = True
-  _support_psc_global_access = True
   _support_network_tier = True
   _support_labels = True
   _support_source_ip_range = True

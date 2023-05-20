@@ -19,8 +19,10 @@ from __future__ import division
 from __future__ import unicode_literals
 
 import os
+import textwrap
 
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.storage import cp_command_util
 from googlecloudsdk.command_lib.storage import encryption_util
 from googlecloudsdk.command_lib.storage import flags
 from googlecloudsdk.command_lib.storage import rsync_command_util
@@ -59,6 +61,34 @@ class Rsync(base.Command):
       gs://my-bucket/data:
 
         $ {command} data gs://my-bucket/data
+
+      To recurse into directories use `--recursive`:
+
+        $ {command} data gs://my-bucket/data --recursive
+
+      To make the local directory ``my-data'' the same as the contents of
+      gs://mybucket/data and delete objects in the local directory that are
+      not in gs://mybucket/data:
+
+        $ {command} gs://mybucket/data my-data --recursive \
+           --delete-unmatched-destination-objects
+
+      To make the contents of gs://mybucket2 the same as gs://mybucket1 and
+      delete objects in gs://mybucket2 that are not in gs://mybucket1:
+
+        $ {command} gs://mybucket1 gs://mybucket2 --recursive \
+           --delete-unmatched-destination-objects
+
+      To copy all objects from ``dir1'' into ``dir2'' and delete all objects
+      in ``dir2'' which are not in ``dir1'':
+
+        $ {command} dir1 dir2 --recursive -\
+           --delete-unmatched-destination-objects
+
+      To mirror your content across cloud providers:
+
+        $ {command} gs://my-gs-bucket s3://my-s3-bucket --recursive \
+           --delete-unmatched-destination-objects
       """,
       # TODO(b/267511499): Code for rest of examples in bug.
   }
@@ -68,6 +98,30 @@ class Rsync(base.Command):
     parser.add_argument('source', help='The source container path.')
     parser.add_argument('destination', help='The destination container path.')
     flags.add_encryption_flags(parser)
+    cp_command_util.add_ignore_symlinks_flag(parser, default=True)
+    cp_command_util.add_recursion_flag(parser)
+
+    parser.add_argument(
+        '--delete-unmatched-destination-objects',
+        action='store_true',
+        help=textwrap.dedent("""\
+            Delete extra files under DESTINATION not found under SOURCE.
+            By default extra files are not deleted.
+
+            Note: this option can delete data quickly if you specify the wrong
+            source and destination combination."""),
+    )
+
+    # TODO(b/267511499): Add below to cp_command_util.add_cp_mv_rsync_flags
+    # util. Not done yet because want to toggle `hidden` separate from other
+    # commands.
+    parser.add_argument(
+        '-n',
+        '--no-clobber',
+        action='store_true',
+        help='Do not overwrite existing files or objects at the destination.',
+    )
+
     # TODO(b/267511499): Code for unimplemented flags in bug.
 
   def Run(self, args):
@@ -89,10 +143,10 @@ class Rsync(base.Command):
         destination_container.storage_url.url_string
     )
     source_task = get_sorted_list_file_task.GetSortedContainerContentsTask(
-        source_container, source_list_path
+        source_container, source_list_path, recurse=args.recursive
     )
     destination_task = get_sorted_list_file_task.GetSortedContainerContentsTask(
-        destination_container, destination_list_path
+        destination_container, destination_list_path, recurse=args.recursive
     )
 
     try:
@@ -107,6 +161,7 @@ class Rsync(base.Command):
               args, metadata_type=user_request_args_factory.MetadataType.OBJECT
           )
       )
+      task_status_queue = task_graph_executor.multiprocessing_context.Queue()
       # Execute a new task iterator for rsync copy, delete, and patch
       # operations iterating through the two sorted list files.
       operation_iterator = rsync_command_util.get_operation_iterator(
@@ -115,8 +170,12 @@ class Rsync(base.Command):
           source_container,
           destination_list_path,
           destination_container,
+          delete_unmatched_destination_objects=(
+              args.delete_unmatched_destination_objects
+          ),
+          ignore_symlinks=args.ignore_symlinks,
+          task_status_queue=task_status_queue,
       )
-      task_status_queue = task_graph_executor.multiprocessing_context.Queue()
       return task_executor.execute_tasks(
           operation_iterator,
           parallelizable=True,

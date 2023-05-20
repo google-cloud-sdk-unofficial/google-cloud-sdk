@@ -67,10 +67,12 @@ class Update(base.UpdateCommand):
         type=bool,
         help='Bindings for all the membership related scopes in the fleet would be updated.',
     )
-    group.add_argument(
-        '--scope',
-        type=str,
-        help='Scope related to the Binding.',
+    resources.AddScopeResourceArg(
+        parser,
+        flag_name='--scope',
+        api_version=util.VERSION_MAP[cls.ReleaseTrack()],
+        scope_help='The Fleet Scope to bind the membership to.',
+        group=group,
     )
 
   def Run(self, args):
@@ -79,9 +81,12 @@ class Update(base.UpdateCommand):
     for flag in ['fleet', 'scope']:
       if args.IsKnownAndSpecified(flag):
         mask.append(flag)
+    scope = None
+    if args.CONCEPTS.scope.Parse() is not None:
+      scope = args.CONCEPTS.scope.Parse().RelativeName()
     return fleetclient.UpdateMembershipBinding(
         resources.MembershipBindingResourceName(args),
-        scope=args.scope,
+        scope=scope,
         fleet=args.fleet,
         mask=','.join(mask))
 

@@ -106,9 +106,12 @@ class Deploy(base.Command):
 
     polling_group = parser.add_mutually_exclusive_group()
     flags.AddAsyncFlag(polling_group)
-    flags.AddWaitForCompletionFlag(polling_group, implies_execute_now=True)
 
-    flags.AddExecuteNowFlag(parser)
+    execute_group = polling_group.add_argument_group(
+        help='--async cannot be used if executing the job after the update.')
+    flags.AddWaitForCompletionFlag(execute_group, implies_execute_now=True)
+
+    flags.AddExecuteNowFlag(execute_group)
 
     concept_parsers.ConceptParser([job_presentation]).AddToParser(parser)
     # No output by default, can be overridden by --format

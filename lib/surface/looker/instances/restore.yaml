@@ -37,5 +37,7 @@
   request:
     ALPHA:
       api_version: v1alpha1
+      modify_request_hooks:
+      - googlecloudsdk.command_lib.looker.backups_util:ModifyInstanceBackupName
     collection: looker.projects.locations.instances
     method: restore

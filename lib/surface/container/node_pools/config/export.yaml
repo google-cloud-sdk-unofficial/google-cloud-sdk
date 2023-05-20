@@ -36,3 +36,8 @@ arguments:
   resource:
     help_text: Node pool to export the configuration for.
     spec: !REF googlecloudsdk.command_lib.container.clusters.resources:node_pool
+    # Inherited from node-pools command.
+    removed_flags: ['location']
+    command_level_fallthroughs:
+      location:
+      - arg_name: 'location'

@@ -68,6 +68,7 @@ class Create(base.CreateCommand):
     flags.AddDescription(parser)
     flags.AddAnnotations(parser)
     flags.AddLogging(parser)
+    flags.AddMonitoringConfig(parser, True)
 
     aws_flags.AddAwsRegion(parser)
     aws_flags.AddIamInstanceProfile(parser)
@@ -118,5 +119,4 @@ class CreateAlpha(Create):
   def Args(parser, track=base.ReleaseTrack.ALPHA):
     """Registers alpha track flags for this command."""
     Create.Args(parser)
-    flags.AddMonitoringConfig(parser, True)
     aws_flags.AddInstancePlacement(parser)

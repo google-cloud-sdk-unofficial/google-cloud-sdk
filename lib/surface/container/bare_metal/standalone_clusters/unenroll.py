@@ -33,7 +33,6 @@ $ {command} my-cluster --location=us-west1
 """
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Unenroll(base.Command):
   """Unenroll an Anthos on bare metal standalone cluster."""
@@ -48,7 +47,6 @@ class Unenroll(base.Command):
     )
     cluster_flags.AddStandaloneClusterResourceArg(parser, 'to unenroll')
     cluster_flags.AddAllowMissingStandaloneCluster(parser)
-    cluster_flags.AddForceStandaloneCluster(parser)
     base.ASYNC_FLAG.AddToParser(parser)
 
   def Run(self, args):

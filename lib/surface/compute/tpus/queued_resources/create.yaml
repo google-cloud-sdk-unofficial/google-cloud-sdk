@@ -54,7 +54,24 @@
             - _REF_: googlecloudsdk.command_lib.compute.tpus.queued_resources.flags:node_count
               required: true
             - _REF_: googlecloudsdk.command_lib.compute.tpus.queued_resources.flags:node_prefix
-    - _REF_: googlecloudsdk.command_lib.compute.tpus.queued_resources.flags:accelerator_type
+    - group:
+        help_text: Specify a chip-based or core-based TPU node.
+        required: true
+        mutex: true
+        params:
+        - group:
+            help_text: Core-based TPU configuration
+            params:
+            - _REF_: googlecloudsdk.command_lib.compute.tpus.queued_resources.flags:accelerator_type
+              required: true
+        - group:
+            help_text: Chip-based TPU configuration
+            mutex: false
+            params:
+            - _REF_: googlecloudsdk.command_lib.compute.tpus.flags:type
+              required: true
+            - _REF_: googlecloudsdk.command_lib.compute.tpus.flags:topology
+              required: true
     - _REF_: googlecloudsdk.command_lib.compute.tpus.queued_resources.flags:runtime_version
 
     - _REF_: googlecloudsdk.command_lib.compute.tpus.queued_resources.flags:best_effort
@@ -77,3 +94,8 @@
     - _REF_: googlecloudsdk.command_lib.compute.tpus.flags:metadata
     - _REF_: googlecloudsdk.command_lib.compute.tpus.flags:metadata_from_file
     - _REF_: googlecloudsdk.command_lib.compute.tpus.queued_resources.flags:tags
+    - _REF_: googlecloudsdk.command_lib.compute.tpus.queued_resources.flags:data_disks
+    - _REF_: googlecloudsdk.command_lib.compute.tpus.queued_resources.flags:description
+    - _REF_: googlecloudsdk.command_lib.compute.tpus.queued_resources.flags:labels
+    - _REF_: googlecloudsdk.command_lib.compute.tpus.queued_resources.flags:enable_secure_boot
+    - _REF_: googlecloudsdk.command_lib.compute.tpus.queued_resources.flags:range

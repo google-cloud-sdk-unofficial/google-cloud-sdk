@@ -36,7 +36,7 @@ $ {command} my-node-pool --cluster=my-cluster --location=us-west1 --node-version
 """
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Update(base.UpdateCommand):
   """Update a node pool in an Anthos cluster on AWS."""
 
@@ -80,3 +80,14 @@ class Update(base.UpdateCommand):
           args=args,
           message=message,
           kind=constants.AWS_NODEPOOL_KIND)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class UpdateAlpha(Update):
+  """Update a node pool in an Anthos cluster on AWS."""
+
+  @staticmethod
+  def Args(parser, track=base.ReleaseTrack.ALPHA):
+    """Registers alpha track flags for this command."""
+    Update.Args(parser)
+    flags.AddEnableAutoRepair(parser, False)

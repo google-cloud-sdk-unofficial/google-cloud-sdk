@@ -39,7 +39,6 @@ class CompleteUpgrade(base.Command):
       parser: an argparse.ArgumentParser-like object. It is mocked out in order
         to capture some information, but behaves like an ArgumentParser.
     """
-
     flags.AddNodePoolNameArg(
         parser,
         'Name of the node pool for which the upgrade is to be completed.')

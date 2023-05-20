@@ -31,5 +31,7 @@
            name.segment(-3):label=ZONE,
            tpu.nodeSpec.len():label=NODE_COUNT,
            tpu.nodeSpec[0].node.acceleratorType.basename():label=ACCELERATOR_TYPE,
+           tpu.nodeSpec[0].node.acceleratorConfig.type.basename():label=TYPE,
+           tpu.nodeSpec[0].node.acceleratorConfig.topology.basename():label=TOPOLOGY,
            state.state:label=STATE
            )
