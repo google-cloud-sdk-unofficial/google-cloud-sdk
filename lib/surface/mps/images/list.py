@@ -78,9 +78,9 @@ class List(base.ListCommand):
   def Run(self, args):
     region = args.CONCEPTS.region.Parse()
     client = MpsClient()
-    vendor = properties.VALUES.mps.vendor.Get(required=True)
+    product = properties.VALUES.mps.product.Get(required=True)
 
     if region is None:
       project = properties.VALUES.core.project.Get(required=True)
-      return client.AggregateListImages(project, vendor, limit=args.limit)
-    return client.ListImages(vendor, region)
+      return client.AggregateListImages(project, product, limit=args.limit)
+    return client.ListImages(product, region)

@@ -21,6 +21,7 @@ from __future__ import unicode_literals
 from googlecloudsdk.api_lib.privateca import base as privateca_base
 from googlecloudsdk.api_lib.privateca import request_utils
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.privateca import flags_v1
 from googlecloudsdk.command_lib.privateca import operations
 from googlecloudsdk.command_lib.privateca import resource_args
 from googlecloudsdk.core import log
@@ -48,6 +49,7 @@ class Delete(base.DeleteCommand):
   @staticmethod
   def Args(parser):
     resource_args.AddCaPoolPositionalResourceArg(parser, 'to delete')
+    flags_v1.AddIgnoreDependentResourcesFlag(parser)
 
   def Run(self, args):
     client = privateca_base.GetClientInstance('v1')
@@ -55,9 +57,20 @@ class Delete(base.DeleteCommand):
 
     ca_pool_ref = args.CONCEPTS.ca_pool.Parse()
 
+    if args.ignore_dependent_resources:
+      prompt_message = (
+          'You are about to delete the CA Pool [{}] without '
+          'checking if it is being used by another cloud '
+          'resource. If you proceed, there may be unintended and '
+          'unrecoverable effects on any dependent resource(s) since the '
+          'CA Pool would not be able to issue certificates.'
+      ).format(ca_pool_ref.RelativeName())
+    else:
+      prompt_message = ('You are about to delete the CA pool [{}]').format(
+          ca_pool_ref.RelativeName())
+
     if not console_io.PromptContinue(
-        message='You are about to delete the CA pool [{}]'.format(
-            ca_pool_ref.RelativeName()),
+        message=prompt_message,
         default=True):
       log.status.Print('Aborted by user.')
       return
@@ -65,6 +78,7 @@ class Delete(base.DeleteCommand):
     operation = client.projects_locations_caPools.Delete(
         messages.PrivatecaProjectsLocationsCaPoolsDeleteRequest(
             name=ca_pool_ref.RelativeName(),
+            ignoreDependentResources=args.ignore_dependent_resources,
             requestId=request_utils.GenerateRequestId()))
 
     operations.Await(

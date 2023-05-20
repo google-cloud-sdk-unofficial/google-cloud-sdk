@@ -349,6 +349,8 @@ class Update(base.UpdateCommand):
     flags.AddILBSubsettingFlags(group, hidden=False)
     flags.AddMeshCertificatesFlags(group)
     flags.AddEnableImageStreamingFlag(group)
+    flags.AddDataplaneV2MetricsFlag(group)
+    flags.AddDataplaneV2ObservabilityModeFlag(group)
     flags.AddClusterDNSFlags(group, hidden=False)
     flags.AddEnableServiceExternalIPs(group)
     flags.AddEnablePrivateEndpoint(group)
@@ -362,10 +364,12 @@ class Update(base.UpdateCommand):
     flags.AddGatewayFlags(group, hidden=False)
     flags.AddSecurityPostureFlag(group)
     flags.AddClusterNetworkPerformanceConfigFlags(group)
+    flags.AddEnableK8sBetaAPIs(group)
 
   def ParseUpdateOptions(self, args, locations):
     get_default = lambda key: getattr(args, key)
     flags.ValidateNotificationConfigFlag(args)
+    flags.WarnForEnablingBetaAPIs(args)
     opts = container_command_util.ParseUpdateOptionsBase(args, locations)
     opts.resource_usage_bigquery_dataset = args.resource_usage_bigquery_dataset
     opts.clear_resource_usage_bigquery_dataset = \
@@ -404,6 +408,9 @@ class Update(base.UpdateCommand):
     opts.security_group = args.security_group
     opts.autoprovisioning_network_tags = args.autoprovisioning_network_tags
     opts.enable_image_streaming = args.enable_image_streaming
+    opts.enable_dataplane_v2_metrics = args.enable_dataplane_v2_metrics
+    opts.disable_dataplane_v2_metrics = args.disable_dataplane_v2_metrics
+    opts.dataplane_v2_observability_mode = args.dataplane_v2_observability_mode
     opts.cluster_dns = args.cluster_dns
     opts.cluster_dns_scope = args.cluster_dns_scope
     opts.cluster_dns_domain = args.cluster_dns_domain
@@ -430,6 +437,7 @@ class Update(base.UpdateCommand):
     opts.disable_managed_prometheus = args.disable_managed_prometheus
     opts.enable_security_posture = args.enable_security_posture
     opts.network_performance_config = args.network_performance_configs
+    opts.enable_k8s_beta_apis = args.enable_kubernetes_unstable_apis
     return opts
 
   def Run(self, args):
@@ -837,6 +845,7 @@ class UpdateBeta(Update):
     flags.AddSecurityPostureFlag(group)
     flags.AddClusterNetworkPerformanceConfigFlags(group)
     flags.AddEnableKubeletReadonlyPortFlag(group)
+    flags.AddEnableK8sBetaAPIs(group)
 
   def ParseUpdateOptions(self, args, locations):
     get_default = lambda key: getattr(args, key)
@@ -946,6 +955,7 @@ class UpdateBeta(Update):
     opts.network_performance_config = args.network_performance_configs
     # pylint: disable=line-too-long
     opts.enble_insecure_kubelet_readonly_port = args.enble_insecure_kubelet_readonly_port
+    opts.enable_k8s_beta_apis = args.enable_kubernetes_unstable_apis
     return opts
 
 
@@ -1041,6 +1051,7 @@ class UpdateAlpha(Update):
     flags.AddSecurityPostureFlag(group)
     flags.AddClusterNetworkPerformanceConfigFlags(group)
     flags.AddEnableKubeletReadonlyPortFlag(group)
+    flags.AddEnableK8sBetaAPIs(group)
 
   def ParseUpdateOptions(self, args, locations):
     get_default = lambda key: getattr(args, key)
@@ -1144,4 +1155,5 @@ class UpdateAlpha(Update):
     opts.network_performance_config = args.network_performance_configs
     # pylint: disable=line-too-long
     opts.enble_insecure_kubelet_readonly_port = args.enble_insecure_kubelet_readonly_port
+    opts.enable_k8s_beta_apis = args.enable_kubernetes_unstable_apis
     return opts

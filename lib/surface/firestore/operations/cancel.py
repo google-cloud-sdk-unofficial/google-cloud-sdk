@@ -18,6 +18,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+from googlecloudsdk.api_lib.firestore import api_utils
 from googlecloudsdk.api_lib.firestore import operations
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.firestore import flags
@@ -64,7 +65,7 @@ class Cancel(base.Command):
             'projectsId': properties.VALUES.core.project.GetOrFail,
             'databasesId': args.database,
         },
-        api_version=operations.OPERATIONS_API_VERSION,
+        api_version=api_utils.FIRESTORE_API_VERSION,
         collection='firestore.projects.databases.operations').RelativeName()
     console_io.PromptContinue(
         message='The operation [{}] will be cancelled.'.format(name),

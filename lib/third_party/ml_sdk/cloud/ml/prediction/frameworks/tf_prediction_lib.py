@@ -205,7 +205,7 @@ def canonicalize_single_tensor_input(instances, tensor_name):
   return instances
 
 
-# TODO(b/34686738): when we no longer load the model to get the signature
+# TODO(user): when we no longer load the model to get the signature
 # consider making this a named constructor on SessionClient.
 def load_tf_model(model_path,
                   tags=(SERVING,),
@@ -382,7 +382,7 @@ class SessionClient(TensorFlowClient):
 
     with stats.time(prediction_utils.SESSION_RUN_TIME):
       try:
-        # TODO(b/33849399): measure the actual session.run() time, even in the
+        # TODO(user): measure the actual session.run() time, even in the
         # case of ModelServer.
         outputs = self._session.run(fetches=fetches, feed_dict=unaliased)
       except Exception as e:  # pylint: disable=broad=except
@@ -433,19 +433,19 @@ class TensorFlowModel(prediction_utils.BaseModel):
               PredictionError.INVALID_INPUTS,
               "Unexpected tensor name: %s" % k)
         # Detect whether or not the user omits an input in one or more inputs.
-        # TODO(b/34686738): perform this check in columnarize?
+        # TODO(user): perform this check in columnarize?
         if isinstance(v, list) and len(v) != len(instances):
           raise PredictionError(
               PredictionError.INVALID_INPUTS,
               "Input %s was missing in at least one input instance." % k)
     return columns
 
-  # TODO(b/34686738): can this be removed?
+  # TODO(user): can this be removed?
   def is_single_input(self, signature):
     """Returns True if the graph only has one input tensor."""
     return len(signature.inputs) == 1
 
-  # TODO(b/34686738): can this be removed?
+  # TODO(user): can this be removed?
   def is_single_string_input(self, signature):
     """Returns True if the graph only has one string input tensor."""
     if self.is_single_input(signature):
@@ -494,12 +494,12 @@ class TensorFlowModel(prediction_utils.BaseModel):
       # When returned element only contains one result (batch size == 1),
       # tensorflow's session.run() will return a scalar directly instead of a
       # a list. So we need to listify that scalar.
-      # TODO(b/34686738): verify this behavior is correct.
+      # TODO(user): verify this behavior is correct.
       def listify(value):
         if not hasattr(value, "shape"):
           return np.asarray([value], dtype=object)
         elif not value.shape:
-          # TODO(b/34686738): pretty sure this is a bug that only exists because
+          # TODO(user): pretty sure this is a bug that only exists because
           # samples like iris have a bug where they use tf.squeeze which removes
           # the batch dimension. The samples should be fixed.
           return np.expand_dims(value, axis=0)

@@ -162,6 +162,7 @@ class Delete(base.DeleteCommand):
     resource_args.AddCertAuthorityPositionalResourceArg(parser, 'to delete')
     flags_v1.AddIgnoreActiveCertificatesFlag(parser)
     flags_v1.AddSkipGracePeriodFlag(parser)
+    flags_v1.AddIgnoreDependentResourcesFlag(parser)
 
   def Run(self, args):
     client = privateca_base.GetClientInstance(api_version='v1')
@@ -170,16 +171,22 @@ class Delete(base.DeleteCommand):
     ca_ref = args.CONCEPTS.certificate_authority.Parse()
     ca_name = ca_ref.RelativeName()
 
+    prompt_message = (
+        'You are about to delete Certificate Authority [{}].').format(
+            ca_ref.RelativeName())
+    if args.ignore_dependent_resources:
+      prompt_message += (
+          '\nThis deletion will happen without '
+          'checking if the CA\'s CA Pool is being used by another '
+          'resource, which may cause unintended and effects on any '
+          'dependent resource(s) since the CA Pool would not be '
+          'able to issue certificates.')
     if args.skip_grace_period:
-      prompt_message = (
-          'You are about to delete Certificate Authority [{}] as '
+      prompt_message += (
+          '\nThis deletion will happen as '
           'soon as possible without a 30-day grace period where '
           'undeletion would have been allowed. If you proceed, there '
-          'will be no way to recover this CA.').format(ca_ref.RelativeName())
-    else:
-      prompt_message = (
-          'You are about to delete Certificate Authority [{}]').format(
-              ca_ref.RelativeName())
+          'will be no way to recover this CA.')
 
     if not console_io.PromptContinue(message=prompt_message, default=True):
       log.status.Print('Aborted by user.')
@@ -201,6 +208,7 @@ class Delete(base.DeleteCommand):
             name=ca_name,
             ignoreActiveCertificates=args.ignore_active_certificates,
             skipGracePeriod=args.skip_grace_period,
+            ignoreDependentResources=args.ignore_dependent_resources,
             requestId=request_utils.GenerateRequestId()))
     try:
       ca_response = operations.Await(
@@ -217,15 +225,23 @@ class Delete(base.DeleteCommand):
     formatted_expire_time = times.ParseDateTime(ca.expireTime).astimezone(
         tz.tzutc()).strftime('%Y-%m-%dT%H:%MZ')
 
-    if current_ca.state == messages.CertificateAuthority.StateValueValuesEnum.AWAITING_USER_ACTIVATION:
+    if (
+        current_ca.state
+        == messages.CertificateAuthority.StateValueValuesEnum.AWAITING_USER_ACTIVATION
+    ):
       log.status.Print(
-          'Deleted Subordinate CA [{}]. This CA was never activated and cannot be recovered using `subordinates undelete`.'
-          .format(ca_name))
+          'Deleted Subordinate CA [{}]. This CA was never activated and cannot'
+          ' be recovered using `subordinates undelete`.'.format(ca_name)
+      )
     elif args.skip_grace_period:
       log.status.Print(
-          'Deleted Subordinate CA [{}]. CA can not be undeleted.'
-          .format(ca_name))
+          'Deleted Subordinate CA [{}]. CA can not be undeleted.'.format(
+              ca_name
+          )
+      )
     else:
       log.status.Print(
           'Deleted Subordinate CA [{}]. CA can be undeleted until {}.'.format(
-              ca_name, formatted_expire_time))
+              ca_name, formatted_expire_time
+          )
+      )

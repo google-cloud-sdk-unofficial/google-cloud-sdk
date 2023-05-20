@@ -30,7 +30,7 @@ _NETWORK_ARG = network_flags.NetworkArgumentForOtherResource("""\
   """)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Create(base.CreateCommand):
   """Create a new Compute Engine Highly Available VPN gateway.
 
@@ -123,6 +123,36 @@ class Create(base.CreateCommand):
   def Run(self, args):
     """See base.CreateCommand."""
     return self._Run(args)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class CreateBeta(Create):
+  """Create a new Compute Engine Highly Available VPN gateway.
+
+  *{command}* creates a new Highly Available VPN gateway.
+
+  Highly Available VPN Gateway provides a means to create a VPN solution with a
+  higher availability SLA compared to Classic Target VPN Gateway.
+  Highly Available VPN gateways are simply referred to as VPN gateways in the
+  API documentation and gcloud commands.
+  A VPN Gateway can reference one or more VPN tunnels that connect it to
+  external VPN gateways or Cloud VPN Gateways.
+  """
+
+  ROUTER_ARG = None
+  INSTANCE_ARG = None
+
+  _support_outer_vpn_ipv6 = True
+
+  @classmethod
+  def Args(cls, parser):
+    """Set up arguments for this command."""
+    super(CreateBeta, cls).Args(parser)
+    flags.GetGatewayIpVersion().AddToParser(parser)
+
+  def Run(self, args):
+    """See base.CreateCommand."""
+    return self._Run(args, support_outer_vpn_ipv6=True)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)

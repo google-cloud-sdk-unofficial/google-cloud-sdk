@@ -27,16 +27,15 @@ from googlecloudsdk.command_lib.workflows import hooks
 from googlecloudsdk.core import log
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
-                    base.ReleaseTrack.GA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
+)
 class Deploy(base.CacheCommand):
   """Create or update a workflow."""
 
   detailed_help = {
-      'DESCRIPTION':
-          '{description}',
-      'EXAMPLES':
-          """\
+      'DESCRIPTION': '{description}',
+      'EXAMPLES': """\
           To deploy a workflow with source code myWorkflow.yaml on Workflows:
 
             $ {command} my-workflow --source=myWorkflow.yaml
@@ -62,6 +61,7 @@ class Deploy(base.CacheCommand):
     if cls.ReleaseTrack() is base.ReleaseTrack.GA:
       flags.AddKmsKeyFlags(parser)
       flags.AddWorkflowLoggingArg(parser)
+      flags.AddUserEnvVarsFlags(parser)
 
   def Run(self, args):
     """Deploy a workflow."""
@@ -72,8 +72,9 @@ class Deploy(base.CacheCommand):
     validate.WorkflowNameConforms(workflow_ref.Name())
     old_workflow = client.Get(workflow_ref)
     first_deployment = old_workflow is None
-    workflow, updated_fields = client.BuildWorkflowFromArgs(args,
-                                                            self.ReleaseTrack())
+    workflow, updated_fields = client.BuildWorkflowFromArgs(
+        args, self.ReleaseTrack()
+    )
     validate.ValidateWorkflow(workflow, first_deployment=first_deployment)
     if first_deployment:
       operation = client.Create(workflow_ref, workflow)

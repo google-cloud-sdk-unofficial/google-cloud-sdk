@@ -97,6 +97,7 @@ class Rsync(base.Command):
   def Args(parser):
     parser.add_argument('source', help='The source container path.')
     parser.add_argument('destination', help='The destination container path.')
+    flags.add_continue_on_error_flag(parser)
     flags.add_encryption_flags(parser)
     cp_command_util.add_ignore_symlinks_flag(parser, default=True)
     cp_command_util.add_recursion_flag(parser)
@@ -151,7 +152,9 @@ class Rsync(base.Command):
 
     try:
       listing_exit_code = task_executor.execute_tasks(
-          [source_task, destination_task], parallelizable=True
+          [source_task, destination_task],
+          continue_on_error=args.continue_on_error,
+          parallelizable=True,
       )
       if listing_exit_code:
         return listing_exit_code
@@ -178,6 +181,7 @@ class Rsync(base.Command):
       )
       return task_executor.execute_tasks(
           operation_iterator,
+          continue_on_error=args.continue_on_error,
           parallelizable=True,
           progress_manager_args=task_status.ProgressManagerArgs(
               task_status.IncrementType.FILES_AND_BYTES,

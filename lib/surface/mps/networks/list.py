@@ -83,15 +83,15 @@ class List(base.ListCommand):
     """Return network list information based on user request."""
     region = args.CONCEPTS.region.Parse()
     client = MpsClient()
-    vendor = properties.VALUES.mps.vendor.Get(required=True)
+    product = properties.VALUES.mps.product.Get(required=True)
 
     if region is None:
       project = properties.VALUES.core.project.Get(required=True)
       return (self.synthesizesNetworkInfo(net)
               for net in client.AggregateListNetworks(
-                  project, vendor, limit=args.limit))
+                  project, product, limit=args.limit))
     return (self.synthesizesNetworkInfo(net)
-            for net in client.ListNetworks(vendor, region))
+            for net in client.ListNetworks(product, region))
 
   def synthesizesNetworkInfo(self, net):
     out = resource_projector.MakeSerializable(net)

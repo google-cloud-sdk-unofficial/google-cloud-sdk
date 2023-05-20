@@ -45,6 +45,19 @@ class Cancel(base.UpdateCommand):
 
           For information about the JSON/YAML format of a snooze:
           https://cloud.google.com/monitoring/api/ref_v3/rest/v3/projects.snoozes
+       """,
+      'EXAMPLES': """\
+          To cancel a snooze, run:
+
+            $ {command} MY-SNOOZE
+
+          To cancel a snooze contained within a specific project, run:
+
+            $ {command} MY-SNOOZE --project=MY-PROJECT
+
+          To cancel a snooze with a fully qualified snooze ID, run:
+
+            $ {command} projects/MY-PROJECT/snoozes/MY-SNOOZE
        """
   }
 

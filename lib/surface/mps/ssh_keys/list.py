@@ -77,12 +77,12 @@ class List(base.ListCommand):
     """Return ssh key list information based on user request."""
     region = args.CONCEPTS.region.Parse()
     client = MpsClient()
-    vendor = properties.VALUES.mps.vendor.Get(required=True)
+    product = properties.VALUES.mps.product.Get(required=True)
 
     if region is None:
       project = properties.VALUES.core.project.Get(required=True)
-      return client.AggregateListSSHKeys(project, vendor, limit=args.limit)
-    return client.ListSSHKeys(vendor, region)
+      return client.AggregateListSSHKeys(project, product, limit=args.limit)
+    return client.ListSSHKeys(product, region)
 
 List.detailed_help = DETAILED_HELP
 

@@ -76,6 +76,9 @@ class List(base.ListCommand):
   def Run(self, args):
     """Lists all the Cloud Run Integrations.
 
+    All regions are listed by default similar to Cloud Run services unless
+    a specific region is provided with the --region flag.
+
     Args:
       args: ArgumentParser, used to reference the inputs provided by the user.
 
@@ -90,15 +93,20 @@ class List(base.ListCommand):
     integration_type = args.type
     service_name = args.service
     release_track = self.ReleaseTrack()
+    region = (None if args.IsSpecified('region')
+              else run_apps_operations.ALL_REGIONS)
 
     conn_context = connection_context.GetConnectionContext(
         args, run_flags.Product.RUN_APPS, release_track)
     with run_apps_operations.Connect(conn_context, release_track) as client:
-      client.VerifyLocation()
+      # If a region is specified via the --region flag then we need to validate
+      # if the region is valid.  Otherwise fetch from all regions by default.
+      if args.IsSpecified('region'):
+        client.VerifyLocation()
       if integration_type:
         types_utils.CheckValidIntegrationType(integration_type)
 
       return {
           printer.RECORD_KEY:
-              client.ListIntegrations(integration_type, service_name)
+              client.ListIntegrations(integration_type, service_name, region)
           }

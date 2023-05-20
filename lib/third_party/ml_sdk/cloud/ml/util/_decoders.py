@@ -41,7 +41,7 @@ class CsvDecoder(object):
   """A decoder for CSV formatted data.
   """
 
-  # TODO(b/32491265) Revisit using cStringIO for design compatibility with
+  # TODO(user) Revisit using cStringIO for design compatibility with
   # coders.CsvCoder.
   class _LineGenerator(object):
     """A csv line generator that allows feeding lines to a csv.DictReader."""
@@ -138,7 +138,7 @@ class CsvDecoder(object):
     if self._fail_on_error:
       raise DecodeError(message)
     else:
-      # TODO(b/32916711) Don't log every time but only every N invalid lines.
+      # TODO(user) Don't log every time but only every N invalid lines.
       logging.warning('Discarding invalid row: %s', message)
       return None
 

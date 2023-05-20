@@ -15,10 +15,13 @@ import traceback
 
 from absl import app
 from absl import flags
+from google.auth import version as google_auth_version
 import googleapiclient
 import httplib2
 import oauth2client_4_0.client
+import requests
 import six
+import urllib3
 
 import bigquery_client
 
@@ -122,6 +125,14 @@ def ProcessBigqueryrcSection(section_name, flag_values):
           setattr(flag_values, flag, old_value + getattr(flag_values, flag))
 
 
+def GetPlatformString():
+  return':'.join([
+      platform.python_implementation(),
+      platform.python_version(),
+      platform.platform()
+  ])
+
+
 def ProcessError(
     err,
     name='unknown',
@@ -149,11 +160,7 @@ def ProcessError(
       'the steps that led to this issue, as well as '
       'any rows that can be made public from '
       'the following information: \n\n')
-  platform_str = ':'.join([
-      platform.python_implementation(),
-      platform.python_version(),
-      platform.platform()
-  ])
+  platform_str = GetPlatformString()
   error_details = textwrap.dedent("""\
      ========================================
      == Platform ==
@@ -244,6 +251,41 @@ def ProcessError(
   logger.exception(response_message, exc_info=err)
   print(response_message)
   return retcode
+
+
+def GetInfoString():
+  """Gets the info string for the current execution."""
+  platform_str = GetPlatformString()
+  return textwrap.dedent(
+      """\
+      BigQuery CLI [{version}]
+
+      Platform: [{platform_str}] {uname}
+      Python Version: [{python_version}]
+
+      Requests Version: [{requests_version}]
+      Urllib3 Version: [{urllib3_version}]
+      Httplib2: [{httplib2_version}]
+      Google Auth Version: [{google_auth_version}]
+
+      System PATH: [{sys_path}]
+      Shell PATH: [{shell_path}]
+      Python PATH: [{python_path}]
+
+      """.format(
+          version=VERSION_NUMBER,
+          platform_str=platform_str,
+          uname=platform.uname(),
+          python_version=sys.version.replace('\n', ' '),
+          httplib2_version=httplib2.__version__,
+          google_auth_version=google_auth_version.__version__,
+          requests_version=requests.__version__,
+          urllib3_version=urllib3.__version__,
+          sys_path=os.pathsep.join(sys.path),
+          shell_path=os.environ['PATH'],
+          python_path=os.environ['PYTHONPATH'],
+      )
+  )
 
 
 def PrintFormattedJsonObject(obj, default_format='json'):

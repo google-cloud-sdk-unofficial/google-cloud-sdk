@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*- #
-# Copyright 2021 Google LLC. All Rights Reserved.
+# Copyright 2023 Google LLC. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,20 +12,16 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""This file provides the implementation of the `functions describe` command."""
+"""Command group for Event Threat Detection custom modules."""
 
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
-from googlecloudsdk.api_lib.functions.v1 import util
+from googlecloudsdk.calliope import base
 
 
-def Run(args):
-  """Display details of a Google Cloud Function."""
-  client = util.GetApiClientInstance()
-  messages = client.MESSAGES_MODULE
-  function_ref = args.CONCEPTS.name.Parse()
-  return client.projects_locations_functions.Get(
-      messages.CloudfunctionsProjectsLocationsFunctionsGetRequest(
-          name=function_ref.RelativeName()))
+@base.Hidden
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class EventThreatDetectionCustomModules(base.Group):
+  """Manage custom modules."""

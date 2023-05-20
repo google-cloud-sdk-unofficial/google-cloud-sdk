@@ -30,8 +30,7 @@ from googlecloudsdk.core import properties
 from googlecloudsdk.core import resources
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
-                    base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Update(base.UpdateCommand):
   """Updates an AlloyDB instance within a given cluster."""
 
@@ -46,15 +45,15 @@ class Update(base.UpdateCommand):
         """,
   }
 
-  @staticmethod
-  def Args(parser):
+  @classmethod
+  def Args(cls, parser):
     """Specifies additional command flags.
 
     Args:
       parser: argparse.Parser, Parser object for command line inputs
     """
     base.ASYNC_FLAG.AddToParser(parser)
-    flags.AddAvailabilityType(parser)
+    flags.AddAvailabilityType(parser, cls.ReleaseTrack())
     flags.AddCluster(parser, False)
     flags.AddDatabaseFlags(parser)
     flags.AddInstance(parser)
@@ -71,6 +70,10 @@ class Update(base.UpdateCommand):
     )
     # TODO(b/185795425): Add --ssl-required and --labels later once we
     # understand the use cases
+
+  def ConstructPatchRequestFromArgs(self, alloydb_messages, instance_ref, args):
+    return instance_helper.ConstructPatchRequestFromArgs(
+        alloydb_messages, instance_ref, args)
 
   def Run(self, args):
     """Constructs and sends request.
@@ -90,14 +93,33 @@ class Update(base.UpdateCommand):
         projectsId=properties.VALUES.core.project.GetOrFail,
         locationsId=args.region,
         clustersId=args.cluster,
-        instancesId=args.instance)
-    req = instance_helper.ConstructPatchRequestFromArgs(
-        alloydb_messages, instance_ref, args)
+        instancesId=args.instance,
+    )
+    req = self.ConstructPatchRequestFromArgs(
+        alloydb_messages, instance_ref, args
+    )
     op = alloydb_client.projects_locations_clusters_instances.Patch(req)
     op_ref = resources.REGISTRY.ParseRelativeName(
-        op.name, collection='alloydb.projects.locations.operations')
+        op.name, collection='alloydb.projects.locations.operations'
+    )
     log.status.Print('Operation ID: {}'.format(op_ref.Name()))
     if not args.async_:
-      instance_operations.Await(op_ref, 'Updating instance',
-                                self.ReleaseTrack(), False)
+      instance_operations.Await(
+          op_ref, 'Updating instance', self.ReleaseTrack(), False
+      )
     return op
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+class UpdateAlphaBeta(Update):
+  """Updates an AlloyDB instance within a given cluster."""
+
+  @staticmethod
+  def Args(parser):
+    super(UpdateAlphaBeta, UpdateAlphaBeta).Args(parser)
+    flags.AddUpdateMode(parser)
+
+  def ConstructPatchRequestFromArgs(self, alloydb_messages, instance_ref, args):
+    return instance_helper.ConstructPatchRequestFromArgsAlphaBeta(
+        alloydb_messages, instance_ref, args
+    )

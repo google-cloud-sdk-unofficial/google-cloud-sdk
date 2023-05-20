@@ -18,8 +18,6 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
-import multiprocessing
-
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.storage import errors_util
 from googlecloudsdk.command_lib.storage import flags
@@ -27,6 +25,7 @@ from googlecloudsdk.command_lib.storage import name_expansion
 from googlecloudsdk.command_lib.storage import plurality_checkable_iterator
 from googlecloudsdk.command_lib.storage import storage_url
 from googlecloudsdk.command_lib.storage.tasks import task_executor
+from googlecloudsdk.command_lib.storage.tasks import task_graph_executor
 from googlecloudsdk.command_lib.storage.tasks import task_status
 from googlecloudsdk.command_lib.storage.tasks.rm import delete_task_iterator_factory
 
@@ -64,7 +63,7 @@ class Delete(base.Command):
       url = storage_url.storage_url_from_string(url_string)
       errors_util.raise_error_if_not_bucket(args.command_path, url)
 
-    task_status_queue = multiprocessing.Queue()
+    task_status_queue = task_graph_executor.multiprocessing_context.Queue()
 
     bucket_iterator = delete_task_iterator_factory.DeleteTaskIteratorFactory(
         name_expansion.NameExpansionIterator(

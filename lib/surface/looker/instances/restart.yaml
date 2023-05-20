@@ -31,6 +31,9 @@
     collection: looker.projects.locations.instances
     method: restart
 
+  async:
+    collection: looker.projects.locations.operations
+
   output:
     format: |
       table(

@@ -163,6 +163,7 @@ def AddBaseArgs(parser, is_alpha=False):
   flags.AddConnectorEnforcement(parser)
   flags.AddTimeout(parser, _INSTANCE_CREATION_TIMEOUT_SECONDS)
   flags.AddEnableGooglePrivatePath(parser, show_negated_in_help=False)
+  flags.AddThreadsPerCore(parser)
 
 
 def AddBetaArgs(parser):
@@ -177,9 +178,9 @@ def AddBetaArgs(parser):
   flags.AddRecreateReplicasOnPrimaryCrash(parser)
 
 
-def AddAlphaArgs(parser):
+def AddAlphaArgs(unused_parser):
   """Declare alpha flags for this command parser."""
-  flags.AddThreadsPerCore(parser)
+  pass
 
 
 def RunBaseCreateCommand(args, release_track):

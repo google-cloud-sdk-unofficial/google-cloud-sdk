@@ -27,11 +27,10 @@ from googlecloudsdk.core import log
 @base.Hidden
 class Load(base.Command):
   """Upload an SBOM file and create a reference occurrence."""
+
   detailed_help = {
-      'DESCRIPTION':
-          '{description}',
-      'EXAMPLES':
-          """\
+      'DESCRIPTION': '{description}',
+      'EXAMPLES': """\
           To upload an SBOM file at /path/to/sbom.json for a docker image in Artifact Registry:
 
           $ {command} --source=/path/to/sbom --uri=us-west1-docker.pkg.dev/my-project/my-repository/busy-box@sha256:abcxyz
@@ -50,28 +49,44 @@ class Load(base.Command):
         metavar='SOURCE',
         required=True,
         default='.',
-        help='The SBOM file for uploading.')
+        help='The SBOM file for uploading.',
+    )
     parser.add_argument(
         '--uri',
         metavar='ARTIFACT_URI',
         required=True,
-        help='The URI of artifact the SBOM is generated from.')
+        help='The URI of artifact the SBOM is generated from.',
+    )
 
   def Run(self, args):
     """Run the load command."""
     # Parse file and get the version.
     s = sbom_util.ParseJsonSbom(args.source)
-    log.info('Successfully loaded the sbom file. Format: {0}-{1}.'.format(
-        s.sbom_format, s.version))
+    log.info(
+        'Successfully loaded the SBOM file. Format: {0}-{1}.'.format(
+            s.sbom_format, s.version
+        )
+    )
 
     # Get information from the artifact.
     a = sbom_util.ProcessArtifact(args.uri)
-    log.info(('Processed artifact. ' +
-              'Project: {0}, Location: {1}, URI: {2}, Digest {3}.').format(
-                  a.project, a.location, a.resource_uri, a.digest))
-
-    # Find the bucket for uploading.
+    log.info(
+        (
+            'Processed artifact. '
+            + 'Project: {0}, Location: {1}, URI: {2}, Digest {3}.'
+        ).format(a.project, a.location, a.resource_uri, a.digests.get('sha256'))
+    )
 
     # Upload SBOM.
+    remote_path = sbom_util.UploadSbomToGCS(
+        source=args.source,
+        artifact=a,
+        sbom=s,
+    )
+    log.info('Uploaded the SBOM file at {0}'.format(remote_path))
 
     # Write reference occurrence.
+    occurrence_id = sbom_util.WriteReferenceOccurrence(
+        artifact=a, storage=remote_path, sbom=s
+    )
+    log.info('Wrote reference occurrence {0}.'.format(occurrence_id))

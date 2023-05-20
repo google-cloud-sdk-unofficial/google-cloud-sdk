@@ -4,7 +4,7 @@
  "id": "bigquery:v2",
  "name": "bigquery",
  "version": "v2",
- "revision": "20230407",
+ "revision": "20230418",
  "title": "BigQuery API",
  "description": "A data platform for customers to create, manage, share and query data.",
  "ownerDomain": "google.com",
@@ -1124,6 +1124,13 @@
    "id": "HivePartitioningOptions",
    "type": "object",
    "properties": {
+    "fields": {
+     "type": "array",
+     "description": "[Output-only] For permanent external tables, this field is populated with the hive partition keys in the order they were inferred. The types of the partition keys can be deduced by checking the table schema (which will include the partition keys). Not every API will populate this field in the output. For example, Tables.Get will populate it, but Tables.List will not contain this field.",
+     "items": {
+      "type": "string"
+     }
+    },
     "mode": {
      "type": "string",
      "description": "[Optional] When set, what mode of hive partitioning to use when reading data. The following modes are supported. (1) AUTO: automatically infer partition key name(s) and type(s). (2) STRINGS: automatically infer partition key name(s). All types are interpreted as strings. (3) CUSTOM: partition key schema is encoded in the source URI prefix. Not all storage formats support hive partitioning. Requesting hive partitioning on an unsupported format will lead to an error. Currently supported types include: AVRO, CSV, JSON, ORC and Parquet."
@@ -3517,6 +3524,7 @@
       "DNN classifier model.",
       "An imported TensorFlow model.",
       "DNN regressor model.",
+      "An imported XGBoost model.",
       "Boosted tree regressor model.",
       "Boosted tree classifier model.",
       "ARIMA model.",
@@ -3527,8 +3535,11 @@
       "Wide-and-deep regressor model.",
       "Autoencoder model.",
       "New name for the ARIMA model.",
+      "ARIMA with external regressors.",
       "Random Forest regressor model.",
-      "Random Forest classifier model."
+      "Random Forest classifier model.",
+      "An imported TensorFlow Lite model.",
+      "An imported ONNX model."
      ],
      "enum": [
       "MODEL_TYPE_UNSPECIFIED",
@@ -3539,6 +3550,7 @@
       "DNN_CLASSIFIER",
       "TENSORFLOW",
       "DNN_REGRESSOR",
+      "XGBOOST",
       "BOOSTED_TREE_REGRESSOR",
       "BOOSTED_TREE_CLASSIFIER",
       "ARIMA",
@@ -3549,8 +3561,11 @@
       "DNN_LINEAR_COMBINED_REGRESSOR",
       "AUTOENCODER",
       "ARIMA_PLUS",
+      "ARIMA_PLUS_XREG",
       "RANDOM_FOREST_REGRESSOR",
-      "RANDOM_FOREST_CLASSIFIER"
+      "RANDOM_FOREST_CLASSIFIER",
+      "TENSORFLOW_LITE",
+      "ONNX"
      ]
     },
     "trainingRuns": {
@@ -3608,6 +3623,11 @@
       "type": "string",
       "format": "int64"
      }
+    },
+    "remoteModelInfo": {
+     "description": "Output only. Remote model info",
+     "readOnly": true,
+     "$ref": "RemoteModelInfo"
     }
    }
   },
@@ -4200,7 +4220,12 @@
      "type": "boolean"
     },
     "autoArimaMaxOrder": {
-     "description": "The max value of non-seasonal p and q.",
+     "description": "The max value of the sum of non-seasonal p and q.",
+     "type": "string",
+     "format": "int64"
+    },
+    "autoArimaMinOrder": {
+     "description": "The min value of the sum of non-seasonal p and q.",
      "type": "string",
      "format": "int64"
     },
@@ -4285,6 +4310,10 @@
      "type": "string",
      "format": "int64"
     },
+    "tfVersion": {
+     "description": "Based on the selected TF version, the corresponding docker image is used to train external models.",
+     "type": "string"
+    },
     "colorSpace": {
      "description": "Enums for color space, used for processing images in Object Table. See more details at https://www.tensorflow.org/io/tutorials/colorspace.",
      "type": "string",
@@ -4305,6 +4334,10 @@
       "GRAYSCALE"
      ]
     },
+    "instanceWeightColumn": {
+     "description": "Name of the instance weight column for training data. This column isn't be used as a feature.",
+     "type": "string"
+    },
     "trendSmoothingWindowSize": {
      "description": "The smoothing window size for the trend component of the time series.",
      "type": "string",
@@ -4324,6 +4357,10 @@
      "description": "Get truncated length by last n points in time series. Use separately from time_series_length_fraction and min_time_series_length.",
      "type": "string",
      "format": "int64"
+    },
+    "xgboostVersion": {
+     "description": "User-selected XGBoost versions for training of XGBoost models.",
+     "type": "string"
     }
    }
   },
@@ -5523,6 +5560,46 @@
     "hparamTuningEvaluationMetrics": {
      "description": "Hyperparameter tuning evaluation metrics of this trial calculated on the eval data. Unlike evaluation_metrics, only the fields corresponding to the hparam_tuning_objectives are set.",
      "$ref": "EvaluationMetrics"
+    }
+   }
+  },
+  "RemoteModelInfo": {
+   "id": "RemoteModelInfo",
+   "description": "Remote Model Info",
+   "type": "object",
+   "properties": {
+    "endpoint": {
+     "description": "Output only. The endpoint for remote model.",
+     "readOnly": true,
+     "type": "string"
+    },
+    "remoteServiceType": {
+     "description": "Output only. The remote service type for remote model.",
+     "readOnly": true,
+     "type": "string",
+     "enumDescriptions": [
+      "Unspecified remote service type.",
+      "V3 Cloud AI Translation API. See more details at [Cloud Translation API] (https://cloud.google.com/translate/docs/reference/rest).",
+      "V1 Cloud AI Vision API See more details at [Cloud Vision API] (https://cloud.google.com/vision/docs/reference/rest).",
+      "V1 Cloud AI Natural Language API. See more details at [REST Resource: documents](https://cloud.google.com/natural-language/docs/reference/rest/v1/documents)."
+     ],
+     "enum": [
+      "REMOTE_SERVICE_TYPE_UNSPECIFIED",
+      "CLOUD_AI_TRANSLATE_V3",
+      "CLOUD_AI_VISION_V1",
+      "CLOUD_AI_NATURAL_LANGUAGE_V1"
+     ]
+    },
+    "connection": {
+     "description": "Output only. Fully qualified name of the user-provided connection object of the remote model. Format: ```\"projects/{project_id}/locations/{location_id}/connections/{connection_id}\"```",
+     "readOnly": true,
+     "type": "string"
+    },
+    "maxBatchingRows": {
+     "description": "Output only. Max number of rows in each batch sent to the remote service. If unset, the number of rows in each batch is set dynamically.",
+     "readOnly": true,
+     "type": "string",
+     "format": "int64"
     }
    }
   },

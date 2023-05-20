@@ -50,15 +50,15 @@ class Create(base.CreateCommand):
         """,
   }
 
-  @staticmethod
-  def Args(parser):
+  @classmethod
+  def Args(cls, parser):
     """Specifies additional command flags.
 
     Args:
       parser: argparse.Parser: Parser object for command line inputs
     """
     base.ASYNC_FLAG.AddToParser(parser)
-    flags.AddAvailabilityType(parser)
+    flags.AddAvailabilityType(parser, cls.ReleaseTrack())
     flags.AddCluster(parser, False)
     flags.AddDatabaseFlags(parser)
     flags.AddInstance(parser)

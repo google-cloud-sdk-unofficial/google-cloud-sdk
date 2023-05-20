@@ -170,7 +170,7 @@ def ParseCreateOptionsBase(args, is_autopilot, get_default, location,
   enable_ip_alias = get_default('enable_ip_alias')
   if hasattr(args, 'enable_ip_alias'):
     flags.WarnForUnspecifiedIpAllocationPolicy(args)
-
+  flags.WarnForEnablingBetaAPIs(args)
   enable_autorepair = None
   if hasattr(args, 'enable_autorepair'):
     enable_autorepair = cmd_util.GetAutoRepair(args)
@@ -350,7 +350,9 @@ def ParseCreateOptionsBase(args, is_autopilot, get_default, location,
       network_performance_config=get_default(
           'network_performance_configs'),
       enble_insecure_kubelet_readonly_port=get_default(
-          'enble_insecure_kubelet_readonly_port'))
+          'enble_insecure_kubelet_readonly_port'),
+      enable_k8s_beta_apis=getattr(args, 'enable_kubernetes_unstable_apis')
+      )
 
 
 GA = 'ga'
@@ -464,6 +466,10 @@ flags_to_add = {
             flags.AddDatabaseEncryptionFlag,
         'dataplanev2':
             flags.AddDataplaneV2Flag,
+        'dataplanev2metrics':
+            flags.AddDataplaneV2MetricsFlag,
+        'dataplanev2obsmode':
+            flags.AddDataplaneV2ObservabilityModeFlag,
         'disksize':
             flags.AddDiskSizeFlag,
         'disktype':
@@ -596,7 +602,9 @@ flags_to_add = {
         'enableSecurityPosture':
             flags.AddSecurityPostureFlag,
         'clusterNetworkPerformanceConfig':
-            flags.AddClusterNetworkPerformanceConfigFlags
+            flags.AddClusterNetworkPerformanceConfigFlags,
+        'enableK8sBetaApis':
+            flags.AddEnableK8sBetaAPIs
     },
     BETA: {
         'accelerator': (lambda p: AddAcceleratorFlag(p, True, True, True)),
@@ -819,7 +827,9 @@ flags_to_add = {
         'clusterNetworkPerformanceConfig':
             flags.AddClusterNetworkPerformanceConfigFlags,
         'enableKubeletReadonlyPort':
-            flags.AddEnableKubeletReadonlyPortFlag
+            flags.AddEnableKubeletReadonlyPortFlag,
+        'enableK8sBetaApis':
+            flags.AddEnableK8sBetaAPIs
     },
     ALPHA: {
         'accelerator': (lambda p: AddAcceleratorFlag(p, True, True, True)),
@@ -1051,7 +1061,9 @@ flags_to_add = {
         'clusterNetworkPerformanceConfig':
             flags.AddClusterNetworkPerformanceConfigFlags,
         'enableKubeletReadonlyPort':
-            flags.AddEnableKubeletReadonlyPortFlag
+            flags.AddEnableKubeletReadonlyPortFlag,
+        'enableK8sBetaApis':
+            flags.AddEnableK8sBetaAPIs
     },
 }
 

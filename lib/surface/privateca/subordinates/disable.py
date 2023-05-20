@@ -21,9 +21,11 @@ from __future__ import unicode_literals
 from googlecloudsdk.api_lib.privateca import base as privateca_base
 from googlecloudsdk.api_lib.privateca import request_utils
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.privateca import flags_v1
 from googlecloudsdk.command_lib.privateca import operations
 from googlecloudsdk.command_lib.privateca import resource_args
 from googlecloudsdk.core import log
+from googlecloudsdk.core.console import console_io
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
@@ -91,6 +93,7 @@ class Disable(base.SilentCommand):
   @staticmethod
   def Args(parser):
     resource_args.AddCertAuthorityPositionalResourceArg(parser, 'to disable')
+    flags_v1.AddIgnoreDependentResourcesFlag(parser)
 
   def Run(self, args):
     client = privateca_base.GetClientInstance(api_version='v1')
@@ -98,6 +101,19 @@ class Disable(base.SilentCommand):
 
     ca_ref = args.CONCEPTS.certificate_authority.Parse()
     ca_name = ca_ref.RelativeName()
+
+    if args.ignore_dependent_resources:
+      prompt_message = (
+          'You are about to disable Certificate Authority [{}] without '
+          'checking if the CA\'s CA Pool is being used by another '
+          'resource. If you proceed and this is the last enabled CA in '
+          'the CA Pool, there may be unintended and '
+          'unrecoverable effects on any dependent resource(s) since the '
+          'CA Pool would not be able to issue certificates.'
+      ).format(ca_ref.RelativeName())
+      if not console_io.PromptContinue(message=prompt_message, default=True):
+        log.status.Print('Aborted by user.')
+        return
 
     current_ca = client.projects_locations_caPools_certificateAuthorities.Get(
         messages
@@ -115,6 +131,7 @@ class Disable(base.SilentCommand):
             name=ca_name,
             disableCertificateAuthorityRequest=messages
             .DisableCertificateAuthorityRequest(
+                ignoreDependentResources=args.ignore_dependent_resources,
                 requestId=request_utils.GenerateRequestId())))
 
     operations.Await(operation, 'Disabling Subordinate CA', api_version='v1')

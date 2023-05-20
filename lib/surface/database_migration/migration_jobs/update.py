@@ -52,10 +52,8 @@ DETAILED_HELP = {
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.GA)
-class Update(base.Command):
+class _Update(object):
   """Update a Database Migration Service migration job."""
-
-  detailed_help = DETAILED_HELP
 
   @staticmethod
   def Args(parser):
@@ -118,3 +116,26 @@ class Update(base.Command):
     return client.projects_locations_operations.Get(
         messages.DatamigrationProjectsLocationsOperationsGetRequest(
             name=operation_ref.operationsId))
+
+
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class UpdateGA(_Update, base.Command):
+  """Update a Database Migration Service migration job."""
+
+  detailed_help = DETAILED_HELP
+
+  @staticmethod
+  def Args(parser):
+    _Update.Args(parser)
+    mj_flags.AddDumpParallelLevelFlag(parser)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class UpdateAlpha(_Update, base.Command):
+  """Update a Database Migration Service migration job."""
+
+  detailed_help = DETAILED_HELP
+
+  @staticmethod
+  def Args(parser):
+    _Update.Args(parser)

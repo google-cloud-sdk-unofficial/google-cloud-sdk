@@ -18,8 +18,12 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+from googlecloudsdk.api_lib.storage import cloud_api
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.storage import du_command_util
+from googlecloudsdk.command_lib.storage import errors
 from googlecloudsdk.command_lib.storage import flags
+from googlecloudsdk.command_lib.storage import storage_url
 
 
 @base.Hidden
@@ -71,12 +75,16 @@ class Du(base.Command):
 
   @staticmethod
   def Args(parser):
-    parser.add_argument('url', nargs='+', help='The url of objects to list.')
+    parser.add_argument('url', nargs='*', help='The url of objects to list.')
     parser.add_argument(
+        '-0',
         '--zero-terminator',
         action='store_true',
-        help='Ends each output line with a 0 byte rather than a newline. You'
-        ' can use this to make the output machine-readable.')
+        help=(
+            'Ends each output line with a 0 byte rather than a newline. You'
+            ' can use this to make the output machine-readable.'
+        ),
+    )
     parser.add_argument(
         '-a',
         '--all-versions',
@@ -86,34 +94,68 @@ class Du(base.Command):
         ' number for each listed object.')
     parser.add_argument(
         '-c',
-        '--include-total-size',
+        '--total',
         action='store_true',
-        help='Includes a total size at the end of the output.')
+        help='Includes a total size of all input sources.',
+    )
     parser.add_argument(
         '-e',
         '--exclude-name-pattern',
-        action='store_true',
-        help='Exclude a pattern from the report. Example: -e "*.o" excludes any'
-        ' object that ends in ".o". Can be specified multiple times.')
+        action='append',
+        default=[],
+        help=(
+            'Exclude a pattern from the report. Example: -e "*.o" excludes any'
+            ' object that ends in ".o". Can be specified multiple times.'
+        ),
+    )
     parser.add_argument(
-        '--human-readable',
+        '-r',
+        '--readable-sizes',
         action='store_true',
-        help='Prints object sizes in human-readable format. For example, 1 KiB,'
-        ' 234 MiB, or 2GiB.')
+        help=(
+            'Prints object sizes in human-readable format. For example, 1 KiB,'
+            ' 234 MiB, or 2GiB.'
+        ),
+    )
     parser.add_argument(
         '-s',
-        '--only-total-size',
+        '--summarize',
         action='store_true',
-        help='Displays only the total size for each argument.')
+        help='Displays only the summary for each argument.',
+    )
     parser.add_argument(
         '-X',
-        '--exclude-content-pattern',
-        action='store_true',
-        help='Similar to -e, but excludes patterns from the given file.'
-        ' The patterns to exclude should be listed one per line.')
+        '--exclude-name-pattern-file',
+        help=(
+            'Similar to -e, but excludes patterns from the given file.'
+            ' The patterns to exclude should be listed one per line.'
+        ),
+    )
 
     flags.add_additional_headers_flag(parser)
 
   def Run(self, args):
-    del args  # Unused.
-    raise NotImplementedError
+    use_gsutil_style = flags.check_if_use_gsutil_style(args)
+
+    if args.url:
+      storage_urls = []
+      for url_string in args.url:
+        url_object = storage_url.storage_url_from_string(url_string)
+        if not isinstance(url_object, storage_url.CloudUrl):
+          raise errors.InvalidUrlError(
+              'Du only works for valid cloud URLs.'
+              ' {} is an invalid cloud URL.'.format(url_object.url_string)
+          )
+        storage_urls.append(url_object)
+    else:
+      storage_urls = [storage_url.CloudUrl(cloud_api.DEFAULT_PROVIDER)]
+
+    du_command_util.DuExecutor(
+        cloud_urls=storage_urls,
+        all_versions=args.all_versions,
+        readable_sizes=args.readable_sizes,
+        summarize=args.summarize,
+        total=args.total,
+        use_gsutil_style=use_gsutil_style,
+        zero_terminator=args.zero_terminator,
+    ).list_urls()

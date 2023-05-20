@@ -49,6 +49,6 @@ class Describe(base.DescribeCommand):
 
   def Run(self, args):
     instance = args.CONCEPTS.instance.Parse()
-    vendor = properties.VALUES.mps.vendor.Get(required=True)
+    product = properties.VALUES.mps.product.Get(required=True)
     client = MpsClient()
-    return client.GetInstance(vendor, instance)
+    return client.GetInstance(product, instance)

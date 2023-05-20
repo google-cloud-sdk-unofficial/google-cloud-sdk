@@ -265,7 +265,7 @@ class CreateBeta(base.CreateCommand):
   _support_header_action = True
   _support_tcl_ssl = False
   _support_fairshare = False
-  _support_regional_security_policy = False
+  _support_regional_security_policy = True
   _support_net_lb = False
 
   @classmethod

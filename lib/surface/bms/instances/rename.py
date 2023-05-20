@@ -46,7 +46,7 @@ class Rename(base.UpdateCommand):
   def Args(parser):
     """Register flags for this command."""
     flags.AddInstanceArgToParser(parser, positional=True)
-    flags.AddInstanceNewNameArgToParser(parser)
+    flags.AddNewNameArgToParser(parser, 'instance')
 
   def Run(self, args):
     client = BmsClient()

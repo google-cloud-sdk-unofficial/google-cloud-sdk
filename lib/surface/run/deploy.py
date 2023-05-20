@@ -22,6 +22,7 @@ from __future__ import unicode_literals
 import enum
 import os.path
 
+from googlecloudsdk.api_lib.run import api_enabler
 from googlecloudsdk.api_lib.run import k8s_object
 from googlecloudsdk.api_lib.run import traffic
 from googlecloudsdk.calliope import base
@@ -184,7 +185,15 @@ class Deploy(base.Command):
 
     service_ref = args.CONCEPTS.service.Parse()
     flags.ValidateResource(service_ref)
-
+    required_apis = ['run.googleapis.com']
+    if include_build:
+      required_apis.append('artifactregistry.googleapis.com')
+      required_apis.append('cloudbuild.googleapis.com')
+    already_activated_services = False
+    if self.ReleaseTrack() is base.ReleaseTrack.ALPHA:
+      already_activated_services = api_enabler.CheckAndEnableApis(
+          properties.VALUES.core.project.Get(), required_apis
+      )
     # Obtaining the connection context prompts the user to select a region if
     # one hasn't been provided. We want to do this prior to preparing a source
     # deploy so that we can use that region for the Artifact Registry repo.
@@ -208,7 +217,9 @@ class Deploy(base.Command):
               cluster_location=(conn_context.cluster_location if
                                 platform == platforms.PLATFORM_GKE else None)),
           repo_id='cloud-run-source-deploy')
-      if artifact_registry.ShouldCreateRepository(ar_repo):
+      if artifact_registry.ShouldCreateRepository(
+          ar_repo, skip_activation_prompt=already_activated_services
+      ):
         repo_to_create = ar_repo
       # The image is built with latest tag. After build, the image digest
       # from the build result will be added to the image of the service spec.
@@ -244,7 +255,9 @@ class Deploy(base.Command):
     changes.append(
         config_changes.SetLaunchStageAnnotationChange(self.ReleaseTrack()))
 
-    with serverless_operations.Connect(conn_context) as operations:
+    with serverless_operations.Connect(
+        conn_context, already_activated_services
+    ) as operations:
       service = operations.GetService(service_ref)
       allow_unauth = GetAllowUnauth(args, operations, service_ref, service)
       resource_change_validators.ValidateClearVpcConnector(service, args)
@@ -284,7 +297,9 @@ class Deploy(base.Command):
             build_image=image,
             build_pack=pack,
             build_source=source,
-            repo_to_create=repo_to_create)
+            repo_to_create=repo_to_create,
+            already_activated_services=already_activated_services,
+        )
 
       if args.async_:
         pretty_print.Success('Service [{{bold}}{serv}{{reset}}] is deploying '

@@ -71,9 +71,16 @@ class Register(base.CreateCommand):
   `--kubeconfig` flag is required). Connect agent will not be installed by
   default for GKE clusters. To install it, specify `--install-connect-agent`.
 
-  To register a non-GKE or GKE On-Prem cluster, use `--context` flag (with an
-  optional `--kubeconfig` flag). Connect agent will always be installed for
-  non-GKE clusters.
+  Anthos clusters on VMware, bare metal, AWS, and Azure are registered
+  with a fleet when the clusters are created. To register Amazon EKS
+  clusters, see
+  [Attach your EKS cluster](https://cloud.google.com/anthos/clusters/docs/multi-cloud/attached/eks/how-to/attach-cluster).
+  To regiser Microsoft Azure clusters, see
+  [Attach your AKS cluster](https://cloud.google.com/anthos/clusters/docs/multi-cloud/attached/aks/how-to/attach-cluster).
+
+  To register a third-party cluster, use --context flag (with an optional
+  --kubeconfig flag). Connect agent will always be installed for these
+  clusters.
 
   If Connect agent is to be installed, its authentication needs to be configured
   by `--enable-workload-identity` or `--service-account-key-file`. For the
@@ -87,7 +94,7 @@ class Register(base.CreateCommand):
 
   ## EXAMPLES
 
-    Register a non-GKE or GKE On-Prem cluster referenced from a specific
+    Register a non-GKE cluster referenced from a specific
     kubeconfig file, and install the Connect agent:
 
       $ {command} my-cluster \
@@ -95,14 +102,14 @@ class Register(base.CreateCommand):
         --kubeconfig=/home/user/custom_kubeconfig \
         --service-account-key-file=/tmp/keyfile.json
 
-    Register a non-GKE or GKE On-Prem cluster referenced from the default
+    Register a non-GKE cluster referenced from the default
     kubeconfig file, and install the Connect agent:
 
       $ {command} my-cluster \
         --context=my-cluster-context \
         --service-account-key-file=/tmp/keyfile.json
 
-    Register a non-GKE or GKE On-Prem cluster, and install a specific version
+    Register a non-GKE cluster, and install a specific version
     of the Connect agent:
 
       $ {command} my-cluster \
@@ -110,7 +117,7 @@ class Register(base.CreateCommand):
         --version=gkeconnect_20190802_02_00 \
         --service-account-key-file=/tmp/keyfile.json
 
-    Register a non-GKE or GKE On-Prem cluster and output a manifest that can be
+    Register a non-GKE cluster and output a manifest that can be
     used to install the Connect agent:
 
       $ {command} my-cluster \

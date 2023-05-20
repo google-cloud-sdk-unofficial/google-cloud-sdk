@@ -213,6 +213,9 @@
       - googlecloudsdk.command_lib.looker.instances_update_util:ModifyAllowedEmailDomains
     collection: looker.projects.locations.instances
 
+  async:
+    collection: looker.projects.locations.operations
+
   output:
     format: |
       table(

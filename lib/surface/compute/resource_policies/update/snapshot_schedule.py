@@ -19,6 +19,8 @@ from __future__ import division
 from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.compute import base_classes
+from googlecloudsdk.api_lib.compute import utils as compute_api
+from googlecloudsdk.api_lib.util import apis
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute import flags as compute_flags
 from googlecloudsdk.command_lib.compute.resource_policies import flags
@@ -42,7 +44,7 @@ Start time for the disk snapshot schedule in UTC. For example, `--start-time="15
   flags.AddSnapshotLabelArgs(parser)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
 class UpdateSnapshotSchedule(base.UpdateCommand):
   """Update a Compute Engine Snapshot Schedule Resource Policy."""
 
@@ -61,6 +63,39 @@ class UpdateSnapshotSchedule(base.UpdateCommand):
 
     resource_policy = util.MakeDiskSnapshotSchedulePolicyForUpdate(
         policy_ref, args, messages)
+
+    patch_request = messages.ComputeResourcePoliciesPatchRequest(
+        resourcePolicy=policy_ref.Name(),
+        resourcePolicyResource=resource_policy,
+        project=policy_ref.project,
+        region=policy_ref.region)
+    service = holder.client.apitools_client.resourcePolicies
+    return client.MakeRequests([(service, 'Patch', patch_request)])
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class UpdateSnapshotScheduleAlpha(base.UpdateCommand):
+  """Update a Compute Engine Snapshot Schedule Resource Policy."""
+
+  @staticmethod
+  def Args(parser):
+    _CommonArgs(parser)
+    flags.AddSnapshotMaxRetentionDaysArgs(parser, required=False)
+    messages = apis.GetMessagesModule('compute',
+                                      compute_api.COMPUTE_ALPHA_API_VERSION)
+    flags.AddOnSourceDiskDeleteArgs(parser, messages)
+
+  def Run(self, args):
+    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    client = holder.client
+    messages = holder.client.messages
+    policy_ref = flags.MakeResourcePolicyArg().ResolveAsResource(
+        args,
+        holder.resources,
+        scope_lister=compute_flags.GetDefaultScopeLister(holder.client))
+
+    resource_policy = util.MakeDiskSnapshotSchedulePolicyForUpdate(
+        policy_ref, args, messages, enable_retention_policy_update=True)
 
     patch_request = messages.ComputeResourcePoliciesPatchRequest(
         resourcePolicy=policy_ref.Name(),

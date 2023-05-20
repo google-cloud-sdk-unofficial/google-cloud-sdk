@@ -442,7 +442,7 @@ class RemovePreconfigWafExclusionBeta(base.UpdateCommand):
 
   SECURITY_POLICY_ARG = None
 
-  _support_regional_security_policy = False
+  _support_regional_security_policy = True
 
   @classmethod
   def Args(cls, parser):

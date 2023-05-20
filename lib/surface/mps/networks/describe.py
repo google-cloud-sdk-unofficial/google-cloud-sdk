@@ -52,9 +52,9 @@ class Describe(base.DescribeCommand):
   def Run(self, args):
     """Return network description information based on user request."""
     network = args.CONCEPTS.network.Parse()
-    vendor = properties.VALUES.mps.vendor.Get(required=True)
+    product = properties.VALUES.mps.product.Get(required=True)
     client = MpsClient()
-    return client.GetNetwork(vendor, network)
+    return client.GetNetwork(product, network)
 
 
 Describe.detailed_help = DETAILED_HELP

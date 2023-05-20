@@ -18,10 +18,11 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
-
-from googlecloudsdk.api_lib.firestore import admin_api
+from googlecloudsdk.api_lib.firestore import api_utils
+from googlecloudsdk.api_lib.firestore import databases
 from googlecloudsdk.calliope import base
 from googlecloudsdk.core import properties
+
 
 PRODUCT_NAME = 'Google Cloud Firestore Native'
 LOCATION_HELP_TEXT = (
@@ -33,47 +34,58 @@ LOCATION_HELP_TEXT = (
 )
 
 
-@base.ReleaseTracks(
-    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
-)
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
 class CreateFirestoreAPI(base.Command):
   """Create a Google Cloud Firestore database via Firestore API.
 
   ## EXAMPLES
 
-  To create Firestore Native database in nam5.
+  To create a Firestore Native database in `nam5`.
 
       $ {command} --location=nam5
 
-  To create Datastore Mode database in us-east1.
+  To create a Datastore Mode database in `us-east1`.
 
       $ {command} --location=us-east1 --type=datastore-mode
 
-  To create Datastore Mode database in us-east1 with a databaseId foo.
+  To create a Datastore Mode database in `us-east1` with a databaseId `foo`.
 
-      $ {command} --database=mytest --location=us-east1 --type=datastore-mode
+      $ {command} --database=foo --location=us-east1 --type=datastore-mode
   """
 
   def DatabaseType(self, database_type):
     if database_type == 'firestore-native':
       return (
-          admin_api.GetMessages().GoogleFirestoreAdminV1Database.TypeValueValuesEnum.FIRESTORE_NATIVE
+          api_utils.GetMessages().GoogleFirestoreAdminV1Database.TypeValueValuesEnum.FIRESTORE_NATIVE
       )
     elif database_type == 'datastore-mode':
       return (
-          admin_api.GetMessages().GoogleFirestoreAdminV1Database.TypeValueValuesEnum.DATASTORE_MODE
+          api_utils.GetMessages().GoogleFirestoreAdminV1Database.TypeValueValuesEnum.DATASTORE_MODE
       )
     else:
       raise ValueError('invalid database type: {}'.format(database_type))
 
-  def Run(self, args):
-    project = properties.VALUES.core.project.Get(required=True)
-    return admin_api.CreateDatabase(
-        project, args.location, args.database, self.DatabaseType(args.type)
+  def DatabaseDeleteProtectionState(self, enable_delete_protection):
+    if enable_delete_protection:
+      return (
+          api_utils.GetMessages().GoogleFirestoreAdminV1Database.DeleteProtectionStateValueValuesEnum.DELETE_PROTECTION_ENABLED
+      )
+    return (
+        api_utils.GetMessages().GoogleFirestoreAdminV1Database.DeleteProtectionStateValueValuesEnum.DELETE_PROTECTION_DISABLED
     )
 
-  @staticmethod
-  def Args(parser):
+  def Run(self, args):
+    project = properties.VALUES.core.project.Get(required=True)
+    return databases.CreateDatabase(
+        project,
+        args.location,
+        args.database,
+        self.DatabaseType(args.type),
+        self.DatabaseDeleteProtectionState(False),
+    )
+
+  @classmethod
+  def Args(cls, parser):
     parser.add_argument(
         '--location',
         help=LOCATION_HELP_TEXT,
@@ -100,4 +112,55 @@ class CreateFirestoreAPI(base.Command):
         """,
         type=str,
         default='(default)',
+    )
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class CreateFirestoreAPIWithDeleteProtection(CreateFirestoreAPI):
+  """Create a Google Cloud Firestore database via Firestore API.
+
+  ## EXAMPLES
+
+  To create a Firestore Native database in `nam5`.
+
+      $ {command} --location=nam5
+
+  To create a Datastore Mode database in `us-east1`.
+
+      $ {command} --location=us-east1 --type=datastore-mode
+
+  To create a Datastore Mode database in `us-east1` with a database ID `foo`.
+
+      $ {command} --database=foo --location=us-east1 --type=datastore-mode
+
+  To create a Firestore Native database in `nam5` with delete protection
+  enabled.
+
+      $ {command} --location=nam5 --enable-delete-protection
+  """
+
+  def Run(self, args):
+    project = properties.VALUES.core.project.Get(required=True)
+    return databases.CreateDatabase(
+        project,
+        args.location,
+        args.database,
+        self.DatabaseType(args.type),
+        self.DatabaseDeleteProtectionState(args.enable_delete_protection),
+    )
+
+  @classmethod
+  def Args(cls, parser):
+    super(CreateFirestoreAPIWithDeleteProtection, cls).Args(parser)
+    parser.add_argument(
+        '--enable-delete-protection',
+        help="""Whether to enable delete protection on the created database.
+
+        If set to true, delete protection of the new database will be enabled
+        and delete operations will fail unless delete protection is disabled.
+
+        Default to false.
+        """,
+        action='store_true',
+        default=False,
     )

@@ -40,6 +40,27 @@ class Create(base.CreateCommand):
 
           For information about the JSON/YAML format of a snooze:
           https://cloud.google.com/monitoring/api/ref_v3/rest/v3/projects.snoozes
+       """,
+      'EXAMPLES': """\
+          To create a snooze with command-line options, run:
+
+            $ {command} --criteria-policies=LIST_OF_POLICIES
+            --display-name=DISPLAY_NAME --start-time=START_TIME
+            --end-time=END_TIME
+
+          To create a snooze with a file, run:
+
+            $ {command} --snooze-from-file=MY-FILE
+
+          Sample contents of MY-FILE:
+
+            criteria:
+              policies:
+              - projects/MY-PROJECT/alertPolicies/MY-POLICY
+            interval:
+              startTime: '2024-03-01T08:00:00Z'
+              endTime: '2024-03-08T04:59:59.500Z'
+            displayName: New Snooze
        """
   }
 

@@ -27,7 +27,6 @@ from googlecloudsdk.command_lib.storage import flags
 from googlecloudsdk.command_lib.storage import ls_command_util
 from googlecloudsdk.command_lib.storage import storage_url
 from googlecloudsdk.core import log
-from googlecloudsdk.core import properties
 
 
 class Ls(base.Command):
@@ -167,17 +166,7 @@ class Ls(base.Command):
     """Command execution logic."""
     encryption_util.initialize_key_store(args)
 
-    if args.format:
-      if args.format != 'gsutil':
-        raise errors.Error(
-            'The only valid format value for ls is "gsutil" (e.g. "--format='
-            'gsutil"). See other ls flags and commands for additional'
-            ' formatting options.')
-      use_gsutil_style = True
-      # Prevents validation errors in resource_printer.py.
-      args.format = None
-    else:
-      use_gsutil_style = properties.VALUES.storage.run_by_gsutil_shim.GetBool()
+    use_gsutil_style = flags.check_if_use_gsutil_style(args)
 
     found_non_default_provider = False
     if args.path:

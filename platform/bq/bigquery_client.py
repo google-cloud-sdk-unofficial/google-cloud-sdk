@@ -950,6 +950,53 @@ class BigquerySchemaError(BigqueryClientError):
   """Error in locating or parsing the schema."""
 
 
+class BigqueryTableConstraintsError(BigqueryClientError):
+  """Error in locating or parsing the table constraints."""
+
+
+def ReadTableConstrants(table_constraints):
+  """Create table constraints json object from string or a file name.
+
+  Args:
+    table_constraints: Either a json string that presents a table_constraints
+      proto or name of a file that contains the json string.
+
+  Returns:
+    The table_constraints (as a json object).
+
+  Raises:
+    BigqueryTableConstraintsError: If load the table constraints from the
+      string or file failed.
+  """
+  if not table_constraints:
+    raise BigqueryTableConstraintsError('table_constraints cannot be empty')
+  if os.path.exists(table_constraints):
+    with open(table_constraints) as f:
+      try:
+        loaded_json = json.load(f)
+      except ValueError as e:
+        raise BigqueryTableConstraintsError(
+            'Error decoding JSON table constraints from file %s.'
+            % (table_constraints,)
+        ) from e
+    return loaded_json
+  if re.search(r'^[./~\\]', table_constraints) is not None:
+    # The table_constraints looks like a file name but the file does not
+    # exist.
+    raise BigqueryTableConstraintsError(
+        'Error reading table constraints: "%s" looks like a filename, '
+        'but was not found.' % (table_constraints,)
+    )
+  try:
+    loaded_json = json.loads(table_constraints)
+  except ValueError as e:
+    raise BigqueryTableConstraintsError(
+        'Error decoding JSON table constraints from string %s.'
+        % (table_constraints,)
+    ) from e
+  return loaded_json
+
+
 class BigqueryModel(model.JsonModel):
   """Adds optional global parameters to all requests."""
 
@@ -1008,11 +1055,15 @@ class BigqueryHttp(http_request.HttpRequest):
       BigqueryClient.RaiseError(content)
     else:
       # If the HttpError is not a json object, it is a communication error.
+      error_details = ''
+      if flags.FLAGS.use_regional_endpoints:
+        error_details = ' The specified regional endpoint may not be supported.'
       raise BigqueryCommunicationError(
-          ('Could not connect with BigQuery server.\n'
-           'Http response status: %s\n'
-           'Http response content:\n%s') %
-          (e.resp.get('status', '(unexpected)'), e.content))
+          'Could not connect with BigQuery server.%s\n'
+          'Http response status: %s\n'
+          'Http response content:\n%s'
+          % (error_details, e.resp.get('status', '(unexpected)'), e.content)
+      )
 
   @staticmethod
   def RaiseErrorFromNonHttpError(e):
@@ -4954,7 +5005,8 @@ class BigqueryClient(object):
       range_partitioning=None,
       require_partition_filter=None,
       destination_kms_key=None,
-      location=None):
+      location=None,
+      table_constraints=None):
     """Create a table corresponding to TableReference.
 
     Args:
@@ -4994,6 +5046,8 @@ class BigqueryClient(object):
         queiries over this table.
       destination_kms_key: User specified KMS key for encryption.
       location: an optional location for which to create tables or views.
+      table_constraints: an optional primary key and foreign key configuration
+        for the table.
 
     Raises:
       TypeError: if reference is not a TableReference.
@@ -5044,6 +5098,8 @@ class BigqueryClient(object):
         body['encryptionConfiguration'] = {'kmsKeyName': destination_kms_key}
       if location is not None:
         body['location'] = location
+      if table_constraints is not None:
+        body['table_constraints'] = table_constraints
       self.apiclient.tables().insert(
           body=body, **dict(reference.GetDatasetReference())).execute()
     except BigqueryDuplicateError:
@@ -5342,7 +5398,8 @@ class BigqueryClient(object):
                   etag=None,
                   encryption_configuration=None,
                   location=None,
-                  autodetect_schema=False):
+                  autodetect_schema=False,
+                  table_constraints=None):
     """Updates a table.
 
     Args:
@@ -5385,7 +5442,8 @@ class BigqueryClient(object):
       encryption_configuration: Updates the encryption configuration.
       location: an optional location for which to update tables or views.
       autodetect_schema: an optional flag to perform autodetect of file schema.
-
+      table_constraints: an optional primary key and foreign key configuration
+        for the table.
     Raises:
       TypeError: if reference is not a TableReference.
     """
@@ -5450,7 +5508,8 @@ class BigqueryClient(object):
       table['requirePartitionFilter'] = require_partition_filter
     if location is not None:
       table['location'] = location
-
+    if table_constraints is not None:
+      table['table_constraints'] = table_constraints
     request = self.apiclient.tables().patch(
         autodetect_schema=autodetect_schema, body=table, **dict(reference))
 

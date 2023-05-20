@@ -1436,6 +1436,7 @@ def _CreateExternalTableDefinition(
     elif external_table_def['sourceFormat'] == 'NEWLINE_DELIMITED_JSON':
       if autodetect is None or autodetect:
         external_table_def['autodetect'] = True
+      external_table_def['jsonOptions'] = {'encoding': encoding or 'UTF-8'}
     elif external_table_def['sourceFormat'] == 'GOOGLE_SHEETS':
       if autodetect is None or autodetect:
         external_table_def['autodetect'] = True
@@ -4553,6 +4554,7 @@ class _Make(BigqueryCmd):
           self.require_partition_filter)
       clustering = _ParseClustering(self.clustering_fields)
       range_partitioning = _ParseRangePartitioning(self.range_partitioning)
+      table_constraints = None
       client.CreateTable(
           reference,
           ignore_existing=True,
@@ -4572,7 +4574,8 @@ class _Make(BigqueryCmd):
           clustering=clustering,
           range_partitioning=range_partitioning,
           require_partition_filter=self.require_partition_filter,
-          destination_kms_key=(self.destination_kms_key))
+          destination_kms_key=(self.destination_kms_key),
+          table_constraints=table_constraints)
       print("%s '%s' successfully created." % (
           object_name,
           reference,
@@ -5581,7 +5584,7 @@ class _Update(BigqueryCmd):
       encryption_configuration = None
       if self.destination_kms_key:
         encryption_configuration = {'kmsKeyName': self.destination_kms_key}
-
+      table_constraints = None
       client.UpdateTable(
           reference,
           schema=schema,
@@ -5603,7 +5606,8 @@ class _Update(BigqueryCmd):
           require_partition_filter=self.require_partition_filter,
           etag=self.etag,
           encryption_configuration=encryption_configuration,
-          autodetect_schema=self.autodetect_schema)
+          autodetect_schema=self.autodetect_schema,
+          table_constraints=table_constraints)
 
       print("%s '%s' successfully updated." % (
           object_name,
@@ -7337,6 +7341,18 @@ class _Version(BigqueryCmd):
     print('This is BigQuery CLI %s' % (bq_utils.VERSION_NUMBER,))
 
 
+class _Info(BigqueryCmd):
+  usage = """info"""
+
+  def _NeedsInit(self):
+    """If just printing known versions, don't run `init` first."""
+    return False
+
+  def RunWithArgs(self):
+    """Return the execution information of bq."""
+    print(bq_utils.GetInfoString())
+
+
 def _ParseUdfResources(udf_resources):
   """Parses UDF resources from an array of resource URIs.
 
@@ -7570,6 +7586,7 @@ def main(unused_argv):
         'extract': _Extract,
         'get-iam-policy': _GetIamPolicy,
         'head': _Head,
+        'info': _Info,
         'init': _Init,
         'insert': _Insert,
         'load': _Load,

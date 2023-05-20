@@ -75,7 +75,7 @@ def load_custom_class():
   if not class_name:
     return None
   custom_class = pydoc.locate(class_name)
-  # TODO(b/37749453): right place to generate errors?
+  # TODO(user): right place to generate errors?
   if not custom_class:
     package_uris = [str(s) for s in version.get("package_uris")]
     raise PredictionError(

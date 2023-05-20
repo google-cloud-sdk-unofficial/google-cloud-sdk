@@ -189,6 +189,7 @@ class CreateGA(_Create, base.Command):
     _Create.Args(parser)
     mj_flags.AddFilterFlag(parser)
     mj_flags.AddCommitIdFlag(parser)
+    mj_flags.AddDumpParallelLevelFlag(parser)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)

@@ -270,12 +270,12 @@
           "type": "string"
         },
         "defaultRoundingMode": {
-          "description": "Optional. Defines the default rounding mode specification of new tables created within this dataset. During table creation, if this field is specified, the table within this dataset will inherit the default rounding mode of the dataset. Setting the default rounding mode on a table overrides this option. Existing tables in the dataset are unaffected. If columns are defined during that table creation, they will immediately inherit the table's default rounding_mode, unless otherwise specified.",
+          "description": "Optional. Defines the default rounding mode specification of new tables created within this dataset. During table creation, if this field is specified, the table within this dataset will inherit the default rounding mode of the dataset. Setting the default rounding mode on a table overrides this option. Existing tables in the dataset are unaffected. If columns are defined during that table creation, they will immediately inherit the table's default rounding mode, unless otherwise specified.",
           "type": "string",
           "enumDescriptions": [
             "Unspecified will default to using ROUND_HALF_AWAY_FROM_ZERO.",
             "ROUND_HALF_AWAY_FROM_ZERO rounds half values away from zero when applying precision and scale upon writing of NUMERIC and BIGNUMERIC values. For Scale: 0 1.1, 1.2, 1.3, 1.4 => 1 1.5, 1.6, 1.7, 1.8, 1.9 => 2",
-            "ROUND_HALF_EVEN rounds half values to the nearest even when applying precision and scale upon writing of NUMERIC and BIGNUMERIC values. For Scale: 0 1.1, 1.2, 1.3, 1.4 => 1 1.5 => 2 1.6, 1.7, 1.8, 1.9 => 2 2.5 => 2"
+            "ROUND_HALF_EVEN rounds half values to the nearest even value when applying precision and scale upon writing of NUMERIC and BIGNUMERIC values. For Scale: 0 1.1, 1.2, 1.3, 1.4 => 1 1.5 => 2 1.6, 1.7, 1.8, 1.9 => 2 2.5 => 2"
           ],
           "enum": [
             "ROUNDING_MODE_UNSPECIFIED",
@@ -552,6 +552,7 @@
             "DNN classifier model.",
             "An imported TensorFlow model.",
             "DNN regressor model.",
+            "An imported XGBoost model.",
             "Boosted tree regressor model.",
             "Boosted tree classifier model.",
             "ARIMA model.",
@@ -562,8 +563,11 @@
             "Wide-and-deep regressor model.",
             "Autoencoder model.",
             "New name for the ARIMA model.",
+            "ARIMA with external regressors.",
             "Random Forest regressor model.",
-            "Random Forest classifier model."
+            "Random Forest classifier model.",
+            "An imported TensorFlow Lite model.",
+            "An imported ONNX model."
           ],
           "enum": [
             "MODEL_TYPE_UNSPECIFIED",
@@ -574,6 +578,7 @@
             "DNN_CLASSIFIER",
             "TENSORFLOW",
             "DNN_REGRESSOR",
+            "XGBOOST",
             "BOOSTED_TREE_REGRESSOR",
             "BOOSTED_TREE_CLASSIFIER",
             "ARIMA",
@@ -584,8 +589,11 @@
             "DNN_LINEAR_COMBINED_REGRESSOR",
             "AUTOENCODER",
             "ARIMA_PLUS",
+            "ARIMA_PLUS_XREG",
             "RANDOM_FOREST_REGRESSOR",
-            "RANDOM_FOREST_CLASSIFIER"
+            "RANDOM_FOREST_CLASSIFIER",
+            "TENSORFLOW_LITE",
+            "ONNX"
           ]
         },
         "trainingRuns": {
@@ -643,6 +651,11 @@
             "type": "string",
             "format": "int64"
           }
+        },
+        "remoteModelInfo": {
+          "description": "Output only. Remote model info",
+          "readOnly": true,
+          "$ref": "RemoteModelInfo"
         }
       }
     },
@@ -1254,7 +1267,12 @@
           "type": "boolean"
         },
         "autoArimaMaxOrder": {
-          "description": "The max value of non-seasonal p and q.",
+          "description": "The max value of the sum of non-seasonal p and q.",
+          "type": "string",
+          "format": "int64"
+        },
+        "autoArimaMinOrder": {
+          "description": "The min value of the sum of non-seasonal p and q.",
           "type": "string",
           "format": "int64"
         },
@@ -1339,6 +1357,10 @@
           "type": "string",
           "format": "int64"
         },
+        "tfVersion": {
+          "description": "Based on the selected TF version, the corresponding docker image is used to train external models.",
+          "type": "string"
+        },
         "colorSpace": {
           "description": "Enums for color space, used for processing images in Object Table. See more details at https:\/\/www.tensorflow.org\/io\/tutorials\/colorspace.",
           "type": "string",
@@ -1359,6 +1381,10 @@
             "GRAYSCALE"
           ]
         },
+        "instanceWeightColumn": {
+          "description": "Name of the instance weight column for training data. This column isn't be used as a feature.",
+          "type": "string"
+        },
         "trendSmoothingWindowSize": {
           "description": "The smoothing window size for the trend component of the time series.",
           "type": "string",
@@ -1378,6 +1404,10 @@
           "description": "Get truncated length by last n points in time series. Use separately from time_series_length_fraction and min_time_series_length.",
           "type": "string",
           "format": "int64"
+        },
+        "xgboostVersion": {
+          "description": "User-selected XGBoost versions for training of XGBoost models.",
+          "type": "string"
         }
       }
     },
@@ -2629,6 +2659,46 @@
         }
       }
     },
+    "RemoteModelInfo": {
+      "id": "RemoteModelInfo",
+      "description": "Remote Model Info",
+      "type": "object",
+      "properties": {
+        "endpoint": {
+          "description": "Output only. The endpoint for remote model.",
+          "readOnly": true,
+          "type": "string"
+        },
+        "remoteServiceType": {
+          "description": "Output only. The remote service type for remote model.",
+          "readOnly": true,
+          "type": "string",
+          "enumDescriptions": [
+            "Unspecified remote service type.",
+            "V3 Cloud AI Translation API. See more details at [Cloud Translation API] (https:\/\/cloud.google.com\/translate\/docs\/reference\/rest).",
+            "V1 Cloud AI Vision API See more details at [Cloud Vision API] (https:\/\/cloud.google.com\/vision\/docs\/reference\/rest).",
+            "V1 Cloud AI Natural Language API. See more details at [REST Resource: documents](https:\/\/cloud.google.com\/natural-language\/docs\/reference\/rest\/v1\/documents)."
+          ],
+          "enum": [
+            "REMOTE_SERVICE_TYPE_UNSPECIFIED",
+            "CLOUD_AI_TRANSLATE_V3",
+            "CLOUD_AI_VISION_V1",
+            "CLOUD_AI_NATURAL_LANGUAGE_V1"
+          ]
+        },
+        "connection": {
+          "description": "Output only. Fully qualified name of the user-provided connection object of the remote model. Format: ```\"projects\/{project_id}\/locations\/{location_id}\/connections\/{connection_id}\"```",
+          "readOnly": true,
+          "type": "string"
+        },
+        "maxBatchingRows": {
+          "description": "Output only. Max number of rows in each batch sent to the remote service. If unset, the number of rows in each batch is set dynamically.",
+          "readOnly": true,
+          "type": "string",
+          "format": "int64"
+        }
+      }
+    },
     "ListModelsResponse": {
       "id": "ListModelsResponse",
       "type": "object",
@@ -3097,7 +3167,7 @@
           "enumDescriptions": [
             "Unspecified will default to using ROUND_HALF_AWAY_FROM_ZERO.",
             "ROUND_HALF_AWAY_FROM_ZERO rounds half values away from zero when applying precision and scale upon writing of NUMERIC and BIGNUMERIC values. For Scale: 0 1.1, 1.2, 1.3, 1.4 => 1 1.5, 1.6, 1.7, 1.8, 1.9 => 2",
-            "ROUND_HALF_EVEN rounds half values to the nearest even when applying precision and scale upon writing of NUMERIC and BIGNUMERIC values. For Scale: 0 1.1, 1.2, 1.3, 1.4 => 1 1.5 => 2 1.6, 1.7, 1.8, 1.9 => 2 2.5 => 2"
+            "ROUND_HALF_EVEN rounds half values to the nearest even value when applying precision and scale upon writing of NUMERIC and BIGNUMERIC values. For Scale: 0 1.1, 1.2, 1.3, 1.4 => 1 1.5 => 2 1.6, 1.7, 1.8, 1.9 => 2 2.5 => 2"
           ],
           "enum": [
             "ROUNDING_MODE_UNSPECIFIED",
@@ -4317,6 +4387,11 @@
           "description": "Output only. Statistics of materialized views of a query job.",
           "readOnly": true,
           "$ref": "MaterializedViewStatistics"
+        },
+        "metadataCacheStatistics": {
+          "description": "Output only. Statistics of metadata cache usage in a query for BigLake tables.",
+          "readOnly": true,
+          "$ref": "MetadataCacheStatistics"
         }
       }
     },
@@ -4614,6 +4689,7 @@
             "DNN classifier model.",
             "An imported TensorFlow model.",
             "DNN regressor model.",
+            "An imported XGBoost model.",
             "Boosted tree regressor model.",
             "Boosted tree classifier model.",
             "ARIMA model.",
@@ -4624,8 +4700,11 @@
             "Wide-and-deep regressor model.",
             "Autoencoder model.",
             "New name for the ARIMA model.",
+            "ARIMA with external regressors.",
             "Random Forest regressor model.",
-            "Random Forest classifier model."
+            "Random Forest classifier model.",
+            "An imported TensorFlow Lite model.",
+            "An imported ONNX model."
           ],
           "enum": [
             "MODEL_TYPE_UNSPECIFIED",
@@ -4636,6 +4715,7 @@
             "DNN_CLASSIFIER",
             "TENSORFLOW",
             "DNN_REGRESSOR",
+            "XGBOOST",
             "BOOSTED_TREE_REGRESSOR",
             "BOOSTED_TREE_CLASSIFIER",
             "ARIMA",
@@ -4646,8 +4726,11 @@
             "DNN_LINEAR_COMBINED_REGRESSOR",
             "AUTOENCODER",
             "ARIMA_PLUS",
+            "ARIMA_PLUS_XREG",
             "RANDOM_FOREST_REGRESSOR",
-            "RANDOM_FOREST_CLASSIFIER"
+            "RANDOM_FOREST_CLASSIFIER",
+            "TENSORFLOW_LITE",
+            "ONNX"
           ]
         },
         "trainingType": {
@@ -5133,6 +5216,49 @@
             "TIME_ZONE",
             "OUT_OF_TIME_TRAVEL_WINDOW"
           ]
+        }
+      }
+    },
+    "MetadataCacheStatistics": {
+      "id": "MetadataCacheStatistics",
+      "description": "Statistics for metadata caching in BigLake tables.",
+      "type": "object",
+      "properties": {
+        "tableMetadataCacheUsage": {
+          "description": "Set for the Metadata caching eligible tables referenced in the query.",
+          "type": "array",
+          "items": {
+            "$ref": "TableMetadataCacheUsage"
+          }
+        }
+      }
+    },
+    "TableMetadataCacheUsage": {
+      "id": "TableMetadataCacheUsage",
+      "description": "Table level detail on the usage of metadata caching. Only set for Metadata caching eligible tables referenced in the query.",
+      "type": "object",
+      "properties": {
+        "tableReference": {
+          "description": "Metadata caching eligible table referenced in the query.",
+          "$ref": "TableReference"
+        },
+        "unusedReason": {
+          "description": "Reason for not using metadata caching for the table.",
+          "type": "string",
+          "enumDescriptions": [
+            "Unused reasons not specified.",
+            "Metadata cache was outside the table's maxStaleness.",
+            "Other unknown reason."
+          ],
+          "enum": [
+            "UNUSED_REASON_UNSPECIFIED",
+            "EXCEEDED_MAX_STALENESS",
+            "OTHER_REASON"
+          ]
+        },
+        "explanation": {
+          "description": "Free form human-readable reason metadata caching was unused for the job.",
+          "type": "string"
         }
       }
     },
@@ -6273,12 +6399,12 @@
           "type": "string"
         },
         "defaultRoundingMode": {
-          "description": "Optional. Defines the default rounding mode specification of new DECIMAL fields (NUMERIC OR BIGNUMERIC) in the table. During table creation or update, if a DECIMAL field is added to this table without an explicit rounding mode specified, then the field inherits the table default rounding mode. Changing this field doesn't affect existing fields.",
+          "description": "Optional. Defines the default rounding mode specification of new decimal fields (NUMERIC OR BIGNUMERIC) in the table. During table creation or update, if a decimal field is added to this table without an explicit rounding mode specified, then the field inherits the table default rounding mode. Changing this field doesn't affect existing fields.",
           "type": "string",
           "enumDescriptions": [
             "Unspecified will default to using ROUND_HALF_AWAY_FROM_ZERO.",
             "ROUND_HALF_AWAY_FROM_ZERO rounds half values away from zero when applying precision and scale upon writing of NUMERIC and BIGNUMERIC values. For Scale: 0 1.1, 1.2, 1.3, 1.4 => 1 1.5, 1.6, 1.7, 1.8, 1.9 => 2",
-            "ROUND_HALF_EVEN rounds half values to the nearest even when applying precision and scale upon writing of NUMERIC and BIGNUMERIC values. For Scale: 0 1.1, 1.2, 1.3, 1.4 => 1 1.5 => 2 1.6, 1.7, 1.8, 1.9 => 2 2.5 => 2"
+            "ROUND_HALF_EVEN rounds half values to the nearest even value when applying precision and scale upon writing of NUMERIC and BIGNUMERIC values. For Scale: 0 1.1, 1.2, 1.3, 1.4 => 1 1.5 => 2 1.6, 1.7, 1.8, 1.9 => 2 2.5 => 2"
           ],
           "enum": [
             "ROUNDING_MODE_UNSPECIFIED",
@@ -6342,6 +6468,10 @@
         "maxStaleness": {
           "description": "Optional. The maximum staleness of data that could be returned when the table (or stale MV) is queried. Staleness encoded as a string encoding of sql IntervalValue type.",
           "type": "string"
+        },
+        "tableConstraints": {
+          "description": "Optional. Tables Primary Key and Foreign Key information",
+          "$ref": "TableConstraints"
         }
       }
     },
@@ -6467,6 +6597,75 @@
           "description": "Required. The time at which the base table was cloned. This value is reported in the JSON response using RFC3339 format.",
           "type": "string",
           "format": "google-datetime"
+        }
+      }
+    },
+    "TableConstraints": {
+      "id": "TableConstraints",
+      "description": "The TableConstraints defines the primary key and foreign key.",
+      "type": "object",
+      "properties": {
+        "primaryKey": {
+          "description": "Optional. Represents a primary key constraint on a table's columns. Present only if the table has a primary key.",
+          "$ref": "PrimaryKey"
+        },
+        "foreignKeys": {
+          "description": "Optional. Present only if the table has a foreign key.",
+          "type": "array",
+          "items": {
+            "$ref": "ForeignKey"
+          }
+        }
+      }
+    },
+    "PrimaryKey": {
+      "id": "PrimaryKey",
+      "description": "Represents the primary key constraint on a table's columns.",
+      "type": "object",
+      "properties": {
+        "columns": {
+          "description": "Required. The columns that are composed of the primary key constraint.",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "ForeignKey": {
+      "id": "ForeignKey",
+      "description": "Represents a foreign key constraint on a table's columns.",
+      "type": "object",
+      "properties": {
+        "name": {
+          "description": "Optional. Set only if the foreign key constraint is named.",
+          "type": "string"
+        },
+        "referencedTable": {
+          "description": "Required. The table that holds the primary key and is referenced by this foreign key.",
+          "$ref": "TableReference"
+        },
+        "columnReferences": {
+          "description": "Required. The columns that compose the foreign key.",
+          "type": "array",
+          "items": {
+            "$ref": "ColumnReference"
+          }
+        }
+      }
+    },
+    "ColumnReference": {
+      "id": "ColumnReference",
+      "description": "The pair of the foreign key column and primary key column.",
+      "type": "object",
+      "properties": {
+        "referencingColumn": {
+          "description": "Required. The column that composes the foreign key.",
+          "type": "string"
+        },
+        "referencedColumn": {
+          "description": "Required. The column in the primary key that are referenced by the referencing_column.",
+          "type": "string"
         }
       }
     },
@@ -7757,7 +7956,7 @@
           "httpMethod": "GET",
           "parameters": {
             "maxResults": {
-              "description": "Maximum number of results to return in a single results page. To paginate through larger sets of results, this method must be called multiple times. To do so, populate the pageToken of a subsequent request with the nextPageToken from the prior response. A wrapper is used here because behavior for maxResults 0 differs from the behavior for maxResults unset.",
+              "description": "`maxResults` unset returns all results, up to 50 per page. Additionally, the number of projects in a page may be fewer than `maxResults` because projects are retrieved and then filtered to only projects with the BigQuery API enabled.",
               "location": "query",
               "type": "integer",
               "format": "uint32"

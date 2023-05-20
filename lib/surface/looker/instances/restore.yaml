@@ -41,3 +41,17 @@
       - googlecloudsdk.command_lib.looker.backups_util:ModifyInstanceBackupName
     collection: looker.projects.locations.instances
     method: restore
+
+  async:
+    collection: looker.projects.locations.operations
+
+  output:
+    format: |
+      table(
+         name.basename():label=OPERATION_NAME,
+         name.segment(3):label=REGION,
+         metadata.verb:label=TYPE,
+         metadata.target.basename(),
+         done,
+         metadata.createTime.date():sort=1
+       )

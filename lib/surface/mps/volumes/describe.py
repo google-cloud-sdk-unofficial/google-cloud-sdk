@@ -52,7 +52,7 @@ class Describe(base.DescribeCommand):
   def Run(self, args):
     """Return volume description information based on user request."""
     volume = args.CONCEPTS.volume.Parse()
-    vendor = properties.VALUES.mps.vendor.Get(required=True)
+    product = properties.VALUES.mps.product.Get(required=True)
     client = MpsClient()
-    return client.GetVolume(vendor, volume)
+    return client.GetVolume(product, volume)
 

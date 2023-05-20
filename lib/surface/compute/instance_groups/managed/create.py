@@ -46,7 +46,7 @@ _MAX_LEN_FOR_DEDUCED_BASE_INSTANCE_NAME = 54
 REGIONAL_FLAGS = ['instance_redistribution_type', 'target_distribution_shape']
 
 
-def _AddInstanceGroupManagerArgs(parser, region_instance_template_enabled):
+def _AddInstanceGroupManagerArgs(parser):
   """Adds args."""
   parser.add_argument(
       '--base-instance-name',
@@ -65,17 +65,7 @@ def _AddInstanceGroupManagerArgs(parser, region_instance_template_enabled):
       metavar='TARGET_POOL',
       help=('Specifies any target pools you want the instances of this '
             'managed instance group to be part of.'))
-  if region_instance_template_enabled:
-    managed_flags.INSTANCE_TEMPLATE_ARG.AddArgument(parser)
-  else:
-    parser.add_argument(
-        '--template',
-        required=True,
-        help=(
-            'Specifies the instance template to use when creating new '
-            'instances.'
-        ),
-    )
+  managed_flags.INSTANCE_TEMPLATE_ARG.AddArgument(parser)
 
 
 def _IsZonalGroup(ref):
@@ -115,12 +105,11 @@ class CreateGA(base.CreateCommand):
 
   support_any_single_zone = False
   support_update_policy_min_ready_flag = False
-  region_instance_template_enabled = False
 
   @classmethod
   def Args(cls, parser):
     parser.display_info.AddFormat(managed_flags.DEFAULT_CREATE_OR_LIST_FORMAT)
-    _AddInstanceGroupManagerArgs(parser, cls.region_instance_template_enabled)
+    _AddInstanceGroupManagerArgs(parser)
     auto_healing_utils.AddAutohealingArgs(parser)
     igm_arg = instance_groups_flags.GetInstanceGroupManagerArg(zones_flag=True)
     igm_arg.AddArgument(parser, operation_type='create')
@@ -320,16 +309,11 @@ class CreateGA(base.CreateCommand):
 
     group_ref = self._CreateGroupReference(args, client, holder.resources)
 
-    if self.region_instance_template_enabled:
-      template_ref = managed_flags.INSTANCE_TEMPLATE_ARG.ResolveAsResource(
-          args,
-          holder.resources,
-          default_scope=flags.compute_scope.ScopeEnum.GLOBAL)
-    else:
-      template_ref = holder.resources.Parse(
-          args.template,
-          params={'project': properties.VALUES.core.project.GetOrFail},
-          collection='compute.instanceTemplates')
+    template_ref = managed_flags.INSTANCE_TEMPLATE_ARG.ResolveAsResource(
+        args,
+        holder.resources,
+        default_scope=flags.compute_scope.ScopeEnum.GLOBAL,
+    )
 
     instance_group_manager = self._CreateInstanceGroupManager(
         args, group_ref, template_ref, client, holder)
@@ -350,9 +334,21 @@ CreateGA.detailed_help = {
 
               $ {command} example-managed-instance-group --zone=us-central1-a --template=example-global-instance-template --size=1
 
-      will create one managed instance group called 'example-managed-instance-group'
-      in the ``us-central1-a'' zone with global instance template resource:
+      will create a managed instance group called 'example-managed-instance-group'
+      in the ``us-central1-a'' zone with a global instance template resource
       'example-global-instance-template'.
+
+      To use a regional instance template, specify the full or partial URL of the template.
+
+      Running:
+
+              $ {command} example-managed-instance-group --zone=us-central1-a \\
+            --template=projects/example-project/regions/us-central1/instanceTemplates/example-regional-instance-template \\
+            --size=1
+
+      will create a managed instance group called
+      'example-managed-instance-group' in the ``us-central1-a'' zone with a
+      regional instance template resource 'example-regional-instance-template'.
     """,
 }
 
@@ -363,7 +359,6 @@ class CreateBeta(CreateGA):
 
   support_any_single_zone = True
   support_update_policy_min_ready_flag = True
-  region_instance_template_enabled = False
 
   @classmethod
   def Args(cls, parser):
@@ -425,8 +420,6 @@ CreateBeta.detailed_help = CreateGA.detailed_help
 class CreateAlpha(CreateBeta):
   """Create Compute Engine managed instance groups."""
 
-  region_instance_template_enabled = True
-
   @classmethod
   def Args(cls, parser):
     super(CreateAlpha, cls).Args(parser)
@@ -440,30 +433,4 @@ class CreateAlpha(CreateBeta):
     return instance_group_manager
 
 
-CreateAlpha.detailed_help = {
-    'brief': 'Create a Compute Engine managed instance group',
-    'DESCRIPTION': """\
-        *{command}* creates a Compute Engine managed instance group.
-    """,
-    'EXAMPLES': """\
-      Running:
-
-              $ {command} example-managed-instance-group --zone=us-central1-a --template=example-global-instance-template --size=1
-
-      will create one managed instance group called 'example-managed-instance-group'
-      in the ``us-central1-a'' zone with global instance template resource:
-      'example-global-instance-template'.
-
-      To use a regional instance template, specify its full URL.
-
-      Running:
-
-              $ {command} example-managed-instance-group --zone=us-central1-a \\
-            --template=https://www.googleapis.com/compute/alpha/projects/example-project/regions/us-central1/instanceTemplates/example-regional-instance-template \\
-            --size=1
-
-      will create one managed instance group called
-      'example-managed-instance-group' in the us-central1-a zone with regional
-      instance template resource: 'example-instance-template'.
-    """,
-}
+CreateAlpha.detailed_help = CreateGA.detailed_help

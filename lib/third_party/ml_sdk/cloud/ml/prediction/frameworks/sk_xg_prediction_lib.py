@@ -71,7 +71,7 @@ class XgboostClient(PredictionClient):
     stats = stats or prediction_utils.Stats()
     stats[prediction_utils.FRAMEWORK] = prediction_utils.XGBOOST_FRAMEWORK_NAME
     stats[prediction_utils.ENGINE] = prediction_utils.XGBOOST_FRAMEWORK_NAME
-    # TODO(b/64574886): Move this to the top once b/64574886 is resolved.
+    # TODO(user): Move this to the top once b/64574886 is resolved.
     # Before then, it would work in production since we install xgboost in
     # the Dockerfile, but the problem is the unit test that will fail to build
     # and run since xgboost can not be added as a dependency to this target.
@@ -160,7 +160,7 @@ def create_xgboost_client(model_path, **unused_kwargs):
   """Returns a prediction client for the corresponding xgboost model."""
   logging.info("Loading the xgboost model from %s", model_path)
 
-  # TODO(b/113077335): Copy model file to local to reduce copying operation.
+  # TODO(user): Copy model file to local to reduce copying operation.
   booster = load_joblib_or_pickle_model(model_path) or _load_xgboost_model(
       model_path)
   if not booster:
@@ -195,7 +195,7 @@ def _load_xgboost_model(model_path):
   Raises:
     PredictionError: If there is a problem while loading the file.
   """
-  # TODO(b/64574886): Move this to the top once b/64574886 is resolved. Before
+  # TODO(user): Move this to the top once b/64574886 is resolved. Before
   # then, it would work in production since we install xgboost in the
   # Dockerfile, but the problem is the unit test that will fail to build and run
   # since xgboost can not be added as a dependency to this target.

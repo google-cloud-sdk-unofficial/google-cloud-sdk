@@ -250,6 +250,7 @@ def AddBaseArgs(parser, is_alpha=False):
   flags.AddDeletionProtection(parser)
   flags.AddConnectorEnforcement(parser)
   flags.AddEnableGooglePrivatePath(parser, show_negated_in_help=True)
+  flags.AddThreadsPerCore(parser)
 
 
 def AddBetaArgs(parser):
@@ -263,9 +264,9 @@ def AddBetaArgs(parser):
   flags.AddRecreateReplicasOnPrimaryCrash(parser)
 
 
-def AddAlphaArgs(parser):
+def AddAlphaArgs(unused_parser):
   """Adds alpha args and flags to the parser."""
-  flags.AddThreadsPerCore(parser)
+  pass
 
 
 def RunBasePatchCommand(args, release_track):

@@ -83,15 +83,15 @@ class List(base.ListCommand):
 
     region = args.CONCEPTS.region.Parse()
     client = MpsClient()
-    vendor = properties.VALUES.mps.vendor.Get(required=True)
+    product = properties.VALUES.mps.product.Get(required=True)
 
     if region is None:
       project = properties.VALUES.core.project.Get(required=True)
       return (self.synthesizesInstanceInfo(ins)
               for ins in client.AggregateListInstances(
-                  project, vendor, limit=args.limit))
+                  project, product, limit=args.limit))
     return (self.synthesizesInstanceInfo(ins)
-            for ins in client.ListInstances(vendor, region))
+            for ins in client.ListInstances(product, region))
 
   def synthesizesInstanceInfo(self, ins):
     out = resource_projector.MakeSerializable(ins)

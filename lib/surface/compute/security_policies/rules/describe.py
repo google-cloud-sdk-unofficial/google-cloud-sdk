@@ -100,8 +100,8 @@ class DescribeHelper(object):
     return security_policy_rule.Describe()
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
-class DescribeGABeta(base.DescribeCommand):
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class DescribeGA(base.DescribeCommand):
   r"""Describe a Compute Engine security policy rule.
 
   *{command}* displays all data associated with a security policy rule.
@@ -117,6 +117,40 @@ class DescribeGABeta(base.DescribeCommand):
   SECURITY_POLICY_ARG = None
 
   _support_regional_security_policy = False
+  _support_net_lb = False
+
+  @classmethod
+  def Args(cls, parser):
+    DescribeHelper.Args(
+        parser,
+        support_regional_security_policy=cls._support_regional_security_policy,
+        support_net_lb=cls._support_net_lb)
+
+  def Run(self, args):
+    return DescribeHelper.Run(
+        self.ReleaseTrack(),
+        args,
+        support_regional_security_policy=self._support_regional_security_policy,
+        support_net_lb=self._support_net_lb)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class DescribeBeta(base.DescribeCommand):
+  r"""Describe a Compute Engine security policy rule.
+
+  *{command}* displays all data associated with a security policy rule.
+
+  ## EXAMPLES
+
+  To describe the rule at priority 1000, run:
+
+    $ {command} 1000 \
+       --security-policy=my-policy
+  """
+
+  SECURITY_POLICY_ARG = None
+
+  _support_regional_security_policy = True
   _support_net_lb = False
 
   @classmethod

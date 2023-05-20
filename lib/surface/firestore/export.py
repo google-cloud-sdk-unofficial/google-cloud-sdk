@@ -18,7 +18,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
-from googlecloudsdk.api_lib.firestore import admin_api
+from googlecloudsdk.api_lib.firestore import importexport
 from googlecloudsdk.api_lib.firestore import operations
 from googlecloudsdk.api_lib.storage import storage_util
 from googlecloudsdk.calliope import base
@@ -72,7 +72,7 @@ class Export(base.Command):
     object_ref = storage_util.ObjectReference.FromUrl(
         args.OUTPUT_URI_PREFIX, allow_empty_object=True)
 
-    response = admin_api.Export(
+    response = importexport.Export(
         project,
         args.database,
         # use join and filter to avoid trailing '/'.

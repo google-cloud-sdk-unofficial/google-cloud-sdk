@@ -610,9 +610,9 @@ class UpdateGA(base.UpdateCommand):
         self._support_tcp_ssl_logging,
         self._support_subsetting,
         self._support_subsetting_subset_size,
-        self._support_advanced_load_balancing,
-        self._support_regional_security_policy,
         self._support_ip_address_selection_policy,
+        support_advanced_load_balancing=self._support_advanced_load_balancing,
+        support_regional_security_policy=self._support_regional_security_policy
     ).Run(args, holder)
 
 
@@ -629,7 +629,7 @@ class UpdateBeta(UpdateGA):
   _support_subsetting_subset_size = True
   _support_advanced_load_balancing = False
   _support_tcp_ssl_logging = True
-  _support_regional_security_policy = False
+  _support_regional_security_policy = True
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)

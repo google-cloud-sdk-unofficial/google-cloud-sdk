@@ -69,8 +69,6 @@ def _AddArgs(parser, supports_min_ready=False):
 class StartUpdateGA(base.Command):
   """Start update instances of managed instance group."""
 
-  region_instance_template_enabled = False
-
   @classmethod
   def Args(cls, parser):
     _AddArgs(parser=parser)
@@ -113,38 +111,28 @@ class StartUpdateGA(base.Command):
     # it as a separate argument args.template, which will be parsed as a
     # ResourceArgument that will make parsing regional instance templates
     # possible.
-    if (
-        TEMPLATE_NAME_KEY in args.version
-        and self.region_instance_template_enabled
-    ):
+    if TEMPLATE_NAME_KEY in args.version:
       args.template = args.version[TEMPLATE_NAME_KEY]
     versions = []
     versions.append(
         update_instances_utils.ParseVersion(
             args,
-            igm_ref.project,
             '--version',
             args.version,
             resources,
             client.messages,
-            region_instance_template_enabled=self.region_instance_template_enabled,
         )
     )
     if args.canary_version:
-      if (
-          TEMPLATE_NAME_KEY in args.canary_version
-          and self.region_instance_template_enabled
-      ):
+      if TEMPLATE_NAME_KEY in args.canary_version:
         args.template = args.canary_version[TEMPLATE_NAME_KEY]
       versions.append(
           update_instances_utils.ParseVersion(
               args,
-              igm_ref.project,
               '--canary-version',
               args.canary_version,
               resources,
               client.messages,
-              region_instance_template_enabled=self.region_instance_template_enabled,
           )
       )
     managed_instance_groups_utils.ValidateVersions(igm_info, versions,
@@ -209,44 +197,7 @@ class StartUpdateGA(base.Command):
           region=igm_ref.region))
     return service, 'Patch', request
 
-
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class StartUpdateBeta(StartUpdateGA):
-  """Start update instances of managed instance group."""
-
-  region_instance_template_enabled = False
-
-  @classmethod
-  def Args(cls, parser):
-    _AddArgs(parser=parser, supports_min_ready=True)
-    instance_groups_flags.MULTISCOPE_INSTANCE_GROUP_MANAGER_ARG.AddArgument(
-        parser
-    )
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class StartUpdateAlpha(StartUpdateBeta):
-  """Start update instances of managed instance group."""
-
-  region_instance_template_enabled = True
-
-  @staticmethod
-  def Args(parser):
-    _AddArgs(parser=parser, supports_min_ready=True)
-    instance_groups_flags.MULTISCOPE_INSTANCE_GROUP_MANAGER_ARG.AddArgument(
-        parser)
-
-
 StartUpdateGA.detailed_help = {
-    'brief': 'Updates instances in a managed instance group',
-    'DESCRIPTION': """\
-        *{command}* updates instances in a managed instance group,
-        according to the given versions and the given update policy.""",
-}
-
-StartUpdateBeta.detailed_help = StartUpdateGA.detailed_help
-
-StartUpdateAlpha.detailed_help = {
     'brief': 'Updates instances in a managed instance group',
     'DESCRIPTION': """\
         *{command}* updates instances in a managed instance group,
@@ -261,16 +212,31 @@ StartUpdateAlpha.detailed_help = {
             --version='template=example-global-instance-template'
 
       Sets the group's instance template version to a global instance template
-      resource: 'example-global-instance-template'.
+      resource 'example-global-instance-template'.
 
-      To use a regional instance template, specify its full URL.
+      To use a regional instance template, specify the full or partial URL of the template.
 
       Running:
 
             {command} example-managed-instance-group \\
-            --version='template=https://www.googleapis.com/compute/alpha/projects/example-project/regions/us-central1/instanceTemplates/example-regional-instance-template'
+            --version='template=projects/example-project/regions/us-central1/instanceTemplates/example-regional-instance-template'
 
       Sets the group's instance template version to a regional instance template
-      resource: 'example-regional-instance-template'.
+      resource 'example-regional-instance-template'.
       """,
 }
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+class StartUpdate(StartUpdateGA):
+  """Start update instances of managed instance group."""
+
+  @classmethod
+  def Args(cls, parser):
+    _AddArgs(parser=parser, supports_min_ready=True)
+    instance_groups_flags.MULTISCOPE_INSTANCE_GROUP_MANAGER_ARG.AddArgument(
+        parser
+    )
+
+
+StartUpdate.detailed_help = StartUpdateGA.detailed_help

@@ -45,6 +45,7 @@ auto_flags = [
     'enableSecurityPosture',
     'enableKubeletReadonlyPort',
     'dataplanev2obsmode',
+    'enableK8sBetaApis',
 ]
 
 # Change default flag values in create-auto

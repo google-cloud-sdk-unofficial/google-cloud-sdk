@@ -242,6 +242,9 @@
                 Time in UTC when the period starts and ends.  A valid time of day must be
                 specified in 24hr format (ex: 13:00, 17:30, 23:45).
 
+  async:
+    collection: looker.projects.locations.operations
+
   request:
     ALPHA:
       api_version: v1alpha1

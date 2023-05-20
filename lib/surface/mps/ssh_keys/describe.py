@@ -52,9 +52,9 @@ class Describe(base.DescribeCommand):
   def Run(self, args):
     """Return ssh key description information based on user request."""
     ssh_key = args.CONCEPTS.ssh_key.Parse()
-    vendor = properties.VALUES.mps.vendor.Get(required=True)
+    product = properties.VALUES.mps.product.Get(required=True)
     client = MpsClient()
-    return client.GetSSHKey(vendor, ssh_key)
+    return client.GetSSHKey(product, ssh_key)
 
 
 Describe.detailed_help = DETAILED_HELP

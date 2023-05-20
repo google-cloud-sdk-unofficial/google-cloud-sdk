@@ -24,7 +24,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute.external_vpn_gateways import flags
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Create(base.CreateCommand):
   """Create a new Compute Engine external VPN gateway.
 
@@ -81,6 +81,23 @@ class Create(base.CreateCommand):
         ref, operation_ref, 'Creating external VPN gateway'
     )
     return ret
+
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class CreateBeta(Create):
+  """Create a new Compute Engine external VPN gateway.
+
+  *{command}* creates a new external VPN gateway.
+
+  External VPN gateway is the on-premises VPN gateway or another cloud
+  provider's VPN gateway that connects to your Google Cloud VPN gateway.
+  To create a highly available VPN from Google Cloud to your on-premises side
+  or another Cloud provider's VPN gateway, you must create an external VPN
+  gateway resource in Google Cloud, which provides the information to
+  Google Cloud about your external VPN gateway.
+  """
+
+  _is_ipv6_supported = True
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)

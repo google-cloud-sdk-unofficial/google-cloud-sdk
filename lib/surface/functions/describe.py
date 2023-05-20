@@ -18,11 +18,22 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+from googlecloudsdk.api_lib.functions.v1 import util as api_util_v1
+from googlecloudsdk.api_lib.functions.v2 import client as client_v2
+from googlecloudsdk.api_lib.functions.v2 import util as api_util_v2
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.functions import flags
 from googlecloudsdk.command_lib.functions import util
-from googlecloudsdk.command_lib.functions.v1.describe import command as command_v1
-from googlecloudsdk.command_lib.functions.v2.describe import command as command_v2
+from googlecloudsdk.core import log
+
+
+def _PrintV2StateMessages(state_messages):
+  log.critical('Function has the following conditions:')
+  for state_message_string in api_util_v2.GetStateMessagesStrings(
+      state_messages
+  ):
+    log.status.Print('  ' + state_message_string)
+  log.status.Print('')  # newline
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
@@ -36,10 +47,22 @@ class Describe(util.FunctionResourceCommand, base.DescribeCommand):
     flags.AddGen2Flag(parser)
 
   def _RunV1(self, args):
-    return command_v1.Run(args)
+    # TODO(b/276346872): Decorate response with upgradeInfo from v2 API call.
+    client = api_util_v1.GetApiClientInstance()
+    return client.projects_locations_functions.Get(
+        client.MESSAGES_MODULE.CloudfunctionsProjectsLocationsFunctionsGetRequest(
+            name=args.CONCEPTS.name.Parse().RelativeName()
+        )
+    )
 
   def _RunV2(self, args):
-    return command_v2.Run(args, self.ReleaseTrack())
+    client = client_v2.FunctionsClient(self.ReleaseTrack())
+    function = self._v2_function or client.GetFunction(
+        args.CONCEPTS.name.Parse().RelativeName(), raise_if_not_found=True
+    )
+    if function.stateMessages:
+      _PrintV2StateMessages(function.stateMessages)
+    return function
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)

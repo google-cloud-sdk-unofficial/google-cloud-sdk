@@ -47,6 +47,25 @@ class Update(base.UpdateCommand):
 
           For information about the JSON/YAML format of a snooze:
           https://cloud.google.com/monitoring/api/ref_v3/rest/v3/projects.snoozes
+       """,
+      'EXAMPLES': """\
+          To update a snooze time interval with command-line options, run:
+
+            $ {command} MY-SNOOZE --start-time=START_TIME --end-time=END_TIME
+
+          To update a snooze display name with a file, run:
+
+            $ {command} --snooze-from-file=MY-FILE --fields=display_name
+
+          Sample contents of MY-FILE:
+
+            criteria:
+              policies:
+              - projects/MY-PROJECT/alertPolicies/MY-POLICY
+            interval:
+              startTime: '2024-03-01T08:00:00Z'
+              endTime: '2024-03-08T04:59:59.500Z'
+            displayName: New Snooze with New Display Name
        """
   }
 

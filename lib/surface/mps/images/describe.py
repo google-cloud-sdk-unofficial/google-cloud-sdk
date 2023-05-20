@@ -49,6 +49,6 @@ class Describe(base.DescribeCommand):
 
   def Run(self, args):
     image = args.CONCEPTS.image.Parse()
-    vendor = properties.VALUES.mps.vendor.Get(required=True)
+    product = properties.VALUES.mps.product.Get(required=True)
     client = MpsClient()
-    return client.GetImage(vendor, image)
+    return client.GetImage(product, image)

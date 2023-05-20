@@ -51,6 +51,16 @@ from .util.url import Url, _encode_target
 from .util.url import _normalize_host as normalize_host
 from .util.url import get_host, parse_url
 
+finalize = None
+try:  # Platform-specific: Python 3
+    import weakref
+
+    finalize = weakref.finalize
+except AttributeError:  # Platform-specific: Python 2
+    from .packages.backports.finalize import backport_finalize
+
+    finalize = backport_finalize
+
 xrange = six.moves.xrange
 
 log = logging.getLogger(__name__)
@@ -220,6 +230,16 @@ class HTTPConnectionPool(ConnectionPool, RequestMethods):
 
             self.conn_kw["proxy"] = self.proxy
             self.conn_kw["proxy_config"] = self.proxy_config
+
+        # Do not pass 'self' as callback to 'finalize'.
+        # Then the 'finalize' would keep an endless living (leak) to self.
+        # By just passing a reference to the pool allows the garbage collector
+        # to free self if nobody else has a reference to it.
+        pool = self.pool
+
+        # Close all the HTTPConnections in the pool before the
+        # HTTPConnectionPool object is garbage collected.
+        finalize(self, _close_pool_connections, pool)
 
     def _new_conn(self):
         """
@@ -490,14 +510,8 @@ class HTTPConnectionPool(ConnectionPool, RequestMethods):
         # Disable access to the pool
         old_pool, self.pool = self.pool, None
 
-        try:
-            while True:
-                conn = old_pool.get(block=False)
-                if conn:
-                    conn.close()
-
-        except queue.Empty:
-            pass  # Done.
+        # Close all the HTTPConnections in the pool.
+        _close_pool_connections(old_pool)
 
     def is_same_host(self, url):
         """
@@ -1110,3 +1124,14 @@ def _normalize_host(host, scheme):
     if host.startswith("[") and host.endswith("]"):
         host = host[1:-1]
     return host
+
+
+def _close_pool_connections(pool):
+    """Drains a queue of connections and closes each one."""
+    try:
+        while True:
+            conn = pool.get(block=False)
+            if conn:
+                conn.close()
+    except queue.Empty:
+        pass  # Done.

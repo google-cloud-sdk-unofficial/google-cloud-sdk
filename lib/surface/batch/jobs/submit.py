@@ -39,7 +39,6 @@ def _CommonArgs(parser):
   Returns:
     network_group flag groups.
   """
-  resource_args.AddJobResourceArgs(parser)
   network_group = parser.add_group()
   network_group.add_argument(
       '--network',
@@ -282,6 +281,7 @@ class Submit(base.Command):
   @staticmethod
   def Args(parser):
     _CommonArgs(parser)
+    resource_args.AddJobResourceArgs(parser)
 
   def Run(self, args):
     job_ref = args.CONCEPTS.job.Parse()
@@ -376,3 +376,34 @@ class SubmitAlpha(SubmitBeta):
       }
       EOF
   """
+
+  @staticmethod
+  def Args(parser):
+    _CommonArgs(parser)
+    resource_args.AddSubmitJobResourceArgs(parser)
+
+  def Run(self, args):
+    job_ref = args.CONCEPTS.job.Parse()
+    location_ref = job_ref.Parent()
+    job_id = job_ref.RelativeName().split('/')[-1]
+    # Remove the invalid job_id if no job_id being specified,
+    # batch_client would create a valid job_id.
+    if job_id == resource_args.INVALIDJOBID:
+      job_id = None
+
+    release_track = self.ReleaseTrack()
+
+    batch_client = jobs.JobsClient(release_track)
+    batch_msgs = batch_client.messages
+    job_msg = batch_msgs.Job()
+
+    if args.config:
+      job_msg = _CreateJobMessage(batch_msgs, args.config)
+
+    _BuildJobMsg(args, job_msg, batch_msgs)
+
+    resp = batch_client.Create(job_id, location_ref, job_msg)
+    log.status.Print(
+        'Job {jobName} was successfully submitted.'.format(jobName=resp.uid)
+    )
+    return resp

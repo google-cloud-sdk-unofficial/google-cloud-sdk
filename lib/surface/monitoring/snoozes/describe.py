@@ -26,6 +26,26 @@ from googlecloudsdk.command_lib.monitoring import resource_args
 class Describe(base.DescribeCommand):
   """Describe a snooze."""
 
+  detailed_help = {
+      'EXAMPLES': """\
+          To describe a snooze, run:
+
+            $ {command} MY-SNOOZE
+
+          To describe a snooze in JSON, run:
+
+            $ {command} MY-SNOOZE --format=json
+
+          To describe a snooze contained within a specific project, run:
+
+            $ {command} MY-SNOOZE --project=MY-PROJECT
+
+          To describe a snooze with a fully qualified snooze ID, run:
+
+            $ {command} projects/MY-PROJECT/snoozes/MY-SNOOZE
+       """
+  }
+
   @staticmethod
   def Args(parser):
     resources = [

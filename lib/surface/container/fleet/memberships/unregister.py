@@ -53,10 +53,10 @@ class Unregister(calliope_base.DeleteCommand):
   three steps can be safely done to properly clean-up in-Fleet and in-cluster
   resources.
 
-  To register a GKE cluster use `--gke-cluster` or `--gke-uri` flag (no
+  To unregister a GKE cluster use `--gke-cluster` or `--gke-uri` flag (no
   `--kubeconfig` flag is required).
 
-  To register a non-GKE cluster use `--context` flag (with an optional
+  To unregister a third-party cluster use `--context` flag (with an optional
   -`-kubeconfig`s flag).
 
   To only delete the Fleet Membership resource, consider using the command:
@@ -67,13 +67,13 @@ class Unregister(calliope_base.DeleteCommand):
 
   ## EXAMPLES
 
-    Unregister a non-GKE cluster referenced from a specific kubeconfig file:
+    Unregister a third-party cluster referenced from a specific kubeconfig file:
 
       $ {command} my-membership \
         --context=my-cluster-context \
         --kubeconfig=/home/user/custom_kubeconfig
 
-    Unregister a non-GKE cluster referenced from the default kubeconfig file:
+    Unregister a third-party cluster referenced from the default kubeconfig file:
 
       $ {command} my-membership --context=my-cluster-context
 
@@ -114,8 +114,8 @@ class Unregister(calliope_base.DeleteCommand):
         action='store_true',
         help=textwrap.dedent("""\
           If set to True for a GKE cluster, Connect agent will be uninstalled
-          from the cluster. No-op for Non-GKE clusters, where Connect agent will
-          always be uninstalled.
+          from the cluster. No-op for third-party clusters, where Connect agent
+          will always be uninstalled.
           """),
         default=False,
     )

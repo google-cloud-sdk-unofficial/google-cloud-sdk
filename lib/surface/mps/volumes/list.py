@@ -82,9 +82,9 @@ class List(base.ListCommand):
     """Return volume list information based on user request."""
     region = args.CONCEPTS.region.Parse()
     client = MpsClient()
-    vendor = properties.VALUES.mps.vendor.Get(required=True)
+    product = properties.VALUES.mps.product.Get(required=True)
 
     if region is None:
       project = properties.VALUES.core.project.Get(required=True)
-      return client.AggregateListVolumes(project, vendor, limit=args.limit)
-    return client.ListVolumes(vendor, region)
+      return client.AggregateListVolumes(project, product, limit=args.limit)
+    return client.ListVolumes(product, region)

@@ -43,6 +43,10 @@ To publish a message to a Pub/Sub Lite topic with an ordering key and
 attributes, run:
 
   $ {command} mytopic --location=us-central1-a --message="Hello World!" --ordering-key="key" --attributes=KEY1=VAL1,KEY2=VAL2
+
+To publish a message to a Pub/Sub Lite topic with an event time, run:
+
+  $ {command} mytopic --location=us-central1-a --message="Hello World!" --event-time="2021-01-01T12:00:00Z"
 """
 
 
@@ -67,9 +71,16 @@ def _AddPublishFlags(parser):
       help="""A string key, used for ordering delivery to subscribers. All
           messages with the same ordering key will be assigned to the same
           partition for ordered delivery.""")
+  parser.add_argument(
+      '--event-time',
+      type=arg_parsers.Datetime.Parse,
+      metavar='DATETIME',
+      help="""A user-specified event time. Run `gcloud topic datetimes` for
+          information on time formats.""")
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA,
+                    base.ReleaseTrack.ALPHA)
 class Publish(base.Command):
   """Publish Pub/Sub Lite messages."""
 
@@ -95,30 +106,3 @@ class Publish(base.Command):
           ordering_key=args.ordering_key,
           attributes=args.attributes,
           event_time=args.event_time if hasattr(args, 'event_time') else None)
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
-class PublishAlphBeta(Publish):
-  """Publish Pub/Sub Lite messages."""
-
-  detailed_help = {
-      'DESCRIPTION':
-          _DESCRIPTION,
-      'EXAMPLES':
-          _EXAMPLES + """\
-
-To publish a message to a Pub/Sub Lite topic with an event time, run:
-
-  $ {command} mytopic --location=us-central1-a --message="Hello World!" --event-time="2021-01-01T12:00:00Z"
-"""
-  }
-
-  @staticmethod
-  def Args(parser):
-    _AddPublishFlags(parser)
-    parser.add_argument(
-        '--event-time',
-        type=arg_parsers.Datetime.Parse,
-        metavar='DATETIME',
-        help="""A user-specified event time. Run `gcloud topic datetimes` for
-            information on time formats.""")
