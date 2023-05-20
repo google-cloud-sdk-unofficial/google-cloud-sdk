@@ -144,7 +144,8 @@ def AddBaseArgs(parser, is_alpha=False):
       choices=['SSD', 'HDD'],
       default=None,
       help='The storage type for the instance. The default is SSD.')
-  flags.AddTier(parser, is_alpha=is_alpha)
+  flags.AddTier(parser)
+  flags.AddEdition(parser, is_alpha=is_alpha)
   kms_flag_overrides = {
       'kms-key': '--disk-encryption-key',
       'kms-keyring': '--disk-encryption-key-keyring',
@@ -295,10 +296,11 @@ def RunBaseCreateCommand(args, release_track):
         '`--enable-private-service-connect`')
 
   if release_track == base.ReleaseTrack.ALPHA:
-    if args.IsSpecified('workload_tier'):
-      if not (args.IsSpecified('cpu') and args.IsSpecified('memory')):
+    if args.IsSpecified('edition') and args.edition == 'enterprise':
+      if not args.IsSpecified('tier'):
         raise sql_exceptions.ArgumentError(
-            '`--workload-tier` requires `--cpu` and `--memory`')
+            '`--edition=enterprise` requires `--tier`'
+        )
 
   instance_resource = (
       command_util.InstancesV1Beta4.ConstructCreateInstanceFromArgs(

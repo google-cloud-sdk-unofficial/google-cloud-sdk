@@ -20,6 +20,7 @@ from __future__ import division
 from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.cloudresourcemanager import projects_api
+from googlecloudsdk.api_lib.smart_guardrails import smart_guardrails
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.projects import flags
 from googlecloudsdk.command_lib.projects import util as command_lib_util
@@ -55,14 +56,25 @@ class Delete(base.DeleteCommand):
 
   detailed_help = {'see_also': flags.CREATE_DELETE_IN_CONSOLE_SEE_ALSO}
 
-  @staticmethod
-  def Args(parser):
+  @classmethod
+  def Args(cls, parser):
     flags.GetProjectIDNumberFlag('delete').AddToParser(parser)
+
+    if cls.ReleaseTrack() == base.ReleaseTrack.ALPHA:
+      flags.GetRecommendFlag().AddToParser(parser)
+
     parser.display_info.AddCacheUpdater(completers.ProjectCompleter)
 
   def Run(self, args):
     project_ref = command_lib_util.ParseProject(args.id)
-    if not console_io.PromptContinue('Your project will be deleted.'):
+    if self.ReleaseTrack() == base.ReleaseTrack.ALPHA and args.recommend:
+      prompt_message = smart_guardrails.GetProjectDeletionRisk(
+          base.ReleaseTrack.GA,
+          project_ref.Name(),
+      )
+    else:
+      prompt_message = 'Your project will be deleted.'
+    if not console_io.PromptContinue(prompt_message):
       return None
     result = projects_api.Delete(project_ref)
     log.DeletedResource(project_ref)

@@ -13,7 +13,7 @@
     examples: |
       To delete an instance with the name `my-looker-instance` in your default region, run:
 
-        $ {command} my-looker-instance
+        $ {command} my-looker-instance --async
 
   arguments:
     resource:

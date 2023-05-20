@@ -48,25 +48,31 @@ class CreateBeta(base.CreateCommand):
 
     if args.CONCEPTS.volume.Parse() is None:
       raise exceptions.RequiredArgumentException(
-          '--volume', 'Requires a volume to create snapshot of')
+          '--volume', 'Requires a volume to create snapshot of'
+      )
 
     volume_ref = args.CONCEPTS.volume.Parse().RelativeName()
     client = snapshots_client.SnapshotsClient(self._RELEASE_TRACK)
-    labels = labels_util.ParseCreateArgs(args,
-                                         client.messages.Snapshot.LabelsValue)
+    labels = labels_util.ParseCreateArgs(
+        args, client.messages.Snapshot.LabelsValue
+    )
 
     snapshot = client.ParseSnapshotConfig(
         name=snapshot_ref.RelativeName(),
         description=args.description,
-        labels=labels)
-    result = client.CreateSnapshot(snapshot_ref, volume_ref, args.async_,
-                                   snapshot)
+        labels=labels,
+    )
+    result = client.CreateSnapshot(
+        snapshot_ref, volume_ref, args.async_, snapshot
+    )
     if args.async_:
       command = 'gcloud {} netapp volumes snapshots list'.format(
-          self.ReleaseTrack().prefix)
+          self.ReleaseTrack().prefix
+      )
       log.status.Print(
           'Check the status of the new snapshot by listing all snapshots:\n  '
-          '$ {} '.format(command))
+          '$ {} '.format(command)
+      )
     return result
 
 

@@ -28,24 +28,32 @@ from googlecloudsdk.command_lib.util.args import labels_util
 from googlecloudsdk.core import log
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA,
-                    base.ReleaseTrack.ALPHA)
+def _Args(parser, enable_no_wrapper_support=False):
+  resource_args.AddSubscriptionResourceArg(parser, 'to update.')
+  flags.AddSubscriptionSettingsFlags(
+      parser,
+      is_update=True,
+      enable_no_wrapper_support=enable_no_wrapper_support,
+  )
+  labels_util.AddUpdateLabelsFlags(parser)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Update(base.UpdateCommand):
   """Updates an existing Cloud Pub/Sub subscription."""
 
   @classmethod
   def Args(cls, parser):
-    resource_args.AddSubscriptionResourceArg(parser, 'to update.')
-    flags.AddSubscriptionSettingsFlags(parser, is_update=True)
-    labels_util.AddUpdateLabelsFlags(parser)
+    _Args(parser)
 
   @exceptions.CatchHTTPErrorRaiseHTTPException()
-  def Run(self, args):
+  def Run(self, args, enable_no_wrapper_support=False):
     """This is what gets called when the user runs this command.
 
     Args:
       args: an argparse namespace. All the arguments that were provided to this
         command invocation.
+      enable_no_wrapper_support: whether or not to add no wrapper flag support.
 
     Returns:
       A serialized object (dict) describing the results of the operation. This
@@ -65,6 +73,11 @@ class Update(base.UpdateCommand):
     clear_dead_letter_policy = getattr(args, 'clear_dead_letter_policy', None)
     clear_retry_policy = getattr(args, 'clear_retry_policy', None)
     clear_bigquery_config = getattr(args, 'clear_bigquery_config', None)
+    clear_push_no_wrapper_config = (
+        getattr(args, 'clear_push_no_wrapper_config', None)
+        if enable_no_wrapper_support
+        else None
+    )
 
     labels_update = labels_util.ProcessUpdateArgsLazy(
         args,
@@ -99,7 +112,9 @@ class Update(base.UpdateCommand):
       result = client.Patch(
           subscription_ref,
           ack_deadline=args.ack_deadline,
-          push_config=util.ParsePushConfig(args),
+          push_config=util.ParsePushConfig(
+              args, enable_no_wrapper_support=enable_no_wrapper_support
+          ),
           retain_acked_messages=args.retain_acked_messages,
           labels=labels_update.GetOrNone(),
           message_retention_duration=args.message_retention_duration,
@@ -116,7 +131,9 @@ class Update(base.UpdateCommand):
           use_topic_schema=use_topic_schema,
           write_metadata=write_metadata,
           drop_unknown_fields=drop_unknown_fields,
-          clear_bigquery_config=clear_bigquery_config)
+          clear_bigquery_config=clear_bigquery_config,
+          clear_push_no_wrapper_config=clear_push_no_wrapper_config,
+      )
     except subscriptions.NoFieldsSpecifiedError:
       if not any(
           args.IsSpecified(arg)
@@ -127,3 +144,16 @@ class Update(base.UpdateCommand):
     else:
       log.UpdatedResource(subscription_ref.RelativeName(), kind='subscription')
     return result
+
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
+class UpdateBeta(Update):
+  """Updates an existing Cloud Pub/Sub subscription."""
+
+  @classmethod
+  def Args(cls, parser):
+    _Args(parser, enable_no_wrapper_support=True)
+
+  @exceptions.CatchHTTPErrorRaiseHTTPException()
+  def Run(self, args):
+    return super(UpdateBeta, self).Run(args, enable_no_wrapper_support=True)

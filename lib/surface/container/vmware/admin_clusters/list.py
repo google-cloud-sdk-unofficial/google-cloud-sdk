@@ -31,7 +31,7 @@ $ {command} --location=us-west1
 """
 
 _EPILOG = """
-To include unenrolled admin clusters, run:
+To include admin clusters that are not enrolled with the Anthos On-Prem API, run:
 
 $ gcloud container fleet memberships list --filter='endpoint.onPremCluster.adminCluster=true'
 """

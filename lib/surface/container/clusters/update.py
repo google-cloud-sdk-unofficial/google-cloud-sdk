@@ -365,6 +365,9 @@ class Update(base.UpdateCommand):
     flags.AddSecurityPostureFlag(group)
     flags.AddClusterNetworkPerformanceConfigFlags(group)
     flags.AddEnableK8sBetaAPIs(group)
+    flags.AddSecurityPostureEnumFlag(group)
+    flags.AddWorkloadVulnScanningEnumFlag(group)
+    flags.AddRuntimeVulnerabilityInsightFlag(group)
 
   def ParseUpdateOptions(self, args, locations):
     get_default = lambda key: getattr(args, key)
@@ -438,6 +441,10 @@ class Update(base.UpdateCommand):
     opts.enable_security_posture = args.enable_security_posture
     opts.network_performance_config = args.network_performance_configs
     opts.enable_k8s_beta_apis = args.enable_kubernetes_unstable_apis
+    opts.security_posture = args.security_posture
+    opts.workload_vulnerability_scanning = args.workload_vulnerability_scanning
+    opts.enable_runtime_vulnerability_insight = (
+        args.enable_runtime_vulnerability_insight)
     return opts
 
   def Run(self, args):
@@ -846,6 +853,9 @@ class UpdateBeta(Update):
     flags.AddClusterNetworkPerformanceConfigFlags(group)
     flags.AddEnableKubeletReadonlyPortFlag(group)
     flags.AddEnableK8sBetaAPIs(group)
+    flags.AddSecurityPostureEnumFlag(group)
+    flags.AddWorkloadVulnScanningEnumFlag(group)
+    flags.AddRuntimeVulnerabilityInsightFlag(group)
 
   def ParseUpdateOptions(self, args, locations):
     get_default = lambda key: getattr(args, key)
@@ -956,6 +966,9 @@ class UpdateBeta(Update):
     # pylint: disable=line-too-long
     opts.enble_insecure_kubelet_readonly_port = args.enble_insecure_kubelet_readonly_port
     opts.enable_k8s_beta_apis = args.enable_kubernetes_unstable_apis
+    opts.security_posture = args.security_posture
+    opts.workload_vulnerability_scanning = args.workload_vulnerability_scanning
+    opts.enable_runtime_vulnerability_insight = args.enable_runtime_vulnerability_insight
     return opts
 
 
@@ -1052,6 +1065,9 @@ class UpdateAlpha(Update):
     flags.AddClusterNetworkPerformanceConfigFlags(group)
     flags.AddEnableKubeletReadonlyPortFlag(group)
     flags.AddEnableK8sBetaAPIs(group)
+    flags.AddSecurityPostureEnumFlag(group)
+    flags.AddWorkloadVulnScanningEnumFlag(group)
+    flags.AddRuntimeVulnerabilityInsightFlag(group)
 
   def ParseUpdateOptions(self, args, locations):
     get_default = lambda key: getattr(args, key)
@@ -1156,4 +1172,7 @@ class UpdateAlpha(Update):
     # pylint: disable=line-too-long
     opts.enble_insecure_kubelet_readonly_port = args.enble_insecure_kubelet_readonly_port
     opts.enable_k8s_beta_apis = args.enable_kubernetes_unstable_apis
+    opts.security_posture = args.security_posture
+    opts.workload_vulnerability_scanning = args.workload_vulnerability_scanning
+    opts.enable_runtime_vulnerability_insight = args.enable_runtime_vulnerability_insight
     return opts

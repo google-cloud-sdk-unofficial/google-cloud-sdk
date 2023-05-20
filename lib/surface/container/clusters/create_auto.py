@@ -46,6 +46,10 @@ auto_flags = [
     'enableKubeletReadonlyPort',
     'dataplanev2obsmode',
     'enableK8sBetaApis',
+    'securityPosture',
+    'workloadVulnerabilityScanning',
+    'enableRuntimeVulnerabilityInsight',
+    'masterglobalaccess',
 ]
 
 # Change default flag values in create-auto

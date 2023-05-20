@@ -33,6 +33,7 @@
         name.basename():label=CLUSTER_NAME:sort=2,
         state:label=STATUS,
         sizeGb:label=SIZE_GB,
+        shardCount:label=SHARD_COUNT,
         replicaCount:label=REPLICA_COUNT,
         createTime.date()
       )

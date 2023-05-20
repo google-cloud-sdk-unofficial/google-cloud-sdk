@@ -9,10 +9,10 @@
         $ {command} my-service-conn-policy --network="projects/my-project/global/networks/net1" --service-class=my-service-class-ad32fa4b --region=us-central1
 
   arguments:
-    resource:
-      spec: !REF googlecloudsdk.command_lib.network_connectivity.resources:serviceConnectionPolicy
-      help_text: Name of the Service Connection Policy to be created.
     params:
+    - arg_name: service_connection_policy
+      resource_spec: !REF googlecloudsdk.command_lib.network_connectivity.resources:serviceConnectionPolicy
+      help_text: Name of the Service Connection Policy to be created.
     - arg_name: network
       required: true
       is_positional: false
@@ -43,9 +43,12 @@
         params:
         - arg_name: subnets
           required: true
-          api_field: serviceConnectionPolicy.pscConfig.subnetworks
-          type: arg_list
+          is_positional: false
+          resource_spec: !REF googlecloudsdk.command_lib.network_connectivity.compute_resources:subnetwork
+          resource_method_params:
+            serviceConnectionPolicy.pscConfig.subnetworks: "{__relative_name__}"
           help_text: Subnetwork to use for IP address management.
+          repeated: true
         - arg_name: psc-connection-limit
           type: int
           api_field: serviceConnectionPolicy.pscConfig.limit

@@ -23,9 +23,20 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.core import properties
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class ListAlpha(base.Command):
-  """List locations available to Google Cloud Firestore."""
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+class List(base.ListCommand):
+  """List locations available to Google Cloud Firestore.
+
+  ## EXAMPLES
+
+  To list all Firestore locations with table.
+
+      $ {command} --format="table(locationId, displayName)"
+
+  To list Firestore locations with a filter.
+
+      $ {command} --filter="locationId:us-west1"
+  """
 
   def Run(self, args):
     project = properties.VALUES.core.project.Get(required=True)

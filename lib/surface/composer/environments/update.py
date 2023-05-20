@@ -52,6 +52,7 @@ class Update(base.Command):
 
   detailed_help = DETAILED_HELP
   _support_autoscaling = True
+  _support_composer25flags = False
   _support_triggerer = False
   _support_maintenance_window = False
   _support_environment_size = True
@@ -218,7 +219,64 @@ class Update(base.Command):
       if args.enable_cloud_data_lineage_integration or args.disable_cloud_data_lineage_integration:
         params[
             'cloud_data_lineage_integration_enabled'] = True if args.enable_cloud_data_lineage_integration else False
+
+    if self._support_composer25flags:
+      self._addComposer25Fields(params, args, env_obj)
     return patch_util.ConstructPatch(**params)
+
+  def _addComposer25Fields(self, params, args, env_obj):
+    is_composer25 = image_versions_command_util.IsVersionComposer25Compatible(
+        env_obj.config.softwareConfig.imageVersion
+    )
+
+    possible_args = {
+        'support-web-server-plugins': args.support_web_server_plugins,
+        'dag-processor-cpu': args.dag_processor_cpu,
+        'dag-processor-memory': args.dag_processor_memory,
+        'dag-processor-count': args.dag_processor_count,
+        'dag-processor-storage': args.dag_processor_storage,
+        'disable-vpc-connectivity': args.disable_vpc_connectivity,
+        'network': args.network,
+        'subnetwork': args.subnetwork,
+    }
+    for k, v in possible_args.items():
+      if v is not None and not is_composer25:
+        raise command_util.InvalidUserInputError(
+            flags.COMPOSER25_IS_REQUIRED_MSG.format(
+                opt=k,
+                composer_version=flags.MIN_COMPOSER25_VERSION,
+            )
+        )
+
+    dag_processor_count = None
+    dag_processor_cpu = None
+    dag_processor_memory_gb = None
+    dag_processor_storage_gb = None
+    if args.dag_processor_count is not None:
+      dag_processor_count = args.dag_processor_count
+    if args.dag_processor_cpu:
+      dag_processor_cpu = args.dag_processor_cpu
+    if args.dag_processor_memory:
+      dag_processor_memory_gb = environments_api_util.MemorySizeBytesToGB(
+          args.dag_processor_memory)
+    if args.dag_processor_storage:
+      dag_processor_storage_gb = environments_api_util.MemorySizeBytesToGB(
+          args.dag_processor_storage)
+    if args.support_web_server_plugins is not None:
+      params['support_web_server_plugins'] = args.support_web_server_plugins
+    params['dag_processor_count'] = dag_processor_count
+    if dag_processor_count:
+      params['dag_processor_cpu'] = dag_processor_cpu
+      params['dag_processor_memory_gb'] = dag_processor_memory_gb
+      params['dag_processor_storage_gb'] = dag_processor_storage_gb
+    if args.disable_vpc_connectivity:
+      params['disable_vpc_connectivity'] = True
+    if args.network_attachment:
+      params['network_attachment'] = args.network_attachment
+    if args.network:
+      params['network'] = args.network
+    if args.subnetwork:
+      params['subnetwork'] = args.subnetwork
 
   # TODO(b/245909413): Update Composer version
   def _addScheduledSnapshotFields(self, params, args, is_composer_v1):
@@ -300,6 +358,7 @@ class UpdateBeta(Update):
   """Update properties of a Cloud Composer environment."""
 
   _support_autoscaling = True
+  _support_composer25flags = True
   _support_triggerer = True
   _support_maintenance_window = True
   _support_environment_size = True
@@ -317,6 +376,7 @@ class UpdateBeta(Update):
 
     flags.AddCloudDataLineageIntegrationUpdateFlagsToGroup(
         Update.update_type_group)
+    flags.AddComposer25FlagsToGroup(Update.update_type_group)
 
   @staticmethod
   def Args(parser):

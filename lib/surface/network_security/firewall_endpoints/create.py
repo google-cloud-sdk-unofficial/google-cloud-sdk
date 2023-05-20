@@ -83,6 +83,9 @@ class Create(base.CreateCommand):
         message='waiting for firewall endpoint [{}] to be created'.format(
             endpoint.RelativeName()
         ),
+        # TODO(b/279880716): Change to True once the resource type is part of
+        # the operation output.
+        has_result=False,
         max_wait=max_wait,
     )
 

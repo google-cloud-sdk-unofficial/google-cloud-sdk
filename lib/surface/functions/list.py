@@ -156,7 +156,7 @@ class ListAlpha(ListBeta):
 
     return itertools.chain(
         list_gen2_generator_v2,
-        decorator_v1.DecorateV1GeneratorWithUpgradeInfo(
+        decorator_v1.decorate_v1_generator_with_v2_api_info(
             list_gen1_generator_v1, list_gen1_generator_v2
         ),
     )

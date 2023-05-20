@@ -18,12 +18,15 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+from apitools.base.py import encoding
 from googlecloudsdk.api_lib.functions.v1 import util as api_util_v1
 from googlecloudsdk.api_lib.functions.v2 import client as client_v2
 from googlecloudsdk.api_lib.functions.v2 import util as api_util_v2
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.functions import flags
 from googlecloudsdk.command_lib.functions import util
+from googlecloudsdk.command_lib.functions.v1 import decorator
+
 from googlecloudsdk.core import log
 
 
@@ -47,13 +50,21 @@ class Describe(util.FunctionResourceCommand, base.DescribeCommand):
     flags.AddGen2Flag(parser)
 
   def _RunV1(self, args):
-    # TODO(b/276346872): Decorate response with upgradeInfo from v2 API call.
     client = api_util_v1.GetApiClientInstance()
-    return client.projects_locations_functions.Get(
+    function = client.projects_locations_functions.Get(
         client.MESSAGES_MODULE.CloudfunctionsProjectsLocationsFunctionsGetRequest(
             name=args.CONCEPTS.name.Parse().RelativeName()
         )
     )
+
+    if self.ReleaseTrack() == base.ReleaseTrack.ALPHA:
+      v2_function = self._v2_function or self._RunV2(args)
+      return decorator.decorate_v1_function_with_v2_api_info(
+          function, v2_function
+      )
+
+    # To facilitate testing, convert to dict for consistency with alpha track.
+    return encoding.MessageToDict(function)
 
   def _RunV2(self, args):
     client = client_v2.FunctionsClient(self.ReleaseTrack())

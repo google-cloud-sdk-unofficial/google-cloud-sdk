@@ -31,14 +31,21 @@ from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 
 
-def _Run(args, enable_labels=False, legacy_output=False):
+def _Run(
+    args,
+    enable_labels=False,
+    legacy_output=False,
+    enable_no_wrapper_support=False,
+):
   """Creates one or more subscriptions."""
   flags.ValidateDeadLetterPolicy(args)
 
   client = subscriptions.SubscriptionsClient()
 
   topic_ref = args.CONCEPTS.topic.Parse()
-  push_config = util.ParsePushConfig(args)
+  push_config = util.ParsePushConfig(
+      args, enable_no_wrapper_support=enable_no_wrapper_support
+  )
   enable_message_ordering = getattr(args, 'enable_message_ordering', None)
   filter_string = getattr(args, 'message_filter', None)
   dead_letter_topic = getattr(args, 'dead_letter_topic', None)
@@ -161,10 +168,15 @@ class CreateBeta(Create):
     subscription = resource_args.CreateSubscriptionResourceArg(
         'to create.', plural=True)
     resource_args.AddResourceArgs(parser, [topic, subscription])
-    flags.AddSubscriptionSettingsFlags(parser)
+    flags.AddSubscriptionSettingsFlags(parser, enable_no_wrapper_support=True)
     labels_util.AddCreateLabelsFlags(parser)
 
   def Run(self, args):
     flags.ValidateFilterString(args)
     legacy_output = properties.VALUES.pubsub.legacy_output.GetBool()
-    return _Run(args, enable_labels=True, legacy_output=legacy_output)
+    return _Run(
+        args,
+        enable_labels=True,
+        legacy_output=legacy_output,
+        enable_no_wrapper_support=True,
+    )

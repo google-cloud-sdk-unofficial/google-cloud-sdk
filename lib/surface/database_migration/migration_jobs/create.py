@@ -26,14 +26,16 @@ from googlecloudsdk.command_lib.database_migration import flags
 from googlecloudsdk.command_lib.database_migration.migration_jobs import flags as mj_flags
 from googlecloudsdk.core import log
 
+MYSQL_CONNECTIVITY_DOC = 'https://cloud.google.com/database-migration/docs/mysql/configure-connectivity'
+
 DETAILED_HELP_ALPHA = {
     'DESCRIPTION': """
         Create a Database Migration Service migration job.
         Recommended steps before creating the migration job:
         - Create a source connection profile. See prerequisites [here](https://cloud.google.com/database-migration/docs/mysql/configure-source-database).
-        - Create a destination connection profile. For MySQL and PostgreSQL migrations, use the cloudsql connection profile for DMS to create the CloudSQL replica for you.
-        - Configure the connectivity method. See prerequisites [here](https://cloud.google.com/database-migration/docs/mysql/configure-connectivity).
-        """,
+        - Create a destination connection profile. For migrating to Cloud SQL for MySQL or Cloud SQL for PostgreSQL, use the cloudsql connection profile for DMS to create the CloudSQL replica for you.
+        - Configure the connectivity method. See prerequisites [here]({MYSQL_CONNECTIVITY_DOC}).
+        """.format(MYSQL_CONNECTIVITY_DOC=MYSQL_CONNECTIVITY_DOC),
     'EXAMPLES': """\
         To create a continuous migration job with IP allowlist connectivity:
 
@@ -59,10 +61,10 @@ DETAILED_HELP_GA = {
         Create a Database Migration Service migration job.
         Recommended steps before creating the migration job:
         - Create a source connection profile. See prerequisites [here](https://cloud.google.com/database-migration/docs/mysql/configure-source-database).
-        - Create a destination connection profile. For MySQL and PostgreSQL migrations, use the cloudsql connection profile for DMS to create the CloudSQL replica for you.
-        - Create a conversion workspace in case the migration is heterogeneous.
-        - Configure the connectivity method. See prerequisites [here](https://cloud.google.com/database-migration/docs/mysql/configure-connectivity).
-        """,
+        - Create a destination connection profile. For migrating to Cloud SQL for MySQL or Cloud SQL for PostgreSQL, use the cloudsql connection profile for DMS to create the CloudSQL replica for you.
+        - Configure the connectivity method. See prerequisites [here]({MYSQL_CONNECTIVITY_DOC}).
+        - [Heterogeneous migrations only] Create a conversion workspace.
+        """.format(MYSQL_CONNECTIVITY_DOC=MYSQL_CONNECTIVITY_DOC),
     'EXAMPLES': """\
         To create a continuous migration job with IP allowlist connectivity:
 
@@ -171,9 +173,7 @@ class _Create(object):
 class CreateGA(_Create, base.Command):
   """Create a Database Migration Service migration job."""
 
-  # TODO(b/267338689): Replace this with DETAILED_HELP_GA once conversion
-  # workspace gcloud support is not hidden.
-  detailed_help = DETAILED_HELP_ALPHA
+  detailed_help = DETAILED_HELP_GA
 
   @staticmethod
   def Args(parser):

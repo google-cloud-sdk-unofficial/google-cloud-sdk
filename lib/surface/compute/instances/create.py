@@ -93,26 +93,27 @@ DETAILED_HELP = {
 }
 
 
-def _CommonArgs(parser,
-                enable_regional=False,
-                enable_kms=False,
-                deprecate_maintenance_policy=False,
-                supports_erase_vss=True,
-                snapshot_csek=False,
-                image_csek=False,
-                support_multi_writer=False,
-                support_replica_zones=False,
-                support_subinterface=False,
-                support_host_error_timeout_seconds=False,
-                support_numa_node_count=False,
-                support_network_queue_count=False,
-                support_instance_kms=False,
-                support_max_run_duration=False,
-                support_provisioned_throughput=False,
-                support_network_attachments=False,
-                support_local_ssd_recovery_timeout=False,
-                support_local_ssd_size=False,
-                support_vlan_nic=False):
+def _CommonArgs(
+    parser,
+    enable_regional=False,
+    enable_kms=False,
+    deprecate_maintenance_policy=False,
+    supports_erase_vss=True,
+    snapshot_csek=False,
+    image_csek=False,
+    support_multi_writer=False,
+    support_replica_zones=True,
+    support_subinterface=False,
+    support_host_error_timeout_seconds=False,
+    support_numa_node_count=False,
+    support_network_queue_count=False,
+    support_instance_kms=False,
+    support_max_run_duration=False,
+    support_provisioned_throughput=False,
+    support_network_attachments=False,
+    support_local_ssd_recovery_timeout=False,
+    support_local_ssd_size=False,
+    support_vlan_nic=False):
   """Register parser args common to all tracks."""
   metadata_utils.AddMetadataArgs(parser)
   instances_flags.AddDiskArgs(parser, enable_regional, enable_kms=enable_kms)
@@ -249,7 +250,7 @@ class Create(base.CreateCommand):
   _support_create_disk_snapshots = True
   _support_boot_snapshot_uri = True
   _enable_pd_interface = False
-  _support_replica_zones = False
+  _support_replica_zones = True
   _support_multi_writer = False
   _support_provisioned_throughput = False
   _support_subinterface = False
@@ -696,7 +697,7 @@ class CreateBeta(Create):
   _deprecate_maintenance_policy = False
   _support_create_disk_snapshots = True
   _support_boot_snapshot_uri = True
-  _support_replica_zones = False
+  _support_replica_zones = True
   _support_multi_writer = True
   _support_provisioned_throughput = False
   _support_subinterface = False

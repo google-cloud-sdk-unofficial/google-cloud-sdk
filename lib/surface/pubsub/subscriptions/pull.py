@@ -53,7 +53,7 @@ table[box](
 """
 
 
-def _Run(args, max_messages, return_immediately=True):
+def _Run(args, max_messages, return_immediately=False):
   """Pulls messages from a subscription."""
   client = subscriptions.SubscriptionsClient()
 
@@ -143,7 +143,9 @@ class PullBeta(Pull):
   def Args(parser):
     parser.display_info.AddFormat(MESSAGE_FORMAT_WITH_ACK_STATUS)
     resource_args.AddSubscriptionResourceArg(parser, 'to pull messages from.')
-    flags.AddPullFlags(parser, add_deprecated=True, add_wait=True)
+    flags.AddPullFlags(
+        parser, add_deprecated=True, add_wait=True, add_return_immediately=True
+    )
 
   def Run(self, args):
     if args.IsSpecified('limit'):
@@ -153,5 +155,11 @@ class PullBeta(Pull):
       max_messages = args.limit
     else:
       max_messages = args.max_messages
-    return_immediately = not args.wait if args.IsSpecified('wait') else True
+
+    return_immediately = False
+    if args.IsSpecified('return_immediately'):
+      return_immediately = args.return_immediately
+    elif args.IsSpecified('wait'):
+      return_immediately = not args.wait
+
     return _Run(args, max_messages, return_immediately)

@@ -26,22 +26,19 @@ from googlecloudsdk.command_lib.database_migration.conversion_workspaces import 
 from googlecloudsdk.core import log
 
 DETAILED_HELP = {
-    'DESCRIPTION':
-        """
+    'DESCRIPTION': """
         Apply Database Migration Service conversion workspace onto the
         destination database.
         """,
-    'EXAMPLES':
-        """\
+    'EXAMPLES': """\
         To apply a conversion workspace:
 
             $ {command} my-conversion-workspace --region=us-central1
-            --destination-connection-profile=projects/$$PROJECT_ID$$/locations/us-central1/connectionProfiles/cp1
+            --destination-connection-profile=projects/$$PROJECT_ID$$/locations/us-central1/connectionProfiles/destination-connection-profile-name
         """,
 }
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Apply(base.Command):
   """Apply a Database Migration Service conversion workspace."""
@@ -88,15 +85,21 @@ class Apply(base.Command):
     if args.IsKnownAndSpecified('no_async'):
       log.status.Print(
           'Waiting for conversion workspace [{}] to be applied with [{}]'
-          .format(conversion_workspace_ref.conversionWorkspacesId,
-                  result_operation.name))
+          .format(
+              conversion_workspace_ref.conversionWorkspacesId,
+              result_operation.name,
+          )
+      )
 
       api_util.HandleLRO(client, result_operation,
                          client.projects_locations_conversionWorkspaces)
 
-      log.status.Print('Applied conversion workspace {} [{}]'.format(
-          conversion_workspace_ref.conversionWorkspacesId,
-          result_operation.name))
+      log.status.Print(
+          'Applied conversion workspace {} [{}]'.format(
+              conversion_workspace_ref.conversionWorkspacesId,
+              result_operation.name,
+          )
+      )
       return
 
     operation_ref = resource_parser.Create(

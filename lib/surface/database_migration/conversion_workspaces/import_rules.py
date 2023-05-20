@@ -25,14 +25,15 @@ from googlecloudsdk.command_lib.database_migration.conversion_workspaces import 
 from googlecloudsdk.core import log
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class ImportRules(base.Command):
   """Import mapping rules in a Database Migration Service conversion workspace."""
 
   detailed_help = {
       'DESCRIPTION': """
-        Import rules in a Database Migration Service conversion workspace.
+        Import mapping rules in a Database Migration Service conversion
+        workspace from a configuration file. For example, for Oracle to
+        PostgreSQL migrations that could be an Ora2Pg config file.
         """,
       'EXAMPLES': """\
         To import rules in a conversion workspace:

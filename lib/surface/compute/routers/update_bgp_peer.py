@@ -243,7 +243,7 @@ class UpdateBgpPeerBeta(UpdateBgpPeer):
 
   @classmethod
   def Args(cls, parser):
-    cls._Args(parser, support_custom_learned_routes=False)
+    cls._Args(parser, support_custom_learned_routes=True)
 
   def Run(self, args):
     """Runs the command.
@@ -256,7 +256,7 @@ class UpdateBgpPeerBeta(UpdateBgpPeer):
       information provided in the arguments.
     """
     return self._Run(
-        args, support_bfd_mode=False, support_custom_learned_routes=False
+        args, support_bfd_mode=False, support_custom_learned_routes=True
     )
 
 

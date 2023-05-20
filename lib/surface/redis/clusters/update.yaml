@@ -30,10 +30,11 @@
       type: int
       help_text: |
         The replica count of each shard.
-    - arg_name: size-gb
-      api_field: cluster.sizeGb
+    - arg_name: shard-count
+      api_field: cluster.shardCount
+      type: int
       help_text: |
-        The memory size of the cluster in GiB.
+        The shard count of the cluster.
 
   async:
     collection: redis.projects.locations.operations
@@ -43,8 +44,8 @@
       api_version: v1alpha1
       modify_request_hooks:
       - googlecloudsdk.command_lib.redis.clusters_update_util:UpdateDisplayName
-      - googlecloudsdk.command_lib.redis.clusters_update_util:UpdateSizeGb
       - googlecloudsdk.command_lib.redis.clusters_update_util:UpdateReplicaCount
+      - googlecloudsdk.command_lib.redis.clusters_update_util:UpdateShardCount
     collection: redis.projects.locations.clusters
 
   update:

@@ -26,20 +26,18 @@ from googlecloudsdk.command_lib.database_migration.conversion_workspaces import 
 from googlecloudsdk.core import log
 
 DETAILED_HELP = {
-    'DESCRIPTION':
-        """
-        Rollback a Database Migration Service conversion workspace.
+    'DESCRIPTION': """
+        Rollback a Database Migration Service conversion workspace to the last
+        committed snapshot.
         """,
-    'EXAMPLES':
-        """\
-        To rollback a conversion workspace:
+    'EXAMPLES': """\
+        To rollback a conversion workspace to the last committed snapshot:
 
             $ {command} my-conversion-workspace --region=us-central1
         """,
 }
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Rollback(base.Command):
   """Rollback a Database Migration Service conversion workspace."""
@@ -82,15 +80,21 @@ class Rollback(base.Command):
     if args.IsKnownAndSpecified('no_async'):
       log.status.Print(
           'Waiting for conversion workspace [{}] to be rollbacked with [{}]'
-          .format(conversion_workspace_ref.conversionWorkspacesId,
-                  result_operation.name))
+          .format(
+              conversion_workspace_ref.conversionWorkspacesId,
+              result_operation.name,
+          )
+      )
 
       api_util.HandleLRO(client, result_operation,
                          client.projects_locations_conversionWorkspaces)
 
-      log.status.Print('Rollbacked conversion workspace {} [{}]'.format(
-          conversion_workspace_ref.conversionWorkspacesId,
-          result_operation.name))
+      log.status.Print(
+          'Rollbacked conversion workspace {} [{}]'.format(
+              conversion_workspace_ref.conversionWorkspacesId,
+              result_operation.name,
+          )
+      )
       return
 
     operation_ref = resource_parser.Create(

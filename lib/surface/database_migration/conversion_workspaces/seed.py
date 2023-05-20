@@ -26,12 +26,10 @@ from googlecloudsdk.command_lib.database_migration.conversion_workspaces import 
 from googlecloudsdk.core import log
 
 DETAILED_HELP = {
-    'DESCRIPTION':
-        """
+    'DESCRIPTION': """
         Seed a Database Migration Service conversion workspace.
         """,
-    'EXAMPLES':
-        """\
+    'EXAMPLES': """\
         To seed a conversion workspace:
 
             $ {command} my-conversion-workspace --region=us-central1
@@ -40,7 +38,6 @@ DETAILED_HELP = {
 }
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Seed(base.Command):
   """Seed a Database Migration Service conversion workspace."""
@@ -93,14 +90,19 @@ class Seed(base.Command):
       log.status.Print(
           'Waiting for conversion workspace [{}] to be seeded with [{}]'.format(
               conversion_workspace_ref.conversionWorkspacesId,
-              result_operation.name))
+              result_operation.name,
+          )
+      )
 
       api_util.HandleLRO(client, result_operation,
                          client.projects_locations_conversionWorkspaces)
 
-      log.status.Print('Seeded conversion workspace {} [{}]'.format(
-          conversion_workspace_ref.conversionWorkspacesId,
-          result_operation.name))
+      log.status.Print(
+          'Seeded conversion workspace {} [{}]'.format(
+              conversion_workspace_ref.conversionWorkspacesId,
+              result_operation.name,
+          )
+      )
       return
 
     operation_ref = resource_parser.Create(

@@ -27,11 +27,11 @@ from googlecloudsdk.command_lib.database_migration.connection_profiles import or
 from googlecloudsdk.core.console import console_io
 
 DETAILED_HELP = {
-    'DESCRIPTION':
-        'Create a Database Migration Service connection profile for Oracle.',
-    'EXAMPLES':
-        """\
-        To create a connection profile for Oracle:
+    'DESCRIPTION': (
+        'Create a Database Migration Service connection profile for Oracle.'
+    ),
+    'EXAMPLES': """\
+        To create a connection profile my-profile for Oracle:
 
             $ {command} my-profile --region=us-central1
             --password=123456 --username=my-user
@@ -40,7 +40,6 @@ DETAILED_HELP = {
 }
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Oracle(base.Command):
   """Create a Database Migration Service connection profile for Oracle."""
@@ -81,7 +80,11 @@ class Oracle(base.Command):
     parent_ref = connection_profile_ref.Parent().RelativeName()
 
     if args.prompt_for_password:
-      args.password = console_io.PromptPassword('Please Enter Password: ')
+      args.password = console_io.PromptPassword(
+          'Please Enter Password for the database user {user}: '.format(
+              user=args.username
+          )
+      )
 
     helper = create_helper.CreateHelper()
     return helper.create(self.ReleaseTrack(), parent_ref,

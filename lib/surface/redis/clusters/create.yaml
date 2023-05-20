@@ -45,10 +45,11 @@
       type: int
       help_text: |
         The replica count of each shard.
-    - arg_name: size-gb
-      api_field: cluster.sizeGb
+    - arg_name: shard-count
+      api_field: cluster.shardCount
+      type: int
       help_text: |
-        The memory size of the cluster in GiB.
+        The shard count of the cluster.
     - arg_name: transit-encryption-mode
       api_field: cluster.transitEncryptionMode
       help_text: |

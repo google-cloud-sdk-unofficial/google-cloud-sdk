@@ -14,7 +14,7 @@
       To restart an instance with the name `my-looker-instance` in the default
       region, run:
 
-        $ {command} my-looker-instance
+        $ {command} my-looker-instance --async
 
   arguments:
     resource:
@@ -35,12 +35,4 @@
     collection: looker.projects.locations.operations
 
   output:
-    format: |
-      table(
-         name.basename():label=OPERATION_NAME,
-         name.segment(3):label=REGION,
-         metadata.verb:label=TYPE,
-         metadata.target.basename(),
-         done,
-         metadata.createTime.date():sort=1
-       )
+    format: none

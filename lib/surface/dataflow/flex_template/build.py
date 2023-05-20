@@ -350,7 +350,7 @@ class Build(base.Command):
           To build the template image and flex template json file, run:
 
             $ {command} gs://template-file-gcs-path \
-              --image-gcr-path=gcr://path-tos-tore-image \
+              --image-gcr-path=gcr://path-to-store-image \
               --jar=path/to/pipeline.jar --jar=path/to/dependency.jar \
               --env=FLEX_TEMPLATE_JAVA_MAIN_CLASS=classpath \
               --flex-template-base-image=JAVA11 \

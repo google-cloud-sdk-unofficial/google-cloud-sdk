@@ -21,7 +21,6 @@ from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.GA)
 class Instances(base.Group):
   """Manage Looker instances.
@@ -31,12 +30,15 @@ class Instances(base.Group):
   To create an instance with the name `my-looker-instance`, with an edition of
   "LOOKER_CORE_STANDARD", run:
 
-    $ {command} create my-looker-instance --ouath-client-id='looker'
-    --ouath-client-secret='looker' --edition="core-standard"
+    $ {command} create my-looker-instance --oauth-client-id='looker'
+    --oauth-client-secret='looker' --edition="core-standard" --async
+
+  Note: It is *recommended* that the *--async* argument is provided when
+  creating a Looker instance.
 
   To delete an instance with the name `my-looker-instance`, run:
 
-    $ {command} delete my-looker-instance
+    $ {command} delete my-looker-instance --async
 
   To display the details for an instance with name `my-looker-instance`, run:
 
@@ -44,11 +46,22 @@ class Instances(base.Group):
 
   To restart an instance with the name `my-looker-instance`, run:
 
-    $ {command} restart my-looker-instance
+    $ {command} restart my-looker-instance --async
 
   To update an instance with the name `my-looker-instance`, run:
 
-    $ {command} update my-looker-instance
+    $ {command} update my-looker-instance --async
+
+  To export an instance with the name `my-looker-instance`, run:
+
+    $ {command} export my-looker-instance
+    --target-gcs-uri='gs://bucketName/folderName'
+    --kms-key='projects/my-project/locations/us-central1/keyRings/my-key-ring/cryptoKeys/my-key'
+
+  To import an instance with the name `my-looker-instance`, run:
+
+    $ {command} import my-looker-instance
+    --source-gcs-uri='gs://bucketName/folderName'
 
   To list all the instances, run:
 

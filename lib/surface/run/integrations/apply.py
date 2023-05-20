@@ -26,7 +26,6 @@ from googlecloudsdk.command_lib.run import flags as run_flags
 from googlecloudsdk.command_lib.run.integrations import flags
 from googlecloudsdk.command_lib.run.integrations import run_apps_operations
 from googlecloudsdk.command_lib.run.integrations import stages
-from googlecloudsdk.core import yaml
 from googlecloudsdk.core.console import progress_tracker
 
 
@@ -60,12 +59,10 @@ class Apply(base.Command):
   def Run(self, args):
     """Create or Update application from YAML."""
 
-    self._ValidateAppConfigFile(args.FILE)
-    app_dict = dict(args.FILE)
-    name = app_dict.pop('name')
-    appconfig = {'config': yaml.dump(args.FILE).encode('utf-8')}
-    release_track = self.ReleaseTrack()
+    file_content = args.FILE
+    self._ValidateAppConfigFile(file_content)
 
+    release_track = self.ReleaseTrack()
     conn_context = connection_context.GetConnectionContext(
         args, run_flags.Product.RUN_APPS, release_track)
     with run_apps_operations.Connect(conn_context, release_track) as client:
@@ -76,4 +73,4 @@ class Apply(base.Command):
           stages.ApplyStages(),
           failure_message='Failed to apply application configuration.'
       ) as tracker:
-        return client.ApplyAppConfig(tracker, name, appconfig)
+        return client.ApplyYaml(tracker, file_content)

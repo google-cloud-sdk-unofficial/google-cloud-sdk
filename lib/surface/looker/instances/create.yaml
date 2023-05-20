@@ -9,11 +9,15 @@
       This command can fail for the following reasons:
         * An instance with the same name already exists.
         * The active account does not have permission to create instances.
+        * --async flag is not passed
     examples: |
       To create a basic tier instance with the name `my-looker-instance` in region `us-central-1`
       with an edition of "LOOKER_CORE_STANDARD", run:
 
-        $ {command} my-looker-instance --region=us-central1 --edition="core-standard" --ouath-client-id='looker' --ouath-client-secret='looker'
+        $ {command} my-looker-instance --region=us-central1 --edition="core-standard" --oauth-client-id='looker' --oauth-client-secret='looker'  --async
+
+      Note: It is *recommended* that the *--async* argument is provided when creating
+      a Looker instance.
 
   arguments:
     resource:

@@ -30,8 +30,9 @@ from googlecloudsdk.command_lib.alloydb import user_helper
 from googlecloudsdk.core import properties
 
 
-@base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
+)
 class Create(base.CreateCommand):
   """Creates a user in a given cluster.
 

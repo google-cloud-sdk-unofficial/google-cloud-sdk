@@ -351,7 +351,12 @@ def ParseCreateOptionsBase(args, is_autopilot, get_default, location,
           'network_performance_configs'),
       enble_insecure_kubelet_readonly_port=get_default(
           'enble_insecure_kubelet_readonly_port'),
-      enable_k8s_beta_apis=getattr(args, 'enable_kubernetes_unstable_apis')
+      enable_k8s_beta_apis=getattr(args, 'enable_kubernetes_unstable_apis'),
+      security_posture=get_default('security_posture'),
+      workload_vulnerability_scanning=get_default(
+          'workload_vulnerability_scanning'),
+      enable_runtime_vulnerability_insight=get_default(
+          'enable_runtime_vulnerability_insight'),
       )
 
 
@@ -604,7 +609,13 @@ flags_to_add = {
         'clusterNetworkPerformanceConfig':
             flags.AddClusterNetworkPerformanceConfigFlags,
         'enableK8sBetaApis':
-            flags.AddEnableK8sBetaAPIs
+            flags.AddEnableK8sBetaAPIs,
+        'securityPosture':
+            flags.AddSecurityPostureEnumFlag,
+        'workloadVulnerabilityScanning':
+            flags.AddWorkloadVulnScanningEnumFlag,
+        'enableRuntimeVulnerabilityInsight':
+            flags.AddRuntimeVulnerabilityInsightFlag,
     },
     BETA: {
         'accelerator': (lambda p: AddAcceleratorFlag(p, True, True, True)),
@@ -829,7 +840,13 @@ flags_to_add = {
         'enableKubeletReadonlyPort':
             flags.AddEnableKubeletReadonlyPortFlag,
         'enableK8sBetaApis':
-            flags.AddEnableK8sBetaAPIs
+            flags.AddEnableK8sBetaAPIs,
+        'securityPosture':
+            flags.AddSecurityPostureEnumFlag,
+        'workloadVulnerabilityScanning':
+            flags.AddWorkloadVulnScanningEnumFlag,
+        'enableRuntimeVulnerabilityInsight':
+            flags.AddRuntimeVulnerabilityInsightFlag,
     },
     ALPHA: {
         'accelerator': (lambda p: AddAcceleratorFlag(p, True, True, True)),
@@ -1063,7 +1080,13 @@ flags_to_add = {
         'enableKubeletReadonlyPort':
             flags.AddEnableKubeletReadonlyPortFlag,
         'enableK8sBetaApis':
-            flags.AddEnableK8sBetaAPIs
+            flags.AddEnableK8sBetaAPIs,
+        'securityPosture':
+            flags.AddSecurityPostureEnumFlag,
+        'workloadVulnerabilityScanning':
+            flags.AddWorkloadVulnScanningEnumFlag,
+        'enableRuntimeVulnerabilityInsight':
+            flags.AddRuntimeVulnerabilityInsightFlag,
     },
 }
 
@@ -1310,6 +1333,12 @@ class CreateBeta(Create):
     ops.enable_security_posture = get_default('enable_security_posture')
     ops.enble_insecure_kubelet_readonly_port = get_default(
         'enble_insecure_kubelet_readonly_port')
+    ops.security_posture = get_default('security_posture')
+    ops.workload_vulnerability_scanning = get_default(
+        'workload_vulnerability_scanning'
+    )
+    ops.enable_runtime_vulnerability_insight = get_default(
+        'enable_runtime_vulnerability_insight')
     return ops
 
 
@@ -1406,4 +1435,9 @@ class CreateAlpha(Create):
     ops.enable_security_posture = get_default('enable_security_posture')
     # pylint: disable=line-too-long
     ops.enble_insecure_kubelet_readonly_port = get_default('enble_insecure_kubelet_readonly_port')
+    ops.security_posture = get_default('security_posture')
+    ops.workload_vulnerability_scanning = get_default(
+        'workload_vulnerability_scanning'
+    )
+    ops.enable_runtime_vulnerability_insight = get_default('enable_runtime_vulnerability_insight')
     return ops

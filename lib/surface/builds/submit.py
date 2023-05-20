@@ -39,21 +39,25 @@ def _CommonArgs(parser):
       'source',
       nargs='?',
       default='.',  # By default, the current directory is used.
-      help='The location of the source to build. The location can be a '
-      'directory on a local disk or a gzipped archive file (.tar.gz) in '
-      'Google Cloud Storage. If the source is a local directory, this '
-      'command skips the files specified in the `--ignore-file`. If '
-      '`--ignore-file` is not specified, use`.gcloudignore` file. If a '
-      '`.gcloudignore` file is absent and a `.gitignore` file is present in '
-      'the local source directory, gcloud will use a generated Git-compatible '
-      '`.gcloudignore` file that respects your .gitignored files. The global '
-      '`.gitignore` is not respected. For more information on `.gcloudignore`, '
-      'see `gcloud topic gcloudignore`.',
+      help=(
+          'The location of the source to build. The location can be a directory'
+          ' on a local disk, a gzipped archive file (.tar.gz) in Google Cloud'
+          ' Storage, or a Git repo url starting with http:// or https://. If'
+          ' the source is a local directory, this command skips the files'
+          ' specified in the `--ignore-file`. If `--ignore-file` is not'
+          ' specified, use`.gcloudignore` file. If a `.gcloudignore` file is'
+          ' absent and a `.gitignore` file is present in the local source'
+          ' directory, gcloud will use a generated Git-compatible'
+          ' `.gcloudignore` file that respects your .gitignored files. The'
+          ' global `.gitignore` is not respected. For more information on'
+          ' `.gcloudignore`, see `gcloud topic gcloudignore`.'
+      ),
   )
   source.add_argument(
       '--no-source',
       action='store_true',
-      help='Specify that no source should be uploaded with this build.')
+      help='Specify that no source should be uploaded with this build.',
+  )
 
   flags.AddRegionFlag(parser)
   flags.AddGcsSourceStagingDirFlag(parser)
@@ -84,6 +88,28 @@ def _CommonArgs(parser):
 
   flags.AddIgnoreFileFlag(parser)
   flags.AddConfigFlags(parser)
+
+  parser.add_argument(
+      '--git-source-dir',
+      help="""\
+Directory, relative to the source root, in which to run the build.
+This must be a relative path. If a step's `dir` is specified and is an absolute
+path, this value is ignored for that step's execution.
+""",
+  )
+  parser.add_argument(
+      '--git-source-revision',
+      help="""\
+Revision to fetch from the Git repository such as a branch, a tag, a commit
+SHA, or any Git ref to run the build.
+
+Cloud Build uses `git fetch` to fetch the revision from the Git repository;
+therefore make sure that the string you provide for `revision` is parsable by
+the command. For information on string values accepted by `git fetch`, see
+https://git-scm.com/docs/gitrevisions#_specifying_revisions. For information on
+`git fetch`, see https://git-scm.com/docs/git-fetch.
+""",
+  )
 
   return worker_pools
 
@@ -162,6 +188,8 @@ class Submit(base.CreateCommand):
         args.machine_type,
         args.disk_size,
         args.worker_pool,
+        args.git_source_dir,
+        args.git_source_revision,
         args.pack,
         False,
         args.default_buckets_behavior,
@@ -179,6 +207,8 @@ class Submit(base.CreateCommand):
         args.no_source,
         args.source,
         args.gcs_source_staging_dir,
+        args.git_source_dir,
+        args.git_source_revision,
         args.ignore_file,
         False,
         build_region,
@@ -253,6 +283,8 @@ class SubmitAlpha(SubmitBeta):
         args.memory,
         args.vcpu_count,
         args.worker_pool,
+        args.git_source_dir,
+        args.git_source_revision,
         args.pack,
         False,
         args.default_buckets_behavior,
@@ -270,6 +302,8 @@ class SubmitAlpha(SubmitBeta):
         args.no_source,
         args.source,
         args.gcs_source_staging_dir,
+                args.git_source_dir,
+        args.git_source_revision,
         args.ignore_file,
         False,
         build_region,

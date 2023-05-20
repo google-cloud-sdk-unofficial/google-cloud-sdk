@@ -26,12 +26,10 @@ from googlecloudsdk.command_lib.database_migration.conversion_workspaces import 
 from googlecloudsdk.core import log
 
 DETAILED_HELP = {
-    'DESCRIPTION':
-        """
+    'DESCRIPTION': """
         Create a Database Migration Service conversion workspace.
         """,
-    'EXAMPLES':
-        """\
+    'EXAMPLES': """\
         To create a conversion workspace:
 
             $ {command} my-conversion-workspace --region=us-central1
@@ -42,7 +40,6 @@ DETAILED_HELP = {
 }
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Create(base.Command):
   """Create a Database Migration Service conversion workspace."""
@@ -90,15 +87,21 @@ class Create(base.Command):
     if args.IsKnownAndSpecified('no_async'):
       log.status.Print(
           'Waiting for conversion workspace [{}] to be created with [{}]'
-          .format(conversion_workspace_ref.conversionWorkspacesId,
-                  result_operation.name))
+          .format(
+              conversion_workspace_ref.conversionWorkspacesId,
+              result_operation.name,
+          )
+      )
 
       api_util.HandleLRO(client, result_operation,
                          client.projects_locations_conversionWorkspaces)
 
-      log.status.Print('Created conversion workspace {} [{}]'.format(
-          conversion_workspace_ref.conversionWorkspacesId,
-          result_operation.name))
+      log.status.Print(
+          'Created conversion workspace {} [{}]'.format(
+              conversion_workspace_ref.conversionWorkspacesId,
+              result_operation.name,
+          )
+      )
       return
 
     operation_ref = resource_parser.Create(

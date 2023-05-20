@@ -31,7 +31,9 @@
           --attribute-mapping="google.subject=assertion.sub" \
           --attribute-condition="true" \
           --client-id="client-id" \
-          --issuer-uri="https://test-idp.com"
+          --issuer-uri="https://test-idp.com" \
+          --web-sso-response-type=id-token \
+          --web-sso-assertion-claims-behavior=only-id-token-claims
 
   request:
     collection: iam.locations.workforcePools.providers
@@ -54,9 +56,7 @@
     - _REF_: googlecloudsdk.command_lib.iam.flags:workforce_pool_provider.oidc_client_id
       required: true
     - _REF_: googlecloudsdk.command_lib.iam.flags:workforce_pool_provider.oidc_web_sso_response_type
-      hidden: true
     - _REF_: googlecloudsdk.command_lib.iam.flags:workforce_pool_provider.oidc_web_sso_assertion_claims_behavior
-      hidden: true
 
   async:
     collection: iam.locations.workforcePools.providers.operations

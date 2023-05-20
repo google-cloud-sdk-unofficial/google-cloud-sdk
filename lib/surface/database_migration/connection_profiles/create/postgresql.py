@@ -26,11 +26,11 @@ from googlecloudsdk.command_lib.database_migration.connection_profiles import fl
 from googlecloudsdk.core.console import console_io
 
 DETAILED_HELP = {
-    'DESCRIPTION':
-        'Create a Database Migration Service connection profile for PostgreSQL.',
-    'EXAMPLES':
-        """\
-        To create a connection profile for PostgreSQL:
+    'DESCRIPTION': (
+        'Create a Database Migration Service connection profile for PostgreSQL.'
+    ),
+    'EXAMPLES': """\
+        To create a connection profile my-profile for PostgreSQL:
 
             $ {command} my-profile --region=us-central1
             --password=123456 --username=my-user

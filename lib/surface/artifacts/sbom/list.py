@@ -56,6 +56,10 @@ class List(base.ListCommand):
 
           $ {command} --resource="us-east1-docker.pkg.dev/project/repo/my-image@sha256:88b205d7995332e10e836514fbfd59ecaf8976fc15060cd66e85cdcebe7fb356"
 
+          To list SBOM file references generated when the images were pushed to Artifact Registry and related to the installed package dependency "perl":
+
+          $ {command} --installed-package="perl"
+
           """,
   }
 
@@ -68,6 +72,17 @@ class List(base.ListCommand):
     """
     parser.display_info.AddFormat(DEFAULT_LIST_FORMAT)
     base.URI_FLAG.RemoveFromParser(parser)
+    parser.add_argument(
+        '--installed-package',
+        required=False,
+        help=(
+            'List SBOM file references generated when the images were pushed to'
+            ' Artifact Registry and related to the installed package'
+            ' dependency. See'
+            ' https://cloud.google.com/container-analysis/docs/scanning-types'
+            ' for supported packages.'
+        ),
+    )
     parser.add_argument(
         '--resource',
         required=False,

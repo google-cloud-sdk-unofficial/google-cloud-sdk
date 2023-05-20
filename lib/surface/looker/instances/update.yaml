@@ -11,9 +11,10 @@
         * The active account does not have permission to update the given
           instance.
     examples: |
-      To update a Looker instance with the name `my-looker-instance` to `LOOKER_CORE_STANDARD`, run:
+      To update the maintenance window to Sunday at 11:00 PM for a Looker instance with the name
+      `my-looker-instance`, run:
 
-        $ {command} my-looker-instance --edition="core-standard"
+        $ {command} my-looker-instance  --maintenance-window-day=sunday --maintenance-window-time='23:00' --async
 
   arguments:
     resource:
@@ -22,64 +23,6 @@
         Arguments and flags that specify the Looker instance you want
         to update.
     params:
-    # Edition Flag
-    - arg_name: edition
-      api_field: instance.platformEdition
-      help_text: |
-        Edition of the instance.
-      choices:
-      - enum_value: STANDARD
-        arg_value: standard
-        release_tracks: [ALPHA]
-        help_text:  |
-          This edition provides a full-feature edition for product exploration
-          and development. Exceptional for all your Analytics.
-      - enum_value: ADVANCED
-        arg_value: advanced
-        release_tracks: [ALPHA]
-        help_text: |
-          This edition provides a full-feature edition for product exploration and development.
-          Scales as your organization and data add complexity.
-      - enum_value: ELITE
-        arg_value: elite
-        release_tracks: [ALPHA]
-        help_text: |
-          This edition provides a full-feature edition for product exploration and development.
-          Drive your business through operational analytics.
-      - enum_value: LOOKER_CORE_TRIAL
-        arg_value: core-trial
-        release_tracks: [ALPHA, GA]
-        help_text: |
-          Trial edition of Looker.
-      - enum_value: LOOKER_CORE_STANDARD
-        arg_value: core-standard
-        release_tracks: [GA]
-        help_text: |
-          A Looker (Google Cloud core) product for small organizations or teams with fewer than 50
-          users. This will be billed monthly while the instance is active.
-      - enum_value:  LOOKER_CORE_STANDARD_ANNUAL
-        arg_value: core-standard-annual
-        release_tracks: [GA]
-        help_text: |
-          A Looker (Google Cloud core) product for small organizations or teams with fewer than 50
-          users. This can be purchased via an annual contract.
-      - enum_value:  LOOKER_CORE_ENTERPRISE_ANNUAL
-        arg_value: core-enterprise-annual
-        release_tracks: [GA]
-        help_text: |
-          A Looker (Google Cloud core) product with enhanced security features for a wide variety of
-          internal BI and analytics use cases. This can be purchased via an annual contract.
-      - enum_value:  LOOKER_CORE_EMBED_ANNUAL
-        arg_value: core-embed-annual
-        release_tracks: [GA]
-        help_text: |
-          A Looker (Google Cloud core) product for deploying and maintaining external analytics and
-          custom applications at scale. This can be purchased via an annual contract.
-      - enum_value:  LOOKER_MODELER
-        arg_value: looker-modeler
-        release_tracks: [ALPHA]
-        help_text: |
-          Standalone Model Service.
     # Public Enabled Flags
     - arg_name: enable-public-ip
       api_field: instance.enablePublicIp
@@ -93,24 +36,6 @@
       type: bool
       help_text: |
         This specifies whether public IP is enabled on the Looker instance.
-    # Oauth Flags
-    - api_field: instance.oauthConfig.clientId
-      arg_name: oauth-client-id
-      help_text: |
-          The client ID from an external OAuth application.
-
-          OAuth Application Credentials - Looker Instance OAuth login settings. Setup an OAuth
-          app that will allow users to authenticate and access the instance. For more
-          information see: https://developers.google.com/identity/protocols/oauth2/web-server#creatingcred
-    - api_field: instance.oauthConfig.clientSecret
-      arg_name: oauth-client-secret
-      help_text: |
-          The client secret from an external OAuth application.
-
-          OAuth Application Credentials - Looker Instance OAuth login settings. Setup an OAuth
-          app that will allow users to authenticate and access the instance. For more
-          information see: https://developers.google.com/identity/protocols/oauth2/web-server#creatingcred
-
     # Group for Maintanence Windows
     - group:
         required: false
@@ -200,29 +125,101 @@
           required: true
           help_text: |
             This specifies the entire allowed email domain list.
+    # Group for Oauth configuration
+    - group:
+        required: false
+        help_text: |
+          OAuth Application Credentials - Looker Instance OAuth login settings. Setup an OAuth
+          app that will allow users to authenticate and access the instance. For more
+          information see: https://developers.google.com/identity/protocols/oauth2/web-server#creatingcred
+        params:
+        - arg_name: oauth-client-id
+          api_field: instance.oauthConfig.clientId
+          required: true
+          help_text: |
+            The client ID from an external OAuth application.
+        - arg_name: oauth-client-secret
+          api_field: instance.oauthConfig.clientSecret
+          required: true
+          help_text: |
+            The client secret from an external OAuth application.
+    # Group for Users Allocations
+    - group:
+        required: false
+        help_text: |
+          User Allocations - There are ten Standard and two Developer users included in the cost of
+          the product. You can allocate additional Standard, Viewer, and Developer users for this
+          instance. It is an optional step and can be modified later.
 
+          With the Standard edition of Looker (Google Cloud core), you can provision up to 50 total
+          users, distributed across Viewer, Standard, and Developer.
+        params:
+        - arg_name: add-viewer-users
+          GA:
+            api_field: instance.userMetadata.additionalViewerUserCount
+          ALPHA:
+            api_field: instance.users.additionalViewerUsers
+          help_text: |
+            Number of additional Viewer Users to allocate to the Looker Instance.
+        - arg_name: add-standard-users
+          GA:
+            api_field: instance.userMetadata.additionalStandardUserCount
+          ALPHA:
+            api_field: instance.users.additionalStandardUsers
+          help_text: |
+            Number of additional Standard Users to allocate to the Looker Instance.
+        - arg_name: add-developer-users
+          GA:
+            api_field: instance.userMetadata.additionalDeveloperUserCount
+          ALPHA:
+            api_field: instance.users.additionalDeveloperUsers
+          help_text: |
+            Number of additional Developer Users to allocate to the Looker Instance.
+    # Group for Custom Domain
+    - group:
+        required: false
+        help_text: |
+          Custom Domains - Looker (Google Cloud core) lets you serve your application through a custom
+          domain. If you use a custom domain, Google will provide a managed auto-renewing SSL
+          certificate for security.
+
+          DNS changes can take up to 24 hours to take effect. Your SSL certificate will take several
+          minutes to activate. Note that you must get the Type A DNS Record from the Google Cloud
+          Console and update with your domain registrar for your custom domain to work properly.
+        params:
+        - arg_name: custom-domain
+          api_field: instance.customDomain.domain
+          help_text: |
+            Domain name wanted to serve the Looker instance.
 
   request:
     ALPHA:
       api_version: v1alpha1
       modify_request_hooks:
+      - googlecloudsdk.command_lib.looker.instances_update_util:UpdateOauthClient
       - googlecloudsdk.command_lib.looker.instances_update_util:ModifyAllowedEmailDomains
+      - googlecloudsdk.command_lib.looker.instances_update_util:UpdateMaintenanceWindow
+      - googlecloudsdk.command_lib.looker.instances_update_util:UpdateUsersAlpha
+      - googlecloudsdk.command_lib.looker.instances_update_util:UpdateDenyMaintenancePeriod
+      - googlecloudsdk.command_lib.looker.instances_update_util:UpdateEnablePublicIpAlpha
+      - googlecloudsdk.command_lib.looker.instances_update_util:UpdateCustomDomain
     GA:
       api_version: v1
       modify_request_hooks:
+      - googlecloudsdk.command_lib.looker.instances_update_util:UpdateOauthClient
       - googlecloudsdk.command_lib.looker.instances_update_util:ModifyAllowedEmailDomains
+      - googlecloudsdk.command_lib.looker.instances_update_util:UpdateMaintenanceWindow
+      - googlecloudsdk.command_lib.looker.instances_update_util:UpdateUserMetadata
+      - googlecloudsdk.command_lib.looker.instances_update_util:UpdateDenyMaintenancePeriod
+      - googlecloudsdk.command_lib.looker.instances_update_util:UpdatePublicIPEnabled
+      - googlecloudsdk.command_lib.looker.instances_update_util:UpdateCustomDomain
     collection: looker.projects.locations.instances
+
+  update:
+    disable_auto_field_mask: true
 
   async:
     collection: looker.projects.locations.operations
 
   output:
-    format: |
-      table(
-         name.basename():label=OPERATION_NAME,
-         name.segment(3):label=REGION,
-         metadata.verb:label=TYPE,
-         metadata.target.basename(),
-         done,
-         metadata.createTime.date():sort=1
-       )
+    format: none

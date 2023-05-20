@@ -26,17 +26,18 @@ from googlecloudsdk.command_lib.database_migration import flags
 from googlecloudsdk.command_lib.database_migration.private_connections import flags as pc_flags
 from googlecloudsdk.core import log
 
-DESCRIPTION = ('Create a Database Migration private connection')
+DESCRIPTION = 'Create a Database Migration private connection'
 EXAMPLES = """\
-    To create a privateConnection called 'my-privateConnection', run:
+    To create a private connection called 'my-private-connection', run:
 
-        $ {command} my-privateConnection --region=us-central1 --display-name=my-privateConnection --vpc=vpc-example --subnet=10.0.0.0/29
+        $ {command} my-private-connection --region=us-central1 --display-name=my-private-connection --vpc=vpc-example --subnet=10.0.0.0/29
+
+        To use a private connection, all migrations and connection profiles that use this configuration must be in the same region.
 
 
    """
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Create(base.Command):
   """Create a Database Migration private connection."""

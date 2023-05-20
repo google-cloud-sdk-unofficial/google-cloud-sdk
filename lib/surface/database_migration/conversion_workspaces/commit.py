@@ -26,13 +26,12 @@ from googlecloudsdk.command_lib.database_migration.conversion_workspaces import 
 from googlecloudsdk.core import log
 
 DETAILED_HELP = {
-    'DESCRIPTION':
-        """
+    'DESCRIPTION': """
         Commit a Database Migration Service conversion workspace.
         """,
-    'EXAMPLES':
-        """\
-        To commit a conversion workspace:
+    'EXAMPLES': """\
+        To commit a version of conversion workspace called
+        my-conversion-workspace:
 
             $ {command} my-conversion-workspace --region=us-central1
             --commit-name=my-commit
@@ -40,7 +39,6 @@ DETAILED_HELP = {
 }
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Commit(base.Command):
   """Commit a Database Migration Service conversion workspace."""
@@ -84,15 +82,21 @@ class Commit(base.Command):
     if args.IsKnownAndSpecified('no_async'):
       log.status.Print(
           'Waiting for conversion workspace [{}] to be committed with [{}]'
-          .format(conversion_workspace_ref.conversionWorkspacesId,
-                  result_operation.name))
+          .format(
+              conversion_workspace_ref.conversionWorkspacesId,
+              result_operation.name,
+          )
+      )
 
       api_util.HandleLRO(client, result_operation,
                          client.projects_locations_conversionWorkspaces)
 
-      log.status.Print('Committed conversion workspace {} [{}]'.format(
-          conversion_workspace_ref.conversionWorkspacesId,
-          result_operation.name))
+      log.status.Print(
+          'Committed conversion workspace {} [{}]'.format(
+              conversion_workspace_ref.conversionWorkspacesId,
+              result_operation.name,
+          )
+      )
       return
 
     operation_ref = resource_parser.Create(

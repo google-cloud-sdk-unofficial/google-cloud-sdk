@@ -1,10 +1,9 @@
 - release_tracks: [GA]
-  hidden: true
   help_text:
     brief: Show details about a database migration private connection.
     description: Show details about a private connection.
     examples: |
-      To show details about a private connection, run:
+      To show details about a private connection called 'my-private-connection', run:
 
         $ {command} my-private-connection --region=us-central1
 

@@ -23,24 +23,25 @@ from googlecloudsdk.api_lib.database_migration import resource_args
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.database_migration.conversion_workspaces import flags as cw_flags
 
+DETAILED_HELP = {
+    'DESCRIPTION': """
+        Describe database entities in a Database Migration conversion workspace.
+        """,
+    'EXAMPLES': """\
+        To describe the database entities of the source tree in a conversion
+        workspace in a project and location `us-central1`, run:
 
-@base.Hidden
+            $ {command} my-conversion-workspace --region=us-central1
+        --tree-type=SOURCE
+        """,
+}
+
+
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class DescribeEntities(base.Command):
   """Describe database entities in a Database Migration conversion workspace."""
 
-  detailed_help = {
-      'DESCRIPTION': """
-        Describe database entities in a Database Migration conversion workspace.
-        """,
-      'EXAMPLES': """\
-      To describe the database entities of the source tree in a conversion
-      workspace in a project and location `us-central1`, run:
-
-      $ {command} my-conversion-workspace --region=us-central1
-      --tree-type=SOURCE
-      """,
-  }
+  detailed_help = DETAILED_HELP
 
   @staticmethod
   def Args(parser):

@@ -9,7 +9,7 @@ help_text:
     Update load-balancing-algorithm of a service LB policy named ``my-service-lb-policy'':
 
       $ {command} my-service-lb-policy
-        --load-balancing-algorithm="NEAREST_ZONE_FIRST"
+        --load-balancing-algorithm=waterfall-by-zone
 
 arguments:
   resource:
@@ -22,23 +22,18 @@ arguments:
     help_text: |
       The global load balancing algorithm to be used.
     choices:
-    - arg_value: balance-over-region
-      enum_value: BALANCE_OVER_REGION
+    - arg_value: waterfall-by-region
       help_text: |
         Direct traffic to the nearest region with endpoints and capacity before spilling over to
         other regions.
-    - arg_value: nearest-zone-first
-      enum_value: NEAREST_ZONE_FIRST
+    - arg_value: waterfall-by-zone
       help_text:  |
         Attempt to keep traffic in a single zone closest to the client, before spilling over to
         other zones.
-    default: balance-over-region
-  - arg_name: reduce-spike-overload
-    api_field: serviceLbPolicy.reduceSpikeOverload
-    help_text: |
-      If specified, will spread the traffic from each client to all the MIGs/NEGs in a region.
-      This option and behavior will be disabled if load-balancing-algorithm=NEAREST_ZONE_FIRST, as
-      they are incompatible.
+    - arg_value: spray-to-region
+      help_text:  |
+        Spread the traffic from each client to all the MIGs/NEGs in a region.
+    default: waterfall-by-region
   - arg_name: auto-capacity-drain
     api_field: serviceLbPolicy.autoCapacityDrain
     ALPHA:
@@ -51,15 +46,6 @@ arguments:
       autoCapacityDrain will never drain more than 50% of the configured MIGs/NEGs of a Backend
       Service.
     type: bool
-  - arg_name: primary-backends
-    api_field:  serviceLbPolicy.primaryBackends
-    help_text: |
-      A list of MIGs/NEGs fully-qualified by its resource identifier where the traffic should first
-      be routed to and capacity filled before routing to other MIGs/NEGs of the backendService this
-      serviceLbPolicy is associated with.
-      The MIG/NEG must exist in the same project. In order for them to receive traffic, it must also
-      be referenced by the backendService which references this serviceLbPolicy.
-    type: arg_list
   - arg_name: description
     api_field: serviceLbPolicy.description
     help_text: The description for the service LB policy.

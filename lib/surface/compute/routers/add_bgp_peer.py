@@ -177,12 +177,12 @@ class AddBgpPeerBeta(AddBgpPeer):
 
   @classmethod
   def Args(cls, parser):
-    cls._Args(parser, support_custom_learned_routes=False)
+    cls._Args(parser, support_custom_learned_routes=True)
 
   def Run(self, args):
     """See base.UpdateCommand."""
     return self._Run(
-        args, support_bfd_mode=False, support_custom_learned_routes=False
+        args, support_bfd_mode=False, support_custom_learned_routes=True
     )
 
 

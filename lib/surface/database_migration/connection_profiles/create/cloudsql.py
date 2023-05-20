@@ -59,7 +59,7 @@ class _CloudSQL(object):
       parser: An argparse parser that you can use to add arguments that go on
         the command line after this command. Positional arguments are allowed.
     """
-    resource_args.AddCloudSqlConnectionProfileResouceArgs(parser, 'to create')
+    resource_args.AddCloudSqlConnectionProfileResourceArgs(parser, 'to create')
 
     cp_flags.AddNoAsyncFlag(parser)
     cp_flags.AddDisplayNameFlag(parser)
@@ -123,4 +123,3 @@ class CloudSQLGA(_CloudSQL, base.Command):
   def Args(parser):
     _CloudSQL.Args(parser)
     cs_flags.AddAllocatedIpRangeFlag(parser)
-

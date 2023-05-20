@@ -26,7 +26,7 @@ from googlecloudsdk.command_lib.database_migration.conversion_workspaces import 
 from googlecloudsdk.core import log
 from googlecloudsdk.core.console import console_io
 
-DESCRIPTION = ('Delete a Database Migration conversion workspace')
+DESCRIPTION = 'Delete a Database Migration conversion workspace'
 EXAMPLES = """\
     To delete a conversion workspace called 'my-conversion-workspace', run:
 
@@ -36,7 +36,6 @@ EXAMPLES = """\
    """
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Delete(base.Command):
   """Delete a Database Migration conversion workspace."""
@@ -88,8 +87,11 @@ class Delete(base.Command):
     if args.IsKnownAndSpecified('no_async'):
       log.status.Print(
           'Waiting for conversion workspace [{}] to be deleted with [{}]'
-          .format(conversion_workspace_ref.conversionWorkspacesId,
-                  result_operation.name))
+          .format(
+              conversion_workspace_ref.conversionWorkspacesId,
+              result_operation.name,
+          )
+      )
 
       api_util.HandleLRO(
           client,
@@ -97,9 +99,12 @@ class Delete(base.Command):
           client.projects_locations_conversionWorkspaces,
           no_resource=True)
 
-      log.status.Print('Deleted conversion workspace {} [{}]'.format(
-          conversion_workspace_ref.conversionWorkspacesId,
-          result_operation.name))
+      log.status.Print(
+          'Deleted conversion workspace {} [{}]'.format(
+              conversion_workspace_ref.conversionWorkspacesId,
+              result_operation.name,
+          )
+      )
       return
 
     operation_ref = resource_parser.Create(

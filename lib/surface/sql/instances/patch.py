@@ -242,7 +242,8 @@ def AddBaseArgs(parser, is_alpha=False):
             'over IP.'))
   flags.AddStorageAutoIncrease(parser)
   flags.AddStorageSize(parser)
-  flags.AddTier(parser, is_patch=True, is_alpha=is_alpha)
+  flags.AddTier(parser, is_patch=True)
+  flags.AddEdition(parser, is_alpha=is_alpha)
   flags.AddEnablePointInTimeRecovery(parser)
   flags.AddNetwork(parser)
   flags.AddMaintenanceVersion(parser)
@@ -262,6 +263,7 @@ def AddBetaArgs(parser):
   flags.AddAllowedPscProjects(psc_update_group)
   flags.AddClearAllowedPscProjects(psc_update_group)
   flags.AddRecreateReplicasOnPrimaryCrash(parser)
+  flags.AddUpgradeSqlNetworkArchitecture(parser)
 
 
 def AddAlphaArgs(unused_parser):

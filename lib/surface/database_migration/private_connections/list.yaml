@@ -1,10 +1,9 @@
 - release_tracks: [GA]
-  hidden: true
   help_text:
     brief: List private connections.
     description: List private connections.
     examples: |
-      To list all private connections in a project and location 'us-central1', run:
+      To list all private connections in the current project and location 'us-central1', run:
 
         $ {command} --region=us-central1
 

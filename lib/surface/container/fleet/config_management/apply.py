@@ -155,11 +155,10 @@ def _parse_config_sync(configmanagement, msg):
           ' is unrecognized in this applySpecVersion. Please remove.')
 
   config_sync = msg.ConfigManagementConfigSync()
-  # missing `enabled: true` will disable configSync
-  if 'enabled' not in spec_source:
-    raise exceptions.Error('Missing required field [{}.enabled]'.format(
-        utils.CONFIG_SYNC))
-  config_sync.enabled = spec_source['enabled']
+  # missing `enabled: true` will enable configSync
+  config_sync.enabled = True
+  if 'enabled' in spec_source:
+    config_sync.enabled = spec_source['enabled']
   # Default to use sourceType 'git' if not specified
   source_type = spec_source.get('sourceType', 'git')
   if source_type == 'oci':

@@ -24,9 +24,18 @@ from googlecloudsdk.command_lib.compute import flags as compute_flags
 from googlecloudsdk.command_lib.compute.addresses import flags
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Move(base.SilentCommand):
-  """Move an address to another project."""
+  """Move an address to another project.
+
+  ## EXAMPLES
+
+  The following command moves address `external-ip1` in region `us-central1` to
+  project `test-playground` with new address name `test-ip1`:
+
+     $ {command} external-ip1 --new-name=test-ip1
+     --target-project=test-playground --region=us-central1
+  """
 
   ADDRESS_ARG = None
 

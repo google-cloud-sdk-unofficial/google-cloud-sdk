@@ -26,17 +26,16 @@ from googlecloudsdk.command_lib.database_migration.private_connections import fl
 from googlecloudsdk.core import log
 from googlecloudsdk.core.console import console_io
 
-DESCRIPTION = ('Delete a Database Migration private connection')
+DESCRIPTION = 'Delete a Database Migration private connection'
 EXAMPLES = """\
-    To delete a privateConnection called 'my-privateConnection', run:
+    To delete a private connection called 'my-private-connection', run:
 
-        $ {command} my-privateConnection --region=us-central1
+        $ {command} my-private-connection --region=us-central1
 
 
    """
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Delete(base.Command):
   """Delete a Database Migration private connection."""

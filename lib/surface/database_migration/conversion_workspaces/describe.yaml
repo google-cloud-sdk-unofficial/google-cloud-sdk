@@ -1,5 +1,4 @@
 - release_tracks: [GA]
-  hidden: true
   help_text:
     brief: Show details about a database migration conversion workspace.
     description: Show details about a conversion workspace.

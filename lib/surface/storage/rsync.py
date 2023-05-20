@@ -99,9 +99,20 @@ class Rsync(base.Command):
     parser.add_argument('destination', help='The destination container path.')
     flags.add_continue_on_error_flag(parser)
     flags.add_encryption_flags(parser)
+    cp_command_util.add_gzip_in_flight_flags(parser)
     cp_command_util.add_ignore_symlinks_flag(parser, default=True)
     cp_command_util.add_recursion_flag(parser)
 
+    parser.add_argument(
+        '--checksums-only',
+        action='store_true',
+        help=(
+            'When comparing objects with matching names at the'
+            ' source and destination, skip modification time check and'
+            ' compare object hashes. Normally, hashes are only compared if'
+            ' modification times are not available.'
+        ),
+    )
     parser.add_argument(
         '--delete-unmatched-destination-objects',
         action='store_true',
@@ -116,11 +127,18 @@ class Rsync(base.Command):
     # TODO(b/267511499): Add below to cp_command_util.add_cp_mv_rsync_flags
     # util. Not done yet because want to toggle `hidden` separate from other
     # commands.
+    flags.add_preserve_acl_flag(parser, hidden=True)
     parser.add_argument(
         '-n',
         '--no-clobber',
         action='store_true',
         help='Do not overwrite existing files or objects at the destination.',
+    )
+    parser.add_argument(
+        '-U',
+        '--skip-unsupported',
+        action='store_true',
+        help='Skip objects with unsupported object types.',
     )
 
     # TODO(b/267511499): Code for unimplemented flags in bug.
@@ -173,10 +191,12 @@ class Rsync(base.Command):
           source_container,
           destination_list_path,
           destination_container,
+          compare_only_hashes=args.checksums_only,
           delete_unmatched_destination_objects=(
               args.delete_unmatched_destination_objects
           ),
           ignore_symlinks=args.ignore_symlinks,
+          skip_unsupported=args.skip_unsupported,
           task_status_queue=task_status_queue,
       )
       return task_executor.execute_tasks(
