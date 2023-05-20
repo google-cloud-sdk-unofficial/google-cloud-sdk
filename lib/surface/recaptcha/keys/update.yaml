@@ -19,6 +19,7 @@
         The reCAPTCHA Key to update.
     params:
     - arg_name: display-name
+      required: false
       api_field: googleCloudRecaptchaenterpriseV1Key.displayName
       help_text: |
         A human-readable name for the key. Typically a site or app name.
@@ -86,7 +87,7 @@
                 Creates a Key configured for iOS devices.
             - group:
                 mutex: true
-                required: true
+                required: false
                 params:
                 - arg_name: allow-all-bundle-ids
                   api_field: googleCloudRecaptchaenterpriseV1Key.iosSettings.allowAllBundleIds
@@ -99,7 +100,30 @@
 
                     Example of a valid bundle id:
                        'com.companyname.productname.appname'
-
+            - group:
+                required: false
+                help_text: |
+                  Fields that are required to perform Apple-specific integrity checks (recommended
+                  for iOS keys).
+                params:
+                - arg_name: private-key-file
+                  api_field: googleCloudRecaptchaenterpriseV1Key.iosSettings.appleDeveloperId.privateKey
+                  required: true
+                  type: "googlecloudsdk.calliope.arg_parsers:FileContents:"
+                  help_text: |
+                    File path to an authentication key (.p8 file extension). This is
+                    generated in the Apple Developer Center under Certificates,
+                    Identifiers & Profiles.
+                - arg_name: key-id
+                  api_field: googleCloudRecaptchaenterpriseV1Key.iosSettings.appleDeveloperId.keyId
+                  required: true
+                  help_text: The Apple developer key ID (10-character string).
+                - arg_name: team-id
+                  api_field: googleCloudRecaptchaenterpriseV1Key.iosSettings.appleDeveloperId.teamId
+                  required: true
+                  help_text: |
+                    The Apple team ID (10-character string) owning the provisioning profile
+                    used to build your application.
         - group:
             help_text: |
               Options for the creation of a site key for Android.

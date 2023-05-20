@@ -48,7 +48,7 @@ class DeleteBeta(base.DeleteCommand):
 
     if args.CONCEPTS.volume.Parse() is None:
       raise exceptions.RequiredArgumentException(
-          '--volume', 'Requires a volume to create snapshot of')
+          '--volume', 'Requires a volume to delete snapshot of')
 
     if not args.quiet:
       delete_warning = ('You are about to delete a Snapshot {}.\n'
@@ -83,7 +83,7 @@ class DeleteAlpha(base.DeleteCommand):
 
     if args.CONCEPTS.volume.Parse() is None:
       raise exceptions.RequiredArgumentException(
-          '--volume', 'Requires a volume to create snapshot of')
+          '--volume', 'Requires a volume to delete snapshot of')
 
     if not args.quiet:
       delete_warning = ('You are about to delete a Snapshot {}.\n'

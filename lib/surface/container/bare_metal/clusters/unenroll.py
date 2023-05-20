@@ -57,6 +57,11 @@ class Unenroll(base.Command):
     cluster_ref = args.CONCEPTS.cluster.Parse()
     operation = cluster_client.Unenroll(args)
 
+    # if a resource does not exist, --allow-missing returns an
+    # operation with an empty name. Early return to avoid polling error.
+    if operation.name is None:
+      return
+
     if args.async_ and not args.IsSpecified('format'):
       args.format = constants.OPERATIONS_FORMAT
 

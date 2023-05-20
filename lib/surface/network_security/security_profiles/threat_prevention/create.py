@@ -21,6 +21,7 @@ from __future__ import unicode_literals
 from googlecloudsdk.api_lib.network_security.security_profiles.threat_prevention import sp_api
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.network_security import sp_flags
+from googlecloudsdk.core import log
 
 DETAILED_HELP = {
     'DESCRIPTION': """
@@ -45,19 +46,44 @@ class CreateProfile(base.CreateCommand):
   def Args(parser):
     sp_flags.AddSecurityProfileResource(parser)
     sp_flags.AddProfileDescription(parser)
+    base.ASYNC_FLAG.AddToParser(parser)
+    base.ASYNC_FLAG.SetDefault(parser, False)
 
   def Run(self, args):
     client = sp_api.Client(self.ReleaseTrack())
     security_profile = args.CONCEPTS.security_profile.Parse()
     description = args.description
+    is_async = args.async_
 
     if not args.IsSpecified('description'):
       args.description = 'Security Profile of type Threat Prevention'
 
-    return client.CreateSecurityProfile(
+    response = client.CreateSecurityProfile(
         name=security_profile.RelativeName(),
         sp_id=security_profile.Name(),
         parent=security_profile.Parent().RelativeName(),
-        description=description)
+        description=description,
+    )
+
+    # Return the in-progress operation if async is requested.
+    if is_async:
+      operation_id = response.name
+      log.status.Print(
+          'Check for operation completion status using operation ID:',
+          operation_id,
+      )
+      return response
+
+    # Default operation poller if async is not specified.
+    return client.WaitForOperation(
+        operation_ref=client.GetOperationsRef(response),
+        message='Waiting for security-profile [{}] to be created'.format(
+            security_profile.RelativeName()
+        ),
+        # TODO(b/279630768): Change to True once the resource type is part of
+        # the operation output.
+        has_result=False,
+    )
+
 
 CreateProfile.detailed_help = DETAILED_HELP

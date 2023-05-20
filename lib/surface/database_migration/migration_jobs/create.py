@@ -129,8 +129,10 @@ class _Create(object):
     destination_ref = args.CONCEPTS.destination.Parse()
     if self.ReleaseTrack() == base.ReleaseTrack.GA:
       conversion_workspace_ref = args.CONCEPTS.conversion_workspace.Parse()
+      cmek_key_ref = args.CONCEPTS.cmek_key.Parse()
     else:
       conversion_workspace_ref = None
+      cmek_key_ref = None
 
     cp_client = migration_jobs.MigrationJobsClient(self.ReleaseTrack())
     result_operation = cp_client.Create(
@@ -139,6 +141,7 @@ class _Create(object):
         source_ref,
         destination_ref,
         conversion_workspace_ref,
+        cmek_key_ref,
         args,
     )
 

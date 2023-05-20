@@ -847,6 +847,8 @@ flags_to_add = {
             flags.AddWorkloadVulnScanningEnumFlag,
         'enableRuntimeVulnerabilityInsight':
             flags.AddRuntimeVulnerabilityInsightFlag,
+        'enableDnsEndpoint':
+            flags.AddEnableDNSEndpoint,
     },
     ALPHA: {
         'accelerator': (lambda p: AddAcceleratorFlag(p, True, True, True)),
@@ -1087,6 +1089,8 @@ flags_to_add = {
             flags.AddWorkloadVulnScanningEnumFlag,
         'enableRuntimeVulnerabilityInsight':
             flags.AddRuntimeVulnerabilityInsightFlag,
+        'enableDnsEndpoint':
+            flags.AddEnableDNSEndpoint,
     },
 }
 
@@ -1339,6 +1343,7 @@ class CreateBeta(Create):
     )
     ops.enable_runtime_vulnerability_insight = get_default(
         'enable_runtime_vulnerability_insight')
+    ops.enable_dns_endpoint = get_default('enable_dns_endpoint')
     return ops
 
 
@@ -1440,4 +1445,5 @@ class CreateAlpha(Create):
         'workload_vulnerability_scanning'
     )
     ops.enable_runtime_vulnerability_insight = get_default('enable_runtime_vulnerability_insight')
+    ops.enable_dns_endpoint = get_default('enable_dns_endpoint')
     return ops

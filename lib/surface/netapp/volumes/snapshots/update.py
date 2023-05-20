@@ -48,7 +48,7 @@ class UpdateBeta(base.CreateCommand):
 
     if args.CONCEPTS.volume.Parse() is None:
       raise exceptions.RequiredArgumentException(
-          '--volume', 'Requires a volume to create snapshot of')
+          '--volume', 'Requires a volume to update snapshot of')
 
     client = snapshots_client.SnapshotsClient(self._RELEASE_TRACK)
     labels_diff = labels_util.Diff.FromUpdateArgs(args)
@@ -109,7 +109,7 @@ class UpdateAlpha(base.CreateCommand):
 
     if args.CONCEPTS.volume.Parse() is None:
       raise exceptions.RequiredArgumentException(
-          '--volume', 'Requires a volume to create snapshot of')
+          '--volume', 'Requires a volume to update snapshot of')
 
     client = snapshots_client.SnapshotsClient(self._RELEASE_TRACK)
     labels_diff = labels_util.Diff.FromUpdateArgs(args)

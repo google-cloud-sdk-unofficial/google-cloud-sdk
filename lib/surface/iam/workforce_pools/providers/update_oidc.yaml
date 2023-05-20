@@ -52,6 +52,7 @@
     - _REF_: googlecloudsdk.command_lib.iam.flags:workforce_pool_provider.attribute_condition
     - _REF_: googlecloudsdk.command_lib.iam.flags:workforce_pool_provider.oidc_issuer_uri
     - _REF_: googlecloudsdk.command_lib.iam.flags:workforce_pool_provider.oidc_client_id
+    - _REF_: googlecloudsdk.command_lib.iam.flags:workforce_pool_provider.oidc_clearable_client_secret
     - _REF_: googlecloudsdk.command_lib.iam.flags:workforce_pool_provider.oidc_web_sso_response_type
     - _REF_: googlecloudsdk.command_lib.iam.flags:workforce_pool_provider.oidc_web_sso_assertion_claims_behavior
 

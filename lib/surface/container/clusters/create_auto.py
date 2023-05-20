@@ -50,6 +50,7 @@ auto_flags = [
     'workloadVulnerabilityScanning',
     'enableRuntimeVulnerabilityInsight',
     'masterglobalaccess',
+    'enableDnsEndpoint',
 ]
 
 # Change default flag values in create-auto

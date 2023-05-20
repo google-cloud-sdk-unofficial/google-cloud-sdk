@@ -73,7 +73,7 @@ class Deploy(base.CacheCommand):
     old_workflow = client.Get(workflow_ref)
     first_deployment = old_workflow is None
     workflow, updated_fields = client.BuildWorkflowFromArgs(
-        args, self.ReleaseTrack()
+        args, old_workflow, self.ReleaseTrack(),
     )
     validate.ValidateWorkflow(workflow, first_deployment=first_deployment)
     if first_deployment:

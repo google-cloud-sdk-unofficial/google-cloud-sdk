@@ -137,6 +137,7 @@ class Create(base.Command):
   _support_max_count_per_zone = False
   _support_local_ssd_recovery_timeout = False
   _support_network_queue_count = True
+  _support_performance_monitoring_unit = False
 
   _log_async = False
 
@@ -161,6 +162,7 @@ class Create(base.Command):
         support_no_address_in_networking=cls._support_no_address_in_networking,
         support_max_count_per_zone=cls._support_max_count_per_zone,
         support_network_queue_count=cls._support_network_queue_count,
+        support_performance_monitoring_unit=cls._support_performance_monitoring_unit,
     )
     cls.AddSourceInstanceTemplate(parser)
 
@@ -203,6 +205,7 @@ class Create(base.Command):
         self._support_confidential_compute_type,
         self._support_provisioned_throughput,
         self._support_max_count_per_zone,
+        self._support_performance_monitoring_unit,
     )
     bulk_instance_resource = bulk_util.CreateBulkInsertInstanceResource(
         args,
@@ -340,6 +343,7 @@ class CreateBeta(Create):
   _support_local_ssd_recovery_timeout = False
   _support_network_queue_count = True
   _support_local_ssd_size = True
+  _support_performance_monitoring_unit = False
 
   @classmethod
   def Args(cls, parser):
@@ -361,6 +365,7 @@ class CreateBeta(Create):
         support_no_address_in_networking=cls._support_no_address_in_networking,
         support_max_count_per_zone=cls._support_max_count_per_zone,
         support_network_queue_count=cls._support_network_queue_count,
+        support_performance_monitoring_unit=cls._support_performance_monitoring_unit,
     )
     cls.AddSourceInstanceTemplate(parser)
 
@@ -387,6 +392,7 @@ class CreateAlpha(Create):
   _support_max_count_per_zone = True
   _support_local_ssd_recovery_timeout = True
   _support_network_queue_count = True
+  _support_performance_monitoring_unit = True
 
   @classmethod
   def Args(cls, parser):
@@ -409,6 +415,7 @@ class CreateAlpha(Create):
         support_no_address_in_networking=cls._support_no_address_in_networking,
         support_max_count_per_zone=cls._support_max_count_per_zone,
         support_network_queue_count=cls._support_network_queue_count,
+        support_performance_monitoring_unit=cls._support_performance_monitoring_unit,
     )
 
     cls.AddSourceInstanceTemplate(parser)

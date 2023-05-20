@@ -61,13 +61,16 @@ class Update(base.UpdateCommand):
     workload_name = workload_resource.RelativeName()
     with endpoint_util.AssuredWorkloadsEndpointOverridesFromRegion(
         release_track=self.ReleaseTrack(), region=region):
-      update_mask = message_util.CreateUpdateMask(args.display_name,
-                                                  args.labels)
+      update_mask = message_util.CreateUpdateMask(
+          args.display_name, args.labels, args.violation_notifications_enabled
+      )
       workload = message_util.CreateAssuredWorkload(
           display_name=args.display_name,
           labels=args.labels,
           etag=args.etag,
-          release_track=self.ReleaseTrack())
+          violation_notifications_enabled=args.violation_notifications_enabled,
+          release_track=self.ReleaseTrack(),
+      )
       client = apis.WorkloadsClient(release_track=self.ReleaseTrack())
       self.updated_resource = client.Update(
           workload=workload, name=workload_name, update_mask=update_mask)

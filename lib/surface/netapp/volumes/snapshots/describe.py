@@ -49,7 +49,7 @@ class DescribeBeta(base.DescribeCommand):
 
     if args.CONCEPTS.volume.Parse() is None:
       raise exceptions.RequiredArgumentException(
-          '--volume', 'Requires a volume to create snapshot of')
+          '--volume', 'Requires a volume to describe snapshot of')
 
     client = snapshots_client.SnapshotsClient(release_track=self._RELEASE_TRACK)
     return client.GetSnapshot(snapshot_ref)
@@ -73,7 +73,7 @@ class DescribeAlpha(base.DescribeCommand):
 
     if args.CONCEPTS.volume.Parse() is None:
       raise exceptions.RequiredArgumentException(
-          '--volume', 'Requires a volume to create snapshot of')
+          '--volume', 'Requires a volume to describe snapshot of')
 
     client = snapshots_client.SnapshotsClient(release_track=self._RELEASE_TRACK)
     return client.GetSnapshot(snapshot_ref)

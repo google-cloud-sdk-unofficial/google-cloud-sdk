@@ -22,6 +22,7 @@ from googlecloudsdk.api_lib.network_security.security_profiles.threat_prevention
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.network_security import sp_flags
 from googlecloudsdk.core import exceptions as core_exceptions
+from googlecloudsdk.core import log
 
 DETAILED_HELP = {
     'DESCRIPTION': """
@@ -58,10 +59,13 @@ class UpdateOverride(base.UpdateCommand):
     sp_flags.AddSecurityProfileResource(parser)
     sp_flags.AddSeverityorThreatIDArg(parser, required=True)
     sp_flags.AddActionArg(parser, required=True)
+    base.ASYNC_FLAG.AddToParser(parser)
+    base.ASYNC_FLAG.SetDefault(parser, False)
 
   def Run(self, args):
     client = sp_api.Client(self.ReleaseTrack())
     security_profile = args.CONCEPTS.security_profile.Parse()
+    is_async = args.async_
 
     update_mask = ''
     overrides = []
@@ -86,12 +90,32 @@ class UpdateOverride(base.UpdateCommand):
           'Either --severities or --threat-ids must be specified'
       )
 
-    return client.ModifyOverride(
+    response = client.ModifyOverride(
         security_profile.RelativeName(),
         overrides,
         'update_override',
         update_mask,
     )
 
+    # Return the in-progress operation if async is requested.
+    if is_async:
+      operation_id = response.name
+      log.status.Print(
+          'Check for operation completion status using operation ID:',
+          operation_id,
+      )
+      return response
+
+    # Default operation poller if async is not specified.
+    return client.WaitForOperation(
+        operation_ref=client.GetOperationsRef(response),
+        message=(
+            'Waiting for update override in security-profile [{}] operation to'
+            ' complete.'.format(security_profile.RelativeName())
+        ),
+        # TODO(b/279630768): Change to True once the resource type is part of
+        # the operation output.
+        has_result=False,
+    )
 
 UpdateOverride.detailed_help = DETAILED_HELP

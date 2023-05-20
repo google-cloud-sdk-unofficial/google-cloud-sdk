@@ -19,12 +19,14 @@ from __future__ import division
 from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.compute import base_classes
+from googlecloudsdk.api_lib.compute import firewall_policy_association_utils as association_utils
 from googlecloudsdk.api_lib.compute.network_firewall_policies import client
 from googlecloudsdk.api_lib.compute.network_firewall_policies import region_client
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute.network_firewall_policies import flags
 
 
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Create(base.CreateCommand):
   """Create a new association between a firewall policy and a network.
 
@@ -33,6 +35,7 @@ class Create(base.CreateCommand):
   resources.
   """
   NEWORK_FIREWALL_POLICY_ARG = None
+  _support_priority = False
 
   @classmethod
   def Args(cls, parser):
@@ -40,7 +43,7 @@ class Create(base.CreateCommand):
         flags.NetworkFirewallPolicyAssociationArgument(
             required=True, operation='create'))
     cls.NETWORK_FIREWALL_POLICY_ARG.AddArgument(parser, operation_type='create')
-    flags.AddArgsCreateAssociation(parser)
+    flags.AddArgsCreateAssociation(parser, cls._support_priority)
     parser.display_info.AddCacheUpdater(flags.NetworkFirewallPoliciesCompleter)
 
   def Run(self, args):
@@ -66,18 +69,53 @@ class Create(base.CreateCommand):
 
     attachment_target = network_ref.SelfLink()
 
+    priority = None
+    if self._support_priority and args.IsSpecified('priority'):
+      priority = association_utils.ConvertPriorityToInt(args.priority)
+
     replace_existing_association = False
     if args.replace_association_on_target:
       replace_existing_association = True
 
-    association = holder.client.messages.FirewallPolicyAssociation(
-        attachmentTarget=attachment_target, name=name)
+    association = None
+    if self._support_priority and priority is not None:
+      association = holder.client.messages.FirewallPolicyAssociation(
+          attachmentTarget=attachment_target, name=name, priority=priority
+      )
+    else:
+      association = holder.client.messages.FirewallPolicyAssociation(
+          attachmentTarget=attachment_target, name=name
+      )
 
     return network_firewall_policy.AddAssociation(
         association=association,
         firewall_policy=args.firewall_policy,
         replace_existing_association=replace_existing_association,
         only_generate_request=False)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class CreateBeta(Create):
+  """Create a new association between a firewall policy and a network.
+
+  *{command}* is used to create network firewall policy associations. A
+  network firewall policy is a set of rules that controls access to various
+  resources.
+  """
+
+  _support_priority = False
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class CreateAlpha(Create):
+  """Create a new association between a firewall policy and a network.
+
+  *{command}* is used to create network firewall policy associations. A
+  network firewall policy is a set of rules that controls access to various
+  resources.
+  """
+
+  _support_priority = True
 
 
 Create.detailed_help = {

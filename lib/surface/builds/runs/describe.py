@@ -18,17 +18,15 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
-from googlecloudsdk.api_lib.cloudbuild import cloudbuild_util as v1_client_util
 from googlecloudsdk.api_lib.cloudbuild.v2 import client_util as v2_client_util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.cloudbuild import run_flags
-from googlecloudsdk.core import resources
 
 
 @base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Describe(base.Command):
-  """Get a PipelineRun/TaskRun/Build."""
+  """Get a PipelineRun/TaskRun."""
 
   @staticmethod
   def Args(parser):
@@ -46,20 +44,4 @@ class Describe(base.Command):
     region = region_ref.AsDict()['locationsId']
     project = region_ref.AsDict()['projectsId']
     run_id = args.RUN_ID
-
-    if args.type == 'build':
-      client = v1_client_util.GetClientInstance()
-      messages = v1_client_util.GetMessagesModule()
-      build_resource = resources.REGISTRY.Parse(
-          run_id,
-          params={
-              'projectsId': project,
-              'locationsId': region,
-              'buildsId': run_id,
-          },
-          collection='cloudbuild.projects.locations.builds')
-      return client.projects_locations_builds.Get(
-          messages.CloudbuildProjectsLocationsBuildsGetRequest(
-              name=build_resource.RelativeName()))
-    else:
-      return v2_client_util.GetRun(project, region, run_id, args.type)
+    return v2_client_util.GetRun(project, region, run_id, args.type)

@@ -21,6 +21,7 @@ from __future__ import unicode_literals
 import os
 import textwrap
 
+from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.storage import cp_command_util
 from googlecloudsdk.command_lib.storage import encryption_util
@@ -57,7 +58,7 @@ class Rsync(base.Command):
 
       """,
       'EXAMPLES': """
-      To sync the contents of the local directory ``data'' to the bucket
+      To sync the contents of the local directory `data` to the bucket
       gs://my-bucket/data:
 
         $ {command} data gs://my-bucket/data
@@ -66,7 +67,7 @@ class Rsync(base.Command):
 
         $ {command} data gs://my-bucket/data --recursive
 
-      To make the local directory ``my-data'' the same as the contents of
+      To make the local directory `my-data` the same as the contents of
       gs://mybucket/data and delete objects in the local directory that are
       not in gs://mybucket/data:
 
@@ -79,8 +80,8 @@ class Rsync(base.Command):
         $ {command} gs://mybucket1 gs://mybucket2 --recursive \
            --delete-unmatched-destination-objects
 
-      To copy all objects from ``dir1'' into ``dir2'' and delete all objects
-      in ``dir2'' which are not in ``dir1'':
+      To copy all objects from `dir1` into `dir2` and delete all objects
+      in `dir2` which are not in `dir1`:
 
         $ {command} dir1 dir2 --recursive -\
            --delete-unmatched-destination-objects
@@ -89,16 +90,32 @@ class Rsync(base.Command):
 
         $ {command} gs://my-gs-bucket s3://my-s3-bucket --recursive \
            --delete-unmatched-destination-objects
+
+      To apply gzip compression to only uploaded image files in `dir`:
+
+        $ {command} dir gs://my-bucket/data --gzip-in-flight=jpeg,jpg,gif,png
+
+      To skip the file `dir/data1/a.txt`:
+
+        $ {command} dir gs://my-bucket --exclude "data./.*\\.txt$"
+
+      To skip all .txt and .jpg files:
+
+        $ {command} dir gs://my-bucket --exclude ".*\\.txt$|.*\\.jpg$"
       """,
-      # TODO(b/267511499): Code for rest of examples in bug.
   }
 
   @staticmethod
   def Args(parser):
     parser.add_argument('source', help='The source container path.')
     parser.add_argument('destination', help='The destination container path.')
-    flags.add_continue_on_error_flag(parser)
+
+    acl_flags_group = parser.add_group()
+    flags.add_preserve_acl_flag(acl_flags_group, hidden=True)
+    flags.add_predefined_acl_flag(acl_flags_group)
+
     flags.add_encryption_flags(parser)
+    cp_command_util.add_cp_mv_rsync_flags(parser)
     cp_command_util.add_gzip_in_flight_flags(parser)
     cp_command_util.add_ignore_symlinks_flag(parser, default=True)
     cp_command_util.add_recursion_flag(parser)
@@ -123,25 +140,41 @@ class Rsync(base.Command):
             Note: this option can delete data quickly if you specify the wrong
             source and destination combination."""),
     )
-
-    # TODO(b/267511499): Add below to cp_command_util.add_cp_mv_rsync_flags
-    # util. Not done yet because want to toggle `hidden` separate from other
-    # commands.
-    flags.add_preserve_acl_flag(parser, hidden=True)
     parser.add_argument(
-        '-n',
-        '--no-clobber',
+        '--dry-run',
         action='store_true',
-        help='Do not overwrite existing files or objects at the destination.',
+        help=(
+            'Print what operations rsync would perform without actually'
+            ' executing them.'
+        ),
     )
     parser.add_argument(
-        '-U',
-        '--skip-unsupported',
-        action='store_true',
-        help='Skip objects with unsupported object types.',
-    )
+        '-x',
+        '--exclude',
+        metavar='REGEX',
+        type=arg_parsers.ArgList(),
+        help=(r"""Exclude objects matching regex pattern from rsync.
 
-    # TODO(b/267511499): Code for unimplemented flags in bug.
+Note that this is a Python regular expression, not a pure wildcard
+pattern. For example, matching a string ending in "abc" is
+`.*abc$` rather than `*abc`. Also note that the exclude path
+is relative, as opposed to absolute
+(similar to Linux `rsync` and `tar` exclude options).
+
+For the Windows cmd.exe command line interpreter, use
+`^` as an escape character instead of `\` and escape the `|`
+character. When using Windows PowerShell, use `'` instead of
+`"` and surround the `|` character with `"`."""),
+    )
+    parser.add_argument(
+        '-u',
+        '--skip-if-dest-has-newer-mtime',
+        action='store_true',
+        help=(
+            'Skip operating on destination object if it has a newer'
+            ' modification time than the source.'
+        ),
+    )
 
   def Run(self, args):
     encryption_util.initialize_key_store(args)
@@ -149,7 +182,7 @@ class Rsync(base.Command):
         os.path.expanduser(args.source)
     )
     destination_container = (
-        rsync_command_util.get_container_or_container_create_location_resource(
+        rsync_command_util.get_existing_or_placeholder_destination_resource(
             os.path.expanduser(args.destination)
         )
     )
@@ -161,11 +194,18 @@ class Rsync(base.Command):
     destination_list_path = rsync_command_util.get_hashed_list_file_path(
         destination_container.storage_url.url_string
     )
+
     source_task = get_sorted_list_file_task.GetSortedContainerContentsTask(
-        source_container, source_list_path, recurse=args.recursive
+        source_container,
+        source_list_path,
+        exclude_pattern_strings=args.exclude,
+        recurse=args.recursive,
     )
     destination_task = get_sorted_list_file_task.GetSortedContainerContentsTask(
-        destination_container, destination_list_path, recurse=args.recursive
+        destination_container,
+        destination_list_path,
+        exclude_pattern_strings=args.exclude,
+        recurse=args.recursive,
     )
 
     try:
@@ -195,7 +235,11 @@ class Rsync(base.Command):
           delete_unmatched_destination_objects=(
               args.delete_unmatched_destination_objects
           ),
+          dry_run=args.dry_run,
           ignore_symlinks=args.ignore_symlinks,
+          skip_if_destination_has_later_modification_time=(
+              args.skip_if_dest_has_newer_mtime
+          ),
           skip_unsupported=args.skip_unsupported,
           task_status_queue=task_status_queue,
       )

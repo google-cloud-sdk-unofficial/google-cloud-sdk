@@ -51,6 +51,5 @@ class List(base.ListCommand):
     Returns:
       The resources listed by the service.
     """
-    location_ref = args.CONCEPTS.location.Parse()
     client = bare_metal_clusters.ClustersClient()
-    return client.List(location_ref, limit=args.limit, page_size=args.page_size)
+    return client.List(args)

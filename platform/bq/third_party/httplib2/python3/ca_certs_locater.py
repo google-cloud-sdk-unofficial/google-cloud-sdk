@@ -2,8 +2,6 @@
 
 import os
 
-
-
 def get():
   """Locate the ca_certs.txt file.
 

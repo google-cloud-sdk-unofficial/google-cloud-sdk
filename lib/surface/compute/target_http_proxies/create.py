@@ -28,10 +28,8 @@ from googlecloudsdk.command_lib.compute.url_maps import flags as url_map_flags
 
 def _DetailedHelp():
   return {
-      'brief':
-          'Create a target HTTP proxy.',
-      'DESCRIPTION':
-          """\
+      'brief': 'Create a target HTTP proxy.',
+      'DESCRIPTION': """\
       *{command}* is used to create target HTTP proxies. A target
       HTTP proxy is referenced by one or more forwarding rules which
       specify the network traffic that the proxy is responsible for
@@ -39,8 +37,7 @@ def _DetailedHelp():
       the rules for routing the requests. The URL map's job is to map
       URLs to backend services which handle the actual requests.
       """,
-      'EXAMPLES':
-          """\
+      'EXAMPLES': """\
       If there is an already-created URL map with the name URL_MAP, create a
       global target HTTP proxy pointing to this map by running:
 
@@ -62,14 +59,16 @@ def _Args(parser, traffic_director_security):
   parser.display_info.AddFormat(flags.DEFAULT_LIST_FORMAT)
   parser.add_argument(
       '--description',
-      help='An optional, textual description for the target HTTP proxy.')
+      help='An optional, textual description for the target HTTP proxy.',
+  )
   parser.display_info.AddCacheUpdater(flags.TargetHttpProxiesCompleter)
   if traffic_director_security:
     flags.AddProxyBind(parser, False)
 
 
-def _Run(args, holder, url_map_ref, target_http_proxy_ref,
-         traffic_director_security):
+def _Run(
+    args, holder, url_map_ref, target_http_proxy_ref, traffic_director_security
+):
   """Issue a Target HTTP Proxy Insert request."""
   client = holder.client
 
@@ -78,24 +77,28 @@ def _Run(args, holder, url_map_ref, target_http_proxy_ref,
         description=args.description,
         name=target_http_proxy_ref.Name(),
         urlMap=url_map_ref.SelfLink(),
-        proxyBind=args.proxy_bind)
+        proxyBind=args.proxy_bind,
+    )
   else:
     target_http_proxy = client.messages.TargetHttpProxy(
         description=args.description,
         name=target_http_proxy_ref.Name(),
-        urlMap=url_map_ref.SelfLink())
+        urlMap=url_map_ref.SelfLink(),
+    )
 
   if target_http_proxies_utils.IsRegionalTargetHttpProxiesRef(
-      target_http_proxy_ref):
+      target_http_proxy_ref
+  ):
     request = client.messages.ComputeRegionTargetHttpProxiesInsertRequest(
         project=target_http_proxy_ref.project,
         region=target_http_proxy_ref.region,
-        targetHttpProxy=target_http_proxy)
+        targetHttpProxy=target_http_proxy,
+    )
     collection = client.apitools_client.regionTargetHttpProxies
   else:
     request = client.messages.ComputeTargetHttpProxiesInsertRequest(
-        project=target_http_proxy_ref.project,
-        targetHttpProxy=target_http_proxy)
+        project=target_http_proxy_ref.project, targetHttpProxy=target_http_proxy
+    )
     collection = client.apitools_client.targetHttpProxies
 
   return client.MakeRequests([(collection, 'Insert', request)])
@@ -123,11 +126,18 @@ class Create(base.CreateCommand):
     """Issue a Target HTTP Proxy Insert request."""
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     target_http_proxy_ref = self.TARGET_HTTP_PROXY_ARG.ResolveAsResource(
-        args, holder.resources, default_scope=compute_scope.ScopeEnum.GLOBAL)
+        args, holder.resources, default_scope=compute_scope.ScopeEnum.GLOBAL
+    )
     url_map_ref = target_http_proxies_utils.ResolveTargetHttpProxyUrlMap(
-        args, self.URL_MAP_ARG, target_http_proxy_ref, holder.resources)
-    return _Run(args, holder, url_map_ref, target_http_proxy_ref,
-                self._traffic_director_security)
+        args, self.URL_MAP_ARG, target_http_proxy_ref, holder.resources
+    )
+    return _Run(
+        args,
+        holder,
+        url_map_ref,
+        target_http_proxy_ref,
+        self._traffic_director_security,
+    )
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)

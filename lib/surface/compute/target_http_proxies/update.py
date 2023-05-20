@@ -29,10 +29,8 @@ from googlecloudsdk.command_lib.compute.url_maps import flags as url_map_flags
 
 def _DetailedHelp():
   return {
-      'brief':
-          'Update a target HTTP proxy.',
-      'DESCRIPTION':
-          """\
+      'brief': 'Update a target HTTP proxy.',
+      'DESCRIPTION': """\
       *{command}* is used to change the URL map of existing target
       HTTP proxies. A target HTTP proxy is referenced by one or more
       forwarding rules which specify the network traffic that the proxy
@@ -41,8 +39,7 @@ def _DetailedHelp():
       job is to map URLs to backend services which handle the actual
       requests.
       """,
-      'EXAMPLES':
-          """\
+      'EXAMPLES': """\
       If there is an already-created URL map with the name URL_MAP, update a
       global target HTTP proxy pointing to this map by running:
 
@@ -59,27 +56,33 @@ def _Run(holder, target_http_proxy_ref, url_map_ref):
   """Issues requests necessary to update Target HTTP Proxies."""
   client = holder.client
   if target_http_proxies_utils.IsRegionalTargetHttpProxiesRef(
-      target_http_proxy_ref):
+      target_http_proxy_ref
+  ):
     request = client.messages.ComputeRegionTargetHttpProxiesSetUrlMapRequest(
         project=target_http_proxy_ref.project,
         region=target_http_proxy_ref.region,
         targetHttpProxy=target_http_proxy_ref.Name(),
         urlMapReference=client.messages.UrlMapReference(
-            urlMap=url_map_ref.SelfLink()))
+            urlMap=url_map_ref.SelfLink()
+        ),
+    )
     collection = client.apitools_client.regionTargetHttpProxies
   else:
     request = client.messages.ComputeTargetHttpProxiesSetUrlMapRequest(
         project=target_http_proxy_ref.project,
         targetHttpProxy=target_http_proxy_ref.Name(),
         urlMapReference=client.messages.UrlMapReference(
-            urlMap=url_map_ref.SelfLink()))
+            urlMap=url_map_ref.SelfLink()
+        ),
+    )
     collection = client.apitools_client.targetHttpProxies
 
   return client.MakeRequests([(collection, 'SetUrlMap', request)])
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
-                    base.ReleaseTrack.GA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
+)
 class Update(base.SilentCommand):
   """Update a target HTTP proxy."""
 
@@ -100,8 +103,10 @@ class Update(base.SilentCommand):
         args,
         holder.resources,
         default_scope=compute_scope.ScopeEnum.GLOBAL,
-        scope_lister=compute_flags.GetDefaultScopeLister(holder.client))
+        scope_lister=compute_flags.GetDefaultScopeLister(holder.client),
+    )
     url_map_ref = target_http_proxies_utils.ResolveTargetHttpProxyUrlMap(
-        args, self.URL_MAP_ARG, target_http_proxy_ref, holder.resources)
+        args, self.URL_MAP_ARG, target_http_proxy_ref, holder.resources
+    )
 
     return _Run(holder, target_http_proxy_ref, url_map_ref)

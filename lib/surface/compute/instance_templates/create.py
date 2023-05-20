@@ -497,7 +497,8 @@ def _RunCreate(compute_api,
                support_ipv6_reservation=False,
                support_internal_ipv6_reservation=False,
                support_replica_zones=False,
-               support_local_ssd_recovery_timeout=False):
+               support_local_ssd_recovery_timeout=False,
+               support_performance_monitoring_unit=False):
   """Common routine for creating instance template.
 
   This is shared between various release tracks.
@@ -533,6 +534,9 @@ def _RunCreate(compute_api,
         create-on-create disk.
       support_local_ssd_recovery_timeout: Indicate whether the local SSD
         recovery timeout is set.
+      support_performance_monitoring_unit: Indicate whether the PMU is
+        supported.
+
   Returns:
       A resource object dispatched by display.Displayer().
   """
@@ -844,16 +848,23 @@ def _RunCreate(compute_api,
       or (support_numa_node_count and args.numa_node_count is not None)
       or has_visible_core_count
       or args.enable_uefi_networking is not None
+      or (
+          support_performance_monitoring_unit
+          and args.performance_monitoring_unit
+      )
   ):
     visible_core_count = (
         args.visible_core_count if has_visible_core_count else None
     )
+
     instance_template.properties.advancedMachineFeatures = (
         instance_utils.CreateAdvancedMachineFeaturesMessage(
             client.messages, args.enable_nested_virtualization,
             args.threads_per_core,
             args.numa_node_count if support_numa_node_count else None,
-            visible_core_count, args.enable_uefi_networking))
+            visible_core_count, args.enable_uefi_networking,
+            args.performance_monitoring_unit
+            if support_performance_monitoring_unit else None))
 
   if args.resource_manager_tags:
     ret_resource_manager_tags = (
@@ -928,6 +939,7 @@ class Create(base.CreateCommand):
   _support_replica_zones = False
   _support_local_ssd_size = True
   _support_network_queue_count = True
+  _support_performance_monitoring_unit = False
 
   @classmethod
   def Args(cls, parser):
@@ -978,6 +990,7 @@ class Create(base.CreateCommand):
         support_region_instance_template=self._support_region_instance_template,
         support_provisioned_throughput=self._support_provisioned_throughput,
         support_replica_zones=self._support_replica_zones,
+        support_performance_monitoring_unit=self._support_performance_monitoring_unit,
     )
 
 
@@ -1011,6 +1024,7 @@ class CreateBeta(Create):
   _support_local_ssd_recovery_timeout = False
   _support_local_ssd_size = True
   _support_network_queue_count = True
+  _support_performance_monitoring_unit = False
 
   @classmethod
   def Args(cls, parser):
@@ -1063,7 +1077,9 @@ class CreateBeta(Create):
         support_region_instance_template=self._support_region_instance_template,
         support_provisioned_throughput=self._support_provisioned_throughput,
         support_replica_zones=self._support_replica_zones,
-        support_local_ssd_recovery_timeout=self._support_local_ssd_recovery_timeout)
+        support_local_ssd_recovery_timeout=self._support_local_ssd_recovery_timeout,
+        support_performance_monitoring_unit=self._support_performance_monitoring_unit,
+    )
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -1097,6 +1113,7 @@ class CreateAlpha(Create):
   _support_local_ssd_recovery_timeout = True
   _support_network_queue_count = True
   _support_local_ssd_size = True
+  _support_performance_monitoring_unit = True
 
   @classmethod
   def Args(cls, parser):
@@ -1128,6 +1145,7 @@ class CreateAlpha(Create):
     instances_flags.AddIPv6AddressAlphaArgs(parser)
     instances_flags.AddIPv6PrefixLengthAlphaArgs(parser)
     instance_templates_flags.AddKeyRevocationActionTypeArgs(parser)
+    instances_flags.AddPerformanceMonitoringUnitArgs(parser)
 
   def Run(self, args):
     """Creates and runs an InstanceTemplates.Insert request.
@@ -1156,7 +1174,9 @@ class CreateAlpha(Create):
         ._support_confidential_compute_type,
         support_provisioned_throughput=self._support_provisioned_throughput,
         support_replica_zones=self._support_replica_zones,
-        support_local_ssd_recovery_timeout=self._support_local_ssd_recovery_timeout)
+        support_local_ssd_recovery_timeout=self._support_local_ssd_recovery_timeout,
+        support_performance_monitoring_unit=self._support_performance_monitoring_unit,
+    )
 
 
 DETAILED_HELP = {

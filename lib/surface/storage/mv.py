@@ -21,7 +21,6 @@ from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.storage import cp_command_util
 from googlecloudsdk.command_lib.storage import errors
-from googlecloudsdk.command_lib.storage import flags
 from googlecloudsdk.command_lib.storage import storage_url
 
 
@@ -83,7 +82,6 @@ class Mv(base.Command):
 
   @staticmethod
   def Args(parser):
-    flags.add_additional_headers_flag(parser)
     cp_command_util.add_cp_and_mv_flags(parser)
 
   def Run(self, args):

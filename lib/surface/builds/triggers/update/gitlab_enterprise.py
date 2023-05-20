@@ -121,7 +121,7 @@ request before running the build.
     )
 
     trigger_utils.AddBuildConfigArgsForUpdate(
-        flag_config, has_build_config=True)
+        flag_config, has_build_config=True, require_docker_image=True)
     trigger_utils.AddRepoEventArgs(flag_config)
 
   def ParseTriggerFromFlags(self, args, old_trigger, update_mask):
@@ -239,7 +239,13 @@ request before running the build.
 
         update_mask.append('repository_event_config.push')
     trigger_utils.ParseBuildConfigArgsForUpdate(
-        trigger, old_trigger, args, messages, has_build_config=True
+        trigger,
+        old_trigger,
+        args,
+        messages,
+        update_mask,
+        None,
+        has_build_config=True,
     )
     trigger_utils.ParseRepoEventArgs(trigger, args)
 

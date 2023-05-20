@@ -29,9 +29,11 @@ from googlecloudsdk.command_lib.compute import flags as compute_flags
 from googlecloudsdk.command_lib.compute import reference_utils
 from googlecloudsdk.command_lib.compute import scope as compute_scope
 from googlecloudsdk.command_lib.compute.ssl_certificates import (
-    flags as ssl_certificates_flags)
-from googlecloudsdk.command_lib.compute.ssl_policies import (flags as
-                                                             ssl_policies_flags)
+    flags as ssl_certificates_flags,
+)
+from googlecloudsdk.command_lib.compute.ssl_policies import (
+    flags as ssl_policies_flags,
+)
 from googlecloudsdk.command_lib.compute.target_https_proxies import flags
 from googlecloudsdk.command_lib.compute.target_https_proxies import target_https_proxies_utils
 from googlecloudsdk.command_lib.compute.url_maps import flags as url_map_flags
@@ -39,10 +41,8 @@ from googlecloudsdk.command_lib.compute.url_maps import flags as url_map_flags
 
 def _DetailedHelp():
   return {
-      'brief':
-          'Update a target HTTPS proxy.',
-      'DESCRIPTION':
-          """
+      'brief': 'Update a target HTTPS proxy.',
+      'DESCRIPTION': """
       *{command}* is used to change the SSL certificate and/or URL map of
       existing target HTTPS proxies. A target HTTPS proxy is referenced by
       one or more forwarding rules which specify the network traffic that
@@ -53,8 +53,7 @@ def _DetailedHelp():
       15 SSL certificates used for server-side authentication. The target
       HTTPS proxy can be associated with at most one SSL policy.
       """,
-      'EXAMPLES':
-          """
+      'EXAMPLES': """
       Update the URL map of a global target HTTPS proxy by running:
 
         $ {command} PROXY_NAME --url-map=URL_MAP
@@ -100,12 +99,20 @@ def _CheckMissingArgument(args):
   ]
   if not sum(args.IsSpecified(arg) for arg in all_args):
     raise compute_exceptions.ArgumentError(
-        'You must specify at least one of %s or %s.' %
-        (', '.join(err_msg_args[:-1]), err_msg_args[-1]))
+        'You must specify at least one of %s or %s.'
+        % (', '.join(err_msg_args[:-1]), err_msg_args[-1])
+    )
 
 
-def _Run(args, holder, ssl_certificates_arg, target_https_proxy_arg,
-         url_map_arg, ssl_policy_arg, certificate_map_ref):
+def _Run(
+    args,
+    holder,
+    ssl_certificates_arg,
+    target_https_proxy_arg,
+    url_map_arg,
+    ssl_policy_arg,
+    certificate_map_ref,
+):
   """Issues requests necessary to update Target HTTPS Proxies."""
   client = holder.client
 
@@ -146,8 +153,11 @@ def _Run(args, holder, ssl_certificates_arg, target_https_proxy_arg,
     )
 
   if args.quic_override:
-    new_resource.quicOverride = client.messages.TargetHttpsProxy.QuicOverrideValueValuesEnum(
-        args.quic_override)
+    new_resource.quicOverride = (
+        client.messages.TargetHttpsProxy.QuicOverrideValueValuesEnum(
+            args.quic_override
+        )
+    )
 
   if args.ssl_policy:
     ssl_policy_ref = target_https_proxies_utils.ResolveSslPolicy(
@@ -229,13 +239,16 @@ class Update(base.SilentCommand):
   def Args(cls, parser):
     cls.SSL_CERTIFICATES_ARG = (
         ssl_certificates_flags.SslCertificatesArgumentForOtherResource(
-            'target HTTPS proxy', required=False))
+            'target HTTPS proxy', required=False
+        )
+    )
 
     cls.TARGET_HTTPS_PROXY_ARG = flags.TargetHttpsProxyArgument()
     cls.TARGET_HTTPS_PROXY_ARG.AddArgument(parser, operation_type='update')
 
     cls.URL_MAP_ARG = url_map_flags.UrlMapArgumentForTargetProxy(
-        required=False, proxy_type='HTTPS')
+        required=False, proxy_type='HTTPS'
+    )
     cls.URL_MAP_ARG.AddArgument(parser)
 
     group = parser.add_mutually_exclusive_group()
@@ -267,19 +280,25 @@ class Update(base.SilentCommand):
         name='certificate-map',
         positional=False,
         required=False,
-        with_location=False)
+        with_location=False,
+    )
     resource_args.GetClearCertificateMapArgumentForOtherResource(
-        'HTTPS proxy').AddToParser(map_group)
+        'HTTPS proxy'
+    ).AddToParser(map_group)
 
-    cls.SSL_POLICY_ARG = ssl_policies_flags.GetSslPolicyMultiScopeArgumentForOtherResource(
-        'HTTPS', required=False)
+    cls.SSL_POLICY_ARG = (
+        ssl_policies_flags.GetSslPolicyMultiScopeArgumentForOtherResource(
+            'HTTPS', required=False
+        )
+    )
 
     group = parser.add_mutually_exclusive_group()
     ssl_policy_group = group.add_argument_group()
     cls.SSL_POLICY_ARG.AddArgument(ssl_policy_group)
 
     ssl_policies_flags.GetClearSslPolicyArgumentForOtherResource(
-        'HTTPS', required=False).AddToParser(group)
+        'HTTPS', required=False
+    ).AddToParser(group)
 
     target_proxies_utils.AddQuicOverrideUpdateArgs(parser)
 
@@ -287,6 +306,12 @@ class Update(base.SilentCommand):
     _CheckMissingArgument(args)
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     certificate_map_ref = args.CONCEPTS.certificate_map.Parse()
-    return _Run(args, holder, self.SSL_CERTIFICATES_ARG,
-                self.TARGET_HTTPS_PROXY_ARG, self.URL_MAP_ARG,
-                self.SSL_POLICY_ARG, certificate_map_ref)
+    return _Run(
+        args,
+        holder,
+        self.SSL_CERTIFICATES_ARG,
+        self.TARGET_HTTPS_PROXY_ARG,
+        self.URL_MAP_ARG,
+        self.SSL_POLICY_ARG,
+        certificate_map_ref,
+    )

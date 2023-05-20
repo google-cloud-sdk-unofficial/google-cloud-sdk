@@ -76,15 +76,16 @@ class UpdateCSR(base.UpdateCommand):
     trigger_utils.AddTagPattern(ref_config)
 
     trigger_utils.AddBuildConfigArgsForUpdate(
-        flag_config, has_build_config=True)
+        flag_config, has_build_config=True, require_docker_image=True)
     trigger_utils.AddRepoEventArgs(flag_config)
 
-  def ParseTriggerFromFlags(self, args, old_trigger):
+  def ParseTriggerFromFlags(self, args, old_trigger, update_mask):
     """Parses command line arguments into a build trigger.
 
     Args:
       args: An argparse arguments object.
       old_trigger: The existing trigger to be updated.
+      update_mask: The fields to be updated.
 
     Returns:
       A build trigger object.
@@ -116,7 +117,14 @@ class UpdateCSR(base.UpdateCommand):
 
     # Build Config
     trigger_utils.ParseBuildConfigArgsForUpdate(
-        trigger, old_trigger, args, messages, has_build_config=True)
+        trigger,
+        old_trigger,
+        args,
+        messages,
+        update_mask,
+        '',
+        has_build_config=True,
+    )
     trigger_utils.ParseRepoEventArgs(trigger, args)
 
     return trigger
@@ -152,11 +160,12 @@ class UpdateCSR(base.UpdateCommand):
         client.MESSAGES_MODULE.CloudbuildProjectsLocationsTriggersGetRequest(
             name=name, triggerId=triggerid))
 
-    trigger = self.ParseTriggerFromFlags(args, old_trigger)
+    update_mask = []
+    trigger = self.ParseTriggerFromFlags(args, old_trigger, update_mask)
 
     # Overwrite the substitutions.additionalProperties in updateMask.
     sub = 'substitutions'
-    update_mask = cloudbuild_util.MessageToFieldPaths(trigger)
+    update_mask.extend(cloudbuild_util.MessageToFieldPaths(trigger))
     update_mask = list(
         set(map(lambda m: sub if m.startswith(sub) else m, update_mask)))
 

@@ -55,6 +55,8 @@
       required: true
     - _REF_: googlecloudsdk.command_lib.iam.flags:workforce_pool_provider.oidc_client_id
       required: true
+    - _REF_: googlecloudsdk.command_lib.iam.flags:workforce_pool_provider.oidc_client_secret_value
+      hidden: true
     - _REF_: googlecloudsdk.command_lib.iam.flags:workforce_pool_provider.oidc_web_sso_response_type
     - _REF_: googlecloudsdk.command_lib.iam.flags:workforce_pool_provider.oidc_web_sso_assertion_claims_behavior
 

@@ -47,7 +47,6 @@ class BuildType(enum.Enum):
   BUILDPACKS = 'Buildpacks'
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Deploy(base.Command):
   """Create or update a Cloud Run job."""
 

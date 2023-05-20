@@ -45,10 +45,10 @@ DETAILED_HELP = {
 
 
 @base.Deprecate(
-    is_removed=False,
-    warning=(
-        'The `gcloud events` command surface is deprecated and will be removed'
-        ' in an upcoming release. Please use `gcloud eventarc` instead.'
+    is_removed=True,
+    error=(
+        'The `gcloud beta events` command surface has been removed. Please use'
+        ' `gcloud eventarc` instead.'
     ),
 )
 @base.ReleaseTracks(base.ReleaseTrack.BETA)

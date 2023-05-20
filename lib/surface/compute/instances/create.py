@@ -269,6 +269,7 @@ class Create(base.CreateCommand):
   _support_regional_instance_template = False
   _support_local_ssd_size = True
   _support_vlan_nic = False
+  _support_performance_monitoring_unit = False
 
   @classmethod
   def Args(cls, parser):
@@ -519,7 +520,9 @@ class Create(base.CreateCommand):
       if (args.enable_nested_virtualization is not None or
           args.threads_per_core is not None or
           (self._support_numa_node_count and args.numa_node_count is not None)
-          or has_visible_core_count or args.enable_uefi_networking is not None):
+          or has_visible_core_count or args.enable_uefi_networking is not None
+          or (self._support_performance_monitoring_unit
+              and args.performance_monitoring_unit)):
         visible_core_count = (
             args.visible_core_count if has_visible_core_count else None
         )
@@ -528,7 +531,9 @@ class Create(base.CreateCommand):
                 compute_client.messages, args.enable_nested_virtualization,
                 args.threads_per_core,
                 args.numa_node_count if self._support_numa_node_count else None,
-                visible_core_count, args.enable_uefi_networking))
+                visible_core_count, args.enable_uefi_networking,
+                args.performance_monitoring_unit
+                if self._support_performance_monitoring_unit else None))
 
       resource_policies = getattr(args, 'resource_policies', None)
       if resource_policies:
@@ -714,6 +719,7 @@ class CreateBeta(Create):
   _support_regional_instance_template = False
   _support_local_ssd_size = True
   _support_vlan_nic = False
+  _support_performance_monitoring_unit = False
 
   def GetSourceMachineImage(self, args, resources):
     """Retrieves the specified source machine image's selflink.
@@ -803,6 +809,7 @@ class CreateAlpha(CreateBeta):
   _support_regional_instance_template = True
   _support_local_ssd_size = True
   _support_vlan_nic = True
+  _support_performance_monitoring_unit = True
 
   @classmethod
   def Args(cls, parser):
@@ -850,6 +857,7 @@ class CreateAlpha(CreateBeta):
     instances_flags.AddKeyRevocationActionTypeArgs(parser)
     instances_flags.AddIPv6AddressAlphaArgs(parser)
     instances_flags.AddIPv6PrefixLengthAlphaArgs(parser)
+    instances_flags.AddPerformanceMonitoringUnitArgs(parser)
 
 
 Create.detailed_help = DETAILED_HELP

@@ -295,6 +295,17 @@ def RunBaseCreateCommand(args, release_track):
         '`--allowed-psc-projects` requires '
         '`--enable-private-service-connect`')
 
+  if args.database_flags is not None and any([
+      'sync_binlog' in args.database_flags,
+      'innodb_flush_log_at_trx_commit' in args.database_flags,
+  ]):
+    log.warning(
+        'Changing innodb_flush_log_at_trx_commit '
+        'or sync_binlog may cause data loss. Check '
+        'https://cloud.google.com/sql/docs/mysql/flags'
+        ' for more details.'
+    )
+
   if release_track == base.ReleaseTrack.ALPHA:
     if args.IsSpecified('edition') and args.edition == 'enterprise':
       if not args.IsSpecified('tier'):

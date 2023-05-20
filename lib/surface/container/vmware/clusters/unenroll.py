@@ -62,6 +62,12 @@ class Unenroll(base.Command):
     if args.validate_only:
       return
 
+    # When using --allow-missing without --async on a non-existing resource,
+    # the server would return an empty operation object.
+    # return early to avoid potential polling error.
+    if operation and operation.name is None:
+      return
+
     if args.async_:
       operations.log_unenroll(cluster_ref, args.async_)
       return operation

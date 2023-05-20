@@ -116,11 +116,10 @@ class Register(base.CreateCommand):
         except console_io.OperationCancelledError:
           msg = """To manually clean up the in-cluster install agent, run:
 
-$ gcloud {} container attached clusters generate-install-manifest --location={} --platform-version={} --format="value(manifest)"  {}  | kubectl delete -f -
+$ gcloud container attached clusters generate-install-manifest --location={} --platform-version={} --format="value(manifest)"  {}  | kubectl delete -f -
 
 AFTER the attach operation completes.
-""".format(six.text_type(self.ReleaseTrack()).lower(), location,
-           attached_flags.GetPlatformVersion(args),
+""".format(location, attached_flags.GetPlatformVersion(args),
            cluster_ref.attachedClustersId)
           pretty_print.Info(msg)
           raise

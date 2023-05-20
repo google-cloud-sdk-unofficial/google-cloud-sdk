@@ -52,7 +52,7 @@ class ResumeBeta(base.CreateCommand):
     replication_ref = args.CONCEPTS.replication.Parse()
     if args.CONCEPTS.volume.Parse() is None:
       raise exceptions.RequiredArgumentException(
-          '--volume', 'Requires a volume to create replication of'
+          '--volume', 'Requires a volume to resume replication of'
       )
 
     client = replications_client.ReplicationsClient(self._RELEASE_TRACK)

@@ -18,7 +18,6 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
-from googlecloudsdk.api_lib.cloudbuild import cloudbuild_util as v1_client_util
 from googlecloudsdk.api_lib.cloudbuild.v2 import client_util as v2_client_util
 from googlecloudsdk.api_lib.util import waiter
 from googlecloudsdk.calliope import base
@@ -30,7 +29,7 @@ from googlecloudsdk.core import resources
 @base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Cancel(base.Command):
-  """Cancel a PipelineRun/TaskRun/Build."""
+  """Cancel a PipelineRun/TaskRun."""
 
   @staticmethod
   def Args(parser):
@@ -109,23 +108,3 @@ class Cancel(base.Command):
           operation_ref, 'Cancelling TaskRun')
       log.status.Print('Cancelled TaskRun {0}'.format(run_id))
       return updated_task_run
-    elif args.type == 'build':
-      client = v1_client_util.GetClientInstance()
-      messages = v1_client_util.GetMessagesModule()
-      build_ref = resources.REGISTRY.Parse(
-          run_id,
-          api_version='v1',
-          params={
-              'projectsId': project,
-              'locationsId': region,
-              'buildsId': run_id,
-          },
-          collection='cloudbuild.projects.locations.builds')
-      cancelled_build = client.projects_locations_builds.Cancel(
-          messages.CancelBuildRequest(
-              name=build_ref.RelativeName(),
-              projectId=build_ref.projectsId,
-              id=build_ref.buildsId,
-          ))
-      log.status.Print('Cancelled Build {0}'.format(run_id))
-      return cancelled_build

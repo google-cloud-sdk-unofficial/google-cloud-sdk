@@ -1,0 +1,17 @@
+- release_tracks: [ALPHA]
+  help_text:
+    brief: "Describe a storage pool."
+    description: "Describe a storage pool."
+    examples: |
+      The following command retrieves a single storage pool and prints its properties.
+
+        $ {command} my-storage-pool
+
+  request:
+    collection: compute.storagePools
+    api_version: alpha
+
+  arguments:
+    resource:
+      help_text: The name of the storage pool you want to inspect.
+      spec: !REF googlecloudsdk.command_lib.compute.resources:storage_pool

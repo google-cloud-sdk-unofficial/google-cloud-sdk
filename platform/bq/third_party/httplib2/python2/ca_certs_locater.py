@@ -6,8 +6,6 @@ from __future__ import print_function
 
 import os
 
-
-
 def get():
   """Locate the ca_certs.txt file.
 

@@ -20,7 +20,6 @@ from __future__ import unicode_literals
 
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.storage import cp_command_util
-from googlecloudsdk.command_lib.storage import flags
 
 
 class Cp(base.Command):
@@ -71,7 +70,6 @@ class Cp(base.Command):
 
   @staticmethod
   def Args(parser):
-    flags.add_additional_headers_flag(parser)
     cp_command_util.add_cp_and_mv_flags(parser)
     cp_command_util.add_recursion_flag(parser)
 

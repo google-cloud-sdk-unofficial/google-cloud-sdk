@@ -48,7 +48,7 @@ DETAILED_HELP = {
 
 
 def AddBaseArgs(parser):
-  """Parses provided arguments to add base arguments used for both Alpha and Beta.
+  """Parses provided arguments to add base arguments used for Alpha/Beta/GA.
 
   Args:
     parser: an argparse argument parser.
@@ -62,13 +62,17 @@ def AddBaseArgs(parser):
             Use Google Standard SQL query for Cloud Spanner and MySQL query
             syntax for Cloud SQL. Cloud Spanner SQL is described at
             https://cloud.google.com/spanner/docs/query-syntax)"
-        """)
+        """,
+  )
 
 
 @base.UnicodeIsSupported
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
+)
 class Query(base.Command):
   """Execute a SQL query against a Dataproc Metastore Service's metadata."""
+
   detailed_help = DETAILED_HELP
 
   @staticmethod

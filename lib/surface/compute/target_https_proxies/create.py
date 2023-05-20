@@ -25,9 +25,11 @@ from googlecloudsdk.command_lib.certificate_manager import resource_args
 from googlecloudsdk.command_lib.compute import reference_utils
 from googlecloudsdk.command_lib.compute import scope as compute_scope
 from googlecloudsdk.command_lib.compute.ssl_certificates import (
-    flags as ssl_certificates_flags)
-from googlecloudsdk.command_lib.compute.ssl_policies import (flags as
-                                                             ssl_policies_flags)
+    flags as ssl_certificates_flags,
+)
+from googlecloudsdk.command_lib.compute.ssl_policies import (
+    flags as ssl_policies_flags,
+)
 from googlecloudsdk.command_lib.compute.target_https_proxies import flags
 from googlecloudsdk.command_lib.compute.target_https_proxies import target_https_proxies_utils
 from googlecloudsdk.command_lib.compute.url_maps import flags as url_map_flags
@@ -35,10 +37,8 @@ from googlecloudsdk.command_lib.compute.url_maps import flags as url_map_flags
 
 def _DetailedHelp():
   return {
-      'brief':
-          'Create a target HTTPS proxy.',
-      'DESCRIPTION':
-          """
+      'brief': 'Create a target HTTPS proxy.',
+      'DESCRIPTION': """
       *{command}* is used to create target HTTPS proxies. A target
       HTTPS proxy is referenced by one or more forwarding rules which
       specify the network traffic that the proxy is responsible for
@@ -49,8 +49,7 @@ def _DetailedHelp():
       used for server-side authentication. The target HTTPS proxy can
       be associated with at most one SSL policy.
       """,
-      'EXAMPLES':
-          """
+      'EXAMPLES': """
       If there is an already-created URL map with the name URL_MAP
       and a SSL certificate named SSL_CERTIFICATE, create a
       global target HTTPS proxy pointing to this map by running:
@@ -64,16 +63,19 @@ def _DetailedHelp():
   }
 
 
-def _Args(parser,
-          traffic_director_security=False,
-          certificate_map=False,
-          list_format=None):
+def _Args(
+    parser,
+    traffic_director_security=False,
+    certificate_map=False,
+    list_format=None,
+):
   """Add the target https proxies command line flags to the parser."""
 
   parser.display_info.AddFormat(list_format)
   parser.add_argument(
       '--description',
-      help='An optional, textual description for the target HTTPS proxy.')
+      help='An optional, textual description for the target HTTPS proxy.',
+  )
 
   parser.display_info.AddCacheUpdater(flags.TargetHttpsProxiesCompleter)
   target_proxies_utils.AddQuicOverrideCreateArgs(parser)
@@ -88,7 +90,8 @@ def _Args(parser,
         name='certificate-map',
         positional=False,
         required=False,
-        with_location=False)
+        with_location=False,
+    )
 
 
 def _Run(
@@ -165,7 +168,9 @@ class Create(base.CreateCommand):
     certificate_group = parser.add_mutually_exclusive_group()
     cls.SSL_CERTIFICATES_ARG = (
         ssl_certificates_flags.SslCertificatesArgumentForOtherResource(
-            'target HTTPS proxy', required=False))
+            'target HTTPS proxy', required=False
+        )
+    )
     cls.SSL_CERTIFICATES_ARG.AddArgument(
         parser, mutex_group=certificate_group, cust_metavar='SSL_CERTIFICATE'
     )
@@ -185,18 +190,23 @@ class Create(base.CreateCommand):
     cls.TARGET_HTTPS_PROXY_ARG.AddArgument(parser, operation_type='create')
 
     cls.URL_MAP_ARG = url_map_flags.UrlMapArgumentForTargetProxy(
-        proxy_type='HTTPS')
+        proxy_type='HTTPS'
+    )
     cls.URL_MAP_ARG.AddArgument(parser)
 
-    cls.SSL_POLICY_ARG = ssl_policies_flags.GetSslPolicyMultiScopeArgumentForOtherResource(
-        'HTTPS', required=False)
+    cls.SSL_POLICY_ARG = (
+        ssl_policies_flags.GetSslPolicyMultiScopeArgumentForOtherResource(
+            'HTTPS', required=False
+        )
+    )
     cls.SSL_POLICY_ARG.AddArgument(parser)
 
     _Args(
         parser,
         traffic_director_security=cls._traffic_director_security,
         certificate_map=cls._certificate_map,
-        list_format=cls._list_format)
+        list_format=cls._list_format,
+    )
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
@@ -225,8 +235,9 @@ class Create(base.CreateCommand):
       )
     else:
       ssl_policy_ref = None
-    certificate_map_ref = args.CONCEPTS.certificate_map.Parse(
-    ) if self._certificate_map else None
+    certificate_map_ref = (
+        args.CONCEPTS.certificate_map.Parse() if self._certificate_map else None
+    )
     return _Run(
         args,
         holder,

@@ -70,6 +70,15 @@ def _PrintAndConfirmWarningMessage(args, database_version):
       database_type_fragment = 'sqlserver'
     flag_docs_url = 'https://cloud.google.com/sql/docs/{}/flags'.format(
         database_type_fragment)
+    if args.database_flags is not None and any([
+        'sync_binlog' in args.database_flags,
+        'innodb_flush_log_at_trx_commit' in args.database_flags,
+    ]):
+      log.warning(
+          'Changing innodb_flush_log_at_trx_commit '
+          'or sync_binlog may cause data loss. Check {}'
+          ' for more details.'.format(flag_docs_url)
+      )
     continue_msg = (
         'WARNING: This patch modifies database flag values, which may require '
         'your instance to be restarted. Check the list of supported flags - '

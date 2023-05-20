@@ -40,6 +40,10 @@
       api_field: cluster.displayName
       help_text: |
         A human-readable name for the cluster.
+    - arg_name: network
+      api_field: cluster.pscConfigs.network
+      help_text: |
+        The network where your cluster IP address is reserved.
     - arg_name: replica-count
       api_field: cluster.replicaCount
       type: int

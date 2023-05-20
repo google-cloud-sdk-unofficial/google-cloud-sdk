@@ -54,7 +54,7 @@ class ListBeta(base.ListCommand):
 
     if args.CONCEPTS.volume.Parse() is None:
       raise exceptions.RequiredArgumentException(
-          '--volume', 'Requires a volume to create snapshot of')
+          '--volume', 'Requires a volume to list snapshots of')
 
     volume_ref = args.CONCEPTS.volume.Parse().RelativeName()
     client = snapshots_client.SnapshotsClient(release_track=self._RELEASE_TRACK)
@@ -82,7 +82,7 @@ class ListAlpha(base.ListCommand):
 
     if args.CONCEPTS.volume.Parse() is None:
       raise exceptions.RequiredArgumentException(
-          '--volume', 'Requires a volume to create snapshot of')
+          '--volume', 'Requires a volume to list snapshots of')
 
     volume_ref = args.CONCEPTS.volume.Parse().RelativeName()
     client = snapshots_client.SnapshotsClient(release_track=self._RELEASE_TRACK)

@@ -114,73 +114,146 @@ class Update(base.Command):
         clear_env_variables=args.clear_env_variables,
         remove_env_variables=args.remove_env_variables,
         update_env_variables=args.update_env_variables,
-        release_track=self.ReleaseTrack())
+        release_track=self.ReleaseTrack(),
+    )
 
     if support_environment_upgrades:
       params['update_image_version'] = args.image_version
     params['update_web_server_access_control'] = (
         environments_api_util.BuildWebServerAllowedIps(
-            args.update_web_server_allow_ip, args.web_server_allow_all,
-            args.web_server_deny_all))
+            args.update_web_server_allow_ip,
+            args.web_server_allow_all,
+            args.web_server_deny_all,
+        )
+    )
 
-    if (args.cloud_sql_machine_type and not is_composer_v1):
+    if args.cloud_sql_machine_type and not is_composer_v1:
       raise command_util.InvalidUserInputError(
-          _INVALID_OPTION_FOR_V2_ERROR_MSG.format(opt='cloud-sql-machine-type'))
-    if (args.web_server_machine_type and not is_composer_v1):
+          _INVALID_OPTION_FOR_V2_ERROR_MSG.format(opt='cloud-sql-machine-type')
+      )
+    if args.web_server_machine_type and not is_composer_v1:
       raise command_util.InvalidUserInputError(
-          _INVALID_OPTION_FOR_V2_ERROR_MSG.format(
-              opt='web-server-machine-type'))
+          _INVALID_OPTION_FOR_V2_ERROR_MSG.format(opt='web-server-machine-type')
+      )
     params['cloud_sql_machine_type'] = args.cloud_sql_machine_type
     params['web_server_machine_type'] = args.web_server_machine_type
-    params['scheduler_count'] = args.scheduler_count
 
     if self._support_environment_size:
-      if (args.environment_size and is_composer_v1):
+      if args.environment_size and is_composer_v1:
         raise command_util.InvalidUserInputError(
-            _INVALID_OPTION_FOR_V1_ERROR_MSG.format(opt='environment-size'))
+            _INVALID_OPTION_FOR_V1_ERROR_MSG.format(opt='environment-size')
+        )
       if self.ReleaseTrack() == base.ReleaseTrack.GA:
         params['environment_size'] = flags.ENVIRONMENT_SIZE_GA.GetEnumForChoice(
-            args.environment_size)
+            args.environment_size
+        )
       elif self.ReleaseTrack() == base.ReleaseTrack.BETA:
-        params[
-            'environment_size'] = flags.ENVIRONMENT_SIZE_BETA.GetEnumForChoice(
-                args.environment_size)
+        params['environment_size'] = (
+            flags.ENVIRONMENT_SIZE_BETA.GetEnumForChoice(args.environment_size)
+        )
       elif self.ReleaseTrack() == base.ReleaseTrack.ALPHA:
-        params[
-            'environment_size'] = flags.ENVIRONMENT_SIZE_ALPHA.GetEnumForChoice(
-                args.environment_size)
+        params['environment_size'] = (
+            flags.ENVIRONMENT_SIZE_ALPHA.GetEnumForChoice(args.environment_size)
+        )
     if self._support_autoscaling:
-      if (is_composer_v1 and
-          (args.scheduler_cpu or args.worker_cpu or args.web_server_cpu or
-           args.scheduler_memory or args.worker_memory or
-           args.web_server_memory or args.scheduler_storage or
-           args.worker_storage or args.web_server_storage or args.min_workers or
-           args.max_workers or self._support_triggerer and
-           (args.enable_triggerer or args.disable_triggerer or
-            args.triggerer_cpu or args.triggerer_memory))):
-        raise command_util.InvalidUserInputError(
-            'Workloads Config flags introduced in Composer 2.X'
-            ' cannot be used when updating Composer 1.X environments.')
-      params['scheduler_cpu'] = args.scheduler_cpu
-      params['worker_cpu'] = args.worker_cpu
-      params['web_server_cpu'] = args.web_server_cpu
-      params['scheduler_memory_gb'] = environments_api_util.MemorySizeBytesToGB(
-          args.scheduler_memory)
-      params['worker_memory_gb'] = environments_api_util.MemorySizeBytesToGB(
-          args.worker_memory)
-      params[
-          'web_server_memory_gb'] = environments_api_util.MemorySizeBytesToGB(
-              args.web_server_memory)
-      params[
-          'scheduler_storage_gb'] = environments_api_util.MemorySizeBytesToGB(
-              args.scheduler_storage)
-      params['worker_storage_gb'] = environments_api_util.MemorySizeBytesToGB(
-          args.worker_storage)
-      params[
-          'web_server_storage_gb'] = environments_api_util.MemorySizeBytesToGB(
-              args.web_server_storage)
-      params['min_workers'] = args.min_workers
-      params['max_workers'] = args.max_workers
+      if (
+          args.scheduler_cpu
+          or args.worker_cpu
+          or args.web_server_cpu
+          or args.scheduler_memory
+          or args.worker_memory
+          or args.web_server_memory
+          or args.scheduler_storage
+          or args.worker_storage
+          or args.web_server_storage
+          or args.min_workers
+          or args.max_workers
+          or self._support_triggerer
+          and (
+              args.enable_triggerer
+              or args.disable_triggerer
+              or args.triggerer_count is not None
+              or args.triggerer_cpu
+              or args.triggerer_memory
+          )
+      ):
+        params['workload_updated'] = True
+        if is_composer_v1:
+          raise command_util.InvalidUserInputError(
+              'Workloads Config flags introduced in Composer 2.X'
+              ' cannot be used when updating Composer 1.X environments.'
+          )
+      if env_obj.config.workloadsConfig:
+        if env_obj.config.workloadsConfig.scheduler:
+          params['scheduler_cpu'] = env_obj.config.workloadsConfig.scheduler.cpu
+          params['scheduler_memory_gb'] = (
+              env_obj.config.workloadsConfig.scheduler.memoryGb
+          )
+          params['scheduler_storage_gb'] = (
+              env_obj.config.workloadsConfig.scheduler.storageGb
+          )
+          params['scheduler_count'] = (
+              env_obj.config.workloadsConfig.scheduler.count
+          )
+        if env_obj.config.workloadsConfig.worker:
+          params['worker_cpu'] = env_obj.config.workloadsConfig.worker.cpu
+
+          params['worker_memory_gb'] = (
+              env_obj.config.workloadsConfig.worker.memoryGb
+          )
+          params['worker_storage_gb'] = (
+              env_obj.config.workloadsConfig.worker.storageGb
+          )
+          params['min_workers'] = env_obj.config.workloadsConfig.worker.minCount
+          params['max_workers'] = env_obj.config.workloadsConfig.worker.maxCount
+        if env_obj.config.workloadsConfig.webServer:
+          params['web_server_cpu'] = (
+              env_obj.config.workloadsConfig.webServer.cpu
+          )
+          params['web_server_memory_gb'] = (
+              env_obj.config.workloadsConfig.webServer.memoryGb
+          )
+          params['web_server_storage_gb'] = (
+              env_obj.config.workloadsConfig.webServer.storageGb
+          )
+      if args.scheduler_count is not None:
+        params['scheduler_count'] = args.scheduler_count
+        if not is_composer_v1:
+          params['workload_updated'] = True
+      if args.scheduler_cpu is not None:
+        params['scheduler_cpu'] = args.scheduler_cpu
+      if args.worker_cpu is not None:
+        params['worker_cpu'] = args.worker_cpu
+      if args.web_server_cpu is not None:
+        params['web_server_cpu'] = args.web_server_cpu
+      if args.scheduler_memory is not None:
+        params['scheduler_memory_gb'] = (
+            environments_api_util.MemorySizeBytesToGB(args.scheduler_memory)
+        )
+      if args.worker_memory is not None:
+        params['worker_memory_gb'] = environments_api_util.MemorySizeBytesToGB(
+            args.worker_memory
+        )
+      if args.web_server_memory is not None:
+        params['web_server_memory_gb'] = (
+            environments_api_util.MemorySizeBytesToGB(args.web_server_memory)
+        )
+      if args.scheduler_storage is not None:
+        params['scheduler_storage_gb'] = (
+            environments_api_util.MemorySizeBytesToGB(args.scheduler_storage)
+        )
+      if args.worker_storage is not None:
+        params['worker_storage_gb'] = environments_api_util.MemorySizeBytesToGB(
+            args.worker_storage
+        )
+      if args.web_server_storage is not None:
+        params['web_server_storage_gb'] = (
+            environments_api_util.MemorySizeBytesToGB(args.web_server_storage)
+        )
+      if args.min_workers:
+        params['min_workers'] = args.min_workers
+      if args.max_workers:
+        params['max_workers'] = args.max_workers
 
     self._addScheduledSnapshotFields(params, args, is_composer_v1)
 
@@ -248,27 +321,48 @@ class Update(base.Command):
             )
         )
 
+    if (
+        args.dag_processor_count is not None
+        or args.dag_processor_cpu
+        or args.dag_processor_memory
+        or args.dag_processor_storage
+    ):
+      params['workload_updated'] = True
+
     dag_processor_count = None
     dag_processor_cpu = None
     dag_processor_memory_gb = None
     dag_processor_storage_gb = None
+
+    if (
+        env_obj.config.workloadsConfig
+        and env_obj.config.workloadsConfig.dagProcessor
+    ):
+      dag_processor_resource = env_obj.config.workloadsConfig.dagProcessor
+      dag_processor_count = dag_processor_resource.count
+      dag_processor_cpu = dag_processor_resource.cpu
+      dag_processor_memory_gb = dag_processor_resource.memoryGb
+      dag_processor_storage_gb = dag_processor_resource.storageGb
+
     if args.dag_processor_count is not None:
       dag_processor_count = args.dag_processor_count
     if args.dag_processor_cpu:
       dag_processor_cpu = args.dag_processor_cpu
     if args.dag_processor_memory:
       dag_processor_memory_gb = environments_api_util.MemorySizeBytesToGB(
-          args.dag_processor_memory)
+          args.dag_processor_memory
+      )
     if args.dag_processor_storage:
       dag_processor_storage_gb = environments_api_util.MemorySizeBytesToGB(
-          args.dag_processor_storage)
+          args.dag_processor_storage
+      )
+
     if args.support_web_server_plugins is not None:
       params['support_web_server_plugins'] = args.support_web_server_plugins
     params['dag_processor_count'] = dag_processor_count
-    if dag_processor_count:
-      params['dag_processor_cpu'] = dag_processor_cpu
-      params['dag_processor_memory_gb'] = dag_processor_memory_gb
-      params['dag_processor_storage_gb'] = dag_processor_storage_gb
+    params['dag_processor_cpu'] = dag_processor_cpu
+    params['dag_processor_memory_gb'] = dag_processor_memory_gb
+    params['dag_processor_storage_gb'] = dag_processor_storage_gb
     if args.disable_vpc_connectivity:
       params['disable_vpc_connectivity'] = True
     if args.network_attachment:

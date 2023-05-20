@@ -52,7 +52,7 @@ class Create(base.CreateCommand):
     base.ASYNC_FLAG.AddToParser(parser)
     vmware_flags.AddValidationOnly(parser)
     vmware_flags.AddDescription(parser)
-    vmware_flags.AddVersion(parser)
+    vmware_flags.AddVersion(parser, required=True)
     vmware_flags.AddClusterAnnotations(parser)
     vmware_flags.AddVmwareControlPlaneNodeConfig(parser)
     vmware_flags.AddVmwareAAGConfig(parser)
