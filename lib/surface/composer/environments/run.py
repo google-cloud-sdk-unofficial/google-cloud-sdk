@@ -102,11 +102,34 @@ class Run(base.Command):
                                                r.to_version or '**')
                           for cmd, r in cls.SUBCOMMAND_ALLOWLIST.items()
                       ])), doc_url))
+    # Add information about restricted nested subcommands.
+    # Some subcommands only allow certain nested subcommands.
+    # Written with for loops to reduce complexity. [g-complex-comprehension]
+    allowed_nested_subcommands_help = []
+    for sub_cmd, r in cls.SUBCOMMAND_ALLOWLIST.items():
+      # Skip sub-commands which don't have a list of allowed_nested_subcommands
+      # Meaning, all nested subcommands are allowed for this subcommand
+      if not r.allowed_nested_subcommands:
+        continue
+      allowed_nested_subcommands_help.append(
+          '- {}: {}'.format(
+              sub_cmd,
+              ', '.join(sorted(r.allowed_nested_subcommands.keys()))
+          ))
+    # Add an additional element stating that all other subcommands are allowed
+    allowed_nested_subcommands_help.append(
+        '- all other subcommands: all nested subcommands are allowed'
+    )
     parser.add_argument(
         'subcommand_nested',
         metavar='SUBCOMMAND_NESTED',
         nargs=argparse.OPTIONAL,
-        help='Additional subcommand in case it is nested.')
+        help=(
+            'Additional subcommand in case it is nested. '
+            'The following is a list of allowed nested subcommands:\n'
+            '{}'
+        ).format('\n'.join(allowed_nested_subcommands_help)),
+    )
     parser.add_argument(
         'cmd_args',
         metavar='CMD_ARGS',

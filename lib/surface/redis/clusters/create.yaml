@@ -23,19 +23,6 @@
         Your cluster ID must be 1 to 63 characters and use only lowercase letters, numbers, or
         hyphens. It must start with a lowercase letter and end with a lowercase letter or number.
     params:
-    - arg_name: auth-mode
-      api_field: cluster.authorizationMode
-      help_text: |
-        Available authorization mode of a Redis cluster.
-      choices:
-      - enum_value: AUTH_MODE_DISABLED
-        arg_value: disabled
-        help_text: |
-            Authorization is disabled for the cluster.
-      - enum_value: AUTH_MODE_IAM_AUTH
-        arg_value: iam-auth
-        help_text: |
-            IAM basic authorization is enabled for the cluster.
     - arg_name: display-name
       api_field: cluster.displayName
       help_text: |

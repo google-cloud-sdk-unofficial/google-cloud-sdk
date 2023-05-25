@@ -307,10 +307,10 @@ def RunBaseCreateCommand(args, release_track):
     )
 
   if release_track == base.ReleaseTrack.ALPHA:
-    if args.IsSpecified('edition') and args.edition == 'enterprise':
+    if args.IsSpecified('edition') and args.edition == 'enterprise-plus':
       if not args.IsSpecified('tier'):
         raise sql_exceptions.ArgumentError(
-            '`--edition=enterprise` requires `--tier`'
+            '`--edition=enterprise-plus` requires `--tier`'
         )
 
   instance_resource = (

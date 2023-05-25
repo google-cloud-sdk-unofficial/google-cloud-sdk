@@ -41,48 +41,46 @@ _DETAILED_HELP = {
       """,
 }
 
-_DETAILED_HELP_ALPHA = {
-    'brief': """Troubleshoot the IAM Policy.
+_DETAILED_HELP = {
+    'brief': """Troubleshoot IAM allow and deny policies.
         """,
     'DESCRIPTION': """\
-      Performs a check on whether a principal is granted a
-      permission on a resource and how that access is determined according to
-      the resource's effective IAM policy interpretation.
+      Uses a resource's effective IAM allow policy and IAM deny policy to
+      check whether a principal has a specific permission on the resource.
         """,
     'EXAMPLES': """\
-      To troubleshoot a permission of a principal on a resource, run:
+      The following command checks whether the principal ``my-user@example.com''
+      has the permission ``resourcemanager.projects.get'' on the project
+      ``my-project'':
 
-        $ {command} //cloudresourcemanager.googleapis.com/projects/project-id
-        --principal-email=my-iam-account@somedomain.com
+        $ {command} //cloudresourcemanager.googleapis.com/projects/my-project
+        --principal-email=my-user@example.com
         --permission=resourcemanager.projects.get
 
-      See https://cloud.google.com/iam/help/allow-policies/overview for more
-      information about IAM policies.
+      The following command checks whether the principal ``my-user@example.com''
+      has the ``compute.images.get'' permission on the project
+      ``my-project''. The command also provides additional context that lets
+      Troubleshooter evaluate conditional role bindings:
 
-      To troubleshoot a permission of a principal on a resource with conditional binding, run:
-
-        $ {command} //cloudresourcemanager.googleapis.com/projects/project-id \
-        --principal-email=my-iam-account@somedomain.com \
-        --permission=resourcemanager.projects.get \
-        --resource-name=//compute.googleapis.com/projects/{project-id}/global/images/{image-id}'\
+        $ {command} //cloudresourcemanager.googleapis.com/projects/my-project \
+        --principal-email=my-user@example.com \
+        --permission=compute.images.get \
+        --resource-name=//compute.googleapis.com/projects/my-project/zones/images/my-image'\
         --resource-service='compute.googleapis.com' \
         --resource-type='compute.googleapis.com/Image' \
-        --destination-ip='192.2.2.2'--destination-port=8080 --request-time='2021-01-01T00:00:00Z'
-
-      See https://cloud.google.com/iam/help/allow-policies/overview for more
-      information about IAM policies.
+        --destination-ip='192.2.2.2'--destination-port=8080 --request-time='2023-01-01T00:00:00Z'
       """,
 }
 
 
-def _ArgsAlpha(parser):
+def _Args(parser):
   """Parses arguments for the commands."""
   parser.add_argument(
       'resource',
       metavar='RESOURCE',
       type=str,
       help="""Full resource name that access is checked against.
-      See: https://cloud.google.com/iam/docs/resource-names.
+      For a list of full resource name formats, see: https://cloud.google.com/iam/docs/resource-names.
       """,
   )
   parser.add_argument(
@@ -99,8 +97,10 @@ def _ArgsAlpha(parser):
       required=True,
       metavar='PERMISSION',
       type=str,
-      help="""Cloud IAM permission to check. This can be a V1 or V2 permission, e.g. `resourcemanager.projects.get` or `cloudresourcemanager.googleapis.com/projects.get`.
-      See: https://cloud.google.com/iam/docs/permissions-reference and https://cloud.google.com/iam/docs/deny-permissions-support
+      help="""IAM permission to check. The permssion can be in the `v1` or `v2`
+      format. For example, `resourcemanager.projects.get` or
+      `cloudresourcemanager.googleapis.com/projects.get`.
+      For a list of permissions, see https://cloud.google.com/iam/docs/permissions-reference and https://cloud.google.com/iam/docs/deny-permissions-support
       """,
   )
   parser.add_argument(
@@ -108,7 +108,7 @@ def _ArgsAlpha(parser):
       required=False,
       type=str,
       help="""The resource service value to use when checking conditional bindings.
-      See: https://cloud.google.com/iam/docs/conditions-resource-attributes#resource-service
+      For accepted values, see: https://cloud.google.com/iam/docs/conditions-resource-attributes#resource-service
       """,
   )
   parser.add_argument(
@@ -116,7 +116,7 @@ def _ArgsAlpha(parser):
       required=False,
       type=str,
       help="""The resource type value to use when checking conditional bindings.
-      See: https://cloud.google.com/iam/docs/conditions-resource-attributes#resource-type
+      For accepted values, see: https://cloud.google.com/iam/docs/conditions-resource-attributes#resource-type
       """,
   )
   parser.add_argument(
@@ -124,7 +124,7 @@ def _ArgsAlpha(parser):
       required=False,
       type=str,
       help="""The resource name value to use when checking conditional bindings.
-      See:  https://cloud.google.com/iam/docs/conditions-resource-attributes#resource-name.
+      For accepted values, see: https://cloud.google.com/iam/docs/conditions-resource-attributes#resource-name.
       """,
   )
   parser.add_argument(
@@ -132,7 +132,7 @@ def _ArgsAlpha(parser):
       required=False,
       type=str,
       help="""The request timestamp to use when checking conditional bindings. This string must adhere to UTC format
-      (RFC 3339). For example,2021-01-01T00:00:00Z. See:
+      (RFC 3339). For example,2021-01-01T00:00:00Z. For more information, see:
       https://tools.ietf.org/html/rfc3339
       """,
   )
@@ -152,47 +152,67 @@ def _ArgsAlpha(parser):
   )
 
 
+def _Run(policy_troubleshooter_api, args):
+  """Troubleshoot the IAM Policies."""
+  destination_context = policy_troubleshooter_api.GetPolicyTroubleshooterPeer(
+      destination_ip=args.destination_ip,
+      destination_port=args.destination_port,
+  )
+  request_context = policy_troubleshooter_api.GetPolicyTroubleshooterRequest(
+      request_time=args.request_time
+  )
+  resource_context = policy_troubleshooter_api.GetPolicyTroubleshooterResource(
+      resource_name=args.resource_name,
+      resource_service=args.resource_service,
+      resource_type=args.resource_type,
+  )
+  condition_context = (
+      policy_troubleshooter_api.GetPolicyTroubleshooterConditionContext(
+          destination=destination_context,
+          request=request_context,
+          resource=resource_context,
+      )
+  )
+  access_tuple = policy_troubleshooter_api.GetPolicyTroubleshooterAccessTuple(
+      condition_context=condition_context,
+      full_resource_name=args.resource,
+      principal_email=args.principal_email,
+      permission=args.permission,
+  )
+  return policy_troubleshooter_api.TroubleshootIAMPolicies(access_tuple)
+
+
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 @base.Hidden
 class TroubleshootAlpha(base.Command):
   """Troubleshoot the IAM Policies."""
 
-  detailed_help = _DETAILED_HELP_ALPHA
+  detailed_help = _DETAILED_HELP
 
   @staticmethod
   def Args(parser):
     """Parses arguments for the commands."""
-    _ArgsAlpha(parser)
+    _Args(parser)
 
   def Run(self, args):
-    policy_troubleshooter_api = policy_troubleshooter.PolicyTroubleshooterApi(
-        self.ReleaseTrack()
+    return _Run(
+        policy_troubleshooter.PolicyTroubleshooterApi(self.ReleaseTrack()), args
     )
-    destination_context = policy_troubleshooter_api.GetPolicyTroubleshooterPeer(
-        destination_ip=args.destination_ip,
-        destination_port=args.destination_port,
+
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.Hidden
+class TroubleshootBeta(base.Command):
+  """Troubleshoot IAM allow and deny policies."""
+
+  detailed_help = _DETAILED_HELP
+
+  @staticmethod
+  def Args(parser):
+    """Parses arguments for the commands."""
+    _Args(parser)
+
+  def Run(self, args):
+    return _Run(
+        policy_troubleshooter.PolicyTroubleshooterApi(self.ReleaseTrack()), args
     )
-    request_context = policy_troubleshooter_api.GetPolicyTroubleshooterRequest(
-        request_time=args.request_time
-    )
-    resource_context = (
-        policy_troubleshooter_api.GetPolicyTroubleshooterResource(
-            resource_name=args.resource_name,
-            resource_service=args.resource_service,
-            resource_type=args.resource_type,
-        )
-    )
-    condition_context = (
-        policy_troubleshooter_api.GetPolicyTroubleshooterConditionContext(
-            destination=destination_context,
-            request=request_context,
-            resource=resource_context,
-        )
-    )
-    access_tuple = policy_troubleshooter_api.GetPolicyTroubleshooterAccessTuple(
-        condition_context=condition_context,
-        full_resource_name=args.resource,
-        principal_email=args.principal_email,
-        permission=args.permission,
-    )
-    return policy_troubleshooter_api.TroubleshootIAMPolicies(access_tuple)

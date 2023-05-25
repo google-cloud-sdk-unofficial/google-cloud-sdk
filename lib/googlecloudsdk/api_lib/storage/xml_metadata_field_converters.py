@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*- #
-# Copyright 2022 Google LLC. All Rights Reserved.
+# Copyright 2023 Google LLC. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Tools for converting metadata fields to S3 formats."""
+"""Tools for converting metadata fields to XML/S3-compatible formats."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -99,7 +99,9 @@ def process_versioning(versioning):
 def process_website(web_error_page, web_main_page_suffix):
   """Converts website strings to S3 metadata dict."""
   clear_error_page = web_error_page == user_request_args_factory.CLEAR
-  clear_main_page_suffix = web_main_page_suffix == user_request_args_factory.CLEAR
+  clear_main_page_suffix = (
+      web_main_page_suffix == user_request_args_factory.CLEAR
+  )
   if clear_error_page and clear_main_page_suffix:
     return user_request_args_factory.CLEAR
 

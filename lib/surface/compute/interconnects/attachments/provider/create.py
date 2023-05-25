@@ -58,6 +58,7 @@ class Create(base.CreateCommand):
     attachment_flags.AddPairingKey(parser)
     attachment_flags.AddDescription(parser)
     attachment_flags.AddCandidateSubnets(parser)
+    attachment_flags.AddSubnetLength(parser)
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
@@ -102,21 +103,5 @@ class CreateAlpha(Create):
 
   @classmethod
   def Args(cls, parser):
-    cls.INTERCONNECT_ARG = (
-        interconnect_flags.InterconnectArgumentForOtherResource(
-            'The interconnect for the interconnect attachment'))
-    cls.INTERCONNECT_ARG.AddArgument(parser)
-
-    cls.INTERCONNECT_ATTACHMENT_ARG = (
-        attachment_flags.InterconnectAttachmentArgument())
-    cls.INTERCONNECT_ATTACHMENT_ARG.AddArgument(parser, operation_type='create')
-
-    attachment_flags.AddBandwidth(parser, required=True)
-    attachment_flags.AddVlan(parser)
-    attachment_flags.AddPartnerAsn(parser)
-    attachment_flags.AddPartnerMetadata(parser, required=True)
-    attachment_flags.AddPairingKey(parser)
-    attachment_flags.AddDescription(parser)
-    attachment_flags.AddCandidateSubnetsAlpha(parser)
+    super(CreateAlpha, cls).Args(parser)
     attachment_flags.AddDryRun(parser)
-    attachment_flags.AddSubnetLength(parser)

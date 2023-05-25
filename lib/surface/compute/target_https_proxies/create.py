@@ -21,18 +21,15 @@ from __future__ import unicode_literals
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import target_proxies_utils
 from googlecloudsdk.calliope import base
-from googlecloudsdk.command_lib.certificate_manager import resource_args
+from googlecloudsdk.command_lib.certificate_manager import resource_args as cm_resource_args
 from googlecloudsdk.command_lib.compute import reference_utils
 from googlecloudsdk.command_lib.compute import scope as compute_scope
-from googlecloudsdk.command_lib.compute.ssl_certificates import (
-    flags as ssl_certificates_flags,
-)
-from googlecloudsdk.command_lib.compute.ssl_policies import (
-    flags as ssl_policies_flags,
-)
+from googlecloudsdk.command_lib.compute.ssl_certificates import flags as ssl_certificates_flags
+from googlecloudsdk.command_lib.compute.ssl_policies import flags as ssl_policies_flags
 from googlecloudsdk.command_lib.compute.target_https_proxies import flags
 from googlecloudsdk.command_lib.compute.target_https_proxies import target_https_proxies_utils
 from googlecloudsdk.command_lib.compute.url_maps import flags as url_map_flags
+from googlecloudsdk.command_lib.network_security import resource_args as ns_resource_args
 
 
 def _DetailedHelp():
@@ -66,7 +63,9 @@ def _DetailedHelp():
 def _Args(
     parser,
     traffic_director_security=False,
+    support_http_keep_alive=False,
     certificate_map=False,
+    server_tls_policy_enabled=False,
     list_format=None,
 ):
   """Add the target https proxies command line flags to the parser."""
@@ -83,8 +82,16 @@ def _Args(
   if traffic_director_security:
     flags.AddProxyBind(parser, False)
 
+  if support_http_keep_alive:
+    target_proxies_utils.AddHttpKeepAliveTimeoutSec(parser)
+
+  if server_tls_policy_enabled:
+    ns_resource_args.GetServerTlsPolicyResourceArg(
+        'to attach', name='server-tls-policy'
+    ).AddToParser(parser)
+
   if certificate_map:
-    resource_args.AddCertificateMapResourceArg(
+    cm_resource_args.AddCertificateMapResourceArg(
         parser,
         'to attach',
         name='certificate-map',
@@ -102,7 +109,9 @@ def _Run(
     ssl_certificates,
     ssl_policy_ref,
     traffic_director_security,
+    support_http_keep_alive,
     certificate_map_ref,
+    server_tls_policy_ref,
 ):
   """Issues requests necessary to create Target HTTPS Proxies."""
   client = holder.client
@@ -123,12 +132,22 @@ def _Run(
         sslCertificates=ssl_certificates,
     )
 
+  if support_http_keep_alive and args.IsSpecified(
+      'http_keep_alive_timeout_sec'
+  ):
+    target_https_proxy.httpKeepAliveTimeoutSec = (
+        args.http_keep_alive_timeout_sec
+    )
+
   if args.IsSpecified('quic_override'):
     quic_enum = client.messages.TargetHttpsProxy.QuicOverrideValueValuesEnum
     target_https_proxy.quicOverride = quic_enum(args.quic_override)
 
   if ssl_policy_ref:
     target_https_proxy.sslPolicy = ssl_policy_ref.SelfLink()
+
+  if server_tls_policy_ref:
+    target_https_proxy.serverTlsPolicy = server_tls_policy_ref.SelfLink()
 
   if certificate_map_ref:
     target_https_proxy.certificateMap = certificate_map_ref.SelfLink()
@@ -153,8 +172,10 @@ def _Run(
 class Create(base.CreateCommand):
   """Create a target HTTPS proxy."""
 
+  _support_http_keep_alive = False
   _traffic_director_security = False
   _certificate_map = True
+  _server_tls_policy_enabled = False
   _list_format = flags.DEFAULT_LIST_FORMAT
 
   SSL_CERTIFICATES_ARG = None
@@ -174,7 +195,7 @@ class Create(base.CreateCommand):
     cls.SSL_CERTIFICATES_ARG.AddArgument(
         parser, mutex_group=certificate_group, cust_metavar='SSL_CERTIFICATE'
     )
-    resource_args.AddCertificateResourceArg(
+    cm_resource_args.AddCertificateResourceArg(
         parser,
         'to attach',
         noun='certificate-manager-certificates',
@@ -204,7 +225,9 @@ class Create(base.CreateCommand):
     _Args(
         parser,
         traffic_director_security=cls._traffic_director_security,
+        support_http_keep_alive=cls._support_http_keep_alive,
         certificate_map=cls._certificate_map,
+        server_tls_policy_enabled=cls._server_tls_policy_enabled,
         list_format=cls._list_format,
     )
 
@@ -238,6 +261,11 @@ class Create(base.CreateCommand):
     certificate_map_ref = (
         args.CONCEPTS.certificate_map.Parse() if self._certificate_map else None
     )
+    server_tls_policy_ref = None
+    if self._server_tls_policy_enabled and args.IsKnownAndSpecified(
+        'server_tls_policy'
+    ):
+      server_tls_policy_ref = args.CONCEPTS.server_tls_policy.Parse()
     return _Run(
         args,
         holder,
@@ -246,7 +274,9 @@ class Create(base.CreateCommand):
         ssl_certificates,
         ssl_policy_ref,
         self._traffic_director_security,
+        self._support_http_keep_alive,
         certificate_map_ref,
+        server_tls_policy_ref,
     )
 
 
@@ -258,3 +288,5 @@ class CreateBeta(Create):
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class CreateAlpha(CreateBeta):
   _traffic_director_security = True
+  _support_http_keep_alive = True
+  _server_tls_policy_enabled = True

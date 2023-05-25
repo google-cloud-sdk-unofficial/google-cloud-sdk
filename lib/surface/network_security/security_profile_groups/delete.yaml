@@ -1,4 +1,4 @@
-release_tracks: [ALPHA]
+release_tracks: [ALPHA, BETA]
 
 help_text:
   brief: |
@@ -16,7 +16,13 @@ arguments:
     help_text: |
       Name of the Security Profile Group you want to delete.
 
+async:
+  collection: networksecurity.organizations.locations.operations
+
 request: &request
-  api_version: v1alpha1
+  ALPHA:
+    api_version: v1alpha1
+  BETA:
+    api_version: v1beta1
   collection: networksecurity.organizations.locations.securityProfileGroups
   method: delete

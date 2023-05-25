@@ -19,7 +19,6 @@ from __future__ import division
 from __future__ import unicode_literals
 
 from apitools.base.py import encoding
-
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import target_proxies_utils
 from googlecloudsdk.calliope import base
@@ -28,15 +27,12 @@ from googlecloudsdk.command_lib.compute import exceptions as compute_exceptions
 from googlecloudsdk.command_lib.compute import flags as compute_flags
 from googlecloudsdk.command_lib.compute import reference_utils
 from googlecloudsdk.command_lib.compute import scope as compute_scope
-from googlecloudsdk.command_lib.compute.ssl_certificates import (
-    flags as ssl_certificates_flags,
-)
-from googlecloudsdk.command_lib.compute.ssl_policies import (
-    flags as ssl_policies_flags,
-)
+from googlecloudsdk.command_lib.compute.ssl_certificates import flags as ssl_certificates_flags
+from googlecloudsdk.command_lib.compute.ssl_policies import flags as ssl_policies_flags
 from googlecloudsdk.command_lib.compute.target_https_proxies import flags
 from googlecloudsdk.command_lib.compute.target_https_proxies import target_https_proxies_utils
 from googlecloudsdk.command_lib.compute.url_maps import flags as url_map_flags
+from googlecloudsdk.command_lib.network_security import resource_args as ns_resource_args
 
 
 def _DetailedHelp():
@@ -73,30 +69,56 @@ def _DetailedHelp():
   }
 
 
-def _CheckMissingArgument(args):
+def _CheckMissingArgument(
+    args, support_http_keep_alive, server_tls_policy_enabled
+):
   """Checks for missing argument."""
-  all_args = [
-      'ssl_certificates',
-      'url_map',
-      'quic_override',
-      'ssl_policy',
-      'clear_ssl_policy',
-      'certificate_map',
-      'clear_certificate_map',
-      'clear_ssl_certificates',
-      'certificate_manager_certificates',
+  http_keep_alive_args = [
+      'clear_http_keep_alive_timeout_sec',
+      'http_keep_alive_timeout_sec',
   ]
-  err_msg_args = [
-      '[--ssl-certificates]',
-      '[--url-map]',
-      '[--quic-override]',
-      '[--ssl-policy]',
-      '[--clear-ssl-policy]',
-      '[--certificate-map]',
-      '[--clear-certificate-map]',
-      '[--clear-ssl-certificates]',
-      '[--certificate-manager-certificates]',
+  server_tls_policy_args = [
+      'clear_server_tls_policy',
+      'server_tls_policy',
   ]
+  all_args = (
+      [
+          'ssl_certificates',
+          'url_map',
+          'quic_override',
+          'ssl_policy',
+          'clear_ssl_policy',
+          'certificate_map',
+          'clear_certificate_map',
+          'clear_ssl_certificates',
+          'certificate_manager_certificates',
+      ]
+      + (http_keep_alive_args if support_http_keep_alive else [])
+      + (server_tls_policy_args if server_tls_policy_enabled else [])
+  )
+  err_http_keep_alive_args = [
+      '[--clear-http-keep-alive-timeout-sec]',
+      '[--http-keep-alive-timeout-sec]',
+  ]
+  err_server_tls_policy_args = [
+      '[--clear-server-tls-policy]',
+      '[--server-tls-policy]',
+  ]
+  err_msg_args = (
+      [
+          '[--ssl-certificates]',
+          '[--url-map]',
+          '[--quic-override]',
+          '[--ssl-policy]',
+          '[--clear-ssl-policy]',
+          '[--certificate-map]',
+          '[--clear-certificate-map]',
+          '[--clear-ssl-certificates]',
+          '[--certificate-manager-certificates]',
+      ]
+      + (err_http_keep_alive_args if support_http_keep_alive else [])
+      + (err_server_tls_policy_args if server_tls_policy_enabled else [])
+  )
   if not sum(args.IsSpecified(arg) for arg in all_args):
     raise compute_exceptions.ArgumentError(
         'You must specify at least one of %s or %s.'
@@ -111,7 +133,9 @@ def _Run(
     target_https_proxy_arg,
     url_map_arg,
     ssl_policy_arg,
+    support_http_keep_alive,
     certificate_map_ref,
+    server_tls_policy_enabled,
 ):
   """Issues requests necessary to update Target HTTPS Proxies."""
   client = holder.client
@@ -169,12 +193,27 @@ def _Run(
     new_resource.sslPolicy = None
     cleared_fields.append('sslPolicy')
 
+  if support_http_keep_alive:
+    if args.IsSpecified('http_keep_alive_timeout_sec'):
+      new_resource.httpKeepAliveTimeoutSec = args.http_keep_alive_timeout_sec
+    elif args.IsSpecified('clear_http_keep_alive_timeout_sec'):
+      new_resource.httpKeepAliveTimeoutSec = None
+      cleared_fields.append('httpKeepAliveTimeoutSec')
+
   if certificate_map_ref:
     new_resource.certificateMap = certificate_map_ref.SelfLink()
 
   if args.IsKnownAndSpecified('clear_certificate_map'):
     new_resource.certificateMap = None
     cleared_fields.append('certificateMap')
+
+  if server_tls_policy_enabled:
+    if args.IsKnownAndSpecified('server_tls_policy'):
+      server_tls_policy_ref = args.CONCEPTS.server_tls_policy.Parse()
+      new_resource.serverTlsPolicy = server_tls_policy_ref.SelfLink()
+    elif args.IsKnownAndSpecified('clear_server_tls_policy'):
+      new_resource.serverTlsPolicy = None
+      cleared_fields.append('serverTlsPolicy')
 
   if old_resource != new_resource:
     return _PatchTargetHttpsProxy(
@@ -226,14 +265,28 @@ def _PatchTargetHttpsProxy(client, proxy_ref, new_resource, cleared_fields):
     return client.MakeRequests(requests)
 
 
-class Update(base.SilentCommand):
+def _AddServerTLSPolicyArguments(parser):
+  """Adds all Server TLS Policy-related arguments."""
+  server_tls_group = parser.add_mutually_exclusive_group()
+  ns_resource_args.GetServerTlsPolicyResourceArg(
+      'to attach', name='server-tls-policy', group=server_tls_group
+  ).AddToParser(server_tls_group)
+  ns_resource_args.GetClearServerTLSPolicyForHttpsProxy().AddToParser(
+      server_tls_group
+  )
+
+
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class Update(base.UpdateCommand):
   """Update a target HTTPS proxy."""
 
+  _support_http_keep_alive = False
   SSL_CERTIFICATES_ARG = None
   TARGET_HTTPS_PROXY_ARG = None
   URL_MAP_ARG = None
   SSL_POLICY_ARG = None
   detailed_help = _DetailedHelp()
+  _server_tls_policy_enabled = False
 
   @classmethod
   def Args(cls, parser):
@@ -300,10 +353,19 @@ class Update(base.SilentCommand):
         'HTTPS', required=False
     ).AddToParser(group)
 
+    if cls._support_http_keep_alive:
+      group = parser.add_mutually_exclusive_group()
+      target_proxies_utils.AddHttpKeepAliveTimeoutSec(group)
+      target_proxies_utils.AddClearHttpKeepAliveTimeoutSec(group)
+
     target_proxies_utils.AddQuicOverrideUpdateArgs(parser)
+    if cls._server_tls_policy_enabled:
+      _AddServerTLSPolicyArguments(parser)
 
   def Run(self, args):
-    _CheckMissingArgument(args)
+    _CheckMissingArgument(
+        args, self._support_http_keep_alive, self._server_tls_policy_enabled
+    )
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     certificate_map_ref = args.CONCEPTS.certificate_map.Parse()
     return _Run(
@@ -313,5 +375,18 @@ class Update(base.SilentCommand):
         self.TARGET_HTTPS_PROXY_ARG,
         self.URL_MAP_ARG,
         self.SSL_POLICY_ARG,
+        self._support_http_keep_alive,
         certificate_map_ref,
+        self._server_tls_policy_enabled,
     )
+
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class UpdateBeta(Update):
+  pass
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class UpdateAlpha(UpdateBeta):
+  _support_http_keep_alive = True
+  _server_tls_policy_enabled = True

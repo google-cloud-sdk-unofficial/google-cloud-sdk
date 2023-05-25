@@ -26,6 +26,7 @@ from googlecloudsdk.command_lib.compute.security_policies import flags as securi
 from googlecloudsdk.command_lib.compute.security_policies import security_policies_utils
 from googlecloudsdk.command_lib.compute.security_policies.rules import flags
 from googlecloudsdk.core import properties
+from googlecloudsdk.core import resources
 
 
 class CreateHelper(object):
@@ -59,12 +60,15 @@ class CreateHelper(object):
       support_net_lb,
   ):
     """Generates the flagset for a Create command."""
-    flags.AddPriority(parser, 'add')
     if support_regional_security_policy or support_net_lb:
+      cls.NAME_ARG = (flags.PriorityArgument('add'))
+      cls.NAME_ARG.AddArgument(
+          parser, operation_type='add', cust_metavar='PRIORITY')
       flags.AddRegionFlag(parser, 'add')
       cls.SECURITY_POLICY_ARG = (
           security_policies_flags.SecurityPolicyMultiScopeArgumentForRules())
     else:
+      flags.AddPriority(parser, 'add')
       cls.SECURITY_POLICY_ARG = (
           security_policies_flags.SecurityPolicyArgumentForRules())
 
@@ -117,25 +121,50 @@ class CreateHelper(object):
     holder = base_classes.ComputeApiHolder(release_track)
     ref = None
     if support_regional_security_policy or support_net_lb:
-      security_policy_ref = cls.SECURITY_POLICY_ARG.ResolveAsResource(
-          args, holder.resources, default_scope=compute_scope.ScopeEnum.GLOBAL)
-      if getattr(security_policy_ref, 'region', None) is not None:
-        ref = holder.resources.Parse(
-            args.name,
-            collection='compute.regionSecurityPolicyRules',
-            params={
-                'project': properties.VALUES.core.project.GetOrFail,
-                'region': security_policy_ref.region,
-                'securityPolicy': args.security_policy,
-            })
+      if args.security_policy:
+        security_policy_ref = cls.SECURITY_POLICY_ARG.ResolveAsResource(
+            args,
+            holder.resources,
+            default_scope=compute_scope.ScopeEnum.GLOBAL)
+        if getattr(security_policy_ref, 'region', None) is not None:
+          ref = holder.resources.Parse(
+              args.name,
+              collection='compute.regionSecurityPolicyRules',
+              params={
+                  'project': properties.VALUES.core.project.GetOrFail,
+                  'region': security_policy_ref.region,
+                  'securityPolicy': args.security_policy,
+              })
+        else:
+          ref = holder.resources.Parse(
+              args.name,
+              collection='compute.securityPolicyRules',
+              params={
+                  'project': properties.VALUES.core.project.GetOrFail,
+                  'securityPolicy': args.security_policy,
+              },
+          )
       else:
-        ref = holder.resources.Parse(
-            args.name,
-            collection='compute.securityPolicyRules',
-            params={
-                'project': properties.VALUES.core.project.GetOrFail,
-                'securityPolicy': args.security_policy,
-            })
+        try:
+          ref = holder.resources.Parse(
+              args.name,
+              collection='compute.regionSecurityPolicyRules',
+              params={
+                  'project': properties.VALUES.core.project.GetOrFail,
+                  'region': getattr(args, 'region', None),
+              },
+          )
+        except (
+            resources.RequiredFieldOmittedException,
+            resources.WrongResourceCollectionException,
+        ):
+          ref = holder.resources.Parse(
+              args.name,
+              collection='compute.securityPolicyRules',
+              params={
+                  'project': properties.VALUES.core.project.GetOrFail,
+              },
+          )
     else:
       ref = holder.resources.Parse(
           args.name,
@@ -201,6 +230,7 @@ class CreateGA(base.CreateCommand):
   """
 
   SECURITY_POLICY_ARG = None
+  NAME_ARG = None
 
   _support_redirect = True
   _support_rate_limit = True

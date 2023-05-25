@@ -4,7 +4,7 @@
  "id": "bigquery:v2",
  "name": "bigquery",
  "version": "v2",
- "revision": "20230418",
+ "revision": "20230517",
  "title": "BigQuery API",
  "description": "A data platform for customers to create, manage, share and query data.",
  "ownerDomain": "google.com",
@@ -739,7 +739,7 @@
    "properties": {
     "kmsKeyName": {
      "type": "string",
-     "description": "[Optional] Describes the Cloud KMS encryption key that will be used to protect destination BigQuery table. The BigQuery Service Account associated with your project requires access to this encryption key."
+     "description": "Optional. Describes the Cloud KMS encryption key that will be used to protect destination BigQuery table. The BigQuery Service Account associated with your project requires access to this encryption key."
     }
    }
   },
@@ -987,6 +987,10 @@
     "ignoreUnknownValues": {
      "type": "boolean",
      "description": "[Optional] Indicates if BigQuery should allow extra values that are not represented in the table schema. If true, the extra values are ignored. If false, records with extra columns are treated as bad records, and if there are too many bad records, an invalid error is returned in the job result. The default value is false. The sourceFormat property determines what BigQuery treats as an extra value: CSV: Trailing columns JSON: Named values that don't match any column names Google Cloud Bigtable: This setting is ignored. Google Cloud Datastore backups: This setting is ignored. Avro: This setting is ignored."
+    },
+    "jsonOptions": {
+     "$ref": "JsonOptions",
+     "description": "Additional properties to set if `sourceFormat` is set to `NEWLINE_DELIMITED_JSON`."
     },
     "maxBadRecords": {
      "type": "integer",
@@ -2153,6 +2157,16 @@
     "$ref": "JsonValue"
    }
   },
+  "JsonOptions": {
+   "id": "JsonOptions",
+   "type": "object",
+   "properties": {
+    "encoding": {
+     "type": "string",
+     "description": "[Optional] The character encoding of the data. The supported values are UTF-8, UTF-16BE, UTF-16LE, UTF-32BE, and UTF-32LE. The default value is UTF-8."
+    }
+   }
+  },
   "JsonValue": {
    "id": "JsonValue",
    "type": "any"
@@ -2245,15 +2259,15 @@
    "properties": {
     "datasetId": {
      "type": "string",
-     "description": "[Required] The ID of the dataset containing this model."
+     "description": "Required. The ID of the dataset containing this model."
     },
     "modelId": {
      "type": "string",
-     "description": "[Required] The ID of the model. The ID must contain only letters (a-z, A-Z), numbers (0-9), or underscores (_). The maximum length is 1,024 characters."
+     "description": "Required. The ID of the model. The ID must contain only letters (a-z, A-Z), numbers (0-9), or underscores (_). The maximum length is 1,024 characters."
     },
     "projectId": {
      "type": "string",
-     "description": "[Required] The ID of the project containing this model."
+     "description": "Required. The ID of the project containing this model."
     }
    }
   },
@@ -2652,15 +2666,15 @@
    "properties": {
     "datasetId": {
      "type": "string",
-     "description": "[Required] The ID of the dataset containing this routine."
+     "description": "Required. The ID of the dataset containing this routine."
     },
     "projectId": {
      "type": "string",
-     "description": "[Required] The ID of the project containing this routine."
+     "description": "Required. The ID of the project containing this routine."
     },
     "routineId": {
      "type": "string",
-     "description": "[Required] The ID of the routine. The ID must contain only letters (a-z, A-Z), numbers (0-9), or underscores (_). The maximum length is 256 characters."
+     "description": "Required. The ID of the routine. The ID must contain only letters (a-z, A-Z), numbers (0-9), or underscores (_). The maximum length is 256 characters."
     }
    }
   },
@@ -2670,19 +2684,19 @@
    "properties": {
     "datasetId": {
      "type": "string",
-     "description": "[Required] The ID of the dataset containing this row access policy."
+     "description": "Required. The ID of the dataset containing this row access policy."
     },
     "policyId": {
      "type": "string",
-     "description": "[Required] The ID of the row access policy. The ID must contain only letters (a-z, A-Z), numbers (0-9), or underscores (_). The maximum length is 256 characters."
+     "description": "Required. The ID of the row access policy. The ID must contain only letters (a-z, A-Z), numbers (0-9), or underscores (_). The maximum length is 256 characters."
     },
     "projectId": {
      "type": "string",
-     "description": "[Required] The ID of the project containing this row access policy."
+     "description": "Required. The ID of the project containing this row access policy."
     },
     "tableId": {
      "type": "string",
-     "description": "[Required] The ID of the table containing this row access policy."
+     "description": "Required. The ID of the table containing this row access policy."
     }
    }
   },
@@ -2937,6 +2951,16 @@
      "$ref": "ModelDefinition",
      "description": "[Output-only, Beta] Present iff this table represents a ML model. Describes the training information for the model, and it is required to run 'PREDICT' queries."
     },
+    "numActiveLogicalBytes": {
+     "type": "string",
+     "description": "[Output-only] Number of logical bytes that are less than 90 days old.",
+     "format": "int64"
+    },
+    "numActivePhysicalBytes": {
+     "type": "string",
+     "description": "[Output-only] Number of physical bytes less than 90 days old. This data is not kept in real time, and might be delayed by a few seconds to a few minutes.",
+     "format": "int64"
+    },
     "numBytes": {
      "type": "string",
      "description": "[Output-only] The size of this table in bytes, excluding any data in the streaming buffer.",
@@ -2945,6 +2969,21 @@
     "numLongTermBytes": {
      "type": "string",
      "description": "[Output-only] The number of bytes in the table that are considered \"long-term storage\".",
+     "format": "int64"
+    },
+    "numLongTermLogicalBytes": {
+     "type": "string",
+     "description": "[Output-only] Number of logical bytes that are more than 90 days old.",
+     "format": "int64"
+    },
+    "numLongTermPhysicalBytes": {
+     "type": "string",
+     "description": "[Output-only] Number of physical bytes more than 90 days old. This data is not kept in real time, and might be delayed by a few seconds to a few minutes.",
+     "format": "int64"
+    },
+    "numPartitions": {
+     "type": "string",
+     "description": "[Output-only] The number of partitions present in the table or materialized view. This data is not kept in real time, and might be delayed by a few seconds to a few minutes.",
      "format": "int64"
     },
     "numPhysicalBytes": {
@@ -2957,42 +2996,17 @@
      "description": "[Output-only] The number of rows of data in this table, excluding any data in the streaming buffer.",
      "format": "uint64"
     },
-    "num_active_logical_bytes": {
-     "type": "string",
-     "description": "[Output-only] Number of logical bytes that are less than 90 days old.",
-     "format": "int64"
-    },
-    "num_active_physical_bytes": {
-     "type": "string",
-     "description": "[Output-only] Number of physical bytes less than 90 days old. This data is not kept in real time, and might be delayed by a few seconds to a few minutes.",
-     "format": "int64"
-    },
-    "num_long_term_logical_bytes": {
-     "type": "string",
-     "description": "[Output-only] Number of logical bytes that are more than 90 days old.",
-     "format": "int64"
-    },
-    "num_long_term_physical_bytes": {
-     "type": "string",
-     "description": "[Output-only] Number of physical bytes more than 90 days old. This data is not kept in real time, and might be delayed by a few seconds to a few minutes.",
-     "format": "int64"
-    },
-    "num_partitions": {
-     "type": "string",
-     "description": "[Output-only] The number of partitions present in the table or materialized view. This data is not kept in real time, and might be delayed by a few seconds to a few minutes.",
-     "format": "int64"
-    },
-    "num_time_travel_physical_bytes": {
+    "numTimeTravelPhysicalBytes": {
      "type": "string",
      "description": "[Output-only] Number of physical bytes used by time travel storage (deleted or changed data). This data is not kept in real time, and might be delayed by a few seconds to a few minutes.",
      "format": "int64"
     },
-    "num_total_logical_bytes": {
+    "numTotalLogicalBytes": {
      "type": "string",
      "description": "[Output-only] Total number of logical bytes in the table or materialized view.",
      "format": "int64"
     },
-    "num_total_physical_bytes": {
+    "numTotalPhysicalBytes": {
      "type": "string",
      "description": "[Output-only] The physical size of this table in bytes. This also includes storage used for time travel. This data is not kept in real time, and might be delayed by a few seconds to a few minutes.",
      "format": "int64"
@@ -3022,6 +3036,10 @@
      "$ref": "Streamingbuffer",
      "description": "[Output-only] Contains information regarding this table's streaming buffer, if one is present. This field will be absent if the table is not being streamed to or if there is no data in the streaming buffer."
     },
+    "tableConstraints": {
+     "$ref": "TableConstraints",
+     "description": "[Optional] The table constraints on the table."
+    },
     "tableReference": {
      "$ref": "TableReference",
      "description": "[Required] Reference describing the ID of this table."
@@ -3046,6 +3064,64 @@
    "properties": {
     "v": {
      "type": "any"
+    }
+   }
+  },
+  "TableConstraints": {
+   "id": "TableConstraints",
+   "type": "object",
+   "properties": {
+    "foreignKeys": {
+     "type": "array",
+     "description": "[Optional] The foreign keys of the tables.",
+     "items": {
+      "type": "object",
+      "properties": {
+       "columnReferences": {
+        "type": "array",
+        "items": {
+         "type": "object",
+         "properties": {
+          "referencedColumn": {
+           "type": "string"
+          },
+          "referencingColumn": {
+           "type": "string"
+          }
+         }
+        }
+       },
+       "name": {
+        "type": "string"
+       },
+       "referencedTable": {
+        "type": "object",
+        "properties": {
+         "datasetId": {
+          "type": "string"
+         },
+         "projectId": {
+          "type": "string"
+         },
+         "tableId": {
+          "type": "string"
+         }
+        }
+       }
+      }
+     }
+    },
+    "primaryKey": {
+     "type": "object",
+     "description": "[Optional] The primary key of the table.",
+     "properties": {
+      "columns": {
+       "type": "array",
+       "items": {
+        "type": "string"
+       }
+      }
+     }
     }
    }
   },
@@ -3536,8 +3612,8 @@
       "Autoencoder model.",
       "New name for the ARIMA model.",
       "ARIMA with external regressors.",
-      "Random Forest regressor model.",
-      "Random Forest classifier model.",
+      "Random forest regressor model.",
+      "Random forest classifier model.",
       "An imported TensorFlow Lite model.",
       "An imported ONNX model."
      ],
@@ -4361,6 +4437,10 @@
     "xgboostVersion": {
      "description": "User-selected XGBoost versions for training of XGBoost models.",
      "type": "string"
+    },
+    "approxGlobalFeatureContrib": {
+     "description": "Whether to use approximate feature contribution method in XGBoost model explanation for global explain.",
+     "type": "boolean"
     }
    }
   },
@@ -5639,15 +5719,17 @@
      "type": "string",
      "enumDescriptions": [
       "",
-      "Non-builtin permanent scalar function.",
+      "Non-built-in persistent scalar function.",
       "Stored procedure.",
-      "Non-builtin permanent TVF."
+      "Non-built-in persistent TVF.",
+      "Non-built-in persistent aggregate function."
      ],
      "enum": [
       "ROUTINE_TYPE_UNSPECIFIED",
       "SCALAR_FUNCTION",
       "PROCEDURE",
-      "TABLE_VALUED_FUNCTION"
+      "TABLE_VALUED_FUNCTION",
+      "AGGREGATE_FUNCTION"
      ]
     },
     "creationTime": {

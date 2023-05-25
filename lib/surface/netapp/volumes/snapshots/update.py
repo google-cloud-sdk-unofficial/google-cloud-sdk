@@ -33,7 +33,7 @@ from googlecloudsdk.core import log
 # BETA is public.
 @base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
-class UpdateBeta(base.CreateCommand):
+class UpdateBeta(base.UpdateCommand):
   """Update a Cloud NetApp Volume Snapshot."""
 
   _RELEASE_TRACK = base.ReleaseTrack.BETA
@@ -94,7 +94,7 @@ class UpdateBeta(base.CreateCommand):
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class UpdateAlpha(base.CreateCommand):
+class UpdateAlpha(base.UpdateCommand):
   """Update a Cloud NetApp Volume Snapshot."""
 
   _RELEASE_TRACK = base.ReleaseTrack.ALPHA

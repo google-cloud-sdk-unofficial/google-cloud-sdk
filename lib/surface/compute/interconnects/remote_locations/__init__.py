@@ -21,9 +21,8 @@ from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class InterconnectRemoteLocations(base.Group):
-  """Read and manipulate Compute Engine interconnect remote locations."""
+  """Read and manipulate Google Compute Engine interconnect remote locations."""
   pass
 
 

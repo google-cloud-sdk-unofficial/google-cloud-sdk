@@ -1,5 +1,5 @@
 {
-  "CLI_VERSION": "5.23",
+  "CLI_VERSION": "5.24",
   "VERSION": "1",
   "capsule": "",
   "commands": {
@@ -2803,13 +2803,42 @@
           "positionals": [],
           "release": "GA",
           "sections": {
-            "DESCRIPTION": "The set sub-command has two sub-commands:",
-            "OFF": "This command will disable usage logging of the buckets named by the\nspecified URLs. All URLs must name buckets (e.g., gs://bucket).\n\nNo logging data is removed from the log buckets when you disable logging,\nbut Google Cloud Storage will stop delivering new logs once you have\nrun this command.",
-            "ON": "The \"gsutil logging set on\" command will enable usage logging of the\nbuckets named by the specified URLs, outputting log files in the specified\nlogging_bucket. Cloud Storage doesn't validate the existence of logging_bucket\nso users should ensure it already exists, and all URLs must name buckets\n(e.g., gs://bucket). The required bucket parameter specifies the\nbucket to which the logs are written, and the optional log_object_prefix\nparameter specifies the prefix for log object names. The default prefix\nis the bucket name. For example, the command:\n\n  gsutil logging set on -b gs://my_logging_bucket -o UsageLog \\\n      gs://my_bucket1 gs://my_bucket2\n\nwill cause all read and write activity to objects in gs://mybucket1 and\ngs://mybucket2 to be logged to objects prefixed with the name \"UsageLog\",\nwith those log objects written to the bucket gs://my_logging_bucket.\n\nIn addition to enabling logging on your bucket(s), you will also need to grant\ncloud-storage-analytics@google.com write access to the log bucket, using this\ncommand:\n\n  gsutil acl ch -g cloud-storage-analytics@google.com:W gs://my_logging_bucket\n\nNote that log data may contain sensitive information, so you should make\nsure to set an appropriate default bucket ACL to protect that data. (See\n\"gsutil help defacl\".)"
+            "DESCRIPTION": "The ``set`` sub-command has two sub-commands:",
+            "OFF": "This command disables usage logging of the buckets named by the specified\nURLs. All URLs must name Cloud Storage buckets (e.g., ``gs://bucket``).\n\nNo logging data is removed from the log buckets when you disable logging,\nbut Google Cloud Storage stops delivering new logs once you have run this\ncommand.",
+            "ON": "The ``gsutil logging set on`` command enables usage logging of the buckets\nnamed by the specified URLs, outputting log files to the bucket specified\nwith the ``-b`` flag. Cloud Storage doesn't validate the existence of the\noutput bucket, so users should ensure it already exists, and all URLs must\nname Cloud Storage buckets (e.g., ``gs://bucket``). The optional ``-o``\nflag specifies the prefix for log object names. The default prefix is the\nbucket name. For example, the command:\n\n  gsutil logging set on -b gs://my_logging_bucket -o UsageLog \\\n      gs://my_bucket1 gs://my_bucket2\n\ncauses all read and write activity to objects in ``gs://mybucket1`` and\n``gs://mybucket2`` to be logged to objects prefixed with the name\n``UsageLog``, with those log objects written to the bucket\n``gs://my_logging_bucket``.\n\nIn addition to enabling logging on your bucket(s), you also need to grant\ncloud-storage-analytics@google.com write access to the log bucket, using this\ncommand:\n\n  gsutil acl ch -g cloud-storage-analytics@google.com:W gs://my_logging_bucket\n\nNote that log data may contain sensitive information, so you should make\nsure to set an appropriate default bucket ACL to protect that data. (See\n\"gsutil help defacl\".)"
           }
         }
       },
-      "flags": {},
+      "flags": {
+        "-b": {
+          "attr": {},
+          "category": "",
+          "default": "",
+          "description": "bucket_name Specifies the bucket that stores the generated logs. This\n flag is only available for the ``set on`` command and is\n required for that command.",
+          "group": "",
+          "is_global": false,
+          "is_hidden": false,
+          "is_required": false,
+          "name": "-b",
+          "nargs": "0",
+          "type": "bool",
+          "value": ""
+        },
+        "-o": {
+          "attr": {},
+          "category": "",
+          "default": "",
+          "description": "log_prefix Specifies a common prefix for the names of generated\n logs. This flag is only available for the ``set on``\n command and is optional for that command.",
+          "group": "",
+          "is_global": false,
+          "is_hidden": false,
+          "is_required": false,
+          "name": "-o",
+          "nargs": "0",
+          "type": "bool",
+          "value": ""
+        }
+      },
       "groups": {},
       "is_group": true,
       "is_hidden": false,
@@ -2820,12 +2849,11 @@
       "positionals": [],
       "release": "GA",
       "sections": {
-        "DESCRIPTION": "Google Cloud Storage offers usage logs and storage logs in the form of CSV\nfiles that you can download and view. Usage logs provide information for all\nof the requests made on a specified bucket and are created hourly. Storage\nlogs provide information about the storage consumption of that bucket for\nthe last day and are created daily.\n\nOnce set up, usage logs and storage logs are automatically created as new\nobjects in a bucket that you specify. Usage logs and storage logs are\nsubject to the same pricing as other objects stored in Cloud Storage.\n\nThe logging command has two sub-commands:",
+        "DESCRIPTION": "Google Cloud Storage offers `usage logs and storage logs\n<https://cloud.google.com/storage/docs/access-logs>`_ in the form of CSV\nfiles that you can download and view. Usage logs provide information for all\nof the requests made on a specified bucket and are created hourly. Storage\nlogs provide information about the storage consumption of that bucket for\nthe last day and are created daily.\n\nOnce set up, usage logs and storage logs are automatically created as new\nobjects in a bucket that you specify. Usage logs and storage logs are\nsubject to the same pricing as other objects stored in Cloud Storage.\n\nFor a complete list of usage log fields and storage data fields, see\n`Usage and storage log format\n<https://cloud.google.com/storage/docs/access-logs#format>`_.\n\nThe <code>logging</code> command has two sub-commands:",
         "GET": "If logging is enabled for the specified bucket url, the server responds\nwith a JSON document that looks something like this:\n\n  {\n    \"logBucket\": \"my_logging_bucket\",\n    \"logObjectPrefix\": \"UsageLog\"\n  }\n\nYou can download log data from your log bucket using the gsutil cp command.",
-        "LOG AND STORAGE DATA FIELDS": "For a complete list of usage log fields and storage data fields, see:\nhttps://cloud.google.com/storage/docs/access-logs#format",
-        "OFF": "This command will disable usage logging of the buckets named by the\nspecified URLs. All URLs must name buckets (e.g., gs://bucket).\n\nNo logging data is removed from the log buckets when you disable logging,\nbut Google Cloud Storage will stop delivering new logs once you have\nrun this command.",
-        "ON": "The \"gsutil logging set on\" command will enable usage logging of the\nbuckets named by the specified URLs, outputting log files in the specified\nlogging_bucket. Cloud Storage doesn't validate the existence of logging_bucket\nso users should ensure it already exists, and all URLs must name buckets\n(e.g., gs://bucket). The required bucket parameter specifies the\nbucket to which the logs are written, and the optional log_object_prefix\nparameter specifies the prefix for log object names. The default prefix\nis the bucket name. For example, the command:\n\n  gsutil logging set on -b gs://my_logging_bucket -o UsageLog \\\n      gs://my_bucket1 gs://my_bucket2\n\nwill cause all read and write activity to objects in gs://mybucket1 and\ngs://mybucket2 to be logged to objects prefixed with the name \"UsageLog\",\nwith those log objects written to the bucket gs://my_logging_bucket.\n\nIn addition to enabling logging on your bucket(s), you will also need to grant\ncloud-storage-analytics@google.com write access to the log bucket, using this\ncommand:\n\n  gsutil acl ch -g cloud-storage-analytics@google.com:W gs://my_logging_bucket\n\nNote that log data may contain sensitive information, so you should make\nsure to set an appropriate default bucket ACL to protect that data. (See\n\"gsutil help defacl\".)",
-        "SET": "The set sub-command has two sub-commands:"
+        "OFF": "This command disables usage logging of the buckets named by the specified\nURLs. All URLs must name Cloud Storage buckets (e.g., ``gs://bucket``).\n\nNo logging data is removed from the log buckets when you disable logging,\nbut Google Cloud Storage stops delivering new logs once you have run this\ncommand.",
+        "ON": "The ``gsutil logging set on`` command enables usage logging of the buckets\nnamed by the specified URLs, outputting log files to the bucket specified\nwith the ``-b`` flag. Cloud Storage doesn't validate the existence of the\noutput bucket, so users should ensure it already exists, and all URLs must\nname Cloud Storage buckets (e.g., ``gs://bucket``). The optional ``-o``\nflag specifies the prefix for log object names. The default prefix is the\nbucket name. For example, the command:\n\n  gsutil logging set on -b gs://my_logging_bucket -o UsageLog \\\n      gs://my_bucket1 gs://my_bucket2\n\ncauses all read and write activity to objects in ``gs://mybucket1`` and\n``gs://mybucket2`` to be logged to objects prefixed with the name\n``UsageLog``, with those log objects written to the bucket\n``gs://my_logging_bucket``.\n\nIn addition to enabling logging on your bucket(s), you also need to grant\ncloud-storage-analytics@google.com write access to the log bucket, using this\ncommand:\n\n  gsutil acl ch -g cloud-storage-analytics@google.com:W gs://my_logging_bucket\n\nNote that log data may contain sensitive information, so you should make\nsure to set an appropriate default bucket ACL to protect that data. (See\n\"gsutil help defacl\".)",
+        "SET": "The ``set`` sub-command has two sub-commands:"
       }
     },
     "ls": {

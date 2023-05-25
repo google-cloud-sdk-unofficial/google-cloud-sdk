@@ -50,13 +50,13 @@ DETAILED_HELP = {
 }
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class AddOverride(base.UpdateCommand):
   """Add overrides to Threat Prevention Profile."""
 
-  @staticmethod
-  def Args(parser):
-    sp_flags.AddSecurityProfileResource(parser)
+  @classmethod
+  def Args(cls, parser):
+    sp_flags.AddSecurityProfileResource(parser, cls.ReleaseTrack())
     sp_flags.AddSeverityorThreatIDArg(parser, required=True)
     sp_flags.AddActionArg(parser, required=True)
     base.ASYNC_FLAG.AddToParser(parser)

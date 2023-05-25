@@ -17,6 +17,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+import datetime
 
 from apitools.base.py import encoding
 from googlecloudsdk.api_lib.batch import jobs
@@ -286,11 +287,7 @@ class Submit(base.Command):
   def Run(self, args):
     job_ref = args.CONCEPTS.job.Parse()
     location_ref = job_ref.Parent()
-    job_id = job_ref.RelativeName().split('/')[-1]
-    # Remove the invalid job_id if no job_id being specified,
-    # batch_client would create a valid job_id.
-    if job_id == resource_args.INVALIDJOBID:
-      job_id = None
+    job_id = self._GetJobId(job_ref, args)
 
     release_track = self.ReleaseTrack()
 
@@ -308,6 +305,14 @@ class Submit(base.Command):
         'Job {jobName} was successfully submitted.'.format(jobName=resp.uid)
     )
     return resp
+
+  def _GetJobId(self, job_ref, args):
+    # Remove the invalid job_id if no job_id being specified,
+    # batch_client would create a valid job_id.
+    job_id = job_ref.RelativeName().split('/')[-1]
+    if job_id == resource_args.INVALIDJOBID:
+      job_id = None
+    return job_id
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
@@ -380,3 +385,37 @@ class SubmitAlpha(SubmitBeta):
       }
       EOF
   """
+
+  @staticmethod
+  def Args(parser):
+    _CommonArgs(parser)
+    parser.add_argument(
+        '--job-prefix',
+        type=str,
+        help="""Specify the job prefix. A job ID in the format of
+          job prefix + %Y%m%d-%H%M%S will be generated. Note that job prefix
+          cannot be specified while JOB ID positional argument is
+          specified.""",
+    )
+    resource_args.AddSubmitJobResourceArgs(parser)
+
+  def _GetJobId(self, job_ref, args):
+    job_id = job_ref.RelativeName().split('/')[-1]
+
+    if job_id != resource_args.INVALIDJOBID and args.job_prefix:
+      raise exceptions.Error(
+          '--job-prefix cannot be specified when JOB ID positional '
+          'argument is specified'
+      )
+    # Remove the invalid job_id if no job_id being specified,
+    # batch_client would create a valid job_id.
+    elif args.job_prefix:
+      job_id = args.job_prefix + '-' + datetime.datetime.now().strftime(
+          '%Y%m%d-%H%M%S'
+      )
+
+    # The case that both positional JOB ID and prefix are not specified
+    elif job_id == resource_args.INVALIDJOBID:
+      job_id = None
+
+    return job_id

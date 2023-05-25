@@ -68,6 +68,9 @@ def _AddContextAwareOptions(args):
                       use_client_certificate)
   if context_config:
     cert_provider_command = _GetCertProviderCommand(context_config)
+    if isinstance(cert_provider_command, list):
+      # e.g. cert_provider_command = ['*/apihelper', '--print_certificate']
+      cert_provider_command = ' '.join(cert_provider_command)
     # Don't need to pass mTLS data if gsutil shouldn't be using it.
     _MaybeAddBotoOption(args, 'Credentials', 'cert_provider_command',
                         cert_provider_command)

@@ -18,7 +18,10 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+from apitools.base.py import encoding
+
 from googlecloudsdk.api_lib.compute import base_classes
+from googlecloudsdk.api_lib.compute import target_proxies_utils
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute import flags as compute_flags
 from googlecloudsdk.command_lib.compute import scope as compute_scope
@@ -52,40 +55,95 @@ def _DetailedHelp():
   }
 
 
-def _Run(holder, target_http_proxy_ref, url_map_ref):
+def _Run(
+    args, holder, target_http_proxy_arg, url_map_arg, support_http_keep_alive
+):
   """Issues requests necessary to update Target HTTP Proxies."""
   client = holder.client
-  if target_http_proxies_utils.IsRegionalTargetHttpProxiesRef(
-      target_http_proxy_ref
-  ):
+
+  proxy_ref = target_http_proxy_arg.ResolveAsResource(
+      args,
+      holder.resources,
+      default_scope=compute_scope.ScopeEnum.GLOBAL,
+      scope_lister=compute_flags.GetDefaultScopeLister(client),
+  )
+
+  url_map_ref = target_http_proxies_utils.ResolveTargetHttpProxyUrlMap(
+      args, url_map_arg, proxy_ref, holder.resources
+  )
+
+  if target_http_proxies_utils.IsRegionalTargetHttpProxiesRef(proxy_ref):
     request = client.messages.ComputeRegionTargetHttpProxiesSetUrlMapRequest(
-        project=target_http_proxy_ref.project,
-        region=target_http_proxy_ref.region,
-        targetHttpProxy=target_http_proxy_ref.Name(),
+        project=proxy_ref.project,
+        region=proxy_ref.region,
+        targetHttpProxy=proxy_ref.Name(),
         urlMapReference=client.messages.UrlMapReference(
             urlMap=url_map_ref.SelfLink()
         ),
     )
     collection = client.apitools_client.regionTargetHttpProxies
+    res = client.MakeRequests([(collection, 'SetUrlMap', request)])
+    return res
   else:
-    request = client.messages.ComputeTargetHttpProxiesSetUrlMapRequest(
-        project=target_http_proxy_ref.project,
-        targetHttpProxy=target_http_proxy_ref.Name(),
-        urlMapReference=client.messages.UrlMapReference(
-            urlMap=url_map_ref.SelfLink()
-        ),
-    )
-    collection = client.apitools_client.targetHttpProxies
+    old_resource = _GetGlobalTargetHttpProxy(client, proxy_ref)
+    new_resource = encoding.CopyProtoMessage(old_resource)
+    cleared_fields = []
 
-  return client.MakeRequests([(collection, 'SetUrlMap', request)])
+    if args.url_map:
+      new_resource.urlMap = url_map_ref.SelfLink()
+
+    if support_http_keep_alive:
+      if args.IsSpecified('http_keep_alive_timeout_sec'):
+        new_resource.httpKeepAliveTimeoutSec = args.http_keep_alive_timeout_sec
+      elif args.IsSpecified('clear_http_keep_alive_timeout_sec'):
+        new_resource.httpKeepAliveTimeoutSec = None
+        cleared_fields.append('httpKeepAliveTimeoutSec')
+
+    if old_resource != new_resource:
+      return _PatchGlobalTargetHttpProxy(
+          client, proxy_ref, new_resource, cleared_fields
+      )
 
 
-@base.ReleaseTracks(
-    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
-)
-class Update(base.SilentCommand):
+def _GetGlobalTargetHttpProxy(client, proxy_ref):
+  """Retrieves the Global target HTTP proxy."""
+
+  requests = []
+  requests.append((
+      client.apitools_client.targetHttpProxies,
+      'Get',
+      client.messages.ComputeTargetHttpProxiesGetRequest(
+          project=proxy_ref.project, targetHttpProxy=proxy_ref.Name()
+      ),
+  ))
+
+  res = client.MakeRequests(requests)
+  return res[0]
+
+
+def _PatchGlobalTargetHttpProxy(
+    client, proxy_ref, new_resource, cleared_fields
+):
+  """Patches the Global target HTTP proxy."""
+  requests = []
+  requests.append((
+      client.apitools_client.targetHttpProxies,
+      'Patch',
+      client.messages.ComputeTargetHttpProxiesPatchRequest(
+          project=proxy_ref.project,
+          targetHttpProxy=proxy_ref.Name(),
+          targetHttpProxyResource=new_resource,
+      ),
+  ))
+  with client.apitools_client.IncludeFields(cleared_fields):
+    return client.MakeRequests(requests)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
+class Update(base.UpdateCommand):
   """Update a target HTTP proxy."""
 
+  _support_http_keep_alive = False
   TARGET_HTTP_PROXY_ARG = None
   URL_MAP_ARG = None
   detailed_help = _DetailedHelp()
@@ -96,17 +154,22 @@ class Update(base.SilentCommand):
     cls.TARGET_HTTP_PROXY_ARG.AddArgument(parser, operation_type='update')
     cls.URL_MAP_ARG = url_map_flags.UrlMapArgumentForTargetProxy()
     cls.URL_MAP_ARG.AddArgument(parser)
+    if cls._support_http_keep_alive:
+      group = parser.add_mutually_exclusive_group()
+      target_proxies_utils.AddHttpKeepAliveTimeoutSec(group)
+      target_proxies_utils.AddClearHttpKeepAliveTimeoutSec(group)
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
-    target_http_proxy_ref = self.TARGET_HTTP_PROXY_ARG.ResolveAsResource(
+    return _Run(
         args,
-        holder.resources,
-        default_scope=compute_scope.ScopeEnum.GLOBAL,
-        scope_lister=compute_flags.GetDefaultScopeLister(holder.client),
-    )
-    url_map_ref = target_http_proxies_utils.ResolveTargetHttpProxyUrlMap(
-        args, self.URL_MAP_ARG, target_http_proxy_ref, holder.resources
+        holder,
+        self.TARGET_HTTP_PROXY_ARG,
+        self.URL_MAP_ARG,
+        self._support_http_keep_alive,
     )
 
-    return _Run(holder, target_http_proxy_ref, url_map_ref)
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class UpdateAlpha(Update):
+  _support_http_keep_alive = True

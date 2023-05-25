@@ -53,7 +53,9 @@ def _DetailedHelp():
   }
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
+)
 class Update(base.UpdateCommand):
   """Update a Google Compute Engine service attachment."""
 
@@ -74,6 +76,11 @@ class Update(base.UpdateCommand):
     flags.AddEnableProxyProtocolForUpdate(parser)
     flags.AddConsumerRejectList(parser)
     flags.AddConsumerAcceptList(parser)
+
+  def _GetProjectOrNetwork(self, consumer_limit):
+    if consumer_limit.projectIdOrNum is not None:
+      return (consumer_limit.projectIdOrNum, consumer_limit.connectionLimit)
+    return (consumer_limit.networkUrl, consumer_limit.connectionLimit)
 
   def _GetOldResource(self, client, service_attachment_ref):
     """Returns the existing ServiceAttachment resource."""
@@ -147,11 +154,11 @@ class Update(base.UpdateCommand):
       consumer_accept_list = service_attachments_utils.GetConsumerAcceptList(
           args, holder.client.messages)
       new_accept_list = sorted(
-          consumer_accept_list,
-          key=lambda x: (x.projectIdOrNum, x.connectionLimit))
+          consumer_accept_list, key=self._GetProjectOrNetwork
+      )
       if old_resource.consumerAcceptLists is None or new_accept_list != sorted(
-          old_resource.consumerAcceptLists,
-          key=lambda x: (x.projectIdOrNum, x.connectionLimit)):
+          old_resource.consumerAcceptLists, key=self._GetProjectOrNetwork
+      ):
         replacement.consumerAcceptLists = new_accept_list
         is_updated = True
         if not new_accept_list:
@@ -177,83 +184,3 @@ class Update(base.UpdateCommand):
     with client.apitools_client.IncludeFields(cleared_fields):
       return client.MakeRequests(
           [self._GetPatchRequest(client, service_attachment_ref, replacement)])
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class UpdateAlpha(Update):
-  """Update a Google Compute Engine service attachment."""
-
-  @classmethod
-  def Args(cls, parser):
-    cls.SERVICE_ATTACHMENT_ARG = flags.ServiceAttachmentArgument()
-    cls.SERVICE_ATTACHMENT_ARG.AddArgument(parser, operation_type='update')
-    cls.NAT_SUBNETWORK_ARG = subnetwork_flags.SubnetworkArgumentForServiceAttachment(
-        required=False)
-    cls.NAT_SUBNETWORK_ARG.AddArgument(parser)
-
-    flags.AddDescription(parser)
-    flags.AddConnectionPreference(parser, is_update=True)
-    flags.AddEnableProxyProtocolForUpdate(parser)
-    flags.AddConsumerRejectListAlpha(parser)
-    flags.AddConsumerAcceptListAlpha(parser)
-
-  def _GetProjectOrNetwork(self, consumer_limit):
-    if consumer_limit.projectIdOrNum is not None:
-      return (consumer_limit.projectIdOrNum, consumer_limit.connectionLimit)
-    return (consumer_limit.networkUrl, consumer_limit.connectionLimit)
-
-  def _Modify(self, holder, args, old_resource, cleared_fields):
-    """Returns the updated service attachment."""
-    replacement = encoding.CopyProtoMessage(old_resource)
-    is_updated = False
-
-    if args.IsSpecified('description'):
-      if args.description != old_resource.description:
-        replacement.description = args.description
-        is_updated = True
-
-    if args.IsSpecified('connection_preference'):
-      new_connection_preference = service_attachments_utils.GetConnectionPreference(
-          args, holder.client.messages)
-      if new_connection_preference != old_resource.connectionPreference:
-        replacement.connectionPreference = new_connection_preference
-        is_updated = True
-
-    if args.IsSpecified('enable_proxy_protocol'):
-      if args.enable_proxy_protocol != old_resource.enableProxyProtocol:
-        replacement.enableProxyProtocol = args.enable_proxy_protocol
-        is_updated = True
-
-    if args.IsSpecified('nat_subnets'):
-      new_nat_subnets = sorted(self._GetNatSubnets(holder, args))
-      if old_resource.natSubnets is None or new_nat_subnets != sorted(
-          old_resource.natSubnets):
-        replacement.natSubnets = new_nat_subnets
-        is_updated = True
-
-    if args.IsSpecified('consumer_reject_list'):
-      new_reject_list = sorted(args.consumer_reject_list)
-      if old_resource.consumerRejectLists is None or new_reject_list != sorted(
-          old_resource.consumerRejectLists):
-        replacement.consumerRejectLists = new_reject_list
-        is_updated = True
-        if not new_reject_list:
-          # The user can clear up the reject list
-          cleared_fields.append('consumerRejectLists')
-
-    if args.IsSpecified('consumer_accept_list'):
-      consumer_accept_list = service_attachments_utils.GetConsumerAcceptListAlpha(
-          args, holder.client.messages)
-      new_accept_list = sorted(
-          consumer_accept_list, key=self._GetProjectOrNetwork)
-      if old_resource.consumerAcceptLists is None or new_accept_list != sorted(
-          old_resource.consumerAcceptLists, key=self._GetProjectOrNetwork):
-        replacement.consumerAcceptLists = new_accept_list
-        is_updated = True
-        if not new_accept_list:
-          # The user can clear up the accept list
-          cleared_fields.append('consumerAcceptLists')
-
-    if is_updated:
-      return replacement
-    return None

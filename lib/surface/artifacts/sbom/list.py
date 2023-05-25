@@ -20,16 +20,9 @@ from __future__ import division
 from __future__ import unicode_literals
 
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.artifacts import sbom_printer
 from googlecloudsdk.command_lib.artifacts import sbom_util
-
-DEFAULT_LIST_FORMAT = """\
-    flattened(
-      occ.resource.uri:label=resource_uri,
-      occ.sbomReference.payload.predicate.location,
-      occ.name:label=reference,
-      file_info.exists:label=file_exists,
-      file_info.err_msg:label=file_err_msg
-    )"""
+from googlecloudsdk.core.resource import resource_printer
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
@@ -44,10 +37,6 @@ class List(base.ListCommand):
 
           $ {command}
 
-          To list SBOM file references related to the repository "us-east1-docker.pkg.dev/project/repo":
-
-          $ {command} --resource="us-east1-docker.pkg.dev/project/repo"
-
           To list SBOM file references related to the image with the tag "us-east1-docker.pkg.dev/project/repo/my-image:1.0":
 
           $ {command} --resource="us-east1-docker.pkg.dev/project/repo/my-image:1.0"
@@ -56,9 +45,13 @@ class List(base.ListCommand):
 
           $ {command} --resource="us-east1-docker.pkg.dev/project/repo/my-image@sha256:88b205d7995332e10e836514fbfd59ecaf8976fc15060cd66e85cdcebe7fb356"
 
+          To list SBOM file references related to the images with the resource path prefix "us-east1-docker.pkg.dev/project/repo":
+
+          $ {command} --resource-prefix="us-east1-docker.pkg.dev/project/repo"
+
           To list SBOM file references generated when the images were pushed to Artifact Registry and related to the installed package dependency "perl":
 
-          $ {command} --installed-package="perl"
+          $ {command} --dependency="perl"
 
           """,
   }
@@ -70,10 +63,16 @@ class List(base.ListCommand):
     Args:
       parser: An argparse.ArgumentPaser.
     """
-    parser.display_info.AddFormat(DEFAULT_LIST_FORMAT)
+
+    resource_printer.RegisterFormatter(
+        sbom_printer.SBOM_PRINTER_FORMAT,
+        sbom_printer.SbomPrinter,
+        hidden=True)
+    parser.display_info.AddFormat(sbom_printer.SBOM_PRINTER_FORMAT)
+
     base.URI_FLAG.RemoveFromParser(parser)
     parser.add_argument(
-        '--installed-package',
+        '--dependency',
         required=False,
         help=(
             'List SBOM file references generated when the images were pushed to'
@@ -86,9 +85,14 @@ class List(base.ListCommand):
     parser.add_argument(
         '--resource',
         required=False,
+        help='List SBOM file references related to the image resource uri.',
+    )
+    parser.add_argument(
+        '--resource-prefix',
+        required=False,
         help=(
-            'List SBOM file references related to the resource uri. It can be'
-            ' a repository or an image.'
+            'List SBOM file references related to the resource uri with the'
+            ' resource path prefix.'
         ),
     )
 

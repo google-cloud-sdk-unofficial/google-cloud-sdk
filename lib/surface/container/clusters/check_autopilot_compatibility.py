@@ -56,7 +56,7 @@ class CheckAutopliotCompatibility(base.ListCommand):
     location = location_get(args)
 
     def sort_key(issue):
-      return (issue.type, issue.issueId)
+      return (issue.incompatibilityType, issue.constraintType)
 
     resp = adapter.CheckAutopilotCompatibility(
         adapter.ParseCluster(args.name, location))

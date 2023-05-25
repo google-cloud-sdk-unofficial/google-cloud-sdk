@@ -244,8 +244,6 @@ def _Typecheck(obj, types, message=None, method=None):
     raise TypeError(message)
 
 
-
-
 def _ToLowerCamel(name):
   """Convert a name with underscores to camelcase."""
   return re.sub('_[a-z]', lambda match: match.group(0)[1].upper(), name)
@@ -727,7 +725,7 @@ def ConfigurePythonLogger(apilog=None):
   """
   if apilog is None:
     # Effectively turn off logging.
-    logging.info(
+    logging.debug(
         'There is no apilog flag so non-critical logging is disabled.')
     logging.disable(logging.CRITICAL)
   else:
@@ -1029,7 +1027,12 @@ class BigqueryModel(model.JsonModel):
 class BigqueryHttp(http_request.HttpRequest):
   """Converts errors into Bigquery errors."""
 
-  def __init__(self, bigquery_model, *args, **kwds):
+  def __init__(
+      self,
+      bigquery_model,
+      *args,
+      **kwds
+  ):
     super(BigqueryHttp, self).__init__(*args, **kwds)
     logging.info('URL being requested from BQ client: %s %s', kwds['method'],
                  args[2])
@@ -1043,7 +1046,11 @@ class BigqueryHttp(http_request.HttpRequest):
 
     def _Construct(*args, **kwds):
       captured_model = bigquery_model
-      return BigqueryHttp(captured_model, *args, **kwds)
+      return BigqueryHttp(
+          captured_model,
+          *args,
+          **kwds
+      )
 
     return _Construct
 
@@ -1072,15 +1079,16 @@ class BigqueryHttp(http_request.HttpRequest):
         'Could not connect with BigQuery server due to: %r' % (e,))
 
   def execute(self, **kwds):  # pylint: disable=g-bad-name
-    try:
-      return super(BigqueryHttp, self).execute(**kwds)
-    except googleapiclient.errors.HttpError as e:
-      # TODO(user): Remove this when apiclient supports logging
-      # of error responses.
-      self._model._log_response(e.resp, e.content)  # pylint: disable=protected-access
-      BigqueryHttp.RaiseErrorFromHttpError(e)
-    except (httplib2.HttpLib2Error, IOError) as e:
-      BigqueryHttp.RaiseErrorFromNonHttpError(e)
+
+      try:
+        return super(BigqueryHttp, self).execute(**kwds)
+      except googleapiclient.errors.HttpError as e:
+        # TODO(user): Remove this when apiclient supports logging
+        # of error responses.
+        self._model._log_response(e.resp, e.content)  # pylint: disable=protected-access
+        BigqueryHttp.RaiseErrorFromHttpError(e)
+      except (httplib2.HttpLib2Error, IOError) as e:
+        BigqueryHttp.RaiseErrorFromNonHttpError(e)
 
 
 class JobIdGenerator(six.with_metaclass(abc.ABCMeta, object)):
@@ -1222,7 +1230,7 @@ class BigqueryClient(object):
         the built-in discovery document will be used.
       job_property: a list of "key=value" strings defining properties
         to apply to all job operations.
-      trace: a tracing header to inclue in all bigquery api requests.
+      trace: a tracing header to include in all bigquery api requests.
       sync: boolean, when inserting jobs, whether to wait for them to
         complete before returning from the insert request.
       wait_printer_factory: a function that returns a WaitPrinter.
@@ -2961,14 +2969,10 @@ class BigqueryClient(object):
       if properties:
         spark_properties = json.loads(properties)
         connection['spark'] = spark_properties
-        if spark_properties.get(
-            'sparkHistoryServerConfig') and spark_properties[
-                'sparkHistoryServerConfig'].get('dataprocCluster'):
-          update_mask.append(
-              'spark.spark_history_server_config.dataproc_cluster')
-        if spark_properties.get('metastoreServiceConfig') and spark_properties[
-            'metastoreServiceConfig'].get('metastoreService'):
-          update_mask.append('spark.metastore_service_config.metastore_service')
+        if 'sparkHistoryServerConfig' in spark_properties:
+          update_mask.append('spark.spark_history_server_config')
+        if 'metastoreServiceConfig' in spark_properties:
+          update_mask.append('spark.metastore_service_config')
       else:
         connection['spark'] = {}
 
@@ -3005,6 +3009,55 @@ class BigqueryClient(object):
     client = self.GetConnectionV1ApiClient()
     return client.projects().locations().connections().list(
         parent=parent, pageToken=page_token, pageSize=max_results).execute()
+
+  def SetConnectionIAMPolicy(self, reference, policy):
+    """Sets IAM policy for the given connection resource.
+
+    Arguments:
+      reference: the ConnectionReference for the connection resource.
+      policy: The policy string in JSON format.
+
+    Returns:
+      The updated IAM policy attached to the given connection resource.
+
+    Raises:
+      TypeError: if reference is not a ConnectionReference.
+    """
+    _Typecheck(
+        reference,
+        ApiClientHelper.ConnectionReference,
+        method='SetConnectionIAMPolicy',
+    )
+    client = self.GetConnectionV1ApiClient()
+    return client.projects().locations().connections().setIamPolicy(
+        resource=reference.path(), body={'policy': policy}
+    ).execute()
+
+  def GetConnectionIAMPolicy(self, reference):
+    """Gets IAM policy for the given connection resource.
+
+    Arguments:
+      reference: the ConnectionReference for the connection resource.
+
+    Returns:
+      The IAM policy attached to the given connection resource.
+
+    Raises:
+      TypeError: if reference is not a ConnectionReference.
+    """
+    _Typecheck(
+        reference,
+        ApiClientHelper.ConnectionReference,
+        method='GetConnectionIAMPolicy',
+    )
+    client = self.GetConnectionV1ApiClient()
+    return (
+        client.projects()
+        .locations()
+        .connections()
+        .getIamPolicy(resource=reference.path())
+        .execute()
+    )
 
   def ReadSchemaAndRows(self,
                         table_dict,
@@ -3872,7 +3925,10 @@ class BigqueryClient(object):
         if 'externalDataConfiguration' in result:
           result['Total URIs'] = len(
               result['externalDataConfiguration']['sourceUris'])
-    if 'encryptionConfiguration' in result:
+    if (
+        'encryptionConfiguration' in result
+        and 'kmsKeyName' in result['encryptionConfiguration']
+    ):
       result['kmsKeyName'] = result['encryptionConfiguration']['kmsKeyName']
     if 'snapshotDefinition' in result:
       result['Base Table'] = result['snapshotDefinition']['baseTableReference']
@@ -4902,7 +4958,8 @@ class BigqueryClient(object):
       source_dataset_reference=None
       ,
       max_time_travel_hours=None,
-      storage_billing_model=None):
+      storage_billing_model=None,
+  ):
     """Create a dataset corresponding to DatasetReference.
 
     Args:
@@ -5698,6 +5755,7 @@ class BigqueryClient(object):
         reference, ApiClientHelper.DatasetReference, method='DeleteDataset')
 
     args = dict(reference)
+
     if delete_contents is not None:
       args['deleteContents'] = delete_contents
     try:

@@ -83,6 +83,20 @@ class Load(base.Command):
         ),
     )
 
+    parser.add_argument(
+        '--destination',
+        metavar='DESTINATION',
+        default=None,
+        required=False,
+        help="""\
+            The storage path will be used to store the SBOM file.
+            Currently only supports Cloud Storage paths start with 'gs://'.
+        """,
+        type=arg_parsers.RegexpValidator(
+            r'^gs://.*$', 'Must be in format of gs://[STORAGE_PATH]'
+        ),
+    )
+
   def Run(self, args):
     """Run the load command."""
     # Parse file and get the version.
@@ -102,11 +116,12 @@ class Load(base.Command):
         ).format(a.project, a.location, a.resource_uri, a.digests.get('sha256'))
     )
 
-    # Upload SBOM.
+    # Upload SBOM to a GCS bucket.
     remote_path = sbom_util.UploadSbomToGCS(
         source=args.source,
         artifact=a,
         sbom=s,
+        gcs_path=args.destination,
     )
     log.info('Uploaded the SBOM file at {0}'.format(remote_path))
 

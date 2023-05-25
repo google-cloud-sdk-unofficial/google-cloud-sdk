@@ -105,5 +105,6 @@ class Compose(base.Command):
     compose_objects_task.ComposeObjectsTask(
         objects_to_compose,
         destination_resource,
+        print_status_message=True,
         user_request_args=user_request_args,
-        print_status_message=True).execute()
+    ).execute()

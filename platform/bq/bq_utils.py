@@ -256,6 +256,10 @@ def ProcessError(
 def GetInfoString():
   """Gets the info string for the current execution."""
   platform_str = GetPlatformString()
+  try:
+    httplib2_version = httplib2.__version__
+  except AttributeError:
+    httplib2_version = httplib2.python3.__version__
   return textwrap.dedent(
       """\
       BigQuery CLI [{version}]
@@ -277,7 +281,7 @@ def GetInfoString():
           platform_str=platform_str,
           uname=platform.uname(),
           python_version=sys.version.replace('\n', ' '),
-          httplib2_version=httplib2.__version__,
+          httplib2_version=httplib2_version,
           google_auth_version=google_auth_version.__version__,
           requests_version=requests.__version__,
           urllib3_version=urllib3.__version__,

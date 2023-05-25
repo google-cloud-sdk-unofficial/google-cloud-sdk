@@ -21,6 +21,9 @@ from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.spectrum_access import sas_portal_api
 from googlecloudsdk.calliope import base
+from googlecloudsdk.core import log
+from googlecloudsdk.core import properties
+from googlecloudsdk.core.console import console_io
 
 
 @base.Hidden
@@ -59,10 +62,41 @@ class Provision(base.DescribeCommand):
     )
 
   def Run(self, args):
+    log.status.Print(
+        'This command will enable the Spectrum Access System'
+        ' and create a new SAS deployment for your'
+        ' organization. The Spectrum Access System is governed by your Google'
+        ' Cloud Agreement or Cloud Master Agreement and the Spectrum Access'
+        ' System specific terms at cloud.google.com/terms.'
+    )
+    console_io.PromptContinue(
+        default=False,
+        cancel_on_no=True,
+        prompt_string='Do you accept the agreement?',
+    )
+
     base.EnableUserProjectQuota()
     client = sas_portal_api.GetClientInstance().customers
     messsage_module = sas_portal_api.GetMessagesModule()
     req = messsage_module.SasPortalProvisionDeploymentRequest()
     req.newOrganizationDisplayName = args.organization_name
     req.newDeploymentDisplayName = args.deployment_name
-    return client.ProvisionDeployment(req)
+
+    result = client.ProvisionDeployment(req)
+    if not result.errorMessage:
+      portal_api_override = properties.VALUES.api_endpoint_overrides.Property(
+          'sasportal'
+      ).Get()
+      sas_portal_url = 'g.co/sasportal'
+      if portal_api_override and ('prod-tt-sasportal' in portal_api_override):
+        sas_portal_url = 'https://wirelessconnectivity.google.com/test-sas'
+
+      project = properties.VALUES.core.project.Get()
+
+      log.status.Print(
+          'A new SAS deployment with userID: {}  has been created. Go to'
+          ' {} to check spectrum availability, pre-register CBSDs,'
+          ' check CBSD status and manage users.'.format(project, sas_portal_url)
+      )
+
+    return result

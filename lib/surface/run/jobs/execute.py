@@ -81,12 +81,21 @@ class Execute(base.Command):
           failure_message='Executing job failed',
           suppress_output=args.async_,
       ) as tracker:
+        overrides = None
+        if (
+            self.ReleaseTrack().prefix == 'alpha'
+            and flags.HasExecutionOverrides(args)
+        ):
+          config_overrides = flags.GetRunJobConfigurationOverrides(args)
+          operations.ValidateConfigOverrides(job_ref, config_overrides)
+          overrides = operations.GetExecutionOverrides(args)
         e = operations.RunJob(
             job_ref,
-            args,
             tracker,
+            args.wait,
+            args.async_,
             self.ReleaseTrack(),
-            from_execute_surface=True,
+            overrides
         )
 
       if args.async_:

@@ -357,6 +357,7 @@ def ParseCreateOptionsBase(args, is_autopilot, get_default, location,
           'workload_vulnerability_scanning'),
       enable_runtime_vulnerability_insight=get_default(
           'enable_runtime_vulnerability_insight'),
+      workload_policies=get_default('workload_policies')
       )
 
 
@@ -399,13 +400,20 @@ def AddPrivateIPv6Flag(api, parser):
   flags.AddPrivateIpv6GoogleAccessTypeFlag(api, parser)
 
 
-def AddAcceleratorFlag(parser, enable_gpu_partition, enable_gpu_sharing,
-                       enable_gpu_deprecated_fields):
+def AddAcceleratorFlag(
+    parser,
+    enable_gpu_partition,
+    enable_gpu_sharing,
+    enable_gpu_deprecated_fields,
+    enable_gpu_driver_installation,
+):
   flags.AddAcceleratorArgs(
       parser,
       enable_gpu_partition=enable_gpu_partition,
       enable_gpu_sharing=enable_gpu_sharing,
-      enable_gpu_deprecated_fields=enable_gpu_deprecated_fields)
+      enable_gpu_deprecated_fields=enable_gpu_deprecated_fields,
+      enable_gpu_driver_installation=enable_gpu_driver_installation,
+  )
 
 
 def AddKubernetesObjectsExportFlag(parser):
@@ -424,7 +432,8 @@ def AttrValue(args, flagname, flag_defaults):
 
 flags_to_add = {
     GA: {
-        'accelerator': (lambda p: AddAcceleratorFlag(p, True, True, False)),
+        'accelerator':
+            (lambda p: AddAcceleratorFlag(p, True, True, False, True)),
         'additionalzones':
             _AddAdditionalZonesFlag,
         'addons':
@@ -618,7 +627,8 @@ flags_to_add = {
             flags.AddRuntimeVulnerabilityInsightFlag,
     },
     BETA: {
-        'accelerator': (lambda p: AddAcceleratorFlag(p, True, True, True)),
+        'accelerator':
+            (lambda p: AddAcceleratorFlag(p, True, True, True, True)),
         'additionalzones':
             _AddAdditionalZonesGroup,
         'addons':
@@ -849,9 +859,11 @@ flags_to_add = {
             flags.AddRuntimeVulnerabilityInsightFlag,
         'enableDnsEndpoint':
             flags.AddEnableDNSEndpoint,
+        'enableFqdnNetworkPolicy': flags.AddEnableFqdnNetworkPolicyFlag,
     },
     ALPHA: {
-        'accelerator': (lambda p: AddAcceleratorFlag(p, True, True, True)),
+        'accelerator':
+            (lambda p: AddAcceleratorFlag(p, True, True, True, True)),
         'additionalzones':
             _AddAdditionalZonesGroup,
         'addons':
@@ -1091,6 +1103,7 @@ flags_to_add = {
             flags.AddRuntimeVulnerabilityInsightFlag,
         'enableDnsEndpoint':
             flags.AddEnableDNSEndpoint,
+        'enableFqdnNetworkPolicy': flags.AddEnableFqdnNetworkPolicyFlag,
     },
 }
 
@@ -1344,6 +1357,7 @@ class CreateBeta(Create):
     ops.enable_runtime_vulnerability_insight = get_default(
         'enable_runtime_vulnerability_insight')
     ops.enable_dns_endpoint = get_default('enable_dns_endpoint')
+    ops.enable_fqdn_network_policy = get_default('enable_fqdn_network_policy')
     return ops
 
 
@@ -1446,4 +1460,5 @@ class CreateAlpha(Create):
     )
     ops.enable_runtime_vulnerability_insight = get_default('enable_runtime_vulnerability_insight')
     ops.enable_dns_endpoint = get_default('enable_dns_endpoint')
+    ops.enable_fqdn_network_policy = get_default('enable_fqdn_network_policy')
     return ops

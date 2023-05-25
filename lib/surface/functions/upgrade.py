@@ -41,6 +41,10 @@ UpgradeAction = collections.namedtuple(
         'success_msg',
     ],
 )
+_ABORT_GUIDANCE_MSG = (
+    'You can abort the upgrade process at any time by rerunning this command'
+    ' with the --abort flag.'
+)
 
 # TODO(b/272771821): Standardize upgrade related strings.
 _SETUP_CONFIG_ACTION = UpgradeAction(
@@ -64,7 +68,7 @@ _SETUP_CONFIG_ACTION = UpgradeAction(
         # TODO(b/265016036): Link to the user test guide for upgrade.
         '\n\nOnce you are ready to redirect production traffic, rerun this'
         ' command with the --redirect-traffic flag.'
-    ),
+    ) + '\n\n' + _ABORT_GUIDANCE_MSG,
 )
 
 _REDIRECT_TRAFFIC_ACTION = UpgradeAction(
@@ -80,7 +84,7 @@ _REDIRECT_TRAFFIC_ACTION = UpgradeAction(
         ' If you experience issues, rerun this command with the'
         ' --rollback-traffic flag. Otherwise, once you are ready to finalize'
         ' the upgrade, rerun this command with the --commit flag.'
-    ),
+    ) + '\n\n' + _ABORT_GUIDANCE_MSG,
 )
 
 _ROLLBACK_TRAFFIC_ACTION = UpgradeAction(
@@ -95,7 +99,7 @@ _ROLLBACK_TRAFFIC_ACTION = UpgradeAction(
         'Your 1st gen function is now serving all of your production traffic.'
         ' Once you are ready to redirect traffic to the 2nd gen function copy,'
         ' rerun this command with the --redirect-traffic flag.'
-    ),
+    ) + '\n\n' + _ABORT_GUIDANCE_MSG,
 )
 
 _ABORT_ACTION = UpgradeAction(
@@ -283,7 +287,3 @@ class UpgradeAlpha(base.Command):
 
     log.status.Print()
     log.status.Print(action.success_msg)
-    log.status.Print(
-        'You can abort the upgrade process at any time by rerunning this'
-        ' command with the --abort flag.'
-    )

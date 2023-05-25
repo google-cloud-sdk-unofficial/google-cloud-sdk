@@ -61,6 +61,7 @@ from six.moves import range
 from six.moves import zip
 import six.moves.http_client
 
+
 import table_formatter
 import bigquery_client
 import bq_flags
@@ -400,6 +401,10 @@ def _ParseLabels(labels):
   return labels_dict
 
 
+def IsRangeBoundaryUnbounded(value):
+  return value.upper() == 'UNBOUNDED' or value.upper() == 'NULL'
+
+
 class TablePrinter(object):
   """Base class for printing a table, with a default implementation."""
 
@@ -449,15 +454,26 @@ class TablePrinter(object):
   @staticmethod
   def _NormalizeRange(field, value):
     """Returns bq-specific formatting of a RANGE type."""
-    if field.get('rangeElementType').get('type').upper() != 'TIMESTAMP':
-      # Do nothing; this type of RANGE does not need formatting.
-      return value
     match = _RANGE_PATTERN.match(value)
     if not match:
       return '<invalid range>'
     start, end = match.groups()
-    normalized_start = TablePrinter._NormalizeTimestamp(field, start)
-    normalized_end = TablePrinter._NormalizeTimestamp(field, end)
+
+    if field.get('rangeElementType').get('type').upper() != 'TIMESTAMP':
+      start = start.upper() if IsRangeBoundaryUnbounded(start) else start
+      end = end.upper() if IsRangeBoundaryUnbounded(end) else end
+      return '[%s, %s)' % (start, end)
+
+    normalized_start = (
+        start.upper()
+        if IsRangeBoundaryUnbounded(start)
+        else TablePrinter._NormalizeTimestamp(field, start)
+    )
+    normalized_end = (
+        end.upper()
+        if IsRangeBoundaryUnbounded(end)
+        else TablePrinter._NormalizeTimestamp(field, end)
+    )
     return '[%s, %s)' % (normalized_start, normalized_end)
 
   _FIELD_NORMALIZERS = {
@@ -576,7 +592,8 @@ class Client(object):
         'trace',
         'sync',
         'api',
-        'api_version')
+        'api_version'
+    )
     for name in global_args:
       client_args[name] = KwdsOrFlags(name)
 
@@ -608,6 +625,7 @@ class Client(object):
     client_args = Client._CollectArgs(config_logging, **kwds)
     bigquery_client_factory = Factory.GetBigqueryClientFactory()
     return bigquery_client_factory(credentials=credentials, **client_args)
+
 
   @classmethod
   def _GetClientCacheKey(cls, **kwds):
@@ -1376,6 +1394,12 @@ def _CreateExternalTableDefinition(
     encoding: Encoding types for CSV files. Available options are: 'UTF-8',
     'ISO-8859-1', 'UTF-16BE', 'UTF-16LE', 'UTF-32BE', and 'UTF-32LE'.
     The default value is 'UTF-8'.
+    file_set_spec_type: Set how to discover files given source URIs. Specify
+      'FILE_SYSTEM_MATCH' (default behavior) to expand source URIs by listing
+      files from the underlying object store. Specify
+      'NEW_LINE_DELIMITED_MANIFEST' to parse the URIs as new line delimited
+      manifest files, where each line contains a URI (No wild-card URIs are
+      supported).
 
   Returns:
     A python dictionary that contains a external table definition for the given
@@ -1397,7 +1421,6 @@ def _CreateExternalTableDefinition(
       raise app.UsageError(('%s is not a supported format.') % source_format)
 
     external_table_def = {'sourceFormat': source_format}
-
     if metadata_cache_mode is not None:
       external_table_def['metadataCacheMode'] = metadata_cache_mode
     if object_metadata is not None:
@@ -3563,6 +3586,27 @@ def _ParseTimePartitioning(partitioning_type=None,
     return None
 
 
+def _ParseFileSetSpecType(file_set_spec_type=None):
+  """Parses the file set specification type from the arguments.
+
+  Args:
+    file_set_spec_type: specifies how to discover files given source URIs.
+
+  Returns:
+    file set specification type.
+  Raises:
+    UsageError: when an illegal value is passed.
+  """
+  if file_set_spec_type is None:
+    return None
+  valid_spec_types = ['FILE_SYSTEM_MATCH', 'NEW_LINE_DELIMITED_MANIFEST']
+  if file_set_spec_type not in valid_spec_types:
+    raise app.UsageError(
+        'Error parsing file_set_spec_type, only FILE_SYSTEM_MATCH, '
+        'NEW_LINE_DELIMITED_MANIFEST or no value are accepted')
+  return 'FILE_SET_SPEC_TYPE_' + file_set_spec_type
+
+
 def _ParseClustering(clustering_fields=None):
   """Parses clustering from the arguments.
 
@@ -4491,7 +4535,8 @@ class _Make(BigqueryCmd):
           source_dataset_reference=source_dataset_reference
           ,
           max_time_travel_hours=self.max_time_travel_hours,
-          storage_billing_model=self.storage_billing_model)
+          storage_billing_model=self.storage_billing_model,
+      )
       print("Dataset '%s' successfully created." % (reference,))
     elif isinstance(reference, TableReference):
       if self.source_dataset:
@@ -4541,7 +4586,6 @@ class _Make(BigqueryCmd):
             self.preserve_ascii_control_characters,
             self.reference_file_schema_uri,
         )
-
 
       view_udf_resources = None
       if self.view_udf_resource:
@@ -6571,21 +6615,39 @@ class _IamPolicyCmd(BigqueryCmd):
         '%s IAM policy for table described by this identifier.' % verb,
         short_name='t',
         flag_values=fv)
+    flags.DEFINE_boolean(
+        'connection',
+        None,
+        '%s IAM policy for connection described by this identifier.' % verb,
+        flag_values=fv,
+    )
     # Subclasses should call self._ProcessCommandRc(fv) after calling this
     # superclass initializer and adding their own flags.
 
   def GetReferenceFromIdentifier(self, client, identifier):
     # pylint: disable=g-doc-exception
-    if self.d and self.t:
-      raise app.UsageError('Cannot specify more than one of -d and -t.')
+    provided_flags = [
+        f
+        for f in [self.d, self.t, self.connection]
+        if f is not None and f
+    ]
+    if len(provided_flags) > 1:
+      raise app.UsageError(
+          'Cannot specify more than one of -d, -t or -connection.'
+      )
     if not identifier:
-      raise app.UsageError('Must provide an identifier for %s.' %
-                           (self._command_name,))
+      raise app.UsageError(
+          'Must provide an identifier for %s.' % (self._command_name,)
+      )
 
     if self.t:
       reference = client.GetTableReference(identifier)
     elif self.d:
       reference = client.GetDatasetReference(identifier)
+    elif self.connection:
+      reference = client.GetConnectionReference(
+          identifier, default_location=FLAGS.location
+      )
     else:
       reference = client.GetReference(identifier)
       _Typecheck(
@@ -6609,6 +6671,8 @@ class _IamPolicyCmd(BigqueryCmd):
       return client.GetTableIAMPolicy(reference)
     elif isinstance(reference, DatasetReference):
       return client.GetDatasetIAMPolicy(reference)
+    elif isinstance(reference, ConnectionReference):
+      return client.GetConnectionIAMPolicy(reference)
     raise RuntimeError(
         'Unexpected reference type: {r_type}'.format(r_type=type(reference)))
 
@@ -6627,12 +6691,14 @@ class _IamPolicyCmd(BigqueryCmd):
       return client.SetTableIAMPolicy(reference, policy)
     elif isinstance(reference, DatasetReference):
       return client.SetDatasetIAMPolicy(reference, policy)
+    elif isinstance(reference, ConnectionReference):
+      return client.SetConnectionIAMPolicy(reference, policy)
     raise RuntimeError(
         'Unexpected reference type: {r_type}'.format(r_type=type(reference)))
 
 
 class _GetIamPolicy(_IamPolicyCmd):  # pylint: disable=missing-docstring
-  usage = """get-iam-policy [(-d|-t)] <identifier>"""
+  usage = """get-iam-policy [(-d|-t|-connection)] <identifier>"""
 
   def __init__(self, name, fv):
     super(_GetIamPolicy, self).__init__(name, fv, 'Get')
@@ -6641,8 +6707,8 @@ class _GetIamPolicy(_IamPolicyCmd):  # pylint: disable=missing-docstring
   def RunWithArgs(self, identifier):
     """Get the IAM policy for a resource.
 
-    Gets the IAM policy for a dataset or table resource, and prints it to
-    stdout. The policy is in JSON format.
+    Gets the IAM policy for a dataset, table or connection resource, and prints
+    it to stdout. The policy is in JSON format.
 
     Usage:
     get-iam-policy <identifier>
@@ -6653,8 +6719,8 @@ class _GetIamPolicy(_IamPolicyCmd):  # pylint: disable=missing-docstring
       bq get-iam-policy proj:ds.table1
 
     Arguments:
-      identifier: The identifier of the resource. Presently only table and view
-        resources are fully supported. (Last updated: 2020-08-03)
+      identifier: The identifier of the resource. Presently only table, view and
+        connection resources are fully supported. (Last updated: 2022-04-25)
     """
     client = Client.Get()
     reference = self.GetReferenceFromIdentifier(client, identifier)
@@ -6664,7 +6730,7 @@ class _GetIamPolicy(_IamPolicyCmd):  # pylint: disable=missing-docstring
 
 
 class _SetIamPolicy(_IamPolicyCmd):  # pylint: disable=missing-docstring
-  usage = """set-iam-policy [(-d|-t)] <identifier> <filename>"""
+  usage = """set-iam-policy [(-d|-t|-connection)] <identifier> <filename>"""
 
   def __init__(self, name, fv):
     super(_SetIamPolicy, self).__init__(name, fv, 'Set')
@@ -6673,8 +6739,9 @@ class _SetIamPolicy(_IamPolicyCmd):  # pylint: disable=missing-docstring
   def RunWithArgs(self, identifier, filename):
     """Set the IAM policy for a resource.
 
-    Sets the IAM policy for a dataset or table resource. After setting the
-    policy, the new policy is printed to stdout. Policies are in JSON format.
+    Sets the IAM policy for a dataset, table or connection resource. After
+    setting the policy, the new policy is printed to stdout. Policies are in
+    JSON format.
 
     If the 'etag' field is present in the policy, it must match the value in the
     current policy, which can be obtained with 'bq get-iam-policy'. Otherwise
@@ -6690,8 +6757,8 @@ class _SetIamPolicy(_IamPolicyCmd):  # pylint: disable=missing-docstring
       bq set-iam-policy proj:ds.table1 /tmp/policy.json
 
     Arguments:
-      identifier: The identifier of the resource. Presently only table and view
-        resources are fully supported. (Last updated: 2020-08-03)
+      identifier: The identifier of the resource. Presently only table, view and
+        connection resources are fully supported. (Last updated: 2022-04-25)
       filename: The name of a file containing the policy in JSON format.
     """
     client = Client.Get()

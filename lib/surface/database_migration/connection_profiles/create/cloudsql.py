@@ -122,4 +122,5 @@ class CloudSQLGA(_CloudSQL, base.Command):
   @staticmethod
   def Args(parser):
     _CloudSQL.Args(parser)
+    resource_args.AddCmekResourceArgs(parser)
     cs_flags.AddAllocatedIpRangeFlag(parser)

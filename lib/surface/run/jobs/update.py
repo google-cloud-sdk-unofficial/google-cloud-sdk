@@ -139,7 +139,7 @@ class Update(base.Command):
         job = operations.UpdateJob(job_ref, changes, tracker, asyn=args.async_)
         if execute_now:
           execution = operations.RunJob(
-              job_ref, args, tracker, self.ReleaseTrack()
+              job_ref, tracker, args.wait, args.async_, self.ReleaseTrack()
           )
 
       if args.async_ and not execute_now:

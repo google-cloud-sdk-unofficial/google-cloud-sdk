@@ -37,6 +37,7 @@ class Create(base.CreateCommand):
   with_private_nat = False
   with_subnet_all = False
   with_auto_network_tier = False
+  with_managed_proxy_lb_endpoint_type = False
 
   @classmethod
   def Args(cls, parser):
@@ -51,7 +52,10 @@ class Create(base.CreateCommand):
     if cls.with_private_nat:
       nats_flags.AddTypeArg(parser)
 
-    nats_flags.AddEndpointTypesArg(parser)
+    nats_flags.AddEndpointTypesArg(
+        parser,
+        with_managed_proxy_lb_endpoint_type=cls.with_managed_proxy_lb_endpoint_type,
+    )
     nats_flags.AddCommonNatArgs(
         parser,
         for_create=True,
@@ -169,6 +173,7 @@ class CreateBeta(Create):
   with_private_nat = False
   with_subnet_all = False
   with_auto_network_tier = True
+  with_managed_proxy_lb_endpoint_type = False
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -178,3 +183,4 @@ class CreateAlpha(Create):
   with_private_nat = True
   with_subnet_all = True
   with_auto_network_tier = True
+  with_managed_proxy_lb_endpoint_type = True

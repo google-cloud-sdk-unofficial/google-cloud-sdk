@@ -196,6 +196,31 @@ class ServiceAccountPrivateKeyFileLoader(ServiceAccountPrivateKeyLoader):
           'cannot be read:\n%s' % (self._file_path, e))
 
 
+class OwnedTestAccountOauthCredentialLoader(CachedCredentialLoader):
+  """Credential loader for owned test account oauth token."""
+
+  def __init__(self, ota_account_pool_id, owner_mdb_group, *args, **kwargs):
+    """Creates OwnedTestAccountOauthCredentialLoader instance.
+
+    Args:
+      ota_account_pool_id: ota account pool the ota is from.
+      owner_mdb_group: the owner mdb of the ota account pool.
+      *args: additional arguments to apply to base class.
+      **kwargs: additional keyword arguments to apply to base class.
+    """
+    super(OwnedTestAccountOauthCredentialLoader,
+          self).__init__(*args, **kwargs)
+    self._ota_pool = ota_account_pool_id
+    self._owner_mdb_group = owner_mdb_group
+
+  def _Load(self):
+    oauth_scopes = sorted(bq_utils.GetClientScopeFromFlags())
+    return bq_owned_test_accounts_utils.OwnedTestingAccountCredentials(
+        oauth_scopes, _CLIENT_USER_AGENT,
+        pool_id=self._ota_pool,
+        owner_mdb_group=self._owner_mdb_group)
+
+
 
 
 class ApplicationDefaultCredentialFileLoader(CachedCredentialLoader):

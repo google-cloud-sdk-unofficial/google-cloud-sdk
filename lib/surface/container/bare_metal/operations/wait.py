@@ -29,9 +29,31 @@ $ {command} OPERATION_ID --location=us-west1
 """
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
-class Wait(base.Command):
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class WaitAlpha(base.Command):
   """Poll an operation for completion."""
+
+  detailed_help = {'EXAMPLES': _EXAMPLES}
+
+  @staticmethod
+  def Args(parser):
+    """Registers flags for this command."""
+    cluster_flags.AddOperationResourceArg(parser, 'to wait for completion')
+    cluster_flags.AddOperationTimeout(parser)
+
+  def Run(self, args):
+    """Runs the wait command."""
+    operation_client = operations.OperationsClient()
+    operation_ref = args.CONCEPTS.operation_id.Parse()
+    return operation_client.Wait(
+        operation_ref=operation_ref, timeout=args.timeout
+    )
+
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class WaitBeta(base.Command):
+  """Poll an operation for completion."""
+
   detailed_help = {'EXAMPLES': _EXAMPLES}
 
   @staticmethod

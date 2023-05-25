@@ -55,7 +55,7 @@ class AlloyDB(base.Command):
       parser: An argparse parser that you can use to add arguments that go on
         the command line after this command. Positional arguments are allowed.
     """
-    resource_args.AddConnectionProfileResourceArg(parser, 'to create')
+    resource_args.AddAlloyDBConnectionProfileResourceArgs(parser, 'to create')
 
     cp_flags.AddNoAsyncFlag(parser)
     cp_flags.AddDisplayNameFlag(parser)

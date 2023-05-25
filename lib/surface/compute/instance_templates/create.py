@@ -58,7 +58,6 @@ def _CommonArgs(
     support_visible_core_count=False,
     support_max_run_duration=False,
     support_region_instance_template=False,
-    support_provisioned_throughput=False,
     support_network_attachments=False,
     support_replica_zones=False,
     support_local_ssd_recovery_timeout=False,
@@ -73,7 +72,6 @@ def _CommonArgs(
       enable_kms=support_kms,
       support_boot=True,
       support_multi_writer=support_multi_writer,
-      support_provisioned_throughput=support_provisioned_throughput,
       support_replica_zones=support_replica_zones,
   )
   if support_local_ssd_size:
@@ -493,7 +491,6 @@ def _RunCreate(compute_api,
                support_max_run_duration=False,
                support_region_instance_template=False,
                support_confidential_compute_type=False,
-               support_provisioned_throughput=False,
                support_ipv6_reservation=False,
                support_internal_ipv6_reservation=False,
                support_replica_zones=False,
@@ -525,8 +522,6 @@ def _RunCreate(compute_api,
         template is supported.
       support_confidential_compute_type: Indicate what confidential compute type
         is used.
-      support_provisioned_throughput: Indicate the provisioned throughput is
-        set.
       support_ipv6_reservation: Indicate the external IPv6 address is supported.
       support_internal_ipv6_reservation: Indicate the internal IPv6 address is
         supported.
@@ -748,7 +743,6 @@ def _RunCreate(compute_api,
       create_boot_disk=create_boot_disk,
       support_kms=support_kms,
       support_multi_writer=support_multi_writer,
-      support_provisioned_throughput=support_provisioned_throughput,
       support_replica_zones=support_replica_zones,
       )
 
@@ -934,7 +928,6 @@ class Create(base.CreateCommand):
   _support_visible_core_count = True
   _support_max_run_duration = False
   _support_region_instance_template = False
-  _support_provisioned_throughput = False
   _support_network_attachments = False
   _support_replica_zones = False
   _support_local_ssd_size = True
@@ -954,7 +947,6 @@ class Create(base.CreateCommand):
         support_visible_core_count=cls._support_visible_core_count,
         support_max_run_duration=cls._support_max_run_duration,
         support_region_instance_template=cls._support_region_instance_template,
-        support_provisioned_throughput=cls._support_provisioned_throughput,
         support_network_attachments=cls._support_network_attachments,
         support_replica_zones=cls._support_replica_zones,
         support_local_ssd_size=cls._support_local_ssd_size,
@@ -988,7 +980,6 @@ class Create(base.CreateCommand):
         support_visible_core_count=self._support_visible_core_count,
         support_max_run_duration=self._support_max_run_duration,
         support_region_instance_template=self._support_region_instance_template,
-        support_provisioned_throughput=self._support_provisioned_throughput,
         support_replica_zones=self._support_replica_zones,
         support_performance_monitoring_unit=self._support_performance_monitoring_unit,
     )
@@ -1018,7 +1009,6 @@ class CreateBeta(Create):
   _support_visible_core_count = True
   _support_max_run_duration = True
   _support_region_instance_template = False
-  _support_provisioned_throughput = False
   _support_network_attachments = False
   _support_replica_zones = False
   _support_local_ssd_recovery_timeout = False
@@ -1040,7 +1030,6 @@ class CreateBeta(Create):
         support_visible_core_count=cls._support_visible_core_count,
         support_max_run_duration=cls._support_max_run_duration,
         support_region_instance_template=cls._support_region_instance_template,
-        support_provisioned_throughput=cls._support_provisioned_throughput,
         support_network_attachments=cls._support_network_attachments,
         support_replica_zones=cls._support_replica_zones,
         support_local_ssd_recovery_timeout=cls._support_local_ssd_recovery_timeout,
@@ -1075,7 +1064,6 @@ class CreateBeta(Create):
         support_visible_core_count=self._support_visible_core_count,
         support_max_run_duration=self._support_max_run_duration,
         support_region_instance_template=self._support_region_instance_template,
-        support_provisioned_throughput=self._support_provisioned_throughput,
         support_replica_zones=self._support_replica_zones,
         support_local_ssd_recovery_timeout=self._support_local_ssd_recovery_timeout,
         support_performance_monitoring_unit=self._support_performance_monitoring_unit,
@@ -1107,7 +1095,6 @@ class CreateAlpha(Create):
   _support_max_run_duration = True
   _support_region_instance_template = True
   _support_confidential_compute_type = True
-  _support_provisioned_throughput = True
   _support_network_attachments = True
   _support_replica_zones = True
   _support_local_ssd_recovery_timeout = True
@@ -1130,7 +1117,6 @@ class CreateAlpha(Create):
         support_visible_core_count=cls._support_visible_core_count,
         support_max_run_duration=cls._support_max_run_duration,
         support_region_instance_template=cls._support_region_instance_template,
-        support_provisioned_throughput=cls._support_provisioned_throughput,
         support_network_attachments=cls._support_network_attachments,
         support_replica_zones=cls._support_replica_zones,
         support_local_ssd_recovery_timeout=cls._support_local_ssd_recovery_timeout,
@@ -1172,7 +1158,6 @@ class CreateAlpha(Create):
         support_region_instance_template=self._support_region_instance_template,
         support_confidential_compute_type=self
         ._support_confidential_compute_type,
-        support_provisioned_throughput=self._support_provisioned_throughput,
         support_replica_zones=self._support_replica_zones,
         support_local_ssd_recovery_timeout=self._support_local_ssd_recovery_timeout,
         support_performance_monitoring_unit=self._support_performance_monitoring_unit,

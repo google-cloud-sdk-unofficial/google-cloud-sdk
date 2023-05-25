@@ -38,13 +38,13 @@ DETAILED_HELP = {
 }
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class CreateProfile(base.CreateCommand):
   """Create a new Threat Prevention Profile."""
 
-  @staticmethod
-  def Args(parser):
-    sp_flags.AddSecurityProfileResource(parser)
+  @classmethod
+  def Args(cls, parser):
+    sp_flags.AddSecurityProfileResource(parser, cls.ReleaseTrack())
     sp_flags.AddProfileDescription(parser)
     base.ASYNC_FLAG.AddToParser(parser)
     base.ASYNC_FLAG.SetDefault(parser, False)

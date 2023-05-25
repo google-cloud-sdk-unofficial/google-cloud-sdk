@@ -34,7 +34,7 @@ from googlecloudsdk.core import log
 # BETA is public.
 @base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
-class ReverseBeta(base.CreateCommand):
+class ReverseBeta(base.Command):
   """Reverse a Cloud NetApp Volume Replication's direction."""
 
   _RELEASE_TRACK = base.ReleaseTrack.BETA

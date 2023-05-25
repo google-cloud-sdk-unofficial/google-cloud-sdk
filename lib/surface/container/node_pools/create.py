@@ -202,7 +202,8 @@ class Create(base.CreateCommand):
         parser,
         enable_gpu_partition=True,
         enable_gpu_sharing=True,
-        enable_gpu_deprecated_fields=False)
+        enable_gpu_deprecated_fields=False,
+        enable_gpu_driver_installation=True)
     flags.AddBootDiskKmsKeyFlag(parser)
     flags.AddClusterAutoscalingFlags(parser)
     flags.AddLocalSSDsGAFlags(parser, for_node_pool=True)
@@ -311,7 +312,8 @@ class CreateBeta(Create):
         parser,
         enable_gpu_partition=True,
         enable_gpu_sharing=True,
-        enable_gpu_deprecated_fields=True)
+        enable_gpu_deprecated_fields=True,
+        enable_gpu_driver_installation=True)
     flags.AddClusterAutoscalingFlags(parser)
     flags.AddLocalSSDsBetaFlags(parser, for_node_pool=True)
     flags.AddBootDiskKmsKeyFlag(parser)
@@ -429,7 +431,8 @@ class CreateAlpha(Create):
         parser,
         enable_gpu_partition=True,
         enable_gpu_sharing=True,
-        enable_gpu_deprecated_fields=True)
+        enable_gpu_deprecated_fields=True,
+        enable_gpu_driver_installation=True)
     flags.AddClusterAutoscalingFlags(parser)
     flags.AddNodePoolAutoprovisioningFlag(parser, hidden=False)
     flags.AddLocalSSDsAlphaFlags(parser, for_node_pool=True)

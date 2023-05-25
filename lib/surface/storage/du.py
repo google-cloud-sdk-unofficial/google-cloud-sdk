@@ -18,15 +18,19 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+import fnmatch
+import sys
+
 from googlecloudsdk.api_lib.storage import cloud_api
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.storage import du_command_util
 from googlecloudsdk.command_lib.storage import errors
 from googlecloudsdk.command_lib.storage import flags
+from googlecloudsdk.command_lib.storage import regex_util
 from googlecloudsdk.command_lib.storage import storage_url
+from googlecloudsdk.core.util import files
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Du(base.Command):
   """Displays the amount of space in bytes used up storage resources."""
@@ -69,7 +73,7 @@ class Du(base.Command):
       To list the size of each bucket in a project and the total size of the
       project:
 
-        $ {command} --only-total-size --human-readable --include-total-size
+        $ {command} --summarize --readable-sizes --total
       """,
   }
 
@@ -150,9 +154,21 @@ class Du(base.Command):
     else:
       storage_urls = [storage_url.CloudUrl(cloud_api.DEFAULT_PROVIDER)]
 
+    exclude_fnmatch_strings = args.exclude_name_pattern
+    if args.exclude_name_pattern_file:
+      if args.exclude_name_pattern_file == '-':
+        exclude_fnmatch_strings.extend([line.strip() for line in sys.stdin])
+      else:
+        with files.FileReader(args.exclude_name_pattern_file) as file:
+          exclude_fnmatch_strings.extend([line.strip() for line in file])
+    exclude_regex_strings = [
+        fnmatch.translate(pattern) for pattern in exclude_fnmatch_strings
+    ]
+
     du_command_util.DuExecutor(
         cloud_urls=storage_urls,
         all_versions=args.all_versions,
+        exclude_patterns=regex_util.Patterns(exclude_regex_strings),
         readable_sizes=args.readable_sizes,
         summarize=args.summarize,
         total=args.total,

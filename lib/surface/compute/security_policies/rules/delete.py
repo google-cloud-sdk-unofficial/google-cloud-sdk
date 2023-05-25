@@ -27,6 +27,7 @@ from googlecloudsdk.command_lib.compute import scope as compute_scope
 from googlecloudsdk.command_lib.compute.security_policies import flags as security_policies_flags
 from googlecloudsdk.command_lib.compute.security_policies.rules import flags
 from googlecloudsdk.core import properties
+from googlecloudsdk.core import resources
 
 
 class DeleteHelper(object):
@@ -43,17 +44,21 @@ class DeleteHelper(object):
   """
 
   SECURITY_POLICY_ARG = None
+  NAME_ARG = None
 
   @classmethod
   def Args(cls, parser, support_regional_security_policy, support_net_lb):
     """Generates the flagset for a Delete command."""
-    flags.AddPriority(parser, 'delete', is_plural=True)
     if support_regional_security_policy or support_net_lb:
+      cls.NAME_ARG = (flags.PriorityArgument('delete', is_plural=True))
+      cls.NAME_ARG.AddArgument(
+          parser, operation_type='delete', cust_metavar='PRIORITY')
       flags.AddRegionFlag(parser, 'delete')
       cls.SECURITY_POLICY_ARG = (
           security_policies_flags.SecurityPolicyMultiScopeArgumentForRules()
       )
     else:
+      flags.AddPriority(parser, 'delete', is_plural=True)
       cls.SECURITY_POLICY_ARG = (
           security_policies_flags.SecurityPolicyArgumentForRules()
       )
@@ -70,29 +75,53 @@ class DeleteHelper(object):
     holder = base_classes.ComputeApiHolder(release_track)
     refs = []
     if support_regional_security_policy or support_net_lb:
-      security_policy_ref = cls.SECURITY_POLICY_ARG.ResolveAsResource(
-          args, holder.resources, default_scope=compute_scope.ScopeEnum.GLOBAL
-      )
-      if getattr(security_policy_ref, 'region', None) is not None:
-        for name in args.names:
-          refs.append(
-              holder.resources.Parse(
-                  name,
-                  collection='compute.regionSecurityPolicyRules',
-                  params={
-                      'project': properties.VALUES.core.project.GetOrFail,
-                      'region': security_policy_ref.region,
-                      'securityPolicy': args.security_policy
-                  }))
+      if args.security_policy:
+        security_policy_ref = cls.SECURITY_POLICY_ARG.ResolveAsResource(
+            args,
+            holder.resources,
+            default_scope=compute_scope.ScopeEnum.GLOBAL)
+        if getattr(security_policy_ref, 'region', None) is not None:
+          for name in args.names:
+            refs.append(holder.resources.Parse(
+                name,
+                collection='compute.regionSecurityPolicyRules',
+                params={
+                    'project': properties.VALUES.core.project.GetOrFail,
+                    'region': security_policy_ref.region,
+                    'securityPolicy': args.security_policy,
+                }))
+        else:
+          for name in args.names:
+            refs.append(holder.resources.Parse(
+                name,
+                collection='compute.securityPolicyRules',
+                params={
+                    'project': properties.VALUES.core.project.GetOrFail,
+                    'securityPolicy': args.security_policy,
+                },
+            ))
       else:
         for name in args.names:
-          refs.append(holder.resources.Parse(
-              name,
-              collection='compute.securityPolicyRules',
-              params={
-                  'project': properties.VALUES.core.project.GetOrFail,
-                  'securityPolicy': args.security_policy
-              }))
+          try:
+            refs.append(holder.resources.Parse(
+                name,
+                collection='compute.regionSecurityPolicyRules',
+                params={
+                    'project': properties.VALUES.core.project.GetOrFail,
+                    'region': getattr(args, 'region', None),
+                },
+            ))
+          except (
+              resources.RequiredFieldOmittedException,
+              resources.WrongResourceCollectionException,
+          ):
+            refs.append(holder.resources.Parse(
+                name,
+                collection='compute.securityPolicyRules',
+                params={
+                    'project': properties.VALUES.core.project.GetOrFail,
+                },
+            ))
     else:
       for name in args.names:
         refs.append(holder.resources.Parse(

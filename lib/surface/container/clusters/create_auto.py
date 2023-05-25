@@ -51,6 +51,7 @@ auto_flags = [
     'enableRuntimeVulnerabilityInsight',
     'masterglobalaccess',
     'enableDnsEndpoint',
+    'workloadPolicies',
 ]
 
 # Change default flag values in create-auto
@@ -75,6 +76,7 @@ def AddAutoFlags(parser, release_track):
       parser,
       release_track=release_track,
       autopilot=True)
+  flags.AddWorkloadPoliciesFlag(parser, hidden=True)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)

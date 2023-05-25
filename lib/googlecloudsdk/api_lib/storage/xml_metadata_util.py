@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*- #
-# Copyright 2021 Google LLC. All Rights Reserved.
+# Copyright 2023 Google LLC. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -24,9 +24,10 @@ import copy
 import re
 
 from googlecloudsdk.api_lib.storage import metadata_util
-from googlecloudsdk.api_lib.storage import s3_metadata_field_converters
+from googlecloudsdk.api_lib.storage import xml_metadata_field_converters
 from googlecloudsdk.command_lib.storage import storage_url
 from googlecloudsdk.command_lib.storage import user_request_args_factory
+from googlecloudsdk.command_lib.storage.resources import gcs_resource_reference
 from googlecloudsdk.command_lib.storage.resources import resource_reference
 from googlecloudsdk.command_lib.storage.resources import s3_resource_reference
 from googlecloudsdk.core import log
@@ -48,7 +49,15 @@ _GCS_TO_S3_PREDEFINED_ACL_TRANSLATION_DICT = {
     'bucketOwnerRead': 'bucket-owner-read',
     'private': 'private',
     'publicRead': 'public-read',
-    'publicReadWrite': 'public-read-write'
+    'publicReadWrite': 'public-read-write',
+}
+_SCHEME_TO_BUCKET_RESOURCE_DICT = {
+    storage_url.ProviderPrefix.GCS: gcs_resource_reference.GcsBucketResource,
+    storage_url.ProviderPrefix.S3: s3_resource_reference.S3BucketResource,
+}
+_SCHEME_TO_OBJECT_RESOURCE_DICT = {
+    storage_url.ProviderPrefix.GCS: gcs_resource_reference.GcsObjectResource,
+    storage_url.ProviderPrefix.S3: s3_resource_reference.S3ObjectResource,
 }
 # Determines whether an etag is a valid MD5.
 MD5_REGEX = re.compile(r'^[a-fA-F0-9]{32}$')
@@ -137,12 +146,14 @@ def translate_predefined_acl_string_to_s3(predefined_acl_string):
   return _GCS_TO_S3_PREDEFINED_ACL_TRANSLATION_DICT[predefined_acl_string]
 
 
-def _get_object_url_from_s3_response(object_dict,
-                                     bucket_name,
-                                     object_name=None):
+def _get_object_url_from_xml_response(scheme,
+                                      object_dict,
+                                      bucket_name,
+                                      object_name=None):
   """Creates storage_url.CloudUrl from S3 API response.
 
   Args:
+    scheme (storage_url.ProviderPrefix): Prefix used for provider URLs.
     object_dict (dict): Dictionary representing S3 API response.
     bucket_name (str): Bucket to include in URL.
     object_name (str | None): Object to include in URL.
@@ -151,7 +162,7 @@ def _get_object_url_from_s3_response(object_dict,
     storage_url.CloudUrl populated with data.
   """
   return storage_url.CloudUrl(
-      scheme=storage_url.ProviderPrefix.S3,
+      scheme=scheme,
       bucket_name=bucket_name,
       object_name=object_name,
       generation=object_dict.get('VersionId'))
@@ -194,10 +205,11 @@ def _get_error_or_value(value):
   return value
 
 
-def get_bucket_resource_from_s3_response(bucket_dict, bucket_name):
+def get_bucket_resource_from_xml_response(scheme, bucket_dict, bucket_name):
   """Creates resource_reference.S3BucketResource from S3 API response.
 
   Args:
+    scheme (storage_url.ProviderPrefix): Prefix used for provider URLs.
     bucket_dict (dict): Dictionary representing S3 API response.
     bucket_name (str): Bucket response is relevant to.
 
@@ -217,8 +229,8 @@ def get_bucket_resource_from_s3_response(bucket_dict, bucket_name):
     else:
       versioning_enabled = None
 
-  return s3_resource_reference.S3BucketResource(
-      storage_url.CloudUrl(storage_url.ProviderPrefix.S3, bucket_name),
+  return _SCHEME_TO_BUCKET_RESOURCE_DICT[scheme](
+      storage_url.CloudUrl(scheme, bucket_name),
       acl=_get_error_or_value(bucket_dict.get('ACL')),
       cors_config=_get_error_or_value(bucket_dict.get('CORSRules')),
       lifecycle_config=_get_error_or_value(
@@ -231,13 +243,15 @@ def get_bucket_resource_from_s3_response(bucket_dict, bucket_name):
       website_config=_get_error_or_value(bucket_dict.get('Website')))
 
 
-def get_object_resource_from_s3_response(object_dict,
-                                         bucket_name,
-                                         object_name=None,
-                                         acl_dict=None):
+def get_object_resource_from_xml_response(scheme,
+                                          object_dict,
+                                          bucket_name,
+                                          object_name=None,
+                                          acl_dict=None):
   """Creates resource_reference.S3ObjectResource from S3 API response.
 
   Args:
+    scheme (storage_url.ProviderPrefix): Prefix used for provider URLs.
     object_dict (dict): Dictionary representing S3 API response.
     bucket_name (str): Bucket response is relevant to.
     object_name (str|None): Object if relevant to query.
@@ -246,8 +260,8 @@ def get_object_resource_from_s3_response(object_dict,
   Returns:
     resource_reference.S3ObjectResource populated with data.
   """
-  object_url = _get_object_url_from_s3_response(
-      object_dict, bucket_name, object_name or object_dict['Key'])
+  object_url = _get_object_url_from_xml_response(
+      scheme, object_dict, bucket_name, object_name or object_dict['Key'])
 
   if 'Size' in object_dict:
     size = object_dict.get('Size')
@@ -268,7 +282,7 @@ def get_object_resource_from_s3_response(object_dict,
     object_dict['ACL'] = raw_acl_data
   acl = _get_error_or_value(raw_acl_data)
 
-  return s3_resource_reference.S3ObjectResource(
+  return _SCHEME_TO_OBJECT_RESOURCE_DICT[scheme](
       object_url,
       acl=acl,
       cache_control=object_dict.get('CacheControl'),
@@ -288,10 +302,11 @@ def get_object_resource_from_s3_response(object_dict,
       update_time=object_dict.get('LastModified'))
 
 
-def get_prefix_resource_from_s3_response(prefix_dict, bucket_name):
+def get_prefix_resource_from_xml_response(scheme, prefix_dict, bucket_name):
   """Creates resource_reference.PrefixResource from S3 API response.
 
   Args:
+    scheme (storage_url.ProviderPrefix): Prefix used for provider URLs.
     prefix_dict (dict): The S3 API response representing a prefix.
     bucket_name (str): Bucket for the prefix.
 
@@ -301,7 +316,7 @@ def get_prefix_resource_from_s3_response(prefix_dict, bucket_name):
   prefix = prefix_dict['Prefix']
   return resource_reference.PrefixResource(
       storage_url.CloudUrl(
-          scheme=storage_url.ProviderPrefix.S3,
+          scheme=scheme,
           bucket_name=bucket_name,
           object_name=prefix),
       prefix=prefix)
@@ -315,30 +330,30 @@ def get_bucket_metadata_dict_from_request_config(request_config):
   if resource_args:
     if resource_args.cors_file_path is not None:
       metadata.update(
-          s3_metadata_field_converters.process_cors(
+          xml_metadata_field_converters.process_cors(
               resource_args.cors_file_path))
     if resource_args.labels_file_path is not None:
       metadata.update(
-          s3_metadata_field_converters.process_labels(
+          xml_metadata_field_converters.process_labels(
               resource_args.labels_file_path))
     if resource_args.lifecycle_file_path is not None:
       metadata.update(
-          s3_metadata_field_converters.process_lifecycle(
+          xml_metadata_field_converters.process_lifecycle(
               resource_args.lifecycle_file_path))
     if resource_args.location is not None:
       metadata['LocationConstraint'] = resource_args.location
     if resource_args.requester_pays is not None:
       metadata.update(
-          s3_metadata_field_converters.process_requester_pays(
+          xml_metadata_field_converters.process_requester_pays(
               resource_args.requester_pays))
     if resource_args.versioning is not None:
       metadata.update(
-          s3_metadata_field_converters.process_versioning(
+          xml_metadata_field_converters.process_versioning(
               resource_args.versioning))
     if (resource_args.web_error_page is not None or
         resource_args.web_main_page_suffix is not None):
       metadata.update(
-          s3_metadata_field_converters.process_website(
+          xml_metadata_field_converters.process_website(
               resource_args.web_error_page, resource_args.web_main_page_suffix))
 
   return metadata
@@ -353,7 +368,10 @@ def _process_value_or_clear_flag(metadata, key, value):
 
 
 def update_object_metadata_dict_from_request_config(
-    object_metadata, request_config, attributes_resource=None
+    object_metadata,
+    request_config,
+    attributes_resource=None,
+    posix_to_set=None,
 ):
   """Returns S3 object metadata dict fields based on RequestConfig.
 
@@ -364,6 +382,7 @@ def update_object_metadata_dict_from_request_config(
       symlink data from a resource for the --preserve-posix and/or
       --preserve_symlink flags. This value is ignored unless it is an instance
       of FileObjectResource.
+    posix_to_set (PosixAttributes|None): Set as custom metadata on target.
 
   Returns:
     dict: Metadata for API request.
@@ -377,7 +396,10 @@ def update_object_metadata_dict_from_request_config(
   existing_metadata = object_metadata.get('Metadata', {})
 
   custom_fields_dict = metadata_util.get_updated_custom_fields(
-      existing_metadata, request_config, attributes_resource=attributes_resource
+      existing_metadata,
+      request_config,
+      attributes_resource=attributes_resource,
+      known_posix=posix_to_set,
   )
   if custom_fields_dict is not None:
     object_metadata['Metadata'] = custom_fields_dict

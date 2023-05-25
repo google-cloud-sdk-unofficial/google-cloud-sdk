@@ -41,6 +41,13 @@ DETAILED_HELP = {
           $ {command} my-private-cloud --cluster=my-management-cluster --node-type-config=type=standard-72,count=3 --management-range=192.168.0.0/24 --vmware-engine-network=my-network
 
           In the second example, the project and location are taken from gcloud properties core/project and compute/zone.
+
+
+          To create a stretched private cloud in the ``us-west2'' region using ``us-west2-a'' zone as preferred and ``us-west2-b'' zone as secondary
+
+          $ {command} my-private-cloud --project=sample-project --location=us-west2 --cluster=my-management-cluster --node-type-config=type=standard-72,count=6 --management-range=192.168.0.0/24 --vmware-engine-network=my-network --type=STRETCHED --preferred-zone=us-west2-a --secondary-zone=us-west2-b
+
+          The project is taken from gcloud properties core/project.
     """,
 }
 
@@ -109,8 +116,28 @@ class Create(base.CreateCommand):
             'TIME_LIMITED': """Time limited private cloud is a zonal resource, can have only 1 node and
             has limited life span. Will be deleted after defined period of time,
             can be converted into standard private cloud by expanding it up to 3
-            or more nodes"""},
+            or more nodes.""",
+            'STRETCHED': """Stretched private cloud is a regional resource with redundancy,
+            with a minimum of 6 nodes, nodes count has to be even."""},
         help='Type of the private cloud')
+    parser.add_argument(
+        '--preferred-zone',
+        required=False,
+        hidden=True,
+        help="""\
+        Zone that will remain operational when connection between the two zones is
+        lost. Specify the resource name of a zone that belongs to the region of the
+        private cloud.
+        """)
+    parser.add_argument(
+        '--secondary-zone',
+        required=False,
+        hidden=True,
+        help="""\
+        Additional zone for a higher level of availability and load balancing.
+        Specify the resource name of a zone that belongs to the region of the
+        private cloud.
+        """)
 
   def Run(self, args):
     privatecloud = args.CONCEPTS.private_cloud.Parse()
@@ -124,6 +151,8 @@ class Create(base.CreateCommand):
         vmware_engine_network_id=args.vmware_engine_network,
         description=args.description,
         private_cloud_type=args.type,
+        preferred_zone=args.preferred_zone,
+        secondary_zone=args.secondary_zone,
     )
     if is_async:
       log.CreatedResource(operation.name, kind='private cloud', is_async=True)

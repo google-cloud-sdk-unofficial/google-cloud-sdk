@@ -46,13 +46,13 @@ DETAILED_HELP = {
 }
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class ListOverrides(base.DescribeCommand):
   """List overrides of Threat Prevention Profile."""
 
-  @staticmethod
-  def Args(parser):
-    sp_flags.AddSecurityProfileResource(parser)
+  @classmethod
+  def Args(cls, parser):
+    sp_flags.AddSecurityProfileResource(parser, cls.ReleaseTrack())
 
   def Run(self, args):
     client = sp_api.Client(self.ReleaseTrack())

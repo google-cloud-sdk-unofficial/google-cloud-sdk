@@ -34,8 +34,68 @@ $ {command} my-node-pool --cluster=my-cluster --location=us-west1
 """
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
-class Create(base.CreateCommand):
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class CreateAlpha(base.CreateCommand):
+  """Create a node pool in an Anthos cluster on VMware."""
+
+  detailed_help = {'EXAMPLES': _EXAMPLES}
+
+  @staticmethod
+  def Args(parser):
+    """Gathers commandline arguments for the create command.
+
+    Args:
+      parser: The argparse parser to add the flag to.
+    """
+    parser.display_info.AddFormat(vmware_constants.VMWARE_NODEPOOLS_FORMAT)
+    flags.AddNodePoolResourceArg(parser, 'to create')
+    flags.AddValidationOnly(parser)
+    base.ASYNC_FLAG.AddToParser(parser)
+    flags.AddNodePoolDisplayName(parser)
+    flags.AddNodePoolAnnotations(parser)
+    flags.AddVmwareNodePoolAutoscalingConfig(parser, for_update=False)
+    flags.AddVmwareNodeConfig(parser, for_update=False)
+    flags.AddNodePoolVersion(parser)
+    flags.AddNodePoolUpgradePolicy(parser)
+
+  def Run(self, args):
+    """Runs the create command.
+
+    Args:
+      args: The arguments received from command line.
+
+    Returns:
+      The return value depends on the command arguments. If `--async` is
+      specified, it returns an operation; otherwise, it returns the created
+      resource. If `--validate-only` is specified, it returns None or any
+      possible error.
+    """
+    node_pool_ref = args.CONCEPTS.node_pool.Parse()
+    client = apis.NodePoolsClient()
+    operation = client.Create(args)
+
+    if args.async_ and not args.IsSpecified('format'):
+      args.format = constants.OPERATIONS_FORMAT
+
+    if args.validate_only:
+      return
+
+    if args.async_:
+      log.CreatedResource(
+          node_pool_ref, 'Node Pool in Anthos Cluster on VMware', args.async_
+      )
+      return operation
+    else:
+      operation_client = operations.OperationsClient()
+      response = operation_client.Wait(operation)
+      log.CreatedResource(
+          node_pool_ref, 'Node Pool in Anthos Cluster on VMware', args.async_
+      )
+      return response
+
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class CreateBeta(base.CreateCommand):
   """Create a node pool in an Anthos cluster on VMware."""
 
   detailed_help = {'EXAMPLES': _EXAMPLES}
@@ -80,12 +140,14 @@ class Create(base.CreateCommand):
       return
 
     if args.async_:
-      log.CreatedResource(node_pool_ref,
-                          'Node Pool in Anthos Cluster on VMware', args.async_)
+      log.CreatedResource(
+          node_pool_ref, 'Node Pool in Anthos Cluster on VMware', args.async_
+      )
       return operation
     else:
       operation_client = operations.OperationsClient()
       response = operation_client.Wait(operation)
-      log.CreatedResource(node_pool_ref,
-                          'Node Pool in Anthos Cluster on VMware', args.async_)
+      log.CreatedResource(
+          node_pool_ref, 'Node Pool in Anthos Cluster on VMware', args.async_
+      )
       return response

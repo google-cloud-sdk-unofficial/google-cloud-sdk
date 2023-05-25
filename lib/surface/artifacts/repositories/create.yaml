@@ -36,13 +36,12 @@
         Name of the encryption key that's used for encrypting the contents of the repository.
     - arg_name: allow-snapshot-overwrites
       type: bool
-      default: false
+      default: null
       api_field: repository.mavenConfig.allowSnapshotOverwrites
       help_text: |
         (Maven only) Allow repository users to publish a snapshot that overwrites the same snapshot version in the repository.
     - arg_name: version-policy
       api_field: repository.mavenConfig.versionPolicy
-      default: NONE
       help_text: |
         (Maven only) The package versions that the repository will store.
       choices:
@@ -116,6 +115,7 @@
     - arg_name: immutable-tags
       type: bool
       api_field: repository.dockerConfig.immutableTags
+      default: null
       help_text: |
         (Docker only) Prevent changes to tagged images in the repository. Tags cannot be deleted or moved to a different image digest, and tagged images cannot be deleted.
     - arg_name: remote-apt-repo
@@ -212,13 +212,12 @@
         Name of the encryption key that's used for encrypting the contents of the repository.
     - arg_name: allow-snapshot-overwrites
       type: bool
-      default: false
+      default: null
       api_field: repository.mavenConfig.allowSnapshotOverwrites
       help_text: |
         (Maven only) Allow repository users to publish a snapshot that overwrites the same snapshot version in the repository.
     - arg_name: version-policy
       api_field: repository.mavenConfig.versionPolicy
-      default: NONE
       help_text: |
         (Maven only) The package versions that the repository will store.
       choices:

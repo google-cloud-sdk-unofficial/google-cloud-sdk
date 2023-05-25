@@ -28,6 +28,7 @@ from googlecloudsdk.command_lib.compute import scope as compute_scope
 from googlecloudsdk.command_lib.compute.security_policies import flags as security_policy_flags
 from googlecloudsdk.command_lib.compute.security_policies.rules import flags
 from googlecloudsdk.core import properties
+from googlecloudsdk.core import resources
 
 
 class AddPreconfigWafExclusionHelper(object):
@@ -66,16 +67,26 @@ class AddPreconfigWafExclusionHelper(object):
   @classmethod
   def Args(cls, parser, support_regional_security_policy):
     """Generates the flagset for an AddPreconfigWafExclusion command."""
-    flags.AddPriority(
-        parser,
-        'add the exclusion configuration for preconfigured WAF evaluation')
     if support_regional_security_policy:
+      cls.NAME_ARG = flags.PriorityArgument(
+          'add the exclusion configuration for preconfigured WAF evaluation'
+      )
+      cls.NAME_ARG.AddArgument(
+          parser,
+          operation_type=(
+              'add the exclusion configuration for preconfigured WAF evaluation'
+          ),
+          cust_metavar='PRIORITY',
+      )
       flags.AddRegionFlag(
           parser,
           'add the exclusion configuration for preconfigured WAF evaluation')
       cls.SECURITY_POLICY_ARG = (
           security_policy_flags.SecurityPolicyMultiScopeArgumentForRules())
     else:
+      flags.AddPriority(
+          parser,
+          'add the exclusion configuration for preconfigured WAF evaluation')
       cls.SECURITY_POLICY_ARG = (
           security_policy_flags.SecurityPolicyArgumentForRules())
     cls.SECURITY_POLICY_ARG.AddArgument(parser)
@@ -232,25 +243,50 @@ class AddPreconfigWafExclusionHelper(object):
     compute_client = holder.client
     ref = None
     if support_regional_security_policy:
-      security_policy_ref = cls.SECURITY_POLICY_ARG.ResolveAsResource(
-          args, holder.resources, default_scope=compute_scope.ScopeEnum.GLOBAL)
-      if getattr(security_policy_ref, 'region', None) is not None:
-        ref = holder.resources.Parse(
-            args.name,
-            collection='compute.regionSecurityPolicyRules',
-            params={
-                'project': properties.VALUES.core.project.GetOrFail,
-                'region': security_policy_ref.region,
-                'securityPolicy': args.security_policy,
-            })
+      if args.security_policy:
+        security_policy_ref = cls.SECURITY_POLICY_ARG.ResolveAsResource(
+            args,
+            holder.resources,
+            default_scope=compute_scope.ScopeEnum.GLOBAL)
+        if getattr(security_policy_ref, 'region', None) is not None:
+          ref = holder.resources.Parse(
+              args.name,
+              collection='compute.regionSecurityPolicyRules',
+              params={
+                  'project': properties.VALUES.core.project.GetOrFail,
+                  'region': security_policy_ref.region,
+                  'securityPolicy': args.security_policy,
+              })
+        else:
+          ref = holder.resources.Parse(
+              args.name,
+              collection='compute.securityPolicyRules',
+              params={
+                  'project': properties.VALUES.core.project.GetOrFail,
+                  'securityPolicy': args.security_policy,
+              },
+          )
       else:
-        ref = holder.resources.Parse(
-            args.name,
-            collection='compute.securityPolicyRules',
-            params={
-                'project': properties.VALUES.core.project.GetOrFail,
-                'securityPolicy': args.security_policy
-            })
+        try:
+          ref = holder.resources.Parse(
+              args.name,
+              collection='compute.regionSecurityPolicyRules',
+              params={
+                  'project': properties.VALUES.core.project.GetOrFail,
+                  'region': getattr(args, 'region', None),
+              },
+          )
+        except (
+            resources.RequiredFieldOmittedException,
+            resources.WrongResourceCollectionException,
+        ):
+          ref = holder.resources.Parse(
+              args.name,
+              collection='compute.securityPolicyRules',
+              params={
+                  'project': properties.VALUES.core.project.GetOrFail,
+              },
+          )
     else:
       ref = holder.resources.Parse(
           args.name,
@@ -304,6 +340,7 @@ class AddPreconfigWafExclusionGA(base.UpdateCommand):
   """
 
   SECURITY_POLICY_ARG = None
+  NAME_ARG = None
 
   _support_regional_security_policy = False
 

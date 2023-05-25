@@ -564,8 +564,8 @@
             "Autoencoder model.",
             "New name for the ARIMA model.",
             "ARIMA with external regressors.",
-            "Random Forest regressor model.",
-            "Random Forest classifier model.",
+            "Random forest regressor model.",
+            "Random forest classifier model.",
             "An imported TensorFlow Lite model.",
             "An imported ONNX model."
           ],
@@ -1408,6 +1408,10 @@
         "xgboostVersion": {
           "description": "User-selected XGBoost versions for training of XGBoost models.",
           "type": "string"
+        },
+        "approxGlobalFeatureContrib": {
+          "description": "Whether to use approximate feature contribution method in XGBoost model explanation for global explain.",
+          "type": "boolean"
         }
       }
     },
@@ -2973,6 +2977,18 @@
             "type": "string"
           }
         },
+        "fileSetSpecType": {
+          "description": "Optional. Specifies how source URIs are interpreted for constructing the file set to load. By default source URIs are expanded against the underlying storage. Other options include specifying manifest files. Only applicable to object storage systems.",
+          "type": "string",
+          "enumDescriptions": [
+            "Expands source URIs by listing files from the underlying object store. Default behavior.",
+            "Indicates the URIs provided are new line delimited manifest files, where each line contains a URI. No wild-card URIs are supported."
+          ],
+          "enum": [
+            "FILE_SET_SPEC_TYPE_FILE_SYSTEM_MATCH",
+            "FILE_SET_SPEC_TYPE_NEW_LINE_DELIMITED_MANIFEST"
+          ]
+        },
         "schema": {
           "description": "Optional. The schema for the data. Schema is required for CSV and JSON formats if autodetect is not on. Schema is disallowed for Google Cloud Bigtable, Cloud Datastore backups, Avro, ORC and Parquet formats.",
           "$ref": "TableSchema"
@@ -3001,6 +3017,10 @@
         "csvOptions": {
           "description": "Optional. Additional properties to set if sourceFormat is set to CSV.",
           "$ref": "CsvOptions"
+        },
+        "jsonOptions": {
+          "description": "Optional. Additional properties to set if sourceFormat is set to JSON.",
+          "$ref": "JsonOptions"
         },
         "bigtableOptions": {
           "description": "Optional. Additional options if sourceFormat is set to BIGTABLE.",
@@ -3234,6 +3254,17 @@
         "preserveAsciiControlCharacters": {
           "description": "Optional. Indicates if the embedded ASCII control characters (the first 32 characters in the ASCII-table, from '\\x00' to '\\x1F') are preserved.",
           "type": "boolean"
+        }
+      }
+    },
+    "JsonOptions": {
+      "id": "JsonOptions",
+      "description": "Json Options for load and make external tables.",
+      "type": "object",
+      "properties": {
+        "encoding": {
+          "description": "Optional. The character encoding of the data. The supported values are UTF-8, UTF-16BE, UTF-16LE, UTF-32BE, and UTF-32LE. The default value is UTF-8.",
+          "type": "string"
         }
       }
     },
@@ -3631,6 +3662,18 @@
           "items": {
             "type": "string"
           }
+        },
+        "fileSetSpecType": {
+          "description": "Optional. Specifies how source URIs are interpreted for constructing the file set to load. By default source URIs are expanded against the underlying storage. Other options include specifying manifest files. Only applicable to object storage systems.",
+          "type": "string",
+          "enumDescriptions": [
+            "Expands source URIs by listing files from the underlying object store. Default behavior.",
+            "Indicates the URIs provided are new line delimited manifest files, where each line contains a URI. No wild-card URIs are supported."
+          ],
+          "enum": [
+            "FILE_SET_SPEC_TYPE_FILE_SYSTEM_MATCH",
+            "FILE_SET_SPEC_TYPE_NEW_LINE_DELIMITED_MANIFEST"
+          ]
         },
         "schema": {
           "description": "Optional. The schema for the destination table. The schema can be omitted if the destination table already exists, or if you're loading data from Google Cloud Datastore.",
@@ -4284,7 +4327,7 @@
           }
         },
         "statementType": {
-          "description": "Output only. The type of query statement, if valid. Possible values: * `SELECT`: [SELECT](\/bigquery\/docs\/reference\/standard-sql\/query-syntax#select_list) statement. * `INSERT`: [INSERT](\/bigquery\/docs\/reference\/standard-sql\/dml-syntax#insert_statement) statement. * `UPDATE`: [UPDATE](\/bigquery\/docs\/reference\/standard-sql\/query-syntax#update_statement) statement. * `DELETE`: [DELETE](\/bigquery\/docs\/reference\/standard-sql\/data-manipulation-language) statement. * `MERGE`: [MERGE](\/bigquery\/docs\/reference\/standard-sql\/data-manipulation-language) statement. * `ALTER_TABLE`: [ALTER TABLE](\/bigquery\/docs\/reference\/standard-sql\/data-definition-language#alter_table_set_options_statement) statement. * `ALTER_VIEW`: [ALTER VIEW](\/bigquery\/docs\/reference\/standard-sql\/data-definition-language#alter_view_set_options_statement) statement. * `ASSERT`: [ASSERT](\/bigquery\/docs\/reference\/standard-sql\/debugging-statements#assert) statement. * `CREATE_FUNCTION`: [CREATE FUNCTION](\/bigquery\/docs\/reference\/standard-sql\/data-definition-language#create_function_statement) statement. * `CREATE_MODEL`: [CREATE MODEL](\/bigquery-ml\/docs\/reference\/standard-sql\/bigqueryml-syntax-create#create_model_statement) statement. * `CREATE_PROCEDURE`: [CREATE PROCEDURE](\/bigquery\/docs\/reference\/standard-sql\/data-definition-language#create_procedure) statement. * `CREATE_ROW_ACCESS_POLICY`: [CREATE ROW ACCESS POLICY](\/bigquery\/docs\/reference\/standard-sql\/data-definition-language#create_row_access_policy_statement) statement. * `CREATE_TABLE`: [CREATE TABLE](\/bigquery\/docs\/reference\/standard-sql\/data-definition-language#create_table_statement) statement, without AS SELECT. * `CREATE_TABLE_AS_SELECT`: [CREATE TABLE AS SELECT](\/bigquery\/docs\/reference\/standard-sql\/data-definition-language#query_statement) statement. * `CREATE_VIEW`: [CREATE VIEW](\/bigquery\/docs\/reference\/standard-sql\/data-definition-language#create_view_statement) statement. * `DROP_FUNCTION` : [DROP FUNCTION](\/bigquery\/docs\/reference\/standard-sql\/data-definition-language#drop_function_statement) statement. * `DROP_PROCEDURE`: [DROP PROCEDURE](\/bigquery\/docs\/reference\/standard-sql\/data-definition-language#drop_procedure_statement) statement. * `DROP_ROW_ACCESS_POLICY`: [DROP [ALL] ROW ACCESS POLICY|POLICIES](\/bigquery\/docs\/reference\/standard-sql\/data-definition-language#drop_row_access_policy_statement) statement. * `DROP_TABLE`: [DROP TABLE](\/bigquery\/docs\/reference\/standard-sql\/data-definition-language#drop_table_statement) statement. * `DROP_VIEW`: [DROP VIEW](\/bigquery\/docs\/reference\/standard-sql\/data-definition-language#drop_view_statement) statement. * `EXPORT_MODEL`: [EXPORT MODEL](\/bigquery-ml\/docs\/reference\/standard-sql\/bigqueryml-syntax-export-model) statement. * `LOAD_DATA`: [LOAD DATA](\/bigquery\/docs\/reference\/standard-sql\/other-statements#load_data_statement) statement.",
+          "description": "Output only. The type of query statement, if valid. Possible values: * `SELECT`: [`SELECT`](\/bigquery\/docs\/reference\/standard-sql\/query-syntax#select_list) statement. * `ASSERT`: [`ASSERT`](\/bigquery\/docs\/reference\/standard-sql\/debugging-statements#assert) statement. * `INSERT`: [`INSERT`](\/bigquery\/docs\/reference\/standard-sql\/dml-syntax#insert_statement) statement. * `UPDATE`: [`UPDATE`](\/bigquery\/docs\/reference\/standard-sql\/query-syntax#update_statement) statement. * `DELETE`: [`DELETE`](\/bigquery\/docs\/reference\/standard-sql\/data-manipulation-language) statement. * `MERGE`: [`MERGE`](\/bigquery\/docs\/reference\/standard-sql\/data-manipulation-language) statement. * `CREATE_TABLE`: [`CREATE TABLE`](\/bigquery\/docs\/reference\/standard-sql\/data-definition-language#create_table_statement) statement, without `AS SELECT`. * `CREATE_TABLE_AS_SELECT`: [`CREATE TABLE AS SELECT`](\/bigquery\/docs\/reference\/standard-sql\/data-definition-language#query_statement) statement. * `CREATE_VIEW`: [`CREATE VIEW`](\/bigquery\/docs\/reference\/standard-sql\/data-definition-language#create_view_statement) statement. * `CREATE_MODEL`: [`CREATE MODEL`](\/bigquery-ml\/docs\/reference\/standard-sql\/bigqueryml-syntax-create#create_model_statement) statement. * `CREATE_MATERIALIZED_VIEW`: [`CREATE MATERIALIZED VIEW`](\/bigquery\/docs\/reference\/standard-sql\/data-definition-language#create_materialized_view_statement) statement. * `CREATE_FUNCTION`: [`CREATE FUNCTION`](\/bigquery\/docs\/reference\/standard-sql\/data-definition-language#create_function_statement) statement. * `CREATE_TABLE_FUNCTION`: [`CREATE TABLE FUNCTION`](\/bigquery\/docs\/reference\/standard-sql\/data-definition-language#create_table_function_statement) statement. * `CREATE_PROCEDURE`: [`CREATE PROCEDURE`](\/bigquery\/docs\/reference\/standard-sql\/data-definition-language#create_procedure) statement. * `CREATE_ROW_ACCESS_POLICY`: [`CREATE ROW ACCESS POLICY`](\/bigquery\/docs\/reference\/standard-sql\/data-definition-language#create_row_access_policy_statement) statement. * `CREATE_SCHEMA`: [`CREATE SCHEMA`](\/bigquery\/docs\/reference\/standard-sql\/data-definition-language#create_schema_statement) statement. * `CREATE_SNAPSHOT_TABLE`: [`CREATE SNAPSHOT TABLE`](\/bigquery\/docs\/reference\/standard-sql\/data-definition-language#create_snapshot_table_statement) statement. * `CREATE_SEARCH_INDEX`: [`CREATE SEARCH INDEX`](\/bigquery\/docs\/reference\/standard-sql\/data-definition-language#create_search_index_statement) statement. * `DROP_TABLE`: [`DROP TABLE`](\/bigquery\/docs\/reference\/standard-sql\/data-definition-language#drop_table_statement) statement. * `DROP_EXTERNAL_TABLE`: [`DROP EXTERNAL TABLE`](\/bigquery\/docs\/reference\/standard-sql\/data-definition-language#drop_external_table_statement) statement. * `DROP_VIEW`: [`DROP VIEW`](\/bigquery\/docs\/reference\/standard-sql\/data-definition-language#drop_view_statement) statement. * `DROP_MODEL`: [`DROP MODEL`](\/bigquery-ml\/docs\/reference\/standard-sql\/bigqueryml-syntax-drop-model) statement. * `DROP_MATERIALIZED_VIEW`: [`DROP MATERIALIZED VIEW`](\/bigquery\/docs\/reference\/standard-sql\/data-definition-language#drop_materialized_view_statement) statement. * `DROP_FUNCTION` : [`DROP FUNCTION`](\/bigquery\/docs\/reference\/standard-sql\/data-definition-language#drop_function_statement) statement. * `DROP_TABLE_FUNCTION` : [`DROP TABLE FUNCTION`](\/bigquery\/docs\/reference\/standard-sql\/data-definition-language#drop_table_function) statement. * `DROP_PROCEDURE`: [`DROP PROCEDURE`](\/bigquery\/docs\/reference\/standard-sql\/data-definition-language#drop_procedure_statement) statement. * `DROP_SEARCH_INDEX`: [`DROP SEARCH INDEX`](\/bigquery\/docs\/reference\/standard-sql\/data-definition-language#drop_search_index) statement. * `DROP_SCHEMA`: [`DROP SCHEMA`](\/bigquery\/docs\/reference\/standard-sql\/data-definition-language#drop_schema_statement) statement. * `DROP_SNAPSHOT_TABLE`: [`DROP SNAPSHOT TABLE`](\/bigquery\/docs\/reference\/standard-sql\/data-definition-language#drop_snapshot_table_statement) statement. * `DROP_ROW_ACCESS_POLICY`: [`DROP [ALL] ROW ACCESS POLICY|POLICIES`](\/bigquery\/docs\/reference\/standard-sql\/data-definition-language#drop_row_access_policy_statement) statement. * `ALTER_TABLE`: [`ALTER TABLE`](\/bigquery\/docs\/reference\/standard-sql\/data-definition-language#alter_table_set_options_statement) statement. * `ALTER_VIEW`: [`ALTER VIEW`](\/bigquery\/docs\/reference\/standard-sql\/data-definition-language#alter_view_set_options_statement) statement. * `ALTER_MATERIALIZED_VIEW`: [`ALTER MATERIALIZED VIEW`](\/bigquery\/docs\/reference\/standard-sql\/data-definition-language#alter_materialized_view_set_options_statement) statement. * `ALTER_SCHEMA`: [`ALTER SCHEMA`](\/bigquery\/docs\/reference\/standard-sql\/data-definition-language#aalter_schema_set_options_statement) statement. * `SCRIPT`: [`SCRIPT`](\/bigquery\/docs\/reference\/standard-sql\/procedural-language). * `TRUNCATE_TABLE`: [`TRUNCATE TABLE`](\/bigquery\/docs\/reference\/standard-sql\/dml-syntax#truncate_table_statement) statement. * `CREATE_EXTERNAL_TABLE`: [`CREATE EXTERNAL TABLE`](\/bigquery\/docs\/reference\/standard-sql\/data-definition-language#create_external_table_statement) statement. * `EXPORT_DATA`: [`EXPORT DATA`](\/bigquery\/docs\/reference\/standard-sql\/other-statements#export_data_statement) statement. * `EXPORT_MODEL`: [`EXPORT MODEL`](\/bigquery-ml\/docs\/reference\/standard-sql\/bigqueryml-syntax-export-model) statement. * `LOAD_DATA`: [`LOAD DATA`](\/bigquery\/docs\/reference\/standard-sql\/other-statements#load_data_statement) statement. * `CALL`: [`CALL`](\/bigquery\/docs\/reference\/standard-sql\/procedural-language#call) statement.",
           "readOnly": true,
           "type": "string"
         },
@@ -4552,6 +4595,21 @@
           "description": "Slot-milliseconds used by the stage.",
           "type": "string",
           "format": "int64"
+        },
+        "computeMode": {
+          "description": "Output only. Compute mode for this stage.",
+          "readOnly": true,
+          "type": "string",
+          "enumDescriptions": [
+            "ComputeMode type not specified.",
+            "This stage was processed using BigQuery slots.",
+            "This stage was processed using BI Engine compute."
+          ],
+          "enum": [
+            "COMPUTE_MODE_UNSPECIFIED",
+            "BIGQUERY",
+            "BI_ENGINE"
+          ]
         }
       }
     },
@@ -4701,8 +4759,8 @@
             "Autoencoder model.",
             "New name for the ARIMA model.",
             "ARIMA with external regressors.",
-            "Random Forest regressor model.",
-            "Random Forest classifier model.",
+            "Random forest regressor model.",
+            "Random forest classifier model.",
             "An imported TensorFlow Lite model.",
             "An imported ONNX model."
           ],
@@ -5159,11 +5217,11 @@
     },
     "MaterializedViewStatistics": {
       "id": "MaterializedViewStatistics",
-      "description": "Statistics of materialized views for a query job.",
+      "description": "Statistics of materialized views considered in a query job.",
       "type": "object",
       "properties": {
         "materializedView": {
-          "description": "Materialized views considereed for the query job. Only a few of them are used by the query while the others are rejected. More details can be found in the child message. It might not be a complete list if there are too many of them.",
+          "description": "Materialized views considered for the query job. Only certain materialized views are used. For a detailed list, see the child message. If many materialized views are considered, then the list might be incomplete.",
           "type": "array",
           "items": {
             "$ref": "MaterializedView"
@@ -5181,28 +5239,28 @@
           "$ref": "TableReference"
         },
         "chosen": {
-          "description": "Whether the materialized view is chosen by the query. Note a materialized view can be candidate data source of multiple queried tables, it is set as true if chosen as the source of any of them.",
+          "description": "Whether the materialized view is chosen for the query. A materialized view can be chosen to rewrite multiple parts of the same query. If a materialized view is chosen to rewrite any part of the query, then this field is true, even if the materialized view was not chosen to rewrite others parts.",
           "type": "boolean"
         },
         "estimatedBytesSaved": {
-          "description": "If set, the estimated bytes saved by using the materialized view rather than the base tables. Provided at best effort.",
+          "description": "If present, specifies a best-effort estimation of the bytes saved by using the materialized view rather than its base tables.",
           "type": "string",
           "format": "int64"
         },
         "rejectedReason": {
-          "description": "If set, the rejected reason why the materialized view is not chosen for the query.",
+          "description": "If present, specifies the reason why the materialized view was not chosen for the query.",
           "type": "string",
           "enumDescriptions": [
             "Default unspecified value.",
-            "View has no cached data because it is not refreshed yet.",
-            "The estimated cost of the view is more expensive than some other view or the base table. Note that the estimate cost may not match the actual billed cost.",
+            "View has no cached data because it has not refreshed yet.",
+            "The estimated cost of the view is more expensive than another view or the base table. Note: The estimate cost might not match the billed cost.",
             "View has no cached data because a base table is truncated.",
             "View is invalidated because of a data change in one or more base tables.",
             "View is invalidated because a base table's partition expiration has changed.",
-            "View is invalidated because a base table's partition expires.",
-            "View is invalidated because a base table has incompatible metadata change.",
-            "View is invalidated because it was refreshed using a different time zone than the current one of the job.",
-            "View is outside of time travel window."
+            "View is invalidated because a base table's partition has expired.",
+            "View is invalidated because a base table has an incompatible metadata change.",
+            "View is invalidated because it was refreshed with a time zone other than that of the current job.",
+            "View is outside the time travel window."
           ],
           "enum": [
             "REJECTED_REASON_UNSPECIFIED",
@@ -5932,15 +5990,17 @@
           "type": "string",
           "enumDescriptions": [
             "",
-            "Non-builtin permanent scalar function.",
+            "Non-built-in persistent scalar function.",
             "Stored procedure.",
-            "Non-builtin permanent TVF."
+            "Non-built-in persistent TVF.",
+            "Non-built-in persistent aggregate function."
           ],
           "enum": [
             "ROUTINE_TYPE_UNSPECIFIED",
             "SCALAR_FUNCTION",
             "PROCEDURE",
-            "TABLE_VALUED_FUNCTION"
+            "TABLE_VALUED_FUNCTION",
+            "AGGREGATE_FUNCTION"
           ]
         },
         "creationTime": {
@@ -6528,17 +6588,17 @@
     },
     "MaterializedViewStatus": {
       "id": "MaterializedViewStatus",
-      "description": "Status of a materialized view. The last refresh timestamp status is omitted here, it is already present in the MaterializedViewDefinition message.",
+      "description": "Status of a materialized view. The last refresh timestamp status is omitted here, but is present in the MaterializedViewDefinition message.",
       "type": "object",
       "properties": {
         "refreshWatermark": {
-          "description": "Output only. Refresh watermark of materialized view. Data of base tables up to this time are collected into the materialized view cache.",
+          "description": "Output only. Refresh watermark of materialized view. The base tables' data were collected into the materialized view cache until this time.",
           "readOnly": true,
           "type": "string",
           "format": "google-datetime"
         },
         "lastRefreshStatus": {
-          "description": "Output only. Error result of the last automatic refresh job. If present, indicates that the last automatic refresh was unsuccessful.",
+          "description": "Output only. Error result of the last automatic refresh. If present, indicates that the last automatic refresh was unsuccessful.",
           "readOnly": true,
           "$ref": "ErrorProto"
         }

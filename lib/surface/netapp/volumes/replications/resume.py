@@ -34,7 +34,7 @@ from googlecloudsdk.core import log
 # BETA is public.
 @base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
-class ResumeBeta(base.CreateCommand):
+class ResumeBeta(base.Command):
   """Resume a Cloud NetApp Volume Replication."""
 
   _RELEASE_TRACK = base.ReleaseTrack.BETA

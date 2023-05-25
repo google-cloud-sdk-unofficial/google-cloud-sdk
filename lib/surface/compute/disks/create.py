@@ -138,8 +138,7 @@ def _CommonArgs(messages,
                 source_instant_snapshot_enabled=False,
                 support_pd_interface=False,
                 support_user_licenses=False,
-                support_async_pd=False,
-                support_provisioned_throughput=False):
+                support_async_pd=False):
   """Add arguments used for parsing in all command tracks."""
   Create.disks_arg.AddArgument(parser, operation_type='create')
   parser.add_argument(
@@ -200,8 +199,7 @@ def _CommonArgs(messages,
   disks_flags.AddProvisionedIopsFlag(parser, arg_parsers)
   disks_flags.AddArchitectureFlag(parser, messages)
 
-  if support_provisioned_throughput:
-    disks_flags.AddProvisionedThroughputFlag(parser, arg_parsers)
+  disks_flags.AddProvisionedThroughputFlag(parser, arg_parsers)
 
   if support_user_licenses:
     parser.add_argument(
@@ -459,7 +457,6 @@ class Create(base.Command):
       support_pd_interface=False,
       support_user_licenses=False,
       support_async_pd=False,
-      support_provisioned_throughput=False,
       support_enable_confidential_compute=False,
   ):
     compute_holder = self._GetApiHolder()
@@ -591,7 +588,7 @@ class Create(base.Command):
               '--provisioned-iops',
               '--provisioned-iops cannot be used with the given disk type.')
 
-      if support_provisioned_throughput and args.IsSpecified(
+      if args.IsSpecified(
           'provisioned_throughput'):
         if type_uri and disks_util.IsProvisioningTypeThroughput(type_uri):
           disk.provisionedThroughput = args.provisioned_throughput
@@ -690,8 +687,7 @@ class CreateAlpha(CreateBeta):
         source_instant_snapshot_enabled=True,
         support_pd_interface=True,
         support_user_licenses=True,
-        support_async_pd=True,
-        support_provisioned_throughput=True)
+        support_async_pd=True)
     image_utils.AddGuestOsFeaturesArg(parser, messages)
     _AddReplicaZonesArg(parser)
     kms_resource_args.AddKmsKeyResourceArg(
@@ -709,7 +705,6 @@ class CreateAlpha(CreateBeta):
         support_pd_interface=True,
         support_user_licenses=True,
         support_async_pd=True,
-        support_provisioned_throughput=True,
         support_enable_confidential_compute=True,
     )
 

@@ -34,8 +34,67 @@ $ {command} my-node-pool --cluster=my-cluster --location=us-west1
 """
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
-class Update(base.UpdateCommand):
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class UpdateAlpha(base.UpdateCommand):
+  """Update a node pool in an Anthos cluster on VMware."""
+
+  detailed_help = {'EXAMPLES': _EXAMPLES}
+
+  @staticmethod
+  def Args(parser):
+    """Gathers commandline arguments for the update command.
+
+    Args:
+      parser: The argparse parser to add the flag to.
+    """
+    parser.display_info.AddFormat(vmware_constants.VMWARE_NODEPOOLS_FORMAT)
+    flags.AddNodePoolResourceArg(parser, 'to update')
+    flags.AddValidationOnly(parser)
+    base.ASYNC_FLAG.AddToParser(parser)
+    flags.AddNodePoolDisplayName(parser)
+    flags.AddVmwareNodePoolAutoscalingConfig(parser, for_update=True)
+    flags.AddVmwareNodeConfig(parser, for_update=True)
+    flags.AddNodePoolVersion(parser)
+    flags.AddNodePoolUpgradePolicy(parser)
+
+  def Run(self, args):
+    """Runs the update command.
+
+    Args:
+      args: The arguments received from command line.
+
+    Returns:
+      The return value depends on the command arguments. If `--async` is
+      specified, it returns an operation; otherwise, it returns the updated
+      resource. If `--validate-only` is specified, it returns None or any
+      possible error.
+    """
+    node_pool_ref = args.CONCEPTS.node_pool.Parse()
+    client = apis.NodePoolsClient()
+    operation = client.Update(args)
+
+    if args.async_ and not args.IsSpecified('format'):
+      args.format = constants.OPERATIONS_FORMAT
+
+    if args.validate_only:
+      return
+
+    if args.async_:
+      log.UpdatedResource(
+          node_pool_ref, 'Node Pool in Anthos Cluster on VMware', args.async_
+      )
+      return operation
+    else:
+      operation_client = operations.OperationsClient()
+      response = operation_client.Wait(operation)
+      log.UpdatedResource(
+          node_pool_ref, 'Node Pool in Anthos Cluster on VMware', args.async_
+      )
+      return response
+
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class UpdateBeta(base.UpdateCommand):
   """Update a node pool in an Anthos cluster on VMware."""
 
   detailed_help = {'EXAMPLES': _EXAMPLES}
@@ -79,12 +138,14 @@ class Update(base.UpdateCommand):
       return
 
     if args.async_:
-      log.UpdatedResource(node_pool_ref,
-                          'Node Pool in Anthos Cluster on VMware', args.async_)
+      log.UpdatedResource(
+          node_pool_ref, 'Node Pool in Anthos Cluster on VMware', args.async_
+      )
       return operation
     else:
       operation_client = operations.OperationsClient()
       response = operation_client.Wait(operation)
-      log.UpdatedResource(node_pool_ref,
-                          'Node Pool in Anthos Cluster on VMware', args.async_)
+      log.UpdatedResource(
+          node_pool_ref, 'Node Pool in Anthos Cluster on VMware', args.async_
+      )
       return response

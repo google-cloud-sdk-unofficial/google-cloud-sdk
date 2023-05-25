@@ -25,9 +25,8 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.core import properties
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class List(base.ListCommand):
-  """List Compute Engine interconnect remote locations."""
+  """List Google Compute Engine Cloud Interconnect remote locations."""
 
   @classmethod
   def Args(cls, parser):
@@ -63,4 +62,4 @@ class List(base.ListCommand):
 
 
 List.detailed_help = base_classes.GetGlobalListerHelp(
-    'interconnect remote locations')
+    'Cloud Interconnect remote locations')

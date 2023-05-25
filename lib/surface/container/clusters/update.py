@@ -368,6 +368,8 @@ class Update(base.UpdateCommand):
     flags.AddSecurityPostureEnumFlag(group)
     flags.AddWorkloadVulnScanningEnumFlag(group)
     flags.AddRuntimeVulnerabilityInsightFlag(group)
+    flags.AddWorkloadPoliciesFlag(group, hidden=True)
+    flags.AddRemoveWorkloadPoliciesFlag(group, hidden=True)
 
   def ParseUpdateOptions(self, args, locations):
     get_default = lambda key: getattr(args, key)
@@ -445,6 +447,8 @@ class Update(base.UpdateCommand):
     opts.workload_vulnerability_scanning = args.workload_vulnerability_scanning
     opts.enable_runtime_vulnerability_insight = (
         args.enable_runtime_vulnerability_insight)
+    opts.workload_policies = args.workload_policies
+    opts.remove_workload_policies = args.remove_workload_policies
     return opts
 
   def Run(self, args):
@@ -856,6 +860,9 @@ class UpdateBeta(Update):
     flags.AddSecurityPostureEnumFlag(group)
     flags.AddWorkloadVulnScanningEnumFlag(group)
     flags.AddRuntimeVulnerabilityInsightFlag(group)
+    flags.AddWorkloadPoliciesFlag(group, hidden=True)
+    flags.AddRemoveWorkloadPoliciesFlag(group, hidden=True)
+    flags.AddEnableFqdnNetworkPolicyFlag(group)
 
   def ParseUpdateOptions(self, args, locations):
     get_default = lambda key: getattr(args, key)
@@ -969,6 +976,9 @@ class UpdateBeta(Update):
     opts.security_posture = args.security_posture
     opts.workload_vulnerability_scanning = args.workload_vulnerability_scanning
     opts.enable_runtime_vulnerability_insight = args.enable_runtime_vulnerability_insight
+    opts.workload_policies = args.workload_policies
+    opts.remove_workload_policies = args.remove_workload_policies
+    opts.enable_fqdn_network_policy = args.enable_fqdn_network_policy
     return opts
 
 
@@ -1068,6 +1078,9 @@ class UpdateAlpha(Update):
     flags.AddSecurityPostureEnumFlag(group)
     flags.AddWorkloadVulnScanningEnumFlag(group)
     flags.AddRuntimeVulnerabilityInsightFlag(group)
+    flags.AddWorkloadPoliciesFlag(group, hidden=True)
+    flags.AddRemoveWorkloadPoliciesFlag(group, hidden=True)
+    flags.AddEnableFqdnNetworkPolicyFlag(group)
 
   def ParseUpdateOptions(self, args, locations):
     get_default = lambda key: getattr(args, key)
@@ -1175,4 +1188,7 @@ class UpdateAlpha(Update):
     opts.security_posture = args.security_posture
     opts.workload_vulnerability_scanning = args.workload_vulnerability_scanning
     opts.enable_runtime_vulnerability_insight = args.enable_runtime_vulnerability_insight
+    opts.workload_policies = args.workload_policies
+    opts.remove_workload_policies = args.remove_workload_policies
+    opts.enable_fqdn_network_policy = args.enable_fqdn_network_policy
     return opts

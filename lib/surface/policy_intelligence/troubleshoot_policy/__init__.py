@@ -23,7 +23,22 @@ from googlecloudsdk.calliope import base
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 @base.Hidden
-class TroubleshootPolicy(base.Group):
+class TroubleshootAlpha(base.Group):
+  """Troubleshoot IAM policies."""
+
+  detailed_help = {
+      'DESCRIPTION': """\
+          Troubleshoot IAM policies.
+
+          More information can be found here:
+          https://cloud.google.com/iam/docs/troubleshooting-access
+      """
+  }
+
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.Hidden
+class TroubleshootBeta(base.Group):
   """Troubleshoot IAM policies."""
 
   detailed_help = {

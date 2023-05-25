@@ -86,6 +86,7 @@ def _CommonArgs(parser):
   flags.AddSkaffoldVersion(parser)
   flags.AddSkaffoldSources(parser)
   flags.AddInitialRolloutGroup(parser)
+  flags.AddDeployParametersFlag(parser)
 
 
 @base.ReleaseTracks(
@@ -154,7 +155,9 @@ class Create(base.CreateCommand):
         pipeline_obj.uid,
         args.from_k8s_manifest,
         args.from_run_manifest,
+        args.deploy_parameters,
     )
+
     deploy_util.SetMetadata(
         client.messages,
         release_config,

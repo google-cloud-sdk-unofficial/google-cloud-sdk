@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*- #
-# Copyright 2020 Google LLC. All Rights Reserved.
+# Copyright 2023 Google LLC. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -28,8 +28,8 @@ from googlecloudsdk.api_lib.storage import cloud_api
 from googlecloudsdk.api_lib.storage import errors
 from googlecloudsdk.api_lib.storage import headers_util
 from googlecloudsdk.api_lib.storage import request_config_factory
-from googlecloudsdk.api_lib.storage import s3_metadata_field_converters
-from googlecloudsdk.api_lib.storage import s3_metadata_util
+from googlecloudsdk.api_lib.storage import xml_metadata_field_converters
+from googlecloudsdk.api_lib.storage import xml_metadata_util
 from googlecloudsdk.command_lib.storage import errors as command_errors
 from googlecloudsdk.command_lib.storage import storage_url
 from googlecloudsdk.command_lib.storage.resources import resource_reference
@@ -57,7 +57,7 @@ def _raise_if_not_found_error(error, resource_name):
 
 
 def _catch_client_error_raise_s3_api_error(format_str=None):
-  """Decorator that catches botocore ClientErrors and raises S3ApiErrors.
+  """Decorator that catches botocore ClientErrors and raises XmlApiErrors.
 
   Args:
     format_str (str): A googlecloudsdk.api_lib.storage.errors.S3ErrorPayload
@@ -66,12 +66,13 @@ def _catch_client_error_raise_s3_api_error(format_str=None):
 
   Returns:
     A decorator that catches botocore.exceptions.ClientError and returns an
-      S3ApiError with a formatted error message.
+      XmlApiError with a formatted error message.
   """
 
   return errors.catch_error_raise_cloud_api_error(
-      [(botocore.exceptions.ClientError, errors.S3ApiError)],
-      format_str=format_str)
+      [(botocore.exceptions.ClientError, errors.XmlApiError)],
+      format_str=format_str,
+  )
 
 
 def _create_client(resource_location=None):
@@ -112,13 +113,14 @@ def _modifies_full_acl_policy(request_config):
 
 
 # pylint:disable=abstract-method
-class S3Api(cloud_api.CloudApi):
-  """S3 Api client."""
+class S3XmlClient(cloud_api.CloudApi):
+  """S3 XML Client."""
 
   capabilities = {
       # Boto3 implements its own unskippable validation.
       cloud_api.Capability.CLIENT_SIDE_HASH_VALIDATION,
   }
+  scheme = storage_url.ProviderPrefix.S3
 
   def __init__(self):
     log.warning(
@@ -173,7 +175,7 @@ class S3Api(cloud_api.CloudApi):
   def get_bucket(self, bucket_name, fields_scope=cloud_api.FieldsScope.NO_ACL):
     """See super class."""
     metadata = {'Name': bucket_name}
-    # TODO (b/168716392): As new commands are implemented, they may want
+    # TODO(b/168716392) As new commands are implemented, they may want
     # specific error handling for different methods.
     try:
       # Low-bandwidth way to determine if bucket exists for FieldsScope.SHORT.
@@ -182,11 +184,12 @@ class S3Api(cloud_api.CloudApi):
     except botocore.exceptions.ClientError as error:
       _raise_if_not_found_error(error, bucket_name)
 
-      metadata['LocationConstraint'] = errors.S3ApiError(error)
+      metadata['LocationConstraint'] = errors.XmlApiError(error)
 
     if fields_scope is cloud_api.FieldsScope.SHORT:
-      return s3_metadata_util.get_bucket_resource_from_s3_response(
-          metadata, bucket_name)
+      return xml_metadata_util.get_bucket_resource_from_xml_response(
+          self.scheme, metadata, bucket_name
+      )
 
     # Data for FieldsScope.NO_ACL.
     for key, api_call, result_has_key in [
@@ -205,17 +208,18 @@ class S3Api(cloud_api.CloudApi):
         # Some results are wrapped in dictionaries with keys matching "key".
         metadata[key] = api_result.get(key) if result_has_key else api_result
       except botocore.exceptions.ClientError as error:
-        metadata[key] = errors.S3ApiError(error)
+        metadata[key] = errors.XmlApiError(error)
 
     # User requested ACL's with FieldsScope.FULL.
     if fields_scope is cloud_api.FieldsScope.FULL:
       try:
         metadata['ACL'] = self.client.get_bucket_acl(Bucket=bucket_name)
       except botocore.exceptions.ClientError as error:
-        metadata['ACL'] = errors.S3ApiError(error)
+        metadata['ACL'] = errors.XmlApiError(error)
 
-    return s3_metadata_util.get_bucket_resource_from_s3_response(
-        metadata, bucket_name)
+    return xml_metadata_util.get_bucket_resource_from_xml_response(
+        self.scheme, metadata, bucket_name
+    )
 
   def list_buckets(self, fields_scope=cloud_api.FieldsScope.NO_ACL):
     """See super class."""
@@ -235,7 +239,7 @@ class S3Api(cloud_api.CloudApi):
                   'Owner': response['Owner']
               })
     except botocore.exceptions.ClientError as error:
-      core_exceptions.reraise(errors.S3ApiError(error))
+      core_exceptions.reraise(errors.XmlApiError(error))
 
   def _make_patch_request(self, bucket_resource, patch_function, patch_kwargs):
     patch_kwargs['Bucket'] = bucket_resource.storage_url.bucket_name
@@ -243,7 +247,7 @@ class S3Api(cloud_api.CloudApi):
       patch_function(**patch_kwargs)
     except botocore.exceptions.ClientError as error:
       _raise_if_not_found_error(error, bucket_resource.storage_url.bucket_name)
-      log.error(errors.S3ApiError(error))
+      log.error(errors.XmlApiError(error))
 
   def patch_bucket(self,
                    bucket_resource,
@@ -258,14 +262,18 @@ class S3Api(cloud_api.CloudApi):
       if _modifies_full_acl_policy(request_config):
         if getattr(resource_args, 'acl_file_path', None):
           put_acl_kwargs['AccessControlPolicy'] = (
-              s3_metadata_field_converters.process_acl_file(
-                  resource_args.acl_file_path))
+              xml_metadata_field_converters.process_acl_file(
+                  resource_args.acl_file_path
+              )
+          )
         else:
           existing_acl_dict = self.client.get_bucket_acl(
               Bucket=bucket_resource.storage_url.bucket_name)
           put_acl_kwargs['AccessControlPolicy'] = (
-              s3_metadata_util.get_acl_policy_with_added_and_removed_grants(
-                  existing_acl_dict, request_config))
+              xml_metadata_util.get_acl_policy_with_added_and_removed_grants(
+                  existing_acl_dict, request_config
+              )
+          )
 
       if request_config.predefined_acl_string:
         put_acl_kwargs['ACL'] = request_config.predefined_acl_string
@@ -274,72 +282,107 @@ class S3Api(cloud_api.CloudApi):
 
     if resource_args.cors_file_path:
       self._make_patch_request(
-          bucket_resource, self.client.put_bucket_cors, {
-              'CORSConfiguration': s3_metadata_field_converters.process_cors(
-                  resource_args.cors_file_path)
-          })
+          bucket_resource,
+          self.client.put_bucket_cors,
+          {
+              'CORSConfiguration': xml_metadata_field_converters.process_cors(
+                  resource_args.cors_file_path
+              )
+          },
+      )
 
     if resource_args.labels_file_path:
       self._make_patch_request(
-          bucket_resource, self.client.put_bucket_tagging, {
-              'Tagging':
-                  s3_metadata_field_converters.process_labels(
-                      resource_args.labels_file_path)
-          })
+          bucket_resource,
+          self.client.put_bucket_tagging,
+          {
+              'Tagging': xml_metadata_field_converters.process_labels(
+                  resource_args.labels_file_path
+              )
+          },
+      )
 
     if resource_args.lifecycle_file_path:
       self._make_patch_request(
-          bucket_resource, self.client.put_bucket_lifecycle_configuration, {
-              'LifecycleConfiguration':
-                  s3_metadata_field_converters.process_lifecycle(
-                      resource_args.lifecycle_file_path),
-          })
+          bucket_resource,
+          self.client.put_bucket_lifecycle_configuration,
+          {
+              'LifecycleConfiguration': (
+                  xml_metadata_field_converters.process_lifecycle(
+                      resource_args.lifecycle_file_path
+                  )
+              ),
+          },
+      )
 
     # TODO(b/203088239): Fix patching so that all possible branches can be
     # tested.
     if resource_args.log_bucket or resource_args.log_object_prefix:
       self._make_patch_request(
-          bucket_resource, self.client.put_bucket_logging, {
-              'BucketLoggingStatus':
-                  s3_metadata_field_converters.process_logging(
-                      resource_args.log_bucket, resource_args.log_object_prefix)
-          })
+          bucket_resource,
+          self.client.put_bucket_logging,
+          {
+              'BucketLoggingStatus': (
+                  xml_metadata_field_converters.process_logging(
+                      resource_args.log_bucket, resource_args.log_object_prefix
+                  )
+              )
+          },
+      )
 
     if resource_args.requester_pays:
       self._make_patch_request(
-          bucket_resource, self.client.put_bucket_request_payment, {
-              'RequestPaymentConfiguration':
-                  s3_metadata_field_converters.process_requester_pays(
-                      resource_args.requester_pays)
-          })
+          bucket_resource,
+          self.client.put_bucket_request_payment,
+          {
+              'RequestPaymentConfiguration': (
+                  xml_metadata_field_converters.process_requester_pays(
+                      resource_args.requester_pays
+                  )
+              )
+          },
+      )
 
     if resource_args.versioning:
       self._make_patch_request(
-          bucket_resource, self.client.put_bucket_versioning, {
-              'VersioningConfiguration':
-                  s3_metadata_field_converters.process_versioning(
-                      resource_args.versioning)
-          })
+          bucket_resource,
+          self.client.put_bucket_versioning,
+          {
+              'VersioningConfiguration': (
+                  xml_metadata_field_converters.process_versioning(
+                      resource_args.versioning
+                  )
+              )
+          },
+      )
 
     if resource_args.web_error_page or resource_args.web_main_page_suffix:
       self._make_patch_request(
-          bucket_resource, self.client.put_bucket_website, {
-              'WebsiteConfiguration':
-                  s3_metadata_field_converters.process_website(
+          bucket_resource,
+          self.client.put_bucket_website,
+          {
+              'WebsiteConfiguration': (
+                  xml_metadata_field_converters.process_website(
                       resource_args.web_error_page,
-                      resource_args.web_main_page_suffix)
-          })
+                      resource_args.web_main_page_suffix,
+                  )
+              )
+          },
+      )
 
     return self.get_bucket(
         bucket_resource.storage_url.bucket_name, fields_scope=fields_scope)
 
   @_catch_client_error_raise_s3_api_error()
-  def copy_object(self,
-                  source_resource,
-                  destination_resource,
-                  request_config,
-                  should_deep_copy_metadata=False,
-                  progress_callback=None):
+  def copy_object(
+      self,
+      source_resource,
+      destination_resource,
+      request_config,
+      posix_to_set=None,
+      progress_callback=None,
+      should_deep_copy_metadata=False,
+  ):
     """See super class."""
     del progress_callback  # TODO(b/161900052): Implement resumable copies.
 
@@ -347,13 +390,16 @@ class S3Api(cloud_api.CloudApi):
       acl_file_path = getattr(request_config.resource_args, 'acl_file_path',
                               None)
       if acl_file_path:
-        acl_dict = s3_metadata_field_converters.process_acl_file(acl_file_path)
+        acl_dict = xml_metadata_field_converters.process_acl_file(acl_file_path)
       else:
         existing_acl_dict = self.client.get_object_acl(
             Bucket=destination_resource.storage_url.bucket_name,
             Key=destination_resource.storage_url.object_name)
-        acl_dict = s3_metadata_util.get_acl_policy_with_added_and_removed_grants(
-            existing_acl_dict, request_config)
+        acl_dict = (
+            xml_metadata_util.get_acl_policy_with_added_and_removed_grants(
+                existing_acl_dict, request_config
+            )
+        )
 
       put_acl_kwargs = {
           'Bucket': destination_resource.storage_url.bucket_name,
@@ -377,20 +423,25 @@ class S3Api(cloud_api.CloudApi):
 
     if should_deep_copy_metadata:
       copy_kwargs['MetadataDirective'] = 'REPLACE'
-      s3_metadata_util.copy_object_metadata(
-          s3_metadata_util.copy_object_metadata(
+      xml_metadata_util.copy_object_metadata(
+          xml_metadata_util.copy_object_metadata(
               destination_resource.metadata,
               source_resource.metadata,
-          ), copy_kwargs)
+          ),
+          copy_kwargs,
+      )
 
-    s3_metadata_util.update_object_metadata_dict_from_request_config(
-        copy_kwargs, request_config)
+    xml_metadata_util.update_object_metadata_dict_from_request_config(
+        copy_kwargs, request_config, posix_to_set=posix_to_set
+    )
     copy_response = self.client.copy_object(**copy_kwargs)
-    return s3_metadata_util.get_object_resource_from_s3_response(
+    return xml_metadata_util.get_object_resource_from_xml_response(
+        self.scheme,
         copy_response,
         copy_kwargs['Bucket'],
         copy_kwargs['Key'],
-        acl_dict=acl_dict)
+        acl_dict=acl_dict,
+    )
 
   @_catch_client_error_raise_s3_api_error()
   def delete_object(self, object_url, request_config):
@@ -536,10 +587,11 @@ class S3Api(cloud_api.CloudApi):
         acl_response.pop('ResponseMetadata', None)
         object_dict['ACL'] = acl_response
       except botocore.exceptions.ClientError as error:
-        object_dict['ACL'] = errors.S3ApiError(error)
+        object_dict['ACL'] = errors.XmlApiError(error)
 
-    return s3_metadata_util.get_object_resource_from_s3_response(
-        object_dict, bucket_name, object_name)
+    return xml_metadata_util.get_object_resource_from_xml_response(
+        self.scheme, object_dict, bucket_name, object_name
+    )
 
   def list_objects(self,
                    bucket_name,
@@ -575,22 +627,27 @@ class S3Api(cloud_api.CloudApi):
                 generation=object_dict.get('VersionId'),
                 fields_scope=fields_scope)
           else:
-            yield s3_metadata_util.get_object_resource_from_s3_response(
-                object_dict, bucket_name)
+            yield xml_metadata_util.get_object_resource_from_xml_response(
+                self.scheme, object_dict, bucket_name
+            )
         for prefix_dict in page.get('CommonPrefixes', []):
-          yield s3_metadata_util.get_prefix_resource_from_s3_response(
-              prefix_dict, bucket_name)
+          yield xml_metadata_util.get_prefix_resource_from_xml_response(
+              self.scheme, prefix_dict, bucket_name
+          )
     except botocore.exceptions.ClientError as error:
-      core_exceptions.reraise(errors.S3ApiError(error))
+      core_exceptions.reraise(errors.XmlApiError(error))
 
   @_catch_client_error_raise_s3_api_error()
-  def patch_object_metadata(self,
-                            bucket_name,
-                            object_name,
-                            object_resource,
-                            request_config,
-                            fields_scope=None,
-                            generation=None):
+  def patch_object_metadata(
+      self,
+      bucket_name,
+      object_name,
+      object_resource,
+      request_config,
+      fields_scope=None,
+      generation=None,
+      posix_to_set=None,
+  ):
     """See super class."""
     del fields_scope  # Unused.
     source_resource = self.get_object_metadata(
@@ -599,7 +656,9 @@ class S3Api(cloud_api.CloudApi):
         source_resource=source_resource,
         destination_resource=object_resource,
         request_config=request_config,
-        should_deep_copy_metadata=True)
+        posix_to_set=posix_to_set,
+        should_deep_copy_metadata=True,
+    )
 
   def _upload_using_managed_transfer_utility(self, source_stream,
                                              destination_resource, extra_args):
@@ -658,19 +717,25 @@ class S3Api(cloud_api.CloudApi):
     }
     kwargs.update(extra_args)
     response = self.client.put_object(**kwargs)
-    return s3_metadata_util.get_object_resource_from_s3_response(
-        response, destination_resource.storage_url.bucket_name,
-        destination_resource.storage_url.object_name)
+    return xml_metadata_util.get_object_resource_from_xml_response(
+        self.scheme,
+        response,
+        destination_resource.storage_url.bucket_name,
+        destination_resource.storage_url.object_name,
+    )
 
   @_catch_client_error_raise_s3_api_error()
-  def upload_object(self,
-                    source_stream,
-                    destination_resource,
-                    request_config,
-                    source_resource=None,
-                    serialization_data=None,
-                    tracker_callback=None,
-                    upload_strategy=cloud_api.UploadStrategy.SIMPLE):
+  def upload_object(
+      self,
+      source_stream,
+      destination_resource,
+      request_config,
+      posix_to_set=None,
+      serialization_data=None,
+      source_resource=None,
+      tracker_callback=None,
+      upload_strategy=cloud_api.UploadStrategy.SIMPLE,
+  ):
     """See super class."""
     del serialization_data, tracker_callback  # Unused.
 
@@ -686,10 +751,11 @@ class S3Api(cloud_api.CloudApi):
       if source_resource.custom_fields:
         extra_args['Metadata'] = source_resource.custom_fields
 
-    s3_metadata_util.update_object_metadata_dict_from_request_config(
+    xml_metadata_util.update_object_metadata_dict_from_request_config(
         extra_args,
         request_config,
         attributes_resource=source_resource,
+        posix_to_set=posix_to_set,
     )
 
     md5_hash = getattr(request_config.resource_args, 'md5_hash', None)

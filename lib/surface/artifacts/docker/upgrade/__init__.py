@@ -25,9 +25,7 @@ from googlecloudsdk.calliope import base
 class Upgrade(base.Group):
   """Commands to support Container Registry to Artifact Registry upgrade.
 
-  To print an equivalant Artifact Registry IAM policy for 'gcr.io/my-project'
-  within scope
-  `projects/my-project`:
+  To print an equivalent Artifact Registry IAM policy for 'gcr.io/my-project':
 
       $ {command} print-iam-policy gcr.io --project=my-project
   """

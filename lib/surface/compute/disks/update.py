@@ -32,8 +32,7 @@ from googlecloudsdk.command_lib.util.args import labels_util
 def _CommonArgs(messages,
                 cls,
                 parser,
-                support_user_licenses=False,
-                support_provisioned_throughput=False):
+                support_user_licenses=False):
   """Add arguments used for parsing in all command tracks."""
   cls.DISK_ARG = disks_flags.MakeDiskArg(plural=False)
   cls.DISK_ARG.AddArgument(parser, operation_type='update')
@@ -83,13 +82,11 @@ def _CommonArgs(messages,
       ),
   )
 
-  if support_provisioned_throughput:
-    parser.add_argument('--provisioned-throughput',
-                        type=arg_parsers.BoundedInt(),
-                        help=(
-                            'Provisioned throughput of disk to update. '
-                            'The throughput unit is  MB per sec. '
-                            'Only for use with disks of type hyperdisk-throughput'))
+  parser.add_argument('--provisioned-throughput',
+                      type=arg_parsers.BoundedInt(),
+                      help=(
+                          'Provisioned throughput of disk to update. '
+                          'The throughput unit is  MB per sec. '))
 
 
 def _LabelsFlagsIncluded(args):
@@ -125,8 +122,7 @@ class Update(base.UpdateCommand):
   def Args(cls, parser):
     messages = cls._GetApiHolder(no_http=True).client.messages
     _CommonArgs(
-        messages, cls, parser, False,
-        support_provisioned_throughput=False)
+        messages, cls, parser, False)
 
   @classmethod
   def _GetApiHolder(cls, no_http=False):
@@ -135,13 +131,11 @@ class Update(base.UpdateCommand):
   def Run(self, args):
     return self._Run(
         args,
-        support_user_licenses=False,
-        support_provisioned_throughput=False)
+        support_user_licenses=False)
 
   def _Run(self,
            args,
-           support_user_licenses=False,
-           support_provisioned_throughput=False):
+           support_user_licenses=False):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     client = holder.client.apitools_client
     messages = holder.client.messages
@@ -154,10 +148,7 @@ class Update(base.UpdateCommand):
 
     if (
         _ProvisionedIopsIncluded(args)
-        or (
-            support_provisioned_throughput
-            and _ProvisionedThroughputIncluded(args)
-        )
+        or _ProvisionedThroughputIncluded(args)
         or _ArchitectureFlagsIncluded(args)
         or (support_user_licenses and _UserLicensesFlagsIncluded(args))
     ):
@@ -194,7 +185,7 @@ class Update(base.UpdateCommand):
           disk_res.provisionedIops = args.provisioned_iops
           disk_update_request.paths.append('provisionedIops')
 
-      if support_provisioned_throughput and _ProvisionedThroughputIncluded(
+      if _ProvisionedThroughputIncluded(
           args):
         if args.provisioned_throughput:
           disk_res.provisionedThroughput = args.provisioned_throughput
@@ -244,8 +235,7 @@ class UpdateBeta(Update):
   def Args(cls, parser):
     messages = cls._GetApiHolder(no_http=True).client.messages
     _CommonArgs(
-        messages, cls, parser, support_user_licenses=True,
-        support_provisioned_throughput=False)
+        messages, cls, parser, support_user_licenses=True)
 
   @classmethod
   def _GetApiHolder(cls, no_http=False):
@@ -254,8 +244,7 @@ class UpdateBeta(Update):
   def Run(self, args):
     return self._Run(
         args,
-        support_user_licenses=True,
-        support_provisioned_throughput=False)
+        support_user_licenses=True)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -271,9 +260,7 @@ class UpdateAlpha(UpdateBeta):
         messages,
         cls,
         parser,
-        support_user_licenses=True,
-        support_provisioned_throughput=True,
-    )
+        support_user_licenses=True)
 
   @classmethod
   def _GetApiHolder(cls, no_http=False):
@@ -282,8 +269,7 @@ class UpdateAlpha(UpdateBeta):
   def Run(self, args):
     return self._Run(
         args,
-        support_user_licenses=True,
-        support_provisioned_throughput=True)
+        support_user_licenses=True)
 
 
 Update.detailed_help = {

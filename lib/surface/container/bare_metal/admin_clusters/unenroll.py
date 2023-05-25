@@ -49,6 +49,7 @@ class Unenroll(base.Command):
     cluster_flags.AddAllowMissingCluster(parser)
     base.ASYNC_FLAG.AddToParser(parser)
     cluster_flags.AddValidationOnly(parser)
+    cluster_flags.AddIgnoreErrors(parser)
 
   def Run(self, args):
     """Runs the unenroll command."""

@@ -1,5 +1,5 @@
 {
-  "CLI_VERSION": "2.0.92",
+  "CLI_VERSION": "2.0.93",
   "VERSION": "1",
   "capsule": "",
   "commands": {
@@ -89,7 +89,7 @@
       "positionals": [],
       "release": "GA",
       "sections": {
-        "DESCRIPTION": "Get the IAM policy for a resource.\n\nGets the IAM policy for a dataset or table resource,\nand prints it to stdout. The policy is in JSON\nformat.\n\nUsage: get-iam-policy <identifier>\n",
+        "DESCRIPTION": "Get the IAM policy for a resource.\n\nGets the IAM policy for a dataset, table or\nconnection resource, and prints it to stdout. The\npolicy is in JSON format.\n\nUsage: get-iam-policy <identifier>\n",
         "EXAMPLES": "bq get-iam-policy ds.table1\nbq get-iam-policy --project_id=proj -t ds.table1\nbq get-iam-policy proj:ds.table1\n"
       }
     },
@@ -338,7 +338,7 @@
       "positionals": [],
       "release": "GA",
       "sections": {
-        "DESCRIPTION": "Set the IAM policy for a resource.\n\nSets the IAM policy for a dataset or table resource.\nAfter setting the policy, the new policy is printed\nto stdout. Policies are in JSON format.\n\nIf the 'etag' field is present in the policy, it must\nmatch the value in the current policy, which can be\nobtained with 'bq get-iam-policy'. Otherwise this\ncommand will fail. This feature allows users to\nprevent concurrent updates.\n\nUsage: set-iam-policy <identifier> <filename>\n",
+        "DESCRIPTION": "Set the IAM policy for a resource.\n\nSets the IAM policy for a dataset, table or\nconnection resource. After setting the policy, the\nnew policy is printed to stdout. Policies are in JSON\nformat.\n\nIf the 'etag' field is present in the policy, it must\nmatch the value in the current policy, which can be\nobtained with 'bq get-iam-policy'. Otherwise this\ncommand will fail. This feature allows users to\nprevent concurrent updates.\n\nUsage: set-iam-policy <identifier> <filename>\n",
         "EXAMPLES": "bq set-iam-policy ds.table1 /tmp/policy.json\nbq set-iam-policy --project_id=proj -t ds.table1\n/tmp/policy.json\nbq set-iam-policy proj:ds.table1 /tmp/policy.json\n"
       }
     },
@@ -846,7 +846,7 @@
       "attr": {},
       "category": "",
       "default": "'false'",
-      "description": "Use a regional endpoint based on the operation's location. Regional endpoints are currently limited to the following locations: us-east4, us-west1.",
+      "description": "Use a regional endpoint based on the operation's location.",
       "group": "",
       "is_global": true,
       "is_hidden": false,

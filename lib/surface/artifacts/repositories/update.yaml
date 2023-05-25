@@ -26,6 +26,7 @@
         Description for the repository.
     - arg_name: immutable-tags
       type: bool
+      default: null
       api_field: repository.dockerConfig.immutableTags
       help_text: |
         (Docker only) Prevent changes to tagged images in the repository. Tags cannot be deleted or moved to a different image digest, and tagged images cannot be deleted.
@@ -38,7 +39,6 @@
     collection: artifactregistry.projects.locations.repositories
     modify_request_hooks:
     - googlecloudsdk.command_lib.artifacts.util:AppendUpstreamPoliciesToRequest
-    - googlecloudsdk.command_lib.artifacts.repository_util:RetainFormatConfigHook
 
   update:
     read_modify_update: true

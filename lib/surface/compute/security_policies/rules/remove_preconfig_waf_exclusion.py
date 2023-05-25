@@ -87,16 +87,28 @@ class RemovePreconfigWafExclusionHelper(object):
   @classmethod
   def Args(cls, parser, support_regional_security_policy):
     """Generates the flagset for a RemovePreconfigWafExclusion command."""
-    flags.AddPriority(
-        parser,
-        'remove the exclusion configuration for preconfigured WAF evaluation')
     if support_regional_security_policy:
+      cls.NAME_ARG = flags.PriorityArgument(
+          'remove the exclusion configuration for preconfigured WAF evaluation'
+      )
+      cls.NAME_ARG.AddArgument(
+          parser,
+          operation_type=(
+              'remove the exclusion configuration for preconfigured WAF'
+              ' evaluation'
+          ),
+          cust_metavar='PRIORITY',
+      )
       flags.AddRegionFlag(
           parser,
           'remove the exclusion configuration for preconfigured WAF evaluation')
       cls.SECURITY_POLICY_ARG = (
           security_policy_flags.SecurityPolicyMultiScopeArgumentForRules())
     else:
+      flags.AddPriority(
+          parser,
+          'remove the exclusion configuration for preconfigured WAF evaluation',
+      )
       cls.SECURITY_POLICY_ARG = (
           security_policy_flags.SecurityPolicyArgumentForRules())
     cls.SECURITY_POLICY_ARG.AddArgument(parser)
@@ -365,6 +377,7 @@ class RemovePreconfigWafExclusionGA(base.UpdateCommand):
   """
 
   SECURITY_POLICY_ARG = None
+  NAME_ARG = None
 
   _support_regional_security_policy = False
 

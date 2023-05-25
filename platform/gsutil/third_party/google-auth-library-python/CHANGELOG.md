@@ -4,6 +4,56 @@
 
 [1]: https://pypi.org/project/google-auth/#history
 
+## [2.17.3](https://github.com/googleapis/google-auth-library-python/compare/v2.17.2...v2.17.3) (2023-04-12)
+
+
+### Bug Fixes
+
+* Add useEmailAzp claim for id token iam flow ([#1270](https://github.com/googleapis/google-auth-library-python/issues/1270)) ([7a9c6f2](https://github.com/googleapis/google-auth-library-python/commit/7a9c6f2d90688e57583437c0872eb12dc5b0d833))
+
+## [2.17.2](https://github.com/googleapis/google-auth-library-python/compare/v2.17.1...v2.17.2) (2023-04-05)
+
+
+### Bug Fixes
+
+* Do not create new JWT credentials if they make the same claims as the existing. ([#1267](https://github.com/googleapis/google-auth-library-python/issues/1267)) ([eebb7b6](https://github.com/googleapis/google-auth-library-python/commit/eebb7b6630a7fc1e943a4d5f8fc76e9dd6dbe687))
+
+## [2.17.1](https://github.com/googleapis/google-auth-library-python/compare/v2.17.0...v2.17.1) (2023-03-30)
+
+
+### Bug Fixes
+
+* Print out reauth plugin error and raise if challenge output is None ([#1265](https://github.com/googleapis/google-auth-library-python/issues/1265)) ([08d22fe](https://github.com/googleapis/google-auth-library-python/commit/08d22fe805e0401c3a902ce96f9c3797e7f166b1))
+
+## [2.17.0](https://github.com/googleapis/google-auth-library-python/compare/v2.16.3...v2.17.0) (2023-03-28)
+
+
+### Features
+
+* Experimental service account iam endpoint flow for id token ([#1258](https://github.com/googleapis/google-auth-library-python/issues/1258)) ([8ff0de5](https://github.com/googleapis/google-auth-library-python/commit/8ff0de5f6c26c8778e24e57d6b7f449856357f81))
+
+
+### Bug Fixes
+
+* Python: Remove aws url validation ([#1254](https://github.com/googleapis/google-auth-library-python/issues/1254)) ([20a966b](https://github.com/googleapis/google-auth-library-python/commit/20a966bbbfc66932f471e0bfd191769f40332233))
+
+## [2.16.3](https://github.com/googleapis/google-auth-library-python/compare/v2.16.2...v2.16.3) (2023-03-24)
+
+
+### Bug Fixes
+
+* Read both applicationId and relyingPartyId. ([#1246](https://github.com/googleapis/google-auth-library-python/issues/1246)) ([e125dfe](https://github.com/googleapis/google-auth-library-python/commit/e125dfe1e345bf5f6cef4efee8215de129401c51))
+
+## [2.16.2](https://github.com/googleapis/google-auth-library-python/compare/v2.16.1...v2.16.2) (2023-03-02)
+
+
+### Bug Fixes
+
+* Call gcloud config get project to get project for user cred ([#1243](https://github.com/googleapis/google-auth-library-python/issues/1243)) ([c078a13](https://github.com/googleapis/google-auth-library-python/commit/c078a13f3d7a6bda69efab11f11c1120e20137ef))
+* Do not use hardcoded string 'python', when you mean sys.executable. ([#1233](https://github.com/googleapis/google-auth-library-python/issues/1233)) ([91ac8e6](https://github.com/googleapis/google-auth-library-python/commit/91ac8e66396fd2335f2be6e7b40dc5c4f6e47bc2))
+* Don't retry if error or error_description is not string ([#1241](https://github.com/googleapis/google-auth-library-python/issues/1241)) ([e2d263a](https://github.com/googleapis/google-auth-library-python/commit/e2d263a2e79a35e8cc90aa338780d07c3313dc76))
+* Improve ADC related errors and warnings ([#1237](https://github.com/googleapis/google-auth-library-python/issues/1237)) ([2dfa213](https://github.com/googleapis/google-auth-library-python/commit/2dfa21371185340404d5d739723a8cd434886e02))
+
 ## [2.16.1](https://github.com/googleapis/google-auth-library-python/compare/v2.16.0...v2.16.1) (2023-02-17)
 
 

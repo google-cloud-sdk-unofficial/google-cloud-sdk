@@ -111,9 +111,9 @@
                   required: true
                   type: "googlecloudsdk.calliope.arg_parsers:FileContents:"
                   help_text: |
-                    File path to an authentication key (.p8 file extension). This is
-                    generated in the Apple Developer Center under Certificates,
-                    Identifiers & Profiles.
+                    File path to a private key (downloaded as a text file with a .p8 file extension)
+                    generated for your Apple Developer account. Ensure that DeviceCheck is
+                    enabled for the private key.
                 - arg_name: key-id
                   api_field: googleCloudRecaptchaenterpriseV1Key.iosSettings.appleDeveloperId.keyId
                   required: true

@@ -21,6 +21,7 @@ from __future__ import unicode_literals
 from googlecloudsdk.api_lib.vmware.privateclouds import PrivateCloudsClient
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.vmware import flags
+from googlecloudsdk.core.resource import resource_projector
 
 DETAILED_HELP = {
     'DESCRIPTION':
@@ -56,10 +57,21 @@ class List(base.ListCommand):
         'table(name.segment(-1):label=NAME,'
         'name.segment(-5):label=PROJECT,'
         'name.segment(-3):label=LOCATION,'
-        'createTime,state,vcenter.fqdn:label=VCENTER_FQDN)')
+        'createTime,state,vcenter.fqdn:label=VCENTER_FQDN,type,'
+        'managementCluster.stretchedClusterConfig.preferredLocation:'
+        'label=PREFERRED_ZONE,'
+        'managementCluster.stretchedClusterConfig.secondaryLocation:'
+        'label=SECONDARY_ZONE)')
 
   def Run(self, args):
     location = args.CONCEPTS.location.Parse()
 
     client = PrivateCloudsClient()
-    return client.List(location)
+    items = client.List(location)
+    for item in items:
+      private_cloud = resource_projector.MakeSerializable(item)
+      if not private_cloud.get('type'):
+        private_cloud['type'] = (
+            client.messages.PrivateCloud.TypeValueValuesEnum.STANDARD
+        )
+      yield private_cloud

@@ -24,17 +24,19 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute.interconnects.remote_locations import flags
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Describe(base.DescribeCommand):
-  """Describe a Compute Engine interconnect remote location.
+  """Describe a Google Compute Engine interconnect remote location."""
 
-    Displays all data associated with Compute Engine
-    interconnect remote location in a project.
+  detailed_help = {
+      'DESCRIPTION': """\
+              Displays all data associated with Google Compute Engine interconnect remote location in a project.
+        """,
+      'EXAMPLES': """\
+        Example of usage:
 
-    Example of usage:
-
-      $ {command} my-remote-location
-  """
+          $ {command} my-remote-location
+        """,
+  }
 
   INTERCONNECT_REMOTE_LOCATION_ARG = None
 

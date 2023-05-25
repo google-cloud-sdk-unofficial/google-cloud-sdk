@@ -26,6 +26,7 @@ from googlecloudsdk.command_lib.compute import scope as compute_scope
 from googlecloudsdk.command_lib.compute.security_policies import flags as security_policy_flags
 from googlecloudsdk.command_lib.compute.security_policies.rules import flags
 from googlecloudsdk.core import properties
+from googlecloudsdk.core import resources
 
 
 class DescribeHelper(object):
@@ -42,17 +43,21 @@ class DescribeHelper(object):
   """
 
   SECURITY_POLICY_ARG = None
+  NAME_ARG = None
 
   @classmethod
   def Args(cls, parser, support_regional_security_policy, support_net_lb):
     """Generates the flagset for a Describe command."""
-    flags.AddPriority(parser, 'describe')
     if support_regional_security_policy or support_net_lb:
+      cls.NAME_ARG = (flags.PriorityArgument('describe'))
+      cls.NAME_ARG.AddArgument(
+          parser, operation_type='describe', cust_metavar='PRIORITY')
       flags.AddRegionFlag(parser, 'describe')
       cls.SECURITY_POLICY_ARG = (
           security_policy_flags.SecurityPolicyMultiScopeArgumentForRules()
       )
     else:
+      flags.AddPriority(parser, 'describe')
       cls.SECURITY_POLICY_ARG = (
           security_policy_flags.SecurityPolicyArgumentForRules()
       )
@@ -66,26 +71,50 @@ class DescribeHelper(object):
     holder = base_classes.ComputeApiHolder(release_track)
     ref = None
     if support_regional_security_policy or support_net_lb:
-      security_policy_ref = cls.SECURITY_POLICY_ARG.ResolveAsResource(
-          args, holder.resources, default_scope=compute_scope.ScopeEnum.GLOBAL
-      )
-      if getattr(security_policy_ref, 'region', None) is not None:
-        ref = holder.resources.Parse(
-            args.name,
-            collection='compute.regionSecurityPolicyRules',
-            params={
-                'project': properties.VALUES.core.project.GetOrFail,
-                'region': security_policy_ref.region,
-                'securityPolicy': args.security_policy,
-            })
+      if args.security_policy:
+        security_policy_ref = cls.SECURITY_POLICY_ARG.ResolveAsResource(
+            args,
+            holder.resources,
+            default_scope=compute_scope.ScopeEnum.GLOBAL)
+        if getattr(security_policy_ref, 'region', None) is not None:
+          ref = holder.resources.Parse(
+              args.name,
+              collection='compute.regionSecurityPolicyRules',
+              params={
+                  'project': properties.VALUES.core.project.GetOrFail,
+                  'region': security_policy_ref.region,
+                  'securityPolicy': args.security_policy,
+              })
+        else:
+          ref = holder.resources.Parse(
+              args.name,
+              collection='compute.securityPolicyRules',
+              params={
+                  'project': properties.VALUES.core.project.GetOrFail,
+                  'securityPolicy': args.security_policy,
+              },
+          )
       else:
-        ref = holder.resources.Parse(
-            args.name,
-            collection='compute.securityPolicyRules',
-            params={
-                'project': properties.VALUES.core.project.GetOrFail,
-                'securityPolicy': args.security_policy
-            })
+        try:
+          ref = holder.resources.Parse(
+              args.name,
+              collection='compute.regionSecurityPolicyRules',
+              params={
+                  'project': properties.VALUES.core.project.GetOrFail,
+                  'region': getattr(args, 'region', None),
+              },
+          )
+        except (
+            resources.RequiredFieldOmittedException,
+            resources.WrongResourceCollectionException,
+        ):
+          ref = holder.resources.Parse(
+              args.name,
+              collection='compute.securityPolicyRules',
+              params={
+                  'project': properties.VALUES.core.project.GetOrFail,
+              },
+          )
     else:
       ref = holder.resources.Parse(
           args.name,

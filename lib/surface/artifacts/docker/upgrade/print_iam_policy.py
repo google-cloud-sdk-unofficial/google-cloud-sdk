@@ -30,56 +30,24 @@ class PrintIamPolicy(base.Command):
   Print an Artifact Registry IAM policy that is equivalent to the IAM policy
   applied to the storage bucket for the specified Container Registry hostname.
   Apply the returned policy to the Artifact Registry repository that will
-  replace the specified host. By default, this command only considers IAM
-  policies within the
-  project-level scope, so policies that are at the folder or organization level
-  will not be included in the generated policy. To change the scope, use the
-  --organization or --folder flags.
+  replace the specified host. If the project has an organization, this command
+  analyzes IAM policies at the organization level. Otherwise, this command
+  analyzes IAM policies at the project level. See required permissions at
+  https://cloud.google.com/policy-intelligence/docs/analyze-iam-policies#required-permissions.
   """
 
   detailed_help = {
       'DESCRIPTION': '{description}',
       'EXAMPLES': """\
-  To print an equivalant Artifact Registry IAM policy for 'gcr.io/my-project' within scope
-  `projects/my-project`:
+  To print an equivalent Artifact Registry IAM policy for 'gcr.io/my-project':
 
       $ {command} upgrade print-iam-policy gcr.io --project=my-project
-
-  To print an equivalant Artifact Registry IAM policy for 'gcr.io/my-project' within scope
-  `folders/123`:
-
-      $ {command} upgrade print-iam-policy gcr.io --project=my-project
-      --folder=123
-
-  To print an equivalant Artifact Registry IAM policy for 'gcr.io/my-project' within scope
-  `organizations/123`:
-
-      $ {command} upgrade print-iam-policy gcr.io --project=my-project
-      --organization=123
   """,
   }
 
   @staticmethod
   def Args(parser):
     flags.GetGCRDomainArg().AddToParser(parser)
-    scope_group = parser.add_mutually_exclusive_group()
-    scope_group.add_argument(
-        '--organization',
-        metavar='ORGANIZATION_ID',
-        help=(
-            'Organization ID on which to scope IAM analysis. Only policies'
-            ' defined at or below this organization will be included in the'
-            ' analysis.'
-        ),
-    )
-    scope_group.add_argument(
-        '--folder',
-        metavar='FOLDER_ID',
-        help=(
-            'Folder ID on which to scope IAM analysis. Only policies defined at'
-            ' or below this folder will be included in the analysis.'
-        ),
-    )
 
   def Run(self, args):
     """Runs the command.
@@ -93,9 +61,4 @@ class PrintIamPolicy(base.Command):
     """
     domain = args.DOMAIN
     project = util.GetProject(args)
-    parent = 'projects/{0}'.format(project)
-    if args.IsSpecified('folder'):
-      parent = 'folders/{0}'.format(args.folder)
-    if args.IsSpecified('organization'):
-      parent = 'organizations/{0}'.format(args.organization)
-    return upgrade_util.iam_policy(domain, project, parent)
+    return upgrade_util.iam_policy(domain, project)

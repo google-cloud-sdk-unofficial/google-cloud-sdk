@@ -20,9 +20,10 @@ import calendar
 import datetime
 import sys
 
-from google.auth import exceptions
 import six
 from six.moves import urllib
+
+from google.auth import exceptions
 
 # Token server doesn't provide a new a token when doing refresh unless the
 # token is expiring within 30 seconds, so refresh threshold should not be

@@ -53,10 +53,12 @@ class CreateV1(base.CreateCommand):
     flags.GetDisplayNameArg('index endpoint').AddToParser(parser)
     flags.GetDescriptionArg('index endpoint').AddToParser(parser)
     flags.GetNetworkArg().AddToParser(parser)
+    flags.GetPublicEndpointEnabledArg().AddToParser(parser)
     labels_util.AddCreateLabelsFlags(parser)
 
   def _Run(self, args, version):
     validation.ValidateDisplayName(args.display_name)
+    validation.ValidateEndpointArgs(args.network, args.public_endpoint_enabled)
     region_ref = args.CONCEPTS.region.Parse()
     region = region_ref.AsDict()['locationsId']
     with endpoint_util.AiplatformEndpointOverrides(version, region=region):

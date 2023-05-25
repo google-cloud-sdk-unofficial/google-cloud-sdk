@@ -45,13 +45,13 @@ DETAILED_HELP = {
 }
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Delete(base.DeleteCommand):
   """Delete a Firewall Plus endpoint."""
 
-  @staticmethod
-  def Args(parser):
-    activation_flags.AddEndpointResource(parser)
+  @classmethod
+  def Args(cls, parser):
+    activation_flags.AddEndpointResource(cls.ReleaseTrack(), parser)
     activation_flags.AddMaxWait(parser, '60m')  # default to 60 minutes wait.
     base.ASYNC_FLAG.AddToParser(parser)
     base.ASYNC_FLAG.SetDefault(parser, True)

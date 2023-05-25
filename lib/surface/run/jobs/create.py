@@ -93,7 +93,8 @@ class Create(base.Command):
     flags.AddAsyncFlag(polling_group)
 
     execute_group = polling_group.add_argument_group(
-        help='--async cannot be used if executing the job after the update.')
+        help='--async cannot be used if executing the job after the update.'
+    )
     flags.AddWaitForCompletionFlag(execute_group, implies_execute_now=True)
 
     flags.AddExecuteNowFlag(execute_group)
@@ -145,7 +146,7 @@ class Create(base.Command):
         )
         if execute_now:
           execution = operations.RunJob(
-              job_ref, args, tracker, self.ReleaseTrack()
+              job_ref, tracker, args.wait, args.async_, self.ReleaseTrack()
           )
 
       if args.async_ and not execute_now:

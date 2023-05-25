@@ -43,13 +43,13 @@ DETAILED_HELP = {
 }
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Describe(base.DescribeCommand):
   """Describe a Firewall Plus endpoint."""
 
-  @staticmethod
-  def Args(parser):
-    activation_flags.AddEndpointResource(parser)
+  @classmethod
+  def Args(cls, parser):
+    activation_flags.AddEndpointResource(cls.ReleaseTrack(), parser)
 
   def Run(self, args):
     client = activation_api.Client(self.ReleaseTrack())
