@@ -36,9 +36,12 @@
 
     params:
     - arg_name: start-time
+      type: googlecloudsdk.core.util.times:ParseDateTime
+      processor: googlecloudsdk.core.util.times:FormatDateTime
       api_field: startTime
       help_text: |
-        Time at which the updated SecurityMarks take effect. For example 2019-02-28T07:00:00Z
+        Time at which the updated SecurityMarks take effect. See `$ gcloud topic datetimes` for
+        information on supported time formats.
     - arg_name: security-marks
       api_field: securityMarks
       help_text: |

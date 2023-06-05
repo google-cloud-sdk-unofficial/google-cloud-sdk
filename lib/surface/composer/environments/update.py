@@ -309,6 +309,8 @@ class Update(base.Command):
         'dag-processor-count': args.dag_processor_count,
         'dag-processor-storage': args.dag_processor_storage,
         'disable-vpc-connectivity': args.disable_vpc_connectivity,
+        'enable-private-environment': args.enable_private_environment,
+        'disable-private-environment': args.disable_private_environment,
         'network': args.network,
         'subnetwork': args.subnetwork,
     }
@@ -359,6 +361,10 @@ class Update(base.Command):
 
     if args.support_web_server_plugins is not None:
       params['support_web_server_plugins'] = args.support_web_server_plugins
+    if args.enable_private_environment is not None:
+      params['enable_private_environment'] = args.enable_private_environment
+    if args.disable_private_environment is not None:
+      params['disable_private_environment'] = args.disable_private_environment
     params['dag_processor_count'] = dag_processor_count
     params['dag_processor_cpu'] = dag_processor_cpu
     params['dag_processor_memory_gb'] = dag_processor_memory_gb

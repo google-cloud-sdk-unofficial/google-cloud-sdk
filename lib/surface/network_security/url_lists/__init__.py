@@ -26,3 +26,4 @@ from googlecloudsdk.calliope import base
 )
 class UrlLists(base.Group):
   """Manage Network Security Url Lists."""
+  category = base.NETWORK_SECURITY_CATEGORY

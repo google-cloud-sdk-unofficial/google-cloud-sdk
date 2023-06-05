@@ -117,6 +117,7 @@ for examples.
   flags.AddAdditionalNodeNetworkFlag(parser, hidden=True)
   flags.AddAdditionalPodNetworkFlag(parser, hidden=True)
   flags.AddAsyncFlag(parser)
+  flags.AddSoleTenantNodeAffinityFileFlag(parser, hidden=True)
 
 
 def ParseCreateNodePoolOptionsBase(args):
@@ -188,7 +189,8 @@ def ParseCreateNodePoolOptionsBase(args):
       logging_variant=args.logging_variant,
       windows_os_version=args.windows_os_version,
       additional_node_network=args.additional_node_network,
-      additional_pod_network=args.additional_pod_network)
+      additional_pod_network=args.additional_pod_network,
+      sole_tenant_node_affinity_file=args.sole_tenant_node_affinity_file)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
@@ -239,6 +241,7 @@ class Create(base.CreateCommand):
     flags.AddLoggingVariantFlag(parser, for_node_pool=True)
     flags.AddWindowsOsVersionFlag(parser)
     flags.AddPlacementTypeFlag(parser, for_node_pool=True, hidden=False)
+    flags.AddBestEffortProvisionFlags(parser)
 
   def ParseCreateNodePoolOptions(self, args):
     ops = ParseCreateNodePoolOptionsBase(args)
@@ -246,6 +249,8 @@ class Create(base.CreateCommand):
     ops.network_performance_config = args.network_performance_configs
     ops.disable_pod_cidr_overprovision = args.disable_pod_cidr_overprovision
     ops.placement_type = args.placement_type
+    ops.enable_best_effort_provision = args.enable_best_effort_provision
+    ops.min_provision_nodes = args.min_provision_nodes
     return ops
 
   def Run(self, args):
@@ -351,7 +356,7 @@ class CreateBeta(Create):
     flags.AddEnableFastSocketFlag(parser)
     flags.AddLoggingVariantFlag(parser, for_node_pool=True)
     flags.AddWindowsOsVersionFlag(parser)
-    flags.AddBestEffortProvisionFlags(parser, hidden=True)
+    flags.AddBestEffortProvisionFlags(parser, hidden=False)
     flags.AddQueuedProvisioningFlag(parser, hidden=True)
     flags.AddTPUTopologyFlag(parser, hidden=True)
     flags.AddEnableNestedVirtualizationFlag(
@@ -471,7 +476,7 @@ class CreateAlpha(Create):
     flags.AddEnableFastSocketFlag(parser)
     flags.AddLoggingVariantFlag(parser, for_node_pool=True)
     flags.AddWindowsOsVersionFlag(parser)
-    flags.AddBestEffortProvisionFlags(parser, hidden=True)
+    flags.AddBestEffortProvisionFlags(parser, hidden=False)
     flags.AddQueuedProvisioningFlag(parser, hidden=True)
     flags.AddTPUTopologyFlag(parser, hidden=True)
     flags.AddEnableNestedVirtualizationFlag(parser, hidden=True)

@@ -27,12 +27,14 @@ from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 
 
-def _Run(args, legacy_output=False):
+def _Run(args, legacy_output=False, enable_no_wrapper_support=False):
   """Modifies the push config for a subscription."""
   client = subscriptions.SubscriptionsClient()
 
   subscription_ref = args.CONCEPTS.subscription.Parse()
-  push_config = util.ParsePushConfig(args)
+  push_config = util.ParsePushConfig(
+      args, enable_no_wrapper_support=enable_no_wrapper_support
+  )
   result = client.ModifyPushConfig(subscription_ref, push_config)
 
   log.UpdatedResource(subscription_ref.RelativeName(), kind='subscription')
@@ -45,14 +47,20 @@ def _Run(args, legacy_output=False):
     return result
 
 
+def _Args(parser, enable_no_wrapper_support=False):
+  resource_args.AddSubscriptionResourceArg(parser, 'to modify.')
+  flags.AddPushConfigFlags(
+      parser, required=True, enable_no_wrapper_support=enable_no_wrapper_support
+  )
+
+
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class ModifyPushConfig(base.Command):
   """Modifies the push configuration of a Cloud Pub/Sub subscription."""
 
   @classmethod
   def Args(cls, parser):
-    resource_args.AddSubscriptionResourceArg(parser, 'to modify.')
-    flags.AddPushConfigFlags(parser, required=True)
+    _Args(parser)
 
   def Run(self, args):
     return _Run(args)
@@ -62,6 +70,12 @@ class ModifyPushConfig(base.Command):
 class ModifyPushConfigBeta(ModifyPushConfig):
   """Modifies the push configuration of a Cloud Pub/Sub subscription."""
 
+  @classmethod
+  def Args(cls, parser):
+    _Args(parser, enable_no_wrapper_support=True)
+
   def Run(self, args):
     legacy_output = properties.VALUES.pubsub.legacy_output.GetBool()
-    return _Run(args, legacy_output=legacy_output)
+    return _Run(
+        args, legacy_output=legacy_output, enable_no_wrapper_support=True
+    )

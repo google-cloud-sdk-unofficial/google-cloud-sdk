@@ -110,16 +110,6 @@ class Create(base.Command):
         help='Datascan scheduling and trigger settings'
     )
     trigger.add_argument(
-        '--disabled',
-        type=bool,
-        help=(
-            'Prevent the scan from executing (including both scheduled scans'
-            ' and scans triggered via RunDataScan API). This does not cancel'
-            ' currently running scan jobs. If not specified, the default is'
-            ' false.'
-        ),
-    )
-    trigger.add_argument(
         '--on-demand',
         type=bool,
         help='If set, the scan runs one-time shortly after Datascan Creation.',

@@ -28,3 +28,5 @@ class SecurityProfiles(base.Group):
   Manage Network Security - Security Profiles.
 
   """
+
+  category = base.NETWORK_SECURITY_CATEGORY

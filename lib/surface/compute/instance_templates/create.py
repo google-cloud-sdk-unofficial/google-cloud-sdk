@@ -933,6 +933,7 @@ class Create(base.CreateCommand):
   _support_local_ssd_size = True
   _support_network_queue_count = True
   _support_performance_monitoring_unit = False
+  _support_internal_ipv6_reservation = True
 
   @classmethod
   def Args(cls, parser):
@@ -982,6 +983,7 @@ class Create(base.CreateCommand):
         support_region_instance_template=self._support_region_instance_template,
         support_replica_zones=self._support_replica_zones,
         support_performance_monitoring_unit=self._support_performance_monitoring_unit,
+        support_internal_ipv6_reservation=self._support_internal_ipv6_reservation,
     )
 
 
@@ -1015,6 +1017,7 @@ class CreateBeta(Create):
   _support_local_ssd_size = True
   _support_network_queue_count = True
   _support_performance_monitoring_unit = False
+  _support_internal_ipv6_reservation = True
 
   @classmethod
   def Args(cls, parser):
@@ -1067,6 +1070,7 @@ class CreateBeta(Create):
         support_replica_zones=self._support_replica_zones,
         support_local_ssd_recovery_timeout=self._support_local_ssd_recovery_timeout,
         support_performance_monitoring_unit=self._support_performance_monitoring_unit,
+        support_internal_ipv6_reservation=self._support_internal_ipv6_reservation,
     )
 
 
@@ -1101,6 +1105,7 @@ class CreateAlpha(Create):
   _support_network_queue_count = True
   _support_local_ssd_size = True
   _support_performance_monitoring_unit = True
+  _support_internal_ipv6_reservation = True
 
   @classmethod
   def Args(cls, parser):
@@ -1161,6 +1166,7 @@ class CreateAlpha(Create):
         support_replica_zones=self._support_replica_zones,
         support_local_ssd_recovery_timeout=self._support_local_ssd_recovery_timeout,
         support_performance_monitoring_unit=self._support_performance_monitoring_unit,
+        support_internal_ipv6_reservation=self._support_internal_ipv6_reservation,
     )
 
 

@@ -30,8 +30,7 @@ from googlecloudsdk.core import properties
 from googlecloudsdk.core import resources
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
-                    base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Create(base.CreateCommand):
   """Creates a new AlloyDB instance within a given cluster."""
 
@@ -77,6 +76,13 @@ class Create(base.CreateCommand):
     # TODO(b/185795425): Add --ssl-required and --labels later once we
     # understand the use cases
 
+  def ConstructCreateRequestFromArgs(
+      self, client, alloydb_messages, cluster_ref, args
+  ):
+    return instance_helper.ConstructCreateRequestFromArgsGA(
+        client, alloydb_messages, cluster_ref, args
+    )
+
   def Run(self, args):
     """Constructs and sends request.
 
@@ -95,8 +101,9 @@ class Create(base.CreateCommand):
         projectsId=properties.VALUES.core.project.GetOrFail,
         locationsId=args.region,
         clustersId=args.cluster)
-    req = instance_helper.ConstructCreateRequestFromArgs(
-        client, alloydb_messages, cluster_ref, args)
+    req = self.ConstructCreateRequestFromArgs(
+        client, alloydb_messages, cluster_ref, args
+    )
     op = alloydb_client.projects_locations_clusters_instances.Create(req)
     op_ref = resources.REGISTRY.ParseRelativeName(
         op.name, collection='alloydb.projects.locations.operations')
@@ -105,3 +112,20 @@ class Create(base.CreateCommand):
       instance_operations.Await(op_ref, 'Creating instance',
                                 self.ReleaseTrack())
     return op
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+class CreateAlphaBeta(Create):
+  """Creates a new AlloyDB instance within a given cluster."""
+
+  @classmethod
+  def Args(cls, parser):
+    super(CreateAlphaBeta, CreateAlphaBeta).Args(parser)
+    flags.AddSSLMode(parser)
+
+  def ConstructCreateRequestFromArgs(
+      self, client, alloydb_messages, cluster_ref, args
+  ):
+    return instance_helper.ConstructCreateRequestFromArgsAlphaBeta(
+        client, alloydb_messages, cluster_ref, args
+    )

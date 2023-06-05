@@ -10,7 +10,6 @@ from __future__ import unicode_literals
 
 import json
 import os
-import sys
 
 
 import bootstrapping
@@ -151,10 +150,7 @@ def main():
 
   # Note that the original args to gsutil will be appended after the args we've
   # supplied here.
-  if sys.version_info.major == 2:
-    bootstrapping.ExecutePythonTool('platform/gsutil_py2', 'gsutil', *args)
-  else:
-    bootstrapping.ExecutePythonTool('platform/gsutil', 'gsutil', *args)
+  bootstrapping.ExecutePythonTool('platform/gsutil', 'gsutil', *args)
 
 
 if __name__ == '__main__':

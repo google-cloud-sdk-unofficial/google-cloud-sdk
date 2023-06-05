@@ -12,16 +12,26 @@
 
       $ {command} my-table --instance=my-instance --no-deletion-protection
 
+      To enable a change stream with a retention period of 1 day, or to update your table's change stream retention period to 1 day, run:
+
+      $ {command} my-table --instance=my-instance --change-stream-retention-period=1d
+
+      To disable a change stream, run:
+
+      $ {command} my-table --instance=my-instance --clear-change-stream-retention-period
+
   request:
     collection: bigtableadmin.projects.instances.tables
     method: patch
     modify_request_hooks:
-    - googlecloudsdk.api_lib.bigtable.tables:RefreshUpdateMask
+    - googlecloudsdk.api_lib.bigtable.tables:HandleChangeStreamArgs
+    - googlecloudsdk.api_lib.bigtable.tables:RefreshUpdateMaskAlpha
 
   arguments:
     resource:
       help_text: Cloud Bigtable table to update.
       spec: !REF googlecloudsdk.command_lib.bigtable.resources:table
+    additional_arguments_hook: googlecloudsdk.api_lib.bigtable.tables:AddChangeStreamConfigUpdateTableParams
     params:
     - api_field: table.deletionProtection
       arg_name: deletion-protection
@@ -49,8 +59,6 @@
   request:
     collection: bigtableadmin.projects.instances.tables
     method: patch
-    modify_request_hooks:
-    - googlecloudsdk.api_lib.bigtable.tables:RefreshUpdateMask
 
   arguments:
     resource:

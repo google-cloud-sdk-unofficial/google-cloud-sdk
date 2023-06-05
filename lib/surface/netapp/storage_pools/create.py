@@ -30,6 +30,11 @@ def _CommonArgs(parser, release_track):
   storagepools_flags.AddStoragePoolCreateArgs(
       parser, release_track=release_track
   )
+  if release_track == base.ReleaseTrack.BETA:
+    storagepools_flags.AddStoragePoolNetworkArg(parser)
+    storagepools_flags.AddStoragePoolActiveDirectoryArg(parser)
+    storagepools_flags.AddStoragePoolKmsConfigArg(parser)
+    storagepools_flags.AddStoragePoolEnableLdapArg(parser)
 
 
 # TODO(b/239613419):
@@ -59,6 +64,10 @@ class CreateBeta(base.CreateCommand):
     storage_pool = client.ParseStoragePoolConfig(
         name=storagepool_ref.RelativeName(),
         service_level=service_level,
+        network=args.network,
+        active_directory=args.active_directory,
+        kms_config=args.kms_config,
+        enable_ldap=args.enable_ldap,
         capacity=capacity_in_gib,
         description=args.description,
         labels=labels,

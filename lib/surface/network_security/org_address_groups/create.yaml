@@ -1,4 +1,4 @@
-release_tracks: [ALPHA, BETA]
+release_tracks: [ALPHA, BETA, GA]
 
 help_text:
   brief: |
@@ -8,7 +8,7 @@ help_text:
   examples: |
     Create an address group with the name ``my-address-group'', type ``IPV4'', capacity ``100'' and the description ``optional description''.
 
-      $ {command} my-address-group --type=IPV4 --capacity 100 --description="optional description" --organization 1234
+      $ {command} my-address-group --type=IPV4 --capacity=100 --description="optional description" --organization=1234
 
 arguments:
   resource:
@@ -54,5 +54,7 @@ request: &request
     api_version: v1alpha1
   BETA:
     api_version: v1beta1
+  GA:
+    api_version: v1
   collection: networksecurity.organizations.locations.addressGroups
   method: create

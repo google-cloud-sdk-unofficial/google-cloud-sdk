@@ -29,12 +29,12 @@ import six
 
 DETAILED_HELP = {
     'EXAMPLES': """\
-      To run a manual database failover on the environment named ``environment-1'', run: $ {command} environment-1
+      To run a manual database failover on the environment named ``environment-1'', run:
+      $ {command} environment-1
     """
 }
 
 
-@base.Hidden
 class DatabaseFailover(base.Command):
   """Run a database failover operation."""
 

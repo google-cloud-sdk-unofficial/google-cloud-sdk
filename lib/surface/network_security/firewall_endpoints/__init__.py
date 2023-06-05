@@ -24,3 +24,4 @@ from googlecloudsdk.calliope import base
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class FirewallEndpoints(base.Group):
   """Create and manage Firewall Plus endpoints."""
+  category = base.NETWORK_SECURITY_CATEGORY

@@ -66,3 +66,4 @@ class SecurityProfileGroups(base.Group):
       --threat-prevention-profile=`organizations/1234/locations/global/securityProfiles/my-new-security-profile`
       --description='New Security Profile of type threat prevention'
   """
+  category = base.NETWORK_SECURITY_CATEGORY

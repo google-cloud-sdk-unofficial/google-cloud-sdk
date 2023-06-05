@@ -21,7 +21,7 @@ from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.app import browser_dispatcher
 
-VERIFY_DOMAINS_URL = ('https://www.google.com/webmasters/verification/'
+VERIFY_DOMAINS_URL = ('https://search.google.com/search-console/welcome/'
                       'verification?authuser=0&domain={domain}&pli=1')
 
 

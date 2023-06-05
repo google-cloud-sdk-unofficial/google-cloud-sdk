@@ -1,4 +1,4 @@
-release_tracks: [ALPHA, BETA]
+release_tracks: [ALPHA, BETA, GA]
 
 help_text:
   brief: |
@@ -9,7 +9,7 @@ help_text:
   examples: |
     Add an item to an address group named ``my-address-group'' of organization 1234.
 
-      $ {command} my-address-group --items=192.168.1.1 --organization 1234
+      $ {command} my-address-group --items=192.168.1.1 --organization=1234
 
 arguments:
   resource:
@@ -28,6 +28,8 @@ request: &request
     api_version: v1alpha1
   BETA:
     api_version: v1beta1
+  GA:
+    api_version: v1
   method: addItems
   collection: networksecurity.organizations.locations.addressGroups
 

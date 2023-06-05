@@ -25,6 +25,6 @@
       table(
         name.basename():sort=1,
         name.scope(workstationConfigs).segment(0):label='CONFIG',
-        state.sub("STATE_", ""),
+        state.sub("STATE_", ""):optional,
         createTime.date()
       )

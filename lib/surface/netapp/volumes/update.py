@@ -97,7 +97,6 @@ class UpdateBeta(base.UpdateCommand):
         share_name=args.share_name,
         export_policy=args.export_policy,
         capacity=capacity_in_gib,
-        network=args.network,
         unix_permissions=args.unix_permissions,
         smb_settings=smb_settings,
         snapshot_policy=snapshot_policy,
@@ -105,7 +104,6 @@ class UpdateBeta(base.UpdateCommand):
         snapshot_directory=args.snapshot_directory,
         security_style=security_style,
         enable_kerberos=args.enable_kerberos,
-        enable_ldap=args.enable_ldap,
         snapshot=args.from_snapshot)
 
     updated_fields = []
@@ -115,8 +113,6 @@ class UpdateBeta(base.UpdateCommand):
       updated_fields.append('capacityGib')
     if args.IsSpecified('storage_pool'):
       updated_fields.append('storagePool')
-    if args.IsSpecified('network'):
-      updated_fields.append('network')
     if args.IsSpecified('share_name'):
       updated_fields.append('shareName')
     if args.IsSpecified('export_policy'):
@@ -140,8 +136,6 @@ class UpdateBeta(base.UpdateCommand):
       updated_fields.append('securityStyle')
     if args.IsSpecified('enable_kerberos'):
       updated_fields.append('kerberosEnabled')
-    if args.IsSpecified('enable_ldap'):
-      updated_fields.append('ldapEnabled')
     if args.IsSpecified('from_snapshot'):
       updated_fields.append('restoreParameters')
     if args.IsSpecified('description'):
@@ -223,7 +217,6 @@ class UpdateAlpha(base.UpdateCommand):
         share_name=args.share_name,
         export_policy=args.export_policy,
         capacity=capacity_in_gib,
-        network=args.network,
         unix_permissions=args.unix_permissions,
         smb_settings=smb_settings,
         snapshot_policy=snapshot_policy,
@@ -231,7 +224,6 @@ class UpdateAlpha(base.UpdateCommand):
         snapshot_directory=args.snapshot_directory,
         security_style=security_style,
         enable_kerberos=args.enable_kerberos,
-        enable_ldap=args.enable_ldap,
         snapshot=args.from_snapshot)
 
     updated_fields = []
@@ -241,8 +233,6 @@ class UpdateAlpha(base.UpdateCommand):
       updated_fields.append('capacityGib')
     if args.IsSpecified('storage_pool'):
       updated_fields.append('storagePool')
-    if args.IsSpecified('network'):
-      updated_fields.append('network')
     if args.IsSpecified('share_name'):
       updated_fields.append('shareName')
     if args.IsSpecified('export_policy'):
@@ -266,8 +256,6 @@ class UpdateAlpha(base.UpdateCommand):
       updated_fields.append('securityStyle')
     if args.IsSpecified('enable_kerberos'):
       updated_fields.append('kerberosEnabled')
-    if args.IsSpecified('enable_ldap'):
-      updated_fields.append('ldapEnabled')
     if args.IsSpecified('from_snapshot'):
       updated_fields.append('restoreParameters')
     if args.IsSpecified('description'):

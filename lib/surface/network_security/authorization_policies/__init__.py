@@ -25,3 +25,4 @@ from googlecloudsdk.calliope import base
                     base.ReleaseTrack.GA)
 class AuthorizationPolicies(base.Group):
   """Manage Network Security AuthorizationPolicies."""
+  category = base.NETWORK_SECURITY_CATEGORY

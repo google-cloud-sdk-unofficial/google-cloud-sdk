@@ -26,6 +26,12 @@ from googlecloudsdk.command_lib.util.args import labels_util
 from googlecloudsdk.core import log
 
 
+def _CommonArgs(parser, release_track):
+  storagepools_flags.AddStoragePoolUpdateArgs(parser)
+  if release_track == base.ReleaseTrack.BETA:
+    storagepools_flags.AddStoragePoolActiveDirectoryArg(parser)
+
+
 # TODO(b/239613419):
 # Keep gcloud beta netapp group hidden until v1beta1 API stable
 # also restructure release tracks that GA \subset BETA \subset ALPHA once
@@ -39,7 +45,7 @@ class UpdateBeta(base.UpdateCommand):
 
   @staticmethod
   def Args(parser):
-    storagepools_flags.AddStoragePoolUpdateArgs(parser)
+    _CommonArgs(parser, UpdateBeta._RELEASE_TRACK)
 
   def Run(self, args):
     """Update a Cloud NetApp Storage Pool in the current project."""
@@ -66,6 +72,8 @@ class UpdateBeta(base.UpdateCommand):
     updated_fields = []
     if args.IsSpecified('capacity'):
       updated_fields.append('capacityGib')
+    if args.IsSpecified('active_directory'):
+      updated_fields.append('activeDirectory')
     if args.IsSpecified('description'):
       updated_fields.append('description')
     if (
@@ -98,7 +106,7 @@ class UpdateAlpha(base.UpdateCommand):
 
   @staticmethod
   def Args(parser):
-    storagepools_flags.AddStoragePoolUpdateArgs(parser)
+    _CommonArgs(parser, UpdateAlpha._RELEASE_TRACK)
 
   def Run(self, args):
     """Update a Cloud NetApp Storage Pool in the current project."""

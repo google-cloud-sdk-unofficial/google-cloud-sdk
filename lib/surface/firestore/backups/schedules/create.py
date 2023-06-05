@@ -41,7 +41,7 @@ class Create(base.CreateCommand):
 
   @staticmethod
   def Args(parser):
-    flags.AddRequiredDatabaseIdFlag(parser)
+    flags.AddDatabaseIdFlag(parser, required=True, hidden=True)
     flags.AddRetentionFlag(parser, required=True)
     flags.AddRecurrenceFlag(parser)
 

@@ -28,6 +28,9 @@ from googlecloudsdk.core import log
 
 def _CommonArgs(parser, release_track):
   volumes_flags.AddVolumeCreateArgs(parser, release_track=release_track)
+  if release_track == base.ReleaseTrack.ALPHA:
+    volumes_flags.AddVolumeNetworkArg(parser)
+    volumes_flags.AddVolumeEnableLdapArg(parser)
 
 
 # TODO(b/239613419):
@@ -87,7 +90,6 @@ class CreateBeta(base.CreateCommand):
         description=args.description,
         labels=labels,
         storage_pool=args.storage_pool,
-        network=args.network,
         protocols=protocols,
         share_name=args.share_name,
         export_policy=args.export_policy,
@@ -98,7 +100,6 @@ class CreateBeta(base.CreateCommand):
         snapshot_directory=args.snapshot_directory,
         security_style=security_style,
         enable_kerberos=args.enable_kerberos,
-        enable_ldap=args.enable_ldap,
         snapshot=args.from_snapshot)
     result = client.CreateVolume(volume_ref, args.async_, volume)
     if args.async_:

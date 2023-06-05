@@ -86,6 +86,7 @@ class Create(base.CreateCommand):
     flags.AddDescription(parser)
     flags.AddConnectionPreference(parser, is_update=False)
     flags.AddEnableProxyProtocolForCreate(parser)
+    flags.AddReconcileConnectionsForCreate(parser)
     flags.AddConsumerRejectList(parser)
     flags.AddConsumerAcceptList(parser)
     flags.AddDomainNames(parser)
@@ -128,6 +129,8 @@ class Create(base.CreateCommand):
       service_attachment.consumerAcceptLists = accept_list
     if args.IsSpecified('domain_names'):
       service_attachment.domainNames = args.domain_names
+    if args.IsSpecified('reconcile_connections'):
+      service_attachment.reconcileConnections = args.reconcile_connections
 
     request = client.messages.ComputeServiceAttachmentsInsertRequest(
         project=service_attachment_ref.project,

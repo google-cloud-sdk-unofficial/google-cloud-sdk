@@ -69,10 +69,10 @@ To load a CSAF security advisory file given an artifact with a tag and a file on
   def Run(self, args):
     """Run the generic artifact upload command."""
     self.ca_client = apis.GetClientInstance('containeranalysis', 'v1')
-    self.ca_messages = apis.GetMessagesModule('containeranalysis', 'v1')
+    self.ca_messages = self.ca_client.MESSAGES_MODULE
     project = args.project
     if project is None:
-      project = properties.VALUES.core.project
+      project = properties.VALUES.core.project.Get(required=True)
     uri = args.uri
     filename = args.source
     notes = ParseVexFile(filename, uri)

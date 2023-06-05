@@ -30,6 +30,7 @@ from googlecloudsdk.command_lib.compute import flags as compute_flags
 from googlecloudsdk.command_lib.compute.commitments import flags
 from googlecloudsdk.command_lib.compute.commitments import reservation_helper
 from googlecloudsdk.core import properties
+from googlecloudsdk.generated_clients.apis.compute.v1 import compute_v1_messages
 
 
 _MISSING_COMMITMENTS_QUOTA_REGEX = r'Quota .COMMITMENTS. exceeded.+'
@@ -124,12 +125,25 @@ class Create(base.Command):
         batch_url=batch_url,
         errors=errors))
     for i, error in enumerate(errors):
-      if re.match(_MISSING_COMMITMENTS_QUOTA_REGEX, error[1]):
+      if isinstance(
+          error[1],
+          compute_v1_messages.Operation.ErrorValue.ErrorsValueListEntry,
+      ):
+        err_msg = error[1].message
+      else:
+        err_msg = error[1]
+
+      if re.match(_MISSING_COMMITMENTS_QUOTA_REGEX, err_msg):
         errors[i] = (
             error[0],
-            error[1] + (' You can request commitments quota on '
-                        'https://cloud.google.com/compute/docs/instances/'
-                        'signing-up-committed-use-discounts#quota'))
+            err_msg
+            + (
+                ' You can request commitments quota on '
+                'https://cloud.google.com/compute/docs/instances/'
+                'signing-up-committed-use-discounts#quota'
+            ),
+        )
+
     if errors:
       utils.RaiseToolException(errors)
     return result

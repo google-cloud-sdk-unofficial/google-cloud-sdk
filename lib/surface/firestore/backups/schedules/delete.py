@@ -41,7 +41,7 @@ class Delete(base.DeleteCommand):
   @staticmethod
   def Args(parser):
     """Set args for gcloud firestore backups schedules delete."""
-    flags.AddRequiredDatabaseIdFlag(parser)
+    flags.AddDatabaseIdFlag(parser, required=True, hidden=True)
     flags.AddBackupScheduleFlag(parser)
 
   def Run(self, args):

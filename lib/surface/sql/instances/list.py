@@ -32,12 +32,16 @@ def _GetUriFromResource(resource):
   """Returns the URI for resource."""
   client = api_util.SqlClient(api_util.API_VERSION_DEFAULT)
   return client.resource_parser.Create(
-      'sql.instances', project=resource.project,
-      instance=resource.name).SelfLink()
+      'sql.instances', project=resource.project, instance=resource.name
+  ).SelfLink()
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA,
-                    base.ReleaseTrack.ALPHA)
+def AddBetaArgs(parser):
+  """Adds base args and flags to the parser."""
+  flags.AddShowSqlNetworkArchitecture(parser)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class List(base.ListCommand):
   """Lists Cloud SQL instances in a given project.
 
@@ -55,10 +59,45 @@ class List(base.ListCommand):
 
     Args:
       args: argparse.Namespace, The arguments that this command was invoked
-          with.
+        with.
 
     Returns:
       SQL instance resource iterator.
     """
     return instances.InstancesV1Beta4.GetDatabaseInstances(
-        limit=args.limit, batch_size=args.page_size)
+        limit=args.limit, batch_size=args.page_size
+    )
+
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
+class ListBeta(base.ListCommand):
+  """Lists Cloud SQL instances in a given project.
+
+  Lists Cloud SQL instances in a given project in the alphabetical
+  order of the instance name.
+  """
+
+  @staticmethod
+  def Args(parser):
+    """Args is called by calliope to gather arguments for this command."""
+    AddBetaArgs(parser)
+    parser.display_info.AddFormat(flags.GetInstanceListFormat())
+    parser.display_info.AddUriFunc(_GetUriFromResource)
+
+  def Run(self, args):
+    """Lists Cloud SQL instances in a given project.
+
+    Args:
+      args: argparse.Namespace, The arguments that this command was invoked
+        with.
+
+    Returns:
+      SQL instance resource iterator.
+    """
+    if args.show_sql_network_architecture:
+      args.GetDisplayInfo().AddFormat(
+          flags.GetInstanceListFormatForNetworkArchitectureUpgrade()
+      )
+    return instances.InstancesV1Beta4.GetDatabaseInstances(
+        limit=args.limit, batch_size=args.page_size
+    )

@@ -54,7 +54,7 @@ table(
 """
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class List(base.ListCommand):
   """List Firewall Plus endpoint associations."""
 
@@ -65,7 +65,7 @@ class List(base.ListCommand):
         association_flags.MakeGetUriFunc(cls.ReleaseTrack())
     )
     association_flags.AddZoneArg(
-        parser, required=False, help_text='The zone for a list operation'
+        parser, required=False, help_text='Zone for the list operation'
     )
 
   def Run(self, args):

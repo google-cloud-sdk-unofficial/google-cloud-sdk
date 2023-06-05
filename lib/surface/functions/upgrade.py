@@ -50,82 +50,85 @@ _ABORT_GUIDANCE_MSG = (
 _SETUP_CONFIG_ACTION = UpgradeAction(
     target_state='SETUP_FUNCTION_UPGRADE_CONFIG_SUCCESSFUL',
     prompt_msg=(
-        'This will duplicate the code and configuration of 1st gen function'
-        ' [{}] to the 2nd gen environment. This will not affect production'
-        ' traffic. Billing and performance of the 2nd gen function may differ.'
-        ' To learn more about the differences between 1st gen and 2nd'
-        ' functions, visit:'
+        'This will duplicate the code and configuration of the 1st gen function'
+        '  [{}] to a 2nd gen function. The 1st gen function will continue to'
+        ' serve traffic until you redirect traffic to its 2nd gen copy in the'
+        ' next step. \n\nTo learn more about the differences between 1st gen'
+        ' and 2nd gen functions, visit:'
         ' https://cloud.google.com/functions/docs/concepts/version-comparison'
     ),
     op_description=(
-        'Setting up the upgrade config and copying the function to the 2nd'
-        ' gen environment'
+        'Setting up the upgrade for function. Please wait while we'
+        ' duplicate the 1st gen function configuration and code to a 2nd gen'
+        ' function.'
     ),
     success_msg=(
-        'Your 2nd gen function copy is now ready for testing. View the'
-        ' function upgrade testing guide for ideas on how to test your'
-        ' function before redirecting production traffic to it.'
-        # TODO(b/265016036): Link to the user test guide for upgrade.
-        '\n\nOnce you are ready to redirect production traffic, rerun this'
-        ' command with the --redirect-traffic flag.'
-    ) + '\n\n' + _ABORT_GUIDANCE_MSG,
+        'The 2nd gen function is now ready for testing. View the function'
+        ' upgrade testing guide for steps on how to test the function before'
+        ' redirecting traffic to it.\n\nOnce you are ready to redirect traffic,'
+        ' rerun this command with the --redirect-traffic flag.'
+    )
+    + '\n\n'
+    + _ABORT_GUIDANCE_MSG,
 )
 
 _REDIRECT_TRAFFIC_ACTION = UpgradeAction(
     target_state='REDIRECT_FUNCTION_UPGRADE_TRAFFIC_SUCCESSFUL',
     prompt_msg=(
-        'This will redirect all production traffic from 1st gen function [{}]'
-        ' to its 2nd gen function copy. Please ensure you have tested the 2nd'
-        ' gen function before proceeding.'
+        'This will redirect all traffic from the 1st gen function [{}] to its'
+        ' 2nd gen copy. Please ensure that you have tested the 2nd gen function'
+        ' before proceeding.'
     ),
-    op_description='Redirecting traffic to your 2nd gen function',
+    op_description='Redirecting traffic to the 2nd gen function.',
     success_msg=(
-        'Your 2nd gen function is now serving all of your production traffic.'
+        'The 2nd gen function is now serving all traffic.'
         ' If you experience issues, rerun this command with the'
         ' --rollback-traffic flag. Otherwise, once you are ready to finalize'
         ' the upgrade, rerun this command with the --commit flag.'
-    ) + '\n\n' + _ABORT_GUIDANCE_MSG,
+    )
+    + '\n\n'
+    + _ABORT_GUIDANCE_MSG,
 )
 
 _ROLLBACK_TRAFFIC_ACTION = UpgradeAction(
     target_state='SETUP_FUNCTION_UPGRADE_CONFIG_SUCCESSFUL',
     prompt_msg=(
-        'This will rollback all production traffic from 2nd gen function [{}]'
-        ' to the original 1st gen function copy. Your 2nd gen function copy'
-        ' will still be available for manual testing.'
+        'This will rollback all traffic from the 2nd gen copy [{}] to the'
+        ' original 1st gen function. The 2nd gen function is still available'
+        ' for testing.'
     ),
-    op_description='Rolling back traffic to your 1st gen function',
+    op_description='Rolling back traffic to the 1st gen function.',
     success_msg=(
-        'Your 1st gen function is now serving all of your production traffic.'
-        ' Once you are ready to redirect traffic to the 2nd gen function copy,'
-        ' rerun this command with the --redirect-traffic flag.'
-    ) + '\n\n' + _ABORT_GUIDANCE_MSG,
+        'The 1st gen function is now serving all traffic. The 2nd'
+        ' gen function is still available for testing.'
+    )
+    + '\n\n'
+    + _ABORT_GUIDANCE_MSG,
 )
 
 _ABORT_ACTION = UpgradeAction(
     target_state='ELIGIBLE_FOR_2ND_GEN_UPGRADE',
     prompt_msg=(
-        'This will abort the generation upgrade process and delete the 2nd gen'
-        ' function copy for 1st gen function [{}].'
+        'This will abort the upgrade process and delete the 2nd gen copy of'
+        ' the 1st gen function [{}].'
     ),
-    op_description='Aborting the function upgrade',
+    op_description='Aborting the upgrade for function.',
     success_msg=(
-        'The 2nd gen function copy and configuration were successfully deleted.'
+        'Upgrade aborted and the 2nd gen function was successfully deleted.'
     ),
 )
 
 _COMMIT_ACTION = UpgradeAction(
     target_state=None,
     prompt_msg=(
-        'This will finish the upgrade process for function [{}] and permanently'
-        ' delete the original 1st gen function copy. This action cannot be'
-        ' undone.'
+        'This will complete the upgrade process for function [{}] and delete'
+        ' the 1st gen copy.\n\nThis action cannot be undone.'
     ),
     op_description=(
-        'Committing the function upgrade and deleting the 1st gen function copy'
+        'Completing the upgrade and deleting the 1st gen copy for function.'
     ),
     success_msg=(
-        'The 1st gen function copy and configuration were successfully deleted.'
+        'Upgrade completed and the 1st gen copy was successfully deleted.'
     ),
 )
 
@@ -191,24 +194,23 @@ class UpgradeAlpha(base.Command):
   detailed_help = {
       'DESCRIPTION': '{description}',
       'EXAMPLES': """\
-          To start the upgrade process for a 1st gen function `foo` and create a 2nd gen function copy, run:
+          To start the upgrade process for a 1st gen function `foo` and create a 2nd gen copy, run:
 
             $ {command} foo
 
-          Once you are ready to redirect production traffic to the 2nd gen function copy, run:
+          Once you are ready to redirect traffic to the 2nd gen copy, run:
 
             $ {command} foo --redirect-traffic
 
-          If you find you need to do more local testing you can rollback
-          production traffic to the 1st gen function copy:
+          If you find you need to do more local testing you can rollback traffic to the 1st gen copy:
 
             $ {command} foo --rollback-traffic
 
-          Once you're ready to finish upgrading and delete the 1st gen function copy, run:
+          Once you're ready to finish upgrading and delete the 1st gen copy, run:
 
             $ {command} foo --commit
 
-          You can abort the generation upgrade process at any time by running:
+          You can abort the upgrade process at any time by running:
 
             $ {command} foo --abort
           """,

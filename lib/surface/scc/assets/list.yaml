@@ -68,11 +68,8 @@
     additional_arguments_hook: googlecloudsdk.command_lib.scc.hooks:AppendParentArg
 
     params:
-    - arg_name: compare-duration
-      api_field: compareDuration
-      help_text: |
-        ListAssetResult's "state" attribute is updated to indicate whether the asset was added, removed, or remained present during the compare_duration period of time that precedes the read_time.
-        Example duration: "100000s"
+    - !REF googlecloudsdk.command_lib.scc.flags:read_time
+    - !REF googlecloudsdk.command_lib.scc.assets.flags:compare_duration
 
     - arg_name: field-mask
       api_field: fieldMask
@@ -85,12 +82,6 @@
       help_text: |
         Expression that defines what fields and order to use for sorting.
         Example order by: "resource_properties.sort_prop ASC"
-
-    - arg_name: read-time
-      api_field: readTime
-      help_text: |
-        Time used as a reference point when filtering assets. Default: NOW
-        Example read time: "2019-02-28T07:00:06.861Z"
 
     - arg_name: page-token
       api_field: pageToken

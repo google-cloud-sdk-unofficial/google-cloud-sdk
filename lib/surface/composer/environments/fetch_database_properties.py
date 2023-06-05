@@ -24,12 +24,12 @@ from googlecloudsdk.command_lib.composer import resource_args
 
 DETAILED_HELP = {
     'EXAMPLES': """\
-      To fetch database properties for the environment named ``environment-1'', run: $ {command} environment-1
+      To fetch database properties for the environment named ``environment-1'', run:
+      $ {command} environment-1
     """
 }
 
 
-@base.Hidden
 class FetchDatabaseProperties(base.Command):
   """Fetch database properties."""
 

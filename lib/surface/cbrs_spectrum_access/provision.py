@@ -21,6 +21,7 @@ from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.spectrum_access import sas_portal_api
 from googlecloudsdk.calliope import base
+from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 from googlecloudsdk.core.console import console_io
@@ -45,9 +46,8 @@ class Provision(base.DescribeCommand):
         required=False,
         help=(
             'The display name to use in case a new SAS Portal organization'
-            ' needs to be created. If not set, a default display name of the'
-            ' form "Cloud organizations/[ID]" will be used where ID is the'
-            ' current Cloud Platform Organization ID.'
+            ' needs to be created. If creating a deployment under an existing'
+            ' organization then the organization-id flag must be set instead.'
         ),
     )
     parser.add_argument(
@@ -56,12 +56,41 @@ class Provision(base.DescribeCommand):
         help=(
             'The display name to use in case a new SAS Portal deployment needs'
             ' to be created. If not set, a default display name of the form'
-            ' "Cloud [ID]" will be used where ID is the current Cloud Platform'
+            ' "[ID]" will be used where ID is the current Cloud Platform'
             ' Project ID.'
+        ),
+    )
+    parser.add_argument(
+        '--organization-id',
+        required=False,
+        type=int,
+        help=(
+            'The id of the organization to create a new deployment under.'
+            ' If left empty a new organization will be created with the name'
+            ' entered via the organization-name flag. Either this or'
+            ' organization-name must be set.'
         ),
     )
 
   def Run(self, args):
+    if not args.organization_name and not args.organization_id:
+      raise exceptions.OneOfArgumentsRequiredException(
+          ['organization-name', 'organization-id'],
+          'Either organization-name or organization-id must be set. Use'
+          ' organization-name when creating a new organization and'
+          ' organization-id when create a deployment under an existing'
+          ' organization.',
+      )
+
+    if args.organization_name and args.organization_id:
+      raise exceptions.InvalidArgumentException(
+          'organization-name, organization-id',
+          'Either organization-name or organization-id must be set but not'
+          ' both. Use organization-name when creating a new organization and'
+          ' organization-id when create a deployment under an existing'
+          ' organization.',
+      )
+
     log.status.Print(
         'This command will enable the Spectrum Access System'
         ' and create a new SAS deployment for your'
@@ -81,6 +110,7 @@ class Provision(base.DescribeCommand):
     req = message_module.SasPortalProvisionDeploymentRequest()
     req.newOrganizationDisplayName = args.organization_name
     req.newDeploymentDisplayName = args.deployment_name
+    req.organizationId = args.organization_id
 
     result = client.ProvisionDeployment(req)
     if not result.errorMessage:

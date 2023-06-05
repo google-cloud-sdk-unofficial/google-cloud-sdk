@@ -86,3 +86,4 @@ class ThreatPrevention(base.Group):
 
       $ {command} delete my-security-profile
   """
+  category = base.NETWORK_SECURITY_CATEGORY

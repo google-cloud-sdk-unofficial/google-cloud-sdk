@@ -19,6 +19,7 @@ from __future__ import division
 from __future__ import unicode_literals
 
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.run import cancellation
 from googlecloudsdk.command_lib.run import connection_context
 from googlecloudsdk.command_lib.run import flags
 from googlecloudsdk.command_lib.run import pretty_print
@@ -55,6 +56,7 @@ class Cancel(base.Command):
         'Execution to cancel.',
         required=True,
         prefixes=False)
+    flags.AddAsyncFlag(parser, default_async_for_cluster=True, is_job=True)
     concept_parsers.ConceptParser([execution_presentation]).AddToParser(parser)
 
   @staticmethod
@@ -74,9 +76,15 @@ class Cancel(base.Command):
     )
 
     with serverless_operations.Connect(conn_context) as client:
-      client.CancelExecution(ex_ref)
-    pretty_print.Success(
-        'Execution [{}] is being cancelled asynchronously.'.format(
-            ex_ref.executionsId
-        )
-    )
+      cancellation.Cancel(
+          ex_ref, client.GetExecution, client.CancelExecution, args.async_
+      )
+    if args.async_:
+      pretty_print.Success(
+          'Cancel in progress for execution [{}]. It can take up to 1 minute.'
+          .format(ex_ref.executionsId)
+      )
+    else:
+      pretty_print.Success(
+          'Cancelled execution [{}].'.format(ex_ref.executionsId)
+      )

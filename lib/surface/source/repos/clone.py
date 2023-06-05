@@ -23,6 +23,7 @@ from googlecloudsdk.api_lib.source import sourcerepo
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions as c_exc
 from googlecloudsdk.core import log
+from googlecloudsdk.core import properties
 from googlecloudsdk.core.credentials import store as c_store
 
 
@@ -96,6 +97,9 @@ class CloneGA(base.Command):
     Returns:
       The path to the new git repository.
     """
+    # disable self signed jwt due to b/284002516
+    properties.VALUES.auth.service_account_use_self_signed_jwt.Set(False)
+
     # Ensure that we're logged in.
     c_store.Load(use_google_auth=True)
 

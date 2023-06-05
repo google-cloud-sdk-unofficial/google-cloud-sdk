@@ -41,7 +41,7 @@ class Describe(base.DescribeCommand):
 
   @staticmethod
   def Args(parser):
-    flags.AddLocationFlag(parser)
+    flags.AddLocationFlag(parser, required=True)
     flags.AddBackupFlag(parser)
 
   def Run(self, args):

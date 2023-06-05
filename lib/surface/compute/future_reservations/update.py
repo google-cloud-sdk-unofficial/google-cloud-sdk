@@ -58,7 +58,8 @@ class Update(base.UpdateCommand):
     fr_flags.AddUpdateFlags(parser,
                             support_fleet=True,
                             support_planning_status=True,
-                            support_local_ssd_count=True)
+                            support_local_ssd_count=True,
+                            support_share_setting=True)
 
   def _ValidateArgs(self, update_mask):
     """Validates that at least one field to update is specified.
@@ -71,7 +72,8 @@ class Update(base.UpdateCommand):
       parameter_names = [
           '--planning-status', '--total-count', '--min-cpu-platform',
           '--local-ssd', '--accelerator', '--maintenance-interval',
-          '--start-time', '--end-time', '--duration', '--machine-type'
+          '--start-time', '--end-time', '--duration', '--machine-type',
+          '--share-setting', '--share-with', '--clear-share-settings'
       ]
       raise exceptions.MinimumArgumentException(
           parameter_names, 'Please specify at least one property to update')
@@ -115,10 +117,18 @@ class Update(base.UpdateCommand):
     if args.IsSpecified('duration'):
       update_mask.append('timeWindow.duration')
 
+    if (
+        args.IsSpecified('clear_share_settings')
+        or args.IsSpecified('share_setting')
+        or args.IsSpecified('share_with')
+    ):
+      update_mask.append('shareSettings')
+
     self._ValidateArgs(update_mask=update_mask)
 
     fr_resource = util.MakeFutureReservationMessageFromArgs(
-        messages, resources, args, fr_ref)
+        messages, resources, args, fr_ref
+    )
 
     # Build update request.
     fr_update_request = messages.ComputeFutureReservationsUpdateRequest(

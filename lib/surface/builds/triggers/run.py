@@ -19,6 +19,7 @@ from __future__ import division
 from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.cloudbuild import cloudbuild_util
+from googlecloudsdk.api_lib.cloudbuild import trigger_config as trigger_utils
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.cloudbuild import resource_args
 from googlecloudsdk.command_lib.util.concepts import concept_parsers
@@ -47,10 +48,11 @@ class Run(base.Command):
         'Build Trigger.',
         required=True).AddToParser(parser)
 
-    revision_config = parser.add_mutually_exclusive_group(required=True)
+    revision_config = parser.add_mutually_exclusive_group()
     revision_config.add_argument('--branch', help='Branch to run.')
     revision_config.add_argument('--tag', help='Tag to run.')
     revision_config.add_argument('--sha', help='SHA to run.')
+    trigger_utils.AddSubstitutions(parser)
 
   def Run(self, args):
     """Runs a build trigger.
@@ -88,6 +90,12 @@ class Run(base.Command):
       request.source = messages.RepoSource(tagName=args.tag)
     elif args.sha:
       request.source = messages.RepoSource(commitSha=args.sha)
+
+    if args.substitutions:
+      if request.source is None:
+        request.source = messages.RepoSource()
+      request.source.substitutions = cloudbuild_util.EncodeTriggerSubstitutions(
+          args.substitutions, messages.RepoSource.SubstitutionsValue)
 
     return client.projects_locations_triggers.Run(
         client.MESSAGES_MODULE.CloudbuildProjectsLocationsTriggersRunRequest(

@@ -144,7 +144,11 @@ class List(base.ListCommand):
 
 
 def _IncludeMetadata(args):
-  default_occ_filter = 'kind="BUILD" OR kind="IMAGE" OR kind="DISCOVERY"'
+  default_occ_filter = (
+      'kind="BUILD" OR kind="IMAGE" OR kind="DISCOVERY" OR'
+      ' kind="SBOM_REFERENCE"'
+  )
+
   return args.show_occurrences or (
       # Assume the user wants to see occurrences if they explicitly filter.
       args.occurrence_filter and args.occurrence_filter != default_occ_filter

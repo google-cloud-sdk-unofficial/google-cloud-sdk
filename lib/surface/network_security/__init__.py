@@ -26,7 +26,7 @@ from googlecloudsdk.calliope import base
 class NetworkSecurity(base.Group):
   """Manage Network Security resources."""
 
-  category = base.NETWORKING_CATEGORY
+  category = base.NETWORK_SECURITY_CATEGORY
 
   def Filter(self, context, args):
     # TODO(b/190537848):  Determine if command group works with project number

@@ -26,3 +26,4 @@ from googlecloudsdk.calliope import base
 )
 class TlsInspectionPolicies(base.Group):
   """Manage Network Security TLS Inspection Policies."""
+  category = base.NETWORK_SECURITY_CATEGORY

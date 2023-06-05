@@ -33,23 +33,21 @@ DETAILED_HELP = {
             To get a description of a firewall endpoint association called
             `my-association`, run:
 
-            $ {command} my-association --zone=us-central1-a --project=my-project
-
-            OR
-
-            $ {command} projects/my-project/locations/us-central1-a/firewallEndpointAssociations/my-association
+              $ {command} my-association --zone=us-central1-a --project=my-project
+              OR
+              $ {command} projects/my-project/locations/us-central1-a/firewallEndpointAssociations/my-association
 
         """,
 }
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Describe(base.DescribeCommand):
   """Describe a Firewall Plus endpoint association."""
 
-  @staticmethod
-  def Args(parser):
-    association_flags.AddAssociationResource(parser)
+  @classmethod
+  def Args(cls, parser):
+    association_flags.AddAssociationResource(cls.ReleaseTrack(), parser)
 
   def Run(self, args):
     client = association_api.Client(self.ReleaseTrack())

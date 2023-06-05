@@ -153,6 +153,8 @@
         enum_value: CENTOS_STREAM
       - arg_value: ROCKY
         enum_value: ROCKY
+      - arg_value: EPEL
+        enum_value: EPEL
     - arg_name: remote-yum-repo-path
       api_field: repository.remoteRepositoryConfig.yumRepository.publicRepository.repositoryPath
       hidden: true

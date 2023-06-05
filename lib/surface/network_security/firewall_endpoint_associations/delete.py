@@ -30,28 +30,24 @@ DETAILED_HELP = {
           `gcloud network-security firewall-endpoint-associations list`.
 
           For more examples, refer to the EXAMPLES section below.
-
         """,
     'EXAMPLES': """
-            To unassociate a network from a firewall, run:
+          To unassociate a network from a firewall, run:
 
-            $ {command} my-association --zone=us-central1-a --project=my-project
-
+            $ {command} my-assoc --zone=us-central1-a --project=my-project
             OR
-
             $ {command} projects/my-project/locations/us-central1-a/firewallEndpointAssociations/my-association
-
         """,
 }
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Delete(base.DeleteCommand):
   """Delete a Firewall Plus endpoint association."""
 
-  @staticmethod
-  def Args(parser):
-    association_flags.AddAssociationResource(parser)
+  @classmethod
+  def Args(cls, parser):
+    association_flags.AddAssociationResource(cls.ReleaseTrack(), parser)
     association_flags.AddMaxWait(parser, '60m')  # default to 60 minutes wait.
     base.ASYNC_FLAG.AddToParser(parser)
     base.ASYNC_FLAG.SetDefault(parser, True)

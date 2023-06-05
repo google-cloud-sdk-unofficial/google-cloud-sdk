@@ -74,6 +74,7 @@ class Update(base.UpdateCommand):
     flags.AddDescription(parser)
     flags.AddConnectionPreference(parser, is_update=True)
     flags.AddEnableProxyProtocolForUpdate(parser)
+    flags.AddReconcileConnectionsForUpdate(parser)
     flags.AddConsumerRejectList(parser)
     flags.AddConsumerAcceptList(parser)
 
@@ -164,6 +165,11 @@ class Update(base.UpdateCommand):
         if not new_accept_list:
           # The user can clear up the accept list
           cleared_fields.append('consumerAcceptLists')
+
+    if args.IsSpecified('reconcile_connections'):
+      if args.reconcile_connections != old_resource.reconcileConnections:
+        replacement.reconcileConnections = args.reconcile_connections
+        is_updated = True
 
     if is_updated:
       return replacement

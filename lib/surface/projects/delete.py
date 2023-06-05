@@ -68,10 +68,15 @@ class Delete(base.DeleteCommand):
   def Run(self, args):
     project_ref = command_lib_util.ParseProject(args.id)
     if self.ReleaseTrack() == base.ReleaseTrack.ALPHA and args.recommend:
+      # Projects command group explicitly disables user project quota.
+      # Call with user project quota enabled, so that
+      # default project can be used as quota project.
+      base.EnableUserProjectQuota()
       prompt_message = smart_guardrails.GetProjectDeletionRisk(
           base.ReleaseTrack.GA,
           project_ref.Name(),
       )
+      base.DisableUserProjectQuota()
     else:
       prompt_message = 'Your project will be deleted.'
     if not console_io.PromptContinue(prompt_message):

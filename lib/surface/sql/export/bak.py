@@ -65,6 +65,8 @@ class Bak(base.Command):
         database_help_text=flags.SQLSERVER_DATABASE_LIST_EXPORT_HELP_TEXT)
     flags.AddBakExportStripeCountArgument(parser)
     flags.AddBakExportStripedArgument(parser)
+    flags.AddBakExportBakTypeArgument(parser)
+    flags.AddBakExportDifferentialBaseArgument(parser)
 
   def Run(self, args):
     """Runs the command to export the Cloud SQL instance."""

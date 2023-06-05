@@ -118,6 +118,7 @@ class UpdateAlphaBeta(Update):
   def Args(parser):
     super(UpdateAlphaBeta, UpdateAlphaBeta).Args(parser)
     flags.AddUpdateMode(parser)
+    flags.AddSSLMode(parser)
 
   def ConstructPatchRequestFromArgs(self, alloydb_messages, instance_ref, args):
     return instance_helper.ConstructPatchRequestFromArgsAlphaBeta(

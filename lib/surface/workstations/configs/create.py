@@ -76,6 +76,7 @@ class Create(base.CreateCommand):
     workstations_flags.AddContainerRunAsUserField(parser)
     workstations_flags.AddEncryptionKeyFields(parser)
     workstations_flags.AddLabelsField(parser)
+    workstations_flags.AddAcceleratorFields(parser)
 
   def Collection(self):
     return 'workstations.projects.locations.workstationClusters.workstationConfigs'

@@ -46,7 +46,6 @@ class Update(base.UpdateCommand):
 
   def Run(self, args):
     """Runs the update command."""
-    flags.ValidateTopologyUpdateFlags(args)
     client = apis.TopologyClient()
     return client.Update(args)
 

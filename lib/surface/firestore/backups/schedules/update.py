@@ -42,7 +42,7 @@ class Update(base.UpdateCommand):
   @staticmethod
   def Args(parser):
     """Set args for gcloud firestore backups schedules update."""
-    flags.AddRequiredDatabaseIdFlag(parser)
+    flags.AddDatabaseIdFlag(parser, required=True, hidden=True)
     flags.AddBackupScheduleFlag(parser)
     flags.AddRetentionFlag(parser)
 

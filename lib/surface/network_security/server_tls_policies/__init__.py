@@ -25,3 +25,4 @@ from googlecloudsdk.calliope import base
                     base.ReleaseTrack.GA)
 class ServerTlsPolicies(base.Group):
   """Manage Network Security ServerTlsPolicies."""
+  category = base.NETWORK_SECURITY_CATEGORY

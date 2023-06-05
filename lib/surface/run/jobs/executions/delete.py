@@ -20,6 +20,7 @@ from __future__ import unicode_literals
 
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.run import connection_context
+from googlecloudsdk.command_lib.run import deletion
 from googlecloudsdk.command_lib.run import flags
 from googlecloudsdk.command_lib.run import resource_args
 from googlecloudsdk.command_lib.run import serverless_operations
@@ -53,6 +54,7 @@ class Delete(base.Command):
         'Execution to delete.',
         required=True,
         prefixes=False)
+    flags.AddAsyncFlag(parser, default_async_for_cluster=True, is_job=True)
     concept_parsers.ConceptParser([execution_presentation]).AddToParser(parser)
 
   @staticmethod
@@ -71,5 +73,7 @@ class Delete(base.Command):
         cancel_on_no=True)
 
     with serverless_operations.Connect(conn_context) as client:
-      client.DeleteExecution(ex_ref)
+      deletion.Delete(
+          ex_ref, client.GetExecution, client.DeleteExecution, args.async_
+      )
     log.DeletedResource(ex_ref.executionsId, 'execution')

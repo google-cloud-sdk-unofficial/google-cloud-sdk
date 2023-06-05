@@ -22,6 +22,7 @@ from googlecloudsdk.api_lib.source import sourcerepo
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.source import flags
 from googlecloudsdk.command_lib.source import util
+from googlecloudsdk.core import properties
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA,
@@ -43,6 +44,9 @@ class Update(base.Command):
     flags.AddRepoUpdateArgs(parser)
 
   def Run(self, args):
+    # disable self signed jwt since this feature is not tested for this command
+    properties.VALUES.auth.service_account_use_self_signed_jwt.Set(False)
+
     client = sourcerepo.Source()
     repo_ref = args.CONCEPTS.repo.Parse()
     repo = client.GetRepo(repo_ref)

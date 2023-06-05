@@ -64,6 +64,13 @@ It is strongly recommended that you use this flag. If this flag isn't specified,
 gcloud transfer will mount your entire filesystem to the agent container and
 give the agent root access.
 """
+DOCKER_NETWORK_HELP_TEXT = """
+Specify the network to connect the Docker container to. This flag maps directly
+to the --network flag in the underlying 'docker run' command.
+
+If binding directly to the Docker host's network is an option, then setting
+this value to 'host' can dramatically improve transfer performance.
+"""
 MISSING_PROJECT_ERROR_TEXT = """
 Could not find project ID. Try adding the project flag: --project=[project-id]
 """
@@ -211,6 +218,8 @@ def _get_docker_command(args, project, creds_file_path):
     base_docker_command.append('--env')
     base_docker_command.append(
         'AWS_SECRET_ACCESS_KEY={}'.format(aws_secret_key))
+  if args.docker_network:
+    base_docker_command.append('--network={}'.format(args.docker_network))
 
   expanded_creds_file_path = _expand_path(creds_file_path)
   expanded_logs_directory_path = _expand_path(args.logs_directory)
@@ -347,6 +356,7 @@ class Install(base.Command):
         ' which agents are activated.')
     parser.add_argument('--count', type=int, help=COUNT_FLAG_HELP_TEXT)
     parser.add_argument('--creds-file', help=CREDS_FILE_FLAG_HELP_TEXT)
+    parser.add_argument('--docker-network', help=DOCKER_NETWORK_HELP_TEXT)
     parser.add_argument(
         '--enable-multipart',
         action=arg_parsers.StoreTrueFalseAction,
@@ -375,7 +385,8 @@ class Install(base.Command):
         '--mount-directories',
         type=arg_parsers.ArgList(),
         metavar='MOUNT-DIRECTORIES',
-        help=MOUNT_DIRECTORIES_HELP_TEXT)
+        help=MOUNT_DIRECTORIES_HELP_TEXT,
+    )
     parser.add_argument('--proxy', help=PROXY_FLAG_HELP_TEXT)
     parser.add_argument(
         '--s3-compatible-mode',

@@ -304,10 +304,12 @@ class Run(base.Command):
         env_obj.config.privateEnvironmentConfig.enablePrivateEnvironment)
     if is_private:
       return command_util.Error(
-          str(error) +
-          ' Make sure you have followed https://cloud.google.com/composer/docs/how-to/accessing/airflow-cli#private-ip '
-          'to enable access to your private Cloud Composer environment from '
-          'your machine.')
+          str(error)
+          + ' Make sure you have followed'
+          ' https://cloud.google.com/composer/docs/how-to/accessing/airflow-cli#private-ip'
+          ' to enable access to your private Cloud Composer environment from'
+          ' your machine.'
+      )
     return error
 
   def _ExtractAirflowVersion(self, image_version):

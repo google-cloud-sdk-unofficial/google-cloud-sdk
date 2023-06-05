@@ -21,6 +21,7 @@ from __future__ import unicode_literals
 from googlecloudsdk.api_lib.source import sourcerepo
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.iam import iam_util
+from googlecloudsdk.core import properties
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.ALPHA,
@@ -65,6 +66,9 @@ class SetIamPolicy(base.UpdateCommand):
       iam_util.IamEtagReadError: if the etag is badly formatted.
       apitools.base.py.exceptions.HttpError: on request errors.
     """
+    # disable self signed jwt since this feature is not tested for this command
+    properties.VALUES.auth.service_account_use_self_signed_jwt.Set(False)
+
     res = sourcerepo.ParseRepo(args.name)
     source = sourcerepo.Source()
     policy, unused_mask = iam_util.ParseYamlOrJsonPolicyFile(

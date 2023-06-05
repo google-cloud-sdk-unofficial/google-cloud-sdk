@@ -27,15 +27,15 @@ from googlecloudsdk.core import properties
 from googlecloudsdk.core import resources
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
+)
 class CreateSecondary(base.CreateCommand):
   """Creates a new AlloyDB SECONDARY instance within a given cluster."""
 
   detailed_help = {
-      'DESCRIPTION':
-          '{description}',
-      'EXAMPLES':
-          """\
+      'DESCRIPTION': '{description}',
+      'EXAMPLES': """\
         To create a new secondary instance, run:
 
           $ {command} my-instance --cluster=my-cluster --region=us-central1
@@ -71,26 +71,34 @@ class CreateSecondary(base.CreateCommand):
         'alloydb.projects.locations.clusters',
         projectsId=properties.VALUES.core.project.GetOrFail,
         locationsId=args.region,
-        clustersId=args.cluster)
+        clustersId=args.cluster,
+    )
     instance_resource = alloydb_messages.Instance()
     instance_ref = client.resource_parser.Create(
         'alloydb.projects.locations.clusters.instances',
         projectsId=properties.VALUES.core.project.GetOrFail,
         locationsId=args.region,
         clustersId=args.cluster,
-        instancesId=args.instance)
+        instancesId=args.instance,
+    )
     instance_resource.name = instance_ref.RelativeName()
-    instance_resource.instanceType = alloydb_messages.Instance.InstanceTypeValueValuesEnum.SECONDARY
+    instance_resource.instanceType = (
+        alloydb_messages.Instance.InstanceTypeValueValuesEnum.SECONDARY
+    )
     req = alloydb_messages.AlloydbProjectsLocationsClustersInstancesCreatesecondaryRequest(
         instance=instance_resource,
         instanceId=args.instance,
-        parent=cluster_ref.RelativeName())
+        parent=cluster_ref.RelativeName(),
+    )
     op = alloydb_client.projects_locations_clusters_instances.Createsecondary(
-        req)
+        req
+    )
     op_ref = resources.REGISTRY.ParseRelativeName(
-        op.name, collection='alloydb.projects.locations.operations')
+        op.name, collection='alloydb.projects.locations.operations'
+    )
     log.status.Print('Operation ID: {}'.format(op_ref.Name()))
     if not args.async_:
-      instance_operations.Await(op_ref, 'Creating secondary instance',
-                                self.ReleaseTrack())
+      instance_operations.Await(
+          op_ref, 'Creating secondary instance', self.ReleaseTrack()
+      )
     return op

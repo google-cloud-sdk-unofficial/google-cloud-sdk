@@ -72,12 +72,16 @@ class Bak(base.Command):
       parser: An argparse parser that you can use to add arguments that go on
         the command line after this command. Positional arguments are allowed.
     """
-    import_util.AddBaseImportFlags(
-        parser, filetype='BAK file', gz_supported=False, user_supported=False)
+    import_util.AddBakImportFlags(
+        parser, filetype='BAK file', gz_supported=False, user_supported=False
+    )
     flags.AddDatabase(
         parser, flags.SQLSERVER_DATABASE_IMPORT_HELP_TEXT, required=True)
     flags.AddEncryptedBakFlags(parser)
     flags.AddBakImportStripedArgument(parser)
+    flags.AddBakImportNoRecoveryArgument(parser)
+    flags.AddBakImportRecoveryOnlyArgument(parser)
+    flags.AddBakImportBakTypeArgument(parser)
 
   def Run(self, args):
     """Runs the command to import into the Cloud SQL instance."""

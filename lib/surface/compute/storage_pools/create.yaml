@@ -1,0 +1,54 @@
+- release_tracks: [ALPHA]
+  help_text:
+    brief: "Create a storage pool."
+    description: "Create a storage pool."
+    examples: |
+      The following command creates a new storage pool named "my-storage-pool":
+
+        $ {command} my-storage-pool --size-tb=10 --provisioned-iops=200 type=SSD
+
+  request:
+    collection: compute.storagePools
+    api_version: alpha
+    method: insert
+    modify_request_hooks:
+    - googlecloudsdk.api_lib.compute.storage_pools.modify_request_hooks:add_name_to_payload
+
+  async:
+    collection: compute.zoneOperations
+    response_name_field: selfLink
+    state:
+      field: status
+      success_values: ['DONE']
+
+  arguments:
+    resource:
+      help_text: The name of the storage pool you want to create.
+      spec: !REF googlecloudsdk.command_lib.compute.resources:storage_pool
+
+    params:
+
+    - arg_name: size
+      api_field: storagePool.sizeGb
+      required: true
+      help_text: |
+        Size of the storage pool.
+      type: 'googlecloudsdk.calliope.arg_parsers:BinarySize:'
+      # TODO(b/283676448), this processor can be effectively eliminated.
+      processor: googlecloudsdk.api_lib.compute.storage_pools.processors:convert_to_gb
+
+    - arg_name: provisioned-iops
+      api_field: storagePool.provisionedIops
+      required: true
+      help_text: |
+        IOPS to provision the pool with.
+      type: int
+
+    - arg_name: type
+      api_field: storagePool.type
+      required: true
+      help_text: |
+        Type of the storage pool.
+      choices:
+      - arg_value: SSD
+        enum_value: SSD

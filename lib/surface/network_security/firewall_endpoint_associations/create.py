@@ -26,31 +26,30 @@ from googlecloudsdk.command_lib.util.args import labels_util
 
 DETAILED_HELP = {
     'DESCRIPTION': """
-          Associate the specified network with the firewall endpoint. Successful
-          creation of a firewall endpoint association results in an association
-          in READY state. Check the progress of association creation by using
-          `gcloud network-security firewall-endpoint-associations list`.
+        Associate the specified network with the firewall endpoint. Successful
+        creation of a firewall endpoint association results in an association
+        in READY state. Check the progress of association creation by using
+        `gcloud network-security firewall-endpoint-associations list`.
 
-          For more examples, refer to the EXAMPLES section below.
+        For more examples, refer to the EXAMPLES section below.
 
         """,
     'EXAMPLES': """
-            To associate a network with a firewall endpoint, run:
+        To associate a network with a firewall endpoint, run:
 
-            $ {command} my-association --network=my-network --endpoint=organizations/1234/locations/us-central1-a/firewallEndpoints/my-endpoint --zone=us-central1-a --project=my-project
-
+            $ {command} my-assoc --network=projects/my-project/networks/global/myNetwork --endpoint=organizations/1234/locations/us-central1-a/firewallEndpoints/my-endpoint  --zone=us-central1-a  --project=my-project
         """,
 }
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Create(base.CreateCommand):
   """Create a Firewall Plus endpoint association."""
 
-  @staticmethod
-  def Args(parser):
-    association_flags.AddAssociationResource(parser)
-    association_flags.AddEndpointResource(parser)
+  @classmethod
+  def Args(cls, parser):
+    association_flags.AddAssociationResource(cls.ReleaseTrack(), parser)
+    association_flags.AddEndpointResource(cls.ReleaseTrack(), parser)
     association_flags.AddNetworkResource(parser)
     association_flags.AddMaxWait(parser, '60m')  # default to 60 minutes wait.
     base.ASYNC_FLAG.AddToParser(parser)

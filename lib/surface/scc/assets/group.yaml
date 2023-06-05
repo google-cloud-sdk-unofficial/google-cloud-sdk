@@ -39,6 +39,10 @@
     additional_arguments_hook: googlecloudsdk.command_lib.scc.hooks:AppendParentArg
 
     params:
+    - _REF_: googlecloudsdk.command_lib.scc.flags:read_time
+      api_field: groupAssetsRequest.readTime
+    - _REF_: googlecloudsdk.command_lib.scc.assets.flags:compare_duration
+      api_field: groupAssetsRequest.compareDuration
     - arg_name: group-by
       api_field: groupAssetsRequest.groupBy
       help_text: |
@@ -49,18 +53,6 @@
         * security_center_properties.resource_type
         * security_center_properties.resource_parent
         * state_change
-    - arg_name: read-time
-      api_field: groupAssetsRequest.readTime
-      help_text: |
-        Time used as a reference point when filtering assets. Filter is limited
-        to assets existing at the supplied time and their values are those at that
-        specific time. For example: 2019-02-28T07:00:00Z. Absence of this field will
-        default to the API's version of NOW.
-    - arg_name: compare-duration
-      api_field: groupAssetsRequest.compareDuration
-      help_text: |
-        GroupAssetsResult's "state_change" attribute is updated to indicate whether the asset was added, removed, or remained present during the compare_duration period of time that precedes the read_time.
-        Example duration: "100000s"
     - arg_name: filter
       api_field: groupAssetsRequest.filter
       help_text: |

@@ -20,6 +20,7 @@ from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.firestore import backups
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.firestore import flags
 from googlecloudsdk.core import properties
 
 
@@ -41,19 +42,7 @@ class List(base.ListCommand):
 
   @staticmethod
   def Args(parser):
-    parser.add_argument(
-        '--location',
-        metavar='LOCATION',
-        type=str,
-        hidden=True,
-        help="""
-      # The location to operate on. If the location is not set, the command will list backups from all locations.
-
-      For example, to operate on location `us-east1`:
-
-        $ {command} --location='us-east1'
-      """,
-    )
+    flags.AddLocationFlag(parser)
 
   def Run(self, args):
     project = properties.VALUES.core.project.Get(required=True)

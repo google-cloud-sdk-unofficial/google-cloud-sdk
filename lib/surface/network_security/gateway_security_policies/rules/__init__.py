@@ -26,3 +26,4 @@ from googlecloudsdk.calliope import base
 )
 class GatewaySecurityPolicyRules(base.Group):
   """Manage Network Security Gateway Security Policy Rules."""
+  category = base.NETWORK_SECURITY_CATEGORY

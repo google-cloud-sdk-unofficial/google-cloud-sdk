@@ -1,4 +1,4 @@
-release_tracks: [ALPHA, BETA]
+release_tracks: [ALPHA, BETA, GA]
 
 help_text:
   brief: |
@@ -8,13 +8,15 @@ help_text:
   examples: |
     To list address groups in an organization, run:
 
-      $ {command} --location=global --organization 1234
+      $ {command} --location=global --organization=1234
 
 request: &request
   ALPHA:
     api_version: v1alpha1
   BETA:
     api_version: v1beta1
+  GA:
+    api_version: v1
   collection: networksecurity.organizations.locations.addressGroups
 
 arguments:
