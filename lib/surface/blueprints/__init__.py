@@ -23,6 +23,9 @@ from googlecloudsdk.calliope import base
 
 # We could have multiple tracks here, e.g.
 #   @base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
+@base.Deprecate(
+    True, 'This command is deprecated.', 'This command is no longer supported.'
+)
 @base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Blueprints(base.Group):

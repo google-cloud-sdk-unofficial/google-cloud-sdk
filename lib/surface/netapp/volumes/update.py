@@ -104,7 +104,7 @@ class UpdateBeta(base.UpdateCommand):
         snapshot_directory=args.snapshot_directory,
         security_style=security_style,
         enable_kerberos=args.enable_kerberos,
-        snapshot=args.from_snapshot)
+        snapshot=args.source_snapshot)
 
     updated_fields = []
     # add possible updated volume fields
@@ -136,7 +136,7 @@ class UpdateBeta(base.UpdateCommand):
       updated_fields.append('securityStyle')
     if args.IsSpecified('enable_kerberos'):
       updated_fields.append('kerberosEnabled')
-    if args.IsSpecified('from_snapshot'):
+    if args.IsSpecified('source_snapshot'):
       updated_fields.append('restoreParameters')
     if args.IsSpecified('description'):
       updated_fields.append('description')
@@ -224,7 +224,7 @@ class UpdateAlpha(base.UpdateCommand):
         snapshot_directory=args.snapshot_directory,
         security_style=security_style,
         enable_kerberos=args.enable_kerberos,
-        snapshot=args.from_snapshot)
+        snapshot=args.source_snapshot)
 
     updated_fields = []
     # add possible updated volume fields
@@ -256,7 +256,7 @@ class UpdateAlpha(base.UpdateCommand):
       updated_fields.append('securityStyle')
     if args.IsSpecified('enable_kerberos'):
       updated_fields.append('kerberosEnabled')
-    if args.IsSpecified('from_snapshot'):
+    if args.IsSpecified('source_snapshot'):
       updated_fields.append('restoreParameters')
     if args.IsSpecified('description'):
       updated_fields.append('description')

@@ -21,5 +21,8 @@ from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 
 
+@base.Deprecate(
+    True, 'This command is deprecated.', 'This command is no longer supported.'
+)
 class Revisions(base.Group):
   """Get details about Blueprints Controller deployment revisions."""

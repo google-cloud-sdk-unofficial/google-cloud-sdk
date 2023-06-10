@@ -29,7 +29,7 @@ from googlecloudsdk.core import properties
 from googlecloudsdk.core import resources
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
 class Create(base.CreateCommand):
   """Create a new AlloyDB cluster within a given project."""
 
@@ -63,10 +63,11 @@ class Create(base.CreateCommand):
         permission_info="The 'AlloyDB Service Agent' service account must hold permission 'Cloud KMS CryptoKey Encrypter/Decrypter'"
     )
     flags.AddAutomatedBackupFlags(parser, alloydb_messages, update=False)
+    flags.AddContinuousBackupConfigFlags(parser)
 
   def ConstructCreateRequestFromArgs(self, alloydb_messages, location_ref,
                                      args):
-    return cluster_helper.ConstructCreateRequestFromArgsGA(
+    return cluster_helper.ConstructCreateRequestFromArgsGABeta(
         alloydb_messages, location_ref, args)
 
   def Run(self, args):
@@ -97,24 +98,8 @@ class Create(base.CreateCommand):
     return op
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class CreateBeta(Create):
-  """Create a new AlloyDB cluster within a given project."""
-
-  @classmethod
-  def Args(cls, parser):
-    super(CreateBeta, cls).Args(parser)
-    flags.AddContinuousBackupConfigFlags(parser)
-
-  def ConstructCreateRequestFromArgs(self, alloydb_messages, location_ref,
-                                     args):
-    return cluster_helper.ConstructCreateRequestFromArgsBeta(
-        alloydb_messages, location_ref, args
-    )
-
-
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class CreateAlpha(CreateBeta):
+class CreateAlpha(Create):
   """Create a new AlloyDB cluster within a given project."""
 
   @classmethod

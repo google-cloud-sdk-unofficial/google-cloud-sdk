@@ -26,6 +26,9 @@ from googlecloudsdk.command_lib.blueprints import resource_args
 from googlecloudsdk.command_lib.util.concepts import concept_parsers
 
 
+@base.Deprecate(
+    True, 'This command is deprecated.', 'This command is no longer supported.'
+)
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class CreateAlpha(base.CreateCommand):
   """Create or update a deployment.

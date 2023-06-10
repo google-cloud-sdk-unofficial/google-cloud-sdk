@@ -122,6 +122,7 @@ class CreateAlphaBeta(Create):
   def Args(cls, parser):
     super(CreateAlphaBeta, CreateAlphaBeta).Args(parser)
     flags.AddSSLMode(parser)
+    flags.AddRequireConnectors(parser)
 
   def ConstructCreateRequestFromArgs(
       self, client, alloydb_messages, cluster_ref, args

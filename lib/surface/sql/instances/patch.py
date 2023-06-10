@@ -140,7 +140,7 @@ def _GetConfirmedClearedFields(args, patch_instance, original_instance):
   return cleared_fields
 
 
-def AddBaseArgs(parser, is_alpha=False):
+def AddBaseArgs(parser):
   """Adds base args and flags to the parser."""
   # TODO(b/35705305): move common flags to command_lib.sql.flags
   flags.AddActivationPolicy(parser)
@@ -252,7 +252,7 @@ def AddBaseArgs(parser, is_alpha=False):
   flags.AddStorageAutoIncrease(parser)
   flags.AddStorageSize(parser)
   flags.AddTier(parser, is_patch=True)
-  flags.AddEdition(parser, is_alpha=is_alpha)
+  flags.AddEdition(parser)
   flags.AddEnablePointInTimeRecovery(parser)
   flags.AddNetwork(parser)
   flags.AddMaintenanceVersion(parser)
@@ -261,6 +261,7 @@ def AddBaseArgs(parser, is_alpha=False):
   flags.AddConnectorEnforcement(parser)
   flags.AddEnableGooglePrivatePath(parser, show_negated_in_help=True)
   flags.AddThreadsPerCore(parser)
+  flags.AddEnableDataCache(parser, show_negated_in_help=False)
 
 
 def AddBetaArgs(parser):
@@ -418,7 +419,7 @@ class PatchAlpha(base.UpdateCommand):
   @staticmethod
   def Args(parser):
     """Args is called by calliope to gather arguments for this command."""
-    AddBaseArgs(parser, is_alpha=True)
+    AddBaseArgs(parser)
     flags.AddZone(
         parser,
         help_text=('Preferred Compute Engine zone (e.g. us-central1-a, '

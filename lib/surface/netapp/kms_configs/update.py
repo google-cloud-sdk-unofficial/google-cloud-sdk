@@ -21,6 +21,11 @@ from __future__ import unicode_literals
 from googlecloudsdk.api_lib.netapp.kms_configs import client as kmsconfigs_client
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.netapp.kms_configs import flags as kmsconfigs_flags
+from googlecloudsdk.command_lib.netapp.kms_configs.flags import ConstructCryptoKeyName
+from googlecloudsdk.command_lib.netapp.kms_configs.flags import ExtractKmsCryptoKeyFromCryptoKeyName
+from googlecloudsdk.command_lib.netapp.kms_configs.flags import ExtractKmsKeyRingFromCryptoKeyName
+from googlecloudsdk.command_lib.netapp.kms_configs.flags import ExtractKmsLocationFromCryptoKeyName
+from googlecloudsdk.command_lib.netapp.kms_configs.flags import ExtractKmsProjectFromCryptoKeyName
 from googlecloudsdk.command_lib.util.args import labels_util
 
 from googlecloudsdk.core import log
@@ -32,7 +37,7 @@ from googlecloudsdk.core import log
 # BETA is public.
 @base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
-class UpdateAlpha(base.UpdateCommand):
+class UpdateBeta(base.UpdateCommand):
   """Update a Cloud NetApp Volumes KMS Config."""
 
   detailed_help = {
@@ -69,14 +74,45 @@ class UpdateAlpha(base.UpdateCommand):
       ).GetOrNone()
     else:
       labels = None
+    kms_project = (
+        args.kms_project
+        if args.kms_project is not None
+        else ExtractKmsProjectFromCryptoKeyName(orig_kmsconfig.cryptoKeyName)
+    )
+    kms_location = (
+        args.kms_location
+        if args.kms_location is not None
+        else ExtractKmsLocationFromCryptoKeyName(orig_kmsconfig.cryptoKeyName)
+    )
+    kms_keyring = (
+        args.kms_keyring
+        if args.kms_keyring is not None
+        else ExtractKmsKeyRingFromCryptoKeyName(orig_kmsconfig.cryptoKeyName)
+    )
+    if args.kms_key is not None:
+      kms_key = args.kms_key
+    else:
+      kms_key = ExtractKmsCryptoKeyFromCryptoKeyName(
+          orig_kmsconfig.cryptoKeyName
+      )
+    crypto_key_name = ConstructCryptoKeyName(
+        kms_project, kms_location, kms_keyring, kms_key
+    )
     kms_config = client.ParseUpdatedKmsConfig(
         orig_kmsconfig,
-        crypto_key_name=orig_kmsconfig.cryptoKeyName,
+        crypto_key_name=crypto_key_name,
         description=args.description,
         labels=labels,
     )
 
     updated_fields = []
+    if (
+        args.IsSpecified('kms_project')
+        or args.IsSpecified('kms_location')
+        or args.IsSpecified('kms_keyring')
+        or args.IsSpecified('kms_key')
+    ):
+      updated_fields.append('cryptoKeyName')
     if args.IsSpecified('description'):
       updated_fields.append('description')
     if (

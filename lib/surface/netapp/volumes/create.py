@@ -100,7 +100,7 @@ class CreateBeta(base.CreateCommand):
         snapshot_directory=args.snapshot_directory,
         security_style=security_style,
         enable_kerberos=args.enable_kerberos,
-        snapshot=args.from_snapshot)
+        snapshot=args.source_snapshot)
     result = client.CreateVolume(volume_ref, args.async_, volume)
     if args.async_:
       command = 'gcloud {} netapp volumes list'.format(
@@ -175,7 +175,7 @@ class CreateAlpha(base.CreateCommand):
         security_style=security_style,
         enable_kerberos=args.enable_kerberos,
         enable_ldap=args.enable_ldap,
-        snapshot=args.from_snapshot)
+        snapshot=args.source_snapshot)
     result = client.CreateVolume(volume_ref, args.async_, volume)
     if args.async_:
       command = 'gcloud {} netapp volumes list'.format(

@@ -38,7 +38,6 @@
     params:
     - group:
         release_tracks: [ALPHA]
-        hidden: true
         help_text: |
           Rollout Sequencing
 

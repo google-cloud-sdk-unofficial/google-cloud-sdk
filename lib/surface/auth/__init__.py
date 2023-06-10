@@ -37,7 +37,7 @@ class Auth(base.Group):
   For information about authorization and credential types, see
   [Authorizing the gcloud CLI](https://cloud.google.com/sdk/docs/authorizing).
   For information about authorizing a service account, see
-  [Authorizing with a service account](https://cloud.google.com/sdk/docs/authorizing#authorizing_with_a_service_account).
+  [Authorizing with a service account](https://cloud.google.com/sdk/docs/authorizing#service-account).
 
   After running `gcloud auth` commands, you can run other commands with
   `--account`=``ACCOUNT'' to authenticate the command with the credentials

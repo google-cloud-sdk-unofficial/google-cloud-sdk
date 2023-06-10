@@ -80,6 +80,9 @@ class GitHelper(base.Command):
   def Run(self, args):
     """Run the helper command."""
 
+    # Disable self signed jwt for this command.
+    properties.VALUES.auth.service_account_use_self_signed_jwt.Set(False)
+
     if args.method not in GitHelper.METHODS:
       if args.ignore_unknown:
         return

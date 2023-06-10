@@ -32,6 +32,9 @@ arguments:
     - arg_value: spray-to-region
       help_text:  |
         Spread the traffic from each client to all the MIGs/NEGs in a region.
+    - arg_value: spray-to-world
+      help_text:  |
+        Balance traffic across all backends across the world proportionally based on capacity.
     default: waterfall-by-region
   - arg_name: auto-capacity-drain
     api_field: serviceLbPolicy.autoCapacityDrain

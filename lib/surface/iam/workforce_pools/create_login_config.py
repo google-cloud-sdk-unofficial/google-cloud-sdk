@@ -24,6 +24,7 @@ import os
 import textwrap
 
 from googlecloudsdk.calliope import base
+from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.iam.byoid_utilities import cred_config
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
@@ -54,34 +55,98 @@ class CreateLoginConfig(base.CreateCommand):
   def Args(cls, parser):
     # Required args.
     parser.add_argument(
-        'audience', help='Workforce pool provider resource name.')
+        'audience', help='Workforce pool provider resource name.'
+    )
     parser.add_argument(
         '--output-file',
         help='Location to store the generated login configuration file.',
-        required=True)
+        required=True,
+    )
+    # Optional args.
     parser.add_argument(
         '--activate',
         action='store_true',
         default=False,
-        help='Sets the property `auth/login_config_file` to the created login '
-        'configuration file. Calling `gcloud auth login` will automatically '
-        'use this login configuration unless it is explicitly unset.')
+        help=(
+            'Sets the property `auth/login_config_file` to the created login'
+            ' configuration file. Calling `gcloud auth login` will'
+            ' automatically use this login configuration unless it is'
+            ' explicitly unset.'
+        ),
+    )
     parser.add_argument(
         '--enable-mtls',
         help='Use mTLS for STS endpoints.',
         action='store_true',
-        hidden=True)
+        hidden=True,
+    )
+    parser.add_argument(
+        '--universe-domain',
+        help='The universe domain.',
+        hidden=True,
+    )
+    parser.add_argument(
+        '--universe-cloud-web-domain',
+        help='The universe cloud web domain.',
+        hidden=True,
+    )
 
   def Run(self, args):
+    # Take universe domains into account.
+    universe_domain_property = properties.VALUES.core.universe_domain
+    if getattr(args, 'universe_domain', None):
+      # Universe_domain arg takes precedence.
+      universe_domain = args.universe_domain
+    elif universe_domain_property.IsExplicitlySet():
+      universe_domain = universe_domain_property.Get()
+    else:
+      universe_domain = 'googleapis.com'
+
+    # TODO(b/284507677): Retrieve automatically when lookup is available.
+    universe_cloud_web_domain = 'auth.cloud.google'
+    if getattr(args, 'universe_cloud_web_domain', None):
+      universe_cloud_web_domain = args.universe_cloud_web_domain
+
+    if (
+        universe_domain != 'googleapis.com'
+        and universe_cloud_web_domain == 'auth.cloud.google'
+    ):
+      raise exceptions.RequiredArgumentException(
+          '--universe_cloud_web_domain',
+          'Both --universe-domain and --universe-cloud-web-domain must be set'
+          ' together.',
+      )
+
+    if (
+        universe_domain == 'googleapis.com'
+        and universe_cloud_web_domain != 'auth.cloud.google'
+    ):
+      raise exceptions.RequiredArgumentException(
+          '--universe-domain',
+          'Both --universe-domain and --universe-cloud-web-domain must be set'
+          ' together.',
+      )
+
     enable_mtls = getattr(args, 'enable_mtls', False)
-    token_endpoint_builder = cred_config.StsEndpoints(enable_mtls=enable_mtls)
+    token_endpoint_builder = cred_config.StsEndpoints(
+        enable_mtls=enable_mtls, universe_domain=universe_domain
+    )
     output = {
         'type': 'external_account_authorized_user_login_config',
         'audience': '//iam.googleapis.com/' + args.audience,
-        'auth_url': 'https://auth.cloud.google/authorize',
+        'auth_url': 'https://{cloud_web_domain}/authorize'.format(
+            cloud_web_domain=universe_cloud_web_domain
+        ),
         'token_url': token_endpoint_builder.oauth_token_url,
         'token_info_url': token_endpoint_builder.token_info_url,
     }
+
+    # TODO(b/276367366): Add in all cases once approved.
+    if universe_domain != 'googleapis.com':
+      output['universe_domain'] = universe_domain
+    if universe_cloud_web_domain != 'auth.cloud.google':
+      output['universe_cloud_web_domain'] = universe_cloud_web_domain
+
     files.WriteFileContents(args.output_file, json.dumps(output, indent=2))
     log.CreatedResource(args.output_file, RESOURCE_TYPE)
 

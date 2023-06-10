@@ -1,5 +1,4 @@
 - release_tracks: [ALPHA]
-  hidden: true
   help_text:
     brief: Update a scope.
     description: Update an existing Fleet Scope.
@@ -38,7 +37,6 @@
 
     params:
     - group:
-        hidden: true
         help_text: |
           Rollout Sequencing
         params:

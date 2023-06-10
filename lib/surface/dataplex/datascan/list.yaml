@@ -31,5 +31,6 @@
         name.basename():label=NAME,
         displayName:label=DISPLAY_NAME,
         state:label=DATASCAN_STATUS,
-        type:label=SCAN_TYPE
+        type:label=SCAN_TYPE,
+        name.scope("locations").segment(0):label=LOCATION
       )

@@ -23,17 +23,8 @@
           --authorizer-token-secret-version=projects/myproj/secrets/api-pat/versions/1 \
           --webhook-secret-secret-version=projects/myproj/secrets/whsecret/versions/1
 
-      To create a GitLab connection for a GitLab server (version >= 13.10),
+      To create a GitLab connection for a GitLab server,
       provide host-uri parameter as well:
-
-        $ {command} my-gle-conn \
-          --host-uri=https://my.gle-server.net \
-          --project=myproj --region=us-central1 \
-          --authorizer-token-secret-version=projects/myproj/secrets/api-pat/versions/1 \
-          --webhook-secret-secret-version=projects/myproj/secrets/whsecret/versions/1
-
-      To create a GitLab connection for a GitLab server (version < 13.10),
-      provide the read-authorizer-token-secret-version parameter as well:
 
         $ {command} my-gle-conn \
           --host-uri=https://my.gle-server.net \
@@ -51,6 +42,7 @@
           --service-directory-service=projects/myproj/namespaces/x/services/mysds \
           --ssl-ca-file=mycertificate.crt \
           --authorizer-token-secret-version=projects/myproj/secrets/api-pat/versions/1 \
+          --read-authorizer-token-secret-version=projects/myproj/secrets/read-pat/versions/1 \
           --webhook-secret-secret-version=projects/myproj/secrets/whsecret/versions/1
 
   command_type: CREATE
@@ -71,8 +63,8 @@
       required: true
     - api_field: connection.gitlabConfig.readAuthorizerCredential.userTokenSecretVersion
       arg_name: read-authorizer-token-secret-version
-      help_text: Secret containing the read_repository personal access token. Required for GitLab
-       Enterprise versions older than 13.10.
+      help_text: Secret containing the read_api personal access token.
+      required: true
     - api_field: connection.gitlabConfig.webhookSecretSecretVersion
       arg_name: webhook-secret-secret-version
       required: true

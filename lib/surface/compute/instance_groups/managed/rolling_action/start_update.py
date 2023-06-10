@@ -176,8 +176,9 @@ class StartUpdateGA(base.Command):
           args.replacement_method, client.messages)
       update_policy.replacementMethod = replacement_method
 
-    rolling_action.ValidateAndFixUpdaterAgainstStateful(update_policy, igm_ref,
-                                                        igm_info, client, args)
+    rolling_action.ValidateAndFixUpdaterAgainstStateful(
+        update_policy, igm_info, client, args
+    )
 
     igm_resource = client.messages.InstanceGroupManager(
         instanceTemplate=None, updatePolicy=update_policy, versions=versions)

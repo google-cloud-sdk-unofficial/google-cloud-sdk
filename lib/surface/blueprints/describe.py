@@ -24,6 +24,9 @@ from googlecloudsdk.command_lib.blueprints import error_handling
 from googlecloudsdk.command_lib.blueprints import resource_args
 
 
+@base.Deprecate(
+    True, 'This command is deprecated.', 'This command is no longer supported.'
+)
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class CreateAlpha(base.DescribeCommand):
   """Display details of a deployment."""

@@ -66,7 +66,7 @@ DETAILED_HELP = {
 }
 
 
-def AddBaseArgs(parser, is_alpha=False):
+def AddBaseArgs(parser):
   """Declare flag and positional arguments for this command parser."""
   # TODO(b/35705305): move common flags to command_lib.sql.flags
   base.ASYNC_FLAG.AddToParser(parser)
@@ -145,7 +145,7 @@ def AddBaseArgs(parser, is_alpha=False):
       default=None,
       help='The storage type for the instance. The default is SSD.')
   flags.AddTier(parser)
-  flags.AddEdition(parser, is_alpha=is_alpha)
+  flags.AddEdition(parser)
   kms_flag_overrides = {
       'kms-key': '--disk-encryption-key',
       'kms-keyring': '--disk-encryption-key-keyring',
@@ -165,6 +165,7 @@ def AddBaseArgs(parser, is_alpha=False):
   flags.AddTimeout(parser, _INSTANCE_CREATION_TIMEOUT_SECONDS)
   flags.AddEnableGooglePrivatePath(parser, show_negated_in_help=False)
   flags.AddThreadsPerCore(parser)
+  flags.AddEnableDataCache(parser, show_negated_in_help=False)
 
 
 def AddBetaArgs(parser):
@@ -306,12 +307,11 @@ def RunBaseCreateCommand(args, release_track):
         ' for more details.'
     )
 
-  if release_track == base.ReleaseTrack.ALPHA:
-    if args.IsSpecified('edition') and args.edition == 'enterprise-plus':
-      if not args.IsSpecified('tier'):
-        raise sql_exceptions.ArgumentError(
-            '`--edition=enterprise-plus` requires `--tier`'
-        )
+  if args.IsSpecified('edition') and args.edition == 'enterprise-plus':
+    if not args.IsSpecified('tier'):
+      raise sql_exceptions.ArgumentError(
+          '`--edition=enterprise-plus` requires `--tier`'
+      )
 
   instance_resource = (
       command_util.InstancesV1Beta4.ConstructCreateInstanceFromArgs(
@@ -410,7 +410,7 @@ class CreateAlpha(base.Command):
   @staticmethod
   def Args(parser):
     """Args is called by calliope to gather arguments for this command."""
-    AddBaseArgs(parser, is_alpha=True)
+    AddBaseArgs(parser)
     flags.AddLocationGroup(parser)
     AddBetaArgs(parser)
     AddAlphaArgs(parser)

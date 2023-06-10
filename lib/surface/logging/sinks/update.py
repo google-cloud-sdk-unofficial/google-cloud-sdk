@@ -26,7 +26,9 @@ from googlecloudsdk.core import log
 from googlecloudsdk.core.console import console_io
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.GA, base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA
+)
 class Update(base.UpdateCommand):
   """Update a sink.
 
@@ -59,6 +61,16 @@ class Update(base.UpdateCommand):
         '--log-filter',
         help=('A new filter expression for the sink. '
               'If omitted, the sink\'s existing filter (if any) is unchanged.'))
+    parser.add_argument(
+        '--custom-writer-identity',
+        metavar='SERVICE_ACCOUNT_EMAIL',
+        help=(
+            'Writer identity for the sink. This flag can only be used if the '
+            'destination is a log bucket in a different project. The writer '
+            'identity is automatically generated when it is not provided for '
+            'a sink.'
+        ),
+    )
     util.AddParentArgs(parser, 'sink to update')
 
     bigquery_group = parser.add_argument_group(
@@ -239,8 +251,7 @@ class Update(base.UpdateCommand):
         sink_data['exclusions'] += args.add_exclusion
 
     custom_writer_identity = None
-    is_alpha = self.ReleaseTrack() == base.ReleaseTrack.ALPHA
-    if is_alpha and args.IsSpecified('custom_writer_identity'):
+    if args.IsSpecified('custom_writer_identity'):
       custom_writer_identity = args.custom_writer_identity
       parameter_names.extend(['--custom_writer_identity'])
 
@@ -285,36 +296,3 @@ class Update(base.UpdateCommand):
     if hasattr(self, '_epilog_result_destination'):
       util.PrintPermissionInstructions(self._epilog_result_destination,
                                        self._epilog_writer_identity)
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class UpdateAlpha(Update):
-  """Update a sink.
-
-  Change the *[DESTINATION]* or *--log-filter* associated with a sink.
-  The new destination must already exist and Cloud Logging must have
-  permission to write to it.
-
-  Log entries are exported to the new destination immediately.
-
-  ## EXAMPLES
-
-  To only update a sink filter, run:
-
-    $ {command} my-sink --log-filter='severity>=ERROR'
-
-  Detailed information about filters can be found at:
-  [](https://cloud.google.com/logging/docs/view/logging-query-language)
-  """
-
-  @staticmethod
-  def Args(parser):
-    Update.Args(parser)
-    parser.add_argument(
-        '--custom-writer-identity',
-        metavar='SERVICE_ACCOUNT_EMAIL',
-        help=(
-            'Writer identity for the sink. Only available for writing to cross-project '
-            'LogBucket sinks. Note a writer identity is '
-            'automatically generated if needed for the sink when it is not explicitly provided.'
-        ))

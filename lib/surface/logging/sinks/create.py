@@ -25,7 +25,9 @@ from googlecloudsdk.core import log
 from googlecloudsdk.core.console import console_io
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.GA, base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA
+)
 class Create(base.CreateCommand):
   # pylint: disable=line-too-long
   """Create a log sink.
@@ -91,6 +93,15 @@ class Create(base.CreateCommand):
         action='store_true',
         help=('Whether to export logs from all child projects and folders. '
               'Only applies to sinks for organizations and folders.'))
+    parser.add_argument(
+        '--custom-writer-identity',
+        metavar='SERVICE_ACCOUNT_EMAIL',
+        help=(
+            'Writer identity for the sink. This flag can only be used if the '
+            'destination is a log bucket in a different project. The writer '
+            'identity is automatically generated when it is not provided for '
+            'a sink.'
+        ))
     bigquery_group = parser.add_argument_group(
         help='Settings for sink exporting data to BigQuery.')
     bigquery_group.add_argument(
@@ -103,7 +114,6 @@ class Create(base.CreateCommand):
               'the suffix and special query syntax '
               '(https://cloud.google.com/bigquery/docs/'
               'querying-partitioned-tables) must be used.'))
-
     parser.add_argument(
         '--exclusion',
         action='append',
@@ -182,8 +192,7 @@ class Create(base.CreateCommand):
       sink_data['disabled'] = args.disabled
 
     custom_writer_identity = None
-    is_alpha = self.ReleaseTrack() == base.ReleaseTrack.ALPHA
-    if is_alpha and args.IsSpecified('custom_writer_identity'):
+    if args.IsSpecified('custom_writer_identity'):
       custom_writer_identity = args.custom_writer_identity
     result = self.CreateSink(
         util.GetParentFromArgs(args), sink_data, custom_writer_identity)
@@ -208,65 +217,3 @@ class Create(base.CreateCommand):
   def Epilog(self, unused_resources_were_displayed):
     util.PrintPermissionInstructions(self._epilog_result_destination,
                                      self._epilog_writer_identity)
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class CreateAlpha(Create):
-  # pylint: disable=line-too-long
-  """Creates a log sink.
-
-  Creates a log used to route log entries to a destination.  The sink routes all
-  log entries that match its *--log-filter* flag.
-
-  An empty filter matches all logs.
-
-  Detailed information about filters can be found at:
-  [](https://cloud.google.com/logging/docs/view/logging-query-language)
-
-  The sink's destination can be a Cloud Logging log bucket, a Cloud Storage
-  bucket, a BigQuery dataset, a Cloud Pub/Sub topic, or a Google Cloud project.
-
-  The destination must already exist.
-
-  If creating a log sink to route logs to a destination outside of Cloud Logging
-  or to a Cloud Logging log bucket in another project, the log sink's service
-  account must be granted permission to write to the destination.
-
-  For more information about destination permissions, see:
-  https://cloud.google.com/logging/docs/export/configure_export_v2#dest-auth
-
-  Matching log entries are routed to the destination after the sink is created.
-
-  ## EXAMPLES
-
-  To route all Google Compute Engine logs to BigQuery, run:
-
-    $ {command} my-bq-sink
-    bigquery.googleapis.com/projects/my-project/datasets/my_dataset --log-filter='resource.type="gce_instance"'
-
-  To route "syslog" from App Engine Flexible to a Cloud Storage bucket, run:
-
-    $ {command} my-gcs-sink storage.googleapis.com/my-bucket --log-filter='logName="projects/my-project/appengine.googleapis.com%2Fsyslog"'
-
-  To route Google App Engine logs with ERROR severity, run:
-
-    $ {command} my-error-logs
-    bigquery.googleapis.com/projects/my-project/datasets/my_dataset --log-filter='resource.type="gae_app" AND severity=ERROR'
-
-  To route all logs to a log bucket in a different project, run:
-
-    $ {command} my-sink
-    logging.googleapis.com/projects/my-central-project/locations/global/buckets/my-central-bucket
-  """
-
-  @staticmethod
-  def Args(parser):
-    Create.Args(parser)
-    parser.add_argument(
-        '--custom-writer-identity',
-        metavar='SERVICE_ACCOUNT_EMAIL',
-        help=(
-            'Writer identity for the sink. Only available for writing to cross-project '
-            'LogBucket sinks. Note a writer identity is '
-            'automatically generated if needed for the sink when it is not explicitly provided.'
-        ))

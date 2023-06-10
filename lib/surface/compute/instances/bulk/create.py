@@ -137,6 +137,7 @@ class Create(base.Command):
   _support_local_ssd_recovery_timeout = False
   _support_network_queue_count = True
   _support_performance_monitoring_unit = False
+  _support_custom_hostnames = False
 
   _log_async = False
 
@@ -161,6 +162,7 @@ class Create(base.Command):
         support_max_count_per_zone=cls._support_max_count_per_zone,
         support_network_queue_count=cls._support_network_queue_count,
         support_performance_monitoring_unit=cls._support_performance_monitoring_unit,
+        support_custom_hostnames=cls._support_custom_hostnames,
     )
     cls.AddSourceInstanceTemplate(parser)
 
@@ -203,6 +205,7 @@ class Create(base.Command):
         self._support_confidential_compute_type,
         self._support_max_count_per_zone,
         self._support_performance_monitoring_unit,
+        self._support_custom_hostnames,
     )
     bulk_instance_resource = bulk_util.CreateBulkInsertInstanceResource(
         args,
@@ -254,6 +257,7 @@ class Create(base.Command):
         support_image_csek=self._support_image_csek,
         support_source_snapshot_csek=self._support_source_snapshot_csek,
         support_max_count_per_zone=self._support_max_count_per_zone,
+        support_custom_hostnames=self._support_custom_hostnames,
     )
 
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
@@ -340,6 +344,7 @@ class CreateBeta(Create):
   _support_network_queue_count = True
   _support_local_ssd_size = True
   _support_performance_monitoring_unit = False
+  _support_custom_hostnames = True
 
   @classmethod
   def Args(cls, parser):
@@ -361,6 +366,7 @@ class CreateBeta(Create):
         support_max_count_per_zone=cls._support_max_count_per_zone,
         support_network_queue_count=cls._support_network_queue_count,
         support_performance_monitoring_unit=cls._support_performance_monitoring_unit,
+        support_custom_hostnames=cls._support_custom_hostnames,
     )
     cls.AddSourceInstanceTemplate(parser)
 
@@ -387,6 +393,7 @@ class CreateAlpha(Create):
   _support_local_ssd_recovery_timeout = True
   _support_network_queue_count = True
   _support_performance_monitoring_unit = True
+  _support_custom_hostnames = True
 
   @classmethod
   def Args(cls, parser):
@@ -409,6 +416,7 @@ class CreateAlpha(Create):
         support_max_count_per_zone=cls._support_max_count_per_zone,
         support_network_queue_count=cls._support_network_queue_count,
         support_performance_monitoring_unit=cls._support_performance_monitoring_unit,
+        support_custom_hostnames=cls._support_custom_hostnames,
     )
 
     cls.AddSourceInstanceTemplate(parser)

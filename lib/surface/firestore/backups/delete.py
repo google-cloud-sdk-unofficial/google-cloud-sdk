@@ -40,7 +40,7 @@ class Delete(base.DeleteCommand):
 
   @staticmethod
   def Args(parser):
-    flags.AddLocationFlag(parser, required=True)
+    flags.AddLocationFlag(parser, required=True, hidden=True)
     flags.AddBackupFlag(parser)
 
   def Run(self, args):

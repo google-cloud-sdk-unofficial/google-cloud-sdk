@@ -20,6 +20,7 @@ from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import disks_util as api_util
+from googlecloudsdk.api_lib.compute import utils
 from googlecloudsdk.api_lib.compute.operations import poller
 from googlecloudsdk.api_lib.util import waiter
 from googlecloudsdk.calliope import arg_parsers
@@ -88,6 +89,18 @@ def _CommonArgs(messages,
                           'Provisioned throughput of disk to update. '
                           'The throughput unit is  MB per sec. '))
 
+  parser.add_argument(
+      '--size',
+      type=arg_parsers.BinarySize(
+          suggested_binary_size_scales=['GB', 'GiB', 'TB', 'TiB', 'PiB', 'PB']),
+      help="""\
+        Size of the disks. The value must be a whole
+        number followed by a size unit of ``GB'' for gigabyte, or ``TB''
+        for terabyte. If no size unit is specified, GB is
+        assumed. For details about disk size limits, refer to:
+        https://cloud.google.com/compute/docs/disks
+        """)
+
 
 def _LabelsFlagsIncluded(args):
   return args.IsSpecified('update_labels') or args.IsSpecified(
@@ -110,6 +123,10 @@ def _ProvisionedIopsIncluded(args):
 
 def _ProvisionedThroughputIncluded(args):
   return args.IsSpecified('provisioned_throughput')
+
+
+def _SizeIncluded(args):
+  return args.IsSpecified('size')
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
@@ -150,6 +167,7 @@ class Update(base.UpdateCommand):
         _ProvisionedIopsIncluded(args)
         or _ProvisionedThroughputIncluded(args)
         or _ArchitectureFlagsIncluded(args)
+        or _SizeIncluded(args)
         or (support_user_licenses and _UserLicensesFlagsIncluded(args))
     ):
       disk_res = messages.Disk(name=disk_ref.Name())
@@ -190,6 +208,10 @@ class Update(base.UpdateCommand):
         if args.provisioned_throughput:
           disk_res.provisionedThroughput = args.provisioned_throughput
           disk_update_request.paths.append('provisionedThroughput')
+
+      if _SizeIncluded(args) and args.size:
+        disk_res.sizeGb = utils.BytesToGb(args.size)
+        disk_update_request.paths.append('sizeGb')
 
       update_operation = service.Update(disk_update_request)
       update_operation_ref = holder.resources.Parse(

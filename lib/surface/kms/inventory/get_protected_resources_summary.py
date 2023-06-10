@@ -26,11 +26,9 @@ DETAILED_HELP = {
     'DESCRIPTION': """
          *{command}* returns a summary of the resources a key is protecting.
 
-         The summary includes:
-            How many projects contain protected resources
-            How many protected resources there are
-            What types of protected resources
-            The count for each type of protected resource
+         The summary includes how many projects contain protected resources,
+         how many protected resources there are, what are the types of protected
+         resources, and the count for each type of protected resource.
        """,
     'EXAMPLES': """
          To view the summary of protected resources for the key `puppy`, run:

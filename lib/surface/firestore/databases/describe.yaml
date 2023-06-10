@@ -1,4 +1,4 @@
-- release_tracks: [ALPHA, BETA, GA]
+- release_tracks: [BETA, GA]
   help_text:
     brief: Describe a Google Cloud Firestore database.
     description: Describe a Google Cloud Firestore database.

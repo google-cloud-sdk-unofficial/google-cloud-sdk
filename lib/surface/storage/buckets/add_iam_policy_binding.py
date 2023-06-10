@@ -45,7 +45,7 @@ class AddIamPolicyBinding(base.Command):
 
       To make objects in BUCKET publicly readable:
 
-        $ {command} gs://BUCKET --member=AllUsers --role=roles/storage.objectViewer
+        $ {command} gs://BUCKET --member=allUsers --role=roles/storage.objectViewer
 
       To specify a custom role for a principal on BUCKET:
 

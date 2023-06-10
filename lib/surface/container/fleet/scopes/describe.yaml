@@ -35,7 +35,6 @@
     params:
     - group:
         release_tracks: [ALPHA]
-        hidden: true
         mutex: true
         help_text: Rollout Sequencing
         params:

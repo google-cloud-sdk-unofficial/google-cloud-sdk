@@ -22,6 +22,7 @@ from __future__ import unicode_literals
 import enum
 import os.path
 
+from googlecloudsdk.api_lib.run import api_enabler
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions as c_exceptions
 from googlecloudsdk.command_lib.artifacts import docker_util
@@ -136,7 +137,15 @@ class Deploy(base.Command):
                 ' build source is provided.'
             ),
         )
-
+    required_apis = ['run.googleapis.com']
+    if include_build:
+      required_apis.append('artifactregistry.googleapis.com')
+      required_apis.append('cloudbuild.googleapis.com')
+    already_activated_services = False
+    if self.ReleaseTrack() in [base.ReleaseTrack.ALPHA]:
+      already_activated_services = api_enabler.CheckAndEnableApis(
+          properties.VALUES.core.project.Get(), required_apis
+      )
     job_ref = args.CONCEPTS.job.Parse()
     flags.ValidateResource(job_ref)
 
@@ -159,7 +168,9 @@ class Deploy(base.Command):
           location_id=artifact_registry.RepoRegion(args),
           repo_id='cloud-run-source-deploy',
       )
-      if artifact_registry.ShouldCreateRepository(ar_repo):
+      if artifact_registry.ShouldCreateRepository(
+          ar_repo, skip_activation_prompt=already_activated_services
+      ):
         repo_to_create = ar_repo
       # The image is built with latest tag. After build, the image digest
       # from the build result will be added to the image of the job spec.

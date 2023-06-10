@@ -383,10 +383,9 @@ class Update(base.UpdateCommand):
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class UpdateBeta(Update):
-  pass
+  _support_http_keep_alive = True
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class UpdateAlpha(UpdateBeta):
-  _support_http_keep_alive = True
   _server_tls_policy_enabled = True

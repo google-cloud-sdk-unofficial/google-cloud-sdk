@@ -282,11 +282,10 @@ class Create(base.CreateCommand):
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class CreateBeta(Create):
-  pass
+  _support_http_keep_alive = True
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class CreateAlpha(CreateBeta):
   _traffic_director_security = True
-  _support_http_keep_alive = True
   _server_tls_policy_enabled = True

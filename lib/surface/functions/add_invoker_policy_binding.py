@@ -27,8 +27,8 @@ from googlecloudsdk.command_lib.iam import iam_util
 _DETAILED_HELP = {
     'DESCRIPTION': '{description}',
     'EXAMPLES': """\
-          To add the invoker policy binding for `FUNCTION-1` from role
-          `ROLE-1` for member `MEMBER-1` run:
+          To add the invoker role policy binding for `FUNCTION-1` for member
+          `MEMBER-1` run:
 
             $ {command} FUNCTION-1 --member=MEMBER-1
           """,

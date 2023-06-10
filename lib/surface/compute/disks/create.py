@@ -138,7 +138,8 @@ def _CommonArgs(messages,
                 source_instant_snapshot_enabled=False,
                 support_pd_interface=False,
                 support_user_licenses=False,
-                support_async_pd=False):
+                support_async_pd=False,
+                support_storage_pool=False):
   """Add arguments used for parsing in all command tracks."""
   Create.disks_arg.AddArgument(parser, operation_type='create')
   parser.add_argument(
@@ -148,7 +149,7 @@ def _CommonArgs(messages,
   parser.add_argument(
       '--size',
       type=arg_parsers.BinarySize(
-          lower_bound='10GB',
+          lower_bound='1GB',
           suggested_binary_size_scales=['GB', 'GiB', 'TB', 'TiB', 'PiB', 'PB']),
       help="""\
         Size of the disks. The value must be a whole
@@ -200,6 +201,9 @@ def _CommonArgs(messages,
   disks_flags.AddArchitectureFlag(parser, messages)
 
   disks_flags.AddProvisionedThroughputFlag(parser, arg_parsers)
+
+  if support_storage_pool:
+    disks_flags.STORAGE_POOL_ARG.AddArgument(parser)
 
   if support_user_licenses:
     parser.add_argument(
@@ -298,16 +302,31 @@ class Create(base.Command):
     size_gb = utils.BytesToGb(args.size)
 
     if size_gb:
+      # Legacy disk type cannot be smaller than 10 GB and it is enforced in
+      # gcloud.
+      if args.type in constants.LEGACY_DISK_TYPE_LIST and size_gb < 10:
+        raise exceptions.InvalidArgumentException(
+            '--size',
+            'Value must be greater than or equal to 10 GB; reveived {0} GB'
+            .format(size_gb),
+        )
       # if disk size is given, use it.
       pass
-    elif (args.source_snapshot or from_image or args.source_disk or
-          self.GetFromSourceInstantSnapshot(args)):
+    elif (
+        args.source_snapshot
+        or from_image
+        or args.source_disk
+        or self.GetFromSourceInstantSnapshot(args)
+    ):
       # if source is a snapshot/image/disk/instant-snapshot, it is ok not to
       # set size_gb since disk size can be obtained from the source.
       pass
     elif args.type in constants.DEFAULT_DISK_SIZE_GB_MAP:
       # Get default disk size from disk_type.
       size_gb = constants.DEFAULT_DISK_SIZE_GB_MAP[args.type]
+    elif args.type:
+      # If disk type is specified, then leaves it to backend to decide the size.
+      pass
     else:
       # If disk type is unspecified or unknown, we use the default size of
       # pd-standard.
@@ -398,6 +417,17 @@ class Create(base.Command):
         return primary_disk_ref.SelfLink()
     return None
 
+  def GetStoragePoolUri(self, args, compute_holder):
+    if args.storage_pool:
+      storage_pool_ref = disks_flags.STORAGE_POOL_ARG.ResolveAsResource(
+          args,
+          compute_holder.resources,
+          default_scope=compute_scope.ScopeEnum.ZONE,
+      )
+      if storage_pool_ref:
+        return storage_pool_ref.SelfLink()
+    return None
+
   def GetLabels(self, args, client):
     labels = None
     args_labels = getattr(args, 'labels', None)
@@ -458,6 +488,7 @@ class Create(base.Command):
       support_user_licenses=False,
       support_async_pd=False,
       support_enable_confidential_compute=False,
+      support_storage_pool=False,
   ):
     compute_holder = self._GetApiHolder()
     client = compute_holder.client
@@ -607,6 +638,9 @@ class Create(base.Command):
       if args.IsSpecified('location_hint'):
         disk.locationHint = args.location_hint
 
+      if support_storage_pool and args.IsSpecified('storage_pool'):
+        disk.storagePool = self.GetStoragePoolUri(args, compute_holder)
+
       if disk_ref.Collection() == 'compute.disks':
         request = client.messages.ComputeDisksInsertRequest(
             disk=disk, project=disk_ref.project, zone=disk_ref.zone)
@@ -687,7 +721,8 @@ class CreateAlpha(CreateBeta):
         source_instant_snapshot_enabled=True,
         support_pd_interface=True,
         support_user_licenses=True,
-        support_async_pd=True)
+        support_async_pd=True,
+        support_storage_pool=True)
     image_utils.AddGuestOsFeaturesArg(parser, messages)
     _AddReplicaZonesArg(parser)
     kms_resource_args.AddKmsKeyResourceArg(
@@ -706,6 +741,7 @@ class CreateAlpha(CreateBeta):
         support_user_licenses=True,
         support_async_pd=True,
         support_enable_confidential_compute=True,
+        support_storage_pool=True,
     )
 
 

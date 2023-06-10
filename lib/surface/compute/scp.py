@@ -67,6 +67,17 @@ Conversely, files from your local computer can be copied to a virtual machine:
 
   $ {command} ~/localtest.txt ~/localtest2.txt example-instance:~/narnia
 
+Remote Windows-based virtual machines require you to provide a path using
+backslash notation:
+
+  $ {command} ~/localtest.txt ~/localtest2.txt example-windows-instance:"C:\\Users\\Public"
+
+Paths for remote Windows-based virtual machines which contain spaces in
+directory name should be appropriately protected with a pair of nested single
+and double quotes:
+
+  $ {command} ~/localtest.txt 'example-windows-instance:"C:\\Users\\Public\\Test Folder"'
+
 If the zone cannot be determined, you will be prompted for it.  Use the
 `--zone` flag to avoid being prompted:
 

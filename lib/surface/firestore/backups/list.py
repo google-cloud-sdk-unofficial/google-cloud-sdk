@@ -42,7 +42,7 @@ class List(base.ListCommand):
 
   @staticmethod
   def Args(parser):
-    flags.AddLocationFlag(parser)
+    flags.AddLocationFlag(parser, hidden=True)
 
   def Run(self, args):
     project = properties.VALUES.core.project.Get(required=True)

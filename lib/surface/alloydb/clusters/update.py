@@ -29,7 +29,9 @@ from googlecloudsdk.core import properties
 from googlecloudsdk.core import resources
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.GA, base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA
+)
 class Update(base.UpdateCommand):
   """Update an AlloyDB cluster within a given project and region."""
 
@@ -46,8 +48,16 @@ class Update(base.UpdateCommand):
 
   def __init__(self, *args, **kwargs):
     super(Update, self).__init__(*args, **kwargs)
-    self.parameters = [('--automated-backup-* | --disable-automated-backup | '
-                        '--clear-automated-backup')]
+    self.parameters = [
+        (
+            '--automated-backup-* | --disable-automated-backup | '
+            '--clear-automated-backup'
+        ),
+        (
+            '--enable-continuous-backup | '
+            '--continuous-backup-* | --clear-continuous-backup-encryption-key'
+        ),
+    ]
 
   @classmethod
   def Args(cls, parser):
@@ -61,6 +71,7 @@ class Update(base.UpdateCommand):
     flags.AddRegion(parser)
     flags.AddCluster(parser)
     flags.AddAutomatedBackupFlags(parser, alloydb_messages, update=True)
+    flags.AddContinuousBackupConfigFlags(parser, update=True)
 
   def ConstructPatchRequestFromArgs(self, alloydb_messages, cluster_ref, args):
     return cluster_helper.ConstructPatchRequestFromArgsGA(
@@ -97,30 +108,3 @@ class Update(base.UpdateCommand):
       cluster_operations.Await(op_ref, 'Updating cluster', self.ReleaseTrack(),
                                False)
     return op
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
-class UpdateAlphaBeta(Update):
-  """Update an AlloyDB cluster within a given project and region."""
-
-  def __init__(self, *args, **kwargs):
-    super(UpdateAlphaBeta, self).__init__(*args, **kwargs)
-    self.parameters = [
-        (
-            '--automated-backup-* | --disable-automated-backup | '
-            '--clear-automated-backup'
-        ),
-        (
-            '--enable-continuous-backup | '
-            '--continuous-backup-* | --clear-continuous-backup-encryption-key'
-        ),
-    ]
-
-  def ConstructPatchRequestFromArgs(self, alloydb_messages, cluster_ref, args):
-    return cluster_helper.ConstructPatchRequestFromArgsAlphaBeta(
-        alloydb_messages, cluster_ref, args)
-
-  @classmethod
-  def Args(cls, parser):
-    super(UpdateAlphaBeta, cls).Args(parser)
-    flags.AddContinuousBackupConfigFlags(parser, update=True)

@@ -21,17 +21,8 @@ from __future__ import unicode_literals
 from googlecloudsdk.api_lib.firestore import api_utils
 from googlecloudsdk.api_lib.firestore import databases
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.firestore import flags
 from googlecloudsdk.core import properties
-
-
-PRODUCT_NAME = 'Google Cloud Firestore Native'
-LOCATION_HELP_TEXT = (
-    'The location to create the {product_name} database within. Available '
-    'locations are listed at '
-    'https://cloud.google.com/firestore/docs/locations.'.format(
-        product_name=PRODUCT_NAME
-    )
-)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
@@ -86,11 +77,8 @@ class CreateFirestoreAPI(base.Command):
 
   @classmethod
   def Args(cls, parser):
-    parser.add_argument(
-        '--location',
-        help=LOCATION_HELP_TEXT,
-        required=True,
-        suggestion_aliases=['--region'],
+    flags.AddLocationFlag(
+        parser, required=True, suggestion_aliases=['--region']
     )
     parser.add_argument(
         '--type',
@@ -136,7 +124,7 @@ class CreateFirestoreAPIWithDeleteProtection(CreateFirestoreAPI):
   To create a Firestore Native database in `nam5` with delete protection
   enabled.
 
-      $ {command} --location=nam5 --enable-delete-protection
+      $ {command} --location=nam5 --delete-protection
   """
 
   def Run(self, args):
@@ -146,14 +134,14 @@ class CreateFirestoreAPIWithDeleteProtection(CreateFirestoreAPI):
         args.location,
         args.database,
         self.DatabaseType(args.type),
-        self.DatabaseDeleteProtectionState(args.enable_delete_protection),
+        self.DatabaseDeleteProtectionState(args.delete_protection),
     )
 
   @classmethod
   def Args(cls, parser):
     super(CreateFirestoreAPIWithDeleteProtection, cls).Args(parser)
     parser.add_argument(
-        '--enable-delete-protection',
+        '--delete-protection',
         help="""Whether to enable delete protection on the created database.
 
         If set to true, delete protection of the new database will be enabled

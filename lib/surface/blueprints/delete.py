@@ -29,6 +29,9 @@ from googlecloudsdk.core import log
 from googlecloudsdk.core.console import console_io
 
 
+@base.Deprecate(
+    True, 'This command is deprecated.', 'This command is no longer supported.'
+)
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class CreateAlpha(base.DeleteCommand):
   """Delete a deployment.

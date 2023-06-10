@@ -19,7 +19,6 @@ from __future__ import division
 from __future__ import unicode_literals
 
 from apitools.base.py import encoding
-
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import target_proxies_utils
 from googlecloudsdk.calliope import base
@@ -139,7 +138,7 @@ def _PatchGlobalTargetHttpProxy(
     return client.MakeRequests(requests)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Update(base.UpdateCommand):
   """Update a target HTTP proxy."""
 
@@ -170,6 +169,11 @@ class Update(base.UpdateCommand):
     )
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class UpdateAlpha(Update):
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class UpdateBeta(Update):
   _support_http_keep_alive = True
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class UpdateAlpha(UpdateBeta):
+  pass
