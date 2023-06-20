@@ -21,14 +21,11 @@ from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class VolumesAlpha(base.Group):
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class VolumesBeta(base.Group):
   """Create and manage Cloud NetApp Volumes."""
 
 
-# TODO(b/239613419):
-# Keep gcloud beta netapp group hidden until v1beta1 API stable
-@base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class VolumesBeta(base.Group):
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class VolumesAlpha(VolumesBeta):
   """Create and manage Cloud NetApp Volumes."""

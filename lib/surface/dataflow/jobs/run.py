@@ -80,7 +80,7 @@ def _CommonArgs(parser):
   parser.add_argument(
       '--region',
       metavar='REGION_ID',
-      help=('The region ID of the job\'s regional endpoint. ' +
+      help=('Region ID of the job\'s regional endpoint. ' +
             dataflow_util.DEFAULT_REGION_MESSAGE))
 
 

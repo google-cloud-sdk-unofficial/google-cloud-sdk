@@ -34,7 +34,7 @@ class Update(base.UpdateCommand):
         To update the instance settings in the zone called ``us-central1-a''
         in the project ``my-gcp-project'' with service account email ``example@serviceaccount.com'', run:
 
-          $ {command} --update_mask=email --service-account=example@serviceaccount.com --zone=us-central1-a --project=my-gcp-project
+          $ {command} --service-account=example@serviceaccount.com --zone=us-central1-a --project=my-gcp-project
       """
   }
 

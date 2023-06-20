@@ -24,16 +24,22 @@ from googlecloudsdk.command_lib.netapp import flags
 from googlecloudsdk.command_lib.util.concepts import concept_parsers
 
 
-# TODO(b/239613419):
-# Keep gcloud beta netapp group hidden until v1beta1 API stable
-# also restructure release tracks that GA \subset BETA \subset ALPHA once
-# BETA is public.
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class DescribeBeta(base.DescribeCommand):
   """Show metadata for a Cloud NetApp Volume."""
 
   _RELEASE_TRACK = base.ReleaseTrack.BETA
+
+  detailed_help = {
+      'DESCRIPTION': """\
+          Describe a Cloud NetApp Volume
+          """,
+      'EXAMPLES': """\
+          The following command describe a Volume named NAME in the given location
+
+              $ {command} NAME --location=us-central1
+          """,
+  }
 
   @staticmethod
   def Args(parser):
@@ -48,19 +54,8 @@ class DescribeBeta(base.DescribeCommand):
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class DescribeAlpha(base.DescribeCommand):
+class DescribeAlpha(DescribeBeta):
   """Show metadata for a Cloud NetApp Volume."""
 
   _RELEASE_TRACK = base.ReleaseTrack.ALPHA
-
-  @staticmethod
-  def Args(parser):
-    concept_parsers.ConceptParser([flags.GetVolumePresentationSpec(
-        'The Volume to describe.')]).AddToParser(parser)
-
-  def Run(self, args):
-    """Run the describe command."""
-    volume_ref = args.CONCEPTS.volume.Parse()
-    client = volumes_client.VolumesClient(release_track=self._RELEASE_TRACK)
-    return client.GetVolume(volume_ref)
 

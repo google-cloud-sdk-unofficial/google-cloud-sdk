@@ -24,16 +24,22 @@ from googlecloudsdk.command_lib.netapp import flags
 from googlecloudsdk.command_lib.util.concepts import concept_parsers
 
 
-# TODO(b/239613419):
-# Keep gcloud beta netapp group hidden until v1beta1 API stable
-# also restructure release tracks that GA \subset BETA \subset ALPHA once
-# BETA is public.
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class DescribeBeta(base.DescribeCommand):
   """Describe a Cloud NetApp Files operation."""
 
   _RELEASE_TRACK = base.ReleaseTrack.BETA
+
+  detailed_help = {
+      'DESCRIPTION':
+          'Describe a Cloud NetApp Files operation.',
+      'EXAMPLES':
+          """\
+            The following command shows the details for the NetApp Files operation named NAME.
+
+                $ {command} NAME
+          """,
+  }
 
   @staticmethod
   def Args(parser):
@@ -50,20 +56,8 @@ class DescribeBeta(base.DescribeCommand):
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class DescribeAlpha(base.DescribeCommand):
+class DescribeAlpha(DescribeBeta):
   """Describe a Cloud NetApp Files operation."""
 
   _RELEASE_TRACK = base.ReleaseTrack.ALPHA
 
-  @staticmethod
-  def Args(parser):
-    concept_parsers.ConceptParser(
-        [flags.GetOperationPresentationSpec('The operation to describe.')]
-    ).AddToParser(parser)
-    parser.display_info.AddFormat('default')
-
-  def Run(self, args):
-    """Run the describe command."""
-    operation_ref = args.CONCEPTS.operation.Parse()
-    client = netapp_client.NetAppClient(release_track=self._RELEASE_TRACK)
-    return client.GetOperation(operation_ref)

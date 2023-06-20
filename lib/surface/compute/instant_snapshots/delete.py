@@ -25,9 +25,15 @@ from googlecloudsdk.command_lib.compute import flags as compute_flags
 from googlecloudsdk.command_lib.compute.instant_snapshots import flags as ips_flags
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class Delete(base.DeleteCommand):
-  """Delete Compute Engine instant snapshots."""
+def _CommonArgs(parser):
+  """A helper function to build args based on different API version."""
+  DeleteBeta.ips_arg = ips_flags.MakeInstantSnapshotArg(plural=True)
+  DeleteBeta.ips_arg.AddArgument(parser, operation_type='delete')
+
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class DeleteBeta(base.DeleteCommand):
+  """Delete Compute Engine instant snapshots in beta."""
 
   def _GetCommonScopeNameForRefs(self, refs):
     """Gets common scope for references."""
@@ -66,18 +72,18 @@ class Delete(base.DeleteCommand):
       requests.append((service, 'Delete', request))
     return requests
 
-  @staticmethod
-  def Args(parser):
-    Delete.ips_arg = ips_flags.MakeInstantSnapshotArg(plural=True)
-    Delete.ips_arg.AddArgument(parser, operation_type='delete')
+  @classmethod
+  def Args(cls, parser):
+    _CommonArgs(parser)
 
-  def Run(self, args):
+  def _Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
 
-    ips_refs = Delete.ips_arg.ResolveAsResource(
+    ips_refs = DeleteBeta.ips_arg.ResolveAsResource(
         args,
         holder.resources,
-        scope_lister=compute_flags.GetDefaultScopeLister(holder.client))
+        scope_lister=compute_flags.GetDefaultScopeLister(holder.client),
+    )
 
     scope_name = self._GetCommonScopeNameForRefs(ips_refs)
 
@@ -87,3 +93,41 @@ class Delete(base.DeleteCommand):
         self._CreateDeleteRequests(holder.client.apitools_client, ips_refs))
 
     return holder.client.MakeRequests(requests)
+
+  def Run(self, args):
+    return self._Run(args)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class DeleteAlpha(DeleteBeta):
+  """Delete Compute Engine instant snapshots in alpha."""
+
+  @classmethod
+  def Args(cls, parser):
+    _CommonArgs(parser)
+
+  def Run(self, args):
+    return self._Run(args)
+
+
+DeleteBeta.detailed_help = {
+    'brief': 'Delete a Compute Engine instant snapshot',
+    'DESCRIPTION': """\
+        *{command}* deletes a Compute Engine instant snapshot. A disk can be
+        deleted only if it is not attached to any virtual machine instances.
+        """,
+    'EXAMPLES': """\
+        To delete Compute Engine instant snapshots with the names 'instant-snapshot-1'
+        and 'instant-snapshot-2', run:
+
+          $ {command} instant-snapshot-1 instant-snapshot-2
+
+        To list all instant snapshots that were created before a specific date, use
+        the --filter flag with the `{parent_command} list` command.
+
+          $ {parent_command} list --filter="creationTimestamp<'2017-01-01'"
+
+        For more information on how to use --filter with the list command,
+        run $ gcloud topic filters.
+        """,
+}

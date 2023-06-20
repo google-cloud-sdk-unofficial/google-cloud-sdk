@@ -54,6 +54,7 @@ class Create(base.CreateCommand):
     flags.AddExternalAddressArgToParser(parser)
     base.ASYNC_FLAG.AddToParser(parser)
     base.ASYNC_FLAG.SetDefault(parser, True)
+    parser.display_info.AddFormat('yaml')
     parser.add_argument(
         '--internal-ip',
         required=True,
@@ -77,12 +78,13 @@ class Create(base.CreateCommand):
     if is_async:
       log.CreatedResource(
           operation.name, kind='external address', is_async=True)
-      return operation
+      return
 
     resource = client.WaitForOperation(
         operation_ref=client.GetOperationRef(operation),
         message='waiting for external address [{}] to be created'.format(
             external_address.RelativeName()))
-    log.CreatedResource(resource, kind='external address')
-
+    log.CreatedResource(
+        external_address.RelativeName(), kind='external address'
+    )
     return resource

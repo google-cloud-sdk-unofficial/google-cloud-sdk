@@ -19,6 +19,7 @@ from __future__ import division
 from __future__ import unicode_literals
 
 import datetime
+
 from googlecloudsdk.api_lib.network_security.firewall_endpoint_associations import association_api
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.network_security import association_flags
@@ -42,7 +43,7 @@ DETAILED_HELP = {
 }
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
 class Create(base.CreateCommand):
   """Create a Firewall Plus endpoint association."""
 
@@ -75,6 +76,7 @@ class Create(base.CreateCommand):
         parent=association.Parent().RelativeName(),
         network=network.RelativeName(),
         firewall_endpoint=endpoint.RelativeName(),
+        tls_inspection_policy=getattr(args, 'tls_inspection_policy', None),
         labels=labels,
     )
     # Return the in-progress operation if async is requested.
@@ -96,5 +98,14 @@ class Create(base.CreateCommand):
         max_wait=max_wait,
     )
 
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class CreateAlpha(Create):
+  """Create a Firewall Plus endpoint association."""
+
+  @classmethod
+  def Args(cls, parser):
+    super(CreateAlpha, cls).Args(parser)
+    association_flags.AddTLSInspectionPolicy(parser)
 
 Create.detailed_help = DETAILED_HELP

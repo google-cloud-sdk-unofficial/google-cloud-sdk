@@ -54,6 +54,7 @@ class Update(base.UpdateCommand):
     flags.AddExternalAddressArgToParser(parser)
     base.ASYNC_FLAG.AddToParser(parser)
     base.ASYNC_FLAG.SetDefault(parser, True)
+    parser.display_info.AddFormat('yaml')
     parser.add_argument(
         '--internal-ip',
         help="""\
@@ -78,7 +79,7 @@ class Update(base.UpdateCommand):
       log.UpdatedResource(
           operation.name, kind='external address', is_async=True
       )
-      return operation
+      return
 
     resource = client.WaitForOperation(
         operation_ref=client.GetOperationRef(operation),
@@ -86,6 +87,7 @@ class Update(base.UpdateCommand):
             external_address.RelativeName()
         ),
     )
-    log.UpdatedResource(resource, kind='external address')
-
+    log.UpdatedResource(
+        external_address.RelativeName(), kind='external address'
+    )
     return resource

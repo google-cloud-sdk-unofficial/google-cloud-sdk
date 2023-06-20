@@ -28,16 +28,26 @@ from googlecloudsdk.core import log
 from googlecloudsdk.core.console import console_io
 
 
-# TODO(b/239613419):
-# Keep gcloud beta netapp group hidden until v1beta1 API stable
-# also restructure release tracks that GA \subset BETA \subset ALPHA once
-# BETA is public.
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class DeleteBeta(base.DeleteCommand):
   """Delete a Cloud NetApp Volume Replication."""
 
   _RELEASE_TRACK = base.ReleaseTrack.BETA
+
+  detailed_help = {
+      'DESCRIPTION': """\
+          Delete a Cloud NetApp Volume Replication
+          """,
+      'EXAMPLES': """\
+          The following command deletes a Replication named NAME using the required arguments
+
+              $ {command} NAME --location=us-central1 --volume=vol1
+
+          To delete a Replication named NAME asynchronously, run the following command:
+
+              $ {command} NAME --location=us-central1 --volume=vol1 --async
+          """,
+  }
 
   @staticmethod
   def Args(parser):

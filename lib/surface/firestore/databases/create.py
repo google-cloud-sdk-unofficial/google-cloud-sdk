@@ -65,6 +65,15 @@ class CreateFirestoreAPI(base.Command):
         api_utils.GetMessages().GoogleFirestoreAdminV1Database.DeleteProtectionStateValueValuesEnum.DELETE_PROTECTION_DISABLED
     )
 
+  def DatabasePitrState(self, enable_pitr):
+    if enable_pitr:
+      return (
+          api_utils.GetMessages().GoogleFirestoreAdminV1Database.PointInTimeRecoveryEnablementValueValuesEnum.POINT_IN_TIME_RECOVERY_ENABLED
+      )
+    return (
+        api_utils.GetMessages().GoogleFirestoreAdminV1Database.PointInTimeRecoveryEnablementValueValuesEnum.POINT_IN_TIME_RECOVERY_DISABLED
+    )
+
   def Run(self, args):
     project = properties.VALUES.core.project.Get(required=True)
     return databases.CreateDatabase(
@@ -73,6 +82,7 @@ class CreateFirestoreAPI(base.Command):
         args.database,
         self.DatabaseType(args.type),
         self.DatabaseDeleteProtectionState(False),
+        self.DatabasePitrState(False),
     )
 
   @classmethod
@@ -104,7 +114,7 @@ class CreateFirestoreAPI(base.Command):
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class CreateFirestoreAPIWithDeleteProtection(CreateFirestoreAPI):
+class CreateFirestoreAPIWithDeleteProtectionAndPitrConfig(CreateFirestoreAPI):
   """Create a Google Cloud Firestore database via Firestore API.
 
   ## EXAMPLES
@@ -125,6 +135,11 @@ class CreateFirestoreAPIWithDeleteProtection(CreateFirestoreAPI):
   enabled.
 
       $ {command} --location=nam5 --delete-protection
+
+  To create a Firestore Native database in `nam5` with Point In Time Recovery
+  (PITR) enabled.
+
+      $ {command} --location=nam5 --enable-pitr
   """
 
   def Run(self, args):
@@ -135,11 +150,12 @@ class CreateFirestoreAPIWithDeleteProtection(CreateFirestoreAPI):
         args.database,
         self.DatabaseType(args.type),
         self.DatabaseDeleteProtectionState(args.delete_protection),
+        self.DatabasePitrState(args.enable_pitr),
     )
 
   @classmethod
   def Args(cls, parser):
-    super(CreateFirestoreAPIWithDeleteProtection, cls).Args(parser)
+    super(CreateFirestoreAPIWithDeleteProtectionAndPitrConfig, cls).Args(parser)
     parser.add_argument(
         '--delete-protection',
         help="""Whether to enable delete protection on the created database.
@@ -147,6 +163,17 @@ class CreateFirestoreAPIWithDeleteProtection(CreateFirestoreAPI):
         If set to true, delete protection of the new database will be enabled
         and delete operations will fail unless delete protection is disabled.
 
+        Default to false.
+        """,
+        action='store_true',
+        default=False,
+    )
+    parser.add_argument(
+        '--enable-pitr',
+        help="""Whether to enable Point In Time Recovery (PITR) on the created
+        database.
+
+        If set to true, PITR on the new database will be enabled.
         Default to false.
         """,
         action='store_true',

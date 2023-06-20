@@ -74,6 +74,11 @@ class Create(base.CreateCommand):
 
     $ {command} my-sink
     logging.googleapis.com/projects/my-central-project/locations/global/buckets/my-central-bucket
+
+  To route all logs to another project, run:
+
+    $ {command} my-sink
+    logging.googleapis.com/projects/my-destination-project
   """
   # pylint: enable=line-too-long
 

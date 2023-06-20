@@ -5,7 +5,7 @@
     examples: |
       The following command creates a new storage pool named "my-storage-pool":
 
-        $ {command} my-storage-pool --size-tb=10 --provisioned-iops=200 type=SSD
+        $ {command} my-storage-pool --size-tb=10 --provisioned-throughput=200 storage-pool-type=hyperdisk-throughput
 
   request:
     collection: compute.storagePools
@@ -37,18 +37,32 @@
       # TODO(b/283676448), this processor can be effectively eliminated.
       processor: googlecloudsdk.api_lib.compute.storage_pools.processors:convert_to_gb
 
+    - arg_name: description
+      api_field: storagePool.description
+      help_text: |
+        Description of the storage pool.
+      type: str
+
     - arg_name: provisioned-iops
       api_field: storagePool.provisionedIops
-      required: true
       help_text: |
         IOPS to provision the pool with.
       type: int
 
-    - arg_name: type
-      api_field: storagePool.type
+    - arg_name: provisioned-throughput
+      api_field: storagePool.provisionedThroughput
+      help_text: |
+        Throughput in mb/s to provision the pool with.
+      type: int
+
+    - arg_name: storage-pool-type
+      api_field: storagePool.storagePoolType
       required: true
       help_text: |
         Type of the storage pool.
       choices:
-      - arg_value: SSD
-        enum_value: SSD
+      - arg_value: hyperdisk-throughput
+        enum_value: hyperdisk-throughput
+      - arg_value: hyperdisk-balanced
+        enum_value: hyperdisk-balanced
+      processor: googlecloudsdk.api_lib.compute.storage_pools.processors:format_pool_type

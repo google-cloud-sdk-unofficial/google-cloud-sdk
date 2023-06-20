@@ -75,6 +75,7 @@ class Create(base.CreateCommand):
     flags.AddNetworkToParser(parser, positional=True)
     base.ASYNC_FLAG.AddToParser(parser)
     base.ASYNC_FLAG.SetDefault(parser, True)
+    parser.display_info.AddFormat('yaml')
     parser.add_argument(
         '--description',
         help="""\
@@ -94,12 +95,13 @@ class Create(base.CreateCommand):
     if is_async:
       log.CreatedResource(
           operation.name, kind='VMware Engine network', is_async=True)
-      return operation
+      return
 
     resource = client.WaitForOperation(
         operation_ref=client.GetOperationRef(operation),
         message='waiting for VMware Engine network [{}] to be created'.format(
-            network.RelativeName()),
-        has_result=True)
-    log.CreatedResource(resource, kind='VMware Engine network', is_async=False)
+            network.RelativeName()
+        ),
+    )
+    log.CreatedResource(network.RelativeName(), kind='VMware Engine network')
     return resource

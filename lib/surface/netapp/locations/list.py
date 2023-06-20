@@ -25,11 +25,6 @@ from googlecloudsdk.core import properties
 from googlecloudsdk.core import resources
 
 
-# TODO(b/239613419):
-# Keep gcloud beta netapp group hidden until v1beta1 API stable
-# also restructure release tracks that GA \subset BETA \subset ALPHA once
-# BETA is public.
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class ListBeta(base.ListCommand):
   """List all Cloud NetApp Files locations."""
@@ -41,10 +36,10 @@ class ListBeta(base.ListCommand):
           'Lists all Cloud NetApp Files locations.',
       'EXAMPLES':
           """\
-The following command shows the details for the NetApp Files location named NAME.
+            The following command lists NetApp Files locations.
 
-  $ {command}
-"""
+                $ {command}
+          """,
   }
 
   @staticmethod
@@ -60,29 +55,8 @@ The following command shows the details for the NetApp Files location named NAME
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class ListAlpha(base.ListCommand):
+class ListAlpha(ListBeta):
   """List all Cloud NetApp Files locations."""
 
   _RELEASE_TRACK = base.ReleaseTrack.ALPHA
 
-  detailed_help = {
-      'DESCRIPTION':
-          'Lists all Cloud NetApp Files locations.',
-      'EXAMPLES':
-          """\
-The following command shows the details for the NetApp Files location named NAME.
-
-  $ {command}
-"""
-  }
-
-  @staticmethod
-  def Args(parser):
-    parser.display_info.AddFormat(flags.LOCATIONS_LIST_FORMAT)
-
-  def Run(self, args):
-    project_ref = resources.REGISTRY.Parse(
-        properties.VALUES.core.project.GetOrFail(),
-        collection='netapp.projects')
-    client = netapp_client.NetAppClient(release_track=self._RELEASE_TRACK)
-    return list(client.ListLocations(project_ref, limit=args.limit))

@@ -24,16 +24,22 @@ from googlecloudsdk.command_lib.netapp import flags
 from googlecloudsdk.command_lib.util.concepts import concept_parsers
 
 
-# TODO(b/239613419):
-# Keep gcloud beta netapp group hidden until v1beta1 API stable
-# also restructure release tracks that GA \subset BETA \subset ALPHA once
-# BETA is public.
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class DescribeBeta(base.DescribeCommand):
   """Show metadata for a Cloud NetApp Storage Pool."""
 
   _RELEASE_TRACK = base.ReleaseTrack.BETA
+
+  detailed_help = {
+      'DESCRIPTION': """\
+          Describe a Storage Pool
+          """,
+      'EXAMPLES': """\
+          The following command describes a Storage Pool named NAME in the given location
+
+              $ {command} NAME --location=us-central1
+          """,
+  }
 
   @staticmethod
   def Args(parser):
@@ -49,20 +55,8 @@ class DescribeBeta(base.DescribeCommand):
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class DescribeAlpha(base.DescribeCommand):
+class DescribeAlpha(DescribeBeta):
   """Show metadata for a Cloud NetApp Storage Pool."""
 
   _RELEASE_TRACK = base.ReleaseTrack.ALPHA
-
-  @staticmethod
-  def Args(parser):
-    concept_parsers.ConceptParser([flags.GetStoragePoolPresentationSpec(
-        'The Storage Pool to describe.')]).AddToParser(parser)
-
-  def Run(self, args):
-    """Run the describe command."""
-    storagepool_ref = args.CONCEPTS.storage_pool.Parse()
-    client = storagepools_client.StoragePoolsClient(
-        release_track=self._RELEASE_TRACK)
-    return client.GetStoragePool(storagepool_ref)
 

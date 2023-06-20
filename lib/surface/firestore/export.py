@@ -26,12 +26,11 @@ from googlecloudsdk.command_lib.firestore import flags
 from googlecloudsdk.core import properties
 
 
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
 class Export(base.Command):
   """export Cloud Firestore documents to Google Cloud Storage."""
 
-  detailed_help = {
-      'EXAMPLES':
-          """\
+  detailed_help = {'EXAMPLES': """\
           To export all collection groups to `mybucket` in objects prefixed with `my/path`, run:
 
             $ {command} gs://mybucket/my/path
@@ -43,11 +42,10 @@ class Export(base.Command):
           To export all collection groups from certain namespace, run:
 
             $ {command} gs://mybucket/my/path --namespace-ids='specific namespace id'
-      """
-  }
+      """}
 
-  @staticmethod
-  def Args(parser):
+  @classmethod
+  def Args(cls, parser):
     """Register flags for this command."""
     flags.AddCollectionIdsFlag(parser)
     flags.AddNamespaceIdsFlag(parser)
@@ -64,13 +62,15 @@ class Export(base.Command):
 
         Will place the export in the `mybucket` bucket in objects prefixed with
         `my/path`.
-        """)
+        """,
+    )
     base.ASYNC_FLAG.AddToParser(parser)
 
   def Run(self, args):
     project = properties.VALUES.core.project.Get(required=True)
     object_ref = storage_util.ObjectReference.FromUrl(
-        args.OUTPUT_URI_PREFIX, allow_empty_object=True)
+        args.OUTPUT_URI_PREFIX, allow_empty_object=True
+    )
 
     response = importexport.Export(
         project,
@@ -78,9 +78,46 @@ class Export(base.Command):
         # use join and filter to avoid trailing '/'.
         object_ref.ToUrl().rstrip('/'),
         namespace_ids=args.namespace_ids,
-        collection_ids=args.collection_ids)
+        collection_ids=args.collection_ids,
+        snapshot_time=self.GetSnapshotTime(args),
+    )
 
     if not args.async_:
       operations.WaitForOperation(response)
 
     return response
+
+  def GetSnapshotTime(self, args):
+    return None
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class ExportAlpha(Export):
+  """export Cloud Firestore documents to Google Cloud Storage."""
+
+  detailed_help = {'EXAMPLES': """\
+          To export all collection groups to `mybucket` in objects prefixed with `my/path`, run:
+
+            $ {command} gs://mybucket/my/path
+
+          To export a specific set of collections groups asynchronously, run:
+
+            $ {command} gs://mybucket/my/path --collection-ids='specific collection group1','specific collection group2' --async
+
+          To export all collection groups from certain namespace, run:
+
+            $ {command} gs://mybucket/my/path --namespace-ids='specific namespace id'
+
+          To export from a snapshot at '2023-05-26T10:20:00.00Z', run:
+
+            $ {command} gs://mybucket/my/path --snapshot-time='2023-05-26T10:20:00.00Z'
+      """}
+
+  @classmethod
+  def Args(cls, parser):
+    """Register flags for this command."""
+    super(ExportAlpha, cls).Args(parser)
+    flags.AddSnapshotTimeFlag(parser)
+
+  def GetSnapshotTime(self, args):
+    return args.snapshot_time

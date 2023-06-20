@@ -53,9 +53,13 @@ class BqmlXGBoostClient(PredictionClient):
       try:
         return self._predictor.predict(inputs, **kwargs)
       except Exception as e:  # pylint: disable=broad-except
-        logging.exception("Exception while predicting with bqml xgboost model.")
-        raise PredictionError(PredictionError.FAILED_TO_RUN_MODEL,
-                              "Exception during bqml xgboost prediction") from e
+        logging.exception(
+            "Exception during predicting with bqml xgboost model."
+        )
+        raise PredictionError(
+            PredictionError.FAILED_TO_RUN_MODEL,
+            "Exception during predicting with bqml xgboost model: " + str(e),
+        ) from e
 
 
 def create_xgboost_predictor(model_path, **unused_kwargs):

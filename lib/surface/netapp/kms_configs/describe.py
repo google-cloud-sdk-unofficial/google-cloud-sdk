@@ -24,11 +24,6 @@ from googlecloudsdk.command_lib.netapp import flags
 from googlecloudsdk.command_lib.util.concepts import concept_parsers
 
 
-# TODO(b/239613419):
-# Keep gcloud beta netapp group hidden until v1beta1 API stable
-# also restructure release tracks that GA \subset BETA \subset ALPHA once
-# BETA is public.
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class DescribeBeta(base.DescribeCommand):
   """Show metadata for a Cloud NetApp Volumes KMS Config."""
@@ -38,13 +33,13 @@ class DescribeBeta(base.DescribeCommand):
           Describe a KMS (Key Management System) Config
           """,
       'EXAMPLES': """\
-          The following command gets metadata using describe for a KMS Config instance in the default netapp/location
+          The following command gets metadata using describe for a KMS Config instance named KMS_CONFIG in the default netapp/location
 
-              $ {command}
+              $ {command} KMS_CONFIG
 
-          To get metadata on a KMS Config in a specified location, run:
+          To get metadata on a KMS Config named KMS_CONFIG in a specified location, run:
 
-              $ {command} --location=us-central1
+              $ {command} KMS_CONFIG --location=us-central1s
           """,
   }
 

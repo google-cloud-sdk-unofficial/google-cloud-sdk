@@ -70,8 +70,8 @@ auto_flag_defaults = dict(
 
 def AddAutoFlags(parser, release_track):
   """Adds flags that are not same in create."""
-  flags.AddLoggingFlag(parser, autopilot=True)
-  flags.AddMonitoringFlag(parser, autopilot=True)
+  flags.AddLoggingFlag(parser)
+  flags.AddMonitoringFlag(parser)
   flags.AddBinauthzFlags(
       parser,
       release_track=release_track,

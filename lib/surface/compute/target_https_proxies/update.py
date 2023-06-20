@@ -159,6 +159,8 @@ def _Run(
           args, ssl_certificates_arg, proxy_ref, holder.resources
       )
       new_resource.sslCertificates = [ref.SelfLink() for ref in ssl_cert_refs]
+    if clear_ssl_certificates:
+      cleared_fields.append('sslCertificates')
   elif args.certificate_manager_certificates:
     location = target_https_proxies_utils.GetLocation(proxy_ref)
     ssl_cert_refs = [

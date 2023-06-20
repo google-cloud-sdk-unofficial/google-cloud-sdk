@@ -202,6 +202,7 @@ class Dev(base.Command):
 
   def _RunCloud(self, args):
     settings = cloud.AssembleSettings(args)
+    cloud.ValidateSettings(settings)
     cloudrun.PromptToOverwriteCloud(args, settings, self.ReleaseTrack())
     cloud_file_generator = cloud_files.CloudRuntimeFiles(settings)
     kubernetes_config = six.ensure_text(cloud_file_generator.KubernetesConfig())

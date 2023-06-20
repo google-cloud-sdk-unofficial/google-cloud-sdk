@@ -25,16 +25,22 @@ from googlecloudsdk.command_lib.netapp import flags
 from googlecloudsdk.command_lib.util.concepts import concept_parsers
 
 
-# TODO(b/239613419):
-# Keep gcloud beta netapp group hidden until v1beta1 API stable
-# also restructure release tracks that GA \subset BETA \subset ALPHA once
-# BETA is public.
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class DescribeBeta(base.DescribeCommand):
   """Show metadata for a Cloud NetApp Active Directory."""
 
   _RELEASE_TRACK = base.ReleaseTrack.BETA
+
+  detailed_help = {
+      'DESCRIPTION': """\
+          Describes an AD (Active Directory) config for Cloud NetApp Volumes
+          """,
+      'EXAMPLES': """\
+          The following command describes an AD named AD_NAME with the required arguments
+
+              $ {command} AD_NAME --location=us-central1
+          """,
+  }
 
   @staticmethod
   def Args(parser):
@@ -50,19 +56,19 @@ class DescribeBeta(base.DescribeCommand):
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class DescribeAlpha(base.DescribeCommand):
+class DescribeAlpha(DescribeBeta):
   """Show metadata for a Cloud NetApp Active Directory."""
 
   _RELEASE_TRACK = base.ReleaseTrack.ALPHA
 
-  @staticmethod
-  def Args(parser):
-    concept_parsers.ConceptParser([flags.GetActiveDirectoryPresentationSpec(
-        'The Active Directory to describe.')]).AddToParser(parser)
+  # @staticmethod
+  # def Args(parser):
+  #   concept_parsers.ConceptParser([flags.GetActiveDirectoryPresentationSpec(
+  #       'The Active Directory to describe.')]).AddToParser(parser)
 
-  def Run(self, args):
-    """Run the describe command."""
-    activedirectory_ref = args.CONCEPTS.active_directory.Parse()
-    client = ad_client.ActiveDirectoriesClient(
-        release_track=self._RELEASE_TRACK)
-    return client.GetActiveDirectory(activedirectory_ref)
+  # def Run(self, args):
+  #   """Run the describe command."""
+  #   activedirectory_ref = args.CONCEPTS.active_directory.Parse()
+  #   client = ad_client.ActiveDirectoriesClient(
+  #       release_track=self._RELEASE_TRACK)
+  #   return client.GetActiveDirectory(activedirectory_ref)

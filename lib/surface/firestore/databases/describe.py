@@ -25,13 +25,24 @@ from googlecloudsdk.command_lib.firestore import flags
 from googlecloudsdk.core import properties
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
+)
 class Describe(base.DescribeCommand):
   """Describes information about a Cloud Firestore database.
 
   The following command describes a Google Cloud Firestore database.
 
-  $ {command}
+  ## EXAMPLES
+
+  To describe a Firestore database with a databaseId `testdb`.
+
+      $ {command} --database=testdb
+
+  If databaseId is not specified, the command will describe information about
+  the `(default)` database.
+
+      $ {command}
   """
 
   @staticmethod

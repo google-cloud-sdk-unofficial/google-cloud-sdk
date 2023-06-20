@@ -130,7 +130,7 @@ class CreateBeta(Create):
           """\
     The following command creates a Filestore instance named NAME with a single volume.
 
-      $ {command} NAME --description=DESCRIPTION --tier=TIER --protocol=PROTOCOL --file-share=name=VOLUME_NAME,capacity=CAPACITY --network=name=NETWORK_NAME,reserved-ip-range=RESERVED_IP_RANGE,connect-mode=CONNECT_MODE --zone=ZONE --kms-key=KMS-KEY --kms-keyring=KMS_KEYRING --kms-location=KMS_LOCATION --kms-project=KMS_PROJECT --flags-file=FLAGS_FILE
+      $ {command} NAME --description=DESCRIPTION --tier=TIER --protocol=PROTOCOL --file-share=name=VOLUME_NAME,capacity=CAPACITY --network=name=NETWORK_NAME,reserved-ip-range=RESERVED_IP_RANGE,connect-mode=CONNECT_MODE --zone=ZONE --kms-key=KMS-KEY --kms-keyring=KMS_KEYRING --kms-location=KMS_LOCATION --kms-project=KMS_PROJECT --managed-ad=domain=DOMAIN,computer=COMPUTER --flags-file=FLAGS_FILE
 
     Example json configuration file:
   {
@@ -145,6 +145,10 @@ class CreateBeta(Create):
           "10.0.0.0/8",
         ],
         "squash-mode": "NO_ROOT_SQUASH",
+        "security-flavors": [
+            "AUTH_SYS",
+            "KRB5P",
+        ],
       },
        {
         "access-mode": "READ_ONLY",
@@ -180,6 +184,7 @@ class CreateBeta(Create):
     if args.protocol is not None:
       protocol = instances_flags.GetProtocolArg(client.messages
       ).GetEnumForChoice(args.protocol)
+    managed_ad = args.managed_ad or None
     labels = labels_util.ParseCreateArgs(
         args, client.messages.Instance.LabelsValue)
     try:
@@ -198,7 +203,8 @@ class CreateBeta(Create):
         labels=labels,
         zone=instance_ref.locationsId,
         nfs_export_options=nfs_export_options,
-        kms_key_name=instances_flags.GetAndValidateKmsKeyName(args))
+        kms_key_name=instances_flags.GetAndValidateKmsKeyName(args),
+        managed_ad=managed_ad)
 
     result = client.CreateInstance(instance_ref, args.async_, instance)
     if args.async_:

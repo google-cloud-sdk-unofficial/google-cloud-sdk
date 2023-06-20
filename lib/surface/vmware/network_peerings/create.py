@@ -58,6 +58,7 @@ class Create(base.CreateCommand):
     flags.AddNetworkPeeringToParser(parser, positional=True)
     base.ASYNC_FLAG.AddToParser(parser)
     base.ASYNC_FLAG.SetDefault(parser, True)
+    parser.display_info.AddFormat('yaml')
     parser.add_argument(
         '--vmware-engine-network',
         required=True,
@@ -163,12 +164,11 @@ class Create(base.CreateCommand):
     if is_async:
       log.CreatedResource(
           operation.name, kind='VPC network peering', is_async=True)
-      return operation
+      return
 
     resource = client.WaitForOperation(
         operation_ref=client.GetOperationRef(operation),
         message='waiting for vpc peering [{}] to be created'.format(
             peering.RelativeName()))
-    log.CreatedResource(resource, kind='VPC network peering')
-
+    log.CreatedResource(peering.RelativeName(), kind='VPC network peering')
     return resource

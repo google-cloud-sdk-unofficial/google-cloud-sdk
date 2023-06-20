@@ -187,6 +187,8 @@ class Update(base.UpdateCommand):
     if self._support_ips:
       if args.IsSpecified('security_profile_group'):
         security_profile_group = args.security_profile_group
+      else:
+        cleared_fields.append('securityProfileGroup')
       if self._support_ips_with_tls and args.IsSpecified('tls_inspect'):
         tls_inspect = args.tls_inspect
     # If not need to construct a new matcher.

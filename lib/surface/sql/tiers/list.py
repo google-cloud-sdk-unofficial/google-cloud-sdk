@@ -30,18 +30,22 @@ class _BaseList(object):
   @staticmethod
   def Args(parser):
     parser.display_info.AddFormat(flags.TIERS_FORMAT)
+    flags.AddShowEdition(parser)
 
-  def Run(self, unused_args):
+  def Run(self, args):
     """Lists all available service tiers for Google Cloud SQL.
 
     Args:
-      unused_args: argparse.Namespace, The arguments that this command was
-          invoked with.
+      args: argparse.Namespace, The arguments that this command was invoked
+        with.
 
     Returns:
       A dict object that has the list of tier resources if the command ran
       successfully.
     """
+    if args.show_edition:
+      args.GetDisplayInfo().AddFormat(flags.TIERS_FORMAT_EDITION)
+
     client = api_util.SqlClient(api_util.API_VERSION_DEFAULT)
     sql_client = client.sql_client
     sql_messages = client.sql_messages

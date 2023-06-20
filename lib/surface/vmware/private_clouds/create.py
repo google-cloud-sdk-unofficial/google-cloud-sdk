@@ -66,6 +66,7 @@ class Create(base.CreateCommand):
                                 hide_resource_argument_flags=True)
     base.ASYNC_FLAG.AddToParser(parser)
     base.ASYNC_FLAG.SetDefault(parser, True)
+    parser.display_info.AddFormat('yaml')
     parser.add_argument(
         '--description',
         help="""\
@@ -156,7 +157,7 @@ class Create(base.CreateCommand):
     )
     if is_async:
       log.CreatedResource(operation.name, kind='private cloud', is_async=True)
-      return operation
+      return
 
     resource = client.WaitForOperation(
         operation_ref=client.GetOperationRef(operation),
@@ -164,6 +165,5 @@ class Create(base.CreateCommand):
             privatecloud.RelativeName()
         ),
     )
-    log.CreatedResource(resource, kind='private cloud')
-
+    log.CreatedResource(privatecloud.RelativeName(), kind='private cloud')
     return resource

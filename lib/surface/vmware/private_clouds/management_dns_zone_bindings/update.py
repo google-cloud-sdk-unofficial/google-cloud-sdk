@@ -57,6 +57,7 @@ class Update(base.UpdateCommand):
     flags.AddManagementDnsZoneBindingArgToParser(parser)
     base.ASYNC_FLAG.AddToParser(parser)
     base.ASYNC_FLAG.SetDefault(parser, True)
+    parser.display_info.AddFormat('yaml')
     parser.add_argument(
         '--description',
         required=True,
@@ -73,12 +74,12 @@ class Update(base.UpdateCommand):
     if is_async:
       log.UpdatedResource(operation.name
                           , kind='management DNS zone binding', is_async=True)
-      return operation
+      return
 
     resource = client.WaitForOperation(
         operation_ref=client.GetOperationRef(operation),
         message=('waiting for management DNS zone binding [{}] ' +
                  'to be updated').format(mdzb.RelativeName()))
-    log.UpdatedResource(resource, kind='management DNS zone binding')
+    log.UpdatedResource(mdzb.RelativeName(), kind='management DNS zone binding')
 
     return resource

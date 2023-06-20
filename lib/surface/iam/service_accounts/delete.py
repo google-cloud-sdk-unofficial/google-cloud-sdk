@@ -22,6 +22,7 @@ from __future__ import unicode_literals
 import textwrap
 
 from googlecloudsdk.api_lib.iam import util
+from googlecloudsdk.api_lib.smart_guardrails import smart_guardrails
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.iam import iam_util
 from googlecloudsdk.core import log
@@ -43,20 +44,40 @@ class Delete(base.DeleteCommand):
           """),
   }
 
-  @staticmethod
-  def Args(parser):
+  @classmethod
+  def Args(cls, parser):
     iam_util.AddServiceAccountNameArg(
         parser, action='to delete')
+    if cls.ReleaseTrack() == base.ReleaseTrack.ALPHA:
+      iam_util.AddServiceAccountRecommendArg(parser, action='deletion')
 
   def Run(self, args):
-    console_io.PromptContinue(
-        message='You are about to delete service '
-        'account [{0}].'.format(args.service_account),
-        cancel_on_no=True)
+    prompt_message = 'You are about to delete service account [{0}]'.format(
+        args.service_account
+    )
     client, messages = util.GetClientAndMessages()
+    sa_resource_name = iam_util.EmailToAccountResourceName(args.service_account)
+    if self.ReleaseTrack() == base.ReleaseTrack.ALPHA and args.recommend:
+      # Add deletion risk message to the prompt.
+      service_account = client.projects_serviceAccounts.Get(
+          messages.IamProjectsServiceAccountsGetRequest(name=sa_resource_name)
+      )
+      # Parent command group explicitly disables user project quota.
+      # Call with user project quota enabled, so that
+      # default project can be used as quota project.
+      base.EnableUserProjectQuota()
+      risk = smart_guardrails.GetServiceAccountDeletionRisk(
+          self.ReleaseTrack(),
+          service_account.projectId,
+          args.service_account,
+      )
+      base.DisableUserProjectQuota()
+      if risk:
+        prompt_message += '\n\n{0}'.format(risk)
+    console_io.PromptContinue(message=prompt_message, cancel_on_no=True)
     client.projects_serviceAccounts.Delete(
-        messages.IamProjectsServiceAccountsDeleteRequest(
-            name=iam_util.EmailToAccountResourceName(args.service_account)))
+        messages.IamProjectsServiceAccountsDeleteRequest(name=sa_resource_name)
+    )
 
     log.status.Print('deleted service account [{0}]'.format(
         args.service_account))

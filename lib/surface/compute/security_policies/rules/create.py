@@ -58,6 +58,7 @@ class CreateHelper(object):
       support_regional_security_policy,
       support_multiple_rate_limit_keys,
       support_net_lb,
+      support_recaptcha_options,
   ):
     """Generates the flagset for a Create command."""
     if support_regional_security_policy or support_net_lb:
@@ -97,6 +98,8 @@ class CreateHelper(object):
       )
     if support_header_action:
       flags.AddRequestHeadersToAdd(parser)
+    if support_recaptcha_options:
+      flags.AddRecaptchaOptions(parser)
     if support_regional_security_policy:
       parser.display_info.AddCacheUpdater(
           security_policies_flags.SecurityPoliciesCompleter)
@@ -116,6 +119,7 @@ class CreateHelper(object):
       support_regional_security_policy,
       support_multiple_rate_limit_keys,
       support_net_lb,
+      support_recaptcha_options,
   ):
     """Validates arguments and creates a security policy rule."""
     holder = base_classes.ComputeApiHolder(release_track)
@@ -193,6 +197,12 @@ class CreateHelper(object):
     if support_header_action:
       request_headers_to_add = args.request_headers_to_add
 
+    expression_options = None
+    if support_recaptcha_options:
+      expression_options = security_policies_utils.CreateExpressionOptions(
+          holder.client, args
+      )
+
     network_matcher = None
     if support_net_lb:
       network_matcher = security_policies_utils.CreateNetworkMatcher(
@@ -202,13 +212,15 @@ class CreateHelper(object):
     return security_policy_rule.Create(
         src_ip_ranges=args.src_ip_ranges,
         expression=args.expression,
+        expression_options=expression_options,
         network_matcher=network_matcher,
         action=args.action,
         description=args.description,
         preview=args.preview,
         redirect_options=redirect_options,
         rate_limit_options=rate_limit_options,
-        request_headers_to_add=request_headers_to_add)
+        request_headers_to_add=request_headers_to_add,
+    )
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
@@ -240,6 +252,7 @@ class CreateGA(base.CreateCommand):
   _support_fairshare = False
   _support_regional_security_policy = False
   _support_net_lb = False
+  _support_recaptcha_options = False
 
   @classmethod
   def Args(cls, parser):
@@ -253,6 +266,7 @@ class CreateGA(base.CreateCommand):
         support_regional_security_policy=cls._support_regional_security_policy,
         support_multiple_rate_limit_keys=cls._support_multiple_rate_limit_keys,
         support_net_lb=cls._support_net_lb,
+        support_recaptcha_options=cls._support_recaptcha_options,
     )
 
   def Run(self, args):
@@ -266,6 +280,7 @@ class CreateGA(base.CreateCommand):
         support_regional_security_policy=self._support_regional_security_policy,
         support_multiple_rate_limit_keys=self._support_multiple_rate_limit_keys,
         support_net_lb=self._support_net_lb,
+        support_recaptcha_options=self._support_recaptcha_options,
     )
 
 
@@ -296,7 +311,8 @@ class CreateBeta(base.CreateCommand):
   _support_tcl_ssl = False
   _support_fairshare = False
   _support_regional_security_policy = True
-  _support_net_lb = False
+  _support_net_lb = True
+  _support_recaptcha_options = True
 
   @classmethod
   def Args(cls, parser):
@@ -310,6 +326,7 @@ class CreateBeta(base.CreateCommand):
         support_regional_security_policy=cls._support_regional_security_policy,
         support_multiple_rate_limit_keys=cls._support_multiple_rate_limit_keys,
         support_net_lb=cls._support_net_lb,
+        support_recaptcha_options=cls._support_recaptcha_options,
     )
 
   def Run(self, args):
@@ -323,6 +340,7 @@ class CreateBeta(base.CreateCommand):
         support_regional_security_policy=self._support_regional_security_policy,
         support_multiple_rate_limit_keys=self._support_multiple_rate_limit_keys,
         support_net_lb=self._support_net_lb,
+        support_recaptcha_options=self._support_recaptcha_options,
     )
 
 
@@ -354,6 +372,7 @@ class CreateAlpha(base.CreateCommand):
   _support_fairshare = True
   _support_regional_security_policy = True
   _support_net_lb = True
+  _support_recaptcha_options = True
 
   @classmethod
   def Args(cls, parser):
@@ -367,6 +386,7 @@ class CreateAlpha(base.CreateCommand):
         support_regional_security_policy=cls._support_regional_security_policy,
         support_multiple_rate_limit_keys=cls._support_multiple_rate_limit_keys,
         support_net_lb=cls._support_net_lb,
+        support_recaptcha_options=cls._support_recaptcha_options,
     )
 
   def Run(self, args):
@@ -380,4 +400,5 @@ class CreateAlpha(base.CreateCommand):
         support_regional_security_policy=self._support_regional_security_policy,
         support_multiple_rate_limit_keys=self._support_multiple_rate_limit_keys,
         support_net_lb=self._support_net_lb,
+        support_recaptcha_options=self._support_recaptcha_options,
     )

@@ -57,6 +57,7 @@ class Create(base.CreateCommand):
     flags.AddManagementDnsZoneBindingArgToParser(parser)
     base.ASYNC_FLAG.AddToParser(parser)
     base.ASYNC_FLAG.SetDefault(parser, True)
+    parser.display_info.AddFormat('yaml')
     group = parser.add_mutually_exclusive_group(required=True)
     group.add_argument(
         '--vpc-network',
@@ -89,12 +90,11 @@ class Create(base.CreateCommand):
     if is_async:
       log.CreatedResource(
           operation.name, kind='management DNS zone binding', is_async=True)
-      return operation
+      return
 
     resource = client.WaitForOperation(
         operation_ref=client.GetOperationRef(operation),
         message=('waiting for management DNS zone binding [{}] ' +
                  'to be created').format(mdzb.RelativeName()))
-    log.CreatedResource(resource, kind='management DNS zone binding')
-
+    log.CreatedResource(mdzb.RelativeName(), kind='management DNS zone binding')
     return resource

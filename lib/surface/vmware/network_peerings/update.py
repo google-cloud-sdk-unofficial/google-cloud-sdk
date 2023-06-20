@@ -54,6 +54,7 @@ class Update(base.UpdateCommand):
     flags.AddNetworkPeeringToParser(parser, positional=True)
     base.ASYNC_FLAG.AddToParser(parser)
     base.ASYNC_FLAG.SetDefault(parser, True)
+    parser.display_info.AddFormat('yaml')
     parser.add_argument(
         '--description',
         required=False,
@@ -69,12 +70,11 @@ class Update(base.UpdateCommand):
     if is_async:
       log.UpdatedResource(
           operation.name, kind='VPC network peering', is_async=True)
-      return operation
+      return
 
     resource = client.WaitForOperation(
         operation_ref=client.GetOperationRef(operation),
         message='waiting for vpc peering [{}] to be updated'.format(
             peering.RelativeName()))
-    log.UpdatedResource(resource, kind='VPC network peering')
-
+    log.UpdatedResource(peering.RelativeName(), kind='VPC network peering')
     return resource

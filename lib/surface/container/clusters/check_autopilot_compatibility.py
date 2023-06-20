@@ -22,7 +22,6 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.core import log
 
 
-@base.Hidden
 class CheckAutopliotCompatibility(base.ListCommand):
   """Check autopilot compatibility of a running cluster."""
 

@@ -55,6 +55,7 @@ class Update(base.UpdateCommand):
     aws_flags.AddRootVolumeKmsKeyArn(parser)
     aws_flags.AddRootVolumeType(parser)
     aws_flags.AddRootVolumeIops(parser)
+    aws_flags.AddRootVolumeThroughput(parser)
     aws_flags.AddConfigEncryptionKmsKeyArn(parser, required=False)
     aws_flags.AddProxyConfigForUpdate(parser, 'node pool')
     aws_flags.AddSshEC2KeyPairForUpdate(parser, 'node pool')

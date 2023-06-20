@@ -21,7 +21,10 @@ from __future__ import unicode_literals
 from googlecloudsdk.api_lib.container.gkemulticloud import azure as api_util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.container.azure import resource_args
+from googlecloudsdk.command_lib.container.gkemulticloud import constants
 from googlecloudsdk.command_lib.container.gkemulticloud import endpoint_util
+from googlecloudsdk.command_lib.container.gkemulticloud import versions
+from googlecloudsdk.core import log
 
 
 _EXAMPLES = """
@@ -43,8 +46,16 @@ class Describe(base.DescribeCommand):
 
   def Run(self, args):
     """Runs the describe command."""
-    location = resource_args.ParseAzureClusterResourceArg(args).locationsId
-    with endpoint_util.GkemulticloudEndpointOverride(location):
-      cluster_ref = resource_args.ParseAzureClusterResourceArg(args)
-      client = api_util.ClustersClient()
-      return client.Get(cluster_ref)
+    self._upgrade_hint = None
+    cluster_ref = resource_args.ParseAzureClusterResourceArg(args)
+    with endpoint_util.GkemulticloudEndpointOverride(cluster_ref.locationsId):
+      cluster_client = api_util.ClustersClient()
+      cluster_info = cluster_client.Get(cluster_ref)
+      self._upgrade_hint = versions.upgrade_hint_cluster(
+          cluster_ref, cluster_info, constants.AZURE
+      )
+      return cluster_info
+
+  def Epilog(self, results_were_displayed):
+    if self._upgrade_hint:
+      log.status.Print(self._upgrade_hint)

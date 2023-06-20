@@ -53,6 +53,7 @@ class Create(base.CreateCommand):
     flags.AddNetworkPolicyToParser(parser, positional=True)
     base.ASYNC_FLAG.AddToParser(parser)
     base.ASYNC_FLAG.SetDefault(parser, True)
+    parser.display_info.AddFormat('yaml')
     parser.add_argument(
         '--vmware-engine-network',
         required=True,
@@ -100,13 +101,15 @@ class Create(base.CreateCommand):
     if is_async:
       log.CreatedResource(
           operation.name, kind='VMware Engine network policy', is_async=True)
-      return operation
+      return
 
     resource = client.WaitForOperation(
         operation_ref=client.GetOperationRef(operation),
         message='waiting for network policy [{}] to be created'.format(
-            network_policy.RelativeName()),
-        has_result=True)
+            network_policy.RelativeName()
+        ),
+    )
     log.CreatedResource(
-        resource, kind='VMware Engine network policy', is_async=False)
+        network_policy.RelativeName(), kind='VMware Engine network policy'
+    )
     return resource

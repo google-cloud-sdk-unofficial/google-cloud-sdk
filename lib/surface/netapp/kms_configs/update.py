@@ -21,21 +21,10 @@ from __future__ import unicode_literals
 from googlecloudsdk.api_lib.netapp.kms_configs import client as kmsconfigs_client
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.netapp.kms_configs import flags as kmsconfigs_flags
-from googlecloudsdk.command_lib.netapp.kms_configs.flags import ConstructCryptoKeyName
-from googlecloudsdk.command_lib.netapp.kms_configs.flags import ExtractKmsCryptoKeyFromCryptoKeyName
-from googlecloudsdk.command_lib.netapp.kms_configs.flags import ExtractKmsKeyRingFromCryptoKeyName
-from googlecloudsdk.command_lib.netapp.kms_configs.flags import ExtractKmsLocationFromCryptoKeyName
-from googlecloudsdk.command_lib.netapp.kms_configs.flags import ExtractKmsProjectFromCryptoKeyName
 from googlecloudsdk.command_lib.util.args import labels_util
-
 from googlecloudsdk.core import log
 
 
-# TODO(b/239613419):
-# Keep gcloud beta netapp group hidden until v1beta1 API stable
-# also restructure release tracks that GA \subset BETA \subset ALPHA once
-# BETA is public.
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class UpdateBeta(base.UpdateCommand):
   """Update a Cloud NetApp Volumes KMS Config."""
@@ -45,14 +34,13 @@ class UpdateBeta(base.UpdateCommand):
           Updates a KMS (Key Management System) Config
           """,
       'EXAMPLES': """\
-          The following command updates a KMS Config instance's description and KMS Key Ring in the default netapp/location
+          The following command updates a KMS Config instance named KMS_CONFIG with all possible arguments
 
-              $ {command} --description="new KMS ring" --kms-keyring=keyring2
+              $ {command} KMS_CONFIG --location=us-central1 --kms-location=europe-southwest1 --kms-project=new-kms-project --kms-keyring=kms-keyring2 --kms-key=crypto-key2
 
-          To update a KMS Config asynchronously, run the following command:
+          To update a KMS Config named KMS_CONFIG asynchronously, run the following command:
 
-              $ {command} --async --description="new KMS ring" --kms-keyring-keyring2
-          """,
+              $ {command} KMS_CONFIG --async --location=us-central1 --kms-location=europe-southwest1 --kms-project=new-kms-project --kms-keyring=kms-keyring2 --kms-key=crypto-key2          """,
   }
 
   _RELEASE_TRACK = base.ReleaseTrack.BETA
@@ -74,28 +62,31 @@ class UpdateBeta(base.UpdateCommand):
       ).GetOrNone()
     else:
       labels = None
-    kms_project = (
-        args.kms_project
-        if args.kms_project is not None
-        else ExtractKmsProjectFromCryptoKeyName(orig_kmsconfig.cryptoKeyName)
-    )
-    kms_location = (
-        args.kms_location
-        if args.kms_location is not None
-        else ExtractKmsLocationFromCryptoKeyName(orig_kmsconfig.cryptoKeyName)
-    )
-    kms_keyring = (
-        args.kms_keyring
-        if args.kms_keyring is not None
-        else ExtractKmsKeyRingFromCryptoKeyName(orig_kmsconfig.cryptoKeyName)
-    )
+    if args.kms_project is not None:
+      kms_project = args.kms_project
+    else:
+      kms_project = kmsconfigs_flags.ExtractKmsProjectFromCryptoKeyName(
+          orig_kmsconfig.cryptoKeyName
+      )
+    if args.kms_location is not None:
+      kms_location = args.kms_location
+    else:
+      kms_location = kmsconfigs_flags.ExtractKmsLocationFromCryptoKeyName(
+          orig_kmsconfig.cryptoKeyName
+      )
+    if args.kms_keyring is not None:
+      kms_keyring = args.kms_keyring
+    else:
+      kms_keyring = kmsconfigs_flags.ExtractKmsKeyRingFromCryptoKeyName(
+          orig_kmsconfig.cryptoKeyName
+      )
     if args.kms_key is not None:
       kms_key = args.kms_key
     else:
-      kms_key = ExtractKmsCryptoKeyFromCryptoKeyName(
+      kms_key = kmsconfigs_flags.ExtractKmsCryptoKeyFromCryptoKeyName(
           orig_kmsconfig.cryptoKeyName
       )
-    crypto_key_name = ConstructCryptoKeyName(
+    crypto_key_name = kmsconfigs_flags.ConstructCryptoKeyName(
         kms_project, kms_location, kms_keyring, kms_key
     )
     kms_config = client.ParseUpdatedKmsConfig(

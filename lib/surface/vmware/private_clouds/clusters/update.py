@@ -56,6 +56,7 @@ class Update(base.UpdateCommand):
     flags.AddClusterArgToParser(parser, positional=True)
     base.ASYNC_FLAG.AddToParser(parser)
     base.ASYNC_FLAG.SetDefault(parser, True)
+    parser.display_info.AddFormat('yaml')
     parser.add_argument(
         '--node-type-config',
         required=True,
@@ -88,12 +89,11 @@ class Update(base.UpdateCommand):
 
     if is_async:
       log.UpdatedResource(operation.name, kind='cluster', is_async=True)
-      return operation
+      return
 
     resource = client.WaitForOperation(
         operation_ref=client.GetOperationRef(operation),
         message='waiting for cluster [{}] to be updated'.format(
             cluster.RelativeName()))
-    log.UpdatedResource(resource, kind='cluster')
-
+    log.UpdatedResource(cluster.RelativeName(), kind='cluster')
     return resource

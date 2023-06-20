@@ -62,6 +62,7 @@ class Create(base.CreateCommand):
     aws_flags.AddSecurityGroupIds(parser, kind='node pool')
     aws_flags.AddRootVolumeType(parser)
     aws_flags.AddRootVolumeIops(parser)
+    aws_flags.AddRootVolumeThroughput(parser)
     aws_flags.AddRootVolumeKmsKeyArn(parser)
     aws_flags.AddProxyConfig(parser)
     aws_flags.AddConfigEncryptionKmsKeyArn(parser)

@@ -56,6 +56,7 @@ class Update(base.UpdateCommand):
     flags.AddExternalAccessRuleToParser(parser, positional=True)
     base.ASYNC_FLAG.AddToParser(parser)
     base.ASYNC_FLAG.SetDefault(parser, True)
+    parser.display_info.AddFormat('yaml')
     parser.add_argument(
         '--description',
         help="""\
@@ -122,7 +123,7 @@ class Update(base.UpdateCommand):
           operation.name,
           kind='VMware Engine external access rule',
           is_async=True)
-      return operation
+      return
 
     resource = client.WaitForOperation(
         operation_ref=client.GetOperationRef(operation),
@@ -130,5 +131,7 @@ class Update(base.UpdateCommand):
             external_access_rule.RelativeName()),
         has_result=True)
     log.UpdatedResource(
-        resource, kind='VMware Engine external access rule', is_async=False)
+        external_access_rule.RelativeName(),
+        kind='VMware Engine external access rule',
+    )
     return resource

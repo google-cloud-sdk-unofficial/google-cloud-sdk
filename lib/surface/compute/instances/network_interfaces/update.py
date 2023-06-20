@@ -37,7 +37,7 @@ from googlecloudsdk.command_lib.util.apis import arg_utils
 import six
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Update(base.UpdateCommand):
   r"""Update a Compute Engine virtual machine network interface.
 
@@ -407,8 +407,25 @@ class Update(base.UpdateCommand):
     )
 
 
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class UpdateBeta(Update):
+  r"""Update a Compute Engine virtual machine network interface.
+
+  *{command}* updates network interfaces of a Compute Engine
+  virtual machine. For example:
+
+    $ {command} example-instance --zone us-central1-a --aliases r1:172.16.0.1/32
+
+  sets 172.16.0.1/32 from range r1 of the default interface's subnetwork
+  as the interface's alias IP.
+  """
+
+  support_ipv6_assignment = False
+  support_set_security_policy = True
+
+
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class UpdateAlpha(Update):
+class UpdateAlpha(UpdateBeta):
   r"""Update a Compute Engine virtual machine network interface.
 
   *{command}* updates network interfaces of a Compute Engine

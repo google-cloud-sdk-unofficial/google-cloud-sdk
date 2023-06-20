@@ -1,0 +1,15 @@
+- release_tracks:
+  - ALPHA
+  help_text:
+    brief: List deployments
+    description: List deployments
+    examples: |-
+      To list all deployments at location `us-central1`, run:
+
+      $ {command} --location=us-central1
+  arguments:
+    resource:
+      spec: !REF googlecloudsdk.command_lib.config_manager.resources:location
+      help_text: The location in which to list deployments
+  request:
+    collection: config.projects.locations.deployments

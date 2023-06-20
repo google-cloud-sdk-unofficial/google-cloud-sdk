@@ -11,9 +11,9 @@
         * The active account does not have permission to create clusters.
     examples: |
       To create a cluster with name `my-redis-cluster` in region `us-central1`
-      with memory size of 24 GiB, run:
+      with 3 shards, run:
 
-        $ {command} my-redis-cluster --region=us-central1 --size-gb=24
+        $ {command} my-redis-cluster --region=us-central1 --shard-count=3
 
   arguments:
     resource:
@@ -28,15 +28,17 @@
       help_text: |
         A human-readable name for the cluster.
     - arg_name: network
+      required: true
       api_field: cluster.pscConfigs.network
       help_text: |
-        The network where your cluster IP address is reserved.
+        The network where your cluster IP addresses are reserved, in the form of projects/{project}/global/networks/{network_id}
     - arg_name: replica-count
       api_field: cluster.replicaCount
       type: int
       help_text: |
         The replica count of each shard.
     - arg_name: shard-count
+      required: true
       api_field: cluster.shardCount
       type: int
       help_text: |

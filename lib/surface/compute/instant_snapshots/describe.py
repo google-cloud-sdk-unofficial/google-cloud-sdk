@@ -24,24 +24,24 @@ from googlecloudsdk.command_lib.compute.instant_snapshots import flags as ips_fl
 
 
 def _CommonArgs(parser):
-  Describe.ips_arg.AddArgument(parser, operation_type='describe')
+  DescribeBeta.ips_arg = ips_flags.MakeInstantSnapshotArg(plural=False)
+  DescribeBeta.ips_arg.AddArgument(parser, operation_type='describe')
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class Describe(base.DescribeCommand):
-  """Describe a Compute Engine instant snapshot."""
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class DescribeBeta(base.DescribeCommand):
+  """Describe a Compute Engine instant snapshot in beta."""
 
-  @staticmethod
-  def Args(parser):
-    Describe.ips_arg = ips_flags.MakeInstantSnapshotArg(plural=False)
+  @classmethod
+  def Args(cls, parser):
     _CommonArgs(parser)
 
-  def Run(self, args):
+  def _Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     client = holder.client
     messages = client.messages
 
-    ips_ref = Describe.ips_arg.ResolveAsResource(args, holder.resources)
+    ips_ref = DescribeBeta.ips_arg.ResolveAsResource(args, holder.resources)
 
     if ips_ref.Collection() == 'compute.instantSnapshots':
       service = client.apitools_client.instantSnapshots
@@ -53,19 +53,31 @@ class Describe(base.DescribeCommand):
     return client.MakeRequests([(service, 'Get',
                                  request_type(**ips_ref.AsDict()))])
 
+  def Run(self, args):
+    return self._Run(args)
 
-Describe.detailed_help = {
-    'brief':
-        'Describe a Compute Engine instant snapshot',
-    'DESCRIPTION':
-        """\
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class DescribeAlpha(DescribeBeta):
+  """Describe a Compute Engine instant snapshot in alpha."""
+
+  @classmethod
+  def Args(cls, parser):
+    _CommonArgs(parser)
+
+  def Run(self, args):
+    return self._Run(args)
+
+
+DescribeBeta.detailed_help = {
+    'brief': 'Describe a Compute Engine instant snapshot',
+    'DESCRIPTION': """\
         *{command}* displays all data associated with a Compute
         Engine instant snapshot in a project.
         """,
-    'EXAMPLES':
-        """\
-        To describe the instant snapshot 'ips-1' in zone 'us-east1-a', run:
+    'EXAMPLES': """\
+        To describe the instant snapshot 'instant-snapshot-1' in zone 'us-east1-a', run:
 
-            $ {command} ips-1 --zone=us-east1-a
+            $ {command} instant-snapshot-1 --zone=us-east1-a
         """,
 }

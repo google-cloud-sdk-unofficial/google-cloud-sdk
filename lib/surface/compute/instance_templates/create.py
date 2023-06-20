@@ -62,6 +62,7 @@ def _CommonArgs(
     support_replica_zones=False,
     support_local_ssd_recovery_timeout=False,
     support_network_queue_count=False,
+    support_storage_pool=False
 ):
   """Adding arguments applicable for creating instance templates."""
   parser.display_info.AddFormat(instance_templates_flags.DEFAULT_LIST_FORMAT)
@@ -73,6 +74,7 @@ def _CommonArgs(
       support_boot=True,
       support_multi_writer=support_multi_writer,
       support_replica_zones=support_replica_zones,
+      support_storage_pool=support_storage_pool
   )
   if support_local_ssd_size:
     instances_flags.AddLocalSsdArgsWithSize(parser)
@@ -495,7 +497,8 @@ def _RunCreate(compute_api,
                support_internal_ipv6_reservation=False,
                support_replica_zones=False,
                support_local_ssd_recovery_timeout=False,
-               support_performance_monitoring_unit=False):
+               support_performance_monitoring_unit=False,
+               support_storage_pool=False):
   """Common routine for creating instance template.
 
   This is shared between various release tracks.
@@ -531,6 +534,7 @@ def _RunCreate(compute_api,
         recovery timeout is set.
       support_performance_monitoring_unit: Indicate whether the PMU is
         supported.
+      support_storage_pool: Indicate whether storage pool is supported.
 
   Returns:
       A resource object dispatched by display.Displayer().
@@ -744,6 +748,7 @@ def _RunCreate(compute_api,
       support_kms=support_kms,
       support_multi_writer=support_multi_writer,
       support_replica_zones=support_replica_zones,
+      support_storage_pool=support_storage_pool
       )
 
   machine_type = instance_utils.InterpretMachineType(
@@ -934,6 +939,7 @@ class Create(base.CreateCommand):
   _support_network_queue_count = True
   _support_performance_monitoring_unit = False
   _support_internal_ipv6_reservation = True
+  _support_storage_pool = False
 
   @classmethod
   def Args(cls, parser):
@@ -952,6 +958,7 @@ class Create(base.CreateCommand):
         support_replica_zones=cls._support_replica_zones,
         support_local_ssd_size=cls._support_local_ssd_size,
         support_network_queue_count=cls._support_network_queue_count,
+        support_storage_pool=cls._support_storage_pool,
     )
     instances_flags.AddMinCpuPlatformArgs(parser, base.ReleaseTrack.GA)
     instances_flags.AddPrivateIpv6GoogleAccessArgForTemplate(
@@ -984,6 +991,7 @@ class Create(base.CreateCommand):
         support_replica_zones=self._support_replica_zones,
         support_performance_monitoring_unit=self._support_performance_monitoring_unit,
         support_internal_ipv6_reservation=self._support_internal_ipv6_reservation,
+        support_storage_pool=self._support_storage_pool,
     )
 
 
@@ -1018,6 +1026,7 @@ class CreateBeta(Create):
   _support_network_queue_count = True
   _support_performance_monitoring_unit = False
   _support_internal_ipv6_reservation = True
+  _support_storage_pool = False
 
   @classmethod
   def Args(cls, parser):
@@ -1036,7 +1045,8 @@ class CreateBeta(Create):
         support_network_attachments=cls._support_network_attachments,
         support_replica_zones=cls._support_replica_zones,
         support_local_ssd_recovery_timeout=cls._support_local_ssd_recovery_timeout,
-        support_network_queue_count=cls._support_network_queue_count)
+        support_network_queue_count=cls._support_network_queue_count,
+        support_storage_pool=cls._support_storage_pool)
     instances_flags.AddMinCpuPlatformArgs(parser, base.ReleaseTrack.BETA)
     instances_flags.AddPrivateIpv6GoogleAccessArgForTemplate(
         parser, utils.COMPUTE_BETA_API_VERSION)
@@ -1071,6 +1081,7 @@ class CreateBeta(Create):
         support_local_ssd_recovery_timeout=self._support_local_ssd_recovery_timeout,
         support_performance_monitoring_unit=self._support_performance_monitoring_unit,
         support_internal_ipv6_reservation=self._support_internal_ipv6_reservation,
+        support_storage_pool=self._support_storage_pool,
     )
 
 
@@ -1106,6 +1117,7 @@ class CreateAlpha(Create):
   _support_local_ssd_size = True
   _support_performance_monitoring_unit = True
   _support_internal_ipv6_reservation = True
+  _support_storage_pool = True
 
   @classmethod
   def Args(cls, parser):
@@ -1125,7 +1137,8 @@ class CreateAlpha(Create):
         support_network_attachments=cls._support_network_attachments,
         support_replica_zones=cls._support_replica_zones,
         support_local_ssd_recovery_timeout=cls._support_local_ssd_recovery_timeout,
-        support_network_queue_count=cls._support_network_queue_count)
+        support_network_queue_count=cls._support_network_queue_count,
+        support_storage_pool=cls._support_storage_pool)
     instances_flags.AddLocalNvdimmArgs(parser)
     instances_flags.AddMinCpuPlatformArgs(parser, base.ReleaseTrack.ALPHA)
     instances_flags.AddConfidentialComputeArgs(
@@ -1167,6 +1180,7 @@ class CreateAlpha(Create):
         support_local_ssd_recovery_timeout=self._support_local_ssd_recovery_timeout,
         support_performance_monitoring_unit=self._support_performance_monitoring_unit,
         support_internal_ipv6_reservation=self._support_internal_ipv6_reservation,
+        support_storage_pool=self._support_storage_pool,
     )
 
 

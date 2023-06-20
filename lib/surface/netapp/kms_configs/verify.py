@@ -24,11 +24,6 @@ from googlecloudsdk.command_lib.netapp import flags
 from googlecloudsdk.command_lib.util.concepts import concept_parsers
 
 
-# TODO(b/239613419):
-# Keep gcloud beta netapp group hidden until v1beta1 API stable
-# also restructure release tracks that GA \subset BETA \subset ALPHA once
-# BETA is public.
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class VerifyBeta(base.Command):
   """Verify that the Cloud NetApp Volumes KMS Config is reachable."""
@@ -38,7 +33,7 @@ class VerifyBeta(base.Command):
           Verifies that the Cloud NetApp Volumes KMS (Key Management System) Config is reachable
           """,
       'EXAMPLES': """\
-          The following command verifies that the KMS Config instance named KMS_CONFIG is reachable using specified project and location.
+          The following command verifies that the KMS Config instance named KMS_CONFIG is reachable using specified location.
 
               $ {command} KMS_CONFIG --location=us-central1
           """,

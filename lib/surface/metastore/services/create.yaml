@@ -338,7 +338,6 @@
               ...
             ```
     - arg_name: endpoint-protocol
-      release_tracks: [ALPHA, BETA]
       help_text: |
         The protocol to use for the metastore service endpoint.
         If unspecified, defaults to `THRIFT`.
@@ -355,6 +354,5 @@
       api_field: service.hiveMetastoreConfig.endpointProtocol
     labels:
       api_field: service.labels
-
   async:
     collection: metastore.projects.locations.operations

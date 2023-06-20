@@ -34,7 +34,6 @@ from googlecloudsdk.command_lib.util.concepts import presentation_specs
 from googlecloudsdk.core.credentials import store
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Proxy(base.BinaryBackedCommand):
   """Proxy a service to localhost authenticating as the active account or with the specified token."""
 

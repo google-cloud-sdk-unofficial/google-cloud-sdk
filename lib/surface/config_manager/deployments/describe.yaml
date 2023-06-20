@@ -1,0 +1,15 @@
+- release_tracks:
+  - ALPHA
+  help_text:
+    brief: Describe deployments
+    description: Describe a deployment
+    examples: |-
+      To describe the deployment, run:
+
+      $ {command}
+  arguments:
+    resource:
+      spec: !REF googlecloudsdk.command_lib.config_manager.resources:deployment
+      help_text: The deployment to describe
+  request:
+    collection: config.projects.locations.deployments

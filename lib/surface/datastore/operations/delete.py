@@ -20,6 +20,7 @@ from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.datastore import operations
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.datastore import flags
 from googlecloudsdk.core import properties
 from googlecloudsdk.core import resources
 from googlecloudsdk.core.console import console_io
@@ -43,21 +44,12 @@ class Delete(base.DeleteCommand):
 
   @staticmethod
   def Args(parser):
-    """Register flags for this command."""
-    parser.add_argument(
-        'name',
-        type=str,
-        default=None,
-        help="""
-        The unique name of the Operation to delete, formatted as either the full
-        or relative resource path:
+    """Register flags for this command.
 
-          projects/my-app-id/operations/foo
-
-        or:
-
-          foo
-        """)
+    Args:
+      parser: argparse.ArgumentParser, the parser for this command.
+    """
+    flags.AddOperationNameFlag(parser, 'delete')
 
   def Run(self, args):
     name = resources.REGISTRY.Parse(

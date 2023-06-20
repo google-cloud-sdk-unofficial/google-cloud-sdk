@@ -58,6 +58,7 @@ class UpdateHelper(object):
       support_regional_security_policy,
       support_multiple_rate_limit_keys,
       support_net_lb,
+      support_recaptcha_options,
   ):
     """Generates the flagset for an Update command."""
     if support_regional_security_policy or support_net_lb:
@@ -99,6 +100,8 @@ class UpdateHelper(object):
       )
     if support_header_action:
       flags.AddRequestHeadersToAdd(parser)
+    if support_recaptcha_options:
+      flags.AddRecaptchaOptions(parser)
 
   @classmethod
   def Run(
@@ -112,6 +115,8 @@ class UpdateHelper(object):
       support_regional_security_policy,
       support_multiple_rate_limit_keys,
       support_net_lb,
+      disable_field_mask,
+      support_recaptcha_options,
   ):
     """Validates arguments and patches a security policy rule."""
     modified_fields = [
@@ -258,6 +263,12 @@ class UpdateHelper(object):
     if support_header_action:
       request_headers_to_add = args.request_headers_to_add
 
+    expression_options = None
+    if support_recaptcha_options:
+      expression_options = security_policies_utils.CreateExpressionOptions(
+          holder.client, args
+      )
+
     network_matcher = None
     update_mask = None
     if support_net_lb:
@@ -265,11 +276,13 @@ class UpdateHelper(object):
           holder.client, args
       )
       network_matcher = result[0]
-      update_mask = result[1]
+      if not disable_field_mask:
+        update_mask = result[1]
 
     return security_policy_rule.Patch(
         src_ip_ranges=args.src_ip_ranges,
         expression=args.expression,
+        expression_options=expression_options,
         network_matcher=network_matcher,
         action=args.action,
         description=args.description,
@@ -277,7 +290,8 @@ class UpdateHelper(object):
         redirect_options=redirect_options,
         rate_limit_options=rate_limit_options,
         request_headers_to_add=request_headers_to_add,
-        update_mask=update_mask)
+        update_mask=update_mask,
+    )
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
@@ -308,6 +322,8 @@ class UpdateGA(base.UpdateCommand):
   _support_fairshare = False
   _support_regional_security_policy = False
   _support_net_lb = False
+  _disable_field_mask = False
+  _support_recaptcha_options = False
 
   @classmethod
   def Args(cls, parser):
@@ -321,6 +337,7 @@ class UpdateGA(base.UpdateCommand):
         support_regional_security_policy=cls._support_regional_security_policy,
         support_multiple_rate_limit_keys=cls._support_multiple_rate_limit_keys,
         support_net_lb=cls._support_net_lb,
+        support_recaptcha_options=cls._support_recaptcha_options,
     )
 
   def Run(self, args):
@@ -334,6 +351,8 @@ class UpdateGA(base.UpdateCommand):
         self._support_regional_security_policy,
         self._support_multiple_rate_limit_keys,
         self._support_net_lb,
+        self._disable_field_mask,
+        self._support_recaptcha_options,
     )
 
 
@@ -363,7 +382,9 @@ class UpdateBeta(base.UpdateCommand):
   _support_tcl_ssl = False
   _support_fairshare = False
   _support_regional_security_policy = True
-  _support_net_lb = False
+  _support_net_lb = True
+  _disable_field_mask = True
+  _support_recaptcha_options = True
 
   @classmethod
   def Args(cls, parser):
@@ -377,6 +398,7 @@ class UpdateBeta(base.UpdateCommand):
         support_regional_security_policy=cls._support_regional_security_policy,
         support_multiple_rate_limit_keys=cls._support_multiple_rate_limit_keys,
         support_net_lb=cls._support_net_lb,
+        support_recaptcha_options=cls._support_recaptcha_options,
     )
 
   def Run(self, args):
@@ -390,6 +412,8 @@ class UpdateBeta(base.UpdateCommand):
         self._support_regional_security_policy,
         self._support_multiple_rate_limit_keys,
         self._support_net_lb,
+        self._disable_field_mask,
+        self._support_recaptcha_options,
     )
 
 
@@ -420,6 +444,8 @@ class UpdateAlpha(base.UpdateCommand):
   _support_fairshare = True
   _support_regional_security_policy = True
   _support_net_lb = True
+  _disable_field_mask = False
+  _support_recaptcha_options = True
 
   @classmethod
   def Args(cls, parser):
@@ -433,6 +459,7 @@ class UpdateAlpha(base.UpdateCommand):
         support_regional_security_policy=cls._support_regional_security_policy,
         support_multiple_rate_limit_keys=cls._support_multiple_rate_limit_keys,
         support_net_lb=cls._support_net_lb,
+        support_recaptcha_options=cls._support_recaptcha_options,
     )
 
   def Run(self, args):
@@ -446,4 +473,6 @@ class UpdateAlpha(base.UpdateCommand):
         self._support_regional_security_policy,
         self._support_multiple_rate_limit_keys,
         self._support_net_lb,
+        self._disable_field_mask,
+        self._support_recaptcha_options,
     )

@@ -30,7 +30,6 @@ from googlecloudsdk.command_lib.compute import flags as compute_flags
 from googlecloudsdk.command_lib.compute.commitments import flags
 from googlecloudsdk.command_lib.compute.commitments import reservation_helper
 from googlecloudsdk.core import properties
-from googlecloudsdk.generated_clients.apis.compute.v1 import compute_v1_messages
 
 
 _MISSING_COMMITMENTS_QUOTA_REGEX = r'Quota .COMMITMENTS. exceeded.+'
@@ -125,10 +124,7 @@ class Create(base.Command):
         batch_url=batch_url,
         errors=errors))
     for i, error in enumerate(errors):
-      if isinstance(
-          error[1],
-          compute_v1_messages.Operation.ErrorValue.ErrorsValueListEntry,
-      ):
+      if hasattr(error[1], 'message') and isinstance(error[1].message, str):
         err_msg = error[1].message
       else:
         err_msg = error[1]

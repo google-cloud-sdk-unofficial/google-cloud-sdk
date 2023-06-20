@@ -84,6 +84,7 @@ class Update(base.UpdateCommand):
         resources=holder.resources,
         version=six.text_type(self.ReleaseTrack()).lower(),
     )
+    cleared_fields = []
     priority = rule_utils.ConvertPriorityToInt(ref.Name())
     src_ip_ranges = []
     dest_ip_ranges = []
@@ -105,6 +106,7 @@ class Update(base.UpdateCommand):
     matcher = None
     security_profile_group = None
     tls_inspect = None
+
     if args.IsSpecified('src_ip_ranges'):
       src_ip_ranges = args.src_ip_ranges
       should_setup_match = True
@@ -164,6 +166,8 @@ class Update(base.UpdateCommand):
                 firewall_policy_id=args.firewall_policy,
             )
         )
+      else:
+        cleared_fields.append('securityProfileGroup')
       if args.IsSpecified('tls_inspect'):
         tls_inspect = args.tls_inspect
     if args.IsSpecified('enable_logging'):
@@ -262,11 +266,12 @@ class Update(base.UpdateCommand):
         organization=args.organization,
     )
 
-    return firewall_policy_rule_client.Update(
-        priority=priority,
-        firewall_policy=firewall_policy_id,
-        firewall_policy_rule=firewall_policy_rule,
-    )
+    with holder.client.apitools_client.IncludeFields(cleared_fields):
+      return firewall_policy_rule_client.Update(
+          priority=priority,
+          firewall_policy=firewall_policy_id,
+          firewall_policy_rule=firewall_policy_rule,
+      )
 
 
 Update.detailed_help = {

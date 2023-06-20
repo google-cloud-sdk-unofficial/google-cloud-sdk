@@ -55,6 +55,7 @@ class Create(base.CreateCommand):
     flags.AddHcxActivationKeyArgToParser(parser)
     base.ASYNC_FLAG.AddToParser(parser)
     base.ASYNC_FLAG.SetDefault(parser, True)
+    parser.display_info.AddFormat('yaml')
 
   def Run(self, args):
     hcx_activation_key = args.CONCEPTS.hcx_activation_key.Parse()
@@ -64,12 +65,13 @@ class Create(base.CreateCommand):
     if is_async:
       log.CreatedResource(
           operation.name, kind='hcx activation key', is_async=True)
-      return operation
+      return
 
     resource = client.WaitForOperation(
         operation_ref=client.GetOperationRef(operation),
         message='waiting for hcx activation key [{}] to be created'.format(
             hcx_activation_key.RelativeName()))
-    log.CreatedResource(resource, kind='hcx activation key')
-
+    log.CreatedResource(
+        hcx_activation_key.RelativeName(), kind='hcx activation key'
+    )
     return resource

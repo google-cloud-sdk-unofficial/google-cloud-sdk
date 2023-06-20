@@ -27,16 +27,22 @@ from googlecloudsdk.command_lib.util.args import labels_util
 from googlecloudsdk.core import log
 
 
-# TODO(b/239613419):
-# Keep gcloud beta netapp group hidden until v1beta1 API stable
-# also restructure release tracks that GA \subset BETA \subset ALPHA once
-# BETA is public.
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class CreateBeta(base.CreateCommand):
   """Create a Cloud NetApp Volume Snapshot."""
 
   _RELEASE_TRACK = base.ReleaseTrack.BETA
+
+  detailed_help = {
+      'DESCRIPTION': """\
+          Create a Cloud NetApp Volume Snapshot
+          """,
+      'EXAMPLES': """\
+          The following command creates a Snapshot named NAME using the required arguments
+
+              $ {command} NAME --location=us-central1 --volume=vol1
+          """,
+  }
 
   @staticmethod
   def Args(parser):
@@ -77,38 +83,8 @@ class CreateBeta(base.CreateCommand):
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class CreateAlpha(base.CreateCommand):
+class CreateAlpha(CreateBeta):
   """Creates a Cloud NetApp Volume Snapshot."""
 
   _RELEASE_TRACK = base.ReleaseTrack.ALPHA
 
-  @staticmethod
-  def Args(parser):
-    snapshots_flags.AddSnapshotCreateArgs(parser)
-
-  def Run(self, args):
-    """Create a Cloud NetApp Volume Snapshot in the current project."""
-    snapshot_ref = args.CONCEPTS.snapshot.Parse()
-
-    if args.CONCEPTS.volume.Parse() is None:
-      raise exceptions.RequiredArgumentException(
-          '--volume', 'Requires a volume to create snapshot of')
-
-    volume_ref = args.CONCEPTS.volume.Parse().RelativeName()
-    client = snapshots_client.SnapshotsClient(self._RELEASE_TRACK)
-    labels = labels_util.ParseCreateArgs(args,
-                                         client.messages.Snapshot.LabelsValue)
-
-    snapshot = client.ParseSnapshotConfig(
-        name=snapshot_ref.RelativeName(),
-        description=args.description,
-        labels=labels)
-    result = client.CreateSnapshot(snapshot_ref, volume_ref, args.async_,
-                                   snapshot)
-    if args.async_:
-      command = 'gcloud {} netapp volumes snapshots list'.format(
-          self.ReleaseTrack().prefix)
-      log.status.Print(
-          'Check the status of the new snapshot by listing all snapshots:\n  '
-          '$ {} '.format(command))
-    return result

@@ -28,16 +28,22 @@ from googlecloudsdk.command_lib.util.concepts import concept_parsers
 from googlecloudsdk.core import log
 
 
-# TODO(b/239613419):
-# Keep gcloud beta netapp group hidden until v1beta1 API stable
-# also restructure release tracks that GA \subset BETA \subset ALPHA once
-# BETA is public.
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class CreateBeta(base.CreateCommand):
   """Create a Cloud NetApp Volume Replication."""
 
   _RELEASE_TRACK = base.ReleaseTrack.BETA
+
+  detailed_help = {
+      'DESCRIPTION': """\
+          Create a Cloud NetApp Volume Replication
+          """,
+      'EXAMPLES': """\
+          The following command creates a Replication named NAME using the required arguments
+
+              $ {command} NAME --location=us-central1 --volume=vol1 --replication-schedule=EVERY_10_MINUTES --destination-volume-parameters=storage_pool=sp1,volume_id=vol2,share_name=share2
+          """,
+  }
 
   @staticmethod
   def Args(parser):

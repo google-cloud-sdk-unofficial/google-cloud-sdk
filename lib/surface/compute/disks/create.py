@@ -379,8 +379,11 @@ class Create(base.Command):
 
   def GetSourceInstantSnapshotUri(self, args, compute_holder):
     if args.source_instant_snapshot:
-      instant_snapshot_ref = disks_flags.SOURCE_INSTANT_SNAPSHOT_ARG.ResolveAsResource(
-          args, compute_holder.resources)
+      instant_snapshot_ref = (
+          disks_flags.SOURCE_INSTANT_SNAPSHOT_ARG.ResolveAsResource(
+              args, compute_holder.resources
+          )
+      )
       if instant_snapshot_ref:
         return instant_snapshot_ref.SelfLink()
     return None
@@ -673,7 +676,7 @@ class Create(base.Command):
 class CreateBeta(Create):
   """Create Compute Engine persistent disks."""
 
-  source_instant_snapshot_enabled = False
+  source_instant_snapshot_enabled = True
 
   @classmethod
   def Args(cls, parser):
@@ -684,8 +687,10 @@ class CreateBeta(Create):
         parser,
         include_physical_block_size_support=True,
         vss_erase_enabled=True,
+        source_instant_snapshot_enabled=True,
         support_async_pd=True,
-        support_pd_interface=True)
+        support_pd_interface=True,
+    )
     image_utils.AddGuestOsFeaturesArg(parser, messages)
     _AddReplicaZonesArg(parser)
     kms_resource_args.AddKmsKeyResourceArg(

@@ -54,6 +54,7 @@ class Update(base.UpdateCommand):
     flags.AddNetworkPolicyToParser(parser, positional=True)
     base.ASYNC_FLAG.AddToParser(parser)
     base.ASYNC_FLAG.SetDefault(parser, True)
+    parser.display_info.AddFormat('yaml')
     parser.add_argument(
         '--description',
         help="""\
@@ -89,13 +90,15 @@ class Update(base.UpdateCommand):
     if is_async:
       log.UpdatedResource(
           operation.name, kind='VMware Engine network policy', is_async=True)
-      return operation
+      return
 
     resource = client.WaitForOperation(
         operation_ref=client.GetOperationRef(operation),
         message='waiting for network policy [{}] to be updated'.format(
-            network_policy.RelativeName()),
-        has_result=True)
+            network_policy.RelativeName()
+        ),
+    )
     log.UpdatedResource(
-        resource, kind='VMware Engine network policy', is_async=False)
+        network_policy.RelativeName(), kind='VMware Engine network policy'
+    )
     return resource

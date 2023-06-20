@@ -21,20 +21,14 @@ from __future__ import unicode_literals
 from googlecloudsdk.api_lib.netapp.kms_configs import client as kmsconfigs_client
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.netapp.kms_configs import flags as kmsconfigs_flags
-from googlecloudsdk.command_lib.netapp.kms_configs.flags import ConstructCryptoKeyName
 from googlecloudsdk.command_lib.util.args import labels_util
-
 from googlecloudsdk.core import log
 
 
-# TODO(b/239613419):
-# Keep gcloud beta netapp group hidden until v1beta1 API stable
-# also restructure release tracks that GA \subset BETA \subset ALPHA once
-# BETA is public.
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class CreateBeta(base.CreateCommand):
   """Create a Cloud NetApp Volumes KMS Config."""
+
   detailed_help = {
       'DESCRIPTION': """\
           Creates a KMS (Key Management System) Config to encrypt Cloud NetApp Volumes, Storage Pools etc. using
@@ -43,7 +37,7 @@ class CreateBeta(base.CreateCommand):
       'EXAMPLES': """\
           The following command creates a KMS Config instance named KMS_CONFIG using specified project, location, Key Ring and Crypto Key
 
-              $ {command} KMS_CONFIG --location=us-central1 --kms-location=us-east4 --kms-project=KMS_PROJECT --kms-keyring=keyring1 --kms-key=crypto-key1
+              $ {command} KMS_CONFIG --location=us-central1 --kms-location=northamerica-northeast1 --kms-project=kms-project1 --kms-keyring=kms-keyring21 --kms-key=crypto-key1
           """,
   }
 
@@ -60,7 +54,7 @@ class CreateBeta(base.CreateCommand):
     labels = labels_util.ParseCreateArgs(
         args, client.messages.KmsConfig.LabelsValue
     )
-    crypto_key_name = ConstructCryptoKeyName(
+    crypto_key_name = kmsconfigs_flags.ConstructCryptoKeyName(
         args.kms_project, args.kms_location, args.kms_keyring, args.kms_key
     )
     kms_config = client.ParseKmsConfig(

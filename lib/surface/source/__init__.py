@@ -42,6 +42,6 @@ class Source(base.Group):
     Returns:
       The updated context.
     """
-    # TODO(b/190539713):  Determine if command group works with project number
+    # gcloud source only accepts project ID, not number.
     base.RequireProjectID(args)
     base.DisableUserProjectQuota()

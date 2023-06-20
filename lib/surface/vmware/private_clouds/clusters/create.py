@@ -56,6 +56,7 @@ class Create(base.CreateCommand):
     flags.AddClusterArgToParser(parser, positional=True)
     base.ASYNC_FLAG.AddToParser(parser)
     base.ASYNC_FLAG.SetDefault(parser, True)
+    parser.display_info.AddFormat('yaml')
     parser.add_argument(
         '--node-type-config',
         required=True,
@@ -85,14 +86,14 @@ class Create(base.CreateCommand):
     client = ClustersClient()
     is_async = args.async_
     operation = client.Create(cluster, args.node_type_config)
+
     if is_async:
       log.CreatedResource(operation.name, kind='cluster', is_async=True)
-      return operation
+      return
 
     resource = client.WaitForOperation(
         operation_ref=client.GetOperationRef(operation),
         message='waiting for cluster [{}] to be created'.format(
             cluster.RelativeName()))
-    log.CreatedResource(resource, kind='cluster')
-
+    log.CreatedResource(cluster.RelativeName(), kind='cluster')
     return resource

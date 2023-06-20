@@ -105,6 +105,6 @@ class Grant(base.Command):
     )
     resource = client.Get(project)
     log.UpdatedResource(
-        dns_bind_permission, kind='DNS Bind Permission', is_async=False
+        dns_bind_permission, kind='DNS Bind Permission'
     )
     return resource

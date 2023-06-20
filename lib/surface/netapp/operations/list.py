@@ -26,16 +26,22 @@ from googlecloudsdk.command_lib.util.concepts import concept_parsers
 from googlecloudsdk.core import properties
 
 
-# TODO(b/239613419):
-# Keep gcloud beta netapp group hidden until v1beta1 API stable
-# also restructure release tracks that GA \subset BETA \subset ALPHA once
-# BETA is public.
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class ListBeta(base.ListCommand):
   """List Cloud NetApp Files operations."""
 
   _RELEASE_TRACK = base.ReleaseTrack.BETA
+
+  detailed_help = {
+      'DESCRIPTION':
+          'Lists all Cloud NetApp Files operations.',
+      'EXAMPLES':
+          """\
+            The following command lists NetApp Files operations under a given location
+
+                $ {command} --location=us-central1
+          """,
+  }
 
   @staticmethod
   def Args(parser):
@@ -59,27 +65,8 @@ class ListBeta(base.ListCommand):
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class ListAlpha(base.ListCommand):
+class ListAlpha(ListBeta):
   """List Cloud NetApp Files operations."""
 
   _RELEASE_TRACK = base.ReleaseTrack.ALPHA
 
-  @staticmethod
-  def Args(parser):
-    concept_parsers.ConceptParser([
-        flags.GetResourceListingLocationPresentationSpec(
-            'The location in which to list operations.')
-    ]).AddToParser(parser)
-    parser.display_info.AddFormat(operations_flags.OPERATIONS_LIST_FORMAT)
-
-  def Run(self, args):
-    # Ensure that project is set before parsing location resource.
-    properties.VALUES.core.project.GetOrFail()
-
-    location_ref = args.CONCEPTS.location.Parse().RelativeName()
-    if args.location:
-      location_list = location_ref.split('/')
-      location_list[-1] = args.location
-      location_ref = '/'.join(location_list)
-    client = netapp_client.NetAppClient(release_track=self._RELEASE_TRACK)
-    return list(client.ListOperations(location_ref, limit=args.limit))

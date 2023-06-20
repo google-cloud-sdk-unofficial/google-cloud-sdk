@@ -26,16 +26,26 @@ from googlecloudsdk.core import log
 from googlecloudsdk.core.console import console_io
 
 
-# TODO(b/239613419):
-# Keep gcloud beta netapp group hidden until v1beta1 API stable
-# also restructure release tracks that GA \subset BETA \subset ALPHA once
-# BETA is public.
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class DeleteBeta(base.DeleteCommand):
   """Delete a Cloud NetApp Volume."""
 
   _RELEASE_TRACK = base.ReleaseTrack.BETA
+
+  detailed_help = {
+      'DESCRIPTION': """\
+          Delete a Cloud NetApp Volume
+          """,
+      'EXAMPLES': """\
+          The following command deletes a Volume named NAME in the given location
+
+              $ {command} NAME --location=us-central1
+
+          To delete a Volume named NAME asynchronously, run the following command:
+
+              $ {command} NAME --location=us-central1 --async
+          """,
+  }
 
   @staticmethod
   def Args(parser):
@@ -61,30 +71,8 @@ class DeleteBeta(base.DeleteCommand):
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class DeleteAlpha(base.DeleteCommand):
+class DeleteAlpha(DeleteBeta):
   """Delete a Cloud NetApp Volume."""
 
   _RELEASE_TRACK = base.ReleaseTrack.ALPHA
-
-  @staticmethod
-  def Args(parser):
-    volumes_flags.AddVolumeDeleteArgs(parser)
-
-  def Run(self, args):
-    """Deletes a Cloud NetApp Volume."""
-    volume_ref = args.CONCEPTS.volume.Parse()
-    if not args.quiet:
-      delete_warning = ('You are about to delete a Volume [{}].\n'
-                        'Are you sure?'.format(volume_ref.RelativeName()))
-      if not console_io.PromptContinue(message=delete_warning):
-        return None
-    client = volumes_client.VolumesClient(release_track=self._RELEASE_TRACK)
-    result = client.DeleteVolume(volume_ref, args.async_, args.force)
-    if args.async_:
-      command = 'gcloud {} netapp volumes list'.format(
-          self.ReleaseTrack().prefix)
-      log.status.Print(
-          'Check the status of the deletion by listing all volumes:\n  '
-          '$ {} '.format(command))
-    return result
 

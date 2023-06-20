@@ -209,13 +209,13 @@ character. When using Windows PowerShell, use `'` instead of
     )
 
     try:
-      listing_exit_code = task_executor.execute_tasks(
+      self.exit_code = task_executor.execute_tasks(
           [source_task, destination_task],
           continue_on_error=args.continue_on_error,
           parallelizable=True,
       )
-      if listing_exit_code:
-        return listing_exit_code
+      if self.exit_code:
+        return
 
       user_request_args = (
           user_request_args_factory.get_user_request_args_from_command_args(
@@ -243,7 +243,7 @@ character. When using Windows PowerShell, use `'` instead of
           skip_unsupported=args.skip_unsupported,
           task_status_queue=task_status_queue,
       )
-      return task_executor.execute_tasks(
+      self.exit_code = task_executor.execute_tasks(
           operation_iterator,
           continue_on_error=args.continue_on_error,
           parallelizable=True,

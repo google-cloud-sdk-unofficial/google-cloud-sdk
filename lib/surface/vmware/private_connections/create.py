@@ -70,7 +70,6 @@ DETAILED_HELP = {
 }
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Create(base.CreateCommand):
   """Create a Google Cloud Private Connection."""
@@ -82,6 +81,7 @@ class Create(base.CreateCommand):
     flags.AddPrivateConnectionToParser(parser, positional=True)
     base.ASYNC_FLAG.AddToParser(parser)
     base.ASYNC_FLAG.SetDefault(parser, True)
+    parser.display_info.AddFormat('yaml')
     parser.add_argument(
         '--description',
         help="""\
@@ -152,12 +152,15 @@ class Create(base.CreateCommand):
     if is_async:
       log.CreatedResource(
           operation.name, kind='Private Connection', is_async=True)
-      return operation
+      return
 
     resource = client.WaitForOperation(
         operation_ref=client.GetOperationRef(operation),
         message='waiting for private connection [{}] to be created'.format(
-            private_connection.RelativeName()),
-        has_result=True)
-    log.CreatedResource(resource, kind='Private Connection', is_async=False)
+            private_connection.RelativeName()
+        ),
+    )
+    log.CreatedResource(
+        private_connection.RelativeName(), kind='Private Connection'
+    )
     return resource

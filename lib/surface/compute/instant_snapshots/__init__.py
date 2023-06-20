@@ -20,8 +20,12 @@ from __future__ import unicode_literals
 
 from googlecloudsdk.calliope import base
 
+DETAILED_HELP = {
+    'brief': 'Create, list and delete Compute Engine instant snapshots',
+}
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
 class InstantSnapshots(base.Group):
   """List, create, and delete Compute Engine instant snapshots."""
 
@@ -30,4 +34,9 @@ InstantSnapshots.category = base.INSTANCES_CATEGORY
 
 InstantSnapshots.detailed_help = {
     'brief': 'Create, list and delete Compute Engine instant snapshots',
+    'DESCRIPTION': """\
+        List, create, describe, and delete Compute Engine instant snapshots.
+
+        See also: [Snapshots API](https://cloud.google.com/compute/docs/reference/rest/beta/instantSnapshots).
+    """,
 }

@@ -30,23 +30,24 @@ def _CommonArgs(parser, release_track):
   storagepools_flags.AddStoragePoolCreateArgs(
       parser, release_track=release_track
   )
-  if release_track == base.ReleaseTrack.BETA:
-    storagepools_flags.AddStoragePoolNetworkArg(parser)
-    storagepools_flags.AddStoragePoolActiveDirectoryArg(parser)
-    storagepools_flags.AddStoragePoolKmsConfigArg(parser)
-    storagepools_flags.AddStoragePoolEnableLdapArg(parser)
 
 
-# TODO(b/239613419):
-# Keep gcloud beta netapp group hidden until v1beta1 API stable
-# also restructure release tracks that GA \subset BETA \subset ALPHA once
-# BETA is public.
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class CreateBeta(base.CreateCommand):
   """Create a Cloud NetApp Storage Pool."""
 
   _RELEASE_TRACK = base.ReleaseTrack.BETA
+
+  detailed_help = {
+      'DESCRIPTION': """\
+          Creates a Storage Pool to contain Volumes with a specified Service Level and capacity.
+          """,
+      'EXAMPLES': """\
+          The following command creates a Storage Pool named NAME using all possible arguments
+
+              $ {command} NAME --location=us-central1 --service-level=standard --capacity=2048 --network=name=default --active-directory=ad1 --kms-config=kms-config1 --enable-ldap=true --description="example description"
+          """,
+  }
 
   @staticmethod
   def Args(parser):
@@ -87,7 +88,7 @@ class CreateBeta(base.CreateCommand):
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class CreateAlpha(base.CreateCommand):
+class CreateAlpha(CreateBeta):
   """Create a Cloud NetApp Storage Pool."""
 
   _RELEASE_TRACK = base.ReleaseTrack.ALPHA
@@ -95,34 +96,4 @@ class CreateAlpha(base.CreateCommand):
   @staticmethod
   def Args(parser):
     _CommonArgs(parser, CreateAlpha._RELEASE_TRACK)
-
-  def Run(self, args):
-    """Create a Cloud NetApp Storage Pool in the current project."""
-    storagepool_ref = args.CONCEPTS.storage_pool.Parse()
-    client = storagepools_client.StoragePoolsClient(self._RELEASE_TRACK)
-    service_level = storagepools_flags.GetStoragePoolServiceLevelArg(
-        client.messages).GetEnumForChoice(args.service_level)
-    labels = labels_util.ParseCreateArgs(
-        args, client.messages.StoragePool.LabelsValue)
-    capacity_in_gib = args.capacity >> 30
-    storage_pool = client.ParseStoragePoolConfig(
-        name=storagepool_ref.RelativeName(),
-        service_level=service_level,
-        capacity=capacity_in_gib,
-        description=args.description,
-        labels=labels,
-    )
-    result = client.CreateStoragePool(
-        storagepool_ref, args.async_, storage_pool
-    )
-    if args.async_:
-      command = 'gcloud {} netapp storage-pools list'.format(
-          self.ReleaseTrack().prefix
-      )
-      log.status.Print(
-          'Check the status of the new storage pool by listing all storage'
-          ' pools:\n  $ {} '.format(command)
-      )
-    return result
-
 

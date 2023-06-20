@@ -56,6 +56,7 @@ class Update(base.UpdateCommand):
     flags.AddLoggingServerArgToParser(parser)
     base.ASYNC_FLAG.AddToParser(parser)
     base.ASYNC_FLAG.SetDefault(parser, True)
+    parser.display_info.AddFormat('yaml')
     parser.add_argument(
         '--hostname',
         help="""\
@@ -100,7 +101,7 @@ class Update(base.UpdateCommand):
 
     if is_async:
       log.UpdatedResource(operation.name, kind='logging-server', is_async=True)
-      return operation
+      return
 
     resource = client.WaitForOperation(
         operation_ref=client.GetOperationRef(operation),
@@ -108,6 +109,5 @@ class Update(base.UpdateCommand):
             logging_server.RelativeName()
         ),
     )
-    log.UpdatedResource(resource, kind='logging-server')
-
+    log.UpdatedResource(logging_server.RelativeName(), kind='logging-server')
     return resource

@@ -25,16 +25,22 @@ from googlecloudsdk.command_lib.util.concepts import concept_parsers
 from googlecloudsdk.core import properties
 
 
-# TODO(b/239613419):
-# Keep gcloud beta netapp group hidden until v1beta1 API stable
-# also restructure release tracks that GA \subset BETA \subset ALPHA once
-# BETA is public.
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class ListBeta(base.ListCommand):
   """List Cloud NetApp Active Directories."""
 
   _RELEASE_TRACK = base.ReleaseTrack.BETA
+
+  detailed_help = {
+      'DESCRIPTION': """\
+          Lists AD (Active Directory) configs for Cloud NetApp Volumes
+          """,
+      'EXAMPLES': """\
+          The following command lists AD configs in the given project and location
+
+              $ {command} --location=us-central1
+          """,
+  }
 
   @staticmethod
   def Args(parser):
@@ -61,30 +67,8 @@ class ListBeta(base.ListCommand):
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class ListAlpha(base.ListCommand):
+class ListAlpha(ListBeta):
   """List Cloud NetApp Active Directories."""
 
   _RELEASE_TRACK = base.ReleaseTrack.ALPHA
 
-  @staticmethod
-  def Args(parser):
-    concept_parsers.ConceptParser([
-        flags.GetResourceListingLocationPresentationSpec(
-            'The location in which to list Active Directories.')
-    ]).AddToParser(parser)
-    ## TODO(b/242744672) Define List format for gcloud netapp active-directories
-    # parser.display_info.AddFormat(activedirectories_flags.ACTIVE_DIRECTORIES_LIST_FORMAT)
-
-  def Run(self, args):
-    """Run the list command."""
-    # Ensure that project is set before parsing location resource.
-    properties.VALUES.core.project.GetOrFail()
-    location_ref = args.CONCEPTS.location.Parse().RelativeName()
-    # Default to listing all Cloud NetApp Active Directories in all locations.
-    location = args.location if args.location else '-'
-    location_list = location_ref.split('/')
-    location_list[-1] = location
-    location_ref = '/'.join(location_list)
-    client = ad_client.ActiveDirectoriesClient(
-        release_track=self._RELEASE_TRACK)
-    return list(client.ListActiveDirectories(location_ref, limit=args.limit))

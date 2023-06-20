@@ -193,7 +193,7 @@ class DescribeBeta(base.DeleteCommand):
   SECURITY_POLICY_ARG = None
 
   _support_regional_security_policy = True
-  _support_net_lb = False
+  _support_net_lb = True
 
   @classmethod
   def Args(cls, parser):

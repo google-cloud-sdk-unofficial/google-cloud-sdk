@@ -55,6 +55,7 @@ class Create(base.CreateCommand):
     flags.AddLoggingServerArgToParser(parser)
     base.ASYNC_FLAG.AddToParser(parser)
     base.ASYNC_FLAG.SetDefault(parser, True)
+    parser.display_info.AddFormat('yaml')
     parser.add_argument(
         '--hostname',
         required=True,
@@ -102,7 +103,7 @@ class Create(base.CreateCommand):
     )
     if is_async:
       log.CreatedResource(operation.name, kind='logging-server', is_async=True)
-      return operation
+      return
 
     resource = client.WaitForOperation(
         operation_ref=client.GetOperationRef(operation),
@@ -110,6 +111,5 @@ class Create(base.CreateCommand):
             logging_server.RelativeName()
         ),
     )
-    log.CreatedResource(resource, kind='logging-server')
-
+    log.CreatedResource(logging_server.RelativeName(), kind='logging-server')
     return resource

@@ -26,6 +26,19 @@ from googlecloudsdk.command_lib.util.args import labels_util
 
 import six
 
+DETAILED_HELP = {
+    'brief': 'Create a Compute Engine instant snapshot',
+    'DESCRIPTION': """\
+    *{command}* creates an instant snapshot of persistent disk. Instant snapshots are useful for
+    backing up persistent disk data.
+    """,
+    'EXAMPLES': """\
+    To create an instant snapshot 'my-instant-snap' from a disk 'my-disk' in zone 'us-east1-a', run:
+
+        $ {command} my-instant-snap --source-disk=my-disk --zone=us-east1-a
+    """,
+}
+
 
 def _SourceArgs(parser):
   source_disk = parser.add_group('Source disk options', required=True)
@@ -34,17 +47,17 @@ def _SourceArgs(parser):
 
 def _CommonArgs(parser):
   """A helper function to build args based on different API version."""
-  Create.IPS_ARG = ips_flags.MakeInstantSnapshotArg()
-  Create.IPS_ARG.AddArgument(parser, operation_type='create')
+  CreateBeta.IPS_ARG = ips_flags.MakeInstantSnapshotArg()
+  CreateBeta.IPS_ARG.AddArgument(parser, operation_type='create')
   labels_util.AddCreateLabelsFlags(parser)
   parser.display_info.AddFormat(
       'table(name, location(), location_scope(), status)')
   _SourceArgs(parser)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class Create(base.Command):
-  """Create Compute Engine instant snapshots."""
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class CreateBeta(base.Command):
+  """Create a Compute Engine instant snapshot in beta."""
 
   @classmethod
   def Args(cls, parser):
@@ -66,7 +79,9 @@ class Create(base.Command):
     client = compute_holder.client
     messages = client.messages
 
-    ips_ref = Create.IPS_ARG.ResolveAsResource(args, compute_holder.resources)
+    ips_ref = CreateBeta.IPS_ARG.ResolveAsResource(
+        args, compute_holder.resources
+    )
     requests = []
     if ips_ref.Collection() == 'compute.instantSnapshots':
       instant_snapshot = messages.InstantSnapshot(
@@ -104,3 +119,18 @@ class Create(base.Command):
 
   def Run(self, args):
     return self._Run(args)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class CreateAlpha(CreateBeta):
+  """Create a Compute Engine instant snapshot in alpha."""
+
+  @classmethod
+  def Args(cls, parser):
+    _CommonArgs(parser)
+
+  def Run(self, args):
+    return self._Run(args)
+
+
+CreateBeta.detailed_help = DETAILED_HELP

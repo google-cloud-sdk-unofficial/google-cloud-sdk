@@ -21,16 +21,11 @@ from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 
 
-# TODO(b/239613419):
-# Keep gcloud beta netapp group hidden until v1beta1 API stable
-# also restructure release tracks that GA \subset BETA \subset ALPHA once
-# BETA is public.
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class OperationsBeta(base.Group):
   """Read and manage Cloud NetApp Files Operations."""
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class OperationsAlpha(base.Group):
+class OperationsAlpha(OperationsBeta):
   """Read and manage Cloud NetApp Files Operations."""

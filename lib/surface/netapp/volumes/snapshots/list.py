@@ -28,16 +28,22 @@ from googlecloudsdk.command_lib.util.concepts import concept_parsers
 from googlecloudsdk.core import properties
 
 
-# TODO(b/239613419):
-# Keep gcloud beta netapp group hidden until v1beta1 API stable
-# also restructure release tracks that GA \subset BETA \subset ALPHA once
-# BETA is public.
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class ListBeta(base.ListCommand):
   """List Cloud NetApp Volume Snapshots."""
 
   _RELEASE_TRACK = base.ReleaseTrack.BETA
+
+  detailed_help = {
+      'DESCRIPTION': """\
+          Lists Cloud NetApp Volume Snapshots
+          """,
+      'EXAMPLES': """\
+          The following command lists all Snapshots in the given location and volume
+
+              $ {command} --location=us-central1 --volume=vol1
+          """,
+  }
 
   @staticmethod
   def Args(parser):
@@ -62,28 +68,8 @@ class ListBeta(base.ListCommand):
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class ListAlpha(base.ListCommand):
+class ListAlpha(ListBeta):
   """List Cloud NetApp Volume Snapshots."""
 
   _RELEASE_TRACK = base.ReleaseTrack.ALPHA
 
-  @staticmethod
-  def Args(parser):
-    concept_parsers.ConceptParser([
-        flags.GetResourceListingLocationPresentationSpec(
-            'The location in which to list Volume Snapshots.')
-    ]).AddToParser(parser)
-    snapshots_flags.AddSnapshotVolumeArg(parser)
-
-  def Run(self, args):
-    """Run the list command."""
-    # Ensure that project is set before parsing location resource.
-    properties.VALUES.core.project.GetOrFail()
-
-    if args.CONCEPTS.volume.Parse() is None:
-      raise exceptions.RequiredArgumentException(
-          '--volume', 'Requires a volume to list snapshots of')
-
-    volume_ref = args.CONCEPTS.volume.Parse().RelativeName()
-    client = snapshots_client.SnapshotsClient(release_track=self._RELEASE_TRACK)
-    return list(client.ListSnapshots(volume_ref, limit=args.limit))

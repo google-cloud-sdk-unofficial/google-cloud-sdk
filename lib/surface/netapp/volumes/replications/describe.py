@@ -26,16 +26,22 @@ from googlecloudsdk.command_lib.netapp.volumes.replications import flags as repl
 from googlecloudsdk.command_lib.util.concepts import concept_parsers
 
 
-# TODO(b/239613419):
-# Keep gcloud beta netapp group hidden until v1beta1 API stable
-# also restructure release tracks that GA \subset BETA \subset ALPHA once
-# BETA is public.
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class DescribeBeta(base.DescribeCommand):
   """Describe a Cloud NetApp Volume Replication."""
 
   _RELEASE_TRACK = base.ReleaseTrack.BETA
+
+  detailed_help = {
+      'DESCRIPTION': """\
+          Describe a Cloud NetApp Volume Replication
+          """,
+      'EXAMPLES': """\
+          The following command describes a Replication named NAME in the given location and volume
+
+              $ {command} NAME --location=us-central1 --volume=vol1
+          """,
+  }
 
   @staticmethod
   def Args(parser):

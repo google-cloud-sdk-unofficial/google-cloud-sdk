@@ -43,7 +43,6 @@ DETAILED_HELP = {
 }
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Update(base.UpdateCommand):
   """Update a Google Cloud Private Connection."""
@@ -56,6 +55,7 @@ class Update(base.UpdateCommand):
     flags.AddPrivateConnectionToParser(parser, positional=True)
     base.ASYNC_FLAG.AddToParser(parser)
     base.ASYNC_FLAG.SetDefault(parser, True)
+    parser.display_info.AddFormat('yaml')
     parser.add_argument(
         '--description',
         help="""\
@@ -77,12 +77,15 @@ class Update(base.UpdateCommand):
     if is_async:
       log.UpdatedResource(
           operation.name, kind='Private Connection', is_async=True)
-      return operation
+      return
 
     resource = client.WaitForOperation(
         operation_ref=client.GetOperationRef(operation),
         message='waiting for private connection [{}] to be updated'.format(
-            private_connection.RelativeName()),
-        has_result=True)
-    log.UpdatedResource(resource, kind='Private Connection', is_async=False)
+            private_connection.RelativeName()
+        ),
+    )
+    log.UpdatedResource(
+        private_connection.RelativeName(), kind='Private Connection'
+    )
     return resource

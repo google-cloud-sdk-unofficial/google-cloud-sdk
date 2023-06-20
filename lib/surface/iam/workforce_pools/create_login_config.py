@@ -103,13 +103,13 @@ class CreateLoginConfig(base.CreateCommand):
       universe_domain = 'googleapis.com'
 
     # TODO(b/284507677): Retrieve automatically when lookup is available.
-    universe_cloud_web_domain = 'auth.cloud.google'
+    universe_cloud_web_domain = 'cloud.google'
     if getattr(args, 'universe_cloud_web_domain', None):
       universe_cloud_web_domain = args.universe_cloud_web_domain
 
     if (
         universe_domain != 'googleapis.com'
-        and universe_cloud_web_domain == 'auth.cloud.google'
+        and universe_cloud_web_domain == 'cloud.google'
     ):
       raise exceptions.RequiredArgumentException(
           '--universe_cloud_web_domain',
@@ -119,7 +119,7 @@ class CreateLoginConfig(base.CreateCommand):
 
     if (
         universe_domain == 'googleapis.com'
-        and universe_cloud_web_domain != 'auth.cloud.google'
+        and universe_cloud_web_domain != 'cloud.google'
     ):
       raise exceptions.RequiredArgumentException(
           '--universe-domain',
@@ -134,7 +134,7 @@ class CreateLoginConfig(base.CreateCommand):
     output = {
         'type': 'external_account_authorized_user_login_config',
         'audience': '//iam.googleapis.com/' + args.audience,
-        'auth_url': 'https://{cloud_web_domain}/authorize'.format(
+        'auth_url': 'https://auth.{cloud_web_domain}/authorize'.format(
             cloud_web_domain=universe_cloud_web_domain
         ),
         'token_url': token_endpoint_builder.oauth_token_url,
@@ -144,7 +144,7 @@ class CreateLoginConfig(base.CreateCommand):
     # TODO(b/276367366): Add in all cases once approved.
     if universe_domain != 'googleapis.com':
       output['universe_domain'] = universe_domain
-    if universe_cloud_web_domain != 'auth.cloud.google':
+    if universe_cloud_web_domain != 'cloud.google':
       output['universe_cloud_web_domain'] = universe_cloud_web_domain
 
     files.WriteFileContents(args.output_file, json.dumps(output, indent=2))

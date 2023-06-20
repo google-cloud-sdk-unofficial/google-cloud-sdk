@@ -43,7 +43,6 @@ DETAILED_HELP = {
 }
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Update(base.UpdateCommand):
   """Update a subnet."""
@@ -54,6 +53,7 @@ class Update(base.UpdateCommand):
   def Args(parser):
     """Register flags for this command."""
     flags.AddSubnetArgToParser(parser)
+    parser.display_info.AddFormat('yaml')
     parser.add_argument(
         '--ip-cidr-range',
         required=True,
@@ -75,7 +75,8 @@ class Update(base.UpdateCommand):
       resource = client.WaitForOperation(
           operation_ref=client.GetOperationRef(operation),
           message='waiting for subnet [{}] to be updated'.format(
-              subnet.RelativeName()),
-          has_result=True)
-    log.UpdatedResource(resource, kind='subnet', is_async=False)
+              subnet.RelativeName()
+          ),
+      )
+    log.UpdatedResource(subnet.RelativeName(), kind='subnet')
     return resource

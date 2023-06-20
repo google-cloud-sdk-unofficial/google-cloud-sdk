@@ -70,6 +70,7 @@ class List(base.ListCommand):
         hidden=True)
     parser.display_info.AddFormat(sbom_printer.SBOM_PRINTER_FORMAT)
 
+    base.SORT_BY_FLAG.SetDefault(parser, 'occ.create_time')
     base.URI_FLAG.RemoveFromParser(parser)
     parser.add_argument(
         '--dependency',

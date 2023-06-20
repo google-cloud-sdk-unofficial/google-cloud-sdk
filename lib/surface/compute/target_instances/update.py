@@ -28,7 +28,7 @@ from googlecloudsdk.command_lib.compute.security_policies import (
 from googlecloudsdk.command_lib.compute.target_instances import flags
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Update(base.UpdateCommand):
   r"""Update a Compute Engine target instance.
 

@@ -23,11 +23,6 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.netapp.kms_configs import flags as kmsconfigs_flags
 
 
-# TODO(b/239613419):
-# Keep gcloud beta netapp group hidden until v1beta1 API stable
-# also restructure release tracks that GA \subset BETA \subset ALPHA once
-# BETA is public.
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class EncryptBeta(base.Command):
   """Encrypt all existing volumes and storage pools in the same region with the desired Cloud NetApp Volumes KMS Config."""

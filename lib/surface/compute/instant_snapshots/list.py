@@ -26,18 +26,22 @@ from googlecloudsdk.command_lib.compute import completers
 from googlecloudsdk.command_lib.compute.instant_snapshots import flags as ips_flags
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class List(base.ListCommand):
-  """List Compute Engine persistent instant snapshots."""
+def _CommonArgs(parser):
+  parser.display_info.AddFormat(ips_flags.MULTISCOPE_LIST_FORMAT)
+  parser.display_info.AddUriFunc(utils.MakeGetUriFunc())
+  lister.AddMultiScopeListerFlags(parser, zonal=True, regional=True)
+  parser.display_info.AddCacheUpdater(completers.InstantSnapshotsCompleter)
 
-  @staticmethod
-  def Args(parser):
-    parser.display_info.AddFormat(ips_flags.MULTISCOPE_LIST_FORMAT)
-    parser.display_info.AddUriFunc(utils.MakeGetUriFunc())
-    lister.AddMultiScopeListerFlags(parser, zonal=True, regional=True)
-    parser.display_info.AddCacheUpdater(completers.InstantSnapshotsCompleter)
 
-  def Run(self, args):
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class ListBeta(base.ListCommand):
+  """List Compute Engine persistent instant snapshots in beta."""
+
+  @classmethod
+  def Args(cls, parser):
+    _CommonArgs(parser)
+
+  def _Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     client = holder.client
 
@@ -50,3 +54,27 @@ class List(base.ListCommand):
         aggregation_service=client.apitools_client.instantSnapshots)
 
     return lister.Invoke(request_data, list_implementation)
+
+  def Run(self, args):
+    return self._Run(args)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class ListAlpha(ListBeta):
+  """List Compute Engine persistent instant snapshots in alpha."""
+
+  @classmethod
+  def Args(cls, parser):
+    _CommonArgs(parser)
+
+  def Run(self, args):
+    return self._Run(args)
+
+
+ListBeta.detailed_help = base_classes.GetMultiScopeListerHelp(
+    'instant snapshots',
+    scopes=[
+        base_classes.ScopeType.zonal_scope,
+        base_classes.ScopeType.regional_scope,
+    ],
+)

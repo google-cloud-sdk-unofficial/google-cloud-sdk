@@ -23,6 +23,7 @@ from googlecloudsdk.api_lib.datastore import index_api
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.app import output_helpers
+from googlecloudsdk.command_lib.datastore import flags
 from googlecloudsdk.core import properties
 from googlecloudsdk.core.console import console_io
 
@@ -57,14 +58,7 @@ Any indexes in your index file that do not exist will be created.
     Args:
       parser: argparse.ArgumentParser, the parser for this command.
     """
-    parser.add_argument(
-        'index_file',
-        help="""
-        The path to your `index.yaml` file. For a detailed look into defining
-        your `index.yaml` file, refer to this configuration guide:
-        https://cloud.google.com/datastore/docs/tools/indexconfig#Datastore_About_index_yaml
-        """,
-    )
+    flags.AddIndexFileFlag(parser)
 
   def Run(self, args):
     return self.CreateIndexes(index_file=args.index_file)

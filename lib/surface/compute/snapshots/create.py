@@ -58,6 +58,7 @@ def _GAArgs(parser):
 
 def _BetaArgs(parser):
   _GAArgs(parser)
+  snap_flags.SOURCE_INSTANT_SNAPSHOT_ARG.AddArgument(parser)
 
 
 def _AlphaArgs(parser):
@@ -131,8 +132,9 @@ class Create(base.CreateCommand):
       snapshot_message.sourceInstantSnapshot = iss_ref.SelfLink()
 
     if args.IsSpecified('snapshot_type'):
-      snapshot_message.snapshotType = snapshot_message.SnapshotTypeValueValuesEnum(
-          args.snapshot_type)
+      snapshot_message.snapshotType = (
+          snapshot_message.SnapshotTypeValueValuesEnum(args.snapshot_type)
+      )
 
     if support_max_retention_days and args.IsSpecified('max_retention_days'):
       snapshot_message.maxRetentionDays = int(args.max_retention_days)
@@ -165,7 +167,7 @@ class CreateBeta(Create):
     _BetaArgs(parser)
 
   def Run(self, args):
-    return self._Run(args)
+    return self._Run(args, support_source_instant_snapshot=True)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)

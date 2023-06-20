@@ -36,6 +36,7 @@ def _Run(
     enable_labels=False,
     legacy_output=False,
     enable_no_wrapper_support=False,
+    enable_push_to_gcs=False,
 ):
   """Creates one or more subscriptions."""
   flags.ValidateDeadLetterPolicy(args)
@@ -66,6 +67,47 @@ def _Run(
   use_topic_schema = getattr(args, 'use_topic_schema', None)
   write_metadata = getattr(args, 'write_metadata', None)
   drop_unknown_fields = getattr(args, 'drop_unknown_fields', None)
+  cloud_storage_bucket = (
+      getattr(args, 'cloud_storage_bucket', None)
+      if enable_push_to_gcs
+      else None
+  )
+  cloud_storage_file_prefix = (
+      getattr(args, 'cloud_storage_file_prefix', None)
+      if enable_push_to_gcs
+      else None
+  )
+  cloud_storage_file_suffix = (
+      getattr(args, 'cloud_storage_file_suffix', None)
+      if enable_push_to_gcs
+      else None
+  )
+  cloud_storage_max_bytes = (
+      getattr(args, 'cloud_storage_max_bytes', None)
+      if enable_push_to_gcs
+      else None
+  )
+  cloud_storage_max_duration = (
+      getattr(args, 'cloud_storage_max_duration', None)
+      if enable_push_to_gcs
+      else None
+  )
+  if enable_push_to_gcs and args.IsSpecified('cloud_storage_max_duration'):
+    cloud_storage_max_duration = util.FormatDuration(
+        cloud_storage_max_duration)
+  cloud_storage_output_format_list = (
+      getattr(args, 'cloud_storage_output_format', None)
+      if enable_push_to_gcs
+      else None
+  )
+  cloud_storage_output_format = None
+  if cloud_storage_output_format_list:
+    cloud_storage_output_format = cloud_storage_output_format_list[0]
+  cloud_storage_write_metadata = (
+      getattr(args, 'cloud_storage_write_metadata', None)
+      if enable_push_to_gcs
+      else None
+  )
 
   no_expiration = False
   expiration_period = getattr(args, 'expiration_period', None)
@@ -106,7 +148,15 @@ def _Run(
           bigquery_table=bigquery_table,
           use_topic_schema=use_topic_schema,
           write_metadata=write_metadata,
-          drop_unknown_fields=drop_unknown_fields)
+          drop_unknown_fields=drop_unknown_fields,
+          cloud_storage_bucket=cloud_storage_bucket,
+          cloud_storage_file_prefix=cloud_storage_file_prefix,
+          cloud_storage_file_suffix=cloud_storage_file_suffix,
+          cloud_storage_max_bytes=cloud_storage_max_bytes,
+          cloud_storage_max_duration=cloud_storage_max_duration,
+          cloud_storage_output_format=cloud_storage_output_format,
+          cloud_storage_write_metadata=cloud_storage_write_metadata,
+      )
     except api_ex.HttpError as error:
       exc = exceptions.HttpException(error)
       log.CreatedResource(
@@ -168,7 +218,8 @@ class CreateBeta(Create):
     subscription = resource_args.CreateSubscriptionResourceArg(
         'to create.', plural=True)
     resource_args.AddResourceArgs(parser, [topic, subscription])
-    flags.AddSubscriptionSettingsFlags(parser, enable_no_wrapper_support=True)
+    flags.AddSubscriptionSettingsFlags(parser, enable_no_wrapper_support=True,
+                                       enable_push_to_gcs=True)
     labels_util.AddCreateLabelsFlags(parser)
 
   def Run(self, args):
@@ -179,4 +230,5 @@ class CreateBeta(Create):
         enable_labels=True,
         legacy_output=legacy_output,
         enable_no_wrapper_support=True,
+        enable_push_to_gcs=True,
     )

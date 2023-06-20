@@ -53,11 +53,13 @@ class BqmlTransformClient(PredictionClient):
         return self._predictor.predict(inputs, **kwargs)
       except Exception as e:  # pylint: disable=broad-except
         logging.exception(
-            "Exception while predicting with bqml model with transform clause."
+            "Exception during predicting with bqml model with transform clause."
         )
         raise PredictionError(
             PredictionError.FAILED_TO_RUN_MODEL,
-            "Exception while predicting with bqml model with transform clause.",
+            "Exception during predicting with bqml model with transform"
+            " clause: "
+            + str(e),
         ) from e
 
 

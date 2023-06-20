@@ -25,9 +25,10 @@ DETAILED_HELP = {
     'DESCRIPTION':
         """\
       The gcloud netapp command group lets you create, configure and manipulate
-      Cloud NetApp Files resources such as Volumes, Storage Pools, etc.
+      Cloud NetApp Volumes resources such as Volumes, Storage Pools, Active Directories,
+      KMS Configs, Volume Snapshots, and Volume Replications etc.
 
-      With Cloud NetApp Files, you can take advantage of Google Cloud Platform's
+      With Cloud NetApp Volumes, you can take advantage of Google Cloud Platform's
       scale, performance and value to manage and run on-prem NetApp Files
       solutions on Google infrastructure, so you don't have to modernize your
       file workloads, and allow for legacy feature support.
@@ -38,16 +39,9 @@ DETAILED_HELP = {
 }
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Netapp(base.Group):
   """Create and manipulate Cloud NetApp Files resources."""
   detailed_help = DETAILED_HELP
   category = base.STORAGE_CATEGORY
 
-
-@base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class NetappBeta(base.Group):
-  """Create and manipulate Cloud NetApp Files resources."""
-  detailed_help = DETAILED_HELP
-  category = base.STORAGE_CATEGORY

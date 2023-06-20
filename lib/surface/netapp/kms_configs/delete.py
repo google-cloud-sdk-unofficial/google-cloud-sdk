@@ -25,11 +25,6 @@ from googlecloudsdk.core import log
 from googlecloudsdk.core.console import console_io
 
 
-# TODO(b/239613419):
-# Keep gcloud beta netapp group hidden until v1beta1 API stable
-# also restructure release tracks that GA \subset BETA \subset ALPHA once
-# BETA is public.
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class DeleteBeta(base.DeleteCommand):
   """Delete a Cloud NetApp Volumes KMS Config."""
@@ -39,13 +34,13 @@ class DeleteBeta(base.DeleteCommand):
           Delete a KMS (Key Management System) Config
           """,
       'EXAMPLES': """\
-          The following command deletes a KMS Config instance in the default netapp/location
+          The following command deletes a KMS Config instance named KMS_CONFIG in the default netapp/location
 
-              $ {command}
+              $ {command} KMS_CONFIG
 
-          To delete a KMS Config asynchronously, run the following command:
+          To delete a KMS Config named KMS_CONFIG asynchronously, run the following command:
 
-              $ {command} --async
+              $ {command} KMS_CONFIG --async
           """,
   }
 
