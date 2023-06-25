@@ -368,8 +368,8 @@ class Update(base.UpdateCommand):
     flags.AddSecurityPostureEnumFlag(group)
     flags.AddWorkloadVulnScanningEnumFlag(group)
     flags.AddRuntimeVulnerabilityInsightFlag(group)
-    flags.AddWorkloadPoliciesFlag(group, hidden=True)
-    flags.AddRemoveWorkloadPoliciesFlag(group, hidden=True)
+    flags.AddWorkloadPoliciesFlag(group)
+    flags.AddRemoveWorkloadPoliciesFlag(group)
 
   def ParseUpdateOptions(self, args, locations):
     get_default = lambda key: getattr(args, key)
@@ -860,9 +860,10 @@ class UpdateBeta(Update):
     flags.AddSecurityPostureEnumFlag(group)
     flags.AddWorkloadVulnScanningEnumFlag(group)
     flags.AddRuntimeVulnerabilityInsightFlag(group)
-    flags.AddWorkloadPoliciesFlag(group, hidden=True)
-    flags.AddRemoveWorkloadPoliciesFlag(group, hidden=True)
+    flags.AddWorkloadPoliciesFlag(group)
+    flags.AddRemoveWorkloadPoliciesFlag(group)
     flags.AddEnableFqdnNetworkPolicyFlag(group)
+    flags.AddHostMaintenanceIntervalFlag(group)
 
   def ParseUpdateOptions(self, args, locations):
     get_default = lambda key: getattr(args, key)
@@ -979,6 +980,7 @@ class UpdateBeta(Update):
     opts.workload_policies = args.workload_policies
     opts.remove_workload_policies = args.remove_workload_policies
     opts.enable_fqdn_network_policy = args.enable_fqdn_network_policy
+    opts.host_maintenance_interval = args.host_maintenance_interval
     return opts
 
 
@@ -1078,9 +1080,10 @@ class UpdateAlpha(Update):
     flags.AddSecurityPostureEnumFlag(group)
     flags.AddWorkloadVulnScanningEnumFlag(group)
     flags.AddRuntimeVulnerabilityInsightFlag(group)
-    flags.AddWorkloadPoliciesFlag(group, hidden=True)
-    flags.AddRemoveWorkloadPoliciesFlag(group, hidden=True)
+    flags.AddWorkloadPoliciesFlag(group)
+    flags.AddRemoveWorkloadPoliciesFlag(group)
     flags.AddEnableFqdnNetworkPolicyFlag(group)
+    flags.AddHostMaintenanceIntervalFlag(group)
 
   def ParseUpdateOptions(self, args, locations):
     get_default = lambda key: getattr(args, key)
@@ -1191,4 +1194,5 @@ class UpdateAlpha(Update):
     opts.workload_policies = args.workload_policies
     opts.remove_workload_policies = args.remove_workload_policies
     opts.enable_fqdn_network_policy = args.enable_fqdn_network_policy
+    opts.host_maintenance_interval = args.host_maintenance_interval
     return opts

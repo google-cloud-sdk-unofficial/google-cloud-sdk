@@ -57,8 +57,8 @@ class AddKey(base.UpdateCommand):
     cls.INTERCONNECT_ARG = flags.InterconnectArgument()
     cls.INTERCONNECT_ARG.AddArgument(parser, operation_type='update')
 
-    flags.AddMacsecPreSharedKeyNameForAddKey(parser)
-    flags.AddMacsecPreSharedKeyStartTimeForAddKey(parser)
+    flags.AddMacsecPreSharedKeyNameForAddOrUpdateKey(parser)
+    flags.AddMacsecPreSharedKeyStartTimeForAddOrUpdateKey(parser)
 
   def Collection(self):
     return 'compute.interconnects'

@@ -137,6 +137,14 @@ def _CommonArgs(parser):
       help="""Specify the Compute Engine machine type, for
       example, e2-standard-4. Currently only one machine type is supported.""",
   )
+  parser.add_argument(
+      '--job-prefix',
+      type=str,
+      help="""Specify the job prefix. A job ID in the format of
+      job prefix + %Y%m%d-%H%M%S will be generated. Note that job prefix
+      cannot be specified while JOB ID positional argument is
+      specified.""",
+  )
 
   return network_group
 
@@ -307,11 +315,24 @@ class Submit(base.Command):
     return resp
 
   def _GetJobId(self, job_ref, args):
+    job_id = job_ref.RelativeName().split('/')[-1]
+
+    if job_id != resource_args.INVALIDJOBID and args.job_prefix:
+      raise exceptions.Error(
+          '--job-prefix cannot be specified when JOB ID positional '
+          'argument is specified'
+      )
     # Remove the invalid job_id if no job_id being specified,
     # batch_client would create a valid job_id.
-    job_id = job_ref.RelativeName().split('/')[-1]
-    if job_id == resource_args.INVALIDJOBID:
+    elif args.job_prefix:
+      job_id = args.job_prefix + '-' + datetime.datetime.now().strftime(
+          '%Y%m%d-%H%M%S'
+      )
+
+    # The case that both positional JOB ID and prefix are not specified
+    elif job_id == resource_args.INVALIDJOBID:
       job_id = None
+
     return job_id
 
 
@@ -385,37 +406,3 @@ class SubmitAlpha(SubmitBeta):
       }
       EOF
   """
-
-  @staticmethod
-  def Args(parser):
-    _CommonArgs(parser)
-    parser.add_argument(
-        '--job-prefix',
-        type=str,
-        help="""Specify the job prefix. A job ID in the format of
-          job prefix + %Y%m%d-%H%M%S will be generated. Note that job prefix
-          cannot be specified while JOB ID positional argument is
-          specified.""",
-    )
-    resource_args.AddSubmitJobResourceArgs(parser)
-
-  def _GetJobId(self, job_ref, args):
-    job_id = job_ref.RelativeName().split('/')[-1]
-
-    if job_id != resource_args.INVALIDJOBID and args.job_prefix:
-      raise exceptions.Error(
-          '--job-prefix cannot be specified when JOB ID positional '
-          'argument is specified'
-      )
-    # Remove the invalid job_id if no job_id being specified,
-    # batch_client would create a valid job_id.
-    elif args.job_prefix:
-      job_id = args.job_prefix + '-' + datetime.datetime.now().strftime(
-          '%Y%m%d-%H%M%S'
-      )
-
-    # The case that both positional JOB ID and prefix are not specified
-    elif job_id == resource_args.INVALIDJOBID:
-      job_id = None
-
-    return job_id

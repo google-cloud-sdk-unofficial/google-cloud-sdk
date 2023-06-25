@@ -53,7 +53,6 @@ class CreateHelper(object):
       support_redirect,
       support_rate_limit,
       support_header_action,
-      support_tcp_ssl,
       support_fairshare,
       support_regional_security_policy,
       support_multiple_rate_limit_keys,
@@ -82,7 +81,6 @@ class CreateHelper(object):
         parser,
         support_redirect=support_redirect,
         support_rate_limit=support_rate_limit,
-        support_tcp_ssl=support_tcp_ssl,
         support_fairshare=support_fairshare)
     flags.AddDescription(parser)
     flags.AddPreview(parser, default=None)
@@ -91,7 +89,6 @@ class CreateHelper(object):
     if support_rate_limit:
       flags.AddRateLimitOptions(
           parser,
-          support_tcp_ssl=support_tcp_ssl,
           support_exceed_redirect=support_redirect,
           support_fairshare=support_fairshare,
           support_multiple_rate_limit_keys=support_multiple_rate_limit_keys,
@@ -248,7 +245,6 @@ class CreateGA(base.CreateCommand):
   _support_rate_limit = True
   _support_multiple_rate_limit_keys = True
   _support_header_action = True
-  _support_tcl_ssl = False
   _support_fairshare = False
   _support_regional_security_policy = False
   _support_net_lb = False
@@ -261,7 +257,6 @@ class CreateGA(base.CreateCommand):
         support_redirect=cls._support_redirect,
         support_rate_limit=cls._support_rate_limit,
         support_header_action=cls._support_header_action,
-        support_tcp_ssl=cls._support_tcl_ssl,
         support_fairshare=cls._support_fairshare,
         support_regional_security_policy=cls._support_regional_security_policy,
         support_multiple_rate_limit_keys=cls._support_multiple_rate_limit_keys,
@@ -308,7 +303,6 @@ class CreateBeta(base.CreateCommand):
   _support_rate_limit = True
   _support_multiple_rate_limit_keys = True
   _support_header_action = True
-  _support_tcl_ssl = False
   _support_fairshare = False
   _support_regional_security_policy = True
   _support_net_lb = True
@@ -321,7 +315,6 @@ class CreateBeta(base.CreateCommand):
         support_redirect=cls._support_redirect,
         support_rate_limit=cls._support_rate_limit,
         support_header_action=cls._support_header_action,
-        support_tcp_ssl=cls._support_tcl_ssl,
         support_fairshare=cls._support_fairshare,
         support_regional_security_policy=cls._support_regional_security_policy,
         support_multiple_rate_limit_keys=cls._support_multiple_rate_limit_keys,
@@ -368,7 +361,6 @@ class CreateAlpha(base.CreateCommand):
   _support_rate_limit = True
   _support_multiple_rate_limit_keys = True
   _support_header_action = True
-  _support_tcl_ssl = True
   _support_fairshare = True
   _support_regional_security_policy = True
   _support_net_lb = True
@@ -381,7 +373,6 @@ class CreateAlpha(base.CreateCommand):
         support_redirect=cls._support_redirect,
         support_rate_limit=cls._support_rate_limit,
         support_header_action=cls._support_header_action,
-        support_tcp_ssl=cls._support_tcl_ssl,
         support_fairshare=cls._support_fairshare,
         support_regional_security_policy=cls._support_regional_security_policy,
         support_multiple_rate_limit_keys=cls._support_multiple_rate_limit_keys,

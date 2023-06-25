@@ -36,7 +36,7 @@ class Clusters(base.Group):
 
   To resize a cluster, run:
 
-    $ {command} update my-cluster --region=us-central1 --num_workers 5
+    $ {command} update my-cluster --region=us-central1 --num-workers 5
 
   To delete a cluster, run:
 

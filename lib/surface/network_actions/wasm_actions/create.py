@@ -26,19 +26,13 @@ from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope.concepts import concepts
 from googlecloudsdk.command_lib.network_actions import flags
+from googlecloudsdk.command_lib.network_actions import util
 from googlecloudsdk.command_lib.util.apis import yaml_data
 from googlecloudsdk.command_lib.util.args import labels_util
 from googlecloudsdk.command_lib.util.concepts import concept_parsers
 from googlecloudsdk.command_lib.util.concepts import presentation_specs
 from googlecloudsdk.core import log
 from googlecloudsdk.core import resources
-
-
-def _GetApiVersion(track):
-  if track is base.ReleaseTrack.ALPHA:
-    return 'v1alpha1'
-  else:
-    raise ValueError('Unsupported Release Track: {}'.format(track))
 
 
 def _GetPossibleValuesOfSupportedEvents():
@@ -112,14 +106,14 @@ class Create(base.CreateCommand):
                 'wasm_action',
                 concepts.ResourceSpec.FromYaml(
                     wasm_action_data.GetData(),
-                    api_version=_GetApiVersion(cls.ReleaseTrack())),
+                    api_version=util.GetApiVersion(cls.ReleaseTrack())),
                 'The ID of the WasmAction.',
                 required=True),
             presentation_specs.ResourcePresentationSpec(
                 '--wasm-plugin',
                 concepts.ResourceSpec.FromYaml(
                     wasm_plugin_data.GetData(),
-                    api_version=_GetApiVersion(cls.ReleaseTrack())),
+                    api_version=util.GetApiVersion(cls.ReleaseTrack())),
                 'ID of the WasmPlugin to use for this action.',
                 flag_name_overrides={'location': ''},
                 required=True)
@@ -143,7 +137,7 @@ class Create(base.CreateCommand):
     flags.AddDescriptionFlag(parser)
 
   def Run(self, args):
-    api_version = _GetApiVersion(self.ReleaseTrack())
+    api_version = util.GetApiVersion(self.ReleaseTrack())
     messages = apis.GetMessagesModule('networkservices', api_version)
 
     wasm_action_ref = args.CONCEPTS.wasm_action.Parse()

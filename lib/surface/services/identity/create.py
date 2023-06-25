@@ -20,6 +20,7 @@ from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.services import serviceusage
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.util.args import common_args
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 
@@ -28,13 +29,16 @@ class Create(base.CreateCommand):
   """Create a service identity for a consumer.
 
   This command creates a service identity for a consumer. The supported
-  consumers are projects.
+  consumers are projects, folders, and organizations.
 
   ## EXAMPLES
 
-  To create a service identity for a project, run:
+  To create a service identity for a project, folder, or organization, run:
 
     $ {command} --service=example.googleapis.com --project=helloworld
+    $ {command} --service=example.googleapis.com --project=1234567890
+    $ {command} --service=example.googleapis.com --folder=1234567890
+    $ {command} --service=example.googleapis.com --organization=1234567890
   """
 
   @staticmethod
@@ -49,6 +53,27 @@ class Create(base.CreateCommand):
         '--service',
         required=True,
         help='The service to create a service identity for.')
+    container = parser.add_group(
+        mutex=True,
+        help=(
+            'Container resource where the service identity will be used.'
+        ),
+    )
+    common_args.ProjectArgument(
+        help_text_to_prepend='Project where the service identity will be used.'
+    ).AddToParser(container)
+    base.Argument(
+        '--folder',
+        default=None,
+        type=int,
+        help='Folder where the service identity will be used.',
+    ).AddToParser(container)
+    base.Argument(
+        '--organization',
+        default=None,
+        type=int,
+        help='Organization where the service identity will be used.',
+    ).AddToParser(container)
 
   def Run(self, args):
     """Run 'services identity create'.
@@ -60,8 +85,21 @@ class Create(base.CreateCommand):
     Returns:
       response with service identity email and uniqueId.
     """
-    project = properties.VALUES.core.project.Get(required=True)
-    response = serviceusage.GenerateServiceIdentity(project, args.service)
+    if args.folder:
+      container = args.folder
+      container_type = serviceusage.ContainerType.FOLDER_SERVICE_RESOURCE
+    elif args.organization:
+      container = args.organization
+      container_type = serviceusage.ContainerType.ORG_SERVICE_RESOURCE
+    else:
+      if args.project:
+        container = args.project
+      else:
+        container = properties.VALUES.core.project.Get(required=True)
+      container_type = serviceusage.ContainerType.PROJECT_SERVICE_RESOURCE
+    response = serviceusage.GenerateServiceIdentity(
+        container, args.service, container_type
+    )
     if 'email' not in response:
       # Print generic message when email not provided in response.
       # Error in GenerateServiceIdentity indicated by thrown exception.

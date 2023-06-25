@@ -55,7 +55,7 @@ def _CommonArgs(parser):
   disks_flags.AddStopGroupAsyncReplicationArgs(parser)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class StopGroupAsyncReplication(base.Command):
   """Stop Group Async Replication for a Consistency Group Resource Policy."""
 
@@ -98,6 +98,21 @@ class StopGroupAsyncReplication(base.Command):
 
 
 StopGroupAsyncReplication.detailed_help = DETAILED_HELP
+
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class StopGroupAsyncReplicationBeta(StopGroupAsyncReplication):
+  """Stop Group Async Replication for a Consistency Group Resource Policy."""
+
+  @classmethod
+  def Args(cls, parser):
+    _CommonArgs(parser)
+
+  def Run(self, args):
+    return self._Run(args)
+
+
+StopGroupAsyncReplicationBeta.detailed_help = DETAILED_HELP
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)

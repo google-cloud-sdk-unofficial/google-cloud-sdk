@@ -179,11 +179,11 @@ character. When using Windows PowerShell, use `'` instead of
   def Run(self, args):
     encryption_util.initialize_key_store(args)
     source_container = rsync_command_util.get_existing_container_resource(
-        os.path.expanduser(args.source)
+        os.path.expanduser(args.source), args.ignore_symlinks
     )
     destination_container = (
         rsync_command_util.get_existing_or_placeholder_destination_resource(
-            os.path.expanduser(args.destination)
+            os.path.expanduser(args.destination), args.ignore_symlinks
         )
     )
 
@@ -199,12 +199,14 @@ character. When using Windows PowerShell, use `'` instead of
         source_container,
         source_list_path,
         exclude_pattern_strings=args.exclude,
+        ignore_symlinks=args.ignore_symlinks,
         recurse=args.recursive,
     )
     destination_task = get_sorted_list_file_task.GetSortedContainerContentsTask(
         destination_container,
         destination_list_path,
         exclude_pattern_strings=args.exclude,
+        ignore_symlinks=args.ignore_symlinks,
         recurse=args.recursive,
     )
 

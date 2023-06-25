@@ -23,7 +23,9 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.workstations import flags as workstations_flags
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.GA, base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA
+)
 class StartTcpTunnel(base.Command):
   """Start a tunnel through which a local process can forward TCP traffic to the workstation."""
 

@@ -27,8 +27,6 @@ from googlecloudsdk.command_lib.spanner import flags
 from googlecloudsdk.command_lib.spanner import resource_args
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-@base.Hidden
 class Update(base.UpdateCommand):
   """Update a Cloud Spanner database."""
 

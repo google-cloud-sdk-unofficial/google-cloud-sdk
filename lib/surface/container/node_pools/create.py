@@ -117,7 +117,7 @@ for examples.
   flags.AddAdditionalNodeNetworkFlag(parser, hidden=True)
   flags.AddAdditionalPodNetworkFlag(parser, hidden=True)
   flags.AddAsyncFlag(parser)
-  flags.AddSoleTenantNodeAffinityFileFlag(parser, hidden=True)
+  flags.AddSoleTenantNodeAffinityFileFlag(parser)
 
 
 def ParseCreateNodePoolOptionsBase(args):
@@ -190,7 +190,8 @@ def ParseCreateNodePoolOptionsBase(args):
       windows_os_version=args.windows_os_version,
       additional_node_network=args.additional_node_network,
       additional_pod_network=args.additional_pod_network,
-      sole_tenant_node_affinity_file=args.sole_tenant_node_affinity_file)
+      sole_tenant_node_affinity_file=args.sole_tenant_node_affinity_file,
+  )
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
@@ -242,6 +243,7 @@ class Create(base.CreateCommand):
     flags.AddWindowsOsVersionFlag(parser)
     flags.AddPlacementTypeFlag(parser, for_node_pool=True, hidden=False)
     flags.AddBestEffortProvisionFlags(parser)
+    flags.AddPlacementPolicyFlag(parser)
 
   def ParseCreateNodePoolOptions(self, args):
     ops = ParseCreateNodePoolOptionsBase(args)
@@ -251,6 +253,7 @@ class Create(base.CreateCommand):
     ops.placement_type = args.placement_type
     ops.enable_best_effort_provision = args.enable_best_effort_provision
     ops.min_provision_nodes = args.min_provision_nodes
+    ops.placement_policy = args.placement_policy
     return ops
 
   def Run(self, args):
@@ -345,6 +348,7 @@ class CreateBeta(Create):
     flags.AddEnableGvnicFlag(parser)
     flags.AddSpotFlag(parser, for_node_pool=True)
     flags.AddPlacementTypeFlag(parser, for_node_pool=True, hidden=False)
+    flags.AddPlacementPolicyFlag(parser)
     flags.AddEnableSurgeUpgradeFlag(parser)
     flags.AddEnableBlueGreenUpgradeFlag(parser)
     flags.AddStandardRolloutPolicyFlag(parser)
@@ -361,6 +365,8 @@ class CreateBeta(Create):
     flags.AddTPUTopologyFlag(parser, hidden=True)
     flags.AddEnableNestedVirtualizationFlag(
         parser, for_node_pool=True, hidden=True)
+    flags.AddHostMaintenanceIntervalFlag(
+        parser, for_node_pool=True, hidden=True)
 
   def ParseCreateNodePoolOptions(self, args):
     ops = ParseCreateNodePoolOptionsBase(args)
@@ -375,6 +381,7 @@ class CreateBeta(Create):
     ops.ephemeral_storage = args.ephemeral_storage
     ops.spot = args.spot
     ops.placement_type = args.placement_type
+    ops.placement_policy = args.placement_policy
     ops.location_policy = args.location_policy
     ops.enable_blue_green_upgrade = args.enable_blue_green_upgrade
     ops.enable_surge_upgrade = args.enable_surge_upgrade
@@ -390,6 +397,7 @@ class CreateBeta(Create):
     ops.enable_nested_virtualization = args.enable_nested_virtualization
     ops.enable_best_effort_provision = args.enable_best_effort_provision
     ops.min_provision_nodes = args.min_provision_nodes
+    ops.host_maintenance_interval = args.host_maintenance_interval
     return ops
 
 
@@ -412,6 +420,7 @@ class CreateAlpha(Create):
     ops.enable_image_streaming = args.enable_image_streaming
     ops.spot = args.spot
     ops.placement_type = args.placement_type
+    ops.placement_policy = args.placement_policy
     ops.location_policy = args.location_policy
     ops.enable_blue_green_upgrade = args.enable_blue_green_upgrade
     ops.enable_surge_upgrade = args.enable_surge_upgrade
@@ -427,6 +436,7 @@ class CreateAlpha(Create):
     ops.enable_nested_virtualization = args.enable_nested_virtualization
     ops.enable_best_effort_provision = args.enable_best_effort_provision
     ops.min_provision_nodes = args.min_provision_nodes
+    ops.host_maintenance_interval = args.host_maintenance_interval
     return ops
 
   @staticmethod
@@ -465,6 +475,7 @@ class CreateAlpha(Create):
     flags.AddEnableGvnicFlag(parser)
     flags.AddSpotFlag(parser, for_node_pool=True)
     flags.AddPlacementTypeFlag(parser, for_node_pool=True, hidden=False)
+    flags.AddPlacementPolicyFlag(parser)
     flags.AddEnableSurgeUpgradeFlag(parser)
     flags.AddEnableBlueGreenUpgradeFlag(parser)
     flags.AddStandardRolloutPolicyFlag(parser, for_node_pool=True)
@@ -480,5 +491,7 @@ class CreateAlpha(Create):
     flags.AddQueuedProvisioningFlag(parser, hidden=True)
     flags.AddTPUTopologyFlag(parser, hidden=True)
     flags.AddEnableNestedVirtualizationFlag(parser, hidden=True)
+    flags.AddHostMaintenanceIntervalFlag(
+        parser, for_node_pool=True, hidden=True)
 
 Create.detailed_help = DETAILED_HELP

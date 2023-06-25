@@ -22,7 +22,10 @@ from __future__ import unicode_literals
 from googlecloudsdk.api_lib.container.gkemulticloud import azure as api_util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.container.azure import resource_args
+from googlecloudsdk.command_lib.container.gkemulticloud import constants
 from googlecloudsdk.command_lib.container.gkemulticloud import endpoint_util
+from googlecloudsdk.command_lib.container.gkemulticloud import versions
+from googlecloudsdk.core import log
 
 _EXAMPLES = """
 To describe a node pool named ``my-node-pool'' in a cluster named
@@ -44,8 +47,17 @@ class Describe(base.DescribeCommand):
 
   def Run(self, args):
     """Runs the describe command."""
-    location = resource_args.ParseAzureNodePoolResourceArg(args).locationsId
-    with endpoint_util.GkemulticloudEndpointOverride(location):
-      nodepool_ref = resource_args.ParseAzureNodePoolResourceArg(args)
-      client = api_util.NodePoolsClient()
-      return client.Get(nodepool_ref)
+    self._upgrade_hint = None
+    node_pool_ref = resource_args.ParseAzureNodePoolResourceArg(args)
+    with endpoint_util.GkemulticloudEndpointOverride(node_pool_ref.locationsId):
+      node_pool_client = api_util.NodePoolsClient()
+      node_pool_info = node_pool_client.Get(node_pool_ref)
+      self._upgrade_hint = versions.upgrade_hint_node_pool(
+          node_pool_ref, node_pool_info, constants.AZURE
+      )
+
+      return node_pool_info
+
+  def Epilog(self, results_were_displayed):
+    if self._upgrade_hint:
+      log.status.Print(self._upgrade_hint)

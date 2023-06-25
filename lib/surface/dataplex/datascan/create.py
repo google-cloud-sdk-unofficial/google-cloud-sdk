@@ -83,7 +83,8 @@ class Create(base.Command):
     )
 
     data_spec = parser.add_group(
-        help='Additional configuration arguments for the scan.'
+        mutex=True,
+        help='Additional configuration arguments for the scan.',
     )
     data_quality = data_spec.add_group(help='DataQualityScan related setting.')
     data_quality.add_argument(
@@ -91,6 +92,14 @@ class Create(base.Command):
         help=(
             'path to the JSON file containing the Data Quality Spec for the'
             ' Data Quality Scan'
+        ),
+    )
+    data_profile = data_spec.add_group(help='DataProfileScan related setting.')
+    data_profile.add_argument(
+        '--data-profile-spec-file',
+        help=(
+            'path to the JSON file containing the Data Profile Spec for the'
+            ' Data Profile Scan'
         ),
     )
     execution_spec = parser.add_group(

@@ -12,18 +12,18 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Command group for Workload Registration."""
+"""Command group for Dataplex Datascan Jobs services."""
 
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
-from googlecloudsdk.calliope import base as calliope_base
+from googlecloudsdk.calliope import base
 
 
-@calliope_base.ReleaseTracks(calliope_base.ReleaseTrack.ALPHA)
-@calliope_base.Hidden
-class WorkloadRegistrations(calliope_base.Group):
-  """Manage Workload Registrations."""
+@base.Hidden
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class Jobs(base.Group):
+  """Manage Dataplex Datascan Jobs service."""
 
-  pass
+  category = base.DATA_ANALYTICS_CATEGORY

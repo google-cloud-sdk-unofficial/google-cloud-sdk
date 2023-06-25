@@ -43,7 +43,7 @@ def _CommonArgs(parser):
   parser.display_info.AddCacheUpdater(None)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class CreateDiskConsistencyGroup(base.CreateCommand):
   """Create a Compute Engine Disk Consistency Group resource policy."""
 
@@ -78,6 +78,23 @@ class CreateDiskConsistencyGroup(base.CreateCommand):
 
 
 CreateDiskConsistencyGroup.detailed_help = DETAILED_HELP
+
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class CreateDiskConsistencyGroupBeta(CreateDiskConsistencyGroup):
+  """Create a Compute Engine Disk Consistency Group resource policy."""
+
+  @staticmethod
+  def Args(parser):
+    CreateDiskConsistencyGroup.resource_policy_arg = (
+        flags.MakeResourcePolicyArg())
+    _CommonArgs(parser)
+
+  def Run(self, args):
+    return self._Run(args)
+
+
+CreateDiskConsistencyGroupBeta.detailed_help = DETAILED_HELP
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)

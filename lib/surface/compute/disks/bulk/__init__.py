@@ -28,12 +28,20 @@ DETAILED_HELP = {
 }
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Bulk(base.Group):
   """Manipulate multiple Compute Engine disks with single command executions."""
 
 
 Bulk.detailed_help = DETAILED_HELP
+
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class BulkBeta(Bulk):
+  """Manipulate multiple Compute Engine disks with single command executions."""
+
+
+BulkBeta.detailed_help = DETAILED_HELP
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)

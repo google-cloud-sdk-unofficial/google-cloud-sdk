@@ -710,7 +710,7 @@ class CreateBeta(Create):
   _support_numa_node_count = False
   _support_visible_core_count = True
   _support_network_queue_count = True
-  _support_instance_kms = False
+  _support_instance_kms = True
   _support_max_run_duration = True
   _support_ipv6_assignment = False
   _support_network_attachments = False

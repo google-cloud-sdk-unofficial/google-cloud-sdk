@@ -1,4 +1,4 @@
-release_tracks: [ALPHA, BETA]
+release_tracks: [BETA]
 help_text:
   brief: Set the IAM policy for a BeyondCorp client connector service.
   description: Sets the IAM policy for the given BeyondCorp client connector service.
@@ -10,8 +10,6 @@ help_text:
 
 request:
   collection: beyondcorp.projects.locations.clientConnectorServices
-  ALPHA:
-    api_version: v1alpha
   BETA:
     api_version: v1
 

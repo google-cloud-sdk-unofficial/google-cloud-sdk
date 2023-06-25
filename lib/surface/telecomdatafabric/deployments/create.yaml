@@ -28,9 +28,6 @@
     - arg_name: deployment-project
       api_field: deployment.projectId
       help_text: Deployment project.
-    - arg_name: deployment-location
-      api_field: deployment.locationId
-      help_text: Deployment location.
 
   async:
     collection: telecomdatafabric.projects.locations.operations

@@ -82,9 +82,7 @@ DETAILED_HELP = {
 }
 
 
-def _SourceArgs(parser,
-                source_instant_snapshot_enabled=False,
-                support_async_pd=False):
+def _SourceArgs(parser, source_instant_snapshot_enabled=False):
   """Add mutually exclusive source args."""
   source_parent_group = parser.add_group()
   source_group = source_parent_group.add_mutually_exclusive_group()
@@ -122,12 +120,10 @@ def _SourceArgs(parser,
   if source_instant_snapshot_enabled:
     disks_flags.SOURCE_INSTANT_SNAPSHOT_ARG.AddArgument(source_group)
   disks_flags.SOURCE_DISK_ARG.AddArgument(parser, mutex_group=source_group)
-  if support_async_pd:
-    disks_flags.ASYNC_PRIMARY_DISK_ARG.AddArgument(
-        parser, mutex_group=source_group
-    )
-    disks_flags.AddPrimaryDiskProject(parser)
-
+  disks_flags.ASYNC_PRIMARY_DISK_ARG.AddArgument(
+      parser, mutex_group=source_group
+  )
+  disks_flags.AddPrimaryDiskProject(parser)
   disks_flags.AddLocationHintArg(parser)
 
 
@@ -138,7 +134,6 @@ def _CommonArgs(messages,
                 source_instant_snapshot_enabled=False,
                 support_pd_interface=False,
                 support_user_licenses=False,
-                support_async_pd=False,
                 support_storage_pool=False):
   """Add arguments used for parsing in all command tracks."""
   Create.disks_arg.AddArgument(parser, operation_type='create')
@@ -195,7 +190,7 @@ def _CommonArgs(messages,
             'be added onto the created disks to indicate the licensing and '
             'billing policies.'))
 
-  _SourceArgs(parser, source_instant_snapshot_enabled, support_async_pd)
+  _SourceArgs(parser, source_instant_snapshot_enabled)
 
   disks_flags.AddProvisionedIopsFlag(parser, arg_parsers)
   disks_flags.AddArchitectureFlag(parser, messages)
@@ -489,7 +484,6 @@ class Create(base.Command):
       support_vss_erase=False,
       support_pd_interface=False,
       support_user_licenses=False,
-      support_async_pd=False,
       support_enable_confidential_compute=False,
       support_storage_pool=False,
   ):
@@ -554,12 +548,12 @@ class Create(base.Command):
       if support_pd_interface and args.interface:
         kwargs['interface'] = arg_utils.ChoiceToEnum(
             args.interface, client.messages.Disk.InterfaceValueValuesEnum)
+      # end of alpha/beta features.
 
-      if support_async_pd and args.primary_disk:
+      if args.primary_disk:
         primary_disk = client.messages.DiskAsyncReplication()
         primary_disk.disk = self.GetAsyncPrimaryDiskUri(args, compute_holder)
         kwargs['asyncPrimaryDisk'] = primary_disk
-      # end of alpha/beta features.
 
       if supports_physical_block and args.IsSpecified('physical_block_size'):
         physical_block_size_bytes = int(args.physical_block_size)
@@ -688,7 +682,6 @@ class CreateBeta(Create):
         include_physical_block_size_support=True,
         vss_erase_enabled=True,
         source_instant_snapshot_enabled=True,
-        support_async_pd=True,
         support_pd_interface=True,
     )
     image_utils.AddGuestOsFeaturesArg(parser, messages)
@@ -704,7 +697,6 @@ class CreateBeta(Create):
         supports_physical_block=True,
         support_vss_erase=True,
         support_multiwriter_disk=True,
-        support_async_pd=True,
         support_pd_interface=True)
 
 
@@ -726,7 +718,6 @@ class CreateAlpha(CreateBeta):
         source_instant_snapshot_enabled=True,
         support_pd_interface=True,
         support_user_licenses=True,
-        support_async_pd=True,
         support_storage_pool=True)
     image_utils.AddGuestOsFeaturesArg(parser, messages)
     _AddReplicaZonesArg(parser)
@@ -744,7 +735,6 @@ class CreateAlpha(CreateBeta):
         support_vss_erase=True,
         support_pd_interface=True,
         support_user_licenses=True,
-        support_async_pd=True,
         support_enable_confidential_compute=True,
         support_storage_pool=True,
     )

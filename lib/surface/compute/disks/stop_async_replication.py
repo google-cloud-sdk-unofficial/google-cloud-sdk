@@ -48,7 +48,7 @@ def _CommonArgs(parser):
       parser, operation_type='stop async replication')
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class StopAsyncReplication(base.Command):
   """Stop Async Replication on Compute Engine persistent disks."""
 
@@ -93,6 +93,22 @@ class StopAsyncReplication(base.Command):
 
 
 StopAsyncReplication.detailed_help = DETAILED_HELP
+
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class StopAsyncReplicationBeta(StopAsyncReplication):
+  """Stop Async Replication on Compute Engine persistent disks."""
+
+  @classmethod
+  def Args(cls, parser):
+    StopAsyncReplication.disks_arg = disks_flags.MakeDiskArg(plural=False)
+    _CommonArgs(parser)
+
+  def Run(self, args):
+    return self._Run(args)
+
+
+StopAsyncReplicationBeta.detailed_help = DETAILED_HELP
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)

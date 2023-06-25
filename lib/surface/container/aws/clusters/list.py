@@ -23,6 +23,8 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.container.aws import resource_args
 from googlecloudsdk.command_lib.container.gkemulticloud import constants
 from googlecloudsdk.command_lib.container.gkemulticloud import endpoint_util
+from googlecloudsdk.command_lib.container.gkemulticloud import versions
+from googlecloudsdk.core import log
 
 
 _EXAMPLES = """
@@ -33,7 +35,7 @@ $ {command} --location=us-west1
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.GA)
-class Describe(base.ListCommand):
+class List(base.ListCommand):
   """List Anthos clusters on AWS."""
 
   detailed_help = {'EXAMPLES': _EXAMPLES}
@@ -45,8 +47,22 @@ class Describe(base.ListCommand):
 
   def Run(self, args):
     """Runs the list command."""
+    self._upgrade_hint = None
     location_ref = args.CONCEPTS.location.Parse()
     with endpoint_util.GkemulticloudEndpointOverride(location_ref.locationsId):
       cluster_client = api_util.ClustersClient()
       items, _ = cluster_client.List(location_ref, args.page_size, args.limit)
-      return items
+      platform = constants.AWS
+      cluster_info_table, end_of_life_flag = versions.generate_versions_table(
+          location_ref,
+          platform,
+          items,
+      )
+      if end_of_life_flag:
+        self._upgrade_hint = versions.upgrade_hint_list(platform)
+      return cluster_info_table
+
+  def Epilog(self, results_were_displayed):
+    super(List, self).Epilog(results_were_displayed)
+    if self._upgrade_hint:
+      log.status.Print(self._upgrade_hint)

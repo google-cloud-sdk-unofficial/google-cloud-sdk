@@ -50,21 +50,23 @@ class Create(base.CreateCommand):
   @staticmethod
   def Args(parser):
     resource_args.AddInstanceResourceArg(parser, 'to create')
+    flags.AddKmsKey(parser)
     flags.AddMaxWait(parser, '60m')  # Default to 60 minutes wait.
     # Create --async flag and set default to be true.
     base.ASYNC_FLAG.AddToParser(parser)
     base.ASYNC_FLAG.SetDefault(parser, True)
 
   def Run(self, args):
-    # Get --async and --max-wait flags.
     is_async = args.async_
     max_wait = datetime.timedelta(seconds=args.max_wait)
+    kms_key = args.kms_key
 
     # Get a long-running operation for this creation
     client = instances.InstancesClient()
     instance = args.CONCEPTS.instance.Parse()
     operation = client.Create(
         instance_ref=instance,
+        kms_key=kms_key,
     )
 
     log.status.Print('Create request issued for [{}].'

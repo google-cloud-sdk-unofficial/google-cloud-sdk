@@ -35,9 +35,12 @@ _DETAILED_HELP = {
 }
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
+)
 class Terminate(base.UpdateCommand):
   """Terminates a Cloud Deploy job run."""
+
   detailed_help = _DETAILED_HELP
 
   @staticmethod

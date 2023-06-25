@@ -56,7 +56,8 @@ _UPDATE_LOGGING_CONFIG_HELPF_TEXT = """\
 
 
 @calliope_base.Hidden
-@calliope_base.ReleaseTracks(calliope_base.ReleaseTrack.ALPHA)
+@calliope_base.ReleaseTracks(calliope_base.ReleaseTrack.ALPHA,
+                             calliope_base.ReleaseTrack.BETA)
 class Update(base.UpdateCommand):
   """Updates the Fleet Observability Feature resource.
 
@@ -66,7 +67,7 @@ class Update(base.UpdateCommand):
 
   To describe the Fleet Observability Feature, run:
 
-    $ {command} --logging-config=LOGGING-CONGIG
+    $ {command} --logging-config=LOGGING-CONFIG
   """
 
   feature_name = 'fleetobservability'

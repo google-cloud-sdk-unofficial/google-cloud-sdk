@@ -20,12 +20,11 @@ from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.run.integrations import types_utils
 from googlecloudsdk.calliope import base
+from googlecloudsdk.calliope import parser_extensions
 from googlecloudsdk.command_lib.run import connection_context
 from googlecloudsdk.command_lib.run import flags as run_flags
 from googlecloudsdk.command_lib.run.integrations import flags
-from googlecloudsdk.command_lib.run.integrations import integration_list_printer as printer
 from googlecloudsdk.command_lib.run.integrations import run_apps_operations
-from googlecloudsdk.core.resource import resource_printer
 
 
 @base.ReleaseTracks(
@@ -66,13 +65,6 @@ class List(base.ListCommand):
     flags.ListIntegrationsOfService(parser)
     flags.ListIntegrationsOfType(parser)
 
-    resource_printer.RegisterFormatter(
-        printer.PRINTER_FORMAT,
-        printer.IntegrationListPrinter,
-        hidden=True,
-    )
-    parser.display_info.AddFormat(printer.PRINTER_FORMAT)
-
   def Run(self, args):
     """Lists all the Cloud Run Integrations.
 
@@ -90,6 +82,7 @@ class List(base.ListCommand):
       The reason this is not a list is because the printer will only recieve
       one entry at a time and cannot easily format all entries into a table.
     """
+    _SetFormat(args)
     integration_type = args.type
     service_name = args.service
     release_track = self.ReleaseTrack()
@@ -106,7 +99,18 @@ class List(base.ListCommand):
       if integration_type:
         types_utils.CheckValidIntegrationType(integration_type)
 
-      return {
-          printer.RECORD_KEY:
-              client.ListIntegrations(integration_type, service_name, region)
-          }
+      return client.ListIntegrations(integration_type, service_name, region)
+
+
+def _SetFormat(namespace: parser_extensions.Namespace) -> None:
+  columns = [
+      # latest_deployment_status does not have a column name
+      'formatted_latest_deployment_status:label=',
+      'integration_name:label=INTEGRATION',
+      'integration_type:label=TYPE',
+      'region:label=REGION',
+      'services:label=SERVICE',
+  ]
+  namespace.GetDisplayInfo().AddFormat(
+      'table({columns})'.format(columns=','.join(columns))
+  )

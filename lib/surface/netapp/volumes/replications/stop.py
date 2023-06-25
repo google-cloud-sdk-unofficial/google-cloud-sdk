@@ -56,6 +56,7 @@ class StopBeta(base.Command):
     ).AddToParser(parser)
     replications_flags.AddReplicationVolumeArg(parser)
     flags.AddResourceAsyncFlag(parser)
+    replications_flags.AddReplicationForceArg(parser)
 
   def Run(self, args):
     """Stop a Cloud NetApp Volume Replication in the current project."""
@@ -67,7 +68,7 @@ class StopBeta(base.Command):
 
     client = replications_client.ReplicationsClient(self._RELEASE_TRACK)
     result = client.StopReplication(
-        replication_ref, args.async_)
+        replication_ref, args.async_, args.force)
     if args.async_:
       command = 'gcloud {} netapp volumes replications list'.format(
           self.ReleaseTrack().prefix

@@ -76,85 +76,17 @@
       api_field: repository.remoteRepositoryConfig.description
       help_text: |
         The description for the remote repository config.
-    - arg_name: remote-mvn-repo
-      api_field: repository.remoteRepositoryConfig.mavenRepository.publicRepository
-      help_text: |
-        (Maven only) Repo upstream for maven remote repository.
-      choices:
-      - arg_value: NONE
-        enum_value: PUBLIC_REPOSITORY_UNSPECIFIED
-      - arg_value: MAVEN-CENTRAL
-        enum_value: MAVEN_CENTRAL
-    - arg_name: remote-docker-repo
-      api_field: repository.remoteRepositoryConfig.dockerRepository.publicRepository
-      help_text: |
-        (Docker only) Repo upstream for docker remote repository.
-      choices:
-      - arg_value: NONE
-        enum_value: PUBLIC_REPOSITORY_UNSPECIFIED
-      - arg_value: DOCKER-HUB
-        enum_value: DOCKER_HUB
-    - arg_name: remote-npm-repo
-      api_field: repository.remoteRepositoryConfig.npmRepository.publicRepository
-      help_text: |
-        (npm only) Repo upstream for npm remote repository.
-      choices:
-      - arg_value: NONE
-        enum_value: PUBLIC_REPOSITORY_UNSPECIFIED
-      - arg_value: NPMJS
-        enum_value: NPMJS
-    - arg_name: remote-python-repo
-      api_field: repository.remoteRepositoryConfig.pythonRepository.publicRepository
-      help_text: |
-        (Python only) Repo upstream for python remote repository.
-      choices:
-      - arg_value: NONE
-        enum_value: PUBLIC_REPOSITORY_UNSPECIFIED
-      - arg_value: PYPI
-        enum_value: PYPI
     - arg_name: immutable-tags
       type: bool
       api_field: repository.dockerConfig.immutableTags
       default: null
       help_text: |
         (Docker only) Prevent changes to tagged images in the repository. Tags cannot be deleted or moved to a different image digest, and tagged images cannot be deleted.
-    - arg_name: remote-apt-repo
-      api_field: repository.remoteRepositoryConfig.aptRepository.publicRepository.repositoryBase
-      hidden: true
-      help_text: |
-        (Apt only) Public repository base for apt remote repository.
-      choices:
-      - arg_value: NONE
-        enum_value: REPOSITORY_BASE_UNSPECIFIED
-      - arg_value: DEBIAN
-        enum_value: DEBIAN
-      - arg_value: UBUNTU
-        enum_value: UBUNTU
     - arg_name: remote-apt-repo-path
       api_field: repository.remoteRepositoryConfig.aptRepository.publicRepository.repositoryPath
       hidden: true
       help_text: |
         (Apt only) Remaining URL path to apt remote repository.
-    - arg_name: remote-yum-repo
-      api_field: repository.remoteRepositoryConfig.yumRepository.publicRepository.repositoryBase
-      hidden: true
-      help_text: |
-        (Yum only) Public repository base for yum remote repository.
-      choices:
-      - arg_value: NONE
-        enum_value: REPOSITORY_BASE_UNSPECIFIED
-      - arg_value: CENTOS
-        enum_value: CENTOS
-      - arg_value: CENTOS-DEBUG
-        enum_value: CENTOS_DEBUG
-      - arg_value: CENTOS-VAULT
-        enum_value: CENTOS_VAULT
-      - arg_value: CENTOS-STREAM
-        enum_value: CENTOS_STREAM
-      - arg_value: ROCKY
-        enum_value: ROCKY
-      - arg_value: EPEL
-        enum_value: EPEL
     - arg_name: remote-yum-repo-path
       api_field: repository.remoteRepositoryConfig.yumRepository.publicRepository.repositoryPath
       hidden: true

@@ -12,18 +12,18 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Command group for Workload Certificate Feature."""
+"""Command group for Dataplex Datascan Resource."""
 
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
-from googlecloudsdk.calliope import base as calliope_base
+from googlecloudsdk.calliope import base
 
 
-@calliope_base.ReleaseTracks(calliope_base.ReleaseTrack.ALPHA)
-@calliope_base.Hidden
-class WorkloadCertificate(calliope_base.Group):
-  """Manage Workload Certificate Feature."""
+@base.Hidden
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class DataScans(base.Group):
+  """Manage Dataplex Datascan."""
 
-  pass
+  category = base.DATA_ANALYTICS_CATEGORY

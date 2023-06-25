@@ -12,37 +12,28 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""The command to list Workload Registrations based on location."""
+"""Command group for RBAC RoleBindings."""
 
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
-from googlecloudsdk.api_lib.workload_certificate import client
-from googlecloudsdk.calliope import base as calliope_base
+from googlecloudsdk.calliope import base
 
 
-class List(calliope_base.ListCommand):
-  """List Workload Registration resources under a location.
+@base.Hidden
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+class Scope(base.Group):
+  """Fleet scope RBAC RoleBindings for permissions.
 
-  List Workload Registration resources under a location in a fleet.
+  This command group allows for manipulation of fleet namespace RBAC
+  RoleBindings.
 
-  ## Examples
+  ## EXAMPLES
 
-  To List Workload Registrations, run:
+  Manage RBAC RoleBindings:
 
-    $ {command} --location us-central1
+    $ {command} --help
   """
 
-  @staticmethod
-  def Args(parser):
-    parser.add_argument(
-        '--location',
-        required=True,
-        help='Location of workload registration.',
-    )
-
-  def Run(self, args):
-    return client.WIPClient(self.ReleaseTrack()).ListRegistrations(
-        args.location
-    )
+  category = base.COMPUTE_CATEGORY

@@ -133,7 +133,7 @@ class Create(base.Command):
   _support_enable_target_shape = True
   _support_confidential_compute_type = False
   _support_no_address_in_networking = False
-  _support_max_count_per_zone = False
+  _support_max_count_per_zone = True
   _support_local_ssd_recovery_timeout = False
   _support_network_queue_count = True
   _support_performance_monitoring_unit = False

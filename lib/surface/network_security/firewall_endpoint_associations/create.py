@@ -24,6 +24,7 @@ from googlecloudsdk.api_lib.network_security.firewall_endpoint_associations impo
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.network_security import association_flags
 from googlecloudsdk.command_lib.util.args import labels_util
+from googlecloudsdk.core import exceptions as core_exceptions
 
 DETAILED_HELP = {
     'DESCRIPTION': """
@@ -58,6 +59,9 @@ class Create(base.CreateCommand):
     labels_util.AddCreateLabelsFlags(parser)
 
   def Run(self, args):
+    return self._Run(args)
+
+  def _Run(self, args, tls_inspection_policy=None):
     client = association_api.Client(self.ReleaseTrack())
 
     association = args.CONCEPTS.firewall_endpoint_association.Parse()
@@ -76,7 +80,9 @@ class Create(base.CreateCommand):
         parent=association.Parent().RelativeName(),
         network=network.RelativeName(),
         firewall_endpoint=endpoint.RelativeName(),
-        tls_inspection_policy=getattr(args, 'tls_inspection_policy', None),
+        tls_inspection_policy=tls_inspection_policy.RelativeName()
+        if tls_inspection_policy is not None
+        else None,
         labels=labels,
     )
     # Return the in-progress operation if async is requested.
@@ -106,6 +112,25 @@ class CreateAlpha(Create):
   @classmethod
   def Args(cls, parser):
     super(CreateAlpha, cls).Args(parser)
-    association_flags.AddTLSInspectionPolicy(parser)
+    association_flags.AddTLSInspectionPolicy(parser, cls.ReleaseTrack())
+
+  def Run(self, args):
+    tls_inspection_policy = None
+
+    if args.IsSpecified('tls_inspection_policy'):
+      tls_inspection_policy = args.CONCEPTS.tls_inspection_policy.Parse()
+      if tls_inspection_policy is None:
+        raise core_exceptions.Error(
+            'TLS Inspection Policy resource path is either malformed or missing'
+            ' necessary flag `--tls-inspection-policy-region`.\nNOTE: TLS'
+            ' Inspection Policy needs to be in the same region as Firewall Plus'
+            ' endpoint resource.'
+        )
+
+    return self._Run(
+        args,
+        tls_inspection_policy=tls_inspection_policy,
+    )
+
 
 Create.detailed_help = DETAILED_HELP

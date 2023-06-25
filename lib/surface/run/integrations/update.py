@@ -93,7 +93,9 @@ class Update(base.Command):
       call_to_action = messages_util.GetCallToAction(integration_type,
                                                      resource_config,
                                                      resource_status)
-      if call_to_action:
+
+      # Call to action should not be shown upon service removals.
+      if call_to_action and not remove_service:
         pretty_print.Info('')
         pretty_print.Info(call_to_action)
         pretty_print.Info(

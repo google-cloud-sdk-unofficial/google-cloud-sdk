@@ -68,6 +68,13 @@ class Enable(base.UpdateCommand, base.EnableCommand):
         default=60,
     )
     parser.add_argument(
+        '--constraint-violation-limit',
+        type=int,
+        help='The number of violations stored on the constraint resource. Must'
+             ' be greater than 0.',
+        default=20,
+    )
+    parser.add_argument(
         '--exemptable-namespaces',
         type=str,
         help=(

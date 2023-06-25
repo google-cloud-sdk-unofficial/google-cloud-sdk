@@ -323,7 +323,9 @@ def ParseCreateOptionsBase(args, is_autopilot, get_default, location,
       max_accelerator=get_default('max_accelerator'),
       autoprovisioning_image_type=get_default('autoprovisioning_image_type'),
       shielded_secure_boot=get_default('shielded_secure_boot'),
-      shielded_integrity_monitoring=get_default('shielded_integrity_monitoring'),
+      shielded_integrity_monitoring=get_default(
+          'shielded_integrity_monitoring'
+      ),
       reservation_affinity=get_default('reservation_affinity'),
       reservation=get_default('reservation'),
       release_channel=get_default('release_channel'),
@@ -346,6 +348,7 @@ def ParseCreateOptionsBase(args, is_autopilot, get_default, location,
       enable_cost_allocation=get_default('enable_cost_allocation'),
       enable_multi_networking=get_default('enable_multi_networking'),
       placement_type=get_default('placement_type'),
+      placement_policy=get_default('placement_policy'),
       enable_security_posture=get_default('enable_security_posture'),
       network_performance_config=get_default(
           'network_performance_configs'),
@@ -560,6 +563,8 @@ flags_to_add = {
             flags.AddNumNodes,
         'placementtype':
             flags.AddPlacementTypeFlag,
+        'placementpolicy':
+            flags.AddPlacementPolicyFlag,
         'preemptible':
             flags.AddPreemptibleFlag,
         'privatecluster':
@@ -671,6 +676,8 @@ flags_to_add = {
             flags.AddCostManagementConfigFlag,
         'placementtype':
             flags.AddPlacementTypeFlag,
+        'placementpolicy':
+            flags.AddPlacementPolicyFlag,
         'confidentialnodes':
             flags.AddEnableConfidentialNodesFlag,
         'databaseencryption':
@@ -714,6 +721,8 @@ flags_to_add = {
             flags.AddEnableGvnicFlag,
         'gkeoidc':
             flags.AddGkeOidcFlag,
+        'hostmaintenanceinterval':
+            flags.AddHostMaintenanceIntervalFlag,
         'identityservice':
             flags.AddIdentityServiceFlag,
         'ilbsubsetting':
@@ -904,6 +913,8 @@ flags_to_add = {
             flags.AddClusterDNSFlags,
         'placementtype':
             flags.AddPlacementTypeFlag,
+        'placementpolicy':
+            flags.AddPlacementPolicyFlag,
         'confidentialnodes':
             flags.AddEnableConfidentialNodesFlag,
         'costmanagementconfig':
@@ -934,6 +945,8 @@ flags_to_add = {
             flags.AddGkeOidcFlag,
         'gvnic':
             flags.AddEnableGvnicFlag,
+        'hostmaintenanceinterval':
+            flags.AddHostMaintenanceIntervalFlag,
         'identityservice':
             flags.AddIdentityServiceFlag,
         'ilbsubsetting':
@@ -1358,6 +1371,7 @@ class CreateBeta(Create):
         'enable_runtime_vulnerability_insight')
     ops.enable_dns_endpoint = get_default('enable_dns_endpoint')
     ops.enable_fqdn_network_policy = get_default('enable_fqdn_network_policy')
+    ops.host_maintenance_interval = get_default('host_maintenance_interval')
     return ops
 
 
@@ -1461,4 +1475,5 @@ class CreateAlpha(Create):
     ops.enable_runtime_vulnerability_insight = get_default('enable_runtime_vulnerability_insight')
     ops.enable_dns_endpoint = get_default('enable_dns_endpoint')
     ops.enable_fqdn_network_policy = get_default('enable_fqdn_network_policy')
+    ops.host_maintenance_interval = get_default('host_maintenance_interval')
     return ops

@@ -153,6 +153,9 @@ def _UpdateRequestFromArgs(request, args, sql_messages, release_track):
   if args.point_in_time and args.restore_database_name:
     clone_context.databaseNames[:] = [args.restore_database_name]
 
+  if args.point_in_time and args.preferred_zone:
+    clone_context.preferredZone = args.preferred_zone
+
   if release_track == base.ReleaseTrack.ALPHA:
     # ALLOCATED IP RANGE options
     if args.allocated_ip_range_name:
@@ -285,6 +288,13 @@ def AddBaseArgs(parser):
       help="""\
     The name of the database to be restored for a point-in-time restore. If
     set, the destination instance will only restore the specified database.
+    """)
+  point_in_time_group.add_argument(
+      '--preferred-zone',
+      required=False,
+      help="""\
+    The preferred zone for the cloned instance. If set, the destination instance
+    will be created in this zone.
     """)
 
 

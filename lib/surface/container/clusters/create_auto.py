@@ -76,7 +76,7 @@ def AddAutoFlags(parser, release_track):
       parser,
       release_track=release_track,
       autopilot=True)
-  flags.AddWorkloadPoliciesFlag(parser, hidden=True)
+  flags.AddWorkloadPoliciesFlag(parser)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)

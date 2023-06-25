@@ -31,6 +31,8 @@ from googlecloudsdk.command_lib.storage import storage_url
 from googlecloudsdk.command_lib.storage import wildcard_iterator
 from googlecloudsdk.command_lib.storage.resources import resource_reference
 from googlecloudsdk.core import properties
+from googlecloudsdk.core.util import iso_duration
+from googlecloudsdk.core.util import times
 
 
 @functools.lru_cache(maxsize=None)
@@ -62,7 +64,6 @@ def _get_region(args, resource):
   )
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class SignUrl(base.Command):
   """Generate a URL with embedded authentication that can be used by anyone."""
@@ -88,15 +89,15 @@ class SignUrl(base.Command):
 
         $ {command} gs://my-bucket/file.txt --query-params=userProject=my-billing-project --private-key-file=key.json
 
-      To create a signed url without a private key, using a service account's
-      credentials:
-
-        $ {command} gs://my-bucket/file.txt --duration=10m --use-service-account
-
       To create a signed url, valid for one hour, for uploading a plain text
       file via HTTP PUT:
 
-        $ {command} gs://my-bucket --http-verb=PUT --duration=1h --headers=content-type=text/plain --private-key-file=key.json
+        $ {command} gs://my-bucket/file.txt --http-verb=PUT --duration=1h --headers=content-type=text/plain --private-key-file=key.json
+
+      To create a signed URL that initiates a resumable upload for a plain text
+      file:
+
+        $ {command} gs://my-bucket/file.txt --http-verb=POST --headers=x-goog-resumable=start,content-type=text/plain --private-key-file=key.json
       """,
   }
 
@@ -118,8 +119,8 @@ class SignUrl(base.Command):
     parser.add_argument(
         '-d',
         '--duration',
-        default=600,  # 10 minutes.
-        type=arg_parsers.Duration(),
+        default=3600,  # 1 hour.
+        type=arg_parsers.Duration(upper_bound='7d'),
         help=textwrap.dedent(
             """\
             Specifies the duration that the signed url should be valid for,
@@ -131,6 +132,7 @@ class SignUrl(base.Command):
     )
     parser.add_argument(
         '--headers',
+        action=arg_parsers.UpdateAction,
         default={},
         metavar='KEY=VALUE',
         type=arg_parsers.ArgDict(),
@@ -158,6 +160,7 @@ class SignUrl(base.Command):
     )
     parser.add_argument(
         '--query-params',
+        action=arg_parsers.UpdateAction,
         default={},
         metavar='KEY=VALUE',
         type=arg_parsers.ArgDict(),
@@ -189,6 +192,15 @@ class SignUrl(base.Command):
     # for other operations.
     host = properties.VALUES.storage.gs_xml_endpoint_url.Get()
 
+    has_provider_url = any(
+        storage_url.storage_url_from_string(url_string).is_provider()
+        for url_string in args.url
+    )
+    if has_provider_url:
+      raise command_errors.Error(
+          'The sign-url command does not support provider-only URLs.'
+      )
+
     for url_string in args.url:
       url = storage_url.storage_url_from_string(url_string)
       if wildcard_iterator.contains_wildcard(url_string):
@@ -210,7 +222,7 @@ class SignUrl(base.Command):
 
         region = _get_region(args, resource)
 
-        sign_url_util.get_signed_url(
+        signed_url = sign_url_util.get_signed_url(
             client_id=client_id,
             duration=args.duration,
             headers=args.headers,
@@ -221,6 +233,19 @@ class SignUrl(base.Command):
             path=path,
             region=region,
         )
+
+        expiration_time = times.GetDateTimePlusDuration(
+            times.Now(tzinfo=times.UTC),
+            iso_duration.Duration(seconds=args.duration),
+        )
+        yield {
+            'resource': str(resource),
+            'http_verb': args.http_verb,
+            'expiration': times.FormatDateTime(
+                expiration_time, fmt='%Y-%m-%d %H:%M:%S'
+            ),
+            'signed_url': signed_url,
+        }
 
         sign_url_util.probe_access_to_resource(
             client_id=client_id,
@@ -233,4 +258,3 @@ class SignUrl(base.Command):
             requested_parameters=parameters,
             requested_resource=resource,
         )
-        # TODO(b/282927259): Yield output and format it correctly.

@@ -59,11 +59,13 @@ def _GAArgs(parser):
 def _BetaArgs(parser):
   _GAArgs(parser)
   snap_flags.SOURCE_INSTANT_SNAPSHOT_ARG.AddArgument(parser)
+  snap_flags.AddSourceInstantSnapshotCsekKey(parser)
 
 
 def _AlphaArgs(parser):
   _GAArgs(parser)
   snap_flags.SOURCE_INSTANT_SNAPSHOT_ARG.AddArgument(parser)
+  snap_flags.AddSourceInstantSnapshotCsekKey(parser)
   snap_flags.AddMaxRetentionDays(parser)
 
 
@@ -130,6 +132,16 @@ class Create(base.CreateCommand):
           holder.resources,
           scope_lister=flags.GetDefaultScopeLister(holder.client))
       snapshot_message.sourceInstantSnapshot = iss_ref.SelfLink()
+      if args.source_instant_snapshot_key_file:
+        source_keys = csek_utils.CsekKeyStore.FromFile(
+            args.source_instant_snapshot_key_file, allow_rsa_encrypted
+        )
+        instant_snapshot_key_or_none = csek_utils.MaybeLookupKeyMessage(
+            source_keys, iss_ref, client
+        )
+        snapshot_message.sourceInstantSnapshotEncryptionKey = (
+            instant_snapshot_key_or_none
+        )
 
     if args.IsSpecified('snapshot_type'):
       snapshot_message.snapshotType = (

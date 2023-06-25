@@ -23,7 +23,9 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.workstations import flags as workstations_flags
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.GA, base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA
+)
 class Create(base.CreateCommand):
   """Create a workstation configuration.
 
@@ -49,8 +51,8 @@ class Create(base.CreateCommand):
         --pd-disk-size=10
   """
 
-  @staticmethod
-  def Args(parser):
+  @classmethod
+  def Args(cls, parser):
     workstations_flags.AddAsyncFlag(parser)
     workstations_flags.AddConfigResourceArg(parser)
     workstations_flags.AddIdleTimeoutFlag(parser)
@@ -76,7 +78,8 @@ class Create(base.CreateCommand):
     workstations_flags.AddContainerRunAsUserField(parser)
     workstations_flags.AddEncryptionKeyFields(parser)
     workstations_flags.AddLabelsField(parser)
-    workstations_flags.AddAcceleratorFields(parser)
+    if (cls.ReleaseTrack() != base.ReleaseTrack.GA):
+      workstations_flags.AddAcceleratorFields(parser)
 
   def Collection(self):
     return 'workstations.projects.locations.workstationClusters.workstationConfigs'

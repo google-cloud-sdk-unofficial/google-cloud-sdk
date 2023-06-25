@@ -1,4 +1,4 @@
-- release_tracks: [ALPHA, BETA]
+- release_tracks: [GA, BETA, ALPHA]
 
   help_text:
     brief: |
@@ -47,7 +47,12 @@
         configuration. Learn more: https://cloud.google.com/workstations/docs.
 
   request:
-    api_version: v1beta
+    GA:
+      api_version: v1
+    BETA:
+      api_version: v1beta
+    ALPHA:
+      api_version: v1beta
     collection: workstations.projects.locations.workstationClusters
 
   async:
