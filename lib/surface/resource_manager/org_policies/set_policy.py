@@ -34,6 +34,22 @@ class SetPolicy(base.DescribeCommand):
 
   ## EXAMPLES
 
+  Organization policy list constraint YAML file example:
+
+    constraint: constraints/CONSTRAINT_NAME
+    listPolicy:
+      deniedValues:
+      - VALUE_A
+
+  Organization policy list constraint JSON file example:
+
+    {
+      "constraint": "constraints/CONSTRAINT_NAME",
+      "listPolicy": {
+        "deniedValues": ["VALUE_A"]
+      }
+    }
+
   The following command sets an Organization Policy for a constraint
   on project `foo-project` from file `/tmp/policy.yaml`:
 

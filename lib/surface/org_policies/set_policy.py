@@ -35,6 +35,30 @@ DETAILED_HELP = {
       """,
     'EXAMPLES':
         """\
+      Organization policy list constraint YAML file example:
+
+        name: projects/PROJECT_ID/policies/CONSTRAINT_NAME
+        spec:
+          rules:
+          - values:
+            denied_values:
+            - VALUE_A
+
+      Organization policy list constraint JSON file example:
+
+        {
+          "name": "projects/PROJECT_ID/policies/CONSTRAINT_NAME",
+          "spec": {
+            "rules": [
+              {
+                "values": {
+                    "deniedValues": ["VALUE_A"]
+                }
+              }
+            ]
+          }
+        }
+
       To set the policy from the file on the path './sample_path', run:
 
         $ {command} ./sample_path

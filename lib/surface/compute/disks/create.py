@@ -596,9 +596,9 @@ class Create(base.Command):
         disk.multiWriter = args.multi_writer
 
       if support_enable_confidential_compute and args.IsSpecified(
-          'enable_confidential_compute'
+          'confidential_compute'
       ):
-        disk.enableConfidentialCompute = args.enable_confidential_compute
+        disk.enableConfidentialCompute = args.confidential_compute
 
       if guest_os_feature_messages:
         disk.guestOsFeatures = guest_os_feature_messages

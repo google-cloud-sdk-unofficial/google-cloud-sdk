@@ -2,7 +2,7 @@
 
   help_text:
     brief: |
-      Describe a BeyondCorp client connector operation.
+      Describe a BeyondCorp client connector operation (Deprecated).
     description: |
       Describe a BeyondCorp client connector operation given a valid operation name.
     examples: |

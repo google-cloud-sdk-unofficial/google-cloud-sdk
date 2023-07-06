@@ -19,7 +19,6 @@ from __future__ import division
 from __future__ import unicode_literals
 
 from apitools.base.py import exceptions
-
 from googlecloudsdk.api_lib.sql import api_util
 from googlecloudsdk.api_lib.sql import operations
 from googlecloudsdk.api_lib.sql import validate
@@ -30,33 +29,49 @@ from googlecloudsdk.core import properties
 from googlecloudsdk.core.console import console_io
 import six
 
+DESCRIPTION = """\
+    Reencrypt a Cloud SQL CMEK instance with the primary key version.
+    """
 
-@base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+EXAMPLES_GA = """\
+    To reencrypt a Cloud SQL CMEK instance with the primary key version:
+
+    $ {command} instance-foo
+    """
+
+DETAILED_HELP = {
+    'DESCRIPTION': DESCRIPTION,
+    'EXAMPLES': EXAMPLES_GA,
+}
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Reencrypt(base.Command):
   """Reencrypts a Cloud SQL CMEK instance."""
+
+  detailed_help = DETAILED_HELP
 
   @staticmethod
   def Args(parser):
     """Args is called by calliope to gather arguments for this command.
 
     Args:
-      parser: An argparse parser that you can use to add arguments that go
-          on the command line after this command. Positional arguments are
-          allowed.
+      parser: An argparse parser that you can use to add arguments that go on
+        the command line after this command. Positional arguments are allowed.
     """
     base.ASYNC_FLAG.AddToParser(parser)
     parser.add_argument(
         'instance',
         completer=flags.InstanceCompleter,
-        help='Cloud SQL instance ID.')
+        help='Cloud SQL instance ID.',
+    )
 
   def Run(self, args):
     """Reencrypts a Cloud SQL CMEK instance.
 
     Args:
       args: argparse.Namespace, The arguments that this command was invoked
-          with.
+        with.
 
     Returns:
       A dict object representing the operations resource describing the

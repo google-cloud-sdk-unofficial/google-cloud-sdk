@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*- #
-# Copyright 2021 Google Inc. All Rights Reserved.
+# Copyright 2023 Google LLC. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,17 +12,21 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""The command group for reCAPTCHA Firewall Policies CLI."""
-# TODO(b/273740843):  clean up duplicate `firewallpolicies` surface.
+"""Utilities for calling the Networkservices API."""
 
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+from googlecloudsdk.api_lib.util import apis
 from googlecloudsdk.calliope import base
 
+API_VERSION_FOR_TRACK = {
+    base.ReleaseTrack.ALPHA: 'v1alpha1',
+}
+_API_NAME = 'networkservices'
 
-@base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.GA)
-class RecaptchaFirewallPolicy(base.Group):
-  """Managed reCAPTCHA Firewall Policies."""
+
+def GetClientInstance(release_track=base.ReleaseTrack.ALPHA):
+  api_version = API_VERSION_FOR_TRACK.get(release_track)
+  return apis.GetClientInstance(_API_NAME, api_version)

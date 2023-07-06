@@ -22,7 +22,7 @@ from googlecloudsdk.calliope import base
 
 
 @base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class SourceManagerAlpha(base.Group):
   """Manage Secure Source Manager resources."""
   category = base.CI_CD_CATEGORY

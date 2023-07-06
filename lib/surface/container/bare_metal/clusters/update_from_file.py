@@ -27,6 +27,7 @@ from googlecloudsdk.command_lib.container.gkeonprem import constants
 from googlecloudsdk.command_lib.export import util as export_util
 from googlecloudsdk.core import log
 from googlecloudsdk.core.console import console_io
+from googlecloudsdk.generated_clients.apis.gkeonprem.v1 import gkeonprem_v1_messages as messages
 
 _EXAMPLES = """
 A cluster can be imported by running:
@@ -65,7 +66,7 @@ class UpdateFromFile(base.Command):
     data = console_io.ReadFromFileOrStdin(args.source or '-', binary=False)
 
     bare_metal_cluster = export_util.Import(
-        message_type=cluster_client.GetMessage().BareMetalCluster,
+        message_type=messages.BareMetalCluster,
         stream=data,
         schema_path=UpdateFromFile.GetSchemaPath(),
     )

@@ -1,7 +1,7 @@
 - release_tracks: [BETA]
   help_text:
     brief: |
-      List BeyondCorp client gateway resources.
+      List BeyondCorp client gateway resources (Deprecated).
     description: |
       List BeyondCorp client gateway resources based on project and location.
 

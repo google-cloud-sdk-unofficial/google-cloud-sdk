@@ -23,7 +23,7 @@ from googlecloudsdk.calliope import base
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class ClientConnector(base.Group):
-  """Provides context-aware access to non-web applications.
+  """Provides context-aware access to non-web applications (Deprecated).
 
      BeyondCorp Enterprise is the zero trust solution from Google that provides
      secure access to private applications with integrated threat and data

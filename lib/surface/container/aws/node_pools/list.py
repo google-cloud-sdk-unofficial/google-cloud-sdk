@@ -23,6 +23,9 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.container.aws import resource_args
 from googlecloudsdk.command_lib.container.gkemulticloud import constants
 from googlecloudsdk.command_lib.container.gkemulticloud import endpoint_util
+from googlecloudsdk.command_lib.container.gkemulticloud import versions
+from googlecloudsdk.core import log
+
 
 _EXAMPLES = """
 To list all node pools in a cluster named ``my-cluster''
@@ -33,7 +36,7 @@ $ {command} --cluster=my-cluster --location=us-west1
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.GA)
-class Describe(base.ListCommand):
+class List(base.ListCommand):
   """List node pools in an Anthos cluster on AWS."""
 
   detailed_help = {'EXAMPLES': _EXAMPLES}
@@ -45,8 +48,31 @@ class Describe(base.ListCommand):
 
   def Run(self, args):
     """Runs the list command."""
+    self._upgrade_hint = None
     cluster_ref = args.CONCEPTS.cluster.Parse()
     with endpoint_util.GkemulticloudEndpointOverride(cluster_ref.locationsId):
       node_pool_client = api_util.NodePoolsClient()
-      items, _ = node_pool_client.List(cluster_ref, args.page_size, args.limit)
-      return items
+      items, is_empty = node_pool_client.List(
+          cluster_ref, args.page_size, args.limit
+      )
+      if is_empty:
+        return items
+
+      platform = constants.AWS
+      node_pool_info_table, end_of_life_flag = (
+          versions.generate_node_pool_versions_table(
+              cluster_ref,
+              platform,
+              items,
+          )
+      )
+      if end_of_life_flag:
+        self._upgrade_hint = versions.upgrade_hint_node_pool_list(
+            platform, cluster_ref
+        )
+      return node_pool_info_table
+
+  def Epilog(self, results_were_displayed):
+    super(List, self).Epilog(results_were_displayed)
+    if self._upgrade_hint:
+      log.status.Print(self._upgrade_hint)

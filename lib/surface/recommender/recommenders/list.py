@@ -18,7 +18,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
-from googlecloudsdk.api_lib.recommender import recommender
+from googlecloudsdk.api_lib.recommender import recommenders
 from googlecloudsdk.calliope import base
 
 DETAILED_HELP = {
@@ -31,7 +31,9 @@ DETAILED_HELP = {
 }
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
+)
 @base.Hidden
 class List(base.ListCommand):
   r"""List recommenders operations.
@@ -66,5 +68,5 @@ class List(base.ListCommand):
     Returns:
       The list of recommender types for this project.
     """
-    client = recommender.CreateClient(self.ReleaseTrack())
-    return client.List(args.page_size, args.limit)
+    client = recommenders.CreateClient(self.ReleaseTrack())
+    return client.List(args.page_size)

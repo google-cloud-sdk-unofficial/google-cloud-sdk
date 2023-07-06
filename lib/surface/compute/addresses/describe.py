@@ -32,12 +32,11 @@ class Describe(base.DescribeCommand):
   ## EXAMPLES
   To get details about a global address, run:
 
-    $ {command} ADDRESS --global
+    $ {command} my-address-name --global
 
   To get details about a regional address, run:
 
-    $ {command} ADDRESS --region=us-central1
-
+    $ {command} my-address-name --region=us-central1
   """
 
   ADDRESS_ARG = None

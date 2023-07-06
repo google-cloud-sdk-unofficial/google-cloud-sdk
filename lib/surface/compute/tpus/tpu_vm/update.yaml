@@ -53,6 +53,22 @@
             params:
             - _REF_: googlecloudsdk.command_lib.compute.tpus.tpu_vm.flags:remove_labels
               release_tracks: [ALPHA]
+    - _REF_: googlecloudsdk.command_lib.compute.tpus.tpu_vm.flags:add_tags
+      release_tracks: [ALPHA]
+    - group:
+        required: false
+        mutex: true
+        params:
+        - group:
+            required: false
+            params:
+            - _REF_: googlecloudsdk.command_lib.compute.tpus.tpu_vm.flags:clear_tags
+              release_tracks: [ALPHA]
+        - group:
+            required: false
+            params:
+            - _REF_: googlecloudsdk.command_lib.compute.tpus.tpu_vm.flags:remove_tags
+              release_tracks: [ALPHA]
 
   update:
     read_modify_update: true

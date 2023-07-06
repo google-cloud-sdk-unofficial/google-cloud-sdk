@@ -34,8 +34,6 @@ from googlecloudsdk.command_lib.storage.tasks import task_graph_executor
 from googlecloudsdk.command_lib.storage.tasks import task_status
 
 
-@base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Rsync(base.Command):
   """Synchronize content of two buckets/directories."""
 
@@ -97,11 +95,11 @@ class Rsync(base.Command):
 
       To skip the file `dir/data1/a.txt`:
 
-        $ {command} dir gs://my-bucket --exclude "data./.*\\.txt$"
+        $ {command} dir gs://my-bucket --exclude="data./.*\\.txt$"
 
       To skip all .txt and .jpg files:
 
-        $ {command} dir gs://my-bucket --exclude ".*\\.txt$|.*\\.jpg$"
+        $ {command} dir gs://my-bucket --exclude=".*\\.txt$|.*\\.jpg$"
       """,
   }
 

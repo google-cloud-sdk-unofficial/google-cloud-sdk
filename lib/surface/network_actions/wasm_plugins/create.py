@@ -21,7 +21,9 @@ from __future__ import unicode_literals
 import textwrap
 
 from googlecloudsdk.api_lib.network_actions import wasm_plugin_api
+from googlecloudsdk.api_lib.network_actions import wasm_plugin_version_api
 from googlecloudsdk.calliope import base
+from googlecloudsdk.calliope import exceptions as calliope_exceptions
 from googlecloudsdk.command_lib.network_actions import flags
 from googlecloudsdk.command_lib.network_actions import util
 from googlecloudsdk.command_lib.util.args import labels_util
@@ -51,19 +53,26 @@ class Create(base.CreateCommand):
   """Create a WasmPlugin."""
 
   detailed_help = {
-      'DESCRIPTION':
-          textwrap.dedent("""Create a new WasmPlugin."""),
-      'EXAMPLES':
-          textwrap.dedent("""\
+      'DESCRIPTION': textwrap.dedent("""\
+          Create a new WasmPlugin and optionally create a WasmPluginVersion and
+          set it as main (serving) one.
+      """),
+      'EXAMPLES': textwrap.dedent("""\
           To create a WasmPlugin called `my-plugin`, run:
 
           $ {command} my-plugin
+
+          To create a WasmPlugin called my-plugin, together with a new version
+          called v1, and set it as main, run:
+
+          $ {command} my-plugin --main-version=v1
+          --image=...-docker.pkg.dev/my-project/repository/container:tag
           """)
   }
 
   @classmethod
   def Args(cls, parser):
-    flags.AdddWasmPluginResource(
+    flags.AddWasmPluginResource(
         parser=parser,
         api_version=util.GetApiVersion(cls.ReleaseTrack()),
     )
@@ -73,23 +82,47 @@ class Create(base.CreateCommand):
     flags.AddDescriptionFlag(parser)
     flags.AddLogConfigFlag(parser)
 
+    flags.AddWasmPluginVersionArgs(parser)
+
   def Run(self, args):
-    client = wasm_plugin_api.Client(self.ReleaseTrack())
+    create_wasm_plugin_with_version = None
+    if (
+        args.main_version is not None
+        and args.image is not None
+        and not args.async_
+    ):
+      create_wasm_plugin_with_version = True
+    elif args.main_version is None and args.image is None:
+      create_wasm_plugin_with_version = False
+    else:
+      if args.main_version is None:
+        raise calliope_exceptions.RequiredArgumentException(
+            '--main-version', 'Both flags --image and'
+            ' --main-version should be set or none of them.')
+      elif args.image is None:
+        raise calliope_exceptions.RequiredArgumentException(
+            '--image', 'Both flags --image and --main-version should be set or'
+            ' none of them.')
+      else:
+        raise calliope_exceptions.ConflictingArgumentsException(
+            '--async', 'If --async flag is set, --image and'
+            ' --main-version flags can\'t be used')
+
+    wp_client = wasm_plugin_api.Client(self.ReleaseTrack())
 
     wasm_plugin_ref = args.CONCEPTS.wasm_plugin.Parse()
     labels = labels_util.ParseCreateArgs(
-        args, client.messages.WasmPlugin.LabelsValue
+        args, wp_client.messages.WasmPlugin.LabelsValue
     )
     log_config = _GetLogConfig(args)
 
-    op_ref = client.CreateWasmPlugin(
+    op_ref = wp_client.CreateWasmPlugin(
         parent=wasm_plugin_ref.Parent().RelativeName(),
         name=wasm_plugin_ref.Name(),
         description=args.description,
         labels=labels,
         log_config=log_config,
     )
-
     log.status.Print('Create request issued for: [{}]'.format(
         wasm_plugin_ref.Name()))
 
@@ -97,13 +130,59 @@ class Create(base.CreateCommand):
       log.status.Print('Check operation [{}] for status.'.format(op_ref.name))
       return op_ref
 
-    wasm_plugin = client.WaitForOperation(
+    wasm_plugin = wp_client.WaitForOperation(
+        operation_ref=op_ref,
+        message='Waiting for operation [{}] to complete'.format(op_ref.name),
+    )
+
+    if not create_wasm_plugin_with_version:
+      log.status.Print(
+          'Created WasmPlugin [{}].'.format(wasm_plugin_ref.Name())
+      )
+      return wasm_plugin
+
+    log.status.Print(
+        'Created WasmPlugin, proceeding to create a WasmPluginVersion [{}].'
+        .format(wasm_plugin_ref.Name())
+    )
+
+    main_version = args.main_version
+    wpv_client = wasm_plugin_version_api.Client(self.ReleaseTrack())
+
+    op_ref = wpv_client.CreateWasmPluginVersion(
+        parent=wasm_plugin_ref.RelativeName(),
+        name=main_version,
+        image=args.image
+    )
+    log.status.Print('Create request issued for: [{}]'.format(main_version))
+
+    _ = wpv_client.WaitForOperation(
+        operation_ref=op_ref,
+        message='Waiting for operation [{}] to complete'.format(op_ref.name),
+    )
+    log.status.Print('Created WasmPluginVersion [{}].'.format(main_version))
+
+    op_ref = wp_client.UpdateWasmPlugin(
+        name=wasm_plugin_ref.RelativeName(),
+        main_version=main_version,
+        # Do this now to prevent removing labels from WasmPlugin during update.
+        # TODO(b/286219289): Remove labels from the updatedMask and function
+        # arguments when resolved.
+        update_mask='labels,mainVersionId',
+        labels=labels,
+    )
+    log.status.Print('Update request issued for: [{}]'.format(
+        wasm_plugin_ref.Name()))
+
+    result = wp_client.WaitForOperation(
         operation_ref=op_ref,
         message='Waiting for operation [{}] to complete'.format(op_ref.name),
     )
 
     log.status.Print(
-        'Created WasmPlugin [{}].'.format(wasm_plugin_ref.Name())
+        'Created WasmPlugin [{}] with WasmPluginVersion [{}].'.format(
+            wasm_plugin_ref.Name(), main_version
+        )
     )
 
-    return wasm_plugin
+    return result

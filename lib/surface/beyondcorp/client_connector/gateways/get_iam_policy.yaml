@@ -1,7 +1,7 @@
 - release_tracks: [BETA]
 
   help_text:
-    brief: Get the IAM policy for a BeyondCorp client gateway.
+    brief: Get the IAM policy for a BeyondCorp client gateway (Deprecated).
     description: Gets the IAM policy for the given BeyondCorp client gateway.
     examples: |
       To get the IAM policy for a client gateway ``my-client-gateway'' run:

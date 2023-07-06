@@ -6,10 +6,10 @@
     description: |
       Remove an IAM policy binding from the IAM policy of a hub resource.
     examples: |
-      To remove the ``roles/networkconnectivity.hubUser'' role from a user of the hub ``my-hub'',
+      To remove the ``roles/networkconnectivity.groupUser'' role from a user of the hub ``my-hub'',
       run:
 
-      $ {command} my-hub --member="user:username@gmail.com" --role="roles/networkconnectivity.hubUser"
+      $ {command} my-hub --member="user:username@gmail.com" --role="roles/networkconnectivity.groupUser"
 
   request: &request
     collection: networkconnectivity.projects.locations.global.hubs

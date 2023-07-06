@@ -1,6 +1,6 @@
 - release_tracks: [BETA]
   help_text:
-    brief: Create a new BeyondCorp client connector service.
+    brief: Create a new BeyondCorp client connector service (Deprecated).
     description: Create a new BeyondCorp client connector service.
     examples: |
       The following command creates a client connector service with ID ``my-service-resource'' using ingress/egress config provided:

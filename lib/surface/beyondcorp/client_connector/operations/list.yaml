@@ -2,7 +2,7 @@
 
   help_text:
     brief: |
-      List BeyondCorp client connector operations.
+      List BeyondCorp client connector operations (Deprecated).
     description: |
       List all BeyondCorp client connector operations in the specified project.
 

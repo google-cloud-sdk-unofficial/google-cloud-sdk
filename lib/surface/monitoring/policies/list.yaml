@@ -20,8 +20,8 @@
 
         $ {command} --filter "description:(cloud)"
 
-      More information can be found at
-      https://cloud.google.com/monitoring/api/v3/sorting-and-filtering
+      Please find all supported fields at
+      https://cloud.google.com/monitoring/api/v3/sorting-and-filtering#alertpolicy.
 
   request:
     collection: monitoring.projects.alertPolicies

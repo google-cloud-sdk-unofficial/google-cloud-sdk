@@ -113,7 +113,9 @@ def _CommonArgs(
     support_local_ssd_recovery_timeout=False,
     support_local_ssd_size=False,
     support_vlan_nic=False,
-    support_storage_pool=False):
+    support_storage_pool=False,
+    support_source_instant_snapshot=False,
+):
   """Register parser args common to all tracks."""
   metadata_utils.AddMetadataArgs(parser)
   instances_flags.AddDiskArgs(parser, enable_regional, enable_kms=enable_kms)
@@ -126,7 +128,9 @@ def _CommonArgs(
       support_boot=True,
       support_multi_writer=support_multi_writer,
       support_replica_zones=support_replica_zones,
-      support_storage_pool=support_storage_pool)
+      support_storage_pool=support_storage_pool,
+      enable_source_instant_snapshots=support_source_instant_snapshot,
+  )
   instances_flags.AddCanIpForwardArgs(parser)
   instances_flags.AddAddressArgs(
       parser,
@@ -159,7 +163,11 @@ def _CommonArgs(
   instances_flags.AddPrivateNetworkIpArgs(parser)
   instances_flags.AddHostnameArg(parser)
   instances_flags.AddImageArgs(
-      parser, enable_snapshots=True, support_image_family_scope=True)
+      parser,
+      enable_snapshots=True,
+      support_image_family_scope=True,
+      enable_instant_snapshots=support_source_instant_snapshot,
+  )
   instances_flags.AddDeletionProtectionFlag(parser)
   instances_flags.AddPublicPtrArgs(parser, instance=True)
   instances_flags.AddIpv6PublicPtrDomainArg(parser)
@@ -270,6 +278,8 @@ class Create(base.CreateCommand):
   _support_vlan_nic = False
   _support_performance_monitoring_unit = False
   _support_storage_pool = False
+  _support_source_instant_snapshot = False
+  _support_boot_instant_snapshot_uri = False
 
   @classmethod
   def Args(cls, parser):
@@ -443,7 +453,10 @@ class Create(base.CreateCommand):
             support_create_disk_snapshots=self._support_create_disk_snapshots,
             support_replica_zones=self._support_replica_zones,
             support_multi_writer=self._support_multi_writer,
-            support_storage_pool=self._support_storage_pool)
+            support_storage_pool=self._support_storage_pool,
+            support_source_instant_snapshot=self._support_source_instant_snapshot,
+            support_boot_instant_snapshot_uri=self._support_boot_instant_snapshot_uri,
+        )
 
       machine_type_uri = None
       if instance_utils.CheckSpecifiedMachineTypeArgs(args, skip_defaults):
@@ -614,7 +627,9 @@ class Create(base.CreateCommand):
         enable_kms=self._support_kms,
         enable_snapshots=True,
         enable_source_snapshot_csek=self._support_source_snapshot_csek,
-        enable_image_csek=self._support_image_csek)
+        enable_image_csek=self._support_image_csek,
+        enable_source_instant_snapshot=self._support_source_instant_snapshot,
+    )
     instances_flags.ValidateImageFlags(args)
     instances_flags.ValidateLocalSsdFlags(args)
     instances_flags.ValidateNicFlags(args)
@@ -720,6 +735,8 @@ class CreateBeta(Create):
   _support_vlan_nic = False
   _support_performance_monitoring_unit = False
   _support_storage_pool = False
+  _support_source_instant_snapshot = False
+  _support_boot_instant_snapshot_uri = False
 
   def GetSourceMachineImage(self, args, resources):
     """Retrieves the specified source machine image's selflink.
@@ -810,6 +827,8 @@ class CreateAlpha(CreateBeta):
   _support_vlan_nic = True
   _support_performance_monitoring_unit = True
   _support_storage_pool = True
+  _support_source_instant_snapshot = True
+  _support_boot_instant_snapshot_uri = True
 
   @classmethod
   def Args(cls, parser):
@@ -824,8 +843,7 @@ class CreateAlpha(CreateBeta):
         support_replica_zones=cls._support_replica_zones,
         support_multi_writer=cls._support_multi_writer,
         support_subinterface=cls._support_subinterface,
-        support_host_error_timeout_seconds=cls
-        ._support_host_error_timeout_seconds,
+        support_host_error_timeout_seconds=cls._support_host_error_timeout_seconds,
         support_numa_node_count=cls._support_numa_node_count,
         support_network_queue_count=cls._support_network_queue_count,
         support_instance_kms=cls._support_instance_kms,
@@ -834,7 +852,9 @@ class CreateAlpha(CreateBeta):
         support_local_ssd_recovery_timeout=cls._support_local_ssd_recovery_timeout,
         support_local_ssd_size=cls._support_local_ssd_size,
         support_vlan_nic=cls._support_vlan_nic,
-        support_storage_pool=cls._support_storage_pool)
+        support_storage_pool=cls._support_storage_pool,
+        support_source_instant_snapshot=cls._support_source_instant_snapshot,
+    )
 
     CreateAlpha.SOURCE_INSTANCE_TEMPLATE = instances_flags.MakeSourceInstanceTemplateArg(
         support_regional_instance_template=cls._support_regional_instance_template

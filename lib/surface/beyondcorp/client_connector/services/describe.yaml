@@ -1,7 +1,7 @@
 - release_tracks: [BETA]
 
   help_text:
-    brief: Describe a BeyondCorp client connector service.
+    brief: Describe a BeyondCorp client connector service (Deprecated).
     description: Describe a BeyondCorp client connector service.
     examples: |
       To describe a client connector service with ID ``my-service-resource'' run:

@@ -78,8 +78,6 @@ class CreateBeta(base.CreateCommand):
         )
     )
 
-    log.status.Print('args: $ {} '.format(args))
-
     replication = client.ParseReplicationConfig(
         name=replication_ref.RelativeName(),
         description=args.description,

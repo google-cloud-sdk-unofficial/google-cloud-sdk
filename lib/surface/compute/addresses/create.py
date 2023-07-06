@@ -62,7 +62,7 @@ class Create(base.CreateCommand):
   ## EXAMPLES
   To reserve three IP addresses in the 'us-central1' region, run:
 
-    $ {command} ADDRESS-1 ADDRESS-2 ADDRESS-3 --region=us-central1
+    $ {command} address-1 address-2 address-3 --region=us-central1
 
   To reserve ephemeral IP addresses '162.222.181.198' and '23.251.146.189' which
   are being used by virtual machine instances in the 'us-central1' region, run:
@@ -71,28 +71,28 @@ class Create(base.CreateCommand):
 
   In the above invocation, the two addresses will be assigned random names.
 
-  To reserve an IP address from the subnet 'default' in the 'us-central1'
-  region, run:
+  To reserve an IP address named subnet-address-1 from the subnet 'default' in
+  the 'us-central1' region, run:
 
-    $ {command} SUBNET-ADDRESS-1 \
+    $ {command} subnet-address-1 \
       --region=us-central1 \
       --subnet=default
 
   To reserve an IP range '10.110.0.0/16' from the network 'default' for
   'VPC_PEERING', run:
 
-    $ {command} IP-RANGE-1 --global --addresses=10.110.0.0 --prefix-length=16 \
+    $ {command} ip-range-1 --global --addresses=10.110.0.0 --prefix-length=16 \
       --purpose=VPC_PEERING --network=default
 
   To reserve any IP range with prefix length '16' from the network 'default' for
   'VPC_PEERING', run:
 
-    $ {command} IP-RANGE-1 --global --prefix-length=16 --purpose=VPC_PEERING \
+    $ {command} ip-range-1 --global --prefix-length=16 --purpose=VPC_PEERING \
       --network=default
 
   To reserve an address from network 'default' for PRIVATE_SERVICE_CONNECT, run:
 
-    $ {command} PSC-ADDRESS-1 --global --addresses=10.110.0.10 \
+    $ {command} psc-address-1 --global --addresses=10.110.0.10 \
       --purpose=PRIVATE_SERVICE_CONNECT --network=default
 
   """
@@ -354,7 +354,7 @@ class CreateBeta(Create):
   ## EXAMPLES
   To reserve three IP addresses in the 'us-central1' region, run:
 
-    $ {command} ADDRESS-1 ADDRESS-2 ADDRESS-3 --region=us-central1
+    $ {command} address-1 address-2 address-3 --region=us-central1
 
   To reserve ephemeral IP addresses '162.222.181.198' and '23.251.146.189' which
   are being used by virtual machine instances in the 'us-central1' region, run:
@@ -363,32 +363,32 @@ class CreateBeta(Create):
 
   In the above invocation, the two addresses will be assigned random names.
 
-  To reserve an IP address from the subnet 'default' in the 'us-central1'
-  region, run:
+  To reserve an IP address named subnet-address-1 from the subnet 'default' in
+  the 'us-central1' region, run:
 
-    $ {command} SUBNET-ADDRESS-1 --region=us-central1 --subnet=default
+    $ {command} subnet-address-1 --region=us-central1 --subnet=default
 
   To reserve an IP address that can be used by multiple internal load balancers
   from the subnet 'default' in the 'us-central1' region, run:
 
-    $ {command} SHARED-ADDRESS-1 --region=us-central1 --subnet=default \
+    $ {command} shared-address-1 --region=us-central1 --subnet=default \
       --purpose=SHARED_LOADBALANCER_VIP
 
   To reserve an IP range '10.110.0.0/16' from the network 'default' for
   'VPC_PEERING', run:
 
-    $ {command} IP-RANGE-1 --global --addresses=10.110.0.0 --prefix-length=16 \
+    $ {command} ip-range-1 --global --addresses=10.110.0.0 --prefix-length=16 \
       --purpose=VPC_PEERING --network=default
 
   To reserve any IP range with prefix length '16' from the network 'default' for
   'VPC_PEERING', run:
 
-    $ {command} IP-RANGE-1 --global --prefix-length=16 --purpose=VPC_PEERING \
+    $ {command} ip-range-1 --global --prefix-length=16 --purpose=VPC_PEERING \
       --network=default
 
   To reserve an address from network 'default' for PRIVATE_SERVICE_CONNECT, run:
 
-    $ {command} PSC-ADDRESS-1 --global --addresses=10.110.0.10 \
+    $ {command} psc-address-1 --global --addresses=10.110.0.10 \
       --purpose=PRIVATE_SERVICE_CONNECT --network=default
 
   """
@@ -409,7 +409,7 @@ class CreateAlpha(Create):
   ## EXAMPLES
   To reserve three IP addresses in the 'us-central1' region, run:
 
-    $ {command} ADDRESS-1 ADDRESS-2 ADDRESS-3 --region=us-central1
+    $ {command} address-1 address-2 address-3 --region=us-central1
 
   To reserve ephemeral IP addresses '162.222.181.198' and '23.251.146.189' which
   are being used by virtual machine instances in the 'us-central1' region, run:
@@ -418,32 +418,32 @@ class CreateAlpha(Create):
 
   In the above invocation, the two addresses will be assigned random names.
 
-  To reserve an IP address from the subnet 'default' in the 'us-central1'
-  region, run:
+  To reserve an IP address named subnet-address-1 from the subnet 'default' in
+  the 'us-central1' region, run:
 
-    $ {command} SUBNET-ADDRESS-1 --region=us-central1 --subnet=default
+    $ {command} subnet-address-1 --region=us-central1 --subnet=default
 
   To reserve an IP address that can be used by multiple internal load balancers
   from the subnet 'default' in the 'us-central1' region, run:
 
-    $ {command} SHARED-ADDRESS-1 --region=us-central1 --subnet=default \
+    $ {command} shared-address-1 --region=us-central1 --subnet=default \
       --purpose=SHARED_LOADBALANCER_VIP
 
   To reserve an IP range '10.110.0.0/16' from the network 'default' for
   'VPC_PEERING', run:
 
-    $ {command} IP-RANGE-1 --global --addresses=10.110.0.0 --prefix-length=16 \
+    $ {command} ip-range-1 --global --addresses=10.110.0.0 --prefix-length=16 \
       --purpose=VPC_PEERING --network=default
 
   To reserve any IP range with prefix length '16' from the network 'default' for
   'VPC_PEERING', run:
 
-    $ {command} IP-RANGE-1 --global --prefix-length=16 --purpose=VPC_PEERING \
+    $ {command} ip-range-1 --global --prefix-length=16 --purpose=VPC_PEERING \
       --network=default
 
   To reserve an address from network 'default' for PRIVATE_SERVICE_CONNECT, run:
 
-    $ {command} PSC-ADDRESS-1 --global --addresses=10.110.0.10 \
+    $ {command} psc-address-1 --global --addresses=10.110.0.10 \
       --purpose=PRIVATE_SERVICE_CONNECT --network=default
   """
 

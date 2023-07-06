@@ -1,6 +1,6 @@
 release_tracks: [BETA]
 help_text:
-  brief: Set the IAM policy for a BeyondCorp client connector service.
+  brief: Set the IAM policy for a BeyondCorp client connector service (Deprecated).
   description: Sets the IAM policy for the given BeyondCorp client connector service.
   examples: |
     The following command will read an IAM policy defined in a JSON file

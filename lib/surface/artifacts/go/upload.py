@@ -33,7 +33,6 @@ from googlecloudsdk.core import resources
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
                     base.ReleaseTrack.GA)
-@base.Hidden
 class Upload(base.Command):
   """Upload a Go module to an artifact repository."""
 

@@ -1,6 +1,6 @@
 - release_tracks: [BETA]
   help_text:
-    brief: Create a new BeyondCorp client gateway.
+    brief: Create a new BeyondCorp client gateway (Deprecated).
     description: Create a new BeyondCorp client gateway.
     examples: |
       The following command creates a client gateway with ID ``my-client-gateway'' in the default user project and location us-central1:

@@ -26,12 +26,12 @@ arguments:
       - arg_name: expiration-date
         api_field: backup.expireTime
         help_text: |
-          Absolute expiration time of the backup, must be at least 6 hours and at most 30 days from
+          Absolute expiration time of the backup; must be at least 6 hours and at most 90 days from
           the time the request is received. See `$ gcloud topic datetimes` for information on
           date/time formats.
       - arg_name: retention-period
         api_field: backup.expireTime
         help_text: |
-          Retention period of the backup relative from now, must be at least 6 hours and at most 30
+          Retention period of the backup relative from now; must be at least 6 hours and at most 90
           days from backup creation time. See `$ gcloud topic datetimes` for information on duration
           formats. See `$ gcloud bigtable backups describe` for creation time.

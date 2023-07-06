@@ -56,7 +56,7 @@ class List(base.ListCommand):
     """)
 
   def Run(self, args):
-    """Run 'gcloud recommender insight_type list'.
+    """Run 'gcloud recommender insight-type list'.
 
     Args:
       args: argparse.Namespace, The arguments that this command was invoked
@@ -66,4 +66,4 @@ class List(base.ListCommand):
       The list of all available insight_types.
     """
     client = insight_types.CreateClient(self.ReleaseTrack())
-    return client.List(args.page_size, args.limit)
+    return client.List(args.page_size)

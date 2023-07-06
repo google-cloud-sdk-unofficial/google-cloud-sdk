@@ -44,7 +44,7 @@ DETAILED_HELP = {
 }
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Delete(base.DeleteCommand):
   """Delete a Secure Source Manager instance."""
 

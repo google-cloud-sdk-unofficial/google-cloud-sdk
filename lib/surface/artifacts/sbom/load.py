@@ -161,7 +161,13 @@ class Load(base.Command):
     # the current working project.
     project_id = a.project
     if not project_id:
-      project_id = a.project or properties.VALUES.core.project.GetOrFail()
+      project_id = args.project or properties.VALUES.core.project.GetOrFail()
+      log.info(
+          (
+              'Failed to get project_id from the artifact URI {0}. Using'
+              ' project {1} for occurrence.'
+          ).format(args.uri, project_id)
+      )
     # Write reference occurrence.
     occurrence_id = sbom_util.WriteReferenceOccurrence(
         artifact=a,
@@ -171,3 +177,8 @@ class Load(base.Command):
         kms_key_version=args.kms_key_version,
     )
     log.info('Wrote reference occurrence {0}.'.format(occurrence_id))
+    log.status.Print(
+        'Uploaded the SBOM file under the resource URI {}.'.format(
+            a.GetOccurrenceResourceUri()
+        )
+    )

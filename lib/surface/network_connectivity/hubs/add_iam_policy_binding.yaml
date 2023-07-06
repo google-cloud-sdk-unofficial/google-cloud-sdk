@@ -7,9 +7,9 @@
       Add an IAM policy binding to the IAM policy of a hub resource. One binding consists of
       a member, a role, and an optional condition.
     examples: |
-      To grant a user the ``roles/networkconnectivity.hubUser'' role on the hub called ``my-hub'', run the following command:
+      To grant a user the ``roles/networkconnectivity.groupUser'' role on the hub called ``my-hub'', run the following command:
 
-      $ {command} my-hub --member="user:username@gmail.com" --role="roles/networkconnectivity.hubUser"
+      $ {command} my-hub --member="user:username@gmail.com" --role="roles/networkconnectivity.groupUser"
 
   request: &request
     collection: networkconnectivity.projects.locations.global.hubs

@@ -1,5 +1,4 @@
-- release_tracks: [ALPHA]
-  hidden: true
+- release_tracks: [ALPHA, BETA]
   help_text:
     brief: Create a Cloud Build Connection for gitlab.com or GitLab Enterprise.
     description: |
@@ -17,7 +16,7 @@
       To create a GitLab connection for gitlab.com,
       provide all the required parameters:
 
-        $ {command} my-gle-conn \
+        $ {command} my-gitlab-conn \
           --project=myproj --region=us-central1 \
           --read-authorizer-token-secret-version=projects/myproj/secrets/read-pat/versions/1 \
           --authorizer-token-secret-version=projects/myproj/secrets/api-pat/versions/1 \

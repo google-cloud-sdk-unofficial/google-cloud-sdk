@@ -40,8 +40,7 @@ class Delete(base.DeleteCommand):
   To release two addresses with the names 'address-name1' and 'address-name2',
   run:
 
-    $ {command} addressname1 address-name2
-
+    $ {command} address-name1 address-name2
   """
 
   ADDRESSES_ARG = None

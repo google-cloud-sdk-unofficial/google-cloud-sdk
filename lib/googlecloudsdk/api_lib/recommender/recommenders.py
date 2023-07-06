@@ -43,7 +43,7 @@ class Recommender(base.ClientBase):
     super(Recommender, self).__init__(api_version)
     self._service = self._client.recommenders
 
-  def List(self, page_size, limit):
+  def List(self, page_size, limit=None):
     """List Recommenders.
 
     Args:
@@ -54,7 +54,7 @@ class Recommender(base.ClientBase):
       The list of Recommenders.
     """
     # Using Project message is ok for all entities if the name is correct.
-    request = (self._messages.RecommenderRecommendersListRequest())
+    request = self._messages.RecommenderRecommendersListRequest()
     return list_pager.YieldFromList(
         self._service,
         request,

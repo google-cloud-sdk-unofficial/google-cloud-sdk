@@ -21,6 +21,9 @@ from __future__ import unicode_literals
 from googlecloudsdk.api_lib.container.gkeonprem import vmware_clusters as apis
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.container.vmware import flags
+from googlecloudsdk.core import log
+
+import six
 
 _EXAMPLES = """
 To query all available versions in location `us-west1`, run:
@@ -37,6 +40,17 @@ To query versions for upgrading a user cluster named `my-user-cluster` in
 location `us-west1`, run:
 
 $ {command} --location=us-west1 --cluster=my-user-cluster
+"""
+
+_EPILOG = """
+An Anthos version must be made available on the admin cluster ahead of the user
+cluster creation or upgrade. Versions annotated with isInstalled=true are
+installed on the admin cluster for the purpose of user cluster creation or
+upgrade whereas other version are released and will be available for upgrade
+once dependencies are resolved.
+
+To install the version in the admin cluster, run:
+$ {} container vmware admin-clusters update my-admin-cluster --required-platform-version=VERSION
 """
 
 
@@ -56,3 +70,13 @@ class QueryVersionConfig(base.Command):
     """Runs the query-version-config command."""
     client = apis.ClustersClient()
     return client.query_version_config(args)
+
+  def Epilog(self, resources_were_displayed):
+    super(QueryVersionConfig, self).Epilog(resources_were_displayed)
+    command_base = 'gcloud'
+    if (
+        self.ReleaseTrack() is base.ReleaseTrack.BETA
+        or self.ReleaseTrack() is base.ReleaseTrack.ALPHA
+    ):
+      command_base += ' ' + six.text_type(self.ReleaseTrack()).lower()
+    log.status.Print(_EPILOG.format(command_base))

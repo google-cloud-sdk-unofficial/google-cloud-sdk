@@ -21,7 +21,7 @@
     modify_request_hooks:
     - googlecloudsdk.command_lib.util.hooks.request_modifiers:SetParentRequestHook
     - googlecloudsdk.command_lib.compute.tpus.queued_resources.util:CreateNodeSpec
-    - googlecloudsdk.command_lib.compute.tpus.queued_resources.util:SetBestEffort
+    - googlecloudsdk.command_lib.compute.tpus.queued_resources.util:SetBestEffortOrSpot
     - googlecloudsdk.command_lib.compute.tpus.queued_resources.util:SetGuaranteed
     - googlecloudsdk.command_lib.compute.tpus.queued_resources.util:SetValidInterval
     - googlecloudsdk.command_lib.compute.tpus.queued_resources.util:VerifyNodeCount
@@ -75,6 +75,7 @@
     - _REF_: googlecloudsdk.command_lib.compute.tpus.queued_resources.flags:runtime_version
 
     - _REF_: googlecloudsdk.command_lib.compute.tpus.queued_resources.flags:best_effort
+    - _REF_: googlecloudsdk.command_lib.compute.tpus.queued_resources.flags:spot
     - _REF_: googlecloudsdk.command_lib.compute.tpus.queued_resources.flags:guaranteed
     - _REF_: googlecloudsdk.command_lib.compute.tpus.queued_resources.flags:min_duration
       hidden: true

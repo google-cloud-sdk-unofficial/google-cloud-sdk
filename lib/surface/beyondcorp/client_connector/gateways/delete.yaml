@@ -1,7 +1,7 @@
 - release_tracks: [BETA]
 
   help_text:
-    brief: Delete a single BeyondCorp client gateway.
+    brief: Delete a single BeyondCorp client gateway (Deprecated).
     description: Delete a single BeyondCorp client gateway.
     examples: |
       To delete a client gateway with ID ``my-client-gateway'' run:

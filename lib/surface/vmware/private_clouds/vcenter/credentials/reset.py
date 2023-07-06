@@ -30,7 +30,7 @@ DETAILED_HELP = {
         """,
     'EXAMPLES':
         """
-          To reset sign-in credentials for vCenter in private cloud ``my-private-cloud'', run:
+          To reset sign-in credentials for vCenter in private cloud `my-private-cloud`, run:
 
 
             $ {command} --private-cloud=my-private-cloud --location=us-west2-a --project=my-project
@@ -39,7 +39,7 @@ DETAILED_HELP = {
 
             $ {command} --private-cloud=my-private-cloud
 
-          In the second example, the project and location are taken from gcloud properties core/project and compute/zone.
+          In the second example, the project and location are taken from gcloud properties `core/project` and `compute/zone`.
 
     """,
 }
@@ -59,12 +59,19 @@ class Reset(base.UpdateCommand):
     base.ASYNC_FLAG.AddToParser(parser)
     base.ASYNC_FLAG.SetDefault(parser, True)
     parser.display_info.AddFormat('yaml')
+    parser.add_argument(
+        '--username',
+        hidden=True,
+        help="""\
+        The username of the user to reset the credentials.
+        """,
+    )
 
   def Run(self, args):
     private_cloud = args.CONCEPTS.private_cloud.Parse()
     client = PrivateCloudsClient()
     is_async = args.async_
-    operation = client.ResetVcenterCredentials(private_cloud)
+    operation = client.ResetVcenterCredentials(private_cloud, args.username)
     if is_async:
       log.UpdatedResource(
           operation.name, kind='vcenter credentials', is_async=True)

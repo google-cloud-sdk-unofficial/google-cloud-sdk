@@ -51,6 +51,7 @@ class PromoteReplica(base.Command):
         'replica',
         completer=flags.InstanceCompleter,
         help='Cloud SQL read replica ID.')
+    flags.AddFailoverFlag(parser)
 
   def Run(self, args):
     """Promotes Cloud SQL read replica to a stand-alone instance.
@@ -116,7 +117,8 @@ class PromoteReplica(base.Command):
 
     result = sql_client.instances.PromoteReplica(
         sql_messages.SqlInstancesPromoteReplicaRequest(
-            project=instance_ref.project, instance=instance_ref.instance))
+            project=instance_ref.project, instance=instance_ref.instance,
+            failover=args.failover))
     operation_ref = client.resource_parser.Create(
         'sql.operations', operation=result.name, project=instance_ref.project)
 

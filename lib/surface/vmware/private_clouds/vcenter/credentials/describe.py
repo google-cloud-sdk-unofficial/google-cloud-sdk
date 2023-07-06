@@ -29,7 +29,7 @@ DETAILED_HELP = {
         """,
     'EXAMPLES':
         """
-          To get sign-in credentials for vCenter in private cloud ``my-private-cloud'', run:
+          To get sign-in credentials for vCenter in private cloud `my-private-cloud`, run:
 
 
             $ {command} --private-cloud=my-private-cloud --location=us-west2-a --project=my-project
@@ -38,7 +38,7 @@ DETAILED_HELP = {
 
             $ {command} --private-cloud=my-private-cloud
 
-          In the second example, the project and location are taken from gcloud properties core/project and compute/zone.
+          In the second example, the project and location are taken from gcloud properties `core/project` and `compute/zone`.
     """,
 }
 
@@ -53,8 +53,15 @@ class Describe(base.DescribeCommand):
   def Args(parser):
     """Register flags for this command."""
     flags.AddPrivatecloudArgToParser(parser)
+    parser.add_argument(
+        '--username',
+        hidden=True,
+        help="""\
+        The username of the user to be queried for credentials.
+        """,
+    )
 
   def Run(self, args):
     resource = args.CONCEPTS.private_cloud.Parse()
     client = PrivateCloudsClient()
-    return client.GetVcenterCredentials(resource)
+    return client.GetVcenterCredentials(resource, args.username)

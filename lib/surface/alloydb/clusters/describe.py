@@ -68,5 +68,23 @@ class Describe(base.DescribeCommand):
         projectsId=properties.VALUES.core.project.GetOrFail,
         locationsId=args.region, clustersId=args.cluster)
     req = alloydb_messages.AlloydbProjectsLocationsClustersGetRequest(
-        name=cluster_ref.RelativeName())
-    return alloydb_client.projects_locations_clusters.Get(req)
+        name=cluster_ref.RelativeName()
+    )
+    cluster = alloydb_client.projects_locations_clusters.Get(req)
+    normalize_automated_backup_policy(cluster.automatedBackupPolicy)
+    return cluster
+
+
+def normalize_automated_backup_policy(policy):
+  """Normalizes the policy so that it looks correct when printed."""
+  if policy is None:
+    return
+  if policy.weeklySchedule is None:
+    return
+  for start_time in policy.weeklySchedule.startTimes:
+    # If the customer selects 00:00 as a start time, this ultimately becomes
+    # a start time with all None fields. In the terminal this is then
+    # confusingly printed as `{}`. We manually set the hours to be 0 in this
+    # case so that it appears as `hours: 0`.
+    if start_time.hours is None:
+      start_time.hours = 0

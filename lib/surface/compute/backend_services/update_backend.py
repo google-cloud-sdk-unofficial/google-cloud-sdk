@@ -45,6 +45,9 @@ class UpdateBackend(base.UpdateCommand):
   To add, remove, or swap backends, use the `gcloud compute backend-services
   remove-backend` and `gcloud compute backend-services add-backend` commands.
   """
+  # This fields decides whether --preference flag can be set when updating the
+  # backend.
+  support_preference = False
 
   @staticmethod
   def Args(parser):
@@ -135,6 +138,15 @@ class UpdateBackend(base.UpdateCommand):
 
     if backend_to_update is not None and args.failover is not None:
       backend_to_update.failover = args.failover
+
+    if (
+        self.support_preference
+        and backend_to_update is not None
+        and args.preference is not None
+    ):
+      backend_to_update.preference = (
+          client.messages.Backend.PreferenceValueValuesEnum(args.preference)
+      )
 
     return replacement
 
@@ -274,6 +286,8 @@ class UpdateBackendAlpha(UpdateBackendBeta):
   For more information about the available settings, see
   https://cloud.google.com/load-balancing/docs/backend-service.
   """
+  # Allow --preference flag to be set when updating the backend.
+  support_preference = True
 
   @classmethod
   def Args(cls, parser):
@@ -284,6 +298,7 @@ class UpdateBackendAlpha(UpdateBackendBeta):
     backend_flags.AddCapacityLimits(parser)
     backend_flags.AddCapacityScalar(parser)
     backend_flags.AddFailover(parser, default=None)
+    backend_flags.AddPreference(parser)
 
   def _ValidateArgs(self, args):
     """Overrides."""
@@ -300,6 +315,7 @@ class UpdateBackendAlpha(UpdateBackendBeta):
         args.max_connections_per_endpoint is not None,
         args.capacity_scaler is not None,
         args.failover is not None,
+        args.preference is not None,
     ]):
       raise exceptions.UpdatePropertyError(
           'At least one property must be modified.')

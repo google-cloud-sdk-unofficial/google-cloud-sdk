@@ -1,6 +1,6 @@
 - release_tracks: [BETA]
   help_text:
-    brief: Update a BeyondCorp client connector service.
+    brief: Update a BeyondCorp client connector service (Deprecated).
     description: Update a BeyondCorp client connector service. Note - Mutable fields include - \
       display_name, ingress.config.destination_routes.
     examples: |
