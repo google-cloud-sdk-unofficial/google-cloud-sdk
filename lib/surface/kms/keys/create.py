@@ -92,14 +92,15 @@ class Create(base.CreateCommand):
         --rotation-period=30d \
         --next-rotation-time=2017-10-12T12:34:56.1234Z
 
-  The following command creates a key named ``foo'' with protection level
-  ``software'' within the keyring ``fellowship'' and location ``us-east1'' with
-  two specified labels:
+  The following command creates a raw encryption key named ``foo'' with
+  protection level ``software'' within the keyring ``fellowship'' and location
+  ``us-east1'' with two specified labels:
 
     $ {command} foo \
         --location=us-east1 \
         --keyring=fellowship \
-        --purpose=encryption \
+        --purpose=raw-encryption \
+        --default-algorithm=aes-128-cbc
         --labels=env=prod,team=kms
 
   The following command creates an asymmetric key named ``samwise'' with
@@ -148,7 +149,6 @@ class Create(base.CreateCommand):
         --skip-initial-version-creation
         --crypto-key-backend="projects/$(gcloud config get project)/
         locations/us-central1/ekmConnections/eagles"
-
   """
 
   @staticmethod

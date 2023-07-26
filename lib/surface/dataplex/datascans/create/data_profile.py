@@ -112,19 +112,21 @@ class DataProfile(base.Command):
         ),
     )
     data_spec_arg.add_argument(
-        '--include-fields',
+        '--include-field-names',
         help=(
-            'The fields to include in data profile. If not specified, all'
-            ' fields at the time of profile scan job execution are included.'
-            ' The fields listed in `exclude_fields` are excluded.'
+            'Names of the fields to include in data profile. If not specified,'
+            ' all fields at the time of profile scan job execution are'
+            ' included. The fields listed in the `--exclude-field-names`'
+            ' flag are excluded.'
         ),
     )
     data_spec_arg.add_argument(
-        '--exclude-fields',
+        '--exclude-field-names',
         help=(
-            'The fields to exclude from data profile. If specified, the fields'
-            ' will be excluded from data profile, regardless of'
-            ' `include_fields` value.'
+            'Names of the fields to exclude from data profile. If'
+            ' specified, the respective fields will be excluded from data'
+            ' profile, regardless of the fields specified in the'
+            ' `--include-field-names` flag.'
         ),
     )
     execution_spec = parser.add_group(

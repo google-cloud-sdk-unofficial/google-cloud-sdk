@@ -62,7 +62,11 @@
         - _REF_: googlecloudsdk.command_lib.container.backup_restore.flags:cluster_resource_all_group_kinds
         - _REF_: googlecloudsdk.command_lib.container.backup_restore.flags:cluster_resource_no_group_kinds
 
-    - _REF_: googlecloudsdk.command_lib.container.backup_restore.flags:restore_plan_substitution_rules_file
+    - group:
+        mutex: true
+        params:
+        - _REF_: googlecloudsdk.command_lib.container.backup_restore.flags:restore_plan_substitution_rules_file
+        - _REF_: googlecloudsdk.command_lib.container.backup_restore.flags:restore_plan_transformation_rules_file
 
     labels:
       api_field: restorePlan.labels

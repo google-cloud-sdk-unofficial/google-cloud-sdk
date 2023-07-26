@@ -25,7 +25,6 @@ from googlecloudsdk.command_lib.container.fleet import util
 from googlecloudsdk.core import properties
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class List(base.ListCommand):
   """List RBAC RoleBindings in a fleet scope.
 

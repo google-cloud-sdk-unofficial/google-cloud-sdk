@@ -28,7 +28,6 @@ from googlecloudsdk.core import properties
 
 
 @base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class List(base.ListCommand):
   """List fleets visible to the user in an organization.
 

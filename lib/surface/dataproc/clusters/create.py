@@ -56,6 +56,7 @@ class Create(base.CreateCommand):
         parser,
         dataproc,
         cls.BETA,
+        cls.ReleaseTrack() == base.ReleaseTrack.ALPHA,
         include_ttl_config=True,
         include_gke_platform_args=cls.BETA,
         include_driver_pool_args=True)
@@ -109,6 +110,7 @@ class Create(base.CreateCommand):
         cluster_ref.projectId,
         compute_resources,
         self.BETA,
+        self.ReleaseTrack() == base.ReleaseTrack.ALPHA,
         include_ttl_config=True,
         include_gke_platform_args=self.BETA)
 

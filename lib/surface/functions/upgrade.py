@@ -24,12 +24,12 @@ from googlecloudsdk.api_lib.functions.v2 import client as client_v2
 from googlecloudsdk.api_lib.functions.v2 import exceptions
 from googlecloudsdk.api_lib.functions.v2 import util as api_util
 from googlecloudsdk.calliope import base
+from googlecloudsdk.calliope import exceptions as calliope_exceptions
 from googlecloudsdk.command_lib.eventarc import types as trigger_types
 from googlecloudsdk.command_lib.functions import flags
 from googlecloudsdk.command_lib.functions.v2 import deploy_util
 from googlecloudsdk.core import log
 from googlecloudsdk.core.console import console_io
-
 import six
 
 UpgradeAction = collections.namedtuple(
@@ -196,7 +196,7 @@ class UpgradeAlpha(base.Command):
       'EXAMPLES': """\
           To start the upgrade process for a 1st gen function `foo` and create a 2nd gen copy, run:
 
-            $ {command} foo
+            $ {command} foo --setup-config
 
           Once you are ready to redirect traffic to the 2nd gen copy, run:
 
@@ -258,9 +258,20 @@ class UpgradeAlpha(base.Command):
     elif args.abort:
       action = _ABORT_ACTION
       action_fn = client.AbortFunctionUpgrade
-    else:
+    elif args.setup_config:
       action = _SETUP_CONFIG_ACTION
       action_fn = client.SetupFunctionUpgradeConfig
+    else:
+      raise calliope_exceptions.OneOfArgumentsRequiredException(
+          [
+              '--abort',
+              '--commit',
+              '--redirect-traffic',
+              '--rollback-traffic',
+              '--setup-config',
+          ],
+          'One of the upgrade step must be specified.',
+      )
 
     _ValidateStateTransition(upgrade_state, action)
 

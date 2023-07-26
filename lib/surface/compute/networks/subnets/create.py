@@ -519,6 +519,7 @@ class CreateBeta(Create):
   """Create a subnet in the Beta release track."""
 
   _include_private_service_connect = True
+  _include_private_nat = True
   _include_reserved_internal_range = True
   _api_version = compute_api.COMPUTE_BETA_API_VERSION
 

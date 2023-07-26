@@ -361,6 +361,7 @@ class Create(base.CreateCommand):
     flags_v1.AddInlineX509ParametersFlags(
         x509_parameters_group, is_ca_command=False, default_max_chain_length=0)
     flags_v1.AddUsePresetProfilesFlag(x509_parameters_group)
+    flags_v1.AddSubjectKeyIdFlag(parser)
 
     cert_arg = 'CERTIFICATE'
     concept_parsers.ConceptParser(
@@ -473,7 +474,7 @@ class Create(base.CreateCommand):
     config.subjectConfig = flags_v1.ParseSubjectFlags(
         args, is_ca=args.is_ca_cert)
     config.x509Config = flags_v1.ParseX509Parameters(args, is_ca_command=False)
-
+    config.subjectKeyId = flags_v1.ParseSubjectKeyId(args, self.messages)
     return config
 
   def Run(self, args):

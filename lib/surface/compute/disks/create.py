@@ -689,6 +689,7 @@ class CreateBeta(Create):
     kms_resource_args.AddKmsKeyResourceArg(
         parser, 'disk', region_fallthrough=True)
     disks_flags.AddMultiWriterFlag(parser)
+    disks_flags.AddEnableConfidentialComputeFlag(parser)
 
   def Run(self, args):
     return self._Run(
@@ -697,7 +698,8 @@ class CreateBeta(Create):
         supports_physical_block=True,
         support_vss_erase=True,
         support_multiwriter_disk=True,
-        support_pd_interface=True)
+        support_pd_interface=True,
+        support_enable_confidential_compute=True)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)

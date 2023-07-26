@@ -28,14 +28,26 @@ class Unlink(base.Command):
   """Unlink the account (if any) linked with a project."""
   detailed_help = {
       'DESCRIPTION': """\
-          This command unlinks a project from its linked billing
-          account. This disables billing on the project.
+          This command unlinks a project from its associated billing account.
+          This action disables billing on the project. Any billable resources
+          and services in use in your project are stopped, and your application
+          stops functioning. Any costs accrued prior to disabling billing on
+          the project are charged to the previously associated billing account.
+
+          Note: To link a project to a different billing account, use the
+          `billing projects link` command. You do not need to unlink the
+          project first.
           """,
       'EXAMPLES': """\
           To unlink the project `my-project` from its linked billing account,
           run:
 
             $ {command} my-project
+          """,
+      'API REFERENCE': """\
+          This command uses the *cloudbilling/v1* API. The full documentation
+          for this API can be found at:
+          https://cloud.google.com/billing/v1/getting-started
           """
   }
 

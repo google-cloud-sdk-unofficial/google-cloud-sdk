@@ -65,8 +65,9 @@ class Create(base.CreateCommand):
         --primary
   """
 
-  GOOGLE_SYMMETRIC_ENCRYPTION = cloudkms_base.GetMessagesModule() \
-      .CryptoKeyVersion.AlgorithmValueValuesEnum.GOOGLE_SYMMETRIC_ENCRYPTION
+  GOOGLE_SYMMETRIC_ENCRYPTION = (
+      cloudkms_base.GetMessagesModule().CryptoKeyVersion.AlgorithmValueValuesEnum.GOOGLE_SYMMETRIC_ENCRYPTION
+  )
 
   SYMMETRIC_NEW_PRIMARY_MESSAGE = (
       'Successfully created key version [{version}] and set it as the primary '
@@ -83,7 +84,11 @@ class Create(base.CreateCommand):
     parser.add_argument(
         '--primary',
         action='store_true',
-        help='If specified, immediately make the new version primary.')
+        help=(
+            'If specified, immediately makes the new version primary. '
+            'This should only be used with the `encryption` purpose.'
+        ),
+    )
 
   def _CreateCreateCKVRequest(self, args):
     # pylint: disable=line-too-long

@@ -26,16 +26,34 @@ from googlecloudsdk.command_lib.billing import utils
 
 _DETAILED_HELP = {
     'DESCRIPTION': """\
-          This command links a billing account to a project.
-
-          If the specified billing account is open, this enables billing on the
+          This command sets or updates the billing account associated with a
           project.
+
+          Billing is enabled on a project when the project is linked to a valid,
+          active Cloud Billing account. The billing account accrues charges
+          for the usage of resources in all of the linked projects. If the
+          project is already linked to a billing account, this command moves
+          the project to the billing account you specify, updating the billing
+          account that is linked to the project.
+
+          Note that associating a project with a closed billing account has the
+          same effect as disabling billing on the project: any paid resources
+          in use by the project are shut down, and your application stops
+          functioning. Unless you want to disable billing, you should always
+          specify a valid, active Cloud Billing account when you run this
+          command. Learn how to confirm the status of a Cloud Billing account at
+          https://cloud.google.com/billing/docs/how-to/verify-billing-enabled#billing_account_status
           """,
     'EXAMPLES': """\
           To link a billing account `0X0X0X-0X0X0X-0X0X0X` with a project
           `my-project`, run:
 
             $ {command} my-project --billing-account=0X0X0X-0X0X0X-0X0X0X
+          """,
+    'API REFERENCE': """\
+          This command uses the *cloudbilling/v1* API. The full documentation
+          for this API can be found at:
+          https://cloud.google.com/billing/v1/getting-started
           """
 }
 

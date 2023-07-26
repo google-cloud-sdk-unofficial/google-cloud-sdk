@@ -34,6 +34,11 @@ class List(base.ListCommand):
   To list only open billing accounts, run:
 
       $ {command} --filter=open=true
+
+  ## API REFERENCE
+
+  This command uses the *cloudbilling/v1* API. The full documentation for this
+  API can be found at: https://cloud.google.com/billing/v1/getting-started
   """
 
   @staticmethod

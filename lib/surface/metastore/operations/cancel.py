@@ -19,7 +19,6 @@ from __future__ import division
 from __future__ import unicode_literals
 
 from apitools.base.py import exceptions as apitools_exceptions
-
 from googlecloudsdk.api_lib.metastore import operations_util as operations_api_util
 from googlecloudsdk.api_lib.metastore import util as api_util
 from googlecloudsdk.api_lib.util import exceptions
@@ -37,7 +36,7 @@ DETAILED_HELP = {'EXAMPLES': """\
         """}
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Cancel(base.Command):
   """Cancel a Dataproc Metastore operation."""
 

@@ -30,7 +30,7 @@ from googlecloudsdk.core import log
 from googlecloudsdk.core import resources
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Create(base.CreateCommand):
   """Add a Rule to a Compute Engine NAT."""
 
@@ -109,8 +109,8 @@ class Create(base.CreateCommand):
         'Creating Rule [{0}] in NAT [{1}]'.format(rule_number, nat_name))
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class CreateAlpha(Create):
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+class CreateAlphaBeta(Create):
   """Add a Rule to a Compute Engine NAT."""
 
   with_private_nat = True

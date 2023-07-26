@@ -31,5 +31,7 @@
       table(
           name.scope("dicomStores"):label=ID,
           name.scope("locations").segment(0):label=LOCATION,
-          notificationConfig.pubsubTopic:label=TOPIC
+          notificationConfig.pubsubTopic:label=TOPIC,
+          notificationConfig.sendForBulkImport:label=BULKIMPORT,
+          streamConfigs.bigqueryDestination.tableUri:label=BQDESTINATION
       )

@@ -30,7 +30,7 @@ from googlecloudsdk.core import log
 from googlecloudsdk.core import resources
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Update(base.UpdateCommand):
   """Update a Rule in a Compute Engine NAT."""
 
@@ -110,11 +110,12 @@ class Update(base.UpdateCommand):
         'Updating Rule [{0}] in NAT [{1}]'.format(rule_number, nat_name))
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class UpdateAlpha(Update):
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+class UpdateAlphaBeta(Update):
   """Update a Rule in a Compute Engine NAT."""
 
   with_private_nat = True
+
 
 Update.detailed_help = {
     'DESCRIPTION':

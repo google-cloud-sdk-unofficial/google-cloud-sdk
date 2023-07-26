@@ -41,6 +41,11 @@ class Describe(base.DescribeCommand):
           To see detailed billing information for a project `my-project`, run:
 
               $ {command} my-project
+          """,
+      'API REFERENCE': """\
+          This command uses the *cloudbilling/v1* API. The full documentation
+          for this API can be found at:
+          https://cloud.google.com/billing/v1/getting-started
           """
   }
 

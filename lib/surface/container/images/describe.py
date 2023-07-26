@@ -18,11 +18,16 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+import re
+
+from containerregistry.client import docker_name
 from googlecloudsdk.api_lib.container.images import container_data_util
 from googlecloudsdk.api_lib.container.images import util
 from googlecloudsdk.api_lib.containeranalysis import filter_util
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.artifacts import requests as ar_requests
 from googlecloudsdk.command_lib.container import flags
+from googlecloudsdk.core import log
 
 # Add to this as we add more container analysis data.
 _DEFAULT_KINDS = [
@@ -32,6 +37,57 @@ _DEFAULT_KINDS = [
     'DEPLOYMENT',
     'DISCOVERY',
 ]
+
+# Includes support for domain scoped projects like
+# google.com/project/gcr.io/image
+GCR_REPO_REGEX = r'^(?P<project>([^\/]+\.[^\/]+\/)?([^\/\.]+))\/(?P<repo>(us\.|eu\.|asia\.)?gcr.io)\/(?P<image>.*)'
+
+
+def MaybeConvertToGCR(image_name):
+  """Converts gcr.io repos on AR from pkg.dev->gcr.io.
+
+  Args:
+    image_name: Image to convert to GCR.
+
+  Returns:
+    The same image_name, but maybe in GCR format.
+  """
+  if 'pkg.dev' not in image_name.registry:
+    return image_name
+
+  # "repository" here refers to the docker definition, which would be called
+  # "package" in AR
+  matches = re.match(GCR_REPO_REGEX, image_name.repository)
+  if not matches:
+    return image_name
+
+  messages = ar_requests.GetMessages()
+  settings = ar_requests.GetProjectSettings(matches.group('project'))
+  if (
+      settings.legacyRedirectionState
+      == messages.ProjectSettings.LegacyRedirectionStateValueValuesEnum.REDIRECTION_FROM_GCR_IO_DISABLED
+  ):
+    log.warning(
+        'gcr.io repositories in Artifact Registry are only scanned if'
+        ' redirected. Redirect this project before checking scanning results'
+    )
+    return image_name
+
+  log.warning(
+      'Container Analysis API uses the gcr.io hostname for scanning results of'
+      ' gcr.io repositories. Using https://{}/{} instead...'.format(
+          matches.group('repo'), matches.group('project')
+      )
+  )
+  return docker_name.Digest(
+      '{registry}/{repository}@{sha256}'.format(
+          registry=matches.group('repo'),
+          repository='{}/{}'.format(
+              matches.group('project'), matches.group('image')
+          ),
+          sha256=image_name.digest,
+      )
+  )
 
 
 def _CommonArgs(parser):
@@ -83,7 +139,7 @@ class Describe(base.DescribeCommand):
     """
 
     with util.WrapExpectedDockerlessErrors(args.image_name):
-      img_name = util.GetDigestFromName(args.image_name)
+      img_name = MaybeConvertToGCR(util.GetDigestFromName(args.image_name))
       return container_data_util.ContainerData(
           registry=img_name.registry,
           repository=img_name.repository,
@@ -186,7 +242,7 @@ class DescribeAlphaAndBeta(Describe):
       f.WithCustomFilter(args.metadata_filter)
 
       with util.WrapExpectedDockerlessErrors(args.image_name):
-        img_name = util.GetDigestFromName(args.image_name)
+        img_name = MaybeConvertToGCR(util.GetDigestFromName(args.image_name))
         # The filter needs the image name with the digest, because that's
         # what it matches against in the API.
         f.WithResources(['https://{}'.format(img_name)])
@@ -210,7 +266,7 @@ class DescribeAlphaAndBeta(Describe):
         return data
     else:
       with util.WrapExpectedDockerlessErrors(args.image_name):
-        img_name = util.GetDigestFromName(args.image_name)
+        img_name = MaybeConvertToGCR(util.GetDigestFromName(args.image_name))
         return container_data_util.ContainerData(
             registry=img_name.registry,
             repository=img_name.repository,

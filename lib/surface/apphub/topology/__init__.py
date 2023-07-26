@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""The topology command group for the Apphub CLI."""
+"""The topology command group for the App Hub CLI."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -26,7 +26,7 @@ from googlecloudsdk.calliope import base
 @base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Topology(base.Group):
-  """Manage Apphub Topology.
+  """Manage App Hub Topology.
 
-  Commands for managing Apphub Topology.
+  Commands for managing App Hub Topology.
   """

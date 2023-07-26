@@ -170,8 +170,8 @@ Create.detailed_help = {
 class CreateBeta(Create):
   """Add a NAT to a Compute Engine router."""
 
-  with_private_nat = False
-  with_subnet_all = False
+  with_private_nat = True
+  with_subnet_all = True
   with_auto_network_tier = True
   with_managed_proxy_lb_endpoint_type = False
 

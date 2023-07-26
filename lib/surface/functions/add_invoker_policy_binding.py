@@ -25,7 +25,15 @@ from googlecloudsdk.command_lib.iam import iam_util
 
 
 _DETAILED_HELP = {
-    'DESCRIPTION': '{description}',
+    'DESCRIPTION': """\
+      Adds the Cloud Run Invoker binding to the IAM policy of a Google Cloud
+      Function's underlying Cloud Run service.
+
+      This command applies to Cloud Functions (2nd gen) only. Cloud Functions
+      (2nd gen) currently requires the Cloud Run Invoke permission on
+      the underlying Cloud Run service to be able to call functions. This
+      command grants the given member permission to invoke the given 2nd gen
+      function.""",
     'EXAMPLES': """\
           To add the invoker role policy binding for `FUNCTION-1` for member
           `MEMBER-1` run:

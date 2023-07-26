@@ -127,6 +127,7 @@ class Create(base.CreateCommand):
     flags_v1.AddInlineX509ParametersFlags(
         x509_config_group, is_ca_command=True, default_max_chain_length=None)
     flags_v1.AddAutoEnableFlag(parser)
+    flags_v1.AddSubjectKeyIdFlag(parser)
 
   def _EnableCertificateAuthority(self, ca_name):
     """Enables the given CA."""

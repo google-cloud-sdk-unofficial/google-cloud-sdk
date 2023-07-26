@@ -42,7 +42,11 @@ class Create(base.CreateCommand):
     )
     cls.FIREWALL_POLICY_ARG.AddArgument(parser, operation_type='create')
     flags.AddAction(
-        parser, support_ips=(cls.ReleaseTrack() == base.ReleaseTrack.ALPHA)
+        parser,
+        support_ips=(
+            cls.ReleaseTrack()
+            in [base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA]
+        ),
     )
     flags.AddFirewallPolicyId(parser, operation='inserted')
     flags.AddSrcIpRanges(parser)
@@ -61,7 +65,7 @@ class Create(base.CreateCommand):
     flags.AddDestFqdns(parser)
     flags.AddSrcAddressGroups(parser)
     flags.AddDestAddressGroups(parser)
-    if cls.ReleaseTrack() == base.ReleaseTrack.ALPHA:
+    if cls.ReleaseTrack() in [base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA]:
       flags.AddSecurityProfileGroup(parser)
       flags.AddTlsInspect(parser)
     flags.AddDescription(parser)
@@ -138,7 +142,7 @@ class Create(base.CreateCommand):
       src_fqdns = args.src_fqdns
     if args.IsSpecified('dest_fqdns'):
       dest_fqdns = args.dest_fqdns
-    if self.ReleaseTrack() == base.ReleaseTrack.ALPHA:
+    if self.ReleaseTrack() in [base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA]:
       if args.IsSpecified('security_profile_group'):
         security_profile_group = (
             firewall_policies_utils.BuildSecurityProfileGroupUrl(
@@ -214,7 +218,7 @@ class Create(base.CreateCommand):
             holder.client.messages.FirewallPolicyRule.DirectionValueValuesEnum.EGRESS
         )
 
-    if self.ReleaseTrack() == base.ReleaseTrack.ALPHA:
+    if self.ReleaseTrack() in [base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA]:
       firewall_policy_rule = holder.client.messages.FirewallPolicyRule(
           priority=rule_utils.ConvertPriorityToInt(ref.Name()),
           action=args.action,

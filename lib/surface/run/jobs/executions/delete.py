@@ -22,6 +22,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.run import connection_context
 from googlecloudsdk.command_lib.run import deletion
 from googlecloudsdk.command_lib.run import flags
+from googlecloudsdk.command_lib.run import pretty_print
 from googlecloudsdk.command_lib.run import resource_args
 from googlecloudsdk.command_lib.run import serverless_operations
 from googlecloudsdk.command_lib.util.concepts import concept_parsers
@@ -76,4 +77,9 @@ class Delete(base.Command):
       deletion.Delete(
           ex_ref, client.GetExecution, client.DeleteExecution, args.async_
       )
-    log.DeletedResource(ex_ref.executionsId, 'execution')
+    if args.async_:
+      pretty_print.Success(
+          'Execution [{}] is being deleted.'.format(ex_ref.executionsId)
+      )
+    else:
+      log.DeletedResource(ex_ref.executionsId, 'execution')

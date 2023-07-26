@@ -1,4 +1,4 @@
-- release_tracks: [ALPHA, GA]
+- release_tracks: [ALPHA]
 
   help_text:
     brief: Update an Event Threat Detection custom module.
@@ -8,20 +8,6 @@
 
         $ {command} 123456 \
             --organization=organizations/123 \
-            --enablement-state="ENABLED" \
-            --custom-config-from-file=custom_config.json
-
-      To update an Event Threat Detection custom module with ID `123456` for folder `456`, run:
-
-        $ {command} 123456 \
-            --folder=folders/456 \
-            --enablement-state="ENABLED" \
-            --custom-config-from-file=custom_config.json
-
-      To update an Event Threat Detection custom module with ID `123456` for project `789`, run:
-
-        $ {command} 123456 \
-            --project=projects/789 \
             --enablement-state="ENABLED" \
             --custom-config-from-file=custom_config.json
 
@@ -52,11 +38,13 @@
 
         - arg_name: folder
           api_field: name
+          hidden: true
           help_text: |
             Folder where the Event Threat Detection custom module resides. Formatted as `folders/456` or just `456`.
 
         - arg_name: project
           api_field: name
+          hidden: true
           help_text: |
             ID or number of the project where the Event Threat Detection custom module resides. Formatted as `projects/789` or just `789`.
 
@@ -66,7 +54,7 @@
       is_positional: false
       required: false
       help_text: |
-        Sets the enablement state of the Event Threat Detection custom module. From the following list of possible enablement states, specify either enabled, disabled or inherited only
+        Sets the enablement state of the Event Threat Detection custom module. Valid options are `ENABLED` and `DISABLED`.
 
     - arg_name: custom-config-from-file
       api_field: eventThreatDetectionCustomModule.config
@@ -79,5 +67,5 @@
     - arg_name: update-mask
       api_field: updateMask
       help_text: |
-        Optional: If left unspecified (default), an update-mask is automatically created using the
+        Optional: If left unspecified (default), an update mask is automatically created using the
         flags specified in the command and only those values are updated.

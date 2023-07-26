@@ -375,6 +375,7 @@ class Create(base.CreateCommand):
         default_value_text='3 years')
     labels_util.AddCreateLabelsFlags(parser)
     flags_v1.AddBucketFlag(parser)
+    flags_v1.AddSubjectKeyIdFlag(parser)
 
     offline_issuer_group = issuer_configuration_group.add_group(
         help=('If the issuing CA is not hosted on Private CA, you must provide '

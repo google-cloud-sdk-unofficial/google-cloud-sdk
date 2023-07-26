@@ -1,4 +1,4 @@
-- release_tracks: [ALPHA]
+- release_tracks: [ALPHA, BETA, GA]
   help_text:
     brief: Update a scope.
     description: Update an existing Fleet Scope.
@@ -21,6 +21,10 @@
     # - googlecloudsdk.command_lib.container.fleet.scopes.rollout_sequencing.util:ValidateAsync
     ALPHA:
       api_version: v1alpha
+    BETA:
+      api_version: v1beta
+    GA:
+      api_version: v1
   response:
     modify_response_hooks:
     - googlecloudsdk.command_lib.container.fleet.scopes.rollout_sequencing.util:UpdateClusterUpgrade

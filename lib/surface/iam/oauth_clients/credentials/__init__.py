@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*- #
-# Copyright 2020 Google LLC. All Rights Reserved.
+# Copyright 2023 Google LLC. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""The command group for gcloud Commerce Procurement consumer order allocations."""
+"""The oauth-clients command group for the IAM CLI."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -23,6 +23,9 @@ from googlecloudsdk.calliope import base
 
 @base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class OrderAllocations(base.Group):
-  """A group of subcommands for working with Procurement Consumer order allocations."""
-  pass
+class OauthClientCredentials(base.Group):
+  """Create and manage OAuth client credentials.
+
+  The {command} group lets you create and manage OAuth client credentials for
+  projects on the Google Cloud Platform.
+  """

@@ -72,7 +72,8 @@ class List(base.ListCommand):
 
     base.SORT_BY_FLAG.SetDefault(parser, 'occ.create_time')
     base.URI_FLAG.RemoveFromParser(parser)
-    parser.add_argument(
+    group = parser.add_group(mutex=True)
+    group.add_argument(
         '--dependency',
         required=False,
         help=(
@@ -83,12 +84,12 @@ class List(base.ListCommand):
             ' for supported packages.'
         ),
     )
-    parser.add_argument(
+    group.add_argument(
         '--resource',
         required=False,
         help='List SBOM file references related to the image resource uri.',
     )
-    parser.add_argument(
+    group.add_argument(
         '--resource-prefix',
         required=False,
         help=(

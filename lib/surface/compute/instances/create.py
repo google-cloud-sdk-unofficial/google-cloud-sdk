@@ -116,6 +116,7 @@ def _CommonArgs(
     support_vlan_nic=False,
     support_storage_pool=False,
     support_source_instant_snapshot=False,
+    support_enable_confidential_compute=False,
 ):
   """Register parser args common to all tracks."""
   metadata_utils.AddMetadataArgs(parser)
@@ -131,6 +132,7 @@ def _CommonArgs(
       support_replica_zones=support_replica_zones,
       support_storage_pool=support_storage_pool,
       enable_source_instant_snapshots=support_source_instant_snapshot,
+      enable_confidential_compute=support_enable_confidential_compute,
   )
   instances_flags.AddCanIpForwardArgs(parser)
   instances_flags.AddAddressArgs(
@@ -283,6 +285,7 @@ class Create(base.CreateCommand):
   _support_source_instant_snapshot = False
   _support_boot_instant_snapshot_uri = False
   _support_partner_metadata = False
+  _support_enable_confidential_compute = False
 
   @classmethod
   def Args(cls, parser):
@@ -293,8 +296,7 @@ class Create(base.CreateCommand):
         support_replica_zones=cls._support_replica_zones,
         enable_regional=cls._support_regional,
         support_subinterface=cls._support_subinterface,
-        support_host_error_timeout_seconds=cls
-        ._support_host_error_timeout_seconds,
+        support_host_error_timeout_seconds=cls._support_host_error_timeout_seconds,
         support_numa_node_count=cls._support_numa_node_count,
         support_instance_kms=cls._support_instance_kms,
         support_max_run_duration=cls._support_max_run_duration,
@@ -304,7 +306,9 @@ class Create(base.CreateCommand):
         support_local_ssd_size=cls._support_local_ssd_size,
         support_network_queue_count=cls._support_network_queue_count,
         support_vlan_nic=cls._support_vlan_nic,
-        support_storage_pool=cls._support_storage_pool)
+        support_storage_pool=cls._support_storage_pool,
+        support_enable_confidential_compute=cls._support_enable_confidential_compute,
+    )
     cls.SOURCE_INSTANCE_TEMPLATE = instances_flags.MakeSourceInstanceTemplateArg(
         support_regional_instance_template=cls._support_regional_instance_template
     )
@@ -458,6 +462,7 @@ class Create(base.CreateCommand):
             support_storage_pool=self._support_storage_pool,
             support_source_instant_snapshot=self._support_source_instant_snapshot,
             support_boot_instant_snapshot_uri=self._support_boot_instant_snapshot_uri,
+            support_enable_confidential_compute=self._support_enable_confidential_compute,
         )
 
       machine_type_uri = None
@@ -761,6 +766,7 @@ class CreateBeta(Create):
   _support_source_instant_snapshot = False
   _support_boot_instant_snapshot_uri = False
   _support_partner_metadata = False
+  _support_enable_confidential_compute = True
 
   def GetSourceMachineImage(self, args, resources):
     """Retrieves the specified source machine image's selflink.
@@ -797,7 +803,9 @@ class CreateBeta(Create):
         support_local_ssd_recovery_timeout=cls._support_local_ssd_recovery_timeout,
         support_local_ssd_size=cls._support_local_ssd_size,
         support_vlan_nic=cls._support_vlan_nic,
-        support_storage_pool=cls._support_storage_pool)
+        support_storage_pool=cls._support_storage_pool,
+        support_enable_confidential_compute=cls._support_enable_confidential_compute,
+    )
     cls.SOURCE_INSTANCE_TEMPLATE = instances_flags.MakeSourceInstanceTemplateArg(
         support_regional_instance_template=cls._support_regional_instance_template
     )
@@ -855,6 +863,7 @@ class CreateAlpha(CreateBeta):
   _support_source_instant_snapshot = True
   _support_boot_instant_snapshot_uri = True
   _support_partner_metadata = True
+  _support_enable_confidential_compute = True
 
   @classmethod
   def Args(cls, parser):
@@ -880,6 +889,7 @@ class CreateAlpha(CreateBeta):
         support_vlan_nic=cls._support_vlan_nic,
         support_storage_pool=cls._support_storage_pool,
         support_source_instant_snapshot=cls._support_source_instant_snapshot,
+        support_enable_confidential_compute=cls._support_enable_confidential_compute,
     )
 
     CreateAlpha.SOURCE_INSTANCE_TEMPLATE = instances_flags.MakeSourceInstanceTemplateArg(

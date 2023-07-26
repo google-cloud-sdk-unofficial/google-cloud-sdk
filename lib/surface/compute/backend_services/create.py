@@ -181,6 +181,7 @@ class CreateHelper(object):
       support_subsetting_subset_size,
       support_advanced_load_balancing,
       support_ip_address_selection_policy,
+      release_track,
   ):
     self._support_failover = support_failover
     self._support_logging = support_logging
@@ -192,6 +193,7 @@ class CreateHelper(object):
     self._support_ip_address_selection_policy = (
         support_ip_address_selection_policy
     )
+    self._release_track = release_track
 
   def _CreateGlobalRequests(self, holder, args, backend_services_ref):
     """Returns a global backend service create request."""
@@ -230,7 +232,9 @@ class CreateHelper(object):
       backend_service.serviceLbPolicy = reference_utils.BuildServiceLbPolicyUrl(
           project_name=backend_services_ref.project,
           location='global',
-          policy_name=args.service_lb_policy)
+          policy_name=args.service_lb_policy,
+          release_track=self._release_track,
+      )
     if args.service_bindings is not None:
       backend_service.serviceBindings = [
           reference_utils.BuildServiceBindingUrl(backend_services_ref.project,
@@ -320,10 +324,10 @@ class CreateHelper(object):
                                                    self._support_failover)
     if (self._support_advanced_load_balancing and
         args.service_lb_policy is not None):
-      backend_service.serviceLbPolicy = reference_utils.BuildServiceLbPolicyUrl(
-          project_name=backend_services_ref.project,
-          location=backend_services_ref.region,
-          policy_name=args.service_lb_policy)
+      raise compute_exceptions.ArgumentError(
+          '--service-lb-policy flag cannot be used for regional backend'
+          ' service.'
+      )
 
     if args.service_bindings is not None:
       region = backend_services_ref.region
@@ -494,6 +498,7 @@ class CreateGA(base.CreateCommand):
         support_ip_address_selection_policy=(
             self._support_ip_address_selection_policy
         ),
+        release_track=self.ReleaseTrack(),
     ).Run(args, holder)
 
 
@@ -520,7 +525,7 @@ class CreateBeta(CreateGA):
   _support_unspecified_protocol = True
   _support_subsetting = True
   _support_subsetting_subset_size = True
-  _support_advanced_load_balancing = False
+  _support_advanced_load_balancing = True
   _support_tcp_ssl_logging = True
 
 

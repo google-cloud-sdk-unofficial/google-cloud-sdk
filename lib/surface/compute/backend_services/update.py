@@ -178,6 +178,7 @@ class UpdateHelper(object):
       support_ip_address_selection_policy,
       support_advanced_load_balancing=False,
       support_regional_security_policy=False,
+      release_track=None,
   ):
     self._support_failover = support_failover
     self._support_logging = support_logging
@@ -189,6 +190,7 @@ class UpdateHelper(object):
     )
     self._support_advanced_load_balancing = support_advanced_load_balancing
     self._support_regional_security_policy = support_regional_security_policy
+    self._release_track = release_track
 
   def Modify(self, client, resources, args, existing, backend_service_ref):
     """Modify Backend Service."""
@@ -307,7 +309,8 @@ class UpdateHelper(object):
         replacement.serviceLbPolicy = reference_utils.BuildServiceLbPolicyUrl(
             project_name=backend_service_ref.project,
             location=location,
-            policy_name=args.service_lb_policy)
+            policy_name=args.service_lb_policy,
+            release_track=self._release_track)
       if args.no_service_lb_policy is not None:
         replacement.serviceLbPolicy = None
         cleared_fields.append('serviceLbPolicy')
@@ -612,7 +615,8 @@ class UpdateGA(base.UpdateCommand):
         self._support_subsetting_subset_size,
         self._support_ip_address_selection_policy,
         support_advanced_load_balancing=self._support_advanced_load_balancing,
-        support_regional_security_policy=self._support_regional_security_policy
+        support_regional_security_policy=self._support_regional_security_policy,
+        release_track=self.ReleaseTrack(),
     ).Run(args, holder)
 
 
@@ -627,7 +631,7 @@ class UpdateBeta(UpdateGA):
   _support_unspecified_protocol = True
   _support_subsetting = True
   _support_subsetting_subset_size = True
-  _support_advanced_load_balancing = False
+  _support_advanced_load_balancing = True
   _support_tcp_ssl_logging = True
   _support_regional_security_policy = True
 

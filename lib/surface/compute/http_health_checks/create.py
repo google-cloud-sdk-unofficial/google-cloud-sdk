@@ -29,7 +29,8 @@ class Create(base.CreateCommand):
   """Create a legacy HTTP health check.
 
   Legacy HTTP health checks are required if you want to implement health
-  checking of a target pool for a Network TCP/UDP Load Balancer. Though you can
+  checking for a target pool backend of an external passthrough Network
+  Load Balancer. Though you can
   use legacy HTTP health checks in certain other Google Cloud Platform load
   balancing configurations and for managed instance group autohealing, you
   should consider a non-legacy HTTP health check created with `health-checks

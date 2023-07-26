@@ -25,7 +25,6 @@ from googlecloudsdk.command_lib.util.apis import arg_utils
 
 
 @base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Describe(base.DescribeCommand):
   """Show fleet info.
 

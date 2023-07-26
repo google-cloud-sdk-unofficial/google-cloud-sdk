@@ -23,13 +23,13 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.apphub import flags
 
 _EXAMPLES = """
-To enable the telemetry monitoring state, run:
+To enable monitoring for the telemetry, run:
 
-$ {command} --monitoring-state=enabled
+$ {command} --enable-monitoring
 
-To disable the telemetry monitoring state, run:
+To disable monitoring for the telemetry, run:
 
-$ {command} --monitoring-state=disabled
+$ {command} --disable-monitoring
 """
 
 

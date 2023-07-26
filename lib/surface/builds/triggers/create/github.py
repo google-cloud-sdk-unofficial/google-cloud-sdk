@@ -55,6 +55,7 @@ class CreateGitHub(base.CreateCommand):
       parser: An argparse.ArgumentParser-like object. It is mocked out in order
         to capture some information, but behaves like an ArgumentParser.
     """
+    messages = cloudbuild_util.GetMessagesModule()
     flag_config = trigger_utils.AddTriggerArgs(parser)
 
     gen_config = flag_config.add_mutually_exclusive_group(required=True)
@@ -103,21 +104,7 @@ For example, --pull-request-pattern=foo will match "foo", "foobar", and "barfoo"
 The syntax of the regular expressions accepted is the syntax accepted by
 RE2 and described at https://github.com/google/re2/wiki/Syntax.
 """)
-    comment_control_choices = {
-        'COMMENTS_DISABLED': """Do not require comments on Pull Requests before builds are triggered.""",
-        'COMMENTS_ENABLED': """Enforce that repository owners or collaborators must comment on Pull Requests before builds are triggered.""",
-        'COMMENTS_ENABLED_FOR_EXTERNAL_CONTRIBUTORS_ONLY': """Enforce that repository owners or collaborators must comment on external contributors' Pull Requests before builds are triggered.""",
-    }
-
-    pr_config.add_argument(
-        '--comment-control',
-        choices=comment_control_choices,
-        default='COMMENTS_ENABLED',
-        help=("""\
-Require a repository collaborator or owner to comment '/gcbrun' on a pull
-request before running the build.
-"""),
-    )
+    trigger_utils.AddCommentControlArg(pr_config, messages)
 
     trigger_utils.AddBuildConfigArgs(flag_config)
     trigger_utils.AddRepoEventArgs(flag_config)

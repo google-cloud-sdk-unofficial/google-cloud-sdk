@@ -27,7 +27,7 @@ from googlecloudsdk.command_lib.compute.resource_policies import flags
 from googlecloudsdk.command_lib.compute.resource_policies import util
 
 
-def _CommonArgs(parser):
+def _CommonArgs(parser, api_version):
   """A helper function to build args."""
   flags.MakeResourcePolicyArg().AddArgument(parser)
   flags.AddCommonArgs(parser)
@@ -42,17 +42,23 @@ Start time for the disk snapshot schedule in UTC. For example, `--start-time="15
       supports_hourly=True,
       required=False)
   flags.AddSnapshotLabelArgs(parser)
+  flags.AddSnapshotMaxRetentionDaysArgs(parser, required=False)
+  messages = apis.GetMessagesModule('compute', api_version)
+  flags.AddOnSourceDiskDeleteArgs(parser, messages)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class UpdateSnapshotSchedule(base.UpdateCommand):
   """Update a Compute Engine Snapshot Schedule Resource Policy."""
 
   @staticmethod
   def Args(parser):
-    _CommonArgs(parser)
+    _CommonArgs(parser, compute_api.COMPUTE_GA_API_VERSION)
 
   def Run(self, args):
+    return self._Run(args)
+
+  def _Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     client = holder.client
     messages = holder.client.messages
@@ -73,37 +79,29 @@ class UpdateSnapshotSchedule(base.UpdateCommand):
     return client.MakeRequests([(service, 'Patch', patch_request)])
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class UpdateSnapshotScheduleAlpha(base.UpdateCommand):
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class UpdateSnapshotScheduleBeta(UpdateSnapshotSchedule):
   """Update a Compute Engine Snapshot Schedule Resource Policy."""
 
   @staticmethod
   def Args(parser):
-    _CommonArgs(parser)
-    flags.AddSnapshotMaxRetentionDaysArgs(parser, required=False)
-    messages = apis.GetMessagesModule('compute',
-                                      compute_api.COMPUTE_ALPHA_API_VERSION)
-    flags.AddOnSourceDiskDeleteArgs(parser, messages)
+    _CommonArgs(parser, compute_api.COMPUTE_BETA_API_VERSION)
 
   def Run(self, args):
-    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
-    client = holder.client
-    messages = holder.client.messages
-    policy_ref = flags.MakeResourcePolicyArg().ResolveAsResource(
-        args,
-        holder.resources,
-        scope_lister=compute_flags.GetDefaultScopeLister(holder.client))
+    return self._Run(args)
 
-    resource_policy = util.MakeDiskSnapshotSchedulePolicyForUpdate(
-        policy_ref, args, messages, enable_retention_policy_update=True)
 
-    patch_request = messages.ComputeResourcePoliciesPatchRequest(
-        resourcePolicy=policy_ref.Name(),
-        resourcePolicyResource=resource_policy,
-        project=policy_ref.project,
-        region=policy_ref.region)
-    service = holder.client.apitools_client.resourcePolicies
-    return client.MakeRequests([(service, 'Patch', patch_request)])
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class UpdateSnapshotScheduleAlpha(UpdateSnapshotSchedule):
+  """Update a Compute Engine Snapshot Schedule Resource Policy."""
+
+  @staticmethod
+  def Args(parser):
+    _CommonArgs(parser, compute_api.COMPUTE_ALPHA_API_VERSION)
+
+  def Run(self, args):
+    return self._Run(args)
+
 
 UpdateSnapshotSchedule.detailed_help = {
     'DESCRIPTION':
@@ -112,7 +110,7 @@ Update a Compute Engine Snapshot Schedule Resource Policy.
 """,
     'EXAMPLES':
         """\
-The following command updates a Compute Engine Snapshot Schedule Resource Policy to take a daily snapshot taken at 13:00 UTC
+The following command updates a Compute Engine Snapshot Schedule Resource Policy to take a daily snapshot at 13:00 UTC
 
   $ {command} my-resource-policy --region=REGION --start-time=13:00 --daily-schedule
 """

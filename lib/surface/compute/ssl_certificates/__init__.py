@@ -30,8 +30,8 @@ class SslCertificates(base.Group):
   itself. You refer to the SSL certificate resource in the target SSL proxy or
   the target HTTPS proxy.
 
-  The relevant load balancer types are SSL Proxy, external HTTPS, and internal
-  HTTPS. For more information, see:
+  The relevant load balancer types are Proxy Network Load Balancers and
+  Application Load Balancers. For more information, see:
   [SSL certificates
   documentation](https://cloud.google.com/load-balancing/docs/ssl-certificates)
   """
@@ -42,7 +42,7 @@ SslCertificates.detailed_help = {
     'DESCRIPTION': """
         Read and manipulate SSL certificates that encrypt
         traffic between clients and a load balancer. The relevant
-        load balancer types are SSL Proxy, external HTTPS, and internal HTTPS.
+        load balancer types are Application Load Balancers and proxy Network Load Balancers.
 
         For more information about SSL certificates, see the
         [SSL certificates documentation](https://cloud.google.com/load-balancing/docs/ssl-certificates).

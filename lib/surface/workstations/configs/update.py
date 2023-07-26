@@ -46,8 +46,8 @@ class Update(base.UpdateCommand):
       --no-shielded-integrity-monitoring
   """
 
-  @staticmethod
-  def Args(parser):
+  @classmethod
+  def Args(cls, parser):
     workstations_flags.AddAsyncFlag(parser)
     workstations_flags.AddConfigResourceArg(parser)
     workstations_flags.AddIdleTimeoutFlag(parser, use_default=False)
@@ -69,6 +69,8 @@ class Update(base.UpdateCommand):
     workstations_flags.AddContainerWorkingDirField(parser)
     workstations_flags.AddContainerRunAsUserField(parser)
     workstations_flags.AddLabelsField(parser)
+    if (cls.ReleaseTrack() != base.ReleaseTrack.GA):
+      workstations_flags.AddAcceleratorFields(parser)
 
   def Collection(self):
     return (

@@ -65,6 +65,7 @@ class UpdateGA(base.UpdateCommand):
     managed_flags.AddMigListManagedInstancesResultsFlag(parser)
     managed_flags.AddMigUpdatePolicyFlags(
         parser, support_min_ready_flag=cls.support_update_policy_min_ready_flag)
+    managed_flags.AddMigForceUpdateOnRepairFlags(parser)
     # When adding RMIG-specific flag, update REGIONAL_FLAGS constant.
 
   def _GetUpdatedStatefulPolicyForDisks(self,
@@ -217,6 +218,12 @@ class UpdateGA(base.UpdateCommand):
           client.messages.InstanceGroupManager
           .ListManagedInstancesResultsValueValuesEnum)(
               args.list_managed_instances_results.upper())
+
+    patch_instance_group_manager.instanceLifecyclePolicy = (
+        managed_instance_groups_utils.CreateInstanceLifecyclePolicy(
+            client.messages, args
+        )
+    )
     return patch_instance_group_manager
 
   def Run(self, args):
@@ -288,7 +295,6 @@ class UpdateBeta(UpdateGA):
   def Args(cls, parser):
     super(UpdateBeta, cls).Args(parser)
     instance_groups_flags.AddMigUpdateStatefulFlagsIPs(parser)
-    managed_flags.AddMigForceUpdateOnRepairFlags(parser)
 
   def _CreateInstanceGroupManagerPatch(self, args, igm_ref, igm_resource,
                                        client, holder):
@@ -296,8 +302,6 @@ class UpdateBeta(UpdateGA):
                                          self)._CreateInstanceGroupManagerPatch(
                                              args, igm_ref, igm_resource,
                                              client, holder)
-    patch_instance_group_manager.instanceLifecyclePolicy = self._GetUpdatedInstanceLifecyclePolicy(
-        args, client)
     return patch_instance_group_manager
 
   def _StatefulArgsSet(self, args):
@@ -385,11 +389,6 @@ class UpdateBeta(UpdateGA):
     return policy_utils.UpdateStatefulPolicy(
         client.messages, stateful_policy,
         None, stateful_internal_ips, stateful_external_ips)
-
-  def _GetUpdatedInstanceLifecyclePolicy(self, args, client):
-    """Create an updated instance lifecycle policy based on specified args."""
-    return managed_instance_groups_utils.CreateInstanceLifecyclePolicy(
-        client.messages, args)
 
 UpdateBeta.detailed_help = UpdateGA.detailed_help
 

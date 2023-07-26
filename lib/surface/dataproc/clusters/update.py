@@ -103,6 +103,7 @@ class Update(base.UpdateCommand):
               decommission), and the maximum allowed timeout is 1 day.
               See $ gcloud topic datetimes for information on duration formats.
               """)
+    _AddAlphaArguments(parser, cls.ReleaseTrack())
 
     idle_delete_group = parser.add_mutually_exclusive_group()
     idle_delete_group.add_argument(
@@ -160,7 +161,6 @@ class Update(base.UpdateCommand):
 
   def Run(self, args):
     dataproc = dp.Dataproc(self.ReleaseTrack())
-
     cluster_ref = args.CONCEPTS.cluster.Parse()
 
     cluster_config = dataproc.messages.ClusterConfig()
@@ -184,6 +184,29 @@ class Update(base.UpdateCommand):
       changed_fields.append(
           'config.secondary_worker_config.num_instances')
       has_changes = True
+
+    if self.ReleaseTrack() == base.ReleaseTrack.ALPHA:
+      if args.secondary_worker_standard_capacity_base is not None:
+        if cluster_config.secondaryWorkerConfig is None:
+          worker_config = dataproc.messages.InstanceGroupConfig(
+              instanceFlexibilityPolicy=dataproc.messages.InstanceFlexibilityPolicy(
+                  provisioningModelMix=dataproc.messages.ProvisioningModelMix(
+                      standardCapacityBase=args.secondary_worker_standard_capacity_base
+                  )))
+        else:
+          worker_config = dataproc.messages.InstanceGroupConfig(
+              numInstances=num_secondary_workers,
+              instanceFlexibilityPolicy=dataproc.messages.InstanceFlexibilityPolicy(
+                  provisioningModelMix=dataproc.messages.ProvisioningModelMix(
+                      standardCapacityBase=args.secondary_worker_standard_capacity_base
+                  )
+              )
+          )
+        cluster_config.secondaryWorkerConfig = worker_config
+        changed_fields.append(
+            'config.secondary_worker_config.instance_flexibility_policy.provisioning_model_mix.standard_capacity_base'
+        )
+        has_changes = True
 
     if args.autoscaling_policy:
       cluster_config.autoscalingConfig = dataproc.messages.AutoscalingConfig(
@@ -296,3 +319,17 @@ class Update(base.UpdateCommand):
 
 def _FirstNonNone(first, second):
   return first if first is not None else second
+
+
+def _AddAlphaArguments(parser, release_track):
+
+  if release_track == base.ReleaseTrack.ALPHA:
+
+    parser.add_argument(
+        '--secondary-worker-standard-capacity-base',
+        type=int,
+        help="""
+              The number of standard VMs in the Spot and Standard Mix
+        feature.
+              """,
+    )

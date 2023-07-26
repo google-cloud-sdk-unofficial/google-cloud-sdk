@@ -30,7 +30,6 @@ auto_flags = [
     'masterauth',
     'nodeidentity',
     'privatecluster',
-    'releasechannel',
     'authenticatorsecurity',
     'databaseencryption',
     'bootdiskkms',
@@ -77,6 +76,7 @@ def AddAutoFlags(parser, release_track):
       release_track=release_track,
       autopilot=True)
   flags.AddWorkloadPoliciesFlag(parser)
+  flags.AddReleaseChannelFlag(parser, autopilot=True)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)

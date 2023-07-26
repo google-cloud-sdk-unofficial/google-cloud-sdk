@@ -26,6 +26,7 @@ from googlecloudsdk.core import properties
 from googlecloudsdk.core import resources
 
 
+@base.Hidden
 class CreateGitLab(base.CreateCommand):
   """Create a build trigger for a GitLab Enterprise repository."""
 
@@ -90,13 +91,7 @@ For example, --pull-request-pattern=foo will match "foo", "foobar", and "barfoo"
 The syntax of the regular expressions accepted is the syntax accepted by
 RE2 and described at https://github.com/google/re2/wiki/Syntax.
 """)
-    pr_config.add_argument(
-        '--comment-control',
-        default=messages.PullRequestFilter.CommentControlValueValuesEnum
-        .COMMENTS_ENABLED,
-        help='Require a repository collaborator or owner to comment \'/gcbrun\' on a pull request before running the build.'
-    )
-
+    trigger_utils.AddCommentControlArg(pr_config, messages)
     trigger_utils.AddBuildConfigArgs(flag_config)
     trigger_utils.AddRepoEventArgs(flag_config)
 

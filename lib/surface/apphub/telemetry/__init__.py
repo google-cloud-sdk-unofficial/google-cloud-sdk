@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""The telemetry command group for the Apphub CLI."""
+"""The telemetry command group for the App Hub CLI."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -26,7 +26,7 @@ from googlecloudsdk.calliope import base
 @base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Telemetry(base.Group):
-  """Manage Apphub Telemetry.
+  """Manage App Hub Telemetry.
 
-  Commands for managing Apphub Telemetry.
+  Commands for managing App Hub Telemetry.
   """

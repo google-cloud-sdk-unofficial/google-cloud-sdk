@@ -165,6 +165,7 @@ def AddBaseArgs(parser):
   flags.AddTimeout(parser, _INSTANCE_CREATION_TIMEOUT_SECONDS)
   flags.AddEnableGooglePrivatePath(parser, show_negated_in_help=False)
   flags.AddThreadsPerCore(parser)
+  flags.AddCascadableReplica(parser)
   flags.AddEnableDataCache(parser, show_negated_in_help=False)
   flags.AddRecreateReplicasOnPrimaryCrash(parser)
 
@@ -179,6 +180,7 @@ def AddBetaArgs(parser):
   flags.AddEnablePrivateServiceConnect(psc_setup_group)
   flags.AddAllowedPscProjects(psc_setup_group)
   flags.AddPasswordPolicyDisallowCompromisedCredentials(parser)
+  flags.AddReplicationLagMaxSecondsForRecreate(parser)
 
 
 def AddAlphaArgs(unused_parser):
@@ -270,6 +272,21 @@ def RunBaseCreateCommand(args, release_track):
       raise sql_exceptions.ArgumentError(
           '`--disk-encryption-key` cannot be specified when creating a replica '
           'of an instance without customer-managed encryption.')
+
+    if args.IsSpecified('cascadable_replica'):
+      if args.region == master_instance_resource.region:
+        raise exceptions.InvalidArgumentException(
+            '--cascadable-replica',
+            '`--cascadable-replica` can only be specified when creating a '
+            'replica that is in a differenct region than the primary.'
+        )
+  else:
+    if args.IsSpecified('cascadable_replica'):
+      raise exceptions.InvalidArgumentException(
+          '--cascadable-replica',
+          '`--cascadable-replica` can only be specified when '
+          '`--master-instance-name` is specified.'
+      )
 
   # --root-password is required when creating SQL Server instances
   if args.IsSpecified('database_version') and args.database_version.startswith(

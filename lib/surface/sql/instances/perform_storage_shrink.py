@@ -105,8 +105,11 @@ class PerformStorageShrink(base.Command):
                 'Status': result_operation.status}
 
       operations.OperationsV1Beta4.WaitForOperation(
-          sql_client, operation_ref,
-          'Performing a storage size decrease on a Cloud SQL instance.')
+          sql_client,
+          operation_ref,
+          'Performing a storage size decrease on a Cloud SQL instance.',
+          2147483647,  # 2^31-1
+      )
 
       changed_instance_resource = sql_client.instances.Get(
           sql_messages.SqlInstancesGetRequest(

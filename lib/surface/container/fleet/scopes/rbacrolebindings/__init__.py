@@ -22,8 +22,7 @@ from googlecloudsdk.calliope import base
 
 
 @base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
-class Scope(base.Group):
+class RBACRoleBinding(base.Group):
   """Fleet scope RBAC RoleBindings for permissions.
 
   This command group allows for manipulation of fleet namespace RBAC

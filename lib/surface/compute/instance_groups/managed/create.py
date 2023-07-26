@@ -121,6 +121,7 @@ class CreateGA(base.CreateCommand):
     managed_flags.AddMigListManagedInstancesResultsFlag(parser)
     managed_flags.AddMigUpdatePolicyFlags(
         parser, support_min_ready_flag=cls.support_update_policy_min_ready_flag)
+    managed_flags.AddMigForceUpdateOnRepairFlags(parser)
     # When adding RMIG-specific flag, update REGIONAL_FLAGS constant.
 
   def _HandleStatefulArgs(self, instance_group_manager, args, client):
@@ -249,18 +250,27 @@ class CreateGA(base.CreateCommand):
     update_policy = managed_instance_groups_utils.PatchUpdatePolicy(
         client, args, None)
 
+    instance_lifecycle_policy = (
+        managed_instance_groups_utils.CreateInstanceLifecyclePolicy(
+            client.messages, args
+        )
+    )
+
     instance_group_manager = client.messages.InstanceGroupManager(
         name=group_ref.Name(),
         description=args.description,
         instanceTemplate=template_ref.SelfLink(),
         baseInstanceName=args.base_instance_name,
         targetPools=self._GetInstanceGroupManagerTargetPools(
-            args.target_pool, group_ref, holder),
+            args.target_pool, group_ref, holder
+        ),
         targetSize=int(args.size),
         autoHealingPolicies=auto_healing_policies,
         distributionPolicy=self._CreateDistributionPolicy(
-            args, holder.resources, client.messages),
+            args, holder.resources, client.messages
+        ),
         updatePolicy=update_policy,
+        instanceLifecyclePolicy=instance_lifecycle_policy,
     )
 
     if args.IsSpecified('list_managed_instances_results'):
@@ -364,7 +374,6 @@ class CreateBeta(CreateGA):
   def Args(cls, parser):
     super(CreateBeta, cls).Args(parser)
     instance_groups_flags.AddMigCreateStatefulIPsFlags(parser)
-    managed_flags.AddMigForceUpdateOnRepairFlags(parser)
 
   def _CreateInstanceGroupManager(self, args, group_ref, template_ref, client,
                                   holder):
@@ -372,10 +381,6 @@ class CreateBeta(CreateGA):
                                    self)._CreateInstanceGroupManager(
                                        args, group_ref, template_ref, client,
                                        holder)
-
-    instance_group_manager.instanceLifecyclePolicy = managed_instance_groups_utils.CreateInstanceLifecyclePolicy(
-        client.messages, args)
-
     return instance_group_manager
 
   def _HandleStatefulArgs(self, instance_group_manager, args, client):

@@ -275,6 +275,7 @@ def AddBetaArgs(parser):
   flags.AddClearAllowedPscProjects(psc_update_group)
   flags.AddUpgradeSqlNetworkArchitecture(parser)
   flags.AddPasswordPolicyDisallowCompromisedCredentials(parser)
+  flags.AddReplicationLagMaxSecondsForRecreate(parser)
 
 
 def AddAlphaArgs(unused_parser):

@@ -1,6 +1,7 @@
 - release_tracks: [ALPHA]
 
   command_type: LIST
+  hidden: true
 
   help_text:
     brief: List the details of resident and descendant Event Threat Detection custom modules.

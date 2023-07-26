@@ -137,19 +137,23 @@ To load a CSAF security advisory file given an artifact with a tag and a file on
         service=self.ca_client.projects_notes,
         request=list_request,
         field='notes',
-        batch_size_attribute='pageSize'
+        batch_size_attribute='pageSize',
     )
 
     cves_in_file = set()
     for file_note in file_notes:
       file_uri = file_note.value.vulnerabilityAssessment.product.genericUri
-      file_cve = file_note.value.vulnerabilityAssessment.assessment.cve
+      file_vulnerability = (
+          file_note.value.vulnerabilityAssessment.assessment.vulnerabilityId
+      )
       if file_uri == uri:
-        cves_in_file.add(file_cve)
+        cves_in_file.add(file_vulnerability)
 
     for db_note in db_notes:
-      db_cve = db_note.vulnerabilityAssessment.assessment.cve
-      if db_cve not in cves_in_file:
+      db_vulnerability = (
+          db_note.vulnerabilityAssessment.assessment.vulnerabilityId
+      )
+      if db_vulnerability not in cves_in_file:
         delete_request = (
             self.ca_messages.ContaineranalysisProjectsNotesDeleteRequest(
                 name=db_note.name

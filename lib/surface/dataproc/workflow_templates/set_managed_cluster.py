@@ -51,6 +51,7 @@ To update managed cluster in a workflow template, run:
         parser,
         dataproc,
         cls.Beta(),
+        cls.Alpha(),
         include_deprecated=cls.Beta(),
         include_gke_platform_args=False)
     flags.AddTemplateResourceArg(parser, 'set managed cluster',
@@ -61,6 +62,10 @@ To update managed cluster in a workflow template, run:
   @classmethod
   def Beta(cls):
     return cls.ReleaseTrack() != base.ReleaseTrack.GA
+
+  @classmethod
+  def Alpha(cls):
+    return cls.ReleaseTrack() == base.ReleaseTrack.ALPHA
 
   @classmethod
   def GetComputeReleaseTrack(cls):
@@ -90,6 +95,7 @@ To update managed cluster in a workflow template, run:
         template_ref.projectsId,
         compute_resources,
         self.Beta(),
+        self.Alpha(),
         include_deprecated=self.Beta())
 
     labels = labels_util.ParseCreateArgs(

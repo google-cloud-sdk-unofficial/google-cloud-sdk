@@ -34,14 +34,15 @@ class Create(base.Command):
   detailed_help = {
       'DESCRIPTION':
           """
-      Create a new bucket.
+      Create new buckets.
       """,
       'EXAMPLES':
           """
 
-      The following command creates a Cloud Storage bucket named ``my-bucket'':
+      The following command creates 2 Cloud Storage buckets, one named
+      ``my-bucket'' and a second bucket named ``my-other-bucket'':
 
-        $ {command} gs://my-bucket
+        $ {command} gs://my-bucket gs://my-other-bucket
 
       The following command creates a bucket with the ``nearline'' default
       [storage class](https://cloud.google.com/storage/docs/storage-classes) in
@@ -54,12 +55,12 @@ class Create(base.Command):
   @staticmethod
   def Args(parser):
     parser.add_argument(
-        'url', type=str, help='The URL of the bucket to create.')
+        'url', type=str, nargs='+', help='The URLs of the buckets to create.')
     parser.add_argument(
         '--enable-autoclass',
         action=arg_parsers.StoreTrueFalseAction,
-        help='The Autoclass feature automatically selects the best storage class'
-        ' for objects based on access patterns.')
+        help='The Autoclass feature automatically selects the best storage'
+        ' class for objects based on access patterns.')
     parser.add_argument(
         '--location',
         '-l',
@@ -121,12 +122,14 @@ class Create(base.Command):
     flags.add_recovery_point_objective_flag(parser)
 
   def Run(self, args):
-    url = storage_url.storage_url_from_string(args.url)
-    errors_util.raise_error_if_not_bucket(args.command_path, url)
-    resource = resource_reference.UnknownResource(url)
-    user_request_args = (
-        user_request_args_factory.get_user_request_args_from_command_args(
-            args, metadata_type=user_request_args_factory.MetadataType.BUCKET))
-    create_bucket_task.CreateBucketTask(
-        resource,
-        user_request_args=user_request_args).execute()
+    for url_string in args.url:
+      url = storage_url.storage_url_from_string(url_string)
+      errors_util.raise_error_if_not_bucket(args.command_path, url)
+      resource = resource_reference.UnknownResource(url)
+      user_request_args = (
+          user_request_args_factory.get_user_request_args_from_command_args(
+              args, metadata_type=user_request_args_factory.MetadataType.BUCKET)
+          )
+      create_bucket_task.CreateBucketTask(
+          resource,
+          user_request_args=user_request_args).execute()

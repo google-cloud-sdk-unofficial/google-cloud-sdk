@@ -20,14 +20,10 @@ from __future__ import unicode_literals
 
 import textwrap
 
-from googlecloudsdk.calliope import base as calliope_base
 from googlecloudsdk.command_lib.container.fleet import connect_gateway_util as cg_util
 from googlecloudsdk.command_lib.container.fleet import resources
 
 
-@calliope_base.ReleaseTracks(
-    calliope_base.ReleaseTrack.ALPHA, calliope_base.ReleaseTrack.BETA
-)
 class GetCredentials(cg_util.GetCredentialsCommand):
   """Fetch credentials for a membership with a particular namespace.
 

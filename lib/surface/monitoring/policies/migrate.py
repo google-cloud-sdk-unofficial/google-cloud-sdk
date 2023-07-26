@@ -26,6 +26,7 @@ from googlecloudsdk.command_lib.monitoring import util
 from googlecloudsdk.command_lib.projects import util as projects_util
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
+from googlecloudsdk.core.console import console_io
 
 
 class Migrate(base.CreateCommand):
@@ -53,6 +54,17 @@ class Migrate(base.CreateCommand):
     project_ref = projects_util.ParseProject(
         properties.VALUES.core.project.Get()
     )
+
+    if not console_io.PromptContinue(
+        message=(
+            'Each call of the migration tool will create a new set of alert'
+            ' policies and/or notification channels. Thus, the migration tool'
+            ' should not be used to update existing alert policies and/or'
+            ' notification channels.'
+        ),
+        default=False,
+    ):
+      return
 
     notification_channels = util.CreateNotificationChannelsFromArgs(
         args, alert_policy_client.messages

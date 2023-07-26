@@ -32,7 +32,6 @@ from googlecloudsdk.generated_clients.apis.gkehub.v1alpha import gkehub_v1alpha_
 
 
 @base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Update(base.UpdateCommand):
   """Update a fleet.
 

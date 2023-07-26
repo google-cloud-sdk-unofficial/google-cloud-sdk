@@ -265,6 +265,8 @@ class UpdateBeta(Update):
   _support_fqdn = True
   _support_geo = True
   _support_nti = True
+  _support_ips = True
+  _support_ips_with_tls = True
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)

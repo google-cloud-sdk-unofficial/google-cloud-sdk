@@ -75,7 +75,8 @@ class Update(base.Command):
     flags.UPDATE_WEB_SERVER_ALLOW_IP.AddToParser(web_server_group)
     flags.WEB_SERVER_ALLOW_ALL.AddToParser(web_server_group)
     flags.WEB_SERVER_DENY_ALL.AddToParser(web_server_group)
-
+    flags.ENABLE_HIGH_RESILIENCE.AddToParser(Update.update_type_group)
+    flags.DISABLE_HIGH_RESILIENCE.AddToParser(Update.update_type_group)
     flags.CLOUD_SQL_MACHINE_TYPE.AddToParser(Update.update_type_group)
     flags.WEB_SERVER_MACHINE_TYPE.AddToParser(Update.update_type_group)
 
@@ -289,6 +290,17 @@ class Update(base.Command):
       if args.enable_cloud_data_lineage_integration or args.disable_cloud_data_lineage_integration:
         params[
             'cloud_data_lineage_integration_enabled'] = True if args.enable_cloud_data_lineage_integration else False
+
+    if args.enable_high_resilience or args.disable_high_resilience:
+      if is_composer_v1:
+        raise command_util.InvalidUserInputError(
+            _INVALID_OPTION_FOR_V1_ERROR_MSG.format(
+                opt='enable_high_resilience'
+                if args.enable_high_resilience
+                else 'disable_high_resilience'
+            )
+        )
+      params['enable_high_resilience'] = bool(args.enable_high_resilience)
 
     if self._support_composer25flags:
       self._addComposer25Fields(params, args, env_obj)

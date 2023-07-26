@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""The command group for the Apphub CLI."""
+"""The command group for the App Hub CLI."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -24,6 +24,6 @@ from googlecloudsdk.calliope import base
 @base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Apphub(base.Group):
-  """Manage Apphub resources."""
+  """Manage App Hub resources."""
   # See third_party/py/googlecloudsdk/calliope/base.py for a list of categories.
   category = base.MANAGEMENT_TOOLS_CATEGORY

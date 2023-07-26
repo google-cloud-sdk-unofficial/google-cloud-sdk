@@ -81,8 +81,7 @@ class Cancel(base.Command):
       )
     if args.async_:
       pretty_print.Success(
-          'Cancel in progress for execution [{}]. This can take up to 1 minute.'
-          .format(ex_ref.executionsId)
+          'Execution [{}] is being cancelled.'.format(ex_ref.executionsId)
       )
     else:
       pretty_print.Success(

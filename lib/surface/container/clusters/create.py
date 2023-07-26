@@ -683,7 +683,7 @@ flags_to_add = {
         'clusterNetworkPerformanceConfig':
             flags.AddClusterNetworkPerformanceConfigFlags,
         'enableKubeletReadonlyPort':
-            (lambda p: flags.AddEnableKubeletReadonlyPortFlag(p, hidden=False)),
+            (lambda p: flags.AddEnableKubeletReadonlyPortFlag(p, hidden=True)),
         'enableK8sBetaApis':
             flags.AddEnableK8sBetaAPIs,
         'securityPosture':
@@ -919,7 +919,7 @@ flags_to_add = {
         'clusterNetworkPerformanceConfig':
             flags.AddClusterNetworkPerformanceConfigFlags,
         'enableKubeletReadonlyPort':
-            (lambda p: flags.AddEnableKubeletReadonlyPortFlag(p, hidden=False)),
+            (lambda p: flags.AddEnableKubeletReadonlyPortFlag(p, hidden=True)),
         'enableK8sBetaApis':
             flags.AddEnableK8sBetaAPIs,
         'securityPosture':
@@ -1087,6 +1087,8 @@ flags_to_add = {
             flags.AddNotificationConfigFlag,
         'num_nodes':
             flags.AddNumNodes,
+        'performancemonitoringunit':
+            lambda p: flags.AddPerformanceMonitoringUnit(p, hidden=True),
         'podsecuritypolicy':
             flags.AddPodSecurityPolicyFlag,
         'preemptible':
@@ -1167,7 +1169,7 @@ flags_to_add = {
         'clusterNetworkPerformanceConfig':
             flags.AddClusterNetworkPerformanceConfigFlags,
         'enableKubeletReadonlyPort':
-            (lambda p: flags.AddEnableKubeletReadonlyPortFlag(p, hidden=False)),
+            (lambda p: flags.AddEnableKubeletReadonlyPortFlag(p, hidden=True)),
         'enableK8sBetaApis':
             flags.AddEnableK8sBetaAPIs,
         'securityPosture':
@@ -1519,6 +1521,7 @@ class CreateAlpha(Create):
     ops.ipv6_access_type = get_default('ipv6_access_type')
     ops.enable_workload_config_audit = get_default(
         'enable_workload_config_audit')
+    ops.performance_monitoring_unit = get_default('performance_monitoring_unit')
     ops.pod_autoscaling_direct_metrics_opt_in = get_default(
         'pod_autoscaling_direct_metrics_opt_in')
     ops.enable_workload_vulnerability_scanning = get_default(

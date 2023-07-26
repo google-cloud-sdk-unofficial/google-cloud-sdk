@@ -1,4 +1,4 @@
-- release_tracks: [ALPHA]
+- release_tracks: [ALPHA, BETA, GA]
   # TODO(b/161926264): Unhide this after adding sufficient tests.
   hidden: true
   help_text:

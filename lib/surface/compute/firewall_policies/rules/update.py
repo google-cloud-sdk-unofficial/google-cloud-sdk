@@ -41,8 +41,11 @@ class Update(base.UpdateCommand):
         required=True, operation='update'
     )
     cls.FIREWALL_POLICY_ARG.AddArgument(parser)
-    is_alpha = cls.ReleaseTrack() == base.ReleaseTrack.ALPHA
-    flags.AddAction(parser, required=False, support_ips=is_alpha)
+    is_alpha_beta = cls.ReleaseTrack() in [
+        base.ReleaseTrack.ALPHA,
+        base.ReleaseTrack.BETA,
+    ]
+    flags.AddAction(parser, required=False, support_ips=is_alpha_beta)
     flags.AddFirewallPolicyId(parser, operation='updated')
     flags.AddSrcIpRanges(parser)
     flags.AddDestIpRanges(parser)
@@ -60,7 +63,7 @@ class Update(base.UpdateCommand):
     flags.AddDestAddressGroups(parser)
     flags.AddSrcFqdns(parser)
     flags.AddDestFqdns(parser)
-    if is_alpha:
+    if is_alpha_beta:
       flags.AddSecurityProfileGroup(parser)
       flags.AddTlsInspect(parser)
     flags.AddDescription(parser)
@@ -156,7 +159,7 @@ class Update(base.UpdateCommand):
     if args.IsSpecified('dest_fqdns'):
       dest_fqdns = args.dest_fqdns
       should_setup_match = True
-    if self.ReleaseTrack() == base.ReleaseTrack.ALPHA:
+    if self.ReleaseTrack() in [base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA]:
       if args.IsSpecified('security_profile_group'):
         security_profile_group = (
             firewall_policies_utils.BuildSecurityProfileGroupUrl(
@@ -233,7 +236,7 @@ class Update(base.UpdateCommand):
             holder.client.messages.FirewallPolicyRule.DirectionValueValuesEnum.EGRESS
         )
 
-    if self.ReleaseTrack() == base.ReleaseTrack.ALPHA:
+    if self.ReleaseTrack() in [base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA]:
       firewall_policy_rule = holder.client.messages.FirewallPolicyRule(
           priority=new_priority,
           action=args.action,

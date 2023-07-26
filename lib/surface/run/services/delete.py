@@ -22,6 +22,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.run import connection_context
 from googlecloudsdk.command_lib.run import deletion
 from googlecloudsdk.command_lib.run import flags
+from googlecloudsdk.command_lib.run import pretty_print
 from googlecloudsdk.command_lib.run import resource_args
 from googlecloudsdk.command_lib.run import serverless_operations
 from googlecloudsdk.command_lib.util.concepts import concept_parsers
@@ -74,10 +75,17 @@ class Delete(base.Command):
         throw_if_unattended=True,
         cancel_on_no=True)
 
+    async_ = deletion.AsyncOrDefault(args.async_)
     with serverless_operations.Connect(conn_context) as client:
-      deletion.Delete(service_ref, client.GetService, client.DeleteService,
-                      args.async_)
-    log.DeletedResource(service_ref.servicesId, 'service')
+      deletion.Delete(
+          service_ref, client.GetService, client.DeleteService, async_
+      )
+    if async_:
+      pretty_print.Success(
+          'Service [{}] is being deleted.'.format(service_ref.servicesId)
+      )
+    else:
+      log.DeletedResource(service_ref.servicesId, 'service')
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)

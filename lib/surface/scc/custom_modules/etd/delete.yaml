@@ -8,14 +8,6 @@
 
         $ {command} 123456 --organization=organizations/123
 
-      To delete an Event Threat Detection custom module with ID `123456` for folder `456`, run:
-
-        $ {command} 123456 --folder=folders/456
-
-      To delete an Event Threat Detection custom module with ID `123456` for project `789`, run:
-
-        $ {command} 123456 --project=projects/789
-
   request:
     collection: securitycenter.organizations.eventThreatDetectionSettings.customModules
     disable_resource_check: true
@@ -43,11 +35,13 @@
 
         - arg_name: folder
           api_field: name
+          hidden: true
           help_text: |
             Folder where the Event Threat Detection custom module resides. Formatted as `folders/456` or just `456`.
 
         - arg_name: project
           api_field: name
+          hidden: true
           help_text: |
             ID or number of the project where the Event Threat Detection custom module resides. Formatted as `projects/789` or just `789`.
 

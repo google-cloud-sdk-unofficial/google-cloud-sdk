@@ -35,6 +35,13 @@ from googlecloudsdk.core.util import iso_duration
 from googlecloudsdk.core.util import times
 
 
+_INSTALL_PY_OPEN_SSL_MESSAGE = (
+    'This command requires the pyOpenSSL library.'
+    ' Please install it and set the environment variable'
+    ' CLOUDSDK_PYTHON_SITEPACKAGES to 1 before re-running this command.'
+)
+
+
 @functools.lru_cache(maxsize=None)
 def _get_region_with_cache(scheme, bucket_name):
   api_client = api_factory.get_api(scheme)
@@ -183,9 +190,14 @@ class SignUrl(base.Command):
     )
 
   def Run(self, args):
-    client_id, key = sign_url_util.get_signing_information_from_file(
-        args.private_key_file, args.private_key_password
-    )
+    try:
+      client_id, key = sign_url_util.get_signing_information_from_file(
+          args.private_key_file, args.private_key_password
+      )
+    except ModuleNotFoundError as error:
+      if 'OpenSSL' in str(error):
+        raise command_errors.Error(_INSTALL_PY_OPEN_SSL_MESSAGE)
+      raise
 
     # Signed URLs always hit the XML API, regardless of what API is preferred
     # for other operations.

@@ -42,6 +42,11 @@ class Describe(base.DescribeCommand):
           To see details for billing account `0X0X0X-0X0X0X-0X0X0X`, run:
 
               $ {command} 0X0X0X-0X0X0X-0X0X0X
+          """,
+      'API REFERENCE': """\
+          This command uses the *cloudbilling/v1* API. The full documentation
+          for this API can be found at:
+          https://cloud.google.com/billing/v1/getting-started
           """
   }
 

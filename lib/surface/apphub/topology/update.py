@@ -23,13 +23,13 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.apphub import flags
 
 _EXAMPLES = """
-To enable the topology state, run:
+To enable the topology, run:
 
-$ {command} --state=enabled
+$ {command} --enable
 
-To disable the topology state, run:
+To disable the topology, run:
 
-$ {command} --state=disabled
+$ {command} --disable
 """
 
 

@@ -114,8 +114,8 @@ for examples.
   flags.AddShieldedInstanceFlags(parser)
   flags.AddNetworkConfigFlags(parser)
   flags.AddThreadsPerCore(parser)
-  flags.AddAdditionalNodeNetworkFlag(parser, hidden=True)
-  flags.AddAdditionalPodNetworkFlag(parser, hidden=True)
+  flags.AddAdditionalNodeNetworkFlag(parser)
+  flags.AddAdditionalPodNetworkFlag(parser)
   flags.AddAsyncFlag(parser)
   flags.AddSoleTenantNodeAffinityFileFlag(parser)
 
@@ -437,6 +437,7 @@ class CreateAlpha(Create):
     ops.enable_best_effort_provision = args.enable_best_effort_provision
     ops.min_provision_nodes = args.min_provision_nodes
     ops.host_maintenance_interval = args.host_maintenance_interval
+    ops.performance_monitoring_unit = args.performance_monitoring_unit
     return ops
 
   @staticmethod
@@ -493,5 +494,6 @@ class CreateAlpha(Create):
     flags.AddEnableNestedVirtualizationFlag(parser, hidden=True)
     flags.AddHostMaintenanceIntervalFlag(
         parser, for_node_pool=True, hidden=True)
+    flags.AddPerformanceMonitoringUnit(parser, hidden=True)
 
 Create.detailed_help = DETAILED_HELP

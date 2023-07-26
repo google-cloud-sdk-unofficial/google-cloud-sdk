@@ -111,16 +111,8 @@ class Update(base.UpdateCommand):
                                                     router_ref.Name()))
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class UpdateBeta(Update):
-  """Update a NAT on a Compute Engine router."""
-  with_private_nat = False
-  with_subnet_all = False
-  with_auto_network_tier = True
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class UpdateAlpha(Update):
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+class UpdateAlphaBeta(Update):
   """Update a NAT on a Compute Engine router."""
   with_private_nat = True
   with_subnet_all = True

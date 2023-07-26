@@ -38,7 +38,6 @@
 
     - api_field: dicomStore.notificationConfig.sendForBulkImport
       arg_name: send-for-bulk-import
-      release_tracks: [ALPHA, BETA]
       type: bool
       default: false
       help_text: |
@@ -47,13 +46,14 @@
 
     - api_field: dicomStore.streamConfigs
       arg_name: stream-configs
-      release_tracks: [ALPHA, BETA]
       repeated: false
       ALPHA:
         processor: googlecloudsdk.command_lib.healthcare.util:InsertDicomStreamConfig:api_version=v1alpha2
       BETA:
         processor: googlecloudsdk.command_lib.healthcare.util:InsertDicomStreamConfig:api_version=v1beta1
+      GA:
+        processor: googlecloudsdk.command_lib.healthcare.util:InsertDicomStreamConfig:api_version=v1
       help_text:
-        The configuration that indicates the BigQuery destinations for streaming instances of a DICOM store.
+        Configuration that indicates the BigQuery destinations for streaming instances of a DICOM store.
         To specify StreamConfigs, list all BigQuery destinations into one string separated by comma.
         (e.g., --stream-configs bq://{bigqueryProjectId1}.{bigqueryDatasetId1}.{bigqueryTableId1},bq://{bigqueryProjectId2}.{bigqueryDatasetId2}.{bigqueryTableId2}).

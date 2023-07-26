@@ -52,7 +52,12 @@ class Create(base.CreateCommand):
           $ {command} --location=us-central1 --file="config.json" --labels=key=value
 
         To create a transcoder job in batch mode:
+
           $ {command} --location=us-central1 --file="config.json" --mode=PROCESSING_MODE_BATCH
+
+        To create a transcoder job with optimizations disabled:
+
+          $ {command} --location=us-central1 --file="config.json" --optimization=DISABLED
       """}
 
   @staticmethod

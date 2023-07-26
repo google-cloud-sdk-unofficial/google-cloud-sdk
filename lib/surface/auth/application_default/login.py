@@ -136,9 +136,8 @@ class Login(base.Command):
           '`--client-id-file`. Please replace `--no-launch-browser` with '
           '`--no-browser`.'
       )
-    # This reauth scope is only used here and when refreshing the access token.
-    scopes = (args.scopes or auth_util.DEFAULT_SCOPES) + [config.REAUTH_SCOPE]
 
+    scopes = args.scopes or auth_util.DEFAULT_SCOPES
     flow_params = dict(
         no_launch_browser=not args.launch_browser,
         no_browser=args.no_browser,

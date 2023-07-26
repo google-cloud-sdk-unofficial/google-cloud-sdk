@@ -78,10 +78,19 @@ class Delete(base.Command):
                           else None))
     domain_mapping_ref = args.CONCEPTS.domain.Parse()
     with serverless_operations.Connect(conn_context) as client:
-      deletion.Delete(domain_mapping_ref, client.GetDomainMapping,
-                      client.DeleteDomainMapping, args.async_)
+      async_ = deletion.AsyncOrDefault(args.async_)
+      deletion.Delete(
+          domain_mapping_ref,
+          client.GetDomainMapping,
+          client.DeleteDomainMapping,
+          async_,
+      )
       msg = """Mappings to [{domain}] now have been deleted.""".format(
           domain=domain_mapping_ref.domainmappingsId)
+      if async_:
+        msg = """Mappings to [{domain}] are being deleted.""".format(
+            domain=domain_mapping_ref.domainmappingsId
+        )
       pretty_print.Success(msg)
 
 

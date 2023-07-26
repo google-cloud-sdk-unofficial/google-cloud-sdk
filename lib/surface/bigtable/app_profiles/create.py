@@ -129,7 +129,9 @@ class CreateAppProfileAlpha(CreateAppProfile):
         .AddForce('create')
         .AddRequestPriority()
         .AddAppProfileRouting(
-            allow_failover_radius=True, allow_row_affinity=True, is_update=False
+            allow_failover_radius=True,
+            allow_row_affinity=True,
+            is_update=False,
         )
     )
 

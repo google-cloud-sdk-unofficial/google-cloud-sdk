@@ -367,7 +367,6 @@ class Update(base.UpdateCommand):
     flags.AddGatewayFlags(group, hidden=False)
     flags.AddSecurityPostureFlag(group)
     flags.AddClusterNetworkPerformanceConfigFlags(group)
-    flags.AddEnableKubeletReadonlyPortFlag(group, hidden=False)
     flags.AddEnableK8sBetaAPIs(group)
     flags.AddSecurityPostureEnumFlag(group)
     flags.AddWorkloadVulnScanningEnumFlag(group)
@@ -446,8 +445,6 @@ class Update(base.UpdateCommand):
     opts.disable_managed_prometheus = args.disable_managed_prometheus
     opts.enable_security_posture = args.enable_security_posture
     opts.network_performance_config = args.network_performance_configs
-    # pylint: disable=line-too-long
-    opts.enable_insecure_kubelet_readonly_port = args.enable_insecure_kubelet_readonly_port
     opts.enable_k8s_beta_apis = args.enable_kubernetes_unstable_apis
     opts.security_posture = args.security_posture
     opts.workload_vulnerability_scanning = args.workload_vulnerability_scanning
@@ -868,7 +865,6 @@ class UpdateBeta(Update):
     flags.AddFleetProjectFlag(group, is_update=True)
     flags.AddSecurityPostureFlag(group)
     flags.AddClusterNetworkPerformanceConfigFlags(group)
-    flags.AddEnableKubeletReadonlyPortFlag(group, hidden=False)
     flags.AddEnableK8sBetaAPIs(group)
     flags.AddSecurityPostureEnumFlag(group)
     flags.AddWorkloadVulnScanningEnumFlag(group)
@@ -984,12 +980,12 @@ class UpdateBeta(Update):
     opts.clear_fleet_project = args.clear_fleet_project
     opts.enable_security_posture = args.enable_security_posture
     opts.network_performance_config = args.network_performance_configs
-    # pylint: disable=line-too-long
-    opts.enable_insecure_kubelet_readonly_port = args.enable_insecure_kubelet_readonly_port
     opts.enable_k8s_beta_apis = args.enable_kubernetes_unstable_apis
     opts.security_posture = args.security_posture
     opts.workload_vulnerability_scanning = args.workload_vulnerability_scanning
-    opts.enable_runtime_vulnerability_insight = args.enable_runtime_vulnerability_insight
+    opts.enable_runtime_vulnerability_insight = (
+        args.enable_runtime_vulnerability_insight
+    )
     opts.workload_policies = args.workload_policies
     opts.remove_workload_policies = args.remove_workload_policies
     opts.enable_fqdn_network_policy = args.enable_fqdn_network_policy
@@ -1088,7 +1084,6 @@ class UpdateAlpha(Update):
     flags.AddFleetProjectFlag(group, is_update=True)
     flags.AddSecurityPostureFlag(group)
     flags.AddClusterNetworkPerformanceConfigFlags(group)
-    flags.AddEnableKubeletReadonlyPortFlag(group, hidden=False)
     flags.AddEnableK8sBetaAPIs(group)
     flags.AddSecurityPostureEnumFlag(group)
     flags.AddWorkloadVulnScanningEnumFlag(group)
@@ -1198,12 +1193,12 @@ class UpdateAlpha(Update):
     opts.clear_fleet_project = args.clear_fleet_project
     opts.enable_security_posture = args.enable_security_posture
     opts.network_performance_config = args.network_performance_configs
-    # pylint: disable=line-too-long
-    opts.enable_insecure_kubelet_readonly_port = args.enable_insecure_kubelet_readonly_port
     opts.enable_k8s_beta_apis = args.enable_kubernetes_unstable_apis
     opts.security_posture = args.security_posture
     opts.workload_vulnerability_scanning = args.workload_vulnerability_scanning
-    opts.enable_runtime_vulnerability_insight = args.enable_runtime_vulnerability_insight
+    opts.enable_runtime_vulnerability_insight = (
+        args.enable_runtime_vulnerability_insight
+    )
     opts.workload_policies = args.workload_policies
     opts.remove_workload_policies = args.remove_workload_policies
     opts.enable_fqdn_network_policy = args.enable_fqdn_network_policy
