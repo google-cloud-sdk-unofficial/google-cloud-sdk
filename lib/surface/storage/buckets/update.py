@@ -184,14 +184,16 @@ def _add_common_args(parser):
   log_bucket.add_argument(
       '--clear-log-bucket',
       action='store_true',
-      help="Clears logging bucket receiving the usage current bucket's data.")
+      help="Clears logging bucket receiving the usage current bucket's data and"
+      ' disables usage logging.')
   log_object_prefix = parser.add_mutually_exclusive_group()
   log_object_prefix.add_argument(
       '--log-object-prefix',
       help='Specifies the object prefix for logging activity to the log'
       ' bucket. The default prefix is the bucket name. All read and write'
       ' activity to objects in the bucket will be logged for objects matching'
-      ' the prefix.')
+      ' the prefix. If usage logging is not enabled this flag will have no'
+      ' effect.')
   log_object_prefix.add_argument(
       '--clear-log-object-prefix',
       action='store_true',

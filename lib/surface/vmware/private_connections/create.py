@@ -43,7 +43,7 @@ DETAILED_HELP = {
 
         The PEER_PROJECT field in the output of the command will provide the value for the service-project required for creating the private connection.
 
-        To create a Private Connection called ``my-private-connection'' of type ``PRIVATE_SERVICE_ACCESS'' in project ``my-project'' and region ``us-west1'' with routing_mode ``REGIONAL'' to connect service networking VPC from project ``td096d594ece09650-tp'' to legacy VMware Engine Network ``us-west1-default'', run:
+        To create a Private Connection called `my-private-connection` of type `PRIVATE_SERVICE_ACCESS` in project `my-project` and region `us-west1` with routing_mode `REGIONAL` to connect service networking VPC from project `td096d594ece09650-tp` to legacy VMware Engine Network `us-west1-default`, run:
 
           $ {command} my-private-connection --location=us-west1 --project=my-project --vmware-engine-network=us-west1-default --description="A short description for the new private connection" --routing-mode=REGIONAL --service-project=td096d594ece09650-tp --type=PRIVATE_SERVICE_ACCESS
 
@@ -53,7 +53,7 @@ DETAILED_HELP = {
 
           In the second example, the project and location are taken from gcloud properties core/project and compute/region, respectively.
 
-        To create a Private Connection called ``my-private-connection'' of type ``THIRD_PARTY_SERVICE'' in project ``my-project'' and region ``us-west1'' to connect VPC ``my-service-network'' from project ``td096d594ece09650-tp'' to legacy VMware Engine Network ``us-west1-default'', run:
+        To create a Private Connection called `my-private-connection` of type `THIRD_PARTY_SERVICE` in project `my-project` and region `us-west1` to connect VPC `my-service-network` from project `td096d594ece09650-tp` to legacy VMware Engine Network `us-west1-default`, run:
 
           $ {command} my-private-connection --location=us-west1 --project=my-project --vmware-engine-network=us-west1-default --description="A short description for the new private connection" --service-network=my-service-network --service-project=td096d594ece09650-tp --type=THIRD_PARTY_SERVICE
 

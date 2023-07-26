@@ -27,7 +27,7 @@ DETAILED_HELP = {
         Display data associated with a VMware Engine node, such as its name, state, node type, ip, fqdn.
       """,
     'EXAMPLES': """
-        To describe a node called ``my-node'' in private cloud ``my-private-cloud'' cluster ``my-cluster'' and zone ``us-west2-a'', run:
+        To describe a node called `my-node` in private cloud `my-private-cloud` cluster `my-cluster` and zone `us-west2-a`, run:
 
           $ {command} my-node --location=us-west2-a --project=my-project --private-cloud=my-private-cloud --cluster=my-cluster
 

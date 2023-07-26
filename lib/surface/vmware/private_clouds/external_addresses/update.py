@@ -28,7 +28,7 @@ DETAILED_HELP = {
           Updates an external IP address in a VMware Engine private cloud. Only description and internal-ip can be updated.
         """,
     'EXAMPLES': """
-          To update an external IP address called ``myip'' that belongs to the private cloud ``my-private-cloud'' in project ``my-project'' and location ``us-west1-a'' by changing its description to ``"Updated description for the external IP address"'' and internal-ip to ``165.87.54.14'', run:
+          To update an external IP address called `myip` that belongs to the private cloud `my-private-cloud` in project `my-project` and location `us-west1-a` by changing its description to `"Updated description for the external IP address"` and internal-ip to `165.87.54.14`, run:
 
             $ {command} myip --project=my-project --private-cloud=my-private-cloud --location=us-west1-a --internal-ip=165.87.54.14 --description="Updated description for the external IP address"
 

@@ -1135,3 +1135,4 @@ def _close_pool_connections(pool):
                 conn.close()
     except queue.Empty:
         pass  # Done.
+

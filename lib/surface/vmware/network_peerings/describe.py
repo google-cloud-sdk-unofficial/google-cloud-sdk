@@ -29,11 +29,11 @@ DETAILED_HELP = {
         """,
     'EXAMPLES':
         """
-          To get information about a VPC network peering called ``new-peering'', run:
+          To get information about a VPC network peering called `new-peering`, run:
 
             $ {command} new-peering
 
-          In this example, the project is taken from gcloud properties core/project and location is taken as ``global''.
+          In this example, the project is taken from gcloud properties core/project and location is taken as `global`.
     """,
 }
 

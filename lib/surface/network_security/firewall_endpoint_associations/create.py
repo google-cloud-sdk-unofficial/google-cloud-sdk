@@ -44,7 +44,7 @@ DETAILED_HELP = {
 }
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Create(base.CreateCommand):
   """Create a Firewall Plus endpoint association."""
 
@@ -54,14 +54,12 @@ class Create(base.CreateCommand):
     association_flags.AddEndpointResource(cls.ReleaseTrack(), parser)
     association_flags.AddNetworkResource(parser)
     association_flags.AddMaxWait(parser, '60m')  # default to 60 minutes wait.
+    association_flags.AddTLSInspectionPolicy(cls.ReleaseTrack(), parser)
     base.ASYNC_FLAG.AddToParser(parser)
     base.ASYNC_FLAG.SetDefault(parser, True)
     labels_util.AddCreateLabelsFlags(parser)
 
   def Run(self, args):
-    return self._Run(args)
-
-  def _Run(self, args, tls_inspection_policy=None):
     client = association_api.Client(self.ReleaseTrack())
 
     association = args.CONCEPTS.firewall_endpoint_association.Parse()
@@ -74,6 +72,17 @@ class Create(base.CreateCommand):
 
     network = args.CONCEPTS.network.Parse()
     endpoint = args.CONCEPTS.endpoint.Parse()
+    tls_inspection_policy = None
+
+    if args.IsSpecified('tls_inspection_policy'):
+      tls_inspection_policy = args.CONCEPTS.tls_inspection_policy.Parse()
+      if tls_inspection_policy is None:
+        raise core_exceptions.Error(
+            'TLS Inspection Policy resource path is either malformed or missing'
+            ' necessary flag `--tls-inspection-policy-region`.\nNOTE: TLS'
+            ' Inspection Policy needs to be in the same region as Firewall Plus'
+            ' endpoint resource.'
+        )
 
     operation = client.CreateAssociation(
         name=association.Name(),
@@ -100,34 +109,6 @@ class Create(base.CreateCommand):
         ),
         has_result=True,
         max_wait=max_wait,
-    )
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class CreateAlpha(Create):
-  """Create a Firewall Plus endpoint association."""
-
-  @classmethod
-  def Args(cls, parser):
-    super(CreateAlpha, cls).Args(parser)
-    association_flags.AddTLSInspectionPolicy(parser, cls.ReleaseTrack())
-
-  def Run(self, args):
-    tls_inspection_policy = None
-
-    if args.IsSpecified('tls_inspection_policy'):
-      tls_inspection_policy = args.CONCEPTS.tls_inspection_policy.Parse()
-      if tls_inspection_policy is None:
-        raise core_exceptions.Error(
-            'TLS Inspection Policy resource path is either malformed or missing'
-            ' necessary flag `--tls-inspection-policy-region`.\nNOTE: TLS'
-            ' Inspection Policy needs to be in the same region as Firewall Plus'
-            ' endpoint resource.'
-        )
-
-    return self._Run(
-        args,
-        tls_inspection_policy=tls_inspection_policy,
     )
 
 

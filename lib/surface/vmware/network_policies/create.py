@@ -29,7 +29,7 @@ DETAILED_HELP = {
         """,
     'EXAMPLES':
         """
-          To create a network policy called ``my-network-policy'' which connects to the VMware Engine network ``my-vmware-engine-network'' using the edge services address range ``192.168.0.0/26'' with the internet access service enabled and the external IP access service disabled, run:
+          To create a network policy called `my-network-policy` which connects to the VMware Engine network `my-vmware-engine-network` using the edge services address range `192.168.0.0/26` with the internet access service enabled and the external IP access service disabled, run:
 
             $ {command} my-network-policy --location=us-west2 --project=my-project --vmware-engine-network=my-vmware-engine-network --edge-services-cidr=192.168.0.0/26 --internet-access --no-external-ip-access
 
@@ -37,7 +37,7 @@ DETAILED_HELP = {
 
             $ {command} my-network-policy --vmware-engine-network=my-vmware-engine-network --edge-services-cidr=192.168.0.0/26 --internet-access
 
-          In the second example, the project and the location are taken from gcloud properties core/project and compute/region respectively. If the ``--external-ip-access'' flag is not specified, it is taken as ``False''.
+          In the second example, the project and the location are taken from gcloud properties core/project and compute/region respectively. If the `--external-ip-access` flag is not specified, it is taken as `False`.
     """,
 }
 

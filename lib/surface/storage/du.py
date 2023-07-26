@@ -31,7 +31,6 @@ from googlecloudsdk.command_lib.storage import storage_url
 from googlecloudsdk.core.util import files
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Du(base.Command):
   """Displays the amount of space in bytes used up storage resources."""
 

@@ -30,7 +30,7 @@ DETAILED_HELP = {
         """,
     'EXAMPLES':
         """
-          To delete an external access firewall rule called ``my-external-access-rule'' in project ``my-project'' and region ``us-west2'' associated with network policy ``my-network-policy'', run:
+          To delete an external access firewall rule called `my-external-access-rule` in project `my-project` and region `us-west2` associated with network policy `my-network-policy`, run:
 
             $ {command} my-external-access-rule --location=us-west2 --project=my-project --network-policy=my-network-policy
 

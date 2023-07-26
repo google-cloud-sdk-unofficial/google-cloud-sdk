@@ -262,6 +262,7 @@ def AddBaseArgs(parser):
   flags.AddEnableGooglePrivatePath(parser, show_negated_in_help=True)
   flags.AddThreadsPerCore(parser)
   flags.AddEnableDataCache(parser, show_negated_in_help=False)
+  flags.AddRecreateReplicasOnPrimaryCrash(parser)
 
 
 def AddBetaArgs(parser):
@@ -272,7 +273,6 @@ def AddBetaArgs(parser):
   psc_update_group = parser.add_mutually_exclusive_group(hidden=True)
   flags.AddAllowedPscProjects(psc_update_group)
   flags.AddClearAllowedPscProjects(psc_update_group)
-  flags.AddRecreateReplicasOnPrimaryCrash(parser)
   flags.AddUpgradeSqlNetworkArchitecture(parser)
   flags.AddPasswordPolicyDisallowCompromisedCredentials(parser)
 

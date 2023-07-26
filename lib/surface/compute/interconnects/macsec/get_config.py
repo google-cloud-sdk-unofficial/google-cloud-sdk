@@ -23,8 +23,27 @@ from googlecloudsdk.api_lib.compute.interconnects import client
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute.interconnects import flags
 
+DETAILED_HELP = {
+    'DESCRIPTION':
+        """\
+        *{command}* displays all MACsec configuration data associated with
+        Compute Engine interconnect in a project.
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+        For an example, refer to the *EXAMPLES* section below.
+        """,
+    # pylint: disable=line-too-long
+    'EXAMPLES':
+        """\
+        To displays all MACsec configuration data associated with Compute Engine
+        interconnect in a project, run:
+
+          $ {command} example-interconnect
+        """,
+    # pylint: enable=line-too-long
+}
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class GetConfig(base.DescribeCommand):
   """Get MACsec configuration of a Compute Engine interconnect.
 
@@ -45,3 +64,6 @@ class GetConfig(base.DescribeCommand):
 
     interconnect = client.Interconnect(ref, compute_client=holder.client)
     return interconnect.GetMacsecConfig()
+
+
+GetConfig.detailed_help = DETAILED_HELP

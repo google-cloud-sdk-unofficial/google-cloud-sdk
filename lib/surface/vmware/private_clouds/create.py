@@ -31,7 +31,7 @@ DETAILED_HELP = {
         """,
     'EXAMPLES':
         """
-          To create a private cloud in the ``us-west2-a'' zone using ``standard-72'' nodes that connects to the ``my-network'' VMware Engine network, run:
+          To create a private cloud in the `us-west2-a` zone using `standard-72` nodes that connects to the `my-network` VMware Engine network, run:
 
 
           $ {command} my-private-cloud --location=us-west2-a --project=my-project --cluster=my-management-cluster --node-type-config=type=standard-72,count=3 --management-range=192.168.0.0/24 --vmware-engine-network=my-network
@@ -43,7 +43,7 @@ DETAILED_HELP = {
           In the second example, the project and location are taken from gcloud properties core/project and compute/zone.
 
 
-          To create a stretched private cloud in the ``us-west2'' region using ``us-west2-a'' zone as preferred and ``us-west2-b'' zone as secondary
+          To create a stretched private cloud in the `us-west2` region using `us-west2-a` zone as preferred and `us-west2-b` zone as secondary
 
           $ {command} my-private-cloud --project=sample-project --location=us-west2 --cluster=my-management-cluster --node-type-config=type=standard-72,count=6 --management-range=192.168.0.0/24 --vmware-engine-network=my-network --type=STRETCHED --preferred-zone=us-west2-a --secondary-zone=us-west2-b
 

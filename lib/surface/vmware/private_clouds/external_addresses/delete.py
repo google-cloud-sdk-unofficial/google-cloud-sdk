@@ -30,8 +30,8 @@ DETAILED_HELP = {
         """,
     'EXAMPLES':
         """
-          To delete an external IP address called ``first-ip'' in private cloud
-          ``my-privatecloud'' and location ``us-east2-b'', run:
+          To delete an external IP address called `first-ip` in private cloud
+          `my-privatecloud` and location `us-east2-b`, run:
 
             $ {command} first-ip --private-cloud=my-privatecloud --location=us-east2-b --project=my-project
 

@@ -31,7 +31,7 @@ DETAILED_HELP = {
         """,
     'EXAMPLES':
         """
-          To create a cluster called ``my-cluster'' in private cloud ``my-private-cloud'', with 3 initial ``standard-72'' nodes in zone ``us-west2-a'', run:
+          To create a cluster called `my-cluster` in private cloud `my-private-cloud`, with 3 initial `standard-72` nodes in zone `us-west2-a`, run:
 
             $ {command} my-cluster --location=us-west2-a --project=my-project --private-cloud=my-private-cloud --node-type-config=type=standard-72,count=3
 

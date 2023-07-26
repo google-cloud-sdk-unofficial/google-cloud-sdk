@@ -25,6 +25,7 @@ from googlecloudsdk.calliope import parser_arguments
 from googlecloudsdk.command_lib.container.bare_metal import admin_cluster_flags as bare_metal_flags
 from googlecloudsdk.command_lib.container.bare_metal import constants as bare_metal_constants
 from googlecloudsdk.command_lib.container.gkeonprem import constants
+from googlecloudsdk.command_lib.container.gkeonprem import flags
 from googlecloudsdk.core import log
 
 _EXAMPLES = """
@@ -66,6 +67,7 @@ class Create(base.CreateCommand):
     bare_metal_flags.AddAdminWorkloadNodeConfig(parser)
     bare_metal_flags.AddNodeAccessConfig(parser)
     bare_metal_flags.AddSecurityConfig(parser)
+    flags.AddBinauthzEvaluationMode(parser)
 
   def Run(self, args):
     """Runs the create command.

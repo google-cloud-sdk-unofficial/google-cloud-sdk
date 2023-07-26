@@ -29,7 +29,7 @@ DETAILED_HELP = {
         """,
     'EXAMPLES':
         """
-          To list external IP addresses in the ``my-privatecloud'' private cloud, run:
+          To list external IP addresses in the `my-privatecloud` private cloud, run:
 
             $ {command} --private-cloud=my-privatecloud --project=my-project --location=us-east2-b
     """,

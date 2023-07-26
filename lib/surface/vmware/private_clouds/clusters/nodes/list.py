@@ -27,7 +27,7 @@ DETAILED_HELP = {
         List nodes in a VMware Engine private cloud's cluster.
         """,
     'EXAMPLES': """
-        To list nodes in the ``my-private-cloud'' private cloud and ``my-cluster'' cluster:
+        To list nodes in the `my-private-cloud` private cloud and `my-cluster` cluster:
 
           $ {command} --location=us-west2-a --project=my-project --private-cloud=my-private-cloud --cluster=my-cluster
 

@@ -1,0 +1,34 @@
+release_tracks: [ALPHA]
+help_text:
+  brief: |
+    Import an LB Traffic Extension.
+  description: |
+    Improt an LB Traffic Extension defined in a YAML file.
+  examples: |
+    To import an LB Traffic Extension named 'my-traffic-extension' from a YAML file
+    in 'europe-west1', run:
+
+        $ {command} my-traffic-extension --source=my-traffic-extension.yaml --location="europe-west1"
+
+request:
+  collection: networkservices.projects.locations.lbTrafficExtensions
+  ALPHA:
+    api_version: v1alpha1
+
+arguments:
+  resource:
+    spec: !REF googlecloudsdk.command_lib.service_extensions.resources:lbTrafficExtension
+    help_text: |
+      Name assigned to the imported LB Traffic Extension.
+
+async:
+  collection: networkservices.projects.locations.operations
+
+import:
+  abort_if_equivalent: true
+  create_if_not_exists: true
+  create_request:
+    collection: networkservices.projects.locations.lbTrafficExtensions
+    ALPHA:
+      api_version: v1alpha1
+    method: create

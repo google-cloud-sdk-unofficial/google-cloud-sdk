@@ -367,7 +367,7 @@ class Update(base.UpdateCommand):
     flags.AddGatewayFlags(group, hidden=False)
     flags.AddSecurityPostureFlag(group)
     flags.AddClusterNetworkPerformanceConfigFlags(group)
-    flags.AddEnableKubeletReadonlyPortFlag(group, hidden=True)
+    flags.AddEnableKubeletReadonlyPortFlag(group, hidden=False)
     flags.AddEnableK8sBetaAPIs(group)
     flags.AddSecurityPostureEnumFlag(group)
     flags.AddWorkloadVulnScanningEnumFlag(group)
@@ -435,7 +435,7 @@ class Update(base.UpdateCommand):
     opts.enable_private_endpoint = args.enable_private_endpoint
     opts.enable_google_cloud_access = args.enable_google_cloud_access
     opts.binauthz_evaluation_mode = args.binauthz_evaluation_mode
-    opts.binauthz_policy = None
+    opts.binauthz_policy_bindings = None
     opts.logging_variant = args.logging_variant
     opts.additional_pod_ipv4_ranges = args.additional_pod_ipv4_ranges
     opts.removed_additional_pod_ipv4_ranges = args.remove_additional_pod_ipv4_ranges
@@ -713,14 +713,21 @@ to completion."""
             args.enable_google_cloud_access)
       except apitools_exceptions.HttpError as error:
         raise exceptions.HttpException(error, util.HTTP_ERROR_FORMAT)
-    elif getattr(args, 'enable_binauthz', None) is not None or getattr(
-        args, 'binauthz_evaluation_mode', None) is not None or getattr(
-            args, 'binauthz_policy', None) is not None:
+    elif (
+        getattr(args, 'enable_binauthz', None) is not None
+        or getattr(args, 'binauthz_evaluation_mode', None) is not None
+        or getattr(args, 'binauthz_policy_bindings', None) is not None
+    ):
       try:
         op_ref = adapter.ModifyBinaryAuthorization(
-            cluster_ref, cluster.binaryAuthorization,
-            args.enable_binauthz, args.binauthz_evaluation_mode,
-            getattr(args, 'binauthz_policy', None))
+            cluster_ref,
+            cluster.binaryAuthorization,
+            args.enable_binauthz,
+            args.binauthz_evaluation_mode,
+            # TODO(b/287101245): switch this to args.binauthz_policy_bindings
+            # once that flag is GA.
+            getattr(args, 'binauthz_policy_bindings', None),
+        )
       except apitools_exceptions.HttpError as error:
         raise exceptions.HttpException(error, util.HTTP_ERROR_FORMAT)
     else:
@@ -861,7 +868,7 @@ class UpdateBeta(Update):
     flags.AddFleetProjectFlag(group, is_update=True)
     flags.AddSecurityPostureFlag(group)
     flags.AddClusterNetworkPerformanceConfigFlags(group)
-    flags.AddEnableKubeletReadonlyPortFlag(group, hidden=True)
+    flags.AddEnableKubeletReadonlyPortFlag(group, hidden=False)
     flags.AddEnableK8sBetaAPIs(group)
     flags.AddSecurityPostureEnumFlag(group)
     flags.AddWorkloadVulnScanningEnumFlag(group)
@@ -966,7 +973,7 @@ class UpdateBeta(Update):
     opts.enable_google_cloud_access = args.enable_google_cloud_access
     opts.enable_cost_allocation = args.enable_cost_allocation
     opts.binauthz_evaluation_mode = args.binauthz_evaluation_mode
-    opts.binauthz_policy = args.binauthz_policy
+    opts.binauthz_policy_bindings = args.binauthz_policy_bindings
     opts.stack_type = args.stack_type
     opts.logging_variant = args.logging_variant
     opts.additional_pod_ipv4_ranges = args.additional_pod_ipv4_ranges
@@ -1081,7 +1088,7 @@ class UpdateAlpha(Update):
     flags.AddFleetProjectFlag(group, is_update=True)
     flags.AddSecurityPostureFlag(group)
     flags.AddClusterNetworkPerformanceConfigFlags(group)
-    flags.AddEnableKubeletReadonlyPortFlag(group, hidden=True)
+    flags.AddEnableKubeletReadonlyPortFlag(group, hidden=False)
     flags.AddEnableK8sBetaAPIs(group)
     flags.AddSecurityPostureEnumFlag(group)
     flags.AddWorkloadVulnScanningEnumFlag(group)
@@ -1180,7 +1187,7 @@ class UpdateAlpha(Update):
     opts.enable_private_endpoint = args.enable_private_endpoint
     opts.enable_google_cloud_access = args.enable_google_cloud_access
     opts.binauthz_evaluation_mode = args.binauthz_evaluation_mode
-    opts.binauthz_policy = args.binauthz_policy
+    opts.binauthz_policy_bindings = args.binauthz_policy_bindings
     opts.stack_type = args.stack_type
     opts.gateway_api = args.gateway_api
     opts.logging_variant = args.logging_variant

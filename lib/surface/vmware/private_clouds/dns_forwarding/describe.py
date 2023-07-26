@@ -27,7 +27,7 @@ _DETAILED_HELP = {
         Display data associated with a VMware Engine DNS forwarding, such as the domains and their respective name servers.
       """,
     'EXAMPLES': """
-        To describe a DNS forwarding config in private cloud ``my-private-cloud'' and zone ``us-west2-a'', run:
+        To describe a DNS forwarding config in private cloud `my-private-cloud` and zone `us-west2-a`, run:
 
           $ {command} --location=us-west2-a --project=my-project --private-cloud=my-private-cloud
 

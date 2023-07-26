@@ -50,7 +50,7 @@ NETWORK_LIST_FORMAT = """ table(
         name.segment(-1):label=NAME,
         name.segment(-5):label=PROJECT,
         name.segment(-3):label=REGION,
-        ips,
+        cidr,
         uid,
         type,
         jumboFramesEnabled,
@@ -87,21 +87,8 @@ class List(base.ListCommand):
 
     if region is None:
       project = properties.VALUES.core.project.Get(required=True)
-      return (self.synthesizesNetworkInfo(net)
-              for net in client.AggregateListNetworks(
-                  project, product, limit=args.limit))
-    return (self.synthesizesNetworkInfo(net)
-            for net in client.ListNetworks(product, region))
-
-  def synthesizesNetworkInfo(self, net):
-    out = resource_projector.MakeSerializable(net)
-    out['ips'] = []
-    for ip_info in net.ips:
-      out['ips'].append(ip_info.address)
-    # We dump jsons here because when we use the built-in serialization, it
-    # sometimes adds a 'u' character before the strings and the tests break.
-    out['ips'] = json.dumps(out['ips'], sort_keys=True)
-    return out
+      return client.AggregateListNetworks(project, product, limit=args.limit)
+    return client.ListNetworks(product, region)
 
 List.detailed_help = DETAILED_HELP
 

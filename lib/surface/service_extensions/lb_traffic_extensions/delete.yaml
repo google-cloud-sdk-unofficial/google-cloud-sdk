@@ -1,0 +1,25 @@
+release_tracks: [ALPHA]
+
+help_text:
+  brief: |
+    Delete an LB Traffic Extension.
+  description: |
+    Delete the specified LB Traffic Extension.
+  example: |
+      To delete an LB Traffic Extension named 'my-traffic-extension' in
+      `europe-west1`, run:
+
+        $ {command} my-traffic-extension --location="europe-west1"
+
+arguments:
+  resource:
+    spec: !REF googlecloudsdk.command_lib.service_extensions.resources:lbTrafficExtension
+    help_text: |
+      Name of the LB Traffic Extension you want to delete.
+
+async:
+  collection: networkservices.projects.locations.operations
+
+request: &request
+  api_version: v1alpha1
+  collection: networkservices.projects.locations.lbTrafficExtensions

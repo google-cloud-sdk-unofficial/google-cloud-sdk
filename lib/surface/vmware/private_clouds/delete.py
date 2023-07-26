@@ -30,7 +30,7 @@ DETAILED_HELP = {
         """,
     'EXAMPLES':
         """
-          To mark a private cloud called ``my-private-cloud'' for deletion, run:
+          To mark a private cloud called `my-private-cloud` for deletion, run:
 
             $ {command} my-private-cloud --location=us-west2-a --project=my-project
 

@@ -26,6 +26,9 @@ from googlecloudsdk.command_lib.storage import errors_util
 from googlecloudsdk.command_lib.storage import flags
 from googlecloudsdk.command_lib.storage import storage_url
 from googlecloudsdk.command_lib.storage import wildcard_iterator
+from googlecloudsdk.command_lib.storage.resources import full_resource_formatter
+from googlecloudsdk.command_lib.storage.resources import gsutil_json_printer
+from googlecloudsdk.command_lib.storage.resources import resource_util
 from googlecloudsdk.core.resource import resource_projector
 
 
@@ -55,6 +58,7 @@ class Describe(base.DescribeCommand):
     parser.add_argument('url', help='Specifies URL of bucket to describe.')
     flags.add_additional_headers_flag(parser)
     flags.add_raw_display_flag(parser)
+    gsutil_json_printer.GsutilJsonPrinter.Register()
 
   def Run(self, args):
     if wildcard_iterator.contains_wildcard(args.url):
@@ -66,10 +70,14 @@ class Describe(base.DescribeCommand):
     errors_util.raise_error_if_not_bucket(args.command_path, url)
     bucket_resource = api_factory.get_api(url.scheme).get_bucket(
         url.bucket_name, fields_scope=cloud_api.FieldsScope.FULL)
-    # MakeSerializable will omit all the None values.
-    serialized_metadata = resource_projector.MakeSerializable(
-        bucket_resource.metadata
-    )
-    return serialized_metadata
 
-    # TODO(b/249985723): Return standardized resource if not args.raw.
+    if args.raw:
+      display_data = bucket_resource.metadata
+    else:
+      display_data = resource_util.get_parsable_display_dict_for_resource(
+          bucket_resource,
+          full_resource_formatter.BucketDisplayTitlesAndDefaults,
+      )
+    # MakeSerializable will omit all the None values.
+    serialized_display_data = resource_projector.MakeSerializable(display_data)
+    return serialized_display_data

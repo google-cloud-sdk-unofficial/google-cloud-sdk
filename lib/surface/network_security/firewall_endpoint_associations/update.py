@@ -52,7 +52,7 @@ DETAILED_HELP = {
 }
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Update(base.UpdateCommand):
   """Update a Firewall Plus endpoint association."""
 
@@ -60,6 +60,7 @@ class Update(base.UpdateCommand):
       '--clear-labels',
       '--remove-labels',
       '--update-labels',
+      '--[no-]tls-inspection-policy',
   ]
 
   @classmethod
@@ -70,29 +71,42 @@ class Update(base.UpdateCommand):
     base.ASYNC_FLAG.SetDefault(parser, True)
     labels_util.AddUpdateLabelsFlags(parser)
 
-  def Run(self, args):
-    return self._Run(args, {})
+    tls_group = parser.add_mutually_exclusive_group()
+    association_flags.AddTLSInspectionPolicy(cls.ReleaseTrack(), tls_group)
+    association_flags.AddNoTLSInspectionPolicyArg(tls_group)
 
-  def _Run(self, args, update_fields):
+  def Run(self, args):
     """Updates an association with labels and TLS inspection policy.
 
     Args:
       args: argparse.Namespace, the parsed arguments.
-      update_fields: A dictionary mapping from field names to update, to their
-        new values. 'labels' should not be set as it is taken care of in this
-        method.
 
     Returns:
       A long running operation if async is set, None otherwise.
     """
     client = association_api.Client(self.ReleaseTrack())
-
+    update_fields = {}
     association = args.CONCEPTS.firewall_endpoint_association.Parse()
     original = client.DescribeAssociation(association.RelativeName())
     if original is None:
       raise exceptions.InvalidArgumentException(
           'firewall-endpoint-association',
-          'Firewall endpoint association does not exist.')
+          'Firewall endpoint association does not exist.',
+      )
+
+    if args.IsSpecified('tls_inspection_policy'):
+      parsed_policy = args.CONCEPTS.tls_inspection_policy.Parse()
+      if parsed_policy is None:
+        raise core_exceptions.Error(
+            'TLS Inspection Policy resource path is either empty, malformed, or'
+            ' missing necessary flag `--tls-inspection-policy-region`.\nNOTE:'
+            ' TLS Inspection Policy needs to be in the same region as Firewall'
+            ' Plus endpoint resource.'
+        )
+      update_fields['tls_inspection_policy'] = parsed_policy.RelativeName()
+    elif getattr(args, 'no_tls_inspection_policy', False):
+      # We use an empty value to remove the policy.
+      update_fields['tls_inspection_policy'] = ''
 
     labels_diff = labels_util.Diff.FromUpdateArgs(args)
     if labels_diff.MayHaveUpdates():
@@ -131,45 +145,5 @@ class Update(base.UpdateCommand):
         max_wait=max_wait,
     )
 
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class UpdateAlpha(Update):
-  """Update a Firewall Plus endpoint association."""
-
-  _valid_arguments = [
-      '--clear-labels',
-      '--remove-labels',
-      '--update-labels',
-      '--[no-]tls-inspection-policy',
-  ]
-
-  @classmethod
-  def Args(cls, parser):
-    super(UpdateAlpha, cls).Args(parser)
-    tls_group = parser.add_mutually_exclusive_group()
-    association_flags.AddTLSInspectionPolicy(tls_group, cls.ReleaseTrack())
-    association_flags.AddNoTLSInspectionPolicyArg(tls_group)
-
-  def Run(self, args):
-    update_fields = {}
-
-    if args.IsSpecified('tls_inspection_policy'):
-      parsed_policy = args.CONCEPTS.tls_inspection_policy.Parse()
-      if parsed_policy is None:
-        raise core_exceptions.Error(
-            'TLS Inspection Policy resource path is either empty, malformed, or'
-            ' missing necessary flag `--tls-inspection-policy-region`.\nNOTE:'
-            ' TLS Inspection Policy needs to be in the same region as Firewall'
-            ' Plus endpoint resource.'
-        )
-      update_fields['tls_inspection_policy'] = parsed_policy.RelativeName()
-    elif getattr(args, 'no_tls_inspection_policy', False):
-      # We use an empty value to remove the policy.
-      update_fields['tls_inspection_policy'] = ''
-
-    return self._Run(
-        args,
-        update_fields=update_fields,
-    )
 
 Update.detailed_help = DETAILED_HELP

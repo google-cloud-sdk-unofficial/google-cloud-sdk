@@ -31,11 +31,11 @@ DETAILED_HELP = {
     'EXAMPLES':
         """
 
-          To update only the description of a VPC network peering named ``my-peering'' to ``Example description'', run:
+          To update only the description of a VPC network peering named `my-peering` to `Example description`, run:
 
             $ {command} my-peering --description="Example description"
 
-          In this example, the project is taken from gcloud properties core/project and location is taken as ``global''.
+          In this example, the project is taken from gcloud properties core/project and location is taken as `global`.
 
     """,
 }

@@ -1,4 +1,4 @@
-- release_tracks: [ALPHA]
+- release_tracks: [ALPHA, BETA]
 
   help_text:
     brief: |
@@ -32,6 +32,19 @@
       api_field: cluster.pscConfigs.network
       help_text: |
         The network where your cluster IP addresses are reserved, in the form of projects/{project}/global/networks/{network_id}
+    - arg_name: auth-mode
+      api_field: cluster.authorizationMode
+      help_text: |
+        Available authorization mode of a Redis cluster.
+      choices:
+      - enum_value: AUTH_MODE_DISABLED
+        arg_value: disabled
+        help_text: |
+            Authorization is disabled for the cluster.
+      - enum_value: AUTH_MODE_IAM_AUTH
+        arg_value: iam-auth
+        help_text: |
+            IAM basic authorization is enabled for the cluster.
     - arg_name: replica-count
       api_field: cluster.replicaCount
       type: int
@@ -64,4 +77,6 @@
   request:
     ALPHA:
       api_version: v1alpha1
+    BETA:
+      api_version: v1beta1
     collection: redis.projects.locations.clusters

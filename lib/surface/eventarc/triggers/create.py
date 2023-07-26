@@ -137,6 +137,18 @@ class Create(base.CreateCommand):
           args.destination_gke_service, args.destination_gke_cluster
       )
       loading_msg = 'this operation may take several minutes'
+    # destination Http Endpoint
+    elif args.IsSpecified('destination_http_endpoint_uri'):
+      destination_http_endpoint_forward_dns_requests = (
+          args.destination_http_endpoint_forward_dns_requests or False
+      )
+      destination_message = client.BuildHTTPEndpointDestinationMessage(
+          destination_http_endpoint_forward_dns_requests,
+          args.destination_http_endpoint_uri,
+          args.network_attachment,
+      )
+      dest_str = 'HTTP endpoint [{}]'.format(args.destination_http_endpoint_uri)
+      loading_msg = 'this operation may take several minutes'
     # destination Workflow
     elif args.IsSpecified('destination_workflow'):
       destination_workflow_location = self.GetDestinationLocation(
@@ -155,7 +167,6 @@ class Create(base.CreateCommand):
       destination_function_location = self.GetDestinationLocation(
           args, trigger_ref, 'destination_function_location', 'Function'
       )
-
       destination_message = client.BuildFunctionDestinationMessage(
           trigger_ref.Parent().Parent().Name(),
           args.destination_function,

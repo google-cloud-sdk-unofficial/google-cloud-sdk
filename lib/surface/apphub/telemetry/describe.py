@@ -20,6 +20,7 @@ from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.apphub import telemetry as apis
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.apphub import output
 
 _EXAMPLES = """
 To describe the telemetry, run:
@@ -38,4 +39,4 @@ class Describe(base.DescribeCommand):
   def Run(self, args):
     """Runs the describe command."""
     client = apis.TelemetryClient()
-    return client.Describe()
+    return output.GetDescribeTelemetryOutput(client.Describe())

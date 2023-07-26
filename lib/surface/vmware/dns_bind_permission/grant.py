@@ -28,7 +28,7 @@ DETAILED_HELP = {
           Grants the bind permission to the customer provided user/service account to bind their DNS zone with the intranet VPC associated with the project.
         """,
     'EXAMPLES': """
-          To grant the bind permission to the customer provided user ``user@abc.com'' to bind their DNS zone with the intranet VPC associated with project ``my-project'', run:
+          To grant the bind permission to the customer provided user `user@abc.com` to bind their DNS zone with the intranet VPC associated with project `my-project`, run:
 
             $ {command} --user=user@abc.com --project=my-project
 
@@ -38,7 +38,7 @@ DETAILED_HELP = {
 
           In the second example, the project is taken from gcloud properties core/project.
 
-          To grant the bind permission to the customer provided service account ``service-account@gserviceaccount.com'' to bind their DNS zone with the intranet VPC associated with project ``my-project'', run:
+          To grant the bind permission to the customer provided service account `service-account@gserviceaccount.com` to bind their DNS zone with the intranet VPC associated with project `my-project`, run:
 
           $ {command} --service-account=service-account@gserviceaccount.com --project=my-project
 

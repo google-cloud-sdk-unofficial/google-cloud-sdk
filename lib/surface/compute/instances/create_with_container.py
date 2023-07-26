@@ -351,7 +351,7 @@ class CreateWithContainerBeta(CreateWithContainer):
   _support_visible_core_count = True
   _support_host_error_timeout_seconds = True
   _support_numa_node_count = False
-  _support_local_ssd_recovery_timeout = False
+  _support_local_ssd_recovery_timeout = True
 
   @staticmethod
   def Args(parser):
@@ -364,6 +364,7 @@ class CreateWithContainerBeta(CreateWithContainer):
         parser, utils.COMPUTE_BETA_API_VERSION)
     instances_flags.AddHostErrorTimeoutSecondsArgs(parser)
     instances_flags.AddVisibleCoreCountArgs(parser)
+    instances_flags.AddLocalSsdRecoveryTimeoutArgs(parser)
 
   def _ValidateTrackSpecificArgs(self, args):
     instances_flags.ValidateLocalSsdFlags(args)

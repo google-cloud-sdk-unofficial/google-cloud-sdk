@@ -29,9 +29,9 @@ _DETAILED_HELP = {
         Update DNS forwarding.
       """,
     'EXAMPLES': """
-        To update a DNS forwarding config in private cloud ``my-private-cloud'' and zone ``us-west2-a'' to forward DNS requests
-        for domain ``activedirectory.my.corp'' to name servers ``192.168.20.15'' and ``192.168.20.16''
-        and for domain ``proxy.my.corp'' to nameservers ``192.168.30.15'' and ``192.168.30.16'', run:
+        To update a DNS forwarding config in private cloud `my-private-cloud` and zone `us-west2-a` to forward DNS requests
+        for domain `activedirectory.my.corp` to name servers `192.168.20.15` and `192.168.20.16`
+        and for domain `proxy.my.corp` to nameservers `192.168.30.15` and `192.168.30.16`, run:
 
           $ {command} --location=us-west2-a --project=my-project --private-cloud=my-private-cloud  --rule=domain=activedirectory.my.corp,name-servers=192.168.20.15;192.168.20.16 --rule=domain=proxy.my.corp,name-servers=192.168.30.15;192.168.30.16
 

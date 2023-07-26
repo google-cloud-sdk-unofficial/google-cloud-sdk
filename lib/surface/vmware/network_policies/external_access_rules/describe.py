@@ -29,7 +29,7 @@ DETAILED_HELP = {
         """,
     'EXAMPLES':
         """
-          To get a description of an external access firewall rule called ``my-external-access-rule'' in project ``my-project'' and region ``us-west2'' associated with network policy ``my-network-policy'', run:
+          To get a description of an external access firewall rule called `my-external-access-rule` in project `my-project` and region `us-west2` associated with network policy `my-network-policy`, run:
 
             $ {command} my-external-access-rule --network-policy=my-network-policy --location=us-west2 --project=my-project
 

@@ -69,56 +69,42 @@ def _DetailedHelp():
   }
 
 
-def _CheckMissingArgument(
-    args, support_http_keep_alive, server_tls_policy_enabled
-):
+def _CheckMissingArgument(args, server_tls_policy_enabled):
   """Checks for missing argument."""
-  http_keep_alive_args = [
-      'clear_http_keep_alive_timeout_sec',
-      'http_keep_alive_timeout_sec',
-  ]
   server_tls_policy_args = [
       'clear_server_tls_policy',
       'server_tls_policy',
   ]
-  all_args = (
-      [
-          'ssl_certificates',
-          'url_map',
-          'quic_override',
-          'ssl_policy',
-          'clear_ssl_policy',
-          'certificate_map',
-          'clear_certificate_map',
-          'clear_ssl_certificates',
-          'certificate_manager_certificates',
-      ]
-      + (http_keep_alive_args if support_http_keep_alive else [])
-      + (server_tls_policy_args if server_tls_policy_enabled else [])
-  )
-  err_http_keep_alive_args = [
-      '[--clear-http-keep-alive-timeout-sec]',
-      '[--http-keep-alive-timeout-sec]',
-  ]
+  all_args = [
+      'ssl_certificates',
+      'url_map',
+      'quic_override',
+      'ssl_policy',
+      'clear_ssl_policy',
+      'certificate_map',
+      'clear_certificate_map',
+      'clear_ssl_certificates',
+      'certificate_manager_certificates',
+      'clear_http_keep_alive_timeout_sec',
+      'http_keep_alive_timeout_sec',
+  ] + (server_tls_policy_args if server_tls_policy_enabled else [])
   err_server_tls_policy_args = [
       '[--clear-server-tls-policy]',
       '[--server-tls-policy]',
   ]
-  err_msg_args = (
-      [
-          '[--ssl-certificates]',
-          '[--url-map]',
-          '[--quic-override]',
-          '[--ssl-policy]',
-          '[--clear-ssl-policy]',
-          '[--certificate-map]',
-          '[--clear-certificate-map]',
-          '[--clear-ssl-certificates]',
-          '[--certificate-manager-certificates]',
-      ]
-      + (err_http_keep_alive_args if support_http_keep_alive else [])
-      + (err_server_tls_policy_args if server_tls_policy_enabled else [])
-  )
+  err_msg_args = [
+      '[--ssl-certificates]',
+      '[--url-map]',
+      '[--quic-override]',
+      '[--ssl-policy]',
+      '[--clear-ssl-policy]',
+      '[--certificate-map]',
+      '[--clear-certificate-map]',
+      '[--clear-ssl-certificates]',
+      '[--certificate-manager-certificates]',
+      '[--clear-http-keep-alive-timeout-sec]',
+      '[--http-keep-alive-timeout-sec]',
+  ] + (err_server_tls_policy_args if server_tls_policy_enabled else [])
   if not sum(args.IsSpecified(arg) for arg in all_args):
     raise compute_exceptions.ArgumentError(
         'You must specify at least one of %s or %s.'
@@ -133,7 +119,6 @@ def _Run(
     target_https_proxy_arg,
     url_map_arg,
     ssl_policy_arg,
-    support_http_keep_alive,
     certificate_map_ref,
     server_tls_policy_enabled,
 ):
@@ -195,12 +180,11 @@ def _Run(
     new_resource.sslPolicy = None
     cleared_fields.append('sslPolicy')
 
-  if support_http_keep_alive:
-    if args.IsSpecified('http_keep_alive_timeout_sec'):
-      new_resource.httpKeepAliveTimeoutSec = args.http_keep_alive_timeout_sec
-    elif args.IsSpecified('clear_http_keep_alive_timeout_sec'):
-      new_resource.httpKeepAliveTimeoutSec = None
-      cleared_fields.append('httpKeepAliveTimeoutSec')
+  if args.IsSpecified('http_keep_alive_timeout_sec'):
+    new_resource.httpKeepAliveTimeoutSec = args.http_keep_alive_timeout_sec
+  elif args.IsSpecified('clear_http_keep_alive_timeout_sec'):
+    new_resource.httpKeepAliveTimeoutSec = None
+    cleared_fields.append('httpKeepAliveTimeoutSec')
 
   if certificate_map_ref:
     new_resource.certificateMap = certificate_map_ref.SelfLink()
@@ -278,11 +262,10 @@ def _AddServerTLSPolicyArguments(parser):
   )
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
 class Update(base.UpdateCommand):
   """Update a target HTTPS proxy."""
 
-  _support_http_keep_alive = False
   SSL_CERTIFICATES_ARG = None
   TARGET_HTTPS_PROXY_ARG = None
   URL_MAP_ARG = None
@@ -355,19 +338,16 @@ class Update(base.UpdateCommand):
         'HTTPS', required=False
     ).AddToParser(group)
 
-    if cls._support_http_keep_alive:
-      group = parser.add_mutually_exclusive_group()
-      target_proxies_utils.AddHttpKeepAliveTimeoutSec(group)
-      target_proxies_utils.AddClearHttpKeepAliveTimeoutSec(group)
+    group = parser.add_mutually_exclusive_group()
+    target_proxies_utils.AddHttpKeepAliveTimeoutSec(group)
+    target_proxies_utils.AddClearHttpKeepAliveTimeoutSec(group)
 
     target_proxies_utils.AddQuicOverrideUpdateArgs(parser)
     if cls._server_tls_policy_enabled:
       _AddServerTLSPolicyArguments(parser)
 
   def Run(self, args):
-    _CheckMissingArgument(
-        args, self._support_http_keep_alive, self._server_tls_policy_enabled
-    )
+    _CheckMissingArgument(args, self._server_tls_policy_enabled)
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     certificate_map_ref = args.CONCEPTS.certificate_map.Parse()
     return _Run(
@@ -377,17 +357,11 @@ class Update(base.UpdateCommand):
         self.TARGET_HTTPS_PROXY_ARG,
         self.URL_MAP_ARG,
         self.SSL_POLICY_ARG,
-        self._support_http_keep_alive,
         certificate_map_ref,
         self._server_tls_policy_enabled,
     )
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class UpdateBeta(Update):
-  _support_http_keep_alive = True
-
-
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class UpdateAlpha(UpdateBeta):
+class UpdateAlpha(Update):
   _server_tls_policy_enabled = True

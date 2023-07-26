@@ -29,8 +29,8 @@ _DETAILED_HELP = {
         Update a Logging Server. Only source_type, hostname, protocol, port can be updated.
       """,
     'EXAMPLES': """
-        To update a logging-server called ``my-logging-server'' in private cloud ``my-private-cloud'' and zone ``us-west2-a'' to change ``ESXI'' source_type, ``192.168.20.15'' hostname
-        ``UDP'' protocol and ``514'' port, run:
+        To update a logging-server called `my-logging-server` in private cloud `my-private-cloud` and zone `us-west2-a` to change `ESXI` source_type, `192.168.20.15` hostname
+        `UDP` protocol and `514` port, run:
 
           $ {command} my-logging-server --location=us-west2-a --project=my-project --private-cloud=my-private-cloud --source-type=ESXI --hostname=192.168.20.15 --protocol=UDP --port=514
 

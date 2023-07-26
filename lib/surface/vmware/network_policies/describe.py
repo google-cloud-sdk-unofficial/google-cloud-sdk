@@ -29,7 +29,7 @@ DETAILED_HELP = {
         """,
     'EXAMPLES':
         """
-          To get a description of a network policy called ``my-network-policy'' in project ``my-project'' and region ``us-west2'', run:
+          To get a description of a network policy called `my-network-policy` in project `my-project` and region `us-west2`, run:
 
             $ {command} my-network-policy --location=us-west2 --project=my-project
 

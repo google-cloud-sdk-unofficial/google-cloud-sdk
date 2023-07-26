@@ -28,6 +28,8 @@ from googlecloudsdk.core import properties
 from googlecloudsdk.core import resources
 
 
+@base.Hidden
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class UpdateGitLabEnterprise(base.UpdateCommand):
   """Updates GitLab Enterprise trigger used by Google Cloud Build."""
 

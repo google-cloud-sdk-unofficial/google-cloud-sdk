@@ -1,4 +1,4 @@
-- release_tracks: [ALPHA]
+- release_tracks: [ALPHA, BETA]
 
   help_text:
     brief: |
@@ -32,4 +32,6 @@
   request:
     ALPHA:
       api_version: v1alpha1
+    BETA:
+      api_version: v1beta1
     collection: redis.projects.locations.clusters

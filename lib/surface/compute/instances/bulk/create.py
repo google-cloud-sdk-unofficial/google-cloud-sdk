@@ -346,7 +346,7 @@ class CreateBeta(Create):
   _support_enable_target_shape = True
   _support_no_address_in_networking = False
   _support_max_count_per_zone = True
-  _support_local_ssd_recovery_timeout = False
+  _support_local_ssd_recovery_timeout = True
   _support_network_queue_count = True
   _support_local_ssd_size = True
   _support_performance_monitoring_unit = False
@@ -380,6 +380,7 @@ class CreateBeta(Create):
 
     # Flags specific to Beta release track
     instances_flags.AddHostErrorTimeoutSecondsArgs(parser)
+    instances_flags.AddLocalSsdRecoveryTimeoutArgs(parser)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)

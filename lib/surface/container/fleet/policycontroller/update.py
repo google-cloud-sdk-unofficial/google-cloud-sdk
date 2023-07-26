@@ -169,10 +169,21 @@ class Update(base.UpdateCommand):
     memberships = base.ParseMembershipsPlural(
         args, search=True, prompt=True, prompt_cancel=False, autoselect=True
     )
+    memberships_short_path = [
+        fleet_util.MembershipPartialName(membership)
+        for membership in memberships
+    ]
     membership_specs_short_path = {
         fleet_util.MembershipPartialName(full_path): ms
         for full_path, ms in membership_specs.items()
+        if fleet_util.MembershipPartialName(full_path) in memberships_short_path
     }
+
+    # Remove spec entries that are not specified in this command.
+    for membership in list(membership_specs.keys()):
+      shortname = fleet_util.MembershipPartialName(membership)
+      if shortname not in memberships_short_path:
+        del membership_specs[membership]
 
     for membership in memberships:
       short_membership = fleet_util.MembershipPartialName(membership)

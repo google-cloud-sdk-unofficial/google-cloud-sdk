@@ -28,7 +28,7 @@ DETAILED_HELP = {
         Revokes the bind permission from the customer provided user/service account on the intranet VPC associated with the consumer project.
         """,
     'EXAMPLES': """
-          To revoke the bind permission to the customer provided user ``user@abc.com'' on the intranet VPC associated with the consumer project ``my-project'', run:
+          To revoke the bind permission to the customer provided user `user@abc.com` on the intranet VPC associated with the consumer project `my-project`, run:
 
             $ {command} --user=user@abc.com --project=my-project
 
@@ -38,7 +38,7 @@ DETAILED_HELP = {
 
           In the second example, the project is taken from gcloud properties core/project.
 
-          To revoke the bind permission to the customer provided service account ``service-account@gserviceaccount.com'' on the intranet VPC associated with the consumer project ``my-project'', run:
+          To revoke the bind permission to the customer provided service account `service-account@gserviceaccount.com` on the intranet VPC associated with the consumer project `my-project`, run:
 
             $ {command} --service-account=service-account@gserviceaccount.com --project=my-project
 

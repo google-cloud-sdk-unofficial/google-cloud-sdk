@@ -139,8 +139,8 @@ class Create(base.CreateCommand):
     log.status.Print(message)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class CreateBeta(Create):
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+class CreateAlphaBeta(Create):
   """Create a Compute Engine interconnect.
 
   *{command}* is used to create interconnects. An interconnect represents a
@@ -163,34 +163,7 @@ class CreateBeta(Create):
     cls.REMOTE_LOCATION_ARG.AddArgument(parser)
     cls.INTERCONNECT_ARG = flags.InterconnectArgument()
     cls.INTERCONNECT_ARG.AddArgument(parser, operation_type='create')
-    flags.AddCreateBetaArgs(parser)
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class CreateAlpha(CreateBeta):
-  """Create a Compute Engine interconnect.
-
-  *{command}* is used to create interconnects. An interconnect represents a
-  single specific connection between Google and the customer.
-  """
-
-  INTERCONNECT_ARG = None
-  LOCATION_ARG = None
-  REMOTE_LOCATION_ARG = None
-  is_cci = False
-
-  @classmethod
-  def Args(cls, parser):
-    cls.LOCATION_ARG = (
-        location_flags.InterconnectLocationArgumentForOtherResource(
-            _LOCATION_FLAG_MSG))
-    cls.LOCATION_ARG.AddArgument(parser)
-    cls.REMOTE_LOCATION_ARG = remote_location_flags.InterconnectRemoteLocationArgumentForOtherResource(
-        _REMOTE_LOCATION_FLAG_MSG)
-    cls.REMOTE_LOCATION_ARG.AddArgument(parser)
-    cls.INTERCONNECT_ARG = flags.InterconnectArgument()
-    cls.INTERCONNECT_ARG.AddArgument(parser, operation_type='create')
-    flags.AddCreateAlphaArgs(parser)
+    flags.AddCreateAlphaBetaArgs(parser)
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
@@ -212,7 +185,7 @@ class CreateAlpha(CreateBeta):
       remote_location = remote_location_ref.SelfLink()
       self.is_cci = True
 
-    return interconnect.CreateAlpha(
+    return interconnect.CreateAlphaBeta(
         description=args.description,
         interconnect_type=interconnect_type,
         requested_link_count=args.requested_link_count,

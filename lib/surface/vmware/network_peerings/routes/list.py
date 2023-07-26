@@ -39,7 +39,7 @@ DETAILED_HELP = {
 
             $ {command} --network-peering=my-peering --filter="direction=OUTGOING"
 
-          In above examples, the location is taken as ``global''.
+          In above examples, the location is taken as `global`.
     """,
 }
 

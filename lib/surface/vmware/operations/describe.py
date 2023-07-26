@@ -29,7 +29,7 @@ DETAILED_HELP = {
         """,
     'EXAMPLES':
         """
-          To get details about an operation on a private cloud with the operation ID ``operation-111-222-333-444'', run:
+          To get details about an operation on a private cloud with the operation ID `operation-111-222-333-444`, run:
 
             $ {command} operation-111-222-333-444 --location=us-central1 --project=my-project
 

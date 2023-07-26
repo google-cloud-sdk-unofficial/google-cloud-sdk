@@ -30,7 +30,7 @@
     - arg_name: view
       api_field: view
       help_text: |
-        There are two possible views: 'basic' and 'full'. The default view is 'basic'.
+        Displays spec and result data based on the argument value. The default view is 'basic'.
       choices:
       - enum_value: BASIC
         arg_value: basic

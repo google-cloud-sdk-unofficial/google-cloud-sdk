@@ -34,7 +34,7 @@ DETAILED_HELP = {
 
             $ {command} --filter="createTime > 2021-04-12T00:00:00.00Z" --sort-by=createTime
 
-          In this example, the location is taken as ``global''.
+          In this example, the location is taken as `global`.
     """,
 }
 

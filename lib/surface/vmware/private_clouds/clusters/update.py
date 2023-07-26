@@ -31,7 +31,7 @@ DETAILED_HELP = {
         """,
     'EXAMPLES':
         """
-          To resize a cluster called ``my-cluster'' in private cloud ``my-private-cloud'' and zone ``us-west2-a'' to have ``3'' nodes, run:
+          To resize a cluster called `my-cluster` in private cloud `my-private-cloud` and zone `us-west2-a` to have `3` nodes, run:
 
             $ {command} my-cluster --location=us-west2-a --project=my-project --private-cloud=my-private-cloud --node-type-config=type=standard-72,count=3
 

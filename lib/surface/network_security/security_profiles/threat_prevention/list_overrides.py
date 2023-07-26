@@ -21,6 +21,7 @@ from __future__ import unicode_literals
 from googlecloudsdk.api_lib.network_security.security_profiles.threat_prevention import sp_api
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.network_security import sp_flags
+from googlecloudsdk.core import exceptions as core_exceptions
 
 DETAILED_HELP = {
     'DESCRIPTION': """
@@ -39,7 +40,7 @@ DETAILED_HELP = {
             format organizations/{organizationID}/locations/{location}/securityProfiles/
             {security_profile_id}
             where organizationID is the organization ID to which the changes should apply,
-            location either global or region specified and
+            location - `global` specified and
             security_profile_id the Security Profile Identifier
 
         """,
@@ -57,6 +58,10 @@ class ListOverrides(base.DescribeCommand):
   def Run(self, args):
     client = sp_api.Client(self.ReleaseTrack())
     security_profile = args.CONCEPTS.security_profile.Parse()
+    if args.location != 'global':
+      raise core_exceptions.Error(
+          'Only `global` location is supported, but got: %s' % args.location
+      )
 
     return client.ListOverrides(security_profile.RelativeName())
 

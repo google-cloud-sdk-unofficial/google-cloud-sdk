@@ -6,7 +6,7 @@ help_text:
   description: |
     List all Security Profiles in the specified location.
   examples: |
-    To list Security Profiles in specifed location and organization, run:
+    To list Security Profiles in specifed location run:
 
       $ {command} --location=global
 

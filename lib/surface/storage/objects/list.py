@@ -25,8 +25,10 @@ from googlecloudsdk.command_lib.storage import errors
 from googlecloudsdk.command_lib.storage import flags
 from googlecloudsdk.command_lib.storage import storage_url
 from googlecloudsdk.command_lib.storage import wildcard_iterator
+from googlecloudsdk.command_lib.storage.resources import full_resource_formatter
 from googlecloudsdk.command_lib.storage.resources import gsutil_full_resource_formatter
 from googlecloudsdk.command_lib.storage.resources import resource_reference
+from googlecloudsdk.command_lib.storage.resources import resource_util
 from googlecloudsdk.core import log
 from googlecloudsdk.core.resource import resource_printer
 from googlecloudsdk.core.resource import resource_projector
@@ -131,10 +133,14 @@ class List(base.ListCommand):
             url,
             all_versions=True,
             fetch_encrypted_object_hashes=args.fetch_encrypted_object_hashes):
+          if args.raw:
+            display_data = resource.metadata
+          else:
+            display_data = resource_util.get_parsable_display_dict_for_resource(
+                resource, full_resource_formatter.ObjectDisplayTitlesAndDefaults
+            )
           # MakeSerializable will omit all the None values.
-          serialized_metadata = resource_projector.MakeSerializable(
-              resource.metadata
+          serialized_display_data = resource_projector.MakeSerializable(
+              display_data
           )
-          yield serialized_metadata
-
-          # TODO(b/249985723): Return standardized resource if not args.raw.
+          yield serialized_display_data

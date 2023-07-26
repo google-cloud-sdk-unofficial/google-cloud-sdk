@@ -29,7 +29,7 @@ DETAILED_HELP = {
         """,
     'EXAMPLES':
         """
-          To get a description of a private cloud called ``my-private-cloud'' in project ``my-project'' and zone ``us-west2-a'', run:
+          To get a description of a private cloud called `my-private-cloud` in project `my-project` and zone `us-west2-a`, run:
 
             $ {command} my-private-cloud --location=us-west2-a --project=my-project
 

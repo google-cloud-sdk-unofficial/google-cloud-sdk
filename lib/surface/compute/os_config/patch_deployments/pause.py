@@ -23,8 +23,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute.os_config import resource_args
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA,
-                    base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
 class Pause(base.Command):
   """Pause patch deployment in a project."""
 

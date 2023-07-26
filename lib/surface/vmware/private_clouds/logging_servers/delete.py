@@ -28,8 +28,8 @@ _DETAILED_HELP = {
         Delete logging-server from a VMware Engine private cloud.
       """,
     'EXAMPLES': """
-        To delete an logging-server called ``my-logging-server'' in private cloud
-        ``my-private-cloud'' and location ``us-east2-b'', run:
+        To delete an logging-server called `my-logging-server` in private cloud
+        `my-private-cloud` and location `us-east2-b`, run:
 
           $ {command} my-logging-server --private-cloud=my-private-cloud --location=us-east2-b --project=my-project
 

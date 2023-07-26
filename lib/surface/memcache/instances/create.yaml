@@ -155,12 +155,11 @@
       type: "googlecloudsdk.command_lib.memcache.instances_util:Parameters"
     - arg_name: reserved-ip-range-id
       api_field: instance.reservedIpRangeId
-      release_tracks: [ALPHA, BETA]
+      release_tracks: [ALPHA, BETA, GA]
       help_text: |
         Contains the name of allocated IP address ranges associated with
         the private service access connection for example, "test-default"
         associated with IP range 10.0.0.0/29.
-      hidden: true
 
   async:
     collection: memcache.projects.locations.operations

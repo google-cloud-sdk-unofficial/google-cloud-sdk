@@ -39,9 +39,7 @@ class AddBgpPeer(base.UpdateCommand):
   INSTANCE_ARG = None
 
   @classmethod
-  def _Args(
-      cls, parser, support_custom_learned_routes=False, enable_ipv6_bgp=False
-  ):
+  def _Args(cls, parser, enable_ipv6_bgp=False):
     cls.ROUTER_ARG = flags.RouterArgument()
     cls.ROUTER_ARG.AddArgument(parser)
     cls.INSTANCE_ARG = instance_flags.InstanceArgumentForRouter()
@@ -51,27 +49,18 @@ class AddBgpPeer(base.UpdateCommand):
         parser, for_add_bgp_peer=True, enable_ipv6_bgp=enable_ipv6_bgp
     )
     flags.AddReplaceCustomAdvertisementArgs(parser, 'peer')
-    if support_custom_learned_routes:
-      flags.AddReplaceCustomLearnedRoutesArgs(parser)
+    flags.AddReplaceCustomLearnedRoutesArgs(parser)
 
   @classmethod
   def Args(cls, parser):
     cls._Args(parser)
 
-  def _Run(
-      self,
-      args,
-      support_bfd_mode=False,
-      support_custom_learned_routes=False,
-      enable_ipv6_bgp=False,
-  ):
+  def _Run(self, args, support_bfd_mode=False, enable_ipv6_bgp=False):
     """Runs the command.
 
     Args:
       args: contains arguments passed to the command
       support_bfd_mode: The flag to indicate whether bfd mode is supported.
-      support_custom_learned_routes: The flag to indicate whether custom learned
-        routes are supported.
       enable_ipv6_bgp: The flag to indicate whether IPv6-based BGP is supported.
 
     Returns:
@@ -105,7 +94,6 @@ class AddBgpPeer(base.UpdateCommand):
         md5_authentication_key_name=md5_authentication_key_name,
         support_bfd_mode=support_bfd_mode,
         instance_ref=instance_ref,
-        support_custom_learned_routes=support_custom_learned_routes,
         enable_ipv6_bgp=enable_ipv6_bgp,
     )
 
@@ -124,11 +112,10 @@ class AddBgpPeer(base.UpdateCommand):
         if value is not None:
           setattr(peer, attr, value)
 
-    if support_custom_learned_routes:
-      if args.set_custom_learned_route_ranges is not None:
-        peer.customLearnedIpRanges = routers_utils.ParseCustomLearnedIpRanges(
-            messages=messages, ip_ranges=args.set_custom_learned_route_ranges
-        )
+    if args.set_custom_learned_route_ranges is not None:
+      peer.customLearnedIpRanges = routers_utils.ParseCustomLearnedIpRanges(
+          messages=messages, ip_ranges=args.set_custom_learned_route_ranges
+      )
 
     replacement.bgpPeers.append(peer)
 
@@ -202,13 +189,11 @@ class AddBgpPeerBeta(AddBgpPeer):
 
   @classmethod
   def Args(cls, parser):
-    cls._Args(parser, support_custom_learned_routes=True)
+    cls._Args(parser)
 
   def Run(self, args):
     """See base.UpdateCommand."""
-    return self._Run(
-        args, support_bfd_mode=False, support_custom_learned_routes=True
-    )
+    return self._Run(args, support_bfd_mode=False)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -220,16 +205,11 @@ class AddBgpPeerAlpha(AddBgpPeerBeta):
 
   @classmethod
   def Args(cls, parser):
-    cls._Args(parser, support_custom_learned_routes=True, enable_ipv6_bgp=True)
+    cls._Args(parser, enable_ipv6_bgp=True)
 
   def Run(self, args):
     """See base.UpdateCommand."""
-    return self._Run(
-        args,
-        support_bfd_mode=True,
-        support_custom_learned_routes=True,
-        enable_ipv6_bgp=True,
-    )
+    return self._Run(args, support_bfd_mode=True, enable_ipv6_bgp=True)
 
 
 def _CreateBgpPeerMessage(
@@ -238,7 +218,6 @@ def _CreateBgpPeerMessage(
     md5_authentication_key_name,
     support_bfd_mode=False,
     instance_ref=None,
-    support_custom_learned_routes=False,
     enable_ipv6_bgp=False,
 ):
   """Creates a BGP peer with base attributes based on flag arguments.
@@ -249,8 +228,6 @@ def _CreateBgpPeerMessage(
     md5_authentication_key_name: The md5 authentication key name.
     support_bfd_mode: The flag to indicate whether bfd mode is supported.
     instance_ref: An instance reference.
-    support_custom_learned_routes: The flag to indicate whether custom learned
-      routes are supported.
     enable_ipv6_bgp: The flag to indicate whether IPv6-based BGP is supported.
 
   Returns:
@@ -285,8 +262,7 @@ def _CreateBgpPeerMessage(
     result.ipv4NexthopAddress = args.ipv4_nexthop_address
     result.peerIpv4NexthopAddress = args.peer_ipv4_nexthop_address
 
-  if support_custom_learned_routes:
-    result.customLearnedRoutePriority = args.custom_learned_route_priority
+  result.customLearnedRoutePriority = args.custom_learned_route_priority
   if instance_ref is not None:
     result.routerApplianceInstance = instance_ref.SelfLink()
   if args.md5_authentication_key is not None:

@@ -24,7 +24,6 @@ from googlecloudsdk.core import properties
 from googlecloudsdk.core.console import console_io
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class DeleteDatabase(base.Command):
   """Delete a Google Cloud Firestore database.

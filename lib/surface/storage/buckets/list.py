@@ -24,6 +24,8 @@ from googlecloudsdk.command_lib.storage import errors
 from googlecloudsdk.command_lib.storage import flags
 from googlecloudsdk.command_lib.storage import storage_url
 from googlecloudsdk.command_lib.storage import wildcard_iterator
+from googlecloudsdk.command_lib.storage.resources import full_resource_formatter
+from googlecloudsdk.command_lib.storage.resources import resource_util
 from googlecloudsdk.core.resource import resource_projector
 
 
@@ -76,10 +78,14 @@ class List(base.ListCommand):
           url.url_string,
           fields_scope=cloud_api.FieldsScope.FULL,
           get_bucket_metadata=True):
+        if args.raw:
+          display_data = bucket.metadata
+        else:
+          display_data = resource_util.get_parsable_display_dict_for_resource(
+              bucket, full_resource_formatter.BucketDisplayTitlesAndDefaults
+          )
         # MakeSerializable will omit all the None values.
-        serialized_metadata = resource_projector.MakeSerializable(
-            bucket.metadata
+        serialized_display_data = resource_projector.MakeSerializable(
+            display_data
         )
-        yield serialized_metadata
-
-        # TODO(b/249985723): Return standardized resource if not args.raw.
+        yield serialized_display_data

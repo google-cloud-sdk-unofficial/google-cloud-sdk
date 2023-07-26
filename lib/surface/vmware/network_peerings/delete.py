@@ -30,11 +30,11 @@ DETAILED_HELP = {
         """,
     'EXAMPLES':
         """
-          To delete a VPC network peering with name ``my-peering'', run:
+          To delete a VPC network peering with name `my-peering`, run:
 
             $ {command} my-peering
 
-          In this example, the project is taken from gcloud properties core/project and location is taken as ``global''.
+          In this example, the project is taken from gcloud properties core/project and location is taken as `global`.
     """,
 }
 

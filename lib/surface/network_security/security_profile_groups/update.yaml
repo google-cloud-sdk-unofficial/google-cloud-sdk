@@ -6,7 +6,7 @@ help_text:
   description: |
     Update the details of a Security Profile Group.
   examples: |
-    To update an SPG with new Threat prevention profile `my-new-security-profile` (Either a fully specified path or `--location` and `--organization` flags for SPG should be specified), run:
+    To update a Security Profile Group with new threat prevention profile `my-new-security-profile`, run:
 
       $ {command} my-security-profile-group --organization=1234 --location=global --threat-prevention-profile=`organizations/1234/locations/global/securityProfiles/my-new-security-profile` --description='New Security Profile of type threat prevention'
 

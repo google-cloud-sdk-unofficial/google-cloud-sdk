@@ -6,7 +6,7 @@ help_text:
   description: |
     Delete the specified Security Profile.
   examples: |
-    To delete a Security Profile called `my-security-profile` which includes location as global or region specifed and organization ID, run:
+    To delete a Security Profile called `my-security-profile` run:
 
       $ {command} my-security-profile
 

@@ -28,7 +28,7 @@ DETAILED_HELP = {
           Create an external IP address that represents an allocated external IP address and its corresponding internal IP address in the private cloud.
         """,
     'EXAMPLES': """
-          To create an external IP address called ``myip'' that corresponds to the internal IP address ``165.87.54.14'' that belongs to the private cloud ``my-private-cloud'' in project ``my-project'' and location ``us-east2-b'', run:
+          To create an external IP address called `myip` that corresponds to the internal IP address `165.87.54.14` that belongs to the private cloud `my-private-cloud` in project `my-project` and location `us-east2-b`, run:
 
             $ {command} myip --project=my-project --private-cloud=my-private-cloud --location=us-east2-b --internal-ip=165.87.54.14 --description="A short description for the new external address"
 

@@ -30,7 +30,7 @@ DETAILED_HELP = {
         """,
     'EXAMPLES':
         """
-          To create a HCX activation key called ``key1'' in private cloud ``my-private-cloud'' in zone ``us-west2-a'', run:
+          To create a HCX activation key called `key1` in private cloud `my-private-cloud` in zone `us-west2-a`, run:
 
             $ {command} key1 --location=us-west2-a --project=my-project --private-cloud=my-private-cloud
 

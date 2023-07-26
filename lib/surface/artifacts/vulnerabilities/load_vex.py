@@ -38,11 +38,11 @@ class LoadVex(base.Command):
       'EXAMPLES': """\
        To load a CSAF security advisory file given an artifact in Artifact Registry and the file on disk, run:
 
-        $ {command} --uri us-east1-docker.pkg.dev/project123/repository123/someimage@sha256:49765698074d6d7baa82f --file /path/to/vex/file --location=us-east1
+        $ {command} --uri=us-east1-docker.pkg.dev/project123/repository123/someimage@sha256:49765698074d6d7baa82f --source=/path/to/vex/file --location=us-east1
 
 To load a CSAF security advisory file given an artifact with a tag and a file on disk, run:
 
-        $ {command} --uri us-east1-docker.pkg.dev/project123/repository123/someimage:latest --file /path/to/vex/file --location=us-east1
+        $ {command} --uri=us-east1-docker.pkg.dev/project123/repository123/someimage:latest --source=/path/to/vex/file --location=us-east1
     """,
   }
   ca_client = None

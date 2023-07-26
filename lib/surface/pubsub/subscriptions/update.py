@@ -28,12 +28,11 @@ from googlecloudsdk.command_lib.util.args import labels_util
 from googlecloudsdk.core import log
 
 
-def _Args(parser, enable_no_wrapper_support=False):
+def _Args(parser):
   resource_args.AddSubscriptionResourceArg(parser, 'to update.')
   flags.AddSubscriptionSettingsFlags(
       parser,
       is_update=True,
-      enable_no_wrapper_support=enable_no_wrapper_support,
   )
   labels_util.AddUpdateLabelsFlags(parser)
 
@@ -47,13 +46,12 @@ class Update(base.UpdateCommand):
     _Args(parser)
 
   @exceptions.CatchHTTPErrorRaiseHTTPException()
-  def Run(self, args, enable_no_wrapper_support=False):
+  def Run(self, args):
     """This is what gets called when the user runs this command.
 
     Args:
       args: an argparse namespace. All the arguments that were provided to this
         command invocation.
-      enable_no_wrapper_support: whether or not to add no wrapper flag support.
 
     Returns:
       A serialized object (dict) describing the results of the operation. This
@@ -75,10 +73,8 @@ class Update(base.UpdateCommand):
     clear_bigquery_config = getattr(args, 'clear_bigquery_config', None)
     clear_cloud_storage_config = getattr(args, 'clear_cloud_storage_config',
                                          None)
-    clear_push_no_wrapper_config = (
-        getattr(args, 'clear_push_no_wrapper_config', None)
-        if enable_no_wrapper_support
-        else None
+    clear_push_no_wrapper_config = getattr(
+        args, 'clear_push_no_wrapper_config', None
     )
 
     labels_update = labels_util.ProcessUpdateArgsLazy(
@@ -131,9 +127,7 @@ class Update(base.UpdateCommand):
       result = client.Patch(
           subscription_ref,
           ack_deadline=args.ack_deadline,
-          push_config=util.ParsePushConfig(
-              args, enable_no_wrapper_support=enable_no_wrapper_support
-          ),
+          push_config=util.ParsePushConfig(args),
           retain_acked_messages=args.retain_acked_messages,
           labels=labels_update.GetOrNone(),
           message_retention_duration=args.message_retention_duration,
@@ -179,8 +173,8 @@ class UpdateBeta(Update):
 
   @classmethod
   def Args(cls, parser):
-    _Args(parser, enable_no_wrapper_support=True)
+    _Args(parser)
 
   @exceptions.CatchHTTPErrorRaiseHTTPException()
   def Run(self, args):
-    return super(UpdateBeta, self).Run(args, enable_no_wrapper_support=True)
+    return super(UpdateBeta, self).Run(args)

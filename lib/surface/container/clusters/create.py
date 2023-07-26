@@ -209,32 +209,48 @@ def ParseCreateOptionsBase(args, is_autopilot, get_default, location,
       enable_dataplane_v2_metrics=get_default('enable_dataplane_v2_metrics'),
       disable_dataplane_v2_metrics=get_default('disable_dataplane_v2_metrics'),
       dataplane_v2_observability_mode=get_default(
-          'dataplane_v2_observability_mode'),
+          'dataplane_v2_observability_mode'
+      ),
       disk_type=get_default('disk_type'),
       enable_autorepair=enable_autorepair,
       enable_autoscaling=get_default('enable_autoscaling'),
       location_policy=get_default('location_policy'),
-      enable_autoupgrade=(cmd_util.GetAutoUpgrade(args) if
-                          hasattr(args, 'enable_autoupgrade')
-                          else None),
+      enable_autoupgrade=(
+          cmd_util.GetAutoUpgrade(args)
+          if hasattr(args, 'enable_autoupgrade')
+          else None
+      ),
       enable_binauthz=get_default('enable_binauthz'),
       binauthz_evaluation_mode=get_default('binauthz_evaluation_mode'),
-      binauthz_policy=get_default('binauthz_policy'),
+      binauthz_policy_bindings=get_default('binauthz_policy_bindings'),
       enable_stackdriver_kubernetes=_GetEnableStackdriver(args),
-      enable_cloud_logging=args.enable_cloud_logging if (hasattr(args, 'enable_cloud_logging') and args.IsSpecified('enable_cloud_logging')) else None,
-      enable_cloud_monitoring=args.enable_cloud_monitoring if (hasattr(args, 'enable_cloud_monitoring') and args.IsSpecified('enable_cloud_monitoring')) else None,
-      enable_workload_monitoring_eap=get_default('enable_workload_monitoring_eap'),
+      enable_cloud_logging=(
+          args.enable_cloud_logging
+          if args.IsKnownAndSpecified('enable_cloud_logging')
+          else None
+      ),
+      enable_cloud_monitoring=(
+          args.enable_cloud_monitoring
+          if args.IsKnownAndSpecified('enable_cloud_monitoring')
+          else None
+      ),
+      enable_workload_monitoring_eap=get_default(
+          'enable_workload_monitoring_eap'
+      ),
       logging=get_default('logging'),
       monitoring=get_default('monitoring'),
       enable_l4_ilb_subsetting=get_default('enable_l4_ilb_subsetting'),
       enable_ip_alias=enable_ip_alias,
       enable_intra_node_visibility=get_default('enable_intra_node_visibility'),
       enable_kubernetes_alpha=get_default('enable_kubernetes_alpha'),
-      enable_cloud_run_alpha=flags.GetLegacyCloudRunFlag('enable_{}_alpha', args, get_default),
+      enable_cloud_run_alpha=flags.GetLegacyCloudRunFlag(
+          'enable_{}_alpha', args, get_default
+      ),
       enable_legacy_authorization=get_default('enable_legacy_authorization'),
       enable_managed_prometheus=get_default('enable_managed_prometheus'),
-      enable_master_authorized_networks=\
-        get_default('enable_master_authorized_networks'),
+      enable_master_authorized_networks=get_default(
+          'enable_master_authorized_networks'
+      ),
       enable_master_global_access=get_default('enable_master_global_access'),
       enable_mesh_certificates=get_default('enable_mesh_certificates'),
       enable_network_policy=get_default('enable_network_policy'),
@@ -254,7 +270,9 @@ def ParseCreateOptionsBase(args, is_autopilot, get_default, location,
       maintenance_window=get_default('maintenance_window'),
       maintenance_window_start=get_default('maintenance_window_start'),
       maintenance_window_end=get_default('maintenance_window_end'),
-      maintenance_window_recurrence=get_default('maintenance_window_recurrence'),
+      maintenance_window_recurrence=get_default(
+          'maintenance_window_recurrence'
+      ),
       master_authorized_networks=get_default('master_authorized_networks'),
       master_ipv4_cidr=get_default('master_ipv4_cidr'),
       max_nodes=get_default('max_nodes'),
@@ -264,7 +282,9 @@ def ParseCreateOptionsBase(args, is_autopilot, get_default, location,
       total_max_nodes=get_default('total_max_nodes'),
       total_min_nodes=get_default('total_min_nodes'),
       network=get_default('network'),
-      node_disk_size_gb=utils.BytesToGb(args.disk_size) if hasattr(args, 'disk_size') else None,
+      node_disk_size_gb=utils.BytesToGb(args.disk_size)
+      if hasattr(args, 'disk_size')
+      else None,
       node_labels=get_default('node_labels'),
       node_locations=get_default('node_locations'),
       node_machine_type=get_default('machine_type'),
@@ -278,12 +298,18 @@ def ParseCreateOptionsBase(args, is_autopilot, get_default, location,
       scopes=get_default('scopes'),
       service_account=get_default('service_account'),
       services_ipv4_cidr=get_default('services_ipv4_cidr'),
-      services_secondary_range_name=get_default('services_secondary_range_name'),
+      services_secondary_range_name=get_default(
+          'services_secondary_range_name'
+      ),
       subnetwork=get_default('subnetwork'),
       system_config_from_file=get_default('system_config_from_file'),
-      private_ipv6_google_access_type=get_default('private_ipv6_google_access_type'),
+      private_ipv6_google_access_type=get_default(
+          'private_ipv6_google_access_type'
+      ),
       tags=get_default('tags'),
-      autoprovisioning_network_tags=get_default('autoprovisioning_network_tags'),
+      autoprovisioning_network_tags=get_default(
+          'autoprovisioning_network_tags'
+      ),
       threads_per_core=get_default('threads_per_core'),
       user=get_default('username'),
       metadata=metadata,
@@ -291,30 +317,60 @@ def ParseCreateOptionsBase(args, is_autopilot, get_default, location,
       max_pods_per_node=get_default('max_pods_per_node'),
       enable_tpu=get_default('enable_tpu'),
       tpu_ipv4_cidr=get_default('tpu_ipv4_cidr'),
-      resource_usage_bigquery_dataset=get_default('resource_usage_bigquery_dataset'),
-      enable_network_egress_metering=get_default('enable_network_egress_metering'),
-      enable_resource_consumption_metering=get_default('enable_resource_consumption_metering'),
+      resource_usage_bigquery_dataset=get_default(
+          'resource_usage_bigquery_dataset'
+      ),
+      enable_network_egress_metering=get_default(
+          'enable_network_egress_metering'
+      ),
+      enable_resource_consumption_metering=get_default(
+          'enable_resource_consumption_metering'
+      ),
       database_encryption_key=get_default('database_encryption_key'),
       workload_pool=get_default('workload_pool'),
       identity_provider=get_default('identity_provider'),
       workload_metadata=get_default('workload_metadata'),
       workload_metadata_from_node=get_default('workload_metadata_from_node'),
-      enable_vertical_pod_autoscaling=get_default('enable_vertical_pod_autoscaling'),
-      enable_experimental_vertical_pod_autoscaling=get_default('enable_experimental_vertical_pod_autoscaling'),
+      enable_vertical_pod_autoscaling=get_default(
+          'enable_vertical_pod_autoscaling'
+      ),
+      enable_experimental_vertical_pod_autoscaling=get_default(
+          'enable_experimental_vertical_pod_autoscaling'
+      ),
       enable_autoprovisioning=get_default('enable_autoprovisioning'),
       autoprovisioning_config_file=get_default('autoprovisioning_config_file'),
-      autoprovisioning_service_account=get_default('autoprovisioning_service_account'),
+      autoprovisioning_service_account=get_default(
+          'autoprovisioning_service_account'
+      ),
       autoprovisioning_scopes=get_default('autoprovisioning_scopes'),
       autoprovisioning_locations=get_default('autoprovisioning_locations'),
-      autoprovisioning_max_surge_upgrade=get_default('autoprovisioning_max_surge_upgrade'),
-      autoprovisioning_max_unavailable_upgrade=get_default('autoprovisioning_max_unavailable_upgrade'),
-      enable_autoprovisioning_surge_upgrade=get_default('enable_autoprovisioning_surge_upgrade'),
-      enable_autoprovisioning_blue_green_upgrade=get_default('enable_autoprovisioning_blue_green_upgrade'),
-      autoprovisioning_standard_rollout_policy=get_default('autoprovisioning_standard_rollout_policy'),
-      autoprovisioning_node_pool_soak_duration=get_default('autoprovisioning_node_pool_soak_duration'),
-      enable_autoprovisioning_autorepair=get_default('enable_autoprovisioning_autorepair'),
-      enable_autoprovisioning_autoupgrade=get_default('enable_autoprovisioning_autoupgrade'),
-      autoprovisioning_min_cpu_platform=get_default('autoprovisioning_min_cpu_platform'),
+      autoprovisioning_max_surge_upgrade=get_default(
+          'autoprovisioning_max_surge_upgrade'
+      ),
+      autoprovisioning_max_unavailable_upgrade=get_default(
+          'autoprovisioning_max_unavailable_upgrade'
+      ),
+      enable_autoprovisioning_surge_upgrade=get_default(
+          'enable_autoprovisioning_surge_upgrade'
+      ),
+      enable_autoprovisioning_blue_green_upgrade=get_default(
+          'enable_autoprovisioning_blue_green_upgrade'
+      ),
+      autoprovisioning_standard_rollout_policy=get_default(
+          'autoprovisioning_standard_rollout_policy'
+      ),
+      autoprovisioning_node_pool_soak_duration=get_default(
+          'autoprovisioning_node_pool_soak_duration'
+      ),
+      enable_autoprovisioning_autorepair=get_default(
+          'enable_autoprovisioning_autorepair'
+      ),
+      enable_autoprovisioning_autoupgrade=get_default(
+          'enable_autoprovisioning_autoupgrade'
+      ),
+      autoprovisioning_min_cpu_platform=get_default(
+          'autoprovisioning_min_cpu_platform'
+      ),
       min_cpu=get_default('min_cpu'),
       max_cpu=get_default('max_cpu'),
       min_memory=get_default('min_memory'),
@@ -338,7 +394,9 @@ def ParseCreateOptionsBase(args, is_autopilot, get_default, location,
       enable_image_streaming=get_default('enable_image_streaming'),
       spot=get_default('spot'),
       enable_service_externalips=get_default('enable_service_externalips'),
-      disable_pod_cidr_overprovision=get_default('disable_pod_cidr_overprovision'),
+      disable_pod_cidr_overprovision=get_default(
+          'disable_pod_cidr_overprovision'
+      ),
       stack_type=get_default('stack_type'),
       ipv6_access_type=get_default('ipv6_access_type'),
       private_endpoint_subnetwork=get_default('private_endpoint_subnetwork'),
@@ -350,18 +408,20 @@ def ParseCreateOptionsBase(args, is_autopilot, get_default, location,
       placement_type=get_default('placement_type'),
       placement_policy=get_default('placement_policy'),
       enable_security_posture=get_default('enable_security_posture'),
-      network_performance_config=get_default(
-          'network_performance_configs'),
+      network_performance_config=get_default('network_performance_configs'),
       enable_insecure_kubelet_readonly_port=get_default(
-          'enable_insecure_kubelet_readonly_port'),
+          'enable_insecure_kubelet_readonly_port'
+      ),
       enable_k8s_beta_apis=getattr(args, 'enable_kubernetes_unstable_apis'),
       security_posture=get_default('security_posture'),
       workload_vulnerability_scanning=get_default(
-          'workload_vulnerability_scanning'),
+          'workload_vulnerability_scanning'
+      ),
       enable_runtime_vulnerability_insight=get_default(
-          'enable_runtime_vulnerability_insight'),
-      workload_policies=get_default('workload_policies')
-      )
+          'enable_runtime_vulnerability_insight'
+      ),
+      workload_policies=get_default('workload_policies'),
+  )
 
 
 GA = 'ga'
@@ -623,7 +683,7 @@ flags_to_add = {
         'clusterNetworkPerformanceConfig':
             flags.AddClusterNetworkPerformanceConfigFlags,
         'enableKubeletReadonlyPort':
-            (lambda p: flags.AddEnableKubeletReadonlyPortFlag(p, hidden=True)),
+            (lambda p: flags.AddEnableKubeletReadonlyPortFlag(p, hidden=False)),
         'enableK8sBetaApis':
             flags.AddEnableK8sBetaAPIs,
         'securityPosture':
@@ -859,7 +919,7 @@ flags_to_add = {
         'clusterNetworkPerformanceConfig':
             flags.AddClusterNetworkPerformanceConfigFlags,
         'enableKubeletReadonlyPort':
-            (lambda p: flags.AddEnableKubeletReadonlyPortFlag(p, hidden=True)),
+            (lambda p: flags.AddEnableKubeletReadonlyPortFlag(p, hidden=False)),
         'enableK8sBetaApis':
             flags.AddEnableK8sBetaAPIs,
         'securityPosture':
@@ -1107,7 +1167,7 @@ flags_to_add = {
         'clusterNetworkPerformanceConfig':
             flags.AddClusterNetworkPerformanceConfigFlags,
         'enableKubeletReadonlyPort':
-            (lambda p: flags.AddEnableKubeletReadonlyPortFlag(p, hidden=True)),
+            (lambda p: flags.AddEnableKubeletReadonlyPortFlag(p, hidden=False)),
         'enableK8sBetaApis':
             flags.AddEnableK8sBetaAPIs,
         'securityPosture':

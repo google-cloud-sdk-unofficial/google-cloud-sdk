@@ -29,7 +29,7 @@ DETAILED_HELP = {
         """,
     'EXAMPLES':
         """
-          To get a description of a network called ``my-network'' of type ``STANDARD'' in project ``my-project'' and region ``global'', run:
+          To get a description of a network called `my-network` of type `STANDARD` in project `my-project` and region `global`, run:
 
             $ {command} my-network --location=global --project=my-project
 
@@ -37,9 +37,9 @@ DETAILED_HELP = {
 
             $ {command} my-network
 
-          In the second example, the project is taken from gcloud properties core/project and the location is taken as ``global''.
+          In the second example, the project is taken from gcloud properties core/project and the location is taken as `global`.
 
-          To get a description of a network called ``my-network'' of type ``LEGACY'' in project ``my-project'' and region ``us-west2'', run:
+          To get a description of a network called `my-network` of type `LEGACY` in project `my-project` and region `us-west2`, run:
 
             $ {command} my-network --location=us-west2 --project=my-project
 
@@ -47,7 +47,7 @@ DETAILED_HELP = {
 
             $ {command} my-network --location=us-west2
 
-          In the last example, the project is taken from gcloud properties core/project. For VMware Engine networks of type ``LEGACY'', you must always specify a region as the location.
+          In the last example, the project is taken from gcloud properties core/project. For VMware Engine networks of type `LEGACY`, you must always specify a region as the location.
     """,
 }
 

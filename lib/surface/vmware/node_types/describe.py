@@ -29,7 +29,7 @@ DETAILED_HELP = {
         """,
     'EXAMPLES':
         """
-          To describe node type ``standard-72'' in location ``us-west1-a'', run:
+          To describe node type `standard-72` in location `us-west1-a`, run:
 
             $ {command} standard-72 --location=us-central1 --project=my-project
 

@@ -1131,7 +1131,7 @@ class CreateBeta(Create):
   _support_region_instance_template = False
   _support_network_attachments = False
   _support_replica_zones = False
-  _support_local_ssd_recovery_timeout = False
+  _support_local_ssd_recovery_timeout = True
   _support_local_ssd_size = True
   _support_network_queue_count = True
   _support_performance_monitoring_unit = False

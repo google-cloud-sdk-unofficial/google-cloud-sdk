@@ -139,14 +139,18 @@ class GenerateCommand(base.Command):
   ):
     """Validates that the given flags can be parsed by the argparse parser."""
 
-    found_project = False
+    found_parent = False
     if command_arguments:
       for command_arg in command_arguments:
-        if '--project' in command_arg:
-          found_project = True
+        if (
+            '--project' in command_arg
+            or '--folder' in command_arg
+            or '--organization' in command_arg
+        ):
+          found_parent = True
     if not command_arguments:
       command_arguments = []
-    if not found_project:
+    if not found_parent:
       command_arguments.append('--project=myproject')
     try:
       command_node._parser.parse_args(command_arguments, raise_error=True)  # pylint: disable=protected-access

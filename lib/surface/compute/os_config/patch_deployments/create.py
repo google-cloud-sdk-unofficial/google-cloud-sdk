@@ -26,8 +26,6 @@ from googlecloudsdk.core import properties
 
 
 def _GetReleaseTrackText(release_track):
-  if release_track == base.ReleaseTrack.ALPHA:
-    return 'alpha '
   if release_track == base.ReleaseTrack.BETA:
     return 'beta '
   else:
@@ -98,15 +96,3 @@ class CreateBeta(Create):
   @staticmethod
   def Args(parser):
     flags.AddPatchDeploymentsCreateFlags(parser, api_version='v1beta')
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class CreateAlpha(CreateBeta):
-  """Create a patch deployment for a project."""
-
-  detailed_help = _GetDetailedHelp(release_track=base.ReleaseTrack.ALPHA)
-
-  @staticmethod
-  def Args(parser):
-    flags.AddPatchDeploymentsCreateFlags(parser, api_version='v1alpha2')
-

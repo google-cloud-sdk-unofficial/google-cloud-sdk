@@ -41,6 +41,10 @@ class DataQuality(base.Command):
             related data source and generates queries based on the rules and runs against
             the data to get data quality check results.
 
+            E.g., command to create a data quality scan `data-quality-datascan`
+            in project `test-project` located in `us-central1` with data spec file `data-quality-spec.json`:
+            dataplex datascans create data-quality data-quality-datascan --project=test-project --location=us-central1 --data-quality-spec-file="data-quality-spec.json"
+
           """,
   }
 
@@ -85,7 +89,8 @@ class DataQuality(base.Command):
         required=True,
         help=(
             'path to the JSON/YAML file containing the spec for'
-            ' the data quality scan.'
+            ' the data quality scan. The json representation reference:'
+            ' https://cloud.google.com/dataplex/docs/reference/rest/v1/DataQualitySpec'
         ),
     )
     execution_spec = parser.add_group(
@@ -108,7 +113,7 @@ class DataQuality(base.Command):
         type=bool,
         help=(
             'If set, the scan runs one-time shortly after data quality scan'
-            ' Creation.'
+            ' creation.'
         ),
     )
     trigger.add_argument(

@@ -31,9 +31,11 @@
           --attribute-mapping="google.subject=assertion.sub" \
           --attribute-condition="true" \
           --client-id="client-id" \
+          --client-secret-value="client-secret" \
           --issuer-uri="https://test-idp.com" \
-          --web-sso-response-type=id-token \
-          --web-sso-assertion-claims-behavior=only-id-token-claims
+          --web-sso-response-type="code" \
+          --web-sso-assertion-claims-behavior="merge-user-info-over-id-token-claims" \
+          --web-sso-additional-scopes="groups,photos"
 
   request:
     collection: iam.locations.workforcePools.providers

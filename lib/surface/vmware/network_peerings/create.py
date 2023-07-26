@@ -32,11 +32,11 @@ DETAILED_HELP = {
         """,
     'EXAMPLES':
         """
-          To create a VPC network peering called ``new-peering'' that connects the VMware Engine network ``my-vmware-engine-network'' with another VMware Engine network ``another-vmware-engine-network'' from project ``another-project'', run:
+          To create a VPC network peering called `new-peering` that connects the VMware Engine network `my-vmware-engine-network` with another VMware Engine network `another-vmware-engine-network` from project `another-project`, run:
 
           $ {command} new-peering --vmware-engine-network=my-vmware-engine-network --peer-network=another-vmware-engine-network --peer-network-type=VMWARE_ENGINE_NETWORK --peer-project=another-project
 
-          In this example, the project is taken from gcloud properties core/project and location is taken as ``global''.
+          In this example, the project is taken from gcloud properties core/project and location is taken as `global`.
     """,
 }
 
@@ -52,8 +52,13 @@ class Create(base.CreateCommand):
   def Args(parser):
     """Register flags for this command."""
     peer_network_choices = [
-        'PEER_NETWORK_TYPE_UNSPECIFIED', 'STANDARD', 'VMWARE_ENGINE_NETWORK',
-        'PRIVATE_SERVICES_ACCESS', 'NETAPP_CLOUD_VOLUMES', 'THIRD_PARTY_SERVICE'
+        'PEER_NETWORK_TYPE_UNSPECIFIED',
+        'STANDARD',
+        'VMWARE_ENGINE_NETWORK',
+        'PRIVATE_SERVICES_ACCESS',
+        'NETAPP_CLOUD_VOLUMES',
+        'THIRD_PARTY_SERVICE',
+        'DELL_POWERSCALE',
     ]
     flags.AddNetworkPeeringToParser(parser, positional=True)
     base.ASYNC_FLAG.AddToParser(parser)
@@ -83,7 +88,9 @@ class Create(base.CreateCommand):
         * PRIVATE_SERVICES_ACCESS: Peering connection used for establishing private services access.
         * NETAPP_CLOUD_VOLUMES: Peering connection used for connecting to NetApp Cloud Volumes.
         * THIRD_PARTY_SERVICE: Peering connection used for connecting to third-party services. Most third-party services require manual setup of reverse peering on the VPC network associated with the third-party service.
-        """)
+        * DELL_POWERSCALE: Peering connection used for connecting to Dell PowerScale Filers.
+        """,
+    )
     parser.add_argument(
         '--peer-project',
         help="""\

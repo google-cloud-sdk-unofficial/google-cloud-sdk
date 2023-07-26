@@ -30,7 +30,7 @@ DETAILED_HELP = {
         """,
     'EXAMPLES':
         """
-          To reset sign-in credentials for NSX in private cloud ``my-private-cloud'', run:
+          To reset sign-in credentials for NSX in private cloud `my-private-cloud`, run:
 
 
             $ {command} --private-cloud=my-private-cloud --location=us-west2-a --project=my-project

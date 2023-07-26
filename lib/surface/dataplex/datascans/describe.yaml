@@ -18,3 +18,17 @@
       help_text: |
         Arguments and flags that define the Dataplex Datascan you want to retrieve.
       spec: !REF googlecloudsdk.command_lib.dataplex.resources:datascan
+    params:
+    - arg_name: view
+      api_field: view
+      help_text: |
+        Displays spec data based on the argument value. The default view is 'basic'.
+      choices:
+      - enum_value: BASIC
+        arg_value: basic
+        help_text: |
+          Does not include spec data in response.
+      - enum_value: FULL
+        arg_value: full
+        help_text: |
+          Includes spec data in response.

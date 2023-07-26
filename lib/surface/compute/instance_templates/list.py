@@ -23,6 +23,7 @@ from googlecloudsdk.api_lib.compute import lister
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute import completers
 from googlecloudsdk.command_lib.compute.instance_templates import flags
+from googlecloudsdk.command_lib.util.apis import arg_utils
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
@@ -38,7 +39,7 @@ class List(base.ListCommand):
   def ParseFlags(self, args, resources):
     return lister.ParseNamesAndRegexpFlags(args, resources)
 
-  def GetListImplementation(self, client):
+  def GetListImplementation(self, client, args, request_data):
     return lister.GlobalLister(
         client,
         service=client.apitools_client.instanceTemplates,
@@ -49,7 +50,7 @@ class List(base.ListCommand):
     client = holder.client
 
     request_data = self.ParseFlags(args, holder.resources)
-    list_implementation = self.GetListImplementation(client)
+    list_implementation = self.GetListImplementation(client, args, request_data)
 
     return lister.Invoke(request_data, list_implementation)
 
@@ -66,16 +67,43 @@ class ListAlpha(List):
     parser.display_info.AddFormat(flags.DEFAULT_LIST_FORMAT)
     lister.AddMultiScopeListerFlags(parser, regional=True, global_=True)
     parser.display_info.AddCacheUpdater(completers.InstanceTemplatesCompleter)
+    parser.add_argument(
+        '--view',
+        choices={
+            'FULL': 'Include everything in instance template',
+            'BASIC': (
+                'Default view of instance, Including everything except Partner'
+                ' Metadata.'
+            ),
+        },
+        type=arg_utils.ChoiceToEnumName,
+        help='specify Instance view',
+    )
 
   def ParseFlags(self, args, resources):
     return lister.ParseMultiScopeFlags(args, resources)
 
-  def GetListImplementation(self, client):
+  def _GetInstanceView(self, view, request_message):
+    if view == 'FULL':
+      return request_message.ViewValueValuesEnum.FULL
+    elif view == 'BASIC':
+      return request_message.ViewValueValuesEnum.BASIC
+    return None
+
+  def _getRequest(self, messages, request_data):
+    if isinstance(request_data.scope_set, lister.RegionSet):
+      return messages.ComputeRegionInstanceTemplatesListRequest
+    return messages.ComputeInstanceTemplatesListRequest
+
+  def GetListImplementation(self, client, args, request_data):
     return lister.MultiScopeLister(
         client,
         regional_service=client.apitools_client.regionInstanceTemplates,
         global_service=client.apitools_client.instanceTemplates,
         aggregation_service=client.apitools_client.instanceTemplates,
+        instance_view_flag=self._GetInstanceView(
+            args.view, self._getRequest(client.messages, request_data)
+        ),
     )
 
 

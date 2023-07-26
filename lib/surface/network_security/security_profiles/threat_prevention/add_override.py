@@ -43,7 +43,7 @@ DETAILED_HELP = {
             format organizations/{organizationID}/locations/{location}/securityProfiles/
             {security_profile_id}
             where organizationID is the organization ID to which the changes should apply,
-            location either global or region specified and
+            location - `global` specified and
             security_profile_id the Security Profile Identifier
 
         """,
@@ -67,7 +67,6 @@ class AddOverride(base.UpdateCommand):
     security_profile = args.CONCEPTS.security_profile.Parse()
     is_async = args.async_
 
-    update_mask = ''
     overrides = []
 
     if not args.IsSpecified('action'):
@@ -88,6 +87,11 @@ class AddOverride(base.UpdateCommand):
     else:
       raise core_exceptions.Error(
           'Either --severities or --threat-ids must be specified'
+      )
+
+    if args.location != 'global':
+      raise core_exceptions.Error(
+          'Only `global` location is supported, but got: %s' % args.location
       )
 
     response = client.ModifyOverride(
@@ -117,5 +121,6 @@ class AddOverride(base.UpdateCommand):
         # the operation output.
         has_result=False,
     )
+
 
 AddOverride.detailed_help = DETAILED_HELP

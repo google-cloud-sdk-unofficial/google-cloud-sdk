@@ -30,7 +30,7 @@ DETAILED_HELP = {
         """,
     'EXAMPLES':
         """
-          To list all the peering routes of private connection called ``my-private-connection'' in project ``my-project'' and region ``us-west1'', run:
+          To list all the peering routes of private connection called `my-private-connection` in project `my-project` and region `us-west1`, run:
 
             $ {command} --private-connection=my-private-connection --location=us-west1 --project=my-project
 

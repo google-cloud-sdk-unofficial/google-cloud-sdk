@@ -35,7 +35,6 @@ def _Run(
     args,
     enable_labels=False,
     legacy_output=False,
-    enable_no_wrapper_support=False
 ):
   """Creates one or more subscriptions."""
   flags.ValidateDeadLetterPolicy(args)
@@ -43,9 +42,7 @@ def _Run(
   client = subscriptions.SubscriptionsClient()
 
   topic_ref = args.CONCEPTS.topic.Parse()
-  push_config = util.ParsePushConfig(
-      args, enable_no_wrapper_support=enable_no_wrapper_support
-  )
+  push_config = util.ParsePushConfig(args)
   enable_message_ordering = getattr(args, 'enable_message_ordering', None)
   filter_string = getattr(args, 'message_filter', None)
   dead_letter_topic = getattr(args, 'dead_letter_topic', None)
@@ -192,7 +189,7 @@ class CreateBeta(Create):
     subscription = resource_args.CreateSubscriptionResourceArg(
         'to create.', plural=True)
     resource_args.AddResourceArgs(parser, [topic, subscription])
-    flags.AddSubscriptionSettingsFlags(parser, enable_no_wrapper_support=True)
+    flags.AddSubscriptionSettingsFlags(parser)
     labels_util.AddCreateLabelsFlags(parser)
 
   def Run(self, args):
@@ -202,5 +199,4 @@ class CreateBeta(Create):
         args,
         enable_labels=True,
         legacy_output=legacy_output,
-        enable_no_wrapper_support=True
     )

@@ -31,7 +31,7 @@ _TRACE = flags.DEFINE_string(
     'A tracing token '
     'to include in api requests.'
 )
-_HTTPLIB2_DEBUGLEVEL = flags.DEFINE_string(
+_HTTPLIB2_DEBUGLEVEL = flags.DEFINE_integer(
     'httplib2_debuglevel',
     None,
     (

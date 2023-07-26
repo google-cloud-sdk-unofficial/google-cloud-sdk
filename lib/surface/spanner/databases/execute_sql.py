@@ -26,6 +26,7 @@ from googlecloudsdk.calliope import exceptions as c_exceptions
 from googlecloudsdk.command_lib.spanner import resource_args
 from googlecloudsdk.command_lib.spanner import sql
 from googlecloudsdk.command_lib.spanner.sql import QueryHasDml
+from googlecloudsdk.command_lib.util.apis import arg_utils
 from googlecloudsdk.core import log
 from googlecloudsdk.core import resources
 
@@ -102,6 +103,9 @@ def AddBaseArgs(parser):
       help='Maximum time to wait for the SQL query to complete. See $ gcloud '
            'topic datetimes for information on duration formats.')
 
+  msgs = apis.GetMessagesModule('spanner', 'v1')
+  GetRequestPriorityMapper(msgs).choice_arg.AddToParser(parser)
+
   timestamp_bound_group = parser.add_argument_group(
       mutex=True,
       help='Read-only query timestamp bound. The default is --strong. See '
@@ -117,6 +121,20 @@ def AddBaseArgs(parser):
   parser.add_argument(
       '--database-role',
       help='Database role user assumes while accessing the database.')
+
+
+def GetRequestPriorityMapper(messages):
+  return arg_utils.ChoiceEnumMapper(
+      '--priority',
+      messages.RequestOptions.PriorityValueValuesEnum,
+      custom_mappings={
+          'PRIORITY_LOW': 'low',
+          'PRIORITY_MEDIUM': 'medium',
+          'PRIORITY_HIGH': 'high',
+          'PRIORITY_UNSPECIFIED': 'unspecified',
+      },
+      help_str='The priority for the execute SQL request.',
+  )
 
 
 @base.UnicodeIsSupported
@@ -139,6 +157,10 @@ class Query(base.Command):
     Returns:
       Some value that we want to have printed later.
     """
+    msgs = apis.GetMessagesModule('spanner', 'v1')
+    request_options = msgs.RequestOptions(
+        priority=GetRequestPriorityMapper(msgs).GetEnumForChoice(args.priority)
+    )
     read_only_options = self.ParseReadOnlyOptions(args)
     session = CreateSession(args, args.database_role)
     try:
@@ -147,6 +169,7 @@ class Query(base.Command):
           args.query_mode,
           session,
           read_only_options,
+          request_options,
           args.enable_partitioned_dml,
           args.timeout)
     finally:

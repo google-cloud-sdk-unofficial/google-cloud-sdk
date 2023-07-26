@@ -27,7 +27,7 @@ _DETAILED_HELP = {
         Display data associated with a VMware Engine logging-server, such as its host name, port, protocol, and source type.
       """,
     'EXAMPLES': """
-        To describe a logging-server called ``my-logging-server'' in private cloud ``my-private-cloud'' and zone ``us-west2-a'', run:
+        To describe a logging-server called `my-logging-server` in private cloud `my-private-cloud` and zone `us-west2-a`, run:
 
           $ {command} my-logging-server --location=us-west2-a --project=my-project --private-cloud=my-private-cloud
 

@@ -1,5 +1,5 @@
 {
-  "CLI_VERSION": "2.0.93",
+  "CLI_VERSION": "2.0.94",
   "VERSION": "1",
   "capsule": "",
   "commands": {
@@ -650,7 +650,7 @@
       "attr": {},
       "category": "",
       "default": "",
-      "description": "Instruct httplib2 to print debugging messages by setting debuglevel to the given value.",
+      "description": "Instruct httplib2 to print debugging messages by setting debuglevel to the given value. (an integer)",
       "group": "",
       "is_global": true,
       "is_hidden": false,

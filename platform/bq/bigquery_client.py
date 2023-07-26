@@ -3330,6 +3330,7 @@ class BigqueryClient(object):
           'commitmentEndTime',
           'multiRegionAuxiliary',
           'edition',
+          'isFlatRate',
       ))
     elif reference_type == ApiClientHelper.BetaReservationAssignmentReference:
       formatter.AddColumns(('name', 'jobType', 'assignee', 'priority'))
@@ -3704,10 +3705,13 @@ class BigqueryClient(object):
     return 'TABLE<{}>'.format(', '.join(columns))
 
   @staticmethod
-  def FormatRoutineArgumentInfo(argument):
+  def FormatRoutineArgumentInfo(routine_type, argument):
     """Converts a routine argument to a pretty string representation.
 
     Arguments:
+      routine_type: The routine type of the corresponding routine. It's of
+        string type corresponding to the string value of enum
+        cloud.bigquery.v2.Routine.RoutineType.
       argument: Routine argument dict to format.
 
     Returns:
@@ -3720,9 +3724,18 @@ class BigqueryClient(object):
 
     if 'name' in argument:
       argument_mode = ''
-      if ('mode' in argument):
+      if 'mode' in argument:
         argument_mode = argument['mode'] + ' '
-      return '{}{} {}'.format(argument_mode, argument['name'], display_type)
+      if (
+          routine_type == 'AGGREGATE_FUNCTION'
+          and 'isAggregate' in argument
+          and not argument['isAggregate']
+      ):
+        return '{}{} {} {}'.format(
+            argument_mode, argument['name'], display_type, 'NOT AGGREGATE'
+        )
+      else:
+        return '{}{} {}'.format(argument_mode, argument['name'], display_type)
     else:
       return display_type
 
@@ -3745,9 +3758,14 @@ class BigqueryClient(object):
     return_table_type = routine_info.get('returnTableType')
     if 'arguments' in routine_info:
       argument_list = routine_info['arguments']
-      signature = '({})'.format(', '.join(
-          BigqueryClient.FormatRoutineArgumentInfo(argument)
-          for argument in argument_list))
+      signature = '({})'.format(
+          ', '.join(
+              BigqueryClient.FormatRoutineArgumentInfo(
+                  routine_info['routineType'], argument
+              )
+              for argument in argument_list
+          )
+      )
     if return_type:
       signature = '{} -> {}'.format(
           signature, BigqueryClient.FormatRoutineDataType(return_type))
@@ -4885,12 +4903,25 @@ class BigqueryClient(object):
 
   def DatasetExists(self, reference):
     _Typecheck(
-        reference, ApiClientHelper.DatasetReference, method='DatasetExists')
+        reference, ApiClientHelper.DatasetReference, method='DatasetExists'
+    )
     try:
       self.apiclient.datasets().get(**dict(reference)).execute()
       return True
     except BigqueryNotFoundError:
       return False
+
+
+  def GetTableRegion(self, reference):
+    _Typecheck(
+        reference, ApiClientHelper.TableReference, method='GetTableRegion'
+    )
+    try:
+      return (
+          self.apiclient.tables().get(**dict(reference)).execute()['location']
+      )
+    except BigqueryNotFoundError:
+      return None
 
   def TableExists(self, reference):
     _Typecheck(reference, ApiClientHelper.TableReference, method='TableExists')
@@ -5185,6 +5216,7 @@ class BigqueryClient(object):
                            params=None,
                            auth_info=None,
                            service_account_name=None,
+                           destination_kms_key=None,
                            notification_pubsub_topic=None,
                            schedule_args=None):
     """Updates a transfer config.
@@ -5201,6 +5233,7 @@ class BigqueryClient(object):
         update credentials.
       service_account_name: The service account that the user could act as and
         used as the credential to create transfer runs from the transfer config.
+      destination_kms_key: Optional KMS key for encryption.
       notification_pubsub_topic: The Pub/Sub topic where notifications will be
         sent after transfer runs associated with this transfer config finish.
       schedule_args: Optional parameters to customize data transfer schedule.
@@ -5276,6 +5309,12 @@ class BigqueryClient(object):
     if service_account_name:
       update_mask.append('service_account_name')
 
+    if destination_kms_key:
+      update_items['encryption_configuration'] = {
+          'kms_key_name': {'value': destination_kms_key}
+      }
+      update_mask.append('encryption_configuration.kms_key_name')
+
     transfer_client.projects().locations().transferConfigs().patch(
         body=update_items,
         name=reference.transferConfigName,
@@ -5297,6 +5336,7 @@ class BigqueryClient(object):
                            service_account_name=None,
                            notification_pubsub_topic=None,
                            schedule_args=None,
+                           destination_kms_key=None,
                            location=None):
     """Create a transfer config corresponding to TransferConfigReference.
 
@@ -5318,6 +5358,7 @@ class BigqueryClient(object):
       notification_pubsub_topic: The Pub/Sub topic where notifications will be
         sent after transfer runs associated with this transfer config finish.
       schedule_args: Optional parameters to customize data transfer schedule.
+      destination_kms_key: Optional KMS key for encryption.
       location: The location where the new transfer config will run.
 
     Raises:
@@ -5370,6 +5411,11 @@ class BigqueryClient(object):
 
     if notification_pubsub_topic:
       create_items['notification_pubsub_topic'] = notification_pubsub_topic
+
+    if destination_kms_key:
+      create_items['encryption_configuration'] = {
+          'kms_key_name': {'value': destination_kms_key}
+      }
 
     new_transfer_config = transfer_client.projects().locations(
     ).transferConfigs().create(
@@ -5432,31 +5478,33 @@ class BigqueryClient(object):
       raise BigqueryError('Data source \'%s\' does not'
                           ' support refresh window days.' % data_source)
 
-  def UpdateTable(self,
-                  reference,
-                  schema=None,
-                  description=None,
-                  display_name=None,
-                  expiration=None,
-                  view_query=None,
-                  materialized_view_query=None,
-                  enable_refresh=None,
-                  refresh_interval_ms=None,
-                  max_staleness=None,
-                  external_data_config=None,
-                  view_udf_resources=None,
-                  use_legacy_sql=None,
-                  labels_to_set=None,
-                  label_keys_to_remove=None,
-                  time_partitioning=None,
-                  range_partitioning=None,
-                  clustering=None,
-                  require_partition_filter=None,
-                  etag=None,
-                  encryption_configuration=None,
-                  location=None,
-                  autodetect_schema=False,
-                  table_constraints=None):
+  def UpdateTable(
+      self,
+      reference,
+      schema=None,
+      description=None,
+      display_name=None,
+      expiration=None,
+      view_query=None,
+      materialized_view_query=None,
+      enable_refresh=None,
+      refresh_interval_ms=None,
+      max_staleness=None,
+      external_data_config=None,
+      view_udf_resources=None,
+      use_legacy_sql=None,
+      labels_to_set=None,
+      label_keys_to_remove=None,
+      time_partitioning=None,
+      range_partitioning=None,
+      clustering=None,
+      require_partition_filter=None,
+      etag=None,
+      encryption_configuration=None,
+      location=None,
+      autodetect_schema=False,
+      table_constraints=None
+    ):
     """Updates a table.
 
     Args:
@@ -5507,10 +5555,10 @@ class BigqueryClient(object):
     _Typecheck(reference, ApiClientHelper.TableReference, method='UpdateTable')
 
     table = BigqueryClient.ConstructObjectInfo(reference)
-
+    maybe_skip_schema = False
     if schema is not None:
       table['schema'] = {'fields': schema}
-    else:
+    elif not maybe_skip_schema:
       table['schema'] = None
 
     if encryption_configuration is not None:
@@ -6717,6 +6765,7 @@ class BigqueryClient(object):
       hive_partitioning_options=None,
       decimal_target_types=None,
       json_extension=None,
+      file_set_spec_type=None,
       thrift_options=None,
       parquet_options=None,
       connection_properties=None,
@@ -6799,6 +6848,12 @@ class BigqueryClient(object):
       json_extension: (experimental) Specify alternative parsing for JSON source
         format. To load newline-delimited JSON, specify 'GEOJSON'. Only
         applicable if `source_format` is 'NEWLINE_DELIMITED_JSON'.
+      file_set_spec_type: (experimental) Set how to discover files for loading.
+        Specify 'FILE_SYSTEM_MATCH' (default behavior) to expand source URIs by
+        listing files from the underlying object store. Specify
+        'NEW_LINE_DELIMITED_MANIFEST' to parse the URIs as new line delimited
+        manifest files, where each line contains a URI (No wild-card URIs are
+        supported).
       thrift_options: (experimental) Options for configuring Apache Thrift load,
         which is required if `source_format` is 'THRIFT'.
       parquet_options: Options for configuring parquet files load, only

@@ -29,7 +29,7 @@ DETAILED_HELP = {
           """,
     'EXAMPLES':
         """
-          To list clusters in the ``my-private-cloud'' private cloud run:
+          To list clusters in the `my-private-cloud` private cloud run:
 
             $ {command} --location=us-west2-a --project=my-project --private-cloud=my-private-cloud
 

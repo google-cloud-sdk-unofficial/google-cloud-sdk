@@ -27,7 +27,7 @@ _DETAILED_HELP = {
         List logging-server in a VMware Engine private cloud.
         """,
     'EXAMPLES': """
-        To list logger-server in the ``my-private-cloud'' private cloud run:
+        To list logger-server in the `my-private-cloud` private cloud run:
 
           $ {command} --location=us-west2-a --project=my-project --private-cloud=my-private-cloud
 

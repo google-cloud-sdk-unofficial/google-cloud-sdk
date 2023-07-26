@@ -26,7 +26,7 @@ DETAILED_HELP = {
           Gets all the users and service accounts having bind permission on the intranet VPC associated with the consumer project granted by the Grant API.
         """,
     'EXAMPLES': """
-          To get all the users and service accounts having bind permission on the intranet VPC associated with the consumer project ``my-project'', run:
+          To get all the users and service accounts having bind permission on the intranet VPC associated with the consumer project `my-project`, run:
 
             $ {command} --project=my-project
 

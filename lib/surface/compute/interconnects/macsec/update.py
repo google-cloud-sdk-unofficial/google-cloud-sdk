@@ -23,8 +23,27 @@ from googlecloudsdk.api_lib.compute.interconnects import client
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute.interconnects import flags
 
+DETAILED_HELP = {
+    'DESCRIPTION':
+        """\
+        *{command}* is used to update MACsec configuration of interconnect. An
+        interconnect represents a single specific connection between Google and
+        the customer.
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+        For an example, refer to the *EXAMPLES* section below.
+        """,
+    # pylint: disable=line-too-long
+    'EXAMPLES':
+        """\
+        To enable MACsec on an interconnect, run:
+
+          $ {command} example-interconnect --enabled
+        """,
+    # pylint: enable=line-too-long
+}
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Update(base.UpdateCommand):
   """Update a Compute Engine interconnect MACsec configuration.
 
@@ -56,7 +75,7 @@ class Update(base.UpdateCommand):
       macsec = interconnect.Describe().macsec
       macsec.failOpen = args.fail_open
 
-    return interconnect.PatchAlpha(
+    return interconnect.PatchAlphaBeta(
         description=None,
         interconnect_type=None,
         requested_link_count=None,
@@ -68,3 +87,6 @@ class Update(base.UpdateCommand):
         label_fingerprint=None,
         macsec_enabled=args.enabled,
         macsec=macsec)
+
+
+Update.detailed_help = DETAILED_HELP

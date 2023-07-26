@@ -30,7 +30,7 @@ DETAILED_HELP = {
         """,
     'EXAMPLES':
         """
-          To delete a Private Connection resource called ``my-private-connection'' in project ``my-project'' and region ``us-west1'', run:
+          To delete a Private Connection resource called `my-private-connection` in project `my-project` and region `us-west1`, run:
 
             $ {command} my-private-connection --location=us-west1 --project=my-project
 

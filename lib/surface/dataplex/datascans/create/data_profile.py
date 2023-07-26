@@ -41,6 +41,10 @@ class DataProfile(base.Command):
             related data source about the structure, content and relationships
             (such as null percent, cardinality, min/max/mean, etc).
 
+            E.g., command to create a data profile scan `data-profile-datascan`
+            in project `test-project` located in `us-central1`:
+            dataplex datascans create data-profile data-profile-datascan --project=test-project --location=us-central1
+
           """,
   }
 
@@ -89,7 +93,8 @@ class DataProfile(base.Command):
         '--data-profile-spec-file',
         help=(
             'path to the JSON/YAML file containing the spec for'
-            ' the data profile scan.'
+            ' the data profile scan. The JSON representation reference:'
+            ' https://cloud.google.com/dataplex/docs/reference/rest/v1/DataProfileSpec'
         ),
     )
     data_spec_arg = data_spec.add_group(
@@ -97,13 +102,13 @@ class DataProfile(base.Command):
     )
     data_spec_arg.add_argument(
         '--row-filter',
-        help='A filter applied to all rows in a single DataScan job.',
+        help='A filter applied to all rows in a single data profile scan job.',
     )
     data_spec_arg.add_argument(
         '--sampling-percent',
         help=(
             'The percentage of the records to be selected from the dataset for'
-            ' DataScan.'
+            ' data profile scan.'
         ),
     )
     data_spec_arg.add_argument(
@@ -142,7 +147,7 @@ class DataProfile(base.Command):
         type=bool,
         help=(
             'If set, the scan runs one-time shortly after data profile scan'
-            ' Creation.'
+            ' creation.'
         ),
     )
     trigger.add_argument(

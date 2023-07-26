@@ -31,7 +31,7 @@ DETAILED_HELP = {
         """,
     'EXAMPLES':
         """
-          To unmark a private cloud called ``my-private-cloud'' for deletion, run:
+          To unmark a private cloud called `my-private-cloud` for deletion, run:
 
 
             $ {command} my-private-cloud --location=us-west2-a --project=my-project

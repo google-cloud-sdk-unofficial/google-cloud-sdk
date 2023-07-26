@@ -30,7 +30,7 @@ DETAILED_HELP = {
         """,
     'EXAMPLES':
         """
-        To update a private connection named ``my-private-connection'' in project ``my-project'' and region ``us-west1'' by changing its description to ``Updated description for the private connection'' and routing-mode to ``GLOBAL'', run:
+        To update a private connection named `my-private-connection` in project `my-project` and region `us-west1` by changing its description to `Updated description for the private connection` and routing-mode to `GLOBAL`, run:
 
           $ {command} my-private-connection --location=us-west1 --project=my-project --description="Updated description for the private connection" --routing-mode=GLOBAL
 

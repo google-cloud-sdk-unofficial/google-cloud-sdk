@@ -1,0 +1,43 @@
+- release_tracks: [ALPHA]
+
+  help_text:
+    brief: create fabric
+    description: creates a fabric
+    examples: |
+      To create a fabric `test-fabric` in location `us-central1`, run:
+
+      $ {command} test-fabric --location=us-central1 --project project-name --deployments name=projects/project-name/locations/us-central1/deployments/dp1,template-id='/streamingestion',deployment-project="projects/cloud-telecomdatafabric-e2e",parameters=data_adapter=METRICS_TRANSFORMER,parameters=domain_name=dp1 --deployments name=projects/project-name/locations/us-central1/deployments/dp2,template-id='/streamingestion',deployment-project="projects/cloud-telecomdatafabric-e2e",parameters=data_adapter=METRICS_TRANSFORMER,parameters=domain_name=dp2 --log-http
+
+  request:
+    collection: telecomdatafabric.projects.locations.fabrics
+    api_version: v1alpha
+
+  arguments:
+    resource:
+      help_text: TelecomDataFabric fabric
+      spec: !REF googlecloudsdk.command_lib.telecomdatafabric.resources:fabric
+    params:
+    - arg_name: deployments
+      api_field: fabric.deployments
+      help_text: List of deployments to be created in the fabric.
+      type:
+        arg_dict:
+          flatten: false
+          spec:
+          - api_field: name
+            arg_name: name
+          - api_field: templateId
+            arg_name: template-id
+            required: false
+          - api_field: templateGcsPath
+            arg_name: template-gcs-path
+            required: false
+          - api_field: projectId
+            arg_name: deployment-project
+            required: false
+          - api_field: parameters
+            arg_name: parameters
+            type: 'googlecloudsdk.calliope.arg_parsers:ArgDict:'
+
+  async:
+    collection: telecomdatafabric.projects.locations.operations

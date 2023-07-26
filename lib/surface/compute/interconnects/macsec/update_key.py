@@ -41,8 +41,7 @@ DETAILED_HELP = {
 }
 
 
-@base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class UpdateKey(base.UpdateCommand):
   """Update pre-shared key in a Compute Engine interconnect MACsec configuration.
 
@@ -86,7 +85,7 @@ class UpdateKey(base.UpdateCommand):
 
     preshared_key.startTime = args.start_time
 
-    return interconnect.PatchAlpha(
+    return interconnect.PatchAlphaBeta(
         description=None,
         interconnect_type=None,
         requested_link_count=None,

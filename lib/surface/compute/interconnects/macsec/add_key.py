@@ -42,7 +42,7 @@ DETAILED_HELP = {
 }
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class AddKey(base.UpdateCommand):
   """Add pre-shared key to a Compute Engine interconnect MACsec configuration.
 
@@ -77,7 +77,7 @@ class AddKey(base.UpdateCommand):
           holder.client.messages.InterconnectMacsecPreSharedKey(
               name=args.key_name, startTime=args.start_time))
 
-    return interconnect.PatchAlpha(
+    return interconnect.PatchAlphaBeta(
         description=None,
         interconnect_type=None,
         requested_link_count=None,

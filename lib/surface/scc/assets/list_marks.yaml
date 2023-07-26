@@ -1,4 +1,10 @@
 - release_tracks: [ALPHA, BETA, GA]
+  deprecate:
+    is_removed: false
+    warning: |
+      Security Command Center Asset APIs are deprecated and will be removed on or after
+      June 26, 2024. Use Cloud Asset Inventory instead [(gcloud asset)](https://cloud.google.com/sdk/gcloud/reference/asset).
+      For more information, [see the deprecation notice at Assets Page](https://cloud.google.com/security-command-center/docs/how-to-use-security-command-center#assets_page).
 
   command_type: LIST
 

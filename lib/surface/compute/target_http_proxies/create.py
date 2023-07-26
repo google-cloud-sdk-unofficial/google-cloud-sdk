@@ -55,7 +55,7 @@ def _DetailedHelp():
   }
 
 
-def _Args(parser, traffic_director_security, support_http_keep_alive):
+def _Args(parser, traffic_director_security):
   """Add the target http proxies comamnd line flags to the parser."""
   parser.display_info.AddFormat(flags.DEFAULT_LIST_FORMAT)
   parser.add_argument(
@@ -65,17 +65,12 @@ def _Args(parser, traffic_director_security, support_http_keep_alive):
   parser.display_info.AddCacheUpdater(flags.TargetHttpProxiesCompleter)
   if traffic_director_security:
     flags.AddProxyBind(parser, False)
-  if support_http_keep_alive:
-    target_proxies_utils.AddHttpKeepAliveTimeoutSec(parser)
+
+  target_proxies_utils.AddHttpKeepAliveTimeoutSec(parser)
 
 
 def _Run(
-    args,
-    holder,
-    url_map_ref,
-    target_http_proxy_ref,
-    traffic_director_security,
-    support_http_keep_alive,
+    args, holder, url_map_ref, target_http_proxy_ref, traffic_director_security
 ):
   """Issue a Target HTTP Proxy Insert request."""
   client = holder.client
@@ -94,9 +89,7 @@ def _Run(
         urlMap=url_map_ref.SelfLink(),
     )
 
-  if support_http_keep_alive and args.IsSpecified(
-      'http_keep_alive_timeout_sec'
-  ):
+  if args.IsSpecified('http_keep_alive_timeout_sec'):
     target_http_proxy.httpKeepAliveTimeoutSec = args.http_keep_alive_timeout_sec
 
   if target_http_proxies_utils.IsRegionalTargetHttpProxiesRef(
@@ -117,12 +110,11 @@ def _Run(
   return client.MakeRequests([(collection, 'Insert', request)])
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
 class Create(base.CreateCommand):
   """Create a target HTTP proxy."""
 
   _traffic_director_security = False
-  _support_http_keep_alive = False
 
   URL_MAP_ARG = None
   TARGET_HTTP_PROXY_ARG = None
@@ -134,7 +126,7 @@ class Create(base.CreateCommand):
     cls.TARGET_HTTP_PROXY_ARG.AddArgument(parser, operation_type='create')
     cls.URL_MAP_ARG = url_map_flags.UrlMapArgumentForTargetProxy()
     cls.URL_MAP_ARG.AddArgument(parser)
-    _Args(parser, cls._traffic_director_security, cls._support_http_keep_alive)
+    _Args(parser, cls._traffic_director_security)
 
   def Run(self, args):
     """Issue a Target HTTP Proxy Insert request."""
@@ -151,15 +143,9 @@ class Create(base.CreateCommand):
         url_map_ref,
         target_http_proxy_ref,
         self._traffic_director_security,
-        self._support_http_keep_alive,
     )
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class CreateBeta(Create):
-  _support_http_keep_alive = True
-
-
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class CreateAlpha(CreateBeta):
+class CreateAlpha(Create):
   _traffic_director_security = True

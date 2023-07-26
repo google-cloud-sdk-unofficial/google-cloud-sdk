@@ -61,7 +61,7 @@ class Delete(base.DeleteCommand):
     flags.GetProjectIDNumberFlag('delete').AddToParser(parser)
 
     if cls.ReleaseTrack() == base.ReleaseTrack.ALPHA:
-      flags.GetRecommendFlag().AddToParser(parser)
+      flags.GetRecommendFlag('project deletion').AddToParser(parser)
 
     parser.display_info.AddCacheUpdater(completers.ProjectCompleter)
 

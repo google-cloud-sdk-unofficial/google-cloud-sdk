@@ -30,7 +30,7 @@ DETAILED_HELP = {
         """,
     'EXAMPLES':
         """
-          To update a network named ``my-network'' of type ``STANDARD'' by changing its description to ``Example description'', run:
+          To update a network named `my-network` of type `STANDARD` by changing its description to `Example description`, run:
 
             $ {command} my-network --location=global --project=my-project --description='Example description'
 
@@ -38,9 +38,9 @@ DETAILED_HELP = {
 
             $ {command} my-network --description='Example description'
 
-          In the second example, the project is taken from gcloud properties core/project and the location is taken as ``global''.
+          In the second example, the project is taken from gcloud properties core/project and the location is taken as `global`.
 
-          To update a network named ``my-network'' of type ``LEGACY'' by changing its description to ``Example description'', run:
+          To update a network named `my-network` of type `LEGACY` by changing its description to `Example description`, run:
 
             $ {command} my-network --location=us-west2 --project=my-project --description='Example description'
 
@@ -48,7 +48,7 @@ DETAILED_HELP = {
 
             $ {command} my-network --location=us-west2 --description='Example description'
 
-          In the last example, the project is taken from gcloud properties core/project. For VMware Engine networks of type ``LEGACY'', you must always specify a region as the location.
+          In the last example, the project is taken from gcloud properties core/project. For VMware Engine networks of type `LEGACY`, you must always specify a region as the location.
     """,
 }
 

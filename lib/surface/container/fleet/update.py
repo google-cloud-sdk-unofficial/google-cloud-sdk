@@ -20,8 +20,15 @@ from __future__ import division
 from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.container.fleet import client
+from googlecloudsdk.api_lib.container.fleet import util
 from googlecloudsdk.calliope import base
-from googlecloudsdk.command_lib.util.apis import arg_utils
+from googlecloudsdk.calliope import parser_arguments
+from googlecloudsdk.calliope import parser_extensions
+from googlecloudsdk.command_lib.container.fleet import flags as fleet_flags
+from googlecloudsdk.command_lib.container.fleet import update_mask
+from googlecloudsdk.command_lib.container.fleet import util as fleet_util
+from googlecloudsdk.core import log
+from googlecloudsdk.generated_clients.apis.gkehub.v1alpha import gkehub_v1alpha_messages as messages
 
 
 @base.Hidden
@@ -43,15 +50,71 @@ class Update(base.UpdateCommand):
   """
 
   @staticmethod
-  def Args(parser):
-    parser.add_argument(
-        '--display-name',
-        type=str,
-        help='Display name of the fleet to be created (required). 4-30 '
-        'characters, alphanumeric and [ \'"!-] only.',
-        required=True)
+  def Args(parser: parser_arguments.ArgumentInterceptor):
+    flags = fleet_flags.FleetFlags(parser)
+    flags.AddAsync()
+    flags.AddDisplayName()
+    flags.AddDefaultClusterConfig()
 
-  def Run(self, args):
-    project = arg_utils.GetFromNamespace(args, '--project', use_defaults=True)
+  def Run(self, args: parser_extensions.Namespace) -> messages.Operation:
+    """Runs the fleet update command.
+
+    User specified --format takes the highest priority. If not specified, it
+    returns the default format of long-running operation or fleet, depending on
+    whether --async is specified.
+
+    $ {command} --async
+      The output is in default operation format.
+
+    $ {command} --async --format
+      The output is in user specified format.
+
+    $ {command}
+      The output is in default fleet format.
+
+    $ {command} --format
+      The output is in user specified format.
+
+    Args:
+      args: Arguments received from command line.
+
+    Returns:
+      A completed update operation; if `--async` is specified, return a
+      long-running operation to be polled manually.
+    """
+    flag_parser = fleet_flags.FleetFlagParser(
+        args, release_track=base.ReleaseTrack.ALPHA
+    )
+
+    if '--format' not in args.GetSpecifiedArgNames():
+      if flag_parser.Async():
+        args.format = fleet_util.OPERATION_FORMAT
+      else:
+        args.format = fleet_util.FLEET_FORMAT
+
+    fleet = flag_parser.Fleet()
+    req = flag_parser.messages.GkehubProjectsLocationsFleetsPatchRequest(
+        fleet=fleet,
+        name=util.FleetResourceName(flag_parser.Project()),
+        updateMask=update_mask.GetFleetUpdateMask(args),
+    )
+
     fleetclient = client.FleetClient(release_track=base.ReleaseTrack.ALPHA)
-    return fleetclient.UpdateFleet(args.display_name, project)
+    operation = fleetclient.UpdateFleet(req)
+    fleet_ref = util.FleetRef(flag_parser.Project())
+
+    if flag_parser.Async():
+      log.UpdatedResource(
+          fleet_ref, 'Anthos fleet', is_async=flag_parser.Async()
+      )
+      return operation
+
+    operation_client = client.OperationClient(
+        release_track=base.ReleaseTrack.ALPHA
+    )
+    operation_ref = util.OperationRef(operation)
+    completed_operation = operation_client.Wait(operation_ref)
+    log.UpdatedResource(
+        fleet_ref, kind='Anthos fleet', is_async=flag_parser.Async()
+    )
+    return completed_operation

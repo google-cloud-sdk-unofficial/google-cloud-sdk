@@ -258,7 +258,7 @@
           "type": "string"
         },
         "linkedDatasetSource": {
-          "description": "Optional. The source when the dataset is of type LINKED.",
+          "description": "Optional. The source dataset reference when the dataset is of type LINKED. For all other dataset types it is not set. This field cannot be updated once it is set. Any attempt to update this field using Update and Patch API Operations will be ignored.",
           "$ref": "LinkedDatasetSource"
         },
         "isCaseInsensitive": {
@@ -1261,10 +1261,6 @@
           "description": "The number of periods ahead that need to be forecasted.",
           "type": "string",
           "format": "int64"
-        },
-        "preserveInputStructs": {
-          "description": "Whether to preserve the input structs in output feature names. Suppose there is a struct A with field b. When false (default), the output feature name is A_b. When true, the output feature name is A.b.",
-          "type": "boolean"
         },
         "autoArimaMaxOrder": {
           "description": "The max value of the sum of non-seasonal p and q.",
@@ -2981,8 +2977,8 @@
           "description": "Optional. Specifies how source URIs are interpreted for constructing the file set to load. By default source URIs are expanded against the underlying storage. Other options include specifying manifest files. Only applicable to object storage systems.",
           "type": "string",
           "enumDescriptions": [
-            "Expands source URIs by listing files from the underlying object store. Default behavior.",
-            "Indicates the URIs provided are new line delimited manifest files, where each line contains a URI. No wild-card URIs are supported."
+            "This option expands source URIs by listing files from the object store. It is the default behavior if FileSetSpecType is not set.",
+            "This option indicates that the provided URIs are newline-delimited manifest files, with one URI per line. Wildcard URIs are not supported."
           ],
           "enum": [
             "FILE_SET_SPEC_TYPE_FILE_SYSTEM_MATCH",
@@ -3664,11 +3660,11 @@
           }
         },
         "fileSetSpecType": {
-          "description": "Optional. Specifies how source URIs are interpreted for constructing the file set to load. By default source URIs are expanded against the underlying storage. Other options include specifying manifest files. Only applicable to object storage systems.",
+          "description": "Optional. Specifies how source URIs are interpreted for constructing the file set to load. By default, source URIs are expanded against the underlying storage. You can also specify manifest files to control how the file set is constructed. This option is only applicable to object storage systems.",
           "type": "string",
           "enumDescriptions": [
-            "Expands source URIs by listing files from the underlying object store. Default behavior.",
-            "Indicates the URIs provided are new line delimited manifest files, where each line contains a URI. No wild-card URIs are supported."
+            "This option expands source URIs by listing files from the object store. It is the default behavior if FileSetSpecType is not set.",
+            "This option indicates that the provided URIs are newline-delimited manifest files, with one URI per line. Wildcard URIs are not supported."
           ],
           "enum": [
             "FILE_SET_SPEC_TYPE_FILE_SYSTEM_MATCH",
@@ -6435,6 +6431,10 @@
           "description": "Optional. Describes the data format, location, and other properties of a table stored outside of BigQuery. By defining these properties, the data source can then be queried as if it were a standard BigQuery table.",
           "$ref": "ExternalDataConfiguration"
         },
+        "biglakeConfiguration": {
+          "description": "Optional. Specifies the configuration of a BigLake managed table.",
+          "$ref": "BigLakeConfiguration"
+        },
         "location": {
           "description": "Output only. The geographic location where the table resides. This value is inherited from the dataset.",
           "readOnly": true,
@@ -6583,6 +6583,10 @@
           "description": "Optional. The maximum frequency at which this materialized view will be refreshed. The default value is \"1800000\" (30 minutes).",
           "type": "string",
           "format": "uint64"
+        },
+        "allowNonIncrementalDefinition": {
+          "description": "Optional. This option declares authors intention to construct a materialized view that will not be refreshed incrementally.",
+          "type": "boolean"
         }
       }
     },
@@ -6601,6 +6605,45 @@
           "description": "Output only. Error result of the last automatic refresh. If present, indicates that the last automatic refresh was unsuccessful.",
           "readOnly": true,
           "$ref": "ErrorProto"
+        }
+      }
+    },
+    "BigLakeConfiguration": {
+      "id": "BigLakeConfiguration",
+      "description": "Configuration for BigLake managed tables.",
+      "type": "object",
+      "properties": {
+        "connectionId": {
+          "description": "Required. The connection specifying the credentials to be used to read and write to external storage, such as Cloud Storage. The connection_id can have the form \"<project\\_id>.<location\\_id>.<connection\\_id>\" or \"projects\/<project\\_id>\/locations\/<location\\_id>\/connections\/<connection\\_id>\".",
+          "type": "string"
+        },
+        "storageUri": {
+          "description": "Required. The fully qualified location prefix of the external folder where table data is stored. The '*' wildcard character is not allowed. The URI should be in the format \"gs:\/\/bucket\/path_to_table\/\"",
+          "type": "string"
+        },
+        "fileFormat": {
+          "description": "Required. The file format the table data is stored in.",
+          "type": "string",
+          "enumDescriptions": [
+            "",
+            ""
+          ],
+          "enum": [
+            "FILE_FORMAT_UNSPECIFIED",
+            "PARQUET"
+          ]
+        },
+        "tableFormat": {
+          "description": "Required. The table format the metadata only snapshots are stored in.",
+          "type": "string",
+          "enumDescriptions": [
+            "",
+            ""
+          ],
+          "enum": [
+            "TABLE_FORMAT_UNSPECIFIED",
+            "ICEBERG"
+          ]
         }
       }
     },
@@ -6666,11 +6709,11 @@
       "type": "object",
       "properties": {
         "primaryKey": {
-          "description": "Optional. Represents a primary key constraint on a table's columns. Present only if the table has a primary key.",
+          "description": "Optional. Represents a primary key constraint on a table's columns. Present only if the table has a primary key. The primary key is not enforced.",
           "$ref": "PrimaryKey"
         },
         "foreignKeys": {
-          "description": "Optional. Present only if the table has a foreign key.",
+          "description": "Optional. Present only if the table has a foreign key. The foreign key is not enforced.",
           "type": "array",
           "items": {
             "$ref": "ForeignKey"
@@ -8278,7 +8321,7 @@
               "format": "google-fieldmask"
             },
             "filter": {
-              "description": "If set, then only the Routines matching this filter are returned. The current supported form is either \"routine_type:\" or \"routineType:\", where is a RoutineType enum. Example: \"routineType:SCALAR_FUNCTION\".",
+              "description": "If set, then only the Routines matching this filter are returned. The supported format is `routineType:{RoutineType}`, where `{RoutineType}` is a RoutineType enum. For example: `routineType:SCALAR_FUNCTION`.",
               "location": "query",
               "type": "string"
             }

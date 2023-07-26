@@ -30,7 +30,7 @@ DETAILED_HELP = {
         """,
     'EXAMPLES':
         """
-          To update a network policy named ``my-network-policy'' so that it disables the external IP access service, run:
+          To update a network policy named `my-network-policy` so that it disables the external IP access service, run:
 
             $ {command} my-network-policy --location=us-west2 --project=my-project --no-external-ip-access
 

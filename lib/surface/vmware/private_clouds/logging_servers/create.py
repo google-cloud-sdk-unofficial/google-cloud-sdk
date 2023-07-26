@@ -29,7 +29,7 @@ _DETAILED_HELP = {
         Create a logging-server in a VMware Engine private cloud to forward VCSA or ESXI logs to it.
       """,
     'EXAMPLES': """
-        To create a logging-server called ``my-logging-server'' in private cloud ``my-private-cloud'', with source type ``ESXI'', host name ``192.168.0.30'', protocol ``UDP'' and port ``514'', run:
+        To create a logging-server called `my-logging-server` in private cloud `my-private-cloud`, with source type `ESXI`, host name `192.168.0.30`, protocol `UDP` and port `514`, run:
 
           $ {command} my-logging-server --location=us-west2-a --project=my-project --private-cloud=my-private-cloud --source-type=ESXI --hostname=192.168.0.30 --protocol=UDP --port=514
 

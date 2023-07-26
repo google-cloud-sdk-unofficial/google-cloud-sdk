@@ -4,7 +4,7 @@
  "id": "bigquery:v2",
  "name": "bigquery",
  "version": "v2",
- "revision": "20230517",
+ "revision": "20230614",
  "title": "BigQuery API",
  "description": "A data platform for customers to create, manage, share and query data.",
  "ownerDomain": "google.com",
@@ -976,6 +976,10 @@
       "type": "string"
      }
     },
+    "fileSetSpecType": {
+     "type": "string",
+     "description": "[Optional] Specifies how source URIs are interpreted for constructing the file set to load. By default source URIs are expanded against the underlying storage. Other options include specifying manifest files. Only applicable to object storage systems."
+    },
     "googleSheetsOptions": {
      "$ref": "GoogleSheetsOptions",
      "description": "[Optional] Additional options if sourceFormat is set to GOOGLE_SHEETS."
@@ -1412,6 +1416,10 @@
     "fieldDelimiter": {
      "type": "string",
      "description": "[Optional] The separator for fields in a CSV file. The separator can be any ISO-8859-1 single-byte character. To use a character in the range 128-255, you must encode the character as UTF8. BigQuery converts the string to ISO-8859-1 encoding, and then uses the first byte of the encoded string to split the data in its raw, binary state. BigQuery also supports the escape sequence \"\\t\" to specify a tab separator. The default value is a comma (',')."
+    },
+    "fileSetSpecType": {
+     "type": "string",
+     "description": "[Optional] Specifies how source URIs are interpreted for constructing the file set to load. By default source URIs are expanded against the underlying storage. Other options include specifying manifest files. Only applicable to object storage systems."
     },
     "hivePartitioningOptions": {
      "$ref": "HivePartitioningOptions",
@@ -4290,10 +4298,6 @@
      "description": "The number of periods ahead that need to be forecasted.",
      "type": "string",
      "format": "int64"
-    },
-    "preserveInputStructs": {
-     "description": "Whether to preserve the input structs in output feature names. Suppose there is a struct A with field b. When false (default), the output feature name is A_b. When true, the output feature name is A.b.",
-     "type": "boolean"
     },
     "autoArimaMaxOrder": {
      "description": "The max value of the sum of non-seasonal p and q.",
@@ -7693,7 +7697,7 @@
        "format": "google-fieldmask"
       },
       "filter": {
-       "description": "If set, then only the Routines matching this filter are returned. The current supported form is either \"routine_type:\" or \"routineType:\", where is a RoutineType enum. Example: \"routineType:SCALAR_FUNCTION\".",
+       "description": "If set, then only the Routines matching this filter are returned. The supported format is `routineType:{RoutineType}`, where `{RoutineType}` is a RoutineType enum. For example: `routineType:SCALAR_FUNCTION`.",
        "location": "query",
        "type": "string"
       }

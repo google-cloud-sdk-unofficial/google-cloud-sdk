@@ -63,7 +63,6 @@ def _DetailedHelp():
 def _Args(
     parser,
     traffic_director_security=False,
-    support_http_keep_alive=False,
     certificate_map=False,
     server_tls_policy_enabled=False,
     list_format=None,
@@ -82,8 +81,7 @@ def _Args(
   if traffic_director_security:
     flags.AddProxyBind(parser, False)
 
-  if support_http_keep_alive:
-    target_proxies_utils.AddHttpKeepAliveTimeoutSec(parser)
+  target_proxies_utils.AddHttpKeepAliveTimeoutSec(parser)
 
   if server_tls_policy_enabled:
     ns_resource_args.GetServerTlsPolicyResourceArg(
@@ -109,7 +107,6 @@ def _Run(
     ssl_certificates,
     ssl_policy_ref,
     traffic_director_security,
-    support_http_keep_alive,
     certificate_map_ref,
     server_tls_policy_ref,
 ):
@@ -132,9 +129,7 @@ def _Run(
         sslCertificates=ssl_certificates,
     )
 
-  if support_http_keep_alive and args.IsSpecified(
-      'http_keep_alive_timeout_sec'
-  ):
+  if args.IsSpecified('http_keep_alive_timeout_sec'):
     target_https_proxy.httpKeepAliveTimeoutSec = (
         args.http_keep_alive_timeout_sec
     )
@@ -168,11 +163,10 @@ def _Run(
   return client.MakeRequests([(collection, 'Insert', request)])
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
 class Create(base.CreateCommand):
   """Create a target HTTPS proxy."""
 
-  _support_http_keep_alive = False
   _traffic_director_security = False
   _certificate_map = True
   _server_tls_policy_enabled = False
@@ -225,7 +219,6 @@ class Create(base.CreateCommand):
     _Args(
         parser,
         traffic_director_security=cls._traffic_director_security,
-        support_http_keep_alive=cls._support_http_keep_alive,
         certificate_map=cls._certificate_map,
         server_tls_policy_enabled=cls._server_tls_policy_enabled,
         list_format=cls._list_format,
@@ -274,18 +267,12 @@ class Create(base.CreateCommand):
         ssl_certificates,
         ssl_policy_ref,
         self._traffic_director_security,
-        self._support_http_keep_alive,
         certificate_map_ref,
         server_tls_policy_ref,
     )
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class CreateBeta(Create):
-  _support_http_keep_alive = True
-
-
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class CreateAlpha(CreateBeta):
+class CreateAlpha(Create):
   _traffic_director_security = True
   _server_tls_policy_enabled = True

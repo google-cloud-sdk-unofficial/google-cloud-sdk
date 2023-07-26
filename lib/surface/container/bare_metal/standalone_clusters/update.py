@@ -25,6 +25,7 @@ from googlecloudsdk.calliope import parser_arguments
 from googlecloudsdk.command_lib.container.bare_metal import constants as bare_metal_constants
 from googlecloudsdk.command_lib.container.bare_metal import standalone_cluster_flags
 from googlecloudsdk.command_lib.container.gkeonprem import constants
+from googlecloudsdk.command_lib.container.gkeonprem import flags
 from googlecloudsdk.core import log
 
 _EXAMPLES = """
@@ -66,6 +67,7 @@ class Update(base.UpdateCommand):
     standalone_cluster_flags.AddClusterOperationsConfig(parser)
     standalone_cluster_flags.AddNodeAccessConfig(parser)
     standalone_cluster_flags.AddUpdateAnnotations(parser)
+    flags.AddBinauthzEvaluationMode(parser)
 
   def Run(self, args):
     """Runs the update command.

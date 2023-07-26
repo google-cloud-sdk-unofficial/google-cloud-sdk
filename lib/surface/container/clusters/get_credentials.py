@@ -80,8 +80,11 @@ class GetCredentials(base.Command):
   [Cloud SDK property](https://cloud.google.com/sdk/docs/properties) to true
   before running {command}
 
-  See [](https://cloud.google.com/kubernetes-engine/docs/kubectl) for
-  kubectl documentation.
+  See
+  [](https://cloud.google.com/kubernetes-engine/docs/how-to/cluster-access-for-kubectl)
+  for kubectl usage with Google Kubernetes Engine and
+  [](https://kubernetes.io/docs/reference/generated/kubectl/kubectl-commands)
+  for available kubectl commands.
   """
   detailed_help = {
       'EXAMPLES': """\

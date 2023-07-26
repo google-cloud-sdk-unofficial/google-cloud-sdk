@@ -30,7 +30,7 @@ DETAILED_HELP = {
         """,
     'EXAMPLES':
         """
-          To delete a cluster called ``my-cluster'' in private cloud ``my-private-cloud'' and zone ``us-west2-a'', run:
+          To delete a cluster called `my-cluster` in private cloud `my-private-cloud` and zone `us-west2-a`, run:
 
             $ {command} my-cluster --location=us-west2-a --project=my-project --private-cloud=my-private-cloud
 

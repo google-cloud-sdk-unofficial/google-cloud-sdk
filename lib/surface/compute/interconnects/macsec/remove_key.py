@@ -23,8 +23,26 @@ from googlecloudsdk.api_lib.compute.interconnects import client
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute.interconnects import flags
 
+DETAILED_HELP = {
+    'DESCRIPTION':
+        """\
+        *{command}* is used to remove pre-shared key from MACsec configuration of
+        interconnect.
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+        For an example, refer to the *EXAMPLES* section below.
+        """,
+    # pylint: disable=line-too-long
+    'EXAMPLES':
+        """\
+        To remove a pre-shared key from MACsec configuration, run:
+
+          $ {command} example-interconnect --key-name=default-key
+        """,
+    # pylint: enable=line-too-long
+}
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class RemoveKey(base.UpdateCommand):
   """Remove pre-shared key from a Compute Engine interconnect MACsec configuration.
 
@@ -53,7 +71,7 @@ class RemoveKey(base.UpdateCommand):
     keys = macsec.preSharedKeys
     macsec.preSharedKeys = [key for key in keys if key.name != args.key_name]
 
-    return interconnect.PatchAlpha(
+    return interconnect.PatchAlphaBeta(
         description=None,
         interconnect_type=None,
         requested_link_count=None,
@@ -65,3 +83,6 @@ class RemoveKey(base.UpdateCommand):
         label_fingerprint=None,
         macsec_enabled=None,
         macsec=macsec)
+
+
+RemoveKey.detailed_help = DETAILED_HELP

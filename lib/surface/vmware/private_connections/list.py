@@ -29,7 +29,7 @@ DETAILED_HELP = {
         """,
     'EXAMPLES':
         """
-          To list private connections in project ``my-project'' and region ``us-west1'' sorted from oldest to newest, run:
+          To list private connections in project `my-project` and region `us-west1` sorted from oldest to newest, run:
 
             $ {command} --location=us-west1 --project=my-project --sort-by=~create_time
 
@@ -39,7 +39,7 @@ DETAILED_HELP = {
 
           In the second example, the project and the location are taken from gcloud properties core/project and compute/region, respectively.
 
-          To list private connections in project ``my-project'' from all regions, run:
+          To list private connections in project `my-project` from all regions, run:
 
             $ {command} --location=- --project=my-project
 

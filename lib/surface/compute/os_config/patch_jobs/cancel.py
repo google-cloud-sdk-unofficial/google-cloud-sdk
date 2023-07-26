@@ -23,8 +23,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute.os_config import resource_args
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA,
-                    base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
 class Cancel(base.Command):
   """Cancel a specific OS patch job which must currently be active.
 

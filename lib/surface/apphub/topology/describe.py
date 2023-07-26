@@ -20,6 +20,8 @@ from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.apphub import topology as apis
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.apphub import output
+
 
 _EXAMPLES = """
 To describe the topology, run:
@@ -38,4 +40,4 @@ class Describe(base.DescribeCommand):
   def Run(self, args):
     """Runs the describe command."""
     client = apis.TopologyClient()
-    return client.Describe()
+    return output.GetDescribeTopologyOutput(client.Describe())

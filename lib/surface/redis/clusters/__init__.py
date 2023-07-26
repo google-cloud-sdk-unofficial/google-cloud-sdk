@@ -23,6 +23,6 @@ from googlecloudsdk.calliope import base
 
 # Hidden for private preview
 @base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Clusters(base.Group):
   """Manage Memorystore Cluster for Redis instances."""

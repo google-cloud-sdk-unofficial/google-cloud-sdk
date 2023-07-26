@@ -22,7 +22,5 @@ from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 
 
-@base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Hmac(base.Group):
-  """Manage Cloud Storage HMAC."""
+  """Manage Cloud Storage service account HMAC keys."""

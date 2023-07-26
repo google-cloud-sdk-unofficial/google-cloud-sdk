@@ -29,7 +29,7 @@ DETAILED_HELP = {
         """,
     'EXAMPLES':
         """
-          To list network policies in your project in the region ``us-west2'' sorted from oldest to newest, run:
+          To list network policies in your project in the region `us-west2` sorted from oldest to newest, run:
 
             $ {command} --location=us-west2 --project=my-project --sort-by=~create_time
 

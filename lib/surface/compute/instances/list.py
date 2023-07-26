@@ -24,6 +24,7 @@ from googlecloudsdk.api_lib.compute import utils
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute import completers
 from googlecloudsdk.command_lib.compute.instances import flags
+from googlecloudsdk.command_lib.util.apis import arg_utils
 
 RESOURCE_TYPE = 'instances'
 
@@ -51,6 +52,7 @@ EXAMPLE_FORMAT = """\
     """
 
 
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
 class List(base.ListCommand):
   """List Compute Engine virtual machine instances."""
 
@@ -75,6 +77,59 @@ class List(base.ListCommand):
     return lister.Invoke(request_data, list_implementation)
 
 
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class ListAlpha(base.ListCommand):
+  """List Compute Engine virtual machine instances."""
+
+  @staticmethod
+  def Args(parser):
+    parser.display_info.AddFormat(flags.DEFAULT_LIST_FORMAT)
+    parser.display_info.AddUriFunc(utils.MakeGetUriFunc())
+    lister.AddZonalListerArgs(parser)
+    parser.display_info.AddCacheUpdater(completers.InstancesCompleter)
+    parser.add_argument(
+        '--view',
+        choices={
+            'FULL': 'Include everything in instance',
+            'BASIC': (
+                'Default view of instance, Including everything except Partner'
+                ' Metadata.'
+            ),
+        },
+        type=arg_utils.ChoiceToEnumName,
+        help='specify Instance view',
+    )
+
+  def _GetInstanceView(self, view, request_message):
+    if view == 'FULL':
+      return request_message.ViewValueValuesEnum.FULL
+    elif view == 'BASIC':
+      return request_message.ViewValueValuesEnum.BASIC
+    return None
+
+  def Run(self, args):
+    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    client = holder.client
+
+    request_data = lister.ParseMultiScopeFlags(args, holder.resources)
+
+    list_implementation = lister.MultiScopeLister(
+        client=client,
+        zonal_service=client.apitools_client.instances,
+        aggregation_service=client.apitools_client.instances,
+        instance_view_flag=self._GetInstanceView(
+            args.view, client.messages.ComputeInstancesListRequest
+        ),
+    )
+
+    return lister.Invoke(request_data, list_implementation)
+
+
 List.detailed_help = DETAILED_HELP.copy()
 List.detailed_help['EXAMPLES'] = EXAMPLE_FORMAT.format(
-    RESOURCE_TYPE, flags.IPV6_INFO_LIST_FORMAT)
+    RESOURCE_TYPE, flags.IPV6_INFO_LIST_FORMAT
+)
+ListAlpha.detailed_help = DETAILED_HELP.copy()
+ListAlpha.detailed_help['EXAMPLES'] = EXAMPLE_FORMAT.format(
+    RESOURCE_TYPE, flags.IPV6_INFO_LIST_FORMAT
+)

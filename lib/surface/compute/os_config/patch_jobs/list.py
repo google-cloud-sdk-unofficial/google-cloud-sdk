@@ -167,20 +167,3 @@ class ListBeta(List):
   @staticmethod
   def Args(parser):
     _Args(parser, base.ReleaseTrack.BETA)
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class ListAlpha(ListBeta):
-  """List ongoing and completed patch jobs.
-
-  ## EXAMPLES
-
-  To list patch jobs in the current project, run:
-
-        $ {command}
-
-  """
-
-  @staticmethod
-  def Args(parser):
-    _Args(parser, base.ReleaseTrack.ALPHA)

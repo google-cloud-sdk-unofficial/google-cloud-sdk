@@ -54,9 +54,7 @@ def _DetailedHelp():
   }
 
 
-def _Run(
-    args, holder, target_http_proxy_arg, url_map_arg, support_http_keep_alive
-):
+def _Run(args, holder, target_http_proxy_arg, url_map_arg):
   """Issues requests necessary to update Target HTTP Proxies."""
   client = holder.client
 
@@ -91,12 +89,11 @@ def _Run(
     if args.url_map:
       new_resource.urlMap = url_map_ref.SelfLink()
 
-    if support_http_keep_alive:
-      if args.IsSpecified('http_keep_alive_timeout_sec'):
-        new_resource.httpKeepAliveTimeoutSec = args.http_keep_alive_timeout_sec
-      elif args.IsSpecified('clear_http_keep_alive_timeout_sec'):
-        new_resource.httpKeepAliveTimeoutSec = None
-        cleared_fields.append('httpKeepAliveTimeoutSec')
+    if args.IsSpecified('http_keep_alive_timeout_sec'):
+      new_resource.httpKeepAliveTimeoutSec = args.http_keep_alive_timeout_sec
+    elif args.IsSpecified('clear_http_keep_alive_timeout_sec'):
+      new_resource.httpKeepAliveTimeoutSec = None
+      cleared_fields.append('httpKeepAliveTimeoutSec')
 
     if old_resource != new_resource:
       return _PatchGlobalTargetHttpProxy(
@@ -138,11 +135,12 @@ def _PatchGlobalTargetHttpProxy(
     return client.MakeRequests(requests)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
+)
 class Update(base.UpdateCommand):
   """Update a target HTTP proxy."""
 
-  _support_http_keep_alive = False
   TARGET_HTTP_PROXY_ARG = None
   URL_MAP_ARG = None
   detailed_help = _DetailedHelp()
@@ -153,10 +151,10 @@ class Update(base.UpdateCommand):
     cls.TARGET_HTTP_PROXY_ARG.AddArgument(parser, operation_type='update')
     cls.URL_MAP_ARG = url_map_flags.UrlMapArgumentForTargetProxy()
     cls.URL_MAP_ARG.AddArgument(parser)
-    if cls._support_http_keep_alive:
-      group = parser.add_mutually_exclusive_group()
-      target_proxies_utils.AddHttpKeepAliveTimeoutSec(group)
-      target_proxies_utils.AddClearHttpKeepAliveTimeoutSec(group)
+
+    group = parser.add_mutually_exclusive_group()
+    target_proxies_utils.AddHttpKeepAliveTimeoutSec(group)
+    target_proxies_utils.AddClearHttpKeepAliveTimeoutSec(group)
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
@@ -165,15 +163,4 @@ class Update(base.UpdateCommand):
         holder,
         self.TARGET_HTTP_PROXY_ARG,
         self.URL_MAP_ARG,
-        self._support_http_keep_alive,
     )
-
-
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class UpdateBeta(Update):
-  _support_http_keep_alive = True
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class UpdateAlpha(UpdateBeta):
-  pass

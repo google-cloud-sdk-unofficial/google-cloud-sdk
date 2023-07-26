@@ -29,8 +29,8 @@ DETAILED_HELP = {
         """,
     'EXAMPLES':
         """
-          To get a description of an address called ``first-ip'' in the
-          ``my-privatecloud'' private cloud in the ``us-east2-b''
+          To get a description of an address called `first-ip` in the
+          `my-privatecloud` private cloud in the `us-east2-b`
           location, run:
 
             $ {command} first-ip --private-cloud=my-privatecloud --location=us-east2-b --project=my-project

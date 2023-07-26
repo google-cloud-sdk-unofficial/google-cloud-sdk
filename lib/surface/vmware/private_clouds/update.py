@@ -30,7 +30,7 @@ DETAILED_HELP = {
         """,
     'EXAMPLES':
         """
-          To update a private cloud named ``my-private-cloud'' by changing its description to ``Example description'' run:
+          To update a private cloud named `my-private-cloud` by changing its description to `Example description` run:
 
             $ {command} my-private-cloud --location=us-west2-a --project=my-project --description='Example description'
 

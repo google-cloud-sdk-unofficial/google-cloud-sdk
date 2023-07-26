@@ -29,7 +29,7 @@ DETAILED_HELP = {
         """,
     'EXAMPLES':
         """
-          To list VMware Engine networks of type ``STANDARD'' in your project, run:
+          To list VMware Engine networks of type `STANDARD` in your project, run:
 
             $ {command} --location=global --project=my-project
 
@@ -37,9 +37,9 @@ DETAILED_HELP = {
 
             $ {command}
 
-          In the second example, the project is taken from gcloud properties core/project and the location is taken as ``global''.
+          In the second example, the project is taken from gcloud properties core/project and the location is taken as `global`.
 
-          To list VMware Engine networks of type ``LEGACY'' in the location ``us-west2'' in your project, run:
+          To list VMware Engine networks of type `LEGACY` in the location `us-west2` in your project, run:
 
             $ {command} --location=us-west2 --project=my-project
 
@@ -47,7 +47,7 @@ DETAILED_HELP = {
 
             $ {command} --location=us-west2
 
-          In the last example, the project is taken from gcloud properties core/project. For VMware Engine networks of type ``LEGACY'', you must always specify a region as the location.
+          In the last example, the project is taken from gcloud properties core/project. For VMware Engine networks of type `LEGACY`, you must always specify a region as the location.
     """,
 }
 

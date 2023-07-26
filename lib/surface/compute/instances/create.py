@@ -752,7 +752,7 @@ class CreateBeta(Create):
   _support_max_run_duration = True
   _support_ipv6_assignment = False
   _support_network_attachments = False
-  _support_local_ssd_recovery_timeout = False
+  _support_local_ssd_recovery_timeout = True
   _support_regional_instance_template = False
   _support_local_ssd_size = True
   _support_vlan_nic = False

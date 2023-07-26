@@ -17,10 +17,17 @@
       help_text: TelecomDataFabric deployment
       spec: !REF googlecloudsdk.command_lib.telecomdatafabric.resources:deployment
     params:
-    - arg_name: template-id
-      api_field: deployment.templateId
-      required: true
-      help_text: Template name.
+    - group:
+        required: true
+        mutex: true
+        help_text: Specify template-gcs-path or template-id.
+        params:
+        - arg_name: template-id
+          api_field: deployment.templateId
+          help_text: TDF provided template id
+        - arg_name: template-gcs-path
+          api_field: deployment.templateGcsPath
+          help_text: Private template gcs path.
     - arg_name: parameters
       type: 'googlecloudsdk.calliope.arg_parsers:ArgDict:'
       api_field: deployment.parameters

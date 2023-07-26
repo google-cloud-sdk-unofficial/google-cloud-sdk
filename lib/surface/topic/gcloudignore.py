@@ -48,7 +48,7 @@ class GcloudignoreHelp(base.TopicCommand):
   *  gcloud alpha deploy releases create
   * `gcloud alpha blueprints apply`
   * `gcloud alpha blueprints preview`
-  * `gcloud alpha config-manager deployments apply`
+  * `gcloud alpha infra-manager deployments apply`
   * `gcloud alpha run jobs deploy`
   * `gcloud beta run jobs deploy`
 
@@ -58,7 +58,7 @@ class GcloudignoreHelp(base.TopicCommand):
      $ gcloud config set gcloudignore/enabled false
 
   The default content of the generated `.gcloudignore` file, which can be
-  overriden with `--ignore-file`, is as follows:
+  overridden with `--ignore-file`, is as follows:
 
     .gcloudignore
     .git

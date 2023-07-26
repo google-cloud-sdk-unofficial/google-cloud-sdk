@@ -1120,6 +1120,17 @@ class _Load(BigqueryCmd):
         '\n STRING: decimal values could be converted to STRING type, '
         'depending on the precision and scale of the decimal schema.',
         flag_values=fv)
+    flags.DEFINE_enum(
+        'file_set_spec_type',
+        None, ['FILE_SYSTEM_MATCH', 'NEW_LINE_DELIMITED_MANIFEST'],
+        '[Experimental] Specifies how to discover files given source URIs. '
+        'Options include: '
+        '\n FILE_SYSTEM_MATCH: expand source URIs by listing files from the '
+        'underlying object store. This is the default behavior.'
+        '\n NEW_LINE_DELIMITED_MANIFEST: indicate the source URIs provided are '
+        'new line delimited manifest files, where each line contains a URI '
+        'with no wild-card.',
+        flag_values=fv)
     flags.DEFINE_string(
         'thrift_schema_idl_root_dir',
         None,
@@ -1302,6 +1313,8 @@ class _Load(BigqueryCmd):
     if self.json_extension is not None:
       opts['json_extension'] = self.json_extension
     opts['decimal_target_types'] = self.decimal_target_types
+    if self.file_set_spec_type is not None:
+      opts['file_set_spec_type'] = _ParseFileSetSpecType(self.file_set_spec_type)
     if opts['source_format'] == 'THRIFT':
       thrift_options = {}
       if self.thrift_schema_idl_root_dir is not None:
@@ -1356,6 +1369,7 @@ def _CreateExternalTableDefinition(
     preserve_ascii_control_characters=False,
     reference_file_schema_uri=None,
     encoding=None,
+    file_set_spec_type=None,
 ):
   """Creates an external table definition with the given URIs and the schema.
 
@@ -1421,6 +1435,8 @@ def _CreateExternalTableDefinition(
       raise app.UsageError(('%s is not a supported format.') % source_format)
 
     external_table_def = {'sourceFormat': source_format}
+    if file_set_spec_type is not None:
+      external_table_def['fileSetSpecType'] = file_set_spec_type
     if metadata_cache_mode is not None:
       external_table_def['metadataCacheMode'] = metadata_cache_mode
     if object_metadata is not None:
@@ -1655,6 +1671,17 @@ class _MakeExternalTableDefinition(BigqueryCmd):
         '\n UTF-32LE (UTF-16 LittleEndian)',
         short_name='E',
         flag_values=fv)
+    flags.DEFINE_enum(
+        'file_set_spec_type',
+        None, ['FILE_SYSTEM_MATCH', 'NEW_LINE_DELIMITED_MANIFEST'],
+        '[Experimental] Specifies how to discover files given source URIs. '
+        'Options include: '
+        '\n FILE_SYSTEM_MATCH: expand source URIs by listing files from the '
+        'underlying object store. This is the default behavior.'
+        '\n NEW_LINE_DELIMITED_MANIFEST: indicate the source URIs provided are '
+        'new line delimited manifest files, where each line contains a URI '
+        'with no wild-card.',
+        flag_values=fv)
     self._ProcessCommandRc(fv)
 
   def RunWithArgs(self, source_uris, schema=None):
@@ -1716,6 +1743,7 @@ class _MakeExternalTableDefinition(BigqueryCmd):
             .preserve_ascii_control_characters,
             reference_file_schema_uri=self.reference_file_schema_uri,
             encoding=self.encoding,
+            file_set_spec_type=self.file_set_spec_type,
             ),
         sys.stdout,
         sort_keys=True,
@@ -2127,7 +2155,6 @@ class _Query(BigqueryCmd):
         params['partitioning_field'] = self.time_partitioning_field
       if self.time_partitioning_type:
         params['partitioning_type'] = self.time_partitioning_type
-
       transfer_name = client.CreateTransferConfig(
           reference=reference,
           data_source='scheduled_query',
@@ -2135,6 +2162,7 @@ class _Query(BigqueryCmd):
           display_name=self.display_name,
           params=json.dumps(params),
           auth_info=auth_info,
+          destination_kms_key=self.destination_kms_key,
           schedule_args=schedule_args,
           location=FLAGS.location)
       print(('Transfer configuration \'%s\' successfully created.' %
@@ -2362,6 +2390,7 @@ def _GetExternalDataConfig(
     object_metadata=None,
     preserve_ascii_control_characters=None,
     reference_file_schema_uri=None,
+    file_set_spec_type=None,
 ):
   """Returns a ExternalDataConfiguration from the file or specification string.
 
@@ -2447,6 +2476,7 @@ def _GetExternalDataConfig(
         object_metadata=object_metadata,
         preserve_ascii_control_characters=preserve_ascii_control_characters,
         reference_file_schema_uri=reference_file_schema_uri,
+        file_set_spec_type=file_set_spec_type,
     )
 
 
@@ -3402,6 +3432,9 @@ class _Delete(BigqueryCmd):
 class _Copy(BigqueryCmd):
   usage = """cp [-n] <source_table>[,<source_table>]* <dest_table>"""
 
+  _CONFIRM_OVERWRITE = 'cp: Table %s already exists. Replace the table? [y/N]: '
+  _NOT_COPYING = ' %s, exiting.'
+
   def __init__(self, name, fv):
     super(_Copy, self).__init__(name, fv)
     flags.DEFINE_boolean(
@@ -3449,6 +3482,7 @@ class _Copy(BigqueryCmd):
         'clone', False, 'Create a clone of source table.', flag_values=fv)
     self._ProcessCommandRc(fv)
 
+
   def RunWithArgs(self, source_tables, dest_table):
     """Copies one table to another.
 
@@ -3472,11 +3506,18 @@ class _Copy(BigqueryCmd):
     else:
       write_disposition = 'WRITE_TRUNCATE'
       ignore_already_exists = False
-      if not self.force:
-        if client.TableExists(dest_reference):
-          if 'y' != _PromptYN('cp: replace %s? (y/N) ' % (dest_reference,)):
-            print('NOT copying %s, exiting.' % (source_references_str,))
-            return 0
+
+    # Check if destination table exists, confirm overwrite
+    destination_region = None
+    if not ignore_already_exists and not self.force:
+      destination_region = client.GetTableRegion(dest_reference)
+      if destination_region and 'y' != _PromptYN(
+          self._CONFIRM_OVERWRITE % (dest_reference)
+      ):
+        print(self._NOT_COPYING % (source_references_str,))
+        return 0
+
+
     operation = 'copied'
     if self.snapshot:
       operation_type = 'SNAPSHOT'
@@ -4249,6 +4290,17 @@ class _Make(BigqueryCmd):
         None, 'provide a reference file with the table schema, currently '
         'enabled for the formats: AVRO, PARQUET, ORC.',
         flag_values=fv)
+    flags.DEFINE_enum(
+        'file_set_spec_type',
+        None, ['FILE_SYSTEM_MATCH', 'NEW_LINE_DELIMITED_MANIFEST'],
+        '[Experimental] Specifies how to discover files given source URIs. '
+        'Options include: '
+        '\n FILE_SYSTEM_MATCH: expand source URIs by listing files from the '
+        'underlying object store. This is the default behavior.'
+        '\n NEW_LINE_DELIMITED_MANIFEST: indicate the source URIs provided are '
+        'new line delimited manifest files, where each line contains a URI '
+        'with no wild-card.',
+        flag_values=fv)
     self._ProcessCommandRc(fv)
 
   def RunWithArgs(self, identifier='', schema=''):
@@ -4399,6 +4451,7 @@ class _Make(BigqueryCmd):
           params=self.params,
           auth_info=auth_info,
           service_account_name=self.service_account_name,
+          destination_kms_key=self.destination_kms_key,
           notification_pubsub_topic=self.notification_pubsub_topic,
           schedule_args=schedule_args,
           location=location)
@@ -4585,6 +4638,7 @@ class _Make(BigqueryCmd):
             self.object_metadata,
             self.preserve_ascii_control_characters,
             self.reference_file_schema_uri,
+            self.file_set_spec_type,
         )
 
       view_udf_resources = None
@@ -5651,7 +5705,8 @@ class _Update(BigqueryCmd):
           etag=self.etag,
           encryption_configuration=encryption_configuration,
           autodetect_schema=self.autodetect_schema,
-          table_constraints=table_constraints)
+          table_constraints=table_constraints
+          )
 
       print("%s '%s' successfully updated." % (
           object_name,
@@ -5684,6 +5739,7 @@ class _Update(BigqueryCmd):
             params=self.params,
             auth_info=auth_info,
             service_account_name=service_account_name,
+            destination_kms_key=self.destination_kms_key,
             notification_pubsub_topic=self.notification_pubsub_topic,
             schedule_args=schedule_args)
         print("Transfer configuration '%s' successfully updated." %
@@ -6077,13 +6133,43 @@ class _Show(BigqueryCmd):
         object_info,
         reference,
         custom_format=custom_format,
-        print_reference=print_reference)
+        print_reference=print_reference,
+    )
 
 
 def _IsSuccessfulDmlOrDdlJob(printable_job_info):
   """Returns True iff the job is successful and is a DML/DDL query job."""
-  return ('Affected Rows' in printable_job_info or
-          'DDL Operation Performed' in printable_job_info)
+  return (
+      'Affected Rows' in printable_job_info
+      or 'DDL Operation Performed' in printable_job_info
+  )
+
+
+def _MaybeGetSessionTempObjectName(dataset_id, object_id):
+  """If we have a session temporary object, returns the user name of the object.
+
+  Args:
+    dataset_id: Dataset of object
+    object_id: Id of object
+
+  Returns: If the object is a session temp object, the name of the object after
+    stripping out internal stuff such as session prefix and signature encodings.
+
+    If the object is not a session temp object, the return value is None.
+  """
+  if not re.fullmatch('_[0-9a-f]{40}', dataset_id):
+    return None  # Not an anonymous dataset
+
+  session_prefix_regexp = (
+      '_[0-9a-f]{8}_[0-9a-f]{4}_[0-9a-f]{4}_[0-9a-f]{4}_[0-9a-f]{12}_'
+  )
+  opt_signature_encoding_regexp = '(?:_b0a98f6_.*)?'
+  match = re.fullmatch(
+      session_prefix_regexp + '(.*?)' + opt_signature_encoding_regexp, object_id
+  )
+  if not match:
+    return None  # No session prefix
+  return match.group(1)
 
 
 def _PrintJobMessages(printable_job_info):
@@ -6169,7 +6255,10 @@ def _PrintJobMessages(printable_job_info):
     routine_id = ddl_target_routine.get('routineId')
     op = _DDL_OPERATION_MAP.get(
         printable_job_info.get('DDL Operation Performed'))
-    if project_id and dataset_id and routine_id and op:
+    temp_object_name = _MaybeGetSessionTempObjectName(dataset_id, routine_id)
+    if temp_object_name is not None:
+      print('%s temporary routine %s' % (op, temp_object_name))
+    else:
       print('%s %s.%s.%s' % (op, project_id, dataset_id, routine_id))
   elif 'DDL Target Row Access Policy' in printable_job_info:
     ddl_target_row_access_policy = printable_job_info[

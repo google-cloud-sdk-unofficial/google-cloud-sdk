@@ -79,13 +79,3 @@ class UpdateBeta(Update):
   def Args(parser):
     flags.AddPatchDeploymentsUpdateFlags(
         parser, api_version='v1beta', release_track='beta')
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class UpdateAlpha(UpdateBeta):
-  """Update a patch deployment in a project."""
-
-  @staticmethod
-  def Args(parser):
-    flags.AddPatchDeploymentsUpdateFlags(
-        parser, api_version='v1alpha2', release_track='alpha')

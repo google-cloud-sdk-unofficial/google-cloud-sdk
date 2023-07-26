@@ -21,6 +21,7 @@ from __future__ import unicode_literals
 from googlecloudsdk.api_lib.network_security.security_profiles.threat_prevention import sp_api
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.network_security import sp_flags
+from googlecloudsdk.core import exceptions as core_exceptions
 from googlecloudsdk.core import log
 
 DETAILED_HELP = {
@@ -30,9 +31,9 @@ DETAILED_HELP = {
 
         """,
     'EXAMPLES': """
-          To create a Security Profile with the name `my-security-profile` which includes location as global or region specifed and organization ID, optional description as `New Security Profile`, run:
+          To create a Security Profile with the name `my-security-profile` and an optional description as `New Security Profile`, run:
 
-              $ {command} my-security-profile  --description="New Security Profile"
+              $ {command} my-security-profile --description="New Security Profile"
 
         """,
 }
@@ -57,6 +58,11 @@ class CreateProfile(base.CreateCommand):
 
     if not args.IsSpecified('description'):
       args.description = 'Security Profile of type Threat Prevention'
+
+    if args.location != 'global':
+      raise core_exceptions.Error(
+          'Only `global` location is supported, but got: %s' % args.location
+      )
 
     response = client.CreateSecurityProfile(
         name=security_profile.RelativeName(),

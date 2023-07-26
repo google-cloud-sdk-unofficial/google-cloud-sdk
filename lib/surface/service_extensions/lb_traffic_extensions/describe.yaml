@@ -1,0 +1,21 @@
+release_tracks: [ALPHA]
+
+help_text:
+  brief: |
+    Describe an LB Traffic Extension.
+  description: |
+    Show details of an LB Traffic Extension.
+  examples: |
+      To show details about the LB Traffic Extension named
+      'my-traffic-extension' located in 'europe-west1'.
+
+        $ {command} my-traffic-extension --location="europe-west1"
+
+arguments:
+  resource:
+    spec: !REF googlecloudsdk.command_lib.service_extensions.resources:lbTrafficExtension
+    help_text: Name of the LB Traffic Extension to be described.
+
+request: &request
+  api_version: v1alpha1
+  collection: networkservices.projects.locations.lbTrafficExtensions

@@ -163,32 +163,3 @@ class Lookup(base.Command):
           instance_ref.RelativeName()))
 
     return response
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class LookupAlpha(Lookup):
-  """Display the guest policies that are applied to an instance.
-
-  ## EXAMPLES
-
-    To view all guest policies that are applied to an instance named
-    `my-instance`, run:
-
-          $ {command} my-instance
-
-  """
-
-  def _CreateRequest(self, messages, instance_name, os_architecture,
-                     os_shortname, os_version):
-    return messages.OsconfigProjectsZonesInstancesLookupGuestPoliciesRequest(
-        instance=instance_name,
-        lookupEffectiveGuestPoliciesRequest=messages
-        .LookupEffectiveGuestPoliciesRequest(
-            osArchitecture=os_architecture,
-            osShortName=os_shortname,
-            osVersion=os_version,
-        ),
-    )
-
-  def _GetResponse(self, service, request):
-    return service.LookupGuestPolicies(request)

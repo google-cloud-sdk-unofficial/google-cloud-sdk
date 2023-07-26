@@ -29,7 +29,7 @@ DETAILED_HELP = {
         """,
     'EXAMPLES':
         """
-          To list VMware Engine operations in a location ``us-west2-a'', run:
+          To list VMware Engine operations in a location `us-west2-a`, run:
 
             $ {command} --location=us-west2-a
 

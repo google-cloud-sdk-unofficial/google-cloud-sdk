@@ -20,7 +20,6 @@ from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.util import messages as messages_util
 from googlecloudsdk.calliope import arg_parsers
-from googlecloudsdk.calliope import base as calliope_base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.container.fleet.features import base
 
@@ -55,9 +54,6 @@ _UPDATE_LOGGING_CONFIG_HELPF_TEXT = """\
 """
 
 
-@calliope_base.Hidden
-@calliope_base.ReleaseTracks(calliope_base.ReleaseTrack.ALPHA,
-                             calliope_base.ReleaseTrack.BETA)
 class Update(base.UpdateCommand):
   """Updates the Fleet Observability Feature resource.
 

@@ -20,8 +20,14 @@ from __future__ import division
 from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.container.fleet import client
+from googlecloudsdk.api_lib.container.fleet import util
 from googlecloudsdk.calliope import base
-from googlecloudsdk.command_lib.util.apis import arg_utils
+from googlecloudsdk.calliope import parser_arguments
+from googlecloudsdk.calliope import parser_extensions
+from googlecloudsdk.command_lib.container.fleet import flags as fleet_flags
+from googlecloudsdk.command_lib.container.fleet import util as fleet_util
+from googlecloudsdk.core import log
+from googlecloudsdk.generated_clients.apis.gkehub.v1alpha import gkehub_v1alpha_messages as messages
 
 
 @base.Hidden
@@ -42,10 +48,50 @@ class Delete(base.DeleteCommand):
   """
 
   @staticmethod
-  def Args(parser):
-    pass
+  def Args(parser: parser_arguments.ArgumentInterceptor) -> messages.Operation:
+    flags = fleet_flags.FleetFlags(parser)
+    flags.AddAsync()
 
-  def Run(self, args):
-    project = arg_utils.GetFromNamespace(args, '--project', use_defaults=True)
+  def Run(self, args: parser_extensions.Namespace) -> messages.Operation:
+    """Runs the fleet delete command.
+
+    A completed fleet delete operation response body is empty, gcloud client
+    won't apply the default output format in non-async mode.
+
+    Args:
+      args: Arguments received from command line.
+
+    Returns:
+      A completed create operation; if `--async` is specified, return a
+      long-running operation to be polled manually.
+    """
+    flag_parser = fleet_flags.FleetFlagParser(
+        args, release_track=base.ReleaseTrack.ALPHA
+    )
+
+    if '--format' not in args.GetSpecifiedArgNames():
+      if flag_parser.Async():
+        args.format = fleet_util.OPERATION_FORMAT
+
+    req = flag_parser.messages.GkehubProjectsLocationsFleetsDeleteRequest(
+        name=util.FleetResourceName(flag_parser.Project())
+    )
     fleetclient = client.FleetClient(release_track=base.ReleaseTrack.ALPHA)
-    return fleetclient.DeleteFleet(project)
+    operation = fleetclient.DeleteFleet(req)
+    fleet_ref = util.FleetRef(flag_parser.Project())
+
+    if flag_parser.Async():
+      log.DeletedResource(
+          fleet_ref, kind='Anthos fleet', is_async=flag_parser.Async()
+      )
+      return operation
+
+    operation_client = client.OperationClient(
+        release_track=base.ReleaseTrack.ALPHA
+    )
+    operation_ref = util.OperationRef(operation)
+    completed_operation = operation_client.Wait(operation_ref)
+    log.DeletedResource(
+        fleet_ref, kind='Anthos fleet', is_async=flag_parser.Async()
+    )
+    return completed_operation

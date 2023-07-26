@@ -31,7 +31,7 @@ DETAILED_HELP = {
         """,
     'EXAMPLES':
         """
-          To update an external access firewall rule named ``my-external-access-rule'' so that it denies the traffic for that rule, run:
+          To update an external access firewall rule named `my-external-access-rule` so that it denies the traffic for that rule, run:
 
             $ {command} my-external-access-rule --network-policy=my-network-policy --action=DENY --location=us-west2 --project=my-project
 

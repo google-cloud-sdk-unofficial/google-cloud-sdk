@@ -29,7 +29,7 @@ DETAILED_HELP = {
         """,
     'EXAMPLES':
         """
-          To get the information about a private connection resource called ``my-private-connection'' in project ``my-project'' and region ``us-west1'', run:
+          To get the information about a private connection resource called `my-private-connection` in project `my-project` and region `us-west1`, run:
 
             $ {command} my-private-connection --location=us-west1 --project=my-project
 
