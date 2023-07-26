@@ -1,9 +1,8 @@
 - release_tracks: [GA]
-  hidden: true
 
   help_text:
     brief: |
-      Delete cleanup policies.
+      Delete cleanup policies from an Artifact Registry repository.
     description: |
       Delete cleanup policies from an Artifact Registry repository.
 

@@ -30,8 +30,7 @@ from googlecloudsdk.command_lib.compute.backend_services import backend_services
 from googlecloudsdk.command_lib.compute.backend_services import flags
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA,
-                    base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class AddBackend(base.UpdateCommand):
   """Add a backend to a backend service.
 
@@ -233,7 +232,7 @@ class AddBackend(base.UpdateCommand):
         [self._GetSetRequest(client, backend_service_ref, new_object)])
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class AddBackendAlpha(AddBackend):
   """Add a backend to a backend service.
 

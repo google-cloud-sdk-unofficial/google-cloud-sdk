@@ -30,6 +30,58 @@
       api_field: repository.dockerConfig.immutableTags
       help_text: |
         (Docker only) Prevent changes to tagged images in the repository. Tags cannot be deleted or moved to a different image digest, and tagged images cannot be deleted.
+    - group:
+        mutex: true
+        hidden: true
+        params:
+        - arg_name: allow-vulnerability-scanning
+          api_field: repository.vulnerabilityScanningConfig.enablementConfig
+          default: null
+          action: store_true
+          hidden: true
+          help_text: |
+            Allow vulnerability scanning on the repository.
+          choices:
+          - arg_value: true
+            enum_value: INHERITED
+            help_text: Vulnerability scanning enablement config set to inherited.
+        - arg_name: disable-vulnerability-scanning
+          api_field: repository.vulnerabilityScanningConfig.enablementConfig
+          default: null
+          action: store_true
+          hidden: true
+          help_text: |
+            Disable vulnerability scanning on the repository.
+          choices:
+          - arg_value: true
+            enum_value: DISABLED
+            help_text: Vulnerability scanning enablement config set to disabled.
+    - group:
+        mutex: true
+        hidden: true
+        params:
+        - arg_name: allow-sbom-generation
+          api_field: repository.sbomConfig.enablementConfig
+          default: null
+          action: store_true
+          hidden: true
+          help_text: |
+            Allow SBOM generation on the repository.
+          choices:
+          - arg_value: true
+            enum_value: INHERITED
+            help_text: SBOM generation enablement config set to inherited.
+        - arg_name: disable-sbom-generation
+          api_field: repository.sbomConfig.enablementConfig
+          default: null
+          action: store_true
+          hidden: true
+          help_text: |
+            Disable SBOM generation on the repository.
+          choices:
+          - arg_value: true
+            enum_value: DISABLED
+            help_text: SBOM generation enablement config set to disabled.
     labels:
       api_field: repository.labels
     additional_arguments_hook: googlecloudsdk.command_lib.artifacts.util:UpstreamsArgs

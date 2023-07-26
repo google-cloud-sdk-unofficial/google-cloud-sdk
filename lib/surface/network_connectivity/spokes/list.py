@@ -40,7 +40,7 @@ class List(base.ListCommand):
     # Add flags to identify region
     flags.AddRegionResourceArg(parser, 'to display')
     flags.AddRegionGroup(
-        parser, supports_region_wildcard=True, hide_global_arg=True)
+        parser, supports_region_wildcard=True, hide_global_arg=False)
 
     # Table formatting
     parser.display_info.AddFormat(util.LIST_FORMAT)

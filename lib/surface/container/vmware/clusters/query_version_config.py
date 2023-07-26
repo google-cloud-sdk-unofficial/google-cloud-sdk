@@ -20,9 +20,9 @@ from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.container.gkeonprem import vmware_clusters as apis
 from googlecloudsdk.calliope import base
+from googlecloudsdk.calliope import parser_arguments
 from googlecloudsdk.command_lib.container.vmware import flags
 from googlecloudsdk.core import log
-
 import six
 
 _EXAMPLES = """
@@ -61,7 +61,7 @@ class QueryVersionConfig(base.Command):
   detailed_help = {'EXAMPLES': _EXAMPLES}
 
   @staticmethod
-  def Args(parser):
+  def Args(parser: parser_arguments.ArgumentInterceptor):
     """Registers flags for this command."""
     flags.AddLocationResourceArg(parser, 'to query versions')
     flags.AddConfigType(parser)
@@ -69,7 +69,7 @@ class QueryVersionConfig(base.Command):
   def Run(self, args):
     """Runs the query-version-config command."""
     client = apis.ClustersClient()
-    return client.query_version_config(args)
+    return client.QueryVersionConfig(args)
 
   def Epilog(self, resources_were_displayed):
     super(QueryVersionConfig, self).Epilog(resources_were_displayed)

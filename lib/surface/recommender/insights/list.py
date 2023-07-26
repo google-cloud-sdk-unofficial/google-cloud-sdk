@@ -36,11 +36,11 @@ DETAILED_HELP = {
 }
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class List(base.ListCommand):
   r"""List insights for a cloud entity.
 
-  This command will list all insights for a given cloud entity, location and
+  This command lists all insights for a given cloud entity, location and
   insight type. Supported insight-types can be found here:
   https://cloud.google.com/recommender/docs/insights/insight-types. Currently
   the following cloud_entity_types are supported: project, billing_account,
@@ -120,11 +120,11 @@ class List(base.ListCommand):
     return insights
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class ListOriginal(base.ListCommand):
   r"""List insights for a cloud entity.
 
-  This command will list all insights for a given cloud entity, location and
+  This command lists all insights for a given cloud entity, location and
   insight type. Supported insight-types can be found here:
   https://cloud.google.com/recommender/docs/insights/insight-types. Currently
   the following cloud_entity_types are supported: project, billing_account,

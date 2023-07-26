@@ -48,6 +48,7 @@ class GcloudignoreHelp(base.TopicCommand):
   *  gcloud alpha deploy releases create
   * `gcloud alpha blueprints apply`
   * `gcloud alpha blueprints preview`
+  * `gcloud alpha config-manager deployments apply`
   * `gcloud alpha run jobs deploy`
   * `gcloud beta run jobs deploy`
 

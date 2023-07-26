@@ -48,6 +48,7 @@ class Update(base.UpdateCommand):
   def Args(parser):
     utils.AddInstanceResourceArg(parser, Update._API_VERSION)
     flags.AddAsyncFlag(parser)
+    flags.AddExperimentalFeaturesFlag(parser)
     flags.AddManBlockFlag(parser)
 
   def Run(self, args):

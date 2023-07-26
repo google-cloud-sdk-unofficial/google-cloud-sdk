@@ -29,14 +29,12 @@ from googlecloudsdk.core import properties
 class Update(base.UpdateCommand):
   """Update zonal instance settings."""
 
-  detailed_help = {
-      'EXAMPLES': """
+  detailed_help = {'EXAMPLES': """
         To update the instance settings in the zone called ``us-central1-a''
         in the project ``my-gcp-project'' with service account email ``example@serviceaccount.com'', run:
 
           $ {command} --service-account=example@serviceaccount.com --zone=us-central1-a --project=my-gcp-project
-      """
-  }
+      """}
 
   @staticmethod
   def Args(parser):
@@ -46,9 +44,15 @@ class Update(base.UpdateCommand):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     client = holder.client
     service = client.apitools_client.instanceSettings
+    request = client.messages.ComputeInstanceSettingsGetRequest(
+        project=properties.VALUES.core.project.GetOrFail(), zone=args.zone
+    )
+    fingerprint = client.MakeRequests([(service, 'Get', request)])[
+        0
+    ].fingerprint
     request = client.messages.ComputeInstanceSettingsPatchRequest(
         instanceSettings=client.messages.InstanceSettings(
-            email=args.service_account,
+            email=args.service_account, fingerprint=fingerprint
         ),
         project=properties.VALUES.core.project.GetOrFail(),
         zone=args.zone,

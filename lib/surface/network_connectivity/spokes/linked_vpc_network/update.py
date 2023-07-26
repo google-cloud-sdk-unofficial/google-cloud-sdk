@@ -29,7 +29,6 @@ from googlecloudsdk.core import log
 from googlecloudsdk.core import resources
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Update(base.Command):
   """Update a VPC spoke.

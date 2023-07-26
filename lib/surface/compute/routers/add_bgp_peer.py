@@ -39,13 +39,17 @@ class AddBgpPeer(base.UpdateCommand):
   INSTANCE_ARG = None
 
   @classmethod
-  def _Args(cls, parser, support_custom_learned_routes=False):
+  def _Args(
+      cls, parser, support_custom_learned_routes=False, enable_ipv6_bgp=False
+  ):
     cls.ROUTER_ARG = flags.RouterArgument()
     cls.ROUTER_ARG.AddArgument(parser)
     cls.INSTANCE_ARG = instance_flags.InstanceArgumentForRouter()
     cls.INSTANCE_ARG.AddArgument(parser)
     base.ASYNC_FLAG.AddToParser(parser)
-    flags.AddBgpPeerArgs(parser, for_add_bgp_peer=True)
+    flags.AddBgpPeerArgs(
+        parser, for_add_bgp_peer=True, enable_ipv6_bgp=enable_ipv6_bgp
+    )
     flags.AddReplaceCustomAdvertisementArgs(parser, 'peer')
     if support_custom_learned_routes:
       flags.AddReplaceCustomLearnedRoutesArgs(parser)
@@ -55,7 +59,11 @@ class AddBgpPeer(base.UpdateCommand):
     cls._Args(parser)
 
   def _Run(
-      self, args, support_bfd_mode=False, support_custom_learned_routes=False
+      self,
+      args,
+      support_bfd_mode=False,
+      support_custom_learned_routes=False,
+      enable_ipv6_bgp=False,
   ):
     """Runs the command.
 
@@ -64,6 +72,7 @@ class AddBgpPeer(base.UpdateCommand):
       support_bfd_mode: The flag to indicate whether bfd mode is supported.
       support_custom_learned_routes: The flag to indicate whether custom learned
         routes are supported.
+      enable_ipv6_bgp: The flag to indicate whether IPv6-based BGP is supported.
 
     Returns:
       The result of patching the router adding the bgp peer with the
@@ -83,10 +92,12 @@ class AddBgpPeer(base.UpdateCommand):
       instance_ref = self.INSTANCE_ARG.ResolveAsResource(
           args,
           holder.resources,
-          scope_lister=instance_flags.GetInstanceZoneScopeLister(holder.client))
+          scope_lister=instance_flags.GetInstanceZoneScopeLister(holder.client),
+      )
 
     md5_authentication_key_name = router_utils.GenerateMd5AuthenticationKeyName(
-        replacement, args)
+        replacement, args
+    )
 
     peer = _CreateBgpPeerMessage(
         messages,
@@ -95,11 +106,13 @@ class AddBgpPeer(base.UpdateCommand):
         support_bfd_mode=support_bfd_mode,
         instance_ref=instance_ref,
         support_custom_learned_routes=support_custom_learned_routes,
+        enable_ipv6_bgp=enable_ipv6_bgp,
     )
 
     if router_utils.HasReplaceAdvertisementFlags(args):
       mode, groups, ranges = router_utils.ParseAdvertisements(
-          messages=messages, resource_class=messages.RouterBgpPeer, args=args)
+          messages=messages, resource_class=messages.RouterBgpPeer, args=args
+      )
 
       attrs = {
           'advertiseMode': mode,
@@ -121,7 +134,8 @@ class AddBgpPeer(base.UpdateCommand):
 
     if args.md5_authentication_key is not None:
       md5_authentication_key = messages.RouterMd5AuthenticationKey(
-          name=md5_authentication_key_name, key=args.md5_authentication_key)
+          name=md5_authentication_key_name, key=args.md5_authentication_key
+      )
       replacement.md5AuthenticationKeys.append(md5_authentication_key)
 
     result = service.Patch(
@@ -129,7 +143,9 @@ class AddBgpPeer(base.UpdateCommand):
             project=router_ref.project,
             region=router_ref.region,
             router=router_ref.Name(),
-            routerResource=replacement))
+            routerResource=replacement,
+        )
+    )
 
     operation_ref = resources.REGISTRY.Parse(
         result.name,
@@ -137,16 +153,21 @@ class AddBgpPeer(base.UpdateCommand):
         params={
             'project': router_ref.project,
             'region': router_ref.region,
-        })
+        },
+    )
 
     if args.async_:
       log.UpdatedResource(
           operation_ref,
-          kind='router [{0}] to add peer [{1}]'.format(router_ref.Name(),
-                                                       peer.name),
+          kind='router [{0}] to add peer [{1}]'.format(
+              router_ref.Name(), peer.name
+          ),
           is_async=True,
-          details='Run the [gcloud compute operations describe] command '
-          'to check the status of this operation.')
+          details=(
+              'Run the [gcloud compute operations describe] command '
+              'to check the status of this operation.'
+          ),
+      )
       return result
 
     target_router_ref = holder.resources.Parse(
@@ -155,13 +176,17 @@ class AddBgpPeer(base.UpdateCommand):
         params={
             'project': router_ref.project,
             'region': router_ref.region,
-        })
+        },
+    )
 
     operation_poller = poller.Poller(service, target_router_ref)
     return waiter.WaitFor(
-        operation_poller, operation_ref,
-        'Creating peer [{0}] in router [{1}]'.format(peer.name,
-                                                     router_ref.Name()))
+        operation_poller,
+        operation_ref,
+        'Creating peer [{0}] in router [{1}]'.format(
+            peer.name, router_ref.Name()
+        ),
+    )
 
   def Run(self, args):
     """See base.UpdateCommand."""
@@ -195,12 +220,15 @@ class AddBgpPeerAlpha(AddBgpPeerBeta):
 
   @classmethod
   def Args(cls, parser):
-    cls._Args(parser, support_custom_learned_routes=True)
+    cls._Args(parser, support_custom_learned_routes=True, enable_ipv6_bgp=True)
 
   def Run(self, args):
     """See base.UpdateCommand."""
     return self._Run(
-        args, support_bfd_mode=True, support_custom_learned_routes=True
+        args,
+        support_bfd_mode=True,
+        support_custom_learned_routes=True,
+        enable_ipv6_bgp=True,
     )
 
 
@@ -211,6 +239,7 @@ def _CreateBgpPeerMessage(
     support_bfd_mode=False,
     instance_ref=None,
     support_custom_learned_routes=False,
+    enable_ipv6_bgp=False,
 ):
   """Creates a BGP peer with base attributes based on flag arguments.
 
@@ -222,11 +251,11 @@ def _CreateBgpPeerMessage(
     instance_ref: An instance reference.
     support_custom_learned_routes: The flag to indicate whether custom learned
       routes are supported.
+    enable_ipv6_bgp: The flag to indicate whether IPv6-based BGP is supported.
 
   Returns:
     the RouterBgpPeer
   """
-  bfd = None
   if support_bfd_mode:
     bfd = _CreateBgpPeerBfdMessageMode(messages, args)
   else:
@@ -237,18 +266,6 @@ def _CreateBgpPeerMessage(
       enable = messages.RouterBgpPeer.EnableValueValuesEnum.TRUE
     else:
       enable = messages.RouterBgpPeer.EnableValueValuesEnum.FALSE
-  enable_ipv6 = None
-  if args.enable_ipv6 is not None:
-    if args.enable_ipv6:
-      enable_ipv6 = True
-    else:
-      enable_ipv6 = False
-  ipv6_nexthop_address = None
-  peer_ipv6_nexthop_address = None
-  if args.ipv6_nexthop_address is not None:
-    ipv6_nexthop_address = args.ipv6_nexthop_address
-  if args.peer_ipv6_nexthop_address is not None:
-    peer_ipv6_nexthop_address = args.peer_ipv6_nexthop_address
 
   result = messages.RouterBgpPeer(
       name=args.peer_name,
@@ -258,9 +275,16 @@ def _CreateBgpPeerMessage(
       advertisedRoutePriority=args.advertised_route_priority,
       enable=enable,
       bfd=bfd,
-      enableIpv6=enable_ipv6,
-      ipv6NexthopAddress=ipv6_nexthop_address,
-      peerIpv6NexthopAddress=peer_ipv6_nexthop_address)
+      enableIpv6=args.enable_ipv6,
+      ipv6NexthopAddress=args.ipv6_nexthop_address,
+      peerIpv6NexthopAddress=args.peer_ipv6_nexthop_address,
+  )
+
+  if enable_ipv6_bgp:
+    result.enableIpv4 = args.enable_ipv4
+    result.ipv4NexthopAddress = args.ipv4_nexthop_address
+    result.peerIpv4NexthopAddress = args.peer_ipv4_nexthop_address
+
   if support_custom_learned_routes:
     result.customLearnedRoutePriority = args.custom_learned_route_priority
   if instance_ref is not None:
@@ -272,16 +296,20 @@ def _CreateBgpPeerMessage(
 
 def _CreateBgpPeerBfdMessage(messages, args):
   """Creates a BGP peer with base attributes based on flag arguments."""
-  if not (args.IsSpecified('bfd_min_receive_interval') or
-          args.IsSpecified('bfd_min_transmit_interval') or
-          args.IsSpecified('bfd_session_initialization_mode') or
-          args.IsSpecified('bfd_multiplier')):
+  if not (
+      args.IsSpecified('bfd_min_receive_interval')
+      or args.IsSpecified('bfd_min_transmit_interval')
+      or args.IsSpecified('bfd_session_initialization_mode')
+      or args.IsSpecified('bfd_multiplier')
+  ):
     return None
   bfd_session_initialization_mode = None
   if args.bfd_session_initialization_mode is not None:
     bfd_session_initialization_mode = (
         messages.RouterBgpPeerBfd.SessionInitializationModeValueValuesEnum(
-            args.bfd_session_initialization_mode))
+            args.bfd_session_initialization_mode
+        )
+    )
   return messages.RouterBgpPeerBfd(
       minReceiveInterval=args.bfd_min_receive_interval,
       minTransmitInterval=args.bfd_min_transmit_interval,
@@ -292,19 +320,24 @@ def _CreateBgpPeerBfdMessage(messages, args):
 
 def _CreateBgpPeerBfdMessageMode(messages, args):
   """Creates a BGP peer with base attributes based on flag arguments."""
-  if not (args.IsSpecified('bfd_min_receive_interval') or
-          args.IsSpecified('bfd_min_transmit_interval') or
-          args.IsSpecified('bfd_session_initialization_mode') or
-          args.IsSpecified('bfd_multiplier')):
+  if not (
+      args.IsSpecified('bfd_min_receive_interval')
+      or args.IsSpecified('bfd_min_transmit_interval')
+      or args.IsSpecified('bfd_session_initialization_mode')
+      or args.IsSpecified('bfd_multiplier')
+  ):
     return None
   mode = None
   bfd_session_initialization_mode = None
   if args.bfd_session_initialization_mode is not None:
     mode = messages.RouterBgpPeerBfd.ModeValueValuesEnum(
-        args.bfd_session_initialization_mode)
+        args.bfd_session_initialization_mode
+    )
     bfd_session_initialization_mode = (
         messages.RouterBgpPeerBfd.SessionInitializationModeValueValuesEnum(
-            args.bfd_session_initialization_mode))
+            args.bfd_session_initialization_mode
+        )
+    )
   return messages.RouterBgpPeerBfd(
       minReceiveInterval=args.bfd_min_receive_interval,
       minTransmitInterval=args.bfd_min_transmit_interval,

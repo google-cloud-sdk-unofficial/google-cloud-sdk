@@ -36,11 +36,11 @@ DETAILED_HELP = {
 }
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class List(base.ListCommand):
   r"""List operations for a recommendation.
 
-  This command will list all recommendations for a given cloud_entity_id,
+  This command lists all recommendations for a given cloud_entity_id,
   location and recommender. Supported recommenders can be found here:
   https://cloud.google.com/recommender/docs/recommenders.
   Currently the following cloud_entity_types are supported: project,
@@ -104,7 +104,6 @@ class List(base.ListCommand):
       recommenders_client = recommenders.CreateClient(self.ReleaseTrack())
       recommenders_response = recommenders_client.List(args.page_size)
       for recommender in [response.name for response in recommenders_response]:
-        peek = None
         parent_name = flags.GetFullRecommenderName(args, recommender)
         new_recommendations = recommendations_client.List(
             parent_name, args.page_size
@@ -123,11 +122,11 @@ class List(base.ListCommand):
     return recommendations
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class ListOriginal(base.ListCommand):
   r"""List operations for a recommendation.
 
-  This command will list all recommendations for a given cloud_entity_id,
+  This command lists all recommendations for a given cloud_entity_id,
   location and recommender. Supported recommenders can be found here:
   https://cloud.google.com/recommender/docs/recommenders.
   Currently the following cloud_entity_types are supported: project,

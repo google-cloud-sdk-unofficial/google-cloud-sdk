@@ -20,6 +20,7 @@ from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.container.gkeonprem import operations
 from googlecloudsdk.calliope import base
+from googlecloudsdk.calliope import parser_arguments
 from googlecloudsdk.command_lib.container.gkeonprem import constants
 from googlecloudsdk.command_lib.container.vmware import flags as vmware_flags
 
@@ -36,7 +37,7 @@ class List(base.ListCommand):
   detailed_help = {'EXAMPLES': _EXAMPLES}
 
   @staticmethod
-  def Args(parser):
+  def Args(parser: parser_arguments.ArgumentInterceptor):
     """Registers flags for this command."""
     vmware_flags.AddLocationResourceArg(parser, 'to list operations')
     parser.display_info.AddFormat(constants.OPERATIONS_FORMAT)

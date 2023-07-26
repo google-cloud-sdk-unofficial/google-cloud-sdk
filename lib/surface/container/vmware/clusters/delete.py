@@ -21,6 +21,7 @@ from __future__ import unicode_literals
 from googlecloudsdk.api_lib.container.gkeonprem import operations
 from googlecloudsdk.api_lib.container.gkeonprem import vmware_clusters as apis
 from googlecloudsdk.calliope import base
+from googlecloudsdk.calliope import parser_arguments
 from googlecloudsdk.command_lib.container.vmware import command_util
 from googlecloudsdk.command_lib.container.vmware import flags
 from googlecloudsdk.core import log
@@ -39,7 +40,7 @@ class Delete(base.DeleteCommand):
   detailed_help = {'EXAMPLES': _EXAMPLES}
 
   @staticmethod
-  def Args(parser):
+  def Args(parser: parser_arguments.ArgumentInterceptor):
     flags.AddClusterResourceArg(parser, 'to delete', True)
     flags.AddValidationOnly(parser)
     flags.AddForceDeleteCluster(parser)

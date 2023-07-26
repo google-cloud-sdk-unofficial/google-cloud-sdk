@@ -21,8 +21,7 @@ from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-@base.Hidden
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class ServiceLbPolicies(base.Group):
   """Manage Network Services ServiceLbPolicies."""
   category = base.MANAGEMENT_TOOLS_CATEGORY

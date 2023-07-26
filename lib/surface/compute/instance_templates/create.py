@@ -20,12 +20,14 @@ from __future__ import unicode_literals
 
 import collections
 import json
+
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import constants
 from googlecloudsdk.api_lib.compute import image_utils
 from googlecloudsdk.api_lib.compute import instance_template_utils
 from googlecloudsdk.api_lib.compute import instance_utils
 from googlecloudsdk.api_lib.compute import metadata_utils
+from googlecloudsdk.api_lib.compute import partner_metadata_utils
 from googlecloudsdk.api_lib.compute import utils
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute import completers
@@ -41,7 +43,6 @@ from googlecloudsdk.command_lib.compute.sole_tenancy import util as sole_tenancy
 from googlecloudsdk.command_lib.util.apis import arg_utils
 from googlecloudsdk.command_lib.util.args import labels_util
 from googlecloudsdk.core import log
-
 import six
 
 
@@ -62,7 +63,7 @@ def _CommonArgs(
     support_replica_zones=False,
     support_local_ssd_recovery_timeout=False,
     support_network_queue_count=False,
-    support_storage_pool=False
+    support_storage_pool=False,
 ):
   """Adding arguments applicable for creating instance templates."""
   parser.display_info.AddFormat(instance_templates_flags.DEFAULT_LIST_FORMAT)
@@ -74,7 +75,7 @@ def _CommonArgs(
       support_boot=True,
       support_multi_writer=support_multi_writer,
       support_replica_zones=support_replica_zones,
-      support_storage_pool=support_storage_pool
+      support_storage_pool=support_storage_pool,
   )
   if support_local_ssd_size:
     instances_flags.AddLocalSsdArgsWithSize(parser)
@@ -111,8 +112,9 @@ def _CommonArgs(
     instances_flags.AddNumaNodeCountArgs(parser)
   instances_flags.AddStackTypeArgs(parser)
   instances_flags.AddIpv6NetworkTierArgs(parser)
-  maintenance_flags.AddResourcePoliciesArgs(parser, 'added to',
-                                            'instance-template')
+  maintenance_flags.AddResourcePoliciesArgs(
+      parser, 'added to', 'instance-template'
+  )
   instances_flags.AddProvisioningModelVmArgs(parser)
   instances_flags.AddInstanceTerminationActionVmArgs(parser)
   instances_flags.AddIPv6AddressArgs(parser)
@@ -124,7 +126,8 @@ def _CommonArgs(
     instances_flags.AddMaxRunDurationVmArgs(parser)
 
   instance_templates_flags.AddServiceProxyConfigArgs(
-      parser, release_track=release_track)
+      parser, release_track=release_track
+  )
   if support_mesh:
     instance_templates_flags.AddMeshArgs(parser)
 
@@ -139,20 +142,25 @@ def _CommonArgs(
 
   if support_region_instance_template:
     parser.add_argument(
-        '--subnet-region', help='Specifies the region of the subnetwork.')
+        '--subnet-region', help='Specifies the region of the subnetwork.'
+    )
     parser.add_argument(
         '--instance-template-region',
-        help='Specifies the region of the regional instance template.')
+        help='Specifies the region of the regional instance template.',
+    )
 
   flags.AddRegionFlag(
-      parser, resource_type='subnetwork', operation_type='attach')
+      parser, resource_type='subnetwork', operation_type='attach'
+  )
 
   parser.add_argument(
       '--description',
-      help='Specifies a textual description for the instance template.')
+      help='Specifies a textual description for the instance template.',
+  )
 
   Create.InstanceTemplateArg = (
-      instance_templates_flags.MakeInstanceTemplateArg())
+      instance_templates_flags.MakeInstanceTemplateArg()
+  )
   Create.InstanceTemplateArg.AddArgument(parser, operation_type='create')
   if support_source_instance:
     instance_templates_flags.MakeSourceInstanceArg().AddArgument(parser)
@@ -165,7 +173,8 @@ Specifies the reservation for instances created from this template.
 """,
       affinity_text="""\
 The type of reservation for instances created from this template.
-""")
+""",
+  )
 
   parser.display_info.AddCacheUpdater(completers.InstanceTemplatesCompleter)
   if support_host_error_timeout_seconds:
@@ -175,9 +184,9 @@ The type of reservation for instances created from this template.
     instances_flags.AddLocalSsdRecoveryTimeoutArgs(parser)
 
 
-def _ValidateInstancesFlags(args,
-                            support_kms=False,
-                            support_max_run_duration=False):
+def _ValidateInstancesFlags(
+    args, support_kms=False, support_max_run_duration=False
+):
   """Validate flags for instance template that affects instance creation.
 
   Args:
@@ -197,18 +206,21 @@ def _ValidateInstancesFlags(args,
   instances_flags.ValidateReservationAffinityGroup(args)
   instances_flags.ValidateNetworkPerformanceConfigsArgs(args)
   instances_flags.ValidateInstanceScheduling(
-      args, support_max_run_duration=support_max_run_duration)
+      args, support_max_run_duration=support_max_run_duration
+  )
 
 
-def _AddSourceInstanceToTemplate(compute_api, args, instance_template,
-                                 support_source_instance):
+def _AddSourceInstanceToTemplate(
+    compute_api, args, instance_template, support_source_instance
+):
   """Set the source instance for the template."""
 
   if not support_source_instance or not args.source_instance:
     return
   source_instance_arg = instance_templates_flags.MakeSourceInstanceArg()
   source_instance_ref = source_instance_arg.ResolveAsResource(
-      args, compute_api.resources)
+      args, compute_api.resources
+  )
   instance_template.sourceInstance = source_instance_ref.SelfLink()
   if args.configure_disk:
     messages = compute_api.client.messages
@@ -222,7 +234,9 @@ def _AddSourceInstanceToTemplate(compute_api, args, instance_template,
       if instantiate_from:
         disk_config.instantiateFrom = (
             messages.DiskInstantiationConfig.InstantiateFromValueValuesEnum(
-                disk.get('instantiate-from').upper().replace('-', '_')))
+                disk.get('instantiate-from').upper().replace('-', '_')
+            )
+        )
       disk_config.customImage = disk.get('custom-image')
       instance_template.sourceInstanceParams.diskConfigs.append(disk_config)
 
@@ -247,14 +261,18 @@ def BuildShieldedInstanceConfigMessage(messages, args):
   enable_secure_boot = None
   enable_vtpm = None
   enable_integrity_monitoring = None
-  if not (hasattr(args, 'shielded_vm_secure_boot') or
-          hasattr(args, 'shielded_vm_vtpm') or
-          hasattr(args, 'shielded_vm_integrity_monitoring')):
+  if not (
+      hasattr(args, 'shielded_vm_secure_boot')
+      or hasattr(args, 'shielded_vm_vtpm')
+      or hasattr(args, 'shielded_vm_integrity_monitoring')
+  ):
     return shielded_instance_config_message
 
-  if (not args.IsSpecified('shielded_vm_secure_boot') and
-      not args.IsSpecified('shielded_vm_vtpm') and
-      not args.IsSpecified('shielded_vm_integrity_monitoring')):
+  if (
+      not args.IsSpecified('shielded_vm_secure_boot')
+      and not args.IsSpecified('shielded_vm_vtpm')
+      and not args.IsSpecified('shielded_vm_integrity_monitoring')
+  ):
     return shielded_instance_config_message
 
   if args.shielded_vm_secure_boot is not None:
@@ -274,18 +292,22 @@ def BuildShieldedInstanceConfigMessage(messages, args):
 
 
 def BuildConfidentialInstanceConfigMessage(
-    messages, args, support_confidential_compute_type=False):
+    messages, args, support_confidential_compute_type=False,
+    support_confidential_compute_type_tdx=False):
   """Builds a confidential instance configuration message."""
   return instance_utils.CreateConfidentialInstanceMessage(
-      messages, args, support_confidential_compute_type)
+      messages, args, support_confidential_compute_type,
+      support_confidential_compute_type_tdx)
 
 
 def PackageLabels(labels_cls, labels):
   # Sorted for test stability
-  return labels_cls(additionalProperties=[
-      labels_cls.AdditionalProperty(key=key, value=value)
-      for key, value in sorted(six.iteritems(labels))
-  ])
+  return labels_cls(
+      additionalProperties=[
+          labels_cls.AdditionalProperty(key=key, value=value)
+          for key, value in sorted(six.iteritems(labels))
+      ]
+  )
 
 
 # Function copied from labels_util.
@@ -305,7 +327,6 @@ def ParseCreateArgsWithServiceProxy(args, labels_cls, labels_dest='labels'):
 
 
 def AddScopesForServiceProxy(args):
-
   if getattr(args, 'service_proxy', False):
     if args.scopes is None:
       args.scopes = constants.DEFAULT_SCOPES[:]
@@ -325,7 +346,6 @@ def AddServiceProxyArgsToMetadata(args):
         arguments specified in the .Args() method.
   """
   if getattr(args, 'service_proxy', False):
-
     service_proxy_config = collections.OrderedDict()
     proxy_spec = collections.OrderedDict()
 
@@ -336,7 +356,8 @@ def AddServiceProxyArgsToMetadata(args):
     if 'serving-ports' in args.service_proxy:
       # convert list of strings to list of integers.
       serving_ports = list(
-          map(int, args.service_proxy['serving-ports'].split(';')))
+          map(int, args.service_proxy['serving-ports'].split(';'))
+      )
       # find unique ports by converting list of integers to set of integers.
       unique_serving_ports = set(serving_ports)
       # convert it back to list of integers.
@@ -374,11 +395,13 @@ def AddServiceProxyArgsToMetadata(args):
     if 'intercept-all-outbound-traffic' in args.service_proxy:
       traffic_interception['intercept-all-outbound'] = True
       if 'exclude-outbound-ip-ranges' in args.service_proxy:
-        traffic_interception['exclude-outbound-ip-ranges'] = (
-            args.service_proxy['exclude-outbound-ip-ranges'].split(';'))
+        traffic_interception['exclude-outbound-ip-ranges'] = args.service_proxy[
+            'exclude-outbound-ip-ranges'
+        ].split(';')
       if 'exclude-outbound-port-ranges' in args.service_proxy:
         traffic_interception['exclude-outbound-port-ranges'] = (
-            args.service_proxy['exclude-outbound-port-ranges'].split(';'))
+            args.service_proxy['exclude-outbound-port-ranges'].split(';')
+        )
     if 'intercept-dns' in args.service_proxy:
       traffic_interception['intercept-dns'] = True
     if traffic_interception:
@@ -399,24 +422,26 @@ def AddServiceProxyArgsToMetadata(args):
     service_proxy_agent_recipe['desired_state'] = 'INSTALLED'
 
     if getattr(args, 'service_proxy_agent_location', False):
-      service_proxy_agent_recipe['installSteps'] = [{
-          'scriptRun': {
-              'script':
-                  service_proxy_aux_data.startup_script_with_location_template %
-                  args.service_proxy_agent_location
+      service_proxy_agent_recipe['installSteps'] = [
+          {
+              'scriptRun': {
+                  'script': (
+                      service_proxy_aux_data.startup_script_with_location_template
+                      % args.service_proxy_agent_location
+                  )
+              }
           }
-      }]
+      ]
     else:
-      service_proxy_agent_recipe['installSteps'] = [{
-          'scriptRun': {
-              'script': service_proxy_aux_data.startup_script
-          }
-      }]
+      service_proxy_agent_recipe['installSteps'] = [
+          {'scriptRun': {'script': service_proxy_aux_data.startup_script}}
+      ]
 
     gce_software_declaration['softwareRecipes'] = [service_proxy_agent_recipe]
 
     args.metadata['gce-software-declaration'] = json.dumps(
-        gce_software_declaration)
+        gce_software_declaration
+    )
     args.metadata['enable-guest-attributes'] = 'TRUE'
 
     if proxy_spec:
@@ -448,57 +473,72 @@ def ConfigureMeshTemplate(args, instance_template_ref, network_interfaces):
       args.scopes.append('cloud-platform')
 
     workload_namespace, workload_name = mesh_util.ParseWorkload(
-        args.mesh['workload'])
+        args.mesh['workload']
+    )
     with mesh_util.KubernetesClient(
-        gke_cluster=args.mesh['gke-cluster']) as kube_client:
+        gke_cluster=args.mesh['gke-cluster']
+    ) as kube_client:
       log.status.Print(
-          'Verifying GKE cluster and Anthos Service Mesh installation...')
+          'Verifying GKE cluster and Anthos Service Mesh installation...'
+      )
       namespaces = ['default', 'istio-system', workload_namespace]
       if kube_client.NamespacesExist(
-          *namespaces) and kube_client.HasNamespaceReaderPermissions(
-              *namespaces):
+          *namespaces
+      ) and kube_client.HasNamespaceReaderPermissions(*namespaces):
         membership_manifest = kube_client.GetMembershipCR()
         # Verify Identity Provider CR existence only.
         _ = kube_client.GetIdentityProviderCR()
 
         namespace_manifest = kube_client.GetNamespace(workload_namespace)
         workload_manifest = kube_client.GetWorkloadGroupCR(
-            workload_namespace, workload_name)
+            workload_namespace, workload_name
+        )
         mesh_util.VerifyWorkloadSetup(workload_manifest)
 
         asm_revision = mesh_util.RetrieveWorkloadRevision(namespace_manifest)
         mesh_config = kube_client.RetrieveMeshConfig(asm_revision)
 
         log.status.Print(
-            'Configuring the instance template for Anthos Service Mesh...')
+            'Configuring the instance template for Anthos Service Mesh...'
+        )
         project_id = instance_template_ref.project
-        mesh_util.ConfigureInstanceTemplate(args, kube_client, project_id,
-                                            network_interfaces[0].network,
-                                            workload_namespace, workload_name,
-                                            workload_manifest,
-                                            membership_manifest, asm_revision,
-                                            mesh_config)
+        mesh_util.ConfigureInstanceTemplate(
+            args,
+            kube_client,
+            project_id,
+            network_interfaces[0].network,
+            workload_namespace,
+            workload_name,
+            workload_manifest,
+            membership_manifest,
+            asm_revision,
+            mesh_config,
+        )
 
 
-def _RunCreate(compute_api,
-               args,
-               support_source_instance,
-               support_kms=False,
-               support_post_key_revocation_action_type=False,
-               support_multi_writer=False,
-               support_mesh=False,
-               support_host_error_timeout_seconds=False,
-               support_numa_node_count=False,
-               support_visible_core_count=False,
-               support_max_run_duration=False,
-               support_region_instance_template=False,
-               support_confidential_compute_type=False,
-               support_ipv6_reservation=False,
-               support_internal_ipv6_reservation=False,
-               support_replica_zones=False,
-               support_local_ssd_recovery_timeout=False,
-               support_performance_monitoring_unit=False,
-               support_storage_pool=False):
+def _RunCreate(
+    compute_api,
+    args,
+    support_source_instance,
+    support_kms=False,
+    support_post_key_revocation_action_type=False,
+    support_multi_writer=False,
+    support_mesh=False,
+    support_host_error_timeout_seconds=False,
+    support_numa_node_count=False,
+    support_visible_core_count=False,
+    support_max_run_duration=False,
+    support_region_instance_template=False,
+    support_confidential_compute_type=False,
+    support_confidential_compute_type_tdx=False,
+    support_ipv6_reservation=False,
+    support_internal_ipv6_reservation=False,
+    support_replica_zones=False,
+    support_local_ssd_recovery_timeout=False,
+    support_performance_monitoring_unit=False,
+    support_storage_pool=False,
+    support_partner_metadata=False,
+):
   """Common routine for creating instance template.
 
   This is shared between various release tracks.
@@ -525,6 +565,8 @@ def _RunCreate(compute_api,
         template is supported.
       support_confidential_compute_type: Indicate what confidential compute type
         is used.
+      support_confidential_compute_type_tdx: Indicate if confidential compute
+        type 'TDX' is supported.
       support_ipv6_reservation: Indicate the external IPv6 address is supported.
       support_internal_ipv6_reservation: Indicate the internal IPv6 address is
         supported.
@@ -535,6 +577,7 @@ def _RunCreate(compute_api,
       support_performance_monitoring_unit: Indicate whether the PMU is
         supported.
       support_storage_pool: Indicate whether storage pool is supported.
+      support_partner_metadata: Indicate whether partner metadata is supported.
 
   Returns:
       A resource object dispatched by display.Displayer().
@@ -542,7 +585,8 @@ def _RunCreate(compute_api,
   _ValidateInstancesFlags(
       args,
       support_kms=support_kms,
-      support_max_run_duration=support_max_run_duration)
+      support_max_run_duration=support_max_run_duration,
+  )
   instances_flags.ValidateNetworkTierArgs(args)
 
   instance_templates_flags.ValidateServiceProxyFlags(args)
@@ -556,8 +600,9 @@ def _RunCreate(compute_api,
   boot_disk_size_gb = utils.BytesToGb(args.boot_disk_size)
   utils.WarnIfDiskSizeIsTooSmall(boot_disk_size_gb, args.boot_disk_type)
 
-  instance_template_ref = (
-      Create.InstanceTemplateArg.ResolveAsResource(args, compute_api.resources))
+  instance_template_ref = Create.InstanceTemplateArg.ResolveAsResource(
+      args, compute_api.resources
+  )
 
   AddScopesForServiceProxy(args)
   AddServiceProxyArgsToMetadata(args)
@@ -569,19 +614,22 @@ def _RunCreate(compute_api,
     else:
       subnet_region = getattr(args, 'region', None)
     network_interfaces = (
-        instance_template_utils.CreateNetworkInterfaceMessages)(
-            resources=compute_api.resources,
-            scope_lister=flags.GetDefaultScopeLister(client),
-            messages=client.messages,
-            network_interface_arg=args.network_interface,
-            subnet_region=subnet_region)
+        instance_template_utils.CreateNetworkInterfaceMessages
+    )(
+        resources=compute_api.resources,
+        scope_lister=flags.GetDefaultScopeLister(client),
+        messages=client.messages,
+        network_interface_arg=args.network_interface,
+        subnet_region=subnet_region,
+    )
   else:
     network_tier = getattr(args, 'network_tier', None)
     stack_type = getattr(args, 'stack_type', None)
     ipv6_network_tier = getattr(args, 'ipv6_network_tier', None)
     external_ipv6_address = getattr(args, 'external_ipv6_address', None)
-    external_ipv6_prefix_length = getattr(args, 'external_ipv6_prefix_length',
-                                          None)
+    external_ipv6_prefix_length = getattr(
+        args, 'external_ipv6_prefix_length', None
+    )
     ipv6_address = None
     ipv6_prefix_length = None
     internal_ipv6_address = None
@@ -599,8 +647,9 @@ def _RunCreate(compute_api,
 
     if support_internal_ipv6_reservation:
       internal_ipv6_address = getattr(args, 'internal_ipv6_address', None)
-      internal_ipv6_prefix_length = getattr(args, 'internal_ipv6_prefix_length',
-                                            None)
+      internal_ipv6_prefix_length = getattr(
+          args, 'internal_ipv6_prefix_length', None
+      )
 
     network_interfaces = [
         instance_template_utils.CreateNetworkInterfaceMessage(
@@ -611,9 +660,11 @@ def _RunCreate(compute_api,
             private_ip=args.private_network_ip,
             subnet_region=subnet_region,
             subnet=args.subnet,
-            address=(instance_template_utils.EPHEMERAL_ADDRESS
-                     if not args.no_address and not args.address else
-                     args.address),
+            address=(
+                instance_template_utils.EPHEMERAL_ADDRESS
+                if not args.no_address and not args.address
+                else args.address
+            ),
             network_tier=network_tier,
             stack_type=stack_type,
             ipv6_network_tier=ipv6_network_tier,
@@ -622,7 +673,8 @@ def _RunCreate(compute_api,
             external_ipv6_address=external_ipv6_address,
             external_ipv6_prefix_length=external_ipv6_prefix_length,
             internal_ipv6_address=internal_ipv6_address,
-            internal_ipv6_prefix_length=internal_ipv6_prefix_length)
+            internal_ipv6_prefix_length=internal_ipv6_prefix_length,
+        )
     ]
 
   if support_mesh:
@@ -631,53 +683,60 @@ def _RunCreate(compute_api,
   metadata = metadata_utils.ConstructMetadataMessage(
       client.messages,
       metadata=args.metadata,
-      metadata_from_file=args.metadata_from_file)
+      metadata_from_file=args.metadata_from_file,
+  )
 
   # Compute the shieldedInstanceConfig message.
   shieldedinstance_config_message = BuildShieldedInstanceConfigMessage(
-      messages=client.messages, args=args)
+      messages=client.messages, args=args
+  )
 
   confidential_instance_config_message = (
       BuildConfidentialInstanceConfigMessage(
           messages=client.messages,
           args=args,
-          support_confidential_compute_type=support_confidential_compute_type))
+          support_confidential_compute_type=support_confidential_compute_type,
+          support_confidential_compute_type_tdx=(
+              support_confidential_compute_type_tdx)))
 
   node_affinities = sole_tenancy_util.GetSchedulingNodeAffinityListFromArgs(
-      args, client.messages)
+      args, client.messages
+  )
 
   location_hint = None
   if args.IsSpecified('location_hint'):
     location_hint = args.location_hint
 
   provisioning_model = None
-  if (hasattr(args, 'provisioning_model') and
-      args.IsSpecified('provisioning_model')):
+  if hasattr(args, 'provisioning_model') and args.IsSpecified(
+      'provisioning_model'
+  ):
     provisioning_model = args.provisioning_model
 
   termination_action = None
-  if (hasattr(args, 'instance_termination_action') and
-      args.IsSpecified('instance_termination_action')):
+  if hasattr(args, 'instance_termination_action') and args.IsSpecified(
+      'instance_termination_action'
+  ):
     termination_action = args.instance_termination_action
 
   max_run_duration = None
-  if (hasattr(args, 'max_run_duration') and
-      args.IsSpecified('max_run_duration')):
+  if hasattr(args, 'max_run_duration') and args.IsSpecified('max_run_duration'):
     max_run_duration = args.max_run_duration
 
   termination_time = None
-  if (hasattr(args, 'termination_time') and
-      args.IsSpecified('termination_time')):
+  if hasattr(args, 'termination_time') and args.IsSpecified('termination_time'):
     termination_time = args.termination_time
 
   host_error_timeout_seconds = None
   if support_host_error_timeout_seconds and args.IsSpecified(
-      'host_error_timeout_seconds'):
+      'host_error_timeout_seconds'
+  ):
     host_error_timeout_seconds = args.host_error_timeout_seconds
 
   local_ssd_recovery_timeout = None
   if support_local_ssd_recovery_timeout and args.IsSpecified(
-      'local_ssd_recovery_timeout'):
+      'local_ssd_recovery_timeout'
+  ):
     local_ssd_recovery_timeout = args.local_ssd_recovery_timeout
   scheduling = instance_utils.CreateSchedulingMessage(
       messages=client.messages,
@@ -692,7 +751,8 @@ def _RunCreate(compute_api,
       host_error_timeout_seconds=host_error_timeout_seconds,
       max_run_duration=max_run_duration,
       termination_time=termination_time,
-      local_ssd_recovery_timeout=local_ssd_recovery_timeout)
+      local_ssd_recovery_timeout=local_ssd_recovery_timeout,
+  )
 
   if args.no_service_account:
     service_account = None
@@ -701,12 +761,15 @@ def _RunCreate(compute_api,
   service_accounts = instance_utils.CreateServiceAccountMessages(
       messages=client.messages,
       scopes=[] if args.no_scopes else args.scopes,
-      service_account=service_account)
+      service_account=service_account,
+  )
 
   # create boot disk through args.boot_disk_device_name
   create_boot_disk = not (
-      instance_utils.UseExistingBootDisk((args.disk or []) +
-                                         (args.create_disk or [])))
+      instance_utils.UseExistingBootDisk(
+          (args.disk or []) + (args.create_disk or [])
+      )
+  )
   if create_boot_disk:
     image_expander = image_utils.ImageExpander(client, compute_api.resources)
     try:
@@ -715,7 +778,8 @@ def _RunCreate(compute_api,
           image=args.image,
           image_family=args.image_family,
           image_project=args.image_project,
-          return_image_resource=True)
+          return_image_resource=True,
+      )
     except utils.ImageNotFoundError as e:
       if args.IsSpecified('image_project'):
         raise e
@@ -724,11 +788,13 @@ def _RunCreate(compute_api,
           image=args.image,
           image_family=args.image_family,
           image_project=args.image_project,
-          return_image_resource=False)
+          return_image_resource=False,
+      )
       raise utils.ImageNotFoundError(
           'The resource [{}] was not found. Is the image located in another '
           'project? Use the --image-project flag to specify the '
-          'project where the image is located.'.format(image_uri))
+          'project where the image is located.'.format(image_uri)
+      )
   else:
     image_uri = None
 
@@ -748,23 +814,25 @@ def _RunCreate(compute_api,
       support_kms=support_kms,
       support_multi_writer=support_multi_writer,
       support_replica_zones=support_replica_zones,
-      support_storage_pool=support_storage_pool
-      )
+      support_storage_pool=support_storage_pool,
+  )
 
   machine_type = instance_utils.InterpretMachineType(
       machine_type=args.machine_type,
       custom_cpu=args.custom_cpu,
       custom_memory=args.custom_memory,
       ext=getattr(args, 'custom_extensions', None),
-      vm_type=getattr(args, 'custom_vm_type', None))
+      vm_type=getattr(args, 'custom_vm_type', None),
+  )
 
-  guest_accelerators = (
-      instance_template_utils.CreateAcceleratorConfigMessages(
-          client.messages, getattr(args, 'accelerator', None)))
+  guest_accelerators = instance_template_utils.CreateAcceleratorConfigMessages(
+      client.messages, getattr(args, 'accelerator', None)
+  )
 
   instance_template = None
   if support_region_instance_template and args.IsSpecified(
-      'instance_template_region'):
+      'instance_template_region'
+  ):
     instance_template = client.messages.InstanceTemplate(
         properties=client.messages.InstanceProperties(
             machineType=machine_type,
@@ -809,32 +877,39 @@ def _RunCreate(compute_api,
   )
 
   instance_template.properties.confidentialInstanceConfig = (
-      confidential_instance_config_message)
+      confidential_instance_config_message
+  )
 
   if args.IsSpecified('network_performance_configs'):
     instance_template.properties.networkPerformanceConfig = (
-        instance_utils.GetNetworkPerformanceConfig(args, client))
+        instance_utils.GetNetworkPerformanceConfig(args, client)
+    )
 
   if args.IsSpecified('resource_policies'):
     instance_template.properties.resourcePolicies = getattr(
-        args, 'resource_policies', [])
+        args, 'resource_policies', []
+    )
 
   if support_post_key_revocation_action_type and args.IsSpecified(
-      'post_key_revocation_action_type'):
+      'post_key_revocation_action_type'
+  ):
     instance_template.properties.postKeyRevocationActionType = arg_utils.ChoiceToEnum(
-        args.post_key_revocation_action_type, client.messages.InstanceProperties
-        .PostKeyRevocationActionTypeValueValuesEnum)
+        args.post_key_revocation_action_type,
+        client.messages.InstanceProperties.PostKeyRevocationActionTypeValueValuesEnum,
+    )
 
   if args.IsSpecified('key_revocation_action_type'):
     instance_template.properties.keyRevocationActionType = arg_utils.ChoiceToEnum(
-        args.key_revocation_action_type, client.messages.InstanceProperties
-        .KeyRevocationActionTypeValueValuesEnum)
+        args.key_revocation_action_type,
+        client.messages.InstanceProperties.KeyRevocationActionTypeValueValuesEnum,
+    )
 
   if args.private_ipv6_google_access_type is not None:
     instance_template.properties.privateIpv6GoogleAccess = (
         instances_flags.GetPrivateIpv6GoogleAccessTypeFlagMapperForTemplate(
-            client.messages).GetEnumForChoice(
-                args.private_ipv6_google_access_type))
+            client.messages
+        ).GetEnumForChoice(args.private_ipv6_google_access_type)
+    )
 
   # Create an AdvancedMachineFeatures message if any of the features requiring
   # one have been specified.
@@ -858,12 +933,17 @@ def _RunCreate(compute_api,
 
     instance_template.properties.advancedMachineFeatures = (
         instance_utils.CreateAdvancedMachineFeaturesMessage(
-            client.messages, args.enable_nested_virtualization,
+            client.messages,
+            args.enable_nested_virtualization,
             args.threads_per_core,
             args.numa_node_count if support_numa_node_count else None,
-            visible_core_count, args.enable_uefi_networking,
+            visible_core_count,
+            args.enable_uefi_networking,
             args.performance_monitoring_unit
-            if support_performance_monitoring_unit else None))
+            if support_performance_monitoring_unit
+            else None,
+        )
+    )
 
   if args.resource_manager_tags:
     ret_resource_manager_tags = (
@@ -882,15 +962,38 @@ def _RunCreate(compute_api,
                       six.iteritems(ret_resource_manager_tags))])
       )
 
+  if support_partner_metadata and (
+      args.partner_metadata or args.partner_metadata_from_file
+  ):
+    properties = client.messages.InstanceProperties
+    partner_metadata_dict = partner_metadata_utils.CreatePartnerMetadataDict(
+        args
+    )
+    partner_metadata_utils.ValidatePartnerMetadata(partner_metadata_dict)
+    partner_metadata_message = properties.PartnerMetadataValue()
+    for namespace, structured_entries in partner_metadata_dict.items():
+      partner_metadata_message.additionalProperties.append(
+          properties.PartnerMetadataValue.AdditionalProperty(
+              key=namespace,
+              value=partner_metadata_utils.ConvertStructuredEntries(
+                  structured_entries
+              ),
+          )
+      )
+    instance_template.properties.partnerMetadata = partner_metadata_message
+
   request = client.messages.ComputeInstanceTemplatesInsertRequest(
-      instanceTemplate=instance_template, project=instance_template_ref.project)
+      instanceTemplate=instance_template, project=instance_template_ref.project
+  )
 
   if support_region_instance_template and args.IsSpecified(
-      'instance_template_region'):
+      'instance_template_region'
+  ):
     request = client.messages.ComputeRegionInstanceTemplatesInsertRequest(
         instanceTemplate=instance_template,
         project=instance_template_ref.project,
-        region=instance_template.region)
+        region=instance_template.region,
+    )
 
   request.instanceTemplate.properties.labels = ParseCreateArgsWithServiceProxy(
       args, client.messages.InstanceProperties.LabelsValue
@@ -903,11 +1006,13 @@ def _RunCreate(compute_api,
   if support_region_instance_template and args.IsSpecified(
       'instance_template_region'
   ):
-    return client.MakeRequests([(client.apitools_client.regionInstanceTemplates,
-                                 'Insert', request)])
+    return client.MakeRequests(
+        [(client.apitools_client.regionInstanceTemplates, 'Insert', request)]
+    )
   else:
-    return client.MakeRequests([(client.apitools_client.instanceTemplates,
-                                 'Insert', request)])
+    return client.MakeRequests(
+        [(client.apitools_client.instanceTemplates, 'Insert', request)]
+    )
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
@@ -924,6 +1029,7 @@ class Create(base.CreateCommand):
   Instance templates are global resources, and can be used to create
   instances in any zone.
   """
+
   _support_source_instance = True
   _support_kms = True
   _support_post_key_revocation_action_type = False
@@ -940,6 +1046,7 @@ class Create(base.CreateCommand):
   _support_performance_monitoring_unit = False
   _support_internal_ipv6_reservation = True
   _support_storage_pool = False
+  _support_partner_metadata = False
 
   @classmethod
   def Args(cls, parser):
@@ -962,7 +1069,8 @@ class Create(base.CreateCommand):
     )
     instances_flags.AddMinCpuPlatformArgs(parser, base.ReleaseTrack.GA)
     instances_flags.AddPrivateIpv6GoogleAccessArgForTemplate(
-        parser, utils.COMPUTE_GA_API_VERSION)
+        parser, utils.COMPUTE_GA_API_VERSION
+    )
     instances_flags.AddConfidentialComputeArgs(parser)
     instance_templates_flags.AddKeyRevocationActionTypeArgs(parser)
 
@@ -992,6 +1100,7 @@ class Create(base.CreateCommand):
         support_performance_monitoring_unit=self._support_performance_monitoring_unit,
         support_internal_ipv6_reservation=self._support_internal_ipv6_reservation,
         support_storage_pool=self._support_storage_pool,
+        support_partner_metadata=self._support_partner_metadata,
     )
 
 
@@ -1009,6 +1118,7 @@ class CreateBeta(Create):
   Instance templates are global resources, and can be used to create
   instances in any zone.
   """
+
   _support_source_instance = True
   _support_kms = True
   _support_post_key_revocation_action_type = True
@@ -1027,6 +1137,7 @@ class CreateBeta(Create):
   _support_performance_monitoring_unit = False
   _support_internal_ipv6_reservation = True
   _support_storage_pool = False
+  _support_partner_metadata = False
 
   @classmethod
   def Args(cls, parser):
@@ -1046,10 +1157,12 @@ class CreateBeta(Create):
         support_replica_zones=cls._support_replica_zones,
         support_local_ssd_recovery_timeout=cls._support_local_ssd_recovery_timeout,
         support_network_queue_count=cls._support_network_queue_count,
-        support_storage_pool=cls._support_storage_pool)
+        support_storage_pool=cls._support_storage_pool,
+    )
     instances_flags.AddMinCpuPlatformArgs(parser, base.ReleaseTrack.BETA)
     instances_flags.AddPrivateIpv6GoogleAccessArgForTemplate(
-        parser, utils.COMPUTE_BETA_API_VERSION)
+        parser, utils.COMPUTE_BETA_API_VERSION
+    )
     instances_flags.AddConfidentialComputeArgs(parser)
     instances_flags.AddPostKeyRevocationActionTypeArgs(parser)
     instance_templates_flags.AddKeyRevocationActionTypeArgs(parser)
@@ -1082,6 +1195,7 @@ class CreateBeta(Create):
         support_performance_monitoring_unit=self._support_performance_monitoring_unit,
         support_internal_ipv6_reservation=self._support_internal_ipv6_reservation,
         support_storage_pool=self._support_storage_pool,
+        support_partner_metadata=self._support_partner_metadata,
     )
 
 
@@ -1099,6 +1213,7 @@ class CreateAlpha(Create):
   Instance templates are global resources, and can be used to create
   instances in any zone.
   """
+
   _support_source_instance = True
   _support_kms = True
   _support_post_key_revocation_action_type = True
@@ -1110,6 +1225,7 @@ class CreateAlpha(Create):
   _support_max_run_duration = True
   _support_region_instance_template = True
   _support_confidential_compute_type = True
+  _support_confidential_compute_type_tdx = True
   _support_network_attachments = True
   _support_replica_zones = True
   _support_local_ssd_recovery_timeout = True
@@ -1118,6 +1234,7 @@ class CreateAlpha(Create):
   _support_performance_monitoring_unit = True
   _support_internal_ipv6_reservation = True
   _support_storage_pool = True
+  _support_partner_metadata = True
 
   @classmethod
   def Args(cls, parser):
@@ -1138,18 +1255,25 @@ class CreateAlpha(Create):
         support_replica_zones=cls._support_replica_zones,
         support_local_ssd_recovery_timeout=cls._support_local_ssd_recovery_timeout,
         support_network_queue_count=cls._support_network_queue_count,
-        support_storage_pool=cls._support_storage_pool)
+        support_storage_pool=cls._support_storage_pool,
+    )
     instances_flags.AddLocalNvdimmArgs(parser)
     instances_flags.AddMinCpuPlatformArgs(parser, base.ReleaseTrack.ALPHA)
     instances_flags.AddConfidentialComputeArgs(
-        parser, support_confidential_compute_type=True)
+        parser,
+        support_confidential_compute_type=cls
+        ._support_confidential_compute_type,
+        support_confidential_compute_type_tdx=cls
+        ._support_confidential_compute_type_tdx)
     instances_flags.AddPrivateIpv6GoogleAccessArgForTemplate(
-        parser, utils.COMPUTE_ALPHA_API_VERSION)
+        parser, utils.COMPUTE_ALPHA_API_VERSION
+    )
     instances_flags.AddPostKeyRevocationActionTypeArgs(parser)
     instances_flags.AddIPv6AddressAlphaArgs(parser)
     instances_flags.AddIPv6PrefixLengthAlphaArgs(parser)
     instance_templates_flags.AddKeyRevocationActionTypeArgs(parser)
     instances_flags.AddPerformanceMonitoringUnitArgs(parser)
+    partner_metadata_utils.AddPartnerMetadataArgs(parser)
 
   def Run(self, args):
     """Creates and runs an InstanceTemplates.Insert request.
@@ -1176,29 +1300,31 @@ class CreateAlpha(Create):
         support_region_instance_template=self._support_region_instance_template,
         support_confidential_compute_type=self
         ._support_confidential_compute_type,
+        support_confidential_compute_type_tdx=self
+        ._support_confidential_compute_type_tdx,
         support_replica_zones=self._support_replica_zones,
         support_local_ssd_recovery_timeout=self._support_local_ssd_recovery_timeout,
         support_performance_monitoring_unit=self._support_performance_monitoring_unit,
         support_internal_ipv6_reservation=self._support_internal_ipv6_reservation,
         support_storage_pool=self._support_storage_pool,
+        support_partner_metadata=self._support_partner_metadata,
     )
 
 
 DETAILED_HELP = {
-    'brief':
-        'Create a Compute Engine virtual machine instance template.',
-    'DESCRIPTION':
+    'brief': 'Create a Compute Engine virtual machine instance template.',
+    'DESCRIPTION': (
         '*{command}* facilitates the creation of Compute Engine '
         'virtual machine instance templates. Instance '
         'templates are global resources, and can be used to create '
-        'instances in any zone.',
-    'EXAMPLES':
-        """\
+        'instances in any zone.'
+    ),
+    'EXAMPLES': """\
         To create an instance template named 'INSTANCE-TEMPLATE' with the 'n2'
         vm type, '9GB' memory, and 2 CPU cores, run:
 
           $ {command} INSTANCE-TEMPLATE --custom-vm-type=n2 --custom-cpu=2 --custom-memory=9GB
-        """
+        """,
 }
 
 Create.detailed_help = DETAILED_HELP

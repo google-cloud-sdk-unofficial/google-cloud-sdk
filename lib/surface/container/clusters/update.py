@@ -200,6 +200,7 @@ def _AddMutuallyExclusiveArgs(mutex_group, release_track):
                     api_adapter.CONFIGCONNECTOR: _ParseAddonDisabled,
                     api_adapter.GCEPDCSIDRIVER: _ParseAddonDisabled,
                     api_adapter.GCPFILESTORECSIDRIVER: _ParseAddonDisabled,
+                    api_adapter.GCSFUSECSIDRIVER: _ParseAddonDisabled,
                 },
                 **{k: _ParseAddonDisabled for k in api_adapter.CLOUDRUN_ADDONS
                   }),),
@@ -216,6 +217,7 @@ def _AddMutuallyExclusiveArgs(mutex_group, release_track):
 {nodelocaldns}=ENABLED|DISABLED
 {gcepdcsidriver}=ENABLED|DISABLED
 {gcpfilestoredriver}=ENABLED|DISABLED
+{gcsfusecsidriver}=ENABLED|DISABLED
 """.format(
     hpa=api_adapter.HPA,
     ingress=api_adapter.INGRESS,
@@ -227,6 +229,7 @@ def _AddMutuallyExclusiveArgs(mutex_group, release_track):
     nodelocaldns=api_adapter.NODELOCALDNS,
     gcepdcsidriver=api_adapter.GCEPDCSIDRIVER,
     gcpfilestoredriver=api_adapter.GCPFILESTORECSIDRIVER,
+    gcsfusecsidriver=api_adapter.GCSFUSECSIDRIVER,
     ))
 
   mutex_group.add_argument(
@@ -364,6 +367,7 @@ class Update(base.UpdateCommand):
     flags.AddGatewayFlags(group, hidden=False)
     flags.AddSecurityPostureFlag(group)
     flags.AddClusterNetworkPerformanceConfigFlags(group)
+    flags.AddEnableKubeletReadonlyPortFlag(group, hidden=True)
     flags.AddEnableK8sBetaAPIs(group)
     flags.AddSecurityPostureEnumFlag(group)
     flags.AddWorkloadVulnScanningEnumFlag(group)
@@ -442,6 +446,8 @@ class Update(base.UpdateCommand):
     opts.disable_managed_prometheus = args.disable_managed_prometheus
     opts.enable_security_posture = args.enable_security_posture
     opts.network_performance_config = args.network_performance_configs
+    # pylint: disable=line-too-long
+    opts.enable_insecure_kubelet_readonly_port = args.enable_insecure_kubelet_readonly_port
     opts.enable_k8s_beta_apis = args.enable_kubernetes_unstable_apis
     opts.security_posture = args.security_posture
     opts.workload_vulnerability_scanning = args.workload_vulnerability_scanning
@@ -855,7 +861,7 @@ class UpdateBeta(Update):
     flags.AddFleetProjectFlag(group, is_update=True)
     flags.AddSecurityPostureFlag(group)
     flags.AddClusterNetworkPerformanceConfigFlags(group)
-    flags.AddEnableKubeletReadonlyPortFlag(group)
+    flags.AddEnableKubeletReadonlyPortFlag(group, hidden=True)
     flags.AddEnableK8sBetaAPIs(group)
     flags.AddSecurityPostureEnumFlag(group)
     flags.AddWorkloadVulnScanningEnumFlag(group)
@@ -972,7 +978,7 @@ class UpdateBeta(Update):
     opts.enable_security_posture = args.enable_security_posture
     opts.network_performance_config = args.network_performance_configs
     # pylint: disable=line-too-long
-    opts.enble_insecure_kubelet_readonly_port = args.enble_insecure_kubelet_readonly_port
+    opts.enable_insecure_kubelet_readonly_port = args.enable_insecure_kubelet_readonly_port
     opts.enable_k8s_beta_apis = args.enable_kubernetes_unstable_apis
     opts.security_posture = args.security_posture
     opts.workload_vulnerability_scanning = args.workload_vulnerability_scanning
@@ -1075,7 +1081,7 @@ class UpdateAlpha(Update):
     flags.AddFleetProjectFlag(group, is_update=True)
     flags.AddSecurityPostureFlag(group)
     flags.AddClusterNetworkPerformanceConfigFlags(group)
-    flags.AddEnableKubeletReadonlyPortFlag(group)
+    flags.AddEnableKubeletReadonlyPortFlag(group, hidden=True)
     flags.AddEnableK8sBetaAPIs(group)
     flags.AddSecurityPostureEnumFlag(group)
     flags.AddWorkloadVulnScanningEnumFlag(group)
@@ -1186,7 +1192,7 @@ class UpdateAlpha(Update):
     opts.enable_security_posture = args.enable_security_posture
     opts.network_performance_config = args.network_performance_configs
     # pylint: disable=line-too-long
-    opts.enble_insecure_kubelet_readonly_port = args.enble_insecure_kubelet_readonly_port
+    opts.enable_insecure_kubelet_readonly_port = args.enable_insecure_kubelet_readonly_port
     opts.enable_k8s_beta_apis = args.enable_kubernetes_unstable_apis
     opts.security_posture = args.security_posture
     opts.workload_vulnerability_scanning = args.workload_vulnerability_scanning

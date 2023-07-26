@@ -1,11 +1,10 @@
 - release_tracks: [GA]
-  hidden: true
 
   help_text:
     brief: |
-      List cleanup policies.
+      List cleanup policies of an Artifact Registry repository.
     description: |
-      List cleanup policies of a Artifact Registry repository.
+      List cleanup policies of an Artifact Registry repository.
 
       This command can fail for the following reasons:
         * The specified repository does not exist.

@@ -20,6 +20,7 @@ from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.container.gkeonprem import bare_metal_admin_clusters as apis
 from googlecloudsdk.calliope import base
+from googlecloudsdk.calliope import parser_arguments
 from googlecloudsdk.command_lib.container.bare_metal import admin_cluster_flags as flags
 
 _EXAMPLES = """
@@ -41,7 +42,7 @@ class QueryVersionConfig(base.Command):
   detailed_help = {'EXAMPLES': _EXAMPLES}
 
   @staticmethod
-  def Args(parser):
+  def Args(parser: parser_arguments.ArgumentInterceptor):
     """Registers flags for this command."""
     flags.AddLocationResourceArg(parser, 'to query versions')
     flags.AddAdminConfigType(parser)

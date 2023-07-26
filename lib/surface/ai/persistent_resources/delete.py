@@ -27,11 +27,11 @@ from googlecloudsdk.command_lib.ai.persistent_resources import validation
 from googlecloudsdk.core import log
 
 _PERSISTENT_RESOURCE_DELETE_DISPLAY_MESSAGE = """\
-Request to delete the PersistentResource [{display_name}] has been sent.
+Request to delete the PersistentResource [{name}] has been sent.
 
 You may view the status of your persistent resource with the command
 
-  $ {command_prefix} ai persistent-resources describe {display_name}
+  $ {command_prefix} ai persistent-resources describe {name}
 """
 
 
@@ -75,5 +75,5 @@ class CancelPreGA(base.SilentCommand):
           version=self._api_version).Delete(resource_name)
       log.status.Print(
           _PERSISTENT_RESOURCE_DELETE_DISPLAY_MESSAGE.format(
-              display_name=resource_name, command_prefix=self._CommandPrefix()))
+              name=resource_name, command_prefix=self._CommandPrefix()))
       return response

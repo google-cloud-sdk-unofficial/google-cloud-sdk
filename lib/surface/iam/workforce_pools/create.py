@@ -18,15 +18,14 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
-
 from googlecloudsdk.api_lib.iam import util
 from googlecloudsdk.api_lib.util import waiter
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions as gcloud_exceptions
 from googlecloudsdk.calliope.concepts import concepts
 from googlecloudsdk.command_lib.iam import iam_util
+from googlecloudsdk.command_lib.iam import identity_pool_waiter
 from googlecloudsdk.command_lib.iam.workforce_pools import flags
-from googlecloudsdk.command_lib.iam.workforce_pools import workforce_pool_waiter
 from googlecloudsdk.command_lib.util.apis import yaml_data
 from googlecloudsdk.command_lib.util.concepts import concept_parsers
 from googlecloudsdk.core import log
@@ -118,9 +117,10 @@ class Create(base.CreateCommand):
 
     lro_resource = resources.REGISTRY.ParseRelativeName(
         lro_ref.name, collection='iam.locations.workforcePools.operations')
-    poller = workforce_pool_waiter.WorkforcePoolOperationPoller(
+    poller = identity_pool_waiter.IdentityPoolOperationPoller(
         client.locations_workforcePools,
-        client.locations_workforcePools_operations)
+        client.locations_workforcePools_operations,
+    )
 
     # Wait for a maximum of 5 minutes, as the IAM replication has a lag of up to
     # 80 seconds. GetOperation has a dependency on IAMInternal.CheckPolicy, and

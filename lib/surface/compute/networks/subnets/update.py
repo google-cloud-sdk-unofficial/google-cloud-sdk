@@ -53,6 +53,7 @@ class Update(base.UpdateCommand):
   _include_alpha_logging = False
   _include_reserved_internal_range = False
   _include_external_ipv6_prefix = False
+  _include_allow_cidr_routes_overlap = False
   _api_version = compute_api.COMPUTE_GA_API_VERSION
   detailed_help = _DetailedHelp()
 
@@ -66,9 +67,14 @@ class Update(base.UpdateCommand):
     cls.SUBNETWORK_ARG = flags.SubnetworkArgument()
     cls.SUBNETWORK_ARG.AddArgument(parser, operation_type='update')
 
-    flags.AddUpdateArgs(parser, cls._include_alpha_logging,
-                        cls._include_reserved_internal_range,
-                        cls._include_external_ipv6_prefix, cls._api_version)
+    flags.AddUpdateArgs(
+        parser,
+        cls._include_alpha_logging,
+        cls._include_reserved_internal_range,
+        cls._include_external_ipv6_prefix,
+        cls._include_allow_cidr_routes_overlap,
+        cls._api_version,
+    )
 
   def Run(self, args):
     """Issues requests necessary to update Subnetworks."""
@@ -101,6 +107,10 @@ class Update(base.UpdateCommand):
 
     private_ipv6_google_access_type = args.private_ipv6_google_access_type
 
+    allow_cidr_routes_overlap = None
+    if self._include_allow_cidr_routes_overlap:
+      allow_cidr_routes_overlap = args.allow_cidr_routes_overlap
+
     stack_type = getattr(args, 'stack_type', None)
     ipv6_access_type = getattr(args, 'ipv6_access_type', None)
 
@@ -126,6 +136,7 @@ class Update(base.UpdateCommand):
         set_new_purpose=set_new_purpose,
         drain_timeout_seconds=drain_timeout_seconds,
         private_ipv6_google_access_type=private_ipv6_google_access_type,
+        allow_cidr_routes_overlap=allow_cidr_routes_overlap,
         stack_type=stack_type,
         ipv6_access_type=ipv6_access_type,
         external_ipv6_prefix=external_ipv6_prefix,
@@ -138,6 +149,7 @@ class UpdateBeta(Update):
 
   _include_reserved_internal_range = True
   _include_external_ipv6_prefix = False
+  _include_allow_cidr_routes_overlap = True
   _api_version = compute_api.COMPUTE_BETA_API_VERSION
 
 
@@ -148,4 +160,5 @@ class UpdateAlpha(UpdateBeta):
   _include_alpha_logging = True
   _include_reserved_internal_range = True
   _include_external_ipv6_prefix = True
+  _include_allow_cidr_routes_overlap = True
   _api_version = compute_api.COMPUTE_ALPHA_API_VERSION

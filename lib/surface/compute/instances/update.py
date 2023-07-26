@@ -20,6 +20,7 @@ from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import instance_utils
+from googlecloudsdk.api_lib.compute import partner_metadata_utils
 from googlecloudsdk.api_lib.compute.operations import poller
 from googlecloudsdk.api_lib.util import waiter
 from googlecloudsdk.calliope import base
@@ -27,6 +28,7 @@ from googlecloudsdk.command_lib.compute.instances import flags
 from googlecloudsdk.command_lib.compute.sole_tenancy import flags as sole_tenancy_flags
 from googlecloudsdk.command_lib.compute.sole_tenancy import util as sole_tenancy_util
 from googlecloudsdk.command_lib.util.args import labels_util
+
 
 DETAILED_HELP = {
     'DESCRIPTION': """
@@ -88,6 +90,7 @@ class Update(base.UpdateCommand):
     deletion_protection_operation_ref = None
     shielded_instance_config_ref = None
     display_device_ref = None
+    partner_metadata_operation_ref = None
 
     labels_diff = labels_util.Diff.FromUpdateArgs(args)
     if labels_diff.MayHaveUpdates():
@@ -103,6 +106,12 @@ class Update(base.UpdateCommand):
       deletion_protection_operation_ref = (
           self._GetDeletionProtectionOperationRef(
               args.deletion_protection, instance_ref, holder))
+    if hasattr(args, 'partner_metadata') and (
+        args.partner_metadata or args.partner_metadata_from_file
+    ):
+      partner_metadata_operation_ref = self._GetPartnerMetadataOperationRef(
+          args, instance_ref, holder
+      )
 
     operation_poller = poller.Poller(client.instances)
     result = self._WaitForResult(
@@ -116,6 +125,10 @@ class Update(base.UpdateCommand):
         operation_poller, deletion_protection_operation_ref,
         'Setting deletion protection of instance [{0}] to [{1}]',
         instance_ref.Name(), args.deletion_protection) or result
+    result = self._WaitForResult(
+        operation_poller, partner_metadata_operation_ref,
+        'Updating partner metadata of instance [{0}]',
+        instance_ref.Name()) or result
 
     if (args.IsSpecified('shielded_vm_secure_boot') or
         args.IsSpecified('shielded_vm_vtpm') or
@@ -288,6 +301,40 @@ class Update(base.UpdateCommand):
     return holder.resources.Parse(
         operation.selfLink, collection='compute.zoneOperations')
 
+  def _GetPartnerMetadataOperationRef(self, args, instance_ref, holder):
+    messages = holder.client.messages
+    client = holder.client.apitools_client
+    partner_metadata_dict = (
+        partner_metadata_utils.CreatePartnerMetadataDict(args)
+    )
+    partner_metadata_utils.ValidatePartnerMetadata(partner_metadata_dict)
+    partner_metadata_message = messages.Instance.PartnerMetadataValue()
+    for namespace, structured_entries in partner_metadata_dict.items():
+      partner_metadata_message.additionalProperties.append(
+          messages.Instance.PartnerMetadataValue.AdditionalProperty(
+              key=namespace,
+              value=partner_metadata_utils.ConvertStructuredEntries(
+                  structured_entries
+              ),
+          )
+      )
+    instance = client.instances.Get(
+        messages.ComputeInstancesGetRequest(**instance_ref.AsDict()))
+    instance.partnerMetadata = partner_metadata_message
+    request = messages.ComputeInstancesUpdateRequest(
+        instance=instance_ref.Name(),
+        project=instance_ref.project,
+        zone=instance_ref.zone,
+        instanceResource=instance,
+        minimalAction=messages.ComputeInstancesUpdateRequest
+        .MinimalActionValueValuesEnum.NO_EFFECT,
+        mostDisruptiveAllowedAction=messages.ComputeInstancesUpdateRequest
+        .MostDisruptiveAllowedActionValueValuesEnum.REFRESH)
+
+    operation = client.instances.Update(request)
+    return holder.resources.Parse(
+        operation.selfLink, collection='compute.zoneOperations')
+
   def _WaitForResult(self, operation_poller, operation_ref, message, *args):
     if operation_ref:
       return waiter.WaitFor(
@@ -330,6 +377,7 @@ class UpdateAlpha(UpdateBeta):
     flags.AddShieldedInstanceIntegrityPolicyArgs(parser)
     flags.AddDisplayDeviceArg(parser, is_update=True)
     sole_tenancy_flags.AddNodeAffinityFlagToParser(parser, is_update=True)
+    partner_metadata_utils.AddPartnerMetadataArgs(parser)
 
 
 Update.detailed_help = DETAILED_HELP

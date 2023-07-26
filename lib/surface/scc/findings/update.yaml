@@ -4,25 +4,25 @@
     brief: Update a Cloud Security Command Center finding.
     description: Update a Cloud Security Command Center finding.
     examples: |
-      Update my-finding's state from ACTIVE to INACTIVE:
+      Update myFinding's state from ACTIVE to INACTIVE:
 
-        $ {command} my-finding --organization=123456 --source=5678 --state=INACTIVE
+        $ {command} `myFinding` --organization=123456 --source=5678 --state=INACTIVE
 
-      Update my-finding's state from ACTIVE to INACTIVE using project name for example-project:
+      Update myFinding's state from ACTIVE to INACTIVE using project name for example-project:
 
-        $ {command} projects/example-project/sources/5678/findings/my-finding --state=INACTIVE
+        $ {command} projects/example-project/sources/5678/findings/myFinding --state=INACTIVE
 
-      Update my-finding's state from ACTIVE to INACTIVE using folder name 456:
+      Update myFinding's state from ACTIVE to INACTIVE using folder name 456:
 
-        $ {command} folders/456/sources/5678/findings/my-finding --state=INACTIVE
+        $ {command} folders/456/sources/5678/findings/myFinding --state=INACTIVE
 
-      Override all source properties on my-finding:
+      Override all source properties on myFinding:
 
-        $ {command} my-finding --organization=123456 --source=5678 --source-properties="propKey1=propVal1,propKey2=propVal2"
+        $ {command} `myFinding` --organization=123456 --source=5678 --source-properties="propKey1=propVal1,propKey2=propVal2"
 
-      Selectively update a specific source property on my-finding:
+      Selectively update a specific source property on myFinding:
 
-        $ {command} my-finding --organization=123456 --source=5678 --source-properties="propKey1=propVal1,propKey2=propVal2" --update-mask="source_properties.propKey1"
+        $ {command} `myFinding` --organization=123456 --source=5678 --source-properties="propKey1=propVal1,propKey2=propVal2" --update-mask="source_properties.propKey1"
 
   request:
     collection: securitycenter.organizations.sources.findings

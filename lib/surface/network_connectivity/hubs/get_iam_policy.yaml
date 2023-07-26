@@ -1,5 +1,4 @@
 - release_tracks: [GA]
-  hidden: true
 
   help_text:
     brief: Get the IAM policy for a hub resource.

@@ -128,7 +128,9 @@ class CreateAppProfileAlpha(CreateAppProfile):
         .AddDescription('app profile', required=False)
         .AddForce('create')
         .AddRequestPriority()
-        .AddAppProfileRouting(allow_failover_radius=True, is_update=False)
+        .AddAppProfileRouting(
+            allow_failover_radius=True, allow_row_affinity=True, is_update=False
+        )
     )
 
   def _CreateAppProfile(self, app_profile_ref, args):
@@ -145,6 +147,7 @@ class CreateAppProfileAlpha(CreateAppProfile):
           If both multi_cluster and transactional_writes are present.
           If both cluster and restrict_to are present.
           If both cluster and failover_radius are present.
+          If both cluster and row_affinity are present.
       OneOfArgumentsRequiredException: If neither cluster or multi_cluster are
           present.
 
@@ -161,4 +164,5 @@ class CreateAppProfileAlpha(CreateAppProfile):
         transactional_writes=args.transactional_writes,
         force=args.force,
         priority=args.priority,
+        row_affinity=args.row_affinity,
     )

@@ -38,7 +38,7 @@ DETAILED_HELP = {
 class List(base.ListCommand):
   r"""List recommenders operations.
 
-  This command will list all recommender types.
+  This command lists all recommender types.
   """
 
   detailed_help = DETAILED_HELP

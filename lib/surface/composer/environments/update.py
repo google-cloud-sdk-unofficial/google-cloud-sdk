@@ -257,10 +257,7 @@ class Update(base.Command):
 
     self._addScheduledSnapshotFields(params, args, is_composer_v1)
 
-    if self._support_triggerer and (args.triggerer_cpu or args.triggerer_memory
-                                    or args.triggerer_count is not None
-                                    or args.enable_triggerer or
-                                    args.disable_triggerer):
+    if self._support_triggerer:
       self._addTriggererFields(params, args, env_obj)
     if self._support_maintenance_window:
       params['maintenance_window_start'] = args.maintenance_window_start

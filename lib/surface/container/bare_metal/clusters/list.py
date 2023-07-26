@@ -20,6 +20,7 @@ from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.container.gkeonprem import bare_metal_clusters
 from googlecloudsdk.calliope import base
+from googlecloudsdk.calliope import parser_arguments
 from googlecloudsdk.command_lib.container.bare_metal import cluster_flags as flags
 from googlecloudsdk.command_lib.container.bare_metal import constants
 
@@ -37,7 +38,7 @@ class List(base.ListCommand):
   detailed_help = {'EXAMPLES': _EXAMPLES}
 
   @staticmethod
-  def Args(parser):
+  def Args(parser: parser_arguments.ArgumentInterceptor):
     """Gathers command line arguments for the list command."""
     flags.AddLocationResourceArg(parser, verb='to list')
     parser.display_info.AddFormat(constants.BARE_METAL_CLUSTERS_FORMAT)

@@ -31,12 +31,12 @@ DETAILED_HELP = {
 }
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 @base.Hidden
 class List(base.ListCommand):
   r"""List operations for an insight type.
 
-  This command will list all insight types
+  This command lists all insight types
   """
 
   detailed_help = DETAILED_HELP

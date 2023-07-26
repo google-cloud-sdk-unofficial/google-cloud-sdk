@@ -178,6 +178,7 @@ def AddBetaArgs(parser):
   flags.AddEnablePrivateServiceConnect(psc_setup_group)
   flags.AddAllowedPscProjects(psc_setup_group)
   flags.AddRecreateReplicasOnPrimaryCrash(parser)
+  flags.AddPasswordPolicyDisallowCompromisedCredentials(parser)
 
 
 def AddAlphaArgs(unused_parser):

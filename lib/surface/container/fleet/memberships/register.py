@@ -70,6 +70,8 @@ class Register(base.CreateCommand):
   To register a GKE cluster, use `--gke-cluster` or `--gke-uri` flag (no
   `--kubeconfig` flag is required). Connect agent will not be installed by
   default for GKE clusters. To install it, specify `--install-connect-agent`.
+  The default value for `--location` is the same as the cluster's region or zone,
+  can be specified as `global`.
 
   Anthos clusters on VMware, bare metal, AWS, and Azure are registered
   with a fleet when the clusters are created. To register Amazon EKS
@@ -117,8 +119,8 @@ class Register(base.CreateCommand):
         --version=gkeconnect_20190802_02_00 \
         --service-account-key-file=/tmp/keyfile.json
 
-    Register a non-GKE cluster and output a manifest that can be
-    used to install the Connect agent:
+    Register a non-GKE cluster and output a manifest that can be used to
+    install the Connect agent by kubectl:
 
       $ {command} my-cluster \
         --context=my-cluster-context \
@@ -137,6 +139,15 @@ class Register(base.CreateCommand):
         --gke-uri=my-cluster-gke-uri \
         --install-connect-agent \
         --service-account-key-file=/tmp/keyfile.json
+
+    Register a GKE cluster and output a manifest that can be used to
+    install the Connect agent by kubectl:
+
+      $ {command} my-cluster \
+        --gke-uri=my-cluster-gke-uri \
+        --enable-workload-identity \
+        --install-connect-agent \
+        --manifest-output-file=/tmp/manifest.yaml
 
     Register a GKE cluster first, and install the Connect agent later.
 
@@ -348,6 +359,16 @@ class Register(base.CreateCommand):
     gke_cluster_resource_link, gke_cluster_uri = gke_util.GetGKEClusterResoureLinkAndURI(
         gke_uri=args.GetValue('gke_uri'),
         gke_cluster=args.GetValue('gke_cluster'))
+    manifest_path = args.GetValue('manifest_output_file')
+    if (
+        gke_cluster_resource_link
+        and manifest_path
+        and not args.GetValue('install_connect_agent')
+    ):
+      raise exceptions.Error(
+          'For GKE clusters,  "manifest-output-file" should be specified'
+          ' together with "install-connect-agent".  '
+      )
     if gke_cluster_resource_link and not args.GetValue('install_connect_agent'):
       return self._RegisterGKE(gke_cluster_resource_link, gke_cluster_uri,
                                project, location, args)
@@ -408,7 +429,11 @@ class Register(base.CreateCommand):
         # public_issuer_url can be None or given by user or gke_cluster_uri
         # (incase of a gke cluster).
         # args.public_issuer_url takes precedence over gke_cluster_uri.
-        public_issuer_url = args.public_issuer_url or kube_client.processor.gke_cluster_uri or None
+        public_issuer_url = (
+            args.public_issuer_url
+            or kube_client.processor.gke_cluster_uri
+            or None
+        )
 
         try:
           openid_config_json = six.ensure_str(

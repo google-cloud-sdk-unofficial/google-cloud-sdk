@@ -1,5 +1,4 @@
 - release_tracks: [GA]
-  hidden: true
 
   help_text:
     brief: Add an IAM policy binding to the IAM policy of a hub resource.

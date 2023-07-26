@@ -88,7 +88,19 @@ class Execute(base.Command):
         ):
           config_overrides = flags.GetRunJobConfigurationOverrides(args)
           operations.ValidateConfigOverrides(job_ref, config_overrides)
-          overrides = operations.GetExecutionOverrides(args)
+          container_overrides = []
+          if flags.HasContainerOverrides(args):
+            # If args list has been explicitly provided as an empty list,
+            # this is to clear out the existing args list.
+            clear_args = (
+                flags.FlagIsExplicitlySet(args, 'args') and not args.args
+            )
+            container_overrides = operations.GetContainerOverrides(
+                args.update_env_vars, args.args, clear_args
+            )
+          overrides = operations.GetExecutionOverrides(
+              args.tasks, args.task_timeout, container_overrides
+          )
         e = operations.RunJob(
             job_ref,
             tracker,

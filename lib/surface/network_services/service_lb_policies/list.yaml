@@ -1,13 +1,20 @@
-release_tracks: [ALPHA]
+release_tracks: [ALPHA, BETA]
 
 help_text:
   brief: |
     List ServiceLbPolicies.
   description: |
     List all ServiceLbPolicies in the specified location of the current project.
+  examples: |
+      To list service lb policies in the current project, run:
+
+        $ {command} --location=global
 
 request: &request
-  api_version: v1alpha1
+  ALPHA:
+    api_version: v1alpha1
+  BETA:
+    api_version: v1beta1
   collection: networkservices.projects.locations.serviceLbPolicies
 
 arguments:

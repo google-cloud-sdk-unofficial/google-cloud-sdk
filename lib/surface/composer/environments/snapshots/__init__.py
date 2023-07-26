@@ -27,3 +27,5 @@ class Snapshots(base.Group):
   The {command} command group saves and loads snapshots of Cloud Composer
   environments.
   """
+
+Snapshots.category = base.COMPOSER_CATEGORY

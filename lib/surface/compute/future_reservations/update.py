@@ -70,10 +70,12 @@ class Update(base.UpdateCommand):
 
     if not update_mask:
       parameter_names = [
-          '--planning-status', '--total-count', '--min-cpu-platform',
-          '--local-ssd', '--accelerator', '--maintenance-interval',
-          '--start-time', '--end-time', '--duration', '--machine-type',
-          '--share-setting', '--share-with', '--clear-share-settings'
+          '--planning-status', '--description', '--name-prefix',
+          '--total-count', '--min-cpu-platform', '--local-ssd',
+          '--clear-local-ssd', '--accelerator', '--clear-accelerator',
+          '--maintenance-interval', '--start-time', '--end-time', '--duration',
+          '--machine-type', '--share-setting', '--share-with',
+          '--clear-share-settings',
       ]
       raise exceptions.MinimumArgumentException(
           parameter_names, 'Please specify at least one property to update')
@@ -97,19 +99,26 @@ class Update(base.UpdateCommand):
       update_mask.append('planningStatus')
     if args.IsSpecified('total_count'):
       update_mask.append('specificSkuProperties.totalCount')
+    if args.IsSpecified('name_prefix'):
+      update_mask.append('namePrefix')
+    if args.IsSpecified('description'):
+      update_mask.append('description')
     if args.IsSpecified('min_cpu_platform'):
       update_mask.append(
-          'specificSkuProperties.instanceProperties.minCpuPlatform')
+          'specificSkuProperties.instanceProperties.minCpuPlatform'
+      )
     if args.IsSpecified('machine_type'):
       update_mask.append('specificSkuProperties.instanceProperties.machineType')
-    if args.IsSpecified('accelerator'):
+    if args.IsSpecified('accelerator') or args.IsSpecified('clear_accelerator'):
       update_mask.append(
-          'specificSkuProperties.instanceProperties.guestAccelerator')
-    if args.IsSpecified('local_ssd'):
+          'specificSkuProperties.instanceProperties.guestAccelerator'
+      )
+    if args.IsSpecified('local_ssd') or args.IsSpecified('clear_local_ssd'):
       update_mask.append('specificSkuProperties.instanceProperties.localSsd')
     if args.IsSpecified('maintenance_interval'):
       update_mask.append(
-          'specificSkuProperties.intanceProperties.maintenanceInterval')
+          'specificSkuProperties.intanceProperties.maintenanceInterval'
+      )
     if args.IsSpecified('start_time'):
       update_mask.append('timeWindow.startTime')
     if args.IsSpecified('end_time'):
@@ -129,6 +138,8 @@ class Update(base.UpdateCommand):
     fr_resource = util.MakeFutureReservationMessageFromArgs(
         messages, resources, args, fr_ref
     )
+    fr_resource.description = args.description
+    fr_resource.namePrefix = args.name_prefix
 
     # Build update request.
     fr_update_request = messages.ComputeFutureReservationsUpdateRequest(

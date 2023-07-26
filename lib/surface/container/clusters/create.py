@@ -352,8 +352,8 @@ def ParseCreateOptionsBase(args, is_autopilot, get_default, location,
       enable_security_posture=get_default('enable_security_posture'),
       network_performance_config=get_default(
           'network_performance_configs'),
-      enble_insecure_kubelet_readonly_port=get_default(
-          'enble_insecure_kubelet_readonly_port'),
+      enable_insecure_kubelet_readonly_port=get_default(
+          'enable_insecure_kubelet_readonly_port'),
       enable_k8s_beta_apis=getattr(args, 'enable_kubernetes_unstable_apis'),
       security_posture=get_default('security_posture'),
       workload_vulnerability_scanning=get_default(
@@ -622,6 +622,8 @@ flags_to_add = {
             flags.AddSecurityPostureFlag,
         'clusterNetworkPerformanceConfig':
             flags.AddClusterNetworkPerformanceConfigFlags,
+        'enableKubeletReadonlyPort':
+            (lambda p: flags.AddEnableKubeletReadonlyPortFlag(p, hidden=True)),
         'enableK8sBetaApis':
             flags.AddEnableK8sBetaAPIs,
         'securityPosture':
@@ -857,7 +859,7 @@ flags_to_add = {
         'clusterNetworkPerformanceConfig':
             flags.AddClusterNetworkPerformanceConfigFlags,
         'enableKubeletReadonlyPort':
-            flags.AddEnableKubeletReadonlyPortFlag,
+            (lambda p: flags.AddEnableKubeletReadonlyPortFlag(p, hidden=True)),
         'enableK8sBetaApis':
             flags.AddEnableK8sBetaAPIs,
         'securityPosture':
@@ -1105,7 +1107,7 @@ flags_to_add = {
         'clusterNetworkPerformanceConfig':
             flags.AddClusterNetworkPerformanceConfigFlags,
         'enableKubeletReadonlyPort':
-            flags.AddEnableKubeletReadonlyPortFlag,
+            (lambda p: flags.AddEnableKubeletReadonlyPortFlag(p, hidden=True)),
         'enableK8sBetaApis':
             flags.AddEnableK8sBetaAPIs,
         'securityPosture':
@@ -1361,8 +1363,8 @@ class CreateBeta(Create):
     ops.enable_fleet = get_default('enable_fleet')
     ops.enable_multi_networking = get_default('enable_multi_networking')
     ops.enable_security_posture = get_default('enable_security_posture')
-    ops.enble_insecure_kubelet_readonly_port = get_default(
-        'enble_insecure_kubelet_readonly_port')
+    ops.enable_insecure_kubelet_readonly_port = get_default(
+        'enable_insecure_kubelet_readonly_port')
     ops.security_posture = get_default('security_posture')
     ops.workload_vulnerability_scanning = get_default(
         'workload_vulnerability_scanning'
@@ -1467,7 +1469,7 @@ class CreateAlpha(Create):
     ops.enable_multi_networking = get_default('enable_multi_networking')
     ops.enable_security_posture = get_default('enable_security_posture')
     # pylint: disable=line-too-long
-    ops.enble_insecure_kubelet_readonly_port = get_default('enble_insecure_kubelet_readonly_port')
+    ops.enable_insecure_kubelet_readonly_port = get_default('enable_insecure_kubelet_readonly_port')
     ops.security_posture = get_default('security_posture')
     ops.workload_vulnerability_scanning = get_default(
         'workload_vulnerability_scanning'

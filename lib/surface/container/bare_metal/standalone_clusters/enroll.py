@@ -21,8 +21,9 @@ from __future__ import unicode_literals
 from googlecloudsdk.api_lib.container.gkeonprem import operations
 from googlecloudsdk.api_lib.container.gkeonprem import standalone_clusters as apis
 from googlecloudsdk.calliope import base
+from googlecloudsdk.calliope import parser_arguments
 from googlecloudsdk.command_lib.container.bare_metal import constants as bare_metal_constants
-from googlecloudsdk.command_lib.container.bare_metal import standalone_flags
+from googlecloudsdk.command_lib.container.bare_metal import standalone_cluster_flags
 from googlecloudsdk.command_lib.container.gkeonprem import constants
 
 _EXAMPLES = """
@@ -42,15 +43,17 @@ class Enroll(base.Command):
   detailed_help = {'EXAMPLES': _EXAMPLES}
 
   @staticmethod
-  def Args(parser):
+  def Args(parser: parser_arguments.ArgumentInterceptor):
     """Parses args for enrolling an Anthos on bare metal standalone cluster."""
     parser.display_info.AddFormat(
         bare_metal_constants.BARE_METAL_STANDALONE_CLUSTERS_FORMAT
     )
-    standalone_flags.AddStandaloneClusterMembershipResourceArg(
+    standalone_cluster_flags.AddStandaloneClusterMembershipResourceArg(
         parser, positional=False, required=True
     )
-    standalone_flags.AddStandaloneClusterResourceArg(parser, verb='to enroll')
+    standalone_cluster_flags.AddStandaloneClusterResourceArg(
+        parser, verb='to enroll'
+    )
     base.ASYNC_FLAG.AddToParser(parser)
 
   def Run(self, args):

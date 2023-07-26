@@ -11,8 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Utilities for running predictions for BQML xgboost models.
-"""
+"""Utilities for running predictions for BQML xgboost models."""
 import logging
 
 from bigquery_ml_utils.inference.xgboost_predictor import Predictor
@@ -64,18 +63,24 @@ class BqmlXGBoostClient(PredictionClient):
 
 def create_xgboost_predictor(model_path, **unused_kwargs):
   """Returns a prediction client for the corresponding xgboost model."""
-  logging.info("Downloading the xgboost model from %s to %s", model_path,
-               LOCAL_MODEL_PATH)
+  logging.info(
+      "Downloading the xgboost model from %s to %s",
+      model_path,
+      LOCAL_MODEL_PATH,
+  )
   copy_model_to_local(model_path, LOCAL_MODEL_PATH)
   try:
     return Predictor.from_path(LOCAL_MODEL_PATH)
   except Exception as e:
     logging.exception("Exception during loading bqml xgboost model.")
-    raise PredictionError(PredictionError.FAILED_TO_LOAD_MODEL,
-                          "Exception during loading bqml xgboost model") from e
+    raise PredictionError(
+        PredictionError.FAILED_TO_LOAD_MODEL,
+        "Exception during loading bqml xgboost model: " + str(e),
+    ) from e
 
 
 def create_bqml_xgboost_model(model_path, unused_flags):
   """Returns a xgboost model from the given model_path."""
-  return BqmlXGBoostModel(BqmlXGBoostClient(
-      create_xgboost_predictor(model_path)))
+  return BqmlXGBoostModel(
+      BqmlXGBoostClient(create_xgboost_predictor(model_path))
+  )

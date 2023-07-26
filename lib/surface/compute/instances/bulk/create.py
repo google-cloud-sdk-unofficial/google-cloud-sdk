@@ -132,6 +132,7 @@ class Create(base.Command):
   _support_max_run_duration = False
   _support_enable_target_shape = True
   _support_confidential_compute_type = False
+  _support_confidential_compute_type_tdx = False
   _support_no_address_in_networking = False
   _support_max_count_per_zone = True
   _support_local_ssd_recovery_timeout = False
@@ -159,6 +160,7 @@ class Create(base.Command):
         support_max_run_duration=cls._support_max_run_duration,
         support_enable_target_shape=cls._support_enable_target_shape,
         support_confidential_compute_type=cls._support_confidential_compute_type,
+        support_confidential_compute_type_tdx=cls._support_confidential_compute_type_tdx,
         support_no_address_in_networking=cls._support_no_address_in_networking,
         support_max_count_per_zone=cls._support_max_count_per_zone,
         support_network_queue_count=cls._support_network_queue_count,
@@ -205,6 +207,7 @@ class Create(base.Command):
         self._support_local_ssd_recovery_timeout,
         self._support_enable_target_shape,
         self._support_confidential_compute_type,
+        self._support_confidential_compute_type_tdx,
         self._support_max_count_per_zone,
         self._support_performance_monitoring_unit,
         self._support_custom_hostnames,
@@ -393,6 +396,7 @@ class CreateAlpha(Create):
   _support_max_run_duration = True
   _support_enable_target_shape = True
   _support_confidential_compute_type = True
+  _support_confidential_compute_type_tdx = True
   _support_no_address_in_networking = True
   _support_max_count_per_zone = True
   _support_local_ssd_recovery_timeout = True
@@ -418,6 +422,8 @@ class CreateAlpha(Create):
         support_max_run_duration=cls._support_max_run_duration,
         support_enable_target_shape=cls._support_enable_target_shape,
         support_confidential_compute_type=cls._support_confidential_compute_type,
+        support_confidential_compute_type_tdx=cls
+        ._support_confidential_compute_type_tdx,
         support_no_address_in_networking=cls._support_no_address_in_networking,
         support_max_count_per_zone=cls._support_max_count_per_zone,
         support_network_queue_count=cls._support_network_queue_count,

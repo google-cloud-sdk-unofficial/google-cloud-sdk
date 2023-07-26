@@ -23,19 +23,37 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute import flags as compute_flags
 from googlecloudsdk.command_lib.compute import scope as compute_scope
 from googlecloudsdk.command_lib.compute.instance_templates import flags
+from googlecloudsdk.command_lib.util.apis import arg_utils
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
 class DescribeGA(base.DescribeCommand):
   """Describe a virtual machine instance template."""
+
   support_region_flag = False
+  view_flag = False
 
   @classmethod
   def Args(cls, parser):
     DescribeGA.InstanceTemplateArg = flags.MakeInstanceTemplateArg(
-        include_regional=cls.support_region_flag)
+        include_regional=cls.support_region_flag
+    )
     DescribeGA.InstanceTemplateArg.AddArgument(
-        parser, operation_type='describe')
+        parser, operation_type='describe'
+    )
+    if cls.view_flag:
+      parser.add_argument(
+          '--view',
+          choices={
+              'FULL': 'Include everything in instance',
+              'BASIC': (
+                  'Default view of instance, Including everything except'
+                  ' Partner Metadata.'
+              ),
+          },
+          type=arg_utils.ChoiceToEnumName,
+          help='specify Instance view',
+      )
 
   @staticmethod
   def GetServiceClient(client, ref):
@@ -51,6 +69,14 @@ class DescribeGA(base.DescribeCommand):
     else:
       return client.messages.ComputeRegionInstanceTemplatesGetRequest
 
+  @staticmethod
+  def GetViewEnumValue(view, request_message):
+    if view == 'FULL':
+      return request_message.ViewValueValuesEnum.FULL
+    elif view == 'BASIC':
+      return request_message.ViewValueValuesEnum.BASIC
+    return None
+
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     client = holder.client
@@ -59,33 +85,46 @@ class DescribeGA(base.DescribeCommand):
         args,
         holder.resources,
         scope_lister=compute_flags.GetDefaultScopeLister(client),
-        default_scope=compute_scope.ScopeEnum.GLOBAL)
+        default_scope=compute_scope.ScopeEnum.GLOBAL,
+    )
 
     service_client = self.GetServiceClient(client, instance_template_ref)
     request_message = self.GetRequestMessage(client, instance_template_ref)
-    return client.MakeRequests([
-        (service_client, 'Get',
-         request_message(**instance_template_ref.AsDict()))
-    ])[0]
+    if self.view_flag:
+      return client.MakeRequests([(
+          service_client,
+          'Get',
+          request_message(
+              **instance_template_ref.AsDict(),
+              view=self.GetViewEnumValue(
+                  args.view, request_message
+              )
+          ),
+      )])[0]
+
+    return client.MakeRequests([(
+        service_client,
+        'Get',
+        request_message(**instance_template_ref.AsDict()),
+    )])[0]
 
 
 DescribeGA.detailed_help = {
-    'brief':
-        'Describe a virtual machine instance template',
-    'DESCRIPTION':
-        """\
+    'brief': 'Describe a virtual machine instance template',
+    'DESCRIPTION': """\
         *{command}* displays all data associated with a Google Compute
         Engine virtual machine instance template.
         """,
-    'EXAMPLES':
-        """\
+    'EXAMPLES': """\
         To describe the instance template named 'INSTANCE-TEMPLATE', run:
 
           $ {command} INSTANCE-TEMPLATE
-        """
+        """,
 }
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class DescribeAlpha(DescribeGA):
   support_region_flag = True
+  view_flag = True
+

@@ -77,7 +77,7 @@ def create_transform_predictor(model_path, **unused_kwargs):
     logging.exception("Exception during loading bqml transform model.")
     raise PredictionError(
         PredictionError.FAILED_TO_LOAD_MODEL,
-        "Exception during loading bqml transform model",
+        "Exception during loading bqml model with transform clause: " + str(e),
     ) from e
 
 

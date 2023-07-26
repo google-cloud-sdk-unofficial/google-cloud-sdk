@@ -35,8 +35,7 @@ def _Run(
     args,
     enable_labels=False,
     legacy_output=False,
-    enable_no_wrapper_support=False,
-    enable_push_to_gcs=False,
+    enable_no_wrapper_support=False
 ):
   """Creates one or more subscriptions."""
   flags.ValidateDeadLetterPolicy(args)
@@ -67,47 +66,22 @@ def _Run(
   use_topic_schema = getattr(args, 'use_topic_schema', None)
   write_metadata = getattr(args, 'write_metadata', None)
   drop_unknown_fields = getattr(args, 'drop_unknown_fields', None)
-  cloud_storage_bucket = (
-      getattr(args, 'cloud_storage_bucket', None)
-      if enable_push_to_gcs
-      else None
-  )
-  cloud_storage_file_prefix = (
-      getattr(args, 'cloud_storage_file_prefix', None)
-      if enable_push_to_gcs
-      else None
-  )
-  cloud_storage_file_suffix = (
-      getattr(args, 'cloud_storage_file_suffix', None)
-      if enable_push_to_gcs
-      else None
-  )
-  cloud_storage_max_bytes = (
-      getattr(args, 'cloud_storage_max_bytes', None)
-      if enable_push_to_gcs
-      else None
-  )
-  cloud_storage_max_duration = (
-      getattr(args, 'cloud_storage_max_duration', None)
-      if enable_push_to_gcs
-      else None
-  )
-  if enable_push_to_gcs and args.IsSpecified('cloud_storage_max_duration'):
+  cloud_storage_bucket = getattr(args, 'cloud_storage_bucket', None)
+  cloud_storage_file_prefix = getattr(args, 'cloud_storage_file_prefix', None)
+  cloud_storage_file_suffix = getattr(args, 'cloud_storage_file_suffix', None)
+  cloud_storage_max_bytes = getattr(args, 'cloud_storage_max_bytes', None)
+  cloud_storage_max_duration = getattr(args, 'cloud_storage_max_duration', None)
+  if args.IsSpecified('cloud_storage_max_duration'):
     cloud_storage_max_duration = util.FormatDuration(
         cloud_storage_max_duration)
-  cloud_storage_output_format_list = (
-      getattr(args, 'cloud_storage_output_format', None)
-      if enable_push_to_gcs
-      else None
-  )
+  cloud_storage_output_format_list = getattr(args,
+                                             'cloud_storage_output_format',
+                                             None)
   cloud_storage_output_format = None
   if cloud_storage_output_format_list:
     cloud_storage_output_format = cloud_storage_output_format_list[0]
-  cloud_storage_write_metadata = (
-      getattr(args, 'cloud_storage_write_metadata', None)
-      if enable_push_to_gcs
-      else None
-  )
+  cloud_storage_write_metadata = getattr(args, 'cloud_storage_write_metadata',
+                                         None)
 
   no_expiration = False
   expiration_period = getattr(args, 'expiration_period', None)
@@ -218,8 +192,7 @@ class CreateBeta(Create):
     subscription = resource_args.CreateSubscriptionResourceArg(
         'to create.', plural=True)
     resource_args.AddResourceArgs(parser, [topic, subscription])
-    flags.AddSubscriptionSettingsFlags(parser, enable_no_wrapper_support=True,
-                                       enable_push_to_gcs=True)
+    flags.AddSubscriptionSettingsFlags(parser, enable_no_wrapper_support=True)
     labels_util.AddCreateLabelsFlags(parser)
 
   def Run(self, args):
@@ -229,6 +202,5 @@ class CreateBeta(Create):
         args,
         enable_labels=True,
         legacy_output=legacy_output,
-        enable_no_wrapper_support=True,
-        enable_push_to_gcs=True,
+        enable_no_wrapper_support=True
     )

@@ -107,9 +107,7 @@ class Update(base.UpdateCommand):
         message='waiting for firewall endpoint [{}] to be updated'.format(
             endpoint.RelativeName()
         ),
-        # TODO(b/279880716): Change to True once the resource type is part of
-        # the operation output.
-        has_result=False,
+        has_result=True,
         max_wait=max_wait,
     )
 

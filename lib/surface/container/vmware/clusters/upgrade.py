@@ -23,6 +23,7 @@ from googlecloudsdk.api_lib.container.gkeonprem import operations
 from googlecloudsdk.api_lib.container.gkeonprem import vmware_admin_clusters
 from googlecloudsdk.api_lib.container.gkeonprem import vmware_clusters
 from googlecloudsdk.calliope import base
+from googlecloudsdk.calliope import parser_arguments
 from googlecloudsdk.command_lib.container.gkeonprem import flags as common_flags
 from googlecloudsdk.command_lib.container.vmware import constants
 from googlecloudsdk.command_lib.container.vmware import errors
@@ -45,7 +46,7 @@ class Upgrade(base.Command):
   detailed_help = {'EXAMPLES': _EXAMPLES}
 
   @staticmethod
-  def Args(parser):
+  def Args(parser: parser_arguments.ArgumentInterceptor):
     """Gathers command line arguments for the upgrade command.
 
     Args:

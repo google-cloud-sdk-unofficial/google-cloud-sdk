@@ -37,8 +37,7 @@
 
   request:
     collection: iam.locations.workforcePools.providers
-    modify_request_hooks:
-    - googlecloudsdk.command_lib.iam.hooks:AddWebSsoConfigToRequest
+
   arguments:
     resource:
       help_text: The workforce pool provider to create.
@@ -57,8 +56,7 @@
     - _REF_: googlecloudsdk.command_lib.iam.flags:workforce_pool_provider.oidc_client_id
       required: true
     - _REF_: googlecloudsdk.command_lib.iam.flags:workforce_pool_provider.oidc_client_secret_value
-      hidden: true
-    additional_arguments_hook: googlecloudsdk.command_lib.iam.workforce_pools.flags:AddWebSsoFlag
+    - _REF_: googlecloudsdk.command_lib.iam.flags:workforce_pool_provider.oidc_web_sso_group
 
   async:
     collection: iam.locations.workforcePools.providers.operations

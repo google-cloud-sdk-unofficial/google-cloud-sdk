@@ -25,6 +25,7 @@ from googlecloudsdk.api_lib.compute import csek_utils
 from googlecloudsdk.api_lib.compute import instance_utils
 from googlecloudsdk.api_lib.compute import kms_utils
 from googlecloudsdk.api_lib.compute import metadata_utils
+from googlecloudsdk.api_lib.compute import partner_metadata_utils
 from googlecloudsdk.api_lib.compute import utils
 from googlecloudsdk.api_lib.compute.instances.create import utils as create_utils
 from googlecloudsdk.api_lib.compute.operations import poller
@@ -266,10 +267,11 @@ class Create(base.CreateCommand):
   _support_numa_node_count = False
   _support_visible_core_count = True
   _support_network_queue_count = True
-  _support_instance_kms = False
+  _support_instance_kms = True
   _support_max_run_duration = False
   _support_ipv6_assignment = False
   _support_confidential_compute_type = False
+  _support_confidential_compute_type_tdx = False
   _support_network_attachments = False
   _support_local_ssd_recovery_timeout = False
   _support_internal_ipv6_reservation = True
@@ -280,6 +282,7 @@ class Create(base.CreateCommand):
   _support_storage_pool = False
   _support_source_instant_snapshot = False
   _support_boot_instant_snapshot_uri = False
+  _support_partner_metadata = False
 
   @classmethod
   def Args(cls, parser):
@@ -346,6 +349,8 @@ class Create(base.CreateCommand):
 
   def _CreateRequests(self, args, instance_refs, project, zone, compute_client,
                       resource_parser, holder):
+    """Creates a request for gcloud based on parameters.
+    """
     # gcloud creates default values for some fields in Instance resource
     # when no value was specified on command line.
     # When --source-instance-template was specified, defaults are taken from
@@ -387,13 +392,8 @@ class Create(base.CreateCommand):
         support_internal_ipv6_reservation=self._support_internal_ipv6_reservation,
     )
 
-    confidential_vm = (
-        args.IsSpecified('confidential_compute') and args.confidential_compute)
-
-    if self._support_confidential_compute_type:
-      confidential_vm |= (
-          args.IsSpecified('confidential_compute_type') and
-          args.confidential_compute_type is not None)
+    confidential_vm_type = instance_utils.GetConfidentialVmType(
+        args, self._support_confidential_compute_type)
 
     create_boot_disk = not (
         instance_utils.UseExistingBootDisk((args.disk or []) +
@@ -405,7 +405,7 @@ class Create(base.CreateCommand):
         create_boot_disk,
         project,
         resource_parser,
-        confidential_vm,
+        confidential_vm_type,
         image_family_scope=args.image_family_scope,
         support_image_family_scope=True)
 
@@ -417,7 +417,9 @@ class Create(base.CreateCommand):
             messages=compute_client.messages,
             args=args,
             support_confidential_compute_type=self
-            ._support_confidential_compute_type))
+            ._support_confidential_compute_type,
+            support_confidential_compute_type_tdx=self
+            ._support_confidential_compute_type_tdx))
 
     csek_keys = csek_utils.CsekKeyStore.FromArgs(args,
                                                  self._support_rsa_encrypted)
@@ -467,7 +469,7 @@ class Create(base.CreateCommand):
             project=instance_ref.project,
             location=instance_ref.zone,
             scope=compute_scopes.ScopeEnum.ZONE,
-            confidential_vm=confidential_vm)
+            confidential_vm_type=confidential_vm_type)
 
       can_ip_forward = instance_utils.GetCanIpForward(args, skip_defaults)
       guest_accelerators = create_utils.GetAccelerators(
@@ -494,6 +496,27 @@ class Create(base.CreateCommand):
           serviceAccounts=project_to_sa[instance_ref.project],
           scheduling=scheduling,
           tags=tags)
+
+      if self._support_partner_metadata and (
+          args.partner_metadata or args.partner_metadata_from_file
+      ):
+        partner_metadata_dict = (
+            partner_metadata_utils.CreatePartnerMetadataDict(args)
+        )
+        partner_metadata_utils.ValidatePartnerMetadata(partner_metadata_dict)
+        partner_metadata_message = (
+            compute_client.messages.Instance.PartnerMetadataValue()
+        )
+        for namespace, structured_entries in partner_metadata_dict.items():
+          partner_metadata_message.additionalProperties.append(
+              compute_client.messages.Instance.PartnerMetadataValue.AdditionalProperty(
+                  key=namespace,
+                  value=partner_metadata_utils.ConvertStructuredEntries(
+                      structured_entries
+                  ),
+              )
+          )
+        instance.partnerMetadata = partner_metadata_message
 
       if self._support_instance_kms and args.CONCEPTS.instance_kms_key:
         instance.instanceEncryptionKey = kms_utils.MaybeGetKmsKey(
@@ -737,6 +760,7 @@ class CreateBeta(Create):
   _support_storage_pool = False
   _support_source_instant_snapshot = False
   _support_boot_instant_snapshot_uri = False
+  _support_partner_metadata = False
 
   def GetSourceMachineImage(self, args, resources):
     """Retrieves the specified source machine image's selflink.
@@ -820,6 +844,7 @@ class CreateAlpha(CreateBeta):
   _support_max_run_duration = True
   _support_ipv6_assignment = True
   _support_confidential_compute_type = True
+  _support_confidential_compute_type_tdx = True
   _support_network_attachments = True
   _support_local_ssd_recovery_timeout = True
   _support_regional_instance_template = True
@@ -829,6 +854,7 @@ class CreateAlpha(CreateBeta):
   _support_storage_pool = True
   _support_source_instant_snapshot = True
   _support_boot_instant_snapshot_uri = True
+  _support_partner_metadata = True
 
   @classmethod
   def Args(cls, parser):
@@ -867,7 +893,11 @@ class CreateAlpha(CreateBeta):
     instances_flags.AddPublicDnsArgs(parser, instance=True)
     instances_flags.AddLocalNvdimmArgs(parser)
     instances_flags.AddConfidentialComputeArgs(
-        parser, support_confidential_compute_type=True)
+        parser,
+        support_confidential_compute_type=cls
+        ._support_confidential_compute_type,
+        support_confidential_compute_type_tdx=cls
+        ._support_confidential_compute_type_tdx)
     instances_flags.AddPostKeyRevocationActionTypeArgs(parser)
     instances_flags.AddPrivateIpv6GoogleAccessArg(
         parser, utils.COMPUTE_ALPHA_API_VERSION)
@@ -878,6 +908,7 @@ class CreateAlpha(CreateBeta):
     instances_flags.AddIPv6AddressAlphaArgs(parser)
     instances_flags.AddIPv6PrefixLengthAlphaArgs(parser)
     instances_flags.AddPerformanceMonitoringUnitArgs(parser)
+    partner_metadata_utils.AddPartnerMetadataArgs(parser)
 
 
 Create.detailed_help = DETAILED_HELP

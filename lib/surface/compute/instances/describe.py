@@ -22,6 +22,7 @@ from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute.instances import flags
+from googlecloudsdk.command_lib.util.apis import arg_utils
 
 DETAILED_HELP = {
     'brief': 'Describe a virtual machine instance.',
@@ -88,6 +89,18 @@ class DescribeAlpha(Describe):
         default=[],
         help=('Instead of instance resource display guest attributes of the '
               'instance stored with the given keys.'))
+    parser.add_argument(
+        '--view',
+        choices={
+            'FULL': 'Include everything in instance',
+            'BASIC': (
+                'Default view of instance, Including everything except Partner'
+                ' Metadata.'
+            ),
+        },
+        type=arg_utils.ChoiceToEnumName,
+        help='specify Instance view',
+    )
 
   def _GetGuestAttributes(self, holder, instance_ref, variable_keys):
     def _GetGuestAttributeRequest(holder, instance_ref, variable_key):
@@ -104,13 +117,31 @@ class DescribeAlpha(Describe):
         for variable_key in variable_keys]
     return holder.client.MakeRequests(requests)
 
+  def _GetInstanceView(self, view, request_message):
+    if view == 'FULL':
+      return request_message.ViewValueValuesEnum.FULL
+    elif view == 'BASIC':
+      return request_message.ViewValueValuesEnum.BASIC
+    return None
+
+  def _GetInstance(self, holder, instance_ref, view=None):
+    request = holder.client.messages.ComputeInstancesGetRequest(
+        **instance_ref.AsDict(), view=view)
+    return holder.client.MakeRequests([
+        (holder.client.apitools_client.instances, 'Get', request)])[0]
+
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     instance_ref = self._GetInstanceRef(holder, args)
     if args.guest_attributes:
       return self._GetGuestAttributes(
-          holder, instance_ref, args.guest_attributes)
-    return self._GetInstance(holder, instance_ref)
+          holder, instance_ref, args.guest_attributes
+      )
+    if args.view:
+      args.view = self._GetInstanceView(
+          args.view, holder.client.messages.ComputeInstancesGetRequest
+      )
+    return self._GetInstance(holder, instance_ref, args.view)
 
 
 Describe.detailed_help = DETAILED_HELP

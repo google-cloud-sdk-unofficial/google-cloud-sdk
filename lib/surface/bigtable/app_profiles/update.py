@@ -141,7 +141,10 @@ class UpdateAppProfileAlpha(UpdateAppProfile):
         arguments.ArgAdder(parser)
         .AddDescription('app profile', required=False)
         .AddAppProfileRouting(
-            required=False, allow_failover_radius=True, is_update=True
+            required=False,
+            allow_failover_radius=True,
+            allow_row_affinity=True,
+            is_update=True,
         )
         .AddForce('update')
         .AddRequestPriority()
@@ -162,6 +165,7 @@ class UpdateAppProfileAlpha(UpdateAppProfile):
           If both multi_cluster and transactional_writes are present.
           If both cluster and restrict_to are present.
           If both cluster and failover_radius are present.
+          If both cluster and row_affinity are present.
       OneOfArgumentsRequiredException: If neither cluster or multi_cluster are
           present.
 
@@ -178,4 +182,5 @@ class UpdateAppProfileAlpha(UpdateAppProfile):
         transactional_writes=args.transactional_writes,
         force=args.force,
         priority=args.priority,
+        row_affinity=args.row_affinity,
     )

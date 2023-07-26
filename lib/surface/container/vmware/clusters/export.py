@@ -19,8 +19,10 @@ from __future__ import division
 from __future__ import unicode_literals
 
 import sys
+
 from googlecloudsdk.api_lib.container.gkeonprem import vmware_clusters as apis
 from googlecloudsdk.calliope import base
+from googlecloudsdk.calliope import parser_arguments
 from googlecloudsdk.command_lib.container.vmware import flags
 from googlecloudsdk.command_lib.export import util as export_util
 from googlecloudsdk.core.util import files
@@ -50,7 +52,7 @@ class Export(base.Command):
     )
 
   @staticmethod
-  def Args(parser):
+  def Args(parser: parser_arguments.ArgumentInterceptor):
     flags.AddClusterResourceArg(parser, 'to export')
     export_util.AddExportFlags(
         parser, schema_path=Export.GetSchemaPath(for_help=True)

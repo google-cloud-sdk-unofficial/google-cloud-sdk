@@ -152,3 +152,5 @@ class CreateAlpha(Create):
     container_flags.AddControlPlaneNodeCount(parser)
     container_flags.AddControlPlaneMachineFilter(parser)
     container_flags.AddControlPlaneSharedDeploymentPolicy(parser)
+    container_flags.AddReleaseChannel(parser)
+    container_flags.AddVersion(parser)

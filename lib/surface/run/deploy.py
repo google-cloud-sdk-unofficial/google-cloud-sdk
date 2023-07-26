@@ -339,5 +339,6 @@ class AlphaDeploy(Deploy):
     flags.AddVpcSubnetFlags(managed_group)
     flags.AddVpcNetworkTagsFlags(managed_group)
     flags.AddRuntimeFlag(managed_group)
+    flags.AddServiceMinInstancesFlag(managed_group)
 
 AlphaDeploy.__doc__ = Deploy.__doc__

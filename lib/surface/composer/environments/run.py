@@ -19,7 +19,9 @@ from __future__ import division
 from __future__ import unicode_literals
 
 import argparse
+import random
 import re
+import time
 
 from googlecloudsdk.api_lib.composer import environments_util as environments_api_util
 from googlecloudsdk.api_lib.composer import util as api_util
@@ -27,6 +29,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.composer import image_versions_util as image_versions_command_util
 from googlecloudsdk.command_lib.composer import resource_args
 from googlecloudsdk.command_lib.composer import util as command_util
+from googlecloudsdk.core import execution_utils
 from googlecloudsdk.core import log
 from googlecloudsdk.core.console import console_io
 
@@ -38,6 +41,11 @@ DEPRECATION_WARNING = ('Because Cloud Composer manages the Airflow metadata '
                        'To avoid issues related to Airflow metadata, we '
                        'recommend that you do not use this subcommand unless '
                        'you understand the outcome.')
+DEFAULT_POLL_TIME_SECONDS = 2
+MAX_CONSECUTIVE_POLL_ERRORS = 10
+MAX_POLL_TIME_SECONDS = 30
+EXP_BACKOFF_MULTIPLIER = 1.75
+POLL_JITTER_SECONDS = 0.5
 
 
 class Run(base.Command):
@@ -315,23 +323,18 @@ class Run(base.Command):
   def _ExtractAirflowVersion(self, image_version):
     return re.findall(r'-airflow-([\d\.]+)', image_version)[0]
 
-  def Run(self, args):
-    self.DeprecationWarningPrompt(args)
-    self.CheckForRequiredCmdArgs(args)
+  def _RunKubectl(self, args, env_obj):
+    """Runs Airflow command using kubectl on the GKE Cluster.
 
-    running_state = (
-        api_util.GetMessagesModule(release_track=self.ReleaseTrack())
-        .Environment.StateValueValuesEnum.RUNNING)
+    This mode the command is executed by connecting to the cluster and
+    running `kubectl pod exec` command.
+    It requires access to GKE Control plane.
 
-    env_ref = args.CONCEPTS.environment.Parse()
-    env_obj = environments_api_util.Get(
-        env_ref, release_track=self.ReleaseTrack())
-
-    if env_obj.state != running_state:
-      raise command_util.Error(
-          'Cannot execute subcommand for environment in state {}. '
-          'Must be RUNNING.'.format(env_obj.state))
-
+    Args:
+      args: argparse.Namespace, An object that contains the values for the
+        arguments specified in the .Args() method.
+      env_obj: Cloud Composer Environment object.
+    """
     cluster_id = env_obj.config.gkeCluster
     cluster_location_id = command_util.ExtractGkeClusterLocationId(env_obj)
 
@@ -352,7 +355,6 @@ class Run(base.Command):
         log.status.Print(
             'Executing within the following Kubernetes cluster namespace: '
             '{}'.format(kubectl_ns))
-
         self.BypassConfirmationPrompt(args, airflow_version)
         kubectl_args = ['exec', pod, '--stdin']
         if tty:
@@ -369,3 +371,133 @@ class Run(base.Command):
             out_func=log.out.Print)
       except command_util.KubectlError as e:
         raise self.ConvertKubectlError(e, env_obj)
+
+  def _RunApi(self, args, env_obj):
+    image_version = env_obj.config.softwareConfig.imageVersion
+    airflow_version = self._ExtractAirflowVersion(image_version)
+    env_ref = args.CONCEPTS.environment.Parse()
+
+    self.CheckSubcommandAirflowSupport(args, airflow_version)
+    self.CheckSubcommandNestedAirflowSupport(args, airflow_version)
+    self.BypassConfirmationPrompt(args, airflow_version)
+
+    cmd = [args.subcommand]
+    if args.subcommand_nested:
+      cmd.append(args.subcommand_nested)
+    if args.cmd_args:
+      cmd.extend(args.cmd_args)
+    log.status.Print(
+        'Executing the command: [ airflow {} ]...'.format(' '.join(cmd))
+    )
+    execute_result = environments_api_util.ExecuteAirflowCommand(
+        command=args.subcommand,
+        subcommand=args.subcommand_nested or '',
+        parameters=args.cmd_args or [],
+        environment_ref=env_ref,
+        release_track=self.ReleaseTrack(),
+    )
+    if execute_result and execute_result.executionId:
+      log.status.Print(
+          'Command has been started. execution_id={}'.format(
+              execute_result.executionId
+          )
+      )
+
+    if not execute_result.executionId:
+      raise command_util.Error(
+          'Cannot execute subcommand for environment. Got empty execution Id.'
+      )
+    log.status.Print('Use ctrl-c to interrupt the command')
+    output_end = False
+    next_line = 1
+    cur_consequetive_poll_errors = 0
+    wait_time_seconds = DEFAULT_POLL_TIME_SECONDS
+    poll_result = None
+    interrupted = False
+    force_stop = False
+    while not output_end and not force_stop:
+      lines = None
+      try:
+        with execution_utils.RaisesKeyboardInterrupt():
+          time.sleep(
+              wait_time_seconds
+              + random.uniform(-POLL_JITTER_SECONDS, POLL_JITTER_SECONDS)
+          )
+          poll_result = environments_api_util.PollAirflowCommand(
+              execution_id=execute_result.executionId,
+              pod_name=execute_result.pod,
+              pod_namespace=execute_result.podNamespace,
+              next_line_number=next_line,
+              environment_ref=env_ref,
+              release_track=self.ReleaseTrack(),
+          )
+          cur_consequetive_poll_errors = 0
+          output_end = poll_result.outputEnd
+          lines = poll_result.output
+          lines.sort(key=lambda line: line.lineNumber)
+      except KeyboardInterrupt:
+        log.status.Print('Interrupting the command...')
+        try:
+          log.debug('Stopping the airflow command...')
+          stop_result = environments_api_util.StopAirflowCommand(
+              execution_id=execute_result.executionId,
+              pod_name=execute_result.pod,
+              force=interrupted,
+              pod_namespace=execute_result.podNamespace,
+              environment_ref=env_ref,
+              release_track=self.ReleaseTrack(),
+          )
+          log.debug('Stop airflow command result...'+str(stop_result))
+          if stop_result and stop_result.output:
+            for line in stop_result.output:
+              log.Print(line)
+          if interrupted:
+            force_stop = True
+          interrupted = True
+        except:  # pylint:disable=bare-except
+          log.debug('Error during stopping airflow command. Retrying polling')
+          cur_consequetive_poll_errors += 1
+      except:  # pylint:disable=bare-except
+        cur_consequetive_poll_errors += 1
+
+      if cur_consequetive_poll_errors == MAX_CONSECUTIVE_POLL_ERRORS:
+        raise command_util.Error('Cannot fetch airflow command status.')
+
+      if not lines:
+        wait_time_seconds = min(
+            wait_time_seconds * EXP_BACKOFF_MULTIPLIER, MAX_POLL_TIME_SECONDS
+        )
+      else:
+        wait_time_seconds = DEFAULT_POLL_TIME_SECONDS
+        for line in lines:
+          log.Print(line.content if line.content else '')
+        next_line = lines[-1].lineNumber + 1
+
+    if poll_result and poll_result.exitInfo and poll_result.exitInfo.exitCode:
+      log.error('Command exit code: {}'.format(poll_result.exitInfo.exitCode))
+      exit(poll_result.exitInfo.exitCode)
+
+  def Run(self, args):
+    self.DeprecationWarningPrompt(args)
+    self.CheckForRequiredCmdArgs(args)
+
+    running_state = api_util.GetMessagesModule(
+        release_track=self.ReleaseTrack()
+    ).Environment.StateValueValuesEnum.RUNNING
+
+    env_ref = args.CONCEPTS.environment.Parse()
+    env_obj = environments_api_util.Get(
+        env_ref, release_track=self.ReleaseTrack()
+    )
+
+    if env_obj.state != running_state:
+      raise command_util.Error(
+          'Cannot execute subcommand for environment in state {}. '
+          'Must be RUNNING.'.format(env_obj.state)
+      )
+    if image_versions_command_util.IsVersionAirflowCommandsApiCompatible(
+        image_version=env_obj.config.softwareConfig.imageVersion
+    ):
+      self._RunApi(args, env_obj)
+    else:
+      self._RunKubectl(args, env_obj)

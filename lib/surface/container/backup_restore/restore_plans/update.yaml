@@ -1,5 +1,4 @@
 - release_tracks: [ALPHA, BETA]
-
   help_text:
     brief: Update a restore plan.
     description: |
@@ -36,19 +35,32 @@
 
     - _REF_: googlecloudsdk.command_lib.container.backup_restore.flags:volume_data_restore_policy
     - _REF_: googlecloudsdk.command_lib.container.backup_restore.flags:namespaced_resource_restore_mode_update
-    - group:
-        params:
-        - _REF_: googlecloudsdk.command_lib.container.backup_restore.flags:cluster_resource_conflict_policy
-        - _REF_: googlecloudsdk.command_lib.container.backup_restore.flags:cluster_resource_restore_scope
+    - _REF_: googlecloudsdk.command_lib.container.backup_restore.flags:cluster_resource_conflict_policy
 
     # Restore scope
+
     - group:
         # Update restore plan does not require these args.
+        help_text: |
+          The scope of namespaced resources to restore.
         mutex: true
         params:
         - _REF_: googlecloudsdk.command_lib.container.backup_restore.flags:restore_plan_all_namespaces
+        - _REF_: googlecloudsdk.command_lib.container.backup_restore.flags:restore_plan_no_namespaces
         - _REF_: googlecloudsdk.command_lib.container.backup_restore.flags:restore_plan_selected_namespaces
+        - _REF_: googlecloudsdk.command_lib.container.backup_restore.flags:restore_plan_excluded_namespaces
         - _REF_: googlecloudsdk.command_lib.container.backup_restore.flags:restore_plan_selected_applications
+
+    - group:
+        help_text: |
+          The scope of cluster-scoped resources to restore.
+        mutex: true
+        params:
+        - _REF_: googlecloudsdk.command_lib.container.backup_restore.flags:cluster_resource_restore_scope
+        - _REF_: googlecloudsdk.command_lib.container.backup_restore.flags:cluster_resource_selected_group_kinds
+        - _REF_: googlecloudsdk.command_lib.container.backup_restore.flags:cluster_resource_excluded_group_kinds
+        - _REF_: googlecloudsdk.command_lib.container.backup_restore.flags:cluster_resource_all_group_kinds
+        - _REF_: googlecloudsdk.command_lib.container.backup_restore.flags:cluster_resource_no_group_kinds
 
     - _REF_: googlecloudsdk.command_lib.container.backup_restore.flags:restore_plan_substitution_rules_file
 

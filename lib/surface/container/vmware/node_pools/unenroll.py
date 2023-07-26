@@ -21,6 +21,7 @@ from __future__ import unicode_literals
 from googlecloudsdk.api_lib.container.gkeonprem import operations
 from googlecloudsdk.api_lib.container.gkeonprem import vmware_node_pools as apis
 from googlecloudsdk.calliope import base
+from googlecloudsdk.calliope import parser_arguments
 from googlecloudsdk.command_lib.container.gkeonprem import constants
 from googlecloudsdk.command_lib.container.vmware import constants as vmware_constants
 from googlecloudsdk.command_lib.container.vmware import flags
@@ -41,7 +42,7 @@ class Unenroll(base.Command):
   detailed_help = {'EXAMPLES': _EXAMPLES}
 
   @staticmethod
-  def Args(parser):
+  def Args(parser: parser_arguments.ArgumentInterceptor):
     parser.display_info.AddFormat(vmware_constants.VMWARE_NODEPOOLS_FORMAT)
     flags.AddNodePoolResourceArg(parser, 'to unenroll')
     base.ASYNC_FLAG.AddToParser(parser)

@@ -29,7 +29,6 @@ from googlecloudsdk.core import log
 from googlecloudsdk.core import resources
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Create(base.Command):
   # TODO(b/216961706) Add documentation for VPC spokes.

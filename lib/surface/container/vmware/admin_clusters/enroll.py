@@ -21,6 +21,7 @@ from __future__ import unicode_literals
 from googlecloudsdk.api_lib.container.gkeonprem import operations
 from googlecloudsdk.api_lib.container.gkeonprem import vmware_admin_clusters as apis
 from googlecloudsdk.calliope import base
+from googlecloudsdk.calliope import parser_arguments
 from googlecloudsdk.command_lib.container.gkeonprem import constants
 from googlecloudsdk.command_lib.container.gkeonprem import flags
 from googlecloudsdk.command_lib.container.vmware import constants as vmware_constants
@@ -43,7 +44,7 @@ class Enroll(base.Command):
   detailed_help = {'EXAMPLES': _EXAMPLES}
 
   @staticmethod
-  def Args(parser):
+  def Args(parser: parser_arguments.ArgumentInterceptor):
     parser.display_info.AddFormat(vmware_constants.VMWARE_CLUSTERS_FORMAT)
     flags.AddAdminClusterMembershipResourceArg(parser, positional=False)
     vmware_flags.AddAdminClusterResourceArg(parser, 'to enroll')

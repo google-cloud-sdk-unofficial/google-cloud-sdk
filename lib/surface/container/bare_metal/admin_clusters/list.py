@@ -21,6 +21,7 @@ from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.container.gkeonprem import bare_metal_admin_clusters as apis
 from googlecloudsdk.calliope import base
+from googlecloudsdk.calliope import parser_arguments
 from googlecloudsdk.command_lib.container.bare_metal import admin_cluster_flags as cluster_flags
 from googlecloudsdk.command_lib.container.bare_metal import constants
 from googlecloudsdk.core import log
@@ -45,7 +46,7 @@ class List(base.ListCommand):
   detailed_help = {'EXAMPLES': _EXAMPLES}
 
   @staticmethod
-  def Args(parser):
+  def Args(parser: parser_arguments.ArgumentInterceptor):
     """Gathers command line arguments for the list command.
 
     Args:

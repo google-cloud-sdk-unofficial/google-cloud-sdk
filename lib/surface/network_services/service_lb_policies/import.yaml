@@ -1,13 +1,20 @@
-release_tracks: [ALPHA]
+release_tracks: [ALPHA, BETA]
 help_text:
   brief: |
     Import service LB policy.
   description: |
     Import a service LB policy.
+  examples: |
+      To import a service LB policy named `my-service-lb-policy` from a YAML file, run:
+
+        $ {command} my-service-lb-policy --source=my-service-lb-policy.yaml --location=global
 
 request:
   collection: networkservices.projects.locations.serviceLbPolicies
-  api_version: v1alpha1
+  ALPHA:
+    api_version: v1alpha1
+  BETA:
+    api_version: v1beta1
 
 arguments:
   resource:
@@ -23,5 +30,8 @@ import:
   create_if_not_exists: true
   create_request:
     collection: networkservices.projects.locations.serviceLbPolicies
-    api_version: v1alpha1
+    ALPHA:
+      api_version: v1alpha1
+    BETA:
+      api_version: v1beta1
     method: create

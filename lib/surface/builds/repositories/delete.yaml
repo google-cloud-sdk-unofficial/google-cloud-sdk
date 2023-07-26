@@ -1,4 +1,4 @@
-- release_tracks: [ALPHA, BETA]
+- release_tracks: [ALPHA, BETA, GA]
   help_text:
     brief: Delete a Cloud Build Repository
     description: Delete a Cloud Build Repository in a Connection.

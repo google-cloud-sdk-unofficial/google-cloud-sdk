@@ -112,7 +112,6 @@ class UpdateHelper(object):
       support_regional_security_policy,
       support_multiple_rate_limit_keys,
       support_net_lb,
-      disable_field_mask,
       support_recaptcha_options,
   ):
     """Validates arguments and patches a security policy rule."""
@@ -273,8 +272,7 @@ class UpdateHelper(object):
           holder.client, args
       )
       network_matcher = result[0]
-      if not disable_field_mask:
-        update_mask = result[1]
+      update_mask = result[1]
 
     return security_policy_rule.Patch(
         src_ip_ranges=args.src_ip_ranges,
@@ -318,7 +316,6 @@ class UpdateGA(base.UpdateCommand):
   _support_fairshare = False
   _support_regional_security_policy = False
   _support_net_lb = False
-  _disable_field_mask = False
   _support_recaptcha_options = False
 
   @classmethod
@@ -346,7 +343,6 @@ class UpdateGA(base.UpdateCommand):
         self._support_regional_security_policy,
         self._support_multiple_rate_limit_keys,
         self._support_net_lb,
-        self._disable_field_mask,
         self._support_recaptcha_options,
     )
 
@@ -377,7 +373,6 @@ class UpdateBeta(base.UpdateCommand):
   _support_fairshare = False
   _support_regional_security_policy = True
   _support_net_lb = True
-  _disable_field_mask = True
   _support_recaptcha_options = True
 
   @classmethod
@@ -405,7 +400,6 @@ class UpdateBeta(base.UpdateCommand):
         self._support_regional_security_policy,
         self._support_multiple_rate_limit_keys,
         self._support_net_lb,
-        self._disable_field_mask,
         self._support_recaptcha_options,
     )
 
@@ -436,7 +430,6 @@ class UpdateAlpha(base.UpdateCommand):
   _support_fairshare = True
   _support_regional_security_policy = True
   _support_net_lb = True
-  _disable_field_mask = False
   _support_recaptcha_options = True
 
   @classmethod
@@ -464,6 +457,5 @@ class UpdateAlpha(base.UpdateCommand):
         self._support_regional_security_policy,
         self._support_multiple_rate_limit_keys,
         self._support_net_lb,
-        self._disable_field_mask,
         self._support_recaptcha_options,
     )

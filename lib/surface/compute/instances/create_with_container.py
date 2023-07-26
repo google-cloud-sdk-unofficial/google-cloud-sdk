@@ -38,7 +38,8 @@ def _Args(parser,
           deprecate_maintenance_policy=False,
           container_mount_enabled=False,
           support_multi_writer=True,
-          support_confidential_compute_type=False):
+          support_confidential_compute_type=False,
+          support_confidential_compute_type_tdx=False):
   """Add flags shared by all release tracks."""
   parser.display_info.AddFormat(instances_flags.DEFAULT_LIST_FORMAT)
   metadata_utils.AddMetadataArgs(parser)
@@ -70,8 +71,10 @@ def _Args(parser,
   instances_flags.AddKonletArgs(parser)
   instances_flags.AddPublicPtrArgs(parser, instance=True)
   instances_flags.AddImageArgs(parser)
-  instances_flags.AddConfidentialComputeArgs(parser,
-                                             support_confidential_compute_type)
+  instances_flags.AddConfidentialComputeArgs(
+      parser,
+      support_confidential_compute_type,
+      support_confidential_compute_type_tdx)
   instances_flags.AddNestedVirtualizationArgs(parser)
   instances_flags.AddThreadsPerCoreArgs(parser)
   instances_flags.AddIPv6AddressArgs(parser)
@@ -101,6 +104,7 @@ class CreateWithContainer(base.CreateCommand):
   _support_numa_node_count = False
   _support_visible_core_count = True
   _support_confidential_compute_type = False
+  _support_confidential_compute_type_tdx = False
   _support_local_ssd_recovery_timeout = False
   _support_internal_ipv6_reservation = False
 
@@ -220,13 +224,8 @@ class CreateWithContainer(base.CreateCommand):
     can_ip_forward = instance_utils.GetCanIpForward(args, skip_defaults)
     tags = containers_utils.CreateTagsMessage(compute_client.messages,
                                               args.tags)
-    confidential_vm = (
-        args.IsSpecified('confidential_compute') and args.confidential_compute)
-
-    if self._support_confidential_compute_type:
-      confidential_vm |= (
-          args.IsSpecified('confidential_compute_type') and
-          args.confidential_compute_type is not None)
+    confidential_vm_type = instance_utils.GetConfidentialVmType(
+        args, self._support_confidential_compute_type)
 
     requests = []
     for instance_ref in instance_refs:
@@ -264,7 +263,7 @@ class CreateWithContainer(base.CreateCommand):
             project=instance_ref.project,
             location=instance_ref.zone,
             scope=compute_scopes.ScopeEnum.ZONE,
-            confidential_vm=confidential_vm)
+            confidential_vm_type=confidential_vm_type)
 
       guest_accelerators = create_utils.GetAccelerators(
           args=args,
@@ -299,7 +298,9 @@ class CreateWithContainer(base.CreateCommand):
               messages=compute_client.messages,
               args=args,
               support_confidential_compute_type=self
-              ._support_confidential_compute_type))
+              ._support_confidential_compute_type,
+              support_confidential_compute_type_tdx=self
+              ._support_confidential_compute_type_tdx))
       if confidential_instance_config:
         instance.confidentialInstanceConfig = confidential_instance_config
 
@@ -380,6 +381,7 @@ class CreateWithContainerAlpha(CreateWithContainerBeta):
   _support_numa_node_count = True
   _support_visible_core_count = True
   _support_confidential_compute_type = True
+  _support_confidential_compute_type_tdx = True
   _support_local_ssd_recovery_timeout = True
 
   @staticmethod
@@ -388,7 +390,8 @@ class CreateWithContainerAlpha(CreateWithContainerBeta):
         parser,
         deprecate_maintenance_policy=True,
         container_mount_enabled=True,
-        support_confidential_compute_type=True)
+        support_confidential_compute_type=True,
+        support_confidential_compute_type_tdx=True)
 
     instances_flags.AddNetworkTierArgs(parser, instance=True)
     instances_flags.AddLocalSsdArgsWithSize(parser)

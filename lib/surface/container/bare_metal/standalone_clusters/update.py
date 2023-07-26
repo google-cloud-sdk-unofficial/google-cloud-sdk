@@ -21,8 +21,9 @@ from __future__ import unicode_literals
 from googlecloudsdk.api_lib.container.gkeonprem import operations
 from googlecloudsdk.api_lib.container.gkeonprem import standalone_clusters
 from googlecloudsdk.calliope import base
+from googlecloudsdk.calliope import parser_arguments
 from googlecloudsdk.command_lib.container.bare_metal import constants as bare_metal_constants
-from googlecloudsdk.command_lib.container.bare_metal import standalone_flags
+from googlecloudsdk.command_lib.container.bare_metal import standalone_cluster_flags
 from googlecloudsdk.command_lib.container.gkeonprem import constants
 from googlecloudsdk.core import log
 
@@ -40,7 +41,7 @@ class Update(base.UpdateCommand):
   detailed_help = {'EXAMPLES': _EXAMPLES}
 
   @staticmethod
-  def Args(parser):
+  def Args(parser: parser_arguments.ArgumentInterceptor):
     """Gathers command line arguments for the update command.
 
     Args:
@@ -49,22 +50,22 @@ class Update(base.UpdateCommand):
     parser.display_info.AddFormat(
         bare_metal_constants.BARE_METAL_STANDALONE_CLUSTERS_FORMAT
     )
-    standalone_flags.AddStandaloneClusterResourceArg(
+    standalone_cluster_flags.AddStandaloneClusterResourceArg(
         parser, verb='to update', positional=True
     )
     base.ASYNC_FLAG.AddToParser(parser)
-    standalone_flags.AddValidationOnly(parser)
-    standalone_flags.AddAllowMissingUpdateStandaloneCluster(parser)
-    standalone_flags.AddControlPlaneConfig(parser, is_update=True)
-    standalone_flags.AddVersion(parser, is_update=True)
-    standalone_flags.AddSecurityConfig(parser, is_update=True)
-    standalone_flags.AddMaintenanceConfig(parser, is_update=True)
-    standalone_flags.AddNetworkConfig(parser, is_update=True)
-    standalone_flags.AddLoadBalancerConfig(parser, is_update=True)
-    standalone_flags.AddDescription(parser)
-    standalone_flags.AddClusterOperationsConfig(parser)
-    standalone_flags.AddNodeAccessConfig(parser)
-    standalone_flags.AddUpdateAnnotations(parser)
+    standalone_cluster_flags.AddValidationOnly(parser)
+    standalone_cluster_flags.AddAllowMissingUpdateStandaloneCluster(parser)
+    standalone_cluster_flags.AddControlPlaneConfig(parser, is_update=True)
+    standalone_cluster_flags.AddVersion(parser, is_update=True)
+    standalone_cluster_flags.AddSecurityConfig(parser, is_update=True)
+    standalone_cluster_flags.AddMaintenanceConfig(parser, is_update=True)
+    standalone_cluster_flags.AddNetworkConfig(parser, is_update=True)
+    standalone_cluster_flags.AddLoadBalancerConfig(parser, is_update=True)
+    standalone_cluster_flags.AddDescription(parser)
+    standalone_cluster_flags.AddClusterOperationsConfig(parser)
+    standalone_cluster_flags.AddNodeAccessConfig(parser)
+    standalone_cluster_flags.AddUpdateAnnotations(parser)
 
   def Run(self, args):
     """Runs the update command.

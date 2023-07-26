@@ -29,17 +29,20 @@ from googlecloudsdk.core import log
 from googlecloudsdk.core import resources
 
 
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Update(base.UpdateCommand):
   """Update a Compute Engine router."""
 
   ROUTER_ARG = None
 
   @classmethod
-  def _Args(cls, parser):
+  def _Args(cls, parser, enable_ipv6_bgp=False):
     cls.ROUTER_ARG = flags.RouterArgument()
     cls.ROUTER_ARG.AddArgument(parser, operation_type='update')
     base.ASYNC_FLAG.AddToParser(parser)
     flags.AddKeepaliveIntervalArg(parser)
+    if enable_ipv6_bgp:
+      flags.AddBgpIdentifierRangeArg(parser)
     flags.AddAsnArg(parser)
     flags.AddUpdateCustomAdvertisementArgs(parser, 'router')
 
@@ -47,7 +50,7 @@ class Update(base.UpdateCommand):
   def Args(cls, parser):
     cls._Args(parser)
 
-  def _Run(self, args):
+  def _Run(self, args, enable_ipv6_bgp=False):
     # Manually ensure replace/incremental flags are mutually exclusive.
     router_utils.CheckIncompatibleFlagsOrRaise(args)
 
@@ -65,18 +68,23 @@ class Update(base.UpdateCommand):
     if args.keepalive_interval is not None:
       setattr(replacement.bgp, 'keepaliveInterval', args.keepalive_interval)
 
+    if enable_ipv6_bgp and args.bgp_identifier_range is not None:
+      setattr(replacement.bgp, 'identifierRange', args.bgp_identifier_range)
+
     if args.asn is not None:
       setattr(replacement.bgp, 'asn', args.asn)
 
     if router_utils.HasReplaceAdvertisementFlags(args):
       mode, groups, ranges = router_utils.ParseAdvertisements(
-          messages=messages, resource_class=messages.RouterBgp, args=args)
+          messages=messages, resource_class=messages.RouterBgp, args=args
+      )
 
       router_utils.PromptIfSwitchToDefaultMode(
           messages=messages,
           resource_class=messages.RouterBgp,
           existing_mode=existing_mode,
-          new_mode=mode)
+          new_mode=mode,
+      )
 
       attrs = {
           'advertiseMode': mode,
@@ -93,28 +101,33 @@ class Update(base.UpdateCommand):
       router_utils.ValidateCustomMode(
           messages=messages,
           resource_class=messages.RouterBgp,
-          resource=replacement.bgp)
+          resource=replacement.bgp,
+      )
 
       # These arguments are guaranteed to be mutually exclusive in args.
       if args.add_advertisement_groups:
         groups_to_add = routers_utils.ParseGroups(
             resource_class=messages.RouterBgp,
-            groups=args.add_advertisement_groups)
+            groups=args.add_advertisement_groups,
+        )
         replacement.bgp.advertisedGroups.extend(groups_to_add)
 
       if args.remove_advertisement_groups:
         groups_to_remove = routers_utils.ParseGroups(
             resource_class=messages.RouterBgp,
-            groups=args.remove_advertisement_groups)
+            groups=args.remove_advertisement_groups,
+        )
         router_utils.RemoveGroupsFromAdvertisements(
             messages=messages,
             resource_class=messages.RouterBgp,
             resource=replacement.bgp,
-            groups=groups_to_remove)
+            groups=groups_to_remove,
+        )
 
       if args.add_advertisement_ranges:
         ip_ranges_to_add = routers_utils.ParseIpRanges(
-            messages=messages, ip_ranges=args.add_advertisement_ranges)
+            messages=messages, ip_ranges=args.add_advertisement_ranges
+        )
         replacement.bgp.advertisedIpRanges.extend(ip_ranges_to_add)
 
       if args.remove_advertisement_ranges:
@@ -122,7 +135,8 @@ class Update(base.UpdateCommand):
             messages=messages,
             resource_class=messages.RouterBgp,
             resource=replacement.bgp,
-            ip_ranges=args.remove_advertisement_ranges)
+            ip_ranges=args.remove_advertisement_ranges,
+        )
 
     # Cleared list fields need to be explicitly identified for Patch API.
     cleared_fields = []
@@ -138,7 +152,9 @@ class Update(base.UpdateCommand):
               project=router_ref.project,
               region=router_ref.region,
               router=router_ref.Name(),
-              routerResource=replacement))
+              routerResource=replacement,
+          )
+      )
 
     operation_ref = resources.REGISTRY.Parse(
         result.name,
@@ -146,15 +162,19 @@ class Update(base.UpdateCommand):
         params={
             'project': router_ref.project,
             'region': router_ref.region,
-        })
+        },
+    )
 
     if args.async_:
       log.UpdatedResource(
           operation_ref,
           kind='router [{0}]'.format(router_ref.Name()),
           is_async=True,
-          details='Run the [gcloud compute operations describe] command '
-          'to check the status of this operation.')
+          details=(
+              'Run the [gcloud compute operations describe] command '
+              'to check the status of this operation.'
+          ),
+      )
       return result
 
     target_router_ref = holder.resources.Parse(
@@ -163,20 +183,42 @@ class Update(base.UpdateCommand):
         params={
             'project': router_ref.project,
             'region': router_ref.region,
-        })
+        },
+    )
 
     operation_poller = poller.Poller(service, target_router_ref)
-    return waiter.WaitFor(operation_poller, operation_ref,
-                          'Updating router [{0}]'.format(router_ref.Name()))
+    return waiter.WaitFor(
+        operation_poller,
+        operation_ref,
+        'Updating router [{0}]'.format(router_ref.Name()),
+    )
 
   def Run(self, args):
     """See base.UpdateCommand."""
     return self._Run(args)
 
 
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class UpdateBeta(Update):
+  """Update a Compute Engine router."""
+  pass
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class UpdateAlpha(UpdateBeta):
+  """Update a Compute Engine router."""
+
+  @classmethod
+  def Args(cls, parser):
+    cls._Args(parser, enable_ipv6_bgp=True)
+
+  def Run(self, args):
+    """See base.UpdateCommand."""
+    return self._Run(args, enable_ipv6_bgp=True)
+
+
 Update.detailed_help = {
-    'DESCRIPTION':
-        """
+    'DESCRIPTION': """
         *{command}* is used to update a Compute Engine router.
         """,
 }

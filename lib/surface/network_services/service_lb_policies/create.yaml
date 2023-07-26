@@ -1,4 +1,4 @@
-release_tracks: [ALPHA]
+release_tracks: [ALPHA, BETA]
 
 help_text:
   brief: |
@@ -40,6 +40,8 @@ arguments:
     api_field: serviceLbPolicy.autoCapacityDrain
     ALPHA:
       processor: googlecloudsdk.command_lib.network_services.util:AutoCapacityDrainHook:api_version=v1alpha1
+    BETA:
+      processor: googlecloudsdk.command_lib.network_services.util:AutoCapacityDrainHook:api_version=v1beta1
     help_text: |
       If specified, an unhealthy MIG/NEG will be removed from Global load balancing and traffic
       routing for the service.
@@ -56,6 +58,9 @@ async:
   collection: networkservices.projects.locations.operations
 
 request: &request
-  api_version: v1alpha1
+  ALPHA:
+    api_version: v1alpha1
+  BETA:
+    api_version: v1beta1
   collection: networkservices.projects.locations.serviceLbPolicies
   method: create

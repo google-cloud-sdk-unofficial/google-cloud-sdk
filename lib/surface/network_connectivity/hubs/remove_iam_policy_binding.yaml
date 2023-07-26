@@ -1,5 +1,4 @@
 - release_tracks: [GA]
-  hidden: true
 
   help_text:
     brief: Remove an IAM policy binding from the IAM policy of a hub resource.

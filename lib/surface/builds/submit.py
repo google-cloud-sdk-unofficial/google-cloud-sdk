@@ -194,6 +194,7 @@ class Submit(base.CreateCommand):
         False,
         args.default_buckets_behavior,
         skip_set_source=True,
+        client_tag='gcloudsubmits'
     )
 
     build_region = submit_util.DetermineBuildRegion(build_config, build_region)
@@ -289,6 +290,7 @@ class SubmitAlpha(SubmitBeta):
         False,
         args.default_buckets_behavior,
         skip_set_source=True,
+        client_tag='gcloudsubmits'
     )
 
     build_region = submit_util.DetermineBuildRegion(build_config, build_region)

@@ -30,3 +30,5 @@ class Environments(base.Group):
   setting Airflow configs, or installing Python dependencies used in Airflow
   DAGs. The command group can also be used to delete Composer environments.
   """
+
+Environments.category = base.COMPOSER_CATEGORY

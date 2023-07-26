@@ -37,9 +37,7 @@
 
   request:
     collection: iam.locations.workforcePools.providers
-    modify_request_hooks:
-    - googlecloudsdk.command_lib.iam.hooks:AddWebSsoConfigToRequest
-    - googlecloudsdk.command_lib.iam.hooks:AddWebSsoConfigFieldMask
+
   arguments:
     resource:
       help_text: The workforce pool provider to update.
@@ -55,7 +53,9 @@
     - _REF_: googlecloudsdk.command_lib.iam.flags:workforce_pool_provider.oidc_issuer_uri
     - _REF_: googlecloudsdk.command_lib.iam.flags:workforce_pool_provider.oidc_client_id
     - _REF_: googlecloudsdk.command_lib.iam.flags:workforce_pool_provider.oidc_clearable_client_secret
-    additional_arguments_hook: googlecloudsdk.command_lib.iam.workforce_pools.flags:AddWebSsoFlag
+    - _REF_: googlecloudsdk.command_lib.iam.flags:workforce_pool_provider.oidc_web_sso_response_type
+    - _REF_: googlecloudsdk.command_lib.iam.flags:workforce_pool_provider.oidc_web_sso_assertion_claims_behavior
+    - _REF_: googlecloudsdk.command_lib.iam.flags:workforce_pool_provider.oidc_web_sso_additional_scopes
 
   async:
     collection: iam.locations.workforcePools.providers.operations

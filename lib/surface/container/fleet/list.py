@@ -58,6 +58,7 @@ If neither --organization nor --project are provided, defaults to the organizati
     parser.display_info.AddFormat(util.LIST_FORMAT)
 
   def Run(self, args):
+    base.EnableUserProjectQuota()
     fleetclient = client.FleetClient(release_track=base.ReleaseTrack.ALPHA)
     project = args.project
     if project is None:

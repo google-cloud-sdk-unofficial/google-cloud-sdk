@@ -1,9 +1,8 @@
 - release_tracks: [GA]
-  hidden: true
 
   help_text:
     brief: |
-      Set or update cleanup policies.
+      Set or update cleanup policies for an Artifact Registry repository.
     description: |
       Set or update cleanup policies for an Artifact Registry repository.
 
@@ -33,7 +32,6 @@
         required: true
         params:
         - arg_name: dry-run
-          hidden: true
           api_field: repository.cleanupPolicyDryRun
           type: bool
           default: null

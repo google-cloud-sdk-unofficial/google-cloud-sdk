@@ -25,11 +25,11 @@
     - arg_name: network
       api_field: workstationCluster.network
       help_text: |
-        The network that instances created under the cluster will be associated with.
+        Fully specified network path for instances created in this cluster.
     - arg_name: subnetwork
       api_field: workstationCluster.subnetwork
       help_text: |
-        The subnetwork that instances created under the cluster will be associated with.
+        Fully specified subnetwork path for instances created in this cluster.
     - arg_name: labels
       api_field: workstationCluster.labels
       type: "googlecloudsdk.calliope.arg_parsers:ArgDict:"

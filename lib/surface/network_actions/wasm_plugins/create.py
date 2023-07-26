@@ -47,6 +47,10 @@ def _GetLogConfig(args):
   return util.GetLogConfig(args.log_config[0])
 
 
+def GetPluginConfigData(args):
+  return args.plugin_config or args.plugin_config_file
+
+
 @base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Create(base.CreateCommand):
@@ -75,6 +79,7 @@ class Create(base.CreateCommand):
     flags.AddWasmPluginResource(
         parser=parser,
         api_version=util.GetApiVersion(cls.ReleaseTrack()),
+        message='The ID of the WasmPlugin to create.',
     )
 
     base.ASYNC_FLAG.AddToParser(parser)
@@ -82,7 +87,13 @@ class Create(base.CreateCommand):
     flags.AddDescriptionFlag(parser)
     flags.AddLogConfigFlag(parser)
 
-    flags.AddWasmPluginVersionArgs(parser)
+    flags.AddWasmPluginVersionArgs(
+        parser=parser,
+        version_message=(
+            'ID of the WasmPluginVersion that will be created for that'
+            ' WasmPlugin and that will be set as the current main version.'
+        ),
+    )
 
   def Run(self, args):
     create_wasm_plugin_with_version = None
@@ -107,6 +118,16 @@ class Create(base.CreateCommand):
         raise calliope_exceptions.ConflictingArgumentsException(
             '--async', 'If --async flag is set, --image and'
             ' --main-version flags can\'t be used')
+    if not create_wasm_plugin_with_version:
+      if (
+          GetPluginConfigData(args) is not None
+          or args.plugin_config_uri is not None
+      ):
+        raise calliope_exceptions.ConflictingArgumentsException(
+            '--plugin_config or --plugin_config_file or --plugin_config_uri',
+            'If one of the flags is set, then --image and --main-version'
+            ' flags also should be set.',
+        )
 
     wp_client = wasm_plugin_api.Client(self.ReleaseTrack())
 
@@ -152,7 +173,9 @@ class Create(base.CreateCommand):
     op_ref = wpv_client.CreateWasmPluginVersion(
         parent=wasm_plugin_ref.RelativeName(),
         name=main_version,
-        image=args.image
+        image=args.image,
+        plugin_config_data=GetPluginConfigData(args),
+        plugin_config_uri=args.plugin_config_uri,
     )
     log.status.Print('Create request issued for: [{}]'.format(main_version))
 

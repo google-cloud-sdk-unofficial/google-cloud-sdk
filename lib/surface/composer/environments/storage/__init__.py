@@ -27,3 +27,5 @@ class Storage(base.Group):
   The {command} command group lets you manage DAGs, Airflow plugins and data
   used inside your Cloud Composer Environments.
   """
+
+Storage.category = base.COMPOSER_CATEGORY

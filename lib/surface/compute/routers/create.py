@@ -30,26 +30,30 @@ from googlecloudsdk.core import resources
 import six
 
 
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Create(base.CreateCommand):
   """Create a Compute Engine router.
 
-     *{command}* is used to create a router to provide dynamic routing to VPN
-     tunnels and interconnects.
+  *{command}* is used to create a router to provide dynamic routing to VPN
+  tunnels and interconnects.
   """
 
   ROUTER_ARG = None
 
   @classmethod
-  def _Args(cls, parser):
+  def _Args(cls, parser, enable_ipv6_bgp=False):
     parser.display_info.AddFormat(flags.DEFAULT_LIST_FORMAT)
     cls.NETWORK_ARG = network_flags.NetworkArgumentForOtherResource(
-        'The network for this router')
+        'The network for this router'
+    )
     cls.NETWORK_ARG.AddArgument(parser)
     cls.ROUTER_ARG = flags.RouterArgument()
     cls.ROUTER_ARG.AddArgument(parser, operation_type='create')
     base.ASYNC_FLAG.AddToParser(parser)
     flags.AddCreateRouterArgs(parser)
     flags.AddKeepaliveIntervalArg(parser)
+    if enable_ipv6_bgp:
+      flags.AddBgpIdentifierRangeArg(parser)
     flags.AddEncryptedInterconnectRouter(parser)
     flags.AddReplaceCustomAdvertisementArgs(parser, 'router')
     parser.display_info.AddCacheUpdater(flags.RoutersCompleter)
@@ -70,19 +74,23 @@ class Create(base.CreateCommand):
     router_resource = messages.Router(
         name=router_ref.Name(),
         description=args.description,
-        network=network_ref.SelfLink())
+        network=network_ref.SelfLink(),
+    )
 
     # Add bgp field with the assigned asn and/or keepalive_interval
     if args.asn is not None or args.keepalive_interval is not None:
-      router_resource.bgp = (
-          messages.RouterBgp(
-              asn=args.asn, keepaliveInterval=args.keepalive_interval))
+      router_resource.bgp = messages.RouterBgp(
+          asn=args.asn, keepaliveInterval=args.keepalive_interval
+      )
 
     if args.IsSpecified('encrypted_interconnect_router'):
-      router_resource.encryptedInterconnectRouter = args.encrypted_interconnect_router
+      router_resource.encryptedInterconnectRouter = (
+          args.encrypted_interconnect_router
+      )
     if router_utils.HasReplaceAdvertisementFlags(args):
       mode, groups, ranges = router_utils.ParseAdvertisements(
-          messages=messages, resource_class=messages.RouterBgp, args=args)
+          messages=messages, resource_class=messages.RouterBgp, args=args
+      )
 
       attrs = {
           'advertiseMode': mode,
@@ -100,7 +108,9 @@ class Create(base.CreateCommand):
         messages.ComputeRoutersInsertRequest(
             router=router_resource,
             region=router_ref.region,
-            project=router_ref.project))
+            project=router_ref.project,
+        )
+    )
 
     operation_ref = resources.REGISTRY.Parse(
         result.name,
@@ -108,7 +118,8 @@ class Create(base.CreateCommand):
         params={
             'project': router_ref.project,
             'region': router_ref.region,
-        })
+        },
+    )
 
     if args.async_:
       # Override the networks list format with the default operations format
@@ -118,8 +129,11 @@ class Create(base.CreateCommand):
           operation_ref,
           kind='router [{0}]'.format(router_ref.Name()),
           is_async=True,
-          details='Run the [gcloud compute operations describe] command '
-          'to check the status of this operation.')
+          details=(
+              'Run the [gcloud compute operations describe] command '
+              'to check the status of this operation.'
+          ),
+      )
       return result
 
     target_router_ref = holder.resources.Parse(
@@ -128,12 +142,40 @@ class Create(base.CreateCommand):
         params={
             'project': router_ref.project,
             'region': router_ref.region,
-        })
+        },
+    )
 
     operation_poller = poller.Poller(service, target_router_ref)
-    return waiter.WaitFor(operation_poller, operation_ref,
-                          'Creating router [{0}]'.format(router_ref.Name()))
+    return waiter.WaitFor(
+        operation_poller,
+        operation_ref,
+        'Creating router [{0}]'.format(router_ref.Name()),
+    )
 
   def Run(self, args):
     """See base.UpdateCommand."""
     return self._Run(args)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class CreateBeta(Create):
+  """Create a Compute Engine router.
+
+  *{command}* is used to create a router to provide dynamic routing to VPN
+  tunnels and interconnects.
+  """
+  pass
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class CreateAlpha(CreateBeta):
+  """Create a Compute Engine router.
+
+  *{command}* is used to create a router to provide dynamic routing to VPN
+  tunnels and interconnects.
+  """
+
+  @classmethod
+  def Args(cls, parser):
+    """See base.CreateCommand."""
+    cls._Args(parser, enable_ipv6_bgp=True)

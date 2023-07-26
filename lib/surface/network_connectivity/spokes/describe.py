@@ -34,7 +34,7 @@ class Describe(base.DescribeCommand):
   @staticmethod
   def Args(parser):
     flags.AddSpokeResourceArg(parser, 'to describe')
-    flags.AddRegionGroup(parser, hide_global_arg=True)
+    flags.AddRegionGroup(parser, hide_global_arg=False)
 
   def Run(self, args):
     client = networkconnectivity_api.SpokesClient(

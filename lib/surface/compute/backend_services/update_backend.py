@@ -233,6 +233,9 @@ class UpdateBackendBeta(UpdateBackend):
   https://cloud.google.com/load-balancing/docs/backend-service.
   """
 
+  # Allow --preference flag to be set when updating the backend.
+  support_preference = True
+
   @classmethod
   def Args(cls, parser):
     flags.GLOBAL_REGIONAL_BACKEND_SERVICE_ARG.AddArgument(parser)
@@ -242,6 +245,7 @@ class UpdateBackendBeta(UpdateBackend):
     backend_flags.AddCapacityLimits(parser)
     backend_flags.AddCapacityScalar(parser)
     backend_flags.AddFailover(parser, default=None)
+    backend_flags.AddPreference(parser)
 
   def _ValidateArgs(self, args):
     """Overrides."""
@@ -258,6 +262,7 @@ class UpdateBackendBeta(UpdateBackend):
         args.max_connections_per_endpoint is not None,
         args.capacity_scaler is not None,
         args.failover is not None,
+        args.preference is not None,
     ]):
       raise exceptions.UpdatePropertyError(
           'At least one property must be modified.')

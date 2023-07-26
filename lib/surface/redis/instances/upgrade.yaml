@@ -39,7 +39,7 @@
 
   input:
     confirmation_prompt: |-
-      WARNING: Upgrading will cause a full cache flush for Basic Tier instances and a failover for Standard Tier instances. The instance will also be temporarily unavailable. To prevent data loss, back up your instance before continuing. For more information, see "Behavior during version upgrade" section in the official Memorystore for Redis documentation.
+      WARNING: Upgrading will cause connection reset for Basic Tier instances and a failover for Standard Tier instances. The instance will also be temporarily unavailable. To prevent data loss, back up your instance before continuing. For more information, see "Behavior during version upgrade" section in the official Memorystore for Redis documentation.
 
   async:
     collection: redis.projects.locations.operations

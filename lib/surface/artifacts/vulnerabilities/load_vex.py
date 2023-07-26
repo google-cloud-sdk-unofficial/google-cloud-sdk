@@ -19,6 +19,7 @@ from __future__ import division
 from __future__ import unicode_literals
 
 from apitools.base.py import exceptions as apitools_exceptions
+from apitools.base.py import list_pager
 from googlecloudsdk.api_lib.util import apis
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.artifacts.vex_util import ParseVexFile
@@ -75,13 +76,14 @@ To load a CSAF security advisory file given an artifact with a tag and a file on
       project = properties.VALUES.core.project.Get(required=True)
     uri = args.uri
     filename = args.source
-    notes = ParseVexFile(filename, uri)
-    self.writeNotes(notes, project)
+    notes, uri_with_digest = ParseVexFile(filename, uri)
+    self.writeNotes(notes, project, uri_with_digest)
     return
 
-  def writeNotes(self, notes, project):
+  def writeNotes(self, notes, project, uri):
     notes_to_create = []
     notes_to_update = []
+    notes_to_retain = notes
     for note in notes:
       note_exists = False
       get_request = self.ca_messages.ContaineranalysisProjectsNotesGetRequest(
@@ -98,6 +100,7 @@ To load a CSAF security advisory file given an artifact with a tag and a file on
         notes_to_create.append(note)
     self.batchWriteNotes(notes_to_create, project)
     self.updateNotes(notes_to_update, project)
+    self.deleteNotes(notes_to_retain, project, uri)
 
   def batchWriteNotes(self, notes, project):
     if not notes:
@@ -124,3 +127,32 @@ To load a CSAF security advisory file given an artifact with a tag and a file on
           )
       )
       self.ca_client.projects_notes.Patch(patch_request)
+
+  def deleteNotes(self, file_notes, project, uri):
+    list_request = self.ca_messages.ContaineranalysisProjectsNotesListRequest(
+        filter='vulnerability_assessment.product.generic_uri="{}"'.format(uri),
+        parent='projects/{}'.format(project),
+    )
+    db_notes = list_pager.YieldFromList(
+        service=self.ca_client.projects_notes,
+        request=list_request,
+        field='notes',
+        batch_size_attribute='pageSize'
+    )
+
+    cves_in_file = set()
+    for file_note in file_notes:
+      file_uri = file_note.value.vulnerabilityAssessment.product.genericUri
+      file_cve = file_note.value.vulnerabilityAssessment.assessment.cve
+      if file_uri == uri:
+        cves_in_file.add(file_cve)
+
+    for db_note in db_notes:
+      db_cve = db_note.vulnerabilityAssessment.assessment.cve
+      if db_cve not in cves_in_file:
+        delete_request = (
+            self.ca_messages.ContaineranalysisProjectsNotesDeleteRequest(
+                name=db_note.name
+            )
+        )
+        self.ca_client.projects_notes.Delete(delete_request)

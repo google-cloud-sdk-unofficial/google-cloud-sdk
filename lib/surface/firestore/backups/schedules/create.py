@@ -34,9 +34,17 @@ class Create(base.CreateCommand):
   To create a backup schedule with 7 days retention and daily recurrence under
   database testdb.
 
-      $ {command} --database='testdb'
-      --retention='7d'
-      --recurrence='daily'
+      $ {command} --database=testdb
+      --retention=7d
+      --recurrence=daily
+
+  To create a backup schedule with 7 days retention and weekly recurrence on
+  Monday under database testdb.
+
+      $ {command} --database=testdb
+      --retention=7d
+      --recurrence=weekly
+      --day-of-week=MON
   """
 
   @staticmethod
@@ -48,5 +56,9 @@ class Create(base.CreateCommand):
   def Run(self, args):
     project = properties.VALUES.core.project.Get(required=True)
     return backup_schedules.CreateBackupSchedule(
-        project, args.database, args.retention, args.recurrence
+        project,
+        args.database,
+        args.retention,
+        args.recurrence,
+        args.day_of_week,
     )

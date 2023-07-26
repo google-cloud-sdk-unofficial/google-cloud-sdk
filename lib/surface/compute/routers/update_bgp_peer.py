@@ -36,11 +36,18 @@ class UpdateBgpPeer(base.UpdateCommand):
   ROUTER_ARG = None
 
   @classmethod
-  def _Args(cls, parser, support_custom_learned_routes=False):
+  def _Args(
+      cls, parser, support_custom_learned_routes=False, enable_ipv6_bgp=False
+  ):
     cls.ROUTER_ARG = flags.RouterArgument()
     cls.ROUTER_ARG.AddArgument(parser)
     base.ASYNC_FLAG.AddToParser(parser)
-    flags.AddBgpPeerArgs(parser, for_add_bgp_peer=False, is_update=True)
+    flags.AddBgpPeerArgs(
+        parser,
+        for_add_bgp_peer=False,
+        is_update=True,
+        enable_ipv6_bgp=enable_ipv6_bgp,
+    )
     flags.AddUpdateCustomAdvertisementArgs(parser, 'peer')
     if support_custom_learned_routes:
       flags.AddUpdateCustomLearnedRoutesArgs(parser)
@@ -50,7 +57,11 @@ class UpdateBgpPeer(base.UpdateCommand):
     cls._Args(parser)
 
   def _Run(
-      self, args, support_bfd_mode=False, support_custom_learned_routes=False
+      self,
+      args,
+      support_bfd_mode=False,
+      support_custom_learned_routes=False,
+      enable_ipv6_bgp=False,
   ):
     """Runs the command.
 
@@ -59,6 +70,7 @@ class UpdateBgpPeer(base.UpdateCommand):
       support_bfd_mode: The flag to indicate whether bfd mode is supported.
       support_custom_learned_routes: The flag to indicate whether custom learned
         routes are supported.
+      enable_ipv6_bgp: The flag to indicate whether IPv6-based BGP is supported.
 
     Returns:
       The result of patching the router updating the bgp peer with the
@@ -81,7 +93,10 @@ class UpdateBgpPeer(base.UpdateCommand):
 
     md5_authentication_key_name = None
     cleared_fields = []
-    if args.clear_md5_authentication_key and peer.md5AuthenticationKeyName is not None:
+    if (
+        args.clear_md5_authentication_key
+        and peer.md5AuthenticationKeyName is not None
+    ):
       replacement.md5AuthenticationKeys = [
           md5_authentication_key
           for md5_authentication_key in replacement.md5AuthenticationKeys
@@ -97,11 +112,13 @@ class UpdateBgpPeer(base.UpdateCommand):
             md5_authentication_key.key = args.md5_authentication_key
             break
       else:
-        md5_authentication_key_name = router_utils.GenerateMd5AuthenticationKeyName(
-            replacement, args)
+        md5_authentication_key_name = (
+            router_utils.GenerateMd5AuthenticationKeyName(replacement, args)
+        )
 
         md5_authentication_key = messages.RouterMd5AuthenticationKey(
-            name=md5_authentication_key_name, key=args.md5_authentication_key)
+            name=md5_authentication_key_name, key=args.md5_authentication_key
+        )
         replacement.md5AuthenticationKeys.append(md5_authentication_key)
 
     _UpdateBgpPeerMessage(
@@ -111,17 +128,20 @@ class UpdateBgpPeer(base.UpdateCommand):
         md5_authentication_key_name=md5_authentication_key_name,
         support_bfd_mode=support_bfd_mode,
         support_custom_learned_routes=support_custom_learned_routes,
+        enable_ipv6_bgp=enable_ipv6_bgp,
     )
 
     if router_utils.HasReplaceAdvertisementFlags(args):
       mode, groups, ranges = router_utils.ParseAdvertisements(
-          messages=messages, resource_class=messages.RouterBgpPeer, args=args)
+          messages=messages, resource_class=messages.RouterBgpPeer, args=args
+      )
 
       router_utils.PromptIfSwitchToDefaultMode(
           messages=messages,
           resource_class=messages.RouterBgpPeer,
           existing_mode=peer.advertiseMode,
-          new_mode=mode)
+          new_mode=mode,
+      )
 
       attrs = {
           'advertiseMode': mode,
@@ -138,28 +158,33 @@ class UpdateBgpPeer(base.UpdateCommand):
       router_utils.ValidateCustomMode(
           messages=messages,
           resource_class=messages.RouterBgpPeer,
-          resource=peer)
+          resource=peer,
+      )
 
       # These arguments are guaranteed to be mutually exclusive in args.
       if args.add_advertisement_groups:
         groups_to_add = routers_utils.ParseGroups(
             resource_class=messages.RouterBgpPeer,
-            groups=args.add_advertisement_groups)
+            groups=args.add_advertisement_groups,
+        )
         peer.advertisedGroups.extend(groups_to_add)
 
       if args.remove_advertisement_groups:
         groups_to_remove = routers_utils.ParseGroups(
             resource_class=messages.RouterBgpPeer,
-            groups=args.remove_advertisement_groups)
+            groups=args.remove_advertisement_groups,
+        )
         router_utils.RemoveGroupsFromAdvertisements(
             messages=messages,
             resource_class=messages.RouterBgpPeer,
             resource=peer,
-            groups=groups_to_remove)
+            groups=groups_to_remove,
+        )
 
       if args.add_advertisement_ranges:
         ip_ranges_to_add = routers_utils.ParseIpRanges(
-            messages=messages, ip_ranges=args.add_advertisement_ranges)
+            messages=messages, ip_ranges=args.add_advertisement_ranges
+        )
         peer.advertisedIpRanges.extend(ip_ranges_to_add)
 
       if args.remove_advertisement_ranges:
@@ -167,7 +192,8 @@ class UpdateBgpPeer(base.UpdateCommand):
             messages=messages,
             resource_class=messages.RouterBgpPeer,
             resource=peer,
-            ip_ranges=args.remove_advertisement_ranges)
+            ip_ranges=args.remove_advertisement_ranges,
+        )
 
     if support_custom_learned_routes:
       if args.set_custom_learned_route_ranges is not None:
@@ -196,7 +222,9 @@ class UpdateBgpPeer(base.UpdateCommand):
               project=router_ref.project,
               region=router_ref.region,
               router=router_ref.Name(),
-              routerResource=replacement))
+              routerResource=replacement,
+          )
+      )
 
     operation_ref = resources.REGISTRY.Parse(
         result.name,
@@ -204,16 +232,21 @@ class UpdateBgpPeer(base.UpdateCommand):
         params={
             'project': router_ref.project,
             'region': router_ref.region,
-        })
+        },
+    )
 
     if args.async_:
       log.UpdatedResource(
           operation_ref,
-          kind='peer [{0}] in router [{1}]'.format(peer.name,
-                                                   router_ref.Name()),
+          kind='peer [{0}] in router [{1}]'.format(
+              peer.name, router_ref.Name()
+          ),
           is_async=True,
-          details='Run the [gcloud compute operations describe] command '
-          'to check the status of this operation.')
+          details=(
+              'Run the [gcloud compute operations describe] command '
+              'to check the status of this operation.'
+          ),
+      )
       return result
 
     target_router_ref = holder.resources.Parse(
@@ -222,13 +255,17 @@ class UpdateBgpPeer(base.UpdateCommand):
         params={
             'project': router_ref.project,
             'region': router_ref.region,
-        })
+        },
+    )
 
     operation_poller = poller.Poller(service, target_router_ref)
     return waiter.WaitFor(
-        operation_poller, operation_ref,
-        'Updating peer [{0}] in router [{1}]'.format(peer.name,
-                                                     router_ref.Name()))
+        operation_poller,
+        operation_ref,
+        'Updating peer [{0}] in router [{1}]'.format(
+            peer.name, router_ref.Name()
+        ),
+    )
 
   def Run(self, args):
     """See base.UpdateCommand."""
@@ -268,7 +305,7 @@ class UpdateBgpPeerAlpha(UpdateBgpPeerBeta):
 
   @classmethod
   def Args(cls, parser):
-    cls._Args(parser, support_custom_learned_routes=True)
+    cls._Args(parser, support_custom_learned_routes=True, enable_ipv6_bgp=True)
 
   def Run(self, args):
     """Runs the command.
@@ -281,7 +318,10 @@ class UpdateBgpPeerAlpha(UpdateBgpPeerBeta):
       information provided in the arguments.
     """
     return self._Run(
-        args, support_bfd_mode=True, support_custom_learned_routes=True
+        args,
+        support_bfd_mode=True,
+        support_custom_learned_routes=True,
+        enable_ipv6_bgp=True,
     )
 
 
@@ -292,6 +332,7 @@ def _UpdateBgpPeerMessage(
     md5_authentication_key_name,
     support_bfd_mode=False,
     support_custom_learned_routes=False,
+    enable_ipv6_bgp=False,
 ):
   """Updates base attributes of a BGP peer based on flag arguments."""
 
@@ -314,6 +355,12 @@ def _UpdateBgpPeerMessage(
     attrs['ipv6NexthopAddress'] = args.ipv6_nexthop_address
   if args.peer_ipv6_nexthop_address is not None:
     attrs['peerIpv6NexthopAddress'] = args.peer_ipv6_nexthop_address
+  if enable_ipv6_bgp and args.enable_ipv4 is not None:
+    attrs['enableIpv4'] = args.enable_ipv4
+  if enable_ipv6_bgp and args.ipv4_nexthop_address is not None:
+    attrs['ipv4NexthopAddress'] = args.ipv4_nexthop_address
+  if enable_ipv6_bgp and args.peer_ipv4_nexthop_address is not None:
+    attrs['peerIpv4NexthopAddress'] = args.peer_ipv4_nexthop_address
   if support_custom_learned_routes:
     if args.custom_learned_route_priority is not None:
       attrs['customLearnedRoutePriority'] = args.custom_learned_route_priority
@@ -324,7 +371,6 @@ def _UpdateBgpPeerMessage(
       setattr(peer, attr, value)
   if args.clear_md5_authentication_key:
     peer.md5AuthenticationKeyName = None
-  bfd = None
   if support_bfd_mode:
     bfd = _UpdateBgpPeerBfdMessageMode(messages, peer, args)
   else:
@@ -335,12 +381,13 @@ def _UpdateBgpPeerMessage(
 
 def _UpdateBgpPeerBfdMessage(messages, peer, args):
   """Updates BGP peer BFD messages based on flag arguments."""
-  if not (args.IsSpecified('bfd_min_receive_interval') or
-          args.IsSpecified('bfd_min_transmit_interval') or
-          args.IsSpecified('bfd_session_initialization_mode') or
-          args.IsSpecified('bfd_multiplier')):
+  if not (
+      args.IsSpecified('bfd_min_receive_interval')
+      or args.IsSpecified('bfd_min_transmit_interval')
+      or args.IsSpecified('bfd_session_initialization_mode')
+      or args.IsSpecified('bfd_multiplier')
+  ):
     return None
-  bfd = None
   if peer.bfd is not None:
     bfd = peer.bfd
   else:
@@ -349,7 +396,9 @@ def _UpdateBgpPeerBfdMessage(messages, peer, args):
   if args.bfd_session_initialization_mode is not None:
     attrs['sessionInitializationMode'] = (
         messages.RouterBgpPeerBfd.SessionInitializationModeValueValuesEnum(
-            args.bfd_session_initialization_mode))
+            args.bfd_session_initialization_mode
+        )
+    )
   attrs['minReceiveInterval'] = args.bfd_min_receive_interval
   attrs['minTransmitInterval'] = args.bfd_min_transmit_interval
   attrs['multiplier'] = args.bfd_multiplier
@@ -361,12 +410,13 @@ def _UpdateBgpPeerBfdMessage(messages, peer, args):
 
 def _UpdateBgpPeerBfdMessageMode(messages, peer, args):
   """Updates BGP peer BFD messages based on flag arguments."""
-  if not (args.IsSpecified('bfd_min_receive_interval') or
-          args.IsSpecified('bfd_min_transmit_interval') or
-          args.IsSpecified('bfd_session_initialization_mode') or
-          args.IsSpecified('bfd_multiplier')):
+  if not (
+      args.IsSpecified('bfd_min_receive_interval')
+      or args.IsSpecified('bfd_min_transmit_interval')
+      or args.IsSpecified('bfd_session_initialization_mode')
+      or args.IsSpecified('bfd_multiplier')
+  ):
     return None
-  bfd = None
   if peer.bfd is not None:
     bfd = peer.bfd
   else:
@@ -374,10 +424,13 @@ def _UpdateBgpPeerBfdMessageMode(messages, peer, args):
   attrs = {}
   if args.bfd_session_initialization_mode is not None:
     attrs['mode'] = messages.RouterBgpPeerBfd.ModeValueValuesEnum(
-        args.bfd_session_initialization_mode)
+        args.bfd_session_initialization_mode
+    )
     attrs['sessionInitializationMode'] = (
         messages.RouterBgpPeerBfd.SessionInitializationModeValueValuesEnum(
-            args.bfd_session_initialization_mode))
+            args.bfd_session_initialization_mode
+        )
+    )
   attrs['minReceiveInterval'] = args.bfd_min_receive_interval
   attrs['minTransmitInterval'] = args.bfd_min_transmit_interval
   attrs['multiplier'] = args.bfd_multiplier
@@ -388,8 +441,7 @@ def _UpdateBgpPeerBfdMessageMode(messages, peer, args):
 
 
 UpdateBgpPeer.detailed_help = {
-    'DESCRIPTION':
-        """
+    'DESCRIPTION': """
         *{command}* is used to update a BGP peer on a Compute Engine
         router.
         """,

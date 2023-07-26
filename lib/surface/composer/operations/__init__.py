@@ -23,3 +23,5 @@ from googlecloudsdk.calliope import base
 
 class Operations(base.Group):
   """Manage Cloud Composer operations."""
+
+Operations.category = base.COMPOSER_CATEGORY

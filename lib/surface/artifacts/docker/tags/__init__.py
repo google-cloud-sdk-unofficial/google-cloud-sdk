@@ -22,32 +22,30 @@ from googlecloudsdk.calliope import base
 
 
 class Tags(base.Group):
+  # pylint: disable=line-too-long
   """Manage Artifact Registry container image tags.
 
   To add tag `my-tag` to image `busy-box` referenced by digest `abcxyz` in
   `us-west1`:
 
-    $ {command}
-    us-west1-docker.pkg.dev/my-project/my-repository/busy-box@sha256:abcxyz
-    us-west1-docker.pkg.dev/my-project/my-repository/busy-box:my-tag
+    $ {command} add us-west1-docker.pkg.dev/my-project/my-repository/busy-box@sha256:abcxyz us-west1-docker.pkg.dev/my-project/my-repository/busy-box:my-tag
 
   To add tag `my-tag` to image `busy-box` referenced by tag `latest` in
   `us-west1`:
 
-    $ {command} us-west1-docker.pkg.dev/my-project/my-repository/busy-box:latest
-    us-west1-docker.pkg.dev/my-project/my-repository/busy-box:my-tag
+    $ {command} add us-west1-docker.pkg.dev/my-project/my-repository/busy-box:latest us-west1-docker.pkg.dev/my-project/my-repository/busy-box:my-tag
 
   To delete tag `my-tag` from image `busy-box` in `us-west1`:
 
-    $ {command} us-west1-docker.pkg.dev/my-project/my-repository/busy-box:my-tag
+    $ {command} delete us-west1-docker.pkg.dev/my-project/my-repository/busy-box:my-tag
 
   To list all tags in repository `my-repository` in `us-west1`:
 
-    $ {command} us-west1-docker.pkg.dev/my-project/my-repository
+    $ {command} list us-west1-docker.pkg.dev/my-project/my-repository
 
   To list tags for image `busy-box` in `us-west1`:
 
-    $ {command} us-west1-docker.pkg.dev/my-project/my-repository/busy-box
+    $ {command} list us-west1-docker.pkg.dev/my-project/my-repository/busy-box
   """
 
   category = base.CI_CD_CATEGORY

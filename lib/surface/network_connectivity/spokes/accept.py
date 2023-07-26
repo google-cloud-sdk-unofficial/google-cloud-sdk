@@ -28,7 +28,6 @@ from googlecloudsdk.core import log
 from googlecloudsdk.core import resources
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Accept(base.Command):
   """Accept a spoke.

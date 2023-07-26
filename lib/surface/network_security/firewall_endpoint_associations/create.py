@@ -98,9 +98,7 @@ class Create(base.CreateCommand):
             'waiting for firewall endpoint association [{}] to be created'
             .format(association.RelativeName())
         ),
-        # TODO(b/279880716): Change to True once the resource type is part of
-        # the operation output.
-        has_result=False,
+        has_result=True,
         max_wait=max_wait,
     )
 

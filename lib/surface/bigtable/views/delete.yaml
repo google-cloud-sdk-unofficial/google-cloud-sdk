@@ -1,0 +1,15 @@
+- release_tracks: [GA, BETA, ALPHA]
+  hidden: true  # TODO(b/277572435): unhide the CLI for GA.
+
+  help_text:
+    brief: Delete a Cloud Bigtable view.
+    description: Delete new Cloud Bigtable view.
+
+  request:
+    collection: bigtableadmin.projects.instances.tables.views
+    method: delete
+
+  arguments:
+    resource:
+      help_text: Cloud Bigtable view to delete.
+      spec: !REF googlecloudsdk.command_lib.bigtable.resources:view
