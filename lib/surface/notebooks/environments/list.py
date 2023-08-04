@@ -45,12 +45,17 @@ DETAILED_HELP = {
 class List(base.ListCommand):
   """Request for listing environments."""
 
-  @staticmethod
-  def Args(parser):
+  @classmethod
+  def Args(cls, parser):
     """Register flags for this command."""
-    parser.display_info.AddFormat(
-        'table(name.segment(-1), name.segment(-3):label=LOCATION, name.segment(-5):label=PROJECT, vmImage.imageFamily, vmImage.imageName, containerImage.repository)'
-    )
+    parser.display_info.AddFormat("""
+        table(name.segment(-1),
+        name.segment(-3):label=LOCATION,
+        name.segment(-5):label=PROJECT,
+        vmImage.imageFamily,
+        vmImage.imageName,
+        containerImage.repository)
+    """)
     parser.display_info.AddUriFunc(env_util.GetEnvironmentURI)
     flags.AddListEnvironmentFlags(parser)
 

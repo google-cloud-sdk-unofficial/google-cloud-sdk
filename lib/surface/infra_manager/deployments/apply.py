@@ -101,5 +101,6 @@ class CreateAlpha(base.CreateCommand):
         args.git_source_directory,
         args.git_source_ref,
         args.input_values,
+        args.inputs_file,
         args.labels,
     )

@@ -27,6 +27,22 @@ from googlecloudsdk.command_lib.util.args import labels_util
 from googlecloudsdk.core import log
 
 
+@base.Deprecate(
+    is_removed=False,
+    warning=(
+        'This command is deprecated. Please use `gcloud alpha dataplex'
+        ' datascans create data-profile` instead to create a data profile'
+        ' scan and use `gcloud alpha dataplex datascans create data-quality`'
+        ' to create a data quality scan.'
+    ),
+    error=(
+        'This command has been removed. '
+        'Please use `gcloud alpha dataplex'
+        ' datascans create data-profile` instead to create a data profile'
+        ' scan and use `gcloud alpha dataplex datascans create data-quality`'
+        ' to create a data quality scan.'
+    ),
+)
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Create(base.Command):
   """Create a Dataplex Datascan."""

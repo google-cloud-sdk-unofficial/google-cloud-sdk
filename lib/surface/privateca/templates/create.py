@@ -77,6 +77,7 @@ class Create(base.CreateCommand):
     flags_v1.AddPredefinedValuesFileFlag(parser)
     flags_v1.AddIdentityConstraintsFlags(parser)
     flags_v1.AddExtensionConstraintsFlags(parser)
+    flags_v1.AddMaximumLifetimeFlag(parser)
     labels_util.AddCreateLabelsFlags(parser)
 
   def Run(self, args):
@@ -92,7 +93,10 @@ class Create(base.CreateCommand):
         identityConstraints=flags_v1.ParseIdentityConstraints(args),
         passthroughExtensions=flags_v1.ParseExtensionConstraints(args),
         description=args.description
-        if args.IsSpecified('description') else None)
+        if args.IsSpecified('description')
+        else None,
+        maximumLifetime=flags_v1.ParseMaximumLifetime(args),
+    )
 
     operation = client.projects_locations_certificateTemplates.Create(
         messages.PrivatecaProjectsLocationsCertificateTemplatesCreateRequest(

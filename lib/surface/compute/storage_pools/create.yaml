@@ -5,7 +5,7 @@
     examples: |
       The following command creates a new storage pool named "my-storage-pool":
 
-        $ {command} my-storage-pool --size-tb=10 --provisioned-throughput=200 storage-pool-type=hyperdisk-throughput
+        $ {command} my-storage-pool --size=10tb --provisioned-throughput=200 --storage-pool-type=hyperdisk-throughput
 
   request:
     collection: compute.storagePools

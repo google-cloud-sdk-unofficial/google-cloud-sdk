@@ -34,7 +34,6 @@ from googlecloudsdk.command_lib.compute.backend_services import flags
 from googlecloudsdk.core import log
 
 
-# TODO(b/73642225): Determine whether 'https' should be default
 def _ResolvePortName(args):
   """Determine port name if one was not specified."""
   if args.port_name:
@@ -57,7 +56,6 @@ def _ResolvePortName(args):
   return 'http'
 
 
-# TODO(b/73642225): Determine whether 'HTTPS' should be default
 def _ResolveProtocol(messages, args, default='HTTP'):
   valid_options = messages.BackendService.ProtocolValueValuesEnum.names()
   if args.protocol and args.protocol not in valid_options:
@@ -201,13 +199,14 @@ class CreateHelper(object):
     if args.load_balancing_scheme == 'INTERNAL':
       raise exceptions.RequiredArgumentException(
           '--region', 'Must specify --region for internal load balancer.')
-    if (self._support_failover and
-        (args.IsSpecified('connection_drain_on_failover') or
-         args.IsSpecified('drop_traffic_if_unhealthy') or
-         args.IsSpecified('failover_ratio'))):
+    if (
+        self._support_failover and
+        backend_services_utils.HasFailoverPolicyArgs(args)
+        ):
       raise exceptions.InvalidArgumentException(
           '--global',
-          'cannot specify failover policies for global backend services.')
+          'failover policy parameters are only for regional passthrough '
+          'Network Load Balancers.')
     backend_service = self._CreateBackendService(holder, args,
                                                  backend_services_ref)
 
@@ -288,42 +287,54 @@ class CreateHelper(object):
       )
 
     request = client.messages.ComputeBackendServicesInsertRequest(
-        backendService=backend_service, project=backend_services_ref.project)
+        backendService=backend_service, project=backend_services_ref.project
+    )
 
     return [(client.apitools_client.backendServices, 'Insert', request)]
 
   def _CreateRegionalRequests(self, holder, args, backend_services_ref):
     """Returns a regional backend service create request."""
 
-    if (not args.cache_key_include_host or
-        not args.cache_key_include_protocol or
-        not args.cache_key_include_query_string or
-        args.cache_key_query_string_blacklist is not None or
-        args.cache_key_query_string_whitelist is not None):
+    if (
+        not args.cache_key_include_host
+        or not args.cache_key_include_protocol
+        or not args.cache_key_include_query_string
+        or args.cache_key_query_string_blacklist is not None
+        or args.cache_key_query_string_whitelist is not None
+    ):
       raise compute_exceptions.ArgumentError(
-          'Custom cache key flags cannot be used for regional requests.')
+          'Custom cache key flags cannot be used for regional requests.'
+      )
 
-    if (self._support_multinic and args.IsSpecified('network') and
-        args.load_balancing_scheme != 'INTERNAL'):
+    if (
+        self._support_multinic
+        and args.IsSpecified('network')
+        and args.load_balancing_scheme != 'INTERNAL'
+    ):
       raise exceptions.InvalidArgumentException(
-          '--network', 'can only specify network for INTERNAL backend service.')
+          '--network', 'can only specify network for INTERNAL backend service.'
+      )
 
-    backend_service = self._CreateRegionBackendService(holder, args,
-                                                       backend_services_ref)
+    backend_service = self._CreateRegionBackendService(
+        holder, args, backend_services_ref
+    )
     client = holder.client
 
     if args.connection_draining_timeout is not None:
       backend_service.connectionDraining = client.messages.ConnectionDraining(
-          drainingTimeoutSec=args.connection_draining_timeout)
+          drainingTimeoutSec=args.connection_draining_timeout
+      )
     if args.custom_request_header is not None:
       backend_service.customRequestHeaders = args.custom_request_header
     if args.custom_response_header is not None:
       backend_service.customResponseHeaders = args.custom_response_header
-    backend_services_utils.ApplyFailoverPolicyArgs(client.messages, args,
-                                                   backend_service,
-                                                   self._support_failover)
-    if (self._support_advanced_load_balancing and
-        args.service_lb_policy is not None):
+    backend_services_utils.ApplyFailoverPolicyArgs(
+        client.messages, args, backend_service, self._support_failover
+    )
+    if (
+        self._support_advanced_load_balancing
+        and args.service_lb_policy is not None
+    ):
       raise compute_exceptions.ArgumentError(
           '--service-lb-policy flag cannot be used for regional backend'
           ' service.'

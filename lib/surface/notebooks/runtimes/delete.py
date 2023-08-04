@@ -41,10 +41,11 @@ DETAILED_HELP = {
 class Delete(base.DeleteCommand):
   """Request for deleting runtimes."""
 
-  @staticmethod
-  def Args(parser):
+  @classmethod
+  def Args(cls, parser):
     """Register flags for this command."""
-    flags.AddDeleteRuntimeFlags(parser)
+    api_version = util.ApiVersionSelector(cls.ReleaseTrack())
+    flags.AddDeleteRuntimeFlags(api_version, parser)
 
   def Run(self, args):
     """This is what gets called when the user runs this command."""

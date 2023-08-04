@@ -61,6 +61,7 @@ class Update(base.UpdateCommand):
     workstations_flags.AddShieldedVtpm(parser, use_default=False)
     workstations_flags.AddShieldedIntegrityMonitoring(parser, use_default=False)
     workstations_flags.AddEnableConfidentialCompute(parser, use_default=False)
+    workstations_flags.AddEnableNestedVirtualization(parser, use_default=False)
     workstations_flags.AddBootDiskSize(parser, use_default=False)
     workstations_flags.AddContainerImageField(parser, use_default=False)
     workstations_flags.AddContainerCommandField(parser)

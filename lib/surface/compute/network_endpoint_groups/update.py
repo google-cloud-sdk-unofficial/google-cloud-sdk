@@ -36,7 +36,7 @@ To remove two endpoints from a network endpoint group:
 """}
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Update(base.UpdateCommand):
   """Update a Compute Engine network endpoint group."""
 
@@ -84,6 +84,13 @@ class Update(base.UpdateCommand):
     return client.Update(
         neg_ref, add_endpoints=add_endpoints, remove_endpoints=remove_endpoints
     )
+
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class BetaUpdate(Update):
+  """Update a Compute Engine network endpoint group."""
+
+  support_regional_scope = True
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)

@@ -44,14 +44,21 @@ DETAILED_HELP = {
 class List(base.ListCommand):
   """Request for listing runtimes."""
 
-  @staticmethod
-  def Args(parser):
+  @classmethod
+  def Args(cls, parser):
     """Register flags for this command."""
-    parser.display_info.AddFormat(
-        'table(name.segment(-1), name.segment(-3):label=LOCATION, name.segment(-5):label=PROJECT, state, machineType.segment(-1), network.segment(-1), subnet.segment(-1))'
-    )
+    api_version = util.ApiVersionSelector(cls.ReleaseTrack())
+    parser.display_info.AddFormat("""
+        table(name.segment(-1),
+        name.segment(-3):label=LOCATION,
+        name.segment(-5):label=PROJECT,
+        state,
+        machineType.segment(-1),
+        network.segment(-1),
+        subnet.segment(-1))
+    """)
     parser.display_info.AddUriFunc(runtime_util.GetRuntimeURI)
-    flags.AddListRuntimeFlags(parser)
+    flags.AddListRuntimeFlags(api_version, parser)
 
   def Run(self, args):
     """This is what gets called when the user runs this command."""

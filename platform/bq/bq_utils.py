@@ -260,6 +260,14 @@ def GetInfoString():
     httplib2_version = httplib2.__version__
   except AttributeError:
     httplib2_version = httplib2.python3.__version__
+  try:
+    shell_path = os.environ['PATH']
+  except KeyError:
+    shell_path = None
+  try:
+    python_path = os.environ['PYTHONPATH']
+  except KeyError:
+    python_path = None
   return textwrap.dedent(
       """\
       BigQuery CLI [{version}]
@@ -286,8 +294,8 @@ def GetInfoString():
           requests_version=requests.__version__,
           urllib3_version=urllib3.__version__,
           sys_path=os.pathsep.join(sys.path),
-          shell_path=os.environ['PATH'],
-          python_path=os.environ['PYTHONPATH'],
+          shell_path=shell_path,
+          python_path=python_path,
       )
   )
 

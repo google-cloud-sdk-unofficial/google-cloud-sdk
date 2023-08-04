@@ -32,9 +32,10 @@ class ListAvailableFeatures(base.ListCommand):
 
   An SSL policy specifies the server-side support for SSL features. An SSL
   policy can be attached to a TargetHttpsProxy or a TargetSslProxy. This affects
-  connections between clients and the HTTPS or SSL proxy load balancer. SSL
+  connections between clients and the load balancer. SSL
   policies do not affect the connection between the load balancers and the
-  backends.
+  backends. SSL policies are used by Application Load Balancers and proxy
+  Network Load Balancers.
   """
 
   @classmethod

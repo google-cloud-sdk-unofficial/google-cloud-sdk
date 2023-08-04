@@ -253,7 +253,7 @@
           "type": "boolean"
         },
         "type": {
-          "description": "Output only. Same as `type` in `ListFormatDataset`. The type of the dataset, one of: * DEFAULT - only accessible by owner and authorized accounts, * PUBLIC - accessible by everyone, * LINKED - linked dataset, * EXTERNAL - dataset with definition in external metadata catalog.",
+          "description": "Output only. Same as `type` in `ListFormatDataset`. The type of the dataset, one of: * DEFAULT - only accessible by owner and authorized accounts, * PUBLIC - accessible by everyone, * LINKED - linked dataset, * EXTERNAL - dataset with definition in external metadata catalog. -- *BIGLAKE_METASTORE - dataset that references a database created in BigLakeMetastore service. --",
           "readOnly": true,
           "type": "string"
         },
@@ -604,7 +604,7 @@
           }
         },
         "featureColumns": {
-          "description": "Output only. Input feature columns that were used to train this model.",
+          "description": "Output only. Input feature columns for the model inference. If the model is trained with TRANSFORM clause, these are the input of the TRANSFORM clause.",
           "readOnly": true,
           "type": "array",
           "items": {
@@ -619,6 +619,14 @@
             "$ref": "StandardSqlField"
           }
         },
+        "transformColumns": {
+          "description": "Output only. This field will be populated if a TRANSFORM clause was used to train a model. TRANSFORM clause (if used) takes feature_columns as input and outputs transform_columns. transform_columns then are used to train the model.",
+          "readOnly": true,
+          "type": "array",
+          "items": {
+            "$ref": "TransformColumn"
+          }
+        },
         "hparamSearchSpaces": {
           "description": "Output only. All hyperparameter search spaces in this model.",
           "readOnly": true,
@@ -626,6 +634,7 @@
         },
         "bestTrialId": {
           "description": "The best trial_id across all training runs.",
+          "deprecated": true,
           "type": "string",
           "format": "int64"
         },
@@ -691,6 +700,7 @@
         "trainingStartTime": {
           "description": "Output only. The start time of this training run, in milliseconds since epoch.",
           "readOnly": true,
+          "deprecated": true,
           "type": "string",
           "format": "int64"
         },
@@ -1246,6 +1256,155 @@
             "ZA"
           ]
         },
+        "holidayRegions": {
+          "description": "A list of geographical regions that are used for time series modeling.",
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enumDescriptions": [
+              "Holiday region unspecified.",
+              "Global.",
+              "North America.",
+              "Japan and Asia Pacific: Korea, Greater China, India, Australia, and New Zealand.",
+              "Europe, the Middle East and Africa.",
+              "Latin America and the Caribbean.",
+              "United Arab Emirates",
+              "Argentina",
+              "Austria",
+              "Australia",
+              "Belgium",
+              "Brazil",
+              "Canada",
+              "Switzerland",
+              "Chile",
+              "China",
+              "Colombia",
+              "Czechoslovakia",
+              "Czech Republic",
+              "Germany",
+              "Denmark",
+              "Algeria",
+              "Ecuador",
+              "Estonia",
+              "Egypt",
+              "Spain",
+              "Finland",
+              "France",
+              "Great Britain (United Kingdom)",
+              "Greece",
+              "Hong Kong",
+              "Hungary",
+              "Indonesia",
+              "Ireland",
+              "Israel",
+              "India",
+              "Iran",
+              "Italy",
+              "Japan",
+              "Korea (South)",
+              "Latvia",
+              "Morocco",
+              "Mexico",
+              "Malaysia",
+              "Nigeria",
+              "Netherlands",
+              "Norway",
+              "New Zealand",
+              "Peru",
+              "Philippines",
+              "Pakistan",
+              "Poland",
+              "Portugal",
+              "Romania",
+              "Serbia",
+              "Russian Federation",
+              "Saudi Arabia",
+              "Sweden",
+              "Singapore",
+              "Slovenia",
+              "Slovakia",
+              "Thailand",
+              "Turkey",
+              "Taiwan",
+              "Ukraine",
+              "United States",
+              "Venezuela",
+              "Viet Nam",
+              "South Africa"
+            ],
+            "enum": [
+              "HOLIDAY_REGION_UNSPECIFIED",
+              "GLOBAL",
+              "NA",
+              "JAPAC",
+              "EMEA",
+              "LAC",
+              "AE",
+              "AR",
+              "AT",
+              "AU",
+              "BE",
+              "BR",
+              "CA",
+              "CH",
+              "CL",
+              "CN",
+              "CO",
+              "CS",
+              "CZ",
+              "DE",
+              "DK",
+              "DZ",
+              "EC",
+              "EE",
+              "EG",
+              "ES",
+              "FI",
+              "FR",
+              "GB",
+              "GR",
+              "HK",
+              "HU",
+              "ID",
+              "IE",
+              "IL",
+              "IN",
+              "IR",
+              "IT",
+              "JP",
+              "KR",
+              "LV",
+              "MA",
+              "MX",
+              "MY",
+              "NG",
+              "NL",
+              "NO",
+              "NZ",
+              "PE",
+              "PH",
+              "PK",
+              "PL",
+              "PT",
+              "RO",
+              "RS",
+              "RU",
+              "SA",
+              "SE",
+              "SG",
+              "SI",
+              "SK",
+              "TH",
+              "TR",
+              "TW",
+              "UA",
+              "US",
+              "VE",
+              "VN",
+              "ZA"
+            ]
+          }
+        },
         "timeSeriesIdColumn": {
           "description": "The time series id column that was used during ARIMA model training.",
           "type": "string"
@@ -1353,6 +1512,22 @@
           "type": "string",
           "format": "int64"
         },
+        "categoryEncodingMethod": {
+          "description": "Categorical feature encoding method.",
+          "type": "string",
+          "enumDescriptions": [
+            "Unspecified encoding method.",
+            "Applies one-hot encoding.",
+            "Applies label encoding.",
+            "Applies dummy encoding."
+          ],
+          "enum": [
+            "ENCODING_METHOD_UNSPECIFIED",
+            "ONE_HOT_ENCODING",
+            "LABEL_ENCODING",
+            "DUMMY_ENCODING"
+          ]
+        },
         "tfVersion": {
           "description": "Based on the selected TF version, the corresponding docker image is used to train external models.",
           "type": "string"
@@ -1382,22 +1557,22 @@
           "type": "string"
         },
         "trendSmoothingWindowSize": {
-          "description": "The smoothing window size for the trend component of the time series.",
+          "description": "Smoothing window size for the trend component. When a positive value is specified, a center moving average smoothing is applied on the history trend. When the smoothing window is out of the boundary at the beginning or the end of the trend, the first element or the last element is padded to fill the smoothing window before the average is applied.",
           "type": "string",
           "format": "int64"
         },
         "timeSeriesLengthFraction": {
-          "description": "Get truncated length by fraction in time series.",
+          "description": "The fraction of the interpolated length of the time series that's used to model the time series trend component. All of the time points of the time series are used to model the non-trend component. This training option accelerates modeling training without sacrificing much forecasting accuracy. You can use this option with `minTimeSeriesLength` but not with `maxTimeSeriesLength`.",
           "type": "number",
           "format": "double"
         },
         "minTimeSeriesLength": {
-          "description": "Set fast trend ARIMA_PLUS model minimum training length. Use in pair with time_series_length_fraction.",
+          "description": "The minimum number of time points in a time series that are used in modeling the trend component of the time series. If you use this option you must also set the `timeSeriesLengthFraction` option. This training option ensures that enough time points are available when you use `timeSeriesLengthFraction` in trend modeling. This is particularly important when forecasting multiple time series in a single query using `timeSeriesIdColumn`. If the total number of time points is less than the `minTimeSeriesLength` value, then the query uses all available time points.",
           "type": "string",
           "format": "int64"
         },
         "maxTimeSeriesLength": {
-          "description": "Get truncated length by last n points in time series. Use separately from time_series_length_fraction and min_time_series_length.",
+          "description": "The maximum number of time points in a time series that can be used in modeling the trend component of the time series. Don't use this option with the `timeSeriesLengthFraction` or `minTimeSeriesLength` options.",
           "type": "string",
           "format": "int64"
         },
@@ -1408,6 +1583,85 @@
         "approxGlobalFeatureContrib": {
           "description": "Whether to use approximate feature contribution method in XGBoost model explanation for global explain.",
           "type": "boolean"
+        },
+        "fitIntercept": {
+          "description": "Whether the model should include intercept during model training.",
+          "type": "boolean"
+        },
+        "numPrincipalComponents": {
+          "description": "Number of principal components to keep in the PCA model. Must be <= the number of features.",
+          "type": "string",
+          "format": "int64"
+        },
+        "pcaExplainedVarianceRatio": {
+          "description": "The minimum ratio of cumulative explained variance that needs to be given by the PCA model.",
+          "type": "number",
+          "format": "double"
+        },
+        "scaleFeatures": {
+          "description": "If true, scale the feature values by dividing the feature standard deviation. Currently only apply to PCA.",
+          "type": "boolean"
+        },
+        "pcaSolver": {
+          "description": "The solver for PCA.",
+          "type": "string",
+          "enumDescriptions": [
+            "",
+            "Full eigen-decoposition.",
+            "Randomized SVD.",
+            "Auto."
+          ],
+          "enum": [
+            "UNSPECIFIED",
+            "FULL",
+            "RANDOMIZED",
+            "AUTO"
+          ]
+        },
+        "autoClassWeights": {
+          "description": "Whether to calculate class weights automatically based on the popularity of each label.",
+          "type": "boolean"
+        },
+        "activationFn": {
+          "description": "Activation function of the neural nets.",
+          "type": "string"
+        },
+        "optimizer": {
+          "description": "Optimizer used for training the neural nets.",
+          "type": "string"
+        },
+        "budgetHours": {
+          "description": "Budget in hours for AutoML training.",
+          "type": "number",
+          "format": "double"
+        },
+        "standardizeFeatures": {
+          "description": "Whether to standardize numerical features. Default to true.",
+          "type": "boolean"
+        },
+        "l1RegActivation": {
+          "description": "L1 regularization coefficient to activations.",
+          "type": "number",
+          "format": "double"
+        },
+        "modelRegistry": {
+          "description": "The model registry.",
+          "type": "string",
+          "enumDescriptions": [
+            "",
+            "Vertex AI."
+          ],
+          "enum": [
+            "MODEL_REGISTRY_UNSPECIFIED",
+            "VERTEX_AI"
+          ]
+        },
+        "vertexAiModelVersionAliases": {
+          "description": "The version aliases to apply in Vertex AI model registry. Always overwrite if the version aliases exists in a existing model.",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
         }
       }
     },
@@ -2081,6 +2335,7 @@
       "properties": {
         "nonSeasonalOrder": {
           "description": "Non-seasonal order.",
+          "deprecated": true,
           "type": "array",
           "items": {
             "$ref": "ArimaOrder"
@@ -2088,6 +2343,7 @@
         },
         "arimaFittingMetrics": {
           "description": "Arima model fitting metrics.",
+          "deprecated": true,
           "type": "array",
           "items": {
             "$ref": "ArimaFittingMetrics"
@@ -2095,6 +2351,7 @@
         },
         "seasonalPeriods": {
           "description": "Seasonal periods. Repeated because multiple periods are supported for one time series.",
+          "deprecated": true,
           "type": "array",
           "items": {
             "type": "string",
@@ -2120,6 +2377,7 @@
         },
         "hasDrift": {
           "description": "Whether Arima model fitted with drift or not. It is always false when d is not 1.",
+          "deprecated": true,
           "type": "array",
           "items": {
             "type": "boolean"
@@ -2127,6 +2385,7 @@
         },
         "timeSeriesId": {
           "description": "Id to differentiate different time series for the large-scale case.",
+          "deprecated": true,
           "type": "array",
           "items": {
             "type": "string"
@@ -2354,6 +2613,28 @@
           "items": {
             "$ref": "StandardSqlField"
           }
+        }
+      }
+    },
+    "TransformColumn": {
+      "id": "TransformColumn",
+      "description": "Information about a single transform column.",
+      "type": "object",
+      "properties": {
+        "name": {
+          "description": "Output only. Name of the column.",
+          "readOnly": true,
+          "type": "string"
+        },
+        "type": {
+          "description": "Output only. Data type of the column after the transform.",
+          "readOnly": true,
+          "$ref": "StandardSqlDataType"
+        },
+        "transformSql": {
+          "description": "Output only. The SQL expression used in the column transform.",
+          "readOnly": true,
+          "type": "string"
         }
       }
     },
@@ -2696,6 +2977,11 @@
           "readOnly": true,
           "type": "string",
           "format": "int64"
+        },
+        "remoteModelVersion": {
+          "description": "Output only. The model version for LLM.",
+          "readOnly": true,
+          "type": "string"
         }
       }
     },
@@ -2860,7 +3146,7 @@
           "type": "string"
         },
         "writeDisposition": {
-          "description": "Optional. Specifies the action that occurs if the destination table already exists. The following values are supported: * WRITE_TRUNCATE: If the table already exists, BigQuery overwrites the table data and uses the schema from the query result. * WRITE_APPEND: If the table already exists, BigQuery appends the data to the table. * WRITE_EMPTY: If the table already exists and contains data, a 'duplicate' error is returned in the job result. The default value is WRITE_EMPTY. Each action is atomic and only occurs if BigQuery is able to complete the job successfully. Creation, truncation and append actions occur as one atomic update upon job completion.",
+          "description": "Optional. Specifies the action that occurs if the destination table already exists. The following values are supported: * WRITE_TRUNCATE: If the table already exists, BigQuery overwrites the data, removes the constraints, and uses the schema from the query result. * WRITE_APPEND: If the table already exists, BigQuery appends the data to the table. * WRITE_EMPTY: If the table already exists and contains data, a 'duplicate' error is returned in the job result. The default value is WRITE_EMPTY. Each action is atomic and only occurs if BigQuery is able to complete the job successfully. Creation, truncation and append actions occur as one atomic update upon job completion.",
           "type": "string"
         },
         "defaultDataset": {
@@ -2990,7 +3276,7 @@
           "$ref": "TableSchema"
         },
         "sourceFormat": {
-          "description": "[Required] The data format. For CSV files, specify \"CSV\". For Google sheets, specify \"GOOGLE_SHEETS\". For newline-delimited JSON, specify \"NEWLINE_DELIMITED_JSON\". For Avro files, specify \"AVRO\". For Google Cloud Datastore backups, specify \"DATASTORE_BACKUP\". For ORC files, specify \"ORC\". For Parquet files, specify \"PARQUET\". [Beta] For Google Cloud Bigtable, specify \"BIGTABLE\".",
+          "description": "[Required] The data format. For CSV files, specify \"CSV\". For Google sheets, specify \"GOOGLE_SHEETS\". For newline-delimited JSON, specify \"NEWLINE_DELIMITED_JSON\". For Avro files, specify \"AVRO\". For Google Cloud Datastore backups, specify \"DATASTORE_BACKUP\". For Apache Iceberg tables, specify \"ICEBERG\". For ORC files, specify \"ORC\". For Parquet files, specify \"PARQUET\". [Beta] For Google Cloud Bigtable, specify \"BIGTABLE\".",
           "type": "string"
         },
         "maxBadRecords": {
@@ -3553,6 +3839,7 @@
         "requirePartitionFilter": {
           "description": "If set to true, queries over this table require a partition filter that can be used for partition elimination to be specified. This field is deprecated; please set the field with the same name on the table itself instead. This field needs a wrapper because we want to output the default value, false, if the user explicitly set it.",
           "default": "false",
+          "deprecated": true,
           "type": "boolean"
         }
       }
@@ -3688,7 +3975,7 @@
           "type": "string"
         },
         "writeDisposition": {
-          "description": "Optional. Specifies the action that occurs if the destination table already exists. The following values are supported: * WRITE_TRUNCATE: If the table already exists, BigQuery overwrites the table data and uses the schema from the load. * WRITE_APPEND: If the table already exists, BigQuery appends the data to the table. * WRITE_EMPTY: If the table already exists and contains data, a 'duplicate' error is returned in the job result. The default value is WRITE_APPEND. Each action is atomic and only occurs if BigQuery is able to complete the job successfully. Creation, truncation and append actions occur as one atomic update upon job completion.",
+          "description": "Optional. Specifies the action that occurs if the destination table already exists. The following values are supported: * WRITE_TRUNCATE: If the table already exists, BigQuery overwrites the data, removes the constraints and uses the schema from the load job. * WRITE_APPEND: If the table already exists, BigQuery appends the data to the table. * WRITE_EMPTY: If the table already exists and contains data, a 'duplicate' error is returned in the job result. The default value is WRITE_APPEND. Each action is atomic and only occurs if BigQuery is able to complete the job successfully. Creation, truncation and append actions occur as one atomic update upon job completion.",
           "type": "string"
         },
         "nullMarker": {
@@ -3943,7 +4230,7 @@
           "type": "string"
         },
         "writeDisposition": {
-          "description": "Optional. Specifies the action that occurs if the destination table already exists. The following values are supported: * WRITE_TRUNCATE: If the table already exists, BigQuery overwrites the table data and uses the schema from the source table. * WRITE_APPEND: If the table already exists, BigQuery appends the data to the table. * WRITE_EMPTY: If the table already exists and contains data, a 'duplicate' error is returned in the job result. The default value is WRITE_EMPTY. Each action is atomic and only occurs if BigQuery is able to complete the job successfully. Creation, truncation and append actions occur as one atomic update upon job completion.",
+          "description": "Optional. Specifies the action that occurs if the destination table already exists. The following values are supported: * WRITE_TRUNCATE: If the table already exists, BigQuery overwrites the table data and uses the schema and table constraints from the source table. * WRITE_APPEND: If the table already exists, BigQuery appends the data to the table. * WRITE_EMPTY: If the table already exists and contains data, a 'duplicate' error is returned in the job result. The default value is WRITE_EMPTY. Each action is atomic and only occurs if BigQuery is able to complete the job successfully. Creation, truncation and append actions occur as one atomic update upon job completion.",
           "type": "string"
         },
         "destinationEncryptionConfiguration": {
@@ -4129,6 +4416,7 @@
         "reservationUsage": {
           "description": "Output only. Job resource usage breakdown by reservation. This field reported misleading information and will no longer be populated.",
           "readOnly": true,
+          "deprecated": true,
           "type": "array",
           "items": {
             "description": "Job resource usage breakdown by reservation.",
@@ -4260,6 +4548,7 @@
         "reservationUsage": {
           "description": "Output only. Job resource usage breakdown by reservation. This field reported misleading information and will no longer be populated.",
           "readOnly": true,
+          "deprecated": true,
           "type": "array",
           "items": {
             "description": "Job resource usage breakdown by reservation.",
@@ -4983,6 +5272,7 @@
         "bytesTransferred": {
           "description": "Output only. This field is deprecated. The number of bytes of source data copied over the network for a `LOAD` query. `transferred_bytes` has the canonical value for physical transferred bytes, which is used for BigQuery Omni billing.",
           "readOnly": true,
+          "deprecated": true,
           "type": "string",
           "format": "int64"
         }
@@ -5741,6 +6031,7 @@
         },
         "preserveNulls": {
           "description": "This property is deprecated.",
+          "deprecated": true,
           "type": "boolean"
         },
         "useQueryCache": {
@@ -7229,6 +7520,23 @@
               "location": "path",
               "required": true,
               "type": "string"
+            },
+            "datasetView": {
+              "description": "Optional. Specifies the view that determines which dataset information is returned. By default, metadata and ACL information are returned.",
+              "location": "query",
+              "type": "string",
+              "enumDescriptions": [
+                "The default value. Default to the FULL view.",
+                "Includes metadata information for the dataset, such as location, etag, lastModifiedTime, etc.",
+                "Includes ACL information for the dataset, which defines dataset access for one or more entities.",
+                "Includes both dataset metadata and ACL information."
+              ],
+              "enum": [
+                "DATASET_VIEW_UNSPECIFIED",
+                "METADATA",
+                "ACL",
+                "FULL"
+              ]
             }
           },
           "parameterOrder": [

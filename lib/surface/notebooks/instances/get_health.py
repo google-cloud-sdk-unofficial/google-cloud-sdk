@@ -41,10 +41,11 @@ DETAILED_HELP = {
 class GetHealth(base.DescribeCommand):
   """Request for checking if a notebook instance is healthy."""
 
-  @staticmethod
-  def Args(parser):
+  @classmethod
+  def Args(cls, parser):
     """Register flags for this command."""
-    flags.AddGetHealthInstanceFlags(parser)
+    api_version = util.ApiVersionSelector(cls.ReleaseTrack())
+    flags.AddGetHealthInstanceFlags(api_version, parser)
 
   def Run(self, args):
     release_track = self.ReleaseTrack()

@@ -4,7 +4,7 @@
  "id": "bigquery:v2",
  "name": "bigquery",
  "version": "v2",
- "revision": "20230614",
+ "revision": "20230726",
  "title": "BigQuery API",
  "description": "A data platform for customers to create, manage, share and query data.",
  "ownerDomain": "google.com",
@@ -2836,15 +2836,15 @@
       "type": "string"
      }
     },
-    "logging_info": {
+    "loggingInfo": {
      "$ref": "SparkLoggingInfo",
      "description": "[Output-only] Logging info is used to generate a link to Cloud Logging."
     },
-    "spark_job_id": {
+    "sparkJobId": {
      "type": "string",
      "description": "[Output-only] Spark job id if a Spark job is created successfully."
     },
-    "spark_job_location": {
+    "sparkJobLocation": {
      "type": "string",
      "description": "[Output-only] Location where the Spark job is executed."
     }
@@ -3660,7 +3660,7 @@
      }
     },
     "featureColumns": {
-     "description": "Output only. Input feature columns that were used to train this model.",
+     "description": "Output only. Input feature columns for the model inference. If the model is trained with TRANSFORM clause, these are the input of the TRANSFORM clause.",
      "readOnly": true,
      "type": "array",
      "items": {
@@ -3675,6 +3675,14 @@
       "$ref": "StandardSqlField"
      }
     },
+    "transformColumns": {
+     "description": "Output only. This field will be populated if a TRANSFORM clause was used to train a model. TRANSFORM clause (if used) takes feature_columns as input and outputs transform_columns. transform_columns then are used to train the model.",
+     "readOnly": true,
+     "type": "array",
+     "items": {
+      "$ref": "TransformColumn"
+     }
+    },
     "hparamSearchSpaces": {
      "description": "Output only. All hyperparameter search spaces in this model.",
      "readOnly": true,
@@ -3682,6 +3690,7 @@
     },
     "bestTrialId": {
      "description": "The best trial_id across all training runs.",
+     "deprecated": true,
      "type": "string",
      "format": "int64"
     },
@@ -3728,6 +3737,7 @@
     "trainingStartTime": {
      "description": "Output only. The start time of this training run, in milliseconds since epoch.",
      "readOnly": true,
+     "deprecated": true,
      "type": "string",
      "format": "int64"
     },
@@ -4283,6 +4293,155 @@
       "ZA"
      ]
     },
+    "holidayRegions": {
+     "description": "A list of geographical regions that are used for time series modeling.",
+     "type": "array",
+     "items": {
+      "type": "string",
+      "enumDescriptions": [
+       "Holiday region unspecified.",
+       "Global.",
+       "North America.",
+       "Japan and Asia Pacific: Korea, Greater China, India, Australia, and New Zealand.",
+       "Europe, the Middle East and Africa.",
+       "Latin America and the Caribbean.",
+       "United Arab Emirates",
+       "Argentina",
+       "Austria",
+       "Australia",
+       "Belgium",
+       "Brazil",
+       "Canada",
+       "Switzerland",
+       "Chile",
+       "China",
+       "Colombia",
+       "Czechoslovakia",
+       "Czech Republic",
+       "Germany",
+       "Denmark",
+       "Algeria",
+       "Ecuador",
+       "Estonia",
+       "Egypt",
+       "Spain",
+       "Finland",
+       "France",
+       "Great Britain (United Kingdom)",
+       "Greece",
+       "Hong Kong",
+       "Hungary",
+       "Indonesia",
+       "Ireland",
+       "Israel",
+       "India",
+       "Iran",
+       "Italy",
+       "Japan",
+       "Korea (South)",
+       "Latvia",
+       "Morocco",
+       "Mexico",
+       "Malaysia",
+       "Nigeria",
+       "Netherlands",
+       "Norway",
+       "New Zealand",
+       "Peru",
+       "Philippines",
+       "Pakistan",
+       "Poland",
+       "Portugal",
+       "Romania",
+       "Serbia",
+       "Russian Federation",
+       "Saudi Arabia",
+       "Sweden",
+       "Singapore",
+       "Slovenia",
+       "Slovakia",
+       "Thailand",
+       "Turkey",
+       "Taiwan",
+       "Ukraine",
+       "United States",
+       "Venezuela",
+       "Viet Nam",
+       "South Africa"
+      ],
+      "enum": [
+       "HOLIDAY_REGION_UNSPECIFIED",
+       "GLOBAL",
+       "NA",
+       "JAPAC",
+       "EMEA",
+       "LAC",
+       "AE",
+       "AR",
+       "AT",
+       "AU",
+       "BE",
+       "BR",
+       "CA",
+       "CH",
+       "CL",
+       "CN",
+       "CO",
+       "CS",
+       "CZ",
+       "DE",
+       "DK",
+       "DZ",
+       "EC",
+       "EE",
+       "EG",
+       "ES",
+       "FI",
+       "FR",
+       "GB",
+       "GR",
+       "HK",
+       "HU",
+       "ID",
+       "IE",
+       "IL",
+       "IN",
+       "IR",
+       "IT",
+       "JP",
+       "KR",
+       "LV",
+       "MA",
+       "MX",
+       "MY",
+       "NG",
+       "NL",
+       "NO",
+       "NZ",
+       "PE",
+       "PH",
+       "PK",
+       "PL",
+       "PT",
+       "RO",
+       "RS",
+       "RU",
+       "SA",
+       "SE",
+       "SG",
+       "SI",
+       "SK",
+       "TH",
+       "TR",
+       "TW",
+       "UA",
+       "US",
+       "VE",
+       "VN",
+       "ZA"
+      ]
+     }
+    },
     "timeSeriesIdColumn": {
      "description": "The time series id column that was used during ARIMA model training.",
      "type": "string"
@@ -4390,6 +4549,22 @@
      "type": "string",
      "format": "int64"
     },
+    "categoryEncodingMethod": {
+     "description": "Categorical feature encoding method.",
+     "type": "string",
+     "enumDescriptions": [
+      "Unspecified encoding method.",
+      "Applies one-hot encoding.",
+      "Applies label encoding.",
+      "Applies dummy encoding."
+     ],
+     "enum": [
+      "ENCODING_METHOD_UNSPECIFIED",
+      "ONE_HOT_ENCODING",
+      "LABEL_ENCODING",
+      "DUMMY_ENCODING"
+     ]
+    },
     "tfVersion": {
      "description": "Based on the selected TF version, the corresponding docker image is used to train external models.",
      "type": "string"
@@ -4419,22 +4594,22 @@
      "type": "string"
     },
     "trendSmoothingWindowSize": {
-     "description": "The smoothing window size for the trend component of the time series.",
+     "description": "Smoothing window size for the trend component. When a positive value is specified, a center moving average smoothing is applied on the history trend. When the smoothing window is out of the boundary at the beginning or the end of the trend, the first element or the last element is padded to fill the smoothing window before the average is applied.",
      "type": "string",
      "format": "int64"
     },
     "timeSeriesLengthFraction": {
-     "description": "Get truncated length by fraction in time series.",
+     "description": "The fraction of the interpolated length of the time series that's used to model the time series trend component. All of the time points of the time series are used to model the non-trend component. This training option accelerates modeling training without sacrificing much forecasting accuracy. You can use this option with `minTimeSeriesLength` but not with `maxTimeSeriesLength`.",
      "type": "number",
      "format": "double"
     },
     "minTimeSeriesLength": {
-     "description": "Set fast trend ARIMA_PLUS model minimum training length. Use in pair with time_series_length_fraction.",
+     "description": "The minimum number of time points in a time series that are used in modeling the trend component of the time series. If you use this option you must also set the `timeSeriesLengthFraction` option. This training option ensures that enough time points are available when you use `timeSeriesLengthFraction` in trend modeling. This is particularly important when forecasting multiple time series in a single query using `timeSeriesIdColumn`. If the total number of time points is less than the `minTimeSeriesLength` value, then the query uses all available time points.",
      "type": "string",
      "format": "int64"
     },
     "maxTimeSeriesLength": {
-     "description": "Get truncated length by last n points in time series. Use separately from time_series_length_fraction and min_time_series_length.",
+     "description": "The maximum number of time points in a time series that can be used in modeling the trend component of the time series. Don't use this option with the `timeSeriesLengthFraction` or `minTimeSeriesLength` options.",
      "type": "string",
      "format": "int64"
     },
@@ -4445,6 +4620,85 @@
     "approxGlobalFeatureContrib": {
      "description": "Whether to use approximate feature contribution method in XGBoost model explanation for global explain.",
      "type": "boolean"
+    },
+    "fitIntercept": {
+     "description": "Whether the model should include intercept during model training.",
+     "type": "boolean"
+    },
+    "numPrincipalComponents": {
+     "description": "Number of principal components to keep in the PCA model. Must be <= the number of features.",
+     "type": "string",
+     "format": "int64"
+    },
+    "pcaExplainedVarianceRatio": {
+     "description": "The minimum ratio of cumulative explained variance that needs to be given by the PCA model.",
+     "type": "number",
+     "format": "double"
+    },
+    "scaleFeatures": {
+     "description": "If true, scale the feature values by dividing the feature standard deviation. Currently only apply to PCA.",
+     "type": "boolean"
+    },
+    "pcaSolver": {
+     "description": "The solver for PCA.",
+     "type": "string",
+     "enumDescriptions": [
+      "",
+      "Full eigen-decoposition.",
+      "Randomized SVD.",
+      "Auto."
+     ],
+     "enum": [
+      "UNSPECIFIED",
+      "FULL",
+      "RANDOMIZED",
+      "AUTO"
+     ]
+    },
+    "autoClassWeights": {
+     "description": "Whether to calculate class weights automatically based on the popularity of each label.",
+     "type": "boolean"
+    },
+    "activationFn": {
+     "description": "Activation function of the neural nets.",
+     "type": "string"
+    },
+    "optimizer": {
+     "description": "Optimizer used for training the neural nets.",
+     "type": "string"
+    },
+    "budgetHours": {
+     "description": "Budget in hours for AutoML training.",
+     "type": "number",
+     "format": "double"
+    },
+    "standardizeFeatures": {
+     "description": "Whether to standardize numerical features. Default to true.",
+     "type": "boolean"
+    },
+    "l1RegActivation": {
+     "description": "L1 regularization coefficient to activations.",
+     "type": "number",
+     "format": "double"
+    },
+    "modelRegistry": {
+     "description": "The model registry.",
+     "type": "string",
+     "enumDescriptions": [
+      "",
+      "Vertex AI."
+     ],
+     "enum": [
+      "MODEL_REGISTRY_UNSPECIFIED",
+      "VERTEX_AI"
+     ]
+    },
+    "vertexAiModelVersionAliases": {
+     "description": "The version aliases to apply in Vertex AI model registry. Always overwrite if the version aliases exists in a existing model.",
+     "type": "array",
+     "items": {
+      "type": "string"
+     }
     }
    }
   },
@@ -5069,6 +5323,7 @@
    "properties": {
     "nonSeasonalOrder": {
      "description": "Non-seasonal order.",
+     "deprecated": true,
      "type": "array",
      "items": {
       "$ref": "ArimaOrder"
@@ -5076,6 +5331,7 @@
     },
     "arimaFittingMetrics": {
      "description": "Arima model fitting metrics.",
+     "deprecated": true,
      "type": "array",
      "items": {
       "$ref": "ArimaFittingMetrics"
@@ -5083,6 +5339,7 @@
     },
     "seasonalPeriods": {
      "description": "Seasonal periods. Repeated because multiple periods are supported for one time series.",
+     "deprecated": true,
      "type": "array",
      "items": {
       "type": "string",
@@ -5108,6 +5365,7 @@
     },
     "hasDrift": {
      "description": "Whether Arima model fitted with drift or not. It is always false when d is not 1.",
+     "deprecated": true,
      "type": "array",
      "items": {
       "type": "boolean"
@@ -5115,6 +5373,7 @@
     },
     "timeSeriesId": {
      "description": "Id to differentiate different time series for the large-scale case.",
+     "deprecated": true,
      "type": "array",
      "items": {
       "type": "string"
@@ -5342,6 +5601,28 @@
      "items": {
       "$ref": "StandardSqlField"
      }
+    }
+   }
+  },
+  "TransformColumn": {
+   "id": "TransformColumn",
+   "description": "Information about a single transform column.",
+   "type": "object",
+   "properties": {
+    "name": {
+     "description": "Output only. Name of the column.",
+     "readOnly": true,
+     "type": "string"
+    },
+    "type": {
+     "description": "Output only. Data type of the column after the transform.",
+     "readOnly": true,
+     "$ref": "StandardSqlDataType"
+    },
+    "transformSql": {
+     "description": "Output only. The SQL expression used in the column transform.",
+     "readOnly": true,
+     "type": "string"
     }
    }
   },
@@ -5684,6 +5965,11 @@
      "readOnly": true,
      "type": "string",
      "format": "int64"
+    },
+    "remoteModelVersion": {
+     "description": "Output only. The model version for LLM.",
+     "readOnly": true,
+     "type": "string"
     }
    }
   },
@@ -7773,35 +8059,6 @@
       "https://www.googleapis.com/auth/cloud-platform.read-only"
      ],
      "description": "Lists all row access policies on the specified table."
-    },
-    "setIamPolicy": {
-     "id": "bigquery.rowAccessPolicies.setIamPolicy",
-     "path": "{+resource}:setIamPolicy",
-     "flatPath": "projects/{projectsId}/datasets/{datasetsId}/tables/{tablesId}/rowAccessPolicies/{rowAccessPoliciesId}:setIamPolicy",
-     "httpMethod": "POST",
-     "parameters": {
-      "resource": {
-       "description": "REQUIRED: The resource for which the policy is being specified. See [Resource names](https://cloud.google.com/apis/design/resource_names) for the appropriate value for this field.",
-       "pattern": "^projects/[^/]+/datasets/[^/]+/tables/[^/]+/rowAccessPolicies/[^/]+$",
-       "location": "path",
-       "required": true,
-       "type": "string"
-      }
-     },
-     "parameterOrder": [
-      "resource"
-     ],
-     "request": {
-      "$ref": "SetIamPolicyRequest"
-     },
-     "response": {
-      "$ref": "Policy"
-     },
-     "scopes": [
-      "https://www.googleapis.com/auth/bigquery",
-      "https://www.googleapis.com/auth/cloud-platform"
-     ],
-     "description": "Sets the access control policy on the specified resource. Replaces any existing policy. Can return `NOT_FOUND`, `INVALID_ARGUMENT`, and `PERMISSION_DENIED` errors."
     },
     "getIamPolicy": {
      "id": "bigquery.rowAccessPolicies.getIamPolicy",

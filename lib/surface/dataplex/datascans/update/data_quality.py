@@ -28,23 +28,22 @@ from googlecloudsdk.command_lib.util.args import labels_util
 from googlecloudsdk.core import log
 
 
-@base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.GA)
 class DataQuality(base.Command):
-  """Update a Dataplex data quality scan job."""
+  """Update a Dataplex data quality scan job.
+
+  Represents a user-visible job which provides the insights for the
+  related data source and generates queries based on the rules and runs against
+  the data to get data quality check results.
+  """
 
   detailed_help = {
       'EXAMPLES': """\
 
-            Update a Dataplex data quality scan job.
+          To update description of a data quality scan `data-quality-datascan`
+          in project `test-project` located in `us-central1`, run:
 
-            Represents a user-visible job which provides the insights for the
-            related data source and generates queries based on the rules and runs against
-            the data to get data quality check results.
-
-            E.g., command to update description of a data quality scan `data-quality-datascan`
-            in project `test-project` located in `us-central1`:
-            dataplex datascans update data-quality data-quality-datascan --project=test-project --location=us-central1 --description="Description is updated."
+            $ {command} data-quality data-quality-datascan --project=test-project --location=us-central1 --description="Description is updated."
 
           """,
   }

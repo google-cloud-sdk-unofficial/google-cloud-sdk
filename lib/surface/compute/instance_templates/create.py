@@ -60,7 +60,7 @@ def _CommonArgs(
     support_max_run_duration=False,
     support_region_instance_template=False,
     support_network_attachments=False,
-    support_replica_zones=False,
+    support_replica_zones=True,
     support_local_ssd_recovery_timeout=False,
     support_network_queue_count=False,
     support_storage_pool=False,
@@ -533,7 +533,7 @@ def _RunCreate(
     support_confidential_compute_type_tdx=False,
     support_ipv6_reservation=False,
     support_internal_ipv6_reservation=False,
-    support_replica_zones=False,
+    support_replica_zones=True,
     support_local_ssd_recovery_timeout=False,
     support_performance_monitoring_unit=False,
     support_storage_pool=False,
@@ -1040,7 +1040,7 @@ class Create(base.CreateCommand):
   _support_max_run_duration = False
   _support_region_instance_template = False
   _support_network_attachments = False
-  _support_replica_zones = False
+  _support_replica_zones = True
   _support_local_ssd_size = True
   _support_network_queue_count = True
   _support_performance_monitoring_unit = False
@@ -1130,7 +1130,7 @@ class CreateBeta(Create):
   _support_max_run_duration = True
   _support_region_instance_template = False
   _support_network_attachments = False
-  _support_replica_zones = False
+  _support_replica_zones = True
   _support_local_ssd_recovery_timeout = True
   _support_local_ssd_size = True
   _support_network_queue_count = True

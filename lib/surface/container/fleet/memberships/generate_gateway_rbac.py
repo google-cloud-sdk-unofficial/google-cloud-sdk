@@ -88,6 +88,14 @@ class GenerateGatewayRbac(base.Command):
       $ {command} --membership=my-cluster
       --users=foo@example.com,test-acct@test-project.iam.gserviceaccount.com
       --role=role/mynamespace/namespace-reader
+
+    The users provided can be using a Google identity (only email) or using
+    external identity providers (starting with "principal://iam.googleapis.com"):
+
+      $ {command} --membership=my-cluster
+      --users=foo@example.com,principal://iam.googleapis.com/locations/global/workforcePools/pool/subject/user
+      --role=clusterrole/cluster-admin --context=my-cluster-context
+      --kubeconfig=/home/user/custom_kubeconfig --apply
   """
 
   @classmethod
@@ -190,8 +198,9 @@ class GenerateGatewayRbac(base.Command):
         elif args.anthos_support:
           users_list.append(rbac_util.GetAnthosSupportUser(project_id))
         for user in users_list:
-          message = (
-              'The RBAC policy for user: {} will be clean up.'.format(user))
+          message = 'The RBAC policy for user: {} will be cleaned up.'.format(
+              user
+          )
           console_io.PromptContinue(message=message, cancel_on_no=True)
           log.status.Print('--------------------------------------------')
           log.status.Print('Start cleaning up RBAC policy for: {}'.format(user))
@@ -200,7 +209,10 @@ class GenerateGatewayRbac(base.Command):
                                            project_id, user,
                                            args.anthos_support):
             log.status.Print(
-                'Finish clean up the previous RBAC policy for: {}'.format(user))
+                'Finished cleaning up the previous RBAC policy for: {}'.format(
+                    user
+                )
+            )
         return
 
     # Generate the RBAC policy file from args.
@@ -273,14 +285,16 @@ class GenerateGatewayRbac(base.Command):
                       rbac_policy_name, args.role)
 
                   log.status.Print(
-                      'The existing RBAC policy has conflict with proposed one:\n{}'
-                      .format(rbac_permission_policy))
+                      'The existing RBAC policy has conflicts with proposed'
+                      ' one:\n{}'.format(rbac_permission_policy)
+                  )
                   need_clean_up = True
                   override_check = True
                 else:
                   raise exceptions.Error(
-                      'Error when get diff for RBAC policy files for user: {}, with error: {}'
-                      .format(user, err))
+                      'Error when getting diff for RBAC policy files for user:'
+                      ' {}, with error: {}'.format(user, err)
+                  )
 
               if override_check:
                 message = ('The RBAC file will be overridden.')
@@ -295,8 +309,9 @@ class GenerateGatewayRbac(base.Command):
                                                  project_id, user,
                                                  args.anthos_support):
                   log.status.Print(
-                      'Finish clean up the previous RBAC policy for: {}'.format(
-                          user))
+                      'Finished cleaning up the previous RBAC policy for: {}'
+                      .format(user)
+                  )
 
             try:
               log.status.Print(

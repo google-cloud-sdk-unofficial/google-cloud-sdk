@@ -48,6 +48,7 @@ class BuildType(enum.Enum):
   BUILDPACKS = 'Buildpacks'
 
 
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
 class Deploy(base.Command):
   """Create or update a Cloud Run job."""
 
@@ -97,9 +98,6 @@ class Deploy(base.Command):
     flags.AddCmekKeyFlag(parser, with_clear=False)
     flags.AddSandboxArg(parser, hidden=True)
     flags.AddGeneralAnnotationFlags(parser)
-    flags.AddVpcNetworkFlags(parser, resource_kind='Job')
-    flags.AddVpcSubnetFlags(parser, resource_kind='Job')
-    flags.AddVpcNetworkTagsFlags(parser, resource_kind='Job')
     flags.AddSourceAndImageFlags(
         parser, image='us-docker.pkg.dev/cloudrun/container/job:latest'
     )
@@ -285,3 +283,13 @@ class Deploy(base.Command):
       )
       log.status.Print(msg)
       return job
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class AlphaDeploy(Deploy):
+  """Create or update a Cloud Run job."""
+
+  @staticmethod
+  def Args(parser):
+    Deploy.CommonArgs(parser)
+    flags.AddVpcNetworkGroupFlagsForUpdate(parser, resource_kind='Job')

@@ -42,10 +42,11 @@ DETAILED_HELP = {
 class Upgrade(base.Command):
   """Request for upgrading instances."""
 
-  @staticmethod
-  def Args(parser):
+  @classmethod
+  def Args(cls, parser):
     """Upgrade flags for this command."""
-    flags.AddUpgradeInstanceFlags(parser)
+    api_version = util.ApiVersionSelector(cls.ReleaseTrack())
+    flags.AddUpgradeInstanceFlags(api_version, parser)
 
   def Run(self, args):
     release_track = self.ReleaseTrack()

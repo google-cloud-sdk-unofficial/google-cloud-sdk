@@ -41,10 +41,11 @@ DETAILED_HELP = {
 class Describe(base.DescribeCommand):
   """Request for describing runtimes."""
 
-  @staticmethod
-  def Args(parser):
+  @classmethod
+  def Args(cls, parser):
     """Register flags for this command."""
-    flags.AddDescribeRuntimeFlags(parser)
+    api_version = util.ApiVersionSelector(cls.ReleaseTrack())
+    flags.AddDescribeRuntimeFlags(api_version, parser)
 
   def Run(self, args):
     release_track = self.ReleaseTrack()

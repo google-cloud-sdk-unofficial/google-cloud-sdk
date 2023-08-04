@@ -74,6 +74,48 @@ def _GetKmsKeyNameFromArgs(args):
   return None
 
 
+def _Args(parser, include_ingestion_flags=False):
+  """Registers flags for this command."""
+  resource_args.AddTopicResourceArg(parser, 'to update.')
+  labels_util.AddUpdateLabelsFlags(parser)
+  resource_args.AddResourceArgs(
+      parser,
+      [
+          kms_resource_args.GetKmsKeyPresentationSpec(
+              'topic',
+              flag_overrides=_KMS_FLAG_OVERRIDES,
+              permission_info=_KMS_PERMISSION_INFO,
+          )
+      ],
+  )
+  flags.AddTopicMessageRetentionFlags(parser, is_update=True)
+
+  msp_group = parser.add_group(
+      mutex=True, help='Message storage policy options.'
+  )
+  msp_group.add_argument(
+      '--recompute-message-storage-policy',
+      action='store_true',
+      help=(
+          'If given, Cloud Pub/Sub will recompute the regions where messages'
+          ' can be stored at rest, based on your organization\'s "Resource '
+          ' Location Restriction" policy.'
+      ),
+  )
+  msp_group.add_argument(
+      '--message-storage-policy-allowed-regions',
+      metavar='REGION',
+      type=arg_parsers.ArgList(),
+      help=(
+          'A list of one or more Cloud regions where messages are allowed to'
+          ' be stored at rest.'
+      ),
+  )
+  flags.AddSchemaSettingsFlags(parser, is_update=True)
+  if include_ingestion_flags:
+    flags.AddIngestionDatasourceFlags(parser, is_update=True)
+
+
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Update(base.UpdateCommand):
   """Updates an existing Cloud Pub/Sub topic."""
@@ -117,42 +159,7 @@ class Update(base.UpdateCommand):
   @staticmethod
   def Args(parser):
     """Registers flags for this command."""
-    resource_args.AddTopicResourceArg(parser, 'to update.')
-    labels_util.AddUpdateLabelsFlags(parser)
-    resource_args.AddResourceArgs(
-        parser,
-        [
-            kms_resource_args.GetKmsKeyPresentationSpec(
-                'topic',
-                flag_overrides=_KMS_FLAG_OVERRIDES,
-                permission_info=_KMS_PERMISSION_INFO,
-            )
-        ],
-    )
-    flags.AddTopicMessageRetentionFlags(parser, is_update=True)
-
-    msp_group = parser.add_group(
-        mutex=True, help='Message storage policy options.'
-    )
-    msp_group.add_argument(
-        '--recompute-message-storage-policy',
-        action='store_true',
-        help=(
-            'If given, Cloud Pub/Sub will recompute the regions where messages'
-            ' can be stored at rest, based on your organization\'s "Resource '
-            ' Location Restriction" policy.'
-        ),
-    )
-    msp_group.add_argument(
-        '--message-storage-policy-allowed-regions',
-        metavar='REGION',
-        type=arg_parsers.ArgList(),
-        help=(
-            'A list of one or more Cloud regions where messages are allowed to'
-            ' be stored at rest.'
-        ),
-    )
-    flags.AddSchemaSettingsFlags(parser, is_update=True)
+    _Args(parser, include_ingestion_flags=False)
 
   def Run(self, args):
     """This is what gets called when the user runs this command.
@@ -199,6 +206,23 @@ class Update(base.UpdateCommand):
     last_revision_id = getattr(args, 'last_revision_id', None)
     result = None
     clear_schema_settings = getattr(args, 'clear_schema_settings', None)
+
+    kinesis_ingestion_stream_arn = getattr(
+        args, 'kinesis_ingestion_stream_arn', None
+    )
+    kinesis_ingestion_consumer_arn = getattr(
+        args, 'kinesis_ingestion_consumer_arn', None
+    )
+    kinesis_ingestion_role_arn = getattr(
+        args, 'kinesis_ingestion_role_arn', None
+    )
+    kinesis_ingestion_service_account = getattr(
+        args, 'kinesis_ingestion_service_account', None
+    )
+    clear_ingestion_data_source_settings = getattr(
+        args, 'clear_ingestion_data_source_settings', None
+    )
+
     try:
       result = client.Patch(
           topic_ref,
@@ -213,6 +237,11 @@ class Update(base.UpdateCommand):
           first_revision_id=first_revision_id,
           last_revision_id=last_revision_id,
           clear_schema_settings=clear_schema_settings,
+          kinesis_ingestion_stream_arn=kinesis_ingestion_stream_arn,
+          kinesis_ingestion_consumer_arn=kinesis_ingestion_consumer_arn,
+          kinesis_ingestion_role_arn=kinesis_ingestion_role_arn,
+          kinesis_ingestion_service_account=kinesis_ingestion_service_account,
+          clear_ingestion_data_source_settings=clear_ingestion_data_source_settings,
       )
     except topics.NoFieldsSpecifiedError:
       operations = [
@@ -234,7 +263,15 @@ class Update(base.UpdateCommand):
 class UpdateBeta(Update):
   """Updates an existing Cloud Pub/Sub topic."""
 
+  @staticmethod
+  def Args(parser):
+    _Args(parser, include_ingestion_flags=False)
+
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class UpdateAlpha(UpdateBeta):
   """Updates an existing Cloud Pub/Sub topic."""
+
+  @staticmethod
+  def Args(parser):
+    _Args(parser, include_ingestion_flags=True)

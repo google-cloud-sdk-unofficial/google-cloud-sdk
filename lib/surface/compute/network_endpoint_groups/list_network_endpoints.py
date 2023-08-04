@@ -36,7 +36,7 @@ in zone ``us-central1-a'':
 }
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class ListNetworkEndpoints(base.ListCommand):
   """List network endpoints in a network endpoint group."""
 
@@ -113,6 +113,12 @@ class ListNetworkEndpoints(base.ListCommand):
         limit=args.limit,
         batch_size=None,
     )
+
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class BetaListNetworkEndpoints(ListNetworkEndpoints):
+  """List network endpoints in a network endpoint group."""
+  support_regional_scope = True
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)

@@ -19,6 +19,7 @@ from __future__ import division
 from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.kmsinventory import inventory
+from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.kms import resource_args
 from googlecloudsdk.command_lib.resource_manager import completers
@@ -37,6 +38,25 @@ DETAILED_HELP = {
 }
 
 
+RESOURCE_TYPE_HELP = """\
+A list of resource types that this request searches for. If empty, it will
+search all the [trackable resource types](https://cloud.google.com/kms/docs/view-key-usage#tracked-resource-types).
+
+Regular expressions are also supported. For example:
+
+  * ``compute.googleapis.com.*'' snapshots resources whose type
+    starts with ``compute.googleapis.com''.
+  * ``.*Image'' snapshots resources whose type ends with
+    ``Image''.
+  * ``.*Image.*'' snapshots resources whose type contains
+    ``Image''.
+
+See [RE2](https://github.com/google/re2/wiki/Syntax) for all supported
+regular expression syntax. If the regular expression does not match any
+supported resource type, an ``INVALID_ARGUMENT'' error will be returned.
+"""
+
+
 class SearchProtectedResources(base.ListCommand):
   """Searches the resources protected by a key."""
   detailed_help = DETAILED_HELP
@@ -50,9 +70,19 @@ class SearchProtectedResources(base.ListCommand):
         completer=completers.OrganizationCompleter,
         required=True,
         help='Organization ID.')
+    parser.add_argument(
+        '--resource-types',
+        metavar='RESOURCE_TYPES',
+        type=arg_parsers.ArgList(),
+        help=RESOURCE_TYPE_HELP,
+    )
 
   def Run(self, args):
     key_name = args.keyname
     org = args.scope
+    resource_types = args.resource_types
+    if not resource_types:
+      resource_types = []
     return inventory.SearchProtectedResources(
-        scope=org, key_name=key_name, args=args)
+        scope=org, key_name=key_name, resource_types=resource_types, args=args
+    )

@@ -41,10 +41,11 @@ DETAILED_HELP = {
 class Reset(base.Command):
   """Request for resetting runtimes."""
 
-  @staticmethod
-  def Args(parser):
+  @classmethod
+  def Args(cls, parser):
     """Register flags for this command."""
-    flags.AddResetRuntimeFlags(parser)
+    api_version = util.ApiVersionSelector(cls.ReleaseTrack())
+    flags.AddResetRuntimeFlags(api_version, parser)
 
   def Run(self, args):
     release_track = self.ReleaseTrack()

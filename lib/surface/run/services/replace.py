@@ -62,8 +62,8 @@ class Replace(base.Command):
          """,
   }
 
-  @staticmethod
-  def Args(parser):
+  @classmethod
+  def Args(cls, parser):
     # Flags specific to connecting to a cluster
     cluster_group = flags.GetClusterArgGroup(parser)
     namespace_presentation = presentation_specs.ResourcePresentationSpec(
@@ -78,6 +78,8 @@ class Replace(base.Command):
     # Flags not specific to any platform
     flags.AddAsyncFlag(parser)
     flags.AddClientNameAndVersionFlags(parser)
+    if cls.ReleaseTrack() == base.ReleaseTrack.ALPHA:
+      flags.AddDryRunFlag(parser)
     parser.add_argument(
         'FILE',
         action='store',
@@ -151,34 +153,51 @@ class Replace(base.Command):
 
     conn_context = connection_context.GetConnectionContext(
         args, flags.Product.RUN, self.ReleaseTrack(), region_label=region_label)
+    dry_run = args.dry_run if hasattr(args, 'dry_run') else False
+
+    action = (
+        'Validating new configuration for'
+        if dry_run
+        else 'Applying new configuration to'
+    )
 
     with serverless_operations.Connect(conn_context) as client:
       service_obj = client.GetService(service_ref)
 
       pretty_print.Info(
           run_messages_util.GetStartDeployMessage(
-              conn_context,
-              service_ref,
-              operation='Applying new configuration to'))
+              conn_context, service_ref, operation=action
+          )
+      )
 
       deployment_stages = stages.ServiceStages()
       header = ('Deploying...' if service_obj else 'Deploying new service...')
+      if dry_run:
+        header = 'Validating...'
       with progress_tracker.StagedProgressTracker(
           header,
           deployment_stages,
           failure_message='Deployment failed',
-          suppress_output=args.async_) as tracker:
+          suppress_output=args.async_ or dry_run,
+      ) as tracker:
         service_obj = client.ReleaseService(
             service_ref,
             changes,
             tracker,
             asyn=args.async_,
             allow_unauthenticated=None,
-            for_replace=True)
+            for_replace=True,
+            dry_run=dry_run,
+        )
       if args.async_:
         pretty_print.Success(
             'New configuration for [{{bold}}{serv}{{reset}}] is being applied '
             'asynchronously.'.format(serv=service_obj.name))
+      elif dry_run:
+        pretty_print.Success(
+            'New configuration has been validated for service '
+            '[{{bold}}{serv}{{reset}}].'.format(serv=service_obj.name)
+        )
       else:
         service_obj = client.GetService(service_ref)
         pretty_print.Success('New configuration has been applied to service '

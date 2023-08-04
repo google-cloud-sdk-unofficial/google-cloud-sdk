@@ -44,10 +44,11 @@ DETAILED_HELP = {
 class Create(base.CreateCommand):
   """Request for creating an runtime."""
 
-  @staticmethod
-  def Args(parser):
+  @classmethod
+  def Args(cls, parser):
     """Register flags for this command."""
-    flags.AddCreateRuntimeFlags(parser)
+    api_version = util.ApiVersionSelector(cls.ReleaseTrack())
+    flags.AddCreateRuntimeFlags(api_version, parser)
 
   def Run(self, args):
     """This is what gets called when the user runs this command."""

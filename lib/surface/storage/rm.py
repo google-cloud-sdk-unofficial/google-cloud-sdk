@@ -87,11 +87,6 @@ class Rm(base.Command):
         nargs='*',
         help='The URLs of the resources to delete.')
     parser.add_argument(
-        '--read-paths-from-stdin',
-        '-I',
-        action='store_true',
-        help='Read the list of resources to remove from stdin.')
-    parser.add_argument(
         '--recursive',
         '-R',
         '-r',
@@ -112,6 +107,7 @@ class Rm(base.Command):
     flags.add_additional_headers_flag(parser)
     flags.add_precondition_flags(parser)
     flags.add_continue_on_error_flag(parser)
+    flags.add_read_paths_from_stdin_flag(parser)
 
   def Run(self, args):
     if args.recursive:

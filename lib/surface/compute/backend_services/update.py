@@ -424,12 +424,15 @@ class UpdateHelper(object):
   def GetSetRequest(self, client, backend_service_ref, replacement):
     """Returns a backend service patch request."""
 
-    if (backend_service_ref.Collection()
-        == 'compute.backendServices') and (self._support_failover and
-                                           replacement.failoverPolicy):
+    if (
+        backend_service_ref.Collection() == 'compute.backendServices'
+        and self._support_failover
+        and replacement.failoverPolicy
+        ):
       raise exceptions.InvalidArgumentException(
           '--global',
-          'cannot specify failover policies for global backend services.')
+          'failover policy parameters are only for regional passthrough '
+          'Network Load Balancers.')
 
     if backend_service_ref.Collection() == 'compute.regionBackendServices':
       return (

@@ -42,10 +42,11 @@ DETAILED_HELP = {
 class Reset(base.Command):
   """Request for resetting instances."""
 
-  @staticmethod
-  def Args(parser):
+  @classmethod
+  def Args(cls, parser):
     """Register flags for this command."""
-    flags.AddResetInstanceFlags(parser)
+    api_version = util.ApiVersionSelector(cls.ReleaseTrack())
+    flags.AddResetInstanceFlags(api_version, parser)
 
   def Run(self, args):
     release_track = self.ReleaseTrack()

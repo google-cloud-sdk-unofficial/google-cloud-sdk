@@ -5,6 +5,11 @@ help_text:
   description: |
     Add an IAM policy binding to the IAM policy of a Cloud Billing account. A
     binding consists of a member and a role.
+  examples: |
+    To add someone@example.com as a Billing Account Administrator for billing account
+    123456-789876-543210, run:
+
+      $ {command} 123456-789876-543210 --member='user:someone@example.com' --role='roles/billing.admin'
 
 request:
   collection: cloudbilling.billingAccounts

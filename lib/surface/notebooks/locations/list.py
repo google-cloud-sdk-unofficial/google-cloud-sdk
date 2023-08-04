@@ -39,8 +39,8 @@ DETAILED_HELP = {
 class List(base.ListCommand):
   """Request for listing locations."""
 
-  @staticmethod
-  def Args(parser):
+  @classmethod
+  def Args(cls, parser):
     """Register flags for this command."""
     parser.display_info.AddFormat('table(locationId)')
     parser.display_info.AddUriFunc(loc_util.GetLocationURI)

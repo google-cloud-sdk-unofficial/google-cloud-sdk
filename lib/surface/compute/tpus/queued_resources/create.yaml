@@ -21,7 +21,8 @@
     modify_request_hooks:
     - googlecloudsdk.command_lib.util.hooks.request_modifiers:SetParentRequestHook
     - googlecloudsdk.command_lib.compute.tpus.queued_resources.util:CreateNodeSpec
-    - googlecloudsdk.command_lib.compute.tpus.queued_resources.util:SetBestEffortOrSpot
+    - googlecloudsdk.command_lib.compute.tpus.queued_resources.util:SetBestEffort
+    - googlecloudsdk.command_lib.compute.tpus.queued_resources.util:SetSpot
     - googlecloudsdk.command_lib.compute.tpus.queued_resources.util:SetGuaranteed
     - googlecloudsdk.command_lib.compute.tpus.queued_resources.util:SetValidInterval
     - googlecloudsdk.command_lib.compute.tpus.queued_resources.util:VerifyNodeCount

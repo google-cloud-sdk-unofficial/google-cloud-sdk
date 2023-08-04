@@ -57,7 +57,7 @@ class CreateAppProfile(base.CreateCommand):
         arguments.ArgAdder(parser)
         .AddDescription('app profile', required=False)
         .AddForce('create')
-        .AddAppProfileRouting(is_update=False)
+        .AddAppProfileRouting()
     )
 
   def _CreateAppProfile(self, app_profile_ref, args):
@@ -131,7 +131,6 @@ class CreateAppProfileAlpha(CreateAppProfile):
         .AddAppProfileRouting(
             allow_failover_radius=True,
             allow_row_affinity=True,
-            is_update=False,
         )
     )
 

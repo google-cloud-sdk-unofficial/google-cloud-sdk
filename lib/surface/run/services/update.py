@@ -194,9 +194,7 @@ class AlphaUpdate(Update):
     # Flags specific to managed CR
     managed_group = flags.GetManagedArgGroup(parser)
     flags.AddCustomAudiencesFlag(managed_group)
-    flags.AddVpcNetworkFlags(managed_group)
-    flags.AddVpcSubnetFlags(managed_group)
-    flags.AddVpcNetworkTagsFlags(managed_group)
+    flags.AddVpcNetworkGroupFlagsForUpdate(managed_group)
     flags.AddRuntimeFlag(managed_group)
     flags.AddDescriptionFlag(managed_group)
     flags.AddServiceMinInstancesFlag(managed_group)

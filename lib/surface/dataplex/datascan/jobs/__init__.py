@@ -21,6 +21,17 @@ from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 
 
+@base.Deprecate(
+    is_removed=False,
+    warning=(
+        'This command is deprecated. '
+        'Please use `gcloud alpha dataplex datascans jobs` instead.'
+    ),
+    error=(
+        'This command has been removed. '
+        'Please use `gcloud alpha dataplex datascans jobs` instead.'
+    ),
+)
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Jobs(base.Group):
   """Manage Dataplex Datascan Jobs services."""

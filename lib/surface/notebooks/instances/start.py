@@ -42,10 +42,11 @@ DETAILED_HELP = {
 class Start(base.Command):
   """Request for starting instances."""
 
-  @staticmethod
-  def Args(parser):
+  @classmethod
+  def Args(cls, parser):
     """Register flags for this command."""
-    flags.AddStartInstanceFlags(parser)
+    api_version = util.ApiVersionSelector(cls.ReleaseTrack())
+    flags.AddStartInstanceFlags(api_version, parser)
 
   def Run(self, args):
     release_track = self.ReleaseTrack()

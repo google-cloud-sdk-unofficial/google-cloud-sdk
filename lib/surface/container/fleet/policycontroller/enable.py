@@ -19,8 +19,8 @@ from __future__ import division
 from __future__ import unicode_literals
 
 from googlecloudsdk.calliope import base as calliope_base
-from googlecloudsdk.command_lib.container.fleet import resources
 from googlecloudsdk.command_lib.container.fleet.features import base
+from googlecloudsdk.command_lib.container.fleet.policycontroller import flags
 from googlecloudsdk.command_lib.container.fleet.policycontroller import utils
 from googlecloudsdk.core import exceptions
 
@@ -42,25 +42,8 @@ class Enable(base.UpdateCommand, base.EnableCommand):
 
   @classmethod
   def Args(cls, parser):
-    resources.AddMembershipResourceArg(
-        parser,
-        plural=True,
-        membership_help=(
-            'The membership names to update, separated by commas if multiple '
-            'are supplied. Ignored if --all-memberships is supplied; if '
-            'neither is supplied, a prompt will appear with all available '
-            'memberships.'
-        ),
-    )
-    parser.add_argument(
-        '--all-memberships',
-        action='store_true',
-        help=(
-            'If supplied, enable Policy Controller for all memberships in the'
-            ' fleet.'
-        ),
-        default=False,
-    )
+    cmd_flags = flags.Flags(parser, 'enable')
+    cmd_flags.AddMemberships()
     parser.add_argument(
         '--audit-interval-seconds',
         type=int,
@@ -147,9 +130,7 @@ class Enable(base.UpdateCommand, base.EnableCommand):
     poco_hub_config = utils.set_poco_hub_config_parameters_from_args(
         args, self.messages
     )
-    # pylint: disable=line-too-long
-    # TODO(b/275747711): Get rid of the pylint exemption and format all of this
-    # automagically.
+
     poco_hub_config.installSpec = self.messages.PolicyControllerHubConfig.InstallSpecValueValuesEnum(
         self.messages.PolicyControllerHubConfig.InstallSpecValueValuesEnum.INSTALL_SPEC_ENABLED
     )

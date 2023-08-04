@@ -518,6 +518,7 @@ class Create(base.CreateCommand):
 class CreateBeta(Create):
   """Create a subnet in the Beta release track."""
 
+  _include_global_managed_proxy = True
   _include_private_service_connect = True
   _include_private_nat = True
   _include_reserved_internal_range = True
@@ -531,7 +532,6 @@ class CreateAlpha(CreateBeta):
   _include_alpha_logging = True
   _include_aggregate_purpose = True
   _include_private_service_connect = True
-  _include_global_managed_proxy = True
   _include_l2 = True
   _include_private_nat = True
   _include_reserved_internal_range = True

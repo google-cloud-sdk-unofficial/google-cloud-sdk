@@ -21,6 +21,7 @@ from __future__ import unicode_literals
 
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.storage import flags
+from googlecloudsdk.command_lib.storage import metrics_util
 
 
 DETAILED_HELP = {
@@ -42,6 +43,10 @@ class Storage(base.Group):
   category = base.STORAGE_CATEGORY
 
   detailed_help = DETAILED_HELP
+
+  def __init__(self):
+    super(Storage, self).__init__()
+    metrics_util.fix_user_agent_for_gsutil_shim()
 
   def Filter(self, context, args):
     # TODO(b/190541521):  Determine if command group works with project number

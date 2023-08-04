@@ -80,3 +80,6 @@
     BETA:
       api_version: v1beta1
     collection: redis.projects.locations.clusters
+
+  output:
+    format: yaml

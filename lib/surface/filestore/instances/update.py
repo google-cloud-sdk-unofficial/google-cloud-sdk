@@ -122,6 +122,66 @@ class UpdateBeta(Update):
   def Args(parser):
     _CommonArgs(parser, UpdateBeta._API_VERSION)
 
+  def Run(self, args):
+    """Runs a command line string arguments.
+
+    Args:
+      args: cmd line string arguments.
+
+    Returns:
+       client: A FilestoreClient instance.
+
+    Raises:
+       InvalidArgumentException: for invalid JSON formatted --file-args.
+       KeyError: for key errors in JSON values.
+    """
+
+    instance_ref = args.CONCEPTS.instance.Parse()
+    client = filestore_client.FilestoreClient(self._API_VERSION)
+    labels_diff = labels_util.Diff.FromUpdateArgs(args)
+    orig_instance = client.GetInstance(instance_ref)
+    try:
+      if args.file_share:
+        client.MakeNFSExportOptionsMsgBeta(
+            messages=client.messages,
+            nfs_export_options=args.file_share.get('nfs-export-options', []))
+    except KeyError as e:
+      raise exceptions.InvalidArgumentException('--file-share',
+                                                six.text_type(e))
+    if labels_diff.MayHaveUpdates():
+      labels = labels_diff.Apply(client.messages.Instance.LabelsValue,
+                                 orig_instance.labels).GetOrNone()
+    else:
+      labels = None
+
+    try:
+      instance = client.ParseUpdatedInstanceConfig(
+          orig_instance,
+          description=args.description,
+          labels=labels,
+          file_share=args.file_share)
+    except filestore_client.Error as e:
+      raise exceptions.InvalidArgumentException('--file-share',
+                                                six.text_type(e))
+
+    updated_fields = []
+    if args.IsSpecified('description'):
+      updated_fields.append('description')
+    if (args.IsSpecified('update_labels') or
+        args.IsSpecified('remove_labels') or args.IsSpecified('clear_labels')):
+      updated_fields.append('labels')
+    if args.IsSpecified('file_share'):
+      updated_fields.append('fileShares')
+    update_mask = ','.join(updated_fields)
+
+    result = client.UpdateInstance(instance_ref, instance, update_mask,
+                                   args.async_)
+    if args.async_:
+      log.status.Print(
+          'To check the status of the operation, run `gcloud {} filestore '
+          'operations describe {}`'.format(self._API_VERSION, result.name))
+    return result
+
 
 Update.detailed_help = {
     'DESCRIPTION':

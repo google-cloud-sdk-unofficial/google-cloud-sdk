@@ -46,6 +46,9 @@ class Update(base.UpdateCommand):
 
   @classmethod
   def Args(cls, parser):
+    # TODO(b/291816961) Use groups and flaghandler for memberships.
+    # Use googlecloudsdk.command_lib.container.fleet.policycontroller.flags
+    # See usage in suspend.py
     resources.AddMembershipResourceArg(
         parser,
         plural=True,
@@ -78,6 +81,7 @@ class Update(base.UpdateCommand):
              ' be greater than 0.',
         default=20,
     )
+    # TODO(b/291816961) Exemptable namespaces should be in a mutex group.
     parser.add_argument(
         '--exemptable-namespaces',
         type=str,
@@ -127,6 +131,7 @@ class Update(base.UpdateCommand):
             ' policy types. (To disable, use --no-template-library-installed)'
         ),
     )
+    # TODO(b/291816961) Monitoring should be in a mutex group.
     parser.add_argument(
         '--monitoring',
         type=str,
@@ -149,23 +154,14 @@ class Update(base.UpdateCommand):
         type=str,
         help='The version of Policy Controller to install.',
     )
-    parser.add_argument(
-        '--suspend',
-        action=utils.BooleanOptionalAction,
-        help=(
-            'If set, suspend Policy Controller webhooks and only preserve the'
-            ' audit functionality. (To resume normal operation, use'
-            ' --no-suspend)'
-        ),
-    )
 
   def Run(self, args):
     membership_specs = self.hubclient.ToPyDict(
         self.GetFeature().membershipSpecs
     )
-    poco_hub_config = utils.set_poco_hub_config_parameters_from_args(
-        args, self.messages
-    )
+    # Required for validation side-effect.
+    # TODO(b/291816961) Removal of validation obviates the need for this call.
+    utils.set_poco_hub_config_parameters_from_args(args, self.messages)
     memberships = base.ParseMembershipsPlural(
         args, search=True, prompt=True, prompt_cancel=False, autoselect=True
     )

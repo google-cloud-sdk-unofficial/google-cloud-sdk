@@ -3905,6 +3905,40 @@ class _Make(BigqueryCmd):
         'has the default value of "CSV" if not specified. ',
         flag_values=fv)
     flags.DEFINE_string(
+        'connection_id',
+        None,
+        'The connection specifying the credentials to be used to read external '
+        'storage. The connection_id can have the form '
+        '"<project_id>.<location_id>.<connection_id>" or '
+        '"projects/<project_id>/locations/<location_id>/connections/<connection_id>". ',
+        flag_values=fv)
+    flags.DEFINE_string(
+        'storage_uri',
+        None,
+        (
+            'The fully qualified location prefix of the external folder where'
+            ' the table data of a BigLake table is stored. The "*" wildcard'
+            ' character is not allowed. The URI should be in the format'
+            ' "gs://bucket/path_to_table/". '
+        ),
+        flag_values=fv,
+    )
+    flags.DEFINE_enum(
+        'file_format',
+        None, ['PARQUET'],
+        'The file format the table data of a BigLake table is stored in. ',
+        flag_values=fv)
+    flags.DEFINE_enum(
+        'table_format',
+        None,
+        ['ICEBERG'],
+        (
+            'The table format the metadata only snapshots of a BigLake table'
+            ' are stored in. '
+        ),
+        flag_values=fv,
+    )
+    flags.DEFINE_string(
         'view', '', 'Create view with this SQL query.', flag_values=fv)
     flags.DEFINE_multi_string(
         'view_udf_resource',
@@ -4112,29 +4146,33 @@ class _Make(BigqueryCmd):
         flag_values=fv)
     flags.DEFINE_enum(
         'job_type',
-        None, ['QUERY', 'PIPELINE', 'ML_EXTERNAL', 'BACKGROUND', 'SPARK'],
-        'Type of jobs to create reservation assignment for. Options include:'
-        '\n QUERY'
-        '\n PIPELINE'
-        '\n Note if PIPELINE reservations are created, then load jobs will '
-        'just use the slots from this reservation and slots from shared pool '
-        'won\'t be used.'
-        '\n ML_EXTERNAL'
-        '\n BigQuery ML jobs that use services external to BQ for model '
-        'training will use slots from this reservation. Slots used by these '
-        'jobs are not preemptible, i.e., they are not available for other jobs '
-        'running in the reservation. These jobs will not utilize idle slots '
-        'from other reservations.'
-        '\n BACKGROUND'
-        '\n BigQuery CDC background merge will use BACKGROUND reservations to '
-        'execute if created.'
-        '\n SPARK'
-        '\n BigQuery Spark jobs that use services external to BQ for executing '
-        'SPARK procedure job. Slots used by these jobs are not preemptible, '
-        'i.e., they are not available for other jobs running in the '
-        'reservation. These jobs will not utilize idle slots from other '
-        'reservations.',
-        flag_values=fv)
+        None,
+        [
+            'QUERY',
+            'PIPELINE',
+            'ML_EXTERNAL',
+            'BACKGROUND',
+            'SPARK',
+        ],
+        (
+            'Type of jobs to create reservation assignment for. Options'
+            ' include:\n QUERY\n PIPELINE\n Note if PIPELINE reservations are'
+            ' created, then load jobs will just use the slots from this'
+            " reservation and slots from shared pool won't be used.\n"
+            ' ML_EXTERNAL\n BigQuery ML jobs that use services external to BQ'
+            ' for model training will use slots from this reservation. Slots'
+            ' used by these jobs are not preemptible, i.e., they are not'
+            ' available for other jobs running in the reservation. These jobs'
+            ' will not utilize idle slots from other reservations.\n'
+            ' BACKGROUND\n BigQuery CDC background merge will use BACKGROUND'
+            ' reservations to execute if created.\n SPARK\n BigQuery Spark jobs'
+            ' that use services external to BQ for executing SPARK procedure'
+            ' job. Slots used by these jobs are not preemptible, i.e., they are'
+            ' not available for other jobs running in the reservation. These'
+            ' jobs will not utilize idle slots from other reservations.'
+        ),
+        flag_values=fv,
+    )
     flags.DEFINE_enum(
         'priority',
         None, [
@@ -4527,7 +4565,8 @@ class _Make(BigqueryCmd):
           connection_credential=self.connection_credential,
           display_name=self.display_name,
           description=self.description,
-          connection_id=identifier)
+          connection_id=identifier,
+      )
       if created_connection:
         reference = client.GetConnectionReference(
             path=created_connection['name'])
@@ -4640,6 +4679,34 @@ class _Make(BigqueryCmd):
             self.reference_file_schema_uri,
             self.file_set_spec_type,
         )
+        if 'fileSetSpecType' in external_data_config:
+          external_data_config['fileSetSpecType'] = _ParseFileSetSpecType(
+              external_data_config['fileSetSpecType'])
+
+      biglake_config = None
+      has_all_required_biglake_config = (
+          self.connection_id
+          and self.storage_uri
+          and self.table_format
+      )
+      has_some_required_biglake_config = (
+          self.connection_id
+          or self.storage_uri
+          or self.file_format
+          or self.table_format
+      )
+      if has_all_required_biglake_config:
+        biglake_config = {
+            'connection_id': self.connection_id,
+            'storage_uri': self.storage_uri,
+            'file_format': self.file_format,
+            'table_format': self.table_format,
+        }
+      elif has_some_required_biglake_config:
+        raise app.UsageError(
+            'BigLake tables require all of connection_id, storage_uri,'
+            ' and table_format to be specified'
+        )
 
       view_udf_resources = None
       if self.view_udf_resource:
@@ -4667,6 +4734,7 @@ class _Make(BigqueryCmd):
           view_udf_resources=view_udf_resources,
           use_legacy_sql=self.use_legacy_sql,
           external_data_config=external_data_config,
+          biglake_config=biglake_config,
           labels=labels,
           time_partitioning=time_partitioning,
           clustering=clustering,
@@ -5577,51 +5645,7 @@ class _Update(BigqueryCmd):
             description=self.description,
             connection_type=self.connection_type,
             properties=self.properties,
-            connection_credential=self.connection_credential)
-        bigquery_client.MaybePrintManualInstructionsForConnection(
-            updated_connection)
-
-    else:
-      reference = client.GetReference(identifier)
-      _Typecheck(reference, (DatasetReference, TableReference),
-                 "Invalid identifier '%s' for update." % (identifier,))
-
-    label_keys_to_remove = None
-    labels_to_set = None
-    if self.set_label is not None:
-      labels_to_set = _ParseLabels(self.set_label)
-    if self.clear_label is not None:
-      label_keys_to_remove = set(self.clear_label)
-
-    if isinstance(reference, DatasetReference):
-      if self.schema:
-        raise app.UsageError('Cannot specify schema with a dataset.')
-      if self.view:
-        raise app.UsageError('Cannot specify view with a dataset.')
-      if self.materialized_view:
-        raise app.UsageError('Cannot specify materialized view with a dataset.')
-      if self.expiration:
-        raise app.UsageError('Cannot specify an expiration for a dataset.')
-      if self.external_table_definition is not None:
-        raise app.UsageError(
-            'Cannot specify an external_table_definition for a dataset.')
-      if self.source and self.description:
-        raise app.UsageError('Cannot specify description with a source.')
-      default_table_exp_ms = None
-      if self.default_table_expiration is not None:
-        default_table_exp_ms = self.default_table_expiration * 1000
-      default_partition_exp_ms = None
-      if self.default_partition_expiration is not None:
-        default_partition_exp_ms = self.default_partition_expiration * 1000
-      _UpdateDataset(
-          client,
-          reference,
-          description=self.description,
-          source=self.source,
-          default_table_expiration_ms=default_table_exp_ms,
-          default_partition_expiration_ms=default_partition_exp_ms,
-          labels_to_set=labels_to_set,
-          label_keys_to_remove=label_keys_to_remove,
+            connection_credential=self.connection_credential,
           default_kms_key=self.default_kms_key,
           etag=self.etag,
           max_time_travel_hours=self.max_time_travel_hours,
@@ -5997,15 +6021,21 @@ class _Show(BigqueryCmd):
         flag_values=fv)
     flags.DEFINE_enum(
         'job_type',
-        None, ['QUERY', 'PIPELINE', 'ML_EXTERNAL', 'BACKGROUND', 'SPARK'],
-        'Type of jobs to search reservation assignment for. Options include:'
-        '\n QUERY'
-        '\n PIPELINE'
-        '\n ML_EXTERNAL'
-        '\n BACKGROUND'
-        '\n SPARK'
-        '\n Used in conjunction with --reservation_assignment.',
-        flag_values=fv)
+        None,
+        [
+            'QUERY',
+            'PIPELINE',
+            'ML_EXTERNAL',
+            'BACKGROUND',
+            'SPARK',
+        ],
+        (
+            'Type of jobs to search reservation assignment for. Options'
+            ' include:\n QUERY\n PIPELINE\n ML_EXTERNAL\n BACKGROUND\n SPARK\n'
+            ' Used in conjunction with --reservation_assignment.'
+        ),
+        flag_values=fv,
+    )
     flags.DEFINE_enum(
         'assignee_type',
         None, ['PROJECT', 'FOLDER', 'ORGANIZATION'],

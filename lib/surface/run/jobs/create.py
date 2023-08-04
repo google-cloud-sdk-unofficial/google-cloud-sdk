@@ -190,7 +190,5 @@ class AlphaCreate(Create):
   @staticmethod
   def Args(parser):
     Create.CommonArgs(parser)
-    flags.AddVpcNetworkFlags(parser, resource_kind='Job')
-    flags.AddVpcSubnetFlags(parser, resource_kind='Job')
-    flags.AddVpcNetworkTagsFlags(parser, resource_kind='Job')
+    flags.AddVpcNetworkGroupFlagsForCreate(parser, resource_kind='Job')
     flags.AddRuntimeFlag(parser)

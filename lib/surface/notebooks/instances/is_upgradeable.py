@@ -42,10 +42,11 @@ DETAILED_HELP = {
 class IsUpgradeable(base.DescribeCommand):
   """Request for checking if a notebook instance is upgradeable."""
 
-  @staticmethod
-  def Args(parser):
+  @classmethod
+  def Args(cls, parser):
     """Register flags for this command."""
-    flags.AddIsUpgradeableInstanceFlags(parser)
+    api_version = util.ApiVersionSelector(cls.ReleaseTrack())
+    flags.AddIsUpgradeableInstanceFlags(api_version, parser)
 
   def Run(self, args):
     release_track = self.ReleaseTrack()

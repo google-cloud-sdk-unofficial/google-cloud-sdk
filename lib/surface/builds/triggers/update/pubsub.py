@@ -87,7 +87,8 @@ class UpdatePubsub(base.UpdateCommand):
     if done:
       return trigger
 
-    trigger.pubsubConfig = messages.PubsubConfig(topic=args.topic)
+    if args.topic:
+      trigger.pubsubConfig = messages.PubsubConfig(topic=args.topic)
 
     project = properties.VALUES.core.project.Get(required=True)
     default_image = 'gcr.io/%s/gcb-%s:$COMMIT_SHA' % (project, args.TRIGGER)
@@ -97,11 +98,12 @@ class UpdatePubsub(base.UpdateCommand):
         args,
         messages,
         update_mask,
-        default_image=default_image,
+        default_image,
         has_repo_source=True,
         has_file_source=True)
 
-    trigger.filter = args.subscription_filter
+    if args.subscription_filter:
+      trigger.filter = args.subscription_filter
 
     return trigger
 

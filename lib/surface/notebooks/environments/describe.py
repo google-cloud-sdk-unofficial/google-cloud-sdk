@@ -43,10 +43,11 @@ DETAILED_HELP = {
 class Describe(base.DescribeCommand):
   """Request for describing environments."""
 
-  @staticmethod
-  def Args(parser):
+  @classmethod
+  def Args(cls, parser):
     """Register flags for this command."""
-    flags.AddDescribeEnvironmentFlags(parser)
+    api_version = util.ApiVersionSelector(cls.ReleaseTrack())
+    flags.AddDescribeEnvironmentFlags(api_version, parser)
 
   def Run(self, args):
     release_track = self.ReleaseTrack()

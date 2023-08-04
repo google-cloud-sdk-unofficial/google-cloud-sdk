@@ -41,10 +41,11 @@ DETAILED_HELP = {
 class Stop(base.Command):
   """Request for stopping runtimes."""
 
-  @staticmethod
-  def Args(parser):
+  @classmethod
+  def Args(cls, parser):
     """Register flags for this command."""
-    flags.AddStopRuntimeFlags(parser)
+    api_version = util.ApiVersionSelector(cls.ReleaseTrack())
+    flags.AddStopRuntimeFlags(api_version, parser)
 
   def Run(self, args):
     release_track = self.ReleaseTrack()

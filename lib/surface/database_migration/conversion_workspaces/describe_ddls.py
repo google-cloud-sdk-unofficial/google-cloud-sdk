@@ -41,7 +41,6 @@ DETAILED_HELP = {
 }
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class DescribeDDLs(base.Command):
   """Describe DDLs in a Database Migration Service conversion workspace."""

@@ -118,6 +118,11 @@
         help_text: |
           Certificates with scope EDGE_CACHE are special-purposed certificates,
           scoped for use with Media Edge services only.
+      - arg_value: "all-regions"
+        enum_value: ALL_REGIONS
+        help_text: |
+          Certificates with scope ALL_REGIONS are currently used for
+          Cross-region Internal Application Load Balancer only.
     - arg_name: description
       api_field: certificate.description
       help_text: |

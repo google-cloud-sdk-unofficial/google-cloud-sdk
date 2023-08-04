@@ -36,7 +36,6 @@ DETAILED_HELP = {
 }
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class DescribeIssues(base.Command):
   """Describe issues in a Database Migration Service conversion workspace."""

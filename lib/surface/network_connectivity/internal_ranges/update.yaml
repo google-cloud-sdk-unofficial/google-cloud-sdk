@@ -24,7 +24,6 @@
     params:
     - group:
         mutex: true
-        required: true
         params:
         - arg_name: ip-cidr-range
           api_field: internalRange.ipCidrRange
@@ -36,6 +35,22 @@
             An alternative to ip-cidr-range.
             Can be set when trying to create a reservation that automatically finds a free range of
             the given size.
+    - group:
+        mutex: true
+        params:
+        - arg_name: clear-overlaps
+          type: bool
+          help_text: |
+            Clear existing overlap fields for the range.
+        - arg_name: overlaps
+          api_field: internalRange.overlaps
+          help_text: Overlap specifications for the range being updated.
+          choices:
+          - arg_value: overlap-route-range
+            enum_value: OVERLAP_ROUTE_RANGE
+            help_text: |
+              Allows for creation or existence of routes that have a more specific destination
+              than the created range.
 
   async:
     collection: networkconnectivity.projects.locations.operations
@@ -43,7 +58,11 @@
   request:
     ALPHA:
       api_version: v1alpha1
+      modify_request_hooks:
+      - googlecloudsdk.command_lib.network_connectivity.util:ClearOverlaps
     GA:
       api_version: v1
+      modify_request_hooks:
+      - googlecloudsdk.command_lib.network_connectivity.util:ClearOverlaps
     collection: networkconnectivity.projects.locations.internalRanges
     method: patch

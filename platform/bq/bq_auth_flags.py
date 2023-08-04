@@ -46,9 +46,11 @@ _SERVICE_ACCOUNT_CREDENTIAL_FILE = flags.DEFINE_string(
     None,
     'Only for the gcloud wrapper use.'
 )
-_OAUTH_ACCESS_TOKEN = flags.DEFINE_string(
+OAUTH_ACCESS_TOKEN = flags.DEFINE_string(
     'oauth_access_token',
     '',
     'Only for the gcloud wrapper use.'
 )
-flags.DEFINE_boolean('use_google_auth', False, 'Use new google auth libraries')
+USE_GOOGLE_AUTH = flags.DEFINE_boolean(
+    'use_google_auth', False, 'Use new google auth libraries'
+)

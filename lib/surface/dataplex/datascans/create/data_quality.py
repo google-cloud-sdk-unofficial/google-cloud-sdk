@@ -27,24 +27,22 @@ from googlecloudsdk.command_lib.util.args import labels_util
 from googlecloudsdk.core import log
 
 
-@base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.GA)
 class DataQuality(base.Command):
-  """Create a Dataplex data quality scan job."""
+  """Create a Dataplex data quality scan job.
+
+  Represents a user-visible job which provides the insights for the
+  related data source and generates queries based on the rules and runs
+  against the data to get data quality check results.
+  """
 
   detailed_help = {
       'EXAMPLES': """\
 
-            Create a Dataplex data quality scan job.
+          To create a data quality scan `data-quality-datascan`
+          in project `test-project` located in `us-central1` with data spec file `data-quality-spec.json`, run:
 
-            Represents a user-visible job which provides the insights for the
-            related data source and generates queries based on the rules and runs against
-            the data to get data quality check results.
-
-            E.g., command to create a data quality scan `data-quality-datascan`
-            in project `test-project` located in `us-central1` with data spec file `data-quality-spec.json`:
-            dataplex datascans create data-quality data-quality-datascan --project=test-project --location=us-central1 --data-quality-spec-file="data-quality-spec.json"
-
+            $ {command} data-quality data-quality-datascan --project=test-project --location=us-central1 --data-quality-spec-file="data-quality-spec.json"
           """,
   }
 

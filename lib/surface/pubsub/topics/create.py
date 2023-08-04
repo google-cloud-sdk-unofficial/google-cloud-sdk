@@ -106,6 +106,17 @@ def _Run(args, legacy_output=False):
   if message_encoding_list:
     message_encoding = message_encoding_list[0]
 
+  kinesis_ingestion_stream_arn = getattr(
+      args, 'kinesis_ingestion_stream_arn', None
+  )
+  kinesis_ingestion_consumer_arn = getattr(
+      args, 'kinesis_ingestion_consumer_arn', None
+  )
+  kinesis_ingestion_role_arn = getattr(args, 'kinesis_ingestion_role_arn', None)
+  kinesis_ingestion_service_account = getattr(
+      args, 'kinesis_ingestion_service_account', None
+  )
+
   failed = []
   for topic_ref in args.CONCEPTS.topic.Parse():
     try:
@@ -119,6 +130,10 @@ def _Run(args, legacy_output=False):
           message_encoding=message_encoding,
           first_revision_id=first_revision_id,
           last_revision_id=last_revision_id,
+          kinesis_ingestion_stream_arn=kinesis_ingestion_stream_arn,
+          kinesis_ingestion_consumer_arn=kinesis_ingestion_consumer_arn,
+          kinesis_ingestion_role_arn=kinesis_ingestion_role_arn,
+          kinesis_ingestion_service_account=kinesis_ingestion_service_account,
       )
     except api_ex.HttpError as error:
       exc = exceptions.HttpException(error)
@@ -139,11 +154,12 @@ def _Run(args, legacy_output=False):
     raise util.RequestsFailedError(failed, 'create')
 
 
-def _Args(parser):
+def _Args(parser, include_ingestion_flags=False):
   """Custom args implementation.
 
   Args:
     parser: The current parser.
+    include_ingestion_flags: Whether to include ingestion datasource flags
   """
 
   resource_args.AddResourceArgs(
@@ -151,6 +167,9 @@ def _Args(parser):
   )
   # This group should not be hidden
   flags.AddSchemaSettingsFlags(parser, is_update=False)
+  if include_ingestion_flags:
+    flags.AddIngestionDatasourceFlags(parser, is_update=False)
+
   labels_util.AddCreateLabelsFlags(parser)
   flags.AddTopicMessageRetentionFlags(parser, is_update=False)
 
@@ -178,7 +197,7 @@ class Create(base.CreateCommand):
 
   @staticmethod
   def Args(parser):
-    _Args(parser)
+    _Args(parser, include_ingestion_flags=False)
 
   def Run(self, args):
     return _Run(args)
@@ -190,7 +209,7 @@ class CreateBeta(Create):
 
   @staticmethod
   def Args(parser):
-    _Args(parser)
+    _Args(parser, include_ingestion_flags=False)
 
   def Run(self, args):
     legacy_output = properties.VALUES.pubsub.legacy_output.GetBool()
@@ -200,3 +219,7 @@ class CreateBeta(Create):
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class CreateAlpha(CreateBeta):
   """Creates one or more Cloud Pub/Sub topics."""
+
+  @staticmethod
+  def Args(parser):
+    _Args(parser, include_ingestion_flags=True)

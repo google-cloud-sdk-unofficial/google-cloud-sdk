@@ -57,7 +57,7 @@ class UpdateAppProfile(base.CreateCommand):
     (
         arguments.ArgAdder(parser)
         .AddDescription('app profile', required=False)
-        .AddAppProfileRouting(required=False, is_update=True)
+        .AddAppProfileRouting(required=False)
         .AddForce('update')
         .AddAsync()
     )
@@ -144,7 +144,6 @@ class UpdateAppProfileAlpha(UpdateAppProfile):
             required=False,
             allow_failover_radius=True,
             allow_row_affinity=True,
-            is_update=True,
         )
         .AddForce('update')
         .AddRequestPriority()

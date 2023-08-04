@@ -19,13 +19,13 @@ from __future__ import division
 from __future__ import unicode_literals
 
 from googlecloudsdk.calliope import base as calliope_base
-from googlecloudsdk.command_lib.container.fleet import resources
 from googlecloudsdk.command_lib.container.fleet.features import base
+from googlecloudsdk.command_lib.container.fleet.policycontroller import flags
 
 
 @calliope_base.Hidden
 class Disable(base.UpdateCommand):
-  """Disable Policy Controller Feature.
+  """Disable (Uninstall) Policy Controller.
 
   Uninstalls Policy Controller.
 
@@ -40,26 +40,8 @@ class Disable(base.UpdateCommand):
 
   @classmethod
   def Args(cls, parser):
-    resources.AddMembershipResourceArg(
-        parser,
-        plural=True,
-        membership_help=(
-            'The membership names for which to uninstall Policy '
-            'Controller, separated by commas if multiple are '
-            'supplied. Ignored if --all-memberships is supplied; '
-            'if neither is supplied, a prompt will appear with all '
-            'available memberships.'
-        ),
-    )
-    parser.add_argument(
-        '--all-memberships',
-        action='store_true',
-        help=(
-            'If supplied, uninstall Policy Controller for all memberships in'
-            ' the fleet.'
-        ),
-        default=False,
-    )
+    cmd_flags = flags.Flags(parser, 'disable')
+    cmd_flags.AddMemberships()
 
   def Run(self, args):
     membership_specs = {}

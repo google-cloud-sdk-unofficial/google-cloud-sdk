@@ -183,7 +183,5 @@ class AlphaUpdate(Update):
   @staticmethod
   def Args(parser):
     Update.CommonArgs(parser)
-    flags.AddVpcNetworkFlags(parser, resource_kind='Job')
-    flags.AddVpcSubnetFlags(parser, resource_kind='Job')
-    flags.AddVpcNetworkTagsFlags(parser, resource_kind='Job')
+    flags.AddVpcNetworkGroupFlagsForUpdate(parser, resource_kind='Job')
     flags.AddRuntimeFlag(parser)

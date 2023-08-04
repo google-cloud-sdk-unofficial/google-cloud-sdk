@@ -277,7 +277,7 @@ class CreateBeta(Create):
   """Create a Google Compute Engine network endpoint group."""
 
   support_serverless_deployment = True
-  support_regional_internet_neg = False
+  support_regional_internet_neg = True
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)

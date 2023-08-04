@@ -39,7 +39,6 @@ REGIONAL_FLAGS = ['instance_redistribution_type', 'target_distribution_shape']
 class UpdateGA(base.UpdateCommand):
   r"""Update a Compute Engine managed instance group."""
 
-  support_any_single_zone = False
   support_update_policy_min_ready_flag = False
 
   @classmethod
@@ -60,8 +59,7 @@ class UpdateGA(base.UpdateCommand):
     instance_groups_flags.AddMigUpdateStatefulFlags(parser)
     instance_groups_flags.AddDescriptionFlag(parser, for_update=True)
     managed_flags.AddMigInstanceRedistributionTypeFlag(parser)
-    managed_flags.AddMigDistributionPolicyTargetShapeFlag(
-        parser, cls.support_any_single_zone)
+    managed_flags.AddMigDistributionPolicyTargetShapeFlag(parser)
     managed_flags.AddMigListManagedInstancesResultsFlag(parser)
     managed_flags.AddMigUpdatePolicyFlags(
         parser, support_min_ready_flag=cls.support_update_policy_min_ready_flag)
@@ -288,7 +286,6 @@ UpdateGA.detailed_help = {
 class UpdateBeta(UpdateGA):
   """Update a Compute Engine managed instance group."""
 
-  support_any_single_zone = True
   support_update_policy_min_ready_flag = True
 
   @classmethod

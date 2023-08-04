@@ -41,10 +41,11 @@ DETAILED_HELP = {
 class Switch(base.Command):
   """Request for switching runtimes."""
 
-  @staticmethod
-  def Args(parser):
+  @classmethod
+  def Args(cls, parser):
     """Register flags for this command."""
-    flags.AddSwitchRuntimeFlags(parser)
+    api_version = util.ApiVersionSelector(cls.ReleaseTrack())
+    flags.AddSwitchRuntimeFlags(api_version, parser)
 
   def Run(self, args):
     release_track = self.ReleaseTrack()

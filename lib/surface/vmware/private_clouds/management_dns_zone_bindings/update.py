@@ -47,7 +47,7 @@ DETAILED_HELP = {
 @base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Update(base.UpdateCommand):
-  """Update a private cloud management DNS zone binding."""
+  """Update a management DNS zone binding."""
 
   detailed_help = DETAILED_HELP
 

@@ -189,7 +189,7 @@ class CreateBeta(Create):
     labels = labels_util.ParseCreateArgs(
         args, client.messages.Instance.LabelsValue)
     try:
-      nfs_export_options = client.MakeNFSExportOptionsMsg(
+      nfs_export_options = client.MakeNFSExportOptionsMsgBeta(
           messages=client.messages,
           nfs_export_options=args.file_share.get('nfs-export-options', []))
     except KeyError as err:

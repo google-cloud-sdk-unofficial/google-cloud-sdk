@@ -105,13 +105,6 @@ def _add_common_args(parser):
       action=arg_parsers.StoreTrueFalseAction,
       help='Enables or disables an event-based hold on objects.')
   parser.add_argument(
-      '--read-paths-from-stdin',
-      '-I',
-      action='store_true',
-      help='Read the list of objects to update from stdin. No need to enter'
-      ' a source argument if this flag is present.\nExample:'
-      ' "storage objects update -I --content-type=new-type"')
-  parser.add_argument(
       '-R',
       '-r',
       '--recursive',
@@ -133,6 +126,14 @@ def _add_common_args(parser):
   flags.add_encryption_flags(parser, allow_patch=True)
   flags.add_precondition_flags(parser)
   flags.add_object_metadata_flags(parser, allow_patch=True)
+  flags.add_read_paths_from_stdin_flag(
+      parser,
+      help_text=(
+          'Read the list of objects to update from stdin. No need to enter'
+          ' a source argument if this flag is present.\nExample:'
+          ' "storage objects update -I --content-type=new-type"'
+      ),
+  )
 
 
 def _add_alpha_args(parser):

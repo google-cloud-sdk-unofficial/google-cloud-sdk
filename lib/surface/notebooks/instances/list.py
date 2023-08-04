@@ -45,12 +45,18 @@ DETAILED_HELP = {
 class List(base.ListCommand):
   """Request for listing instances."""
 
-  @staticmethod
-  def Args(parser):
+  @classmethod
+  def Args(cls, parser):
     """Register flags for this command."""
-    parser.display_info.AddFormat(
-        'table(name.segment(-1), name.segment(-3):label=LOCATION, name.segment(-5):label=PROJECT, state, machineType.segment(-1), network.segment(-1), subnet.segment(-1))'
-    )
+    parser.display_info.AddFormat("""
+        table(name.segment(-1),
+        name.segment(-3):label=LOCATION,
+        name.segment(-5):label=PROJECT,
+        state,
+        machineType.segment(-1),
+        network.segment(-1),
+        subnet.segment(-1))
+    """)
     parser.display_info.AddUriFunc(instance_util.GetInstanceURI)
     flags.AddListInstanceFlags(parser)
 

@@ -41,10 +41,11 @@ DETAILED_HELP = {
 class Rollback(base.Command):
   """Request for rolling back instances."""
 
-  @staticmethod
-  def Args(parser):
+  @classmethod
+  def Args(cls, parser):
     """Upgrade flags for this command."""
-    flags.AddRollbackInstanceFlags(parser)
+    api_version = util.ApiVersionSelector(cls.ReleaseTrack())
+    flags.AddRollbackInstanceFlags(api_version, parser)
 
   def Run(self, args):
     release_track = self.ReleaseTrack()

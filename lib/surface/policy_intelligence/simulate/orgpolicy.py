@@ -172,7 +172,6 @@ def _Run(args, version):
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-@base.Hidden
 class SimulateAlpha(base.Command):
   """Simulate the Org Policies."""
 
@@ -188,7 +187,6 @@ class SimulateAlpha(base.Command):
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
-@base.Hidden
 class SimulateBeta(base.Command):
   """Simulate the Org Policies."""
 

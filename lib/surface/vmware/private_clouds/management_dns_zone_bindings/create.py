@@ -39,7 +39,7 @@ DETAILED_HELP = {
 
             $ {command} my-mgmt-dns-zone-binding --private-cloud=my-private-cloud --vmware-engine-network=sample-vmware-engine-network
 
-          In the second example, the project and region are taken from gcloud properties `core/project` and `vmware/region`.
+          In the second example, the project and location are taken from gcloud properties `core/project` and `compute/zone` respectively.
     """,
 }
 

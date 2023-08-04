@@ -22,7 +22,6 @@ from googlecloudsdk.calliope import base
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-@base.Hidden
 class SimulateAlpha(base.Group):
   """Simulate changes to Organization Policies."""
   detailed_help = {
@@ -36,7 +35,6 @@ class SimulateAlpha(base.Group):
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
-@base.Hidden
 class SimulateBeta(base.Group):
   """Simulate changes to Organization Policies."""
   detailed_help = {

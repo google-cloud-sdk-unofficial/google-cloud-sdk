@@ -29,7 +29,8 @@ TargetPools.category = base.LOAD_BALANCING_CATEGORY
 
 TargetPools.detailed_help = {
     'DESCRIPTION': """
-        Control Compute Engine target pools for Network Load Balancing.
+        Control Compute Engine target pools for external passthrough
+        Network Load Balancers.
 
         For more information about target pools, see the
         [target pools documentation](https://cloud.google.com/load-balancing/docs/target-pools).

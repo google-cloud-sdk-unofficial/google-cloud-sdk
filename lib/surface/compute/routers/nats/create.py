@@ -173,7 +173,7 @@ class CreateBeta(Create):
   with_private_nat = True
   with_subnet_all = True
   with_auto_network_tier = True
-  with_managed_proxy_lb_endpoint_type = False
+  with_managed_proxy_lb_endpoint_type = True
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)

@@ -27,23 +27,22 @@ from googlecloudsdk.command_lib.util.args import labels_util
 from googlecloudsdk.core import log
 
 
-@base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.GA)
 class DataProfile(base.Command):
-  """Create a Dataplex data profile scan job."""
+  """Create a Dataplex data profile scan job.
+
+  Represents a user-visible job which provides the insights for the
+  related data source about the structure, content and relationships
+  (such as null percent, cardinality, min/max/mean, etc).
+  """
 
   detailed_help = {
       'EXAMPLES': """\
 
-            Create a Dataplex data profile scan job.
+          To create a data profile scan `data-profile-datascan`
+          in project `test-project` located in `us-central1`, run:
 
-            Represents a user-visible job which provides the insights for the
-            related data source about the structure, content and relationships
-            (such as null percent, cardinality, min/max/mean, etc).
-
-            E.g., command to create a data profile scan `data-profile-datascan`
-            in project `test-project` located in `us-central1`:
-            dataplex datascans create data-profile data-profile-datascan --project=test-project --location=us-central1
+            $ {command} data-profile data-profile-datascan --project=test-project --location=us-central1
 
           """,
   }

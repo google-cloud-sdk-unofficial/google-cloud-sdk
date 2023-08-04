@@ -1339,8 +1339,24 @@ class BigqueryClient(object):
     discovery_document = None
     if self.discovery_document != _DEFAULT:
       discovery_document = self.discovery_document
-    if discovery_document == _DEFAULT:
-      # Use the api description packed with this client, if one exists.
+      logging.info(
+          'Skipping local discovery document load since discovery_document has'
+          ' a value'
+      )
+    elif discovery_url is not None:
+      logging.info(
+          'Skipping local discovery document load since discovery_url has'
+          ' a value'
+      )
+    # For now, align this strictly with the default flag values. We can loosen
+    # this but for a first pass I'm keeping the current code flow.
+    elif self.api != 'https://www.googleapis.com' or self.api_version != 'v2':
+      logging.info(
+          'API is not bigquery v2 at https://www.googleapis.com so the '
+          'discovery doc will be loaded from the server: %s, %s',
+          self.api, self.api_version)
+    else:
+      # Use the api description packed with this client, if one exists
       doc_filename = discovery_document_loader.get_discovery_bigquery_name(
           self.api, self.api_version)
       try:
@@ -1349,7 +1365,9 @@ class BigqueryClient(object):
       except FileNotFoundError as e:
         logging.warning('Failed to load discovery doc from local files: %s', e)
 
-    if discovery_document is None:
+    if discovery_document is not None:
+      logging.info('Discovery doc is already loaded')
+    else:
       # Attempt to retrieve discovery doc with retry logic for transient,
       # retry-able errors.
       max_retries = 3
@@ -2801,15 +2819,17 @@ class BigqueryClient(object):
     return client.projects().locations().connections().get(
         name=reference.path()).execute()
 
-  def CreateConnection(self,
-                       project_id,
-                       location,
-                       connection_type,
-                       properties,
-                       connection_credential=None,
-                       display_name=None,
-                       description=None,
-                       connection_id=None):
+  def CreateConnection(
+      self,
+      project_id,
+      location,
+      connection_type,
+      properties,
+      connection_credential=None,
+      display_name=None,
+      description=None,
+      connection_id=None,
+  ):
     """Create a connection with the given connection reference.
 
     Arguments:
@@ -2834,6 +2854,7 @@ class BigqueryClient(object):
     if description:
       connection['description'] = description
 
+
     property_name = CONNECTION_TYPE_TO_PROPERTY_MAP.get(connection_type)
     if property_name:
       connection[property_name] = json.loads(properties)
@@ -2850,13 +2871,15 @@ class BigqueryClient(object):
     return client.projects().locations().connections().create(
         parent=parent, connectionId=connection_id, body=connection).execute()
 
-  def UpdateConnection(self,
-                       reference,
-                       connection_type,
-                       properties,
-                       connection_credential=None,
-                       display_name=None,
-                       description=None):
+  def UpdateConnection(
+      self,
+      reference,
+      connection_type,
+      properties,
+      connection_credential=None,
+      display_name=None,
+      description=None,
+  ):
     """Update connection with the given connection reference.
 
     Arguments:
@@ -2897,6 +2920,7 @@ class BigqueryClient(object):
     if description:
       connection['description'] = description
       update_mask.append('description')
+
 
     if connection_type == 'CLOUD_SQL':
       if properties:
@@ -3579,6 +3603,7 @@ class BigqueryClient(object):
         duration_seconds = int(stats['endTime']) / 1000 - start
         result['Duration'] = str(datetime.timedelta(seconds=duration_seconds))
       result['Start Time'] = BigqueryClient.FormatTime(start)
+
 
     session_id = BigqueryClient.GetSessionId(job_info)
     if session_id:
@@ -5085,6 +5110,7 @@ class BigqueryClient(object):
       refresh_interval_ms=None,
       max_staleness=None,
       external_data_config=None,
+      biglake_config=None,
       view_udf_resources=None,
       use_legacy_sql=None,
       labels=None,
@@ -5119,6 +5145,7 @@ class BigqueryClient(object):
       external_data_config: defines a set of external resources used to create
         an external table. For example, a BigQuery table backed by CSV files in
         GCS.
+      biglake_config: specifies the configuration of a BigLake managed table.
       view_udf_resources: optional UDF resources used in a view.
       use_legacy_sql: The choice of using Legacy SQL for the query is optional.
         If not specified, the server will automatically determine the dialect
@@ -5172,6 +5199,8 @@ class BigqueryClient(object):
         if max_staleness is not None:
           body['maxStaleness'] = max_staleness
         body['externalDataConfiguration'] = external_data_config
+      if biglake_config is not None:
+        body['biglakeConfiguration'] = biglake_config
       if labels is not None:
         body['labels'] = labels
       if time_partitioning is not None:
@@ -6878,6 +6907,8 @@ class BigqueryClient(object):
       load_config['useAvroLogicalTypes'] = use_avro_logical_types
     if reference_file_schema_uri is not None:
       load_config['reference_file_schema_uri'] = reference_file_schema_uri
+    if file_set_spec_type is not None:
+      load_config['fileSetSpecType'] = file_set_spec_type
     if json_extension is not None:
       load_config['jsonExtension'] = json_extension
     if parquet_options is not None:

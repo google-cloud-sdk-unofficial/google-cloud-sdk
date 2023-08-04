@@ -65,8 +65,9 @@ def GetAllowUnauth(args, operations, service_ref, service_exists):
   """
   allow_unauth = None
   if platforms.GetPlatform() == platforms.PLATFORM_MANAGED:
-    allow_unauth = flags.GetAllowUnauthenticated(args, operations, service_ref,
-                                                 not service_exists)
+    allow_unauth = flags.GetAllowUnauthenticated(
+        args, operations, service_ref, not service_exists
+    )
     # Avoid failure removing a policy binding for a service that
     # doesn't exist.
     if not service_exists and not allow_unauth:
@@ -84,12 +85,10 @@ class Deploy(base.Command):
   """Create or update a Cloud Run service."""
 
   detailed_help = {
-      'DESCRIPTION':
-          """\
+      'DESCRIPTION': """\
           Creates or updates a Cloud Run service.
           """,
-      'EXAMPLES':
-          """\
+      'EXAMPLES': """\
           To deploy a container to the service `my-backend` on Cloud Run:
 
               $ {command} my-backend --image=us-docker.pkg.dev/project/image
@@ -136,7 +135,8 @@ class Deploy(base.Command):
         resource_args.GetServiceResourceSpec(prompt=True),
         'Service to deploy to.',
         required=True,
-        prefixes=False)
+        prefixes=False,
+    )
     flags.AddPlatformAndLocationFlags(parser)
     flags.AddFunctionArg(parser)
     flags.AddMutexEnvVarsFlags(parser)
@@ -171,7 +171,8 @@ class Deploy(base.Command):
   def Run(self, args):
     """Deploy a container to Cloud Run."""
     platform = flags.GetAndValidatePlatform(
-        args, self.ReleaseTrack(), flags.Product.RUN)
+        args, self.ReleaseTrack(), flags.Product.RUN
+    )
 
     include_build = flags.FlagIsExplicitlySet(args, 'source')
     if not include_build and not args.IsSpecified('image'):
@@ -180,8 +181,10 @@ class Deploy(base.Command):
         include_build = True
       else:
         raise c_exceptions.RequiredArgumentException(
-            '--image', 'Requires a container image to deploy (e.g. '
-            '`gcr.io/cloudrun/hello:latest`) if no build source is provided.')
+            '--image',
+            'Requires a container image to deploy (e.g. '
+            '`gcr.io/cloudrun/hello:latest`) if no build source is provided.',
+        )
 
     service_ref = args.CONCEPTS.service.Parse()
     flags.ValidateResource(service_ref)
@@ -198,7 +201,8 @@ class Deploy(base.Command):
     # one hasn't been provided. We want to do this prior to preparing a source
     # deploy so that we can use that region for the Artifact Registry repo.
     conn_context = connection_context.GetConnectionContext(
-        args, flags.Product.RUN, self.ReleaseTrack())
+        args, flags.Product.RUN, self.ReleaseTrack()
+    )
 
     build_type = None
     image = None
@@ -214,9 +218,14 @@ class Deploy(base.Command):
           project_id=properties.VALUES.core.project.Get(required=True),
           location_id=artifact_registry.RepoRegion(
               args,
-              cluster_location=(conn_context.cluster_location if
-                                platform == platforms.PLATFORM_GKE else None)),
-          repo_id='cloud-run-source-deploy')
+              cluster_location=(
+                  conn_context.cluster_location
+                  if platform == platforms.PLATFORM_GKE
+                  else None
+              ),
+          ),
+          repo_id='cloud-run-source-deploy',
+      )
       if artifact_registry.ShouldCreateRepository(
           ar_repo, skip_activation_prompt=already_activated_services
       ):
@@ -224,8 +233,8 @@ class Deploy(base.Command):
       # The image is built with latest tag. After build, the image digest
       # from the build result will be added to the image of the service spec.
       args.image = '{repo}/{service}'.format(
-          repo=ar_repo.GetDockerString(),
-          service=service_ref.servicesId)
+          repo=ar_repo.GetDockerString(), service=service_ref.servicesId
+      )
       # Use GCP Buildpacks if Dockerfile doesn't exist
       docker_file = source + '/Dockerfile'
       if os.path.exists(docker_file):
@@ -236,24 +245,31 @@ class Deploy(base.Command):
           command_arg = getattr(args, 'command', None)
           if command_arg is not None:
             command = ' '.join(command_arg)
-            pack[0].update({
-                'env': 'GOOGLE_ENTRYPOINT="{command}"'.format(command=command)
-            })
+            pack[0].update(
+                {'env': 'GOOGLE_ENTRYPOINT="{command}"'.format(command=command)}
+            )
         build_type = BuildType.BUILDPACKS
       image = None if pack else args.image
-      operation_message = ('Building using {build_type} and deploying container'
-                           ' to').format(build_type=build_type.value)
-      pretty_print.Info(messages_util.GetBuildEquivalentForSourceRunMessage(
-          service_ref.servicesId, pack, source))
+      operation_message = (
+          'Building using {build_type} and deploying container to'
+      ).format(build_type=build_type.value)
+      pretty_print.Info(
+          messages_util.GetBuildEquivalentForSourceRunMessage(
+              service_ref.servicesId, pack, source
+          )
+      )
 
     # Deploy a container with an image
     changes = flags.GetServiceConfigurationChanges(args)
     changes.insert(
         0,
         config_changes.DeleteAnnotationChange(
-            k8s_object.BINAUTHZ_BREAKGLASS_ANNOTATION))
+            k8s_object.BINAUTHZ_BREAKGLASS_ANNOTATION
+        ),
+    )
     changes.append(
-        config_changes.SetLaunchStageAnnotationChange(self.ReleaseTrack()))
+        config_changes.SetLaunchStageAnnotationChange(self.ReleaseTrack())
+    )
 
     with serverless_operations.Connect(
         conn_context, already_activated_services
@@ -263,11 +279,13 @@ class Deploy(base.Command):
       resource_change_validators.ValidateClearVpcConnector(service, args)
 
       pretty_print.Info(
-          messages_util.GetStartDeployMessage(conn_context, service_ref,
-                                              operation_message))
+          messages_util.GetStartDeployMessage(
+              conn_context, service_ref, operation_message
+          )
+      )
       has_latest = (
-          service is None or
-          traffic.LATEST_REVISION_KEY in service.spec_traffic)
+          service is None or traffic.LATEST_REVISION_KEY in service.spec_traffic
+      )
       deployment_stages = stages.ServiceStages(
           include_iam_policy_set=allow_unauth is not None,
           include_route=has_latest,
@@ -286,7 +304,8 @@ class Deploy(base.Command):
           header,
           deployment_stages,
           failure_message='Deployment failed',
-          suppress_output=args.async_) as tracker:
+          suppress_output=args.async_,
+      ) as tracker:
         service = operations.ReleaseService(
             service_ref,
             changes,
@@ -302,12 +321,15 @@ class Deploy(base.Command):
         )
 
       if args.async_:
-        pretty_print.Success('Service [{{bold}}{serv}{{reset}}] is deploying '
-                             'asynchronously.'.format(serv=service.name))
+        pretty_print.Success(
+            'Service [{{bold}}{serv}{{reset}}] is deploying '
+            'asynchronously.'.format(serv=service.name)
+        )
       else:
         service = operations.GetService(service_ref)
         pretty_print.Success(
-            messages_util.GetSuccessMessageForSynchronousDeploy(service))
+            messages_util.GetSuccessMessageForSynchronousDeploy(service)
+        )
       return service
 
 
@@ -335,10 +357,9 @@ class AlphaDeploy(Deploy):
     # Flags specific to managed CR
     managed_group = flags.GetManagedArgGroup(parser)
     flags.AddCustomAudiencesFlag(managed_group)
-    flags.AddVpcNetworkFlags(managed_group)
-    flags.AddVpcSubnetFlags(managed_group)
-    flags.AddVpcNetworkTagsFlags(managed_group)
+    flags.AddVpcNetworkGroupFlagsForUpdate(managed_group)
     flags.AddRuntimeFlag(managed_group)
     flags.AddServiceMinInstancesFlag(managed_group)
+
 
 AlphaDeploy.__doc__ = Deploy.__doc__

@@ -55,8 +55,12 @@ class CreateAlpha(base.CreateCommand):
     flags.AddNodePoolDisplayName(parser)
     flags.AddNodePoolAnnotations(parser)
     flags.AddVmwareNodePoolAutoscalingConfig(parser, for_update=False)
-    flags.AddVmwareNodeConfig(parser, for_update=False)
+    flags.AddVmwareNodeConfig(
+        parser, for_update=False, release_track=base.ReleaseTrack.ALPHA
+    )
     flags.AddNodePoolVersion(parser)
+
+    # ALPHA only flags
     flags.AddNodePoolUpgradePolicy(parser)
 
   def Run(self, args):

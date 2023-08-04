@@ -8,8 +8,7 @@ import pkgutil
 import string
 from absl import logging
 
-FULL_PKG_NAME = 'bigquery_client'
-SHORT_PKG_NAME = 'bigquery_client'
+PKG_NAME = 'bigquery_client'
 
 # Latest version of the BigQuery API discovery_document from discovery_next.
 DISCOVERY_NEXT_BIGQUERY = 'discovery_next/bigquery.json'
@@ -50,23 +49,30 @@ def load_local_discovery_doc(doc_filename):
     `bytes`, On success, A json object with the contents of the
     discovery document. On failure, None.
   """
-  doc = _fetch_discovery_doc_from_pkg(
-      FULL_PKG_NAME, doc_filename) or _fetch_discovery_doc_from_pkg(
-          SHORT_PKG_NAME, doc_filename)
+  doc = _fetch_discovery_doc_from_pkg(PKG_NAME, doc_filename)
 
   if not doc:
     raise FileNotFoundError(
-        'Failed to load discovery doc from resource paths: %s.%s & %s.%s' %
-        (FULL_PKG_NAME, doc_filename, SHORT_PKG_NAME, doc_filename))
+        'Failed to load discovery doc from resource path: %s.%s' %
+        (PKG_NAME, doc_filename))
 
   return doc
 
 
 def _fetch_discovery_doc_from_pkg(package, resource):
   """Loads a discovery doc as `bytes` specified by `package` and `resource` returning None on error."""
-  raw_doc = pkgutil.get_data(package, resource)
+  try:
+    raw_doc = pkgutil.get_data(package, resource)
+  # TODO(b/286571605) Ideally this would be ModuleNotFoundError but it's not
+  # supported before python3.6 so we need to be less specific for now.
+  except ImportError:
+    raw_doc = None
   if not raw_doc:
     logging.warning(
-        'Failed to load discovery doc from pkg: package: %s, resource %s',
+        'Failed to load discovery doc from (package, resource): %s, %s',
+        package, resource)
+  else:
+    logging.info(
+        'Successfully loaded discovery doc from (package, resource): %s, %s',
         package, resource)
   return raw_doc
