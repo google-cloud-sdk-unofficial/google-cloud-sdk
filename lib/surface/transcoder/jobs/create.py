@@ -55,6 +55,10 @@ class Create(base.CreateCommand):
 
           $ {command} --location=us-central1 --file="config.json" --mode=PROCESSING_MODE_BATCH
 
+        To create a transcoder job in batch mode with priority:
+
+          $ {command} --location=us-central1 --file="config.json" --mode=PROCESSING_MODE_BATCH --batch-mode-priority=3
+
         To create a transcoder job with optimizations disabled:
 
           $ {command} --location=us-central1 --file="config.json" --optimization=DISABLED

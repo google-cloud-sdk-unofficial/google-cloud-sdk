@@ -41,9 +41,11 @@ To delete all agents on your machine, run the following Docker command:
 Note: If you encounter a permission error, you may need to add "sudo" before both instances of "docker".
 """.format(_DELETE_ALL_AGENTS_COMMAND)
 _UNINSTALL_MESSAGE = """\
-To delete all agents on your machine and uninstall the machine's agent Docker image, run the following command:
+To delete all agents on your machine and uninstall the machine's agent Docker image, run the following commands:
 
-{}; docker image rm gcr.io/cloud-ingest/tsop-agent
+{}
+# May take a moment for Docker containers to shutdown before you can run:
+docker image rm gcr.io/cloud-ingest/tsop-agent
 
 Note: If you encounter a permission error, you may need to add "sudo" before all three instances of "docker".
 """.format(_DELETE_ALL_AGENTS_COMMAND)

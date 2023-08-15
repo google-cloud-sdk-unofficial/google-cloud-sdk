@@ -22,6 +22,7 @@ from googlecloudsdk.api_lib.container.fleet import client
 from googlecloudsdk.api_lib.container.fleet import util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.container.fleet import resources
+from googlecloudsdk.command_lib.util.args import labels_util
 
 
 class Update(base.UpdateCommand):
@@ -51,10 +52,42 @@ class Update(base.UpdateCommand):
         namespace_help='Name of the fleet namespace to be updated.',
         required=True,
     )
+    labels_util.AddUpdateLabelsFlags(parser)
+    resources.AddUpdateNamespaceLabelsFlags(parser)
 
   def Run(self, args):
     mask = []
     namespace_arg = args.CONCEPTS.namespace.Parse()
     namespace_path = namespace_arg.RelativeName()
     fleetclient = client.FleetClient(release_track=self.ReleaseTrack())
-    return fleetclient.UpdateScopeNamespace(namespace_path, mask=','.join(mask))
+    current_namespace = fleetclient.GetScopeNamespace(namespace_path)
+
+    # update GCP labels for namespace resource
+    labels_diff = labels_util.Diff.FromUpdateArgs(args)
+    new_labels = None
+    if labels_diff.MayHaveUpdates():
+      mask.append('labels')
+      new_labels = labels_diff.Apply(
+          fleetclient.messages.Namespace.LabelsValue, current_namespace.labels
+      ).GetOrNone()
+
+    # update Namespace/k8s labels for namespace resource
+    namespace_labels_diff = labels_util.Diff(
+        args.update_namespace_labels,
+        args.remove_namespace_labels,
+        args.clear_namespace_labels,
+    )
+    new_namespace_labels = None
+    if namespace_labels_diff.MayHaveUpdates():
+      mask.append('namespace_labels')
+      new_namespace_labels = namespace_labels_diff.Apply(
+          fleetclient.messages.Namespace.NamespaceLabelsValue,
+          current_namespace.namespaceLabels,
+      ).GetOrNone()
+
+    # if there's nothing to update, then return
+    if not mask:
+      return
+    return fleetclient.UpdateScopeNamespace(
+        namespace_path, new_labels, new_namespace_labels, mask=','.join(mask)
+    )

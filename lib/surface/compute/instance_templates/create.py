@@ -64,6 +64,7 @@ def _CommonArgs(
     support_local_ssd_recovery_timeout=False,
     support_network_queue_count=False,
     support_storage_pool=False,
+    support_maintenance_interval=False,
 ):
   """Adding arguments applicable for creating instance templates."""
   parser.display_info.AddFormat(instance_templates_flags.DEFAULT_LIST_FORMAT)
@@ -182,6 +183,9 @@ The type of reservation for instances created from this template.
 
   if support_local_ssd_recovery_timeout:
     instances_flags.AddLocalSsdRecoveryTimeoutArgs(parser)
+
+  if support_maintenance_interval:
+    instances_flags.AddMaintenanceIntervalArgs(parser)
 
 
 def _ValidateInstancesFlags(
@@ -538,6 +542,7 @@ def _RunCreate(
     support_performance_monitoring_unit=False,
     support_storage_pool=False,
     support_partner_metadata=False,
+    support_maintenance_interval=False,
 ):
   """Common routine for creating instance template.
 
@@ -578,6 +583,8 @@ def _RunCreate(
         supported.
       support_storage_pool: Indicate whether storage pool is supported.
       support_partner_metadata: Indicate whether partner metadata is supported.
+      support_maintenance_interval: Indicate whether maintenance interval was
+        set.
 
   Returns:
       A resource object dispatched by display.Displayer().
@@ -738,6 +745,14 @@ def _RunCreate(
       'local_ssd_recovery_timeout'
   ):
     local_ssd_recovery_timeout = args.local_ssd_recovery_timeout
+
+  should_set_maintenance_interval = (
+      support_maintenance_interval and args.IsSpecified('maintenance_interval')
+  )
+  maintenance_interval = (
+      args.maintenance_interval if should_set_maintenance_interval else None
+  )
+
   scheduling = instance_utils.CreateSchedulingMessage(
       messages=client.messages,
       maintenance_policy=args.maintenance_policy,
@@ -752,6 +767,7 @@ def _RunCreate(
       max_run_duration=max_run_duration,
       termination_time=termination_time,
       local_ssd_recovery_timeout=local_ssd_recovery_timeout,
+      maintenance_interval=maintenance_interval,
   )
 
   if args.no_service_account:
@@ -1047,6 +1063,7 @@ class Create(base.CreateCommand):
   _support_internal_ipv6_reservation = True
   _support_storage_pool = False
   _support_partner_metadata = False
+  _support_local_ssd_recovery_timeout = True
 
   @classmethod
   def Args(cls, parser):
@@ -1066,6 +1083,7 @@ class Create(base.CreateCommand):
         support_local_ssd_size=cls._support_local_ssd_size,
         support_network_queue_count=cls._support_network_queue_count,
         support_storage_pool=cls._support_storage_pool,
+        support_local_ssd_recovery_timeout=cls._support_local_ssd_recovery_timeout,
     )
     instances_flags.AddMinCpuPlatformArgs(parser, base.ReleaseTrack.GA)
     instances_flags.AddPrivateIpv6GoogleAccessArgForTemplate(
@@ -1101,6 +1119,7 @@ class Create(base.CreateCommand):
         support_internal_ipv6_reservation=self._support_internal_ipv6_reservation,
         support_storage_pool=self._support_storage_pool,
         support_partner_metadata=self._support_partner_metadata,
+        support_local_ssd_recovery_timeout=self._support_local_ssd_recovery_timeout,
     )
 
 
@@ -1138,6 +1157,7 @@ class CreateBeta(Create):
   _support_internal_ipv6_reservation = True
   _support_storage_pool = False
   _support_partner_metadata = False
+  _support_maintenance_interval = True
 
   @classmethod
   def Args(cls, parser):
@@ -1158,6 +1178,7 @@ class CreateBeta(Create):
         support_local_ssd_recovery_timeout=cls._support_local_ssd_recovery_timeout,
         support_network_queue_count=cls._support_network_queue_count,
         support_storage_pool=cls._support_storage_pool,
+        support_maintenance_interval=cls._support_maintenance_interval,
     )
     instances_flags.AddMinCpuPlatformArgs(parser, base.ReleaseTrack.BETA)
     instances_flags.AddPrivateIpv6GoogleAccessArgForTemplate(
@@ -1196,6 +1217,7 @@ class CreateBeta(Create):
         support_internal_ipv6_reservation=self._support_internal_ipv6_reservation,
         support_storage_pool=self._support_storage_pool,
         support_partner_metadata=self._support_partner_metadata,
+        support_maintenance_interval=self._support_maintenance_interval,
     )
 
 
@@ -1235,6 +1257,7 @@ class CreateAlpha(Create):
   _support_internal_ipv6_reservation = True
   _support_storage_pool = True
   _support_partner_metadata = True
+  _support_maintenance_interval = True
 
   @classmethod
   def Args(cls, parser):
@@ -1256,6 +1279,7 @@ class CreateAlpha(Create):
         support_local_ssd_recovery_timeout=cls._support_local_ssd_recovery_timeout,
         support_network_queue_count=cls._support_network_queue_count,
         support_storage_pool=cls._support_storage_pool,
+        support_maintenance_interval=cls._support_maintenance_interval,
     )
     instances_flags.AddLocalNvdimmArgs(parser)
     instances_flags.AddMinCpuPlatformArgs(parser, base.ReleaseTrack.ALPHA)
@@ -1298,16 +1322,15 @@ class CreateAlpha(Create):
         support_visible_core_count=self._support_visible_core_count,
         support_max_run_duration=self._support_max_run_duration,
         support_region_instance_template=self._support_region_instance_template,
-        support_confidential_compute_type=self
-        ._support_confidential_compute_type,
-        support_confidential_compute_type_tdx=self
-        ._support_confidential_compute_type_tdx,
+        support_confidential_compute_type=self._support_confidential_compute_type,
+        support_confidential_compute_type_tdx=self._support_confidential_compute_type_tdx,
         support_replica_zones=self._support_replica_zones,
         support_local_ssd_recovery_timeout=self._support_local_ssd_recovery_timeout,
         support_performance_monitoring_unit=self._support_performance_monitoring_unit,
         support_internal_ipv6_reservation=self._support_internal_ipv6_reservation,
         support_storage_pool=self._support_storage_pool,
         support_partner_metadata=self._support_partner_metadata,
+        support_maintenance_interval=self._support_maintenance_interval,
     )
 
 

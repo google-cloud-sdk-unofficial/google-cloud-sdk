@@ -24,7 +24,6 @@ from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.dataflow import job_utils
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class UpdateOptions(base.Command):
   """Update pipeline options on-the-fly for running Dataflow jobs.
@@ -46,6 +45,14 @@ class UpdateOptions(base.Command):
   Modify autoscaling settings to scale between 5-10 workers:
 
     $ {command} --min-num-workers=5 --max-num-workers=10
+
+  Require a job to use at least 2 workers:
+
+    $ {command} --min-num-workers=2
+
+  Require a job to use at most 20 workers:
+
+    $ {command} --max-num-workers=20
   """
 
   @staticmethod

@@ -122,9 +122,7 @@ class UpdateProfileGroup(base.UpdateCommand):
         message='Waiting for security-profile-group [{}] to be updated'.format(
             security_profile_group.RelativeName()
         ),
-        # TODO(b/279630768): Change to True once the resource type is part of
-        # the operation output.
-        has_result=False,
+        has_result=True,
     )
 
 

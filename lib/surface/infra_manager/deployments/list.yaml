@@ -21,6 +21,6 @@
       name.basename(),
       state,
       latestRevision.basename(),
-      createTime,
+      createTime:sort=1,
       updateTime
       )

@@ -22,6 +22,7 @@ from googlecloudsdk.api_lib.container.fleet import client
 from googlecloudsdk.api_lib.container.fleet import util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.container.fleet import resources
+from googlecloudsdk.command_lib.util.args import labels_util
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
@@ -58,14 +59,20 @@ class Update(base.UpdateCommand):
     resources.AddMembershipBindingResourceArg(
         parser,
         api_version=util.VERSION_MAP[cls.ReleaseTrack()],
-        binding_help=('Name of the Membership Binding to be updated.'
-                      'Must comply with RFC 1123 (up to 63 characters, '
-                      'alphanumeric and \'-\')'))
+        binding_help=(
+            'Name of the Membership Binding to be updated.'
+            'Must comply with RFC 1123 (up to 63 characters, '
+            "alphanumeric and '-')"
+        ),
+    )
     group = parser.add_mutually_exclusive_group(required=True)
     group.add_argument(
         '--fleet',
         type=bool,
-        help='Bindings for all the membership related scopes in the fleet would be updated.',
+        help=(
+            'Bindings for all the membership related scopes in the fleet would'
+            ' be updated.'
+        ),
     )
     resources.AddScopeResourceArg(
         parser,
@@ -74,20 +81,39 @@ class Update(base.UpdateCommand):
         scope_help='The Fleet Scope to bind the membership to.',
         group=group,
     )
+    labels_util.AddUpdateLabelsFlags(parser)
 
   def Run(self, args):
     fleetclient = client.FleetClient(release_track=self.ReleaseTrack())
     mask = []
+    current_binding = fleetclient.GetMembershipBinding(
+        resources.MembershipBindingResourceName(args)
+    )
+
+    # update GCP labels for namespace resource
+    labels_diff = labels_util.Diff.FromUpdateArgs(args)
+    new_labels = None
+    if labels_diff.MayHaveUpdates():
+      mask.append('labels')
+      new_labels = labels_diff.Apply(
+          fleetclient.messages.MembershipBinding.LabelsValue,
+          current_binding.labels,
+      ).GetOrNone()
+
     for flag in ['fleet', 'scope']:
       if args.IsKnownAndSpecified(flag):
         mask.append(flag)
     scope = None
     if args.CONCEPTS.scope.Parse() is not None:
       scope = args.CONCEPTS.scope.Parse().RelativeName()
+    # if there's nothing to update, then return
+    if not mask:
+      return
     return fleetclient.UpdateMembershipBinding(
         resources.MembershipBindingResourceName(args),
         scope=scope,
         fleet=args.fleet,
+        labels=new_labels,
         mask=','.join(mask))
 
 

@@ -176,29 +176,28 @@ def _add_common_args(parser):
   log_bucket = parser.add_mutually_exclusive_group()
   log_bucket.add_argument(
       '--log-bucket',
-      help='Enables usage logging of the bucket, outputting log files to the'
-      " specified logging_bucket in this flag. Cloud Storage doesn't validate"
-      ' the existence of the bucket receiving logs. In addition to enabling'
-      ' logging on your bucket, you will also need to grant'
-      ' cloud-storage-analytics@google.com write access to the log bucket.')
+      help='Enables usage and storage logging for the bucket specified in the'
+      ' overall update command, outputting log files to the bucket specified in'
+      ' this flag. Cloud Storage does not validate the existence of the bucket'
+      ' receiving logs. In addition to enabling logging on your bucket, you'
+      ' also need to grant cloud-storage-analytics@google.com write access to'
+      ' the log bucket.')
   log_bucket.add_argument(
       '--clear-log-bucket',
       action='store_true',
-      help="Clears logging bucket receiving the usage current bucket's data and"
-      ' disables usage logging.')
+      help='Disables usage and storage logging for the bucket specified in the'
+      ' overall update command.')
   log_object_prefix = parser.add_mutually_exclusive_group()
   log_object_prefix.add_argument(
       '--log-object-prefix',
-      help='Specifies the object prefix for logging activity to the log'
-      ' bucket. The default prefix is the bucket name. All read and write'
-      ' activity to objects in the bucket will be logged for objects matching'
-      ' the prefix. If usage logging is not enabled this flag will have no'
-      ' effect.')
+      help='Specifies a prefix for the names of logs generated in the log'
+      ' bucket. The default prefix is the bucket name. If logging is not'
+      ' enabled, this flag has no effect.')
   log_object_prefix.add_argument(
       '--clear-log-object-prefix',
       action='store_true',
-      help='Clears prefix used to determine what usage data to send to'
-      ' logging bucket.')
+      help='Clears the prefix used to determine the naming of log objects in'
+      ' the logging bucket.')
   public_access_prevention = parser.add_mutually_exclusive_group()
   public_access_prevention.add_argument(
       '--public-access-prevention',

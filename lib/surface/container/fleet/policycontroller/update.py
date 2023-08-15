@@ -20,8 +20,8 @@ from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.container.fleet import util as fleet_util
 from googlecloudsdk.calliope import base as calliope_base
-from googlecloudsdk.command_lib.container.fleet import resources
 from googlecloudsdk.command_lib.container.fleet.features import base
+from googlecloudsdk.command_lib.container.fleet.policycontroller import flags
 from googlecloudsdk.command_lib.container.fleet.policycontroller import utils
 from googlecloudsdk.core import exceptions
 
@@ -46,122 +46,26 @@ class Update(base.UpdateCommand):
 
   @classmethod
   def Args(cls, parser):
-    # TODO(b/291816961) Use groups and flaghandler for memberships.
-    # Use googlecloudsdk.command_lib.container.fleet.policycontroller.flags
-    # See usage in suspend.py
-    resources.AddMembershipResourceArg(
-        parser,
-        plural=True,
-        membership_help=(
-            'The membership names to update, separated by commas if multiple '
-            'are supplied. Ignored if --all-memberships is supplied; if '
-            'neither is supplied, a prompt will appear with all available '
-            'memberships.'
-        ),
-    )
-    parser.add_argument(
-        '--all-memberships',
-        action='store_true',
-        help=(
-            'If supplied, update Policy Controller for all memberships in the'
-            ' fleet.'
-        ),
-        default=False,
-    )
-    parser.add_argument(
-        '--audit-interval-seconds',
-        type=int,
-        help='How often Policy Controller will audit resources, in seconds.',
-        default=60,
-    )
-    parser.add_argument(
-        '--constraint-violation-limit',
-        type=int,
-        help='The number of violations stored on the constraint resource. Must'
-             ' be greater than 0.',
-        default=20,
-    )
-    # TODO(b/291816961) Exemptable namespaces should be in a mutex group.
-    parser.add_argument(
-        '--exemptable-namespaces',
-        type=str,
-        help=(
-            'Namespaces that Policy Controller should ignore, separated by'
-            ' commas if multiple are supplied.'
-        ),
-    )
-    parser.add_argument(
-        '--no-exemptable-namespaces',
-        action='store_true',
-        help=(
-            'Disables any namespace exemptions, enabling Policy Controller on'
-            ' all namespaces.'
-        ),
-    )
-    parser.add_argument(
-        '--log-denies-enabled',
-        action=utils.BooleanOptionalAction,
-        const=None,
-        help=(
-            'If set, log all denies and dry run failures. (To disable, use'
-            ' --no-log-denies-enabled)'
-        ),
-    )
-    parser.add_argument(
-        '--mutation-enabled',
-        action=utils.BooleanOptionalAction,
-        help=(
-            'If set, enable support for mutation. (To disable, use'
-            ' --no-mutation-enabled)'
-        ),
-    )
-    parser.add_argument(
-        '--referential-rules-enabled',
-        action=utils.BooleanOptionalAction,
-        help=(
-            'If set, enable support for referential constraints. (To disable,'
-            ' use --no-referential-rules-enabled)'
-        ),
-    )
-    parser.add_argument(
-        '--template-library-installed',
-        action=utils.BooleanOptionalAction,
-        help=(
-            'If set, install a library of constraint templates for common'
-            ' policy types. (To disable, use --no-template-library-installed)'
-        ),
-    )
-    # TODO(b/291816961) Monitoring should be in a mutex group.
-    parser.add_argument(
-        '--monitoring',
-        type=str,
-        help=(
-            'Monitoring backend options Policy Controller should export metrics'
-            ' to, separated by commas if multiple are supplied. Options:'
-            ' prometheus, cloudmonitoring'
-        ),
-    )
-    parser.add_argument(
-        '--no-monitoring',
-        action='store_true',
-        help=(
-            'Include this flag to disable the monitoring configuration of'
-            ' Policy Controller'
-        ),
-    )
-    parser.add_argument(
-        '--version',
-        type=str,
-        help='The version of Policy Controller to install.',
-    )
+    cmd_flags = flags.Flags(parser, 'update')
+
+    # Scope Flags
+    cmd_flags.AddMemberships()
+
+    # Configuration Flags
+    cmd_flags.AddAuditInterval()
+    cmd_flags.AddConstraintViolationLimit()
+    cmd_flags.AddExemptableNamespaces()
+    cmd_flags.AddLogDeniesEnabled()
+    cmd_flags.AddMonitoring()
+    cmd_flags.AddMutationEnabled()
+    cmd_flags.AddReferentialRulesEnabled()
+    cmd_flags.AddTemplateLibraryInstall()
+    cmd_flags.AddVersion()
 
   def Run(self, args):
     membership_specs = self.hubclient.ToPyDict(
         self.GetFeature().membershipSpecs
     )
-    # Required for validation side-effect.
-    # TODO(b/291816961) Removal of validation obviates the need for this call.
-    utils.set_poco_hub_config_parameters_from_args(args, self.messages)
     memberships = base.ParseMembershipsPlural(
         args, search=True, prompt=True, prompt_cancel=False, autoselect=True
     )

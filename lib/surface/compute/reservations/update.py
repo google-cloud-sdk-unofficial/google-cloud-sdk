@@ -29,21 +29,40 @@ from googlecloudsdk.command_lib.compute.reservations import resource_args
 from googlecloudsdk.command_lib.compute.reservations import util
 
 
-def _ValidateArgs(args, support_share_with, support_share_with_flag):
+def _ValidateArgs(
+    args, support_share_with, support_share_with_flag, support_auto_delete=False
+):
   """Validates that both share settings arguments are mentioned.
 
   Args:
     args: The arguments given to the update command.
     support_share_with: Check the version.
     support_share_with_flag: Check if share_with is supported.
+    support_auto_delete: Check if auto-delete settings are supported.
   """
-  # Check the vesrion and share-with option.
+  # Check the version and share-with option.
   share_with = False
-  parameter_names = ['--share-with', '--vm-count']
+  parameter_names = [
+      '--share-with',
+      '--vm-count',
+  ]
   one_option_exception_message = (
-      'Please provide one of these options: 1- Specify share-with or '
-      'add-share-with or remove-share-with to update the project list. 2- '
-      'Specify reservation vm-count to resize. ')
+      'Please provide one of these options: 1- Specify share-with or'
+      ' add-share-with or remove-share-with to update the project list. 2-'
+      ' Specify reservation vm-count to resize. '
+  )
+
+  if support_auto_delete:
+    parameter_names.extend([
+        '--delete-at-time',
+        '--delete-after-duration',
+        '--disable-auto-delete',
+    ])
+    one_option_exception_message += (
+        '3- Modify auto-delete'
+        ' properties with specifing auto-delete-at-time or'
+        ' auto-delete-after-duration or disable-auto-delete flags.'
+    )
 
   if support_share_with:
     has_share_with = False
@@ -66,8 +85,21 @@ def _ValidateArgs(args, support_share_with, support_share_with_flag):
               '--remove-share-with',
               'Please specify project number (not project id/name).')
 
+  minimum_argument_specified = not share_with and not args.IsSpecified(
+      'vm_count'
+  )
+
+  if support_auto_delete:
+    auto_delete_settings_updated = args.IsSpecified('delete_at_time') or (
+        args.IsSpecified('delete_after_duration')
+        or args.IsSpecified('disable_auto_delete')
+    )
+    minimum_argument_specified = (
+        minimum_argument_specified and not auto_delete_settings_updated
+    )
+
   # Check parameters (add_share_with and remove_share_with are on GA).
-  if not share_with and not args.IsSpecified('vm_count'):
+  if minimum_argument_specified:
     raise exceptions.MinimumArgumentException(parameter_names,
                                               one_option_exception_message)
 
@@ -153,11 +185,55 @@ def _GetResizeRequest(args, reservation_ref, holder):
   return r_resize_request
 
 
+def _AutoDeleteUpdateRequest(args, reservation_ref, holder):
+  """Create Update Request for mofigying auto-delete properties."""
+  messages = holder.client.messages
+
+  update_mask = []
+
+  if args.IsSpecified('delete_at_time'):
+    update_mask.append('deleteAtTime')
+    delete_at_time = args.delete_at_time
+  else:
+    delete_at_time = None
+
+  if args.IsSpecified('delete_after_duration'):
+    update_mask.append('deleteAfterDuration')
+    delete_after_duration = args.delete_after_duration
+  else:
+    delete_after_duration = None
+
+  if args.IsSpecified('disable_auto_delete'):
+    update_mask.append('deleteAtTime')
+
+  r_resource = util.MakeReservationMessage(
+      messages,
+      reservation_ref.Name(),
+      None,
+      None,
+      None,
+      None,
+      reservation_ref.zone,
+      delete_at_time,
+      delete_after_duration,
+  )
+
+  # Build update request.
+  return messages.ComputeReservationsUpdateRequest(
+      reservation=reservation_ref.Name(),
+      reservationResource=r_resource,
+      paths=update_mask,
+      project=reservation_ref.project,
+      zone=reservation_ref.zone,
+  )
+
+
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Update(base.UpdateCommand):
   """Update Compute Engine reservations."""
   _support_share_with = True
   _support_share_with_flag = False
+  _support_auto_delete = False
 
   @classmethod
   def Args(cls, parser):
@@ -174,7 +250,12 @@ class Update(base.UpdateCommand):
     service = holder.client.apitools_client.reservations
 
     # Validate the command.
-    _ValidateArgs(args, self._support_share_with, self._support_share_with_flag)
+    _ValidateArgs(
+        args,
+        self._support_share_with,
+        self._support_share_with_flag,
+        self._support_auto_delete,
+    )
     reservation_ref = resource_args.GetReservationResourceArg(
     ).ResolveAsResource(
         args,
@@ -212,14 +293,37 @@ class Update(base.UpdateCommand):
       result.append(
           holder.client.MakeRequests(([(service, 'Resize', r_resize_request)])))
 
+    if self._support_auto_delete:
+      if args.IsSpecified('delete_at_time') or (
+          args.IsSpecified('delete_after_duration')
+          or args.IsSpecified('disable_auto_delete')
+      ):
+        r_update_request = _AutoDeleteUpdateRequest(
+            args, reservation_ref, holder
+        )
+
+        result.append(
+            list(
+                request_helper.MakeRequests(
+                    requests=[(service, 'Update', r_update_request)],
+                    http=holder.client.apitools_client.http,
+                    batch_url=holder.client.batch_url,
+                    errors=errors,
+                )
+            )
+        )
+        if errors:
+          utils.RaiseToolException(errors)
+
     return result
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
 class UpdateBeta(Update):
   """Update Compute Engine reservations."""
   _support_share_with = True
   _support_share_with_flag = True
+  _support_auto_delete = False
 
   @classmethod
   def Args(cls, parser):
@@ -231,16 +335,45 @@ class UpdateBeta(Update):
     r_flags.GetVmCountFlag(False).AddToParser(parser)
 
 
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class UpdateAlpha(Update):
+  """Update Compute Engine reservations."""
+
+  _support_share_with = True
+  _support_share_with_flag = True
+  _support_auto_delete = True
+
+  @classmethod
+  def Args(cls, parser):
+    resource_args.GetReservationResourceArg().AddArgument(
+        parser, operation_type='update'
+    )
+    r_flags.GetShareWithFlag().AddToParser(parser)
+    r_flags.GetAddShareWithFlag().AddToParser(parser)
+    r_flags.GetRemoveShareWithFlag().AddToParser(parser)
+    r_flags.GetVmCountFlag(False).AddToParser(parser)
+
+    auto_delete_group = base.ArgumentGroup(
+        'Manage auto-delete properties for reservations.',
+        required=False,
+        mutex=True,
+    )
+    auto_delete_group.AddArgument(r_flags.GetDeleteAtTimeFlag())
+    auto_delete_group.AddArgument(r_flags.GetDeleteAfterDurationFlag())
+    auto_delete_group.AddArgument(r_flags.GetDisableAutoDelete())
+    auto_delete_group.AddToParser(parser)
+
+
 Update.detailed_help = {
     'EXAMPLES':
         """
-        To add `my-project` to the list of projects that are shared with a Compute Engine reservation, `my-reservation` in zone: `us-central1-a`, run:
+        To add `project-1,project-2,project-3` to the list of projects that are shared with a Compute Engine reservation, `my-reservation` in zone: `us-central1-a`, run:
 
-            $ {command} my-reservation --add-share-with=my-project --zone=us-central1-a
+            $ {command} my-reservation --add-share-with=project-1,project-2,project-3 --zone=us-central1-a
 
-        To remove `my-project` from the list of projects that are shared with a Compute Engine reservation, `my-reservation` in zone: `us-central1-a`, run:
+        To remove `project-1,project-2,project-3` from the list of projects that are shared with a Compute Engine reservation, `my-reservation` in zone: `us-central1-a`, run:
 
-            $ {command} my-reservation --remove-share-with=my-project --zone=us-central1-a
+            $ {command} my-reservation --remove-share-with=project-1,project-2,project-3 --zone=us-central1-a
 
         To update the number of reserved VM instances to 500 for a Compute Engine reservation, `my-reservation` in zone: `us-central1-a`, run:
 
@@ -251,17 +384,38 @@ Update.detailed_help = {
 UpdateBeta.detailed_help = {
     'EXAMPLES':
         """
-        To add `my-project` to the list of projects that are shared with a Compute Engine reservation, `my-reservation` in zone: `us-central1-a`, run:
+        To add `project-1,project-2,project-3` to the list of projects that are shared with a Compute Engine reservation, `my-reservation` in zone: `us-central1-a`, run:
 
-            $ {command} my-reservation --add-share-with=my-project --zone=us-central1-a
+            $ {command} my-reservation --add-share-with=project-1,project-2,project-3 --zone=us-central1-a
 
-        To remove `my-project` from the list of projects that are shared with a Compute Engine reservation, `my-reservation` in zone: `us-central1-a`, run:
+        To remove `project-1,project-2,project-3` from the list of projects that are shared with a Compute Engine reservation, `my-reservation` in zone: `us-central1-a`, run:
 
-            $ {command} my-reservation --remove-share-with=my-project --zone=us-central1-a
+            $ {command} my-reservation --remove-share-with=project-1,project-2,project-3 --zone=us-central1-a
 
         To update the entire list of projects that are shared with a Compute Engine reservation, `my-reservation` in zone: `us-central1-a`, run:
 
-            $ {command} my-reservation --share-with=my-project --zone=us-central1-a
+            $ {command} my-reservation --share-with=project-1,project-2,project-3 --zone=us-central1-a
+
+        To update the number of reserved VM instances to 500 for a Compute Engine reservation, `my-reservation` in zone: `us-central1-a`, run:
+
+            $ {command} my-reservation --zone=us-central1-a --vm-count=500
+        """
+}
+
+UpdateAlpha.detailed_help = {
+    'EXAMPLES':
+        """
+        To add `project-1,project-2,project-3` to the list of projects that are shared with a Compute Engine reservation, `my-reservation` in zone: `us-central1-a`, run:
+
+            $ {command} my-reservation --add-share-with=project-1,project-2,project-3 --zone=us-central1-a
+
+        To remove `project-1,project-2,project-3` from the list of projects that are shared with a Compute Engine reservation, `my-reservation` in zone: `us-central1-a`, run:
+
+            $ {command} my-reservation --remove-share-with=project-1,project-2,project-3 --zone=us-central1-a
+
+        To update the entire list of projects that are shared with a Compute Engine reservation, `my-reservation` in zone: `us-central1-a`, run:
+
+            $ {command} my-reservation --share-with=project-1,project-2,project-3 --zone=us-central1-a
 
         To update the number of reserved VM instances to 500 for a Compute Engine reservation, `my-reservation` in zone: `us-central1-a`, run:
 

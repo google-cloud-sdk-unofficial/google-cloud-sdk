@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*- #
-# Copyright 2022 Google LLC. All Rights Reserved.
+# Copyright 2023 Google LLC. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -24,15 +24,15 @@ from googlecloudsdk.command_lib.spanner import flags
 from googlecloudsdk.command_lib.spanner import migration_backend
 
 
-class SchemaAndData(base.BinaryBackedCommand):
+class Data(base.BinaryBackedCommand):
   """Migrate data from a source database to Cloud Spanner given a schema."""
 
   detailed_help = {
       'EXAMPLES':
           textwrap.dedent("""\
-        To generate schema and copy data to Cloud Spanner from a source database:
+        To copy data to Cloud Spanner given a session file:
 
-          $ {command} --source=postgresql < ~/cart.pg_dump --target-profile='instance=spanner-instance'
+          $ {command} --session=./session.json --source=postgresql < ~/cart.pg_dump --target-profile='instance=spanner-instance'
       """),
   }
 
@@ -40,6 +40,7 @@ class SchemaAndData(base.BinaryBackedCommand):
   def Args(parser):
     """Register the flags for this command."""
     flags.GetSpannerMigrationSourceFlag().AddToParser(parser)
+    flags.GetSpannerMigrationSessionFlag().AddToParser(parser)
     flags.GetSpannerMigrationPrefixFlag().AddToParser(parser)
     flags.GetSpannerMigrationSkipForeignKeysFlag().AddToParser(parser)
     flags.GetSpannerMigrationSourceProfileFlag().AddToParser(parser)
@@ -50,13 +51,14 @@ class SchemaAndData(base.BinaryBackedCommand):
     flags.GetSpannerMigrationLogLevelFlag().AddToParser(parser)
 
   def Run(self, args):
-    """Run the schema-and-data command."""
-    command_executor = migration_backend.HarbourbridgeWrapper()
+    """Run the data command."""
+    command_executor = migration_backend.SpannerMigrationWrapper()
     env_vars = migration_backend.GetEnvArgsForCommand(
         extra_vars={'GCLOUD_HB_PLUGIN': 'true'})
     response = command_executor(
-        command='schema-and-data',
+        command='data',
         source=args.source,
+        session=args.session,
         prefix=args.prefix,
         skip_foreign_keys=args.skip_foreign_keys,
         source_profile=args.source_profile,

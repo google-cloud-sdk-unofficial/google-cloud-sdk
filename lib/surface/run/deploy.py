@@ -344,10 +344,11 @@ class BetaDeploy(Deploy):
     # Flags specific to managed CR
     managed_group = flags.GetManagedArgGroup(parser)
     flags.AddCustomAudiencesFlag(managed_group)
+    flags.AddVpcNetworkGroupFlagsForUpdate(managed_group)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class AlphaDeploy(Deploy):
+class AlphaDeploy(BetaDeploy):
   """Create or update a Cloud Run service."""
 
   @staticmethod

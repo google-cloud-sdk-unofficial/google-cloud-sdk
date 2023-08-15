@@ -36,9 +36,9 @@ class CreateGcp(base.CreateCommand):
       'DESCRIPTION': '{description}',
       'EXAMPLES': """\
           The following command creates a workload identity pool namespace
-          workload source in the default project with the ID projects/123.
+          workload source in the default project with the ID project-123.
 
-            $ {command} projects/123 --location="global" \\
+            $ {command} project-123 --location="global" \\
             --workload-identity-pool="my-workload-identity-pool" \\
             --namespace="my-namespace" \\
             --resoures="resource-1","resource-2"

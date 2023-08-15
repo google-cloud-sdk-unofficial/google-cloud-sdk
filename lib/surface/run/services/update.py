@@ -181,10 +181,11 @@ class BetaUpdate(Update):
     # Flags specific to managed CR
     managed_group = flags.GetManagedArgGroup(parser)
     flags.AddCustomAudiencesFlag(managed_group)
+    flags.AddVpcNetworkGroupFlagsForUpdate(managed_group)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class AlphaUpdate(Update):
+class AlphaUpdate(BetaUpdate):
   """Update Cloud Run environment variables and other configuration settings."""
 
   @staticmethod
@@ -198,5 +199,6 @@ class AlphaUpdate(Update):
     flags.AddRuntimeFlag(managed_group)
     flags.AddDescriptionFlag(managed_group)
     flags.AddServiceMinInstancesFlag(managed_group)
+
 
 AlphaUpdate.__doc__ = Update.__doc__

@@ -29,7 +29,6 @@ from googlecloudsdk.core import properties
 @base.ReleaseTracks(
     base.ReleaseTrack.GA
 )
-@base.Hidden
 class LoadVex(base.Command):
   """Load VEX data from a file."""
 
@@ -38,11 +37,11 @@ class LoadVex(base.Command):
       'EXAMPLES': """\
        To load a CSAF security advisory file given an artifact in Artifact Registry and the file on disk, run:
 
-        $ {command} --uri=us-east1-docker.pkg.dev/project123/repository123/someimage@sha256:49765698074d6d7baa82f --source=/path/to/vex/file --location=us-east1
+        $ {command} --uri=us-east1-docker.pkg.dev/project123/repository123/someimage@sha256:49765698074d6d7baa82f --source=/path/to/vex/file
 
 To load a CSAF security advisory file given an artifact with a tag and a file on disk, run:
 
-        $ {command} --uri=us-east1-docker.pkg.dev/project123/repository123/someimage:latest --source=/path/to/vex/file --location=us-east1
+        $ {command} --uri=us-east1-docker.pkg.dev/project123/repository123/someimage:latest --source=/path/to/vex/file
     """,
   }
   ca_client = None

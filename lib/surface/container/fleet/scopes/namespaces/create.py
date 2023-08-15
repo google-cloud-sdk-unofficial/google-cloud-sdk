@@ -22,6 +22,7 @@ from googlecloudsdk.api_lib.container.fleet import client
 from googlecloudsdk.api_lib.container.fleet import util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.container.fleet import resources
+from googlecloudsdk.command_lib.util.args import labels_util
 
 
 class Create(base.CreateCommand):
@@ -56,6 +57,8 @@ class Create(base.CreateCommand):
         ),
         required=True,
     )
+    labels_util.AddCreateLabelsFlags(parser)
+    resources.AddCreateNamespaceLabelsFlags(parser)
 
   def Run(self, args):
     namespace_arg = args.CONCEPTS.namespace.Parse()
@@ -63,4 +66,18 @@ class Create(base.CreateCommand):
     namespace_path = namespace_arg.RelativeName()
     parent_path = namespace_arg.Parent().RelativeName()
     fleetclient = client.FleetClient(release_track=self.ReleaseTrack())
-    return fleetclient.CreateScopeNamespace(name, namespace_path, parent_path)
+    labels_diff = labels_util.Diff(additions=args.labels)
+    labels = labels_diff.Apply(
+        fleetclient.messages.Namespace.LabelsValue, None
+    ).GetOrNone()
+    ns_labels_diff = labels_util.Diff(additions=args.namespace_labels)
+    ns_labels = ns_labels_diff.Apply(
+        fleetclient.messages.Namespace.NamespaceLabelsValue, None
+    ).GetOrNone()
+    return fleetclient.CreateScopeNamespace(
+        name,
+        namespace_path,
+        parent_path,
+        labels=labels,
+        namespace_labels=ns_labels,
+    )

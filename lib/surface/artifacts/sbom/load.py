@@ -27,7 +27,6 @@ from googlecloudsdk.core import properties
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
-@base.Hidden
 class Load(base.Command):
   """Upload an SBOM file and create a reference occurrence."""
 
@@ -55,7 +54,7 @@ class Load(base.Command):
 
   @staticmethod
   def Args(parser):
-    """Set up arguements for this command.
+    """Set up arguments for this command.
 
     Args:
       parser: An argparse.ArgumentPaser.

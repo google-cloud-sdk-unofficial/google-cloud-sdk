@@ -22,6 +22,7 @@ from googlecloudsdk.api_lib.container.fleet import client
 from googlecloudsdk.api_lib.container.fleet import util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.container.fleet import resources
+from googlecloudsdk.command_lib.util.args import labels_util
 
 
 class Create(base.CreateCommand):
@@ -74,12 +75,18 @@ class Create(base.CreateCommand):
         choices=['admin', 'edit', 'view'],
         help='Role to assign.',
     )
+    labels_util.AddCreateLabelsFlags(parser)
 
   def Run(self, args):
     fleetclient = client.FleetClient(release_track=self.ReleaseTrack())
+    labels_diff = labels_util.Diff(additions=args.labels)
+    labels = labels_diff.Apply(
+        fleetclient.messages.RBACRoleBinding.LabelsValue, None
+    ).GetOrNone()
     return fleetclient.CreateScopeRBACRoleBinding(
         resources.RBACResourceName(args),
         role=args.role,
         user=args.user,
         group=args.group,
+        labels=labels,
     )

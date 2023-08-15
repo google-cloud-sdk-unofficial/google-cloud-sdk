@@ -24,7 +24,6 @@ from googlecloudsdk.command_lib.artifacts import sbom_util
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
-@base.Hidden
 class Export(base.Command):
   """Export SBOM files."""
 
@@ -39,7 +38,7 @@ class Export(base.Command):
 
   @staticmethod
   def Args(parser):
-    """Set up arguements for this command.
+    """Set up arguments for this command.
 
     Args:
       parser: An argparse.ArgumentPaser.

@@ -5646,6 +5646,51 @@ class _Update(BigqueryCmd):
             connection_type=self.connection_type,
             properties=self.properties,
             connection_credential=self.connection_credential,
+        )
+        bigquery_client.MaybePrintManualInstructionsForConnection(
+            updated_connection)
+
+    else:
+      reference = client.GetReference(identifier)
+      _Typecheck(reference, (DatasetReference, TableReference),
+                 "Invalid identifier '%s' for update." % (identifier,))
+
+    label_keys_to_remove = None
+    labels_to_set = None
+    if self.set_label is not None:
+      labels_to_set = _ParseLabels(self.set_label)
+    if self.clear_label is not None:
+      label_keys_to_remove = set(self.clear_label)
+
+    if isinstance(reference, DatasetReference):
+      if self.schema:
+        raise app.UsageError('Cannot specify schema with a dataset.')
+      if self.view:
+        raise app.UsageError('Cannot specify view with a dataset.')
+      if self.materialized_view:
+        raise app.UsageError('Cannot specify materialized view with a dataset.')
+      if self.expiration:
+        raise app.UsageError('Cannot specify an expiration for a dataset.')
+      if self.external_table_definition is not None:
+        raise app.UsageError(
+            'Cannot specify an external_table_definition for a dataset.')
+      if self.source and self.description:
+        raise app.UsageError('Cannot specify description with a source.')
+      default_table_exp_ms = None
+      if self.default_table_expiration is not None:
+        default_table_exp_ms = self.default_table_expiration * 1000
+      default_partition_exp_ms = None
+      if self.default_partition_expiration is not None:
+        default_partition_exp_ms = self.default_partition_expiration * 1000
+      _UpdateDataset(
+          client,
+          reference,
+          description=self.description,
+          source=self.source,
+          default_table_expiration_ms=default_table_exp_ms,
+          default_partition_expiration_ms=default_partition_exp_ms,
+          labels_to_set=labels_to_set,
+          label_keys_to_remove=label_keys_to_remove,
           default_kms_key=self.default_kms_key,
           etag=self.etag,
           max_time_travel_hours=self.max_time_travel_hours,

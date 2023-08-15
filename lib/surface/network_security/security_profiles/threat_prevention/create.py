@@ -21,6 +21,7 @@ from __future__ import unicode_literals
 from googlecloudsdk.api_lib.network_security.security_profiles.threat_prevention import sp_api
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.network_security import sp_flags
+from googlecloudsdk.command_lib.util.args import labels_util
 from googlecloudsdk.core import exceptions as core_exceptions
 from googlecloudsdk.core import log
 
@@ -49,11 +50,15 @@ class CreateProfile(base.CreateCommand):
     sp_flags.AddProfileDescription(parser)
     base.ASYNC_FLAG.AddToParser(parser)
     base.ASYNC_FLAG.SetDefault(parser, False)
+    labels_util.AddCreateLabelsFlags(parser)
 
   def Run(self, args):
     client = sp_api.Client(self.ReleaseTrack())
     security_profile = args.CONCEPTS.security_profile.Parse()
     description = args.description
+    labels = labels_util.ParseCreateArgs(
+        args, client.messages.SecurityProfile.LabelsValue
+    )
     is_async = args.async_
 
     if not args.IsSpecified('description'):
@@ -69,6 +74,7 @@ class CreateProfile(base.CreateCommand):
         sp_id=security_profile.Name(),
         parent=security_profile.Parent().RelativeName(),
         description=description,
+        labels=labels,
     )
 
     # Return the in-progress operation if async is requested.
@@ -86,9 +92,7 @@ class CreateProfile(base.CreateCommand):
         message='Waiting for security-profile [{}] to be created'.format(
             security_profile.RelativeName()
         ),
-        # TODO(b/279630768): Change to True once the resource type is part of
-        # the operation output.
-        has_result=False,
+        has_result=True,
     )
 
 

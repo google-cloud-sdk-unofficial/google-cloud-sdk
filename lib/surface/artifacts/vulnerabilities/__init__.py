@@ -22,7 +22,6 @@ from googlecloudsdk.calliope import base
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
-@base.Hidden
 class Vulnerabilities(base.Group):
   """Manage Artifact Vulnerabilities.
   """

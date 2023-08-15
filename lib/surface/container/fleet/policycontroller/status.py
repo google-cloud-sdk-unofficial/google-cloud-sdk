@@ -21,8 +21,8 @@ from __future__ import unicode_literals
 from googlecloudsdk.api_lib.container.fleet import client
 from googlecloudsdk.api_lib.container.fleet.policycontroller import status_api_utils
 from googlecloudsdk.calliope import base as calliope_base
-from googlecloudsdk.command_lib.container.fleet import resources
 from googlecloudsdk.command_lib.container.fleet.features import base
+from googlecloudsdk.command_lib.container.fleet.policycontroller import flags
 from googlecloudsdk.command_lib.container.fleet.policycontroller import utils
 from googlecloudsdk.core import properties
 import six
@@ -44,14 +44,8 @@ class Status(base.DescribeCommand):
 
   @classmethod
   def Args(cls, parser):
-    resources.AddMembershipResourceArg(
-        parser,
-        plural=True,
-        membership_help=(
-            'The membership names for which to display the Policy Controller '
-            'runtime status.'
-        ),
-    )
+    cmd_flags = flags.Flags(parser, 'status')
+    cmd_flags.AddMemberships()
 
   def Run(self, args):
     calliope_base.EnableUserProjectQuota()

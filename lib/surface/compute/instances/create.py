@@ -111,7 +111,7 @@ def _CommonArgs(
     support_instance_kms=False,
     support_max_run_duration=False,
     support_network_attachments=False,
-    support_local_ssd_recovery_timeout=False,
+    support_local_ssd_recovery_timeout=True,
     support_local_ssd_size=False,
     support_vlan_nic=False,
     support_storage_pool=False,
@@ -275,7 +275,7 @@ class Create(base.CreateCommand):
   _support_confidential_compute_type = False
   _support_confidential_compute_type_tdx = False
   _support_network_attachments = False
-  _support_local_ssd_recovery_timeout = False
+  _support_local_ssd_recovery_timeout = True
   _support_internal_ipv6_reservation = True
   _support_regional_instance_template = False
   _support_local_ssd_size = True

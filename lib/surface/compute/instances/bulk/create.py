@@ -135,7 +135,7 @@ class Create(base.Command):
   _support_confidential_compute_type_tdx = False
   _support_no_address_in_networking = False
   _support_max_count_per_zone = True
-  _support_local_ssd_recovery_timeout = False
+  _support_local_ssd_recovery_timeout = True
   _support_network_queue_count = True
   _support_performance_monitoring_unit = False
   _support_custom_hostnames = False
@@ -169,6 +169,9 @@ class Create(base.Command):
         support_storage_pool=cls._support_storage_pool,
     )
     cls.AddSourceInstanceTemplate(parser)
+
+    # Flags specific to GA release track
+    instances_flags.AddLocalSsdRecoveryTimeoutArgs(parser)
 
   # LINT.IfChange(instance_template)
   @classmethod

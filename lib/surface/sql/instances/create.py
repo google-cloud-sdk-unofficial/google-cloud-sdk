@@ -168,6 +168,9 @@ def AddBaseArgs(parser):
   flags.AddCascadableReplica(parser)
   flags.AddEnableDataCache(parser, show_negated_in_help=False)
   flags.AddRecreateReplicasOnPrimaryCrash(parser)
+  psc_setup_group = parser.add_group()
+  flags.AddEnablePrivateServiceConnect(psc_setup_group)
+  flags.AddAllowedPscProjects(psc_setup_group)
 
 
 def AddBetaArgs(parser):
@@ -176,9 +179,6 @@ def AddBetaArgs(parser):
   flags.AddInstanceResizeLimit(parser)
   flags.AddAllocatedIpRangeName(parser)
   labels_util.AddCreateLabelsFlags(parser)
-  psc_setup_group = parser.add_group(hidden=True)
-  flags.AddEnablePrivateServiceConnect(psc_setup_group)
-  flags.AddAllowedPscProjects(psc_setup_group)
   flags.AddPasswordPolicyDisallowCompromisedCredentials(parser)
   flags.AddReplicationLagMaxSecondsForRecreate(parser)
 

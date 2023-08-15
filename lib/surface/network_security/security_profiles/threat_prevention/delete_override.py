@@ -21,6 +21,7 @@ from __future__ import unicode_literals
 from googlecloudsdk.api_lib.network_security.security_profiles.threat_prevention import sp_api
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.network_security import sp_flags
+from googlecloudsdk.command_lib.util.args import labels_util
 from googlecloudsdk.core import exceptions as core_exceptions
 from googlecloudsdk.core import log
 
@@ -58,13 +59,23 @@ class DeleteOverride(base.UpdateCommand):
   def Args(cls, parser):
     sp_flags.AddSecurityProfileResource(parser, cls.ReleaseTrack())
     sp_flags.AddSeverityorThreatIDArg(parser, required=True)
+    labels_util.AddUpdateLabelsFlags(parser)
     base.ASYNC_FLAG.AddToParser(parser)
     base.ASYNC_FLAG.SetDefault(parser, False)
+
+  def getLabel(self, client, security_profile):
+    return client.GetSecurityProfile(security_profile.RelativeName()).labels
 
   def Run(self, args):
     client = sp_api.Client(self.ReleaseTrack())
     security_profile = args.CONCEPTS.security_profile.Parse()
     is_async = args.async_
+
+    labels_update = labels_util.ProcessUpdateArgsLazy(
+        args,
+        client.messages.SecurityProfile.LabelsValue,
+        orig_labels_thunk=lambda: self.getLabel(client, security_profile),
+    )
 
     if args.IsSpecified('severities'):
       update_mask = 'severityOverrides'
@@ -86,6 +97,7 @@ class DeleteOverride(base.UpdateCommand):
         security_profile.RelativeName(),
         overrides,
         update_mask,
+        labels=labels_update.GetOrNone(),
     )
 
     # Return the in-progress operation if async is requested.
@@ -104,9 +116,7 @@ class DeleteOverride(base.UpdateCommand):
             'Waiting for delete override from security-profile [{}] operation'
             ' to complete.'.format(security_profile.RelativeName())
         ),
-        # TODO(b/279630768): Change to True once the resource type is part of
-        # the operation output.
-        has_result=False,
+        has_result=True,
     )
 
 

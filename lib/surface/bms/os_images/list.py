@@ -41,7 +41,7 @@ DETAILED_HELP = {
 }
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.GA)
 class List(six.with_metaclass(abc.ABCMeta, base.CacheCommand)):
   """List Bare Metal Solution OS images in a project."""
 
@@ -50,18 +50,7 @@ class List(six.with_metaclass(abc.ABCMeta, base.CacheCommand)):
     """Register flags for this command."""
     flags.FILTER_FLAG_NO_SORTBY_DOC.AddToParser(parser)
     flags.LIMIT_FLAG_NO_SORTBY_DOC.AddToParser(parser)
-
-    # The default format picks out the components of the relative name: given
-    # projects/myproject/locations/global/snapshotSchedulePolicies/my-test
-    # it takes -1 (my-test), and -5 (myproject).
-    parser.display_info.AddFormat(
-        'table('
-        'code,'
-        'name.segment(-5):label=PROJECT,'
-        'description,'
-        'applicableInstanceTypes,'
-        'supportedNetworkTemplates)'
-    )
+    parser.display_info.AddFormat('table(code, description)')
 
   def Run(self, args):
     client = BmsClient()

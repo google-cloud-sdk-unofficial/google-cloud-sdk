@@ -19,9 +19,9 @@
     description: Describe a workload identity pool managed identity workload source.
     examples: |
       The following command describes a workload identity pool managed identity workload source in
-      the default project with the ID ``projects/123''.
+      the default project with the ID ``project-123''.
 
-        $ {command} project/123 \
+        $ {command} project-123 \
             --location="global" \
             --workload-identity-pool="my-workload-identity-pool" \
             --namespace="my-namespace" \

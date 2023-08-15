@@ -15,6 +15,11 @@ DISCOVERY_NEXT_BIGQUERY = 'discovery_next/bigquery.json'
 # Latest version of the IAM Policy API discovery_document from discovery_next.
 DISCOVERY_NEXT_IAM_POLICY = 'discovery_next/iam-policy.json'
 
+SUPPORTED_BIGQUERY_APIS = frozenset([
+    'https://www.googleapis.com',
+    'https://bigquery.googleapis.com',
+])
+
 
 def get_discovery_bigquery_name(api_url, api_version):
   """Returns a filename for `api_url` for fetching discovery doc from pkg files.

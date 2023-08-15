@@ -70,7 +70,7 @@ def _CommonArgs(parser, track):
   flags.AddIgnoreFileFlag(parser)
 
   # Add args for base image automatic update policy
-  flags.AddAutomaticUpdatePolicy(parser, track)
+  flags.AddRuntimeUpdatePolicy(parser, track)
 
   # Add flags for CMEK
   flags.AddKMSKeyFlags(parser)

@@ -105,7 +105,7 @@ class CreateWithContainer(base.CreateCommand):
   _support_visible_core_count = True
   _support_confidential_compute_type = False
   _support_confidential_compute_type_tdx = False
-  _support_local_ssd_recovery_timeout = False
+  _support_local_ssd_recovery_timeout = True
   _support_internal_ipv6_reservation = False
 
   @staticmethod
@@ -117,6 +117,7 @@ class CreateWithContainer(base.CreateCommand):
     instances_flags.AddPrivateIpv6GoogleAccessArg(parser,
                                                   utils.COMPUTE_GA_API_VERSION)
     instances_flags.AddVisibleCoreCountArgs(parser)
+    instances_flags.AddLocalSsdRecoveryTimeoutArgs(parser)
 
   def _ValidateArgs(self, args):
     self._ValidateTrackSpecificArgs(args)

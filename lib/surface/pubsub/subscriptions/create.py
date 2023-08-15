@@ -35,6 +35,7 @@ def _Run(
     args,
     enable_labels=False,
     legacy_output=False,
+    enable_push_to_cps=False,
 ):
   """Creates one or more subscriptions."""
   flags.ValidateDeadLetterPolicy(args)
@@ -79,6 +80,9 @@ def _Run(
     cloud_storage_output_format = cloud_storage_output_format_list[0]
   cloud_storage_write_metadata = getattr(args, 'cloud_storage_write_metadata',
                                          None)
+  pubsub_export_topic = (
+      getattr(args, 'pubsub_export_topic', None) if enable_push_to_cps else None
+  )
 
   no_expiration = False
   expiration_period = getattr(args, 'expiration_period', None)
@@ -89,6 +93,11 @@ def _Run(
 
   if dead_letter_topic:
     dead_letter_topic = args.CONCEPTS.dead_letter_topic.Parse().RelativeName()
+
+  if pubsub_export_topic:
+    pubsub_export_topic = (
+        args.CONCEPTS.pubsub_export_topic.Parse().RelativeName()
+    )
 
   labels = None
   if enable_labels:
@@ -127,6 +136,7 @@ def _Run(
           cloud_storage_max_duration=cloud_storage_max_duration,
           cloud_storage_output_format=cloud_storage_output_format,
           cloud_storage_write_metadata=cloud_storage_write_metadata,
+          pubsub_export_topic=pubsub_export_topic,
       )
     except api_ex.HttpError as error:
       exc = exceptions.HttpException(error)
@@ -189,7 +199,7 @@ class CreateBeta(Create):
     subscription = resource_args.CreateSubscriptionResourceArg(
         'to create.', plural=True)
     resource_args.AddResourceArgs(parser, [topic, subscription])
-    flags.AddSubscriptionSettingsFlags(parser)
+    flags.AddSubscriptionSettingsFlags(parser, enable_push_to_cps=True)
     labels_util.AddCreateLabelsFlags(parser)
 
   def Run(self, args):
@@ -199,4 +209,5 @@ class CreateBeta(Create):
         args,
         enable_labels=True,
         legacy_output=legacy_output,
+        enable_push_to_cps=True,
     )

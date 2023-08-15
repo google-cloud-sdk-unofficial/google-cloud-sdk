@@ -14,6 +14,7 @@
     collection: gkehub.projects.locations.scopes
     modify_request_hooks:
     - googlecloudsdk.command_lib.container.fleet.scopes.rollout_sequencing.util:ValidateAsync
+    - googlecloudsdk.command_lib.container.fleet.scopes.util:HandleNamespaceLabelsCreateRequest
     ALPHA:
       api_version: v1alpha
     BETA:
@@ -62,3 +63,6 @@
             - !REF googlecloudsdk.command_lib.container.fleet.scopes.rollout_sequencing.flags:add_upgrade_soaking_override
             - !REF googlecloudsdk.command_lib.container.fleet.scopes.rollout_sequencing.flags:upgrade_selector
         - !REF googlecloudsdk.command_lib.container.fleet.scopes.rollout_sequencing.flags:upstream_scope
+    additional_arguments_hook: googlecloudsdk.command_lib.container.fleet.resources:CreateScopeLabelsFlags
+    labels:
+      api_field: scope.labels

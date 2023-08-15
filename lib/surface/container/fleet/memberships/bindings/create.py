@@ -22,6 +22,7 @@ from googlecloudsdk.api_lib.container.fleet import client
 from googlecloudsdk.api_lib.container.fleet import util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.container.fleet import resources
+from googlecloudsdk.command_lib.util.args import labels_util
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
@@ -56,14 +57,20 @@ class Create(base.CreateCommand):
     resources.AddMembershipBindingResourceArg(
         parser,
         api_version=util.VERSION_MAP[cls.ReleaseTrack()],
-        binding_help=('Name of the membership Binding to be created.'
-                      'Must comply with RFC 1123 (up to 63 characters, '
-                      'alphanumeric and \'-\')'))
+        binding_help=(
+            'Name of the membership Binding to be created.'
+            'Must comply with RFC 1123 (up to 63 characters, '
+            "alphanumeric and '-')"
+        ),
+    )
     group = parser.add_mutually_exclusive_group(required=True)
     group.add_argument(
         '--fleet',
         type=bool,
-        help='Membership Binding is created for all the Scopes in the Fleet for given Membership.',
+        help=(
+            'Membership Binding is created for all the Scopes in the Fleet for'
+            ' given Membership.'
+        ),
     )
     resources.AddScopeResourceArg(
         parser,
@@ -72,16 +79,22 @@ class Create(base.CreateCommand):
         scope_help='The Fleet Scope to bind the membership to.',
         group=group,
     )
+    labels_util.AddCreateLabelsFlags(parser)
 
   def Run(self, args):
     fleetclient = client.FleetClient(release_track=self.ReleaseTrack())
     scope = None
     if args.CONCEPTS.scope.Parse() is not None:
       scope = args.CONCEPTS.scope.Parse().RelativeName()
+    labels_diff = labels_util.Diff(additions=args.labels)
+    labels = labels_diff.Apply(
+        fleetclient.messages.MembershipBinding.LabelsValue, None
+    ).GetOrNone()
     return fleetclient.CreateMembershipBinding(
         resources.MembershipBindingResourceName(args),
         fleet=args.fleet,
         scope=scope,
+        labels=labels,
     )
 
 

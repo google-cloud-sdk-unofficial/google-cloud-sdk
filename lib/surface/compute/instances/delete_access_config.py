@@ -34,7 +34,10 @@ class DeleteAccessConfig(base.SilentCommand):
         *{command}* is used to delete access configurations from network
         interfaces of Compute Engine virtual machines. Access
         configurations let you assign a public, external IP to a virtual
-        machine.
+        machine. The delete-access-config operation removes external IP from
+        the instance interface. If there is traffic routed to the external IP,
+        after deleting the access config operation, traffic to the external IP
+        will not reach the VM anymore.
       """,
       'EXAMPLES': """
         To remove the externally accessible IP from a virtual machine named
@@ -53,7 +56,8 @@ class DeleteAccessConfig(base.SilentCommand):
         help="""\
         Specifies the name of the access configuration to delete.
         ``{0}'' is used as the default if this flag is not provided.
-        """.format(constants.DEFAULT_ACCESS_CONFIG_NAME))
+        """.format(constants.DEFAULT_ACCESS_CONFIG_NAME),
+    )
     parser.add_argument(
         '--network-interface',
         default=constants.DEFAULT_NETWORK_INTERFACE,
@@ -62,7 +66,8 @@ class DeleteAccessConfig(base.SilentCommand):
         Specifies the name of the network interface from which to delete the
         access configuration. If this is not provided, then ``nic0'' is used
         as the default.
-        """)
+        """,
+    )
 
   def Run(self, args):
     """Invokes request necessary for removing an access config."""
@@ -70,15 +75,19 @@ class DeleteAccessConfig(base.SilentCommand):
     client = holder.client
 
     instance_ref = flags.INSTANCE_ARG.ResolveAsResource(
-        args, holder.resources,
-        scope_lister=flags.GetInstanceZoneScopeLister(client))
+        args,
+        holder.resources,
+        scope_lister=flags.GetInstanceZoneScopeLister(client),
+    )
 
     request = client.messages.ComputeInstancesDeleteAccessConfigRequest(
         accessConfig=args.access_config_name,
         instance=instance_ref.Name(),
         networkInterface=args.network_interface,
         project=instance_ref.project,
-        zone=instance_ref.zone)
+        zone=instance_ref.zone,
+    )
 
-    return client.MakeRequests([(client.apitools_client.instances,
-                                 'DeleteAccessConfig', request)])
+    return client.MakeRequests(
+        [(client.apitools_client.instances, 'DeleteAccessConfig', request)]
+    )

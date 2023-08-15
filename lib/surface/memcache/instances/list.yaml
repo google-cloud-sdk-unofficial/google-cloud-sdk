@@ -42,6 +42,7 @@
         nodeCount:label=NODE_COUNT,
         nodeConfig.cpuCount:label=NODE_CPU,
         nodeConfig.memorySizeMb:label=NODE_MB,
+        memcacheVersion:label=MEMCACHED_VERSION,
         state:label=STATUS,
         createTime.date(),
         updateTime.date()

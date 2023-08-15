@@ -15,7 +15,8 @@
     collection: gkehub.projects.locations.scopes
     # TODO(b/257544684): Remove this and restore modify_request_hooks once scope update IAM
     # permission is ready.
-    issue_request_hook: googlecloudsdk.command_lib.container.fleet.scopes.rollout_sequencing.util:HandleUpdateRequest
+    # issue_request_hook: googlecloudsdk.command_lib.container.fleet.scopes.rollout_sequencing.util:HandleUpdateRequest
+    issue_request_hook: googlecloudsdk.command_lib.container.fleet.scopes.util:HandleNamespaceLabelsUpdateRequest
     # modify_request_hooks:
     # - googlecloudsdk.command_lib.container.fleet.scopes.util:CheckUpdateArguments
     # - googlecloudsdk.command_lib.container.fleet.scopes.rollout_sequencing.util:ValidateAsync
@@ -89,6 +90,9 @@
                 To remove the link between ``SCOPE_NAME'' and its upstream scope, run:
 
                   $ {command} SCOPE_NAME --reset-upstream-scope
+    additional_arguments_hook: googlecloudsdk.command_lib.container.fleet.resources:UpdateScopeLabelsFlags
+    labels:
+      api_field: scope.labels
 
   update:
-    read_modify_update: true
+    read_modify_update: false

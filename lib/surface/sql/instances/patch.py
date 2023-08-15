@@ -263,6 +263,9 @@ def AddBaseArgs(parser):
   flags.AddThreadsPerCore(parser)
   flags.AddEnableDataCache(parser, show_negated_in_help=False)
   flags.AddRecreateReplicasOnPrimaryCrash(parser)
+  psc_update_group = parser.add_mutually_exclusive_group()
+  flags.AddAllowedPscProjects(psc_update_group)
+  flags.AddClearAllowedPscProjects(psc_update_group)
 
 
 def AddBetaArgs(parser):
@@ -270,9 +273,6 @@ def AddBetaArgs(parser):
   flags.AddInstanceResizeLimit(parser)
   flags.AddAllocatedIpRangeName(parser)
   labels_util.AddUpdateLabelsFlags(parser, enable_clear=True)
-  psc_update_group = parser.add_mutually_exclusive_group(hidden=True)
-  flags.AddAllowedPscProjects(psc_update_group)
-  flags.AddClearAllowedPscProjects(psc_update_group)
   flags.AddUpgradeSqlNetworkArchitecture(parser)
   flags.AddPasswordPolicyDisallowCompromisedCredentials(parser)
   flags.AddReplicationLagMaxSecondsForRecreate(parser)

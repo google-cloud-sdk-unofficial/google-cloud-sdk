@@ -29,6 +29,7 @@ gsutil: google-cloud-sdk
 kpt: google-cloud-sdk-kpt
 kubectl: kubectl
 harbourbridge: google-cloud-sdk-harbourbridge
+spanner-migration-tool: google-cloud-sdk-spanner-migration-tool
 kubectl-oidc: google-cloud-sdk-kubectl-oidc
 local-extract: google-cloud-sdk-local-extract
 log-streaming: google-cloud-sdk-log-streaming

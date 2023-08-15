@@ -47,13 +47,13 @@ class Create(base.CreateCommand):
 
           The following command creates a workload identity pool managed
           identity in thedefault project with the ID my-namespace, and a
-          workload source with the ID projects/123 and two
+          workload source with the ID project-123 and two
           resources/attached_service_accounts.
 
             $ {command} my-managed-identity --location="global" \
             --namespace="my-namespace" \
             --workload-identity-pool="my-workload-identity-pool" \
-            --source="projects/123" \
+            --source="project-123" \
             --resources='//foo.googleapis.com/projects/123/foos/foo1', \
                         '//foo.googleapis.com/projects/123/foos/foo2' \
             --attached-service-accounts='foo@bar.iam.gserviceaccount.com', \

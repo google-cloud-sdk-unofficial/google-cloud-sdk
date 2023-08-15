@@ -37,9 +37,9 @@ class CreateGcp(base.CreateCommand):
       'EXAMPLES': """\
           The following command creates a workload identity pool managed
           identity workload source in the default project with the ID
-          projects/123.
+          project-123.
 
-            $ {command} projects/123 --location="global" \\
+            $ {command} project-123 --location="global" \\
             --workload-identity-pool="my-workload-identity-pool" \\
             --namespace="my-namespace" \\
             --managed-identity="my-managed-identity" \\

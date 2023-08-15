@@ -223,7 +223,17 @@ def _get_docker_command(args, project, creds_file_path):
 
   expanded_creds_file_path = _expand_path(creds_file_path)
   expanded_logs_directory_path = _expand_path(args.logs_directory)
-  if args.mount_directories:
+
+  root_with_drive = os.path.abspath(os.sep)
+  root_without_drive = os.sep
+  mount_entire_filesystem = (
+      not args.mount_directories
+      or root_with_drive in args.mount_directories
+      or root_without_drive in args.mount_directories
+  )
+  if mount_entire_filesystem:
+    base_docker_command.append('-v=/:/transfer_root')
+  else:
     # Mount mandatory directories.
     mount_flags = [
         '-v={}:/tmp'.format(expanded_logs_directory_path),
@@ -231,16 +241,9 @@ def _get_docker_command(args, project, creds_file_path):
             creds_file_path=expanded_creds_file_path),
     ]
     for path in args.mount_directories:
-      if path == '/':
-        # Docker can't handle mounting to root.
-        mount_flags.append('-v=/:/transfer_root')
-      else:
-        # Mount custom directory.
-        mount_flags.append('-v={path}:{path}'.format(path=path))
+      # Mount custom directory.
+      mount_flags.append('-v={path}:{path}'.format(path=path))
     base_docker_command.extend(mount_flags)
-  else:
-    # Mount entire filesystem by default.
-    base_docker_command.append('-v=/:/transfer_root')
 
   if args.proxy:
     base_docker_command.append('--env')
@@ -254,15 +257,14 @@ def _get_docker_command(args, project, creds_file_path):
       '--log-dir={}'.format(expanded_logs_directory_path),
       '--project-id={}'.format(project),
   ]
+  if mount_entire_filesystem:
+    agent_args.append('--enable-mount-directory')
   if args.enable_multipart is not None:
     agent_args.append('--enable-multipart={}'.format(args.enable_multipart))
   if getattr(args, 'max_concurrent_small_file_uploads', None):
     # Flag is in alpha, so it may not always exist on args object.
     agent_args.append('--entirefile-fr-parallelism={}'.format(
         args.max_concurrent_small_file_uploads))
-  if not args.mount_directories:
-    # Needed to mount entire filesystem.
-    agent_args.append('--enable-mount-directory')
   if args.id_prefix:
     if args.count is not None:
       agent_id_prefix = args.id_prefix + '0'

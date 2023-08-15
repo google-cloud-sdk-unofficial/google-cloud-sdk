@@ -43,87 +43,20 @@ class Enable(base.UpdateCommand, base.EnableCommand):
   @classmethod
   def Args(cls, parser):
     cmd_flags = flags.Flags(parser, 'enable')
+
+    # Scope Flags
     cmd_flags.AddMemberships()
-    parser.add_argument(
-        '--audit-interval-seconds',
-        type=int,
-        help='How often Policy Controller will audit resources, in seconds.',
-        default=60,
-    )
-    parser.add_argument(
-        '--constraint-violation-limit',
-        type=int,
-        help='The number of violations stored on the constraint resource. Must'
-             ' be greater than 0.',
-        default=20,
-    )
-    parser.add_argument(
-        '--exemptable-namespaces',
-        type=str,
-        help=(
-            'Namespaces that Policy Controller should ignore, separated by'
-            ' commas if multiple are supplied.'
-        ),
-    )
-    parser.add_argument(
-        '--no-exemptable-namespaces',
-        action='store_true',
-        help=(
-            'Disables any namespace exemptions, enabling Policy Controller on'
-            ' all namespaces.'
-        ),
-    )
-    parser.add_argument(
-        '--log-denies-enabled',
-        action='store_true',
-        help='Log all denies and dry run failures.',
-        default=False,
-    )
-    parser.add_argument(
-        '--mutation-enabled',
-        action='store_true',
-        help='Enable support for mutation.',
-        default=False,
-    )
-    parser.add_argument(
-        '--referential-rules-enabled',
-        action='store_true',
-        help='Enable support for referential constraints.',
-        default=False,
-    )
-    parser.add_argument(
-        '--template-library-installed',
-        action='store_true',
-        help=(
-            'Install a library of constraint templates for common policy types.'
-        ),
-        default=True,
-    )
-    parser.add_argument(
-        '--monitoring',
-        type=str,
-        help=(
-            'Monitoring backend options Policy Controller should export metrics'
-            ' to, separated by commas if multiple are supplied. Options:'
-            ' prometheus, cloudmonitoring'
-        ),
-    )
-    parser.add_argument(
-        '--no-monitoring',
-        action='store_true',
-        help=(
-            'Include this flag to disable the monitoring configuration of'
-            ' Policy Controller'
-        ),
-    )
-    parser.add_argument(
-        '--version',
-        type=str,
-        help=(
-            'The version of Policy Controller to install; defaults to latest'
-            ' version.'
-        ),
-    )
+
+    # Configuration Flags
+    cmd_flags.AddAuditInterval()
+    cmd_flags.AddConstraintViolationLimit()
+    cmd_flags.AddExemptableNamespaces()
+    cmd_flags.AddLogDeniesEnabled()
+    cmd_flags.AddMonitoring()
+    cmd_flags.AddMutationEnabled()
+    cmd_flags.AddReferentialRulesEnabled()
+    cmd_flags.AddTemplateLibraryInstall()
+    cmd_flags.AddVersion()
 
   def Run(self, args):
     membership_specs = {}

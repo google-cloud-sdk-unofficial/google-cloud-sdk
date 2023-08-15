@@ -1350,18 +1350,22 @@ class BigqueryClient(object):
       )
     # For now, align this strictly with the default flag values. We can loosen
     # this but for a first pass I'm keeping the current code flow.
-    elif self.api != 'https://www.googleapis.com' or self.api_version != 'v2':
+    elif (
+        self.api not in discovery_document_loader.SUPPORTED_BIGQUERY_APIS
+        or self.api_version != 'v2'
+    ):
       logging.info(
           'API is not bigquery v2 at https://www.googleapis.com so the '
           'discovery doc will be loaded from the server: %s, %s',
           self.api, self.api_version)
     else:
       # Use the api description packed with this client, if one exists
-      doc_filename = discovery_document_loader.get_discovery_bigquery_name(
-          self.api, self.api_version)
       try:
-        discovery_document = discovery_document_loader.load_local_discovery_doc(
-            doc_filename)
+        discovery_document = (
+            discovery_document_loader.load_local_discovery_doc(
+                discovery_document_loader.DISCOVERY_NEXT_BIGQUERY
+            )
+        )
       except FileNotFoundError as e:
         logging.warning('Failed to load discovery doc from local files: %s', e)
 

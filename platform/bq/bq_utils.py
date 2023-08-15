@@ -25,6 +25,7 @@ import urllib3
 
 import bigquery_client
 
+
 FLAGS = flags.FLAGS
 
 _GDRIVE_SCOPE = 'https://www.googleapis.com/auth/drive'
@@ -49,6 +50,7 @@ _VERSION_FILENAME = 'VERSION'
 def _GetVersion():
   """Returns content of VERSION file found in same dir as the cli binary."""
   root = 'bq_utils'
+  # pragma pylint: disable=line-too-long
   return six.ensure_str(pkgutil.get_data(root, _VERSION_FILENAME)).strip()
 
 

@@ -28,11 +28,12 @@ from googlecloudsdk.command_lib.util.args import labels_util
 from googlecloudsdk.core import log
 
 
-def _Args(parser):
+def _Args(parser, enable_push_to_cps=False):
   resource_args.AddSubscriptionResourceArg(parser, 'to update.')
   flags.AddSubscriptionSettingsFlags(
       parser,
       is_update=True,
+      enable_push_to_cps=enable_push_to_cps,
   )
   labels_util.AddUpdateLabelsFlags(parser)
 
@@ -46,12 +47,14 @@ class Update(base.UpdateCommand):
     _Args(parser)
 
   @exceptions.CatchHTTPErrorRaiseHTTPException()
-  def Run(self, args):
+  def Run(self, args, enable_push_to_cps=False):
     """This is what gets called when the user runs this command.
 
     Args:
       args: an argparse namespace. All the arguments that were provided to this
         command invocation.
+      enable_push_to_cps: whether or not to enable Pubsub Export config
+        flags upport.
 
     Returns:
       A serialized object (dict) describing the results of the operation. This
@@ -75,6 +78,11 @@ class Update(base.UpdateCommand):
                                          None)
     clear_push_no_wrapper_config = getattr(
         args, 'clear_push_no_wrapper_config', None
+    )
+    clear_pubsub_export_config = (
+        getattr(args, 'clear_pubsub_export_config', None)
+        if enable_push_to_cps
+        else None
     )
 
     labels_update = labels_util.ProcessUpdateArgsLazy(
@@ -119,6 +127,16 @@ class Update(base.UpdateCommand):
       cloud_storage_output_format = cloud_storage_output_format_list[0]
     cloud_storage_write_metadata = getattr(args, 'cloud_storage_write_metadata',
                                            None)
+    pubsub_export_topic = (
+        getattr(args, 'pubsub_export_topic', None)
+        if enable_push_to_cps
+        else None
+    )
+
+    if pubsub_export_topic:
+      pubsub_export_topic = (
+          args.CONCEPTS.pubsub_export_topic.Parse().RelativeName()
+      )
 
     enable_exactly_once_delivery = getattr(args, 'enable_exactly_once_delivery',
                                            None)
@@ -154,6 +172,8 @@ class Update(base.UpdateCommand):
           cloud_storage_write_metadata=cloud_storage_write_metadata,
           clear_cloud_storage_config=clear_cloud_storage_config,
           clear_push_no_wrapper_config=clear_push_no_wrapper_config,
+          pubsub_export_topic=pubsub_export_topic,
+          clear_pubsub_export_config=clear_pubsub_export_config,
       )
     except subscriptions.NoFieldsSpecifiedError:
       if not any(
@@ -173,8 +193,8 @@ class UpdateBeta(Update):
 
   @classmethod
   def Args(cls, parser):
-    _Args(parser)
+    _Args(parser, enable_push_to_cps=True)
 
   @exceptions.CatchHTTPErrorRaiseHTTPException()
   def Run(self, args):
-    return super(UpdateBeta, self).Run(args)
+    return super(UpdateBeta, self).Run(args, enable_push_to_cps=True)

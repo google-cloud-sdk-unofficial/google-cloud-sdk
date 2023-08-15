@@ -36,7 +36,6 @@ class Create(base.CreateCommand):
 
   with_private_nat = False
   with_subnet_all = False
-  with_auto_network_tier = False
   with_managed_proxy_lb_endpoint_type = False
 
   @classmethod
@@ -61,7 +60,7 @@ class Create(base.CreateCommand):
         for_create=True,
         with_private_nat=cls.with_private_nat,
         with_subnet_all=cls.with_subnet_all,
-        with_auto_network_tier=cls.with_auto_network_tier)
+    )
 
   def Run(self, args):
     """See base.CreateCommand."""
@@ -80,7 +79,6 @@ class Create(base.CreateCommand):
         holder,
         self.with_private_nat,
         self.with_subnet_all,
-        self.with_auto_network_tier,
     )
 
     replacement.nats.append(nat)
@@ -172,7 +170,6 @@ class CreateBeta(Create):
 
   with_private_nat = True
   with_subnet_all = True
-  with_auto_network_tier = True
   with_managed_proxy_lb_endpoint_type = True
 
 
@@ -182,5 +179,4 @@ class CreateAlpha(Create):
 
   with_private_nat = True
   with_subnet_all = True
-  with_auto_network_tier = True
   with_managed_proxy_lb_endpoint_type = True

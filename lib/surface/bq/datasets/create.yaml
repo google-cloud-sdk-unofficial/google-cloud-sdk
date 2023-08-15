@@ -23,7 +23,7 @@
       The following command creates a dataset with ID `my-other-dataset`, overwritting destination
       if it exists:
 
-        $ {command}  my-other-dataset --description 'My Other Dataset' --if-exists 'overwrite'
+        $ {command}  my-other-dataset --description 'My Other Dataset' --overwrite
 
   request:
     collection: bigquery.datasets

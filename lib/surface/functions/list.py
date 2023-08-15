@@ -22,7 +22,6 @@ import itertools
 
 from googlecloudsdk.api_lib.functions import transforms
 from googlecloudsdk.api_lib.functions.v1 import util as api_util_v1
-from googlecloudsdk.api_lib.functions.v2 import util as api_util_v2
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import parser_extensions
@@ -63,16 +62,6 @@ class List(base.ListCommand):
     list_v2_generator = command_v2.Run(
         args, self.ReleaseTrack(), 'environment="GEN_2"'
     )
-
-    # v1 autopush and staging are the same in routing perspective, they share
-    # the staging-cloudfunctions endpoint. The mixer will route the request to
-    # the corresponding manager instances in autopush and staging.
-    # autopush-cloudfunctions.sandbox.googleapi.com endpoint is not used by v1
-    # at all, the GFE will route the traffic to 2nd Gen frontend even if you
-    # specified v1. it's safe to assume when user specified this override, they
-    # are tending to talk to v2 only
-    if api_util_v2.GetCloudFunctionsApiEnv() == api_util_v2.ApiEnv.AUTOPUSH:
-      return list_v2_generator
 
     v1_regions = [r.locationId for r in api_util_v1.ListRegions()]
     # Make a copy of the args for v1 that excludes v2-only regions.
@@ -128,16 +117,6 @@ class ListAlpha(ListBeta):
         self.ReleaseTrack(),
         'environment="GEN_2"',
     )
-
-    # v1 autopush and staging are the same in routing perspective, they share
-    # the staging-cloudfunctions endpoint. The mixer will route the request to
-    # the corresponding manager instances in autopush and staging.
-    # autopush-cloudfunctions.sandbox.googleapi.com endpoint is not used by v1
-    # at all, the GFE will route the traffic to 2nd Gen frontend even if you
-    # specified v1. it's safe to assume when user specified this override, they
-    # are tending to talk to v2 only
-    if api_util_v2.GetCloudFunctionsApiEnv() == api_util_v2.ApiEnv.AUTOPUSH:
-      return list_gen2_generator_v2
 
     v1_regions = [r.locationId for r in api_util_v1.ListRegions()]
     # Make a copy of the args for v1 that excludes v2-only regions.

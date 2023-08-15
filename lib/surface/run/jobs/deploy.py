@@ -48,7 +48,7 @@ class BuildType(enum.Enum):
   BUILDPACKS = 'Buildpacks'
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Deploy(base.Command):
   """Create or update a Cloud Run job."""
 
@@ -285,11 +285,21 @@ class Deploy(base.Command):
       return job
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class AlphaDeploy(Deploy):
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class BetaDeploy(Deploy):
   """Create or update a Cloud Run job."""
 
   @staticmethod
   def Args(parser):
     Deploy.CommonArgs(parser)
-    flags.AddVpcNetworkGroupFlagsForUpdate(parser, resource_kind='Job')
+    flags.AddVpcNetworkGroupFlagsForUpdate(parser, resource_kind='job')
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class AlphaDeploy(BetaDeploy):
+  """Create or update a Cloud Run job."""
+
+  @staticmethod
+  def Args(parser):
+    Deploy.CommonArgs(parser)
+    flags.AddVpcNetworkGroupFlagsForUpdate(parser, resource_kind='job')

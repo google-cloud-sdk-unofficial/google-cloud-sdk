@@ -6,6 +6,7 @@ import os
 import shutil
 import tempfile
 from absl import logging
+from pyglib import stringutil
 
 _DISCOVERY_CACHE_FILE = 'api_discovery.json'
 
@@ -81,7 +82,7 @@ def save_to_cache(cache_root, api_name, api_version, discovery_document):
     # TODO(b/263521050): switch to tempfile.TemporaryDirectory() after py3 move.
     temp_file_path = os.path.join(tmpdir, 'tmp.json')
     with open(temp_file_path, 'wb') as f:
-      f.write(discovery_document.encode('utf-8'))
+      f.write(stringutil.ensure_binary(discovery_document, 'utf8'))
       # Flush followed by fsync to ensure all data is written to temp file
       # before our rename operation.
       f.flush()

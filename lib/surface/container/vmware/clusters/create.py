@@ -72,6 +72,7 @@ class CreateAlpha(base.CreateCommand):
     vmware_flags.AddVmwareAutoRepairConfig(parser)
     vmware_flags.AddAuthorization(parser)
     vmware_flags.AddEnableControlPlaneV2(parser)
+    vmware_flags.AddUpgradePolicy(parser)
 
   def Run(
       self, args: parser_extensions.Namespace

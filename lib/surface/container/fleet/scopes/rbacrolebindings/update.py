@@ -22,6 +22,7 @@ from googlecloudsdk.api_lib.container.fleet import client
 from googlecloudsdk.api_lib.container.fleet import util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.container.fleet import resources
+from googlecloudsdk.command_lib.util.args import labels_util
 
 
 class Update(base.UpdateCommand):
@@ -71,17 +72,36 @@ class Update(base.UpdateCommand):
         choices=['admin', 'edit', 'view'],
         help='Role for the RBACRoleBinding to update to.',
     )
+    labels_util.AddUpdateLabelsFlags(parser)
 
   def Run(self, args):
     fleetclient = client.FleetClient(release_track=self.ReleaseTrack())
     mask = []
+    current_rbac_rolebinding = fleetclient.GetScopeRBACRoleBinding(
+        resources.RBACResourceName(args)
+    )
     for flag in ['role', 'user', 'group']:
       if args.IsKnownAndSpecified(flag):
         mask.append(flag)
+
+    # update GCP labels for namespace resource
+    labels_diff = labels_util.Diff.FromUpdateArgs(args)
+    new_labels = None
+    if labels_diff.MayHaveUpdates():
+      mask.append('labels')
+      new_labels = labels_diff.Apply(
+          fleetclient.messages.RBACRoleBinding.LabelsValue,
+          current_rbac_rolebinding.labels,
+      ).GetOrNone()
+
+    # if there's nothing to update, then return
+    if not mask:
+      return
     return fleetclient.UpdateScopeRBACRoleBinding(
         resources.RBACResourceName(args),
         user=args.user,
         group=args.group,
         role=args.role,
+        labels=new_labels,
         mask=','.join(mask),
     )

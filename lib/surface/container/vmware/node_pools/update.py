@@ -56,7 +56,6 @@ class UpdateAlpha(base.UpdateCommand):
     flags.AddVmwareNodePoolAutoscalingConfig(parser, for_update=True)
     flags.AddVmwareNodeConfig(parser, for_update=True)
     flags.AddNodePoolVersion(parser)
-    flags.AddNodePoolUpgradePolicy(parser)
 
   def Run(self, args):
     """Runs the update command.

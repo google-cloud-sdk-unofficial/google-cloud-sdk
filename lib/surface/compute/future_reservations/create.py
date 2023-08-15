@@ -66,6 +66,7 @@ class CreateAlpha(base.CreateCommand):
   _support_instance_template = True
   _support_planning_status = True
   _support_local_ssd_count = True
+  _support_auto_delete = True
 
   @classmethod
   def Args(cls, parser):
@@ -78,7 +79,8 @@ class CreateAlpha(base.CreateCommand):
         support_fleet=True,
         support_planning_status=cls._support_planning_status,
         support_instance_template=cls._support_instance_template,
-        support_local_ssd_count=cls._support_local_ssd_count)
+        support_local_ssd_count=cls._support_local_ssd_count,
+        support_auto_delete=cls._support_auto_delete)
 
   def Run(self, args):
     return _RunCreate(

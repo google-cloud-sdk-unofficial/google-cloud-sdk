@@ -37,9 +37,9 @@ class Update(base.UpdateCommand):
       'EXAMPLES': """\
           The following command adds resources to a workload identity pool
           namespace workload source in the default project with the ID
-          projects/123.
+          project-123.
 
-            $ {command} projects/123 --location="global" \
+            $ {command} project-123 --location="global" \
             --workload-identity-pool="my-workload-identity-pool" \
             --namespace="my-namespace" \
             --add-resources="resource-1","resource-2" \
@@ -47,9 +47,9 @@ class Update(base.UpdateCommand):
 
           The following command removes all the resources and service accounts
           from a workload identity pool namespace workload source in the
-          default project with the ID projects/123.
+          default project with the ID project-123.
 
-            $ {command} projects/123 --location="global" \
+            $ {command} project-123 --location="global" \
             --workload-identity-pool="my-workload-identity-pool" \
             --namespace="my-namespace" \
             --clear-resources \

@@ -22,7 +22,6 @@ from googlecloudsdk.calliope import base
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
-@base.Hidden
 class Sbom(base.Group):
   """Manage Artifact SBOMs."""
   category = base.CI_CD_CATEGORY

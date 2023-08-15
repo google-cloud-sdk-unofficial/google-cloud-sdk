@@ -42,11 +42,19 @@ DEFAULT_LIST_FORMAT = """\
     """.format(format_util.CONTAINER_ANALYSIS_METADATA_FORMAT)
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class List(base.ListCommand):
   """Command for listing vulnerabilities. To see all fields, use --format=json.
   """
+
+  detailed_help = {
+      'DESCRIPTION': '{description}',
+      'EXAMPLES': """\
+        To list vulnerabilities for an artifact, run:
+
+          $ {command} us-east1-docker.pkg.dev/project123/repository123/someimage@sha256:49765698074d6d7baa82f
+      """,
+  }
 
   @staticmethod
   def Args(parser):

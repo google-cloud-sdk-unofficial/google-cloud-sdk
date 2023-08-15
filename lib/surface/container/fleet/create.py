@@ -26,6 +26,7 @@ from googlecloudsdk.calliope import parser_arguments
 from googlecloudsdk.calliope import parser_extensions
 from googlecloudsdk.command_lib.container.fleet import flags as fleet_flags
 from googlecloudsdk.command_lib.container.fleet import util as fleet_util
+from googlecloudsdk.command_lib.util.args import labels_util
 from googlecloudsdk.core import log
 from googlecloudsdk.generated_clients.apis.gkehub.v1alpha import gkehub_v1alpha_messages as messages
 
@@ -53,6 +54,7 @@ class Create(base.CreateCommand):
     flags.AddAsync()
     flags.AddDisplayName()
     flags.AddDefaultClusterConfig()
+    labels_util.AddCreateLabelsFlags(parser)
 
   def Run(self, args: parser_extensions.Namespace) -> messages.Operation:
     """Runs the fleet create command.
@@ -90,12 +92,18 @@ class Create(base.CreateCommand):
       else:
         args.format = fleet_util.FLEET_FORMAT
 
+    fleet = flag_parser.Fleet()
+    fleetclient = client.FleetClient(release_track=self.ReleaseTrack())
+    labels_diff = labels_util.Diff(additions=args.labels)
+    labels = labels_diff.Apply(
+        fleetclient.messages.Fleet.LabelsValue, None
+    ).GetOrNone()
+    fleet.labels = labels
     req = flag_parser.messages.GkehubProjectsLocationsFleetsCreateRequest(
-        fleet=flag_parser.Fleet(),
+        fleet=fleet,
         parent=util.FleetParentName(flag_parser.Project()),
     )
 
-    fleetclient = client.FleetClient(release_track=base.ReleaseTrack.ALPHA)
     operation = fleetclient.CreateFleet(req)
     fleet_ref = util.FleetRef(flag_parser.Project())
 

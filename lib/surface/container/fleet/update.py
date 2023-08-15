@@ -27,6 +27,7 @@ from googlecloudsdk.calliope import parser_extensions
 from googlecloudsdk.command_lib.container.fleet import flags as fleet_flags
 from googlecloudsdk.command_lib.container.fleet import update_mask
 from googlecloudsdk.command_lib.container.fleet import util as fleet_util
+from googlecloudsdk.command_lib.util.args import labels_util
 from googlecloudsdk.core import log
 from googlecloudsdk.generated_clients.apis.gkehub.v1alpha import gkehub_v1alpha_messages as messages
 
@@ -54,6 +55,7 @@ class Update(base.UpdateCommand):
     flags.AddAsync()
     flags.AddDisplayName()
     flags.AddDefaultClusterConfig()
+    labels_util.AddUpdateLabelsFlags(parser)
 
   def Run(self, args: parser_extensions.Namespace) -> messages.Operation:
     """Runs the fleet update command.
@@ -90,15 +92,30 @@ class Update(base.UpdateCommand):
         args.format = fleet_util.OPERATION_FORMAT
       else:
         args.format = fleet_util.FLEET_FORMAT
+    fleetclient = client.FleetClient(release_track=base.ReleaseTrack.ALPHA)
 
+    # update GCP labels for namespace resource
+    mask = []
+    labels_diff = labels_util.Diff.FromUpdateArgs(args)
+    new_labels = None
+    if labels_diff.MayHaveUpdates():
+      current_fleet = fleetclient.GetFleet(flag_parser.Project())
+      mask.append('labels')
+      new_labels = labels_diff.Apply(
+          fleetclient.messages.Fleet.LabelsValue,
+          current_fleet.labels,
+      ).GetOrNone()
+
+    if update_mask.GetFleetUpdateMask(args):
+      mask.append(update_mask.GetFleetUpdateMask(args))
     fleet = flag_parser.Fleet()
+    fleet.labels = new_labels
     req = flag_parser.messages.GkehubProjectsLocationsFleetsPatchRequest(
         fleet=fleet,
         name=util.FleetResourceName(flag_parser.Project()),
-        updateMask=update_mask.GetFleetUpdateMask(args),
+        updateMask=','.join(mask),
     )
 
-    fleetclient = client.FleetClient(release_track=base.ReleaseTrack.ALPHA)
     operation = fleetclient.UpdateFleet(req)
     fleet_ref = util.FleetRef(flag_parser.Project())
 

@@ -90,6 +90,10 @@
           api_field: connectivityTest.destination.cloudSqlInstance
           help_text: |
             A Cloud SQL instance URI as the destination endpoint.
+        - arg_name: destination-forwarding-rule
+          api_field: connectivityTest.destination.forwardingRule
+          help_text: |
+            A forwarding rule URI as the destination endpoint.
     - arg_name: destination-network
       api_field: connectivityTest.destination.network
       help_text: |
@@ -143,6 +147,7 @@
       - googlecloudsdk.command_lib.network_management.util:ValidateCloudFunctionsURIs
       - googlecloudsdk.command_lib.network_management.util:ValidateAppEngineVersionsURIs
       - googlecloudsdk.command_lib.network_management.util:ValidateCloudRunRevisionsURIs
+      - googlecloudsdk.command_lib.network_management.util:ValidateForwardingRulesURIs
     GA:
       api_version: v1
       modify_request_hooks:
@@ -154,5 +159,6 @@
       - googlecloudsdk.command_lib.network_management.util:ValidateCloudFunctionsURIs
       - googlecloudsdk.command_lib.network_management.util:ValidateAppEngineVersionsURIs
       - googlecloudsdk.command_lib.network_management.util:ValidateCloudRunRevisionsURIs
+      - googlecloudsdk.command_lib.network_management.util:ValidateForwardingRulesURIs
     collection: networkmanagement.projects.locations.global.connectivityTests
     method: create

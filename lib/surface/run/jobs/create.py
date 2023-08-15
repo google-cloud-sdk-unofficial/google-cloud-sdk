@@ -34,7 +34,7 @@ from googlecloudsdk.core import log
 from googlecloudsdk.core.console import progress_tracker
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Create(base.Command):
   """Create a Cloud Run job."""
 
@@ -183,12 +183,22 @@ class Create(base.Command):
       return job
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class AlphaCreate(Create):
-  """Deploy a new job to Cloud Run."""
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class BetaCreate(Create):
+  """Create a Cloud Run job."""
 
   @staticmethod
   def Args(parser):
     Create.CommonArgs(parser)
-    flags.AddVpcNetworkGroupFlagsForCreate(parser, resource_kind='Job')
+    flags.AddVpcNetworkGroupFlagsForCreate(parser, resource_kind='job')
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class AlphaCreate(BetaCreate):
+  """Create a Cloud Run job."""
+
+  @staticmethod
+  def Args(parser):
+    Create.CommonArgs(parser)
+    flags.AddVpcNetworkGroupFlagsForCreate(parser, resource_kind='job')
     flags.AddRuntimeFlag(parser)

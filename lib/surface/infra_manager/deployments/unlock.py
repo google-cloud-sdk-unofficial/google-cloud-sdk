@@ -44,7 +44,6 @@ class UnlockDeploymentAlpha(base.Command):
   def Args(parser):
     flags.AddAsyncFlag(parser)
     flags.AddLockFlag(parser)
-    flags.DisableValidateUpdateFlag(parser)
 
     concept_parsers.ConceptParser(
         [
@@ -73,5 +72,4 @@ class UnlockDeploymentAlpha(base.Command):
         args.async_,
         deployment_full_name,
         args.lock_id,
-        args.disable_validate_update,
     )

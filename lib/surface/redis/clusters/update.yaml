@@ -21,10 +21,6 @@
       help_text: |
         Arguments and flags that specify the Memorystore Redis cluster you want to update.
     params:
-    - arg_name: display-name
-      api_field: cluster.displayName
-      help_text: |
-        A human-readable name for the cluster.
     - arg_name: replica-count
       api_field: cluster.replicaCount
       type: int
@@ -43,13 +39,11 @@
     ALPHA:
       api_version: v1alpha1
       modify_request_hooks:
-      - googlecloudsdk.command_lib.redis.clusters_update_util:UpdateDisplayName
       - googlecloudsdk.command_lib.redis.clusters_update_util:UpdateReplicaCount
       - googlecloudsdk.command_lib.redis.clusters_update_util:UpdateShardCount
     BETA:
       api_version: v1beta1
       modify_request_hooks:
-      - googlecloudsdk.command_lib.redis.clusters_update_util:UpdateDisplayName
       - googlecloudsdk.command_lib.redis.clusters_update_util:UpdateReplicaCount
       - googlecloudsdk.command_lib.redis.clusters_update_util:UpdateShardCount
     collection: redis.projects.locations.clusters

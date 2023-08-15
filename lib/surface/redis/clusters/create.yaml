@@ -23,10 +23,6 @@
         Your cluster ID must be 1 to 63 characters and use only lowercase letters, numbers, or
         hyphens. It must start with a lowercase letter and end with a lowercase letter or number.
     params:
-    - arg_name: display-name
-      api_field: cluster.displayName
-      help_text: |
-        A human-readable name for the cluster.
     - arg_name: network
       required: true
       api_field: cluster.pscConfigs.network

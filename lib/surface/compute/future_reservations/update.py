@@ -59,7 +59,8 @@ class Update(base.UpdateCommand):
                             support_fleet=True,
                             support_planning_status=True,
                             support_local_ssd_count=True,
-                            support_share_setting=True)
+                            support_share_setting=True,
+                            support_auto_delete=True)
 
   def _ValidateArgs(self, update_mask):
     """Validates that at least one field to update is specified.
@@ -70,15 +71,31 @@ class Update(base.UpdateCommand):
 
     if not update_mask:
       parameter_names = [
-          '--planning-status', '--description', '--name-prefix',
-          '--total-count', '--min-cpu-platform', '--local-ssd',
-          '--clear-local-ssd', '--accelerator', '--clear-accelerator',
-          '--maintenance-interval', '--start-time', '--end-time', '--duration',
-          '--machine-type', '--share-setting', '--share-with',
+          '--planning-status',
+          '--description',
+          '--name-prefix',
+          '--total-count',
+          '--min-cpu-platform',
+          '--local-ssd',
+          '--clear-local-ssd',
+          '--accelerator',
+          '--clear-accelerator',
+          '--maintenance-interval',
+          '--start-time',
+          '--end-time',
+          '--duration',
+          '--machine-type',
+          '--share-setting',
+          '--share-with',
           '--clear-share-settings',
+          '--auto-delete-auto-created-reservations',
+          '--no-auto-delete-auto-created-reservations',
+          '--auto-created-reservations-delete-time',
+          '--auto-created-reservations-duration',
       ]
       raise exceptions.MinimumArgumentException(
-          parameter_names, 'Please specify at least one property to update')
+          parameter_names, 'Please specify at least one property to update'
+      )
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
@@ -99,7 +116,7 @@ class Update(base.UpdateCommand):
       update_mask.append('planningStatus')
     if args.IsSpecified('total_count'):
       update_mask.append('specificSkuProperties.totalCount')
-    if args.IsSpecified('name_prefix'):
+    if args.IsSpecified('name_prefix') or args.IsSpecified('clear_name_prefix'):
       update_mask.append('namePrefix')
     if args.IsSpecified('description'):
       update_mask.append('description')
@@ -132,6 +149,13 @@ class Update(base.UpdateCommand):
         or args.IsSpecified('share_with')
     ):
       update_mask.append('shareSettings')
+
+    if args.IsSpecified('auto_delete_auto_created_reservations'):
+      update_mask.append('autoDeleteAutoCreatedReservations')
+    if args.IsSpecified('auto_created_reservations_delete_time'):
+      update_mask.append('autoCreatedReservationsDeleteTime')
+    if args.IsSpecified('auto_created_reservations_duration'):
+      update_mask.append('autoCreatedReservationsDuration')
 
     self._ValidateArgs(update_mask=update_mask)
 

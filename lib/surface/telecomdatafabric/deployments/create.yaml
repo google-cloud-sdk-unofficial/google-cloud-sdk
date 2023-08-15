@@ -28,6 +28,18 @@
         - arg_name: template-gcs-path
           api_field: deployment.templateGcsPath
           help_text: Private template gcs path.
+    - group:
+        mutex: true
+        help_text: Specify lake or lake-info.
+        params:
+        - arg_name: lake
+          api_field: deployment.lake
+          help_text: The existing dataplex lake id
+          processor: googlecloudsdk.api_lib.telecomdatafabric.lake:Lake
+        - arg_name: lake-info
+          api_field: deployment.lakeInfo
+          help_text: The Dataplex lake id to create
+          processor: googlecloudsdk.api_lib.telecomdatafabric.lake:LakeInfo
     - arg_name: parameters
       type: 'googlecloudsdk.calliope.arg_parsers:ArgDict:'
       api_field: deployment.parameters

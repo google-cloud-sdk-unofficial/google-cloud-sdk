@@ -38,6 +38,14 @@
           - api_field: parameters
             arg_name: parameters
             type: 'googlecloudsdk.calliope.arg_parsers:ArgDict:'
+          - api_field: lake
+            arg_name: lake
+            required: false
+            type: googlecloudsdk.api_lib.telecomdatafabric.lake:Lake
+          - api_field: lakeInfo
+            arg_name: lake-info
+            type: googlecloudsdk.api_lib.telecomdatafabric.lake:LakeInfo
+            required: false
 
   async:
     collection: telecomdatafabric.projects.locations.operations

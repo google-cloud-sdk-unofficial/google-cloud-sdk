@@ -18,11 +18,15 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+import copy
+
 from apitools.base.py import exceptions as apitools_exceptions
+from googlecloudsdk.api_lib.clouddeploy import client_util
 from googlecloudsdk.api_lib.clouddeploy import release
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.deploy import delivery_pipeline_util
+from googlecloudsdk.command_lib.deploy import deploy_util
 from googlecloudsdk.command_lib.deploy import exceptions as deploy_exceptions
 from googlecloudsdk.command_lib.deploy import flags
 from googlecloudsdk.command_lib.deploy import promote_util
@@ -33,6 +37,7 @@ from googlecloudsdk.command_lib.deploy import target_util
 from googlecloudsdk.core import exceptions as core_exceptions
 from googlecloudsdk.core import resources
 from googlecloudsdk.core.console import console_io
+
 
 _DETAILED_HELP = {
     'DESCRIPTION': '{description}',
@@ -47,9 +52,7 @@ _DETAILED_HELP = {
 _ROLLBACK = 'rollback'
 
 
-@base.ReleaseTracks(
-    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
-)
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
 class Rollback(base.CreateCommand):
   """Rollbacks a target to a prior rollout.
 
@@ -131,6 +134,139 @@ class Rollback(base.CreateCommand):
         # For rollbacks, default is `stable`.
         starting_phase_id=args.starting_phase_id or 'stable',
     )
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class RollbackAlpha(Rollback):
+  """Rollbacks a target to a prior rollout.
+
+  If release is not specified, the command rollbacks the target with the last
+  successful deployed release. If optional rollout-id parameter is not
+  specified, a generated rollout ID will be used.
+  """
+
+  def Run(self, args):
+    target_ref = args.CONCEPTS.target.Parse()
+    ref_dict = target_ref.AsDict()
+    pipeline_ref = resources.REGISTRY.Parse(
+        args.delivery_pipeline,
+        collection='clouddeploy.projects.locations.deliveryPipelines',
+        params={
+            'projectsId': ref_dict['projectsId'],
+            'locationsId': ref_dict['locationsId'],
+            'deliveryPipelinesId': args.delivery_pipeline,
+        },
+    )
+    pipeline_obj = delivery_pipeline_util.GetPipeline(
+        pipeline_ref.RelativeName()
+    )
+    failed_activity_error_annotation_prefix = 'Cannot perform rollback.'
+    delivery_pipeline_util.ThrowIfPipelineSuspended(
+        pipeline_obj, failed_activity_error_annotation_prefix
+    )
+
+    rollout_obj = client_util.GetMessagesModule().Rollout(
+        description=args.description
+    )
+
+    deploy_util.SetMetadata(
+        client_util.GetMessagesModule(),
+        rollout_obj,
+        deploy_util.ResourceType.ROLLOUT,
+        args.annotations,
+        args.labels,
+    )
+
+    # First call, we perform validate only call, making a copy of the response.
+    validate_response = copy.deepcopy(
+        delivery_pipeline_util.CreateRollbackTarget(
+            pipeline_ref.RelativeName(),
+            target_ref.Name(),
+            validate_only=True,
+            rollout_id=args.rollout_id,
+            # TODO(b/278008194) handle this argument for the rollback command
+            rollout_to_rollback=None,
+            release_id=args.release,
+            rollout_obj=rollout_obj,
+            starting_phase=args.starting_phase_id,
+        )
+    )
+
+    final_rollout_id = args.rollout_id
+    rollback_release_ref = resources.REGISTRY.ParseRelativeName(
+        resources.REGISTRY.Parse(
+            validate_response.rollbackConfig.rollout.name,
+            collection='clouddeploy.projects.locations.deliveryPipelines.releases.rollouts',
+        )
+        .Parent()
+        .RelativeName(),
+        collection='clouddeploy.projects.locations.deliveryPipelines.releases',
+    )
+
+    # If the rollout_id is not given, we will generate it and overwrite the
+    # name that was part of the validate_only call. The reason for this is that
+    # we want to generate the name from the release, but this isn't
+    # available until after the validate_only call.
+    # To make the initial validate_only call, there must be a rollout_id given,
+    # so UUID is initially created for the request but ignored here.
+    if not args.rollout_id:
+      final_rollout_id = rollout_util.GenerateRolloutId(
+          target_ref.Name(), rollback_release_ref
+      )
+      resource_dict = rollback_release_ref.AsDict()
+      new_rollout_ref = resources.REGISTRY.Parse(
+          final_rollout_id,
+          collection='clouddeploy.projects.locations.deliveryPipelines.releases.rollouts',
+          params={
+              'projectsId': resource_dict.get('projectsId'),
+              'locationsId': resource_dict.get('locationsId'),
+              'deliveryPipelinesId': resource_dict.get('deliveryPipelinesId'),
+              'releasesId': rollback_release_ref.Name(),
+          },
+      )
+      validate_response.rollbackConfig.rollout.name = (
+          new_rollout_ref.RelativeName()
+      )
+
+    # if args.description isn't set.
+    if not args.description:
+      validate_response.rollbackConfig.rollout.description = (
+          'Rollback of {}'.format(
+              validate_response.rollbackConfig.rollout.rollbackOfRollout
+          )
+      )
+
+    try:
+      release_obj = release.ReleaseClient().Get(
+          rollback_release_ref.RelativeName()
+      )
+    except apitools_exceptions.HttpError as error:
+      raise exceptions.HttpException(error)
+
+    # prompt to see whether user wants to continue.
+    prompt = 'Rolling back target {} to release {}.\n\n'.format(
+        target_ref.Name(), rollback_release_ref.Name()
+    )
+    release_util.PrintDiff(
+        rollback_release_ref, release_obj, target_ref.Name(), prompt
+    )
+
+    console_io.PromptContinue(cancel_on_no=True)
+
+    create_response = delivery_pipeline_util.CreateRollbackTarget(
+        pipeline_ref.RelativeName(),
+        target_ref.Name(),
+        validate_only=False,
+        # use the final_rollout_id which was calculated on client
+        rollout_id=final_rollout_id,
+        release_id=rollback_release_ref.Name(),
+        # use the server calculated fields for the rest of the fields.
+        rollout_to_rollback=validate_response.rollbackConfig.rollout.rollbackOfRollout,
+        rollout_obj=validate_response.rollbackConfig.rollout,
+        starting_phase=validate_response.rollbackConfig.startingPhaseId,
+    )
+    # return the rollout resource that was created
+    return create_response.rollbackConfig.rollout
 
 
 def _GetCurrentAndRollbackRelease(release_id, pipeline_ref, target_ref):

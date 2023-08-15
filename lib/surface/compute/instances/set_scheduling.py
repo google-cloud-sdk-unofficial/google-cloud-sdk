@@ -47,7 +47,7 @@ class SetSchedulingInstances(base.SilentCommand):
   }
 
   _support_host_error_timeout_seconds = False
-  _support_local_ssd_recovery_timeout = False
+  _support_local_ssd_recovery_timeout = True
   _support_max_run_duration = False
 
   @classmethod
@@ -68,6 +68,7 @@ class SetSchedulingInstances(base.SilentCommand):
     sole_tenancy_flags.AddNodeAffinityFlagToParser(parser, is_update=True)
     flags.INSTANCE_ARG.AddArgument(parser)
     flags.AddMinNodeCpuArg(parser, is_update=True)
+    flags.AddLocalSsdRecoveryTimeoutArgs(parser)
 
   def _Run(self, args):
     """Issues request necessary for setting scheduling options."""

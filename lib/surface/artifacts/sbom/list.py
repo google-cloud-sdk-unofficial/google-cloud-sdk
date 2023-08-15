@@ -26,7 +26,6 @@ from googlecloudsdk.core.resource import resource_printer
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
-@base.Hidden
 class List(base.ListCommand):
   """List SBOM file references."""
 
@@ -58,7 +57,7 @@ class List(base.ListCommand):
 
   @staticmethod
   def Args(parser):
-    """Set up arguements for this command.
+    """Set up arguments for this command.
 
     Args:
       parser: An argparse.ArgumentPaser.

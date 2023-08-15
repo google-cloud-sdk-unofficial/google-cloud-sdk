@@ -60,9 +60,6 @@ class CreateAlpha(base.CreateCommand):
     )
     flags.AddNodePoolVersion(parser)
 
-    # ALPHA only flags
-    flags.AddNodePoolUpgradePolicy(parser)
-
   def Run(self, args):
     """Runs the create command.
 
