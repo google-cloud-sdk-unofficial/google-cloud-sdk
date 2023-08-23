@@ -42,21 +42,21 @@ class Enable(base.UpdateCommand, base.EnableCommand):
 
   @classmethod
   def Args(cls, parser):
-    cmd_flags = flags.Flags(parser, 'enable')
+    cmd_flags = flags.PocoFlags(parser, 'enable')
 
     # Scope Flags
-    cmd_flags.AddMemberships()
+    cmd_flags.add_memberships()
 
     # Configuration Flags
-    cmd_flags.AddAuditInterval()
-    cmd_flags.AddConstraintViolationLimit()
-    cmd_flags.AddExemptableNamespaces()
-    cmd_flags.AddLogDeniesEnabled()
-    cmd_flags.AddMonitoring()
-    cmd_flags.AddMutationEnabled()
-    cmd_flags.AddReferentialRulesEnabled()
-    cmd_flags.AddTemplateLibraryInstall()
-    cmd_flags.AddVersion()
+    cmd_flags.add_audit_interval()
+    cmd_flags.add_constraint_violation_limit()
+    cmd_flags.add_exemptable_namespaces()
+    cmd_flags.add_log_denies_enabled()
+    cmd_flags.add_monitoring()
+    cmd_flags.add_mutation()
+    cmd_flags.add_referential_rules()
+    cmd_flags.add_template_library()
+    cmd_flags.add_version()
 
   def Run(self, args):
     membership_specs = {}

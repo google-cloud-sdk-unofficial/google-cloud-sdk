@@ -35,7 +35,8 @@ class GetCredentials(base.Command):
   detailed_help = {
       'EXAMPLES': kubeconfig.COMMAND_EXAMPLE,
       'DESCRIPTION': kubeconfig.COMMAND_DESCRIPTION.format(
-          cluster_type='Attached cluster')
+          cluster_type='Attached cluster'
+      ),
   }
 
   @staticmethod
@@ -47,20 +48,29 @@ class GetCredentials(base.Command):
     """Runs the get-credentials command."""
     with endpoint_util.GkemulticloudEndpointOverride(
         resource_args.ParseAttachedClusterResourceArg(args).locationsId,
-        self.ReleaseTrack()):
+        self.ReleaseTrack(),
+    ):
       cluster_ref = resource_args.ParseAttachedClusterResourceArg(args)
       cluster_client = api_util.ClustersClient()
       log.status.Print('Fetching cluster endpoint and auth data.')
       resp = cluster_client.Get(cluster_ref)
-      if resp.state != util.GetMessagesModule(
-      ).GoogleCloudGkemulticloudV1AttachedCluster.StateValueValuesEnum.RUNNING:
+      if (
+          resp.state
+          != util.GetMessagesModule().GoogleCloudGkemulticloudV1AttachedCluster.StateValueValuesEnum.RUNNING
+      ):
         log.warning(
-            kubeconfig.NOT_RUNNING_MSG.format(cluster_ref.attachedClustersId))
-      context = kubeconfig.GenerateContext('attached', cluster_ref.projectsId,
-                                           cluster_ref.locationsId,
-                                           cluster_ref.attachedClustersId)
+            kubeconfig.NOT_RUNNING_MSG.format(cluster_ref.attachedClustersId)
+        )
+      context = kubeconfig.GenerateContext(
+          'attached',
+          cluster_ref.projectsId,
+          cluster_ref.locationsId,
+          cluster_ref.attachedClustersId,
+      )
 
-      kubeconfig.GenerateAttachedKubeConfig(resp,
-                                            cluster_ref.attachedClustersId,
-                                            context,
-                                            args.auth_provider_cmd_path)
+      kubeconfig.GenerateAttachedKubeConfig(
+          resp,
+          cluster_ref.attachedClustersId,
+          context,
+          args.auth_provider_cmd_path,
+      )

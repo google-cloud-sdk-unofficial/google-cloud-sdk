@@ -42,8 +42,8 @@ class Describe(base.DescribeCommand):
 
   @classmethod
   def Args(cls, parser):
-    cmd_flags = flags.Flags(parser, 'describe')
-    cmd_flags.AddMemberships()
+    cmd_flags = flags.PocoFlags(parser, 'describe')
+    cmd_flags.add_memberships()
 
   def Run(self, args):
     feature = self.GetFeature()

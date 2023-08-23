@@ -48,8 +48,8 @@ class Detach(base.UpdateCommand, command.PocoCommand):
 
   @classmethod
   def Args(cls, parser):
-    cmd_flags = flags.Flags(parser, 'detach')
-    cmd_flags.AddMemberships()
+    cmd_flags = flags.PocoFlags(parser, 'detach')
+    cmd_flags.add_memberships()
 
   def Run(self, args):
     specs = self.path_specs(args)

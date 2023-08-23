@@ -23,6 +23,7 @@ import tempfile
 
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.artifacts import download_util
+from googlecloudsdk.command_lib.artifacts import file_util
 from googlecloudsdk.command_lib.artifacts import flags
 from googlecloudsdk.core import log
 
@@ -83,12 +84,24 @@ class Download(base.Command):
     """Run the generic artifact download command."""
 
     repo_ref = args.CONCEPTS.repository.Parse()
-    file_id = '{}:{}:{}'.format(args.package, args.version, args.name)
-    tmp_path = os.path.join(tempfile.gettempdir(), args.name)
-    final_path = os.path.join(args.destination, args.name)
-    file_res_name = '{}/files/{}'.format(repo_ref.RelativeName(), file_id)
+    # Get the file name when given a file path
+    file_name = args.name.split('/')[-1]
 
-    download_util.Download(tmp_path, final_path, file_res_name, False)
+    file_id = '{}:{}:{}'.format(args.package, args.version, args.name)
+    tmp_path = os.path.join(tempfile.gettempdir(), file_name)
+    final_path = os.path.join(args.destination, file_name)
+    file_escaped = file_util.EscapeFileNameFromIDs(
+        repo_ref.projectsId,
+        repo_ref.locationsId,
+        repo_ref.repositoriesId,
+        file_id,
+    )
+
+    download_util.Download(
+        tmp_path,
+        final_path,
+        file_escaped.RelativeName(),
+        False)
     log.status.Print(
         'Successfully downloaded the file to {}'.format(args.destination)
     )

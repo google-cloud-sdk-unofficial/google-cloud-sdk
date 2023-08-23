@@ -64,7 +64,8 @@ class Delete(base.DeleteCommand):
       cluster_ref = resource_args.ParseAttachedClusterResourceArg(args)
       cluster_client = api_util.ClustersClient()
       message = command_util.ClusterMessage(
-          cluster_ref.attachedClustersId, kind=constants.ATTACHED)
+          cluster_ref.attachedClustersId, kind=constants.ATTACHED
+      )
       if not args.ignore_errors:
         self._prompt_ignore_errors(args, cluster_client, cluster_ref)
       try:
@@ -76,8 +77,9 @@ class Delete(base.DeleteCommand):
             kind=constants.ATTACHED_CLUSTER_KIND,
         )
       except waiter.OperationError as e:
-        pretty_print.Info('Delete cluster failed. '
-                          'Try re-running with `--ignore-errors`.')
+        pretty_print.Info(
+            'Delete cluster failed. Try re-running with `--ignore-errors`.'
+        )
         raise e
       return ret
 
@@ -91,8 +93,10 @@ class Delete(base.DeleteCommand):
     if resp.state not in error_states:
       return
     args.ignore_errors = console_io.PromptContinue(
-        message=('Cluster is in ERROR or DEGRADED state. '
-                 'Setting --ignore-errors flag.'),
+        message=(
+            'Cluster is in ERROR or DEGRADED state. '
+            'Setting --ignore-errors flag.'
+        ),
         throw_if_unattended=True,
         cancel_on_no=False,
         default=False,

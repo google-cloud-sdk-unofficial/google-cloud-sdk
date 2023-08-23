@@ -57,10 +57,12 @@ class Delete(base.DeleteCommand):
       message = command_util.ClusterMessage(
           cluster_ref.azureClustersId,
           kind=constants.AZURE,
-          region=cluster.azureRegion)
+          region=cluster.azureRegion,
+      )
       return command_util.Delete(
           resource_ref=cluster_ref,
           resource_client=cluster_client,
           message=message,
           args=args,
-          kind=constants.AZURE_CLUSTER_KIND)
+          kind=constants.AZURE_CLUSTER_KIND,
+      )

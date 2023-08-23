@@ -47,7 +47,8 @@ class Cancel(base.Command):
     """Runs the cancel command."""
     with endpoint_util.GkemulticloudEndpointOverride(
         resource_args.ParseOperationResourceArg(args).locationsId,
-        self.ReleaseTrack()):
+        self.ReleaseTrack(),
+    ):
       op_client = op_api_util.OperationsClient()
       op_ref = resource_args.ParseOperationResourceArg(args)
       op = op_client.Get(op_ref)

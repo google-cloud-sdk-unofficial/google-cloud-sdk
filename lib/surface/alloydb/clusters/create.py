@@ -29,7 +29,7 @@ from googlecloudsdk.core import properties
 from googlecloudsdk.core import resources
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Create(base.CreateCommand):
   """Create a new AlloyDB cluster within a given project."""
 
@@ -67,7 +67,7 @@ class Create(base.CreateCommand):
 
   def ConstructCreateRequestFromArgs(self, alloydb_messages, location_ref,
                                      args):
-    return cluster_helper.ConstructCreateRequestFromArgsGABeta(
+    return cluster_helper.ConstructCreateRequestFromArgsGA(
         alloydb_messages, location_ref, args)
 
   def Run(self, args):
@@ -98,8 +98,26 @@ class Create(base.CreateCommand):
     return op
 
 
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class CreateBeta(Create):
+  """Create a new AlloyDB cluster within a given project."""
+
+  @classmethod
+  def Args(cls, parser):
+    super(CreateBeta, cls).Args(parser)
+    alloydb_messages = api_util.GetMessagesModule(cls.ReleaseTrack())
+    flags.AddDatabaseVersion(parser, alloydb_messages)
+
+  def ConstructCreateRequestFromArgs(
+      self, alloydb_messages, location_ref, args
+  ):
+    return cluster_helper.ConstructCreateRequestFromArgsBeta(
+        alloydb_messages, location_ref, args
+    )
+
+
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class CreateAlpha(Create):
+class CreateAlpha(CreateBeta):
   """Create a new AlloyDB cluster within a given project."""
 
   @classmethod

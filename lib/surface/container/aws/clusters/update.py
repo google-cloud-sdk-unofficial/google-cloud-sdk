@@ -53,6 +53,7 @@ class Update(base.UpdateCommand):
     flags.AddTagsForUpdate(parser, 'control plane')
     flags.AddLogging(parser)
     flags.AddMonitoringConfig(parser)
+    flags.AddBinauthzEvaluationMode(parser)
     aws_flags.AddInstanceType(parser)
     aws_flags.AddRoleArn(parser, required=False)
     aws_flags.AddRoleSessionName(parser)
@@ -77,13 +78,15 @@ class Update(base.UpdateCommand):
       cluster_ref = resource_args.ParseAwsClusterResourceArg(args)
       cluster_client = api_util.ClustersClient()
       message = command_util.ClusterMessage(
-          cluster_ref.awsClustersId, action='Updating')
+          cluster_ref.awsClustersId, action='Updating'
+      )
       return command_util.Update(
           resource_ref=cluster_ref,
           resource_client=cluster_client,
           args=args,
           message=message,
-          kind=constants.AWS_CLUSTER_KIND)
+          kind=constants.AWS_CLUSTER_KIND,
+      )
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)

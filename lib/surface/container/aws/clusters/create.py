@@ -53,7 +53,10 @@ class Create(base.CreateCommand):
         required=True,
         type=arg_parsers.ArgList(),
         metavar='SUBNET_ID',
-        help='Subnet ID of an existing VNET to use for the cluster control plane.'
+        help=(
+            'Subnet ID of an existing VNET to use for the cluster control'
+            ' plane.'
+        ),
     )
 
     flags.AddPodAddressCidrBlocks(parser)
@@ -69,6 +72,7 @@ class Create(base.CreateCommand):
     flags.AddAnnotations(parser)
     flags.AddLogging(parser)
     flags.AddMonitoringConfig(parser, True)
+    flags.AddBinauthzEvaluationMode(parser)
 
     aws_flags.AddAwsRegion(parser)
     aws_flags.AddIamInstanceProfile(parser)
@@ -105,13 +109,15 @@ class Create(base.CreateCommand):
           cluster_ref.awsClustersId,
           action='Creating',
           kind=constants.AWS,
-          region=args.aws_region)
+          region=args.aws_region,
+      )
       return command_util.Create(
           resource_ref=cluster_ref,
           resource_client=cluster_client,
           args=args,
           message=message,
-          kind=constants.AWS_CLUSTER_KIND)
+          kind=constants.AWS_CLUSTER_KIND,
+      )
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)

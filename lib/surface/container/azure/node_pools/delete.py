@@ -55,11 +55,12 @@ class Delete(base.DeleteCommand):
       node_pool_ref = resource_args.ParseAzureNodePoolResourceArg(args)
       node_pool_client = api_util.NodePoolsClient()
       message = command_util.NodePoolMessage(
-          node_pool_ref.azureNodePoolsId,
-          cluster=node_pool_ref.azureClustersId)
+          node_pool_ref.azureNodePoolsId, cluster=node_pool_ref.azureClustersId
+      )
       return command_util.Delete(
           resource_ref=node_pool_ref,
           resource_client=node_pool_client,
           message=message,
           args=args,
-          kind=constants.AZURE_NODEPOOL_KIND)
+          kind=constants.AZURE_NODEPOOL_KIND,
+      )

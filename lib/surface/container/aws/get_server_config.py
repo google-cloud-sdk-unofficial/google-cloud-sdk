@@ -46,7 +46,10 @@ class GetServerConfig(base.Command):
     """Runs the get-server-config command."""
     location_ref = args.CONCEPTS.location.Parse()
     with endpoint_util.GkemulticloudEndpointOverride(location_ref.locationsId):
-      log.status.Print('Fetching server config for {location}'.format(
-          location=location_ref.locationsId))
+      log.status.Print(
+          'Fetching server config for {location}'.format(
+              location=location_ref.locationsId
+          )
+      )
       client = api_util.LocationsClient()
       return client.GetAwsServerConfig(location_ref)

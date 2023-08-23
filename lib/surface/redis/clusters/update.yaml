@@ -11,9 +11,9 @@
         * The active account does not have permission to update the given
           cluster.
     examples: |
-      To update a Redis cluster with the size to 48GB, run:
+      To update a Redis cluster with 5 shard and 2 replica, run:
 
-        $ {command} my-redis-cluster --size-gb=48
+        $ {command} my-redis-cluster --shard-count=5 --replica-count=2
 
   arguments:
     resource:

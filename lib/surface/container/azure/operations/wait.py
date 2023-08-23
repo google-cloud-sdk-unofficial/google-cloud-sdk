@@ -46,10 +46,12 @@ class Describe(base.DescribeCommand):
     """Runs the wait command."""
     with endpoint_util.GkemulticloudEndpointOverride(
         resource_args.ParseOperationResourceArg(args).locationsId,
-        self.ReleaseTrack()):
+        self.ReleaseTrack(),
+    ):
       op_client = op_api_util.OperationsClient()
       op_ref = resource_args.ParseOperationResourceArg(args)
       op_client.Wait(
           op_ref,
-          'Waiting for operation {} to complete'.format(op_ref.RelativeName()))
+          'Waiting for operation {} to complete'.format(op_ref.RelativeName()),
+      )
       return op_client.Get(op_ref)

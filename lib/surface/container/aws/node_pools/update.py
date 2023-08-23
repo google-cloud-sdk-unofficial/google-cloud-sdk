@@ -74,13 +74,15 @@ class Update(base.UpdateCommand):
       message = command_util.NodePoolMessage(
           node_pool_ref.awsNodePoolsId,
           action='Updating',
-          cluster=node_pool_ref.awsClustersId)
+          cluster=node_pool_ref.awsClustersId,
+      )
       return command_util.Update(
           resource_ref=node_pool_ref,
           resource_client=node_pool_client,
           args=args,
           message=message,
-          kind=constants.AWS_NODEPOOL_KIND)
+          kind=constants.AWS_NODEPOOL_KIND,
+      )
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)

@@ -40,8 +40,8 @@ class Disable(base.UpdateCommand):
 
   @classmethod
   def Args(cls, parser):
-    cmd_flags = flags.Flags(parser, 'disable')
-    cmd_flags.AddMemberships()
+    cmd_flags = flags.PocoFlags(parser, 'disable')
+    cmd_flags.add_memberships()
 
   def Run(self, args):
     membership_specs = {}

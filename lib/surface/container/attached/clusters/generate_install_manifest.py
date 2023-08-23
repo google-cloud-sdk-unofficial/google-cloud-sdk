@@ -59,16 +59,15 @@ class Describe(base.Command):
     with endpoint_util.GkemulticloudEndpointOverride(location):
       cluster_ref = resource_args.ParseAttachedClusterResourceArg(args)
       client = api_util.LocationsClient()
-      resp = client.GenerateInstallManifest(
-          cluster_ref, args=args
-      )
+      resp = client.GenerateInstallManifest(cluster_ref, args=args)
       if args.output_file:
         log.WriteToFileOrStdout(
             args.output_file,
             resp.manifest,
             overwrite=True,
             binary=False,
-            private=True)
+            private=True,
+        )
         return None
 
       return resp

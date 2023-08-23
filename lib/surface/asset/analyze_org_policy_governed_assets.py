@@ -43,8 +43,8 @@ def AddScopeArgument(parser):
       metavar='SCOPE',
       required=True,
       help=("""\
-        Scope can only be an organization for now. The analysis is
-        limited to the Cloud org policies and assets within this scope. The caller must be
+        Scope can only be an organization. The analysis is
+        limited to the Cloud organization policies and assets within this scope. The caller must be
         granted the `cloudasset.assets.searchAllResources` and `cloudasset.assets.searchAllIamPolicies` permission on
         the desired scope.
 
@@ -66,9 +66,9 @@ def AddConstraintArgument(parser):
 
         Examples:
 
-        * ```organizations/{ORGANIZATION_NUMBER}/customConstraints/{CUSTOM_CONSTRAINT_NAME}
+        * organizations/{ORGANIZATION_NUMBER}/customConstraints/{CUSTOM_CONSTRAINT_NAME}
           for a user-defined custom constraint.
-        * ```organizations/{ORGANIZATION_NUMBER}/constraints/{CANNED_CONSTRAINT_NAME}
+        * organizations/{ORGANIZATION_NUMBER}/constraints/{CANNED_CONSTRAINT_NAME}
           for a gcp-service-defined canned constraint.
         """))
 
@@ -78,6 +78,25 @@ def AddConstraintArgument(parser):
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class AnalyzeOrgPolicyGovernedAssets(base.ListCommand):
+  """Analyze organization policies governed assets under a scope."""
+
+  detailed_help = DETAILED_HELP
+
+  @staticmethod
+  def Args(parser):
+    AddScopeArgument(parser)
+    AddConstraintArgument(parser)
+    base.URI_FLAG.RemoveFromParser(parser)
+
+  def Run(self, args):
+    client = client_util.OrgPolicyAnalyzerClient()
+    return client.AnalyzeOrgPolicyGovernedAssets(args)
+
+
+# TODO(b/294131253): remove Hidden label once we are ready to launch.
+@base.Hidden
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class AnalyzeOrgPolicyGovernedAssetsGA(AnalyzeOrgPolicyGovernedAssets):
   """Analyze organization policies governed assets under a scope."""
 
   detailed_help = DETAILED_HELP

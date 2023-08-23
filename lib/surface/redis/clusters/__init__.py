@@ -21,8 +21,6 @@ from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 
 
-# Hidden for private preview
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Clusters(base.Group):
-  """Manage Memorystore Cluster for Redis instances."""
+  """Manage Memorystore for Redis Cluster instances."""

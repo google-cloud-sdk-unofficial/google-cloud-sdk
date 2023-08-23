@@ -46,7 +46,8 @@ class Describe(base.DescribeCommand):
     """Runs the describe command."""
     with endpoint_util.GkemulticloudEndpointOverride(
         resource_args.ParseAzureClientResourceArg(args).locationsId,
-        self.ReleaseTrack()):
+        self.ReleaseTrack(),
+    ):
       client_ref = resource_args.ParseAzureClientResourceArg(args)
       api_client = api_util.ClientsClient()
       return api_client.Get(client_ref)

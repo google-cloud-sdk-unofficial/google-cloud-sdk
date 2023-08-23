@@ -30,7 +30,6 @@ from googlecloudsdk.command_lib.container.gkemulticloud import endpoint_util
 from googlecloudsdk.command_lib.container.gkemulticloud import flags
 from googlecloudsdk.command_lib.run import pretty_print
 from googlecloudsdk.core.console import console_io
-
 import six
 
 _EXAMPLES = """
@@ -66,8 +65,9 @@ class Import(base.Command):
     fleet_membership_ref = args.CONCEPTS.fleet_membership.Parse()
 
     with endpoint_util.GkemulticloudEndpointOverride(location_ref.locationsId):
-      manifest = self._get_manifest(args, location_ref,
-                                    fleet_membership_ref.membershipsId)
+      manifest = self._get_manifest(
+          args, location_ref, fleet_membership_ref.membershipsId
+      )
 
       import_resp = ''
       with kube_util.KubernetesClient(
@@ -82,17 +82,21 @@ class Import(base.Command):
             pretty_print.Info('Creating in-cluster install agent')
             kube_client.Apply(manifest)
 
-          import_resp = self._import_attached_cluster(args, location_ref,
-                                                      fleet_membership_ref)
+          import_resp = self._import_attached_cluster(
+              args, location_ref, fleet_membership_ref
+          )
         except console_io.OperationCancelledError:
           msg = """To manually clean up the in-cluster install agent, run:
 
 $ gcloud {} container attached clusters generate-install-manifest --location={} --platform-version={} --format="value(manifest)"  {}  | kubectl delete -f -
 
 AFTER the attach operation completes.
-""".format(six.text_type(self.ReleaseTrack()).lower(), location_ref.locationsId,
-           attached_flags.GetPlatformVersion(args),
-           fleet_membership_ref.membershipsId)
+""".format(
+              six.text_type(self.ReleaseTrack()).lower(),
+              location_ref.locationsId,
+              attached_flags.GetPlatformVersion(args),
+              fleet_membership_ref.membershipsId,
+          )
           pretty_print.Info(msg)
           raise
         except:  # pylint: disable=broad-except
@@ -106,7 +110,8 @@ AFTER the attach operation completes.
   def _get_manifest(self, args, location_ref, memberships_id):
     location_client = loc_util.LocationsClient()
     resp = location_client.GenerateInstallManifestForImport(
-        location_ref, memberships_id, args=args)
+        location_ref, memberships_id, args=args
+    )
     return resp.manifest
 
   def _remove_manifest(self, args, kube_client, manifest):
@@ -119,11 +124,13 @@ AFTER the attach operation completes.
     message = command_util.ClusterMessage(
         fleet_membership_ref.RelativeName(),
         action='Importing',
-        kind=constants.ATTACHED)
+        kind=constants.ATTACHED,
+    )
     return command_util.Import(
         location_ref=location_ref,
         resource_client=cluster_client,
         fleet_membership_ref=fleet_membership_ref,
         args=args,
         message=message,
-        kind=constants.ATTACHED_CLUSTER_KIND)
+        kind=constants.ATTACHED_CLUSTER_KIND,
+    )

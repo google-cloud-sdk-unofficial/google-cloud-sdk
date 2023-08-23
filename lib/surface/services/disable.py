@@ -33,30 +33,31 @@ OP_BASE_CMD = 'gcloud beta services operations '
 OP_WAIT_CMD = OP_BASE_CMD + 'wait {0}'
 
 
-class Disable(base.SilentCommand):
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class DisableAlpha(base.SilentCommand):
   """Disable a service for consumption for a project.
 
-     This command disables one or more previously-enabled services for
-     consumption.
+  This command disables one or more previously-enabled services for
+  consumption.
 
-     To see a list of the enabled services for a project, run:
+  To see a list of the enabled services for a project, run:
 
-       $ {parent_command} list
+    $ {parent_command} list
 
-     More information on listing services can be found at:
-     https://cloud.google.com/service-usage/docs/list-services and on
-     disabling a service at:
-     https://cloud.google.com/service-usage/docs/enable-disable
+  More information on listing services can be found at:
+  https://cloud.google.com/service-usage/docs/list-services and on
+  disabling a service at:
+  https://cloud.google.com/service-usage/docs/enable-disable
 
-     ## EXAMPLES
-     To disable a service called `my-consumed-service` for the active
-     project, run:
+  ## EXAMPLES
+  To disable a service called `my-consumed-service` for the active
+  project, run:
 
-       $ {command} my-consumed-service
+    $ {command} my-consumed-service
 
-     To run the same command asynchronously (non-blocking), run:
+  To run the same command asynchronously (non-blocking), run:
 
-       $ {command} my-consumed-service --async
+    $ {command} my-consumed-service --async
   """
 
   @staticmethod
@@ -64,26 +65,117 @@ class Disable(base.SilentCommand):
     """Args is called by calliope to gather arguments for this command.
 
     Args:
-      parser: An argparse parser that you can use to add arguments that go
-          on the command line after this command. Positional arguments are
-          allowed.
+      parser: An argparse parser that you can use to add arguments that go on
+        the command line after this command. Positional arguments are allowed.
     """
     common_flags.consumer_service_flag(suffix='to disable').AddToParser(parser)
     base.ASYNC_FLAG.AddToParser(parser)
     parser.add_argument(
         '--force',
         action='store_true',
-        help='If specified, the disable call will proceed even if there are '
-        'enabled services which depend on the service to be disabled. '
-        'Forcing the call means that the services which depend on the service '
-        'to be disabled will also be disabled.')
+        help=(
+            'If specified, the disable call will proceed even if there are'
+            ' enabled services which depend on the service to be disabled.'
+            ' Forcing the call means that the services which depend on the'
+            ' service to be disabled will also be disabled.'
+        ),
+    )
 
   def Run(self, args):
     """Run 'services disable'.
 
     Args:
       args: argparse.Namespace, The arguments that this command was invoked
-          with.
+        with.
+
+    Returns:
+      Nothing.
+    """
+    if args.IsSpecified('project'):
+      project = args.project
+    else:
+      project = properties.VALUES.core.project.Get(required=True)
+    for service_name in args.service:
+      service_name = arg_parsers.GetServiceNameFromArg(service_name)
+
+      protected_msg = serviceusage.GetProtectedServiceWarning(service_name)
+      if protected_msg:
+        if args.IsSpecified('quiet'):
+          raise console_io.RequiredPromptError()
+        do_disable = console_io.PromptContinue(
+            protected_msg, default=False, throw_if_unattended=True
+        )
+        if not do_disable:
+          continue
+      op = serviceusage.RemoveEnableRule(project, service_name, args.force)
+      if op.done:
+        continue
+      if args.async_:
+        cmd = OP_WAIT_CMD.format(op.name)
+        log.status.Print(
+            'Asynchronous operation is in progress... '
+            'Use the following command to wait for its '
+            'completion:\n {0}'.format(cmd)
+        )
+        continue
+      op = services_util.WaitOperation(op.name, serviceusage.GetOperationV2)
+      services_util.PrintOperation(op)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
+class Disable(base.SilentCommand):
+  """Disable a service for consumption for a project.
+
+  This command disables one or more previously-enabled services for
+  consumption.
+
+  To see a list of the enabled services for a project, run:
+
+    $ {parent_command} list
+
+  More information on listing services can be found at:
+  https://cloud.google.com/service-usage/docs/list-services and on
+  disabling a service at:
+  https://cloud.google.com/service-usage/docs/enable-disable
+
+  ## EXAMPLES
+  To disable a service called `my-consumed-service` for the active
+  project, run:
+
+    $ {command} my-consumed-service
+
+  To run the same command asynchronously (non-blocking), run:
+
+    $ {command} my-consumed-service --async
+  """
+
+  @staticmethod
+  def Args(parser):
+    """Args is called by calliope to gather arguments for this command.
+
+    Args:
+      parser: An argparse parser that you can use to add arguments that go on
+        the command line after this command. Positional arguments are allowed.
+    """
+    common_flags.consumer_service_flag(suffix='to disable').AddToParser(parser)
+    base.ASYNC_FLAG.AddToParser(parser)
+    parser.add_argument(
+        '--force',
+        action='store_true',
+        help=(
+            'If specified, the disable call will proceed even if there are'
+            ' enabled services which depend on the service to be disabled.'
+            ' Forcing the call means that the services which depend on the'
+            ' service to be disabled will also be disabled.'
+        ),
+    )
+
+  def Run(self, args):
+    """Run 'services disable'.
+
+    Args:
+      args: argparse.Namespace, The arguments that this command was invoked
+        with.
 
     Returns:
       Nothing.
@@ -96,19 +188,21 @@ class Disable(base.SilentCommand):
       if protected_msg:
         if args.IsSpecified('quiet'):
           raise console_io.RequiredPromptError()
-        do_disable = console_io.PromptContinue(protected_msg, default=False,
-                                               throw_if_unattended=True)
+        do_disable = console_io.PromptContinue(
+            protected_msg, default=False, throw_if_unattended=True
+        )
         if not do_disable:
           continue
-
       op = serviceusage.DisableApiCall(project, service_name, args.force)
       if op.done:
         continue
       if args.async_:
         cmd = OP_WAIT_CMD.format(op.name)
-        log.status.Print('Asynchronous operation is in progress... '
-                         'Use the following command to wait for its '
-                         'completion:\n {0}'.format(cmd))
+        log.status.Print(
+            'Asynchronous operation is in progress... '
+            'Use the following command to wait for its '
+            'completion:\n {0}'.format(cmd)
+        )
         continue
       op = services_util.WaitOperation(op.name, serviceusage.GetOperation)
       services_util.PrintOperation(op)

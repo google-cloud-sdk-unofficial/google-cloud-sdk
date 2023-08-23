@@ -64,14 +64,6 @@ class Create(base.CreateCommand):
         ),
     )
     group = parser.add_mutually_exclusive_group(required=True)
-    group.add_argument(
-        '--fleet',
-        type=bool,
-        help=(
-            'Membership Binding is created for all the Scopes in the Fleet for'
-            ' given Membership.'
-        ),
-    )
     resources.AddScopeResourceArg(
         parser,
         flag_name='--scope',
@@ -92,7 +84,6 @@ class Create(base.CreateCommand):
     ).GetOrNone()
     return fleetclient.CreateMembershipBinding(
         resources.MembershipBindingResourceName(args),
-        fleet=args.fleet,
         scope=scope,
         labels=labels,
     )

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*- #
-# Copyright 2021 Google LLC. All Rights Reserved.
+# Copyright 2023 Google LLC. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""The command group for Blueprints Controller."""
+"""Transfer appliances commands."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -21,19 +21,12 @@ from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 
 
-# We could have multiple tracks here, e.g.
-#   @base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
-@base.Deprecate(
-    True, 'This command is deprecated.', 'This command is no longer supported.'
-)
 @base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class Blueprints(base.Group):
-  """Manage Blueprints Controller deployments and revisions."""
+class Appliances(base.Group):
+  """Manage Transfer Appliances.
 
-  category = base.MANAGEMENT_TOOLS_CATEGORY
-
-  def Filter(self, context, args):
-    # TODO(b/190526433):  Determine if command group works with project number
-    base.RequireProjectID(args)
-    del context, args
+  Transfer Appliances are high-capacity storage devices that enable
+  the transfer and secure shipment of data to a Google upload facility, where
+  data is uploaded to Cloud Storage.
+  """

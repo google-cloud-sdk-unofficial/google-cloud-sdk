@@ -421,6 +421,7 @@ def ParseCreateOptionsBase(args, is_autopilot, get_default, location,
           'enable_runtime_vulnerability_insight'
       ),
       workload_policies=get_default('workload_policies'),
+      in_transit_encryption=get_default('in_transit_encryption'),
   )
 
 
@@ -692,6 +693,7 @@ flags_to_add = {
             flags.AddWorkloadVulnScanningEnumFlag,
         'enableRuntimeVulnerabilityInsight':
             flags.AddRuntimeVulnerabilityInsightFlag,
+        'InTransitEncryption': flags.AddInTransitEncryptionFlag,
     },
     BETA: {
         'accelerator':
@@ -931,6 +933,7 @@ flags_to_add = {
         'enableDnsEndpoint':
             flags.AddEnableDNSEndpoint,
         'enableFqdnNetworkPolicy': flags.AddEnableFqdnNetworkPolicyFlag,
+        'InTransitEncryption': flags.AddInTransitEncryptionFlag,
     },
     ALPHA: {
         'accelerator':
@@ -1181,6 +1184,7 @@ flags_to_add = {
         'enableDnsEndpoint':
             flags.AddEnableDNSEndpoint,
         'enableFqdnNetworkPolicy': flags.AddEnableFqdnNetworkPolicyFlag,
+        'InTransitEncryption': flags.AddInTransitEncryptionFlag,
     },
 }
 

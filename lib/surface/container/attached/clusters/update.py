@@ -50,6 +50,7 @@ class Update(base.UpdateCommand):
     flags.AddValidateOnly(parser, 'update of the cluster')
     flags.AddLogging(parser, True)
     flags.AddMonitoringConfig(parser)
+    flags.AddBinauthzEvaluationMode(parser)
 
     attached_flags.AddAdminUsers(parser)
     attached_flags.AddPlatformVersion(parser, required=False)
@@ -64,10 +65,12 @@ class Update(base.UpdateCommand):
       cluster_ref = resource_args.ParseAttachedClusterResourceArg(args)
       cluster_client = api_util.ClustersClient()
       message = command_util.ClusterMessage(
-          cluster_ref.attachedClustersId, action='Updating')
+          cluster_ref.attachedClustersId, action='Updating'
+      )
       return command_util.Update(
           resource_ref=cluster_ref,
           resource_client=cluster_client,
           args=args,
           message=message,
-          kind=constants.ATTACHED_CLUSTER_KIND)
+          kind=constants.ATTACHED_CLUSTER_KIND,
+      )

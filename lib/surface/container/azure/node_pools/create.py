@@ -44,7 +44,8 @@ class Create(base.CreateCommand):
   @staticmethod
   def Args(parser):
     resource_args.AddAzureNodePoolResourceArg(
-        parser, 'to create', positional=True)
+        parser, 'to create', positional=True
+    )
 
     flags.AddNodeVersion(parser)
     flags.AddAutoscaling(parser)
@@ -73,13 +74,15 @@ class Create(base.CreateCommand):
       message = command_util.NodePoolMessage(
           node_pool_ref.azureNodePoolsId,
           action='Creating',
-          cluster=node_pool_ref.azureClustersId)
+          cluster=node_pool_ref.azureClustersId,
+      )
       return command_util.Create(
           resource_ref=node_pool_ref,
           resource_client=node_pool_client,
           args=args,
           message=message,
-          kind=constants.AZURE_NODEPOOL_KIND)
+          kind=constants.AZURE_NODEPOOL_KIND,
+      )
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)

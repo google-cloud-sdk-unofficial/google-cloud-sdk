@@ -34,6 +34,7 @@ $ {command} --location=us-west1
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.GA)
 class List(base.ListCommand):
   """List operations."""
+
   detailed_help = {'EXAMPLES': _EXAMPLES}
 
   @staticmethod
@@ -46,11 +47,13 @@ class List(base.ListCommand):
     """Runs the describe command."""
     release_track = self.ReleaseTrack()
     location_ref = args.CONCEPTS.location.Parse()
-    with endpoint_util.GkemulticloudEndpointOverride(location_ref.locationsId,
-                                                     release_track):
+    with endpoint_util.GkemulticloudEndpointOverride(
+        location_ref.locationsId, release_track
+    ):
       op_client = op_api_util.OperationsClient()
       items, empty = op_client.List(
-          location_ref, args.page_size, args.limit, parent_field='name')
+          location_ref, args.page_size, args.limit, parent_field='name'
+      )
       if not empty:
         # ListOperations returns AWS, Azure, and attached operations.
         # Add a filter for AWS operations.

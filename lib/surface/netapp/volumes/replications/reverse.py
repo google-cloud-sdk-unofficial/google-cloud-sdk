@@ -28,6 +28,63 @@ from googlecloudsdk.command_lib.util.concepts import concept_parsers
 from googlecloudsdk.core import log
 
 
+# TODO(b/293907222): Make gcloud netapp public and visible for GA
+@base.Hidden
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class Reverse(base.Command):
+  """Reverse a Cloud NetApp Volume Replication's direction."""
+
+  _RELEASE_TRACK = base.ReleaseTrack.GA
+
+  detailed_help = {
+      'DESCRIPTION': """\
+          Reverse a Cloud NetApp Volume Replication.
+          """,
+      'EXAMPLES': """\
+          The following command reverses a Replication named NAME using the required arguments:
+
+              $ {command} NAME --location=us-central1 --volume=vol1
+
+          To reverse a Replication named NAME asynchronously, run the following command:
+
+              $ {command} NAME --location=us-central1 --volume=vol1 --async
+          """,
+  }
+
+  @staticmethod
+  def Args(parser):
+    concept_parsers.ConceptParser(
+        [
+            flags.GetReplicationPresentationSpec(
+                'The Replication to reverse direction.'
+            )
+        ]
+    ).AddToParser(parser)
+    replications_flags.AddReplicationVolumeArg(parser, reverse_op=True)
+    flags.AddResourceAsyncFlag(parser)
+
+  def Run(self, args):
+    """Reverse a Cloud NetApp Volume Replication's direction in the current project."""
+    replication_ref = args.CONCEPTS.replication.Parse()
+    if args.CONCEPTS.volume.Parse() is None:
+      raise exceptions.RequiredArgumentException(
+          '--volume', 'Requires a volume to reverse replication of'
+      )
+
+    client = replications_client.ReplicationsClient(self._RELEASE_TRACK)
+    result = client.ReverseReplication(
+        replication_ref, args.async_)
+    if args.async_:
+      command = 'gcloud {} netapp volumes replications list'.format(
+          self.ReleaseTrack().prefix
+      )
+      log.status.Print(
+          'Check the status of the reversed replication by listing all'
+          ' replications:\n  $ {} '.format(command)
+      )
+    return result
+
+
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class ReverseBeta(base.Command):
   """Reverse a Cloud NetApp Volume Replication's direction."""

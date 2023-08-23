@@ -59,6 +59,7 @@ class Create(base.CreateCommand):
     flags.AddDescription(parser)
     flags.AddLogging(parser, True)
     flags.AddMonitoringConfig(parser, True)
+    flags.AddBinauthzEvaluationMode(parser)
 
     base.ASYNC_FLAG.AddToParser(parser)
 
@@ -73,10 +74,12 @@ class Create(base.CreateCommand):
       message = command_util.ClusterMessage(
           cluster_ref.attachedClustersId,
           action='Creating',
-          kind=constants.ATTACHED)
+          kind=constants.ATTACHED,
+      )
       return command_util.Create(
           resource_ref=cluster_ref,
           resource_client=cluster_client,
           args=args,
           message=message,
-          kind=constants.ATTACHED_CLUSTER_KIND)
+          kind=constants.ATTACHED_CLUSTER_KIND,
+      )

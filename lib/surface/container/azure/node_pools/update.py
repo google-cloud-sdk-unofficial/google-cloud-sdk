@@ -44,7 +44,8 @@ class Update(base.UpdateCommand):
   @staticmethod
   def Args(parser):
     resource_args.AddAzureNodePoolResourceArg(
-        parser, 'to update', positional=True)
+        parser, 'to update', positional=True
+    )
 
     flags.AddNodeVersion(parser, required=False)
     flags.AddAutoscaling(parser, required=False)
@@ -64,13 +65,15 @@ class Update(base.UpdateCommand):
       message = command_util.NodePoolMessage(
           node_pool_ref.azureNodePoolsId,
           action='Updating',
-          cluster=node_pool_ref.azureClustersId)
+          cluster=node_pool_ref.azureClustersId,
+      )
       return command_util.Update(
           resource_ref=node_pool_ref,
           resource_client=node_pool_client,
           args=args,
           message=message,
-          kind=constants.AZURE_NODEPOOL_KIND)
+          kind=constants.AZURE_NODEPOOL_KIND,
+      )
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)

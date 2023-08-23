@@ -32,6 +32,63 @@ def _CommonArgs(parser, release_track):
   )
 
 
+# TODO(b/293907222): Make gcloud netapp public and visible for GA launch
+@base.Hidden
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class Create(base.CreateCommand):
+  """Create a Cloud NetApp Storage Pool."""
+
+  _RELEASE_TRACK = base.ReleaseTrack.GA
+
+  detailed_help = {
+      'DESCRIPTION': """\
+          Creates a Storage Pool to contain Volumes with a specified Service Level and capacity.
+          """,
+      'EXAMPLES': """\
+          The following command creates a Storage Pool named NAME using all possible arguments
+
+              $ {command} NAME --location=us-central1 --service-level=standard --capacity=2048 --network=name=default --active-directory=ad1 --kms-config=kms-config1 --enable-ldap=true --description="example description"
+          """,
+  }
+
+  @staticmethod
+  def Args(parser):
+    _CommonArgs(parser, Create._RELEASE_TRACK)
+
+  def Run(self, args):
+    """Create a Cloud NetApp Storage Pool in the current project."""
+    storagepool_ref = args.CONCEPTS.storage_pool.Parse()
+    client = storagepools_client.StoragePoolsClient(self._RELEASE_TRACK)
+    service_level = storagepools_flags.GetStoragePoolServiceLevelArg(
+        client.messages).GetEnumForChoice(args.service_level)
+    labels = labels_util.ParseCreateArgs(
+        args, client.messages.StoragePool.LabelsValue)
+    capacity_in_gib = args.capacity >> 30
+    storage_pool = client.ParseStoragePoolConfig(
+        name=storagepool_ref.RelativeName(),
+        service_level=service_level,
+        network=args.network,
+        active_directory=args.active_directory,
+        kms_config=args.kms_config,
+        enable_ldap=args.enable_ldap,
+        capacity=capacity_in_gib,
+        description=args.description,
+        labels=labels,
+    )
+    result = client.CreateStoragePool(
+        storagepool_ref, args.async_, storage_pool
+    )
+    if args.async_:
+      command = 'gcloud {} netapp storage-pools list'.format(
+          self.ReleaseTrack().prefix
+      )
+      log.status.Print(
+          'Check the status of the new storage pool by listing all storage'
+          ' pools:\n  $ {} '.format(command)
+      )
+    return result
+
+
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class CreateBeta(base.CreateCommand):
   """Create a Cloud NetApp Storage Pool."""

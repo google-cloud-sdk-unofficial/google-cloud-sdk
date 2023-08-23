@@ -145,6 +145,12 @@ class RollbackAlpha(Rollback):
   specified, a generated rollout ID will be used.
   """
 
+  @staticmethod
+  def Args(parser):
+    # add the original args
+    Rollback.Args(parser)
+    flags.AddRollbackOfRollout(parser)
+
   def Run(self, args):
     target_ref = args.CONCEPTS.target.Parse()
     ref_dict = target_ref.AsDict()
@@ -184,8 +190,7 @@ class RollbackAlpha(Rollback):
             target_ref.Name(),
             validate_only=True,
             rollout_id=args.rollout_id,
-            # TODO(b/278008194) handle this argument for the rollback command
-            rollout_to_rollback=None,
+            rollout_to_rollback=args.rollback_of_rollout,
             release_id=args.release,
             rollout_obj=rollout_obj,
             starting_phase=args.starting_phase_id,
@@ -230,10 +235,19 @@ class RollbackAlpha(Rollback):
 
     # if args.description isn't set.
     if not args.description:
-      validate_response.rollbackConfig.rollout.description = (
-          'Rollback of {}'.format(
-              validate_response.rollbackConfig.rollout.rollbackOfRollout
+      current_release_ref = resources.REGISTRY.ParseRelativeName(
+          resources.REGISTRY.Parse(
+              validate_response.rollbackConfig.rollout.rollbackOfRollout,
+              collection='clouddeploy.projects.locations.deliveryPipelines.releases.rollouts',
           )
+          .Parent()
+          .RelativeName(),
+          collection=(
+              'clouddeploy.projects.locations.deliveryPipelines.releases'
+          ),
+      )
+      validate_response.rollbackConfig.rollout.description = (
+          'Rollback from {}'.format(current_release_ref.Name())
       )
 
     try:

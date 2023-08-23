@@ -34,8 +34,7 @@ $ {command} my-cluster --location=us-west1
 """
 
 
-@base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Unenroll(base.Command):
   """Unenroll an Anthos on VMware admin cluster."""
 

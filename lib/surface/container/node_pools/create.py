@@ -244,6 +244,7 @@ class Create(base.CreateCommand):
     flags.AddPlacementTypeFlag(parser, for_node_pool=True, hidden=False)
     flags.AddBestEffortProvisionFlags(parser)
     flags.AddPlacementPolicyFlag(parser)
+    flags.AddTPUTopologyFlag(parser)
 
   def ParseCreateNodePoolOptions(self, args):
     ops = ParseCreateNodePoolOptionsBase(args)
@@ -254,6 +255,7 @@ class Create(base.CreateCommand):
     ops.enable_best_effort_provision = args.enable_best_effort_provision
     ops.min_provision_nodes = args.min_provision_nodes
     ops.placement_policy = args.placement_policy
+    ops.tpu_topology = args.tpu_topology
     return ops
 
   def Run(self, args):
@@ -352,6 +354,7 @@ class CreateBeta(Create):
     flags.AddEnableSurgeUpgradeFlag(parser)
     flags.AddEnableBlueGreenUpgradeFlag(parser)
     flags.AddStandardRolloutPolicyFlag(parser)
+    flags.AddAutoscaleRolloutPolicyFlag(parser)
     flags.AddNodePoolSoakDurationFlag(parser)
     flags.AddMaintenanceIntervalFlag(parser, for_node_pool=True, hidden=True)
     flags.AddNetworkPerformanceConfigFlags(parser, hidden=False)
@@ -362,7 +365,7 @@ class CreateBeta(Create):
     flags.AddWindowsOsVersionFlag(parser)
     flags.AddBestEffortProvisionFlags(parser, hidden=False)
     flags.AddQueuedProvisioningFlag(parser, hidden=True)
-    flags.AddTPUTopologyFlag(parser, hidden=True)
+    flags.AddTPUTopologyFlag(parser)
     flags.AddEnableNestedVirtualizationFlag(
         parser, for_node_pool=True, hidden=True)
     flags.AddHostMaintenanceIntervalFlag(
@@ -387,6 +390,7 @@ class CreateBeta(Create):
     ops.enable_surge_upgrade = args.enable_surge_upgrade
     ops.node_pool_soak_duration = args.node_pool_soak_duration
     ops.standard_rollout_policy = args.standard_rollout_policy
+    ops.autoscaled_rollout_policy = args.autoscaled_rollout_policy
     ops.maintenance_interval = args.maintenance_interval
     ops.network_performance_config = args.network_performance_configs
     ops.enable_confidential_nodes = args.enable_confidential_nodes
@@ -438,6 +442,7 @@ class CreateAlpha(Create):
     ops.min_provision_nodes = args.min_provision_nodes
     ops.host_maintenance_interval = args.host_maintenance_interval
     ops.performance_monitoring_unit = args.performance_monitoring_unit
+    ops.autoscaled_rollout_policy = args.autoscaled_rollout_policy
     return ops
 
   @staticmethod
@@ -490,10 +495,11 @@ class CreateAlpha(Create):
     flags.AddWindowsOsVersionFlag(parser)
     flags.AddBestEffortProvisionFlags(parser, hidden=False)
     flags.AddQueuedProvisioningFlag(parser, hidden=True)
-    flags.AddTPUTopologyFlag(parser, hidden=True)
+    flags.AddTPUTopologyFlag(parser)
     flags.AddEnableNestedVirtualizationFlag(parser, hidden=True)
     flags.AddHostMaintenanceIntervalFlag(
         parser, for_node_pool=True, hidden=True)
     flags.AddPerformanceMonitoringUnit(parser, hidden=True)
+    flags.AddAutoscaleRolloutPolicyFlag(parser)
 
 Create.detailed_help = DETAILED_HELP

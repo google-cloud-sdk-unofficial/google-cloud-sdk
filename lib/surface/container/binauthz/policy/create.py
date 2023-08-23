@@ -27,27 +27,26 @@ from googlecloudsdk.command_lib.container.binauthz import parsing
 import six
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
 class Create(base.CreateCommand):
-  r"""Create a Binary Authorization policy.
+  r"""Create a Binary Authorization platform policy.
 
   ## EXAMPLES
 
   To create a policy for GKE in the current project:
 
-      $ {command} my-policy --platform=gke --policy_file=my_policy.yaml
+      $ {command} my-policy --platform=gke --policy-file=my_policy.yaml
 
   To create a policy for GKE in a specific project:
 
       $ {command} my-policy --platform=gke --project=my-project-id \
-        --policy_file=my_policy.yaml
+        --policy-file=my_policy.yaml
 
   or
 
       $ {command} /projects/my-project-id/platforms/gke/policies/my-policy
       \
-        --policy_file=my_policy.yaml
+        --policy-file=my_policy.yaml
   """
 
   @staticmethod

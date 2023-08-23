@@ -43,10 +43,11 @@ class Update(base.UpdateCommand):
   @staticmethod
   def Args(parser):
     auth_config_group = parser.add_argument_group(
-        'Authentication configuration', mutex=True)
-    resource_args.AddAzureClusterAndClientResourceArgs(parser,
-                                                       auth_config_group,
-                                                       update=True)
+        'Authentication configuration', mutex=True
+    )
+    resource_args.AddAzureClusterAndClientResourceArgs(
+        parser, auth_config_group, update=True
+    )
     flags.AddAzureServicesAuthentication(auth_config_group, create=False)
     flags.AddClusterVersion(parser, required=False)
     flags.AddVMSize(parser)
@@ -67,13 +68,15 @@ class Update(base.UpdateCommand):
       cluster_ref = resource_args.ParseAzureClusterResourceArg(args)
       cluster_client = api_util.ClustersClient()
       message = command_util.ClusterMessage(
-          cluster_ref.azureClustersId, action='Updating')
+          cluster_ref.azureClustersId, action='Updating'
+      )
       return command_util.Update(
           resource_ref=cluster_ref,
           resource_client=cluster_client,
           args=args,
           message=message,
-          kind=constants.AZURE_CLUSTER_KIND)
+          kind=constants.AZURE_CLUSTER_KIND,
+      )
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)

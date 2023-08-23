@@ -66,14 +66,6 @@ class Update(base.UpdateCommand):
         ),
     )
     group = parser.add_mutually_exclusive_group(required=True)
-    group.add_argument(
-        '--fleet',
-        type=bool,
-        help=(
-            'Bindings for all the membership related scopes in the fleet would'
-            ' be updated.'
-        ),
-    )
     resources.AddScopeResourceArg(
         parser,
         flag_name='--scope',
@@ -112,7 +104,6 @@ class Update(base.UpdateCommand):
     return fleetclient.UpdateMembershipBinding(
         resources.MembershipBindingResourceName(args),
         scope=scope,
-        fleet=args.fleet,
         labels=new_labels,
         mask=','.join(mask))
 

@@ -78,7 +78,11 @@ def _Run(args, version):
           'clear_labels',
           'remove_labels',
           'anomaly_cloud_logging',
+          'notification_channels',
       ]
+      # TODO(b/294293683): Add notification channel to update args when GA.
+      if version == constants.GA_VERSION:
+        available_update_args.remove('notification_channels')
       if not any(args.IsSpecified(arg) for arg in available_update_args):
         raise
       log.status.Print('No update to perform.')
@@ -108,6 +112,8 @@ class Update(base.UpdateCommand):
   @staticmethod
   def Args(parser):
     _Args(parser)
+    # TODO(b/294293683): move notification channel arg to _Args when GA.
+    flags.GetNotificationChannelsArg(required=False).AddToParser(parser)
 
   def Run(self, args):
     return _Run(args, constants.BETA_VERSION)

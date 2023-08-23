@@ -18,16 +18,15 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
-from googlecloudsdk.api_lib.container.fleet import util as fleet_util
+from apitools.base.protorpclite import messages
 from googlecloudsdk.calliope import base as calliope_base
 from googlecloudsdk.command_lib.container.fleet.features import base
+from googlecloudsdk.command_lib.container.fleet.policycontroller import command
 from googlecloudsdk.command_lib.container.fleet.policycontroller import flags
-from googlecloudsdk.command_lib.container.fleet.policycontroller import utils
-from googlecloudsdk.core import exceptions
 
 
 @calliope_base.Hidden
-class Update(base.UpdateCommand):
+class Update(base.UpdateCommand, command.PocoCommand):
   """Updates the configuration of Policy Controller Feature.
 
   Updates the configuration of the Policy Controller installation
@@ -46,66 +45,42 @@ class Update(base.UpdateCommand):
 
   @classmethod
   def Args(cls, parser):
-    cmd_flags = flags.Flags(parser, 'update')
+    cmd_flags = flags.PocoFlags(parser, 'update')
 
     # Scope Flags
-    cmd_flags.AddMemberships()
+    cmd_flags.add_memberships()
 
     # Configuration Flags
-    cmd_flags.AddAuditInterval()
-    cmd_flags.AddConstraintViolationLimit()
-    cmd_flags.AddExemptableNamespaces()
-    cmd_flags.AddLogDeniesEnabled()
-    cmd_flags.AddMonitoring()
-    cmd_flags.AddMutationEnabled()
-    cmd_flags.AddReferentialRulesEnabled()
-    cmd_flags.AddTemplateLibraryInstall()
-    cmd_flags.AddVersion()
+    cmd_flags.add_audit_interval()
+    cmd_flags.add_constraint_violation_limit()
+    cmd_flags.add_exemptable_namespaces()
+    cmd_flags.add_log_denies_enabled()
+    cmd_flags.add_monitoring()
+    cmd_flags.add_mutation()
+    cmd_flags.add_referential_rules()
+    cmd_flags.add_template_library()
+    cmd_flags.add_version()
 
   def Run(self, args):
-    membership_specs = self.hubclient.ToPyDict(
-        self.GetFeature().membershipSpecs
-    )
-    memberships = base.ParseMembershipsPlural(
-        args, search=True, prompt=True, prompt_cancel=False, autoselect=True
-    )
-    memberships_short_path = [
-        fleet_util.MembershipPartialName(membership)
-        for membership in memberships
-    ]
-    membership_specs_short_path = {
-        fleet_util.MembershipPartialName(full_path): ms
-        for full_path, ms in membership_specs.items()
-        if fleet_util.MembershipPartialName(full_path) in memberships_short_path
-    }
+    parser = flags.PocoFlagParser(args, self.messages)
+    specs = self.path_specs(args)
+    updated_specs = {path: self.update(s, parser) for path, s in specs.items()}
+    return self.update_specs(updated_specs)
 
-    # Remove spec entries that are not specified in this command.
-    for membership in list(membership_specs.keys()):
-      shortname = fleet_util.MembershipPartialName(membership)
-      if shortname not in memberships_short_path:
-        del membership_specs[membership]
+  def update(self, spec: messages.Message, parser: flags.PocoFlagParser):
+    pc = spec.policycontroller
+    pc = parser.update_version(pc)
 
-    for membership in memberships:
-      short_membership = fleet_util.MembershipPartialName(membership)
-      if short_membership not in membership_specs_short_path:
-        raise exceptions.Error(
-            'Policy Controller is not enabled for membership {}'.format(
-                membership
-            )
-        )
-      # make changes to membership spec in place, so that we don't have to deal
-      # with project ID/number conversion.
-      current_poco_membership_spec = membership_specs_short_path[
-          short_membership
-      ].policycontroller
-      poco_hub_config = current_poco_membership_spec.policyControllerHubConfig
-      utils.merge_args_with_poco_hub_config(
-          args, poco_hub_config, self.messages
-      )
-      if args.version:
-        current_poco_membership_spec.version = args.version
+    hub_cfg = pc.policyControllerHubConfig
+    hub_cfg = parser.update_audit_interval(hub_cfg)
+    hub_cfg = parser.update_constraint_violation_limit(hub_cfg)
+    hub_cfg = parser.update_exemptable_namespaces(hub_cfg)
+    hub_cfg = parser.update_log_denies(hub_cfg)
+    hub_cfg = parser.update_mutation(hub_cfg)
+    hub_cfg = parser.update_monitoring(hub_cfg)
+    hub_cfg = parser.update_referential_rules(hub_cfg)
+    hub_cfg = parser.update_template_library(hub_cfg)
 
-    patch = self.messages.Feature(
-        membershipSpecs=self.hubclient.ToMembershipSpecs(membership_specs)
-    )
-    return self.Update(['membership_specs'], patch)
+    pc.policyControllerHubConfig = hub_cfg
+    spec.policycontroller = pc
+    return spec

@@ -27,19 +27,16 @@ from googlecloudsdk.command_lib.bigtable import arguments
 from googlecloudsdk.core import log
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Copy(base.Command):
   """Copy a Cloud Bigtable backup to a new backup."""
   detailed_help = {
-      'DESCRIPTION':
-          textwrap.dedent("""
-          This command copies a Cloud Bigtable backup to a new backup.
+      'DESCRIPTION': textwrap.dedent("""
+          This command creates a copy of a Cloud Bigtable backup.
           """),
-      'EXAMPLES':
-          textwrap.dedent("""\
+      'EXAMPLES': textwrap.dedent("""\
         To copy a backup within the same project, run:
 
-          $ {command} --source-instance=SOURCE_INSTANCE --source-cluster=SOURCE_CLUSTER  --source-backup=SOURCE_BACKUP --destination-instance=DESTINATION_INSTANCE --destination-cluster=DESTINATION_CLUSTER --destination-backup=DESTINATION_BACKUP --expiration-date=2022-08-01T10:49:41Z
+          $ {command} --source-instance=SOURCE_INSTANCE --source-cluster=SOURCE_CLUSTER  --source-backup=SOURCE_BACKUP --destination-instance=DESTINATION_INSTANCE --destination-cluster=DESTINATION_CLUSTER --destination-backup=DESTINATION_BACKUP --expiration-date=2023-09-01T10:49:41Z
 
         To copy a backup to a different project, run:
 
@@ -60,14 +57,21 @@ class Copy(base.Command):
     group_parser = parser.add_argument_group(mutex=True, required=True)
     group_parser.add_argument(
         '--expiration-date',
-        help='Expiration time of the backup, must be at least 6 hours and at '
-        'most 30 days from the time the request is received. See '
-        '`$ gcloud topic datetimes` for information on date/time formats.')
+        help=(
+            'Expiration time of the backup, must be at least 6 hours and at '
+            'most 30 days from the time the source backup is created. See '
+            '`$ gcloud topic datetimes` for information on date/time formats.'
+        ),
+    )
     group_parser.add_argument(
         '--retention-period',
-        help='Retention period of the backup relative from now, must be at '
-        'least 6 hours and at most 30 days. See `$ gcloud topic datetimes` for '
-        'information on duration formats.')
+        help=(
+            'Retention period of the backup relative from now, must be at least'
+            ' 6 hours and at most 30 days from the time the source backup is'
+            ' created. See `$ gcloud topic datetimes` for information on'
+            ' duration formats.'
+        ),
+    )
     base.ASYNC_FLAG.AddToParser(parser)
 
   def Run(self, args):

@@ -25,7 +25,7 @@ from googlecloudsdk.command_lib.artifacts import sbom_util
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Export(base.Command):
-  """Export SBOM files."""
+  """Export SBOM files to Google Cloud Storage."""
 
   detailed_help = {
       'DESCRIPTION': '{description}',

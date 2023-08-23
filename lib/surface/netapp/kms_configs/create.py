@@ -25,6 +25,57 @@ from googlecloudsdk.command_lib.util.args import labels_util
 from googlecloudsdk.core import log
 
 
+# TODO(b/293907222): Make gcloud netapp public and visible for GA launch
+@base.Hidden
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class Create(base.CreateCommand):
+  """Create a Cloud NetApp Volumes KMS Config."""
+
+  detailed_help = {
+      'DESCRIPTION': """\
+          Creates a KMS (Key Management System) Config to encrypt Cloud NetApp Volumes, Storage Pools etc. using Customer Managed Encryption Keys (CMEK)
+          """,
+      'EXAMPLES': """\
+          The following command creates a KMS Config instance named KMS_CONFIG using specified project, location, Key Ring and Crypto Key
+
+              $ {command} KMS_CONFIG --location=us-central1 --kms-location=northamerica-northeast1 --kms-project=kms-project1 --kms-keyring=kms-keyring21 --kms-key=crypto-key1
+          """,
+  }
+
+  _RELEASE_TRACK = base.ReleaseTrack.GA
+
+  @staticmethod
+  def Args(parser):
+    kmsconfigs_flags.AddKMSConfigCreateArgs(parser)
+
+  def Run(self, args):
+    """Create a Cloud NetApp Volumes KMS Config in the current project."""
+    kmsconfig_ref = args.CONCEPTS.kms_config.Parse()
+    client = kmsconfigs_client.KmsConfigsClient(self._RELEASE_TRACK)
+    labels = labels_util.ParseCreateArgs(
+        args, client.messages.KmsConfig.LabelsValue
+    )
+    crypto_key_name = kmsconfigs_flags.ConstructCryptoKeyName(
+        args.kms_project, args.kms_location, args.kms_keyring, args.kms_key
+    )
+    kms_config = client.ParseKmsConfig(
+        name=kmsconfig_ref.RelativeName(),
+        crypto_key_name=crypto_key_name,
+        description=args.description,
+        labels=labels,
+    )
+    result = client.CreateKmsConfig(kmsconfig_ref, args.async_, kms_config)
+    if args.async_:
+      command = 'gcloud {} netapp kms-configs list'.format(
+          self.ReleaseTrack().prefix
+      )
+      log.status.Print(
+          'Check the status of the new KMS Config by listing all KMS configs:\n'
+          '  $ {} '.format(command)
+      )
+    return result
+
+
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class CreateBeta(base.CreateCommand):
   """Create a Cloud NetApp Volumes KMS Config."""

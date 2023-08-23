@@ -44,7 +44,8 @@ class List(base.ListCommand):
   @staticmethod
   def Args(parser):
     resource_args.AddAzureClusterResourceArg(
-        parser, 'to list Azure node pools', positional=False)
+        parser, 'to list Azure node pools', positional=False
+    )
     parser.display_info.AddFormat(constants.AZURE_NODE_POOL_FORMAT)
 
   def Run(self, args):
@@ -54,7 +55,8 @@ class List(base.ListCommand):
     with endpoint_util.GkemulticloudEndpointOverride(cluster_ref.locationsId):
       api_client = api_util.NodePoolsClient()
       items, is_empty = api_client.List(
-          cluster_ref, page_size=args.page_size, limit=args.limit)
+          cluster_ref, page_size=args.page_size, limit=args.limit
+      )
       if is_empty:
         return items
 

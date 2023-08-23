@@ -241,6 +241,8 @@ class UpdateBeta(Update):
     flags.AddEnableBlueGreenUpgradeFlag(upgrade_settings_group)
     flags.AddStandardRolloutPolicyFlag(
         upgrade_settings_group, for_node_pool=True)
+    flags.AddAutoscaleRolloutPolicyFlag(
+        upgrade_settings_group, for_node_pool=True)
     flags.AddNodePoolSoakDurationFlag(
         upgrade_settings_group, for_node_pool=True)
 
@@ -298,6 +300,7 @@ class UpdateBeta(Update):
         enable_surge_upgrade=args.enable_surge_upgrade,
         node_pool_soak_duration=args.node_pool_soak_duration,
         standard_rollout_policy=args.standard_rollout_policy,
+        autoscaled_rollout_policy=args.autoscaled_rollout_policy,
         network_performance_config=args.network_performance_configs,
         enable_confidential_nodes=args.enable_confidential_nodes,
         enable_fast_socket=args.enable_fast_socket,
@@ -333,6 +336,8 @@ class UpdateAlpha(Update):
     flags.AddEnableBlueGreenUpgradeFlag(upgrade_settings_group)
     flags.AddStandardRolloutPolicyFlag(
         upgrade_settings_group, for_node_pool=True)
+    flags.AddAutoscaleRolloutPolicyFlag(
+        upgrade_settings_group, for_node_pool=True)
     flags.AddNodePoolSoakDurationFlag(
         upgrade_settings_group, for_node_pool=True)
 
@@ -390,6 +395,7 @@ class UpdateAlpha(Update):
         enable_surge_upgrade=args.enable_surge_upgrade,
         node_pool_soak_duration=args.node_pool_soak_duration,
         standard_rollout_policy=args.standard_rollout_policy,
+        autoscaled_rollout_policy=args.autoscaled_rollout_policy,
         network_performance_config=args.network_performance_configs,
         enable_confidential_nodes=args.enable_confidential_nodes,
         enable_fast_socket=args.enable_fast_socket,

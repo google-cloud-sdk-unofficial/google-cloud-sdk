@@ -56,11 +56,12 @@ class Delete(base.DeleteCommand):
       node_pool_ref = resource_args.ParseAwsNodePoolResourceArg(args)
       node_pool_client = api_util.NodePoolsClient()
       message = command_util.NodePoolMessage(
-          node_pool_ref.awsNodePoolsId,
-          cluster=node_pool_ref.awsClustersId)
+          node_pool_ref.awsNodePoolsId, cluster=node_pool_ref.awsClustersId
+      )
       return command_util.Delete(
           resource_ref=node_pool_ref,
           resource_client=node_pool_client,
           message=message,
           args=args,
-          kind=constants.AWS_NODEPOOL_KIND)
+          kind=constants.AWS_NODEPOOL_KIND,
+      )

@@ -2,9 +2,9 @@
 
   help_text:
     brief: |
-      Get the certificate authority information for a Memorystore Cluster for Redis instance.
+      Get the certificate authority information for a Memorystore for Redis Cluster instance.
     description: |
-      Get the certificate authority information for a Memorystore Cluster for Redis instance.
+      Get the certificate authority information for a Memorystore for Redis Cluster instance.
 
       This command can fail for the following reasons:
         * The cluster specified does not exist.

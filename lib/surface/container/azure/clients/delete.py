@@ -53,11 +53,12 @@ class Delete(base.DeleteCommand):
       client_ref = resource_args.ParseAzureClientResourceArg(args)
       api_client = api_util.ClientsClient()
       message = command_util.ClientMessage(
-          client_ref.azureClientsId,
-          region=location)
+          client_ref.azureClientsId, region=location
+      )
       return command_util.Delete(
           resource_ref=client_ref,
           resource_client=api_client,
           message=message,
           args=args,
-          kind=constants.AZURE_CLIENT_KIND)
+          kind=constants.AZURE_CLIENT_KIND,
+      )

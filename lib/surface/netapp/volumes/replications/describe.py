@@ -26,6 +26,47 @@ from googlecloudsdk.command_lib.netapp.volumes.replications import flags as repl
 from googlecloudsdk.command_lib.util.concepts import concept_parsers
 
 
+# TODO(b/293907222): Make gcloud netapp public and visible for GA
+@base.Hidden
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class Describe(base.DescribeCommand):
+  """Describe a Cloud NetApp Volume Replication."""
+
+  _RELEASE_TRACK = base.ReleaseTrack.GA
+
+  detailed_help = {
+      'DESCRIPTION': """\
+          Describe a Cloud NetApp Volume Replication.
+          """,
+      'EXAMPLES': """\
+          The following command describes a Replication named NAME in the given location and volume:
+
+              $ {command} NAME --location=us-central1 --volume=vol1
+          """,
+  }
+
+  @staticmethod
+  def Args(parser):
+    concept_parsers.ConceptParser(
+        [flags.GetReplicationPresentationSpec('The Replication to describe.')]
+    ).AddToParser(parser)
+    replications_flags.AddReplicationVolumeArg(parser)
+
+  def Run(self, args):
+    """Get a Cloud NetApp Volume Replication in the current project."""
+    replication_ref = args.CONCEPTS.replication.Parse()
+
+    if args.CONCEPTS.volume.Parse() is None:
+      raise exceptions.RequiredArgumentException(
+          '--volume', 'Requires a volume to describe replication of'
+      )
+
+    client = replications_client.ReplicationsClient(
+        release_track=self._RELEASE_TRACK
+    )
+    return client.GetReplication(replication_ref)
+
+
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class DescribeBeta(base.DescribeCommand):
   """Describe a Cloud NetApp Volume Replication."""

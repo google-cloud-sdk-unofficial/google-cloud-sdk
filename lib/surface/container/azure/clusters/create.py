@@ -43,9 +43,11 @@ class Create(base.CreateCommand):
   @staticmethod
   def Args(parser):
     auth_config_group = parser.add_argument_group(
-        'Authentication configuration', mutex=True, required=True)
-    resource_args.AddAzureClusterAndClientResourceArgs(parser,
-                                                       auth_config_group)
+        'Authentication configuration', mutex=True, required=True
+    )
+    resource_args.AddAzureClusterAndClientResourceArgs(
+        parser, auth_config_group
+    )
     flags.AddAzureServicesAuthentication(auth_config_group)
     flags.AddAzureRegion(parser)
     flags.AddEndpointSubnetId(parser)
@@ -85,13 +87,15 @@ class Create(base.CreateCommand):
           cluster_ref.azureClustersId,
           action='Creating',
           kind=constants.AZURE,
-          region=args.azure_region)
+          region=args.azure_region,
+      )
       return command_util.Create(
           resource_ref=cluster_ref,
           resource_client=cluster_client,
           args=args,
           message=message,
-          kind=constants.AZURE_CLUSTER_KIND)
+          kind=constants.AZURE_CLUSTER_KIND,
+      )
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)

@@ -374,6 +374,7 @@ class Update(base.UpdateCommand):
     flags.AddRuntimeVulnerabilityInsightFlag(group)
     flags.AddWorkloadPoliciesFlag(group)
     flags.AddRemoveWorkloadPoliciesFlag(group)
+    flags.AddInTransitEncryptionFlag(group)
 
   def ParseUpdateOptions(self, args, locations):
     get_default = lambda key: getattr(args, key)
@@ -438,7 +439,9 @@ class Update(base.UpdateCommand):
     opts.binauthz_policy_bindings = None
     opts.logging_variant = args.logging_variant
     opts.additional_pod_ipv4_ranges = args.additional_pod_ipv4_ranges
-    opts.removed_additional_pod_ipv4_ranges = args.remove_additional_pod_ipv4_ranges
+    opts.removed_additional_pod_ipv4_ranges = (
+        args.remove_additional_pod_ipv4_ranges
+    )
     opts.stack_type = args.stack_type
     opts.enable_cost_allocation = args.enable_cost_allocation
     opts.gateway_api = args.gateway_api
@@ -875,6 +878,7 @@ class UpdateBeta(Update):
     flags.AddRemoveWorkloadPoliciesFlag(group)
     flags.AddEnableFqdnNetworkPolicyFlag(group)
     flags.AddHostMaintenanceIntervalFlag(group)
+    flags.AddInTransitEncryptionFlag(group)
 
   def ParseUpdateOptions(self, args, locations):
     get_default = lambda key: getattr(args, key)
@@ -882,37 +886,48 @@ class UpdateBeta(Update):
     opts = container_command_util.ParseUpdateOptionsBase(args, locations)
     opts.enable_pod_security_policy = args.enable_pod_security_policy
     opts.istio_config = args.istio_config
-    opts.cloud_run_config = flags.GetLegacyCloudRunFlag('{}_config', args,
-                                                        get_default)
+    opts.cloud_run_config = flags.GetLegacyCloudRunFlag(
+        '{}_config', args, get_default
+    )
     opts.resource_usage_bigquery_dataset = args.resource_usage_bigquery_dataset
     opts.enable_intra_node_visibility = args.enable_intra_node_visibility
-    opts.clear_resource_usage_bigquery_dataset = \
+    opts.clear_resource_usage_bigquery_dataset = (
         args.clear_resource_usage_bigquery_dataset
+    )
     opts.enable_network_egress_metering = args.enable_network_egress_metering
-    opts.enable_resource_consumption_metering = args.enable_resource_consumption_metering
+    opts.enable_resource_consumption_metering = (
+        args.enable_resource_consumption_metering
+    )
     opts.enable_workload_certificates = args.enable_workload_certificates
     opts.enable_alts = args.enable_alts
-    opts.enable_experimental_vertical_pod_autoscaling = args.enable_experimental_vertical_pod_autoscaling
+    opts.enable_experimental_vertical_pod_autoscaling = (
+        args.enable_experimental_vertical_pod_autoscaling
+    )
     flags.ValidateIstioConfigUpdateArgs(args.istio_config, args.disable_addons)
-    flags.ValidateCloudRunConfigUpdateArgs(opts.cloud_run_config,
-                                           args.disable_addons)
+    flags.ValidateCloudRunConfigUpdateArgs(
+        opts.cloud_run_config, args.disable_addons
+    )
     if args.disable_addons and api_adapter.NODELOCALDNS in args.disable_addons:
       # NodeLocalDNS is being enabled or disabled
       console_io.PromptContinue(
-          message='Enabling/Disabling NodeLocal DNSCache causes a re-creation '
-          'of all cluster nodes at versions 1.15 or above. '
-          'This operation is long-running and will block other '
-          'operations on the cluster (including delete) until it has run '
-          'to completion.'
-          'If you use maintenance windows, cluster nodes will only be re-created '
-          'during a maintenance window. If you prefer not to wait, you can '
-          'manually "upgrade" your node pools to the same version they are '
-          'already using, by setting the --cluster-version flag to the same GKE '
-          'version the nodes are already running.',
-          cancel_on_no=True)
+          message=(
+              'Enabling/Disabling NodeLocal DNSCache causes a re-creation of'
+              ' all cluster nodes at versions 1.15 or above. This operation is'
+              ' long-running and will block other operations on the cluster'
+              ' (including delete) until it has run to completion.If you use'
+              ' maintenance windows, cluster nodes will only be re-created'
+              ' during a maintenance window. If you prefer not to wait, you can'
+              ' manually "upgrade" your node pools to the same version they are'
+              ' already using, by setting the --cluster-version flag to the'
+              ' same GKE version the nodes are already running.'
+          ),
+          cancel_on_no=True,
+      )
 
     opts.enable_stackdriver_kubernetes = args.enable_stackdriver_kubernetes
-    opts.enable_logging_monitoring_system_only = args.enable_logging_monitoring_system_only
+    opts.enable_logging_monitoring_system_only = (
+        args.enable_logging_monitoring_system_only
+    )
     opts.master_logs = args.master_logs
     opts.no_master_logs = args.no_master_logs
     opts.enable_master_metrics = args.enable_master_metrics
@@ -929,8 +944,12 @@ class UpdateBeta(Update):
     opts.enable_master_global_access = args.enable_master_global_access
     opts.disable_default_snat = args.disable_default_snat
     opts.notification_config = args.notification_config
-    opts.kubernetes_objects_changes_target = args.kubernetes_objects_changes_target
-    opts.kubernetes_objects_snapshots_target = args.kubernetes_objects_snapshots_target
+    opts.kubernetes_objects_changes_target = (
+        args.kubernetes_objects_changes_target
+    )
+    opts.kubernetes_objects_snapshots_target = (
+        args.kubernetes_objects_snapshots_target
+    )
     opts.enable_gke_oidc = args.enable_gke_oidc
     opts.enable_identity_service = args.enable_identity_service
     opts.enable_workload_monitoring_eap = args.enable_workload_monitoring_eap
@@ -965,8 +984,12 @@ class UpdateBeta(Update):
     opts.disable_dataplane_v2_metrics = args.disable_dataplane_v2_metrics
     opts.dataplane_v2_observability_mode = args.dataplane_v2_observability_mode
     opts.enable_workload_config_audit = args.enable_workload_config_audit
-    opts.pod_autoscaling_direct_metrics_opt_in = args.pod_autoscaling_direct_metrics_opt_in
-    opts.enable_workload_vulnerability_scanning = args.enable_workload_vulnerability_scanning
+    opts.pod_autoscaling_direct_metrics_opt_in = (
+        args.pod_autoscaling_direct_metrics_opt_in
+    )
+    opts.enable_workload_vulnerability_scanning = (
+        args.enable_workload_vulnerability_scanning
+    )
     opts.enable_private_endpoint = args.enable_private_endpoint
     opts.enable_google_cloud_access = args.enable_google_cloud_access
     opts.enable_cost_allocation = args.enable_cost_allocation
@@ -975,7 +998,9 @@ class UpdateBeta(Update):
     opts.stack_type = args.stack_type
     opts.logging_variant = args.logging_variant
     opts.additional_pod_ipv4_ranges = args.additional_pod_ipv4_ranges
-    opts.removed_additional_pod_ipv4_ranges = args.remove_additional_pod_ipv4_ranges
+    opts.removed_additional_pod_ipv4_ranges = (
+        args.remove_additional_pod_ipv4_ranges
+    )
     opts.gateway_api = args.gateway_api
     opts.fleet_project = args.fleet_project
     opts.enable_fleet = args.enable_fleet
@@ -1095,6 +1120,7 @@ class UpdateAlpha(Update):
     flags.AddRemoveWorkloadPoliciesFlag(group)
     flags.AddEnableFqdnNetworkPolicyFlag(group)
     flags.AddHostMaintenanceIntervalFlag(group)
+    flags.AddInTransitEncryptionFlag(group)
 
   def ParseUpdateOptions(self, args, locations):
     get_default = lambda key: getattr(args, key)
@@ -1103,32 +1129,44 @@ class UpdateAlpha(Update):
     opts.autoscaling_profile = args.autoscaling_profile
     opts.enable_pod_security_policy = args.enable_pod_security_policy
     opts.resource_usage_bigquery_dataset = args.resource_usage_bigquery_dataset
-    opts.clear_resource_usage_bigquery_dataset = \
+    opts.clear_resource_usage_bigquery_dataset = (
         args.clear_resource_usage_bigquery_dataset
+    )
     opts.security_profile = args.security_profile
     opts.istio_config = args.istio_config
-    opts.cloud_run_config = flags.GetLegacyCloudRunFlag('{}_config', args,
-                                                        get_default)
+    opts.cloud_run_config = flags.GetLegacyCloudRunFlag(
+        '{}_config', args, get_default
+    )
     opts.enable_intra_node_visibility = args.enable_intra_node_visibility
     opts.enable_network_egress_metering = args.enable_network_egress_metering
-    opts.enable_resource_consumption_metering = args.enable_resource_consumption_metering
+    opts.enable_resource_consumption_metering = (
+        args.enable_resource_consumption_metering
+    )
     opts.enable_workload_certificates = args.enable_workload_certificates
     opts.enable_alts = args.enable_alts
-    opts.enable_experimental_vertical_pod_autoscaling = args.enable_experimental_vertical_pod_autoscaling
+    opts.enable_experimental_vertical_pod_autoscaling = (
+        args.enable_experimental_vertical_pod_autoscaling
+    )
     flags.ValidateIstioConfigUpdateArgs(args.istio_config, args.disable_addons)
-    flags.ValidateCloudRunConfigUpdateArgs(opts.cloud_run_config,
-                                           args.disable_addons)
+    flags.ValidateCloudRunConfigUpdateArgs(
+        opts.cloud_run_config, args.disable_addons
+    )
     if args.disable_addons and api_adapter.NODELOCALDNS in args.disable_addons:
       # NodeLocalDNS is being enabled or disabled
       console_io.PromptContinue(
-          message='Enabling/Disabling NodeLocal DNSCache causes a re-creation '
-          'of all cluster nodes at versions 1.15 or above. '
-          'This operation is long-running and will block other '
-          'operations on the cluster (including delete) until it has run '
-          'to completion.',
-          cancel_on_no=True)
+          message=(
+              'Enabling/Disabling NodeLocal DNSCache causes a re-creation '
+              'of all cluster nodes at versions 1.15 or above. '
+              'This operation is long-running and will block other '
+              'operations on the cluster (including delete) until it has run '
+              'to completion.'
+          ),
+          cancel_on_no=True,
+      )
     opts.enable_stackdriver_kubernetes = args.enable_stackdriver_kubernetes
-    opts.enable_logging_monitoring_system_only = args.enable_logging_monitoring_system_only
+    opts.enable_logging_monitoring_system_only = (
+        args.enable_logging_monitoring_system_only
+    )
     opts.no_master_logs = args.no_master_logs
     opts.master_logs = args.master_logs
     opts.enable_master_metrics = args.enable_master_metrics
@@ -1145,8 +1183,12 @@ class UpdateAlpha(Update):
     opts.enable_cost_allocation = args.enable_cost_allocation
     opts.enable_master_global_access = args.enable_master_global_access
     opts.notification_config = args.notification_config
-    opts.kubernetes_objects_changes_target = args.kubernetes_objects_changes_target
-    opts.kubernetes_objects_snapshots_target = args.kubernetes_objects_snapshots_target
+    opts.kubernetes_objects_changes_target = (
+        args.kubernetes_objects_changes_target
+    )
+    opts.kubernetes_objects_snapshots_target = (
+        args.kubernetes_objects_snapshots_target
+    )
     opts.enable_gke_oidc = args.enable_gke_oidc
     opts.enable_identity_service = args.enable_identity_service
     opts.enable_workload_monitoring_eap = args.enable_workload_monitoring_eap
@@ -1180,8 +1222,12 @@ class UpdateAlpha(Update):
     opts.disable_dataplane_v2_metrics = args.disable_dataplane_v2_metrics
     opts.dataplane_v2_observability_mode = args.dataplane_v2_observability_mode
     opts.enable_workload_config_audit = args.enable_workload_config_audit
-    opts.pod_autoscaling_direct_metrics_opt_in = args.pod_autoscaling_direct_metrics_opt_in
-    opts.enable_workload_vulnerability_scanning = args.enable_workload_vulnerability_scanning
+    opts.pod_autoscaling_direct_metrics_opt_in = (
+        args.pod_autoscaling_direct_metrics_opt_in
+    )
+    opts.enable_workload_vulnerability_scanning = (
+        args.enable_workload_vulnerability_scanning
+    )
     opts.enable_private_endpoint = args.enable_private_endpoint
     opts.enable_google_cloud_access = args.enable_google_cloud_access
     opts.binauthz_evaluation_mode = args.binauthz_evaluation_mode
@@ -1190,7 +1236,9 @@ class UpdateAlpha(Update):
     opts.gateway_api = args.gateway_api
     opts.logging_variant = args.logging_variant
     opts.additional_pod_ipv4_ranges = args.additional_pod_ipv4_ranges
-    opts.removed_additional_pod_ipv4_ranges = args.remove_additional_pod_ipv4_ranges
+    opts.removed_additional_pod_ipv4_ranges = (
+        args.remove_additional_pod_ipv4_ranges
+    )
     opts.fleet_project = args.fleet_project
     opts.enable_fleet = args.enable_fleet
     opts.clear_fleet_project = args.clear_fleet_project

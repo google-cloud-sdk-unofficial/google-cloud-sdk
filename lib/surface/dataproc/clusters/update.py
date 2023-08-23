@@ -102,7 +102,19 @@ class Update(base.UpdateCommand):
               interrupting jobs). Timeout defaults to 0 if not set (for forceful
               decommission), and the maximum allowed timeout is 1 day.
               See $ gcloud topic datetimes for information on duration formats.
-              """)
+              """,
+    )
+
+    parser.add_argument(
+        '--secondary-worker-required-registration-fraction',
+        help=(
+            'The fraction of secondary worker nodes to successfully report '
+            'for cluster create/update success. Defaults to 0.0001.'
+        ),
+        type=float,
+        hidden=True,
+    )
+
     _AddAlphaArguments(parser, cls.ReleaseTrack())
 
     idle_delete_group = parser.add_mutually_exclusive_group()
@@ -185,6 +197,30 @@ class Update(base.UpdateCommand):
           'config.secondary_worker_config.num_instances')
       has_changes = True
 
+    if args.secondary_worker_required_registration_fraction is not None:
+      if cluster_config.secondaryWorkerConfig is None:
+        worker_config = dataproc.messages.InstanceGroupConfig(
+            startupConfig=dataproc.messages.StartupConfig(
+                requiredRegistrationFraction=(
+                    args.secondary_worker_required_registration_fraction
+                )
+            )
+        )
+      else:
+        worker_config = dataproc.messages.InstanceGroupConfig(
+            numInstances=num_secondary_workers,
+            startupConfig=dataproc.messages.StartupConfig(
+                requiredRegistrationFraction=(
+                    args.secondary_worker_required_registration_fraction
+                )
+            ),
+        )
+      cluster_config.secondaryWorkerConfig = worker_config
+      changed_fields.append(
+          'config.secondary_worker_config.startup_config.required_registration_fraction'
+      )
+      has_changes = True
+
     if self.ReleaseTrack() == base.ReleaseTrack.ALPHA:
       if args.secondary_worker_standard_capacity_base is not None:
         if cluster_config.secondaryWorkerConfig is None:
@@ -196,6 +232,7 @@ class Update(base.UpdateCommand):
         else:
           worker_config = dataproc.messages.InstanceGroupConfig(
               numInstances=num_secondary_workers,
+              startupConfig=cluster_config.secondaryWorkerConfig.startupConfig,
               instanceFlexibilityPolicy=dataproc.messages.InstanceFlexibilityPolicy(
                   provisioningModelMix=dataproc.messages.ProvisioningModelMix(
                       standardCapacityBase=args.secondary_worker_standard_capacity_base

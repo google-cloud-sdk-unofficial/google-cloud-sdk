@@ -88,6 +88,7 @@ class List(base.ListCommand):
     flags.add_encryption_flags(parser, command_only_reads_data=True)
     flags.add_fetch_encrypted_object_hashes_flag(parser, is_list=True)
     flags.add_raw_display_flag(parser)
+    flags.add_uri_support_to_list_commands(parser)
 
   def Display(self, args, resources):
     if args.stat:

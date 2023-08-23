@@ -2,7 +2,7 @@
 
   help_text:
     brief: |
-      List Memorystore Cluster for Redis instances.
+      List Memorystore for Redis Cluster instances.
     description: |
       List all clusters under the specified project and region.
 
@@ -34,6 +34,7 @@
       table(
         name.basename():label=CLUSTER_NAME:sort=2,
         state:label=STATUS,
+        name.segment(3):label=REGION,
         sizeGb:label=SIZE_GB,
         shardCount:label=SHARD_COUNT,
         replicaCount:label=REPLICA_COUNT,

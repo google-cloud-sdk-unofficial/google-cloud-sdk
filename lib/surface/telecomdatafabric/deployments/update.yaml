@@ -1,0 +1,47 @@
+- release_tracks: [ALPHA]
+
+  help_text:
+    brief: |
+      Update a Deployment resource.
+    description: |
+      Update a Deployment resource with given lake or lake_info. Currently only lake or lake_info update is supported.
+    examples: |
+      To update a deployment `test-deployment` in location `us-central1` where data asset should be attached to zones within the given lake_id (lake and zones should already exist), run:
+
+      $ {command} test-deployment --location=us-central1 --lake='lake-id'
+
+      To update a deployment `test-deployment` in location `us-central1` where data asset should be attached to zones within the given lake_id (lake and zones will be created), run:
+
+      $ {command} test-deployment --location=us-central1 --lake-info='lake-id'
+
+  request:
+    collection: telecomdatafabric.projects.locations.deployments
+    api_version: v1alpha
+
+  arguments:
+    resource:
+      help_text: Arguments that specify the TelecomDataFabric deployment you want to update.
+      spec: !REF googlecloudsdk.command_lib.telecomdatafabric.resources:deployment
+    params:
+    - group:
+        mutex: true
+        help_text: Specify lake or lake-info.
+        params:
+        - arg_name: lake
+          api_field: deployment.lake
+          help_text: |
+            The existing dataplex lake id
+              * The Data Asset wil be attached to appropriate zone in the given lake id if present.
+              * If lake id does not exist then it will result in error.
+          processor: googlecloudsdk.api_lib.telecomdatafabric.lake:Lake
+        - arg_name: lake-info
+          api_field: deployment.lakeInfo
+          help_text: |
+            The Dataplex lake id to create
+              * A Dataplex lake will be created with the given lake id.
+              * Three Zones ({lake_id}-landing, {lake_id}-intermediate, {lake_id}-curated) will be created.
+              * Deployment Data  Asset will be attached to appropriate zone based on the asset type.
+          processor: googlecloudsdk.api_lib.telecomdatafabric.lake:LakeInfo
+
+  async:
+    collection: telecomdatafabric.projects.locations.operations

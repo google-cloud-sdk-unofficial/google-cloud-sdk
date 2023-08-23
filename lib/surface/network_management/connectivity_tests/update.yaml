@@ -50,7 +50,6 @@
           api_field: connectivityTest.source.ipAddress
           help_text: |
             The IP address of the source which can be an external or internal IP.
-            An IPv6 address is only allowed when the test's destination is a global load balancer VIP.
         - arg_name: clear-source-ip-address
           type: bool
           help_text: |
@@ -141,7 +140,6 @@
           api_field: connectivityTest.destination.ipAddress
           help_text: |
             The IP address of the destination which can be an external or internal IP.
-            An IPv6 address is only allowed when the test's destination is a global load balancer VIP.
         - arg_name: clear-destination-ip-address
           type: bool
           help_text: |

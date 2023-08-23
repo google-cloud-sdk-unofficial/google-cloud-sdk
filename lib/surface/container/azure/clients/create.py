@@ -48,13 +48,17 @@ class Create(base.CreateCommand):
     parser.add_argument(
         "--tenant-id",
         required=True,
-        help="Azure Active Directory (AAD) tenant ID (GUID) to associate with the client."
+        help=(
+            "Azure Active Directory (AAD) tenant ID (GUID) to associate with"
+            " the client."
+        ),
     )
     parser.add_argument(
         "--application-id",
         required=True,
         dest="app_id",
-        help="Azure Active Directory (AAD) Application/Client ID (GUID).")
+        help="Azure Active Directory (AAD) Application/Client ID (GUID).",
+    )
     base.ASYNC_FLAG.AddToParser(parser)
     flags.AddValidateOnly(parser, "creation of the client")
     parser.display_info.AddFormat(constants.AZURE_CLIENT_FORMAT)
@@ -66,11 +70,12 @@ class Create(base.CreateCommand):
       client_ref = resource_args.ParseAzureClientResourceArg(args)
       api_client = api_util.ClientsClient()
       message = command_util.ClientMessage(
-          client_ref.azureClientsId,
-          action="Creating")
+          client_ref.azureClientsId, action="Creating"
+      )
       return command_util.Create(
           resource_ref=client_ref,
           resource_client=api_client,
           message=message,
           args=args,
-          kind=constants.AZURE_CLIENT_KIND)
+          kind=constants.AZURE_CLIENT_KIND,
+      )

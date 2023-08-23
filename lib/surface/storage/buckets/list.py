@@ -60,6 +60,7 @@ class List(base.ListCommand):
         'urls', nargs='*', help='Specifies URL of buckets to List.')
     flags.add_additional_headers_flag(parser)
     flags.add_raw_display_flag(parser)
+    flags.add_uri_support_to_list_commands(parser)
 
   def Run(self, args):
     if args.urls:

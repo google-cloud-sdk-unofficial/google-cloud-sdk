@@ -46,5 +46,6 @@ class PrintAccessToken(base.Command):
       if args.exec_credential:
         return kubeconfig.ExecCredential(
             expiration_timestamp=response.expirationTime,
-            access_token=response.accessToken)
+            access_token=response.accessToken,
+        )
       return response

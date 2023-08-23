@@ -28,6 +28,64 @@ from googlecloudsdk.core import log
 from googlecloudsdk.core.console import console_io
 
 
+# TODO(b/293907222): Make gcloud netapp public and visible for GA
+@base.Hidden
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class Delete(base.DeleteCommand):
+  """Delete a Cloud NetApp Volume Replication."""
+
+  _RELEASE_TRACK = base.ReleaseTrack.GA
+
+  detailed_help = {
+      'DESCRIPTION': """\
+          Delete a Cloud NetApp Volume Replication.
+          """,
+      'EXAMPLES': """\
+          The following command deletes a Replication named NAME using the required arguments:
+
+              $ {command} NAME --location=us-central1 --volume=vol1
+
+          To delete a Replication named NAME asynchronously, run the following command:
+
+              $ {command} NAME --location=us-central1 --volume=vol1 --async
+          """,
+  }
+
+  @staticmethod
+  def Args(parser):
+    """Add args for deleting a Replication."""
+    concept_parsers.ConceptParser([
+        flags.GetReplicationPresentationSpec('The Replication to delete.')
+    ]).AddToParser(parser)
+    replications_flags.AddReplicationVolumeArg(parser)
+    flags.AddResourceAsyncFlag(parser)
+
+  def Run(self, args):
+    """Delete a Cloud NetApp Volume Replication in the current project."""
+    replication_ref = args.CONCEPTS.replication.Parse()
+
+    if not args.quiet:
+      delete_warning = (
+          'You are about to delete a Replication {}.\nAre you sure?'.format(
+              replication_ref.RelativeName()
+          )
+      )
+      if not console_io.PromptContinue(message=delete_warning):
+        return None
+
+    client = replications_client.ReplicationsClient(self._RELEASE_TRACK)
+    result = client.DeleteReplication(replication_ref, args.async_)
+    if args.async_:
+      command = 'gcloud {} netapp volumes replications list'.format(
+          self.ReleaseTrack().prefix
+      )
+      log.status.Print(
+          'Check the status of the deletion by listing all replications:\n  '
+          '$ {} '.format(command)
+      )
+    return result
+
+
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class DeleteBeta(base.DeleteCommand):
   """Delete a Cloud NetApp Volume Replication."""

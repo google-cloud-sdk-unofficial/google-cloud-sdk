@@ -45,6 +45,7 @@ def _Args(
     support_source_ip_range,
     support_disable_automate_dns_zone,
     support_regional_tcp_proxy,
+    support_ip_collection,
 ):
   """Add the flags to create a forwarding rule."""
 
@@ -52,7 +53,8 @@ def _Args(
       parser,
       include_psc_google_apis=support_psc_google_apis,
       include_target_service_attachment=support_target_service_attachment,
-      include_regional_tcp_proxy=support_regional_tcp_proxy)
+      include_regional_tcp_proxy=support_regional_tcp_proxy,
+      include_ip_collection=support_ip_collection)
   flags.AddIPProtocols(parser, support_all_protocol, support_l3_default)
   flags.AddDescription(parser)
   flags.AddPortsAndPortRange(parser)
@@ -108,6 +110,7 @@ class CreateHelper(object):
       support_source_ip_range,
       support_disable_automate_dns_zone,
       support_regional_tcp_proxy,
+      support_ip_collection
   ):
     self._holder = holder
     self._support_global_access = support_global_access
@@ -121,6 +124,7 @@ class CreateHelper(object):
     self._support_source_ip_range = support_source_ip_range
     self._support_disable_automate_dns_zone = support_disable_automate_dns_zone
     self._support_regional_tcp_proxy = support_regional_tcp_proxy
+    self._support_ip_collection = support_ip_collection
 
   @classmethod
   def Args(
@@ -134,6 +138,7 @@ class CreateHelper(object):
       support_source_ip_range,
       support_disable_automate_dns_zone,
       support_regional_tcp_proxy,
+      support_ip_collection
   ):
     """Inits the class args for supported features."""
     cls.FORWARDING_RULE_ARG = _Args(
@@ -146,6 +151,7 @@ class CreateHelper(object):
         support_source_ip_range,
         support_disable_automate_dns_zone,
         support_regional_tcp_proxy,
+        support_ip_collection
     )
 
   def ConstructProtocol(self, messages, args):
@@ -483,6 +489,10 @@ class CreateHelper(object):
     if args.IsSpecified('allow_psc_global_access'):
       forwarding_rule.allowPscGlobalAccess = args.allow_psc_global_access
 
+    if self._support_ip_collection and args.ip_collection:
+      forwarding_rule.ipCollection = flags.IP_COLLECTION_ARG.ResolveAsResource(
+          args, resources).SelfLink()
+
     if self._support_disable_automate_dns_zone and args.IsSpecified(
         'disable_automate_dns_zone'):
       forwarding_rule.noAutomateDnsZone = args.disable_automate_dns_zone
@@ -615,6 +625,7 @@ class Create(base.CreateCommand):
   _support_source_ip_range = True
   _support_disable_automate_dns_zone = True
   _support_regional_tcp_proxy = True
+  _support_ip_collection = False
 
   @classmethod
   def Args(cls, parser):
@@ -623,7 +634,8 @@ class Create(base.CreateCommand):
                       cls._support_target_service_attachment,
                       cls._support_l3_default, cls._support_source_ip_range,
                       cls._support_disable_automate_dns_zone,
-                      cls._support_regional_tcp_proxy)
+                      cls._support_regional_tcp_proxy,
+                      cls._support_ip_collection)
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
@@ -638,6 +650,7 @@ class Create(base.CreateCommand):
         self._support_source_ip_range,
         self._support_disable_automate_dns_zone,
         self._support_regional_tcp_proxy,
+        self._support_ip_collection,
     ).Run(args)
 
 
@@ -652,6 +665,7 @@ class CreateBeta(Create):
   _support_source_ip_range = True
   _support_disable_automate_dns_zone = True
   _support_regional_tcp_proxy = True
+  _support_ip_collection = False
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -665,6 +679,7 @@ class CreateAlpha(CreateBeta):
   _support_source_ip_range = True
   _support_disable_automate_dns_zone = True
   _support_regional_tcp_proxy = True
+  _support_ip_collection = True
 
 
 Create.detailed_help = {

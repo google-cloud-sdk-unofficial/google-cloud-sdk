@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*- #
-# Copyright 2021 Google LLC. All Rights Reserved.
+# Copyright 2023 Google LLC. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""The command group for Blueprints Controller deployment revisions."""
+"""Command group for cluster upgrade feature."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -21,8 +21,14 @@ from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 
 
-@base.Deprecate(
-    True, 'This command is deprecated.', 'This command is no longer supported.'
+@base.Hidden
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA,
 )
-class Revisions(base.Group):
-  """Get details about Blueprints Controller deployment revisions."""
+class ClusterUpgrades(base.Group):
+  """Configure the Fleet clusterupgrade feature.
+
+  This fleet feature is used to configure fleet-based rollout sequencing.
+  """
+
+  category = base.COMPUTE_CATEGORY

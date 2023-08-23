@@ -18,6 +18,8 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+from typing import Optional
+
 from googlecloudsdk.api_lib.container.gkeonprem import bare_metal_clusters as apis
 from googlecloudsdk.api_lib.container.gkeonprem import operations
 from googlecloudsdk.calliope import base
@@ -27,6 +29,7 @@ from googlecloudsdk.command_lib.container.bare_metal import constants as bare_me
 from googlecloudsdk.command_lib.container.gkeonprem import constants
 from googlecloudsdk.command_lib.container.gkeonprem import flags as common_flags
 from googlecloudsdk.core import log
+from googlecloudsdk.generated_clients.apis.gkeonprem.v1 import gkeonprem_v1_messages as messages
 
 _EXAMPLES = """
 To update a cluster named ``my-cluster'' managed in location ``us-west1'', run:
@@ -35,14 +38,14 @@ $ {command} my-cluster --location=us-west1
 """
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
-class Update(base.UpdateCommand):
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class UpdateBeta(base.UpdateCommand):
   """Update an Anthos cluster on bare metal."""
 
   detailed_help = {'EXAMPLES': _EXAMPLES}
 
   @staticmethod
-  def Args(parser: parser_arguments.ArgumentInterceptor):
+  def Args(parser: parser_arguments.ArgumentInterceptor) -> None:
     """Gathers command line arguments for the update command.
 
     Args:
@@ -67,6 +70,69 @@ class Update(base.UpdateCommand):
     common_flags.AddBinauthzEvaluationMode(parser)
 
   def Run(self, args):
+    """Runs the update command.
+
+    Args:
+      args: The arguments received from command line.
+
+    Returns:
+      The return value depends on the command arguments. If `--async` is
+      specified, it returns an operation; otherwise, it returns the updated
+      resource. If `--validate-only` is specified, it returns operation or any
+      possible error.
+    """
+    cluster_ref = args.CONCEPTS.cluster.Parse()
+    cluster_client = apis.ClustersClient()
+    operation = cluster_client.Update(args)
+
+    if args.async_ and not args.IsSpecified('format'):
+      args.format = constants.OPERATIONS_FORMAT
+
+    if args.async_:
+      return operation
+
+    operation_client = operations.OperationsClient()
+    operation_response = operation_client.Wait(operation)
+
+    if not args.validate_only:
+      log.UpdatedResource(cluster_ref, 'Anthos cluster on bare metal',
+                          args.async_)
+    return operation_response
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class UpdateAlpha(base.UpdateCommand):
+  """Update an Anthos cluster on bare metal."""
+
+  detailed_help = {'EXAMPLES': _EXAMPLES}
+
+  @staticmethod
+  def Args(parser: parser_arguments.ArgumentInterceptor) -> None:
+    """Gathers command line arguments for the update command.
+
+    Args:
+      parser: The argparse parser to add the flag to.
+    """
+    parser.display_info.AddFormat(
+        bare_metal_constants.BARE_METAL_CLUSTERS_FORMAT)
+    flags.AddClusterResourceArg(parser, verb='to update', positional=True)
+    base.ASYNC_FLAG.AddToParser(parser)
+    flags.AddValidationOnly(parser)
+    flags.AddAllowMissingUpdateCluster(parser)
+    flags.AddLoadBalancerConfig(parser, is_update=True)
+    flags.AddControlPlaneConfig(parser, is_update=True)
+    flags.AddVersion(parser, is_update=True)
+    flags.AddSecurityConfig(parser, is_update=True)
+    flags.AddMaintenanceConfig(parser, is_update=True)
+    flags.AddNetworkConfig(parser, is_update=True)
+    flags.AddDescription(parser)
+    flags.AddClusterOperationsConfig(parser)
+    flags.AddNodeAccessConfig(parser)
+    flags.AddUpdateAnnotations(parser)
+    common_flags.AddBinauthzEvaluationMode(parser)
+    flags.AddUpgradePolicy(parser)
+
+  def Run(self, args) -> Optional[messages.Operation]:
     """Runs the update command.
 
     Args:

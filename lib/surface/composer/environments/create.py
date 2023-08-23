@@ -282,7 +282,7 @@ class Create(base.Command):
     self.ParseWebServerAccessControlConfigOptions(args)
     self.ParseMasterAuthorizedNetworksConfigOptions(args, self.ReleaseTrack())
     self.ValidateTriggererFlags(args)
-    self.ValidateComposer25Flags(args)
+    self.ValidateComposer3Flags(args)
     self.ValidateFlagsAddedInComposer2(
         args,
         image_versions_util.IsImageVersionStringComposerV1(self.image_version),
@@ -295,7 +295,7 @@ class Create(base.Command):
     flags.ValidateDiskSize('--disk-size', args.disk_size)
     self.env_ref = args.CONCEPTS.environment.Parse()
     env_name = self.env_ref.Name()
-    self.ParseComposer25Flags(args)
+    self.ParseComposer3Flags(args)
     if not command_util.IsValidEnvironmentName(env_name):
       raise command_util.InvalidUserInputError(
           'Invalid environment name: [{}]. Must match pattern: {}'.format(
@@ -392,7 +392,7 @@ class Create(base.Command):
   def ParsePrivateEnvironmentConfigOptions(self, args, image_version):
     """Parses the options for Private Environment configuration."""
 
-    if self.isComposer25(args):
+    if self.isComposer3(args):
       return
 
     if (args.enable_private_environment and not args.enable_ip_alias and
@@ -452,13 +452,12 @@ class Create(base.Command):
               prerequisite='enable-private-environment',
               opt='composer-network-ipv4-cidr'))
 
-  def isComposer25(self, args):
+  def isComposer3(self, args):
     return False
 
   def ParseWebServerAccessControlConfigOptions(self, args):
     if (
-        not self.isComposer25(args)
-        and args.enable_private_environment
+        args.enable_private_environment
         and not args.web_server_allow_ip
         and not args.web_server_allow_all
         and not args.web_server_deny_all
@@ -493,10 +492,10 @@ class Create(base.Command):
   def ValidateTriggererFlags(self, args):
     pass
 
-  def ValidateComposer25Flags(self, args):
+  def ValidateComposer3Flags(self, args):
     pass
 
-  def ParseComposer25Flags(self, args):
+  def ParseComposer3Flags(self, args):
     pass
 
   def ValidateFlagsAddedInComposer2(self, args, is_composer_v1, release_track):
@@ -652,7 +651,7 @@ class CreateBeta(Create):
     flags.ENABLE_CLOUD_DATA_LINEAGE_INTEGRATION_FLAG.AddToParser(
         cloud_data_lineage_integration_params_group)
 
-    AddComposer25Flags(parser)
+    AddComposer3Flags(parser)
 
   def GetOperationMessage(self, args, is_composer_v1):
     """See base class."""
@@ -745,9 +744,9 @@ class CreateBeta(Create):
     return environments_api_util.Create(self.env_ref, create_flags,
                                         is_composer_v1)
 
-  def ValidateComposer25Flags(self, args):
-    is_composer25 = self.isComposer25(args)
-    # Composer2 flags that are not supported in Composer2.5
+  def ValidateComposer3Flags(self, args):
+    is_composer3 = self.isComposer3(args)
+    # Composer2 flags that are not supported in Composer3
     forbidden_args = {
         'cloud-sql-ipv4-cidr': args.cloud_sql_ipv4_cidr,
         'composer-network-ipv4-cidr': args.composer_network_ipv4_cidr,
@@ -767,19 +766,19 @@ class CreateBeta(Create):
         ),
     }
     for k, v in possible_args.items():
-      if v is not None and not is_composer25:
+      if v is not None and not is_composer3:
         raise command_util.InvalidUserInputError(
-            flags.COMPOSER25_IS_REQUIRED_MSG.format(
+            flags.COMPOSER3_IS_REQUIRED_MSG.format(
                 opt=k,
-                composer_version=flags.MIN_COMPOSER25_VERSION,
+                composer_version=flags.MIN_COMPOSER3_VERSION,
             )
         )
     for k, v in forbidden_args.items():
-      if v is not None and is_composer25:
+      if v is not None and is_composer3:
         raise command_util.InvalidUserInputError(
-            flags.COMPOSER25_IS_NOT_SUPPORTED_MSG.format(
+            flags.COMPOSER3_IS_NOT_SUPPORTED_MSG.format(
                 opt=k,
-                composer_version=flags.MIN_COMPOSER25_VERSION,
+                composer_version=flags.MIN_COMPOSER3_VERSION,
             )
         )
     if args.network_attachment and (args.network or args.subnetwork):
@@ -816,16 +815,18 @@ class CreateBeta(Create):
             flags.ENABLED_TRIGGERER_IS_REQUIRED_MSG.format(
                 opt='triggerer-memory'))
 
-  def isComposer25(self, args):
-    return image_versions_util.IsVersionComposer25Compatible(args.image_version)
+  def isComposer3(self, args):
+    return image_versions_util.IsVersionComposer3Compatible(args.image_version)
 
-  def ParseComposer25Flags(self, args):
+  def ParseComposer3Flags(self, args):
     if args.network_attachment:
       args.network_attachment = parsers.ParseNetworkAttachment(
           args.network_attachment, fallback_region=self.env_ref.Parent().Name()
       ).RelativeName()
 
-def AddComposer25Flags(parser):
+
+def AddComposer3Flags(parser):
+  """Adds Composer 3 flags to the parser."""
   # web-server-plugins-support
   flags.SUPPORT_WEB_SERVER_PLUGINS.AddToParser(parser)
   # Dag processor

@@ -44,8 +44,8 @@ class Status(base.DescribeCommand):
 
   @classmethod
   def Args(cls, parser):
-    cmd_flags = flags.Flags(parser, 'status')
-    cmd_flags.AddMemberships()
+    cmd_flags = flags.PocoFlags(parser, 'status')
+    cmd_flags.add_memberships()
 
   def Run(self, args):
     calliope_base.EnableUserProjectQuota()

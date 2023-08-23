@@ -24,6 +24,37 @@ from googlecloudsdk.command_lib.netapp import flags
 from googlecloudsdk.command_lib.util.concepts import concept_parsers
 
 
+# TODO(b/293907222): Make gcloud netapp public and visible for GA launch
+@base.Hidden
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class Describe(base.DescribeCommand):
+  """Show metadata for a Cloud NetApp Volume."""
+
+  _RELEASE_TRACK = base.ReleaseTrack.GA
+
+  detailed_help = {
+      'DESCRIPTION': """\
+          Describe a Cloud NetApp Volume
+          """,
+      'EXAMPLES': """\
+          The following command describe a Volume named NAME in the given location
+
+              $ {command} NAME --location=us-central1
+          """,
+  }
+
+  @staticmethod
+  def Args(parser):
+    concept_parsers.ConceptParser([flags.GetVolumePresentationSpec(
+        'The Volume to describe.')]).AddToParser(parser)
+
+  def Run(self, args):
+    """Run the describe command."""
+    volume_ref = args.CONCEPTS.volume.Parse()
+    client = volumes_client.VolumesClient(release_track=self._RELEASE_TRACK)
+    return client.GetVolume(volume_ref)
+
+
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class DescribeBeta(base.DescribeCommand):
   """Show metadata for a Cloud NetApp Volume."""

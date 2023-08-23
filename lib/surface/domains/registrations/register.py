@@ -91,6 +91,8 @@ class Register(base.CreateCommand):
     api_version = registrations.GetApiVersionFromArgs(args)
     client = registrations.RegistrationsClient(api_version)
 
+    client.PrintSQSPAck()
+
     normalized = util.NormalizeResourceName(args.registration)
     if normalized != args.registration:
       console_io.PromptContinue(

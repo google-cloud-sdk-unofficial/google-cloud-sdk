@@ -33,11 +33,10 @@ class GetCredentials(base.Command):
   """Get credentials of an Anthos cluster on AWS."""
 
   detailed_help = {
-      'EXAMPLES':
-          kubeconfig.COMMAND_EXAMPLE,
-      'DESCRIPTION':
-          kubeconfig.COMMAND_DESCRIPTION.format(
-              cluster_type='Anthos cluster on AWS')
+      'EXAMPLES': kubeconfig.COMMAND_EXAMPLE,
+      'DESCRIPTION': kubeconfig.COMMAND_DESCRIPTION.format(
+          cluster_type='Anthos cluster on AWS'
+      ),
   }
 
   @staticmethod
@@ -50,30 +49,47 @@ class GetCredentials(base.Command):
     """Runs the get-credentials command."""
     with endpoint_util.GkemulticloudEndpointOverride(
         resource_args.ParseAwsClusterResourceArg(args).locationsId,
-        self.ReleaseTrack()):
+        self.ReleaseTrack(),
+    ):
       cluster_ref = resource_args.ParseAwsClusterResourceArg(args)
       cluster_client = api_util.ClustersClient()
 
       log.status.Print('Fetching cluster endpoint and auth data.')
       resp = cluster_client.Get(cluster_ref)
 
-      if resp.state != util.GetMessagesModule(
-      ).GoogleCloudGkemulticloudV1AwsCluster.StateValueValuesEnum.RUNNING:
+      if (
+          resp.state
+          != util.GetMessagesModule().GoogleCloudGkemulticloudV1AwsCluster.StateValueValuesEnum.RUNNING
+      ):
         log.warning(
-            kubeconfig.NOT_RUNNING_MSG.format(cluster_ref.awsClustersId))
+            kubeconfig.NOT_RUNNING_MSG.format(cluster_ref.awsClustersId)
+        )
 
       if not args.private_endpoint and kubeconfig.ConnectGatewayInNodePools(
-          resp, cluster_ref.awsClustersId):
-        kubeconfig.CheckClusterHasNodePools(api_util.NodePoolsClient(),
-                                            cluster_ref)
+          resp, cluster_ref.awsClustersId
+      ):
+        kubeconfig.CheckClusterHasNodePools(
+            api_util.NodePoolsClient(), cluster_ref
+        )
 
       kubeconfig.ValidateClusterVersion(resp, cluster_ref.awsClustersId)
-      context = kubeconfig.GenerateContext('aws', cluster_ref.projectsId,
-                                           cluster_ref.locationsId,
-                                           cluster_ref.awsClustersId)
+      context = kubeconfig.GenerateContext(
+          'aws',
+          cluster_ref.projectsId,
+          cluster_ref.locationsId,
+          cluster_ref.awsClustersId,
+      )
       cmd_args = kubeconfig.GenerateAuthProviderCmdArgs(
-          'aws', cluster_ref.awsClustersId, cluster_ref.locationsId,
-          cluster_ref.projectsId)
-      kubeconfig.GenerateKubeconfig(resp, cluster_ref.awsClustersId, context,
-                                    args.auth_provider_cmd_path, cmd_args,
-                                    args.private_endpoint)
+          'aws',
+          cluster_ref.awsClustersId,
+          cluster_ref.locationsId,
+          cluster_ref.projectsId,
+      )
+      kubeconfig.GenerateKubeconfig(
+          resp,
+          cluster_ref.awsClustersId,
+          context,
+          args.auth_provider_cmd_path,
+          cmd_args,
+          args.private_endpoint,
+      )

@@ -24,7 +24,7 @@ from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.dataflow import job_utils
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
 class UpdateOptions(base.Command):
   """Update pipeline options on-the-fly for running Dataflow jobs.
 

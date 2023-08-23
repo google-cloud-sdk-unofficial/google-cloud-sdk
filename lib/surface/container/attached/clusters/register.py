@@ -35,7 +35,6 @@ from googlecloudsdk.command_lib.container.gkemulticloud import errors
 from googlecloudsdk.command_lib.container.gkemulticloud import flags
 from googlecloudsdk.command_lib.run import pretty_print
 from googlecloudsdk.core.console import console_io
-
 import six
 
 # Command needs to be in one line for the docgen tool to format properly.
@@ -83,6 +82,7 @@ class Register(base.CreateCommand):
     flags.AddDescription(parser)
     flags.AddLogging(parser, True)
     flags.AddMonitoringConfig(parser, True)
+    flags.AddBinauthzEvaluationMode(parser)
 
     parser.display_info.AddFormat(constants.ATTACHED_CLUSTERS_FORMAT)
 
@@ -111,16 +111,20 @@ class Register(base.CreateCommand):
             pretty_print.Info('Creating in-cluster install agent')
             kube_client.Apply(manifest)
 
-          create_resp = self._create_attached_cluster(args, kube_client,
-                                                      manifest, cluster_ref)
+          create_resp = self._create_attached_cluster(
+              args, kube_client, manifest, cluster_ref
+          )
         except console_io.OperationCancelledError:
           msg = """To manually clean up the in-cluster install agent, run:
 
 $ gcloud container attached clusters generate-install-manifest --location={} --platform-version={} --format="value(manifest)"  {}  | kubectl delete -f -
 
 AFTER the attach operation completes.
-""".format(location, attached_flags.GetPlatformVersion(args),
-           cluster_ref.attachedClustersId)
+""".format(
+              location,
+              attached_flags.GetPlatformVersion(args),
+              cluster_ref.attachedClustersId,
+          )
           pretty_print.Info(msg)
           raise
         except:  # pylint: disable=broad-except
@@ -143,7 +147,8 @@ AFTER the attach operation completes.
 
   def _get_authority(self, kube_client):
     openid_config_json = six.ensure_str(
-        kube_client.GetOpenIDConfiguration(), encoding='utf-8')
+        kube_client.GetOpenIDConfiguration(), encoding='utf-8'
+    )
     issuer_url = json.loads(openid_config_json).get('issuer')
     if not issuer_url:
       raise errors.MissingOIDCIssuerURL(openid_config_json)
@@ -155,10 +160,12 @@ AFTER the attach operation completes.
     message = command_util.ClusterMessage(
         cluster_ref.attachedClustersId,
         action='Creating',
-        kind=constants.ATTACHED)
+        kind=constants.ATTACHED,
+    )
     return command_util.Create(
         resource_ref=cluster_ref,
         resource_client=cluster_client,
         args=args,
         message=message,
-        kind=constants.ATTACHED_CLUSTER_KIND)
+        kind=constants.ATTACHED_CLUSTER_KIND,
+    )

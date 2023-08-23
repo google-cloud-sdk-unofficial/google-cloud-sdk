@@ -56,7 +56,7 @@ class Create(base.CreateCommand):
     flags.AddNodeTaints(parser)
     flags.AddAnnotations(parser, 'node pool')
 
-    aws_flags.AddOnDemandOrSpotInstanceType(parser, track, kind='node pool')
+    aws_flags.AddOnDemandOrSpotInstanceType(parser, kind='node pool')
     aws_flags.AddSshEC2KeyPair(parser, kind='node pool')
     aws_flags.AddIamInstanceProfile(parser, kind='node pool')
     aws_flags.AddSecurityGroupIds(parser, kind='node pool')
@@ -81,13 +81,15 @@ class Create(base.CreateCommand):
       message = command_util.NodePoolMessage(
           node_pool_ref.awsNodePoolsId,
           action='Creating',
-          cluster=node_pool_ref.awsClustersId)
+          cluster=node_pool_ref.awsClustersId,
+      )
       return command_util.Create(
           resource_ref=node_pool_ref,
           resource_client=node_pool_client,
           args=args,
           message=message,
-          kind=constants.AWS_NODEPOOL_KIND)
+          kind=constants.AWS_NODEPOOL_KIND,
+      )
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)

@@ -29,11 +29,11 @@ TargetSSLProxies.category = base.NETWORKING_CATEGORY
 
 TargetSSLProxies.detailed_help = {
     'DESCRIPTION': """
-        List, create, and delete target SSL target proxies for SSL Proxy Load
-        Balancing.
+        List, create, and delete target SSL target proxies for proxy Network
+        Load Balancers.
 
         For more information about target SSL proxies, see the
-        [SSL proxy load balancer documentation](https://cloud.google.com/load-balancing/docs/ssl/).
+        [proxy Network Load Balancer documentation](https://cloud.google.com/load-balancing/docs/tcp/).
 
         See also: [Target SSL proxies API](https://cloud.google.com/compute/docs/reference/rest/v1/targetSslProxies).
     """,

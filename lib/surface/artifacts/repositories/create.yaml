@@ -84,12 +84,10 @@
         (Docker only) Prevent changes to tagged images in the repository. Tags cannot be deleted or moved to a different image digest, and tagged images cannot be deleted.
     - arg_name: remote-apt-repo-path
       api_field: repository.remoteRepositoryConfig.aptRepository.publicRepository.repositoryPath
-      hidden: true
       help_text: |
         (Apt only) Remaining URL path to apt remote repository.
     - arg_name: remote-yum-repo-path
       api_field: repository.remoteRepositoryConfig.yumRepository.publicRepository.repositoryPath
-      hidden: true
       help_text: |
         (Yum only) Remaining URL path to yum remote repository.
     - group:

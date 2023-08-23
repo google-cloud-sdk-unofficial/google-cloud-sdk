@@ -26,6 +26,48 @@ from googlecloudsdk.command_lib.util.concepts import concept_parsers
 from googlecloudsdk.core import properties
 
 
+# TODO(b/293907222): Make gcloud netapp public and visible for GA launch
+@base.Hidden
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class List(base.ListCommand):
+  """List Cloud NetApp Storage Pools."""
+
+  _RELEASE_TRACK = base.ReleaseTrack.GA
+
+  detailed_help = {
+      'DESCRIPTION': """\
+          Lists Storage Pools
+          """,
+      'EXAMPLES': """\
+          The following command lists Storage Pools in the given location
+
+              $ {command} --location=us-central1
+          """,
+  }
+
+  @staticmethod
+  def Args(parser):
+    concept_parsers.ConceptParser([
+        flags.GetResourceListingLocationPresentationSpec(
+            'The location in which to list Storage Pools.')
+    ]).AddToParser(parser)
+    parser.display_info.AddFormat(storagepools_flags.STORAGE_POOLS_LIST_FORMAT)
+
+  def Run(self, args):
+    """Run the list command."""
+    # Ensure that project is set before parsing location resource.
+    properties.VALUES.core.project.GetOrFail()
+    location_ref = args.CONCEPTS.location.Parse().RelativeName()
+    # Default to listing all Cloud NetApp Storage Pools in all locations.
+    location = args.location if args.location else '-'
+    location_list = location_ref.split('/')
+    location_list[-1] = location
+    location_ref = '/'.join(location_list)
+    client = storagepools_client.StoragePoolsClient(
+        release_track=self._RELEASE_TRACK)
+    return list(client.ListStoragePools(location_ref, limit=args.limit))
+
+
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class ListBeta(base.ListCommand):
   """List Cloud NetApp Storage Pools."""

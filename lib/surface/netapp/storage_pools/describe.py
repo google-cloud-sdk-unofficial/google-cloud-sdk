@@ -24,6 +24,38 @@ from googlecloudsdk.command_lib.netapp import flags
 from googlecloudsdk.command_lib.util.concepts import concept_parsers
 
 
+# TODO(b/293907222): Make gcloud netapp public and visible for GA launch
+@base.Hidden
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class Describe(base.DescribeCommand):
+  """Show metadata for a Cloud NetApp Storage Pool."""
+
+  _RELEASE_TRACK = base.ReleaseTrack.GA
+
+  detailed_help = {
+      'DESCRIPTION': """\
+          Describe a Storage Pool
+          """,
+      'EXAMPLES': """\
+          The following command describes a Storage Pool named NAME in the given location
+
+              $ {command} NAME --location=us-central1
+          """,
+  }
+
+  @staticmethod
+  def Args(parser):
+    concept_parsers.ConceptParser([flags.GetStoragePoolPresentationSpec(
+        'The Storage Pool to describe.')]).AddToParser(parser)
+
+  def Run(self, args):
+    """Run the describe command."""
+    storagepool_ref = args.CONCEPTS.storage_pool.Parse()
+    client = storagepools_client.StoragePoolsClient(
+        release_track=self._RELEASE_TRACK)
+    return client.GetStoragePool(storagepool_ref)
+
+
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class DescribeBeta(base.DescribeCommand):
   """Show metadata for a Cloud NetApp Storage Pool."""

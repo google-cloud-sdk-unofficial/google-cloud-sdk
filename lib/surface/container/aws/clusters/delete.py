@@ -60,10 +60,12 @@ class Delete(base.DeleteCommand):
       message = command_util.ClusterMessage(
           cluster_ref.awsClustersId,
           kind=constants.AWS,
-          region=cluster.awsRegion)
+          region=cluster.awsRegion,
+      )
       return command_util.Delete(
           resource_ref=cluster_ref,
           resource_client=cluster_client,
           args=args,
           message=message,
-          kind=constants.AWS_CLUSTER_KIND)
+          kind=constants.AWS_CLUSTER_KIND,
+      )

@@ -2,9 +2,9 @@
 
   help_text:
     brief: |
-      Show metadata for a Memorystore Cluster for Redis instance.
+      Show metadata for a Memorystore for Redis Cluster instance.
     description: |
-      Show metadata for a Memorystore Cluster for Redis instance.
+      Show metadata for a Memorystore for Redis Cluster instance.
 
       Displays all metadata associated with a cluster given a valid
       cluster name.

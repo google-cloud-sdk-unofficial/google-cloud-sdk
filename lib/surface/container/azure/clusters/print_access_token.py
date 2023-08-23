@@ -41,12 +41,14 @@ class PrintAccessToken(base.Command):
     """Runs the print-access-token command."""
     with endpoint_util.GkemulticloudEndpointOverride(
         resource_args.ParseAzureClusterResourceArg(args).locationsId,
-        self.ReleaseTrack()):
+        self.ReleaseTrack(),
+    ):
       cluster_ref = resource_args.ParseAzureClusterResourceArg(args)
       client = api_util.ClustersClient()
       response = client.GenerateAccessToken(cluster_ref)
       if args.exec_credential:
         return kubeconfig.ExecCredential(
             expiration_timestamp=response.expirationTime,
-            access_token=response.accessToken)
+            access_token=response.accessToken,
+        )
       return response

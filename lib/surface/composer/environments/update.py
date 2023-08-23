@@ -52,7 +52,7 @@ class Update(base.Command):
 
   detailed_help = DETAILED_HELP
   _support_autoscaling = True
-  _support_composer25flags = False
+  _support_composer3flags = False
   _support_triggerer = False
   _support_maintenance_window = False
   _support_environment_size = True
@@ -302,12 +302,12 @@ class Update(base.Command):
         )
       params['enable_high_resilience'] = bool(args.enable_high_resilience)
 
-    if self._support_composer25flags:
-      self._addComposer25Fields(params, args, env_obj)
+    if self._support_composer3flags:
+      self._addComposer3Fields(params, args, env_obj)
     return patch_util.ConstructPatch(**params)
 
-  def _addComposer25Fields(self, params, args, env_obj):
-    is_composer25 = image_versions_command_util.IsVersionComposer25Compatible(
+  def _addComposer3Fields(self, params, args, env_obj):
+    is_composer3 = image_versions_command_util.IsVersionComposer3Compatible(
         env_obj.config.softwareConfig.imageVersion
     )
 
@@ -324,11 +324,11 @@ class Update(base.Command):
         'subnetwork': args.subnetwork,
     }
     for k, v in possible_args.items():
-      if v is not None and not is_composer25:
+      if v is not None and not is_composer3:
         raise command_util.InvalidUserInputError(
-            flags.COMPOSER25_IS_REQUIRED_MSG.format(
+            flags.COMPOSER3_IS_REQUIRED_MSG.format(
                 opt=k,
-                composer_version=flags.MIN_COMPOSER25_VERSION,
+                composer_version=flags.MIN_COMPOSER3_VERSION,
             )
         )
 
@@ -467,7 +467,7 @@ class UpdateBeta(Update):
   """Update properties of a Cloud Composer environment."""
 
   _support_autoscaling = True
-  _support_composer25flags = True
+  _support_composer3flags = True
   _support_triggerer = True
   _support_maintenance_window = True
   _support_environment_size = True
@@ -485,7 +485,7 @@ class UpdateBeta(Update):
 
     flags.AddCloudDataLineageIntegrationUpdateFlagsToGroup(
         Update.update_type_group)
-    flags.AddComposer25FlagsToGroup(Update.update_type_group)
+    flags.AddComposer3FlagsToGroup(Update.update_type_group)
 
   @staticmethod
   def Args(parser):
