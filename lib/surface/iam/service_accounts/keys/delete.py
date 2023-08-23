@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Command for deleting user-managed service account keys."""
+"""Command for deleting a service account key."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -30,7 +30,7 @@ from googlecloudsdk.core.console import console_io
 
 
 class Delete(base.Command):
-  """Delete a user-managed key from a service account.
+  """Delete a service account key.
 
   If the service account does not exist, this command returns a
   `PERMISSION_DENIED` error.

@@ -159,6 +159,7 @@
         api_field: googleCloudBillingBudgetsV1beta1CreateBudgetRequest.budget.budgetFilter.labels.additionalProperties
       GA:
         api_field: googleCloudBillingBudgetsV1Budget.budgetFilter.labels.additionalProperties
+      metavar: KEY=VALUE
       type:
         arg_dict:
           flatten: true

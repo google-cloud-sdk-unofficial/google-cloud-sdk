@@ -51,6 +51,10 @@
             help_text: |
               Allows for creation or existence of routes that have a more specific destination
               than the created range.
+          - arg_value: overlap-existing-subnet-range
+            enum_value: OVERLAP_EXISTING_SUBNET_RANGE
+            help_text: |
+              Allows for creation of internal ranges that overlap with existing subnets.
 
   async:
     collection: networkconnectivity.projects.locations.operations

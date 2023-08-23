@@ -26,8 +26,6 @@ from googlecloudsdk.command_lib.netapp.volumes.snapshots import flags as snapsho
 from googlecloudsdk.command_lib.util.concepts import concept_parsers
 
 
-# TODO(b/293907222): Make gcloud netapp public and visible for GA launch
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Describe(base.DescribeCommand):
   """Describe a Cloud NetApp Volume Snapshot."""
@@ -64,38 +62,10 @@ class Describe(base.DescribeCommand):
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
-class DescribeBeta(base.DescribeCommand):
+class DescribeBeta(Describe):
   """Describe a Cloud NetApp Volume Snapshot."""
 
   _RELEASE_TRACK = base.ReleaseTrack.BETA
-
-  detailed_help = {
-      'DESCRIPTION': """\
-          Describe a Cloud NetApp Volume Snapshot
-          """,
-      'EXAMPLES': """\
-          The following command describes a Snapshot named NAME in the given location and volume
-
-              $ {command} NAME --location=us-central1 --volume=vol1
-          """,
-  }
-
-  @staticmethod
-  def Args(parser):
-    concept_parsers.ConceptParser([flags.GetSnapshotPresentationSpec(
-        'The Snapshot to describe.')]).AddToParser(parser)
-    snapshots_flags.AddSnapshotVolumeArg(parser)
-
-  def Run(self, args):
-    """Get a Cloud NetApp Volume Snapshot in the current project."""
-    snapshot_ref = args.CONCEPTS.snapshot.Parse()
-
-    if args.CONCEPTS.volume.Parse() is None:
-      raise exceptions.RequiredArgumentException(
-          '--volume', 'Requires a volume to describe snapshot of')
-
-    client = snapshots_client.SnapshotsClient(release_track=self._RELEASE_TRACK)
-    return client.GetSnapshot(snapshot_ref)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)

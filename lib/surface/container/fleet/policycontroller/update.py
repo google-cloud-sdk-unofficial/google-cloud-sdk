@@ -38,7 +38,7 @@ class Update(base.UpdateCommand, command.PocoCommand):
 
   To modify the audit interval to 120 seconds, run:
 
-    $ {command} --audit-interval-seconds=120
+    $ {command} --audit-interval=120
   """
 
   feature_name = 'policycontroller'

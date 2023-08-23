@@ -1,6 +1,4 @@
 - release_tracks: [ALPHA, BETA, GA]
-  GA:
-    hidden: true
   help_text:
     brief: List fleet scopes.
     description: List scopes in a fleet.

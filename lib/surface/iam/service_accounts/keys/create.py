@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Command to create private keys for service accounts."""
+"""Command to create service account keys."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -28,7 +28,7 @@ from googlecloudsdk.core import log
 
 
 class Create(base.Command):
-  """Create a private key for a service account.
+  """Create a service account key.
 
   If the service account does not exist, this command returns a
   `PERMISSION_DENIED` error.
@@ -41,8 +41,8 @@ class Create(base.Command):
           format.
           """),
       'EXAMPLES': textwrap.dedent("""
-          To create a new private key for a service account, and save a copy
-          of it locally, run:
+          To create a new service account key and save the private
+          portion of the key locally, run:
 
             $ {command} key.json --iam-account=my-iam-account@my-project.iam.gserviceaccount.com
           """),

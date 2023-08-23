@@ -86,13 +86,12 @@ class Update(base.UpdateCommand):
 
     # update GCP labels for namespace resource
     labels_diff = labels_util.Diff.FromUpdateArgs(args)
-    new_labels = None
-    if labels_diff.MayHaveUpdates():
+    new_labels = labels_diff.Apply(
+        fleetclient.messages.RBACRoleBinding.LabelsValue,
+        current_rbac_rolebinding.labels,
+    ).GetOrNone()
+    if new_labels:
       mask.append('labels')
-      new_labels = labels_diff.Apply(
-          fleetclient.messages.RBACRoleBinding.LabelsValue,
-          current_rbac_rolebinding.labels,
-      ).GetOrNone()
 
     # if there's nothing to update, then return
     if not mask:

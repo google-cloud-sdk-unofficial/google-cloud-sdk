@@ -43,7 +43,7 @@ class DataProfile(base.Command):
           To update description of a data profile scan `data-profile-datascan`
           in project `test-project` located in `us-central1`, run:
 
-            $ {command} data-profile data-profile-datascan --project=test-project --location=us-central1 --description="Description is updated."
+            $ {command} data-profile-datascan --project=test-project --location=us-central1 --description="Description is updated."
 
           """,
   }

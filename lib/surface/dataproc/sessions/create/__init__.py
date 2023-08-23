@@ -26,7 +26,6 @@ from googlecloudsdk.command_lib.dataproc.sessions import (
     sessions_create_request_factory)
 
 
-@base.Hidden  # Hidden until fully implemented and released.
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class Create(base.Group):
   """Create a Dataproc session."""

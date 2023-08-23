@@ -49,15 +49,15 @@ class Create(base.CreateCommand):
         """,
   }
 
-  @classmethod
-  def Args(cls, parser):
+  @staticmethod
+  def Args(parser):
     """Specifies additional command flags.
 
     Args:
       parser: argparse.Parser: Parser object for command line inputs
     """
     base.ASYNC_FLAG.AddToParser(parser)
-    flags.AddAvailabilityType(parser, cls.ReleaseTrack())
+    flags.AddAvailabilityType(parser)
     flags.AddCluster(parser, False)
     flags.AddDatabaseFlags(parser)
     flags.AddInstance(parser)
@@ -73,6 +73,8 @@ class Create(base.CreateCommand):
     flags.AddInsightsConfigRecordClientAddress(
         parser, show_negated_in_help=True
     )
+    flags.AddSSLMode(parser, update=False)
+    flags.AddRequireConnectors(parser)
     # TODO(b/185795425): Add --ssl-required and --labels later once we
     # understand the use cases
 
@@ -121,8 +123,6 @@ class CreateAlphaBeta(Create):
   @classmethod
   def Args(cls, parser):
     super(CreateAlphaBeta, CreateAlphaBeta).Args(parser)
-    flags.AddSSLMode(parser)
-    flags.AddRequireConnectors(parser)
 
   def ConstructCreateRequestFromArgs(
       self, client, alloydb_messages, cluster_ref, args

@@ -592,7 +592,8 @@ class Client(object):
         'trace',
         'sync',
         'api',
-        'api_version'
+        'api_version',
+        'quota_project_id',
     )
     for name in global_args:
       client_args[name] = KwdsOrFlags(name)

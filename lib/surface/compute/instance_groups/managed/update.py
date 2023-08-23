@@ -398,11 +398,17 @@ class UpdateAlpha(UpdateBeta):
   def Args(cls, parser):
     super(UpdateAlpha, cls).Args(parser)
     managed_flags.AddMigDefaultActionOnVmFailure(parser)
+    managed_flags.AddStandbyPolicyFlags(parser)
 
   def _CreateInstanceGroupManagerPatch(self, args, igm_ref, igm_resource,
                                        client, holder):
     igm_patch = super(UpdateAlpha, self)._CreateInstanceGroupManagerPatch(
         args, igm_ref, igm_resource, client, holder)
+    standby_policy = managed_instance_groups_utils.CreateStandbyPolicy(
+        client.messages, args.standby_pool_initial_delay, args.standby_pool_mode
+    )
+    if standby_policy:
+      igm_patch.standbyPolicy = standby_policy
 
     return igm_patch
 

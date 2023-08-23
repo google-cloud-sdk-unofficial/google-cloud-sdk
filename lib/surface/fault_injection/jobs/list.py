@@ -47,7 +47,7 @@ _FORMAT = """
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class List(base.ListCommand):
-  """List jobs."""
+  """List Fault injection testing jobs."""
 
   detailed_help = _DETAILED_HELP
 

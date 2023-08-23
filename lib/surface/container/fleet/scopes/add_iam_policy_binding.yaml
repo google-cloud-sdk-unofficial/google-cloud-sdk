@@ -1,5 +1,4 @@
 - release_tracks: [ALPHA, BETA, GA]
-  hidden: true
   help_text:
     brief: Add IAM policy binding to a Fleet Scope.
     description: |

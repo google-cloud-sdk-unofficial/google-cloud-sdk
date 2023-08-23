@@ -35,9 +35,9 @@ DETAILED_HELP = {
         """
           To create an instance called ``my-instance'' in region ``us-central1'', with
           requested boot image of AIX72_ORD_Cloud, 2 Gib of memory, an s922 system type,
-          and a dedication core type, run:
+          a shared core type, and 0.25 cores, run:
 
-          $ {command} my-instance  --region=us-central1 --boot-image=AIX72_ORD_Cloud --memory-gib=2 --network-attachment=dev-net --system-type=s922 --virtual-cpu-type=DEDICATED
+          $ {command} my-instance  --region=us-central1 --boot-image-name=AIX72_ORD_Cloud --memory-gib=2 --network-attachment-name=dev-net --system-type=s922 --virtual-cpu-type=UNCAPPED_SHARED --virtual-cpu-cores=0.25
 
     """,
 }

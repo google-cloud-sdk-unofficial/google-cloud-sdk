@@ -28,8 +28,6 @@ from googlecloudsdk.command_lib.util.concepts import concept_parsers
 from googlecloudsdk.core import log
 
 
-# TODO(b/293907222): Make gcloud netapp public and visible for GA
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Resume(base.Command):
   """Resume a Cloud NetApp Volume Replication."""
@@ -82,51 +80,8 @@ class Resume(base.Command):
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
-class ResumeBeta(base.Command):
+class ResumeBeta(Resume):
   """Resume a Cloud NetApp Volume Replication."""
 
   _RELEASE_TRACK = base.ReleaseTrack.BETA
 
-  detailed_help = {
-      'DESCRIPTION': """\
-          Resume a Cloud NetApp Volume Replication
-          """,
-      'EXAMPLES': """\
-          The following command resumes a Replication named NAME using the required arguments
-
-              $ {command} NAME --location=us-central1 --volume=vol1
-
-          To resume a Replication named NAME asynchronously, run the following command:
-
-              $ {command} NAME --location=us-central1 --volume=vol1 --async
-          """,
-  }
-
-  @staticmethod
-  def Args(parser):
-    concept_parsers.ConceptParser(
-        [flags.GetReplicationPresentationSpec('The Replication to create.')]
-    ).AddToParser(parser)
-    replications_flags.AddReplicationVolumeArg(parser)
-    flags.AddResourceAsyncFlag(parser)
-
-  def Run(self, args):
-    """Resume a Cloud NetApp Volume Replication in the current project."""
-    replication_ref = args.CONCEPTS.replication.Parse()
-    if args.CONCEPTS.volume.Parse() is None:
-      raise exceptions.RequiredArgumentException(
-          '--volume', 'Requires a volume to resume replication of'
-      )
-
-    client = replications_client.ReplicationsClient(self._RELEASE_TRACK)
-    result = client.ResumeReplication(
-        replication_ref, args.async_)
-    if args.async_:
-      command = 'gcloud {} netapp volumes replications list'.format(
-          self.ReleaseTrack().prefix
-      )
-      log.status.Print(
-          'Check the status of the resumed replication by listing all'
-          ' replications:\n  $ {} '.format(command)
-      )
-    return result

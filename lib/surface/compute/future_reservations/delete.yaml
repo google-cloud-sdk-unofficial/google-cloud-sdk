@@ -1,4 +1,4 @@
-- release_tracks: [ALPHA]
+- release_tracks: [ALPHA, BETA]
 
   help_text:
     brief: Delete a Compute Engine future reservation.
@@ -14,12 +14,16 @@
       help_text: The name of the future reservation to delete.
 
   request:
-    api_version: alpha
+    api_version: beta
     collection: compute.futureReservations
     method: delete
+    BETA:
+      api_version: beta
+    ALPHA:
+      api_version: alpha
 
   async:
-    api_version: alpha
+    api_version: beta
     collection: compute.zoneOperations
     method: wait
     response_name_field: selfLink

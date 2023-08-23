@@ -66,11 +66,10 @@ class List(base.ListCommand):
         metavar='RECOMMENDER',
         required=False,
         help=(
-            'Recommender to list recommendations for. Supported recommenders'
-            ' can be found here:'
-            ' https://cloud.google.com/recommender/docs/recommenders. For alpha'
-            ' and beta users: If no recommender is specified, recommendations'
-            ' for all supported recommenders are listed.'
+            'Recommender to list recommendations for. If no recommender is'
+            ' specified, recommendations for all supported recommenders is'
+            ' listed. Supported recommenders can be found here:'
+            ' https://cloud.google.com/recommender/docs/recommenders'
         ),
     )
     parser.display_info.AddFormat("""
@@ -153,10 +152,9 @@ class ListOriginal(base.ListCommand):
         metavar='RECOMMENDER',
         required=True,
         help=(
-            'Recommender to list recommendations for. If no recommender is'
-            ' specified, recommendations for all supported recommenders is'
-            ' listed. Supported recommenders can be found here:'
-            ' https://cloud.google.com/recommender/docs/recommenders'
+            'Recommender to list recommendations for. Supported recommenders'
+            ' can be found here:'
+            ' https://cloud.google.com/recommender/docs/recommenders.'
         ),
     )
     parser.display_info.AddFormat("""

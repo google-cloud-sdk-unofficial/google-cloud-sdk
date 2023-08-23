@@ -55,9 +55,9 @@ class SetStandbyPolicyAlpha(base.Command):
         default_scope=default_scope,
         scope_lister=scope_lister)
     initial_delay_sec = args.initial_delay or None
-    standby_policy = (
-        managed_instance_groups_utils.CreateStandbyPolicy(
-            client.messages, initial_delay_sec))
+    standby_policy = managed_instance_groups_utils.CreateStandbyPolicy(
+        client.messages, initial_delay_sec=initial_delay_sec
+    )
     if not standby_policy:
       return
 

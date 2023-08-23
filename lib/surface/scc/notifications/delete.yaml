@@ -28,6 +28,7 @@
   arguments:
     params:
     - arg_name: notificationConfigId
+      metavar: NOTIFICATION_CONFIG_ID
       api_field: name
       is_positional: true
       required: true

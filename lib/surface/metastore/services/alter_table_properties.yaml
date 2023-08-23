@@ -90,6 +90,7 @@
          a=2,b=3,c=4
 
       required: true
+      metavar: KEY=VALUE
       type:
         arg_dict:
           flatten: true

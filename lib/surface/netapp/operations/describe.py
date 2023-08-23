@@ -24,11 +24,11 @@ from googlecloudsdk.command_lib.netapp import flags
 from googlecloudsdk.command_lib.util.concepts import concept_parsers
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class DescribeBeta(base.DescribeCommand):
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class Describe(base.DescribeCommand):
   """Describe a Cloud NetApp Files operation."""
 
-  _RELEASE_TRACK = base.ReleaseTrack.BETA
+  _RELEASE_TRACK = base.ReleaseTrack.GA
 
   detailed_help = {
       'DESCRIPTION':
@@ -53,6 +53,13 @@ class DescribeBeta(base.DescribeCommand):
     operation_ref = args.CONCEPTS.operation.Parse()
     client = netapp_client.NetAppClient(release_track=self._RELEASE_TRACK)
     return client.GetOperation(operation_ref)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class DescribeBeta(Describe):
+  """Describe a Cloud NetApp Files operation."""
+
+  _RELEASE_TRACK = base.ReleaseTrack.BETA
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)

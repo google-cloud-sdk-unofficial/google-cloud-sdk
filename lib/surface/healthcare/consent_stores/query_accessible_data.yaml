@@ -33,6 +33,7 @@
         The Cloud Storage destination for the result file. The Cloud Healthcare API service account
         must have the `roles/storage.objectAdmin` Cloud IAM role for this Cloud Storage location.
     - arg_name: resource-attributes
+      metavar: KEY=VALUE
       api_field: queryAccessibleDataRequest.resourceAttributes
       type: 'googlecloudsdk.calliope.arg_parsers:ArgDict:'
       help_text: |
@@ -40,6 +41,7 @@
         requested. Each attribute has the form "KEY=VALUE". If no values are specified, then all
         data types are included in the output.
     - arg_name: request-attributes
+      metavar: KEY=VALUE
       api_field: queryAccessibleDataRequest.requestAttributes
       type: 'googlecloudsdk.calliope.arg_parsers:ArgDict:'
       help_text: |

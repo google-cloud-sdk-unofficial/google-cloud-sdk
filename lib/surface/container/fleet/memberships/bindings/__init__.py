@@ -21,7 +21,6 @@ from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Membership(base.Group):
   """Membership Bindings for permissions.
 
@@ -36,9 +35,3 @@ class Membership(base.Group):
   """
 
   category = base.COMPUTE_CATEGORY
-
-
-@base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.GA)
-class MembershipGA(Membership):
-  pass

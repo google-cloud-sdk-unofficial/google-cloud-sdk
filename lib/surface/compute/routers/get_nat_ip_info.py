@@ -24,7 +24,6 @@ from googlecloudsdk.command_lib.compute import flags as compute_flags
 from googlecloudsdk.command_lib.compute.routers import flags as routers_flags
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class GetNatIpInfo(base.DescribeCommand):
   """Display NAT IP information in a router."""
 

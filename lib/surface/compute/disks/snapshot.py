@@ -186,7 +186,7 @@ class SnapshotDisks(base.SilentCommand):
         requests.append((client.regionDisks, 'CreateSnapshot', request))
 
     errors_to_collect = []
-    responses = holder.client.BatchRequests(requests, errors_to_collect)
+    responses = holder.client.AsyncRequests(requests, errors_to_collect)
     for r in responses:
       err = getattr(r, 'error', None)
       if err:

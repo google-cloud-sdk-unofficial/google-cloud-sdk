@@ -11,6 +11,8 @@
   request:
     collection: telecomdatafabric.projects.locations.deployments
     api_version: v1alpha
+    modify_request_hooks:
+    - googlecloudsdk.api_lib.telecomdatafabric.create_deployment_args:GenerateCreateDeployment
 
   arguments:
     resource:
@@ -41,12 +43,16 @@
           help_text: The Dataplex lake id to create
           processor: googlecloudsdk.api_lib.telecomdatafabric.lake:LakeInfo
     - arg_name: parameters
+      metavar: KEY=VALUE
       type: 'googlecloudsdk.calliope.arg_parsers:ArgDict:'
       api_field: deployment.parameters
       help_text: Deployment parameters which is map of string key value pair, eg- --parameters data_adapter=METRICS_TRANSFORMER,parser_details="{\"format\":\"JSON\"}".
     - arg_name: deployment-project
       api_field: deployment.projectId
       help_text: Deployment project.
+    - arg_name: fabric-id
+      api_field: deployment.fabricId
+      help_text: Existing fabric to which the deployment is attached.
 
   async:
     collection: telecomdatafabric.projects.locations.operations

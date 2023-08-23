@@ -84,7 +84,7 @@ class LinkAlpha(base.Command):
     return _RunLink(args)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
 class Link(base.Command):
   """Link a project with a billing account."""
 

@@ -26,8 +26,6 @@ from googlecloudsdk.command_lib.netapp.volumes.replications import flags as repl
 from googlecloudsdk.command_lib.util.concepts import concept_parsers
 
 
-# TODO(b/293907222): Make gcloud netapp public and visible for GA
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Describe(base.DescribeCommand):
   """Describe a Cloud NetApp Volume Replication."""
@@ -68,7 +66,7 @@ class Describe(base.DescribeCommand):
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
-class DescribeBeta(base.DescribeCommand):
+class DescribeBeta(Describe):
   """Describe a Cloud NetApp Volume Replication."""
 
   _RELEASE_TRACK = base.ReleaseTrack.BETA

@@ -1,8 +1,8 @@
-- release_tracks: [ALPHA]
+- release_tracks: [ALPHA, BETA]
 
   help_text:
     brief: Cancel a Compute Engine future reservation.
-    description: Canel a Compute Engine future reservation.
+    description: Cancel a Compute Engine future reservation.
     examples: |
       To cancel a given Compute Engine future reservation, run:
 
@@ -14,12 +14,16 @@
       help_text: The name of the future reservation to cancel.
 
   request:
-    api_version: alpha
+    api_version: beta
     collection: compute.futureReservations
     method: cancel
+    BETA:
+      api_version: beta
+    ALPHA:
+      api_version: alpha
 
   async:
-    api_version: alpha
+    api_version: beta
     collection: compute.zoneOperations
     method: wait
     response_name_field: selfLink

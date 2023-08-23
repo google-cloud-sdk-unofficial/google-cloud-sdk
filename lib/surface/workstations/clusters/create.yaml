@@ -31,6 +31,7 @@
       help_text: |
         Fully specified subnetwork path for instances created in this cluster.
     - arg_name: labels
+      metavar: KEY=VALUE
       api_field: workstationCluster.labels
       type: "googlecloudsdk.calliope.arg_parsers:ArgDict:"
       help_text: |

@@ -25,7 +25,6 @@ from googlecloudsdk.command_lib.container.fleet import util
 from googlecloudsdk.core import properties
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class List(base.ListCommand):
   """List Bindings in a Membership.
 
@@ -74,9 +73,3 @@ class List(base.ListCommand):
                                                 args.location)
     raise calliope_exceptions.RequiredArgumentException(
         'membership', 'Membership parent is required.')
-
-
-@base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.GA)
-class ListGA(List):
-  pass

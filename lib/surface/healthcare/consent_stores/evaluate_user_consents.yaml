@@ -31,6 +31,7 @@
       help_text: |
         The unique identifier of the user to evaluate consents for.
     - arg_name: resource-attributes
+      metavar: KEY=VALUE
       api_field: evaluateUserConsentsRequest.resourceAttributes
       type: 'googlecloudsdk.calliope.arg_parsers:ArgDict:'
       help_text: |
@@ -38,6 +39,7 @@
         attribute has the form "KEY=VALUE". If no values are specified, then all data types are
         queried.
     - arg_name: request-attributes
+      metavar: KEY=VALUE
       api_field: evaluateUserConsentsRequest.requestAttributes
       type: 'googlecloudsdk.calliope.arg_parsers:ArgDict:'
       help_text: |

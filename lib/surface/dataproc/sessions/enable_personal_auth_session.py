@@ -60,6 +60,7 @@ def _inject_encrypted_credentials(dataproc,
   return dataproc.client.projects_locations_sessions.InjectCredentials(request)
 
 
+@base.Hidden  # Hidden until fully implemented and released.
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class SessionsEnablePersonalAuth(base.Command):
   """Enable personal auth on a session."""

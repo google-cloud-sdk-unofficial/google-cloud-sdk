@@ -21,14 +21,13 @@ from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class StoragePools(base.Group):
   """Create and manage Cloud NetApp Storage Pools."""
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
-class StoragePoolsBeta(base.Group):
+class StoragePoolsBeta(StoragePools):
   """Create and manage Cloud NetApp Storage Pools."""
 
 

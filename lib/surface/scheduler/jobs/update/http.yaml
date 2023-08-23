@@ -69,6 +69,7 @@
         - group:
             params:
             - arg_name: update-headers
+              metavar: KEY=VALUE
               type: "googlecloudsdk.calliope.arg_parsers:ArgDict:"
               help_text: |
                 KEY=VALUE pairs of HTTP headers to include in the request.

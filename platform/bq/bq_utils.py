@@ -12,6 +12,7 @@ import sys
 import textwrap
 import time
 import traceback
+from typing import Dict
 
 from absl import app
 from absl import flags
@@ -24,7 +25,6 @@ import six
 import urllib3
 
 import bigquery_client
-
 
 FLAGS = flags.FLAGS
 
@@ -70,26 +70,37 @@ def GetBigqueryRcFilename():
           os.environ.get('BIGQUERYRC') or FLAGS.bigqueryrc)
 
 
+def GetGcloudConfigFilename() -> str:
+  """Returns the best guess for the users gcloud configuration file."""
+  home = os.environ.get('HOME')
+  with open(home + '/.config/gcloud/active_config') as active_config_file:
+    active_config = active_config_file.read().strip()
+    return home + '/.config/gcloud/configurations/config_' + active_config
+
+
 def ProcessBigqueryrc():
   """Updates FLAGS with values found in the bigqueryrc file."""
   ProcessBigqueryrcSection(None, FLAGS)
 
 
-def ProcessBigqueryrcSection(section_name, flag_values):
-  """Read the bigqueryrc file into flag_values for section section_name.
+def ProcessConfigSection(
+    filename: str, section_name: str = None
+) -> Dict[str, str]:
+  """Read a configuration file section returned as a dictionary.
 
   Args:
+    filename: The filename of the configuration file.
     section_name: if None, read the global flag settings.
-    flag_values: FLAGS instance.
 
-  Raises:
-    UsageError: Unknown flag found.
+  Returns:
+    A dictionary of flag names and values from that section of the file.
   """
 
-  bigqueryrc = GetBigqueryRcFilename()
-  if not os.path.exists(bigqueryrc):
-    return
-  with open(bigqueryrc) as rcfile:
+  # TODO(b/286571605): Replace typing when python 3.5 is unsupported.
+  dictionary = {}  # type: Dict[str, str]
+  if not os.path.exists(filename):
+    return dictionary
+  with open(filename) as rcfile:
     in_section = not section_name
     for line in rcfile:
       if line.lstrip().startswith('[') and line.rstrip().endswith(']'):
@@ -108,23 +119,43 @@ def ProcessBigqueryrcSection(section_name, flag_values):
       value = value.strip()
       while flag.startswith('-'):
         flag = flag[1:]
-      # We want flags specified at the command line to override
-      # those in the flagfile.
-      if flag not in flag_values:
-        raise app.UsageError(
-            'Unknown flag %s found in bigqueryrc file in section %s' %
-            (flag, section_name if section_name else 'global'))
-      if not flag_values[flag].present:
-        # This updates the .value and .present attributes.
+      dictionary[flag] = value
+  return dictionary
+
+
+def ProcessBigqueryrcSection(section_name: str, flag_values) -> None:
+  """Read the bigqueryrc file into flag_values for section section_name.
+
+  Args:
+    section_name: if None, read the global flag settings.
+    flag_values: FLAGS instance.
+
+  Raises:
+    UsageError: Unknown flag found.
+  """
+
+  bigqueryrc = GetBigqueryRcFilename()
+  dictionary = ProcessConfigSection(
+      filename=bigqueryrc, section_name=section_name
+  )
+  for flag, value in dictionary.items():
+    # We want flags specified at the command line to override
+    # those in the flagfile.
+    if flag not in flag_values:
+      raise app.UsageError(
+          'Unknown flag %s found in bigqueryrc file in section %s' %
+          (flag, section_name if section_name else 'global'))
+    if not flag_values[flag].present:
+      # This updates the .value and .present attributes.
+      flag_values[flag].parse(value)
+      # This updates the .using_default_value attribute in addition.
+      setattr(flag_values, flag, getattr(flag_values, flag))
+    else:
+      flag_type = flag_values[flag].flag_type()
+      if flag_type.startswith('multi'):
+        old_value = getattr(flag_values, flag)
         flag_values[flag].parse(value)
-        # This updates the .using_default_value attribute in addition.
-        setattr(flag_values, flag, getattr(flag_values, flag))
-      else:
-        flag_type = flag_values[flag].flag_type()
-        if flag_type.startswith('multi'):
-          old_value = getattr(flag_values, flag)
-          flag_values[flag].parse(value)
-          setattr(flag_values, flag, old_value + getattr(flag_values, flag))
+        setattr(flag_values, flag, old_value + getattr(flag_values, flag))
 
 
 def GetPlatformString():

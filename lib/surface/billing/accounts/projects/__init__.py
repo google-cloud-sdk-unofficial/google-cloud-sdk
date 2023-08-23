@@ -22,8 +22,8 @@ from googlecloudsdk.calliope import base
 
 
 _BASE_MESSAGE = """\
-The `gcloud <alpha|beta> billing accounts projects` groups have been moved to
-`gcloud beta billing projects`. Please use the new, shorter commands instead."""
+The `gcloud alpha billing accounts projects` group has been moved to `gcloud
+billing projects`. Please use the new, shorter commands instead."""
 
 
 # Don't promote this group beyond alpha, since the new alias is preferred.

@@ -89,7 +89,7 @@ class Resume(base.SilentCommand):
       request_list.append(request)
 
     errors_to_collect = []
-    responses = client.BatchRequests(request_list, errors_to_collect)
+    responses = client.AsyncRequests(request_list, errors_to_collect)
     if errors_to_collect:
       raise exceptions.MultiError(errors_to_collect)
 

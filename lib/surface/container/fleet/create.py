@@ -31,7 +31,6 @@ from googlecloudsdk.core import log
 from googlecloudsdk.generated_clients.apis.gkehub.v1alpha import gkehub_v1alpha_messages as messages
 
 
-@base.Hidden
 class Create(base.CreateCommand):
   """Create a fleet.
 
@@ -83,7 +82,7 @@ class Create(base.CreateCommand):
       long-running operation to be polled manually.
     """
     flag_parser = fleet_flags.FleetFlagParser(
-        args, release_track=base.ReleaseTrack.ALPHA
+        args, release_track=self.ReleaseTrack()
     )
 
     if '--format' not in args.GetSpecifiedArgNames():

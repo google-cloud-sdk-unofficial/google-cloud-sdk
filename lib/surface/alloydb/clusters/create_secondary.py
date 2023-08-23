@@ -54,6 +54,7 @@ class CreateSecondary(base.CreateCommand):
     flags.AddRegion(parser)
     flags.AddCluster(parser)
     flags.AddPrimaryCluster(parser)
+    flags.AddAllocatedIPRangeName(parser)
     kms_resource_args.AddKmsKeyResourceArg(
         parser,
         'cluster',
@@ -90,6 +91,12 @@ class CreateSecondary(base.CreateCommand):
       encryption_config = alloydb_messages.EncryptionConfig()
       encryption_config.kmsKeyName = kms_key
       cluster_resource.encryptionConfig = encryption_config
+
+    if args.allocated_ip_range_name:
+      cluster_resource.networkConfig = alloydb_messages.NetworkConfig(
+          allocatedIpRange=args.allocated_ip_range_name
+      )
+
     req = (
         alloydb_messages.AlloydbProjectsLocationsClustersCreatesecondaryRequest(
             cluster=cluster_resource,

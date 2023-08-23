@@ -31,7 +31,6 @@ from googlecloudsdk.core.util import times
 CLUSTER_UPGRADE_FEATURE = 'clusterupgrade'
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Update(feature_base.UpdateCommand):
   """Update the clusterupgrade feature for a fleet within a given project."""
@@ -44,8 +43,8 @@ class Update(feature_base.UpdateCommand):
   def Args(parser):
     flags = clusterupgrade_flags.ClusterUpgradeFlags(parser)
     flags.AddDefaultUpgradeSoakingFlag()
-    flags.AddUpgradeSoakingOverrideFlags()
-    flags.AddUpstreamFleetFlags()
+    flags.AddUpgradeSoakingOverrideFlags(with_destructive=True)
+    flags.AddUpstreamFleetFlags(with_destructive=True)
 
   def Run(self, args):
     project = arg_utils.GetFromNamespace(args, '--project', use_defaults=True)

@@ -24,19 +24,7 @@ from googlecloudsdk.calliope import base
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
                     base.ReleaseTrack.GA)
 class Billing(base.Group):
-  # TODO(b/190388783): Once gcloud billing is fully GA, replace "gcloud beta
-  # billing" with "{command}" in the examples below.
-  #
-  # Currently we hardcode "gcloud beta billing" because the example commands are
-  # only in beta. They are not yet available as GA commands, so if we wrote
-  # "{command}" right now, we would generate documentation with invalid sample
-  # commands in the GA environment.
-  #
-  # Note that we don't want to suppress this billing group documentation
-  # entirely from the GA environment, since other billing commands (namely the
-  # budget commands) are GA, so the GA billing landing page should remain as an
-  # entry point to reach the documentation for those commands.
-  r"""Manage billing accounts and associate them with projects.
+  """Manage billing accounts and associate them with projects.
 
   Manage billing accounts and associate them with projects.
 
@@ -44,13 +32,12 @@ class Billing(base.Group):
 
   To list billing accounts associated with the current user, run:
 
-    $ gcloud beta billing accounts list
+    $ {command} accounts list
 
   To link one of the billing accounts `0X0X0X-0X0X0X-0X0X0X` with a project
   `my-project`, run:
 
-    $ gcloud beta billing projects link my-project \
-        --billing-account 0X0X0X-0X0X0X-0X0X0X
+    $ {command} projects link my-project --billing-account 0X0X0X-0X0X0X-0X0X0X
   """
 
   category = base.BILLING_CATEGORY

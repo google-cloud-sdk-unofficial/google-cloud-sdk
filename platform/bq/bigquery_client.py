@@ -1001,15 +1001,21 @@ class BigqueryModel(model.JsonModel):
   def __init__(
       self,
       trace=None,
+      quota_project_id=None,
       **kwds):
     super(BigqueryModel, self).__init__(**kwds)
     self.trace = trace
+    self.quota_project_id = quota_project_id
 
   # pylint: disable=g-bad-name
   def request(self, headers, path_params, query_params, body_value):
     """Updates outgoing request."""
     if 'trace' not in query_params and self.trace:
       headers['cookie'] = self.trace
+
+    if self.quota_project_id:
+      headers['x-goog-user-project'] = self.quota_project_id
+
     return super(BigqueryModel, self).request(headers, path_params,
                                               query_params, body_value)
 
@@ -1267,6 +1273,7 @@ class BigqueryClient(object):
         'max_rows_per_request': None,
         'transfer_path': None,
         'connection_service_path': None,
+        'quota_project_id': None,
     }
     for flagname, default in six.iteritems(default_flag_values):
       if not hasattr(self, flagname):
@@ -1332,7 +1339,8 @@ class BigqueryClient(object):
     """Build and return BigQuery Dynamic client from discovery document."""
     http = self.GetAuthorizedHttp(self.credentials, self.GetHttp())
     bigquery_model = BigqueryModel(
-        trace=self.trace)
+        trace=self.trace,
+        quota_project_id=self.quota_project_id)
     bigquery_http = BigqueryHttp.Factory(
         bigquery_model,
     )
@@ -1449,7 +1457,8 @@ class BigqueryClient(object):
     """Builds and returns BigQuery API client from discovery_next document."""
     http = self.GetAuthorizedHttp(self.credentials, self.GetHttp())
     bigquery_model = BigqueryModel(
-        trace=self.trace)
+        trace=self.trace,
+        quota_project_id=self.quota_project_id)
     bigquery_http = BigqueryHttp.Factory(
         bigquery_model,
     )
@@ -1480,7 +1489,8 @@ class BigqueryClient(object):
     """Builds and returns IAM policy API client from discovery document."""
     http = self.GetAuthorizedHttp(self.credentials, self.GetHttp())
     bigquery_model = BigqueryModel(
-        trace=self.trace)
+        trace=self.trace,
+        quota_project_id=self.quota_project_id)
     bigquery_http = BigqueryHttp.Factory(
         bigquery_model,
     )
@@ -1542,7 +1552,8 @@ class BigqueryClient(object):
     return insert_client
 
   def GetTransferV1ApiClient(
-       self, transferserver_address=None):
+      self,
+      transferserver_address=None):
     """Return the apiclient that supports Transfer v1 operation."""
     path = transferserver_address
     if path is None:

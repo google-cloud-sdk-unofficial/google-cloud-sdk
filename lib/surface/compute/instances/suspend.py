@@ -116,7 +116,7 @@ class Suspend(base.SilentCommand):
                                                   args.discard_local_ssd)))
 
     errors_to_collect = []
-    responses = client.BatchRequests(requests, errors_to_collect)
+    responses = client.AsyncRequests(requests, errors_to_collect)
     if errors_to_collect:
       raise exceptions.MultiError(errors_to_collect)
 

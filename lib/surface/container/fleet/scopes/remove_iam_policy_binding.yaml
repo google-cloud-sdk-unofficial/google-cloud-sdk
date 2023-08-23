@@ -1,5 +1,4 @@
 - release_tracks: [ALPHA, BETA, GA]
-  hidden: true
   help_text:
     brief: Remove IAM policy binding of a Fleet Scope.
     description: |
@@ -10,7 +9,7 @@
       To remove an IAM policy binding for the role of 'roles/gkehub.scopeUser' for the user 'test-user@gmail.com'
       with scope 'my-scope', run:
 
-        $ {command} my-scope --region='us-central1' --member='user:test-user@gmail.com' --role='roles/gkehub.scopeUser'
+        $ {command} my-scope --member='user:test-user@gmail.com' --role='roles/gkehub.scopeUser'
 
       See https://cloud.google.com/iam/docs/managing-policies for details of
       policy role and member types.

@@ -21,7 +21,6 @@ from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 
 
-@base.Hidden
 class Namespace(base.Group):
   """Fleet namespaces are the fleet equivalent of k8s cluster namespaces.
 

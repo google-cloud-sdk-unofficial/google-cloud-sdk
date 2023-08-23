@@ -30,6 +30,7 @@
     - _REF_: googlecloudsdk.command_lib.ml.translate.flags:zone
     - arg_name: source
       required: true
+      metavar: FILE_PATH[=FILE_TYPE]
       type: 'googlecloudsdk.calliope.arg_parsers:ArgDict:allow_key_only=True'
       help_text: |
         Comma-separated list of entries of the form FILE_PATH[=FILE_TYPE]
@@ -41,6 +42,7 @@
 
         '--source gs://input/input.txt=text/plain,gs://input/my.html=text/html'
     - arg_name: models
+      metavar: KEY=VALUE
       type: 'googlecloudsdk.calliope.arg_parsers:ArgDict:'
       help_text: |
         Models to use for translation. Comma-separated dictionary where  map's key
@@ -51,6 +53,7 @@
 
         '--models es-ES=TRL321456789,en-US=general/nmt'
     - arg_name: glossaries
+      metavar: KEY=VALUE
       type: 'googlecloudsdk.calliope.arg_parsers:ArgDict:'
       help_text: |
         Glossaries to be applied for translation. Comma-separated dictionary

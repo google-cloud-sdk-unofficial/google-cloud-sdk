@@ -28,9 +28,7 @@ from googlecloudsdk.command_lib.ai.persistent_resources import persistent_resour
 from googlecloudsdk.command_lib.ai.persistent_resources import validation
 
 
-# TODO(b/262780738): Un-hide these commands when ready
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
-@base.Hidden
 class ListPreGA(base.ListCommand):
   """Lists the active persistent resources.
 

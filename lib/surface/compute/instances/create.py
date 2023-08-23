@@ -702,7 +702,7 @@ class Create(base.CreateCommand):
         raise
 
     errors_to_collect = []
-    responses = compute_client.BatchRequests(requests, errors_to_collect)
+    responses = compute_client.AsyncRequests(requests, errors_to_collect)
     for r in responses:
       err = getattr(r, 'error', None)
       if err:

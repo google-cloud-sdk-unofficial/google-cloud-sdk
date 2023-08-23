@@ -155,9 +155,12 @@ class ListInstances(base.ListCommand):
                                         os.path.basename(instance['zone']))
         for instance in instances
     ]
-    responses = holder.client.BatchRequests([(client.apitools_client.instances,
-                                              'GetGuestAttributes', request)
-                                             for request in requests])
+    responses = holder.client.AsyncRequests(
+        [
+            (client.apitools_client.instances, 'GetGuestAttributes', request)
+            for request in requests
+        ]
+    )
 
     for response in filter(None, responses):
       for item in response.queryValue.items:

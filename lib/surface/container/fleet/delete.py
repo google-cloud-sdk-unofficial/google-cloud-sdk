@@ -30,7 +30,6 @@ from googlecloudsdk.core import log
 from googlecloudsdk.generated_clients.apis.gkehub.v1alpha import gkehub_v1alpha_messages as messages
 
 
-@base.Hidden
 class Delete(base.DeleteCommand):
   """Delete a fleet.
 

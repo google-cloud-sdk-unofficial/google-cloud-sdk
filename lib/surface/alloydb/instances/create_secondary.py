@@ -22,6 +22,7 @@ from googlecloudsdk.api_lib.alloydb import api_util
 from googlecloudsdk.api_lib.alloydb import instance_operations
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.alloydb import flags
+from googlecloudsdk.command_lib.alloydb import instance_helper
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 from googlecloudsdk.core import resources
@@ -51,6 +52,7 @@ class CreateSecondary(base.CreateCommand):
     """
     base.ASYNC_FLAG.AddToParser(parser)
     flags.AddCluster(parser, False)
+    flags.AddAvailabilityType(parser)
     flags.AddInstance(parser)
     flags.AddRegion(parser)
 
@@ -85,6 +87,8 @@ class CreateSecondary(base.CreateCommand):
     instance_resource.instanceType = (
         alloydb_messages.Instance.InstanceTypeValueValuesEnum.SECONDARY
     )
+    instance_resource.availabilityType = instance_helper.ParseAvailabilityType(
+        alloydb_messages, args.availability_type)
     req = alloydb_messages.AlloydbProjectsLocationsClustersInstancesCreatesecondaryRequest(
         instance=instance_resource,
         instanceId=args.instance,

@@ -131,6 +131,10 @@ class Set(base.Command):
     if prop == properties.VALUES.compute.region:
       showed_warning = config_validators.WarnIfSettingNonExistentRegionZone(
           args.value, zonal=False)
+    if prop.section == properties.VALUES.api_endpoint_overrides.name:
+      showed_warning = config_validators.WarnIfSettingApiEndpointOverrideOutsideOfConfigUniverse(
+          args.value, prop
+      )
     if showed_warning and not args.quiet and console_io.CanPrompt():
       if not console_io.PromptContinue(
           'Are you sure you wish to set {0}property [{1}] to {2}?'.format(

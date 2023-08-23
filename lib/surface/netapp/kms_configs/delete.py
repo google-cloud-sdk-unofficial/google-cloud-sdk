@@ -25,8 +25,6 @@ from googlecloudsdk.core import log
 from googlecloudsdk.core.console import console_io
 
 
-# TODO(b/293907222): Make gcloud netapp public and visible for GA launch
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Delete(base.DeleteCommand):
   """Delete a Cloud NetApp Volumes KMS Config."""
@@ -75,48 +73,9 @@ class Delete(base.DeleteCommand):
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
-class DeleteBeta(base.DeleteCommand):
+class DeleteBeta(Delete):
   """Delete a Cloud NetApp Volumes KMS Config."""
-
-  detailed_help = {
-      'DESCRIPTION': """\
-          Delete a KMS (Key Management System) Config
-          """,
-      'EXAMPLES': """\
-          The following command deletes a KMS Config instance named KMS_CONFIG in the default netapp/location
-
-              $ {command} KMS_CONFIG
-
-          To delete a KMS Config named KMS_CONFIG asynchronously, run the following command:
-
-              $ {command} KMS_CONFIG --async
-          """,
-  }
 
   _RELEASE_TRACK = base.ReleaseTrack.BETA
 
-  @staticmethod
-  def Args(parser):
-    kmsconfigs_flags.AddKMSConfigDeleteArgs(parser)
-
-  def Run(self, args):
-    """Delete a Cloud NetApp Volumes KMS Config."""
-
-    kmsconfig_ref = args.CONCEPTS.kms_config.Parse()
-    if not args.quiet:
-      delete_warning = ('You are about to delete a KMS Config {}.\n'
-                        'Are you sure?'.format(kmsconfig_ref.RelativeName()))
-      if not console_io.PromptContinue(message=delete_warning):
-        return None
-    client = kmsconfigs_client.KmsConfigsClient(
-        release_track=self._RELEASE_TRACK)
-    result = client.DeleteKmsConfig(kmsconfig_ref, args.async_)
-
-    if args.async_:
-      command = 'gcloud {} netapp kms-configs list'.format(
-          self.ReleaseTrack().prefix)
-      log.status.Print(
-          'Check the status of the deletion by listing all KMS configs:\n  '
-          '$ {} '.format(command))
-    return result
 

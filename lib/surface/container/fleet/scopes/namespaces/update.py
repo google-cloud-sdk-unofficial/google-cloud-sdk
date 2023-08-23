@@ -64,12 +64,11 @@ class Update(base.UpdateCommand):
 
     # update GCP labels for namespace resource
     labels_diff = labels_util.Diff.FromUpdateArgs(args)
-    new_labels = None
-    if labels_diff.MayHaveUpdates():
+    new_labels = labels_diff.Apply(
+        fleetclient.messages.Namespace.LabelsValue, current_namespace.labels
+    ).GetOrNone()
+    if new_labels:
       mask.append('labels')
-      new_labels = labels_diff.Apply(
-          fleetclient.messages.Namespace.LabelsValue, current_namespace.labels
-      ).GetOrNone()
 
     # update Namespace/k8s labels for namespace resource
     namespace_labels_diff = labels_util.Diff(
@@ -77,13 +76,12 @@ class Update(base.UpdateCommand):
         args.remove_namespace_labels,
         args.clear_namespace_labels,
     )
-    new_namespace_labels = None
-    if namespace_labels_diff.MayHaveUpdates():
+    new_namespace_labels = namespace_labels_diff.Apply(
+        fleetclient.messages.Namespace.NamespaceLabelsValue,
+        current_namespace.namespaceLabels,
+    ).GetOrNone()
+    if new_namespace_labels:
       mask.append('namespace_labels')
-      new_namespace_labels = namespace_labels_diff.Apply(
-          fleetclient.messages.Namespace.NamespaceLabelsValue,
-          current_namespace.namespaceLabels,
-      ).GetOrNone()
 
     # if there's nothing to update, then return
     if not mask:

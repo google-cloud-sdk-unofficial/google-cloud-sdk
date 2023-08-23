@@ -42,7 +42,7 @@ class DataProfile(base.Command):
           To create a data profile scan `data-profile-datascan`
           in project `test-project` located in `us-central1`, run:
 
-            $ {command} data-profile data-profile-datascan --project=test-project --location=us-central1
+            $ {command} data-profile-datascan --project=test-project --location=us-central1
 
           """,
   }
@@ -126,6 +126,15 @@ class DataProfile(base.Command):
             ' specified, the respective fields will be excluded from data'
             ' profile, regardless of the fields specified in the'
             ' `--include-field-names` flag.'
+        ),
+    )
+    data_spec_arg.add_argument(
+        '--export-results-table',
+        help=(
+            'path to the resource table to export data profile scan results, of'
+            ' the form:'
+            ' `//bigquery.googleapis.com/projects/{project_number}/datasets/{dataset_id}/tables/{table_id}`.'
+            ' The table will be created if not present.'
         ),
     )
     execution_spec = parser.add_group(

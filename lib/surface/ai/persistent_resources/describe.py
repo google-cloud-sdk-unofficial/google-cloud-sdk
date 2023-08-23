@@ -26,15 +26,13 @@ from googlecloudsdk.command_lib.ai.persistent_resources import flags
 from googlecloudsdk.command_lib.ai.persistent_resources import validation
 
 
-# TODO(b/262780738): Un-hide these commands when ready
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
-@base.Hidden
 class DescribePreGA(base.DescribeCommand):
   """Get detailed information about a PersistentResource with a given id.
 
   ## EXAMPLES
 
-  To get the persistent resource with the PersistentResource id ''123'' under
+  To get the persistent resource with the PersistentResource id ``123'' under
   project ``example'' in region ``us-central1'', run:
 
     $ {command} 123 --project=example --region=us-central1

@@ -128,6 +128,7 @@
               in through the flags.
             params:
             - arg_name: update-hive-metastore-configs
+              metavar: KEY=VALUE
               type: "googlecloudsdk.calliope.arg_parsers:ArgDict:"
               help_text: |
                 Comma-separated list of Hive metastore configurations. Each configuration has
@@ -397,6 +398,7 @@
               in through the flags.
             params:
             - arg_name: update-hive-metastore-configs
+              metavar: KEY=VALUE
               type: "googlecloudsdk.calliope.arg_parsers:ArgDict:"
               help_text: |
                 Comma-separated list of Hive metastore configurations. Each configuration has

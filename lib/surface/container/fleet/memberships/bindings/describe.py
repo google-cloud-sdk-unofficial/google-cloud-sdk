@@ -24,7 +24,6 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.container.fleet import resources
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Describe(base.DescribeCommand):
   """Show Membership-Binding info.
 
@@ -62,9 +61,3 @@ class Describe(base.DescribeCommand):
     fleetclient = client.FleetClient(release_track=self.ReleaseTrack())
     return fleetclient.GetMembershipBinding(
         resources.MembershipBindingResourceName(args))
-
-
-@base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.GA)
-class DescribeGA(Describe):
-  pass

@@ -1,5 +1,4 @@
 - release_tracks: [ALPHA, BETA, GA]
-  hidden: true
   help_text:
     brief: Get the IAM policy for a Fleet Scope.
     description: |

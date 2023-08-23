@@ -118,11 +118,13 @@
             help_text: Vulnerability scanning enablement config set to disabled.
     - group:
         mutex: true
+        hidden: true
         params:
         - arg_name: allow-sbom-generation
           api_field: repository.sbomConfig.enablementConfig
           default: null
           action: store_true
+          hidden: true
           help_text: |
             Allow SBOM generation on the repository.
           choices:
@@ -133,6 +135,7 @@
           api_field: repository.sbomConfig.enablementConfig
           default: null
           action: store_true
+          hidden: true
           help_text: |
             Disable SBOM generation on the repository.
           choices:

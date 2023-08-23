@@ -35,9 +35,7 @@ You may view the status of your persistent resource with the command
 """
 
 
-# TODO(b/262780738): Un-hide these commands when ready
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
-@base.Hidden
 class CancelPreGA(base.SilentCommand):
   """Delete an active Persistent Resource.
 

@@ -44,9 +44,7 @@ You may view the status of your PersistentResource create operation with the com
 """
 
 
-# TODO(b/262780738): Un-hide these commands when ready
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
-@base.Hidden
 class CreatePreGA(base.CreateCommand):
   """Create a new persistent resource.
 

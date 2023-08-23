@@ -32,7 +32,6 @@ from googlecloudsdk.core import log
 from googlecloudsdk.generated_clients.apis.gkehub.v1alpha import gkehub_v1alpha_messages as messages
 
 
-@base.Hidden
 class Update(base.UpdateCommand):
   """Update a fleet.
 
@@ -100,11 +99,12 @@ class Update(base.UpdateCommand):
     new_labels = None
     if labels_diff.MayHaveUpdates():
       current_fleet = fleetclient.GetFleet(flag_parser.Project())
-      mask.append('labels')
       new_labels = labels_diff.Apply(
           fleetclient.messages.Fleet.LabelsValue,
           current_fleet.labels,
       ).GetOrNone()
+    if new_labels:
+      mask.append('labels')
 
     if update_mask.GetFleetUpdateMask(args):
       mask.append(update_mask.GetFleetUpdateMask(args))

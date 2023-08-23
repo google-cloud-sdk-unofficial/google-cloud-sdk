@@ -261,6 +261,10 @@
           "description": "Optional. The source dataset reference when the dataset is of type LINKED. For all other dataset types it is not set. This field cannot be updated once it is set. Any attempt to update this field using Update and Patch API Operations will be ignored.",
           "$ref": "LinkedDatasetSource"
         },
+        "externalDatasetReference": {
+          "description": "Optional. Information about the external metadata storage where the dataset is defined. Filled out when the dataset type is EXTERNAL.",
+          "$ref": "ExternalDatasetReference"
+        },
         "isCaseInsensitive": {
           "description": "Optional. TRUE if the dataset and its table names are case-insensitive, otherwise FALSE. By default, this is FALSE, which means the dataset and its table names are case-sensitive. This field does not affect routine references.",
           "type": "boolean"
@@ -409,6 +413,21 @@
         "sourceDataset": {
           "description": "The source dataset reference contains project numbers and not project ids.",
           "$ref": "DatasetReference"
+        }
+      }
+    },
+    "ExternalDatasetReference": {
+      "id": "ExternalDatasetReference",
+      "description": "Configures the access a dataset defined in an external metadata storage.",
+      "type": "object",
+      "properties": {
+        "externalSource": {
+          "description": "Required. External source that backs this dataset.",
+          "type": "string"
+        },
+        "connection": {
+          "description": "Required. The connection id that is used to access the external_source. Format: projects\/{project_id}\/locations\/{location_id}\/connections\/{connection_id}",
+          "type": "string"
         }
       }
     },
@@ -4706,6 +4725,11 @@
           "readOnly": true,
           "$ref": "PerformanceInsights"
         },
+        "queryInfo": {
+          "description": "Output only. Query optimization information for a QUERY job.",
+          "readOnly": true,
+          "$ref": "QueryInfo"
+        },
         "sparkStatistics": {
           "description": "Output only. Statistics of a Spark procedure job.",
           "readOnly": true,
@@ -5426,6 +5450,45 @@
           "description": "Output only. True if the stage has insufficient shuffle quota.",
           "readOnly": true,
           "type": "boolean"
+        },
+        "highCardinalityJoins": {
+          "description": "Output only. High cardinality joins in the stage.",
+          "readOnly": true,
+          "type": "array",
+          "items": {
+            "$ref": "HighCardinalityJoin"
+          }
+        }
+      }
+    },
+    "HighCardinalityJoin": {
+      "id": "HighCardinalityJoin",
+      "description": "High cardinality join detailed information.",
+      "type": "object",
+      "properties": {
+        "leftRows": {
+          "description": "Output only. Count of left input rows.",
+          "readOnly": true,
+          "type": "string",
+          "format": "int64"
+        },
+        "rightRows": {
+          "description": "Output only. Count of right input rows.",
+          "readOnly": true,
+          "type": "string",
+          "format": "int64"
+        },
+        "outputRows": {
+          "description": "Output only. Count of the output rows.",
+          "readOnly": true,
+          "type": "string",
+          "format": "int64"
+        },
+        "stepIndex": {
+          "description": "Output only. The index of the join operator in the ExplainQueryStep lists.",
+          "readOnly": true,
+          "type": "integer",
+          "format": "int32"
         }
       }
     },
@@ -5457,6 +5520,22 @@
           "readOnly": true,
           "type": "number",
           "format": "float"
+        }
+      }
+    },
+    "QueryInfo": {
+      "id": "QueryInfo",
+      "description": "Query optimization information for a QUERY job.",
+      "type": "object",
+      "properties": {
+        "optimizationDetails": {
+          "description": "Output only. Information about query optimizations.",
+          "readOnly": true,
+          "type": "object",
+          "additionalProperties": {
+            "type": "any",
+            "description": "Properties of the object."
+          }
         }
       }
     },
@@ -6841,6 +6920,10 @@
         "tableConstraints": {
           "description": "Optional. Tables Primary Key and Foreign Key information",
           "$ref": "TableConstraints"
+        },
+        "tableReplicationInfo": {
+          "description": "Optional. Table replication info for table created `AS REPLICA` DDL like: `CREATE MATERIALIZED VIEW mv1 AS REPLICA OF src_mv`",
+          "$ref": "TableReplicationInfo"
         }
       }
     },
@@ -7078,6 +7161,52 @@
         "referencedColumn": {
           "description": "Required. The column in the primary key that are referenced by the referencing_column.",
           "type": "string"
+        }
+      }
+    },
+    "TableReplicationInfo": {
+      "id": "TableReplicationInfo",
+      "description": "Replication info of a table created using `AS REPLICA` DDL like: `CREATE MATERIALIZED VIEW mv1 AS REPLICA OF src_mv`",
+      "type": "object",
+      "properties": {
+        "sourceTable": {
+          "description": "Required. Source table reference that is replicated.",
+          "$ref": "TableReference"
+        },
+        "replicationIntervalMs": {
+          "description": "Required. Specifies the interval at which the source table is polled for updates.",
+          "type": "string",
+          "format": "int64"
+        },
+        "replicatedSourceLastRefreshTime": {
+          "description": "Optional. Output only. If source is a materialized view, this field signifies the last refresh time of the source.",
+          "readOnly": true,
+          "type": "string",
+          "format": "int64"
+        },
+        "replicationStatus": {
+          "description": "Optional. Output only. Replication status of configured replication.",
+          "readOnly": true,
+          "type": "string",
+          "enumDescriptions": [
+            "",
+            "Replication is Active with no errors.",
+            "Source object is deleted.",
+            "Source revoked replication permissions.",
+            "Source configuration doesn\u2019t allow replication."
+          ],
+          "enum": [
+            "REPLICATION_STATUS_UNSPECIFIED",
+            "ACTIVE",
+            "SOURCE_DELETED",
+            "PERMISSION_DENIED",
+            "UNSUPPORTED_CONFIGURATION"
+          ]
+        },
+        "replicationError": {
+          "description": "Optional. Output only. Replication error that will permanently stopped table replication.",
+          "readOnly": true,
+          "$ref": "ErrorProto"
         }
       }
     },

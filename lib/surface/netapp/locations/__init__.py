@@ -21,8 +21,13 @@ from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 
 
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class Locations(base.Group):
+  """Get and list locations where Cloud NetApp Files is available."""
+
+
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
-class LocationsBeta(base.Group):
+class LocationsBeta(Locations):
   """Get and list locations where Cloud NetApp Files is available."""
 
 

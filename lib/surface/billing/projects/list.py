@@ -71,7 +71,7 @@ class ListAlpha(base.ListCommand):
     return client.List(account_ref, limit=args.limit)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
 class List(base.ListCommand):
   """List all active projects associated with the specified billing account.
 

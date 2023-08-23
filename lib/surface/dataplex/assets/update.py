@@ -65,6 +65,23 @@ class Update(base.Command):
   @staticmethod
   def Args(parser):
     _CommonArgs(parser)
+    resource_spec = parser.add_group(
+        required=False,
+        help='Specification of the resource that is referenced by this asset.',
+    )
+    resource_spec.add_argument(
+        '--resource-read-access-mode',
+        required=False,
+        choices={
+            'DIRECT': 'Data is accessed directly using storage APIs',
+            'MANAGED': (
+                'Data is accessed through a managed interface using BigQuery'
+                ' APIs.'
+            ),
+        },
+        type=arg_utils.ChoiceToEnumName,
+        help='Read access mode',
+    )
 
   def GenerateUpdateMask(self, args):
     return asset.GenerateUpdateMask(args)

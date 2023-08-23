@@ -45,15 +45,15 @@ class Update(base.UpdateCommand):
         """,
   }
 
-  @classmethod
-  def Args(cls, parser):
+  @staticmethod
+  def Args(parser):
     """Specifies additional command flags.
 
     Args:
       parser: argparse.Parser, Parser object for command line inputs
     """
     base.ASYNC_FLAG.AddToParser(parser)
-    flags.AddAvailabilityType(parser, cls.ReleaseTrack())
+    flags.AddAvailabilityType(parser)
     flags.AddCluster(parser, False)
     flags.AddDatabaseFlags(parser)
     flags.AddInstance(parser)
@@ -68,6 +68,8 @@ class Update(base.UpdateCommand):
     flags.AddInsightsConfigRecordClientAddress(
         parser, show_negated_in_help=True
     )
+    flags.AddSSLMode(parser, update=True)
+    flags.AddRequireConnectors(parser)
     # TODO(b/185795425): Add --ssl-required and --labels later once we
     # understand the use cases
 
@@ -118,8 +120,6 @@ class UpdateAlphaBeta(Update):
   def Args(parser):
     super(UpdateAlphaBeta, UpdateAlphaBeta).Args(parser)
     flags.AddUpdateMode(parser)
-    flags.AddSSLMode(parser)
-    flags.AddRequireConnectors(parser)
 
   def ConstructPatchRequestFromArgs(self, alloydb_messages, instance_ref, args):
     return instance_helper.ConstructPatchRequestFromArgsAlphaBeta(

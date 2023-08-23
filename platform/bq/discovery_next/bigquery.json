@@ -4,7 +4,7 @@
  "id": "bigquery:v2",
  "name": "bigquery",
  "version": "v2",
- "revision": "20230801",
+ "revision": "20230815",
  "title": "BigQuery API",
  "description": "A data platform for customers to create, manage, share and query data.",
  "ownerDomain": "google.com",
@@ -139,6 +139,28 @@
      "items": {
       "$ref": "BiEngineReason"
      }
+    }
+   }
+  },
+  "BigLakeConfiguration": {
+   "id": "BigLakeConfiguration",
+   "type": "object",
+   "properties": {
+    "connectionId": {
+     "type": "string",
+     "description": "[Required] Required and immutable. Credential reference for accessing external storage system. Normalized as project_id.location_id.connection_id."
+    },
+    "fileFormat": {
+     "type": "string",
+     "description": "[Required] Required and immutable. Open source file format that the table data is stored in. Currently only PARQUET is supported."
+    },
+    "storageUri": {
+     "type": "string",
+     "description": "[Required] Required and immutable. Fully qualified location prefix of the external folder where data is stored. Normalized to standard format: \"gs:////\". Starts with \"gs://\" rather than \"/bigstore/\". Ends with \"/\". Does not contain \"*\". See also BigLakeStorageMetadata on how it is used."
+    },
+    "tableFormat": {
+     "type": "string",
+     "description": "[Required] Required and immutable. Open source file format that the table data is stored in. Currently only PARQUET is supported."
     }
    }
   },
@@ -510,6 +532,10 @@
     "etag": {
      "type": "string",
      "description": "[Output-only] A hash of the resource."
+    },
+    "externalDatasetReference": {
+     "$ref": "ExternalDatasetReference",
+     "description": "[Optional] Information about the external metadata storage where the dataset is defined. Filled out when the dataset type is EXTERNAL."
     },
     "friendlyName": {
      "type": "string",
@@ -1031,6 +1057,20 @@
      "items": {
       "type": "string"
      }
+    }
+   }
+  },
+  "ExternalDatasetReference": {
+   "id": "ExternalDatasetReference",
+   "type": "object",
+   "properties": {
+    "connection": {
+     "type": "string",
+     "description": "[Required] The connection id that is used to access the external_source. Format: projects/{project_id}/locations/{location_id}/connections/{connection_id}"
+    },
+    "externalSource": {
+     "type": "string",
+     "description": "[Required] External source that backs this dataset."
     }
    }
   },
@@ -2875,6 +2915,10 @@
    "id": "Table",
    "type": "object",
    "properties": {
+    "biglakeConfiguration": {
+     "$ref": "BigLakeConfiguration",
+     "description": "[Optional] Specifies the configuration of a BigLake managed table."
+    },
     "cloneDefinition": {
      "$ref": "CloneDefinition",
      "description": "[Output-only] Clone definition."
@@ -3301,6 +3345,16 @@
      "type": "string",
      "description": "[Optional] Precision (maximum number of total digits in base 10) and scale (maximum number of digits in the fractional part in base 10) constraints for values of this field for NUMERIC or BIGNUMERIC. It is invalid to set precision or scale if type \u2260 \"NUMERIC\" and \u2260 \"BIGNUMERIC\". If precision and scale are not specified, no value range constraint is imposed on this field insofar as values are permitted by the type. Values of this NUMERIC or BIGNUMERIC field must be in this range when: - Precision (P) and scale (S) are specified: [-10P-S + 10-S, 10P-S - 10-S] - Precision (P) is specified but not scale (and thus scale is interpreted to be equal to zero): [-10P + 1, 10P - 1]. Acceptable values for precision and scale if both are specified: - If type = \"NUMERIC\": 1 \u2264 precision - scale \u2264 29 and 0 \u2264 scale \u2264 9. - If type = \"BIGNUMERIC\": 1 \u2264 precision - scale \u2264 38 and 0 \u2264 scale \u2264 38. Acceptable values for precision if only precision is specified but not scale (and thus scale is interpreted to be equal to zero): - If type = \"NUMERIC\": 1 \u2264 precision \u2264 29. - If type = \"BIGNUMERIC\": 1 \u2264 precision \u2264 38. If scale is specified but not precision, then it is invalid.",
      "format": "int64"
+    },
+    "rangeElementType": {
+     "type": "object",
+     "description": "Optional. The subtype of the RANGE, if the type of this field is RANGE. If the type is RANGE, this field is required. Possible values for the field element type of a RANGE include: - DATE - DATETIME - TIMESTAMP",
+     "properties": {
+      "type": {
+       "type": "string",
+       "description": "The field element type of a RANGE"
+      }
+     }
     },
     "roundingMode": {
      "type": "string",

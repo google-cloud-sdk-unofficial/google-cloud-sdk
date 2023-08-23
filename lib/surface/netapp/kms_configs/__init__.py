@@ -21,13 +21,11 @@ from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 
 
-# TODO(b/293907222): Make gcloud netapp public and visible for GA launch
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class KmsConfigs(base.Group):
   """Create and manage Cloud NetApp Volumes KMS Configs."""
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
-class KmsConfigsBeta(base.Group):
+class KmsConfigsBeta(KmsConfigs):
   """Create and manage Cloud NetApp Volumes KMS Configs."""

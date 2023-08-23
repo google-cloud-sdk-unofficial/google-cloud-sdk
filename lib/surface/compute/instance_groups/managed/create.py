@@ -426,6 +426,7 @@ class CreateAlpha(CreateBeta):
   def Args(cls, parser):
     super(CreateAlpha, cls).Args(parser)
     managed_flags.AddMigDefaultActionOnVmFailure(parser)
+    managed_flags.AddStandbyPolicyFlags(parser)
 
   def _CreateInstanceGroupManager(self, args, group_ref, template_ref, client,
                                   holder):
@@ -433,6 +434,11 @@ class CreateAlpha(CreateBeta):
                                    self)._CreateInstanceGroupManager(
                                        args, group_ref, template_ref, client,
                                        holder)
+    standby_policy = managed_instance_groups_utils.CreateStandbyPolicy(
+        client.messages, args.standby_pool_initial_delay, args.standby_pool_mode
+    )
+    if standby_policy:
+      instance_group_manager.standbyPolicy = standby_policy
     return instance_group_manager
 
 

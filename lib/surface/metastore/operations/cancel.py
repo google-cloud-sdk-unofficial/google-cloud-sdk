@@ -36,7 +36,8 @@ DETAILED_HELP = {'EXAMPLES': """\
         """}
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
+                    base.ReleaseTrack.GA)
 class Cancel(base.Command):
   """Cancel a Dataproc Metastore operation."""
 

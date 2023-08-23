@@ -35,6 +35,7 @@
   arguments:
     params:
     - arg_name: notificationConfigId
+      metavar: NOTIFICATION_CONFIG_ID
       is_positional: true
       required: true
       help_text: |

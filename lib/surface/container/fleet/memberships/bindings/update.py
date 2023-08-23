@@ -25,7 +25,6 @@ from googlecloudsdk.command_lib.container.fleet import resources
 from googlecloudsdk.command_lib.util.args import labels_util
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Update(base.UpdateCommand):
   """Update the Binding in a Membership.
 
@@ -84,13 +83,12 @@ class Update(base.UpdateCommand):
 
     # update GCP labels for namespace resource
     labels_diff = labels_util.Diff.FromUpdateArgs(args)
-    new_labels = None
-    if labels_diff.MayHaveUpdates():
+    new_labels = labels_diff.Apply(
+        fleetclient.messages.MembershipBinding.LabelsValue,
+        current_binding.labels,
+    ).GetOrNone()
+    if new_labels:
       mask.append('labels')
-      new_labels = labels_diff.Apply(
-          fleetclient.messages.MembershipBinding.LabelsValue,
-          current_binding.labels,
-      ).GetOrNone()
 
     for flag in ['fleet', 'scope']:
       if args.IsKnownAndSpecified(flag):
@@ -106,9 +104,3 @@ class Update(base.UpdateCommand):
         scope=scope,
         labels=new_labels,
         mask=','.join(mask))
-
-
-@base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.GA)
-class UpdateGA(Update):
-  pass

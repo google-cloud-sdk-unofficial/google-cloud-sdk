@@ -63,6 +63,7 @@
         ID of the App Engine service to send the request to.
     - api_field: job.appEngineHttpTarget.headers.additionalProperties
       arg_name: headers
+      metavar: KEY=VALUE
       type:
         arg_dict:
           flatten: true

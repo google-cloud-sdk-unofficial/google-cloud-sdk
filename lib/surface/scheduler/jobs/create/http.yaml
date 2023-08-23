@@ -62,6 +62,7 @@
         HTTP method to use for the request.
     - api_field: job.httpTarget.headers.additionalProperties
       arg_name: headers
+      metavar: KEY=VALUE
       type:
         arg_dict:
           flatten: true

@@ -58,7 +58,7 @@ class SimulateMaintenanceEvent(base.UpdateCommand):
       requests.append((client.instances, 'SimulateMaintenanceEvent', request))
 
     errors_to_collect = []
-    responses = holder.client.BatchRequests(requests, errors_to_collect)
+    responses = holder.client.AsyncRequests(requests, errors_to_collect)
     for r in responses:
       err = getattr(r, 'error', None)
       if err:
@@ -133,7 +133,7 @@ class SimulateMaintenanceEventAlpha(SimulateMaintenanceEvent):
         requests.append((client.instances, 'SimulateMaintenanceEvent', request))
 
     errors_to_collect = []
-    responses = holder.client.BatchRequests(requests, errors_to_collect)
+    responses = holder.client.AsyncRequests(requests, errors_to_collect)
 
     for r in responses:
       err = getattr(r, 'error', None)

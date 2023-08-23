@@ -93,12 +93,12 @@ class Update(base.UpdateCommand):
           'resources': {
               condition.value: None
               for condition in workload_source.conditionSet.conditions
-              if condition.attribute == 'resources'
+              if condition.attribute == 'resource'
           },
           'attached_service_accounts': {
               condition.value: None
               for condition in workload_source.conditionSet.conditions
-              if condition.attribute == 'attached_service_accounts'
+              if condition.attribute == 'attached_service_account'
           },
       }
     # This is an upsert request if not found
@@ -147,7 +147,7 @@ class Update(base.UpdateCommand):
     if args.clear_attached_service_accounts:
       conditions_dict['attached_service_accounts'] = {}
     if args.remove_resources:
-      for value in args.remove_attached_service_accounts:
+      for value in args.remove_resources:
         conditions_dict['resources'].pop(value, None)
     if args.remove_attached_service_accounts:
       for value in args.remove_attached_service_accounts:

@@ -65,6 +65,7 @@
           Perform no call logging.
       default: none
     - arg_name: labels
+      metavar: KEY=VALUE
       api_field: execution.labels
       help_text: |
         List of label KEY=VALUE pairs to add.

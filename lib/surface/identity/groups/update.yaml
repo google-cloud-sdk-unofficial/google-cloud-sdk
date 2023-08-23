@@ -94,7 +94,6 @@
         params:
         - arg_name: add-posix-group
           api_field: group.posixGroups
-          metavar: POSIX_GROUP
           type:
             arg_dict:
               flatten: false

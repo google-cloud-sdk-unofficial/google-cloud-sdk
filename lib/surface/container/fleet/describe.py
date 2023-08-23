@@ -24,7 +24,6 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.util.apis import arg_utils
 
 
-@base.Hidden
 class Describe(base.DescribeCommand):
   """Show fleet info.
 

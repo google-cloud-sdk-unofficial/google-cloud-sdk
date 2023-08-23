@@ -43,7 +43,7 @@ class DataQuality(base.Command):
           To update description of a data quality scan `data-quality-datascan`
           in project `test-project` located in `us-central1`, run:
 
-            $ {command} data-quality data-quality-datascan --project=test-project --location=us-central1 --description="Description is updated."
+            $ {command} data-quality-datascan --project=test-project --location=us-central1 --description="Description is updated."
 
           """,
   }

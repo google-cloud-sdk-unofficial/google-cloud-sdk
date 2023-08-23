@@ -21,8 +21,13 @@ from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 
 
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class Operations(base.Group):
+  """Read and manage Cloud NetApp Files Operations."""
+
+
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
-class OperationsBeta(base.Group):
+class OperationsBeta(Operations):
   """Read and manage Cloud NetApp Files Operations."""
 
 

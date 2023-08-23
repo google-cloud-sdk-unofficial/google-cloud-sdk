@@ -17,6 +17,7 @@
         Arguments and flags that specify the workstation to create.
     params:
     - arg_name: labels
+      metavar: KEY=VALUE
       api_field: workstation.labels
       type: "googlecloudsdk.calliope.arg_parsers:ArgDict:"
       help_text: |

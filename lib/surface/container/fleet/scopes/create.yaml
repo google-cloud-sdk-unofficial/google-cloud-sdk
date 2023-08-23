@@ -1,6 +1,4 @@
 - release_tracks: [ALPHA, BETA, GA]
-  GA:
-    hidden: true
   help_text:
     brief: Create a new fleet scope.
     description: |

@@ -26,8 +26,6 @@ from googlecloudsdk.command_lib.util.args import labels_util
 from googlecloudsdk.core import log
 
 
-# TODO(b/293907222): Make gcloud netapp public and visible for GA launch
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Create(base.CreateCommand):
   """Create a Cloud NetApp Active Directory."""
@@ -90,64 +88,10 @@ class Create(base.CreateCommand):
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
-class CreateBeta(base.CreateCommand):
+class CreateBeta(Create):
   """Create a Cloud NetApp Active Directory."""
 
   _RELEASE_TRACK = base.ReleaseTrack.BETA
-
-  detailed_help = {
-      'DESCRIPTION': """\
-          Creates an AD (Active Directory) config for Cloud NetApp Volumes.
-          """,
-      'EXAMPLES': """\
-          The following command creates an AD named AD_NAME with the required arguments:
-
-              $ {command} AD_NAME --location=us-central1 --domain=example-domain.com --dns=0.0.0.0 --net-bios-prefix=prefix-1 --enable-aes=true --username=user1 --password="secure1" --backup-operators=backup_op1,backup_op2 --security-operators=sec_op1,sec_op2 --enable-ldap-signing=false
-          """,
-  }
-
-  @staticmethod
-  def Args(parser):
-    activedirectories_flags.AddActiveDirectoryCreateArgs(parser)
-
-  def Run(self, args):
-    """Create a Cloud NetApp Active Directory in the current project."""
-    activedirectory_ref = args.CONCEPTS.active_directory.Parse()
-    client = ad_client.ActiveDirectoriesClient(self._RELEASE_TRACK)
-    labels = labels_util.ParseCreateArgs(
-        args, client.messages.ActiveDirectory.LabelsValue)
-
-    active_directory = client.ParseActiveDirectoryConfig(
-        name=activedirectory_ref.RelativeName(),
-        domain=args.domain,
-        site=args.site,
-        dns=args.dns,
-        net_bios_prefix=args.net_bios_prefix,
-        organizational_unit=args.organizational_unit,
-        aes_encryption=args.enable_aes,
-        username=args.username,
-        password=args.password,
-        backup_operators=args.backup_operators,
-        security_operators=args.security_operators,
-        kdc_hostname=args.kdc_hostname,
-        kdc_ip=args.kdc_ip,
-        nfs_users_with_ldap=args.nfs_users_with_ldap,
-        ldap_signing=args.enable_ldap_signing,
-        encrypt_dc_connections=args.encrypt_dc_connections,
-        description=args.description,
-        labels=labels,
-    )
-    result = client.CreateActiveDirectory(activedirectory_ref,
-                                          args.async_,
-                                          active_directory)
-    if args.async_:
-      command = 'gcloud {} netapp active-directories list'.format(
-          self.ReleaseTrack().prefix)
-      log.status.Print(
-          'Check the status of the new active directory by listing all active'
-          ' directories:\n  $ {} '.format(command)
-      )
-    return result
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)

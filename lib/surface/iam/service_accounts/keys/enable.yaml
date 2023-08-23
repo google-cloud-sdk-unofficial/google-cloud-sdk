@@ -1,9 +1,9 @@
 - release_tracks: [ALPHA, BETA, GA]
 
   help_text:
-    brief: Enable a public key related to an IAM service account.
+    brief: Enable a service account key.
     description: |
-      Enable a public key related to an IAM service account.
+      Enable a service account key.
 
       If the service account does not exist, this command returns a `PERMISSION_DENIED` error.
     examples: |

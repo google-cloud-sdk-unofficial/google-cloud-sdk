@@ -18,6 +18,7 @@
       spec: !REF googlecloudsdk.command_lib.telecomdatafabric.resources:fabric
     params:
     - arg_name: deployments
+      metavar: KEY=VALUE
       api_field: fabric.deployments
       help_text: List of deployments to be created in the fabric.
       type:

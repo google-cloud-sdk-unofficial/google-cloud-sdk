@@ -31,6 +31,7 @@
       help_text: |
         The unique identifier of the data to check access for.
     - arg_name: request-attributes
+      metavar: KEY=VALUE
       api_field: checkDataAccessRequest.requestAttributes
       type: 'googlecloudsdk.calliope.arg_parsers:ArgDict:'
       help_text: |

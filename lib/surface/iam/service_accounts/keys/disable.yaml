@@ -1,9 +1,9 @@
 - release_tracks: [ALPHA, BETA, GA]
 
   help_text:
-    brief: Disable a public key related to an IAM service account.
+    brief: Disable a service account key.
     description: |
-      Disable a public key related to an IAM service account.
+      Disable a service account key.
 
       If the service account does not exist, this command returns a `PERMISSION_DENIED` error.
     examples: |

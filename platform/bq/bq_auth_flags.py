@@ -54,3 +54,9 @@ OAUTH_ACCESS_TOKEN = flags.DEFINE_string(
 USE_GOOGLE_AUTH = flags.DEFINE_boolean(
     'use_google_auth', False, 'Use new google auth libraries'
 )
+QUOTA_PROJECT_ID = flags.DEFINE_string(
+    'quota_project_id',
+    '',
+    'ID of a Google Cloud Project as the quota project to be used for billing '
+    'and quota limits.',
+)

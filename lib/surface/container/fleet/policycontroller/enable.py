@@ -18,15 +18,15 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+from apitools.base.protorpclite import messages
 from googlecloudsdk.calliope import base as calliope_base
 from googlecloudsdk.command_lib.container.fleet.features import base
+from googlecloudsdk.command_lib.container.fleet.policycontroller import command
 from googlecloudsdk.command_lib.container.fleet.policycontroller import flags
-from googlecloudsdk.command_lib.container.fleet.policycontroller import utils
-from googlecloudsdk.core import exceptions
 
 
 @calliope_base.Hidden
-class Enable(base.UpdateCommand, base.EnableCommand):
+class Enable(base.UpdateCommand, base.EnableCommand, command.PocoCommand):
   """Enable Policy Controller Feature.
 
   Enables the Policy Controller Feature in a fleet.
@@ -59,39 +59,36 @@ class Enable(base.UpdateCommand, base.EnableCommand):
     cmd_flags.add_version()
 
   def Run(self, args):
-    membership_specs = {}
-    poco_hub_config = utils.set_poco_hub_config_parameters_from_args(
-        args, self.messages
-    )
+    parser = flags.PocoFlagParser(args, self.messages)
+    specs = self.path_specs(args, True)
+    updated_specs = {path: self.enable(s, parser) for path, s in specs.items()}
+    return self.update_specs(updated_specs)
 
-    poco_hub_config.installSpec = self.messages.PolicyControllerHubConfig.InstallSpecValueValuesEnum(
-        self.messages.PolicyControllerHubConfig.InstallSpecValueValuesEnum.INSTALL_SPEC_ENABLED
-    )
-
-    memberships = base.ParseMembershipsPlural(
-        args, prompt=True, prompt_cancel=False, search=True
-    )
-    for membership in memberships:
-      poco_membership_spec = self.messages.PolicyControllerMembershipSpec(
-          policyControllerHubConfig=poco_hub_config
+  def _get_hub_config(self, spec: messages.Message) -> messages.Message:
+    if spec.policyControllerHubConfig is None:
+      return self.messages.PolicyControllerHubConfig(
+          installSpec=self.messages.PolicyControllerHubConfig.InstallSpecValueValuesEnum.INSTALL_SPEC_ENABLED
       )
-      if args.version:
-        poco_membership_spec.version = args.version
+    return spec.policyControllerHubConfig
 
-      membership_path = membership
-      membership_specs[membership_path] = self.messages.MembershipFeatureSpec(
-          policycontroller=poco_membership_spec
-      )
+  def _get_policycontroller(self, spec: messages.Message) -> messages.Message:
+    if spec.policycontroller is None:
+      return self.messages.PolicyControllerMembershipSpec()
+    return spec.policycontroller
 
-    f = self.messages.Feature(
-        membershipSpecs=self.hubclient.ToMembershipSpecs(membership_specs)
-    )
+  def enable(self, spec, parser):
+    pc = self._get_policycontroller(spec)
+    hub_cfg = self._get_hub_config(pc)
+    hub_cfg = parser.update_audit_interval(hub_cfg)
+    hub_cfg = parser.update_constraint_violation_limit(hub_cfg)
+    hub_cfg = parser.update_exemptable_namespaces(hub_cfg)
+    hub_cfg = parser.update_log_denies(hub_cfg)
+    hub_cfg = parser.update_mutation(hub_cfg)
+    hub_cfg = parser.update_monitoring(hub_cfg)
+    hub_cfg = parser.update_referential_rules(hub_cfg)
+    hub_cfg = parser.update_template_library(hub_cfg)
 
-    try:
-      return self.Update(['membership_specs'], f)
-    except exceptions.Error as e:
-      fne = self.FeatureNotEnabledError()
-      if str(e) == str(fne):
-        return self.Enable(f)
-      else:
-        raise e
+    pc.policyControllerHubConfig = hub_cfg
+    pc = parser.update_version(pc)
+    spec.policycontroller = pc
+    return spec

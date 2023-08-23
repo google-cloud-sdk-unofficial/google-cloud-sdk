@@ -25,11 +25,11 @@ from googlecloudsdk.core import properties
 from googlecloudsdk.core import resources
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class ListBeta(base.ListCommand):
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class List(base.ListCommand):
   """List all Cloud NetApp Files locations."""
 
-  _RELEASE_TRACK = base.ReleaseTrack.BETA
+  _RELEASE_TRACK = base.ReleaseTrack.GA
 
   detailed_help = {
       'DESCRIPTION':
@@ -52,6 +52,13 @@ class ListBeta(base.ListCommand):
         collection='netapp.projects')
     client = netapp_client.NetAppClient(release_track=self._RELEASE_TRACK)
     return list(client.ListLocations(project_ref, limit=args.limit))
+
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class ListBeta(List):
+  """List all Cloud NetApp Files locations."""
+
+  _RELEASE_TRACK = base.ReleaseTrack.BETA
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)

@@ -25,7 +25,6 @@ from googlecloudsdk.command_lib.container.fleet import resources
 from googlecloudsdk.command_lib.util.args import labels_util
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Create(base.CreateCommand):
   """Create a Membership Binding.
 
@@ -87,10 +86,3 @@ class Create(base.CreateCommand):
         scope=scope,
         labels=labels,
     )
-
-
-@base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.GA)
-class CreateGA(Create):
-  pass
-

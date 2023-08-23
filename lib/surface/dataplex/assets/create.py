@@ -104,6 +104,19 @@ class Create(base.Command):
         type=arg_utils.ChoiceToEnumName,
         help='Type',
     )
+    resource_spec.add_argument(
+        '--resource-read-access-mode',
+        required=False,
+        choices={
+            'DIRECT': 'Data is accessed directly using storage APIs',
+            'MANAGED': (
+                'Data is accessed through a managed interface using BigQuery'
+                ' APIs.'
+            ),
+        },
+        type=arg_utils.ChoiceToEnumName,
+        help='Read access mode',
+    )
 
   def GenerateRequest(self, args):
     return asset.GenerateAssetForCreateRequest(args)

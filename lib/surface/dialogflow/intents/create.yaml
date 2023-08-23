@@ -26,6 +26,7 @@ arguments:
   - _COMMON_: flags.ml_enabled
   - arg_name: other-properties
     type: "googlecloudsdk.calliope.arg_parsers:ArgDict:"
+    metavar: KEY=VALUE
     help_text: |
       Map containing other properties to set on the intent.
 

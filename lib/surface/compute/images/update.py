@@ -173,7 +173,7 @@ class Update(base.UpdateCommand):
       requests.append((client.apitools_client.images, 'Patch', request))
 
     errors_to_collect = []
-    result = client.BatchRequests(requests, errors_to_collect)
+    result = client.AsyncRequests(requests, errors_to_collect)
     if errors_to_collect:
       raise exceptions.MultiError(errors_to_collect)
     if result:

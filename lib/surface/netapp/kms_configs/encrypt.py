@@ -23,8 +23,6 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.netapp.kms_configs import flags as kmsconfigs_flags
 
 
-# TODO(b/293907222): Make gcloud netapp public and visible for GA launch
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Encrypt(base.Command):
   """Encrypt all existing volumes and storage pools in the same region with the desired Cloud NetApp Volumes KMS Config."""
@@ -54,30 +52,8 @@ class Encrypt(base.Command):
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
-class EncryptBeta(base.Command):
+class EncryptBeta(Encrypt):
   """Encrypt all existing volumes and storage pools in the same region with the desired Cloud NetApp Volumes KMS Config."""
 
-  detailed_help = {
-      'DESCRIPTION': """\
-          Encrypt the existing volumes with the desired KMS (Key Management System) Config using
-          Customer Managed Encryption Keys (CMEK)
-          """,
-      'EXAMPLES': """\
-          The following command encrypts the existing volumes with the desired KMS Config instance named KMS_CONFIG using specified project and location.
-
-              $ {command} KMS_CONFIG --location=us-central1
-          """,
-  }
-
   _RELEASE_TRACK = base.ReleaseTrack.BETA
-
-  @staticmethod
-  def Args(parser):
-    kmsconfigs_flags.AddKMSConfigEncryptArgs(parser)
-
-  def Run(self, args):
-    """Encrypt all existing volumes and storage pools under a Cloud NetApp Volumes KMS Config in the current project."""
-    kmsconfig_ref = args.CONCEPTS.kms_config.Parse()
-    client = kmsconfigs_client.KmsConfigsClient(self._RELEASE_TRACK)
-    return client.EncryptKmsConfig(kmsconfig_ref, args.async_)
 

@@ -56,6 +56,7 @@ class Restore(base.RestoreCommand):
     flags.AddCluster(parser)
     flags.AddRegion(parser)
     flags.AddNetwork(parser)
+    flags.AddAllocatedIPRangeName(parser)
     kms_resource_args.AddKmsKeyResourceArg(
         parser,
         'cluster',

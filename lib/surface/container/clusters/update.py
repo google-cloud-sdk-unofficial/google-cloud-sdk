@@ -375,6 +375,7 @@ class Update(base.UpdateCommand):
     flags.AddWorkloadPoliciesFlag(group)
     flags.AddRemoveWorkloadPoliciesFlag(group)
     flags.AddInTransitEncryptionFlag(group)
+    flags.AddEnableMultiNetworkingFlag(group, hidden=True)
 
   def ParseUpdateOptions(self, args, locations):
     get_default = lambda key: getattr(args, key)
@@ -456,6 +457,7 @@ class Update(base.UpdateCommand):
         args.enable_runtime_vulnerability_insight)
     opts.workload_policies = args.workload_policies
     opts.remove_workload_policies = args.remove_workload_policies
+    opts.enable_multi_networking = args.enable_multi_networking
     return opts
 
   def Run(self, args):
@@ -879,6 +881,7 @@ class UpdateBeta(Update):
     flags.AddEnableFqdnNetworkPolicyFlag(group)
     flags.AddHostMaintenanceIntervalFlag(group)
     flags.AddInTransitEncryptionFlag(group)
+    flags.AddEnableMultiNetworkingFlag(group, hidden=True)
 
   def ParseUpdateOptions(self, args, locations):
     get_default = lambda key: getattr(args, key)
@@ -1017,6 +1020,7 @@ class UpdateBeta(Update):
     opts.remove_workload_policies = args.remove_workload_policies
     opts.enable_fqdn_network_policy = args.enable_fqdn_network_policy
     opts.host_maintenance_interval = args.host_maintenance_interval
+    opts.enable_multi_networking = args.enable_multi_networking
     return opts
 
 
@@ -1121,6 +1125,7 @@ class UpdateAlpha(Update):
     flags.AddEnableFqdnNetworkPolicyFlag(group)
     flags.AddHostMaintenanceIntervalFlag(group)
     flags.AddInTransitEncryptionFlag(group)
+    flags.AddEnableMultiNetworkingFlag(group, hidden=True)
 
   def ParseUpdateOptions(self, args, locations):
     get_default = lambda key: getattr(args, key)
@@ -1254,4 +1259,5 @@ class UpdateAlpha(Update):
     opts.remove_workload_policies = args.remove_workload_policies
     opts.enable_fqdn_network_policy = args.enable_fqdn_network_policy
     opts.host_maintenance_interval = args.host_maintenance_interval
+    opts.enable_multi_networking = args.enable_multi_networking
     return opts

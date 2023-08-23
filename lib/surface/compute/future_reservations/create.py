@@ -58,12 +58,13 @@ def _RunCreate(compute_api, args):
   return compute_api.client.MakeRequests([(service, 'Insert', create_request)])
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class CreateAlpha(base.CreateCommand):
-  """Create a Compute Engine future reservation."""
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class CreateBeta(base.CreateCommand):
+  """Create a Compute Engine reservation."""
   _support_share_setting = True
-  _support_location_hint = True
+  _support_location_hint = False
   _support_instance_template = True
+  _support_fleet = False
   _support_planning_status = True
   _support_local_ssd_count = True
   _support_auto_delete = True
@@ -76,7 +77,38 @@ class CreateAlpha(base.CreateCommand):
         parser,
         support_share_setting=cls._support_share_setting,
         support_location_hint=cls._support_location_hint,
-        support_fleet=True,
+        support_fleet=cls._support_fleet,
+        support_planning_status=cls._support_planning_status,
+        support_instance_template=cls._support_instance_template,
+        support_local_ssd_count=cls._support_local_ssd_count,
+        support_auto_delete=cls._support_auto_delete)
+
+  def Run(self, args):
+    return _RunCreate(
+        base_classes.ComputeApiHolder(base.ReleaseTrack.BETA), args)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class CreateAlpha(CreateBeta):
+  """Create a Compute Engine future reservation."""
+
+  _support_share_setting = True
+  _support_location_hint = True
+  _support_instance_template = True
+  _support_fleet = True
+  _support_planning_status = True
+  _support_local_ssd_count = True
+  _support_auto_delete = True
+
+  @classmethod
+  def Args(cls, parser):
+    resource_args.GetFutureReservationResourceArg().AddArgument(
+        parser, operation_type='create')
+    flags.AddCreateFlags(
+        parser,
+        support_share_setting=cls._support_share_setting,
+        support_location_hint=cls._support_location_hint,
+        support_fleet=cls._support_fleet,
         support_planning_status=cls._support_planning_status,
         support_instance_template=cls._support_instance_template,
         support_local_ssd_count=cls._support_local_ssd_count,
@@ -86,6 +118,19 @@ class CreateAlpha(base.CreateCommand):
     return _RunCreate(
         base_classes.ComputeApiHolder(base.ReleaseTrack.ALPHA), args)
 
+CreateBeta.detailed_help = {
+    'brief':
+        'Create a Compute Engine future reservation.',
+    'EXAMPLES': """
+        To create a Compute Engine future reservation by specifying VM properties using an instance template, run:
+
+            $ {command} my-future-reservation --total-count=1000 --start-time=2022-11-10 --end-time=2022-12-10 --name-prefix=prefix-reservation --source-instance-template=example-instance-template --zone=fake-zone
+
+        To create a Compute Engine future reservation by directly specifying VM properties, run:
+
+            $ {command} my-future-reservation --total-count=1000 --start-time=2022-11-10 --end-time=2022-12-10 --name-prefix=prefix-reservation --machine-type=custom-8-10240 --min-cpu-platform="Intel Haswell" --accelerator=count=2,type=nvidia-tesla-v100 --local-ssd=size=375,interface=scsi
+        """
+}
 
 CreateAlpha.detailed_help = {
     'brief':

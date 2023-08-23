@@ -53,6 +53,7 @@
         - group:
             params:
             - arg_name: update-attributes
+              metavar: KEY=VALUE
               type: "googlecloudsdk.calliope.arg_parsers:ArgDict:"
               help_text: |
                 Comma-separated list of attributes. Each attribute has the form

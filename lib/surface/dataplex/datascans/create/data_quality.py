@@ -42,7 +42,7 @@ class DataQuality(base.Command):
           To create a data quality scan `data-quality-datascan`
           in project `test-project` located in `us-central1` with data spec file `data-quality-spec.json`, run:
 
-            $ {command} data-quality data-quality-datascan --project=test-project --location=us-central1 --data-quality-spec-file="data-quality-spec.json"
+            $ {command} data-quality-datascan --project=test-project --location=us-central1 --data-quality-spec-file="data-quality-spec.json"
           """,
   }
 

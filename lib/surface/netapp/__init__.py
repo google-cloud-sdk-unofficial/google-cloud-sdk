@@ -39,18 +39,11 @@ DETAILED_HELP = {
 }
 
 
-# TODO(b/293907222): Make gcloud netapp public and visible for GA launch
-@base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.GA)
-class NetappGA(base.Group):
-  """Create and manipulate Cloud NetApp Volumes resources."""
-  detailed_help = DETAILED_HELP
-  category = base.STORAGE_CATEGORY
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.GA, base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA
+)
 class Netapp(base.Group):
   """Create and manipulate Cloud NetApp Files resources."""
+
   detailed_help = DETAILED_HELP
   category = base.STORAGE_CATEGORY
-

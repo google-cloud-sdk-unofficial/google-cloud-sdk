@@ -38,7 +38,7 @@ _DETAILED_HELP = {
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Create(base.CreateCommand):
-  """Create a job."""
+  """Create a Fault injection testing job."""
 
   detailed_help = _DETAILED_HELP
 

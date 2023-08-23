@@ -98,7 +98,7 @@ class Stop(base.SilentCommand):
     requests = self._CreateRequests(client, instance_refs, args)
 
     errors_to_collect = []
-    responses = client.BatchRequests(requests, errors_to_collect)
+    responses = client.AsyncRequests(requests, errors_to_collect)
     if errors_to_collect:
       raise core_exceptions.MultiError(errors_to_collect)
 

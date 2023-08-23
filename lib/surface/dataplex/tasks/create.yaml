@@ -115,6 +115,7 @@
             project.
         - arg_name: execution-args
           api_field: googleCloudDataplexV1Task.executionSpec.args.additionalProperties
+          metavar: KEY=VALUE
           type:
             arg_dict:
               flatten: true
@@ -210,6 +211,7 @@
                         For example, gs://bucket-name/my/path/to/file.jar
                     - arg_name: notebook-container-image-properties
                       api_field: googleCloudDataplexV1Task.notebook.infrastructureSpec.containerImage.properties.additionalProperties
+                      metavar: KEY=VALUE
                       type:
                         arg_dict:
                           flatten: true
@@ -337,6 +339,7 @@
                         For example, gs://bucket-name/my/path/to/lib.tar.gz
                     - arg_name: container-image-properties
                       api_field: googleCloudDataplexV1Task.spark.infrastructureSpec.containerImage.properties.additionalProperties
+                      metavar: KEY=VALUE
                       type:
                         arg_dict:
                           flatten: true
