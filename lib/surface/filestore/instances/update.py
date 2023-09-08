@@ -59,17 +59,21 @@ class Update(base.CreateCommand):
     client = filestore_client.FilestoreClient(self._API_VERSION)
     labels_diff = labels_util.Diff.FromUpdateArgs(args)
     orig_instance = client.GetInstance(instance_ref)
+
     try:
       if args.file_share:
         client.MakeNFSExportOptionsMsg(
             messages=client.messages,
-            nfs_export_options=args.file_share.get('nfs-export-options', []))
+            nfs_export_options=args.file_share.get('nfs-export-options', []),
+        )
     except KeyError as err:
-      raise exceptions.InvalidArgumentException('--file-share',
-                                                six.text_type(err))
+      raise exceptions.InvalidArgumentException(
+          '--file-share', six.text_type(err)
+      )
     if labels_diff.MayHaveUpdates():
-      labels = labels_diff.Apply(client.messages.Instance.LabelsValue,
-                                 orig_instance.labels).GetOrNone()
+      labels = labels_diff.Apply(
+          client.messages.Instance.LabelsValue, orig_instance.labels
+      ).GetOrNone()
     else:
       labels = None
     try:
@@ -77,7 +81,8 @@ class Update(base.CreateCommand):
           orig_instance,
           description=args.description,
           labels=labels,
-          file_share=args.file_share)
+          file_share=args.file_share,
+          clear_nfs_export_options=args.clear_nfs_export_options)
     except filestore_client.Error as e:
       raise exceptions.InvalidArgumentException('--file-share',
                                                 six.text_type(e))
@@ -140,17 +145,21 @@ class UpdateBeta(Update):
     client = filestore_client.FilestoreClient(self._API_VERSION)
     labels_diff = labels_util.Diff.FromUpdateArgs(args)
     orig_instance = client.GetInstance(instance_ref)
+
     try:
       if args.file_share:
         client.MakeNFSExportOptionsMsgBeta(
             messages=client.messages,
-            nfs_export_options=args.file_share.get('nfs-export-options', []))
+            nfs_export_options=args.file_share.get('nfs-export-options', []),
+        )
     except KeyError as e:
-      raise exceptions.InvalidArgumentException('--file-share',
-                                                six.text_type(e))
+      raise exceptions.InvalidArgumentException(
+          '--file-share', six.text_type(e)
+      )
     if labels_diff.MayHaveUpdates():
-      labels = labels_diff.Apply(client.messages.Instance.LabelsValue,
-                                 orig_instance.labels).GetOrNone()
+      labels = labels_diff.Apply(
+          client.messages.Instance.LabelsValue, orig_instance.labels
+      ).GetOrNone()
     else:
       labels = None
 
@@ -159,7 +168,8 @@ class UpdateBeta(Update):
           orig_instance,
           description=args.description,
           labels=labels,
-          file_share=args.file_share)
+          file_share=args.file_share,
+          clear_nfs_export_options=args.clear_nfs_export_options)
     except filestore_client.Error as e:
       raise exceptions.InvalidArgumentException('--file-share',
                                                 six.text_type(e))

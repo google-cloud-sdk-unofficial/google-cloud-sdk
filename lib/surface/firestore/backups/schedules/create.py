@@ -24,9 +24,8 @@ from googlecloudsdk.command_lib.firestore import flags
 from googlecloudsdk.core import properties
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class Create(base.CreateCommand):
+class Create(base.Command):
   """Creates a Cloud Firestore backup schedule.
 
   ## EXAMPLES
@@ -49,7 +48,7 @@ class Create(base.CreateCommand):
 
   @staticmethod
   def Args(parser):
-    flags.AddDatabaseIdFlag(parser, required=True, hidden=True)
+    flags.AddDatabaseIdFlag(parser, required=True)
     flags.AddRetentionFlag(parser, required=True)
     flags.AddRecurrenceFlag(parser)
 

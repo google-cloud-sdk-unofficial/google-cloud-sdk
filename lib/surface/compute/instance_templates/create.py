@@ -30,6 +30,7 @@ from googlecloudsdk.api_lib.compute import metadata_utils
 from googlecloudsdk.api_lib.compute import partner_metadata_utils
 from googlecloudsdk.api_lib.compute import utils
 from googlecloudsdk.calliope import base
+from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.compute import completers
 from googlecloudsdk.command_lib.compute import flags
 from googlecloudsdk.command_lib.compute import resource_manager_tags_utils
@@ -59,6 +60,7 @@ def _CommonArgs(
     support_visible_core_count=False,
     support_max_run_duration=False,
     support_region_instance_template=False,
+    support_subnet_region=False,
     support_network_attachments=False,
     support_replica_zones=True,
     support_local_ssd_recovery_timeout=False,
@@ -142,9 +144,10 @@ def _CommonArgs(
   instances_flags.AddNetworkPerformanceConfigsArgs(parser)
 
   if support_region_instance_template:
-    parser.add_argument(
-        '--subnet-region', help='Specifies the region of the subnetwork.'
-    )
+    if support_subnet_region:
+      parser.add_argument(
+          '--subnet-region', help='Specifies the region of the subnetwork.'
+      )
     parser.add_argument(
         '--instance-template-region',
         help='Specifies the region of the regional instance template.',
@@ -533,6 +536,7 @@ def _RunCreate(
     support_visible_core_count=False,
     support_max_run_duration=False,
     support_region_instance_template=False,
+    support_subnet_region=False,
     support_confidential_compute_type=False,
     support_confidential_compute_type_tdx=False,
     support_ipv6_reservation=False,
@@ -568,6 +572,8 @@ def _RunCreate(
         termination-time is supported.
       support_region_instance_template: Indicate whether create region instance
         template is supported.
+      support_subnet_region: Indicate whether subnet_region flag enhancement
+        should be supported.
       support_confidential_compute_type: Indicate what confidential compute type
         is used.
       support_confidential_compute_type_tdx: Indicate if confidential compute
@@ -602,6 +608,20 @@ def _RunCreate(
   if support_mesh:
     instance_templates_flags.ValidateMeshFlag(args)
 
+  if support_region_instance_template:
+    subnet_region_flag = 'region'
+    if support_subnet_region:
+      subnet_region_flag = 'subnet_region'
+    instance_template_region = getattr(args, 'instance_template_region', None)
+    subnet_region = getattr(args, subnet_region_flag, None)
+    if (subnet_region is not None
+        and instance_template_region is not None
+        and instance_template_region != subnet_region):
+      raise exceptions.InvalidArgumentException(
+          '--instance-template-region',
+          'Values of `--instance-template-region` and `--{}` must match'.format(
+              subnet_region_flag))
+
   client = compute_api.client
 
   boot_disk_size_gb = utils.BytesToGb(args.boot_disk_size)
@@ -615,8 +635,7 @@ def _RunCreate(
   AddServiceProxyArgsToMetadata(args)
 
   if hasattr(args, 'network_interface') and args.network_interface:
-    subnet_region = None
-    if support_region_instance_template:
+    if support_subnet_region:
       subnet_region = getattr(args, 'subnet_region', None)
     else:
       subnet_region = getattr(args, 'region', None)
@@ -641,9 +660,8 @@ def _RunCreate(
     ipv6_prefix_length = None
     internal_ipv6_address = None
     internal_ipv6_prefix_length = None
-    subnet_region = None
 
-    if support_region_instance_template:
+    if support_subnet_region:
       subnet_region = getattr(args, 'subnet_region', None)
     else:
       subnet_region = getattr(args, 'region', None)
@@ -845,7 +863,6 @@ def _RunCreate(
       client.messages, getattr(args, 'accelerator', None)
   )
 
-  instance_template = None
   if support_region_instance_template and args.IsSpecified(
       'instance_template_region'
   ):
@@ -1054,7 +1071,8 @@ class Create(base.CreateCommand):
   _support_numa_node_count = False
   _support_visible_core_count = True
   _support_max_run_duration = False
-  _support_region_instance_template = False
+  _support_region_instance_template = True
+  _support_subnet_region = False
   _support_network_attachments = False
   _support_replica_zones = True
   _support_local_ssd_size = True
@@ -1078,6 +1096,7 @@ class Create(base.CreateCommand):
         support_visible_core_count=cls._support_visible_core_count,
         support_max_run_duration=cls._support_max_run_duration,
         support_region_instance_template=cls._support_region_instance_template,
+        support_subnet_region=cls._support_subnet_region,
         support_network_attachments=cls._support_network_attachments,
         support_replica_zones=cls._support_replica_zones,
         support_local_ssd_size=cls._support_local_ssd_size,
@@ -1114,6 +1133,7 @@ class Create(base.CreateCommand):
         support_visible_core_count=self._support_visible_core_count,
         support_max_run_duration=self._support_max_run_duration,
         support_region_instance_template=self._support_region_instance_template,
+        support_subnet_region=self._support_subnet_region,
         support_replica_zones=self._support_replica_zones,
         support_performance_monitoring_unit=self._support_performance_monitoring_unit,
         support_internal_ipv6_reservation=self._support_internal_ipv6_reservation,
@@ -1147,7 +1167,8 @@ class CreateBeta(Create):
   _support_numa_node_count = False
   _support_visible_core_count = True
   _support_max_run_duration = True
-  _support_region_instance_template = False
+  _support_region_instance_template = True
+  _support_subnet_region = False
   _support_network_attachments = False
   _support_replica_zones = True
   _support_local_ssd_recovery_timeout = True
@@ -1173,6 +1194,7 @@ class CreateBeta(Create):
         support_visible_core_count=cls._support_visible_core_count,
         support_max_run_duration=cls._support_max_run_duration,
         support_region_instance_template=cls._support_region_instance_template,
+        support_subnet_region=cls._support_subnet_region,
         support_network_attachments=cls._support_network_attachments,
         support_replica_zones=cls._support_replica_zones,
         support_local_ssd_recovery_timeout=cls._support_local_ssd_recovery_timeout,
@@ -1211,6 +1233,7 @@ class CreateBeta(Create):
         support_visible_core_count=self._support_visible_core_count,
         support_max_run_duration=self._support_max_run_duration,
         support_region_instance_template=self._support_region_instance_template,
+        support_subnet_region=self._support_subnet_region,
         support_replica_zones=self._support_replica_zones,
         support_local_ssd_recovery_timeout=self._support_local_ssd_recovery_timeout,
         support_performance_monitoring_unit=self._support_performance_monitoring_unit,
@@ -1246,6 +1269,7 @@ class CreateAlpha(Create):
   _support_visible_core_count = True
   _support_max_run_duration = True
   _support_region_instance_template = True
+  _support_subnet_region = True
   _support_confidential_compute_type = True
   _support_confidential_compute_type_tdx = True
   _support_network_attachments = True
@@ -1274,6 +1298,7 @@ class CreateAlpha(Create):
         support_visible_core_count=cls._support_visible_core_count,
         support_max_run_duration=cls._support_max_run_duration,
         support_region_instance_template=cls._support_region_instance_template,
+        support_subnet_region=cls._support_subnet_region,
         support_network_attachments=cls._support_network_attachments,
         support_replica_zones=cls._support_replica_zones,
         support_local_ssd_recovery_timeout=cls._support_local_ssd_recovery_timeout,
@@ -1322,6 +1347,7 @@ class CreateAlpha(Create):
         support_visible_core_count=self._support_visible_core_count,
         support_max_run_duration=self._support_max_run_duration,
         support_region_instance_template=self._support_region_instance_template,
+        support_subnet_region=self._support_subnet_region,
         support_confidential_compute_type=self._support_confidential_compute_type,
         support_confidential_compute_type_tdx=self._support_confidential_compute_type_tdx,
         support_replica_zones=self._support_replica_zones,

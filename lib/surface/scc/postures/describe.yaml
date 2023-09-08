@@ -1,0 +1,37 @@
+- release_tracks: [ALPHA]
+  hidden: true
+  help_text:
+    brief: Describe a Cloud Security Command Center posture.
+    description: |
+      Describe a Cloud Security Command Center posture.
+
+      By default, the latest created revision of the posture is described. Users must provide revision ID to describe a specific revision.
+    examples: |
+      Describe the latest revision of a posture named `organizations/123/locations/global/postures/posture-foo-1` (i.e. a posture in organization `123`, location `global`, with id `posture-foo-1`):
+
+        $ {command} organizations/123/locations/global/postures/posture-foo-1
+
+      Describe a specific revision `abcdefg` of posture named `organizations/123/locations/global/postures/posture-foo-1`:
+
+        $ {command} organizations/123/locations/global/postures/posture-foo-1 --revision-id=abcdefg
+
+  request:
+    collection: securityposture.organizations.locations.postures
+    disable_resource_check: true
+    api_version: v1alpha
+    method: get
+
+  arguments:
+    params:
+    - arg_name: posture_name
+      api_field: name
+      is_positional: true
+      required: true
+      help_text: |
+        Relative resource name of the posture, like organizations/<organizationID>/locations/<location>/postures/<postureID>.
+
+    - arg_name: revision-id
+      api_field: revisionId
+      required: false
+      help_text: |
+        ID of the specific posture revision to describe. If not specified, latest revision is described.

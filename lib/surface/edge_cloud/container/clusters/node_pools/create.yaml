@@ -57,6 +57,15 @@
         must have `roles/cloudkms.cryptoKeyEncrypterDecrypter` on the key.
 
         If not provided, a Google-managed key will be used instead.
+    - arg_name: node-labels
+      hidden: true
+      release_tracks: [ALPHA]
+      api_field: nodePool.nodeConfig.labels
+      metavar: KEY=VALUE
+      type: "googlecloudsdk.calliope.arg_parsers:ArgDict:"
+      help_text: |
+        Comma-delimited list of key-value pairs that comprise labels for the
+        individual nodes in the node pool.
     labels:
       api_field: nodePool.labels
 

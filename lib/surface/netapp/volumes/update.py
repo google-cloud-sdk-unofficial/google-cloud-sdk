@@ -79,6 +79,15 @@ class Update(base.UpdateCommand):
             smb_setting, client.messages
         )
         smb_settings.append(smb_setting_enum)
+    restricted_actions = []
+    if args.restricted_actions:
+      for restricted_action in args.restricted_actions:
+        restricted_action_enum = (
+            volumes_flags.GetVolumeRestrictedActionsEnumFromArg(
+                restricted_action, client.messages
+            )
+        )
+        restricted_actions.append(restricted_action_enum)
     snapshot_policy = {}
     for name, snapshot_schedule in (
         ('hourly_snapshot', args.snapshot_hourly),
@@ -110,7 +119,8 @@ class Update(base.UpdateCommand):
         snapshot_directory=args.snapshot_directory,
         security_style=security_style,
         enable_kerberos=args.enable_kerberos,
-        snapshot=args.source_snapshot)
+        snapshot=args.source_snapshot,
+        restricted_actions=restricted_actions)
 
     updated_fields = []
     # add possible updated volume fields
@@ -144,6 +154,8 @@ class Update(base.UpdateCommand):
       updated_fields.append('kerberosEnabled')
     if args.IsSpecified('source_snapshot'):
       updated_fields.append('restoreParameters')
+    if args.IsSpecified('restricted_actions'):
+      updated_fields.append('restrictedActions')
     if args.IsSpecified('description'):
       updated_fields.append('description')
     if (args.IsSpecified('update_labels') or
@@ -167,10 +179,18 @@ class UpdateBeta(Update):
 
   _RELEASE_TRACK = base.ReleaseTrack.BETA
 
+  @staticmethod
+  def Args(parser):
+    _CommonArgs(parser, UpdateBeta._RELEASE_TRACK)
+
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class UpdateAlpha(UpdateBeta):
   """Update a Cloud NetApp Volume."""
 
   _RELEASE_TRACK = base.ReleaseTrack.ALPHA
+
+  @staticmethod
+  def Args(parser):
+    _CommonArgs(parser, UpdateAlpha._RELEASE_TRACK)
 

@@ -38,16 +38,16 @@ class CreateAlpha(base.CreateCommand):
   detailed_help = {'EXAMPLES': """
         Create a deployment named `my-deployment` from a storage `my-bucket`:
 
-          $ {command} projects/p1/location/us-central1/deployments/my-deployment --gcs-source="gs://my-bucket" --input-values="project=p1,region=us-central1"
+          $ {command} projects/p1/locations/us-central1/deployments/my-deployment --gcs-source="gs://my-bucket" --input-values="project=p1,region=us-central1"
 
         Create a deployment named `my-deployment` from git repo "https://github.com/examples/repository.git", "staging/compute" folder, "mainline" branch:
 
-          $ {command} projects/p1/location/us-central1/deployments/my-deployment --git-source-repo="https://github.com/examples/repository.git"
+          $ {command} projects/p1/locations/us-central1/deployments/my-deployment --git-source-repo="https://github.com/examples/repository.git"
             --git-source-directory="staging/compute" --git-source-ref="mainline"
 
         Update a deployment's labels:
 
-          $ {command} projects/p1/location/us-central1/deployments/my-deployment --git-source-repo="https://github.com/examples/repository.git"
+          $ {command} projects/p1/locations/us-central1/deployments/my-deployment --git-source-repo="https://github.com/examples/repository.git"
             --git-source-directory="staging/compute" --git-source-ref="mainline" --labels="env=prod,team=finance"
       """}
   # pylint: enable=line-too-long

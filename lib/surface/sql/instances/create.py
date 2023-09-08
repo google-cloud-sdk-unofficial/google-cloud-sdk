@@ -120,6 +120,7 @@ def AddBaseArgs(parser):
   flags.AddMemory(parser)
   flags.AddPasswordPolicyMinLength(parser)
   flags.AddPasswordPolicyComplexity(parser)
+  flags.AddPasswordPolicyDisallowCompromisedCredentials(parser)
   flags.AddPasswordPolicyReuseInterval(parser)
   flags.AddPasswordPolicyDisallowUsernameSubstring(parser)
   flags.AddPasswordPolicyPasswordChangeInterval(parser)
@@ -179,7 +180,6 @@ def AddBetaArgs(parser):
   flags.AddInstanceResizeLimit(parser)
   flags.AddAllocatedIpRangeName(parser)
   labels_util.AddCreateLabelsFlags(parser)
-  flags.AddPasswordPolicyDisallowCompromisedCredentials(parser)
   flags.AddReplicationLagMaxSecondsForRecreate(parser)
 
 
@@ -278,7 +278,7 @@ def RunBaseCreateCommand(args, release_track):
         raise exceptions.InvalidArgumentException(
             '--cascadable-replica',
             '`--cascadable-replica` can only be specified when creating a '
-            'replica that is in a differenct region than the primary.'
+            'replica that is in a different region than the primary.'
         )
   else:
     if args.IsSpecified('cascadable_replica'):

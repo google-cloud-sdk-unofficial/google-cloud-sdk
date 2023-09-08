@@ -27,10 +27,10 @@ from googlecloudsdk.command_lib.compute import scope as compute_scope
 from googlecloudsdk.command_lib.compute.instance_templates import flags
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA,
+                    base.ReleaseTrack.ALPHA)
 class DeleteGA(base.DeleteCommand):
   """Delete Compute Engine virtual machine instance templates."""
-  support_region_flag = False
 
   @staticmethod
   def GetServiceClient(client, ref):
@@ -49,7 +49,7 @@ class DeleteGA(base.DeleteCommand):
   @classmethod
   def Args(cls, parser):
     cls.InstanceTemplateArg = flags.MakeInstanceTemplateArg(
-        plural=True, include_regional=cls.support_region_flag)
+        plural=True, include_regional=True)
     cls.InstanceTemplateArg.AddArgument(parser, operation_type='delete')
     parser.display_info.AddCacheUpdater(completers.InstanceTemplatesCompleter)
 
@@ -90,9 +90,3 @@ DeleteGA.detailed_help = {
           $ {command} INSTANCE-TEMPLATE
         """
 }
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class DeleteAlpha(DeleteGA):
-
-  support_region_flag = True

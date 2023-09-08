@@ -1,5 +1,4 @@
 - release_tracks: [GA]
-  hidden: true
 
   help_text:
     brief: Get the IAM policy for a group resource.
@@ -9,7 +8,7 @@
     examples: |
       To get the IAM policy for a group named ``my-group'' in the hub named ``my-hub'', run:
 
-      $ {command} my-group --hub="my-hub"
+        $ {command} my-group --hub="my-hub"
 
   request: &request
     collection: networkconnectivity.projects.locations.global.hubs.groups

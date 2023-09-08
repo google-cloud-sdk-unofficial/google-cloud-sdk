@@ -30,10 +30,10 @@ from googlecloudsdk.core.console import console_io
 
 
 class Migrate(base.CreateCommand):
-  """Migrate a new alerting policy."""
+  """Migrate a Prometheus configuration file to Cloud Monitoring."""
 
   detailed_help = {'DESCRIPTION': """\
-          Creates a new alerting policies and/or notification channels based on
+          Creates new alerting policies and/or notification channels based on
           provided Prometheus files. The rules YAML file, which holds the alert
           rules, must be specified as a file through the
           `--policies-from-prometheus-alert-rules-yaml` flag.

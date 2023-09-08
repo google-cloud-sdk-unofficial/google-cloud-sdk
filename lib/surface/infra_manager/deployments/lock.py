@@ -36,7 +36,7 @@ class LockDeploymentAlpha(base.Command):
   detailed_help = {'EXAMPLES': """
         Lock deployment `my-deployment` under project `p1` and location `us-central1`:
 
-          $ {command} projects/p1/location/us-central1/deployments/my-deployment
+          $ {command} projects/p1/locations/us-central1/deployments/my-deployment
 
       """}
 

@@ -56,7 +56,6 @@ def _RunCreate(compute_api, args):
 class Create(base.CreateCommand):
   """Create a Compute Engine reservation."""
   _support_share_setting = True
-  _support_instance_template = True
   _support_auto_delete = False
 
   @classmethod
@@ -64,8 +63,9 @@ class Create(base.CreateCommand):
     resource_args.GetReservationResourceArg().AddArgument(
         parser, operation_type='create')
     flags.AddCreateFlags(
-        parser, support_share_setting=cls._support_share_setting,
-        support_instance_template=cls._support_instance_template)
+        parser,
+        support_share_setting=cls._support_share_setting,
+    )
 
   def Run(self, args):
     return _RunCreate(base_classes.ComputeApiHolder(base.ReleaseTrack.GA), args)
@@ -75,7 +75,6 @@ class Create(base.CreateCommand):
 class CreateBeta(Create):
   """Create a Compute Engine reservation."""
   _support_share_setting = True
-  _support_instance_template = True
   _support_ssd_count = False
   _support_auto_delete = False
 
@@ -84,8 +83,9 @@ class CreateBeta(Create):
     resource_args.GetReservationResourceArg().AddArgument(
         parser, operation_type='create')
     flags.AddCreateFlags(
-        parser, support_share_setting=cls._support_share_setting,
-        support_instance_template=cls._support_instance_template)
+        parser,
+        support_share_setting=cls._support_share_setting,
+    )
 
   def Run(self, args):
     return _RunCreate(
@@ -96,7 +96,6 @@ class CreateBeta(Create):
 class CreateAlpha(CreateBeta):
   """Create a Compute Engine reservation."""
   _support_share_setting = True
-  _support_instance_template = True
   _support_ssd_count = True
   _support_auto_delete = True
 
@@ -108,9 +107,9 @@ class CreateAlpha(CreateBeta):
         parser,
         support_share_setting=cls._support_share_setting,
         support_fleet=True,
-        support_instance_template=cls._support_instance_template,
         support_ssd_count=cls._support_ssd_count,
-        support_auto_delete=cls._support_auto_delete)
+        support_auto_delete=cls._support_auto_delete,
+    )
 
   def Run(self, args):
     return _RunCreate(

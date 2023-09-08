@@ -22,8 +22,8 @@ from apitools.base.py import exceptions as apitools_exceptions
 from apitools.base.py import list_pager
 from googlecloudsdk.api_lib.util import apis
 from googlecloudsdk.calliope import base
-from googlecloudsdk.command_lib.artifacts.vex_util import ParseVexFile
-from googlecloudsdk.core import properties
+from googlecloudsdk.command_lib.artifacts import docker_util
+from googlecloudsdk.command_lib.artifacts import vex_util
 
 
 @base.ReleaseTracks(
@@ -70,12 +70,16 @@ To load a CSAF security advisory file given an artifact with a tag and a file on
     """Run the generic artifact upload command."""
     self.ca_client = apis.GetClientInstance('containeranalysis', 'v1')
     self.ca_messages = self.ca_client.MESSAGES_MODULE
+    uri = args.uri
+    uri = vex_util.RemoveHTTPS(uri)
+    image, version = docker_util.DockerUrlToVersion(uri)
     project = args.project
     if project is None:
-      project = properties.VALUES.core.project.Get(required=True)
-    uri = args.uri
+      project = image.project
     filename = args.source
-    notes, uri_with_digest = ParseVexFile(filename, uri)
+    notes, uri_with_digest = vex_util.ParseVexFile(
+        filename, image, version
+    )
     self.writeNotes(notes, project, uri_with_digest)
     return
 

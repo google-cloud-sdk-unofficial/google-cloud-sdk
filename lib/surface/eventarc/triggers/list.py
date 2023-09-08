@@ -117,6 +117,9 @@ def _Destination(trigger):
     dest = destination.get('workflow')
     match = re.search(workflows_str_pattern, dest)
     return 'Workflows: {}'.format(match.group(1)) if match else  ''
+  elif 'httpEndpoint' in destination:
+    dest = destination.get('httpEndpoint')
+    return 'HTTP endpoint: {}'.format(dest.get('uri'))
   else:
     # For new types of triggers, return empty string for now.
     return ''

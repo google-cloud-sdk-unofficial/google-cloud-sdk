@@ -26,14 +26,12 @@ from googlecloudsdk.calliope import base
 class TroubleshootAlpha(base.Group):
   """Troubleshoot IAM policies."""
 
-  detailed_help = {
-      'DESCRIPTION': """\
+  detailed_help = {'DESCRIPTION': """\
           Troubleshoot IAM policies.
 
           More information can be found here:
           https://cloud.google.com/iam/docs/troubleshooting-access
-      """
-  }
+      """}
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
@@ -41,11 +39,21 @@ class TroubleshootAlpha(base.Group):
 class TroubleshootBeta(base.Group):
   """Troubleshoot IAM policies."""
 
-  detailed_help = {
-      'DESCRIPTION': """\
+  detailed_help = {'DESCRIPTION': """\
           Troubleshoot IAM policies.
 
           More information can be found here:
           https://cloud.google.com/iam/docs/troubleshooting-access
-      """
-  }
+      """}
+
+
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class Troubleshoot(base.Group):
+  """Troubleshoot IAM policies."""
+
+  detailed_help = {'DESCRIPTION': """\
+          Troubleshoot IAM policies.
+
+          More information can be found here:
+          https://cloud.google.com/iam/docs/troubleshooting-access
+      """}

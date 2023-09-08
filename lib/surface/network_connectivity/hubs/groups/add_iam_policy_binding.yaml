@@ -1,5 +1,4 @@
 - release_tracks: [GA]
-  hidden: true
 
   help_text:
     brief: Add an IAM policy binding to the IAM policy of a group resource.
@@ -9,7 +8,7 @@
     examples: |
       To grant a user the ``roles/networkconnectivity.groupUser'' role on the group called ``my-group'' in the hub called ``my-hub''', run the following command:
 
-      $ {command} my-group --member="user:username@gmail.com" --role="roles/networkconnectivity.groupUser" --hub="my-hub"
+        $ {command} my-group --member="user:username@gmail.com" --role="roles/networkconnectivity.groupUser" --hub="my-hub"
 
   request: &request
     collection: networkconnectivity.projects.locations.global.hubs.groups

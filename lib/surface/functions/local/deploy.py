@@ -18,15 +18,24 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+import json
 import textwrap
+import typing
 
+from googlecloudsdk.api_lib.functions.v2 import client as client_v2
 from googlecloudsdk.calliope import base
-from googlecloudsdk.calliope import exceptions as calliope_exceptions
-from googlecloudsdk.command_lib.functions import flags
+from googlecloudsdk.calliope import exceptions
+from googlecloudsdk.calliope import parser_extensions
+from googlecloudsdk.command_lib.functions import flags as flag_util
+from googlecloudsdk.command_lib.functions import source_util
 from googlecloudsdk.command_lib.functions.local import flags as local_flags
 from googlecloudsdk.command_lib.functions.local import util
+from googlecloudsdk.command_lib.functions.v2.deploy import env_vars_util
+from googlecloudsdk.command_lib.util.args import map_util
 from googlecloudsdk.core import log
 from googlecloudsdk.core.console import console_io
+from googlecloudsdk.core.util import files as file_utils
+
 
 _LOCAL_DEPLOY_MESSAGE = textwrap.dedent("""\
     Your function {name} is serving at localhost:{port}.
@@ -40,13 +49,12 @@ _LOCAL_DEPLOY_MESSAGE = textwrap.dedent("""\
     To call local CloudEvent and Background functions using curl, please see:
     https://cloud.google.com/functions/docs/running/calling
     """)
-_RUNTIMES = ['python', 'go', 'java', 'nodejs', 'php', 'ruby', 'dotnet']
-_APPENGINE_BUILDER = 'gcr.io/gae-runtimes/buildpacks/google-gae-22/{}/builder'
 _DETAILED_HELP = {
     'DESCRIPTION': """
         `{command}` Deploy a Google Cloud Function locally.
         """,
 }
+_REGION = 'us-central1'
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -60,58 +68,97 @@ class Deploy(base.Command):
     local_flags.AddDeploymentNameFlag(parser)
     local_flags.AddPortFlag(parser)
     local_flags.AddBuilderFlag(parser)
-    flags.AddEntryPointFlag(parser)
-    flags.AddRuntimeFlag(parser, _RUNTIMES)
-    # TODO(b/289323441): Add docker labels for flags.
 
-    # TODO(b/287273158): Add logic to handle these flags.
-    # flags.AddIgnoreFileFlag(parser)
-    # Set track to GA to only add memory flag.
-    # flags.AddFunctionMemoryAndCpuFlags(parser, base.ReleaseTrack.GA)
-    # flags.AddSourceFlag(parser)
-    # flags.AddFunctionTimeoutFlag(parser)
-    # env_vars_util.AddUpdateEnvVarsFlags(parser)
-    # env_vars_util.AddBuildEnvVarsFlags(parser)
-    # TODO(b/287273158): Add flags: build-env-vars-file, env-vars-file
+    flag_util.AddEntryPointFlag(parser)
+    flag_util.AddRuntimeFlag(parser)
+    flag_util.AddIgnoreFileFlag(parser)
+    # TODO(b/296916846): Add memory and CPU flags
+    flag_util.AddSourceFlag(parser)
+
+    env_vars_util.AddBuildEnvVarsFlags(parser)
+    env_vars_util.AddUpdateEnvVarsFlags(parser)
+
+    # Add NO-OP gen2 flag for user familiarity
+    flag_util.AddGen2Flag(parser, hidden=True)
 
   def Run(self, args):
     util.ValidateDependencies()
-    args = self.ValidateArgs(args)
+    labels = self._CreateAndUpdateLabels(args)
 
-    pack_args = self.BuildPackArgs(args)
-    util.RunPack(pack_args)
+    client = client_v2.FunctionsClient(release_track=base.ReleaseTrack.ALPHA)
+    runtimes = sorted({r.name for r in client.ListRuntimes(_REGION).runtimes})
+    flags = labels.get('flags')
+    self._ValidateFlags(flags, runtimes)
 
     name = args.NAME[0]
-    port = args.port
-    util.RunDockerContainer(name, port)
 
-    log.status.Print(_LOCAL_DEPLOY_MESSAGE.format(name=name, port=port))
+    with file_utils.TemporaryDirectory() as tmp_dir:
+      path = source_util.CreateSourcesZipFile(
+          tmp_dir,
+          source_path=flags.get('source', '.'),
+          ignore_file=flags.get('ignore-file')
+      )
+      util.RunPack(name=name,
+                   builder=flags.get('--builder'),
+                   runtime=flags.get('--runtime'),
+                   entry_point=flags.get('--entry-point'),
+                   path=path,
+                   build_env_vars=labels.get('build-env-vars'))
 
-  def BuildPackArgs(self, args):
-    name = args.NAME[0]
-    pack_args = ['build', '--builder']
-    if args.builder:
-      pack_args.append(args.builder)
-    else:
-      # Always use language-specific builder when builder not provided.
-      pack_args.append(_APPENGINE_BUILDER.format(args.runtime))
-    pack_args.extend(['--env', 'GOOGLE_FUNCTION_TARGET=' + args.entry_point])
-    pack_args.extend(['-q', name])
-    return pack_args
+    util.RunDockerContainer(name=name,
+                            port=flags.get('--port', '8080'),
+                            env_vars=labels.get('env-vars'),
+                            labels=labels)
 
-  def ValidateArgs(self, args):
-    if not args.entry_point:
-      raise calliope_exceptions.RequiredArgumentException(
+    log.status.Print(_LOCAL_DEPLOY_MESSAGE.format(
+        name=name, port=flags.get('--port', '8080')))
+
+  def _CreateAndUpdateLabels(
+      self, args: parser_extensions.Namespace) -> typing.Dict[str, typing.Any]:
+    labels = {}
+
+    old_labels = util.GetDockerContainerLabels(args.NAME[0])
+    old_flags = json.loads(old_labels.get('flags', '{}'))
+    old_env_vars = json.loads(old_labels.get('env-vars', '{}'))
+    old_build_env_vars = json.loads(old_labels.get('build-env-vars', '{}'))
+
+    labels['flags'] = self._ApplyNewFlags(args, old_flags)
+
+    env_vars = map_util.GetMapFlagsFromArgs('env-vars', args)
+    labels['env-vars'] = map_util.ApplyMapFlags(old_env_vars, **env_vars)
+
+    build_env_vars = map_util.GetMapFlagsFromArgs('build-env-vars', args)
+    labels['build-env-vars'] = map_util.ApplyMapFlags(
+        old_build_env_vars, **build_env_vars)
+
+    return labels
+
+  def _ApplyNewFlags(self, args: parser_extensions.Namespace,
+                     old_flags: typing.Dict[str, str]) -> typing.Dict[str, str]:
+    flags = {**old_flags, **args.GetSpecifiedArgs()}
+    flags = {k: v for (k, v) in flags.items()
+             if not('NAME' in k or 'env-vars' in k)}
+    return flags
+
+  def _ValidateFlags(self, flags: typing.Dict[str, str],
+                     runtimes: typing.Set[str]) -> None:
+    if '--entry-point' not in flags:
+      raise exceptions.RequiredArgumentException(
           '--entry-point', 'Flag `--entry-point` required.'
       )
     # Require runtime if builder not specified.
-    if not args.builder and not args.runtime:
-      if not console_io.CanPrompt():
-        raise calliope_exceptions.RequiredArgumentException(
-            '--runtime', 'Flag `--runtime` required when builder not specified.'
-        )
-      idx = console_io.PromptChoice(
-          _RUNTIMES, message='Please select a runtime:\n'
+    if '--builder' not in flags and '--runtime' not in flags:
+      flags['--runtime'] = self._PromptUserForRuntime(runtimes)
+    if flags.get('--runtime') not in runtimes:
+      log.out.Print('--runtime must be one of the following:')
+      flags['--runtime'] = self._PromptUserForRuntime(runtimes)
+
+  def _PromptUserForRuntime(self, runtimes: typing.Set[str]) -> str:
+    if not console_io.CanPrompt():
+      raise exceptions.RequiredArgumentException(
+          '--runtime', 'Flag `--runtime` required when builder not specified.'
       )
-      args.runtime = _RUNTIMES[idx]
-    return args
+    idx = console_io.PromptChoice(
+        runtimes, message='Please select a runtime:\n'
+    )
+    return runtimes[idx]

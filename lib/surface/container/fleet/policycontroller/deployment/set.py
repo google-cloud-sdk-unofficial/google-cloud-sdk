@@ -17,11 +17,12 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
-from googlecloudsdk.api_lib.container.fleet import util as fleet_util
+from googlecloudsdk.api_lib.container.fleet.policycontroller import protos
 from googlecloudsdk.calliope import base as calliope_base
-from googlecloudsdk.command_lib.container.fleet import resources
 from googlecloudsdk.command_lib.container.fleet.features import base
+from googlecloudsdk.command_lib.container.fleet.policycontroller import command
 from googlecloudsdk.command_lib.container.fleet.policycontroller import deployment_configs as deployment
+from googlecloudsdk.command_lib.container.fleet.policycontroller import flags
 from googlecloudsdk.core import exceptions
 
 
@@ -29,7 +30,7 @@ from googlecloudsdk.core import exceptions
 @calliope_base.ReleaseTracks(
     calliope_base.ReleaseTrack.ALPHA, calliope_base.ReleaseTrack.BETA
 )
-class Set(base.UpdateCommand):
+class Set(base.UpdateCommand, command.PocoCommand):
   """Sets configuration of the Policy Controller components.
 
   Customizes on-cluster components of Policy Controller. Supported
@@ -91,6 +92,9 @@ class Set(base.UpdateCommand):
 
   @classmethod
   def Args(cls, parser):
+    cmd_flags = flags.PocoFlags(parser, 'set deployment configuration')
+    cmd_flags.add_memberships()
+
     parser.add_argument(
         'deployment',
         choices=deployment.G8R_COMPONENTS,
@@ -111,25 +115,6 @@ class Set(base.UpdateCommand):
             ' based on the property being set.'
         ),
     )
-    resources.AddMembershipResourceArg(
-        parser,
-        plural=True,
-        membership_help=(
-            'The membership names to update, separated by commas if multiple'
-            ' are supplied. Ignored if --all-memberships is supplied; if'
-            ' neither is supplied, a prompt will appear with all available'
-            ' memberships.'
-        ),
-    )
-    parser.add_argument(
-        '--all-memberships',
-        action='store_true',
-        help=(
-            'If supplied, update Policy Controller for all memberships in the'
-            ' fleet.'
-        ),
-        default=False,
-    )
     parser.add_argument(
         '--effect',
         choices=deployment.K8S_SCHEDULING_OPTIONS,
@@ -139,10 +124,12 @@ class Set(base.UpdateCommand):
 
   def Run(self, args):
     # All the membership specs for this feature.
-    specs = self._membership_specs(args)
+    specs = self.path_specs(args)
 
     for _, spec in specs.items():
-      cfgs = deployment.get_configurations(spec)
+      cfgs = protos.additional_properties_to_dict(
+          spec.policycontroller.policyControllerHubConfig.deploymentConfigs
+      )
       deployment_cfg = cfgs.get(
           args.deployment,
           self.messages.PolicyControllerPolicyControllerDeploymentConfig(),
@@ -155,31 +142,14 @@ class Set(base.UpdateCommand):
           args.effect,
       )
 
-      # Convert back to a list of additionalProperties
-      cfg_values = [
-          self.cfg_to_additional_property(key, cfg) for key, cfg in cfgs.items()
-      ]
+      # Convert back to a list of additionalProperties.
+      dcv = protos.set_additional_properties(
+          self.messages.PolicyControllerHubConfig.DeploymentConfigsValue(), cfgs
+      )
 
-      # Rebuild DeploymentConfigValues and assign back to spec.
-      dcv = self.messages.PolicyControllerHubConfig.DeploymentConfigsValue()
-      dcv.additionalProperties = cfg_values
       spec.policycontroller.policyControllerHubConfig.deploymentConfigs = dcv
 
     return self.merge_specs(specs)
-
-  def _membership_specs(self, args):
-    memberships = [
-        fleet_util.MembershipPartialName(p)
-        for p in base.ParseMembershipsPlural(
-            args, search=True, prompt=True, prompt_cancel=False, autoselect=True
-        )
-    ]
-    specs = self.hubclient.ToPyDict(self.GetFeature().membershipSpecs)
-    return {
-        path: spec
-        for path, spec in specs.items()
-        if fleet_util.MembershipPartialName(path) in memberships
-    }
 
   def set_deployment_config(self, deployment_cfg, prop, value, effect):
     if prop == 'toleration':
@@ -200,11 +170,6 @@ class Set(base.UpdateCommand):
       return deployment.update_mem_request(self.messages, deployment_cfg, value)
     if prop == 'replica-count':
       return deployment.update_replica_count(deployment_cfg, value)
-
-  def cfg_to_additional_property(self, key, cfg):
-    return self.messages.PolicyControllerHubConfig.DeploymentConfigsValue.AdditionalProperty(
-        key=key, value=cfg
-    )
 
   def merge_specs(self, specs):
     orig = self.hubclient.ToPyDict(self.GetFeature().membershipSpecs)

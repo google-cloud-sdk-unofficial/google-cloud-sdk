@@ -21,7 +21,7 @@ from __future__ import unicode_literals
 from googlecloudsdk.api_lib.bms.bms_client import BmsClient
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.bms import flags
-from googlecloudsdk.core import properties
+from googlecloudsdk.command_lib.bms.util import FixParentPathWithGlobalRegion
 
 
 DETAILED_HELP = {
@@ -68,11 +68,8 @@ class List(base.ListCommand):
         'label=ALLOWED_CIDRS)')
 
   def Run(self, args):
-    region = args.CONCEPTS.region.Parse()
+    region = FixParentPathWithGlobalRegion(args.CONCEPTS.region.Parse())
     client = BmsClient()
-    if region is None:
-      project = properties.VALUES.core.project.Get(required=True)
-      return client.AggregateListNfsShares(project, limit=args.limit)
     return client.ListNfsShares(region, limit=args.limit)
 
 List.detailed_help = DETAILED_HELP

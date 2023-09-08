@@ -21,7 +21,8 @@ from __future__ import unicode_literals
 from googlecloudsdk.api_lib.bms.bms_client import BmsClient
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.bms import flags
-from googlecloudsdk.core import properties
+from googlecloudsdk.command_lib.bms.util import FixParentPathWithGlobalRegion
+
 
 DETAILED_HELP = {
     'DESCRIPTION':
@@ -67,11 +68,8 @@ class List(base.ListCommand):
         'requestedSizeGib,storageType,state)')
 
   def Run(self, args):
-    region = args.CONCEPTS.region.Parse()
+    region = FixParentPathWithGlobalRegion(args.CONCEPTS.region.Parse())
     client = BmsClient()
-    if region is None:
-      project = properties.VALUES.core.project.Get(required=True)
-      return client.AggregateListVolumes(project, limit=args.limit)
     return client.ListVolumes(region, limit=args.limit)
 
 

@@ -36,7 +36,7 @@ class UnlockDeploymentAlpha(base.Command):
   detailed_help = {'EXAMPLES': """
         Unlock deployment `my-deployment` under project `p1` and location `us-central1` with lock-id `1234`:
 
-          $ {command} projects/p1/location/us-central1/deployments/my-deployment --lock-id=1234
+          $ {command} projects/p1/locations/us-central1/deployments/my-deployment --lock-id=1234
 
       """}
 

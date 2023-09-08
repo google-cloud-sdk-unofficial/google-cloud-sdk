@@ -70,6 +70,7 @@ class Create(base.CreateCommand):
     flags.AddProxyConfig(parser)
     flags.AddFleetProject(parser)
     flags.AddAdminUsers(parser)
+    flags.AddAdminGroups(parser)
     flags.AddDescription(parser)
     flags.AddAnnotations(parser)
     flags.AddLogging(parser)

@@ -1,5 +1,4 @@
 - release_tracks: [GA]
-  hidden: true
 
   help_text:
     brief: Set the IAM policy of a group resource.
@@ -10,7 +9,7 @@
       To replace the IAM policy of a group resource with the policy defined in a
       file called ``policy.json'', run:
 
-      $ {command} my-group policy.json --hub="my-hub"
+        $ {command} my-group policy.json --hub="my-hub"
 
   request: &request
     collection: networkconnectivity.projects.locations.global.hubs.groups

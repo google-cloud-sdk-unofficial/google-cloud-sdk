@@ -18,12 +18,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
-from apitools.base.py import exceptions as apitools_exceptions
 from googlecloudsdk.calliope import base as calliope_base
-from googlecloudsdk.command_lib.container.fleet import api_util as fleet_api_util
-from googlecloudsdk.command_lib.container.fleet.policycontroller import utils
-from googlecloudsdk.core import exceptions
-import six
 
 
 @calliope_base.Hidden

@@ -29,15 +29,13 @@ from googlecloudsdk.command_lib.util.apis import arg_utils
 @base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
 class DescribeGA(base.DescribeCommand):
   """Describe a virtual machine instance template."""
-
-  support_region_flag = False
+  support_region_flag = True
   view_flag = False
 
   @classmethod
   def Args(cls, parser):
     DescribeGA.InstanceTemplateArg = flags.MakeInstanceTemplateArg(
-        include_regional=cls.support_region_flag
-    )
+        include_regional=cls.support_region_flag)
     DescribeGA.InstanceTemplateArg.AddArgument(
         parser, operation_type='describe'
     )
@@ -125,6 +123,4 @@ DescribeGA.detailed_help = {
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class DescribeAlpha(DescribeGA):
-  support_region_flag = True
   view_flag = True
-

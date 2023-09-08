@@ -34,7 +34,7 @@ class ExportLockAlpha(base.Command):
   detailed_help = {'EXAMPLES': """
         Export lock info for deployment `projects/p1/locations/us-central1/deployments/my-deployment`:
 
-          $ {command} projects/p1/location/us-central1/deployments/my-deployment
+          $ {command} projects/p1/locations/us-central1/deployments/my-deployment
 
       """}
 

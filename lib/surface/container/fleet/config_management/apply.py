@@ -169,6 +169,9 @@ def _parse_config_sync(configmanagement, msg):
     config_sync.sourceFormat = spec_source['sourceFormat']
   if 'preventDrift' in spec_source:
     config_sync.preventDrift = spec_source['preventDrift']
+  if 'metricsGcpServiceAccountEmail' in spec_source:
+    config_sync.metricsGcpServiceAccountEmail = spec_source[
+        'metricsGcpServiceAccountEmail']
 
   return config_sync
 

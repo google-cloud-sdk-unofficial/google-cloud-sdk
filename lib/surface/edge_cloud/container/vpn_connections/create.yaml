@@ -23,13 +23,14 @@
     params:
     - arg_name: vpn_connection
       help_text: VPN connection to create.
+      required: true
       is_primary_resource: true
       resource_spec: !REF googlecloudsdk.command_lib.edge_cloud.container.resources:vpnConnection
     - arg_name: cluster
       help_text: |
         The name of the cluster to be connected under current project.
-      is_positional: false
       resource_spec: !REF googlecloudsdk.command_lib.edge_cloud.container.resources:cluster
+      required: true
       resource_method_params:
         vpnConnection.cluster: "{__relative_name__}"
     - arg_name: vpc-network

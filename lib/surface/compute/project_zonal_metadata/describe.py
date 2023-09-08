@@ -17,6 +17,8 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+import base64
+
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute.project_zonal_metadata import flags
@@ -47,7 +49,9 @@ class Describe(base.DescribeCommand):
     )
     response = client.MakeRequests([(service, 'Get', request)])[0]
     return {
-        'fingerprint': response.fingerprint,
+        'fingerprint': str(
+            base64.encodebytes(response.fingerprint), 'utf-8'
+        ).rstrip('\n'),
         'metadata': response.metadata,
         'zone': response.zone,
     }

@@ -29,8 +29,8 @@ URLMaps.category = base.NETWORKING_CATEGORY
 
 URLMaps.detailed_help = {
     'DESCRIPTION': """
-        List, create, and delete URL maps for external HTTP(S) Load Balancing,
-        internal HTTP(S) Load Balancing, and Traffic Director.
+        List, create, and delete URL maps for external Application Load Balancer,
+        internal Application Load Balancer, and Traffic Director.
 
         For more information about URL maps, see the
         [URL maps documentation](https://cloud.google.com/load-balancing/docs/url-map-concepts).

@@ -51,9 +51,11 @@ class Update(base.UpdateCommand):
     flags.AddLogging(parser, True)
     flags.AddMonitoringConfig(parser)
     flags.AddBinauthzEvaluationMode(parser)
+    flags.AddAdminGroupsForUpdate(parser)
 
-    attached_flags.AddAdminUsers(parser)
+    attached_flags.AddAdminUsersForUpdate(parser)
     attached_flags.AddPlatformVersion(parser, required=False)
+    attached_flags.AddProxyConfig(parser)
 
     base.ASYNC_FLAG.AddToParser(parser)
     parser.display_info.AddFormat(constants.ATTACHED_CLUSTERS_FORMAT)

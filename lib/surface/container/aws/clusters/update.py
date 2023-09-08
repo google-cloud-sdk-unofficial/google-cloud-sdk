@@ -47,6 +47,7 @@ class Update(base.UpdateCommand):
     flags.AddClusterVersion(parser, required=False)
     flags.AddValidateOnly(parser, 'update of the cluster')
     flags.AddAdminUsers(parser, create=False)
+    flags.AddAdminGroups(parser)
     flags.AddRootVolumeSize(parser)
     flags.AddDescriptionForUpdate(parser)
     flags.AddAnnotationsForUpdate(parser, 'cluster')

@@ -52,6 +52,7 @@ class Create(base.CreateCommand):
     attached_flags.AddOidcConfig(parser)
     attached_flags.AddDistribution(parser, required=True)
     attached_flags.AddAdminUsers(parser)
+    attached_flags.AddProxyConfig(parser)
 
     flags.AddAnnotations(parser)
     flags.AddValidateOnly(parser, 'cluster to create')
@@ -60,6 +61,7 @@ class Create(base.CreateCommand):
     flags.AddLogging(parser, True)
     flags.AddMonitoringConfig(parser, True)
     flags.AddBinauthzEvaluationMode(parser)
+    flags.AddAdminGroups(parser)
 
     base.ASYNC_FLAG.AddToParser(parser)
 

@@ -62,6 +62,64 @@ _DETAILED_HELP = {
 }
 
 
+# TODO(b/274633761) make command public after preview.
+@base.Hidden
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class EnableAlpha(base.SilentCommand):
+  """Enables a service for consumption for a project."""
+
+  @staticmethod
+  def Args(parser):
+    """Args is called by calliope to gather arguments for this command.
+
+    Args:
+      parser: An argparse parser that you can use to add arguments that go on
+        the command line after this command. Positional arguments are allowed.
+    """
+    common_flags.available_service_flag(suffix='to enable').AddToParser(parser)
+    common_flags.add_resource_args(parser)
+    base.ASYNC_FLAG.AddToParser(parser)
+
+  def Run(self, args):
+    """Run 'services enable'.
+
+    Args:
+      args: argparse.Namespace, The arguments that this command was invoked
+        with.
+
+    Returns:
+      Nothing.
+    """
+    if args.IsSpecified('project'):
+      project = args.project
+    else:
+      project = properties.VALUES.core.project.Get(required=True)
+    if args.IsSpecified('folder'):
+      folder = args.folder
+    else:
+      folder = None
+    if args.IsSpecified('organization'):
+      organization = args.organization
+    else:
+      organization = None
+
+    op = serviceusage.AddEnableRule(args.service, project, folder, organization)
+    if op.done:
+      return
+    if args.async_:
+      cmd = _OP_WAIT_CMD.format(op.name)
+      log.status.Print(
+          'Asynchronous operation is in progress... '
+          'Use the following command to wait for its '
+          'completion:\n {0}'.format(cmd)
+      )
+      return
+    log.status.Print('Operation finished successfully')
+
+EnableAlpha.detailed_help = _DETAILED_HELP
+
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
 class Enable(base.SilentCommand):
   """Enables a service for consumption for a project."""
 

@@ -55,6 +55,7 @@ class Create(base.CreateCommand):
     flags.AddNodeLabels(parser)
     flags.AddNodeTaints(parser)
     flags.AddAnnotations(parser, 'node pool')
+    flags.AddEnableAutoRepair(parser, True)
 
     aws_flags.AddOnDemandOrSpotInstanceType(parser, kind='node pool')
     aws_flags.AddSshEC2KeyPair(parser, kind='node pool')
@@ -100,6 +101,5 @@ class CreateAlpha(Create):
   def Args(parser):
     """Registers alpha track flags for this command."""
     Create.Args(parser, base.ReleaseTrack.ALPHA)
-    flags.AddEnableAutoRepair(parser, True)
     aws_flags.AddInstancePlacement(parser)
     flags.AddImageType(parser)

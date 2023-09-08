@@ -137,6 +137,7 @@ class Ssh(base.Command):
 
   _ENABLE_IAP = True
   _ENABLE_BATCHING = True
+  DEFAULT_BATCH_SIZE = 64
 
   @classmethod
   def Args(cls, parser):
@@ -148,7 +149,10 @@ class Ssh(base.Command):
     ssh_utils.BaseSSHCLIHelper.Args(parser)
     AddSSHArgs(parser)
     tpu_ssh_utils.AddTPUSSHArgs(
-        parser, enable_iap=cls._ENABLE_IAP, enable_batching=cls._ENABLE_BATCHING
+        parser,
+        enable_iap=cls._ENABLE_IAP,
+        enable_batching=cls._ENABLE_BATCHING,
+        enable_batching_default=cls.DEFAULT_BATCH_SIZE,
     )
     AddCommandArgGroup(parser)
     flags.AddZoneFlag(parser, resource_type='tpu', operation_type='ssh')
@@ -232,11 +236,9 @@ class Ssh(base.Command):
           ' rest.'.format(num_nodes)
       )
 
-    # Enumerate the total number of nodes and workers needed to ssh into.
-    num_ips = sum(
-        [len(prepped_node.worker_ips) for prepped_node in prepped_nodes]
+    ssh_batch_size = tpu_ssh_utils.ParseBatchSize(
+        args.batch_size, self.DEFAULT_BATCH_SIZE
     )
-    ssh_batch_size = tpu_ssh_utils.ParseBatchSize(args.batch_size, num_ips)
     tpu_ssh_utils.SSHIntoPreppedNodes(
         prepped_nodes,
         args,
@@ -257,7 +259,7 @@ Ssh.detailed_help = {
             $ {command} my-qr --command="last boot"
 
         To run the same command in all nodes and workers in a Cloud TPU Queued
-        Resource simultaneously, run:
+        Resource (with the default batch size), run:
 
             $ {command} my-qr --command="last boot" --worker=all --node=all
 

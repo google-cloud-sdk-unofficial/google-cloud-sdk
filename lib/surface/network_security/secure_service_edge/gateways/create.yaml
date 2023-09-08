@@ -1,0 +1,44 @@
+release_tracks: [ALPHA]
+
+help_text:
+  brief: |
+    Create a SSE gateway.
+  description: |
+    Create a new gateway within an existing SSE realm.
+  examples: |
+    The following command creates a new gateway named `my-gateway` in the location `us-central1` within the SSE realm `my-realm`.
+
+      $ {command} my-gateway --location=us-central1 --realm=my-realm --app-vpc=my-app-vpc --user-vpc=my-user-vpc
+
+    The gateway connects `my-app-vpc` and `my-user-vpc` to SSE-owned subnets in `us-central1`.
+
+arguments:
+  resource:
+    spec: !REF googlecloudsdk.command_lib.network_security.resources:sseGateway
+    help_text: |
+      The gateway to be created.
+  params:
+  - arg_name: realm
+    required: true
+    api_field: sSEGateway.sseRealm
+    help_text: |
+      SSE realm to which this gateway belongs.
+  - arg_name: app-vpc
+    required: true
+    api_field: sSEGateway.appVpc
+    help_text: |
+      The VPC in your project which holds the application to be secured.
+  - arg_name: user-vpc
+    required: true
+    api_field: sSEGateway.userVpc
+    help_text: |
+      The VPC in your project where branch office users land.
+
+async:
+  collection: networksecurity.projects.locations.operations
+
+request: &request
+  ALPHA:
+    api_version: v1alpha1
+  collection: networksecurity.projects.locations.sseGateways
+  method: create

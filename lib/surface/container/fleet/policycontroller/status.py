@@ -22,8 +22,8 @@ from googlecloudsdk.api_lib.container.fleet import client
 from googlecloudsdk.api_lib.container.fleet.policycontroller import status_api_utils
 from googlecloudsdk.calliope import base as calliope_base
 from googlecloudsdk.command_lib.container.fleet.features import base
+from googlecloudsdk.command_lib.container.fleet.policycontroller import constants
 from googlecloudsdk.command_lib.container.fleet.policycontroller import flags
-from googlecloudsdk.command_lib.container.fleet.policycontroller import utils
 from googlecloudsdk.core import properties
 import six
 
@@ -107,7 +107,7 @@ class Status(base.DescribeCommand):
       ):
         version = spec.policycontroller.version
       else:
-        version = utils.get_install_spec_label(
+        version = get_install_spec_label(
             six.text_type(
                 spec.policycontroller.policyControllerHubConfig.installSpec
             )
@@ -115,3 +115,9 @@ class Status(base.DescribeCommand):
       status[membership]['version'] = version
 
     return status
+
+
+def get_install_spec_label(install_spec):
+  return constants.INSTALL_SPEC_LABEL_MAP.get(
+      install_spec, constants.INSTALL_SPEC_LABEL_MAP['INSTALL_SPEC_UNSPECIFIED']
+  )

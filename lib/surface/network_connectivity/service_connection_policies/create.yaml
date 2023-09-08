@@ -11,11 +11,11 @@
   arguments:
     params:
     - arg_name: service_connection_policy
+      required: true
       resource_spec: !REF googlecloudsdk.command_lib.network_connectivity.resources:serviceConnectionPolicy
       help_text: Name of the Service Connection Policy to be created.
     - arg_name: network
       required: true
-      is_positional: false
       resource_spec: !REF googlecloudsdk.command_lib.network_connectivity.compute_resources:network
       resource_method_params:
         serviceConnectionPolicy.network: "{__relative_name__}"
@@ -43,7 +43,6 @@
         params:
         - arg_name: subnets
           required: true
-          is_positional: false
           resource_spec: !REF googlecloudsdk.command_lib.network_connectivity.compute_resources:subnetwork
           resource_method_params:
             serviceConnectionPolicy.pscConfig.subnetworks: "{__relative_name__}"

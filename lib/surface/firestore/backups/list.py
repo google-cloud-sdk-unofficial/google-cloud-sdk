@@ -24,7 +24,6 @@ from googlecloudsdk.command_lib.firestore import flags
 from googlecloudsdk.core import properties
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class List(base.ListCommand):
   """List backups available to Cloud Firestore.
@@ -42,7 +41,7 @@ class List(base.ListCommand):
 
   @staticmethod
   def Args(parser):
-    flags.AddLocationFlag(parser, hidden=True)
+    flags.AddLocationFlag(parser)
 
   def Run(self, args):
     project = properties.VALUES.core.project.Get(required=True)

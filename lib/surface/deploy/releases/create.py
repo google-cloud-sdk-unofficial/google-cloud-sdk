@@ -18,9 +18,11 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+import datetime
 import os.path
 
 from googlecloudsdk.api_lib.clouddeploy import client_util
+from googlecloudsdk.api_lib.clouddeploy import config
 from googlecloudsdk.api_lib.clouddeploy import release
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions as c_exceptions
@@ -34,6 +36,8 @@ from googlecloudsdk.core import exceptions as core_exceptions
 from googlecloudsdk.core import log
 from googlecloudsdk.core import resources
 from googlecloudsdk.core.util import files
+from googlecloudsdk.core.util import times
+
 
 _DETAILED_HELP = {
     'DESCRIPTION': '{description}',
@@ -101,6 +105,55 @@ class Create(base.CreateCommand):
   def Args(parser):
     _CommonArgs(parser)
 
+  def _CheckSupportedVersion(self, release_ref, skaffold_version):
+    config_client = config.ConfigClient()
+    c = config_client.GetConfig(
+        release_ref.AsDict()['projectsId'], release_ref.AsDict()['locationsId']
+    )
+    version_obj = None
+    for v in c.supportedVersions:
+      if v.version == skaffold_version:
+        version_obj = v
+        break
+    if not version_obj:
+      return
+
+    try:
+      maintenance_dt = times.ParseDateTime(version_obj.maintenanceModeTime)
+    except (times.DateTimeSyntaxError, times.DateTimeValueError):
+      maintenance_dt = None
+    try:
+      support_expiration_dt = times.ParseDateTime(
+          version_obj.supportExpirationTime
+      )
+    except (times.DateTimeSyntaxError, times.DateTimeValueError):
+      support_expiration_dt = None
+    if maintenance_dt and (
+        maintenance_dt - times.Now()) <= datetime.timedelta(days=28):
+      log.status.Print(
+          'WARNING: This release\'s Skaffold version will be'
+          ' in maintenance mode beginning on {date}.'
+          ' After that you won\'t be able to create releases'
+          ' using this version of Skaffold.\n'
+          'https://cloud.google.com/deploy/docs/using-skaffold'
+          '/select-skaffold#skaffold_version_deprecation'
+          '_and_maintenance_policy'.format(
+              date=maintenance_dt.strftime('%Y-%m-%d'))
+      )
+    if support_expiration_dt and times.Now() > support_expiration_dt:
+      raise core_exceptions.Error(
+          'The Skaffold version you\'ve chosen is no longer supported.\n'
+          'https://cloud.google.com/deploy/docs/using-skaffold/select-skaffold'
+          '#skaffold_version_deprecation_and_maintenance_policy'
+      )
+    if maintenance_dt and times.Now() > maintenance_dt:
+      raise core_exceptions.Error(
+          'You can\'t create a new release using a Skaffold version'
+          ' that is in maintenance mode.\n'
+          'https://cloud.google.com/deploy/docs/using-skaffold/select-skaffold'
+          '#skaffold_version_deprecation_and_maintenance_policy'
+      )
+
   def Run(self, args):
     """This is what gets called when the user runs this command."""
     if args.disable_initial_rollout and args.to_target:
@@ -140,6 +193,9 @@ class Create(base.CreateCommand):
         args.skaffold_file = os.path.relpath(
             os.path.abspath(args.skaffold_file), os.path.abspath(source)
         )
+    if args.skaffold_version:
+      self._CheckSupportedVersion(release_ref, args.skaffold_version)
+
     client = release.ReleaseClient()
     # Create the release create request.
     release_config = release_util.CreateReleaseConfig(

@@ -216,3 +216,20 @@ class TroubleshootBeta(base.Command):
     return _Run(
         policy_troubleshooter.PolicyTroubleshooterApi(self.ReleaseTrack()), args
     )
+
+
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class Troubleshoot(base.Command):
+  """Troubleshoot IAM allow and deny policies."""
+
+  detailed_help = _DETAILED_HELP
+
+  @staticmethod
+  def Args(parser):
+    """Parses arguments for the commands."""
+    _Args(parser)
+
+  def Run(self, args):
+    return _Run(
+        policy_troubleshooter.PolicyTroubleshooterApi(self.ReleaseTrack()), args
+    )

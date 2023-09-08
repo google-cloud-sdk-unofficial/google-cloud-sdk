@@ -355,7 +355,9 @@ class Update(base.UpdateCommand):
     group_dataplane_v2_observability = group.add_group()
     flags.AddDataplaneV2MetricsFlag(group_dataplane_v2_observability)
     flags.AddDataplaneV2ObservabilityModeFlag(group_dataplane_v2_observability)
-    flags.AddClusterDNSFlags(group, hidden=False)
+    flags.AddClusterDNSFlags(
+        group, release_track=base.ReleaseTrack.GA, hidden=False
+    )
     flags.AddEnableServiceExternalIPs(group)
     flags.AddEnablePrivateEndpoint(group)
     flags.AddEnableGoogleCloudAccess(group)
@@ -370,12 +372,14 @@ class Update(base.UpdateCommand):
     flags.AddClusterNetworkPerformanceConfigFlags(group)
     flags.AddEnableK8sBetaAPIs(group)
     flags.AddSecurityPostureEnumFlag(group)
-    flags.AddWorkloadVulnScanningEnumFlag(group)
+    flags.AddWorkloadVulnScanningEnumFlag(group,
+                                          release_track=base.ReleaseTrack.GA)
     flags.AddRuntimeVulnerabilityInsightFlag(group)
     flags.AddWorkloadPoliciesFlag(group)
     flags.AddRemoveWorkloadPoliciesFlag(group)
     flags.AddInTransitEncryptionFlag(group)
     flags.AddEnableMultiNetworkingFlag(group, hidden=True)
+    flags.AddContainerdConfigFlag(group, hidden=True)
 
   def ParseUpdateOptions(self, args, locations):
     get_default = lambda key: getattr(args, key)
@@ -458,6 +462,7 @@ class Update(base.UpdateCommand):
     opts.workload_policies = args.workload_policies
     opts.remove_workload_policies = args.remove_workload_policies
     opts.enable_multi_networking = args.enable_multi_networking
+    opts.containerd_config_from_file = args.containerd_config_from_file
     return opts
 
   def Run(self, args):
@@ -845,7 +850,9 @@ class UpdateBeta(Update):
     flags.AddKubernetesObjectsExportConfig(group)
     flags.AddDisableAutopilotFlag(group)
     flags.AddILBSubsettingFlags(group, hidden=False)
-    flags.AddClusterDNSFlags(group, hidden=False)
+    flags.AddClusterDNSFlags(
+        group, release_track=base.ReleaseTrack.BETA, hidden=False
+    )
     flags.AddCrossConnectSubnetworksMutationFlags(group)
     flags.AddEnableServiceExternalIPs(group)
     flags.AddAuthenticatorSecurityGroupFlags(group)
@@ -874,7 +881,8 @@ class UpdateBeta(Update):
     flags.AddClusterNetworkPerformanceConfigFlags(group)
     flags.AddEnableK8sBetaAPIs(group)
     flags.AddSecurityPostureEnumFlag(group)
-    flags.AddWorkloadVulnScanningEnumFlag(group)
+    flags.AddWorkloadVulnScanningEnumFlag(group,
+                                          release_track=base.ReleaseTrack.BETA)
     flags.AddRuntimeVulnerabilityInsightFlag(group)
     flags.AddWorkloadPoliciesFlag(group)
     flags.AddRemoveWorkloadPoliciesFlag(group)
@@ -882,6 +890,7 @@ class UpdateBeta(Update):
     flags.AddHostMaintenanceIntervalFlag(group)
     flags.AddInTransitEncryptionFlag(group)
     flags.AddEnableMultiNetworkingFlag(group, hidden=True)
+    flags.AddContainerdConfigFlag(group, hidden=True)
 
   def ParseUpdateOptions(self, args, locations):
     get_default = lambda key: getattr(args, key)
@@ -969,6 +978,9 @@ class UpdateBeta(Update):
     opts.cluster_dns = args.cluster_dns
     opts.cluster_dns_scope = args.cluster_dns_scope
     opts.cluster_dns_domain = args.cluster_dns_domain
+    opts.enable_additive_vpc_scope = args.enable_additive_vpc_scope
+    opts.disable_additive_vpc_scope = args.disable_additive_vpc_scope
+    opts.additive_vpc_scope_dns_domain = args.additive_vpc_scope_dns_domain
     if opts.cluster_dns and opts.cluster_dns.lower() == 'clouddns':
       console_io.PromptContinue(
           message='All the node-pools in the cluster need to be re-created '
@@ -1021,6 +1033,7 @@ class UpdateBeta(Update):
     opts.enable_fqdn_network_policy = args.enable_fqdn_network_policy
     opts.host_maintenance_interval = args.host_maintenance_interval
     opts.enable_multi_networking = args.enable_multi_networking
+    opts.containerd_config_from_file = args.containerd_config_from_file
     return opts
 
 
@@ -1090,7 +1103,9 @@ class UpdateAlpha(Update):
     flags.AddKubernetesObjectsExportConfig(group)
     flags.AddDisableAutopilotFlag(group)
     flags.AddILBSubsettingFlags(group, hidden=False)
-    flags.AddClusterDNSFlags(group, hidden=False)
+    flags.AddClusterDNSFlags(
+        group, release_track=base.ReleaseTrack.ALPHA, hidden=False
+    )
     flags.AddCrossConnectSubnetworksMutationFlags(group)
     flags.AddEnableServiceExternalIPs(group)
     flags.AddAuthenticatorSecurityGroupFlags(group)
@@ -1118,7 +1133,8 @@ class UpdateAlpha(Update):
     flags.AddClusterNetworkPerformanceConfigFlags(group)
     flags.AddEnableK8sBetaAPIs(group)
     flags.AddSecurityPostureEnumFlag(group)
-    flags.AddWorkloadVulnScanningEnumFlag(group)
+    flags.AddWorkloadVulnScanningEnumFlag(group,
+                                          release_track=base.ReleaseTrack.ALPHA)
     flags.AddRuntimeVulnerabilityInsightFlag(group)
     flags.AddWorkloadPoliciesFlag(group)
     flags.AddRemoveWorkloadPoliciesFlag(group)
@@ -1126,6 +1142,7 @@ class UpdateAlpha(Update):
     flags.AddHostMaintenanceIntervalFlag(group)
     flags.AddInTransitEncryptionFlag(group)
     flags.AddEnableMultiNetworkingFlag(group, hidden=True)
+    flags.AddContainerdConfigFlag(group, hidden=True)
 
   def ParseUpdateOptions(self, args, locations):
     get_default = lambda key: getattr(args, key)
@@ -1210,6 +1227,9 @@ class UpdateAlpha(Update):
     opts.cluster_dns = args.cluster_dns
     opts.cluster_dns_scope = args.cluster_dns_scope
     opts.cluster_dns_domain = args.cluster_dns_domain
+    opts.enable_additive_vpc_scope = args.enable_additive_vpc_scope
+    opts.disable_additive_vpc_scope = args.disable_additive_vpc_scope
+    opts.additive_vpc_scope_dns_domain = args.additive_vpc_scope_dns_domain
     if opts.cluster_dns and opts.cluster_dns.lower() == 'clouddns':
       console_io.PromptContinue(
           message='All the node-pools in the cluster need to be re-created by '
@@ -1260,4 +1280,5 @@ class UpdateAlpha(Update):
     opts.enable_fqdn_network_policy = args.enable_fqdn_network_policy
     opts.host_maintenance_interval = args.host_maintenance_interval
     opts.enable_multi_networking = args.enable_multi_networking
+    opts.containerd_config_from_file = args.containerd_config_from_file
     return opts

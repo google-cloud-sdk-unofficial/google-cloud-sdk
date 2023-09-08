@@ -24,7 +24,6 @@ from googlecloudsdk.command_lib.firestore import flags
 from googlecloudsdk.core import properties
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class List(base.ListCommand):
   """Lists backup schedules under a Cloud Firesore database.
@@ -38,7 +37,7 @@ class List(base.ListCommand):
 
   @staticmethod
   def Args(parser):
-    flags.AddDatabaseIdFlag(parser, required=True, hidden=True)
+    flags.AddDatabaseIdFlag(parser, required=True)
 
   def Run(self, args):
     project = properties.VALUES.core.project.Get(required=True)

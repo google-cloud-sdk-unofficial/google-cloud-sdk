@@ -37,17 +37,35 @@ from googlecloudsdk.command_lib.util.concepts import presentation_specs
 from googlecloudsdk.core.console import progress_tracker
 
 
+def ContainerArgGroup():
+  """Returns an argument group with all per-container update args."""
+
+  help_text = """
+    If the --container flag is specified the following arguments may only be
+    specified after a --container flag.
+    """
+  group = base.ArgumentGroup(help=help_text)
+  group.AddArgument(flags.ImageArg(required=False))
+  group.AddArgument(flags.PortArg())
+  group.AddArgument(flags.Http2Flag())
+  group.AddArgument(flags.MutexEnvVarsFlags())
+  group.AddArgument(flags.MemoryFlag())
+  group.AddArgument(flags.CpuFlag())
+  group.AddArgument(flags.CommandFlag())
+  group.AddArgument(flags.ArgsFlag())
+  group.AddArgument(flags.SecretsFlags())
+  return group
+
+
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Update(base.Command):
   """Update Cloud Run environment variables and other configuration settings."""
 
   detailed_help = {
-      'DESCRIPTION':
-          """\
+      'DESCRIPTION': """\
           {description}
           """,
-      'EXAMPLES':
-          """\
+      'EXAMPLES': """\
           To update one or more env vars:
 
               $ {command} myservice --update-env-vars=KEY1=VALUE1,KEY2=VALUE2
@@ -55,7 +73,7 @@ class Update(base.Command):
   }
 
   @staticmethod
-  def CommonArgs(parser):
+  def CommonArgs(parser, add_container_args=True):
     # Flags specific to managed CR
     managed_group = flags.GetManagedArgGroup(parser)
     flags.AddBinAuthzPolicyFlags(managed_group)
@@ -83,9 +101,11 @@ class Update(base.Command):
         resource_args.GetServiceResourceSpec(prompt=True),
         'Service to update the configuration of.',
         required=True,
-        prefixes=False)
-    flags.AddMutexEnvVarsFlags(parser)
-    flags.AddMemoryFlag(parser)
+        prefixes=False,
+    )
+    if add_container_args:
+      flags.AddMutexEnvVarsFlags(parser)
+      flags.AddMemoryFlag(parser)
     flags.AddConcurrencyFlag(parser)
     flags.AddTimeoutFlag(parser)
     flags.AddAsyncFlag(parser)
@@ -93,18 +113,21 @@ class Update(base.Command):
     flags.AddGeneralAnnotationFlags(parser)
     flags.AddMinInstancesFlag(parser)
     flags.AddMaxInstancesFlag(parser)
-    flags.AddCommandFlag(parser)
-    flags.AddArgsFlag(parser)
-    flags.AddPortFlag(parser)
-    flags.AddCpuFlag(parser)
+    if add_container_args:
+      flags.AddCommandFlag(parser)
+      flags.AddArgsFlag(parser)
+      flags.AddPortFlag(parser)
+      flags.AddCpuFlag(parser)
     flags.AddNoTrafficFlag(parser)
     flags.AddDeployTagFlag(parser)
     flags.AddServiceAccountFlag(parser)
-    flags.AddImageArg(parser, required=False)
+    if add_container_args:
+      flags.AddImageArg(parser, required=False)
     flags.AddClientNameAndVersionFlags(parser)
     flags.AddIngressFlag(parser)
-    flags.AddHttp2Flag(parser)
-    flags.AddSecretsFlags(parser)
+    if add_container_args:
+      flags.AddHttp2Flag(parser)
+      flags.AddSecretsFlags(parser)
     concept_parsers.ConceptParser([service_presentation]).AddToParser(parser)
     # No output by default, can be overridden by --format
     parser.display_info.AddFormat('none')
@@ -121,26 +144,36 @@ class Update(base.Command):
 
     Args:
       args: Args!
+
     Returns:
       googlecloudsdk.api_lib.run.Service, the updated service
     """
     changes = flags.GetServiceConfigurationChanges(args)
-    if not changes or (len(changes) == 1 and isinstance(
-        changes[0], config_changes.SetClientNameAndVersionAnnotationChange)):
+    if not changes or (
+        len(changes) == 1
+        and isinstance(
+            changes[0], config_changes.SetClientNameAndVersionAnnotationChange
+        )
+    ):
       raise exceptions.NoConfigurationChangeError(
           'No configuration change requested. '
           'Did you mean to include the flags `--update-env-vars`, '
           '`--memory`, `--concurrency`, `--timeout`, `--connectivity`, '
-          '`--image`?')
+          '`--image`?'
+      )
     changes.insert(
         0,
         config_changes.DeleteAnnotationChange(
-            k8s_object.BINAUTHZ_BREAKGLASS_ANNOTATION))
+            k8s_object.BINAUTHZ_BREAKGLASS_ANNOTATION
+        ),
+    )
     changes.append(
-        config_changes.SetLaunchStageAnnotationChange(self.ReleaseTrack()))
+        config_changes.SetLaunchStageAnnotationChange(self.ReleaseTrack())
+    )
 
     conn_context = connection_context.GetConnectionContext(
-        args, flags.Product.RUN, self.ReleaseTrack())
+        args, flags.Product.RUN, self.ReleaseTrack()
+    )
     service_ref = args.CONCEPTS.service.Parse()
     flags.ValidateResource(service_ref)
 
@@ -148,25 +181,31 @@ class Update(base.Command):
       service = client.GetService(service_ref)
       resource_change_validators.ValidateClearVpcConnector(service, args)
       has_latest = (
-          service is None or
-          traffic.LATEST_REVISION_KEY in service.spec_traffic)
+          service is None or traffic.LATEST_REVISION_KEY in service.spec_traffic
+      )
       deployment_stages = stages.ServiceStages(
-          include_iam_policy_set=False, include_route=has_latest)
+          include_iam_policy_set=False, include_route=has_latest
+      )
       with progress_tracker.StagedProgressTracker(
           'Deploying...',
           deployment_stages,
           failure_message='Deployment failed',
-          suppress_output=args.async_) as tracker:
+          suppress_output=args.async_,
+      ) as tracker:
         service = client.ReleaseService(
-            service_ref, changes, tracker, asyn=args.async_, prefetch=service)
+            service_ref, changes, tracker, asyn=args.async_, prefetch=service
+        )
 
       if args.async_:
-        pretty_print.Success('Service [{{bold}}{serv}{{reset}}] is deploying '
-                             'asynchronously.'.format(serv=service.name))
+        pretty_print.Success(
+            'Service [{{bold}}{serv}{{reset}}] is deploying '
+            'asynchronously.'.format(serv=service.name)
+        )
       else:
         service = client.GetService(service_ref)
         pretty_print.Success(
-            messages_util.GetSuccessMessageForSynchronousDeploy(service))
+            messages_util.GetSuccessMessageForSynchronousDeploy(service)
+        )
       return service
 
 
@@ -190,7 +229,7 @@ class AlphaUpdate(BetaUpdate):
 
   @staticmethod
   def Args(parser):
-    Update.CommonArgs(parser)
+    Update.CommonArgs(parser, add_container_args=False)
 
     # Flags specific to managed CR
     managed_group = flags.GetManagedArgGroup(parser)
@@ -199,6 +238,10 @@ class AlphaUpdate(BetaUpdate):
     flags.AddRuntimeFlag(managed_group)
     flags.AddDescriptionFlag(managed_group)
     flags.AddServiceMinInstancesFlag(managed_group)
+    # pylint: disable=protected-access
+    flags.ContainerFlags(
+        parser.parser._calliope_command, ContainerArgGroup()
+    ).AddToParser(managed_group)
 
 
 AlphaUpdate.__doc__ = Update.__doc__

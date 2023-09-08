@@ -55,6 +55,7 @@ class Update(base.UpdateCommand):
             email=args.service_account, fingerprint=fingerprint
         ),
         project=properties.VALUES.core.project.GetOrFail(),
+        updateMask='email',
         zone=args.zone,
     )
     # TODO(b/271293873):Remove no_followup=True once singleton support is added.

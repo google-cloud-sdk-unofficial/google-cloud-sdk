@@ -24,7 +24,6 @@ from googlecloudsdk.command_lib.firestore import flags
 from googlecloudsdk.core import properties
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Describe(base.DescribeCommand):
   """Describes a Cloud Firestore backup schedule.
@@ -41,7 +40,7 @@ class Describe(base.DescribeCommand):
   @staticmethod
   def Args(parser):
     """Set args for gcloud firestore backups schedules describe."""
-    flags.AddDatabaseIdFlag(parser, required=True, hidden=True)
+    flags.AddDatabaseIdFlag(parser, required=True)
     flags.AddBackupScheduleFlag(parser)
 
   def Run(self, args):

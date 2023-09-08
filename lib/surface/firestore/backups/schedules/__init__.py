@@ -21,6 +21,6 @@ from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 
 
-@base.Hidden
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Schedules(base.Group):
   """Manage the backup schedules for a Cloud Firestore Database."""

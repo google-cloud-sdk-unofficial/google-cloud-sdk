@@ -36,7 +36,7 @@ class ImportStatefileAlpha(base.Command):
   detailed_help = {'EXAMPLES': """
         Import state file for `my-deployment` with lock-id `1658343229583347`:
 
-          $ {command} projects/p1/location/us-central1/deployments/my-deployment --lock-id=1658343229583347
+          $ {command} projects/p1/locations/us-central1/deployments/my-deployment --lock-id=1658343229583347
 
       """}
 

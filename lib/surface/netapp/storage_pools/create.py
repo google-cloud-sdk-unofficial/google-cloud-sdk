@@ -93,6 +93,10 @@ class CreateBeta(Create):
 
   _RELEASE_TRACK = base.ReleaseTrack.BETA
 
+  @staticmethod
+  def Args(parser):
+    _CommonArgs(parser, CreateBeta._RELEASE_TRACK)
+
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class CreateAlpha(CreateBeta):

@@ -89,6 +89,13 @@ class Create(base.CreateCommand):
     security_style = (
         volumes_flags.GetVolumeSecurityStyleEnumFromArg(args.security_style,
                                                         client.messages))
+    restricted_actions = []
+    if args.restricted_actions:
+      for restricted_action in args.restricted_actions:
+        restricted_action_enum = (
+            volumes_flags.GetVolumeRestrictedActionsEnumFromArg(
+                restricted_action, client.messages))
+        restricted_actions.append(restricted_action_enum)
     labels = labels_util.ParseCreateArgs(args,
                                          client.messages.Volume.LabelsValue)
     volume = client.ParseVolumeConfig(
@@ -107,7 +114,8 @@ class Create(base.CreateCommand):
         snapshot_directory=args.snapshot_directory,
         security_style=security_style,
         enable_kerberos=args.enable_kerberos,
-        snapshot=args.source_snapshot)
+        snapshot=args.source_snapshot,
+        restricted_actions=restricted_actions)
     result = client.CreateVolume(volume_ref, args.async_, volume)
     if args.async_:
       command = 'gcloud {} netapp volumes list'.format(
@@ -123,6 +131,10 @@ class CreateBeta(Create):
   """Create a Cloud NetApp Volume."""
 
   _RELEASE_TRACK = base.ReleaseTrack.BETA
+
+  @staticmethod
+  def Args(parser):
+    _CommonArgs(parser, CreateBeta._RELEASE_TRACK)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)

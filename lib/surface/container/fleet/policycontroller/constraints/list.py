@@ -21,7 +21,7 @@ from __future__ import unicode_literals
 from googlecloudsdk.api_lib.container.fleet.policycontroller import status_api_utils
 from googlecloudsdk.calliope import base as calliope_base
 from googlecloudsdk.command_lib.container.fleet import resources
-from googlecloudsdk.command_lib.container.fleet.policycontroller import utils
+from googlecloudsdk.command_lib.container.fleet.policycontroller import constants
 from googlecloudsdk.core import properties
 
 
@@ -118,7 +118,7 @@ def ListMembershipConstraints(
       formatted_constraint['match'] = constraint.spec.kubernetesMatch or {}
       formatted_constraint['parameters'] = constraint.spec.parameters or {}
       formatted_constraint['enforcementAction'] = (
-          utils.get_enforcement_action_label(
+          constants.get_enforcement_action_label(
               messages.MembershipConstraintSpec.EnforcementActionValueValuesEnum(
                   constraint.spec.enforcementAction
               ).name

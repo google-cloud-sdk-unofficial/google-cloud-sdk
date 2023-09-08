@@ -37,6 +37,15 @@
         Only machines matching this filter will be allowed to join the node
         pool. The filtering language accepts strings like "name=<name>", and is
         documented in more detail at https://google.aip.dev/160.
+    - arg_name: node-labels
+      hidden: true
+      release_tracks: [ALPHA]
+      api_field: nodePool.nodeConfig.labels
+      metavar: KEY=VALUE
+      type: "googlecloudsdk.calliope.arg_parsers:ArgDict:"
+      help_text: |
+        Comma-delimited list of key-value pairs that comprise labels for the
+        individual nodes in the node pool.
     labels:
       api_field: nodePool.labels
 

@@ -33,24 +33,26 @@ class List(base.ListCommand):
   @staticmethod
   def Args(parser):
     parser.display_info.AddFormat(flags.DEFAULT_LIST_FORMAT)
-    lister.AddBaseListerArgs(parser)
+    lister.AddMultiScopeListerFlags(parser, regional=True, global_=True)
     parser.display_info.AddCacheUpdater(completers.InstanceTemplatesCompleter)
 
   def ParseFlags(self, args, resources):
     return lister.ParseNamesAndRegexpFlags(args, resources)
 
-  def GetListImplementation(self, client, args, request_data):
-    return lister.GlobalLister(
+  def GetListImplementation(self, client):
+    return lister.MultiScopeLister(
         client,
-        service=client.apitools_client.instanceTemplates,
-    )
+        regional_service=client.apitools_client.regionInstanceTemplates,
+        global_service=client.apitools_client.instanceTemplates,
+        aggregation_service=client.apitools_client.instanceTemplates
+        )
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     client = holder.client
 
-    request_data = self.ParseFlags(args, holder.resources)
-    list_implementation = self.GetListImplementation(client, args, request_data)
+    request_data = lister.ParseMultiScopeFlags(args, holder.resources)
+    list_implementation = self.GetListImplementation(client)
 
     return lister.Invoke(request_data, list_implementation)
 
@@ -105,6 +107,15 @@ class ListAlpha(List):
             args.view, self._getRequest(client.messages, request_data)
         ),
     )
+
+  def Run(self, args):
+    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    client = holder.client
+
+    request_data = lister.ParseMultiScopeFlags(args, holder.resources)
+    list_implementation = self.GetListImplementation(client, args, request_data)
+
+    return lister.Invoke(request_data, list_implementation)
 
 
 ListAlpha.detailed_help = base_classes.GetGlobalRegionalListerHelp(

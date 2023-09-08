@@ -20,6 +20,7 @@ from __future__ import unicode_literals
 
 from apitools.base.py import exceptions as apitools_exceptions
 from googlecloudsdk.api_lib.clouddeploy import release
+from googlecloudsdk.api_lib.util import apis as core_apis
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.deploy import delivery_pipeline_util
@@ -28,7 +29,10 @@ from googlecloudsdk.command_lib.deploy import flags
 from googlecloudsdk.command_lib.deploy import promote_util
 from googlecloudsdk.command_lib.deploy import release_util
 from googlecloudsdk.command_lib.deploy import resource_args
+from googlecloudsdk.core import exceptions as core_exceptions
+from googlecloudsdk.core import log
 from googlecloudsdk.core.console import console_io
+
 
 _DETAILED_HELP = {
     'DESCRIPTION': '{description}',
@@ -90,6 +94,28 @@ class Promote(base.CreateCommand):
       release_obj = release.ReleaseClient().Get(release_ref.RelativeName())
     except apitools_exceptions.HttpError as error:
       raise exceptions.HttpException(error)
+
+    messages = core_apis.GetMessagesModule('clouddeploy', 'v1')
+    skaffold_support_state = release_util.GetSkaffoldSupportState(release_obj)
+    skaffold_support_state_enum = (
+        messages.SkaffoldSupportedCondition.SkaffoldSupportStateValueValuesEnum
+    )
+    if (skaffold_support_state ==
+        skaffold_support_state_enum.SKAFFOLD_SUPPORT_STATE_MAINTENANCE_MODE):
+      log.status.Print(
+          "WARNING: This release's Skaffold version is in maintenance mode and"
+          " will be unsupported soon.\n"
+          " https://cloud.google.com/deploy/docs/using-skaffold/select-skaffold"
+          "#skaffold_version_deprecation_and_maintenance_policy")
+
+    if (skaffold_support_state ==
+        skaffold_support_state_enum.SKAFFOLD_SUPPORT_STATE_UNSUPPORTED):
+      raise core_exceptions.Error(
+          "You can't promote this release because the Skaffold version that was"
+          " used to create the release is no longer supported.\n"
+          "https://cloud.google.com/deploy/docs/using-skaffold/select-skaffold"
+          "#skaffold_version_deprecation_and_maintenance_policy"
+      )
 
     if release_obj.abandoned:
       raise deploy_exceptions.AbandonedReleaseError(

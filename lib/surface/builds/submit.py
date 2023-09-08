@@ -110,6 +110,27 @@ https://git-scm.com/docs/gitrevisions#_specifying_revisions. For information on
 `git fetch`, see https://git-scm.com/docs/git-fetch.
 """,
   )
+  parser.add_argument(
+      '--dir',
+      help="""\
+Directory, relative to the source root, in which to run the build. This is used when the build source is a 2nd-gen Google Cloud Build repository resource.
+This must be a relative path. If a step's `dir` is specified and is an absolute
+path, this value is ignored for that step's execution.
+""",
+  )
+  parser.add_argument(
+      '--revision',
+      help="""\
+Revision to fetch from the Git repository such as a branch, a tag, a commit
+SHA, or any Git ref to run the build. This is used when the build source is a 2nd-gen Google Cloud Build repository resource.
+
+Cloud Build uses `git fetch` to fetch the revision from the Git repository;
+therefore make sure that the string you provide for `revision` is parsable by
+the command. For information on string values accepted by `git fetch`, see
+https://git-scm.com/docs/gitrevisions#_specifying_revisions. For information on
+`git fetch`, see https://git-scm.com/docs/git-fetch.
+""",
+  )
 
   return worker_pools
 
@@ -190,6 +211,8 @@ class Submit(base.CreateCommand):
         args.worker_pool,
         args.git_source_dir,
         args.git_source_revision,
+        args.dir,
+        args.revision,
         args.pack,
         False,
         args.default_buckets_behavior,
@@ -208,6 +231,8 @@ class Submit(base.CreateCommand):
         args.no_source,
         args.source,
         args.gcs_source_staging_dir,
+        args.dir,
+        args.revision,
         args.git_source_dir,
         args.git_source_revision,
         args.ignore_file,
@@ -284,6 +309,8 @@ class SubmitAlpha(SubmitBeta):
         args.memory,
         args.vcpu_count,
         args.worker_pool,
+        args.dir,
+        args.revision,
         args.git_source_dir,
         args.git_source_revision,
         args.pack,
@@ -304,7 +331,9 @@ class SubmitAlpha(SubmitBeta):
         args.no_source,
         args.source,
         args.gcs_source_staging_dir,
-                args.git_source_dir,
+        args.dir,
+        args.revision,
+        args.git_source_dir,
         args.git_source_revision,
         args.ignore_file,
         False,

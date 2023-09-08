@@ -16,6 +16,16 @@
     - arg_name: description
       api_field: hub.description
       help_text: Description of the hub.
+    - arg_name: policy-mode
+      release_tracks: [GA]
+      api_field: hub.policyMode
+      hidden: true
+      help_text: Policy mode of the hub.
+    - arg_name: preset-topology
+      release_tracks: [GA]
+      api_field: hub.presetTopology
+      hidden: true
+      help_text: Topology of the hub. Only applicable when ``--policy-mode=PRESET''.
     labels:
       api_field: hub.labels
 

@@ -89,6 +89,7 @@ class Scp(base.Command):
 
   _ENABLE_IAP = True
   _ENABLE_BATCHING = True
+  DEFAULT_BATCH_SIZE = 64
 
   @classmethod
   def Args(cls, parser):
@@ -98,7 +99,12 @@ class Scp(base.Command):
       parser: An argparse.ArgumentParser.
     """
     ssh_utils.BaseSSHCLIHelper.Args(parser)
-    tpu_ssh_utils.AddTPUSSHArgs(parser, cls._ENABLE_IAP, cls._ENABLE_BATCHING)
+    tpu_ssh_utils.AddTPUSSHArgs(
+        parser,
+        cls._ENABLE_IAP,
+        cls._ENABLE_BATCHING,
+        enable_batching_default=cls.DEFAULT_BATCH_SIZE,
+    )
     AddSCPArgs(parser)
     flags.AddZoneFlag(parser, resource_type='tpu', operation_type='scp')
 
@@ -190,11 +196,9 @@ class Scp(base.Command):
           ' rest.'.format(num_nodes)
       )
 
-    # Enumerate the total number of nodes and workers needed to ssh into.
-    num_ips = sum(
-        [len(prepped_node.worker_ips) for prepped_node in prepped_nodes]
+    scp_batch_size = tpu_ssh_utils.ParseBatchSize(
+        args.batch_size, self.DEFAULT_BATCH_SIZE
     )
-    scp_batch_size = tpu_ssh_utils.ParseBatchSize(args.batch_size, num_ips)
     tpu_ssh_utils.SCPIntoPreppedNodes(
         prepped_nodes,
         args,
@@ -214,9 +218,13 @@ Scp.detailed_help = {
 
             $ {command} ~/my-file my-qr:
 
-        To copy a file into all nodes and workers in a Cloud TPU Queued Resource, run:
+        To copy a file into all nodes and workers in a Cloud TPU Queued Resource (with the default batch size), run:
 
             $ {command} ~/my-file my-qr: --worker=all --node=all
+
+        To copy a file into all nodes and workers in a Cloud TPU Queued Resource with a batch size of 4, run:
+
+            $ {command} ~/my-file my-qr: --worker=all --node=all --batch-size=4
 
         To copy a file into all workers in the first node of a Cloud TPU Queued Resource, run:
 

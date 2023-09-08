@@ -40,26 +40,6 @@
       repeated: false
       help_text: |-
         The description of the instance. 2048 characters or less.
-    - group:
-        required: false
-        help_text: |-
-          Network configuration for the instance.
-        params:
-        - arg_name: network-config-network-name
-          api_field: instance.networkConfig.networkName
-          required: false
-          repeated: false
-          help_text: |
-            The name of the Google Compute Engine
-            [VPC network](https://cloud.google.com/vpc/docs/vpc) to which the
-            instance is connected.
-        - arg_name: network-config-reserved-ip-range
-          api_field: instance.networkConfig.reservedIpRange
-          required: false
-          repeated: false
-          help_text: |-
-            Optional, the name of an allocated IP address range associated with private
-            service access. If no range name is provided all ranges will be considered.
     - arg_name: capacity-gib
       api_field: instance.capacityGib
       required: true
@@ -67,6 +47,23 @@
       type: long
       help_text: |-
         Storage capacity of Parallelstore instance in Gibibytes (GiB).
+    - arg_name: network
+      api_field: instance.network
+      required: false
+      repeated: false
+      help_text: |-
+        The name of the Google Compute Engine
+        [VPC network](https://cloud.google.com/vpc/docs/vpc) to which the
+        instance is connected.
+    - arg_name: reserved-ip-range
+      api_field: instance.reservedIpRange
+      required: false
+      repeated: false
+      help_text: |-
+        Contains the id of allocated IP address range associated with the private
+        service access connection for example, "test-default" associated with IP
+        range 10.0.0.0/29. If no range id is provided all ranges will be
+        considered.
     labels:
       api_field: instance.labels
   request:

@@ -23,25 +23,38 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.core.console import console_io
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
-                    base.ReleaseTrack.GA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
+)
 class Copy(base.Command):
   """Copy log entries."""
 
   @staticmethod
   def Args(parser):
     """Register flags for this command."""
-    parser.add_argument('bucket_id', help='Id of the bucket to copy.')
     parser.add_argument(
-        'destination', help='destination to which to copy logs.')
+        'bucket_id',
+        help='Id of the log bucket to copy logs from. Example: my-bucket',
+    )
     parser.add_argument(
-        '--location', required=True, help='Location of the bucket.')
+        'destination',
+        help=(
+            'Destination to copy logs to. Example: Cloud Storage bucket:'
+            ' storage.googleapis.com/my-cloud-storage-bucket'
+        ),
+    )
+    parser.add_argument(
+        '--location', required=True, help='Location of the log bucket.'
+    )
     parser.add_argument(
         '--log-filter',
         required=False,
-        help=('A filter specifying which log entries to copy. '
-              'The filter must be no more than 20k characters. '
-              'An empty filter matches all log entries.'))
+        help=(
+            'A filter specifying which log entries to copy. '
+            'The filter must be no more than 20k characters. '
+            'An empty filter matches all log entries.'
+        ),
+    )
 
     util.AddParentArgs(parser, 'log entries to copy')
 

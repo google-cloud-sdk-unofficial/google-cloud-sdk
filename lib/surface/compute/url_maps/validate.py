@@ -92,10 +92,9 @@ def _AddScopeFlags(parser):
 def _AddLoadBalancingSchemeFlag(parser):
   """Add --load-balancing-scheme flag."""
   help_text = """\
-  Specifies the load balancer type(s) this validation request is for. Use
-  `EXTERNAL_MANAGED` for HTTP/HTTPS External Global Load Balancer
-  with Advanced Traffic Management. Use `EXTERNAL` for Classic
-  HTTP/HTTPS External Global Load Balancer.
+  Specifies the load balancer type this validation request is for. Use
+  `EXTERNAL_MANAGED` for global external Application Load Balancer. Use
+  `EXTERNAL` for classic Application Load Balancer.
 
   Other load balancer types are not supported. For more information, refer to
   [Choosing a load balancer](https://cloud.google.com/load-balancing/docs/choosing-load-balancer/).

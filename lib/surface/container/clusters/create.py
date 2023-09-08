@@ -197,6 +197,11 @@ def ParseCreateOptionsBase(args, is_autopilot, get_default, location,
       boot_disk_kms_key=get_default('boot_disk_kms_key'),
       cluster_dns=get_default('cluster_dns'),
       cluster_dns_scope=get_default('cluster_dns_scope'),
+      enable_additive_vpc_scope=get_default('enable_additive_vpc_scope'),
+      additive_vpc_scope_dns_domain=get_default(
+          'additive_vpc_scope_dns_domain'
+      ),
+      disable_additive_vpc_scope=get_default('disable_additive_vpc_scope'),
       cluster_dns_domain=get_default('cluster_dns_domain'),
       cluster_ipv4_cidr=get_default('cluster_ipv4_cidr'),
       cluster_secondary_range_name=get_default('cluster_secondary_range_name'),
@@ -422,6 +427,7 @@ def ParseCreateOptionsBase(args, is_autopilot, get_default, location,
       ),
       workload_policies=get_default('workload_policies'),
       in_transit_encryption=get_default('in_transit_encryption'),
+      containerd_config_from_file=get_default('containerd_config_from_file'),
   )
 
 
@@ -530,8 +536,8 @@ flags_to_add = {
             flags.AddCloudRunConfigFlag,
         'clusterautoscaling':
             functools.partial(flags.AddClusterAutoscalingFlags),
-        'clusterdns':
-            flags.AddClusterDNSFlags,
+        'clusterdns': (lambda p: flags.AddClusterDNSFlags(
+            p, release_track=base.ReleaseTrack.GA)),
         'clusterversion':
             flags.AddClusterVersionFlag,
         'confidentialnodes':
@@ -689,11 +695,17 @@ flags_to_add = {
             flags.AddEnableK8sBetaAPIs,
         'securityPosture':
             flags.AddSecurityPostureEnumFlag,
-        'workloadVulnerabilityScanning':
-            flags.AddWorkloadVulnScanningEnumFlag,
+        # pylint: disable=g-long-lambda
+        'workloadVulnerabilityScanning': (
+            lambda p: flags.AddWorkloadVulnScanningEnumFlag(
+                p, release_track=base.ReleaseTrack.GA
+            )
+        ),
         'enableRuntimeVulnerabilityInsight':
             flags.AddRuntimeVulnerabilityInsightFlag,
         'InTransitEncryption': flags.AddInTransitEncryptionFlag,
+        'containerdConfig':
+            (lambda p: flags.AddContainerdConfigFlag(p, hidden=True)),
     },
     BETA: {
         'accelerator':
@@ -732,8 +744,8 @@ flags_to_add = {
             flags.AddCloudRunConfigFlag,
         'clusterautoscaling':
             functools.partial(flags.AddClusterAutoscalingFlags),
-        'clusterdns':
-            flags.AddClusterDNSFlags,
+        'clusterdns': (lambda p: flags.AddClusterDNSFlags(
+            p, release_track=base.ReleaseTrack.BETA)),
         'clusterversion':
             flags.AddClusterVersionFlag,
         'costmanagementconfig':
@@ -854,6 +866,8 @@ flags_to_add = {
         'privateipv6type': (lambda p: AddPrivateIPv6Flag('v1beta1', p)),
         'releasechannel':
             flags.AddReleaseChannelFlag,
+        'resourceManagerTags':
+            flags.AddResourceManagerTagsCreate,
         'resourceusageexport':
             flags.AddResourceUsageExportFlags,
         'reservationaffinity':
@@ -926,14 +940,20 @@ flags_to_add = {
             flags.AddEnableK8sBetaAPIs,
         'securityPosture':
             flags.AddSecurityPostureEnumFlag,
-        'workloadVulnerabilityScanning':
-            flags.AddWorkloadVulnScanningEnumFlag,
+        # pylint: disable=g-long-lambda
+        'workloadVulnerabilityScanning': (
+            lambda p: flags.AddWorkloadVulnScanningEnumFlag(
+                p, release_track=base.ReleaseTrack.BETA
+            )
+        ),
         'enableRuntimeVulnerabilityInsight':
             flags.AddRuntimeVulnerabilityInsightFlag,
         'enableDnsEndpoint':
             flags.AddEnableDNSEndpoint,
         'enableFqdnNetworkPolicy': flags.AddEnableFqdnNetworkPolicyFlag,
         'InTransitEncryption': flags.AddInTransitEncryptionFlag,
+        'containerdConfig':
+            (lambda p: flags.AddContainerdConfigFlag(p, hidden=True)),
     },
     ALPHA: {
         'accelerator':
@@ -974,8 +994,8 @@ flags_to_add = {
             flags.AddCloudRunConfigFlag,
         'clusterautoscaling':
             functools.partial(flags.AddClusterAutoscalingFlags),
-        'clusterdns':
-            flags.AddClusterDNSFlags,
+        'clusterdns': (lambda p: flags.AddClusterDNSFlags(
+            p, release_track=base.ReleaseTrack.ALPHA)),
         'placementtype':
             flags.AddPlacementTypeFlag,
         'placementpolicy':
@@ -1103,6 +1123,8 @@ flags_to_add = {
         'privateipv6type': (lambda p: AddPrivateIPv6Flag('v1alpha1', p)),
         'reservationaffinity':
             flags.AddReservationAffinityFlags,
+        'resourceManagerTags':
+            flags.AddResourceManagerTagsCreate,
         'resourceusageexport':
             flags.AddResourceUsageExportFlags,
         'releasechannel':
@@ -1177,14 +1199,20 @@ flags_to_add = {
             flags.AddEnableK8sBetaAPIs,
         'securityPosture':
             flags.AddSecurityPostureEnumFlag,
-        'workloadVulnerabilityScanning':
-            flags.AddWorkloadVulnScanningEnumFlag,
+        # pylint: disable=g-long-lambda
+        'workloadVulnerabilityScanning': (
+            lambda p: flags.AddWorkloadVulnScanningEnumFlag(
+                p, release_track=base.ReleaseTrack.ALPHA
+            )
+        ),
         'enableRuntimeVulnerabilityInsight':
             flags.AddRuntimeVulnerabilityInsightFlag,
         'enableDnsEndpoint':
             flags.AddEnableDNSEndpoint,
         'enableFqdnNetworkPolicy': flags.AddEnableFqdnNetworkPolicyFlag,
         'InTransitEncryption': flags.AddInTransitEncryptionFlag,
+        'containerdConfig':
+            (lambda p: flags.AddContainerdConfigFlag(p, hidden=True)),
     },
 }
 
@@ -1440,6 +1468,10 @@ class CreateBeta(Create):
     ops.enable_dns_endpoint = get_default('enable_dns_endpoint')
     ops.enable_fqdn_network_policy = get_default('enable_fqdn_network_policy')
     ops.host_maintenance_interval = get_default('host_maintenance_interval')
+    ops.containerd_config_from_file = get_default(
+        'containerd_config_from_file',
+    )
+    ops.resource_manager_tags = get_default('resource_manager_tags')
     return ops
 
 
@@ -1545,4 +1577,6 @@ class CreateAlpha(Create):
     ops.enable_dns_endpoint = get_default('enable_dns_endpoint')
     ops.enable_fqdn_network_policy = get_default('enable_fqdn_network_policy')
     ops.host_maintenance_interval = get_default('host_maintenance_interval')
+    ops.contianerd_config_from_file = get_default('contianerd_config_from_file')
+    ops.resource_manager_tags = get_default('resource_manager_tags')
     return ops

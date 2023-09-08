@@ -47,7 +47,8 @@ class Provision(base.DescribeCommand):
         help=(
             'The display name to use in case a new SAS Portal organization'
             ' needs to be created. If creating a deployment under an existing'
-            ' organization then the organization-id flag must be set instead.'
+            ' organization then the `--organization-id` flag must be set'
+            ' instead.'
         ),
     )
     parser.add_argument(
@@ -67,8 +68,8 @@ class Provision(base.DescribeCommand):
         help=(
             'The id of the organization to create a new deployment under.'
             ' If left empty a new organization will be created with the name'
-            ' entered via the organization-name flag. Either this or'
-            ' organization-name must be set.'
+            ' entered via the `--organization-name` flag. Either this or'
+            ' `--organization-name` must be set.'
         ),
     )
 
@@ -76,19 +77,19 @@ class Provision(base.DescribeCommand):
     if not args.organization_name and not args.organization_id:
       raise exceptions.OneOfArgumentsRequiredException(
           ['organization-name', 'organization-id'],
-          'Either organization-name or organization-id must be set. Use'
-          ' organization-name when creating a new organization and'
-          ' organization-id when create a deployment under an existing'
+          'Either `--organization-name` or `--organization-id` must be set. Use'
+          ' `--organization-name` when creating a new organization and'
+          ' `--organization-id` when create a deployment under an existing'
           ' organization.',
       )
 
     if args.organization_name and args.organization_id:
       raise exceptions.InvalidArgumentException(
           'organization-name, organization-id',
-          'Either organization-name or organization-id must be set but not'
-          ' both. Use organization-name when creating a new organization and'
-          ' organization-id when create a deployment under an existing'
-          ' organization.',
+          'Either `--organization-name` or `--organization-id` must be set but'
+          ' not both. Use `--organization-name` when creating a new'
+          ' organization and `--organization-id` when creating a deployment'
+          ' under an existing organization.',
       )
 
     log.status.Print(

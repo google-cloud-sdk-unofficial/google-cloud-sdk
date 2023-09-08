@@ -51,6 +51,7 @@ auto_flags = [
     'masterglobalaccess',
     'enableDnsEndpoint',
     'workloadPolicies',
+    'containerdConfig',
 ]
 
 # Change default flag values in create-auto

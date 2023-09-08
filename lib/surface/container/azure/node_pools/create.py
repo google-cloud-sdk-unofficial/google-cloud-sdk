@@ -62,6 +62,7 @@ class Create(base.CreateCommand):
     flags.AddProxyConfig(parser)
     flags.AddConfigEncryption(parser)
     flags.AddAnnotations(parser, 'node pool')
+    flags.AddEnableAutoRepair(parser, True)
     base.ASYNC_FLAG.AddToParser(parser)
     parser.display_info.AddFormat(constants.AZURE_NODE_POOL_FORMAT)
 
@@ -94,4 +95,3 @@ class CreateAlpha(Create):
     """Registers alpha track flags for this command."""
     Create.Args(parser)
     flags.AddImageType(parser)
-    flags.AddEnableAutoRepair(parser, True)

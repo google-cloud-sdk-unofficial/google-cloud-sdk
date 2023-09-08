@@ -25,7 +25,6 @@ from googlecloudsdk.command_lib.firestore import flags
 from googlecloudsdk.core import properties
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Delete(base.DeleteCommand):
   """Deletes a Cloud Firestore backup.
@@ -40,7 +39,7 @@ class Delete(base.DeleteCommand):
 
   @staticmethod
   def Args(parser):
-    flags.AddLocationFlag(parser, required=True, hidden=True)
+    flags.AddLocationFlag(parser, required=True)
     flags.AddBackupFlag(parser)
 
   def Run(self, args):

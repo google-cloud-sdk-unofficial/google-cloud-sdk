@@ -106,6 +106,7 @@ class Update(base.UpdateCommand):
     flags.AddEnableFastSocketFlag(group)
     flags.AddLoggingVariantFlag(group, for_node_pool=True)
     flags.AddWindowsOsVersionFlag(group)
+    flags.AddContainerdConfigFlag(group, hidden=True)
 
   def ParseUpdateNodePoolOptions(self, args):
     flags.ValidateSurgeUpgradeSettings(args)
@@ -142,7 +143,8 @@ class Update(base.UpdateCommand):
         enable_private_nodes=args.enable_private_nodes,
         enable_fast_socket=args.enable_fast_socket,
         logging_variant=args.logging_variant,
-        windows_os_version=args.windows_os_version)
+        windows_os_version=args.windows_os_version,
+        containerd_config_from_file=args.containerd_config_from_file)
 
   def Run(self, args):
     """This is what gets called when the user runs this command.
@@ -266,6 +268,8 @@ class UpdateBeta(Update):
     flags.AddEnableFastSocketFlag(group)
     flags.AddLoggingVariantFlag(group, for_node_pool=True)
     flags.AddWindowsOsVersionFlag(group)
+    flags.AddResourceManagerTagsNodePoolUpdate(group)
+    flags.AddContainerdConfigFlag(group, hidden=True)
 
   def ParseUpdateNodePoolOptions(self, args):
     flags.ValidateSurgeUpgradeSettings(args)
@@ -305,7 +309,9 @@ class UpdateBeta(Update):
         enable_confidential_nodes=args.enable_confidential_nodes,
         enable_fast_socket=args.enable_fast_socket,
         logging_variant=args.logging_variant,
-        windows_os_version=args.windows_os_version)
+        windows_os_version=args.windows_os_version,
+        resource_manager_tags=args.resource_manager_tags,
+        containerd_config_from_file=args.containerd_config_from_file)
     return ops
 
 
@@ -361,6 +367,8 @@ class UpdateAlpha(Update):
     flags.AddEnableFastSocketFlag(group)
     flags.AddLoggingVariantFlag(group, for_node_pool=True)
     flags.AddWindowsOsVersionFlag(group)
+    flags.AddResourceManagerTagsNodePoolUpdate(group)
+    flags.AddContainerdConfigFlag(group, hidden=True)
 
   def ParseUpdateNodePoolOptions(self, args):
     flags.ValidateSurgeUpgradeSettings(args)
@@ -400,7 +408,9 @@ class UpdateAlpha(Update):
         enable_confidential_nodes=args.enable_confidential_nodes,
         enable_fast_socket=args.enable_fast_socket,
         logging_variant=args.logging_variant,
-        windows_os_version=args.windows_os_version)
+        windows_os_version=args.windows_os_version,
+        resource_manager_tags=args.resource_manager_tags,
+        containerd_config_from_file=args.containerd_config_from_file)
     return ops
 
 

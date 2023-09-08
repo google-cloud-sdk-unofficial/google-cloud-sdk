@@ -52,6 +52,7 @@ class Update(base.UpdateCommand):
     flags.AddSSHPublicKey(parser, required=False)
     flags.AddAnnotationsForUpdate(parser, 'node pool')
     flags.AddValidateOnly(parser, 'update of the node pool')
+    flags.AddEnableAutoRepair(parser, False)
 
     base.ASYNC_FLAG.AddToParser(parser)
     parser.display_info.AddFormat(constants.AZURE_NODE_POOL_FORMAT)
@@ -84,4 +85,3 @@ class UpdateAlpha(Update):
   def Args(parser, track=base.ReleaseTrack.ALPHA):
     """Registers alpha track flags for this command."""
     Update.Args(parser)
-    flags.AddEnableAutoRepair(parser, False)

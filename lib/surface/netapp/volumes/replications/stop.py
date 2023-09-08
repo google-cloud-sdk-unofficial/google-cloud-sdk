@@ -20,7 +20,6 @@ from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.netapp.volumes.replications import client as replications_client
 from googlecloudsdk.calliope import base
-from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.netapp import flags
 from googlecloudsdk.command_lib.netapp.volumes.replications import flags as replications_flags
 from googlecloudsdk.command_lib.util.concepts import concept_parsers
@@ -61,10 +60,6 @@ class Stop(base.Command):
   def Run(self, args):
     """Stop a Cloud NetApp Volume Replication in the current project."""
     replication_ref = args.CONCEPTS.replication.Parse()
-    if args.CONCEPTS.volume.Parse() is None:
-      raise exceptions.RequiredArgumentException(
-          '--volume', 'Requires a volume to stop replication of'
-      )
 
     client = replications_client.ReplicationsClient(self._RELEASE_TRACK)
     result = client.StopReplication(
@@ -85,4 +80,3 @@ class StopBeta(Stop):
   """Stop a Cloud NetApp Volume Replication."""
 
   _RELEASE_TRACK = base.ReleaseTrack.BETA
-

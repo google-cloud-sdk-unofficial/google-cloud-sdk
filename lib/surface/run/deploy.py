@@ -80,6 +80,26 @@ class BuildType(enum.Enum):
   BUILDPACKS = 'Buildpacks'
 
 
+def ContainerArgGroup():
+  """Returns an argument group with all per-container deploy args."""
+
+  help_text = """
+    If the --container flag is specified the following arguments may only be
+    specified after a --container flag.
+    """
+  group = base.ArgumentGroup(help=help_text)
+  group.AddArgument(flags.SourceAndImageFlags())
+  group.AddArgument(flags.PortArg())
+  group.AddArgument(flags.Http2Flag())
+  group.AddArgument(flags.MutexEnvVarsFlags())
+  group.AddArgument(flags.MemoryFlag())
+  group.AddArgument(flags.CpuFlag())
+  group.AddArgument(flags.CommandFlag())
+  group.AddArgument(flags.ArgsFlag())
+  group.AddArgument(flags.SecretsFlags())
+  return group
+
+
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Deploy(base.Command):
   """Create or update a Cloud Run service."""
@@ -105,7 +125,7 @@ class Deploy(base.Command):
   }
 
   @staticmethod
-  def CommonArgs(parser):
+  def CommonArgs(parser, add_container_args=True):
     # Flags specific to managed CR
     managed_group = flags.GetManagedArgGroup(parser)
     flags.AddAllowUnauthenticatedFlag(managed_group)
@@ -139,8 +159,9 @@ class Deploy(base.Command):
     )
     flags.AddPlatformAndLocationFlags(parser)
     flags.AddFunctionArg(parser)
-    flags.AddMutexEnvVarsFlags(parser)
-    flags.AddMemoryFlag(parser)
+    if add_container_args:
+      flags.AddMutexEnvVarsFlags(parser)
+      flags.AddMemoryFlag(parser)
     flags.AddConcurrencyFlag(parser)
     flags.AddTimeoutFlag(parser)
     flags.AddAsyncFlag(parser)
@@ -148,18 +169,20 @@ class Deploy(base.Command):
     flags.AddGeneralAnnotationFlags(parser)
     flags.AddMinInstancesFlag(parser)
     flags.AddMaxInstancesFlag(parser)
-    flags.AddCommandFlag(parser)
-    flags.AddArgsFlag(parser)
-    flags.AddPortFlag(parser)
-    flags.AddCpuFlag(parser)
+    if add_container_args:
+      flags.AddCommandFlag(parser)
+      flags.AddArgsFlag(parser)
+      flags.AddPortFlag(parser)
+      flags.AddCpuFlag(parser)
     flags.AddNoTrafficFlag(parser)
     flags.AddDeployTagFlag(parser)
     flags.AddServiceAccountFlag(parser)
     flags.AddClientNameAndVersionFlags(parser)
     flags.AddIngressFlag(parser)
-    flags.AddHttp2Flag(parser)
-    flags.AddSourceAndImageFlags(parser)
-    flags.AddSecretsFlags(parser)
+    if add_container_args:
+      flags.AddHttp2Flag(parser)
+      flags.AddSourceAndImageFlags(parser)
+      flags.AddSecretsFlags(parser)
     concept_parsers.ConceptParser([service_presentation]).AddToParser(parser)
     # No output by default, can be overridden by --format
     parser.display_info.AddFormat('none')
@@ -174,29 +197,82 @@ class Deploy(base.Command):
         args, self.ReleaseTrack(), flags.Product.RUN
     )
 
-    include_build = flags.FlagIsExplicitlySet(args, 'source')
-    if not include_build and not args.IsSpecified('image'):
-      if console_io.CanPrompt():
-        args.source = flags.PromptForDefaultSource()
-        include_build = True
-      else:
+    if flags.FlagIsExplicitlySet(args, 'containers'):
+      containers = args.containers
+    else:
+      containers = {'': args}
+
+    if len(containers) > 1:
+      ingress_containers = [
+          c
+          for c in containers.values()
+          if c.IsSpecified('port') or c.IsSpecified('use_http2')
+      ]
+      if len(ingress_containers) != 1:
+        raise c_exceptions.InvalidArgumentException(
+            '--container',
+            'Exactly one container must specify --port or --use-http2',
+        )
+
+    if len(containers) > 10:
+      raise c_exceptions.InvalidArgumentException(
+          '--container', 'Services may include at most 10 contianers'
+      )
+
+    build_from_source = {
+        name: container
+        for name, container in containers.items()
+        if not container.IsSpecified('image')
+    }
+    if len(build_from_source) > 1:
+      needs_image = [
+          name
+          for name, container in build_from_source.items()
+          if not flags.FlagIsExplicitlySet(container, 'source')
+      ]
+      if needs_image:
         raise c_exceptions.RequiredArgumentException(
             '--image',
-            'Requires a container image to deploy (e.g. '
-            '`gcr.io/cloudrun/hello:latest`) if no build source is provided.',
+            'Containers {} require a container image to deploy (e.g.'
+            ' `gcr.io/cloudrun/hello:latest`) if no build source is'
+            ' provided.'.format(', '.join(needs_image)),
         )
+      raise c_exceptions.InvalidArgumentException(
+          '--container', 'At most one container can be deployed from source.'
+      )
+
+    for name, container in build_from_source.items():
+      if not flags.FlagIsExplicitlySet(container, 'source'):
+        if console_io.CanPrompt():
+          container.source = flags.PromptForDefaultSource(name)
+        else:
+          if name:
+            message = (
+                'Container {} requires a container image to deploy (e.g.'
+                ' `gcr.io/cloudrun/hello:latest`) if no build source is'
+                ' provided.'.format(name)
+            )
+          else:
+            message = (
+                'Requires a container image to deploy (e.g.'
+                ' `gcr.io/cloudrun/hello:latest`) if no build source is'
+                ' provided.'
+            )
+          raise c_exceptions.RequiredArgumentException(
+              '--image',
+              message,
+          )
 
     service_ref = args.CONCEPTS.service.Parse()
     flags.ValidateResource(service_ref)
+
     required_apis = ['run.googleapis.com']
-    if include_build:
+    if build_from_source:
       required_apis.append('artifactregistry.googleapis.com')
       required_apis.append('cloudbuild.googleapis.com')
-    already_activated_services = False
-    if self.ReleaseTrack() in [base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA]:
-      already_activated_services = api_enabler.CheckAndEnableApis(
-          properties.VALUES.core.project.Get(), required_apis
-      )
+    already_activated_services = api_enabler.CheckAndEnableApis(
+        properties.VALUES.core.project.Get(), required_apis
+    )
     # Obtaining the connection context prompts the user to select a region if
     # one hasn't been provided. We want to do this prior to preparing a source
     # deploy so that we can use that region for the Artifact Registry repo.
@@ -204,15 +280,16 @@ class Deploy(base.Command):
         args, flags.Product.RUN, self.ReleaseTrack()
     )
 
-    build_type = None
     image = None
     pack = None
     source = None
     operation_message = 'Deploying container to'
     repo_to_create = None
     # Build an image from source if source specified
-    if include_build:
-      source = args.source
+    if build_from_source:
+      # Only one container can deployed from source
+      container = next(iter(build_from_source.values()))
+      source = container.source
 
       ar_repo = docker_util.DockerRepo(
           project_id=properties.VALUES.core.project.Get(required=True),
@@ -232,7 +309,7 @@ class Deploy(base.Command):
         repo_to_create = ar_repo
       # The image is built with latest tag. After build, the image digest
       # from the build result will be added to the image of the service spec.
-      args.image = '{repo}/{service}'.format(
+      container.image = '{repo}/{service}'.format(
           repo=ar_repo.GetDockerString(), service=service_ref.servicesId
       )
       # Use GCP Buildpacks if Dockerfile doesn't exist
@@ -240,16 +317,16 @@ class Deploy(base.Command):
       if os.path.exists(docker_file):
         build_type = BuildType.DOCKERFILE
       else:
-        pack = [{'image': args.image}]
+        pack = [{'image': container.image}]
         if self.ReleaseTrack() is base.ReleaseTrack.ALPHA:
-          command_arg = getattr(args, 'command', None)
+          command_arg = getattr(container, 'command', None)
           if command_arg is not None:
             command = ' '.join(command_arg)
             pack[0].update(
                 {'env': 'GOOGLE_ENTRYPOINT="{command}"'.format(command=command)}
             )
         build_type = BuildType.BUILDPACKS
-      image = None if pack else args.image
+      image = None if pack else container.image
       operation_message = (
           'Building using {build_type} and deploying container to'
       ).format(build_type=build_type.value)
@@ -289,11 +366,10 @@ class Deploy(base.Command):
       deployment_stages = stages.ServiceStages(
           include_iam_policy_set=allow_unauth is not None,
           include_route=has_latest,
-          include_build=include_build,
+          include_build=bool(build_from_source),
           include_create_repo=repo_to_create is not None,
       )
-      header = None
-      if include_build:
+      if build_from_source:
         header = 'Building and deploying'
       else:
         header = 'Deploying'
@@ -353,7 +429,7 @@ class AlphaDeploy(BetaDeploy):
 
   @staticmethod
   def Args(parser):
-    Deploy.CommonArgs(parser)
+    Deploy.CommonArgs(parser, False)
 
     # Flags specific to managed CR
     managed_group = flags.GetManagedArgGroup(parser)
@@ -361,6 +437,10 @@ class AlphaDeploy(BetaDeploy):
     flags.AddVpcNetworkGroupFlagsForUpdate(managed_group)
     flags.AddRuntimeFlag(managed_group)
     flags.AddServiceMinInstancesFlag(managed_group)
+    # pylint: disable=protected-access
+    flags.ContainerFlags(
+        parser.parser._calliope_command, ContainerArgGroup()
+    ).AddToParser(managed_group)
 
 
 AlphaDeploy.__doc__ = Deploy.__doc__

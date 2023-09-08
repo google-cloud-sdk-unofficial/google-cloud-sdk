@@ -467,7 +467,7 @@ def _UpdateADC(creds, add_quota_project_to_adc):
   command_auth_util.WriteGcloudCredentialsToADC(creds, add_quota_project_to_adc)
   new_adc_json = command_auth_util.GetADCAsJson()
   if new_adc_json and new_adc_json != old_adc_json:
-    adc_msg = '\nApplication default credentials (ADC) were updated.'
+    adc_msg = '\nApplication Default Credentials (ADC) were updated.'
     quota_project = command_auth_util.GetQuotaProjectFromADC()
     if quota_project:
       adc_msg = adc_msg + (
@@ -475,6 +475,17 @@ def _UpdateADC(creds, add_quota_project_to_adc):
           'just update the quota project in ADC, use $gcloud auth '
           'application-default set-quota-project.'.format(quota_project))
     log.status.Print(adc_msg)
+
+  # --update-adc for 1P auth gets deprecated
+  if (c_creds.IsUserAccountCredentials(creds) and not
+      c_creds.IsExternalAccountUserCredentials(creds) and not
+      c_creds.IsExternalAccountAuthorizedUserCredentials(creds)):
+    log.status.Print(
+        '\nThe --update-adc flag is deprecated. Use the `gcloud auth'
+        ' application-default login` command instead.\n\nFor information'
+        ' about local development authentication setup, see https://cloud.'
+        'google.com/docs/authentication/external/set-up-adc-local'
+    )
 
 
 def _ValidateADCFlags(update_adc, add_quota_project_to_adc):

@@ -20,10 +20,12 @@ from __future__ import unicode_literals
 import argparse
 
 from googlecloudsdk.api_lib.container.fleet import util as fleet_util
+from googlecloudsdk.api_lib.container.fleet.policycontroller import protos
 from googlecloudsdk.calliope import base as calliope_base
-from googlecloudsdk.command_lib.container.fleet import resources
 from googlecloudsdk.command_lib.container.fleet.features import base
+from googlecloudsdk.command_lib.container.fleet.policycontroller import command
 from googlecloudsdk.command_lib.container.fleet.policycontroller import deployment_configs as deployment
+from googlecloudsdk.command_lib.container.fleet.policycontroller import flags
 from googlecloudsdk.core import exceptions
 
 
@@ -31,7 +33,7 @@ from googlecloudsdk.core import exceptions
 @calliope_base.ReleaseTracks(
     calliope_base.ReleaseTrack.ALPHA, calliope_base.ReleaseTrack.BETA
 )
-class Remove(base.UpdateCommand):
+class Remove(base.UpdateCommand, command.PocoCommand):
   """Removes configuration properties from Policy Controller components.
 
   Remove customizations of on-cluster components in Policy Controller. These
@@ -85,6 +87,9 @@ class Remove(base.UpdateCommand):
 
   @classmethod
   def Args(cls, parser):
+    cmd_flags = flags.PocoFlags(parser, 'remove deployment configuration')
+    cmd_flags.add_memberships()
+
     parser.add_argument(
         'deployment',
         choices=deployment.G8R_COMPONENTS,
@@ -107,25 +112,6 @@ class Remove(base.UpdateCommand):
             ' included for any other property.'
         ),
     )
-    resources.AddMembershipResourceArg(
-        parser,
-        plural=True,
-        membership_help=(
-            'The membership names to update, separated by commas if multiple '
-            'are supplied. Ignored if --all-memberships is supplied; if '
-            'neither is supplied, a prompt will appear with all available '
-            'memberships.'
-        ),
-    )
-    parser.add_argument(
-        '--all-memberships',
-        action='store_true',
-        help=(
-            'If supplied, update Policy Controller for all memberships in the'
-            ' fleet.'
-        ),
-        default=False,
-    )
     parser.add_argument(
         '--effect',
         choices=deployment.K8S_SCHEDULING_OPTIONS,
@@ -141,7 +127,9 @@ class Remove(base.UpdateCommand):
     specs = self._membership_specs(args)
 
     for _, spec in specs.items():
-      cfgs = deployment.get_configurations(spec)
+      cfgs = protos.additional_properties_to_dict(
+          spec.policycontroller.policyControllerHubConfig.deploymentConfigs
+      )
       deployment_cfg = cfgs.get(
           args.deployment,
           self.messages.PolicyControllerPolicyControllerDeploymentConfig(),
@@ -154,15 +142,11 @@ class Remove(base.UpdateCommand):
           args.effect,
       )
 
-      # Convert back to a list of additionalProperties
+      # Convert back to a list of additionalProperties.
       # TODO(b/290215626) If empty, ensure it's removed from proto.
-      cfg_values = [
-          self.cfg_to_additional_property(key, cfg) for key, cfg in cfgs.items()
-      ]
-
-      # Rebuild DeploymentConfigValues and assign back to spec.
-      dcv = self.messages.PolicyControllerHubConfig.DeploymentConfigsValue()
-      dcv.additionalProperties = cfg_values
+      dcv = protos.set_additional_properties(
+          self.messages.PolicyControllerHubConfig.DeploymentConfigsValue(), cfgs
+      )
       spec.policycontroller.policyControllerHubConfig.deploymentConfigs = dcv
 
     return self.merge_specs(specs)
@@ -202,11 +186,6 @@ class Remove(base.UpdateCommand):
       return deployment.update_mem_request(self.messages, deployment_cfg, None)
     if prop == 'replica-count':
       return deployment.update_replica_count(deployment_cfg, None)
-
-  def cfg_to_additional_property(self, key, cfg):
-    return self.messages.PolicyControllerHubConfig.DeploymentConfigsValue.AdditionalProperty(
-        key=key, value=cfg
-    )
 
   def merge_specs(self, specs):
     orig = self.hubclient.ToPyDict(self.GetFeature().membershipSpecs)

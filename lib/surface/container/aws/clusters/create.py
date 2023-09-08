@@ -68,6 +68,7 @@ class Create(base.CreateCommand):
     flags.AddFleetProject(parser)
     flags.AddTags(parser, 'cluster')
     flags.AddAdminUsers(parser)
+    flags.AddAdminGroups(parser)
     flags.AddDescription(parser)
     flags.AddAnnotations(parser)
     flags.AddLogging(parser)

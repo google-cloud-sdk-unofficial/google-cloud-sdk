@@ -42,6 +42,7 @@ class Create(base.Command):
     flags.AddSpokeResourceArg(parser, 'to create', vpc_spoke_only_command=True)
     flags.AddRegionGroup(parser, hide_global_arg=False, hide_region_arg=True)
     flags.AddHubFlag(parser)
+    flags.AddGroupFlag(parser)
     flags.AddVPCNetworkFlag(parser)
     flags.AddDescriptionFlag(parser, 'Description of the spoke to create.')
     flags.AddAsyncFlag(parser)
@@ -59,6 +60,7 @@ class Create(base.Command):
         args, client.messages.Spoke.LabelsValue)
     spoke = client.messages.Spoke(
         hub=args.hub,
+        group=args.group,
         linkedVpcNetwork=client.messages.LinkedVpcNetwork(
             uri=args.vpc_network,
             excludeExportRanges=args.exclude_export_ranges),

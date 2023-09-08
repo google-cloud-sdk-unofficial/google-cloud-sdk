@@ -24,9 +24,8 @@ from googlecloudsdk.command_lib.firestore import flags
 from googlecloudsdk.core import properties
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class Delete(base.DeleteCommand):
+class Delete(base.Command):
   """Deletes a Cloud Firestore backup schedule.
 
   ## EXAMPLES
@@ -41,7 +40,7 @@ class Delete(base.DeleteCommand):
   @staticmethod
   def Args(parser):
     """Set args for gcloud firestore backups schedules delete."""
-    flags.AddDatabaseIdFlag(parser, required=True, hidden=True)
+    flags.AddDatabaseIdFlag(parser, required=True)
     flags.AddBackupScheduleFlag(parser)
 
   def Run(self, args):

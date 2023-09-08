@@ -47,6 +47,7 @@ class GcloudignoreHelp(base.TopicCommand):
   * `gcloud run jobs deploy`
   *  gcloud alpha deploy releases create
   * `gcloud alpha infra-manager deployments apply`
+  * `gcloud alpha functions local deploy`
   * `gcloud alpha run jobs deploy`
   * `gcloud beta run jobs deploy`
 

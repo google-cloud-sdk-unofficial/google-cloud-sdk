@@ -92,7 +92,6 @@ class Failover(base.Command):
       return sql_client.operations.Get(
           sql_messages.SqlOperationsGetRequest(
               project=operation_ref.project,
-              instance=operation_ref.instance,
               operation=operation_ref.operation))
 
     operations.OperationsV1Beta4.WaitForOperation(

@@ -33,6 +33,8 @@ OP_BASE_CMD = 'gcloud beta services operations '
 OP_WAIT_CMD = OP_BASE_CMD + 'wait {0}'
 
 
+# TODO(b/274633761) make command public after preview.
+@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class DisableAlpha(base.SilentCommand):
   """Disable a service for consumption for a project.
@@ -69,6 +71,7 @@ class DisableAlpha(base.SilentCommand):
         the command line after this command. Positional arguments are allowed.
     """
     common_flags.consumer_service_flag(suffix='to disable').AddToParser(parser)
+    common_flags.add_resource_args(parser)
     base.ASYNC_FLAG.AddToParser(parser)
     parser.add_argument(
         '--force',
@@ -95,6 +98,14 @@ class DisableAlpha(base.SilentCommand):
       project = args.project
     else:
       project = properties.VALUES.core.project.Get(required=True)
+    if args.IsSpecified('folder'):
+      folder = args.folder
+    else:
+      folder = None
+    if args.IsSpecified('organization'):
+      organization = args.organization
+    else:
+      organization = None
     for service_name in args.service:
       service_name = arg_parsers.GetServiceNameFromArg(service_name)
 
@@ -107,7 +118,9 @@ class DisableAlpha(base.SilentCommand):
         )
         if not do_disable:
           continue
-      op = serviceusage.RemoveEnableRule(project, service_name, args.force)
+      op = serviceusage.RemoveEnableRule(
+          project, service_name, args.force, folder, organization
+      )
       if op.done:
         continue
       if args.async_:
@@ -118,8 +131,7 @@ class DisableAlpha(base.SilentCommand):
             'completion:\n {0}'.format(cmd)
         )
         continue
-      op = services_util.WaitOperation(op.name, serviceusage.GetOperationV2)
-      services_util.PrintOperation(op)
+    log.status.Print('Operation finished successfully')
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)

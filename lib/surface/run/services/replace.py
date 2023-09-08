@@ -78,7 +78,7 @@ class Replace(base.Command):
     # Flags not specific to any platform
     flags.AddAsyncFlag(parser)
     flags.AddClientNameAndVersionFlags(parser)
-    if cls.ReleaseTrack() == base.ReleaseTrack.ALPHA:
+    if cls.ReleaseTrack() in [base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA]:
       flags.AddDryRunFlag(parser)
     parser.add_argument(
         'FILE',

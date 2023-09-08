@@ -33,13 +33,7 @@ class Cancel(base.UpdateCommand):
 
   *{command}* cancels a Compute Engine instance group manager resize request.
 
-  You can only delete a resize request when it is in the ACCEPTED state.
-
-  Note:
-  Cancelled ResizeRequest is not deleted, the resource will still remain
-  unless it's deleted.
-  Cancel is a subject to race with the provisioning that can start at any
-  moment, and if it does, cancel will fail.
+  You can only cancel a resize request when it is in the ACCEPTED state.
   """
 
   @staticmethod

@@ -18,6 +18,8 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+from typing import Optional
+
 from googlecloudsdk.api_lib.container.gkeonprem import bare_metal_node_pools as apis
 from googlecloudsdk.api_lib.container.gkeonprem import operations
 from googlecloudsdk.calliope import base
@@ -27,6 +29,7 @@ from googlecloudsdk.command_lib.container.bare_metal import constants as bare_me
 from googlecloudsdk.command_lib.container.bare_metal import node_pool_flags as flags
 from googlecloudsdk.command_lib.container.gkeonprem import constants
 from googlecloudsdk.core import log
+from googlecloudsdk.generated_clients.apis.gkeonprem.v1 import gkeonprem_v1_messages as messages
 
 _EXAMPLES = """
 To update a node pool named ``my-node-pool'' in a cluster named
@@ -36,8 +39,8 @@ $ {command} my-node-pool --cluster=my-cluster --location=us-west1
 """
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
-class Update(base.UpdateCommand):
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class UpdateBeta(base.UpdateCommand):
   """Update a node pool in an Anthos cluster on bare metal."""
 
   detailed_help = {'EXAMPLES': _EXAMPLES}
@@ -59,6 +62,61 @@ class Update(base.UpdateCommand):
     flags.AddNodePoolDisplayName(parser)
 
   def Run(self, args):
+    """Runs the update command.
+
+    Args:
+      args: The arguments received from command line.
+
+    Returns:
+      The return value depends on the command arguments. If `--async` is
+      specified, it returns an operation; otherwise, it returns the updated
+      resource. If `--validate-only` is specified, it returns None or any
+      possible error.
+    """
+    node_pool_ref = args.CONCEPTS.node_pool.Parse()
+    client = apis.NodePoolsClient()
+    operation = client.Update(args)
+
+    if args.async_ and not args.IsSpecified('format'):
+      args.format = constants.OPERATIONS_FORMAT
+
+    if args.async_:
+      return operation
+
+    operation_client = operations.OperationsClient()
+    operation_response = operation_client.Wait(operation)
+
+    if not args.validate_only:
+      log.UpdatedResource(node_pool_ref,
+                          'Node pool in Anthos cluster on bare metal',
+                          args.async_)
+    return operation_response
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class UpdateAlpha(base.UpdateCommand):
+  """Update a node pool in an Anthos cluster on bare metal."""
+
+  detailed_help = {'EXAMPLES': _EXAMPLES}
+
+  @staticmethod
+  def Args(parser: parser_arguments.ArgumentInterceptor):
+    """Gathers commandline arguments for the update command.
+
+    Args:
+      parser: The argparse parser to add the flag to.
+    """
+    parser.display_info.AddFormat(
+        bare_metal_constants.BARE_METAL_NODE_POOLS_FORMAT)
+    flags.AddNodePoolResourceArg(parser, 'to update')
+    cluster_flags.AddValidationOnly(parser)
+    flags.AddAllowMissingUpdateNodePool(parser)
+    base.ASYNC_FLAG.AddToParser(parser)
+    flags.AddNodePoolConfig(parser, is_update=True)
+    flags.AddNodePoolDisplayName(parser)
+    flags.AddNodePoolVersion(parser)
+
+  def Run(self, args) -> Optional[messages.Operation]:
     """Runs the update command.
 
     Args:

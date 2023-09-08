@@ -231,6 +231,7 @@ def AddBaseArgs(parser):
   flags.AddMemory(parser)
   flags.AddPasswordPolicyMinLength(parser)
   flags.AddPasswordPolicyComplexity(parser)
+  flags.AddPasswordPolicyDisallowCompromisedCredentials(parser)
   flags.AddPasswordPolicyReuseInterval(parser)
   flags.AddPasswordPolicyDisallowUsernameSubstring(parser)
   flags.AddPasswordPolicyPasswordChangeInterval(parser)
@@ -274,7 +275,6 @@ def AddBetaArgs(parser):
   flags.AddAllocatedIpRangeName(parser)
   labels_util.AddUpdateLabelsFlags(parser, enable_clear=True)
   flags.AddUpgradeSqlNetworkArchitecture(parser)
-  flags.AddPasswordPolicyDisallowCompromisedCredentials(parser)
   flags.AddReplicationLagMaxSecondsForRecreate(parser)
 
 

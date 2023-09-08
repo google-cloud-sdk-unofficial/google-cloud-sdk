@@ -118,6 +118,7 @@ for examples.
   flags.AddAdditionalPodNetworkFlag(parser)
   flags.AddAsyncFlag(parser)
   flags.AddSoleTenantNodeAffinityFileFlag(parser)
+  flags.AddContainerdConfigFlag(parser)
 
 
 def ParseCreateNodePoolOptionsBase(args):
@@ -191,6 +192,7 @@ def ParseCreateNodePoolOptionsBase(args):
       additional_node_network=args.additional_node_network,
       additional_pod_network=args.additional_pod_network,
       sole_tenant_node_affinity_file=args.sole_tenant_node_affinity_file,
+      containerd_config_from_file=args.containerd_config_from_file,
   )
 
 
@@ -370,6 +372,7 @@ class CreateBeta(Create):
         parser, for_node_pool=True, hidden=True)
     flags.AddHostMaintenanceIntervalFlag(
         parser, for_node_pool=True, hidden=True)
+    flags.AddResourceManagerTagsCreate(parser, for_node_pool=True)
 
   def ParseCreateNodePoolOptions(self, args):
     ops = ParseCreateNodePoolOptionsBase(args)
@@ -402,6 +405,7 @@ class CreateBeta(Create):
     ops.enable_best_effort_provision = args.enable_best_effort_provision
     ops.min_provision_nodes = args.min_provision_nodes
     ops.host_maintenance_interval = args.host_maintenance_interval
+    ops.resource_manager_tags = args.resource_manager_tags
     return ops
 
 
@@ -443,6 +447,7 @@ class CreateAlpha(Create):
     ops.host_maintenance_interval = args.host_maintenance_interval
     ops.performance_monitoring_unit = args.performance_monitoring_unit
     ops.autoscaled_rollout_policy = args.autoscaled_rollout_policy
+    ops.resource_manager_tags = args.resource_manager_tags
     return ops
 
   @staticmethod
@@ -501,5 +506,6 @@ class CreateAlpha(Create):
         parser, for_node_pool=True, hidden=True)
     flags.AddPerformanceMonitoringUnit(parser, hidden=True)
     flags.AddAutoscaleRolloutPolicyFlag(parser)
+    flags.AddResourceManagerTagsCreate(parser, for_node_pool=True)
 
 Create.detailed_help = DETAILED_HELP

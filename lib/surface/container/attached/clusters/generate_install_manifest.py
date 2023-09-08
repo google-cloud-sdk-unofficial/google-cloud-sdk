@@ -51,6 +51,7 @@ class Describe(base.Command):
     )
 
     attached_flags.AddPlatformVersion(parser)
+    attached_flags.AddProxyConfig(parser)
     flags.AddOutputFile(parser, 'to store manifest')
 
   def Run(self, args):
