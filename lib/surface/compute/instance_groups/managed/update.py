@@ -405,10 +405,16 @@ class UpdateAlpha(UpdateBeta):
     igm_patch = super(UpdateAlpha, self)._CreateInstanceGroupManagerPatch(
         args, igm_ref, igm_resource, client, holder)
     standby_policy = managed_instance_groups_utils.CreateStandbyPolicy(
-        client.messages, args.standby_pool_initial_delay, args.standby_pool_mode
+        client.messages,
+        args.standby_policy_initial_delay,
+        args.standby_policy_mode,
     )
     if standby_policy:
       igm_patch.standbyPolicy = standby_policy
+    if args.suspended_size:
+      igm_patch.targetSuspendedSize = args.suspended_size
+    if args.stopped_size:
+      igm_patch.targetStoppedSize = args.stopped_size
 
     return igm_patch
 

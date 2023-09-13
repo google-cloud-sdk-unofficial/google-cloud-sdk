@@ -40,9 +40,9 @@ class DataQuality(base.Command):
       'EXAMPLES': """\
 
           To create a data quality scan `data-quality-datascan`
-          in project `test-project` located in `us-central1` with data spec file `data-quality-spec.json`, run:
+          in project `test-project` located in `us-central1` on bigquery resource table `test-table` in dataset `test-dataset` with data spec file `data-quality-spec.json`, run:
 
-            $ {command} data-quality-datascan --project=test-project --location=us-central1 --data-quality-spec-file="data-quality-spec.json"
+            $ {command} data-quality-datascan --project=test-project --location=us-central1 --data-source-resource="//bigquery.googleapis.com/projects/test-project/datasets/test-dataset/tables/test-table" --data-quality-spec-file="data-quality-spec.json"
           """,
   }
 

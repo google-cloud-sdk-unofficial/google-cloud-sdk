@@ -186,6 +186,11 @@ export CLOUDSDK_BQ_PYTHON
 export CLOUDSDK_ENCODING
 export PYTHONIOENCODING="$CLOUDSDK_ENCODING"
 
+# TODO(b/153353954): Delete this when rolled out everywhere.
+case $HOSTNAME in
+  *.corp.google.com|*.c.googlers.com) export CLOUDSDK_INTERNAL_USER_FAST_UPDATE=true;;
+esac
+
 # </cloud-sdk-sh-preamble>
 
 export CLOUDSDK_COMPONENT_MANAGER_DISABLE_UPDATE_CHECK=1

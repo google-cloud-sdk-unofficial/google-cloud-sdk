@@ -63,6 +63,7 @@ if sys.version_info > (3, 8):
   collections_abc = collections.abc
 
 
+
 # Maps supported connection type names to the corresponding property in the
 # connection proto.
 CONNECTION_TYPE_TO_PROPERTY_MAP = {
@@ -144,6 +145,8 @@ def MakeAzureFederatedAppClientAndTenantIdPropertiesJson(
 
   return '{"customerTenantId": "%s", "federatedApplicationClientId" : "%s"}' % (
       tenant_id, federated_app_client_id)
+
+
 
 
 def _PrintFormattedJsonObject(obj, obj_format='json'):
@@ -309,6 +312,14 @@ def _FormatTags(tags):
   # When Python 3.6 is supported in client libraries use f-strings
   result_lines = [
       '{}:{}'.format(tag.get('tagKey'), tag.get('tagValue')) for tag in tags
+  ]
+  return '\n'.join(result_lines)
+
+
+def _FormatResourceTags(tags):
+  """Format a resource's tags for printing."""
+  result_lines = [
+      '{}:{}'.format(key, value) for key, value in tags.items()
   ]
   return '\n'.join(result_lines)
 
@@ -902,7 +913,7 @@ class BigqueryServiceError(BigqueryError):
       job_ref: Optional JobReference, if this error was encountered while
         processing a job.
     """
-    super(BigqueryServiceError, self).__init__(message, *args, **kwds)
+    super().__init__(message, *args, **kwds)
     self.error = error
     self.error_list = error_list
     self.job_ref = job_ref
@@ -1003,7 +1014,7 @@ class BigqueryModel(model.JsonModel):
       trace=None,
       quota_project_id=None,
       **kwds):
-    super(BigqueryModel, self).__init__(**kwds)
+    super().__init__(**kwds)
     self.trace = trace
     self.quota_project_id = quota_project_id
 
@@ -1016,8 +1027,7 @@ class BigqueryModel(model.JsonModel):
     if self.quota_project_id:
       headers['x-goog-user-project'] = self.quota_project_id
 
-    return super(BigqueryModel, self).request(headers, path_params,
-                                              query_params, body_value)
+    return super().request(headers, path_params, query_params, body_value)
 
   # pylint: enable=g-bad-name
 
@@ -1025,7 +1035,7 @@ class BigqueryModel(model.JsonModel):
   def response(self, resp, content):
     """Convert the response wire format into a Python object."""
     logging.info('Response from server with status code: %s', resp['status'])
-    return super(BigqueryModel, self).response(resp, content)
+    return super().response(resp, content)
 
   # pylint: enable=g-bad-name
 
@@ -1039,7 +1049,7 @@ class BigqueryHttp(http_request.HttpRequest):
       *args,
       **kwds
   ):
-    super(BigqueryHttp, self).__init__(*args, **kwds)
+    super().__init__(*args, **kwds)
     logging.info('URL being requested from BQ client: %s %s', kwds['method'],
                  args[2])
     self._model = bigquery_model
@@ -1087,7 +1097,7 @@ class BigqueryHttp(http_request.HttpRequest):
   def execute(self, **kwds):  # pylint: disable=g-bad-name
 
       try:
-        return super(BigqueryHttp, self).execute(**kwds)
+        return super().execute(**kwds)
       except googleapiclient.errors.HttpError as e:
         # TODO(user): Remove this when apiclient supports logging
         # of error responses.
@@ -1163,7 +1173,7 @@ class JobIdGeneratorIncrementing(JobIdGenerator):
   """Generates job ids that increment each time we're asked."""
 
   def __init__(self, inner):
-    super(JobIdGeneratorIncrementing, self).__init__()
+    super().__init__()
     self._inner = inner
     self._retry = 0
 
@@ -1172,7 +1182,7 @@ class JobIdGeneratorIncrementing(JobIdGenerator):
     return '%s_%d' % (self._inner.Generate(config), self._retry)
 
 
-class TransferScheduleArgs(object):
+class TransferScheduleArgs:
   """Arguments to customize data transfer schedule."""
 
   def __init__(self,
@@ -1213,7 +1223,7 @@ class TransferScheduleArgs(object):
     return time_str or None
 
 
-class BigqueryClient(object):
+class BigqueryClient:
   """Class encapsulating interaction with the BigQuery service."""
 
   def __init__(self, **kwds):
@@ -1245,7 +1255,7 @@ class BigqueryClient(object):
     Raises:
       ValueError: if keywords are missing or incorrectly specified.
     """
-    super(BigqueryClient, self).__init__()
+    super().__init__()
     for key, value in six.iteritems(kwds):
       setattr(self, key, value)
     self._apiclient = None
@@ -1349,7 +1359,7 @@ class BigqueryClient(object):
       discovery_document = self.discovery_document
       logging.info(
           'Skipping local discovery document load since discovery_document has'
-          ' a value'
+          ' a value: %s', discovery_document
       )
     elif discovery_url is not None:
       logging.info(
@@ -3315,6 +3325,8 @@ class BigqueryClient(object):
         formatter.AddColumns(('Labels',))
         if 'encryptionConfiguration' in object_info:
           formatter.AddColumns(('kmsKeyName',))
+        if 'resourceTags' in object_info:
+          formatter.AddColumns(('Tags',))
       if print_format == 'view':
         formatter.AddColumns(('Query',))
       if print_format == 'materialized_view':
@@ -3900,6 +3912,14 @@ class BigqueryClient(object):
         source_dataset = result['linkedDatasetSource']['sourceDataset']
         result['Source dataset'] = str(
             ApiClientHelper.DatasetReference.Create(**source_dataset))
+      if result['type'] == 'EXTERNAL' and 'externalDatasetReference' in result:
+        external_dataset_reference = result['externalDatasetReference']
+        if 'external_source' in external_dataset_reference:
+          result['External source'] = external_dataset_reference[
+              'external_source'
+          ]
+        if 'connection' in external_dataset_reference:
+          result['Connection'] = external_dataset_reference['connection']
     if 'maxTimeTravelHours' in result:
       result['Max time travel (Hours)'] = result['maxTimeTravelHours']
     return result
@@ -3947,6 +3967,8 @@ class BigqueryClient(object):
           int(result['expirationTime']) / 1000)
     if 'labels' in result:
       result['Labels'] = _FormatLabels(result['labels'])
+    if 'resourceTags' in result:
+      result['Tags'] = _FormatResourceTags(result['resourceTags'])
     if 'timePartitioning' in result:
       if 'type' in result['timePartitioning']:
         result['Time Partitioning'] = result['timePartitioning']['type']
@@ -5026,8 +5048,9 @@ class BigqueryClient(object):
       data_location=None,
       labels=None,
       default_kms_key=None,
-      source_dataset_reference=None
-      ,
+      source_dataset_reference=None,
+      external_source=None,
+      connection_id=None,
       max_time_travel_hours=None,
       storage_billing_model=None,
   ):
@@ -5053,6 +5076,8 @@ class BigqueryClient(object):
         request.
       source_dataset_reference: An optional ApiClientHelper.DatasetReference
         that will be the source of this linked dataset. #
+      external_source: External source that backs this dataset.
+      connection_id: Connection used for accessing the external_source.
       max_time_travel_hours: Optional. Define the max time travel in hours. The
         value can be from 48 to 168 hours (2 to 7 days). The default value is
         168 hours if this is not set.
@@ -5063,6 +5088,9 @@ class BigqueryClient(object):
       TypeError: if reference is not an ApiClientHelper.DatasetReference
         or if source_dataset_reference is provided but is not an
         ApiClientHelper.DatasetReference.
+        or if both external_dataset_reference and source_dataset_reference
+        are provided or if not all required arguments for external database is
+        provided.
       BigqueryDuplicateError: if reference exists and ignore_existing
          is False.
     """
@@ -5097,6 +5125,15 @@ class BigqueryClient(object):
           'sourceDataset':
               BigqueryClient.ConstructObjectInfo(source_dataset_reference)
               ['datasetReference']
+      }
+    # externalDatasetReference can only be specified in case of externals
+    # datasets. This option cannot be used in case of regular dataset or linked
+    # datasets.
+    # So we only set this if an external_source is specified.
+    if external_source:
+      body['externalDatasetReference'] = {
+          'externalSource': external_source,
+          'connection': connection_id,
       }
 
     if max_time_travel_hours is not None:
@@ -5135,7 +5172,8 @@ class BigqueryClient(object):
       require_partition_filter=None,
       destination_kms_key=None,
       location=None,
-      table_constraints=None):
+      table_constraints=None,
+      resource_tags=None):
     """Create a table corresponding to TableReference.
 
     Args:
@@ -5178,6 +5216,7 @@ class BigqueryClient(object):
       location: an optional location for which to create tables or views.
       table_constraints: an optional primary key and foreign key configuration
         for the table.
+      resource_tags: an optional dict of tags to attach to the table.
 
     Raises:
       TypeError: if reference is not a TableReference.
@@ -6308,7 +6347,7 @@ class BigqueryClient(object):
       result = self.WaitJob(job_reference=job_reference)
     return result
 
-  class WaitPrinter(object):
+  class WaitPrinter:
     """Base class that defines the WaitPrinter interface."""
 
     def Print(self, job_id, wait_time, status):
@@ -7036,7 +7075,7 @@ class BigqueryClient(object):
 
 
 
-class _TableReader(object):
+class _TableReader:
   """Base class that defines the TableReader interface.
 
   _TableReaders provide a way to read paginated rows and schemas from a table.
@@ -7289,7 +7328,7 @@ class _QueryTableReader(_TableReader):
     return (rows, page_token, schema)
 
 
-class ApiClientHelper(object):
+class ApiClientHelper:
   """Static helper methods and classes not provided by the discovery client."""
 
   def __init__(self, *unused_args, **unused_kwds):

@@ -20,7 +20,6 @@ from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.cloudbuild import cloudbuild_util
 from googlecloudsdk.calliope import base
-from googlecloudsdk.command_lib.container.fleet.build import utils
 from googlecloudsdk.command_lib.container.fleet.features import base as hubbase
 from googlecloudsdk.core import exceptions
 from googlecloudsdk.core import properties
@@ -177,15 +176,6 @@ class DescribeAlpha(Describe):
     if wp.privatePoolV1Config is not None:
       wp_status[
           'TYPE'] = cloudbuild_util.WorkerpoolTypes.PRIVATE.name.capitalize()
-    elif wp.hybridPoolConfig is not None:
-      feature = self.GetFeature(v1alpha1=True)
-      feature_state_memberships = utils.GetFeatureStateMemberships(feature)
-      details = feature_state_memberships[wp.hybridPoolConfig.membership]
-      wp_status.update({
-          'TYPE': cloudbuild_util.WorkerpoolTypes.HYBRID.name.capitalize(),
-          'HWP_DESCRIPTION': details.description,
-          'HWP_STATUS': details.code,
-      })
     else:
       wp_status[
           'TYPE'] = cloudbuild_util.WorkerpoolTypes.UNKNOWN.name.capitalize()

@@ -13,7 +13,7 @@ _USE_GCE_SERVICE_ACCOUNT = flags.DEFINE_boolean(
     False,
     'Only for the gcloud wrapper use.'
 )
-_CREDENTIAL_FILE = flags.DEFINE_string(
+CREDENTIAL_FILE = flags.DEFINE_string(
     'credential_file',
     os.path.join(
         os.path.expanduser('~'),

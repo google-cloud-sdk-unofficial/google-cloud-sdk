@@ -104,6 +104,12 @@ class Export(base.CreateCommand):
         parser, 'image export',
         daisy_utils.EXPORT_ROLES_FOR_COMPUTE_SERVICE_ACCOUNT)
 
+    daisy_utils.AddCloudBuildServiceAccountArg(
+        parser,
+        'image export',
+        daisy_utils.EXPORT_ROLES_FOR_CLOUDBUILD_SERVICE_ACCOUNT,
+    )
+
     daisy_utils.AddCommonDaisyArgs(
         parser,
         operation='an export',

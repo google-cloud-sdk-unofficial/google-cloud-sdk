@@ -373,6 +373,7 @@ class CreateBeta(Create):
     flags.AddHostMaintenanceIntervalFlag(
         parser, for_node_pool=True, hidden=True)
     flags.AddResourceManagerTagsCreate(parser, for_node_pool=True)
+    flags.AddSecondaryBootDisksArgs(parser, hidden=True)
 
   def ParseCreateNodePoolOptions(self, args):
     ops = ParseCreateNodePoolOptionsBase(args)
@@ -406,6 +407,7 @@ class CreateBeta(Create):
     ops.min_provision_nodes = args.min_provision_nodes
     ops.host_maintenance_interval = args.host_maintenance_interval
     ops.resource_manager_tags = args.resource_manager_tags
+    ops.secondary_boot_disks = args.secondary_boot_disk
     return ops
 
 
@@ -448,6 +450,7 @@ class CreateAlpha(Create):
     ops.performance_monitoring_unit = args.performance_monitoring_unit
     ops.autoscaled_rollout_policy = args.autoscaled_rollout_policy
     ops.resource_manager_tags = args.resource_manager_tags
+    ops.secondary_boot_disks = args.secondary_boot_disk
     return ops
 
   @staticmethod
@@ -507,5 +510,6 @@ class CreateAlpha(Create):
     flags.AddPerformanceMonitoringUnit(parser, hidden=True)
     flags.AddAutoscaleRolloutPolicyFlag(parser)
     flags.AddResourceManagerTagsCreate(parser, for_node_pool=True)
+    flags.AddSecondaryBootDisksArgs(parser, hidden=True)
 
 Create.detailed_help = DETAILED_HELP

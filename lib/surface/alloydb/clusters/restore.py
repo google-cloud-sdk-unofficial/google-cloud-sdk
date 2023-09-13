@@ -60,7 +60,10 @@ class Restore(base.RestoreCommand):
     kms_resource_args.AddKmsKeyResourceArg(
         parser,
         'cluster',
-        permission_info="The 'AlloyDB Service Agent' service account must hold permission 'Cloud KMS CryptoKey Encrypter/Decrypter'"
+        permission_info=(
+            "The 'AlloyDB Service Agent' service account must hold permission"
+            " 'Cloud KMS CryptoKey Encrypter/Decrypter'"
+        ),
     )
 
   @staticmethod

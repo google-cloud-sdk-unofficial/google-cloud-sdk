@@ -4,7 +4,7 @@
  "id": "bigquery:v2",
  "name": "bigquery",
  "version": "v2",
- "revision": "20230815",
+ "revision": "20230905",
  "title": "BigQuery API",
  "description": "A data platform for customers to create, manage, share and query data.",
  "ownerDomain": "google.com",
@@ -1964,7 +1964,7 @@
     },
     "ddlTargetDataset": {
      "$ref": "DatasetReference",
-     "description": "[Output only] The DDL target dataset. Present only for CREATE/ALTER/DROP SCHEMA queries."
+     "description": "[Output only] The DDL target dataset. Present only for CREATE/ALTER/DROP/UNDROP SCHEMA queries."
     },
     "ddlTargetRoutine": {
      "$ref": "RoutineReference",
@@ -2501,6 +2501,10 @@
     "dryRun": {
      "type": "boolean",
      "description": "[Optional] If set to true, BigQuery doesn't run the job. Instead, if the query is valid, BigQuery returns statistics about the job such as how many bytes would be processed. If the query is invalid, an error returns. The default value is false."
+    },
+    "jobCreationMode": {
+     "type": "string",
+     "description": "This field is for internal use only."
     },
     "kind": {
      "type": "string",
@@ -6068,7 +6072,7 @@
      "description": "Required. The type of routine.",
      "type": "string",
      "enumDescriptions": [
-      "",
+      "Default value.",
       "Non-built-in persistent scalar function.",
       "Stored procedure.",
       "Non-built-in persistent TVF.",
@@ -6098,7 +6102,7 @@
      "description": "Optional. Defaults to \"SQL\" if remote_function_options field is absent, not set otherwise.",
      "type": "string",
      "enumDescriptions": [
-      "",
+      "Default value.",
       "SQL language.",
       "JavaScript language.",
       "Python language.",
@@ -6171,10 +6175,10 @@
      "$ref": "SparkOptions"
     },
     "dataGovernanceType": {
-     "description": "Optional. Data governance specific option, if the value is DATA_MASKING, the function will be validated as masking functions.",
+     "description": "Optional. If set to `DATA_MASKING`, the function is validated and made available as a masking function. For more information, see [Create custom masking routines](https://cloud.google.com/bigquery/docs/user-defined-functions#custom-mask).",
      "type": "string",
      "enumDescriptions": [
-      "Unspecified data governance type.",
+      "The data governance type is unspecified.",
       "The data governance type is data masking."
      ],
      "enum": [
@@ -6197,7 +6201,7 @@
      "description": "Optional. Defaults to FIXED_TYPE.",
      "type": "string",
      "enumDescriptions": [
-      "",
+      "Default value.",
       "The argument is a variable with fully specified type, which can be a struct or an array, but not a table.",
       "The argument is any type, including struct or array, but not a table. To be added: FIXED_TABLE, ANY_TABLE"
      ],
@@ -6211,7 +6215,7 @@
      "description": "Optional. Specifies whether the argument is input or output. Can be set for procedures only.",
      "type": "string",
      "enumDescriptions": [
-      "",
+      "Default value.",
       "The argument is input-only.",
       "The argument is output-only.",
       "The argument is both an input and an output."
@@ -6334,6 +6338,7 @@
   },
   "ListRoutinesResponse": {
    "id": "ListRoutinesResponse",
+   "description": "Describes the format of a single result page when listing routines.",
    "type": "object",
    "properties": {
     "routines": {
@@ -6649,6 +6654,11 @@
        "description": "Dataset ID of the requested dataset",
        "required": true,
        "location": "path"
+      },
+      "datasetView": {
+       "type": "string",
+       "description": "Specifies the view that determines which dataset information is returned. By default, metadata and ACL information are returned. Allowed values: METADATA, ACL, FULL.",
+       "location": "query"
       },
       "projectId": {
        "type": "string",

@@ -435,10 +435,16 @@ class CreateAlpha(CreateBeta):
                                        args, group_ref, template_ref, client,
                                        holder)
     standby_policy = managed_instance_groups_utils.CreateStandbyPolicy(
-        client.messages, args.standby_pool_initial_delay, args.standby_pool_mode
+        client.messages,
+        args.standby_policy_initial_delay,
+        args.standby_policy_mode,
     )
     if standby_policy:
       instance_group_manager.standbyPolicy = standby_policy
+    if args.suspended_size:
+      instance_group_manager.targetSuspendedSize = args.suspended_size
+    if args.stopped_size:
+      instance_group_manager.targetStoppedSize = args.stopped_size
     return instance_group_manager
 
 

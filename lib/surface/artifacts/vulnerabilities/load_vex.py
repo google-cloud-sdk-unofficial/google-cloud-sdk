@@ -72,7 +72,7 @@ To load a CSAF security advisory file given an artifact with a tag and a file on
     self.ca_messages = self.ca_client.MESSAGES_MODULE
     uri = args.uri
     uri = vex_util.RemoveHTTPS(uri)
-    image, version = docker_util.DockerUrlToVersion(uri)
+    image, version = docker_util.DockerUrlToImage(uri)
     project = args.project
     if project is None:
       project = image.project

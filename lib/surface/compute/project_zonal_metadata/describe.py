@@ -33,6 +33,7 @@ class Describe(base.DescribeCommand):
   detailed_help = {'EXAMPLES': """
         To describe the project zonal metadata in the zone ``us-central1-a''
         for the project ``my-gcp-project'', run:
+
           $ {command} --zone=us-central1-a --project=my-gcp-project
       """}
 

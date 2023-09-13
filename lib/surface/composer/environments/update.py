@@ -54,7 +54,7 @@ class Update(base.Command):
   _support_autoscaling = True
   _support_composer3flags = False
   _support_triggerer = False
-  _support_maintenance_window = False
+  _support_maintenance_window = True
   _support_environment_size = True
   _support_airflow_database_retention = False
   _support_cloud_data_lineage_integration = False
@@ -89,6 +89,8 @@ class Update(base.Command):
           Update.update_type_group.add_argument_group(hidden=True))
 
     flags.AddScheduledSnapshotFlagsToGroup(Update.update_type_group)
+
+    flags.AddMaintenanceWindowFlagsGroup(Update.update_type_group)
 
   def _ConstructPatch(self, env_ref, args, support_environment_upgrades=False):
     env_obj = environments_api_util.Get(
@@ -313,6 +315,8 @@ class Update(base.Command):
 
     possible_args = {
         'support-web-server-plugins': args.support_web_server_plugins,
+        'enable-private-builds-only': args.enable_private_builds_only,
+        'disable-private-builds-only': args.disable_private_builds_only,
         'dag-processor-cpu': args.dag_processor_cpu,
         'dag-processor-memory': args.dag_processor_memory,
         'dag-processor-count': args.dag_processor_count,
@@ -370,6 +374,10 @@ class Update(base.Command):
 
     if args.support_web_server_plugins is not None:
       params['support_web_server_plugins'] = args.support_web_server_plugins
+    if args.enable_private_builds_only or args.disable_private_builds_only:
+      params['support_private_builds_only'] = (
+          True if args.enable_private_builds_only else False
+      )
     if args.enable_private_environment is not None:
       params['enable_private_environment'] = args.enable_private_environment
     if args.disable_private_environment is not None:
@@ -481,8 +489,6 @@ class UpdateBeta(Update):
     # Environment upgrade arguments
     UpdateBeta.support_environment_upgrades = True
     flags.AddEnvUpgradeFlagsToGroup(Update.update_type_group)
-    flags.AddMaintenanceWindowFlagsGroup(Update.update_type_group)
-
     flags.AddCloudDataLineageIntegrationUpdateFlagsToGroup(
         Update.update_type_group)
     flags.AddComposer3FlagsToGroup(Update.update_type_group)

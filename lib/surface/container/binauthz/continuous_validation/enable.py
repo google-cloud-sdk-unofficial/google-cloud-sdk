@@ -26,7 +26,7 @@ from googlecloudsdk.calliope import base
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Enable(base.UpdateCommand):
-  """Disable Binary Authorization Continuous Validation for the project.
+  """Enable Binary Authorization Continuous Validation for the project.
 
     ## EXAMPLES
 

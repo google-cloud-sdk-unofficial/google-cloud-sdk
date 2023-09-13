@@ -70,6 +70,14 @@ class Create(base.CreateCommand):
     container_flags.AddMaintenanceWindowStart(parser)
     container_flags.AddControlPlaneKMSKey(parser)
     container_flags.AddLROMaximumTimeout(parser)
+    container_flags.AddSystemAddonsConfig(parser)
+    container_flags.AddExternalLbIpv4AddressPools(parser)
+    container_flags.AddControlPlaneNodeLocation(parser)
+    container_flags.AddControlPlaneNodeCount(parser)
+    container_flags.AddControlPlaneMachineFilter(parser)
+    container_flags.AddControlPlaneSharedDeploymentPolicy(parser)
+    container_flags.AddReleaseChannel(parser)
+    container_flags.AddVersion(parser)
     base.ASYNC_FLAG.AddToParser(parser)
 
   def Run(self, args):
@@ -133,11 +141,4 @@ class CreateAlpha(Create):
     Create.Args(parser)
     container_flags.AddClusterIPV6CIDR(parser)
     container_flags.AddServicesIPV6CIDR(parser)
-    container_flags.AddSystemAddonsConfig(parser)
-    container_flags.AddExternalLbIpv4AddressPools(parser)
-    container_flags.AddControlPlaneNodeLocation(parser)
-    container_flags.AddControlPlaneNodeCount(parser)
-    container_flags.AddControlPlaneMachineFilter(parser)
-    container_flags.AddControlPlaneSharedDeploymentPolicy(parser)
-    container_flags.AddReleaseChannel(parser)
-    container_flags.AddVersion(parser)
+

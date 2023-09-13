@@ -58,7 +58,8 @@ class Create(base.CreateCommand):
     storagepool_ref = args.CONCEPTS.storage_pool.Parse()
     client = storagepools_client.StoragePoolsClient(self._RELEASE_TRACK)
     service_level = storagepools_flags.GetStoragePoolServiceLevelArg(
-        client.messages).GetEnumForChoice(args.service_level)
+        client.messages, self._RELEASE_TRACK
+    ).GetEnumForChoice(args.service_level)
     labels = labels_util.ParseCreateArgs(
         args, client.messages.StoragePool.LabelsValue)
     capacity_in_gib = args.capacity >> 30
@@ -107,4 +108,3 @@ class CreateAlpha(CreateBeta):
   @staticmethod
   def Args(parser):
     _CommonArgs(parser, CreateAlpha._RELEASE_TRACK)
-

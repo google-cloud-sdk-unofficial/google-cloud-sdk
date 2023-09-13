@@ -3,7 +3,6 @@
 # Copyright 2012 Google Inc. All Rights Reserved.
 """Python script for interacting with BigQuery."""
 
-
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
@@ -4281,6 +4280,16 @@ class _Make(BigqueryCmd):
         'When set to a dataset reference, creates a Linked Dataset pointing to '
         'the source dataset.',
         flag_values=fv)
+    flags.DEFINE_string(
+        'external_source',
+        None,
+        (
+            'External source that backs this dataset. Currently only AWS Glue'
+            ' databases are supported (format'
+            ' aws-glue://<AWS_ARN_OF_GLUE_DATABASE>)'
+        ),
+        flag_values=fv,
+    )
     flags.DEFINE_boolean(
         'parquet_enum_as_string',
         False, 'Infer Parquet ENUM logical type as STRING '
@@ -4359,6 +4368,10 @@ class _Make(BigqueryCmd):
           new_dataset.newview
       bq mk -d --data_location=EU new_dataset
       bq mk -d --source_dataset=src_dataset new_dataset (requires allowlisting)
+      bq mk -d
+        --external_source=aws-glue://<aws_arn_of_glue_database>
+        --connection_id=<connection>
+        new_dataset
       bq mk --transfer_config --target_dataset=dataset --display_name=name
           -p='{"param":"value"}' --data_source=source
           --schedule_start_time={schedule_start_time}
@@ -4615,6 +4628,15 @@ class _Make(BigqueryCmd):
       else:
         source_dataset_reference = None
 
+      if self.external_source and self.source_dataset:
+        raise app.UsageError(
+            'Cannot specify both external_source and linked dataset.'
+        )
+
+      if self.external_source and not self.connection_id:
+        raise app.UsageError(
+            'connection_id is required when external_source is specified.'
+        )
 
       client.CreateDataset(
           reference,
@@ -4625,8 +4647,9 @@ class _Make(BigqueryCmd):
           data_location=location,
           default_kms_key=self.default_kms_key,
           labels=labels,
-          source_dataset_reference=source_dataset_reference
-          ,
+          source_dataset_reference=source_dataset_reference,
+          external_source=self.external_source,
+          connection_id=self.connection_id,
           max_time_travel_hours=self.max_time_travel_hours,
           storage_billing_model=self.storage_billing_model,
       )
@@ -4721,6 +4744,7 @@ class _Make(BigqueryCmd):
       clustering = _ParseClustering(self.clustering_fields)
       range_partitioning = _ParseRangePartitioning(self.range_partitioning)
       table_constraints = None
+      resource_tags = None
       client.CreateTable(
           reference,
           ignore_existing=True,
@@ -4742,7 +4766,8 @@ class _Make(BigqueryCmd):
           range_partitioning=range_partitioning,
           require_partition_filter=self.require_partition_filter,
           destination_kms_key=(self.destination_kms_key),
-          table_constraints=table_constraints)
+          table_constraints=table_constraints,
+          resource_tags=resource_tags)
       print("%s '%s' successfully created." % (
           object_name,
           reference,
@@ -5623,6 +5648,7 @@ class _Update(BigqueryCmd):
       reference = TransferConfigReference(
           transferConfigName=formatted_identifier)
     elif self.connection or self.connection_credential:
+      kms_key = None
       reference = client.GetConnectionReference(
           identifier=identifier, default_location=FLAGS.location)
       if self.connection_type == 'AWS' and self.iam_role_id:
@@ -5638,8 +5664,13 @@ class _Update(BigqueryCmd):
         elif self.tenant_id:
           self.properties = bigquery_client.MakeTenantIdPropertiesJson(
               self.tenant_id)
-      if self.properties or self.display_name or self.description \
-          or self.connection_credential:
+      if (
+          self.properties or
+          self.display_name or
+          self.description or
+          self.connection_credential or
+          kms_key is not None
+      ):
         updated_connection = client.UpdateConnection(
             reference=reference,
             display_name=self.display_name,

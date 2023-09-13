@@ -139,11 +139,7 @@ class Create(base.CreateCommand):
       loading_msg = 'this operation may take several minutes'
     # destination Http Endpoint
     elif args.IsSpecified('destination_http_endpoint_uri'):
-      destination_http_endpoint_forward_dns_requests = (
-          args.destination_http_endpoint_forward_dns_requests or False
-      )
       destination_message = client.BuildHTTPEndpointDestinationMessage(
-          destination_http_endpoint_forward_dns_requests,
           args.destination_http_endpoint_uri,
           args.network_attachment,
       )

@@ -81,8 +81,8 @@ class List(base.ListCommand):
           table(
             clusterName:label=NAME,
             config.gceClusterConfig.yesno(yes=GCE, no=GKE):label=PLATFORM,
-            config.workerConfig.numInstances:label=WORKER_COUNT,
-            config.secondaryWorkerConfig.numInstances:label=PREEMPTIBLE_WORKER_COUNT,
+            config.workerConfig.numInstances:label=PRIMARY_WORKER_COUNT,
+            config.secondaryWorkerConfig.numInstances:label=SECONDARY_WORKER_COUNT,
             status.state:label=STATUS,
             config.firstof(
                 gkeClusterConfig.namespacedGkeDeploymentTarget.targetGkeCluster,

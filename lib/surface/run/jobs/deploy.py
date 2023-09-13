@@ -140,7 +140,7 @@ class Deploy(base.Command):
       required_apis.append('artifactregistry.googleapis.com')
       required_apis.append('cloudbuild.googleapis.com')
     already_activated_services = False
-    if self.ReleaseTrack() in [base.ReleaseTrack.ALPHA]:
+    if self.ReleaseTrack() in [base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA]:
       already_activated_services = api_enabler.CheckAndEnableApis(
           properties.VALUES.core.project.Get(), required_apis
       )

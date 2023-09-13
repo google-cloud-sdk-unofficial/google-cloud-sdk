@@ -8,8 +8,35 @@
   request:
     collection: bigtableadmin.projects.instances.tables.views
     method: create
+    modify_request_hooks:
+    - googlecloudsdk.api_lib.bigtable.views:ModifyCreateViewRequest
 
   arguments:
     resource:
       help_text: Cloud Bigtable view to create.
       spec: !REF googlecloudsdk.command_lib.bigtable.resources:view
+    params:
+    - arg_name: definition-file
+      api_field: view
+      type: "googlecloudsdk.calliope.arg_parsers:YAMLFileContents:"
+      help_text: |
+        Path to a JSON or YAML file containing a valid view protobuf.
+
+        The 'name' field is ignored. The name is deduced from the other command line arguments.
+
+        Example:
+        {
+          "subsetView":
+          {
+            "rowPrefixes": ["cm93MQ=="],
+            "familySubsets":
+            {
+              "column_family_name":
+              {
+                "qualifiers":["Y29sdW1uX2E="],
+                "qualifierPrefixes":["Y29sdW1uX3ByZWZpeDE="]
+              }
+            }
+          },
+          "deletionProtection": true
+        }

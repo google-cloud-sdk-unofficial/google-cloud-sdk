@@ -301,6 +301,12 @@ class Import(base.CreateCommand):
         parser, 'image import',
         daisy_utils.IMPORT_ROLES_FOR_COMPUTE_SERVICE_ACCOUNT)
 
+    daisy_utils.AddCloudBuildServiceAccountArg(
+        parser,
+        'image import',
+        daisy_utils.IMPORT_ROLES_FOR_CLOUDBUILD_SERVICE_ACCOUNT,
+    )
+
   @classmethod
   def _GetComputeApiHolder(cls, no_http=False):
     return base_classes.ComputeApiHolder(cls.ReleaseTrack(), no_http)

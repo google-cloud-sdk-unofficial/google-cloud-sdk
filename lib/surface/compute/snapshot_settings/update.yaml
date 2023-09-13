@@ -1,4 +1,4 @@
-- release_tracks: [ALPHA]
+- release_tracks: [ALPHA, BETA]
   help_text:
     brief: "Update snapshot settings."
     description: "Update the snapshot settings of a project."
@@ -20,15 +20,25 @@
       $ {command} --storage-location-policy=specific-locations --storage-location-names=us-west1
 
   request:
-    collection: compute.snapshotSettings
-    api_version: alpha
-    modify_request_hooks:
-    # `storage-location-names` cannot be validated with an argument processor for some reason,
-    # so we do it in a request modification hook
-    - googlecloudsdk.api_lib.compute.snapshot_settings.modify_request_hooks:validate_single_location
+    ALPHA:
+      api_version: alpha
+      # The reason hooks are duplicated is because there isn't really a great way of reading the
+      # request version defined here from within the hooks. Instead, we duplicate them, and pass the
+      # version explicitly.
+      modify_request_hooks:
+      # `storage-location-names` cannot be validated with an argument processor for some reason,
+      # so we do it in a request modification hook
+      - googlecloudsdk.api_lib.compute.snapshot_settings.modify_request_hooks:validate_single_location
+      - googlecloudsdk.api_lib.compute.snapshot_settings.modify_request_hooks:maybe_add_locations:version=alpha
+      - googlecloudsdk.api_lib.compute.snapshot_settings.modify_request_hooks:adjust_storage_location_update_mask
+    BETA:
+      api_version: beta
+      modify_request_hooks:
+      - googlecloudsdk.api_lib.compute.snapshot_settings.modify_request_hooks:validate_single_location
+      - googlecloudsdk.api_lib.compute.snapshot_settings.modify_request_hooks:maybe_add_locations:version=beta
+      - googlecloudsdk.api_lib.compute.snapshot_settings.modify_request_hooks:adjust_storage_location_update_mask
 
-    - googlecloudsdk.api_lib.compute.snapshot_settings.modify_request_hooks:maybe_add_locations
-    - googlecloudsdk.api_lib.compute.snapshot_settings.modify_request_hooks:adjust_storage_location_update_mask
+    collection: compute.snapshotSettings
 
   output:
     format: yaml(storageLocation.policy, storageLocation.locations.list(show="keys"))

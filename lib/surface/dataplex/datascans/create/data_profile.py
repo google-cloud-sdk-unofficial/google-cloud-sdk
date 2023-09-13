@@ -40,9 +40,9 @@ class DataProfile(base.Command):
       'EXAMPLES': """\
 
           To create a data profile scan `data-profile-datascan`
-          in project `test-project` located in `us-central1`, run:
+          in project `test-project` located in `us-central1` on bigquery resource table `test-table` in dataset `test-dataset`, run:
 
-            $ {command} data-profile-datascan --project=test-project --location=us-central1
+            $ {command} data-profile-datascan --project=test-project --location=us-central1 --data-source-resource="//bigquery.googleapis.com/projects/test-project/datasets/test-dataset/tables/test-table"
 
           """,
   }

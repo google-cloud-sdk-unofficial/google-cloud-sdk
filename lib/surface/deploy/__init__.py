@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-"""The command group for Google Cloud Deploy."""
+"""The command group for Cloud Deploy."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -25,7 +25,7 @@ from googlecloudsdk.calliope import base
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
                     base.ReleaseTrack.GA)
 class Deploy(base.Group):
-  """Create and manage Google Cloud Deploy resources."""
+  """Create and manage Cloud Deploy resources."""
   category = base.CI_CD_CATEGORY
 
   def Filter(self, context, args):

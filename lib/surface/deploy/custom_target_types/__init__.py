@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""The Custom Target Type command group for Google Cloud Deploy."""
+"""The Custom Target Type command group for Cloud Deploy."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -24,6 +24,6 @@ from googlecloudsdk.calliope import base
 @base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class CustomTargetTypes(base.Group):
-  """Create and manage Custom Target Type resources for Google Cloud Deploy."""
+  """Create and manage Custom Target Type resources for Cloud Deploy."""
 
   category = base.CI_CD_CATEGORY

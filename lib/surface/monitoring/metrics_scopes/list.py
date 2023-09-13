@@ -20,12 +20,13 @@ from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.monitoring import metrics_scopes
 from googlecloudsdk.calliope import base
-from googlecloudsdk.command_lib.projects import flags
+from googlecloudsdk.command_lib.monitoring import flags
+from googlecloudsdk.command_lib.monitoring import util as monitoring_util
 from googlecloudsdk.command_lib.projects import util as command_lib_util
 
 
 class List(base.ListCommand):
-  """List the metrics scopes monitoring the specified project.
+  """List the metrics scopes monitoring the specified monitored resource container.
 
   This command can fail for the following reasons:
   * The projects specified do not exist.
@@ -38,15 +39,18 @@ class List(base.ListCommand):
   ## EXAMPLES
   To list the metrics scopes monitoring MY-PROJECT-ID
 
-  $ {command} MY-PROJECT-ID
+  $ {command} projects/MY-PROJECT-ID
   """
 
   @staticmethod
   def Args(parser):
-    flags.GetProjectIDNumberFlag('list').AddToParser(parser)
+    flags.GetMonitoredResourceContainerNameFlag('list').AddToParser(parser)
 
   def Run(self, args):
     client = metrics_scopes.MetricsScopeClient()
-    project_ref = command_lib_util.ParseProject(args.id)
+    _, resource_id = monitoring_util.ParseMonitoredResourceContainer(
+        args.monitored_resource_container_name, True
+    )
+    project_ref = command_lib_util.ParseProject(resource_id)
     result = client.List(project_ref)
     return result

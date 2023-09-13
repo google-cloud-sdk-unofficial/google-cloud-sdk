@@ -3,8 +3,10 @@
 
 import argparse
 import json
+import logging
 import os
 import sys
+from typing import Optional
 
 from absl import app
 from absl import flags
@@ -76,6 +78,7 @@ class CachedCredentialLoader(CredentialLoader):
     Raises:
       BigqueryError: if cache file cannot be created to store credential.
     """
+    logging.info('Loading credentials with the CachedCredentialLoader')
     self.credential_cache_file = credential_cache_file
     self._read_cache_first = read_cache_first
     # MultiprocessFileStorage recommends using scopes as the key for single-user
@@ -299,13 +302,16 @@ def _GetCredentialsLoaderFromFlags():
   """Returns a CredentialsLoader based on user-supplied flags."""
   # TODO(b/274926222): Add e2e test for --oauth_access_token.
   if FLAGS.oauth_access_token:
+    logging.info('Loading credentials using oauth_access_token')
     return AccessTokenCredentialLoader(access_token=FLAGS.oauth_access_token)
   if FLAGS.service_account:
+    logging.info('Loading credentials using service_account')
     if not FLAGS.service_account_credential_file:
       raise app.UsageError(
           'The flag --service_account_credential_file must be specified '
           'if --service_account is used.')
     if FLAGS.service_account_private_key_file:
+      logging.info('Loading credentials using service_account_private_key_file')
       return ServiceAccountPrivateKeyFileLoader(
           credential_cache_file=FLAGS.service_account_credential_file,
           read_cache_first=True,
@@ -316,6 +322,9 @@ def _GetCredentialsLoaderFromFlags():
                          '--service_account_private_key_file flag to be set.')
 
   if FLAGS.application_default_credential_file:
+    logging.info(
+        'Loading credentials using application_default_credential_file'
+    )
     if not FLAGS.credential_file:
       raise app.UsageError('The flag --credential_file must be specified if '
                            '--application_default_credential_file is used.')
@@ -332,6 +341,7 @@ def GetCredentialsFromFlags():
 
 
   if FLAGS.use_gce_service_account:
+    logging.info('Loading credentials using use_gce_service_account')
     # In the case of a GCE service account, we can skip the entire
     # process of loading from storage.
     return oauth2client_4_0.contrib.gce.AppAssertionCredentials()

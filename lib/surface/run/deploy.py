@@ -394,6 +394,7 @@ class Deploy(base.Command):
             build_source=source,
             repo_to_create=repo_to_create,
             already_activated_services=already_activated_services,
+            generate_name=flags.FlagIsExplicitlySet(args, 'revision_suffix'),
         )
 
       if args.async_:

@@ -1,4 +1,4 @@
-- release_tracks: [ALPHA]
+- release_tracks: [ALPHA, BETA]
   help_text:
     brief: "Describe snapshot settings."
     description: "Describe the snapshot settings of a project."
@@ -8,9 +8,13 @@
         $ {command} --project=my-project
 
   request:
+    ALPHA:
+      api_version: alpha
+    BETA:
+      api_version: beta
+
     collection: compute.snapshotSettings
     method: get
-    api_version: alpha
 
   arguments:
     resource:

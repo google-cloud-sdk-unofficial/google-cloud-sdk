@@ -4651,6 +4651,11 @@
           "readOnly": true,
           "$ref": "TableReference"
         },
+        "ddlDestinationTable": {
+          "description": "Output only. The table after rename. Present only for ALTER TABLE RENAME TO query.",
+          "readOnly": true,
+          "$ref": "TableReference"
+        },
         "ddlTargetRowAccessPolicy": {
           "description": "Output only. The DDL target row access policy. Present only for CREATE\/DROP ROW ACCESS POLICY queries.",
           "readOnly": true,
@@ -5677,16 +5682,22 @@
           "enumDescriptions": [
             "Unused reasons not specified.",
             "Metadata cache was outside the table's maxStaleness.",
+            "Metadata caching feature is not enabled. [Update BigLake tables] (\/bigquery\/docs\/create-cloud-storage-table-biglake#update-biglake-tables) to enable the metadata caching.",
             "Other unknown reason."
           ],
           "enum": [
             "UNUSED_REASON_UNSPECIFIED",
             "EXCEEDED_MAX_STALENESS",
+            "METADATA_CACHING_NOT_ENABLED",
             "OTHER_REASON"
           ]
         },
         "explanation": {
           "description": "Free form human-readable reason metadata caching was unused for the job.",
+          "type": "string"
+        },
+        "tableType": {
+          "description": "[Table type](\/bigquery\/docs\/reference\/rest\/v2\/tables#Table.FIELDS.type).",
           "type": "string"
         }
       }
@@ -6361,7 +6372,7 @@
           "description": "Required. The type of routine.",
           "type": "string",
           "enumDescriptions": [
-            "",
+            "Default value.",
             "Non-built-in persistent scalar function.",
             "Stored procedure.",
             "Non-built-in persistent TVF.",
@@ -6391,7 +6402,7 @@
           "description": "Optional. Defaults to \"SQL\" if remote_function_options field is absent, not set otherwise.",
           "type": "string",
           "enumDescriptions": [
-            "",
+            "Default value.",
             "SQL language.",
             "JavaScript language.",
             "Python language.",
@@ -6464,10 +6475,10 @@
           "$ref": "SparkOptions"
         },
         "dataGovernanceType": {
-          "description": "Optional. Data governance specific option, if the value is DATA_MASKING, the function will be validated as masking functions.",
+          "description": "Optional. If set to `DATA_MASKING`, the function is validated and made available as a masking function. For more information, see [Create custom masking routines](https:\/\/cloud.google.com\/bigquery\/docs\/user-defined-functions#custom-mask).",
           "type": "string",
           "enumDescriptions": [
-            "Unspecified data governance type.",
+            "The data governance type is unspecified.",
             "The data governance type is data masking."
           ],
           "enum": [
@@ -6490,7 +6501,7 @@
           "description": "Optional. Defaults to FIXED_TYPE.",
           "type": "string",
           "enumDescriptions": [
-            "",
+            "Default value.",
             "The argument is a variable with fully specified type, which can be a struct or an array, but not a table.",
             "The argument is any type, including struct or array, but not a table. To be added: FIXED_TABLE, ANY_TABLE"
           ],
@@ -6504,7 +6515,7 @@
           "description": "Optional. Specifies whether the argument is input or output. Can be set for procedures only.",
           "type": "string",
           "enumDescriptions": [
-            "",
+            "Default value.",
             "The argument is input-only.",
             "The argument is output-only.",
             "The argument is both an input and an output."
@@ -6627,6 +6638,7 @@
     },
     "ListRoutinesResponse": {
       "id": "ListRoutinesResponse",
+      "description": "Describes the format of a single result page when listing routines.",
       "type": "object",
       "properties": {
         "routines": {
@@ -6929,6 +6941,7 @@
     },
     "ViewDefinition": {
       "id": "ViewDefinition",
+      "description": "Describes the definition of a logical view.",
       "type": "object",
       "properties": {
         "query": {
@@ -6949,6 +6962,40 @@
         "useExplicitColumnNames": {
           "description": "True if the column names are explicitly specified. For example by using the 'CREATE VIEW v(c1, c2) AS ...' syntax. Can only be set for GoogleSQL views.",
           "type": "boolean"
+        },
+        "privacyPolicy": {
+          "description": "Optional. Specifices the privacy policy for the view.",
+          "$ref": "PrivacyPolicy"
+        }
+      }
+    },
+    "PrivacyPolicy": {
+      "id": "PrivacyPolicy",
+      "description": "Represents privacy policy that contains the privacy requirements specified by the data owner. Currently, this is only supported on views.",
+      "type": "object",
+      "properties": {
+        "aggregationThresholdPolicy": {
+          "description": "Optional. Policy used for aggregation thresholds.",
+          "$ref": "AggregationThresholdPolicy"
+        }
+      }
+    },
+    "AggregationThresholdPolicy": {
+      "id": "AggregationThresholdPolicy",
+      "description": "Represents privacy policy associated with \"aggregation threshold\" method.",
+      "type": "object",
+      "properties": {
+        "threshold": {
+          "description": "Optional. The threshold for the \"aggregation threshold\" policy.",
+          "type": "string",
+          "format": "int64"
+        },
+        "privacyUnitColumns": {
+          "description": "Optional. The privacy unit column(s) associated with this policy. For now, only one column per data source object (table, view) is allowed as a privacy unit column. Representing as a repeated field in metadata for extensibility to multiple columns in future. Duplicates and Repeated struct fields are not allowed. For nested fields, use dot notation (\"outer.inner\")",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
         }
       }
     },
@@ -7189,7 +7236,7 @@
           "readOnly": true,
           "type": "string",
           "enumDescriptions": [
-            "",
+            "Default value.",
             "Replication is Active with no errors.",
             "Source object is deleted.",
             "Source revoked replication permissions.",
@@ -7212,6 +7259,7 @@
     },
     "TableList": {
       "id": "TableList",
+      "description": "Partial projection of the metadata for a given table in a list response.",
       "type": "object",
       "properties": {
         "kind": {
@@ -7278,11 +7326,16 @@
               },
               "view": {
                 "description": "Additional details for a view.",
+                "description": "Information about a logical view.",
                 "type": "object",
                 "properties": {
                   "useLegacySql": {
                     "description": "True if view is defined in legacy SQL dialect, false if in GoogleSQL.",
                     "type": "boolean"
+                  },
+                  "privacyPolicy": {
+                    "description": "Specifices the privacy policy for the view.",
+                    "$ref": "PrivacyPolicy"
                   }
                 }
               },
@@ -7296,6 +7349,11 @@
                 "description": "The time when this table expires, in milliseconds since the epoch. If not present, the table will persist indefinitely. Expired tables will be deleted and their storage reclaimed.",
                 "type": "string",
                 "format": "int64"
+              },
+              "requirePartitionFilter": {
+                "description": "Optional. If set to true, queries including this table must specify a partition filter. This filter is used for partition elimination.",
+                "default": "false",
+                "type": "boolean"
               }
             }
           }
@@ -7309,6 +7367,7 @@
     },
     "TableDataInsertAllRequest": {
       "id": "TableDataInsertAllRequest",
+      "description": "Request for sending a single streaming insert.",
       "type": "object",
       "properties": {
         "kind": {
@@ -7331,6 +7390,7 @@
         "rows": {
           "type": "array",
           "items": {
+            "description": "Data for a single insertion row.",
             "type": "object",
             "properties": {
               "insertId": {
@@ -7350,6 +7410,7 @@
     },
     "TableDataInsertAllResponse": {
       "id": "TableDataInsertAllResponse",
+      "description": "Describes the format of a streaming insert response.",
       "type": "object",
       "properties": {
         "kind": {
@@ -7358,15 +7419,19 @@
           "type": "string"
         },
         "insertErrors": {
+          "description": "Describes specific errors encountered while processing the request.",
           "type": "array",
           "items": {
+            "description": "Error details about a single row's insertion.",
             "type": "object",
             "properties": {
               "index": {
+                "description": "The index of the row that error applies to.",
                 "type": "integer",
                 "format": "uint32"
               },
               "errors": {
+                "description": "Error information for the row indicated by the index property.",
                 "type": "array",
                 "items": {
                   "$ref": "ErrorProto"
@@ -9304,18 +9369,21 @@
           "httpMethod": "POST",
           "parameters": {
             "projectId": {
+              "description": "Required. Project ID of the destination.",
               "pattern": "^[^\/]+$",
               "location": "path",
               "required": true,
               "type": "string"
             },
             "datasetId": {
+              "description": "Required. Dataset ID of the destination.",
               "pattern": "^[^\/]+$",
               "location": "path",
               "required": true,
               "type": "string"
             },
             "tableId": {
+              "description": "Required. Table ID of the destination.",
               "pattern": "^[^\/]+$",
               "location": "path",
               "required": true,

@@ -90,6 +90,11 @@ class Import(base.CreateCommand):
     daisy_utils.AddComputeServiceAccountArg(
         parser, 'machine image import',
         daisy_utils.IMPORT_ROLES_FOR_COMPUTE_SERVICE_ACCOUNT)
+    daisy_utils.AddCloudBuildServiceAccountArg(
+        parser,
+        'machine image import',
+        daisy_utils.IMPORT_ROLES_FOR_CLOUDBUILD_SERVICE_ACCOUNT,
+    )
     instances_flags.AddServiceAccountAndScopeArgs(
         parser,
         False,

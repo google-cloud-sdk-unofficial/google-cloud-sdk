@@ -5,11 +5,11 @@ In particular, the External Account credentials don't have an equivalent in
 oauth2client, so we create helper methods to allow variants of this particular
 class to be used in oauth2client workflows.
 """
-
 import copy
 import datetime
 import io
 import json
+from typing import TYPE_CHECKING
 
 from google.auth import aws
 from google.auth import external_account
@@ -43,13 +43,15 @@ class WrappedCredentials(oauth2client_4_0.client.OAuth2Credentials):
             base_creds, external_account_authorized_user.Credentials):
       raise TypeError('Invalid Credentials')
     self._base = base_creds
-    super(WrappedCredentials, self).__init__(access_token=self._base.token,
-                                             client_id=self._base._audience,
-                                             client_secret=None,
-                                             refresh_token=None,
-                                             token_expiry=self._base.expiry,
-                                             token_uri=None,
-                                             user_agent=None)
+    super().__init__(
+        access_token=self._base.token,
+        client_id=self._base._audience,
+        client_secret=None,
+        refresh_token=None,
+        token_expiry=self._base.expiry,
+        token_uri=None,
+        user_agent=None,
+    )
 
   def _do_refresh_request(self, http):
     self._base.refresh(requests.Request())
@@ -108,7 +110,7 @@ class WrappedCredentials(oauth2client_4_0.client.OAuth2Credentials):
     return cls(creds)
 
   @classmethod
-  def from_json(cls, json_data):
+  def from_json(cls, json_data: str) -> 'WrappedCredentials':
     """Instantiate a Credentials object from a JSON description of it.
 
     The JSON should have been produced by calling .to_json() on the object.

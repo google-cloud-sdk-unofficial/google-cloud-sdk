@@ -744,6 +744,8 @@ class CreateBeta(Create):
             args.dag_processor_storage
         ),
         composer_internal_ipv4_cidr_block=args.composer_internal_ipv4_cidr_block,
+        enable_private_builds_only=args.enable_private_builds_only,
+        disable_private_builds_only=args.disable_private_builds_only,
         release_track=self.ReleaseTrack(),
         storage_bucket=args.storage_bucket,
     )
@@ -771,7 +773,10 @@ class CreateBeta(Create):
         'composer-internal-ipv4-cidr-block': (
             args.composer_internal_ipv4_cidr_block
         ),
+        'enable-private-builds-only': args.enable_private_builds_only,
+        'disable-private-builds-only': args.disable_private_builds_only,
     }
+
     for k, v in possible_args.items():
       if v is not None and not is_composer3:
         raise command_util.InvalidUserInputError(
@@ -847,6 +852,10 @@ def AddComposer3Flags(parser):
   flags.DAG_PROCESSOR_STORAGE.AddToParser(dag_processor_params_group)
   # other flags
   flags.COMPOSER_INTERNAL_IPV4_CIDR_FLAG.AddToParser(parser)
+  # support-private-builds-only
+  private_builds_only_group = parser.add_mutually_exclusive_group(hidden=True)
+  flags.ENABLE_PRIVATE_BUILDS_ONLY.AddToParser(private_builds_only_group)
+  flags.DISABLE_PRIVATE_BUILDS_ONLY.AddToParser(private_builds_only_group)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -970,6 +979,8 @@ class CreateAlpha(CreateBeta):
             args.dag_processor_storage
         ),
         composer_internal_ipv4_cidr_block=args.composer_internal_ipv4_cidr_block,
+        enable_private_builds_only=args.enable_private_builds_only,
+        disable_private_builds_only=args.disable_private_builds_only,
         release_track=self.ReleaseTrack(),
         storage_bucket=args.storage_bucket,
     )

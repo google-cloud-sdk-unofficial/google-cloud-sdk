@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""The command group for Google Cloud Deploy."""
+"""The command group for Cloud Deploy."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -24,6 +24,6 @@ from googlecloudsdk.calliope import base
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 @base.Hidden
 class AutomationRuns(base.Group):
-  """Manages AutomationRuns resources for Google Cloud Deploy."""
+  """Manages AutomationRuns resources for Cloud Deploy."""
 
   category = base.CI_CD_CATEGORY

@@ -63,6 +63,7 @@ class Update(base.UpdateCommand):
     aws_flags.AddSshEC2KeyPairForUpdate(parser, 'node pool')
     aws_flags.AddIamInstanceProfile(parser, kind='node pool', required=False)
     aws_flags.AddAutoScalingMetricsCollectionForUpdate(parser)
+    aws_flags.AddInstanceType(parser, kind='node pool')
     base.ASYNC_FLAG.AddToParser(parser)
 
     parser.display_info.AddFormat(constants.AWS_NODEPOOLS_FORMAT)
@@ -95,3 +96,5 @@ class UpdateAlpha(Update):
   def Args(parser, track=base.ReleaseTrack.ALPHA):
     """Registers alpha track flags for this command."""
     Update.Args(parser)
+    flags.AddMaxSurgeUpdate(parser)
+    flags.AddMaxUnavailableUpdate(parser)

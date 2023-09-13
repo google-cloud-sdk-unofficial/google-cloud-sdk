@@ -158,6 +158,19 @@
         set of services should be included in the budget. If omitted, the report will include usage
         for all services. The service names are available through the Catalog API:
         https://cloud.google.com/billing/v1/how-tos/catalog-api.
+    - arg_name: filter-resource-ancestors
+      ALPHA:
+        api_field: googleCloudBillingBudgetsV1beta1UpdateBudgetRequest.budget.budgetFilter.resourceAncestors
+      BETA:
+        api_field: googleCloudBillingBudgetsV1beta1UpdateBudgetRequest.budget.budgetFilter.resourceAncestors
+      GA:
+        api_field: googleCloudBillingBudgetsV1Budget.budgetFilter.resourceAncestors
+      help_text: |
+        A set of folder and organization names of the form `folders/{folderId}` or
+        `organizations/{organizationId}`, specifying that usage from only this set of folders and
+        organizations should be included in the budget. If omitted, the budget includes all usage
+        that the billing account pays for. If the folder or organization contains projects that are
+        paid for by a different Cloud Billing account, the budget doesn't apply to those projects.
     - arg_name: filter-subaccounts
       ALPHA:
         api_field: googleCloudBillingBudgetsV1beta1UpdateBudgetRequest.budget.budgetFilter.subaccounts

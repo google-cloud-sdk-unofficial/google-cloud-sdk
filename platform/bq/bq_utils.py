@@ -12,7 +12,7 @@ import sys
 import textwrap
 import time
 import traceback
-from typing import Dict
+from typing import Dict, Optional
 
 from absl import app
 from absl import flags
@@ -71,11 +71,80 @@ def GetBigqueryRcFilename():
 
 
 def GetGcloudConfigFilename() -> str:
-  """Returns the best guess for the users gcloud configuration file."""
+  """Returns the best guess for the user's gcloud configuration file."""
   home = os.environ.get('HOME')
-  with open(home + '/.config/gcloud/active_config') as active_config_file:
-    active_config = active_config_file.read().strip()
-    return home + '/.config/gcloud/configurations/config_' + active_config
+  if not home:
+    return ''
+  try:
+    with open(home + '/.config/gcloud/active_config') as active_config_file:
+      active_config = active_config_file.read().strip()
+      return home + '/.config/gcloud/configurations/config_' + active_config
+  except IOError:
+    logging.warning('Could not find gcloud config file')
+    return ''
+
+
+def UpdateFlag(flag_values, flag: str, value) -> None:
+  # This updates the .value and .present attributes.
+  flag_values[flag].parse(value)
+  # This updates the .using_default_value attribute in addition.
+  setattr(flag_values, flag, getattr(flag_values, flag))
+
+
+def ProcessGcloudConfig(flag_values) -> None:
+  """Processes the user's gcloud config and applies that configuration to BQ."""
+  gcloud_file_name = GetGcloudConfigFilename()
+  if not gcloud_file_name:
+    logging.warning('Not processing gcloud config file since it is not found')
+    return
+  try:
+    auth_config = ProcessConfigSection(
+        filename=gcloud_file_name, section_name='auth'
+    )
+    core_config = ProcessConfigSection(
+        filename=gcloud_file_name, section_name='core'
+    )
+  except IOError:
+    logging.warning('Could not load gcloud config data')
+    return
+  try:
+    access_token_file = auth_config['access_token_file']
+    universe_domain = core_config['universe_domain']
+  except KeyError:
+    # This is expected if these attributes aren't in the config file.
+    return
+  if (
+      access_token_file is not None
+      and universe_domain is not None
+  ):
+    logging.info(
+        'Using the gcloud configuration to get TPC authorisation from'
+        ' access_token_file'
+    )
+    if (
+        not flag_values['oauth_access_token'].using_default_value
+        or not flag_values['use_google_auth'].using_default_value
+        or not flag_values['api'].using_default_value
+    ):
+      logging.warning(
+          'Users gcloud config file and bigqueryrc file have incompatible'
+          ' configurations. Defaulting to the bigqueryrc file'
+      )
+    try:
+      with open(access_token_file) as token_file:
+        token = token_file.read().strip()
+    except IOError:
+      logging.warning(
+          'Could not open `access_token_file` file, ignoring gcloud settings'
+      )
+    else:
+      UpdateFlag(flag_values, 'oauth_access_token', token)
+      UpdateFlag(flag_values, 'use_google_auth', True)
+      UpdateFlag(
+          flag_values,
+          'api',
+          'https://bigquery.' + universe_domain,
+      )
 
 
 def ProcessBigqueryrc():
@@ -84,7 +153,7 @@ def ProcessBigqueryrc():
 
 
 def ProcessConfigSection(
-    filename: str, section_name: str = None
+    filename: str, section_name: Optional[str] = None
 ) -> Dict[str, str]:
   """Read a configuration file section returned as a dictionary.
 
@@ -100,30 +169,33 @@ def ProcessConfigSection(
   dictionary = {}  # type: Dict[str, str]
   if not os.path.exists(filename):
     return dictionary
-  with open(filename) as rcfile:
-    in_section = not section_name
-    for line in rcfile:
-      if line.lstrip().startswith('[') and line.rstrip().endswith(']'):
-        next_section = line.strip()[1:-1]
-        in_section = section_name == next_section
-        continue
-      elif not in_section:
-        continue
-      elif line.lstrip().startswith('#') or not line.strip():
-        continue
-      flag, equalsign, value = line.partition('=')
-      # if no value given, assume stringified boolean true
-      if not equalsign:
-        value = 'true'
-      flag = flag.strip()
-      value = value.strip()
-      while flag.startswith('-'):
-        flag = flag[1:]
-      dictionary[flag] = value
+  try:
+    with open(filename) as rcfile:
+      in_section = not section_name
+      for line in rcfile:
+        if line.lstrip().startswith('[') and line.rstrip().endswith(']'):
+          next_section = line.strip()[1:-1]
+          in_section = section_name == next_section
+          continue
+        elif not in_section:
+          continue
+        elif line.lstrip().startswith('#') or not line.strip():
+          continue
+        flag, equalsign, value = line.partition('=')
+        # if no value given, assume stringified boolean true
+        if not equalsign:
+          value = 'true'
+        flag = flag.strip()
+        value = value.strip()
+        while flag.startswith('-'):
+          flag = flag[1:]
+        dictionary[flag] = value
+  except IOError:
+    pass
   return dictionary
 
 
-def ProcessBigqueryrcSection(section_name: str, flag_values) -> None:
+def ProcessBigqueryrcSection(section_name: Optional[str], flag_values) -> None:
   """Read the bigqueryrc file into flag_values for section section_name.
 
   Args:
@@ -146,10 +218,7 @@ def ProcessBigqueryrcSection(section_name: str, flag_values) -> None:
           'Unknown flag %s found in bigqueryrc file in section %s' %
           (flag, section_name if section_name else 'global'))
     if not flag_values[flag].present:
-      # This updates the .value and .present attributes.
-      flag_values[flag].parse(value)
-      # This updates the .using_default_value attribute in addition.
-      setattr(flag_values, flag, getattr(flag_values, flag))
+      UpdateFlag(flag_values, flag, value)
     else:
       flag_type = flag_values[flag].flag_type()
       if flag_type.startswith('multi'):
@@ -172,6 +241,7 @@ def ProcessError(
     message_prefix='You have encountered a bug in the BigQuery CLI.'):
   """Translate an error message into some printing and a return code."""
 
+  bigquery_client.ConfigurePythonLogger(FLAGS.apilog)
   logger = logging.getLogger(__name__)
 
   if isinstance(err, SystemExit):
@@ -292,7 +362,10 @@ def GetInfoString():
   try:
     httplib2_version = httplib2.__version__
   except AttributeError:
+    # Handle an unexpected version being loaded
+    # pytype: disable=module-attr
     httplib2_version = httplib2.python3.__version__
+    # pytype: enable=module-attr
   try:
     shell_path = os.environ['PATH']
   except KeyError:
@@ -368,3 +441,34 @@ def GetClientScopeFromFlags():
 
 def GetClientScopesFor3pi():
   return [_CLOUD_PLATFORM_SCOPE]
+
+
+def ParseTags(tags: str) -> Dict[str, str]:
+  """Parses a list of user-supplied string representing tags.
+
+  Args:
+    tags: A comma separated user-supplied string representing tags. It is
+      expected to be in the format "key1:value1,key2:value2".
+
+  Returns:
+    A dictionary mapping tag keys to tag values.
+
+  Raises:
+    UsageError: Incorrect tags or no tags are supplied.
+  """
+  tags = tags.strip()
+  if not tags:
+    raise app.UsageError('No tags supplied')
+  tags_dict = {}
+  for key_value in tags.split(','):
+    k, _, v = key_value.partition(':')
+    k = k.strip()
+    if not k:
+      raise app.UsageError('Tag key cannot be None')
+    v = v.strip()
+    if not v:
+      raise app.UsageError('Tag value cannot be None')
+    if k in tags_dict:
+      raise app.UsageError('Cannot specify tag key "%s" multiple times' % k)
+    tags_dict[k] = v
+  return tags_dict

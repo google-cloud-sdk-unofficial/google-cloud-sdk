@@ -106,6 +106,12 @@ class Import(base.CreateCommand):
             'to work properly.'),
         operation='Import')
 
+    daisy_utils.AddCloudBuildServiceAccountArg(
+        parser,
+        'instance import',
+        daisy_utils.IMPORT_ROLES_FOR_CLOUDBUILD_SERVICE_ACCOUNT,
+    )
+
   @classmethod
   def _GetComputeApiHolder(cls, no_http=False):
     return base_classes.ComputeApiHolder(cls.ReleaseTrack(), no_http)
@@ -206,11 +212,15 @@ class Import(base.CreateCommand):
         zone=properties.VALUES.compute.zone.Get(),
         project=args.project,
         output_filter=_OUTPUT_FILTER,
-        release_track=(self.ReleaseTrack().id.lower()
-                       if self.ReleaseTrack() else None),
+        release_track=(
+            self.ReleaseTrack().id.lower() if self.ReleaseTrack() else None
+        ),
         hostname=getattr(args, 'hostname', None),
         no_address=getattr(args, 'no_address', False),
         compute_service_account=getattr(args, 'compute_service_account', ''),
+        cloudbuild_service_account=getattr(
+            args, 'cloudbuild_service_account', ''
+        ),
         scopes=getattr(args, 'scopes', None),
         no_scopes=getattr(args, 'no_scopes', False),
         service_account=getattr(args, 'service_account', None),

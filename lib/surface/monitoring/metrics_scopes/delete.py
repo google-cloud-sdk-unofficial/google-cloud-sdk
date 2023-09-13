@@ -42,24 +42,27 @@ class Delete(base.DeleteCommand):
   `monitored-project-1` to a metrics scope with project id `metrics-scope-1`
   assuming the `metrics-scope-1` is the default project:
 
-    $ {command} monitored-project-1
+    $ {command} projects/monitored-project-1
 
   The following command adds a monitored project with the ID
   `monitored-project-1` to a metrics scope with project id `metrics-scope-1`:
 
-    $ {command} monitored-project-1 --project=metrics-scope-1
+    $ {command} projects/monitored-project-1 --project=metrics-scope-1
     $ {command}
     locations/global/metricsScopes/metrics-scope-1/projects/monitored-project-1
   """
 
   @staticmethod
   def Args(parser):
-    flags.GetMonitoredProjectIDNumberFlag('delete').AddToParser(parser)
+    flags.GetMonitoredResourceContainerNameFlag('delete').AddToParser(parser)
 
   def Run(self, args):
     client = metrics_scopes.MetricsScopeClient()
-    metrics_scope_ref, monitored_project_ref = monitoring_util.ParseMonitoredProject(
-        args.monitored_project)
+    metrics_scope_ref, monitored_project_ref = (
+        monitoring_util.ParseMonitoredProject(
+            args.monitored_resource_container_name, True
+        )
+    )
     result = client.Delete(metrics_scope_ref, monitored_project_ref)
     log.DeletedResource(
         client.MonitoredProjectName(metrics_scope_ref, monitored_project_ref),
