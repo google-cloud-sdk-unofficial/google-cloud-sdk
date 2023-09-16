@@ -193,9 +193,8 @@ class Update(base.Command):
           suppress_output=args.async_,
       ) as tracker:
         service = client.ReleaseService(
-            service_ref, changes, tracker, asyn=args.async_, prefetch=service,
-            generate_name=flags.FlagIsExplicitlySet(args, 'revision_suffix'),
-            )
+            service_ref, changes, tracker, asyn=args.async_, prefetch=service
+        )
 
       if args.async_:
         pretty_print.Success(
