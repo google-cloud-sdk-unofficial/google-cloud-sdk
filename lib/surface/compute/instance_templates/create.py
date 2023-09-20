@@ -67,6 +67,7 @@ def _CommonArgs(
     support_network_queue_count=False,
     support_storage_pool=False,
     support_maintenance_interval=False,
+    support_specific_then_x_affinity=False,
 ):
   """Adding arguments applicable for creating instance templates."""
   parser.display_info.AddFormat(instance_templates_flags.DEFAULT_LIST_FORMAT)
@@ -178,6 +179,7 @@ Specifies the reservation for instances created from this template.
       affinity_text="""\
 The type of reservation for instances created from this template.
 """,
+      support_specific_then_x_affinity=support_specific_then_x_affinity,
   )
 
   parser.display_info.AddCacheUpdater(completers.InstanceTemplatesCompleter)
@@ -547,6 +549,7 @@ def _RunCreate(
     support_storage_pool=False,
     support_partner_metadata=False,
     support_maintenance_interval=False,
+    support_specific_then_x_affinity=False,
 ):
   """Common routine for creating instance template.
 
@@ -590,6 +593,8 @@ def _RunCreate(
       support_storage_pool: Indicate whether storage pool is supported.
       support_partner_metadata: Indicate whether partner metadata is supported.
       support_maintenance_interval: Indicate whether maintenance interval was
+        set.
+      support_specific_then_x_affinity: Indicate whether specific_then_x was
         set.
 
   Returns:
@@ -906,7 +911,9 @@ def _RunCreate(
   )
 
   instance_template.properties.reservationAffinity = (
-      instance_utils.GetReservationAffinity(args, client)
+      instance_utils.GetReservationAffinity(
+          args, client, support_specific_then_x_affinity
+      )
   )
 
   instance_template.properties.confidentialInstanceConfig = (
@@ -1082,6 +1089,7 @@ class Create(base.CreateCommand):
   _support_storage_pool = False
   _support_partner_metadata = False
   _support_local_ssd_recovery_timeout = True
+  _support_specific_then_x_affinity = False
 
   @classmethod
   def Args(cls, parser):
@@ -1103,6 +1111,7 @@ class Create(base.CreateCommand):
         support_network_queue_count=cls._support_network_queue_count,
         support_storage_pool=cls._support_storage_pool,
         support_local_ssd_recovery_timeout=cls._support_local_ssd_recovery_timeout,
+        support_specific_then_x_affinity=cls._support_specific_then_x_affinity,
     )
     instances_flags.AddMinCpuPlatformArgs(parser, base.ReleaseTrack.GA)
     instances_flags.AddPrivateIpv6GoogleAccessArgForTemplate(
@@ -1140,6 +1149,7 @@ class Create(base.CreateCommand):
         support_storage_pool=self._support_storage_pool,
         support_partner_metadata=self._support_partner_metadata,
         support_local_ssd_recovery_timeout=self._support_local_ssd_recovery_timeout,
+        support_specific_then_x_affinity=self._support_specific_then_x_affinity,
     )
 
 
@@ -1179,6 +1189,7 @@ class CreateBeta(Create):
   _support_storage_pool = False
   _support_partner_metadata = False
   _support_maintenance_interval = True
+  _support_specific_then_x_affinity = True
 
   @classmethod
   def Args(cls, parser):
@@ -1201,6 +1212,7 @@ class CreateBeta(Create):
         support_network_queue_count=cls._support_network_queue_count,
         support_storage_pool=cls._support_storage_pool,
         support_maintenance_interval=cls._support_maintenance_interval,
+        support_specific_then_x_affinity=cls._support_specific_then_x_affinity,
     )
     instances_flags.AddMinCpuPlatformArgs(parser, base.ReleaseTrack.BETA)
     instances_flags.AddPrivateIpv6GoogleAccessArgForTemplate(
@@ -1241,6 +1253,7 @@ class CreateBeta(Create):
         support_storage_pool=self._support_storage_pool,
         support_partner_metadata=self._support_partner_metadata,
         support_maintenance_interval=self._support_maintenance_interval,
+        support_specific_then_x_affinity=self._support_specific_then_x_affinity,
     )
 
 
@@ -1282,6 +1295,7 @@ class CreateAlpha(Create):
   _support_storage_pool = True
   _support_partner_metadata = True
   _support_maintenance_interval = True
+  _support_specific_then_x_affinity = True
 
   @classmethod
   def Args(cls, parser):
@@ -1305,6 +1319,7 @@ class CreateAlpha(Create):
         support_network_queue_count=cls._support_network_queue_count,
         support_storage_pool=cls._support_storage_pool,
         support_maintenance_interval=cls._support_maintenance_interval,
+        support_specific_then_x_affinity=cls._support_specific_then_x_affinity,
     )
     instances_flags.AddLocalNvdimmArgs(parser)
     instances_flags.AddMinCpuPlatformArgs(parser, base.ReleaseTrack.ALPHA)
@@ -1357,6 +1372,7 @@ class CreateAlpha(Create):
         support_storage_pool=self._support_storage_pool,
         support_partner_metadata=self._support_partner_metadata,
         support_maintenance_interval=self._support_maintenance_interval,
+        support_specific_then_x_affinity=self._support_specific_then_x_affinity,
     )
 
 

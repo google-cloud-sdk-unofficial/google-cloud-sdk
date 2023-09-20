@@ -62,6 +62,7 @@ class Oracle(base.Command):
     cp_flags.AddPasswordFlagGroup(parser, required=True)
     cp_flags.AddHostFlag(parser, required=True)
     cp_flags.AddPortFlag(parser, required=True)
+    cp_flags.AddSslServerOnlyConfigGroup(parser)
     oracle_flags.AddDatabaseServiceFlag(parser)
     flags.AddLabelsCreateFlags(parser)
 

@@ -21,7 +21,7 @@ from __future__ import unicode_literals
 from googlecloudsdk.api_lib.bms.bms_client import BmsClient
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.bms import flags
-from googlecloudsdk.command_lib.bms.util import FixParentPathWithGlobalRegion
+from googlecloudsdk.command_lib.bms import util
 from googlecloudsdk.core.resource import resource_projector
 
 DETAILED_HELP = {
@@ -71,7 +71,7 @@ class List(base.ListCommand):
         'state)')
 
   def Run(self, args):
-    region = FixParentPathWithGlobalRegion(args.CONCEPTS.region.Parse())
+    region = util.FixParentPathWithGlobalRegion(args.CONCEPTS.region.Parse())
     client = BmsClient()
     for instance in client.ListInstances(region, limit=args.limit):
       synthesized_instance = self.synthesizedInstance(instance, client)

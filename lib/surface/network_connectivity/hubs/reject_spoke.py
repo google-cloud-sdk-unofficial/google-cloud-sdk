@@ -29,7 +29,6 @@ from googlecloudsdk.core import resources
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
-@base.Hidden
 class RejectSpoke(base.Command):
   """Reject a spoke from a hub.
 

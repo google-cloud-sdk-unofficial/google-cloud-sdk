@@ -77,6 +77,9 @@
       - arg_value: '1.5'
         enum_value: MEMCACHE_1_5
         help_text: Memcached major version 1.5
+      - arg_value: '1.6.15'
+        enum_value: MEMCACHE_1_6_15
+        help_text: Memcached version 1.6.15
     - arg_name: maintenance-window-day
       api_field: instance.maintenancePolicy.weeklyMaintenanceWindow.day
       release_tracks: [ALPHA, BETA, GA]

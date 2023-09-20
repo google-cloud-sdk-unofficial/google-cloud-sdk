@@ -37,7 +37,7 @@ OP_WAIT_CMD = OP_BASE_CMD + 'wait {0}'
 @base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class DisableAlpha(base.SilentCommand):
-  """Disable a service for consumption for a project.
+  """Disable a service for consumption for a project, folder or organization.
 
   This command disables one or more previously-enabled services for
   consumption.
@@ -52,10 +52,25 @@ class DisableAlpha(base.SilentCommand):
   https://cloud.google.com/service-usage/docs/enable-disable
 
   ## EXAMPLES
-  To disable a service called `my-consumed-service` for the active
+  To disable a service called `my-consumed-service` for the current
   project, run:
 
     $ {command} my-consumed-service
+
+  To disable a service called `my-consumed-service` for the project
+  `my-project`, run:
+
+    $ {command} my-consumed-service --project=my-project
+
+  To disable a service called `my-consumed-service` for the folder
+  `my-folder`, run:
+
+    $ {command} my-consumed-service --folder=my-folder
+
+  To disable a service called `my-consumed-service` for the organization
+  `my-organization`, run:
+
+    $ {command} my-consumed-service --organization=my-organization
 
   To run the same command asynchronously (non-blocking), run:
 

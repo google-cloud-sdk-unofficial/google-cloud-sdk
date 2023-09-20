@@ -46,16 +46,14 @@ class Create(base.CreateCommand):
             --workload-identity-pool="my-workload-identity-pool"
 
           The following command creates a workload identity pool managed
-          identity in thedefault project with the ID my-namespace, and a
-          workload source with the ID project-123 and two
-          resources/attached_service_accounts.
+          identity in the default project with the ID `my-managed-identity`. The
+          command also authorizes any workload in Google Cloud project `123`
+          with the given service accounts attached to assume the identity.
 
             $ {command} my-managed-identity --location="global" \
             --namespace="my-namespace" \
             --workload-identity-pool="my-workload-identity-pool" \
             --source="project-123" \
-            --resources='//foo.googleapis.com/projects/123/foos/foo1', \
-                        '//foo.googleapis.com/projects/123/foos/foo2' \
             --attached-service-accounts='foo@bar.iam.gserviceaccount.com', \
                                         'bar@foo.iam.gserviceaccount.com'
           """,
@@ -66,6 +64,9 @@ class Create(base.CreateCommand):
     managed_identity_data = yaml_data.ResourceYAMLData.FromPath(
         'iam.workload_identity_pool_managed_identity'
     )
+    # b/295594640: The help text for this command should include what the ID
+    # represents and format constraints enforced. Figure out if it's possible
+    # to add that information to this parser.
     concept_parsers.ConceptParser.ForResource(
         'managed_identity',
         concepts.ResourceSpec.FromYaml(
@@ -77,19 +78,16 @@ class Create(base.CreateCommand):
     parser.add_argument(
         '--description',
         help=(
-            'A description of the managed identity. Cannot exceed 256'
-            ' characters.'
+            'A description of the managed identity.'
         ),
     )
     parser.add_argument(
         '--disabled',
         action='store_true',
         help=(
-            'Whether the managed identity is disabled. If disabled, credentials'
-            ' may longer be issued for this identity and this identity will no'
-            ' no longer be able to access Google Cloud APIs. Existing'
-            ' credentials may continue to be accepted by third party APIs and'
-            ' workloads until they expire.'
+            'Whether the managed identity is disabled. If disabled, '
+            'credentials may longer be issued for this identity. Existing '
+            'credentials may continue to be accepted until they expire.'
         ),
     )
     base.ASYNC_FLAG.AddToParser(parser)
@@ -142,8 +140,9 @@ class Create(base.CreateCommand):
         and not args.attached_service_accounts
     ):
       raise gcloud_exceptions.OneOfArgumentsRequiredException(
-          ['--resources', '--attached_service_accounts'],
-          'Must provide at least one attribute when source is specified.',
+          ['--resources', '--attached-service-accounts'],
+          'Must provide at least one attribute that matches workload(s) '
+          'from the source.',
       )
 
     if (args.resources or args.attached_service_accounts) and not args.source:

@@ -891,6 +891,7 @@ class UpdateBeta(Update):
     flags.AddInTransitEncryptionFlag(group)
     flags.AddEnableMultiNetworkingFlag(group, hidden=True)
     flags.AddContainerdConfigFlag(group, hidden=True)
+    flags.AddAutoprovisioningResourceManagerTagsUpdate(group)
 
   def ParseUpdateOptions(self, args, locations):
     get_default = lambda key: getattr(args, key)
@@ -1034,6 +1035,9 @@ class UpdateBeta(Update):
     opts.host_maintenance_interval = args.host_maintenance_interval
     opts.enable_multi_networking = args.enable_multi_networking
     opts.containerd_config_from_file = args.containerd_config_from_file
+    opts.autoprovisioning_resource_manager_tags = get_default(
+        'autoprovisioning_resource_manager_tags'
+    )
     return opts
 
 
@@ -1143,6 +1147,7 @@ class UpdateAlpha(Update):
     flags.AddInTransitEncryptionFlag(group)
     flags.AddEnableMultiNetworkingFlag(group, hidden=True)
     flags.AddContainerdConfigFlag(group, hidden=True)
+    flags.AddAutoprovisioningResourceManagerTagsUpdate(group)
 
   def ParseUpdateOptions(self, args, locations):
     get_default = lambda key: getattr(args, key)
@@ -1281,4 +1286,7 @@ class UpdateAlpha(Update):
     opts.host_maintenance_interval = args.host_maintenance_interval
     opts.enable_multi_networking = args.enable_multi_networking
     opts.containerd_config_from_file = args.containerd_config_from_file
+    opts.autoprovisioning_resource_manager_tags = get_default(
+        'autoprovisioning_resource_manager_tags'
+    )
     return opts

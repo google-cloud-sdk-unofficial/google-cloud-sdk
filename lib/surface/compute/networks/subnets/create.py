@@ -48,10 +48,16 @@ def _DetailedHelp():
   }
 
 
-def _AddArgs(parser, include_alpha_logging, include_global_managed_proxy,
-             include_aggregate_purpose, include_private_service_connect,
-             include_l2, include_private_nat, include_reserved_internal_range,
-             include_external_ipv6_prefix, api_version):
+def _AddArgs(
+    parser,
+    include_alpha_logging,
+    include_aggregate_purpose,
+    include_l2,
+    include_private_nat,
+    include_reserved_internal_range,
+    include_external_ipv6_prefix,
+    api_version,
+):
   """Add subnetwork create arguments to parser."""
   parser.display_info.AddFormat(flags.DEFAULT_LIST_FORMAT_WITH_IPV6_FIELD)
 
@@ -147,30 +153,31 @@ def _AddArgs(parser, include_alpha_logging, include_global_managed_proxy,
     flags.AddLoggingMetadataDeprecated(parser, messages)
 
   purpose_choices = {
-      'PRIVATE':
-          'Regular user created or automatically created subnet.',
-      'INTERNAL_HTTPS_LOAD_BALANCER':
-          'Reserved for Internal HTTP(S) Load Balancing.',
-      'REGIONAL_MANAGED_PROXY':
-          'Reserved for Regional HTTP(S) Load Balancing.',
+      'PRIVATE': 'Regular user created or automatically created subnet.',
+      'INTERNAL_HTTPS_LOAD_BALANCER': (
+          'Reserved for Internal HTTP(S) Load Balancing.'
+      ),
+      'REGIONAL_MANAGED_PROXY': (
+          'Reserved for Regional Envoy-based Load Balancing.'
+      ),
+      'GLOBAL_MANAGED_PROXY': (
+          'Reserved for Global Envoy-based  Load Balancing.'
+      ),
+      'PRIVATE_SERVICE_CONNECT': (
+          'Reserved for Private Service Connect Internal Load Balancing.'
+      ),
   }
-
-  if include_global_managed_proxy:
-    purpose_choices['GLOBAL_MANAGED_PROXY'] = (
-        'Reserved for Global HTTP(S) Load Balancing.')
 
   if include_aggregate_purpose:
     purpose_choices['AGGREGATE'] = (
         'Reserved for Aggregate Ranges used for aggregating '
-        'private subnetworks.')
-
-  if include_private_service_connect:
-    purpose_choices['PRIVATE_SERVICE_CONNECT'] = (
-        'Reserved for Private Service Connect Internal Load Balancing.')
+        'private subnetworks.'
+    )
 
   if include_private_nat:
     purpose_choices['PRIVATE_NAT'] = (
-        'Reserved for use as source range for Private NAT.')
+        'Reserved for use as source range for Private NAT.'
+    )
 
   # Subnetwork purpose is introduced with L7ILB feature. Aggregate purpose
   # will have to be enabled for a given release track only after L7ILB feature
@@ -182,24 +189,19 @@ def _AddArgs(parser, include_alpha_logging, include_global_managed_proxy,
       type=arg_utils.ChoiceToEnumName,
       help='The purpose of this subnetwork.')
 
-  if include_global_managed_proxy:
-    help_text = (
-        'The role of subnetwork. This field is required when the '
-        'purpose is set to GLOBAL_MANAGED_PROXY, REGIONAL_MANAGED_PROXY or '
-        'INTERNAL_HTTPS_LOAD_BALANCER.')
-  else:
-    help_text = ('The role of subnetwork. This field is required when the '
-                 'purpose is set to REGIONAL_MANAGED_PROXY or '
-                 'INTERNAL_HTTPS_LOAD_BALANCER.')
-
   parser.add_argument(
       '--role',
       choices={
           'ACTIVE': 'The ACTIVE subnet that is currently used.',
-          'BACKUP': 'The BACKUP subnet that could be promoted to ACTIVE.'
+          'BACKUP': 'The BACKUP subnet that could be promoted to ACTIVE.',
       },
       type=lambda x: x.replace('-', '_').upper(),
-      help=help_text)
+      help=(
+          'The role of subnetwork. This field is required when the purpose is'
+          ' set to GLOBAL_MANAGED_PROXY, REGIONAL_MANAGED_PROXY or'
+          ' INTERNAL_HTTPS_LOAD_BALANCER.'
+      ),
+  )
 
   # Add private ipv6 google access enum based on api version.
   messages = apis.GetMessagesModule('compute', api_version)
@@ -312,12 +314,17 @@ def GetPrivateIpv6GoogleAccessTypeFlagMapper(messages):
   )
 
 
-def _CreateSubnetwork(messages, subnet_ref, network_ref, args,
-                      include_alpha_logging, include_global_managed_proxy,
-                      include_aggregate_purpose,
-                      include_private_service_connect, include_l2,
-                      include_reserved_internal_range,
-                      include_external_ipv6_prefix):
+def _CreateSubnetwork(
+    messages,
+    subnet_ref,
+    network_ref,
+    args,
+    include_alpha_logging,
+    include_aggregate_purpose,
+    include_l2,
+    include_reserved_internal_range,
+    include_external_ipv6_prefix,
+):
   """Create the subnet resource."""
   subnetwork = messages.Subnetwork(
       name=subnet_ref.Name(),
@@ -374,43 +381,27 @@ def _CreateSubnetwork(messages, subnet_ref, network_ref, args,
   if args.purpose:
     subnetwork.purpose = messages.Subnetwork.PurposeValueValuesEnum(
         args.purpose)
-  if (subnetwork.purpose
+  if (
+      subnetwork.purpose
       == messages.Subnetwork.PurposeValueValuesEnum.INTERNAL_HTTPS_LOAD_BALANCER
       or subnetwork.purpose
-      == messages.Subnetwork.PurposeValueValuesEnum.REGIONAL_MANAGED_PROXY or
-      (include_global_managed_proxy and subnetwork.purpose
-       == messages.Subnetwork.PurposeValueValuesEnum.GLOBAL_MANAGED_PROXY)):
+      == messages.Subnetwork.PurposeValueValuesEnum.REGIONAL_MANAGED_PROXY
+      or subnetwork.purpose
+      == messages.Subnetwork.PurposeValueValuesEnum.GLOBAL_MANAGED_PROXY
+      or subnetwork.purpose
+      == messages.Subnetwork.PurposeValueValuesEnum.PRIVATE_SERVICE_CONNECT
+      or (
+          include_aggregate_purpose
+          and subnetwork.purpose
+          == messages.Subnetwork.PurposeValueValuesEnum.AGGREGATE
+      )
+  ):
     # Clear unsupported fields in the subnet resource
     subnetwork.privateIpGoogleAccess = None
     subnetwork.enableFlowLogs = None
     subnetwork.logConfig = None
   if getattr(args, 'role', None):
     subnetwork.role = messages.Subnetwork.RoleValueValuesEnum(args.role)
-
-  # At present aggregate purpose is available only in alpha whereas
-  # https_load_balancer is available in Beta. Given Aggregate Purpose Enum
-  # is not available in Beta, the code duplication below is necessary.
-  if include_aggregate_purpose:
-    if args.purpose:
-      subnetwork.purpose = messages.Subnetwork.PurposeValueValuesEnum(
-          args.purpose)
-      if (subnetwork.purpose ==
-          messages.Subnetwork.PurposeValueValuesEnum.AGGREGATE):
-        # Clear unsupported fields in the subnet resource
-        subnetwork.privateIpGoogleAccess = None
-        subnetwork.enableFlowLogs = None
-        subnetwork.logConfig = None
-
-  if include_private_service_connect:
-    if args.purpose:
-      subnetwork.purpose = messages.Subnetwork.PurposeValueValuesEnum(
-          args.purpose)
-      if (subnetwork.purpose ==
-          messages.Subnetwork.PurposeValueValuesEnum.PRIVATE_SERVICE_CONNECT):
-        # Clear unsupported fields in the subnet resource
-        subnetwork.privateIpGoogleAccess = None
-        subnetwork.enableFlowLogs = None
-        subnetwork.logConfig = None
 
   if args.private_ipv6_google_access_type is not None:
     subnetwork.privateIpv6GoogleAccess = (
@@ -442,9 +433,15 @@ def _CreateSubnetwork(messages, subnet_ref, network_ref, args,
   return subnetwork
 
 
-def _Run(args, holder, include_alpha_logging, include_global_managed_proxy,
-         include_aggregate_purpose, include_private_service_connect, include_l2,
-         include_reserved_internal_range, include_external_ipv6_prefix):
+def _Run(
+    args,
+    holder,
+    include_alpha_logging,
+    include_aggregate_purpose,
+    include_l2,
+    include_reserved_internal_range,
+    include_external_ipv6_prefix,
+):
   """Issues a list of requests necessary for adding a subnetwork."""
   client = holder.client
 
@@ -457,10 +454,16 @@ def _Run(args, holder, include_alpha_logging, include_global_managed_proxy,
       scope_lister=compute_flags.GetDefaultScopeLister(client))
 
   subnetwork = _CreateSubnetwork(
-      client.messages, subnet_ref, network_ref, args, include_alpha_logging,
-      include_global_managed_proxy, include_aggregate_purpose,
-      include_private_service_connect, include_l2,
-      include_reserved_internal_range, include_external_ipv6_prefix)
+      client.messages,
+      subnet_ref,
+      network_ref,
+      args,
+      include_alpha_logging,
+      include_aggregate_purpose,
+      include_l2,
+      include_reserved_internal_range,
+      include_external_ipv6_prefix,
+  )
   request = client.messages.ComputeSubnetworksInsertRequest(
       subnetwork=subnetwork,
       region=subnet_ref.region,
@@ -484,11 +487,9 @@ class Create(base.CreateCommand):
   """Create a GA subnet."""
 
   _include_alpha_logging = False
-  _include_global_managed_proxy = False
   _include_aggregate_purpose = False
-  _include_private_service_connect = True
-  _include_l2 = False
   _include_private_nat = False
+  _include_l2 = False
   _include_reserved_internal_range = False
   _include_external_ipv6_prefix = False
   _api_version = compute_api.COMPUTE_GA_API_VERSION
@@ -497,29 +498,35 @@ class Create(base.CreateCommand):
 
   @classmethod
   def Args(cls, parser):
-    _AddArgs(parser, cls._include_alpha_logging,
-             cls._include_global_managed_proxy, cls._include_aggregate_purpose,
-             cls._include_private_service_connect, cls._include_l2,
-             cls._include_private_nat, cls._include_reserved_internal_range,
-             cls._include_external_ipv6_prefix, cls._api_version)
+    _AddArgs(
+        parser,
+        cls._include_alpha_logging,
+        cls._include_aggregate_purpose,
+        cls._include_l2,
+        cls._include_private_nat,
+        cls._include_reserved_internal_range,
+        cls._include_external_ipv6_prefix,
+        cls._api_version,
+    )
 
   def Run(self, args):
     """Issues a list of requests necessary for adding a subnetwork."""
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
-    return _Run(args, holder, self._include_alpha_logging,
-                self._include_global_managed_proxy,
-                self._include_aggregate_purpose,
-                self._include_private_service_connect, self._include_l2,
-                self._include_reserved_internal_range,
-                self._include_external_ipv6_prefix)
+    return _Run(
+        args,
+        holder,
+        self._include_alpha_logging,
+        self._include_aggregate_purpose,
+        self._include_l2,
+        self._include_reserved_internal_range,
+        self._include_external_ipv6_prefix,
+    )
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class CreateBeta(Create):
   """Create a subnet in the Beta release track."""
 
-  _include_global_managed_proxy = True
-  _include_private_service_connect = True
   _include_private_nat = True
   _include_reserved_internal_range = True
   _api_version = compute_api.COMPUTE_BETA_API_VERSION
@@ -531,9 +538,6 @@ class CreateAlpha(CreateBeta):
 
   _include_alpha_logging = True
   _include_aggregate_purpose = True
-  _include_private_service_connect = True
   _include_l2 = True
-  _include_private_nat = True
-  _include_reserved_internal_range = True
   _include_external_ipv6_prefix = True
   _api_version = compute_api.COMPUTE_ALPHA_API_VERSION

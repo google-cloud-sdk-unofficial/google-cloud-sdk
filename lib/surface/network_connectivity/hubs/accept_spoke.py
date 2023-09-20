@@ -29,7 +29,6 @@ from googlecloudsdk.core import resources
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
-@base.Hidden
 class AcceptSpoke(base.Command):
   """Accept a spoke into a hub.
 

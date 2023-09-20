@@ -61,9 +61,7 @@ class AddIamPolicyBinding(base.Command):
 
   def Run(self, args):
     url_object = storage_url.storage_url_from_string(args.url)
-    errors_util.raise_error_if_not_bucket(args.command_path, url_object)
-    errors_util.raise_error_if_not_gcs(args.command_path, url_object)
-
+    errors_util.raise_error_if_not_gcs_bucket(args.command_path, url_object)
     policy = api_factory.get_api(url_object.scheme).get_bucket_iam_policy(
         url_object.bucket_name)
     return iam_command_util.add_iam_binding_to_resource(

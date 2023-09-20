@@ -40,7 +40,6 @@
     - _REF_: googlecloudsdk.command_lib.iam.flags:workforce_pool.description
     - _REF_: googlecloudsdk.command_lib.iam.flags:workforce_pool.session_duration
     - _REF_: googlecloudsdk.command_lib.iam.flags:workforce_pool.disabled
-    - _REF_: googlecloudsdk.command_lib.iam.flags:workforce_pool.clearable_allowed_services
     - _REF_: googlecloudsdk.command_lib.iam.flags:workforce_pool.disable_programmatic_signin
       hidden: true
 

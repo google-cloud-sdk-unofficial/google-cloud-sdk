@@ -36,6 +36,7 @@
           --web-sso-response-type="code" \
           --web-sso-assertion-claims-behavior="merge-user-info-over-id-token-claims" \
           --web-sso-additional-scopes="groups,photos"
+          --jwk-json-path="path/to/jwk.json"
 
   request:
     collection: iam.locations.workforcePools.providers
@@ -60,7 +61,6 @@
     - _REF_: googlecloudsdk.command_lib.iam.flags:workforce_pool_provider.oidc_client_secret_value
     - _REF_: googlecloudsdk.command_lib.iam.flags:workforce_pool_provider.oidc_web_sso_group
     - _REF_: googlecloudsdk.command_lib.iam.flags:workforce_pool_provider.oidc_jwks_json_path
-      hidden: true
 
   async:
     collection: iam.locations.workforcePools.providers.operations

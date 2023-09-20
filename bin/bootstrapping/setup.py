@@ -31,7 +31,7 @@ if import_site_packages:
   # pylint:disable=g-import-not-at-top
   import site
 
-# Put Cloud SDK libs on the path
+# Put Google Cloud CLI libs on the path
 root_dir = os.path.normpath(os.path.join(
     os.path.dirname(os.path.realpath(__file__)), '..', '..'))
 lib_dir = os.path.join(root_dir, 'lib')

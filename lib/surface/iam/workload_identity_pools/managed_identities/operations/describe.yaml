@@ -18,7 +18,7 @@
     brief: Describe a workload identity pool managed identity operation.
     description: Describe a workload identity pool managed identity operation.
     examples: |
-      The following command describes the long running workload identity pool managed identity
+      The following command describes the long-running workload identity pool managed identity
       operation with the ID `my-operation`:
 
         $ {command} my-operation \
@@ -32,6 +32,6 @@
 
   arguments:
     resource:
-      help_text: Workload identity pool managed identity long running operation to describe.
+      help_text: Workload identity pool managed identity long-running operation to describe.
       spec: !REF googlecloudsdk.command_lib.iam.resources:workload_identity_pool_managed_identity_operation
       is_positional: true

@@ -102,7 +102,12 @@ class List(base.ListCommand):
 
         if c.nodePools:
           ver_status = vv.Compare(c.currentMasterVersion, c.currentNodeVersion)
-          if ver_status == VersionVerifier.UPGRADE_AVAILABLE:
+          # If autopilot is enabled, then nodes cannot be manually upgraded,
+          # so we don't show the upgrade_available message
+          # (which prompts users to run a command to upgrade their nodes).
+          if ver_status == VersionVerifier.UPGRADE_AVAILABLE and not (
+              c.autopilot and c.autopilot.enabled
+          ):
             c.currentNodeVersion += ' *'
             upgrade_available = True
           elif ver_status == VersionVerifier.SUPPORT_ENDING:

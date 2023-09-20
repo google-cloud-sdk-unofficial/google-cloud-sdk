@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""services list groups members command."""
+"""services groups list members command."""
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
@@ -33,31 +33,31 @@ _GROUP_RESOURCE = 'groups/%s'
 # TODO(b/274633761) make command public after suv2 launch.
 @base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class ListGroupMembers(base.Command):
-  """List group members of a specific service and group.
+class ListGroupMembers(base.ListCommand):
+  """List members of a specific service and group.
 
-  List group members of a specific service and group.
+  List members of a specific service and group.
 
   ## EXAMPLES
 
-   List group members of service my-service and group my-group:
+   List members of service my-service and group my-group:
 
    $ {command} my-service my-group
 
-   List flattened group members of service my-service and group my-group :
+   List flattened members of service my-service and group my-group :
 
     $ {command} my-service my-group --flattened-members
 
-   List flattened group members of service my-service and default group :
+   List flattened members of service my-service and default group :
 
     $ {command} my-service --flattened-members
 
-   List group members of service my-service and group my-group
+   List members of service my-service and group my-group
    for a specific project '12345678':
 
     $ {command} my-service my-group --project=12345678
 
-   List flattened group fembers of service my-service and group my-group
+   List flattened fembers of service my-service and group my-group
    for a specific folder '12345678':
 
     $ {command} my-service my-group --folder=12345678 --flattened-members
@@ -65,10 +65,9 @@ class ListGroupMembers(base.Command):
 
   @staticmethod
   def Args(parser):
-    parser.add_argument('service', help='The name of the service.')
-    # TODO(b/274633761)  Set default 'dependencies' after b/292271220 is done.
+    parser.add_argument('service', help='Name of the service.')
     parser.add_argument(
-        '--group', help='The service group name.', default='suv1-dependencies'
+        'group', help='Service group name, for example "dependencies".'
     )
     common_flags.add_resource_args(parser)
     parser.add_argument(
@@ -79,6 +78,11 @@ class ListGroupMembers(base.Command):
             ' members.'
         ),
     )
+
+    base.PAGE_SIZE_FLAG.SetDefault(parser, 50)
+
+    # Remove unneeded list-related flags from parser
+    base.URI_FLAG.RemoveFromParser(parser)
 
     parser.display_info.AddFormat("""
           table(
@@ -114,7 +118,8 @@ class ListGroupMembers(base.Command):
       response = serviceusage.ListGroupMembers(
           resource_name,
           _SERVICE_RESOURCE % args.service + '/' + _GROUP_RESOURCE % args.group,
-      ).groupMembers
+          args.page_size,
+      )
     if response:
       if args.flattened_members:
         log.status.Print(

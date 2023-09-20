@@ -96,6 +96,7 @@ def _CommonArgs(parser, track):
   flags.AddGen2Flag(parser)
   flags.AddServeAllTrafficLatestRevisionFlag(parser)
   flags.AddConcurrencyFlag(parser, track)
+  flags.AddBuildServiceAccountFlag(parser, track)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)

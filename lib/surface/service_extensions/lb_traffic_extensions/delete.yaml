@@ -1,4 +1,4 @@
-release_tracks: [ALPHA]
+release_tracks: [BETA, ALPHA]
 
 help_text:
   brief: |
@@ -6,10 +6,10 @@ help_text:
   description: |
     Delete the specified LB Traffic Extension.
   example: |
-      To delete an LB Traffic Extension named 'my-traffic-extension' in
-      `europe-west1`, run:
+      To delete an LB Traffic Extension named `my-traffic-extension` in
+      `us-central1`, run:
 
-        $ {command} my-traffic-extension --location="europe-west1"
+        $ {command} my-traffic-extension --location=us-central1
 
 arguments:
   resource:
@@ -21,5 +21,8 @@ async:
   collection: networkservices.projects.locations.operations
 
 request: &request
-  api_version: v1alpha1
+  ALPHA:
+    api_version: v1alpha1
+  BETA:
+    api_version: v1beta1
   collection: networkservices.projects.locations.lbTrafficExtensions

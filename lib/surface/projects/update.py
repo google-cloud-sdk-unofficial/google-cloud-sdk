@@ -45,6 +45,11 @@ class UpdateAlpha(base.UpdateCommand):
   label `dive`:
 
     $ {command} example-foo-bar-1 --name="Foo Bar & Grill" --remove-labels=dive
+
+  The following command updates a project with the ID `example-foo-bar-1` to
+  have labels `foo` and `bar` with values of `abc` and `def`, respectively:
+
+    $ {command} example-foo-bar-1 --update-labels="foo=abc,bar=def"
   """
 
   @staticmethod

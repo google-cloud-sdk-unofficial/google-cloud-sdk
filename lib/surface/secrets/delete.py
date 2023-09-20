@@ -29,7 +29,7 @@ from googlecloudsdk.core.console import console_io
 class Delete(base.DeleteCommand):
   r"""Delete a secret.
 
-  Delete a secret and destroy all secret versions. This action is irreversable.
+  Delete a secret and destroy all secret versions. This action is irreversible.
   If the given secret does not exist, this command will succeed, but the
   operation will be a no-op.
 
@@ -79,7 +79,7 @@ class Delete(base.DeleteCommand):
 class DeleteBeta(Delete):
   r"""Delete a secret.
 
-  Delete a secret and destroy all secret versions. This action is irreversable.
+  Delete a secret and destroy all secret versions. This action is irreversible.
   If the given secret does not exist, this command will succeed, but the
   operation will be a no-op.
 

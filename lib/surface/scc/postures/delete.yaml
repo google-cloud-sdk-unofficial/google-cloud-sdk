@@ -1,0 +1,42 @@
+- release_tracks: [ALPHA]
+  hidden: true
+  help_text:
+    brief: Delete a Cloud Security Command Center posture.
+    description: |
+      Delete a Cloud Security Command Center posture.
+
+      Posture with all it's revisions is deleted. Deletion won't be allowed in case any of the versions of the posture is deployed on a workload.
+      ETAG can be provided as an optional flag.
+    examples: |
+      Delete the posture named `organizations/123/locations/global/postures/posture-foo-1` (i.e. a posture in organization `123`, location `global`, with id `posture-foo-1`):
+
+        $ {command} organizations/123/locations/global/postures/posture-foo-1
+
+      Delete the posture named `organizations/123/locations/global/postures/posture-foo-1` (i.e. a posture in organization `123`, location `global`, with id `posture-foo-1`)
+      for the ETAG ABcdO1Rf5clu7Yhlkwgelo7Vl4tiqd7Sy5iP5SdkSVU
+
+        $ {command} organizations/123/locations/global/postures/posture-foo-1 --etag=ABcdO1Rf5clu7Yhlkwgelo7Vl4tiqd7Sy5iI5SdkSVU
+
+  request:
+    collection: securityposture.organizations.locations.postures
+    disable_resource_check: true
+    api_version: v1alpha
+    method: delete
+
+  arguments:
+    params:
+    - arg_name: posture_name
+      api_field: name
+      is_positional: true
+      required: true
+      help_text: |
+          Relative resource name of the posture, like organizations/<organizationID>/locations/<location>/postures/<postureID>.
+
+    - arg_name: etag
+      api_field: etag
+      required: false
+      help_text: |
+          Etag is an optional flag. If the provided Etag doesn't match the server generated Etag, the delete operation won't proceed.
+
+  async:
+    collection: securityposture.organizations.locations.operations

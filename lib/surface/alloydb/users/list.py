@@ -27,7 +27,8 @@ from googlecloudsdk.core import properties
 _USER_FORMAT = """
     table(
         name,
-        userType:label="USER_TYPE"
+        userType:label="USER_TYPE",
+        databaseRoles:label="DATABASE_ROLES"
     )
 """
 

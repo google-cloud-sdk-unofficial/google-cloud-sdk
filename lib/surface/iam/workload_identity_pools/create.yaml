@@ -43,7 +43,7 @@
     - _REF_: googlecloudsdk.command_lib.iam.flags:workload_identity_pool.disabled
     - _REF_: googlecloudsdk.command_lib.iam.flags:workload_identity_pool.session_duration
       hidden: true
-    - _REF_: googlecloudsdk.command_lib.iam.flags:workload_identity_pool.identity_mode
+    - _REF_: googlecloudsdk.command_lib.iam.flags:workload_identity_pool.mode
       hidden: true
 
 # ALPHA and BETA release track should not be updated going forward. All preview features should be

@@ -1,19 +1,21 @@
-release_tracks: [ALPHA]
+release_tracks: [BETA, ALPHA]
 help_text:
   brief: |
     Import an LB Traffic Extension.
   description: |
     Improt an LB Traffic Extension defined in a YAML file.
   examples: |
-    To import an LB Traffic Extension named 'my-traffic-extension' from a YAML file
-    in 'europe-west1', run:
+    To import an LB Traffic Extension named `my-traffic-extension` from a YAML file
+    in `us-central1`, run:
 
-        $ {command} my-traffic-extension --source=my-traffic-extension.yaml --location="europe-west1"
+        $ {command} my-traffic-extension --source=my-traffic-extension.yaml --location=us-central1
 
 request:
   collection: networkservices.projects.locations.lbTrafficExtensions
   ALPHA:
     api_version: v1alpha1
+  BETA:
+    api_version: v1beta1
 
 arguments:
   resource:
@@ -31,4 +33,6 @@ import:
     collection: networkservices.projects.locations.lbTrafficExtensions
     ALPHA:
       api_version: v1alpha1
+    BETA:
+      api_version: v1beta1
     method: create

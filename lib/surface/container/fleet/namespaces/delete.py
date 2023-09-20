@@ -20,9 +20,15 @@ from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.container.fleet import client
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib import deprecation_utils
 from googlecloudsdk.command_lib.util.apis import arg_utils
 
 
+@deprecation_utils.DeprecateCommandAtVersion(
+    remove_version='447.0.0',
+    remove=True,
+    alt_command='gcloud fleet scopes namespaces delete',
+)
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Delete(base.DeleteCommand):
   """Delete a fleet namespace.

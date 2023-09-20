@@ -1,0 +1,48 @@
+- release_tracks: [ALPHA]
+  hidden: true
+  help_text:
+    brief: Extract a Cloud Security Command Center posture from a workload.
+    description: |
+      Extract a Cloud Security Command Center posture from a workload. First argument is the parent
+      of the posture to be created. Second argument is the name of the posture to be created. The workload
+      from where the organization policies need to be extracted is provided via 'workload' flag.
+
+      Extracted posture is returned as the response of the command. LRO operation ID is printed as the
+      standard output.
+    example: |
+     Extract a posture named `posture-foo-1` within parent `organizations/123/locations/global`(i.e. a posture in organization `123`, location `global`, with id `posture-foo-1`) from workload `projects/456`:
+
+        $ {command} organizations/123/locations/global posture-foo-1 --workload=projects/456
+
+  request:
+    collection: securityposture.organizations.locations.postures
+    disable_resource_check: true
+    api_version: v1alpha
+    method: extract
+
+  arguments:
+    params:
+    - arg_name: posture_parent
+      api_field: parent
+      is_positional: true
+      required: true
+      help_text: |
+        Organization where posture is to be created. Format:
+        `organizations/<organizationID>/locations/<location>`
+
+    - arg_name: posture_id
+      api_field: extractPostureRequest.postureId
+      is_positional: true
+      required: true
+      help_text: |
+         Name of the posture to be created. It has to be unique for an organization.
+
+    - arg_name: workload
+      api_field: extractPostureRequest.workload
+      required: true
+      help_text: |
+        Workload from where policies has to be extracted into a posture. It can be in one
+        of the following formats: `projects/projectNumber`, `folders/folderNumber`, `organizations/organizationNumber`.
+
+  async:
+    collection: securityposture.organizations.locations.operations

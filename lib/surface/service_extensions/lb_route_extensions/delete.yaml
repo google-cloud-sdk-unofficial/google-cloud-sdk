@@ -1,0 +1,28 @@
+release_tracks: [BETA, ALPHA]
+
+help_text:
+  brief: |
+    Delete an LB Route Extension.
+  description: |
+    Delete the specified LB Route Extension.
+  example: |
+      To delete an LB Route Extension named
+      `my-route-extension` in `us-central1`, run:
+
+        $ {command} my-route-extension --location=us-central1
+
+arguments:
+  resource:
+    spec: !REF googlecloudsdk.command_lib.service_extensions.resources:lbRouteExtension
+    help_text: |
+      Name of the LB Route Extension you want to delete.
+
+async:
+  collection: networkservices.projects.locations.operations
+
+request: &request
+  ALPHA:
+    api_version: v1alpha1
+  BETA:
+    api_version: v1beta1
+  collection: networkservices.projects.locations.lbRouteExtensions

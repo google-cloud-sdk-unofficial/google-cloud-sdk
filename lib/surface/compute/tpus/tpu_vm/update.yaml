@@ -1,22 +1,29 @@
-- release_tracks: [ALPHA]
+- release_tracks: [GA, ALPHA]
   help_text:
     brief: Update a Cloud TPU VM node.
     description: Update a Cloud TPU VM node.
-    examples: |
-      To modify a TPU VM node with ID `my-tpu` in the default user project, network and compute/zone
-      (with other defaults supplied by API) by adding labels `k0`, with value `value0` and label
-      `k1` with value `value1` and removing labels with key `k2`, run:
+    GA:
+      examples: |
+        To modify a TPU VM node with ID `my-tpu` in the default user project and compute/zone by
+        updating the description to "A new description", run:
 
-        $ {command} my-tpu --update-labels=k0=value0,k1=value1 --remove-labels=k2
+          $ {command} my-tpu --description="A new description"
+    ALPHA:
+      examples: |
+        To modify a TPU VM node with ID `my-tpu` in the default user project, network and compute/zone
+        (with other defaults supplied by API) by adding labels `k0`, with value `value0` and label
+        `k1` with value `value1` and removing labels with key `k2`, run:
 
-      Labels can be used to identify the TPU VM node. To list TPU VM nodes with the `k1:value1`
-      label, run:
+          $ {command} my-tpu --update-labels=k0=value0,k1=value1 --remove-labels=k2
 
-        $ {parent_command} list --filter='labels.k1=value1'
+        Labels can be used to identify the TPU VM node. To list TPU VM nodes with the `k1:value1`
+        label, run:
 
-      To list only the labels when describing a resource, use `--format` to filter the result:
+          $ {parent_command} list --filter='labels.k1=value1'
 
-        $ {parent_command} describe my-tpu --format="default(labels)"
+        To list only the labels when describing a resource, use `--format` to filter the result:
+
+          $ {parent_command} describe my-tpu --format="default(labels)"
 
   request:
     collection: tpu.projects.locations.nodes
@@ -24,12 +31,18 @@
       api_version: v2alpha1
       modify_request_hooks:
       - googlecloudsdk.command_lib.compute.tpus.tpu_vm.util:GenerateUpdateMask:api_version=v2alpha1
+    GA:
+      api_version: v2
+      modify_request_hooks:
+      - googlecloudsdk.command_lib.compute.tpus.tpu_vm.util:GenerateUpdateMask:api_version=v2
 
   async:
     collection: tpu.projects.locations.operations
     extract_resource_result: false
     ALPHA:
       api_version: v2alpha1
+    GA:
+      api_version: v2
 
   arguments:
     resource:
@@ -38,12 +51,12 @@
 
     params:
     - _REF_: googlecloudsdk.command_lib.compute.tpus.tpu_vm.flags:description
-      release_tracks: [ALPHA]
     - _REF_: googlecloudsdk.command_lib.compute.tpus.tpu_vm.flags:enable_external_ips
       release_tracks: [ALPHA]
     - _REF_: googlecloudsdk.command_lib.compute.tpus.tpu_vm.flags:update_labels
       release_tracks: [ALPHA]
     - group:
+        release_tracks: [ALPHA]
         required: false
         mutex: true
         params:
@@ -54,6 +67,7 @@
     - _REF_: googlecloudsdk.command_lib.compute.tpus.tpu_vm.flags:add_tags
       release_tracks: [ALPHA]
     - group:
+        release_tracks: [ALPHA]
         required: false
         mutex: true
         params:
@@ -62,17 +76,20 @@
         - _REF_: googlecloudsdk.command_lib.compute.tpus.tpu_vm.flags:remove_tags
           release_tracks: [ALPHA]
     - group:
+        release_tracks: [ALPHA]
         required: false
         mutex: true
         params:
         - _REF_: googlecloudsdk.command_lib.compute.tpus.flags:metadata_from_file
           release_tracks: [ALPHA]
         - group:
+            release_tracks: [ALPHA]
             required: false
             params:
             - _REF_: googlecloudsdk.command_lib.compute.tpus.flags:update_metadata
               release_tracks: [ALPHA]
             - group:
+                release_tracks: [ALPHA]
                 required: false
                 mutex: true
                 params:
@@ -81,6 +98,7 @@
                 - _REF_: googlecloudsdk.command_lib.compute.tpus.flags:remove_metadata
                   release_tracks: [ALPHA]
     - group:
+        release_tracks: [ALPHA]
         required: false
         mutex: true
         params:

@@ -26,5 +26,7 @@ from googlecloudsdk.calliope import base
 class WorkloadSources(base.Group):
   """Manage IAM workload identity pool namespace workload sources.
 
-  Commands for managing IAM workload identity pool namespace workload sources.
+   WorkloadSources define which workloads can attest an identity within a pool.
+   When a WorkloadSource is defined for a namespace, matching workloads may
+   receive any identity within that namespace.
   """

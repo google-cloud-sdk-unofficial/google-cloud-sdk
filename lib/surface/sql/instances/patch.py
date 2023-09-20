@@ -276,6 +276,7 @@ def AddBetaArgs(parser):
   labels_util.AddUpdateLabelsFlags(parser, enable_clear=True)
   flags.AddUpgradeSqlNetworkArchitecture(parser)
   flags.AddReplicationLagMaxSecondsForRecreate(parser)
+  flags.AddSslMode(parser)
 
 
 def AddAlphaArgs(unused_parser):

@@ -29,6 +29,17 @@ from googlecloudsdk.core import resources
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.Deprecate(
+    is_removed=False,
+    warning=(
+        'This command is deprecated. '
+        'Please use `gcloud network-connectivity hubs accept-spoke` instead.'
+    ),
+    error=(
+        'This command has been removed. '
+        'Please use `gcloud network-connectivity hubs accept-spoke` instead.'
+    ),
+)
 class Accept(base.Command):
   """Accept a spoke.
 

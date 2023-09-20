@@ -41,8 +41,8 @@ def ContainerArgGroup():
   """Returns an argument group with all per-container update args."""
 
   help_text = """
-    If the --container flag is specified the following arguments may only be
-    specified after a --container flag.
+    If the --container or --remove-containers flag is specified the following
+    arguments may only be specified after a --container flag.
     """
   group = base.ArgumentGroup(help=help_text)
   group.AddArgument(flags.ImageArg(required=False))
@@ -193,7 +193,15 @@ class Update(base.Command):
           suppress_output=args.async_,
       ) as tracker:
         service = client.ReleaseService(
-            service_ref, changes, tracker, asyn=args.async_, prefetch=service
+            service_ref,
+            changes,
+            tracker,
+            asyn=args.async_,
+            prefetch=service,
+            generate_name=(
+                flags.FlagIsExplicitlySet(args, 'revision_suffix')
+                or flags.FlagIsExplicitlySet(args, 'tag')
+            ),
         )
 
       if args.async_:
@@ -240,7 +248,8 @@ class AlphaUpdate(BetaUpdate):
     flags.AddServiceMinInstancesFlag(managed_group)
     # pylint: disable=protected-access
     flags.ContainerFlags(
-        parser.parser._calliope_command, ContainerArgGroup()
+        parser.parser._calliope_command,
+        ContainerArgGroup(),
     ).AddToParser(managed_group)
 
 

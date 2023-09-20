@@ -79,8 +79,7 @@ class SetIamPolicy(base.Command):
   def Run(self, args):
     for url_string in args.urls:
       url = storage_url.storage_url_from_string(url_string)
-      errors_util.raise_error_if_not_bucket(args.command_path, url)
-      errors_util.raise_error_if_not_gcs(args.command_path, url)
+      errors_util.raise_error_if_not_gcs_bucket(args.command_path, url)
 
     policy = metadata_field_converters.process_iam_file(
         args.policy_file, custom_etag=args.etag)

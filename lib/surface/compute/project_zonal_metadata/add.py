@@ -89,7 +89,7 @@ class AddMetadata(base.UpdateCommand):
             ),
         ),
         project=properties.VALUES.core.project.GetOrFail(),
-        updateMask=metadata_utils.ConstructUpdateMask(args.metadata),
+        updateMask=metadata_utils.ConstructUpdateMask(args.metadata.keys()),
         zone=args.zone,
     )
     # TODO(b/271293873):Remove no_followup=True once singleton support is added.

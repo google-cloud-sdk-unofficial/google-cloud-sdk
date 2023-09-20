@@ -53,8 +53,7 @@ class GetIamPolicy(base.Command):
 
   def Run(self, args):
     url_object = storage_url.storage_url_from_string(args.url)
-    errors_util.raise_error_if_not_bucket(args.command_path, url_object)
-    errors_util.raise_error_if_not_gcs(args.command_path, url_object)
+    errors_util.raise_error_if_not_gcs_bucket(args.command_path, url_object)
     matching_url = iam_command_util.get_single_matching_url(args.url)
     return api_factory.get_api(matching_url.scheme).get_bucket_iam_policy(
         matching_url.bucket_name)

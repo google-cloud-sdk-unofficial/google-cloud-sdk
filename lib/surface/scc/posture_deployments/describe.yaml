@@ -1,0 +1,30 @@
+- release_tracks: [ALPHA]
+  hidden: true
+  help_text:
+    brief: Describe a Cloud Security Command Center posture-deployment.
+    description: |
+      Describe a Cloud Security Command Center posture-deployment.
+
+    examples: |
+      Describe a posture-deployment present on an organization:
+          organizations/123/locations/global/postureDeployments/posture-deployment-foo-1
+          (i.e. a posture-deployment
+          in organization 123, location global, with id posture-deployment-foo-1):
+
+              $ gcloud alpha scc posture-deployments describe \
+                  organizations/123/locations/global/postureDeployments/posture-deployment-foo-1
+
+  request:
+    collection: securityposture.organizations.locations.postureDeployments
+    disable_resource_check: true
+    api_version: v1alpha
+    method: get
+
+  arguments:
+    params:
+    - arg_name: posture_deployment_name
+      api_field: name
+      is_positional: true
+      required: true
+      help_text: |
+        Relative resource name of the posture-deployment, like organizations/<organizationID>/locations/<location>/postureDeployments/<postureDeploymentID>.

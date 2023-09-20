@@ -1,4 +1,4 @@
-release_tracks: [ALPHA]
+release_tracks: [BETA, ALPHA]
 
 help_text:
   brief: |
@@ -7,9 +7,9 @@ help_text:
     Show details of an LB Traffic Extension.
   examples: |
       To show details about the LB Traffic Extension named
-      'my-traffic-extension' located in 'europe-west1'.
+      `my-traffic-extension` located in `us-central1`.
 
-        $ {command} my-traffic-extension --location="europe-west1"
+        $ {command} my-traffic-extension --location=us-central1
 
 arguments:
   resource:
@@ -17,5 +17,8 @@ arguments:
     help_text: Name of the LB Traffic Extension to be described.
 
 request: &request
-  api_version: v1alpha1
+  ALPHA:
+    api_version: v1alpha1
+  BETA:
+    api_version: v1beta1
   collection: networkservices.projects.locations.lbTrafficExtensions

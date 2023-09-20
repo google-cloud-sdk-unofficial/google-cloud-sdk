@@ -21,8 +21,7 @@ from __future__ import unicode_literals
 from googlecloudsdk.api_lib.bms.bms_client import BmsClient
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.bms import flags
-from googlecloudsdk.command_lib.bms.util import FixParentPathWithGlobalRegion
-
+from googlecloudsdk.command_lib.bms import util
 
 DETAILED_HELP = {
     'DESCRIPTION':
@@ -69,7 +68,7 @@ class List(base.ListCommand):
         'label=RESERVATION_NOTE)')
 
   def Run(self, args):
-    region = FixParentPathWithGlobalRegion(args.CONCEPTS.region.Parse())
+    region = util.FixParentPathWithGlobalRegion(args.CONCEPTS.region.Parse())
     client = BmsClient()
     networks_gen = client.ListNetworks(region, limit=args.limit)
 

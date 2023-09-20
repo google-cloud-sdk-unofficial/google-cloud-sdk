@@ -26,11 +26,14 @@ from googlecloudsdk.command_lib.artifacts import docker_util
 from googlecloudsdk.command_lib.artifacts import vex_util
 
 
-@base.ReleaseTracks(
-    base.ReleaseTrack.GA
-)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class LoadVex(base.Command):
-  """Load VEX data from a file."""
+  """Load VEX data from a CSAF file into Artifact Analysis.
+
+  Command loads VEX data from a Common Security Advisory Framework (CSAF) file
+  into Artifact Analysis as VulnerabilityAssessment Notes. VEX data tells
+  Artifact Analysis whether vulnerabilities are relevant and how.
+  """
 
   detailed_help = {
       'DESCRIPTION': '{description}',

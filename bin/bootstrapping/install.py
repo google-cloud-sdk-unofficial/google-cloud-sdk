@@ -3,7 +3,7 @@
 # Copyright 2013 Google Inc. All Rights Reserved.
 #
 
-"""Do initial setup for the Cloud SDK."""
+"""Do initial setup for the Cloud CLI."""
 
 from __future__ import absolute_import
 from __future__ import print_function
@@ -128,7 +128,7 @@ def ParseArgs():
       '--install-python',
       default=True,
       type=Bool,
-      help='(true/false) Attempt to install Python. MacOs only.',
+      help='(true/false) Attempt to install Python. MacOS only.',
   )
   parser.add_argument(
       '--no-compile-python',
@@ -185,17 +185,17 @@ future by running the following command:
 
 
 def Install(override_components, additional_components, compile_python):
-  """Do the normal installation of the Cloud SDK."""
+  """Do the normal installation of the Cloud CLI."""
   # Install the OS specific wrapper scripts for gcloud and any pre-configured
-  # components for the SDK.
+  # components for the CLI.
   to_install = (override_components if override_components is not None
                 else bootstrapping.GetDefaultInstalledComponents())
 
   # If there are components that are to be installed by default, this means we
-  # are working with an incomplete Cloud SDK package.  This comes from the curl
+  # are working with an incomplete Cloud CLI package.  This comes from the curl
   # installer or the Windows installer or downloading a seed directly.  In this
-  # case, we will update to the latest version of the SDK.  If there are no
-  # default components, this is a fully packaged SDK.  If there are additional
+  # case, we will update to the latest version of the CLI.  If there are no
+  # default components, this is a fully packaged CLI.  If there are additional
   # components requested, just install them without updating the version.
   update = bool(to_install)
 
@@ -210,7 +210,7 @@ def Install(override_components, additional_components, compile_python):
 
 
 def ReInstall(component_ids, compile_python):
-  """Do a forced reinstallation of the Cloud SDK.
+  """Do a forced reinstallation of Google Cloud CLI.
 
   Args:
     component_ids: [str], The components that should be automatically installed.

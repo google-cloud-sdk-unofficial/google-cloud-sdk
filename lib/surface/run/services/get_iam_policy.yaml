@@ -28,3 +28,8 @@
       command_level_fallthroughs:
         region:
         - arg_name: 'region'
+
+  ALPHA:
+    iam:
+      policy_version: 3
+      get_iam_policy_version_path: options_requestedPolicyVersion

@@ -117,6 +117,7 @@ def _CommonArgs(
     support_storage_pool=False,
     support_source_instant_snapshot=False,
     support_enable_confidential_compute=False,
+    support_specific_then_x_affinity=False,
 ):
   """Register parser args common to all tracks."""
   metadata_utils.AddMetadataArgs(parser)
@@ -197,7 +198,9 @@ def _CommonArgs(
   instances_flags.AddReservationAffinityGroup(
       parser,
       group_text='Specifies the reservation for the instance.',
-      affinity_text='The type of reservation for the instance.')
+      affinity_text='The type of reservation for the instance.',
+      support_specific_then_x_affinity=support_specific_then_x_affinity,
+  )
 
   maintenance_flags.AddResourcePoliciesArgs(parser, 'added to', 'instance')
 
@@ -286,6 +289,7 @@ class Create(base.CreateCommand):
   _support_boot_instant_snapshot_uri = False
   _support_partner_metadata = False
   _support_enable_confidential_compute = False
+  _support_specific_then_x_affinity = False
 
   @classmethod
   def Args(cls, parser):
@@ -308,6 +312,7 @@ class Create(base.CreateCommand):
         support_vlan_nic=cls._support_vlan_nic,
         support_storage_pool=cls._support_storage_pool,
         support_enable_confidential_compute=cls._support_enable_confidential_compute,
+        support_specific_then_x_affinity=cls._support_specific_then_x_affinity,
     )
     cls.SOURCE_INSTANCE_TEMPLATE = instances_flags.MakeSourceInstanceTemplateArg(
         support_regional_instance_template=cls._support_regional_instance_template
@@ -642,7 +647,9 @@ class Create(base.CreateCommand):
             enableDisplay=args.enable_display_device)
 
       request.instance.reservationAffinity = (
-          instance_utils.GetReservationAffinity(args, compute_client)
+          instance_utils.GetReservationAffinity(
+              args, compute_client, self._support_specific_then_x_affinity
+          )
       )
 
       requests.append(
@@ -767,6 +774,7 @@ class CreateBeta(Create):
   _support_boot_instant_snapshot_uri = False
   _support_partner_metadata = False
   _support_enable_confidential_compute = True
+  _support_specific_then_x_affinity = True
 
   def GetSourceMachineImage(self, args, resources):
     """Retrieves the specified source machine image's selflink.
@@ -805,6 +813,7 @@ class CreateBeta(Create):
         support_vlan_nic=cls._support_vlan_nic,
         support_storage_pool=cls._support_storage_pool,
         support_enable_confidential_compute=cls._support_enable_confidential_compute,
+        support_specific_then_x_affinity=cls._support_specific_then_x_affinity,
     )
     cls.SOURCE_INSTANCE_TEMPLATE = instances_flags.MakeSourceInstanceTemplateArg(
         support_regional_instance_template=cls._support_regional_instance_template
@@ -864,6 +873,7 @@ class CreateAlpha(CreateBeta):
   _support_boot_instant_snapshot_uri = True
   _support_partner_metadata = True
   _support_enable_confidential_compute = True
+  _support_specific_then_x_affinity = True
 
   @classmethod
   def Args(cls, parser):
@@ -890,6 +900,7 @@ class CreateAlpha(CreateBeta):
         support_storage_pool=cls._support_storage_pool,
         support_source_instant_snapshot=cls._support_source_instant_snapshot,
         support_enable_confidential_compute=cls._support_enable_confidential_compute,
+        support_specific_then_x_affinity=cls._support_specific_then_x_affinity,
     )
 
     CreateAlpha.SOURCE_INSTANCE_TEMPLATE = instances_flags.MakeSourceInstanceTemplateArg(

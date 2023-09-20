@@ -51,6 +51,19 @@ arguments:
       autoCapacityDrain will never drain more than 50% of the configured MIGs/NEGs of a Backend
       Service.
     type: bool
+  - arg_name: failover-health-threshold
+    api_field: serviceLbPolicy.failoverConfig
+    ALPHA:
+      processor: googlecloudsdk.command_lib.network_services.util:FailoverHealthThresholdHook:api_version=v1alpha1
+    BETA:
+      processor: googlecloudsdk.command_lib.network_services.util:FailoverHealthThresholdHook:api_version=v1beta1
+    help_text: |
+      The percentage threshold that a load balancer will begin to send traffic to failover backends.
+      If the percentage of endpoints in a MIG/NEG is smaller than this value, traffic would be sent
+      to failover backends if possible. This field should be set to a value between 1 and 99.
+      The default value is 50 for Global external HTTP(S) load balancer (classic) and Proxyless
+      service mesh, and 70 for others.
+    type: int
   - arg_name: description
     api_field: serviceLbPolicy.description
     help_text: The description for the service LB policy.

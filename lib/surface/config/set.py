@@ -123,6 +123,8 @@ class Set(base.Command):
 
     showed_warning = False
     if prop == properties.VALUES.core.project:
+      # This warning is informational and should not ask for confirmation
+      config_validators.WarnIfSettingProjectWhenAdcExists(args.value)
       showed_warning = config_validators.WarnIfSettingProjectWithNoAccess(
           scope, args.value)
     if prop == properties.VALUES.compute.zone:

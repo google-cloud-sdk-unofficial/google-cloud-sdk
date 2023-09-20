@@ -84,8 +84,8 @@ def ContainerArgGroup():
   """Returns an argument group with all per-container deploy args."""
 
   help_text = """
-    If the --container flag is specified the following arguments may only be
-    specified after a --container flag.
+    If the --container or --remove-containers flag is specified the following
+    arguments may only be specified after a --container flag.
     """
   group = base.ArgumentGroup(help=help_text)
   group.AddArgument(flags.SourceAndImageFlags())
@@ -270,9 +270,12 @@ class Deploy(base.Command):
     if build_from_source:
       required_apis.append('artifactregistry.googleapis.com')
       required_apis.append('cloudbuild.googleapis.com')
-    already_activated_services = api_enabler.CheckAndEnableApis(
-        properties.VALUES.core.project.Get(), required_apis
-    )
+
+    already_activated_services = False
+    if platform == platforms.PLATFORM_MANAGED:
+      already_activated_services = api_enabler.CheckAndEnableApis(
+          properties.VALUES.core.project.Get(), required_apis
+      )
     # Obtaining the connection context prompts the user to select a region if
     # one hasn't been provided. We want to do this prior to preparing a source
     # deploy so that we can use that region for the Artifact Registry repo.
@@ -394,6 +397,10 @@ class Deploy(base.Command):
             build_source=source,
             repo_to_create=repo_to_create,
             already_activated_services=already_activated_services,
+            generate_name=(
+                flags.FlagIsExplicitlySet(args, 'revision_suffix')
+                or flags.FlagIsExplicitlySet(args, 'tag')
+            ),
         )
 
       if args.async_:

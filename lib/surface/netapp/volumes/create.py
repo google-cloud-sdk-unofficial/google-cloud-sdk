@@ -86,18 +86,26 @@ class Create(base.CreateCommand):
       # if no snapshot_schedule was set in args, change to None type for
       # ParseVolumeConfig to easily parse
       snapshot_policy = None
-    security_style = (
-        volumes_flags.GetVolumeSecurityStyleEnumFromArg(args.security_style,
-                                                        client.messages))
+    security_style = volumes_flags.GetVolumeSecurityStyleEnumFromArg(
+        args.security_style, client.messages
+    )
     restricted_actions = []
     if args.restricted_actions:
       for restricted_action in args.restricted_actions:
         restricted_action_enum = (
             volumes_flags.GetVolumeRestrictedActionsEnumFromArg(
-                restricted_action, client.messages))
+                restricted_action, client.messages
+            )
+        )
         restricted_actions.append(restricted_action_enum)
-    labels = labels_util.ParseCreateArgs(args,
-                                         client.messages.Volume.LabelsValue)
+    labels = labels_util.ParseCreateArgs(
+        args, client.messages.Volume.LabelsValue
+    )
+    backup_config = (
+        args.backup_config
+        if self._RELEASE_TRACK == base.ReleaseTrack.BETA
+        else None
+    )
     volume = client.ParseVolumeConfig(
         name=volume_ref.RelativeName(),
         capacity=capacity_in_gib,
@@ -115,7 +123,8 @@ class Create(base.CreateCommand):
         security_style=security_style,
         enable_kerberos=args.enable_kerberos,
         snapshot=args.source_snapshot,
-        restricted_actions=restricted_actions)
+        restricted_actions=restricted_actions,
+        backup_config=backup_config)
     result = client.CreateVolume(volume_ref, args.async_, volume)
     if args.async_:
       command = 'gcloud {} netapp volumes list'.format(

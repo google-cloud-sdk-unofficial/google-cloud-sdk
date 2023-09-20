@@ -190,10 +190,33 @@ def ParseCreateOptionsBase(args, is_autopilot, get_default, location,
 
   flags.WarnForLocationPolicyDefault(args)
 
+  ephemeral_storage_local_ssd = None
+  if args.IsKnownAndSpecified('ephemeral_storage_local_ssd'):
+    ephemeral_storage_local_ssd = (
+        []
+        if args.ephemeral_storage_local_ssd is None
+        else args.ephemeral_storage_local_ssd
+    )
+
+  local_nvme_ssd_block = None
+  if args.IsKnownAndSpecified('local_nvme_ssd_block'):
+    local_nvme_ssd_block = (
+        []
+        if args.local_nvme_ssd_block is None
+        else args.local_nvme_ssd_block
+    )
+
+  addons = get_default('addons')
+  if getattr(args, 'enable_backup_restore', None):
+    if addons is None:
+      addons = api_adapter.BACKUPRESTORE
+    else:
+      addons += api_adapter.BACKUPRESTORE
+
   return api_adapter.CreateClusterOptions(
       accelerators=get_default('accelerator'),
       additional_zones=get_default('additional_zones'),
-      addons=get_default('addons'),
+      addons=addons,
       boot_disk_kms_key=get_default('boot_disk_kms_key'),
       cluster_dns=get_default('cluster_dns'),
       cluster_dns_scope=get_default('cluster_dns_scope'),
@@ -263,14 +286,14 @@ def ParseCreateOptionsBase(args, is_autopilot, get_default, location,
       enable_private_endpoint=get_default('enable_private_endpoint'),
       enable_gke_oidc=getattr(args, 'enable_gke_oidc', None),
       enable_identity_service=getattr(args, 'enable_identity_service', None),
-      ephemeral_storage_local_ssd=get_default('ephemeral_storage_local_ssd'),
+      ephemeral_storage_local_ssd=(ephemeral_storage_local_ssd),
       image_type=get_default('image_type'),
       image=get_default('image'),
       image_project=get_default('image_project'),
       image_family=get_default('image_family'),
       issue_client_certificate=get_default('issue_client_certificate'),
       labels=get_default('labels'),
-      local_nvme_ssd_block=get_default('local_nvme_ssd_block'),
+      local_nvme_ssd_block=(local_nvme_ssd_block),
       local_ssd_count=get_default('local_ssd_count'),
       maintenance_window=get_default('maintenance_window'),
       maintenance_window_start=get_default('maintenance_window_start'),
@@ -868,6 +891,8 @@ flags_to_add = {
             flags.AddReleaseChannelFlag,
         'resourceManagerTags':
             flags.AddResourceManagerTagsCreate,
+        'autoprovisioningResourceManagerTags':
+            flags.AddAutoprovisioningResourceManagerTagsCreate,
         'resourceusageexport':
             flags.AddResourceUsageExportFlags,
         'reservationaffinity':
@@ -1125,6 +1150,8 @@ flags_to_add = {
             flags.AddReservationAffinityFlags,
         'resourceManagerTags':
             flags.AddResourceManagerTagsCreate,
+        'autoprovisioningResourceManagerTags':
+            flags.AddAutoprovisioningResourceManagerTagsCreate,
         'resourceusageexport':
             flags.AddResourceUsageExportFlags,
         'releasechannel':
@@ -1392,6 +1419,13 @@ class CreateBeta(Create):
                                  project_id)
     flags.WarnForNodeVersionAutoUpgrade(args)
     flags.ValidateSurgeUpgradeSettings(args)
+    ephemeral_storage = None
+    if args.IsKnownAndSpecified('ephemeral_storage'):
+      ephemeral_storage = (
+          []
+          if args.ephemeral_storage is None
+          else args.ephemeral_storage
+      )
     ops.boot_disk_kms_key = get_default('boot_disk_kms_key')
     ops.min_cpu_platform = get_default('min_cpu_platform')
     ops.enable_pod_security_policy = get_default('enable_pod_security_policy')
@@ -1430,7 +1464,7 @@ class CreateBeta(Create):
                                                'enable_workload_certificates',
                                                None)
     ops.enable_alts = getattr(args, 'enable_alts', None)
-    ops.ephemeral_storage = get_default('ephemeral_storage')
+    ops.ephemeral_storage = ephemeral_storage
     ops.enable_workload_monitoring_eap = \
       get_default('enable_workload_monitoring_eap')
     ops.private_endpoint_subnetwork = \
@@ -1472,6 +1506,9 @@ class CreateBeta(Create):
         'containerd_config_from_file',
     )
     ops.resource_manager_tags = get_default('resource_manager_tags')
+    ops.autoprovisioning_resource_manager_tags = get_default(
+        'autoprovisioning_resource_manager_tags'
+    )
     return ops
 
 
@@ -1489,10 +1526,17 @@ class CreateAlpha(Create):
                                  project_id)
     flags.WarnForNodeVersionAutoUpgrade(args)
     flags.ValidateSurgeUpgradeSettings(args)
+    ephemeral_storage = None
+    if args.IsKnownAndSpecified('ephemeral_storage'):
+      ephemeral_storage = (
+          []
+          if args.ephemeral_storage is None
+          else args.ephemeral_storage
+      )
     ops.boot_disk_kms_key = get_default('boot_disk_kms_key')
     ops.autoscaling_profile = get_default('autoscaling_profile')
     ops.local_ssd_volume_configs = get_default('local_ssd_volumes')
-    ops.ephemeral_storage = get_default('ephemeral_storage')
+    ops.ephemeral_storage = ephemeral_storage
     ops.enable_pod_security_policy = get_default('enable_pod_security_policy')
     ops.allow_route_overlap = get_default('allow_route_overlap')
     ops.private_cluster = get_default('private_cluster')
@@ -1579,4 +1623,7 @@ class CreateAlpha(Create):
     ops.host_maintenance_interval = get_default('host_maintenance_interval')
     ops.contianerd_config_from_file = get_default('contianerd_config_from_file')
     ops.resource_manager_tags = get_default('resource_manager_tags')
+    ops.autoprovisioning_resource_manager_tags = get_default(
+        'autoprovisioning_resource_manager_tags'
+    )
     return ops

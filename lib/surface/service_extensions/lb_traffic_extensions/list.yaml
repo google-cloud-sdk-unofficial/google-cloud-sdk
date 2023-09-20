@@ -1,4 +1,4 @@
-release_tracks: [ALPHA]
+release_tracks: [BETA, ALPHA]
 
 help_text:
   brief: |
@@ -8,13 +8,16 @@ help_text:
     project.
   examples: |
       To list all LB Traffic Extensions in the current project located in
-      'europe-west1' region, run:
+      `us-central1` region, run:
 
-        $ {command} --location="europe-west1"
+        $ {command} --location=us-central1
 
 
 request: &request
-  api_version: v1alpha1
+  ALPHA:
+    api_version: v1alpha1
+  BETA:
+    api_version: v1beta1
   collection: networkservices.projects.locations.lbTrafficExtensions
 
 arguments:

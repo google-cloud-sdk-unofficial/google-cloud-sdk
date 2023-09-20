@@ -22,13 +22,20 @@ from __future__ import unicode_literals
 from googlecloudsdk.api_lib.services import services_util
 from googlecloudsdk.api_lib.services import serviceusage
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.services import common_flags
 
 
-class List(base.ListCommand):
-  """List services for a project.
+# TODO(b/274633761) make command public after preview.
+@base.Hidden
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class ListAlpha(base.ListCommand):
+  """List services for a project, folder or organization.
 
-  This command lists the services that are enabled or available to be enabled
-  by a project. You can choose the mode in which the command will list
+  This command lists the services that are enabled or available (Google first
+  party services) to be enabled
+  by a project, folder or organization. Service enablement can be inherited from
+  resource ancestors. A resource's enabled services include services that are
+  enabled on the resource itself and enabled on all resource ancestors.
   services by using exactly one of the `--enabled` or `--available` flags.
   `--enabled` is the default.
 
@@ -38,9 +45,130 @@ class List(base.ListCommand):
 
     $ {command} --enabled
 
-  To list the services the current project can enable for consumption, run:
+  To list the Google first party services the current project can enable for
+  consumption, run:
 
     $ {command} --available
+  """
+
+  @staticmethod
+  def Args(parser):
+    """Args is called by calliope to gather arguments for this command.
+
+    Args:
+      parser: An argparse parser that you can use to add arguments that go on
+        the command line after this command. Positional arguments are allowed.
+    """
+    mode_group = parser.add_mutually_exclusive_group(required=False)
+
+    mode_group.add_argument(
+        '--enabled',
+        action='store_true',
+        help=(
+            '(DEFAULT) Return the services which the project, folder or'
+            ' organization has enabled.'
+        ),
+    )
+
+    mode_group.add_argument(
+        '--available',
+        action='store_true',
+        help=(
+            'Return the Google first party services available to the '
+            'project, folder or organization to enable. This list will '
+            'include any services that the project, folder or organization '
+            'has already enabled.'
+        ),
+    )
+
+    common_flags.add_resource_args(parser)
+
+    base.PAGE_SIZE_FLAG.SetDefault(parser, 200)
+
+    # Remove unneeded list-related flags from parser
+    base.URI_FLAG.RemoveFromParser(parser)
+
+    parser.display_info.AddFormat("""
+        table(
+            name:label=NAME:sort=1,
+            title
+        )
+      """)
+
+  def Run(self, args):
+    """Run 'services list'.
+
+    Args:
+      args: argparse.Namespace, The arguments that this command was invoked
+        with.
+
+    Returns:
+      The list of services for this project.
+    """
+    # Default mode is --enabled, so if no flags were specified,
+    # turn on the args.enabled flag.
+    if not (args.enabled or args.available):
+      args.enabled = True
+    if args.IsSpecified('project'):
+      project = args.project
+    else:
+      project = services_util.GetValidatedProject(args.project)
+    if args.IsSpecified('folder'):
+      folder = args.folder
+    else:
+      folder = None
+    if args.IsSpecified('organization'):
+      organization = args.organization
+    else:
+      organization = None
+    if args.IsSpecified('limit'):
+      return serviceusage.ListServicesV2(
+          project,
+          args.enabled,
+          args.page_size,
+          args.limit,
+          folder=folder,
+          organization=organization,
+      )
+    else:
+      return serviceusage.ListServicesV2(
+          project,
+          args.enabled,
+          args.page_size,
+          folder=folder,
+          organization=organization,
+      )
+
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
+class List(base.ListCommand):
+
+  """List services for a project.
+
+  This command lists the services that are enabled or available to be enabled
+  by a project. You can choose the mode in which the command will list
+  services by using exactly one of the `--enabled` or `--available` flags.
+  `--enabled` is the default.
+
+  ## EXAMPLES
+
+  To list the services for  the current project has enabled for consumption,
+  run:
+
+    $ {command} --enabled
+
+  To list the services for the current project can enable for consumption, run:
+
+    $ {command} --available
+
+  To list the services for project `my-project` has enabled for consumption,
+  run:
+
+    $ {command} --enabled --project=my-project
+
+  To list the services the project `my-project` can enable for consumption, run:
+
+    $ {command} --available --project=my-project
   """
 
   @staticmethod
@@ -95,5 +223,6 @@ class List(base.ListCommand):
     if not (args.enabled or args.available):
       args.enabled = True
     project = services_util.GetValidatedProject(args.project)
-    return serviceusage.ListServices(project, args.enabled, args.page_size,
-                                     args.limit)
+    return serviceusage.ListServices(
+        project, args.enabled, args.page_size, args.limit
+    )

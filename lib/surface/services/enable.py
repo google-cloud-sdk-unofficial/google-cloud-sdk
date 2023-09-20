@@ -29,9 +29,53 @@ from googlecloudsdk.core import properties
 _OP_BASE_CMD = 'gcloud beta services operations '
 _OP_WAIT_CMD = _OP_BASE_CMD + 'wait {0}'
 
+_DETAILED_HELP_ALPHA = {
+    'DESCRIPTION': """\
+        This command enables a service for consumption for a project, folder or organization.
+
+        To see a list of available services for a project, run:
+
+          $ {parent_command} list --available
+
+     More information on listing services can be found at:
+     https://cloud.google.com/service-usage/docs/list-services and on
+     disabling a service at:
+     https://cloud.google.com/service-usage/docs/enable-disable
+        """,
+    'EXAMPLES': """\
+        To enable a service called `my-consumed-service` on the current
+        project, run:
+
+          $ {command} my-consumed-service
+
+        To enable a service called `my-consumed-service` on the project
+        `my-project`, run:
+
+          $ {command} my-consumed-service --project=my-project
+
+        To enable a service called `my-consumed-service` on the folder
+        `my-folder, run:
+
+          $ {command} my-consumed-service --folder=my-folder
+
+        To enable a service called `my-consumed-service` on the organization
+        `my-organization`, run:
+
+          $ {command} my-consumed-service --organization=my-organization
+
+        To run the same command asynchronously (non-blocking), run:
+
+          $ {command} my-consumed-service --async
+
+        To enable services called `service1`, `service2`, and `service3` on the
+        current project, run:
+
+          $ {command} service1 service2 service3
+        """,
+}
+
 _DETAILED_HELP = {
-    'DESCRIPTION':
-        """\
+    'DESCRIPTION': """\
         This command enables a service for consumption for a project.
 
         To see a list of available services for a project, run:
@@ -43,8 +87,7 @@ _DETAILED_HELP = {
      disabling a service at:
      https://cloud.google.com/service-usage/docs/enable-disable
         """,
-    'EXAMPLES':
-        """\
+    'EXAMPLES': """\
         To enable a service called `my-consumed-service` on the current
         project, run:
 
@@ -66,7 +109,7 @@ _DETAILED_HELP = {
 @base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class EnableAlpha(base.SilentCommand):
-  """Enables a service for consumption for a project."""
+  """Enables a service for consumption for a project, folder or organization."""
 
   @staticmethod
   def Args(parser):
@@ -116,7 +159,7 @@ class EnableAlpha(base.SilentCommand):
       return
     log.status.Print('Operation finished successfully')
 
-EnableAlpha.detailed_help = _DETAILED_HELP
+EnableAlpha.detailed_help = _DETAILED_HELP_ALPHA
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)

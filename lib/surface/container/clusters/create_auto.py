@@ -78,6 +78,7 @@ def AddAutoFlags(parser, release_track):
       autopilot=True)
   flags.AddWorkloadPoliciesFlag(parser)
   flags.AddReleaseChannelFlag(parser, autopilot=True)
+  flags.AddEnableBackupRestoreFlag(parser)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
@@ -104,6 +105,7 @@ class CreateBeta(create.CreateBeta):
   def Args(parser):
     create.AddFlags(create.BETA, parser, auto_flag_defaults, auto_flags)
     AddAutoFlags(parser, base.ReleaseTrack.BETA)
+    flags.AddAutoprovisioningResourceManagerTagsCreate(parser)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -117,3 +119,4 @@ class CreateAlpha(create.CreateAlpha):
   def Args(parser):
     create.AddFlags(create.ALPHA, parser, auto_flag_defaults, auto_flags)
     AddAutoFlags(parser, base.ReleaseTrack.ALPHA)
+    flags.AddAutoprovisioningResourceManagerTagsCreate(parser)

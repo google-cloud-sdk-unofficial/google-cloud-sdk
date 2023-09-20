@@ -18,8 +18,10 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
-from apitools.base.py import exceptions as apitools_exceptions
+import os
+
 from apitools.base.py import transfer
+from googlecloudsdk.api_lib.artifacts import exceptions as ar_exceptions
 from googlecloudsdk.api_lib.util import apis
 from googlecloudsdk.api_lib.util import waiter
 from googlecloudsdk.calliope import base
@@ -37,14 +39,17 @@ class Upload(base.Command):
   api_version = 'v1'
 
   detailed_help = {
-      'DESCRIPTION':
-          '{description}',
-      'EXAMPLES':
-          """\
+      'DESCRIPTION': '{description}',
+      'EXAMPLES': """\
     To upload version v0.1.0 of a generic artifact located in /path/to/file/ to a repository in "us-central1":
 
         $ {command} --location=us-central1 --project=myproject --repository=myrepo \
           --package=mypackage --version=v0.1.0 --source=/path/to/file/
+
+    To upload version v0.1.0 of a generic artifact located in /path/to/file/ to a repository in "us-central1" within a folder structure:
+
+        $ {command} --location=us-central1 --project=myproject --repository=myrepo \
+          --package=mypackage --version=v0.1.0 --source=/path/to/file/ --destination-path=folder/file
     """,
   }
 
@@ -57,12 +62,8 @@ class Upload(base.Command):
     """
     flags.GetRequiredRepoFlag().AddToParser(parser)
     base.ASYNC_FLAG.AddToParser(parser)
+    group = parser.add_group(mutex=True, required=True)
 
-    parser.add_argument(
-        '--source',
-        metavar='SOURCE',
-        required=True,
-        help='The path to the file you are uploading.')
     parser.add_argument(
         '--package',
         metavar='PACKAGE',
@@ -72,26 +73,80 @@ class Upload(base.Command):
         '--version',
         metavar='VERSION',
         required=True,
-        help='The version of the package. You cannot overwrite an existing version in the repository.'
+        help=(
+            'The version of the package. '
+            'You cannot overwrite an existing version in the repository.'
+        ),
     )
+    parser.add_argument(
+        '--destination-path',
+        metavar='DESTINATION_PATH',
+        required=False,
+        help=(
+            'Use to specify the path to upload a generic '
+            'artifact to within a folder structure.'
+        ),
+    )
+    group.add_argument(
+        '--source',
+        metavar='SOURCE',
+        help='The path to the file you are uploading.')
+    group.add_argument(
+        '--source-directory',
+        metavar='SOURCE_DIRECTORY',
+        help='The directory you are uploading.')
 
   def Run(self, args):
     """Run the generic artifact upload command."""
 
     client = apis.GetClientInstance('artifactregistry', self.api_version)
-    client.additional_http_headers['X-Goog-Upload-Protocol'] = 'multipart'
     messages = client.MESSAGES_MODULE
 
-    try:
-      return self.uploadArtifact(args, client, messages)
-    except apitools_exceptions.HttpError:
-      # Retrying without the header for scotty resumable uploads.
-      client = apis.GetClientInstance('artifactregistry', self.api_version)
-      return self.uploadArtifact(args, client, messages)
+    source_dir = args.source_directory
+    source_file = args.source
+    destination = args.destination_path
 
-  def uploadArtifact(self, args, client, messages):
+    if source_dir and destination:
+      raise ar_exceptions.InvalidInputValueError(
+          'Cannot specify both --source-dir and --destination-path.'
+      )
+
+    if source_dir and args.async_:
+      raise ar_exceptions.InvalidInputValueError(
+          'Asynchronous uploads not supported for directories.'
+      )
+
+    # Uploading a single file
+    if source_file:
+      return self.uploadArtifact(args, source_file, client, messages)
+    # Uploading a directory
+    elif source_dir:
+      # If source_dir was specified, normalize and traverse
+      # through the directory sending one upload request per file found,
+      # preserving the folder structure.
+      args.source_directory = os.path.normpath(source_dir)
+      for path, _, files in os.walk(source_dir):
+        for file in files:
+          self.uploadArtifact(
+              args, (os.path.join(path, file)), client, messages
+          )
+
+  def uploadArtifact(self, args, file_path, client, messages):
     repo_ref = args.CONCEPTS.repository.Parse()
-    file_name = args.source.split('/')[-1]
+    # If destination_path was not specified,
+    # take the last portion of the file path as the the file name.
+    # ie. file path is folder1/folder2/file.txt, the file name is file.txt
+    if args.source:
+      if args.destination_path:
+        file_name = args.destination_path
+      else:
+        file_name = os.path.basename(file_path)
+    else:
+      # ie: "/usr/Desktop/test_generic_folder"
+      # remove the prefix from the full file path
+      # /usr/Desktop/test_generic_folder/test.txt
+      # to get 'test.txt'
+      file_name = file_path[len(args.source_directory)+1:]
 
     request = messages.ArtifactregistryProjectsLocationsRepositoriesGenericArtifactsUploadRequest(
         uploadGenericArtifactRequest=messages.UploadGenericArtifactRequest(
@@ -100,8 +155,8 @@ class Upload(base.Command):
             filename=file_name),
         parent=repo_ref.RelativeName())
 
-    mime_type = util.GetMimetype(args.source)
-    upload = transfer.Upload.FromFile(args.source, mime_type=mime_type)
+    mime_type = util.GetMimetype(file_path)
+    upload = transfer.Upload.FromFile(file_path, mime_type=mime_type)
     op_obj = client.projects_locations_repositories_genericArtifacts.Upload(
         request, upload=upload)
     op = op_obj.operation

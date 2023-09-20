@@ -18,14 +18,14 @@
     brief: Describe a workload identity pool namespace workload source operation.
     description: Describe a workload identity pool namespace workload source operation.
     examples: |
-      The following command describes the long running workload identity pool namespace workload
+      The following command describes the long-running workload identity pool namespace workload
       source operation with the ID `my-operation`:
 
         $ {command} my-operation \
             --workload-identity-pool="my-workload-identity-pool" \
             --namespace="my-namespace" \
             --managed-identity="my-managed-identity" \
-            --workload-source="projects/123" \
+            --workload-source="project-123" \
             --location="global"
 
   request:
@@ -33,6 +33,6 @@
 
   arguments:
     resource:
-      help_text: Workload identity pool namespace workload source long running operation to describe.
+      help_text: Workload identity pool namespace workload source long-running operation to describe.
       spec: !REF googlecloudsdk.command_lib.iam.resources:workload_identity_pool_namespace_workload_source_operation
       is_positional: true

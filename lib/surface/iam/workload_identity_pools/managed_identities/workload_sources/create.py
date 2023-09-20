@@ -30,14 +30,15 @@ from googlecloudsdk.core import log
 
 
 class CreateGcp(base.CreateCommand):
-  """Create a workload identity pool managed identity workload source."""
+  """Create a workload source for a workload identity pool managed identity."""
 
   detailed_help = {
       'DESCRIPTION': '{description}',
       'EXAMPLES': """\
-          The following command creates a workload identity pool managed
-          identity workload source in the default project with the ID
-          project-123.
+          The following command creates a workload source for a workload
+          identity pool managed identity that authorizes any workload in
+          the Google Cloud project `123` with the given service
+          accounts attached to assume it.
 
             $ {command} project-123 --location="global" \\
             --workload-identity-pool="my-workload-identity-pool" \\
@@ -57,8 +58,7 @@ class CreateGcp(base.CreateCommand):
         concepts.ResourceSpec.FromYaml(
             workload_source_data.GetData(), is_positional=True
         ),
-        'The workload identity pool managed identity workload source to'
-        ' create.',
+        'The workload source to create.',
         required=True,
     ).AddToParser(parser)
     # Flags for creating workload source
@@ -87,8 +87,9 @@ class CreateGcp(base.CreateCommand):
   def CheckArgs(self, args):
     if not args.resources and not args.attached_service_accounts:
       raise gcloud_exceptions.OneOfArgumentsRequiredException(
-          ['--resources', '--attached_service_accounts'],
-          'Must provide at least one attribute.',
+          ['--resources', '--attached-service-accounts'],
+          'Must provide at least one attribute that will match workload(s) '
+          'from the source.',
       )
 
   def CreateWorkloadSource(self, args, client, messages, workload_source_ref):

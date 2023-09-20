@@ -21,7 +21,9 @@ from __future__ import unicode_literals
 
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.config import completers
+from googlecloudsdk.command_lib.config import config_validators
 from googlecloudsdk.core import log
+from googlecloudsdk.core import properties
 from googlecloudsdk.core.configurations import named_configs
 
 
@@ -57,5 +59,10 @@ class Activate(base.SilentCommand):
   def Run(self, args):
     named_configs.ConfigurationStore.ActivateConfig(args.configuration_name)
     log.status.write('Activated [{0}].\n'.format(args.configuration_name))
+    project_id = properties.VALUES.core.project.Get()
+    if project_id:
+      # Warning if current project does not match the one in ADC
+      config_validators.WarnIfSettingProjectWhenAdcExists(project_id)
+
     return args.configuration_name
 

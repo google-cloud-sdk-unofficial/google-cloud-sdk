@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Command to create a workload source under a workload identity pool namespace."""
+"""Command to create a workload source for a workload identity pool namespace."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -30,18 +30,20 @@ from googlecloudsdk.core import log
 
 
 class CreateGcp(base.CreateCommand):
-  """Create a workload identity pool namespace workload source for a hosted source."""
+  """Create a workload source for a workload identity pool namespace."""
 
   detailed_help = {
       'DESCRIPTION': '{description}',
       'EXAMPLES': """\
-          The following command creates a workload identity pool namespace
-          workload source in the default project with the ID project-123.
+          The following command creates a workload source for the specified
+          workload identity pool namespace that authorizes any workload in
+          the Google Cloud project `123` with the given service accounts
+          attached to assume any identity within the namespace.
 
             $ {command} project-123 --location="global" \\
             --workload-identity-pool="my-workload-identity-pool" \\
             --namespace="my-namespace" \\
-            --resoures="resource-1","resource-2"
+            --attached-service-account='foo@bar.iam.gserviceaccount.com'
           """,
   }
 
@@ -50,12 +52,15 @@ class CreateGcp(base.CreateCommand):
     workload_source_data = yaml_data.ResourceYAMLData.FromPath(
         'iam.workload_identity_pool_namespace_workload_source'
     )
+    # b/295594640: The help text for this command should include what the ID
+    # represents and format constraints enforced. Figure out if it's possible
+    # to add that information to this parser.
     concept_parsers.ConceptParser.ForResource(
         'workload_source',
         concepts.ResourceSpec.FromYaml(
             workload_source_data.GetData(), is_positional=True
         ),
-        'The workload identity pool namespace workload source to create.',
+        'The workload source to create.',
         required=True,
     ).AddToParser(parser)
     # Flags for creating workload source
@@ -84,8 +89,9 @@ class CreateGcp(base.CreateCommand):
   def CheckArgs(self, args):
     if not args.resources and not args.attached_service_accounts:
       raise gcloud_exceptions.OneOfArgumentsRequiredException(
-          ['--resources', '--attached_service_accounts'],
-          'Must provide at least one attribute when gcp-source is specified.',
+          ['--resources', '--attached-service-accounts'],
+          'Must provide at least one attribute that will match workload(s) '
+          'from the source.',
       )
 
   def CreateWorkloadSource(self, args, client, messages, workload_source_ref):

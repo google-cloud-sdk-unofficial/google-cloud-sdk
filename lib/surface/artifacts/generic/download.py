@@ -21,6 +21,7 @@ from __future__ import unicode_literals
 import os
 import tempfile
 
+from googlecloudsdk.api_lib.artifacts import exceptions as ar_exceptions
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.artifacts import download_util
 from googlecloudsdk.command_lib.artifacts import file_util
@@ -43,6 +44,12 @@ class Download(base.Command):
         $ {command} --location=us-central1 --project=myproject --repository=myrepo \
           --package=mypackage --version=v0.1.0 --destination=/path/to/destination/ \
           --name=myfile.txt
+
+    To download all files of version v0.1.0 and package mypackage located in a repository in "us-central1" to /path/to/destination/
+    while maintaining the folder hierarchy:
+
+        $ {command} --location=us-central1 --project=myproject --repository=myrepo \
+          --package=mypackage --version=v0.1.0 --destination=/path/to/destination/
     """,
   }
 
@@ -76,8 +83,7 @@ class Download(base.Command):
     parser.add_argument(
         '--name',
         metavar='NAME',
-        required=True,
-        help='The name of the artifact to download.'
+        help='If specified, the file name within the artifact to download.'
     )
 
   def Run(self, args):
@@ -85,9 +91,32 @@ class Download(base.Command):
 
     repo_ref = args.CONCEPTS.repository.Parse()
     # Get the file name when given a file path
-    file_name = args.name.split('/')[-1]
+    if args.name:
+      file_name = os.path.basename(args.name)
+      file_id = '{}:{}:{}'.format(args.package, args.version, args.name)
+      self.downloadGenericArtifact(args, repo_ref, file_id, file_name)
+    else:
+      # file name was not specified, download all files in the given version.
+      list_files = file_util.ListGenericFiles(args)
+      if not list_files:
+        raise ar_exceptions.ArtifactRegistryError(
+            'No files found for package: {} version: {}'.format(
+                args.package, args.version
+            )
+        )
+      for files in list_files:
+        # Extract just the file id.
+        file_id = os.path.basename(files.name)
+        file_name = file_id.rsplit(':', 1)[1].replace('%2F', '/')
+        # Create the directory structure.
+        if '/' in file_name:
+          d = os.path.dirname(file_name)
+          os.makedirs(os.path.join(tempfile.gettempdir(), d), exist_ok=True)
+          os.makedirs(os.path.join(args.destination, d))
 
-    file_id = '{}:{}:{}'.format(args.package, args.version, args.name)
+        self.downloadGenericArtifact(args, repo_ref, file_id, file_name)
+
+  def downloadGenericArtifact(self, args, repo_ref, file_id, file_name):
     tmp_path = os.path.join(tempfile.gettempdir(), file_name)
     final_path = os.path.join(args.destination, file_name)
     file_escaped = file_util.EscapeFileNameFromIDs(

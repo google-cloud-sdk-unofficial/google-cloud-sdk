@@ -109,6 +109,21 @@ class SignAndCreate(base.CreateCommand):
           Whether to validate that the Attestation can be verified by the
           provided Attestor.
         """))
+    parser.add_argument(
+        '--pae-encode-payload',
+        action='store_true',
+        default=False,
+        help=textwrap.dedent("""\
+          Whether to pae-encode the payload before signing.
+        """),
+    )
+    parser.add_argument(
+        '--dsse-type',
+        type=str,
+        default='application/vnd.dev.cosign.simplesigning.v1+json',
+        help=textwrap.dedent("""\
+          DSSE type used for pae encoding."""),
+    )
 
   def Run(self, args):
     project_ref = resources.REGISTRY.Parse(
@@ -145,13 +160,20 @@ class SignAndCreate(base.CreateCommand):
             cancel_on_no=True)
 
     payload = binauthz_command_util.MakeSignaturePayload(args.artifact_url)
+    payload_for_signing = payload
+    if args.pae_encode_payload:
+      payload_for_signing = binauthz_command_util.PaeEncode(
+          args.dsse_type, payload.decode('utf-8')
+      )
 
     kms_client = kms.Client()
     pubkey_response = kms_client.GetPublicKey(key_ref.RelativeName())
 
     sign_response = kms_client.AsymmetricSign(
         key_ref.RelativeName(),
-        kms.GetAlgorithmDigestType(pubkey_response.algorithm), payload)
+        kms.GetAlgorithmDigestType(pubkey_response.algorithm),
+        payload_for_signing,
+    )
 
     validation_callback = functools.partial(
         validation.validate_attestation,

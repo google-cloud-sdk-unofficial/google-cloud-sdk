@@ -140,6 +140,7 @@ class Create(base.Command):
   _support_performance_monitoring_unit = False
   _support_custom_hostnames = False
   _support_storage_pool = False
+  _support_specific_then_x_affinity = False
 
   _log_async = False
 
@@ -167,6 +168,7 @@ class Create(base.Command):
         support_performance_monitoring_unit=cls._support_performance_monitoring_unit,
         support_custom_hostnames=cls._support_custom_hostnames,
         support_storage_pool=cls._support_storage_pool,
+        support_specific_then_x_affinity=cls._support_specific_then_x_affinity,
     )
     cls.AddSourceInstanceTemplate(parser)
 
@@ -215,6 +217,7 @@ class Create(base.Command):
         self._support_performance_monitoring_unit,
         self._support_custom_hostnames,
         self._support_storage_pool,
+        self._support_specific_then_x_affinity,
     )
     bulk_instance_resource = bulk_util.CreateBulkInsertInstanceResource(
         args,
@@ -355,6 +358,7 @@ class CreateBeta(Create):
   _support_performance_monitoring_unit = False
   _support_custom_hostnames = True
   _support_storage_pool = False
+  _support_specific_then_x_affinity = True
 
   @classmethod
   def Args(cls, parser):
@@ -378,6 +382,7 @@ class CreateBeta(Create):
         support_performance_monitoring_unit=cls._support_performance_monitoring_unit,
         support_custom_hostnames=cls._support_custom_hostnames,
         support_storage_pool=cls._support_storage_pool,
+        support_specific_then_x_affinity=cls._support_specific_then_x_affinity,
     )
     cls.AddSourceInstanceTemplate(parser)
 
@@ -408,6 +413,7 @@ class CreateAlpha(Create):
   _support_performance_monitoring_unit = True
   _support_custom_hostnames = True
   _support_storage_pool = True
+  _support_specific_then_x_affinity = True
 
   @classmethod
   def Args(cls, parser):
@@ -434,6 +440,7 @@ class CreateAlpha(Create):
         support_performance_monitoring_unit=cls._support_performance_monitoring_unit,
         support_custom_hostnames=cls._support_custom_hostnames,
         support_storage_pool=cls._support_storage_pool,
+        support_specific_then_x_affinity=cls._support_specific_then_x_affinity,
     )
 
     cls.AddSourceInstanceTemplate(parser)

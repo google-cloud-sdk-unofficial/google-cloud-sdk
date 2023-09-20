@@ -19,8 +19,14 @@ from __future__ import division
 from __future__ import unicode_literals
 
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib import deprecation_utils
 
 
+@deprecation_utils.DeprecateCommandAtVersion(
+    remove_version='447.0.0',
+    remove=True,
+    alt_command='gcloud fleet scopes namespaces',
+)
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Namespace(base.Group):
   """Fleet namespaces are the fleet equivalent of k8s cluster namespaces.

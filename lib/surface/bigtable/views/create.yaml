@@ -40,3 +40,6 @@
           },
           "deletionProtection": true
         }
+
+  async:
+    collection: bigtableadmin.operations

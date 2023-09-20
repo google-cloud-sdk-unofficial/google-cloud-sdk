@@ -1,0 +1,37 @@
+release_tracks: [BETA, ALPHA]
+
+help_text:
+  brief: |
+    List LB Route Extensions.
+  description: |
+    List all LB Route Extensions in the specified location of the
+    current project.
+  examples: |
+      To list all LB Route Extensions in the current project located
+      in `us-central1` region run:
+
+        $ {command} --location=us-central1
+
+request: &request
+  ALPHA:
+    api_version: v1alpha1
+  BETA:
+    api_version: v1beta1
+  collection: networkservices.projects.locations.lbRouteExtensions
+
+arguments:
+  resource:
+    spec: !REF googlecloudsdk.command_lib.service_extensions.resources:location
+    help_text: |
+      The project of the LB Route Extensions to list.
+
+response:
+  id_field: name
+
+output:
+  format: |
+      table(
+        name.basename():label=NAME,
+        loadBalancingScheme,
+        updateTime.date(unit=1000, tz_default=UTC):label=LAST_MODIFIED
+      )

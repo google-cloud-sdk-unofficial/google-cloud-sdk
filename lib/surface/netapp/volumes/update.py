@@ -101,8 +101,17 @@ class Update(base.UpdateCommand):
       # if no snapshot_schedule was set in args, change to None type for
       # ParseVolumeConfig to easily parse
       snapshot_policy = None
-    security_style = (volumes_flags.GetVolumeSecurityStyleEnumFromArg(
-        args.security_style, client.messages)) if args.security_style else None
+    if args.security_style:
+      security_style = volumes_flags.GetVolumeSecurityStyleEnumFromArg(
+          args.security_style, client.messages
+      )
+    else:
+      security_style = None
+    backup_config = (
+        args.backup_config
+        if self._RELEASE_TRACK == base.ReleaseTrack.BETA
+        else None
+    )
     volume = client.ParseUpdatedVolumeConfig(
         original_volume,
         description=args.description,
@@ -120,7 +129,8 @@ class Update(base.UpdateCommand):
         security_style=security_style,
         enable_kerberos=args.enable_kerberos,
         snapshot=args.source_snapshot,
-        restricted_actions=restricted_actions)
+        restricted_actions=restricted_actions,
+        backup_config=backup_config)
 
     updated_fields = []
     # add possible updated volume fields
@@ -156,20 +166,29 @@ class Update(base.UpdateCommand):
       updated_fields.append('restoreParameters')
     if args.IsSpecified('restricted_actions'):
       updated_fields.append('restrictedActions')
+    if self._RELEASE_TRACK == base.ReleaseTrack.BETA and args.IsSpecified(
+        'backup_config'
+    ):
+      updated_fields.append('backupConfig')
     if args.IsSpecified('description'):
       updated_fields.append('description')
-    if (args.IsSpecified('update_labels') or
-        args.IsSpecified('remove_labels') or args.IsSpecified('clear_labels')):
+    if (
+        args.IsSpecified('update_labels')
+        or args.IsSpecified('remove_labels')
+        or args.IsSpecified('clear_labels')
+    ):
       updated_fields.append('labels')
     update_mask = ','.join(updated_fields)
 
     result = client.UpdateVolume(volume_ref, volume, update_mask, args.async_)
     if args.async_:
       command = 'gcloud {} netapp volumes list'.format(
-          self.ReleaseTrack().prefix)
+          self.ReleaseTrack().prefix
+      )
       log.status.Print(
           'Check the status of the updated volume by listing all volumes:\n  '
-          '$ {} '.format(command))
+          '$ {} '.format(command)
+      )
     return result
 
 

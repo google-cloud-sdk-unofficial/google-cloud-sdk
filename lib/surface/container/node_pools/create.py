@@ -129,6 +129,21 @@ def ParseCreateNodePoolOptionsBase(args):
   flags.WarnForLocationPolicyDefault(args)
   metadata = metadata_utils.ConstructMetadataDict(args.metadata,
                                                   args.metadata_from_file)
+  ephemeral_storage_local_ssd = None
+  if args.IsKnownAndSpecified('ephemeral_storage_local_ssd'):
+    ephemeral_storage_local_ssd = (
+        []
+        if args.ephemeral_storage_local_ssd is None
+        else args.ephemeral_storage_local_ssd
+    )
+
+  local_nvme_ssd_block = None
+  if args.IsKnownAndSpecified('local_nvme_ssd_block'):
+    local_nvme_ssd_block = (
+        []
+        if args.local_nvme_ssd_block is None
+        else args.local_nvme_ssd_block
+    )
   return api_adapter.CreateNodePoolOptions(
       accelerators=args.accelerator,
       boot_disk_kms_key=args.boot_disk_kms_key,
@@ -138,8 +153,8 @@ def ParseCreateNodePoolOptionsBase(args):
       node_version=args.node_version,
       num_nodes=args.num_nodes,
       local_ssd_count=args.local_ssd_count,
-      local_nvme_ssd_block=args.local_nvme_ssd_block,
-      ephemeral_storage_local_ssd=args.ephemeral_storage_local_ssd,
+      local_nvme_ssd_block=local_nvme_ssd_block,
+      ephemeral_storage_local_ssd=ephemeral_storage_local_ssd,
       tags=args.tags,
       threads_per_core=args.threads_per_core,
       labels=args.labels,
@@ -379,13 +394,20 @@ class CreateBeta(Create):
     ops = ParseCreateNodePoolOptionsBase(args)
     flags.WarnForNodeVersionAutoUpgrade(args)
     flags.ValidateSurgeUpgradeSettings(args)
+    ephemeral_storage = None
+    if args.IsKnownAndSpecified('ephemeral_storage'):
+      ephemeral_storage = (
+          []
+          if args.ephemeral_storage is None
+          else args.ephemeral_storage
+      )
     ops.boot_disk_kms_key = args.boot_disk_kms_key
     ops.sandbox = args.sandbox
     ops.node_locations = args.node_locations
     ops.system_config_from_file = args.system_config_from_file
     ops.enable_gcfs = args.enable_gcfs
     ops.enable_image_streaming = args.enable_image_streaming
-    ops.ephemeral_storage = args.ephemeral_storage
+    ops.ephemeral_storage = ephemeral_storage
     ops.spot = args.spot
     ops.placement_type = args.placement_type
     ops.placement_policy = args.placement_policy
@@ -419,8 +441,14 @@ class CreateAlpha(Create):
     ops = ParseCreateNodePoolOptionsBase(args)
     flags.WarnForNodeVersionAutoUpgrade(args)
     flags.ValidateSurgeUpgradeSettings(args)
+    ephemeral_storage = None
+    if args.IsKnownAndSpecified('ephemeral_storage'):
+      ephemeral_storage = (
+          []
+          if args.ephemeral_storage is None
+          else args.ephemeral_storage
+      )
     ops.local_ssd_volume_configs = args.local_ssd_volumes
-    ops.ephemeral_storage = args.ephemeral_storage
     ops.boot_disk_kms_key = args.boot_disk_kms_key
     ops.sandbox = args.sandbox
     ops.linux_sysctls = args.linux_sysctls
@@ -450,6 +478,7 @@ class CreateAlpha(Create):
     ops.performance_monitoring_unit = args.performance_monitoring_unit
     ops.autoscaled_rollout_policy = args.autoscaled_rollout_policy
     ops.resource_manager_tags = args.resource_manager_tags
+    ops.ephemeral_storage = ephemeral_storage
     ops.secondary_boot_disks = args.secondary_boot_disk
     return ops
 

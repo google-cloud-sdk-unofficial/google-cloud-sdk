@@ -1,5 +1,4 @@
-release_tracks: [ALPHA, BETA]
-hidden: true
+release_tracks: [ALPHA, BETA, GA]
 
 help_text:
   brief: |
@@ -7,7 +6,7 @@ help_text:
   description: |
     Upgrade memcahce instance to a newer memcached version.
   examples: |
-    To upgarde memcache version of an instance with the name 'my-memcache-instance' in region
+    To upgrade memcache version of an instance with the name 'my-memcache-instance' in region
     'us-central-1' to MEMCACHE_1_6_15
 
       $ {command} my-memcache-instance --region=us-central1 --memcached-version="1.6.15"
@@ -16,11 +15,16 @@ arguments:
   resource:
     spec: !REF googlecloudsdk.command_lib.memcache.resources:instance
     help_text: |
-      Arguments and flags that specify the Cloud Memorystore for Memcache instance you
-      want to upgarde
+      Arguments and flags that specify the Memorystore for Memcached instance you
+      want to upgrade.
   params:
   - arg_name: memcached-version
-    api_field: googleCloudMemcacheV1beta2UpgradeInstanceRequest.memcacheVersion
+    ALPHA:
+      api_field: googleCloudMemcacheV1beta2UpgradeInstanceRequest.memcacheVersion
+    BETA:
+      api_field: googleCloudMemcacheV1beta2UpgradeInstanceRequest.memcacheVersion
+    GA:
+      api_field: googleCloudMemcacheV1UpgradeInstanceRequest.memcacheVersion
     required: true
     choices:
     - arg_value: 1.6.15

@@ -85,7 +85,7 @@ def ExecutePythonTool(tool_dir, exec_name, *args):
   py_path = None  # Let execution_utils resolve the path.
   # Gsutil allows users to set the desired Python interpreter using a separate
   # environment variable, so as to allow users to run gsutil using Python 3
-  # without forcing the rest of the Cloud SDK to use Python 3 (as it would
+  # without forcing the rest of Google Cloud CLI to use Python 3 (as it would
   # likely break at the time this comment was written).
   extra_popen_kwargs = {}
   if exec_name == 'gsutil':
@@ -265,8 +265,8 @@ def WarnAndExitOnBlockedCommand(args, blocked_commands):
   if blocked:
     sys.stderr.write('It looks like you are trying to run "%s %s".\n'
                      % (args[0], bad_arg))
-    sys.stderr.write('The "%s" command is no longer needed with the '
-                     'Cloud SDK.\n' % bad_arg)
+    sys.stderr.write('The "%s" command is no longer needed with '
+                     'Google Cloud CLI.\n' % bad_arg)
     sys.stderr.write(blocked_commands[bad_arg] + '\n')
     answer = input('Really run this command? (y/N) ')
     if answer not in ['y', 'Y']:
