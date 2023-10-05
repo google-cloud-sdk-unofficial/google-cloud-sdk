@@ -19,29 +19,23 @@ from __future__ import division
 from __future__ import unicode_literals
 
 from googlecloudsdk.calliope import base
-from googlecloudsdk.command_lib.run import connection_context
-from googlecloudsdk.command_lib.run import exceptions
-from googlecloudsdk.command_lib.run import flags as run_flags
 from googlecloudsdk.command_lib.run import pretty_print
 from googlecloudsdk.command_lib.run.integrations import flags
 from googlecloudsdk.command_lib.run.integrations import messages_util
 from googlecloudsdk.command_lib.run.integrations import run_apps_operations
+from googlecloudsdk.command_lib.runapps import exceptions
 from googlecloudsdk.core.console import console_io
 
 
-@base.ReleaseTracks(
-    base.ReleaseTrack.ALPHA,
-    base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Delete(base.Command):
   """Delete a Cloud Run Integration and its associated resources."""
 
   detailed_help = {
-      'DESCRIPTION':
-          """\
+      'DESCRIPTION': """\
           {description}
           """,
-      'EXAMPLES':
-          """\
+      'EXAMPLES': """\
           To delete a redis integration and the associated resources
 
               $ {command} my-redis-integration
@@ -63,17 +57,16 @@ class Delete(base.Command):
     integration_name = args.name
     release_track = self.ReleaseTrack()
 
-    conn_context = connection_context.GetConnectionContext(
-        args, run_flags.Product.RUN_APPS, release_track)
-
     console_io.PromptContinue(
-        message=('Integration [{}] will be deleted. '
-                 'This will also delete any resources this integration created.'
-                ).format(integration_name),
+        message=(
+            'Integration [{}] will be deleted. '
+            'This will also delete any resources this integration created.'
+        ).format(integration_name),
         throw_if_unattended=True,
-        cancel_on_no=True)
+        cancel_on_no=True,
+    )
 
-    with run_apps_operations.Connect(conn_context, release_track) as client:
+    with run_apps_operations.Connect(args, release_track) as client:
       client.VerifyLocation()
       try:
         integration_type = client.DeleteIntegration(name=integration_name)
@@ -86,4 +79,6 @@ class Delete(base.Command):
             messages_util.GetSuccessMessage(
                 integration_type=integration_type,
                 integration_name=integration_name,
-                action='deleted'))
+                action='deleted',
+            )
+        )

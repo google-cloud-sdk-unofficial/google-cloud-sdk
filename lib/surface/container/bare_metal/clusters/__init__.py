@@ -22,6 +22,8 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import parser_arguments
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
+)
 class Clusters(base.Group):
   """Create and manage Anthos clusters on bare metal."""

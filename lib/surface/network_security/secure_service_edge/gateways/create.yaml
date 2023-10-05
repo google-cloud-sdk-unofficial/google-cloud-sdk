@@ -24,7 +24,6 @@ arguments:
     help_text: |
       SSE realm to which this gateway belongs.
   - arg_name: app-vpc
-    required: true
     api_field: sSEGateway.appVpc
     help_text: |
       The VPC in your project which holds the application to be secured.

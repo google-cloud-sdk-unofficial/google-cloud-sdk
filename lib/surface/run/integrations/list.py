@@ -21,8 +21,6 @@ from __future__ import unicode_literals
 from googlecloudsdk.api_lib.run.integrations import types_utils
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import parser_extensions
-from googlecloudsdk.command_lib.run import connection_context
-from googlecloudsdk.command_lib.run import flags as run_flags
 from googlecloudsdk.command_lib.run.integrations import flags
 from googlecloudsdk.command_lib.run.integrations import run_apps_operations
 
@@ -89,9 +87,7 @@ class List(base.ListCommand):
     region = (None if args.IsSpecified('region')
               else run_apps_operations.ALL_REGIONS)
 
-    conn_context = connection_context.GetConnectionContext(
-        args, run_flags.Product.RUN_APPS, release_track)
-    with run_apps_operations.Connect(conn_context, release_track) as client:
+    with run_apps_operations.Connect(args, release_track) as client:
       # If a region is specified via the --region flag then we need to validate
       # if the region is valid.  Otherwise fetch from all regions by default.
       if args.IsSpecified('region'):

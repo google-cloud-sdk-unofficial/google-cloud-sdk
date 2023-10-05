@@ -22,7 +22,9 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import parser_arguments
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
+)
 class BareMetal(base.Group):
   """Deploy and manage Anthos clusters on bare metal for running containers."""
 

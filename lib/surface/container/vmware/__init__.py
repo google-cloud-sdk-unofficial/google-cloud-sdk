@@ -23,7 +23,9 @@ from googlecloudsdk.calliope import parser_arguments
 from googlecloudsdk.command_lib.projects import util
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
+)
 class Vmware(base.Group):
   """Deploy and manage Anthos clusters on VMware for running containers."""
 

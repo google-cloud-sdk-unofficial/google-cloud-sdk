@@ -32,9 +32,9 @@
 - release_tracks: [GA]
 
   help_text:
-    brief:  Create a Cloud Healthcare API HL7v2 store.
+    brief:  Update a Cloud Healthcare API HL7v2 store.
     description: |
-      Create a Cloud Healthcare API HL7v2 store.
+      Update a Cloud Healthcare API HL7v2 store.
     examples: |
       To update the Cloud Pub/Sub topics on a HL7v2 store ``test-hl7v2-store'', run:
 
@@ -47,7 +47,7 @@
 
   arguments:
     resource:
-      help_text: Cloud Healthcare API HL7v2 store to create.
+      help_text: Cloud Healthcare API HL7v2 store to update.
       spec: !REF googlecloudsdk.command_lib.healthcare.resources:hl7v2_store
 
     params:

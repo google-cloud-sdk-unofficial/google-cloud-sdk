@@ -20,12 +20,10 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 from googlecloudsdk.calliope import base
-from googlecloudsdk.command_lib.run import connection_context
-from googlecloudsdk.command_lib.run import exceptions
-from googlecloudsdk.command_lib.run import flags as run_flags
 from googlecloudsdk.command_lib.run.integrations import flags
 from googlecloudsdk.command_lib.run.integrations import run_apps_operations
 from googlecloudsdk.command_lib.run.integrations import stages
+from googlecloudsdk.command_lib.runapps import exceptions
 from googlecloudsdk.core.console import progress_tracker
 
 
@@ -63,9 +61,7 @@ class Apply(base.Command):
     self._ValidateAppConfigFile(file_content)
 
     release_track = self.ReleaseTrack()
-    conn_context = connection_context.GetConnectionContext(
-        args, run_flags.Product.RUN_APPS, release_track)
-    with run_apps_operations.Connect(conn_context, release_track) as client:
+    with run_apps_operations.Connect(args, release_track) as client:
       client.VerifyLocation()
 
       with progress_tracker.StagedProgressTracker(

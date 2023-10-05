@@ -49,5 +49,8 @@
     - _REF_: googlecloudsdk.command_lib.iam.flags:oauth_client.display_name
     - _REF_: googlecloudsdk.command_lib.iam.flags:oauth_client.disabled
     - _REF_: googlecloudsdk.command_lib.iam.flags:oauth_client.allowed_grant_types
+      required: true
     - _REF_: googlecloudsdk.command_lib.iam.flags:oauth_client.allowed_scopes
+      required: true
     - _REF_: googlecloudsdk.command_lib.iam.flags:oauth_client.allowed_redirect_uris
+      required: true

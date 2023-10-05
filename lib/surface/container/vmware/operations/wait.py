@@ -30,7 +30,9 @@ $ {command} OPERATION_ID --location=us-west1
 """
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
+)
 class Wait(base.Command):
   """Poll an operation for completion."""
   detailed_help = {'EXAMPLES': _EXAMPLES}

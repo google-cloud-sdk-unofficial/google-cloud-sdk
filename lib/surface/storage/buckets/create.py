@@ -52,8 +52,8 @@ class Create(base.Command):
       """,
   }
 
-  @staticmethod
-  def Args(parser):
+  @classmethod
+  def Args(cls, parser):
     parser.add_argument(
         'url', type=str, nargs='+', help='The URLs of the buckets to create.')
     parser.add_argument(
@@ -120,6 +120,20 @@ class Create(base.Command):
               ' or with unsupported regions) will return an error.'))
     flags.add_additional_headers_flag(parser)
     flags.add_recovery_point_objective_flag(parser)
+
+    if cls.ReleaseTrack() == base.ReleaseTrack.ALPHA:
+      parser.add_argument(
+          '--soft-delete-duration',
+          type=arg_parsers.Duration(),
+          hidden=True,
+          help=(
+              'Duration to retain soft-deleted objects. For example, "2wd1" is'
+              ' two weeks. The presence of this flag creates a bucket with a'
+              ' soft delete policy enabled, meaning deleted objects can be'
+              ' restored if requested within the inputted duration. See `gcloud'
+              ' topic datetimes` for more information on duration format."'
+          ),
+      )
 
   def Run(self, args):
     for url_string in args.url:

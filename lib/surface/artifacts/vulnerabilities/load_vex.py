@@ -80,10 +80,10 @@ To load a CSAF security advisory file given an artifact with a tag and a file on
     if project is None:
       project = image.project
     filename = args.source
-    notes, uri_with_digest = vex_util.ParseVexFile(
+    notes, generic_uri = vex_util.ParseVexFile(
         filename, image, version
     )
-    self.writeNotes(notes, project, uri_with_digest)
+    self.writeNotes(notes, project, generic_uri)
     return
 
   def writeNotes(self, notes, project, uri):

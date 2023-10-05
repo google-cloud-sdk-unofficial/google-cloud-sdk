@@ -474,6 +474,8 @@ class Run(base.Command):
         next_line = lines[-1].lineNumber + 1
 
     if poll_result and poll_result.exitInfo and poll_result.exitInfo.exitCode:
+      if poll_result.exitInfo.error:
+        log.error('Error message: {}', poll_result.exitInfo.error)
       log.error('Command exit code: {}'.format(poll_result.exitInfo.exitCode))
       exit(poll_result.exitInfo.exitCode)
 

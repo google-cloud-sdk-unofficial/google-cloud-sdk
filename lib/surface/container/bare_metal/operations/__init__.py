@@ -24,7 +24,9 @@ from googlecloudsdk.command_lib.projects import util
 from googlecloudsdk.core import log
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
+)
 class Operations(base.Group):
   """Manage Anthos on bare metal long running operations."""
 

@@ -110,20 +110,25 @@ def main():
     # opposed to the similar message in gcloud_main.py), as we know that no
     # commands will work.
     sys.stderr.write(
-        ('ERROR: gcloud failed to load: {0}\n{1}\n\n'
-         'This usually indicates corruption in your gcloud installation or '
-         'problems with your Python interpreter.\n\n'
-         'Please verify that the following is the path to a working Python '
-         '3.5+ executable:\n'
-         '    {2}\n\n'
-         'If it is not, please set the CLOUDSDK_PYTHON environment variable to '
-         'point to a working Python 3.5+ executable.\n\n'
-         'If you are still experiencing problems, please reinstall the Cloud '
-         'SDK using the instructions here:\n'
-         '    https://cloud.google.com/sdk/\n').format(
-             err,
-             '\n'.join(traceback.format_exc().splitlines()[2::2]),
-             sys.executable))
+        (
+            'ERROR: gcloud failed to load: {err}\n{traceback}\n\nThis usually'
+            ' indicates corruption in your gcloud installation or problems with'
+            ' your Python interpreter.\n\nPlease verify that the following is'
+            ' the path to a working Python'
+            ' {py_major_version}.{py_minor_version}+ executable:\n   '
+            ' {executable}\n\nIf it is not, please set the CLOUDSDK_PYTHON'
+            ' environment variable to point to a working Python'
+            ' {py_major_version}.{py_minor_version}+ executable.\n\nIf you are'
+            ' still experiencing problems, please reinstall the Cloud SDK using'
+            ' the instructions here:\n    https://cloud.google.com/sdk/\n'
+        ).format(
+            err=err,
+            traceback='\n'.join(traceback.format_exc().splitlines()[2::2]),
+            executable=sys.executable,
+            py_major_version=3,
+            py_minor_version=8,
+        )
+    )
     sys.exit(1)
   sys.exit(gcloud_main.main())
 

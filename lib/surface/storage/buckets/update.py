@@ -286,7 +286,24 @@ def _add_alpha_args(parser):
   Returns:
     buckets update flag group
   """
-  del parser  # Unused.
+  parser.add_argument(
+      '--soft-delete-duration',
+      type=arg_parsers.Duration(),
+      hidden=True,
+      help=(
+          'Duration to retain soft-deleted objects. For example, "2wd1" is'
+          ' two weeks.'
+      ),
+  )
+  parser.add_argument(
+      '--clear-soft-delete',
+      action='store_true',
+      hidden=True,
+      help=(
+          'Duration to retain soft-deleted objects. For example, "2wd1" is'
+          ' two weeks.'
+      ),
+  )
 
 
 def _is_initial_bucket_metadata_needed(user_request_args):

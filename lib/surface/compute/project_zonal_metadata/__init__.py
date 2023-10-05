@@ -22,7 +22,6 @@ from googlecloudsdk.calliope import base
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-@base.Hidden
 class ProjectZonalMetadata(base.Group):
   """Describe and update Compute Engine project zonal metadata."""
 

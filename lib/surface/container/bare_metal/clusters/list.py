@@ -32,7 +32,9 @@ $ {command} --location=us-west1
 """
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
+)
 class List(base.ListCommand):
   """List Anthos clusters on bare metal."""
   detailed_help = {'EXAMPLES': _EXAMPLES}

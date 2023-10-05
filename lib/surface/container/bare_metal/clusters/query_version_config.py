@@ -41,7 +41,9 @@ $ {command} --location=us-west1 --cluster=my-user-cluster
 """
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
+)
 class QueryVersionConfig(base.Command):
   """Query versions for creating or upgrading an Anthos on bare metal user cluster."""
 

@@ -23,6 +23,7 @@ import uuid
 
 from googlecloudsdk.api_lib.transfer.appliances import operations
 from googlecloudsdk.api_lib.util import apis
+from googlecloudsdk.api_lib.util import exceptions as gcloud_exception
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.transfer.appliances import flags
 from googlecloudsdk.command_lib.transfer.appliances import mapping_util
@@ -53,7 +54,7 @@ DETAILED_HELP = {
         `us-central1`, only changing the name and Cloud Storage destination:
 
           $ {command} \
-              my-other-appliance --clone=my-appliance \
+              my-other-appliance --country=US --clone=my-appliance \
               --clone-region=us-central1 --offline-import=my-other-bucket
 
         To use a flags file to create an appliance rather than provide a
@@ -110,17 +111,21 @@ class Create(base.Command):
         'name',
         help='Immutable ID that will uniquely identify the appliance.')
     parser.add_argument(
-        '--draft',
+        '--submit',
         action='store_true',
         help=(
-            'When specified the order will be not be submitted immediately.'
-            'Use `{parent_command} update --submit` to submit the order later.'
+            'When specified the order will be submitted immediately. By '
+            'default, orders are created in a draft state. Use '
+            '`{parent_command} update --submit` to submit the order later.'
             )
         )
     resource_args.add_clone_resource_arg(parser)
     flags.add_appliance_settings(parser)
     flags.add_delivery_information(parser)
 
+  @gcloud_exception.CatchHTTPErrorRaiseHTTPException(
+      'Status code: {status_code}. {status_message}.'
+  )
   def Run(self, args):
     client = apis.GetClientInstance('transferappliance', 'v1alpha1')
     messages = apis.GetMessagesModule('transferappliance', 'v1alpha1')
@@ -157,7 +162,7 @@ class Create(base.Command):
     # Map args to the order resource, make the API call, append result.
     appliance_name = resource_args.get_appliance_name(region, args.name)
     mapping_util.apply_args_to_order(order, args, appliance_name)
-    order.skipDraft = not args.draft
+    order.skipDraft = args.submit
     operation = client.projects_locations_orders.Create(
         messages.TransferapplianceProjectsLocationsOrdersCreateRequest(
             order=order,

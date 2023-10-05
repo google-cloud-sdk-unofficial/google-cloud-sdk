@@ -24,7 +24,7 @@ from googlecloudsdk.calliope import base
 class Redis(base.Group):
   """Manage Cloud Memorystore Redis resources."""
 
-  category = base.STORAGE_CATEGORY
+  category = base.DATABASES_CATEGORY
 
   def Filter(self, context, args):
     # TODO(b/190538727):  Determine if command group works with project number

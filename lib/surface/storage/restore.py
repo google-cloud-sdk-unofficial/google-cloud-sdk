@@ -19,6 +19,7 @@ from __future__ import division
 from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.storage import cloud_api
+from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.storage import errors_util
 from googlecloudsdk.command_lib.storage import flags
@@ -55,7 +56,6 @@ def _restore_task_iterator(args):
           allow_overwrite=args.allow_overwrite,
           deleted_after_time=args.deleted_after_time,
           deleted_before_time=args.deleted_before_time,
-          live_at_time=args.live_at_time,
           user_request_args=user_request_args,
       )
     else:
@@ -142,23 +142,16 @@ class Restore(base.Command):
             ' is not enabled, this will result in a soft-deleted object.'
         ),
     )
-    time_flags_group = bulk_restore_flag_group.add_group(mutex=True)
-    time_flags_group.add_argument(
-        '--live-at-time',
-        help=(
-            'If specified, restores the generation of each soft-deleted object'
-            ' that was live at the specified time.'
-        ),
-    )
-    deleted_before_and_after_flags_group = time_flags_group.add_group()
-    deleted_before_and_after_flags_group.add_argument(
+    bulk_restore_flag_group.add_argument(
         '--deleted-after-time',
+        type=arg_parsers.Datetime.Parse,
         help=(
             'Restores only the objects that were soft-deleted after this time.'
         ),
     )
-    deleted_before_and_after_flags_group.add_argument(
+    bulk_restore_flag_group.add_argument(
         '--deleted-before-time',
+        type=arg_parsers.Datetime.Parse,
         help=(
             'Restores only the objects that were soft-deleted before this time.'
         ),

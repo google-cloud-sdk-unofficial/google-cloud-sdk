@@ -18,30 +18,43 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
-from googlecloudsdk.api_lib.vmware.clusters import ClustersClient
+from googlecloudsdk.api_lib.vmware import clusters
+from googlecloudsdk.calliope import actions
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.vmware import flags
+from googlecloudsdk.command_lib.vmware.clusters import util
 from googlecloudsdk.core import log
 
 DETAILED_HELP = {
-    'DESCRIPTION':
-        """
+    'DESCRIPTION': """
           Adjust the number of nodes in the VMware Engine cluster. Successful addition or removal of a node results in a cluster in READY state. Check the progress of a cluster using `{parent_command} list`.
         """,
-    'EXAMPLES':
-        """
-          To resize a cluster called `my-cluster` in private cloud `my-private-cloud` and zone `us-west2-a` to have `3` nodes, run:
+    'EXAMPLES': """
+          To resize a cluster called `my-cluster` in private cloud `my-private-cloud` and zone `us-west2-a` to have `3` nodes of type `standard-72`, run:
 
-            $ {command} my-cluster --location=us-west2-a --project=my-project --private-cloud=my-private-cloud --node-type-config=type=standard-72,count=3
+            $ {command} my-cluster --location=us-west2-a --project=my-project --private-cloud=my-private-cloud --update-nodes-config=type=standard-72,count=3
 
             Or:
 
-            $ {command} my-cluster --private-cloud=my-private-cloud --node-type-config=type=standard-72,count=3
+            $ {command} my-cluster --private-cloud=my-private-cloud --update-nodes-config=type=standard-72,count=3
 
            In the second example, the project and location are taken from gcloud properties core/project and compute/zone.
     """,
 }
+
+_NODE_TYPE_CONFIG_HELP = """
+        Information about the type and number of nodes associated with the cluster.
+
+        type (required): canonical identifier of the node type.
+
+        count (required): number of nodes of this type in the cluster.
+"""
+
+_OLD_NODE_TYPE_CONFIG_HELP = _NODE_TYPE_CONFIG_HELP + """
+
+        custom_core_count: can be passed, but the value will be ignored. Updating custom core count is not supported.
+"""
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
@@ -59,32 +72,126 @@ class Update(base.UpdateCommand):
     parser.display_info.AddFormat('yaml')
     parser.add_argument(
         '--node-type-config',
-        required=True,
+        required=False,
         type=arg_parsers.ArgDict(
-            spec={
-                'type': str,
-                'count': int,
-                'custom-core-count': int
-            },
-            required_keys=('type', 'count')),
+            spec={'type': str, 'count': int, 'custom-core-count': int},
+            required_keys=('type', 'count'),
+        ),
+        action=actions.DeprecationAction(
+            '--node-type-config',
+            warn=(
+                'The {flag_name} option is deprecated; please use'
+                ' --update-nodes-config and --remove-nodes-config instead.'
+            ),
+            removed=False,
+            action='append',
+        ),
+        metavar='[count=COUNT],[type=TYPE]',
+        help=_OLD_NODE_TYPE_CONFIG_HELP,
+    )
+    parser.add_argument(
+        '--update-nodes-config',
+        required=False,
+        default=list(),
+        type=arg_parsers.ArgDict(
+            spec={'type': str, 'count': int},
+            required_keys=('type', 'count'),
+        ),
         action='append',
-        help="""\
-        Information about the type and number of nodes associated with the cluster.
+        help=_NODE_TYPE_CONFIG_HELP,
+    )
+    parser.add_argument(
+        '--remove-nodes-config',
+        required=False,
+        metavar='TYPE',
+        default=list(),
+        type=str,
+        action='append',
+        help='Type of node that should be removed from the cluster',
+    )
 
-        type (required): canonical identifier of the node type.
+  @staticmethod
+  def _ParseOldNodesConfigsParameters(existing_cluster, nodes_configs):
+    current_node_types = [
+        prop.key
+        for prop in existing_cluster.nodeTypeConfigs.additionalProperties
+    ]
+    requested_node_types = [config['type'] for config in nodes_configs]
 
-        count (required): number of nodes of this type in the cluster.
+    duplicated_types = util.FindDuplicatedTypes(requested_node_types)
+    if duplicated_types:
+      raise util.InvalidNodeConfigsProvidedError(
+          'types: {} provided more than once.'.format(duplicated_types)
+      )
 
-        custom-core-count (optional): customized number of cores available to each node of the type.
-        To get a list of valid values for your node type,
-        run the gcloud vmware node-types describe command and reference the
-        availableCustomCoreCounts field in the output.
-        """)
+    unspecified_types = set(current_node_types) - set(requested_node_types)
+    if unspecified_types:
+      raise util.InvalidNodeConfigsProvidedError(
+          'when using `--node-type-config` parameters you need to specify node'
+          ' counts for all node types present in the cluster. Missing node'
+          ' types: {}.'.format(list(unspecified_types))
+      )
+
+    return [
+        util.NodeTypeConfig(
+            type=config['type'], count=config['count'], custom_core_count=0
+        )
+        for config in nodes_configs
+    ]
+
+  @staticmethod
+  def _ParseNewNodesConfigsParameters(
+      existing_cluster, updated_nodes_configs, removed_types
+  ):
+    requested_node_types = [
+        config['type'] for config in updated_nodes_configs
+    ] + removed_types
+
+    duplicated_types = util.FindDuplicatedTypes(requested_node_types)
+    if duplicated_types:
+      raise util.InvalidNodeConfigsProvidedError(
+          'types: {} provided more than once.'.format(duplicated_types)
+      )
+
+    node_count = {}
+    for prop in existing_cluster.nodeTypeConfigs.additionalProperties:
+      node_count[prop.key] = prop.value.nodeCount
+
+    for config in updated_nodes_configs:
+      node_count[config['type']] = config['count']
+
+    for node_type in removed_types:
+      node_count[node_type] = 0
+
+    return [
+        util.NodeTypeConfig(type=node_type, count=count, custom_core_count=0)
+        for node_type, count in node_count.items()
+    ]
 
   def Run(self, args):
     cluster = args.CONCEPTS.cluster.Parse()
-    client = ClustersClient()
-    operation = client.Update(cluster, args.node_type_config)
+    client = clusters.ClustersClient()
+
+    if args.node_type_config and (
+        args.update_nodes_config or args.remove_nodes_config
+    ):
+      raise util.InvalidNodeConfigsProvidedError(
+          'flag `--node-type-config` is mutually exclusive with'
+          ' `--update-nodes-config` and `--remove-nodes-config` flags.'
+      )
+
+    existing_cluster = client.Get(cluster)
+
+    if args.node_type_config:
+      configs = self._ParseOldNodesConfigsParameters(
+          existing_cluster, args.node_type_config
+      )
+    else:
+      configs = self._ParseNewNodesConfigsParameters(
+          existing_cluster, args.update_nodes_config, args.remove_nodes_config
+      )
+
+    operation = client.Update(cluster, configs)
     is_async = args.async_
 
     if is_async:
@@ -94,6 +201,8 @@ class Update(base.UpdateCommand):
     resource = client.WaitForOperation(
         operation_ref=client.GetOperationRef(operation),
         message='waiting for cluster [{}] to be updated'.format(
-            cluster.RelativeName()))
+            cluster.RelativeName()
+        ),
+    )
     log.UpdatedResource(cluster.RelativeName(), kind='cluster')
     return resource

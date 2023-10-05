@@ -161,3 +161,67 @@ class UpdateBeta(base.UpdateCommand):
       log.UpdatedResource(cluster_ref, 'Anthos Cluster on VMware', args.async_)
 
       return operation_response
+
+
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class Update(base.UpdateCommand):
+  """Update an Anthos cluster on VMware."""
+
+  detailed_help = {'EXAMPLES': _EXAMPLES}
+
+  @staticmethod
+  def Args(parser: parser_arguments.ArgumentInterceptor):
+    """Gathers command line arguments for the update command.
+
+    Args:
+      parser: The argparse parser to add the flag to.
+    """
+    parser.display_info.AddFormat(vmware_constants.VMWARE_CLUSTERS_FORMAT)
+    flags.AddClusterResourceArg(parser, 'to update', True)
+    base.ASYNC_FLAG.AddToParser(parser)
+    flags.AddValidationOnly(parser)
+    flags.AddAllowMissingUpdateCluster(parser)
+    flags.AddDescription(parser)
+    flags.AddVersion(parser)
+    flags.AddVmwareControlPlaneNodeConfig(parser, for_update=True)
+    flags.AddVmwareAAGConfig(parser, for_update=True)
+    flags.AddVmwareStorageConfig(parser, for_update=True)
+    flags.AddVmwareNetworkConfig(parser, for_update=True)
+    flags.AddVmwareLoadBalancerConfig(parser, for_update=True)
+    flags.AddVmwareDataplaneV2Config(parser, for_update=True)
+    flags.AddEnableVmwareTracking(parser, for_update=True)
+    flags.AddVmwareAutoRepairConfig(parser, for_update=True)
+    flags.AddAuthorization(parser)
+    flags.AddUpdateAnnotations(parser)
+
+  def Run(self, args):
+    """Runs the update command.
+
+    Args:
+      args: The arguments received from command line.
+
+    Returns:
+      The return value depends on the command arguments. If `--async` is
+      specified, it returns an operation; otherwise, it returns the updated
+      resource. If `--validate-only` is specified, it returns None or any
+      possible error.
+    """
+    cluster_ref = args.CONCEPTS.cluster.Parse()
+    cluster_client = apis.ClustersClient()
+    operation = cluster_client.Update(args)
+
+    if args.async_ and not args.IsSpecified('format'):
+      args.format = constants.OPERATIONS_FORMAT
+
+    if args.validate_only:
+      return
+
+    if args.async_:
+      log.UpdatedResource(cluster_ref, 'Anthos Cluster on VMware', args.async_)
+      return operation
+    else:
+      operation_client = operations.OperationsClient()
+      operation_response = operation_client.Wait(operation)
+      log.UpdatedResource(cluster_ref, 'Anthos Cluster on VMware', args.async_)
+
+      return operation_response

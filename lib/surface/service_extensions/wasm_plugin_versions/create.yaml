@@ -1,0 +1,45 @@
+- release_tracks: [ALPHA]
+  hidden: true
+  help_text:
+    brief: Create a WasmPluginVersion.
+    description: |
+      Create a new WasmPluginVersion.
+    examples: |
+      To create a WasmPluginVersion called 'my-plugin-version', run:
+
+        $ {command} my-plugin-version --wasm-plugin=my-plugin
+        --image=...-docker.pkg.dev/my-project/repository/container:tag
+
+  request:
+    collection: networkservices.projects.locations.wasmPlugins.versions
+    ALPHA:
+      api_version: v1alpha1
+
+  async:
+    collection: networkservices.projects.locations.operations
+
+  arguments:
+    resource:
+      help_text: The ID of the WasmPluginVersion to create.
+      spec: !REF googlecloudsdk.command_lib.network_actions.resources:wasmPluginVersion
+      is_positional: true
+    params:
+    - _REF_: googlecloudsdk.command_lib.network_actions.flags:wasmPluginVersion.image
+    - group:
+        help_text: |
+          Configuration for the WasmPlugin, provided to the Proxy-Wasm plugin at runtime
+          via the proxy_on_configure Proxy-Wasm ABI.
+        mutex: true
+        params:
+        - arg_name: plugin-config
+          api_field: wasmPluginVersion.pluginConfigData
+          help_text: |
+            WasmPlugin configuration in the textual format.
+        - arg_name: plugin-config-file
+          api_field: wasmPluginVersion.pluginConfigData
+          type: "googlecloudsdk.calliope.arg_parsers:FileContents:binary=True"
+          help_text: |
+            Path to a file containg WasmPlugin configuration.
+        - _REF_: googlecloudsdk.command_lib.network_actions.flags:wasmPluginVersion.pluginConfigUri
+    - _REF_: googlecloudsdk.command_lib.network_actions.flags:wasmPluginVersion.description
+    - _REF_: googlecloudsdk.command_lib.network_actions.flags:wasmPluginVersion.labels

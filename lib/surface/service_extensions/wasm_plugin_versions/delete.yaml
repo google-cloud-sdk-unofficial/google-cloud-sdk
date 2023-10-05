@@ -1,0 +1,24 @@
+- release_tracks: [ALPHA]
+  hidden: true
+  help_text:
+    brief: Delete a WasmPluginVersion.
+    description: |
+      Delete a WasmPluginVersion.
+    examples: |
+      To delete a WasmPluginVersion called 'my-plugin-version', run:
+
+        $ {command} my-plugin-version
+
+  request:
+    collection: networkservices.projects.locations.wasmPlugins.versions
+    ALPHA:
+      api_version: v1alpha1
+
+  async:
+    collection: networkservices.projects.locations.operations
+
+  arguments:
+    resource:
+      help_text: The WasmPluginVersion to delete.
+      spec: !REF googlecloudsdk.command_lib.network_actions.resources:wasmPluginVersion
+      is_positional: true

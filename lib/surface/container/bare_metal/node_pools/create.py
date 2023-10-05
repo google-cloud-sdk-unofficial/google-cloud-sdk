@@ -41,6 +41,63 @@ $ {command} my-node-pool --cluster=my-cluster --location=us-west1
 """
 
 
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class Create(base.CreateCommand):
+  """Create a node pool in an Anthos cluster on bare metal."""
+
+  detailed_help = {'EXAMPLES': _EXAMPLES}
+
+  @staticmethod
+  def Args(parser: parser_arguments.ArgumentInterceptor):
+    """Gathers command line arguments for the create command.
+
+    Args:
+      parser: The argparse parser to add the flag to.
+    """
+    parser.display_info.AddFormat(
+        bare_metal_constants.BARE_METAL_NODE_POOLS_FORMAT
+    )
+    node_pool_flags.AddNodePoolResourceArg(parser, 'to create')
+    cluster_flags.AddValidationOnly(parser)
+    base.ASYNC_FLAG.AddToParser(parser)
+    node_pool_flags.AddNodePoolAnnotations(parser)
+    node_pool_flags.AddNodePoolDisplayName(parser)
+    node_pool_flags.AddNodePoolConfig(parser)
+
+  def Run(self, args):
+    """Runs the create command.
+
+    Args:
+      args: The arguments received from command line.
+
+    Returns:
+      The return value depends on the command arguments. If `--async` is
+      specified, it returns an operation; otherwise, it returns the created
+      resource. If `--validate-only` is specified, it returns None or any
+      possible error.
+    """
+    node_pool_ref = args.CONCEPTS.node_pool.Parse()
+    client = apis.NodePoolsClient()
+    operation = client.Create(args)
+
+    if args.async_ and not args.IsSpecified('format'):
+      args.format = constants.OPERATIONS_FORMAT
+
+    if args.async_:
+      return operation
+
+    operation_client = operations.OperationsClient()
+    operation_response = operation_client.Wait(operation)
+
+    if not args.validate_only:
+      log.CreatedResource(
+          node_pool_ref,
+          'node pool in Anthos cluster on bare metal',
+          args.async_,
+      )
+    return operation_response
+
+
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class CreateBeta(base.CreateCommand):
   """Create a node pool in an Anthos cluster on bare metal."""

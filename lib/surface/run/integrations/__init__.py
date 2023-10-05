@@ -19,9 +19,9 @@ from __future__ import division
 from __future__ import unicode_literals
 
 from googlecloudsdk.calliope import base
-from googlecloudsdk.command_lib.run import exceptions
-from googlecloudsdk.command_lib.run import flags
 from googlecloudsdk.command_lib.run import platforms
+from googlecloudsdk.command_lib.runapps import exceptions
+from googlecloudsdk.command_lib.runapps import flags
 
 
 @base.ReleaseTracks(

@@ -26,7 +26,6 @@ from googlecloudsdk.core import properties
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-@base.Hidden
 class AddMetadata(base.UpdateCommand):
   # pylint:disable=line-too-long
   """Add or update project zonal metadata.

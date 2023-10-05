@@ -19,8 +19,6 @@ from __future__ import division
 from __future__ import unicode_literals
 
 from googlecloudsdk.calliope import base
-from googlecloudsdk.command_lib.run import connection_context
-from googlecloudsdk.command_lib.run import flags as run_flags
 from googlecloudsdk.command_lib.run.integrations import run_apps_operations
 
 
@@ -59,9 +57,7 @@ class List(base.ListCommand):
   def Run(self, args):
     """List integration types."""
     release_track = self.ReleaseTrack()
-    conn_context = connection_context.GetConnectionContext(
-        args, run_flags.Product.RUN_APPS, release_track)
-    with run_apps_operations.Connect(conn_context, release_track) as client:
+    with run_apps_operations.Connect(args, release_track) as client:
       # Output is sorted by the integration name to guarantee the same ordering
       # for scenario tests.
       result = sorted(client.ListIntegrationTypes(),

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*- #
-# Copyright 2022 Google LLC. All Rights Reserved.
+# Copyright 2023 Google LLC. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Fallback formatter for Cloud Run Integrations."""
+"""Default formatter for Cloud Run Integrations."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -26,7 +26,7 @@ from googlecloudsdk.core.resource import custom_printer_base as cp
 from googlecloudsdk.core.resource import yaml_printer as yp
 
 
-class FallbackFormatter(base_formatter.BaseFormatter):
+class DefaultFormatter(base_formatter.BaseFormatter):
   """Format logics when no integration specific formatter is matched."""
 
   def TransformConfig(self, record):

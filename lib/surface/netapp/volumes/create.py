@@ -106,6 +106,11 @@ class Create(base.CreateCommand):
         if self._RELEASE_TRACK == base.ReleaseTrack.BETA
         else None
     )
+    source_backup = (
+        args.source_backup
+        if self._RELEASE_TRACK == base.ReleaseTrack.BETA
+        else None
+    )
     volume = client.ParseVolumeConfig(
         name=volume_ref.RelativeName(),
         capacity=capacity_in_gib,
@@ -123,6 +128,7 @@ class Create(base.CreateCommand):
         security_style=security_style,
         enable_kerberos=args.enable_kerberos,
         snapshot=args.source_snapshot,
+        backup=source_backup,
         restricted_actions=restricted_actions,
         backup_config=backup_config)
     result = client.CreateVolume(volume_ref, args.async_, volume)

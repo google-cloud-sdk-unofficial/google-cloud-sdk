@@ -54,7 +54,9 @@ $ {} container vmware admin-clusters update my-admin-cluster --required-platform
 """
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
+)
 class QueryVersionConfig(base.Command):
   """Query versions for creating or upgrading an Anthos on VMware user cluster."""
 

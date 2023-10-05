@@ -22,6 +22,7 @@ import uuid
 
 from googlecloudsdk.api_lib.transfer.appliances import operations
 from googlecloudsdk.api_lib.util import apis
+from googlecloudsdk.api_lib.util import exceptions as gcloud_exception
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.transfer.appliances import resource_args
 
@@ -59,6 +60,9 @@ class Delete(base.DeleteCommand):
             ' them.'
         ))
 
+  @gcloud_exception.CatchHTTPErrorRaiseHTTPException(
+      'Status code: {status_code}. {status_message}.'
+  )
   def Run(self, args):
     client = apis.GetClientInstance('transferappliance', 'v1alpha1')
     messages = apis.GetMessagesModule('transferappliance', 'v1alpha1')

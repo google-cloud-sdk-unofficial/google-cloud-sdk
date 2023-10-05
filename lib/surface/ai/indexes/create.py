@@ -24,6 +24,7 @@ from googlecloudsdk.command_lib.ai import constants
 from googlecloudsdk.command_lib.ai import endpoint_util
 from googlecloudsdk.command_lib.ai import flags
 from googlecloudsdk.command_lib.ai import indexes_util
+from googlecloudsdk.command_lib.ai import region_util
 from googlecloudsdk.command_lib.ai import validation
 from googlecloudsdk.command_lib.util.args import labels_util
 from googlecloudsdk.core import log
@@ -45,7 +46,13 @@ class CreateV1(base.CreateCommand):
 
   @staticmethod
   def Args(parser):
-    flags.AddRegionResourceArg(parser, 'to create index')
+    flags.AddRegionResourceArg(
+        parser,
+        'to create index',
+        prompt_func=region_util.GetPromptForRegionFunc(
+            constants.SUPPORTED_OP_REGIONS
+        ),
+    )
     flags.GetDisplayNameArg('index').AddToParser(parser)
     flags.GetDescriptionArg('index').AddToParser(parser)
     flags.GetMetadataFilePathArg('index', required=True).AddToParser(parser)

@@ -79,6 +79,7 @@ class Create(base.CreateCommand):
     workstations_flags.AddContainerRunAsUserField(parser)
     workstations_flags.AddEncryptionKeyFields(parser)
     workstations_flags.AddLabelsField(parser)
+    workstations_flags.AddReplicaZones(parser)
     if (cls.ReleaseTrack() != base.ReleaseTrack.GA):
       workstations_flags.AddAcceleratorFields(parser)
 

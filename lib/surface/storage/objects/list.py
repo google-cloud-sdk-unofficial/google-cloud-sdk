@@ -34,14 +34,25 @@ from googlecloudsdk.core.resource import resource_printer
 from googlecloudsdk.core.resource import resource_projector
 
 
-def _object_iterator(url, all_versions, fetch_encrypted_object_hashes):
+def _object_iterator(
+    url,
+    all_versions,
+    fetch_encrypted_object_hashes,
+    halt_on_empty_response,
+    next_page_token,
+    soft_deleted_only,
+):
   """Iterates through resources matching URL and filter out non-objects."""
   for resource in wildcard_iterator.CloudWildcardIterator(
       url,
       all_versions=all_versions,
       error_on_missing_key=False,
       fetch_encrypted_object_hashes=fetch_encrypted_object_hashes,
-      fields_scope=cloud_api.FieldsScope.FULL):
+      fields_scope=cloud_api.FieldsScope.FULL,
+      halt_on_empty_response=halt_on_empty_response,
+      next_page_token=next_page_token,
+      soft_deleted_only=soft_deleted_only,
+  ):
     if isinstance(resource, resource_reference.ObjectResource):
       yield resource
 
@@ -75,8 +86,8 @@ class List(base.ListCommand):
       """,
   }
 
-  @staticmethod
-  def Args(parser):
+  @classmethod
+  def Args(cls, parser):
     parser.add_argument(
         'urls', nargs='+', help='Specifies URL of objects to list.')
     parser.add_argument(
@@ -89,6 +100,9 @@ class List(base.ListCommand):
     flags.add_fetch_encrypted_object_hashes_flag(parser, is_list=True)
     flags.add_raw_display_flag(parser)
     flags.add_uri_support_to_list_commands(parser)
+
+    if cls.ReleaseTrack() == base.ReleaseTrack.ALPHA:
+      flags.add_soft_delete_flags(parser)
 
   def Display(self, args, resources):
     if args.stat:
@@ -117,23 +131,25 @@ class List(base.ListCommand):
         gsutil_full_resource_formatter.GsutilFullResourceFormatter()
     )
     for url in urls:
+      object_iterator = _object_iterator(
+          url,
+          all_versions=not args.stat,
+          fetch_encrypted_object_hashes=args.fetch_encrypted_object_hashes,
+          halt_on_empty_response=not getattr(args, 'exhaustive', False),
+          next_page_token=getattr(args, 'next_page_token', None),
+          soft_deleted_only=getattr(args, 'soft_deleted', False),
+      )
       if args.stat:
         # Replicating gsutil "stat" command behavior.
         found_match = False
-        for resource in _object_iterator(
-            url,
-            all_versions=False,
-            fetch_encrypted_object_hashes=args.fetch_encrypted_object_hashes):
+        for resource in object_iterator:
           found_match = True
           yield stat_formatter.format_object(resource, show_acl=False)
         if not found_match:
           log.error('No URLs matched: ' + url.url_string)
           self.exit_code = 1
       else:
-        for resource in _object_iterator(
-            url,
-            all_versions=True,
-            fetch_encrypted_object_hashes=args.fetch_encrypted_object_hashes):
+        for resource in object_iterator:
           if args.raw:
             display_data = resource.metadata
           else:

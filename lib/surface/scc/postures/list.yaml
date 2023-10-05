@@ -1,0 +1,33 @@
+- release_tracks: [ALPHA]
+  hidden: true
+  help_text:
+    brief: Lists all the Cloud Security Command Center postures for an organization.
+    description: |
+      Lists all Cloud Security Command Center postures for an organization.
+
+      By default, postures created in global location are returned.
+    examples: |
+       List all postures in organization 123. If location is omitted,
+       this returns postures from location 'global'. For a posture with multiple revisions,
+       only the latest revision of the posture is returned in the output.
+
+        $ {command} organizations/123
+
+       List all postures in organization 123, location global
+
+        $ {command} organizations/123/locations/global
+
+  request:
+    collection: securityposture.organizations.locations.postures
+    disable_resource_check: true
+    api_version: v1alpha
+    method: list
+
+  arguments:
+    params:
+    - arg_name: parent
+      api_field: parent
+      is_positional: true
+      required: true
+      help_text: |
+        Resource name of the parent, like organizations/<organizationID> or organizations/<organizationID>/locations/<location>.

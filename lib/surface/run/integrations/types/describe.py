@@ -19,14 +19,11 @@ from __future__ import division
 from __future__ import unicode_literals
 
 from frozendict import frozendict
-
 from googlecloudsdk.calliope import base
-from googlecloudsdk.command_lib.run import connection_context
-from googlecloudsdk.command_lib.run import exceptions
-from googlecloudsdk.command_lib.run import flags as run_flags
 from googlecloudsdk.command_lib.run.integrations import flags
 from googlecloudsdk.command_lib.run.integrations import run_apps_operations
 from googlecloudsdk.command_lib.run.integrations import types_describe_printer
+from googlecloudsdk.command_lib.runapps import exceptions
 from googlecloudsdk.core.resource import resource_printer
 
 
@@ -38,19 +35,15 @@ class Params:
     self.optional = optional
 
 
-@base.ReleaseTracks(
-    base.ReleaseTrack.ALPHA,
-    base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Describe(base.DescribeCommand):
   """Describes a Cloud Run Integration type."""
 
   detailed_help = {
-      'DESCRIPTION':
-          """\
+      'DESCRIPTION': """\
           {description}
           """,
-      'EXAMPLES':
-          """\
+      'EXAMPLES': """\
           To describe an integration type
 
               $ {command} [TYPE]
@@ -69,29 +62,27 @@ class Describe(base.DescribeCommand):
     resource_printer.RegisterFormatter(
         types_describe_printer.PRINTER_FORMAT,
         types_describe_printer.TypesDescribePrinter,
-        hidden=True)
-    parser.display_info.AddFormat(
-        types_describe_printer.PRINTER_FORMAT)
+        hidden=True,
+    )
+    parser.display_info.AddFormat(types_describe_printer.PRINTER_FORMAT)
 
   def Run(self, args):
     """Describe an integration type."""
     release_track = self.ReleaseTrack()
     type_name = args.type
-    conn_context = connection_context.GetConnectionContext(
-        args, run_flags.Product.RUN_APPS, release_track)
-    with run_apps_operations.Connect(conn_context, release_track) as client:
+    with run_apps_operations.Connect(args, release_track) as client:
       type_def = client.GetIntegrationTypeDefinition(type_name)
       if not type_def:
         raise exceptions.ArgumentError(
-            'Cannot find integration type [{}]'.format(type_name))
+            'Cannot find integration type [{}]'.format(type_name)
+        )
 
       return {
-          'description':
-              type_def.description,
-          'example_command':
-              type_def.example_command.format(track=self.ReleaseTrack().prefix),
-          'parameters':
-              self._GetParams(type_def),
+          'description': type_def.description,
+          'example_command': type_def.example_command.format(
+              track=self.ReleaseTrack().prefix
+          ),
+          'parameters': self._GetParams(type_def),
       }
 
   def _GetParams(self, type_def):
@@ -105,16 +96,12 @@ class Describe(base.DescribeCommand):
         continue
       if required:
         required_params.append(
-            frozendict({
-                'name': param.name,
-                'description': param.description
-            }))
+            frozendict({'name': param.name, 'description': param.description})
+        )
       else:
         optional_params.append(
-            frozendict({
-                'name': param.name,
-                'description': param.description
-            }))
+            frozendict({'name': param.name, 'description': param.description})
+        )
 
     # sorting the parameters based on name to guarantee the same ordering
     # for scenario tests.

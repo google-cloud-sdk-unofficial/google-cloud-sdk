@@ -97,6 +97,7 @@ def ContainerArgGroup():
   group.AddArgument(flags.CommandFlag())
   group.AddArgument(flags.ArgsFlag())
   group.AddArgument(flags.SecretsFlags())
+  group.AddArgument(flags.DependsOnFlag())
   return group
 
 
@@ -340,7 +341,7 @@ class Deploy(base.Command):
       )
 
     # Deploy a container with an image
-    changes = flags.GetServiceConfigurationChanges(args)
+    changes = flags.GetServiceConfigurationChanges(args, self.ReleaseTrack())
     changes.insert(
         0,
         config_changes.DeleteAnnotationChange(
@@ -434,8 +435,8 @@ class BetaDeploy(Deploy):
 class AlphaDeploy(BetaDeploy):
   """Create or update a Cloud Run service."""
 
-  @staticmethod
-  def Args(parser):
+  @classmethod
+  def Args(cls, parser):
     Deploy.CommonArgs(parser, False)
 
     # Flags specific to managed CR
@@ -444,9 +445,11 @@ class AlphaDeploy(BetaDeploy):
     flags.AddVpcNetworkGroupFlagsForUpdate(managed_group)
     flags.AddRuntimeFlag(managed_group)
     flags.AddServiceMinInstancesFlag(managed_group)
+    flags.AddVolumesFlags(managed_group, cls.ReleaseTrack())
     # pylint: disable=protected-access
     flags.ContainerFlags(
-        parser.parser._calliope_command, ContainerArgGroup()
+        parser.parser._calliope_command,
+        ContainerArgGroup(),
     ).AddToParser(managed_group)
 
 

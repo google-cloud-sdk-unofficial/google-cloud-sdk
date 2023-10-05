@@ -19,28 +19,22 @@ from __future__ import division
 from __future__ import unicode_literals
 
 from googlecloudsdk.calliope import base
-from googlecloudsdk.command_lib.run import connection_context
-from googlecloudsdk.command_lib.run import exceptions
-from googlecloudsdk.command_lib.run import flags as run_flags
 from googlecloudsdk.command_lib.run import pretty_print
 from googlecloudsdk.command_lib.run.integrations import flags
 from googlecloudsdk.command_lib.run.integrations import messages_util
 from googlecloudsdk.command_lib.run.integrations import run_apps_operations
+from googlecloudsdk.command_lib.runapps import exceptions
 
 
-@base.ReleaseTracks(
-    base.ReleaseTrack.ALPHA,
-    base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Create(base.Command):
   """Create a Cloud Run Integration."""
 
   detailed_help = {
-      'DESCRIPTION':
-          """\
+      'DESCRIPTION': """\
           {description}
           """,
-      'EXAMPLES':
-          """\
+      'EXAMPLES': """\
           To create and attach a redis instance to a Cloud Run service
 
               $ {command} --type=redis --service=myservice
@@ -75,20 +69,20 @@ class Create(base.Command):
     flags.ValidateEnabledGcpApis(integration_type)
     release_track = self.ReleaseTrack()
 
-    conn_context = connection_context.GetConnectionContext(
-        args, run_flags.Product.RUN_APPS, release_track)
-    with run_apps_operations.Connect(conn_context, release_track) as client:
+    with run_apps_operations.Connect(args, release_track) as client:
       client.VerifyLocation()
       self._validateServiceNameAgainstIntegrations(
           client,
           integration_type=integration_type,
           service=service,
-          integration_name=input_name)
+          integration_name=input_name,
+      )
       integration_name = client.CreateIntegration(
           integration_type=integration_type,
           parameters=parameters,
           service=service,
-          name=input_name)
+          name=input_name,
+      )
     resource_config = client.GetIntegration(integration_name)
     resource_status = client.GetIntegrationStatus(integration_name)
 
@@ -97,26 +91,31 @@ class Create(base.Command):
         messages_util.GetSuccessMessage(
             integration_type=integration_type,
             integration_name=integration_name,
-            action='created'))
+            action='created',
+        )
+    )
 
-    call_to_action = messages_util.GetCallToAction(integration_type,
-                                                   resource_config,
-                                                   resource_status)
+    call_to_action = messages_util.GetCallToAction(
+        integration_type, resource_config, resource_status
+    )
     if call_to_action:
       pretty_print.Info('')
       pretty_print.Info(call_to_action)
       pretty_print.Info(
-          messages_util.CheckStatusMessage(release_track,
-                                           integration_name))
+          messages_util.CheckStatusMessage(release_track, integration_name)
+      )
 
-  def _validateServiceNameAgainstIntegrations(self, client, integration_type,
-                                              integration_name, service):
+  def _validateServiceNameAgainstIntegrations(
+      self, client, integration_type, integration_name, service
+  ):
     """Checks if the service name matches an integration name."""
     if not service:
       return
-    error = exceptions.ArgumentError('Service name cannot be the same as ' +
-                                     'the provided integration name or an ' +
-                                     'existing integration name')
+    error = exceptions.ArgumentError(
+        'Service name cannot be the same as '
+        + 'the provided integration name or an '
+        + 'existing integration name'
+    )
     if service == integration_name:
       raise error
     integrations = client.ListIntegrations(integration_type, None)

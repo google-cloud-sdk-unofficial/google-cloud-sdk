@@ -350,6 +350,7 @@ class Ssh(base.Command):
     # identity_file_list will be None if security keys are not enabled.
     identity_file_list = ssh.WriteSecurityKeys(oslogin_state)
     identity_file = None
+    cert_file = None
     options = None
     if not args.plain:
       if not identity_file_list:
@@ -357,6 +358,9 @@ class Ssh(base.Command):
       options = ssh_helper.GetConfig(ssh_utils.HostKeyAlias(instance),
                                      args.strict_host_key_checking,
                                      host_keys_to_add=host_keys)
+
+    if oslogin_state.third_party_user:
+      cert_file = ssh.CertFileFromZone(args.zone)
 
     extra_flags = ssh.ParseAndSubstituteSSHFlags(args, remote, instance_address,
                                                  internal_address)
@@ -374,6 +378,7 @@ class Ssh(base.Command):
     # specifying a custom port (b/121998342).
     ssh_cmd_args = {'remote': remote,
                     'identity_file': identity_file,
+                    'cert_file': cert_file,
                     'options': options,
                     'extra_flags': extra_flags,
                     'remote_command': remote_command,

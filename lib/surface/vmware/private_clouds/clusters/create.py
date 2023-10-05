@@ -22,6 +22,7 @@ from googlecloudsdk.api_lib.vmware.clusters import ClustersClient
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.vmware import flags
+from googlecloudsdk.command_lib.vmware.clusters import util
 from googlecloudsdk.core import log
 
 DETAILED_HELP = {
@@ -85,7 +86,9 @@ class Create(base.CreateCommand):
     cluster = args.CONCEPTS.cluster.Parse()
     client = ClustersClient()
     is_async = args.async_
-    operation = client.Create(cluster, args.node_type_config)
+
+    nodes_configs = util.ParseNodesConfigsParameters(args.node_type_config)
+    operation = client.Create(cluster, nodes_configs)
 
     if is_async:
       log.CreatedResource(operation.name, kind='cluster', is_async=True)

@@ -31,5 +31,6 @@
       table(
           name.scope("hl7V2Stores"):label=ID,
           name.scope("locations").segment(0):label=LOCATION,
-          notificationConfig.pubsubTopic:label=TOPIC
+          notificationConfig.pubsubTopic:label=TOPIC,
+          parserConfig.version:label=PARSER_VER
       )

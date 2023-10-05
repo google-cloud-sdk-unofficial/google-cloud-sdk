@@ -35,7 +35,9 @@ $ {command} my-node-pool --cluster=my-cluster --location=us-west1
 """
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
+)
 class Enroll(base.Command):
   """Enroll a node pool of a user cluster in Anthos on bare metal."""
 

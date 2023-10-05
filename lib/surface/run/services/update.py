@@ -54,6 +54,7 @@ def ContainerArgGroup():
   group.AddArgument(flags.CommandFlag())
   group.AddArgument(flags.ArgsFlag())
   group.AddArgument(flags.SecretsFlags())
+  group.AddArgument(flags.DependsOnFlag())
   return group
 
 

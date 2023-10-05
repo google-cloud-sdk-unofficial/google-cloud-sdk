@@ -22,15 +22,14 @@ from googlecloudsdk.api_lib.vmware.privateclouds import PrivateCloudsClient
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.vmware import flags
+from googlecloudsdk.command_lib.vmware.clusters import util
 from googlecloudsdk.core import log
 
 DETAILED_HELP = {
-    'DESCRIPTION':
-        """
+    'DESCRIPTION': """
           Create a VMware Engine private cloud. Private cloud creation is considered finished when the private cloud is in READY state. Check the progress of a private cloud using `{parent_command} list`.
         """,
-    'EXAMPLES':
-        """
+    'EXAMPLES': """
           To create a private cloud in the `us-west2-a` zone using `standard-72` nodes that connects to the `my-network` VMware Engine network, run:
 
 
@@ -62,8 +61,9 @@ class Create(base.CreateCommand):
   def Args(parser):
     """Register flags for this command."""
     flags.AddPrivatecloudArgToParser(parser, positional=True)
-    flags.AddClusterArgToParser(parser, positional=False,
-                                hide_resource_argument_flags=True)
+    flags.AddClusterArgToParser(
+        parser, positional=False, hide_resource_argument_flags=True
+    )
     base.ASYNC_FLAG.AddToParser(parser)
     base.ASYNC_FLAG.SetDefault(parser, True)
     parser.display_info.AddFormat('yaml')
@@ -71,29 +71,29 @@ class Create(base.CreateCommand):
         '--description',
         help="""\
         Text describing the private cloud.
-        """)
+        """,
+    )
     parser.add_argument(
         '--management-range',
         required=True,
         help="""\
          IP address range in the private cloud to use for management appliances, in CIDR format. Use an IP address range that meets the [VMware Engine networking requirements](https://cloud.google.com/vmware-engine/docs/quickstart-networking-requirements).
-        """)
+        """,
+    )
     parser.add_argument(
         '--vmware-engine-network',
         required=True,
         help="""\
         Resource ID of the VMware Engine network attached to the private cloud.
-        """)
+        """,
+    )
     parser.add_argument(
         '--node-type-config',
         required=True,
         type=arg_parsers.ArgDict(
-            spec={
-                'type': str,
-                'count': int,
-                'custom-core-count': int
-            },
-            required_keys=('type', 'count')),
+            spec={'type': str, 'count': int, 'custom-core-count': int},
+            required_keys=('type', 'count'),
+        ),
         action='append',
         help="""\
         Information about the type and number of nodes associated with the cluster.
@@ -106,7 +106,8 @@ class Create(base.CreateCommand):
         To get a list of valid values for your node type,
         run the gcloud vmware node-types describe command and reference the
         availableCustomCoreCounts field in the output.
-        """)
+        """,
+    )
     parser.add_argument(
         '--type',
         required=False,
@@ -119,8 +120,10 @@ class Create(base.CreateCommand):
             can be converted into standard private cloud by expanding it up to 3
             or more nodes.""",
             'STRETCHED': """Stretched private cloud is a regional resource with redundancy,
-            with a minimum of 6 nodes, nodes count has to be even."""},
-        help='Type of the private cloud')
+            with a minimum of 6 nodes, nodes count has to be even.""",
+        },
+        help='Type of the private cloud',
+    )
     parser.add_argument(
         '--preferred-zone',
         required=False,
@@ -129,7 +132,8 @@ class Create(base.CreateCommand):
         Zone that will remain operational when connection between the two zones is
         lost. Specify the resource name of a zone that belongs to the region of the
         private cloud.
-        """)
+        """,
+    )
     parser.add_argument(
         '--secondary-zone',
         required=False,
@@ -138,16 +142,20 @@ class Create(base.CreateCommand):
         Additional zone for a higher level of availability and load balancing.
         Specify the resource name of a zone that belongs to the region of the
         private cloud.
-        """)
+        """,
+    )
 
   def Run(self, args):
     privatecloud = args.CONCEPTS.private_cloud.Parse()
     client = PrivateCloudsClient()
     is_async = args.async_
+
+    nodes_configs = util.ParseNodesConfigsParameters(args.node_type_config)
+
     operation = client.Create(
         privatecloud,
         cluster_id=args.cluster,
-        nodes_configs=args.node_type_config,
+        nodes_configs=nodes_configs,
         network_cidr=args.management_range,
         vmware_engine_network_id=args.vmware_engine_network,
         description=args.description,

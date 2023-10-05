@@ -24,7 +24,7 @@ from googlecloudsdk.command_lib.infra_manager import resource_args
 from googlecloudsdk.command_lib.util.concepts import concept_parsers
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.GA)
 class ExportLockAlpha(base.Command):
   """Exports lock info of a deployment.
 

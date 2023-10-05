@@ -258,21 +258,17 @@ the Google Cloud Platform.
   )
 
 
-MACOS_PYTHON_INSTALL_PATH = '/Library/Frameworks/Python.framework/Versions/3.7/'
-MACOS_PYTHON = 'macos_python-3.7.9.tar.gz'
+MACOS_PYTHON_INSTALL_PATH = '/Library/Frameworks/Python.framework/Versions/3.10/'
+MACOS_PYTHON = 'python-3.10.11-macos11.tar.gz'
 MACOS_PYTHON_URL = (
     'https://dl.google.com/dl/cloudsdk/channels/rapid/' + MACOS_PYTHON
 )
-PYTHON_VERSION = '3.7'
+PYTHON_VERSION = '3.10'
 
 
 def MaybeInstallPythonOnMac():
   """Optionally install Python on Mac machines."""
   if platforms.OperatingSystem.Current() != platforms.OperatingSystem.MACOSX:
-    return
-  if platforms.Architecture.Current() != platforms.Architecture.x86_64:
-    return
-  if platforms.Platform.IsActuallyM1ArmArchitecture():
     return
 
   print('\nGoogle Cloud CLI works best with Python {} and certain modules.\n'
@@ -305,7 +301,7 @@ def MaybeInstallPythonOnMac():
             else:
               exit_code = execution_utils.Exec([
                   'sudo', 'installer', '-target', '/', '-pkg',
-                  './python-3.7.9-macosx10.9.pkg'
+                  './python-3.10.11-macos11.pkg'
               ],
                                                no_exit=True)
               if exit_code != 0:

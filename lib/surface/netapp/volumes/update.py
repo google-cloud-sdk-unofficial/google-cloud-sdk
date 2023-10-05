@@ -112,6 +112,11 @@ class Update(base.UpdateCommand):
         if self._RELEASE_TRACK == base.ReleaseTrack.BETA
         else None
     )
+    source_backup = (
+        args.source_backup
+        if self._RELEASE_TRACK == base.ReleaseTrack.BETA
+        else None
+    )
     volume = client.ParseUpdatedVolumeConfig(
         original_volume,
         description=args.description,
@@ -129,6 +134,7 @@ class Update(base.UpdateCommand):
         security_style=security_style,
         enable_kerberos=args.enable_kerberos,
         snapshot=args.source_snapshot,
+        backup=source_backup,
         restricted_actions=restricted_actions,
         backup_config=backup_config)
 
@@ -163,6 +169,10 @@ class Update(base.UpdateCommand):
     if args.IsSpecified('enable_kerberos'):
       updated_fields.append('kerberosEnabled')
     if args.IsSpecified('source_snapshot'):
+      updated_fields.append('restoreParameters')
+    if self._RELEASE_TRACK == base.ReleaseTrack.BETA and args.IsSpecified(
+        'source_backup'
+    ):
       updated_fields.append('restoreParameters')
     if args.IsSpecified('restricted_actions'):
       updated_fields.append('restrictedActions')

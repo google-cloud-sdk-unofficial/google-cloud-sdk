@@ -134,7 +134,11 @@ class DisableAlpha(base.SilentCommand):
         if not do_disable:
           continue
       op = serviceusage.RemoveEnableRule(
-          project, service_name, args.force, folder, organization
+          project,
+          service_name,
+          force=args.force,
+          folder=folder,
+          organization=organization,
       )
       if op.done:
         continue

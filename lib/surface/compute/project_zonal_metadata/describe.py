@@ -26,7 +26,6 @@ from googlecloudsdk.core import properties
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-@base.Hidden
 class Describe(base.DescribeCommand):
   """Describe project zonal metadata."""
 

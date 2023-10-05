@@ -21,6 +21,7 @@ from __future__ import unicode_literals
 import datetime
 import os.path
 
+from apitools.base.py import exceptions as apitools_exceptions
 from googlecloudsdk.api_lib.clouddeploy import client_util
 from googlecloudsdk.api_lib.clouddeploy import config
 from googlecloudsdk.api_lib.clouddeploy import release
@@ -107,9 +108,16 @@ class Create(base.CreateCommand):
 
   def _CheckSupportedVersion(self, release_ref, skaffold_version):
     config_client = config.ConfigClient()
-    c = config_client.GetConfig(
-        release_ref.AsDict()['projectsId'], release_ref.AsDict()['locationsId']
-    )
+    try:
+      c = config_client.GetConfig(
+          release_ref.AsDict()['projectsId'],
+          release_ref.AsDict()['locationsId'],
+      )
+    except apitools_exceptions.HttpForbiddenError:
+      # We can't display any preemptive warnings, but the server will still
+      # prevent any mischief later.
+      return
+
     version_obj = None
     for v in c.supportedVersions:
       if v.version == skaffold_version:
@@ -160,6 +168,17 @@ class Create(base.CreateCommand):
       raise c_exceptions.ConflictingArgumentsException(
           '--disable-initial-rollout', '--to-target'
       )
+    if args.from_run_container:
+      if args.build_artifacts:
+        raise c_exceptions.ConflictingArgumentsException(
+            '--from-run-container',
+            '--build-artifacts',
+        )
+      if args.images:
+        raise c_exceptions.ConflictingArgumentsException(
+            '--from-run-container',
+            '--images'
+        )
     args.CONCEPTS.parsed_args.release = release_util.RenderPattern(
         args.CONCEPTS.parsed_args.release
     )
@@ -211,6 +230,9 @@ class Create(base.CreateCommand):
         pipeline_obj.uid,
         args.from_k8s_manifest,
         args.from_run_manifest,
+        args.from_run_container,
+        args.services,
+        pipeline_obj,
         args.deploy_parameters,
     )
 

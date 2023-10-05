@@ -18,7 +18,10 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+from googlecloudsdk.api_lib.storage import api_factory
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.storage import errors_util
+from googlecloudsdk.command_lib.storage import storage_url
 
 
 @base.Hidden
@@ -31,22 +34,28 @@ class Describe(base.DescribeCommand):
       Get details about a specific storage operation.
       """,
       'EXAMPLES': """\
-      To describe an operation, run:
+      To describe an operation "1234567890" on bucket "my-bucket", run:
 
-        $ {command} BUCKET OPERATION-ID
+        $ {command} gs://my-bucket 1234567890
       """,
   }
 
   @staticmethod
   def Args(parser):
     parser.add_argument(
-        'bucket',
-        help='Name of the bucket that the operation belongs to.',
+        'url',
+        help=(
+            'URL of the bucket that the operation belongs to.'
+            ' For example, "gs://bucket"'
+        ),
     )
     parser.add_argument(
         'operation_id', help='The ID of the operation resource.'
     )
 
   def Run(self, args):
-    # TODO(b/291789849): Add when API function available.
-    pass
+    url_object = storage_url.storage_url_from_string(args.url)
+    errors_util.raise_error_if_not_gcs_bucket(args.command_path, url_object)
+    return api_factory.get_api(url_object.scheme).get_operation(
+        bucket_name=url_object.bucket_name, operation_id=args.operation_id
+    )

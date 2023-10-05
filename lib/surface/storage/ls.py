@@ -93,8 +93,8 @@ class Ls(base.Command):
   }
   # pylint:enable=g-backslash-continuation
 
-  @staticmethod
-  def Args(parser):
+  @classmethod
+  def Args(cls, parser):
     """Edit argparse.ArgumentParser for the command."""
     parser.add_argument(
         'path',
@@ -162,6 +162,9 @@ class Ls(base.Command):
     flags.add_encryption_flags(parser, command_only_reads_data=True)
     flags.add_fetch_encrypted_object_hashes_flag(parser, is_list=True)
 
+    if cls.ReleaseTrack() == base.ReleaseTrack.ALPHA:
+      flags.add_soft_delete_flags(parser)
+
   def Run(self, args):
     """Command execution logic."""
     encryption_util.initialize_key_store(args)
@@ -196,10 +199,14 @@ class Ls(base.Command):
         buckets_flag=args.buckets,
         display_detail=display_detail,
         fetch_encrypted_object_hashes=args.fetch_encrypted_object_hashes,
+        halt_on_empty_response=not getattr(args, 'exhaustive', False),
         include_etag=args.etag,
+        next_page_token=getattr(args, 'next_page_token', None),
         readable_sizes=args.readable_sizes,
         recursion_flag=args.recursive,
-        use_gsutil_style=use_gsutil_style).list_urls()
+        soft_deleted_only=getattr(args, 'soft_deleted', False),
+        use_gsutil_style=use_gsutil_style,
+    ).list_urls()
 
     if found_non_default_provider and args.full:
       # We do guarantee full-style formatting for all metadata fields of

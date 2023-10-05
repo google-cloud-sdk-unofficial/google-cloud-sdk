@@ -21,6 +21,7 @@ from __future__ import unicode_literals
 from googlecloudsdk.api_lib.util import apis
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.transfer import name_util
+from googlecloudsdk.core import log
 
 
 class Cancel(base.Command):
@@ -52,3 +53,4 @@ class Cancel(base.Command):
     client.transferOperations.Cancel(
         messages.StoragetransferTransferOperationsCancelRequest(
             name=formatted_name))
+    log.status.Print('Sent cancel request for {}'.format(formatted_name))

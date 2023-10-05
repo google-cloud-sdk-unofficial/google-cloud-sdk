@@ -67,3 +67,21 @@ class WaitBeta(base.Command):
     operation_client = operations.OperationsClient()
     operation_ref = args.CONCEPTS.operation_id.Parse()
     return operation_client.Wait(operation_ref=operation_ref)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class Wait(base.Command):
+  """Poll an operation for completion."""
+
+  detailed_help = {'EXAMPLES': _EXAMPLES}
+
+  @staticmethod
+  def Args(parser: parser_arguments.ArgumentInterceptor):
+    """Registers flags for this command."""
+    cluster_flags.AddOperationResourceArg(parser, 'to wait for completion')
+
+  def Run(self, args):
+    """Runs the wait command."""
+    operation_client = operations.OperationsClient()
+    operation_ref = args.CONCEPTS.operation_id.Parse()
+    return operation_client.Wait(operation_ref=operation_ref)

@@ -51,6 +51,7 @@ class Create(base.CreateCommand):
   def Args(cls, parser):
     activation_flags.AddEndpointResource(cls.ReleaseTrack(), parser)
     activation_flags.AddMaxWait(parser, '60m')  # default to 60 minutes wait.
+    activation_flags.AddDescriptionArg(parser)
     base.ASYNC_FLAG.AddToParser(parser)
     base.ASYNC_FLAG.SetDefault(parser, True)
     labels_util.AddCreateLabelsFlags(parser)
@@ -69,7 +70,8 @@ class Create(base.CreateCommand):
     operation = client.CreateEndpoint(
         name=endpoint.Name(),
         parent=endpoint.Parent().RelativeName(),
-        labels=labels,
+        description=getattr(args, 'description', None),
+        labels=labels
     )
     # Return the in-progress operation if async is requested.
     if is_async:

@@ -38,7 +38,9 @@ $ {command} my-cluster --location=us-west1 --admin-cluster-membership=projects/m
 """
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
+)
 class Enroll(base.Command):
   """Enroll an Anthos on bare metal admin cluster."""
 

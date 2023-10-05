@@ -20,8 +20,6 @@ from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.run.integrations import types_utils
 from googlecloudsdk.calliope import base
-from googlecloudsdk.command_lib.run import connection_context
-from googlecloudsdk.command_lib.run import flags as run_flags
 from googlecloudsdk.command_lib.run.integrations import flags
 from googlecloudsdk.command_lib.run.integrations import integration_printer
 from googlecloudsdk.command_lib.run.integrations import run_apps_operations
@@ -67,9 +65,7 @@ class Describe(base.DescribeCommand):
     """Describe an integration type."""
     release_track = self.ReleaseTrack()
     name = args.name
-    conn_context = connection_context.GetConnectionContext(
-        args, run_flags.Product.RUN_APPS, release_track)
-    with run_apps_operations.Connect(conn_context, release_track) as client:
+    with run_apps_operations.Connect(args, release_track) as client:
       client.VerifyLocation()
       resource_config = client.GetIntegration(name)
       latest_deployment = client.GetLatestDeployment(resource_config)
@@ -78,7 +74,7 @@ class Describe(base.DescribeCommand):
 
       return integration_printer.Record(
           name=name,
-          region=conn_context.region,
+          region=client.region,
           integration_type=integration_type,
           config=resource_config,
           status=resource_status,

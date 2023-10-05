@@ -18,7 +18,10 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+from googlecloudsdk.api_lib.storage import api_factory
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.storage import errors_util
+from googlecloudsdk.command_lib.storage import storage_url
 
 
 @base.Hidden
@@ -31,23 +34,26 @@ class List(base.ListCommand):
       List storage operations.
       """,
       'EXAMPLES': """\
-      To list all storage operations in a bucket, run:
+      To list all storage operations that belong to the bucket "my-bucket", run:
 
-        $ {command} BUCKET
+        $ {command} gs://my-bucket
 
       To list operations in JSON format, run:
 
-        $ {command} BUCKET --format=json
+        $ {command} gs://my-bucket --format=json
       """,
   }
 
   @staticmethod
   def Args(parser):
     parser.add_argument(
-        'bucket',
-        help='Name of the bucket that the operations belong to.',
+        'url',
+        help='URL of the bucket that the operations belong to.',
     )
 
   def Run(self, args):
-    # TODO(b/291789435): Add when API function available.
-    pass
+    url_object = storage_url.storage_url_from_string(args.url)
+    errors_util.raise_error_if_not_gcs_bucket(args.command_path, url_object)
+    return api_factory.get_api(url_object.scheme).list_operations(
+        bucket_name=url_object.bucket_name,
+    )

@@ -87,6 +87,7 @@ class StartIapTunnel(base.Command):
   """Starts an IAP TCP forwarding tunnel."""
 
   fetch_instance_after_connect_error = False
+  support_security_gateway = False
 
   @classmethod
   def Args(cls, parser):
@@ -129,7 +130,7 @@ If `LOCAL_PORT` is 0, an arbitrary unused local port is chosen."""
         action='store_true',
         help='Disables the immediate check of the connection.')
 
-    iap_tunnel.AddHostBasedTunnelArgs(parser)
+    iap_tunnel.AddHostBasedTunnelArgs(parser, cls.support_security_gateway)
 
   def Run(self, args):
     if args.listen_on_stdin and args.IsSpecified('local_host_port'):
@@ -249,12 +250,19 @@ If `LOCAL_PORT` is 0, an arbitrary unused local port is chosen."""
       log.warning(_NUMPY_HELP_TEXT)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
-class StartIapTunnelAlphaBeta(StartIapTunnel):
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class StartIapTunnelBeta(StartIapTunnel):
   """Starts an IAP TCP forwarding tunnel (Beta)."""
   # Make the Compute Engine instances.Get call only after failing to connect.
   fetch_instance_after_connect_error = True
 
 
-StartIapTunnelAlphaBeta.detailed_help = _DetailedHelp()
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class StartIapTunnelAlpha(StartIapTunnelBeta):
+  """Starts an IAP TCP forwarding tunnel (Beta)."""
+  support_security_gateway = True
+
+
+StartIapTunnelAlpha.detailed_help = _DetailedHelp()
+StartIapTunnelBeta.detailed_help = _DetailedHelp()
 StartIapTunnel.detailed_help = _DetailedHelp()

@@ -233,8 +233,6 @@ class Status(feature_base.FeatureCommand, base.ListCommand):
       # as it indicates an unreachable cluster or a dated syncState.code
       if md.state is None or md.state.code is None:
         cluster.config_sync = 'CODE_UNSPECIFIED'
-      elif md.state.code.name != 'OK':
-        cluster.config_sync = md.state.code.name
       else:
         # operator errors could occur regardless of the deployment_state
         if has_operator_error(fs):
@@ -242,7 +240,10 @@ class Status(feature_base.FeatureCommand, base.ListCommand):
         # (b/154174276, b/156293028)
         # check operator_state to see if ACM/nomos has been installed
         if not has_operator_state(fs):
-          cluster.config_sync = 'OPERATOR_STATE_UNSPECIFIED'
+          if md.state.code.name != 'OK':
+            cluster.config_sync = md.state.code.name
+          else:
+            cluster.config_sync = 'OPERATOR_STATE_UNSPECIFIED'
         else:
           cluster.config_sync = fs.operatorState.deploymentState.name
           if cluster.config_sync == 'INSTALLED':

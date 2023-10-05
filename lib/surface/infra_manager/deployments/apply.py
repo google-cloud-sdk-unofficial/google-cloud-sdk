@@ -26,7 +26,7 @@ from googlecloudsdk.command_lib.infra_manager import resource_args
 from googlecloudsdk.command_lib.util.concepts import concept_parsers
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.GA)
 class CreateAlpha(base.CreateCommand):
   """Create or update a deployment.
 

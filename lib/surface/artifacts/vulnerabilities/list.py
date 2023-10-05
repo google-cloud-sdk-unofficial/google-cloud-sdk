@@ -30,13 +30,14 @@ from googlecloudsdk.command_lib.artifacts import format_util
 
 DEFAULT_LIST_FORMAT = """\
      table[box, title="%TITLE%"](
-      vulnerability.shortDescription:label=CVE,
-      vulnerability.effectiveSeverity:label=EFFECTIVE_SEVERITY,
-      vulnerability.cvssScore:label=CVSS:sort=-1:reverse,
-      vulnerability.packageIssue.fixAvailable:label=FIX_AVAILABLE,
-      vulnerability.vexAssessment.state:label=VEX_STATUS,
-      vulnerability.packageIssue.affectedPackage:sort=3:label=PACKAGE,
-      vulnerability.packageIssue.packageType:label=PACKAGE_TYPE,
+      occurrence.vulnerability.shortDescription:label=CVE,
+      occurrence.vulnerability.effectiveSeverity:label=EFFECTIVE_SEVERITY,
+      occurrence.vulnerability.cvssScore:label=CVSS:sort=-1:reverse,
+      occurrence.vulnerability.packageIssue.fixAvailable:label=FIX_AVAILABLE,
+      occurrence.vulnerability.vexAssessment.state:label=VEX_STATUS,
+      occurrence.vulnerability.packageIssue.affectedPackage:sort=3:label=PACKAGE,
+      occurrence.vulnerability.packageIssue.packageType:label=PACKAGE_TYPE,
+      vexScope,
       {}
     )
     """.format(format_util.CONTAINER_ANALYSIS_METADATA_FORMAT)
@@ -60,7 +61,7 @@ class List(base.ListCommand):
   def Args(parser):
     flags.GetListURIArg().AddToParser(parser)
     flags.GetVulnerabilitiesOccurrenceFilterFlag().AddToParser(parser)
-    parser.display_info.AddFlatten(['vulnerability.packageIssue'])
+    parser.display_info.AddFlatten(['occurrence.vulnerability.packageIssue'])
     return
 
   def Run(self, args):
@@ -68,11 +69,25 @@ class List(base.ListCommand):
     resource, project = self.replaceTags(args.URI)
     latest_scan = GetLatestScan(project, resource)
     self.setTitle(args, latest_scan)
-    vulnerabilities = GetVulnerabilities(project, resource, occurrence_filter)
-    vulnerabilities = list(vulnerabilities)
-    if len(vulnerabilities) < 1:
-      vulnerabilities = {}
-    return vulnerabilities
+    occurrences = GetVulnerabilities(project, resource, occurrence_filter)
+    occurrences = list(occurrences)
+    results = []
+    if len(occurrences) < 1:
+      return {}
+    for occ in occurrences:
+      vex_scope = ''
+      if (
+          occ.vulnerability
+          and occ.vulnerability.vexAssessment
+          and occ.vulnerability.vexAssessment.noteName
+      ):
+        tokens = occ.vulnerability.vexAssessment.noteName.split('/')
+        if tokens[-1].startswith('image-'):
+          vex_scope = 'IMAGE'
+        else:
+          vex_scope = 'DIGEST'
+      results.append(VulnerabilityEntry(occ, vex_scope))
+    return results
 
   def replaceTags(self, original_uri):
     updated_uri = original_uri
@@ -108,3 +123,24 @@ class List(base.ListCommand):
       title = 'Latest scan was at {}'.format(last_scan_time)
     list_format = DEFAULT_LIST_FORMAT.replace('%TITLE%', title)
     args.GetDisplayInfo().AddFormat(list_format)
+
+
+class VulnerabilityEntry(object):
+  """Holder for an entry of vulnerability list results.
+
+  Properties:
+    occurrence: Vulnerability occurrence.
+    vex_scope: Scope of the VEX statement.
+  """
+
+  def __init__(self, occurrence, vex_scope):
+    self._occurrence = occurrence
+    self._vex_scope = vex_scope
+
+  @property
+  def occurrence(self):
+    return self._occurrence
+
+  @property
+  def vex_scope(self):
+    return self._vex_scope

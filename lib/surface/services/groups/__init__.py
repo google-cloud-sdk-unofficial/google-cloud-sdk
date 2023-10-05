@@ -25,4 +25,4 @@ from googlecloudsdk.calliope import base
 @base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Groups(base.Group):
-  """View service group information.."""
+  """View service group information."""

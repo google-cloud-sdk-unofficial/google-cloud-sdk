@@ -22,6 +22,8 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import parser_arguments
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
+)
 class NodePools(base.Group):
   """Create and manage node pools in an Anthos cluster on bare metal."""

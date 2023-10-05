@@ -176,3 +176,71 @@ class CreateBeta(base.CreateCommand):
       log.CreatedResource(cluster_ref, 'Anthos Cluster on VMware', args.async_)
 
       return operation_response
+
+
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class Create(base.CreateCommand):
+  """Create an Anthos cluster on VMware."""
+
+  detailed_help = {'EXAMPLES': _EXAMPLES}
+
+  @staticmethod
+  def Args(parser: parser_arguments.ArgumentInterceptor):
+    """Gathers command line arguments for the create command.
+
+    Args:
+      parser: The argparse parser to add the flag to.
+    """
+    parser.display_info.AddFormat(vmware_constants.VMWARE_CLUSTERS_FORMAT)
+    vmware_flags.AddClusterResourceArg(parser, 'to create', True)
+    vmware_flags.AddAdminClusterMembershipResourceArg(parser, positional=False)
+    base.ASYNC_FLAG.AddToParser(parser)
+    vmware_flags.AddValidationOnly(parser)
+    vmware_flags.AddDescription(parser)
+    vmware_flags.AddVersion(parser, required=True)
+    vmware_flags.AddClusterAnnotations(parser)
+    vmware_flags.AddVmwareControlPlaneNodeConfig(parser)
+    vmware_flags.AddVmwareAAGConfig(parser)
+    vmware_flags.AddVmwareStorageConfig(parser)
+    vmware_flags.AddVmwareNetworkConfig(parser)
+    vmware_flags.AddVmwareLoadBalancerConfig(parser)
+    vmware_flags.AddVCenterConfig(parser)
+    vmware_flags.AddVmwareDataplaneV2Config(parser)
+    vmware_flags.AddEnableVmwareTracking(parser)
+    vmware_flags.AddVmwareAutoRepairConfig(parser)
+    vmware_flags.AddAuthorization(parser)
+    vmware_flags.AddEnableControlPlaneV2(parser)
+
+  def Run(
+      self, args: parser_extensions.Namespace
+  ) -> Optional[messages.Operation]:
+    """Runs the create command.
+
+    Args:
+      args: The arguments received from command line.
+
+    Returns:
+      The return value depends on the command arguments. If `--async` is
+      specified, it returns an operation to be polled; otherwise, it returns a
+      completed operation. If `--validate-only` is specified, it returns None or
+      any possible error.
+    """
+    cluster_ref = args.CONCEPTS.cluster.Parse()
+    cluster_client = apis.ClustersClient()
+    operation = cluster_client.Create(args)
+
+    if args.async_ and not args.IsSpecified('format'):
+      args.format = constants.OPERATIONS_FORMAT
+
+    if args.validate_only:
+      return None
+
+    if args.async_:
+      log.CreatedResource(cluster_ref, 'Anthos Cluster on VMware', args.async_)
+      return operation
+    else:
+      operation_client = operations.OperationsClient()
+      operation_response = operation_client.Wait(operation)
+      log.CreatedResource(cluster_ref, 'Anthos Cluster on VMware', args.async_)
+
+      return operation_response

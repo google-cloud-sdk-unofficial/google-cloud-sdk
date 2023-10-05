@@ -27,6 +27,7 @@ from googlecloudsdk.command_lib.ai import endpoint_util
 from googlecloudsdk.command_lib.ai import flags
 from googlecloudsdk.command_lib.ai import index_endpoints_util
 from googlecloudsdk.command_lib.ai import operations_util
+from googlecloudsdk.command_lib.ai import region_util
 from googlecloudsdk.command_lib.ai import validation
 from googlecloudsdk.command_lib.util.args import labels_util
 from googlecloudsdk.core import log
@@ -49,7 +50,13 @@ class CreateV1(base.CreateCommand):
 
   @staticmethod
   def Args(parser):
-    flags.AddRegionResourceArg(parser, 'to create index endpoint')
+    flags.AddRegionResourceArg(
+        parser,
+        'to create index endpoint',
+        prompt_func=region_util.GetPromptForRegionFunc(
+            constants.SUPPORTED_OP_REGIONS
+        ),
+    )
     flags.GetDisplayNameArg('index endpoint').AddToParser(parser)
     flags.GetDescriptionArg('index endpoint').AddToParser(parser)
     flags.GetNetworkArg().AddToParser(parser)

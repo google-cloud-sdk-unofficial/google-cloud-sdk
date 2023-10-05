@@ -229,7 +229,12 @@ class UpdateBeta(Update):
     flags.AddEnableAutoRepairFlag(node_management_group, for_node_pool=True)
     flags.AddEnableAutoUpgradeFlag(node_management_group, for_node_pool=True)
     flags.AddAcceleratorArgs(
-        group, enable_gpu_partition=True, enable_gpu_sharing=True, hidden=True)
+        group,
+        enable_gpu_partition=True,
+        enable_gpu_sharing=True,
+        enable_gpu_driver_installation=True,
+        hidden=True,
+    )
 
     autoscaling_group = flags.AddClusterAutoscalingFlags(group)
     flags.AddNodePoolAutoprovisioningFlag(autoscaling_group, hidden=False)
@@ -328,7 +333,12 @@ class UpdateAlpha(Update):
     flags.AddEnableAutoRepairFlag(node_management_group, for_node_pool=True)
     flags.AddEnableAutoUpgradeFlag(node_management_group, for_node_pool=True)
     flags.AddAcceleratorArgs(
-        group, enable_gpu_partition=True, enable_gpu_sharing=True, hidden=True)
+        group,
+        enable_gpu_partition=True,
+        enable_gpu_sharing=True,
+        enable_gpu_driver_installation=True,
+        hidden=True,
+    )
 
     autoscaling_group = flags.AddClusterAutoscalingFlags(group)
     flags.AddNodePoolAutoprovisioningFlag(autoscaling_group, hidden=False)

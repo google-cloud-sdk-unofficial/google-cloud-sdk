@@ -146,9 +146,9 @@ class EnableAlpha(base.SilentCommand):
     else:
       organization = None
 
-    op = serviceusage.AddEnableRule(args.service, project, folder, organization)
-    if op.done:
-      return
+    op = serviceusage.AddEnableRule(
+        args.service, project, folder=folder, organization=organization
+    )
     if args.async_:
       cmd = _OP_WAIT_CMD.format(op.name)
       log.status.Print(
@@ -156,7 +156,6 @@ class EnableAlpha(base.SilentCommand):
           'Use the following command to wait for its '
           'completion:\n {0}'.format(cmd)
       )
-      return
     log.status.Print('Operation finished successfully')
 
 EnableAlpha.detailed_help = _DETAILED_HELP_ALPHA

@@ -26,7 +26,6 @@ from googlecloudsdk.core import properties
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-@base.Hidden
 class RemoveMetadata(base.UpdateCommand):
   # pylint:disable=line-too-long
   """Remove project zonal metadata.

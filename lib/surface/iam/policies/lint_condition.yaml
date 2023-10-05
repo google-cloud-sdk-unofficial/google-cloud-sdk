@@ -46,7 +46,9 @@
             The path to a JSON or YAML file containing the condition.
             See https://cloud.google.com/iam/docs/conditions-overview for schema of the condition.
         - group:
-            help_text: condition to lint.
+            help_text: |
+              The condition to lint. It must have an `expression` property and a `title` property.
+              The `description` property is optional.
             params:
             - arg_name: expression
               api_field: condition.expression

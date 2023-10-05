@@ -23,6 +23,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.ai import constants
 from googlecloudsdk.command_lib.ai import endpoint_util
 from googlecloudsdk.command_lib.ai import flags
+from googlecloudsdk.command_lib.ai import region_util
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
@@ -38,7 +39,13 @@ class ListV1(base.ListCommand):
 
   @staticmethod
   def Args(parser):
-    flags.AddRegionResourceArg(parser, 'to list index endpoints')
+    flags.AddRegionResourceArg(
+        parser,
+        'to list index endpoints',
+        prompt_func=region_util.GetPromptForRegionFunc(
+            constants.SUPPORTED_OP_REGIONS
+        ),
+    )
 
   def _Run(self, args, version):
     region_ref = args.CONCEPTS.region.Parse()
