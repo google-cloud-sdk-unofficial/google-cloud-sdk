@@ -41,10 +41,6 @@ class DeleteDatabase(base.Command):
   To delete a Firestore database test providing etag.
 
       $ {command} --database=test --etag=etag
-
-  To delete a Firestore database test and allow missing.
-
-      $ {command} --database=test --allow-missing
   """
 
   def Run(self, args):
@@ -57,9 +53,7 @@ class DeleteDatabase(base.Command):
         ),
         cancel_on_no=True,
     )
-    return databases.DeleteDatabase(
-        project, args.database, args.etag, args.allow_missing
-    )
+    return databases.DeleteDatabase(project, args.database, args.etag)
 
   @staticmethod
   def Args(parser):

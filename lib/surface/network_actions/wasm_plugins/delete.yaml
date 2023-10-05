@@ -1,11 +1,11 @@
 - release_tracks: [ALPHA]
   hidden: true
   help_text:
-    brief: Delete a WasmPlugin.
+    brief: Delete a `WasmPlugin` resource.
     description: |
-      Delete a WasmPlugin.
+      Delete a `WasmPlugin` resource.
     examples: |
-      To delete a WasmPlugin called 'my-plugin', run:
+      To delete a `WasmPlugin` called `my-plugin`, run:
 
         $ {command} my-plugin
 
@@ -19,6 +19,6 @@
 
   arguments:
     resource:
-      help_text: The WasmPlugin to delete.
+      help_text: The `WasmPlugin` resource to delete.
       spec: !REF googlecloudsdk.command_lib.network_actions.resources:wasmPlugin
       is_positional: true

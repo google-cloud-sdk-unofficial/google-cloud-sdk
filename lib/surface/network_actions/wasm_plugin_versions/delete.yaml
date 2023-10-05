@@ -1,11 +1,11 @@
 - release_tracks: [ALPHA]
   hidden: true
   help_text:
-    brief: Delete a WasmPluginVersion.
+    brief: Delete a `WasmPluginVersion` resource.
     description: |
-      Delete a WasmPluginVersion.
+      Delete a `WasmPluginVersion` resource.
     examples: |
-      To delete a WasmPluginVersion called 'my-plugin-version', run:
+      To delete a `WasmPluginVersion` called 'my-plugin-version', run:
 
         $ {command} my-plugin-version
 
@@ -19,6 +19,6 @@
 
   arguments:
     resource:
-      help_text: The WasmPluginVersion to delete.
+      help_text: The `WasmPluginVersion` resource to delete.
       spec: !REF googlecloudsdk.command_lib.network_actions.resources:wasmPluginVersion
       is_positional: true

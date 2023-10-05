@@ -30,9 +30,10 @@ from googlecloudsdk.core import log
 DETAILED_HELP = {
     'EXAMPLES':
         """\
-        To deploy index ``345'' to an index endpoint ``456'' with 2 min replica count and 10 max replica count under project ``example'' in region ``us-central1'', run:
+        To deploy index ``345'' to an index endpoint ``456'' with 2 min replica count and 10 max replica count under project ``example'' in region ``us-central1'', within reserved ip ranges
+        ``vertex-ai-ip-ranges-1'' and ``vertex-ai-ip-ranges-2'' run:
 
-          $ {command} 456 --project=example --region=us-central1 --index=345 --deployed-index-id=deployed-index-345 --display-name=deployed-index-345 --min-replica-count=2 --max-replica-count=10
+          $ {command} 456 --project=example --region=us-central1 --index=345 --deployed-index-id=deployed-index-345 --display-name=deployed-index-345 --min-replica-count=2 --max-replica-count=10 --reserved-ip-ranges=vertex-ai-ip-ranges-1,vertex-ai-ip-ranges-2
         """,
 }
 
@@ -50,6 +51,7 @@ class DeployIndexV1(base.Command):
     flags.GetIndexIdArg().AddToParser(parser)
     flags.GetDisplayNameArg('deployed index').AddToParser(parser)
     flags.AddDeploymentResourcesArgs(parser, 'deployed index')
+    flags.AddReservedIpRangesArgs(parser, 'deployed index')
 
   def _Run(self, args, version):
     validation.ValidateDisplayName(args.display_name)
@@ -72,8 +74,8 @@ class DeployIndexV1(base.Command):
               name=operation.name,
               verb='deploy index',
               id=op_ref.Name(),
-              sub_commands='--index-endpoint={} [--project={}]'.format(
-                  index_endpoint_id, project_id)))
+              sub_commands='--index-endpoint={} --region={} [--project={}]'
+              .format(index_endpoint_id, region, project_id)))
       return operation
 
   def Run(self, args):

@@ -1,5 +1,4 @@
-- release_tracks: [ALPHA, BETA, GA]
-  hidden: true
+- release_tracks: [ALPHA]
   help_text:
     brief:  Describe a SCC Security Posture's long running scan operation.
     description: Describe a SCC Security Posture's long running scan operation.

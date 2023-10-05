@@ -70,8 +70,8 @@ class UpdateV1(base.UpdateCommand):
                 name=operation.name,
                 verb='update index',
                 id=op_ref.Name(),
-                sub_commands='--index={} [--project={}]'.format(
-                    index_ref.Name(), project_id)))
+                sub_commands='--index={} --region={} [--project={}]'.format(
+                    index_ref.Name(), region, project_id)))
         # We will not wait for the operation since it can take up to hours.
         return operation
 

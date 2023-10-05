@@ -120,7 +120,7 @@ _DESCRIPTION = """
   `Usage and storage log format
   <https://cloud.google.com/storage/docs/access-logs#format>`_.
   
-  The <code>logging</code> command has two sub-commands:
+  The ``logging`` command has two sub-commands:
 """ + _SET_DESCRIPTION + _GET_DESCRIPTION + """
 
 <B>OPTIONS</B>
@@ -185,8 +185,10 @@ class LoggingCommand(Command):
           'get':
               GcloudStorageMap(
                   gcloud_command=[
-                      'alpha', 'storage', 'buckets', 'list',
-                      '--format=multi(logging:format=json)', '--raw'
+                      'storage', 'buckets', 'list',
+                      '--format="gsutiljson[key=logging_config,empty=\' has '
+                      'no logging configuration.\',empty_prefix_key='
+                      'storage_url]"', '--raw'
                   ],
                   flag_map={},
               ),
@@ -196,7 +198,6 @@ class LoggingCommand(Command):
                       'on':
                           GcloudStorageMap(
                               gcloud_command=[
-                                  'alpha',
                                   'storage',
                                   'buckets',
                                   'update',
@@ -211,7 +212,6 @@ class LoggingCommand(Command):
                       'off':
                           GcloudStorageMap(
                               gcloud_command=[
-                                  'alpha',
                                   'storage',
                                   'buckets',
                                   'update',

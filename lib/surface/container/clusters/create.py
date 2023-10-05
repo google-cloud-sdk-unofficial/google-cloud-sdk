@@ -451,6 +451,8 @@ def ParseCreateOptionsBase(args, is_autopilot, get_default, location,
       workload_policies=get_default('workload_policies'),
       in_transit_encryption=get_default('in_transit_encryption'),
       containerd_config_from_file=get_default('containerd_config_from_file'),
+      fleet_project=get_default('fleet_project'),
+      enable_fleet=get_default('enable_fleet'),
   )
 
 
@@ -704,6 +706,8 @@ flags_to_add = {
             flags.AddPrivateEndpointSubnetworkFlag,
         'enableGoogleCloudAccess':
             flags.AddEnableGoogleCloudAccess,
+        'fleetProject':
+            flags.AddFleetProjectFlag,
         'loggingvariant':
             flags.AddLoggingVariantFlag,
         'enableMultiNetworking':

@@ -101,3 +101,4 @@
     - _REF_: googlecloudsdk.command_lib.compute.tpus.queued_resources.flags:labels
     - _REF_: googlecloudsdk.command_lib.compute.tpus.queued_resources.flags:enable_secure_boot
     - _REF_: googlecloudsdk.command_lib.compute.tpus.queued_resources.flags:range
+    - _REF_: googlecloudsdk.command_lib.compute.tpus.queued_resources.flags:autocheckpoint_enabled

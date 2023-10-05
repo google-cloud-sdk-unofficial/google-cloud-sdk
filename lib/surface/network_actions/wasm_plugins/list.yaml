@@ -1,11 +1,11 @@
 - release_tracks: [ALPHA]
   hidden: true
   help_text:
-    brief: List all WasmPlugins.
+    brief: List all `WasmPlugin` resources.
     description: |
-      List WasmPlugins.
+      List `WasmPlugin` resources.
     examples: |
-      To list existing WasmPlugins, run:
+      To list existing `WasmPlugin` resources, run:
 
         $ {command}
 

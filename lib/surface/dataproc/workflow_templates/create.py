@@ -46,6 +46,7 @@ class Create(base.CreateCommand):
     dataproc = dp.Dataproc(cls.ReleaseTrack())
     labels_util.AddCreateLabelsFlags(parser)
     workflow_templates.AddDagTimeoutFlag(parser, False)
+    workflow_templates.AddKmsKeyFlag(parser, False)
     flags.AddTemplateResourceArg(parser, 'create', dataproc.api_version)
 
   def Run(self, args):
@@ -67,6 +68,11 @@ class Create(base.CreateCommand):
 
     if args.dag_timeout:
       workflow_template.dagTimeout = six.text_type(args.dag_timeout) + 's'
+
+    if args.kms_key:
+      workflow_template.encryptionConfig = (
+          workflow_templates.GenerateEncryptionConfig(args.kms_key, dataproc)
+      )
 
     request = messages.DataprocProjectsRegionsWorkflowTemplatesCreateRequest(
         parent=parent, workflowTemplate=workflow_template)

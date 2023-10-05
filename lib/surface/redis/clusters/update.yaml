@@ -1,4 +1,4 @@
-- release_tracks: [ALPHA, BETA]
+- release_tracks: [ALPHA, BETA, GA]
 
   help_text:
     brief: |
@@ -43,6 +43,11 @@
       - googlecloudsdk.command_lib.redis.clusters_update_util:UpdateShardCount
     BETA:
       api_version: v1beta1
+      modify_request_hooks:
+      - googlecloudsdk.command_lib.redis.clusters_update_util:UpdateReplicaCount
+      - googlecloudsdk.command_lib.redis.clusters_update_util:UpdateShardCount
+    GA:
+      api_version: v1
       modify_request_hooks:
       - googlecloudsdk.command_lib.redis.clusters_update_util:UpdateReplicaCount
       - googlecloudsdk.command_lib.redis.clusters_update_util:UpdateShardCount

@@ -25,3 +25,5 @@ from googlecloudsdk.calliope import base
 @base.Hidden
 class Overwatch(base.Group):
   """Manage Overwatch Commands."""
+
+  category = base.SECURITY_CATEGORY

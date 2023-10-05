@@ -1,9 +1,8 @@
 - release_tracks: [ALPHA]
-  hidden: true
   help_text:
-    brief: List the details of Cloud Security Command Center posture templates.
+    brief: List the details of Cloud Security Command Center (SCC) posture templates.
     description: |
-      List the details of the Cloud Security Command Center posture templates for the specified organization.
+      List the details of the  Cloud Security Command Center (SCC) posture templates for the specified organization.
     examples: |
       To list Cloud Security Command Center posture templates for organization `123`, run:
 

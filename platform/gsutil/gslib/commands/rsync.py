@@ -366,7 +366,7 @@ _DETAILED_HELP_TEXT = ("""
      checksums or perform partial replacements.
 
 <B>OPTIONS</B>
-  -a canned_acl  Sets named canned_acl when uploaded objects created. See
+  -a predef-acl  Sets the specified predefined ACL on uploaded objects. See
                  "gsutil help acls" for further details. Note that rsync will
                  decide whether or not to perform a copy based only on object
                  size and modification time, not current ACL state. Also see the
@@ -493,21 +493,21 @@ _DETAILED_HELP_TEXT = ("""
                  path is always relative (similar to Unix rsync or tar exclude
                  options). For example, if you run the command:
 
-                   gsutil rsync -x "data.[/\\\\].*\\.txt$" dir gs://my-bucket
+                   gsutil rsync -x "data.[/\\].*\.txt$" dir gs://my-bucket
 
                  it skips the file dir/data1/a.txt.
 
                  You can use regex alternation to specify multiple exclusions,
                  for example:
 
-                   gsutil rsync -x ".*\\.txt$|.*\\.jpg$" dir gs://my-bucket
+                   gsutil rsync -x ".*\.txt$|.*\.jpg$" dir gs://my-bucket
 
                  skips all .txt and .jpg files in dir.
 
                  NOTE: When using the Windows cmd.exe command line interpreter,
-                 use ^ as an escape character instead of \\ and escape the |
-                 character. When using Windows PowerShell, use ' instead of "
-                 and surround the | character with ".
+                 use ``^`` as an escape character instead of ``\`` and escape
+                 the ``|`` character. When using Windows PowerShell, use ``'``
+                 instead of ``"`` and surround the ``|`` character with ``"``.
 
   -y pattern     Similar to the -x option, but the command will first skip
                  directories/prefixes using the provided pattern and then
@@ -1609,7 +1609,7 @@ class RsyncCommand(Command):
   def get_gcloud_storage_args(self):
     ShimTranslatePredefinedAclSubOptForCopy(self.sub_opts)
 
-    gcloud_command = ['alpha', 'storage', 'rsync']
+    gcloud_command = ['storage', 'rsync']
     flag_keys = [flag for flag, _ in self.sub_opts]
     if '-e' not in flag_keys:
       gcloud_command += ['--no-ignore-symlinks']

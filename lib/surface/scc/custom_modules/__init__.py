@@ -24,3 +24,5 @@ from googlecloudsdk.calliope import base
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.GA)
 class CustomModules(base.Group):
   """Manage Cloud SCC (Security Command Center) custom modules."""
+
+  category = base.SECURITY_CATEGORY

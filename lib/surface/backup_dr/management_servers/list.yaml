@@ -1,0 +1,24 @@
+- release_tracks: [ALPHA, BETA, GA]
+
+  help_text:
+    brief: List Management Servers
+    description: Displays all managment servers in a project.
+    examples: |
+      To list management servers for all locations, run:
+
+      $ {command}
+
+      To list all management servers in a location ``my-location'', run:
+
+      $ {command} --location=my-location
+
+  request:
+    collection: backupdr.projects.locations.managementServers
+
+  response:
+    id_field: name
+
+  arguments:
+    resource:
+      help_text: Location to list management servers from.
+      spec: !REF googlecloudsdk.command_lib.backupdr.resources:locationDefaultGlobal

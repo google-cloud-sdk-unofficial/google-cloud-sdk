@@ -71,6 +71,7 @@ from gslib.utils.constants import UTF8
 from gslib.utils.ls_helper import PrintFullInfoAboutObject
 from gslib.utils.retry_util import Retry
 from gslib.utils.system_util import IS_WINDOWS
+from gslib.utils import shim_util
 
 from six import add_move, MovedModule
 
@@ -201,10 +202,10 @@ class TestLsUnit(testcase.GsUtilUnitTestCase):
         mock_log_handler = self.RunCommand('ls', ['-rRlLbeah', '-p foo'],
                                            return_log_handler=True)
         self.assertIn(
-            'Gcloud Storage Command: {} alpha storage ls'
+            'Gcloud Storage Command: {} storage ls'
             ' --fetch-encrypted-object-hashes'
             ' -r -r -l -L -b -e -a --readable-sizes --project  foo'.format(
-                os.path.join('fake_dir', 'bin', 'gcloud')),
+                shim_util._get_gcloud_binary_path('fake_dir')),
             mock_log_handler.messages['info'])
 
 
@@ -788,8 +789,8 @@ class TestLs(testcase.GsUtilIntegrationTestCase):
 
     _Check5()
 
-  @unittest.skipIf(IS_WINDOWS,
-                   'Unicode handling on Windows requires mods to site-packages')
+  @unittest.skipIf(
+      IS_WINDOWS, 'Unicode handling on Windows requires mods to site-packages')
   def test_list_unicode_filename(self):
     """Tests listing an object with a unicode filename."""
     # Note: This test fails on Windows (command.exe). I was able to get ls to
@@ -1107,7 +1108,7 @@ class TestLs(testcase.GsUtilIntegrationTestCase):
     bucket_uri = self.CreateBucketWithRetentionPolicy(
         retention_period_in_seconds=1)
     stdout = self.RunGsUtil(['ls', '-Lb', suri(bucket_uri)], return_stdout=True)
-    self.assertRegex(stdout, r'Retention Policy\:\t*Present')
+    self.assertRegex(stdout, r'Retention Policy\:\s*Present')
     # Clearing Retention Policy on the bucket.
     self.RunGsUtil(['retention', 'clear', suri(bucket_uri)])
     stdout = self.RunGsUtil(['ls', '-Lb', suri(bucket_uri)], return_stdout=True)

@@ -35,11 +35,27 @@ class Setup(base.DescribeCommand):
     $ gcloud cbrs-spectrum-access analytics setup
   """
 
-  def Run(self, _):
+  @staticmethod
+  def Args(parser):
+    parser.add_argument(
+        '--user-id',
+        required=False,
+        help=(
+            'User ID to provision analytics for. This is useful when reusing'
+            ' the same project to provision analytics for multiple user IDs.'
+            ' Otherwise the user ID associated with the current Google Cloud'
+            ' project is used.'
+        ),
+    )
+
+  def Run(self, args):
     base.EnableUserProjectQuota()
 
     client = sas_portal_api.GetClientInstance().customers
     message_module = sas_portal_api.GetMessagesModule()
     req = message_module.SasPortalSetupSasAnalyticsRequest()
+    if args.user_id:
+      req.userId = args.user_id
+
     result = client.SetupSasAnalytics(req)
     return result

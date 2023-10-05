@@ -65,14 +65,12 @@ DETAILED_HELP = {
 
           ```
             - --api-target:
-                service:
-                  - "foo.service.com"
+                service: "foo.service.com"
             - --api-target:
-                service:
-                  - "bar.service.com"
+                service: "bar.service.com"
                 methods:
-                  - "foomethod"
-                  - "barmethod"
+                - "foomethod"
+                - "barmethod"
             ```
         """
 }

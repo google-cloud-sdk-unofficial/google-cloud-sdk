@@ -24,3 +24,5 @@ from googlecloudsdk.calliope import base
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class BigQueryExports(base.Group):
   """Manage Cloud SCC (Security Command Center) BigQuery exports."""
+
+  category = base.SECURITY_CATEGORY

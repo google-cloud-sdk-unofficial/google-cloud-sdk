@@ -1,9 +1,8 @@
 - release_tracks: [ALPHA]
-  hidden: true
   help_text:
-    brief: Create a Cloud Security Command Center posture.
+    brief: Create a  Cloud Security Command Center (SCC) posture.
     description: |
-      Create a Cloud Security Command Center posture. First argument is the parent of the posture to
+      Create a  Cloud Security Command Center (SCC) posture. First argument is the parent of the posture to
       be created. Second argument is the name of the posture to be created. The posture details are
       provided in YAML file. The file path is mentioned in `posture-from-file` flag.
 

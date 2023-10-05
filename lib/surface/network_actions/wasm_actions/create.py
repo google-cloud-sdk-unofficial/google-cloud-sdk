@@ -71,22 +71,22 @@ def _ConvertStringSupportedEventToEnum(messages, supported_event):
 @base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Create(base.CreateCommand):
-  """Create a WasmAction."""
+  """Create a `WasmAction` resource."""
 
   detailed_help = {
       'DESCRIPTION':
           textwrap.dedent("""\
-          This command creates a WasmAction that uses the specfied WasmPlugin.
+          Create a `WasmAction` resource that uses the specified plugin.
           """),
       'EXAMPLES':
           textwrap.dedent("""\
-          To create a WasmAction called `my-action` using WasmPlugin
-          `my-plugin`, run:
+          To create a `WasmAction` called `my-action` using the
+          `my-plugin` plugin, run:
 
           $ {command} my-action --wasm-plugin=my-plugin
 
-          You may also specify the full resource path to a plugin, e.g.
-          projects/my-project/locations/global/wasmPlugins/my-plugin
+          You may also specify the full resource path to a plugin, for example,
+          `projects/my-project/locations/global/wasmPlugins/my-plugin`
           """)
   }
 
@@ -107,14 +107,14 @@ class Create(base.CreateCommand):
                 concepts.ResourceSpec.FromYaml(
                     wasm_action_data.GetData(),
                     api_version=util.GetApiVersion(cls.ReleaseTrack())),
-                'The ID of the WasmAction.',
+                'The ID of the `WasmAction`.',
                 required=True),
             presentation_specs.ResourcePresentationSpec(
                 '--wasm-plugin',
                 concepts.ResourceSpec.FromYaml(
                     wasm_plugin_data.GetData(),
                     api_version=util.GetApiVersion(cls.ReleaseTrack())),
-                'ID of the WasmPlugin to use for this action.',
+                'ID of the `WasmPlugin` to use for this action.',
                 flag_name_overrides={'location': ''},
                 required=True)
         ],
@@ -130,7 +130,7 @@ class Create(base.CreateCommand):
         default=[],
         help=textwrap.dedent("""\
           Specify the portion of the request/response payload to be processed by
-          the Plugin."""),
+          the plugin."""),
     )
     base.ASYNC_FLAG.AddToParser(parser)
     labels_util.AddCreateLabelsFlags(parser)

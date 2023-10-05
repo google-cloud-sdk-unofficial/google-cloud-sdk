@@ -1,9 +1,8 @@
 - release_tracks: [ALPHA]
-  hidden: true
   help_text:
-    brief: Delete a Cloud Security Command Center posture deployment.
+    brief: Delete a  Cloud Security Command Center (SCC) posture deployment.
     description: |
-      Delete a Cloud Security Command Center posture deployment.
+      Delete a  Cloud Security Command Center (SCC) posture deployment.
 
     examples: |
       Delete the posture deployment named `organizations/123/locations/global/postureDeployments/posture-deployment-foo` (i.e. a posture deployment in organization `123`, location `global`, with id `posture-deployment-foo`):

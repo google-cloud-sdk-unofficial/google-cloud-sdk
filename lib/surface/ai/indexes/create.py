@@ -78,8 +78,8 @@ class CreateV1(base.CreateCommand):
               name=operation.name,
               verb='create index',
               id=op_ref.Name(),
-              sub_commands='--index={} [--project={}]'.format(
-                  index_id, project_id)))
+              sub_commands='--index={} --region={} [--project={}]'.format(
+                  index_id, region, project_id)))
       return operation
 
   def Run(self, args):

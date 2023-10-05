@@ -1,9 +1,8 @@
 - release_tracks: [ALPHA]
-  hidden: true
   help_text:
-    brief: Update the given Cloud Security Command Center posture.
+    brief: Update the given Cloud Security Command Center (SCC) posture.
     description: |
-      Update a Cloud Security Command Center posture.
+      Update a Cloud Security Command Center (SCC) posture.
 
       Fields specified in update-mask flag are updated. Updatable fields are state, description and policy_sets.
       State of the posture can't be updated along with update of other fields.
@@ -16,21 +15,21 @@
       c) DRAFT to ACTIVE
       d) DEPRECATED to ACTIVE
 
-      The update operation will result in the update of the revision_id specified in the request, unless the posture revision is currently deployed on a workload.
+      The update operation will result in the update of the revision-id specified in the request, unless the posture revision is currently deployed on a workload.
       A new revision is created for an already deployed posture revision.
 
     examples: |
-      Update the revision_id `abcdefgh` of the posture named `foo-posture` in the organization `organizations/123/locations/global`:
+      Update the revision-id `abcdefgh` of the posture named `foo-posture` in the organization `organizations/123/locations/global`:
       Change State to ACTIVE.
-        $ {command} organizations/123/locations/global/postures/foo-posture --posture-from-file=update_posture.yaml --revision_id=abcdefgh update_mask=state
+        $ {command} organizations/123/locations/global/postures/foo-posture --posture-from-file=update_posture.yaml --revision-id=abcdefgh update_mask=state
 
         Contents of update_posture.yaml are |
             name: organizations/123/locations/global/postures/foo-posture
             state: ACTIVE
 
-      Update the revision_id `abcdefgh` of the posture named `foo-posture` in the organization `organizations/123/locations/global`:
+      Update the revision-id `abcdefgh` of the posture named `foo-posture` in the organization `organizations/123/locations/global`:
       Change description and policy_sets to the values mentioned in update_posture.yaml
-        $ {command} organizations/123/locations/global/postures/foo-posture --posture-from-file=update_posture.yaml --revision_id=abcdefgh update_mask=description,policy_sets
+        $ {command} organizations/123/locations/global/postures/foo-posture --posture-from-file=update_posture.yaml --revision-id=abcdefgh update_mask=description,policy_sets
 
         Contents of update_posture.yaml are |
             name: organizations/123/locations/global/postures/foo-posture

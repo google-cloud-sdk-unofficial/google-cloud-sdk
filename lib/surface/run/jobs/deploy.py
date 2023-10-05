@@ -245,6 +245,7 @@ class Deploy(base.Command):
             build_source=source,
             repo_to_create=repo_to_create,
             prefetch=job_obj,
+            already_activated_services=already_activated_services,
         )
         if execute_now:
           execution = operations.RunJob(

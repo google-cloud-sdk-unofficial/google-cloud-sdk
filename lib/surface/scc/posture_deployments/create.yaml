@@ -1,14 +1,13 @@
 - release_tracks: [ALPHA]
-  hidden: true
   help_text:
-    brief: Create a Cloud Security Command Center posture-deployment.
+    brief: Create a Cloud Security Command Center (SCC) posture deployment.
     description: |
-      Create a Cloud Security Command Center posture-deployment. First argument is the parent of the posture-deployment to
-      be created. Second argument is the name of the posture-deployment to be created. Followed by details of posture that we wish to deploy and the target_resource that we wish to deploy on.
+      Create a  Cloud Security Command Center (SCC) posture deployment. First argument is the parent of the posture-deployment to
+      be created. Second argument is the name of the posture-deployment to be created. It is followed by details of the posture to be deployed and the target_resource to be deployed on.
 
       LRO operation ID is returned as the response of the command.
     example: |
-     Create a posture-deployment named `posture-deployment-foo-1` within parent `organizations/123/locations/global`(i.e. a posture-deployment in organization `123`, location `global`, with id `posture-deployment-foo-1`, which deploys posture `organizations/123/locations/foo-posture` with revision-id `foo-posture-revision-id`):
+     Create a posture deployment named `posture-deployment-foo-1` within parent `organizations/123/locations/global`(i.e. a posture-deployment in organization `123`, location `global`, with id `posture-deployment-foo-1`, which deploys posture `organizations/123/locations/foo-posture` with revision-id `foo-posture-revision-id`):
 
         $ {command} organizations/123/locations/global posture-deployment-foo-1 --posture-name=organizations/123/locations/global/foo-posture --posture-revision-id=foo-posture-revision-id
 

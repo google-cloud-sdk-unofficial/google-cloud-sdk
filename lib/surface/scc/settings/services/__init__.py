@@ -24,3 +24,5 @@ from googlecloudsdk.calliope import base
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Services(base.Group):
   """Manage Cloud SCC services settings."""
+
+  category = base.SECURITY_CATEGORY

@@ -66,3 +66,23 @@
       - arg_value: hyperdisk-balanced
         enum_value: hyperdisk-balanced
       processor: googlecloudsdk.api_lib.compute.storage_pools.processors:format_pool_type
+
+    - arg_name: capacity-provisioning-type
+      api_field: storagePool.capacityProvisioningType
+      help_text: |
+        Capacity provisioning type.
+      choices:
+      - arg_value: standard
+        enum_value: standard
+      - arg_value: advanced
+        enum_value: advanced
+
+    - arg_name: performance-provisioning-type
+      api_field: storagePool.performanceProvisioningType
+      help_text: |
+        Performance provisioning type.
+      choices:
+      - arg_value: standard
+        enum_value: standard
+      - arg_value: advanced
+        enum_value: advanced

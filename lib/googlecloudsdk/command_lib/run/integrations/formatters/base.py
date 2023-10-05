@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*- #
-# Copyright 2022 Google LLC. All Rights Reserved.
+# Copyright 2023 Google LLC. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -21,9 +21,13 @@ from __future__ import unicode_literals
 
 import abc
 
+from typing import Optional, Dict
+from googlecloudsdk.api_lib.run.integrations import types_utils
 from googlecloudsdk.command_lib.run.integrations.formatters import states
 from googlecloudsdk.core import properties
 from googlecloudsdk.core.console import console_attr
+from googlecloudsdk.core.resource import custom_printer_base as cp
+from googlecloudsdk.generated_clients.apis.runapps.v1alpha1 import runapps_v1alpha1_messages as runapps
 
 
 # Constants used to pick the symbol displayed to the console.
@@ -38,18 +42,48 @@ ASCII = 'ascii'
 UTF8 = 'utf8'
 
 
+class Record(object):
+  """Record holds data that is passed around to printers for formatting.
+
+  Attributes:
+    name: str, name of the integration
+    region: str, GCP region for the integration.
+    metadata: the type metadata for the integration.
+    resource: the resource of the integration.
+    status: dict, application status for the given integration.
+    latest_deployment: str, canonical deployment name for the latest deployment
+      for the given integration.
+  """
+
+  def __init__(
+      self,
+      name: str,
+      region: str,
+      metadata: Optional[types_utils.TypeMetadata] = None,
+      resource: Optional[runapps.Resource] = None,
+      status: Dict[str, str] = None,
+      latest_deployment: runapps.Deployment = None,
+  ):
+    self.name = name
+    self.region = region
+    self.metadata = metadata
+    self.resource = resource if resource else runapps.Resource()
+    self.status = status if status is not None else {}
+    self.latest_deployment = latest_deployment
+
+
 class BaseFormatter:
   """Prints the run Integration in a custom human-readable format."""
 
   @abc.abstractmethod
-  def TransformConfig(self, record):
+  def TransformConfig(self, record: Record) -> cp._Marker:
     """Override to describe the format of the config of the integration."""
 
   @abc.abstractmethod
-  def TransformComponentStatus(self, record):
+  def TransformComponentStatus(self, record: Record) -> cp._Marker:
     """Override to describe the format of the components and status of the integration."""
 
-  def CallToAction(self, record):
+  def CallToAction(self, record: Record) -> cp._Marker:
     """Override to return call to action message.
 
     Args:

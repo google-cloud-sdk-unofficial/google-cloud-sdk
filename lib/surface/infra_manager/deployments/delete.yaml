@@ -21,5 +21,8 @@
     collection: config.projects.locations.deployments
     modify_request_hooks:
     - googlecloudsdk.command_lib.infra_manager.deploy_util:UpdateDeploymentDeleteRequestWithForce
+  response:
+    modify_response_hooks:
+    - googlecloudsdk.command_lib.infra_manager.deploy_util:DeploymentDeleteCleanupStagedObjects
   async:
     collection: config.projects.locations.operations

@@ -23,3 +23,5 @@ from googlecloudsdk.calliope import base
 
 class Asset(base.Group):
   """Manage Cloud SCC (Security Command Center) assets."""
+
+  category = base.SECURITY_CATEGORY

@@ -24,3 +24,5 @@ from googlecloudsdk.calliope import base
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class EventThreatDetectionCustomModules(base.Group):
   """Manage custom modules."""
+
+  category = base.SECURITY_CATEGORY

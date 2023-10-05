@@ -1,10 +1,10 @@
 - release_tracks: [ALPHA]
   hidden: true
   help_text:
-    brief: Show details about a WasmPluginVersion.
-    description: Show details about a WasmPluginVersion.
+    brief: Show details about a `WasmPluginVersion` resource.
+    description: Show details about a `WasmPluginVersion` resource.
     examples: |
-      To show details about a WasmPluginVersion, run:
+      To show details about a `WasmPluginVersion`, run:
 
         $ {command} my-plugin-version
 
@@ -15,7 +15,7 @@
 
   arguments:
     resource:
-      help_text: The WasmPluginVersion you want to describe.
+      help_text: The `WasmPluginVersion` resource that you want to describe.
       spec: !REF googlecloudsdk.command_lib.network_actions.resources:wasmPluginVersion
       is_positional: true
 

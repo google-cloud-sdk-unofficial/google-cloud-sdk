@@ -1,9 +1,8 @@
 - release_tracks: [ALPHA]
-  hidden: true
   help_text:
-    brief: Describe a Cloud Security Command Center posture template.
+    brief: Describe a  Cloud Security Command Center (SCC) posture template.
     description: |
-      Describe a Cloud Security Command Center posture template.
+      Describe a  Cloud Security Command Center (SCC) posture template.
 
       By default, the latest created revision of the posture template is described. Users must provide revision ID to describe a specific revision.
     examples: |

@@ -1,11 +1,11 @@
 - release_tracks: [ALPHA]
   hidden: true
   help_text:
-    brief: List all WasmActions.
+    brief: List all `WasmAction` resources.
     description: |
-      List WasmActions.
+      List `WasmAction` resources.
     examples: |
-      To list existing WasmActions, run:
+      To list existing `WasmAction` resources, run:
 
         $ {command}
 

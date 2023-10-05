@@ -171,8 +171,8 @@ class UpdateBeta(base.UpdateCommand):
     fr_update_request = messages.ComputeFutureReservationsUpdateRequest(
         futureReservation=fr_ref.Name(),
         futureReservationResource=fr_resource,
-        paths=update_mask,
         project=fr_ref.project,
+        updateMask=','.join(update_mask),
         zone=fr_ref.zone)
 
     # Invoke futureReservation.update API.

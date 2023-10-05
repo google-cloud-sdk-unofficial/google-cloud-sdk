@@ -85,3 +85,5 @@
     - _REF_: googlecloudsdk.command_lib.compute.tpus.tpu_vm.flags:enable_secure_boot
     - _REF_: googlecloudsdk.command_lib.compute.tpus.tpu_vm.flags:boot_disk
       release_tracks: [ALPHA]
+    - _REF_: googlecloudsdk.command_lib.compute.tpus.tpu_vm.flags:autocheckpoint_enabled
+      release_tracks: [ALPHA]

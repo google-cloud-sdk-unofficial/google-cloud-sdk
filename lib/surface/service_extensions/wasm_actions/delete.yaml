@@ -20,4 +20,4 @@
   arguments:
     resource:
       help_text: The WasmAction to delete.
-      spec: !REF googlecloudsdk.command_lib.network_actions.resources:wasmAction
+      spec: !REF googlecloudsdk.command_lib.service_extensions.resources:wasmAction

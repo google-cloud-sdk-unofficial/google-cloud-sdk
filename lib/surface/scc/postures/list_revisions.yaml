@@ -1,0 +1,28 @@
+- release_tracks: [ALPHA]
+  help_text:
+    brief: List the revisions of a  Cloud Security Command Center (SCC) posture.
+    description: |
+      List the revisions of a Cloud Security Command Center (SCC) posture.
+    examples: |
+      To list Cloud Security Command Center posture revisions for posture `organizations/123/locations/global/postures/posture123` , run:
+
+        $ {command} organizations/123/locations/global/postures/posture123
+  command_type: LIST
+  request:
+    collection: securityposture.organizations.locations.postures
+    disable_resource_check: true
+    api_version: v1alpha
+    method: listRevisions
+
+  response:
+    result_attribute: revisions
+
+  arguments:
+    params:
+    - arg_name: posture_name
+      api_field: name
+      is_positional: true
+      required: true
+      help_text: |
+        Posture name of the Cloud Security Command Center posture for listing the revisions.
+        Formatted as `organizations/<organizationID>/locations/<location>/postures/<postureID>`

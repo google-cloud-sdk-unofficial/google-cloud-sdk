@@ -18,22 +18,26 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+from googlecloudsdk.api_lib.functions.v1 import util as api_util_v1
 from googlecloudsdk.calliope import base
+from googlecloudsdk.calliope import parser_extensions
 from googlecloudsdk.command_lib.functions import flags
-from googlecloudsdk.command_lib.functions.v2.add_invoker_policy_binding import command
+from googlecloudsdk.command_lib.functions import util
+from googlecloudsdk.command_lib.functions.v2.add_invoker_policy_binding import command as command_v2
 from googlecloudsdk.command_lib.iam import iam_util
 
 
 _DETAILED_HELP = {
     'DESCRIPTION': """\
-      Adds the Cloud Run Invoker binding to the IAM policy of a Google Cloud
-      Function's underlying Cloud Run service.
+      Adds an invoker role IAM policy binding that allows the specified member
+      to invoke the specified function.
 
-      This command applies to Cloud Functions (2nd gen) only. Cloud Functions
-      (2nd gen) currently requires the Cloud Run Invoke permission on
-      the underlying Cloud Run service to be able to call functions. This
-      command grants the given member permission to invoke the given 2nd gen
-      function.""",
+      For Cloud Functions (1st gen), this adds the Cloud Functions Invoker
+      binding to the IAM policy of the specified function.
+
+      For Cloud Functions (2nd gen), this adds the Cloud Run Invoker binding to
+      the IAM policy of the specified function's underlying Cloud Run service.
+      """,
     'EXAMPLES': """\
           To add the invoker role policy binding for `FUNCTION-1` for member
           `MEMBER-1` run:
@@ -44,7 +48,7 @@ _DETAILED_HELP = {
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
-class AddInvokerPolicyBinding(base.Command):
+class AddInvokerPolicyBinding(util.FunctionResourceCommand):
   """Adds an invoker binding to the IAM policy of a Google Cloud Function.
 
   This command applies to Cloud Functions 2nd gen only.
@@ -56,19 +60,18 @@ class AddInvokerPolicyBinding(base.Command):
   def Args(parser):
     """Registers flags for this command."""
     flags.AddFunctionResourceArg(parser, 'to add the invoker binding to')
+    flags.AddGen2Flag(parser, 'to add the invoker binding to')
     iam_util.AddMemberFlag(parser, 'to add to the IAM policy', False)
 
-  def Run(self, args):
-    """Runs the command.
+  def _RunV1(self, args: parser_extensions.Namespace):
+    return api_util_v1.AddFunctionIamPolicyBinding(
+        args.CONCEPTS.name.Parse().RelativeName(),
+        member=args.member,
+        role='roles/cloudfunctions.invoker',
+    )
 
-    Args:
-      args: an argparse namespace. All the arguments that were provided to this
-        command invocation.
-
-    Returns:
-      The updated IAM policy for the service.
-    """
-    return command.Run(args, self.ReleaseTrack())
+  def _RunV2(self, args):
+    return command_v2.Run(args, self.ReleaseTrack())
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)

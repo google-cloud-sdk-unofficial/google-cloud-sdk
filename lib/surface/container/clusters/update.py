@@ -380,6 +380,7 @@ class Update(base.UpdateCommand):
     flags.AddInTransitEncryptionFlag(group)
     flags.AddEnableMultiNetworkingFlag(group, hidden=True)
     flags.AddContainerdConfigFlag(group, hidden=True)
+    flags.AddFleetProjectFlag(group, is_update=True)
 
   def ParseUpdateOptions(self, args, locations):
     get_default = lambda key: getattr(args, key)
@@ -463,6 +464,9 @@ class Update(base.UpdateCommand):
     opts.remove_workload_policies = args.remove_workload_policies
     opts.enable_multi_networking = args.enable_multi_networking
     opts.containerd_config_from_file = args.containerd_config_from_file
+    opts.fleet_project = args.fleet_project
+    opts.enable_fleet = args.enable_fleet
+    opts.clear_fleet_project = args.clear_fleet_project
     return opts
 
   def Run(self, args):

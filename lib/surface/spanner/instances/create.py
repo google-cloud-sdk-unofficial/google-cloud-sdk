@@ -77,9 +77,15 @@ class Create(base.CreateCommand):
     instance_type = resource_args.GetInstanceType(args)
     expire_behavior = resource_args.GetExpireBehavior(args)
 
-    op = instances.Create(args.instance, args.config, args.description,
-                          args.nodes, args.processing_units, instance_type,
-                          expire_behavior)
+    op = instances.Create(
+        instance=args.instance,
+        config=args.config,
+        description=args.description,
+        nodes=args.nodes,
+        processing_units=args.processing_units,
+        instance_type=instance_type,
+        expire_behavior=expire_behavior,
+    )
     if args.async_:
       return op
     instance_operations.Await(op, 'Creating instance')
@@ -99,9 +105,9 @@ class AlphaCreate(Create):
     resource_args.AddExpireBehaviorArg(parser)
     resource_args.AddInstanceTypeArg(parser)
     resource_args.AddDefaultStorageTypeArg(parser)
-    group_parser = parser.add_argument_group(mutex=True, required=False)
-    flags.Nodes().AddToParser(group_parser)
-    flags.ProcessingUnits().AddToParser(group_parser)
+    flags.AddCapacityArgsForInstance(
+        require_all_autoscaling_args=True, parser=parser
+    )
     base.ASYNC_FLAG.AddToParser(parser)
     parser.display_info.AddCacheUpdater(flags.InstanceCompleter)
 
@@ -125,9 +131,22 @@ class AlphaCreate(Create):
       return ('Operation unsuccessful. Default storage type value could not be '
               'determined.')
 
-    op = instances.Create(args.instance, args.config, args.description,
-                          args.nodes, args.processing_units, instance_type,
-                          expire_behavior, default_storage_type)
+    op = instances.Create(
+        args.instance,
+        args.config,
+        args.description,
+        args.nodes,
+        args.processing_units,
+        args.autoscaling_min_nodes,
+        args.autoscaling_max_nodes,
+        args.autoscaling_min_processing_units,
+        args.autoscaling_max_processing_units,
+        args.autoscaling_high_priority_cpu_target,
+        args.autoscaling_storage_target,
+        instance_type,
+        expire_behavior,
+        default_storage_type,
+    )
     if args.async_:
       return op
     instance_operations.Await(op, 'Creating instance')

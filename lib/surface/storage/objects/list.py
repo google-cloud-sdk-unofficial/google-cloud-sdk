@@ -133,7 +133,7 @@ class List(base.ListCommand):
     for url in urls:
       object_iterator = _object_iterator(
           url,
-          all_versions=not args.stat,
+          all_versions=not (args.stat or getattr(args, 'soft_deleted', False)),
           fetch_encrypted_object_hashes=args.fetch_encrypted_object_hashes,
           halt_on_empty_response=not getattr(args, 'exhaustive', False),
           next_page_token=getattr(args, 'next_page_token', None),

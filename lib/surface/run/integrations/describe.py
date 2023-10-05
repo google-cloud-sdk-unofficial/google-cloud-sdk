@@ -23,6 +23,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.run.integrations import flags
 from googlecloudsdk.command_lib.run.integrations import integration_printer
 from googlecloudsdk.command_lib.run.integrations import run_apps_operations
+from googlecloudsdk.command_lib.run.integrations.formatters import base as fb
 from googlecloudsdk.core.resource import resource_printer
 
 
@@ -67,16 +68,16 @@ class Describe(base.DescribeCommand):
     name = args.name
     with run_apps_operations.Connect(args, release_track) as client:
       client.VerifyLocation()
-      resource_config = client.GetIntegration(name)
-      latest_deployment = client.GetLatestDeployment(resource_config)
+      resource = client.GetIntegrationGeneric(name)
+      latest_deployment = client.GetLatestDeployment(resource)
       resource_status = client.GetIntegrationStatus(name)
-      integration_type = types_utils.GetIntegrationType(resource_config)
+      metadata = types_utils.GetTypeMetadataFromResource(resource)
 
-      return integration_printer.Record(
+      return fb.Record(
           name=name,
           region=client.region,
-          integration_type=integration_type,
-          config=resource_config,
+          metadata=metadata,
+          resource=resource,
           status=resource_status,
           latest_deployment=latest_deployment,
       )

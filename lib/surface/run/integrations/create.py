@@ -18,6 +18,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+from googlecloudsdk.api_lib.run.integrations import types_utils
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.run import pretty_print
 from googlecloudsdk.command_lib.run.integrations import flags
@@ -83,8 +84,9 @@ class Create(base.Command):
           service=service,
           name=input_name,
       )
-    resource_config = client.GetIntegration(integration_name)
+    resource = client.GetIntegrationGeneric(integration_name)
     resource_status = client.GetIntegrationStatus(integration_name)
+    metadata = types_utils.GetTypeMetadataFromResource(resource)
 
     pretty_print.Info('')
     pretty_print.Success(
@@ -96,7 +98,7 @@ class Create(base.Command):
     )
 
     call_to_action = messages_util.GetCallToAction(
-        integration_type, resource_config, resource_status
+        metadata, resource, resource_status
     )
     if call_to_action:
       pretty_print.Info('')

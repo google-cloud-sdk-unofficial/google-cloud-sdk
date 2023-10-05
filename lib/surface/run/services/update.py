@@ -243,6 +243,7 @@ class AlphaUpdate(BetaUpdate):
     # Flags specific to managed CR
     managed_group = flags.GetManagedArgGroup(parser)
     flags.AddCustomAudiencesFlag(managed_group)
+    flags.AddDefaultUrlFlag(managed_group)
     flags.AddVpcNetworkGroupFlagsForUpdate(managed_group)
     flags.AddRuntimeFlag(managed_group)
     flags.AddDescriptionFlag(managed_group)

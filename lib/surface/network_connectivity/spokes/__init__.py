@@ -21,5 +21,8 @@ from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 
 
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA, base.ReleaseTrack.GA
+)
 class Spokes(base.Group):
   """Manage Network Connectivity Center spokes."""

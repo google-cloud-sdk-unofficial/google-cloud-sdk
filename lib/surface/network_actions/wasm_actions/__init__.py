@@ -24,4 +24,4 @@ from googlecloudsdk.calliope import base
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 @base.Hidden
 class WasmActions(base.Group):
-  """Interact with and manage Network Actions WasmActions."""
+  """Interact with and manage Network Actions `WasmActions`."""

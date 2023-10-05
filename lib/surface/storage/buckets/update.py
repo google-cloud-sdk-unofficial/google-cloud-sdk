@@ -144,11 +144,6 @@ def _add_common_args(parser):
       ' By setting the default event-based hold on a bucket, newly-created'
       ' objects inherit that value as their event-based hold (it is not'
       ' applied retroactively).')
-  parser.add_argument(
-      '--enable-autoclass',
-      action=arg_parsers.StoreTrueFalseAction,
-      help='The Autoclass feature automatically selects the best storage class'
-      ' for objects based on access patterns.')
   labels = parser.add_mutually_exclusive_group()
   labels.add_argument('--labels-file', help=_LABELS_HELP_TEXT)
   update_labels = labels.add_group()
@@ -273,6 +268,7 @@ def _add_common_args(parser):
       action='store_true',
       help='Clear website error page if bucket is hosting website.')
   flags.add_additional_headers_flag(parser)
+  flags.add_autoclass_flags(parser)
   flags.add_continue_on_error_flag(parser)
   flags.add_recovery_point_objective_flag(parser)
 

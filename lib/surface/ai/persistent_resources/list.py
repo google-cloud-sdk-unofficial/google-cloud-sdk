@@ -74,5 +74,13 @@ class ListPreGA(base.ListCommand):
 
     with endpoint_util.AiplatformEndpointOverrides(
         version=self._api_version, region=region):
-      return client.PersistentResourcesClient(version=self._api_version).List(
-          region=region_ref.RelativeName())
+      response = client.PersistentResourcesClient(
+          version=self._api_version).List(
+              region=region_ref.RelativeName())
+      # Filter out resources with a raySpec present to hide ray clusters from
+      # the user. In both the error and success case, the response will be a
+      # generator object `YieldFromList`
+      response = [resource for resource in response if (
+          (resource.resourceRuntimeSpec is None) or
+          (resource.resourceRuntimeSpec.raySpec is None))]
+      return response

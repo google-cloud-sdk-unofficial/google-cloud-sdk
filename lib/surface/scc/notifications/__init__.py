@@ -23,3 +23,5 @@ from googlecloudsdk.calliope import base
 
 class NotificationConfigs(base.Group):
   """Manage Cloud SCC (Security Command Center) notifications."""
+
+  category = base.SECURITY_CATEGORY

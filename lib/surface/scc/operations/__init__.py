@@ -23,3 +23,5 @@ from googlecloudsdk.calliope import base
 
 class Operations(base.Group):
   """Manage Cloud SCC (Security Command Center) operations."""
+
+  category = base.SECURITY_CATEGORY

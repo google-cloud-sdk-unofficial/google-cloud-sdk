@@ -20,5 +20,5 @@
   arguments:
     resource:
       help_text: The WasmPlugin to delete.
-      spec: !REF googlecloudsdk.command_lib.network_actions.resources:wasmPlugin
+      spec: !REF googlecloudsdk.command_lib.service_extensions.resources:wasmPlugin
       is_positional: true

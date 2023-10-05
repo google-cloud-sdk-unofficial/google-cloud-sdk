@@ -123,6 +123,7 @@ from gslib.utils.unit_util import HumanReadableToBytes
 from gslib.utils.unit_util import MakeHumanReadable
 from gslib.utils.unit_util import ONE_KIB
 from gslib.utils.unit_util import ONE_MIB
+from gslib.utils import shim_util
 
 import six
 from six.moves import http_client
@@ -147,8 +148,8 @@ if not IS_WINDOWS:
 # (status_code, error_prefix, error_substring)
 _GCLOUD_STORAGE_GZIP_FLAG_CONFLICT_OUTPUT = (
     2, 'ERROR',
-    'At most one of --gzip-in-flight-all | --gzip-in-flight-extensions |'
-    ' --gzip-local-all | --gzip-local-extensions can be specified')
+    'At most one of --gzip-in-flight | --gzip-in-flight-all | --gzip-local |'
+    ' --gzip-local-all can be specified')
 
 
 def TestCpMvPOSIXBucketToLocalErrors(cls, bucket_uri, obj, tmpdir, is_cp=True):
@@ -2136,8 +2137,8 @@ class TestCp(testcase.GsUtilIntegrationTestCase):
 
     _Check1()
 
-  @unittest.skipIf(IS_WINDOWS,
-                   'Unicode handling on Windows requires mods to site-packages')
+  @unittest.skipIf(
+      IS_WINDOWS, 'Unicode handling on Windows requires mods to site-packages')
   @SequentialAndParallelTransfer
   def test_cp_manifest_upload_unicode(self):
     return self._ManifestUpload('foo-unicöde'.encode(UTF8),
@@ -3804,20 +3805,20 @@ class TestCp(testcase.GsUtilIntegrationTestCase):
     bucket_uri = self.CreateBucket()
     fpath = self.CreateTempFile(file_name='looks-zipped.gz', contents=b'foo')
     stderr = self.RunGsUtil([
-        '-D', '-d', '-h', 'content-type:application/gzip', 'cp', '-J',
+        '-DD', '-h', 'content-type:application/gzip', 'cp', '-J',
         suri(fpath),
         suri(bucket_uri, 'foo')
     ],
                             return_stderr=True)
-    # Ensure the progress logger sees a gzip encoding.
     if self._use_gcloud_storage:
       self.assertIn("b\'Content-Encoding\': b\'gzip\'", stderr)
       self.assertIn('"contentType": "application/gzip"', stderr)
     else:
-      self.assertIn('send: Using gzip transport encoding for the request.',
-                    stderr)
+      self.assertIn("\'Content-Encoding\': \'gzip\'", stderr)
+      self.assertIn('contentType: \'application/gzip\'', stderr)
     self.RunGsUtil(['cp', suri(bucket_uri, 'foo'), fpath])
 
+  @unittest.skipIf(IS_WINDOWS, 'TODO(b/293885158) Timeout on Windows.')
   @SequentialAndParallelTransfer
   def test_cp_resumable_download_gzip(self):
     """Tests that download can be resumed successfully with a gzipped file."""
@@ -5025,10 +5026,10 @@ class TestCpUnitTests(testcase.GsUtilUnitTestCase):
                                            return_log_handler=True)
         info_lines = '\n'.join(mock_log_handler.messages['info'])
         self.assertIn(
-            'Gcloud Storage Command: {} alpha storage cp'
+            'Gcloud Storage Command: {} storage cp'
             ' --ignore-symlinks --no-clobber -r -r --storage-class some-class'
             ' --print-created-message --predefined-acl publicRead {} {}'.format(
-                os.path.join('fake_dir', 'bin', 'gcloud'), fpath,
+                shim_util._get_gcloud_binary_path('fake_dir'), fpath,
                 suri(bucket_uri)), info_lines)
         warn_lines = '\n'.join(mock_log_handler.messages['warning'])
         self.assertIn('Use the -m flag to enable parallelism', warn_lines)

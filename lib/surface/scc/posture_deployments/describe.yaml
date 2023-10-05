@@ -1,9 +1,8 @@
 - release_tracks: [ALPHA]
-  hidden: true
   help_text:
-    brief: Describe a Cloud Security Command Center posture-deployment.
+    brief: Describe a Cloud Security Command Center (SCC) posture deployment.
     description: |
-      Describe a Cloud Security Command Center posture-deployment.
+      Describe a  Cloud Security Command Center (SCC) posture deployment.
 
     examples: |
       Describe a posture-deployment present on an organization:

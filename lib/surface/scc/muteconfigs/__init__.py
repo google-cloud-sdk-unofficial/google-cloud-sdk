@@ -24,3 +24,5 @@ from googlecloudsdk.calliope import base
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.GA)
 class MuteConfigs(base.Group):
   """Manage Cloud SCC (Security Command Center) mute configs."""
+
+  category = base.SECURITY_CATEGORY

@@ -32,6 +32,28 @@ arguments:
     api_field: sSEGateway.userVpc
     help_text: |
       The VPC in your project where branch office users land.
+  - arg_name: app-traffic-ilb-ip
+    api_field: sSEGateway.appTrafficTargetIp
+    help_text: |
+      The ILB IP address where the application traffic should be routed to.
+      Default value is set to "100.64.1.253".
+  - arg_name: app-traffic-subnet-range
+    api_field: sSEGateway.appTrafficVpcSubnetRange
+    help_text: |
+      Address range (in CIDR format) of the subnet where application traffic is routed.
+      Default value is set to "100.64.1.0/24".
+      User defined / customized subnet range CIDR suffix should be less than or equal to 24.
+  - arg_name: user-traffic-ilb-ip
+    api_field: sSEGateway.userTrafficTargetIp
+    help_text: |
+      The ILB IP address where the user traffic should be routed to.
+      Default value is set to "100.64.1.253".
+  - arg_name: user-traffic-subnet-range
+    api_field: sSEGateway.userTrafficVpcSubnetRange
+    help_text: |
+      Address range (in CIDR format) of the subnet where user traffic is routed.
+      Default value is set to "100.64.2.0/24".
+      User defined / customized subnet range CIDR suffix should less than or equal to 24.
 
 async:
   collection: networksecurity.projects.locations.operations

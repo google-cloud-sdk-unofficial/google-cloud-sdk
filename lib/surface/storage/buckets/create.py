@@ -20,6 +20,7 @@ from __future__ import unicode_literals
 
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.storage import errors
 from googlecloudsdk.command_lib.storage import errors_util
 from googlecloudsdk.command_lib.storage import flags
 from googlecloudsdk.command_lib.storage import storage_url
@@ -56,11 +57,6 @@ class Create(base.Command):
   def Args(cls, parser):
     parser.add_argument(
         'url', type=str, nargs='+', help='The URLs of the buckets to create.')
-    parser.add_argument(
-        '--enable-autoclass',
-        action=arg_parsers.StoreTrueFalseAction,
-        help='The Autoclass feature automatically selects the best storage'
-        ' class for objects based on access patterns.')
     parser.add_argument(
         '--location',
         '-l',
@@ -119,6 +115,7 @@ class Create(base.Command):
               ' ever be valid. Invalid location pairs (such as mixed-continent,'
               ' or with unsupported regions) will return an error.'))
     flags.add_additional_headers_flag(parser)
+    flags.add_autoclass_flags(parser)
     flags.add_recovery_point_objective_flag(parser)
 
     if cls.ReleaseTrack() == base.ReleaseTrack.ALPHA:
@@ -144,6 +141,15 @@ class Create(base.Command):
           user_request_args_factory.get_user_request_args_from_command_args(
               args, metadata_type=user_request_args_factory.MetadataType.BUCKET)
           )
+      if (
+          user_request_args.resource_args.autoclass_terminal_storage_class
+          is not None
+          and not user_request_args.resource_args.enable_autoclass
+      ):
+        raise errors.Error(
+            '--autoclass_terminal_storage_class is only allowed if'
+            ' --enable-autoclass is set.'
+        )
       create_bucket_task.CreateBucketTask(
           resource,
           user_request_args=user_request_args).execute()

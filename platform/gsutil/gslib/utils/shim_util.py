@@ -31,6 +31,7 @@ from gslib.cs_api_map import ApiSelector
 from gslib.exception import CommandException
 from gslib.utils import boto_util
 from gslib.utils import constants
+from gslib.utils import system_util
 
 
 class HIDDEN_SHIM_MODE(enum.Enum):
@@ -185,6 +186,18 @@ def get_flag_from_header(raw_header_key, header_value, unset=False):
   return None
 
 
+def get_format_flag_caret():
+  if system_util.IS_WINDOWS:
+    return '^^^^'
+  return '^'
+
+
+def get_format_flag_newline():
+  if system_util.IS_WINDOWS:
+    return '^\^n'
+  return '\n'
+
+
 class GcloudStorageFlag(object):
 
   def __init__(self,
@@ -230,7 +243,12 @@ class GcloudStorageMap(object):
     self.supports_output_translation = supports_output_translation
 
 
-def _get_gcloud_binary_path():
+def _get_gcloud_binary_path(cloudsdk_root):
+  return os.path.join(cloudsdk_root, 'bin',
+                      'gcloud.cmd' if system_util.IS_WINDOWS else 'gcloud')
+
+
+def _get_validated_gcloud_binary_path():
   # GCLOUD_BINARY_PATH is used for testing purpose only.
   # It helps to run the parity_check.py script directly without having
   # to build gcloud.
@@ -248,7 +266,7 @@ def _get_gcloud_binary_path():
         ' google-cloud-sdk installation directory to resolve the issue.'
         ' Alternatively, you can set `use_gcloud_storage=False` to disable'
         ' running the command using gcloud storage.')
-  return os.path.join(cloudsdk_root, 'bin', 'gcloud')
+  return _get_gcloud_binary_path(cloudsdk_root)
 
 
 def _get_gcs_json_endpoint_from_boto_config(config):
@@ -546,6 +564,18 @@ class GcloudStorageCommandMixin(object):
       for k, v in env_variables.items():
         logger_func('%s=%s', k, v)
 
+  def _get_full_gcloud_storage_execution_information(self, args):
+    top_level_flags, env_variables = self._translate_top_level_flags()
+    header_flags = self._translate_headers()
+
+    flags_from_boto, env_vars_from_boto = self._translate_boto_config()
+    env_variables.update(env_vars_from_boto)
+
+    gcloud_binary_path = _get_validated_gcloud_binary_path()
+    gcloud_storage_command = ([gcloud_binary_path] + args + top_level_flags +
+                              header_flags + flags_from_boto)
+    return env_variables, gcloud_storage_command
+
   def translate_to_gcloud_storage_if_requested(self):
     """Translates the gsutil command to gcloud storage equivalent.
 
@@ -575,17 +605,8 @@ class GcloudStorageCommandMixin(object):
           format(' | '.join([x.value for x in HIDDEN_SHIM_MODE])))
     if use_gcloud_storage:
       try:
-        top_level_flags, env_variables = self._translate_top_level_flags()
-        header_flags = self._translate_headers()
-
-        flags_from_boto, env_vars_from_boto = self._translate_boto_config()
-        env_variables.update(env_vars_from_boto)
-
-        gcloud_binary_path = _get_gcloud_binary_path()
-        gcloud_storage_command = ([gcloud_binary_path] +
-                                  self.get_gcloud_storage_args() +
-                                  top_level_flags + header_flags +
-                                  flags_from_boto)
+        env_variables, gcloud_storage_command = self._get_full_gcloud_storage_execution_information(
+            self.get_gcloud_storage_args())
         if hidden_shim_mode == HIDDEN_SHIM_MODE.DRY_RUN:
           self._print_gcloud_storage_command_info(gcloud_storage_command,
                                                   env_variables,
@@ -596,7 +617,7 @@ class GcloudStorageCommandMixin(object):
               ' same credentials as gcloud.'
               ' You can make gsutil use the same credentials by running:\n'
               '{} config set pass_credentials_to_gsutil True'.format(
-                  gcloud_binary_path))
+                  _get_validated_gcloud_binary_path()))
         elif (boto_util.UsingGsHmac() and
               ApiSelector.XML not in self.command_spec.gs_api_support):
           raise CommandException(
@@ -620,9 +641,12 @@ class GcloudStorageCommandMixin(object):
             ' Going to run gsutil command. Error: %s', e)
     return False
 
-  def run_gcloud_storage(self):
+  def _get_shim_command_environment_variables(self):
     subprocess_envs = os.environ.copy()
     subprocess_envs.update(self._translated_env_variables)
+    return subprocess_envs
+
+  def run_gcloud_storage(self):
     process = subprocess.run(self._translated_gcloud_storage_command,
-                             env=subprocess_envs)
+                             env=self._get_shim_command_environment_variables())
     return process.returncode

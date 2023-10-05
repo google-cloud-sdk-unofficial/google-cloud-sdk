@@ -23,3 +23,5 @@ from googlecloudsdk.calliope import base
 
 class Finding(base.Group):
   """Manage Cloud SCC (Security Command Center) findings."""
+
+  category = base.SECURITY_CATEGORY

@@ -28,14 +28,6 @@ arguments:
     api_field: partnerSSEGateway.partnerVpcSubnetRange
     help_text: |
       Address range (in CIDR format) for the partner-owned subnet which will support this gateway.
-  - arg_name: branch-ilb-ip
-    api_field: partnerSSEGateway.partnerRnIlbIp
-    help_text: |
-      IP address of the partner ILB which handles branch user traffic.
-  - arg_name: mobile-ilb-ip
-    api_field: partnerSSEGateway.partnerScIlbIp
-    help_text: |
-      IP address of the partner ILB which handles mobile user traffic.
 
 async:
   collection: networksecurity.projects.locations.operations

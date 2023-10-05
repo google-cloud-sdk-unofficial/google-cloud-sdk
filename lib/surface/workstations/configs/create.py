@@ -59,6 +59,7 @@ class Create(base.CreateCommand):
     workstations_flags.AddRunningTimeoutFlag(parser)
     workstations_flags.AddMachineTypeFlag(parser)
     workstations_flags.AddServiceAccountFlag(parser)
+    workstations_flags.AddServiceAccountScopes(parser)
     workstations_flags.AddNetworkTags(parser)
     workstations_flags.AddPoolSize(parser)
     workstations_flags.AddDisablePublicIpAddresses(parser)

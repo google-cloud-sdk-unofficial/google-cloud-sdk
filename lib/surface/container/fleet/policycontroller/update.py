@@ -45,21 +45,26 @@ class Update(base.UpdateCommand, command.PocoCommand):
 
   @classmethod
   def Args(cls, parser):
-    cmd_flags = flags.PocoFlags(parser, 'update')
+    top_group = parser.add_argument_group(mutex=True)
+    modal_group = top_group.add_argument_group(mutex=False)
+    membership_group = modal_group.add_argument_group(mutex=True)
+    scope_flags = flags.PocoFlags(modal_group, 'enable')
+    config_group = membership_group.add_argument_group(mutex=False)
+    manual_flags = flags.PocoFlags(config_group, 'config')
 
     # Scope Flags
-    cmd_flags.add_memberships()
+    scope_flags.add_memberships()
 
     # Configuration Flags
-    cmd_flags.add_audit_interval()
-    cmd_flags.add_constraint_violation_limit()
-    cmd_flags.add_exemptable_namespaces()
-    cmd_flags.add_log_denies_enabled()
-    cmd_flags.add_monitoring()
-    cmd_flags.add_mutation()
-    cmd_flags.add_referential_rules()
-    cmd_flags.add_template_library()
-    cmd_flags.add_version()
+    manual_flags.add_audit_interval()
+    manual_flags.add_constraint_violation_limit()
+    manual_flags.add_exemptable_namespaces()
+    manual_flags.add_log_denies_enabled()
+    manual_flags.add_monitoring()
+    manual_flags.add_mutation()
+    manual_flags.add_referential_rules()
+    manual_flags.add_template_library()
+    manual_flags.add_version()
 
   def Run(self, args):
     parser = flags.PocoFlagParser(args, self.messages)

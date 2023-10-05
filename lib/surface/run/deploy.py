@@ -80,7 +80,7 @@ class BuildType(enum.Enum):
   BUILDPACKS = 'Buildpacks'
 
 
-def ContainerArgGroup():
+def ContainerArgGroup(release_track=base.ReleaseTrack.GA):
   """Returns an argument group with all per-container deploy args."""
 
   help_text = """
@@ -98,6 +98,9 @@ def ContainerArgGroup():
   group.AddArgument(flags.ArgsFlag())
   group.AddArgument(flags.SecretsFlags())
   group.AddArgument(flags.DependsOnFlag())
+  if release_track == base.ReleaseTrack.ALPHA:
+    group.AddArgument(flags.AddVolumeMountFlag())
+    group.AddArgument(flags.RemoveVolumeMountFlag())
   return group
 
 
@@ -443,13 +446,14 @@ class AlphaDeploy(BetaDeploy):
     managed_group = flags.GetManagedArgGroup(parser)
     flags.AddCustomAudiencesFlag(managed_group)
     flags.AddVpcNetworkGroupFlagsForUpdate(managed_group)
+    flags.AddDefaultUrlFlag(managed_group)
     flags.AddRuntimeFlag(managed_group)
     flags.AddServiceMinInstancesFlag(managed_group)
     flags.AddVolumesFlags(managed_group, cls.ReleaseTrack())
     # pylint: disable=protected-access
     flags.ContainerFlags(
         parser.parser._calliope_command,
-        ContainerArgGroup(),
+        ContainerArgGroup(cls.ReleaseTrack()),
     ).AddToParser(managed_group)
 
 

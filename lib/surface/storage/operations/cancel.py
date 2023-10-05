@@ -21,6 +21,7 @@ from __future__ import unicode_literals
 from googlecloudsdk.api_lib.storage import api_factory
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.storage import errors_util
+from googlecloudsdk.command_lib.storage import operations_util
 from googlecloudsdk.command_lib.storage import storage_url
 from googlecloudsdk.core import log
 
@@ -59,11 +60,12 @@ class Cancel(base.Command):
   def Run(self, args):
     url_object = storage_url.storage_url_from_string(args.url)
     errors_util.raise_error_if_not_gcs_bucket(args.command_path, url_object)
+    operation_id = operations_util.get_operation_id_from_name(args.operation_id)
     api_factory.get_api(url_object.scheme).cancel_operation(
-        bucket_name=url_object.bucket_name, operation_id=args.operation_id
+        bucket_name=url_object.bucket_name, operation_id=operation_id
     )
     log.status.Print(
         'Sent cancel request for bucket {} operation {}'.format(
-            url_object, args.operation_id
+            url_object, operation_id
         )
     )

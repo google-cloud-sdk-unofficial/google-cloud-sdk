@@ -54,20 +54,19 @@ def GetPluginConfigData(args):
 @base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Create(base.CreateCommand):
-  """Create a WasmPlugin."""
+  """Create a `WasmPlugin` resource."""
 
   detailed_help = {
       'DESCRIPTION': textwrap.dedent("""\
-          Create a new WasmPlugin and optionally create a WasmPluginVersion and
-          set it as main (serving) one.
+          Create a new `WasmPlugin` resource.
       """),
       'EXAMPLES': textwrap.dedent("""\
-          To create a WasmPlugin called `my-plugin`, run:
+          To create a `WasmPlugin` called `my-plugin`, run:
 
           $ {command} my-plugin
 
-          To create a WasmPlugin called my-plugin, together with a new version
-          called v1, and set it as main, run:
+          To create a `WasmPlugin` called `my-plugin`, together with a new
+          version called `v1`, and set it as main, run:
 
           $ {command} my-plugin --main-version=v1
           --image=...-docker.pkg.dev/my-project/repository/container:tag
@@ -79,7 +78,7 @@ class Create(base.CreateCommand):
     flags.AddWasmPluginResource(
         parser=parser,
         api_version=util.GetApiVersion(cls.ReleaseTrack()),
-        message='The ID of the WasmPlugin to create.',
+        message='The ID of the `WasmPlugin` resource to create.',
     )
 
     base.ASYNC_FLAG.AddToParser(parser)
@@ -90,8 +89,9 @@ class Create(base.CreateCommand):
     flags.AddWasmPluginVersionArgs(
         parser=parser,
         version_message=(
-            'ID of the WasmPluginVersion that will be created for that'
-            ' WasmPlugin and that will be set as the current main version.'
+            'ID of the `WasmPluginVersion` resource that will be created for '
+            'that `WasmPlugin` and that will be set as the current '
+            'main version.'
         ),
     )
 
@@ -109,11 +109,11 @@ class Create(base.CreateCommand):
       if args.main_version is None:
         raise calliope_exceptions.RequiredArgumentException(
             '--main-version', 'Both flags --image and'
-            ' --main-version should be set or none of them.')
+            ' --main-version should be set or neither of them.')
       elif args.image is None:
         raise calliope_exceptions.RequiredArgumentException(
-            '--image', 'Both flags --image and --main-version should be set or'
-            ' none of them.')
+            '--image', 'Both flags --image and --main-version should be set'
+            ' or neither of them.')
       else:
         raise calliope_exceptions.ConflictingArgumentsException(
             '--async', 'If --async flag is set, --image and'

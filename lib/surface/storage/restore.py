@@ -21,6 +21,7 @@ from __future__ import unicode_literals
 from googlecloudsdk.api_lib.storage import cloud_api
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.storage import errors
 from googlecloudsdk.command_lib.storage import errors_util
 from googlecloudsdk.command_lib.storage import flags
 from googlecloudsdk.command_lib.storage import stdin_iterator
@@ -32,6 +33,14 @@ from googlecloudsdk.command_lib.storage.tasks import task_graph_executor
 from googlecloudsdk.command_lib.storage.tasks import task_status
 from googlecloudsdk.command_lib.storage.tasks.objects import bulk_restore_objects_task
 from googlecloudsdk.command_lib.storage.tasks.objects import restore_object_task
+from googlecloudsdk.core import log
+
+
+_BULK_RESTORE_FLAGS = [
+    'allow_overwrite',
+    'deleted_after_time',
+    'deleted_before_time',
+]
 
 
 def _restore_task_iterator(args):
@@ -49,7 +58,10 @@ def _restore_task_iterator(args):
       args.urls, args.read_paths_from_stdin
   ):
     url = storage_url.storage_url_from_string(url_string)
+    # TODO(b/292075826): Remove once bucket restore supported.
+    errors_util.raise_error_if_not_cloud_object(args.command_path, url)
     errors_util.raise_error_if_not_gcs(args.command_path, url)
+
     if args.asyncronous:
       yield bulk_restore_objects_task.BulkRestoreObjectsTask(
           url,
@@ -60,7 +72,9 @@ def _restore_task_iterator(args):
       )
     else:
       for resource in wildcard_iterator.get_wildcard_iterator(
-          url_string, fields_scope=fields_scope
+          url_string,
+          fields_scope=fields_scope,
+          soft_deleted_only=True,
       ):
         yield restore_object_task.RestoreObjectTask(resource, user_request_args)
 
@@ -80,17 +94,14 @@ class Restore(base.Command):
       """,
       'EXAMPLES': """
 
-      Restore latest version of object in a bucket:
-
-        $ {command} gs://bucket/file1.txt
-
-      Restore specific version of object in a bucket:
+      Restore specific version of object in a bucket. Note: Generation number
+      is required.
 
         $ {command} gs://bucket/file1.txt#123
 
       Restore two objects in a bucket:
 
-        $ {command} gs://bucket/file1.txt gs://bucket/file2.txt
+        $ {command} gs://bucket/file1.txt#123 gs://bucket/file2.txt#456
 
       Restore all text objects in a bucket:
 
@@ -106,7 +117,7 @@ class Restore(base.Command):
 
       Restore all objects in a bucket asynchronously:
 
-        $ {command} gs://bucket --async
+        $ {command} gs://bucket/** --async
 
       Restore all text files in a bucket asynchronously:
 
@@ -159,6 +170,17 @@ class Restore(base.Command):
 
   def Run(self, args):
     task_status_queue = task_graph_executor.multiprocessing_context.Queue()
+
+    if args.asyncronous:
+      log.status.Print(
+          'To see created operations, run "operations list" for'
+          ' the matched buckets.'
+      )
+    elif any((getattr(args, flag) for flag in _BULK_RESTORE_FLAGS)):
+      raise errors.Error(
+          'Bulk restore flag found without --async. See help text with --help.'
+      )
+
     self.exit_code = task_executor.execute_tasks(
         task_iterator=_restore_task_iterator(args),
         parallelizable=True,

@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""gcloud network-actions wasm-actions create command."""
+"""gcloud service-extensions wasm-actions create command."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -25,8 +25,8 @@ from googlecloudsdk.api_lib.util import waiter
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope.concepts import concepts
-from googlecloudsdk.command_lib.network_actions import flags
-from googlecloudsdk.command_lib.network_actions import util
+from googlecloudsdk.command_lib.service_extensions import flags
+from googlecloudsdk.command_lib.service_extensions import util
 from googlecloudsdk.command_lib.util.apis import yaml_data
 from googlecloudsdk.command_lib.util.args import labels_util
 from googlecloudsdk.command_lib.util.concepts import concept_parsers
@@ -93,9 +93,9 @@ class Create(base.CreateCommand):
   @classmethod
   def Args(cls, parser):
     wasm_action_data = yaml_data.ResourceYAMLData.FromPath(
-        'network_actions.wasmAction')
+        'service_extensions.wasmAction')
     wasm_plugin_data = yaml_data.ResourceYAMLData.FromPath(
-        'network_actions.wasmPlugin')
+        'service_extensions.wasmPlugin')
 
     # Register the wasm_action and --wasm-plugin resource args. They
     # both provide a --location flag, so to avoid a conflict, we

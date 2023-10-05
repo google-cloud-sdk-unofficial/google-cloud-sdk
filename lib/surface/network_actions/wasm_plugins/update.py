@@ -54,36 +54,37 @@ def GetPluginConfigData(args):
 @base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Update(base.UpdateCommand):
-  """Update a WasmPlugin."""
+  """Update a `WasmPlugin` resource."""
 
   detailed_help = {
       'DESCRIPTION': textwrap.dedent("""\
-          Update an existing WasmPlugin and optionally create
-          a WasmPluginVersion and set it as main (serving) one.
+          Update an existing `WasmPlugin` resource and optionally create
+          a `WasmPluginVersion` resource and set it as the main (serving) one.
 
-          If --image is not specified:
-              * the method only updates the WasmPlugin resource without creating
-                a WasmPluginVersion.
-              * the --plugin-config*** flags are disallowed.
-              * if --main-version is set, then the referenced WasmPluginVersion
-                must already exists and it will be set as main (serving) one.
-
-          If --image is specified:
-              * the --main-version flag should also be specified.
-              * the method updates the WasmPlugin resource and creates a new
-                WasmPluginVersion with --main-version name and sets it as
+          If `--image` is not specified:
+              * the method only updates the `WasmPlugin` resource without
+                creating a `WasmPluginVersion`.
+              * the `--plugin-config***` flags are disallowed.
+              * if `--main-version` is set, then the referenced
+                `WasmPluginVersion` must already exist and it is set as the
                 main (serving) one.
-              * the --plugin-config*** flags are allowed.
-              * the --async flag is disallowed.
+
+          If `--image` is specified:
+              * the `--main-version` flag must also be specified.
+              * the method updates the `WasmPlugin` resource and creates a new
+                `WasmPluginVersion` with `--main-version` name and sets it as
+                the main (serving) one.
+              * the `--plugin-config***` flags are allowed.
+              * the `--async` flag is disallowed.
       """),
       'EXAMPLES': textwrap.dedent("""\
-          To update a WasmPlugin called `my-plugin`, run:
+          To update a `WasmPlugin` called `my-plugin`, run:
 
           $ {command} my-plugin --main-version=new-version
           --description="A new description." --labels=label1=value1
 
-          To update a WasmPlugin called my-plugin and also create a new version
-          called v1 and set it as main:
+          To update a `WasmPlugin` called `my-plugin` and also create a new
+          version called `v1` and set it as main:
 
           $ {command} my-plugin --main-version=v1
           --description="A new description." --labels=label1=value1
@@ -96,7 +97,7 @@ class Update(base.UpdateCommand):
     flags.AddWasmPluginResource(
         parser=parser,
         api_version=util.GetApiVersion(cls.ReleaseTrack()),
-        message='The ID of the WasmPlugin to update.',
+        message='The ID of the `WasmPlugin` to update.',
     )
 
     base.ASYNC_FLAG.AddToParser(parser)
@@ -107,13 +108,13 @@ class Update(base.UpdateCommand):
     flags.AddWasmPluginVersionArgs(
         parser=parser,
         version_message="""
-            The ID of the WasmPluginVersion that should be the currently
+            The ID of the `WasmPluginVersion` that should be the currently
             serving one. The version referred to must be a child of this
-            WasmPlugin.
+            `WasmPlugin`.
 
-            If the --image flag was also provided, the WasmPluginVersion will be
-            created for that WasmPlugin and will be set as the current
-            main version.
+            If the `--image` flag was also provided, the `WasmPluginVersion`
+            will be created for that `WasmPlugin` and will be set as the
+            current main version.
         """,
     )
 
@@ -133,7 +134,7 @@ class Update(base.UpdateCommand):
     elif args.main_version is None:
       raise calliope_exceptions.RequiredArgumentException(
           '--main-version',
-          'Both flags --image and --main-version should be set or none of'
+          'Both flags --image and --main-version should be set or neither of'
           ' them.',
       )
     else:

@@ -1,9 +1,8 @@
 - release_tracks: [ALPHA]
-  hidden: true
   help_text:
-    brief: Extract a Cloud Security Command Center posture from a workload.
+    brief: Extract a  Cloud Security Command Center (SCC) posture from a workload.
     description: |
-      Extract a Cloud Security Command Center posture from a workload. First argument is the parent
+      Extract a  Cloud Security Command Center (SCC) posture from a workload. First argument is the parent
       of the posture to be created. Second argument is the name of the posture to be created. The workload
       from where the organization policies need to be extracted is provided via 'workload' flag.
 
