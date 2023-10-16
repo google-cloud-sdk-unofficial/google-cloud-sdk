@@ -166,8 +166,8 @@ class Du(base.Command):
 
     du_command_util.DuExecutor(
         cloud_urls=storage_urls,
-        all_versions=args.all_versions,
         exclude_patterns=regex_util.Patterns(exclude_regex_strings),
+        object_state=flags.get_object_state_from_flags(args),
         readable_sizes=args.readable_sizes,
         summarize=args.summarize,
         total=args.total,

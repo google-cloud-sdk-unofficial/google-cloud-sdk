@@ -21,6 +21,7 @@
     format: |
       table(
         name.basename():label=NAME,
+        gdceCluster.gdceCluster.basename():label=CLUSTER,
         displayName:label=DISPLAY_NAME,
         createTime:label=CREATE_TIME,
         state:label=STATE

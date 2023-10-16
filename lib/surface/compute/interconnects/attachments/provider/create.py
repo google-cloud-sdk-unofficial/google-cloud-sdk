@@ -38,6 +38,7 @@ class Create(base.CreateCommand):
   INTERCONNECT_ATTACHMENT_ARG = None
   INTERCONNECT_ARG = None
   ROUTER_ARG = None
+  _support_partner_ipv6_byoip = False
 
   @classmethod
   def Args(cls, parser):
@@ -75,7 +76,19 @@ class Create(base.CreateCommand):
       interconnect_ref = self.INTERCONNECT_ARG.ResolveAsResource(
           args, holder.resources)
 
-    return interconnect_attachment.CreateAlpha(
+    candidate_ipv6_subnets = None
+    cloud_router_ipv6_interface_id = None
+    customer_router_ipv6_interface_id = None
+    if self._support_partner_ipv6_byoip:
+      candidate_ipv6_subnets = args.candidate_ipv6_subnets
+      cloud_router_ipv6_interface_id = getattr(
+          args, 'cloud_router_ipv6_interface_id', None
+      )
+      customer_router_ipv6_interface_id = getattr(
+          args, 'customer_router_ipv6_interface_id', None
+      )
+
+    return interconnect_attachment.Create(
         description=args.description,
         interconnect=interconnect_ref,
         vlan_tag_802_1q=args.vlan,
@@ -87,8 +100,12 @@ class Create(base.CreateCommand):
         partner_name=args.partner_name,
         partner_interconnect=args.partner_interconnect_name,
         partner_portal_url=args.partner_portal_url,
+        subnet_length=getattr(args, 'subnet_length', None),
         validate_only=getattr(args, 'dry_run', None),
-        subnet_length=getattr(args, 'subnet_length', None))
+        candidate_ipv6_subnets=candidate_ipv6_subnets,
+        cloud_router_ipv6_interface_id=cloud_router_ipv6_interface_id,
+        customer_router_ipv6_interface_id=customer_router_ipv6_interface_id,
+    )
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -100,8 +117,12 @@ class CreateAlpha(Create):
   to a path into and out of the customer's cloud network. Partner provider
   attachments can only be created by approved network partners.
   """
+  _support_partner_ipv6_byoip = True
 
   @classmethod
   def Args(cls, parser):
     super(CreateAlpha, cls).Args(parser)
     attachment_flags.AddDryRun(parser)
+    attachment_flags.AddCandidateIpv6Subnets(parser)
+    attachment_flags.AddCloudRouterIpv6InterfaceId(parser)
+    attachment_flags.AddCustomerRouterIpv6InterfaceId(parser)

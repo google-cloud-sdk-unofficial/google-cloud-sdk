@@ -18,15 +18,12 @@
 import abc
 import os
 
-import six
-
 from google.auth import _helpers, environment_vars
 from google.auth import exceptions
 from google.auth import metrics
 
 
-@six.add_metaclass(abc.ABCMeta)
-class Credentials(object):
+class Credentials(metaclass=abc.ABCMeta):
     """Base class for all credentials.
 
     All credentials have a :attr:`token` that is used for authentication and
@@ -54,6 +51,12 @@ class Credentials(object):
         If this is None, the token is assumed to never expire."""
         self._quota_project_id = None
         """Optional[str]: Project to use for quota and billing purposes."""
+        self._trust_boundary = None
+        """Optional[str]: Encoded string representation of credentials trust
+        boundary."""
+        self._universe_domain = "googleapis.com"
+        """Optional[str]: The universe domain value, default is googleapis.com
+        """
 
     @property
     def expired(self):
@@ -84,6 +87,11 @@ class Credentials(object):
     def quota_project_id(self):
         """Project to use for quota and billing purposes."""
         return self._quota_project_id
+
+    @property
+    def universe_domain(self):
+        """The universe domain value."""
+        return self._universe_domain
 
     @abc.abstractmethod
     def refresh(self, request):
@@ -127,6 +135,8 @@ class Credentials(object):
         headers["authorization"] = "Bearer {}".format(
             _helpers.from_bytes(token or self.token)
         )
+        if self._trust_boundary is not None:
+            headers["x-identity-trust-boundary"] = self._trust_boundary
         if self.quota_project_id:
             headers["x-goog-user-project"] = self.quota_project_id
 
@@ -227,8 +237,7 @@ class AnonymousCredentials(Credentials):
         """Anonymous credentials do nothing to the request."""
 
 
-@six.add_metaclass(abc.ABCMeta)
-class ReadOnlyScoped(object):
+class ReadOnlyScoped(metaclass=abc.ABCMeta):
     """Interface for credentials whose scopes can be queried.
 
     OAuth 2.0-based credentials allow limiting access using scopes as described
@@ -369,8 +378,7 @@ def with_scopes_if_required(credentials, scopes, default_scopes=None):
         return credentials
 
 
-@six.add_metaclass(abc.ABCMeta)
-class Signing(object):
+class Signing(metaclass=abc.ABCMeta):
     """Interface for credentials that can cryptographically sign messages."""
 
     @abc.abstractmethod

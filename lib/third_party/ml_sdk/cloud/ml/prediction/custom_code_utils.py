@@ -17,6 +17,7 @@ import inspect
 import json
 import os
 import pydoc  # used for importing python classes from their FQN
+import sys
 
 from ._interfaces import Model
 from .prediction_utils import PredictionError
@@ -112,8 +113,12 @@ def _validate_prediction_class(user_class):
                           "The provided model class, %s, is missing the "
                           "required predict method." % user_class_name)
   # Check the predict method has the correct number of arguments
-  user_signature = inspect.getargspec(user_class.predict)[0]
-  model_signature = inspect.getargspec(Model.predict)[0]
+  if sys.version_info.major == 2:
+    user_signature = inspect.getargspec(user_class.predict).args  # pylint: disable=deprecated-method
+    model_signature = inspect.getargspec(Model.predict).args  # pylint: disable=deprecated-method
+  else:
+    user_signature = inspect.getfullargspec(user_class.predict).args
+    model_signature = inspect.getfullargspec(Model.predict).args
   user_predict_num_args = len(user_signature)
   predict_num_args = len(model_signature)
   if predict_num_args is not user_predict_num_args:

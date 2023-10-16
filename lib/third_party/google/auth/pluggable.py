@@ -193,7 +193,7 @@ class Credentials(external_account.Credentials):
 
         if not _helpers.is_python_3():
             raise exceptions.RefreshError(
-                "Pluggable auth is only supported for python 3.6+"
+                "Pluggable auth is only supported for python 3.7+"
             )
 
         # Inject env vars.
@@ -255,7 +255,7 @@ class Credentials(external_account.Credentials):
 
         if not _helpers.is_python_3():
             raise exceptions.RefreshError(
-                "Pluggable auth is only supported for python 3.6+"
+                "Pluggable auth is only supported for python 3.7+"
             )
 
         # Inject variables
@@ -422,3 +422,8 @@ class Credentials(external_account.Credentials):
             raise exceptions.InvalidValue(
                 "Interactive mode is only enabled for workforce pool."
             )
+
+    def _create_default_metrics_options(self):
+        metrics_options = super(Credentials, self)._create_default_metrics_options()
+        metrics_options["source"] = "executable"
+        return metrics_options

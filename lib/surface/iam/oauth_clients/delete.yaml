@@ -38,3 +38,4 @@
     - api_field: validateOnly
       arg_name: validate-only
       help_text: When set, validates the deletion but does not actually delete the OAuth client.
+      hidden: true

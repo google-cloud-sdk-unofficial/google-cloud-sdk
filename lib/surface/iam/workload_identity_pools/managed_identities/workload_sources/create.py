@@ -20,6 +20,7 @@ from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.iam import util
 from googlecloudsdk.api_lib.iam.workload_identity_pools import workload_sources
+from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions as gcloud_exceptions
 from googlecloudsdk.calliope.concepts import concepts
@@ -36,15 +37,15 @@ class CreateGcp(base.CreateCommand):
       'DESCRIPTION': '{description}',
       'EXAMPLES': """\
           The following command creates a workload source for a workload
-          identity pool managed identity that authorizes any workload in
-          the Google Cloud project `123` with the given service
-          accounts attached to assume it.
+          identity pool managed identity that authorizes any Compute Engine
+          instance in the Google Cloud project `123` based on their attached
+          service account.
 
             $ {command} project-123 --location="global" \\
             --workload-identity-pool="my-workload-identity-pool" \\
             --namespace="my-namespace" \\
             --managed-identity="my-managed-identity" \\
-            --resoures="resource-1","resource-2"
+            --single-attribute-selectors="compute.googleapis.com/Instance.attached_service_account.email='foo@bar.iam.gserviceaccount.com'"
           """,
   }
 
@@ -62,7 +63,15 @@ class CreateGcp(base.CreateCommand):
         required=True,
     ).AddToParser(parser)
     # Flags for creating workload source
-    flags.AddGcpWorkloadSourceFlags(parser)
+    parser.add_argument(
+        '--single-attribute-selectors',
+        type=arg_parsers.ArgList(),
+        help=(
+            'The attributes that a workload can attest for it to be allowed to '
+            'receive a managed identity.'
+        ),
+        metavar='SINGLE_ATTRIBUTE_SELECTORS',
+    )
     base.ASYNC_FLAG.AddToParser(parser)
 
   def Run(self, args):
@@ -71,49 +80,29 @@ class CreateGcp(base.CreateCommand):
     client, messages = util.GetClientAndMessages()
     workload_source_ref = args.CONCEPTS.workload_source.Parse()
 
-    lro_ref = self.CreateWorkloadSource(
-        args, client, messages, workload_source_ref
+    lro_ref = client.projects_locations_workloadIdentityPools_namespaces_managedIdentities_workloadSources.Create(
+        messages.IamProjectsLocationsWorkloadIdentityPoolsNamespacesManagedIdentitiesWorkloadSourcesCreateRequest(
+            parent=workload_source_ref.Parent().RelativeName(),
+            workloadSource=messages.WorkloadSource(
+                singleAttributeSelectors=flags.ParseSingleAttributeSelectorArg(
+                    arg_name='--single-attribute-selectors',
+                    arg_value=args.single_attribute_selectors,
+                ),
+            ),
+            workloadSourceId=workload_source_ref.workloadSourcesId,
+        )
     )
 
-    if args.async_:
-      return lro_ref
-
-    result = self.WaitForCreateWorkloadSourceOperation(
-        client, lro_ref, workload_source_ref
-    )
-
-    return result
-
-  def CheckArgs(self, args):
-    if not args.resources and not args.attached_service_accounts:
-      raise gcloud_exceptions.OneOfArgumentsRequiredException(
-          ['--resources', '--attached-service-accounts'],
-          'Must provide at least one attribute that will match workload(s) '
-          'from the source.',
-      )
-
-  def CreateWorkloadSource(self, args, client, messages, workload_source_ref):
-    lro_ref = workload_sources.CreateGcpWorkloadSource(
-        client=client,
-        messages=messages,
-        workload_source_id=workload_source_ref.workloadSourcesId,
-        resources=args.resources,
-        attached_service_accounts=args.attached_service_accounts,
-        parent=workload_source_ref.Parent().RelativeName(),
-        for_managed_identity=True,
-    )
     log.status.Print(
         'Create request issued for: [{}]'.format(
             workload_source_ref.workloadSourcesId
         )
     )
 
-    return lro_ref
+    if args.async_:
+      return lro_ref
 
-  def WaitForCreateWorkloadSourceOperation(
-      self, client, lro_ref, workload_source_ref
-  ):
-    workload_source_result = workload_sources.WaitForWorkloadSourceOperation(
+    result = workload_sources.WaitForWorkloadSourceOperation(
         client=client,
         lro_ref=lro_ref,
         for_managed_identity=True,
@@ -124,4 +113,12 @@ class CreateGcp(base.CreateCommand):
         )
     )
 
-    return workload_source_result
+    return result
+
+  def CheckArgs(self, args):
+    if not args.single_attribute_selectors:
+      raise gcloud_exceptions.OneOfArgumentsRequiredException(
+          ['--single-attribute-selectors'],
+          'Must provide at least one selector that will match workload(s) '
+          'from the source.',
+      )

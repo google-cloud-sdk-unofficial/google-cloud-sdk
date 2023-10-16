@@ -100,6 +100,7 @@ def _AddMutuallyExclusiveArgs(mutex_group, release_track):
                     api_adapter.GCEPDCSIDRIVER: _ParseAddonDisabled,
                     api_adapter.GCPFILESTORECSIDRIVER: _ParseAddonDisabled,
                     api_adapter.GCSFUSECSIDRIVER: _ParseAddonDisabled,
+                    api_adapter.STATEFULHA: _ParseAddonDisabled,
                     api_adapter.CONFIGCONNECTOR: _ParseAddonDisabled,
                 },
                 **{k: _ParseAddonDisabled for k in api_adapter.CLOUDRUN_ADDONS
@@ -152,6 +153,7 @@ def _AddMutuallyExclusiveArgs(mutex_group, release_track):
                     api_adapter.GCEPDCSIDRIVER: _ParseAddonDisabled,
                     api_adapter.GCPFILESTORECSIDRIVER: _ParseAddonDisabled,
                     api_adapter.GCSFUSECSIDRIVER: _ParseAddonDisabled,
+                    api_adapter.STATEFULHA: _ParseAddonDisabled,
                     api_adapter.CONFIGCONNECTOR: _ParseAddonDisabled,
                 },
                 **{k: _ParseAddonDisabled for k in api_adapter.CLOUDRUN_ADDONS
@@ -201,6 +203,7 @@ def _AddMutuallyExclusiveArgs(mutex_group, release_track):
                     api_adapter.GCEPDCSIDRIVER: _ParseAddonDisabled,
                     api_adapter.GCPFILESTORECSIDRIVER: _ParseAddonDisabled,
                     api_adapter.GCSFUSECSIDRIVER: _ParseAddonDisabled,
+                    api_adapter.STATEFULHA: _ParseAddonDisabled,
                 },
                 **{k: _ParseAddonDisabled for k in api_adapter.CLOUDRUN_ADDONS
                   }),),

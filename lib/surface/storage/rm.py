@@ -18,11 +18,15 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+import collections
+
 from googlecloudsdk.api_lib.storage import cloud_api
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.storage import flags
+from googlecloudsdk.command_lib.storage import folder_util
 from googlecloudsdk.command_lib.storage import name_expansion
 from googlecloudsdk.command_lib.storage import plurality_checkable_iterator
+from googlecloudsdk.command_lib.storage import rm_command_util
 from googlecloudsdk.command_lib.storage import stdin_iterator
 from googlecloudsdk.command_lib.storage import user_request_args_factory
 from googlecloudsdk.command_lib.storage.tasks import task_executor
@@ -91,11 +95,17 @@ class Rm(base.Command):
         '-R',
         '-r',
         action='store_true',
-        help=('Recursively delete the contents of buckets or directories that'
-              ' match the path expression. If the path is set to a bucket, like'
-              ' ``gs://bucket\'\', the bucket is also deleted. This option'
-              ' implies the `--all-versions` option. If you want to delete only'
-              ' live object versions, use the ``**\'\' wildcard instead.'))
+        help=(
+            'Recursively delete the contents of buckets or directories that'
+            ' match the path expression.'
+            # TODO(b/301935143): Uncomment the following line:
+            # ' By default, this will delete managed folders as well.
+            ' If the path is set to a bucket, like'
+            " ``gs://bucket'', the bucket is also deleted. This option"
+            ' implies the `--all-versions` option. If you want to delete only'
+            " live object versions, use the ``**'' wildcard instead."
+        ),
+    )
     parser.add_argument(
         '--all-versions',
         '-a',
@@ -103,25 +113,41 @@ class Rm(base.Command):
         help='Delete all'
         ' [versions](https://cloud.google.com/storage/docs/object-versioning)'
         ' of an object.')
+    parser.add_argument(
+        '--exclude-managed-folders',
+        action='store_true',
+        default=False,
+        hidden=True,
+        help=(
+            'Excludes managed folders from command operations. By default'
+            ' gcloud storage includes managed folders in recursive removals.'
+        ),
+    )
 
     flags.add_additional_headers_flag(parser)
-    flags.add_precondition_flags(parser)
     flags.add_continue_on_error_flag(parser)
+    flags.add_precondition_flags(parser)
     flags.add_read_paths_from_stdin_flag(parser)
 
   def Run(self, args):
     if args.recursive:
       bucket_setting = name_expansion.BucketSetting.YES
+      object_state = cloud_api.ObjectState.LIVE_AND_NONCURRENT
       recursion_setting = name_expansion.RecursionSetting.YES
     else:
       bucket_setting = name_expansion.BucketSetting.NO
+      object_state = flags.get_object_state_from_flags(args)
       recursion_setting = name_expansion.RecursionSetting.NO_WITH_WARNING
+
+    url_found_match_tracker = collections.OrderedDict()
     name_expansion_iterator = name_expansion.NameExpansionIterator(
         stdin_iterator.get_urls_iterable(args.urls, args.read_paths_from_stdin),
-        all_versions=args.all_versions or args.recursive,
         fields_scope=cloud_api.FieldsScope.SHORT,
         include_buckets=bucket_setting,
+        managed_folder_setting=folder_util.ManagedFolderSetting.DO_NOT_LIST,
+        object_state=object_state,
         recursion_requested=recursion_setting,
+        url_found_match_tracker=url_found_match_tracker,
     )
 
     user_request_args = (
@@ -139,24 +165,47 @@ class Rm(base.Command):
         parallelizable=True,
         task_status_queue=task_status_queue,
         progress_manager_args=task_status.ProgressManagerArgs(
-            increment_type=task_status.IncrementType.INTEGER,
-            manifest_path=None),
-        continue_on_error=args.continue_on_error)
+            increment_type=task_status.IncrementType.INTEGER, manifest_path=None
+        ),
+        continue_on_error=args.continue_on_error,
+    )
+
+    if args.recursive and not args.exclude_managed_folders:
+      managed_folder_expansion_iterator = name_expansion.NameExpansionIterator(
+          args.urls,
+          managed_folder_setting=folder_util.ManagedFolderSetting.LIST_WITHOUT_OBJECTS,
+          raise_error_for_unmatched_urls=False,
+          recursion_requested=name_expansion.RecursionSetting.YES,
+          url_found_match_tracker=url_found_match_tracker,
+      )
+      managed_folder_exit_code = rm_command_util.remove_managed_folders(
+          args,
+          managed_folder_expansion_iterator,
+          task_status_queue,
+          verbose=True,
+      )
+    else:
+      managed_folder_exit_code = 0
 
     bucket_iterator = plurality_checkable_iterator.PluralityCheckableIterator(
         task_iterator_factory.bucket_iterator())
 
     # We perform the is_empty check to avoid printing unneccesary status lines.
     if args.recursive and not bucket_iterator.is_empty():
-      log.status.Print('Removing Buckets:')
+      log.status.Print('Removing buckets:')
       bucket_exit_code = task_executor.execute_tasks(
           bucket_iterator,
           parallelizable=True,
           task_status_queue=task_status_queue,
           progress_manager_args=task_status.ProgressManagerArgs(
               increment_type=task_status.IncrementType.INTEGER,
-              manifest_path=None),
-          continue_on_error=args.continue_on_error)
+              manifest_path=None,
+          ),
+          continue_on_error=args.continue_on_error,
+      )
     else:
       bucket_exit_code = 0
-    self.exit_code = max(object_exit_code, bucket_exit_code)
+
+    self.exit_code = max(
+        object_exit_code, managed_folder_exit_code, bucket_exit_code
+    )

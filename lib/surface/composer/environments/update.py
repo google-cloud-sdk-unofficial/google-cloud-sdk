@@ -53,7 +53,6 @@ class Update(base.Command):
   detailed_help = DETAILED_HELP
   _support_autoscaling = True
   _support_composer3flags = False
-  _support_triggerer = False
   _support_maintenance_window = True
   _support_environment_size = True
   _support_airflow_database_retention = False
@@ -171,8 +170,7 @@ class Update(base.Command):
           or args.web_server_storage
           or args.min_workers
           or args.max_workers
-          or self._support_triggerer
-          and (
+          or (
               args.enable_triggerer
               or args.disable_triggerer
               or args.triggerer_count is not None
@@ -259,9 +257,8 @@ class Update(base.Command):
         params['max_workers'] = args.max_workers
 
     self._addScheduledSnapshotFields(params, args, is_composer_v1)
+    self._addTriggererFields(params, args, env_obj)
 
-    if self._support_triggerer:
-      self._addTriggererFields(params, args, env_obj)
     if self._support_maintenance_window:
       params['maintenance_window_start'] = args.maintenance_window_start
       params['maintenance_window_end'] = args.maintenance_window_end
@@ -476,7 +473,6 @@ class UpdateBeta(Update):
 
   _support_autoscaling = True
   _support_composer3flags = True
-  _support_triggerer = True
   _support_maintenance_window = True
   _support_environment_size = True
   _support_cloud_data_lineage_integration = True
@@ -542,7 +538,6 @@ class UpdateAlpha(UpdateBeta):
   """Update properties of a Cloud Composer environment."""
 
   _support_autoscaling = True
-  _support_triggerer = True
   _support_airflow_database_retention = True
 
   @staticmethod

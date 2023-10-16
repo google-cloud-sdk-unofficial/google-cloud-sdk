@@ -1,5 +1,4 @@
 - release_tracks: [ALPHA]
-  hidden: true
   help_text:
     brief: List all WasmPluginVersions for a WasmPlugin.
     description: |

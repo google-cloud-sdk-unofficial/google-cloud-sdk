@@ -29,7 +29,7 @@
       is_positional: true
       required: true
       help_text: |
-        Relative resource name of the posture-deployment, like organizations/<organizationID>/locations/<location>/postureDeployments/<postureDeploymentID>.
+        Relative resource name of the posture deployment, like `organizations/<organizationID>/locations/<location>/postureDeployments/<postureDeploymentID>`.
 
     - group:
         params:
@@ -37,7 +37,7 @@
           api_field: postureDeployment.postureId
           required: true
           help_text: |
-            Relative name of the posture to be updated, like organizations/<organizationID>/locations/<location>/postures/<postureID>.
+            Relative name of the posture to be updated, like `organizations/<organizationID>/locations/<location>/postures/<postureID>`.
         - arg_name: posture-revision-id
           api_field: postureDeployment.postureRevisionId
           required: true

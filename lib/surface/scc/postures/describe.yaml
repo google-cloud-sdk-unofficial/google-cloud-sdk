@@ -4,9 +4,9 @@
     description: |
       Describe a Cloud Security Command Center (SCC) posture.
 
-      By default, the latest created revision of the posture is described. Users must provide revision ID to describe a specific revision.
+      By default, the latest updated revision of the posture is described. Users must provide revision ID to describe a specific revision.
     examples: |
-      Describe the latest revision of a posture named `organizations/123/locations/global/postures/posture-foo-1` (i.e. a posture in organization `123`, location `global`, with id `posture-foo-1`):
+      Describe the latest updated revision of a posture named `organizations/123/locations/global/postures/posture-foo-1` (i.e. a posture in organization `123`, location `global`, with id `posture-foo-1`):
 
         $ {command} organizations/123/locations/global/postures/posture-foo-1
 

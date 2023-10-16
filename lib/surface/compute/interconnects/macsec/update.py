@@ -43,7 +43,9 @@ DETAILED_HELP = {
 }
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
+)
 class Update(base.UpdateCommand):
   """Update a Compute Engine interconnect MACsec configuration.
 
@@ -75,7 +77,7 @@ class Update(base.UpdateCommand):
       macsec = interconnect.Describe().macsec
       macsec.failOpen = args.fail_open
 
-    return interconnect.PatchAlphaBeta(
+    return interconnect.Patch(
         description=None,
         interconnect_type=None,
         requested_link_count=None,

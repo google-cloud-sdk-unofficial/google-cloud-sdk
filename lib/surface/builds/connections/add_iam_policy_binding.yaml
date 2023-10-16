@@ -1,5 +1,4 @@
-- release_tracks: [ALPHA, BETA, GA]
-  help_text:
+- help_text:
     brief: Add IAM policy binding to a Cloud Build connection.
     description: |
       Add IAM policy binding to a Cloud Build connection.

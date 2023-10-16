@@ -70,7 +70,7 @@ class Describe(base.DescribeCommand):
       client.VerifyLocation()
       resource = client.GetIntegrationGeneric(name)
       latest_deployment = client.GetLatestDeployment(resource)
-      resource_status = client.GetIntegrationStatus(name)
+      resource_status = client.GetIntegrationStatus(resource.id)
       metadata = types_utils.GetTypeMetadataFromResource(resource)
 
       return fb.Record(

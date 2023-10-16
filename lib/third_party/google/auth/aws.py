@@ -39,14 +39,13 @@ via the GCP STS endpoint.
 
 import hashlib
 import hmac
+import http.client as http_client
 import json
 import os
 import posixpath
 import re
-
-from six.moves import http_client
-from six.moves import urllib
-from six.moves.urllib.parse import urljoin
+import urllib
+from urllib.parse import urljoin
 
 from google.auth import _helpers
 from google.auth import environment_vars
@@ -741,6 +740,11 @@ class Credentials(external_account.Credentials):
             return True
 
         return False
+
+    def _create_default_metrics_options(self):
+        metrics_options = super(Credentials, self)._create_default_metrics_options()
+        metrics_options["source"] = "aws"
+        return metrics_options
 
     @classmethod
     def from_info(cls, info, **kwargs):

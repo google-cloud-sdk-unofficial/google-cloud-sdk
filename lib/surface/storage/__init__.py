@@ -56,3 +56,6 @@ class Storage(base.Group):
     # See b/258687686#comment5 for more information.
     base.DisableUserProjectQuota()
     del context, args
+
+    # Enable self signed jwt for alpha track
+    self.EnableSelfSignedJwtForTracks([base.ReleaseTrack.ALPHA])

@@ -49,7 +49,7 @@ class MutateDeployedIndexV1(base.Command):
   def Args(parser):
     flags.AddIndexEndpointResourceArg(parser, 'ID of the index endpoint.')
     flags.GetDeployedIndexId().AddToParser(parser)
-    flags.AddDeploymentResourcesArgs(parser, 'deployed index')
+    flags.AddMutateDeploymentResourcesArgs(parser, 'deployed index')
     flags.AddReservedIpRangesArgs(parser, 'deployed index')
 
   def _Run(self, args, version):

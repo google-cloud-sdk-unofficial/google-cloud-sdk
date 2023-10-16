@@ -127,14 +127,17 @@ def _SourceArgs(parser, source_instant_snapshot_enabled=False):
   disks_flags.AddLocationHintArg(parser)
 
 
-def _CommonArgs(messages,
-                parser,
-                include_physical_block_size_support=False,
-                vss_erase_enabled=False,
-                source_instant_snapshot_enabled=False,
-                support_pd_interface=False,
-                support_user_licenses=False,
-                support_storage_pool=False):
+def _CommonArgs(
+    messages,
+    parser,
+    include_physical_block_size_support=False,
+    vss_erase_enabled=False,
+    source_instant_snapshot_enabled=False,
+    support_pd_interface=False,
+    support_user_licenses=False,
+    support_storage_pool=False,
+    support_access_mode=False,
+):
   """Add arguments used for parsing in all command tracks."""
   Create.disks_arg.AddArgument(parser, operation_type='create')
   parser.add_argument(
@@ -199,6 +202,9 @@ def _CommonArgs(messages,
 
   if support_storage_pool:
     disks_flags.STORAGE_POOL_ARG.AddArgument(parser)
+
+  if support_access_mode:
+    disks_flags.AddAccessModeFlag(parser, messages)
 
   if support_user_licenses:
     parser.add_argument(
@@ -486,6 +492,7 @@ class Create(base.Command):
       support_user_licenses=False,
       support_enable_confidential_compute=False,
       support_storage_pool=False,
+      support_access_mode=False,
   ):
     compute_holder = self._GetApiHolder()
     client = compute_holder.client
@@ -629,6 +636,9 @@ class Create(base.Command):
       if args.IsSpecified('architecture'):
         disk.architecture = disk.ArchitectureValueValuesEnum(args.architecture)
 
+      if support_access_mode and args.IsSpecified('access_mode'):
+        disk.accessMode = disk.AccessModeValueValuesEnum(args.access_mode)
+
       if support_user_licenses and args.IsSpecified('user_licenses'):
         disk.userLicenses = args.user_licenses
 
@@ -720,7 +730,9 @@ class CreateAlpha(CreateBeta):
         source_instant_snapshot_enabled=True,
         support_pd_interface=True,
         support_user_licenses=True,
-        support_storage_pool=True)
+        support_storage_pool=True,
+        support_access_mode=True,
+    )
     image_utils.AddGuestOsFeaturesArg(parser, messages)
     _AddReplicaZonesArg(parser)
     kms_resource_args.AddKmsKeyResourceArg(
@@ -739,6 +751,7 @@ class CreateAlpha(CreateBeta):
         support_user_licenses=True,
         support_enable_confidential_compute=True,
         support_storage_pool=True,
+        support_access_mode=True,
     )
 
 

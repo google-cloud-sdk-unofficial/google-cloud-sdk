@@ -22,7 +22,6 @@ from googlecloudsdk.calliope import base
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
-@base.Hidden
 class ServiceExtensions(base.Group):
   """Manage Service Extensions resources."""
   category = base.NETWORKING_CATEGORY

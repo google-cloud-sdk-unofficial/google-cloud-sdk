@@ -39,3 +39,4 @@
     - api_field: undeleteOauthClientRequest.validateOnly
       arg_name: validate-only
       help_text: When set, validates the undeletion but does not actually undelete the OAuth client.
+      hidden: true

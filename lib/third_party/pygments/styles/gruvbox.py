@@ -5,7 +5,7 @@
     pygments version of the "gruvbox" vim theme.
     https://github.com/morhetz/gruvbox
 
-    :copyright: Copyright 2006-2022 by the Pygments team, see AUTHORS.
+    :copyright: Copyright 2006-2023 by the Pygments team, see AUTHORS.
     :license: BSD, see LICENSE for details.
 """
 
@@ -55,6 +55,7 @@ class GruvboxDarkStyle(Style):
         Generic.Error:      '#fb4934',
         Generic.Emph:       'italic',
         Generic.Strong:     'bold',
+        Generic.EmphStrong: 'bold italic',
         Generic.Prompt:     '#a89984',
         Generic.Output:     '#f2e5bc',
         Generic.Traceback:  '#fb4934',

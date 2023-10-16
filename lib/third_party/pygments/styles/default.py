@@ -4,7 +4,7 @@
 
     The default highlighting style.
 
-    :copyright: Copyright 2006-2022 by the Pygments team, see AUTHORS.
+    :copyright: Copyright 2006-2023 by the Pygments team, see AUTHORS.
     :license: BSD, see LICENSE for details.
 """
 
@@ -19,7 +19,6 @@ class DefaultStyle(Style):
     """
 
     background_color = "#f8f8f8"
-    default_style = ""
 
     styles = {
         Whitespace:                "#bbbbbb",
@@ -64,6 +63,7 @@ class DefaultStyle(Style):
         Generic.Error:             "#E40000",
         Generic.Emph:              "italic",
         Generic.Strong:            "bold",
+        Generic.EmphStrong:        "bold italic",
         Generic.Prompt:            "bold #000080",
         Generic.Output:            "#717171",
         Generic.Traceback:         "#04D",

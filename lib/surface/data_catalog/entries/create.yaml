@@ -48,6 +48,9 @@
     - !REF googlecloudsdk.command_lib.data_catalog.entries.v1_flags:display_name
     - !REF googlecloudsdk.command_lib.data_catalog.entries.v1_flags:description
     - group:
+        params:
+        - !REF googlecloudsdk.command_lib.data_catalog.entries.v1_flags:fully_qualified_name
+    - group:
         mutex: true
         required: true
         help_text: |

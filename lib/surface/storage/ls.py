@@ -25,6 +25,7 @@ from googlecloudsdk.command_lib.storage import encryption_util
 from googlecloudsdk.command_lib.storage import errors
 from googlecloudsdk.command_lib.storage import flags
 from googlecloudsdk.command_lib.storage import ls_command_util
+from googlecloudsdk.command_lib.storage import stdin_iterator
 from googlecloudsdk.command_lib.storage import storage_url
 from googlecloudsdk.core import log
 
@@ -102,13 +103,16 @@ class Ls(base.Command):
         help='The path of objects and directories to list. The path must begin'
              ' with gs:// and is allowed to contain wildcard characters.')
     parser.add_argument(
-        '-a', '--all-versions',
+        '-a',
+        '--all-versions',
         action='store_true',
-        help='Include non-current object versions in the listing. This flag is'
-        ' typically only useful for buckets with'
-        ' [object versioning](https://cloud.google.com/storage/docs/object-versioning)'
-        ' enabled. If combined with the `--long` option, the metageneration'
-        ' for each listed object is also included.'
+        help=(
+            'Include noncurrent object versions in the listing. This flag is'
+            ' typically only useful for buckets with [object'
+            ' versioning](https://cloud.google.com/storage/docs/object-versioning)'
+            ' enabled. If combined with the `--long` option, the metageneration'
+            ' for each listed object is also included.'
+        ),
     )
     parser.add_argument(
         '-b',
@@ -161,6 +165,7 @@ class Ls(base.Command):
     flags.add_additional_headers_flag(parser)
     flags.add_encryption_flags(parser, command_only_reads_data=True)
     flags.add_fetch_encrypted_object_hashes_flag(parser, is_list=True)
+    flags.add_read_paths_from_stdin_flag(parser)
 
     if cls.ReleaseTrack() == base.ReleaseTrack.ALPHA:
       flags.add_soft_delete_flags(parser)
@@ -172,17 +177,21 @@ class Ls(base.Command):
     use_gsutil_style = flags.check_if_use_gsutil_style(args)
 
     found_non_default_provider = False
-    if args.path:
-      storage_urls = [storage_url.storage_url_from_string(path)
-                      for path in args.path]
-      for url in storage_urls:
-        if not isinstance(url, storage_url.CloudUrl):
-          raise errors.InvalidUrlError('Ls only works for cloud URLs.'
-                                       ' Error for: {}'.format(url.url_string))
-        if url.scheme is not cloud_api.DEFAULT_PROVIDER:
-          found_non_default_provider = True
+    if args.path or args.read_paths_from_stdin:
+      paths = stdin_iterator.get_urls_iterable(
+          args.path, args.read_paths_from_stdin, allow_empty=True
+      )
     else:
-      storage_urls = [storage_url.CloudUrl(cloud_api.DEFAULT_PROVIDER)]
+      paths = [cloud_api.DEFAULT_PROVIDER.value + '://']
+
+    storage_urls = [storage_url.storage_url_from_string(path) for path in paths]
+    for url in storage_urls:
+      if not isinstance(url, storage_url.CloudUrl):
+        raise errors.InvalidUrlError(
+            'Ls only works for cloud URLs. Error for: {}'.format(url.url_string)
+        )
+      if url.scheme is not cloud_api.DEFAULT_PROVIDER:
+        found_non_default_provider = True
 
     if args.full:
       display_detail = ls_command_util.DisplayDetail.FULL
@@ -195,16 +204,15 @@ class Ls(base.Command):
 
     ls_command_util.LsExecutor(
         storage_urls,
-        all_versions=args.all_versions,
         buckets_flag=args.buckets,
         display_detail=display_detail,
         fetch_encrypted_object_hashes=args.fetch_encrypted_object_hashes,
         halt_on_empty_response=not getattr(args, 'exhaustive', False),
         include_etag=args.etag,
         next_page_token=getattr(args, 'next_page_token', None),
+        object_state=flags.get_object_state_from_flags(args),
         readable_sizes=args.readable_sizes,
         recursion_flag=args.recursive,
-        soft_deleted_only=getattr(args, 'soft_deleted', False),
         use_gsutil_style=use_gsutil_style,
     ).list_urls()
 

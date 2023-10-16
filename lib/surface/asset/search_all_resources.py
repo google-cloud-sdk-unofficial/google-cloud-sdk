@@ -109,6 +109,11 @@ def AddQueryArgument(parser):
           Compute instances that have relationships with ``instance-group-1'' in
           the Compute instance group resource name, for relationship type
           ``INSTANCE_TO_INSTANCEGROUP''.
+        * ```sccSecurityMarks.key=value``` to find Cloud resources that are
+          attached with security marks whose key is ``key'' and value is
+          ``value''.
+        * ```sccSecurityMarks.key:*``` to find Cloud resources that are attached
+          with security marks whose key is ``key''.
         * ```state:ACTIVE``` to find Cloud resources whose state contains
           ``ACTIVE'' as a word.
         * ```NOT state:ACTIVE``` to find Cloud resources whose state doesn't

@@ -65,17 +65,15 @@ flag_overrides = {
 }
 
 auto_flag_defaults = dict(
-    list(create.base_flag_defaults.items()) + list(flag_overrides.items()))
+    list(create.base_flag_defaults.items()) + list(flag_overrides.items())
+)
 
 
 def AddAutoFlags(parser, release_track):
   """Adds flags that are not same in create."""
-  flags.AddLoggingFlag(parser)
-  flags.AddMonitoringFlag(parser)
-  flags.AddBinauthzFlags(
-      parser,
-      release_track=release_track,
-      autopilot=True)
+  flags.AddLoggingFlag(parser, True)
+  flags.AddMonitoringFlag(parser, True)
+  flags.AddBinauthzFlags(parser, release_track=release_track, autopilot=True)
   flags.AddWorkloadPoliciesFlag(parser)
   flags.AddReleaseChannelFlag(parser, autopilot=True)
   flags.AddEnableBackupRestoreFlag(parser)

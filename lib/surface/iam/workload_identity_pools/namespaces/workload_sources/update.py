@@ -13,15 +13,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Command to update a workload source under a workload identity pool managed identity."""
-
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
-from apitools.base.py import exceptions
+import operator
+
 from googlecloudsdk.api_lib.iam import util
 from googlecloudsdk.api_lib.iam.workload_identity_pools import workload_sources
+from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
+from googlecloudsdk.calliope import exceptions as gcloud_exceptions
 from googlecloudsdk.calliope.concepts import concepts
 from googlecloudsdk.command_lib.iam.workload_identity_pools import flags
 from googlecloudsdk.command_lib.util.apis import yaml_data
@@ -30,34 +32,30 @@ from googlecloudsdk.core import log
 
 
 class Update(base.UpdateCommand):
-  """Update a workload identity pool managed identity workload source."""
+  """Update a workload source for a workload identity pool namespace."""
 
   detailed_help = {
       'DESCRIPTION': '{description}',
       'EXAMPLES': """\
-          The following command adds resources to a workload identity pool
-          namespace workload source in the default project with the ID
-          project-123.
+          The following command matches Compute Engine instances within the
+          Google Cloud project 123 based on their attached service account.
 
             $ {command} project-123 --location="global" \
             --workload-identity-pool="my-workload-identity-pool" \
             --namespace="my-namespace" \
-            --add-resources="resource-1","resource-2" \
-            --add-attached-service-accounts="service-account1","service-account2"
+            --single-attribute-selectors="compute.googleapis.com/Instance.attached_service_account.email='foo@bar.iam.gserviceaccount.com'"
+            --allow-identity-self-selection
 
-          The following command removes all the resources and service accounts
-          from a workload identity pool namespace workload source in the
-          default project with the ID project-123.
+          The following command stops matching Compute Engine instances within
+          the Google Cloud project 123 based on their attached service account.
 
             $ {command} project-123 --location="global" \
             --workload-identity-pool="my-workload-identity-pool" \
             --namespace="my-namespace" \
-            --clear-resources \
-            --clear-attached-service-accounts
+            --single-attribute-selectors="compute.googleapis.com/Instance.attached_service_account.email='foo@bar.iam.gserviceaccount.com'"
+            --no-allow-identity-self-selection
           """,
   }
-
-  upsert = False
 
   @staticmethod
   def Args(parser):
@@ -69,153 +67,57 @@ class Update(base.UpdateCommand):
         concepts.ResourceSpec.FromYaml(
             workload_source_data.GetData(), is_positional=True
         ),
-        'The workload identity pool namespace workload source to create.',
+        'The workload source to update.',
         required=True,
     ).AddToParser(parser)
-    # Flags for creating workload source
-    flags.AddUpdateWorkloadSourceFlags(parser)
+    # Flags for updating workload source
+    parser.add_argument(
+        '--single-attribute-selectors',
+        type=arg_parsers.ArgList(),
+        help=(
+            'An attribute that a workload can attest for it to be allow to '
+            'receive a managed identity.'
+        ),
+        metavar='SINGLE_ATTRIBUTE_SELECTORS',
+    )
+    parser.add_argument(
+        '--allow-identity-self-selection',
+        action=arg_parsers.StoreTrueFalseAction,
+        help=(
+            'Allows matched workloads to request any identity within the'
+            ' namespace.'
+        ),
+    )
     base.ASYNC_FLAG.AddToParser(parser)
 
   def Run(self, args):
+    self.CheckArgs(args)
+
     client, messages = util.GetClientAndMessages()
     workload_source_ref = args.CONCEPTS.workload_source.Parse()
 
-    try:
-      workload_source = client.projects_locations_workloadIdentityPools_namespaces_workloadSources.Get(
-          messages.IamProjectsLocationsWorkloadIdentityPoolsNamespacesWorkloadSourcesGetRequest(
-              name=workload_source_ref.RelativeName()
-          )
-      )
-      conditions_dict = {
-          'resources': {
-              condition.value: None
-              for condition in workload_source.conditionSet.conditions
-              if condition.attribute == 'resource'
-          },
-          'attached_service_accounts': {
-              condition.value: None
-              for condition in workload_source.conditionSet.conditions
-              if condition.attribute == 'attached_service_account'
-          },
-      }
-    # This is an upsert request if not found
-    except exceptions.HttpNotFoundError:
-      workload_source = messages.WorkloadSource()
-      conditions_dict = {'resources': {}, 'attached_service_accounts': {}}
-      self.upsert = True
-
-    self.BuildConditionsDictFromArgs(args, conditions_dict)
-
-    if self.upsert:
-      if not self.EmptyCondition(conditions_dict):
-        verb = 'Create'
-        lro_ref = self.CreateWorkloadSource(
-            client, messages, workload_source_ref, conditions_dict
-        )
-      else:
-        # Do nothing if it's an upsert but nothing to create
-        return
-    elif self.EmptyCondition(conditions_dict):
-      verb = 'Delete'
-      lro_ref = self.DeleteWorkloadSource(
-          client, messages, workload_source, workload_source_ref
-      )
-    else:
-      verb = 'Update'
-      workload_source.conditionSet = self.ToWorkloadSourceConditionSet(
-          messages, conditions_dict
-      )
-      lro_ref = self.UpdateWorkloadSource(
-          client, messages, workload_source, workload_source_ref
-      )
-
-    if args.async_:
-      return lro_ref
-
-    result = self.WaitForWorkloadSourceOperation(
-        client, lro_ref, workload_source_ref, verb
-    )
-
-    return result
-
-  def BuildConditionsDictFromArgs(self, args, conditions_dict):
-    if args.clear_resources:
-      conditions_dict['resources'] = {}
-    if args.clear_attached_service_accounts:
-      conditions_dict['attached_service_accounts'] = {}
-    if args.remove_resources:
-      for value in args.remove_resources:
-        conditions_dict['resources'].pop(value, None)
-    if args.remove_attached_service_accounts:
-      for value in args.remove_attached_service_accounts:
-        conditions_dict['attached_service_accounts'].pop(value, None)
-    if args.add_resources:
-      for value in args.add_resources:
-        conditions_dict['resources'][value] = None
-    if args.add_attached_service_accounts:
-      for value in args.add_attached_service_accounts:
-        conditions_dict['attached_service_accounts'][value] = None
-
-  def CreateWorkloadSource(
-      self, client, messages, workload_source_ref, conditions_dict
-  ):
-    lro_ref = workload_sources.CreateGcpWorkloadSource(
-        client=client,
-        messages=messages,
-        workload_source_id=workload_source_ref.workloadSourcesId,
-        resources=conditions_dict['resources'],
-        attached_service_accounts=conditions_dict['attached_service_accounts'],
-        parent=workload_source_ref.Parent().RelativeName(),
-        for_managed_identity=False,
-    )
-    log.status.Print(
-        'Create request issued for: [{}]'.format(
-            workload_source_ref.workloadSourcesId
+    # Read current workload source from storage
+    workload_source = client.projects_locations_workloadIdentityPools_namespaces_workloadSources.Get(
+        messages.IamProjectsLocationsWorkloadIdentityPoolsNamespacesWorkloadSourcesGetRequest(
+            name=workload_source_ref.RelativeName()
         )
     )
 
-    return lro_ref
-
-  def WaitForWorkloadSourceOperation(
-      self, client, lro_ref, workload_source_ref, verb: str
-  ):
-    workload_source_result = workload_sources.WaitForWorkloadSourceOperation(
-        client=client,
-        lro_ref=lro_ref,
-        for_managed_identity=False,
-        delete=True if verb == 'Delete' else False,
+    # Reconcile the list of adds and deletes
+    reconciled_identity_assignment_list = self.ReconcileIdentityAssignments(
+        args, workload_source.identityAssignments
     )
-    log.status.Print(
-        '{}d workload source [{}].'.format(
-            verb, workload_source_ref.workloadSourcesId
-        )
+    workload_source.identityAssignments.clear()
+    workload_source.identityAssignments.extend(
+        reconciled_identity_assignment_list
     )
 
-    return workload_source_result
-
-  def DeleteWorkloadSource(
-      self, client, messages, workload_source, workload_source_ref
-  ):
-    lro_ref = client.projects_locations_workloadIdentityPools_namespaces_workloadSources.Delete(
-        messages.IamProjectsLocationsWorkloadIdentityPoolsNamespacesWorkloadSourcesDeleteRequest(
-            name=workload_source.name, etag=workload_source.etag
-        )
-    )
-    log.status.Print(
-        'Delete request issued for: [{}]'.format(
-            workload_source_ref.workloadSourcesId
-        )
-    )
-    return lro_ref
-
-  def UpdateWorkloadSource(
-      self, client, messages, workload_source, workload_source_ref
-  ):
+    # Write back the updated workload source
     lro_ref = client.projects_locations_workloadIdentityPools_namespaces_workloadSources.Patch(
         messages.IamProjectsLocationsWorkloadIdentityPoolsNamespacesWorkloadSourcesPatchRequest(
             name=workload_source.name,
             workloadSource=workload_source,
-            updateMask='condition_set',
+            updateMask='identity_assignments',
         )
     )
     log.status.Print(
@@ -223,23 +125,93 @@ class Update(base.UpdateCommand):
             workload_source_ref.workloadSourcesId
         )
     )
-    return lro_ref
 
-  def EmptyCondition(self, conditions_dict):
-    return not bool(conditions_dict['resources']) and not bool(
-        conditions_dict['attached_service_accounts']
+    if args.async_:
+      return lro_ref
+
+    # Wait for the LRO to complete.
+    result = workload_sources.WaitForWorkloadSourceOperation(
+        client=client,
+        lro_ref=lro_ref,
+    )
+    log.status.Print(
+        'Updated workload source [{}].'.format(
+            workload_source_ref.workloadSourcesId
+        )
     )
 
-  def ToWorkloadSourceConditionSet(self, messages, conditions_dict):
-    conditions = []
-    for value in conditions_dict['resources']:
-      conditions.append(
-          messages.WorkloadSourceCondition(attribute='resource', value=value)
+    return result
+
+  def CheckArgs(self, args):
+    if not args.single_attribute_selectors:
+      raise gcloud_exceptions.OneOfArgumentsRequiredException(
+          ['--single-attribute-selectors'],
+          'Must provide at least one selector that will match workload(s)'
+          ' from the source.',
       )
-    for value in conditions_dict['attached_service_accounts']:
-      conditions.append(
-          messages.WorkloadSourceCondition(
-              attribute='attached_service_account', value=value
+    if args.allow_identity_self_selection is None:
+      raise gcloud_exceptions.OneOfArgumentsRequiredException(
+          ['--[no-]allow-identity-self-selection'],
+          'Must add or remove at least one identity assignment.',
+      )
+
+  def ReconcileIdentityAssignments(self, args, original_identity_assignments):
+    """Reconciles the identity assignment changes with the original list."""
+    _, messages = util.GetClientAndMessages()
+    updated_selectors = set()
+
+    # Add all existing selectors
+    for identity_assignment in original_identity_assignments:
+      updated_selectors.update(
+          map(
+              self.ToHashableSelector,
+              identity_assignment.singleAttributeSelectors,
           )
       )
-    return messages.WorkloadSourceConditionSet(conditions=conditions)
+
+    if args.allow_identity_self_selection is not None:
+      hashable_selectors = set(
+          map(
+              self.ToHashableSelector,
+              flags.ParseSingleAttributeSelectorArg(
+                  '--single-attribute-selectors',
+                  args.single_attribute_selectors,
+              ),
+          )
+      )
+      # Add single attribute selectors
+      if args.allow_identity_self_selection:
+        updated_selectors |= hashable_selectors
+      # Remove single attribute selectors
+      else:
+        updated_selectors -= hashable_selectors
+
+    if updated_selectors == set():
+      return []
+
+    # Convert to proto and return
+    identity_assignment_proto = messages.IdentityAssignment()
+    identity_assignment_proto.singleAttributeSelectors.extend(
+        sorted(
+            list(map(self.ToProtoSelector, updated_selectors)),
+            # Sort results to guarantee stable results across platforms and
+            # versions
+            key=operator.attrgetter('attribute', 'value'),
+        )
+    )
+    # The only values left in updated_selectors are ones where
+    # allow_identity_self_selection is true.
+    identity_assignment_proto.allowIdentitySelfSelection = True
+    return [identity_assignment_proto]
+
+  def ToHashableSelector(self, proto_selector):
+    """Converts the given SingleAttributeSelector proto into a hashable type."""
+    return tuple([proto_selector.attribute, proto_selector.value])
+
+  def ToProtoSelector(self, hashable_selector):
+    """Converts the given hashable SingleAttributeSelector into a proto."""
+    _, messages = util.GetClientAndMessages()
+    return messages.SingleAttributeSelector(
+        attribute=hashable_selector[0],
+        value=hashable_selector[1],
+    )

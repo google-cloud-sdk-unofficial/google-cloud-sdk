@@ -114,6 +114,7 @@ class CreateGA(base.CreateCommand):
     igm_arg.AddArgument(parser, operation_type='create')
     instance_groups_flags.AddZonesFlag(parser)
     instance_groups_flags.AddMigCreateStatefulFlags(parser)
+    instance_groups_flags.AddMigCreateStatefulIPsFlags(parser)
     managed_flags.AddMigInstanceRedistributionTypeFlag(parser)
     managed_flags.AddMigDistributionPolicyTargetShapeFlag(parser)
     managed_flags.AddMigListManagedInstancesResultsFlag(parser)
@@ -125,19 +126,58 @@ class CreateGA(base.CreateCommand):
   def _HandleStatefulArgs(self, instance_group_manager, args, client):
     instance_groups_flags.ValidateManagedInstanceGroupStatefulDisksProperties(
         args)
-    if args.stateful_disk:
+    instance_groups_flags.ValidateManagedInstanceGroupStatefulIPsProperties(
+        args
+    )
+    if (
+        args.stateful_disk
+        or args.stateful_internal_ip
+        or args.stateful_external_ip
+    ):
       instance_group_manager.statefulPolicy = (
           self._CreateStatefulPolicy(args, client))
 
   def _CreateStatefulPolicy(self, args, client):
-    """Create stateful policy from disks of args --stateful-disk."""
+    """Create stateful policy from disks of args --stateful-disk, and ips of args --stateful-external-ips and --stateful-internal-ips."""
     stateful_disks = []
     for stateful_disk_dict in (args.stateful_disk or []):
       stateful_disks.append(
           policy_utils.MakeStatefulPolicyPreservedStateDiskEntry(
               client.messages, stateful_disk_dict))
     stateful_disks.sort(key=lambda x: x.key)
-    return policy_utils.MakeStatefulPolicy(client.messages, stateful_disks)
+    stateful_policy = policy_utils.MakeStatefulPolicy(
+        client.messages, stateful_disks
+    )
+
+    stateful_internal_ips = []
+    for stateful_ip_dict in args.stateful_internal_ip or []:
+      stateful_internal_ips.append(
+          policy_utils.MakeStatefulPolicyPreservedStateInternalIPEntry(
+              client.messages, stateful_ip_dict
+          )
+      )
+    stateful_internal_ips.sort(key=lambda x: x.key)
+    stateful_policy.preservedState.internalIPs = (
+        client.messages.StatefulPolicyPreservedState.InternalIPsValue(
+            additionalProperties=stateful_internal_ips
+        )
+    )
+
+    stateful_external_ips = []
+    for stateful_ip_dict in args.stateful_external_ip or []:
+      stateful_external_ips.append(
+          policy_utils.MakeStatefulPolicyPreservedStateExternalIPEntry(
+              client.messages, stateful_ip_dict
+          )
+      )
+    stateful_external_ips.sort(key=lambda x: x.key)
+    stateful_policy.preservedState.externalIPs = (
+        client.messages.StatefulPolicyPreservedState.ExternalIPsValue(
+            additionalProperties=stateful_external_ips
+        )
+    )
+
+    return stateful_policy
 
   def _CreateGroupReference(self, args, client, resources):
     if args.zones:
@@ -370,7 +410,6 @@ class CreateBeta(CreateGA):
   @classmethod
   def Args(cls, parser):
     super(CreateBeta, cls).Args(parser)
-    instance_groups_flags.AddMigCreateStatefulIPsFlags(parser)
 
   def _CreateInstanceGroupManager(self, args, group_ref, template_ref, client,
                                   holder):
@@ -379,40 +418,6 @@ class CreateBeta(CreateGA):
                                        args, group_ref, template_ref, client,
                                        holder)
     return instance_group_manager
-
-  def _HandleStatefulArgs(self, instance_group_manager, args, client):
-    instance_groups_flags.ValidateManagedInstanceGroupStatefulDisksProperties(
-        args)
-    instance_groups_flags.ValidateManagedInstanceGroupStatefulIPsProperties(
-        args)
-    if args.stateful_disk or args.stateful_internal_ip or args.stateful_external_ip:
-      instance_group_manager.statefulPolicy = (
-          self._CreateStatefulPolicy(args, client))
-
-  def _CreateStatefulPolicy(self, args, client):
-    stateful_policy = super(CreateBeta,
-                            self)._CreateStatefulPolicy(args, client)
-    stateful_internal_ips = []
-    for stateful_ip_dict in args.stateful_internal_ip or []:
-      stateful_internal_ips.append(
-          policy_utils.MakeStatefulPolicyPreservedStateInternalIPEntry(
-              client.messages, stateful_ip_dict))
-    stateful_internal_ips.sort(key=lambda x: x.key)
-    stateful_policy.preservedState.internalIPs = (
-        client.messages.StatefulPolicyPreservedState.InternalIPsValue(
-            additionalProperties=stateful_internal_ips))
-
-    stateful_external_ips = []
-    for stateful_ip_dict in args.stateful_external_ip or []:
-      stateful_external_ips.append(
-          policy_utils.MakeStatefulPolicyPreservedStateExternalIPEntry(
-              client.messages, stateful_ip_dict))
-    stateful_external_ips.sort(key=lambda x: x.key)
-    stateful_policy.preservedState.externalIPs = (
-        client.messages.StatefulPolicyPreservedState.ExternalIPsValue(
-            additionalProperties=stateful_external_ips))
-
-    return stateful_policy
 
 
 CreateBeta.detailed_help = CreateGA.detailed_help

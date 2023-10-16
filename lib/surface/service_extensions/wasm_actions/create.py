@@ -68,7 +68,6 @@ def _ConvertStringSupportedEventToEnum(messages, supported_event):
                  uppercase_event)
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Create(base.CreateCommand):
   """Create a WasmAction."""

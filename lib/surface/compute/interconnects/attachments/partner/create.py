@@ -48,6 +48,7 @@ class Create(base.CreateCommand):
   INTERCONNECT_ATTACHMENT_ARG = None
   INTERCONNECT_ARG = None
   ROUTER_ARG = None
+  _support_partner_ipv6 = False
 
   @classmethod
   def Args(cls, parser):
@@ -98,7 +99,7 @@ class Create(base.CreateCommand):
 
     admin_enabled = attachment_flags.GetAdminEnabledFlag(args)
 
-    attachment = interconnect_attachment.CreateAlpha(
+    attachment = interconnect_attachment.Create(
         description=args.description,
         router=router_ref,
         attachment_type='PARTNER',
@@ -107,7 +108,9 @@ class Create(base.CreateCommand):
         validate_only=getattr(args, 'dry_run', None),
         mtu=getattr(args, 'mtu', None),
         encryption=getattr(args, 'encryption', None),
-        ipsec_internal_addresses=ipsec_internal_addresses_urls)
+        ipsec_internal_addresses=ipsec_internal_addresses_urls,
+        stack_type=getattr(args, 'stack_type', None),
+    )
     self._pairing_key = attachment.pairingKey
     return attachment
 
@@ -123,8 +126,10 @@ class CreateAlpha(Create):
   interconnect attachment binds the underlying connectivity of a provider's
   Interconnect to a path into and out of the customer's cloud network.
   """
+  _support_partner_ipv6 = True
 
   @classmethod
   def Args(cls, parser):
     super(CreateAlpha, cls).Args(parser)
     attachment_flags.AddDryRun(parser)
+    attachment_flags.AddStackType(parser)

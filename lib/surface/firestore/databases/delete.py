@@ -72,12 +72,3 @@ class DeleteDatabase(base.Command):
         ),
         type=str,
     )
-    parser.add_argument(
-        '--allow-missing',
-        help=(
-            'If set and the Database is not found, the request will succeed but'
-            ' no action will be taken.'
-        ),
-        action='store_true',
-        default=False,
-    )

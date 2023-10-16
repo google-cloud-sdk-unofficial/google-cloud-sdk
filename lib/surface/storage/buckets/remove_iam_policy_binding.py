@@ -24,6 +24,7 @@ from googlecloudsdk.command_lib.iam import iam_util
 from googlecloudsdk.command_lib.storage import errors_util
 from googlecloudsdk.command_lib.storage import iam_command_util
 from googlecloudsdk.command_lib.storage import storage_url
+from googlecloudsdk.command_lib.storage.tasks import set_iam_policy_task
 
 
 class RemoveIamPolicyBinding(base.Command):
@@ -59,4 +60,5 @@ class RemoveIamPolicyBinding(base.Command):
     policy = client.get_bucket_iam_policy(url_object.bucket_name)
 
     return iam_command_util.remove_iam_binding_from_resource(
-        args, url_object, policy)
+        args, url_object, policy, set_iam_policy_task.SetBucketIamPolicyTask
+    )

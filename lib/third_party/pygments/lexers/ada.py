@@ -4,22 +4,17 @@
 
     Lexers for Ada family languages.
 
-    :copyright: Copyright 2006-2022 by the Pygments team, see AUTHORS.
+    :copyright: Copyright 2006-2023 by the Pygments team, see AUTHORS.
     :license: BSD, see LICENSE for details.
 """
 
 import re
 
-from pygments.lexer import Lexer, RegexLexer, include, bygroups, words, \
-    using, this, default
-from pygments.util import get_bool_opt, get_list_opt
+from pygments.lexer import RegexLexer, include, bygroups, words, using, this, \
+    default
 from pygments.token import Text, Comment, Operator, Keyword, Name, String, \
-    Number, Punctuation, Error
-from pygments.scanner import Scanner
+    Number, Punctuation
 from pygments.lexers._ada_builtins import KEYWORD_LIST, BUILTIN_LIST
-
-# compatibility import
-from pygments.lexers.modula2 import Modula2Lexer
 
 __all__ = ['AdaLexer']
 
@@ -73,7 +68,7 @@ class AdaLexer(RegexLexer):
             include('numbers'),
             (r"'[^']'", String.Character),
             (r'(\w+)(\s*|[(,])', bygroups(Name, using(this))),
-            (r"(<>|=>|:=|[()|:;,.'])", Punctuation),
+            (r"(<>|=>|:=|@|[\[\]]|[()|:;,.'])", Punctuation),
             (r'[*<>+=/&-]', Operator),
             (r'\n+', Text),
         ],
@@ -101,6 +96,7 @@ class AdaLexer(RegexLexer):
         'type_def': [
             (r';', Punctuation, '#pop'),
             (r'\(', Punctuation, 'formal_part'),
+            (r'\[', Punctuation, 'formal_part'),
             (r'with|and|use', Keyword.Reserved),
             (r'array\b', Keyword.Reserved, ('#pop', 'array_def')),
             (r'record\b', Keyword.Reserved, ('record_def')),
@@ -117,11 +113,14 @@ class AdaLexer(RegexLexer):
             include('root'),
         ],
         'import': [
-            (r'[\w.]+', Name.Namespace, '#pop'),
+            # TODO: use Name.Namespace if appropriate.  This needs
+            # work to disinguish imports from aspects.
+            (r'[\w.]+', Name, '#pop'),
             default('#pop'),
         ],
         'formal_part': [
             (r'\)', Punctuation, '#pop'),
+            (r'\]', Punctuation, '#pop'),
             (r'\w+', Name.Variable),
             (r',|:[^=]', Punctuation),
             (r'(in|not|null|out|access)\b', Keyword.Reserved),

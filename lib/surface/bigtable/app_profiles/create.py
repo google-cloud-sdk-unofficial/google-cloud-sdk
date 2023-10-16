@@ -126,12 +126,12 @@ class CreateAppProfileAlpha(CreateAppProfile):
     (
         arguments.ArgAdder(parser)
         .AddDescription('app profile', required=False)
-        .AddForce('create')
-        .AddRequestPriority()
         .AddAppProfileRouting(
             allow_failover_radius=True,
             allow_row_affinity=True,
         )
+        .AddIsolation()
+        .AddForce('create')
     )
 
   def _CreateAppProfile(self, app_profile_ref, args):

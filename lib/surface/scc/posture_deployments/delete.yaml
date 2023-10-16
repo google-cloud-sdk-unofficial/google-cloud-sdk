@@ -38,3 +38,6 @@
   input:
     confirmation_prompt: |
       You are about to delete a posture deployment. All policies of this posture will get removed/un-enforced.
+
+  async:
+    collection: securityposture.organizations.locations.operations

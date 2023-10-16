@@ -43,6 +43,8 @@ class Enable(base.UpdateCommand, base.EnableCommand, command.PocoCommand):
   @classmethod
   def Args(cls, parser):
     top_group = parser.add_argument_group(mutex=True)
+    flags.fleet_default_cfg_group().AddToParser(top_group)
+
     modal_group = top_group.add_argument_group(mutex=False)
     membership_group = modal_group.add_argument_group(mutex=True)
     scope_flags = flags.PocoFlags(modal_group, 'enable')
@@ -65,15 +67,24 @@ class Enable(base.UpdateCommand, base.EnableCommand, command.PocoCommand):
 
   def Run(self, args):
     parser = flags.PocoFlagParser(args, self.messages)
-    specs = self.path_specs(args, True)
-    updated_specs = {path: self.enable(s, parser) for path, s in specs.items()}
-    return self.update_specs(updated_specs)
+    if parser.is_feature_update():
+      self._configure_feature(parser)
+    else:  # Otherwise we are updating memberships.
+      specs = self.path_specs(args, True)
+      updated_specs = {p: self.enable(s, parser) for p, s in specs.items()}
+      self.update_specs(updated_specs)
+
+  def _configure_feature(self, parser):
+    default_cfg = parser.load_fleet_default_cfg()
+    if default_cfg is None:
+      # The remove case has been selected
+      self.update_fleet_default(None)
+    else:
+      self.update_fleet_default(default_cfg)
 
   def _get_hub_config(self, spec: messages.Message) -> messages.Message:
     if spec.policyControllerHubConfig is None:
-      return self.messages.PolicyControllerHubConfig(
-          installSpec=self.messages.PolicyControllerHubConfig.InstallSpecValueValuesEnum.INSTALL_SPEC_ENABLED
-      )
+      return self.messages.PolicyControllerHubConfig()
     return spec.policyControllerHubConfig
 
   def _get_policycontroller(self, spec: messages.Message) -> messages.Message:
@@ -92,7 +103,9 @@ class Enable(base.UpdateCommand, base.EnableCommand, command.PocoCommand):
     hub_cfg = parser.update_monitoring(hub_cfg)
     hub_cfg = parser.update_referential_rules(hub_cfg)
     hub_cfg = parser.update_template_library(hub_cfg)
-
+    hub_cfg.installSpec = (
+        self.messages.PolicyControllerHubConfig.InstallSpecValueValuesEnum.INSTALL_SPEC_ENABLED
+    )
     pc.policyControllerHubConfig = hub_cfg
     pc = parser.update_version(pc)
     spec.policycontroller = pc

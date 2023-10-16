@@ -34,8 +34,6 @@ Those steps are:
 
 import sys
 
-from six.moves import range
-
 from google.auth import exceptions
 from google.auth import metrics
 from google.oauth2 import _client
@@ -334,6 +332,10 @@ def refresh_grant(
     response_status_ok, response_data, retryable_error = _client._token_endpoint_request_no_throw(
         request, token_uri, body, headers=metrics_header
     )
+
+    if not response_status_ok and isinstance(response_data, str):
+        raise exceptions.RefreshError(response_data, retryable=False)
+
     if (
         not response_status_ok
         and response_data.get("error") == _REAUTH_NEEDED_ERROR

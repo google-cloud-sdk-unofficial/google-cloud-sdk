@@ -1,5 +1,4 @@
-- release_tracks: [ALPHA, BETA, GA]
-  help_text:
+- help_text:
     brief: Delete a Cloud Build Connection
     description: Delete a Cloud Build Connection.
     examples: |

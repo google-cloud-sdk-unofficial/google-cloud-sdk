@@ -68,9 +68,9 @@ def _get_task_iterator(urls, args):
     recursion_setting = name_expansion.RecursionSetting.NO
   for name_expansion_result in name_expansion.NameExpansionIterator(
       urls,
-      all_versions=args.all_versions,
       fields_scope=fields_scope,
       include_buckets=name_expansion.BucketSetting.NO_WITH_ERROR,
+      object_state=flags.get_object_state_from_flags(args),
       recursion_requested=recursion_setting,
   ):
     yield task_type(

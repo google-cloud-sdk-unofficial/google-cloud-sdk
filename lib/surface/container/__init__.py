@@ -97,4 +97,8 @@ class ContainerAlpha(Container):
     """
     base.DisableUserProjectQuota()
     context['api_adapter'] = api_adapter.NewAPIAdapter('v1alpha1')
+
+    # Enable self signed jwt for alpha track
+    self.EnableSelfSignedJwtForTracks([base.ReleaseTrack.ALPHA])
+
     return context

@@ -1,5 +1,4 @@
-- release_tracks: [ALPHA, BETA, GA]
-  help_text:
+- help_text:
     brief: Create a Cloud Build Connection of type GitHub.
     description: |
       Create a Cloud Build Connection of type GitHub (for github.com).

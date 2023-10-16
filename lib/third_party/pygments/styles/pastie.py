@@ -6,7 +6,7 @@
 
     .. _pastie: http://pastie.caboo.se/
 
-    :copyright: Copyright 2006-2022 by the Pygments team, see AUTHORS.
+    :copyright: Copyright 2006-2023 by the Pygments team, see AUTHORS.
     :license: BSD, see LICENSE for details.
 """
 
@@ -19,8 +19,6 @@ class PastieStyle(Style):
     """
     Style similar to the pastie default style.
     """
-
-    default_style = ''
 
     styles = {
         Whitespace:             '#bbbbbb',
@@ -66,6 +64,7 @@ class PastieStyle(Style):
         Generic.Error:          '#aa0000',
         Generic.Emph:           'italic',
         Generic.Strong:         'bold',
+        Generic.EmphStrong:     'bold italic',
         Generic.Prompt:         '#555555',
         Generic.Output:         '#888888',
         Generic.Traceback:      '#aa0000',

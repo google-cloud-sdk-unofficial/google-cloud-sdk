@@ -30,10 +30,13 @@ from googlecloudsdk.command_lib.compute.disks import flags as disks_flags
 from googlecloudsdk.command_lib.util.args import labels_util
 
 
-def _CommonArgs(messages,
-                cls,
-                parser,
-                support_user_licenses=False):
+def _CommonArgs(
+    messages,
+    cls,
+    parser,
+    support_user_licenses=False,
+    support_access_mode=False,
+):
   """Add arguments used for parsing in all command tracks."""
   cls.DISK_ARG = disks_flags.MakeDiskArg(plural=False)
   cls.DISK_ARG.AddArgument(parser, operation_type='update')
@@ -72,6 +75,9 @@ def _CommonArgs(messages,
       action='store_true',
       help='Removes the architecture or processor type annotation from the disk.'
   )
+
+  if support_access_mode:
+    disks_flags.AddAccessModeFlag(parser, messages)
 
   parser.add_argument(
       '--provisioned-iops',
@@ -117,6 +123,10 @@ def _ArchitectureFlagsIncluded(args):
       'clear_architecture')
 
 
+def _AccessModeFlagsIncluded(args, support_access_mode=False):
+  return support_access_mode and args.IsSpecified('access_mode')
+
+
 def _ProvisionedIopsIncluded(args):
   return args.IsSpecified('provisioned_iops')
 
@@ -150,9 +160,7 @@ class Update(base.UpdateCommand):
         args,
         support_user_licenses=False)
 
-  def _Run(self,
-           args,
-           support_user_licenses=False):
+  def _Run(self, args, support_user_licenses=False, support_access_mode=False):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     client = holder.client.apitools_client
     messages = holder.client.messages
@@ -169,6 +177,9 @@ class Update(base.UpdateCommand):
         or _ArchitectureFlagsIncluded(args)
         or _SizeIncluded(args)
         or (support_user_licenses and _UserLicensesFlagsIncluded(args))
+        or _AccessModeFlagsIncluded(
+            args, support_access_mode=support_access_mode
+        )
     ):
       disk_res = messages.Disk(name=disk_ref.Name())
       disk_update_request = None
@@ -197,6 +208,14 @@ class Update(base.UpdateCommand):
           disk_res.architecture = disk_res.ArchitectureValueValuesEnum(
               args.update_architecture)
         disk_update_request.paths.append('architecture')
+
+      if _AccessModeFlagsIncluded(
+          args, support_access_mode=support_access_mode
+      ):
+        disk_res.accessMode = disk_res.AccessModeValueValuesEnum(
+            args.access_mode
+        )
+        disk_update_request.paths.append('accessMode')
 
       if _ProvisionedIopsIncluded(args):
         if args.provisioned_iops:
@@ -282,16 +301,16 @@ class UpdateAlpha(UpdateBeta):
         messages,
         cls,
         parser,
-        support_user_licenses=True)
+        support_user_licenses=True,
+        support_access_mode=True,
+    )
 
   @classmethod
   def _GetApiHolder(cls, no_http=False):
     return base_classes.ComputeApiHolder(cls.ReleaseTrack(), no_http)
 
   def Run(self, args):
-    return self._Run(
-        args,
-        support_user_licenses=True)
+    return self._Run(args, support_user_licenses=True, support_access_mode=True)
 
 
 Update.detailed_help = {

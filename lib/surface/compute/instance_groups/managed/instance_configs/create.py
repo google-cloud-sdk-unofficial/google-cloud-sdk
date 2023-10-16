@@ -43,6 +43,7 @@ class CreateGA(base.CreateCommand):
             parser, operation_type='create a per-instance config for')
     instance_groups_flags.AddMigStatefulFlagsForInstanceConfigs(parser)
     instance_groups_flags.AddMigStatefulUpdateInstanceFlag(parser)
+    instance_groups_flags.AddMigStatefulIPsFlagsForInstanceConfigs(parser)
 
   @staticmethod
   def _CreateInstanceReference(holder, igm_ref, instance_name):
@@ -115,18 +116,26 @@ class CreateGA(base.CreateCommand):
 
   def _ValidateStatefulFlagsForInstanceConfigs(self, args):
     instance_groups_flags.ValidateMigStatefulFlagsForInstanceConfigs(args)
+    instance_groups_flags.ValidateMigStatefulIPFlagsForInstanceConfigs(
+        args=args, current_internal_addresses=[], current_external_addresses=[])
 
   def _CreatePerInstanceConfigMessage(self, holder, instance_ref, args):
-    return instance_configs_messages.CreatePerInstanceConfigMessage(
-        holder, instance_ref, args.stateful_disk, args.stateful_metadata)
+    return instance_configs_messages.CreatePerInstanceConfigMessageWithIPs(
+        holder,
+        instance_ref,
+        args.stateful_disk,
+        args.stateful_metadata,
+        args.stateful_internal_ip,
+        args.stateful_external_ip,
+    )
 
 
 CreateGA.detailed_help = {
-    'brief':
+    'brief': (
         'Create a per-instance config for an instance in a '
-        'managed instance group.',
-    'DESCRIPTION':
-        """\
+        'managed instance group.'
+    ),
+    'DESCRIPTION': """\
         *{command}* creates a per-instance config for an instance controlled by
         a Compute Engine managed instance group. An instance with a per-instance
         config preserves the specified metadata and/or disks during
@@ -136,8 +145,7 @@ CreateGA.detailed_help = {
         instance, by performing the necessary action (for example, REFRESH),
         unless overridden by providing the ``--no-update-instance'' flag.
         """,
-    'EXAMPLES':
-        """\
+    'EXAMPLES': """\
         To create a per-instance config with a stateful disk ``my-disk'' and to
         add stateful metadata ``my-key:my-value'', on instance
         ``my-instance'', run:
@@ -147,44 +155,6 @@ CreateGA.detailed_help = {
         If ``my-disk'' did not exist previously in the per-instance config,
         and if it does not exist in the group's instance template, then the
         command adds ``my-disk'' to my-instance.
-        """.format(
-            group='my-group',
-            region='--region=europe-west4',
-            instance='--instance=my-instance',
-            disk=('--stateful-disk=device-name=my-disk,source='
-                  'projects/my-project/zones/us-central1-a/disks/my-disk-3'),
-            metadata='--stateful-metadata="my-key=my-value"')
-}
-
-
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class CreateBeta(CreateGA):
-  """Create per-instance config for an instance in a managed instance group."""
-
-  @classmethod
-  def Args(cls, parser):
-    CreateGA.Args(parser)
-    instance_groups_flags.AddMigStatefulIPsFlagsForInstanceConfigs(parser)
-
-  def _CreatePerInstanceConfigMessage(self, holder, instance_ref, args):
-    return instance_configs_messages.CreatePerInstanceConfigMessageWithIPs(
-        holder, instance_ref, args.stateful_disk, args.stateful_metadata,
-        args.stateful_internal_ip, args.stateful_external_ip)
-
-  def _ValidateStatefulFlagsForInstanceConfigs(self, args):
-    super(CreateBeta, self)._ValidateStatefulFlagsForInstanceConfigs(args)
-    instance_groups_flags.ValidateMigStatefulIPFlagsForInstanceConfigs(
-        args=args,
-        current_internal_addresses=[],
-        current_external_addresses=[])
-
-
-CreateBeta.detailed_help = {
-    'brief': CreateGA.detailed_help['brief'],
-    'DESCRIPTION': CreateGA.detailed_help['DESCRIPTION'],
-    'EXAMPLES':
-        CreateGA.detailed_help['EXAMPLES'] +
-        """\
 
         To create a per-instance config with a stateful internal IP
         ``192.168.0.10'' and a stateful external IP reserved in address
@@ -195,16 +165,37 @@ CreateBeta.detailed_help = {
         If the provided IP address is not yet reserved, the MIG automatically
         creates a corresponding IP address reservation.
         """.format(
-            group='my-group',
-            region='--region=europe-west4',
-            instance='--instance=my-instance',
-            internal_ip=('--stateful-internal-ip=address=192.168.0.10,'
-                         'interface-name=nic0'),
-            external_ip=('--stateful-external-ip=address='
-                         '/projects/example-project/regions/europe-west4/'
-                         'addresses/my-address'
-                         ',interface-name=nic0'))
+        group='my-group',
+        region='--region=europe-west4',
+        instance='--instance=my-instance',
+        disk=(
+            '--stateful-disk=device-name=my-disk,source='
+            'projects/my-project/zones/us-central1-a/disks/my-disk-3'
+        ),
+        metadata='--stateful-metadata="my-key=my-value"',
+        internal_ip=(
+            '--stateful-internal-ip=address=192.168.0.10,interface-name=nic0'
+        ),
+        external_ip=(
+            '--stateful-external-ip=address='
+            '/projects/example-project/regions/europe-west4/'
+            'addresses/my-address'
+            ',interface-name=nic0'
+        ),
+    ),
 }
+
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class CreateBeta(CreateGA):
+  """Create per-instance config for an instance in a managed instance group."""
+
+  @classmethod
+  def Args(cls, parser):
+    CreateGA.Args(parser)
+
+
+CreateBeta.detailed_help = CreateGA.detailed_help
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)

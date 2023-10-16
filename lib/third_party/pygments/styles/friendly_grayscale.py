@@ -7,7 +7,7 @@
     using the luminosity value calculated by
     http://www.workwithcolor.com/color-converter-01.htm
 
-    :copyright: Copyright 2006-2022 by the Pygments team, see AUTHORS.
+    :copyright: Copyright 2006-2023 by the Pygments team, see AUTHORS.
     :license: BSD, see LICENSE for details.
 """
 
@@ -24,7 +24,6 @@ class FriendlyGrayscaleStyle(Style):
     """
 
     background_color = "#f0f0f0"
-    default_style = ""
 
     styles = {
         Whitespace:                "#bbbbbb",
@@ -68,6 +67,7 @@ class FriendlyGrayscaleStyle(Style):
         Generic.Error:             "#898989",
         Generic.Emph:              "italic",
         Generic.Strong:            "bold",
+        Generic.EmphStrong:        "bold italic",
         Generic.Prompt:            "bold #7E7E7E",
         Generic.Output:            "#888888",
         Generic.Traceback:         "#6D6D6D",

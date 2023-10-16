@@ -22,6 +22,5 @@ from googlecloudsdk.calliope import base
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-@base.Hidden
 class WasmPlugins(base.Group):
   """Interact with and manage Service Extensions WasmPlugins."""

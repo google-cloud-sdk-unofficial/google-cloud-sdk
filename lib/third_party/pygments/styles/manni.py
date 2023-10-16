@@ -7,7 +7,7 @@
     This is a port of the style used in the `php port`_ of pygments
     by Manni. The style is called 'default' there.
 
-    :copyright: Copyright 2006-2022 by the Pygments team, see AUTHORS.
+    :copyright: Copyright 2006-2023 by the Pygments team, see AUTHORS.
     :license: BSD, see LICENSE for details.
 """
 
@@ -66,6 +66,7 @@ class ManniStyle(Style):
         Generic.Error:      '#FF0000',
         Generic.Emph:       'italic',
         Generic.Strong:     'bold',
+        Generic.EmphStrong: 'bold italic',
         Generic.Prompt:     'bold #000099',
         Generic.Output:     '#AAAAAA',
         Generic.Traceback:  '#99CC66',

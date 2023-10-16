@@ -243,6 +243,14 @@ information on how to structure KEYs and VALUEs, run
   flags.SNAPSHOT_CREATION_SCHEDULE.AddToParser(scheduled_snapshots_params_group)
   flags.SNAPSHOT_SCHEDULE_TIMEZONE.AddToParser(scheduled_snapshots_params_group)
 
+  triggerer_params_group = parser.add_argument_group(
+      flags.TRIGGERER_PARAMETERS_FLAG_GROUP_DESCRIPTION
+  )
+  flags.TRIGGERER_CPU.AddToParser(triggerer_params_group)
+  flags.TRIGGERER_COUNT.AddToParser(triggerer_params_group)
+  flags.TRIGGERER_MEMORY.AddToParser(triggerer_params_group)
+  flags.ENABLE_TRIGGERER.AddToParser(triggerer_params_group)
+
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Create(base.Command):
@@ -490,7 +498,39 @@ class Create(base.Command):
     pass
 
   def ValidateTriggererFlags(self, args):
-    pass
+    if args.image_version:
+      triggerer_supported = image_versions_util.IsVersionTriggererCompatible(
+          args.image_version
+      )
+      possible_args = {
+          'enable-triggerer': args.enable_triggerer,
+          'triggerer-cpu': args.triggerer_cpu,
+          'triggerer-memory': args.triggerer_memory,
+          'triggerer-count': args.triggerer_count,
+      }
+      for k, v in possible_args.items():
+        if v and not triggerer_supported:
+          raise command_util.InvalidUserInputError(
+              flags.INVALID_OPTION_FOR_MIN_IMAGE_VERSION_ERROR_MSG.format(
+                  opt=k,
+                  composer_version=flags.MIN_TRIGGERER_COMPOSER_VERSION,
+                  airflow_version=flags.MIN_TRIGGERER_AIRFLOW_VERSION,
+              )
+          )
+    if not (
+        args.enable_triggerer
+        or (args.triggerer_count and args.triggerer_count > 0)
+    ):
+      if args.triggerer_cpu:
+        raise command_util.InvalidUserInputError(
+            flags.ENABLED_TRIGGERER_IS_REQUIRED_MSG.format(opt='triggerer-cpu')
+        )
+      if args.triggerer_memory:
+        raise command_util.InvalidUserInputError(
+            flags.ENABLED_TRIGGERER_IS_REQUIRED_MSG.format(
+                opt='triggerer-memory'
+            )
+        )
 
   def ValidateComposer3Flags(self, args):
     pass
@@ -588,10 +628,16 @@ class Create(base.Command):
         cloud_sql_machine_type=args.cloud_sql_machine_type,
         web_server_machine_type=args.web_server_machine_type,
         scheduler_cpu=args.scheduler_cpu,
+        triggerer_cpu=args.triggerer_cpu,
+        triggerer_count=args.triggerer_count,
         worker_cpu=args.worker_cpu,
         web_server_cpu=args.web_server_cpu,
         scheduler_memory_gb=environments_api_util.MemorySizeBytesToGB(
-            args.scheduler_memory),
+            args.scheduler_memory
+        ),
+        triggerer_memory_gb=environments_api_util.MemorySizeBytesToGB(
+            args.triggerer_memory
+        ),
         worker_memory_gb=environments_api_util.MemorySizeBytesToGB(
             args.worker_memory),
         web_server_memory_gb=environments_api_util.MemorySizeBytesToGB(
@@ -605,6 +651,7 @@ class Create(base.Command):
         min_workers=args.min_workers,
         max_workers=args.max_workers,
         scheduler_count=args.scheduler_count,
+        enable_triggerer=args.enable_triggerer,
         environment_size=args.environment_size,
         maintenance_window_start=args.maintenance_window_start,
         maintenance_window_end=args.maintenance_window_end,
@@ -638,13 +685,6 @@ class CreateBeta(Create):
   @classmethod
   def Args(cls, parser, release_track=base.ReleaseTrack.BETA):
     super(CreateBeta, cls).Args(parser, release_track)
-
-    triggerer_params_group = parser.add_argument_group(
-        flags.TRIGGERER_PARAMETERS_FLAG_GROUP_DESCRIPTION)
-    flags.TRIGGERER_CPU.AddToParser(triggerer_params_group)
-    flags.TRIGGERER_COUNT.AddToParser(triggerer_params_group)
-    flags.TRIGGERER_MEMORY.AddToParser(triggerer_params_group)
-    flags.ENABLE_TRIGGERER.AddToParser(triggerer_params_group)
 
     cloud_data_lineage_integration_params_group = parser.add_argument_group(
         flags.CLOUD_DATA_LINEAGE_INTEGRATION_GROUP_DESCRIPTION)

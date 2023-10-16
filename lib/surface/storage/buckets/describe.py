@@ -29,7 +29,6 @@ from googlecloudsdk.command_lib.storage import wildcard_iterator
 from googlecloudsdk.command_lib.storage.resources import full_resource_formatter
 from googlecloudsdk.command_lib.storage.resources import gsutil_json_printer
 from googlecloudsdk.command_lib.storage.resources import resource_util
-from googlecloudsdk.core.resource import resource_projector
 
 
 class Describe(base.DescribeCommand):
@@ -71,13 +70,8 @@ class Describe(base.DescribeCommand):
     bucket_resource = api_factory.get_api(url.scheme).get_bucket(
         url.bucket_name, fields_scope=cloud_api.FieldsScope.FULL)
 
-    if args.raw:
-      display_data = bucket_resource.metadata
-    else:
-      display_data = resource_util.get_parsable_display_dict_for_resource(
-          bucket_resource,
-          full_resource_formatter.BucketDisplayTitlesAndDefaults,
-      )
-    # MakeSerializable will omit all the None values.
-    serialized_display_data = resource_projector.MakeSerializable(display_data)
-    return serialized_display_data
+    return resource_util.get_display_dict_for_resource(
+        bucket_resource,
+        full_resource_formatter.BucketDisplayTitlesAndDefaults,
+        display_raw_keys=args.raw,
+    )

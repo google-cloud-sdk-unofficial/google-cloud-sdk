@@ -215,12 +215,14 @@ class GenerateGatewayRbac(base.Command):
         kube_client.CheckClusterAdminPermissions()
         identities_list = list()
         if args.users:
-          identities_list = args.users.split(',')
+          identities_list = [(user, True) for user in args.users.split(',')]
         elif args.anthos_support:
-          identities_list.append(rbac_util.GetAnthosSupportUser(project_id))
+          identities_list.append(
+              (rbac_util.GetAnthosSupportUser(project_id), True)
+          )
         elif args.groups:
-          identities_list = args.groups.split(',')
-        for identity in identities_list:
+          identities_list = [(group, False) for group in args.groups.split(',')]
+        for identity, is_user in identities_list:
           message = 'The RBAC policy for {} will be cleaned up.'.format(
               identity
           )
@@ -229,14 +231,15 @@ class GenerateGatewayRbac(base.Command):
           log.status.Print(
               'Start cleaning up RBAC policy for: {}'.format(identity)
           )
-
-          if kube_client.CleanUpRbacPolicy(
+          rbac = kube_client.GetRBACForOperations(
               args.membership,
               args.role,
               project_id,
               identity,
+              is_user,
               args.anthos_support,
-          ):
+          )
+          if kube_client.CleanUpRbacPolicy(rbac):
             log.status.Print(
                 'Finished cleaning up the previous RBAC policy for: {}'.format(
                     identity
@@ -283,21 +286,22 @@ class GenerateGatewayRbac(base.Command):
       ) as kube_client:
         # Check Admin permissions.
         kube_client.CheckClusterAdminPermissions()
-        for user in generated_rbac.keys():
+        for identity, is_user in generated_rbac.keys():
           with file_utils.TemporaryDirectory() as tmp_dir:
             file = tmp_dir + '/rbac.yaml'
-            current_rbac_policy = generated_rbac.get(user)
+            current_rbac_policy = generated_rbac.get((identity, is_user))
             file_utils.WriteFileContents(file, current_rbac_policy)
-
-            # Check whether there are existing RBAC policy for this user, if not,
-            # will directly apply the new RBAC policy.
-            if not kube_client.GetRbacPolicy(
+            rbac = kube_client.GetRBACForOperations(
                 args.membership,
                 args.role,
                 project_id,
-                user,
-                args.anthos_support,
-            ):
+                identity,
+                is_user,
+                args.anthos_support,)
+
+            # Check whether there are existing RBAC policy for this user, if not,
+            # will directly apply the new RBAC policy.
+            if not kube_client.GetRbacPolicy(rbac):
               # Check whether there are role confliction, which required clean up.
               need_clean_up = False
               # Override when proposed RBAC policy has diff with existing one.
@@ -319,7 +323,7 @@ class GenerateGatewayRbac(base.Command):
                 # the new one.
                 if 'Invalid value' in err:
                   rbac_policy_name = kube_client.RbacPolicyName(
-                      'permission', project_id, args.membership, user
+                      'permission', project_id, args.membership, identity
                   )
 
                   rbac_permission_policy = kube_client.GetRbacPermissionPolicy(
@@ -334,8 +338,8 @@ class GenerateGatewayRbac(base.Command):
                   override_check = True
                 else:
                   raise exceptions.Error(
-                      'Error when getting diff for RBAC policy files for user:'
-                      ' {}, with error: {}'.format(user, err)
+                      'Error when getting diff for RBAC policy files for:'
+                      ' {}, with error: {}'.format(identity, err)
                   )
 
               if override_check:
@@ -346,24 +350,18 @@ class GenerateGatewayRbac(base.Command):
                 log.status.Print('--------------------------------------------')
                 log.status.Print(
                     'Start cleaning up previous RBAC policy for: {}'.format(
-                        user
+                        identity
                     )
                 )
-                if kube_client.CleanUpRbacPolicy(
-                    args.membership,
-                    args.role,
-                    project_id,
-                    user,
-                    args.anthos_support,
-                ):
+                if kube_client.CleanUpRbacPolicy(rbac):
                   log.status.Print(
                       'Finished cleaning up the previous RBAC policy for: {}'
-                      .format(user)
+                      .format(identity)
                   )
 
             try:
               log.status.Print(
-                  'Writing RBAC policy for user: {} to cluster.'.format(user)
+                  'Writing RBAC policy for user: {} to cluster.'.format(identity)
               )
               kube_client.ApplyRbacPolicy(file)
             except Exception as e:

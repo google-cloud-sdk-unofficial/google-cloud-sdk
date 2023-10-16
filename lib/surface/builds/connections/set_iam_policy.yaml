@@ -1,5 +1,4 @@
-- release_tracks: [ALPHA, BETA, GA]
-  help_text:
+- help_text:
     brief: Set the IAM policy for a Cloud Build connection.
     description: |
       Set the IAM policy for a Cloud Build connection as defined in a JSON or YAML file.

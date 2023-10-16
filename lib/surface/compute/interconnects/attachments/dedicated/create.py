@@ -107,7 +107,7 @@ class Create(base.CreateCommand):
           for name in args.ipsec_internal_addresses
       ]
 
-    return interconnect_attachment.CreateAlpha(
+    return interconnect_attachment.Create(
         description=args.description,
         interconnect=interconnect_ref,
         attachment_type='DEDICATED',
@@ -123,10 +123,13 @@ class Create(base.CreateCommand):
         stack_type=getattr(args, 'stack_type', None),
         candidate_ipv6_subnets=args.candidate_ipv6_subnets,
         cloud_router_ipv6_interface_id=getattr(
-            args, 'cloud_router_ipv6_interface_id', None),
+            args, 'cloud_router_ipv6_interface_id', None
+        ),
         customer_router_ipv6_interface_id=getattr(
-            args, 'customer_router_ipv6_interface_id', None),
-        subnet_length=getattr(args, 'subnet_length', None))
+            args, 'customer_router_ipv6_interface_id', None
+        ),
+        subnet_length=getattr(args, 'subnet_length', None),
+    )
 
   def Epilog(self, resources_were_displayed):
     message = ('You must configure your Cloud Router with an interface '

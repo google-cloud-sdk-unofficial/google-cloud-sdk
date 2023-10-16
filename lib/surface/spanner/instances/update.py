@@ -57,12 +57,12 @@ class Update(base.Command):
     """
     flags.Instance().AddToParser(parser)
     flags.Description(required=False).AddToParser(parser)
-    group_parser = parser.add_argument_group(mutex=True)
-    flags.Nodes().AddToParser(group_parser)
-    flags.ProcessingUnits().AddToParser(group_parser)
     base.ASYNC_FLAG.AddToParser(parser)
     resource_args.AddExpireBehaviorArg(parser)
     resource_args.AddInstanceTypeArg(parser)
+    flags.AddCapacityArgsForInstance(
+        require_all_autoscaling_args=False, parser=parser
+    )
 
   def Run(self, args):
     """This is what gets called when the user runs this command.
@@ -82,6 +82,12 @@ class Update(base.Command):
         description=args.description,
         nodes=args.nodes,
         processing_units=args.processing_units,
+        autoscaling_min_nodes=args.autoscaling_min_nodes,
+        autoscaling_max_nodes=args.autoscaling_max_nodes,
+        autoscaling_min_processing_units=args.autoscaling_min_processing_units,
+        autoscaling_max_processing_units=args.autoscaling_max_processing_units,
+        autoscaling_high_priority_cpu_target=args.autoscaling_high_priority_cpu_target,
+        autoscaling_storage_target=args.autoscaling_storage_target,
         instance_type=instance_type,
         expire_behavior=expire_behavior)
     if args.async_:

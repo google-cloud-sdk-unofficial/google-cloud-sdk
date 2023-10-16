@@ -22,6 +22,7 @@ from apitools.base.py import encoding
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import target_proxies_utils
 from googlecloudsdk.calliope import base
+from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.compute import flags as compute_flags
 from googlecloudsdk.command_lib.compute import scope as compute_scope
 from googlecloudsdk.command_lib.compute.target_http_proxies import flags
@@ -70,6 +71,18 @@ def _Run(args, holder, target_http_proxy_arg, url_map_arg):
   )
 
   if target_http_proxies_utils.IsRegionalTargetHttpProxiesRef(proxy_ref):
+    invalid_arg = None
+    if args.IsSpecified('http_keep_alive_timeout_sec'):
+      invalid_arg = '--http-keep-alive-timeout-sec'
+    elif args.IsSpecified('clear_http_keep_alive_timeout_sec'):
+      invalid_arg = '--clear-http-keep-alive-timeout-sec'
+    if invalid_arg is not None:
+      raise exceptions.InvalidArgumentException(
+          invalid_arg,
+          'http keep alive timeout is not patchable for regional target HTTP'
+          ' proxies',
+      )
+
     request = client.messages.ComputeRegionTargetHttpProxiesSetUrlMapRequest(
         project=proxy_ref.project,
         region=proxy_ref.region,

@@ -109,6 +109,11 @@ class Create(base.CreateCommand):
 class CreateBeta(Create):
   """Create a Compute Engine node group."""
 
+  @staticmethod
+  def Args(parser):
+    Create.Args(parser)
+    flags.AddMaintenanceIntervalArgToParser(parser)
+
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class CreateAlpha(CreateBeta):

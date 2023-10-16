@@ -4,7 +4,7 @@
 
     Arduino® Syntax highlighting style.
 
-    :copyright: Copyright 2006-2022 by the Pygments team, see AUTHORS.
+    :copyright: Copyright 2006-2023 by the Pygments team, see AUTHORS.
     :license: BSD, see LICENSE for details.
 """
 
@@ -20,7 +20,6 @@ class ArduinoStyle(Style):
     """
 
     background_color = "#ffffff"
-    default_style = ""
 
     styles = {
         Whitespace:                "",        # class: 'w'

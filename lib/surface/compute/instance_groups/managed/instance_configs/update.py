@@ -148,7 +148,88 @@ class UpdateGA(base.UpdateCommand):
             for key, value in sorted(six.iteritems(new_stateful_metadata))
         ]))
 
+    UpdateGA._PatchStatefulInternalIPs(
+        messages=messages,
+        per_instance_config=per_instance_config,
+        ips_to_update=args.stateful_internal_ip,
+        ips_to_remove=args.remove_stateful_internal_ips,
+    )
+    UpdateGA._PatchStatefulExternalIPs(
+        messages=messages,
+        per_instance_config=per_instance_config,
+        ips_to_update=args.stateful_external_ip,
+        ips_to_remove=args.remove_stateful_external_ips,
+    )
+
     return per_instance_config
+
+  @staticmethod
+  def _PatchStatefulInternalIPs(
+      messages, per_instance_config, ips_to_update, ips_to_remove
+  ):
+    """Patch and return the updated list of stateful internal IPs."""
+    existing_ips = (
+        per_instance_config.preservedState.internalIPs.additionalProperties
+        if per_instance_config.preservedState.internalIPs
+        else []
+    )
+    ips_to_update_dict = {
+        (
+            ip.get(
+                'interface-name',
+                instance_groups_flags.STATEFUL_IP_DEFAULT_INTERFACE_NAME,
+            )
+        ): ip
+        for ip in iter(ips_to_update or [])
+    }
+    UpdateGA._VerifyStatefulIPsToRemoveSet(
+        '--remove-stateful-internal-ips', existing_ips, ips_to_remove
+    )
+    new_stateful_ips, remaining_ips_to_update = UpdateGA._UpdateExistingIPs(
+        messages, existing_ips, ips_to_update_dict, ips_to_remove
+    )
+    new_stateful_ips.extend(
+        UpdateGA._CreateInternalIPs(messages, remaining_ips_to_update)
+    )
+    per_instance_config.preservedState.internalIPs = (
+        messages.PreservedState.InternalIPsValue(
+            additionalProperties=new_stateful_ips
+        )
+    )
+
+  @staticmethod
+  def _PatchStatefulExternalIPs(
+      messages, per_instance_config, ips_to_update, ips_to_remove
+  ):
+    """Patch and return the updated list of stateful external IPs."""
+    existing_ips = (
+        per_instance_config.preservedState.externalIPs.additionalProperties
+        if per_instance_config.preservedState.externalIPs
+        else []
+    )
+    ips_to_update_dict = {
+        (
+            ip.get(
+                'interface-name',
+                instance_groups_flags.STATEFUL_IP_DEFAULT_INTERFACE_NAME,
+            )
+        ): ip
+        for ip in iter(ips_to_update or [])
+    }
+    UpdateGA._VerifyStatefulIPsToRemoveSet(
+        '--remove-stateful-external-ips', existing_ips, ips_to_remove
+    )
+    new_stateful_ips, remaining_ips_to_update = UpdateGA._UpdateExistingIPs(
+        messages, existing_ips, ips_to_update_dict, ips_to_remove
+    )
+    new_stateful_ips.extend(
+        UpdateGA._CreateExternalIPs(messages, remaining_ips_to_update)
+    )
+    per_instance_config.preservedState.externalIPs = (
+        messages.PreservedState.ExternalIPsValue(
+            additionalProperties=new_stateful_ips
+        )
+    )
 
   @staticmethod
   def _CreateInstanceReference(holder, igm_ref, instance_name):
@@ -171,10 +252,102 @@ class UpdateGA(base.UpdateCommand):
             parser, operation_type='update per-instance config for')
     instance_groups_flags.AddMigStatefulFlagsForUpdateInstanceConfigs(parser)
     instance_groups_flags.AddMigStatefulUpdateInstanceFlag(parser)
+    instance_groups_flags.AddMigStatefulIPsFlagsForUpdateInstanceConfigs(parser)
 
   def _ValidateStatefulFlagsForInstanceConfigs(self, args, per_instance_config):
     instance_groups_flags.ValidateMigStatefulFlagsForInstanceConfigs(
         args, for_update=True)
+    instance_groups_flags.ValidateMigStatefulIPFlagsForInstanceConfigs(
+        args,
+        UpdateGA._GetInterfacesWithInternalAddresses(per_instance_config),
+        UpdateGA._GetInterfacesWithExternalAddresses(per_instance_config),
+        for_update=True,
+    )
+
+  @staticmethod
+  def _GetExistingInterfaceNames(existing_ips):
+    return map(lambda x: x.key, existing_ips)
+
+  @staticmethod
+  def _VerifyStatefulIPsToRemoveSet(
+      remove_ips_flag_name, existing_ips, ips_to_remove
+  ):
+    """Verify that there are no extraneous IP interfaces to be removed."""
+    ips_to_remove_set = set(ips_to_remove or [])
+    existing_interfaces = UpdateGA._GetExistingInterfaceNames(existing_ips)
+    extraneous_interfaces = ips_to_remove_set.difference(existing_interfaces)
+    if extraneous_interfaces:
+      raise exceptions.InvalidArgumentException(
+          parameter_name=remove_ips_flag_name,
+          message=(
+              'The following are invalid stateful IPs to remove: `{0}`'.format(
+                  ','.join(extraneous_interfaces)
+              )
+          ),
+      )
+
+  @staticmethod
+  def _UpdateExistingIPs(
+      messages, existing_ips, ips_to_update_dict, ips_to_remove
+  ):
+    new_stateful_ips = []
+    remaining_ips_to_update = dict(ips_to_update_dict)
+    ips_to_remove_set = set(ips_to_remove or [])
+    for current_stateful_ip in existing_ips:
+      interface_name = current_stateful_ip.key
+      # Interface to be removed.
+      if interface_name in ips_to_remove_set:
+        continue
+      # Interface to be updated.
+      if interface_name in remaining_ips_to_update:
+        instance_configs_messages.PatchPreservedStateNetworkIpEntry(
+            messages,
+            current_stateful_ip.value,
+            remaining_ips_to_update[interface_name],
+        )
+        del remaining_ips_to_update[interface_name]
+      new_stateful_ips.append(current_stateful_ip)
+    return new_stateful_ips, remaining_ips_to_update
+
+  @staticmethod
+  def _CreateInternalIPs(messages, new_ips_dict):
+    new_stateful_ips = []
+    for update_stateful_ip in new_ips_dict.values():
+      new_stateful_ips.append(
+          instance_configs_messages.MakePreservedStateInternalNetworkIpEntry(
+              messages=messages, stateful_ip=update_stateful_ip
+          )
+      )
+    return new_stateful_ips
+
+  @staticmethod
+  def _CreateExternalIPs(messages, new_ips_dict):
+    new_stateful_ips = []
+    for update_stateful_ip in new_ips_dict.values():
+      new_stateful_ips.append(
+          instance_configs_messages.MakePreservedStateExternalNetworkIpEntry(
+              messages=messages, stateful_ip=update_stateful_ip
+          )
+      )
+    return new_stateful_ips
+
+  @staticmethod
+  def _GetInterfacesWithInternalAddresses(per_instance_config):
+    existing_ips = (
+        per_instance_config.preservedState.internalIPs.additionalProperties
+        if per_instance_config.preservedState.internalIPs
+        else []
+    )
+    return UpdateGA._GetExistingInterfaceNames(existing_ips)
+
+  @staticmethod
+  def _GetInterfacesWithExternalAddresses(per_instance_config):
+    existing_ips = (
+        per_instance_config.preservedState.externalIPs.additionalProperties
+        if per_instance_config.preservedState.externalIPs
+        else []
+    )
+    return UpdateGA._GetExistingInterfaceNames(existing_ips)
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
@@ -234,10 +407,8 @@ class UpdateGA(base.UpdateCommand):
 
 
 UpdateGA.detailed_help = {
-    'brief':
-        'Update per-instance config of a managed instance group.',
-    'DESCRIPTION':
-        """\
+    'brief': 'Update per-instance config of a managed instance group.',
+    'DESCRIPTION': """\
         *{command}* updates the per-instance config of an instance controlled by
         a Compute Engine managed instance group. The command lets you
         change the list of instance-specific stateful resources, that is, the
@@ -248,8 +419,7 @@ UpdateGA.detailed_help = {
         performing the necessary action (for example, REFRESH), unless
         overridden by providing the ``--no-update-instance'' flag.
         """,
-    'EXAMPLES':
-        """\
+    'EXAMPLES': """\
         To updates the stateful disk ``my-disk-3'' to the image provided by
         ``source'', and clear ``my-disk1'' and ``my-disk2'' as stateful
         disks, and to add stateful metadata ``my-key'': ``my-value'', on
@@ -263,179 +433,6 @@ UpdateGA.detailed_help = {
         stateful configuration for ``my-disk-1'' and ``my-disk-2''; if these
         disk are not defined in the group's instance template, then they are
         detached.
-        """.format(
-            group='my-group',
-            region='--region=europe-west4',
-            instance='--instance=my-instance',
-            disk=('--stateful-disk=device-name=my-disk-3,source='
-                  'projects/my-project/zones/us-central1-a/disks/my-disk-3'),
-            remove_disks='--remove-stateful-disks=my-disk-1,my-disk-2',
-            meta='--stateful-metadata=\'my-key=my-value\'')
-}
-
-
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class UpdateBeta(UpdateGA):
-  """Update per-instance config of a managed instance group."""
-
-  @classmethod
-  def Args(cls, parser):
-    UpdateGA.Args(parser)
-    instance_groups_flags.AddMigStatefulIPsFlagsForUpdateInstanceConfigs(parser)
-
-  def _ValidateStatefulFlagsForInstanceConfigs(self, args, per_instance_config):
-    super(UpdateBeta, self)._ValidateStatefulFlagsForInstanceConfigs(
-        args, per_instance_config)
-    instance_groups_flags.ValidateMigStatefulIPFlagsForInstanceConfigs(
-        args,
-        UpdateBeta._GetInterfacesWithInternalAddresses(per_instance_config),
-        UpdateBeta._GetInterfacesWithExternalAddresses(per_instance_config),
-        for_update=True)
-
-  def _CombinePerInstanceConfigMessage(self, holder, per_instance_config,
-                                       instance_ref, args):
-    messages = holder.client.messages
-    per_instance_config = super(
-        UpdateBeta, self)._CombinePerInstanceConfigMessage(
-            holder, per_instance_config, instance_ref, args)
-    UpdateBeta._PatchStatefulInternalIPs(
-        messages=messages,
-        per_instance_config=per_instance_config,
-        ips_to_update=args.stateful_internal_ip,
-        ips_to_remove=args.remove_stateful_internal_ips)
-    UpdateBeta._PatchStatefulExternalIPs(
-        messages=messages,
-        per_instance_config=per_instance_config,
-        ips_to_update=args.stateful_external_ip,
-        ips_to_remove=args.remove_stateful_external_ips)
-    return per_instance_config
-
-  @staticmethod
-  def _GetExistingInterfaceNames(existing_ips):
-    return map(lambda x: x.key, existing_ips)
-
-  @staticmethod
-  def _VerifyStatefulIPsToRemoveSet(remove_ips_flag_name, existing_ips,
-                                    ips_to_remove):
-    """Verify that there are no extraneous IP interfaces to be removed."""
-    ips_to_remove_set = set(ips_to_remove or [])
-    existing_interfaces = UpdateBeta._GetExistingInterfaceNames(existing_ips)
-    extraneous_interfaces = ips_to_remove_set.difference(existing_interfaces)
-    if extraneous_interfaces:
-      raise exceptions.InvalidArgumentException(
-          parameter_name=remove_ips_flag_name,
-          message=('The following are invalid stateful IPs to remove: `{0}`'
-                   .format(','.join(extraneous_interfaces))))
-
-  @staticmethod
-  def _UpdateExistingIPs(messages, existing_ips, ips_to_update_dict,
-                         ips_to_remove):
-    new_stateful_ips = []
-    remaining_ips_to_update = dict(ips_to_update_dict)
-    ips_to_remove_set = set(ips_to_remove or [])
-    for current_stateful_ip in existing_ips:
-      interface_name = current_stateful_ip.key
-      # Interface to be removed.
-      if interface_name in ips_to_remove_set:
-        continue
-      # Interface to be updated.
-      if interface_name in remaining_ips_to_update:
-        instance_configs_messages.PatchPreservedStateNetworkIpEntry(
-            messages, current_stateful_ip.value,
-            remaining_ips_to_update[interface_name])
-        del remaining_ips_to_update[interface_name]
-      new_stateful_ips.append(current_stateful_ip)
-    return new_stateful_ips, remaining_ips_to_update
-
-  @staticmethod
-  def _CreateInternalIPs(messages, new_ips_dict):
-    new_stateful_ips = []
-    for update_stateful_ip in new_ips_dict.values():
-      new_stateful_ips.append(
-          instance_configs_messages.MakePreservedStateInternalNetworkIpEntry(
-              messages=messages,
-              stateful_ip=update_stateful_ip))
-    return new_stateful_ips
-
-  @staticmethod
-  def _CreateExternalIPs(messages, new_ips_dict):
-    new_stateful_ips = []
-    for update_stateful_ip in new_ips_dict.values():
-      new_stateful_ips.append(
-          instance_configs_messages.MakePreservedStateExternalNetworkIpEntry(
-              messages=messages,
-              stateful_ip=update_stateful_ip))
-    return new_stateful_ips
-
-  @staticmethod
-  def _GetInterfacesWithInternalAddresses(per_instance_config):
-    existing_ips = (
-        per_instance_config.preservedState.internalIPs.additionalProperties
-        if per_instance_config.preservedState.internalIPs
-        else [])
-    return UpdateBeta._GetExistingInterfaceNames(existing_ips)
-
-  @staticmethod
-  def _GetInterfacesWithExternalAddresses(per_instance_config):
-    existing_ips = (
-        per_instance_config.preservedState.externalIPs.additionalProperties
-        if per_instance_config.preservedState.externalIPs
-        else [])
-    return UpdateBeta._GetExistingInterfaceNames(existing_ips)
-
-  @staticmethod
-  def _PatchStatefulInternalIPs(messages, per_instance_config,
-                                ips_to_update, ips_to_remove):
-    """Patch and return the updated list of stateful internal IPs."""
-    existing_ips = (
-        per_instance_config.preservedState.internalIPs.additionalProperties
-        if per_instance_config.preservedState.internalIPs
-        else [])
-    ips_to_update_dict = {
-        (ip.get('interface-name',
-                instance_groups_flags.STATEFUL_IP_DEFAULT_INTERFACE_NAME)):
-            ip for ip in iter(ips_to_update or [])
-    }
-    UpdateBeta._VerifyStatefulIPsToRemoveSet(
-        '--remove-stateful-internal-ips', existing_ips, ips_to_remove)
-    new_stateful_ips, remaining_ips_to_update = UpdateBeta._UpdateExistingIPs(
-        messages, existing_ips, ips_to_update_dict, ips_to_remove)
-    new_stateful_ips.extend(UpdateBeta._CreateInternalIPs(
-        messages, remaining_ips_to_update))
-    per_instance_config.preservedState.internalIPs = (
-        messages.PreservedState.InternalIPsValue(
-            additionalProperties=new_stateful_ips))
-
-  @staticmethod
-  def _PatchStatefulExternalIPs(messages, per_instance_config,
-                                ips_to_update, ips_to_remove):
-    """Patch and return the updated list of stateful external IPs."""
-    existing_ips = (
-        per_instance_config.preservedState.externalIPs.additionalProperties
-        if per_instance_config.preservedState.externalIPs
-        else [])
-    ips_to_update_dict = {
-        (ip.get('interface-name',
-                instance_groups_flags.STATEFUL_IP_DEFAULT_INTERFACE_NAME)):
-            ip for ip in iter(ips_to_update or [])
-    }
-    UpdateBeta._VerifyStatefulIPsToRemoveSet(
-        '--remove-stateful-external-ips', existing_ips, ips_to_remove)
-    new_stateful_ips, remaining_ips_to_update = UpdateBeta._UpdateExistingIPs(
-        messages, existing_ips, ips_to_update_dict, ips_to_remove)
-    new_stateful_ips.extend(UpdateBeta._CreateExternalIPs(
-        messages, remaining_ips_to_update))
-    per_instance_config.preservedState.externalIPs = (
-        messages.PreservedState.ExternalIPsValue(
-            additionalProperties=new_stateful_ips))
-
-
-UpdateBeta.detailed_help = {
-    'brief': UpdateGA.detailed_help['brief'],
-    'DESCRIPTION': UpdateGA.detailed_help['DESCRIPTION'],
-    'EXAMPLES':
-        UpdateGA.detailed_help['EXAMPLES'] +
-        """\
 
         To update a per-instance configuration with a stateful internal IP
         ``192.168.0.10'', on instance ``my-instance'', run:
@@ -447,13 +444,33 @@ UpdateBeta.detailed_help = {
 
           $ {{command}} {group} {region} {instance} {remove_internal_ip}
         """.format(
-            group='my-group',
-            region='--region=europe-west4',
-            instance='--instance=my-instance',
-            internal_ip=('--stateful-internal-ip=address=192.168.0.10,'
-                         'interface-name=nic0'),
-            remove_internal_ip='--remove-stateful-internal-ips=nic0')
+        group='my-group',
+        region='--region=europe-west4',
+        instance='--instance=my-instance',
+        disk=(
+            '--stateful-disk=device-name=my-disk-3,source='
+            'projects/my-project/zones/us-central1-a/disks/my-disk-3'
+        ),
+        remove_disks='--remove-stateful-disks=my-disk-1,my-disk-2',
+        meta="--stateful-metadata='my-key=my-value'",
+        internal_ip=(
+            '--stateful-internal-ip=address=192.168.0.10,interface-name=nic0'
+        ),
+        remove_internal_ip='--remove-stateful-internal-ips=nic0',
+    ),
 }
+
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class UpdateBeta(UpdateGA):
+  """Update per-instance config of a managed instance group."""
+
+  @classmethod
+  def Args(cls, parser):
+    UpdateGA.Args(parser)
+
+
+UpdateBeta.detailed_help = UpdateGA.detailed_help
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)

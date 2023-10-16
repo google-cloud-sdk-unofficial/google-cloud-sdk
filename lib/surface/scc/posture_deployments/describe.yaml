@@ -5,13 +5,11 @@
       Describe a  Cloud Security Command Center (SCC) posture deployment.
 
     examples: |
-      Describe a posture-deployment present on an organization:
-          organizations/123/locations/global/postureDeployments/posture-deployment-foo-1
-          (i.e. a posture-deployment
-          in organization 123, location global, with id posture-deployment-foo-1):
+      To describe posture deployment `organizations/123/locations/global/postureDeployments/posture-deployment-foo-1`
+          (i.e. a posture deployment
+          in organization `123`, location `global`, with ID `posture-deployment-foo-1`), run:
 
-              $ gcloud alpha scc posture-deployments describe \
-                  organizations/123/locations/global/postureDeployments/posture-deployment-foo-1
+              $ {command} organizations/123/locations/global/postureDeployments/posture-deployment-foo-1
 
   request:
     collection: securityposture.organizations.locations.postureDeployments
@@ -26,4 +24,4 @@
       is_positional: true
       required: true
       help_text: |
-        Relative resource name of the posture-deployment, like organizations/<organizationID>/locations/<location>/postureDeployments/<postureDeploymentID>.
+        Relative resource name of the posture deployment, like `organizations/<organizationID>/locations/<location>/postureDeployments/<postureDeploymentID>`.

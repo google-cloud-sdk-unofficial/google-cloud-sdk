@@ -4,7 +4,7 @@
 
     A modern style based on the VIM pyte theme.
 
-    :copyright: Copyright 2006-2022 by the Pygments team, see AUTHORS.
+    :copyright: Copyright 2006-2023 by the Pygments team, see AUTHORS.
     :license: BSD, see LICENSE for details.
 """
 
@@ -19,7 +19,6 @@ class FriendlyStyle(Style):
     """
 
     background_color = "#f0f0f0"
-    default_style = ""
     line_number_color = "#666666"
 
     styles = {
@@ -64,6 +63,7 @@ class FriendlyStyle(Style):
         Generic.Error:             "#FF0000",
         Generic.Emph:              "italic",
         Generic.Strong:            "bold",
+        Generic.EmphStrong:        "bold italic",
         Generic.Prompt:            "bold #c65d09",
         Generic.Output:            "#888",
         Generic.Traceback:         "#04D",

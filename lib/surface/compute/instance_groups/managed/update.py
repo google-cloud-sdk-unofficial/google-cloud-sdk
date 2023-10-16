@@ -57,6 +57,7 @@ class UpdateGA(base.UpdateCommand):
     autohealing_params_group = autohealing_group.add_group()
     auto_healing_utils.AddAutohealingArgs(autohealing_params_group)
     instance_groups_flags.AddMigUpdateStatefulFlags(parser)
+    instance_groups_flags.AddMigUpdateStatefulFlagsIPs(parser)
     instance_groups_flags.AddDescriptionFlag(parser, for_update=True)
     managed_flags.AddMigInstanceRedistributionTypeFlag(parser)
     managed_flags.AddMigDistributionPolicyTargetShapeFlag(parser)
@@ -120,18 +121,113 @@ class UpdateGA(base.UpdateCommand):
     remove_device_names = args.remove_stateful_disks
     stateful_disks = self._GetUpdatedStatefulPolicyForDisks(
         client, current_stateful_policy, update_disks, remove_device_names)
-    return policy_utils.MakeStatefulPolicy(client.messages, stateful_disks)
+
+    stateful_policy = policy_utils.MakeStatefulPolicy(
+        client.messages, stateful_disks
+    )
+
+    stateful_internal_ips = self._GetPatchForStatefulPolicyForInternalIPs(
+        client, args.stateful_internal_ip, args.remove_stateful_internal_ips
+    )
+
+    stateful_external_ips = self._GetPatchForStatefulPolicyForExternalIPs(
+        client, args.stateful_external_ip, args.remove_stateful_external_ips
+    )
+
+    return policy_utils.UpdateStatefulPolicy(
+        client.messages,
+        stateful_policy,
+        None,
+        stateful_internal_ips,
+        stateful_external_ips,
+    )
 
   def _StatefulArgsSet(self, args):
-    return (args.IsSpecified('stateful_disk') or
-            args.IsSpecified('remove_stateful_disks'))
+    return (
+        args.IsSpecified('stateful_disk')
+        or args.IsSpecified('remove_stateful_disks')
+        or args.IsSpecified('stateful_internal_ip')
+        or args.IsSpecified('remove_stateful_internal_ips')
+        or args.IsSpecified('stateful_external_ip')
+        or args.IsSpecified('remove_stateful_external_ips')
+    )
 
   def _StatefulnessIntroduced(self, args):
-    return args.IsSpecified('stateful_disk')
+    return (
+        args.IsSpecified('stateful_disk')
+        or args.IsSpecified('stateful_internal_ip')
+        or args.IsSpecified('stateful_external_ip')
+    )
 
   def _ValidateStatefulPolicyParams(self, args, stateful_policy):
-    instance_groups_flags.ValidateUpdateStatefulPolicyParams(args,
-                                                             stateful_policy)
+    instance_groups_flags.ValidateUpdateStatefulPolicyParams(
+        args, stateful_policy
+    )
+    instance_groups_flags.ValidateUpdateStatefulPolicyParamsWithIPs(
+        args, stateful_policy
+    )
+
+  def _GetStatefulPolicyPatchForStatefulIPsCommon(
+      self,
+      client,
+      update_ip_to_ip_entry_lambda,
+      update_ip_to_none_lambda,
+      update_ips=None,
+      remove_interface_names=None,
+  ):
+    if remove_interface_names:
+      managed_instance_groups_utils.RegisterCustomStatefulIpsPatchEncoders(
+          client
+      )
+    patched_ips_map = {}
+
+    # Update the interfaces specified in IPs to be updated.
+    for update_ip in update_ips or []:
+      # Interface name is optional, use the default if not specified.
+      interface_name = update_ip.get(
+          'interface-name',
+          instance_groups_flags.STATEFUL_IP_DEFAULT_INTERFACE_NAME,
+      )
+      updated_preserved_state_ip = update_ip_to_ip_entry_lambda(update_ip)
+      patched_ips_map[interface_name] = updated_preserved_state_ip
+
+    # Remove the interfaces specified for removal.
+    for interface_name in remove_interface_names or []:
+      updated_preserved_state_ip = update_ip_to_none_lambda(interface_name)
+      patched_ips_map[interface_name] = updated_preserved_state_ip
+
+    stateful_ips = sorted(
+        [stateful_ip for key, stateful_ip in six.iteritems(patched_ips_map)],
+        key=lambda x: x.key,
+    )
+    return stateful_ips
+
+  def _GetPatchForStatefulPolicyForInternalIPs(
+      self, client, update_internal_ips=None, remove_interface_names=None
+  ):
+    # Extract internal IPs protos from current stateful policy proto.
+    return self._GetStatefulPolicyPatchForStatefulIPsCommon(
+        client,
+        functools.partial(policy_utils.MakeInternalIPEntry, client.messages),
+        functools.partial(
+            policy_utils.MakeInternalIPNullEntryForDisablingInPatch, client
+        ),
+        update_internal_ips,
+        remove_interface_names,
+    )
+
+  def _GetPatchForStatefulPolicyForExternalIPs(
+      self, client, update_external_ips=None, remove_interface_names=None
+  ):
+    return self._GetStatefulPolicyPatchForStatefulIPsCommon(
+        client,
+        functools.partial(policy_utils.MakeExternalIPEntry, client.messages),
+        functools.partial(
+            policy_utils.MakeExternalIPNullEntryForDisablingInPatch, client
+        ),
+        update_external_ips,
+        remove_interface_names,
+    )
 
   def _PatchStatefulPolicy(self, igm_patch, args, igm_resource, client, holder):
     """Patch the stateful policy specified in args, to igm_patch."""
@@ -291,7 +387,6 @@ class UpdateBeta(UpdateGA):
   @classmethod
   def Args(cls, parser):
     super(UpdateBeta, cls).Args(parser)
-    instance_groups_flags.AddMigUpdateStatefulFlagsIPs(parser)
 
   def _CreateInstanceGroupManagerPatch(self, args, igm_ref, igm_resource,
                                        client, holder):
@@ -300,92 +395,6 @@ class UpdateBeta(UpdateGA):
                                              args, igm_ref, igm_resource,
                                              client, holder)
     return patch_instance_group_manager
-
-  def _StatefulArgsSet(self, args):
-    return (super(UpdateBeta, self)._StatefulArgsSet(args) or
-            args.IsSpecified('stateful_internal_ip') or
-            args.IsSpecified('remove_stateful_internal_ips') or
-            args.IsSpecified('stateful_external_ip') or
-            args.IsSpecified('remove_stateful_external_ips'))
-
-  def _StatefulnessIntroduced(self, args):
-    return (super(UpdateBeta, self)._StatefulnessIntroduced(args) or
-            args.IsSpecified('stateful_internal_ip') or
-            args.IsSpecified('stateful_external_ip'))
-
-  def _ValidateStatefulPolicyParams(self, args, stateful_policy):
-    super(UpdateBeta, self)._ValidateStatefulPolicyParams(args,
-                                                          stateful_policy)
-    instance_groups_flags.ValidateUpdateStatefulPolicyParamsWithIPs(
-        args, stateful_policy)
-
-  def _GetStatefulPolicyPatchForStatefulIPsCommon(self,
-                                                  client,
-                                                  update_ip_to_ip_entry_lambda,
-                                                  update_ip_to_none_lambda,
-                                                  update_ips=None,
-                                                  remove_interface_names=None):
-    if remove_interface_names:
-      managed_instance_groups_utils.RegisterCustomStatefulIpsPatchEncoders(
-          client)
-    patched_ips_map = {}
-
-    # Update the interfaces specified in IPs to be updated.
-    for update_ip in (update_ips or []):
-      # Interface name is optional, use the default if not specified.
-      interface_name = update_ip.get(
-          'interface-name',
-          instance_groups_flags.STATEFUL_IP_DEFAULT_INTERFACE_NAME)
-      updated_preserved_state_ip = update_ip_to_ip_entry_lambda(update_ip)
-      patched_ips_map[interface_name] = updated_preserved_state_ip
-
-    # Remove the interfaces specified for removal.
-    for interface_name in remove_interface_names or []:
-      updated_preserved_state_ip = update_ip_to_none_lambda(interface_name)
-      patched_ips_map[interface_name] = updated_preserved_state_ip
-
-    stateful_ips = sorted(
-        [stateful_ip for key, stateful_ip in six.iteritems(patched_ips_map)],
-        key=lambda x: x.key)
-    return stateful_ips
-
-  def _GetPatchForStatefulPolicyForInternalIPs(self,
-                                               client,
-                                               update_internal_ips=None,
-                                               remove_interface_names=None):
-    # Extract internal IPs protos from current stateful policy proto.
-    return self._GetStatefulPolicyPatchForStatefulIPsCommon(
-        client,
-        functools.partial(policy_utils.MakeInternalIPEntry, client.messages),
-        functools.partial(
-            policy_utils.MakeInternalIPNullEntryForDisablingInPatch, client),
-        update_internal_ips, remove_interface_names)
-
-  def _GetPatchForStatefulPolicyForExternalIPs(self,
-                                               client,
-                                               update_external_ips=None,
-                                               remove_interface_names=None):
-    return self._GetStatefulPolicyPatchForStatefulIPsCommon(
-        client,
-        functools.partial(policy_utils.MakeExternalIPEntry, client.messages),
-        functools.partial(
-            policy_utils.MakeExternalIPNullEntryForDisablingInPatch, client),
-        update_external_ips, remove_interface_names)
-
-  def _GetUpdatedStatefulPolicy(self, client, current_stateful_policy, args):
-    """Create an updated stateful policy based on specified args."""
-    stateful_policy = super(UpdateBeta, self)._GetUpdatedStatefulPolicy(
-        client, current_stateful_policy, args)
-
-    stateful_internal_ips = self._GetPatchForStatefulPolicyForInternalIPs(
-        client, args.stateful_internal_ip, args.remove_stateful_internal_ips)
-
-    stateful_external_ips = self._GetPatchForStatefulPolicyForExternalIPs(
-        client, args.stateful_external_ip, args.remove_stateful_external_ips)
-
-    return policy_utils.UpdateStatefulPolicy(
-        client.messages, stateful_policy,
-        None, stateful_internal_ips, stateful_external_ips)
 
 UpdateBeta.detailed_help = UpdateGA.detailed_help
 

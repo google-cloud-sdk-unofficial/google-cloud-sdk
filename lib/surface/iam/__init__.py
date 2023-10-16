@@ -48,3 +48,6 @@ class Iam(base.Group):
     # TODO(b/190535430):  Determine if command group works with project number
     base.RequireProjectID(args)
     base.DisableUserProjectQuota()
+
+    # Enable self signed jwt for alpha track
+    self.EnableSelfSignedJwtForTracks([base.ReleaseTrack.ALPHA])

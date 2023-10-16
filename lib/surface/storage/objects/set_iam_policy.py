@@ -30,8 +30,7 @@ from googlecloudsdk.command_lib.storage import storage_url
 from googlecloudsdk.command_lib.storage.tasks import set_iam_policy_task
 
 
-def _set_iam_policy_task_iterator(url_strings, recurse, fetch_all_versions,
-                                  policy):
+def _set_iam_policy_task_iterator(url_strings, recurse, object_state, policy):
   """Generates SetIamPolicyTask's for execution."""
   if recurse:
     recursion_requested = name_expansion.RecursionSetting.YES
@@ -40,11 +39,13 @@ def _set_iam_policy_task_iterator(url_strings, recurse, fetch_all_versions,
 
   for name_expansion_result in name_expansion.NameExpansionIterator(
       url_strings,
-      all_versions=fetch_all_versions,
       fields_scope=cloud_api.FieldsScope.SHORT,
-      recursion_requested=recursion_requested):
-    yield set_iam_policy_task.SetIamPolicyTask(
-        name_expansion_result.resource.storage_url, policy)
+      object_state=object_state,
+      recursion_requested=recursion_requested,
+  ):
+    yield set_iam_policy_task.SetObjectIamPolicyTask(
+        name_expansion_result.resource.storage_url, policy
+    )
 
 
 @base.Hidden
@@ -108,9 +109,14 @@ class SetIamPolicy(base.Command):
     policy = metadata_field_converters.process_iam_file(
         args.policy_file, custom_etag=args.etag)
     exit_code, output = iam_command_util.execute_set_iam_task_iterator(
-        _set_iam_policy_task_iterator(args.urls, args.recursive,
-                                      args.all_versions, policy),
-        args.continue_on_error)
+        _set_iam_policy_task_iterator(
+            args.urls,
+            args.recursive,
+            flags.get_object_state_from_flags(args),
+            policy,
+        ),
+        args.continue_on_error,
+    )
 
     self.exit_code = exit_code
     return output

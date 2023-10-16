@@ -1,5 +1,4 @@
 - release_tracks: [ALPHA]
-  hidden: true
   help_text:
     brief: Show details about a WasmAction.
     description: Show details about a WasmAction.

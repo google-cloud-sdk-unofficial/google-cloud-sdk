@@ -4,7 +4,7 @@
 
     Lexers for other C-like languages.
 
-    :copyright: Copyright 2006-2022 by the Pygments team, see AUTHORS.
+    :copyright: Copyright 2006-2023 by the Pygments team, see AUTHORS.
     :license: BSD, see LICENSE for details.
 """
 
@@ -38,10 +38,11 @@ class PikeLexer(CppLexer):
         'statements': [
             (words((
                 'catch', 'new', 'private', 'protected', 'public', 'gauge',
-                'throw', 'throws', 'class', 'interface', 'implement', 'abstract', 'extends', 'from',
-                'this', 'super', 'constant', 'final', 'static', 'import', 'use', 'extern',
-                'inline', 'proto', 'break', 'continue', 'if', 'else', 'for',
-                'while', 'do', 'switch', 'case', 'as', 'in', 'version', 'return', 'true', 'false', 'null',
+                'throw', 'throws', 'class', 'interface', 'implement', 'abstract',
+                'extends', 'from', 'this', 'super', 'constant', 'final', 'static',
+                'import', 'use', 'extern', 'inline', 'proto', 'break', 'continue',
+                'if', 'else', 'for', 'while', 'do', 'switch', 'case', 'as', 'in',
+                'version', 'return', 'true', 'false', 'null',
                 '__VERSION__', '__MAJOR__', '__MINOR__', '__BUILD__', '__REAL_VERSION__',
                 '__REAL_MAJOR__', '__REAL_MINOR__', '__REAL_BUILD__', '__DATE__', '__TIME__',
                 '__FILE__', '__DIR__', '__LINE__', '__AUTO_BIGNUM__', '__NT__', '__PIKE__',
@@ -126,7 +127,7 @@ class ClayLexer(RegexLexer):
         ],
         'strings': [
             (r'(?i)\\(x[0-9a-f]{2}|.)', String.Escape),
-            (r'.', String),
+            (r'[^\\"]+', String),
         ],
         'nl': [
             (r'\n', String),
@@ -304,8 +305,8 @@ class CudaLexer(CLexer):
                  '__syncthreads_or'}
     execution_confs = {'<<<', '>>>'}
 
-    def get_tokens_unprocessed(self, text):
-        for index, token, value in CLexer.get_tokens_unprocessed(self, text):
+    def get_tokens_unprocessed(self, text, stack=('root',)):
+        for index, token, value in CLexer.get_tokens_unprocessed(self, text, stack):
             if token is Name:
                 if value in self.variable_qualifiers:
                     token = Keyword.Type
@@ -525,8 +526,8 @@ class ArduinoLexer(CppLexer):
         'typename', 'this', 'alignof', 'constexpr', 'decltype', 'noexcept',
         'static_assert', 'thread_local', 'restrict'}
 
-    def get_tokens_unprocessed(self, text):
-        for index, token, value in CppLexer.get_tokens_unprocessed(self, text):
+    def get_tokens_unprocessed(self, text, stack=('root',)):
+        for index, token, value in CppLexer.get_tokens_unprocessed(self, text, stack):
             if value in self.structure:
                 yield index, Name.Builtin, value
             elif value in self.operators:

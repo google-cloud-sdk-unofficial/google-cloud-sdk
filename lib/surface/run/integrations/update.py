@@ -76,7 +76,7 @@ class Update(base.Command):
           remove_service=remove_service)
 
       resource = client.GetIntegrationGeneric(integration_name)
-      resource_status = client.GetIntegrationStatus(integration_name)
+      resource_status = client.GetIntegrationStatus(resource.id)
       metadata = types_utils.GetTypeMetadataFromResource(resource)
 
       pretty_print.Info('')
@@ -84,16 +84,20 @@ class Update(base.Command):
           messages_util.GetSuccessMessage(
               integration_type=metadata.integration_type,
               integration_name=integration_name,
-              action='updated'))
+              action='updated',
+          )
+      )
 
-      call_to_action = messages_util.GetCallToAction(metadata,
-                                                     resource,
-                                                     resource_status)
+      call_to_action = messages_util.GetCallToAction(
+          metadata, resource, resource_status
+      )
 
       # Call to action should not be shown upon service removals.
       if call_to_action and not remove_service:
         pretty_print.Info('')
         pretty_print.Info(call_to_action)
         pretty_print.Info(
-            messages_util.CheckStatusMessage(self.ReleaseTrack(),
-                                             integration_name))
+            messages_util.CheckStatusMessage(
+                self.ReleaseTrack(), integration_name
+            )
+        )

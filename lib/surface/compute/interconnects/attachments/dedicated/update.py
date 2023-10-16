@@ -65,7 +65,7 @@ class Update(base.UpdateCommand):
   def Run(self, args):
     interconnect_attachment = self._get_attachment(args)
     admin_enabled = attachment_flags.GetAdminEnabledFlag(args)
-    return interconnect_attachment.PatchGa(
+    return interconnect_attachment.Patch(
         description=args.description,
         admin_enabled=admin_enabled,
         bandwidth=getattr(args, 'bandwidth', None),
@@ -73,9 +73,12 @@ class Update(base.UpdateCommand):
         stack_type=getattr(args, 'stack_type', None),
         candidate_ipv6_subnets=getattr(args, 'candidate_ipv6_subnets', None),
         cloud_router_ipv6_interface_id=getattr(
-            args, 'cloud_router_ipv6_interface_id', None),
+            args, 'cloud_router_ipv6_interface_id', None
+        ),
         customer_router_ipv6_interface_id=getattr(
-            args, 'customer_router_ipv6_interface_id', None))
+            args, 'customer_router_ipv6_interface_id', None
+        ),
+    )
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
@@ -108,7 +111,7 @@ class UpdateBeta(Update):
         label_fingerprint = old_attachment.labelFingerprint
     admin_enabled = attachment_flags.GetAdminEnabledFlag(args)
 
-    return interconnect_attachment.PatchAlphaAndBeta(
+    return interconnect_attachment.Patch(
         description=args.description,
         admin_enabled=admin_enabled,
         labels=labels,
@@ -118,9 +121,12 @@ class UpdateBeta(Update):
         stack_type=getattr(args, 'stack_type', None),
         candidate_ipv6_subnets=getattr(args, 'candidate_ipv6_subnets', None),
         cloud_router_ipv6_interface_id=getattr(
-            args, 'cloud_router_ipv6_interface_id', None),
+            args, 'cloud_router_ipv6_interface_id', None
+        ),
         customer_router_ipv6_interface_id=getattr(
-            args, 'customer_router_ipv6_interface_id', None))
+            args, 'customer_router_ipv6_interface_id', None
+        ),
+    )
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)

@@ -105,8 +105,9 @@ class Create(base.CreateCommand):
     )
 
     messages = holder.client.messages
-    interconnect_type = flags.GetInterconnectType(messages,
-                                                  args.interconnect_type)
+    interconnect_type = flags.GetInterconnectType(
+        messages, args.interconnect_type
+    )
     link_type = flags.GetLinkType(messages, args.link_type)
 
     remote_location = None
@@ -124,6 +125,9 @@ class Create(base.CreateCommand):
         location=location_ref.SelfLink(),
         customer_name=args.customer_name,
         remote_location=remote_location,
+        requested_features=flags.GetRequestedFeatures(
+            messages, args.requested_features
+        ),
     )
 
   def Epilog(self, resources_were_displayed):
@@ -185,7 +189,7 @@ class CreateAlphaBeta(Create):
       remote_location = remote_location_ref.SelfLink()
       self.is_cci = True
 
-    return interconnect.CreateAlphaBeta(
+    return interconnect.Create(
         description=args.description,
         interconnect_type=interconnect_type,
         requested_link_count=args.requested_link_count,

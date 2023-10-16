@@ -27,7 +27,9 @@ from googlecloudsdk.api_lib.util import waiter
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.artifacts import flags
 from googlecloudsdk.command_lib.artifacts import util
+from googlecloudsdk.core import properties
 from googlecloudsdk.core import resources
+from googlecloudsdk.core.util import scaled_integer
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
@@ -132,6 +134,10 @@ class Upload(base.Command):
           )
 
   def uploadArtifact(self, args, file_path, client, messages):
+    # Default chunk size to be consistent for uploading to clouds.
+    chunksize = scaled_integer.ParseInteger(
+        properties.VALUES.storage.upload_chunk_size.Get()
+    )
     repo_ref = args.CONCEPTS.repository.Parse()
     # If destination_path was not specified,
     # take the last portion of the file path as the the file name.
@@ -156,7 +162,8 @@ class Upload(base.Command):
         parent=repo_ref.RelativeName())
 
     mime_type = util.GetMimetype(file_path)
-    upload = transfer.Upload.FromFile(file_path, mime_type=mime_type)
+    upload = transfer.Upload.FromFile(
+        file_path, mime_type=mime_type, chunksize=chunksize)
     op_obj = client.projects_locations_repositories_genericArtifacts.Upload(
         request, upload=upload)
     op = op_obj.operation

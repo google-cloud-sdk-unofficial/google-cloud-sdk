@@ -31,7 +31,6 @@ from googlecloudsdk.command_lib.storage import wildcard_iterator
 from googlecloudsdk.command_lib.storage.resources import full_resource_formatter
 from googlecloudsdk.command_lib.storage.resources import gsutil_json_printer
 from googlecloudsdk.command_lib.storage.resources import resource_util
-from googlecloudsdk.core.resource import resource_projector
 
 
 class Describe(base.DescribeCommand):
@@ -56,14 +55,17 @@ class Describe(base.DescribeCommand):
       """,
   }
 
-  @staticmethod
-  def Args(parser):
+  @classmethod
+  def Args(cls, parser):
     parser.add_argument('url', help='Specifies URL of object to describe.')
     flags.add_additional_headers_flag(parser)
     flags.add_encryption_flags(parser, command_only_reads_data=True)
     flags.add_fetch_encrypted_object_hashes_flag(parser, is_list=False)
     flags.add_raw_display_flag(parser)
     gsutil_json_printer.GsutilJsonPrinter.Register()
+
+    if cls.ReleaseTrack() == base.ReleaseTrack.ALPHA:
+      flags.add_soft_deleted_flag(parser)
 
   def Run(self, args):
     encryption_util.initialize_key_store(args)
@@ -82,6 +84,7 @@ class Describe(base.DescribeCommand):
         url.object_name,
         generation=url.generation,
         fields_scope=cloud_api.FieldsScope.FULL,
+        soft_deleted=getattr(args, 'soft_deleted', False),
     )
 
     if (args.fetch_encrypted_object_hashes and
@@ -98,16 +101,13 @@ class Describe(base.DescribeCommand):
           fields_scope=cloud_api.FieldsScope.FULL,
           generation=resource.generation,
           request_config=request_config,
+          soft_deleted=getattr(args, 'soft_deleted', False),
       )
     else:
       final_resource = resource
 
-    if args.raw:
-      display_data = final_resource.metadata
-    else:
-      display_data = resource_util.get_parsable_display_dict_for_resource(
-          final_resource, full_resource_formatter.ObjectDisplayTitlesAndDefaults
-      )
-    # MakeSerializable will omit all the None values.
-    serialized_display_data = resource_projector.MakeSerializable(display_data)
-    return serialized_display_data
+    return resource_util.get_display_dict_for_resource(
+        final_resource,
+        full_resource_formatter.ObjectDisplayTitlesAndDefaults,
+        display_raw_keys=args.raw,
+    )

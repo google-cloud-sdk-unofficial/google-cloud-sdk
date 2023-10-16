@@ -40,7 +40,10 @@ class Disable(base.UpdateCommand):
 
   @classmethod
   def Args(cls, parser):
+
     top_group = parser.add_argument_group(mutex=True)
+    flags.no_fleet_default_cfg_flag().AddToParser(top_group)
+
     cmd_flags = flags.PocoFlags(top_group, 'disable')
     cmd_flags.add_memberships()
 

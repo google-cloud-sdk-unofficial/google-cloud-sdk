@@ -25,6 +25,7 @@ from googlecloudsdk.command_lib.iam import iam_util
 from googlecloudsdk.command_lib.storage import errors_util
 from googlecloudsdk.command_lib.storage import iam_command_util
 from googlecloudsdk.command_lib.storage import storage_url
+from googlecloudsdk.command_lib.storage.tasks import set_iam_policy_task
 
 
 class AddIamPolicyBinding(base.Command):
@@ -65,4 +66,9 @@ class AddIamPolicyBinding(base.Command):
     policy = api_factory.get_api(url_object.scheme).get_bucket_iam_policy(
         url_object.bucket_name)
     return iam_command_util.add_iam_binding_to_resource(
-        args, url_object, apis.GetMessagesModule('storage', 'v1'), policy)
+        args,
+        url_object,
+        apis.GetMessagesModule('storage', 'v1'),
+        policy,
+        set_iam_policy_task.SetBucketIamPolicyTask,
+    )

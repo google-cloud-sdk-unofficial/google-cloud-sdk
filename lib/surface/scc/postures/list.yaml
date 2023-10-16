@@ -8,7 +8,7 @@
     examples: |
        List all postures in organization 123. If location is omitted,
        this returns postures from location 'global'. For a posture with multiple revisions,
-       only the latest revision of the posture is returned in the output.
+       only the latest updated revision of the posture is returned in the output.
 
         $ {command} organizations/123
 

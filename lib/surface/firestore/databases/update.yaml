@@ -29,4 +29,3 @@
     - _REF_: googlecloudsdk.command_lib.firestore.flags:enable_delete_protection
       release_tracks: [ALPHA]
     - _REF_: googlecloudsdk.command_lib.firestore.flags:enable_pitr
-      release_tracks: [ALPHA]

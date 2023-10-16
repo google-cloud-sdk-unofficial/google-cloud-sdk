@@ -2,8 +2,8 @@
   help_text:
     brief: Create a Cloud Security Command Center (SCC) posture deployment.
     description: |
-      Create a  Cloud Security Command Center (SCC) posture deployment. First argument is the parent of the posture-deployment to
-      be created. Second argument is the name of the posture-deployment to be created. It is followed by details of the posture to be deployed and the target_resource to be deployed on.
+      Create a  Cloud Security Command Center (SCC) posture deployment. First argument is the parent of the posture deployment to
+      be created. Second argument is the name of the posture deployment to be created. It is followed by details of the posture to be deployed and the target_resource to be deployed on.
 
       LRO operation ID is returned as the response of the command.
     example: |
@@ -32,7 +32,7 @@
       is_positional: true
       required: true
       help_text: |
-         Name of the posture-deployment to be created. It has to be unique for an organization.
+         Name of the posture deployment to be created. It has to be unique for an organization.
 
     - arg_name: posture-name
       api_field: postureDeployment.postureId
@@ -61,4 +61,7 @@
     - arg_name: description
       api_field: postureDeployment.description
       help_text: |
-        User provided description of the posture-deployment.
+        User-provided description of the posture deployment.
+
+  async:
+    collection: securityposture.organizations.locations.operations

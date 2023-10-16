@@ -18,6 +18,8 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+import collections
+
 from googlecloudsdk.api_lib.storage import cloud_api
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
@@ -43,6 +45,56 @@ _BULK_RESTORE_FLAGS = [
 ]
 
 
+def _url_iterator(args):
+  """Extracts, validates, and yields URLs."""
+  for url_string in stdin_iterator.get_urls_iterable(
+      args.urls, args.read_paths_from_stdin
+  ):
+    url = storage_url.storage_url_from_string(url_string)
+    # TODO(b/292075826): Remove once bucket restore supported.
+    errors_util.raise_error_if_not_cloud_object(args.command_path, url)
+    errors_util.raise_error_if_not_gcs(args.command_path, url)
+    yield url
+
+
+def _async_restore_task_iterator(args, user_request_args):
+  """Yields non-blocking restore tasks."""
+  bucket_to_globs = collections.defaultdict(list)
+  for url in _url_iterator(args):
+    # TODO(b/292075826): Add exception for buckets once bucket restore
+    # is supported
+    if not wildcard_iterator.contains_wildcard(url.url_string):
+      log.warning(
+          'Bulk restores are long operations. For restoring a single'
+          ' object, you should probably use a synchronous restore'
+          ' without the --async flag. URL without wildcards: {}'.format(url)
+      )
+    bucket_to_globs[storage_url.CloudUrl(url.scheme, url.bucket_name)].append(
+        url.object_name
+    )
+
+  for bucket_url, object_globs in bucket_to_globs.items():
+    yield bulk_restore_objects_task.BulkRestoreObjectsTask(
+        bucket_url,
+        object_globs,
+        allow_overwrite=args.allow_overwrite,
+        deleted_after_time=args.deleted_after_time,
+        deleted_before_time=args.deleted_before_time,
+        user_request_args=user_request_args,
+    )
+
+
+def _sync_restore_task_iterator(args, fields_scope, user_request_args):
+  """Yields blocking restore tasks."""
+  for url in _url_iterator(args):
+    for resource in wildcard_iterator.get_wildcard_iterator(
+        url.url_string,
+        fields_scope=fields_scope,
+        object_state=cloud_api.ObjectState.SOFT_DELETED,
+    ):
+      yield restore_object_task.RestoreObjectTask(resource, user_request_args)
+
+
 def _restore_task_iterator(args):
   """Yields restore tasks."""
   if args.preserve_acl:
@@ -54,29 +106,9 @@ def _restore_task_iterator(args):
           args, metadata_type=user_request_args_factory.MetadataType.OBJECT
       )
   )
-  for url_string in stdin_iterator.get_urls_iterable(
-      args.urls, args.read_paths_from_stdin
-  ):
-    url = storage_url.storage_url_from_string(url_string)
-    # TODO(b/292075826): Remove once bucket restore supported.
-    errors_util.raise_error_if_not_cloud_object(args.command_path, url)
-    errors_util.raise_error_if_not_gcs(args.command_path, url)
-
-    if args.asyncronous:
-      yield bulk_restore_objects_task.BulkRestoreObjectsTask(
-          url,
-          allow_overwrite=args.allow_overwrite,
-          deleted_after_time=args.deleted_after_time,
-          deleted_before_time=args.deleted_before_time,
-          user_request_args=user_request_args,
-      )
-    else:
-      for resource in wildcard_iterator.get_wildcard_iterator(
-          url_string,
-          fields_scope=fields_scope,
-          soft_deleted_only=True,
-      ):
-        yield restore_object_task.RestoreObjectTask(resource, user_request_args)
+  if args.asyncronous:
+    return _async_restore_task_iterator(args, user_request_args)
+  return _sync_restore_task_iterator(args, fields_scope, user_request_args)
 
 
 @base.Hidden

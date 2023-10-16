@@ -4,14 +4,14 @@
 
     Lexers for Haskell and related languages.
 
-    :copyright: Copyright 2006-2022 by the Pygments team, see AUTHORS.
+    :copyright: Copyright 2006-2023 by the Pygments team, see AUTHORS.
     :license: BSD, see LICENSE for details.
 """
 
 import re
 
 from pygments.lexer import Lexer, RegexLexer, bygroups, do_insertions, \
-    default, include, inherit
+    default, include, inherit, line_re
 from pygments.token import Text, Comment, Operator, Keyword, Name, String, \
     Number, Punctuation, Generic, Whitespace
 from pygments import unistring as uni
@@ -19,9 +19,6 @@ from pygments import unistring as uni
 __all__ = ['HaskellLexer', 'HspecLexer', 'IdrisLexer', 'AgdaLexer', 'CryptolLexer',
            'LiterateHaskellLexer', 'LiterateIdrisLexer', 'LiterateAgdaLexer',
            'LiterateCryptolLexer', 'KokaLexer']
-
-
-line_re = re.compile('.*?\n')
 
 
 class HaskellLexer(RegexLexer):
@@ -166,7 +163,7 @@ class HspecLexer(HaskellLexer):
 
     name = 'Hspec'
     aliases = ['hspec']
-    filenames = []
+    filenames = ['*Spec.hs']
     mimetypes = []
 
     tokens = {
@@ -305,19 +302,22 @@ class AgdaLexer(RegexLexer):
     filenames = ['*.agda']
     mimetypes = ['text/x-agda']
 
-    reserved = ['abstract', 'codata', 'coinductive', 'constructor', 'data', 'do',
-                'eta-equality', 'field', 'forall', 'hiding', 'in', 'inductive', 'infix',
-                'infixl', 'infixr', 'instance', 'interleaved', 'let', 'macro', 'mutual',
-                'no-eta-equality', 'open', 'overlap', 'pattern', 'postulate', 'primitive', 'private',
-                'quote', 'quoteTerm',
-                'record', 'renaming', 'rewrite', 'syntax', 'tactic',
-                'unquote', 'unquoteDecl', 'unquoteDef', 'using', 'variable', 'where', 'with']
+    reserved = (
+        'abstract', 'codata', 'coinductive', 'constructor', 'data', 'do',
+        'eta-equality', 'field', 'forall', 'hiding', 'in', 'inductive', 'infix',
+        'infixl', 'infixr', 'instance', 'interleaved', 'let', 'macro', 'mutual',
+        'no-eta-equality', 'open', 'overlap', 'pattern', 'postulate', 'primitive',
+        'private', 'quote', 'quoteTerm', 'record', 'renaming', 'rewrite',
+        'syntax', 'tactic', 'unquote', 'unquoteDecl', 'unquoteDef', 'using',
+        'variable', 'where', 'with',
+    )
 
     tokens = {
         'root': [
             # Declaration
             (r'^(\s*)([^\s(){}]+)(\s*)(:)(\s*)',
-             bygroups(Whitespace, Name.Function, Whitespace, Operator.Word, Whitespace)),
+             bygroups(Whitespace, Name.Function, Whitespace,
+                      Operator.Word, Whitespace)),
             # Comments
             (r'--(?![!#$%&*+./<=>?@^|_~:\\]).*?$', Comment.Single),
             (r'\{-', Comment.Multiline, 'comment'),
@@ -326,7 +326,8 @@ class AgdaLexer(RegexLexer):
             # Lexemes:
             #  Identifiers
             (r'\b(%s)(?!\')\b' % '|'.join(reserved), Keyword.Reserved),
-            (r'(import|module)(\s+)', bygroups(Keyword.Reserved, Whitespace), 'module'),
+            (r'(import|module)(\s+)', bygroups(Keyword.Reserved, Whitespace),
+             'module'),
             (r'\b(Set|Prop)[\u2080-\u2089]*\b', Keyword.Type),
             #  Special Symbols
             (r'(\(|\)|\{|\})', Operator),
@@ -351,7 +352,7 @@ class AgdaLexer(RegexLexer):
         ],
         'module': [
             (r'\{-', Comment.Multiline, 'comment'),
-            (r'[a-zA-Z][\w.]*', Name, '#pop'),
+            (r'[a-zA-Z][\w.\']*', Name, '#pop'),
             (r'[\W0-9_]+', Text)
         ],
         'comment': HaskellLexer.tokens['comment'],

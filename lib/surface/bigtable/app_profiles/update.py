@@ -145,8 +145,8 @@ class UpdateAppProfileAlpha(UpdateAppProfile):
             allow_failover_radius=True,
             allow_row_affinity=True,
         )
+        .AddIsolation()
         .AddForce('update')
-        .AddRequestPriority()
         .AddAsync()
     )
 

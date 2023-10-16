@@ -76,7 +76,7 @@ class CreateBeta(Create):
   """Create a Compute Engine reservation."""
   _support_share_setting = True
   _support_ssd_count = False
-  _support_auto_delete = False
+  _support_auto_delete = True
 
   @classmethod
   def Args(cls, parser):
@@ -85,7 +85,7 @@ class CreateBeta(Create):
     flags.AddCreateFlags(
         parser,
         support_share_setting=cls._support_share_setting,
-    )
+        support_auto_delete=cls._support_auto_delete)
 
   def Run(self, args):
     return _RunCreate(

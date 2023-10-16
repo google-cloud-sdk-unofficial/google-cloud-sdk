@@ -58,9 +58,9 @@ class Create(base.CreateCommand):
     flags.Description().AddToParser(parser)
     resource_args.AddExpireBehaviorArg(parser)
     resource_args.AddInstanceTypeArg(parser)
-    group_parser = parser.add_argument_group(mutex=True, required=False)
-    flags.Nodes().AddToParser(group_parser)
-    flags.ProcessingUnits().AddToParser(group_parser)
+    flags.AddCapacityArgsForInstance(
+        require_all_autoscaling_args=True, parser=parser
+    )
     base.ASYNC_FLAG.AddToParser(parser)
     parser.display_info.AddCacheUpdater(flags.InstanceCompleter)
 
@@ -83,6 +83,12 @@ class Create(base.CreateCommand):
         description=args.description,
         nodes=args.nodes,
         processing_units=args.processing_units,
+        autoscaling_min_nodes=args.autoscaling_min_nodes,
+        autoscaling_max_nodes=args.autoscaling_max_nodes,
+        autoscaling_min_processing_units=args.autoscaling_min_processing_units,
+        autoscaling_max_processing_units=args.autoscaling_max_processing_units,
+        autoscaling_high_priority_cpu_target=args.autoscaling_high_priority_cpu_target,
+        autoscaling_storage_target=args.autoscaling_storage_target,
         instance_type=instance_type,
         expire_behavior=expire_behavior,
     )

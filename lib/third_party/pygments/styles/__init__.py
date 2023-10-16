@@ -4,64 +4,76 @@
 
     Contains built-in styles.
 
-    :copyright: Copyright 2006-2022 by the Pygments team, see AUTHORS.
+    :copyright: Copyright 2006-2023 by the Pygments team, see AUTHORS.
     :license: BSD, see LICENSE for details.
 """
 
 from pygments.plugin import find_plugin_styles
 from pygments.util import ClassNotFound
 
-
-#: Maps style names to 'submodule::classname'.
+#: A dictionary of built-in styles, mapping style names to
+#: ``'submodule::classname'`` strings.
 STYLE_MAP = {
-    'default':  'default::DefaultStyle',
-    'emacs':    'emacs::EmacsStyle',
-    'friendly': 'friendly::FriendlyStyle',
-    'friendly_grayscale': 'friendly_grayscale::FriendlyGrayscaleStyle',
-    'colorful': 'colorful::ColorfulStyle',
-    'autumn':   'autumn::AutumnStyle',
-    'murphy':   'murphy::MurphyStyle',
-    'manni':    'manni::ManniStyle',
-    'material': 'material::MaterialStyle',
-    'monokai':  'monokai::MonokaiStyle',
-    'perldoc':  'perldoc::PerldocStyle',
-    'pastie':   'pastie::PastieStyle',
-    'borland':  'borland::BorlandStyle',
-    'trac':     'trac::TracStyle',
-    'native':   'native::NativeStyle',
-    'fruity':   'fruity::FruityStyle',
-    'bw':       'bw::BlackWhiteStyle',
-    'vim':      'vim::VimStyle',
-    'vs':       'vs::VisualStudioStyle',
-    'tango':    'tango::TangoStyle',
-    'rrt':      'rrt::RrtStyle',
-    'xcode':    'xcode::XcodeStyle',
-    'igor':     'igor::IgorStyle',
-    'paraiso-light': 'paraiso_light::ParaisoLightStyle',
-    'paraiso-dark': 'paraiso_dark::ParaisoDarkStyle',
-    'lovelace': 'lovelace::LovelaceStyle',
-    'algol':    'algol::AlgolStyle',
+    'abap': 'abap::AbapStyle',
     'algol_nu': 'algol_nu::Algol_NuStyle',
-    'arduino':  'arduino::ArduinoStyle',
-    'rainbow_dash': 'rainbow_dash::RainbowDashStyle',
-    'abap':     'abap::AbapStyle',
-    'solarized-dark': 'solarized::SolarizedDarkStyle',
-    'solarized-light': 'solarized::SolarizedLightStyle',
-    'sas':         'sas::SasStyle',
-    'stata':       'stata_light::StataLightStyle',
-    'stata-light': 'stata_light::StataLightStyle',
-    'stata-dark':  'stata_dark::StataDarkStyle',
-    'inkpot':      'inkpot::InkPotStyle',
-    'zenburn': 'zenburn::ZenburnStyle',
+    'algol': 'algol::AlgolStyle',
+    'arduino': 'arduino::ArduinoStyle',
+    'autumn': 'autumn::AutumnStyle',
+    'borland': 'borland::BorlandStyle',
+    'bw': 'bw::BlackWhiteStyle',
+    'colorful': 'colorful::ColorfulStyle',
+    'default': 'default::DefaultStyle',
+    'dracula': 'dracula::DraculaStyle',
+    'emacs': 'emacs::EmacsStyle',
+    'friendly_grayscale': 'friendly_grayscale::FriendlyGrayscaleStyle',
+    'friendly': 'friendly::FriendlyStyle',
+    'fruity': 'fruity::FruityStyle',
+    'github-dark': 'gh_dark::GhDarkStyle',
     'gruvbox-dark': 'gruvbox::GruvboxDarkStyle',
     'gruvbox-light': 'gruvbox::GruvboxLightStyle',
-    'dracula': 'dracula::DraculaStyle',
+    'igor': 'igor::IgorStyle',
+    'inkpot': 'inkpot::InkPotStyle',
+    'lightbulb': 'lightbulb::LightbulbStyle',
+    'lilypond': 'lilypond::LilyPondStyle',
+    'lovelace': 'lovelace::LovelaceStyle',
+    'manni': 'manni::ManniStyle',
+    'material': 'material::MaterialStyle',
+    'monokai': 'monokai::MonokaiStyle',
+    'murphy': 'murphy::MurphyStyle',
+    'native':   'native::NativeStyle',
+    'nord-darker': 'nord::NordDarkerStyle',
+    'nord': 'nord::NordStyle',
     'one-dark': 'onedark::OneDarkStyle',
-    'lilypond' : 'lilypond::LilyPondStyle',
+    'paraiso-dark': 'paraiso_dark::ParaisoDarkStyle',
+    'paraiso-light': 'paraiso_light::ParaisoLightStyle',
+    'pastie': 'pastie::PastieStyle',
+    'perldoc': 'perldoc::PerldocStyle',
+    'rainbow_dash': 'rainbow_dash::RainbowDashStyle',
+    'rrt': 'rrt::RrtStyle',
+    'sas': 'sas::SasStyle',
+    'solarized-dark': 'solarized::SolarizedDarkStyle',
+    'solarized-light': 'solarized::SolarizedLightStyle',
+    'staroffice': 'staroffice::StarofficeStyle',
+    'stata-dark': 'stata_dark::StataDarkStyle',
+    'stata-light': 'stata_light::StataLightStyle',
+    'stata': 'stata_light::StataLightStyle',
+    'tango': 'tango::TangoStyle',
+    'trac': 'trac::TracStyle',
+    'vim': 'vim::VimStyle',
+    'vs': 'vs::VisualStudioStyle',
+    'xcode': 'xcode::XcodeStyle',
+    'zenburn': 'zenburn::ZenburnStyle'
 }
 
 
 def get_style_by_name(name):
+    """
+    Return a style class by its short name. The names of the builtin styles
+    are listed in :data:`pygments.styles.STYLE_MAP`.
+
+    Will raise :exc:`pygments.util.ClassNotFound` if no style of that name is
+    found.
+    """
     if name in STYLE_MAP:
         mod, cls = STYLE_MAP[name].split('::')
         builtin = "yes"
@@ -86,8 +98,7 @@ def get_style_by_name(name):
 
 
 def get_all_styles():
-    """Return a generator for all styles by name,
-    both builtin and plugin."""
+    """Return a generator for all styles by name, both builtin and plugin."""
     yield from STYLE_MAP
     for name, _ in find_plugin_styles():
         yield name

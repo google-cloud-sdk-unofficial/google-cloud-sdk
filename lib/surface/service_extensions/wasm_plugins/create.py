@@ -51,7 +51,6 @@ def GetPluginConfigData(args):
   return args.plugin_config or args.plugin_config_file
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Create(base.CreateCommand):
   """Create a WasmPlugin."""

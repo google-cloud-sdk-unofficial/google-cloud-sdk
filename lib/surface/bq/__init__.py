@@ -31,3 +31,6 @@ class Bq(base.Group):
     # TODO(b/190526493):  Determine if command group works with project number
     base.RequireProjectID(args)
     del context, args
+
+    # Enable self signed jwt for alpha track
+    self.EnableSelfSignedJwtForTracks([base.ReleaseTrack.ALPHA])

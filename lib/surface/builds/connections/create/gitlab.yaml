@@ -1,5 +1,4 @@
-- release_tracks: [ALPHA, BETA, GA]
-  help_text:
+- help_text:
     brief: Create a Cloud Build Connection for gitlab.com or GitLab Enterprise.
     description: |
       Create a Cloud Build Connection for gitlab.com or GitLab Enterprise.

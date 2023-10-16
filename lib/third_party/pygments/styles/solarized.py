@@ -7,7 +7,7 @@
     A Pygments style for the Solarized themes (licensed under MIT).
     See: https://github.com/altercation/solarized
 
-    :copyright: Copyright 2006-2022 by the Pygments team, see AUTHORS.
+    :copyright: Copyright 2006-2023 by the Pygments team, see AUTHORS.
     :license: BSD, see LICENSE for details.
 """
 
@@ -67,6 +67,7 @@ def make_style(colors):
         Generic.Output:      colors['base0'],
         Generic.Prompt:      'bold ' + colors['blue'],
         Generic.Strong:      'bold',
+        Generic.EmphStrong:  'bold italic',
         Generic.Traceback:   colors['blue'],
 
         Error:               'bg:' + colors['red'],

@@ -35,7 +35,9 @@ def _set_iam_policy_task_iterator(url_strings, policy):
   for url_string in url_strings:
     for resource in wildcard_iterator.get_wildcard_iterator(
         url_string, fields_scope=cloud_api.FieldsScope.SHORT):
-      yield set_iam_policy_task.SetIamPolicyTask(resource.storage_url, policy)
+      yield set_iam_policy_task.SetBucketIamPolicyTask(
+          resource.storage_url, policy
+      )
 
 
 class SetIamPolicy(base.Command):

@@ -21,15 +21,14 @@ from __future__ import unicode_literals
 from googlecloudsdk.api_lib.vmware.privateclouds import PrivateCloudsClient
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.vmware import flags
+from googlecloudsdk.core import resources
 from googlecloudsdk.core.resource import resource_projector
 
 DETAILED_HELP = {
-    'DESCRIPTION':
-        """
+    'DESCRIPTION': """
           List VMware Engine private clouds.
         """,
-    'EXAMPLES':
-        """
+    'EXAMPLES': """
           To list VMware Engine operations in the location `us-west2-a`, run:
 
             $ {command} --location=us-west2-a
@@ -58,10 +57,11 @@ class List(base.ListCommand):
         'name.segment(-5):label=PROJECT,'
         'name.segment(-3):label=LOCATION,'
         'createTime,state,vcenter.fqdn:label=VCENTER_FQDN,type,'
-        'managementCluster.stretchedClusterConfig.preferredLocation:'
+        'managementCluster.stretchedClusterConfig.preferredLocation.segment(-1):'
         'label=PREFERRED_ZONE,'
-        'managementCluster.stretchedClusterConfig.secondaryLocation:'
-        'label=SECONDARY_ZONE)')
+        'managementCluster.stretchedClusterConfig.secondaryLocation.segment(-1):'
+        'label=SECONDARY_ZONE)'
+    )
 
   def Run(self, args):
     location = args.CONCEPTS.location.Parse()
@@ -73,5 +73,18 @@ class List(base.ListCommand):
       if not private_cloud.get('type'):
         private_cloud['type'] = (
             client.messages.PrivateCloud.TypeValueValuesEnum.STANDARD
+        )
+      if private_cloud.get('type') == 'STRETCHED':
+        # private cloud name example:
+        # projects/sample-project/locations/us-west1-a/privateClouds/pc-name
+        private_cloud_name = private_cloud.get('name').split('/')
+        private_cloud_resource = resources.REGISTRY.Create(
+            'vmwareengine.projects.locations.privateClouds',
+            projectsId=private_cloud_name[-5],
+            locationsId=private_cloud_name[-3],
+            privateCloudsId=private_cloud_name[-1],
+        )
+        private_cloud['managementCluster'] = client.GetManagementCluster(
+            private_cloud_resource
         )
       yield private_cloud
