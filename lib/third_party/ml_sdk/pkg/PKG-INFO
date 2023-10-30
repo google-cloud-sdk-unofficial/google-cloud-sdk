@@ -1,4 +1,4 @@
-Metadata-Version: 1.0
+Metadata-Version: 2.1
 Name: cloudml
 Version: 0.1
 Summary: Google Cloud Machine Learning Prediction SDK
@@ -6,5 +6,8 @@ Home-page: UNKNOWN
 Author: Google
 Author-email: cloudml-feedback@google.com
 License: UNKNOWN
-Description: UNKNOWN
 Platform: UNKNOWN
+License-File: LICENSE
+
+UNKNOWN
+

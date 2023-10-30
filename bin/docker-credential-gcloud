@@ -48,9 +48,6 @@ order_python() {
       fi
     fi
   done
-  if [ -z "$selected_version" ]; then
-    selected_version=python
-  fi
   echo $selected_version
 }
 

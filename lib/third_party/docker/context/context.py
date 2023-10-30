@@ -11,6 +11,7 @@ from docker.context.config import get_context_host
 
 class Context:
     """A context."""
+
     def __init__(self, name, orchestrator=None, host=None, endpoints=None,
                  tls=False):
         if not name:
@@ -93,7 +94,7 @@ class Context:
         try:
             with open(meta_file) as f:
                 metadata = json.load(f)
-        except (IOError, KeyError, ValueError) as e:
+        except (OSError, KeyError, ValueError) as e:
             # unknown format
             raise Exception("""Detected corrupted meta file for
                 context {} : {}""".format(name, e))
@@ -127,8 +128,12 @@ class Context:
                 elif filename.startswith("key"):
                     key = os.path.join(tls_dir, endpoint, filename)
             if all([ca_cert, cert, key]):
+                verify = None
+                if endpoint == "docker" and not self.endpoints["docker"].get(
+                        "SkipTLSVerify", False):
+                    verify = True
                 certs[endpoint] = TLSConfig(
-                    client_cert=(cert, key), ca_cert=ca_cert)
+                    client_cert=(cert, key), ca_cert=ca_cert, verify=verify)
         self.tls_cfg = certs
         self.tls_path = tls_dir
 
@@ -166,7 +171,7 @@ class Context:
             rmtree(self.tls_path)
 
     def __repr__(self):
-        return "<%s: '%s'>" % (self.__class__.__name__, self.name)
+        return f"<{self.__class__.__name__}: '{self.name}'>"
 
     def __str__(self):
         return json.dumps(self.__call__(), indent=2)

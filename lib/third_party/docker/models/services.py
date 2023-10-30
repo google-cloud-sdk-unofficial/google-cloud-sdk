@@ -157,6 +157,8 @@ class ServiceCollection(Collection):
                 constraints.
             preferences (list of tuple): :py:class:`~docker.types.Placement`
                 preferences.
+            maxreplicas (int): :py:class:`~docker.types.Placement` maxreplicas
+                or (int) representing maximum number of replicas per node.
             platforms (list of tuple): A list of platform constraints
                 expressed as ``(arch, os)`` tuples.
             container_labels (dict): Labels to apply to the container.
@@ -211,6 +213,12 @@ class ServiceCollection(Collection):
                 to the service.
             privileges (Privileges): Security options for the service's
                 containers.
+            cap_add (:py:class:`list`): A list of kernel capabilities to add to
+                the default set for the container.
+            cap_drop (:py:class:`list`): A list of kernel capabilities to drop
+                from the default set for the container.
+            sysctls (:py:class:`dict`): A dict of sysctl values to add to the
+                container
 
         Returns:
             :py:class:`Service`: The created service.
@@ -258,6 +266,8 @@ class ServiceCollection(Collection):
             filters (dict): Filters to process on the nodes list. Valid
                 filters: ``id``, ``name`` , ``label`` and ``mode``.
                 Default: ``None``.
+            status (bool): Include the service task count of running and
+                desired tasks. Default: ``None``.
 
         Returns:
             list of :py:class:`Service`: The services.
@@ -275,6 +285,8 @@ class ServiceCollection(Collection):
 # kwargs to copy straight over to ContainerSpec
 CONTAINER_SPEC_KWARGS = [
     'args',
+    'cap_add',
+    'cap_drop',
     'command',
     'configs',
     'dns_config',
@@ -297,6 +309,7 @@ CONTAINER_SPEC_KWARGS = [
     'tty',
     'user',
     'workdir',
+    'sysctls',
 ]
 
 # kwargs to copy straight over to TaskTemplate
@@ -312,6 +325,7 @@ CREATE_SERVICE_KWARGS = [
     'labels',
     'mode',
     'update_config',
+    'rollback_config',
     'endpoint_spec',
 ]
 
@@ -319,6 +333,7 @@ PLACEMENT_KWARGS = [
     'constraints',
     'preferences',
     'platforms',
+    'maxreplicas',
 ]
 
 

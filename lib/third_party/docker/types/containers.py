@@ -1,5 +1,3 @@
-import six
-
 from .. import errors
 from ..utils.utils import (
     convert_port_bindings, convert_tmpfs_mounts, convert_volume_binds,
@@ -10,7 +8,7 @@ from .base import DictType
 from .healthcheck import Healthcheck
 
 
-class LogConfigTypesEnum(object):
+class LogConfigTypesEnum:
     _values = (
         'json-file',
         'syslog',
@@ -61,7 +59,7 @@ class LogConfig(DictType):
         if config and not isinstance(config, dict):
             raise ValueError("LogConfig.config must be a dictionary")
 
-        super(LogConfig, self).__init__({
+        super().__init__({
             'Type': log_driver_type,
             'Config': config
         })
@@ -97,8 +95,8 @@ class Ulimit(DictType):
 
     Args:
 
-        name (str): Which ulimit will this apply to. A list of valid names can
-            be found `here <http://tinyurl.me/ZWRkM2Ztwlykf>`_.
+        name (str): Which ulimit will this apply to. The valid names can be
+            found in '/etc/security/limits.conf' on a gnu/linux system.
         soft (int): The soft limit for this ulimit. Optional.
         hard (int): The hard limit for this ulimit. Optional.
 
@@ -117,13 +115,13 @@ class Ulimit(DictType):
         name = kwargs.get('name', kwargs.get('Name'))
         soft = kwargs.get('soft', kwargs.get('Soft'))
         hard = kwargs.get('hard', kwargs.get('Hard'))
-        if not isinstance(name, six.string_types):
+        if not isinstance(name, str):
             raise ValueError("Ulimit.name must be a string")
         if soft and not isinstance(soft, int):
             raise ValueError("Ulimit.soft must be an integer")
         if hard and not isinstance(hard, int):
             raise ValueError("Ulimit.hard must be an integer")
-        super(Ulimit, self).__init__({
+        super().__init__({
             'Name': name,
             'Soft': soft,
             'Hard': hard
@@ -184,7 +182,7 @@ class DeviceRequest(DictType):
 
         if driver is None:
             driver = ''
-        elif not isinstance(driver, six.string_types):
+        elif not isinstance(driver, str):
             raise ValueError('DeviceRequest.driver must be a string')
         if count is None:
             count = 0
@@ -203,7 +201,7 @@ class DeviceRequest(DictType):
         elif not isinstance(options, dict):
             raise ValueError('DeviceRequest.options must be a dict')
 
-        super(DeviceRequest, self).__init__({
+        super().__init__({
             'Driver': driver,
             'Count': count,
             'DeviceIDs': device_ids,
@@ -274,7 +272,8 @@ class HostConfig(dict):
                  volume_driver=None, cpu_count=None, cpu_percent=None,
                  nano_cpus=None, cpuset_mems=None, runtime=None, mounts=None,
                  cpu_rt_period=None, cpu_rt_runtime=None,
-                 device_cgroup_rules=None, device_requests=None):
+                 device_cgroup_rules=None, device_requests=None,
+                 cgroupns=None):
 
         if mem_limit is not None:
             self['Memory'] = parse_bytes(mem_limit)
@@ -297,7 +296,7 @@ class HostConfig(dict):
             self['MemorySwappiness'] = mem_swappiness
 
         if shm_size is not None:
-            if isinstance(shm_size, six.string_types):
+            if isinstance(shm_size, str):
                 shm_size = parse_bytes(shm_size)
 
             self['ShmSize'] = shm_size
@@ -334,10 +333,11 @@ class HostConfig(dict):
         if dns_search:
             self['DnsSearch'] = dns_search
 
-        if network_mode:
-            self['NetworkMode'] = network_mode
-        elif network_mode is None:
-            self['NetworkMode'] = 'default'
+        if network_mode == 'host' and port_bindings:
+            raise host_config_incompatible_error(
+                'network_mode', 'host', 'port_bindings'
+            )
+        self['NetworkMode'] = network_mode or 'default'
 
         if restart_policy:
             if not isinstance(restart_policy, dict):
@@ -357,7 +357,7 @@ class HostConfig(dict):
             self['Devices'] = parse_devices(devices)
 
         if group_add:
-            self['GroupAdd'] = [six.text_type(grp) for grp in group_add]
+            self['GroupAdd'] = [str(grp) for grp in group_add]
 
         if dns is not None:
             self['Dns'] = dns
@@ -377,11 +377,11 @@ class HostConfig(dict):
             if not isinstance(sysctls, dict):
                 raise host_config_type_error('sysctls', sysctls, 'dict')
             self['Sysctls'] = {}
-            for k, v in six.iteritems(sysctls):
-                self['Sysctls'][k] = six.text_type(v)
+            for k, v in sysctls.items():
+                self['Sysctls'][k] = str(v)
 
         if volumes_from is not None:
-            if isinstance(volumes_from, six.string_types):
+            if isinstance(volumes_from, str):
                 volumes_from = volumes_from.split(',')
 
             self['VolumesFrom'] = volumes_from
@@ -403,7 +403,7 @@ class HostConfig(dict):
 
         if isinstance(lxc_conf, dict):
             formatted = []
-            for k, v in six.iteritems(lxc_conf):
+            for k, v in lxc_conf.items():
                 formatted.append({'Key': k, 'Value': str(v)})
             lxc_conf = formatted
 
@@ -558,7 +558,7 @@ class HostConfig(dict):
             self["PidsLimit"] = pids_limit
 
         if isolation:
-            if not isinstance(isolation, six.string_types):
+            if not isinstance(isolation, str):
                 raise host_config_type_error('isolation', isolation, 'string')
             if version_lt(version, '1.24'):
                 raise host_config_version_error('isolation', '1.24')
@@ -608,7 +608,7 @@ class HostConfig(dict):
             self['CpuPercent'] = cpu_percent
 
         if nano_cpus:
-            if not isinstance(nano_cpus, six.integer_types):
+            if not isinstance(nano_cpus, int):
                 raise host_config_type_error('nano_cpus', nano_cpus, 'int')
             if version_lt(version, '1.25'):
                 raise host_config_version_error('nano_cpus', '1.25')
@@ -647,6 +647,9 @@ class HostConfig(dict):
                     req = DeviceRequest(**req)
                 self['DeviceRequests'].append(req)
 
+        if cgroupns:
+            self['CgroupnsMode'] = cgroupns
+
 
 def host_config_type_error(param, param_value, expected):
     error_msg = 'Invalid type for {0} param: expected {1} but found {2}'
@@ -662,6 +665,13 @@ def host_config_version_error(param, version, less_than=True):
 def host_config_value_error(param, param_value):
     error_msg = 'Invalid value for {0} param: {1}'
     return ValueError(error_msg.format(param, param_value))
+
+
+def host_config_incompatible_error(param, param_value, incompatible_param):
+    error_msg = '\"{1}\" {0} is incompatible with {2}'
+    return errors.InvalidArgument(
+        error_msg.format(param, param_value, incompatible_param)
+    )
 
 
 class ContainerConfig(dict):
@@ -691,17 +701,17 @@ class ContainerConfig(dict):
                     'version 1.29'
                 )
 
-        if isinstance(command, six.string_types):
+        if isinstance(command, str):
             command = split_command(command)
 
-        if isinstance(entrypoint, six.string_types):
+        if isinstance(entrypoint, str):
             entrypoint = split_command(entrypoint)
 
         if isinstance(environment, dict):
             environment = format_environment(environment)
 
         if isinstance(labels, list):
-            labels = dict((lbl, six.text_type('')) for lbl in labels)
+            labels = {lbl: '' for lbl in labels}
 
         if isinstance(ports, list):
             exposed_ports = {}
@@ -712,10 +722,10 @@ class ContainerConfig(dict):
                     if len(port_definition) == 2:
                         proto = port_definition[1]
                     port = port_definition[0]
-                exposed_ports['{0}/{1}'.format(port, proto)] = {}
+                exposed_ports[f'{port}/{proto}'] = {}
             ports = exposed_ports
 
-        if isinstance(volumes, six.string_types):
+        if isinstance(volumes, str):
             volumes = [volumes, ]
 
         if isinstance(volumes, list):
@@ -744,7 +754,7 @@ class ContainerConfig(dict):
             'Hostname': hostname,
             'Domainname': domainname,
             'ExposedPorts': ports,
-            'User': six.text_type(user) if user is not None else None,
+            'User': str(user) if user is not None else None,
             'Tty': tty,
             'OpenStdin': stdin_open,
             'StdinOnce': stdin_once,

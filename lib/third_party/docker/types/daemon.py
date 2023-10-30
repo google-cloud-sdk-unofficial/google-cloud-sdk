@@ -1,14 +1,11 @@
 import socket
 
-try:
-    import requests.packages.urllib3 as urllib3
-except ImportError:
-    import urllib3
+import urllib3
 
 from ..errors import DockerException
 
 
-class CancellableStream(object):
+class CancellableStream:
     """
     Stream wrapper for real-time events, logs, etc. from the server.
 
@@ -32,7 +29,7 @@ class CancellableStream(object):
             return next(self._stream)
         except urllib3.exceptions.ProtocolError:
             raise StopIteration
-        except socket.error:
+        except OSError:
             raise StopIteration
 
     next = __next__
