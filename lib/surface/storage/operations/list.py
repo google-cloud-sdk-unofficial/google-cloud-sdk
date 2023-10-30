@@ -21,6 +21,7 @@ from __future__ import unicode_literals
 from googlecloudsdk.api_lib.storage import api_factory
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.storage import errors_util
+from googlecloudsdk.command_lib.storage import operations_util
 from googlecloudsdk.command_lib.storage import storage_url
 
 
@@ -36,19 +37,26 @@ class List(base.ListCommand):
       'EXAMPLES': """\
       To list all storage operations that belong to the bucket "my-bucket", run:
 
-        $ {command} gs://my-bucket
+        $ {command} projects/_/buckets/my-bucket
 
       To list operations in JSON format, run:
 
-        $ {command} gs://my-bucket --format=json
+        $ {command} projects/_/buckets/my-bucket --format=json
+
+      An alternative bucket format is available:
+
+        $ {command} gs://my-bucket
       """,
   }
 
   @staticmethod
   def Args(parser):
     parser.add_argument(
-        'url',
-        help='URL of the bucket that the operations belong to.',
+        'operation_name',
+        help=(
+            'The operation name including the Cloud Storage bucket and'
+            ' operation ID.'
+        ),
     )
     parser.add_argument(
         '--server-filter',
@@ -60,9 +68,16 @@ class List(base.ListCommand):
     )
 
   def Run(self, args):
-    url_object = storage_url.storage_url_from_string(args.url)
-    errors_util.raise_error_if_not_gcs_bucket(args.command_path, url_object)
-    return api_factory.get_api(url_object.scheme).list_operations(
-        bucket_name=url_object.bucket_name,
+    url_object = storage_url.storage_url_from_string(args.operation_name)
+    if isinstance(url_object, storage_url.CloudUrl):
+      errors_util.raise_error_if_not_gcs_bucket(args.command_path, url_object)
+      bucket = url_object.bucket_name
+    else:
+      bucket = operations_util.get_operation_bucket_from_name(
+          args.operation_name
+      )
+    scheme = storage_url.ProviderPrefix.GCS
+    return api_factory.get_api(scheme).list_operations(
+        bucket_name=bucket,
         server_side_filter=args.server_filter,
     )

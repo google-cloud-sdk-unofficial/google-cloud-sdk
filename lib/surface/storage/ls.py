@@ -24,6 +24,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.storage import encryption_util
 from googlecloudsdk.command_lib.storage import errors
 from googlecloudsdk.command_lib.storage import flags
+from googlecloudsdk.command_lib.storage import list_util
 from googlecloudsdk.command_lib.storage import ls_command_util
 from googlecloudsdk.command_lib.storage import stdin_iterator
 from googlecloudsdk.command_lib.storage import storage_url
@@ -194,13 +195,13 @@ class Ls(base.Command):
         found_non_default_provider = True
 
     if args.full:
-      display_detail = ls_command_util.DisplayDetail.FULL
+      display_detail = list_util.DisplayDetail.FULL
     elif args.json:
-      display_detail = ls_command_util.DisplayDetail.JSON
+      display_detail = list_util.DisplayDetail.JSON
     elif args.long:
-      display_detail = ls_command_util.DisplayDetail.LONG
+      display_detail = list_util.DisplayDetail.LONG
     else:
-      display_detail = ls_command_util.DisplayDetail.SHORT
+      display_detail = list_util.DisplayDetail.SHORT
 
     ls_command_util.LsExecutor(
         storage_urls,
@@ -209,6 +210,7 @@ class Ls(base.Command):
         fetch_encrypted_object_hashes=args.fetch_encrypted_object_hashes,
         halt_on_empty_response=not getattr(args, 'exhaustive', False),
         include_etag=args.etag,
+        include_managed_folders=self.ReleaseTrack() is base.ReleaseTrack.ALPHA,
         next_page_token=getattr(args, 'next_page_token', None),
         object_state=flags.get_object_state_from_flags(args),
         readable_sizes=args.readable_sizes,

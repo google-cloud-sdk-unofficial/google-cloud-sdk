@@ -68,9 +68,9 @@ class Cp(base.Command):
       """,
   }
 
-  @staticmethod
-  def Args(parser):
-    cp_command_util.add_cp_and_mv_flags(parser)
+  @classmethod
+  def Args(cls, parser):
+    cp_command_util.add_cp_and_mv_flags(parser, cls.ReleaseTrack())
     cp_command_util.add_recursion_flag(parser)
 
   def Run(self, args):

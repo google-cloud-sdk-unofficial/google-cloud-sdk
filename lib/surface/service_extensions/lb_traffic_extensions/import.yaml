@@ -1,11 +1,11 @@
 release_tracks: [BETA, ALPHA]
 help_text:
   brief: |
-    Import an LB Traffic Extension.
+    Import an `LbTrafficExtension` resource.
   description: |
-    Improt an LB Traffic Extension defined in a YAML file.
+    Import an `LbTrafficExtension` resource defined in a YAML file.
   examples: |
-    To import an LB Traffic Extension named `my-traffic-extension` from a YAML file
+    To import an `LbTrafficExtension` resource named `my-traffic-extension` from a YAML file
     in `us-central1`, run:
 
         $ {command} my-traffic-extension --source=my-traffic-extension.yaml --location=us-central1
@@ -21,7 +21,7 @@ arguments:
   resource:
     spec: !REF googlecloudsdk.command_lib.service_extensions.resources:lbTrafficExtension
     help_text: |
-      Name assigned to the imported LB Traffic Extension.
+      The ID of the new or updated `LbTrafficExtension` resource.
 
 async:
   collection: networkservices.projects.locations.operations

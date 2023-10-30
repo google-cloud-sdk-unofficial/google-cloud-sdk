@@ -19,6 +19,7 @@ from __future__ import division
 from __future__ import unicode_literals
 
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.storage import errors_util
 from googlecloudsdk.command_lib.storage import flags
 from googlecloudsdk.command_lib.storage import folder_util
 from googlecloudsdk.command_lib.storage import storage_url
@@ -48,8 +49,13 @@ class List(base.ListCommand):
     flags.add_raw_display_flag(parser)
 
   def Run(self, args):
+    urls = []
     for url_string in args.url:
       url = storage_url.storage_url_from_string(url_string)
+      errors_util.raise_error_if_not_gcs(args.command_path, url)
+      urls.append(url)
+
+    for url in urls:
       for resource in wildcard_iterator.CloudWildcardIterator(
           url.join('**'),
           managed_folder_setting=folder_util.ManagedFolderSetting.LIST_WITHOUT_OBJECTS,

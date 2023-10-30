@@ -94,6 +94,30 @@ def AddQueryArgument(parser):
           ``env'' and its value is ``prod''.
         * ```labels.env:*``` to find Cloud resources that have a label
           ``env''.
+        * ```tagKeys:env``` to find Cloud resources that are directly attached
+        to tags where the
+          [`TagKey.namespacedName`](https://cloud.google.com/resource-manager/reference/rest/v3/tagKeys#resource:-tagkey)
+          contains `env`.
+        * ```tagValues:prod*``` to find Cloud resources that are directly
+          attached to tags where the
+          [`TagValue.namespacedName`](https://cloud.google.com/resource-manager/reference/rest/v3/tagValues#resource:-tagvalue)
+          contains a word prefixed by `prod`.
+        * ```tagValueIds=tagValues/123``` to find Cloud resources that are
+          directly attached to tags where the
+          [`TagValue.name`](https://cloud.google.com/resource-manager/reference/rest/v3/tagValues#resource:-tagvalue)
+          is exactly `tagValues/123`.
+        * ```effectiveTagKeys:env``` to find Cloud resources that are directly
+          attached to or inherited tags where the
+          [`TagKey.namespacedName`](https://cloud.google.com/resource-manager/reference/rest/v3/tagKeys#resource:-tagkey)
+          contains `env`.
+        * ```effectiveTagValues:prod*``` to find Cloud resources that are
+          directly attached to or inherited tags where the
+          [`TagValue.namespacedName`](https://cloud.google.com/resource-manager/reference/rest/v3/tagValues#resource:-tagvalue)
+          contains a word prefixed by `prod`.
+        * ```effectiveTagValueIds=tagValues/123``` to find Cloud resources that
+          are directly attached to or inherited tags where the
+          [`TagValue.name`](https://cloud.google.com/resource-manager/reference/rest/v3/tagValues#resource:-tagvalue)
+          is exactly `tagValues/123`.
         * ```kmsKey:key``` to find Cloud resources encrypted with a
           customer-managed encryption key whose name contains ``key'' as a word.
           This field is deprecated. Please use the `kmsKeys` field to retrieve
@@ -220,6 +244,8 @@ def AddReadMaskArgument(parser):
           * `description`
           * `location`
           * `labels`
+          * `tags`
+          * `effective_tags` or `effectiveTags`
           * `network_tags` or `networkTags`
           * `kms_keys` or `kmsKeys`
           * `create_time` or `createTime`

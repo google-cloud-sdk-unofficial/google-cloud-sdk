@@ -2,11 +2,11 @@ release_tracks: [BETA, ALPHA]
 
 help_text:
   brief: |
-    Describe an LB Traffic Extension.
+    Describe an `LbTrafficExtension` resource.
   description: |
-    Show details of an LB Traffic Extension.
+    Show details of an `LbTrafficExtension` resource.
   examples: |
-      To show details about the LB Traffic Extension named
+      To show details about the `LbTrafficExtension` resource named
       `my-traffic-extension` located in `us-central1`.
 
         $ {command} my-traffic-extension --location=us-central1
@@ -14,7 +14,7 @@ help_text:
 arguments:
   resource:
     spec: !REF googlecloudsdk.command_lib.service_extensions.resources:lbTrafficExtension
-    help_text: Name of the LB Traffic Extension to be described.
+    help_text: The ID of the `LbTrafficExtension` resource.
 
 request: &request
   ALPHA:

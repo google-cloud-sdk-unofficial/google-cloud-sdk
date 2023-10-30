@@ -1,10 +1,10 @@
 - release_tracks: [ALPHA]
   help_text:
-    brief: List all WasmPluginVersions for a WasmPlugin.
+    brief: List all `WasmPluginVersion` resources for a `WasmPlugin`.
     description: |
-      List WasmPluginVersions.
+      List `WasmPluginVersion` resources.
     examples: |
-      To list existing WasmPluginVersions, run:
+      To list existing `WasmPluginVersion` resources, run:
 
         $ {command} --wasm-plugin=WASM_PLUGIN
 
@@ -18,7 +18,7 @@
 
   arguments:
     resource:
-      help_text: The parent WasmPlugin.
+      help_text: The parent `WasmPlugin`.
       spec: !REF googlecloudsdk.command_lib.service_extensions.resources:wasmPlugin
       is_positional: false
 

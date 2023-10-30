@@ -25,10 +25,10 @@ from googlecloudsdk.calliope.base import ReleaseTrack
 from googlecloudsdk.command_lib.assured import flags
 
 _DETAILED_HELP = {
-    'DESCRIPTION':
-        'Acknowledge an existing Assured Workloads compliance violation.',
-    'EXAMPLES':
-        """ \
+    'DESCRIPTION': (
+        'Acknowledge an existing Assured Workloads compliance violation.'
+    ),
+    'EXAMPLES': """ \
         To acknowledge an Assured Workloads Violation in the `us-central1` region, belonging to an organization with ID `123`, with workload ID `456`,  with violation ID `789` and comment as `test ack`, run:
 
           $ {command} organizations/123/locations/us-central1/workloads/456/violations/789 --comment="test ack"
@@ -52,6 +52,16 @@ class Acknowledge(base.UpdateCommand):
     region = violation_resource.Parent().Parent().Name()
     violation = violation_resource.RelativeName()
     with endpoint_util.AssuredWorkloadsEndpointOverridesFromRegion(
-        release_track=self.ReleaseTrack(), region=region):
+        release_track=self.ReleaseTrack(), region=region
+    ):
       client = apis.ViolationsClient(release_track=self.ReleaseTrack())
-      return client.Acknowledge(name=violation, comment=args.comment)
+      if self.ReleaseTrack() == ReleaseTrack.GA:
+        return client.Acknowledge(
+            name=violation,
+            comment=args.comment
+        )
+      return client.Acknowledge(
+          name=violation,
+          comment=args.comment,
+          acknowledge_type=args.acknowledge_type,
+      )

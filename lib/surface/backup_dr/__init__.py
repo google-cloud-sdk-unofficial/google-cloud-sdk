@@ -19,9 +19,22 @@ from googlecloudsdk.calliope import base
 
 
 @base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA,
-                    base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
 class Backupdr(base.Group):
+  """Backup and DR command group."""
+
+  # See third_party/py/googlecloudsdk/calliope/base.py for a list of categories.
+  category = base.STORAGE_CATEGORY
+
+  def Filter(self, context, args):
+    # restricts users to pass in project id only, need to check whether
+    # its okay to pass in project number
+    base.RequireProjectID(args)
+    del context, args
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class BackupdrAlpha(base.Group):
   """Backup and DR command group."""
 
   # See third_party/py/googlecloudsdk/calliope/base.py for a list of categories.

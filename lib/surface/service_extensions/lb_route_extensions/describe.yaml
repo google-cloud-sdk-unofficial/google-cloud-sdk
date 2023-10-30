@@ -2,11 +2,11 @@ release_tracks: [BETA, ALPHA]
 
 help_text:
   brief: |
-    Describe an LB Route Extension.
+    Describe an `LbRouteExtension` resource.
   description: |
-    Show details about an LB Route Extension.
+    Show details about an `LbRouteExtension` resource.
   examples: |
-    To show details about the LB Route Extension named
+    To show details about the `LbRouteExtension` resource named
     `my-route-extension` located in `us-central1`.
 
       $ {command} my-route-extension --location=us-central1
@@ -14,7 +14,7 @@ help_text:
 arguments:
   resource:
     spec: !REF googlecloudsdk.command_lib.service_extensions.resources:lbRouteExtension
-    help_text: Name of the LB Route Extension to be described.
+    help_text: The ID of the `LbRouteExtension` resource.
 
 request: &request
   ALPHA:

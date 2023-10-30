@@ -23,6 +23,8 @@ from googlecloudsdk.calliope import base
 
 
 @base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
+)
 class CmekConfig(base.Group):
-  """Get information about Cloud Tasks CmekConfig."""
+  """Get or change CMEK configuration for Cloud Tasks."""

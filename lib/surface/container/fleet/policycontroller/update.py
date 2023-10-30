@@ -43,14 +43,18 @@ class Update(base.UpdateCommand, command.PocoCommand):
 
   feature_name = 'policycontroller'
 
+  def __init__(self, cli, context):
+    self.__feature = None
+    super().__init__(cli, context)
+
   @classmethod
   def Args(cls, parser):
     top_group = parser.add_argument_group(mutex=True)
     modal_group = top_group.add_argument_group(mutex=False)
     membership_group = modal_group.add_argument_group(mutex=True)
-    scope_flags = flags.PocoFlags(modal_group, 'enable')
+    scope_flags = flags.PocoFlags(modal_group, 'update')
     config_group = membership_group.add_argument_group(mutex=False)
-    manual_flags = flags.PocoFlags(config_group, 'config')
+    manual_flags = flags.PocoFlags(config_group, 'update')
 
     # Scope Flags
     scope_flags.add_memberships()
@@ -63,8 +67,10 @@ class Update(base.UpdateCommand, command.PocoCommand):
     manual_flags.add_monitoring()
     manual_flags.add_mutation()
     manual_flags.add_referential_rules()
-    manual_flags.add_template_library()
     manual_flags.add_version()
+
+    # Configuration origin flag
+    flags.origin_flag().AddToParser(membership_group)
 
   def Run(self, args):
     parser = flags.PocoFlagParser(args, self.messages)
@@ -72,20 +78,28 @@ class Update(base.UpdateCommand, command.PocoCommand):
     updated_specs = {path: self.update(s, parser) for path, s in specs.items()}
     return self.update_specs(updated_specs)
 
+  def feature_cache(self, refresh: bool = False):
+    """Gets and caches the current feature for this object."""
+    if self.__feature is None or refresh:
+      self.__feature = self.GetFeature()
+    return self.__feature
+
   def update(self, spec: messages.Message, parser: flags.PocoFlagParser):
-    pc = spec.policycontroller
-    pc = parser.update_version(pc)
+    if parser.use_default_cfg():
+      parser.set_default_cfg(self.feature_cache(), spec)
+    else:
+      pc = spec.policycontroller
+      pc = parser.update_version(pc)
 
-    hub_cfg = pc.policyControllerHubConfig
-    hub_cfg = parser.update_audit_interval(hub_cfg)
-    hub_cfg = parser.update_constraint_violation_limit(hub_cfg)
-    hub_cfg = parser.update_exemptable_namespaces(hub_cfg)
-    hub_cfg = parser.update_log_denies(hub_cfg)
-    hub_cfg = parser.update_mutation(hub_cfg)
-    hub_cfg = parser.update_monitoring(hub_cfg)
-    hub_cfg = parser.update_referential_rules(hub_cfg)
-    hub_cfg = parser.update_template_library(hub_cfg)
+      hub_cfg = pc.policyControllerHubConfig
+      hub_cfg = parser.update_audit_interval(hub_cfg)
+      hub_cfg = parser.update_constraint_violation_limit(hub_cfg)
+      hub_cfg = parser.update_exemptable_namespaces(hub_cfg)
+      hub_cfg = parser.update_log_denies(hub_cfg)
+      hub_cfg = parser.update_mutation(hub_cfg)
+      hub_cfg = parser.update_monitoring(hub_cfg)
+      hub_cfg = parser.update_referential_rules(hub_cfg)
 
-    pc.policyControllerHubConfig = hub_cfg
-    spec.policycontroller = pc
+      pc.policyControllerHubConfig = hub_cfg
+      spec.policycontroller = pc
     return spec

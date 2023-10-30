@@ -17,6 +17,7 @@
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
+import uuid
 
 from apitools.base.py import exceptions as apitools_exceptions
 from googlecloudsdk.api_lib.cloudkms import base as cloudkms_base
@@ -101,7 +102,7 @@ class RawEncrypt(base.Command):
   @staticmethod
   def Args(parser):
     flags.AddKeyResourceFlags(parser, 'The key to use for encryption.')
-    flags.AddCryptoKeyVersionFlag(parser, 'to use for encryption')
+    flags.AddCryptoKeyVersionFlag(parser, 'to use for encryption', True)
     flags.AddPlaintextFileFlag(parser, 'to encrypt')
     flags.AddCiphertextFileFlag(parser, 'to output')
     flags.AddIvFileFlag(parser, 'for encryption')
@@ -183,13 +184,8 @@ class RawEncrypt(base.Command):
             'the IV size must be {0} bytes.'.format(CBC_CTR_IV_SIZE),
         )
 
-    if args.version:
-      crypto_key_ref = flags.ParseCryptoKeyVersionName(args)
-    else:
-      crypto_key_ref = flags.ParseCryptoKeyName(args)
-
+    crypto_key_ref = flags.ParseCryptoKeyVersionName(args)
     messages = cloudkms_base.GetMessagesModule()
-
     req = messages.CloudkmsProjectsLocationsKeyRingsCryptoKeysCryptoKeyVersionsRawEncryptRequest(  # pylint: disable=line-too-long
         name=crypto_key_ref.RelativeName()
     )
@@ -286,5 +282,14 @@ class RawEncrypt(base.Command):
       log.WriteToFileOrStdout(
           args.ciphertext_file, resp.ciphertext, binary=True, overwrite=True
       )
+      # If an initialization vector file is not provided,
+      # store the one created during the encrypt in a randomly named file.
+      if not args.initialization_vector_file and resp.initializationVector:
+        iv_file_name = './inialization_vector_' + str(uuid.uuid4())[:8]
+        files.WriteBinaryFileContents(
+            iv_file_name,
+            resp.initializationVector,
+            overwrite=True,
+        )
     except files.Error as e:
       raise exceptions.BadFileException(e)

@@ -18,25 +18,52 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+import collections
+
+from googlecloudsdk.api_lib.storage import api_factory
 from googlecloudsdk.api_lib.storage.gcs_json import metadata_field_converters
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.iam import iam_util
+from googlecloudsdk.command_lib.storage import errors_util
 from googlecloudsdk.command_lib.storage import flags
 from googlecloudsdk.command_lib.storage import folder_util
 from googlecloudsdk.command_lib.storage import iam_command_util
 from googlecloudsdk.command_lib.storage import name_expansion
+from googlecloudsdk.command_lib.storage import storage_url
+from googlecloudsdk.command_lib.storage import wildcard_iterator
 from googlecloudsdk.command_lib.storage.tasks import set_iam_policy_task
+from googlecloudsdk.core import log
 
 
 def _set_iam_policy_task_iterator(url_strings, policy):
   """Generates SetIamPolicyTask's for execution."""
+  url_found_match_tracker = collections.OrderedDict()
   for name_expansion_result in name_expansion.NameExpansionIterator(
       url_strings,
       managed_folder_setting=folder_util.ManagedFolderSetting.LIST_WITHOUT_OBJECTS,
+      raise_error_for_unmatched_urls=False,
+      url_found_match_tracker=url_found_match_tracker,
   ):
     yield set_iam_policy_task.SetManagedFolderIamPolicyTask(
-        name_expansion_result.resource.storage_url, policy
+        name_expansion_result.resource.storage_url,
+        policy,
     )
+
+  for url_string, found_match in url_found_match_tracker.items():
+    if found_match:
+      continue
+    if wildcard_iterator.contains_wildcard(url_string):
+      log.warning(
+          'Not creating managed folder for URL containing wildcard that did not'
+          ' match any managed folders: '
+          + url_string
+      )
+      continue
+    url = storage_url.storage_url_from_string(url_string)
+    api_factory.get_api(url.scheme).create_managed_folder(
+        url.bucket_name, url.object_name
+    )
+    yield set_iam_policy_task.SetManagedFolderIamPolicyTask(url, policy)
 
 
 class SetIamPolicy(base.Command):
@@ -75,6 +102,9 @@ class SetIamPolicy(base.Command):
     flags.add_continue_on_error_flag(parser)
 
   def Run(self, args):
+    for url_string in args.urls:
+      url = storage_url.storage_url_from_string(url_string)
+      errors_util.raise_error_if_not_gcs_managed_folder(args.command_path, url)
     policy = metadata_field_converters.process_iam_file(
         args.policy_file, custom_etag=args.etag
     )

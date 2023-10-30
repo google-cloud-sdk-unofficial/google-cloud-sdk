@@ -78,7 +78,6 @@ class UpdateHelper(object):
       support_subsetting_subset_size,
       support_unspecified_protocol,
       support_advanced_load_balancing,
-      support_regional_security_policy,
       support_ip_address_selection_policy,
   ):
     """Add all arguments for updating a backend service."""
@@ -95,20 +94,15 @@ class UpdateHelper(object):
     cls.HTTPS_HEALTH_CHECK_ARG.AddArgument(
         parser, cust_metavar='HTTPS_HEALTH_CHECK')
     flags.AddNoHealthChecks(parser)
-    if support_regional_security_policy:
-      cls.SECURITY_POLICY_ARG = (
-          security_policy_flags
-          .SecurityPolicyMultiScopeArgumentForTargetResource(
-              resource='backend service',
-              region_hidden=True,
-              scope_flags_usage=compute_flags.ScopeFlagsUsage
-              .USE_EXISTING_SCOPE_FLAGS,
-              short_help_text=(
-                  'The security policy that will be set for this {0}.')))
-    else:
-      cls.SECURITY_POLICY_ARG = (
-          security_policy_flags.SecurityPolicyArgumentForTargetResource(
-              resource='backend service'))
+    cls.SECURITY_POLICY_ARG = (
+        security_policy_flags
+        .SecurityPolicyMultiScopeArgumentForTargetResource(
+            resource='backend service',
+            region_hidden=True,
+            scope_flags_usage=compute_flags.ScopeFlagsUsage
+            .USE_EXISTING_SCOPE_FLAGS,
+            short_help_text=(
+                'The security policy that will be set for this {0}.')))
     cls.SECURITY_POLICY_ARG.AddArgument(parser)
     cls.EDGE_SECURITY_POLICY_ARG = (
         security_policy_flags.EdgeSecurityPolicyArgumentForTargetResource(
@@ -177,7 +171,6 @@ class UpdateHelper(object):
       support_subsetting_subset_size,
       support_ip_address_selection_policy,
       support_advanced_load_balancing=False,
-      support_regional_security_policy=False,
       release_track=None,
   ):
     self._support_failover = support_failover
@@ -189,7 +182,6 @@ class UpdateHelper(object):
         support_ip_address_selection_policy
     )
     self._support_advanced_load_balancing = support_advanced_load_balancing
-    self._support_regional_security_policy = support_regional_security_policy
     self._release_track = release_track
 
   def Modify(self, client, resources, args, existing, backend_service_ref):
@@ -459,8 +451,7 @@ class UpdateHelper(object):
     backend_service = backend_service_client.BackendService(
         backend_service_ref, compute_client=client)
     return backend_service.MakeSetSecurityPolicyRequestTuple(
-        security_policy=security_policy_ref,
-        support_regional_security_policy=self._support_regional_security_policy)
+        security_policy=security_policy_ref)
 
   def _GetSetEdgeSecurityPolicyRequest(self, client, backend_service_ref,
                                        security_policy_ref):
@@ -587,7 +578,6 @@ class UpdateGA(base.UpdateCommand):
   _support_subsetting = True
   _support_subsetting_subset_size = False
   _support_advanced_load_balancing = False
-  _support_regional_security_policy = False
   _support_ip_address_selection_policy = False
 
   @classmethod
@@ -601,7 +591,6 @@ class UpdateGA(base.UpdateCommand):
         support_subsetting_subset_size=cls._support_subsetting_subset_size,
         support_unspecified_protocol=cls._support_unspecified_protocol,
         support_advanced_load_balancing=cls._support_advanced_load_balancing,
-        support_regional_security_policy=cls._support_regional_security_policy,
         support_ip_address_selection_policy=(
             cls._support_ip_address_selection_policy
         ),
@@ -618,7 +607,6 @@ class UpdateGA(base.UpdateCommand):
         self._support_subsetting_subset_size,
         self._support_ip_address_selection_policy,
         support_advanced_load_balancing=self._support_advanced_load_balancing,
-        support_regional_security_policy=self._support_regional_security_policy,
         release_track=self.ReleaseTrack(),
     ).Run(args, holder)
 
@@ -636,7 +624,7 @@ class UpdateBeta(UpdateGA):
   _support_subsetting_subset_size = True
   _support_advanced_load_balancing = True
   _support_tcp_ssl_logging = True
-  _support_regional_security_policy = True
+  _support_ip_address_selection_policy = True
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -652,5 +640,4 @@ class UpdateAlpha(UpdateBeta):
   _support_subsetting_subset_size = True
   _support_advanced_load_balancing = True
   _support_tcp_ssl_logging = True
-  _support_regional_security_policy = True
   _support_ip_address_selection_policy = True

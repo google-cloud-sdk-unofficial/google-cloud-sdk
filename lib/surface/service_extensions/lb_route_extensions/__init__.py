@@ -22,6 +22,5 @@ from googlecloudsdk.calliope import base
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
-@base.Hidden
 class LbRouteExtensions(base.Group):
-  """Manage Service Extensions LbRouteExtension resources."""
+  """Manage Service Extensions `LbRouteExtension` resources."""

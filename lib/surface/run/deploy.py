@@ -270,14 +270,14 @@ class Deploy(base.Command):
     service_ref = args.CONCEPTS.service.Parse()
     flags.ValidateResource(service_ref)
 
-    required_apis = ['run.googleapis.com']
+    required_apis = [api_enabler.get_run_api()]
     if build_from_source:
       required_apis.append('artifactregistry.googleapis.com')
       required_apis.append('cloudbuild.googleapis.com')
 
     already_activated_services = False
     if platform == platforms.PLATFORM_MANAGED:
-      already_activated_services = api_enabler.CheckAndEnableApis(
+      already_activated_services = api_enabler.check_and_enable_apis(
           properties.VALUES.core.project.Get(), required_apis
       )
     # Obtaining the connection context prompts the user to select a region if

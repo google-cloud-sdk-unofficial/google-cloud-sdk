@@ -125,31 +125,32 @@ class Set(base.UpdateCommand, command.PocoCommand):
   def Run(self, args):
     # All the membership specs for this feature.
     specs = self.path_specs(args)
+    updated_specs = {path: self.set(spec, args) for path, spec in specs.items()}
+    return self.update_specs(updated_specs)
 
-    for _, spec in specs.items():
-      cfgs = protos.additional_properties_to_dict(
-          spec.policycontroller.policyControllerHubConfig.deploymentConfigs
-      )
-      deployment_cfg = cfgs.get(
-          args.deployment,
-          self.messages.PolicyControllerPolicyControllerDeploymentConfig(),
-      )
+  def set(self, spec, args):
+    cfgs = protos.additional_properties_to_dict(
+        spec.policycontroller.policyControllerHubConfig.deploymentConfigs
+    )
+    deployment_cfg = cfgs.get(
+        args.deployment,
+        self.messages.PolicyControllerPolicyControllerDeploymentConfig(),
+    )
 
-      cfgs[args.deployment] = self.set_deployment_config(
-          deployment_cfg,
-          args.property,
-          args.value,
-          args.effect,
-      )
+    cfgs[args.deployment] = self.set_deployment_config(
+        deployment_cfg,
+        args.property,
+        args.value,
+        args.effect,
+    )
 
-      # Convert back to a list of additionalProperties.
-      dcv = protos.set_additional_properties(
-          self.messages.PolicyControllerHubConfig.DeploymentConfigsValue(), cfgs
-      )
+    # Convert back to a list of additionalProperties.
+    dcv = protos.set_additional_properties(
+        self.messages.PolicyControllerHubConfig.DeploymentConfigsValue(), cfgs
+    )
 
-      spec.policycontroller.policyControllerHubConfig.deploymentConfigs = dcv
-
-    return self.merge_specs(specs)
+    spec.policycontroller.policyControllerHubConfig.deploymentConfigs = dcv
+    return spec
 
   def set_deployment_config(self, deployment_cfg, prop, value, effect):
     if prop == 'toleration':
@@ -170,13 +171,3 @@ class Set(base.UpdateCommand, command.PocoCommand):
       return deployment.update_mem_request(self.messages, deployment_cfg, value)
     if prop == 'replica-count':
       return deployment.update_replica_count(deployment_cfg, value)
-
-  def merge_specs(self, specs):
-    orig = self.hubclient.ToPyDict(self.GetFeature().membershipSpecs)
-    merged = {path: specs.get(path, spec) for path, spec in orig.items()}
-    self.Update(
-        ['membership_specs'],
-        self.messages.Feature(
-            membershipSpecs=self.hubclient.ToMembershipSpecs(merged)
-        ),
-    )

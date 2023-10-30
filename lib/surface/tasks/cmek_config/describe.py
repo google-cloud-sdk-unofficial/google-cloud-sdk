@@ -25,9 +25,11 @@ from googlecloudsdk.command_lib.tasks import parsers
 
 
 @base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
+)
 class GetCmekConfig(base.Command):
-  """Get CMEK Config in a location."""
+  """Get CMEK configuration for Cloud Tasks in the specified location."""
 
   detailed_help = {
       'DESCRIPTION': """\

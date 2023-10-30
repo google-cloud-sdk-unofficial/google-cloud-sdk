@@ -419,6 +419,7 @@ def ParseCreateOptionsBase(args, is_autopilot, get_default, location,
       autopilot=is_autopilot,
       gvnic=get_default('enable_gvnic'),
       enable_confidential_nodes=get_default('enable_confidential_nodes'),
+      enable_confidential_storage=get_default('enable_confidential_storage'),
       enable_image_streaming=get_default('enable_image_streaming'),
       spot=get_default('spot'),
       enable_service_externalips=get_default('enable_service_externalips'),
@@ -730,7 +731,6 @@ flags_to_add = {
         ),
         'enableRuntimeVulnerabilityInsight':
             flags.AddRuntimeVulnerabilityInsightFlag,
-        'InTransitEncryption': flags.AddInTransitEncryptionFlag,
         'containerdConfig':
             (lambda p: flags.AddContainerdConfigFlag(p, hidden=True)),
     },
@@ -783,6 +783,8 @@ flags_to_add = {
             flags.AddPlacementPolicyFlag,
         'confidentialnodes':
             flags.AddEnableConfidentialNodesFlag,
+        'enableconfidentialstorage':
+            flags.AddEnableConfidentialStorageFlag,
         'databaseencryption':
             flags.AddDatabaseEncryptionFlag,
         'datapath': (lambda p: flags.AddDatapathProviderFlag(p, hidden=True)),
@@ -1031,6 +1033,8 @@ flags_to_add = {
             flags.AddPlacementPolicyFlag,
         'confidentialnodes':
             flags.AddEnableConfidentialNodesFlag,
+        'enableconfidentialstorage':
+            flags.AddEnableConfidentialStorageFlag,
         'costmanagementconfig':
             flags.AddCostManagementConfigFlag,
         'databaseencryption':
@@ -1510,6 +1514,7 @@ class CreateBeta(Create):
         'containerd_config_from_file',
     )
     ops.resource_manager_tags = get_default('resource_manager_tags')
+    ops.enable_confidential_storage = get_default('enable_confidential_storage')
     ops.autoprovisioning_resource_manager_tags = get_default(
         'autoprovisioning_resource_manager_tags'
     )
@@ -1627,6 +1632,8 @@ class CreateAlpha(Create):
     ops.host_maintenance_interval = get_default('host_maintenance_interval')
     ops.contianerd_config_from_file = get_default('contianerd_config_from_file')
     ops.resource_manager_tags = get_default('resource_manager_tags')
+    ops.enable_confidential_storage = get_default('enable_confidential_storage')
+
     ops.autoprovisioning_resource_manager_tags = get_default(
         'autoprovisioning_resource_manager_tags'
     )

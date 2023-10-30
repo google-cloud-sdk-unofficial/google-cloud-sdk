@@ -20,7 +20,6 @@ from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.storage import api_factory
 from googlecloudsdk.calliope import base
-from googlecloudsdk.command_lib.storage import errors_util
 from googlecloudsdk.command_lib.storage import operations_util
 from googlecloudsdk.command_lib.storage import storage_url
 from googlecloudsdk.core import log
@@ -38,34 +37,34 @@ class Cancel(base.Command):
       is already complete.
       """,
       'EXAMPLES': """\
-      To cancel the operation "1234567890" on bucket "bucket", run:
+      To cancel the operation "1234567890" on bucket "my-bucket", run:
 
-        $ {command} gs://bucket 1234567890
+        $ {command} projects/_/buckets/my-bucket/operations/1234567890
       """,
   }
 
   @staticmethod
   def Args(parser):
     parser.add_argument(
-        'url',
+        'operation_name',
         help=(
-            'URL of the bucket that the operation belongs to.'
-            ' For example, "gs://bucket"'
+            'The operation name including the Cloud Storage bucket and'
+            ' operation ID.'
         ),
-    )
-    parser.add_argument(
-        'operation_id', help='The ID of the operation resource.'
     )
 
   def Run(self, args):
-    url_object = storage_url.storage_url_from_string(args.url)
-    errors_util.raise_error_if_not_gcs_bucket(args.command_path, url_object)
-    operation_id = operations_util.get_operation_id_from_name(args.operation_id)
-    api_factory.get_api(url_object.scheme).cancel_operation(
-        bucket_name=url_object.bucket_name, operation_id=operation_id
+    bucket, operation_id = (
+        operations_util.get_operation_bucket_and_id_from_name(
+            args.operation_name
+        )
+    )
+    scheme = storage_url.ProviderPrefix.GCS
+    api_factory.get_api(scheme).cancel_operation(
+        bucket_name=bucket, operation_id=operation_id
     )
     log.status.Print(
         'Sent cancel request for bucket {} operation {}'.format(
-            url_object, operation_id
+            storage_url.CloudUrl(scheme, bucket), operation_id
         )
     )

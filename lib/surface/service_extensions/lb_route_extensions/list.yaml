@@ -2,12 +2,12 @@ release_tracks: [BETA, ALPHA]
 
 help_text:
   brief: |
-    List LB Route Extensions.
+    List `LbRouteExtension` resources.
   description: |
-    List all LB Route Extensions in the specified location of the
+    List all `LbRouteExtension` resources in the specified location of the
     current project.
   examples: |
-      To list all LB Route Extensions in the current project located
+      To list all `LbRouteExtension` resources in the current project located
       in `us-central1` region run:
 
         $ {command} --location=us-central1
@@ -23,7 +23,7 @@ arguments:
   resource:
     spec: !REF googlecloudsdk.command_lib.service_extensions.resources:location
     help_text: |
-      The project of the LB Route Extensions to list.
+      The parent location.
 
 response:
   id_field: name

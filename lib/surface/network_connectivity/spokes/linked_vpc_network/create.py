@@ -49,6 +49,9 @@ class Create(base.Command):
     flags.AddExcludeExportRangesFlag(
         parser,
         hide_exclude_export_ranges_flag=False)
+    flags.AddIncludeExportRangesFlag(
+        parser, hide_include_export_ranges_flag=True
+    )
     labels_util.AddCreateLabelsFlags(parser)
 
   def Run(self, args):
@@ -63,9 +66,11 @@ class Create(base.Command):
         group=args.group,
         linkedVpcNetwork=client.messages.LinkedVpcNetwork(
             uri=args.vpc_network,
-            excludeExportRanges=args.exclude_export_ranges),
+            excludeExportRanges=args.exclude_export_ranges,
+            includeExportRanges=args.include_export_ranges,
+        ),
         description=args.description,
-        labels=labels
+        labels=labels,
     )
 
     op_ref = client.CreateVPCSpoke(spoke_ref, spoke)

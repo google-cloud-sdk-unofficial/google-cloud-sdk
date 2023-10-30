@@ -28,20 +28,16 @@ from googlecloudsdk.command_lib.backupdr import flags
 from googlecloudsdk.core import log
 
 
-# TODO(b/302059451): Add e2e test for list command before release
-@base.Hidden
-@base.ReleaseTracks(
-    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
-)
-class Create(base.CreateCommand):
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class CreateAlpha(base.CreateCommand):
   """Create a new Management Server."""
 
   detailed_help = {
       'DESCRIPTION': '{description}',
       'EXAMPLES': """\
-        To create a new management server in location us-central1 with network sample-network, run:
+        To create a new management server `sample-ms` in project `sample-project` and location `us-central1` with network `sample-network`, run:
 
-          $ {command} projects/sample-project/locations/us-central1/managementServers/sample-ms --network=projects/sample-project/global/networks/sample-network
+          $ {command} sample-ms --project=sample-project --location=us-central1 --network=projects/sample-project/global/networks/sample-network
         """,
   }
 
@@ -101,3 +97,9 @@ class Create(base.CreateCommand):
     )
 
     return resource
+
+
+@base.Hidden
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
+class Create(CreateAlpha):
+  """Create a new Management Server."""

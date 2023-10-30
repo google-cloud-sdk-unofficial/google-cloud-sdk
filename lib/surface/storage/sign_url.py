@@ -31,6 +31,8 @@ from googlecloudsdk.command_lib.storage import storage_url
 from googlecloudsdk.command_lib.storage import wildcard_iterator
 from googlecloudsdk.command_lib.storage.resources import resource_reference
 from googlecloudsdk.core import properties
+from googlecloudsdk.core.credentials import creds as c_creds
+from googlecloudsdk.core.credentials import store as c_store
 from googlecloudsdk.core.util import iso_duration
 from googlecloudsdk.core.util import times
 
@@ -39,6 +41,12 @@ _INSTALL_PY_OPEN_SSL_MESSAGE = (
     'This command requires the pyOpenSSL library.'
     ' Please install it and set the environment variable'
     ' CLOUDSDK_PYTHON_SITEPACKAGES to 1 before re-running this command.'
+)
+
+_PROVIDE_SERVICE_ACCOUNT_MESSAGE = (
+    'This command requires a service account to sign a URL. Please authenticate'
+    ' with a service account, or provide the global'
+    " '--impersonate-service-account' flag."
 )
 
 
@@ -77,8 +85,11 @@ class SignUrl(base.Command):
   detailed_help = {
       'DESCRIPTION': """
       *{command}* will generate a signed URL that embeds authentication data so
-      the URL can be used by someone who does not have a Google account. Please
-      see the [Signed URLs documentation](https://cloud.google.com/storage/docs/access-control/signed-urls)
+      the URL can be used by someone who does not have a Google account. Use the
+      global ``--impersonate-service-account'' flag to specify the service
+      account that will be used to sign the specified URL or authenticate with
+      a service account directly. Otherwise, a service account key is required.
+      Please see the [Signed URLs documentation](https://cloud.google.com/storage/docs/access-control/signed-urls)
       for background about signed URLs.
 
       Note, `{command}` does not support operations on sub-directories. For
@@ -87,21 +98,23 @@ class SignUrl(base.Command):
       `{command} gs://some-bucket/some-directory/`.
       """,
       'EXAMPLES': """
-      To create a signed url for downloading an object valid for 10 minutes:
+      To create a signed url for downloading an object valid for 10 minutes with
+      the credentials of an impersonated service account:
 
-        $ {command} gs://my-bucket/file.txt --duration=10m --private-key-file=key.json
+        $ {command} gs://my-bucket/file.txt --duration=10m --impersonate-service-account=sa@my-project.iam.gserviceaccount.com
 
-      To create a signed url that will bill to my-billing-project:
+      To create a signed url that will bill to my-billing-project when already
+      authenticated as a service account:
 
-        $ {command} gs://my-bucket/file.txt --query-params=userProject=my-billing-project --private-key-file=key.json
+        $ {command} gs://my-bucket/file.txt --query-params=userProject=my-billing-project
 
       To create a signed url, valid for one hour, for uploading a plain text
       file via HTTP PUT:
 
-        $ {command} gs://my-bucket/file.txt --http-verb=PUT --duration=1h --headers=content-type=text/plain --private-key-file=key.json
+        $ {command} gs://my-bucket/file.txt --http-verb=PUT --duration=1h --headers=content-type=text/plain --impersonate-service-account=sa@my-project.iam.gserviceaccount.com
 
       To create a signed URL that initiates a resumable upload for a plain text
-      file:
+      file using a private key file:
 
         $ {command} gs://my-bucket/file.txt --http-verb=POST --headers=x-goog-resumable=start,content-type=text/plain --private-key-file=key.json
       """,
@@ -113,15 +126,7 @@ class SignUrl(base.Command):
         'url',
         nargs='+',
         help='The URLs to be signed. May contain wildcards.')
-    parser.add_argument(
-        '--private-key-file',
-        required=True,
-        help=textwrap.dedent("""\
-            The service account private key used to generate the cryptographic
-            signature for the generated URL. Must be in PKCS12 or JSON format.
-            If encrypted, will prompt for the passphrase used to protect the
-            private key file (default ``notasecret'')."""),
-    )
+
     parser.add_argument(
         '-d',
         '--duration',
@@ -133,7 +138,13 @@ class SignUrl(base.Command):
             default duration is 1 hour. For example 10s for 10 seconds.
             See $ gcloud topic datetimes for information on duration formats.
 
-            The max duration allowed is 7 days when PRIVATE_KEY_FILE is used."""
+            The max duration allowed is 12 hours. This limitation exists because
+            the system-managed key used to sign the URL may not remain valid
+            after 12 hours.
+
+            Alternatively, the max duration allowed is 7 days when signing with
+            either the ``--private-key-file'' flag or an account that authorized
+            with ``gcloud auth activate-service-account''."""
         ),
     )
     parser.add_argument(
@@ -160,9 +171,21 @@ class SignUrl(base.Command):
             validation will fail."""),
     )
     parser.add_argument(
+        '--private-key-file',
+        help=textwrap.dedent("""\
+            The service account private key used to generate the cryptographic
+            signature for the generated URL. Must be in PKCS12 or JSON format.
+            If encrypted, will prompt for the passphrase used to protect the
+            private key file (default ``notasecret'').
+
+            Note: Service account keys are a security risk if not managed
+            correctly. Review [best practices for managing service account keys](https://cloud.google.com/iam/docs/best-practices-for-managing-service-account-keys)
+            before using this option."""),
+    )
+    parser.add_argument(
         '-p',
         '--private-key-password',
-        help='Specifies the private key password instead of prompting.',
+        help='Specifies the PRIVATE_KEY_FILE password instead of prompting.',
     )
     parser.add_argument(
         '--query-params',
@@ -190,14 +213,39 @@ class SignUrl(base.Command):
     )
 
   def Run(self, args):
-    try:
-      client_id, key = sign_url_util.get_signing_information_from_file(
-          args.private_key_file, args.private_key_password
+    key = None
+    delegates = None
+    creds = c_store.Load(prevent_refresh=True, use_google_auth=False)
+    if args.private_key_file:
+      try:
+        client_id, key = sign_url_util.get_signing_information_from_file(
+            args.private_key_file, args.private_key_password
+        )
+      except ModuleNotFoundError as error:
+        if 'OpenSSL' in str(error):
+          raise command_errors.Error(_INSTALL_PY_OPEN_SSL_MESSAGE)
+        raise
+    elif args.impersonate_service_account:
+      impersonated_account, delegates = c_store.ParseImpersonationAccounts(
+          args.impersonate_service_account
       )
-    except ModuleNotFoundError as error:
-      if 'OpenSSL' in str(error):
-        raise command_errors.Error(_INSTALL_PY_OPEN_SSL_MESSAGE)
-      raise
+      client_id = impersonated_account
+    elif (
+        c_creds.CredentialType.FromCredentials(creds)
+        == c_creds.CredentialType.GCE
+    ):
+      client_id = properties.VALUES.core.account.Get()
+    elif c_creds.IsServiceAccountCredentials(creds):
+      try:
+        client_id, key = sign_url_util.get_signing_information_from_json(
+            c_creds.ToJson(creds)
+        )
+      except ModuleNotFoundError as error:
+        if 'OpenSSL' in str(error):
+          raise command_errors.Error(_INSTALL_PY_OPEN_SSL_MESSAGE)
+        raise
+    else:
+      raise command_errors.Error(_PROVIDE_SERVICE_ACCOUNT_MESSAGE)
 
     # Signed URLs always hit the XML API, regardless of what API is preferred
     # for other operations.
@@ -243,6 +291,7 @@ class SignUrl(base.Command):
             parameters=parameters,
             path=path,
             region=region,
+            delegates=delegates,
         )
 
         expiration_time = times.GetDateTimePlusDuration(

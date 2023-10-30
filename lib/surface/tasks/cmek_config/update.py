@@ -26,9 +26,11 @@ from googlecloudsdk.core import log
 
 
 @base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
+)
 class UpdateCmekConfig(base.Command):
-  """Update CMEK Config in a location."""
+  """Enable, disable, or edit CMEK configuration for Cloud Tasks in the specified location."""
 
   detailed_help = {
       'DESCRIPTION': """\

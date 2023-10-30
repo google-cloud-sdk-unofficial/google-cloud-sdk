@@ -376,6 +376,7 @@ class CreateBeta(Create):
     flags.AddMaintenanceIntervalFlag(parser, for_node_pool=True, hidden=True)
     flags.AddNetworkPerformanceConfigFlags(parser, hidden=False)
     flags.AddEnableConfidentialNodesFlag(parser, for_node_pool=True)
+    flags.AddEnableConfidentialStorageFlag(parser, for_node_pool=True)
     flags.AddDisablePodCIDROverprovisionFlag(parser)
     flags.AddEnableFastSocketFlag(parser)
     flags.AddLoggingVariantFlag(parser, for_node_pool=True)
@@ -430,6 +431,7 @@ class CreateBeta(Create):
     ops.host_maintenance_interval = args.host_maintenance_interval
     ops.resource_manager_tags = args.resource_manager_tags
     ops.secondary_boot_disks = args.secondary_boot_disk
+    ops.enable_confidential_storage = args.enable_confidential_storage
     return ops
 
 
@@ -480,6 +482,7 @@ class CreateAlpha(Create):
     ops.resource_manager_tags = args.resource_manager_tags
     ops.ephemeral_storage = ephemeral_storage
     ops.secondary_boot_disks = args.secondary_boot_disk
+    ops.enable_confidential_storage = args.enable_confidential_storage
     return ops
 
   @staticmethod
@@ -526,6 +529,7 @@ class CreateAlpha(Create):
     flags.AddMaintenanceIntervalFlag(parser, for_node_pool=True, hidden=True)
     flags.AddNetworkPerformanceConfigFlags(parser, hidden=False)
     flags.AddEnableConfidentialNodesFlag(parser, for_node_pool=True)
+    flags.AddEnableConfidentialStorageFlag(parser, for_node_pool=True)
     flags.AddDisablePodCIDROverprovisionFlag(parser)
     flags.AddEnableFastSocketFlag(parser)
     flags.AddLoggingVariantFlag(parser, for_node_pool=True)

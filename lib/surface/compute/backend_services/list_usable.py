@@ -27,15 +27,14 @@ from googlecloudsdk.core import properties
 
 _DETAILED_HELP = {
     "DESCRIPTION": """\
-          $ {command}  \
-          retrieves the list of backend service resources in the
-          specified project for which you have compute.backendService.get
-          and compute.backendService.use permissions. This command is useful
-          when you're creating load balancers in a Shared VPC environment
-          and you want to use [cross-project service
-          referencing](https://cloud.google.com/load-balancing/docs/https#cross-project).
-          You can use this command to find out which backend
-          services in other projects are available to you for referencing.
+        *{command}* retrieves the list of backend service resources in the
+        specified project for which you have compute.backendService.get
+        and compute.backendService.use permissions. This command is useful
+        when you're creating load balancers in a Shared VPC environment
+        and you want to use [cross-project service
+        referencing](https://cloud.google.com/load-balancing/docs/https#cross-project).
+        You can use this command to find out which backend
+        services in other projects are available to you for referencing.
         """,
     "EXAMPLES": """\
         To list all global backend services in a project, run:
@@ -49,7 +48,6 @@ _DETAILED_HELP = {
 }
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
 class ListUsable(base.ListCommand):
   """List usable backend services."""
 

@@ -27,11 +27,130 @@ from googlecloudsdk.command_lib.storage import cp_command_util
 from googlecloudsdk.command_lib.storage import encryption_util
 from googlecloudsdk.command_lib.storage import flags
 from googlecloudsdk.command_lib.storage import rsync_command_util
+from googlecloudsdk.command_lib.storage import storage_url
 from googlecloudsdk.command_lib.storage import user_request_args_factory
 from googlecloudsdk.command_lib.storage.tasks import get_sorted_list_file_task
 from googlecloudsdk.command_lib.storage.tasks import task_executor
 from googlecloudsdk.command_lib.storage.tasks import task_graph_executor
 from googlecloudsdk.command_lib.storage.tasks import task_status
+
+
+def _get_list_tasks_and_cleanup_paths(
+    args,
+    source_container,
+    destination_container,
+):
+  """Generates tasks for creating source/destination inventories.
+
+  Args:
+    args (parser_extensions.Namespace): Command line arguments.
+    source_container (resource_reference.Resource): Location to find source
+      resources.
+    destination_container (resource_reference.Resource): Location for
+      destination resources.
+
+  Returns:
+    A tuple (list_tasks, cleanup_paths).
+      list_tasks (List[task.Task]): The tasks to run to create inventories.
+      cleanup_paths (List[str]): The paths where inventories are stored. The
+        caller is responsible for removing these after transfers complete.
+  """
+  list_task_arguments = [
+      (source_container, False),
+      (destination_container, False),
+  ]
+  # TODO(b/304524534): Replace with args.include_managed_folders.
+  if getattr(args, 'include_managed_folders', False):
+    list_task_arguments.extend(
+        [(source_container, True), (destination_container, True)]
+    )
+
+  cleanup_paths = []
+  list_tasks = []
+  for container, managed_folders_only in list_task_arguments:
+    path = rsync_command_util.get_hashed_list_file_path(
+        container.storage_url.url_string,
+        is_managed_folder_list=managed_folders_only,
+    )
+    cleanup_paths.append(path)
+    task = get_sorted_list_file_task.GetSortedContainerContentsTask(
+        container,
+        path,
+        exclude_pattern_strings=args.exclude,
+        ignore_symlinks=args.ignore_symlinks,
+        managed_folders_only=managed_folders_only,
+        recurse=args.recursive,
+    )
+    list_tasks.append(task)
+  return list_tasks, cleanup_paths
+
+
+def _perform_rsync(
+    args,
+    source_container,
+    destination_container,
+    perform_managed_folder_operations=False,
+):
+  """Creates and executes tasks for rsync commands.
+
+  Args:
+    args (parser_extensions.Namespace): Command line arguments.
+    source_container (resource_reference.Resource): Location to find source
+      resources.
+    destination_container (resource_reference.Resource): Location for
+      destination resources.
+    perform_managed_folder_operations (bool): If True, generates manifest files
+      and performs copy tasks for managed folders. Otherwise, does so for
+      objects/files.
+
+  Returns:
+    Exit code (int).
+  """
+  user_request_args = (
+      user_request_args_factory.get_user_request_args_from_command_args(
+          args, metadata_type=user_request_args_factory.MetadataType.OBJECT
+      )
+  )
+
+  source_list_path = rsync_command_util.get_hashed_list_file_path(
+      source_container.storage_url.url_string,
+      is_managed_folder_list=perform_managed_folder_operations,
+  )
+  destination_list_path = rsync_command_util.get_hashed_list_file_path(
+      destination_container.storage_url.url_string,
+      is_managed_folder_list=perform_managed_folder_operations,
+  )
+
+  task_status_queue = task_graph_executor.multiprocessing_context.Queue()
+  operation_iterator = rsync_command_util.get_operation_iterator(
+      user_request_args,
+      source_list_path,
+      source_container,
+      destination_list_path,
+      destination_container,
+      compare_only_hashes=args.checksums_only,
+      delete_unmatched_destination_objects=(
+          args.delete_unmatched_destination_objects
+      ),
+      dry_run=args.dry_run,
+      ignore_symlinks=args.ignore_symlinks,
+      yield_managed_folder_operations=perform_managed_folder_operations,
+      skip_if_destination_has_later_modification_time=(
+          args.skip_if_dest_has_newer_mtime
+      ),
+      skip_unsupported=args.skip_unsupported,
+      task_status_queue=task_status_queue,
+  )
+  return task_executor.execute_tasks(
+      operation_iterator,
+      continue_on_error=args.continue_on_error,
+      parallelizable=not perform_managed_folder_operations,
+      progress_manager_args=task_status.ProgressManagerArgs(
+          task_status.IncrementType.FILES_AND_BYTES,
+          manifest_path=user_request_args.manifest_path,
+      ),
+      task_status_queue=task_status_queue,
+  )
 
 
 class Rsync(base.Command):
@@ -84,7 +203,7 @@ class Rsync(base.Command):
         $ {command} dir1 dir2 --recursive -\
            --delete-unmatched-destination-objects
 
-      To mirror your content across cloud providers:
+      To mirror your objects across cloud providers:
 
         $ {command} gs://my-gs-bucket s3://my-s3-bucket --recursive \
            --delete-unmatched-destination-objects
@@ -103,8 +222,8 @@ class Rsync(base.Command):
       """,
   }
 
-  @staticmethod
-  def Args(parser):
+  @classmethod
+  def Args(cls, parser):
     parser.add_argument('source', help='The source container path.')
     parser.add_argument('destination', help='The destination container path.')
 
@@ -117,6 +236,9 @@ class Rsync(base.Command):
     cp_command_util.add_gzip_in_flight_flags(parser)
     cp_command_util.add_ignore_symlinks_flag(parser, default=True)
     cp_command_util.add_recursion_flag(parser)
+
+    if cls.ReleaseTrack() is base.ReleaseTrack.ALPHA:
+      cp_command_util.add_include_managed_folders_flag(parser)
 
     parser.add_argument(
         '--checksums-only',
@@ -133,7 +255,8 @@ class Rsync(base.Command):
         action='store_true',
         help=textwrap.dedent("""\
             Delete extra files under DESTINATION not found under SOURCE.
-            By default extra files are not deleted.
+            By default extra files are not deleted. Managed folders are not
+            affected by this flag.
 
             Note: this option can delete data quickly if you specify the wrong
             source and destination combination."""),
@@ -176,6 +299,11 @@ character. When using Windows PowerShell, use `'` instead of
 
   def Run(self, args):
     encryption_util.initialize_key_store(args)
+    cp_command_util.validate_include_managed_folders(
+        args,
+        [args.source],
+        storage_url.storage_url_from_string(args.destination),
+    )
     source_container = rsync_command_util.get_existing_container_resource(
         os.path.expanduser(args.source), args.ignore_symlinks
     )
@@ -185,74 +313,42 @@ character. When using Windows PowerShell, use `'` instead of
         )
     )
 
-    # Create list tasks for source and destination and execute in parallel.
-    source_list_path = rsync_command_util.get_hashed_list_file_path(
-        source_container.storage_url.url_string
-    )
-    destination_list_path = rsync_command_util.get_hashed_list_file_path(
-        destination_container.storage_url.url_string
-    )
-
-    source_task = get_sorted_list_file_task.GetSortedContainerContentsTask(
-        source_container,
-        source_list_path,
-        exclude_pattern_strings=args.exclude,
-        ignore_symlinks=args.ignore_symlinks,
-        recurse=args.recursive,
-    )
-    destination_task = get_sorted_list_file_task.GetSortedContainerContentsTask(
-        destination_container,
-        destination_list_path,
-        exclude_pattern_strings=args.exclude,
-        ignore_symlinks=args.ignore_symlinks,
-        recurse=args.recursive,
+    list_tasks, cleanup_paths = _get_list_tasks_and_cleanup_paths(
+        args, source_container, destination_container,
     )
 
     try:
-      self.exit_code = task_executor.execute_tasks(
-          [source_task, destination_task],
+      exit_code = task_executor.execute_tasks(
+          list_tasks,
           continue_on_error=args.continue_on_error,
           parallelizable=True,
       )
-      if self.exit_code:
+      if exit_code:
+        self.exit_code = exit_code
         return
 
-      user_request_args = (
-          user_request_args_factory.get_user_request_args_from_command_args(
-              args, metadata_type=user_request_args_factory.MetadataType.OBJECT
-          )
-      )
-      task_status_queue = task_graph_executor.multiprocessing_context.Queue()
-      # Execute a new task iterator for rsync copy, delete, and patch
-      # operations iterating through the two sorted list files.
-      operation_iterator = rsync_command_util.get_operation_iterator(
-          user_request_args,
-          source_list_path,
+      # TODO(b/304524534): Replace with args.include_managed_folders.
+      if getattr(args, 'include_managed_folders', False):
+        exit_code = _perform_rsync(
+            args,
+            source_container,
+            destination_container,
+            perform_managed_folder_operations=True,
+        )
+        if exit_code:
+          # An error occurred setting up managed folders in the destination, so
+          # we exit out early, as managed folders regulate permissions and we do
+          # not want to copy to a location that is incorrectly configured.
+          self.exit_code = exit_code
+          return
+
+      self.exit_code = _perform_rsync(
+          args,
           source_container,
-          destination_list_path,
           destination_container,
-          compare_only_hashes=args.checksums_only,
-          delete_unmatched_destination_objects=(
-              args.delete_unmatched_destination_objects
-          ),
-          dry_run=args.dry_run,
-          ignore_symlinks=args.ignore_symlinks,
-          skip_if_destination_has_later_modification_time=(
-              args.skip_if_dest_has_newer_mtime
-          ),
-          skip_unsupported=args.skip_unsupported,
-          task_status_queue=task_status_queue,
+          perform_managed_folder_operations=False,
       )
-      self.exit_code = task_executor.execute_tasks(
-          operation_iterator,
-          continue_on_error=args.continue_on_error,
-          parallelizable=True,
-          progress_manager_args=task_status.ProgressManagerArgs(
-              task_status.IncrementType.FILES_AND_BYTES,
-              manifest_path=user_request_args.manifest_path,
-          ),
-          task_status_queue=task_status_queue,
-      )
+
     finally:
-      rsync_command_util.try_to_delete_file(source_list_path)
-      rsync_command_util.try_to_delete_file(destination_list_path)
+      for path in cleanup_paths:
+        rsync_command_util.try_to_delete_file(path)

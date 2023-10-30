@@ -19,10 +19,12 @@ from __future__ import division
 from __future__ import unicode_literals
 
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.storage import errors_util
 from googlecloudsdk.command_lib.storage import flags
 from googlecloudsdk.command_lib.storage import folder_util
 from googlecloudsdk.command_lib.storage import name_expansion
 from googlecloudsdk.command_lib.storage import rm_command_util
+from googlecloudsdk.command_lib.storage import storage_url
 from googlecloudsdk.command_lib.storage.tasks import task_graph_executor
 
 
@@ -51,6 +53,10 @@ class Delete(base.Command):
     flags.add_continue_on_error_flag(parser)
 
   def Run(self, args):
+    for url_string in args.url:
+      url = storage_url.storage_url_from_string(url_string)
+      errors_util.raise_error_if_not_gcs_managed_folder(args.command_path, url)
+
     managed_folder_expansion_iterator = name_expansion.NameExpansionIterator(
         args.url,
         managed_folder_setting=folder_util.ManagedFolderSetting.LIST_WITHOUT_OBJECTS,

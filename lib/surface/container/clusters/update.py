@@ -380,7 +380,6 @@ class Update(base.UpdateCommand):
     flags.AddRuntimeVulnerabilityInsightFlag(group)
     flags.AddWorkloadPoliciesFlag(group)
     flags.AddRemoveWorkloadPoliciesFlag(group)
-    flags.AddInTransitEncryptionFlag(group)
     flags.AddEnableMultiNetworkingFlag(group, hidden=True)
     flags.AddContainerdConfigFlag(group, hidden=True)
     flags.AddFleetProjectFlag(group, is_update=True)

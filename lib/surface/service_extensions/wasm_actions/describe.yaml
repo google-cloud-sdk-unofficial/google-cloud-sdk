@@ -1,9 +1,9 @@
 - release_tracks: [ALPHA]
   help_text:
-    brief: Show details about a WasmAction.
-    description: Show details about a WasmAction.
+    brief: Show details about a `WasmAction` resource.
+    description: Show details about a `WasmAction` resource.
     examples: |
-      To show details about a WasmAction, run:
+      To show details about a `WasmAction`, run:
 
         $ {command} my-wasm-action
 
@@ -14,5 +14,5 @@
 
   arguments:
     resource:
-      help_text: The WasmAction you want to describe.
+      help_text: The `WasmAction` resource that you want to describe.
       spec: !REF googlecloudsdk.command_lib.service_extensions.resources:wasmAction

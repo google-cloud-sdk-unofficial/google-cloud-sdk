@@ -23,4 +23,4 @@ from googlecloudsdk.calliope import base
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class WasmActions(base.Group):
-  """Interact with and manage Service Extensions WasmActions."""
+  """Interact with and manage Service Extensions `WasmActions`."""

@@ -19,6 +19,7 @@ from __future__ import division
 from __future__ import unicode_literals
 
 import os
+import sys
 import tempfile
 
 from googlecloudsdk.api_lib.artifacts import exceptions as ar_exceptions
@@ -111,14 +112,25 @@ class Download(base.Command):
         # Create the directory structure.
         if '/' in file_name:
           d = os.path.dirname(file_name)
-          os.makedirs(os.path.join(tempfile.gettempdir(), d), exist_ok=True)
-          os.makedirs(os.path.join(args.destination, d))
-
+          try:
+            os.makedirs(os.path.join(args.destination, d))
+          except FileExistsError:
+            log.error(
+                'Directory {} already exists.'.format(
+                    os.path.join(args.destination, d)
+                )
+            )
+            sys.exit(1)
         self.downloadGenericArtifact(args, repo_ref, file_id, file_name)
 
   def downloadGenericArtifact(self, args, repo_ref, file_id, file_name):
-    tmp_path = os.path.join(tempfile.gettempdir(), file_name)
     final_path = os.path.join(args.destination, file_name)
+
+    if args.name:
+      tmp_path = os.path.join(tempfile.gettempdir(), file_name)
+    else:
+      tmp_path = final_path
+
     file_escaped = file_util.EscapeFileNameFromIDs(
         repo_ref.projectsId,
         repo_ref.locationsId,

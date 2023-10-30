@@ -21,8 +21,10 @@ from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.app import browser_dispatcher
 
-VERIFY_DOMAINS_URL = ('https://search.google.com/search-console/welcome/'
-                      'verification?authuser=0&domain={domain}&pli=1')
+VERIFY_DOMAINS_URL = (
+    'https://search.google.com/search-console/welcome'
+    '?authuser=0&new_domain_name={domain}&pli=1'
+)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
@@ -30,10 +32,8 @@ class Verify(base.Command):
   """Verifies a domain via an in-browser workflow."""
 
   detailed_help = {
-      'DESCRIPTION':
-          '{description}',
-      'EXAMPLES':
-          """\
+      'DESCRIPTION': '{description}',
+      'EXAMPLES': """\
           To verify a domain for the current user, run:
 
             $ {command} example.com
@@ -45,9 +45,7 @@ class Verify(base.Command):
 
   @staticmethod
   def Args(parser):
-    parser.add_argument(
-        'domain',
-        help='The domain to be verified.')
+    parser.add_argument('domain', help='The domain to be verified.')
 
   def Run(self, args):
     url = VERIFY_DOMAINS_URL.format(domain=args.domain)

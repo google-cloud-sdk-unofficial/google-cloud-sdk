@@ -1,5 +1,8 @@
 - release_tracks: [ALPHA, BETA, GA]
-
+  BETA:
+    hidden: true
+  GA:
+    hidden: true
   help_text:
     brief: Describe a management server.
     description: Describe a management server.

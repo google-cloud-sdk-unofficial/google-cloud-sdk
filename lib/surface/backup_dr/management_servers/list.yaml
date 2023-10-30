@@ -1,5 +1,8 @@
 - release_tracks: [ALPHA, BETA, GA]
-
+  BETA:
+    hidden: true
+  GA:
+    hidden: true
   help_text:
     brief: List Management Servers
     description: Displays all managment servers in a project.

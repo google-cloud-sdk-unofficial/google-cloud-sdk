@@ -538,6 +538,7 @@ class CreateBeta(CreateGA):
   _support_subsetting_subset_size = True
   _support_advanced_load_balancing = True
   _support_tcp_ssl_logging = True
+  _support_ip_address_selection_policy = True
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)

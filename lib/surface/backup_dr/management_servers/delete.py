@@ -29,19 +29,16 @@ from googlecloudsdk.core import log
 from googlecloudsdk.core.console import console_io
 
 
-@base.Hidden
-@base.ReleaseTracks(
-    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
-)
-class Delete(base.DeleteCommand):
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class DeleteAlpha(base.DeleteCommand):
   """Delete a given Management Server."""
 
   detailed_help = {
       'DESCRIPTION': '{description}',
       'EXAMPLES': """\
-        To delete management server projects/sample-project/locations/us-central1/managementServers/sample-ms, run:
+        To delete a management server `sample-ms` in project `sample-project` and location `us-central1` , run:
 
-          $ {command} projects/sample-project/locations/us-central1/managementServers/sample-ms
+          $ {command} sample-ms --project=sample-project --location=us-central1
         """,
   }
 
@@ -104,3 +101,9 @@ class Delete(base.DeleteCommand):
         ),
         has_result=False,
     )
+
+
+@base.Hidden
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
+class Delete(DeleteAlpha):
+  """Delete a given Management Server."""

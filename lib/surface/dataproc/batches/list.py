@@ -19,7 +19,6 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
-from apitools.base.py import list_pager
 from googlecloudsdk.api_lib.dataproc import constants
 from googlecloudsdk.api_lib.dataproc import dataproc as dp
 from googlecloudsdk.api_lib.dataproc import display_helper
@@ -81,11 +80,15 @@ class List(base.ListCommand):
                               util.ParseProjectsLocations(dataproc),
                               args)
 
-    jobs = list_pager.YieldFromList(dataproc.client.projects_locations_batches,
-                                    request,
-                                    limit=args.limit, field='batches',
-                                    batch_size=args.page_size,
-                                    batch_size_attribute='pageSize')
+    jobs = util.YieldFromListWithUnreachableList(
+        'The following batches are unreachable: %s',
+        dataproc.client.projects_locations_batches,
+        request,
+        limit=args.limit,
+        field='batches',
+        batch_size=args.page_size,
+        batch_size_attribute='pageSize',
+    )
     return (display_helper.DisplayHelper(job) for job in jobs)
 
   @staticmethod

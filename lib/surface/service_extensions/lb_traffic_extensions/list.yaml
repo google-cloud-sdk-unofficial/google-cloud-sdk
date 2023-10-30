@@ -2,12 +2,12 @@ release_tracks: [BETA, ALPHA]
 
 help_text:
   brief: |
-    List LB Traffic Extensions.
+    List `LbTrafficExtension` resources.
   description: |
-    List all LB Traffic Extensions in the specified location of the current
+    List all `LbTrafficExtension` resources in the specified location of the current
     project.
   examples: |
-      To list all LB Traffic Extensions in the current project located in
+      To list all `LbTrafficExtension` resources in the current project located in
       `us-central1` region, run:
 
         $ {command} --location=us-central1
@@ -24,7 +24,7 @@ arguments:
   resource:
     spec: !REF googlecloudsdk.command_lib.service_extensions.resources:location
     help_text: |
-      The project of the service LB policies to display.
+      The parent location.
 
 response:
   id_field: name

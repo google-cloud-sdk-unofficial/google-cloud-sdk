@@ -18,7 +18,6 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
-from apitools.base.py import list_pager
 
 from googlecloudsdk.api_lib.dataproc import constants
 from googlecloudsdk.api_lib.dataproc import dataproc as dp
@@ -65,7 +64,8 @@ class List(base.ListCommand):
     request = messages.DataprocProjectsRegionsWorkflowTemplatesListRequest(
         parent=region_ref.RelativeName())
 
-    return list_pager.YieldFromList(
+    return util.YieldFromListWithUnreachableList(
+        'The following workflow templates are unreachable: %s',
         dataproc.client.projects_regions_workflowTemplates,
         request,
         limit=args.limit,

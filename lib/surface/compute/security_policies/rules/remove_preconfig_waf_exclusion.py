@@ -85,32 +85,24 @@ class RemovePreconfigWafExclusionHelper(object):
   """
 
   @classmethod
-  def Args(cls, parser, support_regional_security_policy):
+  def Args(cls, parser):
     """Generates the flagset for a RemovePreconfigWafExclusion command."""
-    if support_regional_security_policy:
-      cls.NAME_ARG = flags.PriorityArgument(
-          'remove the exclusion configuration for preconfigured WAF evaluation'
-      )
-      cls.NAME_ARG.AddArgument(
-          parser,
-          operation_type=(
-              'remove the exclusion configuration for preconfigured WAF'
-              ' evaluation'
-          ),
-          cust_metavar='PRIORITY',
-      )
-      flags.AddRegionFlag(
-          parser,
-          'remove the exclusion configuration for preconfigured WAF evaluation')
-      cls.SECURITY_POLICY_ARG = (
-          security_policy_flags.SecurityPolicyMultiScopeArgumentForRules())
-    else:
-      flags.AddPriority(
-          parser,
-          'remove the exclusion configuration for preconfigured WAF evaluation',
-      )
-      cls.SECURITY_POLICY_ARG = (
-          security_policy_flags.SecurityPolicyArgumentForRules())
+    cls.NAME_ARG = flags.PriorityArgument(
+        'remove the exclusion configuration for preconfigured WAF evaluation'
+    )
+    cls.NAME_ARG.AddArgument(
+        parser,
+        operation_type=(
+            'remove the exclusion configuration for preconfigured WAF'
+            ' evaluation'
+        ),
+        cust_metavar='PRIORITY',
+    )
+    flags.AddRegionFlag(
+        parser,
+        'remove the exclusion configuration for preconfigured WAF evaluation')
+    cls.SECURITY_POLICY_ARG = (
+        security_policy_flags.SecurityPolicyMultiScopeArgumentForRules())
     cls.SECURITY_POLICY_ARG.AddArgument(parser)
     flags.AddTargetRuleSet(parser=parser, is_add=False)
     flags.AddTargetRuleIds(parser=parser, is_add=False)
@@ -248,7 +240,7 @@ class RemovePreconfigWafExclusionHelper(object):
     return new_preconfig_waf_config
 
   @classmethod
-  def Run(cls, release_track, args, support_regional_security_policy):
+  def Run(cls, release_track, args):
     """Validates arguments and patches a security policy rule."""
     if args.target_rule_set == '*':
       if (args.IsSpecified('target_rule_ids') or
@@ -281,26 +273,17 @@ class RemovePreconfigWafExclusionHelper(object):
     holder = base_classes.ComputeApiHolder(release_track)
     compute_client = holder.client
     ref = None
-    if support_regional_security_policy:
-      security_policy_ref = cls.SECURITY_POLICY_ARG.ResolveAsResource(
-          args, holder.resources, default_scope=compute_scope.ScopeEnum.GLOBAL)
-      if getattr(security_policy_ref, 'region', None) is not None:
-        ref = holder.resources.Parse(
-            args.name,
-            collection='compute.regionSecurityPolicyRules',
-            params={
-                'project': properties.VALUES.core.project.GetOrFail,
-                'region': security_policy_ref.region,
-                'securityPolicy': args.security_policy,
-            })
-      else:
-        ref = holder.resources.Parse(
-            args.name,
-            collection='compute.securityPolicyRules',
-            params={
-                'project': properties.VALUES.core.project.GetOrFail,
-                'securityPolicy': args.security_policy
-            })
+    security_policy_ref = cls.SECURITY_POLICY_ARG.ResolveAsResource(
+        args, holder.resources, default_scope=compute_scope.ScopeEnum.GLOBAL)
+    if getattr(security_policy_ref, 'region', None) is not None:
+      ref = holder.resources.Parse(
+          args.name,
+          collection='compute.regionSecurityPolicyRules',
+          params={
+              'project': properties.VALUES.core.project.GetOrFail,
+              'region': security_policy_ref.region,
+              'securityPolicy': args.security_policy,
+          })
     else:
       ref = holder.resources.Parse(
           args.name,
@@ -379,25 +362,21 @@ class RemovePreconfigWafExclusionGA(base.UpdateCommand):
   SECURITY_POLICY_ARG = None
   NAME_ARG = None
 
-  _support_regional_security_policy = False
-
   @classmethod
   def Args(cls, parser):
     RemovePreconfigWafExclusionHelper.Args(
         parser,
-        support_regional_security_policy=cls._support_regional_security_policy,
     )
 
   def Run(self, args):
     return RemovePreconfigWafExclusionHelper.Run(
         self.ReleaseTrack(),
         args,
-        support_regional_security_policy=self._support_regional_security_policy,
     )
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
-class RemovePreconfigWafExclusionBeta(base.UpdateCommand):
+class RemovePreconfigWafExclusionBeta(RemovePreconfigWafExclusionGA):
   r"""Remove an exclusion configuration for preconfigured WAF evaluation from a security policy rule.
 
   *{command}* is used to remove an exclusion configuration for preconfigured WAF
@@ -452,28 +431,10 @@ class RemovePreconfigWafExclusionBeta(base.UpdateCommand):
        --security-policy=my-policy \
        --target-rule-set=*
   """
-
-  SECURITY_POLICY_ARG = None
-
-  _support_regional_security_policy = True
-
-  @classmethod
-  def Args(cls, parser):
-    RemovePreconfigWafExclusionHelper.Args(
-        parser,
-        support_regional_security_policy=cls._support_regional_security_policy,
-    )
-
-  def Run(self, args):
-    return RemovePreconfigWafExclusionHelper.Run(
-        self.ReleaseTrack(),
-        args,
-        support_regional_security_policy=self._support_regional_security_policy,
-    )
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class RemovePreconfigWafExclusionAlpha(base.UpdateCommand):
+class RemovePreconfigWafExclusionAlpha(RemovePreconfigWafExclusionBeta):
   r"""Remove an exclusion configuration for preconfigured WAF evaluation from a security policy rule.
 
   *{command}* is used to remove an exclusion configuration for preconfigured WAF
@@ -528,19 +489,3 @@ class RemovePreconfigWafExclusionAlpha(base.UpdateCommand):
        --security-policy=my-policy \
        --target-rule-set=*
   """
-
-  SECURITY_POLICY_ARG = None
-
-  _support_regional_security_policy = True
-
-  @classmethod
-  def Args(cls, parser):
-    RemovePreconfigWafExclusionHelper.Args(
-        parser,
-        support_regional_security_policy=cls._support_regional_security_policy)
-
-  def Run(self, args):
-    return RemovePreconfigWafExclusionHelper.Run(
-        self.ReleaseTrack(),
-        args,
-        support_regional_security_policy=self._support_regional_security_policy)

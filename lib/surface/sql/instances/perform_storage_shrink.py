@@ -19,7 +19,6 @@ from __future__ import division
 from __future__ import unicode_literals
 
 from apitools.base.py import exceptions as apitools_exceptions
-
 from googlecloudsdk.api_lib.sql import api_util
 from googlecloudsdk.api_lib.sql import constants
 from googlecloudsdk.api_lib.sql import exceptions
@@ -29,6 +28,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions as calliope_exceptions
 from googlecloudsdk.command_lib.sql import flags
 from googlecloudsdk.core import properties
+from googlecloudsdk.core.console import console_io
 import six.moves.http_client
 
 
@@ -80,7 +80,16 @@ class PerformStorageShrink(base.Command):
     instance_ref = client.resource_parser.Parse(
         args.instance,
         params={'project': properties.VALUES.core.project.GetOrFail},
-        collection='sql.instances')
+        collection='sql.instances',
+    )
+
+    if not console_io.PromptContinue(
+        'Confirm that you have already run `gcloud alpha sql instances'
+        ' get-storage-shrink-config $instance_name` and understand that this'
+        ' operation will restart your database and might take a long time to'
+        ' complete (y/n)'
+    ):
+      return None
 
     try:
       request = sql_messages.SqlProjectsInstancesPerformDiskShrinkRequest(

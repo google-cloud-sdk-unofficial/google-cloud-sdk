@@ -19,8 +19,10 @@ from __future__ import division
 from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.cloudbuild.v2 import client_util
+from googlecloudsdk.api_lib.cloudbuild.v2 import workflow_input_util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.cloudbuild import run_flags
+from googlecloudsdk.core.resource import resource_projector
 
 
 @base.Hidden
@@ -51,4 +53,6 @@ class Describe(base.Command):
     workflow = client.projects_locations_workflows.Get(
         messages.CloudbuildProjectsLocationsWorkflowsGetRequest(
             name=workflow_name))
-    return workflow
+    synthesized = resource_projector.MakeSerializable(workflow)
+    workflow_input_util.WorkflowDisplay(synthesized)
+    return synthesized

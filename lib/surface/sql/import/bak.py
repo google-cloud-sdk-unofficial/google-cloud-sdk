@@ -82,6 +82,8 @@ class Bak(base.Command):
     flags.AddBakImportNoRecoveryArgument(parser)
     flags.AddBakImportRecoveryOnlyArgument(parser)
     flags.AddBakImportBakTypeArgument(parser)
+    flags.AddBakImportStopAtArgument(parser)
+    flags.AddBakImportStopAtMarkArgument(parser)
 
   def Run(self, args):
     """Runs the command to import into the Cloud SQL instance."""

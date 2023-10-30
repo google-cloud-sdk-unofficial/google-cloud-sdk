@@ -135,13 +135,13 @@ class Deploy(base.Command):
                 ' build source is provided.'
             ),
         )
-    required_apis = ['run.googleapis.com']
+    required_apis = [api_enabler.get_run_api()]
     if include_build:
       required_apis.append('artifactregistry.googleapis.com')
       required_apis.append('cloudbuild.googleapis.com')
     already_activated_services = False
     if self.ReleaseTrack() in [base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA]:
-      already_activated_services = api_enabler.CheckAndEnableApis(
+      already_activated_services = api_enabler.check_and_enable_apis(
           properties.VALUES.core.project.Get(), required_apis
       )
     job_ref = args.CONCEPTS.job.Parse()
@@ -300,7 +300,12 @@ class BetaDeploy(Deploy):
 class AlphaDeploy(BetaDeploy):
   """Create or update a Cloud Run job."""
 
-  @staticmethod
-  def Args(parser):
+  @classmethod
+  def Args(cls, parser):
     Deploy.CommonArgs(parser)
     flags.AddVpcNetworkGroupFlagsForUpdate(parser, resource_kind='job')
+    flags.AddVolumesFlags(parser, cls.ReleaseTrack())
+    group = base.ArgumentGroup()
+    group.AddArgument(flags.AddVolumeMountFlag())
+    group.AddArgument(flags.RemoveVolumeMountFlag())
+    group.AddToParser(parser)

@@ -78,7 +78,7 @@ class RawDecrypt(base.Command):
   @staticmethod
   def Args(parser):
     flags.AddKeyResourceFlags(parser, 'The (raw) key to use for decryption.')
-    flags.AddCryptoKeyVersionFlag(parser, 'to use for decryption')
+    flags.AddCryptoKeyVersionFlag(parser, 'to use for decryption', True)
     flags.AddPlaintextFileFlag(parser, 'to store the decrypted data')
     flags.AddCiphertextFileFlag(parser, 'to decrypt')
     flags.AddIvFileFlag(parser, 'for decryption')
@@ -169,7 +169,7 @@ class RawDecrypt(base.Command):
             .format(args.additional_authenticated_data_file, e)
         )
 
-    crypto_key_ref = flags.ParseCryptoKeyName(args)
+    crypto_key_ref = flags.ParseCryptoKeyVersionName(args)
     messages = cloudkms_base.GetMessagesModule()
     request = messages.CloudkmsProjectsLocationsKeyRingsCryptoKeysCryptoKeyVersionsRawDecryptRequest(  # pylint: disable=line-too-long
         name=crypto_key_ref.RelativeName()

@@ -2,17 +2,15 @@
 Monkey patching of distutils.
 """
 
-import sys
-import distutils.filelist
-import platform
-import types
 import functools
 import inspect
+import platform
+import sys
+import types
+from importlib import import_module
 
-from .py26compat import import_module
-import six
+import distutils.filelist
 
-import setuptools
 
 __all__ = []
 """
@@ -21,11 +19,27 @@ if you think you need this functionality.
 """
 
 
+def _get_mro(cls):
+    """
+    Returns the bases classes for cls sorted by the MRO.
+
+    Works around an issue on Jython where inspect.getmro will not return all
+    base classes if multiple classes share the same name. Instead, this
+    function will return a tuple containing the class itself, and the contents
+    of cls.__bases__. See https://github.com/pypa/setuptools/issues/1024.
+    """
+    if platform.python_implementation() == "Jython":
+        return (cls,) + cls.__bases__
+    return inspect.getmro(cls)
+
+
 def get_unpatched(item):
     lookup = (
-        get_unpatched_class if isinstance(item, six.class_types) else
-        get_unpatched_function if isinstance(item, types.FunctionType) else
-        lambda item: None
+        get_unpatched_class
+        if isinstance(item, type)
+        else get_unpatched_function
+        if isinstance(item, types.FunctionType)
+        else lambda item: None
     )
     return lookup(item)
 
@@ -37,9 +51,7 @@ def get_unpatched_class(cls):
     first.
     """
     external_bases = (
-        cls
-        for cls in inspect.getmro(cls)
-        if not cls.__module__.startswith('setuptools')
+        cls for cls in _get_mro(cls) if not cls.__module__.startswith('setuptools')
     )
     base = next(external_bases)
     if not base.__module__.startswith('distutils'):
@@ -49,39 +61,27 @@ def get_unpatched_class(cls):
 
 
 def patch_all():
+    import setuptools
+
     # we can't patch distutils.cmd, alas
     distutils.core.Command = setuptools.Command
 
-    has_issue_12885 = (
-        sys.version_info < (3, 4, 6)
-        or
-        (3, 5) < sys.version_info <= (3, 5, 3)
-        or
-        (3, 6) < sys.version_info
-    )
+    has_issue_12885 = sys.version_info <= (3, 5, 3)
 
     if has_issue_12885:
         # fix findall bug in distutils (http://bugs.python.org/issue12885)
         distutils.filelist.findall = setuptools.findall
 
-    needs_warehouse = (
-        sys.version_info < (2, 7, 13)
-        or
-        (3, 0) < sys.version_info < (3, 3, 7)
-        or
-        (3, 4) < sys.version_info < (3, 4, 6)
-        or
-        (3, 5) < sys.version_info <= (3, 5, 3)
-        or
-        (3, 6) < sys.version_info
-    )
+    needs_warehouse = (3, 4) < sys.version_info < (3, 4, 6) or (
+        3,
+        5,
+    ) < sys.version_info <= (3, 5, 3)
 
     if needs_warehouse:
         warehouse = 'https://upload.pypi.org/legacy/'
         distutils.config.PyPIRCCommand.DEFAULT_REPOSITORY = warehouse
 
-    _patch_distribution_metadata_write_pkg_file()
-    _patch_distribution_metadata_write_pkg_info()
+    _patch_distribution_metadata()
 
     # Install Distribution throughout the distutils
     for module in distutils.dist, distutils.core, distutils.cmd:
@@ -91,33 +91,25 @@ def patch_all():
     distutils.core.Extension = setuptools.extension.Extension
     distutils.extension.Extension = setuptools.extension.Extension
     if 'distutils.command.build_ext' in sys.modules:
-        sys.modules['distutils.command.build_ext'].Extension = (
-            setuptools.extension.Extension
-        )
+        sys.modules[
+            'distutils.command.build_ext'
+        ].Extension = setuptools.extension.Extension
 
     patch_for_msvc_specialized_compiler()
 
 
-def _patch_distribution_metadata_write_pkg_file():
-    """Patch write_pkg_file to also write Requires-Python/Requires-External"""
-    distutils.dist.DistributionMetadata.write_pkg_file = (
-        setuptools.dist.write_pkg_file
-    )
+def _patch_distribution_metadata():
+    from . import _core_metadata
 
-
-def _patch_distribution_metadata_write_pkg_info():
-    """
-    Workaround issue #197 - Python 3 prior to 3.2.2 uses an environment-local
-    encoding to save the pkg_info. Monkey-patch its write_pkg_info method to
-    correct this undesirable behavior.
-    """
-    environment_local = (3,) <= sys.version_info[:3] < (3, 2, 2)
-    if not environment_local:
-        return
-
-    distutils.dist.DistributionMetadata.write_pkg_info = (
-        setuptools.dist.write_pkg_info
-    )
+    """Patch write_pkg_file and read_pkg_file for higher metadata standards"""
+    for attr in (
+        'write_pkg_info',
+        'write_pkg_file',
+        'read_pkg_file',
+        'get_metadata_version',
+    ):
+        new_val = getattr(_core_metadata, attr)
+        setattr(distutils.dist.DistributionMetadata, attr, new_val)
 
 
 def patch_func(replacement, target_mod, func_name):
@@ -150,14 +142,14 @@ def patch_for_msvc_specialized_compiler():
     msvc = import_module('setuptools.msvc')
 
     if platform.system() != 'Windows':
-        # Compilers only availables on Microsoft Windows
+        # Compilers only available on Microsoft Windows
         return
 
     def patch_params(mod_name, func_name):
         """
         Prepare the parameters for patch_func to patch indicated function.
         """
-        repl_prefix = 'msvc9_' if 'msvc9' in mod_name else 'msvc14_'
+        repl_prefix = 'msvc14_'
         repl_name = repl_prefix + func_name.lstrip('_')
         repl = getattr(msvc, repl_name)
         mod = import_module(mod_name)
@@ -165,27 +157,11 @@ def patch_for_msvc_specialized_compiler():
             raise ImportError(func_name)
         return repl, mod, func_name
 
-    # Python 2.7 to 3.4
-    msvc9 = functools.partial(patch_params, 'distutils.msvc9compiler')
-
     # Python 3.5+
     msvc14 = functools.partial(patch_params, 'distutils._msvccompiler')
 
     try:
-        # Patch distutils.msvc9compiler
-        patch_func(*msvc9('find_vcvarsall'))
-        patch_func(*msvc9('query_vcvarsall'))
-    except ImportError:
-        pass
-
-    try:
         # Patch distutils._msvccompiler._get_vc_env
         patch_func(*msvc14('_get_vc_env'))
-    except ImportError:
-        pass
-
-    try:
-        # Patch distutils._msvccompiler.gen_lib_options for Numpy
-        patch_func(*msvc14('gen_lib_options'))
     except ImportError:
         pass

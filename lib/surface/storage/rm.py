@@ -84,8 +84,8 @@ class Rm(base.Command):
       """,
   }
 
-  @staticmethod
-  def Args(parser):
+  @classmethod
+  def Args(cls, parser):
     parser.add_argument(
         'urls',
         nargs='*',
@@ -113,16 +113,17 @@ class Rm(base.Command):
         help='Delete all'
         ' [versions](https://cloud.google.com/storage/docs/object-versioning)'
         ' of an object.')
-    parser.add_argument(
-        '--exclude-managed-folders',
-        action='store_true',
-        default=False,
-        hidden=True,
-        help=(
-            'Excludes managed folders from command operations. By default'
-            ' gcloud storage includes managed folders in recursive removals.'
-        ),
-    )
+
+    if cls.ReleaseTrack() is base.ReleaseTrack.ALPHA:
+      parser.add_argument(
+          '--exclude-managed-folders',
+          action='store_true',
+          default=False,
+          help=(
+              'Excludes managed folders from command operations. By default'
+              ' gcloud storage includes managed folders in recursive removals.'
+          ),
+      )
 
     flags.add_additional_headers_flag(parser)
     flags.add_continue_on_error_flag(parser)
@@ -139,6 +140,12 @@ class Rm(base.Command):
       object_state = flags.get_object_state_from_flags(args)
       recursion_setting = name_expansion.RecursionSetting.NO_WITH_WARNING
 
+    should_perform_managed_folder_operations = (
+        args.recursive
+        # TODO(b/304524534): Replace with args.exclude_managed_folders.
+        and not getattr(args, 'exclude_managed_folders', True)
+    )
+
     url_found_match_tracker = collections.OrderedDict()
     name_expansion_iterator = name_expansion.NameExpansionIterator(
         stdin_iterator.get_urls_iterable(args.urls, args.read_paths_from_stdin),
@@ -146,6 +153,7 @@ class Rm(base.Command):
         include_buckets=bucket_setting,
         managed_folder_setting=folder_util.ManagedFolderSetting.DO_NOT_LIST,
         object_state=object_state,
+        raise_error_for_unmatched_urls=not should_perform_managed_folder_operations,
         recursion_requested=recursion_setting,
         url_found_match_tracker=url_found_match_tracker,
     )
@@ -170,11 +178,15 @@ class Rm(base.Command):
         continue_on_error=args.continue_on_error,
     )
 
-    if args.recursive and not args.exclude_managed_folders:
+    if should_perform_managed_folder_operations:
       managed_folder_expansion_iterator = name_expansion.NameExpansionIterator(
           args.urls,
           managed_folder_setting=folder_util.ManagedFolderSetting.LIST_WITHOUT_OBJECTS,
-          raise_error_for_unmatched_urls=False,
+          raise_error_for_unmatched_urls=True,
+          # `rm` defaults to including managed folders, but this will raise a
+          # precondition error if the command targets a non-UBLA bucket. These
+          # errors should be silenced.
+          raise_managed_folder_precondition_errors=False,
           recursion_requested=name_expansion.RecursionSetting.YES,
           url_found_match_tracker=url_found_match_tracker,
       )

@@ -20,6 +20,7 @@ from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.storage import api_factory
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.storage import errors_util
 from googlecloudsdk.command_lib.storage import flags
 from googlecloudsdk.command_lib.storage import storage_url
 from googlecloudsdk.command_lib.storage.resources import full_resource_formatter
@@ -51,6 +52,7 @@ class Describe(base.Command):
 
   def Run(self, args):
     url = storage_url.storage_url_from_string(args.url)
+    errors_util.raise_error_if_not_gcs_managed_folder(args.command_path, url)
     client = api_factory.get_api(url.scheme)
     resource = client.get_managed_folder(
         url.bucket_name,

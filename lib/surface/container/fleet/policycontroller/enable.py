@@ -62,7 +62,6 @@ class Enable(base.UpdateCommand, base.EnableCommand, command.PocoCommand):
     manual_flags.add_monitoring()
     manual_flags.add_mutation()
     manual_flags.add_referential_rules()
-    manual_flags.add_template_library()
     manual_flags.add_version()
 
   def Run(self, args):
@@ -102,7 +101,6 @@ class Enable(base.UpdateCommand, base.EnableCommand, command.PocoCommand):
     hub_cfg = parser.update_mutation(hub_cfg)
     hub_cfg = parser.update_monitoring(hub_cfg)
     hub_cfg = parser.update_referential_rules(hub_cfg)
-    hub_cfg = parser.update_template_library(hub_cfg)
     hub_cfg.installSpec = (
         self.messages.PolicyControllerHubConfig.InstallSpecValueValuesEnum.INSTALL_SPEC_ENABLED
     )

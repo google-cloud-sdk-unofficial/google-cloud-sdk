@@ -20,6 +20,7 @@ from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.storage import api_factory
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.storage import errors_util
 from googlecloudsdk.command_lib.storage import flags
 from googlecloudsdk.command_lib.storage import storage_url
 from googlecloudsdk.core import log
@@ -47,8 +48,13 @@ class Create(base.Command):
     flags.add_additional_headers_flag(parser)
 
   def Run(self, args):
+    urls = []
     for url_string in args.url:
       url = storage_url.storage_url_from_string(url_string)
+      errors_util.raise_error_if_not_gcs_managed_folder(args.command_path, url)
+      urls.append(url)
+
+    for url in urls:
       client = api_factory.get_api(url.scheme)
       log.status.Print('Creating {}...'.format(url))
       client.create_managed_folder(url.bucket_name, url.object_name)

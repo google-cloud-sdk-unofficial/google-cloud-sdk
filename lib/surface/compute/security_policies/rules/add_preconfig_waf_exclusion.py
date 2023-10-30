@@ -65,30 +65,23 @@ class AddPreconfigWafExclusionHelper(object):
   """
 
   @classmethod
-  def Args(cls, parser, support_regional_security_policy):
+  def Args(cls, parser):
     """Generates the flagset for an AddPreconfigWafExclusion command."""
-    if support_regional_security_policy:
-      cls.NAME_ARG = flags.PriorityArgument(
-          'add the exclusion configuration for preconfigured WAF evaluation'
-      )
-      cls.NAME_ARG.AddArgument(
-          parser,
-          operation_type=(
-              'add the exclusion configuration for preconfigured WAF evaluation'
-          ),
-          cust_metavar='PRIORITY',
-      )
-      flags.AddRegionFlag(
-          parser,
-          'add the exclusion configuration for preconfigured WAF evaluation')
-      cls.SECURITY_POLICY_ARG = (
-          security_policy_flags.SecurityPolicyMultiScopeArgumentForRules())
-    else:
-      flags.AddPriority(
-          parser,
-          'add the exclusion configuration for preconfigured WAF evaluation')
-      cls.SECURITY_POLICY_ARG = (
-          security_policy_flags.SecurityPolicyArgumentForRules())
+    cls.NAME_ARG = flags.PriorityArgument(
+        'add the exclusion configuration for preconfigured WAF evaluation'
+    )
+    cls.NAME_ARG.AddArgument(
+        parser,
+        operation_type=(
+            'add the exclusion configuration for preconfigured WAF evaluation'
+        ),
+        cust_metavar='PRIORITY',
+    )
+    flags.AddRegionFlag(
+        parser,
+        'add the exclusion configuration for preconfigured WAF evaluation')
+    cls.SECURITY_POLICY_ARG = (
+        security_policy_flags.SecurityPolicyMultiScopeArgumentForRules())
     cls.SECURITY_POLICY_ARG.AddArgument(parser)
     flags.AddTargetRuleSet(parser=parser, is_add=True)
     flags.AddTargetRuleIds(parser=parser, is_add=True)
@@ -211,7 +204,7 @@ class AddPreconfigWafExclusionHelper(object):
     return new_preconfig_waf_config
 
   @classmethod
-  def Run(cls, release_track, args, support_regional_security_policy):
+  def Run(cls, release_track, args):
     """Validates arguments and patches a security policy rule."""
     if not (args.IsSpecified('request_header_to_exclude') or
             args.IsSpecified('request_cookie_to_exclude') or
@@ -242,59 +235,50 @@ class AddPreconfigWafExclusionHelper(object):
     holder = base_classes.ComputeApiHolder(release_track)
     compute_client = holder.client
     ref = None
-    if support_regional_security_policy:
-      if args.security_policy:
-        security_policy_ref = cls.SECURITY_POLICY_ARG.ResolveAsResource(
-            args,
-            holder.resources,
-            default_scope=compute_scope.ScopeEnum.GLOBAL)
-        if getattr(security_policy_ref, 'region', None) is not None:
-          ref = holder.resources.Parse(
-              args.name,
-              collection='compute.regionSecurityPolicyRules',
-              params={
-                  'project': properties.VALUES.core.project.GetOrFail,
-                  'region': security_policy_ref.region,
-                  'securityPolicy': args.security_policy,
-              })
-        else:
-          ref = holder.resources.Parse(
-              args.name,
-              collection='compute.securityPolicyRules',
-              params={
-                  'project': properties.VALUES.core.project.GetOrFail,
-                  'securityPolicy': args.security_policy,
-              },
-          )
+    if args.security_policy:
+      security_policy_ref = cls.SECURITY_POLICY_ARG.ResolveAsResource(
+          args,
+          holder.resources,
+          default_scope=compute_scope.ScopeEnum.GLOBAL)
+      if getattr(security_policy_ref, 'region', None) is not None:
+        ref = holder.resources.Parse(
+            args.name,
+            collection='compute.regionSecurityPolicyRules',
+            params={
+                'project': properties.VALUES.core.project.GetOrFail,
+                'region': security_policy_ref.region,
+                'securityPolicy': args.security_policy,
+            })
       else:
-        try:
-          ref = holder.resources.Parse(
-              args.name,
-              collection='compute.regionSecurityPolicyRules',
-              params={
-                  'project': properties.VALUES.core.project.GetOrFail,
-                  'region': getattr(args, 'region', None),
-              },
-          )
-        except (
-            resources.RequiredFieldOmittedException,
-            resources.WrongResourceCollectionException,
-        ):
-          ref = holder.resources.Parse(
-              args.name,
-              collection='compute.securityPolicyRules',
-              params={
-                  'project': properties.VALUES.core.project.GetOrFail,
-              },
-          )
+        ref = holder.resources.Parse(
+            args.name,
+            collection='compute.securityPolicyRules',
+            params={
+                'project': properties.VALUES.core.project.GetOrFail,
+                'securityPolicy': args.security_policy,
+            },
+        )
     else:
-      ref = holder.resources.Parse(
-          args.name,
-          collection='compute.securityPolicyRules',
-          params={
-              'project': properties.VALUES.core.project.GetOrFail,
-              'securityPolicy': args.security_policy
-          })
+      try:
+        ref = holder.resources.Parse(
+            args.name,
+            collection='compute.regionSecurityPolicyRules',
+            params={
+                'project': properties.VALUES.core.project.GetOrFail,
+                'region': getattr(args, 'region', None),
+            },
+        )
+      except (
+          resources.RequiredFieldOmittedException,
+          resources.WrongResourceCollectionException,
+      ):
+        ref = holder.resources.Parse(
+            args.name,
+            collection='compute.securityPolicyRules',
+            params={
+                'project': properties.VALUES.core.project.GetOrFail,
+            },
+        )
     security_policy_rule = client.SecurityPolicyRule(
         ref, compute_client=compute_client)
     existing_rule = security_policy_rule.Describe()[0]
@@ -339,28 +323,23 @@ class AddPreconfigWafExclusionGA(base.UpdateCommand):
        --request-cookie-to-exclude=op=EQUALS_ANY
   """
 
-  SECURITY_POLICY_ARG = None
   NAME_ARG = None
-
-  _support_regional_security_policy = False
 
   @classmethod
   def Args(cls, parser):
     AddPreconfigWafExclusionHelper.Args(
         parser,
-        support_regional_security_policy=cls._support_regional_security_policy,
     )
 
   def Run(self, args):
     return AddPreconfigWafExclusionHelper.Run(
         self.ReleaseTrack(),
         args,
-        support_regional_security_policy=self._support_regional_security_policy,
     )
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
-class AddPreconfigWafExclusionBeta(base.UpdateCommand):
+class AddPreconfigWafExclusionBeta(AddPreconfigWafExclusionGA):
   r"""Add an exclusion configuration for preconfigured WAF evaluation into a security policy rule.
 
   *{command}* is used to add an exclusion configuration for preconfigured WAF
@@ -392,28 +371,10 @@ class AddPreconfigWafExclusionBeta(base.UpdateCommand):
        --target-rule-set=sqli-stable \
        --request-cookie-to-exclude=op=EQUALS_ANY
   """
-
-  SECURITY_POLICY_ARG = None
-
-  _support_regional_security_policy = True
-
-  @classmethod
-  def Args(cls, parser):
-    AddPreconfigWafExclusionHelper.Args(
-        parser,
-        support_regional_security_policy=cls._support_regional_security_policy,
-    )
-
-  def Run(self, args):
-    return AddPreconfigWafExclusionHelper.Run(
-        self.ReleaseTrack(),
-        args,
-        support_regional_security_policy=self._support_regional_security_policy,
-    )
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class AddPreconfigWafExclusionAlpha(base.UpdateCommand):
+class AddPreconfigWafExclusionAlpha(AddPreconfigWafExclusionBeta):
   r"""Add an exclusion configuration for preconfigured WAF evaluation into a security policy rule.
 
   *{command}* is used to add an exclusion configuration for preconfigured WAF
@@ -445,19 +406,3 @@ class AddPreconfigWafExclusionAlpha(base.UpdateCommand):
        --target-rule-set=sqli-stable \
        --request-cookie-to-exclude=op=EQUALS_ANY
   """
-
-  SECURITY_POLICY_ARG = None
-
-  _support_regional_security_policy = True
-
-  @classmethod
-  def Args(cls, parser):
-    AddPreconfigWafExclusionHelper.Args(
-        parser,
-        support_regional_security_policy=cls._support_regional_security_policy)
-
-  def Run(self, args):
-    return AddPreconfigWafExclusionHelper.Run(
-        self.ReleaseTrack(),
-        args,
-        support_regional_security_policy=self._support_regional_security_policy)

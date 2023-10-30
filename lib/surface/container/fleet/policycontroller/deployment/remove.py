@@ -19,7 +19,6 @@ from __future__ import unicode_literals
 
 import argparse
 
-from googlecloudsdk.api_lib.container.fleet import util as fleet_util
 from googlecloudsdk.api_lib.container.fleet.policycontroller import protos
 from googlecloudsdk.calliope import base as calliope_base
 from googlecloudsdk.command_lib.container.fleet.features import base
@@ -124,46 +123,35 @@ class Remove(base.UpdateCommand, command.PocoCommand):
 
   def Run(self, args):
     # All the membership specs for this feature.
-    specs = self._membership_specs(args)
-
-    for _, spec in specs.items():
-      cfgs = protos.additional_properties_to_dict(
-          spec.policycontroller.policyControllerHubConfig.deploymentConfigs
-      )
-      deployment_cfg = cfgs.get(
-          args.deployment,
-          self.messages.PolicyControllerPolicyControllerDeploymentConfig(),
-      )
-
-      cfgs[args.deployment] = self.set_deployment_config(
-          deployment_cfg,
-          args.property,
-          args.value,
-          args.effect,
-      )
-
-      # Convert back to a list of additionalProperties.
-      # TODO(b/290215626) If empty, ensure it's removed from proto.
-      dcv = protos.set_additional_properties(
-          self.messages.PolicyControllerHubConfig.DeploymentConfigsValue(), cfgs
-      )
-      spec.policycontroller.policyControllerHubConfig.deploymentConfigs = dcv
-
-    return self.merge_specs(specs)
-
-  def _membership_specs(self, args):
-    memberships = [
-        fleet_util.MembershipPartialName(p)
-        for p in base.ParseMembershipsPlural(
-            args, search=True, prompt=True, prompt_cancel=False, autoselect=True
-        )
-    ]
-    specs = self.hubclient.ToPyDict(self.GetFeature().membershipSpecs)
-    return {
-        path: spec
-        for path, spec in specs.items()
-        if fleet_util.MembershipPartialName(path) in memberships
+    specs = self.path_specs(args)
+    updated_specs = {
+        path: self.remove(spec, args) for path, spec in specs.items()
     }
+    return self.update_specs(updated_specs)
+
+  def remove(self, spec, args):
+    cfgs = protos.additional_properties_to_dict(
+        spec.policycontroller.policyControllerHubConfig.deploymentConfigs
+    )
+    deployment_cfg = cfgs.get(
+        args.deployment,
+        self.messages.PolicyControllerPolicyControllerDeploymentConfig(),
+    )
+
+    cfgs[args.deployment] = self.set_deployment_config(
+        deployment_cfg,
+        args.property,
+        args.value,
+        args.effect,
+    )
+
+    # Convert back to a list of additionalProperties.
+    # TODO(b/290215626) If empty, ensure it's removed from proto.
+    dcv = protos.set_additional_properties(
+        self.messages.PolicyControllerHubConfig.DeploymentConfigsValue(), cfgs
+    )
+    spec.policycontroller.policyControllerHubConfig.deploymentConfigs = dcv
+    return spec
 
   def set_deployment_config(self, deployment_cfg, prop, value, effect):
     if prop == 'toleration':
@@ -186,13 +174,3 @@ class Remove(base.UpdateCommand, command.PocoCommand):
       return deployment.update_mem_request(self.messages, deployment_cfg, None)
     if prop == 'replica-count':
       return deployment.update_replica_count(deployment_cfg, None)
-
-  def merge_specs(self, specs):
-    orig = self.hubclient.ToPyDict(self.GetFeature().membershipSpecs)
-    merged = {path: specs.get(path, spec) for path, spec in orig.items()}
-    self.Update(
-        ['membership_specs'],
-        self.messages.Feature(
-            membershipSpecs=self.hubclient.ToMembershipSpecs(merged)
-        ),
-    )

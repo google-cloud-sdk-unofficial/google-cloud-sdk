@@ -1,10 +1,10 @@
 - release_tracks: [ALPHA]
   help_text:
-    brief: Delete a WasmAction.
+    brief: Delete a `WasmAction` resource.
     description: |
-      Delete a WasmAction.
+      Delete a `WasmAction` resource.
     examples: |
-      To delete a WasmAction called 'my-wasm-action', run:
+      To delete a `WasmAction` called 'my-wasm-action', run:
 
         $ {command} my-wasm-action
 
@@ -18,5 +18,5 @@
 
   arguments:
     resource:
-      help_text: The WasmAction to delete.
+      help_text: The `WasmAction` to delete.
       spec: !REF googlecloudsdk.command_lib.service_extensions.resources:wasmAction
