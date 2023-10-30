@@ -47,6 +47,11 @@ class CreateAppProfile(base.CreateCommand):
 
             $ {command} my-app-profile-id --instance=my-instance-id --route-any --description="Routes requests for my use case"
 
+          To create an app profile with a request priority of PRIORITY_MEDIUM,
+          run:
+
+            $ {command} my-app-profile-id --instance=my-instance-id --route-any --priority=PRIORITY_MEDIUM
+
           """),
   }
 
@@ -56,8 +61,9 @@ class CreateAppProfile(base.CreateCommand):
     (
         arguments.ArgAdder(parser)
         .AddDescription('app profile', required=False)
-        .AddForce('create')
         .AddAppProfileRouting()
+        .AddIsolation()
+        .AddForce('create')
     )
 
   def _CreateAppProfile(self, app_profile_ref, args):
@@ -87,6 +93,7 @@ class CreateAppProfile(base.CreateCommand):
         restrict_to=args.restrict_to,
         transactional_writes=args.transactional_writes,
         force=args.force,
+        priority=args.priority,
     )
 
   def Run(self, args):

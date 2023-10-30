@@ -32,15 +32,15 @@ DETAILED_HELP = {
         """
     To create an instance from a VmImage family, run:
 
-      $ {command} example-instance --vm-image-project=deeplearning-platform-release --vm-image-family=workbench-image-family --machine-type=n1-standard-4 --location=us-central1-b
+      $ {command} example-instance --vm-image-project=cloud-notebooks-managed --vm-image-family=workbench-instances --machine-type=n1-standard-4 --location=us-central1-b
 
     To create an instance from a VmImage name, run:
 
-      $ {command} example-instance --vm-image-project=deeplearning-platform-release --vm-image-name=workbench-image-name --machine-type=n1-standard-4 --location=us-central1-b
+      $ {command} example-instance --vm-image-project=cloud-notebooks-managed --vm-image-name=workbench-instances-v20230925-debian-11-py310 --machine-type=n1-standard-4 --location=us-central1-b
 
     To create an instance from a Container Repository, run:
 
-      $ {command} example-instance --container-repository=gcr.io/deeplearning-platform-release/base-cpu --container-tag=test-tag --machine-type=n1-standard-4 --location=us-central1-b
+      $ {command} example-instance --container-repository=gcr.io/deeplearning-platform-release/base-cpu --container-tag=latest --machine-type=n1-standard-4 --location=us-central1-b
     """,
 }
 

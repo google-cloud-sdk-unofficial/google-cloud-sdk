@@ -199,4 +199,5 @@ class AlphaUpdate(BetaUpdate):
     group = base.ArgumentGroup()
     group.AddArgument(flags.AddVolumeMountFlag())
     group.AddArgument(flags.RemoveVolumeMountFlag())
+    group.AddArgument(flags.ClearVolumeMountsFlag())
     group.AddToParser(parser)

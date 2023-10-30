@@ -119,6 +119,7 @@ class Create(base.Command):
     flags.add_recovery_point_objective_flag(parser)
 
     if cls.ReleaseTrack() == base.ReleaseTrack.ALPHA:
+      flags.add_enable_per_object_retention_flag(parser)
       parser.add_argument(
           '--soft-delete-duration',
           type=arg_parsers.Duration(),

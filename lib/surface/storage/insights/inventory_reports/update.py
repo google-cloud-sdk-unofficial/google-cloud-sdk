@@ -78,7 +78,7 @@ class Update(base.Command):
     if args.add_metadata_fields or args.remove_metadata_fields:
       # Get the existing report config so that we can modify
       # the metadata_fields list.
-      report_config = client.get(report_config_name)
+      report_config = client.get_inventory_report(report_config_name)
       metadata_fields = set(
           report_config.objectMetadataReportOptions.metadataFields)
       if args.add_metadata_fields is not None:
@@ -106,7 +106,7 @@ class Update(base.Command):
     else:
       destination_url = None
 
-    return client.update(
+    return client.update_inventory_report(
         report_config_name,
         destination_url=destination_url,
         metadata_fields=metadata_fields_list,
@@ -117,4 +117,5 @@ class Update(base.Command):
         csv_delimiter=args.csv_delimiter,
         csv_header=args.csv_header,
         parquet=args.parquet,
-        display_name=args.display_name)
+        display_name=args.display_name,
+    )

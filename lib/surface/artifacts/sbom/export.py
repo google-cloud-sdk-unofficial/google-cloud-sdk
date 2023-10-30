@@ -47,7 +47,13 @@ class Export(base.Command):
     parser.add_argument(
         '--uri',
         required=True,
-        help='The URI of the Artifact Registry image the SBOM is exported for.',
+        help=(
+            'The URI of the Artifact Registry image the SBOM is exported for. A'
+            " 'gcr.io' image can also be used if redirection is enabled in"
+            ' Artifact Registry. Make sure'
+            " 'artifactregistry.projectsettings.get' permission is granted to"
+            ' the current gcloud user to verify the redirection status.'
+        ),
     )
 
   def Run(self, args):

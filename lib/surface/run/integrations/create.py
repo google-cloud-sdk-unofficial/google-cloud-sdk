@@ -86,7 +86,7 @@ class Create(base.Command):
       )
     resource = client.GetIntegrationGeneric(integration_name)
     resource_status = client.GetIntegrationStatus(resource.id)
-    metadata = types_utils.GetTypeMetadataFromResource(resource)
+    metadata = types_utils.GetTypeMetadata(integration_type)
 
     pretty_print.Info('')
     pretty_print.Success(

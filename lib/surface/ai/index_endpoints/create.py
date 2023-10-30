@@ -62,6 +62,8 @@ class CreateV1(base.CreateCommand):
     flags.GetNetworkArg().AddToParser(parser)
     flags.GetPublicEndpointEnabledArg().AddToParser(parser)
     labels_util.AddCreateLabelsFlags(parser)
+    flags.AddPrivateServiceConnectConfig(parser)
+    flags.GetEncryptionKmsKeyNameArg().AddToParser(parser)
 
   def _Run(self, args, version):
     validation.ValidateDisplayName(args.display_name)

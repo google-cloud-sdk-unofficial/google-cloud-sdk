@@ -31,15 +31,27 @@ def _DetailedHelp():
   return {
       'brief': 'Update a Google Compute Engine network attachment.',
       'DESCRIPTION': """\
-      *{command}* is used to update network attachments. A service consumer
-      creates a network attachment to make a network available to producers.
-      Service producers use Private Service Connect Interfaces to privately
-      connect to the network attachment.
+      *{command}* is used to update network attachments. You can update the
+      following fields: description, subnets, producer-accept-list and
+      producer-reject-list. If you update the producer-accept-list or
+      producer-reject-list, the full new list should be specified.
+      """,
+      'EXAMPLES': """\
+      To update all the parameters with the new list, run:
+
+        $ {command} NETWORK_ATTACHMENT_NAME --region=us-central1 --subnets=MY_SUBNET2 --description='default network attachment' --producer-accept-list=PROJECT5,PROJECT6 --producer-reject-list=PROJECT7,PROJECT8
+
+      To update a network attachment to change only the subnet to MY_SUBNET3, run:
+
+        $ {command} NETWORK_ATTACHMENT_NAME --region=us-central1 --subnets=MY_SUBNET3
+
       """,
   }
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
+)
 class Update(base.UpdateCommand):
   """Update a Google Compute Engine network attachment."""
 

@@ -80,7 +80,7 @@ class Create(base.CreateCommand):
   support_l4ilb_neg = False
   support_serverless_deployment = False
   support_l7psc_neg = True
-  support_regional_internet_neg = False
+  support_regional_internet_neg = True
 
   @classmethod
   def Args(cls, parser):

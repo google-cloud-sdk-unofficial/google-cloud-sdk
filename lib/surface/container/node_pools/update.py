@@ -19,6 +19,7 @@ from __future__ import division
 from __future__ import unicode_literals
 
 from apitools.base.py import exceptions as apitools_exceptions
+from googlecloudsdk.api_lib.compute import utils
 from googlecloudsdk.api_lib.container import api_adapter
 from googlecloudsdk.api_lib.container import util
 from googlecloudsdk.calliope import base
@@ -108,6 +109,11 @@ class Update(base.UpdateCommand):
     flags.AddWindowsOsVersionFlag(group)
     flags.AddContainerdConfigFlag(group, hidden=True)
 
+    node_config_group = group.add_argument_group('Node config')
+    flags.AddMachineTypeFlag(node_config_group, update=True)
+    flags.AddDiskTypeFlag(node_config_group)
+    flags.AddDiskSizeFlag(node_config_group)
+
   def ParseUpdateNodePoolOptions(self, args):
     flags.ValidateSurgeUpgradeSettings(args)
     flags.WarnForLocationPolicyDefault(args)
@@ -144,7 +150,13 @@ class Update(base.UpdateCommand):
         enable_fast_socket=args.enable_fast_socket,
         logging_variant=args.logging_variant,
         windows_os_version=args.windows_os_version,
-        containerd_config_from_file=args.containerd_config_from_file)
+        containerd_config_from_file=args.containerd_config_from_file,
+        machine_type=args.machine_type,
+        disk_type=args.disk_type,
+        disk_size_gb=utils.BytesToGb(args.disk_size)
+        if hasattr(args, 'disk_size')
+        else None,
+    )
 
   def Run(self, args):
     """This is what gets called when the user runs this command.
@@ -276,6 +288,11 @@ class UpdateBeta(Update):
     flags.AddResourceManagerTagsNodePoolUpdate(group)
     flags.AddContainerdConfigFlag(group, hidden=True)
 
+    node_config_group = group.add_argument_group('Node config')
+    flags.AddMachineTypeFlag(node_config_group, update=True)
+    flags.AddDiskTypeFlag(node_config_group)
+    flags.AddDiskSizeFlag(node_config_group)
+
   def ParseUpdateNodePoolOptions(self, args):
     flags.ValidateSurgeUpgradeSettings(args)
     flags.WarnForLocationPolicyDefault(args)
@@ -316,7 +333,13 @@ class UpdateBeta(Update):
         logging_variant=args.logging_variant,
         windows_os_version=args.windows_os_version,
         resource_manager_tags=args.resource_manager_tags,
-        containerd_config_from_file=args.containerd_config_from_file)
+        containerd_config_from_file=args.containerd_config_from_file,
+        machine_type=args.machine_type,
+        disk_type=args.disk_type,
+        disk_size_gb=utils.BytesToGb(args.disk_size)
+        if hasattr(args, 'disk_size')
+        else None,
+    )
     return ops
 
 
@@ -380,6 +403,11 @@ class UpdateAlpha(Update):
     flags.AddResourceManagerTagsNodePoolUpdate(group)
     flags.AddContainerdConfigFlag(group, hidden=True)
 
+    node_config_group = group.add_argument_group('Node config')
+    flags.AddMachineTypeFlag(node_config_group, update=True)
+    flags.AddDiskTypeFlag(node_config_group)
+    flags.AddDiskSizeFlag(node_config_group)
+
   def ParseUpdateNodePoolOptions(self, args):
     flags.ValidateSurgeUpgradeSettings(args)
     flags.WarnForLocationPolicyDefault(args)
@@ -420,7 +448,13 @@ class UpdateAlpha(Update):
         logging_variant=args.logging_variant,
         windows_os_version=args.windows_os_version,
         resource_manager_tags=args.resource_manager_tags,
-        containerd_config_from_file=args.containerd_config_from_file)
+        containerd_config_from_file=args.containerd_config_from_file,
+        machine_type=args.machine_type,
+        disk_type=args.disk_type,
+        disk_size_gb=utils.BytesToGb(args.disk_size)
+        if hasattr(args, 'disk_size')
+        else None,
+    )
     return ops
 
 

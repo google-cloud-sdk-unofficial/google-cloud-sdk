@@ -18,9 +18,10 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
-from googlecloudsdk.api_lib.container.fleet import client
+from googlecloudsdk.api_lib.container.fleet.policycontroller import protos
 from googlecloudsdk.calliope import base as calliope_base
 from googlecloudsdk.command_lib.container.fleet.features import base
+from googlecloudsdk.command_lib.container.fleet.policycontroller import command
 from googlecloudsdk.command_lib.container.fleet.policycontroller import flags
 
 
@@ -28,7 +29,7 @@ from googlecloudsdk.command_lib.container.fleet.policycontroller import flags
 @calliope_base.ReleaseTracks(
     calliope_base.ReleaseTrack.ALPHA, calliope_base.ReleaseTrack.BETA
 )
-class Describe(base.DescribeCommand):
+class Describe(base.DescribeCommand, command.PocoCommand):
   """Describe Policy Controller feature.
 
   ## EXAMPLES
@@ -47,26 +48,16 @@ class Describe(base.DescribeCommand):
 
   def Run(self, args):
     feature = self.GetFeature()
-    if args.memberships is not None:
-      memberships_filter = args.memberships
-      if feature.membershipSpecs:
-        specs = client.HubClient.ToPyDict(feature.membershipSpecs)
-        filtered_specs = {}
-        for membership_name in specs:
-          if membership_name in memberships_filter:
-            filtered_specs[membership_name] = specs[membership_name]
-        feature.membershipSpecs = client.HubClient.ToProtoMap(
-            self.messages.Feature.MembershipSpecsValue, filtered_specs
-        )
 
-      if feature.membershipStates:
-        states = client.HubClient.ToPyDict(feature.membershipStates)
-        filtered_states = {}
-        for membership_name in states:
-          if membership_name in memberships_filter:
-            filtered_states[membership_name] = states[membership_name]
-        feature.membershipStates = client.HubClient.ToProtoMap(
-            self.messages.Feature.MembershipStatesValue, filtered_states
-        )
+    if args.memberships is not None:
+      specs = self.path_specs(args, ignore_metadata=False)
+      feature.membershipSpecs = protos.set_additional_properties(
+          self.messages.Feature.MembershipSpecsValue(), specs
+      )
+
+      states = self.path_states(args)
+      feature.membershipStates = protos.set_additional_properties(
+          self.messages.Feature.MembershipStatesValue(), states
+      )
 
     return feature

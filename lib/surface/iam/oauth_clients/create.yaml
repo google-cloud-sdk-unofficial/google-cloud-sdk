@@ -25,7 +25,7 @@
 
         $ {command} my-oauth-client \
             --location="global" \
-            --client-type="private" \
+            --client-type="confidential-client" \
             --display-name="My oauth client" \
             --description="My oauth client description" \
             --disabled \

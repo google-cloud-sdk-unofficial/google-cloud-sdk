@@ -18,6 +18,7 @@ import enum
 from cloudsdk.google.protobuf import message
 from cloudsdk.google.protobuf import duration_pb2
 from cloudsdk.google.protobuf import timestamp_pb2
+from cloudsdk.google.protobuf import field_mask_pb2
 from cloudsdk.google.protobuf import struct_pb2
 from cloudsdk.google.protobuf import wrappers_pb2
 
@@ -25,9 +26,14 @@ from proto.marshal import compat
 from proto.marshal.collections import MapComposite
 from proto.marshal.collections import Repeated
 from proto.marshal.collections import RepeatedComposite
+
+from proto.marshal.rules import bytes as pb_bytes
+from proto.marshal.rules import stringy_numbers
 from proto.marshal.rules import dates
 from proto.marshal.rules import struct
 from proto.marshal.rules import wrappers
+from proto.marshal.rules import field_mask
+from proto.primitives import ProtoType
 
 
 class Rule(abc.ABC):
@@ -85,14 +91,6 @@ class BaseMarshal:
             proto_type (type): A protocol buffer message type.
             rule: A marshal object
         """
-        # Sanity check: Do not register anything to a class that is not
-        # a protocol buffer message.
-        if not issubclass(proto_type, (message.Message, enum.IntEnum)):
-            raise TypeError(
-                "Only enums and protocol buffer messages may be "
-                "registered to the marshal."
-            )
-
         # If a rule was provided, register it and be done.
         if rule:
             # Ensure the rule implements Rule.
@@ -130,6 +128,9 @@ class BaseMarshal:
         self.register(timestamp_pb2.Timestamp, dates.TimestampRule())
         self.register(duration_pb2.Duration, dates.DurationRule())
 
+        # Register FieldMask wrappers.
+        self.register(field_mask_pb2.FieldMask, field_mask.FieldMaskRule())
+
         # Register nullable primitive wrappers.
         self.register(wrappers_pb2.BoolValue, wrappers.BoolValueRule())
         self.register(wrappers_pb2.BytesValue, wrappers.BytesValueRule())
@@ -150,6 +151,30 @@ class BaseMarshal:
         self.register(struct_pb2.ListValue, struct.ListValueRule(marshal=self))
         self.register(struct_pb2.Struct, struct.StructRule(marshal=self))
 
+        # Special case for bytes to allow base64 encode/decode
+        self.register(ProtoType.BYTES, pb_bytes.BytesRule())
+
+        # Special case for int64 from strings because of dict round trip.
+        # See https://github.com/protocolbuffers/protobuf/issues/2679
+        for rule_class in stringy_numbers.STRINGY_NUMBER_RULES:
+            self.register(rule_class._proto_type, rule_class())
+
+    def get_rule(self, proto_type):
+        # Rules are needed to convert values between proto-plus and pb.
+        # Retrieve the rule for the specified proto type.
+        # The NoopRule will be used when a rule is not found.
+        rule = self._rules.get(proto_type, self._noop)
+
+        # If we don't find a rule, also check under `_instances`
+        # in case there is a rule in another package.
+        # See https://github.com/googleapis/proto-plus-python/issues/349
+        if rule == self._noop and hasattr(self, "_instances"):
+            for _, instance in self._instances.items():
+                rule = instance._rules.get(proto_type, self._noop)
+                if rule != self._noop:
+                    break
+        return rule
+
     def to_python(self, proto_type, value, *, absent: bool = None):
         # Internal protobuf has its own special type for lists of values.
         # Return a view around it that implements MutableSequence.
@@ -165,10 +190,7 @@ class BaseMarshal:
         # Same thing for maps of messages.
         if value_type in compat.map_composite_types:
             return MapComposite(value, marshal=self)
-
-        # Convert ordinary values.
-        rule = self._rules.get(proto_type, self._noop)
-        return rule.to_python(value, absent=absent)
+        return self.get_rule(proto_type=proto_type).to_python(value, absent=absent)
 
     def to_proto(self, proto_type, value, *, strict: bool = False):
         # The protos in google/protobuf/struct.proto are exceptional cases,
@@ -203,19 +225,17 @@ class BaseMarshal:
             recursive_type = type(proto_type().value)
             return {k: self.to_proto(recursive_type, v) for k, v in value.items()}
 
-        # Convert ordinary values.
-        rule = self._rules.get(proto_type, self._noop)
-        pb_value = rule.to_proto(value)
+        pb_value = self.get_rule(proto_type=proto_type).to_proto(value)
 
         # Sanity check: If we are in strict mode, did we get the value we want?
         if strict and not isinstance(pb_value, proto_type):
             raise TypeError(
                 "Parameter must be instance of the same class; "
                 "expected {expected}, got {got}".format(
-                    expected=proto_type.__name__, got=pb_value.__class__.__name__,
+                    expected=proto_type.__name__,
+                    got=pb_value.__class__.__name__,
                 ),
             )
-
         # Return the final value.
         return pb_value
 

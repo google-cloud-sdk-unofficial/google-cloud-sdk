@@ -31,7 +31,7 @@ from googlecloudsdk.core.console import console_io
 import six.moves.http_client
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class RemoveIamPolicyBinding(base.Command):
   """Remove IAM policy binding from the IAM policy of a project.
 
@@ -51,7 +51,7 @@ class RemoveIamPolicyBinding(base.Command):
         role_completer=completers.ProjectsIamRolesCompleter,
         add_condition=True,
     )
-    if cls.ReleaseTrack() == base.ReleaseTrack.ALPHA:
+    if cls.ReleaseTrack() != base.ReleaseTrack.GA:
       flags.GetRecommendFlag('IAM policy binding removal').AddToParser(parser)
 
   @http_retry.RetryOnHttpStatus(six.moves.http_client.CONFLICT)
@@ -61,7 +61,7 @@ class RemoveIamPolicyBinding(base.Command):
     # If recommend is enabled and there is no condition,
     # get risk assesment from Smart Guardrails.
     if (
-        self.ReleaseTrack() == base.ReleaseTrack.ALPHA
+        self.ReleaseTrack() != base.ReleaseTrack.GA
         and args.recommend
         and not condition
     ):

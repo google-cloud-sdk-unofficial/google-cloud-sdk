@@ -21,6 +21,7 @@ from __future__ import unicode_literals
 from googlecloudsdk.api_lib.container.fleet import util
 from googlecloudsdk.calliope import actions
 from googlecloudsdk.calliope import base as calliope_base
+from googlecloudsdk.command_lib.anthos.common import file_parsers
 from googlecloudsdk.command_lib.container.fleet import resources
 from googlecloudsdk.command_lib.container.fleet.features import base
 from googlecloudsdk.command_lib.container.fleet.mesh import utils
@@ -33,13 +34,21 @@ def _RunUpdate(cmd, args):
     cmd: the release track specific command
     args: the args passed to the command
   """
+
+  memberships = []
+  resource = False
+  update_mask = []
+
   # Deprecated non-resource arg
   if args.IsKnownAndSpecified('membership'):
     resource = False
     memberships = utils.ParseMemberships(args)
-  else:
+    update_mask = ['membershipSpecs']
+  elif args.fleet_default_member_config is None:
     resource = True
     memberships = base.ParseMembershipsPlural(args, prompt=True, search=True)
+    update_mask = ['membershipSpecs']
+
   f = cmd.GetFeature()
   membership_specs = {}
   for membership in memberships:
@@ -53,6 +62,12 @@ def _RunUpdate(cmd, args):
         patch = spec
     if not patch.mesh:
       patch.mesh = cmd.messages.ServiceMeshMembershipSpec()
+
+    if hasattr(args, 'origin') and args.origin is not None:
+      if args.origin == 'fleet':
+        patch.origin = cmd.messages.Origin(
+            type=cmd.messages.Origin.TypeValueValuesEnum('FLEET')
+        )
 
     if hasattr(args, 'management') and args.management is not None:
       management = (
@@ -78,7 +93,24 @@ def _RunUpdate(cmd, args):
 
   f = cmd.messages.Feature(
       membershipSpecs=cmd.hubclient.ToMembershipSpecs(membership_specs))
-  cmd.Update(['membershipSpecs'], f)
+
+  if args.fleet_default_member_config:
+    # Load config YAML file.
+    loaded_config = file_parsers.YamlConfigFile(
+        file_path=args.fleet_default_member_config,
+        item_type=utils.FleetDefaultMemberConfigObject,
+    )
+
+    # Create new service mesh feature spec.
+    member_config = utils.ParseFleetDefaultMemberConfig(
+        loaded_config, cmd.messages
+    )
+    f.fleetDefaultMemberConfig = (
+        cmd.messages.CommonFleetDefaultMemberConfigSpec(mesh=member_config)
+    )
+    update_mask.append('fleet_default_member_config')
+
+  cmd.Update(update_mask, f)
 
 
 @calliope_base.ReleaseTracks(calliope_base.ReleaseTrack.ALPHA)
@@ -100,13 +132,30 @@ class UpdateAlpha(base.UpdateCommand):
 
   @staticmethod
   def Args(parser):
-    group = parser.add_mutually_exclusive_group()
+    args_group = parser.add_mutually_exclusive_group(required=True)
+
+    args_group.add_argument(
+        '--fleet-default-member-config',
+        hidden=True,
+        type=str,
+        help="""The path to a service-mesh.yaml configuration file.
+
+        To enable the Service Mesh Feature with a fleet-level default
+        membership configuration, run:
+
+          $ {command} --fleet-default-member-config=/path/to/service-mesh.yaml""",
+    )
+
+    membership_group = args_group.add_group()
+
+    membership_names_group = membership_group.add_mutually_exclusive_group()
     resources.AddMembershipResourceArg(
-        group,
+        membership_names_group,
         plural=True,
-        membership_help='Membership names to update, separated by commas if '
-        'multiple are supplied.')
-    group.add_argument(
+        membership_help=('Membership names to update, separated by commas if '
+                         'multiple are supplied.'),
+    )
+    membership_names_group.add_argument(
         '--membership',
         type=str,
         help='Membership name to update.',
@@ -115,15 +164,23 @@ class UpdateAlpha(base.UpdateCommand):
             warn='The {flag_name} flag is now '
             'deprecated. Please use `--memberships` '
             'instead.'))
-    group = parser.add_argument_group(required=True)
-    group.add_argument(
+
+    membership_configs_group = membership_group.add_group(required=True)
+    membership_configs_group.add_argument(
+        '--origin',
+        hidden=True,
+        choices=['fleet'],
+        help='Changing the origin of the membership.',
+    )
+    membership_configs_group.add_argument(
         '--management',
         choices=['automatic', 'manual'],
-        help='The management mode to update to.')
-    group.add_argument(
+        help='The management mode to update to.',
+    )
+    membership_configs_group.add_argument(
         '--control-plane',
         choices=['automatic', 'manual'],
-        help='The control plane management to update to.',
+        help='Control plane management to update to.',
         action=actions.DeprecationAction(
             '--control-plane',
             warn='The {flag_name} flag is now '
@@ -154,19 +211,43 @@ class UpdateGA(base.UpdateCommand):
 
   @staticmethod
   def Args(parser):
-    group = parser.add_mutually_exclusive_group()
+    args_group = parser.add_mutually_exclusive_group(required=True)
+
+    args_group.add_argument(
+        '--fleet-default-member-config',
+        hidden=True,
+        type=str,
+        help="""The path to a service-mesh.yaml configuration file.
+
+        To enable the Service Mesh Feature with a fleet-level default
+        membership configuration, run:
+
+          $ {command} --fleet-default-member-config=/path/to/service-mesh.yaml""",
+    )
+
+    membership_group = args_group.add_group()
+
+    membership_names_group = membership_group.add_mutually_exclusive_group()
     resources.AddMembershipResourceArg(
-        group,
+        membership_names_group,
         plural=True,
         membership_help=('Membership names to update, separated by commas if '
                          'multiple are supplied.'),
     )
-    group = parser.add_argument_group(required=True)
-    group.add_argument(
+
+    membership_configs_group = membership_group.add_group(required=True)
+    membership_configs_group.add_argument(
+        '--origin',
+        hidden=True,
+        choices=['fleet'],
+        help='Changing the origin of the membership.',
+    )
+    membership_configs_group.add_argument(
         '--management',
         choices=['automatic', 'manual'],
-        help='The management mode to update to.')
-    group.add_argument(
+        help='The management mode to update to.',
+    )
+    membership_configs_group.add_argument(
         '--control-plane',
         choices=['automatic', 'manual'],
         help='Control plane management to update to.',

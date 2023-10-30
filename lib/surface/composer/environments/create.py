@@ -94,6 +94,7 @@ def _CommonArgs(parser, support_max_pods_per_node, release_track):
     flags.NETWORK_ATTACHMENT.AddToParser(parser)
   flags.NETWORK_FLAG.AddToParser(network_subnetwork_group)
   flags.SUBNETWORK_FLAG.AddToParser(network_subnetwork_group)
+  flags.STORAGE_BUCKET_FLAG.AddToParser(parser)
 
   labels_util.AddCreateLabelsFlags(parser)
   flags.CREATE_ENV_VARS_FLAG.AddToParser(parser)
@@ -196,6 +197,7 @@ information on how to structure KEYs and VALUEs, run
   flags.WEB_SERVER_ALLOW_ALL.AddToParser(web_server_group)
   flags.WEB_SERVER_DENY_ALL.AddToParser(web_server_group)
   flags.CLOUD_SQL_MACHINE_TYPE.AddToParser(parser)
+  flags.CLOUD_SQL_PREFERRED_ZONE.AddToParser(parser)
   flags.WEB_SERVER_MACHINE_TYPE.AddToParser(parser)
   flags.AddMaintenanceWindowFlagsGroup(parser)
 
@@ -555,6 +557,12 @@ class Create(base.Command):
     if args.enable_high_resilience and is_composer_v1:
       raise command_util.InvalidUserInputError(
           _INVALID_OPTION_FOR_V1_ERROR_MSG.format(opt='enable-high-resilience'))
+    if args.cloud_sql_preferred_zone and is_composer_v1:
+      raise command_util.InvalidUserInputError(
+          _INVALID_OPTION_FOR_V1_ERROR_MSG.format(
+              opt='cloud-sql-preferred-zone'
+          )
+      )
     if args.connection_subnetwork and is_composer_v1:
       raise command_util.InvalidUserInputError(
           _INVALID_OPTION_FOR_V1_ERROR_MSG.format(opt='connection-subnetwork'))
@@ -639,15 +647,20 @@ class Create(base.Command):
             args.triggerer_memory
         ),
         worker_memory_gb=environments_api_util.MemorySizeBytesToGB(
-            args.worker_memory),
+            args.worker_memory
+        ),
         web_server_memory_gb=environments_api_util.MemorySizeBytesToGB(
-            args.web_server_memory),
+            args.web_server_memory
+        ),
         scheduler_storage_gb=environments_api_util.MemorySizeBytesToGB(
-            args.scheduler_storage),
+            args.scheduler_storage
+        ),
         worker_storage_gb=environments_api_util.MemorySizeBytesToGB(
-            args.worker_storage),
+            args.worker_storage
+        ),
         web_server_storage_gb=environments_api_util.MemorySizeBytesToGB(
-            args.web_server_storage),
+            args.web_server_storage
+        ),
         min_workers=args.min_workers,
         max_workers=args.max_workers,
         scheduler_count=args.scheduler_count,
@@ -657,15 +670,20 @@ class Create(base.Command):
         maintenance_window_end=args.maintenance_window_end,
         maintenance_window_recurrence=args.maintenance_window_recurrence,
         enable_master_authorized_networks=(
-            args.enable_master_authorized_networks),
+            args.enable_master_authorized_networks
+        ),
         master_authorized_networks=args.master_authorized_networks,
         enable_scheduled_snapshot_creation=(
-            args.enable_scheduled_snapshot_creation),
+            args.enable_scheduled_snapshot_creation
+        ),
         snapshot_creation_schedule=args.snapshot_creation_schedule,
         snapshot_location=args.snapshot_location,
         snapshot_schedule_timezone=args.snapshot_schedule_timezone,
         enable_high_resilience=args.enable_high_resilience,
-        release_track=self.ReleaseTrack())
+        cloud_sql_preferred_zone=args.cloud_sql_preferred_zone,
+        release_track=self.ReleaseTrack(),
+        storage_bucket=args.storage_bucket,
+    )
     return environments_api_util.Create(self.env_ref, create_flags,
                                         is_composer_v1)
 
@@ -690,7 +708,6 @@ class CreateBeta(Create):
         flags.CLOUD_DATA_LINEAGE_INTEGRATION_GROUP_DESCRIPTION)
     flags.ENABLE_CLOUD_DATA_LINEAGE_INTEGRATION_FLAG.AddToParser(
         cloud_data_lineage_integration_params_group)
-    flags.STORAGE_BUCKET_FLAG.AddToParser(parser)
 
     AddComposer3Flags(parser)
 
@@ -774,6 +791,7 @@ class CreateBeta(Create):
         snapshot_schedule_timezone=args.snapshot_schedule_timezone,
         enable_cloud_data_lineage_integration=args.enable_cloud_data_lineage_integration,
         enable_high_resilience=args.enable_high_resilience,
+        cloud_sql_preferred_zone=args.cloud_sql_preferred_zone,
         support_web_server_plugins=args.support_web_server_plugins,
         dag_processor_cpu=args.dag_processor_cpu,
         dag_processor_count=args.dag_processor_count,
@@ -1009,6 +1027,7 @@ class CreateAlpha(CreateBeta):
         snapshot_schedule_timezone=args.snapshot_schedule_timezone,
         enable_cloud_data_lineage_integration=args.enable_cloud_data_lineage_integration,
         enable_high_resilience=args.enable_high_resilience,
+        cloud_sql_preferred_zone=args.cloud_sql_preferred_zone,
         support_web_server_plugins=args.support_web_server_plugins,
         dag_processor_cpu=args.dag_processor_cpu,
         dag_processor_count=args.dag_processor_count,

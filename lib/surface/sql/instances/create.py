@@ -172,6 +172,7 @@ def AddBaseArgs(parser):
   psc_setup_group = parser.add_group()
   flags.AddEnablePrivateServiceConnect(psc_setup_group)
   flags.AddAllowedPscProjects(psc_setup_group)
+  flags.AddSslMode(parser)
 
 
 def AddBetaArgs(parser):
@@ -181,7 +182,6 @@ def AddBetaArgs(parser):
   flags.AddAllocatedIpRangeName(parser)
   labels_util.AddCreateLabelsFlags(parser)
   flags.AddReplicationLagMaxSecondsForRecreate(parser)
-  flags.AddSslMode(parser)
 
 
 def AddAlphaArgs(unused_parser):

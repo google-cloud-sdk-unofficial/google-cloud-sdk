@@ -42,14 +42,6 @@ def _GetUriBeta(tensorboard):
   return ref.SelfLink()
 
 
-def _GetUriAlpha(tensorboard):
-  ref = resources.REGISTRY.ParseRelativeName(
-      tensorboard.name,
-      constants.TENSORBOARDS_COLLECTION,
-      api_version=constants.AI_PLATFORM_API_VERSION[constants.ALPHA_VERSION])
-  return ref.SelfLink()
-
-
 def _Run(args, version):
   region_ref = args.CONCEPTS.region.Parse()
   region = region_ref.AsDict()['locationsId']
@@ -84,7 +76,7 @@ class ListGa(base.ListCommand):
     return _Run(args, constants.GA_VERSION)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
 class ListBeta(base.ListCommand):
   """Lists the Tensorboards of the given project and region."""
 
@@ -104,16 +96,3 @@ class ListBeta(base.ListCommand):
 
   def Run(self, args):
     return _Run(args, constants.BETA_VERSION)
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class ListAlpha(base.ListCommand):
-  """Lists the Tensorboards of the given project and region."""
-
-  @staticmethod
-  def Args(parser):
-    flags.AddRegionResourceArg(parser, 'to list Tensorboards')
-    parser.display_info.AddUriFunc(_GetUriAlpha)
-
-  def Run(self, args):
-    return _Run(args, constants.ALPHA_VERSION)

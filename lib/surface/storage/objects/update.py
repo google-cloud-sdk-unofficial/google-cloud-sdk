@@ -145,7 +145,7 @@ def _add_alpha_args(parser):
   Returns:
     objects update flag group
   """
-  del parser  # Unused.
+  flags.add_retention_flags(parser, is_update=True)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)

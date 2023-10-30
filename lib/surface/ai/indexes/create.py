@@ -57,6 +57,7 @@ class CreateV1(base.CreateCommand):
     flags.GetDescriptionArg('index').AddToParser(parser)
     flags.GetMetadataFilePathArg('index', required=True).AddToParser(parser)
     flags.GetMetadataSchemaUriArg('index').AddToParser(parser)
+    flags.GetIndexUpdateMethod().AddToParser(parser)
     labels_util.AddCreateLabelsFlags(parser)
 
   def _Run(self, args, version):

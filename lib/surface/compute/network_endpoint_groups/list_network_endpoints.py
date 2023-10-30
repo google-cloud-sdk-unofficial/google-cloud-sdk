@@ -48,7 +48,7 @@ class ListNetworkEndpoints(base.ListCommand):
           networkEndpoint.port,
           networkEndpoint.fqdn
         )"""
-  support_regional_scope = False
+  support_regional_scope = True
 
   @classmethod
   def Args(cls, parser):

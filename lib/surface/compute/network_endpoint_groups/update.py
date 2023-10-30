@@ -41,7 +41,7 @@ class Update(base.UpdateCommand):
   """Update a Compute Engine network endpoint group."""
 
   detailed_help = DETAILED_HELP
-  support_regional_scope = False
+  support_regional_scope = True
   support_hybrid_neg = True
   support_l4ilb_neg = False
   support_ipv6 = False

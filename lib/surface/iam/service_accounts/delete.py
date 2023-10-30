@@ -48,7 +48,7 @@ class Delete(base.DeleteCommand):
   def Args(cls, parser):
     iam_util.AddServiceAccountNameArg(
         parser, action='to delete')
-    if cls.ReleaseTrack() == base.ReleaseTrack.ALPHA:
+    if cls.ReleaseTrack() != base.ReleaseTrack.GA:
       iam_util.AddServiceAccountRecommendArg(parser, action='deletion')
 
   def Run(self, args):
@@ -57,7 +57,7 @@ class Delete(base.DeleteCommand):
     )
     client, messages = util.GetClientAndMessages()
     sa_resource_name = iam_util.EmailToAccountResourceName(args.service_account)
-    if self.ReleaseTrack() == base.ReleaseTrack.ALPHA and args.recommend:
+    if self.ReleaseTrack() != base.ReleaseTrack.GA and args.recommend:
       # Add deletion risk message to the prompt.
       service_account = client.projects_serviceAccounts.Get(
           messages.IamProjectsServiceAccountsGetRequest(name=sa_resource_name)

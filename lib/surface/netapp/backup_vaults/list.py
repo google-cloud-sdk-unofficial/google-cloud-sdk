@@ -26,7 +26,6 @@ from googlecloudsdk.command_lib.util.concepts import concept_parsers
 from googlecloudsdk.core import properties
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class ListBeta(base.ListCommand):
   """List Cloud NetApp Volumes Backup Vaults."""

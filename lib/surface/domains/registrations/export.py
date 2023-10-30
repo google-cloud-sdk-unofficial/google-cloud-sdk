@@ -27,6 +27,17 @@ from googlecloudsdk.core import log
 from googlecloudsdk.core.console import console_io
 
 
+@base.Deprecate(
+    is_removed=False,
+    warning=(
+        'This command is deprecated. See'
+        ' https://cloud.google.com/domains/docs/deprecations/feature-deprecations.'
+    ),
+    error=(
+        'This command has been removed. See'
+        ' https://cloud.google.com/domains/docs/deprecations/feature-deprecations.'
+    ),
+)
 class Export(base.DeleteCommand):
   """Export a Cloud Domains registration.
 

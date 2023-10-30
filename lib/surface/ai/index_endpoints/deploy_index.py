@@ -31,9 +31,9 @@ DETAILED_HELP = {
     'EXAMPLES':
         """\
         To deploy index ``345'' to an index endpoint ``456'' with 2 min replica count and 10 max replica count under project ``example'' in region ``us-central1'', within reserved ip ranges
-        ``vertex-ai-ip-ranges-1'' and ``vertex-ai-ip-ranges-2'' run:
+        ``vertex-ai-ip-range-1'' and ``vertex-ai-ip-range-2'' run:
 
-          $ {command} 456 --project=example --region=us-central1 --index=345 --deployed-index-id=deployed-index-345 --display-name=deployed-index-345 --min-replica-count=2 --max-replica-count=10 --reserved-ip-ranges=vertex-ai-ip-ranges-1,vertex-ai-ip-ranges-2
+          $ {command} 456 --project=example --region=us-central1 --index=345 --deployed-index-id=deployed-index-345 --display-name=deployed-index-345 --min-replica-count=2 --max-replica-count=10 --reserved-ip-ranges=vertex-ai-ip-range-1,vertex-ai-ip-range-2
         """,
 }
 
@@ -52,6 +52,9 @@ class DeployIndexV1(base.Command):
     flags.GetDisplayNameArg('deployed index').AddToParser(parser)
     flags.AddDeploymentResourcesArgs(parser, 'deployed index')
     flags.AddReservedIpRangesArgs(parser, 'deployed index')
+    flags.AddDeploymentGroupArg(parser)
+    flags.AddAuthConfigArgs(parser, 'deployed index')
+    flags.GetEnableAccessLoggingArg().AddToParser(parser)
 
   def _Run(self, args, version):
     validation.ValidateDisplayName(args.display_name)

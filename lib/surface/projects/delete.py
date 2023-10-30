@@ -60,14 +60,14 @@ class Delete(base.DeleteCommand):
   def Args(cls, parser):
     flags.GetProjectIDNumberFlag('delete').AddToParser(parser)
 
-    if cls.ReleaseTrack() == base.ReleaseTrack.ALPHA:
+    if cls.ReleaseTrack() != base.ReleaseTrack.GA:
       flags.GetRecommendFlag('project deletion').AddToParser(parser)
 
     parser.display_info.AddCacheUpdater(completers.ProjectCompleter)
 
   def Run(self, args):
     project_ref = command_lib_util.ParseProject(args.id)
-    if self.ReleaseTrack() == base.ReleaseTrack.ALPHA and args.recommend:
+    if self.ReleaseTrack() != base.ReleaseTrack.GA and args.recommend:
       # Projects command group explicitly disables user project quota.
       # Call with user project quota enabled, so that
       # default project can be used as quota project.

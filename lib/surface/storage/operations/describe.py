@@ -24,8 +24,6 @@ from googlecloudsdk.command_lib.storage import operations_util
 from googlecloudsdk.command_lib.storage import storage_url
 
 
-@base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Describe(base.DescribeCommand):
   """Get configuration and latest storage operation details."""
 
@@ -36,7 +34,7 @@ class Describe(base.DescribeCommand):
       'EXAMPLES': """\
       To describe an operation "C894F35J" on bucket "my-bucket", run:
 
-        $ {command} projects/_/buckets/my-bucket/operations/1234567890
+        $ {command} projects/_/buckets/my-bucket/operations/C894F35J
       """,
   }
 

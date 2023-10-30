@@ -61,6 +61,8 @@ class Delete(base.Command):
 
   def Run(self, args):
     report_config_name = args.CONCEPTS.report_config.Parse().RelativeName()
-    insights_api.InsightsApi().delete(report_config_name, args.force)
+    insights_api.InsightsApi().delete_inventory_report(
+        report_config_name, args.force
+    )
     log.status.Print('Deleted report config: {}'.format(
         report_config_name))

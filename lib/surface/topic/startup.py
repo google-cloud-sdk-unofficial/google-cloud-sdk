@@ -66,7 +66,7 @@ class Startup(base.TopicCommand):
     # Use a python you have installed in a special location
     $ export CLOUDSDK_PYTHON=/usr/local/my-custom-python-install/python
 
-  `gsutil` versions 5.0 and onward support Python 3.5-3.8. To use a different
+  `gsutil` versions 5.0 and onward support Python 3.8-3.11. To use a different
   interpreter for `gsutil` than for the other Python tools, set the
   `CLOUDSDK_GSUTIL_PYTHON` environment variable to the desired interpreter.
 

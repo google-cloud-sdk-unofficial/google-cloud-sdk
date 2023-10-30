@@ -20,6 +20,7 @@ from __future__ import unicode_literals
 
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.storage import cp_command_util
+from googlecloudsdk.command_lib.storage import flags
 
 
 class Cp(base.Command):
@@ -72,6 +73,8 @@ class Cp(base.Command):
   def Args(cls, parser):
     cp_command_util.add_cp_and_mv_flags(parser, cls.ReleaseTrack())
     cp_command_util.add_recursion_flag(parser)
+    if cls.ReleaseTrack() == base.ReleaseTrack.ALPHA:
+      flags.add_retention_flags(parser)
 
   def Run(self, args):
     self.exit_code = cp_command_util.run_cp(args)

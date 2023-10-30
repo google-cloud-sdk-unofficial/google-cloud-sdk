@@ -58,8 +58,11 @@ class ProtoEnumMeta(enum.EnumMeta):
         # In 3.7 onwards, we can define an _ignore_ attribute and do some
         # mucking around with that.
         if pb_options in attrs._member_names:
-            idx = attrs._member_names.index(pb_options)
-            attrs._member_names.pop(idx)
+            if isinstance(attrs._member_names, list):
+                idx = attrs._member_names.index(pb_options)
+                attrs._member_names.pop(idx)
+            else:  # Python 3.11.0b3
+                del attrs._member_names[pb_options]
 
         # Make the descriptor.
         enum_desc = descriptor_pb2.EnumDescriptorProto(
@@ -108,7 +111,48 @@ class ProtoEnumMeta(enum.EnumMeta):
 class Enum(enum.IntEnum, metaclass=ProtoEnumMeta):
     """A enum object that also builds a protobuf enum descriptor."""
 
-    pass
+    def _comparable(self, other):
+        # Avoid 'isinstance' to prevent other IntEnums from matching
+        return type(other) in (type(self), int)
+
+    def __hash__(self):
+        return hash(self.value)
+
+    def __eq__(self, other):
+        if not self._comparable(other):
+            return NotImplemented
+
+        return self.value == int(other)
+
+    def __ne__(self, other):
+        if not self._comparable(other):
+            return NotImplemented
+
+        return self.value != int(other)
+
+    def __lt__(self, other):
+        if not self._comparable(other):
+            return NotImplemented
+
+        return self.value < int(other)
+
+    def __le__(self, other):
+        if not self._comparable(other):
+            return NotImplemented
+
+        return self.value <= int(other)
+
+    def __ge__(self, other):
+        if not self._comparable(other):
+            return NotImplemented
+
+        return self.value >= int(other)
+
+    def __gt__(self, other):
+        if not self._comparable(other):
+            return NotImplemented
+
+        return self.value > int(other)
 
 
 class _EnumInfo:

@@ -58,6 +58,7 @@ def ContainerArgGroup(release_track=base.ReleaseTrack.GA):
   if release_track == base.ReleaseTrack.ALPHA:
     group.AddArgument(flags.AddVolumeMountFlag())
     group.AddArgument(flags.RemoveVolumeMountFlag())
+    group.AddArgument(flags.ClearVolumeMountsFlag())
   return group
 
 

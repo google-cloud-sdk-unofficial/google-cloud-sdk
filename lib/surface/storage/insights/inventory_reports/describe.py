@@ -56,4 +56,6 @@ class Describe(base.DescribeCommand):
 
   def Run(self, args):
     report_config_ref = args.CONCEPTS.report_config.Parse()
-    return insights_api.InsightsApi().get(report_config_ref.RelativeName())
+    return insights_api.InsightsApi().get_inventory_report(
+        report_config_ref.RelativeName()
+    )

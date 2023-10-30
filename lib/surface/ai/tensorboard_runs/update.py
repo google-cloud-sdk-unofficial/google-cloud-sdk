@@ -57,7 +57,7 @@ def _Run(args, version):
       return op
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
 class UpdateBeta(base.UpdateCommand):
   """Update an existing Vertex AI Tensorboard run."""
 
@@ -80,15 +80,3 @@ class UpdateBeta(base.UpdateCommand):
 
   def Run(self, args):
     return _Run(args, constants.BETA_VERSION)
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class UpdateAlpha(base.UpdateCommand):
-  """Update an existing Vertex AI Tensorboard run."""
-
-  @staticmethod
-  def Args(parser):
-    _AddArgs(parser)
-
-  def Run(self, args):
-    return _Run(args, constants.ALPHA_VERSION)

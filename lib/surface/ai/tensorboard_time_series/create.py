@@ -59,7 +59,7 @@ def _Run(args, version):
     return response
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
 class CreateBeta(base.CreateCommand):
   """Create a new Vertex AI Tensorboard time series."""
 
@@ -86,15 +86,3 @@ class CreateBeta(base.CreateCommand):
 
   def Run(self, args):
     return _Run(args, constants.BETA_VERSION)
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class CreateAlpha(base.CreateCommand):
-  """Create a new Vertex AI Tensorboard time series."""
-
-  @staticmethod
-  def Args(parser):
-    _AddArgs(parser)
-
-  def Run(self, args):
-    return _Run(args, constants.ALPHA_VERSION)

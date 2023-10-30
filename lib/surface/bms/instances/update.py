@@ -62,35 +62,42 @@ class Update(base.UpdateCommand):
     flags.AddInstanceOsImageToParser(parser, hidden=False)
     flags.AddInstanceEnableHyperthreadingToParser(parser, hidden=False)
 
-  def Run(self, args):
-    client = BmsClient()
-    instance = args.CONCEPTS.instance.Parse()
-
+  def GetRequestFields(self, args, client, instance):
     labels_diff = labels_util.Diff.FromUpdateArgs(args)
     orig_resource = client.GetInstance(instance)
     labels_update = labels_diff.Apply(client.messages.Instance.LabelsValue,
                                       orig_resource.labels).GetOrNone()
     os_image = getattr(args, 'os_image', None)
     enable_hyperthreading = getattr(args, 'enable_hyperthreading', None)
+    return {
+        'instance_resource': instance,
+        'labels': labels_update,
+        'os_image': os_image,
+        'enable_hyperthreading': enable_hyperthreading,
+        'ssh_keys': [],
+        'kms_crypto_key_version': None,
+    }
 
+  def Run(self, args):
+    client = BmsClient()
+    instance = args.CONCEPTS.instance.Parse()
     op_ref = client.UpdateInstance(
-        instance_resource=instance, labels=labels_update, os_image=os_image,
-        enable_hyperthreading=enable_hyperthreading)
-
+        **self.GetRequestFields(args, client, instance))
     if op_ref.done:
       log.UpdatedResource(instance.Name(), kind='instance')
       return op_ref
     if args.async_:
-      log.status.Print('Update request issued for: [{}]\nCheck operation '
-                       '[{}] for status.'.format(instance.Name(),
-                                                 op_ref.name))
+      log.status.Print(
+          f'Update request issued for: [{instance.Name()}]\n'
+          f'Check operation [{op_ref.name}] for status.')
       return op_ref
 
     op_resource = resources.REGISTRY.ParseRelativeName(
         op_ref.name,
         collection='baremetalsolution.projects.locations.operations',
         api_version='v2')
-    poller = waiter.CloudOperationPollerNoResources(client.operation_service)
+    poller = waiter.CloudOperationPollerNoResources(
+        client.operation_service)
     res = waiter.WaitFor(
         poller, op_resource,
         'Waiting for operation [{}] to complete'.format(op_ref.name))
@@ -104,8 +111,16 @@ class UpdateAlpha(Update):
 
   @staticmethod
   def Args(parser):
+    flags.AddSshKeyArgToParser(parser, required=False, plural=True)
+    flags.AddKMSCryptoKeyVersionToParser(parser, hidden=False)
     # Flags which are only available in ALPHA should be added to parser here.
     Update.Args(parser)
 
+  def GetRequestFields(self, args, client, instance):
+    return {
+        **super().GetRequestFields(args, client, instance),
+        'kms_crypto_key_version': getattr(args, 'kms_crypto_key_version', None),
+        'ssh_keys': args.CONCEPTS.ssh_keys.Parse(),
+    }
 
 Update.detailed_help = DETAILED_HELP

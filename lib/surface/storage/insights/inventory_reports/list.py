@@ -91,6 +91,6 @@ class List(base.ListCommand):
     source_bucket = storage_url.storage_url_from_string(
         args.source) if args.source is not None else None
 
-    return insights_api.InsightsApi().list(
-        source_bucket,
-        location=args.location, page_size=args.page_size)
+    return insights_api.InsightsApi().list_inventory_reports(
+        source_bucket, location=args.location, page_size=args.page_size
+    )

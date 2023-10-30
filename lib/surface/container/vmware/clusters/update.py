@@ -129,6 +129,7 @@ class UpdateBeta(base.UpdateCommand):
     flags.AddVmwareAutoRepairConfig(parser, for_update=True)
     flags.AddAuthorization(parser)
     flags.AddUpdateAnnotations(parser)
+    flags.AddUpgradePolicy(parser)
 
   def Run(self, args):
     """Runs the update command.
@@ -193,6 +194,7 @@ class Update(base.UpdateCommand):
     flags.AddVmwareAutoRepairConfig(parser, for_update=True)
     flags.AddAuthorization(parser)
     flags.AddUpdateAnnotations(parser)
+    flags.AddUpgradePolicy(parser)
 
   def Run(self, args):
     """Runs the update command.

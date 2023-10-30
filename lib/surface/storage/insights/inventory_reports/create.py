@@ -85,7 +85,7 @@ class Create(base.Command):
     else:
       end_date = start_date + datetime.timedelta(days=365)
 
-    report_config = insights_api.InsightsApi().create(
+    report_config = insights_api.InsightsApi().create_inventory_report(
         source_bucket=source_bucket.bucket_name,
         destination_url=destination,
         metadata_fields=list(args.metadata_fields),
@@ -96,6 +96,7 @@ class Create(base.Command):
         csv_separator=args.csv_separator,
         csv_header=args.csv_header,
         parquet=args.parquet,
-        display_name=args.display_name)
+        display_name=args.display_name,
+    )
     log.status.Print(
         'Created report configuration: {}'.format(report_config.name))

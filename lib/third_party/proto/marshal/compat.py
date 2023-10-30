@@ -20,14 +20,23 @@
 
 from cloudsdk.google.protobuf.internal import containers
 
+# Import protobuf 4.xx first and fallback to earlier version
+# if not present.
 try:
-    from cloudsdk.google.protobuf.pyext import _message
+    from google._upb import _message
 except ImportError:
     _message = None
+
+if not _message:
+    try:
+        from cloudsdk.google.protobuf.pyext import _message
+    except ImportError:
+        _message = None
 
 repeated_composite_types = (containers.RepeatedCompositeFieldContainer,)
 repeated_scalar_types = (containers.RepeatedScalarFieldContainer,)
 map_composite_types = (containers.MessageMap,)
+
 if _message:
     repeated_composite_types += (_message.RepeatedCompositeContainer,)
     repeated_scalar_types += (_message.RepeatedScalarContainer,)

@@ -59,7 +59,7 @@ class DescribeGa(base.DescribeCommand):
     return _Run(args, constants.GA_VERSION)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
 class DescribeBeta(base.DescribeCommand):
   """Gets detailed Tensorboard information about the given Tensorboard id."""
 
@@ -82,15 +82,3 @@ class DescribeBeta(base.DescribeCommand):
 
   def Run(self, args):
     return _Run(args, constants.BETA_VERSION)
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class DescribeAlpha(base.DescribeCommand):
-  """Gets detailed Tensorboard information about the given Tensorboard id."""
-
-  @staticmethod
-  def Args(parser):
-    flags.AddTensorboardResourceArg(parser, 'to describe')
-
-  def Run(self, args):
-    return _Run(args, constants.ALPHA_VERSION)

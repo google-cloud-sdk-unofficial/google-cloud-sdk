@@ -25,7 +25,7 @@ from googlecloudsdk.command_lib.compute.project_zonal_metadata import flags
 from googlecloudsdk.core import properties
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Describe(base.DescribeCommand):
   """Describe project zonal metadata."""
 

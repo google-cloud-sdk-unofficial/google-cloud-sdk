@@ -104,7 +104,13 @@ class RepeatedComposite(Repeated):
         if len(self.pb) > 0:
             return type(self.pb[0])
 
-        # We have no members in the list.
+        # We have no members in the list, so we get the type from the attributes.
+        if hasattr(self.pb, "_message_descriptor") and hasattr(
+            self.pb._message_descriptor, "_concrete_class"
+        ):
+            return self.pb._message_descriptor._concrete_class
+
+        # Fallback logic in case attributes are not available
         # In order to get the type, we create a throw-away copy and add a
         # blank member to it.
         canary = copy.deepcopy(self.pb).add()
@@ -157,9 +163,9 @@ class RepeatedComposite(Repeated):
 
                 if len(value) != len(indices):  # XXX: Use PEP 572 on 3.8+
                     raise ValueError(
-                        "attempt to assign sequence of size "
-                        "{} to extended slice of size "
-                        "{}".format(len(value), len(indices))
+                        f"attempt to assign sequence of size "
+                        f"{len(value)} to extended slice of size "
+                        f"{len(indices)}"
                     )
 
                 # Assign each value to its index, calling this function again
@@ -169,8 +175,7 @@ class RepeatedComposite(Repeated):
 
         else:
             raise TypeError(
-                "list indices must be integers or slices, not {}".format(
-                    type(key).__name__)
+                f"list indices must be integers or slices, not {type(key).__name__}"
             )
 
     def insert(self, index: int, value):

@@ -71,7 +71,7 @@ class Describe(base.DescribeCommand):
       resource = client.GetIntegrationGeneric(name)
       latest_deployment = client.GetLatestDeployment(resource)
       resource_status = client.GetIntegrationStatus(resource.id)
-      metadata = types_utils.GetTypeMetadataFromResource(resource)
+      metadata = types_utils.GetTypeMetadataByResource(resource)
 
       return fb.Record(
           name=name,

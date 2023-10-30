@@ -22,9 +22,7 @@ from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.run.integrations import flags
 from googlecloudsdk.command_lib.run.integrations import run_apps_operations
-from googlecloudsdk.command_lib.run.integrations import stages
 from googlecloudsdk.command_lib.runapps import exceptions
-from googlecloudsdk.core.console import progress_tracker
 
 
 @base.Hidden
@@ -64,9 +62,4 @@ class Apply(base.Command):
     with run_apps_operations.Connect(args, release_track) as client:
       client.VerifyLocation()
 
-      with progress_tracker.StagedProgressTracker(
-          'Applying Configuration...',
-          stages.ApplyStages(),
-          failure_message='Failed to apply application configuration.'
-      ) as tracker:
-        return client.ApplyYaml(tracker, file_content)
+      return client.ApplyYaml(file_content)

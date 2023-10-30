@@ -65,7 +65,7 @@ class Add(base.CreateCommand):
     else:
       public_key = args.key
     return client.CreateSshKey(
-        resource=args.CONCEPTS.ssh_key.Parse(), public_key=public_key)
+        resource=args.CONCEPTS.ssh_key.Parse(), public_key=public_key.strip())
 
 
 Add.detailed_help = DETAILED_HELP

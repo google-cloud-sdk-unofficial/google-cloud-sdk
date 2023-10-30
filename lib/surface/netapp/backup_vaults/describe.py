@@ -24,7 +24,6 @@ from googlecloudsdk.command_lib.netapp import flags
 from googlecloudsdk.command_lib.util.concepts import concept_parsers
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class DescribeBeta(base.DescribeCommand):
   """Show metadata for a Cloud NetApp Volumes Backup Vault."""

@@ -21,7 +21,7 @@ from __future__ import unicode_literals
 from googlecloudsdk.command_lib.container.fleet.features import base
 
 
-class Disable(base.DisableCommand):
+class Disable(base.UpdateCommand, base.DisableCommand):
   """Disable Service Mesh Feature.
 
   Disable the Service Mesh Feature in a fleet.
@@ -31,6 +31,43 @@ class Disable(base.DisableCommand):
   To disable the Service Mesh Feature, run:
 
     $ {command}
+
+  To delete the fleet-level default Membership configuration, run:
+
+    $ {command} --fleet-default-member-config
   """
 
   feature_name = 'servicemesh'
+
+  @classmethod
+  def Args(cls, parser):
+    parser.add_argument(
+        '--fleet-default-member-config',
+        hidden=True,
+        action='store_true',
+        help="""If specified, deletes the default membership
+        configuration present in your fleet.
+
+        To delete the fleet-level default Membership configuration present in
+        your fleet, run:
+
+          $ {command} --fleet-default-member-config""",
+    )
+
+    parser.add_argument(
+        '--force',
+        action='store_true',
+        help=(
+            'Disable this feature, even if it is currently in use. '
+            'Force disablement may result in unexpected behavior.'
+        ),
+    )
+
+  def Run(self, args):
+    # Clear the fleet_default_member_config if the
+    # fleet_default_member_config flag is set to true.
+    if args.fleet_default_member_config:
+      patch = self.messages.Feature(name=self.FeatureResourceName())
+      self.Update(['fleet_default_member_config'], patch)
+    else:
+      self.Disable(force=args.force)

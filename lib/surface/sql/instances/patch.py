@@ -267,6 +267,7 @@ def AddBaseArgs(parser):
   psc_update_group = parser.add_mutually_exclusive_group()
   flags.AddAllowedPscProjects(psc_update_group)
   flags.AddClearAllowedPscProjects(psc_update_group)
+  flags.AddSslMode(parser)
 
 
 def AddBetaArgs(parser):
@@ -276,7 +277,6 @@ def AddBetaArgs(parser):
   labels_util.AddUpdateLabelsFlags(parser, enable_clear=True)
   flags.AddUpgradeSqlNetworkArchitecture(parser)
   flags.AddReplicationLagMaxSecondsForRecreate(parser)
-  flags.AddSslMode(parser)
 
 
 def AddAlphaArgs(unused_parser):

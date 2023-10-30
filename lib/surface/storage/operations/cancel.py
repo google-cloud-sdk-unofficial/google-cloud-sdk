@@ -25,8 +25,6 @@ from googlecloudsdk.command_lib.storage import storage_url
 from googlecloudsdk.core import log
 
 
-@base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Cancel(base.Command):
   """Cancel a storage operation."""
 
@@ -37,9 +35,9 @@ class Cancel(base.Command):
       is already complete.
       """,
       'EXAMPLES': """\
-      To cancel the operation "1234567890" on bucket "my-bucket", run:
+      To cancel the operation "C894F35J" on bucket "my-bucket", run:
 
-        $ {command} projects/_/buckets/my-bucket/operations/1234567890
+        $ {command} projects/_/buckets/my-bucket/operations/C894F35J
       """,
   }
 

@@ -34,9 +34,3 @@
       help_text: The OAuth client to undelete.
       spec: !REF googlecloudsdk.command_lib.iam.resources:oauth_client
       is_positional: true
-
-    params:
-    - api_field: undeleteOauthClientRequest.validateOnly
-      arg_name: validate-only
-      help_text: When set, validates the undeletion but does not actually undelete the OAuth client.
-      hidden: true

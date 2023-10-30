@@ -35,7 +35,7 @@ def _Run(args, version):
     return response
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
 class DescribeBeta(base.DescribeCommand):
   """Get detailed Tensorboard time series information about the given Tensorboard time series id."""
 
@@ -58,15 +58,3 @@ class DescribeBeta(base.DescribeCommand):
 
   def Run(self, args):
     return _Run(args, constants.BETA_VERSION)
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class DescribeAlpha(base.DescribeCommand):
-  """Get detailed Tensorboard time series information about the given Tensorboard time series id."""
-
-  @staticmethod
-  def Args(parser):
-    flags.AddTensorboardTimeSeriesResourceArg(parser, 'to describe')
-
-  def Run(self, args):
-    return _Run(args, constants.ALPHA_VERSION)

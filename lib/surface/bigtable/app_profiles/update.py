@@ -48,6 +48,10 @@ class UpdateAppProfile(base.CreateCommand):
 
             $ {command} my-app-profile-id --instance=my-instance-id --description="New description"
 
+          To update the request priority for an app profile to PRIORITY_LOW, run:
+
+            $ {command} my-app-profile-id --instance=my-instance-id --priority=PRIORITY_LOW
+
           """),
   }
 
@@ -58,6 +62,7 @@ class UpdateAppProfile(base.CreateCommand):
         arguments.ArgAdder(parser)
         .AddDescription('app profile', required=False)
         .AddAppProfileRouting(required=False)
+        .AddIsolation()
         .AddForce('update')
         .AddAsync()
     )
@@ -89,6 +94,7 @@ class UpdateAppProfile(base.CreateCommand):
         restrict_to=args.restrict_to,
         transactional_writes=args.transactional_writes,
         force=args.force,
+        priority=args.priority,
     )
 
   def Run(self, args):

@@ -43,7 +43,7 @@ def _Run(args, version):
     return response
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
 class ReadBeta(base.Command):
   """Read the Tensorboard time series data from the given Tensorboard time series id."""
 
@@ -66,15 +66,3 @@ class ReadBeta(base.Command):
 
   def Run(self, args):
     return _Run(args, constants.BETA_VERSION)
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class ReadAlpha(base.Command):
-  """Read the Tensorboard time series data from the given Tensorboard time series id."""
-
-  @staticmethod
-  def Args(parser):
-    _AddArgs(parser)
-
-  def Run(self, args):
-    return _Run(args, constants.ALPHA_VERSION)

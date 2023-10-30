@@ -1,4 +1,4 @@
-- release_tracks: [ALPHA, BETA]
+- release_tracks: [ALPHA, BETA, GA]
   help_text:
     brief: |
       Update a VPC Access connector.
@@ -34,7 +34,7 @@
         Arguments and flags that specify the VPC Access connector you want to update.
     params:
     - arg_name: min-instances
-      release_tracks: [ALPHA, BETA]
+      release_tracks: [ALPHA, BETA, GA]
       api_field: connector.minInstances
       required: false
       help_text: |
@@ -43,7 +43,7 @@
         set minimum number of instances, and less than the value specified by --max-instances`.
         `--max-instances` must be provided
     - arg_name: max-instances
-      release_tracks: [ALPHA, BETA]
+      release_tracks: [ALPHA, BETA, GA]
       api_field: connector.maxInstances
       required: false
       help_text: |
@@ -52,7 +52,7 @@
         set maximum number of instances, and greater than the value specified by `--min-instances`.
         `--min-instances` must be provided.
     - arg_name: machine-type
-      release_tracks: [ALPHA, BETA]
+      release_tracks: [ALPHA, BETA, GA]
       api_field: connector.machineType
       required: false
       help_text: |

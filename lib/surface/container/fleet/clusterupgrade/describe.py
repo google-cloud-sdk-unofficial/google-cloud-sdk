@@ -114,7 +114,7 @@ class Describe(feature_base.DescribeCommand):
         'fleet': fleet,
         'spec': Describe.FormatDurations(fleet_spec),
     }
-    if feature.state.clusterupgrade is not None:
+    if feature.state is not None and feature.state.clusterupgrade is not None:
       res['state'] = feature.state.clusterupgrade
     return res
 

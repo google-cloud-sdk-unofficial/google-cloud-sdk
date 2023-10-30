@@ -124,7 +124,15 @@ class AccessToken(base.Command):
         allow_account_impersonation=True,
         use_google_auth=True,
         with_access_token_cache=with_access_token_cache)
+
+    # c_store.Load already refreshed the cred, so we don't need to refresh the
+    # cred unless we need to alter the cred in the code below, for example,
+    # changing the scopes.
+    should_refresh_again = False
+
     if args.scopes:
+      # refresh again due to altered scopes
+      should_refresh_again = True
       cred_type = c_creds.CredentialTypeGoogleAuth.FromCredentials(cred)
       if cred_type not in [
           c_creds.CredentialTypeGoogleAuth.USER_ACCOUNT,
@@ -152,9 +160,13 @@ class AccessToken(base.Command):
         cred._scopes = scopes
 
     if c_creds.IsImpersonatedAccountCredentials(cred) and args.lifetime:
+      # refresh again due to altered lifetime
+      should_refresh_again = True
       cred._lifetime = args.lifetime  # pylint: disable=protected-access
 
-    c_store.Refresh(cred)
+    if should_refresh_again:
+      c_store.Refresh(cred)
+
     if c_creds.IsOauth2ClientCredentials(cred):
       token = cred.access_token
     else:

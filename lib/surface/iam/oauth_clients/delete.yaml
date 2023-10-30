@@ -33,9 +33,3 @@
       help_text: The OAuth client to delete.
       spec: !REF googlecloudsdk.command_lib.iam.resources:oauth_client
       is_positional: true
-
-    params:
-    - api_field: validateOnly
-      arg_name: validate-only
-      help_text: When set, validates the deletion but does not actually delete the OAuth client.
-      hidden: true
