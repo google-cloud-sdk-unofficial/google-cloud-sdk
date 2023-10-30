@@ -19,6 +19,7 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+from apitools.base.py import list_pager
 from googlecloudsdk.api_lib.util import apis
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.scc import flags as scc_flags
@@ -70,5 +71,13 @@ class List(base.ListCommand):
     request.pageSize = args.page_size
 
     client = apis.GetClientInstance('securitycenter', 'v1')
-    result = client.organizations_notificationConfigs.List(request)
-    return result.notificationConfigs
+
+    # Automatically handle pagination. All notifications are returned regardless
+    # of --page-size argument.
+    return list_pager.YieldFromList(
+        client.organizations_notificationConfigs,
+        request,
+        batch_size_attribute='pageSize',
+        batch_size=args.page_size,
+        field='notificationConfigs',
+    )

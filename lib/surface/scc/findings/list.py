@@ -21,6 +21,7 @@ from __future__ import unicode_literals
 
 import re
 
+from apitools.base.py import list_pager
 from googlecloudsdk.api_lib.util import apis
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.scc import errors
@@ -158,9 +159,15 @@ class List(base.ListCommand):
     request = _GenerateParent(args, request)
     client = apis.GetClientInstance("securitycenter", "v1")
 
-    result = client.organizations_sources_findings.List(request)
-
-    return result.listFindingsResults
+    # Automatically handle pagination. All findings are returned regarldess of
+    # --page-size argument.
+    return list_pager.YieldFromList(
+        client.organizations_sources_findings,
+        request,
+        batch_size_attribute="pageSize",
+        batch_size=args.page_size,
+        field="listFindingsResults",
+    )
 
 
 def _GenerateParent(args, req):

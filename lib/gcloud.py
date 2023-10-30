@@ -21,6 +21,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+import contextlib
 import os
 import sys
 
@@ -84,52 +85,92 @@ def _import_gcloud_main():
   return googlecloudsdk.gcloud_main
 
 
-def main():
-  sys.path = reorder_sys_path(sys.path)
-  # pylint:disable=g-import-not-at-top
-  from googlecloudsdk.core.util import encoding
+MIN_SUPPORTED_PY3_VERSION = (3, 8)
+MAX_SUPPORTED_PY3_VERSION = (3, 10)
 
-  if encoding.GetEncodedValue(os.environ, '_ARGCOMPLETE'):
-    try:
-      # pylint:disable=g-import-not-at-top
-      import googlecloudsdk.command_lib.static_completion.lookup as lookup
-      lookup.Complete()
-      return
-    except Exception:  # pylint:disable=broad-except, hide completion errors
-      if encoding.GetEncodedValue(os.environ, '_ARGCOMPLETE_TRACE') == 'static':
-        raise
 
+def python_version_string(python_version):
+  return '{}.{}'.format(python_version[0], python_version[1])
+
+
+@contextlib.contextmanager
+def gcloud_exception_handler():
+  """Handles exceptions from gcloud to provide a helpful message."""
   try:
-    _fix_google_module()
-    gcloud_main = _import_gcloud_main()
+    yield
   except Exception as err:  # pylint: disable=broad-except
     # We want to catch *everything* here to display a nice message to the user
     # pylint:disable=g-import-not-at-top
+    python_version = sys.version_info[:2]
+    if (python_version < MIN_SUPPORTED_PY3_VERSION or
+        python_version > MAX_SUPPORTED_PY3_VERSION):
+      error_message = (
+          'You are running gcloud with Python {python_version}, which is not '
+          'supported. Install a compatible version of Python '
+          '({min_python_version}-{max_python_version}) and set the '
+          'CLOUDSDK_PYTHON environment variable to point to it.\n\n'.format(
+              python_version=python_version_string(python_version),
+              min_python_version=python_version_string(
+                  MIN_SUPPORTED_PY3_VERSION),
+              max_python_version=python_version_string(
+                  MAX_SUPPORTED_PY3_VERSION))
+          )
+    else:
+      error_message = (
+          'This usually indicates corruption in your gcloud installation or '
+          'problems with your Python interpreter.\n\n'
+          'Please verify that the following is the path to a working Python '
+          '{min_python_version}-{max_python_version} executable:\n    '
+          '{executable}\n\nIf it is not, please set the CLOUDSDK_PYTHON '
+          'environment variable to point to a working Python '
+          'executable.\n\n').format(
+              executable=sys.executable,
+              min_python_version=python_version_string(
+                  MIN_SUPPORTED_PY3_VERSION),
+              max_python_version=python_version_string(
+                  MAX_SUPPORTED_PY3_VERSION))
+
     import traceback
     # We DON'T want to suggest `gcloud components reinstall` here (ex. as
     # opposed to the similar message in gcloud_main.py), as we know that no
     # commands will work.
     sys.stderr.write(
         (
-            'ERROR: gcloud failed to load: {err}\n{traceback}\n\nThis usually'
-            ' indicates corruption in your gcloud installation or problems with'
-            ' your Python interpreter.\n\nPlease verify that the following is'
-            ' the path to a working Python'
-            ' {py_major_version}.{py_minor_version}+ executable:\n   '
-            ' {executable}\n\nIf it is not, please set the CLOUDSDK_PYTHON'
-            ' environment variable to point to a working Python'
-            ' {py_major_version}.{py_minor_version}+ executable.\n\nIf you are'
-            ' still experiencing problems, please reinstall the Cloud SDK using'
-            ' the instructions here:\n    https://cloud.google.com/sdk/\n'
+            'ERROR: gcloud failed to load: {err}\n{traceback}\n\n'
+            '{error_message}If you are '
+            'still experiencing problems, please reinstall the '
+            'Google Cloud CLI using the instructions here:\n    '
+            'https://cloud.google.com/sdk/docs/install\n'
         ).format(
             err=err,
             traceback='\n'.join(traceback.format_exc().splitlines()[2::2]),
-            executable=sys.executable,
-            py_major_version=3,
-            py_minor_version=8,
+            error_message=error_message
         )
     )
     sys.exit(1)
+
+
+def main():
+  with gcloud_exception_handler():
+    sys.path = reorder_sys_path(sys.path)
+    # pylint:disable=g-import-not-at-top
+    from googlecloudsdk.core.util import encoding
+
+  if encoding.GetEncodedValue(os.environ, '_ARGCOMPLETE'):
+    try:
+      # pylint:disable=g-import-not-at-top
+      from googlecloudsdk.command_lib.static_completion import lookup
+      lookup.Complete()
+      return
+    except Exception:  # pylint:disable=broad-except, hide completion errors
+      if encoding.GetEncodedValue(os.environ,
+                                  '_ARGCOMPLETE_TRACE') == 'static':
+        raise
+
+  with gcloud_exception_handler():
+    _fix_google_module()
+    gcloud_main = _import_gcloud_main()
+
   sys.exit(gcloud_main.main())
 
 
