@@ -51,7 +51,6 @@ class Update(base.UpdateCommand):
   """
 
   support_ipv6_assignment = False
-  support_set_security_policy = False
 
   SECURITY_POLICY_ARG = None
 
@@ -203,13 +202,12 @@ class Update(base.UpdateCommand):
       """,
     )
 
-    if cls.support_set_security_policy:
-      cls.SECURITY_POLICY_ARG = (
-          security_policy_flags.SecurityPolicyRegionalArgumentForTargetResource(
-              resource='instance network interface'
-          )
-      )
-      cls.SECURITY_POLICY_ARG.AddArgument(parser)
+    cls.SECURITY_POLICY_ARG = (
+        security_policy_flags.SecurityPolicyRegionalArgumentForTargetResource(
+            resource='instance network interface'
+        )
+    )
+    cls.SECURITY_POLICY_ARG.AddArgument(parser)
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
@@ -421,7 +419,6 @@ class UpdateBeta(Update):
   """
 
   support_ipv6_assignment = False
-  support_set_security_policy = True
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -438,4 +435,3 @@ class UpdateAlpha(UpdateBeta):
   """
 
   support_ipv6_assignment = True
-  support_set_security_policy = True

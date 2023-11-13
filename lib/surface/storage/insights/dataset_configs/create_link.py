@@ -15,8 +15,10 @@
 
 """Implementation of create-link command for insights dataset config."""
 
+from googlecloudsdk.api_lib.storage import insights_api
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.storage.insights.dataset_configs import resource_args
+from googlecloudsdk.core import log
 
 
 @base.Hidden
@@ -37,7 +39,7 @@ class CreateLink(base.Command):
 
       To create a link for the same dataset config with fully specified name:
 
-          $ {command} /projects/foo/locations/us-central1/datasetConfigs/my-config
+          $ {command} projects/foo/locations/us-central1/datasetConfigs/my-config
       """,
   }
 
@@ -46,5 +48,16 @@ class CreateLink(base.Command):
     resource_args.add_dataset_config_resource_arg(parser, 'to create link')
 
   def Run(self, args):
-    # TODO(b/277754687): Add when API function available.
-    raise NotImplementedError
+    client = insights_api.InsightsApi()
+    dataset_config_relative_name = (
+        args.CONCEPTS.dataset_config.Parse().RelativeName()
+    )
+
+    client.create_dataset_config_link(
+        dataset_config_relative_name,
+    )
+    log.status.Print(
+        'Created dataset config link for dataset config: {}'.format(
+            dataset_config_relative_name
+        )
+    )

@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Command to describe the service projects."""
+"""Command to describe a Service Project."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -35,7 +35,7 @@ _DETAILED_HELP = {
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Describe(base.DescribeCommand):
-  """Describe service projects."""
+  """Describe an Apphub service project."""
 
   detailed_help = _DETAILED_HELP
 

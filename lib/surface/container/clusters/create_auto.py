@@ -52,6 +52,7 @@ auto_flags = [
     'enableDnsEndpoint',
     'workloadPolicies',
     'containerdConfig',
+    'labels',
 ]
 
 # Change default flag values in create-auto

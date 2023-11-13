@@ -144,5 +144,6 @@ class CreateAlpha(Create):
     network_utils.AddEnableUlaInternalIpv6Arg(parser)
     network_utils.AddNetworkFirewallPolicyEnforcementOrderArg(parser)
     network_utils.AddRdmaArg(parser)
+    network_utils.AddBgpBestPathSelectionArgGroup(parser)
 
     parser.display_info.AddCacheUpdater(flags.NetworksCompleter)

@@ -74,5 +74,5 @@ class CreateLinuxConfig(base.CreateCommand):
 
   def Run(self, args):
     enterprise_certificate_config.create_config(
-        args, enterprise_certificate_config.ConfigType.PKCS11
+        enterprise_certificate_config.ConfigType.PKCS11, **vars(args)
     )

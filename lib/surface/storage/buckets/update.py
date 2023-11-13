@@ -234,11 +234,30 @@ def _add_common_args(parser):
       ' requester pays all costs related to accessing the bucket and its'
       ' objects.')
   parser.add_argument(
+      '--soft-delete-duration',
+      type=arg_parsers.Duration(),
+      help=(
+          'Duration to retain soft-deleted objects. For example, "2w1d" is'
+          ' two weeks and one day.'
+      ),
+  )
+  parser.add_argument(
+      '--clear-soft-delete',
+      action='store_true',
+      help=(
+          'Clears bucket soft delete settings. Does not affect objects already'
+          ' in soft-deleted state.'
+      ),
+  )
+  parser.add_argument(
       '--uniform-bucket-level-access',
       action=arg_parsers.StoreTrueFalseAction,
-      help='Enables or disables [uniform bucket-level access]'
-      '(https://cloud.google.com/storage/docs/bucket-policy-only)'
-      ' for the buckets.')
+      help=(
+          'Enables or disables [uniform bucket-level access]'
+          '(https://cloud.google.com/storage/docs/bucket-policy-only)'
+          ' for the buckets.'
+      ),
+  )
   parser.add_argument(
       '--versioning',
       action=arg_parsers.StoreTrueFalseAction,
@@ -281,24 +300,7 @@ def _add_alpha_args(parser):
   Returns:
     buckets update flag group
   """
-  parser.add_argument(
-      '--soft-delete-duration',
-      type=arg_parsers.Duration(),
-      hidden=True,
-      help=(
-          'Duration to retain soft-deleted objects. For example, "2w1d" is'
-          ' two weeks and one day.'
-      ),
-  )
-  parser.add_argument(
-      '--clear-soft-delete',
-      action='store_true',
-      hidden=True,
-      help=(
-          'Clears bucket soft delete settings. Does not affect objects already'
-          ' in soft-deleted state.'
-      ),
-  )
+  del parser  # Unused. Currently, no alpha args.
 
 
 def _is_initial_bucket_metadata_needed(user_request_args):

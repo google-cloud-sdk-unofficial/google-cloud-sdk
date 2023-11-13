@@ -37,9 +37,12 @@ _DETAILED_HELP = {
 }
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-@base.Hidden
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
+)
 class Cancel(base.CreateCommand):
+  """Cancels a Cloud Deploy Automation Run."""
+
   detailed_help = _DETAILED_HELP
 
   @staticmethod

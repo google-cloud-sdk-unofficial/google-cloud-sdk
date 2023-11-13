@@ -15,8 +15,24 @@
 
 """Implementation of list command for insights dataset config."""
 
+import re
+
+from googlecloudsdk.api_lib.storage import insights_api
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.storage import flags
+
+LOCATION_REGEX_PATTERN = re.compile(r'locations/(.*)/.*/')
+
+
+def _transform_location(dataset_config):
+  matched_result = re.search(LOCATION_REGEX_PATTERN, dataset_config['name'])
+  if matched_result and matched_result.group(1) is not None:
+    return matched_result.group(1)
+  else:
+    return 'N/A-Misformated Value'
+
+
+_TRANSFORMS = {'location_transform': _transform_location}
 
 
 @base.Hidden
@@ -50,8 +66,21 @@ class List(base.ListCommand):
 
   @staticmethod
   def Args(parser):
-    flags.add_dataset_config_location_flag(parser)
+    flags.add_dataset_config_location_flag(parser, is_required=False)
+    parser.display_info.AddFormat("""
+        table(
+            uid:label=DATASET_CONFIG_ID,
+            name.basename():label=DATASET_CONFIG_NAME,
+            location_transform():label=LOCATION,
+            sourceProjects.projectNumbers:label=SOURCE_PROJECTS,
+            organizationNumber:label=ORGANIZATION_NUMBER,
+            format('{} days', retentionPeriodDays):label=RETENTION_PERIOD_DAYS,
+            datasetConfigState:label=STATE
+        )
+        """)
+    parser.display_info.AddTransforms(_TRANSFORMS)
 
   def Run(self, args):
-    # TODO(b/277754528): Add when API function available.
-    raise NotImplementedError
+    return insights_api.InsightsApi().list_dataset_config(
+        location=args.location, page_size=args.page_size
+    )

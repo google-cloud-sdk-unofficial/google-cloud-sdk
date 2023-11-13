@@ -20,9 +20,11 @@ from __future__ import unicode_literals
 
 from apitools.base.py import exceptions as apitools_exceptions
 from apitools.base.py import list_pager
+from googlecloudsdk.api_lib.artifacts import exceptions as ar_exceptions
 from googlecloudsdk.api_lib.util import apis
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.artifacts import docker_util
+from googlecloudsdk.command_lib.artifacts import requests as ar_requests
 from googlecloudsdk.command_lib.artifacts import vex_util
 
 
@@ -55,7 +57,13 @@ To load a CSAF security advisory file given an artifact with a tag and a file on
     parser.add_argument(
         '--uri',
         required=True,
-        help='The path of the artifact in Artifact Registry.',
+        help=(
+            "The path of the artifact in Artifact Registry. A 'gcr.io' image"
+            ' can also be used if redirection is enabled in Artifact Registry.'
+            " Make sure 'artifactregistry.projectsettings.get' permission is"
+            ' granted to the current gcloud user to verify the redirection'
+            ' status.'
+        ),
     )
     parser.add_argument(
         '--source',
@@ -75,13 +83,32 @@ To load a CSAF security advisory file given an artifact with a tag and a file on
     self.ca_messages = self.ca_client.MESSAGES_MODULE
     uri = args.uri
     uri = vex_util.RemoveHTTPS(uri)
-    image, version = docker_util.DockerUrlToImage(uri)
-    project = args.project
-    if project is None:
-      project = image.project
+    if docker_util.IsARDockerImage(uri):
+      image, version = docker_util.DockerUrlToImage(uri)
+      image_uri = image.GetDockerString()
+      version_uri = version.GetDockerString() if version else None
+      image_project = image.project
+    elif docker_util.IsGCRImage(uri):
+      image_project, image_uri, version_uri = vex_util.ParseGCRUrl(uri)
+      messages = ar_requests.GetMessages()
+      settings = ar_requests.GetProjectSettings(image_project)
+      if (
+          settings.legacyRedirectionState
+          != messages.ProjectSettings.LegacyRedirectionStateValueValuesEnum.REDIRECTION_FROM_GCR_IO_ENABLED
+      ):
+        raise ar_exceptions.InvalidInputValueError(
+            'This command only supports Artifact Registry. You can enable'
+            ' redirection to use gcr.io repositories in Artifact Registry.'
+        )
+    else:
+      raise ar_exceptions.InvalidInputValueError(
+          '{} is not an Artifact Registry image.'.format(uri)
+      )
+
+    project = args.project or image_project
     filename = args.source
     notes, generic_uri = vex_util.ParseVexFile(
-        filename, image, version
+        filename, image_uri, version_uri
     )
     self.writeNotes(notes, project, generic_uri)
     return
@@ -91,7 +118,6 @@ To load a CSAF security advisory file given an artifact with a tag and a file on
     notes_to_update = []
     notes_to_retain = notes
     for note in notes:
-      note_exists = False
       get_request = self.ca_messages.ContaineranalysisProjectsNotesGetRequest(
           name='projects/{}/notes/{}'.format(project, note.key)
       )

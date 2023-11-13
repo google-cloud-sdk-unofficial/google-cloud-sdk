@@ -38,22 +38,14 @@ class Delete(base.UpdateCommand):
 
   feature_name = 'identityservice'
 
-  _fleet_default_member_config_supported_tracks = [
-      calliope_base.ReleaseTrack.ALPHA, calliope_base.ReleaseTrack.BETA
-  ]
-
   @classmethod
   def Args(cls, parser):
     resources.AddMembershipResourceArg(
         parser, membership_help='Membership name provided during registration.')
-
-    if cls.ReleaseTrack(
-    ) not in cls._fleet_default_member_config_supported_tracks:
-      return
-
     parser.add_argument(
         '--fleet-default-member-config',
         action='store_true',
+        hidden=cls.ReleaseTrack() is calliope_base.ReleaseTrack.GA,
         help="""If specified, deletes the default membership
         configuration present in your fleet.
 
@@ -67,33 +59,27 @@ class Delete(base.UpdateCommand):
     update_mask = []
     patch = self.messages.Feature()
 
-    if self.ReleaseTrack(
-    ) in self._fleet_default_member_config_supported_tracks:
-      # Clear the fleet_default_member_config if the
-      # fleet_default_member_config flag is set to true.
-      if args.fleet_default_member_config:
-        self._UpdateFleetDefaultMemberConfigMaskAndPatch(update_mask, patch)
-        # If the user only specified fleet_default_member_config flag,
-        # stop further processing.
-        if not args.membership:
-          self.Update(update_mask, patch)
-          return
+    if args.fleet_default_member_config:
+      update_mask.append('fleet_default_member_config')
+      if not args.membership:
+        # TODO: b/307330225) - Figure out a way to get rid of this.
+        # This is currently necessary because the Hub CLH doesn't currently
+        # allow updates with an empty FeatureSpec object. `spec` isn't actually
+        # going to get updated as it isn't present in the update mask.
+        patch.spec = self.messages.CommonFeatureSpec()
 
-    self._UpdateMembershipSpecsMaskAndPatch(args, update_mask, patch)
-    # Patch the feature based on the given masks.
+        self.Update(update_mask, patch)
+        return
+
+    self.preparePerMemberConfigDeletion(args, update_mask, patch)
     self.Update(update_mask, patch)
 
-  def _UpdateFleetDefaultMemberConfigMaskAndPatch(self, mask, patch):
-    patch.fleetDefaultMemberConfig = self.messages.CommonFleetDefaultMemberConfigSpec(
-    )
-    mask.append('fleet_default_member_config')
-
-  def _UpdateMembershipSpecsMaskAndPatch(self, args, mask, patch):
-    # Get fleet memberships (cluster registered with fleet) from GCP Project.
+  def preparePerMemberConfigDeletion(self, args, mask, patch):
+    # Get the membership the user is trying to delete a config from.
     membership = base.ParseMembership(
         args, prompt=True, autoselect=True, search=True)
 
-    # Setup a patch to set the MembershipSpec to the empty proto ("delete").
-    specs = {membership: self.messages.MembershipFeatureSpec()}
-    patch.membershipSpecs = self.hubclient.ToMembershipSpecs(specs)
+    patch.membershipSpecs = self.hubclient.ToMembershipSpecs(
+        {membership: self.messages.MembershipFeatureSpec()}
+    )
     mask.append('membership_specs')

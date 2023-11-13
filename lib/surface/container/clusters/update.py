@@ -727,6 +727,11 @@ to completion."""
             args.enable_google_cloud_access)
       except apitools_exceptions.HttpError as error:
         raise exceptions.HttpException(error, util.HTTP_ERROR_FORMAT)
+    elif getattr(args, 'complete_convert_to_autopilot', None) is not None:
+      try:
+        op_ref = adapter.CompleteConvertToAutopilot(cluster_ref)
+      except apitools_exceptions.HttpError as error:
+        raise exceptions.HttpException(error, util.HTTP_ERROR_FORMAT)
     elif (
         getattr(args, 'enable_binauthz', None) is not None
         or getattr(args, 'binauthz_evaluation_mode', None) is not None
@@ -898,6 +903,9 @@ class UpdateBeta(Update):
     flags.AddEnableMultiNetworkingFlag(group, hidden=True)
     flags.AddContainerdConfigFlag(group, hidden=True)
     flags.AddAutoprovisioningResourceManagerTagsUpdate(group)
+    flags.AddConvertToAutopilotFlag(group)
+    flags.AddCompleteConvertToAutopilotFlag(group)
+    flags.AddConvertToStandardFlag(group)
 
   def ParseUpdateOptions(self, args, locations):
     get_default = lambda key: getattr(args, key)
@@ -1044,6 +1052,9 @@ class UpdateBeta(Update):
     opts.autoprovisioning_resource_manager_tags = get_default(
         'autoprovisioning_resource_manager_tags'
     )
+    opts.convert_to_autopilot = args.convert_to_autopilot
+    opts.complete_convert_to_autopilot = args.complete_convert_to_autopilot
+    opts.convert_to_standard = args.convert_to_standard
     return opts
 
 
@@ -1154,6 +1165,9 @@ class UpdateAlpha(Update):
     flags.AddEnableMultiNetworkingFlag(group, hidden=True)
     flags.AddContainerdConfigFlag(group, hidden=True)
     flags.AddAutoprovisioningResourceManagerTagsUpdate(group)
+    flags.AddConvertToAutopilotFlag(group)
+    flags.AddCompleteConvertToAutopilotFlag(group)
+    flags.AddConvertToStandardFlag(group)
 
   def ParseUpdateOptions(self, args, locations):
     get_default = lambda key: getattr(args, key)
@@ -1295,4 +1309,7 @@ class UpdateAlpha(Update):
     opts.autoprovisioning_resource_manager_tags = get_default(
         'autoprovisioning_resource_manager_tags'
     )
+    opts.convert_to_autopilot = args.convert_to_autopilot
+    opts.complete_convert_to_autopilot = args.complete_convert_to_autopilot
+    opts.convert_to_standard = args.convert_to_standard
     return opts

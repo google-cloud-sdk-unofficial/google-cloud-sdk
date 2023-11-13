@@ -39,15 +39,14 @@ _API_REFERENCE_ = """
 """
 
 
-@base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class UpgradeAlpha(base.Command):
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class Upgrade(base.Command):
   """Upgrade an Edge Container cluster."""
 
   detailed_help = {
       'EXAMPLES': _EXAMPLES,
       'API REFERENCE': _API_REFERENCE_.format(
-          API=util.VERSION_MAP.get(base.ReleaseTrack.ALPHA)
+          API=util.VERSION_MAP.get(base.ReleaseTrack.GA)
       ),
   }
 
@@ -74,3 +73,15 @@ class UpgradeAlpha(base.Command):
     )
 
     return print_warning.PrintWarning(op, None)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class UpgradeAlpha(Upgrade):
+  """Upgrade an Edge Container cluster."""
+
+  @staticmethod
+  def Args(parser, track=base.ReleaseTrack.ALPHA):
+    Upgrade.detailed_help['API REFERENCE'] = _API_REFERENCE_.format(
+        API=util.VERSION_MAP.get(track)
+    )
+    Upgrade.Args(parser)

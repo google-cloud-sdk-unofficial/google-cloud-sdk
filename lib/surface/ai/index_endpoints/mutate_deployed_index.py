@@ -32,9 +32,14 @@ from googlecloudsdk.core import log
 DETAILED_HELP = {
     'EXAMPLES':
         """\
-        To mutated a deployed index ``deployed-index-123'' from an index endpoint ``456'' with 2 min replica count and 10 max replica count under project ``example'' in region ``us-central1'', within ``vertex-ai-ip-ranges-1'' and ``vertex-ai-ip-ranges-2'' run:
+        To mutated a deployed index ``deployed-index-123'' from an index
+        endpoint ``456'' with 2 min replica count and 10 max replica count under
+        project ``example'' in region ``us-central1'', within
+        ``vertex-ai-ip-ranges-1'' and ``vertex-ai-ip-ranges-2'', within
+        deployment group ``test'', enabling access logging, with JWT audiences
+        ``aud1'' and ``aud2'', JWT issuers ``issuer1'' and ``issuer2'' run:
 
-          $ {command} 456 --project=example --region=us-central1 --deployed-index-id=deployed-index-123 --min-replica-count=2 --max-replica-count=10 --reserved-ip-ranges=vertex-ai-ip-ranges-1,vertex-ai-ip-ranges-2
+          $ {command} 456 --project=example --region=us-central1 --deployed-index-id=deployed-index-123 --min-replica-count=2 --max-replica-count=10 --reserved-ip-ranges=vertex-ai-ip-ranges-1,vertex-ai-ip-ranges-2 --enable-access-logging --audiences=aud1,aud2 --allowed-issuers=issuer1,issuer2 --deployment-group=test
         """,
 }
 
@@ -51,6 +56,9 @@ class MutateDeployedIndexV1(base.Command):
     flags.GetDeployedIndexId().AddToParser(parser)
     flags.AddMutateDeploymentResourcesArgs(parser, 'deployed index')
     flags.AddReservedIpRangesArgs(parser, 'deployed index')
+    flags.AddDeploymentGroupArg(parser)
+    flags.AddAuthConfigArgs(parser, 'deployed index')
+    flags.GetEnableAccessLoggingArg().AddToParser(parser)
 
   def _Run(self, args, version):
     index_endpoint_ref = args.CONCEPTS.index_endpoint.Parse()

@@ -15,6 +15,7 @@
 
 """Implementation of describe command for insights dataset config."""
 
+from googlecloudsdk.api_lib.storage import insights_api
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.storage.insights.dataset_configs import resource_args
 
@@ -37,7 +38,7 @@ class Describe(base.DescribeCommand):
 
       To describe the same dataset config with fully specified name:
 
-          $ {command} /projects/foo/locations/us-central1/datasetConfigs/my-config
+          $ {command} projects/foo/locations/us-central1/datasetConfigs/my-config
       """,
   }
 
@@ -46,5 +47,7 @@ class Describe(base.DescribeCommand):
     resource_args.add_dataset_config_resource_arg(parser, 'to describe')
 
   def Run(self, args):
-    # TODO(b/277753063): Add when API function available.
-    raise NotImplementedError
+    dataset_config_ref = args.CONCEPTS.dataset_config.Parse()
+    return insights_api.InsightsApi().get_dataset_config(
+        dataset_config_ref.RelativeName()
+    )

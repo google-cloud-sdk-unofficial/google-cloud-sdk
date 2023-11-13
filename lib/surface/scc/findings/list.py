@@ -24,10 +24,10 @@ import re
 from apitools.base.py import list_pager
 from googlecloudsdk.api_lib.util import apis
 from googlecloudsdk.calliope import base
-from googlecloudsdk.command_lib.scc import errors
 from googlecloudsdk.command_lib.scc import flags as scc_flags
-from googlecloudsdk.command_lib.scc import util
+from googlecloudsdk.command_lib.scc import util as scc_util
 from googlecloudsdk.command_lib.scc.findings import flags
+from googlecloudsdk.command_lib.scc.findings import util
 from googlecloudsdk.core import properties
 from googlecloudsdk.core.util import times
 from googlecloudsdk.generated_clients.apis.securitycenter.v1 import securitycenter_v1_messages as messages
@@ -180,49 +180,16 @@ def _GenerateParent(args, req):
   Returns:
     req: Modified request
   """
-  _ValidateMutexOnSourceAndParent(args)
-  req.parent = _GetSourceNameForParent(args)
+  util.ValidateMutexOnSourceAndParent(args)
+  req.parent = util.GetSourceNameForParent(args)
   req.filter = args.filter
   if req.fieldMask is not None:
-    req.fieldMask = CleanUpUserInput(req.fieldMask)
+    req.fieldMask = scc_util.CleanUpUserMaskInput(req.fieldMask)
   args.filter = ""
   resource_pattern = re.compile(
       "(organizations|projects|folders)/.*/sources/[0-9-]+$"
   )
-  parent = util.GetParentFromPositionalArguments(args)
+  parent = scc_util.GetParentFromPositionalArguments(args)
   if resource_pattern.match(parent):
     args.source = parent
   return req
-
-
-def _ValidateMutexOnSourceAndParent(args):
-  """Validates that only a full resource name or split arguments are provided."""
-  if "/" in args.source and args.parent is not None:
-    raise errors.InvalidSCCInputError(
-        "Only provide a full resource name "
-        "(organizations/123/sources/456) or a --parent flag, not both."
-    )
-
-
-def _GetSourceNameForParent(args):
-  """Returns relative resource name for a source."""
-  resource_pattern = re.compile(
-      "(organizations|projects|folders)/.*/sources/[0-9-]+"
-  )
-  id_pattern = re.compile("[0-9-]+")
-  if not resource_pattern.match(args.source) and not id_pattern.match(
-      args.source
-  ):
-    raise errors.InvalidSCCInputError(
-        "The source must either be the full resource "
-        "name or the numeric source ID."
-    )
-  if resource_pattern.match(args.source):
-    # Handle full resource name
-    return args.source
-  return util.GetParentFromPositionalArguments(args) + "/sources/" + args.source
-
-
-def CleanUpUserInput(mask):
-  """Removes spaces from a field mask provided by user."""
-  return mask.replace(" ", "")

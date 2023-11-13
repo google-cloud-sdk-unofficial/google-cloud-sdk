@@ -34,6 +34,11 @@
       required: true
       help_text: |
         The encoding of the message.
+      choices:
+      - arg_value: json
+        enum_value: JSON
+      - arg_value: binary
+        enum_value: BINARY
     - group:
         help_text: |
           Schema definition.
@@ -67,6 +72,11 @@
               help_text: |
                 Type of inline schema.
               required: true
+              choices:
+              - arg_value: avro
+                enum_value: AVRO
+              - arg_value: protocol-buffer
+                enum_value: PROTOCOL_BUFFER
 
   response:
     modify_response_hooks:

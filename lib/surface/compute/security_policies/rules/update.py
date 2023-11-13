@@ -55,7 +55,6 @@ class UpdateHelper(object):
       support_header_action,
       support_fairshare,
       support_multiple_rate_limit_keys,
-      support_net_lb,
       support_recaptcha_options,
   ):
     """Generates the flagset for an Update command."""
@@ -67,10 +66,7 @@ class UpdateHelper(object):
         security_policy_flags.SecurityPolicyMultiScopeArgumentForRules()
     )
     cls.SECURITY_POLICY_ARG.AddArgument(parser)
-    if support_net_lb:
-      flags.AddMatcherAndNetworkMatcher(parser, required=False)
-    else:
-      flags.AddMatcher(parser, required=False)
+    flags.AddMatcherAndNetworkMatcher(parser, required=False)
     flags.AddAction(
         parser,
         required=False,
@@ -103,7 +99,6 @@ class UpdateHelper(object):
       support_header_action,
       support_fairshare,
       support_multiple_rate_limit_keys,
-      support_net_lb,
       support_recaptcha_options,
   ):
     """Validates arguments and patches a security policy rule."""
@@ -112,6 +107,14 @@ class UpdateHelper(object):
         args.src_ip_ranges,
         args.action,
         args.preview is not None,
+        args.network_user_defined_fields,
+        args.network_src_ip_ranges,
+        args.network_dest_ip_ranges,
+        args.network_ip_protocols,
+        args.network_src_ports,
+        args.network_dest_ports,
+        args.network_src_region_codes,
+        args.network_src_asns
     ]
     min_args = [
         '--description',
@@ -119,6 +122,14 @@ class UpdateHelper(object):
         '--expression',
         '--action',
         '--preview',
+        '--network-user-defined-fields',
+        '--network-src-ip-ranges',
+        '--network-dest-ip-ranges',
+        '--network-ip-protocols',
+        '--network-src-ports',
+        '--network-dest-ports',
+        '--network-src-region-codes',
+        '--network-src-asns'
     ]
     if support_redirect:
       modified_fields.extend([args.redirect_type, args.redirect_target])
@@ -158,27 +169,6 @@ class UpdateHelper(object):
       min_args.extend([
           '--recaptcha_action_site_keys',
           '--recaptcha_session_site_keys',
-      ])
-    if support_net_lb:
-      modified_fields.extend([
-          args.network_user_defined_fields,
-          args.network_src_ip_ranges,
-          args.network_dest_ip_ranges,
-          args.network_ip_protocols,
-          args.network_src_ports,
-          args.network_dest_ports,
-          args.network_src_region_codes,
-          args.network_src_asns
-      ])
-      min_args.extend([
-          '--network-user-defined-fields',
-          '--network-src-ip-ranges',
-          '--network-dest-ip-ranges',
-          '--network-ip-protocols',
-          '--network-src-ports',
-          '--network-dest-ports',
-          '--network-src-region-codes',
-          '--network-src-asns'
       ])
     if not any(
         [args.IsSpecified(field[2:].replace('-', '_')) for field in min_args]):
@@ -256,14 +246,11 @@ class UpdateHelper(object):
           holder.client, args
       )
 
-    network_matcher = None
-    update_mask = None
-    if support_net_lb:
-      result = security_policies_utils.CreateNetworkMatcher(
-          holder.client, args
-      )
-      network_matcher = result[0]
-      update_mask = result[1]
+    result = security_policies_utils.CreateNetworkMatcher(
+        holder.client, args
+    )
+    network_matcher = result[0]
+    update_mask = result[1]
 
     return security_policy_rule.Patch(
         src_ip_ranges=args.src_ip_ranges,
@@ -305,7 +292,6 @@ class UpdateGA(base.UpdateCommand):
   _support_multiple_rate_limit_keys = True
   _support_header_action = True
   _support_fairshare = False
-  _support_net_lb = False
   _support_recaptcha_options = False
 
   @classmethod
@@ -317,7 +303,6 @@ class UpdateGA(base.UpdateCommand):
         support_header_action=cls._support_header_action,
         support_fairshare=cls._support_fairshare,
         support_multiple_rate_limit_keys=cls._support_multiple_rate_limit_keys,
-        support_net_lb=cls._support_net_lb,
         support_recaptcha_options=cls._support_recaptcha_options,
     )
 
@@ -330,7 +315,6 @@ class UpdateGA(base.UpdateCommand):
         self._support_header_action,
         self._support_fairshare,
         self._support_multiple_rate_limit_keys,
-        self._support_net_lb,
         self._support_recaptcha_options,
     )
 
@@ -359,7 +343,6 @@ class UpdateBeta(base.UpdateCommand):
   _support_multiple_rate_limit_keys = True
   _support_header_action = True
   _support_fairshare = False
-  _support_net_lb = True
   _support_recaptcha_options = True
 
   @classmethod
@@ -371,7 +354,6 @@ class UpdateBeta(base.UpdateCommand):
         support_header_action=cls._support_header_action,
         support_fairshare=cls._support_fairshare,
         support_multiple_rate_limit_keys=cls._support_multiple_rate_limit_keys,
-        support_net_lb=cls._support_net_lb,
         support_recaptcha_options=cls._support_recaptcha_options,
     )
 
@@ -384,7 +366,6 @@ class UpdateBeta(base.UpdateCommand):
         self._support_header_action,
         self._support_fairshare,
         self._support_multiple_rate_limit_keys,
-        self._support_net_lb,
         self._support_recaptcha_options,
     )
 
@@ -413,7 +394,6 @@ class UpdateAlpha(base.UpdateCommand):
   _support_multiple_rate_limit_keys = True
   _support_header_action = True
   _support_fairshare = True
-  _support_net_lb = True
   _support_recaptcha_options = True
 
   @classmethod
@@ -425,7 +405,6 @@ class UpdateAlpha(base.UpdateCommand):
         support_header_action=cls._support_header_action,
         support_fairshare=cls._support_fairshare,
         support_multiple_rate_limit_keys=cls._support_multiple_rate_limit_keys,
-        support_net_lb=cls._support_net_lb,
         support_recaptcha_options=cls._support_recaptcha_options,
     )
 
@@ -438,6 +417,5 @@ class UpdateAlpha(base.UpdateCommand):
         self._support_header_action,
         self._support_fairshare,
         self._support_multiple_rate_limit_keys,
-        self._support_net_lb,
         self._support_recaptcha_options,
     )

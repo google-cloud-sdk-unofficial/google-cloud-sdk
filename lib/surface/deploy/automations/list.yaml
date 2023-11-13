@@ -1,7 +1,6 @@
-- release_tracks: [ALPHA]
-  hidden: true
+- release_tracks: [ALPHA, BETA, GA]
   help_text:
-    brief: List the automations.
+    brief: List the Automations.
     description: |
       List the automations for a specified delivery pipeline.
     examples: |

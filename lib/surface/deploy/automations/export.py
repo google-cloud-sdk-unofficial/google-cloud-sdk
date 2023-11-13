@@ -41,9 +41,11 @@ _DETAILED_HELP = {
 }
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
+)
 class Export(base.ExportCommand):
-  """Returns the YAML definition of the specified automation.
+  """Returns the YAML definition of the specified Automation.
 
   The exported yaml definition can be applied by using the `deploy apply`
   command.

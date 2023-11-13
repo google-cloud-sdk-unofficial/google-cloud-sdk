@@ -355,3 +355,17 @@
         Defines levels of hermeticity for actions executed on this instance by requiring other
         isolation and hermeticity related feature policies like linux-execution, windows-execution,
         etc to be set a certain way.
+    - api_field: instance.featurePolicy.dockerUlimits.policy
+      arg_name: docker-ulimits
+      required: false
+      choices:
+      - arg_value: allowed
+        enum_value: allowed
+        help_text: |
+          The feature can be used.
+      - arg_value: forbidden
+        enum_value: forbidden
+        help_text: |
+          The feature cannot be used.
+      help_text: |
+        Whether dockerUlimits can be used. If unspecified, the default is equivalent to "allowed".

@@ -55,7 +55,6 @@ class CreateHelper(object):
       support_header_action,
       support_fairshare,
       support_multiple_rate_limit_keys,
-      support_net_lb,
       support_recaptcha_options,
   ):
     """Generates the flagset for a Create command."""
@@ -66,10 +65,7 @@ class CreateHelper(object):
     cls.SECURITY_POLICY_ARG = (
         security_policies_flags.SecurityPolicyMultiScopeArgumentForRules())
     cls.SECURITY_POLICY_ARG.AddArgument(parser)
-    if support_net_lb:
-      flags.AddMatcherAndNetworkMatcher(parser)
-    else:
-      flags.AddMatcher(parser)
+    flags.AddMatcherAndNetworkMatcher(parser)
     flags.AddAction(
         parser,
         support_redirect=support_redirect,
@@ -103,12 +99,10 @@ class CreateHelper(object):
       support_header_action,
       support_fairshare,
       support_multiple_rate_limit_keys,
-      support_net_lb,
       support_recaptcha_options,
   ):
     """Validates arguments and creates a security policy rule."""
     holder = base_classes.ComputeApiHolder(release_track)
-    ref = None
     if args.security_policy:
       security_policy_ref = cls.SECURITY_POLICY_ARG.ResolveAsResource(
           args,
@@ -180,11 +174,9 @@ class CreateHelper(object):
           holder.client, args
       )
 
-    network_matcher = None
-    if support_net_lb:
-      network_matcher = security_policies_utils.CreateNetworkMatcher(
-          holder.client, args
-      )[0]
+    network_matcher = security_policies_utils.CreateNetworkMatcher(
+        holder.client, args
+    )[0]
 
     return security_policy_rule.Create(
         src_ip_ranges=args.src_ip_ranges,
@@ -226,7 +218,6 @@ class CreateGA(base.CreateCommand):
   _support_multiple_rate_limit_keys = True
   _support_header_action = True
   _support_fairshare = False
-  _support_net_lb = False
   _support_recaptcha_options = False
 
   @classmethod
@@ -238,7 +229,6 @@ class CreateGA(base.CreateCommand):
         support_header_action=cls._support_header_action,
         support_fairshare=cls._support_fairshare,
         support_multiple_rate_limit_keys=cls._support_multiple_rate_limit_keys,
-        support_net_lb=cls._support_net_lb,
         support_recaptcha_options=cls._support_recaptcha_options,
     )
 
@@ -251,7 +241,6 @@ class CreateGA(base.CreateCommand):
         support_header_action=self._support_header_action,
         support_fairshare=self._support_fairshare,
         support_multiple_rate_limit_keys=self._support_multiple_rate_limit_keys,
-        support_net_lb=self._support_net_lb,
         support_recaptcha_options=self._support_recaptcha_options,
     )
 
@@ -281,7 +270,6 @@ class CreateBeta(base.CreateCommand):
   _support_multiple_rate_limit_keys = True
   _support_header_action = True
   _support_fairshare = False
-  _support_net_lb = True
   _support_recaptcha_options = True
 
   @classmethod
@@ -293,7 +281,6 @@ class CreateBeta(base.CreateCommand):
         support_header_action=cls._support_header_action,
         support_fairshare=cls._support_fairshare,
         support_multiple_rate_limit_keys=cls._support_multiple_rate_limit_keys,
-        support_net_lb=cls._support_net_lb,
         support_recaptcha_options=cls._support_recaptcha_options,
     )
 
@@ -306,7 +293,6 @@ class CreateBeta(base.CreateCommand):
         support_header_action=self._support_header_action,
         support_fairshare=self._support_fairshare,
         support_multiple_rate_limit_keys=self._support_multiple_rate_limit_keys,
-        support_net_lb=self._support_net_lb,
         support_recaptcha_options=self._support_recaptcha_options,
     )
 
@@ -336,7 +322,6 @@ class CreateAlpha(base.CreateCommand):
   _support_multiple_rate_limit_keys = True
   _support_header_action = True
   _support_fairshare = True
-  _support_net_lb = True
   _support_recaptcha_options = True
 
   @classmethod
@@ -348,7 +333,6 @@ class CreateAlpha(base.CreateCommand):
         support_header_action=cls._support_header_action,
         support_fairshare=cls._support_fairshare,
         support_multiple_rate_limit_keys=cls._support_multiple_rate_limit_keys,
-        support_net_lb=cls._support_net_lb,
         support_recaptcha_options=cls._support_recaptcha_options,
     )
 
@@ -361,6 +345,5 @@ class CreateAlpha(base.CreateCommand):
         support_header_action=self._support_header_action,
         support_fairshare=self._support_fairshare,
         support_multiple_rate_limit_keys=self._support_multiple_rate_limit_keys,
-        support_net_lb=self._support_net_lb,
         support_recaptcha_options=self._support_recaptcha_options,
     )

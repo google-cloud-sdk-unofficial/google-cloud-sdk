@@ -62,7 +62,7 @@ class Create(base.CreateCommand):
     flags.EXTERNAL_URI_FLAG.AddToParser(parser)
     flags.SOURCE_PROPERTIES_FLAG.AddToParser(parser)
     flags.STATE_FLAG.AddToParser(parser)
-    flags.CreateEventTimeFlag(True).AddToParser(parser)
+    flags.EVENT_TIME_FLAG_REQUIRED.AddToParser(parser)
 
     parser.add_argument(
         "--category",

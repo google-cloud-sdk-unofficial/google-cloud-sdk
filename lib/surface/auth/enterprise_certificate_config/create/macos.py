@@ -53,5 +53,5 @@ class CreateMacOSConfig(base.CreateCommand):
 
   def Run(self, args):
     enterprise_certificate_config.create_config(
-        args, enterprise_certificate_config.ConfigType.KEYCHAIN
+        enterprise_certificate_config.ConfigType.KEYCHAIN, **vars(args)
     )

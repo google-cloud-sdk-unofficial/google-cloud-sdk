@@ -106,13 +106,15 @@ class Update(base.UpdateCommand):
     )
 
     parser.add_argument(
-        '--secondary-worker-required-registration-fraction',
+        '--min-secondary-worker-fraction',
         help=(
-            'The fraction of secondary worker nodes to successfully report '
-            'for cluster create/update success. Defaults to 0.0001.'
+            'Minimum fraction of new secondary worker nodes added in a scale up'
+            ' update operation, required to update the cluster. If it is not'
+            ' met, cluster updation will rollback the addition of secondary'
+            ' workers. Must be a decimal value between 0 and 1. Defaults to'
+            ' 0.0001.'
         ),
         type=float,
-        hidden=True,
     )
 
     _AddAlphaArguments(parser, cls.ReleaseTrack())
@@ -197,12 +199,12 @@ class Update(base.UpdateCommand):
           'config.secondary_worker_config.num_instances')
       has_changes = True
 
-    if args.secondary_worker_required_registration_fraction is not None:
+    if args.min_secondary_worker_fraction is not None:
       if cluster_config.secondaryWorkerConfig is None:
         worker_config = dataproc.messages.InstanceGroupConfig(
             startupConfig=dataproc.messages.StartupConfig(
                 requiredRegistrationFraction=(
-                    args.secondary_worker_required_registration_fraction
+                    args.min_secondary_worker_fraction
                 )
             )
         )
@@ -211,7 +213,7 @@ class Update(base.UpdateCommand):
             numInstances=num_secondary_workers,
             startupConfig=dataproc.messages.StartupConfig(
                 requiredRegistrationFraction=(
-                    args.secondary_worker_required_registration_fraction
+                    args.min_secondary_worker_fraction
                 )
             ),
         )

@@ -51,7 +51,7 @@ def _CommonArgs(parser):
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
                     base.ReleaseTrack.GA)
 class Apply(base.UpdateCommand):
-  """Applies a yaml configuration containing Deliver Pipeline(s), Target(s) declarative definitions."""
+  """Applies a yaml configuration containing Delivery Pipeline(s), Target(s) and Automation(s) declarative definitions."""
 
   detailed_help = _DETAILED_HELP
 

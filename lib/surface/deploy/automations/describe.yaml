@@ -1,7 +1,6 @@
-- release_tracks: [ALPHA]
-  hidden: true
+- release_tracks: [ALPHA, BETA, GA]
   help_text:
-    brief: Show details for a automation.
+    brief: Show details for an Automation.
     description: Show details for a specified automation.
     examples: |
       To show details about an automation 'test-automation', for delivery pipeline 'test-pipeline', in region 'us-central1', run:

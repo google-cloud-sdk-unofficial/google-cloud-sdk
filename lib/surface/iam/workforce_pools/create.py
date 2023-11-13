@@ -40,12 +40,12 @@ class Create(base.CreateCommand):
 
   ## EXAMPLES
 
-  The following command creates a workforce pool with ID ``my-workforce-pool''
+  The following command creates a workforce pool with ID `my-workforce-pool`
   in the organization ``12345'':
 
     $ {command} my-workforce-pool --organization=12345
 
-  The following command creates a workforce pool with ID ``my-workforce-pool''
+  The following command creates a workforce pool with ID `my-workforce-pool`
   with explicit values for all required and optional parameters:
 
     $ {command} my-workforce-pool --organization=12345 --location=global
@@ -99,18 +99,20 @@ class Create(base.CreateCommand):
     parser.add_argument(
         '--allowed-services',
         action='append',
-        type=arg_parsers.ArgDict(spec={'domain': str}, required_keys=['domain']),
-        hidden=True,
+        type=arg_parsers.ArgDict(
+            spec={'domain': str}, required_keys=['domain']
+        ),
         help=(
-            'Services allowed for web sign-in with the workforce pool. If not'
-            ' set, by default all the services are allowed.'
+            'Services allowed for web sign-in with the workforce pool. The flag'
+            ' accepts multiple values with the key as `domain` and value as the'
+            ' domain of the service allowed for web sign-in. If not set, by'
+            ' default all the services are allowed.'
         ),
     )
     parser.add_argument(
         '--disable-programmatic-signin',
         action='store_true',
-        hidden=True,
-        help='Disable programatic sign-in for workforce pool users.',
+        help='Disable programmatic sign-in for workforce pool users.',
     )
     base.ASYNC_FLAG.AddToParser(parser)
 

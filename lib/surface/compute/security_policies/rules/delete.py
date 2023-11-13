@@ -142,13 +142,10 @@ class DeleteGA(base.DeleteCommand):
 
   @classmethod
   def Args(cls, parser):
-    DeleteHelper.Args(
-        parser)
+    DeleteHelper.Args(parser)
 
   def Run(self, args):
-    return DeleteHelper.Run(
-        self.ReleaseTrack(),
-        args)
+    return DeleteHelper.Run(self.ReleaseTrack(), args)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)

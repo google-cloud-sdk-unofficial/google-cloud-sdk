@@ -37,21 +37,38 @@ from googlecloudsdk.core.util import encoding
 from six.moves import http_client as httplib
 
 
-SERIAL_PORT_GATEWAY = 'ssh-serialport.googleapis.com'
+SERIAL_PORT_HELP = (
+    'https://cloud.google.com/compute/docs/'
+    'instances/interacting-with-serial-console'
+)
 CONNECTION_PORT = '9600'
-HOST_KEY_URL = ('https://cloud-certs.storage.googleapis.com/'
-                'google-cloud-serialport-host-key.pub')
-DEFAULT_HOST_KEY = ('ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDkOOCaBZVTxzvjJ7+7'
-                    'YonnZOwIZ2Z7azwPC+oHbBCbWNBZAwzs63JQlHLibHG6NiNunFwP/lWs'
-                    '5SpLx5eEdxGL+WQmvtldnBdqJzNE1UHrxPDegysCXxn1fT7KELpLozLh'
-                    'vlfSnWJXbFbDrGB0bTv2U373Zo3BL9XTRf3qthdDEMF3GouUH8pGvitH'
-                    'lwcwO1ulpVB0sTIdB7Bu+YPuo1XSuL2n3tXA9n9S+7kQCoyuXodeBpJo'
-                    'JxzdJeoQXAepLrLA7nl6jRiYZyic0WJeSJm7vmvl1VDAGkyXloNEhBnv'
-                    'oQFQl5aCwcS8UQnzzwMDflQ+JgsynYN08dLIRGcwkJe9')
-SERIAL_PORT_HELP = ('https://cloud.google.com/compute/docs/'
-                    'instances/interacting-with-serial-console')
+
+# Global ISPAC Constants and Templates
+
+SERIAL_PORT_GATEWAY = 'ssh-serialport.googleapis.com'
+HOST_KEY_URL = (
+    'https://cloud-certs.storage.googleapis.com/'
+    'google-cloud-serialport-host-key.pub'
+)
+DEFAULT_HOST_KEY = (
+    'ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDkOOCaBZVTxzvjJ7+7'
+    'YonnZOwIZ2Z7azwPC+oHbBCbWNBZAwzs63JQlHLibHG6NiNunFwP/lWs'
+    '5SpLx5eEdxGL+WQmvtldnBdqJzNE1UHrxPDegysCXxn1fT7KELpLozLh'
+    'vlfSnWJXbFbDrGB0bTv2U373Zo3BL9XTRf3qthdDEMF3GouUH8pGvitH'
+    'lwcwO1ulpVB0sTIdB7Bu+YPuo1XSuL2n3tXA9n9S+7kQCoyuXodeBpJo'
+    'JxzdJeoQXAepLrLA7nl6jRiYZyic0WJeSJm7vmvl1VDAGkyXloNEhBnv'
+    'oQFQl5aCwcS8UQnzzwMDflQ+JgsynYN08dLIRGcwkJe9'
+)
+
+# Regional ISPAC Constants and Templates
+
+REGIONAL_SERIAL_PORT_GATEWAY_TEMPLATE = '{0}-ssh-serialport.googleapis.com'
+REGIONAL_HOST_KEY_URL_TEMPLATE = (
+    'https://www.gstatic.com/vm_serial_port/{0}/{0}.pub'
+)
 
 
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
 class ConnectToSerialPort(base.Command):
   """Connect to the serial port of an instance.
 
@@ -77,6 +94,7 @@ class ConnectToSerialPort(base.Command):
   """
 
   category = base.TOOLS_CATEGORY
+  enable_regional_support = False
 
   @staticmethod
   def Args(parser):
@@ -126,12 +144,6 @@ class ConnectToSerialPort(base.Command):
         replay-lines=N. See {0} for additional options.
         """.format(SERIAL_PORT_HELP))
 
-    parser.add_argument(
-        '--serial-port-gateway',
-        hidden=True,
-        help='THIS ARGUMENT NEEDS HELP TEXT.',
-        default=SERIAL_PORT_GATEWAY)
-
     flags.AddZoneFlag(
         parser,
         resource_type='instance',
@@ -158,39 +170,60 @@ class ConnectToSerialPort(base.Command):
       remote.user = ssh.GetDefaultSshUsername()
     public_key = ssh_helper.keys.GetPublicKey().ToEntry(include_comment=True)
 
-    hostname = '[{0}]:{1}'.format(args.serial_port_gateway, CONNECTION_PORT)
+    if self.enable_regional_support and args.location:
+      gateway = REGIONAL_SERIAL_PORT_GATEWAY_TEMPLATE.format(args.location)
+      hostkey_url = REGIONAL_HOST_KEY_URL_TEMPLATE.format(args.location)
+      log.info(
+          'Connecting to serialport via server in {0}'.format(args.location)
+      )
+    else:
+      gateway = SERIAL_PORT_GATEWAY
+      hostkey_url = HOST_KEY_URL
+    hostname = '[{0}]:{1}'.format(gateway, CONNECTION_PORT)
     # Update google_compute_known_hosts file with published host key
-    if args.serial_port_gateway == SERIAL_PORT_GATEWAY:
-      http_client = http.Http()
-      http_response = http_client.request(HOST_KEY_URL)
-      known_hosts = ssh.KnownHosts.FromDefaultFile()
-      if int(http_response[0]['status']) == httplib.OK:
-        host_key = encoding.Decode(http_response[1]).strip()
-        known_hosts.Add(hostname, host_key, overwrite=True)
-        known_hosts.Write()
-      elif known_hosts.ContainsAlias(hostname):
-        log.warning(
-            'Unable to download and update Host Key for [{0}] from [{1}]. '
-            'Attempting to connect using existing Host Key in [{2}]. If '
-            'the connection fails, please try again to update the Host '
-            'Key.'.format(SERIAL_PORT_GATEWAY, HOST_KEY_URL,
-                          known_hosts.file_path))
-      else:
-        known_hosts.Add(hostname, DEFAULT_HOST_KEY)
-        known_hosts.Write()
-        log.warning(
-            'Unable to download Host Key for [{0}] from [{1}]. To ensure '
-            'the security of the SSH connection, gcloud will attempt to '
-            'connect using a hard-coded Host Key value. If the connection '
-            'fails, please try again. If the problem persists, try '
-            'updating gcloud and connecting again.'
-            .format(SERIAL_PORT_GATEWAY, HOST_KEY_URL))
+    http_client = http.Http()
+    known_hosts = ssh.KnownHosts.FromDefaultFile()
+    http_response = http_client.request(hostkey_url)
+
+    if int(http_response[0]['status']) == httplib.OK:
+      host_key = encoding.Decode(http_response[1]).strip()
+      known_hosts.Add(hostname, host_key, overwrite=True)
+      known_hosts.Write()
+      log.info('Successfully acquired hostkey for {0}'.format(gateway))
+    elif known_hosts.ContainsAlias(hostname):
+      log.warning(
+          'Unable to download and update Host Key for [{0}] from [{1}]. '
+          'Attempting to connect using existing Host Key in [{2}]. If '
+          'the connection fails, please try again to update the Host '
+          'Key.'.format(gateway, hostkey_url, known_hosts.file_path)
+      )
+    elif gateway == SERIAL_PORT_GATEWAY:
+      known_hosts.Add(hostname, DEFAULT_HOST_KEY)
+      known_hosts.Write()
+      log.warning(
+          'Unable to download Host Key for [{0}] from [{1}]. To ensure '
+          'the security of the SSH connection, gcloud will attempt to '
+          'connect using a hard-coded Host Key value. If the connection '
+          'fails, please try again. If the problem persists, try '
+          'updating gcloud and connecting again.'.format(gateway, hostkey_url)
+      )
+    else:
+      log.warning(
+          'Unable to download Host Key for [{0}] from [{1}]. gcloud does not'
+          'have a fallback Host Key and will therefore terminate the '
+          'connection attempt. If the problem persists, try '
+          'updating gcloud and connecting again.'.format(gateway, hostkey_url)
+      )
+      # We shouldn't allow a connection without the correct host key
+      return
+
     instance_ref = instance_flags.SSH_INSTANCE_RESOLVER.ResolveResources(
         [remote.host],
         compute_scope.ScopeEnum.ZONE,
         args.zone,
         holder.resources,
-        scope_lister=instance_flags.GetInstanceZoneScopeLister(client))[0]
+        scope_lister=instance_flags.GetInstanceZoneScopeLister(client),
+    )[0]
     instance = ssh_helper.GetInstance(client, instance_ref)
     project = ssh_helper.GetProject(client, instance_ref.project)
     expiration, expiration_micros = ssh_utils.GetSSHKeyExpirationFromArgs(args)
@@ -213,7 +246,7 @@ class ConnectToSerialPort(base.Command):
       for k, v in args.extra_args.items():
         constructed_username_list.append('{0}={1}'.format(k, v))
     serial_user = '.'.join(constructed_username_list)
-    serial_remote = ssh.Remote(args.serial_port_gateway, user=serial_user)
+    serial_remote = ssh.Remote(gateway, user=serial_user)
 
     identity_file = ssh_helper.keys.key_file
     options = ssh_helper.GetConfig(hostname, strict_host_key_checking='yes')
@@ -242,3 +275,42 @@ class ConnectToSerialPort(base.Command):
       return_code = 255
     if return_code:
       sys.exit(return_code)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class ConnectToSerialPortAlpha(ConnectToSerialPort):
+  """Connect to the serial port of an instance.
+
+  *{command}* allows users to connect to, and interact with, a VM's
+  virtual serial port using ssh as the secure, authenticated transport
+  protocol.
+
+  The user must first enable serial port access to a given VM by setting
+  the 'serial-port-enable=true' metadata key-value pair. Setting
+  'serial-port-enable' on the project-level metadata enables serial port
+  access to all VMs in the project.
+
+  This command uses the same SSH key pair as the `gcloud compute ssh`
+  command and also ensures that the user's public SSH key is present in
+  the project's metadata. If the user does not have a public SSH key,
+  one is generated using ssh-keygen.
+
+  ## EXAMPLES
+  To connect to the serial port of the instance 'my-instance' in zone
+  'us-central1-f', run:
+
+    $ {command} my-instance --zone=us-central1-f
+  """
+  enable_regional_support = True
+
+  @classmethod
+  def Args(cls, parser):
+    super(ConnectToSerialPortAlpha, cls).Args(parser)
+
+    parser.add_argument(
+        '--location',
+        help="""\
+        If provided, the region in which the serial console connection will
+        occur. Must be the region of the VM to connect to.
+        """,
+    )

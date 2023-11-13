@@ -65,5 +65,5 @@ class CreateWindowsConfig(base.CreateCommand):
 
   def Run(self, args):
     enterprise_certificate_config.create_config(
-        args, enterprise_certificate_config.ConfigType.MYSTORE
+        enterprise_certificate_config.ConfigType.MYSTORE, **vars(args)
     )

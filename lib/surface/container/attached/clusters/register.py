@@ -25,6 +25,7 @@ import json
 from googlecloudsdk.api_lib.container.gkemulticloud import attached as api_util
 from googlecloudsdk.api_lib.container.gkemulticloud import locations as loc_util
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.container.attached import cluster_util
 from googlecloudsdk.command_lib.container.attached import flags as attached_flags
 from googlecloudsdk.command_lib.container.attached import resource_args
 from googlecloudsdk.command_lib.container.fleet import kube_util
@@ -34,7 +35,9 @@ from googlecloudsdk.command_lib.container.gkemulticloud import endpoint_util
 from googlecloudsdk.command_lib.container.gkemulticloud import errors
 from googlecloudsdk.command_lib.container.gkemulticloud import flags
 from googlecloudsdk.command_lib.run import pretty_print
+from googlecloudsdk.core import exceptions
 from googlecloudsdk.core.console import console_io
+from googlecloudsdk.core.util import retry
 import six
 
 # Command needs to be in one line for the docgen tool to format properly.
@@ -94,7 +97,6 @@ class Register(base.CreateCommand):
       cluster_ref = resource_args.ParseAttachedClusterResourceArg(args)
       manifest = self._get_manifest(args, cluster_ref)
 
-      create_resp = ''
       with kube_util.KubernetesClient(
           kubeconfig=attached_flags.GetKubeconfig(args),
           context=attached_flags.GetContext(args),
@@ -112,10 +114,25 @@ class Register(base.CreateCommand):
           if not flags.GetValidateOnly(args):
             pretty_print.Info('Creating in-cluster install agent')
             kube_client.Apply(manifest)
+            retryer = retry.Retryer(
+                max_retrials=constants.ATTACHED_INSTALL_AGENT_VERIFY_RETRIES
+            )
+            retryer.RetryOnException(
+                cluster_util.verify_install_agent_deployed,
+                args=(kube_client,),
+                sleep_ms=constants.ATTACHED_INSTALL_AGENT_VERIFY_WAIT_MS,
+            )
 
-          create_resp = self._create_attached_cluster(
-              args, kube_client, manifest, cluster_ref
-          )
+          create_resp = self._create_attached_cluster(args, cluster_ref)
+        except retry.RetryException as e:
+          self._remove_manifest(args, kube_client, manifest)
+          # last_result[1] holds information about the last exception the
+          # retryer caught. last_result[1][1] holds the exception type and
+          # last_result[1][2] holds the exception value. The retry exception is
+          # not useful to users, so reraise whatever error caused it to timeout.
+          if e.last_result[1]:
+            exceptions.reraise(e.last_result[1][1], e.last_result[1][2])
+          raise
         except console_io.OperationCancelledError:
           msg = """To manually clean up the in-cluster install agent, run:
 
@@ -157,7 +174,7 @@ AFTER the attach operation completes.
     jwks = kube_client.GetOpenIDKeyset()
     return issuer_url, jwks
 
-  def _create_attached_cluster(self, args, kube_client, manifest, cluster_ref):
+  def _create_attached_cluster(self, args, cluster_ref):
     cluster_client = api_util.ClustersClient()
     message = command_util.ClusterMessage(
         cluster_ref.attachedClustersId,

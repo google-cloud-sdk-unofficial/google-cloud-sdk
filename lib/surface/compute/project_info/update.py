@@ -42,7 +42,7 @@ class Update(base.UpdateCommand):
     if cls._support_managed_protection_tier:
       parser.add_argument(
           '--managed-protection-tier',
-          choices=['CA_STANDARD', 'CAMP_PLUS_MONTHLY'],
+          choices=['CA_STANDARD', 'CAMP_PLUS_PAYGO'],
           type=lambda x: x.upper(),
           help='The maanged protection tier to assign to the project.',
       )

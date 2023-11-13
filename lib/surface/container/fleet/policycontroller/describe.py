@@ -19,15 +19,11 @@ from __future__ import division
 from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.container.fleet.policycontroller import protos
-from googlecloudsdk.calliope import base as calliope_base
 from googlecloudsdk.command_lib.container.fleet.features import base
 from googlecloudsdk.command_lib.container.fleet.policycontroller import command
 from googlecloudsdk.command_lib.container.fleet.policycontroller import flags
 
 
-@calliope_base.ReleaseTracks(
-    calliope_base.ReleaseTrack.ALPHA, calliope_base.ReleaseTrack.BETA
-)
 class Describe(base.DescribeCommand, command.PocoCommand):
   """Describe Policy Controller feature.
 

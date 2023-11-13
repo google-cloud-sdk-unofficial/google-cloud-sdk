@@ -15,8 +15,10 @@
 
 """Implementation of delete-link command for insights dataset config."""
 
+from googlecloudsdk.api_lib.storage import insights_api
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.storage.insights.dataset_configs import resource_args
+from googlecloudsdk.core import log
 
 
 @base.Hidden
@@ -37,7 +39,7 @@ class DeleteLink(base.Command):
 
       To delete a link for the same dataset config with fully specified name:
 
-          $ {command} /projects/foo/locations/us-central1/datasetConfigs/my-config
+          $ {command} projects/foo/locations/us-central1/datasetConfigs/my-config
       """,
   }
 
@@ -46,5 +48,16 @@ class DeleteLink(base.Command):
     resource_args.add_dataset_config_resource_arg(parser, 'to delete link')
 
   def Run(self, args):
-    # TODO(b/277753872): Add when API function available.
-    raise NotImplementedError
+    client = insights_api.InsightsApi()
+    dataset_config_relative_name = (
+        args.CONCEPTS.dataset_config.Parse().RelativeName()
+    )
+
+    client.delete_dataset_config_link(
+        dataset_config_relative_name,
+    )
+    log.status.Print(
+        'Deleted dataset config link for dataset config: {}'.format(
+            dataset_config_relative_name
+        )
+    )

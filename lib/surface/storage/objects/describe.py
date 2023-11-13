@@ -62,10 +62,8 @@ class Describe(base.DescribeCommand):
     flags.add_encryption_flags(parser, command_only_reads_data=True)
     flags.add_fetch_encrypted_object_hashes_flag(parser, is_list=False)
     flags.add_raw_display_flag(parser)
+    flags.add_soft_deleted_flag(parser)
     gsutil_json_printer.GsutilJsonPrinter.Register()
-
-    if cls.ReleaseTrack() == base.ReleaseTrack.ALPHA:
-      flags.add_soft_deleted_flag(parser)
 
   def Run(self, args):
     encryption_util.initialize_key_store(args)
@@ -84,7 +82,7 @@ class Describe(base.DescribeCommand):
         url.object_name,
         generation=url.generation,
         fields_scope=cloud_api.FieldsScope.FULL,
-        soft_deleted=getattr(args, 'soft_deleted', False),
+        soft_deleted=args.soft_deleted,
     )
 
     if (args.fetch_encrypted_object_hashes and
@@ -101,7 +99,7 @@ class Describe(base.DescribeCommand):
           fields_scope=cloud_api.FieldsScope.FULL,
           generation=resource.generation,
           request_config=request_config,
-          soft_deleted=getattr(args, 'soft_deleted', False),
+          soft_deleted=args.soft_deleted,
       )
     else:
       final_resource = resource

@@ -12,6 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
 """Command to Get a Cloud Security Command Center mute config."""
 
 from __future__ import absolute_import
@@ -27,6 +28,7 @@ from googlecloudsdk.core import properties
 from googlecloudsdk.generated_clients.apis.securitycenter.v1 import securitycenter_v1_messages as messages
 
 
+# TODO: b/308476775 - Migrate Get command usage to Describe
 @base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.ALPHA)
 class Get(base.Command):
   """Get a Cloud Security Command Center mute config."""

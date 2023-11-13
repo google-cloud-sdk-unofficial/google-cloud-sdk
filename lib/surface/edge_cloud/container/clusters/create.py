@@ -141,4 +141,5 @@ class CreateAlpha(Create):
     Create.Args(parser)
     container_flags.AddClusterIPV6CIDR(parser)
     container_flags.AddServicesIPV6CIDR(parser)
+    container_flags.AddExternalLbIpv6AddressPools(parser)
     container_flags.AddOfflineRebootTtL(parser)

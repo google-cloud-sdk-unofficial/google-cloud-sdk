@@ -1,7 +1,7 @@
 #
 # This file is part of pyasn1 software.
 #
-# Copyright (c) 2005-2017, Ilya Etingof <etingof@gmail.com>
+# Copyright (c) 2005-2019, Ilya Etingof <etingof@gmail.com>
 # License: http://snmplabs.com/pyasn1/license.html
 #
 from pyasn1 import error
@@ -25,7 +25,7 @@ class BooleanDecoder(decoder.AbstractSimpleDecoder):
         byte = oct2int(head[0])
         # CER/DER specifies encoding of TRUE as 0xFF and FALSE as 0x0, while
         # BER allows any non-zero value as TRUE; cf. sections 8.2.2. and 11.1 
-        # in http://www.itu.int/ITU-T/studygroups/com17/languages/X.690-0207.pdf
+        # in https://www.itu.int/ITU-T/studygroups/com17/languages/X.690-0207.pdf
         if byte == 0xff:
             value = 1
         elif byte == 0x00:
@@ -87,7 +87,7 @@ class Decoder(decoder.Decoder):
 #:
 #: Raises
 #: ------
-#: :py:class:`~pyasn1.error.PyAsn1Error`
+#: ~pyasn1.error.PyAsn1Error, ~pyasn1.error.SubstrateUnderrunError
 #:     On decoding errors
 #:
 #: Examples

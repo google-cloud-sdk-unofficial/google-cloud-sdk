@@ -29,7 +29,7 @@ from googlecloudsdk.command_lib.spanner import flags
 from googlecloudsdk.command_lib.spanner import resource_args
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Create(base.CreateCommand):
   """Create a Cloud Spanner instance."""
 
@@ -59,7 +59,79 @@ class Create(base.CreateCommand):
     resource_args.AddExpireBehaviorArg(parser)
     resource_args.AddInstanceTypeArg(parser)
     flags.AddCapacityArgsForInstance(
-        require_all_autoscaling_args=True, parser=parser
+        require_all_autoscaling_args=True,
+        hide_autoscaling_args=True,
+        parser=parser,
+    )
+    base.ASYNC_FLAG.AddToParser(parser)
+    parser.display_info.AddCacheUpdater(flags.InstanceCompleter)
+
+  def Run(self, args):
+    """This is what gets called when the user runs this command.
+
+    Args:
+      args: an argparse namespace. All the arguments that were provided to this
+        command invocation.
+
+    Returns:
+      Some value that we want to have printed later.
+    """
+    instance_type = resource_args.GetInstanceType(args)
+    expire_behavior = resource_args.GetExpireBehavior(args)
+
+    op = instances.Create(
+        instance=args.instance,
+        config=args.config,
+        description=args.description,
+        nodes=args.nodes,
+        processing_units=args.processing_units,
+        autoscaling_min_nodes=args.autoscaling_min_nodes,
+        autoscaling_max_nodes=args.autoscaling_max_nodes,
+        autoscaling_min_processing_units=args.autoscaling_min_processing_units,
+        autoscaling_max_processing_units=args.autoscaling_max_processing_units,
+        autoscaling_high_priority_cpu_target=args.autoscaling_high_priority_cpu_target,
+        autoscaling_storage_target=args.autoscaling_storage_target,
+        instance_type=instance_type,
+        expire_behavior=expire_behavior,
+    )
+    if args.async_:
+      return op
+    instance_operations.Await(op, 'Creating instance')
+
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class BetaCreate(base.CreateCommand):
+  """Create a Cloud Spanner instance."""
+
+  detailed_help = {
+      'EXAMPLES':
+          textwrap.dedent("""\
+        To create a Cloud Spanner instance, run:
+
+          $ {command} my-instance-id --config=regional-us-east1 --description=my-instance-display-name --nodes=3
+        """),
+  }
+
+  @staticmethod
+  def Args(parser):
+    """Args is called by calliope to gather arguments for this command.
+
+    Please add arguments in alphabetical order except for no- or a clear-
+    pair for that argument which can follow the argument itself.
+    Args:
+      parser: An argparse parser that you can use to add arguments that go
+          on the command line after this command. Positional arguments are
+          allowed.
+    """
+    flags.Instance().AddToParser(parser)
+    flags.Config().AddToParser(parser)
+    flags.Description().AddToParser(parser)
+    resource_args.AddExpireBehaviorArg(parser)
+    resource_args.AddInstanceTypeArg(parser)
+    flags.AddCapacityArgsForInstance(
+        require_all_autoscaling_args=True,
+        hide_autoscaling_args=False,
+        parser=parser,
     )
     base.ASYNC_FLAG.AddToParser(parser)
     parser.display_info.AddCacheUpdater(flags.InstanceCompleter)
@@ -112,7 +184,9 @@ class AlphaCreate(Create):
     resource_args.AddInstanceTypeArg(parser)
     resource_args.AddDefaultStorageTypeArg(parser)
     flags.AddCapacityArgsForInstance(
-        require_all_autoscaling_args=True, parser=parser
+        require_all_autoscaling_args=True,
+        hide_autoscaling_args=False,
+        parser=parser,
     )
     base.ASYNC_FLAG.AddToParser(parser)
     parser.display_info.AddCacheUpdater(flags.InstanceCompleter)

@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Command to describe a Service Project in the Project/Location."""
+"""Command to list Service Projects."""
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
@@ -45,7 +45,7 @@ _FORMAT = """
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class List(base.ListCommand):
-  """List Service Projects."""
+  """List Apphub service projects."""
 
   detailed_help = _DETAILED_HELP
 

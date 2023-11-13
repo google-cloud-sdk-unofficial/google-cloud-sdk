@@ -316,7 +316,7 @@ class Create(base.CreateCommand):
             'The Certificate Authority ID of the CA to issue the subordinate '
             'CA certificate from. This ID is optional. If ommitted, '
             'any available ENABLED CA in the issuing CA pool will be chosen.'),
-        required=False).AddToParser(issuing_resource_group)
+        required=False).AddToParser(parser)
 
     concept_parsers.ConceptParser([
         presentation_specs.ResourcePresentationSpec(

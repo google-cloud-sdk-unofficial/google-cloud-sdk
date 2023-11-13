@@ -118,6 +118,7 @@ def _CommonArgs(
     support_source_instant_snapshot=False,
     support_enable_confidential_compute=False,
     support_specific_then_x_affinity=False,
+    support_ipv6_only=False,
 ):
   """Register parser args common to all tracks."""
   metadata_utils.AddMetadataArgs(parser)
@@ -143,7 +144,8 @@ def _CommonArgs(
       instance_create=True,
       support_network_queue_count=support_network_queue_count,
       support_network_attachments=support_network_attachments,
-      support_vlan_nic=support_vlan_nic)
+      support_vlan_nic=support_vlan_nic,
+      support_ipv6_only=support_ipv6_only)
   instances_flags.AddAcceleratorArgs(parser)
   instances_flags.AddMachineTypeArgs(parser)
   instances_flags.AddMaintenancePolicyArgs(
@@ -185,7 +187,7 @@ def _CommonArgs(
   instances_flags.AddResourceManagerTagsArgs(parser)
   if support_numa_node_count:
     instances_flags.AddNumaNodeCountArgs(parser)
-  instances_flags.AddStackTypeArgs(parser)
+  instances_flags.AddStackTypeArgs(parser, support_ipv6_only=support_ipv6_only)
   instances_flags.AddIpv6NetworkTierArgs(parser)
   instances_flags.AddNetworkPerformanceConfigsArgs(parser)
   instances_flags.AddProvisioningModelVmArgs(parser)
@@ -874,6 +876,7 @@ class CreateAlpha(CreateBeta):
   _support_partner_metadata = True
   _support_enable_confidential_compute = True
   _support_specific_then_x_affinity = True
+  _support_ipv6_only = True
 
   @classmethod
   def Args(cls, parser):
@@ -901,6 +904,7 @@ class CreateAlpha(CreateBeta):
         support_source_instant_snapshot=cls._support_source_instant_snapshot,
         support_enable_confidential_compute=cls._support_enable_confidential_compute,
         support_specific_then_x_affinity=cls._support_specific_then_x_affinity,
+        support_ipv6_only=cls._support_ipv6_only,
     )
 
     CreateAlpha.SOURCE_INSTANCE_TEMPLATE = instances_flags.MakeSourceInstanceTemplateArg(
@@ -929,6 +933,7 @@ class CreateAlpha(CreateBeta):
     instances_flags.AddIPv6AddressAlphaArgs(parser)
     instances_flags.AddIPv6PrefixLengthAlphaArgs(parser)
     instances_flags.AddPerformanceMonitoringUnitArgs(parser)
+    instances_flags.AddAvailabilityDomainAgrs(parser)
     partner_metadata_utils.AddPartnerMetadataArgs(parser)
 
 

@@ -150,7 +150,6 @@ def RunBaseSwitchoverCommand(args, allow_mysql):
   )
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class SwitchoverAlpha(base.Command):
   """Switches over a Cloud SQL instance to one of its replicas.
@@ -176,7 +175,6 @@ class SwitchoverAlpha(base.Command):
     AddBaseArgs(parser)
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class SwitchoverBeta(base.Command):
   """Switches over a Cloud SQL instance to one of its replicas.

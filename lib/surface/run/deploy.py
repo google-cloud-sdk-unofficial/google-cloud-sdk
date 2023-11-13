@@ -14,11 +14,6 @@
 # limitations under the License.
 """Deploy a container to Cloud Run."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-from __future__ import unicode_literals
-
 import enum
 import os.path
 
@@ -31,6 +26,7 @@ from googlecloudsdk.command_lib.artifacts import docker_util
 from googlecloudsdk.command_lib.run import artifact_registry
 from googlecloudsdk.command_lib.run import config_changes
 from googlecloudsdk.command_lib.run import connection_context
+from googlecloudsdk.command_lib.run import container_parser
 from googlecloudsdk.command_lib.run import flags
 from googlecloudsdk.command_lib.run import messages_util
 from googlecloudsdk.command_lib.run import platforms
@@ -84,9 +80,11 @@ def ContainerArgGroup(release_track=base.ReleaseTrack.GA):
   """Returns an argument group with all per-container deploy args."""
 
   help_text = """
-    If the --container or --remove-containers flag is specified the following
-    arguments may only be specified after a --container flag.
-    """
+Container Flags
+
+  The following flags apply to a single container. If the --container flag is specified these flags may only be
+  specified after a --container flag. Otherwise they will apply to the primary ingress container.
+"""
   group = base.ArgumentGroup(help=help_text)
   group.AddArgument(flags.SourceAndImageFlags())
   group.AddArgument(flags.PortArg())
@@ -426,13 +424,16 @@ class Deploy(base.Command):
 class BetaDeploy(Deploy):
   """Create or update a Cloud Run service."""
 
-  @staticmethod
-  def Args(parser):
-    Deploy.CommonArgs(parser)
+  @classmethod
+  def Args(cls, parser):
+    Deploy.CommonArgs(parser, False)
 
     # Flags specific to managed CR
     managed_group = flags.GetManagedArgGroup(parser)
     flags.AddVpcNetworkGroupFlagsForUpdate(managed_group)
+    flags.RemoveContainersFlag().AddToParser(managed_group)
+    container_args = ContainerArgGroup(cls.ReleaseTrack())
+    container_parser.AddContainerFlags(parser, container_args)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -450,11 +451,9 @@ class AlphaDeploy(BetaDeploy):
     flags.AddRuntimeFlag(managed_group)
     flags.AddServiceMinInstancesFlag(managed_group)
     flags.AddVolumesFlags(managed_group, cls.ReleaseTrack())
-    # pylint: disable=protected-access
-    flags.ContainerFlags(
-        parser.parser._calliope_command,
-        ContainerArgGroup(cls.ReleaseTrack()),
-    ).AddToParser(managed_group)
+    flags.RemoveContainersFlag().AddToParser(managed_group)
+    container_args = ContainerArgGroup(cls.ReleaseTrack())
+    container_parser.AddContainerFlags(parser, container_args)
 
 
 AlphaDeploy.__doc__ = Deploy.__doc__

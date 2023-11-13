@@ -41,3 +41,8 @@
       required: true
       help_text: |
         Type of the schema.
+      choices:
+      - arg_value: avro
+        enum_value: AVRO
+      - arg_value: protocol-buffer
+        enum_value: PROTOCOL_BUFFER

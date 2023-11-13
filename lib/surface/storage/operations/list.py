@@ -67,6 +67,10 @@ class List(base.ListCommand):
         ),
     )
 
+    # Unnecessary and unimplemented flags built into `ListCommand` base class.
+    base.PAGE_SIZE_FLAG.RemoveFromParser(parser)
+    base.URI_FLAG.RemoveFromParser(parser)
+
   def Run(self, args):
     url_object = storage_url.storage_url_from_string(args.parent_resource_name)
     if isinstance(url_object, storage_url.CloudUrl):

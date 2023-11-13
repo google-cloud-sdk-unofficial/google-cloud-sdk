@@ -19,15 +19,11 @@ from __future__ import division
 from __future__ import unicode_literals
 
 from apitools.base.protorpclite import messages
-from googlecloudsdk.calliope import base as calliope_base
 from googlecloudsdk.command_lib.container.fleet.features import base
 from googlecloudsdk.command_lib.container.fleet.policycontroller import command
 from googlecloudsdk.command_lib.container.fleet.policycontroller import flags
 
 
-@calliope_base.ReleaseTracks(
-    calliope_base.ReleaseTrack.ALPHA, calliope_base.ReleaseTrack.BETA
-)
 class Update(base.UpdateCommand, command.PocoCommand):
   """Updates the configuration of Policy Controller Feature.
 

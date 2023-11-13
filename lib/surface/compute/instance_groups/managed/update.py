@@ -387,7 +387,7 @@ class UpdateBeta(UpdateGA):
   @classmethod
   def Args(cls, parser):
     super(UpdateBeta, cls).Args(parser)
-
+    managed_flags.AddStandbyPolicyFlags(parser)
     managed_flags.AddMigDefaultActionOnVmFailure(parser)
 
   def _CreateInstanceGroupManagerPatch(self, args, igm_ref, igm_resource,
@@ -396,6 +396,17 @@ class UpdateBeta(UpdateGA):
                                          self)._CreateInstanceGroupManagerPatch(
                                              args, igm_ref, igm_resource,
                                              client, holder)
+    standby_policy = managed_instance_groups_utils.CreateStandbyPolicy(
+        client.messages,
+        args.standby_policy_initial_delay,
+        args.standby_policy_mode,
+    )
+    if standby_policy:
+      patch_instance_group_manager.standbyPolicy = standby_policy
+    if args.suspended_size:
+      patch_instance_group_manager.targetSuspendedSize = args.suspended_size
+    if args.stopped_size:
+      patch_instance_group_manager.targetStoppedSize = args.stopped_size
     return patch_instance_group_manager
 
 UpdateBeta.detailed_help = UpdateGA.detailed_help
@@ -408,23 +419,11 @@ class UpdateAlpha(UpdateBeta):
   @classmethod
   def Args(cls, parser):
     super(UpdateAlpha, cls).Args(parser)
-    managed_flags.AddStandbyPolicyFlags(parser)
 
   def _CreateInstanceGroupManagerPatch(self, args, igm_ref, igm_resource,
                                        client, holder):
     igm_patch = super(UpdateAlpha, self)._CreateInstanceGroupManagerPatch(
         args, igm_ref, igm_resource, client, holder)
-    standby_policy = managed_instance_groups_utils.CreateStandbyPolicy(
-        client.messages,
-        args.standby_policy_initial_delay,
-        args.standby_policy_mode,
-    )
-    if standby_policy:
-      igm_patch.standbyPolicy = standby_policy
-    if args.suspended_size:
-      igm_patch.targetSuspendedSize = args.suspended_size
-    if args.stopped_size:
-      igm_patch.targetStoppedSize = args.stopped_size
 
     return igm_patch
 

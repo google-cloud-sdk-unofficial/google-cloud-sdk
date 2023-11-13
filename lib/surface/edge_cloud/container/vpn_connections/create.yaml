@@ -56,15 +56,12 @@
         The project of the VPC network. Required if the project of VPC network differs from the
         project of the cluster.
     - arg_name: router
-      release_tracks: [ALPHA]
       api_field: vpnConnection.router
       help_text: |
         Name of the Cloud Router to use when creating the VPN connection. This Cloud Router must be
         in the same region as the cluster and connected to the provided VPC network. If not
         provided, a service-managed Cloud Router will either be created or reused to create the VPN
         connection.
-      GA:
-        hidden: true
     labels:
       api_field: vpnConnection.labels
 

@@ -20,7 +20,6 @@ from __future__ import unicode_literals
 import argparse
 
 from googlecloudsdk.api_lib.container.fleet.policycontroller import protos
-from googlecloudsdk.calliope import base as calliope_base
 from googlecloudsdk.command_lib.container.fleet.features import base
 from googlecloudsdk.command_lib.container.fleet.policycontroller import command
 from googlecloudsdk.command_lib.container.fleet.policycontroller import deployment_configs as deployment
@@ -28,9 +27,6 @@ from googlecloudsdk.command_lib.container.fleet.policycontroller import flags
 from googlecloudsdk.core import exceptions
 
 
-@calliope_base.ReleaseTracks(
-    calliope_base.ReleaseTrack.ALPHA, calliope_base.ReleaseTrack.BETA
-)
 class Remove(base.UpdateCommand, command.PocoCommand):
   """Removes configuration properties from Policy Controller components.
 

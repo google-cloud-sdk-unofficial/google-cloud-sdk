@@ -14,16 +14,12 @@
 # limitations under the License.
 """Command for updating env vars and other configuration info."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-from __future__ import unicode_literals
-
 from googlecloudsdk.api_lib.run import k8s_object
 from googlecloudsdk.api_lib.run import traffic
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.run import config_changes
 from googlecloudsdk.command_lib.run import connection_context
+from googlecloudsdk.command_lib.run import container_parser
 from googlecloudsdk.command_lib.run import exceptions
 from googlecloudsdk.command_lib.run import flags
 from googlecloudsdk.command_lib.run import messages_util
@@ -227,13 +223,16 @@ class Update(base.Command):
 class BetaUpdate(Update):
   """Update Cloud Run environment variables and other configuration settings."""
 
-  @staticmethod
-  def Args(parser):
-    Update.CommonArgs(parser)
+  @classmethod
+  def Args(cls, parser):
+    Update.CommonArgs(parser, add_container_args=False)
 
     # Flags specific to managed CR
     managed_group = flags.GetManagedArgGroup(parser)
     flags.AddVpcNetworkGroupFlagsForUpdate(managed_group)
+    flags.RemoveContainersFlag().AddToParser(managed_group)
+    container_args = ContainerArgGroup(cls.ReleaseTrack())
+    container_parser.AddContainerFlags(parser, container_args)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -252,11 +251,9 @@ class AlphaUpdate(BetaUpdate):
     flags.AddDescriptionFlag(managed_group)
     flags.AddServiceMinInstancesFlag(managed_group)
     flags.AddVolumesFlags(managed_group, cls.ReleaseTrack())
-    # pylint: disable=protected-access
-    flags.ContainerFlags(
-        parser.parser._calliope_command,
-        ContainerArgGroup(cls.ReleaseTrack()),
-    ).AddToParser(managed_group)
+    flags.RemoveContainersFlag().AddToParser(managed_group)
+    container_args = ContainerArgGroup(cls.ReleaseTrack())
+    container_parser.AddContainerFlags(parser, container_args)
 
 
 AlphaUpdate.__doc__ = Update.__doc__

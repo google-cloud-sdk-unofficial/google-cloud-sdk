@@ -15,9 +15,31 @@
 
 """Implementation of create command for insights dataset config."""
 
+import csv
+
+from apitools.base.py import exceptions as apitools_exceptions
+from googlecloudsdk.api_lib.storage import insights_api
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.storage import flags
+from googlecloudsdk.core import log
+from googlecloudsdk.core import properties
+from googlecloudsdk.core.util import files
+
+
+def _get_source_projects_list(source_projects_file):
+  with files.FileReader(source_projects_file) as f:
+    reader = csv.reader(f)
+
+    source_projects_list = []
+    for row in reader:
+      if (len(row)) > 1:
+        raise ValueError(
+            'CSV file contains multiple rows with multiple columns.'
+        )
+      source_projects_list.append(int(row[0]))
+
+    return source_projects_list
 
 
 @base.Hidden
@@ -31,18 +53,18 @@ class Create(base.Command):
       """,
       'EXAMPLES': """
       To create a dataset config with config name as "my-config" in location
-      "us-central1" and project numbers "project_num1" and "project_num2"
-      which comes under organization "google":
+      "us-central1" and project numbers "123456" and "456789" belonging to
+      organization number "54321":
 
          $ {command} my-config --location=us-central1
-         --source-projects=project_num1,project_num2 --organization=google
+         --source-projects=123456,456789 --organization=54321 --retention-period-days=1
 
       To create the dataset config, that automatically addes new buckets into
       config:
 
          $ {command} my-config --location=us-central1
-         --source-projects=project_num1,project_num2 --organization=google
-         --auto-add-new-buckets
+         --source-projects=123456,456789 --organization=54321
+         --auto-add-new-buckets --retention-period-days=1
       """,
   }
 
@@ -63,7 +85,7 @@ class Create(base.Command):
     )
     source_projects_group.add_argument(
         '--source-projects',
-        type=arg_parsers.ArgList(),
+        type=arg_parsers.ArgList(element_type=int),
         metavar='SOURCE_PROJECT_NUMBERS',
         help='List of source project numbers.',
     )
@@ -71,11 +93,11 @@ class Create(base.Command):
         '--source-projects-file',
         type=str,
         metavar='SOURCE_PROJECT_NUMBERS_IN_FILE',
-        help='File containing list of source project numbers.',
+        help='CSV file containing source project numbers, one per line.',
     )
     parser.add_argument(
         '--organization',
-        type=str,
+        type=int,
         required=True,
         metavar='SOURCE_ORG_NUMBER',
         help='Provide the source organization number.',
@@ -166,9 +188,46 @@ class Create(base.Command):
             ' defined in the given config.'
         ),
     )
+
     flags.add_dataset_config_location_flag(parser)
     flags.add_dataset_config_create_update_flags(parser)
 
   def Run(self, args):
-    # TODO(b/277754365): Add when API function available.
-    raise NotImplementedError
+
+    if args.source_projects is not None:
+      source_projects_list = args.source_projects
+    else:
+      source_projects_list = _get_source_projects_list(
+          args.source_projects_file
+      )
+
+    api_client = insights_api.InsightsApi()
+
+    try:
+      dataset_config = api_client.create_dataset_config(
+          dataset_config_name=args.DATASET_CONFIG_NAME,
+          location=args.location,
+          destination_project=properties.VALUES.core.project.Get(),
+          source_projects_list=source_projects_list,
+          organization_number=args.organization,
+          include_buckets_name_list=args.include_bucket_names,
+          include_buckets_prefix_regex_list=args.include_bucket_prefix_regexes,
+          exclude_buckets_name_list=args.exclude_bucket_names,
+          exclude_buckets_prefix_regex_list=args.exclude_bucket_prefix_regexes,
+          include_source_locations=args.include_source_locations,
+          exclude_source_locations=args.exclude_source_locations,
+          auto_add_new_buckets=args.auto_add_new_buckets,
+          retention_period=args.retention_period_days,
+          skip_verification=args.skip_verification,
+          identity_type=args.identity,
+          description=args.description,
+      )
+      log.status.Print('Created dataset config: {}'.format(dataset_config.name))
+    except apitools_exceptions.HttpBadRequestError:
+      log.status.Print(
+          'We caught an exception while trying to create the'
+          ' dataset-configuration.\nPlease check that the flags are set with'
+          ' valid values. For example, config name must start with an'
+          " alphanumeric value and only contain '_' as a special character"
+      )
+      raise

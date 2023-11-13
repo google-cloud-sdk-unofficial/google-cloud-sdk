@@ -167,9 +167,7 @@ class Ls(base.Command):
     flags.add_encryption_flags(parser, command_only_reads_data=True)
     flags.add_fetch_encrypted_object_hashes_flag(parser, is_list=True)
     flags.add_read_paths_from_stdin_flag(parser)
-
-    if cls.ReleaseTrack() == base.ReleaseTrack.ALPHA:
-      flags.add_soft_delete_flags(parser)
+    flags.add_soft_delete_flags(parser)
 
   def Run(self, args):
     """Command execution logic."""

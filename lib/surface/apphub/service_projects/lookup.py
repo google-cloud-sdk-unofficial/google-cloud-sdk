@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Command to lookup Service Project in the Project/Location."""
+"""Command to lookup a Service Project."""
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
@@ -33,7 +33,7 @@ _DETAILED_HELP = {
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Lookup(base.DescribeCommand):
-  """Lookup Service Projects."""
+  """Lookup an Apphub service project."""
 
   detailed_help = _DETAILED_HELP
 

@@ -17,15 +17,11 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
-from googlecloudsdk.calliope import base as calliope_base
 from googlecloudsdk.command_lib.container.fleet.features import base
 from googlecloudsdk.command_lib.container.fleet.policycontroller import command
 from googlecloudsdk.command_lib.container.fleet.policycontroller import content
 
 
-@calliope_base.ReleaseTracks(
-    calliope_base.ReleaseTrack.ALPHA, calliope_base.ReleaseTrack.BETA
-)
 class Disable(base.UpdateCommand, command.PocoCommand):
   """Disable template installation for Policy Controller content.
 

@@ -21,6 +21,7 @@ from __future__ import unicode_literals
 from googlecloudsdk.api_lib.cloudbuild import cloudbuild_util
 from googlecloudsdk.api_lib.cloudbuild import trigger_config as trigger_utils
 from googlecloudsdk.calliope import base
+from googlecloudsdk.calliope import exceptions as c_exceptions
 from googlecloudsdk.command_lib.cloudbuild import resource_args
 from googlecloudsdk.command_lib.util.concepts import concept_parsers
 from googlecloudsdk.core import log
@@ -68,7 +69,7 @@ class UpdatePubsub(base.UpdateCommand):
     trigger_utils.AddBuildConfigArgsForUpdate(
         flag_config, has_file_source=True)
     trigger_utils.AddRepoSourceForUpdate(flag_config)
-    trigger_utils.AddFilterArg(flag_config)
+    trigger_utils.AddFilterArgForUpdate(flag_config)
 
   def ParseTriggerFromFlags(self, args, old_trigger, update_mask):
     """Parses arguments into a build trigger.
@@ -100,11 +101,18 @@ class UpdatePubsub(base.UpdateCommand):
         update_mask,
         default_image,
         has_repo_source=True,
-        has_file_source=True)
+        has_file_source=True,
+    )
 
-    if args.subscription_filter:
-      trigger.filter = args.subscription_filter
-
+    trigger.filter = args.subscription_filter
+    if args.subscription_filter is not None and not args.subscription_filter:
+      raise c_exceptions.InvalidArgumentException(
+          '--subscription-filter',
+          'cannot update subscription filter to be empty; please use'
+          ' `--clear-subscription-filter` to clear subscription filter.',
+      )
+    elif args.clear_subscription_filter:
+      trigger.filter = ''
     return trigger
 
   def Run(self, args):

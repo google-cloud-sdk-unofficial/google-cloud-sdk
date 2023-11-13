@@ -61,7 +61,6 @@ class DescribeHelper(object):
   def Run(cls, release_track, args):
     """Validates arguments and describes a security policy rule."""
     holder = base_classes.ComputeApiHolder(release_track)
-    ref = None
     if args.security_policy:
       security_policy_ref = cls.SECURITY_POLICY_ARG.ResolveAsResource(
           args,
@@ -133,9 +132,7 @@ class DescribeGA(base.DescribeCommand):
     DescribeHelper.Args(parser)
 
   def Run(self, args):
-    return DescribeHelper.Run(
-        self.ReleaseTrack(),
-        args)
+    return DescribeHelper.Run(self.ReleaseTrack(), args)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)

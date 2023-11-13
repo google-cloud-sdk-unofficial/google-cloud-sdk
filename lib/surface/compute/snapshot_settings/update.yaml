@@ -1,4 +1,4 @@
-- release_tracks: [ALPHA, BETA]
+- release_tracks: [ALPHA, BETA, GA]
   help_text:
     brief: "Update snapshot settings."
     description: "Update the snapshot settings of a project."
@@ -36,6 +36,12 @@
       modify_request_hooks:
       - googlecloudsdk.api_lib.compute.snapshot_settings.modify_request_hooks:validate_single_location
       - googlecloudsdk.api_lib.compute.snapshot_settings.modify_request_hooks:maybe_add_locations:version=beta
+      - googlecloudsdk.api_lib.compute.snapshot_settings.modify_request_hooks:adjust_storage_location_update_mask
+    GA:
+      api_version: v1
+      modify_request_hooks:
+      - googlecloudsdk.api_lib.compute.snapshot_settings.modify_request_hooks:validate_single_location
+      - googlecloudsdk.api_lib.compute.snapshot_settings.modify_request_hooks:maybe_add_locations:version=v1
       - googlecloudsdk.api_lib.compute.snapshot_settings.modify_request_hooks:adjust_storage_location_update_mask
 
     collection: compute.snapshotSettings

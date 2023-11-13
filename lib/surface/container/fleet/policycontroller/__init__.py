@@ -21,15 +21,10 @@ from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
+)
 class Policycontroller(base.Group):
-  """Manage Policy Controller Feature."""
-
-  category = base.COMPUTE_CATEGORY
-
-
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class PolicycontrollerBeta(base.Group):
   """Manage Policy Controller Feature."""
 
   category = base.COMPUTE_CATEGORY

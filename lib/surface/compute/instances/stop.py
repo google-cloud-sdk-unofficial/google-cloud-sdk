@@ -73,13 +73,29 @@ class Stop(base.SilentCommand):
         type=lambda x: ast.literal_eval(x.lower().capitalize()),
         help=('If set to true, local SSD data is discarded.'))
     base.ASYNC_FLAG.AddToParser(parser)
+    if cls.ReleaseTrack() == base.ReleaseTrack.ALPHA:
+      parser.add_argument(
+          '--no-graceful-shutdown',
+          default=None,
+          action='store_true',
+          help='If specified, skips graceful shutdown.',
+      )
 
   def _CreateStopRequest(self, client, instance_ref, args):
+    if self.ReleaseTrack() == base.ReleaseTrack.ALPHA:
+      return client.messages.ComputeInstancesStopRequest(
+          discardLocalSsd=args.discard_local_ssd,
+          instance=instance_ref.Name(),
+          project=instance_ref.project,
+          zone=instance_ref.zone,
+          noGracefulShutdown=args.no_graceful_shutdown,
+      )
     return client.messages.ComputeInstancesStopRequest(
         discardLocalSsd=args.discard_local_ssd,
         instance=instance_ref.Name(),
         project=instance_ref.project,
-        zone=instance_ref.zone)
+        zone=instance_ref.zone,
+    )
 
   def _CreateRequests(self, client, instance_refs, args):
     return [(client.apitools_client.instances, 'Stop',

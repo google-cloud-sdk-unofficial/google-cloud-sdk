@@ -70,7 +70,7 @@ class Update(base.UpdateCommand):
   def Args(parser):
     # Add flags and finding positional argument.
     flags.CreateFindingArg().AddToParser(parser)
-    flags.CreateEventTimeFlag().AddToParser(parser)
+    flags.EVENT_TIME_FLAG_NOT_REQUIRED.AddToParser(parser)
     flags.EXTERNAL_URI_FLAG.AddToParser(parser)
     flags.SOURCE_PROPERTIES_FLAG.AddToParser(parser)
     flags.STATE_FLAG.AddToParser(parser)

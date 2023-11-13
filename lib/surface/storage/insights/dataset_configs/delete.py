@@ -15,8 +15,11 @@
 
 """Implementation of delete command for insights dataset config."""
 
+from googlecloudsdk.api_lib.storage import insights_api
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.storage.insights.dataset_configs import resource_args
+from googlecloudsdk.core import log
+from googlecloudsdk.core.console import console_io
 
 
 @base.Hidden
@@ -37,7 +40,7 @@ class Delete(base.Command):
 
       To delete the same dataset config with fully specified name:
 
-          ${command} /projects/foo/locations/us-central1/datasetConfigs/my-config
+          ${command} projects/foo/locations/us-central1/datasetConfigs/my-config
 
       To delete the same dataset config and unlink it from the BigQuery
       instance:
@@ -66,5 +69,32 @@ class Delete(base.Command):
     )
 
   def Run(self, args):
-    # TODO(b/277753062): Add when API function available.
-    raise NotImplementedError
+    client = insights_api.InsightsApi()
+    dataset_config_relative_name = (
+        args.CONCEPTS.dataset_config.Parse().RelativeName()
+    )
+
+    if not args.force:
+      message = 'You are about to delete dataset config: {}'.format(
+          dataset_config_relative_name
+      )
+      console_io.PromptContinue(
+          message=message, throw_if_unattended=True, cancel_on_no=True
+      )
+
+    if args.auto_delete_link:
+      client.delete_dataset_config_link(
+          dataset_config_relative_name,
+      )
+      log.status.Print(
+          'Deleted dataset config link for dataset config: {}'.format(
+              dataset_config_relative_name
+          )
+      )
+
+    client.delete_dataset_config(
+        dataset_config_relative_name,
+    )
+    log.status.Print(
+        'Deleted dataset config: {}'.format(dataset_config_relative_name)
+    )

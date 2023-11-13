@@ -114,25 +114,24 @@ class Create(base.Command):
               ' dual-region. Only regions within the same continent are or will'
               ' ever be valid. Invalid location pairs (such as mixed-continent,'
               ' or with unsupported regions) will return an error.'))
+    parser.add_argument(
+        '--soft-delete-duration',
+        type=arg_parsers.Duration(),
+        help=(
+            'Duration to retain soft-deleted objects. For example, "2w1d" is'
+            ' two weeks and one day. The presence of this flag creates a'
+            ' bucket with a soft delete policy enabled, meaning deleted'
+            ' objects can be restored if requested within the inputted'
+            ' duration. See `gcloud topic datetimes` for more information on'
+            ' the duration format.'
+        ),
+    )
     flags.add_additional_headers_flag(parser)
     flags.add_autoclass_flags(parser)
     flags.add_recovery_point_objective_flag(parser)
 
     if cls.ReleaseTrack() == base.ReleaseTrack.ALPHA:
       flags.add_enable_per_object_retention_flag(parser)
-      parser.add_argument(
-          '--soft-delete-duration',
-          type=arg_parsers.Duration(),
-          hidden=True,
-          help=(
-              'Duration to retain soft-deleted objects. For example, "2w1d" is'
-              ' two weeks and one day. The presence of this flag creates a'
-              ' bucket with a soft delete policy enabled, meaning deleted'
-              ' objects can be restored if requested within the inputted'
-              ' duration. See `gcloud topic datetimes` for more information on'
-              ' the duration format.'
-          ),
-      )
 
   def Run(self, args):
     for url_string in args.url:

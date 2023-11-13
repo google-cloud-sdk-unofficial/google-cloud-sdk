@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Command to delete a Service Project in the Project/Location."""
+"""Command to remove a Service Project."""
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
@@ -34,7 +34,7 @@ _DETAILED_HELP = {
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Remove(base.DeleteCommand):
-  """Remove Service Projects."""
+  """Remove an Apphub service project."""
 
   detailed_help = _DETAILED_HELP
 

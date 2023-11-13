@@ -138,6 +138,34 @@ class Update(base.UpdateCommand):
           messages.NetworkRoutingConfig.RoutingModeValueValuesEnum(
               args.bgp_routing_mode.upper()))
 
+    if getattr(args, 'bgp_best_path_selection_mode', None) is not None:
+      should_patch = True
+      if getattr(network_resource, 'routingConfig', None) is None:
+        network_resource.routingConfig = messages.NetworkRoutingConfig()
+      network_resource.routingConfig.bgpBestPathSelectionMode = (
+          messages.NetworkRoutingConfig.BgpBestPathSelectionModeValueValuesEnum(
+              args.bgp_best_path_selection_mode
+          )
+      )
+
+    if getattr(args, 'bgp_bps_always_compare_med', None) is not None:
+      should_patch = True
+      if getattr(network_resource, 'routingConfig', None) is None:
+        network_resource.routingConfig = messages.NetworkRoutingConfig()
+      network_resource.routingConfig.bgpAlwaysCompareMed = (
+          args.bgp_bps_always_compare_med
+      )
+
+    if getattr(args, 'bgp_bps_inter_region_cost', None) is not None:
+      should_patch = True
+      if getattr(network_resource, 'routingConfig', None) is None:
+        network_resource.routingConfig = messages.NetworkRoutingConfig()
+      network_resource.routingConfig.bgpInterRegionCost = (
+          messages.NetworkRoutingConfig.BgpInterRegionCostValueValuesEnum(
+              args.bgp_bps_inter_region_cost
+          )
+      )
+
     if self._support_firewall_order and args.network_firewall_policy_enforcement_order:
       should_patch = True
       network_resource.networkFirewallPolicyEnforcementOrder = (
@@ -201,7 +229,8 @@ class UpdateAlpha(Update):
     cls.NETWORK_ARG = flags.NetworkArgument()
     cls.NETWORK_ARG.AddArgument(parser)
     base.ASYNC_FLAG.AddToParser(parser)
-    network_utils.AddUpdateArgsAlpha(parser)
+    network_utils.AddUpdateArgs(parser)
+    network_utils.AddBgpBestPathSelectionArgGroup(parser)
 
 
 Update.detailed_help = {

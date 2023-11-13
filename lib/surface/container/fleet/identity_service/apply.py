@@ -57,20 +57,33 @@ class Apply(base.UpdateCommand):
         hidden=True,
         required=False,
     )
-
     per_member_config_args = command_args.add_group(required=False, mutex=False)
     resources.AddMembershipResourceArg(per_member_config_args)
-    per_member_config_args.add_argument(
+
+    per_member_config_source = per_member_config_args.add_group(
+        mutex=True, required=True
+    )
+    per_member_config_source.add_argument(
         '--config',
         type=str,
         help='The path to an identity-service.yaml config file.',
-        required=True,
+    )
+    per_member_config_source.add_argument(
+        '--origin',
+        choices=['fleet'],
+        type=str,
+        help=(
+            'Set the configuration of a membership to the default fleet'
+            ' configuration.'
+        ),
+        hidden=True,
     )
 
   def Run(self, args):
     patch = self.messages.Feature()
     update_mask = []
-    if args.config:
+
+    if args.config or args.origin:
       self.preparePerMemberConfigPatch(args, patch, update_mask)
 
     if args.fleet_default_member_config:
@@ -99,29 +112,32 @@ class Apply(base.UpdateCommand):
 
   def preparePerMemberConfigPatch(self, args, patch, update_mask):
     # Get the membership the user is attempting to apply the configuration to.
-    # This will prompt the user to select a membership from the ones available
-    # in the fleet if none is provided.
+    # If no membership is specified, and there is a single membership available
+    # in the fleet, it would be automatically selected.
+    # If no membership is specified, and there are multiple memberships
+    # available in the fleet, the user would be prompted to select
+    # one from the ones available in the fleet.
     membership = base.ParseMembership(
         args, prompt=True, autoselect=True, search=True
     )
+    membership_spec = self.messages.MembershipFeatureSpec()
+    if args.origin:
+      membership_spec.origin = self.messages.Origin(
+          type=self.messages.Origin.TypeValueValuesEnum('FLEET')
+      )
+    else:
+      # Load the config YAML file.
+      loaded_config = file_parsers.YamlConfigFile(
+          file_path=args.config, item_type=file_parsers.LoginConfigObject
+      )
 
-    # Load the config YAML file.
-    loaded_config = file_parsers.YamlConfigFile(
-        file_path=args.config, item_type=file_parsers.LoginConfigObject
-    )
+      # Create a new identity service feature spec.
+      member_config = utils.parse_config(loaded_config, self.messages)
+      membership_spec.identityservice = member_config
 
-    # Create a new identity service feature spec.
-    member_config = utils.parse_config(loaded_config, self.messages)
-
-    # UpdateFeature uses the patch method to update the member_configs map, so
-    # there's no need to fetch the existing feature spec.
-    specs = {
-        membership: self.messages.MembershipFeatureSpec(
-            identityservice=member_config
-        )
-    }
-
-    # Add the newly prepared membership specs to the feature patch and update
+    # Add the newly prepared membershipSpec to the feature patch and update
     # `update mask`.
-    patch.membershipSpecs = self.hubclient.ToMembershipSpecs(specs)
+    patch.membershipSpecs = self.hubclient.ToMembershipSpecs(
+        {membership: membership_spec}
+    )
     update_mask.append('membership_specs')

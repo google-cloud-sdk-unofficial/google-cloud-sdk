@@ -59,8 +59,8 @@ class Delete(base.DeleteCommand):
   instances.
   """
 
-  @staticmethod
-  def Args(parser):
+  @classmethod
+  def Args(cls, parser):
     auto_delete_override = parser.add_mutually_exclusive_group()
 
     auto_delete_override.add_argument(
@@ -90,6 +90,14 @@ class Delete(base.DeleteCommand):
         """)
 
     flags.INSTANCES_ARG.AddArgument(parser, operation_type='delete')
+
+    if cls.ReleaseTrack() == base.ReleaseTrack.ALPHA:
+      parser.add_argument(
+          '--no-graceful-shutdown',
+          action='store_true',
+          default=None,
+          help='If specified, skips graceful shutdown.',
+      )
 
     parser.display_info.AddCacheUpdater(completers.InstancesCompleter)
 
@@ -210,8 +218,14 @@ class Delete(base.DeleteCommand):
 
     delete_requests = []
     for ref in refs:
-      request_protobuf = client.messages.ComputeInstancesDeleteRequest(
-          **ref.AsDict())
+      if self.ReleaseTrack() == base.ReleaseTrack.ALPHA:
+        request_protobuf = client.messages.ComputeInstancesDeleteRequest(
+            **ref.AsDict(), noGracefulShutdown=args.no_graceful_shutdown
+        )
+      else:
+        request_protobuf = client.messages.ComputeInstancesDeleteRequest(
+            **ref.AsDict()
+        )
       delete_requests.append((client.apitools_client.instances, 'Delete',
                               request_protobuf))
 

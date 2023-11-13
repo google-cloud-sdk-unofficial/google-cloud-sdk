@@ -101,20 +101,24 @@ class SignAndCreate(base.CreateCommand):
 
           This parameter is only necessary if the `--public-key-id-override`
           flag was provided when this KMS key was added to the Attestor."""))
-    parser.add_argument(
+    group = parser.add_group(mutex=True, help='exclusive flags')
+    group.add_argument(
         '--validate',
         action='store_true',
         default=False,
         help=textwrap.dedent("""\
           Whether to validate that the Attestation can be verified by the
           provided Attestor.
-        """))
-    parser.add_argument(
+        """),
+    )
+    group.add_argument(
         '--pae-encode-payload',
         action='store_true',
         default=False,
         help=textwrap.dedent("""\
           Whether to pae-encode the payload before signing.
+          Note: currently validation is not supported for attestations with
+          pae-encoded payload.
         """),
     )
     parser.add_argument(

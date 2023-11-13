@@ -410,33 +410,12 @@ class CreateBeta(CreateGA):
   @classmethod
   def Args(cls, parser):
     super(CreateBeta, cls).Args(parser)
-
+    managed_flags.AddStandbyPolicyFlags(parser)
     managed_flags.AddMigDefaultActionOnVmFailure(parser)
 
   def _CreateInstanceGroupManager(self, args, group_ref, template_ref, client,
                                   holder):
     instance_group_manager = super(CreateBeta,
-                                   self)._CreateInstanceGroupManager(
-                                       args, group_ref, template_ref, client,
-                                       holder)
-    return instance_group_manager
-
-
-CreateBeta.detailed_help = CreateGA.detailed_help
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class CreateAlpha(CreateBeta):
-  """Create Compute Engine managed instance groups."""
-
-  @classmethod
-  def Args(cls, parser):
-    super(CreateAlpha, cls).Args(parser)
-    managed_flags.AddStandbyPolicyFlags(parser)
-
-  def _CreateInstanceGroupManager(self, args, group_ref, template_ref, client,
-                                  holder):
-    instance_group_manager = super(CreateAlpha,
                                    self)._CreateInstanceGroupManager(
                                        args, group_ref, template_ref, client,
                                        holder)
@@ -451,6 +430,26 @@ class CreateAlpha(CreateBeta):
       instance_group_manager.targetSuspendedSize = args.suspended_size
     if args.stopped_size:
       instance_group_manager.targetStoppedSize = args.stopped_size
+    return instance_group_manager
+
+
+CreateBeta.detailed_help = CreateGA.detailed_help
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class CreateAlpha(CreateBeta):
+  """Create Compute Engine managed instance groups."""
+
+  @classmethod
+  def Args(cls, parser):
+    super(CreateAlpha, cls).Args(parser)
+
+  def _CreateInstanceGroupManager(self, args, group_ref, template_ref, client,
+                                  holder):
+    instance_group_manager = super(CreateAlpha,
+                                   self)._CreateInstanceGroupManager(
+                                       args, group_ref, template_ref, client,
+                                       holder)
     return instance_group_manager
 
 
