@@ -102,7 +102,7 @@ def _SetFormat(namespace: parser_extensions.Namespace) -> None:
       'integration_name:label=NAME',
       'integration_type:label=TYPE',
       'region:label=REGION',
-      'services:label=SERVICE',
+      'services:label=BINDINGS',
   ]
   namespace.GetDisplayInfo().AddFormat(
       'table({columns})'.format(columns=','.join(columns))

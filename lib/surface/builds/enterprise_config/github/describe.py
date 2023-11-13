@@ -27,7 +27,7 @@ from googlecloudsdk.core import resources
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class DescribeAlpha(base.DescribeCommand):
-  """Describe a github enterprise config used by Google Cloud Build.
+  """Describe a github enterprise config used by Cloud Build.
   """
 
   @staticmethod

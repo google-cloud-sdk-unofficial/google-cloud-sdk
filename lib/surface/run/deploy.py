@@ -140,6 +140,7 @@ class Deploy(base.Command):
     flags.AddCmekKeyFlag(managed_group)
     flags.AddCmekKeyRevocationActionTypeFlag(managed_group)
     flags.AddCpuThrottlingFlag(managed_group)
+    flags.AddCustomAudiencesFlag(managed_group)
     flags.AddDescriptionFlag(managed_group)
     flags.AddEgressSettingsFlag(managed_group)
     flags.AddEncryptionKeyShutdownHoursFlag(managed_group)
@@ -431,7 +432,6 @@ class BetaDeploy(Deploy):
 
     # Flags specific to managed CR
     managed_group = flags.GetManagedArgGroup(parser)
-    flags.AddCustomAudiencesFlag(managed_group)
     flags.AddVpcNetworkGroupFlagsForUpdate(managed_group)
 
 
@@ -445,7 +445,6 @@ class AlphaDeploy(BetaDeploy):
 
     # Flags specific to managed CR
     managed_group = flags.GetManagedArgGroup(parser)
-    flags.AddCustomAudiencesFlag(managed_group)
     flags.AddVpcNetworkGroupFlagsForUpdate(managed_group)
     flags.AddDefaultUrlFlag(managed_group)
     flags.AddRuntimeFlag(managed_group)

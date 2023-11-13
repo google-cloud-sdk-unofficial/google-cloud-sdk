@@ -138,6 +138,10 @@ class Update(base.UpdateCommand):
           args.CONCEPTS.pubsub_export_topic.Parse().RelativeName()
       )
 
+    pubsub_export_topic_region = getattr(
+        args, 'pubsub_export_topic_region', None
+    )
+
     enable_exactly_once_delivery = getattr(args, 'enable_exactly_once_delivery',
                                            None)
 
@@ -173,6 +177,7 @@ class Update(base.UpdateCommand):
           clear_cloud_storage_config=clear_cloud_storage_config,
           clear_push_no_wrapper_config=clear_push_no_wrapper_config,
           pubsub_export_topic=pubsub_export_topic,
+          pubsub_export_topic_region=pubsub_export_topic_region,
           clear_pubsub_export_config=clear_pubsub_export_config,
       )
     except subscriptions.NoFieldsSpecifiedError:

@@ -29,7 +29,7 @@ from googlecloudsdk.core import resources
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class CreateAlpha(base.CreateCommand):
-  """Update a Bitbucket Server config for use by Google Cloud Build."""
+  """Update a Bitbucket Server config for use by Cloud Build."""
 
   @staticmethod
   def Args(parser):

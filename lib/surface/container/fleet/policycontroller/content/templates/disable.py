@@ -23,7 +23,6 @@ from googlecloudsdk.command_lib.container.fleet.policycontroller import command
 from googlecloudsdk.command_lib.container.fleet.policycontroller import content
 
 
-@calliope_base.Hidden
 @calliope_base.ReleaseTracks(
     calliope_base.ReleaseTrack.ALPHA, calliope_base.ReleaseTrack.BETA
 )
@@ -32,6 +31,12 @@ class Disable(base.UpdateCommand, command.PocoCommand):
 
   The Google-defined template library can be installed onto Policy Controller
   installations. This command removes that template library.
+
+  ## EXAMPLES
+
+  To remove the template library:
+
+    $ {command}
   """
 
   feature_name = 'policycontroller'

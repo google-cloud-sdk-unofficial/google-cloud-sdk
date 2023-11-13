@@ -29,7 +29,7 @@ from googlecloudsdk.core import resources
 
 
 class UpdatePubsub(base.UpdateCommand):
-  """Update a Pub/Sub trigger used by Google Cloud Build."""
+  """Update a Pub/Sub trigger used by Cloud Build."""
 
   detailed_help = {
       'EXAMPLES':

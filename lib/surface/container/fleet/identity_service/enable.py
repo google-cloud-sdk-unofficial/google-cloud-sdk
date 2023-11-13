@@ -42,19 +42,12 @@ class Enable(base.EnableCommand):
 
   feature_name = 'identityservice'
 
-  _fleet_default_member_config_supported_tracks = [
-      calliope_base.ReleaseTrack.ALPHA, calliope_base.ReleaseTrack.BETA
-  ]
-
   @classmethod
   def Args(cls, parser):
-    if cls.ReleaseTrack(
-    ) not in cls._fleet_default_member_config_supported_tracks:
-      return
-
     parser.add_argument(
         '--fleet-default-member-config',
         type=str,
+        hidden=cls.ReleaseTrack() is calliope_base.ReleaseTrack.GA,
         help="""The path to an identity-service.yaml identity configuration
         file. If specified, this configuration would be the default Identity
         Service configuration for all memberships in your fleet. It could be
@@ -68,15 +61,8 @@ class Enable(base.EnableCommand):
     )
 
   def Run(self, args):
-    empty_feature = self.messages.Feature()
-    if self.ReleaseTrack(
-    ) not in self._fleet_default_member_config_supported_tracks:
-      return self.Enable(empty_feature)
-
-    # run enable with an empty feature if the fleet_default_member_config
-    # is not specified
     if not args.fleet_default_member_config:
-      return self.Enable(empty_feature)
+      return self.Enable(self.messages.Feature())
 
     # Load config YAML file.
     loaded_config = file_parsers.YamlConfigFile(

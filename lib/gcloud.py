@@ -98,24 +98,31 @@ def gcloud_exception_handler():
   """Handles exceptions from gcloud to provide a helpful message."""
   try:
     yield
-  except Exception as err:  # pylint: disable=broad-except
+  except Exception:  # pylint: disable=broad-except
     # We want to catch *everything* here to display a nice message to the user
     # pylint:disable=g-import-not-at-top
     python_version = sys.version_info[:2]
     if (python_version < MIN_SUPPORTED_PY3_VERSION or
         python_version > MAX_SUPPORTED_PY3_VERSION):
+      valid_python_version = False
+      if python_version > MAX_SUPPORTED_PY3_VERSION:
+        support_message = 'not currently supported by gcloud'
+      else:
+        support_message = 'no longer supported by gcloud'
       error_message = (
-          'You are running gcloud with Python {python_version}, which is not '
-          'supported. Install a compatible version of Python '
-          '({min_python_version}-{max_python_version}) and set the '
-          'CLOUDSDK_PYTHON environment variable to point to it.\n\n'.format(
+          'You are running gcloud with Python {python_version}, which is '
+          '{support_message}.\nInstall a compatible version of Python '
+          '{min_python_version}-{max_python_version} and set the '
+          'CLOUDSDK_PYTHON environment variable to point to it.'.format(
               python_version=python_version_string(python_version),
+              support_message=support_message,
               min_python_version=python_version_string(
                   MIN_SUPPORTED_PY3_VERSION),
               max_python_version=python_version_string(
                   MAX_SUPPORTED_PY3_VERSION))
           )
     else:
+      valid_python_version = True
       error_message = (
           'This usually indicates corruption in your gcloud installation or '
           'problems with your Python interpreter.\n\n'
@@ -123,30 +130,28 @@ def gcloud_exception_handler():
           '{min_python_version}-{max_python_version} executable:\n    '
           '{executable}\n\nIf it is not, please set the CLOUDSDK_PYTHON '
           'environment variable to point to a working Python '
-          'executable.\n\n').format(
+          'executable.').format(
               executable=sys.executable,
               min_python_version=python_version_string(
                   MIN_SUPPORTED_PY3_VERSION),
               max_python_version=python_version_string(
                   MAX_SUPPORTED_PY3_VERSION))
 
-    import traceback
     # We DON'T want to suggest `gcloud components reinstall` here (ex. as
     # opposed to the similar message in gcloud_main.py), as we know that no
     # commands will work.
     sys.stderr.write(
         (
-            'ERROR: gcloud failed to load: {err}\n{traceback}\n\n'
-            '{error_message}If you are '
-            'still experiencing problems, please reinstall the '
+            'ERROR: gcloud failed to load. {error_message}\n\n'
+            'If you are still experiencing problems, please reinstall the '
             'Google Cloud CLI using the instructions here:\n    '
             'https://cloud.google.com/sdk/docs/install\n'
-        ).format(
-            err=err,
-            traceback='\n'.join(traceback.format_exc().splitlines()[2::2]),
-            error_message=error_message
-        )
+        ).format(error_message=error_message)
     )
+    if valid_python_version:
+      import traceback
+      sys.stderr.write('\n\n{}\n'.format(
+          '\n'.join(traceback.format_exc().splitlines())))
     sys.exit(1)
 
 

@@ -61,9 +61,7 @@ class Create(base.CreateCommand):
     flags.CreateFindingArg().AddToParser(parser)
     flags.EXTERNAL_URI_FLAG.AddToParser(parser)
     flags.SOURCE_PROPERTIES_FLAG.AddToParser(parser)
-    flags.CreateStateFlag(
-        """State is one of: [ACTIVE, INACTIVE]. STATE must be one of: active, inactive, state-unspecified."""
-    ).AddToParser(parser)
+    flags.STATE_FLAG.AddToParser(parser)
     flags.CreateEventTimeFlag(True).AddToParser(parser)
 
     parser.add_argument(

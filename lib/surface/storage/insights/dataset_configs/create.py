@@ -92,20 +92,50 @@ class Create(base.Command):
     include_exclude_buckets_group = parser.add_group(
         mutex=True,
         help=(
-            'Specify the list of buckets to be included or excluded.'
+            'Specify the list of buckets to be included or excluded, both a'
+            ' list of bucket names and prefix regexes can be specified for'
+            ' either include or exclude buckets.'
         ),
     )
-    include_exclude_buckets_group.add_argument(
-        '--include-buckets',
-        type=arg_parsers.ArgList(),
-        metavar='BUCKETS_NAMES_OR_REGEX',
-        help='List of buckets or regex to be included.',
+    include_buckets_group = include_exclude_buckets_group.add_group(
+        help='Specify the list of buckets to be included.',
     )
-    include_exclude_buckets_group.add_argument(
-        '--exclude-buckets',
+    include_buckets_group.add_argument(
+        '--include-bucket-names',
         type=arg_parsers.ArgList(),
-        metavar='BUCKETS_NAMES_OR_REGEX',
-        help='List of buckets or regex to be excluded.',
+        metavar='BUCKETS_NAMES',
+        help='List of bucket names be included.',
+    )
+    include_buckets_group.add_argument(
+        '--include-bucket-prefix-regexes',
+        type=arg_parsers.ArgList(),
+        metavar='BUCKETS_REGEXES',
+        help=(
+            'List of bucket prefix regexes to be included. The dataset config'
+            ' will include all the buckets that match with the prefix regex.'
+            ' Examples of allowed prefix regex patterns can be'
+            ' testbucket```*```, testbucket.```*```foo, testb.+foo```*``` . It'
+            ' should follow syntax specified in google/re2 on GitHub. '
+        ),
+    )
+    exclude_buckets_group = include_exclude_buckets_group.add_group(
+        help='Specify the list of buckets to be excluded.',
+    )
+    exclude_buckets_group.add_argument(
+        '--exclude-bucket-names',
+        type=arg_parsers.ArgList(),
+        metavar='BUCKETS_NAMES',
+        help='List of bucket names to be excluded.',
+    )
+    exclude_buckets_group.add_argument(
+        '--exclude-bucket-prefix-regexes',
+        type=arg_parsers.ArgList(),
+        metavar='BUCKETS_REGEXES',
+        help=(
+            'List of bucket prefix regexes to be excluded. Allowed regex'
+            ' patterns are similar to those for the'
+            ' --include-bucket-prefix-regexes flag.'
+        ),
     )
 
     include_exclude_locations_group = parser.add_group(

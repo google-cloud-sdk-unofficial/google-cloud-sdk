@@ -33,7 +33,7 @@ from googlecloudsdk.core import resources
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Create(base.CreateCommand):
-  """Create a worker pool for use by Google Cloud Build."""
+  """Create a worker pool for use by Cloud Build."""
 
   detailed_help = {
       'DESCRIPTION':
@@ -172,7 +172,7 @@ class Create(base.CreateCommand):
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class CreateBeta(Create):
-  """Create a worker pool for use by Google Cloud Build."""
+  """Create a worker pool for use by Cloud Build."""
 
   @staticmethod
   def Args(parser):
@@ -195,7 +195,7 @@ class CreateBeta(Create):
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class CreateAlpha(Create):
-  """Create a private or hybrid pool for use by Google Cloud Build."""
+  """Create a private or hybrid pool for use by Cloud Build."""
 
   detailed_help = {
       'DESCRIPTION':

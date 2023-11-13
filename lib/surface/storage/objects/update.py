@@ -49,8 +49,14 @@ def _get_task_iterator(urls, args):
   adds_or_removes_acls = user_request_args_factory.adds_or_removes_acls(
       user_request_args
   )
+  # TODO(b/292084011): Remove getattr when object lock is GA.
+  updates_retention = getattr(args, 'retain_until', None) or getattr(
+      args, 'retention_mode', None
+  )
   if requires_rewrite or adds_or_removes_acls:
     fields_scope = cloud_api.FieldsScope.FULL
+  elif updates_retention:
+    fields_scope = cloud_api.FieldsScope.NO_ACL
   else:
     fields_scope = cloud_api.FieldsScope.SHORT
 

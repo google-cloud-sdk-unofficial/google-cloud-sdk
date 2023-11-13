@@ -33,13 +33,11 @@
     - arg_name: remote-username
       api_field: repository.remoteRepositoryConfig.upstreamCredentials.usernamePasswordCredentials.username
       default: null
-      hidden: true
       help_text: |
         Remote Repository upstream registry username.
     - arg_name: remote-password-secret-version
       api_field: repository.remoteRepositoryConfig.upstreamCredentials.usernamePasswordCredentials.passwordSecretVersion
       default: null
-      hidden: true
       help_text: |
         Secret Manager secret version that contains password for the remote repository upstream.
     - group:

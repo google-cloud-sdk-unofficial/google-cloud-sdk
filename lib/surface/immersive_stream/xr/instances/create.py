@@ -68,16 +68,28 @@ class Create(base.CreateCommand):
   @staticmethod
   def Args(parser):
     resource_args.AddContentResourceArg(
-        parser, verb='served by the instance', positional=False)
+        parser, verb='served by the instance', positional=False
+    )
     parser.add_argument('instance', help='Name of the instance to be created')
     parser.add_argument(
         '--version',
         required=True,
-        help='Build version tag of the content served by this instance')
+        help='Build version tag of the content served by this instance',
+    )
     parser.add_argument(
         '--fallback-url',
-        help='Fallback url to redirect users to when this service instance is unable to provide the streaming experience',
-        required=False)
+        help=(
+            'Fallback url to redirect users to when this service instance is'
+            ' unable to provide the streaming experience'
+        ),
+        required=False,
+    )
+    parser.add_argument(
+        '--mode',
+        help='The rendering mode that is supported by this service instance',
+        required=False,
+        hidden=True,
+    )
     flags.AddRegionConfigArg('--add-region', parser)
     base.ASYNC_FLAG.AddToParser(parser)
 
@@ -92,8 +104,12 @@ class Create(base.CreateCommand):
     instance_name = args.instance
     version = args.version
     fallback_url = args.fallback_url
+    mode = args.mode
 
     if fallback_url and not flags.ValidateUrl(fallback_url):
+      return
+
+    if mode and not flags.ValidateMode(mode):
       return
 
     client = api_util.GetClient(self.ReleaseTrack())
@@ -102,25 +118,38 @@ class Create(base.CreateCommand):
         add_region_configs=region_configs,
         update_region_configs=None,
         remove_regions=None,
-        current_instance=None)
-    result_operation = instances.Create(self.ReleaseTrack(), instance_name,
-                                        content_name, location, version,
-                                        target_location_configs, fallback_url)
+        current_instance=None,
+    )
+    result_operation = instances.Create(
+        self.ReleaseTrack(),
+        instance_name,
+        content_name,
+        location,
+        version,
+        target_location_configs,
+        fallback_url,
+        mode,
+    )
     log.status.Print('Create request issued for: [{}]'.format(instance_name))
     if args.async_:
-      log.status.Print('Check operation [{}] for status.\n'.format(
-          result_operation.name))
+      log.status.Print(
+          'Check operation [{}] for status.\n'.format(result_operation.name)
+      )
       return result_operation
 
     operation_resource = resources.REGISTRY.Parse(
         result_operation.name,
         api_version=api_util.GetApiVersion(self.ReleaseTrack()),
-        collection='stream.projects.locations.operations')
+        collection='stream.projects.locations.operations',
+    )
     created_instance = waiter.WaitFor(
-        waiter.CloudOperationPoller(client.projects_locations_streamInstances,
-                                    client.projects_locations_operations),
+        waiter.CloudOperationPoller(
+            client.projects_locations_streamInstances,
+            client.projects_locations_operations,
+        ),
         operation_resource,
-        'Waiting for operation [{}] to complete'.format(result_operation.name))
+        'Waiting for operation [{}] to complete'.format(result_operation.name),
+    )
 
     instance_resource = resources.REGISTRY.Parse(
         None,

@@ -19,13 +19,11 @@ from __future__ import division
 from __future__ import unicode_literals
 
 from apitools.base.protorpclite import messages
-from googlecloudsdk.calliope import base as calliope_base
 from googlecloudsdk.command_lib.container.fleet.features import base
 from googlecloudsdk.command_lib.container.fleet.policycontroller import command
 from googlecloudsdk.command_lib.container.fleet.policycontroller import flags
 
 
-@calliope_base.Hidden
 class Enable(base.UpdateCommand, base.EnableCommand, command.PocoCommand):
   """Enable Policy Controller Feature.
 
@@ -61,6 +59,7 @@ class Enable(base.UpdateCommand, base.EnableCommand, command.PocoCommand):
     manual_flags.add_log_denies_enabled()
     manual_flags.add_monitoring()
     manual_flags.add_mutation()
+    manual_flags.add_no_default_bundles()
     manual_flags.add_referential_rules()
     manual_flags.add_version()
 
@@ -104,6 +103,9 @@ class Enable(base.UpdateCommand, base.EnableCommand, command.PocoCommand):
     hub_cfg.installSpec = (
         self.messages.PolicyControllerHubConfig.InstallSpecValueValuesEnum.INSTALL_SPEC_ENABLED
     )
+    # If this is a first installation, attempt to inject default bundle.
+    if spec.policycontroller is None:
+      hub_cfg = parser.update_default_bundles(hub_cfg)
     pc.policyControllerHubConfig = hub_cfg
     pc = parser.update_version(pc)
     spec.policycontroller = pc

@@ -70,8 +70,10 @@
             mutex: false
             params:
             - _REF_: googlecloudsdk.command_lib.compute.tpus.flags:type
+              api_field: queuedResource.tpu.nodeSpec.node.acceleratorConfig.type
               required: true
             - _REF_: googlecloudsdk.command_lib.compute.tpus.flags:topology
+              api_field: queuedResource.tpu.nodeSpec.node.acceleratorConfig.topology
               required: true
     - _REF_: googlecloudsdk.command_lib.compute.tpus.queued_resources.flags:runtime_version
 

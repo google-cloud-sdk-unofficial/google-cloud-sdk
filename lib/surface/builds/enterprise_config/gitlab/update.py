@@ -31,7 +31,7 @@ from googlecloudsdk.core import resources
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class CreateAlpha(base.CreateCommand):
-  """Update a GitLab Enterprise config for use by Google Cloud Build."""
+  """Update a GitLab Enterprise config for use by Cloud Build."""
 
   @staticmethod
   def Args(parser):

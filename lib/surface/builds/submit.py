@@ -113,7 +113,7 @@ https://git-scm.com/docs/gitrevisions#_specifying_revisions. For information on
   parser.add_argument(
       '--dir',
       help="""\
-Directory, relative to the source root, in which to run the build. This is used when the build source is a 2nd-gen Google Cloud Build repository resource.
+Directory, relative to the source root, in which to run the build. This is used when the build source is a 2nd-gen Cloud Build repository resource.
 This must be a relative path. If a step's `dir` is specified and is an absolute
 path, this value is ignored for that step's execution.
 """,
@@ -122,7 +122,7 @@ path, this value is ignored for that step's execution.
       '--revision',
       help="""\
 Revision to fetch from the Git repository such as a branch, a tag, a commit
-SHA, or any Git ref to run the build. This is used when the build source is a 2nd-gen Google Cloud Build repository resource.
+SHA, or any Git ref to run the build. This is used when the build source is a 2nd-gen Cloud Build repository resource.
 
 Cloud Build uses `git fetch` to fetch the revision from the Git repository;
 therefore make sure that the string you provide for `revision` is parsable by
@@ -137,14 +137,13 @@ https://git-scm.com/docs/gitrevisions#_specifying_revisions. For information on
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Submit(base.CreateCommand):
-  """Submit a build using Google Cloud Build.
+  """Submit a build using Cloud Build.
 
-  Submit a build using Google Cloud Build.
+  Submit a build using Cloud Build.
   """
 
   detailed_help = {
-      'DESCRIPTION':
-          """\
+      'DESCRIPTION': """\
           {description}
 
           When the `builds/use_kaniko` property is `True`, builds submitted with
@@ -154,7 +153,7 @@ class Submit(base.CreateCommand):
           for faster builds. By default, Kaniko will cache layers for 6 hours.
           To override this, set the `builds/kaniko_cache_ttl` property.
       """,
-      'EXAMPLES': ("""
+      'EXAMPLES': """
       To submit a build with source located at storage URL `gs://bucket/object.zip`:
 
          $ {command}  "gs://bucket/object.zip" --tag=gcr.io/my-project/image
@@ -167,7 +166,15 @@ class Submit(base.CreateCommand):
       To submit a build with local source `source.tgz` asynchronously:
 
         $ {command} "source.tgz" --tag=gcr.io/my-project/image --async
-      """)
+
+      To submit a build with source from a Git repository `https://github.com/owner/repo`:
+
+        $ {command} "https://github.com/owner/repo" --git-source-revision=main --config=config.yaml
+
+      To submit a build with source from a 2nd-gen Cloud Build repository resource `projects/my-project/locations/us-west1/connections/my-conn/repositories/my-repo`:
+
+        $ {command} "projects/my-project/locations/us-west1/connections/my-conn/repositories/my-repo" --revision=main
+      """,
   }
 
   _support_gcl = False
@@ -254,9 +261,9 @@ class Submit(base.CreateCommand):
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class SubmitBeta(Submit):
-  """Submit a build using Google Cloud Build.
+  """Submit a build using Cloud Build.
 
-  Submit a build using Google Cloud Build.
+  Submit a build using Cloud Build.
   """
 
   _support_gcl = True
@@ -264,9 +271,9 @@ class SubmitBeta(Submit):
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class SubmitAlpha(SubmitBeta):
-  """Submit a build using Google Cloud Build.
+  """Submit a build using Cloud Build.
 
-  Submit a build using Google Cloud Build.
+  Submit a build using Cloud Build.
   """
 
   @staticmethod

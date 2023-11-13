@@ -28,7 +28,7 @@ from googlecloudsdk.core import resources
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Describe(hubbase.DescribeCommand):
-  """Describe a worker pool used by Google Cloud Build."""
+  """Describe a worker pool used by Cloud Build."""
 
   detailed_help = {
       'DESCRIPTION':
@@ -108,12 +108,12 @@ class Describe(hubbase.DescribeCommand):
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class DescribeBeta(Describe):
-  """Describe a worker pool used by Google Cloud Build."""
+  """Describe a worker pool used by Cloud Build."""
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class DescribeAlpha(Describe):
-  """Describe a private or hybrid worker pool used by Google Cloud Build."""
+  """Describe a private or hybrid worker pool used by Cloud Build."""
 
   detailed_help = {
       'DESCRIPTION':

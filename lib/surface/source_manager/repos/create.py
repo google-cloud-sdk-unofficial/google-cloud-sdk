@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Create Cloud Git repository command."""
+"""Create Secure Source Manager repository command."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -26,10 +26,10 @@ from googlecloudsdk.command_lib.source_manager import resource_args
 
 DETAILED_HELP = {
     "DESCRIPTION": """
-          Create a Cloud Git repository.
+          Create a Secure Source Manager repository.
         """,
     "EXAMPLES": """
-            To create a cloud git repository called 'my-repo' in location 'us-central1' in instance 'my-instance', run:
+            To create a repository called 'my-repo' in location 'us-central1' in instance 'my-instance', run:
 
             $ {command} my-repo --region=us-central1 --instance=my-instance
         """,
@@ -38,7 +38,7 @@ DETAILED_HELP = {
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Create(base.CreateCommand):
-  """Create a Cloud Git Repository."""
+  """Create a Secure Source Manager repository."""
 
   @staticmethod
   def Args(parser):

@@ -30,7 +30,7 @@ from googlecloudsdk.core import resources
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class DeleteAlpha(base.DeleteCommand):
-  """Delete a GitLab Enterprise config from Google Cloud Build."""
+  """Delete a GitLab Enterprise config from Cloud Build."""
 
   @staticmethod
   def Args(parser):

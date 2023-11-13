@@ -25,7 +25,6 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.transfer.appliances import resource_args
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class List(base.ListCommand):
   """List Transfer Appliance orders."""

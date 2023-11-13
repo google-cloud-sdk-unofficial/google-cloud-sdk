@@ -46,7 +46,10 @@ class Create(base.CreateCommand):
     flags = rollout_flags.RolloutFlags(parser)
     flags.AddRolloutResourceArg()
     flags.AddDisplayName()
+    flags.AddLabels()
+    flags.AddManagedRolloutConfig()
     flags.AddAsync()
+    flags.AddFeatureUpdate()
 
   def Run(self, args: parser_extensions.Namespace) -> alpha_messages.Operation:
     """Runs the describe command."""

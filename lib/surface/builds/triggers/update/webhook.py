@@ -31,7 +31,7 @@ from googlecloudsdk.core import resources
 
 
 class UpdateWebhook(base.UpdateCommand):
-  """Update a Webhook trigger used by Google Cloud Build."""
+  """Update a Webhook trigger used by Cloud Build."""
 
   detailed_help = {
       'EXAMPLES': textwrap.dedent("""\

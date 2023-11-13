@@ -43,7 +43,6 @@ DETAILED_HELP = {
 }
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Update(base.Command):
   """Update an order for a transfer appliance."""

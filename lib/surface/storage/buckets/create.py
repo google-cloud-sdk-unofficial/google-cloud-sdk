@@ -125,11 +125,12 @@ class Create(base.Command):
           type=arg_parsers.Duration(),
           hidden=True,
           help=(
-              'Duration to retain soft-deleted objects. For example, "2wd1" is'
-              ' two weeks. The presence of this flag creates a bucket with a'
-              ' soft delete policy enabled, meaning deleted objects can be'
-              ' restored if requested within the inputted duration. See `gcloud'
-              ' topic datetimes` for more information on duration format."'
+              'Duration to retain soft-deleted objects. For example, "2w1d" is'
+              ' two weeks and one day. The presence of this flag creates a'
+              ' bucket with a soft delete policy enabled, meaning deleted'
+              ' objects can be restored if requested within the inputted'
+              ' duration. See `gcloud topic datetimes` for more information on'
+              ' the duration format.'
           ),
       )
 

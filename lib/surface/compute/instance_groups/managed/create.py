@@ -411,6 +411,8 @@ class CreateBeta(CreateGA):
   def Args(cls, parser):
     super(CreateBeta, cls).Args(parser)
 
+    managed_flags.AddMigDefaultActionOnVmFailure(parser)
+
   def _CreateInstanceGroupManager(self, args, group_ref, template_ref, client,
                                   holder):
     instance_group_manager = super(CreateBeta,
@@ -430,7 +432,6 @@ class CreateAlpha(CreateBeta):
   @classmethod
   def Args(cls, parser):
     super(CreateAlpha, cls).Args(parser)
-    managed_flags.AddMigDefaultActionOnVmFailure(parser)
     managed_flags.AddStandbyPolicyFlags(parser)
 
   def _CreateInstanceGroupManager(self, args, group_ref, template_ref, client,

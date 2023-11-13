@@ -28,9 +28,8 @@ class Policycontroller(base.Group):
   category = base.COMPUTE_CATEGORY
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class PolicycontrollerBeta(base.Group):
   """Manage Policy Controller Feature."""
 
-  pass
+  category = base.COMPUTE_CATEGORY

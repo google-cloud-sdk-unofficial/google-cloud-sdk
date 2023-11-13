@@ -87,6 +87,7 @@ class Update(base.Command):
     flags.AddCmekKeyFlag(managed_group)
     flags.AddCmekKeyRevocationActionTypeFlag(managed_group)
     flags.AddCpuThrottlingFlag(managed_group)
+    flags.AddCustomAudiencesFlag(managed_group)
     flags.AddEgressSettingsFlag(managed_group)
     flags.AddEncryptionKeyShutdownHoursFlag(managed_group)
     flags.AddRevisionSuffixArg(managed_group)
@@ -232,7 +233,6 @@ class BetaUpdate(Update):
 
     # Flags specific to managed CR
     managed_group = flags.GetManagedArgGroup(parser)
-    flags.AddCustomAudiencesFlag(managed_group)
     flags.AddVpcNetworkGroupFlagsForUpdate(managed_group)
 
 
@@ -246,7 +246,6 @@ class AlphaUpdate(BetaUpdate):
 
     # Flags specific to managed CR
     managed_group = flags.GetManagedArgGroup(parser)
-    flags.AddCustomAudiencesFlag(managed_group)
     flags.AddDefaultUrlFlag(managed_group)
     flags.AddVpcNetworkGroupFlagsForUpdate(managed_group)
     flags.AddRuntimeFlag(managed_group)

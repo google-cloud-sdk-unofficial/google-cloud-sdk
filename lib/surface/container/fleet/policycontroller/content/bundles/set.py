@@ -23,7 +23,6 @@ from googlecloudsdk.command_lib.container.fleet.policycontroller import command
 from googlecloudsdk.command_lib.container.fleet.policycontroller import content
 
 
-@calliope_base.Hidden
 @calliope_base.ReleaseTracks(
     calliope_base.ReleaseTrack.ALPHA, calliope_base.ReleaseTrack.BETA
 )
@@ -41,7 +40,7 @@ class Set(base.UpdateCommand, command.PocoCommand):
 
   To uninstall a bundle, use the `remove` command.
 
-  ## Examples
+  ## EXAMPLES
 
   To install a policy bundle:
 

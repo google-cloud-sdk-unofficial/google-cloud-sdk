@@ -29,7 +29,7 @@ from googlecloudsdk.core import resources
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class UpdateAlpha(base.UpdateCommand):
-  """Update github enterprise config used by Google Cloud Build.
+  """Update github enterprise config used by Cloud Build.
   """
 
   @staticmethod

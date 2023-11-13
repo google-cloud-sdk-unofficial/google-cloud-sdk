@@ -25,7 +25,6 @@ from googlecloudsdk.command_lib.netapp.backup_vaults.backups import flags as bac
 from googlecloudsdk.command_lib.util.concepts import concept_parsers
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class DescribeBeta(base.DescribeCommand):
   """Describe a Cloud NetApp Backup."""

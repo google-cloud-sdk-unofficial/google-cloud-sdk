@@ -25,7 +25,9 @@ from googlecloudsdk.command_lib.container.fleet.policycontroller import command
 from googlecloudsdk.command_lib.container.fleet.policycontroller import flags
 
 
-@calliope_base.Hidden
+@calliope_base.ReleaseTracks(
+    calliope_base.ReleaseTrack.ALPHA, calliope_base.ReleaseTrack.BETA
+)
 class Update(base.UpdateCommand, command.PocoCommand):
   """Updates the configuration of Policy Controller Feature.
 
@@ -43,14 +45,9 @@ class Update(base.UpdateCommand, command.PocoCommand):
 
   feature_name = 'policycontroller'
 
-  def __init__(self, cli, context):
-    self.__feature = None
-    super().__init__(cli, context)
-
   @classmethod
   def Args(cls, parser):
-    top_group = parser.add_argument_group(mutex=True)
-    modal_group = top_group.add_argument_group(mutex=False)
+    modal_group = parser.add_argument_group(mutex=False)
     membership_group = modal_group.add_argument_group(mutex=True)
     scope_flags = flags.PocoFlags(modal_group, 'update')
     config_group = membership_group.add_argument_group(mutex=False)
@@ -80,9 +77,11 @@ class Update(base.UpdateCommand, command.PocoCommand):
 
   def feature_cache(self, refresh: bool = False):
     """Gets and caches the current feature for this object."""
-    if self.__feature is None or refresh:
-      self.__feature = self.GetFeature()
-    return self.__feature
+    cache = getattr(self, '__feature_cache', None)
+    if cache is None or refresh:
+      cache = self.GetFeature()
+      setattr(self, '__feature_cache', cache)
+    return cache
 
   def update(self, spec: messages.Message, parser: flags.PocoFlagParser):
     if parser.use_default_cfg():

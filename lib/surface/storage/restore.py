@@ -19,6 +19,7 @@ from __future__ import division
 from __future__ import unicode_literals
 
 import collections
+import enum
 
 from googlecloudsdk.api_lib.storage import cloud_api
 from googlecloudsdk.calliope import arg_parsers
@@ -43,6 +44,33 @@ _BULK_RESTORE_FLAGS = [
     'deleted_after_time',
     'deleted_before_time',
 ]
+_SYNCHRONOUS_RESTORE_FLAGS = ['all_versions']
+
+
+class ExecutionMode(enum.Enum):
+  ASYNCHRONOUS = 'Asynchronous'
+  SYNCHRONOUS = 'Synchronous'
+
+
+def _raise_if_invalid_flag_combination(args, execution_mode, invalid_flags):
+  """Raises error if invalid combination of flags found in user input.
+
+  Args:
+    args (parser_extensions.Namespace): User input object.
+    execution_mode (ExecutionMode): Determined by presence of --async flag.
+    invalid_flags (list[str]): Flags as `args` attributes.
+
+  Raises:
+    error.Error: Flag incompatible with execution mode.
+  """
+  for invalid_flag in invalid_flags:
+    if getattr(args, invalid_flag):
+      raise errors.Error(
+          '{} execution does not support flag: {}.'
+          ' See help text with --help.'.format(
+              execution_mode.value, invalid_flag
+          )
+      )
 
 
 def _url_iterator(args):
@@ -86,13 +114,29 @@ def _async_restore_task_iterator(args, user_request_args):
 
 def _sync_restore_task_iterator(args, fields_scope, user_request_args):
   """Yields blocking restore tasks."""
+  last_resource = None
   for url in _url_iterator(args):
     for resource in wildcard_iterator.get_wildcard_iterator(
         url.url_string,
         fields_scope=fields_scope,
         object_state=cloud_api.ObjectState.SOFT_DELETED,
     ):
-      yield restore_object_task.RestoreObjectTask(resource, user_request_args)
+      if args.all_versions:
+        yield restore_object_task.RestoreObjectTask(resource, user_request_args)
+      else:
+        if (
+            last_resource
+            and last_resource.storage_url.versionless_url_string
+            != resource.storage_url.versionless_url_string
+        ):
+          yield restore_object_task.RestoreObjectTask(
+              last_resource, user_request_args
+          )
+        last_resource = resource
+  if last_resource:
+    yield restore_object_task.RestoreObjectTask(
+        last_resource, user_request_args
+    )
 
 
 def _restore_task_iterator(args):
@@ -114,14 +158,14 @@ def _restore_task_iterator(args):
 @base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Restore(base.Command):
-  """Restore one or more objects."""
+  """Restore one or more soft-deleted objects."""
 
   # TODO(b/292075826): Update docstring and help once bucket restore supported.
   detailed_help = {
       'DESCRIPTION': """
       The restore command restores soft-deleted objects:
 
-        $ {command} restore url...
+        $ {command} url...
 
       """,
       'EXAMPLES': """
@@ -165,6 +209,26 @@ class Restore(base.Command):
     flags.add_preserve_acl_flag(parser)
     flags.add_read_paths_from_stdin_flag(parser)
 
+    synchronous_restore_flag_group = parser.add_group(
+        help='SYNCHRONOUS RESTORE OPTIONS'
+    )
+    synchronous_restore_flag_group.add_argument(
+        '-a',
+        '--all-versions',
+        action='store_true',
+        help=(
+            'Restores all versions of soft-deleted objects.'
+            '\n\nThis flag is only useful for buckets with [object versioning]'
+            ' (https://cloud.google.com/storage/docs/object-versioning)'
+            ' enabled. In this case, the latest soft-deleted version will'
+            ' become live and the previous generations will become noncurrent.'
+            '\n\nIf versioning is disabled, the latest soft-deleted version'
+            ' will become live and previous generations will be soft-deleted'
+            ' again.'
+            '\n\nThis flag disables parallelism to preserve version order.'
+        ),
+    )
+
     parser.add_argument(
         '--async',
         # Can't create `async` attribute because "async" is a keyword.
@@ -204,18 +268,17 @@ class Restore(base.Command):
     task_status_queue = task_graph_executor.multiprocessing_context.Queue()
 
     if args.asyncronous:
-      log.status.Print(
-          'To see created operations, run "operations list" for'
-          ' the matched buckets.'
+      _raise_if_invalid_flag_combination(
+          args, ExecutionMode.ASYNCHRONOUS, _SYNCHRONOUS_RESTORE_FLAGS
       )
-    elif any((getattr(args, flag) for flag in _BULK_RESTORE_FLAGS)):
-      raise errors.Error(
-          'Bulk restore flag found without --async. See help text with --help.'
+    else:
+      _raise_if_invalid_flag_combination(
+          args, ExecutionMode.SYNCHRONOUS, _BULK_RESTORE_FLAGS
       )
 
     self.exit_code = task_executor.execute_tasks(
         task_iterator=_restore_task_iterator(args),
-        parallelizable=True,
+        parallelizable=not args.all_versions,
         task_status_queue=task_status_queue,
         progress_manager_args=task_status.ProgressManagerArgs(
             increment_type=task_status.IncrementType.INTEGER, manifest_path=None

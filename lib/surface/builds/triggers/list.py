@@ -26,11 +26,11 @@ from googlecloudsdk.core import resources
 
 
 class List(base.ListCommand):
-  """List Google Cloud Build triggers for a project."""
+  """List Cloud Build triggers for a project."""
 
   detailed_help = {
       'DESCRIPTION':
-          'List Google Cloud Build triggers for a project.',
+          'List Cloud Build triggers for a project.',
       'EXAMPLES': ("""
         To list build triggers, run:
 

@@ -29,7 +29,7 @@ from googlecloudsdk.core import resources
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Delete(base.DeleteCommand):
-  """Delete a worker pool from Google Cloud Build."""
+  """Delete a worker pool from Cloud Build."""
 
   detailed_help = {
       'DESCRIPTION':

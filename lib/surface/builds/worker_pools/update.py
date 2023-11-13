@@ -32,7 +32,7 @@ from googlecloudsdk.core import resources
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Update(base.UpdateCommand):
-  """Update a worker pool used by Google Cloud Build."""
+  """Update a worker pool used by Cloud Build."""
 
   detailed_help = {
       'DESCRIPTION':
@@ -151,7 +151,7 @@ class Update(base.UpdateCommand):
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class UpdateBeta(Update):
-  """Update a worker pool used by Google Cloud Build."""
+  """Update a worker pool used by Cloud Build."""
 
   @staticmethod
   def Args(parser):
@@ -174,7 +174,7 @@ class UpdateBeta(Update):
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class UpdateAlpha(Update):
-  """Update a private or hybrid pool used by Google Cloud Build."""
+  """Update a private or hybrid pool used by Cloud Build."""
 
   detailed_help = {
       'DESCRIPTION':

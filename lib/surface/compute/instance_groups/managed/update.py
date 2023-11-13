@@ -388,6 +388,8 @@ class UpdateBeta(UpdateGA):
   def Args(cls, parser):
     super(UpdateBeta, cls).Args(parser)
 
+    managed_flags.AddMigDefaultActionOnVmFailure(parser)
+
   def _CreateInstanceGroupManagerPatch(self, args, igm_ref, igm_resource,
                                        client, holder):
     patch_instance_group_manager = super(UpdateBeta,
@@ -406,7 +408,6 @@ class UpdateAlpha(UpdateBeta):
   @classmethod
   def Args(cls, parser):
     super(UpdateAlpha, cls).Args(parser)
-    managed_flags.AddMigDefaultActionOnVmFailure(parser)
     managed_flags.AddStandbyPolicyFlags(parser)
 
   def _CreateInstanceGroupManagerPatch(self, args, igm_ref, igm_resource,

@@ -42,7 +42,7 @@ _API_REFERENCE_ = """
 """
 
 _RCP_LRO_MAXIMUM_TIMEOUT_ = 1800000  # 30 min
-_LCP_LRO_MAXIMUM_TIMEOUT_ = 25200000  # 7 hours
+_LCP_LRO_MAXIMUM_TIMEOUT_ = 36000000  # 10 hours
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)

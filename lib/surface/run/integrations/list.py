@@ -95,7 +95,9 @@ class List(base.ListCommand):
       if integration_type:
         types_utils.CheckValidIntegrationType(integration_type)
 
-      return client.ListIntegrations(integration_type, service_name, region)
+      return client.ListIntegrations(
+          integration_type, service_name, region, types_utils.SERVICE_TYPE
+      )
 
 
 def _SetFormat(namespace: parser_extensions.Namespace) -> None:

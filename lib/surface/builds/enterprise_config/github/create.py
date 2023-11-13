@@ -29,7 +29,7 @@ from googlecloudsdk.core import resources
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class CreateAlpha(base.CreateCommand):
-  """Create a GitHub Enterprise Config for use by Google Cloud Build.
+  """Create a GitHub Enterprise Config for use by Cloud Build.
   """
 
   @staticmethod

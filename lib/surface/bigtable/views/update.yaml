@@ -40,6 +40,11 @@
           },
           "deletionProtection": true
         }
+    - arg_name: interactive
+      type: bool
+      default: true
+      help_text: |
+        If provided, a diff is displayed with a prompt to proceed or cancel the update.
 
   async:
     collection: bigtableadmin.operations

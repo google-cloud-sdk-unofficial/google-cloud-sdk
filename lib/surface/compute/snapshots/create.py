@@ -24,6 +24,7 @@ from googlecloudsdk.api_lib.compute.operations import poller
 from googlecloudsdk.api_lib.util import waiter
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute import flags
+from googlecloudsdk.command_lib.compute import scope as compute_scope
 from googlecloudsdk.command_lib.compute.snapshots import flags as snap_flags
 from googlecloudsdk.command_lib.util.args import labels_util
 from googlecloudsdk.core import log
@@ -45,15 +46,18 @@ def _GAArgs(parser):
   Create an application-consistent snapshot by informing the OS
   to prepare for the snapshot process. Currently only supported
   for creating snapshots of disks attached to Windows instances.
-  """)
+  """,
+  )
   flags.AddStorageLocationFlag(parser, 'snapshot')
   labels_util.AddCreateLabelsFlags(parser)
   csek_utils.AddCsekKeyArgs(parser, flags_about_creation=False)
   base.ASYNC_FLAG.AddToParser(parser)
   parser.add_argument(
-      '--description', help=('Text to describe the new snapshot.'))
+      '--description', help='Text to describe the new snapshot.'
+  )
   snap_flags.SOURCE_DISK_ARG.AddArgument(parser)
   snap_flags.AddSnapshotType(parser)
+  snap_flags.SOURCE_DISK_FOR_RECOVERY_CHECKPOINT_ARG.AddArgument(parser)
 
 
 def _BetaArgs(parser):
@@ -80,10 +84,12 @@ class Create(base.CreateCommand):
   def Run(self, args):
     return self._Run(args)
 
-  def _Run(self,
-           args,
-           support_source_instant_snapshot=False,
-           support_max_retention_days=False):
+  def _Run(
+      self,
+      args,
+      support_source_instant_snapshot=False,
+      support_max_retention_days=False,
+  ):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     client = holder.client.apitools_client
     messages = holder.client.messages
@@ -92,34 +98,53 @@ class Create(base.CreateCommand):
         params={
             'project': properties.VALUES.core.project.GetOrFail,
         },
-        collection='compute.snapshots')
+        collection='compute.snapshots',
+    )
 
     snapshot_message = messages.Snapshot(
-        name=snap_ref.Name(), description=args.description)
+        name=snap_ref.Name(), description=args.description
+    )
     # This feature is only exposed in alpha/beta
     allow_rsa_encrypted = self.ReleaseTrack() in [
-        base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA
+        base.ReleaseTrack.ALPHA,
+        base.ReleaseTrack.BETA,
     ]
     if args.source_disk:
       disk_ref = snap_flags.SOURCE_DISK_ARG.ResolveAsResource(
           args,
           holder.resources,
-          scope_lister=flags.GetDefaultScopeLister(holder.client))
+          scope_lister=flags.GetDefaultScopeLister(holder.client),
+      )
       snapshot_message.sourceDisk = disk_ref.SelfLink()
       if args.source_disk_key_file:
         source_keys = csek_utils.CsekKeyStore.FromFile(
-            args.source_disk_key_file, allow_rsa_encrypted)
+            args.source_disk_key_file, allow_rsa_encrypted
+        )
         disk_key_or_none = csek_utils.MaybeLookupKeyMessage(
-            source_keys, disk_ref, client)
+            source_keys, disk_ref, client
+        )
         snapshot_message.sourceDiskEncryptionKey = disk_key_or_none
+    if args.source_disk_for_recovery_checkpoint:
+      source_disk_for_recovery_checkpoint_ref = (
+          snap_flags.SOURCE_DISK_FOR_RECOVERY_CHECKPOINT_ARG.ResolveAsResource(
+              args,
+              holder.resources,
+              default_scope=compute_scope.ScopeEnum.REGION,
+          )
+      )
+      snapshot_message.sourceDiskForRecoveryCheckpoint = (
+          source_disk_for_recovery_checkpoint_ref.SelfLink()
+      )
     if args.csek_key_file:
       csek_keys = csek_utils.CsekKeyStore.FromArgs(args, allow_rsa_encrypted)
       snap_key_or_none = csek_utils.MaybeLookupKeyMessage(
-          csek_keys, snap_ref, client)
+          csek_keys, snap_ref, client
+      )
       snapshot_message.snapshotEncryptionKey = snap_key_or_none
     if hasattr(args, 'labels') and args.IsSpecified('labels'):
       snapshot_message.labels = labels_util.ParseCreateArgs(
-          args, messages.Snapshot.LabelsValue)
+          args, messages.Snapshot.LabelsValue
+      )
     if args.storage_location:
       snapshot_message.storageLocations = [args.storage_location]
     if args.guest_flush:
@@ -130,7 +155,8 @@ class Create(base.CreateCommand):
       iss_ref = snap_flags.SOURCE_INSTANT_SNAPSHOT_ARG.ResolveAsResource(
           args,
           holder.resources,
-          scope_lister=flags.GetDefaultScopeLister(holder.client))
+          scope_lister=flags.GetDefaultScopeLister(holder.client),
+      )
       snapshot_message.sourceInstantSnapshot = iss_ref.SelfLink()
       if args.source_instant_snapshot_key_file:
         source_keys = csek_utils.CsekKeyStore.FromFile(
@@ -152,23 +178,31 @@ class Create(base.CreateCommand):
       snapshot_message.maxRetentionDays = int(args.max_retention_days)
 
     request = messages.ComputeSnapshotsInsertRequest(
-        snapshot=snapshot_message, project=snap_ref.project)
+        snapshot=snapshot_message, project=snap_ref.project
+    )
     result = client.snapshots.Insert(request)
     operation_ref = resources.REGISTRY.Parse(
         result.name,
         params={'project': snap_ref.project},
-        collection='compute.globalOperations')
+        collection='compute.globalOperations',
+    )
     if args.async_:
       log.UpdatedResource(
           operation_ref,
           kind='gce snapshot {0}'.format(snap_ref.Name()),
           is_async=True,
-          details='Use [gcloud compute operations describe] command '
-          'to check the status of this operation.')
+          details=(
+              'Use [gcloud compute operations describe] command '
+              'to check the status of this operation.'
+          ),
+      )
       return result
     operation_poller = poller.Poller(client.snapshots, snap_ref)
-    return waiter.WaitFor(operation_poller, operation_ref,
-                          'Creating gce snapshot {0}'.format(snap_ref.Name()))
+    return waiter.WaitFor(
+        operation_poller,
+        operation_ref,
+        'Creating gce snapshot {0}'.format(snap_ref.Name()),
+    )
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
@@ -193,20 +227,18 @@ class CreateAlpha(Create):
     return self._Run(
         args,
         support_source_instant_snapshot=True,
-        support_max_retention_days=True)
+        support_max_retention_days=True,
+    )
 
 
 Create.detailed_help = {
-    'brief':
-        'Create Compute Engine snapshots',
-    'DESCRIPTION':
-        """\
+    'brief': 'Create Compute Engine snapshots',
+    'DESCRIPTION': """\
     *{command}* creates snapshot of persistent disk. Snapshots are useful for
     backing up persistent disk data and for creating custom images.
     For more information, see https://cloud.google.com/compute/docs/disks/create-snapshots.
     """,
-    'EXAMPLES':
-        """\
+    'EXAMPLES': """\
     To create a snapshot 'my-snap' from a disk 'my-disk' in zone 'us-east1-a', run:
 
         $ {command} my-snap --source-disk=my-disk --source-disk-zone=us-east1-a

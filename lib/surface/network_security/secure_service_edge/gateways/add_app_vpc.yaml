@@ -1,4 +1,8 @@
 release_tracks: [ALPHA]
+deprecate:
+  is_removed: false
+  warning: |
+    Command add-app-vpc is deprecated. Use add-app-network instead.
 
 help_text:
   brief: |

@@ -26,7 +26,6 @@ from googlecloudsdk.command_lib.util.args import labels_util
 from googlecloudsdk.core import log
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class UpdateBeta(base.UpdateCommand):
   """Update a Cloud NetApp Backup."""
@@ -40,7 +39,7 @@ class UpdateBeta(base.UpdateCommand):
       'EXAMPLES': """\
           The following command updates a Backup named BACKUP and its specified parameters:
 
-              $ {command} NAME --location=us-central1 ----description="new description"
+              $ {command} NAME --location=us-central1 --description="new description"
           """,
   }
 

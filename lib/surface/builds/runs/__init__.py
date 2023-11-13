@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""The command group for Google Cloud Build's PipelineRuns and TaskRuns."""
+"""The command group for Cloud Build's PipelineRuns and TaskRuns."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -24,5 +24,5 @@ from googlecloudsdk.calliope import base
 @base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Runs(base.Group):
-  """Manage PipelineRuns and TaskRuns for Google Cloud Build."""
+  """Manage PipelineRuns and TaskRuns for Cloud Build."""
   category = base.CI_CD_CATEGORY

@@ -150,6 +150,15 @@ class UpdateHelper(object):
             '--exceed-action-rpc-status-code',
             '--exceed-action-rpc-status-message'
         ])
+    if support_recaptcha_options:
+      modified_fields.extend([
+          args.recaptcha_action_site_keys,
+          args.recaptcha_session_site_keys,
+      ])
+      min_args.extend([
+          '--recaptcha_action_site_keys',
+          '--recaptcha_session_site_keys',
+      ])
     if support_net_lb:
       modified_fields.extend([
           args.network_user_defined_fields,

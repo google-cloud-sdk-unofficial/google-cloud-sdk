@@ -40,7 +40,7 @@ _API_REFERENCE_ = """
   API can be found at: https://cloud.google.com/edge-cloud
 """
 
-_LRO_MAXIMUM_TIMEOUT_ = 43200000  # 12 hours
+_LRO_MAXIMUM_TIMEOUT_ = 68400000  # 19 hours
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)

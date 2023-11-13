@@ -83,6 +83,7 @@ def _Run(
   pubsub_export_topic = (
       getattr(args, 'pubsub_export_topic', None) if enable_push_to_cps else None
   )
+  pubsub_export_topic_region = getattr(args, 'pubsub_export_topic_region', None)
 
   no_expiration = False
   expiration_period = getattr(args, 'expiration_period', None)
@@ -137,6 +138,7 @@ def _Run(
           cloud_storage_output_format=cloud_storage_output_format,
           cloud_storage_write_metadata=cloud_storage_write_metadata,
           pubsub_export_topic=pubsub_export_topic,
+          pubsub_export_topic_region=pubsub_export_topic_region,
       )
     except api_ex.HttpError as error:
       exc = exceptions.HttpException(error)

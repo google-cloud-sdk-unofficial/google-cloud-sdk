@@ -29,7 +29,7 @@ from googlecloudsdk.core import resources
 
 
 class UpdateGitLab(base.UpdateCommand):
-  """Updates GitLab trigger used by Google Cloud Build."""
+  """Updates GitLab trigger used by Cloud Build."""
 
   detailed_help = {
       'EXAMPLES':

@@ -41,15 +41,35 @@ class EnableVpcServiceControls(base.SilentCommand):
   detailed_help = {
       'DESCRIPTION':
           """\
-          This command enables VPC Service Controls for the peering connection.
+          This command configures IPv4 routes and DNS zones applicable to a
+          service producer VPC network (for example, servicenetworking). The
+          route and DNS configuration match those recommended for using the
+          restricted.googleapis.com VIP:
 
-          The local default route (destination 0.0.0.0/0, next hop default
-          internet gateway) is deleted in the service producer VPC network.
-          After deletion, the service producer VPC network can import a custom
-          default route from the peering connection to the customer VPC network.
-          This requires that the customer VPC network be configured to export
-          custom routes. The custom default route cannot have an associated
-          network tag.
+          When enabled, Google Cloud makes the following route configuration
+          changes in the service producer VPC network: Google Cloud removes the
+          IPv4 default route (destination 0.0.0.0/0, next hop default internet
+          gateway). Google Cloud then creates an IPv4 route for destination
+          199.36.153.4/30 using the default internet gateway next hop.
+
+          When enabled, Google Cloud also creates Cloud DNS managed private
+          zones and authorizes those zones for the service producer VPC network.
+          The zones include googleapis.com, pkg.dev, gcr.io, and other necessary
+          domains or host names for Google APIs and services that are compatible
+          with VPC Service Controls. Record data in the zones resolves all host
+          names to 199.36.153.4, 199.36.153.5, 199.36.153.6, and 199.36.153.7.
+
+          When disabled, Google Cloud makes the following route configuration
+          changes in the service producer VPC network: Google Cloud restores a
+          default route (destination 0.0.0.0/0, next hop default internet
+          gateway). Google Cloud also deletes the Cloud DNS managed private
+          zones that provided the host name overrides.
+
+          While enabled, the service producer VPC network can still import
+          static and dynamic routes from the peered customer network if you
+          enable custom route export. These custom routes can include a default
+          route. For this reason, this command is not to be used solely as a
+          means for preventing access to the internet.
           """,
       'EXAMPLES':
           """\

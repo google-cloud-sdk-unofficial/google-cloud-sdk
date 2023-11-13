@@ -47,10 +47,14 @@ def _ByStartAndCreationTime(ex):
     The lastTransitionTime of the Started condition or the creation timestamp of
     the execution if the execution is unstarted.
   """
-  return (False if ex.started_condition and
-          ex.started_condition['status'] is not None else True,
-          ex.started_condition['lastTransitionTime']
-          if ex.started_condition else ex.creation_timestamp)
+  return (
+      False
+      if ex.started_condition and ex.started_condition['status'] is not None
+      else True,
+      ex.started_condition['lastTransitionTime']
+      if ex.started_condition and ex.started_condition['lastTransitionTime']
+      else ex.creation_timestamp,
+  )
 
 
 class List(commands.List):

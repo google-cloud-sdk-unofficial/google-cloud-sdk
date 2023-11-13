@@ -109,7 +109,7 @@ class Hash(base.Command):
 
       To get just the MD5 hash digest of a local object in hex format:
 
-        $ {command} /dir/object.txt --skip-md5 --hex
+        $ {command} /dir/object.txt --skip-crc32c --hex
       """,
   }
 

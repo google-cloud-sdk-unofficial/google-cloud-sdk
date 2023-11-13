@@ -31,7 +31,7 @@ from googlecloudsdk.core import resources
 
 
 class UpdateCSR(base.UpdateCommand):
-  """Updates Cloud Source Repositories trigger used by Google Cloud Build."""
+  """Updates Cloud Source Repositories trigger used by Cloud Build."""
 
   detailed_help = {
       'EXAMPLES':

@@ -23,7 +23,6 @@ from googlecloudsdk.command_lib.container.fleet.policycontroller import command
 from googlecloudsdk.command_lib.container.fleet.policycontroller import content
 
 
-@calliope_base.Hidden
 @calliope_base.ReleaseTracks(
     calliope_base.ReleaseTrack.ALPHA, calliope_base.ReleaseTrack.BETA
 )
@@ -33,7 +32,7 @@ class Remove(base.UpdateCommand, command.PocoCommand):
   Google-defined policy bundles of constraints can be installed onto Policy
   Controller installations. This command removes those bundles.
 
-  ## Examples
+  ## EXAMPLES
 
   To remove a policy bundle:
 

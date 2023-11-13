@@ -94,11 +94,15 @@ class Update(base.UpdateCommand):
     fleetclient = client.FleetClient(release_track=base.ReleaseTrack.ALPHA)
 
     # update GCP labels for namespace resource
-    mask = []
-    labels_diff = labels_util.Diff.FromUpdateArgs(args)
     new_labels = None
-    if labels_diff.MayHaveUpdates():
+    mask = []
+
+    # Fetch existing fleet.
+    current_fleet = None
+    labels_diff = labels_util.Diff.FromUpdateArgs(args)
+    if labels_diff.MayHaveUpdates() or update_mask.HasBinauthzConfig(args):
       current_fleet = fleetclient.GetFleet(flag_parser.Project())
+
       new_labels = labels_diff.Apply(
           fleetclient.messages.Fleet.LabelsValue,
           current_fleet.labels,
@@ -108,7 +112,8 @@ class Update(base.UpdateCommand):
 
     if update_mask.GetFleetUpdateMask(args):
       mask.append(update_mask.GetFleetUpdateMask(args))
-    fleet = flag_parser.Fleet()
+
+    fleet = flag_parser.Fleet(current_fleet)
     fleet.labels = new_labels
     req = flag_parser.messages.GkehubProjectsLocationsFleetsPatchRequest(
         fleet=fleet,

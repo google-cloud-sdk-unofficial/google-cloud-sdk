@@ -1,4 +1,8 @@
 release_tracks: [ALPHA]
+deprecate:
+  is_removed: false
+  warning: |
+    Command remove-app-vpc is deprecated. Use remove-app-network instead.
 
 help_text:
   brief: |

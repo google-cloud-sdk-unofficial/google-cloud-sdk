@@ -67,7 +67,6 @@ class _CloudSQL(object):
     cs_flags.AddActivationPolicylag(parser)
     cs_flags.AddAuthorizedNetworksFlag(parser)
     cs_flags.AddAutoStorageIncreaseFlag(parser)
-    cs_flags.AddDatabaseVersionFlag(parser)
     cs_flags.AddDatabaseFlagsFlag(parser)
     cs_flags.AddDataDiskSizeFlag(parser)
     cs_flags.AddDataDiskTypeFlag(parser)
@@ -111,6 +110,7 @@ class CloudSQLAlpha(_CloudSQL, base.Command):
   @staticmethod
   def Args(parser):
     _CloudSQL.Args(parser)
+    cs_flags.AddDatabaseVersionFlag(parser, support_minor_version=False)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
@@ -122,6 +122,7 @@ class CloudSQLGA(_CloudSQL, base.Command):
   @staticmethod
   def Args(parser):
     _CloudSQL.Args(parser)
+    cs_flags.AddDatabaseVersionFlag(parser, support_minor_version=True)
     resource_args.AddCmekResourceArgs(parser)
     cs_flags.AddAllocatedIpRangeFlag(parser)
     cs_flags.AddEditionFlag(parser)

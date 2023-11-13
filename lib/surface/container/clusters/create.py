@@ -1323,7 +1323,7 @@ class Create(base.CreateCommand):
 
     adapter = self.context['api_adapter']
     location_get = self.context['location_get']
-    location = location_get(args)
+    location = location_get(args, is_autopilot=self.autopilot)
 
     cluster_ref = adapter.ParseCluster(args.name, location)
     options = self.ParseCreateOptions(args, location, cluster_ref.projectId)

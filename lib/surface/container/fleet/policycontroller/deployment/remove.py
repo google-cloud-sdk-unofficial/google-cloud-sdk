@@ -28,7 +28,6 @@ from googlecloudsdk.command_lib.container.fleet.policycontroller import flags
 from googlecloudsdk.core import exceptions
 
 
-@calliope_base.Hidden
 @calliope_base.ReleaseTracks(
     calliope_base.ReleaseTrack.ALPHA, calliope_base.ReleaseTrack.BETA
 )

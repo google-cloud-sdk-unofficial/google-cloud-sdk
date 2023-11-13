@@ -29,7 +29,7 @@ from googlecloudsdk.core import resources
 
 
 class UpdateManual(base.UpdateCommand):
-  """Updates a manual trigger used by Google Cloud Build."""
+  """Updates a manual trigger used by Cloud Build."""
 
   detailed_help = {
       'EXAMPLES':

@@ -69,27 +69,30 @@ class List(base.ListCommand):
               The Attestor whose Container Analysis Note will be queried
               for attestations. Note that the caller must have the
               `containeranalysis.notes.listOccurrences` permission on the note
-              being queried.""")),
+              being queried."""),
+        ),
     )
 
   def Run(self, args):
     artifact_url_without_scheme = None
     if args.artifact_url:
-      artifact_url_without_scheme = binauthz_command_util.RemoveArtifactUrlScheme(
-          args.artifact_url)
+      artifact_url_without_scheme = (
+          binauthz_command_util.RemoveArtifactUrlScheme(args.artifact_url)
+      )
+    attestors_client = attestors.Client(apis.GetApiVersion(self.ReleaseTrack()))
+    drydock_client = containeranalysis.Client(
+        ca_apis.GetApiVersion(self.ReleaseTrack())
+    )
 
     attestor_ref = args.CONCEPTS.attestor.Parse()
-    api_version = apis.GetApiVersion(self.ReleaseTrack())
-    client = attestors.Client(api_version)
-    attestor = client.Get(attestor_ref)
-    # TODO(b/79709480): Add other types of attestors if/when supported.
+    attestor = attestors_client.Get(attestor_ref)
     note_ref = resources.REGISTRY.ParseResourceId(
         'containeranalysis.projects.notes',
-        client.GetNoteAttr(attestor).noteReference, {})
+        attestors_client.GetNoteAttr(attestor).noteReference,
+        {},
+    )
 
-    client = containeranalysis.Client(ca_apis.GetApiVersion(
-        self.ReleaseTrack()))
-    return client.YieldAttestations(
+    return drydock_client.YieldAttestations(
         note_ref=note_ref,
         artifact_url=artifact_url_without_scheme,
         page_size=args.page_size,

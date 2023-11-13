@@ -23,7 +23,9 @@ from googlecloudsdk.command_lib.container.fleet.features import base
 from googlecloudsdk.command_lib.container.fleet.policycontroller import flags
 
 
-@calliope_base.Hidden
+@calliope_base.ReleaseTracks(
+    calliope_base.ReleaseTrack.ALPHA, calliope_base.ReleaseTrack.BETA
+)
 class Disable(base.UpdateCommand):
   """Disable (Uninstall) Policy Controller.
 

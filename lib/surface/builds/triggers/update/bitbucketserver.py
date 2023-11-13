@@ -29,7 +29,7 @@ from googlecloudsdk.core import resources
 
 
 class UpdateBitbucketServer(base.UpdateCommand):
-  """Updates Bitbucket Server trigger used by Google Cloud Build."""
+  """Updates Bitbucket Server trigger used by Cloud Build."""
 
   detailed_help = {
       'EXAMPLES':

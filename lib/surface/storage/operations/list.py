@@ -50,29 +50,31 @@ class List(base.ListCommand):
   @staticmethod
   def Args(parser):
     parser.add_argument(
-        'operation_name',
+        'parent_resource_name',
         help=(
-            'The operation name including the Cloud Storage bucket and'
-            ' operation ID.'
+            'The operation parent resource in the format'
+            ' "projects/```_```/buckets/BUCKET".'
         ),
     )
     parser.add_argument(
         '--server-filter',
         help=(
             'Server-side filter string used to determine what operations to'
-            ' return. Example: (done = true AND complete_time >='
-            ' "2023-01-01T00:00:00Z") OR requested_cancellation = true'
+            " return. Example: '(done = true AND complete_time >="
+            ' "2023-01-01T00:00:00Z") OR requested_cancellation = true\''
+            ' Note that the entire filter string must be in quotes and'
+            ' date strings within the filter must be in embedded quotes.'
         ),
     )
 
   def Run(self, args):
-    url_object = storage_url.storage_url_from_string(args.operation_name)
+    url_object = storage_url.storage_url_from_string(args.parent_resource_name)
     if isinstance(url_object, storage_url.CloudUrl):
       errors_util.raise_error_if_not_gcs_bucket(args.command_path, url_object)
       bucket = url_object.bucket_name
     else:
       bucket = operations_util.get_operation_bucket_from_name(
-          args.operation_name
+          args.parent_resource_name
       )
     scheme = storage_url.ProviderPrefix.GCS
     return api_factory.get_api(scheme).list_operations(

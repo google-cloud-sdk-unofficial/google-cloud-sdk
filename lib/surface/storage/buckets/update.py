@@ -126,7 +126,6 @@ def _add_common_args(parser):
       help="Clears the bucket's CORS settings.")
   parser.add_argument(
       '--default-storage-class',
-      hidden=True,
       help='Sets the default storage class for the bucket.',
   )
   default_encryption_key = parser.add_mutually_exclusive_group()
@@ -287,8 +286,8 @@ def _add_alpha_args(parser):
       type=arg_parsers.Duration(),
       hidden=True,
       help=(
-          'Duration to retain soft-deleted objects. For example, "2wd1" is'
-          ' two weeks.'
+          'Duration to retain soft-deleted objects. For example, "2w1d" is'
+          ' two weeks and one day.'
       ),
   )
   parser.add_argument(
@@ -296,8 +295,8 @@ def _add_alpha_args(parser):
       action='store_true',
       hidden=True,
       help=(
-          'Duration to retain soft-deleted objects. For example, "2wd1" is'
-          ' two weeks.'
+          'Clears bucket soft delete settings. Does not affect objects already'
+          ' in soft-deleted state.'
       ),
   )
 

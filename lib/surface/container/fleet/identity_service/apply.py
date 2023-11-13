@@ -27,7 +27,7 @@ from googlecloudsdk.command_lib.container.fleet.identity_service import utils
 # Pull out the example text so the example command can be one line without the
 # py linter complaining. The docgen tool properly breaks it into multiple lines.
 EXAMPLES = """\
-    To apply an Identity Service configuration for a membership, run:
+    To apply an Identity Service configuration to a membership, run:
 
     $ {command} --membership=MEMBERSHIP_NAME --config=/path/to/identity-service.yaml
 """
@@ -49,34 +49,79 @@ class Apply(base.UpdateCommand):
 
   @classmethod
   def Args(cls, parser):
-    resources.AddMembershipResourceArg(parser)
-    parser.add_argument(
+    command_args = parser.add_group(required=True, mutex=False)
+    command_args.add_argument(
+        '--fleet-default-member-config',
+        type=str,
+        help='The path to an identity-service.yaml config file.',
+        hidden=True,
+        required=False,
+    )
+
+    per_member_config_args = command_args.add_group(required=False, mutex=False)
+    resources.AddMembershipResourceArg(per_member_config_args)
+    per_member_config_args.add_argument(
         '--config',
         type=str,
-        help='The path to the identity-service.yaml config file.',
-        required=True)
+        help='The path to an identity-service.yaml config file.',
+        required=True,
+    )
 
   def Run(self, args):
-    # Get fleet memberships (cluster registered with fleet) from GCP Project.
-    membership = base.ParseMembership(
-        args, prompt=True, autoselect=True, search=True)
+    patch = self.messages.Feature()
+    update_mask = []
+    if args.config:
+      self.preparePerMemberConfigPatch(args, patch, update_mask)
 
-    # Load config YAML file.
+    if args.fleet_default_member_config:
+      self.prepareFleetDefaultMemberConfigPatch(args, patch, update_mask)
+
+    self.Update(update_mask, patch)
+
+  def prepareFleetDefaultMemberConfigPatch(self, args, patch, update_mask):
+    # Load the config YAML file.
     loaded_config = file_parsers.YamlConfigFile(
-        file_path=args.config, item_type=file_parsers.LoginConfigObject)
+        file_path=args.fleet_default_member_config,
+        item_type=file_parsers.LoginConfigObject,
+    )
 
-    # Create new identity service feature spec.
+    # Create a new identity service feature spec.
     member_config = utils.parse_config(loaded_config, self.messages)
 
-    # UpdateFeature uses the patch method to update member_configs map, hence
-    # there's no need to get the existing feature spec.
-    full_name = membership
-    specs = {
-        full_name:
-            self.messages.MembershipFeatureSpec(identityservice=member_config)
-    }
-    feature = self.messages.Feature(
-        membershipSpecs=self.hubclient.ToMembershipSpecs(specs))
+    # Add the fleet default member config to the feature patch and update
+    # `update mask`.
+    patch.fleetDefaultMemberConfig = (
+        self.messages.CommonFleetDefaultMemberConfigSpec(
+            identityservice=member_config
+        )
+    )
+    update_mask.append('fleet_default_member_config')
 
-    # Execute update to apply new identity service feature spec to membership.
-    self.Update(['membership_specs'], feature)
+  def preparePerMemberConfigPatch(self, args, patch, update_mask):
+    # Get the membership the user is attempting to apply the configuration to.
+    # This will prompt the user to select a membership from the ones available
+    # in the fleet if none is provided.
+    membership = base.ParseMembership(
+        args, prompt=True, autoselect=True, search=True
+    )
+
+    # Load the config YAML file.
+    loaded_config = file_parsers.YamlConfigFile(
+        file_path=args.config, item_type=file_parsers.LoginConfigObject
+    )
+
+    # Create a new identity service feature spec.
+    member_config = utils.parse_config(loaded_config, self.messages)
+
+    # UpdateFeature uses the patch method to update the member_configs map, so
+    # there's no need to fetch the existing feature spec.
+    specs = {
+        membership: self.messages.MembershipFeatureSpec(
+            identityservice=member_config
+        )
+    }
+
+    # Add the newly prepared membership specs to the feature patch and update
+    # `update mask`.
+    patch.membershipSpecs = self.hubclient.ToMembershipSpecs(specs)
+    update_mask.append('membership_specs')

@@ -34,7 +34,7 @@ from googlecloudsdk.core import properties
 
 _CreateTargetArgs = collections.namedtuple('_TargetArgs', [
     'project', 'zone', 'instance', 'interface', 'port', 'region', 'network',
-    'host', 'dest_group'
+    'host', 'dest_group', 'security_gateway'
 ])
 
 _NUMPY_HELP_TEXT = """
@@ -159,23 +159,37 @@ If `LOCAL_PORT` is 0, an arbitrary unused local port is chosen."""
 
   def _CreateIapTunnelHelper(self, args, target):
 
+    if self.support_security_gateway and args.security_gateway:
+      tunneler = iap_tunnel.SecurityGatewayTunnelHelper(
+          args, project=target.project, region=target.region,
+          security_gateway=target.security_gateway,
+          host=target.host, port=target.port)
+    elif target.host:
+      tunneler = iap_tunnel.IAPWebsocketTunnelHelper(
+          args, target.project,
+          region=target.region,
+          network=target.network,
+          host=target.host,
+          port=target.port,
+          dest_group=target.dest_group)
+    else:
+      tunneler = iap_tunnel.IAPWebsocketTunnelHelper(
+          args, target.project,
+          zone=target.zone,
+          instance=target.instance,
+          interface=target.interface,
+          port=target.port)
+
     if args.listen_on_stdin:
-      iap_tunnel_helper = iap_tunnel.IapTunnelStdinHelper(args, target.project)
+      iap_tunnel_helper = iap_tunnel.IapTunnelStdinHelper(tunneler)
     else:
       local_host, local_port = self._GetLocalHostPort(args)
       check_connection = True
       if hasattr(args, 'iap_tunnel_disable_connection_check'):
         check_connection = not args.iap_tunnel_disable_connection_check
       iap_tunnel_helper = iap_tunnel.IapTunnelProxyServerHelper(
-          args, target.project, local_host, local_port, check_connection)
+          local_host, local_port, check_connection, tunneler)
 
-    if target.host:
-      iap_tunnel_helper.ConfigureForHost(target.region, target.network,
-                                         target.host, target.port,
-                                         target.dest_group)
-    else:
-      iap_tunnel_helper.ConfigureForInstance(target.zone, target.instance,
-                                             target.interface, target.port)
     return iap_tunnel_helper
 
   def _GetTargetArgs(self, args):
@@ -187,6 +201,20 @@ If `LOCAL_PORT` is 0, an arbitrary unused local port is chosen."""
           host=args.instance_name,
           port=args.instance_port,
           dest_group=args.dest_group,
+          zone=None,
+          instance=None,
+          interface=None,
+          security_gateway=None)
+
+    if self.support_security_gateway and args.security_gateway:
+      return _CreateTargetArgs(
+          project=properties.VALUES.core.project.GetOrFail(),
+          host=args.instance_name,
+          port=args.instance_port,
+          region=args.region,
+          security_gateway=args.security_gateway,
+          network=None,
+          dest_group=None,
           zone=None,
           instance=None,
           interface=None)
@@ -202,7 +230,8 @@ If `LOCAL_PORT` is 0, an arbitrary unused local port is chosen."""
           region=None,
           network=None,
           host=None,
-          dest_group=None)
+          dest_group=None,
+          security_gateway=None)
 
     instance_ref, instance_obj = self._FetchInstance(args)
 
@@ -215,7 +244,8 @@ If `LOCAL_PORT` is 0, an arbitrary unused local port is chosen."""
         region=None,
         network=None,
         host=None,
-        dest_group=None)
+        dest_group=None,
+        security_gateway=None)
 
   def _FetchInstance(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())

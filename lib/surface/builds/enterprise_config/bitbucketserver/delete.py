@@ -29,7 +29,7 @@ from googlecloudsdk.core import resources
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class DeleteAlpha(base.DeleteCommand):
-  """Delete a Bitbucket Server config from Google Cloud Build."""
+  """Delete a Bitbucket Server config from Cloud Build."""
 
   @staticmethod
   def Args(parser):

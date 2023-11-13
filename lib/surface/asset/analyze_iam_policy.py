@@ -23,35 +23,39 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.asset import flags
 
 
+# pylint: disable=line-too-long
+DETAILED_HELP = {
+    'DESCRIPTION': """\
+      Analyzes IAM policies that match a request.
+      """,
+    'EXAMPLES': """\
+      To find out which users have been granted the
+      iam.serviceAccounts.actAs permission on a service account, run:
+
+        $ {command} --organization=YOUR_ORG_ID --full-resource-name=YOUR_SERVICE_ACCOUNT_FULL_RESOURCE_NAME --permissions='iam.serviceAccounts.actAs'
+
+      To find out which resources a user can access, run:
+
+        $ {command} --organization=YOUR_ORG_ID --identity='user:u1@foo.com'
+
+      To find out which roles or permissions a user has been granted on a
+      project, run:
+
+        $ {command} --organization=YOUR_ORG_ID --full-resource-name=YOUR_PROJECT_FULL_RESOURCE_NAME --identity='user:u1@foo.com'
+
+      To find out which users have been granted the
+      iam.serviceAccounts.actAs permission on any applicable resources, run:
+
+        $ {command} --organization=YOUR_ORG_ID --permissions='iam.serviceAccounts.actAs'
+      """,
+}
+
+
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class AnalyzeIamPolicyGA(base.Command):
   """Analyzes IAM policies that match a request."""
 
-  detailed_help = {
-      'DESCRIPTION':
-          ' Analyzes IAM policies that match a request.',
-      'EXAMPLES':
-          """\
-          To find out which users have been granted the
-          iam.serviceAccounts.actAs permission on a service account, run:
-
-            $ {command} --organization=YOUR_ORG_ID --full-resource-name=YOUR_SERVICE_ACCOUNT_FULL_RESOURCE_NAME --permissions='iam.serviceAccounts.actAs'
-
-          To find out which resources a user can access, run:
-
-            $ {command} --organization=YOUR_ORG_ID --identity='user:u1@foo.com'
-
-          To find out which roles or permissions a user has been granted on a
-          project, run:
-
-            $ {command} --organization=YOUR_ORG_ID --full-resource-name=YOUR_PROJECT_FULL_RESOURCE_NAME --identity='user:u1@foo.com'
-
-          To find out which users have been granted the
-          iam.serviceAccounts.actAs permission on any applicable resources, run:
-
-            $ {command} --organization=YOUR_ORG_ID --permissions='iam.serviceAccounts.actAs'
-      """
-  }
+  detailed_help = DETAILED_HELP
 
   _API_VERSION = client_util.DEFAULT_API_VERSION
 
@@ -66,3 +70,25 @@ class AnalyzeIamPolicyGA(base.Command):
   def Run(self, args):
     client = client_util.AnalyzeIamPolicyClient(self._API_VERSION)
     return client.Analyze(args)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class AnalyzeIamPolicyBETA(AnalyzeIamPolicyGA):
+  """BETA version, Analyzes IAM policies that match a request."""
+
+  @classmethod
+  def Args(cls, parser):
+    AnalyzeIamPolicyGA.Args(parser)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class AnalyzeIamPolicyALPHA(AnalyzeIamPolicyBETA):
+  """ALPHA version, Analyzes IAM policies that match a request."""
+
+  @classmethod
+  def Args(cls, parser):
+    AnalyzeIamPolicyBETA.Args(parser)
+    # TODO(b/304841991): Move versioned field to common parsing function after
+    # version label is removed.
+    options_group = flags.GetOrAddOptionGroup(parser)
+    flags.AddAnalyzerIncludeDenyPolicyAnalysisArgs(options_group)

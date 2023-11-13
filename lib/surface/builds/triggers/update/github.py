@@ -29,7 +29,7 @@ from googlecloudsdk.core import resources
 
 
 class UpdateGitHub(base.UpdateCommand):
-  """Update GitHub trigger used by Google Cloud Build."""
+  """Update GitHub trigger used by Cloud Build."""
 
   detailed_help = {
       'EXAMPLES':

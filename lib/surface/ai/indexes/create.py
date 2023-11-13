@@ -37,11 +37,12 @@ class CreateV1(base.CreateCommand):
   ## EXAMPLES
 
   To create an index under project `example` in region
-  `us-central1`, run:
+  `us-central1`, encrypted with KMS key `kms-key-name`, run:
 
     $ {command} --display-name=index --description=test
     --metadata-file=path/to/your/metadata.json
     --project=example --region=us-central1
+    --encryption-kms-key-name=kms-key-name
   """
 
   @staticmethod
@@ -58,6 +59,7 @@ class CreateV1(base.CreateCommand):
     flags.GetMetadataFilePathArg('index', required=True).AddToParser(parser)
     flags.GetMetadataSchemaUriArg('index').AddToParser(parser)
     flags.GetIndexUpdateMethod().AddToParser(parser)
+    flags.GetEncryptionKmsKeyNameArg().AddToParser(parser)
     labels_util.AddCreateLabelsFlags(parser)
 
   def _Run(self, args, version):
@@ -94,11 +96,12 @@ class CreateV1Beta1(CreateV1):
   ## EXAMPLES
 
   To create an index under project `example` in region
-  `us-central1`, run:
+  `us-central1`, encrypted with KMS key `kms-key-name`, run:
 
     $ {command} --display-name=index --description=test
     --metadata-file=path/to/your/metadata.json
     --project=example --region=us-central1
+    --encryption-kms-key-name=kms-key-name
   """
 
   def Run(self, args):
