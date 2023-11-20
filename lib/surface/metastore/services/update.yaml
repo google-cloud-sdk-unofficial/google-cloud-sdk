@@ -37,6 +37,7 @@
       - googlecloudsdk.command_lib.metastore.services.util:SetServiceRequestUpdateHiveMetastoreConfigs
       - googlecloudsdk.command_lib.metastore.services.util:GenerateUpdateAuxiliaryVersionsConfigs
       - googlecloudsdk.command_lib.metastore.services.util:UpdateServiceMaskHook
+      - googlecloudsdk.command_lib.metastore.validators:ValidateServiceMutexConfig
     collection: metastore.projects.locations.services
 
   arguments:
@@ -54,10 +55,9 @@
     - arg_name: data-catalog-sync
       default: false
       api_field: service.metadataIntegration.dataCatalogConfig.enabled
-      release_tracks: [ALPHA, BETA]
       help_text: |
-        A boolean flag to determine whether Dataproc Metastore metadata sync
-        to Data Catalog should be enabled, false if unspecified.
+        Boolean flag to determine whether or not Dataproc Metastore metadata sync to Data Catalog
+        is enabled, false if unspecified.
         Mutually exclusive with flag `--encryption-kms-key`.
         Cannot be updated if the service uses customer-managed encryption keys.
     - group:

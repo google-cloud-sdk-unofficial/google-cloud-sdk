@@ -80,7 +80,7 @@ def AddNamesArgument(parser):
       help=("""\
         Names refer to a list of
         [full resource names](https://cloud.google.com/asset-inventory/docs/resource-name-format)
-        of [searchable asset types](https://cloud.google.com/asset-inventory/docs/supported-asset-types#searchable_asset_types).
+        of [searchable asset types](https://cloud.google.com/asset-inventory/docs/supported-asset-types).
         For each batch call, total number of names provided is between 1 and 20.
 
         The example value is:

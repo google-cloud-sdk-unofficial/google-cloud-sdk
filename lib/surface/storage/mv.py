@@ -84,8 +84,7 @@ class Mv(base.Command):
   @classmethod
   def Args(cls, parser):
     cp_command_util.add_cp_and_mv_flags(parser, cls.ReleaseTrack())
-    if cls.ReleaseTrack() == base.ReleaseTrack.ALPHA:
-      flags.add_retention_flags(parser)
+    flags.add_per_object_retention_flags(parser)
 
   def Run(self, args):
     for url_string in args.source:

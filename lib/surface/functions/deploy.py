@@ -36,7 +36,7 @@ def _CommonArgs(parser, track):
 
   # Add `args.memory` as str. Converted at runtime to int for v1.
   # Add `args.cpu` as flag that requires `args.memory`
-  flags.AddFunctionMemoryAndCpuFlags(parser, track)
+  flags.AddFunctionMemoryAndCpuFlags(parser)
 
   # Add args for function properties
   flags.AddAllowUnauthenticatedFlag(parser)
@@ -95,7 +95,7 @@ def _CommonArgs(parser, track):
   flags.AddTriggerServiceAccountFlag(parser)
   flags.AddGen2Flag(parser)
   flags.AddServeAllTrafficLatestRevisionFlag(parser)
-  flags.AddConcurrencyFlag(parser, track)
+  flags.AddConcurrencyFlag(parser)
   flags.AddBuildServiceAccountFlag(parser, track)
 
 

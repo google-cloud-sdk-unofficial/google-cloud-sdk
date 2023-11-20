@@ -16,34 +16,43 @@
 
 import collections
 import functools
+import logging
+import warnings
 
 import grpc
-import pkg_resources
 
 from google.api_core import exceptions
 import google.auth
 import google.auth.credentials
 import google.auth.transport.grpc
 import google.auth.transport.requests
+import cloudsdk.google.protobuf
 
-try:
-    import grpc_gcp
+PROTOBUF_VERSION = cloudsdk.google.protobuf.__version__
 
-    HAS_GRPC_GCP = True
-except ImportError:
+# The grpcio-gcp package only has support for protobuf < 4
+if PROTOBUF_VERSION[0:2] == "3.":  # pragma: NO COVER
+    try:
+        import grpc_gcp
+
+        warnings.warn(
+            """Support for grpcio-gcp is deprecated. This feature will be
+            removed from `google-api-core` after January 1, 2024. If you need to
+            continue to use this feature, please pin to a specific version of
+            `google-api-core`.""",
+            DeprecationWarning,
+        )
+        HAS_GRPC_GCP = True
+    except ImportError:
+        HAS_GRPC_GCP = False
+else:
     HAS_GRPC_GCP = False
 
-try:
-    # google.auth.__version__ was added in 1.26.0
-    _GOOGLE_AUTH_VERSION = google.auth.__version__
-except AttributeError:
-    try:  # try pkg_resources if it is available
-        _GOOGLE_AUTH_VERSION = pkg_resources.get_distribution("google-auth").version
-    except pkg_resources.DistributionNotFound:  # pragma: NO COVER
-        _GOOGLE_AUTH_VERSION = None
 
 # The list of gRPC Callable interfaces that return iterators.
 _STREAM_WRAP_CLASSES = (grpc.UnaryStreamMultiCallable, grpc.StreamStreamMultiCallable)
+
+_LOGGER = logging.getLogger(__name__)
 
 
 def _patch_callable_name(callable_):
@@ -246,7 +255,9 @@ def _create_composite_credentials(
 
     # Create the metadata plugin for inserting the authorization header.
     metadata_plugin = google.auth.transport.grpc.AuthMetadataPlugin(
-        credentials, request, default_host=default_host,
+        credentials,
+        request,
+        default_host=default_host,
     )
 
     # Create a set of grpc.CallCredentials using the metadata plugin.
@@ -268,7 +279,8 @@ def create_channel(
     quota_project_id=None,
     default_scopes=None,
     default_host=None,
-    **kwargs
+    compression=None,
+    **kwargs,
 ):
     """Create a secure channel with credentials.
 
@@ -289,8 +301,11 @@ def create_channel(
         default_scopes (Sequence[str]): Default scopes passed by a Google client
             library. Use 'scopes' for user-defined scopes.
         default_host (str): The default endpoint. e.g., "pubsub.googleapis.com".
+        compression (grpc.Compression): An optional value indicating the
+            compression method to be used over the lifetime of the channel.
         kwargs: Additional key-word args passed to
             :func:`grpc_gcp.secure_channel` or :func:`grpc.secure_channel`.
+            Note: `grpc_gcp` is only supported in environments with protobuf < 4.0.0.
 
     Returns:
         grpc.Channel: The created channel.
@@ -309,16 +324,19 @@ def create_channel(
         default_host=default_host,
     )
 
-    if HAS_GRPC_GCP:
-        # If grpc_gcp module is available use grpc_gcp.secure_channel,
-        # otherwise, use grpc.secure_channel to create grpc channel.
+    if HAS_GRPC_GCP:  # pragma: NO COVER
+        if compression is not None and compression != grpc.Compression.NoCompression:
+            _LOGGER.debug(
+                "Compression argument is being ignored for grpc_gcp.secure_channel creation."
+            )
         return grpc_gcp.secure_channel(target, composite_credentials, **kwargs)
-    else:
-        return grpc.secure_channel(target, composite_credentials, **kwargs)
+    return grpc.secure_channel(
+        target, composite_credentials, compression=compression, **kwargs
+    )
 
 
 _MethodCall = collections.namedtuple(
-    "_MethodCall", ("request", "timeout", "metadata", "credentials")
+    "_MethodCall", ("request", "timeout", "metadata", "credentials", "compression")
 )
 
 _ChannelRequest = collections.namedtuple("_ChannelRequest", ("method", "request"))
@@ -345,11 +363,15 @@ class _CallableStub(object):
         """List[protobuf.Message]: All requests sent to this callable."""
         self.calls = []
         """List[Tuple]: All invocations of this callable. Each tuple is the
-        request, timeout, metadata, and credentials."""
+        request, timeout, metadata, compression, and credentials."""
 
-    def __call__(self, request, timeout=None, metadata=None, credentials=None):
+    def __call__(
+        self, request, timeout=None, metadata=None, credentials=None, compression=None
+    ):
         self._channel.requests.append(_ChannelRequest(self._method, request))
-        self.calls.append(_MethodCall(request, timeout, metadata, credentials))
+        self.calls.append(
+            _MethodCall(request, timeout, metadata, credentials, compression)
+        )
         self.requests.append(request)
 
         response = self.response

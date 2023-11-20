@@ -33,11 +33,8 @@ _DETAILED_HELP = {
 
 _FORMAT = """
   table(
-    name.scope("serviceProjectAttachments"):label=NAME,
-    name.scope("projects").segment(1):label=PROJECT,
-    name.scope("locations").segment(0):label=LOCATION,
+    name.scope("serviceProjectAttachments"):label=ID,
     service_project,
-    uid,
     createTime.date(unit=1000, tz_default=UTC)
   )
 """

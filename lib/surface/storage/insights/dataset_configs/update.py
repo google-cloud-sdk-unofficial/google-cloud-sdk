@@ -18,11 +18,11 @@
 from googlecloudsdk.api_lib.storage import insights_api
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.storage import flags
+from googlecloudsdk.command_lib.storage.insights.dataset_configs import log_util
 from googlecloudsdk.command_lib.storage.insights.dataset_configs import resource_args
 from googlecloudsdk.core.console import console_io
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Update(base.Command):
   """Updates a dataset config for insights."""
@@ -33,10 +33,10 @@ class Update(base.Command):
       """,
       'EXAMPLES': """
 
-      To update the verification process for the dataset config "my-config" in
+      To update the description for a dataset config "my-config" in
       location "us-central1":
 
-          $ {command} my-config --location=us-central1 --skip-verification
+          $ {command} my-config --location=us-central1 --description="a user provided description"
 
       To update the same dataset config with fully specified name:
 
@@ -73,9 +73,16 @@ class Update(base.Command):
       else:
         raise ValueError('retention-period-days value must be greater than 0')
 
-    return client.update_dataset_config(
+    update_dataset_config_operation = client.update_dataset_config(
         dataset_config_relative_name,
         retention_period=args.retention_period_days,
-        skip_verification=args.skip_verification,
         description=args.description,
     )
+
+    log_util.dataset_config_operation_started_and_status_log(
+        'Update',
+        dataset_config_relative_name,
+        update_dataset_config_operation.name,
+    )
+
+    return update_dataset_config_operation

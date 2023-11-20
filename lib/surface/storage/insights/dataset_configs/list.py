@@ -35,7 +35,6 @@ def _transform_location(dataset_config):
 _TRANSFORMS = {'location_transform': _transform_location}
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class List(base.ListCommand):
   """List returns all the insights dataset configs for given location."""
@@ -46,7 +45,7 @@ class List(base.ListCommand):
       """,
       'EXAMPLES': """
 
-      List all dataset configs for any locations:
+      List all dataset configs in all locations:
 
           $ {command}
 
@@ -54,7 +53,7 @@ class List(base.ListCommand):
 
           $ {command} --location=us-central1
 
-      List all dataset configs with the page size of "20":
+      List all dataset configs with a page size of "20":
 
           $ {command} --location=us-central1 --page-size=20
 
@@ -74,7 +73,7 @@ class List(base.ListCommand):
             location_transform():label=LOCATION,
             sourceProjects.projectNumbers:label=SOURCE_PROJECTS,
             organizationNumber:label=ORGANIZATION_NUMBER,
-            format('{} days', retentionPeriodDays):label=RETENTION_PERIOD_DAYS,
+            retentionPeriodDays:label=RETENTION_PERIOD_DAYS,
             datasetConfigState:label=STATE
         )
         """)

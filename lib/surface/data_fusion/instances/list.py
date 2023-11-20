@@ -47,6 +47,7 @@ class List(base.ListCommand):
         'updateTime:reverse:label=UPDATE_TIME,'
         'zone:label=ZONE,'
         'version:label=VERSION,'
+        'patchRevision:label=PATCH_REVISION,'
         'availableVersion:label=AVAILABLE_VERSIONS_TO_UPDATE,'
         'service_endpoint:label=INSTANCE_URL'
         ')')

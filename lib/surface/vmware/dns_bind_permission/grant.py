@@ -51,7 +51,6 @@ DETAILED_HELP = {
 }
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Grant(base.Command):
   """Grants a DNS Bind Permission."""

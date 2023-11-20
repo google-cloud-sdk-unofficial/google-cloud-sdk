@@ -19,8 +19,6 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
-from apitools.base.py import list_pager
-
 from googlecloudsdk.api_lib.dataproc import constants
 from googlecloudsdk.api_lib.dataproc import dataproc as dp
 from googlecloudsdk.api_lib.dataproc import display_helper
@@ -98,12 +96,15 @@ class List(base.ListCommand):
           dataproc.messages.DataprocProjectsRegionsJobsListRequest
           .JobStateMatcherValueValuesEnum.lookup_by_name(state))
 
-    jobs = list_pager.YieldFromList(
+    jobs = util.YieldFromListWithUnreachableList(
+        'The following jobs are unreachable: %s',
         dataproc.client.projects_regions_jobs,
         request,
-        limit=args.limit, field='jobs',
+        limit=args.limit,
+        field='jobs',
         batch_size=args.page_size,
-        batch_size_attribute='pageSize')
+        batch_size_attribute='pageSize',
+    )
     return (display_helper.DisplayHelper(job) for job in jobs)
 
   @staticmethod

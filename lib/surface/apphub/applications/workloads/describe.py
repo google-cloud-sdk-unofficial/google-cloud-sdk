@@ -35,7 +35,7 @@ _DETAILED_HELP = {
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Describe(base.DescribeCommand):
-  """Describe an application workload."""
+  """Describe an Apphub application workload."""
 
   detailed_help = _DETAILED_HELP
 

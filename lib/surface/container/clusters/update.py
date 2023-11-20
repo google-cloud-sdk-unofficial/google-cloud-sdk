@@ -906,6 +906,7 @@ class UpdateBeta(Update):
     flags.AddConvertToAutopilotFlag(group)
     flags.AddCompleteConvertToAutopilotFlag(group)
     flags.AddConvertToStandardFlag(group)
+    flags.AddSecretManagerEnableFlag(group)
 
   def ParseUpdateOptions(self, args, locations):
     get_default = lambda key: getattr(args, key)
@@ -1055,6 +1056,7 @@ class UpdateBeta(Update):
     opts.convert_to_autopilot = args.convert_to_autopilot
     opts.complete_convert_to_autopilot = args.complete_convert_to_autopilot
     opts.convert_to_standard = args.convert_to_standard
+    opts.enable_secret_manager = args.enable_secret_manager
     return opts
 
 
@@ -1168,6 +1170,7 @@ class UpdateAlpha(Update):
     flags.AddConvertToAutopilotFlag(group)
     flags.AddCompleteConvertToAutopilotFlag(group)
     flags.AddConvertToStandardFlag(group)
+    flags.AddSecretManagerEnableFlag(group)
 
   def ParseUpdateOptions(self, args, locations):
     get_default = lambda key: getattr(args, key)
@@ -1312,4 +1315,5 @@ class UpdateAlpha(Update):
     opts.convert_to_autopilot = args.convert_to_autopilot
     opts.complete_convert_to_autopilot = args.complete_convert_to_autopilot
     opts.convert_to_standard = args.convert_to_standard
+    opts.enable_secret_manager = args.enable_secret_manager
     return opts

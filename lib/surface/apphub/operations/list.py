@@ -34,9 +34,8 @@ _DETAILED_HELP = {
 _FORMAT = """
   table(
     name.scope("operations"):label=ID,
-    name.scope("projects").segment(1):label=PROJECT,
-    name.scope("locations").segment(0):label=LOCATION,
     metadata.verb,
+    metadata.target,
     done
   )
 """
@@ -44,7 +43,7 @@ _FORMAT = """
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class List(base.ListCommand):
-  """List Operations."""
+  """List Apphub operations."""
 
   detailed_help = _DETAILED_HELP
 

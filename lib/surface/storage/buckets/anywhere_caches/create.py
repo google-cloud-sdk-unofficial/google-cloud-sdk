@@ -16,7 +16,15 @@
 
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.storage import errors_util
 from googlecloudsdk.command_lib.storage import flags
+from googlecloudsdk.command_lib.storage import plurality_checkable_iterator
+from googlecloudsdk.command_lib.storage import progress_callbacks
+from googlecloudsdk.command_lib.storage import storage_url
+from googlecloudsdk.command_lib.storage.tasks import task_executor
+from googlecloudsdk.command_lib.storage.tasks import task_graph_executor
+from googlecloudsdk.command_lib.storage.tasks import task_status
+from googlecloudsdk.command_lib.storage.tasks.buckets.anywhere_caches import create_anywhere_cache_task
 
 
 @base.Hidden
@@ -55,7 +63,6 @@ class Create(base.CreateCommand):
     parser.add_argument(
         'url',
         type=str,
-        nargs=1,
         help=(
             'Specifies the URL of the bucket where the Anywhere Cache should be'
             ' created.'
@@ -80,6 +87,33 @@ class Create(base.CreateCommand):
 
     flags.add_admission_policy_flag(parser)
 
+  def get_task_iterator(self, args, task_status_queue):
+    url = storage_url.storage_url_from_string(args.url)
+    errors_util.raise_error_if_not_bucket(args.command_path, url)
+
+    progress_callbacks.workload_estimator_callback(
+        task_status_queue, len(args.zone)
+    )
+
+    if args.ttl is not None:
+      args.ttl = str(args.ttl)+'s'
+
+    for zone in args.zone:
+      yield create_anywhere_cache_task.CreateAnywhereCacheTask(
+          url, zone, admission_policy=args.admission_policy, ttl=args.ttl
+      )
+
   def Run(self, args):
-    # TODO(b/303559466) : Implementation of create command
-    raise NotImplementedError
+    task_status_queue = task_graph_executor.multiprocessing_context.Queue()
+    task_iterator = self.get_task_iterator(args, task_status_queue)
+    plurality_checkable_task_iterator = (
+        plurality_checkable_iterator.PluralityCheckableIterator(task_iterator)
+    )
+    self.exit_code = task_executor.execute_tasks(
+        plurality_checkable_task_iterator,
+        parallelizable=True,
+        task_status_queue=task_status_queue,
+        progress_manager_args=task_status.ProgressManagerArgs(
+            increment_type=task_status.IncrementType.INTEGER, manifest_path=None
+        ),
+    )

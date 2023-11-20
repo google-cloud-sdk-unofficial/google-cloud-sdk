@@ -14,7 +14,6 @@
 # limitations under the License.
 #
 from collections import OrderedDict
-from distutils import util
 import os
 import re
 from typing import Dict, Optional, Sequence, Tuple, Type, Union
@@ -33,6 +32,7 @@ from google.auth.exceptions import MutualTLSChannelError  # type: ignore
 from google.auth.transport import mtls  # type: ignore
 from google.longrunning import operations_pb2
 from google.oauth2 import service_account  # type: ignore
+import grpc
 
 OptionalRetry = Union[retries.Retry, object]
 
@@ -49,7 +49,8 @@ class AbstractOperationsClientMeta(type):
     _transport_registry["rest"] = OperationsRestTransport
 
     def get_transport_class(
-        cls, label: Optional[str] = None,
+        cls,
+        label: Optional[str] = None,
     ) -> Type[OperationsTransport]:
         """Returns an appropriate transport class.
 
@@ -165,7 +166,9 @@ class AbstractOperationsClient(metaclass=AbstractOperationsClientMeta):
         return self._transport
 
     @staticmethod
-    def common_billing_account_path(billing_account: str,) -> str:
+    def common_billing_account_path(
+        billing_account: str,
+    ) -> str:
         """Returns a fully-qualified billing_account string."""
         return "billingAccounts/{billing_account}".format(
             billing_account=billing_account,
@@ -178,9 +181,13 @@ class AbstractOperationsClient(metaclass=AbstractOperationsClientMeta):
         return m.groupdict() if m else {}
 
     @staticmethod
-    def common_folder_path(folder: str,) -> str:
+    def common_folder_path(
+        folder: str,
+    ) -> str:
         """Returns a fully-qualified folder string."""
-        return "folders/{folder}".format(folder=folder,)
+        return "folders/{folder}".format(
+            folder=folder,
+        )
 
     @staticmethod
     def parse_common_folder_path(path: str) -> Dict[str, str]:
@@ -189,9 +196,13 @@ class AbstractOperationsClient(metaclass=AbstractOperationsClientMeta):
         return m.groupdict() if m else {}
 
     @staticmethod
-    def common_organization_path(organization: str,) -> str:
+    def common_organization_path(
+        organization: str,
+    ) -> str:
         """Returns a fully-qualified organization string."""
-        return "organizations/{organization}".format(organization=organization,)
+        return "organizations/{organization}".format(
+            organization=organization,
+        )
 
     @staticmethod
     def parse_common_organization_path(path: str) -> Dict[str, str]:
@@ -200,9 +211,13 @@ class AbstractOperationsClient(metaclass=AbstractOperationsClientMeta):
         return m.groupdict() if m else {}
 
     @staticmethod
-    def common_project_path(project: str,) -> str:
+    def common_project_path(
+        project: str,
+    ) -> str:
         """Returns a fully-qualified project string."""
-        return "projects/{project}".format(project=project,)
+        return "projects/{project}".format(
+            project=project,
+        )
 
     @staticmethod
     def parse_common_project_path(path: str) -> Dict[str, str]:
@@ -211,10 +226,14 @@ class AbstractOperationsClient(metaclass=AbstractOperationsClientMeta):
         return m.groupdict() if m else {}
 
     @staticmethod
-    def common_location_path(project: str, location: str,) -> str:
+    def common_location_path(
+        project: str,
+        location: str,
+    ) -> str:
         """Returns a fully-qualified location string."""
         return "projects/{project}/locations/{location}".format(
-            project=project, location=location,
+            project=project,
+            location=location,
         )
 
     @staticmethod
@@ -274,13 +293,16 @@ class AbstractOperationsClient(metaclass=AbstractOperationsClientMeta):
             client_options = client_options_lib.ClientOptions()
 
         # Create SSL credentials for mutual TLS if needed.
-        use_client_cert = bool(
-            util.strtobool(os.getenv("GOOGLE_API_USE_CLIENT_CERTIFICATE", "false"))
-        )
-
+        use_client_cert = os.getenv(
+            "GOOGLE_API_USE_CLIENT_CERTIFICATE", "false"
+        ).lower()
+        if use_client_cert not in ("true", "false"):
+            raise ValueError(
+                "Environment variable `GOOGLE_API_USE_CLIENT_CERTIFICATE` must be either `true` or `false`"
+            )
         client_cert_source_func = None
         is_mtls = False
-        if use_client_cert:
+        if use_client_cert == "true":
             if client_options.client_cert_source:
                 is_mtls = True
                 client_cert_source_func = client_options.client_cert_source
@@ -349,6 +371,7 @@ class AbstractOperationsClient(metaclass=AbstractOperationsClientMeta):
         page_token: Optional[str] = None,
         retry: OptionalRetry = gapic_v1.method.DEFAULT,
         timeout: Optional[float] = None,
+        compression: Optional[grpc.Compression] = gapic_v1.method.DEFAULT,
         metadata: Sequence[Tuple[str, str]] = (),
     ) -> pagers.ListOperationsPager:
         r"""Lists operations that match the specified filter in the request.
@@ -406,12 +429,21 @@ class AbstractOperationsClient(metaclass=AbstractOperationsClientMeta):
         )
 
         # Send the request.
-        response = rpc(request, retry=retry, timeout=timeout, metadata=metadata,)
+        response = rpc(
+            request,
+            retry=retry,
+            timeout=timeout,
+            compression=compression,
+            metadata=metadata,
+        )
 
         # This method is paged; wrap the response in a pager, which provides
         # an `__iter__` convenience method.
         response = pagers.ListOperationsPager(
-            method=rpc, request=request, response=response, metadata=metadata,
+            method=rpc,
+            request=request,
+            response=response,
+            metadata=metadata,
         )
 
         # Done; return the response.
@@ -423,6 +455,7 @@ class AbstractOperationsClient(metaclass=AbstractOperationsClientMeta):
         *,
         retry: OptionalRetry = gapic_v1.method.DEFAULT,
         timeout: Optional[float] = None,
+        compression: Optional[grpc.Compression] = gapic_v1.method.DEFAULT,
         metadata: Sequence[Tuple[str, str]] = (),
     ) -> operations_pb2.Operation:
         r"""Gets the latest state of a long-running operation.
@@ -441,7 +474,7 @@ class AbstractOperationsClient(metaclass=AbstractOperationsClientMeta):
         Returns:
             google.longrunning.operations_pb2.Operation:
                 This resource represents a long-
-                unning operation that is the result of a
+                running operation that is the result of a
                 network API call.
 
         """
@@ -459,7 +492,13 @@ class AbstractOperationsClient(metaclass=AbstractOperationsClientMeta):
         )
 
         # Send the request.
-        response = rpc(request, retry=retry, timeout=timeout, metadata=metadata,)
+        response = rpc(
+            request,
+            retry=retry,
+            timeout=timeout,
+            compression=compression,
+            metadata=metadata,
+        )
 
         # Done; return the response.
         return response
@@ -470,6 +509,7 @@ class AbstractOperationsClient(metaclass=AbstractOperationsClientMeta):
         *,
         retry: OptionalRetry = gapic_v1.method.DEFAULT,
         timeout: Optional[float] = None,
+        compression: Optional[grpc.Compression] = gapic_v1.method.DEFAULT,
         metadata: Sequence[Tuple[str, str]] = (),
     ) -> None:
         r"""Deletes a long-running operation. This method indicates that the
@@ -506,7 +546,11 @@ class AbstractOperationsClient(metaclass=AbstractOperationsClientMeta):
 
         # Send the request.
         rpc(
-            request, retry=retry, timeout=timeout, metadata=metadata,
+            request,
+            retry=retry,
+            timeout=timeout,
+            compression=compression,
+            metadata=metadata,
         )
 
     def cancel_operation(
@@ -515,6 +559,7 @@ class AbstractOperationsClient(metaclass=AbstractOperationsClientMeta):
         *,
         retry: OptionalRetry = gapic_v1.method.DEFAULT,
         timeout: Optional[float] = None,
+        compression: Optional[grpc.Compression] = gapic_v1.method.DEFAULT,
         metadata: Sequence[Tuple[str, str]] = (),
     ) -> None:
         r"""Starts asynchronous cancellation on a long-running operation.
@@ -560,5 +605,9 @@ class AbstractOperationsClient(metaclass=AbstractOperationsClientMeta):
 
         # Send the request.
         rpc(
-            request, retry=retry, timeout=timeout, metadata=metadata,
+            request,
+            retry=retry,
+            timeout=timeout,
+            compression=compression,
+            metadata=metadata,
         )

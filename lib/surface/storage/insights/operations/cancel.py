@@ -23,7 +23,6 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.core import log
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Cancel(base.Command):
   """Cancel an insights operation."""

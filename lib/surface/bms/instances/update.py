@@ -75,7 +75,7 @@ class Update(base.UpdateCommand):
         'os_image': os_image,
         'enable_hyperthreading': enable_hyperthreading,
         'ssh_keys': [],
-        'kms_crypto_key_version': None,
+        'kms_key_version': None,
     }
 
   def Run(self, args):
@@ -119,7 +119,7 @@ class UpdateAlpha(Update):
   def GetRequestFields(self, args, client, instance):
     return {
         **super().GetRequestFields(args, client, instance),
-        'kms_crypto_key_version': getattr(args, 'kms_crypto_key_version', None),
+        'kms_key_version': args.kms_crypto_key_version,
         'ssh_keys': args.CONCEPTS.ssh_keys.Parse(),
     }
 

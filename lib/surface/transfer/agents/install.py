@@ -200,6 +200,28 @@ def _check_if_docker_installed():
     raise OSError(error_format.format(executed_command=_get_executed_command()))
 
 
+# Pairs of user arg and Docker flag. Coincidence that it's just a case change.
+_ADD_IF_PRESENT_PAIRS = [
+    ('enable_multipart', '--enable-multipart'),
+    ('hdfs_data_transfer_protection', '--hdfs-data-transfer-protection'),
+    ('hdfs_namenode_uri', '--hdfs-namenode-uri'),
+    ('hdfs_username', '--hdfs-username'),
+    ('kerberos_config_file', '--kerberos-config-file'),
+    ('kerberos_keytab_file', '--kerberos-keytab-file'),
+    ('kerberos_service_principal', '--kerberos-service-principal'),
+    ('kerberos_user_principal', '--kerberos-user-principal'),
+    ('max_concurrent_small_file_uploads', '--entirefile-fr-parallelism'),
+]
+
+
+def _add_docker_flag_if_user_arg_present(user_args, docker_args):
+  """Adds user flags values directly directly to docker command."""
+  for user_arg, docker_flag in _ADD_IF_PRESENT_PAIRS:
+    user_value = getattr(user_args, user_arg, None)
+    if user_value is not None:
+      docker_args.append('{}={}'.format(docker_flag, user_value))
+
+
 def _get_docker_command(args, project, creds_file_path):
   """Returns docker command from user arguments and generated values."""
   base_docker_command = [
@@ -259,12 +281,6 @@ def _get_docker_command(args, project, creds_file_path):
   ]
   if mount_entire_filesystem:
     agent_args.append('--enable-mount-directory')
-  if args.enable_multipart is not None:
-    agent_args.append('--enable-multipart={}'.format(args.enable_multipart))
-  if getattr(args, 'max_concurrent_small_file_uploads', None):
-    # Flag is in alpha, so it may not always exist on args object.
-    agent_args.append('--entirefile-fr-parallelism={}'.format(
-        args.max_concurrent_small_file_uploads))
   if args.id_prefix:
     if args.count is not None:
       agent_id_prefix = args.id_prefix + '0'
@@ -272,6 +288,9 @@ def _get_docker_command(args, project, creds_file_path):
       agent_id_prefix = args.id_prefix
     # ID prefix must be the last argument for multipe-agent creation to work.
     agent_args.append('--agent-id-prefix={}'.format(agent_id_prefix))
+
+  _add_docker_flag_if_user_arg_present(args, agent_args)
+
   if args.s3_compatible_mode:
     # TODO(b/238213039): Remove when this flag becomes optional.
     agent_args.append('--enable-s3')
@@ -437,3 +456,66 @@ class InstallAlpha(Install):
         help='Adjust the maximum number of files less than or equal to 32 MiB'
         ' large that the agent can upload in parallel. Not recommended for'
         " users unfamiliar with Google Cloud's rate limiting.")
+
+    hdfs_group = parser.add_group(
+        category='HDFS',
+        hidden=True,
+    )
+    hdfs_group.add_argument(
+        '--hdfs-data-transfer-protection',
+        choices=['authentication', 'integrity', 'privacy'],
+        help=(
+            'Client-side quality of protection setting for Kerberized clusters.'
+            ' Client-side QOP value cannot be more restrictive than the'
+            ' server-side QOP value.'
+        ),
+    )
+    hdfs_group.add_argument(
+        '--hdfs-namenode-uri',
+        help=(
+            'A URI representing an HDFS cluster including a schema, namenode,'
+            ' and port. Examples: "rpc://my-namenode:8020",'
+            ' "http://my-namenode:9870".\n\nUse "http" or "https" for WebHDFS.'
+            ' If no schema is'
+            ' provided, the CLI assumes native "rpc". If no port is provided,'
+            ' the default is 8020 for RPC, 9870 for HTTP, and 9871 for HTTPS.'
+            ' For example, the input "my-namenode" becomes'
+            ' "rpc://my-namenode:8020".'
+        ),
+    )
+    hdfs_group.add_argument(
+        '--hdfs-username',
+        help='Username for connecting to an HDFS cluster with simple auth.',
+    )
+
+    kerberos_group = parser.add_group(
+        category='Kerberos',
+        hidden=True,
+    )
+    kerberos_group.add_argument(
+        '--kerberos-config-file', help='Path to Kerberos config file.'
+    )
+    kerberos_group.add_argument(
+        '--kerberos-keytab-file',
+        help=(
+            'Path to a Keytab file containing the user principal specified'
+            ' with the --kerberos-user-principal flag.'
+        ),
+    )
+    kerberos_group.add_argument(
+        '--kerberos-service-principal',
+        help=(
+            'Kerberos service principal to use, of the form'
+            ' "<primary>/<instance>". Realm is mapped from your Kerberos'
+            ' config. Any supplied realm is ignored. If not passed in, it will'
+            ' default to "hdfs/<namenode_fqdn>" (fqdn = fully qualified domain'
+            ' name).'
+        ),
+    )
+    kerberos_group.add_argument(
+        '--kerberos-user-principal',
+        help=(
+            'Kerberos user principal to use when connecting to an HDFS cluster'
+            ' via Kerberos auth.'
+        ),
+    )

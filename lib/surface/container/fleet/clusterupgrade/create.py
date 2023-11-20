@@ -36,3 +36,9 @@ class Create(clusterupgrade_update.Update):
     flags.AddDefaultUpgradeSoakingFlag()
     flags.AddUpgradeSoakingOverrideFlags(with_destructive=False)
     flags.AddUpstreamFleetFlags(with_destructive=False)
+
+
+@base.Hidden
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
+class CreateBetaAndGA(Create):
+  """Create the clusterupgrade feature for a fleet within a given project."""

@@ -19,6 +19,7 @@ from __future__ import division
 from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.storage import api_factory
+from googlecloudsdk.api_lib.storage import errors as api_errors
 from googlecloudsdk.api_lib.util import apis
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.iam import iam_util
@@ -62,13 +63,22 @@ class AddIamPolicyBinding(base.Command):
   def Run(self, args):
     url = storage_url.storage_url_from_string(args.url)
     errors_util.raise_error_if_not_gcs_managed_folder(args.command_path, url)
-    policy = api_factory.get_api(url.scheme).get_managed_folder_iam_policy(
-        url.bucket_name, url.object_name
-    )
+
+    api_client = api_factory.get_api(url.scheme)
+    messages = apis.GetMessagesModule('storage', 'v1')
+
+    try:
+      policy = api_client.get_managed_folder_iam_policy(
+          url.bucket_name, url.object_name
+      )
+    except api_errors.NotFoundError:
+      api_client.create_managed_folder(url.bucket_name, url.object_name)
+      policy = messages.Policy()
+
     return iam_command_util.add_iam_binding_to_resource(
         args,
         url,
-        apis.GetMessagesModule('storage', 'v1'),
+        messages,
         policy,
         set_iam_policy_task.SetManagedFolderIamPolicyTask,
     )

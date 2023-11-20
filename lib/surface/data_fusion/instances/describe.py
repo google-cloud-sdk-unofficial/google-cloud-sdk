@@ -37,21 +37,29 @@ class Describe(base.DescribeCommand):
   @staticmethod
   def Args(parser):
     resource_args.AddInstanceResourceArg(parser, 'Instance to describe.')
-    parser.display_info.AddFormat('table[box]('
-                                  'name.segment(5):label=NAME,'
-                                  'type:label=EDITION,'
-                                  'createTime:reverse:label=CREATE_TIME,'
-                                  'updateTime:reverse:label=UPDATE_TIME,'
-                                  'zone:label=ZONE,'
-                                  'service_endpoint:label=INSTANCE_URL'
-                                  ')')
+    parser.display_info.AddFormat(
+        'table[box]('
+        'name.segment(5):label=NAME,'
+        'type:label=EDITION,'
+        'createTime:reverse:label=CREATE_TIME,'
+        'updateTime:reverse:label=UPDATE_TIME,'
+        'zone:label=ZONE,'
+        'version:label=VERSION,'
+        'patchRevision:label=PATCH_REVISION,'
+        'availableVersion:label=AVAILABLE_VERSIONS_TO_UPDATE,'
+        'service_endpoint:label=INSTANCE_URL'
+        ')'
+    )
 
   def Run(self, args):
     datafusion = df.Datafusion()
     instance_ref = args.CONCEPTS.instance.Parse()
 
-    request = datafusion.messages.DatafusionProjectsLocationsInstancesGetRequest(
-        name=instance_ref.RelativeName())
+    request = (
+        datafusion.messages.DatafusionProjectsLocationsInstancesGetRequest(
+            name=instance_ref.RelativeName()
+        )
+    )
 
     instance = datafusion.client.projects_locations_instances.Get(request)
     return instance

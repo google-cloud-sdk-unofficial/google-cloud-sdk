@@ -42,7 +42,6 @@ DETAILED_HELP = {
 }
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Repair(base.UpdateCommand):
   """Repair a management DNS zone binding."""

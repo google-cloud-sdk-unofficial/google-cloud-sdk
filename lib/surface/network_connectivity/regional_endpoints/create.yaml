@@ -11,7 +11,7 @@
           --region=us-centeral1
           [--network=my-network]
           [--subnetwork=my-subnet]
-          --endpoint=my-target-endpoint
+          --target-google-api=my-target-endpoint
           [--enable-global-access]
 
   arguments:
@@ -41,9 +41,9 @@
     - arg_name: subnetwork
       api_field: googleCloudNetworkconnectivityV1betaRegionalEndpoint.subnetwork
       help_text: The name of the subnetwork from which the IP address will be allocated.
-    - arg_name: endpoint
+    - arg_name: target-google-api
       required: true
-      api_field: googleCloudNetworkconnectivityV1betaRegionalEndpoint.targetEndpoint
+      api_field: googleCloudNetworkconnectivityV1betaRegionalEndpoint.targetGoogleApi
       help_text: The service endpoint the regional endpoint will connect to.
     labels:
       api_field: googleCloudNetworkconnectivityV1betaRegionalEndpoint.labels

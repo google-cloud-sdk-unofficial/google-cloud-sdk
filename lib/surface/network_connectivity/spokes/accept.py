@@ -30,7 +30,7 @@ from googlecloudsdk.core import resources
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 @base.Deprecate(
-    is_removed=False,
+    is_removed=True,
     warning=(
         'This command is deprecated. '
         'Please use `gcloud network-connectivity hubs accept-spoke` instead.'

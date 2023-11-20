@@ -33,21 +33,21 @@ class Update(base.UpdateCommand):
 
   ## EXAMPLES
 
-  To create a quota preference named in region 'us-central1' that applies to the
-  'default_limit' quota for 'projects/12321', run:
+  To create a quota preference named in region `us-central1` that applies to the
+  `default_limit` quota for `projects/12321`, run:
 
     $ {command}
-    --service=example.{properties.VALUES.core.universe_domain.Get()}
+    --service=example.googleapis.com
     --project=12321
     --quota-id=default_limit
     --preferred-value=100
     --dimensions=regions=us-central1
 
 
-  To create a quota preference for an organization, run:
+  To create a quota preference for `organizations/123`, run:
 
     $ {command}
-    --service=example.{properties.VALUES.core.universe_domain.Get()}
+    --service=example.googleapis.com
     --organization=123
     --quota-id=default_limit
     --preferred-value=200
@@ -66,7 +66,7 @@ class Update(base.UpdateCommand):
     flags.Service().AddToParser(parser)
     flags.PreferredValue().AddToParser(parser)
     flags.QuotaId(positional=False).AddToParser(parser)
-    flags.AddConsumerFlags(parser)
+    flags.AddConsumerFlags(parser, 'quota preference to update')
 
     # optional flags
     flags.Dimensions().AddToParser(parser)

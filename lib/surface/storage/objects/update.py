@@ -132,6 +132,7 @@ def _add_common_args(parser):
   flags.add_encryption_flags(parser, allow_patch=True)
   flags.add_precondition_flags(parser)
   flags.add_object_metadata_flags(parser, allow_patch=True)
+  flags.add_per_object_retention_flags(parser, is_update=True)
   flags.add_read_paths_from_stdin_flag(
       parser,
       help_text=(
@@ -151,7 +152,7 @@ def _add_alpha_args(parser):
   Returns:
     objects update flag group
   """
-  flags.add_retention_flags(parser, is_update=True)
+  del parser  # Unused.
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)

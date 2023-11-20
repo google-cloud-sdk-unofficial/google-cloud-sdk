@@ -43,7 +43,6 @@ class Disable(base.UpdateCommand, base.DisableCommand):
   def Args(cls, parser):
     parser.add_argument(
         '--fleet-default-member-config',
-        hidden=True,
         action='store_true',
         help="""If specified, deletes the default membership
         configuration present in your fleet.

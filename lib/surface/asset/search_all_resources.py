@@ -169,7 +169,7 @@ def AddAssetTypesArgument(parser):
       default=[],
       help=("""\
         A list of asset types that this request searches for. If empty, it will
-        search all the [searchable asset types](https://cloud.google.com/asset-inventory/docs/supported-asset-types#searchable_asset_types).
+        search all the [searchable asset types](https://cloud.google.com/asset-inventory/docs/supported-asset-types).
 
         Regular expressions are also supported. For example:
 

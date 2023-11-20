@@ -22,7 +22,6 @@ from googlecloudsdk.api_lib.storage import insights_api
 from googlecloudsdk.calliope import base
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class List(base.ListCommand):
   """List insights operations."""

@@ -20,7 +20,7 @@ from __future__ import unicode_literals
 
 import uuid
 
-from googlecloudsdk.api_lib.transfer.appliances import operations
+from googlecloudsdk.api_lib.transfer.appliances import operations_util
 from googlecloudsdk.api_lib.util import apis
 from googlecloudsdk.api_lib.util import exceptions as gcloud_exception
 from googlecloudsdk.calliope import base
@@ -51,7 +51,8 @@ class Update(base.Command):
 
   @staticmethod
   def Args(parser):
-    resource_args.add_order_resource_arg(parser, 'update')
+    resource_args.add_order_resource_arg(
+        parser, resource_args.ResourceVerb.UPDATE)
     parser.add_argument(
         '--submit',
         action='store_true',
@@ -90,7 +91,8 @@ class Update(base.Command):
                 updateMask=update_mask,
             )
         )
-        results.append(operations.block_until_appliance(operation, 'update'))
+        results.append(operations_util.wait_then_yield_appliance(
+            operation, 'update'))
     # Map args to the order resource, make the API call if needed.
     update_mask = mapping_util.apply_args_to_order(order, args)
     if update_mask:
@@ -102,7 +104,7 @@ class Update(base.Command):
               updateMask=update_mask,
           )
       )
-      results.append(operations.block_until_order(operation, 'update'))
+      results.append(operations_util.wait_then_yield_order(operation, 'update'))
     if args.submit:
       operation = client.projects_locations_orders.Submit(
           messages.TransferapplianceProjectsLocationsOrdersSubmitRequest(
@@ -110,11 +112,12 @@ class Update(base.Command):
       if update_mask:
         # We don't want to dump out the order twice, so when an order update
         # already occurred we just wait for the submit operation to complete.
-        operations.block_until_done(operation, 'submit')
+        operations_util.wait_then_yield_nothing(operation, 'submit')
       else:
         # Since there's no update operation on the order we can yield an order
         # and add it to the result output.
-        results.append(operations.block_until_order(operation, 'submit'))
+        results.append(operations_util.wait_then_yield_order(
+            operation, 'submit'))
     if not results:
       log.warning('No updates were performed.')
     return results

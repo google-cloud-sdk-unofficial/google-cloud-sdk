@@ -33,17 +33,17 @@ _DETAILED_HELP = {
 
 _FORMAT = """
   table(
-    name.basename():label=NAME,
+    name.basename():label=ID,
     displayName,
-    description,
-    workloadReference
+    workloadReference,
+    createTime.date(unit=1000, tz_default=UTC)
   )
 """
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class List(base.ListCommand):
-  """List application workloads."""
+  """List Apphub application workloads."""
 
   detailed_help = _DETAILED_HELP
 

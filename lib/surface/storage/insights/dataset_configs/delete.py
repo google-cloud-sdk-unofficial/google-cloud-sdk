@@ -17,12 +17,11 @@
 
 from googlecloudsdk.api_lib.storage import insights_api
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.storage.insights.dataset_configs import log_util
 from googlecloudsdk.command_lib.storage.insights.dataset_configs import resource_args
-from googlecloudsdk.core import log
 from googlecloudsdk.core.console import console_io
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Delete(base.Command):
   """Delete dataset config for insights."""
@@ -60,7 +59,10 @@ class Delete(base.Command):
     parser.add_argument(
         '--auto-delete-link',
         action='store_true',
-        help='Delete the link before config gets deleted explicitly.',
+        help=(
+            'Delete the BigQuery instance links before the config gets deleted'
+            ' explicitly.'
+        ),
     )
     parser.add_argument(
         '--force',
@@ -83,18 +85,20 @@ class Delete(base.Command):
       )
 
     if args.auto_delete_link:
-      client.delete_dataset_config_link(
+      delete_dataset_config_link_operation = client.delete_dataset_config_link(
           dataset_config_relative_name,
       )
-      log.status.Print(
-          'Deleted dataset config link for dataset config: {}'.format(
-              dataset_config_relative_name
-          )
+      log_util.dataset_config_operation_started_and_status_log(
+          'Delete link',
+          dataset_config_relative_name,
+          delete_dataset_config_link_operation.name,
       )
 
-    client.delete_dataset_config(
-        dataset_config_relative_name,
+    delete_dataset_config_operation = client.delete_dataset_config(
+        dataset_config_relative_name
     )
-    log.status.Print(
-        'Deleted dataset config: {}'.format(dataset_config_relative_name)
+    log_util.dataset_config_operation_started_and_status_log(
+        'Delete',
+        dataset_config_relative_name,
+        delete_dataset_config_operation.name,
     )

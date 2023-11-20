@@ -49,7 +49,8 @@ class Describe(base.DescribeCommand):
 
   @staticmethod
   def Args(parser):
-    resource_args.add_appliance_resource_arg(parser, 'describe')
+    resource_args.add_appliance_resource_arg(
+        parser, resource_args.ResourceVerb.DESCRIBE)
 
   def Run(self, args):
     client = apis.GetClientInstance('transferappliance', 'v1alpha1')

@@ -81,7 +81,10 @@ class Create(base.CreateCommand):
         'kms-project': '--gce-pd-kms-key-project'
     }
     kms_resource_args.AddKmsKeyResourceArg(
-        parser, 'cluster', flag_overrides=kms_flag_overrides)
+        parser,
+        'cluster',
+        flag_overrides=kms_flag_overrides,
+        name='--gce-pd-kms-key')
 
   @staticmethod
   def ValidateArgs(args):

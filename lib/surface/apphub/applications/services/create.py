@@ -37,7 +37,7 @@ _DETAILED_HELP = {
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Create(base.CreateCommand):
-  """Create an application service."""
+  """Create an Apphub application service."""
 
   detailed_help = _DETAILED_HELP
 

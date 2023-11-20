@@ -17,8 +17,6 @@
       spec: !REF googlecloudsdk.command_lib.bigtable.resources:view
     params:
     - arg_name: definition-file
-      api_field: view
-      type: "googlecloudsdk.calliope.arg_parsers:YAMLFileContents:"
       help_text: |
         Path to a JSON or YAML file containing a valid view protobuf.
 
@@ -28,13 +26,13 @@
         {
           "subsetView":
           {
-            "rowPrefixes": ["cm93MQ=="],
+            "rowPrefixes": ["store1"],
             "familySubsets":
             {
               "column_family_name":
               {
-                "qualifiers":["Y29sdW1uX2E="],
-                "qualifierPrefixes":["Y29sdW1uX3ByZWZpeDE="]
+                "qualifiers":["address"],
+                "qualifierPrefixes":["tel"]
               }
             }
           },
@@ -45,6 +43,15 @@
       default: true
       help_text: |
         If provided, a diff is displayed with a prompt to proceed or cancel the update.
+    - arg_name: pre-encoded
+      type: bool
+      default: false
+      help_text: |
+        By default, Base64 encoding is applied to all binary fields ("rowPrefixes", "qualifiers" and
+        "qualifierPrefixes") in the JSON or YAML definition file.
+
+        Use this to indicate that all binary fields are already Base64-encoded and should be used
+        directly.
 
   async:
     collection: bigtableadmin.operations

@@ -18,34 +18,6 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
-from googlecloudsdk.command_lib.apphub import consts
-from googlecloudsdk.core import properties
-from googlecloudsdk.core import resources
-
-
-def GetProjectLocationResource(locations_id):
-  return resources.REGISTRY.Parse(
-      locations_id,
-      params={
-          consts.Resource.PROJECTS_ID: properties.VALUES.core.project.GetOrFail,
-      },
-      collection=consts.Collections.PROJECTS_LOCATIONS,
-  )
-
-
-def GetGlobalTopologyResourceRelativeName():
-  return (
-      GetProjectLocationResource(consts.Resource.GLOBAL_LOCATION).RelativeName()
-      + consts.Topology.TOPOLOGY_SUFFIX
-  )
-
-
-def GetGlobalTelemetryResourceRelativeName():
-  return (
-      GetProjectLocationResource(consts.Resource.GLOBAL_LOCATION).RelativeName()
-      + consts.Telemetry.TELEMETRY_SUFFIX
-  )
-
 
 def DefaultToGlobal():
   """Returns 'global' to be used as a fallthrough hook in resources.yaml."""

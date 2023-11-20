@@ -20,7 +20,7 @@ from __future__ import unicode_literals
 
 import uuid
 
-from googlecloudsdk.api_lib.transfer.appliances import operations
+from googlecloudsdk.api_lib.transfer.appliances import operations_util
 from googlecloudsdk.api_lib.util import apis
 from googlecloudsdk.api_lib.util import exceptions as gcloud_exception
 from googlecloudsdk.calliope import base
@@ -50,7 +50,8 @@ class Delete(base.DeleteCommand):
 
   @staticmethod
   def Args(parser):
-    resource_args.add_order_resource_arg(parser, verb='delete')
+    resource_args.add_order_resource_arg(
+        parser, verb=resource_args.ResourceVerb.DELETE)
     parser.add_argument(
         '--keep-appliances',
         action='store_true',
@@ -75,8 +76,8 @@ class Delete(base.DeleteCommand):
         operation = client.projects_locations_appliances.Delete(
             messages.TransferapplianceProjectsLocationsAppliancesDeleteRequest(
                 name=appliance_name, requestId=uuid.uuid4().hex))
-        operations.block_until_done(operation, 'delete appliance')
+        operations_util.wait_then_yield_nothing(operation, 'delete appliance')
     operation = client.projects_locations_orders.Delete(
         messages.TransferapplianceProjectsLocationsOrdersDeleteRequest(
             name=order_ref.RelativeName(), requestId=uuid.uuid4().hex))
-    return operations.block_until_done(operation, 'delete order')
+    return operations_util.wait_then_yield_nothing(operation, 'delete order')

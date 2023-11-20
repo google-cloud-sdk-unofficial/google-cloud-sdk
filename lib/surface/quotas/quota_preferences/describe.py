@@ -30,21 +30,17 @@ class Describe(base.DescribeCommand):
   ## EXAMPLES
 
   To get the details of quota `CpusPerProject` for service
-  'example.{properties.VALUES.core.universe_domain.Get()}' and consumer
-  'projects/12321', run:
+  `example.googleapis.com` and consumer `projects/12321`, run:
 
-    $ {command} CpusPerProject
-    --service=example.{properties.VALUES.core.universe_domain.Get()}
-    --project=12321
+    $ {command} CpusPerProject --service=example.googleapis.com --project=12321
+    $ {command} CpusPerProject --service=example.googleapis.com
+    --project=my-project-id
 
 
   To get the details of quota `CpusPerProject` for service
-  'example.{properties.VALUES.core.universe_domain.Get()}' and consumer
-  'folders/12345', run:
+  `example.googleapis.com` and consumer `folders/12345`, run:
 
-    $ {command} CpusPerProject
-    --service=example.{properties.VALUES.core.universe_domain.Get()}
-    --folder=12345
+    $ {command} CpusPerProject --service=example.googleapis.com --folder=12345
   """
 
   @staticmethod
@@ -55,8 +51,8 @@ class Describe(base.DescribeCommand):
       parser: An argparse parser that you can use to add arguments that go on
         the command line after this command. Positional arguments are allowed.
     """
+    flags.AddConsumerFlags(parser, 'quota preference to describe')
     flags.PreferrenceId().AddToParser(parser)
-    flags.AddConsumerFlags(parser)
 
   def Run(self, args):
     """Run command.

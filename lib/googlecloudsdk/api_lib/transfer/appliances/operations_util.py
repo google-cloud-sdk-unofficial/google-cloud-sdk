@@ -26,7 +26,7 @@ from googlecloudsdk.core import resources
 COLLECTION = 'transferappliance.projects.locations.operations'
 
 
-def block_until_done(operation, verb, result_type=None, client=None):
+def _wait_for_operation(operation, verb, result_type=None, client=None):
   """Blocks execution until an operation completes and handles the result.
 
   Args:
@@ -38,7 +38,7 @@ def block_until_done(operation, verb, result_type=None, client=None):
         the results and operations clients.
 
   Returns:
-    The result of the operation or nothing (if None).
+    poller.GetResult(operation).
   Raises:
     InternalError if provided `result_type` is not `appliance` or `order`.
   """
@@ -62,7 +62,22 @@ def block_until_done(operation, verb, result_type=None, client=None):
   )
 
 
-def block_until_appliance(operation, verb, client=None):
+def wait_then_yield_nothing(operation, verb, client=None):
+  """Blocks execution until an operation completes and does not yield a result.
+
+  Args:
+    operation (messages.Operation): The operation to wait on.
+    verb (str): The verb to use in messages, such as "delete order".
+    client (apitools.base.py.base_api.BaseApiService): API client for loading
+        the results and operations clients.
+
+  Returns:
+    poller.GetResult(operation).
+  """
+  return _wait_for_operation(operation, verb, result_type=None, client=client)
+
+
+def wait_then_yield_appliance(operation, verb, client=None):
   """Blocks execution until an operation completes and returns an appliance.
 
   Args:
@@ -72,13 +87,13 @@ def block_until_appliance(operation, verb, client=None):
         loading the results and operations clients.
 
   Returns:
-    The appliance that was a result of the operation.
+    poller.GetResult(operation).
   """
   verb += ' appliance'
-  return block_until_done(operation, verb, 'appliance', client=client)
+  return _wait_for_operation(operation, verb, 'appliance', client=client)
 
 
-def block_until_order(operation, verb, client=None):
+def wait_then_yield_order(operation, verb, client=None):
   """Blocks execution until an operation completes and returns an order.
 
   Args:
@@ -88,7 +103,7 @@ def block_until_order(operation, verb, client=None):
         loading the results and operations clients.
 
   Returns:
-    The order that was a result of the operation.
+    poller.GetResult(operation).
   """
   verb += ' order'
-  return block_until_done(operation, verb, 'order', client=client)
+  return _wait_for_operation(operation, verb, 'order', client=client)

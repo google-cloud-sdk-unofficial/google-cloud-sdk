@@ -55,7 +55,6 @@ class Update(base.Command):
   _support_composer3flags = False
   _support_maintenance_window = True
   _support_environment_size = True
-  _support_airflow_database_retention = False
   _support_cloud_data_lineage_integration = False
 
   @staticmethod
@@ -83,9 +82,10 @@ class Update(base.Command):
                                            release_track)
     flags.AddMasterAuthorizedNetworksUpdateFlagsToGroup(
         Update.update_type_group)
-    if release_track == base.ReleaseTrack.ALPHA:
-      flags.AIRFLOW_DATABASE_RETENTION_DAYS.AddToParser(
-          Update.update_type_group.add_argument_group(hidden=True))
+
+    flags.AIRFLOW_DATABASE_RETENTION_DAYS.AddToParser(
+        Update.update_type_group.add_argument_group(hidden=True)
+    )
 
     flags.AddScheduledSnapshotFlagsToGroup(Update.update_type_group)
 
@@ -264,9 +264,9 @@ class Update(base.Command):
       params['maintenance_window_end'] = args.maintenance_window_end
       params[
           'maintenance_window_recurrence'] = args.maintenance_window_recurrence
-    if self._support_airflow_database_retention:
-      params[
-          'airflow_database_retention_days'] = args.airflow_database_retention_days
+    params['airflow_database_retention_days'] = (
+        args.airflow_database_retention_days
+    )
     if args.enable_master_authorized_networks and args.disable_master_authorized_networks:
       raise command_util.InvalidUserInputError(
           'Cannot specify --enable-master-authorized-networks with --disable-master-authorized-networks'
@@ -538,7 +538,6 @@ class UpdateAlpha(UpdateBeta):
   """Update properties of a Cloud Composer environment."""
 
   _support_autoscaling = True
-  _support_airflow_database_retention = True
 
   @staticmethod
   def Args(parser):

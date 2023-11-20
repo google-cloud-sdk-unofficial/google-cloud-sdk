@@ -414,6 +414,7 @@ class CreateAlpha(Create):
   _support_custom_hostnames = True
   _support_storage_pool = True
   _support_specific_then_x_affinity = True
+  _support_ipv6_only = True
 
   @classmethod
   def Args(cls, parser):
@@ -441,6 +442,7 @@ class CreateAlpha(Create):
         support_custom_hostnames=cls._support_custom_hostnames,
         support_storage_pool=cls._support_storage_pool,
         support_specific_then_x_affinity=cls._support_specific_then_x_affinity,
+        support_ipv6_only=cls._support_ipv6_only,
     )
 
     cls.AddSourceInstanceTemplate(parser)

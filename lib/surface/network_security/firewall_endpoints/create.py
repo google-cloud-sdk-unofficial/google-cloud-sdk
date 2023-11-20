@@ -43,7 +43,7 @@ DETAILED_HELP = {
 }
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
 class Create(base.CreateCommand):
   """Create a Firewall Plus endpoint."""
 
@@ -57,6 +57,9 @@ class Create(base.CreateCommand):
     labels_util.AddCreateLabelsFlags(parser)
 
   def Run(self, args):
+    return self._Run(args)
+
+  def _Run(self, args, target_firewall_attachment=None, endpoint_type=None):
     client = activation_api.Client(self.ReleaseTrack())
 
     endpoint = args.CONCEPTS.firewall_endpoint.Parse()
@@ -71,7 +74,9 @@ class Create(base.CreateCommand):
         name=endpoint.Name(),
         parent=endpoint.Parent().RelativeName(),
         description=getattr(args, 'description', None),
-        labels=labels
+        labels=labels,
+        target_firewall_attachment=target_firewall_attachment,
+        endpoint_type=endpoint_type,
     )
     # Return the in-progress operation if async is requested.
     if is_async:
@@ -88,6 +93,30 @@ class Create(base.CreateCommand):
         has_result=True,
         max_wait=max_wait,
     )
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class CreateAlpha(Create):
+  """Create a Firewall Plus endpoint."""
+
+  @classmethod
+  def Args(cls, parser):
+    super(CreateAlpha, cls).Args(parser)
+    activation_flags.AddTargetFirewallAttachmentArg(parser)
+
+  def Run(self, args):
+    target_firewall_attachment = getattr(
+        args, 'target_firewall_attachment', None
+    )
+
+    if target_firewall_attachment is not None:
+      return self._Run(
+          args, target_firewall_attachment, endpoint_type='THIRD_PARTY'
+      )
+    else:
+      return self._Run(
+          args, target_firewall_attachment, endpoint_type='TYPE_UNSPECIFIED'
+      )
 
 
 Create.detailed_help = DETAILED_HELP

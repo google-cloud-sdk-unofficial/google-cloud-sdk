@@ -17,11 +17,10 @@
 
 from googlecloudsdk.api_lib.storage import insights_api
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.storage.insights.dataset_configs import log_util
 from googlecloudsdk.command_lib.storage.insights.dataset_configs import resource_args
-from googlecloudsdk.core import log
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class CreateLink(base.Command):
   """Create a link to a BigQuery instance."""
@@ -53,11 +52,11 @@ class CreateLink(base.Command):
         args.CONCEPTS.dataset_config.Parse().RelativeName()
     )
 
-    client.create_dataset_config_link(
+    create_dataset_config_link_operation = client.create_dataset_config_link(
         dataset_config_relative_name,
     )
-    log.status.Print(
-        'Created dataset config link for dataset config: {}'.format(
-            dataset_config_relative_name
-        )
+    log_util.dataset_config_operation_started_and_status_log(
+        'Create link',
+        dataset_config_relative_name,
+        create_dataset_config_link_operation.name,
     )

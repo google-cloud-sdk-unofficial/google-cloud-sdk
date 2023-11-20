@@ -194,3 +194,9 @@ class Describe(feature_base.DescribeCommand):
         + [current_cluster_upgrade]
         + downstream_cluster_upgrades
     )
+
+
+@base.Hidden
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
+class DescribeBetaAndGA(Describe):
+  """Describe the clusterupgrade feature for a fleet within a given project."""

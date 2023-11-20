@@ -20,7 +20,7 @@ from __future__ import unicode_literals
 
 import uuid
 
-from googlecloudsdk.api_lib.transfer.appliances import operations
+from googlecloudsdk.api_lib.transfer.appliances import operations_util
 from googlecloudsdk.api_lib.util import apis
 from googlecloudsdk.api_lib.util import exceptions as gcloud_exception
 from googlecloudsdk.calliope import base
@@ -48,7 +48,8 @@ class Delete(base.DeleteCommand):
 
   @staticmethod
   def Args(parser):
-    resource_args.add_appliance_resource_arg(parser, verb='delete')
+    resource_args.add_appliance_resource_arg(
+        parser, verb=resource_args.ResourceVerb.DELETE)
 
   @gcloud_exception.CatchHTTPErrorRaiseHTTPException(
       'Status code: {status_code}. {status_message}.'
@@ -62,5 +63,5 @@ class Delete(base.DeleteCommand):
             name=name, requestId=uuid.uuid4().hex
         )
     )
-    # TODO(b/295557626) Fix naming so this is less confusing.
-    return operations.block_until_done(operation, 'delete appliance')
+    return operations_util.wait_then_yield_nothing(
+        operation, 'delete appliance')

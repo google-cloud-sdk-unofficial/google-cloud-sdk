@@ -64,3 +64,4 @@
                fields.slice(:-1).*extract('fieldPath').*flatten().join('\n'):label=FIELD_PATHS,\
                fields.slice(:-1).*extract('order').*flatten().join('\n'):label=ORDER,\
                fields.slice(:-1).*extract('arrayConfig').*flatten().join('\n'):label=ARRAY_CONFIG)"
+    release_tracks: [BETA, GA]

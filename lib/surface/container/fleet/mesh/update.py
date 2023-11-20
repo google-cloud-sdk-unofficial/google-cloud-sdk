@@ -136,7 +136,6 @@ class UpdateAlpha(base.UpdateCommand):
 
     args_group.add_argument(
         '--fleet-default-member-config',
-        hidden=True,
         type=str,
         help="""The path to a service-mesh.yaml configuration file.
 
@@ -168,7 +167,6 @@ class UpdateAlpha(base.UpdateCommand):
     membership_configs_group = membership_group.add_group(required=True)
     membership_configs_group.add_argument(
         '--origin',
-        hidden=True,
         choices=['fleet'],
         help='Changing the origin of the membership.',
     )
@@ -215,7 +213,6 @@ class UpdateGA(base.UpdateCommand):
 
     args_group.add_argument(
         '--fleet-default-member-config',
-        hidden=True,
         type=str,
         help="""The path to a service-mesh.yaml configuration file.
 
@@ -238,7 +235,6 @@ class UpdateGA(base.UpdateCommand):
     membership_configs_group = membership_group.add_group(required=True)
     membership_configs_group.add_argument(
         '--origin',
-        hidden=True,
         choices=['fleet'],
         help='Changing the origin of the membership.',
     )

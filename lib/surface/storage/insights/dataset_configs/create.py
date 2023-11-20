@@ -16,33 +16,47 @@
 """Implementation of create command for insights dataset config."""
 
 import csv
+import os
 
 from apitools.base.py import exceptions as apitools_exceptions
 from googlecloudsdk.api_lib.storage import insights_api
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.storage import errors
 from googlecloudsdk.command_lib.storage import flags
+from googlecloudsdk.command_lib.storage.insights.dataset_configs import log_util
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 from googlecloudsdk.core.util import files
 
 
 def _get_source_projects_list(source_projects_file):
-  with files.FileReader(source_projects_file) as f:
-    reader = csv.reader(f)
+  source_projects_abs_path = os.path.expanduser(source_projects_file)
 
-    source_projects_list = []
-    for row in reader:
-      if (len(row)) > 1:
-        raise ValueError(
-            'CSV file contains multiple rows with multiple columns.'
-        )
-      source_projects_list.append(int(row[0]))
+  with files.FileReader(source_projects_abs_path) as f:
+    try:
+      reader = csv.reader(f)
 
-    return source_projects_list
+      source_projects_list = []
+      for row_number, row in enumerate(reader):
+        row = [element.strip() for element in row if element.strip()]
+
+        if (len(row)) > 1:
+          raise ValueError(
+              'Row {} Should have excatly 1 column, but found {} columns'
+              .format(row_number, len(row))
+          )
+        if any(row) and row[0].strip():
+          source_projects_list.append(int(row[0].strip()))
+    except Exception as e:
+      raise errors.Error(
+          'Invalid format for file {} provided for the --source-projects-file'
+          ' flag.\nError: {}'.format(source_projects_file, e)
+      )
+
+  return source_projects_list
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Create(base.Command):
   """Create a new dataset config for insights."""
@@ -59,7 +73,7 @@ class Create(base.Command):
          $ {command} my-config --location=us-central1
          --source-projects=123456,456789 --organization=54321 --retention-period-days=1
 
-      To create the dataset config, that automatically addes new buckets into
+      To create a dataset config that automatically adds new buckets into
       config:
 
          $ {command} my-config --location=us-central1
@@ -93,7 +107,10 @@ class Create(base.Command):
         '--source-projects-file',
         type=str,
         metavar='SOURCE_PROJECT_NUMBERS_IN_FILE',
-        help='CSV file containing source project numbers, one per line.',
+        help=(
+            'CSV formatted file containing source project numbers, one per'
+            ' line.'
+        ),
     )
     parser.add_argument(
         '--organization',
@@ -184,8 +201,8 @@ class Create(base.Command):
         '--auto-add-new-buckets',
         action='store_true',
         help=(
-            'Automatically include any new buckets created within criteria'
-            ' defined in the given config.'
+            'Automatically include any new buckets created if they satisfy'
+            ' criteria defined in config settings.'
         ),
     )
 
@@ -204,7 +221,7 @@ class Create(base.Command):
     api_client = insights_api.InsightsApi()
 
     try:
-      dataset_config = api_client.create_dataset_config(
+      dataset_config_operation = api_client.create_dataset_config(
           dataset_config_name=args.DATASET_CONFIG_NAME,
           location=args.location,
           destination_project=properties.VALUES.core.project.Get(),
@@ -218,11 +235,12 @@ class Create(base.Command):
           exclude_source_locations=args.exclude_source_locations,
           auto_add_new_buckets=args.auto_add_new_buckets,
           retention_period=args.retention_period_days,
-          skip_verification=args.skip_verification,
           identity_type=args.identity,
           description=args.description,
       )
-      log.status.Print('Created dataset config: {}'.format(dataset_config.name))
+      log_util.dataset_config_operation_started_and_status_log(
+          'Create', args.DATASET_CONFIG_NAME, dataset_config_operation.name
+      )
     except apitools_exceptions.HttpBadRequestError:
       log.status.Print(
           'We caught an exception while trying to create the'

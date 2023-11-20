@@ -25,37 +25,15 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute.queued_resources import flags
 
 
-DETAILED_HELP = {
-    'DESCRIPTION':
-        """\
-        {command} displays all Google Compute Engine queued resources in a
-        project in given zones.
-      """,
-    'EXAMPLES':
-        """\
-        To list all queued resources in us-central1-b and europe-west1-d zones
-        in a project in table form, run:
-
-        $ {command} --zones=us-central1-b,europe-west1-d
-
-        To list the URIs of all queued resources in us-central1-b zone in a
-        project, run:
-
-        $ {command} --zones=us-central1-b --uri
-    """
-}
-
-
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class List(base.ListCommand):
-  """List Google Compute Engine queued resources."""
+  """List Compute Engine queued resources."""
 
   @staticmethod
   def Args(parser):
     flags.AddOutputFormat(parser)
     parser.display_info.AddUriFunc(utils.MakeGetUriFunc())
-    lister.AddBaseListerArgs(parser)
-    lister.AddZoneArg(parser, hidden=False, required=True)
+    lister.AddZonalListerArgs(parser)
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
@@ -68,4 +46,4 @@ class List(base.ListCommand):
 
     return lister.Invoke(request_data, list_implementation)
 
-List.detailed_help = DETAILED_HELP
+List.detailed_help = base_classes.GetZonalListerHelp('queued resources')

@@ -44,9 +44,14 @@ class Update(base.UpdateCommand):
       'EXAMPLES':
           """\
         To update instance 'my-instance' in project 'my-project' and location
-        'my-location' to version `6.1.0.0`, run:
+        'my-location' to version `6.9.2`, run:
 
-          $ {command} --project=my-project --location=my-location --version=6.1.0.0 my-instance
+          $ {command} --project=my-project --location=my-location --version=6.9.2 my-instance
+
+        To update instance 'my-instance' in project 'my-project' and location
+        'my-location' to patch revision '6.9.2.1', run:
+
+          $ {command} --project=my-project --location=my-location --version=6.9.2 --patch_revision=6.9.2.1 my-instance
           """,
   }
 
@@ -81,6 +86,7 @@ class Update(base.UpdateCommand):
         help='Options to use for instance update, '
         'specified as KEY1=VALUE1,KEY2=VALUE2.')
     parser.add_argument('--version', help='Version of Datafusion to update to.')
+    parser.add_argument('--patch_revision', help='Patch revision version of Cloud Data Fusion to update to.')
 
   def Run(self, args):
     datafusion = df.Datafusion()
@@ -110,6 +116,7 @@ class Update(base.UpdateCommand):
     instance = datafusion.messages.Instance(
         name=instance_ref.RelativeName(),
         version=version,
+        patchRevision=args.patch_revision,
         enableStackdriverLogging=enable_stackdriver_logging,
         enableStackdriverMonitoring=enable_stackdriver_monitoring,
         enableRbac=enable_rbac,

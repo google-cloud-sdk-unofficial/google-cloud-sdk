@@ -39,7 +39,6 @@ DETAILED_HELP = {
 }
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Delete(base.DescribeCommand):
   """Delete a Google Cloud VMware Engine VPC network peering."""

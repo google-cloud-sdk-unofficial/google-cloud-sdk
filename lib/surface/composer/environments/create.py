@@ -147,8 +147,11 @@ information on how to structure KEYs and VALUEs, run
       'Cannot be updated.')
 
   version_group = parser.add_mutually_exclusive_group()
+  # TODO(b/309750417): Update help text
   airflow_version_type = arg_parsers.RegexpValidator(
-      r'^(\d+(?:\.\d+(?:\.\d+)?)?)', 'must be in the form X[.Y[.Z]].')
+      r'^(\d+(?:\.\d+(?:\.\d+(?:-build\.\d+)?)?)?)',
+      'must be in the form X[.Y[.Z]].',
+  )
   version_group.add_argument(
       '--airflow-version',
       type=airflow_version_type,
@@ -164,11 +167,13 @@ information on how to structure KEYs and VALUEs, run
       Composer version. The resolved version is stored in the created
       environment.""")
 
+  # TODO(b/309750417): Update help text
   image_version_type = arg_parsers.RegexpValidator(
-      r'^composer-(\d+(?:\.\d+.\d+(?:-[a-z]+\.\d+)?)?|latest)-airflow-(\d+(?:\.\d+(?:\.\d+)?)?)',
-      'must be in the form \'composer-A[.B.C[-D.E]]-airflow-X[.Y[.Z]]\' or '
-      '\'latest\' can be provided in place of the Cloud Composer version '
-      'string. For example: \'composer-latest-airflow-1.10.0\'.')
+      r'^composer-(\d+(?:\.\d+.\d+(?:-[a-z]+\.\d+)?)?|latest)-airflow-(\d+(?:\.\d+(?:\.\d+(?:-build\.\d+)?)?)?)',
+      "must be in the form 'composer-A[.B.C[-D.E]]-airflow-X[.Y[.Z]]' or "
+      "'latest' can be provided in place of the Cloud Composer version "
+      "string. For example: 'composer-latest-airflow-1.10.0'.",
+  )
   version_group.add_argument(
       '--image-version',
       type=image_version_type,
@@ -252,6 +257,9 @@ information on how to structure KEYs and VALUEs, run
   flags.TRIGGERER_COUNT.AddToParser(triggerer_params_group)
   flags.TRIGGERER_MEMORY.AddToParser(triggerer_params_group)
   flags.ENABLE_TRIGGERER.AddToParser(triggerer_params_group)
+
+  flags.AIRFLOW_DATABASE_RETENTION_DAYS.AddToParser(
+      parser.add_argument_group(hidden=True))
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
@@ -683,6 +691,7 @@ class Create(base.Command):
         cloud_sql_preferred_zone=args.cloud_sql_preferred_zone,
         release_track=self.ReleaseTrack(),
         storage_bucket=args.storage_bucket,
+        airflow_database_retention_days=args.airflow_database_retention_days
     )
     return environments_api_util.Create(self.env_ref, create_flags,
                                         is_composer_v1)
@@ -806,6 +815,7 @@ class CreateBeta(Create):
         disable_private_builds_only=args.disable_private_builds_only,
         release_track=self.ReleaseTrack(),
         storage_bucket=args.storage_bucket,
+        airflow_database_retention_days=args.airflow_database_retention_days
     )
 
     return environments_api_util.Create(self.env_ref, create_flags,
@@ -941,8 +951,6 @@ class CreateAlpha(CreateBeta):
         help="""The type of executor by which task instances are run on Airflow;
         currently supported executor types are CELERY and KUBERNETES.
         Defaults to CELERY. Cannot be updated.""")
-    flags.AIRFLOW_DATABASE_RETENTION_DAYS.AddToParser(
-        parser.add_argument_group(hidden=True))
 
   def GetOperationMessage(self, args, is_composer_v1):
     """See base class."""

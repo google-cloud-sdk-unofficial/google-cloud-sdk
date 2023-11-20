@@ -23,20 +23,17 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.vmware import flags
 
 DETAILED_HELP = {
-    'DESCRIPTION':
-        """
-          List manamgement DNS zone bindings in a VMware Engine private cloud.
+    'DESCRIPTION': """
+          List management DNS zone bindings in a VMware Engine private cloud.
         """,
-    'EXAMPLES':
-        """
-          To list manamgement DNS zone bindings in the `my-private-cloud` private cloud, run:
+    'EXAMPLES': """
+          To list management DNS zone bindings in the `my-private-cloud` private cloud, run:
 
             $ {command} --private-cloud=my-private-cloud --project=my-project --location=us-east2-b
     """,
 }
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class List(base.ListCommand):
   """List management DNS zone bindings in a VMware Engine private cloud."""

@@ -29,6 +29,5 @@ class CloudQuotas(base.Group):
   category = base.API_PLATFORM_AND_ECOSYSTEMS_CATEGORY
 
   def Filter(self, context, args):
-    # base.RequireProjectID(args)
     del context, args
     base.DisableUserProjectQuota()

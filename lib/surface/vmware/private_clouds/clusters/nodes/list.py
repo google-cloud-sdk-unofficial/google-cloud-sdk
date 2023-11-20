@@ -40,7 +40,6 @@ DETAILED_HELP = {
 }
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class List(base.ListCommand):
   """List nodes in a Google Cloud VMware Engine private cloud's cluster."""

@@ -21,7 +21,7 @@ from __future__ import unicode_literals
 import uuid
 
 
-from googlecloudsdk.api_lib.transfer.appliances import operations
+from googlecloudsdk.api_lib.transfer.appliances import operations_util
 from googlecloudsdk.api_lib.util import apis
 from googlecloudsdk.api_lib.util import exceptions as gcloud_exception
 from googlecloudsdk.calliope import base
@@ -156,7 +156,8 @@ class Create(base.Command):
             applianceId=args.name,
             parent=parent,
             requestId=uuid.uuid4().hex))
-    results.append(operations.block_until_appliance(operation, 'create'))
+    results.append(operations_util.wait_then_yield_appliance(
+        operation, 'create'))
 
     # Map args to the order resource, make the API call, append result.
     appliance_name = resource_args.get_appliance_name(region, args.name)
@@ -168,5 +169,6 @@ class Create(base.Command):
             orderId=args.name,
             parent=parent,
             requestId=uuid.uuid4().hex))
-    results.append(operations.block_until_order(operation, 'create'))
+    results.append(operations_util.wait_then_yield_order(
+        operation, 'create'))
     return results

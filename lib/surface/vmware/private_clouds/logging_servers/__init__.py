@@ -21,7 +21,6 @@ from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class LoggingServers(base.Group):
   """Manage logging-server in Google Cloud VMware Engine."""

@@ -111,7 +111,6 @@ class Create(base.CreateCommand):
     parser.add_argument(
         '--type',
         required=False,
-        hidden=True,
         default='STANDARD',
         choices={
             'STANDARD': """Standard private is a zonal resource, with 3 or more nodes nodes. Default type.""",
@@ -127,7 +126,6 @@ class Create(base.CreateCommand):
     parser.add_argument(
         '--preferred-zone',
         required=False,
-        hidden=True,
         help="""\
         Zone that will remain operational when connection between the two zones is
         lost. Specify the resource name of a zone that belongs to the region of the
@@ -137,7 +135,6 @@ class Create(base.CreateCommand):
     parser.add_argument(
         '--secondary-zone',
         required=False,
-        hidden=True,
         help="""\
         Additional zone for a higher level of availability and load balancing.
         Specify the resource name of a zone that belongs to the region of the

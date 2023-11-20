@@ -21,6 +21,7 @@ from __future__ import unicode_literals
 from googlecloudsdk.api_lib.container.gkemulticloud import locations as api_util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.container.attached import resource_args
+from googlecloudsdk.command_lib.container.gkemulticloud import constants
 from googlecloudsdk.command_lib.container.gkemulticloud import endpoint_util
 from googlecloudsdk.core import log
 
@@ -41,6 +42,7 @@ class GetServerConfig(base.Command):
   @staticmethod
   def Args(parser):
     resource_args.AddLocationResourceArg(parser, 'to get server configuration')
+    parser.display_info.AddFormat(constants.ATTACHED_SERVER_CONFIG_FORMAT)
 
   def Run(self, args):
     """Runs the get-server-config command."""

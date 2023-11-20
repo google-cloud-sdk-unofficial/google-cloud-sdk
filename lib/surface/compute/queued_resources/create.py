@@ -76,6 +76,7 @@ class Create(base.CreateCommand):
   _support_custom_hostnames = True
   _support_storage_pool = False
   _support_specific_then_x = True
+  _support_ipv6_only = True
 
   @classmethod
   def Args(cls, parser):
@@ -105,6 +106,7 @@ class Create(base.CreateCommand):
         support_performance_monitoring_unit=cls._support_performance_monitoring_unit,
         support_custom_hostnames=cls._support_custom_hostnames,
         support_specific_then_x_affinity=cls._support_specific_then_x,
+        support_ipv6_only=cls._support_ipv6_only,
     )
     cls.AddSourceInstanceTemplate(parser)
     instances_flags.AddSecureTagsArgs(parser)

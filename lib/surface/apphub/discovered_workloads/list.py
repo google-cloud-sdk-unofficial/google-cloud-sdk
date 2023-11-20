@@ -33,9 +33,7 @@ _DETAILED_HELP = {
 
 _FORMAT = """
   table(
-    name.scope("discoveredWorkloads"):label=NAME,
-    name.scope("projects").segment(1):label=PROJECT,
-    name.scope("locations").segment(0):label=LOCATION,
+    name.scope("discoveredWorkloads"):label=ID,
     workloadReference,
     workloadProperties
   )
@@ -44,7 +42,7 @@ _FORMAT = """
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class List(base.ListCommand):
-  """List Discovered Workloads."""
+  """List Apphub discovered workloads."""
 
   detailed_help = _DETAILED_HELP
 

@@ -19,6 +19,7 @@ from __future__ import unicode_literals
 
 import datetime
 
+from apitools.base.protorpclite.messages import DecodeError
 from apitools.base.py import encoding
 from googlecloudsdk.api_lib.batch import jobs
 from googlecloudsdk.calliope import arg_parsers
@@ -27,6 +28,7 @@ from googlecloudsdk.command_lib.batch import resource_args
 from googlecloudsdk.command_lib.util.apis import arg_utils
 from googlecloudsdk.core import exceptions
 from googlecloudsdk.core import log
+from googlecloudsdk.core import yaml
 from googlecloudsdk.core.util import files
 
 
@@ -244,14 +246,6 @@ def _BuildJobMsg(args, job_msg, batch_msgs):
     )
 
 
-def _CreateJobMessage(batch_msgs, config):
-  """Construct the job proto with the config input."""
-  try:
-    return encoding.JsonToMessage(batch_msgs.Job, config)
-  except Exception as e:
-    raise exceptions.Error('Unable to parse config file: {}'.format(e))
-
-
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Submit(base.Command):
   """Submit a Batch job.
@@ -292,6 +286,24 @@ class Submit(base.Command):
     _CommonArgs(parser)
     resource_args.AddSubmitJobResourceArgs(parser)
 
+  @classmethod
+  def _CreateJobMessage(cls, batch_msgs, config):
+    """Create the job message from the config file.
+
+    Args:
+        batch_msgs: Batch defined proto message.
+        config: The input config file in the JSON format, this parent
+        class only takes JSON format while alpha subclass would take both
+        JSON and YAML.
+
+    Returns:
+        Parsed job message from the config file.
+    """
+    try:
+      return encoding.JsonToMessage(batch_msgs.Job, config)
+    except Exception as e:
+      raise exceptions.Error('Unable to parse config file: {}'.format(e))
+
   def Run(self, args):
     job_ref = args.CONCEPTS.job.Parse()
     location_ref = job_ref.Parent()
@@ -304,7 +316,7 @@ class Submit(base.Command):
     job_msg = batch_msgs.Job()
 
     if args.config:
-      job_msg = _CreateJobMessage(batch_msgs, args.config)
+      job_msg = self._CreateJobMessage(batch_msgs, args.config)
 
     _BuildJobMsg(args, job_msg, batch_msgs)
 
@@ -381,10 +393,14 @@ class SubmitAlpha(SubmitBeta):
 
   ## EXAMPLES
 
-  To submit the job with config.json sample config file and name
+  To submit the job with config.json or config.yaml sample config file and name
   `projects/foo/locations/us-central1/jobs/bar`, run:
 
     $ {command} projects/foo/locations/us-central1/jobs/bar --config=config.json
+
+    or
+
+    $ {command} projects/foo/locations/us-central1/jobs/bar --config=config.yaml
 
   To submit the job through stdin with json job config and name
   `projects/foo/locations/us-central1/jobs/bar`, run:
@@ -406,3 +422,25 @@ class SubmitAlpha(SubmitBeta):
       }
       EOF
   """
+
+  @classmethod
+  def _CreateJobMessage(cls, batch_msgs, config):
+    """Parse with trying YAML then JSON.
+
+    Args:
+         batch_msgs: Batch defined proto message.
+         config: The input config file either in YAML or JSON.
+
+    Returns:
+         Parsed job message from the config file.
+    """
+    try:
+      result = encoding.PyValueToMessage(batch_msgs.Job, yaml.load(config))
+    except (ValueError, AttributeError, yaml.YAMLParseError):
+      try:
+        result = encoding.JsonToMessage(batch_msgs.Job, config)
+      except (ValueError, DecodeError) as e:
+        raise exceptions.Error(
+            'Unable to parse config file: {}'.format(e)
+        )
+    return result

@@ -33,17 +33,17 @@ _DETAILED_HELP = {
 
 _FORMAT = """
   table(
-    name.basename():label=NAME,
+    name.basename():label=ID,
     displayName,
-    description,
-    serviceReference
+    serviceReference,
+    createTime.date(unit=1000, tz_default=UTC)
   )
 """
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class List(base.ListCommand):
-  """List application services."""
+  """List Apphub application services."""
 
   detailed_help = _DETAILED_HELP
 

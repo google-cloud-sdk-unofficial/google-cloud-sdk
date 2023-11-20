@@ -40,7 +40,6 @@ _DETAILED_HELP = {
 }
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class List(base.ListCommand):
   """List logging-server in a Google Cloud VMware Engine private cloud."""

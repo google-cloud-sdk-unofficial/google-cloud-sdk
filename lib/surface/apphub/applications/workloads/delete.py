@@ -34,7 +34,7 @@ _DETAILED_HELP = {
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Delete(base.DeleteCommand):
-  """Delete an application workload."""
+  """Delete an Apphub application workload."""
 
   detailed_help = _DETAILED_HELP
 

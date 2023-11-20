@@ -268,6 +268,7 @@ def AddBaseArgs(parser):
   flags.AddAllowedPscProjects(psc_update_group)
   flags.AddClearAllowedPscProjects(psc_update_group)
   flags.AddSslMode(parser)
+  flags.AddUpgradeSqlNetworkArchitecture(parser)
 
 
 def AddBetaArgs(parser):
@@ -275,7 +276,6 @@ def AddBetaArgs(parser):
   flags.AddInstanceResizeLimit(parser)
   flags.AddAllocatedIpRangeName(parser)
   labels_util.AddUpdateLabelsFlags(parser, enable_clear=True)
-  flags.AddUpgradeSqlNetworkArchitecture(parser)
   flags.AddReplicationLagMaxSecondsForRecreate(parser)
 
 

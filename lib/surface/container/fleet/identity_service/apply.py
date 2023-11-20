@@ -30,17 +30,21 @@ EXAMPLES = """\
     To apply an Identity Service configuration to a membership, run:
 
     $ {command} --membership=MEMBERSHIP_NAME --config=/path/to/identity-service.yaml
+
+    To create or modify a fleet-level default membership configuration, run:
+
+    $ {command} --fleet-default-member-config=/path/to/identity-service.yaml
+
+    To apply an existing fleet-level default membership configuration to a membership, run:
+
+    $ {command} --origin=fleet --membership=MEMBERSHIP_NAME
 """
 
 
 class Apply(base.UpdateCommand):
-  """Update an Identity Service Feature Spec.
+  """Update the Identity Service Feature.
 
-  Applies the authentication configuration to the Identity Service feature spec
-  for this membership. This configuration is now the "source of truth" for the
-  cluster and can only be updated by using this command or the Cloud Console.
-  Any local authentication configuration on the cluster is overwritten by this
-  configuration, including any local updates made after you run this command.
+  This command updates the Identity Service Feature in a fleet.
   """
 
   detailed_help = {'EXAMPLES': EXAMPLES}
@@ -53,8 +57,7 @@ class Apply(base.UpdateCommand):
     command_args.add_argument(
         '--fleet-default-member-config',
         type=str,
-        help='The path to an identity-service.yaml config file.',
-        hidden=True,
+        help='The path to an identity-service.yaml configuration file.',
         required=False,
     )
     per_member_config_args = command_args.add_group(required=False, mutex=False)
@@ -66,17 +69,16 @@ class Apply(base.UpdateCommand):
     per_member_config_source.add_argument(
         '--config',
         type=str,
-        help='The path to an identity-service.yaml config file.',
+        help='The path to an identity-service.yaml configuration file.',
     )
     per_member_config_source.add_argument(
         '--origin',
         choices=['fleet'],
         type=str,
         help=(
-            'Set the configuration of a membership to the default fleet'
-            ' configuration.'
+            'Applies the fleet-level default membership configuration to a'
+            ' membership.'
         ),
-        hidden=True,
     )
 
   def Run(self, args):

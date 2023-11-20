@@ -73,8 +73,7 @@ class Cp(base.Command):
   def Args(cls, parser):
     cp_command_util.add_cp_and_mv_flags(parser, cls.ReleaseTrack())
     cp_command_util.add_recursion_flag(parser)
-    if cls.ReleaseTrack() == base.ReleaseTrack.ALPHA:
-      flags.add_retention_flags(parser)
+    flags.add_per_object_retention_flags(parser)
 
   def Run(self, args):
     self.exit_code = cp_command_util.run_cp(args)

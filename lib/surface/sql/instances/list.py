@@ -36,11 +36,6 @@ def _GetUriFromResource(resource):
   ).SelfLink()
 
 
-def AddBetaArgs(parser):
-  """Adds base args and flags to the parser."""
-  flags.AddShowSqlNetworkArchitecture(parser)
-
-
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class List(base.ListCommand):
   """Lists Cloud SQL instances in a given project.
@@ -54,6 +49,7 @@ class List(base.ListCommand):
     parser.display_info.AddFormat(flags.GetInstanceListFormat())
     parser.display_info.AddUriFunc(_GetUriFromResource)
     flags.AddShowEdition(parser)
+    flags.AddShowSqlNetworkArchitecture(parser)
 
   def Run(self, args):
     """Lists Cloud SQL instances in a given project.
@@ -67,7 +63,10 @@ class List(base.ListCommand):
     """
     if args.show_edition:
       args.GetDisplayInfo().AddFormat(flags.GetInstanceListFormatEdition())
-
+    if args.show_sql_network_architecture:
+      args.GetDisplayInfo().AddFormat(
+          flags.GetInstanceListFormatForNetworkArchitectureUpgrade()
+      )
     return instances.InstancesV1Beta4.GetDatabaseInstances(
         limit=args.limit, batch_size=args.page_size
     )
@@ -84,10 +83,10 @@ class ListBeta(base.ListCommand):
   @staticmethod
   def Args(parser):
     """Args is called by calliope to gather arguments for this command."""
-    AddBetaArgs(parser)
     parser.display_info.AddFormat(flags.GetInstanceListFormat())
     parser.display_info.AddUriFunc(_GetUriFromResource)
     flags.AddShowEdition(parser)
+    flags.AddShowSqlNetworkArchitecture(parser)
 
   def Run(self, args):
     """Lists Cloud SQL instances in a given project.

@@ -33,11 +33,8 @@ _DETAILED_HELP = {
 
 _FORMAT = """
   table(
-    name.scope("projects").segment(1):label=PROJECT,
-    name.scope("locations").segment(0):label=LOCATION,
     name.scope("applications"):label=ID,
     displayName,
-    uid,
     createTime.date(unit=1000, tz_default=UTC)
   )
 """
@@ -45,7 +42,7 @@ _FORMAT = """
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class List(base.ListCommand):
-  """List all Apphub applications in the project/location."""
+  """List Apphub applications."""
 
   detailed_help = _DETAILED_HELP
 

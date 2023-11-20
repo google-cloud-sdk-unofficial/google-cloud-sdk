@@ -24,9 +24,12 @@
 
 import functools
 
+from google.api_core import exceptions as core_exceptions
 from google.api_core import gapic_v1, page_iterator_async
-from google.api_core.operations_v1 import operations_client_config
+from google.api_core import retry as retries
+from google.api_core import timeout as timeouts
 from google.longrunning import operations_pb2
+from grpc import Compression
 
 
 class OperationsAsyncClient:
@@ -41,39 +44,50 @@ class OperationsAsyncClient:
             the default configuration is used.
     """
 
-    def __init__(self, channel, client_config=operations_client_config.config):
+    def __init__(self, channel, client_config=None):
         # Create the gRPC client stub with gRPC AsyncIO channel.
         self.operations_stub = operations_pb2.OperationsStub(channel)
 
-        # Create all wrapped methods using the interface configuration.
-        # The interface config contains all of the default settings for retry
-        # and timeout for each RPC method.
-        interfaces = client_config["interfaces"]
-        interface_config = interfaces["google.longrunning.Operations"]
-        method_configs = gapic_v1.config_async.parse_method_configs(interface_config)
+        default_retry = retries.Retry(
+            initial=0.1,  # seconds
+            maximum=60.0,  # seconds
+            multiplier=1.3,
+            predicate=retries.if_exception_type(
+                core_exceptions.DeadlineExceeded,
+                core_exceptions.ServiceUnavailable,
+            ),
+            timeout=600.0,  # seconds
+        )
+        default_timeout = timeouts.TimeToDeadlineTimeout(timeout=600.0)
+
+        default_compression = Compression.NoCompression
 
         self._get_operation = gapic_v1.method_async.wrap_method(
             self.operations_stub.GetOperation,
-            default_retry=method_configs["GetOperation"].retry,
-            default_timeout=method_configs["GetOperation"].timeout,
+            default_retry=default_retry,
+            default_timeout=default_timeout,
+            default_compression=default_compression,
         )
 
         self._list_operations = gapic_v1.method_async.wrap_method(
             self.operations_stub.ListOperations,
-            default_retry=method_configs["ListOperations"].retry,
-            default_timeout=method_configs["ListOperations"].timeout,
+            default_retry=default_retry,
+            default_timeout=default_timeout,
+            default_compression=default_compression,
         )
 
         self._cancel_operation = gapic_v1.method_async.wrap_method(
             self.operations_stub.CancelOperation,
-            default_retry=method_configs["CancelOperation"].retry,
-            default_timeout=method_configs["CancelOperation"].timeout,
+            default_retry=default_retry,
+            default_timeout=default_timeout,
+            default_compression=default_compression,
         )
 
         self._delete_operation = gapic_v1.method_async.wrap_method(
             self.operations_stub.DeleteOperation,
-            default_retry=method_configs["DeleteOperation"].retry,
-            default_timeout=method_configs["DeleteOperation"].timeout,
+            default_retry=default_retry,
+            default_timeout=default_timeout,
+            default_compression=default_compression,
         )
 
     async def get_operation(
@@ -81,6 +95,7 @@ class OperationsAsyncClient:
         name,
         retry=gapic_v1.method_async.DEFAULT,
         timeout=gapic_v1.method_async.DEFAULT,
+        compression=gapic_v1.method_async.DEFAULT,
         metadata=None,
     ):
         """Gets the latest state of a long-running operation.
@@ -107,6 +122,8 @@ class OperationsAsyncClient:
                 unspecified, the the default timeout in the client
                 configuration is used. If ``None``, then the RPC method will
                 not time out.
+            compression (grpc.Compression): An element of grpc.compression
+                e.g. grpc.compression.Gzip.
             metadata (Optional[List[Tuple[str, str]]]):
                 Additional gRPC metadata.
 
@@ -126,7 +143,11 @@ class OperationsAsyncClient:
         metadata.append(gapic_v1.routing_header.to_grpc_metadata({"name": name}))
 
         return await self._get_operation(
-            request, retry=retry, timeout=timeout, metadata=metadata
+            request,
+            retry=retry,
+            timeout=timeout,
+            compression=compression,
+            metadata=metadata,
         )
 
     async def list_operations(
@@ -135,6 +156,7 @@ class OperationsAsyncClient:
         filter_,
         retry=gapic_v1.method_async.DEFAULT,
         timeout=gapic_v1.method_async.DEFAULT,
+        compression=gapic_v1.method_async.DEFAULT,
         metadata=None,
     ):
         """
@@ -171,6 +193,8 @@ class OperationsAsyncClient:
                 unspecified, the the default timeout in the client
                 configuration is used. If ``None``, then the RPC method will
                 not time out.
+            compression (grpc.Compression): An element of grpc.compression
+                e.g. grpc.compression.Gzip.
             metadata (Optional[List[Tuple[str, str]]]): Additional gRPC
                 metadata.
 
@@ -195,7 +219,11 @@ class OperationsAsyncClient:
 
         # Create the method used to fetch pages
         method = functools.partial(
-            self._list_operations, retry=retry, timeout=timeout, metadata=metadata
+            self._list_operations,
+            retry=retry,
+            timeout=timeout,
+            compression=compression,
+            metadata=metadata,
         )
 
         iterator = page_iterator_async.AsyncGRPCIterator(
@@ -214,6 +242,7 @@ class OperationsAsyncClient:
         name,
         retry=gapic_v1.method_async.DEFAULT,
         timeout=gapic_v1.method_async.DEFAULT,
+        compression=gapic_v1.method_async.DEFAULT,
         metadata=None,
     ):
         """Starts asynchronous cancellation on a long-running operation.
@@ -254,6 +283,8 @@ class OperationsAsyncClient:
             google.api_core.exceptions.GoogleAPICallError: If an error occurred
                 while invoking the RPC, the appropriate ``GoogleAPICallError``
                 subclass will be raised.
+            compression (grpc.Compression): An element of grpc.compression
+                e.g. grpc.compression.Gzip.
             metadata (Optional[List[Tuple[str, str]]]): Additional gRPC
                 metadata.
         """
@@ -265,7 +296,11 @@ class OperationsAsyncClient:
         metadata.append(gapic_v1.routing_header.to_grpc_metadata({"name": name}))
 
         await self._cancel_operation(
-            request, retry=retry, timeout=timeout, metadata=metadata
+            request,
+            retry=retry,
+            timeout=timeout,
+            compression=compression,
+            metadata=metadata,
         )
 
     async def delete_operation(
@@ -273,6 +308,7 @@ class OperationsAsyncClient:
         name,
         retry=gapic_v1.method_async.DEFAULT,
         timeout=gapic_v1.method_async.DEFAULT,
+        compression=gapic_v1.method_async.DEFAULT,
         metadata=None,
     ):
         """Deletes a long-running operation.
@@ -299,6 +335,8 @@ class OperationsAsyncClient:
                 unspecified, the the default timeout in the client
                 configuration is used. If ``None``, then the RPC method will
                 not time out.
+            compression (grpc.Compression): An element of grpc.compression
+                e.g. grpc.compression.Gzip.
             metadata (Optional[List[Tuple[str, str]]]): Additional gRPC
                 metadata.
 
@@ -318,5 +356,9 @@ class OperationsAsyncClient:
         metadata.append(gapic_v1.routing_header.to_grpc_metadata({"name": name}))
 
         await self._delete_operation(
-            request, retry=retry, timeout=timeout, metadata=metadata
+            request,
+            retry=retry,
+            timeout=timeout,
+            compression=compression,
+            metadata=metadata,
         )

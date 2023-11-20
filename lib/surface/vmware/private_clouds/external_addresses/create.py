@@ -41,10 +41,9 @@ DETAILED_HELP = {
 }
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Create(base.CreateCommand):
-  """Create an external IP address that represents an allocated external IP address and its corresponding internal IP address in the private cloud."""
+  """Create an external IP address."""
 
   detailed_help = DETAILED_HELP
 

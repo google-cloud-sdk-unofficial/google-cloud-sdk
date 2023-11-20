@@ -42,7 +42,6 @@ _DETAILED_HELP = {
 }
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Delete(base.DeleteCommand):
   """Delete logging-server from a VMware Engine private cloud."""

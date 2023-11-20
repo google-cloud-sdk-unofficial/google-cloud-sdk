@@ -16,26 +16,22 @@
 import abc
 from typing import Awaitable, Callable, Optional, Sequence, Union
 
-import pkg_resources
-
 import google.api_core  # type: ignore
 from google.api_core import exceptions as core_exceptions  # type: ignore
 from google.api_core import gapic_v1  # type: ignore
 from google.api_core import retry as retries  # type: ignore
+from google.api_core import version
 import google.auth  # type: ignore
 from google.auth import credentials as ga_credentials  # type: ignore
 from google.longrunning import operations_pb2
 from google.oauth2 import service_account  # type: ignore
 from cloudsdk.google.protobuf import empty_pb2  # type: ignore
+from grpc import Compression
 
-try:
-    DEFAULT_CLIENT_INFO = gapic_v1.client_info.ClientInfo(
-        gapic_version=pkg_resources.get_distribution(
-            "google.api_core.operations_v1",
-        ).version,
-    )
-except pkg_resources.DistributionNotFound:
-    DEFAULT_CLIENT_INFO = gapic_v1.client_info.ClientInfo()
+
+DEFAULT_CLIENT_INFO = gapic_v1.client_info.ClientInfo(
+    gapic_version=version.__version__,
+)
 
 
 class OperationsTransport(abc.ABC):
@@ -134,6 +130,7 @@ class OperationsTransport(abc.ABC):
                     deadline=10.0,
                 ),
                 default_timeout=10.0,
+                default_compression=Compression.NoCompression,
                 client_info=client_info,
             ),
             self.get_operation: gapic_v1.method.wrap_method(
@@ -148,6 +145,7 @@ class OperationsTransport(abc.ABC):
                     deadline=10.0,
                 ),
                 default_timeout=10.0,
+                default_compression=Compression.NoCompression,
                 client_info=client_info,
             ),
             self.delete_operation: gapic_v1.method.wrap_method(
@@ -162,6 +160,7 @@ class OperationsTransport(abc.ABC):
                     deadline=10.0,
                 ),
                 default_timeout=10.0,
+                default_compression=Compression.NoCompression,
                 client_info=client_info,
             ),
             self.cancel_operation: gapic_v1.method.wrap_method(
@@ -176,6 +175,7 @@ class OperationsTransport(abc.ABC):
                     deadline=10.0,
                 ),
                 default_timeout=10.0,
+                default_compression=Compression.NoCompression,
                 client_info=client_info,
             ),
         }
@@ -183,9 +183,9 @@ class OperationsTransport(abc.ABC):
     def close(self):
         """Closes resources associated with the transport.
 
-       .. warning::
-            Only call this method if the transport is NOT shared
-            with other clients - this may cause errors in other clients!
+        .. warning::
+             Only call this method if the transport is NOT shared
+             with other clients - this may cause errors in other clients!
         """
         raise NotImplementedError()
 

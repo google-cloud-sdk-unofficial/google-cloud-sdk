@@ -128,10 +128,8 @@ class Create(base.Command):
     )
     flags.add_additional_headers_flag(parser)
     flags.add_autoclass_flags(parser)
+    flags.add_enable_per_object_retention_flag(parser)
     flags.add_recovery_point_objective_flag(parser)
-
-    if cls.ReleaseTrack() == base.ReleaseTrack.ALPHA:
-      flags.add_enable_per_object_retention_flag(parser)
 
   def Run(self, args):
     for url_string in args.url:

@@ -42,7 +42,7 @@
       type: bool
       default: false
       help_text: |
-        By default, we apply Base64 encoding to all binary fields ("rowPrefixes", "qualifiers" and
+        By default, Base64 encoding is applied to all binary fields ("rowPrefixes", "qualifiers" and
         "qualifierPrefixes") in the JSON or YAML definition file.
 
         Use this to indicate that all binary fields are already Base64-encoded and should be used

@@ -165,3 +165,9 @@ class _EnableCommand(feature_base.EnableCommandMixin):
       # the caller.
       self.Enable(self.messages.Feature())
       return self.GetFeature()
+
+
+@base.Hidden
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
+class UpdateBetaAndGA(Update):
+  """Update the clusterupgrade feature for a fleet within a given project."""

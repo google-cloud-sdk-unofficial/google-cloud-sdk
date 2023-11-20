@@ -87,14 +87,11 @@
                 - _REF_: googlecloudsdk.command_lib.compute.tpus.flags:remove_metadata
                   release_tracks: [ALPHA]
     - group:
-        release_tracks: [ALPHA]
         required: false
         mutex: true
         params:
         - _REF_: googlecloudsdk.command_lib.compute.tpus.tpu_vm.flags:attach_disk
-          release_tracks: [ALPHA]
         - _REF_: googlecloudsdk.command_lib.compute.tpus.tpu_vm.flags:detach_disk
-          release_tracks: [ALPHA]
 
   update:
     read_modify_update: true

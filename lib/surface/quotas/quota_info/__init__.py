@@ -12,21 +12,14 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""The topology command group for the App Hub CLI."""
-
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
+"""The command group for Cloud Quotas Quota Info."""
 
 from googlecloudsdk.calliope import base
 
 
-# NOTE: Release track decorators can be used here as well, and would propagate
-# to this group's children.
+# We could have multiple tracks here, e.g.
+#   @base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.ALPHA)
 @base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class Topology(base.Group):
-  """Manage App Hub Topology.
-
-  Commands for managing App Hub Topology.
-  """
+class QuotaInfo(base.Group):
+  """Manage Cloud Quotas QuotaInfo."""

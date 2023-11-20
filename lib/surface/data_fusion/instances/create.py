@@ -67,7 +67,11 @@ class Create(base.Command):
     parser.add_argument(
         '--version',
         help='The version of Cloud Data Fusion to use when creating the instance. '
-        'For example: `--version=6.2.2`.')
+        'For example: `--version=6.9.2`.')
+    parser.add_argument(
+        '--patch_revision',
+        help='Patch revision version of Cloud Data Fusion to use when creating the instance.'
+        'For example: `--patch_revision=6.9.2.1`.')
     parser.add_argument(
         '--options',
         type=arg_parsers.ArgDict(),
@@ -120,6 +124,7 @@ class Create(base.Command):
         zone=zone,
         type=edition,
         version=version,
+        patchRevision=args.patch_revision,
         enableStackdriverLogging=enable_stackdriver_logging,
         enableStackdriverMonitoring=enable_stackdriver_monitoring,
         enableRbac=enable_rbac,

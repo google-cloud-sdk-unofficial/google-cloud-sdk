@@ -24,6 +24,7 @@ from googlecloudsdk.api_lib.container.binauthz import apis
 from googlecloudsdk.api_lib.container.binauthz import attestors
 from googlecloudsdk.api_lib.container.binauthz import containeranalysis
 from googlecloudsdk.api_lib.container.binauthz import containeranalysis_apis as ca_apis
+from googlecloudsdk.api_lib.container.binauthz import util as binauthz_api_util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.container.binauthz import flags
 from googlecloudsdk.command_lib.container.binauthz import util as binauthz_command_util
@@ -33,10 +34,12 @@ from googlecloudsdk.core import resources
 class List(base.ListCommand):
   r"""List Binary Authorization attestations.
 
-  This command lists Binary Authorization attestations for your project.
-  Command line flags specify which artifact to list the attestations for.
-  If no artifact is specified, then this lists all URLs with associated
-  occurrences.
+  This command lists Binary Authorization attestations for your
+  project.  Command line flags specify which attestor and artifact to
+  list the attestations for. If no attestor is specified, this lists
+  all attestations in the project, which requires the
+  `containeranalysis.occurrences.get` permission. If no artifact is
+  specified, then this lists all URLs with associated occurrences.
 
   ## EXAMPLES
 
@@ -62,7 +65,7 @@ class List(base.ListCommand):
         parser,
         flags.GetAttestorPresentationSpec(
             base_name='attestor',
-            required=True,
+            required=False,
             positional=False,
             use_global_project_flag=False,
             group_help=textwrap.dedent("""\
@@ -74,11 +77,15 @@ class List(base.ListCommand):
     )
 
   def Run(self, args):
-    artifact_url_without_scheme = None
+    artifact_digest = None
     if args.artifact_url:
-      artifact_url_without_scheme = (
-          binauthz_command_util.RemoveArtifactUrlScheme(args.artifact_url)
-      )
+      artifact_digest = binauthz_command_util.GetImageDigest(args.artifact_url)
+
+    if args.attestor:
+      return self.ListInAttestor(args, artifact_digest)
+    return self.ListInProject(args, artifact_digest)
+
+  def ListInAttestor(self, args, artifact_digest):
     attestors_client = attestors.Client(apis.GetApiVersion(self.ReleaseTrack()))
     drydock_client = containeranalysis.Client(
         ca_apis.GetApiVersion(self.ReleaseTrack())
@@ -94,7 +101,20 @@ class List(base.ListCommand):
 
     return drydock_client.YieldAttestations(
         note_ref=note_ref,
-        artifact_url=artifact_url_without_scheme,
+        artifact_digest=artifact_digest,
+        page_size=args.page_size,
+        limit=args.limit,
+    )
+
+  def ListInProject(self, args, artifact_digest):
+    drydock_client = containeranalysis.Client(
+        ca_apis.GetApiVersion(self.ReleaseTrack())
+    )
+
+    return drydock_client.YieldAttestations(
+        note_ref=None,
+        project_ref=binauthz_api_util.GetProjectRef(),
+        artifact_digest=artifact_digest,
         page_size=args.page_size,
         limit=args.limit,
     )

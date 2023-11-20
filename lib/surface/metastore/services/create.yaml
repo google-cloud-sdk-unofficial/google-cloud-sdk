@@ -121,7 +121,6 @@
     - arg_name: data-catalog-sync
       default: false
       api_field: service.metadataIntegration.dataCatalogConfig.enabled
-      release_tracks: [ALPHA, BETA]
       help_text: |
         A boolean flag to determine whether Dataproc Metastore metadata sync
         to Data Catalog should be enabled, false if unspecified.

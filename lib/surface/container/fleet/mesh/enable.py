@@ -46,7 +46,6 @@ class Enable(base.EnableCommand):
   def Args(cls, parser):
     parser.add_argument(
         '--fleet-default-member-config',
-        hidden=True,
         type=str,
         help="""The path to a service-mesh.yaml configuration file.
 

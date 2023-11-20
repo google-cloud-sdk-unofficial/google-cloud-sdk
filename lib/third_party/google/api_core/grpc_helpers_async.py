@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""AsyncIO helpers for :mod:`grpc` supporting 3.6+.
+"""AsyncIO helpers for :mod:`grpc` supporting 3.7+.
 
 Please combine more detailed docstring in grpc_helpers.py to use following
 functions. This module is implementing the same surface with AsyncIO semantics.
@@ -26,9 +26,6 @@ from grpc import aio
 
 from google.api_core import exceptions, grpc_helpers
 
-
-# TODO(user) Support gRPC GCP wrapper
-HAS_GRPC_GCP = False
 
 # NOTE(lidiz) Alternatively, we can hack "__getattribute__" to perform
 # automatic patching for us. But that means the overhead of creating an
@@ -215,6 +212,7 @@ def create_channel(
     quota_project_id=None,
     default_scopes=None,
     default_host=None,
+    compression=None,
     **kwargs
 ):
     """Create an AsyncIO secure channel with credentials.
@@ -236,6 +234,8 @@ def create_channel(
         default_scopes (Sequence[str]): Default scopes passed by a Google client
             library. Use 'scopes' for user-defined scopes.
         default_host (str): The default endpoint. e.g., "pubsub.googleapis.com".
+        compression (grpc.Compression): An optional value indicating the
+            compression method to be used over the lifetime of the channel.
         kwargs: Additional key-word args passed to :func:`aio.secure_channel`.
 
     Returns:
@@ -255,7 +255,9 @@ def create_channel(
         default_host=default_host,
     )
 
-    return aio.secure_channel(target, composite_credentials, **kwargs)
+    return aio.secure_channel(
+        target, composite_credentials, compression=compression, **kwargs
+    )
 
 
 class FakeUnaryUnaryCall(_WrappedUnaryUnaryCall):

@@ -18,7 +18,6 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
-from googlecloudsdk.calliope import base as calliope_base
 from googlecloudsdk.command_lib.anthos.common import file_parsers
 from googlecloudsdk.command_lib.container.fleet.features import base
 from googlecloudsdk.command_lib.container.fleet.identity_service import utils
@@ -29,11 +28,15 @@ EXAMPLES = """\
     To enable the Identity Service Feature, run:
 
     $ {command}
+
+    To enable the Identity Service Feature with a fleet-level default membership configuration, run:
+
+    $ {command} --fleet-default-member-config=/path/to/identity-service.yaml
 """
 
 
 class Enable(base.EnableCommand):
-  """Enable Identity Service Feature.
+  """Enable the Identity Service Feature.
 
   This command enables the Identity Service Feature in a fleet.
   """
@@ -47,7 +50,6 @@ class Enable(base.EnableCommand):
     parser.add_argument(
         '--fleet-default-member-config',
         type=str,
-        hidden=cls.ReleaseTrack() is calliope_base.ReleaseTrack.GA,
         help="""The path to an identity-service.yaml identity configuration
         file. If specified, this configuration would be the default Identity
         Service configuration for all memberships in your fleet. It could be

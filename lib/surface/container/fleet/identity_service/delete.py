@@ -18,22 +18,24 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
-from googlecloudsdk.calliope import base as calliope_base
 from googlecloudsdk.command_lib.container.fleet import resources
 from googlecloudsdk.command_lib.container.fleet.features import base
 
 
 class Delete(base.UpdateCommand):
-  """Remove the Identity Service Feature Spec for the given membership.
+  """Delete a resource from the Identity Service Feature.
 
-  Removes the Identity Service Feature Spec for the given
-  membership.
+  Deletes a resource from the Identity Service Feature.
 
   ## EXAMPLES
 
-  To delete an Identity Service configuration for a membership, run:
+  To delete the Identity Service configuration from a membership, run:
 
     $ {command} --membership=MEMBERSHIP_NAME
+
+  To delete the fleet-level default membership configuration, run:
+
+    $ {command} --fleet-default-member-config
   """
 
   feature_name = 'identityservice'
@@ -45,7 +47,6 @@ class Delete(base.UpdateCommand):
     parser.add_argument(
         '--fleet-default-member-config',
         action='store_true',
-        hidden=cls.ReleaseTrack() is calliope_base.ReleaseTrack.GA,
         help="""If specified, deletes the default membership
         configuration present in your fleet.
 

@@ -454,6 +454,7 @@ def ParseCreateOptionsBase(args, is_autopilot, get_default, location,
       containerd_config_from_file=get_default('containerd_config_from_file'),
       fleet_project=get_default('fleet_project'),
       enable_fleet=get_default('enable_fleet'),
+      enable_secret_manager=get_default('enable_secret_manager'),
   )
 
 
@@ -983,8 +984,12 @@ flags_to_add = {
             flags.AddEnableDNSEndpoint,
         'enableFqdnNetworkPolicy': flags.AddEnableFqdnNetworkPolicyFlag,
         'InTransitEncryption': flags.AddInTransitEncryptionFlag,
-        'containerdConfig':
-            (lambda p: flags.AddContainerdConfigFlag(p, hidden=True)),
+        'containerdConfig': lambda p: flags.AddContainerdConfigFlag(
+            p, hidden=True
+        ),
+        'secretManagerConfig': lambda p: flags.AddSecretManagerEnableFlag(
+            p, hidden=True
+            ),
     },
     ALPHA: {
         'accelerator':
@@ -1246,8 +1251,12 @@ flags_to_add = {
             flags.AddEnableDNSEndpoint,
         'enableFqdnNetworkPolicy': flags.AddEnableFqdnNetworkPolicyFlag,
         'InTransitEncryption': flags.AddInTransitEncryptionFlag,
-        'containerdConfig':
-            (lambda p: flags.AddContainerdConfigFlag(p, hidden=True)),
+        'containerdConfig': lambda p: flags.AddContainerdConfigFlag(
+            p, hidden=True
+        ),
+        'secretManagerConfig': lambda p: flags.AddSecretManagerEnableFlag(
+            p, hidden=True
+            ),
     },
 }
 
@@ -1518,6 +1527,7 @@ class CreateBeta(Create):
     ops.autoprovisioning_resource_manager_tags = get_default(
         'autoprovisioning_resource_manager_tags'
     )
+    ops.enable_secret_manager = get_default('enable_secret_manager')
     return ops
 
 
@@ -1637,4 +1647,5 @@ class CreateAlpha(Create):
     ops.autoprovisioning_resource_manager_tags = get_default(
         'autoprovisioning_resource_manager_tags'
     )
+    ops.enable_secret_manager = get_default('enable_secret_manager')
     return ops
