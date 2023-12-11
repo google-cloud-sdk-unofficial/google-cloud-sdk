@@ -126,7 +126,6 @@ def ParseCreateNodePoolOptionsBase(args):
   enable_autorepair = cmd_util.GetAutoRepair(args)
   flags.WarnForNodeModification(args, enable_autorepair)
   flags.ValidateSurgeUpgradeSettings(args)
-  flags.WarnForLocationPolicyDefault(args)
   metadata = metadata_utils.ConstructMetadataDict(args.metadata,
                                                   args.metadata_from_file)
   ephemeral_storage_local_ssd = None
@@ -382,7 +381,7 @@ class CreateBeta(Create):
     flags.AddLoggingVariantFlag(parser, for_node_pool=True)
     flags.AddWindowsOsVersionFlag(parser)
     flags.AddBestEffortProvisionFlags(parser, hidden=False)
-    flags.AddQueuedProvisioningFlag(parser, hidden=True)
+    flags.AddQueuedProvisioningFlag(parser)
     flags.AddTPUTopologyFlag(parser)
     flags.AddEnableNestedVirtualizationFlag(
         parser, for_node_pool=True, hidden=True)
@@ -535,7 +534,7 @@ class CreateAlpha(Create):
     flags.AddLoggingVariantFlag(parser, for_node_pool=True)
     flags.AddWindowsOsVersionFlag(parser)
     flags.AddBestEffortProvisionFlags(parser, hidden=False)
-    flags.AddQueuedProvisioningFlag(parser, hidden=True)
+    flags.AddQueuedProvisioningFlag(parser)
     flags.AddTPUTopologyFlag(parser)
     flags.AddEnableNestedVirtualizationFlag(parser, hidden=True)
     flags.AddHostMaintenanceIntervalFlag(

@@ -13,7 +13,7 @@
 # limitations under the License.
 
 from abc import ABC, abstractmethod
-from typing import List, Union
+from typing import List, Optional, Union
 
 from google.api_core.operation import Operation
 from google.cloud.pubsublite.types import (
@@ -71,11 +71,20 @@ class AdminClientInterface(ABC):
     def create_subscription(
         self,
         subscription: Subscription,
-        starting_offset: BacklogLocation = BacklogLocation.END,
+        target: Union[BacklogLocation, PublishTime, EventTime] = BacklogLocation.END,
+        starting_offset: Optional[BacklogLocation] = None,
     ) -> Subscription:
         """Create a subscription, returns the created subscription. By default
         a subscription will only receive messages published after the
-        subscription was created."""
+        subscription was created.
+
+        `starting_offset` is deprecated. Use `target` to initialize the
+        subscription to a target location within the message backlog instead.
+        `starting_offset` has higher precedence if `target` is also set.
+
+        A seek is initiated if the target location is a publish or event time.
+        If the seek fails, the created subscription is not deleted.
+        """
 
     @abstractmethod
     def get_subscription(self, subscription_path: SubscriptionPath) -> Subscription:
@@ -115,34 +124,28 @@ class AdminClientInterface(ABC):
 
     @abstractmethod
     def create_reservation(self, reservation: Reservation) -> Reservation:
-        """Create a reservation, returns the created reservation.
-        """
+        """Create a reservation, returns the created reservation."""
 
     @abstractmethod
     def get_reservation(self, reservation_path: ReservationPath) -> Reservation:
-        """Get the reservation object from the server.
-        """
+        """Get the reservation object from the server."""
 
     @abstractmethod
     def list_reservations(self, location_path: LocationPath) -> List[Reservation]:
-        """List the Pub/Sub lite reservations that exist for a project in a given location.
-        """
+        """List the Pub/Sub lite reservations that exist for a project in a given location."""
 
     @abstractmethod
     def update_reservation(
         self, reservation: Reservation, update_mask: FieldMask
     ) -> Reservation:
-        """Update the masked fields of the provided reservation.
-        """
+        """Update the masked fields of the provided reservation."""
 
     @abstractmethod
     def delete_reservation(self, reservation_path: ReservationPath):
-        """Delete a reservation and all associated messages.
-        """
+        """Delete a reservation and all associated messages."""
 
     @abstractmethod
     def list_reservation_topics(
         self, reservation_path: ReservationPath
     ) -> List[TopicPath]:
-        """List the subscriptions that exist for a given reservation.
-        """
+        """List the subscriptions that exist for a given reservation."""

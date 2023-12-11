@@ -21,6 +21,7 @@ retryable_codes = {
     StatusCode.INTERNAL,
     StatusCode.UNAVAILABLE,
     StatusCode.UNKNOWN,
+    StatusCode.CANCELLED,
 }
 
 

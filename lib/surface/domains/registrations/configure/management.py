@@ -34,9 +34,18 @@ class ConfigureManagement(base.UpdateCommand):
 
   ## EXAMPLES
 
+  To start an interactive flow to configure management settings for
+  ``example.com'', run:
+
+    $ {command} example.com
+
   To unlock a transfer lock of a registration for ``example.com'', run:
 
     $ {command} example.com --transfer-lock-state=unlocked
+
+  To disable automatic renewals for ``example.com'', run:
+
+    $ {command} example.com --preferred-renewal-method=renewal-disabled
   """
 
   @staticmethod
@@ -57,13 +66,23 @@ class ConfigureManagement(base.UpdateCommand):
 
     transfer_lock_state = util.ParseTransferLockState(api_version,
                                                       args.transfer_lock_state)
-    if transfer_lock_state is None:
+    renewal_method = util.ParseRenewalMethod(
+        api_version, args.preferred_renewal_method
+    )
+
+    if transfer_lock_state is None and renewal_method is None:
       transfer_lock_state = util.PromptForTransferLockState(
           api_version, registration.managementSettings.transferLockState)
-      if transfer_lock_state is None:
-        return None
+      renewal_method = util.PromptForRenewalMethod(
+          api_version, registration.managementSettings.preferredRenewalMethod
+      )
 
-    response = client.ConfigureManagement(registration_ref, transfer_lock_state)
+    if transfer_lock_state is None and renewal_method is None:
+      return None
+
+    response = client.ConfigureManagement(
+        registration_ref, transfer_lock_state, renewal_method
+    )
 
     response = util.WaitForOperation(api_version, response, args.async_)
     log.UpdatedResource(registration_ref.Name(), 'registration', args.async_)

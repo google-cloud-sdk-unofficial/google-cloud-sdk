@@ -87,7 +87,13 @@ class AsyncClientMultiplexer(Generic[_Key, _Client]):
     async def get_or_create(self, key: _Key) -> _Client:
         if key not in self._live_clients:
             self._live_clients[key] = asyncio.ensure_future(self._factory(key))
-        return await self._live_clients[key]
+        future = self._live_clients[key]
+        try:
+            return await future
+        except BaseException as e:
+            if key in self._live_clients and self._live_clients[key] is future:
+                del self._live_clients[key]
+            raise e
 
     async def try_erase(self, key: _Key, client: _Client):
         if key not in self._live_clients:

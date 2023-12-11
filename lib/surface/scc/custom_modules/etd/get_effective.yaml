@@ -1,5 +1,4 @@
 - release_tracks: [ALPHA]
-  hidden: true
 
   help_text:
     brief: Get the details of a Event Threat Detection custom module with effective enablement state.

@@ -12,7 +12,7 @@ import sys
 import textwrap
 import time
 import traceback
-from typing import Dict, Optional
+from typing import Dict, Optional, List
 
 from absl import app
 from absl import flags
@@ -47,7 +47,7 @@ _BIGQUERY_TOS_MESSAGE = (
 _VERSION_FILENAME = 'VERSION'
 
 
-def _GetVersion():
+def _GetVersion() -> str:
   """Returns content of VERSION file found in same dir as the cli binary."""
   root = 'bq_utils'
   # pragma pylint: disable=line-too-long
@@ -57,7 +57,7 @@ def _GetVersion():
 VERSION_NUMBER = _GetVersion()
 
 
-def GetBigqueryRcFilename():
+def GetBigqueryRcFilename() -> Optional[str]:
   """Return the name of the bigqueryrc file to use.
 
   In order, we look for a flag the user specified, an environment
@@ -147,7 +147,7 @@ def ProcessGcloudConfig(flag_values) -> None:
       )
 
 
-def ProcessBigqueryrc():
+def ProcessBigqueryrc() -> None:
   """Updates FLAGS with values found in the bigqueryrc file."""
   ProcessBigqueryrcSection(None, FLAGS)
 
@@ -227,7 +227,7 @@ def ProcessBigqueryrcSection(section_name: Optional[str], flag_values) -> None:
         setattr(flag_values, flag, old_value + getattr(flag_values, flag))
 
 
-def GetPlatformString():
+def GetPlatformString() -> str:
   return':'.join([
       platform.python_implementation(),
       platform.python_version(),
@@ -236,9 +236,10 @@ def GetPlatformString():
 
 
 def ProcessError(
-    err,
-    name='unknown',
-    message_prefix='You have encountered a bug in the BigQuery CLI.'):
+    err: BaseException,
+    name: str = 'unknown',
+    message_prefix: str = 'You have encountered a bug in the BigQuery CLI.',
+) -> int:
   """Translate an error message into some printing and a return code."""
 
   bigquery_client.ConfigurePythonLogger(FLAGS.apilog)
@@ -253,16 +254,7 @@ def ProcessError(
 
   (etype, value, tb) = sys.exc_info()
   trace = ''.join(traceback.format_exception(etype, value, tb))
-  # pragma pylint: disable=line-too-long
-  contact_us_msg = (
-      'Please file a bug report in our '
-      'public '
-      'issue tracker:\n'
-      '  https://issuetracker.google.com/issues/new?component=187149&template=0\n'
-      'Please include a brief description of '
-      'the steps that led to this issue, as well as '
-      'any rows that can be made public from '
-      'the following information: \n\n')
+  contact_us_msg = _GenerateContactUsMessage()
   platform_str = GetPlatformString()
   error_details = textwrap.dedent("""\
      ========================================
@@ -356,7 +348,39 @@ def ProcessError(
   return retcode
 
 
-def GetInfoString():
+def _GenerateContactUsMessage() -> str:
+  """Generates the Contact Us message."""
+  # pragma pylint: disable=line-too-long
+  contact_us_msg = (
+      'Please file a bug report in our '
+      'public '
+      'issue tracker:\n'
+      '  https://issuetracker.google.com/issues/new?component=187149&template=0\n'
+      'Please include a brief description of '
+      'the steps that led to this issue, as well as '
+      'any rows that can be made public from '
+      'the following information: \n\n')
+
+  # If an internal user runs the public BQ CLI, show the internal issue tracker.
+  try:
+    gcloud_properties_file = GetGcloudConfigFilename()
+    gcloud_core_properties = ProcessConfigSection(gcloud_properties_file, 'core')
+    if (
+        'account' in gcloud_core_properties
+        and '@google.com' in gcloud_core_properties['account']
+    ):
+      contact_us_msg = contact_us_msg.replace('public', 'internal').replace(
+          'https://issuetracker.google.com/issues/new?component=187149&template=0',
+          'http://b/issues/new?component=60322&template=178900',
+      )
+  except Exception:  # pylint: disable=broad-exception-caught
+    # No-op if unable to determine the active account using gcloud.
+    pass
+
+  return contact_us_msg
+
+
+def GetInfoString() -> str:
   """Gets the info string for the current execution."""
   platform_str = GetPlatformString()
   try:
@@ -430,7 +454,7 @@ def PrintFormattedJsonObject(obj, default_format='json'):
         (use_format, json_formats))
 
 
-def GetClientScopeFromFlags():
+def GetClientScopesFromFlags() -> List[str]:
   """Returns auth scopes based on user supplied flags."""
   client_scope = [_BIGQUERY_SCOPE, _CLOUD_PLATFORM_SCOPE]
   if FLAGS.enable_gdrive:
@@ -439,12 +463,13 @@ def GetClientScopeFromFlags():
   return client_scope
 
 
-def GetClientScopesFor3pi():
+def GetClientScopesFor3pi() -> List[str]:
+  """"Returns the scopes list for 3rd Party Identity Federation."""
   return [_CLOUD_PLATFORM_SCOPE]
 
 
 def ParseTags(tags: str) -> Dict[str, str]:
-  """Parses a list of user-supplied string representing tags.
+  """Parses user-supplied string representing tags.
 
   Args:
     tags: A comma separated user-supplied string representing tags. It is
@@ -472,3 +497,32 @@ def ParseTags(tags: str) -> Dict[str, str]:
       raise app.UsageError('Cannot specify tag key "%s" multiple times' % k)
     tags_dict[k] = v
   return tags_dict
+
+
+def ParseTagKeys(tag_keys: str) -> List[str]:
+  """Parses user-supplied string representing tag keys.
+
+  Args:
+    tag_keys: A comma separated user-supplied string representing tag keys.  It
+      is expected to be in the format "key1,key2".
+
+  Returns:
+    A list of tag keys.
+
+  Raises:
+    UsageError: Incorrect tag_keys or no tag_keys are supplied.
+  """
+  tag_keys = tag_keys.strip()
+  if not tag_keys:
+    raise app.UsageError('No tag keys supplied')
+  tags_set = set()
+  for key in tag_keys.split(','):
+    key = key.strip()
+    if not key:
+      raise app.UsageError('Tag key cannot be None')
+    if key in tags_set:
+      raise app.UsageError('Cannot specify tag key "%s" multiple times' % key)
+    if key.find(':') != -1:
+      raise app.UsageError('Specify only tag key for "%s"' % key)
+    tags_set.add(key)
+  return list(tags_set)

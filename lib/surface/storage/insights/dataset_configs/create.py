@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Implementation of create command for insights dataset config."""
+"""Implementation of create command for Insights dataset config."""
 
 import csv
 import os
@@ -47,7 +47,14 @@ def _get_source_projects_list(source_projects_file):
               .format(row_number, len(row))
           )
         if any(row) and row[0].strip():
-          source_projects_list.append(int(row[0].strip()))
+          try:
+            source_projects_list.append(int(row[0].strip()))
+          except ValueError:
+            raise ValueError(
+                'Source project number {} is not a valid number'.format(
+                    row[0].strip()
+                )
+            )
     except Exception as e:
       raise errors.Error(
           'Invalid format for file {} provided for the --source-projects-file'
@@ -59,11 +66,11 @@ def _get_source_projects_list(source_projects_file):
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Create(base.Command):
-  """Create a new dataset config for insights."""
+  """Create a new dataset config for Insights."""
 
   detailed_help = {
       'DESCRIPTION': """
-       Create a new dataset config for insights.
+       Create a new dataset config for Insights.
       """,
       'EXAMPLES': """
       To create a dataset config with config name as "my-config" in location

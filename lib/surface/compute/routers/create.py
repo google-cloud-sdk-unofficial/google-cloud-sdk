@@ -63,7 +63,7 @@ class Create(base.CreateCommand):
     """See base.CreateCommand."""
     cls._Args(parser)
 
-  def _Run(self, args):
+  def _Run(self, args, enable_ipv6_bgp=False):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     messages = holder.client.messages
     service = holder.client.apitools_client.routers
@@ -103,6 +103,11 @@ class Create(base.CreateCommand):
       for attr, value in six.iteritems(attrs):
         if value is not None:
           setattr(router_resource.bgp, attr, value)
+
+    if enable_ipv6_bgp and args.bgp_identifier_range is not None:
+      if not hasattr(router_resource.bgp, 'identifierRange'):
+        router_resource.bgp = messages.RouterBgp()
+      router_resource.bgp.identifierRange = args.bgp_identifier_range
 
     result = service.Insert(
         messages.ComputeRoutersInsertRequest(
@@ -164,7 +169,15 @@ class CreateBeta(Create):
   *{command}* is used to create a router to provide dynamic routing to VPN
   tunnels and interconnects.
   """
-  pass
+
+  @classmethod
+  def Args(cls, parser):
+    """See base.CreateCommand."""
+    cls._Args(parser, enable_ipv6_bgp=True)
+
+  def Run(self, args):
+    """See base.UpdateCommand."""
+    return self._Run(args, enable_ipv6_bgp=True)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -174,8 +187,3 @@ class CreateAlpha(CreateBeta):
   *{command}* is used to create a router to provide dynamic routing to VPN
   tunnels and interconnects.
   """
-
-  @classmethod
-  def Args(cls, parser):
-    """See base.CreateCommand."""
-    cls._Args(parser, enable_ipv6_bgp=True)

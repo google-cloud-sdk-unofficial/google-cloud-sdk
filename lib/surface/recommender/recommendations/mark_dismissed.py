@@ -36,7 +36,7 @@ class MarkDismissed(base.Command):
      ## EXAMPLES
      To mark a recommendation as DISMISSED:
 
-     $ {command} abcd-1234 --project=project-name --location=global
+     $ {command} abcd-1234 --project=project-id --location=global
      --recommender=google.compute.instance.MachineTypeRecommender --etag=abc123
   """
 

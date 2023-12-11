@@ -197,7 +197,13 @@ class UpdateInterfaceBeta(UpdateInterface):
   *{command}* is used to update an interface on a Compute Engine
   router.
   """
-  pass
+
+  def Run(self, args):
+    return self._Run(args, enable_ipv6_bgp=True)
+
+  @classmethod
+  def Args(cls, parser):
+    return cls._Args(parser, enable_ipv6_bgp=True)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -207,10 +213,4 @@ class UpdateInterfaceAlpha(UpdateInterfaceBeta):
   *{command}* is used to update an interface on a Compute Engine
   router.
   """
-
-  def Run(self, args):
-    return self._Run(args, enable_ipv6_bgp=True)
-
-  @classmethod
-  def Args(cls, parser):
-    return cls._Args(parser, enable_ipv6_bgp=True)
+  pass

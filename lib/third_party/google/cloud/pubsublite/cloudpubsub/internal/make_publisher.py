@@ -28,6 +28,7 @@ from google.cloud.pubsublite.cloudpubsub.internal.single_publisher import (
     AsyncSinglePublisher,
     SinglePublisher,
 )
+from google.cloud.pubsublite.internal.publisher_client_id import PublisherClientId
 from google.cloud.pubsublite.internal.wire.make_publisher import (
     make_publisher as make_wire_publisher,
     DEFAULT_BATCHING_SETTINGS as WIRE_DEFAULT_BATCHING,
@@ -47,6 +48,7 @@ def make_async_publisher(
     credentials: Optional[Credentials] = None,
     client_options: Optional[ClientOptions] = None,
     metadata: Optional[Mapping[str, str]] = None,
+    client_id: Optional[PublisherClientId] = None,
 ) -> AsyncSinglePublisher:
     """
     Make a new publisher for the given topic.
@@ -58,6 +60,7 @@ def make_async_publisher(
       credentials: The credentials to use to connect. GOOGLE_DEFAULT_CREDENTIALS is used if None.
       client_options: Other options to pass to the client. Note that if you pass any you must set api_endpoint.
       metadata: Additional metadata to send with the RPC.
+      client_id: 128-bit unique client id. If set, enables publish idempotency for the session.
 
     Returns:
       A new AsyncPublisher.
@@ -75,6 +78,7 @@ def make_async_publisher(
             credentials=credentials,
             client_options=client_options,
             metadata=metadata,
+            client_id=client_id,
         )
 
     return AsyncSinglePublisherImpl(underlying_factory)
@@ -87,6 +91,7 @@ def make_publisher(
     credentials: Optional[Credentials] = None,
     client_options: Optional[ClientOptions] = None,
     metadata: Optional[Mapping[str, str]] = None,
+    client_id: Optional[PublisherClientId] = None,
 ) -> SinglePublisher:
     """
     Make a new publisher for the given topic.
@@ -98,6 +103,7 @@ def make_publisher(
       credentials: The credentials to use to connect. GOOGLE_DEFAULT_CREDENTIALS is used if None.
       client_options: Other options to pass to the client. Note that if you pass any you must set api_endpoint.
       metadata: Additional metadata to send with the RPC.
+      client_id: 128-bit unique client id. If set, enables publish idempotency for the session.
 
     Returns:
       A new Publisher.
@@ -113,5 +119,6 @@ def make_publisher(
             credentials=credentials,
             client_options=client_options,
             metadata=metadata,
+            client_id=client_id,
         )
     )

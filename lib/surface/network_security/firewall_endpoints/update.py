@@ -61,6 +61,7 @@ class Update(base.UpdateCommand):
     activation_flags.AddEndpointResource(cls.ReleaseTrack(), parser)
     activation_flags.AddMaxWait(parser, '60m')  # default to 60 minutes wait.
     activation_flags.AddDescriptionArg(parser)
+    activation_flags.AddUpdateBillingProjectArg(parser)
     base.ASYNC_FLAG.AddToParser(parser)
     base.ASYNC_FLAG.SetDefault(parser, True)
     labels_util.AddUpdateLabelsFlags(parser)
@@ -75,27 +76,41 @@ class Update(base.UpdateCommand):
           'firewall-endpoint',
           'Firewall endpoint does not exist.')
 
-    labels_diff = labels_util.Diff.FromUpdateArgs(args)
-    if not labels_diff.MayHaveUpdates():
-      raise exceptions.MinimumArgumentException([
-          '--clear-labels', '--remove-labels', '--update-labels'
-      ])
+    update_mask = []
 
-    labels = original.labels
-    labels_update = labels_diff.Apply(
-        client.messages.FirewallEndpoint.LabelsValue,
-        original.labels,
-    )
-    if labels_update.needs_update:
-      labels = labels_update.labels
+    labels = None
+    labels_diff = labels_util.Diff.FromUpdateArgs(args)
+    if labels_diff.MayHaveUpdates():
+      update_mask.append('labels')
+      labels = original.labels
+      labels_update = labels_diff.Apply(
+          client.messages.FirewallEndpoint.LabelsValue,
+          original.labels,
+      )
+      if labels_update.needs_update:
+        labels = labels_update.labels
+
+    billing_project_id = args.update_billing_project
+    if billing_project_id:
+      update_mask.append('billing_project_id')
+
+    if not update_mask:
+      raise exceptions.MinimumArgumentException([
+          '--clear-labels',
+          '--remove-labels',
+          '--update-labels',
+          '--update-billing-project',
+      ])
 
     is_async = args.async_
     max_wait = datetime.timedelta(seconds=args.max_wait)
 
-    operation = client.UpdateEndpointLabels(
+    operation = client.UpdateEndpoint(
         name=endpoint.RelativeName(),
         description=getattr(args, 'description', None),
+        update_mask=','.join(update_mask),
         labels=labels,
+        billing_project_id=billing_project_id,
     )
     # Return the in-progress operation if async is requested.
     if is_async:

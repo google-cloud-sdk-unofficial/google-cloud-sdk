@@ -43,7 +43,8 @@ def _Run(args, legacy_output=False):
       log.DeletedResource(
           topic_ref.RelativeName(),
           kind='topic',
-          failed=exc.payload.status_message)
+          failed=util.CreateFailureErrorMessage(exc.payload.status_message),
+      )
       failed.append(topic_ref.topicsId)
       continue
 

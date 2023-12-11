@@ -14,13 +14,13 @@ import functools
 import json
 import os
 import pdb
-import pipes
 import re
 import shlex
 import sys
 import time
 import traceback
 import types
+from typing import List, Tuple
 
 __author__ = 'craigcitro@google.com (Craig Citro)'
 
@@ -30,7 +30,7 @@ if os.path.isdir(_THIRD_PARTY_DIR) and _THIRD_PARTY_DIR not in sys.path:
   sys.path.insert(0, _THIRD_PARTY_DIR)
 
 # This strange import below ensures that the correct 'google' is imported.
-# We reload after sys.path is updated, so we know if will find our google
+# We reload after sys.path is updated, so we know if we'll find our google
 # before any other.
 # pylint:disable=g-import-not-at-top
 if 'google' in sys.modules:
@@ -38,8 +38,8 @@ if 'google' in sys.modules:
   try:
     reload(google)
   except NameError:
-    import imp
-    imp.reload(google)
+    import importlib
+    importlib.reload(google)
 
 
 from absl import app
@@ -95,8 +95,6 @@ JobIdGeneratorIncrementing = bigquery_client.JobIdGeneratorIncrementing
 JobIdGeneratorRandom = bigquery_client.JobIdGeneratorRandom
 JobIdGeneratorFingerprint = bigquery_client.JobIdGeneratorFingerprint
 ReservationReference = bigquery_client.ApiClientHelper.ReservationReference
-AutoscaleAlphaReservationReference = bigquery_client.ApiClientHelper.AutoscaleAlphaReservationReference
-AutoscalePreviewReservationReference = bigquery_client.ApiClientHelper.AutoscalePreviewReservationReference
 BetaReservationReference = bigquery_client.ApiClientHelper.BetaReservationReference
 CapacityCommitmentReference = bigquery_client.ApiClientHelper.CapacityCommitmentReference  # pylint: disable=line-too-long
 ReservationAssignmentReference = bigquery_client.ApiClientHelper.ReservationAssignmentReference  # pylint: disable=line-too-long
@@ -604,6 +602,8 @@ class Client(object):
     client_args['enable_resumable_uploads'] = (
         True if FLAGS.enable_resumable_uploads is None else
         FLAGS.enable_resumable_uploads)
+    if FLAGS.max_rows_per_request:
+      client_args['max_rows_per_request'] = FLAGS.max_rows_per_request
 
     return client_args
 
@@ -2020,6 +2020,11 @@ class _Query(BigqueryCmd):
         None,
         'An existing session id where the query will be run.',
         flag_values=fv)
+    flags.DEFINE_bool(
+        'continuous',
+        False,
+        'Whether to run the query as continuous query',
+        flag_values=fv)
     self._ProcessCommandRc(fv)
 
   def RunWithArgs(self, *args):
@@ -2208,6 +2213,9 @@ class _Query(BigqueryCmd):
         raise app.UsageError('batch cannot be specified in rpc mode.')
       if self.flatten_results:
         raise app.UsageError('flatten_results cannot be specified in rpc mode.')
+      if self.continuous:
+        raise app.UsageError(
+            'continuous cannot be specified in rpc mode.')
       kwds['max_results'] = self.max_rows
       fields, rows, execution = client.RunQueryRpc(query, **kwds)
       if self.dry_run:
@@ -2239,10 +2247,13 @@ class _Query(BigqueryCmd):
       kwds['destination_table'] = self.destination_table
       kwds['allow_large_results'] = self.allow_large_results
       kwds['flatten_results'] = self.flatten_results
+      kwds['continuous'] = self.continuous
       kwds['job_id'] = _GetJobIdFromFlags()
       if self.job_timeout_ms:
         kwds['job_timeout_ms'] = self.job_timeout_ms
+
       job = client.Query(query, **kwds)
+
       if self.dry_run:
         _PrintDryRunInfo(job)
       elif not FLAGS.sync:
@@ -3072,11 +3083,7 @@ class _List(BigqueryCmd):  # pylint: disable=missing-docstring
             "Failed to list capacity commitments '%s': %s" % (identifier, e))
     elif self.reservation:
       response = None
-      if FLAGS.api_version == 'autoscale_alpha':
-        object_type = AutoscaleAlphaReservationReference
-      elif FLAGS.api_version == 'autoscale_preview':
-        object_type = AutoscalePreviewReservationReference
-      elif FLAGS.api_version == 'v1beta1':
+      if FLAGS.api_version == 'v1beta1':
         object_type = BetaReservationReference
       else:
         object_type = ReservationReference
@@ -3190,7 +3197,10 @@ class _List(BigqueryCmd):  # pylint: disable=missing-docstring
     elif self.row_access_policies:
       object_type = RowAccessPolicyReference
       response = client.ListRowAccessPoliciesWithGrantees(
-          reference, self.max_results, self.page_token)
+          reference,
+          self.max_results,
+          self.page_token,
+      )
       if 'rowAccessPolicies' in response:
         results = response['rowAccessPolicies']
       else:
@@ -3432,6 +3442,21 @@ class _Delete(BigqueryCmd):
 class _Copy(BigqueryCmd):
   usage = """cp [-n] <source_table>[,<source_table>]* <dest_table>"""
 
+  _NOTE = '**** NOTE! **** '
+  _DATASET_NOT_FOUND = (
+      'Dataset %s not found. Please enter a valid dataset name.'
+  )
+  _CROSS_REGION_WARNING = (
+      'Warning: This operation is a cross-region copy operation. This may incur'
+      ' additional charges.'
+  )
+  _SYNC_FLAG_ENABLED_WARNING = (
+      'Warning: This operation is a cross-region copy operation. This may incur'
+      ' additional charges and take a long time to complete.\nThis command is'
+      ' running in sync mode. It is recommended to use async mode (-sync=false)'
+      ' for cross-region copy operation.'
+  )
+  _CONFIRM_CROSS_REGION = 'cp: Proceed with cross-region copy of %s? [y/N]: '
   _CONFIRM_OVERWRITE = 'cp: Table %s already exists. Replace the table? [y/N]: '
   _NOT_COPYING = ' %s, exiting.'
 
@@ -3482,6 +3507,107 @@ class _Copy(BigqueryCmd):
         'clone', False, 'Create a clone of source table.', flag_values=fv)
     self._ProcessCommandRc(fv)
 
+  def _CheckAllSourceDatasetsInSameRegionAndGetFirstSourceRegion(
+      self,
+      client: BigqueryClient,
+      source_references: List[ApiClientHelper.Reference],
+  ) -> Tuple[bool, str]:
+    """Checks whether all source datasets are from same region.
+
+    Args:
+      client: Bigquery client
+      source_references: Source reference
+
+    Returns:
+      true  - all source datasets are from the same region. Includes the
+              scenario in which there is only one source dataset
+      false - all source datasets are not from the same region.
+    Raises:
+      BigqueryNotFoundError: If unable to compute the dataset region
+    """
+    all_source_datasets_in_same_region = True
+    first_source_region = None
+    for _, val in enumerate(source_references):
+      source_dataset = val.GetDatasetReference()
+      source_region = client.GetDatasetRegion(source_dataset)
+      if source_region is None:
+        raise bigquery_client.BigqueryNotFoundError(
+            self._DATASET_NOT_FOUND % (str(source_dataset),),
+            {'reason': 'notFound'},
+            [],
+        )
+      if first_source_region is None:
+        first_source_region = source_region
+      elif first_source_region != source_region:
+        all_source_datasets_in_same_region = False
+        break
+    return all_source_datasets_in_same_region, first_source_region
+
+  def shouldContinueAfterCrossRegionCheck(
+      self,
+      client,
+      source_references,
+      source_references_str,
+      dest_reference,
+      destination_region,
+  ):
+    """Checks if it is a Cross Region Copy operation and obtain confirmation from user.
+
+    Args:
+      client: Bigquery client
+      source_references: Source reference
+      source_references_str: Source reference string
+      dest_reference: Destination dataset reference
+      destination_region: Destination dataset region
+
+    Returns:
+      true  - it is not a cross-region operation, or user has used force option,
+              or cross-region operation is verified confirmed with user, or
+              Insufficient permissions to query datasets for validation
+      false - if user did not allow cross-region operation, or
+              Dataset does not exist hence operation can't be performed.
+    Raises:
+      BigqueryNotFoundError: If unable to compute the dataset region
+    """
+    destination_dataset = dest_reference.GetDatasetReference()
+
+    try:
+      all_source_datasets_in_same_region, first_source_region = (
+          self._CheckAllSourceDatasetsInSameRegionAndGetFirstSourceRegion(
+              client, source_references
+          )
+      )
+      if destination_region is None:
+        destination_region = client.GetDatasetRegion(destination_dataset)
+    except bigquery_client.BigqueryAccessDeniedError as err:
+      print(
+          'Unable to determine source or destination dataset location, skipping'
+          ' cross-region validation: '
+          + str(err)
+      )
+      return True
+    if destination_region is None:
+      raise bigquery_client.BigqueryNotFoundError(
+          self._DATASET_NOT_FOUND % (str(destination_dataset),),
+          {'reason': 'notFound'},
+          [],
+      )
+    if all_source_datasets_in_same_region and (
+        destination_region == first_source_region
+    ):
+      return True
+    print(
+        self._NOTE,
+        '\n' + self._SYNC_FLAG_ENABLED_WARNING
+        if FLAGS.sync
+        else '\n' + self._CROSS_REGION_WARNING,
+    )
+    if self.force:
+      return True
+    if 'y' != _PromptYN(self._CONFIRM_CROSS_REGION % (source_references_str,)):
+      print(self._NOT_COPYING % (source_references_str,))
+      return False
+    return True
 
   def RunWithArgs(self, source_tables, dest_table):
     """Copies one table to another.
@@ -3517,6 +3643,14 @@ class _Copy(BigqueryCmd):
         print(self._NOT_COPYING % (source_references_str,))
         return 0
 
+    if not self.shouldContinueAfterCrossRegionCheck(
+        client,
+        source_references,
+        source_references_str,
+        dest_reference,
+        destination_region,
+    ):
+      return 0
 
     operation = 'copied'
     if self.snapshot:
@@ -4137,13 +4271,6 @@ class _Make(BigqueryCmd):
         'Number of slots to be scaled when needed. Autoscale will be enabled '
         'when setting this.',
         flag_values=fv)
-    flags.DEFINE_integer(
-        'autoscale_budget_slot_hours',
-        None,
-        'If not None, enables reservation autoscaling. Defines the upper limit '
-        'of autoscaled slot-hours this reservation can get during 7*24 hour '
-        'rolling window.',
-        flag_values=fv)
     flags.DEFINE_enum(
         'job_type',
         None,
@@ -4153,6 +4280,7 @@ class _Make(BigqueryCmd):
             'ML_EXTERNAL',
             'BACKGROUND',
             'SPARK',
+            'CONTINUOUS',
         ],
         (
             'Type of jobs to create reservation assignment for. Options'
@@ -4349,6 +4477,12 @@ class _Make(BigqueryCmd):
         'new line delimited manifest files, where each line contains a URI '
         'with no wild-card.',
         flag_values=fv)
+    flags.DEFINE_string(
+        'kms_key_name',
+        None,
+        'Cloud KMS key name used for encryption.',
+        flag_values=fv,
+    )
     self._ProcessCommandRc(fv)
 
   def RunWithArgs(self, identifier='', schema=''):
@@ -4430,7 +4564,6 @@ class _Make(BigqueryCmd):
             enable_queuing_and_priorities=self.enable_queuing_and_priorities,
             multi_region_auxiliary=self.multi_region_auxiliary,
             autoscale_max_slots=self.autoscale_max_slots,
-            autoscale_budget_slot_hours=self.autoscale_budget_slot_hours,
         )
       except BaseException as e:
         raise bigquery_client.BigqueryError(
@@ -4580,6 +4713,7 @@ class _Make(BigqueryCmd):
           display_name=self.display_name,
           description=self.description,
           connection_id=identifier,
+          kms_key_name=self.kms_key_name,
       )
       if created_connection:
         reference = client.GetConnectionReference(
@@ -5182,13 +5316,6 @@ class _Update(BigqueryCmd):
         'Number of slots to be scaled when needed. Autoscale will be enabled '
         'when setting this.',
         flag_values=fv)
-    flags.DEFINE_integer(
-        'autoscale_budget_slot_hours',
-        None,
-        'If not None, enables reservation autoscaling. Defines the upper limit '
-        'of autoscaled slot-hours this reservation can get during 7*24 hour '
-        'rolling window.',
-        flag_values=fv)
     flags.DEFINE_boolean(
         'transfer_config',
         False,
@@ -5497,6 +5624,12 @@ class _Update(BigqueryCmd):
         'Optional. Define the Vertex AI model ID to register to Vertex AI for '
         'BigQuery ML models.',
         flag_values=fv)
+    flags.DEFINE_string(
+        'kms_key_name',
+        None,
+        'Cloud KMS key name used for encryption.',
+        flag_values=fv,
+    )
     self._ProcessCommandRc(fv)
 
   def RunWithArgs(self, identifier='', schema=''):
@@ -5574,7 +5707,7 @@ class _Update(BigqueryCmd):
               target_job_concurrency=concurrency,
               enable_queuing_and_priorities=self.enable_queuing_and_priorities,
               autoscale_max_slots=self.autoscale_max_slots,
-              autoscale_budget_slot_hours=self.autoscale_budget_slot_hours)
+          )
           _PrintObjectInfo(object_info, reference, custom_format='show')
       except BaseException as e:
         raise bigquery_client.BigqueryError(
@@ -5648,7 +5781,6 @@ class _Update(BigqueryCmd):
       reference = TransferConfigReference(
           transferConfigName=formatted_identifier)
     elif self.connection or self.connection_credential:
-      kms_key = None
       reference = client.GetConnectionReference(
           identifier=identifier, default_location=FLAGS.location)
       if self.connection_type == 'AWS' and self.iam_role_id:
@@ -5669,7 +5801,7 @@ class _Update(BigqueryCmd):
           self.display_name or
           self.description or
           self.connection_credential or
-          kms_key is not None
+          self.kms_key_name is not None
       ):
         updated_connection = client.UpdateConnection(
             reference=reference,
@@ -5678,6 +5810,7 @@ class _Update(BigqueryCmd):
             connection_type=self.connection_type,
             properties=self.properties,
             connection_credential=self.connection_credential,
+            kms_key_name=self.kms_key_name,
         )
         bigquery_client.MaybePrintManualInstructionsForConnection(
             updated_connection)
@@ -5784,6 +5917,7 @@ class _Update(BigqueryCmd):
       if self.destination_kms_key:
         encryption_configuration = {'kmsKeyName': self.destination_kms_key}
       table_constraints = None
+
       client.UpdateTable(
           reference,
           schema=schema,
@@ -5806,7 +5940,7 @@ class _Update(BigqueryCmd):
           etag=self.etag,
           encryption_configuration=encryption_configuration,
           autodetect_schema=self.autodetect_schema,
-          table_constraints=table_constraints
+          table_constraints=table_constraints,
           )
 
       print("%s '%s' successfully updated." % (
@@ -6046,10 +6180,17 @@ class _Show(BigqueryCmd):
         'details.',
         flag_values=fv)
     flags.DEFINE_boolean(
+        'table_replica',
+        False,
+        'Show table replica specific details instead of general table details.',
+        flag_values=fv,
+    )
+    flags.DEFINE_boolean(
         'schema',
         False,
         'Show only the schema instead of general table details.',
-        flag_values=fv)
+        flag_values=fv,
+    )
     flags.DEFINE_boolean(
         'encryption_service_account',
         False,
@@ -6105,6 +6246,7 @@ class _Show(BigqueryCmd):
             'ML_EXTERNAL',
             'BACKGROUND',
             'SPARK',
+            'CONTINUOUS',
         ],
         (
             'Type of jobs to search reservation assignment for. Options'
@@ -6174,6 +6316,9 @@ class _Show(BigqueryCmd):
     elif self.materialized_view:
       reference = client.GetTableReference(identifier)
       custom_format = 'materialized_view'
+    elif self.table_replica:
+      reference = client.GetTableReference(identifier)
+      custom_format = 'table_replica'
     elif self.schema:
       if FLAGS.format not in [None, 'prettyjson', 'json']:
         raise app.UsageError(
@@ -6346,11 +6491,18 @@ def _PrintJobMessages(printable_job_info):
                   project=project_id,
                   dataset=dataset_id,
                   table=table_id))
-      elif (('Statement Type' in printable_job_info) and
-            ('SEARCH_INDEX' in printable_job_info['Statement Type'])):
-        print('%s search index on table %s.%s.%s\n' %
-              (six.ensure_str(op), six.ensure_str(project_id),
-               six.ensure_str(dataset_id), six.ensure_str(table_id)))
+      elif (
+          'Statement Type' in printable_job_info
+          and 'INDEX' in printable_job_info['Statement Type']
+      ):
+        if 'SEARCH_INDEX' in printable_job_info['Statement Type']:
+          print('%s search index on table %s.%s.%s\n' %
+                (six.ensure_str(op), six.ensure_str(project_id),
+                 six.ensure_str(dataset_id), six.ensure_str(table_id)))
+        elif 'VECTOR_INDEX' in printable_job_info['Statement Type']:
+          print('%s vector index on table %s.%s.%s\n' %
+                (six.ensure_str(op), six.ensure_str(project_id),
+                 six.ensure_str(dataset_id), six.ensure_str(table_id)))
       else:
         print('%s %s.%s.%s\n' %
               (six.ensure_str(op), six.ensure_str(project_id),
@@ -7313,7 +7465,7 @@ class CommandLoop(cmd.Cmd):
       return 'EOF'
     words = line.strip().split()
     if len(words) > 1 and words[0].lower() == 'select':
-      return 'query %s' % (pipes.quote(line),)
+      return 'query %s' % (shlex.quote(line),)
     if len(words) == 1 and words[0] not in ['help', 'ls', 'version']:
       return 'help %s' % (line.strip(),)
     return line
@@ -7482,6 +7634,16 @@ class _Init(BigqueryCmd):
 
   def RunWithArgs(self):
     """Authenticate and create a default .bigqueryrc file."""
+    message = ('BQ CLI will soon require all users to log in using'
+               ' `gcloud auth login`. `bq init` will no longer be supported'
+               ' after January 1, 2024.\n')
+    termcolor.cprint(
+        '\n'.join(textwrap.wrap(message, width=80)),
+        color='red',
+        attrs=['bold'],
+        file=sys.stdout,
+    )
+
     # Capture project_id before loading defaults from ~/.bigqueryrc so that we
     # get the true value of the flag as specified on the command line.
     project_id_flag = FLAGS.project_id

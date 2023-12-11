@@ -1,11 +1,7 @@
 - release_tracks: [ALPHA, BETA, GA]
-  BETA:
-    hidden: true
-  GA:
-    hidden: true
   help_text:
-    brief: Describe a management server.
-    description: Describe a management server.
+    brief: Show details of the management server.
+    description: Show all configuration data associated with the specified management server.
     examples: |
       To view details for management server 'MANAGEMENT_SERVER', run:
 
@@ -19,5 +15,5 @@
 
   arguments:
     resource:
-      help_text: Management Server to describe.
+      help_text: Name of the management server to describe.
       spec: !REF googlecloudsdk.command_lib.backupdr.resources:managementServer

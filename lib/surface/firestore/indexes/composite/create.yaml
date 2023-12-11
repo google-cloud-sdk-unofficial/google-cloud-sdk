@@ -43,6 +43,10 @@
 
     params:
     - _REF_: googlecloudsdk.command_lib.firestore.flags:field_config
+      release_tracks: [BETA, GA]
+      required: true
+    - _REF_: googlecloudsdk.command_lib.firestore.flags:field_config_alpha
+      release_tracks: [ALPHA]
       required: true
     - _REF_: googlecloudsdk.command_lib.firestore.flags:query_scope
     - _REF_: googlecloudsdk.command_lib.firestore.flags:api_scope

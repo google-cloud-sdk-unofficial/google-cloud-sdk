@@ -27,15 +27,15 @@ from googlecloudsdk.command_lib.iam import iam_util
 _DETAILED_HELP = {
     'DESCRIPTION': '{description}',
     'EXAMPLES': """ \
-        To set an application IAM policy with the id `my-app` and an IAM policy
-        in a json file 'policy.json', run:
+        To set the application IAM policy using a json file 'my_policy.json' for
+        the Application `my-app` in location `us-east1`, run:
 
-          $ {command} my-app /path/to/my_policy.json
+          $ {command} my-app --location=us-east1 /path/to/my_policy.json
 
-        To set an application IAM policy with the id `my-app` and an IAM policy
-        in a yaml file 'policy.yaml', run:
+        To set the application IAM policy using a yaml file 'my_policy.yaml` for
+        the Application `my-app` in location `us-east1`, run:
 
-          $ {command} my-app /path/to/my_policy.yaml
+          $ {command} my-app --location=us-east1 /path/to/my_policy.yaml
         """,
 }
 

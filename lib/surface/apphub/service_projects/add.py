@@ -27,9 +27,10 @@ from googlecloudsdk.command_lib.apphub import flags
 _DETAILED_HELP = {
     'DESCRIPTION': '{description}',
     'EXAMPLES': """ \
-        To add a service project with the id `my-service-project` run:
+        To add the service project `my-service-project` to the host project
+        `my-host-project`, run:
 
-          $ {command} my-service-project
+          $ {command} my-service-project --project=my-host-project
         """,
 }
 

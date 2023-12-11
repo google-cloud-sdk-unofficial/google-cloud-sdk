@@ -56,12 +56,6 @@ def AddSCPArgs(parser):
       '--compress', action='store_true', help='Enable compression.')
 
 
-def SCPRunCmd(env, cmd, *args):
-  """Returns a function to run."""
-  del args
-  return cmd.Run(env)
-
-
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Scp(base.Command):
   """Copy files to and from a Cloud TPU VM via SCP."""

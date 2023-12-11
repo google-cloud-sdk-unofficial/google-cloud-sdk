@@ -30,7 +30,7 @@ class MigrateConfig(base.Group):
   provides commands for converting datastore-indexes.xml, queue.xml, cron.xml
   and dispatch.xml to their yaml counterparts.
   """
-
+  category = base.APP_ENGINE_CATEGORY
   detailed_help = {
       'EXAMPLES': """\
           To convert a cron.xml to cron.yaml, run:

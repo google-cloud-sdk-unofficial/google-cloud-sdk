@@ -28,7 +28,7 @@ DETAILED_HELP = {
         """
         To mark a recommendation as FAILED:
 
-          $ {command} abcd-1234 --project=project-name --location=global --recommender=google.compute.instance.MachineTypeRecommender --etag=abc123 --state-metadata=key1=value1,key2=value2
+          $ {command} abcd-1234 --project=project-id --location=global --recommender=google.compute.instance.MachineTypeRecommender --etag=abc123 --state-metadata=key1=value1,key2=value2
         """,
 }
 

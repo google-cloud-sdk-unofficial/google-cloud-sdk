@@ -21,12 +21,8 @@ from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 
 
-@base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.GA, base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA
+)
 class Location(base.Group):
-  """Manage Backup and DR locations."""
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class LocationAlpha(base.Group):
   """Manage Backup and DR locations."""

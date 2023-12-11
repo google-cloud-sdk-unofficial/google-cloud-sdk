@@ -26,9 +26,10 @@ from googlecloudsdk.command_lib.apphub import flags
 _DETAILED_HELP = {
     'DESCRIPTION': '{description}',
     'EXAMPLES': """ \
-        To get an application IAM policy with the id `my-app`, run:
+        To get the application IAM policy for the Application `my-app` in
+        in location `us-east1`, run:
 
-          $ {command} my-app
+          $ {command} my-app --location=us-east1
         """,
 }
 

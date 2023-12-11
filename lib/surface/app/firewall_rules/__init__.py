@@ -28,7 +28,7 @@ class FirewallRules(base.Group):
 
   This set of commands can be used to view and manage your app's firewall rules.
   """
-
+  category = base.APP_ENGINE_CATEGORY
   detailed_help = {
       'DESCRIPTION':
           '{description}',

@@ -19,13 +19,14 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-from googlecloudsdk.api_lib.util import apis
+from googlecloudsdk.api_lib.scc import securitycenter_client
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.scc import flags as scc_flags
+from googlecloudsdk.command_lib.scc import util as scc_util
 from googlecloudsdk.command_lib.scc.muteconfigs import flags
 from googlecloudsdk.command_lib.scc.muteconfigs import util
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
-from googlecloudsdk.generated_clients.apis.securitycenter.v1 import securitycenter_v1_messages as messages
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.ALPHA)
@@ -64,30 +65,49 @@ class Create(base.CreateCommand):
     flags.AddParentGroup(parser)
     flags.DESCRIPTION_FLAG.AddToParser(parser)
     flags.FILTER_FLAG.AddToParser(parser)
+    # TODO: b/311713896 - Remove api-version flag when v2 is fully GA.
+    scc_flags.API_VERSION_FLAG.AddToParser(parser)
+    scc_flags.LOCATION_FLAG.AddToParser(parser)
     parser.display_info.AddFormat(properties.VALUES.core.default_format.Get())
 
   def Run(self, args):
+    # Determine what version to call from --location and --api-version.
+    version = scc_util.GetVersionFromArguments(args, args.mute_config)
+    # Build request from args.
+    messages = securitycenter_client.GetMessages(version)
     request = messages.SecuritycenterOrganizationsMuteConfigsCreateRequest()
-    request.googleCloudSecuritycenterV1MuteConfig = (
-        messages.GoogleCloudSecuritycenterV1MuteConfig(
-            filter=args.filter, description=args.description
-        )
-    )
-    request = GenerateMuteConfig(args, request)
-    client = apis.GetClientInstance("securitycenter", "v1")
+    if version == "v2":
+      request.googleCloudSecuritycenterV2MuteConfig = (
+          messages.GoogleCloudSecuritycenterV2MuteConfig(
+              filter=args.filter, description=args.description
+          )
+      )
+    else:
+      request.googleCloudSecuritycenterV1MuteConfig = (
+          messages.GoogleCloudSecuritycenterV1MuteConfig(
+              filter=args.filter, description=args.description
+          )
+      )
+    request = _GenerateMuteConfig(args, request, version)
+    client = securitycenter_client.GetClient(version)
     response = client.organizations_muteConfigs.Create(request)
     log.status.Print("Created.")
     return response
 
 
-def GenerateMuteConfig(args, req):
+def _GenerateMuteConfig(args, req, version="v1"):
   """Updates parent and Generates a mute config."""
   req.parent = util.ValidateAndGetParent(args)
   if req.parent is not None:
+    if version == "v2":
+      req.parent = util.ValidateAndGetRegionalizedParent(args, req.parent)
     req.muteConfigId = util.ValidateAndGetMuteConfigId(args)
   else:
-    mute_config = util.ValidateAndGetMuteConfigFullResourceName(args)
+    args.location = scc_util.ValidateAndGetLocation(args, version)
+    mute_config = util.ValidateAndGetMuteConfigFullResourceName(
+        args, version
+    )
     req.muteConfigId = util.GetMuteConfigIdFromFullResourceName(mute_config)
-    req.parent = util.GetParentFromFullResourceName(mute_config)
+    req.parent = util.GetParentFromFullResourceName(mute_config, version)
   args.filter = ""
   return req

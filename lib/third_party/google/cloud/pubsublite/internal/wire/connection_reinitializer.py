@@ -37,7 +37,8 @@ class ConnectionReinitializer(Generic[Request, Response], metaclass=ABCMeta):
 
     @abstractmethod
     async def reinitialize(
-        self, connection: Connection[Request, Response],
+        self,
+        connection: Connection[Request, Response],
     ):
         """Reinitialize a connection. Must ensure no calls to the associated RetryingConnection
         occur until this completes.

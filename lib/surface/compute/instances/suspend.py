@@ -42,8 +42,15 @@ DETAILED_HELP = {
         Note: A suspended instance can be resumed by running the gcloud compute
         instances resume command.
 
-        Limitations: See this feature's restrictions at
-        https://cloud.google.com/compute/docs/instances/suspend-resume-instance#limitations
+        If a VM has any attached Local SSD disks, you can preserve the Local SSD
+        data when you suspend the VM by setting `--discard-local-ssd=False`.
+        Preserving the Local SSD disk data incurs costs and is subject to
+        limitations.
+
+        Limitations:
+
+         - Limitations for suspending a VM: https://cloud.google.com/compute/docs/instances/suspend-resume-instance#limitations
+         - Limitations for preserving Local SSD data: https://cloud.google.com/compute/docs/disks/local-ssd#stop_instance
         """,
     'EXAMPLES':
         """\
@@ -55,7 +62,7 @@ DETAILED_HELP = {
 
           $ {command} test-instance --discard-local-ssd=True
 
-        Using '--discard-local-ssd' without a value defaults to True.
+        Using `--discard-local-ssd` without a value defaults to `True`.
       """
 }
 

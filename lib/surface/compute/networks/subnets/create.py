@@ -53,7 +53,6 @@ def _AddArgs(
     include_alpha_logging,
     include_aggregate_purpose,
     include_l2,
-    include_private_nat,
     include_reserved_internal_range,
     include_external_ipv6_prefix,
     api_version,
@@ -166,17 +165,13 @@ def _AddArgs(
       'PRIVATE_SERVICE_CONNECT': (
           'Reserved for Private Service Connect Internal Load Balancing.'
       ),
+      'PRIVATE_NAT': 'Reserved for use as source range for Private NAT.',
   }
 
   if include_aggregate_purpose:
     purpose_choices['AGGREGATE'] = (
         'Reserved for Aggregate Ranges used for aggregating '
         'private subnetworks.'
-    )
-
-  if include_private_nat:
-    purpose_choices['PRIVATE_NAT'] = (
-        'Reserved for use as source range for Private NAT.'
     )
 
   # Subnetwork purpose is introduced with L7ILB feature. Aggregate purpose
@@ -488,7 +483,6 @@ class Create(base.CreateCommand):
 
   _include_alpha_logging = False
   _include_aggregate_purpose = False
-  _include_private_nat = False
   _include_l2 = False
   _include_reserved_internal_range = False
   _include_external_ipv6_prefix = False
@@ -503,7 +497,6 @@ class Create(base.CreateCommand):
         cls._include_alpha_logging,
         cls._include_aggregate_purpose,
         cls._include_l2,
-        cls._include_private_nat,
         cls._include_reserved_internal_range,
         cls._include_external_ipv6_prefix,
         cls._api_version,
@@ -527,7 +520,6 @@ class Create(base.CreateCommand):
 class CreateBeta(Create):
   """Create a subnet in the Beta release track."""
 
-  _include_private_nat = True
   _include_reserved_internal_range = True
   _api_version = compute_api.COMPUTE_BETA_API_VERSION
 

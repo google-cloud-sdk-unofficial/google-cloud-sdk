@@ -46,7 +46,8 @@ class Diagnose(base.Command):
 
   @classmethod
   def Args(cls, parser):
-    flags.AddTimeoutFlag(parser)
+     # 26m is backend timeout + 4m for safety buffer.
+    flags.AddTimeoutFlag(parser, default='30m')
     dataproc = dp.Dataproc(cls.ReleaseTrack())
     flags.AddClusterResourceArg(parser, 'diagnose', dataproc.api_version)
     Diagnose.addDiagnoseFlags(parser, dataproc)

@@ -27,7 +27,7 @@ DETAILED_HELP = {
         """
         To mark an insight as ACTIVE:
 
-          $ {command} abcd-1234 --project=project-name --location=global --insight-type=google.compute.firewall.Insight --etag=abc123
+          $ {command} abcd-1234 --project=project-id --location=global --insight-type=google.compute.firewall.Insight --etag=abc123
         """,
 }
 

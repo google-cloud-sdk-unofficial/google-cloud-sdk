@@ -1,11 +1,7 @@
 - release_tracks: [ALPHA, BETA, GA]
-  BETA:
-    hidden: true
-  GA:
-    hidden: true
   help_text:
     brief: List available Backup and DR locations.
-    description: List available Backup and DR locations.
+    description: List all locations where Backup and DR Service is available.
     examples: |
       To list all locations, run:
 

@@ -48,24 +48,19 @@ class ListNetworkEndpoints(base.ListCommand):
           networkEndpoint.port,
           networkEndpoint.fqdn
         )"""
-  support_regional_scope = True
 
   @classmethod
   def Args(cls, parser):
     parser.display_info.AddFormat(cls.display_info_format)
     base.URI_FLAG.RemoveFromParser(parser)
-    flags.MakeNetworkEndpointGroupsArg(
-        support_regional_scope=cls.support_regional_scope
-    ).AddArgument(parser)
+    flags.MakeNetworkEndpointGroupsArg().AddArgument(parser)
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     client = holder.client
     messages = client.messages
 
-    neg_ref = flags.MakeNetworkEndpointGroupsArg(
-        support_regional_scope=self.support_regional_scope
-    ).ResolveAsResource(
+    neg_ref = flags.MakeNetworkEndpointGroupsArg().ResolveAsResource(
         args,
         holder.resources,
         scope_lister=compute_flags.GetDefaultScopeLister(client),
@@ -89,7 +84,7 @@ class ListNetworkEndpoints(base.ListCommand):
           )
       )
       service = client.apitools_client.networkEndpointGroups
-    elif self.support_regional_scope and hasattr(neg_ref, 'region'):
+    elif hasattr(neg_ref, 'region'):
       request = messages.ComputeRegionNetworkEndpointGroupsListNetworkEndpointsRequest(
           networkEndpointGroup=neg_ref.Name(),
           project=neg_ref.project,
@@ -118,7 +113,6 @@ class ListNetworkEndpoints(base.ListCommand):
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class BetaListNetworkEndpoints(ListNetworkEndpoints):
   """List network endpoints in a network endpoint group."""
-  support_regional_scope = True
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -133,4 +127,3 @@ class AlphaListNetworkEndpoints(ListNetworkEndpoints):
         networkEndpoint.port,
         networkEndpoint.fqdn
       )"""
-  support_regional_scope = True

@@ -19,7 +19,6 @@ from __future__ import division
 from __future__ import unicode_literals
 
 from apitools.base.py import exceptions as api_ex
-
 from googlecloudsdk.api_lib.pubsub import subscriptions
 from googlecloudsdk.api_lib.util import exceptions
 from googlecloudsdk.calliope import base
@@ -36,6 +35,7 @@ def _Run(
     enable_labels=False,
     legacy_output=False,
     enable_push_to_cps=False,
+    enable_use_table_schema=False,
 ):
   """Creates one or more subscriptions."""
   flags.ValidateDeadLetterPolicy(args)
@@ -50,8 +50,9 @@ def _Run(
   max_delivery_attempts = getattr(args, 'max_delivery_attempts', None)
   retain_acked_messages = getattr(args, 'retain_acked_messages', None)
   retention_duration = getattr(args, 'message_retention_duration', None)
-  enable_exactly_once_delivery = getattr(args, 'enable_exactly_once_delivery',
-                                         None)
+  enable_exactly_once_delivery = getattr(
+      args, 'enable_exactly_once_delivery', None
+  )
   if args.IsSpecified('message_retention_duration'):
     retention_duration = util.FormatDuration(retention_duration)
   min_retry_delay = getattr(args, 'min_retry_delay', None)
@@ -62,6 +63,11 @@ def _Run(
     max_retry_delay = util.FormatDuration(max_retry_delay)
   bigquery_table = getattr(args, 'bigquery_table', None)
   use_topic_schema = getattr(args, 'use_topic_schema', None)
+  use_table_schema = (
+      getattr(args, 'use_table_schema', None)
+      if enable_use_table_schema
+      else None
+  )
   write_metadata = getattr(args, 'write_metadata', None)
   drop_unknown_fields = getattr(args, 'drop_unknown_fields', None)
   cloud_storage_bucket = getattr(args, 'cloud_storage_bucket', None)
@@ -70,16 +76,16 @@ def _Run(
   cloud_storage_max_bytes = getattr(args, 'cloud_storage_max_bytes', None)
   cloud_storage_max_duration = getattr(args, 'cloud_storage_max_duration', None)
   if args.IsSpecified('cloud_storage_max_duration'):
-    cloud_storage_max_duration = util.FormatDuration(
-        cloud_storage_max_duration)
-  cloud_storage_output_format_list = getattr(args,
-                                             'cloud_storage_output_format',
-                                             None)
+    cloud_storage_max_duration = util.FormatDuration(cloud_storage_max_duration)
+  cloud_storage_output_format_list = getattr(
+      args, 'cloud_storage_output_format', None
+  )
   cloud_storage_output_format = None
   if cloud_storage_output_format_list:
     cloud_storage_output_format = cloud_storage_output_format_list[0]
-  cloud_storage_write_metadata = getattr(args, 'cloud_storage_write_metadata',
-                                         None)
+  cloud_storage_write_metadata = getattr(
+      args, 'cloud_storage_write_metadata', None
+  )
   pubsub_export_topic = (
       getattr(args, 'pubsub_export_topic', None) if enable_push_to_cps else None
   )
@@ -103,11 +109,11 @@ def _Run(
   labels = None
   if enable_labels:
     labels = labels_util.ParseCreateArgs(
-        args, client.messages.Subscription.LabelsValue)
+        args, client.messages.Subscription.LabelsValue
+    )
 
   failed = []
   for subscription_ref in args.CONCEPTS.subscription.Parse():
-
     try:
       result = client.Create(
           subscription_ref,
@@ -128,6 +134,7 @@ def _Run(
           enable_exactly_once_delivery=enable_exactly_once_delivery,
           bigquery_table=bigquery_table,
           use_topic_schema=use_topic_schema,
+          use_table_schema=use_table_schema,
           write_metadata=write_metadata,
           drop_unknown_fields=drop_unknown_fields,
           cloud_storage_bucket=cloud_storage_bucket,
@@ -145,7 +152,8 @@ def _Run(
       log.CreatedResource(
           subscription_ref.RelativeName(),
           kind='subscription',
-          failed=exc.payload.status_message)
+          failed=util.CreateFailureErrorMessage(exc.payload.status_message),
+      )
       failed.append(subscription_ref.subscriptionsId)
       continue
 
@@ -163,22 +171,23 @@ def _Run(
 class Create(base.CreateCommand):
   """Creates one or more Cloud Pub/Sub subscriptions."""
 
-  detailed_help = {
-      'DESCRIPTION':
-          """\
+  detailed_help = {'DESCRIPTION': """\
           Creates one or more Cloud Pub/Sub subscriptions for a given topic.
           The new subscription defaults to a PULL subscription unless a push
-          endpoint is specified."""
-  }
+          endpoint is specified."""}
 
   @classmethod
   def Args(cls, parser):
-    topic_help_text = ('from which this subscription is receiving messages. '
-                       'Each subscription is attached to a single topic.')
+    topic_help_text = (
+        'from which this subscription is receiving messages. '
+        'Each subscription is attached to a single topic.'
+    )
     topic = resource_args.CreateTopicResourceArg(
-        topic_help_text, positional=False)
+        topic_help_text, positional=False
+    )
     subscription = resource_args.CreateSubscriptionResourceArg(
-        'to create.', plural=True)
+        'to create.', plural=True
+    )
     resource_args.AddResourceArgs(parser, [topic, subscription])
     flags.AddSubscriptionSettingsFlags(parser)
     labels_util.AddCreateLabelsFlags(parser)
@@ -194,14 +203,20 @@ class CreateBeta(Create):
 
   @classmethod
   def Args(cls, parser):
-    topic_help_text = ('from which this subscription is receiving messages. '
-                       'Each subscription is attached to a single topic.')
+    topic_help_text = (
+        'from which this subscription is receiving messages. '
+        'Each subscription is attached to a single topic.'
+    )
     topic = resource_args.CreateTopicResourceArg(
-        topic_help_text, positional=False)
+        topic_help_text, positional=False
+    )
     subscription = resource_args.CreateSubscriptionResourceArg(
-        'to create.', plural=True)
+        'to create.', plural=True
+    )
     resource_args.AddResourceArgs(parser, [topic, subscription])
-    flags.AddSubscriptionSettingsFlags(parser, enable_push_to_cps=True)
+    flags.AddSubscriptionSettingsFlags(
+        parser, enable_push_to_cps=True, enable_use_table_schema=True
+    )
     labels_util.AddCreateLabelsFlags(parser)
 
   def Run(self, args):
@@ -212,4 +227,5 @@ class CreateBeta(Create):
         enable_labels=True,
         legacy_output=legacy_output,
         enable_push_to_cps=True,
+        enable_use_table_schema=True,
     )

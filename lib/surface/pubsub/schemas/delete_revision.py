@@ -66,7 +66,9 @@ class DeleteRevision(base.Command):
     except api_ex.HttpError as error:
       exc = exceptions.HttpException(error)
       log.DeletedResource(
-          schema_ref, kind='schema revision', failed=exc.payload.status_message
+          schema_ref,
+          kind='schema revision',
+          failed=util.CreateFailureErrorMessage(exc.payload.status_message),
       )
       return
 

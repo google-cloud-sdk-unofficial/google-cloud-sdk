@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from asynctest.mock import MagicMock
+from unittest.mock import MagicMock
 from google.api_core.exceptions import Aborted, GoogleAPICallError
 from cloudsdk.google.protobuf.any_pb2 import Any  # pytype: disable=pyi-error
 from google.rpc.error_details_pb2 import ErrorInfo

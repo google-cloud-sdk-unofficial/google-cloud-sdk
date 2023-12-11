@@ -8,7 +8,7 @@ import os
 from absl import flags
 
 
-_USE_GCE_SERVICE_ACCOUNT = flags.DEFINE_boolean(
+USE_GCE_SERVICE_ACCOUNT = flags.DEFINE_boolean(
     'use_gce_service_account',
     False,
     'Only for the gcloud wrapper use.'
@@ -41,7 +41,7 @@ _SERVICE_ACCOUNT_PRIVATE_KEY_PASSWORD = flags.DEFINE_string(
     'notasecret',
     'Only for the gcloud wrapper use.'
 )
-_SERVICE_ACCOUNT_CREDENTIAL_FILE = flags.DEFINE_string(
+SERVICE_ACCOUNT_CREDENTIAL_FILE = flags.DEFINE_string(
     'service_account_credential_file',
     None,
     'Only for the gcloud wrapper use.'

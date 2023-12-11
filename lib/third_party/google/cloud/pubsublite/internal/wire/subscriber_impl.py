@@ -17,7 +17,6 @@ from copy import deepcopy
 from typing import Optional, List
 
 from google.api_core.exceptions import GoogleAPICallError, FailedPrecondition
-from overrides import overrides
 
 from google.cloud.pubsublite.internal.wait_ignore_cancelled import wait_ignore_errors
 from google.cloud.pubsublite.internal.wire.connection import (
@@ -111,7 +110,9 @@ class SubscriberImpl(
             )
             return
         # Workaround for incredibly slow proto-plus-python accesses
-        messages = list(response.messages.messages._pb)
+        messages = list(
+            response.messages.messages._pb  # pytype: disable=attribute-error
+        )
         self._outstanding_flow_control.on_messages(messages)
         for message in messages:
             if (
@@ -154,7 +155,6 @@ class SubscriberImpl(
         await self._stop_loopers()
         await self._connection.__aexit__(exc_type, exc_val, exc_tb)
 
-    @overrides
     async def stop_processing(self, error: GoogleAPICallError):
         await self._stop_loopers()
         if is_reset_signal(error):
@@ -164,14 +164,14 @@ class SubscriberImpl(
                 allowed_bytes = sum(message.size_bytes for message in batch)
                 self._outstanding_flow_control.add(
                     FlowControlRequest(
-                        allowed_messages=len(batch), allowed_bytes=allowed_bytes,
+                        allowed_messages=len(batch),
+                        allowed_bytes=allowed_bytes,
                     )
                 )
 
             await self._reset_handler.handle_reset()
             self._last_received_offset = None
 
-    @overrides
     async def reinitialize(
         self, connection: Connection[SubscribeRequest, SubscribeResponse]
     ):

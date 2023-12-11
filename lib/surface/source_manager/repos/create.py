@@ -60,9 +60,12 @@ class Create(base.CreateCommand):
     with repositories.OverrideApiEndpointOverrides(api_base_url):
       # Create a repository
       client = repositories.RepositoriesClient()
-      create_response = client.Create(repository_ref)
-
-    return create_response
+      # this is a shortcut LRO, it completes immediately and is marked as done
+      # there is no need to wait
+      create_operation = client.Create(repository_ref)
+      if not args.IsSpecified("format"):
+        args.format = "default"
+      return create_operation
 
 
 Create.detailed_help = DETAILED_HELP

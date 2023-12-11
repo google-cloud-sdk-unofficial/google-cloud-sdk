@@ -6,7 +6,7 @@ import json
 import logging
 import os
 import sys
-from typing import Optional
+from typing import List, Optional, Union
 
 from absl import app
 from absl import flags
@@ -46,17 +46,30 @@ _CLIENT_INFO = {
 }
 
 
+WrappedCredentialsUnionType = Union[
+    'wrapped_credentials.WrappedCredentials'
+    '| Oauth2WithReauthCredentials'
+    '| oauth2client_4_0.client.AccessTokenCredentials'
+]
+
+CredentialsFromFlagsUnionType = Union[
+    WrappedCredentialsUnionType,
+    (
+        'oauth2client_4_0.contrib.gce.AppAssertionCredentials'
+    ),
+]
+
 
 class CredentialLoader(object):
   """Base class for credential loader."""
 
-  def Load(self):
+  def Load(self) -> WrappedCredentialsUnionType:
     """Loads credential."""
     cred = self._Load()
     cred._user_agent = _CLIENT_USER_AGENT  # pylint: disable=protected-access
     return cred
 
-  def _Load(self):
+  def _Load(self) -> WrappedCredentialsUnionType:
     raise NotImplementedError()
 
 
@@ -68,7 +81,9 @@ class CachedCredentialLoader(CredentialLoader):
   will save to local cache file for future use.
   """
 
-  def __init__(self, credential_cache_file, read_cache_first=True):
+  def __init__(
+      self, credential_cache_file: str, read_cache_first: bool = True
+  ) -> None:
     """Creates CachedCredentialLoader instance.
 
     Args:
@@ -83,7 +98,7 @@ class CachedCredentialLoader(CredentialLoader):
     self._read_cache_first = read_cache_first
     # MultiprocessFileStorage recommends using scopes as the key for single-user
     # credentials storage.
-    self._scopes_key = ','.join(sorted(bq_utils.GetClientScopeFromFlags()))
+    self._scopes_key = ','.join(sorted(bq_utils.GetClientScopesFromFlags()))
     try:
       self._storage = oauth2client_4_0.contrib.multiprocess_file_storage.MultiprocessFileStorage(
           credential_cache_file, self._scopes_key)
@@ -92,10 +107,12 @@ class CachedCredentialLoader(CredentialLoader):
           'Cannot create credential file %s: %s' % (credential_cache_file, e))
 
   @property
-  def storage(self):
+  def storage(
+      self,
+  ) -> 'oauth2client_4_0.contrib.multiprocess_file_storage.MultiprocessFileStorage':
     return self._storage
 
-  def Load(self):
+  def Load(self) -> WrappedCredentialsUnionType:
     cred = self._LoadFromCache() if self._read_cache_first else None
     if cred:
       return cred
@@ -110,7 +127,9 @@ class CachedCredentialLoader(CredentialLoader):
     cred.set_store(self._storage)
     return cred
 
-  def _LoadFromCache(self):
+  def _LoadFromCache(
+      self,
+  ) -> Optional['wrapped_credentials.WrappedCredentials']:
     """Loads credential from cache file."""
     if not os.path.exists(self.credential_cache_file):
       return None
@@ -134,14 +153,14 @@ class CachedCredentialLoader(CredentialLoader):
     if isinstance(creds, wrapped_credentials.WrappedCredentials):
       scopes = bq_utils.GetClientScopesFor3pi()
     else:
-      scopes = bq_utils.GetClientScopeFromFlags()
+      scopes = bq_utils.GetClientScopesFromFlags()
     if not creds.has_scopes(scopes):
       # Our cached credentials do not cover the required scopes.
       return None
 
     return creds
 
-  def _RaiseCredentialsCorrupt(self, e):
+  def _RaiseCredentialsCorrupt(self, e: 'BaseException') -> None:
     bq_utils.ProcessError(
         e,
         name='GetCredentialsFromFlags',
@@ -156,7 +175,7 @@ class CachedCredentialLoader(CredentialLoader):
 class ServiceAccountPrivateKeyLoader(CachedCredentialLoader):
   """Base class for loading credential from service account."""
 
-  def Load(self):
+  def Load(self) -> WrappedCredentialsUnionType:
     if not oauth2client_4_0.client.HAS_OPENSSL:
       raise app.UsageError(
           'BigQuery requires OpenSSL to be installed in order to use '
@@ -168,7 +187,9 @@ class ServiceAccountPrivateKeyLoader(CachedCredentialLoader):
 class ServiceAccountPrivateKeyFileLoader(ServiceAccountPrivateKeyLoader):
   """Credential loader for private key stored in a file."""
 
-  def __init__(self, service_account, file_path, password, *args, **kwargs):
+  def __init__(
+      self, service_account: str, file_path: str, password: str, *args, **kwargs
+  ) -> None:
     """Creates ServiceAccountPrivateKeyFileLoader instance.
 
     Args:
@@ -183,13 +204,13 @@ class ServiceAccountPrivateKeyFileLoader(ServiceAccountPrivateKeyLoader):
     self._file_path = file_path
     self._password = password
 
-  def _Load(self):
+  def _Load(self) -> WrappedCredentialsUnionType:
     try:
       return (oauth2client_4_0.service_account.ServiceAccountCredentials
               .from_p12_keyfile(
                   service_account_email=self._service_account,
                   filename=self._file_path,
-                  scopes=bq_utils.GetClientScopeFromFlags(),
+                  scopes=bq_utils.GetClientScopesFromFlags(),
                   private_key_password=self._password,
                   token_uri=oauth2client_4_0.GOOGLE_TOKEN_URI,
                   revoke_uri=oauth2client_4_0.GOOGLE_REVOKE_URI))
@@ -199,37 +220,12 @@ class ServiceAccountPrivateKeyFileLoader(ServiceAccountPrivateKeyLoader):
           'cannot be read:\n%s' % (self._file_path, e))
 
 
-class OwnedTestAccountOauthCredentialLoader(CachedCredentialLoader):
-  """Credential loader for owned test account oauth token."""
-
-  def __init__(self, ota_account_pool_id, owner_mdb_group, *args, **kwargs):
-    """Creates OwnedTestAccountOauthCredentialLoader instance.
-
-    Args:
-      ota_account_pool_id: ota account pool the ota is from.
-      owner_mdb_group: the owner mdb of the ota account pool.
-      *args: additional arguments to apply to base class.
-      **kwargs: additional keyword arguments to apply to base class.
-    """
-    super(OwnedTestAccountOauthCredentialLoader,
-          self).__init__(*args, **kwargs)
-    self._ota_pool = ota_account_pool_id
-    self._owner_mdb_group = owner_mdb_group
-
-  def _Load(self):
-    oauth_scopes = sorted(bq_utils.GetClientScopeFromFlags())
-    return bq_owned_test_accounts_utils.OwnedTestingAccountCredentials(
-        oauth_scopes, _CLIENT_USER_AGENT,
-        pool_id=self._ota_pool,
-        owner_mdb_group=self._owner_mdb_group)
-
-
 
 
 class ApplicationDefaultCredentialFileLoader(CachedCredentialLoader):
   """Credential loader for application default credential file."""
 
-  def __init__(self, credential_file, *args, **kwargs):
+  def __init__(self, credential_file: str, *args, **kwargs) -> None:
     """Creates ApplicationDefaultCredentialFileLoader instance.
 
     Args:
@@ -241,12 +237,12 @@ class ApplicationDefaultCredentialFileLoader(CachedCredentialLoader):
           self).__init__(*args, **kwargs)
     self._credential_file = credential_file
 
-  def _Load(self):
+  def _Load(self) -> WrappedCredentialsUnionType:
     """Loads credentials from given application default credential file."""
     with open(self._credential_file) as file_obj:
       credentials = json.load(file_obj)
 
-    client_scope = bq_utils.GetClientScopeFromFlags()
+    client_scope = bq_utils.GetClientScopesFromFlags()
     if credentials['type'] == oauth2client_4_0.client.AUTHORIZED_USER:
       return Oauth2WithReauthCredentials(
           access_token=None,
@@ -264,16 +260,12 @@ class ApplicationDefaultCredentialFileLoader(CachedCredentialLoader):
       return wrapped_credentials.WrappedCredentials.for_external_account_authorized_user(
           self._credential_file)
     else:  # Service account
-      token_uri = None
-      revoke_uri = None
       credentials['type'] = oauth2client_4_0.client.SERVICE_ACCOUNT
       service_account_credentials = (
           oauth2client_4_0.service_account.ServiceAccountCredentials
           .from_json_keyfile_dict(
               keyfile_dict=credentials,
-              scopes=client_scope,
-              token_uri=token_uri,
-              revoke_uri=revoke_uri))
+              scopes=client_scope))
       service_account_credentials._user_agent = _CLIENT_USER_AGENT  # pylint: disable=protected-access
       return service_account_credentials
 
@@ -281,7 +273,7 @@ class ApplicationDefaultCredentialFileLoader(CachedCredentialLoader):
 class AccessTokenCredentialLoader(CredentialLoader):
   """Credential loader for OAuth access token."""
 
-  def __init__(self, access_token, *args, **kwargs):
+  def __init__(self, access_token: str, *args, **kwargs) -> None:
     """Creates ApplicationDefaultCredentialFileLoader instance.
 
     Args:
@@ -292,13 +284,15 @@ class AccessTokenCredentialLoader(CredentialLoader):
     super(AccessTokenCredentialLoader, self).__init__(*args, **kwargs)
     self._access_token = access_token
 
-  def _Load(self):
+  def _Load(self) -> WrappedCredentialsUnionType:
     return oauth2client_4_0.client.AccessTokenCredentials(
         self._access_token, _CLIENT_USER_AGENT
     )
 
 
-def _GetCredentialsLoaderFromFlags():
+def _GetCredentialsLoaderFromFlags() -> (
+    'CachedCredentialLoader | AccessTokenCredentialLoader'
+):
   """Returns a CredentialsLoader based on user-supplied flags."""
   # TODO(b/274926222): Add e2e test for --oauth_access_token.
   if FLAGS.oauth_access_token:
@@ -336,7 +330,7 @@ def _GetCredentialsLoaderFromFlags():
       'bq.py should not be invoked. Use bq command instead.')
 
 
-def GetCredentialsFromFlags():
+def GetCredentialsFromFlags() -> CredentialsFromFlagsUnionType:
   """Returns credentials based on user-supplied flags."""
 
 
@@ -357,8 +351,11 @@ def GetCredentialsFromFlags():
   return credentials
 
 
-def _GetReauthCredentials(oauth2_creds):
+def _GetReauthCredentials(
+    oauth2_creds: 'oauth2client_4_0.client.OAuth2Credentials',
+) -> 'Oauth2WithReauthCredentials':
   reauth_creds = Oauth2WithReauthCredentials.from_OAuth2Credentials(
-      oauth2_creds)
+      oauth2_creds
+  )
   reauth_creds.store = oauth2_creds.store
   return reauth_creds

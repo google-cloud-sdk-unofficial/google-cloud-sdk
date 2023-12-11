@@ -30,7 +30,7 @@ from googlecloudsdk.command_lib.storage.tasks.buckets.anywhere_caches import cre
 @base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Create(base.CreateCommand):
-  """Create Anywhere Cache Instances for a bucket."""
+  """Create Anywhere Cache instances for a bucket."""
 
   detailed_help = {
       'DESCRIPTION': """
@@ -89,7 +89,7 @@ class Create(base.CreateCommand):
 
   def get_task_iterator(self, args, task_status_queue):
     url = storage_url.storage_url_from_string(args.url)
-    errors_util.raise_error_if_not_bucket(args.command_path, url)
+    errors_util.raise_error_if_not_gcs_bucket(args.command_path, url)
 
     progress_callbacks.workload_estimator_callback(
         task_status_queue, len(args.zone)

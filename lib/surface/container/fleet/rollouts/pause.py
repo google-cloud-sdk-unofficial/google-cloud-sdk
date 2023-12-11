@@ -53,9 +53,9 @@ class Pause(base.UpdateCommand):
     flag_parser = rollout_flags.RolloutFlagParser(
         args, release_track=base.ReleaseTrack.ALPHA
     )
-    req = alpha_messages.GkehubProjectsLocationsRolloutsPauseRequest(
-        name=util.RolloutName(args)
-    )
+    req = alpha_messages.GkehubProjectsLocationsRolloutsPauseRequest()
+    req.name = util.RolloutName(args)
+    req.pauseRolloutRequest = alpha_messages.PauseRolloutRequest()
 
     fleet_client = client.FleetClient(release_track=self.ReleaseTrack())
     operation = fleet_client.PauseRollout(req)

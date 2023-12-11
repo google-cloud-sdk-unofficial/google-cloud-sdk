@@ -1,6 +1,6 @@
 - help_text:
     brief: |
-      Describe a Backup and DR operation.
+      Describe an operation.
     description: |
       Describe a Backup and DR operation.
     examples: |

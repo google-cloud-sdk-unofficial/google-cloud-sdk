@@ -69,12 +69,14 @@ class UpdateGa(base.UpdateCommand):
             args.IsSpecified('json_custom_content_types') or
             args.IsSpecified('log_level') or
             args.IsSpecified('recaptcha_redirect_site_key') or
-            args.IsSpecified('network_ddos_protection')):
+            args.IsSpecified('network_ddos_protection') or
+            args.IsSpecified('user_ip_request_headers')):
       parameter_names = [
           '--description', '--enable-layer7-ddos-defense',
           '--layer7-ddos-defense-rule-visibility', '--json-parsing',
           '--json-custom-content-types', '--log-level',
-          '--recaptcha-redirect-site-key', '--network-ddos-protection'
+          '--recaptcha-redirect-site-key', '--network-ddos-protection',
+          '--user-ip-request-headers'
       ]
       raise exceptions.MinimumArgumentException(
           parameter_names, 'Please specify at least one property to update')
@@ -94,7 +96,7 @@ class UpdateGa(base.UpdateCommand):
     advanced_options_config = existing_security_policy.advancedOptionsConfig
     recaptcha_options_config = existing_security_policy.recaptchaOptionsConfig
     ddos_protection_config = existing_security_policy.ddosProtectionConfig
-    support_user_ip = False
+
     if args.description is not None:
       description = args.description
     if (args.IsSpecified('enable_layer7_ddos_defense') or
@@ -104,10 +106,11 @@ class UpdateGa(base.UpdateCommand):
               holder.client, args, adaptive_protection_config))
     if (args.IsSpecified('json_parsing') or
         args.IsSpecified('json_custom_content_types') or
-        args.IsSpecified('log_level')):
+        args.IsSpecified('log_level') or
+        args.IsSpecified('user_ip_request_headers')):
       advanced_options_config = (
           security_policies_utils.CreateAdvancedOptionsConfig(
-              holder.client, args, advanced_options_config, support_user_ip))
+              holder.client, args, advanced_options_config))
     if args.IsSpecified('recaptcha_redirect_site_key'):
       recaptcha_options_config = (
           security_policies_utils.CreateRecaptchaOptionsConfig(
@@ -153,7 +156,7 @@ class UpdateBeta(UpdateGa):
 
     flags.AddCloudArmorAdaptiveProtection(parser)
     flags.AddCloudArmorAdaptiveProtectionAutoDeploy(parser)
-    flags.AddAdvancedOptions(parser, support_user_ip=True)
+    flags.AddAdvancedOptions(parser)
     flags.AddRecaptchaOptions(parser)
     flags.AddDdosProtectionConfigWithAdvancedPreview(parser)
 
@@ -207,7 +210,7 @@ class UpdateBeta(UpdateGa):
     advanced_options_config = existing_security_policy.advancedOptionsConfig
     recaptcha_options_config = existing_security_policy.recaptchaOptionsConfig
     ddos_protection_config = existing_security_policy.ddosProtectionConfig
-    support_user_ip = True
+
     if args.description is not None:
       description = args.description
     if (args.IsSpecified('enable_layer7_ddos_defense') or
@@ -227,7 +230,7 @@ class UpdateBeta(UpdateGa):
         args.IsSpecified('user_ip_request_headers')):
       advanced_options_config = (
           security_policies_utils.CreateAdvancedOptionsConfig(
-              holder.client, args, advanced_options_config, support_user_ip))
+              holder.client, args, advanced_options_config))
     if args.IsSpecified('recaptcha_redirect_site_key'):
       recaptcha_options_config = (
           security_policies_utils.CreateRecaptchaOptionsConfig(
@@ -273,7 +276,7 @@ class UpdateAlpha(UpdateBeta):
 
     flags.AddCloudArmorAdaptiveProtection(parser)
     flags.AddCloudArmorAdaptiveProtectionAutoDeploy(parser)
-    flags.AddAdvancedOptions(parser, support_user_ip=True)
+    flags.AddAdvancedOptions(parser)
     flags.AddRecaptchaOptions(parser)
     flags.AddDdosProtectionConfigWithAdvancedPreview(parser)
     flags.AddDdosProtectionConfigOld(parser)
@@ -328,7 +331,7 @@ class UpdateAlpha(UpdateBeta):
     advanced_options_config = existing_security_policy.advancedOptionsConfig
     recaptcha_options_config = existing_security_policy.recaptchaOptionsConfig
     ddos_protection_config = existing_security_policy.ddosProtectionConfig
-    support_user_ip = True
+
     if args.description is not None:
       description = args.description
     if args.enable_ml is not None:
@@ -351,7 +354,7 @@ class UpdateAlpha(UpdateBeta):
         args.IsSpecified('user_ip_request_headers')):
       advanced_options_config = (
           security_policies_utils.CreateAdvancedOptionsConfig(
-              holder.client, args, advanced_options_config, support_user_ip))
+              holder.client, args, advanced_options_config))
     if args.IsSpecified('recaptcha_redirect_site_key'):
       recaptcha_options_config = (
           security_policies_utils.CreateRecaptchaOptionsConfig(

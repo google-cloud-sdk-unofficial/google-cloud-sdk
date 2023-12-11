@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Implementation of delete command for insights dataset config."""
+"""Implementation of delete command for Insights dataset config."""
 
 from googlecloudsdk.api_lib.storage import insights_api
 from googlecloudsdk.calliope import base
@@ -24,11 +24,11 @@ from googlecloudsdk.core.console import console_io
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Delete(base.Command):
-  """Delete dataset config for insights."""
+  """Delete dataset config for Insights."""
 
   detailed_help = {
       'DESCRIPTION': """
-      Delete an insights dataset config.
+      Delete an Insights dataset config.
       """,
       'EXAMPLES': """
 

@@ -25,9 +25,10 @@ from googlecloudsdk.command_lib.compute.addresses import flags
 
 
 class Describe(base.DescribeCommand):
-  r"""Display detailed information about an address.
+  r"""Display detailed information about a reserved static address.
 
-  *{command}* displays all data associated with an address in a project.
+  *{command}* displays all data associated with a reserved static address in a
+  project.
 
   ## EXAMPLES
   To get details about a global address, run:

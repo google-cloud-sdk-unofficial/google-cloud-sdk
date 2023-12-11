@@ -12,17 +12,22 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Implementation of update command for updating Anywhere Cache Instances."""
+"""Implementation of update command for updating Anywhere Cache instances."""
 
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.storage import flags
+from googlecloudsdk.command_lib.storage import progress_callbacks
+from googlecloudsdk.command_lib.storage.tasks import task_executor
+from googlecloudsdk.command_lib.storage.tasks import task_graph_executor
+from googlecloudsdk.command_lib.storage.tasks import task_status
+from googlecloudsdk.command_lib.storage.tasks.buckets.anywhere_caches import patch_anywhere_cache_task
 
 
 @base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Update(base.UpdateCommand):
-  """Update Anywhere Cache Instances of a bucket."""
+  """Update Anywhere Cache instances of a bucket."""
 
   detailed_help = {
       'DESCRIPTION': """
@@ -33,16 +38,15 @@ class Update(base.UpdateCommand):
       'EXAMPLES': """
 
       The following command updates cache entry's ttl, and admisson policy of
-      anywhere cache instance of bucket gs://my-bucket in ``asia-south2-b''
+      anywhere cache instance of bucket ``my-bucket'' in ``asia-south2-b''
       zone.
 
-        $ {command} gs://my-bucket/asia-south2-b --ttl=6h --admission-policy='ADMIT_ON_SECOND_MISS'
+        $ {command} my-bucket/asia-south2-b --ttl=6h --admission-policy='ADMIT_ON_SECOND_MISS'
 
       The following command updates cache entry's ttl of anywhere cache instance
-      of bucket ``gs://my-bucket'', and ``gs://my-bucket-2'' in
-      ``asia-south2-b'' zone.
+      of bucket ``my-bucket'', and ``my-bucket-2'' in ``asia-south2-b'' zone.
 
-        $ {command} gs://my-bucket/asia-south2-b gs://my-bucket-2/asia-south2-b --ttl=6h
+        $ {command} my-bucket/asia-south2-b my-bucket-2/asia-south2-b --ttl=6h
       """,
   }
 
@@ -66,6 +70,28 @@ class Update(base.UpdateCommand):
 
     flags.add_admission_policy_flag(parser)
 
+  def get_task_iterator(self, args, task_status_queue):
+    progress_callbacks.workload_estimator_callback(
+        task_status_queue, len(args.id)
+    )
+
+    ttl = str(args.ttl) + 's' if args.ttl else None
+
+    for id_str in args.id:
+      bucket_name, _, zone = id_str.rpartition('/')
+      yield patch_anywhere_cache_task.PatchAnywhereCacheTask(
+          bucket_name, zone, admission_policy=args.admission_policy, ttl=ttl
+      )
+
   def Run(self, args):
-    # TODO(b/303559100) : Implementation of update command
-    raise NotImplementedError
+    task_status_queue = task_graph_executor.multiprocessing_context.Queue()
+    task_iterator = self.get_task_iterator(args, task_status_queue)
+
+    self.exit_code = task_executor.execute_tasks(
+        task_iterator,
+        parallelizable=True,
+        task_status_queue=task_status_queue,
+        progress_manager_args=task_status.ProgressManagerArgs(
+            increment_type=task_status.IncrementType.INTEGER, manifest_path=None
+        ),
+    )

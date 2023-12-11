@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Implementation of delete-link command for insights dataset config."""
+"""Implementation of delete-link command for Insights dataset config."""
 
 from googlecloudsdk.api_lib.storage import insights_api
 from googlecloudsdk.calliope import base

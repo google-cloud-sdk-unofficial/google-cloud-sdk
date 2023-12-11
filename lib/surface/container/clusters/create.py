@@ -188,8 +188,6 @@ def ParseCreateOptionsBase(args, is_autopilot, get_default, location,
 
   flags.ValidateNotificationConfigFlag(args)
 
-  flags.WarnForLocationPolicyDefault(args)
-
   ephemeral_storage_local_ssd = None
   if args.IsKnownAndSpecified('ephemeral_storage_local_ssd'):
     ephemeral_storage_local_ssd = (
@@ -236,6 +234,12 @@ def ParseCreateOptionsBase(args, is_autopilot, get_default, location,
       dataplane_v2=get_default('enable_dataplane_v2'),
       enable_dataplane_v2_metrics=get_default('enable_dataplane_v2_metrics'),
       disable_dataplane_v2_metrics=get_default('disable_dataplane_v2_metrics'),
+      enable_dataplane_v2_flow_observability=get_default(
+          'enable_dataplane_v2_flow_observability'
+      ),
+      disable_dataplane_v2_flow_observability=get_default(
+          'disable_dataplane_v2_flow_observability'
+      ),
       dataplane_v2_observability_mode=get_default(
           'dataplane_v2_observability_mode'
       ),
@@ -579,8 +583,8 @@ flags_to_add = {
             flags.AddDataplaneV2Flag,
         'dataplanev2metrics':
             flags.AddDataplaneV2MetricsFlag,
-        'dataplanev2obsmode':
-            flags.AddDataplaneV2ObservabilityModeFlag,
+        'dataplanev2obs':
+            flags.AddDataplaneV2ObservabilityFlags,
         'disksize':
             flags.AddDiskSizeFlag,
         'disktype':
@@ -793,8 +797,8 @@ flags_to_add = {
             flags.AddDataplaneV2Flag,
         'dataplanev2metrics':
             flags.AddDataplaneV2MetricsFlag,
-        'dataplanev2obsmode':
-            flags.AddDataplaneV2ObservabilityModeFlag,
+        'dataplanev2obs':
+            flags.AddDataplaneV2ObservabilityFlags,
         'disabledefaultsnat':
             AddDisableDefaultSnatFlagForClusterCreate,
         'disksize':
@@ -1050,8 +1054,8 @@ flags_to_add = {
             flags.AddDataplaneV2Flag,
         'dataplanev2metrics':
             flags.AddDataplaneV2MetricsFlag,
-        'dataplanev2obsmode':
-            flags.AddDataplaneV2ObservabilityModeFlag,
+        'dataplanev2obs':
+            flags.AddDataplaneV2ObservabilityFlags,
         'disabledefaultsnat':
             AddDisableDefaultSnatFlagForClusterCreate,
         'disksize':

@@ -81,6 +81,10 @@ class Set(base.UpdateCommand, command.PocoCommand):
   To set a cpu request:
 
     $ {command} audit cpu-request 250m
+
+  To set anti-affinity to achieve high availability on the mutation deployment:
+
+    $ {command} mutation pod-affinity anti
   """
 
   feature_name = 'policycontroller'
@@ -166,3 +170,7 @@ class Set(base.UpdateCommand, command.PocoCommand):
       return deployment.update_mem_request(self.messages, deployment_cfg, value)
     if prop == 'replica-count':
       return deployment.update_replica_count(deployment_cfg, value)
+    if prop == 'pod-affinity':
+      return deployment.update_pod_affinity(
+          self.messages, deployment_cfg, value
+      )

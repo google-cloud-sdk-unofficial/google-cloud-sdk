@@ -66,6 +66,7 @@ class AlloyDB(base.Command):
     ad_flags.AddCpuCountFlag(parser)
     ad_flags.AddDatabaseFlagsFlag(parser)
     ad_flags.AddPrimaryLabelsFlag(parser)
+    ad_flags.AddDatabaseVersionFlag(parser)
     flags.AddLabelsCreateFlags(parser)
 
   def Run(self, args):

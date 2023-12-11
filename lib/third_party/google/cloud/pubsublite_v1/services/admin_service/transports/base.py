@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2020 Google LLC
+# Copyright 2022 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,7 +15,8 @@
 #
 import abc
 from typing import Awaitable, Callable, Dict, Optional, Sequence, Union
-import pkg_resources
+
+from google.cloud.pubsublite_v1 import gapic_version as package_version
 
 import google.auth  # type: ignore
 import google.api_core
@@ -28,17 +29,13 @@ from google.oauth2 import service_account  # type: ignore
 
 from google.cloud.pubsublite_v1.types import admin
 from google.cloud.pubsublite_v1.types import common
+from google.longrunning import operations_pb2
 from google.longrunning import operations_pb2  # type: ignore
 from cloudsdk.google.protobuf import empty_pb2  # type: ignore
 
-try:
-    DEFAULT_CLIENT_INFO = gapic_v1.client_info.ClientInfo(
-        gapic_version=pkg_resources.get_distribution(
-            "google-cloud-pubsublite",
-        ).version,
-    )
-except pkg_resources.DistributionNotFound:
-    DEFAULT_CLIENT_INFO = gapic_v1.client_info.ClientInfo()
+DEFAULT_CLIENT_INFO = gapic_v1.client_info.ClientInfo(
+    gapic_version=package_version.__version__
+)
 
 
 class AdminServiceTransport(abc.ABC):
@@ -52,12 +49,13 @@ class AdminServiceTransport(abc.ABC):
         self,
         *,
         host: str = DEFAULT_HOST,
-        credentials: ga_credentials.Credentials = None,
+        credentials: Optional[ga_credentials.Credentials] = None,
         credentials_file: Optional[str] = None,
         scopes: Optional[Sequence[str]] = None,
         quota_project_id: Optional[str] = None,
         client_info: gapic_v1.client_info.ClientInfo = DEFAULT_CLIENT_INFO,
         always_use_jwt_access: Optional[bool] = False,
+        api_audience: Optional[str] = None,
         **kwargs,
     ) -> None:
         """Instantiate the transport.
@@ -84,10 +82,6 @@ class AdminServiceTransport(abc.ABC):
             always_use_jwt_access (Optional[bool]): Whether self signed JWT should
                 be used for service account credentials.
         """
-        # Save the hostname. Default to port 443 (HTTPS) if none is specified.
-        if ":" not in host:
-            host += ":443"
-        self._host = host
 
         scopes_kwargs = {"scopes": scopes, "default_scopes": self.AUTH_SCOPES}
 
@@ -109,6 +103,11 @@ class AdminServiceTransport(abc.ABC):
             credentials, _ = google.auth.default(
                 **scopes_kwargs, quota_project_id=quota_project_id
             )
+            # Don't apply audience if the credentials file passed from user.
+            if hasattr(credentials, "with_gdch_audience"):
+                credentials = credentials.with_gdch_audience(
+                    api_audience if api_audience else host
+                )
 
         # If the credentials are service account credentials, then always try to use self signed JWT.
         if (
@@ -121,14 +120,23 @@ class AdminServiceTransport(abc.ABC):
         # Save the credentials.
         self._credentials = credentials
 
+        # Save the hostname. Default to port 443 (HTTPS) if none is specified.
+        if ":" not in host:
+            host += ":443"
+        self._host = host
+
     def _prep_wrapped_messages(self, client_info):
         # Precompute the wrapped methods.
         self._wrapped_methods = {
             self.create_topic: gapic_v1.method.wrap_method(
-                self.create_topic, default_timeout=None, client_info=client_info,
+                self.create_topic,
+                default_timeout=None,
+                client_info=client_info,
             ),
             self.get_topic: gapic_v1.method.wrap_method(
-                self.get_topic, default_timeout=None, client_info=client_info,
+                self.get_topic,
+                default_timeout=None,
+                client_info=client_info,
             ),
             self.get_topic_partitions: gapic_v1.method.wrap_method(
                 self.get_topic_partitions,
@@ -136,13 +144,19 @@ class AdminServiceTransport(abc.ABC):
                 client_info=client_info,
             ),
             self.list_topics: gapic_v1.method.wrap_method(
-                self.list_topics, default_timeout=None, client_info=client_info,
+                self.list_topics,
+                default_timeout=None,
+                client_info=client_info,
             ),
             self.update_topic: gapic_v1.method.wrap_method(
-                self.update_topic, default_timeout=None, client_info=client_info,
+                self.update_topic,
+                default_timeout=None,
+                client_info=client_info,
             ),
             self.delete_topic: gapic_v1.method.wrap_method(
-                self.delete_topic, default_timeout=None, client_info=client_info,
+                self.delete_topic,
+                default_timeout=None,
+                client_info=client_info,
             ),
             self.list_topic_subscriptions: gapic_v1.method.wrap_method(
                 self.list_topic_subscriptions,
@@ -150,37 +164,59 @@ class AdminServiceTransport(abc.ABC):
                 client_info=client_info,
             ),
             self.create_subscription: gapic_v1.method.wrap_method(
-                self.create_subscription, default_timeout=None, client_info=client_info,
+                self.create_subscription,
+                default_timeout=None,
+                client_info=client_info,
             ),
             self.get_subscription: gapic_v1.method.wrap_method(
-                self.get_subscription, default_timeout=None, client_info=client_info,
+                self.get_subscription,
+                default_timeout=None,
+                client_info=client_info,
             ),
             self.list_subscriptions: gapic_v1.method.wrap_method(
-                self.list_subscriptions, default_timeout=None, client_info=client_info,
+                self.list_subscriptions,
+                default_timeout=None,
+                client_info=client_info,
             ),
             self.update_subscription: gapic_v1.method.wrap_method(
-                self.update_subscription, default_timeout=None, client_info=client_info,
+                self.update_subscription,
+                default_timeout=None,
+                client_info=client_info,
             ),
             self.delete_subscription: gapic_v1.method.wrap_method(
-                self.delete_subscription, default_timeout=None, client_info=client_info,
+                self.delete_subscription,
+                default_timeout=None,
+                client_info=client_info,
             ),
             self.seek_subscription: gapic_v1.method.wrap_method(
-                self.seek_subscription, default_timeout=None, client_info=client_info,
+                self.seek_subscription,
+                default_timeout=None,
+                client_info=client_info,
             ),
             self.create_reservation: gapic_v1.method.wrap_method(
-                self.create_reservation, default_timeout=None, client_info=client_info,
+                self.create_reservation,
+                default_timeout=None,
+                client_info=client_info,
             ),
             self.get_reservation: gapic_v1.method.wrap_method(
-                self.get_reservation, default_timeout=None, client_info=client_info,
+                self.get_reservation,
+                default_timeout=None,
+                client_info=client_info,
             ),
             self.list_reservations: gapic_v1.method.wrap_method(
-                self.list_reservations, default_timeout=None, client_info=client_info,
+                self.list_reservations,
+                default_timeout=None,
+                client_info=client_info,
             ),
             self.update_reservation: gapic_v1.method.wrap_method(
-                self.update_reservation, default_timeout=None, client_info=client_info,
+                self.update_reservation,
+                default_timeout=None,
+                client_info=client_info,
             ),
             self.delete_reservation: gapic_v1.method.wrap_method(
-                self.delete_reservation, default_timeout=None, client_info=client_info,
+                self.delete_reservation,
+                default_timeout=None,
+                client_info=client_info,
             ),
             self.list_reservation_topics: gapic_v1.method.wrap_method(
                 self.list_reservation_topics,
@@ -192,9 +228,9 @@ class AdminServiceTransport(abc.ABC):
     def close(self):
         """Closes resources associated with the transport.
 
-       .. warning::
-            Only call this method if the transport is NOT shared
-            with other clients - this may cause errors in other clients!
+        .. warning::
+             Only call this method if the transport is NOT shared
+             with other clients - this may cause errors in other clients!
         """
         raise NotImplementedError()
 
@@ -378,6 +414,43 @@ class AdminServiceTransport(abc.ABC):
             Awaitable[admin.ListReservationTopicsResponse],
         ],
     ]:
+        raise NotImplementedError()
+
+    @property
+    def list_operations(
+        self,
+    ) -> Callable[
+        [operations_pb2.ListOperationsRequest],
+        Union[
+            operations_pb2.ListOperationsResponse,
+            Awaitable[operations_pb2.ListOperationsResponse],
+        ],
+    ]:
+        raise NotImplementedError()
+
+    @property
+    def get_operation(
+        self,
+    ) -> Callable[
+        [operations_pb2.GetOperationRequest],
+        Union[operations_pb2.Operation, Awaitable[operations_pb2.Operation]],
+    ]:
+        raise NotImplementedError()
+
+    @property
+    def cancel_operation(
+        self,
+    ) -> Callable[[operations_pb2.CancelOperationRequest], None,]:
+        raise NotImplementedError()
+
+    @property
+    def delete_operation(
+        self,
+    ) -> Callable[[operations_pb2.DeleteOperationRequest], None,]:
+        raise NotImplementedError()
+
+    @property
+    def kind(self) -> str:
         raise NotImplementedError()
 
 

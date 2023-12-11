@@ -255,7 +255,10 @@ def _AddServerTLSPolicyArguments(parser):
   """Adds all Server TLS Policy-related arguments."""
   server_tls_group = parser.add_mutually_exclusive_group()
   ns_resource_args.GetServerTlsPolicyResourceArg(
-      'to attach', name='server-tls-policy', group=server_tls_group
+      'to attach',
+      name='server-tls-policy',
+      group=server_tls_group,
+      region_fallthrough=True,
   ).AddToParser(server_tls_group)
   ns_resource_args.GetClearServerTLSPolicyForHttpsProxy().AddToParser(
       server_tls_group

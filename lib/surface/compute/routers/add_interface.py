@@ -199,7 +199,13 @@ class AddInterfaceBeta(AddInterface):
   *{command}* is used to add an interface to a Compute Engine
   router.
   """
-  pass
+
+  @classmethod
+  def Args(cls, parser):
+    cls._Args(parser, enable_ipv6_bgp=True)
+
+  def Run(self, args):
+    return self._Run(args, enable_ipv6_bgp=True)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -209,10 +215,4 @@ class AddInterfaceAlpha(AddInterfaceBeta):
   *{command}* is used to add an interface to a Compute Engine
   router.
   """
-
-  @classmethod
-  def Args(cls, parser):
-    cls._Args(parser, enable_ipv6_bgp=True)
-
-  def Run(self, args):
-    return self._Run(args, enable_ipv6_bgp=True)
+  pass

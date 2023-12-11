@@ -34,7 +34,7 @@ class Create(base.CreateCommand):
 
   ## EXAMPLES
 
-  To create a quota preference named in region `us-central1` that applies to the
+  To create a quota preference in region `us-central1` that applies to the
   `default_limit` quota under service `example.googleapis.com` for
   `projects/12321`, run:
 
@@ -43,7 +43,7 @@ class Create(base.CreateCommand):
     --project=12321
     --quota-id=default_limit
     --preferred-value=100
-    --dimensions=regions=us-central1
+    --dimensions=region=us-central1
     --preference-id=example_default-limit_us-central1
 
 

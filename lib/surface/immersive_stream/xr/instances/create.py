@@ -34,9 +34,8 @@ class Create(base.CreateCommand):
   """Create an Immersive Stream for XR service instance."""
 
   detailed_help = {
-      'DESCRIPTION':
-          'Create an Immersive Stream for XR service instance.',
-      'EXAMPLES': ("""
+      'DESCRIPTION': 'Create an Immersive Stream for XR service instance.',
+      'EXAMPLES': """
           To create a service instance called `my-instance` serving content
           `my-content` with version `my-version` that has availablilty for 2
           concurent sessions in us-west1 region and 3 concurrent sessions in
@@ -53,12 +52,24 @@ class Create(base.CreateCommand):
           `https://www.google.com` run:
 
             $ {command} my-instance --content=my-content --version=my-version --add-region=region=us-west1,capacity=2 --fallback-url="https://www.google.com"
-      """)
+      """,
   }
 
   @staticmethod
   def __ValidateArgs(args):
-    regions = {region_config['region'] for region_config in args.add_region}
+    regions = {}
+    for region_config in args.add_region:
+      regions[region_config['region']] = region_config
+      if region_config.get('enable_autoscaling', False) and not (
+          'autoscaling_buffer' in region_config
+          and 'autoscaling_min_capacity' in region_config
+      ):
+        log.error(
+            'Must set autoscaling_buffer and autoscaling_min_capacity if'
+            ' enable_autoscaling is set to true.'
+        )
+        return False
+
     if len(regions) < len(args.add_region):
       log.error('Duplicate regions in --add-region arguments.')
       return False
@@ -90,6 +101,12 @@ class Create(base.CreateCommand):
         required=False,
         hidden=True,
     )
+    parser.add_argument(
+        '--gpu-class',
+        help='The class of GPU that is used by this service instance',
+        required=False,
+        hidden=True,
+    )
     flags.AddRegionConfigArg('--add-region', parser)
     base.ASYNC_FLAG.AddToParser(parser)
 
@@ -105,11 +122,15 @@ class Create(base.CreateCommand):
     version = args.version
     fallback_url = args.fallback_url
     mode = args.mode
+    gpu_class = args.gpu_class
 
     if fallback_url and not flags.ValidateUrl(fallback_url):
       return
 
     if mode and not flags.ValidateMode(mode):
+      return
+
+    if gpu_class and not flags.ValidateGpuClass(gpu_class, mode):
       return
 
     client = api_util.GetClient(self.ReleaseTrack())
@@ -129,6 +150,7 @@ class Create(base.CreateCommand):
         target_location_configs,
         fallback_url,
         mode,
+        gpu_class,
     )
     log.status.Print('Create request issued for: [{}]'.format(instance_name))
     if args.async_:
@@ -158,8 +180,9 @@ class Create(base.CreateCommand):
         params={
             'projectsId': properties.VALUES.core.project.Get(required=True),
             'locationsId': 'global',
-            'streamInstancesId': instance_name
-        })
+            'streamInstancesId': instance_name,
+        },
+    )
 
     log.CreatedResource(instance_resource)
 

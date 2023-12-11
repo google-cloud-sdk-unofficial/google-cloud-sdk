@@ -47,6 +47,16 @@ class List(base.ListCommand):
     base.SORT_BY_FLAG.RemoveFromParser(parser)
     base.URI_FLAG.RemoveFromParser(parser)
 
+    parser.display_info.AddFormat("""
+          table(
+            name.basename():label=REPOSITORY_ID:sort=1,
+            name.segment(3):label=LOCATION,
+            instance.basename():label=INSTANCE_ID,
+            createTime.date(),
+            uris.html:label=HTML_HOST
+          )
+        """)
+
   def Run(self, args):
     # Get resource args to contruct base url
     location_ref = args.CONCEPTS.region.Parse()
@@ -58,8 +68,7 @@ class List(base.ListCommand):
       # List repositories
       client = repositories.RepositoriesClient()
       list_response = client.List(location_ref, args.page_size, args.page_token)
-
-    return list_response
+      return list_response.repositories
 
 
 List.detailed_help = DETAILED_HELP

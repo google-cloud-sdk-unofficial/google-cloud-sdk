@@ -18,7 +18,7 @@ arguments:
   params:
   - arg_name: network
     required: true
-    api_field: detachAppVPCRequest.peerNetwork
+    api_field: detachAppNetworkRequest.peerNetwork
     help_text: |
       Name of the network to be detached. This can be a simple name (like `my-network`) or a fully qualified identifier (like `projects/my-project/global/networks/my-network`).
 
@@ -29,4 +29,4 @@ request: &request
   ALPHA:
     api_version: v1alpha1
   collection: networksecurity.projects.locations.sseGateways
-  method: detachAppVpc
+  method: detachAppNetwork

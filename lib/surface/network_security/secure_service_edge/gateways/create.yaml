@@ -8,9 +8,9 @@ help_text:
   examples: |
     The following command creates a new gateway named `my-gateway` in the location `us-central1` within the SSE realm `my-realm`.
 
-      $ {command} my-gateway --location=us-central1 --realm=my-realm --app-vpc=my-app-vpc --user-vpc=my-user-vpc
+      $ {command} my-gateway --location=us-central1 --realm=my-realm --untrusted-network=my-untrusted-network
 
-    The gateway connects `my-app-vpc` and `my-user-vpc` to SSE-owned subnets in `us-central1`.
+    The gateway connects `my-untrusted-network` to a SSE-owned subnet in `us-central1`.
 
 arguments:
   resource:
@@ -32,11 +32,11 @@ arguments:
       deprecated:
         removed: false
         warn: Flag {flag_name} is deprecated. Use --untrusted-network instead.
-    api_field: sSEGateway.userVpc
+    api_field: sSEGateway.untrustedNetwork
     help_text: |
       The VPC in your project where branch office users land.
   - arg_name: untrusted-network
-    api_field: sSEGateway.userVpc
+    api_field: sSEGateway.untrustedNetwork
     help_text: |
       Network in your project where untrusted users land.
   - arg_name: app-traffic-ilb-ip
@@ -44,12 +44,12 @@ arguments:
       deprecated:
         removed: false
         warn: Flag {flag_name} is deprecated. Use --app-facing-target-ip instead.
-    api_field: sSEGateway.appTrafficTargetIp
+    api_field: sSEGateway.appFacingTargetIp
     help_text: |
       The ILB IP address where the application traffic should be routed to.
       Default value is set to "100.64.1.253".
   - arg_name: app-facing-target-ip
-    api_field: sSEGateway.appTrafficTargetIp
+    api_field: sSEGateway.appFacingTargetIp
     help_text: |
       Target IP address where application traffic is routed.
       Default value is set to "100.64.1.253".
@@ -58,13 +58,13 @@ arguments:
       deprecated:
         removed: false
         warn: Flag {flag_name} is deprecated. Use --app-facing-subnet-range instead.
-    api_field: sSEGateway.appTrafficVpcSubnetRange
+    api_field: sSEGateway.appFacingSubnetRange
     help_text: |
       Address range (in CIDR format) of the subnet where application traffic is routed.
       Default value is set to "100.64.1.0/24".
       User defined / customized subnet range CIDR suffix should be less than or equal to 24.
   - arg_name: app-facing-subnet-range
-    api_field: sSEGateway.appTrafficVpcSubnetRange
+    api_field: sSEGateway.appFacingSubnetRange
     help_text: |
       Address range (in CIDR format) of the subnet where application traffic is routed.
       Default value is set to "100.64.1.0/24".
@@ -74,12 +74,12 @@ arguments:
       deprecated:
         removed: false
         warn: Flag {flag_name} is deprecated. Use --untrusted-facing-target-ip instead.
-    api_field: sSEGateway.userTrafficTargetIp
+    api_field: sSEGateway.untrustedFacingTargetIp
     help_text: |
       The ILB IP address where the user traffic should be routed to.
       Default value is set to "100.64.2.253".
   - arg_name: untrusted-facing-target-ip
-    api_field: sSEGateway.userTrafficTargetIp
+    api_field: sSEGateway.untrustedFacingTargetIp
     help_text: |
       Target IP address where untrusted traffic is routed.
       Default value is set to "100.64.2.253".
@@ -88,13 +88,13 @@ arguments:
       deprecated:
         removed: false
         warn: Flag {flag_name} is deprecated. Use --untrusted-facing-subnet-range instead.
-    api_field: sSEGateway.userTrafficVpcSubnetRange
+    api_field: sSEGateway.untrustedFacingSubnetRange
     help_text: |
       Address range (in CIDR format) of the subnet where user traffic is routed.
       Default value is set to "100.64.2.0/24".
       User defined / customized subnet range CIDR suffix should less than or equal to 24.
   - arg_name: untrusted-facing-subnet-range
-    api_field: sSEGateway.userTrafficVpcSubnetRange
+    api_field: sSEGateway.untrustedFacingSubnetRange
     help_text: |
       Address range (in CIDR format) of the subnet where untrusted traffic is routed.
       Default value is set to "100.64.2.0/24".

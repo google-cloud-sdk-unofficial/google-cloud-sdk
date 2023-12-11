@@ -52,6 +52,10 @@
             arg_value: fastly
             help_text: |
               Fastly
+          - enum_value: CLOUDFLARE
+            arg_value: cloudflare
+            help_text: |
+              Cloudflare
         - arg_name: waf-feature
           required: true
           api_field: googleCloudRecaptchaenterpriseV1Key.wafSettings.wafFeature

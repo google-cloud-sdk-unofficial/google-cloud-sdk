@@ -18,6 +18,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+from googlecloudsdk.api_lib.run import execution
 from googlecloudsdk.command_lib.run import commands
 from googlecloudsdk.command_lib.run import connection_context
 from googlecloudsdk.command_lib.run import flags
@@ -28,10 +29,11 @@ from googlecloudsdk.command_lib.util.concepts import concept_parsers
 from googlecloudsdk.command_lib.util.concepts import presentation_specs
 
 
-def _SucceededStatus(execution):
+def _SucceededStatus(ex):
   return '{} / {}'.format(
-      execution.get('status', {}).get('succeededCount', 0),
-      execution.get('spec', {}).get('taskCount', 0))
+      ex.get('status', {}).get('succeededCount', 0),
+      ex.get('spec', {}).get('taskCount', 0),
+  )
 
 
 def _ByStartAndCreationTime(ex):
@@ -120,5 +122,11 @@ class List(commands.List):
         args, flags.Product.RUN, self.ReleaseTrack())
     with serverless_operations.Connect(conn_context) as client:
       self.SetCompleteApiEndpoint(conn_context.endpoint)
+      label_selector = None
+      if job_name:
+        label_selector = '{label} = {name}'.format(
+            label=execution.JOB_LABEL, name=job_name
+        )
       return self._SortExecutions(
-          client.ListExecutions(namespace_ref, job_name))
+          client.ListExecutions(namespace_ref, label_selector)
+      )

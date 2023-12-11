@@ -29,7 +29,7 @@ class Regions(base.Group):
   This command can be used to view availability of App Engine standard and
   flexible runtime environments in all geographic regions.
   """
-
+  category = base.APP_ENGINE_CATEGORY
   detailed_help = {
       'EXAMPLES': """\
           To view regional availability of App Engine runtime environments, run:

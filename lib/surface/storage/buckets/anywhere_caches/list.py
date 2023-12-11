@@ -12,16 +12,21 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Implementation of list command to list Anywhere Cache Instances of bucket."""
+"""Implementation of list command to list Anywhere Cache instances of bucket."""
 
+from googlecloudsdk.api_lib.storage import api_factory
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.storage import errors_util
 from googlecloudsdk.command_lib.storage import flags
+from googlecloudsdk.command_lib.storage import storage_url
+from googlecloudsdk.command_lib.storage.resources import resource_util
+from surface.storage.buckets.anywhere_caches import describe
 
 
 @base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class List(base.ListCommand):
-  """List all Anywhere Cache Instances of a bucket."""
+  """List all Anywhere Cache instances of a bucket."""
 
   detailed_help = {
       'DESCRIPTION': """
@@ -42,7 +47,6 @@ class List(base.ListCommand):
     parser.add_argument(
         'url',
         type=str,
-        nargs=1,
         help=(
             'Specifies the URL of the bucket for which anywhere cache instances'
             ' should be listed.'
@@ -50,8 +54,17 @@ class List(base.ListCommand):
     )
 
     flags.add_raw_display_flag(parser)
-    flags.add_uri_support_to_list_commands(parser)
 
   def Run(self, args):
-    # TODO(b/303559863) : Implementation of list command
-    raise NotImplementedError
+    url = storage_url.storage_url_from_string(args.url)
+    errors_util.raise_error_if_not_gcs_bucket(args.command_path, url)
+
+    cache_resources = api_factory.get_api(url.scheme).list_anywhere_caches(
+        url.bucket_name
+    )
+    for cache_resource in cache_resources:
+      yield resource_util.get_display_dict_for_resource(
+          cache_resource,
+          describe.AnywhereCacheDisplayTitlesAndDefaults,
+          args.raw,
+      )

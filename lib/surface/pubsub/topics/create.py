@@ -19,10 +19,8 @@ from __future__ import division
 from __future__ import unicode_literals
 
 from apitools.base.py import exceptions as api_ex
-
 from googlecloudsdk.api_lib.pubsub import topics
 from googlecloudsdk.api_lib.util import exceptions
-from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.kms import resource_args as kms_resource_args
 from googlecloudsdk.command_lib.pubsub import flags
@@ -94,6 +92,10 @@ def _Run(args, legacy_output=False):
       args.message_storage_policy_allowed_regions
   )
 
+  message_storage_policy_enforce_in_transit = getattr(
+      args, 'message_storage_policy_enforce_in_transit', None
+  )
+
   schema = getattr(args, 'schema', None)
   first_revision_id = None
   last_revision_id = None
@@ -126,6 +128,7 @@ def _Run(args, legacy_output=False):
           kms_key=kms_key,
           message_retention_duration=retention_duration,
           message_storage_policy_allowed_regions=message_storage_policy_allowed_regions,
+          message_storage_policy_enforce_in_transit=message_storage_policy_enforce_in_transit,
           schema=schema,
           message_encoding=message_encoding,
           first_revision_id=first_revision_id,
@@ -140,7 +143,7 @@ def _Run(args, legacy_output=False):
       log.CreatedResource(
           topic_ref.RelativeName(),
           kind='topic',
-          failed=exc.payload.status_message,
+          failed=util.CreateFailureErrorMessage(exc.payload.status_message),
       )
       failed.append(topic_ref.topicsId)
       continue
@@ -154,12 +157,18 @@ def _Run(args, legacy_output=False):
     raise util.RequestsFailedError(failed, 'create')
 
 
-def _Args(parser, include_ingestion_flags=False):
+def _Args(
+    parser,
+    include_ingestion_flags=False,
+    enforce_in_transit_flag_supported=False,
+):
   """Custom args implementation.
 
   Args:
     parser: The current parser.
     include_ingestion_flags: Whether to include ingestion datasource flags
+    enforce_in_transit_flag_supported: Whether or not to allow the enforce
+      in-transit flag to be set.
   """
 
   resource_args.AddResourceArgs(
@@ -173,14 +182,10 @@ def _Args(parser, include_ingestion_flags=False):
   labels_util.AddCreateLabelsFlags(parser)
   flags.AddTopicMessageRetentionFlags(parser, is_update=False)
 
-  parser.add_argument(
-      '--message-storage-policy-allowed-regions',
-      metavar='REGION',
-      type=arg_parsers.ArgList(),
-      help=(
-          'A list of one or more Cloud regions where messages are allowed to'
-          ' be stored at rest.'
-      ),
+  flags.AddTopicMessageStoragePolicyFlags(
+      parser,
+      is_update=False,
+      enforce_in_transit_flag_supported=enforce_in_transit_flag_supported,
   )
 
 
@@ -188,12 +193,10 @@ def _Args(parser, include_ingestion_flags=False):
 class Create(base.CreateCommand):
   """Creates one or more Cloud Pub/Sub topics."""
 
-  detailed_help = {
-      'EXAMPLES': """\
+  detailed_help = {'EXAMPLES': """\
           To create a Cloud Pub/Sub topic, run:
 
-              $ {command} mytopic"""
-  }
+              $ {command} mytopic"""}
 
   @staticmethod
   def Args(parser):
@@ -222,4 +225,8 @@ class CreateAlpha(CreateBeta):
 
   @staticmethod
   def Args(parser):
-    _Args(parser, include_ingestion_flags=True)
+    _Args(
+        parser,
+        include_ingestion_flags=True,
+        enforce_in_transit_flag_supported=True,
+    )

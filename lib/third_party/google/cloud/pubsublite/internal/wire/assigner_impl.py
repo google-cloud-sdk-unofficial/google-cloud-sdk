@@ -17,8 +17,6 @@ from typing import Optional, Set
 
 import logging
 
-from overrides import overrides
-
 from google.cloud.pubsublite.internal.wait_ignore_cancelled import wait_ignore_errors
 from google.cloud.pubsublite.internal.wire.assigner import Assigner
 from google.cloud.pubsublite.internal.wire.retrying_connection import (
@@ -106,16 +104,15 @@ class AssignerImpl(
         await self._stop_receiver()
         await self._connection.__aexit__(exc_type, exc_val, exc_tb)
 
-    @overrides
     async def stop_processing(self, error: GoogleAPICallError):
         await self._stop_receiver()
         self._outstanding_assignment = False
         while not self._new_assignment.empty():
             self._new_assignment.get_nowait()
 
-    @overrides
     async def reinitialize(
-        self, connection: Connection[PartitionAssignmentRequest, PartitionAssignment],
+        self,
+        connection: Connection[PartitionAssignmentRequest, PartitionAssignment],
     ):
         await connection.write(PartitionAssignmentRequest(initial=self._initial))
         self._start_receiver()

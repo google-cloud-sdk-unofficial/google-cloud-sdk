@@ -25,9 +25,10 @@ from googlecloudsdk.command_lib.apphub import flags
 _DETAILED_HELP = {
     'DESCRIPTION': '{description}',
     'EXAMPLES': """ \
-        To delete a application service with the id `my-application-service`, run:
+        To delete the Service `my-service` from the Application `my-app` in
+        location `us-east1`, run:
 
-          $ {command} my-application-service
+          $ {command} my-service --application=my-app --location=us-east1
         """,
 }
 

@@ -27,7 +27,7 @@ class Logs(base.Group):
 
   This set of commands can be used to view your existing App Engine logs.
   """
-
+  category = base.APP_ENGINE_CATEGORY
   detailed_help = {
       'EXAMPLES': """\
           To read the logs for the current App Engine project, run:

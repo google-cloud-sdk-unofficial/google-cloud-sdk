@@ -5,13 +5,16 @@ import errno
 import os
 import shutil
 import tempfile
+from typing import Optional
 from absl import logging
 from pyglib import stringutil
 
 _DISCOVERY_CACHE_FILE = 'api_discovery.json'
 
 
-def get_from_cache(cache_root, api_name, api_version):
+def get_from_cache(
+    cache_root: str, api_name: str, api_version: str
+) -> Optional[str]:
   """Loads a discovery document from the on-disc cache using key `api` and `version`.
 
   Args:
@@ -40,7 +43,9 @@ def get_from_cache(cache_root, api_name, api_version):
     return None
 
 
-def save_to_cache(cache_root, api_name, api_version, discovery_document):
+def save_to_cache(
+    cache_root: str, api_name: str, api_version: str, discovery_document: str
+) -> None:
   """Saves a discovery document to the on-disc cache with key `api` and `version`.
 
   Args:

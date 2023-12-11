@@ -15,6 +15,11 @@
 # limitations under the License.
 #
 
+from google.cloud.pubsublite import gapic_version as package_version
+
+__version__ = package_version.__version__
+
+
 from google.cloud.pubsublite_v1.services.admin_service.async_client import (
     AdminServiceAsyncClient,
 )
@@ -70,6 +75,7 @@ from google.cloud.pubsublite_v1.types.admin import UpdateSubscriptionRequest
 from google.cloud.pubsublite_v1.types.admin import UpdateTopicRequest
 from google.cloud.pubsublite_v1.types.common import AttributeValues
 from google.cloud.pubsublite_v1.types.common import Cursor
+from google.cloud.pubsublite_v1.types.common import ExportConfig
 from google.cloud.pubsublite_v1.types.common import PubSubMessage
 from google.cloud.pubsublite_v1.types.common import Reservation
 from google.cloud.pubsublite_v1.types.common import SequencedMessage
@@ -131,6 +137,7 @@ __all__ = (
     "CursorServiceClient",
     "DeleteSubscriptionRequest",
     "DeleteTopicRequest",
+    "ExportConfig",
     "FlowControlRequest",
     "GetSubscriptionRequest",
     "GetTopicPartitionsRequest",

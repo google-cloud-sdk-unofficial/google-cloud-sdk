@@ -46,7 +46,6 @@ from google.cloud.pubsublite.types import (
     Partition,
     SubscriptionPath,
 )
-from overrides import overrides
 
 
 class SubscriberClient(SubscriberClientInterface, ConstructableFromServiceAccount):
@@ -100,7 +99,6 @@ class SubscriberClient(SubscriberClientInterface, ConstructableFromServiceAccoun
         )
         self._require_started = RequireStarted()
 
-    @overrides
     def subscribe(
         self,
         subscription: Union[SubscriptionPath, str],
@@ -116,13 +114,11 @@ class SubscriberClient(SubscriberClientInterface, ConstructableFromServiceAccoun
             fixed_partitions,
         )
 
-    @overrides
     def __enter__(self):
         self._require_started.__enter__()
         self._impl.__enter__()
         return self
 
-    @overrides
     def __exit__(self, exc_type, exc_value, traceback):
         self._impl.__exit__(exc_type, exc_value, traceback)
         self._require_started.__exit__(exc_type, exc_value, traceback)
@@ -177,7 +173,6 @@ class AsyncSubscriberClient(
         )
         self._require_started = RequireStarted()
 
-    @overrides
     async def subscribe(
         self,
         subscription: Union[SubscriptionPath, str],
@@ -189,13 +184,11 @@ class AsyncSubscriberClient(
             subscription, per_partition_flow_control_settings, fixed_partitions
         )
 
-    @overrides
     async def __aenter__(self):
         self._require_started.__enter__()
         await self._impl.__aenter__()
         return self
 
-    @overrides
     async def __aexit__(self, exc_type, exc_value, traceback):
         await self._impl.__aexit__(exc_type, exc_value, traceback)
         self._require_started.__exit__(exc_type, exc_value, traceback)

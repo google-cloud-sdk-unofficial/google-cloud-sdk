@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2020 Google LLC
+# Copyright 2022 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,6 +13,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+from google.cloud.pubsublite_v1 import gapic_version as package_version
+
+__version__ = package_version.__version__
+
 
 from .services.admin_service import AdminServiceClient
 from .services.admin_service import AdminServiceAsyncClient
@@ -56,6 +60,7 @@ from .types.admin import UpdateSubscriptionRequest
 from .types.admin import UpdateTopicRequest
 from .types.common import AttributeValues
 from .types.common import Cursor
+from .types.common import ExportConfig
 from .types.common import PubSubMessage
 from .types.common import Reservation
 from .types.common import SequencedMessage
@@ -123,6 +128,7 @@ __all__ = (
     "DeleteReservationRequest",
     "DeleteSubscriptionRequest",
     "DeleteTopicRequest",
+    "ExportConfig",
     "FlowControlRequest",
     "GetReservationRequest",
     "GetSubscriptionRequest",

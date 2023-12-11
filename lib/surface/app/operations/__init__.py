@@ -29,7 +29,7 @@ class Operations(base.Group):
   This set of commands can be used to view and manage your existing App Engine
   operations.
   """
-
+  category = base.APP_ENGINE_CATEGORY
   detailed_help = {
       'EXAMPLES': """\
           To list your App Engine operations, run:

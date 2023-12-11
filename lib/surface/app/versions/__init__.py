@@ -40,3 +40,4 @@ class Versions(base.Group):
 
     $ {command} list
   """
+  category = base.APP_ENGINE_CATEGORY

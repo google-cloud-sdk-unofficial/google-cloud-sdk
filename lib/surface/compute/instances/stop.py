@@ -35,10 +35,22 @@ DETAILED_HELP = {
         """\
         *{command}* is used to stop a Compute Engine virtual machine.
         Stopping a VM performs a clean shutdown, much like invoking the shutdown
-        functionality of a workstation or laptop. Stopping a VM with a local SSD
-        is not supported and will result in an API error unless the
-        `--discard-local-ssd` flag is passed. Stopping a VM which is
-        already stopped will return without errors.
+        functionality of a workstation or laptop.
+
+        If a VM has any attached Local SSD disks, you must use the
+        `--discard-local-ssd` flag to indicate whether or not the Local SSD
+        data should be discarded. To stop the VM and preserve the Local SSD
+        data when you stop the VM by setting `--discard-local-ssd=False`.
+
+        To stop the VM and discard the Local SSD data, specify
+        `--discard-local-ssd=True`.
+
+        Preserving the Local SSD disk data incurs costs and is subject to
+        limitations. See
+        https://cloud.google.com/compute/docs/disks/local-ssd#stop_instance
+        for more information.
+
+        Stopping a VM which is already stopped will return without errors.
         """,
     'EXAMPLES':
         """\

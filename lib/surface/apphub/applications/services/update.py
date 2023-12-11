@@ -27,11 +27,11 @@ from googlecloudsdk.command_lib.apphub import flags
 _DETAILED_HELP = {
     'DESCRIPTION': '{description}',
     'EXAMPLES': """ \
-        To update a service with the id `my-application-service`,
-        with a new display name of updatedDisplayName and new description of
-        updatedDescription run:
+        To update the Service `my-service` with a new environment
+        `prod` in the Application `my-app` in location `us-east1`,
+        run:
 
-          $ {command} my-application-service --display-name=updatedDisplayName --description=updatedDescription
+          $ {command} my-service --environment=prod --application=my-app --location=us-east1
         """,
 }
 

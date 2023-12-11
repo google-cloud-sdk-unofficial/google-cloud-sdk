@@ -295,7 +295,10 @@ class CreateWithContainer(base.CreateCommand):
         match_container_mount_disks=True)
     confidential_instance_config = (
         create_utils.BuildConfidentialInstanceConfigMessage(
-            messages=client.messages, args=args))
+            messages=client.messages,
+            args=args,
+            support_confidential_compute_type=False,
+            support_confidential_compute_type_tdx=False))
 
     properties = client.messages.InstanceProperties(
         machineType=machine_type,
@@ -397,7 +400,10 @@ class CreateWithContainerBeta(CreateWithContainer):
         match_container_mount_disks=True)
     confidential_instance_config = (
         create_utils.BuildConfidentialInstanceConfigMessage(
-            messages=client.messages, args=args))
+            messages=client.messages,
+            args=args,
+            support_confidential_compute_type=True,
+            support_confidential_compute_type_tdx=False))
     guest_accelerators = (
         instance_template_utils.CreateAcceleratorConfigMessages(
             client.messages, getattr(args, 'accelerator', None)))

@@ -22,10 +22,9 @@ from googlecloudsdk.calliope import base
 
 # NOTE: Release track decorators can be used here as well, and would propagate
 # to this group's children.
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Operations(base.Group):
-  """Manage App Hub Operations.
+  """Manage App Hub Operations (long-running operations).
 
-  Commands for managing App Hub Operations.
+  Commands for managing App Hub Operations (long-running operations).
   """

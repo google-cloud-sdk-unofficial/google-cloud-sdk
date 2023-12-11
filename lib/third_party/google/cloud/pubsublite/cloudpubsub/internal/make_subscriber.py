@@ -218,7 +218,11 @@ def make_async_subscriber(
         assigner_factory = lambda: FixedSetAssigner(fixed_partitions)  # noqa: E731
     else:
         assigner_factory = lambda: _make_dynamic_assigner(  # noqa: E731
-            subscription, transport, client_options, credentials, metadata,
+            subscription,
+            transport,
+            client_options,
+            credentials,
+            metadata,
         )
 
     if nack_handler is None:

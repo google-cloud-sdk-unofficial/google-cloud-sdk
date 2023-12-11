@@ -19,7 +19,6 @@ from __future__ import division
 from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.pubsub import topics
-from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.kms import resource_args as kms_resource_args
 from googlecloudsdk.command_lib.pubsub import flags
@@ -28,6 +27,40 @@ from googlecloudsdk.command_lib.pubsub import util
 from googlecloudsdk.command_lib.util.args import labels_util
 from googlecloudsdk.core import exceptions as core_exceptions
 from googlecloudsdk.core import log
+
+DETAILED_HELP = {'EXAMPLES': """\
+          To update existing labels on a Cloud Pub/Sub topic, run:
+
+              $ {command} mytopic --update-labels=KEY1=VAL1,KEY2=VAL2
+
+          To clear all labels on a Cloud Pub/Sub topic, run:
+
+              $ {command} mytopic --clear-labels
+
+          To remove an existing label on a Cloud Pub/Sub topic, run:
+
+              $ {command} mytopic --remove-labels=KEY1,KEY2
+
+          To enable customer-managed encryption for a Cloud Pub/Sub topic by protecting message data with a Cloud KMS CryptoKey, run:
+
+              $ {command} mytopic --topic-encryption-key=projects/PROJECT_ID/locations/KMS_LOCATION/keyRings/KEYRING/cryptoKeys/KEY
+
+          To enable or update retention on a Cloud Pub/Sub topic, run:
+
+              $ {command} mytopic --message-retention-duration=MESSAGE_RETENTION_DURATION
+
+          To disable retention on a Cloud Pub/Sub topic, run:
+
+              $ {command} mytopic --clear-message-retention-duration
+
+          To update a Cloud Pub/Sub topic's message storage policy, run:
+
+              $ {command} mytopic --message-storage-policy-allowed-regions=some-cloud-region1,some-cloud-region2
+
+          To recompute a Cloud Pub/Sub topic's message storage policy based on your organization's "Resource Location Restriction" policy, run:
+
+              $ {command} mytopic --recompute-message-storage-policy
+          """}
 
 _KMS_FLAG_OVERRIDES = {
     'kms-key': '--topic-encryption-key',
@@ -74,7 +107,11 @@ def _GetKmsKeyNameFromArgs(args):
   return None
 
 
-def _Args(parser, include_ingestion_flags=False):
+def _Args(
+    parser,
+    include_ingestion_flags=False,
+    enforce_in_transit_flag_supported=False,
+):
   """Registers flags for this command."""
   resource_args.AddTopicResourceArg(parser, 'to update.')
   labels_util.AddUpdateLabelsFlags(parser)
@@ -90,27 +127,12 @@ def _Args(parser, include_ingestion_flags=False):
   )
   flags.AddTopicMessageRetentionFlags(parser, is_update=True)
 
-  msp_group = parser.add_group(
-      mutex=True, help='Message storage policy options.'
+  flags.AddTopicMessageStoragePolicyFlags(
+      parser,
+      is_update=True,
+      enforce_in_transit_flag_supported=enforce_in_transit_flag_supported,
   )
-  msp_group.add_argument(
-      '--recompute-message-storage-policy',
-      action='store_true',
-      help=(
-          'If given, Cloud Pub/Sub will recompute the regions where messages'
-          ' can be stored at rest, based on your organization\'s "Resource '
-          ' Location Restriction" policy.'
-      ),
-  )
-  msp_group.add_argument(
-      '--message-storage-policy-allowed-regions',
-      metavar='REGION',
-      type=arg_parsers.ArgList(),
-      help=(
-          'A list of one or more Cloud regions where messages are allowed to'
-          ' be stored at rest.'
-      ),
-  )
+
   flags.AddSchemaSettingsFlags(parser, is_update=True)
   if include_ingestion_flags:
     flags.AddIngestionDatasourceFlags(parser, is_update=True)
@@ -120,41 +142,7 @@ def _Args(parser, include_ingestion_flags=False):
 class Update(base.UpdateCommand):
   """Updates an existing Cloud Pub/Sub topic."""
 
-  detailed_help = {
-      'EXAMPLES': """\
-          To update existing labels on a Cloud Pub/Sub topic, run:
-
-              $ {command} mytopic --update-labels=KEY1=VAL1,KEY2=VAL2
-
-          To clear all labels on a Cloud Pub/Sub topic, run:
-
-              $ {command} mytopic --clear-labels
-
-          To remove an existing label on a Cloud Pub/Sub topic, run:
-
-              $ {command} mytopic --remove-labels=KEY1,KEY2
-
-          To enable customer-managed encryption for a Cloud Pub/Sub topic by protecting message data with a Cloud KMS CryptoKey, run:
-
-              $ {command} mytopic --topic-encryption-key=projects/PROJECT_ID/locations/KMS_LOCATION/keyRings/KEYRING/cryptoKeys/KEY
-
-          To enable or update retention on a Cloud Pub/Sub topic, run:
-
-              $ {command} mytopic --message-retention-duration=MESSAGE_RETENTION_DURATION
-
-          To disable retention on a Cloud Pub/Sub topic, run:
-
-              $ {command} mytopic --clear-message-retention-duration
-
-          To update a Cloud Pub/Sub topic's message storage policy, run:
-
-              $ {command} mytopic --message-storage-policy-allowed-regions=some-cloud-region1,some-cloud-region2
-
-          To recompute a Cloud Pub/Sub topic's message storage policy based on your organization's "Resource Location Restriction" policy, run:
-
-              $ {command} mytopic --recompute-message-storage-policy
-          """
-  }
+  detailed_help = DETAILED_HELP
 
   @staticmethod
   def Args(parser):
@@ -207,6 +195,10 @@ class Update(base.UpdateCommand):
     result = None
     clear_schema_settings = getattr(args, 'clear_schema_settings', None)
 
+    message_storage_policy_enforce_in_transit = getattr(
+        args, 'message_storage_policy_enforce_in_transit', None
+    )
+
     kinesis_ingestion_stream_arn = getattr(
         args, 'kinesis_ingestion_stream_arn', None
     )
@@ -232,6 +224,7 @@ class Update(base.UpdateCommand):
           clear_message_retention_duration,
           args.recompute_message_storage_policy,
           args.message_storage_policy_allowed_regions,
+          message_storage_policy_enforce_in_transit,
           schema=schema,
           message_encoding=message_encoding,
           first_revision_id=first_revision_id,
@@ -271,7 +264,18 @@ class UpdateBeta(Update):
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class UpdateAlpha(UpdateBeta):
   """Updates an existing Cloud Pub/Sub topic."""
+  detailed_help = {
+      'EXAMPLES': DETAILED_HELP['EXAMPLES'] + """
+          To enforce both at-rest and in-transit guarantees for messages published to the topic, run:
+
+              $ {command} mytopic --message-storage-policy-allowed-regions=some-cloud-region1,some-cloud-region2 --message-storage-policy-enforce-in-transit
+      """
+  }
 
   @staticmethod
   def Args(parser):
-    _Args(parser, include_ingestion_flags=True)
+    _Args(
+        parser,
+        include_ingestion_flags=True,
+        enforce_in_transit_flag_supported=True,
+    )

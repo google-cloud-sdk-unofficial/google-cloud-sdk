@@ -401,6 +401,18 @@ class Ssh(base.Command):
     if self.enable_security_keys:
       ssh_utils.ConfirmSecurityKeyStatus(oslogin_state)
 
+    # TODO(b/35355795): Don't force connect in general.
+    # At a minimum, avoid injecting 'y' if PuTTY will prompt for a password /
+    # 2FA authentication method (since we know that won't work), or if the user
+    # has disabled the property.
+    prompt_for_password = (
+        args.plain
+        and not any(f == '-i' or f.startswith('-i=') for f in extra_flags))
+    putty_force_connect = (
+        not prompt_for_password
+        and not oslogin_state.oslogin_2fa_enabled
+        and properties.VALUES.ssh.putty_force_connect.GetBool())
+
     if args.plain or oslogin_state.oslogin_enabled:
       keys_newly_added = False
     else:
@@ -412,23 +424,22 @@ class Ssh(base.Command):
                                          iap_tunnel_args,
                                          extra_flags=extra_flags)
       log.status.Print('Waiting for SSH key to propagate.')
-      # TODO(b/35355795): Don't force_connect
       try:
         poller.Poll(
             ssh_helper.env,
-            putty_force_connect=properties.VALUES.ssh.putty_force_connect.GetBool())
+            putty_force_connect=putty_force_connect)
       except retry.WaitException:
         raise ssh_utils.NetworkError()
 
     if args.internal_ip and not on_prem:
       ssh_helper.PreliminarilyVerifyInstance(instance.id, remote, identity_file,
-                                             options)
+                                             options, putty_force_connect)
 
     # Errors from SSH itself result in an ssh.CommandError being raised
     try:
       return_code = cmd.Run(
           ssh_helper.env,
-          putty_force_connect=properties.VALUES.ssh.putty_force_connect.GetBool())
+          putty_force_connect=putty_force_connect)
     except ssh.CommandError as e:
       if not on_prem:
         log.status.Print(self.createRecommendMessage(args, instance_name,

@@ -75,6 +75,10 @@ class Remove(base.UpdateCommand, command.PocoCommand):
   To remove a cpu request:
 
     $ {command} audit cpu-request
+
+  To remove the anti-affinity configuration:
+
+    $ {command} admission pod-affinity
   """
 
   feature_name = 'policycontroller'
@@ -169,3 +173,5 @@ class Remove(base.UpdateCommand, command.PocoCommand):
       return deployment.update_mem_request(self.messages, deployment_cfg, None)
     if prop == 'replica-count':
       return deployment.update_replica_count(deployment_cfg, None)
+    if prop == 'pod-affinity':
+      return deployment.update_pod_affinity(self.messages, deployment_cfg, None)

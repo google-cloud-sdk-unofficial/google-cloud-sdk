@@ -24,7 +24,7 @@
       name.segment(3):label=LOCATION,
       network.basename(),
       ipAddress,
-      targetEndpoint,
+      targetGoogleApi,
       accessType)
 
   request: &request

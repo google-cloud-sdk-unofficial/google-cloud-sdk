@@ -119,6 +119,7 @@ def _CommonArgs(
     support_enable_confidential_compute=False,
     support_specific_then_x_affinity=False,
     support_ipv6_only=False,
+    support_graceful_shutdown=False,
 ):
   """Register parser args common to all tracks."""
   metadata_utils.AddMetadataArgs(parser)
@@ -230,6 +231,9 @@ def _CommonArgs(
 
   instances_flags.AddNodeProjectArgs(parser)
 
+  if support_graceful_shutdown:
+    instances_flags.AddGracefulShutdownArgs(parser)
+
   if support_host_error_timeout_seconds:
     instances_flags.AddHostErrorTimeoutSecondsArgs(parser)
 
@@ -292,6 +296,7 @@ class Create(base.CreateCommand):
   _support_partner_metadata = False
   _support_enable_confidential_compute = False
   _support_specific_then_x_affinity = False
+  _support_graceful_shutdown = False
 
   @classmethod
   def Args(cls, parser):
@@ -315,6 +320,7 @@ class Create(base.CreateCommand):
         support_storage_pool=cls._support_storage_pool,
         support_enable_confidential_compute=cls._support_enable_confidential_compute,
         support_specific_then_x_affinity=cls._support_specific_then_x_affinity,
+        support_graceful_shutdown=cls._support_graceful_shutdown,
     )
     cls.SOURCE_INSTANCE_TEMPLATE = instances_flags.MakeSourceInstanceTemplateArg(
         support_regional_instance_template=cls._support_regional_instance_template
@@ -326,7 +332,12 @@ class Create(base.CreateCommand):
     instances_flags.AddMinCpuPlatformArgs(parser, base.ReleaseTrack.GA)
     instances_flags.AddPrivateIpv6GoogleAccessArg(parser,
                                                   utils.COMPUTE_GA_API_VERSION)
-    instances_flags.AddConfidentialComputeArgs(parser)
+    instances_flags.AddConfidentialComputeArgs(
+        parser,
+        support_confidential_compute_type=cls
+        ._support_confidential_compute_type,
+        support_confidential_compute_type_tdx=cls
+        ._support_confidential_compute_type_tdx)
     instances_flags.AddKeyRevocationActionTypeArgs(parser)
     instances_flags.AddVisibleCoreCountArgs(parser)
 
@@ -380,10 +391,11 @@ class Create(base.CreateCommand):
         skip_defaults,
         support_node_affinity=True,
         support_node_project=True,
-        support_host_error_timeout_seconds=self
-        ._support_host_error_timeout_seconds,
+        support_host_error_timeout_seconds=self._support_host_error_timeout_seconds,
         support_max_run_duration=self._support_max_run_duration,
-        support_local_ssd_recovery_timeout=self._support_local_ssd_recovery_timeout)
+        support_local_ssd_recovery_timeout=self._support_local_ssd_recovery_timeout,
+        support_graceful_shutdown=self._support_graceful_shutdown,
+    )
     tags = instance_utils.GetTags(args, compute_client)
     labels = instance_utils.GetLabels(args, compute_client)
     metadata = instance_utils.GetMetadata(args, compute_client, skip_defaults)
@@ -765,6 +777,8 @@ class CreateBeta(Create):
   _support_instance_kms = True
   _support_max_run_duration = True
   _support_ipv6_assignment = False
+  _support_confidential_compute_type = True
+  _support_confidential_compute_type_tdx = False
   _support_network_attachments = False
   _support_local_ssd_recovery_timeout = True
   _support_regional_instance_template = False
@@ -777,6 +791,7 @@ class CreateBeta(Create):
   _support_partner_metadata = False
   _support_enable_confidential_compute = True
   _support_specific_then_x_affinity = True
+  _support_graceful_shutdown = False
 
   def GetSourceMachineImage(self, args, resources):
     """Retrieves the specified source machine image's selflink.
@@ -816,6 +831,7 @@ class CreateBeta(Create):
         support_storage_pool=cls._support_storage_pool,
         support_enable_confidential_compute=cls._support_enable_confidential_compute,
         support_specific_then_x_affinity=cls._support_specific_then_x_affinity,
+        support_graceful_shutdown=cls._support_graceful_shutdown,
     )
     cls.SOURCE_INSTANCE_TEMPLATE = instances_flags.MakeSourceInstanceTemplateArg(
         support_regional_instance_template=cls._support_regional_instance_template
@@ -827,7 +843,12 @@ class CreateBeta(Create):
     instances_flags.AddMinCpuPlatformArgs(parser, base.ReleaseTrack.BETA)
     instances_flags.AddPrivateIpv6GoogleAccessArg(
         parser, utils.COMPUTE_BETA_API_VERSION)
-    instances_flags.AddConfidentialComputeArgs(parser)
+    instances_flags.AddConfidentialComputeArgs(
+        parser,
+        support_confidential_compute_type=cls
+        ._support_confidential_compute_type,
+        support_confidential_compute_type_tdx=cls
+        ._support_confidential_compute_type_tdx)
     instances_flags.AddPostKeyRevocationActionTypeArgs(parser)
     instances_flags.AddKeyRevocationActionTypeArgs(parser)
     instances_flags.AddVisibleCoreCountArgs(parser)
@@ -877,6 +898,7 @@ class CreateAlpha(CreateBeta):
   _support_enable_confidential_compute = True
   _support_specific_then_x_affinity = True
   _support_ipv6_only = True
+  _support_graceful_shutdown = True
 
   @classmethod
   def Args(cls, parser):
@@ -905,6 +927,7 @@ class CreateAlpha(CreateBeta):
         support_enable_confidential_compute=cls._support_enable_confidential_compute,
         support_specific_then_x_affinity=cls._support_specific_then_x_affinity,
         support_ipv6_only=cls._support_ipv6_only,
+        support_graceful_shutdown=cls._support_graceful_shutdown,
     )
 
     CreateAlpha.SOURCE_INSTANCE_TEMPLATE = instances_flags.MakeSourceInstanceTemplateArg(

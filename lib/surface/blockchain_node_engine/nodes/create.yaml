@@ -52,6 +52,14 @@
         enum_value: TESTNET_GOERLI_PRATER
         help_text:  |
           Goerli & Prater Ethereum test network.
+      - arg_value: holesky
+        enum_value: TESTNET_HOLESKY
+        help_text:  |
+          Holesky Ethereum test network.
+      - arg_value: sepolia
+        enum_value: TESTNET_SEPOLIA
+        help_text:  |
+          Sepolia Ethereum test network.
     - arg_name: node-type
       api_field: blockchainNode.ethereumDetails.nodeType
       default: FULL

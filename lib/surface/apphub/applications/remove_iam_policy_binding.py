@@ -31,12 +31,10 @@ _DETAILED_HELP = {
     'DESCRIPTION': '{description}',
     'EXAMPLES': """\
         To remove an IAM policy binding for the role of `roles/apphub.viewer`
-        for the user `test-user@gmail.com` to Application `my-app`, run:
+        for the user `test-user@gmail.com` from Application `my-app` in location
+        `us-east1`, run:
 
-          $ {command} my-app --role=roles/apphub.viewer --member=user:test-user@gmail.com
-
-        See https://cloud.google.com/dataplex/docs/iam-roles for details of
-        policy role and member types.
+          $ {command} my-app --location=us-east1 --role=roles/apphub.viewer --member=user:test-user@gmail.com
         """,
 }
 

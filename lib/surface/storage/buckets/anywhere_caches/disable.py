@@ -14,13 +14,20 @@
 # limitations under the License.
 """Implementation of disable command for disabling Anywhere Cache Instances."""
 
+
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.storage import progress_callbacks
+from googlecloudsdk.command_lib.storage import storage_url
+from googlecloudsdk.command_lib.storage.tasks import task_executor
+from googlecloudsdk.command_lib.storage.tasks import task_graph_executor
+from googlecloudsdk.command_lib.storage.tasks import task_status
+from googlecloudsdk.command_lib.storage.tasks.buckets.anywhere_caches import disable_anywhere_cache_task
 
 
 @base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Disable(base.Command):
-  """Disable Anywhere Cache Instances of a bucket."""
+  """Disable Anywhere Cache instances of a bucket."""
 
   detailed_help = {
       'DESCRIPTION': """
@@ -56,6 +63,26 @@ class Disable(base.Command):
         ),
     )
 
+  def _get_task_iterator(self, args, task_status_queue):
+    progress_callbacks.workload_estimator_callback(
+        task_status_queue, len(args.id)
+    )
+
+    for id_str in args.id:
+      bucket_name, _, zone = id_str.rpartition(storage_url.CLOUD_URL_DELIMITER)
+      yield disable_anywhere_cache_task.DisableAnywhereCacheTask(
+          bucket_name, zone
+      )
+
   def Run(self, args):
-    # TODO(b/303559351) : Implementation of disable command
-    raise NotImplementedError
+    task_status_queue = task_graph_executor.multiprocessing_context.Queue()
+    task_iterator = self._get_task_iterator(args, task_status_queue)
+
+    self.exit_code = task_executor.execute_tasks(
+        task_iterator,
+        parallelizable=True,
+        task_status_queue=task_status_queue,
+        progress_manager_args=task_status.ProgressManagerArgs(
+            increment_type=task_status.IncrementType.INTEGER, manifest_path=None
+        ),
+    )

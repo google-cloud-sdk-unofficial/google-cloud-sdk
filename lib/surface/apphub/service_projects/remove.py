@@ -25,9 +25,10 @@ from googlecloudsdk.command_lib.apphub import flags
 _DETAILED_HELP = {
     'DESCRIPTION': '{description}',
     'EXAMPLES': """ \
-        To delete a service project with the id `my-service-project`, run:
+        To remove the service project `my-service-project` from the host project
+        `my-host-project`, run:
 
-          $ {command} my-service-project
+          $ {command} my-service-project --project=my-host-project
         """,
 }
 

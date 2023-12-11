@@ -52,6 +52,7 @@ class Create(base.CreateCommand):
     activation_flags.AddEndpointResource(cls.ReleaseTrack(), parser)
     activation_flags.AddMaxWait(parser, '60m')  # default to 60 minutes wait.
     activation_flags.AddDescriptionArg(parser)
+    activation_flags.AddBillingProjectArg(parser)
     base.ASYNC_FLAG.AddToParser(parser)
     base.ASYNC_FLAG.SetDefault(parser, True)
     labels_util.AddCreateLabelsFlags(parser)
@@ -74,6 +75,7 @@ class Create(base.CreateCommand):
         name=endpoint.Name(),
         parent=endpoint.Parent().RelativeName(),
         description=getattr(args, 'description', None),
+        billing_project_id=args.billing_project,
         labels=labels,
         target_firewall_attachment=target_firewall_attachment,
         endpoint_type=endpoint_type,

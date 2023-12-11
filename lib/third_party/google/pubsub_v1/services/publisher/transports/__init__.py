@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
-
-# Copyright 2020 Google LLC
+# Copyright 2023 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,22 +13,26 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-
 from collections import OrderedDict
 from typing import Dict, Type
 
 from .base import PublisherTransport
 from .grpc import PublisherGrpcTransport
 from .grpc_asyncio import PublisherGrpcAsyncIOTransport
+from .rest import PublisherRestTransport
+from .rest import PublisherRestInterceptor
 
 
 # Compile a registry of transports.
 _transport_registry = OrderedDict()  # type: Dict[str, Type[PublisherTransport]]
 _transport_registry["grpc"] = PublisherGrpcTransport
 _transport_registry["grpc_asyncio"] = PublisherGrpcAsyncIOTransport
+_transport_registry["rest"] = PublisherRestTransport
 
 __all__ = (
     "PublisherTransport",
     "PublisherGrpcTransport",
     "PublisherGrpcAsyncIOTransport",
+    "PublisherRestTransport",
+    "PublisherRestInterceptor",
 )

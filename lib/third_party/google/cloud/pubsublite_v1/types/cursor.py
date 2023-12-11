@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2020 Google LLC
+# Copyright 2022 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,6 +13,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+from __future__ import annotations
+
+from typing import MutableMapping, MutableSequence
+
 import proto  # type: ignore
 
 from google.cloud.pubsublite_v1.types import common
@@ -51,13 +55,18 @@ class InitialCommitCursorRequest(proto.Message):
             range [0, topic.num_partitions).
     """
 
-    subscription = proto.Field(proto.STRING, number=1,)
-    partition = proto.Field(proto.INT64, number=2,)
+    subscription: str = proto.Field(
+        proto.STRING,
+        number=1,
+    )
+    partition: int = proto.Field(
+        proto.INT64,
+        number=2,
+    )
 
 
 class InitialCommitCursorResponse(proto.Message):
-    r"""Response to an InitialCommitCursorRequest.
-    """
+    r"""Response to an InitialCommitCursorRequest."""
 
 
 class SequencedCommitCursorRequest(proto.Message):
@@ -69,7 +78,11 @@ class SequencedCommitCursorRequest(proto.Message):
             The new value for the committed cursor.
     """
 
-    cursor = proto.Field(proto.MESSAGE, number=1, message=common.Cursor,)
+    cursor: common.Cursor = proto.Field(
+        proto.MESSAGE,
+        number=1,
+        message=common.Cursor,
+    )
 
 
 class SequencedCommitCursorResponse(proto.Message):
@@ -84,7 +97,10 @@ class SequencedCommitCursorResponse(proto.Message):
             in the order that they are received.
     """
 
-    acknowledged_commits = proto.Field(proto.INT64, number=1,)
+    acknowledged_commits: int = proto.Field(
+        proto.INT64,
+        number=1,
+    )
 
 
 class StreamingCommitCursorRequest(proto.Message):
@@ -108,10 +124,13 @@ class StreamingCommitCursorRequest(proto.Message):
             This field is a member of `oneof`_ ``request``.
     """
 
-    initial = proto.Field(
-        proto.MESSAGE, number=1, oneof="request", message="InitialCommitCursorRequest",
+    initial: "InitialCommitCursorRequest" = proto.Field(
+        proto.MESSAGE,
+        number=1,
+        oneof="request",
+        message="InitialCommitCursorRequest",
     )
-    commit = proto.Field(
+    commit: "SequencedCommitCursorRequest" = proto.Field(
         proto.MESSAGE,
         number=2,
         oneof="request",
@@ -140,10 +159,13 @@ class StreamingCommitCursorResponse(proto.Message):
             This field is a member of `oneof`_ ``request``.
     """
 
-    initial = proto.Field(
-        proto.MESSAGE, number=1, oneof="request", message="InitialCommitCursorResponse",
+    initial: "InitialCommitCursorResponse" = proto.Field(
+        proto.MESSAGE,
+        number=1,
+        oneof="request",
+        message="InitialCommitCursorResponse",
     )
-    commit = proto.Field(
+    commit: "SequencedCommitCursorResponse" = proto.Field(
         proto.MESSAGE,
         number=2,
         oneof="request",
@@ -166,14 +188,23 @@ class CommitCursorRequest(proto.Message):
             The new value for the committed cursor.
     """
 
-    subscription = proto.Field(proto.STRING, number=1,)
-    partition = proto.Field(proto.INT64, number=2,)
-    cursor = proto.Field(proto.MESSAGE, number=3, message=common.Cursor,)
+    subscription: str = proto.Field(
+        proto.STRING,
+        number=1,
+    )
+    partition: int = proto.Field(
+        proto.INT64,
+        number=2,
+    )
+    cursor: common.Cursor = proto.Field(
+        proto.MESSAGE,
+        number=3,
+        message=common.Cursor,
+    )
 
 
 class CommitCursorResponse(proto.Message):
-    r"""Response for CommitCursor.
-    """
+    r"""Response for CommitCursor."""
 
 
 class ListPartitionCursorsRequest(proto.Message):
@@ -199,9 +230,18 @@ class ListPartitionCursorsRequest(proto.Message):
             the page token.
     """
 
-    parent = proto.Field(proto.STRING, number=1,)
-    page_size = proto.Field(proto.INT32, number=2,)
-    page_token = proto.Field(proto.STRING, number=3,)
+    parent: str = proto.Field(
+        proto.STRING,
+        number=1,
+    )
+    page_size: int = proto.Field(
+        proto.INT32,
+        number=2,
+    )
+    page_token: str = proto.Field(
+        proto.STRING,
+        number=3,
+    )
 
 
 class PartitionCursor(proto.Message):
@@ -214,15 +254,22 @@ class PartitionCursor(proto.Message):
             The value of the cursor.
     """
 
-    partition = proto.Field(proto.INT64, number=1,)
-    cursor = proto.Field(proto.MESSAGE, number=2, message=common.Cursor,)
+    partition: int = proto.Field(
+        proto.INT64,
+        number=1,
+    )
+    cursor: common.Cursor = proto.Field(
+        proto.MESSAGE,
+        number=2,
+        message=common.Cursor,
+    )
 
 
 class ListPartitionCursorsResponse(proto.Message):
     r"""Response for ListPartitionCursors
 
     Attributes:
-        partition_cursors (Sequence[google.cloud.pubsublite_v1.types.PartitionCursor]):
+        partition_cursors (MutableSequence[google.cloud.pubsublite_v1.types.PartitionCursor]):
             The partition cursors from this request.
         next_page_token (str):
             A token, which can be sent as ``page_token`` to retrieve the
@@ -234,10 +281,15 @@ class ListPartitionCursorsResponse(proto.Message):
     def raw_page(self):
         return self
 
-    partition_cursors = proto.RepeatedField(
-        proto.MESSAGE, number=1, message="PartitionCursor",
+    partition_cursors: MutableSequence["PartitionCursor"] = proto.RepeatedField(
+        proto.MESSAGE,
+        number=1,
+        message="PartitionCursor",
     )
-    next_page_token = proto.Field(proto.STRING, number=2,)
+    next_page_token: str = proto.Field(
+        proto.STRING,
+        number=2,
+    )
 
 
 __all__ = tuple(sorted(__protobuf__.manifest))

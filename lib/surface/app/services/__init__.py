@@ -34,7 +34,7 @@ class Services(base.Group):
   For more information on App Engine services, see:
   https://cloud.google.com/appengine/docs/python/an-overview-of-app-engine
   """
-
+  category = base.APP_ENGINE_CATEGORY
   detailed_help = {
       'EXAMPLES': """\
           To list your deployed services, run:

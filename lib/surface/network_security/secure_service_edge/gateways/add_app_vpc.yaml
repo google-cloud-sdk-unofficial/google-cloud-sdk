@@ -22,7 +22,7 @@ arguments:
   params:
   - arg_name: vpc
     required: true
-    api_field: attachAppVPCRequest.peerNetwork
+    api_field: attachAppNetworkRequest.peerNetwork
     help_text: |
       Name of the VPC to be attached. This can be a simple name (like `my-vpc`) or a fully qualified identifier (like `projects/my-project/global/networks/my-vpc`).
 
@@ -33,4 +33,4 @@ request: &request
   ALPHA:
     api_version: v1alpha1
   collection: networksecurity.projects.locations.sseGateways
-  method: attachAppVpc
+  method: attachAppNetwork

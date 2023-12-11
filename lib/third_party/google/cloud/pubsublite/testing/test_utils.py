@@ -16,7 +16,7 @@ import asyncio
 import threading
 from typing import List, Union, Any, TypeVar, Generic, Optional, Callable, Awaitable
 
-from asynctest import CoroutineMock
+from unittest.mock import AsyncMock
 
 T = TypeVar("T")
 
@@ -55,7 +55,7 @@ class QueuePair:
         self.results = asyncio.Queue()
 
 
-def wire_queues(mock: CoroutineMock) -> QueuePair:
+def wire_queues(mock: AsyncMock) -> QueuePair:
     queues = QueuePair()
     mock.side_effect = make_queue_waiter(queues.called, queues.results)
     return queues

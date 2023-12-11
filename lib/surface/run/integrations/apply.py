@@ -49,8 +49,10 @@ class Apply(base.Command):
     flags.AddFileArg(parser)
 
   def _ValidateAppConfigFile(self, file_content):
-    if 'name' not in file_content:
-      raise exceptions.FieldMismatchError("'name' is missing.")
+    if 'name' not in file_content and 'resources' not in file_content:
+      raise exceptions.FieldMismatchError("'name' or 'resources' is missing.")
+    if '/t' in file_content:
+      raise exceptions.ConfigurationError('tabs found in manifest content.')
 
   def Run(self, args):
     """Create or Update application from YAML."""

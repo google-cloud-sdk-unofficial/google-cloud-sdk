@@ -27,6 +27,7 @@ from googlecloudsdk.command_lib.run import artifact_registry
 from googlecloudsdk.command_lib.run import config_changes
 from googlecloudsdk.command_lib.run import connection_context
 from googlecloudsdk.command_lib.run import container_parser
+from googlecloudsdk.command_lib.run import exceptions
 from googlecloudsdk.command_lib.run import flags
 from googlecloudsdk.command_lib.run import messages_util
 from googlecloudsdk.command_lib.run import platforms
@@ -162,7 +163,6 @@ class Deploy(base.Command):
         prefixes=False,
     )
     flags.AddPlatformAndLocationFlags(parser)
-    flags.AddFunctionArg(parser)
     if add_container_args:
       flags.AddMutexEnvVarsFlags(parser)
       flags.AddMemoryFlag(parser)
@@ -266,7 +266,11 @@ class Deploy(base.Command):
               '--image',
               message,
           )
-
+      if (
+          self.ReleaseTrack() is base.ReleaseTrack.ALPHA
+          and flags.FlagIsExplicitlySet(container, 'function')
+      ):
+        raise exceptions.ArgumentError('[--function] is unimplemented')
     service_ref = args.CONCEPTS.service.Parse()
     flags.ValidateResource(service_ref)
 
@@ -452,6 +456,7 @@ class AlphaDeploy(BetaDeploy):
     flags.AddServiceMinInstancesFlag(managed_group)
     flags.AddVolumesFlags(managed_group, cls.ReleaseTrack())
     flags.RemoveContainersFlag().AddToParser(managed_group)
+    flags.AddFunctionAndRuntimeLanguageFlag(managed_group)
     container_args = ContainerArgGroup(cls.ReleaseTrack())
     container_parser.AddContainerFlags(parser, container_args)
 

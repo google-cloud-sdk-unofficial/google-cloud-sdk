@@ -18,6 +18,7 @@ from __future__ import division
 from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.apphub import operations as apis
+from googlecloudsdk.api_lib.apphub import utils as api_lib_utils
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.apphub import flags
 
@@ -43,7 +44,7 @@ _FORMAT = """
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class List(base.ListCommand):
-  """List Apphub operations."""
+  """List Apphub operations (long-running operations)."""
 
   detailed_help = _DETAILED_HELP
 
@@ -51,6 +52,11 @@ class List(base.ListCommand):
   def Args(parser):
     flags.AddListOperationsFlags(parser)
     parser.display_info.AddFormat(_FORMAT)
+    parser.display_info.AddUriFunc(
+        api_lib_utils.MakeGetUriFunc(
+            'apphub.projects.locations.operations'
+        )
+    )
 
   def Run(self, args):
     """Run the list command."""

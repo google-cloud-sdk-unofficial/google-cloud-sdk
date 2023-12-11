@@ -27,11 +27,11 @@ from googlecloudsdk.command_lib.apphub import flags
 _DETAILED_HELP = {
     'DESCRIPTION': '{description}',
     'EXAMPLES': """ \
-        To update a workload with the id `my-application-workload`,
-        with a new display name of updatedDisplayName and new description of
-        updatedDescription run:
+        To update the Workload `my-workload` with a new environment
+        `prod` in the Application `my-app` in location `us-east1`,
+        run:
 
-          $ {command} my-application-workload --display-name=updatedDisplayName --description=updatedDescription
+          $ {command} my-workload --environment=prod --application=my-app --location=us-east1
         """,
 }
 

@@ -29,11 +29,14 @@ from googlecloudsdk.core import log
 from googlecloudsdk.core.console import console_io
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
+)
 class DeleteAlpha(base.DeleteCommand):
-  """Delete a given Management Server."""
+  """Delete the specified Management Server."""
 
   detailed_help = {
+      'BRIEF': 'Deletes a specific management server',
       'DESCRIPTION': '{description}',
       'EXAMPLES': """\
         To delete a management server `sample-ms` in project `sample-project` and location `us-central1` , run:
@@ -51,7 +54,12 @@ class DeleteAlpha(base.DeleteCommand):
     """
     base.ASYNC_FLAG.AddToParser(parser)
     base.ASYNC_FLAG.SetDefault(parser, True)
-    flags.AddManagementServerResourceArg(parser, 'to delete')
+    flags.AddManagementServerResourceArg(
+        parser,
+        'Name of the management server to delete. Before you delete, take a'
+        ' look at the prerequisites'
+        ' [here](https://cloud.google.com/backup-disaster-recovery/docs/configuration/decommission).',
+    )
 
   def Run(self, args):
     """Constructs and sends request.
@@ -101,9 +109,3 @@ class DeleteAlpha(base.DeleteCommand):
         ),
         has_result=False,
     )
-
-
-@base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
-class Delete(DeleteAlpha):
-  """Delete a given Management Server."""

@@ -116,7 +116,6 @@ class Update(base.UpdateCommand):
 
   def ParseUpdateNodePoolOptions(self, args):
     flags.ValidateSurgeUpgradeSettings(args)
-    flags.WarnForLocationPolicyDefault(args)
 
     return api_adapter.UpdateNodePoolOptions(
         enable_autorepair=args.enable_autorepair,
@@ -295,7 +294,6 @@ class UpdateBeta(Update):
 
   def ParseUpdateNodePoolOptions(self, args):
     flags.ValidateSurgeUpgradeSettings(args)
-    flags.WarnForLocationPolicyDefault(args)
 
     ops = api_adapter.UpdateNodePoolOptions(
         accelerators=args.accelerator,
@@ -410,7 +408,6 @@ class UpdateAlpha(Update):
 
   def ParseUpdateNodePoolOptions(self, args):
     flags.ValidateSurgeUpgradeSettings(args)
-    flags.WarnForLocationPolicyDefault(args)
 
     ops = api_adapter.UpdateNodePoolOptions(
         accelerators=args.accelerator,

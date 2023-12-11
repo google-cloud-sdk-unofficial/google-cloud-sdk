@@ -28,6 +28,7 @@ _FORMAT = """\
 table(
     name.scope("registrations"):label=DOMAIN,
     state:label=STATE,
+    managementSettings.renewalMethod:label=RENEWAL_METHOD,
     expireTime:label=EXPIRE_TIME
 )
 """

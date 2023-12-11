@@ -28,12 +28,20 @@ from googlecloudsdk.command_lib.backupdr import flags
 from googlecloudsdk.core import log
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class CreateAlpha(base.CreateCommand):
-  """Create a new Management Server."""
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
+)
+class Create(base.CreateCommand):
+  """Create a new management server in the project."""
 
   detailed_help = {
-      'DESCRIPTION': '{description}',
+      'BRIEF': 'Creates a new management server',
+      'DESCRIPTION': (
+          '{description} A management server is required to access the'
+          ' management console. It can only be created in locations where'
+          ' Backup and DR is available. Resources in other locations can be'
+          ' backed up.'
+      ),
       'EXAMPLES': """\
         To create a new management server `sample-ms` in project `sample-project` and location `us-central1` with network `sample-network`, run:
 
@@ -50,7 +58,12 @@ class CreateAlpha(base.CreateCommand):
     """
     base.ASYNC_FLAG.AddToParser(parser)
     base.ASYNC_FLAG.SetDefault(parser, True)
-    flags.AddManagementServerResourceArg(parser, 'to create')
+    flags.AddManagementServerResourceArg(
+        parser,
+        'Name of the management server to be created. Once the management'
+        " server is deployed, this name can't be changed. The name must be"
+        ' unique for a project and location.',
+    )
     flags.AddNetwork(parser)
 
   def Run(self, args):
@@ -97,9 +110,3 @@ class CreateAlpha(base.CreateCommand):
     )
 
     return resource
-
-
-@base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
-class Create(CreateAlpha):
-  """Create a new Management Server."""

@@ -11,6 +11,20 @@
             --enablement-state="ENABLED" \
             --custom-config-from-file=custom_config.json
 
+      To update an Event Threat Detection custom module with ID `123456` for folder `456`, run:
+
+        $ {command} 123456 \
+            --folder=folders/456 \
+            --enablement-state="ENABLED" \
+            --custom-config-from-file=custom_config.json
+
+      To update an Event Threat Detection custom module with ID `123456` for project `789`, run:
+
+        $ {command} 123456 \
+            --project=projects/789 \
+            --enablement-state="ENABLED" \
+            --custom-config-from-file=custom_config.json
+
   request:
     collection: securitycenter.organizations.eventThreatDetectionSettings.customModules
     disable_resource_check: true
@@ -38,13 +52,11 @@
 
         - arg_name: folder
           api_field: name
-          hidden: true
           help_text: |
             Folder where the Event Threat Detection custom module resides. Formatted as `folders/456` or just `456`.
 
         - arg_name: project
           api_field: name
-          hidden: true
           help_text: |
             ID or number of the project where the Event Threat Detection custom module resides. Formatted as `projects/789` or just `789`.
 
@@ -54,7 +66,7 @@
       is_positional: false
       required: false
       help_text: |
-        Sets the enablement state of the Event Threat Detection custom module. Valid options are `ENABLED` and `DISABLED`.
+        Sets the enablement state of the Event Threat Detection custom module. Valid options are `ENABLED`, `DISABLED`, and `INHERITED`.
 
     - arg_name: custom-config-from-file
       api_field: eventThreatDetectionCustomModule.config

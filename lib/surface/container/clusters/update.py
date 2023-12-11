@@ -357,7 +357,7 @@ class Update(base.UpdateCommand):
     flags.AddEnableImageStreamingFlag(group)
     group_dataplane_v2_observability = group.add_group()
     flags.AddDataplaneV2MetricsFlag(group_dataplane_v2_observability)
-    flags.AddDataplaneV2ObservabilityModeFlag(group_dataplane_v2_observability)
+    flags.AddDataplaneV2ObservabilityFlags(group_dataplane_v2_observability)
     flags.AddClusterDNSFlags(
         group, release_track=base.ReleaseTrack.GA, hidden=False
     )
@@ -428,6 +428,12 @@ class Update(base.UpdateCommand):
     opts.enable_image_streaming = args.enable_image_streaming
     opts.enable_dataplane_v2_metrics = args.enable_dataplane_v2_metrics
     opts.disable_dataplane_v2_metrics = args.disable_dataplane_v2_metrics
+    opts.enable_dataplane_v2_flow_observability = (
+        args.enable_dataplane_v2_flow_observability
+    )
+    opts.disable_dataplane_v2_flow_observability = (
+        args.disable_dataplane_v2_flow_observability
+    )
     opts.dataplane_v2_observability_mode = args.dataplane_v2_observability_mode
     opts.cluster_dns = args.cluster_dns
     opts.cluster_dns_scope = args.cluster_dns_scope
@@ -874,7 +880,7 @@ class UpdateBeta(Update):
     flags.AddDataplaneV2Flag(group, hidden=True)
     group_dataplane_v2_observability = group.add_group()
     flags.AddDataplaneV2MetricsFlag(group_dataplane_v2_observability)
-    flags.AddDataplaneV2ObservabilityModeFlag(group_dataplane_v2_observability)
+    flags.AddDataplaneV2ObservabilityFlags(group_dataplane_v2_observability)
     flags.AddWorkloadConfigAuditFlag(group)
     flags.AddPodAutoscalingDirectMetricsOptInFlag(group)
     flags.AddWorkloadVulnScanningFlag(group)
@@ -1013,6 +1019,12 @@ class UpdateBeta(Update):
     opts.dataplane_v2 = args.enable_dataplane_v2
     opts.enable_dataplane_v2_metrics = args.enable_dataplane_v2_metrics
     opts.disable_dataplane_v2_metrics = args.disable_dataplane_v2_metrics
+    opts.enable_dataplane_v2_flow_observability = (
+        args.enable_dataplane_v2_flow_observability
+    )
+    opts.disable_dataplane_v2_flow_observability = (
+        args.disable_dataplane_v2_flow_observability
+    )
     opts.dataplane_v2_observability_mode = args.dataplane_v2_observability_mode
     opts.enable_workload_config_audit = args.enable_workload_config_audit
     opts.pod_autoscaling_direct_metrics_opt_in = (
@@ -1139,7 +1151,7 @@ class UpdateAlpha(Update):
     flags.AddDataplaneV2Flag(group, hidden=True)
     group_dataplane_v2_observability = group.add_group()
     flags.AddDataplaneV2MetricsFlag(group_dataplane_v2_observability)
-    flags.AddDataplaneV2ObservabilityModeFlag(group_dataplane_v2_observability)
+    flags.AddDataplaneV2ObservabilityFlags(group_dataplane_v2_observability)
     flags.AddWorkloadConfigAuditFlag(group)
     flags.AddPodAutoscalingDirectMetricsOptInFlag(group)
     flags.AddWorkloadVulnScanningFlag(group)
@@ -1273,6 +1285,12 @@ class UpdateAlpha(Update):
     opts.dataplane_v2 = args.enable_dataplane_v2
     opts.enable_dataplane_v2_metrics = args.enable_dataplane_v2_metrics
     opts.disable_dataplane_v2_metrics = args.disable_dataplane_v2_metrics
+    opts.enable_dataplane_v2_flow_observability = (
+        args.enable_dataplane_v2_flow_observability
+    )
+    opts.disable_dataplane_v2_flow_observability = (
+        args.disable_dataplane_v2_flow_observability
+    )
     opts.dataplane_v2_observability_mode = args.dataplane_v2_observability_mode
     opts.enable_workload_config_audit = args.enable_workload_config_audit
     opts.pod_autoscaling_direct_metrics_opt_in = (

@@ -66,6 +66,7 @@ class Create(base.CreateCommand):
     workstations_flags.AddShieldedSecureBoot(parser)
     workstations_flags.AddShieldedVtpm(parser)
     workstations_flags.AddShieldedIntegrityMonitoring(parser)
+    workstations_flags.AddEnableAuditAgent(parser)
     workstations_flags.AddEnableConfidentialCompute(parser)
     workstations_flags.AddEnableNestedVirtualization(parser)
     workstations_flags.AddBootDiskSize(parser)

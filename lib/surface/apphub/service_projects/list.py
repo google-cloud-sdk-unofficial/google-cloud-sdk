@@ -18,6 +18,7 @@ from __future__ import division
 from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.apphub import service_projects as apis
+from googlecloudsdk.api_lib.apphub import utils as api_lib_utils
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.apphub import flags
 
@@ -25,9 +26,10 @@ from googlecloudsdk.command_lib.apphub import flags
 _DETAILED_HELP = {
     'DESCRIPTION': '{description}',
     'EXAMPLES': """ \
-        To list all service projects, run:
+        To list all service projects attached to the host project
+        `my-host-project`, run:
 
-          $ {command}
+          $ {command} --project=my-host-project
         """,
 }
 
@@ -50,6 +52,11 @@ class List(base.ListCommand):
   def Args(parser):
     flags.AddListServiceProjectFlags(parser)
     parser.display_info.AddFormat(_FORMAT)
+    parser.display_info.AddUriFunc(
+        api_lib_utils.MakeGetUriFunc(
+            'apphub.projects.locations.serviceProjectAttachments'
+        )
+    )
 
   def Run(self, args):
     """Run the list command."""

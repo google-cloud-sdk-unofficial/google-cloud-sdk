@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Implementation of describe command for insights dataset config."""
+"""Implementation of describe command for Insights dataset config."""
 
 from googlecloudsdk.api_lib.storage import insights_api
 from googlecloudsdk.calliope import base
@@ -22,11 +22,11 @@ from googlecloudsdk.command_lib.storage.insights.dataset_configs import resource
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Describe(base.DescribeCommand):
-  """Describe dataset config for insights."""
+  """Describe dataset config for Insights."""
 
   detailed_help = {
       'DESCRIPTION': """
-      Describe the insights dataset config.
+      Describe the Insights dataset config.
       """,
       'EXAMPLES': """
 

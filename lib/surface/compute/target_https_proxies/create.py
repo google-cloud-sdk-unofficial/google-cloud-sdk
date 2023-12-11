@@ -85,7 +85,7 @@ def _Args(
 
   if server_tls_policy_enabled:
     ns_resource_args.GetServerTlsPolicyResourceArg(
-        'to attach', name='server-tls-policy'
+        'to attach', name='server-tls-policy', region_fallthrough=True
     ).AddToParser(parser)
 
   if certificate_map:
@@ -235,10 +235,10 @@ class Create(base.CreateCommand):
     ssl_certificates = target_https_proxies_utils.ResolveSslCertificates(
         args, self.SSL_CERTIFICATES_ARG, proxy_ref, holder.resources
     )
+    location = target_https_proxies_utils.GetLocation(proxy_ref)
     if ssl_certificates:
       ssl_certificates = [ref.SelfLink() for ref in ssl_certificates]
     elif args.certificate_manager_certificates:
-      location = target_https_proxies_utils.GetLocation(proxy_ref)
       ssl_certificates = [
           reference_utils.BuildCcmCertificateUrl(
               proxy_ref.project, location, certificate_name

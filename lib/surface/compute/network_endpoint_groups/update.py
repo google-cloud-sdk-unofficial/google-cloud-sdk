@@ -41,20 +41,14 @@ class Update(base.UpdateCommand):
   """Update a Compute Engine network endpoint group."""
 
   detailed_help = DETAILED_HELP
-  support_regional_scope = True
-  support_hybrid_neg = True
-  support_l4ilb_neg = False
   support_ipv6 = False
 
   @classmethod
   def Args(cls, parser):
     flags.MakeNetworkEndpointGroupsArg(
-        support_regional_scope=cls.support_regional_scope,
     ).AddArgument(parser)
     flags.AddUpdateNegArgsToParser(
         parser,
-        support_hybrid_neg=cls.support_hybrid_neg,
-        support_l4ilb_neg=cls.support_l4ilb_neg,
         support_ipv6=cls.support_ipv6,
     )
 
@@ -64,9 +58,7 @@ class Update(base.UpdateCommand):
     messages = holder.client.messages
     resources = holder.resources
 
-    neg_ref = flags.MakeNetworkEndpointGroupsArg(
-        support_regional_scope=self.support_regional_scope,
-    ).ResolveAsResource(
+    neg_ref = flags.MakeNetworkEndpointGroupsArg().ResolveAsResource(
         args,
         resources,
         scope_lister=compute_flags.GetDefaultScopeLister(holder.client),
@@ -90,13 +82,9 @@ class Update(base.UpdateCommand):
 class BetaUpdate(Update):
   """Update a Compute Engine network endpoint group."""
 
-  support_regional_scope = True
-
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class AlphaUpdate(Update):
   """Update a Compute Engine network endpoint group."""
 
-  support_l4ilb_neg = True
-  support_regional_scope = True
   support_ipv6 = True

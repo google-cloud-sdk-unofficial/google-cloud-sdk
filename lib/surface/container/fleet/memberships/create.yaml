@@ -20,7 +20,7 @@
   request:
     collection: gkehub.projects.locations.memberships
     ALPHA:
-      api_version: v1alpha2
+      api_version: v1alpha
     BETA:
       api_version: v1beta1
     GA:

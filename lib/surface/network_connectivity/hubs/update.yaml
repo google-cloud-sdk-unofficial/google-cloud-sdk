@@ -29,6 +29,11 @@
           spec:
           - api_field: key
           - api_field: value
+    - arg_name: export-psc
+      release_tracks: [GA]
+      api_field: hub.exportPsc
+      hidden: true
+      help_text: Whether Private Service Connect transitivity is enabled for the hub.
     GA:
       labels:
         api_field: hub.labels

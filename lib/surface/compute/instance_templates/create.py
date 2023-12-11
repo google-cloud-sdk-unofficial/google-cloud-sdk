@@ -68,6 +68,7 @@ def _CommonArgs(
     support_storage_pool=False,
     support_maintenance_interval=False,
     support_specific_then_x_affinity=False,
+    support_graceful_shutdown=False,
 ):
   """Adding arguments applicable for creating instance templates."""
   parser.display_info.AddFormat(instance_templates_flags.DEFAULT_LIST_FORMAT)
@@ -191,6 +192,9 @@ The type of reservation for instances created from this template.
 
   if support_maintenance_interval:
     instances_flags.AddMaintenanceIntervalArgs(parser)
+
+  if support_graceful_shutdown:
+    instances_flags.AddGracefulShutdownArgs(parser)
 
 
 def _ValidateInstancesFlags(
@@ -550,6 +554,7 @@ def _RunCreate(
     support_partner_metadata=False,
     support_maintenance_interval=False,
     support_specific_then_x_affinity=False,
+    support_graceful_shutdown=False,
 ):
   """Common routine for creating instance template.
 
@@ -596,6 +601,8 @@ def _RunCreate(
         set.
       support_specific_then_x_affinity: Indicate whether specific_then_x was
         set.
+      support_graceful_shutdown: Indicate whether graceful shutdown is
+        supported.
 
   Returns:
       A resource object dispatched by display.Displayer().
@@ -776,6 +783,10 @@ def _RunCreate(
       args.maintenance_interval if should_set_maintenance_interval else None
   )
 
+  graceful_shutdown = instance_utils.ExtractGracefulShutdownFromArgs(
+      args, support_graceful_shutdown
+  )
+
   scheduling = instance_utils.CreateSchedulingMessage(
       messages=client.messages,
       maintenance_policy=args.maintenance_policy,
@@ -791,6 +802,7 @@ def _RunCreate(
       termination_time=termination_time,
       local_ssd_recovery_timeout=local_ssd_recovery_timeout,
       maintenance_interval=maintenance_interval,
+      graceful_shutdown=graceful_shutdown,
   )
 
   if args.no_service_account:
@@ -1080,6 +1092,8 @@ class Create(base.CreateCommand):
   _support_max_run_duration = False
   _support_region_instance_template = True
   _support_subnet_region = False
+  _support_confidential_compute_type = False
+  _support_confidential_compute_type_tdx = False
   _support_network_attachments = False
   _support_replica_zones = True
   _support_local_ssd_size = True
@@ -1090,6 +1104,7 @@ class Create(base.CreateCommand):
   _support_partner_metadata = False
   _support_local_ssd_recovery_timeout = True
   _support_specific_then_x_affinity = False
+  _support_graceful_shutdown = False
 
   @classmethod
   def Args(cls, parser):
@@ -1112,12 +1127,18 @@ class Create(base.CreateCommand):
         support_storage_pool=cls._support_storage_pool,
         support_local_ssd_recovery_timeout=cls._support_local_ssd_recovery_timeout,
         support_specific_then_x_affinity=cls._support_specific_then_x_affinity,
+        support_graceful_shutdown=cls._support_graceful_shutdown,
     )
     instances_flags.AddMinCpuPlatformArgs(parser, base.ReleaseTrack.GA)
     instances_flags.AddPrivateIpv6GoogleAccessArgForTemplate(
         parser, utils.COMPUTE_GA_API_VERSION
     )
-    instances_flags.AddConfidentialComputeArgs(parser)
+    instances_flags.AddConfidentialComputeArgs(
+        parser,
+        support_confidential_compute_type=cls
+        ._support_confidential_compute_type,
+        support_confidential_compute_type_tdx=cls
+        ._support_confidential_compute_type_tdx)
     instance_templates_flags.AddKeyRevocationActionTypeArgs(parser)
 
   def Run(self, args):
@@ -1143,6 +1164,8 @@ class Create(base.CreateCommand):
         support_max_run_duration=self._support_max_run_duration,
         support_region_instance_template=self._support_region_instance_template,
         support_subnet_region=self._support_subnet_region,
+        support_confidential_compute_type=self._support_confidential_compute_type,
+        support_confidential_compute_type_tdx=self._support_confidential_compute_type_tdx,
         support_replica_zones=self._support_replica_zones,
         support_performance_monitoring_unit=self._support_performance_monitoring_unit,
         support_internal_ipv6_reservation=self._support_internal_ipv6_reservation,
@@ -1150,6 +1173,7 @@ class Create(base.CreateCommand):
         support_partner_metadata=self._support_partner_metadata,
         support_local_ssd_recovery_timeout=self._support_local_ssd_recovery_timeout,
         support_specific_then_x_affinity=self._support_specific_then_x_affinity,
+        support_graceful_shutdown=self._support_graceful_shutdown,
     )
 
 
@@ -1179,6 +1203,8 @@ class CreateBeta(Create):
   _support_max_run_duration = True
   _support_region_instance_template = True
   _support_subnet_region = False
+  _support_confidential_compute_type = True
+  _support_confidential_compute_type_tdx = False
   _support_network_attachments = False
   _support_replica_zones = True
   _support_local_ssd_recovery_timeout = True
@@ -1190,6 +1216,7 @@ class CreateBeta(Create):
   _support_partner_metadata = False
   _support_maintenance_interval = True
   _support_specific_then_x_affinity = True
+  _support_graceful_shutdown = False
 
   @classmethod
   def Args(cls, parser):
@@ -1213,12 +1240,18 @@ class CreateBeta(Create):
         support_storage_pool=cls._support_storage_pool,
         support_maintenance_interval=cls._support_maintenance_interval,
         support_specific_then_x_affinity=cls._support_specific_then_x_affinity,
+        support_graceful_shutdown=cls._support_graceful_shutdown,
     )
     instances_flags.AddMinCpuPlatformArgs(parser, base.ReleaseTrack.BETA)
     instances_flags.AddPrivateIpv6GoogleAccessArgForTemplate(
         parser, utils.COMPUTE_BETA_API_VERSION
     )
-    instances_flags.AddConfidentialComputeArgs(parser)
+    instances_flags.AddConfidentialComputeArgs(
+        parser,
+        support_confidential_compute_type=cls
+        ._support_confidential_compute_type,
+        support_confidential_compute_type_tdx=cls
+        ._support_confidential_compute_type_tdx)
     instances_flags.AddPostKeyRevocationActionTypeArgs(parser)
     instance_templates_flags.AddKeyRevocationActionTypeArgs(parser)
 
@@ -1246,6 +1279,8 @@ class CreateBeta(Create):
         support_max_run_duration=self._support_max_run_duration,
         support_region_instance_template=self._support_region_instance_template,
         support_subnet_region=self._support_subnet_region,
+        support_confidential_compute_type=self._support_confidential_compute_type,
+        support_confidential_compute_type_tdx=self._support_confidential_compute_type_tdx,
         support_replica_zones=self._support_replica_zones,
         support_local_ssd_recovery_timeout=self._support_local_ssd_recovery_timeout,
         support_performance_monitoring_unit=self._support_performance_monitoring_unit,
@@ -1254,6 +1289,7 @@ class CreateBeta(Create):
         support_partner_metadata=self._support_partner_metadata,
         support_maintenance_interval=self._support_maintenance_interval,
         support_specific_then_x_affinity=self._support_specific_then_x_affinity,
+        support_graceful_shutdown=self._support_graceful_shutdown,
     )
 
 
@@ -1296,6 +1332,7 @@ class CreateAlpha(Create):
   _support_partner_metadata = True
   _support_maintenance_interval = True
   _support_specific_then_x_affinity = True
+  _support_graceful_shutdown = True
 
   @classmethod
   def Args(cls, parser):
@@ -1320,6 +1357,7 @@ class CreateAlpha(Create):
         support_storage_pool=cls._support_storage_pool,
         support_maintenance_interval=cls._support_maintenance_interval,
         support_specific_then_x_affinity=cls._support_specific_then_x_affinity,
+        support_graceful_shutdown=cls._support_graceful_shutdown,
     )
     instances_flags.AddLocalNvdimmArgs(parser)
     instances_flags.AddMinCpuPlatformArgs(parser, base.ReleaseTrack.ALPHA)
@@ -1373,6 +1411,7 @@ class CreateAlpha(Create):
         support_partner_metadata=self._support_partner_metadata,
         support_maintenance_interval=self._support_maintenance_interval,
         support_specific_then_x_affinity=self._support_specific_then_x_affinity,
+        support_graceful_shutdown=self._support_graceful_shutdown,
     )
 
 

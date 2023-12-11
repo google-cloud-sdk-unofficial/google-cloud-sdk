@@ -38,7 +38,7 @@ class DomainMappings(base.Group):
   certificate for your domain. Use the MANUAL management type to provide
   your own certificate or omit SSL.
   """
-
+  category = base.APP_ENGINE_CATEGORY
   detailed_help = {
       'DESCRIPTION':
           '{description}',

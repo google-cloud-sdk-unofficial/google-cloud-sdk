@@ -6,6 +6,7 @@ Discovery Documents are used to create API Clients.
 
 import pkgutil
 import string
+from typing import Optional
 from absl import logging
 
 PKG_NAME = 'bigquery_client'
@@ -21,7 +22,7 @@ SUPPORTED_BIGQUERY_APIS = frozenset([
 ])
 
 
-def get_discovery_bigquery_name(api_url, api_version):
+def get_discovery_bigquery_name(api_url: str, api_version: str) -> str:
   """Returns a filename for `api_url` for fetching discovery doc from pkg files.
 
   Used for discovery and not discovery_next.
@@ -37,7 +38,7 @@ def get_discovery_bigquery_name(api_url, api_version):
   return doc_filename
 
 
-def load_local_discovery_doc(doc_filename):
+def load_local_discovery_doc(doc_filename: str) -> bytes:
   """Loads the discovery document for `doc_filename` with `version` from package files.
 
   Example:
@@ -64,7 +65,9 @@ def load_local_discovery_doc(doc_filename):
   return doc
 
 
-def _fetch_discovery_doc_from_pkg(package, resource):
+def _fetch_discovery_doc_from_pkg(
+    package: str, resource: str
+) -> Optional[bytes]:
   """Loads a discovery doc as `bytes` specified by `package` and `resource` returning None on error."""
   try:
     raw_doc = pkgutil.get_data(package, resource)

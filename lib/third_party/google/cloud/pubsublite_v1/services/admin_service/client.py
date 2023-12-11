@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2020 Google LLC
+# Copyright 2022 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -16,8 +16,20 @@
 from collections import OrderedDict
 import os
 import re
-from typing import Dict, Optional, Sequence, Tuple, Type, Union
-import pkg_resources
+from typing import (
+    Dict,
+    Mapping,
+    MutableMapping,
+    MutableSequence,
+    Optional,
+    Sequence,
+    Tuple,
+    Type,
+    Union,
+    cast,
+)
+
+from google.cloud.pubsublite_v1 import gapic_version as package_version
 
 from google.api_core import client_options as client_options_lib
 from google.api_core import exceptions as core_exceptions
@@ -39,6 +51,7 @@ from google.api_core import operation_async  # type: ignore
 from google.cloud.pubsublite_v1.services.admin_service import pagers
 from google.cloud.pubsublite_v1.types import admin
 from google.cloud.pubsublite_v1.types import common
+from google.longrunning import operations_pb2
 from cloudsdk.google.protobuf import field_mask_pb2  # type: ignore
 from .transports.base import AdminServiceTransport, DEFAULT_CLIENT_INFO
 from .transports.grpc import AdminServiceGrpcTransport
@@ -57,7 +70,10 @@ class AdminServiceClientMeta(type):
     _transport_registry["grpc"] = AdminServiceGrpcTransport
     _transport_registry["grpc_asyncio"] = AdminServiceGrpcAsyncIOTransport
 
-    def get_transport_class(cls, label: str = None,) -> Type[AdminServiceTransport]:
+    def get_transport_class(
+        cls,
+        label: Optional[str] = None,
+    ) -> Type[AdminServiceTransport]:
         """Returns an appropriate transport class.
 
         Args:
@@ -165,10 +181,18 @@ class AdminServiceClient(metaclass=AdminServiceClientMeta):
         return self._transport
 
     @staticmethod
-    def reservation_path(project: str, location: str, reservation: str,) -> str:
+    def reservation_path(
+        project: str,
+        location: str,
+        reservation: str,
+    ) -> str:
         """Returns a fully-qualified reservation string."""
-        return "projects/{project}/locations/{location}/reservations/{reservation}".format(
-            project=project, location=location, reservation=reservation,
+        return (
+            "projects/{project}/locations/{location}/reservations/{reservation}".format(
+                project=project,
+                location=location,
+                reservation=reservation,
+            )
         )
 
     @staticmethod
@@ -181,10 +205,16 @@ class AdminServiceClient(metaclass=AdminServiceClientMeta):
         return m.groupdict() if m else {}
 
     @staticmethod
-    def subscription_path(project: str, location: str, subscription: str,) -> str:
+    def subscription_path(
+        project: str,
+        location: str,
+        subscription: str,
+    ) -> str:
         """Returns a fully-qualified subscription string."""
         return "projects/{project}/locations/{location}/subscriptions/{subscription}".format(
-            project=project, location=location, subscription=subscription,
+            project=project,
+            location=location,
+            subscription=subscription,
         )
 
     @staticmethod
@@ -197,10 +227,16 @@ class AdminServiceClient(metaclass=AdminServiceClientMeta):
         return m.groupdict() if m else {}
 
     @staticmethod
-    def topic_path(project: str, location: str, topic: str,) -> str:
+    def topic_path(
+        project: str,
+        location: str,
+        topic: str,
+    ) -> str:
         """Returns a fully-qualified topic string."""
         return "projects/{project}/locations/{location}/topics/{topic}".format(
-            project=project, location=location, topic=topic,
+            project=project,
+            location=location,
+            topic=topic,
         )
 
     @staticmethod
@@ -213,7 +249,9 @@ class AdminServiceClient(metaclass=AdminServiceClientMeta):
         return m.groupdict() if m else {}
 
     @staticmethod
-    def common_billing_account_path(billing_account: str,) -> str:
+    def common_billing_account_path(
+        billing_account: str,
+    ) -> str:
         """Returns a fully-qualified billing_account string."""
         return "billingAccounts/{billing_account}".format(
             billing_account=billing_account,
@@ -226,9 +264,13 @@ class AdminServiceClient(metaclass=AdminServiceClientMeta):
         return m.groupdict() if m else {}
 
     @staticmethod
-    def common_folder_path(folder: str,) -> str:
+    def common_folder_path(
+        folder: str,
+    ) -> str:
         """Returns a fully-qualified folder string."""
-        return "folders/{folder}".format(folder=folder,)
+        return "folders/{folder}".format(
+            folder=folder,
+        )
 
     @staticmethod
     def parse_common_folder_path(path: str) -> Dict[str, str]:
@@ -237,9 +279,13 @@ class AdminServiceClient(metaclass=AdminServiceClientMeta):
         return m.groupdict() if m else {}
 
     @staticmethod
-    def common_organization_path(organization: str,) -> str:
+    def common_organization_path(
+        organization: str,
+    ) -> str:
         """Returns a fully-qualified organization string."""
-        return "organizations/{organization}".format(organization=organization,)
+        return "organizations/{organization}".format(
+            organization=organization,
+        )
 
     @staticmethod
     def parse_common_organization_path(path: str) -> Dict[str, str]:
@@ -248,9 +294,13 @@ class AdminServiceClient(metaclass=AdminServiceClientMeta):
         return m.groupdict() if m else {}
 
     @staticmethod
-    def common_project_path(project: str,) -> str:
+    def common_project_path(
+        project: str,
+    ) -> str:
         """Returns a fully-qualified project string."""
-        return "projects/{project}".format(project=project,)
+        return "projects/{project}".format(
+            project=project,
+        )
 
     @staticmethod
     def parse_common_project_path(path: str) -> Dict[str, str]:
@@ -259,10 +309,14 @@ class AdminServiceClient(metaclass=AdminServiceClientMeta):
         return m.groupdict() if m else {}
 
     @staticmethod
-    def common_location_path(project: str, location: str,) -> str:
+    def common_location_path(
+        project: str,
+        location: str,
+    ) -> str:
         """Returns a fully-qualified location string."""
         return "projects/{project}/locations/{location}".format(
-            project=project, location=location,
+            project=project,
+            location=location,
         )
 
     @staticmethod
@@ -287,7 +341,7 @@ class AdminServiceClient(metaclass=AdminServiceClientMeta):
         The API endpoint is determined in the following order:
         (1) if `client_options.api_endpoint` if provided, use the provided one.
         (2) if `GOOGLE_API_USE_CLIENT_CERTIFICATE` environment variable is "always", use the
-        default mTLS endpoint; if the environment variabel is "never", use the default API
+        default mTLS endpoint; if the environment variable is "never", use the default API
         endpoint; otherwise if client cert source exists, use the default mTLS endpoint, otherwise
         use the default API endpoint.
 
@@ -342,8 +396,8 @@ class AdminServiceClient(metaclass=AdminServiceClientMeta):
         self,
         *,
         credentials: Optional[ga_credentials.Credentials] = None,
-        transport: Union[str, AdminServiceTransport, None] = None,
-        client_options: Optional[client_options_lib.ClientOptions] = None,
+        transport: Optional[Union[str, AdminServiceTransport]] = None,
+        client_options: Optional[Union[client_options_lib.ClientOptions, dict]] = None,
         client_info: gapic_v1.client_info.ClientInfo = DEFAULT_CLIENT_INFO,
     ) -> None:
         """Instantiates the admin service client.
@@ -357,7 +411,7 @@ class AdminServiceClient(metaclass=AdminServiceClientMeta):
             transport (Union[str, AdminServiceTransport]): The
                 transport to use. If set to None, a transport is chosen
                 automatically.
-            client_options (google.api_core.client_options.ClientOptions): Custom options for the
+            client_options (Optional[Union[google.api_core.client_options.ClientOptions, dict]]): Custom options for the
                 client. It won't take effect if a ``transport`` instance is provided.
                 (1) The ``api_endpoint`` property can be used to override the
                 default endpoint provided by the client. GOOGLE_API_USE_MTLS_ENDPOINT
@@ -387,6 +441,7 @@ class AdminServiceClient(metaclass=AdminServiceClientMeta):
             client_options = client_options_lib.from_dict(client_options)
         if client_options is None:
             client_options = client_options_lib.ClientOptions()
+        client_options = cast(client_options_lib.ClientOptions, client_options)
 
         api_endpoint, client_cert_source_func = self.get_mtls_endpoint_and_cert_source(
             client_options
@@ -434,20 +489,48 @@ class AdminServiceClient(metaclass=AdminServiceClientMeta):
                 quota_project_id=client_options.quota_project_id,
                 client_info=client_info,
                 always_use_jwt_access=True,
+                api_audience=client_options.api_audience,
             )
 
     def create_topic(
         self,
-        request: Union[admin.CreateTopicRequest, dict] = None,
+        request: Optional[Union[admin.CreateTopicRequest, dict]] = None,
         *,
-        parent: str = None,
-        topic: common.Topic = None,
-        topic_id: str = None,
+        parent: Optional[str] = None,
+        topic: Optional[common.Topic] = None,
+        topic_id: Optional[str] = None,
         retry: OptionalRetry = gapic_v1.method.DEFAULT,
-        timeout: float = None,
+        timeout: Union[float, object] = gapic_v1.method.DEFAULT,
         metadata: Sequence[Tuple[str, str]] = (),
     ) -> common.Topic:
         r"""Creates a new topic.
+
+        .. code-block:: python
+
+            # This snippet has been automatically generated and should be regarded as a
+            # code template only.
+            # It will require modifications to work:
+            # - It may require correct/in-range values for request initialization.
+            # - It may require specifying regional endpoints when creating the service
+            #   client as shown in:
+            #   https://googleapis.dev/python/google-api-core/latest/client_options.html
+            from google.cloud import pubsublite_v1
+
+            def sample_create_topic():
+                # Create a client
+                client = pubsublite_v1.AdminServiceClient()
+
+                # Initialize request argument(s)
+                request = pubsublite_v1.CreateTopicRequest(
+                    parent="parent_value",
+                    topic_id="topic_id_value",
+                )
+
+                # Make the request
+                response = client.create_topic(request=request)
+
+                # Handle the response
+                print(response)
 
         Args:
             request (Union[google.cloud.pubsublite_v1.types.CreateTopicRequest, dict]):
@@ -522,21 +605,52 @@ class AdminServiceClient(metaclass=AdminServiceClientMeta):
         )
 
         # Send the request.
-        response = rpc(request, retry=retry, timeout=timeout, metadata=metadata,)
+        response = rpc(
+            request,
+            retry=retry,
+            timeout=timeout,
+            metadata=metadata,
+        )
 
         # Done; return the response.
         return response
 
     def get_topic(
         self,
-        request: Union[admin.GetTopicRequest, dict] = None,
+        request: Optional[Union[admin.GetTopicRequest, dict]] = None,
         *,
-        name: str = None,
+        name: Optional[str] = None,
         retry: OptionalRetry = gapic_v1.method.DEFAULT,
-        timeout: float = None,
+        timeout: Union[float, object] = gapic_v1.method.DEFAULT,
         metadata: Sequence[Tuple[str, str]] = (),
     ) -> common.Topic:
         r"""Returns the topic configuration.
+
+        .. code-block:: python
+
+            # This snippet has been automatically generated and should be regarded as a
+            # code template only.
+            # It will require modifications to work:
+            # - It may require correct/in-range values for request initialization.
+            # - It may require specifying regional endpoints when creating the service
+            #   client as shown in:
+            #   https://googleapis.dev/python/google-api-core/latest/client_options.html
+            from google.cloud import pubsublite_v1
+
+            def sample_get_topic():
+                # Create a client
+                client = pubsublite_v1.AdminServiceClient()
+
+                # Initialize request argument(s)
+                request = pubsublite_v1.GetTopicRequest(
+                    name="name_value",
+                )
+
+                # Make the request
+                response = client.get_topic(request=request)
+
+                # Handle the response
+                print(response)
 
         Args:
             request (Union[google.cloud.pubsublite_v1.types.GetTopicRequest, dict]):
@@ -590,22 +704,53 @@ class AdminServiceClient(metaclass=AdminServiceClientMeta):
         )
 
         # Send the request.
-        response = rpc(request, retry=retry, timeout=timeout, metadata=metadata,)
+        response = rpc(
+            request,
+            retry=retry,
+            timeout=timeout,
+            metadata=metadata,
+        )
 
         # Done; return the response.
         return response
 
     def get_topic_partitions(
         self,
-        request: Union[admin.GetTopicPartitionsRequest, dict] = None,
+        request: Optional[Union[admin.GetTopicPartitionsRequest, dict]] = None,
         *,
-        name: str = None,
+        name: Optional[str] = None,
         retry: OptionalRetry = gapic_v1.method.DEFAULT,
-        timeout: float = None,
+        timeout: Union[float, object] = gapic_v1.method.DEFAULT,
         metadata: Sequence[Tuple[str, str]] = (),
     ) -> admin.TopicPartitions:
         r"""Returns the partition information for the requested
         topic.
+
+        .. code-block:: python
+
+            # This snippet has been automatically generated and should be regarded as a
+            # code template only.
+            # It will require modifications to work:
+            # - It may require correct/in-range values for request initialization.
+            # - It may require specifying regional endpoints when creating the service
+            #   client as shown in:
+            #   https://googleapis.dev/python/google-api-core/latest/client_options.html
+            from google.cloud import pubsublite_v1
+
+            def sample_get_topic_partitions():
+                # Create a client
+                client = pubsublite_v1.AdminServiceClient()
+
+                # Initialize request argument(s)
+                request = pubsublite_v1.GetTopicPartitionsRequest(
+                    name="name_value",
+                )
+
+                # Make the request
+                response = client.get_topic_partitions(request=request)
+
+                # Handle the response
+                print(response)
 
         Args:
             request (Union[google.cloud.pubsublite_v1.types.GetTopicPartitionsRequest, dict]):
@@ -659,21 +804,53 @@ class AdminServiceClient(metaclass=AdminServiceClientMeta):
         )
 
         # Send the request.
-        response = rpc(request, retry=retry, timeout=timeout, metadata=metadata,)
+        response = rpc(
+            request,
+            retry=retry,
+            timeout=timeout,
+            metadata=metadata,
+        )
 
         # Done; return the response.
         return response
 
     def list_topics(
         self,
-        request: Union[admin.ListTopicsRequest, dict] = None,
+        request: Optional[Union[admin.ListTopicsRequest, dict]] = None,
         *,
-        parent: str = None,
+        parent: Optional[str] = None,
         retry: OptionalRetry = gapic_v1.method.DEFAULT,
-        timeout: float = None,
+        timeout: Union[float, object] = gapic_v1.method.DEFAULT,
         metadata: Sequence[Tuple[str, str]] = (),
     ) -> pagers.ListTopicsPager:
         r"""Returns the list of topics for the given project.
+
+        .. code-block:: python
+
+            # This snippet has been automatically generated and should be regarded as a
+            # code template only.
+            # It will require modifications to work:
+            # - It may require correct/in-range values for request initialization.
+            # - It may require specifying regional endpoints when creating the service
+            #   client as shown in:
+            #   https://googleapis.dev/python/google-api-core/latest/client_options.html
+            from google.cloud import pubsublite_v1
+
+            def sample_list_topics():
+                # Create a client
+                client = pubsublite_v1.AdminServiceClient()
+
+                # Initialize request argument(s)
+                request = pubsublite_v1.ListTopicsRequest(
+                    parent="parent_value",
+                )
+
+                # Make the request
+                page_result = client.list_topics(request=request)
+
+                # Handle the response
+                for response in page_result:
+                    print(response)
 
         Args:
             request (Union[google.cloud.pubsublite_v1.types.ListTopicsRequest, dict]):
@@ -732,12 +909,20 @@ class AdminServiceClient(metaclass=AdminServiceClientMeta):
         )
 
         # Send the request.
-        response = rpc(request, retry=retry, timeout=timeout, metadata=metadata,)
+        response = rpc(
+            request,
+            retry=retry,
+            timeout=timeout,
+            metadata=metadata,
+        )
 
         # This method is paged; wrap the response in a pager, which provides
         # an `__iter__` convenience method.
         response = pagers.ListTopicsPager(
-            method=rpc, request=request, response=response, metadata=metadata,
+            method=rpc,
+            request=request,
+            response=response,
+            metadata=metadata,
         )
 
         # Done; return the response.
@@ -745,15 +930,40 @@ class AdminServiceClient(metaclass=AdminServiceClientMeta):
 
     def update_topic(
         self,
-        request: Union[admin.UpdateTopicRequest, dict] = None,
+        request: Optional[Union[admin.UpdateTopicRequest, dict]] = None,
         *,
-        topic: common.Topic = None,
-        update_mask: field_mask_pb2.FieldMask = None,
+        topic: Optional[common.Topic] = None,
+        update_mask: Optional[field_mask_pb2.FieldMask] = None,
         retry: OptionalRetry = gapic_v1.method.DEFAULT,
-        timeout: float = None,
+        timeout: Union[float, object] = gapic_v1.method.DEFAULT,
         metadata: Sequence[Tuple[str, str]] = (),
     ) -> common.Topic:
         r"""Updates properties of the specified topic.
+
+        .. code-block:: python
+
+            # This snippet has been automatically generated and should be regarded as a
+            # code template only.
+            # It will require modifications to work:
+            # - It may require correct/in-range values for request initialization.
+            # - It may require specifying regional endpoints when creating the service
+            #   client as shown in:
+            #   https://googleapis.dev/python/google-api-core/latest/client_options.html
+            from google.cloud import pubsublite_v1
+
+            def sample_update_topic():
+                # Create a client
+                client = pubsublite_v1.AdminServiceClient()
+
+                # Initialize request argument(s)
+                request = pubsublite_v1.UpdateTopicRequest(
+                )
+
+                # Make the request
+                response = client.update_topic(request=request)
+
+                # Handle the response
+                print(response)
 
         Args:
             request (Union[google.cloud.pubsublite_v1.types.UpdateTopicRequest, dict]):
@@ -818,21 +1028,49 @@ class AdminServiceClient(metaclass=AdminServiceClientMeta):
         )
 
         # Send the request.
-        response = rpc(request, retry=retry, timeout=timeout, metadata=metadata,)
+        response = rpc(
+            request,
+            retry=retry,
+            timeout=timeout,
+            metadata=metadata,
+        )
 
         # Done; return the response.
         return response
 
     def delete_topic(
         self,
-        request: Union[admin.DeleteTopicRequest, dict] = None,
+        request: Optional[Union[admin.DeleteTopicRequest, dict]] = None,
         *,
-        name: str = None,
+        name: Optional[str] = None,
         retry: OptionalRetry = gapic_v1.method.DEFAULT,
-        timeout: float = None,
+        timeout: Union[float, object] = gapic_v1.method.DEFAULT,
         metadata: Sequence[Tuple[str, str]] = (),
     ) -> None:
         r"""Deletes the specified topic.
+
+        .. code-block:: python
+
+            # This snippet has been automatically generated and should be regarded as a
+            # code template only.
+            # It will require modifications to work:
+            # - It may require correct/in-range values for request initialization.
+            # - It may require specifying regional endpoints when creating the service
+            #   client as shown in:
+            #   https://googleapis.dev/python/google-api-core/latest/client_options.html
+            from google.cloud import pubsublite_v1
+
+            def sample_delete_topic():
+                # Create a client
+                client = pubsublite_v1.AdminServiceClient()
+
+                # Initialize request argument(s)
+                request = pubsublite_v1.DeleteTopicRequest(
+                    name="name_value",
+                )
+
+                # Make the request
+                client.delete_topic(request=request)
 
         Args:
             request (Union[google.cloud.pubsublite_v1.types.DeleteTopicRequest, dict]):
@@ -883,20 +1121,50 @@ class AdminServiceClient(metaclass=AdminServiceClientMeta):
 
         # Send the request.
         rpc(
-            request, retry=retry, timeout=timeout, metadata=metadata,
+            request,
+            retry=retry,
+            timeout=timeout,
+            metadata=metadata,
         )
 
     def list_topic_subscriptions(
         self,
-        request: Union[admin.ListTopicSubscriptionsRequest, dict] = None,
+        request: Optional[Union[admin.ListTopicSubscriptionsRequest, dict]] = None,
         *,
-        name: str = None,
+        name: Optional[str] = None,
         retry: OptionalRetry = gapic_v1.method.DEFAULT,
-        timeout: float = None,
+        timeout: Union[float, object] = gapic_v1.method.DEFAULT,
         metadata: Sequence[Tuple[str, str]] = (),
     ) -> pagers.ListTopicSubscriptionsPager:
         r"""Lists the subscriptions attached to the specified
         topic.
+
+        .. code-block:: python
+
+            # This snippet has been automatically generated and should be regarded as a
+            # code template only.
+            # It will require modifications to work:
+            # - It may require correct/in-range values for request initialization.
+            # - It may require specifying regional endpoints when creating the service
+            #   client as shown in:
+            #   https://googleapis.dev/python/google-api-core/latest/client_options.html
+            from google.cloud import pubsublite_v1
+
+            def sample_list_topic_subscriptions():
+                # Create a client
+                client = pubsublite_v1.AdminServiceClient()
+
+                # Initialize request argument(s)
+                request = pubsublite_v1.ListTopicSubscriptionsRequest(
+                    name="name_value",
+                )
+
+                # Make the request
+                page_result = client.list_topic_subscriptions(request=request)
+
+                # Handle the response
+                for response in page_result:
+                    print(response)
 
         Args:
             request (Union[google.cloud.pubsublite_v1.types.ListTopicSubscriptionsRequest, dict]):
@@ -954,12 +1222,20 @@ class AdminServiceClient(metaclass=AdminServiceClientMeta):
         )
 
         # Send the request.
-        response = rpc(request, retry=retry, timeout=timeout, metadata=metadata,)
+        response = rpc(
+            request,
+            retry=retry,
+            timeout=timeout,
+            metadata=metadata,
+        )
 
         # This method is paged; wrap the response in a pager, which provides
         # an `__iter__` convenience method.
         response = pagers.ListTopicSubscriptionsPager(
-            method=rpc, request=request, response=response, metadata=metadata,
+            method=rpc,
+            request=request,
+            response=response,
+            metadata=metadata,
         )
 
         # Done; return the response.
@@ -967,16 +1243,43 @@ class AdminServiceClient(metaclass=AdminServiceClientMeta):
 
     def create_subscription(
         self,
-        request: Union[admin.CreateSubscriptionRequest, dict] = None,
+        request: Optional[Union[admin.CreateSubscriptionRequest, dict]] = None,
         *,
-        parent: str = None,
-        subscription: common.Subscription = None,
-        subscription_id: str = None,
+        parent: Optional[str] = None,
+        subscription: Optional[common.Subscription] = None,
+        subscription_id: Optional[str] = None,
         retry: OptionalRetry = gapic_v1.method.DEFAULT,
-        timeout: float = None,
+        timeout: Union[float, object] = gapic_v1.method.DEFAULT,
         metadata: Sequence[Tuple[str, str]] = (),
     ) -> common.Subscription:
         r"""Creates a new subscription.
+
+        .. code-block:: python
+
+            # This snippet has been automatically generated and should be regarded as a
+            # code template only.
+            # It will require modifications to work:
+            # - It may require correct/in-range values for request initialization.
+            # - It may require specifying regional endpoints when creating the service
+            #   client as shown in:
+            #   https://googleapis.dev/python/google-api-core/latest/client_options.html
+            from google.cloud import pubsublite_v1
+
+            def sample_create_subscription():
+                # Create a client
+                client = pubsublite_v1.AdminServiceClient()
+
+                # Initialize request argument(s)
+                request = pubsublite_v1.CreateSubscriptionRequest(
+                    parent="parent_value",
+                    subscription_id="subscription_id_value",
+                )
+
+                # Make the request
+                response = client.create_subscription(request=request)
+
+                # Handle the response
+                print(response)
 
         Args:
             request (Union[google.cloud.pubsublite_v1.types.CreateSubscriptionRequest, dict]):
@@ -1053,21 +1356,52 @@ class AdminServiceClient(metaclass=AdminServiceClientMeta):
         )
 
         # Send the request.
-        response = rpc(request, retry=retry, timeout=timeout, metadata=metadata,)
+        response = rpc(
+            request,
+            retry=retry,
+            timeout=timeout,
+            metadata=metadata,
+        )
 
         # Done; return the response.
         return response
 
     def get_subscription(
         self,
-        request: Union[admin.GetSubscriptionRequest, dict] = None,
+        request: Optional[Union[admin.GetSubscriptionRequest, dict]] = None,
         *,
-        name: str = None,
+        name: Optional[str] = None,
         retry: OptionalRetry = gapic_v1.method.DEFAULT,
-        timeout: float = None,
+        timeout: Union[float, object] = gapic_v1.method.DEFAULT,
         metadata: Sequence[Tuple[str, str]] = (),
     ) -> common.Subscription:
         r"""Returns the subscription configuration.
+
+        .. code-block:: python
+
+            # This snippet has been automatically generated and should be regarded as a
+            # code template only.
+            # It will require modifications to work:
+            # - It may require correct/in-range values for request initialization.
+            # - It may require specifying regional endpoints when creating the service
+            #   client as shown in:
+            #   https://googleapis.dev/python/google-api-core/latest/client_options.html
+            from google.cloud import pubsublite_v1
+
+            def sample_get_subscription():
+                # Create a client
+                client = pubsublite_v1.AdminServiceClient()
+
+                # Initialize request argument(s)
+                request = pubsublite_v1.GetSubscriptionRequest(
+                    name="name_value",
+                )
+
+                # Make the request
+                response = client.get_subscription(request=request)
+
+                # Handle the response
+                print(response)
 
         Args:
             request (Union[google.cloud.pubsublite_v1.types.GetSubscriptionRequest, dict]):
@@ -1124,22 +1458,54 @@ class AdminServiceClient(metaclass=AdminServiceClientMeta):
         )
 
         # Send the request.
-        response = rpc(request, retry=retry, timeout=timeout, metadata=metadata,)
+        response = rpc(
+            request,
+            retry=retry,
+            timeout=timeout,
+            metadata=metadata,
+        )
 
         # Done; return the response.
         return response
 
     def list_subscriptions(
         self,
-        request: Union[admin.ListSubscriptionsRequest, dict] = None,
+        request: Optional[Union[admin.ListSubscriptionsRequest, dict]] = None,
         *,
-        parent: str = None,
+        parent: Optional[str] = None,
         retry: OptionalRetry = gapic_v1.method.DEFAULT,
-        timeout: float = None,
+        timeout: Union[float, object] = gapic_v1.method.DEFAULT,
         metadata: Sequence[Tuple[str, str]] = (),
     ) -> pagers.ListSubscriptionsPager:
         r"""Returns the list of subscriptions for the given
         project.
+
+        .. code-block:: python
+
+            # This snippet has been automatically generated and should be regarded as a
+            # code template only.
+            # It will require modifications to work:
+            # - It may require correct/in-range values for request initialization.
+            # - It may require specifying regional endpoints when creating the service
+            #   client as shown in:
+            #   https://googleapis.dev/python/google-api-core/latest/client_options.html
+            from google.cloud import pubsublite_v1
+
+            def sample_list_subscriptions():
+                # Create a client
+                client = pubsublite_v1.AdminServiceClient()
+
+                # Initialize request argument(s)
+                request = pubsublite_v1.ListSubscriptionsRequest(
+                    parent="parent_value",
+                )
+
+                # Make the request
+                page_result = client.list_subscriptions(request=request)
+
+                # Handle the response
+                for response in page_result:
+                    print(response)
 
         Args:
             request (Union[google.cloud.pubsublite_v1.types.ListSubscriptionsRequest, dict]):
@@ -1198,12 +1564,20 @@ class AdminServiceClient(metaclass=AdminServiceClientMeta):
         )
 
         # Send the request.
-        response = rpc(request, retry=retry, timeout=timeout, metadata=metadata,)
+        response = rpc(
+            request,
+            retry=retry,
+            timeout=timeout,
+            metadata=metadata,
+        )
 
         # This method is paged; wrap the response in a pager, which provides
         # an `__iter__` convenience method.
         response = pagers.ListSubscriptionsPager(
-            method=rpc, request=request, response=response, metadata=metadata,
+            method=rpc,
+            request=request,
+            response=response,
+            metadata=metadata,
         )
 
         # Done; return the response.
@@ -1211,15 +1585,40 @@ class AdminServiceClient(metaclass=AdminServiceClientMeta):
 
     def update_subscription(
         self,
-        request: Union[admin.UpdateSubscriptionRequest, dict] = None,
+        request: Optional[Union[admin.UpdateSubscriptionRequest, dict]] = None,
         *,
-        subscription: common.Subscription = None,
-        update_mask: field_mask_pb2.FieldMask = None,
+        subscription: Optional[common.Subscription] = None,
+        update_mask: Optional[field_mask_pb2.FieldMask] = None,
         retry: OptionalRetry = gapic_v1.method.DEFAULT,
-        timeout: float = None,
+        timeout: Union[float, object] = gapic_v1.method.DEFAULT,
         metadata: Sequence[Tuple[str, str]] = (),
     ) -> common.Subscription:
         r"""Updates properties of the specified subscription.
+
+        .. code-block:: python
+
+            # This snippet has been automatically generated and should be regarded as a
+            # code template only.
+            # It will require modifications to work:
+            # - It may require correct/in-range values for request initialization.
+            # - It may require specifying regional endpoints when creating the service
+            #   client as shown in:
+            #   https://googleapis.dev/python/google-api-core/latest/client_options.html
+            from google.cloud import pubsublite_v1
+
+            def sample_update_subscription():
+                # Create a client
+                client = pubsublite_v1.AdminServiceClient()
+
+                # Initialize request argument(s)
+                request = pubsublite_v1.UpdateSubscriptionRequest(
+                )
+
+                # Make the request
+                response = client.update_subscription(request=request)
+
+                # Handle the response
+                print(response)
 
         Args:
             request (Union[google.cloud.pubsublite_v1.types.UpdateSubscriptionRequest, dict]):
@@ -1286,21 +1685,49 @@ class AdminServiceClient(metaclass=AdminServiceClientMeta):
         )
 
         # Send the request.
-        response = rpc(request, retry=retry, timeout=timeout, metadata=metadata,)
+        response = rpc(
+            request,
+            retry=retry,
+            timeout=timeout,
+            metadata=metadata,
+        )
 
         # Done; return the response.
         return response
 
     def delete_subscription(
         self,
-        request: Union[admin.DeleteSubscriptionRequest, dict] = None,
+        request: Optional[Union[admin.DeleteSubscriptionRequest, dict]] = None,
         *,
-        name: str = None,
+        name: Optional[str] = None,
         retry: OptionalRetry = gapic_v1.method.DEFAULT,
-        timeout: float = None,
+        timeout: Union[float, object] = gapic_v1.method.DEFAULT,
         metadata: Sequence[Tuple[str, str]] = (),
     ) -> None:
         r"""Deletes the specified subscription.
+
+        .. code-block:: python
+
+            # This snippet has been automatically generated and should be regarded as a
+            # code template only.
+            # It will require modifications to work:
+            # - It may require correct/in-range values for request initialization.
+            # - It may require specifying regional endpoints when creating the service
+            #   client as shown in:
+            #   https://googleapis.dev/python/google-api-core/latest/client_options.html
+            from google.cloud import pubsublite_v1
+
+            def sample_delete_subscription():
+                # Create a client
+                client = pubsublite_v1.AdminServiceClient()
+
+                # Initialize request argument(s)
+                request = pubsublite_v1.DeleteSubscriptionRequest(
+                    name="name_value",
+                )
+
+                # Make the request
+                client.delete_subscription(request=request)
 
         Args:
             request (Union[google.cloud.pubsublite_v1.types.DeleteSubscriptionRequest, dict]):
@@ -1351,15 +1778,18 @@ class AdminServiceClient(metaclass=AdminServiceClientMeta):
 
         # Send the request.
         rpc(
-            request, retry=retry, timeout=timeout, metadata=metadata,
+            request,
+            retry=retry,
+            timeout=timeout,
+            metadata=metadata,
         )
 
     def seek_subscription(
         self,
-        request: Union[admin.SeekSubscriptionRequest, dict] = None,
+        request: Optional[Union[admin.SeekSubscriptionRequest, dict]] = None,
         *,
         retry: OptionalRetry = gapic_v1.method.DEFAULT,
-        timeout: float = None,
+        timeout: Union[float, object] = gapic_v1.method.DEFAULT,
         metadata: Sequence[Tuple[str, str]] = (),
     ) -> operation.Operation:
         r"""Performs an out-of-band seek for a subscription to a
@@ -1389,6 +1819,37 @@ class AdminServiceClient(metaclass=AdminServiceClientMeta):
         If the previous seek operation has not yet completed, it
         will be aborted and the new invocation of seek will
         supersede it.
+
+        .. code-block:: python
+
+            # This snippet has been automatically generated and should be regarded as a
+            # code template only.
+            # It will require modifications to work:
+            # - It may require correct/in-range values for request initialization.
+            # - It may require specifying regional endpoints when creating the service
+            #   client as shown in:
+            #   https://googleapis.dev/python/google-api-core/latest/client_options.html
+            from google.cloud import pubsublite_v1
+
+            def sample_seek_subscription():
+                # Create a client
+                client = pubsublite_v1.AdminServiceClient()
+
+                # Initialize request argument(s)
+                request = pubsublite_v1.SeekSubscriptionRequest(
+                    named_target="HEAD",
+                    name="name_value",
+                )
+
+                # Make the request
+                operation = client.seek_subscription(request=request)
+
+                print("Waiting for operation to complete...")
+
+                response = operation.result()
+
+                # Handle the response
+                print(response)
 
         Args:
             request (Union[google.cloud.pubsublite_v1.types.SeekSubscriptionRequest, dict]):
@@ -1427,7 +1888,12 @@ class AdminServiceClient(metaclass=AdminServiceClientMeta):
         )
 
         # Send the request.
-        response = rpc(request, retry=retry, timeout=timeout, metadata=metadata,)
+        response = rpc(
+            request,
+            retry=retry,
+            timeout=timeout,
+            metadata=metadata,
+        )
 
         # Wrap the response in an operation future.
         response = operation.from_gapic(
@@ -1442,16 +1908,43 @@ class AdminServiceClient(metaclass=AdminServiceClientMeta):
 
     def create_reservation(
         self,
-        request: Union[admin.CreateReservationRequest, dict] = None,
+        request: Optional[Union[admin.CreateReservationRequest, dict]] = None,
         *,
-        parent: str = None,
-        reservation: common.Reservation = None,
-        reservation_id: str = None,
+        parent: Optional[str] = None,
+        reservation: Optional[common.Reservation] = None,
+        reservation_id: Optional[str] = None,
         retry: OptionalRetry = gapic_v1.method.DEFAULT,
-        timeout: float = None,
+        timeout: Union[float, object] = gapic_v1.method.DEFAULT,
         metadata: Sequence[Tuple[str, str]] = (),
     ) -> common.Reservation:
         r"""Creates a new reservation.
+
+        .. code-block:: python
+
+            # This snippet has been automatically generated and should be regarded as a
+            # code template only.
+            # It will require modifications to work:
+            # - It may require correct/in-range values for request initialization.
+            # - It may require specifying regional endpoints when creating the service
+            #   client as shown in:
+            #   https://googleapis.dev/python/google-api-core/latest/client_options.html
+            from google.cloud import pubsublite_v1
+
+            def sample_create_reservation():
+                # Create a client
+                client = pubsublite_v1.AdminServiceClient()
+
+                # Initialize request argument(s)
+                request = pubsublite_v1.CreateReservationRequest(
+                    parent="parent_value",
+                    reservation_id="reservation_id_value",
+                )
+
+                # Make the request
+                response = client.create_reservation(request=request)
+
+                # Handle the response
+                print(response)
 
         Args:
             request (Union[google.cloud.pubsublite_v1.types.CreateReservationRequest, dict]):
@@ -1528,21 +2021,52 @@ class AdminServiceClient(metaclass=AdminServiceClientMeta):
         )
 
         # Send the request.
-        response = rpc(request, retry=retry, timeout=timeout, metadata=metadata,)
+        response = rpc(
+            request,
+            retry=retry,
+            timeout=timeout,
+            metadata=metadata,
+        )
 
         # Done; return the response.
         return response
 
     def get_reservation(
         self,
-        request: Union[admin.GetReservationRequest, dict] = None,
+        request: Optional[Union[admin.GetReservationRequest, dict]] = None,
         *,
-        name: str = None,
+        name: Optional[str] = None,
         retry: OptionalRetry = gapic_v1.method.DEFAULT,
-        timeout: float = None,
+        timeout: Union[float, object] = gapic_v1.method.DEFAULT,
         metadata: Sequence[Tuple[str, str]] = (),
     ) -> common.Reservation:
         r"""Returns the reservation configuration.
+
+        .. code-block:: python
+
+            # This snippet has been automatically generated and should be regarded as a
+            # code template only.
+            # It will require modifications to work:
+            # - It may require correct/in-range values for request initialization.
+            # - It may require specifying regional endpoints when creating the service
+            #   client as shown in:
+            #   https://googleapis.dev/python/google-api-core/latest/client_options.html
+            from google.cloud import pubsublite_v1
+
+            def sample_get_reservation():
+                # Create a client
+                client = pubsublite_v1.AdminServiceClient()
+
+                # Initialize request argument(s)
+                request = pubsublite_v1.GetReservationRequest(
+                    name="name_value",
+                )
+
+                # Make the request
+                response = client.get_reservation(request=request)
+
+                # Handle the response
+                print(response)
 
         Args:
             request (Union[google.cloud.pubsublite_v1.types.GetReservationRequest, dict]):
@@ -1599,22 +2123,54 @@ class AdminServiceClient(metaclass=AdminServiceClientMeta):
         )
 
         # Send the request.
-        response = rpc(request, retry=retry, timeout=timeout, metadata=metadata,)
+        response = rpc(
+            request,
+            retry=retry,
+            timeout=timeout,
+            metadata=metadata,
+        )
 
         # Done; return the response.
         return response
 
     def list_reservations(
         self,
-        request: Union[admin.ListReservationsRequest, dict] = None,
+        request: Optional[Union[admin.ListReservationsRequest, dict]] = None,
         *,
-        parent: str = None,
+        parent: Optional[str] = None,
         retry: OptionalRetry = gapic_v1.method.DEFAULT,
-        timeout: float = None,
+        timeout: Union[float, object] = gapic_v1.method.DEFAULT,
         metadata: Sequence[Tuple[str, str]] = (),
     ) -> pagers.ListReservationsPager:
         r"""Returns the list of reservations for the given
         project.
+
+        .. code-block:: python
+
+            # This snippet has been automatically generated and should be regarded as a
+            # code template only.
+            # It will require modifications to work:
+            # - It may require correct/in-range values for request initialization.
+            # - It may require specifying regional endpoints when creating the service
+            #   client as shown in:
+            #   https://googleapis.dev/python/google-api-core/latest/client_options.html
+            from google.cloud import pubsublite_v1
+
+            def sample_list_reservations():
+                # Create a client
+                client = pubsublite_v1.AdminServiceClient()
+
+                # Initialize request argument(s)
+                request = pubsublite_v1.ListReservationsRequest(
+                    parent="parent_value",
+                )
+
+                # Make the request
+                page_result = client.list_reservations(request=request)
+
+                # Handle the response
+                for response in page_result:
+                    print(response)
 
         Args:
             request (Union[google.cloud.pubsublite_v1.types.ListReservationsRequest, dict]):
@@ -1673,12 +2229,20 @@ class AdminServiceClient(metaclass=AdminServiceClientMeta):
         )
 
         # Send the request.
-        response = rpc(request, retry=retry, timeout=timeout, metadata=metadata,)
+        response = rpc(
+            request,
+            retry=retry,
+            timeout=timeout,
+            metadata=metadata,
+        )
 
         # This method is paged; wrap the response in a pager, which provides
         # an `__iter__` convenience method.
         response = pagers.ListReservationsPager(
-            method=rpc, request=request, response=response, metadata=metadata,
+            method=rpc,
+            request=request,
+            response=response,
+            metadata=metadata,
         )
 
         # Done; return the response.
@@ -1686,15 +2250,40 @@ class AdminServiceClient(metaclass=AdminServiceClientMeta):
 
     def update_reservation(
         self,
-        request: Union[admin.UpdateReservationRequest, dict] = None,
+        request: Optional[Union[admin.UpdateReservationRequest, dict]] = None,
         *,
-        reservation: common.Reservation = None,
-        update_mask: field_mask_pb2.FieldMask = None,
+        reservation: Optional[common.Reservation] = None,
+        update_mask: Optional[field_mask_pb2.FieldMask] = None,
         retry: OptionalRetry = gapic_v1.method.DEFAULT,
-        timeout: float = None,
+        timeout: Union[float, object] = gapic_v1.method.DEFAULT,
         metadata: Sequence[Tuple[str, str]] = (),
     ) -> common.Reservation:
         r"""Updates properties of the specified reservation.
+
+        .. code-block:: python
+
+            # This snippet has been automatically generated and should be regarded as a
+            # code template only.
+            # It will require modifications to work:
+            # - It may require correct/in-range values for request initialization.
+            # - It may require specifying regional endpoints when creating the service
+            #   client as shown in:
+            #   https://googleapis.dev/python/google-api-core/latest/client_options.html
+            from google.cloud import pubsublite_v1
+
+            def sample_update_reservation():
+                # Create a client
+                client = pubsublite_v1.AdminServiceClient()
+
+                # Initialize request argument(s)
+                request = pubsublite_v1.UpdateReservationRequest(
+                )
+
+                # Make the request
+                response = client.update_reservation(request=request)
+
+                # Handle the response
+                print(response)
 
         Args:
             request (Union[google.cloud.pubsublite_v1.types.UpdateReservationRequest, dict]):
@@ -1761,21 +2350,49 @@ class AdminServiceClient(metaclass=AdminServiceClientMeta):
         )
 
         # Send the request.
-        response = rpc(request, retry=retry, timeout=timeout, metadata=metadata,)
+        response = rpc(
+            request,
+            retry=retry,
+            timeout=timeout,
+            metadata=metadata,
+        )
 
         # Done; return the response.
         return response
 
     def delete_reservation(
         self,
-        request: Union[admin.DeleteReservationRequest, dict] = None,
+        request: Optional[Union[admin.DeleteReservationRequest, dict]] = None,
         *,
-        name: str = None,
+        name: Optional[str] = None,
         retry: OptionalRetry = gapic_v1.method.DEFAULT,
-        timeout: float = None,
+        timeout: Union[float, object] = gapic_v1.method.DEFAULT,
         metadata: Sequence[Tuple[str, str]] = (),
     ) -> None:
         r"""Deletes the specified reservation.
+
+        .. code-block:: python
+
+            # This snippet has been automatically generated and should be regarded as a
+            # code template only.
+            # It will require modifications to work:
+            # - It may require correct/in-range values for request initialization.
+            # - It may require specifying regional endpoints when creating the service
+            #   client as shown in:
+            #   https://googleapis.dev/python/google-api-core/latest/client_options.html
+            from google.cloud import pubsublite_v1
+
+            def sample_delete_reservation():
+                # Create a client
+                client = pubsublite_v1.AdminServiceClient()
+
+                # Initialize request argument(s)
+                request = pubsublite_v1.DeleteReservationRequest(
+                    name="name_value",
+                )
+
+                # Make the request
+                client.delete_reservation(request=request)
 
         Args:
             request (Union[google.cloud.pubsublite_v1.types.DeleteReservationRequest, dict]):
@@ -1827,20 +2444,50 @@ class AdminServiceClient(metaclass=AdminServiceClientMeta):
 
         # Send the request.
         rpc(
-            request, retry=retry, timeout=timeout, metadata=metadata,
+            request,
+            retry=retry,
+            timeout=timeout,
+            metadata=metadata,
         )
 
     def list_reservation_topics(
         self,
-        request: Union[admin.ListReservationTopicsRequest, dict] = None,
+        request: Optional[Union[admin.ListReservationTopicsRequest, dict]] = None,
         *,
-        name: str = None,
+        name: Optional[str] = None,
         retry: OptionalRetry = gapic_v1.method.DEFAULT,
-        timeout: float = None,
+        timeout: Union[float, object] = gapic_v1.method.DEFAULT,
         metadata: Sequence[Tuple[str, str]] = (),
     ) -> pagers.ListReservationTopicsPager:
         r"""Lists the topics attached to the specified
         reservation.
+
+        .. code-block:: python
+
+            # This snippet has been automatically generated and should be regarded as a
+            # code template only.
+            # It will require modifications to work:
+            # - It may require correct/in-range values for request initialization.
+            # - It may require specifying regional endpoints when creating the service
+            #   client as shown in:
+            #   https://googleapis.dev/python/google-api-core/latest/client_options.html
+            from google.cloud import pubsublite_v1
+
+            def sample_list_reservation_topics():
+                # Create a client
+                client = pubsublite_v1.AdminServiceClient()
+
+                # Initialize request argument(s)
+                request = pubsublite_v1.ListReservationTopicsRequest(
+                    name="name_value",
+                )
+
+                # Make the request
+                page_result = client.list_reservation_topics(request=request)
+
+                # Handle the response
+                for response in page_result:
+                    print(response)
 
         Args:
             request (Union[google.cloud.pubsublite_v1.types.ListReservationTopicsRequest, dict]):
@@ -1899,18 +2546,26 @@ class AdminServiceClient(metaclass=AdminServiceClientMeta):
         )
 
         # Send the request.
-        response = rpc(request, retry=retry, timeout=timeout, metadata=metadata,)
+        response = rpc(
+            request,
+            retry=retry,
+            timeout=timeout,
+            metadata=metadata,
+        )
 
         # This method is paged; wrap the response in a pager, which provides
         # an `__iter__` convenience method.
         response = pagers.ListReservationTopicsPager(
-            method=rpc, request=request, response=response, metadata=metadata,
+            method=rpc,
+            request=request,
+            response=response,
+            metadata=metadata,
         )
 
         # Done; return the response.
         return response
 
-    def __enter__(self):
+    def __enter__(self) -> "AdminServiceClient":
         return self
 
     def __exit__(self, type, value, traceback):
@@ -1923,15 +2578,227 @@ class AdminServiceClient(metaclass=AdminServiceClientMeta):
         """
         self.transport.close()
 
+    def list_operations(
+        self,
+        request: Optional[operations_pb2.ListOperationsRequest] = None,
+        *,
+        retry: OptionalRetry = gapic_v1.method.DEFAULT,
+        timeout: Union[float, object] = gapic_v1.method.DEFAULT,
+        metadata: Sequence[Tuple[str, str]] = (),
+    ) -> operations_pb2.ListOperationsResponse:
+        r"""Lists operations that match the specified filter in the request.
 
-try:
-    DEFAULT_CLIENT_INFO = gapic_v1.client_info.ClientInfo(
-        gapic_version=pkg_resources.get_distribution(
-            "google-cloud-pubsublite",
-        ).version,
-    )
-except pkg_resources.DistributionNotFound:
-    DEFAULT_CLIENT_INFO = gapic_v1.client_info.ClientInfo()
+        Args:
+            request (:class:`~.operations_pb2.ListOperationsRequest`):
+                The request object. Request message for
+                `ListOperations` method.
+            retry (google.api_core.retry.Retry): Designation of what errors,
+                    if any, should be retried.
+            timeout (float): The timeout for this request.
+            metadata (Sequence[Tuple[str, str]]): Strings which should be
+                sent along with the request as metadata.
+        Returns:
+            ~.operations_pb2.ListOperationsResponse:
+                Response message for ``ListOperations`` method.
+        """
+        # Create or coerce a protobuf request object.
+        # The request isn't a proto-plus wrapped type,
+        # so it must be constructed via keyword expansion.
+        if isinstance(request, dict):
+            request = operations_pb2.ListOperationsRequest(**request)
+
+        # Wrap the RPC method; this adds retry and timeout information,
+        # and friendly error handling.
+        rpc = gapic_v1.method.wrap_method(
+            self._transport.list_operations,
+            default_timeout=None,
+            client_info=DEFAULT_CLIENT_INFO,
+        )
+
+        # Certain fields should be provided within the metadata header;
+        # add these here.
+        metadata = tuple(metadata) + (
+            gapic_v1.routing_header.to_grpc_metadata((("name", request.name),)),
+        )
+
+        # Send the request.
+        response = rpc(
+            request,
+            retry=retry,
+            timeout=timeout,
+            metadata=metadata,
+        )
+
+        # Done; return the response.
+        return response
+
+    def get_operation(
+        self,
+        request: Optional[operations_pb2.GetOperationRequest] = None,
+        *,
+        retry: OptionalRetry = gapic_v1.method.DEFAULT,
+        timeout: Union[float, object] = gapic_v1.method.DEFAULT,
+        metadata: Sequence[Tuple[str, str]] = (),
+    ) -> operations_pb2.Operation:
+        r"""Gets the latest state of a long-running operation.
+
+        Args:
+            request (:class:`~.operations_pb2.GetOperationRequest`):
+                The request object. Request message for
+                `GetOperation` method.
+            retry (google.api_core.retry.Retry): Designation of what errors,
+                    if any, should be retried.
+            timeout (float): The timeout for this request.
+            metadata (Sequence[Tuple[str, str]]): Strings which should be
+                sent along with the request as metadata.
+        Returns:
+            ~.operations_pb2.Operation:
+                An ``Operation`` object.
+        """
+        # Create or coerce a protobuf request object.
+        # The request isn't a proto-plus wrapped type,
+        # so it must be constructed via keyword expansion.
+        if isinstance(request, dict):
+            request = operations_pb2.GetOperationRequest(**request)
+
+        # Wrap the RPC method; this adds retry and timeout information,
+        # and friendly error handling.
+        rpc = gapic_v1.method.wrap_method(
+            self._transport.get_operation,
+            default_timeout=None,
+            client_info=DEFAULT_CLIENT_INFO,
+        )
+
+        # Certain fields should be provided within the metadata header;
+        # add these here.
+        metadata = tuple(metadata) + (
+            gapic_v1.routing_header.to_grpc_metadata((("name", request.name),)),
+        )
+
+        # Send the request.
+        response = rpc(
+            request,
+            retry=retry,
+            timeout=timeout,
+            metadata=metadata,
+        )
+
+        # Done; return the response.
+        return response
+
+    def delete_operation(
+        self,
+        request: Optional[operations_pb2.DeleteOperationRequest] = None,
+        *,
+        retry: OptionalRetry = gapic_v1.method.DEFAULT,
+        timeout: Union[float, object] = gapic_v1.method.DEFAULT,
+        metadata: Sequence[Tuple[str, str]] = (),
+    ) -> None:
+        r"""Deletes a long-running operation.
+
+        This method indicates that the client is no longer interested
+        in the operation result. It does not cancel the operation.
+        If the server doesn't support this method, it returns
+        `google.rpc.Code.UNIMPLEMENTED`.
+
+        Args:
+            request (:class:`~.operations_pb2.DeleteOperationRequest`):
+                The request object. Request message for
+                `DeleteOperation` method.
+            retry (google.api_core.retry.Retry): Designation of what errors,
+                    if any, should be retried.
+            timeout (float): The timeout for this request.
+            metadata (Sequence[Tuple[str, str]]): Strings which should be
+                sent along with the request as metadata.
+        Returns:
+            None
+        """
+        # Create or coerce a protobuf request object.
+        # The request isn't a proto-plus wrapped type,
+        # so it must be constructed via keyword expansion.
+        if isinstance(request, dict):
+            request = operations_pb2.DeleteOperationRequest(**request)
+
+        # Wrap the RPC method; this adds retry and timeout information,
+        # and friendly error handling.
+        rpc = gapic_v1.method.wrap_method(
+            self._transport.delete_operation,
+            default_timeout=None,
+            client_info=DEFAULT_CLIENT_INFO,
+        )
+
+        # Certain fields should be provided within the metadata header;
+        # add these here.
+        metadata = tuple(metadata) + (
+            gapic_v1.routing_header.to_grpc_metadata((("name", request.name),)),
+        )
+
+        # Send the request.
+        rpc(
+            request,
+            retry=retry,
+            timeout=timeout,
+            metadata=metadata,
+        )
+
+    def cancel_operation(
+        self,
+        request: Optional[operations_pb2.CancelOperationRequest] = None,
+        *,
+        retry: OptionalRetry = gapic_v1.method.DEFAULT,
+        timeout: Union[float, object] = gapic_v1.method.DEFAULT,
+        metadata: Sequence[Tuple[str, str]] = (),
+    ) -> None:
+        r"""Starts asynchronous cancellation on a long-running operation.
+
+        The server makes a best effort to cancel the operation, but success
+        is not guaranteed.  If the server doesn't support this method, it returns
+        `google.rpc.Code.UNIMPLEMENTED`.
+
+        Args:
+            request (:class:`~.operations_pb2.CancelOperationRequest`):
+                The request object. Request message for
+                `CancelOperation` method.
+            retry (google.api_core.retry.Retry): Designation of what errors,
+                    if any, should be retried.
+            timeout (float): The timeout for this request.
+            metadata (Sequence[Tuple[str, str]]): Strings which should be
+                sent along with the request as metadata.
+        Returns:
+            None
+        """
+        # Create or coerce a protobuf request object.
+        # The request isn't a proto-plus wrapped type,
+        # so it must be constructed via keyword expansion.
+        if isinstance(request, dict):
+            request = operations_pb2.CancelOperationRequest(**request)
+
+        # Wrap the RPC method; this adds retry and timeout information,
+        # and friendly error handling.
+        rpc = gapic_v1.method.wrap_method(
+            self._transport.cancel_operation,
+            default_timeout=None,
+            client_info=DEFAULT_CLIENT_INFO,
+        )
+
+        # Certain fields should be provided within the metadata header;
+        # add these here.
+        metadata = tuple(metadata) + (
+            gapic_v1.routing_header.to_grpc_metadata((("name", request.name),)),
+        )
+
+        # Send the request.
+        rpc(
+            request,
+            retry=retry,
+            timeout=timeout,
+            metadata=metadata,
+        )
+
+
+DEFAULT_CLIENT_INFO = gapic_v1.client_info.ClientInfo(
+    gapic_version=package_version.__version__
+)
 
 
 __all__ = ("AdminServiceClient",)

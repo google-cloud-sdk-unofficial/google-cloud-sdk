@@ -76,6 +76,7 @@ class Update(base.UpdateCommand):
         'enable_hyperthreading': enable_hyperthreading,
         'ssh_keys': [],
         'kms_key_version': None,
+        'clear_ssh_keys': False,
     }
 
   def Run(self, args):
@@ -111,7 +112,7 @@ class UpdateAlpha(Update):
 
   @staticmethod
   def Args(parser):
-    flags.AddSshKeyArgToParser(parser, required=False, plural=True)
+    flags.AddProvisioningSshKeyArgToParser(parser, required=False, plural=True)
     flags.AddKMSCryptoKeyVersionToParser(parser, hidden=False)
     # Flags which are only available in ALPHA should be added to parser here.
     Update.Args(parser)
@@ -121,6 +122,7 @@ class UpdateAlpha(Update):
         **super().GetRequestFields(args, client, instance),
         'kms_key_version': args.kms_crypto_key_version,
         'ssh_keys': args.CONCEPTS.ssh_keys.Parse(),
+        'clear_ssh_keys': getattr(args, 'clear_ssh_keys', False),
     }
 
 Update.detailed_help = DETAILED_HELP

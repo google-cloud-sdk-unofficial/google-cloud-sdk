@@ -26,9 +26,10 @@ from googlecloudsdk.command_lib.apphub import flags
 _DETAILED_HELP = {
     'DESCRIPTION': '{description}',
     'EXAMPLES': """ \
-        To describe a discovered workload with the id `my-discovered-workload`, run:
+        To describe the DiscoveredWorkload `my-discovered-workload` in location
+        `us-east1`, run:
 
-          $ {command} my-discovered-workload
+          $ {command} my-discovered-workload --location=us-east1
         """,
 }
 

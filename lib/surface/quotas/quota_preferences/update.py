@@ -33,24 +33,25 @@ class Update(base.UpdateCommand):
 
   ## EXAMPLES
 
-  To create a quota preference named in region `us-central1` that applies to the
-  `default_limit` quota for `projects/12321`, run:
+  To update a quota preference with id `my-preference` in region `us-central1`
+  that applies to the `default_limit` quota for `projects/12321`, run:
 
-    $ {command}
+    $ {command} my-preference
     --service=example.googleapis.com
     --project=12321
     --quota-id=default_limit
     --preferred-value=100
-    --dimensions=regions=us-central1
+    --dimensions=region=us-central1
 
 
-  To create a quota preference for `organizations/123`, run:
+  To create a new quota preference for `organizations/123`, run:
 
-    $ {command}
+    $ {command} my-preference
     --service=example.googleapis.com
     --organization=123
     --quota-id=default_limit
     --preferred-value=200
+    --allow-missing
   """
 
   @staticmethod

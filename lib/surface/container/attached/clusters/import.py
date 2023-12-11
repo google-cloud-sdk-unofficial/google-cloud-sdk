@@ -57,6 +57,7 @@ class Import(base.Command):
     attached_flags.AddPlatformVersion(parser)
     attached_flags.AddDistribution(parser, required=True)
     attached_flags.AddKubectl(parser)
+    attached_flags.AddProxyConfig(parser)
 
     flags.AddValidateOnly(parser, 'cluster to import')
 

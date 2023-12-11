@@ -14,6 +14,7 @@
 
 from concurrent.futures import Future
 from typing import Optional, Mapping, Union
+from uuid import uuid4
 
 from google.api_core.client_options import ClientOptions
 from google.auth.credentials import Credentials
@@ -36,12 +37,16 @@ from google.cloud.pubsublite.cloudpubsub.publisher_client_interface import (
 from google.cloud.pubsublite.internal.constructable_from_service_account import (
     ConstructableFromServiceAccount,
 )
+from google.cloud.pubsublite.internal.publisher_client_id import PublisherClientId
 from google.cloud.pubsublite.internal.require_started import RequireStarted
 from google.cloud.pubsublite.internal.wire.make_publisher import (
     DEFAULT_BATCHING_SETTINGS as WIRE_DEFAULT_BATCHING,
 )
 from google.cloud.pubsublite.types import TopicPath
-from overrides import overrides
+
+
+def _get_client_id(enable_idempotence: bool):
+    return PublisherClientId(uuid4().bytes) if enable_idempotence else None
 
 
 class PublisherClient(PublisherClientInterface, ConstructableFromServiceAccount):
@@ -53,7 +58,7 @@ class PublisherClient(PublisherClientInterface, ConstructableFromServiceAccount)
     """
 
     _impl: PublisherClientInterface
-    _require_stared: RequireStarted
+    _require_started: RequireStarted
 
     DEFAULT_BATCHING_SETTINGS = WIRE_DEFAULT_BATCHING
     """
@@ -67,6 +72,7 @@ class PublisherClient(PublisherClientInterface, ConstructableFromServiceAccount)
         credentials: Optional[Credentials] = None,
         transport: str = "grpc_asyncio",
         client_options: Optional[ClientOptions] = None,
+        enable_idempotence: bool = False,
     ):
         """
         Create a new PublisherClient.
@@ -76,7 +82,9 @@ class PublisherClient(PublisherClientInterface, ConstructableFromServiceAccount)
             credentials: If provided, the credentials to use when connecting.
             transport: The transport to use. Must correspond to an asyncio transport.
             client_options: The client options to use when connecting. If used, must explicitly set `api_endpoint`.
+            enable_idempotence: Whether idempotence is enabled, where the server will ensure that unique messages within a single publisher session are stored only once.
         """
+        client_id = _get_client_id(enable_idempotence)
         self._impl = MultiplexedPublisherClient(
             lambda topic: make_publisher(
                 topic=topic,
@@ -84,11 +92,11 @@ class PublisherClient(PublisherClientInterface, ConstructableFromServiceAccount)
                 credentials=credentials,
                 client_options=client_options,
                 transport=transport,
+                client_id=client_id,
             )
         )
-        self._require_stared = RequireStarted()
+        self._require_started = RequireStarted()
 
-    @overrides
     def publish(
         self,
         topic: Union[TopicPath, str],
@@ -96,21 +104,19 @@ class PublisherClient(PublisherClientInterface, ConstructableFromServiceAccount)
         ordering_key: str = "",
         **attrs: Mapping[str, str],
     ) -> "Future[str]":
-        self._require_stared.require_started()
+        self._require_started.require_started()
         return self._impl.publish(
             topic=topic, data=data, ordering_key=ordering_key, **attrs
         )
 
-    @overrides
     def __enter__(self):
-        self._require_stared.__enter__()
+        self._require_started.__enter__()
         self._impl.__enter__()
         return self
 
-    @overrides
     def __exit__(self, exc_type, exc_value, traceback):
         self._impl.__exit__(exc_type, exc_value, traceback)
-        self._require_stared.__exit__(exc_type, exc_value, traceback)
+        self._require_started.__exit__(exc_type, exc_value, traceback)
 
 
 class AsyncPublisherClient(
@@ -124,7 +130,7 @@ class AsyncPublisherClient(
     """
 
     _impl: AsyncPublisherClientInterface
-    _require_stared: RequireStarted
+    _require_started: RequireStarted
 
     DEFAULT_BATCHING_SETTINGS = WIRE_DEFAULT_BATCHING
     """
@@ -138,6 +144,7 @@ class AsyncPublisherClient(
         credentials: Optional[Credentials] = None,
         transport: str = "grpc_asyncio",
         client_options: Optional[ClientOptions] = None,
+        enable_idempotence: bool = False,
     ):
         """
         Create a new AsyncPublisherClient.
@@ -147,7 +154,9 @@ class AsyncPublisherClient(
             credentials: If provided, the credentials to use when connecting.
             transport: The transport to use. Must correspond to an asyncio transport.
             client_options: The client options to use when connecting. If used, must explicitly set `api_endpoint`.
+            enable_idempotence: Whether idempotence is enabled, where the server will ensure that unique messages within a single publisher session are stored only once.
         """
+        client_id = _get_client_id(enable_idempotence)
         self._impl = MultiplexedAsyncPublisherClient(
             lambda topic: make_async_publisher(
                 topic=topic,
@@ -155,11 +164,11 @@ class AsyncPublisherClient(
                 credentials=credentials,
                 client_options=client_options,
                 transport=transport,
+                client_id=client_id,
             )
         )
-        self._require_stared = RequireStarted()
+        self._require_started = RequireStarted()
 
-    @overrides
     async def publish(
         self,
         topic: Union[TopicPath, str],
@@ -167,18 +176,16 @@ class AsyncPublisherClient(
         ordering_key: str = "",
         **attrs: Mapping[str, str],
     ) -> str:
-        self._require_stared.require_started()
+        self._require_started.require_started()
         return await self._impl.publish(
             topic=topic, data=data, ordering_key=ordering_key, **attrs
         )
 
-    @overrides
     async def __aenter__(self):
-        self._require_stared.__enter__()
+        self._require_started.__enter__()
         await self._impl.__aenter__()
         return self
 
-    @overrides
     async def __aexit__(self, exc_type, exc_value, traceback):
         await self._impl.__aexit__(exc_type, exc_value, traceback)
-        self._require_stared.__exit__(exc_type, exc_value, traceback)
+        self._require_started.__exit__(exc_type, exc_value, traceback)

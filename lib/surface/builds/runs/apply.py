@@ -56,9 +56,8 @@ class Create(base.CreateCommand):
     parent = args.CONCEPTS.region.Parse().RelativeName()
 
     if run_type == 'PipelineRun':
-      pipeline_run, discarded_fields = pipeline_input_util.TektonYamlDataToPipelineRun(
+      pipeline_run = pipeline_input_util.TektonYamlDataToPipelineRun(
           yaml_data)
-      self._CheckDiscardedFields(discarded_fields)
       operation = client.projects_locations_pipelineRuns.Create(
           messages.CloudbuildProjectsLocationsPipelineRunsCreateRequest(
               parent=parent,
@@ -82,9 +81,8 @@ class Create(base.CreateCommand):
       log.CreatedResource(pipeline_run_ref)
       return created_pipeline_run
     elif run_type == 'TaskRun':
-      task_run, discarded_fields = pipeline_input_util.TektonYamlDataToTaskRun(
+      task_run = pipeline_input_util.TektonYamlDataToTaskRun(
           yaml_data)
-      self._CheckDiscardedFields(discarded_fields)
       operation = client.projects_locations_taskRuns.Create(
           messages.CloudbuildProjectsLocationsTaskRunsCreateRequest(
               parent=parent,
@@ -111,8 +109,3 @@ class Create(base.CreateCommand):
       raise cloudbuild_exceptions.InvalidYamlError(
           'Requested resource type {r} not supported'.format(r=run_type))
 
-  def _CheckDiscardedFields(self, fields):
-    if fields:
-      log.warning(
-          'Following fields in the YAML are not supported and discarded: %s',
-          ', '.join(fields))

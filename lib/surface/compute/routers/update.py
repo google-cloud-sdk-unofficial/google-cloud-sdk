@@ -201,12 +201,6 @@ class Update(base.UpdateCommand):
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class UpdateBeta(Update):
   """Update a Compute Engine router."""
-  pass
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class UpdateAlpha(UpdateBeta):
-  """Update a Compute Engine router."""
 
   @classmethod
   def Args(cls, parser):
@@ -215,6 +209,13 @@ class UpdateAlpha(UpdateBeta):
   def Run(self, args):
     """See base.UpdateCommand."""
     return self._Run(args, enable_ipv6_bgp=True)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class UpdateAlpha(UpdateBeta):
+  """Update a Compute Engine router."""
+
+  pass
 
 
 Update.detailed_help = {

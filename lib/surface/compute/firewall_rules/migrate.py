@@ -21,6 +21,7 @@ from __future__ import unicode_literals
 import itertools
 import json
 import re
+
 from apitools.base.py import list_pager
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute.operations import poller
@@ -29,6 +30,8 @@ from googlecloudsdk.api_lib.util import waiter
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.compute import flags as compute_flags
+from googlecloudsdk.command_lib.compute.network_firewall_policies import convert_terraform
+from googlecloudsdk.command_lib.compute.network_firewall_policies import secure_tags_utils
 from googlecloudsdk.command_lib.compute.networks import flags as network_flags
 from googlecloudsdk.command_lib.resource_manager import endpoint_utils as endpoints
 from googlecloudsdk.command_lib.resource_manager import operations
@@ -233,7 +236,11 @@ def _ReadTagMapping(file_name):
     log.status.Print(repr(e))
     return None
 
-  return data
+  tag_mapping = {
+      k: secure_tags_utils.TranslateSecureTag(v) for k, v in data.items()
+  }
+
+  return tag_mapping
 
 
 def _GetFullCanonicalResourceName(instance):
@@ -415,6 +422,16 @@ class Migrate(base.CreateCommand):
             ' secure tags mapping.'
         ),
     )
+    # optional --export-terraform-script argument
+    parser.add_argument(
+        '--export-terraform-script',
+        action='store_true',
+        required=False,
+        help=(
+            'If set, migration tool will output a terraform script to create a'
+            ' Firewall Policy with migrated rules.'
+        ),
+    )
 
   def Run(self, args):
     """Run the migration logic."""
@@ -434,6 +451,7 @@ class Migrate(base.CreateCommand):
     export_tag_mapping = getattr(args, 'export_tag_mapping', False)
     tag_mapping_file_name = getattr(args, 'tag_mapping_file', None)
     bind_tags_to_instances = getattr(args, 'bind_tags_to_instances', False)
+    export_terraform_script = getattr(args, 'export_terraform_script', False)
 
     # In the export tag mode, the tag mapping file must be provided
     if export_tag_mapping and not tag_mapping_file_name:
@@ -701,6 +719,16 @@ class Migrate(base.CreateCommand):
           ),
           name=policy_name,
       )
+
+    if export_terraform_script:
+      log.status.Print('Terraform script for migrated Network Firewall Policy:')
+      log.status.Print(
+          convert_terraform.ConvertFirewallPolicy(firewall_policy, project)
+      )
+      for rule, _ in migrated_rules:
+        log.status.Print(convert_terraform.ConvertFirewallPolicyRule(rule))
+      return
+
     response = client.networkFirewallPolicies.Insert(
         messages.ComputeNetworkFirewallPoliciesInsertRequest(
             project=project, firewallPolicy=firewall_policy

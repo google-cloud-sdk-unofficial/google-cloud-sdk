@@ -48,6 +48,7 @@ class Create(base.Command):
   """Create Compute Engine commitments."""
   _support_share_setting = True
   _support_stable_fleet = False
+  _support_existing_reservation = False
 
   detailed_help = {
       'EXAMPLES': '''
@@ -65,10 +66,18 @@ class Create(base.Command):
     flags.AddCreateFlags(
         parser,
         support_share_setting=cls._support_share_setting,
-        support_stable_fleet=cls._support_stable_fleet)
+        support_stable_fleet=cls._support_stable_fleet,
+        support_existing_reservation=cls._support_existing_reservation)
 
   def _MakeCreateRequest(
-      self, args, messages, project, region, commitment_ref, holder):
+      self,
+      args,
+      messages,
+      project,
+      region,
+      commitment_ref,
+      existing_reservations,
+      holder):
 
     if (
         args.split_source_commitment is not None
@@ -91,7 +100,7 @@ class Create(base.Command):
         autoRenew=flags.TranslateAutoRenewArgForCreate(args),
         splitSourceCommitment=args.split_source_commitment,
         mergeSourceCommitments=flags.TranslateMergeArg(
-            args.merge_source_commitments
+            args.merge_source_commitments,
         ),
     )
     return messages.ComputeRegionCommitmentsInsertRequest(
@@ -107,12 +116,20 @@ class Create(base.Command):
         args,
         resources,
         scope_lister=compute_flags.GetDefaultScopeLister(holder.client))
-
+    existing_reservations = flags.ResolveExistingReservationArgs(
+        args,
+        resources)
     messages = holder.client.messages
     region = properties.VALUES.compute.region.Get()
     project = properties.VALUES.core.project.Get()
     create_request = self._MakeCreateRequest(
-        args, messages, project, region, commitment_ref, holder)
+        args,
+        messages,
+        project,
+        region,
+        commitment_ref,
+        existing_reservations,
+        holder)
 
     service = holder.client.apitools_client.regionCommitments
     batch_url = holder.client.batch_url
@@ -150,6 +167,7 @@ class CreateBeta(Create):
   """Create Compute Engine commitments."""
   _support_share_setting = True
   _support_stable_fleet = True
+  _support_existing_reservation = False
 
   @classmethod
   def Args(cls, parser):
@@ -157,7 +175,8 @@ class CreateBeta(Create):
     flags.AddCreateFlags(
         parser,
         support_share_setting=cls._support_share_setting,
-        support_stable_fleet=cls._support_stable_fleet)
+        support_stable_fleet=cls._support_stable_fleet,
+        support_existing_reservation=cls._support_existing_reservation)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -165,16 +184,25 @@ class CreateAlpha(CreateBeta):
   """Create Compute Engine commitments."""
   _support_share_setting = True
   _support_stable_fleet = True
+  _support_existing_reservation = True
 
   @classmethod
   def Args(cls, parser):
     _CommonArgs('alpha', parser)
     flags.AddCreateFlags(
         parser, support_share_setting=cls._support_share_setting,
-        support_stable_fleet=cls._support_stable_fleet)
+        support_stable_fleet=cls._support_stable_fleet,
+        support_existing_reservation=cls._support_existing_reservation)
 
-  def _MakeCreateRequest(self, args, messages, project, region, commitment_ref,
-                         holder):
+  def _MakeCreateRequest(
+      self,
+      args,
+      messages,
+      project,
+      region,
+      commitment_ref,
+      existing_reservations,
+      holder):
 
     if (args.split_source_commitment is not None and
         args.merge_source_commitments is not None):
@@ -194,7 +222,9 @@ class CreateAlpha(CreateBeta):
         autoRenew=flags.TranslateAutoRenewArgForCreate(args),
         splitSourceCommitment=args.split_source_commitment,
         mergeSourceCommitments=flags.TranslateMergeArg(
-            args.merge_source_commitments))
+            args.merge_source_commitments),
+        existingReservations=existing_reservations,
+        )
     return messages.ComputeRegionCommitmentsInsertRequest(
         commitment=commitment,
         project=project,

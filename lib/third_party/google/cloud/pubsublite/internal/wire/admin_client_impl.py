@@ -12,7 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import List, Union
+import logging
+from typing import List, Optional, Union
 
 from google.api_core.exceptions import InvalidArgument
 from google.api_core.operation import Operation
@@ -38,7 +39,10 @@ from google.cloud.pubsublite_v1 import (
     TimeTarget,
     SeekSubscriptionRequest,
     CreateSubscriptionRequest,
+    ExportConfig,
 )
+
+log = logging.getLogger(__name__)
 
 
 class AdminClientImpl(AdminClientInterface):
@@ -85,17 +89,51 @@ class AdminClientImpl(AdminClientInterface):
     def create_subscription(
         self,
         subscription: Subscription,
-        starting_offset: BacklogLocation = BacklogLocation.END,
+        target: Union[BacklogLocation, PublishTime, EventTime] = BacklogLocation.END,
+        starting_offset: Optional[BacklogLocation] = None,
     ) -> Subscription:
+        if starting_offset:
+            log.warning("starting_offset is deprecated. Use target instead.")
+            target = starting_offset
         path = SubscriptionPath.parse(subscription.name)
-        return self._underlying.create_subscription(
+        requires_seek = isinstance(target, PublishTime) or isinstance(target, EventTime)
+        requires_update = (
+            requires_seek
+            and subscription.export_config
+            and subscription.export_config.desired_state == ExportConfig.State.ACTIVE
+        )
+        if requires_update:
+            # Export subscriptions must be paused while seeking. The state is
+            # later updated to active.
+            subscription.export_config.desired_state = ExportConfig.State.PAUSED
+
+        # Request 1 - Create the subscription.
+        skip_backlog = False
+        if isinstance(target, BacklogLocation):
+            skip_backlog = target == BacklogLocation.END
+        response = self._underlying.create_subscription(
             request=CreateSubscriptionRequest(
                 parent=str(path.to_location_path()),
                 subscription=subscription,
                 subscription_id=path.name,
-                skip_backlog=(starting_offset == BacklogLocation.END),
+                skip_backlog=skip_backlog,
             )
         )
+        # Request 2 (optional) - seek the subscription.
+        if requires_seek:
+            self.seek_subscription(subscription_path=path, target=target)
+        # Request 3 (optional) - make the export subscription active.
+        if requires_update:
+            response = self.update_subscription(
+                subscription=Subscription(
+                    name=response.name,
+                    export_config=ExportConfig(
+                        desired_state=ExportConfig.State.ACTIVE,
+                    ),
+                ),
+                update_mask=FieldMask(paths=["export_config.desired_state"]),
+            )
+        return response
 
     def get_subscription(self, subscription_path: SubscriptionPath) -> Subscription:
         return self._underlying.get_subscription(name=str(subscription_path))

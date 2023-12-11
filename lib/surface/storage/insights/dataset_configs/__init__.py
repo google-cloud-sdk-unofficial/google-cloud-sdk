@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Cloud Storage insights dataset configurations."""
+"""Cloud Storage Insights dataset configurations."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -24,4 +24,4 @@ from googlecloudsdk.calliope import base
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class DatasetConfigs(base.Group):
-  """Manage Cloud Storage insights dataset configurations."""
+  """Manage Cloud Storage Insights dataset configurations."""

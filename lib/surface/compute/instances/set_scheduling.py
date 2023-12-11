@@ -49,6 +49,7 @@ class SetSchedulingInstances(base.SilentCommand):
   _support_host_error_timeout_seconds = False
   _support_local_ssd_recovery_timeout = True
   _support_max_run_duration = False
+  _support_graceful_shutdown = False
 
   @classmethod
   def Args(cls, parser):
@@ -91,9 +92,28 @@ class SetSchedulingInstances(base.SilentCommand):
         args, 'host_error_timeout_seconds'):
       scheduling_options.hostErrorTimeoutSeconds = args.host_error_timeout_seconds
 
-    if self._support_local_ssd_recovery_timeout and hasattr(
-        args, 'local_ssd_recovery_timeout') and args.IsSpecified(
-            'local_ssd_recovery_timeout'):
+    if self._support_graceful_shutdown:
+      graceful_shutdown = instance_utils.ExtractGracefulShutdownFromArgs(
+          args, self._support_graceful_shutdown
+      )
+      if graceful_shutdown is not None:
+        scheduling_options.gracefulShutdown = (
+            client.messages.SchedulingGracefulShutdown()
+        )
+        if 'enabled' in graceful_shutdown:
+          scheduling_options.gracefulShutdown.enabled = graceful_shutdown[
+              'enabled'
+          ]
+        if 'maxDuration' in graceful_shutdown:
+          scheduling_options.gracefulShutdown.maxDuration = (
+              client.messages.Duration(seconds=graceful_shutdown['maxDuration'])
+          )
+
+    if (
+        self._support_local_ssd_recovery_timeout
+        and hasattr(args, 'local_ssd_recovery_timeout')
+        and args.IsSpecified('local_ssd_recovery_timeout')
+    ):
       scheduling_options.localSsdRecoveryTimeout = client.messages.Duration(
           seconds=args.local_ssd_recovery_timeout)
 
@@ -222,6 +242,7 @@ class SetSchedulingInstancesAlpha(SetSchedulingInstancesBeta):
   _support_host_error_timeout_seconds = True
   _support_local_ssd_recovery_timeout = True
   _support_max_run_duration = True
+  _support_graceful_shutdown = True
 
   @classmethod
   def Args(cls, parser):
@@ -245,3 +266,4 @@ class SetSchedulingInstancesAlpha(SetSchedulingInstancesBeta):
     flags.AddHostErrorTimeoutSecondsArgs(parser)
     flags.AddLocalSsdRecoveryTimeoutArgs(parser)
     flags.AddMaxRunDurationVmArgs(parser, is_update=True)
+    flags.AddGracefulShutdownArgs(parser)

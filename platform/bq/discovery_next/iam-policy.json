@@ -5,7 +5,7 @@
   "name": "bigquery",
   "canonicalName": "Bigquery",
   "version": "v2",
-  "revision": "0",
+  "revision": "20231113",
   "title": "BigQuery API",
   "description": "A data platform for customers to create, manage, share and query data.",
   "ownerDomain": "google.com",
@@ -343,7 +343,7 @@
           "type": "string"
         },
         "tableId": {
-          "description": "Required. The ID of the table. The ID must contain only letters (a-z, A-Z), numbers (0-9), or underscores (_). The maximum length is 1,024 characters. Certain operations allow suffixing of the table ID with a partition decorator, such as `sample_table$20190123`.",
+          "description": "Required. The ID of the table. The ID can contain Unicode characters in category L (letter), M (mark), N (number), Pc (connector, including underscore), Pd (dash), and Zs (space). For more information, see [General Category](https:\/\/wikipedia.org\/wiki\/Unicode_character_property#General_Category). The maximum length is 1,024 characters. Certain operations allow suffixing of the table ID with a partition decorator, such as `sample_table$20190123`.",
           "type": "string"
         }
       }
@@ -448,6 +448,7 @@
     },
     "DatasetList": {
       "id": "DatasetList",
+      "description": "Response format for a page of results when listing datasets.",
       "type": "object",
       "properties": {
         "kind": {
@@ -563,7 +564,7 @@
           "readOnly": true,
           "type": "string",
           "enumDescriptions": [
-            "",
+            "Default value.",
             "Linear regression model.",
             "Logistic regression based classification model.",
             "K-means clustering model.",
@@ -785,7 +786,7 @@
           "description": "Type of loss function used during training run.",
           "type": "string",
           "enumDescriptions": [
-            "",
+            "Default value.",
             "Mean squared loss, used for linear regression.",
             "Mean log loss, used for logistic regression."
           ],
@@ -834,7 +835,7 @@
           "description": "The data split type for training and evaluation, e.g. RANDOM.",
           "type": "string",
           "enumDescriptions": [
-            "",
+            "Default value.",
             "Splits data randomly.",
             "Splits data with the user provided tags.",
             "Splits data sequentially.",
@@ -863,7 +864,7 @@
           "description": "The strategy to determine learn rate for the current iteration.",
           "type": "string",
           "enumDescriptions": [
-            "",
+            "Default value.",
             "Use line search to determine learning rate.",
             "Use a constant learning rate."
           ],
@@ -898,7 +899,7 @@
           "description": "Distance type for clustering models.",
           "type": "string",
           "enumDescriptions": [
-            "",
+            "Default value.",
             "Eculidean distance.",
             "Cosine distance."
           ],
@@ -921,7 +922,7 @@
           "description": "Optimization strategy for training linear regression models.",
           "type": "string",
           "enumDescriptions": [
-            "",
+            "Default value.",
             "Uses an iterative batch gradient descent algorithm.",
             "Uses a normal equation to solve linear regression problem."
           ],
@@ -1044,7 +1045,7 @@
           "description": "Feedback type that specifies which algorithm to run for matrix factorization.",
           "type": "string",
           "enumDescriptions": [
-            "",
+            "Default value.",
             "Use weighted-als for implicit feedback problems.",
             "Use nonweighted-als for explicit feedback problems."
           ],
@@ -1099,7 +1100,7 @@
           "description": "The data frequency of a time series.",
           "type": "string",
           "enumDescriptions": [
-            "",
+            "Default value.",
             "Automatically inferred from timestamps.",
             "Yearly data.",
             "Quarterly data.",
@@ -1625,7 +1626,7 @@
           "description": "The solver for PCA.",
           "type": "string",
           "enumDescriptions": [
-            "",
+            "Default value.",
             "Full eigen-decoposition.",
             "Randomized SVD.",
             "Auto."
@@ -1667,7 +1668,7 @@
           "description": "The model registry.",
           "type": "string",
           "enumDescriptions": [
-            "",
+            "Default value.",
             "Vertex AI."
           ],
           "enum": [
@@ -1744,6 +1745,7 @@
           }
         },
         "arimaResult": {
+          "description": "Arima result.",
           "$ref": "ArimaResult"
         },
         "principalComponentInfos": {
@@ -2631,9 +2633,11 @@
     },
     "StandardSqlStructType": {
       "id": "StandardSqlStructType",
+      "description": "The representation of a SQL STRUCT type.",
       "type": "object",
       "properties": {
         "fields": {
+          "description": "Fields within the struct.",
           "type": "array",
           "items": {
             "$ref": "StandardSqlField"
@@ -2927,7 +2931,7 @@
           "description": "The status of the trial.",
           "type": "string",
           "enumDescriptions": [
-            "",
+            "Default value.",
             "Scheduled but not started.",
             "Running state.",
             "The trial succeeded.",
@@ -2983,13 +2987,15 @@
             "Unspecified remote service type.",
             "V3 Cloud AI Translation API. See more details at [Cloud Translation API] (https:\/\/cloud.google.com\/translate\/docs\/reference\/rest).",
             "V1 Cloud AI Vision API See more details at [Cloud Vision API] (https:\/\/cloud.google.com\/vision\/docs\/reference\/rest).",
-            "V1 Cloud AI Natural Language API. See more details at [REST Resource: documents](https:\/\/cloud.google.com\/natural-language\/docs\/reference\/rest\/v1\/documents)."
+            "V1 Cloud AI Natural Language API. See more details at [REST Resource: documents](https:\/\/cloud.google.com\/natural-language\/docs\/reference\/rest\/v1\/documents).",
+            "V2 Speech-to-Text API. See more details at [Google Cloud Speech-to-Text V2 API](https:\/\/cloud.google.com\/speech-to-text\/v2\/docs)"
           ],
           "enum": [
             "REMOTE_SERVICE_TYPE_UNSPECIFIED",
             "CLOUD_AI_TRANSLATE_V3",
             "CLOUD_AI_VISION_V1",
-            "CLOUD_AI_NATURAL_LANGUAGE_V1"
+            "CLOUD_AI_NATURAL_LANGUAGE_V1",
+            "CLOUD_AI_SPEECH_TO_TEXT_V2"
           ]
         },
         "connection": {
@@ -3007,11 +3013,17 @@
           "description": "Output only. The model version for LLM.",
           "readOnly": true,
           "type": "string"
+        },
+        "speechRecognizer": {
+          "description": "Output only. The name of the speech recognizer to use for speech recognition. The expected format is `projects\/{project}\/locations\/{location}\/recognizers\/{recognizer}`. Customers can specify this field at model creation. If not specified, a default recognizer `projects\/{model project}\/locations\/global\/recognizers\/_` will be used. See more details at [recognizers](https:\/\/cloud.google.com\/speech-to-text\/v2\/docs\/reference\/rest\/v2\/projects.locations.recognizers)",
+          "readOnly": true,
+          "type": "string"
         }
       }
     },
     "ListModelsResponse": {
       "id": "ListModelsResponse",
+      "description": "Response format for a single page when listing BigQuery ML models.",
       "type": "object",
       "properties": {
         "models": {
@@ -3029,6 +3041,7 @@
     },
     "JobCancelResponse": {
       "id": "JobCancelResponse",
+      "description": "Describes format of a jobs cancellation response.",
       "type": "object",
       "properties": {
         "kind": {
@@ -3094,6 +3107,11 @@
           "description": "Output only. [Full-projection-only] String representation of identity of requesting party. Populated for both first- and third-party identities. Only present for APIs that support third-party identities.",
           "readOnly": true,
           "type": "string"
+        },
+        "jobCreationReason": {
+          "description": "Output only. If set, it provides the reason why a Job was created. If not set, it should be treated as the default: REQUESTED. This feature is not yet available. Jobs will always be created.",
+          "readOnly": true,
+          "$ref": "JobCreationReason"
         }
       }
     },
@@ -3175,7 +3193,7 @@
           "type": "string"
         },
         "defaultDataset": {
-          "description": "Optional. Specifies the default dataset to use for unqualified table names in the query. This setting does not alter behavior of unqualified dataset names. Setting the system variable @@dataset_id achieves the same behavior.",
+          "description": "Optional. Specifies the default dataset to use for unqualified table names in the query. This setting does not alter behavior of unqualified dataset names. Setting the system variable `@@dataset_id` achieves the same behavior. See https:\/\/cloud.google.com\/bigquery\/docs\/reference\/system-variables for more information on system variables.",
           "$ref": "DatasetReference"
         },
         "priority": {
@@ -3269,6 +3287,10 @@
         },
         "createSession": {
           "description": "If this property is true, the job creates a new session using a randomly generated session_id. To continue using a created session with subsequent queries, pass the existing session identifier as a `ConnectionProperty` value. The session identifier is returned as part of the `SessionInfo` message within the query statistics. The new session's location will be set to `Job.JobReference.location` if it is present, otherwise it's set to the default location based on existing routing logic.",
+          "type": "boolean"
+        },
+        "continuous": {
+          "description": "Optional. Whether to run the query as continuous or a regular query. Continuous query is currently in experimental stage and not ready for general usage.",
           "type": "boolean"
         }
       }
@@ -3529,6 +3551,7 @@
     },
     "CsvOptions": {
       "id": "CsvOptions",
+      "description": "Information related to a CSV data source.",
       "type": "object",
       "properties": {
         "fieldDelimiter": {
@@ -3577,6 +3600,7 @@
     },
     "BigtableOptions": {
       "id": "BigtableOptions",
+      "description": "Options specific to Google Cloud Bigtable data sources.",
       "type": "object",
       "properties": {
         "columnFamilies": {
@@ -3593,11 +3617,16 @@
         "readRowkeyAsString": {
           "description": "Optional. If field is true, then the rowkey column families will be read and converted to string. Otherwise they are read with BYTES type values and users need to manually cast them with CAST if necessary. The default value is false.",
           "type": "boolean"
+        },
+        "outputColumnFamiliesAsJson": {
+          "description": "Optional. If field is true, then each column family will be read as a single JSON column. Otherwise they are read as a repeated cell structure containing timestamp\/value tuples. The default value is false.",
+          "type": "boolean"
         }
       }
     },
     "BigtableColumnFamily": {
       "id": "BigtableColumnFamily",
+      "description": "Information related to a Bigtable column family.",
       "type": "object",
       "properties": {
         "familyId": {
@@ -3627,6 +3656,7 @@
     },
     "BigtableColumn": {
       "id": "BigtableColumn",
+      "description": "Information related to a Bigtable column.",
       "type": "object",
       "properties": {
         "qualifierEncoded": {
@@ -3635,6 +3665,7 @@
           "format": "byte"
         },
         "qualifierString": {
+          "description": "Qualifier string.",
           "type": "string"
         },
         "fieldName": {
@@ -3657,6 +3688,7 @@
     },
     "GoogleSheetsOptions": {
       "id": "GoogleSheetsOptions",
+      "description": "Options specific to Google Sheets data sources.",
       "type": "object",
       "properties": {
         "skipLeadingRows": {
@@ -3792,6 +3824,10 @@
               }
             }
           }
+        },
+        "rangeElementType": {
+          "description": "Optional. The element type of the range, if this is a range.",
+          "$ref": "QueryParameterType"
         }
       }
     },
@@ -3916,6 +3952,7 @@
     },
     "ScriptOptions": {
       "id": "ScriptOptions",
+      "description": "Options related to script execution.",
       "type": "object",
       "properties": {
         "statementTimeoutMs": {
@@ -3932,9 +3969,9 @@
           "description": "Determines which statement in the script represents the \"key result\", used to populate the schema and query results of the script job. Default is LAST.",
           "type": "string",
           "enumDescriptions": [
-            "",
-            "",
-            ""
+            "Default value.",
+            "The last result determines the key result.",
+            "The first SELECT statement determines the key result."
           ],
           "enum": [
             "KEY_RESULT_STATEMENT_KIND_UNSPECIFIED",
@@ -3946,7 +3983,7 @@
     },
     "ConnectionProperty": {
       "id": "ConnectionProperty",
-      "description": "A connection-level property to customize query behavior. Under JDBC, these correspond directly to connection properties passed to the DriverManager. Under ODBC, these correspond to properties in the connection string. Currently supported connection properties: * **dataset_project_id**: represents the default project for datasets that are used in the query. Setting the system variable `@@dataset_project_id` achieves the same behavior. * **time_zone**: represents the default timezone used to run the query. * **session_id**: associates the query with a given session. * **query_label**: associates the query with a given job label. If set, all subsequent queries in a script or session will have this label. For the format in which a you can specify a query label, see labels in the JobConfiguration resource type. Additional properties are allowed, but ignored. Specifying multiple connection properties with the same key returns an error.",
+      "description": "A connection-level property to customize query behavior. Under JDBC, these correspond directly to connection properties passed to the DriverManager. Under ODBC, these correspond to properties in the connection string. Currently supported connection properties: * **dataset_project_id**: represents the default project for datasets that are used in the query. Setting the system variable `@@dataset_project_id` achieves the same behavior. For more information about system variables, see: https:\/\/cloud.google.com\/bigquery\/docs\/reference\/system-variables * **time_zone**: represents the default timezone used to run the query. * **session_id**: associates the query with a given session. * **query_label**: associates the query with a given job label. If set, all subsequent queries in a script or session will have this label. For the format in which a you can specify a query label, see labels in the JobConfiguration resource type: https:\/\/cloud.google.com\/bigquery\/docs\/reference\/rest\/v2\/Job#jobconfiguration Additional properties are allowed, but ignored. Specifying multiple connection properties with the same key returns an error.",
       "type": "object",
       "properties": {
         "key": {
@@ -4159,6 +4196,7 @@
     },
     "DestinationTableProperties": {
       "id": "DestinationTableProperties",
+      "description": "Properties for the destination table.",
       "type": "object",
       "properties": {
         "friendlyName": {
@@ -4364,7 +4402,7 @@
           "type": "string"
         },
         "location": {
-          "description": "Optional. The geographic location of the job. The default value is US.",
+          "description": "Optional. The geographic location of the job. The default value is US. For more information about BigQuery locations, see: https:\/\/cloud.google.com\/bigquery\/docs\/locations",
           "type": "string"
         }
       }
@@ -4559,7 +4597,7 @@
           "format": "int64"
         },
         "billingTier": {
-          "description": "Output only. Billing tier for the job. This is a BigQuery-specific concept which is not related to the GCP notion of \"free tier\". The value here is a measure of the query's resource consumption relative to the amount of data scanned. For on-demand queries, the limit is 100, and all queries within this limit are billed at the standard on-demand rates. On-demand queries that exceed this limit will fail with a billingTierLimitExceeded error.",
+          "description": "Output only. Billing tier for the job. This is a BigQuery-specific concept which is not related to the Google Cloud notion of \"free tier\". The value here is a measure of the query's resource consumption relative to the amount of data scanned. For on-demand queries, the limit is 100, and all queries within this limit are billed at the standard on-demand rates. On-demand queries that exceed this limit will fail with a billingTierLimitExceeded error.",
           "readOnly": true,
           "type": "integer",
           "format": "int32"
@@ -4724,6 +4762,11 @@
           "description": "Output only. Search query specific statistics.",
           "readOnly": true,
           "$ref": "SearchStatistics"
+        },
+        "vectorSearchStatistics": {
+          "description": "Output only. Search query specific statistics.",
+          "readOnly": true,
+          "$ref": "VectorSearchStatistics"
         },
         "performanceInsights": {
           "description": "Output only. Performance insights.",
@@ -5059,7 +5102,7 @@
           "readOnly": true,
           "type": "string",
           "enumDescriptions": [
-            "",
+            "Default value.",
             "Linear regression model.",
             "Logistic regression based classification model.",
             "K-means clustering model.",
@@ -5368,6 +5411,7 @@
             "Indicates that the total size of indexed base tables in your organization exceeds your region's limit and the index is not used in the query. To index larger base tables, you can use your own reservation for index-management jobs.",
             "Indicates that the esitmated performance gain from using the search index is too low for the given search query.",
             "Indicates that search indexes can not be used for search query with STANDARD edition.",
+            "Indicates that an option in the search function that cannot make use of the index has been selected.",
             "Indicates an internal error that causes the search index to be unused.",
             "Indicates that the reason search indexes cannot be used in the query is not covered by any of the other IndexUnusedReason options."
           ],
@@ -5388,6 +5432,7 @@
             "BASE_TABLE_TOO_LARGE",
             "ESTIMATED_PERFORMANCE_GAIN_TOO_LOW",
             "NOT_SUPPORTED_IN_STANDARD_EDITION",
+            "INDEX_SUPPRESSED_BY_FUNCTION_OPTION",
             "INTERNAL_ERROR",
             "OTHER_REASON"
           ]
@@ -5403,6 +5448,36 @@
         "indexName": {
           "description": "Specifies the name of the unused search index, if available.",
           "type": "string"
+        }
+      }
+    },
+    "VectorSearchStatistics": {
+      "id": "VectorSearchStatistics",
+      "description": "Statistics for a vector search query. Populated as part of JobStatistics2.",
+      "type": "object",
+      "properties": {
+        "indexUsageMode": {
+          "description": "Specifies the index usage mode for the query.",
+          "type": "string",
+          "enumDescriptions": [
+            "Index usage mode not specified.",
+            "No vector indexes were used in the vector search query. See [`indexUnusedReasons`] (\/bigquery\/docs\/reference\/rest\/v2\/Job#IndexUnusedReason) for detailed reasons.",
+            "Part of the vector search query used vector indexes. See [`indexUnusedReasons`] (\/bigquery\/docs\/reference\/rest\/v2\/Job#IndexUnusedReason) for why other parts of the query did not use vector indexes.",
+            "The entire vector search query used vector indexes."
+          ],
+          "enum": [
+            "INDEX_USAGE_MODE_UNSPECIFIED",
+            "UNUSED",
+            "PARTIALLY_USED",
+            "FULLY_USED"
+          ]
+        },
+        "indexUnusedReasons": {
+          "description": "When `indexUsageMode` is `UNUSED` or `PARTIALLY_USED`, this field explains why indexes were not used in all or part of the vector search query. If `indexUsageMode` is `FULLY_USED`, this field is not populated.",
+          "type": "array",
+          "items": {
+            "$ref": "IndexUnusedReason"
+          }
         }
       }
     },
@@ -5455,6 +5530,14 @@
           "description": "Output only. True if the stage has insufficient shuffle quota.",
           "readOnly": true,
           "type": "boolean"
+        },
+        "biEngineReasons": {
+          "description": "Output only. If present, the stage had the following reasons for being disqualified from BI Engine execution.",
+          "readOnly": true,
+          "type": "array",
+          "items": {
+            "$ref": "BiEngineReason"
+          }
         },
         "highCardinalityJoins": {
           "description": "Output only. High cardinality joins in the stage.",
@@ -5571,6 +5654,16 @@
           "description": "Output only. Logging info is used to generate a link to Cloud Logging.",
           "readOnly": true,
           "$ref": "LoggingInfo"
+        },
+        "kmsKeyName": {
+          "description": "Output only. The Cloud KMS encryption key that is used to protect the resources created by the Spark job. If the Spark procedure uses DEFINER security mode, the Cloud KMS key is inferred from the Spark connection associated with the procedure if it is provided. Otherwise the key is inferred from the default key of the Spark connection's project if the CMEK organization policy is enforced. If the Spark procedure uses INVOKER security mode, the Cloud KMS encryption key is inferred from the system variable @@spark_proc_properties.kms_key_name if it is provided. Otherwise, the key is inferred fromt he default key of the BigQuery job's project if the CMEK organization policy is enforced. Example: * `projects\/[kms_project_id]\/locations\/[region]\/keyRings\/[key_region]\/cryptoKeys\/[key]`",
+          "readOnly": true,
+          "type": "string"
+        },
+        "gcsStagingBucket": {
+          "description": "Output only. The Google Cloud Storage bucket that is used as the default filesystem by the Spark application. This fields is only filled when the Spark procedure uses the INVOKER security mode. It is inferred from the system variable @@spark_proc_properties.staging_bucket if it is provided. Otherwise, BigQuery creates a default staging bucket for the job and returns the bucket name in this field. Example: * `gs:\/\/[bucket_name]`",
+          "readOnly": true,
+          "type": "string"
         }
       }
     },
@@ -5631,12 +5724,14 @@
             "View has no cached data because it has not refreshed yet.",
             "The estimated cost of the view is more expensive than another view or the base table. Note: The estimate cost might not match the billed cost.",
             "View has no cached data because a base table is truncated.",
-            "View is invalidated because of a data change in one or more base tables.",
+            "View is invalidated because of a data change in one or more base tables. It could be any recent change if the [`max_staleness`](https:\/\/cloud.google.com\/bigquery\/docs\/materialized-views-create#max_staleness) option is not set for the view, or otherwise any change outside of the staleness window.",
             "View is invalidated because a base table's partition expiration has changed.",
             "View is invalidated because a base table's partition has expired.",
             "View is invalidated because a base table has an incompatible metadata change.",
             "View is invalidated because it was refreshed with a time zone other than that of the current job.",
-            "View is outside the time travel window."
+            "View is outside the time travel window.",
+            "View is inaccessible to the user because of a fine-grained security policy on one of its base tables.",
+            "One of the view's base tables is too stale. For example, the cached metadata of a biglake table needs to be updated."
           ],
           "enum": [
             "REJECTED_REASON_UNSPECIFIED",
@@ -5648,7 +5743,9 @@
             "BASE_TABLE_EXPIRED_PARTITION",
             "BASE_TABLE_INCOMPATIBLE_METADATA_CHANGE",
             "TIME_ZONE",
-            "OUT_OF_TIME_TRAVEL_WINDOW"
+            "OUT_OF_TIME_TRAVEL_WINDOW",
+            "BASE_TABLE_FINE_GRAINED_SECURITY_POLICY",
+            "BASE_TABLE_TOO_STALE"
           ]
         }
       }
@@ -5805,7 +5902,7 @@
           "description": "Whether this child job was a statement or expression.",
           "type": "string",
           "enumDescriptions": [
-            "",
+            "Default value.",
             "The statement appears directly in the script.",
             "The statement evaluates an expression that appears in the script."
           ],
@@ -5958,8 +6055,35 @@
         }
       }
     },
+    "JobCreationReason": {
+      "id": "JobCreationReason",
+      "description": "Reason about why a Job was created from a [`jobs.query`](https:\/\/cloud.google.com\/bigquery\/docs\/reference\/rest\/v2\/jobs\/query) method when used with `JOB_CREATION_OPTIONAL` Job creation mode. For [`jobs.insert`](https:\/\/cloud.google.com\/bigquery\/docs\/reference\/rest\/v2\/jobs\/insert) method calls it will always be `REQUESTED`. This feature is not yet available. Jobs will always be created.",
+      "type": "object",
+      "properties": {
+        "code": {
+          "description": "Output only. Specifies the high level reason why a Job was created.",
+          "readOnly": true,
+          "type": "string",
+          "enumDescriptions": [
+            "Reason is not specified.",
+            "Job creation was requested.",
+            "The query request ran beyond a system defined timeout specified by the [timeoutMs field in the QueryRequest](https:\/\/cloud.google.com\/bigquery\/docs\/reference\/rest\/v2\/jobs\/query#queryrequest). As a result it was considered a long running operation for which a job was created.",
+            "The results from the query cannot fit in the response.",
+            "BigQuery has determined that the query needs to be executed as a Job."
+          ],
+          "enum": [
+            "CODE_UNSPECIFIED",
+            "REQUESTED",
+            "LONG_RUNNING",
+            "LARGE_RESULTS",
+            "OTHER"
+          ]
+        }
+      }
+    },
     "JobList": {
       "id": "JobList",
+      "description": "JobList is the response format for a jobs.list call.",
       "type": "object",
       "properties": {
         "etag": {
@@ -5979,6 +6103,7 @@
           "description": "List of jobs that were requested.",
           "type": "array",
           "items": {
+            "description": "ListFormatJob is a partial projection of job information returned as part of a jobs.list response.",
             "type": "object",
             "properties": {
               "id": {
@@ -6096,6 +6221,7 @@
     },
     "QueryRequest": {
       "id": "QueryRequest",
+      "description": "Describes the format of the jobs.query request.",
       "type": "object",
       "properties": {
         "kind": {
@@ -6185,6 +6311,20 @@
         "createSession": {
           "description": "Optional. If true, creates a new session using a randomly generated session_id. If false, runs query with an existing session_id passed in ConnectionProperty, otherwise runs query in non-session mode. The session location will be set to QueryRequest.location if it is present, otherwise it's set to the default location based on existing routing logic.",
           "type": "boolean"
+        },
+        "jobCreationMode": {
+          "description": "Optional. If not set, jobs are always required. If set, the query request will follow the behavior described JobCreationMode. This feature is not yet available. Jobs will always be created.",
+          "type": "string",
+          "enumDescriptions": [
+            "If unspecified JOB_CREATION_REQUIRED is the default.",
+            "Default. Job creation is always required.",
+            "Job creation is optional. Returning immediate results is prioritized. BigQuery will automatically determine if a Job needs to be created. The conditions under which BigQuery can decide to not create a Job are subject to change. If Job creation is required, JOB_CREATION_REQUIRED mode should be used, which is the default."
+          ],
+          "enum": [
+            "JOB_CREATION_MODE_UNSPECIFIED",
+            "JOB_CREATION_REQUIRED",
+            "JOB_CREATION_OPTIONAL"
+          ]
         }
       }
     },
@@ -6215,6 +6355,14 @@
         "jobReference": {
           "description": "Reference to the Job that was created to run the query. This field will be present even if the original request timed out, in which case GetQueryResults can be used to read the results once the query has completed. Since this API only returns the first page of results, subsequent pages can be fetched via the same mechanism (GetQueryResults).",
           "$ref": "JobReference"
+        },
+        "jobCreationReason": {
+          "description": "Optional. Only relevant when a job_reference is present in the response. If job_reference is not present it will always be unset. When job_reference is present, this field should be interpreted as follows: If set, it will provide the reason of why a Job was created. If not set, it should be treated as the default: REQUESTED. This feature is not yet available. Jobs will always be created.",
+          "$ref": "JobCreationReason"
+        },
+        "queryId": {
+          "description": "Query ID for the completed query. This ID will be auto-generated. This field is not yet available and it is currently not guaranteed to be populated.",
+          "type": "string"
         },
         "totalRows": {
           "description": "The total number of rows in the complete query result set, which can be more than the number of rows in this single page of results.",
@@ -6462,6 +6610,20 @@
             "NOT_DETERMINISTIC"
           ]
         },
+        "securityMode": {
+          "description": "Optional. The security mode of the routine, if defined. If not defined, the security mode is automatically determined from the routine's configuration.",
+          "type": "string",
+          "enumDescriptions": [
+            "The security mode of the routine is unspecified.",
+            "The routine is to be executed with the privileges of the user who defines it.",
+            "The routine is to be executed with the privileges of the user who invokes it."
+          ],
+          "enum": [
+            "SECURITY_MODE_UNSPECIFIED",
+            "DEFINER",
+            "INVOKER"
+          ]
+        },
         "strictMode": {
           "description": "Optional. Can be set for procedures only. If true (default), the definition body will be validated in the creation and the updates of the procedure. For procedures with an argument of ANY TYPE, the definition body validtion is not supported at creation\/update time, and thus this field must be set to false explicitly.",
           "type": "boolean"
@@ -6530,6 +6692,10 @@
         "dataType": {
           "description": "Required unless argument_kind = ANY_TYPE.",
           "$ref": "StandardSqlDataType"
+        },
+        "isAggregate": {
+          "description": "Optional. Whether the argument is an aggregate function parameter. Must be Unset for routine types other than AGGREGATE_FUNCTION. For AGGREGATE_FUNCTION, if set to false, it is equivalent to adding \"NOT AGGREGATE\" clause in DDL; Otherwise, it is equivalent to omitting \"NOT AGGREGATE\" clause in DDL.",
+          "type": "boolean"
         }
       }
     },
@@ -6936,6 +7102,14 @@
         "tableReplicationInfo": {
           "description": "Optional. Table replication info for table created `AS REPLICA` DDL like: `CREATE MATERIALIZED VIEW mv1 AS REPLICA OF src_mv`",
           "$ref": "TableReplicationInfo"
+        },
+        "replicas": {
+          "description": "Optional. Output only. Table references of all replicas currently active on the table.",
+          "readOnly": true,
+          "type": "array",
+          "items": {
+            "$ref": "TableReference"
+          }
         }
       }
     },
@@ -7064,8 +7238,8 @@
           "description": "Required. The file format the table data is stored in.",
           "type": "string",
           "enumDescriptions": [
-            "",
-            ""
+            "Default Value.",
+            "Apache Parquet format."
           ],
           "enum": [
             "FILE_FORMAT_UNSPECIFIED",
@@ -7076,8 +7250,8 @@
           "description": "Required. The table format the metadata only snapshots are stored in.",
           "type": "string",
           "enumDescriptions": [
-            "",
-            ""
+            "Default Value.",
+            "Apache Iceberg format."
           ],
           "enum": [
             "TABLE_FORMAT_UNSPECIFIED",
@@ -7394,9 +7568,11 @@
             "type": "object",
             "properties": {
               "insertId": {
+                "description": "Insertion ID for best-effort deduplication. This feature is not recommended, and users seeking stronger insertion semantics are encouraged to use other mechanisms such as the BigQuery Write API.",
                 "type": "string"
               },
               "json": {
+                "description": "Data for a single row.",
                 "$ref": "JsonObject"
               }
             }
@@ -8324,6 +8500,10 @@
               "*/*"
             ],
             "protocols": {
+              "resumable": {
+                "multipart": true,
+                "path": "/resumable/upload/bigquery/v2/projects/{+projectId}/jobs"
+              },
               "simple": {
                 "multipart": true,
                 "path": "/upload/bigquery/v2/projects/{+projectId}/jobs"
@@ -8427,8 +8607,8 @@
               "location": "query",
               "type": "string",
               "enumDescriptions": [
-                "",
-                ""
+                "Does not include the job configuration",
+                "Includes all job data"
               ],
               "enum": [
                 "MINIMAL",
@@ -8441,9 +8621,9 @@
               "repeated": true,
               "type": "string",
               "enumDescriptions": [
-                "",
-                "",
-                ""
+                "Finished jobs",
+                "Pending jobs",
+                "Running jobs."
               ],
               "enum": [
                 "DONE",
@@ -9481,5 +9661,12 @@
       }
     }
   },
+  "endpoints": [
+    {
+      "endpointUrl": "https://bigquery.me-central2.rep.googleapis.com/",
+      "location": "me-central2",
+      "description": "Regional Endpoint"
+    }
+  ],
   "basePath": ""
 }

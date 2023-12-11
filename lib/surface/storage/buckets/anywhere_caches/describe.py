@@ -14,14 +14,36 @@
 # limitations under the License.
 """Implementation of describe command to get the Anywhere Cache Instance."""
 
+import collections
+
+from googlecloudsdk.api_lib.storage import api_factory
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.storage import flags
+from googlecloudsdk.command_lib.storage import storage_url
+from googlecloudsdk.command_lib.storage.resources import resource_util
+
+# Determines the order in which the fields should be displayed for
+# an AnywhereCacheResource.
+AnywhereCacheDisplayTitlesAndDefaults = collections.namedtuple(
+    'AnywhereCacheDisplayTitlesAndDefaults',
+    (
+        'admission_policy',
+        'bucket',
+        'create_time',
+        'kind',
+        'pending_update',
+        'state',
+        'ttl',
+        'update_time',
+        'zone',
+    ),
+)
 
 
 @base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Describe(base.DescribeCommand):
-  """Returns details of Anywhere Cache Instance of a bucket."""
+  """Returns details of Anywhere Cache instance of a bucket."""
 
   detailed_help = {
       'DESCRIPTION': """
@@ -31,9 +53,9 @@ class Describe(base.DescribeCommand):
       'EXAMPLES': """
 
       The following command describes Anywhere Cache Instance of bucket
-      ``gs://my-bucket'' in ``asia-south2-b'' zone:
+      ``my-bucket'' in ``asia-south2-b'' zone:
 
-        $ {command} gs://my-bucket/asia-south2-b
+        $ {command} my-bucket/asia-south2-b
       """,
   }
 
@@ -42,7 +64,6 @@ class Describe(base.DescribeCommand):
     parser.add_argument(
         'id',
         type=str,
-        nargs=1,
         help=(
             'Identifier for a Anywhere Cache instance. It is a combination of'
             ' bucket_name/zone.'
@@ -52,5 +73,14 @@ class Describe(base.DescribeCommand):
     flags.add_raw_display_flag(parser)
 
   def Run(self, args):
-    # TODO(b/303559468) : Implementation of describe command
-    raise NotImplementedError
+    bucket_name, _, zone = args.id.rpartition('/')
+
+    result = api_factory.get_api(
+        storage_url.ProviderPrefix.GCS
+    ).get_anywhere_cache(bucket_name, zone)
+
+    return resource_util.get_display_dict_for_resource(
+        result,
+        AnywhereCacheDisplayTitlesAndDefaults,
+        args.raw,
+    )

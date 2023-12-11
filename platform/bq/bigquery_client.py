@@ -10,6 +10,7 @@ from __future__ import print_function
 import abc
 import collections
 import datetime
+import enum
 import hashlib
 import itertools
 import json
@@ -23,12 +24,14 @@ import tempfile
 import textwrap
 import time
 import traceback
+from typing import Any, Dict, List, Optional
 import uuid
 
 
 # To configure apiclient logging.
 from absl import flags
 from absl import logging as absl_logging
+from google.api_core.iam import Policy
 import googleapiclient
 from googleapiclient import discovery
 from googleapiclient import http as http_request
@@ -305,6 +308,14 @@ def _FormatLabels(labels):
     label_str = '%s:%s' % (key, value)
     result_lines.extend([label_str])
   return '\n'.join(result_lines)
+
+
+def _FormatTableReference(table):
+  return '%s:%s.%s' % (
+      table['projectId'],
+      table['datasetId'],
+      table['tableId'],
+  )
 
 
 def _FormatTags(tags):
@@ -1226,6 +1237,7 @@ class TransferScheduleArgs:
 class BigqueryClient:
   """Class encapsulating interaction with the BigQuery service."""
 
+
   def __init__(self, **kwds):
     """Initializes BigqueryClient.
 
@@ -1344,8 +1356,8 @@ class BigqueryClient:
 
   def BuildApiClient(
       self,
-      discovery_url=None,
-  ):
+      discovery_url: Optional[str] = None,
+  ) -> discovery.Resource:
     """Build and return BigQuery Dynamic client from discovery document."""
     http = self.GetAuthorizedHttp(self.credentials, self.GetHttp())
     bigquery_model = BigqueryModel(
@@ -1463,7 +1475,7 @@ class BigqueryClient:
 
     return built_client
 
-  def BuildDiscoveryNextApiClient(self):
+  def BuildDiscoveryNextApiClient(self) -> discovery.Resource:
     """Builds and returns BigQuery API client from discovery_next document."""
     http = self.GetAuthorizedHttp(self.credentials, self.GetHttp())
     bigquery_model = BigqueryModel(
@@ -1495,7 +1507,7 @@ class BigqueryClient:
       logging.error('Error building from models document: %s', models_doc)
       raise
 
-  def BuildIAMPolicyApiClient(self):
+  def BuildIAMPolicyApiClient(self) -> discovery.Resource:
     """Builds and returns IAM policy API client from discovery document."""
     http = self.GetAuthorizedHttp(self.credentials, self.GetHttp())
     bigquery_model = BigqueryModel(
@@ -1510,6 +1522,7 @@ class BigqueryClient:
       iam_pol_doc = self.OverrideEndpoint(iam_pol_doc)
     except (BigqueryClientError, FileNotFoundError) as e:
       logging.warning('Failed to load discovery doc from local files: %s', e)
+      raise
 
     try:
       client_options = discovery.get_client_options()
@@ -1526,44 +1539,44 @@ class BigqueryClient:
       raise
 
   @property
-  def apiclient(self):
+  def apiclient(self) -> discovery.Resource:
     """Returns the apiclient attached to self."""
     if self._apiclient is None:
       self._apiclient = self.BuildApiClient()
     return self._apiclient
 
-  def GetModelsApiClient(self):
+  def GetModelsApiClient(self) -> discovery.Resource:
     """Returns the apiclient attached to self."""
     if self._models_apiclient is None:
       self._models_apiclient = self.BuildDiscoveryNextApiClient()
     return self._models_apiclient
 
-  def GetRoutinesApiClient(self):
+  def GetRoutinesApiClient(self) -> discovery.Resource:
     """Return the apiclient attached to self."""
     if self._routines_apiclient is None:
       self._routines_apiclient = self.BuildDiscoveryNextApiClient()
     return self._routines_apiclient
 
-  def GetRowAccessPoliciesApiClient(self):
+  def GetRowAccessPoliciesApiClient(self) -> discovery.Resource:
     """Return the apiclient attached to self."""
     if self._row_access_policies_apiclient is None:
       self._row_access_policies_apiclient = self.BuildDiscoveryNextApiClient()
     return self._row_access_policies_apiclient
 
-  def GetIAMPolicyApiClient(self):
+  def GetIAMPolicyApiClient(self) -> discovery.Resource:
     """Return the apiclient attached to self."""
     if self._iam_policy_apiclient is None:
       self._iam_policy_apiclient = self.BuildIAMPolicyApiClient()
     return self._iam_policy_apiclient
 
-  def GetInsertApiClient(self):
+  def GetInsertApiClient(self) -> discovery.Resource:
     """Return the apiclient that supports insert operation."""
     insert_client = self.apiclient
     return insert_client
 
   def GetTransferV1ApiClient(
       self,
-      transferserver_address=None):
+      transferserver_address: Optional[str] = None) -> discovery.Resource:
     """Return the apiclient that supports Transfer v1 operation."""
     path = transferserver_address
     if path is None:
@@ -1578,7 +1591,9 @@ class BigqueryClient:
     return self._op_transfer_client
 
 
-  def GetReservationApiClient(self, reservationserver_address=None):
+  def GetReservationApiClient(
+      self, reservationserver_address: Optional[str] = None
+  ) -> discovery.Resource:
     """Return the apiclient that supports reservation operations."""
     path = reservationserver_address
     reservation_version = 'v1'
@@ -1590,7 +1605,9 @@ class BigqueryClient:
       discovery_url=discovery_url)
     return self._op_reservation_client
 
-  def GetConnectionV1ApiClient(self, connection_service_address=None):
+  def GetConnectionV1ApiClient(
+      self, connection_service_address: Optional[str] = None
+  ) -> discovery.Resource:
     """Return the apiclient that supports connections operations."""
     path = connection_service_address
 
@@ -1744,7 +1761,12 @@ class BigqueryClient:
   @staticmethod
   def ValidatePrintFormat(print_format):
     if print_format not in [
-        'show', 'list', 'view', 'materialized_view', 'make'
+        'show',
+        'list',
+        'view',
+        'materialized_view',
+        'make',
+        'table_replica',
     ]:
       raise ValueError('Unknown format: %s' % (print_format,))
 
@@ -1986,14 +2008,6 @@ class BigqueryClient:
     reservation_id = reservation_id or default_reservation_id
     if not reservation_id:
       raise BigqueryError('Reservation name not specified.')
-    if (self.api_version == 'autoscale_alpha'
-       ):
-      return ApiClientHelper.AutoscaleAlphaReservationReference(
-          projectId=project_id, location=location, reservationId=reservation_id)
-    elif (self.api_version == 'autoscale_preview'
-         ):
-      return ApiClientHelper.AutoscalePreviewReservationReference(
-          projectId=project_id, location=location, reservationId=reservation_id)
     elif (self.api_version == 'v1beta1'
          ):
       return ApiClientHelper.BetaReservationReference(
@@ -2108,11 +2122,17 @@ class BigqueryClient:
     # Projects are handled separately, because we only have
     # bigquery.projects.list.
     if isinstance(reference, ApiClientHelper.ProjectReference):
-      projects = self.ListProjects(max_results=1000)
+      max_project_results = 1000
+      projects = self.ListProjects(max_results=max_project_results)
       for project in projects:
         if BigqueryClient.ConstructObjectReference(project) == reference:
           project['kind'] = 'bigquery#project'
           return project
+      if len(projects) >= max_project_results:
+        raise BigqueryError(
+            'Number of projects found exceeded limit, please instead run'
+            ' gcloud projects describe %s' % (reference,),
+        )
       raise BigqueryNotFoundError('Unknown %r' % (reference,),
                                   {'reason': 'notFound'}, [])
 
@@ -2195,8 +2215,7 @@ class BigqueryClient:
     target_job_concurrency,
     enable_queuing_and_priorities,
     multi_region_auxiliary,
-    autoscale_max_slots = None,
-    autoscale_budget_slot_hours = None):
+    autoscale_max_slots = None):
     """Return the request body for CreateReservation.
 
     Arguments:
@@ -2210,8 +2229,6 @@ class BigqueryClient:
       multi_region_auxiliary: Whether this reservation is for the auxiliary
         region.
       autoscale_max_slots: Number of slots to be scaled when needed.
-      autoscale_budget_slot_hours: The budget expressed in slot-hours for 7*24
-        hour rolling window.
 
     Returns:
       Reservation object that was created.
@@ -2240,15 +2257,6 @@ class BigqueryClient:
     if autoscale_max_slots is not None:
       reservation['autoscale'] = {}
       reservation['autoscale']['max_slots'] = autoscale_max_slots
-    if autoscale_budget_slot_hours is not None:
-      if (self.api_version != 'autoscale_preview'
-         ):
-        raise BigqueryError('autoscale_budget_slot_hours is only supported in '
-                            'autoscale_preview. Please specify \'--api_version='
-                            'autoscale_preview\' and retry.')
-      reservation['autoscale'] = {}
-      reservation['autoscale'][
-          'budget_slot_hours'] = autoscale_budget_slot_hours
 
 
     if edition is not None:
@@ -2265,8 +2273,7 @@ class BigqueryClient:
     target_job_concurrency,
     enable_queuing_and_priorities,
     multi_region_auxiliary,
-    autoscale_max_slots = None,
-    autoscale_budget_slot_hours = None):
+    autoscale_max_slots = None):
     """Create a reservation with the given reservation reference.
 
     Arguments:
@@ -2281,8 +2288,6 @@ class BigqueryClient:
       multi_region_auxiliary: Whether this reservation is for the auxiliary
         region.
       autoscale_max_slots: Number of slots to be scaled when needed.
-      autoscale_budget_slot_hours: The budget expressed in slot-hours for 7*24
-        hour rolling window.
 
     Returns:
       Reservation object that was created.
@@ -2298,7 +2303,6 @@ class BigqueryClient:
         enable_queuing_and_priorities,
         multi_region_auxiliary,
         autoscale_max_slots,
-        autoscale_budget_slot_hours,
     )
     client = self.GetReservationApiClient()
     parent = 'projects/%s/locations/%s' % (reference.projectId,
@@ -2413,7 +2417,7 @@ class BigqueryClient:
       target_job_concurrency,
       enable_queuing_and_priorities,
       autoscale_max_slots,
-      autoscale_budget_slot_hours=None):
+  ):
     """Return the request body and update mask for UpdateReservation.
 
     Arguments:
@@ -2424,8 +2428,6 @@ class BigqueryClient:
       enable_queuing_and_priorities: Whether queuing and new prioritization
         behavior should be enabled for the reservation.
       autoscale_max_slots: Number of slots to be scaled when needed.
-      autoscale_budget_slot_hours: The budget expressed in slot-hours for 7*24
-        hour rolling window.
 
     Returns:
       Reservation object that was updated.
@@ -2466,20 +2468,6 @@ class BigqueryClient:
       else:
         # Disable autoscale.
         update_mask += 'autoscale,'
-    if autoscale_budget_slot_hours is not None:
-      if (self.api_version != 'autoscale_preview'
-         ):
-        raise BigqueryError('autoscale_budget_slot_hours is only supported in '
-                            'autoscale_preview. Please specify \'--api_version='
-                            'autoscale_preview\' and retry.')
-      if autoscale_budget_slot_hours != 0:
-        reservation['autoscale'] = {}
-        reservation['autoscale'][
-            'budget_slot_hours'] = autoscale_budget_slot_hours
-        update_mask += 'autoscale.budget_slot_hours,'
-      else:
-        # Disable autoscale.
-        update_mask += 'autoscale,'
 
     return reservation, update_mask
 
@@ -2491,7 +2479,6 @@ class BigqueryClient:
       target_job_concurrency,
       enable_queuing_and_priorities,
       autoscale_max_slots,
-      autoscale_budget_slot_hours=None,
   ):
     """Updates a reservation with the given reservation reference.
 
@@ -2504,8 +2491,6 @@ class BigqueryClient:
       enable_queuing_and_priorities: Whether queuing and new prioritization
         behavior should be enabled for the reservation.
       autoscale_max_slots: Number of slots to be scaled when needed.
-      autoscale_budget_slot_hours: The budget expressed in slot-hours for 7*24
-        hour rolling window.
 
     Returns:
       Reservation object that was updated.
@@ -2519,7 +2504,7 @@ class BigqueryClient:
         target_job_concurrency,
         enable_queuing_and_priorities,
         autoscale_max_slots,
-        autoscale_budget_slot_hours)
+    )
     client = self.GetReservationApiClient()
     return client.projects().locations().reservations().patch(
         name=reference.path(), updateMask=update_mask,
@@ -2854,6 +2839,7 @@ class BigqueryClient:
       display_name=None,
       description=None,
       connection_id=None,
+      kms_key_name=None,
   ):
     """Create a connection with the given connection reference.
 
@@ -2866,6 +2852,7 @@ class BigqueryClient:
       display_name: Friendly name for the connection.
       description: Description of the connection.
       connection_id: Optional connection ID.
+      kms_key_name: Optional KMS key name.
 
     Returns:
       Connection object that was created.
@@ -2879,6 +2866,8 @@ class BigqueryClient:
     if description:
       connection['description'] = description
 
+    if kms_key_name:
+      connection['kmsKeyName'] = kms_key_name
 
     property_name = CONNECTION_TYPE_TO_PROPERTY_MAP.get(connection_type)
     if property_name:
@@ -2904,6 +2893,7 @@ class BigqueryClient:
       connection_credential=None,
       display_name=None,
       description=None,
+      kms_key_name=None,
   ):
     """Update connection with the given connection reference.
 
@@ -2914,11 +2904,19 @@ class BigqueryClient:
       connection_credential: Connection credentials in JSON format.
       display_name: Friendly name for the connection
       description: Description of the connection
-
+      kms_key_name: Optional KMS key name.
+    Raises:
+      BigqueryClientError: The connection type is not defined when updating
+      connection_credential or properties.
     Returns:
       Connection object that was created.
     """
 
+    if (connection_credential or properties) and not connection_type:
+      raise BigqueryClientError(
+          'connection_type is required when updating connection_credential or'
+          ' properties'
+      )
     connection = {}
     update_mask = []
 
@@ -2946,6 +2944,10 @@ class BigqueryClient:
       connection['description'] = description
       update_mask.append('description')
 
+    if kms_key_name is not None:
+      update_mask.append('kms_key_name')
+    if kms_key_name:
+      connection['kmsKeyName'] = kms_key_name
 
     if connection_type == 'CLOUD_SQL':
       if properties:
@@ -3163,7 +3165,10 @@ class BigqueryClient:
       raise ValueError('start_row is required')
     if max_rows is None:
       raise ValueError('max_rows is required')
-    job_ref = ApiClientHelper.JobReference.Create(**job_dict)
+    if not job_dict:
+      job_ref: ApiClientHelper.JobReference = None
+    else:
+      job_ref = ApiClientHelper.JobReference.Create(**job_dict)
     if flags.FLAGS.jobs_query_use_results_from_response and result_first_page:
       reader = _QueryTableReader(self.apiclient, self.max_rows_per_request,
                                  job_ref, result_first_page)
@@ -3336,6 +3341,17 @@ class BigqueryClient:
             'Refresh Interval Ms',
             'Last Refresh Time'
         ))
+      if print_format == 'table_replica':
+        formatter.AddColumns((
+            'Type',
+            'Last modified',
+            'Schema',
+            'Source Table',
+            'Source Last Refresh Time',
+            'Replication Interval Seconds',
+            'Replication Status',
+            'Replication Error',
+        ))
     elif reference_type == ApiClientHelper.EncryptionServiceAccount:
       formatter.AddColumns(list(object_info.keys()))
     elif reference_type == ApiClientHelper.ReservationReference:
@@ -3360,16 +3376,6 @@ class BigqueryClient:
           'creationTime',
           'updateTime',
           'multiRegionAuxiliary'))
-    elif reference_type == ApiClientHelper.AutoscaleAlphaReservationReference:
-      formatter.AddColumns(
-          ('name', 'slotCapacity', 'targetJobConcurrency', 'ignoreIdleSlots',
-           'autoscaleMaxSlots', 'autoscaleCurrentSlots', 'creationTime',
-           'updateTime', 'multiRegionAuxiliary'))
-    elif reference_type == ApiClientHelper.AutoscalePreviewReservationReference:
-      formatter.AddColumns(
-          ('name', 'slotCapacity', 'targetJobConcurrency', 'ignoreIdleSlots',
-           'autoscaleBudgetSlotHours', 'autoscaleUsedBudgetSlotHours',
-           'creationTime', 'updateTime', 'multiRegionAuxiliary'))
     elif reference_type == ApiClientHelper.CapacityCommitmentReference:
       formatter.AddColumns((
           'name',
@@ -4001,6 +4007,29 @@ class BigqueryClient:
             result['materializedView']['lastRefreshTime'] != '0'):
           result['Last Refresh Time'] = BigqueryClient.FormatTime(
               int(result['materializedView']['lastRefreshTime']) / 1000)
+      if 'tableReplicationInfo' in result:
+        result['Source Table'] = _FormatTableReference(
+            result['tableReplicationInfo']['sourceTable']
+        )
+        result['Replication Interval Seconds'] = int(
+            int(result['tableReplicationInfo']['replicationIntervalMs']) / 1000
+        )
+        result['Replication Status'] = result['tableReplicationInfo'][
+            'replicationStatus'
+        ]
+        if 'replicatedSourceLastRefreshTime' in result['tableReplicationInfo']:
+          result['Source Last Refresh Time'] = BigqueryClient.FormatTime(
+              int(
+                  result['tableReplicationInfo'][
+                      'replicatedSourceLastRefreshTime'
+                  ]
+              )
+              / 1000
+          )
+        if 'replicationError' in result['tableReplicationInfo']:
+          result['Replication Error'] = result['tableReplicationInfo'][
+              'replicationError'
+          ]['message']
       if result['type'] == 'EXTERNAL':
         if 'externalDataConfiguration' in result:
           result['Total URIs'] = len(
@@ -4111,20 +4140,11 @@ class BigqueryClient:
         'enableQueuingAndPriorities' not in list(result.keys())):
       result['enableQueuingAndPriorities'] = 'False'
     if 'autoscale' in list(result.keys()):
-      if (reference_type != ApiClientHelper.AutoscalePreviewReservationReference
-          and 'maxSlots' in result['autoscale']):
+      if 'maxSlots' in result['autoscale']:
         result['autoscaleMaxSlots'] = result['autoscale']['maxSlots']
         result['autoscaleCurrentSlots'] = '0'
         if 'currentSlots' in result['autoscale']:
           result['autoscaleCurrentSlots'] = result['autoscale']['currentSlots']
-      if (reference_type == ApiClientHelper.AutoscalePreviewReservationReference
-          and 'budgetSlotHours' in result['autoscale']):
-        result['autoscaleBudgetSlotHours'] = result['autoscale'][
-            'budgetSlotHours']
-        result['autoscaleUsedBudgetSlotHours'] = '0'
-        if 'usedBudgetSlotHours' in result['autoscale']:
-          result['autoscaleUsedBudgetSlotHours'] = result['autoscale'][
-              'usedBudgetSlotHours']
       # The original 'autoscale' fields is not needed anymore now.
       result.pop('autoscale', None)
     return result
@@ -4605,7 +4625,7 @@ class BigqueryClient:
     request = self._PrepareListRequest({}, max_results, page_token)
     result = self._ExecuteListProjectsRequest(request)
     results = result.get('projects', [])
-    while 'nextPageToken' in result and (max_results is None or
+    while 'nextPageToken' in result and (max_results is not None and
                                          len(results) < max_results):
       request['pageToken'] = result['nextPageToken']
       result = self._ExecuteListProjectsRequest(request)
@@ -4703,14 +4723,34 @@ class BigqueryClient:
         pageToken=page_token,
         filter=filter_expression).execute()
 
-  def ListRowAccessPoliciesWithGrantees(self, table_reference, page_size,
-                                        page_token):
+  def _ListRowAccessPolicies(
+      self,
+      table_reference: 'ApiClientHelper.TableReference',
+      page_size: int,
+      page_token: str,
+  ) -> Dict[str, List[Any]]:
+    """Lists row access policies for the given table reference."""
+    return self.GetRowAccessPoliciesApiClient().rowAccessPolicies().list(
+        projectId=table_reference.projectId,
+        datasetId=table_reference.datasetId,
+        tableId=table_reference.tableId,
+        pageSize=page_size,
+        pageToken=page_token).execute()
+
+  def ListRowAccessPoliciesWithGrantees(
+      self,
+      table_reference: 'ApiClientHelper.TableReference',
+      page_size: int,
+      page_token: str,
+      max_concurrent_iam_calls: int = 1,
+  ) -> Dict[str, List[Any]]:
     """Lists row access policies for the given table reference.
 
     Arguments:
       table_reference: Reference to the table.
       page_size: Number of results to return.
       page_token: Token to retrieve the next page of results.
+      max_concurrent_iam_calls: Number of concurrent calls to getIAMPolicy.
 
     Returns:
       A dict that contains entries:
@@ -4718,21 +4758,30 @@ class BigqueryClient:
           'grantees' field that contains the row access policy grantees.
         'nextPageToken': nextPageToken for the next page, if present.
     """
-    response = self.GetRowAccessPoliciesApiClient().rowAccessPolicies().list(
-        projectId=table_reference.projectId,
-        datasetId=table_reference.datasetId,
-        tableId=table_reference.tableId,
-        pageSize=page_size,
-        pageToken=page_token).execute()
+    response = self._ListRowAccessPolicies(
+        table_reference, page_size, page_token
+    )
     if 'rowAccessPolicies' in response:
       row_access_policies = response['rowAccessPolicies']
-      for row_access_policy in row_access_policies:
-        row_access_policy_ref = ApiClientHelper.RowAccessPolicyReference.Create(
-            **row_access_policy['rowAccessPolicyReference'])
-        iam_policy = self.GetRowAccessPolicyIAMPolicy(row_access_policy_ref)
-        grantees = self._GetGranteesFromRowAccessPolicyIamPolicy(iam_policy)
-        row_access_policy['grantees'] = grantees
+      parallel.RunInParallel(
+          function=self._SetRowAccessPolicyGrantees,
+          list_of_kwargs_to_function=[
+              {'row_access_policy': row_access_policy}
+              for row_access_policy in row_access_policies
+          ],
+          num_workers=max_concurrent_iam_calls,
+          cancel_futures=True,
+      )
     return response
+
+  def _SetRowAccessPolicyGrantees(self, row_access_policy):
+    """Sets the grantees on the given Row Access Policy."""
+    row_access_policy_ref = ApiClientHelper.RowAccessPolicyReference.Create(
+        **row_access_policy['rowAccessPolicyReference']
+    )
+    iam_policy = self.GetRowAccessPolicyIAMPolicy(row_access_policy_ref)
+    grantees = self._GetGranteesFromRowAccessPolicyIamPolicy(iam_policy)
+    row_access_policy['grantees'] = grantees
 
   def _GetGranteesFromRowAccessPolicyIamPolicy(self, iam_policy):
     """Returns the filtered data viewer members of the given IAM policy."""
@@ -4789,7 +4838,9 @@ class BigqueryClient:
     return self.GetIAMPolicyApiClient().tables().getIamPolicy(
         resource=formatted_resource).execute()
 
-  def GetRowAccessPolicyIAMPolicy(self, reference):
+  def GetRowAccessPolicyIAMPolicy(
+      self, reference: 'ApiClientHelper.RowAccessPolicyReference'
+  ) -> Policy:
     """Gets IAM policy for the given row access policy resource.
 
     Arguments:
@@ -4973,6 +5024,16 @@ class BigqueryClient:
     except BigqueryNotFoundError:
       return False
 
+  def GetDatasetRegion(self, reference):
+    _Typecheck(
+        reference, ApiClientHelper.DatasetReference, method='GetDatasetRegion'
+    )
+    try:
+      return (
+          self.apiclient.datasets().get(**dict(reference)).execute()['location']
+      )
+    except BigqueryNotFoundError:
+      return None
 
   def GetTableRegion(self, reference):
     _Typecheck(
@@ -5586,8 +5647,10 @@ class BigqueryClient:
       encryption_configuration=None,
       location=None,
       autodetect_schema=False,
-      table_constraints=None
-    ):
+      table_constraints=None,
+      tags_to_attach: Dict[str, str] = None,
+      tags_to_remove: List[str] = None,
+      clear_all_tags: bool = False):
     """Updates a table.
 
     Args:
@@ -5632,6 +5695,9 @@ class BigqueryClient:
       autodetect_schema: an optional flag to perform autodetect of file schema.
       table_constraints: an optional primary key and foreign key configuration
         for the table.
+      tags_to_attach: an optional dict of tags to attach to the table
+      tags_to_remove: an optional list of tag keys to remove from the table
+      clear_all_tags: if set, clears all the tags attached to the table
     Raises:
       TypeError: if reference is not a TableReference.
     """
@@ -5698,6 +5764,24 @@ class BigqueryClient:
       table['location'] = location
     if table_constraints is not None:
       table['table_constraints'] = table_constraints
+    self._ExecutePatchTableRequest(reference, table, autodetect_schema, etag)
+
+  def _ExecuteGetTableRequest(self, reference):
+    return self.apiclient.tables().get(**dict(reference)).execute()
+
+  def _ExecutePatchTableRequest(self,
+                                reference,
+                                table,
+                                autodetect_schema: bool = False,
+                                etag: str = None):
+    """Executes request to patch table.
+
+    Args:
+      reference: the TableReference to patch.
+      table: the body of request
+      autodetect_schema: an optional flag to perform autodetect of file schema.
+      etag: if set, checks that etag in the existing table matches.
+    """
     request = self.apiclient.tables().patch(
         autodetect_schema=autodetect_schema, body=table, **dict(reference))
 
@@ -6645,8 +6729,9 @@ class BigqueryClient:
             if 'schema' in result:
               execution['statistics']['query']['schema'] = result['schema']
             return ([], [], execution)
-          job_reference = ApiClientHelper.JobReference.Create(
-              **result['jobReference'])
+          if 'jobReference' in result:
+            job_reference = ApiClientHelper.JobReference.Create(
+                **result['jobReference'])
         else:
           # The query/getQueryResults methods do not return the job state,
           # so we just print 'RUNNING' while we are actively waiting.
@@ -6658,7 +6743,7 @@ class BigqueryClient:
               location=location)
         if result['jobComplete']:
           (schema, rows) = self.ReadSchemaAndJobRows(
-              dict(job_reference),
+              dict(job_reference) if job_reference else {},
               start_row=0,
               max_rows=max_results,
               result_first_page=result)
@@ -6709,6 +6794,7 @@ class BigqueryClient:
       job_timeout_ms=None,
       create_session=None,
       connection_properties=None,
+      continuous=None,
       **kwds):
     # pylint: disable=g-doc-args
     """Execute the given query, returning the created job.
@@ -6763,6 +6849,8 @@ class BigqueryClient:
         for the destination table.
       script_options: Optional. Options controlling script execution.
       job_timeout_ms: Optional. How long to let the job run.
+      continuous: Optional. Whether the query should be executed as continuous
+        query.
       **kwds: Passed on to self.ExecuteJob.
 
     Raises:
@@ -6811,6 +6899,7 @@ class BigqueryClient:
         clustering=clustering,
         create_session=create_session,
         min_completion_ratio=min_completion_ratio,
+        continuous=continuous,
         range_partitioning=range_partitioning)
     _ApplyParameters(query_config, connection_properties=connection_properties)
     request = {'query': query_config}
@@ -7295,7 +7384,7 @@ class _QueryTableReader(_TableReader):
                    max_rows,
                    page_token=None,
                    selected_fields=None):
-    kwds = dict(self.job_ref)
+    kwds = dict(self.job_ref) if self.job_ref else {}
     kwds['maxResults'] = max_rows
     # Sets the timeout to 0 because we assume the table is already ready.
     kwds['timeoutMs'] = 0
@@ -7493,14 +7582,6 @@ class ApiClientHelper:
 
   class BetaReservationReference(ReservationReference):
     """Reference for v1beta1 reservation service."""
-    pass
-
-  class AutoscaleAlphaReservationReference(ReservationReference):
-    """Reference for autoscale_alpha, which has more features than stable versions."""
-    pass
-
-  class AutoscalePreviewReservationReference(ReservationReference):
-    """Reference for autoscale_preview, which has more features than stable versions."""
     pass
 
   class CapacityCommitmentReference(Reference):

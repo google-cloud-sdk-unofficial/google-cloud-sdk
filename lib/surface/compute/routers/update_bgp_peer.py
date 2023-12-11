@@ -267,7 +267,7 @@ class UpdateBgpPeerBeta(UpdateBgpPeer):
 
   @classmethod
   def Args(cls, parser):
-    cls._Args(parser)
+    cls._Args(parser, enable_ipv6_bgp=True)
 
   def Run(self, args):
     """Runs the command.
@@ -279,7 +279,7 @@ class UpdateBgpPeerBeta(UpdateBgpPeer):
       The result of patching the router updating the bgp peer with the
       information provided in the arguments.
     """
-    return self._Run(args, support_bfd_mode=False)
+    return self._Run(args, support_bfd_mode=False, enable_ipv6_bgp=True)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)

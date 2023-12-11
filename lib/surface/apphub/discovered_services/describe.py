@@ -26,9 +26,10 @@ from googlecloudsdk.command_lib.apphub import flags
 _DETAILED_HELP = {
     'DESCRIPTION': '{description}',
     'EXAMPLES': """ \
-        To describe a discovered service with the id `my-discovered-service`, run:
+        To describe the DiscoveredService `my-discovered-service` in
+        location `us-east1`, run:
 
-          $ {command} my-discovered-service
+          $ {command} my-discovered-service --location=us-east1
         """,
 }
 

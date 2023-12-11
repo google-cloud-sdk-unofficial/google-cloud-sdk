@@ -28,12 +28,13 @@ from googlecloudsdk.command_lib.util.args import labels_util
 from googlecloudsdk.core import log
 
 
-def _Args(parser, enable_push_to_cps=False):
+def _Args(parser, enable_push_to_cps=False, enable_use_table_schema=False):
   resource_args.AddSubscriptionResourceArg(parser, 'to update.')
   flags.AddSubscriptionSettingsFlags(
       parser,
       is_update=True,
       enable_push_to_cps=enable_push_to_cps,
+      enable_use_table_schema=enable_use_table_schema,
   )
   labels_util.AddUpdateLabelsFlags(parser)
 
@@ -47,14 +48,16 @@ class Update(base.UpdateCommand):
     _Args(parser)
 
   @exceptions.CatchHTTPErrorRaiseHTTPException()
-  def Run(self, args, enable_push_to_cps=False):
+  def Run(self, args, enable_push_to_cps=False, enable_use_table_schema=False):
     """This is what gets called when the user runs this command.
 
     Args:
       args: an argparse namespace. All the arguments that were provided to this
         command invocation.
-      enable_push_to_cps: whether or not to enable Pubsub Export config
-        flags upport.
+      enable_push_to_cps: whether or not to enable Pubsub Export config flags
+        support.
+      enable_use_table_schema: whether or not to enable `use_table_schema` flag
+        support.
 
     Returns:
       A serialized object (dict) describing the results of the operation. This
@@ -74,8 +77,9 @@ class Update(base.UpdateCommand):
     clear_dead_letter_policy = getattr(args, 'clear_dead_letter_policy', None)
     clear_retry_policy = getattr(args, 'clear_retry_policy', None)
     clear_bigquery_config = getattr(args, 'clear_bigquery_config', None)
-    clear_cloud_storage_config = getattr(args, 'clear_cloud_storage_config',
-                                         None)
+    clear_cloud_storage_config = getattr(
+        args, 'clear_cloud_storage_config', None
+    )
     clear_push_no_wrapper_config = getattr(
         args, 'clear_push_no_wrapper_config', None
     )
@@ -88,7 +92,8 @@ class Update(base.UpdateCommand):
     labels_update = labels_util.ProcessUpdateArgsLazy(
         args,
         client.messages.Subscription.LabelsValue,
-        orig_labels_thunk=lambda: client.Get(subscription_ref).labels)
+        orig_labels_thunk=lambda: client.Get(subscription_ref).labels,
+    )
 
     no_expiration = False
     expiration_period = getattr(args, 'expiration_period', None)
@@ -108,25 +113,33 @@ class Update(base.UpdateCommand):
       max_retry_delay = util.FormatDuration(max_retry_delay)
     bigquery_table = getattr(args, 'bigquery_table', None)
     use_topic_schema = getattr(args, 'use_topic_schema', None)
+    use_table_schema = (
+        getattr(args, 'use_table_schema', None)
+        if enable_use_table_schema
+        else None
+    )
     write_metadata = getattr(args, 'write_metadata', None)
     drop_unknown_fields = getattr(args, 'drop_unknown_fields', None)
     cloud_storage_bucket = getattr(args, 'cloud_storage_bucket', None)
     cloud_storage_file_prefix = getattr(args, 'cloud_storage_file_prefix', None)
     cloud_storage_file_suffix = getattr(args, 'cloud_storage_file_suffix', None)
     cloud_storage_max_bytes = getattr(args, 'cloud_storage_max_bytes', None)
-    cloud_storage_max_duration = getattr(args, 'cloud_storage_max_duration',
-                                         None)
+    cloud_storage_max_duration = getattr(
+        args, 'cloud_storage_max_duration', None
+    )
     if args.IsSpecified('cloud_storage_max_duration'):
       cloud_storage_max_duration = util.FormatDuration(
-          cloud_storage_max_duration)
-    cloud_storage_output_format_list = getattr(args,
-                                               'cloud_storage_output_format',
-                                               None)
+          cloud_storage_max_duration
+      )
+    cloud_storage_output_format_list = getattr(
+        args, 'cloud_storage_output_format', None
+    )
     cloud_storage_output_format = None
     if cloud_storage_output_format_list:
       cloud_storage_output_format = cloud_storage_output_format_list[0]
-    cloud_storage_write_metadata = getattr(args, 'cloud_storage_write_metadata',
-                                           None)
+    cloud_storage_write_metadata = getattr(
+        args, 'cloud_storage_write_metadata', None
+    )
     pubsub_export_topic = (
         getattr(args, 'pubsub_export_topic', None)
         if enable_push_to_cps
@@ -142,8 +155,9 @@ class Update(base.UpdateCommand):
         args, 'pubsub_export_topic_region', None
     )
 
-    enable_exactly_once_delivery = getattr(args, 'enable_exactly_once_delivery',
-                                           None)
+    enable_exactly_once_delivery = getattr(
+        args, 'enable_exactly_once_delivery', None
+    )
 
     try:
       result = client.Patch(
@@ -164,6 +178,7 @@ class Update(base.UpdateCommand):
           enable_exactly_once_delivery=enable_exactly_once_delivery,
           bigquery_table=bigquery_table,
           use_topic_schema=use_topic_schema,
+          use_table_schema=use_table_schema,
           write_metadata=write_metadata,
           drop_unknown_fields=drop_unknown_fields,
           clear_bigquery_config=clear_bigquery_config,
@@ -183,7 +198,8 @@ class Update(base.UpdateCommand):
     except subscriptions.NoFieldsSpecifiedError:
       if not any(
           args.IsSpecified(arg)
-          for arg in ('clear_labels', 'update_labels', 'remove_labels')):
+          for arg in ('clear_labels', 'update_labels', 'remove_labels')
+      ):
         raise
       log.status.Print('No update to perform.')
       result = None
@@ -198,8 +214,10 @@ class UpdateBeta(Update):
 
   @classmethod
   def Args(cls, parser):
-    _Args(parser, enable_push_to_cps=True)
+    _Args(parser, enable_push_to_cps=True, enable_use_table_schema=True)
 
   @exceptions.CatchHTTPErrorRaiseHTTPException()
   def Run(self, args):
-    return super(UpdateBeta, self).Run(args, enable_push_to_cps=True)
+    return super(UpdateBeta, self).Run(
+        args, enable_push_to_cps=True, enable_use_table_schema=True
+    )

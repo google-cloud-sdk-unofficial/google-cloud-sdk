@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Implementation of list command for insights dataset config."""
+"""Implementation of list command for Insights dataset config."""
 
 import re
 
@@ -37,11 +37,11 @@ _TRANSFORMS = {'location_transform': _transform_location}
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class List(base.ListCommand):
-  """List returns all the insights dataset configs for given location."""
+  """List returns all the Insights dataset configs for given location."""
 
   detailed_help = {
       'DESCRIPTION': """
-      List Cloud storage insights dataset configs.
+      List Cloud storage Insights dataset configs.
       """,
       'EXAMPLES': """
 

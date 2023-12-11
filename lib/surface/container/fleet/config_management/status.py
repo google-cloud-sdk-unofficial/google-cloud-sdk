@@ -86,12 +86,17 @@ class ConfigmanagementFeatureState(object):
       if has_config_sync_git(fs):
         self.sync_branch = fs.membershipSpec.configSync.git.syncBranch
 
-  def update_policy_controller_state(self, fs):
+  def update_policy_controller_state(self, md):
     """Update policy controller state for the membership that has ACM installed.
 
     Args:
-      fs: ConfigmanagementFeatureState
+      md: MembershipFeatureState
     """
+    # Also surface top-level Feature Authorizer errors.
+    if md.state.code.name != 'OK':
+      self.policy_controller_state = 'ERROR: {}'.format(md.state.description)
+      return
+    fs = md.configmanagement
     if not (fs.policyControllerState and
             fs.policyControllerState.deploymentState):
       self.policy_controller_state = NA
@@ -237,8 +242,8 @@ class Status(feature_base.FeatureCommand, base.ListCommand):
         # operator errors could occur regardless of the deployment_state
         if has_operator_error(fs):
           append_error(name, fs.operatorState.errors, acm_errors)
-        # (b/154174276, b/156293028)
-        # check operator_state to see if ACM/nomos has been installed
+        # We should update PoCo state regardless of operator state.
+        cluster.update_policy_controller_state(md)
         if not has_operator_state(fs):
           if md.state.code.name != 'OK':
             cluster.config_sync = md.state.code.name
@@ -251,7 +256,6 @@ class Status(feature_base.FeatureCommand, base.ListCommand):
             if has_config_sync_error(fs):
               append_error(name, fs.configSyncState.syncState.errors,
                            acm_errors)
-            cluster.update_policy_controller_state(fs)
             cluster.update_hierarchy_controller_state(fs)
             if name in feature_spec_memberships:
               cluster.update_pending_state(

@@ -17,6 +17,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+from googlecloudsdk.api_lib.apphub import utils as api_lib_utils
 from googlecloudsdk.api_lib.apphub.applications import workloads as apis
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.apphub import flags
@@ -25,9 +26,10 @@ from googlecloudsdk.command_lib.apphub import flags
 _DETAILED_HELP = {
     'DESCRIPTION': '{description}',
     'EXAMPLES': """ \
-        To list all workloads, run:
+        To list all Workloads in the Application `my-app` in location
+        `us-east1`, run:
 
-          $ {command}
+          $ {command} --application=my-app --location=us-east1
         """,
 }
 
@@ -51,6 +53,11 @@ class List(base.ListCommand):
   def Args(parser):
     flags.AddListApplicationWorkloadFlags(parser)
     parser.display_info.AddFormat(_FORMAT)
+    parser.display_info.AddUriFunc(
+        api_lib_utils.MakeGetUriFunc(
+            'apphub.projects.locations.applications.workloads'
+        )
+    )
 
   def Run(self, args):
     """Run the list command."""

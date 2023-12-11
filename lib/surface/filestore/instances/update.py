@@ -169,6 +169,8 @@ class UpdateBeta(Update):
           description=args.description,
           labels=labels,
           file_share=args.file_share,
+          managed_ad=args.managed_ad,
+          disconnect_managed_ad=args.disconnect_managed_ad,
           clear_nfs_export_options=args.clear_nfs_export_options)
     except filestore_client.Error as e:
       raise exceptions.InvalidArgumentException('--file-share',
@@ -182,6 +184,10 @@ class UpdateBeta(Update):
       updated_fields.append('labels')
     if args.IsSpecified('file_share'):
       updated_fields.append('fileShares')
+    if args.IsSpecified('managed_ad') or args.IsSpecified(
+        'disconnect_managed_ad'
+    ):
+      updated_fields.append('directoryServices')
     update_mask = ','.join(updated_fields)
 
     result = client.UpdateInstance(instance_ref, instance, update_mask,

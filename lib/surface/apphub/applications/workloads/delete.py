@@ -25,9 +25,10 @@ from googlecloudsdk.command_lib.apphub import flags
 _DETAILED_HELP = {
     'DESCRIPTION': '{description}',
     'EXAMPLES': """ \
-        To delete a application workload with the id `my-application-workload`, run:
+        To delete the Workload `my-workload` from the Application `my-app` in
+        location `us-east1`, run:
 
-          $ {command} my-application-workload
+          $ {command} my-workload --application=my-app --location=us-east1
         """,
 }
 

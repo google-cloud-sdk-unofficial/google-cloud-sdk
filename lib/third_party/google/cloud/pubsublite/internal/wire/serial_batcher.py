@@ -15,7 +15,6 @@
 from abc import abstractmethod, ABCMeta
 from typing import Generic, List, NamedTuple
 import asyncio
-from overrides import overrides
 
 from google.cloud.pubsublite.internal.wire.connection import Request, Response
 from google.cloud.pubsublite.internal.wire.work_item import WorkItem
@@ -46,7 +45,6 @@ class RequestSizer(Generic[Request], metaclass=ABCMeta):
 
 
 class IgnoredRequestSizer(RequestSizer[Request]):
-    @overrides
     def get_size(self, request) -> BatchSize:
         return BatchSize(0, 0)
 

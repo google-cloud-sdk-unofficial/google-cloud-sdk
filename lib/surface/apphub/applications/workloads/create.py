@@ -28,9 +28,11 @@ from googlecloudsdk.command_lib.apphub import flags
 _DETAILED_HELP = {
     'DESCRIPTION': '{description}',
     'EXAMPLES': """ \
-        To create a application workload with the id `my-application-workload` run:
+        To create the Workload `my-workload` with discovered workload
+        `my-discovered-workload` in the Application `my-app` in location
+        `us-east1`, run:
 
-          $ {command} my-application-workload
+          $ {command} my-workload --application=my-app --location=us-east1 --discovered-workload=my-discovered-workload
         """,
 }
 

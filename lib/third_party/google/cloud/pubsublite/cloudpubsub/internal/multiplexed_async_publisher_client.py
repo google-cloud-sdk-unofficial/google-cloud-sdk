@@ -26,7 +26,6 @@ from google.cloud.pubsublite.cloudpubsub.publisher_client_interface import (
     AsyncPublisherClientInterface,
 )
 from google.cloud.pubsublite.types import TopicPath
-from overrides import overrides
 
 
 AsyncPublisherFactory = Callable[[TopicPath], AsyncSinglePublisher]
@@ -47,7 +46,6 @@ class MultiplexedAsyncPublisherClient(AsyncPublisherClientInterface):
         await client.__aenter__()
         return client
 
-    @overrides
     async def publish(
         self,
         topic: Union[TopicPath, str],
@@ -67,11 +65,9 @@ class MultiplexedAsyncPublisherClient(AsyncPublisherClientInterface):
             await self._multiplexer.try_erase(topic, publisher)
             raise e
 
-    @overrides
     async def __aenter__(self):
         await self._multiplexer.__aenter__()
         return self
 
-    @overrides
     async def __aexit__(self, exc_type, exc_value, traceback):
         await self._multiplexer.__aexit__(exc_type, exc_value, traceback)

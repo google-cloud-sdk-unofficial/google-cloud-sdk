@@ -18,6 +18,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+from googlecloudsdk.api_lib.run import execution
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.run import connection_context
 from googlecloudsdk.command_lib.run import deletion
@@ -67,15 +68,33 @@ class Delete(base.Command):
     conn_context = connection_context.GetConnectionContext(
         args, flags.Product.RUN, self.ReleaseTrack())
     job_ref = args.CONCEPTS.job.Parse()
-
-    console_io.PromptContinue(
-        message='Job [{}] will be deleted.'.format(job_ref.jobsId),
-        throw_if_unattended=True,
-        cancel_on_no=True)
-
     with serverless_operations.Connect(conn_context) as client:
+      message = 'Job [{}] will be deleted.'.format(job_ref.jobsId)
+      if console_io.CanPrompt() and self.HasRunningExecutions(job_ref, client):
+        message += (
+            ' This job is currently executing; all running executions will be'
+            ' stopped and deleted.'
+        )
+      console_io.PromptContinue(
+          message=message,
+          throw_if_unattended=True,
+          cancel_on_no=True,
+      )
       deletion.Delete(job_ref, client.GetJob, client.DeleteJob, args.async_)
     if args.async_:
       pretty_print.Success('Job [{}] is being deleted.'.format(job_ref.jobsId))
     else:
       log.DeletedResource(job_ref.jobsId, 'job')
+
+  def HasRunningExecutions(self, job_ref, client):
+    # gcloud-disable-gdu-domain
+    label_selector = (
+        '{label} = {name}, run.googleapis.com/servingState = Active'.format(
+            label=execution.JOB_LABEL, name=job_ref.jobsId
+        )
+    )
+    for _ in client.ListExecutions(
+        job_ref.Parent(), label_selector, limit=1, page_size=1
+    ):
+      return True
+    return False

@@ -12,15 +12,21 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Implementation of resume command for resuming Anywhere Cache Instances."""
+"""Implementation of resume command for resuming Anywhere Cache instances."""
 
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.storage import progress_callbacks
+from googlecloudsdk.command_lib.storage import storage_url
+from googlecloudsdk.command_lib.storage.tasks import task_executor
+from googlecloudsdk.command_lib.storage.tasks import task_graph_executor
+from googlecloudsdk.command_lib.storage.tasks import task_status
+from googlecloudsdk.command_lib.storage.tasks.buckets.anywhere_caches import resume_anywhere_cache_task
 
 
 @base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Resume(base.Command):
-  """Resume Anywhere Cache Instances of a bucket."""
+  """Resume Anywhere Cache instances of a bucket."""
 
   detailed_help = {
       'DESCRIPTION': """
@@ -52,6 +58,26 @@ class Resume(base.Command):
         ),
     )
 
+  def _get_task_iterator(self, args, task_status_queue):
+    progress_callbacks.workload_estimator_callback(
+        task_status_queue, len(args.id)
+    )
+
+    for id_str in args.id:
+      bucket_name, _, zone = id_str.rpartition(storage_url.CLOUD_URL_DELIMITER)
+      yield resume_anywhere_cache_task.ResumeAnywhereCacheTask(
+          bucket_name, zone
+      )
+
   def Run(self, args):
-    # TODO(b/303559351) : Implementation of resume command
-    raise NotImplementedError
+    task_status_queue = task_graph_executor.multiprocessing_context.Queue()
+    task_iterator = self._get_task_iterator(args, task_status_queue)
+
+    self.exit_code = task_executor.execute_tasks(
+        task_iterator,
+        parallelizable=True,
+        task_status_queue=task_status_queue,
+        progress_manager_args=task_status.ProgressManagerArgs(
+            increment_type=task_status.IncrementType.INTEGER, manifest_path=None
+        ),
+    )

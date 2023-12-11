@@ -24,13 +24,13 @@ from googlecloudsdk.api_lib.spanner import backup_operations
 from googlecloudsdk.api_lib.spanner import database_operations
 from googlecloudsdk.api_lib.spanner import instance_config_operations
 from googlecloudsdk.api_lib.spanner import instance_operations
+from googlecloudsdk.api_lib.spanner import ssd_cache_operations
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions as c_exceptions
 from googlecloudsdk.command_lib.spanner import flags
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA,
-                    base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
 class List(base.ListCommand):
   """List the Cloud Spanner operations on the given instance or database or instance configuration."""
 
@@ -203,3 +203,66 @@ class List(base.ListCommand):
       return database_operations.List(args.instance, args.database)
 
     return instance_operations.List(args.instance)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class AlphaList(List):
+  """List the Cloud Spanner operations with ALPHA features."""
+
+  __doc__ = List.__doc__
+
+  @staticmethod
+  def Args(parser):
+    """Args is called by calliope to gather arguments for this command.
+
+    Please add arguments in alphabetical order except for no- or a clear-
+    pair for that argument which can follow the argument itself.
+    Args:
+      parser: An argparse parser that you can use to add arguments that go on
+        the command line after this command. Positional arguments are allowed.
+    """
+    super(AlphaList, AlphaList).Args(parser)
+
+    flags.SsdCache(
+        positional=False,
+        required=False,
+        hidden=True,
+        text='For SSD Cache operations, the SSD Cache ID.',
+    ).AddToParser(parser)
+
+  def Run(self, args):
+    """This is what gets called when the user runs this command.
+
+    Args:
+      args: an argparse namespace. All the arguments that were provided to this
+        command invocation.
+
+    Returns:
+      Some value that we want to have printed later.
+    """
+    if args.ssd_cache:
+      if args.instance:
+        raise c_exceptions.InvalidArgumentException(
+            '--instance or --ssd-cache',
+            'The `--instance` flag cannot be used with `--ssd-cache`.',
+        )
+      if args.type:
+        raise c_exceptions.InvalidArgumentException(
+            '--type or --ssd-cache',
+            'The `--type` flag cannot be used with `--ssd-cache`.',
+        )
+      # Update output table for SSD Cache operations.
+      # pylint:disable=protected-access
+      args._GetParser().ai.display_info.AddFormat("""
+          table(
+            name.basename():label=OPERATION_ID,
+            done():label=DONE,
+            metadata.'@type'.split('.').slice(-1:).join(),
+            metadata.progress.startTime:label=START_TIME,
+            metadata.progress.endTime:label=END_TIME,
+            metadata.cancelTime:label=CANCEL_TIME
+          )
+        """)
+      return ssd_cache_operations.List(args.ssd_cache, args.instance_config)
+
+    return super().Run(args)

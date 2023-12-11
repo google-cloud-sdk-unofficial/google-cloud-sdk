@@ -65,6 +65,7 @@ class Create(base.CreateCommand):
     )
     flags.AddAutomatedBackupFlags(parser, alloydb_messages, update=False)
     flags.AddContinuousBackupConfigFlags(parser)
+    flags.AddDatabaseVersion(parser, alloydb_messages)
 
   def ConstructCreateRequestFromArgs(self, alloydb_messages, location_ref,
                                      args):
@@ -106,8 +107,6 @@ class CreateBeta(Create):
   @classmethod
   def Args(cls, parser):
     super(CreateBeta, cls).Args(parser)
-    alloydb_messages = api_util.GetMessagesModule(cls.ReleaseTrack())
-    flags.AddDatabaseVersion(parser, alloydb_messages)
 
   def ConstructCreateRequestFromArgs(
       self, alloydb_messages, location_ref, args
@@ -124,6 +123,7 @@ class CreateAlpha(CreateBeta):
   @classmethod
   def Args(cls, parser):
     super(CreateAlpha, cls).Args(parser)
+    flags.AddEnablePrivateServicesConnect(parser)
 
   def ConstructCreateRequestFromArgs(
       self, alloydb_messages, location_ref, args

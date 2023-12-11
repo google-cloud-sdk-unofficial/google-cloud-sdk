@@ -18,6 +18,7 @@ from __future__ import division
 from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.apphub import discovered_services as apis
+from googlecloudsdk.api_lib.apphub import utils as api_lib_utils
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.apphub import flags
 
@@ -25,9 +26,9 @@ from googlecloudsdk.command_lib.apphub import flags
 _DETAILED_HELP = {
     'DESCRIPTION': '{description}',
     'EXAMPLES': """ \
-        To list all discovered services, run:
+        To list all DiscoveredServices in location `us-east1`, run:
 
-          $ {command}
+          $ {command} --location=us-east1
         """,
 }
 
@@ -50,6 +51,12 @@ class List(base.ListCommand):
   def Args(parser):
     flags.AddListDiscoveredServiceFlags(parser)
     parser.display_info.AddFormat(_FORMAT)
+    # parser.display_info.AddUriFunc(api_lib_utils.GetUri)
+    parser.display_info.AddUriFunc(
+        api_lib_utils.MakeGetUriFunc(
+            'apphub.projects.locations.discoveredServices'
+        )
+    )
 
   def Run(self, args):
     """Run the list command."""

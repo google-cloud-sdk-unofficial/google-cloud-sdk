@@ -69,9 +69,7 @@ class List(base.ListCommand):
     else:
       # If no region is specified, list runs from all regions.
       project = args.project or properties.VALUES.core.project.GetOrFail()
-      response = client.projects_locations.List(
-          messages.CloudbuildProjectsLocationsListRequest(
-              name='projects/{}'.format(project)))
+      response = client_util.ListLocations(project)
       parents = sorted([location.name for location in response.locations])
 
     # Manually manage the limit since we'll be making repeated list requests.

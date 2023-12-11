@@ -24,13 +24,13 @@ from googlecloudsdk.api_lib.spanner import backup_operations
 from googlecloudsdk.api_lib.spanner import database_operations
 from googlecloudsdk.api_lib.spanner import instance_config_operations
 from googlecloudsdk.api_lib.spanner import instance_operations
+from googlecloudsdk.api_lib.spanner import ssd_cache_operations
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions as c_exceptions
 from googlecloudsdk.command_lib.spanner import flags
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA,
-                    base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
 class Describe(base.DescribeCommand):
   """Describe a Cloud Spanner operation."""
 
@@ -105,3 +105,51 @@ class Describe(base.DescribeCommand):
                                      args.operation)
 
     return instance_operations.Get(args.instance, args.operation)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class AlphaDescribe(Describe):
+  """Describe a Cloud Spanner operation with ALPHA features."""
+
+  __doc__ = Describe.__doc__
+
+  @staticmethod
+  def Args(parser):
+    """Args is called by calliope to gather arguments for this command.
+
+    Please add arguments in alphabetical order except for no- or a clear-
+    pair for that argument which can follow the argument itself.
+    Args:
+      parser: An argparse parser that you can use to add arguments that go on
+        the command line after this command. Positional arguments are allowed.
+    """
+    super(AlphaDescribe, AlphaDescribe).Args(parser)
+
+    flags.SsdCache(
+        positional=False,
+        required=False,
+        hidden=True,
+        text='The ID of the SSD Cache the operation is executing on.',
+    ).AddToParser(parser)
+
+  def Run(self, args):
+    """This is what gets called when the user runs this command.
+
+    Args:
+      args: an argparse namespace. All the arguments that were provided to this
+        command invocation.
+
+    Returns:
+      Some value that we want to have printed later.
+    """
+    if args.ssd_cache:
+      if args.instance:
+        raise c_exceptions.InvalidArgumentException(
+            '--instance or --ssd-cache',
+            'The `--instance` flag cannot be used with `--ssd-cache`.',
+        )
+      return ssd_cache_operations.Get(
+          args.operation, args.ssd_cache, args.instance_config
+      )
+
+    return super().Run(args)

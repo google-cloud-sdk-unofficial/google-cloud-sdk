@@ -53,6 +53,8 @@ class Update(base.UpdateCommand):
     flags.AddRootVolumeSize(parser)
     flags.AddNodeLabelsForUpdate(parser)
     flags.AddEnableAutoRepair(parser, False)
+    flags.AddMaxSurgeUpdate(parser)
+    flags.AddMaxUnavailableUpdate(parser)
     aws_flags.AddSecurityGroupFlagsForUpdate(parser, 'node pool')
     aws_flags.AddRootVolumeKmsKeyArn(parser)
     aws_flags.AddRootVolumeType(parser)
@@ -96,5 +98,3 @@ class UpdateAlpha(Update):
   def Args(parser, track=base.ReleaseTrack.ALPHA):
     """Registers alpha track flags for this command."""
     Update.Args(parser)
-    flags.AddMaxSurgeUpdate(parser)
-    flags.AddMaxUnavailableUpdate(parser)

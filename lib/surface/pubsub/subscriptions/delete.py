@@ -43,7 +43,8 @@ def _Run(args, legacy_output=False):
       log.DeletedResource(
           subscription_ref.RelativeName(),
           kind='subscription',
-          failed=exc.payload.status_message)
+          failed=util.CreateFailureErrorMessage(exc.payload.status_message),
+      )
       failed.append(subscription_ref.subscriptionsId)
       continue
 

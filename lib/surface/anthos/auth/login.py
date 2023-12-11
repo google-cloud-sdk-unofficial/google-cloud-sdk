@@ -29,8 +29,7 @@ class Login(base.BinaryBackedCommand):
   """Authenticate clusters using the Anthos client."""
 
   detailed_help = {
-      'EXAMPLES':
-          """
+      'EXAMPLES': """
       To  add credentials to default kubeconfig file:
 
           $ {command} --cluster=testcluster --login-config=kubectl-anthos-config.yaml
@@ -42,6 +41,15 @@ class Login(base.BinaryBackedCommand):
       To generate the commands without executing them:
 
           $ {command} --cluster=testcluster --login-config=kubectl-anthos-config.yaml --dry-run
+
+      To add credentials to default kubeconfig file using server side login:
+
+          $ {command} --cluster=testcluster --server=<server-url>
+
+
+      To add credentials to custom kubeconfig file using server side login:
+
+          $ {command}  --cluster=testcluster --server=<server-url> --kubeconfig=my.kubeconfig
             """,
   }
 
@@ -57,10 +65,28 @@ class Login(base.BinaryBackedCommand):
     flags.GetDryRunFlag('Print out the generated kubectl commands '
                         'but do not execute them.').AddToParser(parser)
     flags.GetSetPreferredAuthenticationFlag().AddToParser(parser)
+    flags.GetServerFlag().AddToParser(parser)
 
   def Run(self, args):
     command_executor = anthoscli_backend.AnthosAuthWrapper()
     cluster = args.CLUSTER
+
+    # If "server" flag is used, skip reading local config file.
+    if args.server:
+      # Log and execute binary command with flags.
+      log.status.Print(messages.LOGIN_CONFIG_MESSAGE)
+      response = command_executor(
+          command='login',
+          cluster=cluster,
+          kube_config=args.kubeconfig,
+          login_config_cert=args.login_config_cert,
+          dry_run=args.dry_run,
+          server_url=args.server,
+          env=anthoscli_backend.GetEnvArgsForCommand(
+              extra_vars={'GCLOUD_AUTH_PLUGIN': 'true'}
+          ),
+      )
+      return anthoscli_backend.LoginResponseHandler(response)
 
     # Get Default Path if flag not provided.
     login_config = args.login_config or command_executor.default_config_path
@@ -71,12 +97,15 @@ class Login(base.BinaryBackedCommand):
 
     # Get Preferred Auth Method and handle prompting.
     force_update = args.set_preferred_auth
-    authmethod, ldapuser, ldappass = anthoscli_backend.GetPreferredAuthForCluster(
-        cluster=cluster,
-        login_config=login_config,
-        config_contents=config_contents,
-        force_update=force_update,
-        is_url=is_url)
+    authmethod, ldapuser, ldappass = (
+        anthoscli_backend.GetPreferredAuthForCluster(
+            cluster=cluster,
+            login_config=login_config,
+            config_contents=config_contents,
+            force_update=force_update,
+            is_url=is_url,
+        )
+    )
 
     # Log and execute binary command with flags.
     log.status.Print(messages.LOGIN_CONFIG_MESSAGE)
@@ -93,6 +122,8 @@ class Login(base.BinaryBackedCommand):
         ldap_pass=ldappass,
         preferred_auth=authmethod,
         env=anthoscli_backend.GetEnvArgsForCommand(
-            extra_vars={'GCLOUD_AUTH_PLUGIN': 'true'}))
+            extra_vars={'GCLOUD_AUTH_PLUGIN': 'true'}
+        ),
+    )
     return anthoscli_backend.LoginResponseHandler(
         response, list_clusters_only=(cluster is None))

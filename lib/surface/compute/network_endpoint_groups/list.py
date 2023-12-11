@@ -37,7 +37,6 @@ class List(base.ListCommand):
           base_classes.ScopeType.global_scope,
       ],
   )
-  support_regional_scope = True
 
   @classmethod
   def Args(cls, parser):
@@ -50,7 +49,7 @@ class List(base.ListCommand):
         )
         """)
     lister.AddMultiScopeListerFlags(
-        parser, zonal=True, regional=cls.support_regional_scope, global_=True
+        parser, zonal=True, regional=True, global_=True
     )
 
   def Run(self, args):
@@ -61,9 +60,7 @@ class List(base.ListCommand):
     list_implementation = lister.MultiScopeLister(
         client,
         zonal_service=client.apitools_client.networkEndpointGroups,
-        regional_service=client.apitools_client.regionNetworkEndpointGroups
-        if self.support_regional_scope
-        else None,
+        regional_service=client.apitools_client.regionNetworkEndpointGroups,
         global_service=client.apitools_client.globalNetworkEndpointGroups,
         aggregation_service=client.apitools_client.networkEndpointGroups,
     )

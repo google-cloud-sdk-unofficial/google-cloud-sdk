@@ -58,9 +58,12 @@ class Delete(base.DeleteCommand):
     with repositories.OverrideApiEndpointOverrides(api_base_url):
       # Delete repository
       client = repositories.RepositoriesClient()
-      delete_response = client.Delete(repository_ref, args.allow_missing)
-
-    return delete_response
+      # this is a shortcut LRO, it completes immediately and is marked as done
+      # there is no need to wait
+      delete_operation = client.Delete(repository_ref, args.allow_missing)
+      if not args.IsSpecified("format"):
+        args.format = "default"
+      return delete_operation
 
 
 Delete.detailed_help = DETAILED_HELP

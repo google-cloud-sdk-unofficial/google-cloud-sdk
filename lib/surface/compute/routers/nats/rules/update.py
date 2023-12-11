@@ -30,11 +30,11 @@ from googlecloudsdk.core import log
 from googlecloudsdk.core import resources
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
+)
 class Update(base.UpdateCommand):
   """Update a Rule in a Compute Engine NAT."""
-
-  with_private_nat = False
 
   @classmethod
   def Args(cls, parser):
@@ -44,12 +44,11 @@ class Update(base.UpdateCommand):
     rules_flags.AddRuleNumberArg(parser, operation_type='update', plural=False)
     rules_flags.AddNatNameArg(parser)
     compute_flags.AddRegionFlag(
-        parser, 'NAT containing the Rule', operation_type='update')
+        parser, 'NAT containing the Rule', operation_type='update'
+    )
 
-    rules_flags.AddMatchArg(
-        parser, required=False, with_private_nat=cls.with_private_nat)
-    rules_flags.AddIpAndRangeArgsForUpdate(
-        parser, with_private_nat=cls.with_private_nat)
+    rules_flags.AddMatchArg(parser, required=False)
+    rules_flags.AddIpAndRangeArgsForUpdate(parser)
 
     base.ASYNC_FLAG.AddToParser(parser)
 
@@ -69,8 +68,7 @@ class Update(base.UpdateCommand):
     nat = nats_utils.FindNatOrRaise(router, nat_name)
     rule = rules_utils.FindRuleOrRaise(nat, rule_number)
 
-    rules_utils.UpdateRuleMessage(
-        rule, args, holder, nat, with_private_nat=self.with_private_nat)
+    rules_utils.UpdateRuleMessage(rule, args, holder, nat)
 
     result = service.Patch(
         messages.ComputeRoutersPatchRequest(
@@ -108,13 +106,6 @@ class Update(base.UpdateCommand):
     return waiter.WaitFor(
         operation_poller, operation_ref,
         'Updating Rule [{0}] in NAT [{1}]'.format(rule_number, nat_name))
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
-class UpdateAlphaBeta(Update):
-  """Update a Rule in a Compute Engine NAT."""
-
-  with_private_nat = True
 
 
 Update.detailed_help = {

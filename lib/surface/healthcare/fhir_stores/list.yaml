@@ -30,8 +30,8 @@
       table(
           name.scope("fhirStores"):label=ID,
           name.scope("locations").segment(0):label=LOCATION,
-          disableReferentialIntegrity:label=REF_INT,
-          disableResourceVersioning:label=RES_VER,
+          disableReferentialIntegrity:label=DISABLE_REF_INT,
+          disableResourceVersioning:label=DISABLE_RES_VER,
           enableUpdateCreate:label=UPDATE_CREATE,
           notificationConfig.pubsubTopic:label=TOPIC
       )

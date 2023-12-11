@@ -20,7 +20,7 @@ cloud-firestore-emulator: google-cloud-sdk-firestore-emulator
 cloud-spanner-emulator: google-cloud-sdk-spanner-emulator
 core: google-cloud-sdk
 pkg: unavailable
-docker-credential-gcr: unavailable
+docker-credential-gcr: google-cloud-cli-docker-credential-gcr
 enterprise-certificate-proxy: google-cloud-sdk-enterprise-certificate-proxy
 gcloud: google-cloud-sdk
 gcloud-crc32c: google-cloud-sdk

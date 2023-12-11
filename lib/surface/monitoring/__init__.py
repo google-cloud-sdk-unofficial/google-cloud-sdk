@@ -71,7 +71,7 @@ class MonitoringBeta(base.Group):
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class MonitoringAlpha(base.Group):
   # pylint: disable=line-too-long
-  """Manage Cloud Monitoring alerting policies, dashboards, and notification channels."""
+  """Manage Cloud Monitoring alerting policies, dashboards, notification channels, and uptime checks."""
   category = base.MONITORING_CATEGORY
 
   detailed_help = {
@@ -85,6 +85,7 @@ class MonitoringAlpha(base.Group):
               * https://cloud.google.com/monitoring/alerts/using-alerting-api
               * https://cloud.google.com/monitoring/alerts/using-channels-api
               * https://cloud.google.com/monitoring/dashboards/api-dashboard
+              * https://cloud.google.com/monitoring/uptime-checks/manage#api
       """
   }
 

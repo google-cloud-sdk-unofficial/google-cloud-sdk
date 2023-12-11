@@ -30,11 +30,11 @@ from googlecloudsdk.core import log
 from googlecloudsdk.core import resources
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
+)
 class Create(base.CreateCommand):
   """Add a Rule to a Compute Engine NAT."""
-
-  with_private_nat = False
 
   @classmethod
   def Args(cls, parser):
@@ -45,10 +45,8 @@ class Create(base.CreateCommand):
     rules_flags.AddNatNameArg(parser)
     compute_flags.AddRegionFlag(parser, 'NAT', operation_type='create')
 
-    rules_flags.AddMatchArg(
-        parser, required=True, with_private_nat=cls.with_private_nat)
-    rules_flags.AddIpAndRangeArgsForCreate(
-        parser, with_private_nat=cls.with_private_nat)
+    rules_flags.AddMatchArg(parser, required=True)
+    rules_flags.AddIpAndRangeArgsForCreate(parser)
 
     base.ASYNC_FLAG.AddToParser(parser)
 
@@ -67,8 +65,7 @@ class Create(base.CreateCommand):
 
     existing_nat = nats_utils.FindNatOrRaise(router, nat_name)
 
-    rule = rules_utils.CreateRuleMessage(
-        args, holder, existing_nat, with_private_nat=self.with_private_nat)
+    rule = rules_utils.CreateRuleMessage(args, holder, existing_nat)
     existing_nat.rules.append(rule)
 
     result = service.Patch(
@@ -107,13 +104,6 @@ class Create(base.CreateCommand):
     return waiter.WaitFor(
         operation_poller, operation_ref,
         'Creating Rule [{0}] in NAT [{1}]'.format(rule_number, nat_name))
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
-class CreateAlphaBeta(Create):
-  """Add a Rule to a Compute Engine NAT."""
-
-  with_private_nat = True
 
 
 Create.detailed_help = {

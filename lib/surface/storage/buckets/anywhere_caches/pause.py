@@ -12,15 +12,21 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Implementation of pause command to pause Anywhere Cache Instances."""
+"""Implementation of pause command to pause Anywhere Cache instances."""
 
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.storage import plurality_checkable_iterator
+from googlecloudsdk.command_lib.storage import progress_callbacks
+from googlecloudsdk.command_lib.storage.tasks import task_executor
+from googlecloudsdk.command_lib.storage.tasks import task_graph_executor
+from googlecloudsdk.command_lib.storage.tasks import task_status
+from googlecloudsdk.command_lib.storage.tasks.buckets.anywhere_caches import pause_anywhere_cache_task
 
 
 @base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Pause(base.Command):
-  """Pause Anywhere Cache Instances of a bucket."""
+  """Pause Anywhere Cache instances of a bucket."""
 
   detailed_help = {
       'DESCRIPTION': """
@@ -31,9 +37,9 @@ class Pause(base.Command):
       'EXAMPLES': """
 
       The following command pause the anywhere cache instance of bucket
-      ``gs://my-bucket'' in ``asia-south2-b'' zone:
+      ``my-bucket'' in ``asia-south2-b'' zone:
 
-        $ {command} gs://my-bucket/asia-south2-b
+        $ {command} my-bucket/asia-south2-b
       """,
   }
 
@@ -49,6 +55,28 @@ class Pause(base.Command):
         ),
     )
 
+  def get_task_iterator(self, args, task_status_queue):
+    progress_callbacks.workload_estimator_callback(
+        task_status_queue, len(args.id)
+    )
+
+    for id_str in args.id:
+      bucket_name, _, zone = id_str.rpartition('/')
+      yield pause_anywhere_cache_task.PauseAnywhereCacheTask(bucket_name, zone)
+
   def Run(self, args):
-    # TODO(b/303559351) : Implementation of pause command
-    raise NotImplementedError
+    task_status_queue = task_graph_executor.multiprocessing_context.Queue()
+    task_iterator = self.get_task_iterator(args, task_status_queue)
+    plurality_checkable_task_iterator = (
+        plurality_checkable_iterator.PluralityCheckableIterator(task_iterator)
+    )
+
+    self.exit_code = task_executor.execute_tasks(
+        plurality_checkable_task_iterator,
+        parallelizable=True,
+        task_status_queue=task_status_queue,
+        progress_manager_args=task_status.ProgressManagerArgs(
+            increment_type=task_status.IncrementType.INTEGER, manifest_path=None
+        ),
+        continue_on_error=getattr(args, 'continue_on_error', False),
+    )

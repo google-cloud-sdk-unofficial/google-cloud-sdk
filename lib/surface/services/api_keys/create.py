@@ -27,9 +27,7 @@ from googlecloudsdk.core import properties
 
 OP_BASE_CMD = 'gcloud services operations '
 OP_WAIT_CMD = OP_BASE_CMD + 'wait {0}'
-DETAILED_HELP = {
-    'EXAMPLES':
-        """
+DETAILED_HELP = {'EXAMPLES': """
         To create a key with display name and allowed ips specified:
 
           $ {command} --display-name="test name" --allowed-ips=2620:15c:2c4:203:2776:1f90:6b3b:217,104.133.8.78
@@ -37,6 +35,10 @@ DETAILED_HELP = {
         To create a key with annotations:
 
          $ {command} --annotations=foo=bar,abc=def
+
+        To create a key with user-specified key id:
+
+          $ {command} --key-id="my-key-id"
 
         To create a key with allowed referrers restriction:
 
@@ -72,11 +74,12 @@ DETAILED_HELP = {
               - "foomethod"
               - "barmethod"
         ```
-        """
-}
+        """}
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
+)
 class Create(base.CreateCommand):
   """Create an API key."""
 
@@ -84,6 +87,7 @@ class Create(base.CreateCommand):
   def Args(parser):
     common_flags.display_name_flag(parser=parser, suffix='to create')
     common_flags.add_key_create_args(parser)
+    common_flags.key_id_flag(parser=parser, suffix='to create')
     base.ASYNC_FLAG.AddToParser(parser)
 
   def Run(self, args):
@@ -121,8 +125,16 @@ class Create(base.CreateCommand):
       key_proto.restrictions.apiTargets = apikeys.GetApiTargets(args, messages)
     if args.IsSpecified('annotations'):
       key_proto.annotations = apikeys.GetAnnotations(args, messages)
-    request = messages.ApikeysProjectsLocationsKeysCreateRequest(
-        parent=apikeys.GetParentResourceName(project_id), v2Key=key_proto)
+    if args.IsSpecified('key_id'):
+      request = messages.ApikeysProjectsLocationsKeysCreateRequest(
+          parent=apikeys.GetParentResourceName(project_id),
+          v2Key=key_proto,
+          keyId=args.key_id,
+      )
+    else:
+      request = messages.ApikeysProjectsLocationsKeysCreateRequest(
+          parent=apikeys.GetParentResourceName(project_id), v2Key=key_proto
+      )
     op = client.projects_locations_keys.Create(request)
     if not op.done:
       if args.async_:

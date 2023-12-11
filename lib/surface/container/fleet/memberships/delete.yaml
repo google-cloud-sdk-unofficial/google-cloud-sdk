@@ -23,7 +23,7 @@
     modify_request_hooks:
     - googlecloudsdk.command_lib.container.fleet.memberships.util:SetMembershipLocation
     ALPHA:
-      api_version: v1alpha2
+      api_version: v1alpha
     BETA:
       api_version: v1beta1
     GA:

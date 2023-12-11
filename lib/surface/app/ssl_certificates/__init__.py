@@ -30,7 +30,7 @@ class SslCertificates(base.Group):
   This set of commands can be used to view and manage your app's
   SSL certificates.
   """
-
+  category = base.APP_ENGINE_CATEGORY
   detailed_help = {
       'DESCRIPTION':
           '{description}',

@@ -25,7 +25,7 @@ arguments:
       Reference ID of the customer gateway to be paired with this partner gateway.
   - arg_name: partner-subnet-range
     required: true
-    api_field: partnerSSEGateway.partnerVpcSubnetRange
+    api_field: partnerSSEGateway.partnerSubnetRange
     help_text: |
       Address range (in CIDR format) for the partner-owned subnet which will support this gateway.
 

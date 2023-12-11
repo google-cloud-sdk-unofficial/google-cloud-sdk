@@ -25,9 +25,10 @@ from googlecloudsdk.command_lib.apphub import flags
 _DETAILED_HELP = {
     'DESCRIPTION': '{description}',
     'EXAMPLES': """ \
-        To update an application with the id `my-app` run:
+        To update the Application `my-app` with a new environment
+        `prod` in location `us-east1`, run:
 
-          $ {command} my-app
+          $ {command} my-app --location=us-east1 --environment=prod
         """,
 }
 

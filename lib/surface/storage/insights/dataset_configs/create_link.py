@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Implementation of create-link command for insights dataset config."""
+"""Implementation of create-link command for Insights dataset config."""
 
 from googlecloudsdk.api_lib.storage import insights_api
 from googlecloudsdk.calliope import base
@@ -27,7 +27,7 @@ class CreateLink(base.Command):
 
   detailed_help = {
       'DESCRIPTION': """
-      Create link to the customer BigQuery instance for insights dataset config.
+      Create link to the customer BigQuery instance for Insights dataset config.
       """,
       'EXAMPLES': """
 

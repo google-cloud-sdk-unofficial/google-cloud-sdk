@@ -65,27 +65,20 @@
         - _REF_: googlecloudsdk.command_lib.compute.tpus.tpu_vm.flags:clear_tags
         - _REF_: googlecloudsdk.command_lib.compute.tpus.tpu_vm.flags:remove_tags
     - group:
-        release_tracks: [ALPHA]
         required: false
         mutex: true
         params:
         - _REF_: googlecloudsdk.command_lib.compute.tpus.flags:metadata_from_file
-          release_tracks: [ALPHA]
         - group:
-            release_tracks: [ALPHA]
             required: false
             params:
             - _REF_: googlecloudsdk.command_lib.compute.tpus.flags:update_metadata
-              release_tracks: [ALPHA]
             - group:
-                release_tracks: [ALPHA]
                 required: false
                 mutex: true
                 params:
                 - _REF_: googlecloudsdk.command_lib.compute.tpus.flags:clear_metadata
-                  release_tracks: [ALPHA]
                 - _REF_: googlecloudsdk.command_lib.compute.tpus.flags:remove_metadata
-                  release_tracks: [ALPHA]
     - group:
         required: false
         mutex: true

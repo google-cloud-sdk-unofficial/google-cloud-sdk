@@ -125,7 +125,7 @@ class RetryingConnection(Connection[Request, Response], PermanentFailable):
                         asyncio.sleep(
                             min(
                                 _MAX_BACKOFF_SECS,
-                                _MIN_BACKOFF_SECS * (2 ** bad_retries),
+                                _MIN_BACKOFF_SECS * (2**bad_retries),
                             )
                         )
                     )

@@ -53,6 +53,9 @@ class Update(base.UpdateCommand):
       parser: argparse.Parser, Parser object for command line inputs
     """
     base.ASYNC_FLAG.AddToParser(parser)
+    # Update runs for a long time, it is better to default to async mode so that
+    # users can query the operation status and find the status.
+    base.ASYNC_FLAG.SetDefault(parser, True)
     flags.AddAvailabilityType(parser)
     flags.AddCluster(parser, False)
     flags.AddDatabaseFlags(parser)

@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
-
-# Copyright 2020 Google LLC
+# Copyright 2023 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,33 +13,29 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-
 import warnings
-from typing import Callable, Dict, Optional, Sequence, Tuple
+from typing import Callable, Dict, Optional, Sequence, Tuple, Union
 
-from google.api_core import grpc_helpers  # type: ignore
-from google.api_core import gapic_v1  # type: ignore
-from google import auth  # type: ignore
-from google.auth import credentials  # type: ignore
+from google.api_core import grpc_helpers
+from google.api_core import gapic_v1
+import google.auth  # type: ignore
+from google.auth import credentials as ga_credentials  # type: ignore
 from google.auth.transport.grpc import SslCredentials  # type: ignore
 
 import grpc  # type: ignore
 
-from google.iam.v1 import iam_policy_pb2 as iam_policy  # type: ignore
-from google.iam.v1 import policy_pb2 as policy  # type: ignore
-from cloudsdk.google.protobuf import empty_pb2 as empty  # type: ignore
+from google.iam.v1 import iam_policy_pb2  # type: ignore
+from google.iam.v1 import policy_pb2  # type: ignore
+from cloudsdk.google.protobuf import empty_pb2  # type: ignore
 from google.pubsub_v1.types import schema
 from google.pubsub_v1.types import schema as gp_schema
-
 from .base import SchemaServiceTransport, DEFAULT_CLIENT_INFO
 
 
 class SchemaServiceGrpcTransport(SchemaServiceTransport):
     """gRPC backend transport for SchemaService.
 
-     Service for doing schema-related operations.
-    EXPERIMENTAL: The Schema service is in development and may not
-    work yet.
+    Service for doing schema-related operations.
 
     This class defines the same methods as the primary client, so the
     primary client can load the underlying transport implementation
@@ -56,20 +51,24 @@ class SchemaServiceGrpcTransport(SchemaServiceTransport):
         self,
         *,
         host: str = "pubsub.googleapis.com",
-        credentials: credentials.Credentials = None,
-        credentials_file: str = None,
-        scopes: Sequence[str] = None,
-        channel: grpc.Channel = None,
-        api_mtls_endpoint: str = None,
-        client_cert_source: Callable[[], Tuple[bytes, bytes]] = None,
-        ssl_channel_credentials: grpc.ChannelCredentials = None,
+        credentials: Optional[ga_credentials.Credentials] = None,
+        credentials_file: Optional[str] = None,
+        scopes: Optional[Sequence[str]] = None,
+        channel: Optional[grpc.Channel] = None,
+        api_mtls_endpoint: Optional[str] = None,
+        client_cert_source: Optional[Callable[[], Tuple[bytes, bytes]]] = None,
+        ssl_channel_credentials: Optional[grpc.ChannelCredentials] = None,
+        client_cert_source_for_mtls: Optional[Callable[[], Tuple[bytes, bytes]]] = None,
         quota_project_id: Optional[str] = None,
         client_info: gapic_v1.client_info.ClientInfo = DEFAULT_CLIENT_INFO,
+        always_use_jwt_access: Optional[bool] = False,
+        api_audience: Optional[str] = None,
     ) -> None:
         """Instantiate the transport.
 
         Args:
-            host (Optional[str]): The hostname to connect to.
+            host (Optional[str]):
+                 The hostname to connect to.
             credentials (Optional[google.auth.credentials.Credentials]): The
                 authorization credentials to attach to requests. These
                 credentials identify the application to the service; if none
@@ -86,13 +85,17 @@ class SchemaServiceGrpcTransport(SchemaServiceTransport):
             api_mtls_endpoint (Optional[str]): Deprecated. The mutual TLS endpoint.
                 If provided, it overrides the ``host`` argument and tries to create
                 a mutual TLS channel with client SSL credentials from
-                ``client_cert_source`` or applicatin default SSL credentials.
+                ``client_cert_source`` or application default SSL credentials.
             client_cert_source (Optional[Callable[[], Tuple[bytes, bytes]]]):
                 Deprecated. A callback to provide client SSL certificate bytes and
                 private key bytes, both in PEM format. It is ignored if
                 ``api_mtls_endpoint`` is None.
             ssl_channel_credentials (grpc.ChannelCredentials): SSL credentials
-                for grpc channel. It is ignored if ``channel`` is provided.
+                for the grpc channel. It is ignored if ``channel`` is provided.
+            client_cert_source_for_mtls (Optional[Callable[[], Tuple[bytes, bytes]]]):
+                A callback to provide client certificate bytes and private key bytes,
+                both in PEM format. It is used to configure a mutual TLS channel. It is
+                ignored if ``channel`` or ``ssl_channel_credentials`` is provided.
             quota_project_id (Optional[str]): An optional project to use for billing
                 and quota.
             client_info (google.api_core.gapic_v1.client_info.ClientInfo):
@@ -100,6 +103,8 @@ class SchemaServiceGrpcTransport(SchemaServiceTransport):
                 API requests. If ``None``, then default info will be used.
                 Generally, you only need to set this if you're developing
                 your own client library.
+            always_use_jwt_access (Optional[bool]): Whether self signed JWT should
+                be used for service account credentials.
 
         Raises:
           google.auth.exceptions.MutualTLSChannelError: If mutual TLS transport
@@ -107,106 +112,90 @@ class SchemaServiceGrpcTransport(SchemaServiceTransport):
           google.api_core.exceptions.DuplicateCredentialArgs: If both ``credentials``
               and ``credentials_file`` are passed.
         """
+        self._grpc_channel = None
         self._ssl_channel_credentials = ssl_channel_credentials
+        self._stubs: Dict[str, Callable] = {}
+
+        if api_mtls_endpoint:
+            warnings.warn("api_mtls_endpoint is deprecated", DeprecationWarning)
+        if client_cert_source:
+            warnings.warn("client_cert_source is deprecated", DeprecationWarning)
 
         if channel:
-            # Sanity check: Ensure that channel and credentials are not both
-            # provided.
+            # Ignore credentials if a channel was passed.
             credentials = False
-
             # If a channel was explicitly provided, set it.
             self._grpc_channel = channel
             self._ssl_channel_credentials = None
-        elif api_mtls_endpoint:
-            warnings.warn(
-                "api_mtls_endpoint and client_cert_source are deprecated",
-                DeprecationWarning,
-            )
 
-            host = (
-                api_mtls_endpoint
-                if ":" in api_mtls_endpoint
-                else api_mtls_endpoint + ":443"
-            )
-
-            if credentials is None:
-                credentials, _ = auth.default(
-                    scopes=self.AUTH_SCOPES, quota_project_id=quota_project_id
-                )
-
-            # Create SSL credentials with client_cert_source or application
-            # default SSL credentials.
-            if client_cert_source:
-                cert, key = client_cert_source()
-                ssl_credentials = grpc.ssl_channel_credentials(
-                    certificate_chain=cert, private_key=key
-                )
-            else:
-                ssl_credentials = SslCredentials().ssl_credentials
-
-            # create a new channel. The provided one is ignored.
-            self._grpc_channel = type(self).create_channel(
-                host,
-                credentials=credentials,
-                credentials_file=credentials_file,
-                ssl_credentials=ssl_credentials,
-                scopes=scopes or self.AUTH_SCOPES,
-                quota_project_id=quota_project_id,
-                options=[
-                    ("grpc.max_send_message_length", -1),
-                    ("grpc.max_receive_message_length", -1),
-                    ("grpc.keepalive_time_ms", 30000),
-                ],
-            )
-            self._ssl_channel_credentials = ssl_credentials
         else:
-            host = host if ":" in host else host + ":443"
+            if api_mtls_endpoint:
+                host = api_mtls_endpoint
 
-            if credentials is None:
-                credentials, _ = auth.default(
-                    scopes=self.AUTH_SCOPES, quota_project_id=quota_project_id
-                )
+                # Create SSL credentials with client_cert_source or application
+                # default SSL credentials.
+                if client_cert_source:
+                    cert, key = client_cert_source()
+                    self._ssl_channel_credentials = grpc.ssl_channel_credentials(
+                        certificate_chain=cert, private_key=key
+                    )
+                else:
+                    self._ssl_channel_credentials = SslCredentials().ssl_credentials
 
-            # create a new channel. The provided one is ignored.
-            self._grpc_channel = type(self).create_channel(
-                host,
-                credentials=credentials,
-                credentials_file=credentials_file,
-                ssl_credentials=ssl_channel_credentials,
-                scopes=scopes or self.AUTH_SCOPES,
-                quota_project_id=quota_project_id,
-                options=[
-                    ("grpc.max_send_message_length", -1),
-                    ("grpc.max_receive_message_length", -1),
-                    ("grpc.keepalive_time_ms", 30000),
-                ],
-            )
+            else:
+                if client_cert_source_for_mtls and not ssl_channel_credentials:
+                    cert, key = client_cert_source_for_mtls()
+                    self._ssl_channel_credentials = grpc.ssl_channel_credentials(
+                        certificate_chain=cert, private_key=key
+                    )
 
-        self._stubs = {}  # type: Dict[str, Callable]
-
-        # Run the base constructor.
+        # The base transport sets the host, credentials and scopes
         super().__init__(
             host=host,
             credentials=credentials,
             credentials_file=credentials_file,
-            scopes=scopes or self.AUTH_SCOPES,
+            scopes=scopes,
             quota_project_id=quota_project_id,
             client_info=client_info,
+            always_use_jwt_access=always_use_jwt_access,
+            api_audience=api_audience,
         )
+
+        if not self._grpc_channel:
+            self._grpc_channel = type(self).create_channel(
+                self._host,
+                # use the credentials which are saved
+                credentials=self._credentials,
+                # Set ``credentials_file`` to ``None`` here as
+                # the credentials that we saved earlier should be used.
+                credentials_file=None,
+                scopes=self._scopes,
+                ssl_credentials=self._ssl_channel_credentials,
+                quota_project_id=quota_project_id,
+                options=[
+                    ("grpc.max_send_message_length", -1),
+                    ("grpc.max_receive_message_length", -1),
+                    ("grpc.max_metadata_size", 4 * 1024 * 1024),
+                    ("grpc.keepalive_time_ms", 30000),
+                ],
+            )
+
+        # Wrap messages. This must be done after self._grpc_channel exists
+        self._prep_wrapped_messages(client_info)
 
     @classmethod
     def create_channel(
         cls,
         host: str = "pubsub.googleapis.com",
-        credentials: credentials.Credentials = None,
-        credentials_file: str = None,
+        credentials: Optional[ga_credentials.Credentials] = None,
+        credentials_file: Optional[str] = None,
         scopes: Optional[Sequence[str]] = None,
         quota_project_id: Optional[str] = None,
         **kwargs,
     ) -> grpc.Channel:
         """Create and return a gRPC channel object.
         Args:
-            address (Optional[str]): The host for the channel to use.
+            host (Optional[str]): The host for the channel to use.
             credentials (Optional[~.Credentials]): The
                 authorization credentials to attach to requests. These
                 credentials identify this application to the service. If
@@ -229,20 +218,21 @@ class SchemaServiceGrpcTransport(SchemaServiceTransport):
             google.api_core.exceptions.DuplicateCredentialArgs: If both ``credentials``
               and ``credentials_file`` are passed.
         """
-        scopes = scopes or cls.AUTH_SCOPES
+
         return grpc_helpers.create_channel(
             host,
             credentials=credentials,
             credentials_file=credentials_file,
-            scopes=scopes,
             quota_project_id=quota_project_id,
+            default_scopes=cls.AUTH_SCOPES,
+            scopes=scopes,
+            default_host=cls.DEFAULT_HOST,
             **kwargs,
         )
 
     @property
     def grpc_channel(self) -> grpc.Channel:
-        """Return the channel designed to connect to this service.
-        """
+        """Return the channel designed to connect to this service."""
         return self._grpc_channel
 
     @property
@@ -322,7 +312,114 @@ class SchemaServiceGrpcTransport(SchemaServiceTransport):
         return self._stubs["list_schemas"]
 
     @property
-    def delete_schema(self) -> Callable[[schema.DeleteSchemaRequest], empty.Empty]:
+    def list_schema_revisions(
+        self,
+    ) -> Callable[
+        [schema.ListSchemaRevisionsRequest], schema.ListSchemaRevisionsResponse
+    ]:
+        r"""Return a callable for the list schema revisions method over gRPC.
+
+        Lists all schema revisions for the named schema.
+
+        Returns:
+            Callable[[~.ListSchemaRevisionsRequest],
+                    ~.ListSchemaRevisionsResponse]:
+                A function that, when called, will call the underlying RPC
+                on the server.
+        """
+        # Generate a "stub function" on-the-fly which will actually make
+        # the request.
+        # gRPC handles serialization and deserialization, so we just need
+        # to pass in the functions for each.
+        if "list_schema_revisions" not in self._stubs:
+            self._stubs["list_schema_revisions"] = self.grpc_channel.unary_unary(
+                "/google.pubsub.v1.SchemaService/ListSchemaRevisions",
+                request_serializer=schema.ListSchemaRevisionsRequest.serialize,
+                response_deserializer=schema.ListSchemaRevisionsResponse.deserialize,
+            )
+        return self._stubs["list_schema_revisions"]
+
+    @property
+    def commit_schema(
+        self,
+    ) -> Callable[[gp_schema.CommitSchemaRequest], gp_schema.Schema]:
+        r"""Return a callable for the commit schema method over gRPC.
+
+        Commits a new schema revision to an existing schema.
+
+        Returns:
+            Callable[[~.CommitSchemaRequest],
+                    ~.Schema]:
+                A function that, when called, will call the underlying RPC
+                on the server.
+        """
+        # Generate a "stub function" on-the-fly which will actually make
+        # the request.
+        # gRPC handles serialization and deserialization, so we just need
+        # to pass in the functions for each.
+        if "commit_schema" not in self._stubs:
+            self._stubs["commit_schema"] = self.grpc_channel.unary_unary(
+                "/google.pubsub.v1.SchemaService/CommitSchema",
+                request_serializer=gp_schema.CommitSchemaRequest.serialize,
+                response_deserializer=gp_schema.Schema.deserialize,
+            )
+        return self._stubs["commit_schema"]
+
+    @property
+    def rollback_schema(
+        self,
+    ) -> Callable[[schema.RollbackSchemaRequest], schema.Schema]:
+        r"""Return a callable for the rollback schema method over gRPC.
+
+        Creates a new schema revision that is a copy of the provided
+        revision_id.
+
+        Returns:
+            Callable[[~.RollbackSchemaRequest],
+                    ~.Schema]:
+                A function that, when called, will call the underlying RPC
+                on the server.
+        """
+        # Generate a "stub function" on-the-fly which will actually make
+        # the request.
+        # gRPC handles serialization and deserialization, so we just need
+        # to pass in the functions for each.
+        if "rollback_schema" not in self._stubs:
+            self._stubs["rollback_schema"] = self.grpc_channel.unary_unary(
+                "/google.pubsub.v1.SchemaService/RollbackSchema",
+                request_serializer=schema.RollbackSchemaRequest.serialize,
+                response_deserializer=schema.Schema.deserialize,
+            )
+        return self._stubs["rollback_schema"]
+
+    @property
+    def delete_schema_revision(
+        self,
+    ) -> Callable[[schema.DeleteSchemaRevisionRequest], schema.Schema]:
+        r"""Return a callable for the delete schema revision method over gRPC.
+
+        Deletes a specific schema revision.
+
+        Returns:
+            Callable[[~.DeleteSchemaRevisionRequest],
+                    ~.Schema]:
+                A function that, when called, will call the underlying RPC
+                on the server.
+        """
+        # Generate a "stub function" on-the-fly which will actually make
+        # the request.
+        # gRPC handles serialization and deserialization, so we just need
+        # to pass in the functions for each.
+        if "delete_schema_revision" not in self._stubs:
+            self._stubs["delete_schema_revision"] = self.grpc_channel.unary_unary(
+                "/google.pubsub.v1.SchemaService/DeleteSchemaRevision",
+                request_serializer=schema.DeleteSchemaRevisionRequest.serialize,
+                response_deserializer=schema.Schema.deserialize,
+            )
+        return self._stubs["delete_schema_revision"]
+
+    @property
+    def delete_schema(self) -> Callable[[schema.DeleteSchemaRequest], empty_pb2.Empty]:
         r"""Return a callable for the delete schema method over gRPC.
 
         Deletes a schema.
@@ -341,7 +438,7 @@ class SchemaServiceGrpcTransport(SchemaServiceTransport):
             self._stubs["delete_schema"] = self.grpc_channel.unary_unary(
                 "/google.pubsub.v1.SchemaService/DeleteSchema",
                 request_serializer=schema.DeleteSchemaRequest.serialize,
-                response_deserializer=empty.Empty.FromString,
+                response_deserializer=empty_pb2.Empty.FromString,
             )
         return self._stubs["delete_schema"]
 
@@ -400,7 +497,7 @@ class SchemaServiceGrpcTransport(SchemaServiceTransport):
     @property
     def set_iam_policy(
         self,
-    ) -> Callable[[iam_policy.SetIamPolicyRequest], policy.Policy]:
+    ) -> Callable[[iam_policy_pb2.SetIamPolicyRequest], policy_pb2.Policy]:
         r"""Return a callable for the set iam policy method over gRPC.
         Sets the IAM access control policy on the specified
         function. Replaces any existing policy.
@@ -417,15 +514,15 @@ class SchemaServiceGrpcTransport(SchemaServiceTransport):
         if "set_iam_policy" not in self._stubs:
             self._stubs["set_iam_policy"] = self.grpc_channel.unary_unary(
                 "/google.iam.v1.IAMPolicy/SetIamPolicy",
-                request_serializer=iam_policy.SetIamPolicyRequest.SerializeToString,
-                response_deserializer=policy.Policy.FromString,
+                request_serializer=iam_policy_pb2.SetIamPolicyRequest.SerializeToString,
+                response_deserializer=policy_pb2.Policy.FromString,
             )
         return self._stubs["set_iam_policy"]
 
     @property
     def get_iam_policy(
         self,
-    ) -> Callable[[iam_policy.GetIamPolicyRequest], policy.Policy]:
+    ) -> Callable[[iam_policy_pb2.GetIamPolicyRequest], policy_pb2.Policy]:
         r"""Return a callable for the get iam policy method over gRPC.
         Gets the IAM access control policy for a function.
         Returns an empty policy if the function exists and does
@@ -443,8 +540,8 @@ class SchemaServiceGrpcTransport(SchemaServiceTransport):
         if "get_iam_policy" not in self._stubs:
             self._stubs["get_iam_policy"] = self.grpc_channel.unary_unary(
                 "/google.iam.v1.IAMPolicy/GetIamPolicy",
-                request_serializer=iam_policy.GetIamPolicyRequest.SerializeToString,
-                response_deserializer=policy.Policy.FromString,
+                request_serializer=iam_policy_pb2.GetIamPolicyRequest.SerializeToString,
+                response_deserializer=policy_pb2.Policy.FromString,
             )
         return self._stubs["get_iam_policy"]
 
@@ -452,7 +549,8 @@ class SchemaServiceGrpcTransport(SchemaServiceTransport):
     def test_iam_permissions(
         self,
     ) -> Callable[
-        [iam_policy.TestIamPermissionsRequest], iam_policy.TestIamPermissionsResponse
+        [iam_policy_pb2.TestIamPermissionsRequest],
+        iam_policy_pb2.TestIamPermissionsResponse,
     ]:
         r"""Return a callable for the test iam permissions method over gRPC.
         Tests the specified permissions against the IAM access control
@@ -471,10 +569,17 @@ class SchemaServiceGrpcTransport(SchemaServiceTransport):
         if "test_iam_permissions" not in self._stubs:
             self._stubs["test_iam_permissions"] = self.grpc_channel.unary_unary(
                 "/google.iam.v1.IAMPolicy/TestIamPermissions",
-                request_serializer=iam_policy.TestIamPermissionsRequest.SerializeToString,
-                response_deserializer=iam_policy.TestIamPermissionsResponse.FromString,
+                request_serializer=iam_policy_pb2.TestIamPermissionsRequest.SerializeToString,
+                response_deserializer=iam_policy_pb2.TestIamPermissionsResponse.FromString,
             )
         return self._stubs["test_iam_permissions"]
+
+    def close(self):
+        self.grpc_channel.close()
+
+    @property
+    def kind(self) -> str:
+        return "grpc"
 
 
 __all__ = ("SchemaServiceGrpcTransport",)

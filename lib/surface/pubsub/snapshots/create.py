@@ -92,7 +92,8 @@ class Create(base.CreateCommand):
         log.CreatedResource(
             snapshot_ref.RelativeName(),
             kind='snapshot',
-            failed=exc.payload.status_message)
+            failed=util.CreateFailureErrorMessage(exc.payload.status_message),
+        )
         failed.append(snapshot_name)
         continue
 

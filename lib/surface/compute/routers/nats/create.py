@@ -30,12 +30,11 @@ from googlecloudsdk.core import log
 from googlecloudsdk.core import resources
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
+)
 class Create(base.CreateCommand):
   """Add a NAT to a Compute Engine router."""
-
-  with_private_nat = False
-  with_subnet_all = False
 
   @classmethod
   def Args(cls, parser):
@@ -47,16 +46,10 @@ class Create(base.CreateCommand):
     compute_flags.AddRegionFlag(parser, 'NAT', operation_type='create')
 
     nats_flags.AddNatNameArg(parser, operation_type='create')
-    if cls.with_private_nat:
-      nats_flags.AddTypeArg(parser)
+    nats_flags.AddTypeArg(parser)
 
     nats_flags.AddEndpointTypesArg(parser)
-    nats_flags.AddCommonNatArgs(
-        parser,
-        for_create=True,
-        with_private_nat=cls.with_private_nat,
-        with_subnet_all=cls.with_subnet_all,
-    )
+    nats_flags.AddCommonNatArgs(parser, for_create=True)
 
   def Run(self, args):
     """See base.CreateCommand."""
@@ -70,12 +63,7 @@ class Create(base.CreateCommand):
     request_type = messages.ComputeRoutersGetRequest
     replacement = service.Get(request_type(**router_ref.AsDict()))
 
-    nat = nats_utils.CreateNatMessage(
-        args,
-        holder,
-        self.with_private_nat,
-        self.with_subnet_all,
-    )
+    nat = nats_utils.CreateNatMessage(args, holder)
 
     replacement.nats.append(nat)
 
@@ -158,19 +146,3 @@ Create.detailed_help = {
     The alpha command uses the compute/alpha/routers API. Full documentation is not available for the alpha API.
     """
 }
-
-
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class CreateBeta(Create):
-  """Add a NAT to a Compute Engine router."""
-
-  with_private_nat = True
-  with_subnet_all = True
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class CreateAlpha(Create):
-  """Add a NAT to a Compute Engine router."""
-
-  with_private_nat = True
-  with_subnet_all = True

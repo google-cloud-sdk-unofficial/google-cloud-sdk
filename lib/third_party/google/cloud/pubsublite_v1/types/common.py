@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2020 Google LLC
+# Copyright 2022 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,6 +13,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+from __future__ import annotations
+
+from typing import MutableMapping, MutableSequence
+
 import proto  # type: ignore
 
 from cloudsdk.google.protobuf import duration_pb2  # type: ignore
@@ -29,6 +33,7 @@ __protobuf__ = proto.module(
         "Reservation",
         "Topic",
         "Subscription",
+        "ExportConfig",
         "TimeTarget",
     },
 )
@@ -38,11 +43,14 @@ class AttributeValues(proto.Message):
     r"""The values associated with a key of an attribute.
 
     Attributes:
-        values (Sequence[bytes]):
+        values (MutableSequence[bytes]):
             The list of values associated with a key.
     """
 
-    values = proto.RepeatedField(proto.BYTES, number=1,)
+    values: MutableSequence[bytes] = proto.RepeatedField(
+        proto.BYTES,
+        number=1,
+    )
 
 
 class PubSubMessage(proto.Message):
@@ -57,19 +65,32 @@ class PubSubMessage(proto.Message):
             the message is routed to an arbitrary partition.
         data (bytes):
             The payload of the message.
-        attributes (Sequence[google.cloud.pubsublite_v1.types.PubSubMessage.AttributesEntry]):
+        attributes (MutableMapping[str, google.cloud.pubsublite_v1.types.AttributeValues]):
             Optional attributes that can be used for
             message metadata/headers.
         event_time (google.protobuf.timestamp_pb2.Timestamp):
             An optional, user-specified event time.
     """
 
-    key = proto.Field(proto.BYTES, number=1,)
-    data = proto.Field(proto.BYTES, number=2,)
-    attributes = proto.MapField(
-        proto.STRING, proto.MESSAGE, number=3, message="AttributeValues",
+    key: bytes = proto.Field(
+        proto.BYTES,
+        number=1,
     )
-    event_time = proto.Field(proto.MESSAGE, number=4, message=timestamp_pb2.Timestamp,)
+    data: bytes = proto.Field(
+        proto.BYTES,
+        number=2,
+    )
+    attributes: MutableMapping[str, "AttributeValues"] = proto.MapField(
+        proto.STRING,
+        proto.MESSAGE,
+        number=3,
+        message="AttributeValues",
+    )
+    event_time: timestamp_pb2.Timestamp = proto.Field(
+        proto.MESSAGE,
+        number=4,
+        message=timestamp_pb2.Timestamp,
+    )
 
 
 class Cursor(proto.Message):
@@ -82,7 +103,10 @@ class Cursor(proto.Message):
             partition. Must be greater than or equal 0.
     """
 
-    offset = proto.Field(proto.INT64, number=1,)
+    offset: int = proto.Field(
+        proto.INT64,
+        number=1,
+    )
 
 
 class SequencedMessage(proto.Message):
@@ -103,12 +127,25 @@ class SequencedMessage(proto.Message):
             control and quota purposes.
     """
 
-    cursor = proto.Field(proto.MESSAGE, number=1, message="Cursor",)
-    publish_time = proto.Field(
-        proto.MESSAGE, number=2, message=timestamp_pb2.Timestamp,
+    cursor: "Cursor" = proto.Field(
+        proto.MESSAGE,
+        number=1,
+        message="Cursor",
     )
-    message = proto.Field(proto.MESSAGE, number=3, message="PubSubMessage",)
-    size_bytes = proto.Field(proto.INT64, number=4,)
+    publish_time: timestamp_pb2.Timestamp = proto.Field(
+        proto.MESSAGE,
+        number=2,
+        message=timestamp_pb2.Timestamp,
+    )
+    message: "PubSubMessage" = proto.Field(
+        proto.MESSAGE,
+        number=3,
+        message="PubSubMessage",
+    )
+    size_bytes: int = proto.Field(
+        proto.INT64,
+        number=4,
+    )
 
 
 class Reservation(proto.Message):
@@ -130,8 +167,14 @@ class Reservation(proto.Message):
             individually.
     """
 
-    name = proto.Field(proto.STRING, number=1,)
-    throughput_capacity = proto.Field(proto.INT64, number=2,)
+    name: str = proto.Field(
+        proto.STRING,
+        number=1,
+    )
+    throughput_capacity: int = proto.Field(
+        proto.INT64,
+        number=2,
+    )
 
 
 class Topic(proto.Message):
@@ -199,12 +242,25 @@ class Topic(proto.Message):
                     in MiB/s. Must be >= 4 and <= 32.
             """
 
-            publish_mib_per_sec = proto.Field(proto.INT32, number=1,)
-            subscribe_mib_per_sec = proto.Field(proto.INT32, number=2,)
+            publish_mib_per_sec: int = proto.Field(
+                proto.INT32,
+                number=1,
+            )
+            subscribe_mib_per_sec: int = proto.Field(
+                proto.INT32,
+                number=2,
+            )
 
-        count = proto.Field(proto.INT64, number=1,)
-        scale = proto.Field(proto.INT32, number=2, oneof="dimension",)
-        capacity = proto.Field(
+        count: int = proto.Field(
+            proto.INT64,
+            number=1,
+        )
+        scale: int = proto.Field(
+            proto.INT32,
+            number=2,
+            oneof="dimension",
+        )
+        capacity: "Topic.PartitionConfig.Capacity" = proto.Field(
             proto.MESSAGE,
             number=3,
             oneof="dimension",
@@ -227,8 +283,15 @@ class Topic(proto.Message):
                 partition is below ``per_partition_bytes``.
         """
 
-        per_partition_bytes = proto.Field(proto.INT64, number=1,)
-        period = proto.Field(proto.MESSAGE, number=2, message=duration_pb2.Duration,)
+        per_partition_bytes: int = proto.Field(
+            proto.INT64,
+            number=1,
+        )
+        period: duration_pb2.Duration = proto.Field(
+            proto.MESSAGE,
+            number=2,
+            message=duration_pb2.Duration,
+        )
 
     class ReservationConfig(proto.Message):
         r"""The settings for this topic's Reservation usage.
@@ -240,13 +303,29 @@ class Topic(proto.Message):
                 projects/{project_number}/locations/{location}/reservations/{reservation_id}
         """
 
-        throughput_reservation = proto.Field(proto.STRING, number=1,)
+        throughput_reservation: str = proto.Field(
+            proto.STRING,
+            number=1,
+        )
 
-    name = proto.Field(proto.STRING, number=1,)
-    partition_config = proto.Field(proto.MESSAGE, number=2, message=PartitionConfig,)
-    retention_config = proto.Field(proto.MESSAGE, number=3, message=RetentionConfig,)
-    reservation_config = proto.Field(
-        proto.MESSAGE, number=4, message=ReservationConfig,
+    name: str = proto.Field(
+        proto.STRING,
+        number=1,
+    )
+    partition_config: PartitionConfig = proto.Field(
+        proto.MESSAGE,
+        number=2,
+        message=PartitionConfig,
+    )
+    retention_config: RetentionConfig = proto.Field(
+        proto.MESSAGE,
+        number=3,
+        message=RetentionConfig,
+    )
+    reservation_config: ReservationConfig = proto.Field(
+        proto.MESSAGE,
+        number=4,
+        message=ReservationConfig,
     )
 
 
@@ -264,6 +343,10 @@ class Subscription(proto.Message):
         delivery_config (google.cloud.pubsublite_v1.types.Subscription.DeliveryConfig):
             The settings for this subscription's message
             delivery.
+        export_config (google.cloud.pubsublite_v1.types.ExportConfig):
+            If present, messages are automatically
+            written from the Pub/Sub Lite topic associated
+            with this subscription to a destination.
     """
 
     class DeliveryConfig(proto.Message):
@@ -279,20 +362,148 @@ class Subscription(proto.Message):
             r"""When this subscription should send messages to subscribers relative
             to messages persistence in storage. For details, see `Creating Lite
             subscriptions <https://cloud.google.com/pubsub/lite/docs/subscriptions#creating_lite_subscriptions>`__.
+
+            Values:
+                DELIVERY_REQUIREMENT_UNSPECIFIED (0):
+                    Default value. This value is unused.
+                DELIVER_IMMEDIATELY (1):
+                    The server does not wait for a published
+                    message to be successfully written to storage
+                    before delivering it to subscribers.
+                DELIVER_AFTER_STORED (2):
+                    The server will not deliver a published
+                    message to subscribers until the message has
+                    been successfully written to storage. This will
+                    result in higher end-to-end latency, but
+                    consistent delivery.
             """
             DELIVERY_REQUIREMENT_UNSPECIFIED = 0
             DELIVER_IMMEDIATELY = 1
             DELIVER_AFTER_STORED = 2
 
-        delivery_requirement = proto.Field(
-            proto.ENUM,
-            number=3,
-            enum="Subscription.DeliveryConfig.DeliveryRequirement",
+        delivery_requirement: "Subscription.DeliveryConfig.DeliveryRequirement" = (
+            proto.Field(
+                proto.ENUM,
+                number=3,
+                enum="Subscription.DeliveryConfig.DeliveryRequirement",
+            )
         )
 
-    name = proto.Field(proto.STRING, number=1,)
-    topic = proto.Field(proto.STRING, number=2,)
-    delivery_config = proto.Field(proto.MESSAGE, number=3, message=DeliveryConfig,)
+    name: str = proto.Field(
+        proto.STRING,
+        number=1,
+    )
+    topic: str = proto.Field(
+        proto.STRING,
+        number=2,
+    )
+    delivery_config: DeliveryConfig = proto.Field(
+        proto.MESSAGE,
+        number=3,
+        message=DeliveryConfig,
+    )
+    export_config: "ExportConfig" = proto.Field(
+        proto.MESSAGE,
+        number=4,
+        message="ExportConfig",
+    )
+
+
+class ExportConfig(proto.Message):
+    r"""Configuration for a Pub/Sub Lite subscription that writes
+    messages to a destination. User subscriber clients must not
+    connect to this subscription.
+
+
+    .. _oneof: https://proto-plus-python.readthedocs.io/en/stable/fields.html#oneofs-mutually-exclusive-fields
+
+    Attributes:
+        desired_state (google.cloud.pubsublite_v1.types.ExportConfig.State):
+            The desired state of this export. Setting this to values
+            other than ``ACTIVE`` and ``PAUSED`` will result in an
+            error.
+        current_state (google.cloud.pubsublite_v1.types.ExportConfig.State):
+            Output only. The current state of the export,
+            which may be different to the desired state due
+            to errors. This field is output only.
+        dead_letter_topic (str):
+            Optional. The name of an optional Pub/Sub Lite topic to
+            publish messages that can not be exported to the
+            destination. For example, the message can not be published
+            to the Pub/Sub service because it does not satisfy the
+            constraints documented at
+            https://cloud.google.com/pubsub/docs/publisher.
+
+            Structured like:
+            projects/{project_number}/locations/{location}/topics/{topic_id}.
+            Must be within the same project and location as the
+            subscription. The topic may be changed or removed.
+        pubsub_config (google.cloud.pubsublite_v1.types.ExportConfig.PubSubConfig):
+            Messages are automatically written from the
+            Pub/Sub Lite topic associated with this
+            subscription to a Pub/Sub topic.
+
+            This field is a member of `oneof`_ ``destination``.
+    """
+
+    class State(proto.Enum):
+        r"""The desired export state.
+
+        Values:
+            STATE_UNSPECIFIED (0):
+                Default value. This value is unused.
+            ACTIVE (1):
+                Messages are being exported.
+            PAUSED (2):
+                Exporting messages is suspended.
+            PERMISSION_DENIED (3):
+                Messages cannot be exported due to permission
+                denied errors. Output only.
+            NOT_FOUND (4):
+                Messages cannot be exported due to missing
+                resources. Output only.
+        """
+        STATE_UNSPECIFIED = 0
+        ACTIVE = 1
+        PAUSED = 2
+        PERMISSION_DENIED = 3
+        NOT_FOUND = 4
+
+    class PubSubConfig(proto.Message):
+        r"""Configuration for exporting to a Pub/Sub topic.
+
+        Attributes:
+            topic (str):
+                The name of the Pub/Sub topic. Structured like:
+                projects/{project_number}/topics/{topic_id}. The topic may
+                be changed.
+        """
+
+        topic: str = proto.Field(
+            proto.STRING,
+            number=1,
+        )
+
+    desired_state: State = proto.Field(
+        proto.ENUM,
+        number=1,
+        enum=State,
+    )
+    current_state: State = proto.Field(
+        proto.ENUM,
+        number=6,
+        enum=State,
+    )
+    dead_letter_topic: str = proto.Field(
+        proto.STRING,
+        number=5,
+    )
+    pubsub_config: PubSubConfig = proto.Field(
+        proto.MESSAGE,
+        number=3,
+        oneof="destination",
+        message=PubSubConfig,
+    )
 
 
 class TimeTarget(proto.Message):
@@ -325,11 +536,17 @@ class TimeTarget(proto.Message):
             This field is a member of `oneof`_ ``time``.
     """
 
-    publish_time = proto.Field(
-        proto.MESSAGE, number=1, oneof="time", message=timestamp_pb2.Timestamp,
+    publish_time: timestamp_pb2.Timestamp = proto.Field(
+        proto.MESSAGE,
+        number=1,
+        oneof="time",
+        message=timestamp_pb2.Timestamp,
     )
-    event_time = proto.Field(
-        proto.MESSAGE, number=2, oneof="time", message=timestamp_pb2.Timestamp,
+    event_time: timestamp_pb2.Timestamp = proto.Field(
+        proto.MESSAGE,
+        number=2,
+        oneof="time",
+        message=timestamp_pb2.Timestamp,
     )
 
 

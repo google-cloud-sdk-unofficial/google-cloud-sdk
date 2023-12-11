@@ -91,6 +91,7 @@ class Update(base.UpdateCommand):
     shielded_instance_config_ref = None
     display_device_ref = None
     partner_metadata_operation_ref = None
+    graceful_shutdown_operation_ref = None
 
     labels_diff = labels_util.Diff.FromUpdateArgs(args)
     if labels_diff.MayHaveUpdates():
@@ -112,6 +113,16 @@ class Update(base.UpdateCommand):
       partner_metadata_operation_ref = self._GetPartnerMetadataOperationRef(
           args, instance_ref, holder
       )
+    if (
+        hasattr(args, 'graceful_shutdown')
+        and args.IsSpecified('graceful_shutdown')
+    ) or (
+        hasattr(args, 'graceful_shutdown_max_duration')
+        and args.IsSpecified('graceful_shutdown_max_duration')
+    ):
+      graceful_shutdown_operation_ref = self._GetGracefulShutdownOperationRef(
+          args, instance_ref, holder
+      )
 
     operation_poller = poller.Poller(client.instances)
     result = self._WaitForResult(
@@ -129,6 +140,15 @@ class Update(base.UpdateCommand):
         operation_poller, partner_metadata_operation_ref,
         'Updating partner metadata of instance [{0}]',
         instance_ref.Name()) or result
+    result = (
+        self._WaitForResult(
+            operation_poller,
+            graceful_shutdown_operation_ref,
+            'Updating graceful shutdown configuration of instance [{0}]',
+            instance_ref.Name(),
+        )
+        or result
+    )
 
     if (args.IsSpecified('shielded_vm_secure_boot') or
         args.IsSpecified('shielded_vm_vtpm') or
@@ -301,6 +321,49 @@ class Update(base.UpdateCommand):
     return holder.resources.Parse(
         operation.selfLink, collection='compute.zoneOperations')
 
+  def _GetGracefulShutdownOperationRef(self, args, instance_ref, holder):
+    messages = holder.client.messages
+    client = holder.client.apitools_client
+    instance = client.instances.Get(
+        messages.ComputeInstancesGetRequest(**instance_ref.AsDict())
+    )
+
+    updated_graceful_shutdown_message = instance.scheduling.gracefulShutdown
+    if hasattr(args, 'graceful_shutdown') and args.IsSpecified(
+        'graceful_shutdown'
+    ):
+      if updated_graceful_shutdown_message is None:
+        updated_graceful_shutdown_message = (
+            messages.SchedulingGracefulShutdown()
+        )
+      updated_graceful_shutdown_message.enabled = args.graceful_shutdown
+    if hasattr(args, 'graceful_shutdown_max_duration') and args.IsSpecified(
+        'graceful_shutdown_max_duration'
+    ):
+      if updated_graceful_shutdown_message is None:
+        updated_graceful_shutdown_message = (
+            messages.SchedulingGracefulShutdown()
+        )
+      updated_graceful_shutdown_message.maxDuration = messages.Duration(
+          seconds=args.graceful_shutdown_max_duration
+      )
+
+    instance.scheduling.gracefulShutdown = updated_graceful_shutdown_message
+
+    request = messages.ComputeInstancesUpdateRequest(
+        instance=instance_ref.Name(),
+        project=instance_ref.project,
+        zone=instance_ref.zone,
+        instanceResource=instance,
+        minimalAction=messages.ComputeInstancesUpdateRequest.MinimalActionValueValuesEnum.NO_EFFECT,
+        mostDisruptiveAllowedAction=messages.ComputeInstancesUpdateRequest.MostDisruptiveAllowedActionValueValuesEnum.REFRESH,
+    )
+
+    operation = client.instances.Update(request)
+    return holder.resources.Parse(
+        operation.selfLink, collection='compute.zoneOperations'
+    )
+
   def _GetPartnerMetadataOperationRef(self, args, instance_ref, holder):
     messages = holder.client.messages
     client = holder.client.apitools_client
@@ -378,6 +441,7 @@ class UpdateAlpha(UpdateBeta):
     flags.AddDisplayDeviceArg(parser, is_update=True)
     sole_tenancy_flags.AddNodeAffinityFlagToParser(parser, is_update=True)
     partner_metadata_utils.AddPartnerMetadataArgs(parser)
+    flags.AddGracefulShutdownArgs(parser)
 
 
 Update.detailed_help = DETAILED_HELP

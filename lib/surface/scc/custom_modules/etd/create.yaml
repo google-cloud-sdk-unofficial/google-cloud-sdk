@@ -12,6 +12,22 @@
             --enablement-state="ENABLED" \
             --custom-config-from-file=config.json
 
+      To create an Event Threat Detection custom module for folder `456`, run:
+
+        $ {command} --folder=folders/456 \
+            --display-name="test_display_name" \
+            --module-type="CONFIGURABLE_BAD_IP" \
+            --enablement-state="ENABLED" \
+            --custom-config-from-file=config.json
+
+      To create an Event Threat Detection custom module for project `789`, run:
+
+        $ {command} --project=projects/789 \
+            --display-name="test_display_name" \
+            --module-type="CONFIGURABLE_BAD_IP" \
+            --enablement-state="ENABLED" \
+            --custom-config-from-file=config.json
+
   request:
     collection: securitycenter.organizations.eventThreatDetectionSettings.customModules
     disable_resource_check: true
@@ -31,13 +47,11 @@
 
         - arg_name: folder
           api_field: parent
-          hidden: true
           help_text: |
             Folder where the Event Threat Detection custom module resides. Formatted as `folders/456` or just `456`.
 
         - arg_name: project
           api_field: parent
-          hidden: true
           help_text: |
             ID or number of the project where the Event Threat Detection custom module resides. Formatted as `projects/789` or just `789`.
 

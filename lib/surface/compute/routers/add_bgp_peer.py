@@ -189,11 +189,11 @@ class AddBgpPeerBeta(AddBgpPeer):
 
   @classmethod
   def Args(cls, parser):
-    cls._Args(parser)
+    cls._Args(parser, enable_ipv6_bgp=True)
 
   def Run(self, args):
     """See base.UpdateCommand."""
-    return self._Run(args, support_bfd_mode=False)
+    return self._Run(args, support_bfd_mode=False, enable_ipv6_bgp=True)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)

@@ -68,7 +68,7 @@ REGIONAL_HOST_KEY_URL_TEMPLATE = (
 )
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class ConnectToSerialPort(base.Command):
   """Connect to the serial port of an instance.
 
@@ -262,6 +262,14 @@ class ConnectToSerialPort(base.Command):
       ssh_helper.EnsureSSHKeyExists(
           client, remote.user, instance, project, expiration)
 
+    # TODO(b/35355795): Don't force connect in general.
+    # At a minimum, avoid injecting 'y' if PuTTY will prompt for a 2FA
+    # authentication method (since we know that won't work), or if the user has
+    # disabled the property.
+    putty_force_connect = (
+        not oslogin_state.oslogin_2fa_enabled and
+        properties.VALUES.ssh.putty_force_connect.GetBool())
+
     # Don't wait for the instance to become SSHable. We are not connecting to
     # the instance itself through SSH, so the instance doesn't need to have
     # fully booted to connect to the serial port. Also, ignore exit code 255,
@@ -270,15 +278,15 @@ class ConnectToSerialPort(base.Command):
     try:
       return_code = cmd.Run(
           ssh_helper.env,
-          putty_force_connect=properties.VALUES.ssh.putty_force_connect.GetBool())
+          putty_force_connect=putty_force_connect)
     except ssh.CommandError:
       return_code = 255
     if return_code:
       sys.exit(return_code)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class ConnectToSerialPortAlpha(ConnectToSerialPort):
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
+class ConnectToSerialPortAlphaBeta(ConnectToSerialPort):
   """Connect to the serial port of an instance.
 
   *{command}* allows users to connect to, and interact with, a VM's
@@ -305,7 +313,7 @@ class ConnectToSerialPortAlpha(ConnectToSerialPort):
 
   @classmethod
   def Args(cls, parser):
-    super(ConnectToSerialPortAlpha, cls).Args(parser)
+    super(ConnectToSerialPortAlphaBeta, cls).Args(parser)
 
     parser.add_argument(
         '--location',

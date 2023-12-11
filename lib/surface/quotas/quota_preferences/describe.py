@@ -29,18 +29,17 @@ class Describe(base.DescribeCommand):
 
   ## EXAMPLES
 
-  To get the details of quota `CpusPerProject` for service
-  `example.googleapis.com` and consumer `projects/12321`, run:
+  To get the details of quota preference `my-preference` for consumer
+  `projects/12321`, run:
 
-    $ {command} CpusPerProject --service=example.googleapis.com --project=12321
-    $ {command} CpusPerProject --service=example.googleapis.com
-    --project=my-project-id
+    $ {command} my-preference --project=12321
+    $ {command} my-preference --project=my-project-id
 
 
-  To get the details of quota `CpusPerProject` for service
-  `example.googleapis.com` and consumer `folders/12345`, run:
+  To get the details of quota preference `my-preference` for consumer
+  `folders/12345`, run:
 
-    $ {command} CpusPerProject --service=example.googleapis.com --folder=12345
+    $ {command} my-preference --folder=12345
   """
 
   @staticmethod

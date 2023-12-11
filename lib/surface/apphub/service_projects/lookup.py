@@ -24,9 +24,9 @@ from googlecloudsdk.core import properties
 _DETAILED_HELP = {
     'DESCRIPTION': '{description}',
     'EXAMPLES': """ \
-        To lookup service project , run:
+        To lookup the service project `my-service-project`, run:
 
-          $ {command}
+          $ {command} --project=my-service-project
         """,
 }
 

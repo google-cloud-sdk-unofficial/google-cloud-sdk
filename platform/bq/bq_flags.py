@@ -206,7 +206,7 @@ _JOBS_QUERY_USE_REQUEST_ID = flags.DEFINE_boolean(
     False,
     'If true, sends request_id in jobs.query request.',
 )
-_ENABLE_GDRIVE = flags.DEFINE_boolean(
+ENABLE_GDRIVE = flags.DEFINE_boolean(
     'enable_gdrive',
     True,
     (
