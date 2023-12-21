@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Command for deleting queued resources."""
+"""Command for describing queued resources."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -27,11 +27,11 @@ from googlecloudsdk.command_lib.compute.instance_groups import flags as instance
 
 
 @base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Describe(base.DescribeCommand):
-  """Describe a Compute Engine instance group manager resize request resource.
+  """Describe a Compute Engine managed instance group resize request resource.
 
-  *{command}* describes a Compute Engine instance group manager resize request
+  *{command}* describes a Compute Engine managed instance group resize request
   resource.
   """
 

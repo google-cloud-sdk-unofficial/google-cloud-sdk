@@ -713,15 +713,13 @@ class CreateBeta(Create):
   def Args(cls, parser, release_track=base.ReleaseTrack.BETA):
     super(CreateBeta, cls).Args(parser, release_track)
 
-    cloud_data_lineage_integration_params_group = parser.add_argument_group(
-        flags.CLOUD_DATA_LINEAGE_INTEGRATION_GROUP_DESCRIPTION)
-    flags.ENABLE_CLOUD_DATA_LINEAGE_INTEGRATION_FLAG.AddToParser(
-        cloud_data_lineage_integration_params_group)
+    AddLineageIntegrationParser(parser)
 
     AddComposer3Flags(parser)
 
   def GetOperationMessage(self, args, is_composer_v1):
     """See base class."""
+
     create_flags = environments_api_util.CreateEnvironmentFlags(
         node_count=args.node_count,
         labels=args.labels,
@@ -799,6 +797,7 @@ class CreateBeta(Create):
         snapshot_location=args.snapshot_location,
         snapshot_schedule_timezone=args.snapshot_schedule_timezone,
         enable_cloud_data_lineage_integration=args.enable_cloud_data_lineage_integration,
+        disable_cloud_data_lineage_integration=args.disable_cloud_data_lineage_integration,
         enable_high_resilience=args.enable_high_resilience,
         cloud_sql_preferred_zone=args.cloud_sql_preferred_zone,
         support_web_server_plugins=args.support_web_server_plugins,
@@ -815,7 +814,7 @@ class CreateBeta(Create):
         disable_private_builds_only=args.disable_private_builds_only,
         release_track=self.ReleaseTrack(),
         storage_bucket=args.storage_bucket,
-        airflow_database_retention_days=args.airflow_database_retention_days
+        airflow_database_retention_days=args.airflow_database_retention_days,
     )
 
     return environments_api_util.Create(self.env_ref, create_flags,
@@ -903,6 +902,19 @@ class CreateBeta(Create):
       args.network_attachment = parsers.ParseNetworkAttachment(
           args.network_attachment, fallback_region=self.env_ref.Parent().Name()
       ).RelativeName()
+
+
+def AddLineageIntegrationParser(parser):
+  """Adds lineage integration flags to the parser."""
+
+  lineage_params_group = parser.add_mutually_exclusive_group()
+
+  flags.ENABLE_CLOUD_DATA_LINEAGE_INTEGRATION_FLAG.AddToParser(
+      lineage_params_group
+  )
+  flags.DISABLE_CLOUD_DATA_LINEAGE_INTEGRATION_FLAG.AddToParser(
+      lineage_params_group
+  )
 
 
 def AddComposer3Flags(parser):
@@ -1034,6 +1046,7 @@ class CreateAlpha(CreateBeta):
         snapshot_location=args.snapshot_location,
         snapshot_schedule_timezone=args.snapshot_schedule_timezone,
         enable_cloud_data_lineage_integration=args.enable_cloud_data_lineage_integration,
+        disable_cloud_data_lineage_integration=args.disable_cloud_data_lineage_integration,
         enable_high_resilience=args.enable_high_resilience,
         cloud_sql_preferred_zone=args.cloud_sql_preferred_zone,
         support_web_server_plugins=args.support_web_server_plugins,

@@ -77,10 +77,7 @@ class Update(base.Command):
   @staticmethod
   def __ValidateArgs(args):
     if args.add_region:
-      regions = {region_config['region'] for region_config in args.add_region}
-      if len(regions) < len(args.add_region):
-        log.error('Duplicate regions in --add-region arguments.')
-        return False
+      return flags.ValidateRegionConfigArgs(args.add_region, 'add')
 
     if args.remove_region:
       if len(set(args.remove_region)) < len(args.remove_region):
@@ -88,12 +85,7 @@ class Update(base.Command):
         return False
 
     if args.update_region:
-      regions = {
-          region_config['region'] for region_config in args.update_region
-      }
-      if len(regions) < len(args.update_region):
-        log.error('Duplicate regions in --update-region arguments.')
-        return False
+      return flags.ValidateRegionConfigArgs(args.update_region, 'update')
 
     return True
 

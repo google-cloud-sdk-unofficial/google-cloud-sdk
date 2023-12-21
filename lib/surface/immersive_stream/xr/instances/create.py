@@ -57,24 +57,7 @@ class Create(base.CreateCommand):
 
   @staticmethod
   def __ValidateArgs(args):
-    regions = {}
-    for region_config in args.add_region:
-      regions[region_config['region']] = region_config
-      if region_config.get('enable_autoscaling', False) and not (
-          'autoscaling_buffer' in region_config
-          and 'autoscaling_min_capacity' in region_config
-      ):
-        log.error(
-            'Must set autoscaling_buffer and autoscaling_min_capacity if'
-            ' enable_autoscaling is set to true.'
-        )
-        return False
-
-    if len(regions) < len(args.add_region):
-      log.error('Duplicate regions in --add-region arguments.')
-      return False
-
-    return True
+    return flags.ValidateRegionConfigArgs(args.add_region, 'add')
 
   @staticmethod
   def Args(parser):

@@ -218,7 +218,6 @@ def ParseCreateOptionsBase(args, is_autopilot, get_default, location,
       boot_disk_kms_key=get_default('boot_disk_kms_key'),
       cluster_dns=get_default('cluster_dns'),
       cluster_dns_scope=get_default('cluster_dns_scope'),
-      enable_additive_vpc_scope=get_default('enable_additive_vpc_scope'),
       additive_vpc_scope_dns_domain=get_default(
           'additive_vpc_scope_dns_domain'
       ),
@@ -459,6 +458,10 @@ def ParseCreateOptionsBase(args, is_autopilot, get_default, location,
       fleet_project=get_default('fleet_project'),
       enable_fleet=get_default('enable_fleet'),
       enable_secret_manager=get_default('enable_secret_manager'),
+      resource_manager_tags=get_default('resource_manager_tags'),
+      autoprovisioning_resource_manager_tags=get_default(
+          'autoprovisioning_resource_manager_tags'
+      ),
   )
 
 
@@ -670,6 +673,10 @@ flags_to_add = {
         'privateipv6type': (lambda p: AddPrivateIPv6Flag('v1', p)),
         'releasechannel':
             flags.AddReleaseChannelFlag,
+        'resourceManagerTags':
+            flags.AddResourceManagerTagsCreate,
+        'autoprovisioningResourceManagerTags':
+            flags.AddAutoprovisioningResourceManagerTagsCreate,
         'reservationaffinity':
             flags.AddReservationAffinityFlags,
         'resourceusageexport':
@@ -1526,11 +1533,7 @@ class CreateBeta(Create):
     ops.containerd_config_from_file = get_default(
         'containerd_config_from_file',
     )
-    ops.resource_manager_tags = get_default('resource_manager_tags')
     ops.enable_confidential_storage = get_default('enable_confidential_storage')
-    ops.autoprovisioning_resource_manager_tags = get_default(
-        'autoprovisioning_resource_manager_tags'
-    )
     ops.enable_secret_manager = get_default('enable_secret_manager')
     return ops
 
@@ -1645,11 +1648,6 @@ class CreateAlpha(Create):
     ops.enable_fqdn_network_policy = get_default('enable_fqdn_network_policy')
     ops.host_maintenance_interval = get_default('host_maintenance_interval')
     ops.contianerd_config_from_file = get_default('contianerd_config_from_file')
-    ops.resource_manager_tags = get_default('resource_manager_tags')
     ops.enable_confidential_storage = get_default('enable_confidential_storage')
-
-    ops.autoprovisioning_resource_manager_tags = get_default(
-        'autoprovisioning_resource_manager_tags'
-    )
     ops.enable_secret_manager = get_default('enable_secret_manager')
     return ops

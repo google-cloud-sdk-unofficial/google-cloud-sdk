@@ -25,8 +25,8 @@ from googlecloudsdk.command_lib.infra_manager import resource_args
 from googlecloudsdk.command_lib.util.concepts import concept_parsers
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.GA)
-class ExportStatefileAlpha(base.Command):
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class ExportStatefile(base.Command):
   """Export a terraform state file.
 
   This command generates a signed url to download a terraform state file.

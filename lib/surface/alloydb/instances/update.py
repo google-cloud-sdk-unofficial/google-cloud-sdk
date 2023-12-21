@@ -115,16 +115,32 @@ class Update(base.UpdateCommand):
     return op
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
-class UpdateAlphaBeta(Update):
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class UpdateBeta(Update):
   """Updates an AlloyDB instance within a given cluster."""
 
   @staticmethod
   def Args(parser):
-    super(UpdateAlphaBeta, UpdateAlphaBeta).Args(parser)
+    super(UpdateBeta, UpdateBeta).Args(parser)
     flags.AddUpdateMode(parser)
 
   def ConstructPatchRequestFromArgs(self, alloydb_messages, instance_ref, args):
-    return instance_helper.ConstructPatchRequestFromArgsAlphaBeta(
+    return instance_helper.ConstructPatchRequestFromArgsBeta(
+        alloydb_messages, instance_ref, args
+    )
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class UpdateAlpha(UpdateBeta):
+  """Updates an AlloyDB instance within a given cluster."""
+
+  @staticmethod
+  def Args(parser):
+    super(UpdateAlpha, UpdateAlpha).Args(parser)
+    flags.AddAssignInboundPublicIp(parser, update=True)
+    flags.AddAuthorizedExternalNetworks(parser)
+
+  def ConstructPatchRequestFromArgs(self, alloydb_messages, instance_ref, args):
+    return instance_helper.ConstructPatchRequestFromArgsAlpha(
         alloydb_messages, instance_ref, args
     )

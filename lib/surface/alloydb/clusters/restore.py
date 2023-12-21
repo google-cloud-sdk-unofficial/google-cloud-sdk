@@ -29,9 +29,7 @@ from googlecloudsdk.core import properties
 from googlecloudsdk.core import resources
 
 
-@base.ReleaseTracks(
-    base.ReleaseTrack.GA, base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA
-)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
 class Restore(base.RestoreCommand):
   """Restore an AlloyDB cluster from a given backup or a source cluster and a timestamp."""
 
@@ -109,3 +107,35 @@ class Restore(base.RestoreCommand):
     if not args.async_:
       cluster_operations.Await(op_ref, 'Restoring cluster', self.ReleaseTrack())
     return op
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class RestoreAlpha(Restore):
+  """Restore an AlloyDB cluster from a given backup or a source cluster and a timestamp."""
+
+  detailed_help = {
+      'DESCRIPTION': '{description}',
+      'EXAMPLES': """\
+          To restore a cluster from a backup, run:
+
+              $ {command} my-cluster --region=us-central1 --backup=my-backup
+
+          To restore a cluster from a source cluster and a timestamp, run:
+
+              $ {command} my-cluster --region=us-central1 \
+                --source-cluster=old-cluster \
+                --point-in-time=2012-11-15T16:19:00.094Z
+        """,
+  }
+
+  @classmethod
+  def Args(cls, parser):
+    super(RestoreAlpha, cls).Args(parser)
+    flags.AddEnablePrivateServicesConnect(parser)
+
+  def ConstructRestoreRequestFromArgs(
+      self, alloydb_messages, location_ref, resource_parser, args
+  ):
+    return cluster_helper.ConstructRestoreRequestFromArgsAlpha(
+        alloydb_messages, location_ref, resource_parser, args
+    )

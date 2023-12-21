@@ -49,28 +49,19 @@ DETAILED_HELP = {
 
 
 @base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class List(base.ListCommand):
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class ListBeta(base.ListCommand):
   """List Compute Engine managed instance group resize requests."""
 
   detailed_help = DETAILED_HELP
 
-  @staticmethod
-  def Args(parser):
-    parser.display_info.AddFormat(rr_flags.DEFAULT_CREATE_OR_LIST_FORMAT)
+  @classmethod
+  def Args(cls, parser):
+    parser.display_info.AddFormat(rr_flags.DEFAULT_CREATE_OR_LIST_FORMAT_BETA)
     instance_groups_flags.MakeZonalInstanceGroupManagerArg().AddArgument(
         parser)
 
-  def Run(self, args):
-    """Creates and issues an instanceGroupManagerResizeRequests.list request.
-
-    Args:
-      args: the argparse arguments that this command was invoked with.
-
-    Returns:
-      List of resize requests and their queuing policies.
-    """
-    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+  def _Run(self, args, holder):
     client = holder.client
 
     group_ref = (instance_groups_flags.MakeZonalInstanceGroupManagerArg().
@@ -98,3 +89,40 @@ class List(base.ListCommand):
     if errors:
       utils.RaiseToolException(errors)
     return results
+
+  def Run(self, args):
+    """Creates and issues an instanceGroupManagerResizeRequests.list request.
+
+    Args:
+      args: the argparse arguments that this command was invoked with.
+
+    Returns:
+      List of resize requests and their queuing policies.
+    """
+    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    return self._Run(args, holder)
+
+
+@base.Hidden
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class ListAlpha(ListBeta):
+  """List Compute Engine managed instance group resize requests."""
+
+  detailed_help = DETAILED_HELP
+
+  @classmethod
+  def Args(cls, parser):
+    super().Args(parser)
+    parser.display_info.AddFormat(rr_flags.DEFAULT_CREATE_OR_LIST_FORMAT_ALPHA)
+
+  def Run(self, args):
+    """Creates and issues an instanceGroupManagerResizeRequests.list request.
+
+    Args:
+      args: the argparse arguments that this command was invoked with.
+
+    Returns:
+      List of resize requests and their queuing policies.
+    """
+    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    return self._Run(args, holder)

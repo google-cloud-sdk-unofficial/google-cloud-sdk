@@ -29,19 +29,19 @@ from googlecloudsdk.command_lib.compute.instance_groups import flags as instance
 
 
 @base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Delete(base.DeleteCommand):
   """Delete a Compute Engine managed instance group resize request.
 
-  *{command}* is used to delete one or more Compute Engine managed instance
+  *{command}* deletes one or more Compute Engine managed instance
   group resize requests.
 
-  You can only delete a request when it is not active, in a state SUCCEEDED,
+  You can only delete a request when it is in a state SUCCEEDED,
   FAILED, or CANCELLED.
   """
 
-  @staticmethod
-  def Args(parser):
+  @classmethod
+  def Args(cls, parser):
     instance_groups_flags.MakeZonalInstanceGroupManagerArg().AddArgument(
         parser
     )
@@ -82,7 +82,6 @@ class Delete(base.DeleteCommand):
     """
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     client = holder.client
-
     resource_arg = instance_groups_flags.MakeZonalInstanceGroupManagerArg()
     default_scope = compute_scope.ScopeEnum.ZONE
     scope_lister = compute_flags.GetDefaultScopeLister(client)

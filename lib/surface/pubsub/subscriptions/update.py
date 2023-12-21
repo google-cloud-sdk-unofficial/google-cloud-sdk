@@ -28,13 +28,12 @@ from googlecloudsdk.command_lib.util.args import labels_util
 from googlecloudsdk.core import log
 
 
-def _Args(parser, enable_push_to_cps=False, enable_use_table_schema=False):
+def _Args(parser, enable_push_to_cps=False):
   resource_args.AddSubscriptionResourceArg(parser, 'to update.')
   flags.AddSubscriptionSettingsFlags(
       parser,
       is_update=True,
       enable_push_to_cps=enable_push_to_cps,
-      enable_use_table_schema=enable_use_table_schema,
   )
   labels_util.AddUpdateLabelsFlags(parser)
 
@@ -48,15 +47,13 @@ class Update(base.UpdateCommand):
     _Args(parser)
 
   @exceptions.CatchHTTPErrorRaiseHTTPException()
-  def Run(self, args, enable_push_to_cps=False, enable_use_table_schema=False):
+  def Run(self, args, enable_push_to_cps=False):
     """This is what gets called when the user runs this command.
 
     Args:
       args: an argparse namespace. All the arguments that were provided to this
         command invocation.
       enable_push_to_cps: whether or not to enable Pubsub Export config flags
-        support.
-      enable_use_table_schema: whether or not to enable `use_table_schema` flag
         support.
 
     Returns:
@@ -113,11 +110,7 @@ class Update(base.UpdateCommand):
       max_retry_delay = util.FormatDuration(max_retry_delay)
     bigquery_table = getattr(args, 'bigquery_table', None)
     use_topic_schema = getattr(args, 'use_topic_schema', None)
-    use_table_schema = (
-        getattr(args, 'use_table_schema', None)
-        if enable_use_table_schema
-        else None
-    )
+    use_table_schema = getattr(args, 'use_table_schema', None)
     write_metadata = getattr(args, 'write_metadata', None)
     drop_unknown_fields = getattr(args, 'drop_unknown_fields', None)
     cloud_storage_bucket = getattr(args, 'cloud_storage_bucket', None)
@@ -214,10 +207,10 @@ class UpdateBeta(Update):
 
   @classmethod
   def Args(cls, parser):
-    _Args(parser, enable_push_to_cps=True, enable_use_table_schema=True)
+    _Args(parser, enable_push_to_cps=True)
 
   @exceptions.CatchHTTPErrorRaiseHTTPException()
   def Run(self, args):
     return super(UpdateBeta, self).Run(
-        args, enable_push_to_cps=True, enable_use_table_schema=True
+        args, enable_push_to_cps=True
     )

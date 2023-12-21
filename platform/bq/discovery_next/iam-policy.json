@@ -5,7 +5,7 @@
   "name": "bigquery",
   "canonicalName": "Bigquery",
   "version": "v2",
-  "revision": "20231113",
+  "revision": "20231204",
   "title": "BigQuery API",
   "description": "A data platform for customers to create, manage, share and query data.",
   "ownerDomain": "google.com",
@@ -5413,6 +5413,7 @@
             "Indicates that search indexes can not be used for search query with STANDARD edition.",
             "Indicates that an option in the search function that cannot make use of the index has been selected.",
             "Indicates an internal error that causes the search index to be unused.",
+            "Indicates that the query was cached, and thus the search index was not used.",
             "Indicates that the reason search indexes cannot be used in the query is not covered by any of the other IndexUnusedReason options."
           ],
           "enum": [
@@ -5434,6 +5435,7 @@
             "NOT_SUPPORTED_IN_STANDARD_EDITION",
             "INDEX_SUPPRESSED_BY_FUNCTION_OPTION",
             "INTERNAL_ERROR",
+            "QUERY_CACHE_HIT",
             "OTHER_REASON"
           ]
         },
@@ -7098,6 +7100,13 @@
         "tableConstraints": {
           "description": "Optional. Tables Primary Key and Foreign Key information",
           "$ref": "TableConstraints"
+        },
+        "resourceTags": {
+          "description": "Optional. Labels V2\/Tags for the Table. These tags are managed by Resource Manager. go\/bq-table-tags-api",
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
         },
         "tableReplicationInfo": {
           "description": "Optional. Table replication info for table created `AS REPLICA` DDL like: `CREATE MATERIALIZED VIEW mv1 AS REPLICA OF src_mv`",

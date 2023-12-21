@@ -24,7 +24,9 @@ import requests
 import six
 import urllib3
 
-import bigquery_client
+from utils import bq_error
+from utils import bq_logging
+
 
 FLAGS = flags.FLAGS
 
@@ -242,7 +244,7 @@ def ProcessError(
 ) -> int:
   """Translate an error message into some printing and a return code."""
 
-  bigquery_client.ConfigurePythonLogger(FLAGS.apilog)
+  bq_logging.ConfigurePythonLogger(FLAGS.apilog)
   logger = logging.getLogger(__name__)
 
   if isinstance(err, SystemExit):
@@ -277,23 +279,23 @@ def ProcessError(
          six.ensure_str(trace))
 
   codecs.register_error('strict', codecs.replace_errors)
-  message = bigquery_client.EncodeForPrinting(err)
-  if isinstance(err, (bigquery_client.BigqueryNotFoundError,
-                      bigquery_client.BigqueryDuplicateError)):
+  message = bq_logging.EncodeForPrinting(err)
+  if isinstance(err, (bq_error.BigqueryNotFoundError,
+                      bq_error.BigqueryDuplicateError)):
     response.append('BigQuery error in %s operation: %s' % (name, message))
     retcode = 2
-  elif isinstance(err, bigquery_client.BigqueryTermsOfServiceError):
+  elif isinstance(err, bq_error.BigqueryTermsOfServiceError):
     response.append(str(err) + '\n')
     response.append(_BIGQUERY_TOS_MESSAGE)
-  elif isinstance(err, bigquery_client.BigqueryInvalidQueryError):
+  elif isinstance(err, bq_error.BigqueryInvalidQueryError):
     response.append('Error in query string: %s' % (message,))
-  elif (isinstance(err, bigquery_client.BigqueryError) and
-        not isinstance(err, bigquery_client.BigqueryInterfaceError)):
+  elif (isinstance(err, bq_error.BigqueryError) and
+        not isinstance(err, bq_error.BigqueryInterfaceError)):
     response.append('BigQuery error in %s operation: %s' % (name, message))
   elif isinstance(err, (app.UsageError, TypeError)):
     response.append(message)
   elif (isinstance(err, SyntaxError) or
-        isinstance(err, bigquery_client.BigquerySchemaError)):
+        isinstance(err, bq_error.BigquerySchemaError)):
     response.append('Invalid input: %s' % (message,))
   elif isinstance(err, flags.Error):
     response.append('Error parsing command: %s' % (message,))
@@ -303,7 +305,7 @@ def ProcessError(
     # Errors with traceback information are printed here.
     # The traceback module has nicely formatted the error trace
     # for us, so we don't want to undo that via TextWrap.
-    if isinstance(err, bigquery_client.BigqueryInterfaceError):
+    if isinstance(err, bq_error.BigqueryInterfaceError):
       message_prefix = (
           'Bigquery service returned an invalid reply in %s operation: %s.'
           '\n\n'
@@ -526,3 +528,13 @@ def ParseTagKeys(tag_keys: str) -> List[str]:
       raise app.UsageError('Specify only tag key for "%s"' % key)
     tags_set.add(key)
   return list(tags_set)
+
+
+def GetUserAgent() -> str:
+  """Returns the user agent for BigQuery API requests based on environment and version."""
+  google_python_client_name = 'google-api-python-client (gzip)'
+  if os.environ.get('CLOUDSDK_WRAPPER') == '1':
+    return 'google-cloud-sdk' + os.environ.get(
+        'CLOUDSDK_VERSION', VERSION_NUMBER) + ' ' + google_python_client_name
+  else:
+    return 'bq/' + VERSION_NUMBER + ' ' + google_python_client_name

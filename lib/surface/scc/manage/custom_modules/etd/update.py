@@ -23,6 +23,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.scc.manage import constants
 from googlecloudsdk.command_lib.scc.manage import flags
 from googlecloudsdk.command_lib.scc.manage import parsing
+from googlecloudsdk.core.console import console_io
 
 
 class Update(base.Command):
@@ -63,6 +64,14 @@ class Update(base.Command):
     )
     update_mask = parsing.CreateUpdateMaskFromArgs(args)
 
+    if not validate_only:
+      console_io.PromptContinue(
+          message=(
+              'Are you sure you want to update the Event Threat Detection'
+              ' custom module {}?\n'.format(name)
+          ),
+          cancel_on_no=True,
+      )
     client = clients.ETDCustomModuleClient()
 
     return client.Update(

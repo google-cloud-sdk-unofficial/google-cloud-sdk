@@ -92,7 +92,6 @@ class CreateHelper(object):
       cls,
       parser,
       support_failover,
-      support_logging,
       support_multinic,
       support_client_only,
       support_unspecified_protocol,
@@ -149,11 +148,10 @@ class CreateHelper(object):
       flags.AddDropTrafficIfUnhealthy(parser, default=None)
       flags.AddFailoverRatio(parser)
 
-    if support_logging:
-      flags.AddEnableLogging(parser)
-      flags.AddLoggingSampleRate(parser)
-      flags.AddLoggingOptional(parser)
-      flags.AddLoggingOptionalFields(parser)
+    flags.AddEnableLogging(parser)
+    flags.AddLoggingSampleRate(parser)
+    flags.AddLoggingOptional(parser)
+    flags.AddLoggingOptionalFields(parser)
 
     if support_multinic:
       flags.AddNetwork(parser)
@@ -172,8 +170,6 @@ class CreateHelper(object):
   def __init__(
       self,
       support_failover,
-      support_logging,
-      support_tcp_ssl_logging,
       support_multinic,
       support_subsetting,
       support_subsetting_subset_size,
@@ -182,8 +178,6 @@ class CreateHelper(object):
       release_track,
   ):
     self._support_failover = support_failover
-    self._support_logging = support_logging
-    self._support_tcp_ssl_logging = support_tcp_ssl_logging
     self._support_multinic = support_multinic
     self._support_subsetting = support_subsetting
     self._support_subsetting_subset_size = support_subsetting_subset_size
@@ -277,8 +271,6 @@ class CreateHelper(object):
         client.messages,
         args,
         backend_service,
-        support_logging=self._support_logging,
-        support_tcp_ssl_logging=self._support_tcp_ssl_logging,
     )
 
     if self._support_ip_address_selection_policy:
@@ -378,8 +370,6 @@ class CreateHelper(object):
         client.messages,
         args,
         backend_service,
-        support_logging=self._support_logging,
-        support_tcp_ssl_logging=self._support_tcp_ssl_logging,
     )
 
     if self._support_ip_address_selection_policy:
@@ -467,8 +457,6 @@ class CreateGA(base.CreateCommand):
   """
 
   _support_failover = True
-  _support_logging = True
-  _support_tcp_ssl_logging = False
   _support_multinic = True
   _support_client_only = True
   _support_unspecified_protocol = True
@@ -482,7 +470,6 @@ class CreateGA(base.CreateCommand):
     CreateHelper.Args(
         parser,
         support_failover=cls._support_failover,
-        support_logging=cls._support_logging,
         support_multinic=cls._support_multinic,
         support_client_only=cls._support_client_only,
         support_unspecified_protocol=cls._support_unspecified_protocol,
@@ -500,8 +487,6 @@ class CreateGA(base.CreateCommand):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     return CreateHelper(
         support_failover=self._support_failover,
-        support_logging=self._support_logging,
-        support_tcp_ssl_logging=self._support_tcp_ssl_logging,
         support_multinic=self._support_multinic,
         support_subsetting=self._support_subsetting,
         support_subsetting_subset_size=self._support_subsetting_subset_size,
@@ -537,7 +522,6 @@ class CreateBeta(CreateGA):
   _support_subsetting = True
   _support_subsetting_subset_size = True
   _support_advanced_load_balancing = True
-  _support_tcp_ssl_logging = True
   _support_ip_address_selection_policy = True
 
 
@@ -564,5 +548,4 @@ class CreateAlpha(CreateBeta):
   _support_subsetting = True
   _support_subsetting_subset_size = True
   _support_advanced_load_balancing = True
-  _support_tcp_ssl_logging = True
   _support_ip_address_selection_policy = True

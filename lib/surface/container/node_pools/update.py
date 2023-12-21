@@ -108,6 +108,7 @@ class Update(base.UpdateCommand):
     flags.AddLoggingVariantFlag(group, for_node_pool=True)
     flags.AddWindowsOsVersionFlag(group)
     flags.AddContainerdConfigFlag(group, hidden=True)
+    flags.AddResourceManagerTagsNodePoolUpdate(group)
 
     node_config_group = group.add_argument_group('Node config')
     flags.AddMachineTypeFlag(node_config_group, update=True)
@@ -155,6 +156,7 @@ class Update(base.UpdateCommand):
         disk_size_gb=utils.BytesToGb(args.disk_size)
         if hasattr(args, 'disk_size')
         else None,
+        resource_manager_tags=args.resource_manager_tags,
     )
 
   def Run(self, args):

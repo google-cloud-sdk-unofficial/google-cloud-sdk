@@ -279,9 +279,9 @@ def AddBetaArgs(parser):
   flags.AddReplicationLagMaxSecondsForRecreate(parser)
 
 
-def AddAlphaArgs(unused_parser):
+def AddAlphaArgs(parser):
   """Adds alpha args and flags to the parser."""
-  pass
+  flags.AddSimulateMaintenanceEvent(parser)
 
 
 def RunBasePatchCommand(args, release_track):
@@ -310,6 +310,23 @@ def RunBasePatchCommand(args, release_track):
       args.instance,
       params={'project': properties.VALUES.core.project.GetOrFail},
       collection='sql.instances')
+
+  # If the flag to simulate a maintenance event is supplied along with other
+  # flags thrown an error.
+  if release_track == release_track.ALPHA and args.IsSpecified(
+      'simulate_maintenance_event'
+  ):
+    for key in args.GetSpecifiedArgsDict():
+      # positional argument does not have a flag argument
+      if key == 'instance':
+        continue
+      if key == 'simulate_maintenance_event':
+        continue
+      if not args.GetFlagArgument(key).is_global:
+        raise exceptions.ArgumentError(
+            '`--simulate-maintenance-event` cannot be specified with other'
+            ' arguments excluding gCloud wide flags'
+        )
 
   if args.IsSpecified('no_backup'):
     if args.IsSpecified('enable_bin_log'):

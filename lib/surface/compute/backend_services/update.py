@@ -72,7 +72,6 @@ class UpdateHelper(object):
       cls,
       parser,
       support_failover,
-      support_logging,
       support_client_only,
       support_subsetting,
       support_subsetting_subset_size,
@@ -136,11 +135,10 @@ class UpdateHelper(object):
       flags.AddDropTrafficIfUnhealthy(parser, default=None)
       flags.AddFailoverRatio(parser)
 
-    if support_logging:
-      flags.AddEnableLogging(parser)
-      flags.AddLoggingSampleRate(parser)
-      flags.AddLoggingOptional(parser)
-      flags.AddLoggingOptionalFields(parser)
+    flags.AddEnableLogging(parser)
+    flags.AddLoggingSampleRate(parser)
+    flags.AddLoggingOptional(parser)
+    flags.AddLoggingOptionalFields(parser)
 
     AddIapFlag(parser)
     flags.AddCustomRequestHeaders(parser, remove_all_flag=True, default=None)
@@ -165,8 +163,6 @@ class UpdateHelper(object):
   def __init__(
       self,
       support_failover,
-      support_logging,
-      support_tcp_ssl_logging,
       support_subsetting,
       support_subsetting_subset_size,
       support_ip_address_selection_policy,
@@ -174,8 +170,6 @@ class UpdateHelper(object):
       release_track=None,
   ):
     self._support_failover = support_failover
-    self._support_logging = support_logging
-    self._support_tcp_ssl_logging = support_tcp_ssl_logging
     self._support_subsetting = support_subsetting
     self._support_subsetting_subset_size = support_subsetting_subset_size
     self._support_ip_address_selection_policy = (
@@ -291,8 +285,6 @@ class UpdateHelper(object):
         client.messages,
         args,
         replacement,
-        support_logging=self._support_logging,
-        support_tcp_ssl_logging=self._support_tcp_ssl_logging,
         cleared_fields=cleared_fields,
     )
 
@@ -356,16 +348,10 @@ class UpdateHelper(object):
         if self._support_failover
         else False,
         args.IsSpecified('failover_ratio') if self._support_failover else False,
-        args.IsSpecified('enable_logging') if self._support_logging else False,
-        args.IsSpecified('logging_sample_rate')
-        if self._support_logging
-        else False,
-        args.IsSpecified('logging_optional')
-        if self._support_logging
-        else False,
-        args.IsSpecified('logging_optional_fields')
-        if self._support_logging
-        else False,
+        args.IsSpecified('enable_logging'),
+        args.IsSpecified('logging_sample_rate'),
+        args.IsSpecified('logging_optional'),
+        args.IsSpecified('logging_optional_fields'),
         args.IsSpecified('health_checks'),
         args.IsSpecified('https_health_checks'),
         args.IsSpecified('no_health_checks'),
@@ -570,8 +556,6 @@ class UpdateGA(base.UpdateCommand):
   *{command}* is used to update backend services.
   """
 
-  _support_logging = True
-  _support_tcp_ssl_logging = False
   _support_failover = True
   _support_client_only = True
   _support_unspecified_protocol = True
@@ -585,7 +569,6 @@ class UpdateGA(base.UpdateCommand):
     UpdateHelper.Args(
         parser,
         support_failover=cls._support_failover,
-        support_logging=cls._support_logging,
         support_client_only=cls._support_client_only,
         support_subsetting=cls._support_subsetting,
         support_subsetting_subset_size=cls._support_subsetting_subset_size,
@@ -601,8 +584,6 @@ class UpdateGA(base.UpdateCommand):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     return UpdateHelper(
         self._support_failover,
-        self._support_logging,
-        self._support_tcp_ssl_logging,
         self._support_subsetting,
         self._support_subsetting_subset_size,
         self._support_ip_address_selection_policy,
@@ -623,7 +604,6 @@ class UpdateBeta(UpdateGA):
   _support_subsetting = True
   _support_subsetting_subset_size = True
   _support_advanced_load_balancing = True
-  _support_tcp_ssl_logging = True
   _support_ip_address_selection_policy = True
 
 
@@ -639,5 +619,4 @@ class UpdateAlpha(UpdateBeta):
   _support_subsetting = True
   _support_subsetting_subset_size = True
   _support_advanced_load_balancing = True
-  _support_tcp_ssl_logging = True
   _support_ip_address_selection_policy = True

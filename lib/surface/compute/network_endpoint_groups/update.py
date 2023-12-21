@@ -42,6 +42,7 @@ class Update(base.UpdateCommand):
 
   detailed_help = DETAILED_HELP
   support_ipv6 = False
+  support_port_mapping_neg = False
 
   @classmethod
   def Args(cls, parser):
@@ -50,6 +51,7 @@ class Update(base.UpdateCommand):
     flags.AddUpdateNegArgsToParser(
         parser,
         support_ipv6=cls.support_ipv6,
+        support_port_mapping_neg=cls.support_port_mapping_neg,
     )
 
   def Run(self, args):
@@ -88,3 +90,4 @@ class AlphaUpdate(Update):
   """Update a Compute Engine network endpoint group."""
 
   support_ipv6 = True
+  support_port_mapping_neg = True

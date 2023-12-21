@@ -1,4 +1,4 @@
-- release_tracks: [ALPHA, GA]
+- release_tracks: [GA]
   help_text:
     brief: List resources
     description: List resources for a deployment revision

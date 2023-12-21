@@ -23,6 +23,6 @@ from googlecloudsdk.calliope import base
 
 
 @base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class ManagedInstanceGroupsResizeRequests(base.Group):
   """List, create, delete, cancel, and describe ResizeRequests."""

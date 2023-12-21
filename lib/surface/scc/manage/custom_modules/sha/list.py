@@ -20,7 +20,6 @@ from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.scc.manage.sha import clients
 from googlecloudsdk.calliope import base
-from googlecloudsdk.command_lib.scc import flags as scc_flags
 from googlecloudsdk.command_lib.scc.manage import flags
 from googlecloudsdk.command_lib.scc.manage import parsing
 
@@ -66,14 +65,10 @@ class List(base.ListCommand):
   @staticmethod
   def Args(parser):
     base.URI_FLAG.RemoveFromParser(parser)
-    base.SORT_BY_FLAG.RemoveFromParser(parser)
-    base.FILTER_FLAG.RemoveFromParser(parser)
     flags.CreateParentFlag(required=True).AddToParser(parser)
-    scc_flags.PAGE_TOKEN_FLAG.AddToParser(parser)
 
   def Run(self, args):
     parent = parsing.GetParentResourceNameFromArgs(args)
-    page_token = args.page_token
     page_size = args.page_size
     limit = args.limit
 
@@ -81,7 +76,6 @@ class List(base.ListCommand):
 
     return client.List(
         page_size=page_size,
-        page_token=page_token,
         parent=parent,
         limit=limit,
     )

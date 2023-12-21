@@ -1,4 +1,4 @@
-- release_tracks: [ALPHA, GA]
+- release_tracks: [GA]
   help_text:
     brief: Describe resources
     description: Describe a resource

@@ -23,7 +23,9 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute.instances import flags
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.GA, base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA
+)
 class InstanceSetName(base.SilentCommand):
   """Set name for Compute Engine virtual machine instances."""
 

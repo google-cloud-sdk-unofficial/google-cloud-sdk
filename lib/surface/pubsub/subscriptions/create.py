@@ -35,7 +35,6 @@ def _Run(
     enable_labels=False,
     legacy_output=False,
     enable_push_to_cps=False,
-    enable_use_table_schema=False,
 ):
   """Creates one or more subscriptions."""
   flags.ValidateDeadLetterPolicy(args)
@@ -63,11 +62,7 @@ def _Run(
     max_retry_delay = util.FormatDuration(max_retry_delay)
   bigquery_table = getattr(args, 'bigquery_table', None)
   use_topic_schema = getattr(args, 'use_topic_schema', None)
-  use_table_schema = (
-      getattr(args, 'use_table_schema', None)
-      if enable_use_table_schema
-      else None
-  )
+  use_table_schema = getattr(args, 'use_table_schema', None)
   write_metadata = getattr(args, 'write_metadata', None)
   drop_unknown_fields = getattr(args, 'drop_unknown_fields', None)
   cloud_storage_bucket = getattr(args, 'cloud_storage_bucket', None)
@@ -215,7 +210,7 @@ class CreateBeta(Create):
     )
     resource_args.AddResourceArgs(parser, [topic, subscription])
     flags.AddSubscriptionSettingsFlags(
-        parser, enable_push_to_cps=True, enable_use_table_schema=True
+        parser, enable_push_to_cps=True
     )
     labels_util.AddCreateLabelsFlags(parser)
 
@@ -227,5 +222,4 @@ class CreateBeta(Create):
         enable_labels=True,
         legacy_output=legacy_output,
         enable_push_to_cps=True,
-        enable_use_table_schema=True,
     )

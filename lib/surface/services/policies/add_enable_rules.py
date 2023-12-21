@@ -141,7 +141,7 @@ class AddEnableRules(base.SilentCommand):
           'completion:\n {0}'.format(cmd)
       )
 
-    update_policy = serviceusage.GetConsumerPolicy(
+    update_policy = serviceusage.GetConsumerPolicyV2(
         resource_name + _CONSUMER_POLICY_DEFAULT.format(args.policy_name)
     )
 

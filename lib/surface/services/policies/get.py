@@ -17,10 +17,15 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+import json
+
 from googlecloudsdk.api_lib.services import serviceusage
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.services import common_flags
+from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
+from googlecloudsdk.core import yaml
+from googlecloudsdk.core.util import files
 
 _PROJECT_RESOURCE = 'projects/{}'
 _FOLDER_RESOURCE = 'folders/{}'
@@ -44,6 +49,13 @@ class Get(base.Command):
    $ {command}
       OR
    $ {command} --policy-name=default
+
+   Get consumer policy for default policy on current project and save the
+   content in an output file:
+
+   $ {command} --output-file=/path/to/the/file.yaml
+       OR
+   $ {command} --output-file=/path/to/the/file.json
   """
 
   @staticmethod
@@ -57,6 +69,14 @@ class Get(base.Command):
         default='default',
     )
     common_flags.add_resource_args(parser)
+
+    parser.add_argument(
+        '--output-file',
+        help=(
+            'Path to the file to write policy contents to. Supported format:'
+            '.yaml or .json.'
+        ),
+    )
 
   def Run(self, args):
     """Run command.
@@ -78,8 +98,58 @@ class Get(base.Command):
       project = properties.VALUES.core.project.Get(required=True)
       resource_name = _PROJECT_RESOURCE.format(project)
 
-    # TODO(b/274633761) Rearrange the ouput in the format:
-    # (policy name -> enable rules -> update time -> etag)
-    return serviceusage.GetConsumerPolicy(
+    policy = serviceusage.GetConsumerPolicyV2Alpha(
         resource_name + _CONSUMER_POLICY_DEFAULT.format(args.policy_name),
     )
+
+    if args.IsSpecified('output_file'):
+      if not (
+          args.output_file.endswith('.json')
+          or args.output_file.endswith('.yaml')
+      ):
+        log.error(
+            'Invalid output-file format. Please provide path to a yaml or json'
+            ' file.'
+        )
+      else:
+        if args.output_file.endswith('.json'):
+          data = json.dumps(_ConvertToDict(policy), sort_keys=False)
+        else:
+          data = yaml.dump(_ConvertToDict(policy), round_trip=True)
+        files.WriteFileContents(args.output_file, data)
+
+        log.status.Print(
+            'Policy written to the output file %s ' % args.output_file
+        )
+    else:
+      # TODO(b/274633761) Rearrange the ouput in the format:
+      # (policy name -> enable rules -> update time -> etag)
+      return policy
+
+
+def _ConvertToDict(policy):
+  """ConvertToDict command.
+
+  Args:
+    policy: consumerPolicy to be convert to orderedDict.
+
+  Returns:
+    orderedDict.
+  """
+
+  output = {
+      'name': policy.name,
+      'enable_rules': [],
+      'update_time': policy.updateTime,
+      'etag': policy.etag,
+      'createTime': policy.createTime,
+  }
+
+  for enable_rule in policy.enableRules:
+    output['enable_rules'].append({
+        'services': list(enable_rule.services),
+        'categories': list(enable_rule.categories),
+        'groups': list(enable_rule.groups),
+    })
+
+  return output

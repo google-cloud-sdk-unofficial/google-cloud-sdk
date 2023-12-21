@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Deletes(n >= 0) Delivery Pipeline(s), Target(s) with current project's Cloud Deploy service.."""
+"""Deletes(n >= 0) Delivery Pipeline(s), Target(s), Custom Target Type(s), and Automation(s) with current project's Cloud Deploy service.."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -29,7 +29,7 @@ _DETAILED_HELP = {
         '{description}',
     'EXAMPLES':
         """ \
-    To delete the delivery pipeline(s) and target(s) in a Cloud Deploy YAML file `deploy.yaml`:
+    To delete the resources in a Cloud Deploy YAML file `deploy.yaml`:
 
        $ {command} --file=deploy.yaml --region=us-central1
 
@@ -54,7 +54,7 @@ def _CommonArgs(parser):
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
                     base.ReleaseTrack.GA)
 class Delete(base.UpdateCommand):
-  """Deletes delivery pipeline(s) and target(s) in a yaml configuration."""
+  """Deletes Delivery Pipeline(s), Target(s), Custom Target Type(s), and Automation(s) in a yaml configuration."""
 
   detailed_help = _DETAILED_HELP
 

@@ -24,11 +24,17 @@ from googlecloudsdk.command_lib.container.fleet.clusterupgrade import flags as c
 from surface.container.fleet.clusterupgrade import update as clusterupgrade_update
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
+)
 class Create(clusterupgrade_update.Update):
   """Create the clusterupgrade feature for a fleet within a given project."""
 
-  detailed_help = {}
+  detailed_help = {"EXAMPLES": """\
+            To create the clusterupgrade feature for the current fleet, run:
+
+            $ {command} --default-upgrade-soaking=DEFAULT_UPGRADE_SOAKING
+        """}
 
   @staticmethod
   def Args(parser):
@@ -36,9 +42,3 @@ class Create(clusterupgrade_update.Update):
     flags.AddDefaultUpgradeSoakingFlag()
     flags.AddUpgradeSoakingOverrideFlags(with_destructive=False)
     flags.AddUpstreamFleetFlags(with_destructive=False)
-
-
-@base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
-class CreateBetaAndGA(Create):
-  """Create the clusterupgrade feature for a fleet within a given project."""

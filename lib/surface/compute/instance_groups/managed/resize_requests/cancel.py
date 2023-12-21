@@ -27,17 +27,17 @@ from googlecloudsdk.command_lib.compute.instance_groups import flags as instance
 
 
 @base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Cancel(base.UpdateCommand):
-  """Cancel a Compute Engine instance group manager resize request.
+  """Cancel a Compute Engine managed instance group resize request.
 
-  *{command}* cancels a Compute Engine instance group manager resize request.
+  *{command}* cancels a Compute Engine managed instance group resize request.
 
   You can only cancel a resize request when it is in the ACCEPTED state.
   """
 
-  @staticmethod
-  def Args(parser):
+  @classmethod
+  def Args(cls, parser):
     instance_groups_flags.MakeZonalInstanceGroupManagerArg().AddArgument(
         parser)
     parser.add_argument(
@@ -58,7 +58,6 @@ class Cancel(base.UpdateCommand):
     """
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     client = holder.client
-
     resource_arg = instance_groups_flags.MakeZonalInstanceGroupManagerArg()
     default_scope = compute_scope.ScopeEnum.ZONE
     scope_lister = flags.GetDefaultScopeLister(client)
@@ -79,3 +78,4 @@ class Cancel(base.UpdateCommand):
         ),
     )]
     return client.MakeRequests(requests)
+

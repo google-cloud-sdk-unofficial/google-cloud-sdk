@@ -134,6 +134,30 @@ class Import(base.Command):
     if self._IsSha2ImportMethod(import_method, messages):
       sha = hashes.SHA256()
 
+    # RSA-OAEP import methods have a maximum target key size that's a function
+    # of the RSA modulus size.
+    if not self._IsRsaAesWrappingImportMethod(import_method, messages):
+      if (
+          import_method
+          == messages.ImportJob.ImportMethodValueValuesEnum.RSA_OAEP_3072_SHA256
+      ):
+        modulus_byte_length = 3072 // 8
+      elif (
+          import_method
+          == messages.ImportJob.ImportMethodValueValuesEnum.RSA_OAEP_4096_SHA256
+      ):
+        modulus_byte_length = 4096 // 8
+      else:
+        raise ValueError('unexpected import method: {0}'.format(import_method))
+      # per go/rfc/8017#section-7.1.1
+      max_target_key_size = modulus_byte_length - (2 * sha.digest_size) - 2
+      if len(target_key_bytes) > max_target_key_size:
+        raise exceptions.BadFileException(
+            'target-key-file',
+            "The file is larger than the import method's maximum size of {0} "
+            'bytes.'.format(max_target_key_size),
+        )
+
     aes_wrapped_key = b''
     to_be_rsa_wrapped_key = target_key_bytes
     public_key = serialization.load_pem_public_key(

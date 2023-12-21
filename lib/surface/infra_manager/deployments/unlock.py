@@ -26,8 +26,8 @@ from googlecloudsdk.command_lib.infra_manager import resource_args
 from googlecloudsdk.command_lib.util.concepts import concept_parsers
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.GA)
-class UnlockDeploymentAlpha(base.Command):
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class UnlockDeployment(base.Command):
   """Unlocks the deployment.
 
   This command releases the lock on deployment.

@@ -125,5 +125,6 @@ class AlphaListNetworkEndpoints(ListNetworkEndpoints):
         networkEndpoint.ipAddress,
         networkEndpoint.ipv6Address,
         networkEndpoint.port,
-        networkEndpoint.fqdn
+        networkEndpoint.fqdn,
+        networkEndpoint.clientPort
       )"""

@@ -30,7 +30,6 @@ import uuid
 
 # To configure apiclient logging.
 from absl import flags
-from absl import logging as absl_logging
 from google.api_core.iam import Policy
 import googleapiclient
 from googleapiclient import discovery
@@ -47,8 +46,11 @@ from six.moves.urllib.parse import urljoin
 
 # pylint: disable=unused-import
 import bq_flags
+import bq_utils
 from discovery_documents import discovery_document_cache
 from discovery_documents import discovery_document_loader
+from utils import bq_error
+from utils import bq_logging
 
 
 # A unique non-None default, for use in kwargs that need to
@@ -430,7 +432,7 @@ def _ParseReservationIdentifier(identifier):
     reservation_id. If an element is not found, it is represented by None.
 
   Raises:
-    BigqueryError: if the identifier could not be parsed.
+    bq_error.BigqueryError: if the identifier could not be parsed.
   """
 
   pattern = re.compile(
@@ -442,8 +444,8 @@ def _ParseReservationIdentifier(identifier):
 
   match = re.search(pattern, identifier)
   if not match:
-    raise BigqueryError('Could not parse reservation identifier: %s' %
-                        identifier)
+    raise bq_error.BigqueryError(
+        'Could not parse reservation identifier: %s' % identifier)
 
   project_id = match.groupdict().get('project_id', None)
   location = match.groupdict().get('location', None)
@@ -465,7 +467,7 @@ def _ParseReservationPath(path):
     reservation_id. If an element is not found, it is represented by None.
 
   Raises:
-    BigqueryError: if the path could not be parsed.
+    bq_error.BigqueryError: if the path could not be parsed.
   """
 
   pattern = re.compile(
@@ -479,7 +481,8 @@ def _ParseReservationPath(path):
 
   match = re.search(pattern, path)
   if not match:
-    raise BigqueryError('Could not parse reservation path: %s' % path)
+    raise bq_error.BigqueryError(
+        'Could not parse reservation path: %s' % path)
 
   group = lambda key: match.groupdict().get(key, None)
   project_id = group('project_id')
@@ -503,7 +506,7 @@ def _ParseCapacityCommitmentIdentifier(identifier, allow_commas):
     None.
 
   Raises:
-    BigqueryError: if the identifier could not be parsed.
+    bq_error.BigqueryError: if the identifier could not be parsed.
   """
   pattern = None
   if allow_commas:
@@ -523,8 +526,8 @@ def _ParseCapacityCommitmentIdentifier(identifier, allow_commas):
 
   match = re.search(pattern, identifier)
   if not match:
-    raise BigqueryError('Could not parse capacity commitment identifier: %s' %
-                        identifier)
+    raise bq_error.BigqueryError(
+        'Could not parse capacity commitment identifier: %s' % identifier)
 
   project_id = match.groupdict().get('project_id', None)
   location = match.groupdict().get('location', None)
@@ -545,7 +548,7 @@ def _ParseCapacityCommitmentPath(path):
     None.
 
   Raises:
-    BigqueryError: if the path could not be parsed.
+    bq_error.BigqueryError: if the path could not be parsed.
   """
   pattern = re.compile(
       r"""
@@ -556,7 +559,8 @@ def _ParseCapacityCommitmentPath(path):
 
   match = re.search(pattern, path)
   if not match:
-    raise BigqueryError('Could not parse capacity commitment path: %s' % path)
+    raise bq_error.BigqueryError(
+        'Could not parse capacity commitment path: %s' % path)
 
   project_id = match.groupdict().get('project_id', None)
   location = match.groupdict().get('location', None)
@@ -579,7 +583,7 @@ def _ParseReservationAssignmentIdentifier(identifier):
     None.
 
   Raises:
-    BigqueryError: if the identifier could not be parsed.
+    bq_error.BigqueryError: if the identifier could not be parsed.
   """
 
   pattern = re.compile(
@@ -592,7 +596,7 @@ def _ParseReservationAssignmentIdentifier(identifier):
 
   match = re.search(pattern, identifier)
   if not match:
-    raise BigqueryError(
+    raise bq_error.BigqueryError(
         'Could not parse reservation assignment identifier: %s' % identifier)
 
   project_id = match.groupdict().get('project_id', None)
@@ -618,7 +622,7 @@ def _ParseReservationAssignmentPath(path):
     None.
 
   Raises:
-    BigqueryError: if the path could not be parsed.
+    bq_error.BigqueryError: if the path could not be parsed.
   """
 
   pattern = re.compile(
@@ -631,8 +635,8 @@ def _ParseReservationAssignmentPath(path):
 
   match = re.search(pattern, path)
   if not match:
-    raise BigqueryError('Could not parse reservation assignment path: %s' %
-                        path)
+    raise bq_error.BigqueryError(
+        'Could not parse reservation assignment path: %s' % path)
 
   project_id = match.groupdict().get('project_id', None)
   location = match.groupdict().get('location', None)
@@ -655,17 +659,17 @@ def _ParseConnectionIdentifier(identifier):
     If an element is not found, it is represented by None.
 
   Raises:
-    BigqueryError: if the identifier could not be parsed.
+    bq_error.BigqueryError: if the identifier could not be parsed.
   """
 
   if not identifier:
-    raise BigqueryError('Empty connection identifier')
+    raise bq_error.BigqueryError('Empty connection identifier')
 
   tokens = identifier.split('.')
   num_tokens = len(tokens)
   if num_tokens > 4:
-    raise BigqueryError('Could not parse connection identifier: %s' %
-                        identifier)
+    raise bq_error.BigqueryError(
+        'Could not parse connection identifier: %s' % identifier)
   connection_id = tokens[num_tokens - 1]
   location = tokens[num_tokens - 2] if num_tokens > 1 else None
   project_id = '.'.join(tokens[:num_tokens - 2]) if num_tokens > 2 else None
@@ -685,7 +689,7 @@ def _ParseConnectionPath(path):
     connection_id. If an element is not found, it is represented by None.
 
   Raises:
-    BigqueryError: if the path could not be parsed.
+    bq_error.BigqueryError: if the path could not be parsed.
   """
 
   pattern = re.compile(
@@ -697,7 +701,8 @@ def _ParseConnectionPath(path):
 
   match = re.search(pattern, path)
   if not match:
-    raise BigqueryError('Could not parse connection path: %s' % path)
+    raise bq_error.BigqueryError(
+        'Could not parse connection path: %s' % path)
 
   project_id = match.groupdict().get('project_id', None)
   location = match.groupdict().get('location', None)
@@ -733,46 +738,6 @@ def _BuildApiEndpointFromApiFlag(api_flag, parsed_discovery_document):
   return urljoin(api_flag, parsed_discovery_document['servicePath'])
 
 
-def ConfigurePythonLogger(apilog=None):
-  """Sets up Python logger, which BigqueryClient logs with.
-
-  Applications can configure logging however they want, but this
-  captures one pattern of logging which seems useful when dealing with
-  a single command line option for determining logging.
-
-  Args:
-    apilog: To log to sys.stdout, specify '', '-', '1', 'true', or 'stdout'. To
-      log to sys.stderr, specify 'stderr'. To log to a file, specify the file
-      path. Specify None to disable logging.
-  """
-  if apilog is None:
-    # Effectively turn off logging.
-    logging.debug(
-        'There is no apilog flag so non-critical logging is disabled.')
-    logging.disable(logging.CRITICAL)
-  else:
-    if apilog in ('', '-', '1', 'true', 'stdout'):
-      _SetLogFile(sys.stdout)
-    elif apilog == 'stderr':
-      _SetLogFile(sys.stderr)
-    elif apilog:
-      _SetLogFile(open(apilog, 'w'))
-    else:
-      logging.basicConfig(level=logging.INFO)
-    # Turn on apiclient logging of http requests and responses. (Here
-    # we handle both the flags interface from apiclient < 1.2 and the
-    # module global in apiclient >= 1.2.)
-    if hasattr(flags.FLAGS, 'dump_request_response'):
-      flags.FLAGS.dump_request_response = True
-    else:
-      model.dump_request_response = True
-
-
-def _SetLogFile(logfile):
-  absl_logging.use_python_logging(quiet=True)
-  absl_logging.get_absl_handler().python_handler.stream = logfile
-
-
 InsertEntry = collections.namedtuple('InsertEntry', ['insert_id', 'record'])
 
 
@@ -789,27 +754,10 @@ def JsonToInsertEntry(insert_id, json_string):
   try:
     row = json.loads(json_string)
     if not isinstance(row, dict):
-      raise BigqueryClientError('Value is not a JSON object')
+      raise bq_error.BigqueryClientError('Value is not a JSON object')
     return InsertEntry(insert_id, row)
   except ValueError as e:
-    raise BigqueryClientError('Could not parse object: %s' % (str(e),))
-
-
-def EncodeForPrinting(o):
-  """Safely encode an object as the encoding for sys.stdout."""
-  # Not all file objects provide an encoding attribute, so we make sure to
-  # handle the case where the attribute is completely absent.
-  encoding = getattr(sys.stdout, 'encoding', None) or 'ascii'
-  # We want to prevent conflicts in python2 between formatting
-  # a str type with a unicode type, e.g. b'abc%s' % (u'[unicode]',)
-  # where the byte type will be auto decoded as ascii thus causing
-  # an error.
-  # Thus we only want to encode the object if it's passed in as a
-  # unicode type and the unicode type is not a str type.
-  if isinstance(o, type(u'')) and not isinstance(o, str):
-    return o.encode(encoding, 'backslashreplace')
-  else:
-    return str(o)
+    raise bq_error.BigqueryClientError('Could not parse object: %s' % (str(e),))
 
 
 class BigqueryError(Exception):
@@ -869,7 +817,7 @@ class BigqueryError(Exception):
     # to <type 'string'> now -- otherwise it's a trap for any code that
     # tries to %s-format the exception later: str() uses 'ascii' codec.
     # And the message is for display only, so this shouldn't confuse other code.
-    message = EncodeForPrinting(message)
+    message = bq_logging.EncodeForPrinting(message)
 
     if not reason or not message:
       return BigqueryInterfaceError(
@@ -985,17 +933,18 @@ def ReadTableConstrants(table_constraints):
     The table_constraints (as a json object).
 
   Raises:
-    BigqueryTableConstraintsError: If load the table constraints from the
-      string or file failed.
+    bq_error.BigqueryTableConstraintsError: If load the table constraints
+      from the string or file failed.
   """
   if not table_constraints:
-    raise BigqueryTableConstraintsError('table_constraints cannot be empty')
+    raise bq_error.BigqueryTableConstraintsError(
+        'table_constraints cannot be empty')
   if os.path.exists(table_constraints):
     with open(table_constraints) as f:
       try:
         loaded_json = json.load(f)
       except ValueError as e:
-        raise BigqueryTableConstraintsError(
+        raise bq_error.BigqueryTableConstraintsError(
             'Error decoding JSON table constraints from file %s.'
             % (table_constraints,)
         ) from e
@@ -1003,14 +952,14 @@ def ReadTableConstrants(table_constraints):
   if re.search(r'^[./~\\]', table_constraints) is not None:
     # The table_constraints looks like a file name but the file does not
     # exist.
-    raise BigqueryTableConstraintsError(
+    raise bq_error.BigqueryTableConstraintsError(
         'Error reading table constraints: "%s" looks like a filename, '
         'but was not found.' % (table_constraints,)
     )
   try:
     loaded_json = json.loads(table_constraints)
   except ValueError as e:
-    raise BigqueryTableConstraintsError(
+    raise bq_error.BigqueryTableConstraintsError(
         'Error decoding JSON table constraints from string %s.'
         % (table_constraints,)
     ) from e
@@ -1092,7 +1041,7 @@ class BigqueryHttp(http_request.HttpRequest):
       error_details = ''
       if flags.FLAGS.use_regional_endpoints:
         error_details = ' The specified regional endpoint may not be supported.'
-      raise BigqueryCommunicationError(
+      raise bq_error.BigqueryCommunicationError(
           'Could not connect with BigQuery server.%s\n'
           'Http response status: %s\n'
           'Http response content:\n%s'
@@ -1102,7 +1051,7 @@ class BigqueryHttp(http_request.HttpRequest):
   @staticmethod
   def RaiseErrorFromNonHttpError(e):
     """Raises a BigQueryError given a non-HttpError."""
-    raise BigqueryCommunicationError(
+    raise bq_error.BigqueryCommunicationError(
         'Could not connect with BigQuery server due to: %r' % (e,))
 
   def execute(self, **kwds):  # pylint: disable=g-bad-name
@@ -1250,7 +1199,7 @@ class BigqueryClient:
         initialization, a project_id is required when calling any
         method that creates a job on the server. Methods that have
         this requirement pass through **kwds, and will raise
-        BigqueryClientConfigurationError if no project_id can be
+        bq_error.BigqueryClientConfigurationError if no project_id can be
         found.
       dataset_id: a default dataset id to use.
       discovery_document: the discovery document to use. If None, one
@@ -1359,6 +1308,7 @@ class BigqueryClient:
       discovery_url: Optional[str] = None,
   ) -> discovery.Resource:
     """Build and return BigQuery Dynamic client from discovery document."""
+    logging.info('BuildApiClient discovery_url: %s', discovery_url)
     http = self.GetAuthorizedHttp(self.credentials, self.GetHttp())
     bigquery_model = BigqueryModel(
         trace=self.trace,
@@ -1406,6 +1356,11 @@ class BigqueryClient:
       # retry-able errors.
       max_retries = 3
       iterations = 0
+      headers = (
+          {'X-ESF-Use-Cloud-UberMint-If-Enabled': '1'}
+          if hasattr(self, 'use_uber_mint') and self.use_uber_mint
+          else None
+      )
       while iterations < max_retries and discovery_document is None:
         if iterations > 0:
           # Wait briefly before retrying with exponentially increasing wait.
@@ -1416,36 +1371,43 @@ class BigqueryClient:
             discovery_url = self.GetDiscoveryUrl().format(
                 api='bigquery', apiVersion=self.api_version)
           logging.info('Requesting discovery document from %s', discovery_url)
-          response_metadata, discovery_document = http.request(discovery_url)
+          if headers:
+            response_metadata, discovery_document = http.request(
+                discovery_url, headers=headers
+            )
+          else:
+            response_metadata, discovery_document = http.request(
+                discovery_url
+            )
           discovery_document = discovery_document.decode('utf-8')
           if int(response_metadata.get('status')) >= 400:
             msg = 'Got %s response from discovery url: %s' % (
                 response_metadata.get('status'), discovery_url)
             logging.error('%s:\n%s', msg, discovery_document)
-            raise BigqueryCommunicationError(msg)
+            raise bq_error.BigqueryCommunicationError(msg)
         except (httplib2.HttpLib2Error, googleapiclient.errors.HttpError,
                 six.moves.http_client.HTTPException) as e:
           # We can't find the specified server. This can be thrown for
           # multiple reasons, so inspect the error.
           if hasattr(e, 'content'):
             if iterations == max_retries:
-              raise BigqueryCommunicationError(
+              raise bq_error.BigqueryCommunicationError(
                   'Cannot contact server. Please try again.\nError: %r'
                   '\nContent: %s' % (e, e.content))
           else:
             if iterations == max_retries:
-              raise BigqueryCommunicationError(
+              raise bq_error.BigqueryCommunicationError(
                   'Cannot contact server. Please try again.\n'
                   'Traceback: %s' % (traceback.format_exc(),))
         except IOError as e:
           if iterations == max_retries:
-            raise BigqueryCommunicationError(
+            raise bq_error.BigqueryCommunicationError(
                 'Cannot contact server. Please try again.\nError: %r' % (e,))
         except googleapiclient.errors.UnknownApiNameOrVersion as e:
           # We can't resolve the discovery url for the given server.
           # Don't retry in this case.
-          raise BigqueryCommunicationError('Invalid API name or version: %s' %
-                                           (str(e),))
+          raise bq_error.BigqueryCommunicationError(
+              'Invalid API name or version: %s' % (str(e),))
 
     discovery_document_to_build_client = self.OverrideEndpoint(
         discovery_document)
@@ -1489,7 +1451,7 @@ class BigqueryClient:
       models_doc = discovery_document_loader.load_local_discovery_doc(
           discovery_document_loader.DISCOVERY_NEXT_BIGQUERY)
       models_doc = self.OverrideEndpoint(models_doc)
-    except (BigqueryClientError, FileNotFoundError) as e:
+    except (bq_error.BigqueryClientError, FileNotFoundError) as e:
       logging.warning('Failed to load discovery doc from local files: %s', e)
       raise
 
@@ -1520,7 +1482,7 @@ class BigqueryClient:
       iam_pol_doc = discovery_document_loader.load_local_discovery_doc(
           discovery_document_loader.DISCOVERY_NEXT_IAM_POLICY)
       iam_pol_doc = self.OverrideEndpoint(iam_pol_doc)
-    except (BigqueryClientError, FileNotFoundError) as e:
+    except (bq_error.BigqueryClientError, FileNotFoundError) as e:
       logging.warning('Failed to load discovery doc from local files: %s', e)
       raise
 
@@ -1541,7 +1503,9 @@ class BigqueryClient:
   @property
   def apiclient(self) -> discovery.Resource:
     """Returns the apiclient attached to self."""
-    if self._apiclient is None:
+    if self._apiclient:
+      logging.info('Using the cached BigQuery API client')
+    else:
       self._apiclient = self.BuildApiClient()
     return self._apiclient
 
@@ -1578,13 +1542,19 @@ class BigqueryClient:
       self,
       transferserver_address: Optional[str] = None) -> discovery.Resource:
     """Return the apiclient that supports Transfer v1 operation."""
+    logging.info(
+        'GetTransferV1ApiClient transferserver_address: %s',
+        transferserver_address,
+    )
     path = transferserver_address
     if path is None:
       path = self.transfer_path
     if path is None:
       path = 'https://bigquerydatatransfer.googleapis.com'
 
-    if not self._op_transfer_client:
+    if self._op_transfer_client:
+      logging.info('Using the cached Transfer API client')
+    else:
       discovery_url = (path + '/$discovery/rest?version=v1')
       self._op_transfer_client = self.BuildApiClient(
       discovery_url=discovery_url)
@@ -1599,7 +1569,9 @@ class BigqueryClient:
     reservation_version = 'v1'
     if path is None:
       path = 'https://bigqueryreservation.googleapis.com'
-    if not self._op_reservation_client:
+    if self._op_reservation_client:
+      logging.info('Using the cached Reservations API client')
+    else:
       discovery_url = (path + '/$discovery/rest?version=' + reservation_version)
       self._op_reservation_client = self.BuildApiClient(
       discovery_url=discovery_url)
@@ -1613,7 +1585,9 @@ class BigqueryClient:
 
     if path is None:
       path = 'https://bigqueryconnection.googleapis.com'
-    if not self._op_connection_service_client:
+    if self._op_connection_service_client:
+      logging.info('Using the cached Connections API client')
+    else:
       discovery_url = (path + '/$discovery/rest?version=v1')
       self._op_connection_service_client = self.BuildApiClient(
       discovery_url=discovery_url)
@@ -1631,7 +1605,8 @@ class BigqueryClient:
       discovery_document updated discovery document.
 
     Raises:
-      BigqueryClientError: if location is not set and use_regional_endpoints is.
+      bq_error.BigqueryClientError: if location is not set and
+        use_regional_endpoints is.
     """
     if discovery_document is None:
       return discovery_document
@@ -1646,7 +1621,7 @@ class BigqueryClient:
           discovery_document['rootUrl'])
       discovery_document['rootUrl'] = regional_endpoint
     elif flags.FLAGS.use_regional_endpoints:
-      raise BigqueryClientError(
+      raise bq_error.BigqueryClientError(
           '--location is required when --use_regional_endpoints is set')
 
 
@@ -1701,7 +1676,7 @@ class BigqueryClient:
       else:
         role = entry.pop('role', None)
         if not role or len(list(entry.values())) != 1:
-          raise BigqueryInterfaceError(
+          raise bq_error.BigqueryInterfaceError(
               'Invalid ACL returned by server: %s' % acl, {}, [])
         acl_entries[role].extend(six.itervalues(entry))
     # Show a couple things first.
@@ -1849,10 +1824,10 @@ class BigqueryClient:
     except ValueError:
       pass
     if project_id == '':
-      raise BigqueryClientError('Please provide a project ID.')
+      raise bq_error.BigqueryClientError('Please provide a project ID.')
     else:
-      raise BigqueryClientError('Cannot determine project described by %s' %
-                                (identifier,))
+      raise bq_error.BigqueryClientError(
+          'Cannot determine project described by %s' % (identifier,))
 
   def GetDatasetReference(self, identifier=''):
     """Determine a DatasetReference from an identifier and self."""
@@ -1870,15 +1845,15 @@ class BigqueryClient:
       # identifier is 'foo:bar'
       pass
     else:
-      raise BigqueryError('Cannot determine dataset described by %s' %
-                          (identifier,))
+      raise bq_error.BigqueryError(
+          'Cannot determine dataset described by %s' % (identifier,))
 
     try:
       return ApiClientHelper.DatasetReference.Create(
           projectId=project_id, datasetId=dataset_id)
-    except ValueError:
-      raise BigqueryError('Cannot determine dataset described by %s' %
-                          (identifier,))
+    except ValueError as e:
+      raise bq_error.BigqueryError(
+          'Cannot determine dataset described by %s' % (identifier,)) from e
 
   def GetTableReference(self, identifier='', default_dataset_id=''):
     """Determine a TableReference from an identifier and self."""
@@ -1894,9 +1869,9 @@ class BigqueryClient:
           datasetId=dataset_id,
           tableId=table_id,
       )
-    except ValueError:
-      raise BigqueryError('Cannot determine table described by %s' %
-                          (identifier,))
+    except ValueError as e:
+      raise bq_error.BigqueryError(
+          'Cannot determine table described by %s' % (identifier,)) from e
 
   def GetModelReference(self, identifier=''):
     """Returns a ModelReference from an identifier."""
@@ -1909,8 +1884,9 @@ class BigqueryClient:
           projectId=project_id or self.project_id,
           datasetId=dataset_id,
           modelId=table_id)
-    except ValueError:
-      raise BigqueryError('Cannot determine model described by %s' % identifier)
+    except ValueError as e:
+      raise bq_error.BigqueryError(
+          'Cannot determine model described by %s' % identifier) from e
 
   def GetRoutineReference(self, identifier=''):
     """Returns a RoutineReference from an identifier."""
@@ -1923,9 +1899,9 @@ class BigqueryClient:
           projectId=project_id or self.project_id,
           datasetId=dataset_id,
           routineId=table_id)
-    except ValueError:
-      raise BigqueryError('Cannot determine routine described by %s' %
-                          identifier)
+    except ValueError as e:
+      raise bq_error.BigqueryError(
+          'Cannot determine routine described by %s' % identifier) from e
 
   def GetQueryDefaultDataset(self, identifier):
     parsed_project_id, parsed_dataset_id = self._ParseDatasetIdentifier(
@@ -1949,21 +1925,22 @@ class BigqueryClient:
       A valid ProjectReference, DatasetReference, or TableReference.
 
     Raises:
-      BigqueryError: if no valid reference can be determined.
+      bq_error.BigqueryError: if no valid reference can be determined.
     """
     try:
       return self.GetTableReference(identifier)
-    except BigqueryError:
+    except bq_error.BigqueryError:
       pass
     try:
       return self.GetDatasetReference(identifier)
-    except BigqueryError:
+    except bq_error.BigqueryError:
       pass
     try:
       return self.GetProjectReference(identifier)
-    except BigqueryError:
+    except bq_error.BigqueryError:
       pass
-    raise BigqueryError('Cannot determine reference for "%s"' % (identifier,))
+    raise bq_error.BigqueryError(
+        'Cannot determine reference for "%s"' % (identifier,))
 
   def GetJobReference(self, identifier='', default_location=None):
     """Determine a JobReference from an identifier, location, and self."""
@@ -1978,7 +1955,8 @@ class BigqueryClient:
             projectId=project_id, jobId=job_id, location=location)
       except ValueError:
         pass
-    raise BigqueryError('Cannot determine job described by %s' % (identifier,))
+    raise bq_error.BigqueryError(
+        'Cannot determine job described by %s' % (identifier,))
 
   def GetReservationReference(self,
                               identifier=None,
@@ -1992,22 +1970,22 @@ class BigqueryClient:
     # from the self.project_id. We'll skip this check in this case.
     if (check_reservation_project and project_id and self.project_id and
         project_id != self.project_id):
-      raise BigqueryError(
+      raise bq_error.BigqueryError(
           "Specified project '%s' should be the same as the project of the "
           "reservation '%s'." % (self.project_id, project_id))
     project_id = project_id or self.project_id
     if not project_id:
-      raise BigqueryError('Project id not specified.')
+      raise bq_error.BigqueryError('Project id not specified.')
     location = location or default_location
     if not location:
-      raise BigqueryError('Location not specified.')
+      raise bq_error.BigqueryError('Location not specified.')
     if default_location and location.lower() != default_location.lower():
-      raise BigqueryError(
+      raise bq_error.BigqueryError(
           "Specified location '%s' should be the same as the location of the "
           "reservation '%s'." % (default_location, location))
     reservation_id = reservation_id or default_reservation_id
     if not reservation_id:
-      raise BigqueryError('Reservation name not specified.')
+      raise bq_error.BigqueryError('Reservation name not specified.')
     elif (self.api_version == 'v1beta1'
          ):
       return ApiClientHelper.BetaReservationReference(
@@ -2020,10 +1998,10 @@ class BigqueryClient:
     """Determine a ReservationReference from an identifier and location."""
     project_id = self.project_id
     if not project_id:
-      raise BigqueryError('Project id not specified.')
+      raise bq_error.BigqueryError('Project id not specified.')
     location = default_location
     if not location:
-      raise BigqueryError('Location not specified.')
+      raise bq_error.BigqueryError('Location not specified.')
     return ApiClientHelper.BiReservationReference.Create(
         projectId=project_id, location=location)
 
@@ -2041,16 +2019,18 @@ class BigqueryClient:
       project_id, location, capacity_commitment_id = _ParseCapacityCommitmentPath(
           path)
     else:
-      raise BigqueryError('Either identifier or path must be specified.')
+      raise bq_error.BigqueryError(
+          'Either identifier or path must be specified.')
     project_id = project_id or self.project_id
     if not project_id:
-      raise BigqueryError('Project id not specified.')
+      raise bq_error.BigqueryError('Project id not specified.')
     location = location or default_location
     if not location:
-      raise BigqueryError('Location not specified.')
+      raise bq_error.BigqueryError('Location not specified.')
     capacity_commitment_id = capacity_commitment_id or default_capacity_commitment_id
     if not capacity_commitment_id:
-      raise BigqueryError('Capacity commitment id not specified.')
+      raise bq_error.BigqueryError(
+          'Capacity commitment id not specified.')
 
     return ApiClientHelper.CapacityCommitmentReference.Create(
         projectId=project_id,
@@ -2071,13 +2051,14 @@ class BigqueryClient:
       (project_id, location, reservation_id,
        reservation_assignment_id) = _ParseReservationAssignmentPath(path)
     else:
-      raise BigqueryError('Either identifier or path must be specified.')
+      raise bq_error.BigqueryError(
+          'Either identifier or path must be specified.')
     project_id = project_id or self.project_id
     if not project_id:
-      raise BigqueryError('Project id not specified.')
+      raise bq_error.BigqueryError('Project id not specified.')
     location = location or default_location
     if not location:
-      raise BigqueryError('Location not specified.')
+      raise bq_error.BigqueryError('Location not specified.')
     reservation_id = reservation_id or default_reservation_id
     reservation_assignment_id = reservation_assignment_id or default_reservation_assignment_id
     if (self.api_version == 'v1beta1'
@@ -2107,13 +2088,13 @@ class BigqueryClient:
       (project_id, location, connection_id) = _ParseConnectionPath(path)
     project_id = project_id or self.project_id
     if not project_id:
-      raise BigqueryError('Project id not specified.')
+      raise bq_error.BigqueryError('Project id not specified.')
     location = location or default_location
     if not location:
-      raise BigqueryError('Location not specified.')
+      raise bq_error.BigqueryError('Location not specified.')
     connection_id = connection_id or default_connection_id
     if not connection_id:
-      raise BigqueryError('Connection name not specified.')
+      raise bq_error.BigqueryError('Connection name not specified.')
     return ApiClientHelper.ConnectionReference.Create(
         projectId=project_id, location=location, connectionId=connection_id)
 
@@ -2129,12 +2110,12 @@ class BigqueryClient:
           project['kind'] = 'bigquery#project'
           return project
       if len(projects) >= max_project_results:
-        raise BigqueryError(
+        raise bq_error.BigqueryError(
             'Number of projects found exceeded limit, please instead run'
             ' gcloud projects describe %s' % (reference,),
         )
-      raise BigqueryNotFoundError('Unknown %r' % (reference,),
-                                  {'reason': 'notFound'}, [])
+      raise bq_error.BigqueryNotFoundError('Unknown %r' % (reference,),
+                                           {'reason': 'notFound'}, [])
 
     if isinstance(reference, ApiClientHelper.JobReference):
       return self.apiclient.jobs().get(**dict(reference)).execute()
@@ -2234,7 +2215,8 @@ class BigqueryClient:
       Reservation object that was created.
 
     Raises:
-      BigqueryError: if autoscale_max_slots is used with other version.
+      bq_error.BigqueryError: if autoscale_max_slots is used with other
+        version.
     """
     reservation = {}
     reservation['slot_capacity'] = slots
@@ -2247,7 +2229,7 @@ class BigqueryClient:
     if enable_queuing_and_priorities is not None:
       if (self.api_version != 'v1beta1'
          ):
-        raise BigqueryError(
+        raise bq_error.BigqueryError(
             'enable_queuing_and_priorities is only supported in v1beta1. '
             'Please specify \'--api_version=v1beta1\' and retry.')
       reservation['enable_queuing_and_priorities'] = {}
@@ -2293,7 +2275,8 @@ class BigqueryClient:
       Reservation object that was created.
 
     Raises:
-      BigqueryError: if autoscale_max_slots is used with other version.
+      bq_error.BigqueryError: if autoscale_max_slots is used with other
+        version.
     """
     reservation = self.GetBodyForCreateReservation(
         slots,
@@ -2433,7 +2416,8 @@ class BigqueryClient:
       Reservation object that was updated.
 
     Raises:
-      BigqueryError: if autoscale_max_slots is used with other version.
+      bq_error.BigqueryError: if autoscale_max_slots is used with other
+        version.
     """
     reservation = {}
     update_mask = ''
@@ -2452,7 +2436,7 @@ class BigqueryClient:
     if enable_queuing_and_priorities is not None:
       if (self.api_version != 'v1beta1'
          ):
-        raise BigqueryError(
+        raise bq_error.BigqueryError(
             'enable_queuing_and_priorities is only supported in v1beta1. '
             'Please specify \'--api_version=v1beta1\' and retry.')
       reservation['enable_queuing_and_priorities'] = {}
@@ -2496,7 +2480,8 @@ class BigqueryClient:
       Reservation object that was updated.
 
     Raises:
-      BigqueryError: if autoscale_max_slots is used with other version.
+      bq_error.BigqueryError: if autoscale_max_slots is used with other
+        version.
     """
     reservation, update_mask = self.GetParamsForUpdateReservation(
         slots,
@@ -2600,10 +2585,10 @@ class BigqueryClient:
       Capacity commitment object that was updated.
 
     Raises:
-      BigqueryError: if capacity commitment cannot be updated.
+      bq_error.BigqueryError: if capacity commitment cannot be updated.
     """
     if plan is None and renewal_plan is None:
-      raise BigqueryError('Please specify fields to be updated.')
+      raise bq_error.BigqueryError('Please specify fields to be updated.')
     capacity_commitment = {}
     update_mask = []
     if plan is not None:
@@ -2630,16 +2615,16 @@ class BigqueryClient:
       List of capacity commitment objects after the split.
 
     Raises:
-      BigqueryError: if capacity commitment cannot be updated.
+      bq_error.BigqueryError: if capacity commitment cannot be updated.
     """
     if slots is None:
-      raise BigqueryError('Please specify slots for the split.')
+      raise bq_error.BigqueryError('Please specify slots for the split.')
     client = self.GetReservationApiClient()
     body = {'slotCount': slots}
     response = client.projects().locations().capacityCommitments().split(
         name=reference.path(), body=body).execute()
     if 'first' not in response or 'second' not in response:
-      raise BigqueryError('internal error')
+      raise bq_error.BigqueryError('internal error')
     return [response['first'], response['second']]
 
   def MergeCapacityCommitments(self, location, capacity_commitment_ids):
@@ -2653,14 +2638,15 @@ class BigqueryClient:
       Merged capacity commitment.
 
     Raises:
-      BigqueryError: if capacity commitment cannot be merged.
+      bq_error.BigqueryError: if capacity commitment cannot be merged.
     """
     if not self.project_id:
-      raise BigqueryError('project id must be specified.')
+      raise bq_error.BigqueryError('project id must be specified.')
     if not location:
-      raise BigqueryError('location must be specified.')
+      raise bq_error.BigqueryError('location must be specified.')
     if capacity_commitment_ids is None or len(capacity_commitment_ids) < 2:
-      raise BigqueryError('at least 2 capacity commitments must be specified.')
+      raise bq_error.BigqueryError(
+          'at least 2 capacity commitments must be specified.')
     client = self.GetReservationApiClient()
     parent = 'projects/%s/locations/%s' % (self.project_id, location)
     body = {'capacityCommitmentIds': capacity_commitment_ids}
@@ -2684,18 +2670,18 @@ class BigqueryClient:
       ReservationAssignment object that was created.
 
     Raises:
-      BigqueryError: if assignment cannot be created.
+      bq_error.BigqueryError: if assignment cannot be created.
     """
     reservation_assignment = {}
     if not job_type:
-      raise BigqueryError('job_type not specified.')
+      raise bq_error.BigqueryError('job_type not specified.')
     reservation_assignment['job_type'] = job_type
     if priority:
       reservation_assignment['priority'] = priority
     if not assignee_type:
-      raise BigqueryError('assignee_type not specified.')
+      raise bq_error.BigqueryError('assignee_type not specified.')
     if not assignee_id:
-      raise BigqueryError('assignee_id not specified.')
+      raise bq_error.BigqueryError('assignee_id not specified.')
     # assignee_type is singular, that's why we need additional 's' inside
     # format string for assignee below.
     reservation_assignment['assignee'] = '%ss/%s' % (assignee_type.lower(),
@@ -2738,7 +2724,7 @@ class BigqueryClient:
       Reservation assignment object that was updated.
 
     Raises:
-      BigqueryError: if assignment cannot be updated.
+      bq_error.BigqueryError: if assignment cannot be updated.
     """
     reservation_assignment = {}
     update_mask = ''
@@ -2790,17 +2776,17 @@ class BigqueryClient:
       ReservationAssignment object if it exists.
 
     Raises:
-      BigqueryError: If required parameters are not passed in or reservation
-      assignment not found.
+      bq_error.BigqueryError: If required parameters are not passed in or
+        reservation assignment not found.
     """
     if not location:
-      raise BigqueryError('location not specified.')
+      raise bq_error.BigqueryError('location not specified.')
     if not job_type:
-      raise BigqueryError('job_type not specified.')
+      raise bq_error.BigqueryError('job_type not specified.')
     if not assignee_type:
-      raise BigqueryError('assignee_type not specified.')
+      raise bq_error.BigqueryError('assignee_type not specified.')
     if not assignee_id:
-      raise BigqueryError('assignee_id not specified.')
+      raise bq_error.BigqueryError('assignee_id not specified.')
     # assignee_type is singular, that's why we need additional 's' inside
     # format string for assignee below.
     assignee = '%ss/%s' % (assignee_type.lower(), assignee_id)
@@ -2814,7 +2800,7 @@ class BigqueryClient:
       for assignment in response['assignments']:
         if assignment['jobType'] == job_type:
           return assignment
-    raise BigqueryError('Reservation assignment not found')
+    raise bq_error.BigqueryError('Reservation assignment not found')
 
   def GetConnection(self, reference):
     """Gets connection with the given connection reference.
@@ -2878,7 +2864,8 @@ class BigqueryClient:
           json.loads(connection_credential)
 
     else:
-      raise ValueError('connection_type %s is unsupported' % connection_type)
+      error = 'connection_type %s is unsupported' % connection_type
+      raise ValueError(error)
 
     client = self.GetConnectionV1ApiClient()
     parent = 'projects/%s/locations/%s' % (project_id, location)
@@ -2906,14 +2893,15 @@ class BigqueryClient:
       description: Description of the connection
       kms_key_name: Optional KMS key name.
     Raises:
-      BigqueryClientError: The connection type is not defined when updating
+      bq_error.BigqueryClientError: The connection type is not defined
+        when updating
       connection_credential or properties.
     Returns:
       Connection object that was created.
     """
 
     if (connection_credential or properties) and not connection_type:
-      raise BigqueryClientError(
+      raise bq_error.BigqueryClientError(
           'connection_type is required when updating connection_credential or'
           ' properties'
       )
@@ -2935,6 +2923,7 @@ class BigqueryClient:
           base_path + '.' + inflection.underscore(json_property)
           for json_property in json_properties
       ]
+
 
     if display_name:
       connection['friendlyName'] = display_name
@@ -3405,7 +3394,7 @@ class BigqueryClient:
   def RaiseError(result):
     """Raises an appropriate BigQuery error given the json error result."""
     error = result.get('error', {}).get('errors', [{}])[0]
-    raise BigqueryError.Create(error, result, [])
+    raise bq_error.CreateBigqueryError(error, result, [])
 
   @staticmethod
   def IsFailedJob(job):
@@ -3438,17 +3427,17 @@ class BigqueryClient:
       job, if it is not in an error state.
 
     Raises:
-      BigqueryError: A BigqueryError instance based on the job's error
-      description.
+      bq_error.BigqueryError: A bq_error.BigqueryError instance
+        based on the job's error description.
     """
     if BigqueryClient.IsFailedJob(job):
       error = job['status']['errorResult']
       error_ls = job['status'].get('errors', [])
-      raise BigqueryError.Create(
+      raise bq_error.CreateBigqueryError(
           error,
           error,
           error_ls,
-          job_ref=BigqueryClient.ConstructObjectReference(job),
+          job_ref=str(BigqueryClient.ConstructObjectReference(job)),
           session_id=BigqueryClient.GetSessionId(job),
       )
     return job
@@ -3477,30 +3466,33 @@ class BigqueryClient:
       List of one or more valid URIs, as strings.
 
     Raises:
-      BigqueryClientError: if no valid list of sources can be determined.
+      bq_error.BigqueryClientError: if no valid list of sources can be
+        determined.
     """
     sources = [source.strip() for source in source_string.split(',')]
     gs_uris = [
         source for source in sources if source.startswith(_GCS_SCHEME_PREFIX)
     ]
     if not sources:
-      raise BigqueryClientError('No sources specified')
+      raise bq_error.BigqueryClientError('No sources specified')
     if gs_uris:
       if len(gs_uris) != len(sources):
-        raise BigqueryClientError(
+        raise bq_error.BigqueryClientError(
             'All URIs must begin with "{}" if any do.'.format(
                 _GCS_SCHEME_PREFIX))
       return sources
     else:
       source = sources[0]
       if len(sources) > 1:
-        raise BigqueryClientError(
+        raise bq_error.BigqueryClientError(
             'Local upload currently supports only one file, found %d' %
             (len(sources),))
       if not os.path.exists(source):
-        raise BigqueryClientError('Source file not found: %s' % (source,))
+        raise bq_error.BigqueryClientError(
+            'Source file not found: %s' % (source,))
       if not os.path.isfile(source):
-        raise BigqueryClientError('Source path is not a file: %s' % (source,))
+        raise bq_error.BigqueryClientError(
+            'Source path is not a file: %s' % (source,))
     return sources
 
   @staticmethod
@@ -3518,35 +3510,37 @@ class BigqueryClient:
       The new schema (as a dict).
 
     Raises:
-      BigquerySchemaError: If the schema is invalid or the filename does
-          not exist.
+      bq_error.BigquerySchemaError: If the schema is invalid or the
+        filename does not exist.
     """
 
     if schema.startswith(_GCS_SCHEME_PREFIX):
-      raise BigquerySchemaError('Cannot load schema files from GCS.')
+      raise bq_error.BigquerySchemaError(
+          'Cannot load schema files from GCS.')
 
     def NewField(entry):
       name, _, field_type = entry.partition(':')
       if entry.count(':') > 1 or not name.strip():
-        raise BigquerySchemaError('Invalid schema entry: %s' % (entry,))
+        raise bq_error.BigquerySchemaError(
+            'Invalid schema entry: %s' % (entry,))
       return {
           'name': name.strip(),
           'type': field_type.strip().upper() or 'STRING',
       }
 
     if not schema:
-      raise BigquerySchemaError('Schema cannot be empty')
+      raise bq_error.BigquerySchemaError('Schema cannot be empty')
     elif os.path.exists(schema):
       with open(schema) as f:
         try:
           loaded_json = json.load(f)
         except ValueError as e:
-          raise BigquerySchemaError(
+          raise bq_error.BigquerySchemaError(
               ('Error decoding JSON schema from file %s: %s\n'
                'To specify a one-column schema, use "name:string".') %
               (schema, e))
       if not isinstance(loaded_json, list):
-        raise BigquerySchemaError(
+        raise bq_error.BigquerySchemaError(
             'Error in "%s": Table schemas must be specified as JSON lists.' %
             schema)
       return loaded_json
@@ -3554,7 +3548,7 @@ class BigqueryClient:
       # We have something that looks like a filename, but we didn't
       # find it. Tell the user about the problem now, rather than wait
       # for a round-trip to the server.
-      raise BigquerySchemaError(
+      raise bq_error.BigquerySchemaError(
           ('Error reading schema: "%s" looks like a filename, '
            'but was not found.') % (schema,))
     else:
@@ -3627,7 +3621,7 @@ class BigqueryClient:
       try:
         BigqueryClient.RaiseIfJobError(result)
         result['State'] = 'SUCCESS'
-      except BigqueryError:
+      except bq_error.BigqueryError:
         result['State'] = 'FAILURE'
 
     if 'startTime' in stats:
@@ -4280,6 +4274,7 @@ class BigqueryClient:
       request['pageToken'] = page_token
     return request
 
+
   def _PrepareTransferListRequest(self,
                                   reference,
                                   location,
@@ -4299,7 +4294,7 @@ class BigqueryClient:
         data_source_ids = data_source_ids[1].split(',')
         request['dataSourceIds'] = data_source_ids
       else:
-        raise BigqueryError(
+        raise bq_error.BigqueryError(
             'Invalid filter flag values: \'%s\'. '
             'Expected format: \'--filter=dataSourceIds:id1,id2\'' %
             data_source_ids[0])
@@ -4324,10 +4319,12 @@ class BigqueryClient:
         try:
           states = states.split(':')[1].split(',')
           request['states'] = states
-        except IndexError:
-          raise BigqueryError('Invalid flag argument "' + states + '"')
+        except IndexError as e:
+          raise bq_error.BigqueryError(
+              'Invalid flag argument "' + states + '"') from e
       else:
-        raise BigqueryError('Invalid flag argument "' + states + '"')
+        raise bq_error.BigqueryError(
+            'Invalid flag argument "' + states + '"')
     if page_token is not None:
       request['pageToken'] = page_token
     return request
@@ -4350,19 +4347,21 @@ class BigqueryClient:
         try:
           message_type = message_type.split(':')[1].split(',')
           request['messageTypes'] = message_type
-        except IndexError:
-          raise BigqueryError('Invalid flag argument "' + message_type + '"')
+        except IndexError as e:
+          raise bq_error.BigqueryError(
+              'Invalid flag argument "' + message_type + '"') from e
       else:
-        raise BigqueryError('Invalid flag argument "' + message_type + '"')
+        raise bq_error.BigqueryError(
+            'Invalid flag argument "' + message_type + '"')
     return request
 
   def _NormalizeProjectReference(self, reference):
     if reference is None:
       try:
         return self.GetProjectReference()
-      except BigqueryClientError:
-        raise BigqueryClientError(
-            'Project reference or a default project is required')
+      except bq_error.BigqueryClientError as e:
+        raise bq_error.BigqueryClientError(
+            'Project reference or a default project is required') from e
     return reference
 
   def ListJobRefs(self, **kwds):
@@ -5009,7 +5008,7 @@ class BigqueryClient:
 
     try:
       return self.ExecuteJob({'copy': copy_config}, **kwds)
-    except BigqueryDuplicateError as e:
+    except bq_error.BigqueryDuplicateError as e:
       if ignore_already_exists:
         return None
       raise e
@@ -5021,7 +5020,7 @@ class BigqueryClient:
     try:
       self.apiclient.datasets().get(**dict(reference)).execute()
       return True
-    except BigqueryNotFoundError:
+    except bq_error.BigqueryNotFoundError:
       return False
 
   def GetDatasetRegion(self, reference):
@@ -5032,7 +5031,7 @@ class BigqueryClient:
       return (
           self.apiclient.datasets().get(**dict(reference)).execute()['location']
       )
-    except BigqueryNotFoundError:
+    except bq_error.BigqueryNotFoundError:
       return None
 
   def GetTableRegion(self, reference):
@@ -5043,21 +5042,21 @@ class BigqueryClient:
       return (
           self.apiclient.tables().get(**dict(reference)).execute()['location']
       )
-    except BigqueryNotFoundError:
+    except bq_error.BigqueryNotFoundError:
       return None
 
   def TableExists(self, reference):
     _Typecheck(reference, ApiClientHelper.TableReference, method='TableExists')
     try:
       return self.apiclient.tables().get(**dict(reference)).execute()
-    except BigqueryNotFoundError:
+    except bq_error.BigqueryNotFoundError:
       return False
 
   def JobExists(self, reference):
     _Typecheck(reference, ApiClientHelper.JobReference, method='JobExists')
     try:
       return self.apiclient.jobs().get(**dict(reference)).execute()
-    except BigqueryNotFoundError:
+    except bq_error.BigqueryNotFoundError:
       return False
 
   def ModelExists(self, reference):
@@ -5067,7 +5066,7 @@ class BigqueryClient:
           projectId=reference.projectId,
           datasetId=reference.datasetId,
           modelId=reference.modelId).execute()
-    except BigqueryNotFoundError:
+    except bq_error.BigqueryNotFoundError:
       return False
 
   def RoutineExists(self, reference):
@@ -5078,7 +5077,7 @@ class BigqueryClient:
           projectId=reference.projectId,
           datasetId=reference.datasetId,
           routineId=reference.routineId).execute()
-    except BigqueryNotFoundError:
+    except bq_error.BigqueryNotFoundError:
       return False
 
   def TransferExists(self, reference):
@@ -5092,7 +5091,7 @@ class BigqueryClient:
       transfer_client.projects().locations().transferConfigs().get(
           name=reference.transferConfigName).execute()
       return True
-    except BigqueryNotFoundError:
+    except bq_error.BigqueryNotFoundError:
       return False
 
   # TODO(b/191712821): add tags modification here. For the Preview Tags are not
@@ -5205,7 +5204,7 @@ class BigqueryClient:
     try:
       self.apiclient.datasets().insert(
           body=body, **dict(reference.GetProjectReference())).execute()
-    except BigqueryDuplicateError:
+    except bq_error.BigqueryDuplicateError:
       if not ignore_existing:
         raise
 
@@ -5332,9 +5331,11 @@ class BigqueryClient:
         body['location'] = location
       if table_constraints is not None:
         body['table_constraints'] = table_constraints
+      if resource_tags is not None:
+        body['resourceTags'] = resource_tags
       self.apiclient.tables().insert(
           body=body, **dict(reference.GetDatasetReference())).execute()
-    except BigqueryDuplicateError:
+    except bq_error.BigqueryDuplicateError:
       if not ignore_existing:
         raise
 
@@ -5385,7 +5386,7 @@ class BigqueryClient:
     Raises:
       TypeError: if reference is not a TransferConfigReference.
       BigqueryNotFoundError: if dataset is not found
-      BigqueryError: required field not given.
+      bq_error.BigqueryError: required field not given.
     """
 
     _Typecheck(
@@ -5405,8 +5406,8 @@ class BigqueryClient:
         update_items['destinationDatasetId'] = target_dataset
         update_mask.append('transfer_config.destination_dataset_id')
       else:
-        raise BigqueryNotFoundError('Unknown %r' % (dataset_reference,),
-                                    {'reason': 'notFound'}, [])
+        raise bq_error.BigqueryNotFoundError(
+            'Unknown %r' % (dataset_reference,), {'reason': 'notFound'}, [])
       update_items['destinationDatasetId'] = target_dataset
 
     if display_name:
@@ -5507,7 +5508,7 @@ class BigqueryClient:
 
     Raises:
       BigqueryNotFoundError: if a requested item is not found.
-      BigqueryError: if a required field isn't provided.
+      bq_error.BigqueryError: if a required field isn't provided.
 
     Returns:
       The generated transfer configuration name.
@@ -5522,7 +5523,7 @@ class BigqueryClient:
     if display_name:
       create_items['displayName'] = display_name
     else:
-      raise BigqueryError('A display name must be provided.')
+      raise bq_error.BigqueryError('A display name must be provided.')
 
     create_items['dataSourceId'] = data_source
 
@@ -5539,7 +5540,7 @@ class BigqueryClient:
     if params:
       create_items = self.ProcessParamsFlag(params, create_items)
     else:
-      raise BigqueryError('Parameters must be provided.')
+      raise bq_error.BigqueryError('Parameters must be provided.')
 
     if location:
       parent = reference + '/locations/' + location
@@ -5584,13 +5585,14 @@ class BigqueryClient:
       items: The body after it has been updated with the params flag.
 
     Raises:
-      BigqueryError: If there is an error with the given params.
+      bq_error.BigqueryError: If there is an error with the given params.
     """
     try:
       parsed_params = json.loads(params)
-    except:
-      raise BigqueryError('Parameters should be specified in JSON format'
-                          ' when creating the transfer configuration.')
+    except Exception as e:
+      raise bq_error.BigqueryError(
+          'Parameters should be specified in JSON format when creating the'
+          ' transfer configuration.') from e
     items['params'] = parsed_params
     return items
 
@@ -5608,19 +5610,21 @@ class BigqueryClient:
       items: The body after it has been updated with the
       refresh window days flag.
     Raises:
-      BigqueryError: If the data source does not support (custom) window days.
+      bq_error.BigqueryError: If the data source does not support (custom)
+        window days.
     """
     if 'dataRefreshType' in data_source_info:
       if data_source_info['dataRefreshType'] == 'CUSTOM_SLIDING_WINDOW':
         items['data_refresh_window_days'] = refresh_window_days
         return items
       else:
-        raise BigqueryError('Data source \'%s\' does not'
-                            ' support custom refresh window days.' %
-                            data_source)
+        raise bq_error.BigqueryError(
+            'Data source \'%s\' does not support custom refresh window days.'
+            % data_source)
     else:
-      raise BigqueryError('Data source \'%s\' does not'
-                          ' support refresh window days.' % data_source)
+      raise bq_error.BigqueryError(
+          'Data source \'%s\' does not support refresh window days.'
+          % data_source)
 
   def UpdateTable(
       self,
@@ -5703,6 +5707,12 @@ class BigqueryClient:
     """
     _Typecheck(reference, ApiClientHelper.TableReference, method='UpdateTable')
 
+    existing_table = {}
+    if clear_all_tags:
+      # getting existing table. This is required to clear all tags attached to
+      # a table. Adding this at the start of the method as this can also be
+      # used for other scenarios
+      existing_table = self._ExecuteGetTableRequest(reference)
     table = BigqueryClient.ConstructObjectInfo(reference)
     maybe_skip_schema = False
     if schema is not None:
@@ -5764,6 +5774,19 @@ class BigqueryClient:
       table['location'] = location
     if table_constraints is not None:
       table['table_constraints'] = table_constraints
+    resource_tags = {}
+    if clear_all_tags and 'resourceTags' in existing_table:
+      for tag in existing_table['resourceTags']:
+        resource_tags[tag] = None
+    else:
+      for tag in tags_to_remove or []:
+        resource_tags[tag] = None
+    for tag in tags_to_attach or {}:
+      resource_tags[tag] = tags_to_attach[tag]
+    # resourceTags is used to add a new tag binding, update value of existing
+    # tag and also to remove a tag binding
+    # check go/bq-table-tags-api for details
+    table['resourceTags'] = resource_tags
     self._ExecutePatchTableRequest(reference, table, autodetect_schema, etag)
 
   def _ExecuteGetTableRequest(self, reference):
@@ -5963,7 +5986,7 @@ class BigqueryClient:
 
     Raises:
       TypeError: if reference is not a DatasetReference.
-      BigqueryNotFoundError: if reference does not exist and
+      bq_error.BigqueryNotFoundError: if reference does not exist and
         ignore_not_found is False.
     """
     _Typecheck(
@@ -5975,7 +5998,7 @@ class BigqueryClient:
       args['deleteContents'] = delete_contents
     try:
       self.apiclient.datasets().delete(**args).execute()
-    except BigqueryNotFoundError:
+    except bq_error.BigqueryNotFoundError:
       if not ignore_not_found:
         raise
 
@@ -5988,13 +6011,13 @@ class BigqueryClient:
 
     Raises:
       TypeError: if reference is not a TableReference.
-      BigqueryNotFoundError: if reference does not exist and
+      bq_error.BigqueryNotFoundError: if reference does not exist and
         ignore_not_found is False.
     """
     _Typecheck(reference, ApiClientHelper.TableReference, method='DeleteTable')
     try:
       self.apiclient.tables().delete(**dict(reference)).execute()
-    except BigqueryNotFoundError:
+    except bq_error.BigqueryNotFoundError:
       if not ignore_not_found:
         raise
 
@@ -6007,13 +6030,13 @@ class BigqueryClient:
 
     Raises:
       TypeError: if reference is not a JobReference.
-      BigqueryNotFoundError: if reference does not exist and
+      bq_error.BigqueryNotFoundError: if reference does not exist and
         ignore_not_found is False.
     """
     _Typecheck(reference, ApiClientHelper.JobReference, method='DeleteJob')
     try:
       self.apiclient.jobs().delete(**dict(reference)).execute()
-    except BigqueryNotFoundError:
+    except bq_error.BigqueryNotFoundError:
       if not ignore_not_found:
         raise
 
@@ -6026,7 +6049,7 @@ class BigqueryClient:
 
     Raises:
       TypeError: if reference is not a ModelReference.
-      BigqueryNotFoundError: if reference does not exist and
+      bq_error.BigqueryNotFoundError: if reference does not exist and
         ignore_not_found is False.
     """
     _Typecheck(reference, ApiClientHelper.ModelReference, method='DeleteModel')
@@ -6035,7 +6058,7 @@ class BigqueryClient:
           projectId=reference.projectId,
           datasetId=reference.datasetId,
           modelId=reference.modelId).execute()
-    except BigqueryNotFoundError:
+    except bq_error.BigqueryNotFoundError:
       if not ignore_not_found:
         raise
 
@@ -6048,14 +6071,14 @@ class BigqueryClient:
 
     Raises:
       TypeError: if reference is not a RoutineReference.
-      BigqueryNotFoundError: if reference does not exist and
+      bq_error.BigqueryNotFoundError: if reference does not exist and
         ignore_not_found is False.
     """
     _Typecheck(
         reference, ApiClientHelper.RoutineReference, method='DeleteRoutine')
     try:
       self.GetRoutinesApiClient().routines().delete(**dict(reference)).execute()
-    except BigqueryNotFoundError:
+    except bq_error.BigqueryNotFoundError:
       if not ignore_not_found:
         raise
 
@@ -6068,7 +6091,7 @@ class BigqueryClient:
 
     Raises:
       TypeError: if reference is not a TransferConfigReference.
-      BigqueryNotFoundError: if reference does not exist and
+      bq_error.BigqueryNotFoundError: if reference does not exist and
         ignore_not_found is False.
     """
 
@@ -6080,10 +6103,10 @@ class BigqueryClient:
       transfer_client = self.GetTransferV1ApiClient()
       transfer_client.projects().locations().transferConfigs().delete(
           name=reference.transferConfigName).execute()
-    except BigqueryNotFoundError:
+    except bq_error.BigqueryNotFoundError as e:
       if not ignore_not_found:
-        raise BigqueryNotFoundError('Not found: %r' % (reference,),
-                                    {'reason': 'notFound'}, [])
+        raise bq_error.BigqueryNotFoundError(
+            'Not found: %r' % (reference,), {'reason': 'notFound'}, []) from e
 
   #################################
   ## Job control
@@ -6160,12 +6183,12 @@ class BigqueryClient:
       reference used in the request.
 
     Raises:
-      BigqueryClientConfigurationError: if project_id and
+      bq_error.BigqueryClientConfigurationError: if project_id and
         self.project_id are None.
     """
     project_id = project_id or self.project_id
     if not project_id:
-      raise BigqueryClientConfigurationError(
+      raise bq_error.BigqueryClientConfigurationError(
           'Cannot start a job without a project id.')
     configuration = configuration.copy()
     if self.job_property:
@@ -6257,13 +6280,13 @@ class BigqueryClient:
       The query response.
 
     Raises:
-      BigqueryClientConfigurationError: if project_id and
+      bq_error.BigqueryClientConfigurationError: if project_id and
         self.project_id are None.
-      BigqueryError: if query execution fails.
+      bq_error.BigqueryError: if query execution fails.
     """
     project_id = project_id or self.project_id
     if not project_id:
-      raise BigqueryClientConfigurationError(
+      raise bq_error.BigqueryClientConfigurationError(
           'Cannot run a query without a project id.')
     request = {'query': query}
     if external_table_definitions_json:
@@ -6318,12 +6341,12 @@ class BigqueryClient:
       The getQueryResults() result.
 
     Raises:
-      BigqueryClientConfigurationError: if project_id and
+      bq_error.BigqueryClientConfigurationError: if project_id and
         self.project_id are None.
     """
     project_id = project_id or self.project_id
     if not project_id:
-      raise BigqueryClientConfigurationError(
+      raise bq_error.BigqueryClientConfigurationError(
           'Cannot get query results without a project id.')
     kwds = {}
     _ApplyParameters(
@@ -6412,14 +6435,15 @@ class BigqueryClient:
       The job resource returned for the job for which cancel is being requested.
 
     Raises:
-      BigqueryClientConfigurationError: if project_id or job_id are None.
+      bq_error.BigqueryClientConfigurationError: if project_id or job_id
+        are None.
     """
     project_id = project_id or self.project_id
     if not project_id:
-      raise BigqueryClientConfigurationError(
+      raise bq_error.BigqueryClientConfigurationError(
           'Cannot cancel a job without a project id.')
     if not job_id:
-      raise BigqueryClientConfigurationError(
+      raise bq_error.BigqueryClientConfigurationError(
           'Cannot cancel a job without a job id.')
 
     job_reference = ApiClientHelper.JobReference.Create(
@@ -6536,10 +6560,10 @@ class BigqueryClient:
         if done:
           printer.Print(job_reference.jobId, current_wait, current_status)
           break
-      except BigqueryCommunicationError as e:
+      except bq_error.BigqueryCommunicationError as e:
         # Communication errors while waiting on a job are okay.
         logging.warning('Transient error during job status check: %s', e)
-      except BigqueryBackendError as e:
+      except bq_error.BigqueryBackendError as e:
         # Temporary server errors while waiting on a job are okay.
         logging.warning('Transient error during job status check: %s', e)
       except BigqueryServiceError as e:
@@ -6654,9 +6678,9 @@ class BigqueryClient:
       **kwds: Passed directly to self.ExecuteSyncQuery.
 
     Raises:
-      BigqueryClientError: if no query is provided.
+      bq_error.BigqueryClientError: if no query is provided.
       StopIteration: if the query does not complete within wait seconds.
-      BigqueryError: if query fails.
+      bq_error.BigqueryError: if query fails.
 
     Returns:
       A tuple (schema fields, row results, execution metadata).
@@ -6667,13 +6691,14 @@ class BigqueryClient:
         dict contains statistics
     """
     if not self.sync:
-      raise BigqueryClientError('Running RPC-style query asynchronously is '
-                                'not supported')
+      raise bq_error.BigqueryClientError(
+          'Running RPC-style query asynchronously is not supported')
     if not query:
-      raise BigqueryClientError('No query string provided')
+      raise bq_error.BigqueryClientError('No query string provided')
 
     if request_id is not None and not flags.FLAGS.jobs_query_use_request_id:
-      raise BigqueryClientError('request_id is not yet supported')
+      raise bq_error.BigqueryClientError(
+          'request_id is not yet supported')
 
     if wait_printer_factory:
       printer = wait_printer_factory()
@@ -6758,10 +6783,10 @@ class BigqueryClient:
               'jobReference': job_reference
           }
           return (schema, rows, execution)
-      except BigqueryCommunicationError as e:
+      except bq_error.BigqueryCommunicationError as e:
         # Communication errors while waiting on a job are okay.
         logging.warning('Transient error during query: %s', e)
-      except BigqueryBackendError as e:
+      except bq_error.BigqueryBackendError as e:
         # Temporary server errors while waiting on a job are okay.
         logging.warning('Transient error during query: %s', e)
 
@@ -6854,13 +6879,13 @@ class BigqueryClient:
       **kwds: Passed on to self.ExecuteJob.
 
     Raises:
-      BigqueryClientError: if no query is provided.
+      bq_error.BigqueryClientError: if no query is provided.
 
     Returns:
       The resulting job info.
     """
     if not query:
-      raise BigqueryClientError('No query string provided')
+      raise bq_error.BigqueryClientError('No query string provided')
     query_config = {'query': query}
     if self.dataset_id:
       query_config['defaultDataset'] = self.GetQueryDefaultDataset(
@@ -6872,9 +6897,10 @@ class BigqueryClient:
     if destination_table:
       try:
         reference = self.GetTableReference(destination_table)
-      except BigqueryError as e:
-        raise BigqueryError('Invalid value %s for destination_table: %s' %
-                            (destination_table, e))
+      except bq_error.BigqueryError as e:
+        raise bq_error.BigqueryError(
+            'Invalid value %s for destination_table: %s' %
+            (destination_table, e))
       query_config['destinationTable'] = dict(reference)
     if destination_encryption_configuration:
       query_config['destinationEncryptionConfiguration'] = (
@@ -7127,7 +7153,7 @@ class BigqueryClient:
       The resulting job info.
 
     Raises:
-      BigqueryClientError: if required parameters are invalid.
+      bq_error.BigqueryClientError: if required parameters are invalid.
     """
     _Typecheck(
         reference,
@@ -7136,7 +7162,7 @@ class BigqueryClient:
     uris = destination_uris.split(',')
     for uri in uris:
       if not uri.startswith(_GCS_SCHEME_PREFIX):
-        raise BigqueryClientError(
+        raise bq_error.BigqueryClientError(
             'Illegal URI: {}. Extract URI must start with "{}".'.format(
                 uri, _GCS_SCHEME_PREFIX))
     if isinstance(reference, ApiClientHelper.TableReference):
@@ -7238,7 +7264,7 @@ class _TableReader:
     result = []
     for field, v in zip(schema, values):
       if 'type' not in field:
-        raise BigqueryCommunicationError(
+        raise bq_error.BigqueryCommunicationError(
             'Invalid response: missing type property')
       if field['type'].upper() == 'RECORD':
         # Nested field.
@@ -7360,7 +7386,7 @@ class _JobTableReader(_TableReader):
       kwds['startIndex'] = start_row
     data = self._apiclient.jobs().getQueryResults(**kwds).execute()
     if not data['jobComplete']:
-      raise BigqueryError('Job %s is not done' % (self,))
+      raise bq_error.BigqueryError('Job %s is not done' % (self,))
     page_token = data.get('pageToken', None)
     schema = data.get('schema', None)
     rows = data.get('rows', [])
@@ -7393,7 +7419,7 @@ class _QueryTableReader(_TableReader):
     else:
       kwds['startIndex'] = start_row
     if not self._results['jobComplete']:
-      raise BigqueryError('Job %s is not done' % (self,))
+      raise bq_error.BigqueryError('Job %s is not done' % (self,))
     # DDL and DML statements return no rows, just delegate them to
     # getQueryResults.
     result_rows = self._results.get('rows', None)
@@ -7403,14 +7429,15 @@ class _QueryTableReader(_TableReader):
         len(result_rows) >= min(int(total_rows), start_row + max_rows)):
       page_token = self._results.get('pageToken', None)
       if (len(result_rows) < int(total_rows) and page_token is None):
-        raise BigqueryError('Synchronous query %s did not return all rows, '
-                            'yet it did not return a page token' % (self,))
+        raise bq_error.BigqueryError(
+            'Synchronous query %s did not return all rows, yet it did not'
+            ' return a page token' % (self,))
       schema = self._results.get('schema', None)
       rows = self._results.get('rows', [])
     else:
       data = self._apiclient.jobs().getQueryResults(**kwds).execute()
       if not data['jobComplete']:
-        raise BigqueryError('Job %s is not done' % (self,))
+        raise bq_error.BigqueryError('Job %s is not done' % (self,))
       page_token = data.get('pageToken', None)
       schema = data.get('schema', None)
       rows = data.get('rows', [])

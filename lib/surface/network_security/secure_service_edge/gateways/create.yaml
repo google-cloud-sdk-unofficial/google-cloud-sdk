@@ -30,8 +30,8 @@ arguments:
   - arg_name: user-vpc
     action:
       deprecated:
-        removed: false
-        warn: Flag {flag_name} is deprecated. Use --untrusted-network instead.
+        removed: true
+        error: Flag {flag_name} has been removed. Use --untrusted-network instead.
     api_field: sSEGateway.untrustedNetwork
     help_text: |
       The VPC in your project where branch office users land.
@@ -42,8 +42,8 @@ arguments:
   - arg_name: app-traffic-ilb-ip
     action:
       deprecated:
-        removed: false
-        warn: Flag {flag_name} is deprecated. Use --app-facing-target-ip instead.
+        removed: true
+        error: Flag {flag_name} has been removed. Use --app-facing-target-ip instead.
     api_field: sSEGateway.appFacingTargetIp
     help_text: |
       The ILB IP address where the application traffic should be routed to.
@@ -56,8 +56,8 @@ arguments:
   - arg_name: app-traffic-subnet-range
     action:
       deprecated:
-        removed: false
-        warn: Flag {flag_name} is deprecated. Use --app-facing-subnet-range instead.
+        removed: true
+        error: Flag {flag_name} has been removed. Use --app-facing-subnet-range instead.
     api_field: sSEGateway.appFacingSubnetRange
     help_text: |
       Address range (in CIDR format) of the subnet where application traffic is routed.
@@ -72,8 +72,8 @@ arguments:
   - arg_name: user-traffic-ilb-ip
     action:
       deprecated:
-        removed: false
-        warn: Flag {flag_name} is deprecated. Use --untrusted-facing-target-ip instead.
+        removed: true
+        error: Flag {flag_name} has been removed. Use --untrusted-facing-target-ip instead.
     api_field: sSEGateway.untrustedFacingTargetIp
     help_text: |
       The ILB IP address where the user traffic should be routed to.
@@ -86,8 +86,8 @@ arguments:
   - arg_name: user-traffic-subnet-range
     action:
       deprecated:
-        removed: false
-        warn: Flag {flag_name} is deprecated. Use --untrusted-facing-subnet-range instead.
+        removed: true
+        error: Flag {flag_name} has been removed. Use --untrusted-facing-subnet-range instead.
     api_field: sSEGateway.untrustedFacingSubnetRange
     help_text: |
       Address range (in CIDR format) of the subnet where user traffic is routed.

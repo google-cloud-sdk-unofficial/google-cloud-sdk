@@ -20,7 +20,7 @@ import sys
 import time
 import traceback
 import types
-from typing import List, Tuple
+from typing import List, Optional, Tuple
 
 __author__ = 'craigcitro@google.com (Craig Citro)'
 
@@ -67,6 +67,8 @@ import bq_flags
 import bq_utils
 import credential_loader
 
+from utils import bq_error
+from utils import bq_logging
 
 flags.adopt_module_key_flags(bq_flags)
 
@@ -105,16 +107,6 @@ ConnectionReference = bigquery_client.ApiClientHelper.ConnectionReference
 
 CONNECTION_ID_PATTERN = re.compile(r'[\w-]+')
 _RANGE_PATTERN = re.compile(r'^\[(\S+.+\S+), (\S+.+\S+)\)$')
-
-if os.environ.get('CLOUDSDK_WRAPPER') == '1':
-  _CLIENT_ID = '32555940559.apps.googleusercontent.com'
-  _CLIENT_SECRET = 'ZmssLNjJy2998hD4CTg2ejr2'
-  _CLIENT_USER_AGENT = 'google-cloud-sdk' + os.environ.get(
-      'CLOUDSDK_VERSION', bq_utils.VERSION_NUMBER)
-else:
-  _CLIENT_ID = '977385342095.apps.googleusercontent.com'
-  _CLIENT_SECRET = 'wbER7576mc_1YOII0dGk7jEE'
-  _CLIENT_USER_AGENT = 'bq/' + bq_utils.VERSION_NUMBER
 
 _DELIMITER_MAP = {
     'tab': '\t',
@@ -224,9 +216,9 @@ def ValidateAtMostOneSelected(*args):
   return count > 1
 
 
-def _ConfigureLogging(client):
+def _ConfigureLogging(logging_utils):
   try:
-    client.ConfigurePythonLogger(FLAGS.apilog)
+    logging_utils.ConfigurePythonLogger(FLAGS.apilog)
   except IOError as e:
     if e.errno == 2:
       print('Could not configure logging. %s: %s' % (e.strerror, e.filename))
@@ -402,6 +394,14 @@ def IsRangeBoundaryUnbounded(value):
   return value.upper() == 'UNBOUNDED' or value.upper() == 'NULL'
 
 
+def _ParseRangeString(value: str) -> Optional[Tuple[str, str]]:
+  match = _RANGE_PATTERN.match(value)
+  if not match:
+    return None
+  start, end = match.groups()
+  return start, end
+
+
 class TablePrinter(object):
   """Base class for printing a table, with a default implementation."""
 
@@ -451,10 +451,10 @@ class TablePrinter(object):
   @staticmethod
   def _NormalizeRange(field, value):
     """Returns bq-specific formatting of a RANGE type."""
-    match = _RANGE_PATTERN.match(value)
-    if not match:
+    parsed = _ParseRangeString(value)
+    if parsed is None:
       return '<invalid range>'
-    start, end = match.groups()
+    start, end = parsed
 
     if field.get('rangeElementType').get('type').upper() != 'TIMESTAMP':
       start = start.upper() if IsRangeBoundaryUnbounded(start) else start
@@ -575,7 +575,7 @@ class Client(object):
     # for the case of being loaded as a library.
     bq_utils.ProcessBigqueryrc()
     if config_logging:
-      _ConfigureLogging(bigquery_client)
+      _ConfigureLogging(bq_logging)
 
     if FLAGS.httplib2_debuglevel:
       httplib2.debuglevel = FLAGS.httplib2_debuglevel
@@ -811,12 +811,12 @@ class NewCmd(appcommands.Cmd):
     try:
       args = shlex.split(argv)
     except ValueError as e:
-      raise SyntaxError(bigquery_client.EncodeForPrinting(e))
+      raise SyntaxError(bq_logging.EncodeForPrinting(e)) from e
     return self.Run([self._command_name] + args)
 
   def _HandleError(self, e):
-    message = bigquery_client.EncodeForPrinting(e)
-    if isinstance(e, bigquery_client.BigqueryClientConfigurationError):
+    message = bq_logging.EncodeForPrinting(e)
+    if isinstance(e, bq_error.BigqueryClientConfigurationError):
       message += ' Try running "bq init".'
     print('Exception raised in %s operation: %s' %
           (self._command_name, message))
@@ -830,8 +830,8 @@ class NewCmd(appcommands.Cmd):
     except (BaseException, googleapiclient.errors.ResumableUploadError) as e:
       # Don't break into the debugger for expected exceptions.
       if (isinstance(e, app.UsageError) or
-          (isinstance(e, bigquery_client.BigqueryError) and
-           not isinstance(e, bigquery_client.BigqueryInterfaceError)) or
+          (isinstance(e, bq_error.BigqueryError) and
+           not isinstance(e, bq_error.BigqueryInterfaceError)) or
           isinstance(e, googleapiclient.errors.ResumableUploadError)):
         return self._HandleError(e)
       print()
@@ -2123,12 +2123,12 @@ class _Query(BigqueryCmd):
       try:
         transfer_client.projects().dataSources().get(
             name=scheduled_queries_reference).execute()
-      except:
-        raise bigquery_client.BigqueryAccessDeniedError(
+      except Exception as e:
+        raise bq_error.BigqueryAccessDeniedError(
             'Scheduled queries are not enabled on this project. Please enable '
             'them at '
             'https://console.cloud.google.com/bigquery/scheduled-queries',
-            {'reason': 'notFound'}, [])
+            {'reason': 'notFound'}, []) from e
       if self.use_legacy_sql is None or self.use_legacy_sql:
         raise app.UsageError(
             'Scheduled queries do not support legacy SQL. Please use standard '
@@ -2964,7 +2964,7 @@ class _List(BigqueryCmd):  # pylint: disable=missing-docstring
     else:
       try:
         reference = client.GetReference(identifier)
-      except bigquery_client.BigqueryError:
+      except bq_error.BigqueryError:
         # We want to let through the case of no identifier, which
         # will fall through to the second case below.
         reference = None
@@ -2981,7 +2981,7 @@ class _List(BigqueryCmd):  # pylint: disable=missing-docstring
       if isinstance(reference, TableReference):
         try:
           reference = client.GetDatasetReference(identifier)
-        except bigquery_client.BigqueryError:
+        except bq_error.BigqueryError:
           pass
       _Typecheck(reference, (type(None), ProjectReference, DatasetReference),
                  ('Invalid identifier "%s" for ls, cannot call list on object '
@@ -3061,7 +3061,7 @@ class _List(BigqueryCmd):  # pylint: disable=missing-docstring
         if 'nextPageToken' in response:
           _PrintPageToken(response)
       except BaseException as e:
-        raise bigquery_client.BigqueryError(
+        raise bq_error.BigqueryError(
             "Failed to list reservation assignments '%s': %s" % (identifier, e))
     elif self.capacity_commitment:
       try:
@@ -3079,7 +3079,7 @@ class _List(BigqueryCmd):  # pylint: disable=missing-docstring
         if 'nextPageToken' in response:
           _PrintPageToken(response)
       except BaseException as e:
-        raise bigquery_client.BigqueryError(
+        raise bq_error.BigqueryError(
             "Failed to list capacity commitments '%s': %s" % (identifier, e))
     elif self.reservation:
       response = None
@@ -3099,10 +3099,10 @@ class _List(BigqueryCmd):  # pylint: disable=missing-docstring
           size_in_bytes = int(response['size'])
           size_in_gbytes = size_in_bytes / (1024 * 1024 * 1024)
           print('BI Engine reservation: %sGB' % size_in_gbytes)
-      except bigquery_client.BigqueryNotFoundError:
+      except bq_error.BigqueryNotFoundError:
         pass
       except BaseException as e:
-        raise bigquery_client.BigqueryError(
+        raise bq_error.BigqueryError(
             "Failed to list BI reservations '%s': %s" % (identifier, e))
 
       try:
@@ -3114,7 +3114,7 @@ class _List(BigqueryCmd):  # pylint: disable=missing-docstring
           results = (response['reservations'] if 'reservations' in response
                      else [])
       except BaseException as e:
-        raise bigquery_client.BigqueryError(
+        raise bq_error.BigqueryError(
             "Failed to list reservations '%s': %s" % (identifier, e))
       if not results:
         print('No reservations found.')
@@ -3367,7 +3367,7 @@ class _Delete(BigqueryCmd):
         )
         print("Reservation '%s' successfully deleted." % identifier)
       except BaseException as e:
-        raise bigquery_client.BigqueryError(
+        raise bq_error.BigqueryError(
             "Failed to delete reservation '%s': %s" % (identifier, e))
     elif self.reservation_assignment:
       try:
@@ -3376,7 +3376,7 @@ class _Delete(BigqueryCmd):
         client.DeleteReservationAssignment(reference)
         print("Reservation assignment '%s' successfully deleted." % identifier)
       except BaseException as e:
-        raise bigquery_client.BigqueryError(
+        raise bq_error.BigqueryError(
             "Failed to delete reservation assignment '%s': %s" %
             (identifier, e))
     elif self.capacity_commitment:
@@ -3386,7 +3386,7 @@ class _Delete(BigqueryCmd):
         client.DeleteCapacityCommitment(reference, self.force)
         print("Capacity commitment '%s' successfully deleted." % identifier)
       except BaseException as e:
-        raise bigquery_client.BigqueryError(
+        raise bq_error.BigqueryError(
             "Failed to delete capacity commitment '%s': %s" % (identifier, e))
     elif self.connection:
       reference = client.GetConnectionReference(
@@ -3523,7 +3523,8 @@ class _Copy(BigqueryCmd):
               scenario in which there is only one source dataset
       false - all source datasets are not from the same region.
     Raises:
-      BigqueryNotFoundError: If unable to compute the dataset region
+      bq_error.BigqueryNotFoundError: If unable to compute the dataset
+        region
     """
     all_source_datasets_in_same_region = True
     first_source_region = None
@@ -3531,7 +3532,7 @@ class _Copy(BigqueryCmd):
       source_dataset = val.GetDatasetReference()
       source_region = client.GetDatasetRegion(source_dataset)
       if source_region is None:
-        raise bigquery_client.BigqueryNotFoundError(
+        raise bq_error.BigqueryNotFoundError(
             self._DATASET_NOT_FOUND % (str(source_dataset),),
             {'reason': 'notFound'},
             [],
@@ -3567,7 +3568,8 @@ class _Copy(BigqueryCmd):
       false - if user did not allow cross-region operation, or
               Dataset does not exist hence operation can't be performed.
     Raises:
-      BigqueryNotFoundError: If unable to compute the dataset region
+      bq_error.BigqueryNotFoundError: If unable to compute the dataset
+        region
     """
     destination_dataset = dest_reference.GetDatasetReference()
 
@@ -3579,7 +3581,7 @@ class _Copy(BigqueryCmd):
       )
       if destination_region is None:
         destination_region = client.GetDatasetRegion(destination_dataset)
-    except bigquery_client.BigqueryAccessDeniedError as err:
+    except bq_error.BigqueryAccessDeniedError as err:
       print(
           'Unable to determine source or destination dataset location, skipping'
           ' cross-region validation: '
@@ -3587,7 +3589,7 @@ class _Copy(BigqueryCmd):
       )
       return True
     if destination_region is None:
-      raise bigquery_client.BigqueryNotFoundError(
+      raise bq_error.BigqueryNotFoundError(
           self._DATASET_NOT_FOUND % (str(destination_dataset),),
           {'reason': 'notFound'},
           [],
@@ -4483,6 +4485,12 @@ class _Make(BigqueryCmd):
         'Cloud KMS key name used for encryption.',
         flag_values=fv,
     )
+    flags.DEFINE_string(
+        'add_tags',
+        None,
+        'Tags to attach to the table. The format is namespaced key:value pair '
+        'like "1234567/my_tag_key:my_tag_value,test-project123/environment:production"',
+        flag_values=fv)
     self._ProcessCommandRc(fv)
 
   def RunWithArgs(self, identifier='', schema=''):
@@ -4566,7 +4574,7 @@ class _Make(BigqueryCmd):
             autoscale_max_slots=self.autoscale_max_slots,
         )
       except BaseException as e:
-        raise bigquery_client.BigqueryError(
+        raise bq_error.BigqueryError(
             "Failed to create reservation '%s': %s" % (identifier, e))
       if object_info is not None:
         _PrintObjectInfo(object_info, reference, custom_format='show')
@@ -4585,7 +4593,7 @@ class _Make(BigqueryCmd):
             self.multi_region_auxiliary,
         )
       except BaseException as e:
-        raise bigquery_client.BigqueryError(
+        raise bq_error.BigqueryError(
             "Failed to create capacity commitment in '%s': %s" %
             (identifier, e))
       if object_info is not None:
@@ -4604,7 +4612,7 @@ class _Make(BigqueryCmd):
             path=object_info['name'])
         _PrintObjectInfo(object_info, reference, custom_format='show')
       except BaseException as e:
-        raise bigquery_client.BigqueryError(
+        raise bq_error.BigqueryError(
             "Failed to create reservation assignment '%s': %s" %
             (identifier, e))
     elif self.transfer_config:
@@ -4615,7 +4623,7 @@ class _Make(BigqueryCmd):
         credentials = CheckValidCreds(reference, self.data_source,
                                       transfer_client)
       else:
-        raise bigquery_client.BigqueryError('A data source must be provided.')
+        raise bq_error.BigqueryError('A data source must be provided.')
       auth_info = {}
       if (not credentials and self.data_source != 'loadtesting' and
           not self.service_account_name):
@@ -4673,8 +4681,11 @@ class _Make(BigqueryCmd):
       formatter.Print()
     elif self.connection:
       # Create a new connection.
-      if not self.connection_type:
-        raise app.UsageError('Need to specify --connection_type.')
+      connection_type_defined = self.connection_type
+      if not connection_type_defined:
+        error = 'Need to specify --connection_type'
+        raise app.UsageError(error)
+
       if self.connection_type == 'AWS' and self.iam_role_id:
         self.properties = bigquery_client.MakeAccessRolePropertiesJson(
             self.iam_role_id)
@@ -4702,8 +4713,10 @@ class _Make(BigqueryCmd):
       # the properties are optional.
       if not param_properties and self.connection_type == 'SPARK':
         param_properties = '{}'
-      if not param_properties:
-        raise app.UsageError('Need to specify --properties')
+      properties_defined = param_properties
+      if not properties_defined:
+        error = 'Need to specify --properties'
+        raise app.UsageError(error)
       created_connection = client.CreateConnection(
           project_id=FLAGS.project_id,
           location=FLAGS.location,
@@ -4740,7 +4753,7 @@ class _Make(BigqueryCmd):
       if client.DatasetExists(reference):
         message = "Dataset '%s' already exists." % (reference,)
         if not self.f:
-          raise bigquery_client.BigqueryError(message)
+          raise bq_error.BigqueryError(message)
         else:
           print(message)
           return
@@ -4803,7 +4816,7 @@ class _Make(BigqueryCmd):
                        reference,
                    )
         if not self.f:
-          raise bigquery_client.BigqueryError(message)
+          raise bq_error.BigqueryError(message)
         else:
           print(message)
           return
@@ -4879,6 +4892,8 @@ class _Make(BigqueryCmd):
       range_partitioning = _ParseRangePartitioning(self.range_partitioning)
       table_constraints = None
       resource_tags = None
+      if self.add_tags is not None:
+        resource_tags = bq_utils.ParseTags(self.add_tags)
       client.CreateTable(
           reference,
           ignore_existing=True,
@@ -4974,7 +4989,7 @@ class _Truncate(BigqueryCmd):  # pylint: disable=missing-docstring
         try:
           status.append(
               self._TruncateTable(a_table, str(self.timestamp), False))
-        except bigquery_client.BigqueryError as e:
+        except bq_error.BigqueryError as e:
           print(e)
           status.append((self._formatOutputString(a_table, 'Failed')))
           self.failed_table_count += 1
@@ -5009,7 +5024,7 @@ class _Truncate(BigqueryCmd):  # pylint: disable=missing-docstring
           status.append(
               self._TruncateTable(table_reference, str(recovery_timestamp),
                                   a_table['fully_replicated']))
-        except bigquery_client.BigqueryError as e:
+        except bq_error.BigqueryError as e:
           print(e)
           status.append((self._formatOutputString(table_reference, 'Failed')))
           self.failed_table_count += 1
@@ -5092,7 +5107,7 @@ FROM (
     client = Client.Get()
     try:
       job = client.Query(query, use_legacy_sql=False)
-    except bigquery_client.BigqueryError as e:
+    except bq_error.BigqueryError as e:
       if 'Name multi_site_info not found' in e.error['message']:
         raise app.UsageError(
             'This functionality is not enabled for the current project.')
@@ -5151,7 +5166,7 @@ FROM (
       job_ref = BigqueryClient.ConstructObjectReference(job)
       self.truncated_table_count += 1
       return self._formatOutputString(dest, 'Successful %s ' % job_ref)
-    except bigquery_client.BigqueryError as e:
+    except bq_error.BigqueryError as e:
       print(e)
       self.failed_table_count += 1
       return self._formatOutputString(dest, 'Failed %s ' % job_ref)
@@ -5630,6 +5645,23 @@ class _Update(BigqueryCmd):
         'Cloud KMS key name used for encryption.',
         flag_values=fv,
     )
+    flags.DEFINE_string(
+        'add_tags',
+        None,
+        'Tags to attach to the table. The format is namespaced key:value pair '
+        'like "1234567/my_tag_key:my_tag_value,test-project123/environment:production"',
+        flag_values=fv)
+    flags.DEFINE_string(
+        'remove_tags',
+        None,
+        'Tags to remove from the table. The format is namespaced keys like'
+        ' "1234567/my_tag_key,test-project123/environment"',
+        flag_values=fv)
+    flags.DEFINE_boolean(
+        'clear_all_tags',
+        False,
+        'Clear all tags attached to the table',
+        flag_values=fv)
     self._ProcessCommandRc(fv)
 
   def RunWithArgs(self, identifier='', schema=''):
@@ -5710,12 +5742,12 @@ class _Update(BigqueryCmd):
           )
           _PrintObjectInfo(object_info, reference, custom_format='show')
       except BaseException as e:
-        raise bigquery_client.BigqueryError(
+        raise bq_error.BigqueryError(
             "Failed to update reservation '%s': %s" % (identifier, e))
     elif self.capacity_commitment:
       try:
         if self.split and self.merge:
-          raise bigquery_client.BigqueryError(
+          raise bq_error.BigqueryError(
               'Cannot specify both --split and --merge.')
         reference = client.GetCapacityCommitmentReference(
             identifier=identifier,
@@ -5742,13 +5774,13 @@ class _Update(BigqueryCmd):
         else:
           err = "Failed to update capacity commitment '%s': %s" % (identifier,
                                                                    e)
-        raise bigquery_client.BigqueryError(err)
+        raise bq_error.BigqueryError(err)
     elif self.reservation_assignment:
       try:
         reference = client.GetReservationAssignmentReference(
             identifier=identifier, default_location=FLAGS.location)
         if self.destination_reservation_id and self.priority is not None:
-          raise bigquery_client.BigqueryError(
+          raise bq_error.BigqueryError(
               'Cannot specify both --destination_reservation_id and '
               '--priority.')
         if self.destination_reservation_id:
@@ -5762,14 +5794,14 @@ class _Update(BigqueryCmd):
           object_info = client.UpdateReservationAssignment(
               reference, self.priority)
         else:
-          raise bigquery_client.BigqueryError(
+          raise bq_error.BigqueryError(
               'Either --destination_reservation_id or --priority must be '
               'specified.')
 
         _PrintObjectInfo(
             object_info, reference, custom_format='show', print_reference=False)
       except BaseException as e:
-        raise bigquery_client.BigqueryError(
+        raise bq_error.BigqueryError(
             "Failed to update reservation assignment '%s': %s" %
             (identifier, e))
     elif self.d or not identifier:
@@ -5917,6 +5949,12 @@ class _Update(BigqueryCmd):
       if self.destination_kms_key:
         encryption_configuration = {'kmsKeyName': self.destination_kms_key}
       table_constraints = None
+      tags_to_attach = None
+      if self.add_tags:
+        tags_to_attach = bq_utils.ParseTags(self.add_tags)
+      tags_to_remove = None
+      if self.remove_tags:
+        tags_to_remove = bq_utils.ParseTagKeys(self.remove_tags)
 
       client.UpdateTable(
           reference,
@@ -5941,6 +5979,9 @@ class _Update(BigqueryCmd):
           encryption_configuration=encryption_configuration,
           autodetect_schema=self.autodetect_schema,
           table_constraints=table_constraints,
+          tags_to_attach=tags_to_attach,
+          tags_to_remove=tags_to_remove,
+          clear_all_tags=self.clear_all_tags,
           )
 
       print("%s '%s' successfully updated." % (
@@ -5980,7 +6021,7 @@ class _Update(BigqueryCmd):
         print("Transfer configuration '%s' successfully updated." %
               (reference,))
       else:
-        raise bigquery_client.BigqueryNotFoundError(
+        raise bq_error.BigqueryNotFoundError(
             'Not found: %r' % (reference,), {'reason': 'notFound'}, [])
     elif isinstance(reference, ModelReference):
       expiration = None
@@ -6445,8 +6486,7 @@ def _PrintJobMessages(printable_job_info):
   if printable_job_info['State'] == 'FAILURE':
     error_result = printable_job_info['status']['errorResult']
     error_ls = printable_job_info['status'].get('errors', [])
-    error = bigquery_client.BigqueryError.Create(error_result, error_result,
-                                                 error_ls)
+    error = bq_error.CreateBigqueryError(error_result, error_result, error_ls)
     print('Error encountered during job execution:\n%s\n' % (error,))
   elif 'errors' in printable_job_info['status']:
     warnings = printable_job_info['status']['errors']
@@ -6840,7 +6880,7 @@ class _Insert(BigqueryCmd):
           unique_insert_id = insert_id + '_' + str(lineno)
         batch.append(bigquery_client.JsonToInsertEntry(unique_insert_id, line))
         lineno += 1
-      except bigquery_client.BigqueryClientError as e:
+      except bq_error.BigqueryClientError as e:
         raise app.UsageError('Line %d: %s' % (lineno, str(e)))
       if (FLAGS.max_rows_per_request and
           len(batch) == FLAGS.max_rows_per_request):
@@ -6911,7 +6951,7 @@ class _Wait(BigqueryCmd):  # pylint: disable=missing-docstring
     if not job_id:
       running_jobs = client.ListJobRefs(state_filter=['PENDING', 'RUNNING'])
       if len(running_jobs) != 1:
-        raise bigquery_client.BigqueryError(
+        raise bq_error.BigqueryError(
             'No job_id provided, found %d running jobs' % (len(running_jobs),))
       job_reference = running_jobs.pop()
     else:
@@ -7648,7 +7688,7 @@ class _Init(BigqueryCmd):
     # get the true value of the flag as specified on the command line.
     project_id_flag = FLAGS.project_id
     bq_utils.ProcessBigqueryrc()
-    _ConfigureLogging(bigquery_client)
+    _ConfigureLogging(bq_logging)
     if self.delete_credentials:
       return self.DeleteCredentials()
     bigqueryrc = bq_utils.GetBigqueryRcFilename()
@@ -7901,6 +7941,11 @@ def _ParseParameterType(type_string):
         'type': 'STRUCT',
         'structTypes': _ParseStructType(type_string[7:-1])
     }
+  if type_string.startswith('RANGE<') and type_string.endswith('>'):
+    type_dict = {
+        'type': 'RANGE',
+        'rangeElementType': _ParseParameterType(type_string[6:-1]),
+    }
   if not type_string:
     raise app.UsageError('Query parameter missing type')
   return type_dict
@@ -7956,6 +8001,27 @@ def _FormatRfc3339(datetime_obj):
   return datetime_obj.isoformat('T') + 'Z'
 
 
+def _ParseRangeParameterValue(range_value: str) -> Tuple[str, str]:
+  """Parse a range parameter value string into its components.
+
+  Args:
+    range_value: A range value string of the form "[<start>, <end>)".
+
+  Returns:
+    A tuple (<start>, <end>).
+
+  Raises:
+    app.UsageError: if the input range value string was not formatted correctly.
+  """
+  parsed = _ParseRangeString(range_value)
+  if parsed is None:
+    raise app.UsageError(
+        f'Invalid range parameter value: {range_value}. Expected format:'
+        ' "[<start>, <end>)"'
+    )
+  return parsed
+
+
 def _ParseParameterValue(type_dict, value_input):
   """Parse a parameter value of type `type_dict` from value_input.
 
@@ -7991,6 +8057,16 @@ def _ParseParameterValue(type_dict, value_input):
     if not values:  # Workaround to pass empty array parameter.
       return {'value': {}}  # An empty arrayValues list is the same as NULL.
     return {'arrayValues': values}
+  if 'rangeElementType' in type_dict:
+    if value_input == 'NULL':
+      return {'rangeValue': None}
+    start, end = _ParseRangeParameterValue(value_input)
+    return {
+        'rangeValue': {
+            'start': _ParseParameterValue(type_dict['rangeElementType'], start),
+            'end': _ParseParameterValue(type_dict['rangeElementType'], end),
+        }
+    }
   return {'value': value_input if value_input != 'NULL' else None}
 
 

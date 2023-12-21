@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Applies a yaml configuration containing Deliver Pipeline(s), Target(s) declarative definitions."""
+"""Applies a yaml configuration containing Delivery Pipeline(s), Target(s), Custom Target Type(s), and Automation(s) declarative definitions."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -51,7 +51,7 @@ def _CommonArgs(parser):
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
                     base.ReleaseTrack.GA)
 class Apply(base.UpdateCommand):
-  """Applies a yaml configuration containing Delivery Pipeline(s), Target(s) and Automation(s) declarative definitions."""
+  """Applies a yaml configuration containing Delivery Pipeline(s), Target(s), Custom Target Type(s), and Automation(s) declarative definitions."""
 
   detailed_help = _DETAILED_HELP
 

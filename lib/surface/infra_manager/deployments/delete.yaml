@@ -1,4 +1,4 @@
-- release_tracks: [ALPHA, GA]
+- release_tracks: [GA]
   help_text:
     brief: Delete deployments
     description: Delete a deployment

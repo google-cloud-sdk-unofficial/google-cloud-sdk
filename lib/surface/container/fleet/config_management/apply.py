@@ -77,9 +77,11 @@ class Apply(base.UpdateCommand):
         loaded_cm, self.messages)
     version = self._get_backfill_version(
         membership) if not args.version else args.version
+    cluster = loaded_cm.get('spec', {}).get('cluster', '')
     spec = self.messages.MembershipFeatureSpec(
         configmanagement=self.messages.ConfigManagementMembershipSpec(
             version=version,
+            cluster=cluster,
             configSync=config_sync,
             policyController=policy_controller,
             hierarchyController=hierarchy_controller_config))
@@ -122,8 +124,10 @@ def _validate_meta(configmanagement):
   if 'spec' not in configmanagement:
     raise exceptions.Error('Missing required field .spec')
   spec = configmanagement['spec']
+  legal_fields = {utils.CONFIG_SYNC, utils.POLICY_CONTROLLER, utils.HNC,
+                  utils.CLUSTER}
   for field in spec:
-    if field not in [utils.CONFIG_SYNC, utils.POLICY_CONTROLLER, utils.HNC]:
+    if field not in legal_fields:
       raise exceptions.Error(
           'Please remove illegal field .spec.{}'.format(field))
 

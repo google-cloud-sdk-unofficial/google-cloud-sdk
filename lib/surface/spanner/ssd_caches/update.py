@@ -26,7 +26,7 @@ from googlecloudsdk.command_lib.spanner import flags
 from googlecloudsdk.command_lib.util.args import labels_util
 
 
-class Update(base.UpdateCommand):
+class Update(base.Command):
   """Update a Cloud Spanner SSD cache."""
 
   detailed_help = {

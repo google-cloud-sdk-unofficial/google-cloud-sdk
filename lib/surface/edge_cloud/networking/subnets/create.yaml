@@ -32,7 +32,6 @@
         An optional, textual description for the subnet.
     - arg_name: ipv4-range
       api_field: subnet.ipv4Cidr
-      required: true
       type: "googlecloudsdk.calliope.arg_parsers:ArgList:"
       help_text: |
         The ranges of ipv4 addresses that are owned by this subnetwork in CIDR format.

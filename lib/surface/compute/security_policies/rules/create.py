@@ -218,7 +218,7 @@ class CreateGA(base.CreateCommand):
   _support_multiple_rate_limit_keys = True
   _support_header_action = True
   _support_fairshare = False
-  _support_recaptcha_options = False
+  _support_recaptcha_options = True
 
   @classmethod
   def Args(cls, parser):

@@ -120,7 +120,9 @@ class Update(base.Command):
     )
 
     if support_environment_upgrades:
-      params['update_image_version'] = args.image_version
+      params['update_image_version'] = self._getImageVersion(
+          args, env_ref, env_obj
+      )
     params['update_web_server_access_control'] = (
         environments_api_util.BuildWebServerAllowedIps(
             args.update_web_server_allow_ip,
@@ -304,6 +306,32 @@ class Update(base.Command):
     if self._support_composer3flags:
       self._addComposer3Fields(params, args, env_obj)
     return patch_util.ConstructPatch(**params)
+
+  def _getImageVersion(self, args, env_ref, env_obj):
+    if (
+        args.airflow_version or args.image_version
+    ) and image_versions_command_util.IsDefaultImageVersion(args.image_version):
+      message = image_versions_command_util.BuildDefaultComposerVersionWarning(
+          args.image_version, args.airflow_version
+      )
+      log.warning(message)
+
+    if args.airflow_version:
+      args.image_version = (
+          image_versions_command_util.ImageVersionFromAirflowVersion(
+              args.airflow_version, env_obj.config.softwareConfig.imageVersion
+          )
+      )
+    # Checks validity of image_version upgrade request.
+    if args.image_version:
+      upgrade_validation = (
+          image_versions_command_util.IsValidImageVersionUpgrade(
+              env_obj.config.softwareConfig.imageVersion, args.image_version
+          )
+      )
+      if not upgrade_validation.upgrade_valid:
+        raise command_util.InvalidUserInputError(upgrade_validation.error)
+    return args.image_version
 
   def _addComposer3Fields(self, params, args, env_obj):
     is_composer3 = image_versions_command_util.IsVersionComposer3Compatible(
@@ -496,25 +524,6 @@ class UpdateBeta(Update):
 
   def Run(self, args):
     env_ref = args.CONCEPTS.environment.Parse()
-    if (
-        args.airflow_version or args.image_version
-    ) and image_versions_command_util.IsDefaultImageVersion(args.image_version):
-      message = image_versions_command_util.BuildDefaultComposerVersionWarning(
-          args.image_version, args.airflow_version
-      )
-      log.warning(message)
-    if args.airflow_version:
-      # Converts airflow_version arg to image_version arg
-      args.image_version = (
-          image_versions_command_util.ImageVersionFromAirflowVersion(
-              args.airflow_version))
-
-    # Checks validity of image_version upgrade request.
-    if args.image_version:
-      upgrade_validation = image_versions_command_util.IsValidImageVersionUpgrade(
-          env_ref, args.image_version, self.ReleaseTrack())
-      if not upgrade_validation.upgrade_valid:
-        raise command_util.InvalidUserInputError(upgrade_validation.error)
 
     # Checks validity of update_web_server_allow_ip
     if (self.ReleaseTrack() == base.ReleaseTrack.BETA and

@@ -21,6 +21,7 @@ from __future__ import unicode_literals
 
 import re
 
+import frozendict
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.container.fleet.clusterupgrade import flags as clusterupgrade_flags
 from googlecloudsdk.command_lib.container.fleet.features import base as feature_base
@@ -33,11 +34,13 @@ from googlecloudsdk.core.util import times
 CLUSTER_UPGRADE_FEATURE = 'clusterupgrade'
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
+)
 class Describe(feature_base.DescribeCommand):
   """Describe the clusterupgrade feature for a fleet within a given project."""
 
-  detailed_help = {
+  detailed_help = frozendict.frozendict({
       'DESCRIPTION': """\
           Describe the Fleet clusterupgrade feature used for configuring
           fleet-based rollout sequencing.
@@ -47,7 +50,7 @@ class Describe(feature_base.DescribeCommand):
 
               $ {command}
           """,
-  }
+  })
 
   feature_name = CLUSTER_UPGRADE_FEATURE
 
@@ -194,9 +197,3 @@ class Describe(feature_base.DescribeCommand):
         + [current_cluster_upgrade]
         + downstream_cluster_upgrades
     )
-
-
-@base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
-class DescribeBetaAndGA(Describe):
-  """Describe the clusterupgrade feature for a fleet within a given project."""

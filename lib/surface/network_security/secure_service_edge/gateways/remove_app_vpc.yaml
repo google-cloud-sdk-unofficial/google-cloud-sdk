@@ -1,8 +1,8 @@
 release_tracks: [ALPHA]
 deprecate:
-  is_removed: false
-  warning: |
-    Command remove-app-vpc is deprecated. Use remove-app-network instead.
+  is_removed: true
+  error: |
+    Command remove-app-vpc has been removed. Use remove-app-network instead.
 
 help_text:
   brief: |

@@ -23,11 +23,11 @@ from googlecloudsdk.api_lib.compute import lister
 from googlecloudsdk.calliope import base
 
 
-@base.ReleaseTracks(
-    base.ReleaseTrack.GA, base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA
-)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
 class List(base.ListCommand):
   """Lists Compute Engine network endpoint groups."""
+
+  support_port_mapping_neg = False
 
   detailed_help = base_classes.GetMultiScopeListerHelp(
       'network endpoint groups',
@@ -40,14 +40,21 @@ class List(base.ListCommand):
 
   @classmethod
   def Args(cls, parser):
-    parser.display_info.AddFormat("""\
+    table = """\
         table(
             name,
             selfLink.scope().segment(-3).yesno(no="global"):label=LOCATION,
             networkEndpointType:label=ENDPOINT_TYPE,
-            size
-        )
-        """)
+            size"""
+    if cls.support_port_mapping_neg:
+      table += """,
+          clientPortMappingMode:label=CLIENT_PORT_MAPPING_MODE
+          """
+    table += """\
+                )
+        """
+
+    parser.display_info.AddFormat(table)
     lister.AddMultiScopeListerFlags(
         parser, zonal=True, regional=True, global_=True
     )
@@ -66,3 +73,11 @@ class List(base.ListCommand):
     )
 
     return lister.Invoke(request_data, list_implementation)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class ListAlpha(List):
+  """List a Google Compute Engine network endpoint group."""
+
+  support_port_mapping_neg = True
+

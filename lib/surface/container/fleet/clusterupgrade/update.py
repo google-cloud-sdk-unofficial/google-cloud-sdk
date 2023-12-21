@@ -31,11 +31,17 @@ from googlecloudsdk.core.util import times
 CLUSTER_UPGRADE_FEATURE = 'clusterupgrade'
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
+)
 class Update(feature_base.UpdateCommand):
   """Update the clusterupgrade feature for a fleet within a given project."""
 
-  detailed_help = {}
+  detailed_help = {'EXAMPLES': """\
+            To update the clusterupgrade feature for the current fleet, run:
+
+            $ {command} --default-upgrade-soaking=DEFAULT_UPGRADE_SOAKING
+        """}
 
   feature_name = CLUSTER_UPGRADE_FEATURE
 
@@ -165,9 +171,3 @@ class _EnableCommand(feature_base.EnableCommandMixin):
       # the caller.
       self.Enable(self.messages.Feature())
       return self.GetFeature()
-
-
-@base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
-class UpdateBetaAndGA(Update):
-  """Update the clusterupgrade feature for a fleet within a given project."""

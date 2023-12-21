@@ -16,7 +16,6 @@
 
 import enum
 import os.path
-
 from googlecloudsdk.api_lib.run import api_enabler
 from googlecloudsdk.api_lib.run import k8s_object
 from googlecloudsdk.api_lib.run import traffic
@@ -27,7 +26,6 @@ from googlecloudsdk.command_lib.run import artifact_registry
 from googlecloudsdk.command_lib.run import config_changes
 from googlecloudsdk.command_lib.run import connection_context
 from googlecloudsdk.command_lib.run import container_parser
-from googlecloudsdk.command_lib.run import exceptions
 from googlecloudsdk.command_lib.run import flags
 from googlecloudsdk.command_lib.run import messages_util
 from googlecloudsdk.command_lib.run import platforms
@@ -93,7 +91,6 @@ Container Flags
   group.AddArgument(flags.MutexEnvVarsFlags())
   group.AddArgument(flags.MemoryFlag())
   group.AddArgument(flags.CpuFlag())
-  group.AddArgument(flags.CommandFlag())
   group.AddArgument(flags.ArgsFlag())
   group.AddArgument(flags.SecretsFlags())
   group.AddArgument(flags.DependsOnFlag())
@@ -101,6 +98,9 @@ Container Flags
     group.AddArgument(flags.AddVolumeMountFlag())
     group.AddArgument(flags.RemoveVolumeMountFlag())
     group.AddArgument(flags.ClearVolumeMountsFlag())
+    group.AddArgument(flags.AddCommandAndFunctionFlag())
+  else:
+    group.AddArgument(flags.CommandFlag())
   return group
 
 
@@ -266,11 +266,6 @@ class Deploy(base.Command):
               '--image',
               message,
           )
-      if (
-          self.ReleaseTrack() is base.ReleaseTrack.ALPHA
-          and flags.FlagIsExplicitlySet(container, 'function')
-      ):
-        raise exceptions.ArgumentError('[--function] is unimplemented')
     service_ref = args.CONCEPTS.service.Parse()
     flags.ValidateResource(service_ref)
 
@@ -327,20 +322,15 @@ class Deploy(base.Command):
       docker_file = source + '/Dockerfile'
       if os.path.exists(docker_file):
         build_type = BuildType.DOCKERFILE
+        # TODO(b/310727875): check --function is not provided
       else:
-        pack = [{'image': container.image}]
-        if self.ReleaseTrack() is base.ReleaseTrack.ALPHA:
-          command_arg = getattr(container, 'command', None)
-          if command_arg is not None:
-            command = ' '.join(command_arg)
-            pack[0].update(
-                {'env': 'GOOGLE_ENTRYPOINT="{command}"'.format(command=command)}
-            )
+        pack = _CreateBuildPack(container, self.ReleaseTrack())
         build_type = BuildType.BUILDPACKS
       image = None if pack else container.image
       operation_message = (
           'Building using {build_type} and deploying container to'
       ).format(build_type=build_type.value)
+      # TODO(b/310732246) this command might need to be changed
       pretty_print.Info(
           messages_util.GetBuildEquivalentForSourceRunMessage(
               service_ref.servicesId, pack, source
@@ -424,6 +414,27 @@ class Deploy(base.Command):
       return service
 
 
+def _CreateBuildPack(container, release_track=base.ReleaseTrack.GA):
+  """A helper method to cofigure buildpack."""
+  pack = [{'image': container.image}]
+  if release_track is base.ReleaseTrack.ALPHA:
+    command_arg = getattr(container, 'command', None)
+    function_arg = getattr(container, 'function', None)
+    if command_arg is not None:
+      command = ' '.join(command_arg)
+      pack[0].update(
+          {'envs': ['GOOGLE_ENTRYPOINT="{command}"'.format(command=command)]}
+      )
+    elif function_arg is not None:
+      pack[0].update({
+          'envs': [
+              'GOOGLE_FUNCTION_SIGNATURE_TYPE=http',
+              'GOOGLE_FUNCTION_TARGET={target}'.format(target=function_arg),
+          ]
+      })
+  return pack
+
+
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class BetaDeploy(Deploy):
   """Create or update a Cloud Run service."""
@@ -452,11 +463,11 @@ class AlphaDeploy(BetaDeploy):
     managed_group = flags.GetManagedArgGroup(parser)
     flags.AddVpcNetworkGroupFlagsForUpdate(managed_group)
     flags.AddDefaultUrlFlag(managed_group)
+    flags.AddInvokerIamCheckFlag(managed_group)
     flags.AddRuntimeFlag(managed_group)
     flags.AddServiceMinInstancesFlag(managed_group)
     flags.AddVolumesFlags(managed_group, cls.ReleaseTrack())
     flags.RemoveContainersFlag().AddToParser(managed_group)
-    flags.AddFunctionAndRuntimeLanguageFlag(managed_group)
     container_args = ContainerArgGroup(cls.ReleaseTrack())
     container_parser.AddContainerFlags(parser, container_args)
 

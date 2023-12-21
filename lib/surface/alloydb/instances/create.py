@@ -116,17 +116,34 @@ class Create(base.CreateCommand):
     return op
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
-class CreateAlphaBeta(Create):
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class CreateBeta(Create):
   """Creates a new AlloyDB instance within a given cluster."""
 
   @classmethod
   def Args(cls, parser):
-    super(CreateAlphaBeta, CreateAlphaBeta).Args(parser)
+    super(CreateBeta, CreateBeta).Args(parser)
 
   def ConstructCreateRequestFromArgs(
       self, client, alloydb_messages, cluster_ref, args
   ):
-    return instance_helper.ConstructCreateRequestFromArgsAlphaBeta(
+    return instance_helper.ConstructCreateRequestFromArgsBeta(
+        client, alloydb_messages, cluster_ref, args
+    )
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class CreateAlpha(CreateBeta):
+  """Creates a new AlloyDB instance within a given cluster."""
+
+  @classmethod
+  def Args(cls, parser):
+    super(CreateAlpha, CreateAlpha).Args(parser)
+    flags.AddAssignInboundPublicIp(parser, update=False)
+
+  def ConstructCreateRequestFromArgs(
+      self, client, alloydb_messages, cluster_ref, args
+  ):
+    return instance_helper.ConstructCreateRequestFromArgsAlpha(
         client, alloydb_messages, cluster_ref, args
     )

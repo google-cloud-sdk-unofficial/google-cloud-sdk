@@ -20,12 +20,13 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-from googlecloudsdk.api_lib.util import apis
+from googlecloudsdk.api_lib.scc import securitycenter_client
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.scc import flags as scc_flags
+from googlecloudsdk.command_lib.scc import util as scc_util
 from googlecloudsdk.command_lib.scc.muteconfigs import flags
 from googlecloudsdk.command_lib.scc.muteconfigs import util
 from googlecloudsdk.core import properties
-from googlecloudsdk.generated_clients.apis.securitycenter.v1 import securitycenter_v1_messages as messages
 
 
 # TODO: b/308476775 - Migrate Get command usage to Describe
@@ -63,14 +64,20 @@ class Get(base.Command):
     # Add flags and positional arguments.
     flags.MUTE_CONFIG_FLAG.AddToParser(parser)
     flags.AddParentGroup(parser)
+    # TODO: b/311713896 - Remove api-version flag when v2 is fully GA.
+    scc_flags.API_VERSION_FLAG.AddToParser(parser)
+    scc_flags.LOCATION_FLAG.AddToParser(parser)
     parser.display_info.AddFormat(properties.VALUES.core.default_format.Get())
 
   def Run(self, args):
+    # Determine what version to call from --location and --api-version.
+    version = scc_util.GetVersionFromArguments(args, args.mute_config)
+    messages = securitycenter_client.GetMessages(version)
     request = messages.SecuritycenterOrganizationsMuteConfigsGetRequest()
 
     # Generate name and send request if the user continues.
-    request = util.GenerateMuteConfigName(args, request)
-    client = apis.GetClientInstance("securitycenter", "v1")
+    request = util.GenerateMuteConfigName(args, request, version)
+    client = securitycenter_client.GetClient(version)
 
     response = client.organizations_muteConfigs.Get(request)
     return response

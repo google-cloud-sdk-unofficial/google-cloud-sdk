@@ -74,6 +74,8 @@
     - _REF_: googlecloudsdk.command_lib.compute.tpus.tpu_vm.flags:network
     - _REF_: googlecloudsdk.command_lib.compute.tpus.tpu_vm.flags:subnetwork
     - _REF_: googlecloudsdk.command_lib.compute.tpus.tpu_vm.flags:enable_external_ips
+    - _REF_: googlecloudsdk.command_lib.compute.tpus.tpu_vm.flags:queue_count
+      release_tracks: [ALPHA]
     - _REF_: googlecloudsdk.command_lib.compute.tpus.tpu_vm.flags:version
     - _REF_: googlecloudsdk.command_lib.compute.tpus.tpu_vm.flags:preemptible
     - _REF_: googlecloudsdk.command_lib.compute.tpus.tpu_vm.flags:spot

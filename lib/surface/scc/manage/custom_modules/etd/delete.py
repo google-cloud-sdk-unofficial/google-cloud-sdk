@@ -23,6 +23,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.scc.manage import constants
 from googlecloudsdk.command_lib.scc.manage import flags
 from googlecloudsdk.command_lib.scc.manage import parsing
+from googlecloudsdk.core.console import console_io
 
 
 class Delete(base.DeleteCommand):
@@ -74,6 +75,15 @@ class Delete(base.DeleteCommand):
     )
 
     validate_only = args.validate_only
+
+    if not validate_only:
+      console_io.PromptContinue(
+          message=(
+              'Are you sure you want to delete the Event Threat Detection'
+              ' custom module {}?\n'.format(name)
+          ),
+          cancel_on_no=True,
+      )
 
     client = clients.ETDCustomModuleClient()
 

@@ -21,10 +21,10 @@ import oauth2client_4_0.service_account
 import oauth2client_4_0.tools
 import requests
 
-import bigquery_client
 import bq_auth_flags
 import bq_utils
 import wrapped_credentials
+from utils import bq_error
 
 
 FLAGS = flags.FLAGS
@@ -103,7 +103,7 @@ class CachedCredentialLoader(CredentialLoader):
       self._storage = oauth2client_4_0.contrib.multiprocess_file_storage.MultiprocessFileStorage(
           credential_cache_file, self._scopes_key)
     except OSError as e:
-      raise bigquery_client.BigqueryError(
+      raise bq_error.BigqueryError(
           'Cannot create credential file %s: %s' % (credential_cache_file, e))
 
   @property

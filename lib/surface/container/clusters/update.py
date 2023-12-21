@@ -101,6 +101,7 @@ def _AddMutuallyExclusiveArgs(mutex_group, release_track):
                     api_adapter.GCPFILESTORECSIDRIVER: _ParseAddonDisabled,
                     api_adapter.GCSFUSECSIDRIVER: _ParseAddonDisabled,
                     api_adapter.STATEFULHA: _ParseAddonDisabled,
+                    api_adapter.PARALLELSTORECSIDRIVER: _ParseAddonDisabled,
                     api_adapter.CONFIGCONNECTOR: _ParseAddonDisabled,
                 },
                 **{k: _ParseAddonDisabled for k in api_adapter.CLOUDRUN_ADDONS
@@ -154,6 +155,7 @@ def _AddMutuallyExclusiveArgs(mutex_group, release_track):
                     api_adapter.GCPFILESTORECSIDRIVER: _ParseAddonDisabled,
                     api_adapter.GCSFUSECSIDRIVER: _ParseAddonDisabled,
                     api_adapter.STATEFULHA: _ParseAddonDisabled,
+                    api_adapter.PARALLELSTORECSIDRIVER: _ParseAddonDisabled,
                     api_adapter.CONFIGCONNECTOR: _ParseAddonDisabled,
                 },
                 **{k: _ParseAddonDisabled for k in api_adapter.CLOUDRUN_ADDONS
@@ -204,6 +206,7 @@ def _AddMutuallyExclusiveArgs(mutex_group, release_track):
                     api_adapter.GCPFILESTORECSIDRIVER: _ParseAddonDisabled,
                     api_adapter.GCSFUSECSIDRIVER: _ParseAddonDisabled,
                     api_adapter.STATEFULHA: _ParseAddonDisabled,
+                    api_adapter.PARALLELSTORECSIDRIVER: _ParseAddonDisabled,
                 },
                 **{k: _ParseAddonDisabled for k in api_adapter.CLOUDRUN_ADDONS
                   }),),
@@ -382,6 +385,7 @@ class Update(base.UpdateCommand):
     flags.AddRemoveWorkloadPoliciesFlag(group)
     flags.AddEnableMultiNetworkingFlag(group, hidden=True)
     flags.AddContainerdConfigFlag(group, hidden=True)
+    flags.AddAutoprovisioningResourceManagerTagsUpdate(group)
     flags.AddFleetProjectFlag(group, is_update=True)
 
   def ParseUpdateOptions(self, args, locations):
@@ -1000,7 +1004,6 @@ class UpdateBeta(Update):
     opts.cluster_dns = args.cluster_dns
     opts.cluster_dns_scope = args.cluster_dns_scope
     opts.cluster_dns_domain = args.cluster_dns_domain
-    opts.enable_additive_vpc_scope = args.enable_additive_vpc_scope
     opts.disable_additive_vpc_scope = args.disable_additive_vpc_scope
     opts.additive_vpc_scope_dns_domain = args.additive_vpc_scope_dns_domain
     if opts.cluster_dns and opts.cluster_dns.lower() == 'clouddns':
@@ -1062,9 +1065,6 @@ class UpdateBeta(Update):
     opts.host_maintenance_interval = args.host_maintenance_interval
     opts.enable_multi_networking = args.enable_multi_networking
     opts.containerd_config_from_file = args.containerd_config_from_file
-    opts.autoprovisioning_resource_manager_tags = get_default(
-        'autoprovisioning_resource_manager_tags'
-    )
     opts.convert_to_autopilot = args.convert_to_autopilot
     opts.complete_convert_to_autopilot = args.complete_convert_to_autopilot
     opts.convert_to_standard = args.convert_to_standard
@@ -1267,7 +1267,6 @@ class UpdateAlpha(Update):
     opts.cluster_dns = args.cluster_dns
     opts.cluster_dns_scope = args.cluster_dns_scope
     opts.cluster_dns_domain = args.cluster_dns_domain
-    opts.enable_additive_vpc_scope = args.enable_additive_vpc_scope
     opts.disable_additive_vpc_scope = args.disable_additive_vpc_scope
     opts.additive_vpc_scope_dns_domain = args.additive_vpc_scope_dns_domain
     if opts.cluster_dns and opts.cluster_dns.lower() == 'clouddns':
@@ -1327,9 +1326,6 @@ class UpdateAlpha(Update):
     opts.host_maintenance_interval = args.host_maintenance_interval
     opts.enable_multi_networking = args.enable_multi_networking
     opts.containerd_config_from_file = args.containerd_config_from_file
-    opts.autoprovisioning_resource_manager_tags = get_default(
-        'autoprovisioning_resource_manager_tags'
-    )
     opts.convert_to_autopilot = args.convert_to_autopilot
     opts.complete_convert_to_autopilot = args.complete_convert_to_autopilot
     opts.convert_to_standard = args.convert_to_standard

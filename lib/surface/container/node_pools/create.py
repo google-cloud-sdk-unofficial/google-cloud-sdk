@@ -207,6 +207,7 @@ def ParseCreateNodePoolOptionsBase(args):
       additional_pod_network=args.additional_pod_network,
       sole_tenant_node_affinity_file=args.sole_tenant_node_affinity_file,
       containerd_config_from_file=args.containerd_config_from_file,
+      resource_manager_tags=args.resource_manager_tags,
   )
 
 
@@ -261,6 +262,7 @@ class Create(base.CreateCommand):
     flags.AddBestEffortProvisionFlags(parser)
     flags.AddPlacementPolicyFlag(parser)
     flags.AddTPUTopologyFlag(parser)
+    flags.AddResourceManagerTagsCreate(parser, for_node_pool=True)
 
   def ParseCreateNodePoolOptions(self, args):
     ops = ParseCreateNodePoolOptionsBase(args)
@@ -428,7 +430,6 @@ class CreateBeta(Create):
     ops.enable_best_effort_provision = args.enable_best_effort_provision
     ops.min_provision_nodes = args.min_provision_nodes
     ops.host_maintenance_interval = args.host_maintenance_interval
-    ops.resource_manager_tags = args.resource_manager_tags
     ops.secondary_boot_disks = args.secondary_boot_disk
     ops.enable_confidential_storage = args.enable_confidential_storage
     return ops
@@ -478,7 +479,6 @@ class CreateAlpha(Create):
     ops.host_maintenance_interval = args.host_maintenance_interval
     ops.performance_monitoring_unit = args.performance_monitoring_unit
     ops.autoscaled_rollout_policy = args.autoscaled_rollout_policy
-    ops.resource_manager_tags = args.resource_manager_tags
     ops.ephemeral_storage = ephemeral_storage
     ops.secondary_boot_disks = args.secondary_boot_disk
     ops.enable_confidential_storage = args.enable_confidential_storage

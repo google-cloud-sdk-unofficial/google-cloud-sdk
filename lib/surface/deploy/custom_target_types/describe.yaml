@@ -1,5 +1,4 @@
-- release_tracks: [ALPHA]
-  hidden: true
+- release_tracks: [ALPHA, BETA, GA]
   help_text:
     brief: Show details for a custom target type.
     description: Show details for a specified custom target type.

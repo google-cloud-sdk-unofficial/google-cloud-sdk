@@ -57,6 +57,7 @@ class CheckUpgrade(base.Command):
 
   def Run(self, args):
     env_resource = args.CONCEPTS.environment.Parse()
+    env_details = environments_api_util.Get(env_resource, self.ReleaseTrack())
     if (
         args.airflow_version or args.image_version
     ) and image_versions_command_util.IsDefaultImageVersion(args.image_version):
@@ -68,12 +69,18 @@ class CheckUpgrade(base.Command):
       # Converts airflow_version arg to image_version arg
       args.image_version = (
           image_versions_command_util.ImageVersionFromAirflowVersion(
-              args.airflow_version))
+              args.airflow_version,
+              env_details.config.softwareConfig.imageVersion,
+          )
+      )
 
       # Checks validity of image_version upgrade request.
     if args.image_version:
-      upgrade_validation = image_versions_command_util.IsValidImageVersionUpgrade(
-          env_resource, args.image_version, self.ReleaseTrack())
+      upgrade_validation = (
+          image_versions_command_util.IsValidImageVersionUpgrade(
+              env_details.config.softwareConfig.imageVersion, args.image_version
+          )
+      )
       if not upgrade_validation.upgrade_valid:
         raise command_util.InvalidUserInputError(upgrade_validation.error)
 

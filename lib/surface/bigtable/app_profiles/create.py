@@ -28,7 +28,7 @@ from googlecloudsdk.command_lib.bigtable import arguments
 from googlecloudsdk.core import log
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class CreateAppProfile(base.CreateCommand):
   """Create a new Bigtable app profile."""
 
@@ -75,12 +75,9 @@ class CreateAppProfile(base.CreateCommand):
         command invocation.
 
     Raises:
-      ConflictingArgumentsException:
-          If both cluster and multi_cluster are present.
-          If both multi_cluster and transactional_writes are present.
-          If both cluster and restrict_to are present.
-      OneOfArgumentsRequiredException: If neither cluster or multi_cluster are
-          present.
+      ConflictingArgumentsException,
+      OneOfArgumentsRequiredException:
+        See app_profiles.Create(...)
 
     Returns:
       Created app profile resource object.
@@ -92,8 +89,8 @@ class CreateAppProfile(base.CreateCommand):
         multi_cluster=args.route_any,
         restrict_to=args.restrict_to,
         transactional_writes=args.transactional_writes,
-        force=args.force,
         priority=args.priority,
+        force=args.force,
     )
 
   def Run(self, args):
@@ -104,11 +101,9 @@ class CreateAppProfile(base.CreateCommand):
         command invocation.
 
     Raises:
-      ConflictingArgumentsException:
-          If both cluster and multi_cluster are present.
-          If both multi_cluster and transactional_writes are present.
-      OneOfArgumentsRequiredException: If neither cluster or multi_cluster are
-          present.
+      ConflictingArgumentsException,
+      OneOfArgumentsRequiredException:
+        See _CreateAppProfile(...)
 
     Returns:
       Created resource.
@@ -123,8 +118,8 @@ class CreateAppProfile(base.CreateCommand):
       return result
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class CreateAppProfileAlpha(CreateAppProfile):
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class CreateAppProfileBeta(CreateAppProfile):
   """Create a new Bigtable app profile."""
 
   @staticmethod
@@ -133,11 +128,8 @@ class CreateAppProfileAlpha(CreateAppProfile):
     (
         arguments.ArgAdder(parser)
         .AddDescription('app profile', required=False)
-        .AddAppProfileRouting(
-            allow_failover_radius=True,
-            allow_row_affinity=True,
-        )
-        .AddIsolation()
+        .AddAppProfileRouting()
+        .AddIsolation(allow_data_boost=True)
         .AddForce('create')
     )
 
@@ -150,14 +142,57 @@ class CreateAppProfileAlpha(CreateAppProfile):
         command invocation.
 
     Raises:
-      ConflictingArgumentsException:
-          If both cluster and multi_cluster are present.
-          If both multi_cluster and transactional_writes are present.
-          If both cluster and restrict_to are present.
-          If both cluster and failover_radius are present.
-          If both cluster and row_affinity are present.
-      OneOfArgumentsRequiredException: If neither cluster or multi_cluster are
-          present.
+      ConflictingArgumentsException,
+      OneOfArgumentsRequiredException:
+        See app_profiles.Create(...)
+
+    Returns:
+      Created app profile resource object.
+    """
+    return app_profiles.Create(
+        app_profile_ref,
+        cluster=args.route_to,
+        description=args.description,
+        multi_cluster=args.route_any,
+        restrict_to=args.restrict_to,
+        transactional_writes=args.transactional_writes,
+        priority=args.priority,
+        data_boost=args.data_boost,
+        data_boost_billing_owner=args.data_boost_billing_owner,
+        force=args.force,
+    )
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class CreateAppProfileAlpha(CreateAppProfileBeta):
+  """Create a new Bigtable app profile."""
+
+  @staticmethod
+  def Args(parser):
+    arguments.AddAppProfileResourceArg(parser, 'to create')
+    (
+        arguments.ArgAdder(parser)
+        .AddDescription('app profile', required=False)
+        .AddAppProfileRouting(
+            allow_failover_radius=True,
+            allow_row_affinity=True,
+        )
+        .AddIsolation(allow_data_boost=True)
+        .AddForce('create')
+    )
+
+  def _CreateAppProfile(self, app_profile_ref, args):
+    """Creates an AppProfile with the given arguments.
+
+    Args:
+      app_profile_ref: A resource reference of the new app profile.
+      args: an argparse namespace. All the arguments that were provided to this
+        command invocation.
+
+    Raises:
+      ConflictingArgumentsException,
+      OneOfArgumentsRequiredException:
+        See app_profiles.Create(...)
 
     Returns:
       Created app profile resource object.
@@ -170,7 +205,9 @@ class CreateAppProfileAlpha(CreateAppProfile):
         restrict_to=args.restrict_to,
         failover_radius=args.failover_radius,
         transactional_writes=args.transactional_writes,
-        force=args.force,
-        priority=args.priority,
         row_affinity=args.row_affinity,
+        priority=args.priority,
+        data_boost=args.data_boost,
+        data_boost_billing_owner=args.data_boost_billing_owner,
+        force=args.force,
     )

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*- #
-# Copyright 2022 Google LLC. All Rights Reserved.
+# Copyright 2023 Google LLC. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,21 +12,16 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Command group for Network Services."""
-
+"""Command group for Debugging Service Mesh Membership."""
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
-from googlecloudsdk.calliope import base
+from googlecloudsdk.calliope import base as calliope_base
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-@base.Hidden
-class NetworkActions(base.Group):
-  """Manage Network Actions resources."""
-  category = base.NETWORKING_CATEGORY
+@calliope_base.ReleaseTracks(calliope_base.ReleaseTrack.ALPHA)
+class Debug(calliope_base.Group):
+  """Debug Service Mesh memberships."""
 
-  def Filter(self, context, args):
-    base.RequireProjectID(args)
-    del context, args
+  category = calliope_base.COMPUTE_CATEGORY

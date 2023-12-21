@@ -286,7 +286,6 @@ class Create(base.CreateCommand):
   _support_network_attachments = False
   _support_local_ssd_recovery_timeout = True
   _support_internal_ipv6_reservation = True
-  _support_regional_instance_template = False
   _support_local_ssd_size = True
   _support_vlan_nic = False
   _support_performance_monitoring_unit = False
@@ -322,8 +321,8 @@ class Create(base.CreateCommand):
         support_specific_then_x_affinity=cls._support_specific_then_x_affinity,
         support_graceful_shutdown=cls._support_graceful_shutdown,
     )
-    cls.SOURCE_INSTANCE_TEMPLATE = instances_flags.MakeSourceInstanceTemplateArg(
-        support_regional_instance_template=cls._support_regional_instance_template
+    cls.SOURCE_INSTANCE_TEMPLATE = (
+        instances_flags.MakeSourceInstanceTemplateArg()
     )
     cls.SOURCE_INSTANCE_TEMPLATE.AddArgument(parser)
     cls.SOURCE_MACHINE_IMAGE = (instances_flags.AddMachineImageArg())
@@ -343,15 +342,6 @@ class Create(base.CreateCommand):
 
   def Collection(self):
     return 'compute.instances'
-
-  def GetSourceInstanceTemplate(self, args, resources):
-    """Get sourceInstanceTemplate value as required by API."""
-    if not args.IsSpecified('source_instance_template'):
-      return None
-    ref = self.SOURCE_INSTANCE_TEMPLATE.ResolveAsResource(
-        args, resources, default_scope=flags.compute_scope.ScopeEnum.GLOBAL
-    )
-    return ref.SelfLink()
 
   def GetSourceMachineImage(self, args, resources):
     """Retrieves the specified source machine image's selflink.
@@ -378,8 +368,9 @@ class Create(base.CreateCommand):
     # When --source-instance-template was specified, defaults are taken from
     # Instance Template and gcloud flags are used to override them - by default
     # fields should not be initialized.
-    source_instance_template = self.GetSourceInstanceTemplate(
-        args, resource_parser)
+    source_instance_template = instance_utils.GetSourceInstanceTemplate(
+        args, resource_parser, self.SOURCE_INSTANCE_TEMPLATE
+    )
     skip_defaults = source_instance_template is not None
 
     source_machine_image = self.GetSourceMachineImage(args, resource_parser)
@@ -781,7 +772,6 @@ class CreateBeta(Create):
   _support_confidential_compute_type_tdx = False
   _support_network_attachments = False
   _support_local_ssd_recovery_timeout = True
-  _support_regional_instance_template = False
   _support_local_ssd_size = True
   _support_vlan_nic = False
   _support_performance_monitoring_unit = False
@@ -833,8 +823,8 @@ class CreateBeta(Create):
         support_specific_then_x_affinity=cls._support_specific_then_x_affinity,
         support_graceful_shutdown=cls._support_graceful_shutdown,
     )
-    cls.SOURCE_INSTANCE_TEMPLATE = instances_flags.MakeSourceInstanceTemplateArg(
-        support_regional_instance_template=cls._support_regional_instance_template
+    cls.SOURCE_INSTANCE_TEMPLATE = (
+        instances_flags.MakeSourceInstanceTemplateArg()
     )
     cls.SOURCE_INSTANCE_TEMPLATE.AddArgument(parser)
     cls.SOURCE_MACHINE_IMAGE = (instances_flags.AddMachineImageArg())
@@ -887,7 +877,6 @@ class CreateAlpha(CreateBeta):
   _support_confidential_compute_type_tdx = True
   _support_network_attachments = True
   _support_local_ssd_recovery_timeout = True
-  _support_regional_instance_template = True
   _support_local_ssd_size = True
   _support_vlan_nic = True
   _support_performance_monitoring_unit = True
@@ -930,8 +919,8 @@ class CreateAlpha(CreateBeta):
         support_graceful_shutdown=cls._support_graceful_shutdown,
     )
 
-    CreateAlpha.SOURCE_INSTANCE_TEMPLATE = instances_flags.MakeSourceInstanceTemplateArg(
-        support_regional_instance_template=cls._support_regional_instance_template
+    CreateAlpha.SOURCE_INSTANCE_TEMPLATE = (
+        instances_flags.MakeSourceInstanceTemplateArg()
     )
     CreateAlpha.SOURCE_INSTANCE_TEMPLATE.AddArgument(parser)
     CreateAlpha.SOURCE_MACHINE_IMAGE = (instances_flags.AddMachineImageArg())

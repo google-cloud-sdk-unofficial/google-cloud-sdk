@@ -368,4 +368,4 @@
         help_text: |
           The feature cannot be used.
       help_text: |
-        Whether dockerUlimits can be used. If unspecified, the default is equivalent to "allowed".
+        Whether dockerUlimits can be used. If unspecified, the default is equivalent to "forbidden".

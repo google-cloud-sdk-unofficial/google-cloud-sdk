@@ -82,8 +82,17 @@ class UploadV1(base.CreateCommand):
               args.container_args,
               args.container_env_vars,
               args.container_ports,
+              args.container_grpc_ports,
               args.container_predict_route,
               args.container_health_route,
+              args.container_deployment_timeout_seconds,
+              args.container_shared_memory_size_mb,
+              args.container_startup_probe_exec,
+              args.container_startup_probe_period_seconds,
+              args.container_startup_probe_timeout_seconds,
+              args.container_health_probe_exec,
+              args.container_health_probe_period_seconds,
+              args.container_health_probe_timeout_seconds,
               explanation_spec=self._BuildExplanationSpec(args),
               parent_model=args.parent_model,
               model_id=args.model_id,
@@ -180,7 +189,7 @@ class UploadV1(base.CreateCommand):
     return smooth_grad_config
 
   def _ReadExplanationMetadata(self, explanation_metadata_file):
-    """Read local explanation metadadta file provided.
+    """Read local explanation metadata file provided.
 
     Args:
       explanation_metadata_file: str. A local file for explanation metadata.
@@ -241,8 +250,17 @@ class UploadV1Beta1(UploadV1):
           args.container_args,
           args.container_env_vars,
           args.container_ports,
+          args.container_grpc_ports,
           args.container_predict_route,
           args.container_health_route,
+          args.container_deployment_timeout_seconds,
+          args.container_shared_memory_size_mb,
+          args.container_startup_probe_exec,
+          args.container_startup_probe_period_seconds,
+          args.container_startup_probe_timeout_seconds,
+          args.container_health_probe_exec,
+          args.container_health_probe_period_seconds,
+          args.container_health_probe_timeout_seconds,
           self._BuildExplanationSpec(args),
           parent_model=args.parent_model,
           model_id=args.model_id,

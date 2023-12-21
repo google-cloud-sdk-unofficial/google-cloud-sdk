@@ -23,6 +23,16 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.components import util
 
 
+@base.Deprecate(
+    is_removed=False,
+    warning=(
+        'This command is deprecated and will be modified in gcloud v468.0.0. To'
+        ' restore your installation to a previous version, run "gcloud'
+        ' components update --version=<previous_version>" or install the'
+        ' previous version directly from'
+        ' https://cloud.google.com/sdk/docs/install.'
+    ),
+)
 class Restore(base.SilentCommand):
   """Restore the Google Cloud CLI installation to its previous state.
 
