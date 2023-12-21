@@ -57,7 +57,7 @@ class ListBeta(base.ListCommand):
 
   @classmethod
   def Args(cls, parser):
-    parser.display_info.AddFormat(rr_flags.DEFAULT_CREATE_OR_LIST_FORMAT_BETA)
+    rr_flags.AddOutputFormat(parser, base.ReleaseTrack.BETA)
     instance_groups_flags.MakeZonalInstanceGroupManagerArg().AddArgument(
         parser)
 
@@ -113,7 +113,7 @@ class ListAlpha(ListBeta):
   @classmethod
   def Args(cls, parser):
     super().Args(parser)
-    parser.display_info.AddFormat(rr_flags.DEFAULT_CREATE_OR_LIST_FORMAT_ALPHA)
+    rr_flags.AddOutputFormat(parser, base.ReleaseTrack.ALPHA)
 
   def Run(self, args):
     """Creates and issues an instanceGroupManagerResizeRequests.list request.

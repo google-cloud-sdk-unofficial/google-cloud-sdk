@@ -33,11 +33,11 @@ class CreateGitLab(base.CreateCommand):
       'EXAMPLES': """\
             To create a push trigger with a 2nd-gen repository for all branches:
 
-              $ {command} --name="my-trigger" --service-account="projects/my-project/serviceAccounts/my-byosa@my-project.iam.gserviceaccount.com" --repository="projects/1234/locations/global/connections/myconn/repositories/myrepo" --branch-pattern=".*" --build-config="cloudbuild.yaml"
+              $ {command} --name="my-trigger" --service-account="projects/my-project/serviceAccounts/my-byosa@my-project.iam.gserviceaccount.com" --repository="projects/1234/locations/us-central1/connections/myconn/repositories/myrepo" --branch-pattern=".*" --build-config="cloudbuild.yaml" --region=us-central1
 
-            To create a pull request trigger with a 1st-gen repository for main:
+            To create a pull request trigger with a 2nd-gen repository for main:
 
-              $ {command} --name="my-trigger" --service-account="projects/my-project/serviceAccounts/my-byosa@my-project.iam.gserviceaccount.com" --repository="projects/1234/locations/global/connections/myconn/repositories/myrepo" --build-config="cloudbuild.yaml"
+              $ {command} --name="my-trigger" --service-account="projects/my-project/serviceAccounts/my-byosa@my-project.iam.gserviceaccount.com" --repository="projects/1234/locations/us-central1/connections/myconn/repositories/myrepo" --build-config="cloudbuild.yaml" --pull-request-pattern="^main$" --region=us-central1
           """,
   }
 
@@ -49,7 +49,6 @@ class CreateGitLab(base.CreateCommand):
       parser: An argparse.ArgumentParser-like object. It is mocked out in order
         to capture some information, but behaves like an ArgumentParser.
     """
-    messages = cloudbuild_util.GetMessagesModule()
     flag_config = trigger_utils.AddGitLabEnterpriseTriggerArgs(parser)
     flag_config.add_argument(
         '--repository',
@@ -77,7 +76,7 @@ For example, --pull-request-pattern=foo will match "foo", "foobar", and "barfoo"
 The syntax of the regular expressions accepted is the syntax accepted by
 RE2 and described at https://github.com/google/re2/wiki/Syntax.
 """)
-    trigger_utils.AddCommentControlArg(pr_config, messages)
+    trigger_utils.AddCommentControlArg(pr_config)
     trigger_utils.AddBuildConfigArgs(flag_config, require_docker_image=True)
     trigger_utils.AddRepoEventArgs(flag_config)
 

@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Command for listing Runapps resources."""
+"""Command for listing Stacks resources."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -25,10 +25,9 @@ from googlecloudsdk.command_lib.run.integrations import flags
 from googlecloudsdk.command_lib.run.integrations import run_apps_operations
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class List(base.ListCommand):
-  """List Runapps resources."""
+  """List Stacks resources."""
 
   detailed_help = {
       'DESCRIPTION': """\
@@ -61,7 +60,7 @@ class List(base.ListCommand):
     flags.ListIntegrationsOfType(parser)
 
   def Run(self, args):
-    """Lists all the Runapps resources.
+    """Lists all the Stacks resources.
 
     All regions are listed by default similar to Cloud Run services unless
     a specific region is provided with the --region flag.

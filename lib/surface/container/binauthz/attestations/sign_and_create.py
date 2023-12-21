@@ -80,7 +80,8 @@ class SignAndCreate(base.CreateCommand):
               be able to read this attestor and must have the
               `containeranalysis.notes.attachOccurrence` permission for the
               Attestor's underlying Note resource (usually via the
-              `containeranalysis.notes.attacher` role).""")),
+              `containeranalysis.notes.attacher` role)."""),
+        ),
         flags.GetCryptoKeyVersionPresentationSpec(
             base_name='keyversion',
             required=True,
@@ -88,7 +89,8 @@ class SignAndCreate(base.CreateCommand):
             use_global_project_flag=False,
             group_help=textwrap.dedent("""\
               The Cloud KMS (Key Management Service) CryptoKeyVersion to use to
-              sign the attestation payload.""")),
+              sign the attestation payload."""),
+        ),
     )
     parser.add_argument(
         '--public-key-id-override',
@@ -100,7 +102,8 @@ class SignAndCreate(base.CreateCommand):
           Attestation.
 
           This parameter is only necessary if the `--public-key-id-override`
-          flag was provided when this KMS key was added to the Attestor."""))
+          flag was provided when this KMS key was added to the Attestor."""),
+    )
     parser.add_argument(
         '--validate',
         action='store_true',
@@ -145,7 +148,9 @@ class SignAndCreate(base.CreateCommand):
     # TODO(b/79709480): Add other types of attestors if/when supported.
     note_ref = resources.REGISTRY.ParseResourceId(
         'containeranalysis.projects.notes',
-        attestor.userOwnedDrydockNote.noteReference, {})
+        attestor.userOwnedDrydockNote.noteReference,
+        {},
+    )
 
     key_id = args.public_key_id_override or kms.GetKeyUri(key_ref)
 
@@ -153,12 +158,17 @@ class SignAndCreate(base.CreateCommand):
     validation_enabled = 'validate' in args and args.validate
     if not validation_enabled:
       if key_id not in set(
-          pubkey.id for pubkey in attestor.userOwnedDrydockNote.publicKeys):
-        log.warning('No public key with ID [%s] found on attestor [%s]', key_id,
-                    attestor.name)
+          pubkey.id for pubkey in attestor.userOwnedDrydockNote.publicKeys
+      ):
+        log.warning(
+            'No public key with ID [%s] found on attestor [%s]',
+            key_id,
+            attestor.name,
+        )
         console_io.PromptContinue(
             prompt_string='Create and upload Attestation anyway?',
-            cancel_on_no=True)
+            cancel_on_no=True,
+        )
 
     payload = binauthz_command_util.MakeSignaturePayload(args.artifact_url)
     payload_for_signing = payload
@@ -179,10 +189,12 @@ class SignAndCreate(base.CreateCommand):
     validation_callback = functools.partial(
         validation.validate_attestation,
         attestor_ref=attestor_ref,
-        api_version=api_version)
+        api_version=api_version,
+    )
 
     client = containeranalysis.Client(
-        ca_apis.GetApiVersion(self.ReleaseTrack()))
+        ca_apis.GetApiVersion(self.ReleaseTrack())
+    )
     return client.CreateAttestationOccurrence(
         project_ref=project_ref,
         note_ref=note_ref,

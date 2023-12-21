@@ -41,7 +41,12 @@ def _DetailedHelp():
   }
 
 
-def _Args(parser, include_log_config, include_weighted_load_balancing):
+def _Args(
+    parser,
+    include_log_config,
+    include_weighted_load_balancing,
+    include_source_regions,
+):
   """Set up arguments to create a HTTP HealthCheck."""
   parser.display_info.AddFormat(flags.DEFAULT_LIST_FORMAT)
   flags.HealthCheckArgument('HTTP').AddArgument(parser, operation_type='create')
@@ -49,13 +54,21 @@ def _Args(parser, include_log_config, include_weighted_load_balancing):
       parser, include_weighted_load_balancing)
   health_checks_utils.AddProtocolAgnosticCreationArgs(parser, 'HTTP')
   health_checks_utils.AddHttpRelatedResponseArg(parser)
+  if include_source_regions:
+    health_checks_utils.AddHealthCheckSourceRegionsRelatedArgs(parser)
   if include_log_config:
     health_checks_utils.AddHealthCheckLoggingRelatedArgs(parser)
 
   parser.display_info.AddCacheUpdater(completers.HealthChecksCompleterAlpha)
 
 
-def _Run(args, holder, include_log_config, include_weighted_load_balancing):
+def _Run(
+    args,
+    holder,
+    include_log_config,
+    include_weighted_load_balancing,
+    include_source_regions,
+):
   """Issues the request necessary for adding the health check."""
   client = holder.client
   messages = client.messages
@@ -113,6 +126,9 @@ def _Run(args, holder, include_log_config, include_weighted_load_balancing):
     request.healthCheck.logConfig = health_checks_utils.CreateLogConfig(
         client, args)
 
+  if include_source_regions and (args.source_regions is not None):
+    request.healthCheck.sourceRegions = args.source_regions
+
   return client.MakeRequests([(collection, 'Insert', request)])
 
 
@@ -124,24 +140,37 @@ class Create(base.CreateCommand):
 
   _include_log_config = True
   _include_weighted_load_balancing = False
+  _include_source_regions = False
 
   @classmethod
   def Args(cls, parser):
-    _Args(parser, cls._include_log_config, cls._include_weighted_load_balancing)
+    _Args(
+        parser,
+        cls._include_log_config,
+        cls._include_weighted_load_balancing,
+        cls._include_source_regions,
+    )
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
-    return _Run(args, holder, self._include_log_config,
-                self._include_weighted_load_balancing)
+    return _Run(
+        args,
+        holder,
+        self._include_log_config,
+        self._include_weighted_load_balancing,
+        self._include_source_regions,
+    )
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class CreateBeta(Create):
 
   _include_weighted_load_balancing = False
+  _include_source_regions = False
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class CreateAlpha(CreateBeta):
 
   _include_weighted_load_balancing = True
+  _include_source_regions = True

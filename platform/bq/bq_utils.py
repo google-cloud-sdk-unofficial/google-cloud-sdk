@@ -12,7 +12,7 @@ import sys
 import textwrap
 import time
 import traceback
-from typing import Dict, Optional, List
+from typing import Dict, List, Optional, TextIO
 
 from absl import app
 from absl import flags
@@ -45,7 +45,8 @@ _BIGQUERY_TOS_MESSAGE = (
     '\thttps://cloud.google.com/bigquery/docs/quickstarts/'
     'quickstart-command-line\n\n'
     'Once you have completed the sign-up process, please try your command '
-    'again.')
+    'again.'
+)
 _VERSION_FILENAME = 'VERSION'
 
 
@@ -68,8 +69,11 @@ def GetBigqueryRcFilename() -> Optional[str]:
   Returns:
     bigqueryrc filename as a string.
   """
-  return ((FLAGS['bigqueryrc'].present and FLAGS.bigqueryrc) or
-          os.environ.get('BIGQUERYRC') or FLAGS.bigqueryrc)
+  return (
+      (FLAGS['bigqueryrc'].present and FLAGS.bigqueryrc)
+      or os.environ.get('BIGQUERYRC')
+      or FLAGS.bigqueryrc
+  )
 
 
 def GetGcloudConfigFilename() -> str:
@@ -100,14 +104,24 @@ def ProcessGcloudConfig(flag_values) -> None:
     logging.warning('Not processing gcloud config file since it is not found')
     return
   try:
-    auth_config = ProcessConfigSection(
-        filename=gcloud_file_name, section_name='auth'
+    configs = _ProcessConfigSections(
+        filename=gcloud_file_name, section_names=['billing', 'auth', 'core']
     )
-    core_config = ProcessConfigSection(
-        filename=gcloud_file_name, section_name='core'
-    )
+    billing_config = configs.get('billing')
+    auth_config = configs.get('auth')
+    core_config = configs.get('core')
   except IOError:
     logging.warning('Could not load gcloud config data')
+    return
+
+  if (
+      billing_config
+      and 'quota_project' in billing_config
+      and flag_values['quota_project_id'].using_default_value
+  ):
+    UpdateFlag(flag_values, 'quota_project_id', billing_config['quota_project'])
+
+  if not auth_config or not core_config:
     return
   try:
     access_token_file = auth_config['access_token_file']
@@ -115,14 +129,7 @@ def ProcessGcloudConfig(flag_values) -> None:
   except KeyError:
     # This is expected if these attributes aren't in the config file.
     return
-  if (
-      access_token_file is not None
-      and universe_domain is not None
-  ):
-    logging.info(
-        'Using the gcloud configuration to get TPC authorisation from'
-        ' access_token_file'
-    )
+  if access_token_file and universe_domain:
     if (
         not flag_values['oauth_access_token'].using_default_value
         or not flag_values['use_google_auth'].using_default_value
@@ -132,6 +139,12 @@ def ProcessGcloudConfig(flag_values) -> None:
           'Users gcloud config file and bigqueryrc file have incompatible'
           ' configurations. Defaulting to the bigqueryrc file'
       )
+      return
+
+    logging.info(
+        'Using the gcloud configuration to get TPC authorisation from'
+        ' access_token_file'
+    )
     try:
       with open(access_token_file) as token_file:
         token = token_file.read().strip()
@@ -154,7 +167,35 @@ def ProcessBigqueryrc() -> None:
   ProcessBigqueryrcSection(None, FLAGS)
 
 
-def ProcessConfigSection(
+def _ProcessConfigSections(
+    filename: str, section_names: List[str]
+) -> Dict[str, Dict[str, str]]:
+  """Read configuration file sections returned as a nested dictionary.
+
+  Args:
+    filename: The filename of the configuration file.
+    section_names: A list of the section names.
+
+  Returns:
+    A nested dictionary of section names to flag names and values from the file.
+  """
+
+  # TODO(b/286571605): Replace typing when python 3.5 is unsupported.
+  dictionary = {}  # type: Dict[str, Dict[str, str]]
+  if not os.path.exists(filename):
+    return dictionary
+  try:
+    with open(filename) as rcfile:
+      for section_name in section_names:
+        dictionary[section_name] = _ProcessSingleConfigSection(
+            rcfile, section_name
+        )
+  except IOError:
+    pass
+  return dictionary
+
+
+def _ProcessConfigSection(
     filename: str, section_name: Optional[str] = None
 ) -> Dict[str, str]:
   """Read a configuration file section returned as a dictionary.
@@ -173,27 +214,44 @@ def ProcessConfigSection(
     return dictionary
   try:
     with open(filename) as rcfile:
-      in_section = not section_name
-      for line in rcfile:
-        if line.lstrip().startswith('[') and line.rstrip().endswith(']'):
-          next_section = line.strip()[1:-1]
-          in_section = section_name == next_section
-          continue
-        elif not in_section:
-          continue
-        elif line.lstrip().startswith('#') or not line.strip():
-          continue
-        flag, equalsign, value = line.partition('=')
-        # if no value given, assume stringified boolean true
-        if not equalsign:
-          value = 'true'
-        flag = flag.strip()
-        value = value.strip()
-        while flag.startswith('-'):
-          flag = flag[1:]
-        dictionary[flag] = value
+      dictionary = _ProcessSingleConfigSection(rcfile, section_name)
   except IOError:
     pass
+  return dictionary
+
+
+def _ProcessSingleConfigSection(
+    file: TextIO, section_name: str
+) -> Dict[str, str]:
+  """Read a configuration file section returned as a dictionary.
+
+  Args:
+    file: The opened configuration file object.
+    section_name: Name of the section to read.
+
+  Returns:
+    A dictionary of flag names and values from that section of the file.
+  """
+  dictionary = {}
+  in_section = not section_name
+  for line in file:
+    if line.lstrip().startswith('[') and line.rstrip().endswith(']'):
+      next_section = line.strip()[1:-1]
+      in_section = section_name == next_section
+      continue
+    elif not in_section:
+      continue
+    elif line.lstrip().startswith('#') or not line.strip():
+      continue
+    flag, equalsign, value = line.partition('=')
+    # if no value given, assume stringified boolean true
+    if not equalsign:
+      value = 'true'
+    flag = flag.strip()
+    value = value.strip()
+    while flag.startswith('-'):
+      flag = flag[1:]
+    dictionary[flag] = value
   return dictionary
 
 
@@ -209,7 +267,7 @@ def ProcessBigqueryrcSection(section_name: Optional[str], flag_values) -> None:
   """
 
   bigqueryrc = GetBigqueryRcFilename()
-  dictionary = ProcessConfigSection(
+  dictionary = _ProcessConfigSection(
       filename=bigqueryrc, section_name=section_name
   )
   for flag, value in dictionary.items():
@@ -217,8 +275,9 @@ def ProcessBigqueryrcSection(section_name: Optional[str], flag_values) -> None:
     # those in the flagfile.
     if flag not in flag_values:
       raise app.UsageError(
-          'Unknown flag %s found in bigqueryrc file in section %s' %
-          (flag, section_name if section_name else 'global'))
+          'Unknown flag %s found in bigqueryrc file in section %s'
+          % (flag, section_name if section_name else 'global')
+      )
     if not flag_values[flag].present:
       UpdateFlag(flag_values, flag, value)
     else:
@@ -230,10 +289,10 @@ def ProcessBigqueryrcSection(section_name: Optional[str], flag_values) -> None:
 
 
 def GetPlatformString() -> str:
-  return':'.join([
+  return ':'.join([
       platform.python_implementation(),
       platform.python_version(),
-      platform.platform()
+      platform.platform(),
   ])
 
 
@@ -258,7 +317,8 @@ def ProcessError(
   trace = ''.join(traceback.format_exception(etype, value, tb))
   contact_us_msg = _GenerateContactUsMessage()
   platform_str = GetPlatformString()
-  error_details = textwrap.dedent("""\
+  error_details = (
+      textwrap.dedent("""\
      ========================================
      == Platform ==
        %s
@@ -271,17 +331,21 @@ def ProcessError(
      == Error trace ==
      %s
      ========================================
-     """) % (
-         platform_str,
-         six.ensure_str(VERSION_NUMBER),
-         [six.ensure_str(item) for item in sys.argv],
-         time.strftime('%Y-%m-%d %H:%M:%S', time.gmtime()),
-         six.ensure_str(trace))
+     """)
+      % (
+          platform_str,
+          six.ensure_str(VERSION_NUMBER),
+          [six.ensure_str(item) for item in sys.argv],
+          time.strftime('%Y-%m-%d %H:%M:%S', time.gmtime()),
+          six.ensure_str(trace),
+      )
+  )
 
   codecs.register_error('strict', codecs.replace_errors)
   message = bq_logging.EncodeForPrinting(err)
-  if isinstance(err, (bq_error.BigqueryNotFoundError,
-                      bq_error.BigqueryDuplicateError)):
+  if isinstance(
+      err, (bq_error.BigqueryNotFoundError, bq_error.BigqueryDuplicateError)
+  ):
     response.append('BigQuery error in %s operation: %s' % (name, message))
     retcode = 2
   elif isinstance(err, bq_error.BigqueryTermsOfServiceError):
@@ -289,13 +353,15 @@ def ProcessError(
     response.append(_BIGQUERY_TOS_MESSAGE)
   elif isinstance(err, bq_error.BigqueryInvalidQueryError):
     response.append('Error in query string: %s' % (message,))
-  elif (isinstance(err, bq_error.BigqueryError) and
-        not isinstance(err, bq_error.BigqueryInterfaceError)):
+  elif isinstance(err, bq_error.BigqueryError) and not isinstance(
+      err, bq_error.BigqueryInterfaceError
+  ):
     response.append('BigQuery error in %s operation: %s' % (name, message))
   elif isinstance(err, (app.UsageError, TypeError)):
     response.append(message)
-  elif (isinstance(err, SyntaxError) or
-        isinstance(err, bq_error.BigquerySchemaError)):
+  elif isinstance(err, SyntaxError) or isinstance(
+      err, bq_error.BigquerySchemaError
+  ):
     response.append('Invalid input: %s' % (message,))
   elif isinstance(err, flags.Error):
     response.append('Error parsing command: %s' % (message,))
@@ -312,7 +378,8 @@ def ProcessError(
           'Please make sure you are using the latest version '
           'of the bq tool and try again. '
           'If this problem persists, you may have encountered a bug in the '
-          'bigquery client.' % (name, message))
+          'bigquery client.' % (name, message)
+      )
     elif isinstance(err, oauth2client_4_0.client.Error):
       message_prefix = (
           'Authorization error. This may be a network connection problem, '
@@ -322,15 +389,19 @@ def ProcessError(
           '"bq init --delete_credentials".'
           '\n\n'
           'If this problem still occurs, you may have encountered a bug '
-          'in the bigquery client.')
-    elif (isinstance(err, http.client.HTTPException) or
-          isinstance(err, googleapiclient.errors.Error) or
-          isinstance(err, httplib2.HttpLib2Error)):
+          'in the bigquery client.'
+      )
+    elif (
+        isinstance(err, http.client.HTTPException)
+        or isinstance(err, googleapiclient.errors.Error)
+        or isinstance(err, httplib2.HttpLib2Error)
+    ):
       message_prefix = (
           'Network connection problem encountered, please try again.'
           '\n\n'
           'If this problem persists, you may have encountered a bug in the '
-          'bigquery client.')
+          'bigquery client.'
+      )
 
     message = message_prefix + ' ' + contact_us_msg
     wrap_error_message = True
@@ -338,8 +409,9 @@ def ProcessError(
       message = flags.text_wrap(message)
     print(message)
     print(error_details)
-    response.append('Unexpected exception in %s operation: %s' %
-                    (name, message))
+    response.append(
+        'Unexpected exception in %s operation: %s' % (name, message)
+    )
 
   response_message = '\n'.join(response)
   wrap_error_message = True
@@ -361,12 +433,15 @@ def _GenerateContactUsMessage() -> str:
       'Please include a brief description of '
       'the steps that led to this issue, as well as '
       'any rows that can be made public from '
-      'the following information: \n\n')
+      'the following information: \n\n'
+  )
 
   # If an internal user runs the public BQ CLI, show the internal issue tracker.
   try:
     gcloud_properties_file = GetGcloudConfigFilename()
-    gcloud_core_properties = ProcessConfigSection(gcloud_properties_file, 'core')
+    gcloud_core_properties = _ProcessConfigSection(
+        gcloud_properties_file, 'core'
+    )
     if (
         'account' in gcloud_core_properties
         and '@google.com' in gcloud_core_properties['account']
@@ -452,8 +527,9 @@ def PrintFormattedJsonObject(obj, default_format='json'):
     print(json.dumps(obj, sort_keys=True, indent=2))
   else:
     raise ValueError(
-        'Invalid json format for printing: \'%s\', expected one of: %s' %
-        (use_format, json_formats))
+        "Invalid json format for printing: '%s', expected one of: %s"
+        % (use_format, json_formats)
+    )
 
 
 def GetClientScopesFromFlags() -> List[str]:
@@ -466,7 +542,7 @@ def GetClientScopesFromFlags() -> List[str]:
 
 
 def GetClientScopesFor3pi() -> List[str]:
-  """"Returns the scopes list for 3rd Party Identity Federation."""
+  """Returns the scopes list for 3rd Party Identity Federation."""
   return [_CLOUD_PLATFORM_SCOPE]
 
 
@@ -534,7 +610,11 @@ def GetUserAgent() -> str:
   """Returns the user agent for BigQuery API requests based on environment and version."""
   google_python_client_name = 'google-api-python-client (gzip)'
   if os.environ.get('CLOUDSDK_WRAPPER') == '1':
-    return 'google-cloud-sdk' + os.environ.get(
-        'CLOUDSDK_VERSION', VERSION_NUMBER) + ' ' + google_python_client_name
+    return (
+        'google-cloud-sdk'
+        + os.environ.get('CLOUDSDK_VERSION', VERSION_NUMBER)
+        + ' '
+        + google_python_client_name
+    )
   else:
     return 'bq/' + VERSION_NUMBER + ' ' + google_python_client_name

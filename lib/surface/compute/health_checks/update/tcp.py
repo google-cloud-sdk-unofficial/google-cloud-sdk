@@ -41,11 +41,13 @@ def _DetailedHelp():
   }
 
 
-def _Args(parser, include_log_config):
+def _Args(parser, include_log_config, include_source_regions):
   health_check_arg = flags.HealthCheckArgument('TCP')
   health_check_arg.AddArgument(parser, operation_type='update')
   health_checks_utils.AddTcpRelatedUpdateArgs(parser)
   health_checks_utils.AddProtocolAgnosticUpdateArgs(parser, 'TCP')
+  if include_source_regions:
+    health_checks_utils.AddHealthCheckSourceRegionsRelatedArgs(parser)
   if include_log_config:
     health_checks_utils.AddHealthCheckLoggingRelatedArgs(parser)
 
@@ -86,7 +88,9 @@ def _GetRegionalSetRequest(client, health_check_ref, replacement):
               region=health_check_ref.region))
 
 
-def _Modify(client, args, existing_check, include_log_config):
+def _Modify(
+    client, args, existing_check, include_log_config, include_source_regions
+):
   """Returns a modified HealthCheck message."""
   # We do not support using 'update tcp' with a health check of a
   # different protocol.
@@ -149,10 +153,21 @@ def _Modify(client, args, existing_check, include_log_config):
   if include_log_config:
     new_health_check.logConfig = health_checks_utils.ModifyLogConfig(
         client, args, existing_check.logConfig)
+
+  if include_source_regions:
+    source_regions = existing_check.sourceRegions
+    if args.IsSpecified('source_regions'):
+      source_regions = args.source_regions
+    new_health_check.sourceRegions = source_regions
+
   return new_health_check
 
 
-def _ValidateArgs(args, include_log_config):
+def _ValidateArgs(
+    args,
+    include_log_config,
+    include_source_regions,
+):
   """Validates given args and raises exception if any args are invalid."""
   health_checks_utils.CheckProtocolAgnosticArgs(args)
 
@@ -163,16 +178,26 @@ def _ValidateArgs(args, include_log_config):
   if include_log_config:
     args_unset = (args.enable_logging is None and args_unset)
 
-  if (args.description is None and args.request is None and
-      args.response is None and args.port_name is None and args_unset):
+  source_regions_modified = False
+  if include_source_regions and args.IsSpecified('source_regions'):
+    source_regions_modified = True
+
+  if (
+      args.description is None
+      and args.request is None
+      and args.response is None
+      and args.port_name is None
+      and not source_regions_modified
+      and args_unset
+  ):
     raise exceptions.ArgumentError('At least one property must be modified.')
 
 
-def _Run(args, holder, include_log_config):
+def _Run(args, holder, include_log_config, include_source_regions):
   """Issues the requests necessary for updating the health check."""
   client = holder.client
 
-  _ValidateArgs(args, include_log_config)
+  _ValidateArgs(args, include_log_config, include_source_regions)
 
   health_check_arg = flags.HealthCheckArgument('TCP')
   health_check_ref = health_check_arg.ResolveAsResource(
@@ -185,7 +210,9 @@ def _Run(args, holder, include_log_config):
 
   objects = client.MakeRequests([get_request])
 
-  new_object = _Modify(client, args, objects[0], include_log_config)
+  new_object = _Modify(
+      client, args, objects[0], include_log_config, include_source_regions
+  )
 
   # If existing object is equal to the proposed object or if
   # _Modify() returns None, then there is no work to be done, so we
@@ -208,24 +235,27 @@ class Update(base.UpdateCommand):
   """Update a TCP health check."""
 
   _include_log_config = True
+  _include_source_regions = False
   detailed_help = _DetailedHelp()
 
   @classmethod
   def Args(cls, parser):
-    _Args(parser, cls._include_log_config)
+    _Args(parser, cls._include_log_config, cls._include_source_regions)
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
-    return _Run(args, holder, self._include_log_config)
+    return _Run(
+        args, holder, self._include_log_config, self._include_source_regions
+    )
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class UpdateBeta(Update):
 
-  pass
+  _include_source_regions = False
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class UpdateAlpha(UpdateBeta):
 
-  pass
+  _include_source_regions = True

@@ -41,7 +41,12 @@ def _DetailedHelp():
   }
 
 
-def _Args(parser, include_log_config, include_weighted_load_balancing):
+def _Args(
+    parser,
+    include_log_config,
+    include_weighted_load_balancing,
+    include_source_regions,
+):
   """Adds all the args in the parser."""
   health_check_arg = flags.HealthCheckArgument('HTTPS')
   health_check_arg.AddArgument(parser, operation_type='update')
@@ -49,6 +54,8 @@ def _Args(parser, include_log_config, include_weighted_load_balancing):
                                                include_weighted_load_balancing)
   health_checks_utils.AddProtocolAgnosticUpdateArgs(parser, 'HTTPS')
   health_checks_utils.AddHttpRelatedResponseArg(parser)
+  if include_source_regions:
+    health_checks_utils.AddHealthCheckSourceRegionsRelatedArgs(parser)
   if include_log_config:
     health_checks_utils.AddHealthCheckLoggingRelatedArgs(parser)
 
@@ -89,8 +96,14 @@ def _GetRegionalSetRequest(client, health_check_ref, replacement):
               region=health_check_ref.region))
 
 
-def _Modify(client, args, existing_check, include_log_config,
-            include_weighted_load_balancing):
+def _Modify(
+    client,
+    args,
+    existing_check,
+    include_log_config,
+    include_weighted_load_balancing,
+    include_source_regions,
+):
   """Returns a modified HealthCheck message."""
   # We do not support using 'update https' with a health check of a
   # different protocol.
@@ -168,12 +181,22 @@ def _Modify(client, args, existing_check, include_log_config,
   if include_log_config:
     new_health_check.logConfig = health_checks_utils.ModifyLogConfig(
         client, args, existing_check.logConfig)
+
+  if include_source_regions:
+    source_regions = existing_check.sourceRegions
+    if args.IsSpecified('source_regions'):
+      source_regions = args.source_regions
+    new_health_check.sourceRegions = source_regions
+
   return new_health_check
 
 
-def _ValidateArgs(args,
-                  include_log_config,
-                  include_weighted_load_balancing=False):
+def _ValidateArgs(
+    args,
+    include_log_config,
+    include_weighted_load_balancing,
+    include_source_regions,
+):
   """Validates given args and raises exception if any args are invalid."""
   health_checks_utils.CheckProtocolAgnosticArgs(args)
 
@@ -185,21 +208,42 @@ def _ValidateArgs(args,
   if include_log_config:
     args_unset = (args.enable_logging is None and args_unset)
 
+  source_regions_modified = False
+  if include_source_regions and args.IsSpecified('source_regions'):
+    source_regions_modified = True
+
   weight_report_mode_modified = False
   if include_weighted_load_balancing and args.IsSpecified('weight_report_mode'):
     weight_report_mode_modified = True
 
-  if (args.description is None and args.host is None and
-      args.response is None and args.port_name is None and
-      not weight_report_mode_modified and args_unset):
+  if (
+      args.description is None
+      and args.host is None
+      and args.response is None
+      and args.port_name is None
+      and not weight_report_mode_modified
+      and not source_regions_modified
+      and args_unset
+  ):
     raise exceptions.ArgumentError('At least one property must be modified.')
 
 
-def _Run(args, holder, include_log_config, include_weighted_load_balancing):
+def _Run(
+    args,
+    holder,
+    include_log_config,
+    include_weighted_load_balancing,
+    include_source_regions,
+):
   """Issues the requests necessary for updating the health check."""
   client = holder.client
 
-  _ValidateArgs(args, include_log_config, include_weighted_load_balancing)
+  _ValidateArgs(
+      args,
+      include_log_config,
+      include_weighted_load_balancing,
+      include_source_regions,
+  )
   health_check_arg = flags.HealthCheckArgument('HTTPS')
   health_check_ref = health_check_arg.ResolveAsResource(
       args, holder.resources, default_scope=compute_scope.ScopeEnum.GLOBAL)
@@ -211,8 +255,14 @@ def _Run(args, holder, include_log_config, include_weighted_load_balancing):
 
   objects = client.MakeRequests([get_request])
 
-  new_object = _Modify(client, args, objects[0], include_log_config,
-                       include_weighted_load_balancing)
+  new_object = _Modify(
+      client,
+      args,
+      objects[0],
+      include_log_config,
+      include_weighted_load_balancing,
+      include_source_regions,
+  )
 
   # If existing object is equal to the proposed object or if
   # _Modify() returns None, then there is no work to be done, so we
@@ -235,25 +285,38 @@ class Update(base.UpdateCommand):
 
   _include_log_config = True
   _include_weighted_load_balancing = False
+  _include_source_regions = False
   detailed_help = _DetailedHelp()
 
   @classmethod
   def Args(cls, parser):
-    _Args(parser, cls._include_log_config, cls._include_weighted_load_balancing)
+    _Args(
+        parser,
+        cls._include_log_config,
+        cls._include_weighted_load_balancing,
+        cls._include_source_regions,
+    )
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
-    return _Run(args, holder, self._include_log_config,
-                self._include_weighted_load_balancing)
+    return _Run(
+        args,
+        holder,
+        self._include_log_config,
+        self._include_weighted_load_balancing,
+        self._include_source_regions,
+    )
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class UpdateBeta(Update):
 
   _include_weighted_load_balancing = False
+  _include_source_regions = False
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class UpdateAlpha(UpdateBeta):
 
   _include_weighted_load_balancing = True
+  _include_source_regions = True

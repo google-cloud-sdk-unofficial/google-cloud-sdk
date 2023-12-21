@@ -293,7 +293,7 @@ class Create(base.CreateCommand):
   _support_source_instant_snapshot = False
   _support_boot_instant_snapshot_uri = False
   _support_partner_metadata = False
-  _support_enable_confidential_compute = False
+  _support_enable_confidential_compute = True
   _support_specific_then_x_affinity = False
   _support_graceful_shutdown = False
 

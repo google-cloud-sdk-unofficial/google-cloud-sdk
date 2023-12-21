@@ -20,11 +20,12 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 from apitools.base.py import list_pager
-from googlecloudsdk.api_lib.util import apis
+from googlecloudsdk.api_lib.scc import securitycenter_client
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.scc import flags as scc_flags
+from googlecloudsdk.command_lib.scc import util as scc_util
 from googlecloudsdk.command_lib.scc.muteconfigs import flags
 from googlecloudsdk.command_lib.scc.muteconfigs import util
-from googlecloudsdk.generated_clients.apis.securitycenter.v1 import securitycenter_v1_messages as messages
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.ALPHA)
@@ -60,11 +61,22 @@ class List(base.ListCommand):
     base.URI_FLAG.RemoveFromParser(parser)
     # Add flags and positional arguments
     flags.AddParentGroup(parser, True)
+    # TODO: b/311713896 - Remove api-version flag when v2 is fully GA.
+    scc_flags.API_VERSION_FLAG.AddToParser(parser)
+    scc_flags.LOCATION_FLAG.AddToParser(parser)
 
   def Run(self, args):
+    # Determine what version to call from --location and --api-version.
+    version = scc_util.GetVersionFromArguments(args)
+    # Build request from args.
+    messages = securitycenter_client.GetMessages(version)
     request = messages.SecuritycenterOrganizationsMuteConfigsListRequest()
     request.parent = util.ValidateAndGetParent(args)
-    client = apis.GetClientInstance("securitycenter", "v1")
+    if version == "v2":
+      request.parent = util.ValidateAndGetRegionalizedParent(
+          args, request.parent
+      )
+    client = securitycenter_client.GetClient(version)
 
     # Automatically handle pagination. All muteconfigs are returned regarldess
     # of --page-size argument.

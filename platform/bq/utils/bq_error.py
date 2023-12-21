@@ -8,6 +8,15 @@ import bq_flags
 from utils import bq_logging
 
 
+P12_DEPRECATION_MESSAGE = (
+    'BQ CLI no longer supports the deprecated P12 format by default. To migrate'
+    ' to the new JSON service account key format, follow the steps in'
+    ' https://cloud.google.com/iam/docs/keys-create-delete#creating. To force'
+    ' BQ CLI to recognize P12 keys, re-run the command with'
+    ' --nouse_google_auth.'
+)
+
+
 class BigqueryError(Exception):
   """Class to represent a BigQuery error."""
 

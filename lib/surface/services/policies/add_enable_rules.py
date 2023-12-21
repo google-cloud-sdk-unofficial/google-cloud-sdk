@@ -141,13 +141,13 @@ class AddEnableRules(base.SilentCommand):
           'completion:\n {0}'.format(cmd)
       )
 
-    update_policy = serviceusage.GetConsumerPolicyV2(
+    update_policy = serviceusage.GetConsumerPolicyV2Alpha(
         resource_name + _CONSUMER_POLICY_DEFAULT.format(args.policy_name)
     )
 
     resources = collections.namedtuple('Values', ['services'])
     result = []
-    for value in update_policy.enableRules[0].values:
+    for value in update_policy.enableRules[0].services:
       result.append(resources(value))
     log.status.Print(
         'Consumer policy ('

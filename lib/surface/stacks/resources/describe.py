@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Command for describing Runapps resource."""
+"""Command for describing Stacks resource."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -27,10 +27,9 @@ from googlecloudsdk.command_lib.run.integrations.formatters import base as fb
 from googlecloudsdk.core.resource import resource_printer
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Describe(base.DescribeCommand):
-  """Describe a Runapps resource."""
+  """Describe a Stacks resource."""
 
   detailed_help = {
       'DESCRIPTION':
@@ -62,7 +61,7 @@ class Describe(base.DescribeCommand):
         integration_printer.INTEGRATION_PRINTER_FORMAT)
 
   def Run(self, args):
-    """Describe a runapps resource."""
+    """Describe a Stacks resource."""
     release_track = self.ReleaseTrack()
     name = args.name
     with run_apps_operations.Connect(args, release_track) as client:

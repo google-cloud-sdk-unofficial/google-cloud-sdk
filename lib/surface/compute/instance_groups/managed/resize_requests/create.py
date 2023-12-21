@@ -38,16 +38,17 @@ class CreateBeta(base.CreateCommand):
       'brief': 'Create a Compute Engine managed instance group resize request.',
       'EXAMPLES': """
 
-     To create a queued managed instance group resize request, run the following command:
+     To create a resize request for a managed instance group, run the following command:
 
-       $ {command} my-mig --resize-request=resize-request-1 --resize-by=1
+       $ {command} my-mig --resize-request=resize-request-1 --resize-by=1 --run-duration=3d1h30s
    """,
   }
 
   @classmethod
   def Args(cls, parser):
     instance_groups_flags.MakeZonalInstanceGroupManagerArg().AddArgument(parser)
-    parser.display_info.AddFormat(rr_flags.DEFAULT_CREATE_OR_LIST_FORMAT_BETA)
+    rr_flags.AddOutputFormat(parser, base.ReleaseTrack.BETA)
+
     parser.add_argument(
         '--resize-request',
         metavar='RESIZE_REQUEST_NAME',
@@ -60,6 +61,17 @@ class CreateBeta(base.CreateCommand):
         type=int,
         required=True,
         help="""The number of VMs to resize managed instance group by.""",
+    )
+    parser.add_argument(
+        '--run-duration',
+        type=arg_parsers.Duration(),
+        required=True,
+        help="""The time you need the requested VMs to run before being
+        automatically deleted. The value must be formatted as the number of
+        days, hours, minutes, or seconds followed by `d`, `h`, `m`, and `s`
+        respectively. For example, specify `30m` for a duration of 30
+        minutes or `1d2h3m4s` for 1 day, 2 hours, 3 minutes, and 4 seconds.
+        The value must be between `10m` (10 minutes) and `7d` (7 days).""",
     )
 
   def Run(self, args):
@@ -85,7 +97,9 @@ class CreateBeta(base.CreateCommand):
     )
 
     resize_request = client.messages.InstanceGroupManagerResizeRequest(
-        name=args.resize_request, resizeBy=args.resize_by
+        name=args.resize_request,
+        resizeBy=args.resize_by,
+        requestedRunDuration=client.messages.Duration(seconds=args.run_duration)
     )
 
     request = (
@@ -118,13 +132,18 @@ class CreateAlpha(base.CreateCommand):
      To create a queued managed instance group resize request, run the following command:
 
        $ {command} my-mig --resize-request=resize-request-1 --resize-by=1 --valid-until-duration=4h
+
+     To create a resize request that provisions VM instances to run for a specified time before being automatically deleted, run the following command:
+
+       $ {command} my-mig --resize-request=resize-request-1 --resize-by=1 --run-duration=3d1h30s
    """,
   }
 
   @classmethod
   def Args(cls, parser):
     instance_groups_flags.MakeZonalInstanceGroupManagerArg().AddArgument(parser)
-    parser.display_info.AddFormat(rr_flags.DEFAULT_CREATE_OR_LIST_FORMAT_ALPHA)
+    rr_flags.AddOutputFormat(parser, base.ReleaseTrack.ALPHA)
+
     parser.add_argument(
         '--resize-request',
         metavar='RESIZE_REQUEST_NAME',
@@ -154,6 +173,18 @@ class CreateAlpha(base.CreateCommand):
         '--valid-until-time',
         type=arg_parsers.Datetime.Parse,
         help="""Absolute deadline for waiting for capacity in RFC3339 text format."""
+    )
+
+    parser.add_argument(
+        '--run-duration',
+        type=arg_parsers.Duration(),
+        required=False,
+        help="""The time you need the requested VMs to run before being
+        automatically deleted. The value must be formatted as the number of
+        days, hours, minutes, or seconds followed by `d`, `h`, `m`, and `s`
+        respectively. For example, specify `30m` for a duration of 30
+        minutes or `1d2h3m4s` for 1 day, 2 hours, 3 minutes, and 4 seconds.
+        The value must be between `10m` (10 minutes) and `7d` (7 days).""",
     )
 
   def Run(self, args):
@@ -191,16 +222,22 @@ class CreateAlpha(base.CreateCommand):
     else:
       queuing_policy = None
 
+    run_duration = None
+    if args.IsKnownAndSpecified('run_duration'):
+      run_duration = client.messages.Duration(seconds=args.run_duration)
+
     if args.IsKnownAndSpecified('resize_by'):
       resize_request = client.messages.InstanceGroupManagerResizeRequest(
           name=args.resize_request,
           queuingPolicy=queuing_policy,
+          requestedRunDuration=run_duration,
           resizeBy=args.resize_by,
       )
     else:
       resize_request = client.messages.InstanceGroupManagerResizeRequest(
           name=args.resize_request,
           queuingPolicy=queuing_policy,
+          requestedRunDuration=run_duration,
           resizeBy=args.count,
       )
 

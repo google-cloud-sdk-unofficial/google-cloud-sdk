@@ -66,7 +66,8 @@ class Create(base.CreateCommand):
         type=str,
         help=textwrap.dedent("""\
           Path to file containing the signature to store, or `-` to read
-          signature from stdin."""))
+          signature from stdin."""),
+    )
     parser.add_argument(
         '--payload-file',
         required=False,
@@ -82,7 +83,8 @@ class Create(base.CreateCommand):
           NOTE: If you sign a payload with e.g. different whitespace or
           formatting, you must explicitly provide the payload content via this
           flag.
-          """))
+          """),
+    )
 
     flags.AddConcepts(
         parser,
@@ -98,7 +100,8 @@ class Create(base.CreateCommand):
               be able to read this attestor and must have the
               `containeranalysis.notes.attachOccurrence` permission for the
               Attestor's underlying Note resource (usually via the
-              `containeranalysis.notes.attacher` role).""")),
+              `containeranalysis.notes.attacher` role)."""),
+        ),
     )
 
     parser.add_argument(
@@ -112,7 +115,8 @@ class Create(base.CreateCommand):
 
           For PGP keys, this must be the version 4, full 160-bit fingerprint,
           expressed as a 40 character hexadecimal string. See
-          https://tools.ietf.org/html/rfc4880#section-12.2 for details."""))
+          https://tools.ietf.org/html/rfc4880#section-12.2 for details."""),
+    )
 
     parser.add_argument(
         '--validate',
@@ -121,7 +125,8 @@ class Create(base.CreateCommand):
         help=textwrap.dedent("""\
           Whether to validate that the Attestation can be verified by the
           provided Attestor.
-        """))
+        """),
+    )
 
   def Run(self, args):
     project_ref = resources.REGISTRY.Parse(
@@ -146,15 +151,20 @@ class Create(base.CreateCommand):
     # TODO(b/79709480): Add other types of attestors if/when supported.
     note_ref = resources.REGISTRY.ParseResourceId(
         'containeranalysis.projects.notes',
-        client.GetNoteAttr(attestor).noteReference, {})
+        client.GetNoteAttr(attestor).noteReference,
+        {},
+    )
 
     validation_enabled = 'validate' in args and args.validate
     validation_callback = functools.partial(
         validation.validate_attestation,
         attestor_ref=attestor_ref,
-        api_version=api_version)
+        api_version=api_version,
+    )
 
-    return containeranalysis.Client().CreateAttestationOccurrence(
+    return containeranalysis.Client(
+        ca_apis.GetApiVersion(self.ReleaseTrack())
+    ).CreateAttestationOccurrence(
         project_ref=project_ref,
         note_ref=note_ref,
         artifact_url=artifact_url_without_scheme,
@@ -198,7 +208,8 @@ class CreateWithPkixSupport(base.CreateCommand):
         type=str,
         help=textwrap.dedent("""\
           Path to file containing the signature to store, or `-` to read
-          signature from stdin."""))
+          signature from stdin."""),
+    )
     parser.add_argument(
         '--payload-file',
         required=False,
@@ -214,15 +225,8 @@ class CreateWithPkixSupport(base.CreateCommand):
           NOTE: If you sign a payload with e.g. different whitespace or
           formatting, you must explicitly provide the payload content via this
           flag.
-          """))
-    parser.add_argument(
-        '--validate',
-        action='store_true',
-        default=False,
-        help=textwrap.dedent("""\
-          Whether to validate that the Attestation can be verified by the
-          provided Attestor.
-        """))
+          """),
+    )
 
     flags.AddConcepts(
         parser,
@@ -238,7 +242,8 @@ class CreateWithPkixSupport(base.CreateCommand):
               be able to read this attestor and must have the
               `containeranalysis.notes.attachOccurrence` permission for the
               Attestor's underlying Note resource (usually via the
-              `containeranalysis.notes.attacher` role).""")),
+              `containeranalysis.notes.attacher` role)."""),
+        ),
     )
 
     parser.add_argument(
@@ -255,7 +260,18 @@ class CreateWithPkixSupport(base.CreateCommand):
 
           For PGP keys, this must be the version 4, full 160-bit fingerprint,
           expressed as a 40 character hexadecimal string. See
-          https://tools.ietf.org/html/rfc4880#section-12.2 for details."""))
+          https://tools.ietf.org/html/rfc4880#section-12.2 for details."""),
+    )
+
+    parser.add_argument(
+        '--validate',
+        action='store_true',
+        default=False,
+        help=textwrap.dedent("""\
+          Whether to validate that the Attestation can be verified by the
+          provided Attestor.
+        """),
+    )
 
   def Run(self, args):
     project_ref = resources.REGISTRY.Parse(
@@ -275,21 +291,25 @@ class CreateWithPkixSupport(base.CreateCommand):
 
     attestor_ref = args.CONCEPTS.attestor.Parse()
     api_version = apis.GetApiVersion(self.ReleaseTrack())
-    attestor = attestors.Client(api_version).Get(attestor_ref)
+    client = attestors.Client(api_version)
+    attestor = client.Get(attestor_ref)
     # TODO(b/79709480): Add other types of attestors if/when supported.
     note_ref = resources.REGISTRY.ParseResourceId(
         'containeranalysis.projects.notes',
-        attestor.userOwnedDrydockNote.noteReference, {})
+        client.GetNoteAttr(attestor).noteReference,
+        {},
+    )
 
     validation_enabled = 'validate' in args and args.validate
     validation_callback = functools.partial(
         validation.validate_attestation,
         attestor_ref=attestor_ref,
-        api_version=api_version)
+        api_version=api_version,
+    )
 
-    client = containeranalysis.Client(
-        ca_apis.GetApiVersion(self.ReleaseTrack()))
-    return client.CreateAttestationOccurrence(
+    return containeranalysis.Client(
+        ca_apis.GetApiVersion(self.ReleaseTrack())
+    ).CreateAttestationOccurrence(
         project_ref=project_ref,
         note_ref=note_ref,
         artifact_url=artifact_url_without_scheme,

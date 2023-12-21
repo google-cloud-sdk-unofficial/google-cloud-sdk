@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Command for listing Runapps resources."""
+"""Command for listing Stacks resources."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -24,13 +24,12 @@ from googlecloudsdk.command_lib.run.integrations import run_apps_operations
 from googlecloudsdk.core import log
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class ExportGraph(base.ListCommand):
-  """Export a graph for Runapps resources."""
+  """Export a graph for Stacks resources."""
 
   def Run(self, args):
-    """Export a graph for Runapps resources.
+    """Export a graph for Stacks resources.
 
     Args:
       args: ArgumentParser, used to reference the inputs provided by the user.

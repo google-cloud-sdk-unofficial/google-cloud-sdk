@@ -272,6 +272,7 @@ class Create(base.Command):
     _AddReplicaZonesArg(parser)
     kms_resource_args.AddKmsKeyResourceArg(
         parser, 'disk', region_fallthrough=True)
+    disks_flags.AddEnableConfidentialComputeFlag(parser)
 
   def ParseLicenses(self, args):
     """Parse license.
@@ -490,7 +491,7 @@ class Create(base.Command):
       support_vss_erase=False,
       support_pd_interface=False,
       support_user_licenses=False,
-      support_enable_confidential_compute=False,
+      support_enable_confidential_compute=True,
       support_storage_pool=False,
       support_access_mode=False,
   ):

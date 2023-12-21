@@ -80,6 +80,7 @@ def AddAutoFlags(parser, release_track):
   flags.AddReleaseChannelFlag(parser, autopilot=True)
   flags.AddEnableBackupRestoreFlag(parser)
   flags.AddAutoprovisioningResourceManagerTagsCreate(parser)
+  flags.AddAdditiveVPCScopeFlags(parser, release_track=release_track)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)

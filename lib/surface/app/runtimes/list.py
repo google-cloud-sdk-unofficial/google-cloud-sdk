@@ -22,16 +22,18 @@ from googlecloudsdk.api_lib.app import appengine_api_client
 from googlecloudsdk.calliope import base
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
 class List(base.ListCommand):
-  """List runtimes available.
+  """List the available runtimes.
 
-  This command lists all the runtimes available and their current stages.
+  This command lists all the available runtimes and their current stages, for
+  example,
+  GA, BETA or END OF SUPPORT.
   """
 
   detailed_help = {
       'EXAMPLES': """\
-          To list all the runtimes for a given environment, run:
+          To list all the runtimes in the App Engine standard environment, run:
 
             $ {command} --environment=standard
 

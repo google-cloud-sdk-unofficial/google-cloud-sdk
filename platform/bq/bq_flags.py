@@ -2,6 +2,7 @@
 """Flags for calling BigQuery."""
 
 import os
+from typing import Optional
 
 
 
@@ -16,7 +17,7 @@ _APILOG = flags.DEFINE_string(
         ' direct to stdout.'
     ),
 )
-_API = flags.DEFINE_string(
+API: flags.FlagHolder[Optional[str]] = flags.DEFINE_string(
     'api',
     'https://www.googleapis.com',
     'API endpoint to talk to.'

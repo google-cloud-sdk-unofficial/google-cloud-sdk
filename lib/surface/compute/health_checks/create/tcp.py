@@ -40,17 +40,19 @@ def _DetailedHelp():
   }
 
 
-def _Args(parser, include_log_config):
+def _Args(parser, include_log_config, include_source_regions):
   """Set up arguments to create an HTTP2 HealthCheck."""
   parser.display_info.AddFormat(flags.DEFAULT_LIST_FORMAT)
   flags.HealthCheckArgument('TCP').AddArgument(parser, operation_type='create')
   health_checks_utils.AddTcpRelatedCreationArgs(parser)
   health_checks_utils.AddProtocolAgnosticCreationArgs(parser, 'TCP')
+  if include_source_regions:
+    health_checks_utils.AddHealthCheckSourceRegionsRelatedArgs(parser)
   if include_log_config:
     health_checks_utils.AddHealthCheckLoggingRelatedArgs(parser)
 
 
-def _Run(args, holder, include_log_config):
+def _Run(args, holder, include_log_config, include_source_regions):
   """Issues the request necessary for adding the health check."""
   client = holder.client
   messages = client.messages
@@ -101,6 +103,9 @@ def _Run(args, holder, include_log_config):
     request.healthCheck.logConfig = health_checks_utils.CreateLogConfig(
         client, args)
 
+  if include_source_regions and (args.source_regions is not None):
+    request.healthCheck.sourceRegions = args.source_regions
+
   return client.MakeRequests([(collection, 'Insert', request)])
 
 
@@ -109,24 +114,27 @@ class Create(base.CreateCommand):
   """Create a TCP health."""
 
   _include_log_config = True
+  _include_source_regions = False
   detailed_help = _DetailedHelp()
 
   @classmethod
   def Args(cls, parser):
-    _Args(parser, cls._include_log_config)
+    _Args(parser, cls._include_log_config, cls._include_source_regions)
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
-    return _Run(args, holder, self._include_log_config)
+    return _Run(
+        args, holder, self._include_log_config, self._include_source_regions
+    )
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class CreateBeta(Create):
 
-  pass
+  _include_source_regions = False
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class CreateAlpha(CreateBeta):
 
-  pass
+  _include_source_regions = True

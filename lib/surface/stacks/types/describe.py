@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Command for describing Runapps types."""
+"""Command for describing Stacks types."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -35,17 +35,16 @@ class Params:
     self.optional = optional
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Describe(base.DescribeCommand):
-  """Describes a Runapps type."""
+  """Describes a Stacks type."""
 
   detailed_help = {
       'DESCRIPTION': """\
           {description}
           """,
       'EXAMPLES': """\
-          To describe a runapps type
+          To describe a Stacks type
 
               $ {command} [TYPE]
 
@@ -68,7 +67,7 @@ class Describe(base.DescribeCommand):
         types_describe_printer.PRINTER_FORMAT)
 
   def Run(self, args):
-    """Describe a Runapps type."""
+    """Describe a Stacks type."""
     release_track = self.ReleaseTrack()
     type_name = args.type
     with run_apps_operations.Connect(args, release_track) as client:

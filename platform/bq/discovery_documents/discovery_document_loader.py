@@ -8,6 +8,7 @@ import pkgutil
 import string
 from typing import Optional
 from absl import logging
+import bq_flags
 
 PKG_NAME = 'bigquery_client'
 
@@ -20,6 +21,13 @@ SUPPORTED_BIGQUERY_APIS = frozenset([
     'https://www.googleapis.com',
     'https://bigquery.googleapis.com',
 ])
+
+
+def is_api_being_overwritten() -> bool:
+  """Returns true if the api flag is being used and requests should change."""
+  return (
+      bq_flags.API.present
+  )
 
 
 def get_discovery_bigquery_name(api_url: str, api_version: str) -> str:

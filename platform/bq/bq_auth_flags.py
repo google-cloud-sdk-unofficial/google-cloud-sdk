@@ -2,6 +2,7 @@
 """Auth flags for calling BigQuery."""
 
 import os
+from typing import Optional
 
 
 
@@ -21,22 +22,26 @@ CREDENTIAL_FILE = flags.DEFINE_string(
     ),
     'Only for the gcloud wrapper use.'
 )
-_APPLICATION_DEFAULT_CREDENTIAL_FILE = flags.DEFINE_string(
-    'application_default_credential_file',
-    '',
-    'Only for the gcloud wrapper use.'
+APPLICATION_DEFAULT_CREDENTIAL_FILE: flags.FlagHolder[Optional[str]] = (
+    flags.DEFINE_string(
+        'application_default_credential_file',
+        '',
+        'Only for the gcloud wrapper use.'
+    )
 )
-_SERVICE_ACCOUNT = flags.DEFINE_string(
+SERVICE_ACCOUNT: flags.FlagHolder[Optional[str]] = flags.DEFINE_string(
     'service_account',
     '',
     'Only for the gcloud wrapper use.'
 )
-_SERVICE_ACCOUNT_PRIVATE_KEY_FILE = flags.DEFINE_string(
-    'service_account_private_key_file',
-    '',
-    'Only for the gcloud wrapper use.'
+SERVICE_ACCOUNT_PRIVATE_KEY_FILE: flags.FlagHolder[Optional[str]] = (
+    flags.DEFINE_string(
+        'service_account_private_key_file',
+        '',
+        'Only for the gcloud wrapper use.'
+    )
 )
-_SERVICE_ACCOUNT_PRIVATE_KEY_PASSWORD = flags.DEFINE_string(
+SERVICE_ACCOUNT_PRIVATE_KEY_PASSWORD = flags.DEFINE_string(
     'service_account_private_key_password',
     'notasecret',
     'Only for the gcloud wrapper use.'

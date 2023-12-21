@@ -25,7 +25,6 @@ from googlecloudsdk.command_lib.run.integrations import run_apps_operations
 from googlecloudsdk.command_lib.runapps import exceptions
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Deploy(base.Command):
   """Create or replace an application from a YAML specification."""

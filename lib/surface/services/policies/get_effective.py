@@ -21,14 +21,16 @@ from __future__ import unicode_literals
 
 import collections
 
+from googlecloudsdk.api_lib.services import exceptions
 from googlecloudsdk.api_lib.services import serviceusage
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.services import common_flags
+from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 
-_PROJECT_RESOURCE = 'projects/%s'
-_FOLDER_RESOURCE = 'folders/%s'
-_ORGANIZATION_RESOURCE = 'organizations/%s'
+_PROJECT_RESOURCE = 'projects/{}'
+_FOLDER_RESOURCE = 'folders/{}'
+_ORGANIZATION_RESOURCE = 'organizations/{}'
 
 
 # TODO: b/274633761 - Make command public after suv2 launch.
@@ -52,12 +54,21 @@ class GetEffectivePolicy(base.Command):
 
   @staticmethod
   def Args(parser):
+    parser.add_argument(
+        '--view',
+        help=(
+            'The view of the effective policy. BASIC includes basic metadata'
+            ' about the effective policy. FULL includes every information'
+            ' related to effective policy.'
+        ),
+        default='BASIC',
+    )
     common_flags.add_resource_args(parser)
 
     parser.display_info.AddFormat("""
           table(
             EnabledService:label=EnabledService:sort=1,
-            EnabledResources
+            EnabledPolicies:label=EnabledPolicies
           )
         """)
 
@@ -69,29 +80,49 @@ class GetEffectivePolicy(base.Command):
         command invocation.
 
     Returns:
-      Resource name and its parent name.
+      Effective Policy.
     """
+
+    if args.view not in ('BASIC', 'FULL'):
+      raise exceptions.ConfigError(
+          'Invalid view. Please provide a valid view. Excepted view : BASIC,'
+          ' FULL'
+      )
     if args.IsSpecified('folder'):
-      resource_name = _FOLDER_RESOURCE % args.folder
+      resource_name = _FOLDER_RESOURCE.format(args.folder)
     elif args.IsSpecified('organization'):
-      resource_name = _ORGANIZATION_RESOURCE % args.organization
+      resource_name = _ORGANIZATION_RESOURCE.format(args.organization)
     elif args.IsSpecified('project'):
-      resource_name = _PROJECT_RESOURCE % args.project
+      resource_name = _PROJECT_RESOURCE.format(args.project)
     else:
       project = properties.VALUES.core.project.Get(required=True)
-      resource_name = _PROJECT_RESOURCE % project
+      resource_name = _PROJECT_RESOURCE.format(project)
 
-    response = serviceusage.GetEffectivePolicy(
-        resource_name + '/effectivePolicy'
-    ).enableRuleMetadata
-
-    result = []
-
-    resources = collections.namedtuple(
-        'enabledResources', ['EnabledService', 'EnabledResources']
+    response = serviceusage.GetEffectivePolicyV2Alpha(
+        resource_name + '/effectivePolicy', args.view
     )
 
-    for metadata in response:
-      for values in metadata.enabledResources.additionalProperties:
-        result.append(resources(values.key, values.value.resources))
-    return result
+    log.status.Print('EnabledRules:')
+    for enable_rule in response.enableRules:
+      log.status.Print(' Services:')
+      for service in enable_rule.services:
+        log.status.Print('  - %s' % service)
+      log.status.Print(' Categories:')
+      for category in enable_rule.categories:
+        log.status.Print('  - %s' % category)
+      log.status.Print(' Groups:')
+      for group in enable_rule.groups:
+        log.status.Print('  - %s' % group)
+
+    if args.view == 'FULL':
+      log.status.Print('\nMetadata of effective policy:')
+      result = []
+
+      resources = collections.namedtuple(
+          'serviceSources', ['EnabledService', 'EnabledPolicies']
+      )
+
+      for metadata in response.enableRuleMetadata:
+        for values in metadata.serviceSources.additionalProperties:
+          result.append(resources(values.key, values.value.policies))
+      return result

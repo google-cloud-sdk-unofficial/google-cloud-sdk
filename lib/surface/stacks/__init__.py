@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""The runapps group."""
+"""The Stacks group."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -23,19 +23,19 @@ from googlecloudsdk.command_lib.run import platforms
 from googlecloudsdk.command_lib.runapps import flags
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class Runapps(base.Group):
-  """View and manage your Runapps resources.
+class Stacks(base.Group):
+  """View and manage your Stacks resources.
 
-  This set of commands can be used to view and manage your Runapps resources.
+  This set of commands can be used to view and manage your Stacks resources.
   """
 
+  category = base.SERVERLESS_CATEGORY
   detailed_help = {
       'EXAMPLES': """
-          To apply your existing Runapps resources, run:
+          To deploy your existing Stacks resources, run:
 
-            $ {command} apply stacks.yaml
+            $ {command} deploy stacks.yaml
       """,
   }
 

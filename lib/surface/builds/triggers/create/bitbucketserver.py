@@ -50,7 +50,6 @@ class CreateBitbucketServer(base.CreateCommand):
       parser: An argparse.ArgumentParser-like object. It is mocked out in order
         to capture some information, but behaves like an ArgumentParser.
     """
-    messages = cloudbuild_util.GetMessagesModule()
     flag_config = trigger_utils.AddTriggerArgs(parser)
     flag_config.add_argument(
         '--repo-slug', help='Bitbucket Server repository slug.', required=True)
@@ -79,7 +78,7 @@ For example, --pull-request-pattern=foo will match "foo", "foobar", and "barfoo"
 The syntax of the regular expressions accepted is the syntax accepted by
 RE2 and described at https://github.com/google/re2/wiki/Syntax.
 """)
-    trigger_utils.AddCommentControlArg(pr_config, messages)
+    trigger_utils.AddCommentControlArg(pr_config)
     trigger_utils.AddBuildConfigArgs(flag_config)
     trigger_utils.AddRepoEventArgs(flag_config)
 
@@ -107,21 +106,30 @@ RE2 and described at https://github.com/google/re2/wiki/Syntax.
     bbs = messages.BitbucketServerTriggerConfig(
         repoSlug=args.repo_slug,
         projectKey=args.project_key,
-        bitbucketServerConfigResource=args.bitbucket_server_config_resource)
+        bitbucketServerConfigResource=args.bitbucket_server_config_resource,
+    )
     if args.pull_request_pattern:
       bbs.pullRequest = messages.PullRequestFilter(
-          branch=args.pull_request_pattern)
+          branch=args.pull_request_pattern
+      )
       if args.comment_control:
-        bbs.pullRequest.commentControl = messages.PullRequestFilter.CommentControlValueValuesEnum(
-            args.comment_control)
+        bbs.pullRequest.commentControl = (
+            messages.PullRequestFilter.CommentControlValueValuesEnum(
+                args.comment_control
+            )
+        )
     else:
       # Push event
       bbs.push = messages.PushFilter(
-          branch=args.branch_pattern, tag=args.tag_pattern)
+          branch=args.branch_pattern, tag=args.tag_pattern
+      )
     trigger.bitbucketServerTriggerConfig = bbs
 
     default_image = 'gcr.io/%s/bitbucketserver-%s/%s:$COMMIT_SHA' % (
-        project, args.project_key, args.repo_slug)
+        project,
+        args.project_key,
+        args.repo_slug,
+    )
     trigger_utils.ParseBuildConfigArgs(trigger, args, messages, default_image)
     trigger_utils.ParseRepoEventArgs(trigger, args)
 

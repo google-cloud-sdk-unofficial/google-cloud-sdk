@@ -32,13 +32,17 @@ from googlecloudsdk.core.util import files
 
 
 class Du(base.Command):
-  """Displays the amount of space in bytes used up storage resources."""
+  """Displays the amount of space in bytes used by storage resources."""
 
   detailed_help = {
       'DESCRIPTION':
           """
-      Displays the amount of space in bytes used up by the objects in a bucket,
-      subdirectory, or project.
+      Displays the amount of space in bytes used by the objects in a bucket,
+      subdirectory, or project. This command calculates the current space usage
+      by making a series of object listing requests, which can take a long time
+      for large buckets. If your bucket contains hundreds of thousands of
+      objects, or if you want to monitor your bucket size over time, use
+      Monitoring instead, as described in [Get bucket size](https://cloud.google.com/storage/docs/getting-bucket-size)
       """,
       'EXAMPLES':
           """
@@ -107,8 +111,8 @@ class Du(base.Command):
         action='append',
         default=[],
         help=(
-            'Exclude a pattern from the report. Example: -e "*.o" excludes any'
-            ' object that ends in ".o". Can be specified multiple times.'
+            'Exclude a pattern from the report. Example: `-e "*.o"` excludes'
+            ' any object that ends in ".o". Can be specified multiple times.'
         ),
     )
     parser.add_argument(

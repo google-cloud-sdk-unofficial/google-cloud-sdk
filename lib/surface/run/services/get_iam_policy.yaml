@@ -33,3 +33,7 @@
     iam:
       policy_version: 3
       get_iam_policy_version_path: options_requestedPolicyVersion
+  BETA:
+    iam:
+      policy_version: 3
+      get_iam_policy_version_path: options_requestedPolicyVersion

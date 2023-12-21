@@ -42,7 +42,7 @@ class CreateGitHub(base.CreateCommand):
 
             To create a pull request trigger with a 2nd gen repository for master:
 
-              $ {command} --name="my-trigger"  --repository=projects/my-project/locations/us-central1/connections/my-conn/repositories/my-repo --pull-request-pattern="^master$" --build-config="cloudbuild.yaml"
+              $ {command} --name="my-trigger"  --repository=projects/my-project/locations/us-central1/connections/my-conn/repositories/my-repo --pull-request-pattern="^master$" --build-config="cloudbuild.yaml" --region=us-central1
 
           """,
   }
@@ -55,7 +55,6 @@ class CreateGitHub(base.CreateCommand):
       parser: An argparse.ArgumentParser-like object. It is mocked out in order
         to capture some information, but behaves like an ArgumentParser.
     """
-    messages = cloudbuild_util.GetMessagesModule()
     flag_config = trigger_utils.AddTriggerArgs(parser)
 
     gen_config = flag_config.add_mutually_exclusive_group(required=True)
@@ -104,7 +103,7 @@ For example, --pull-request-pattern=foo will match "foo", "foobar", and "barfoo"
 The syntax of the regular expressions accepted is the syntax accepted by
 RE2 and described at https://github.com/google/re2/wiki/Syntax.
 """)
-    trigger_utils.AddCommentControlArg(pr_config, messages)
+    trigger_utils.AddCommentControlArg(pr_config)
 
     trigger_utils.AddBuildConfigArgs(flag_config)
     trigger_utils.AddRepoEventArgs(flag_config)

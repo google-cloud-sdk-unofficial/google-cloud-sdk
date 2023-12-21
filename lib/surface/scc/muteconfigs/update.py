@@ -19,14 +19,14 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-from googlecloudsdk.api_lib.util import apis
+from googlecloudsdk.api_lib.scc import securitycenter_client
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.scc import flags as scc_flags
 from googlecloudsdk.command_lib.scc import util as scc_util
 from googlecloudsdk.command_lib.scc.muteconfigs import flags
 from googlecloudsdk.command_lib.scc.muteconfigs import util
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
-from googlecloudsdk.generated_clients.apis.securitycenter.v1 import securitycenter_v1_messages as messages
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.ALPHA)
@@ -65,7 +65,9 @@ class Update(base.UpdateCommand):
     flags.MUTE_CONFIG_FLAG.AddToParser(parser)
     flags.DESCRIPTION_FLAG.AddToParser(parser)
     flags.FILTER_FLAG.AddToParser(parser)
-
+    # TODO: b/311713896 - Remove api-version flag when v2 is fully GA.
+    scc_flags.API_VERSION_FLAG.AddToParser(parser)
+    scc_flags.LOCATION_FLAG.AddToParser(parser)
     parser.add_argument(
         "--update-mask",
         help="""
@@ -75,13 +77,23 @@ class Update(base.UpdateCommand):
     parser.display_info.AddFormat(properties.VALUES.core.default_format.Get())
 
   def Run(self, args):
+    # Determine what version to call from --location and --api-version.
+    version = scc_util.GetVersionFromArguments(args, args.mute_config)
+    messages = securitycenter_client.GetMessages(version)
     request = messages.SecuritycenterOrganizationsMuteConfigsPatchRequest()
 
-    request.googleCloudSecuritycenterV1MuteConfig = (
-        messages.GoogleCloudSecuritycenterV1MuteConfig(
-            description=args.description, filter=args.filter
-        )
-    )
+    if version == "v2":
+      request.googleCloudSecuritycenterV2MuteConfig = (
+          messages.GoogleCloudSecuritycenterV2MuteConfig(
+              description=args.description, filter=args.filter
+          )
+      )
+    else:
+      request.googleCloudSecuritycenterV1MuteConfig = (
+          messages.GoogleCloudSecuritycenterV1MuteConfig(
+              description=args.description, filter=args.filter
+          )
+      )
 
     # Create update mask if none was specified
     if not args.update_mask:
@@ -93,11 +105,11 @@ class Update(base.UpdateCommand):
       request.updateMask = ",".join(computed_update_mask)
 
     # Generate name and send request
-    request = util.GenerateMuteConfigName(args, request)
+    request = util.GenerateMuteConfigName(args, request, version)
     request.updateMask = scc_util.CleanUpUserMaskInput(request.updateMask)
     args.filter = ""
 
-    client = apis.GetClientInstance("securitycenter", "v1")
+    client = securitycenter_client.GetClient(version)
     response = client.organizations_muteConfigs.Patch(request)
     log.status.Print("Updated.")
     return response

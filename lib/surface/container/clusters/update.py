@@ -378,8 +378,7 @@ class Update(base.UpdateCommand):
     flags.AddClusterNetworkPerformanceConfigFlags(group)
     flags.AddEnableK8sBetaAPIs(group)
     flags.AddSecurityPostureEnumFlag(group)
-    flags.AddWorkloadVulnScanningEnumFlag(group,
-                                          release_track=base.ReleaseTrack.GA)
+    flags.AddWorkloadVulnScanningEnumFlag(group)
     flags.AddRuntimeVulnerabilityInsightFlag(group)
     flags.AddWorkloadPoliciesFlag(group)
     flags.AddRemoveWorkloadPoliciesFlag(group)
@@ -387,6 +386,7 @@ class Update(base.UpdateCommand):
     flags.AddContainerdConfigFlag(group, hidden=True)
     flags.AddAutoprovisioningResourceManagerTagsUpdate(group)
     flags.AddFleetProjectFlag(group, is_update=True)
+    flags.AddInTransitEncryptionFlag(group)
 
   def ParseUpdateOptions(self, args, locations):
     get_default = lambda key: getattr(args, key)
@@ -902,8 +902,7 @@ class UpdateBeta(Update):
     flags.AddClusterNetworkPerformanceConfigFlags(group)
     flags.AddEnableK8sBetaAPIs(group)
     flags.AddSecurityPostureEnumFlag(group)
-    flags.AddWorkloadVulnScanningEnumFlag(group,
-                                          release_track=base.ReleaseTrack.BETA)
+    flags.AddWorkloadVulnScanningEnumFlag(group)
     flags.AddRuntimeVulnerabilityInsightFlag(group)
     flags.AddWorkloadPoliciesFlag(group)
     flags.AddRemoveWorkloadPoliciesFlag(group)
@@ -1168,8 +1167,7 @@ class UpdateAlpha(Update):
     flags.AddClusterNetworkPerformanceConfigFlags(group)
     flags.AddEnableK8sBetaAPIs(group)
     flags.AddSecurityPostureEnumFlag(group)
-    flags.AddWorkloadVulnScanningEnumFlag(group,
-                                          release_track=base.ReleaseTrack.ALPHA)
+    flags.AddWorkloadVulnScanningEnumFlag(group)
     flags.AddRuntimeVulnerabilityInsightFlag(group)
     flags.AddWorkloadPoliciesFlag(group)
     flags.AddRemoveWorkloadPoliciesFlag(group)

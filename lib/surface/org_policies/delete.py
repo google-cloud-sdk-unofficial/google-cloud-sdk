@@ -47,6 +47,16 @@ class Delete(base.Command):
   def Args(parser):
     arguments.AddConstraintArgToParser(parser)
     arguments.AddResourceFlagsToParser(parser)
+    parser.add_argument(
+        '--etag',
+        hidden=True,
+        metavar='ETAG',
+        help=(
+            'The current top-level etag of the Policy. If an etag is provided'
+            ' and does not match the current etag of the Policy, deletion will'
+            ' fail with a concurrent error.'
+        ),
+    )
 
   def Run(self, args):
     """Deletes an organization policy.
@@ -63,7 +73,7 @@ class Delete(base.Command):
     org_policy_api = org_policy_service.OrgPolicyApi(self.ReleaseTrack())
     policy_name = utils.GetPolicyNameFromArgs(args)
 
-    delete_response = org_policy_api.DeletePolicy(policy_name)
+    delete_response = org_policy_api.DeletePolicy(policy_name, args.etag)
     log.DeletedResource(policy_name, 'policy')
     return delete_response
 

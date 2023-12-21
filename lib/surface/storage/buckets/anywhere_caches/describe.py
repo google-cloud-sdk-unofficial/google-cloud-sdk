@@ -30,6 +30,7 @@ AnywhereCacheDisplayTitlesAndDefaults = collections.namedtuple(
         'admission_policy',
         'bucket',
         'create_time',
+        'id',
         'kind',
         'pending_update',
         'state',

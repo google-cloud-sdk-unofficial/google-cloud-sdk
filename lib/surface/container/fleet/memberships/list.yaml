@@ -32,6 +32,6 @@
     format: |
       table(
         name.basename():label=NAME,
-        externalId:label=EXTERNAL_ID,
+        unique_id:label=UNIQUE_ID,
         name.scope().segment(-3):label=LOCATION
       )

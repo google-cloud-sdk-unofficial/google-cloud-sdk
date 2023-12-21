@@ -141,9 +141,13 @@ class Stop(base.SilentCommand):
           'status of the operation(s).')
       return responses
 
-    operation_poller = poller.BatchPoller(client,
-                                          client.apitools_client.instances,
-                                          instance_refs)
+    # Why DeleteBatchPoller for stop operation?
+    # instance might get deleted while stopping is in progress due to change in
+    # targetState caused by new incoming delete requests while gracefully
+    # shutting down
+    operation_poller = poller.DeleteBatchPoller(
+        client, client.apitools_client.instances, instance_refs
+    )
     waiter.WaitFor(
         operation_poller,
         poller.OperationBatch(operation_refs),

@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Command for deleting Runapps resource."""
+"""Command for deleting Stacks resource."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -27,10 +27,9 @@ from googlecloudsdk.command_lib.runapps import exceptions
 from googlecloudsdk.core.console import console_io
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Delete(base.Command):
-  """Delete a Runapps resource and its associated bindings."""
+  """Delete a Stacks resource and its associated bindings."""
 
   detailed_help = {
       'DESCRIPTION': """\
@@ -54,14 +53,14 @@ class Delete(base.Command):
     flags.AddNamePositionalArg(parser)
 
   def Run(self, args):
-    """Delete a Runapps resource."""
+    """Delete a Stacks resource."""
     resource_name = args.name
     release_track = self.ReleaseTrack()
 
     console_io.PromptContinue(
         message=(
             'Resource [{}] will be deleted. This will also delete any'
-            ' underlying resources this Runapps resource created.'
+            ' underlying resources this Stacks resource created.'
         ).format(resource_name),
         throw_if_unattended=True,
         cancel_on_no=True,

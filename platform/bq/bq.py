@@ -12,6 +12,7 @@ import collections
 import datetime
 import functools
 import json
+import logging
 import os
 import pdb
 import re
@@ -59,7 +60,8 @@ from six.moves import map
 from six.moves import range
 from six.moves import zip
 import six.moves.http_client
-
+import termcolor
+import textwrap
 
 import table_formatter
 import bigquery_client
@@ -227,8 +229,10 @@ def _ConfigureLogging(logging_utils):
 
 
 def _UseServiceAccount():
-  return bool(FLAGS.use_gce_service_account or FLAGS.service_account
-             )
+  return bool(
+      FLAGS.use_gce_service_account
+      or FLAGS.service_account
+  )
 
 
 def _GetFormatterFromFlags(secondary_format='sparse'):
@@ -615,14 +619,17 @@ class Client(object):
       config_logging: if True, set python logging according to --apilog.
       **kwds: keyword arguments for creating BigqueryClient.
     """
+    # Resolve flag values first.
+    client_args = Client._CollectArgs(config_logging, **kwds)
 
     if 'credentials' in kwds:
+      logging.info('Credentials passed in directly')
       credentials = kwds.pop('credentials')
     else:
+      logging.info('Credentials loaded using oauth2client')
       credentials = credential_loader.GetCredentialsFromFlags()
     assert credentials is not None
 
-    client_args = Client._CollectArgs(config_logging, **kwds)
     bigquery_client_factory = Factory.GetBigqueryClientFactory()
     return bigquery_client_factory(credentials=credentials, **client_args)
 
@@ -6654,10 +6661,9 @@ def _PrintObjectsArrayWithToken(object_infos, objects_type):
       print('\nNext token: ' + object_infos['token'])
 
 
-
-
 class _Cancel(BigqueryCmd):
   """Attempt to cancel the specified job if it is running."""
+
   usage = """cancel [--nosync] [<job_id>]"""
 
   def __init__(self, name, fv):
@@ -7675,8 +7681,8 @@ class _Init(BigqueryCmd):
   def RunWithArgs(self):
     """Authenticate and create a default .bigqueryrc file."""
     message = ('BQ CLI will soon require all users to log in using'
-               ' `gcloud auth login`. `bq init` will no longer be supported'
-               ' after January 1, 2024.\n')
+               ' `gcloud auth login`. `bq init` will no longer handle'
+               ' authentication after January 1, 2024.\n')
     termcolor.cprint(
         '\n'.join(textwrap.wrap(message, width=80)),
         color='red',

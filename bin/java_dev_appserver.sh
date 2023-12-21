@@ -198,6 +198,12 @@ case $HOSTNAME in
   *.corp.google.com|*.c.googlers.com) export CLOUDSDK_INTERNAL_USER_FAST_UPDATE=true;;
 esac
 
+if [ -z "$OPENSSL_CONF" ]; then
+    if [ -f "$HOME/.config/gcloud/ecp_openssl.cnf" ]; then
+     export OPENSSL_CONF="$HOME/.config/gcloud/ecp_openssl.cnf"
+   fi
+fi
+
 # </cloud-sdk-sh-preamble>
 
 exec "$CLOUDSDK_PYTHON" $CLOUDSDK_PYTHON_ARGS "${CLOUDSDK_ROOT_DIR}/bin/bootstrapping/java_dev_appserver.py" "$@"

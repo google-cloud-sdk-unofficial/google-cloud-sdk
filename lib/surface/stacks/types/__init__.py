@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*- #
-# Copyright 2022 Google LLC. All Rights Reserved.
+# Copyright 2023 Google LLC. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,26 +12,26 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""The command to disable the Anthos Observability Feature."""
+"""The gcloud stacks types group."""
 
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
-from googlecloudsdk.calliope import base as gbase
-from googlecloudsdk.command_lib.container.fleet.features import base
+from googlecloudsdk.calliope import base
 
 
-@gbase.Hidden
-class Disable(base.DisableCommand):
-  """Disable Anthos Observability Feature.
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class StacksTypes(base.Group):
+  """View available Stacks Types.
 
-  This command disables the Anthos Observability Feature in a fleet.
-
-  ## Examples
-
-  Disable Anthos Observability Feature:
-
-    $ {command}
+  This set of commands can be used to view Stacks Types.
   """
-  feature_name = 'anthosobservability'
+
+  detailed_help = {
+      'EXAMPLES': """
+          To list available Stacks types, run:
+
+            $ {command} list
+      """,
+  }

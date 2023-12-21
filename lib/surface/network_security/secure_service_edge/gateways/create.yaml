@@ -27,72 +27,26 @@ arguments:
     api_field: sSEGateway.appVpc
     help_text: |
       The VPC in your project which holds the application to be secured.
-  - arg_name: user-vpc
-    action:
-      deprecated:
-        removed: true
-        error: Flag {flag_name} has been removed. Use --untrusted-network instead.
-    api_field: sSEGateway.untrustedNetwork
-    help_text: |
-      The VPC in your project where branch office users land.
   - arg_name: untrusted-network
     api_field: sSEGateway.untrustedNetwork
     help_text: |
       Network in your project where untrusted users land.
-  - arg_name: app-traffic-ilb-ip
-    action:
-      deprecated:
-        removed: true
-        error: Flag {flag_name} has been removed. Use --app-facing-target-ip instead.
-    api_field: sSEGateway.appFacingTargetIp
-    help_text: |
-      The ILB IP address where the application traffic should be routed to.
-      Default value is set to "100.64.1.253".
   - arg_name: app-facing-target-ip
     api_field: sSEGateway.appFacingTargetIp
     help_text: |
       Target IP address where application traffic is routed.
       Default value is set to "100.64.1.253".
-  - arg_name: app-traffic-subnet-range
-    action:
-      deprecated:
-        removed: true
-        error: Flag {flag_name} has been removed. Use --app-facing-subnet-range instead.
-    api_field: sSEGateway.appFacingSubnetRange
-    help_text: |
-      Address range (in CIDR format) of the subnet where application traffic is routed.
-      Default value is set to "100.64.1.0/24".
-      User defined / customized subnet range CIDR suffix should be less than or equal to 24.
   - arg_name: app-facing-subnet-range
     api_field: sSEGateway.appFacingSubnetRange
     help_text: |
       Address range (in CIDR format) of the subnet where application traffic is routed.
       Default value is set to "100.64.1.0/24".
       The CIDR suffix should be less than or equal to 24.
-  - arg_name: user-traffic-ilb-ip
-    action:
-      deprecated:
-        removed: true
-        error: Flag {flag_name} has been removed. Use --untrusted-facing-target-ip instead.
-    api_field: sSEGateway.untrustedFacingTargetIp
-    help_text: |
-      The ILB IP address where the user traffic should be routed to.
-      Default value is set to "100.64.2.253".
   - arg_name: untrusted-facing-target-ip
     api_field: sSEGateway.untrustedFacingTargetIp
     help_text: |
       Target IP address where untrusted traffic is routed.
       Default value is set to "100.64.2.253".
-  - arg_name: user-traffic-subnet-range
-    action:
-      deprecated:
-        removed: true
-        error: Flag {flag_name} has been removed. Use --untrusted-facing-subnet-range instead.
-    api_field: sSEGateway.untrustedFacingSubnetRange
-    help_text: |
-      Address range (in CIDR format) of the subnet where user traffic is routed.
-      Default value is set to "100.64.2.0/24".
-      User defined / customized subnet range CIDR suffix should less than or equal to 24.
   - arg_name: untrusted-facing-subnet-range
     api_field: sSEGateway.untrustedFacingSubnetRange
     help_text: |

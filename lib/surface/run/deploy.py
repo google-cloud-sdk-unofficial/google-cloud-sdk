@@ -27,6 +27,7 @@ from googlecloudsdk.command_lib.run import config_changes
 from googlecloudsdk.command_lib.run import connection_context
 from googlecloudsdk.command_lib.run import container_parser
 from googlecloudsdk.command_lib.run import flags
+from googlecloudsdk.command_lib.run import functions
 from googlecloudsdk.command_lib.run import messages_util
 from googlecloudsdk.command_lib.run import platforms
 from googlecloudsdk.command_lib.run import pretty_print
@@ -99,6 +100,7 @@ Container Flags
     group.AddArgument(flags.RemoveVolumeMountFlag())
     group.AddArgument(flags.ClearVolumeMountsFlag())
     group.AddArgument(flags.AddCommandAndFunctionFlag())
+    group.AddArgument(flags.BaseImageArg())
   else:
     group.AddArgument(flags.CommandFlag())
   return group
@@ -291,11 +293,17 @@ class Deploy(base.Command):
     source = None
     operation_message = 'Deploying container to'
     repo_to_create = None
+    is_function = False
     # Build an image from source if source specified
     if build_from_source:
       # Only one container can deployed from source
       container = next(iter(build_from_source.values()))
       source = container.source
+      # We cannot use flag.isExplicitlySet(args, 'function') because it will
+      # return False when user provide --function after --container.
+      is_function = (
+          self.ReleaseTrack() == base.ReleaseTrack.ALPHA and container.function
+      )
 
       ar_repo = docker_util.DockerRepo(
           project_id=properties.VALUES.core.project.Get(required=True),
@@ -355,6 +363,16 @@ class Deploy(base.Command):
       service = operations.GetService(service_ref)
       allow_unauth = GetAllowUnauth(args, operations, service_ref, service)
       resource_change_validators.ValidateClearVpcConnector(service, args)
+      if service:  # Service has been deployed before
+        if is_function and service.template.container.command:
+          clear_command = flags.PromptForClearCommand()
+          if clear_command:
+            changes.append(config_changes.ContainerCommandChange([]))
+          else:
+            raise c_exceptions.ConflictingArgumentsException(
+                '--command',
+                '--function',
+            )
 
       pretty_print.Info(
           messages_util.GetStartDeployMessage(
@@ -376,6 +394,11 @@ class Deploy(base.Command):
         header = 'Deploying'
       if service is None:
         header += ' new service'
+        # new services default cpu boost on the client
+        if not flags.FlagIsExplicitlySet(args, 'cpu_boost'):
+          changes.append(
+              config_changes.StartupCpuBoostChange(cpu_boost=True)
+          )
       header += '...'
       with progress_tracker.StagedProgressTracker(
           header,
@@ -432,6 +455,17 @@ def _CreateBuildPack(container, release_track=base.ReleaseTrack.GA):
               'GOOGLE_FUNCTION_TARGET={target}'.format(target=function_arg),
           ]
       })
+      base_image_arg = getattr(container, 'base_image', None)
+      if base_image_arg:
+        pack[0].update(
+            {
+                'builder': '{builder}'.format(
+                    builder=functions.FunctionBuilder(
+                        base_image_arg
+                    )
+                )
+            }
+        )
   return pack
 
 
@@ -468,6 +502,7 @@ class AlphaDeploy(BetaDeploy):
     flags.AddServiceMinInstancesFlag(managed_group)
     flags.AddVolumesFlags(managed_group, cls.ReleaseTrack())
     flags.RemoveContainersFlag().AddToParser(managed_group)
+    flags.SERVICE_MESH_FLAG.AddToParser(managed_group)
     container_args = ContainerArgGroup(cls.ReleaseTrack())
     container_parser.AddContainerFlags(parser, container_args)
 

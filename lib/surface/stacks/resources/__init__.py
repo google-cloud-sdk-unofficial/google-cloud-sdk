@@ -12,26 +12,21 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""The gcloud runapps types group."""
-
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
+"""The gcloud Stacks resources group."""
 
 from googlecloudsdk.calliope import base
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class RunappsTypes(base.Group):
-  """View available Runapps Types.
+class StacksResources(base.Group):
+  """Stacks resources command group.
 
-  This set of commands can be used to view Runapps Types.
+  This set of commands can be used to view Cloud Run resources.
   """
 
   detailed_help = {
       'EXAMPLES': """
-          To list available Runapps types, run:
+          To list Stacks resources, run:
 
             $ {command} list
       """,

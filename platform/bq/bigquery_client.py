@@ -710,6 +710,16 @@ def _ParseConnectionPath(path):
   return (project_id, location, connection_id)
 
 
+def _ParseJson(json_string):
+  """Wrapper for standard json parsing, but throws BigQueryClientError in case of errors while parsing."""
+  try:
+    return json.loads(json_string)
+  except ValueError as e:
+    raise bq_error.BigqueryClientError(
+        'Error decoding JSON from string %s: %s' % (json_string, e)
+    )
+
+
 def _ParseDiscoveryDoc(discovery_document):
   """Takes a downloaded discovery document and parses it.
 
@@ -1415,8 +1425,7 @@ class BigqueryClient:
     built_client = None
     try:
       client_options = discovery.get_client_options()
-      if (not flags.FLAGS['api'].using_default_value
-         ):
+      if discovery_document_loader.is_api_being_overwritten():
         client_options.api_endpoint = _BuildApiEndpointFromApiFlag(
             flags.FLAGS.api,
             _ParseDiscoveryDoc(discovery_document_to_build_client))
@@ -1568,7 +1577,10 @@ class BigqueryClient:
     path = reservationserver_address
     reservation_version = 'v1'
     if path is None:
-      path = 'https://bigqueryreservation.googleapis.com'
+      if discovery_document_loader.is_api_being_overwritten():
+        path = bq_flags.API.value
+      else:
+        path = 'https://bigqueryreservation.googleapis.com'
     if self._op_reservation_client:
       logging.info('Using the cached Reservations API client')
     else:
@@ -2857,11 +2869,11 @@ class BigqueryClient:
 
     property_name = CONNECTION_TYPE_TO_PROPERTY_MAP.get(connection_type)
     if property_name:
-      connection[property_name] = json.loads(properties)
-
+      connection[property_name] = _ParseJson(properties)
       if connection_credential:
-        connection[property_name]['credential'] = \
-          json.loads(connection_credential)
+        connection[property_name]['credential'] = _ParseJson(
+            connection_credential
+        )
 
     else:
       error = 'connection_type %s is unsupported' % connection_type
@@ -2940,7 +2952,7 @@ class BigqueryClient:
 
     if connection_type == 'CLOUD_SQL':
       if properties:
-        cloudsql_properties = json.loads(properties)
+        cloudsql_properties = _ParseJson(properties)
         connection['cloudSql'] = cloudsql_properties
 
         update_mask.extend(
@@ -2950,13 +2962,13 @@ class BigqueryClient:
         connection['cloudSql'] = {}
 
       if connection_credential:
-        connection['cloudSql']['credential'] = json.loads(connection_credential)
+        connection['cloudSql']['credential'] = _ParseJson(connection_credential)
         update_mask.append('cloudSql.credential')
 
     elif connection_type == 'AWS':
 
       if properties:
-        aws_properties = json.loads(properties)
+        aws_properties = _ParseJson(properties)
         connection['aws'] = aws_properties
         if aws_properties.get('crossAccountRole') and \
             aws_properties['crossAccountRole'].get('iamRoleId'):
@@ -2968,12 +2980,12 @@ class BigqueryClient:
         connection['aws'] = {}
 
       if connection_credential:
-        connection['aws']['credential'] = json.loads(connection_credential)
+        connection['aws']['credential'] = _ParseJson(connection_credential)
         update_mask.append('aws.credential')
 
     elif connection_type == 'Azure':
       if properties:
-        azure_properties = json.loads(properties)
+        azure_properties = _ParseJson(properties)
         connection['azure'] = azure_properties
         if azure_properties.get('customerTenantId'):
           update_mask.append('azure.customer_tenant_id')
@@ -2982,7 +2994,7 @@ class BigqueryClient:
 
     elif connection_type == 'SQL_DATA_SOURCE':
       if properties:
-        sql_data_source_properties = json.loads(properties)
+        sql_data_source_properties = _ParseJson(properties)
         connection['sqlDataSource'] = sql_data_source_properties
 
         update_mask.extend(
@@ -2992,13 +3004,14 @@ class BigqueryClient:
         connection['sqlDataSource'] = {}
 
       if connection_credential:
-        connection['sqlDataSource']['credential'] = json.loads(
-            connection_credential)
+        connection['sqlDataSource']['credential'] = _ParseJson(
+            connection_credential
+        )
         update_mask.append('sqlDataSource.credential')
 
     elif connection_type == 'CLOUD_SPANNER':
       if properties:
-        cloudspanner_properties = json.loads(properties)
+        cloudspanner_properties = _ParseJson(properties)
         connection['cloudSpanner'] = cloudspanner_properties
         update_mask.extend(
             GetUpdateMask(connection_type.lower(), cloudspanner_properties))
@@ -3007,7 +3020,7 @@ class BigqueryClient:
 
     elif connection_type == 'SPARK':
       if properties:
-        spark_properties = json.loads(properties)
+        spark_properties = _ParseJson(properties)
         connection['spark'] = spark_properties
         if 'sparkHistoryServerConfig' in spark_properties:
           update_mask.append('spark.spark_history_server_config')
@@ -6548,7 +6561,8 @@ class BigqueryClient:
     # times, then increase to max(3, max_wait), and then keep waiting
     # that long until we've run out of time.
     waits = itertools.chain(
-        itertools.repeat(1, 8), range(2, 30, 3), itertools.repeat(30))
+       itertools.repeat(1, 8), range(2, 30, 3),
+       itertools.repeat(30))
     current_wait = 0
     current_status = 'UNKNOWN'
     in_error_state = False
@@ -6572,6 +6586,8 @@ class BigqueryClient:
         # the error is transient we'd like "wait" to get past it.
         if in_error_state: raise
         in_error_state = True
+
+      # For every second we're polling, update the message to the user.
       for _ in range(next(waits)):
         current_wait = time.time() - start_time
         printer.Print(job_reference.jobId, current_wait, current_status)

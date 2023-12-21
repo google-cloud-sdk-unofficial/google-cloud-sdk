@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Command for listing Runapps types."""
+"""Command for listing Stacks types."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -22,10 +22,9 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.run.integrations import run_apps_operations
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class List(base.ListCommand):
-  """Lists Runapps Types."""
+  """Lists Stacks Types."""
 
   detailed_help = {
       'DESCRIPTION': """\
@@ -52,7 +51,7 @@ class List(base.ListCommand):
         'description:label=DESCRIPTION)')
 
   def Run(self, args):
-    """List runapps types."""
+    """List Stacks types."""
     release_track = self.ReleaseTrack()
     with run_apps_operations.Connect(args, release_track) as client:
       # Output is sorted by the type name to guarantee the same ordering

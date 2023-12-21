@@ -735,16 +735,13 @@ flags_to_add = {
             flags.AddEnableK8sBetaAPIs,
         'securityPosture':
             flags.AddSecurityPostureEnumFlag,
-        # pylint: disable=g-long-lambda
-        'workloadVulnerabilityScanning': (
-            lambda p: flags.AddWorkloadVulnScanningEnumFlag(
-                p, release_track=base.ReleaseTrack.GA
-            )
-        ),
+        'workloadVulnerabilityScanning':
+            flags.AddWorkloadVulnScanningEnumFlag,
         'enableRuntimeVulnerabilityInsight':
             flags.AddRuntimeVulnerabilityInsightFlag,
         'containerdConfig':
             (lambda p: flags.AddContainerdConfigFlag(p, hidden=True)),
+        'InTransitEncryption': flags.AddInTransitEncryptionFlag,
     },
     BETA: {
         'accelerator':
@@ -983,12 +980,8 @@ flags_to_add = {
             flags.AddEnableK8sBetaAPIs,
         'securityPosture':
             flags.AddSecurityPostureEnumFlag,
-        # pylint: disable=g-long-lambda
-        'workloadVulnerabilityScanning': (
-            lambda p: flags.AddWorkloadVulnScanningEnumFlag(
-                p, release_track=base.ReleaseTrack.BETA
-            )
-        ),
+        'workloadVulnerabilityScanning':
+            flags.AddWorkloadVulnScanningEnumFlag,
         'enableRuntimeVulnerabilityInsight':
             flags.AddRuntimeVulnerabilityInsightFlag,
         'enableDnsEndpoint':
@@ -1250,12 +1243,8 @@ flags_to_add = {
             flags.AddEnableK8sBetaAPIs,
         'securityPosture':
             flags.AddSecurityPostureEnumFlag,
-        # pylint: disable=g-long-lambda
-        'workloadVulnerabilityScanning': (
-            lambda p: flags.AddWorkloadVulnScanningEnumFlag(
-                p, release_track=base.ReleaseTrack.ALPHA
-            )
-        ),
+        'workloadVulnerabilityScanning':
+            flags.AddWorkloadVulnScanningEnumFlag,
         'enableRuntimeVulnerabilityInsight':
             flags.AddRuntimeVulnerabilityInsightFlag,
         'enableDnsEndpoint':
