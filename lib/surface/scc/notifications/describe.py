@@ -19,16 +19,11 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-from googlecloudsdk.api_lib.util import apis
+from googlecloudsdk.api_lib.scc import securitycenter_client
 from googlecloudsdk.calliope import base
-from googlecloudsdk.command_lib.scc import util
+from googlecloudsdk.command_lib.scc import flags as scc_flags
+from googlecloudsdk.command_lib.scc import util as scc_util
 from googlecloudsdk.command_lib.scc.notifications import notification_util
-from googlecloudsdk.core import exceptions as core_exceptions
-from googlecloudsdk.generated_clients.apis.securitycenter.v1 import securitycenter_v1_messages
-
-
-class InvalidNotificationConfigError(core_exceptions.Error):
-  """Exception raised for errors in the input."""
 
 
 @base.ReleaseTracks(
@@ -104,16 +99,30 @@ class Describe(base.DescribeCommand):
             Formatted as ``projects/789'' or just ``789''.
         """,
     )
+    scc_flags.API_VERSION_FLAG.AddToParser(parser)
+    scc_flags.LOCATION_FLAG.AddToParser(parser)
 
   def Run(self, args):
-    req = (
-        securitycenter_v1_messages.SecuritycenterOrganizationsNotificationConfigsGetRequest()
-    )
 
-    parent = util.GetParentFromNamedArguments(args)
+    parent = scc_util.GetParentFromNamedArguments(args)
     notification_util.ValidateMutexOnConfigIdAndParent(args, parent)
-    req.name = notification_util.GetNotificationConfigName(args)
 
-    client = apis.GetClientInstance('securitycenter', 'v1')
-    result = client.organizations_notificationConfigs.Get(req)
-    return result
+    # Determine what version to call from --location and --api-version. The
+    # NotificationConfig is a version_specific_existing_resource that may not be
+    # accesed through v2 if it currently exists in v1, and vice vesra.
+    version = scc_util.GetVersionFromArguments(
+        args, args.NOTIFICATIONCONFIGID, version_specific_existing_resource=True
+    )
+    messages = securitycenter_client.GetMessages(version)
+    client = securitycenter_client.GetClient(version)
+
+    if version == 'v1':
+      req = messages.SecuritycenterOrganizationsNotificationConfigsGetRequest()
+      req.name = notification_util.ValidateAndGetNotificationConfigV1Name(args)
+      return client.organizations_notificationConfigs.Get(req)
+    else:
+      req = (
+          messages.SecuritycenterOrganizationsLocationsNotificationConfigsGetRequest()
+      )
+      req.name = notification_util.ValidateAndGetNotificationConfigV2Name(args)
+      return client.organizations_locations_notificationConfigs.Get(req)

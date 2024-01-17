@@ -21,7 +21,7 @@ from __future__ import unicode_literals
 from googlecloudsdk.api_lib.privateca import base as privateca_base
 from googlecloudsdk.api_lib.privateca import request_utils
 from googlecloudsdk.calliope import base
-from googlecloudsdk.command_lib.privateca import flags_v1
+from googlecloudsdk.command_lib.privateca import flags
 from googlecloudsdk.command_lib.privateca import operations
 from googlecloudsdk.command_lib.privateca import resource_args
 from googlecloudsdk.core import log
@@ -49,7 +49,7 @@ class Delete(base.DeleteCommand):
   @staticmethod
   def Args(parser):
     resource_args.AddCaPoolPositionalResourceArg(parser, 'to delete')
-    flags_v1.AddIgnoreDependentResourcesFlag(parser)
+    flags.AddIgnoreDependentResourcesFlag(parser)
 
   def Run(self, args):
     client = privateca_base.GetClientInstance('v1')

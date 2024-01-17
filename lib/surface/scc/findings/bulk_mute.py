@@ -19,10 +19,11 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-from googlecloudsdk.api_lib.util import apis
+from googlecloudsdk.api_lib.scc import securitycenter_client
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.scc import flags as scc_flags
+from googlecloudsdk.command_lib.scc import util as scc_util
 from googlecloudsdk.command_lib.scc.findings import util
-from googlecloudsdk.generated_clients.apis.securitycenter.v1 import securitycenter_v1_messages as messages
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.ALPHA)
@@ -76,16 +77,24 @@ class BulkMute(base.Command):
         "--filter",
         help="The filter string which will applied to findings being muted.",
     )
+    scc_flags.API_VERSION_FLAG.AddToParser(parser)
+    scc_flags.LOCATION_FLAG.AddToParser(parser)
 
   def Run(self, args):
+    version = scc_util.GetVersionFromArguments(args)
     # Create the request and include the filter from args.
+    messages = securitycenter_client.GetMessages(version)
     request = messages.SecuritycenterOrganizationsFindingsBulkMuteRequest()
-    request.bulkMuteFindingsRequest = messages.BulkMuteFindingsRequest()
-    request.bulkMuteFindingsRequest.filter = args.filter
+    request.bulkMuteFindingsRequest = messages.BulkMuteFindingsRequest(
+        filter=args.filter
+    )
     request.parent = util.ValidateAndGetParent(args)
     args.filter = ""
 
-    client = apis.GetClientInstance("securitycenter", "v1")
-    result = client.organizations_findings.BulkMute(request)
+    if version == "v2":
+      request.parent = util.ValidateLocationAndGetRegionalizedParent(
+          args, request.parent
+      )
 
-    return result
+    client = securitycenter_client.GetClient(version)
+    return client.organizations_findings.BulkMute(request)

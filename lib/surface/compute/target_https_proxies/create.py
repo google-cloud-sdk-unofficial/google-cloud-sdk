@@ -163,7 +163,7 @@ def _Run(
   return client.MakeRequests([(collection, 'Insert', request)])
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Create(base.CreateCommand):
   """Create a target HTTPS proxy."""
 
@@ -272,7 +272,11 @@ class Create(base.CreateCommand):
     )
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class CreateAlpha(Create):
-  _traffic_director_security = True
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class CreateBeta(Create):
   _server_tls_policy_enabled = True
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class CreateAlpha(CreateBeta):
+  _traffic_director_security = True

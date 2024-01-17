@@ -26,51 +26,6 @@ from googlecloudsdk.command_lib.privateca import resource_args
 from googlecloudsdk.core import log
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class EnableBeta(base.SilentCommand):
-  r"""Enable a root certificate authority.
-
-    Enables a root certificate authority. The root certificate authority will be
-    allowed to issue certificates once enabled.
-
-    ## EXAMPLES
-
-    To enable a root CA:
-
-        $ {command} prod-root --location=us-west1
-  """
-
-  @staticmethod
-  def Args(parser):
-    resource_args.AddCertificateAuthorityPositionalResourceArg(
-        parser, 'to enable')
-
-  def Run(self, args):
-    client = privateca_base.GetClientInstance()
-    messages = privateca_base.GetMessagesModule()
-
-    ca_ref = args.CONCEPTS.certificate_authority.Parse()
-
-    current_ca = client.projects_locations_certificateAuthorities.Get(
-        messages.PrivatecaProjectsLocationsCertificateAuthoritiesGetRequest(
-            name=ca_ref.RelativeName()))
-
-    resource_args.CheckExpectedCAType(
-        messages.CertificateAuthority.TypeValueValuesEnum.SELF_SIGNED,
-        current_ca)
-
-    operation = client.projects_locations_certificateAuthorities.Enable(
-        messages.PrivatecaProjectsLocationsCertificateAuthoritiesEnableRequest(
-            name=ca_ref.RelativeName(),
-            enableCertificateAuthorityRequest=messages
-            .EnableCertificateAuthorityRequest(
-                requestId=request_utils.GenerateRequestId())))
-
-    operations.Await(operation, 'Enabling Root CA')
-
-    log.status.Print('Enabled Root CA [{}].'.format(ca_ref.RelativeName()))
-
-
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Enable(base.SilentCommand):
   r"""Enable a root certificate authority.

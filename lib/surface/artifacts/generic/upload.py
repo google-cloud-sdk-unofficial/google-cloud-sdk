@@ -127,6 +127,10 @@ class Upload(base.Command):
       # through the directory sending one upload request per file found,
       # preserving the folder structure.
       args.source_directory = os.path.normpath(source_dir)
+      if not os.path.isdir(args.source_directory):
+        raise ar_exceptions.InvalidInputValueError(
+            'Specified path is not an existing directory.'
+            )
       for path, _, files in os.walk(source_dir):
         for file in files:
           self.uploadArtifact(

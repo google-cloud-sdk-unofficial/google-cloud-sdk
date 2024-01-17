@@ -3,9 +3,9 @@
     brief: "Describe a storage pool."
     description: "Describe a storage pool."
     examples: |
-      The following command retrieves a single storage pool and prints its properties.
+      To retrieve a single storage pool and print its properties, run the following command:
 
-        $ {command} my-storage-pool
+      $ {command} my-storage-pool
 
   request:
     collection: compute.storagePools
@@ -13,5 +13,5 @@
 
   arguments:
     resource:
-      help_text: The name of the storage pool you want to inspect.
+      help_text: Name of the storage pool you want to inspect.
       spec: !REF googlecloudsdk.command_lib.compute.resources:storage_pool

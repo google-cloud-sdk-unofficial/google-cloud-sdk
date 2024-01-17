@@ -21,23 +21,6 @@ from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class PrivateCaBeta(base.Group):
-  """Manage private Certificate Authorities on Google Cloud.
-
-  The privateca command group lets you create and manage private certificate
-  authorities and certificates.
-  """
-
-  category = base.IDENTITY_AND_SECURITY_CATEGORY
-
-  def Filter(self, context, args):
-    # TODO(b/190538423):  Determine if command group works with project number
-    base.RequireProjectID(args)
-    del context, args
-    base.DisableUserProjectQuota()
-
-
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class PrivateCaGa(base.Group):
   """Manage private Certificate Authorities on Google Cloud.

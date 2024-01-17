@@ -43,7 +43,7 @@ class RestoreBackup(base.RestoreCommand):
           allowed.
     """
     parser.add_argument(
-        'backup_id', type=int, help='The ID of the backup run to restore from.')
+        'id', type=int, help='The ID of the backup run to restore from.')
     parser.add_argument(
         '--restore-instance',
         required=True,
@@ -94,7 +94,7 @@ class RestoreBackup(base.RestoreCommand):
             instancesRestoreBackupRequest=(
                 sql_messages.InstancesRestoreBackupRequest(
                     restoreBackupContext=sql_messages.RestoreBackupContext(
-                        backupRunId=args.backup_id,
+                        backupRunId=args.id,
                         instanceId=args.backup_instance,)))))
 
     operation_ref = client.resource_parser.Create(

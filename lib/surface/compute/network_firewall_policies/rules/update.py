@@ -86,10 +86,14 @@ class Update(base.UpdateCommand):
         'dest_region_codes': 'match.destRegionCodes',
         'src_fqdns': 'match.srcFqdns',
         'dest_fqdns': 'match.destFqdns',
+        'src_secure_tags': 'match.srcSecureTags',
         'src_address_groups': 'match.srcAddressGroups',
         'dest_address_groups': 'match.destAddressGroups',
         'src_threat_intelligence': 'match.srcThreatIntelligences',
         'dest_threat_intelligence': 'match.destThreatIntelligences',
+        'security_profile_group': 'securityProfileGroup',
+        'target_secure_tags': 'targetSecureTags',
+        'target_service_accounts': 'targetServiceAccounts'
     }
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     ref = self.NETWORK_FIREWALL_POLICY_ARG.ResolveAsResource(
@@ -112,8 +116,8 @@ class Update(base.UpdateCommand):
     target_service_accounts = []
     security_profile_group = None
     tls_inspect = None
-    enable_logging = False
-    disabled = False
+    enable_logging = None
+    disabled = None
     should_setup_match = False
     traffic_direct = None
     src_secure_tags = []
@@ -187,7 +191,10 @@ class Update(base.UpdateCommand):
     if self._support_ips:
       if args.IsSpecified('security_profile_group'):
         security_profile_group = args.security_profile_group
-      else:
+      elif (
+          args.IsSpecified('action')
+          and args.action != 'apply_security_profile_group'
+      ):
         cleared_fields.append('securityProfileGroup')
       if self._support_ips_with_tls and args.IsSpecified('tls_inspect'):
         tls_inspect = args.tls_inspect
@@ -261,6 +268,7 @@ class UpdateBeta(Update):
 
   *{command}* is used to update network firewall policy rules.
   """
+
   _support_address_group = True
   _support_fqdn = True
   _support_geo = True
@@ -275,6 +283,7 @@ class UpdateAlpha(Update):
 
   *{command}* is used to update network firewall policy rules.
   """
+
   _support_address_group = True
   _support_fqdn = True
   _support_geo = True

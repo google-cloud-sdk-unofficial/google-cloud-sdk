@@ -36,7 +36,7 @@ _DETAILED_HELP = {
 }
 
 
-@base.ReleaseTracks(ReleaseTrack.BETA, ReleaseTrack.ALPHA)
+@base.ReleaseTracks(ReleaseTrack.GA, ReleaseTrack.BETA, ReleaseTrack.ALPHA)
 class EnableResourceMonitoring(base.UpdateCommand):
   """Enables Resource Monitoring for an Assured Workloads environment."""
 

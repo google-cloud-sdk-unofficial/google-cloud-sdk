@@ -20,15 +20,14 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-from googlecloudsdk.api_lib.scc import securitycenter_client as sc_client
-from googlecloudsdk.api_lib.util import apis
+from googlecloudsdk.api_lib.scc import securitycenter_client
 from googlecloudsdk.calliope import base
-from googlecloudsdk.command_lib.scc import util
+from googlecloudsdk.command_lib.scc import flags as scc_flags
+from googlecloudsdk.command_lib.scc import util as scc_util
 from googlecloudsdk.command_lib.scc.bqexports import bqexport_util
 from googlecloudsdk.command_lib.scc.bqexports import flags as bqexport_flags
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
-from googlecloudsdk.generated_clients.apis.securitycenter.v1 import securitycenter_v1_messages
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
@@ -114,38 +113,46 @@ class Update(base.UpdateCommand):
 
     parser.display_info.AddFormat(properties.VALUES.core.default_format.Get())
 
+    scc_flags.API_VERSION_FLAG.AddToParser(parser)
+    scc_flags.LOCATION_FLAG.AddToParser(parser)
+
   def Run(self, args):
-    req = (
-        securitycenter_v1_messages.SecuritycenterOrganizationsBigQueryExportsPatchRequest()
+
+    # Determine what version to call from --location and --api-version. The
+    # BigQuery export is a version_specific_existing_resource that may not be
+    # accessed through v2 if it currently exists in v1, and vice versa.
+    version = scc_util.GetVersionFromArguments(
+        args, args.BIG_QUERY_EXPORT, version_specific_existing_resource=True
     )
+    messages = securitycenter_client.GetMessages(version)
+    client = securitycenter_client.GetClient(version)
 
-    parent = util.GetParentFromNamedArguments(args)
-    if parent is not None:
-      bq_export_id = bqexport_util.ValidateAndGetBigQueryExportId(args)
-      req.name = parent + '/bigQueryExports/' + bq_export_id
+    if version == 'v1':
+      req = messages.SecuritycenterOrganizationsBigQueryExportsPatchRequest()
+      req.name = bqexport_util.ValidateAndGetBigQueryExportV1Name(args)
+      export = messages.GoogleCloudSecuritycenterV1BigQueryExport()
+      req.googleCloudSecuritycenterV1BigQueryExport = export
+      endpoint = client.organizations_bigQueryExports
     else:
-      bq_export_name = (
-          bqexport_util.ValidateAndGetBigQueryExportFullResourceName(args)
+      req = (
+          messages.SecuritycenterOrganizationsLocationsBigQueryExportsPatchRequest()
       )
-      req.name = bq_export_name
-
-    messages = sc_client.GetMessages('v1')
+      req.name = bqexport_util.ValidateAndGetBigQueryExportV2Name(args)
+      export = messages.GoogleCloudSecuritycenterV2BigQueryExport()
+      req.googleCloudSecuritycenterV2BigQueryExport = export
+      endpoint = client.organizations_locations_bigQueryExports
 
     computed_update_mask = []
-    req.googleCloudSecuritycenterV1BigQueryExport = (
-        messages.GoogleCloudSecuritycenterV1BigQueryExport()
-    )
+
     if args.IsKnownAndSpecified('dataset'):
       computed_update_mask.append('dataset')
-      req.googleCloudSecuritycenterV1BigQueryExport.dataset = args.dataset
+      export.dataset = args.dataset
     if args.IsKnownAndSpecified('description'):
       computed_update_mask.append('description')
-      req.googleCloudSecuritycenterV1BigQueryExport.description = (
-          args.description
-      )
+      export.description = args.description
     if args.IsKnownAndSpecified('filter'):
       computed_update_mask.append('filter')
-      req.googleCloudSecuritycenterV1BigQueryExport.filter = args.filter
+      export.filter = args.filter
 
     # If the user supplies an update mask, use that regardless of the supplied
     # fields.
@@ -157,7 +164,6 @@ class Update(base.UpdateCommand):
     # Set the args' filter to None to avoid downstream naming conflicts.
     args.filter = None
 
-    client = apis.GetClientInstance('securitycenter', 'v1')
-    bq_export_response = client.organizations_bigQueryExports.Patch(req)
+    bq_export_response = endpoint.Patch(req)
     log.status.Print('Updated.')
     return bq_export_response

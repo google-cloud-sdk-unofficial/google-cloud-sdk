@@ -19,14 +19,14 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-from googlecloudsdk.api_lib.util import apis
+from googlecloudsdk.api_lib.scc import securitycenter_client
 from googlecloudsdk.calliope import base
-from googlecloudsdk.command_lib.scc import util
+from googlecloudsdk.command_lib.scc import flags as scc_flags
+from googlecloudsdk.command_lib.scc import util as scc_util
 from googlecloudsdk.command_lib.scc.notifications import flags as notifications_flags
 from googlecloudsdk.command_lib.scc.notifications import notification_util
 from googlecloudsdk.core import log
 from googlecloudsdk.core.console import console_io
-from googlecloudsdk.generated_clients.apis.securitycenter.v1 import securitycenter_v1_messages
 
 
 @base.ReleaseTracks(
@@ -67,10 +67,10 @@ class Delete(base.DeleteCommand):
     notifications_flags.AddParentGroup(parser)
     notifications_flags.AddNotificationConfigPositionalArgument(parser)
 
+    scc_flags.API_VERSION_FLAG.AddToParser(parser)
+    scc_flags.LOCATION_FLAG.AddToParser(parser)
+
   def Run(self, args):
-    req = (
-        securitycenter_v1_messages.SecuritycenterOrganizationsNotificationConfigsDeleteRequest()
-    )
 
     # Prompt user to confirm deletion.
     console_io.PromptContinue(
@@ -79,11 +79,29 @@ class Delete(base.DeleteCommand):
     )
 
     # Validate mutex after prompt.
-    parent = util.GetParentFromNamedArguments(args)
+    parent = scc_util.GetParentFromNamedArguments(args)
     notification_util.ValidateMutexOnConfigIdAndParent(args, parent)
-    req.name = notification_util.GetNotificationConfigName(args)
 
-    client = apis.GetClientInstance('securitycenter', 'v1')
-    result = client.organizations_notificationConfigs.Delete(req)
+    # Determine what version to call from --location and --api-version. The
+    # NotificationConfig is a version_specific_existing_resource that may not be
+    # accesed through v2 if it currently exists in v1, and vice vesra.
+    version = scc_util.GetVersionFromArguments(
+        args, args.NOTIFICATIONCONFIGID, version_specific_existing_resource=True
+    )
+    messages = securitycenter_client.GetMessages(version)
+    client = securitycenter_client.GetClient(version)
+
+    if version == 'v1':
+      req = (
+          messages.SecuritycenterOrganizationsNotificationConfigsDeleteRequest()
+      )
+      req.name = notification_util.ValidateAndGetNotificationConfigV1Name(args)
+      result = client.organizations_notificationConfigs.Delete(req)
+    else:
+      req = (
+          messages.SecuritycenterOrganizationsLocationsNotificationConfigsDeleteRequest()
+      )
+      req.name = notification_util.ValidateAndGetNotificationConfigV2Name(args)
+      result = client.organizations_locations_notificationConfigs.Delete(req)
     log.status.Print('Deleted.')
     return result

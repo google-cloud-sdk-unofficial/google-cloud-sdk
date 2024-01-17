@@ -61,7 +61,6 @@ class List(base.ListCommand):
     base.URI_FLAG.RemoveFromParser(parser)
     # Add flags and positional arguments
     flags.AddParentGroup(parser, True)
-    # TODO: b/311713896 - Remove api-version flag when v2 is fully GA.
     scc_flags.API_VERSION_FLAG.AddToParser(parser)
     scc_flags.LOCATION_FLAG.AddToParser(parser)
 

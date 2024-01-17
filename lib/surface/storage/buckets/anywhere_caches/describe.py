@@ -28,6 +28,7 @@ AnywhereCacheDisplayTitlesAndDefaults = collections.namedtuple(
     'AnywhereCacheDisplayTitlesAndDefaults',
     (
         'admission_policy',
+        'anywhere_cache_id',
         'bucket',
         'create_time',
         'id',
@@ -41,7 +42,6 @@ AnywhereCacheDisplayTitlesAndDefaults = collections.namedtuple(
 )
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Describe(base.DescribeCommand):
   """Returns details of Anywhere Cache instance of a bucket."""
@@ -53,10 +53,10 @@ class Describe(base.DescribeCommand):
       """,
       'EXAMPLES': """
 
-      The following command describes Anywhere Cache Instance of bucket
-      ``my-bucket'' in ``asia-south2-b'' zone:
+      The following command describes the anywhere cache instance of bucket
+      ``my-bucket'' having anywhere_cache_id ``my-cache-id'':
 
-        $ {command} my-bucket/asia-south2-b
+        $ {command} my-bucket/my-cache-id
       """,
   }
 
@@ -67,18 +67,19 @@ class Describe(base.DescribeCommand):
         type=str,
         help=(
             'Identifier for a Anywhere Cache instance. It is a combination of'
-            ' bucket_name/zone.'
+            ' bucket_name/anywhere_cache_id, For example :'
+            ' test-bucket/my-cache-id.'
         ),
     )
 
     flags.add_raw_display_flag(parser)
 
   def Run(self, args):
-    bucket_name, _, zone = args.id.rpartition('/')
+    bucket_name, _, anywhere_cache_id = args.id.rpartition('/')
 
     result = api_factory.get_api(
         storage_url.ProviderPrefix.GCS
-    ).get_anywhere_cache(bucket_name, zone)
+    ).get_anywhere_cache(bucket_name, anywhere_cache_id)
 
     return resource_util.get_display_dict_for_resource(
         result,

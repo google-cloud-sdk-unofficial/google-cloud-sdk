@@ -23,10 +23,9 @@ from googlecloudsdk.command_lib.storage.tasks import task_status
 from googlecloudsdk.command_lib.storage.tasks.buckets.anywhere_caches import resume_anywhere_cache_task
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Resume(base.Command):
-  """Resume Anywhere Cache instances of a bucket."""
+  """Resume Anywhere Cache instances."""
 
   detailed_help = {
       'DESCRIPTION': """
@@ -39,10 +38,10 @@ class Resume(base.Command):
       """,
       'EXAMPLES': """
 
-      The following command resume anywhere cache instance of bucket
-      ``gs://my-bucket'' in ``asia-south2-b'' zone:
+      The following command resume the anywhere cache instance of bucket
+      ``my-bucket'' having anywhere_cache_id ``my-cache-id'':
 
-        $ {command} gs://my-bucket/asia-south2-b
+        $ {command} my-bucket/my-cache-id
       """,
   }
 
@@ -54,7 +53,8 @@ class Resume(base.Command):
         nargs='+',
         help=(
             'Identifiers for a Anywhere Cache instance. They are combination of'
-            ' bucket_name/zone.'
+            ' bucket_name/anywhere_cache_id. For example :'
+            ' test-bucket/my-cache-id.'
         ),
     )
 
@@ -64,9 +64,11 @@ class Resume(base.Command):
     )
 
     for id_str in args.id:
-      bucket_name, _, zone = id_str.rpartition(storage_url.CLOUD_URL_DELIMITER)
+      bucket_name, _, anywhere_cache_id = id_str.rpartition(
+          storage_url.CLOUD_URL_DELIMITER
+      )
       yield resume_anywhere_cache_task.ResumeAnywhereCacheTask(
-          bucket_name, zone
+          bucket_name, anywhere_cache_id
       )
 
   def Run(self, args):

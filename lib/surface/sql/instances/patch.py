@@ -231,7 +231,6 @@ def AddBaseArgs(parser):
   flags.AddMemory(parser)
   flags.AddPasswordPolicyMinLength(parser)
   flags.AddPasswordPolicyComplexity(parser)
-  flags.AddPasswordPolicyDisallowCompromisedCredentials(parser)
   flags.AddPasswordPolicyReuseInterval(parser)
   flags.AddPasswordPolicyDisallowUsernameSubstring(parser)
   flags.AddPasswordPolicyPasswordChangeInterval(parser)

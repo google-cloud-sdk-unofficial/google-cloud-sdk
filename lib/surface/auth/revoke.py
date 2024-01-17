@@ -147,10 +147,10 @@ class Revoke(base.Command):
     return accounts
 
   def Epilog(self, unused_results_were_displayed):
-    accounts = auth_util.AllAccounts()
+    accounts = c_store.AllAccounts()
     printer = resource_printer.Printer(
-        auth_util.ACCOUNT_TABLE_FORMAT,
-        out=log.status)
+        c_store.ACCOUNT_TABLE_FORMAT, out=log.status
+    )
     printer.Print(accounts)
 
 

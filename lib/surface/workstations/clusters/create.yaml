@@ -48,7 +48,6 @@
         configuration. Learn more: https://cloud.google.com/workstations/docs.
     - arg_name: domain
       api_field: workstationCluster.domainConfig.domain
-      release_tracks: [ALPHA, BETA]
       type: str
       help_text: |
         Domain used by Workstations for HTTP ingress.

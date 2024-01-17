@@ -30,58 +30,6 @@ from googlecloudsdk.command_lib.privateca import text_utils
 from googlecloudsdk.core import properties
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class ListBeta(base.ListCommand):
-  """List the root certificate authorities within a project."""
-
-  @staticmethod
-  def Args(parser):
-    base.Argument(
-        '--location',
-        help='Location of the certificate authorities.').AddToParser(parser)
-    base.PAGE_SIZE_FLAG.SetDefault(parser, 100)
-    base.FILTER_FLAG.RemoveFromParser(parser)
-
-    parser.display_info.AddFormat("""
-        table(
-          name.basename(),
-          name.scope().segment(-3):label=LOCATION,
-          state,
-          ca_certificate_descriptions[0].subject_description.not_before_time():label=NOT_BEFORE,
-          ca_certificate_descriptions[0].subject_description.not_after_time():label=NOT_AFTER)
-        """)
-    parser.display_info.AddTransforms({
-        'not_before_time': text_utils.TransformNotBeforeTime,
-        'not_after_time': text_utils.TransformNotAfterTime
-    })
-    parser.display_info.AddUriFunc(
-        resource_utils.MakeGetUriFunc(
-            'privateca.projects.locations.certificateAuthorities'))
-
-  def Run(self, args):
-    client = privateca_base.GetClientInstance()
-    messages = privateca_base.GetMessagesModule()
-
-    location = args.location if args.IsSpecified('location') else '-'
-
-    parent_resource = 'projects/{}/locations/{}'.format(
-        properties.VALUES.core.project.GetOrFail(), location)
-
-    request = messages.PrivatecaProjectsLocationsCertificateAuthoritiesListRequest(
-        parent=parent_resource,
-        filter='type:SELF_SIGNED',
-        orderBy=common_args.ParseSortByArg(args.sort_by))
-
-    return list_pager.YieldFromList(
-        client.projects_locations_certificateAuthorities,
-        request,
-        field='certificateAuthorities',
-        limit=args.limit,
-        batch_size_attribute='pageSize',
-        batch_size=args.page_size,
-        get_field_func=response_utils.GetFieldAndLogUnreachable)
-
-
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class List(base.ListCommand):
   """List root certificate authorities.

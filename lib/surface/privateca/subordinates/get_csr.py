@@ -23,39 +23,6 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.privateca import resource_args
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class GetCsrBeta(base.Command):
-  r"""Get the CSR for a subordinate certificate authority that has not yet been activated.
-
-  Gets the PEM-encoded CSR for a subordinate certificate authority that is
-  pending activation. The CSR should be signed by the issuing Certificate
-  Authority and uploaded back to the Private CA instance using the `subordinates
-  activate` command.
-
-  ## EXAMPLES
-
-    To download the CSR for the 'server-tls-1' CA into a file called
-    'server-tls-1.csr':
-
-      $ {command} server-tls-1 --location=us > server-tls-1.csr
-  """
-
-  @staticmethod
-  def Args(parser):
-    resource_args.AddCertificateAuthorityPositionalResourceArg(
-        parser, 'to get csr for')
-    parser.display_info.AddFormat("""value(pemCsr)""")
-
-  def Run(self, args):
-    client = privateca_base.GetClientInstance()
-    messages = privateca_base.GetMessagesModule()
-    ca_ref = args.CONCEPTS.certificate_authority.Parse()
-
-    return client.projects_locations_certificateAuthorities.Fetch(
-        messages.PrivatecaProjectsLocationsCertificateAuthoritiesFetchRequest(
-            name=ca_ref.RelativeName()))
-
-
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class GetCsr(base.Command):
   # pylint: disable=line-too-long

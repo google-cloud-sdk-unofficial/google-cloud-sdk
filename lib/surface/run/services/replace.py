@@ -154,6 +154,10 @@ class Replace(base.Command):
     conn_context = connection_context.GetConnectionContext(
         args, flags.Product.RUN, self.ReleaseTrack(), region_label=region_label)
     dry_run = args.dry_run if hasattr(args, 'dry_run') else False
+    use_wait = (
+        self.ReleaseTrack() == base.ReleaseTrack.ALPHA
+        and platforms.GetPlatform() == platforms.PLATFORM_MANAGED
+    )
 
     action = (
         'Validating new configuration for'
@@ -188,6 +192,7 @@ class Replace(base.Command):
             allow_unauthenticated=None,
             for_replace=True,
             dry_run=dry_run,
+            use_wait=use_wait,
         )
       if args.async_:
         pretty_print.Success(
@@ -199,7 +204,6 @@ class Replace(base.Command):
             '[{{bold}}{serv}{{reset}}].'.format(serv=service_obj.name)
         )
       else:
-        service_obj = client.GetService(service_ref)
         pretty_print.Success('New configuration has been applied to service '
                              '[{{bold}}{serv}{{reset}}].\n'
                              'URL: {{bold}}{url}{{reset}}'.format(

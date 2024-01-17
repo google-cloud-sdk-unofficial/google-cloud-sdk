@@ -23,6 +23,7 @@ from googlecloudsdk.command_lib.run import container_parser
 from googlecloudsdk.command_lib.run import exceptions
 from googlecloudsdk.command_lib.run import flags
 from googlecloudsdk.command_lib.run import messages_util
+from googlecloudsdk.command_lib.run import platforms
 from googlecloudsdk.command_lib.run import pretty_print
 from googlecloudsdk.command_lib.run import resource_args
 from googlecloudsdk.command_lib.run import resource_change_validators
@@ -51,7 +52,7 @@ def ContainerArgGroup(release_track=base.ReleaseTrack.GA):
   group.AddArgument(flags.ArgsFlag())
   group.AddArgument(flags.SecretsFlags())
   group.AddArgument(flags.DependsOnFlag())
-  if release_track == base.ReleaseTrack.ALPHA:
+  if release_track in [base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA]:
     group.AddArgument(flags.AddVolumeMountFlag())
     group.AddArgument(flags.RemoveVolumeMountFlag())
     group.AddArgument(flags.ClearVolumeMountsFlag())
@@ -179,6 +180,10 @@ class Update(base.Command):
     service_ref = args.CONCEPTS.service.Parse()
     flags.ValidateResource(service_ref)
 
+    use_wait = (
+        platforms.GetPlatform() == platforms.PLATFORM_MANAGED
+        and self.ReleaseTrack() == base.ReleaseTrack.ALPHA
+    )
     with serverless_operations.Connect(conn_context) as client:
       service = client.GetService(service_ref)
       resource_change_validators.ValidateClearVpcConnector(service, args)
@@ -204,6 +209,7 @@ class Update(base.Command):
                 flags.FlagIsExplicitlySet(args, 'revision_suffix')
                 or flags.FlagIsExplicitlySet(args, 'tag')
             ),
+            use_wait=use_wait,
         )
 
       if args.async_:
@@ -212,7 +218,6 @@ class Update(base.Command):
             'asynchronously.'.format(serv=service.name)
         )
       else:
-        service = client.GetService(service_ref)
         pretty_print.Success(
             messages_util.GetSuccessMessageForSynchronousDeploy(service)
         )
@@ -230,6 +235,7 @@ class BetaUpdate(Update):
     # Flags specific to managed CR
     managed_group = flags.GetManagedArgGroup(parser)
     flags.AddVpcNetworkGroupFlagsForUpdate(managed_group)
+    flags.AddVolumesFlags(managed_group, cls.ReleaseTrack())
     flags.RemoveContainersFlag().AddToParser(managed_group)
     container_args = ContainerArgGroup(cls.ReleaseTrack())
     container_parser.AddContainerFlags(parser, container_args)

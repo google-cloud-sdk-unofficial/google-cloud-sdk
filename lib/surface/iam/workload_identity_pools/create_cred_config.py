@@ -67,7 +67,9 @@ class CreateCredConfig(base.CreateCommand):
         parser, cred_config.ConfigType.WORKLOAD_IDENTITY_POOLS)
 
     parser.add_argument(
-        'audience', help='The workload identity pool provider resource ID.')
+        'audience',
+        help='The workload identity pool provider fully qualified identifier.',
+    )
 
     credential_types = parser.add_group(
         mutex=True, required=True, help='Credential types.')

@@ -203,17 +203,29 @@ def _AddArgs(
   GetPrivateIpv6GoogleAccessTypeFlagMapper(messages).choice_arg.AddToParser(
       parser)
 
+  stack_type_choices = {
+      'IPV4_ONLY': (
+          'New VMs in this subnet will only be assigned IPv4 addresses'
+      ),
+      'IPV4_IPV6': (
+          'New VMs in this subnet can have both IPv4 and IPv6 addresses'
+      ),
+  }
+
+  if api_version == compute_api.COMPUTE_ALPHA_API_VERSION:
+    stack_type_choices['IPV6_ONLY'] = (
+        'New VMs in this subnet will only be assigned IPv6 addresses'
+    )
+
   parser.add_argument(
       '--stack-type',
-      choices={
-          'IPV4_ONLY':
-              'New VMs in this subnet will only be assigned IPv4 addresses',
-          'IPV4_IPV6':
-              'New VMs in this subnet can have both IPv4 and IPv6 addresses'
-      },
+      choices=stack_type_choices,
       type=arg_utils.ChoiceToEnumName,
-      help=('The stack type for this subnet. Determines if IPv6 is enabled '
-            'on the subnet. If not specified IPV4_ONLY will be used.'))
+      help=(
+          'The stack type for this subnet. Determines if IPv6 is enabled '
+          'on the subnet. If not specified IPV4_ONLY will be used.'
+      ),
+  )
 
   ipv6_access_type_choices = {
       'EXTERNAL': 'VMs in this subnet can have external IPv6.',
@@ -223,9 +235,12 @@ def _AddArgs(
       '--ipv6-access-type',
       choices=ipv6_access_type_choices,
       type=arg_utils.ChoiceToEnumName,
-      help=('IPv6 access type can be specified only when the subnet is '
-            'created, or when the subnet is first updated to have a stack '
-            'type of IPV4_IPV6. Once set, the access type is immutable.'))
+      help=(
+          'IPv6 access type can be specified only when the subnet is '
+          'created, or when the subnet is first updated to have a stack '
+          'type of IPV4_IPV6. Once set, the access type is immutable.'
+      ),
+  )
 
   parser.display_info.AddCacheUpdater(network_flags.NetworksCompleter)
 

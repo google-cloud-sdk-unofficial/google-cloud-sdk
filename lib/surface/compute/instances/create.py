@@ -232,7 +232,7 @@ def _CommonArgs(
   instances_flags.AddNodeProjectArgs(parser)
 
   if support_graceful_shutdown:
-    instances_flags.AddGracefulShutdownArgs(parser)
+    instances_flags.AddGracefulShutdownArgs(parser, is_create=True)
 
   if support_host_error_timeout_seconds:
     instances_flags.AddHostErrorTimeoutSecondsArgs(parser)

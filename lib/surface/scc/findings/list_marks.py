@@ -19,13 +19,13 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-from googlecloudsdk.api_lib.util import apis
+from googlecloudsdk.api_lib.scc import securitycenter_client
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.scc import flags as scc_flags
+from googlecloudsdk.command_lib.scc import util as scc_util
 from googlecloudsdk.command_lib.scc.findings import flags
 from googlecloudsdk.command_lib.scc.findings import util
 from googlecloudsdk.core.util import times
-from googlecloudsdk.generated_clients.apis.securitycenter.v1 import securitycenter_v1_messages as messages
 
 
 @base.ReleaseTracks(
@@ -62,22 +62,25 @@ class ListMarks(base.ListCommand):
     flags.CreateFindingArg().AddToParser(parser)
     scc_flags.PAGE_TOKEN_FLAG.AddToParser(parser)
     scc_flags.READ_TIME_FLAG.AddToParser(parser)
+    scc_flags.API_VERSION_FLAG.AddToParser(parser)
+    scc_flags.LOCATION_FLAG.AddToParser(parser)
 
   def Run(self, args):
+    # Determine what version to call from --location and --api-version.
+    version = _GetApiVersion(args)
+    messages = securitycenter_client.GetMessages(version)
     request = messages.SecuritycenterOrganizationsSourcesFindingsListRequest()
 
     # Populate the request fields from args
     request.pageToken = args.page_token
-    request.readTime = args.read_time
-    if request.readTime:
-      # Get DateTime from string and convert to the format required by the API.
+    if version == "v1" and args.IsKnownAndSpecified("read_time"):
+      request.readTime = args.read_time
+      # Get DateTime from string and convert to the format required by API.
       read_time_dt = times.ParseDateTime(request.readTime)
       request.readTime = times.FormatDateTime(read_time_dt)
 
-    request = GenerateParentForListFindingsSecurityMarksCommand(
-        args, request
-    )
-    client = apis.GetClientInstance("securitycenter", "v1")
+    request = _GenerateParent(args, request, version)
+    client = securitycenter_client.GetClient(version)
     list_findings_response = client.organizations_sources_findings.List(request)
 
     # Get the security marks
@@ -87,10 +90,18 @@ class ListMarks(base.ListCommand):
     return response
 
 
-def GenerateParentForListFindingsSecurityMarksCommand(args, req):
+def _GenerateParent(args, req, version):
   """Generates a finding's parent and adds filter based on finding name."""
   util.ValidateMutexOnFindingAndSourceAndOrganization(args)
-  finding_name = util.GetFindingNameForParent(args)
-  req.parent = util.GetSourceParentFromResourceName(finding_name)
-  req.filter = "name : \"" + util.GetFindingIdFromName(finding_name) + "\""
+  finding_name = util.GetFullFindingName(args, version)
+  req.parent = util.GetSourceParentFromFindingName(finding_name, version)
+  req.filter = f"name : \"{util.GetFindingIdFromName(finding_name)}\""
   return req
+
+
+def _GetApiVersion(args):
+  """Determine what version to call from --location and --api-version."""
+  deprecated_args = ["compare_duration", "read_time"]
+  return scc_util.GetVersionFromArguments(
+      args, args.finding, deprecated_args
+  )

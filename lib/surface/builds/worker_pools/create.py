@@ -25,7 +25,6 @@ from googlecloudsdk.api_lib.compute import utils as compute_utils
 from googlecloudsdk.api_lib.util import waiter
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.cloudbuild import workerpool_flags
-from googlecloudsdk.command_lib.util.apis import arg_utils
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 from googlecloudsdk.core import resources
@@ -33,13 +32,11 @@ from googlecloudsdk.core import resources
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Create(base.CreateCommand):
-  """Create a worker pool for use by Cloud Build."""
+  """Create a worker pool for use by Google Cloud Build."""
 
   detailed_help = {
-      'DESCRIPTION':
-          '{description}',
-      'EXAMPLES':
-          """\
+      'DESCRIPTION': '{description}',
+      'EXAMPLES': """\
           To create a worker pool named `wp1` in region `us-central1`, run:
 
             $ {command} wp1 --region=us-central1
@@ -97,12 +94,8 @@ class Create(base.CreateCommand):
     if args.config_from_file is not None:
       try:
         wp = workerpool_config.LoadWorkerpoolConfigFromPath(
-            args.config_from_file, messages)
-        # Don't allow a worker pool config for hybrid pools in any other
-        # track but alpha.
-        if release_track != base.ReleaseTrack.ALPHA:
-          if wp.hybridPoolConfig is not None:
-            raise cloudbuild_exceptions.HybridNonAlphaConfigError
+            args.config_from_file, messages
+        )
       except cloudbuild_exceptions.ParseProtoException as err:
         log.err.Print(
             '\nFailed to parse configuration from file. If you'
@@ -118,9 +111,12 @@ class Create(base.CreateCommand):
         if args.peered_network_ip_range is not None:
           network_config.peeredNetworkIpRange = args.peered_network_ip_range
       # All of the egress flags are mutually exclusive with each other.
-      if args.no_public_egress or (release_track == base.ReleaseTrack.GA and
-                                   args.no_external_ip):
-        network_config.egressOption = messages.NetworkConfig.EgressOptionValueValuesEnum.NO_PUBLIC_EGRESS
+      if args.no_public_egress or (
+          release_track == base.ReleaseTrack.GA and args.no_external_ip
+      ):
+        network_config.egressOption = (
+            messages.NetworkConfig.EgressOptionValueValuesEnum.NO_PUBLIC_EGRESS
+        )
       wp.privatePoolV1Config.networkConfig = network_config
 
       worker_config = messages.WorkerConfig()
@@ -195,13 +191,11 @@ class CreateBeta(Create):
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class CreateAlpha(Create):
-  """Create a private or hybrid pool for use by Cloud Build."""
+  """Create a private pool for use by Cloud Build."""
 
   detailed_help = {
-      'DESCRIPTION':
-          '{description}',
-      'EXAMPLES':
-          """\
+      'DESCRIPTION': '{description}',
+      'EXAMPLES': """\
 
         * Private pools
 
@@ -214,17 +208,7 @@ class CreateAlpha(Create):
         and have a disk size of 64GB, run:
 
           $ {command} pwp1 --project=p1 --region=us-central1 --peered-network=projects/123/global/networks/default --peered-network-ip-range=192.168.0.0/28 --worker-machine-type=e2-standard-2 --worker-disk-size=64GB
-
-        * Hybrid pools
-
-        To create a hybrid pool named `hwp1` out of Hub member named `foo` in region `us-west4`, run:
-
-          $ {command} hwp1 --region=us-west4 --membership=projects/123/locations/global/memberships/foo
-
-        To create a hybrid pool in project `p1` in region `us-west4` that requires 60 GB of disk size per build by default, run:
-
-          $ {command} hwp1 --region=us-west4 --membership=projects/123/locations/global/memberships/foo --default-build-disk-size=60GB
-          """,
+                    """,
   }
 
   @staticmethod
@@ -268,53 +252,36 @@ class CreateAlpha(Create):
     if args.config_from_file is not None:
       try:
         wp = workerpool_config.LoadWorkerpoolConfigFromPath(
-            args.config_from_file, messages)
+            args.config_from_file, messages
+        )
       except cloudbuild_exceptions.ParseProtoException as err:
         log.err.Print('\nFailed to parse configuration from file.\n')
         raise err
     else:
-      if args.membership is not None:
+      wp.privatePoolV1Config = messages.PrivatePoolV1Config()
 
-        wp.hybridPoolConfig = messages.HybridPoolConfig()
-        wp.hybridPoolConfig.membership = args.membership
+      network_config = messages.NetworkConfig()
+      if args.peered_network is not None:
+        network_config.peeredNetwork = args.peered_network
+        if args.peered_network_ip_range is not None:
+          network_config.peeredNetworkIpRange = args.peered_network_ip_range
+      # All of the egress flags are mutually exclusive with each other.
+      if args.no_public_egress or (
+          release_track == base.ReleaseTrack.GA and args.no_external_ip
+      ):
+        network_config.egressOption = (
+            messages.NetworkConfig.EgressOptionValueValuesEnum.NO_PUBLIC_EGRESS
+        )
+      wp.privatePoolV1Config.networkConfig = network_config
 
-        worker_config = messages.HybridWorkerConfig()
-        if args.default_build_disk_size is not None:
-          worker_config.diskSizeGb = compute_utils.BytesToGb(
-              args.default_build_disk_size)
-        if args.default_build_memory is not None:
-          worker_config.memoryGb = cloudbuild_util.BytesToGb(
-              args.default_build_memory)
-        if args.default_build_vcpu_count is not None:
-          worker_config.vcpuCount = args.default_build_vcpu_count
-        wp.hybridPoolConfig.defaultWorkerConfig = worker_config
-
-        wp.hybridPoolConfig.builderImageCaching = arg_utils.ChoiceToEnum(
-            args.builder_image_caching,
-            messages.HybridPoolConfig.BuilderImageCachingValueValuesEnum)
-        if args.caching_storage_class is not None:
-          wp.hybridPoolConfig.cachingStorageClass = args.caching_storage_class
-      else:
-        wp.privatePoolV1Config = messages.PrivatePoolV1Config()
-
-        network_config = messages.NetworkConfig()
-        if args.peered_network is not None:
-          network_config.peeredNetwork = args.peered_network
-          if args.peered_network_ip_range is not None:
-            network_config.peeredNetworkIpRange = args.peered_network_ip_range
-        # All of the egress flags are mutually exclusive with each other.
-        if args.no_public_egress or (release_track == base.ReleaseTrack.GA and
-                                     args.no_external_ip):
-          network_config.egressOption = messages.NetworkConfig.EgressOptionValueValuesEnum.NO_PUBLIC_EGRESS
-        wp.privatePoolV1Config.networkConfig = network_config
-
-        worker_config = messages.WorkerConfig()
-        if args.worker_machine_type is not None:
-          worker_config.machineType = args.worker_machine_type
-        if args.worker_disk_size is not None:
-          worker_config.diskSizeGb = compute_utils.BytesToGb(
-              args.worker_disk_size)
-        wp.privatePoolV1Config.workerConfig = worker_config
+      worker_config = messages.WorkerConfig()
+      if args.worker_machine_type is not None:
+        worker_config.machineType = args.worker_machine_type
+      if args.worker_disk_size is not None:
+        worker_config.diskSizeGb = compute_utils.BytesToGb(
+            args.worker_disk_size
+        )
+      wp.privatePoolV1Config.workerConfig = worker_config
 
     parent = properties.VALUES.core.project.Get(required=True)
 
@@ -322,21 +289,29 @@ class CreateAlpha(Create):
     parent_resource = resources.REGISTRY.Create(
         collection='cloudbuild.projects.locations',
         projectsId=parent,
-        locationsId=wp_region)
+        locationsId=wp_region,
+    )
 
     # Send the Create request
     created_op = client.projects_locations_workerPools.Create(
         messages.CloudbuildProjectsLocationsWorkerPoolsCreateRequest(
             workerPool=wp,
             parent=parent_resource.RelativeName(),
-            workerPoolId=wp_name))
+            workerPoolId=wp_name,
+        )
+    )
 
     op_resource = resources.REGISTRY.ParseRelativeName(
-        created_op.name, collection='cloudbuild.projects.locations.operations')
+        created_op.name, collection='cloudbuild.projects.locations.operations'
+    )
     created_wp = waiter.WaitFor(
-        waiter.CloudOperationPoller(client.projects_locations_workerPools,
-                                    client.projects_locations_operations),
-        op_resource, 'Creating worker pool')
+        waiter.CloudOperationPoller(
+            client.projects_locations_workerPools,
+            client.projects_locations_operations,
+        ),
+        op_resource,
+        'Creating worker pool',
+    )
 
     # Get the workerpool ref
     wp_resource = resources.REGISTRY.Parse(
@@ -347,7 +322,8 @@ class CreateAlpha(Create):
             'projectsId': parent,
             'locationsId': wp_region,
             'workerPoolsId': wp_name,
-        })
+        },
+    )
 
     log.CreatedResource(wp_resource)
 

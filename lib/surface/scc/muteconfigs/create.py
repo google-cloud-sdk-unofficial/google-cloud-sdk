@@ -65,7 +65,6 @@ class Create(base.CreateCommand):
     flags.AddParentGroup(parser)
     flags.DESCRIPTION_FLAG.AddToParser(parser)
     flags.FILTER_FLAG.AddToParser(parser)
-    # TODO: b/311713896 - Remove api-version flag when v2 is fully GA.
     scc_flags.API_VERSION_FLAG.AddToParser(parser)
     scc_flags.LOCATION_FLAG.AddToParser(parser)
     parser.display_info.AddFormat(properties.VALUES.core.default_format.Get())

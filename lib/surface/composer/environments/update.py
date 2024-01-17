@@ -75,6 +75,12 @@ class Update(base.Command):
     flags.WEB_SERVER_DENY_ALL.AddToParser(web_server_group)
     flags.ENABLE_HIGH_RESILIENCE.AddToParser(Update.update_type_group)
     flags.DISABLE_HIGH_RESILIENCE.AddToParser(Update.update_type_group)
+    flags.ENABLE_LOGS_IN_CLOUD_LOGGING_ONLY.AddToParser(
+        Update.update_type_group
+    )
+    flags.DISABLE_LOGS_IN_CLOUD_LOGGING_ONLY.AddToParser(
+        Update.update_type_group
+    )
     flags.CLOUD_SQL_MACHINE_TYPE.AddToParser(Update.update_type_group)
     flags.WEB_SERVER_MACHINE_TYPE.AddToParser(Update.update_type_group)
 
@@ -302,6 +308,22 @@ class Update(base.Command):
             )
         )
       params['enable_high_resilience'] = bool(args.enable_high_resilience)
+
+    if (
+        args.enable_logs_in_cloud_logging_only
+        or args.disable_logs_in_cloud_logging_only
+    ):
+      if is_composer_v1:
+        raise command_util.InvalidUserInputError(
+            _INVALID_OPTION_FOR_V1_ERROR_MSG.format(
+                opt='enable_logs_in_cloud_logging_only'
+                if args.enable_logs_in_cloud_logging_only
+                else 'disable_logs_in_cloud_logging_only'
+            )
+        )
+      params['enable_logs_in_cloud_logging_only'] = bool(
+          args.enable_logs_in_cloud_logging_only
+      )
 
     if self._support_composer3flags:
       self._addComposer3Fields(params, args, env_obj)

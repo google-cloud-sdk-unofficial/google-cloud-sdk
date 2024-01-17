@@ -20,15 +20,14 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-from googlecloudsdk.api_lib.util import apis
+from googlecloudsdk.api_lib.scc import securitycenter_client
 from googlecloudsdk.calliope import base
-from googlecloudsdk.command_lib.scc import util
+from googlecloudsdk.command_lib.scc import flags as scc_flags
+from googlecloudsdk.command_lib.scc import util as scc_util
 from googlecloudsdk.command_lib.scc.bqexports import bqexport_util
 from googlecloudsdk.command_lib.scc.bqexports import flags as bqexports_flags
-from googlecloudsdk.generated_clients.apis.securitycenter.v1 import securitycenter_v1_messages
 
 
-# TODO: b/308476775 - Migrate Get command usage to Describe
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Get(base.DescribeCommand):
   """Get a Cloud Security Command Center BigQuery export."""
@@ -70,21 +69,31 @@ class Get(base.DescribeCommand):
     bqexports_flags.AddBigQueryPositionalArgument(parser)
     bqexports_flags.AddParentGroup(parser)
 
+    # TODO: b/311713896 - Remove api-version flag when v2 is fully GA.
+    scc_flags.API_VERSION_FLAG.AddToParser(parser)
+    scc_flags.LOCATION_FLAG.AddToParser(parser)
+
   def Run(self, args):
-    req = (
-        securitycenter_v1_messages.SecuritycenterOrganizationsBigQueryExportsGetRequest()
+
+    # Determine what version to call from --location and --api-version. The
+    # BigQueryExport is a version_specific_existing_resource that may not be
+    # accessed through v2 if it currently exists in v1, and vice versa.
+    version = scc_util.GetVersionFromArguments(
+        args, args.BIG_QUERY_EXPORT, version_specific_existing_resource=True
     )
+    messages = securitycenter_client.GetMessages(version)
+    client = securitycenter_client.GetClient(version)
 
-    parent = util.GetParentFromNamedArguments(args)
-    if parent is not None:
-      bq_export_id = bqexport_util.ValidateAndGetBigQueryExportId(args)
-      req.name = parent + '/bigQueryExports/' + bq_export_id
+    if version == 'v1':
+      req = messages.SecuritycenterOrganizationsBigQueryExportsGetRequest()
+      req.name = bqexport_util.ValidateAndGetBigQueryExportV1Name(args)
+      bq_export_response = client.organizations_bigQueryExports.Get(req)
     else:
-      bq_export_name = (
-          bqexport_util.ValidateAndGetBigQueryExportFullResourceName(args)
+      req = (
+          messages.SecuritycenterOrganizationsLocationsBigQueryExportsGetRequest()
       )
-      req.name = bq_export_name
-
-    client = apis.GetClientInstance('securitycenter', 'v1')
-    bq_export_response = client.organizations_bigQueryExports.Get(req)
+      req.name = bqexport_util.ValidateAndGetBigQueryExportV2Name(args)
+      bq_export_response = client.organizations_locations_bigQueryExports.Get(
+          req
+      )
     return bq_export_response

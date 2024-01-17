@@ -43,13 +43,13 @@ DETAILED_HELP = {
 
       $ {command} example-instance --zone=us-central1-a --update-labels=k0=value1,k1=value2 --remove-labels=k3
 
-    Labels can be used to identify the disk. To list disks with the 'k1:value2' label, run:
+    Labels can be used to identify the instance. To list instances with the 'k1:value2' label, run:
 
       $ {parent_command} list --filter='labels.k1:value2'
 
     To list only the labels when describing a resource, use --format to filter the result:
 
-      $ {parent_command} describe example-disk --format="default(labels)"
+      $ {parent_command} describe example-instance --format="default(labels)"
   """
 }
 

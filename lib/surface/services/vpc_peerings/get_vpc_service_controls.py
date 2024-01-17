@@ -24,7 +24,9 @@ from googlecloudsdk.command_lib.projects import util as projects_util
 from googlecloudsdk.core import properties
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
+)
 class GetVpcServiceControls(base.DescribeCommand):
   """Get VPC state of Service Controls for the peering connection."""
 

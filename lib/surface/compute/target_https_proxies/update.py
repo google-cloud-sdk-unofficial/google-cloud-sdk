@@ -265,7 +265,7 @@ def _AddServerTLSPolicyArguments(parser):
   )
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Update(base.UpdateCommand):
   """Update a target HTTPS proxy."""
 
@@ -365,6 +365,6 @@ class Update(base.UpdateCommand):
     )
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class UpdateAlpha(Update):
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
+class UpdateBeta(Update):
   _server_tls_policy_enabled = True

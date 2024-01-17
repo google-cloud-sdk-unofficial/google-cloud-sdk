@@ -1,9 +1,9 @@
 - release_tracks: [ALPHA]
   help_text:
-    brief: "List storage pools."
-    description: "List storage pools."
+    brief: "View storage pools."
+    description: "View storage pools."
     examples: |
-      The following command lists all storage pools in all regions and zones:
+        To display all storage pools in all regions and zones, run the following command:
 
         $ {command}
 

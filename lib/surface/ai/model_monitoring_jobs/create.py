@@ -76,6 +76,7 @@ def _Args(parser):
   flags.AddObjectiveConfigGroupForCreate(parser, required=False)
   flags.AddKmsKeyResourceArg(parser, 'model deployment monitoring job')
   flags.GetAnomalyCloudLoggingArg(required=False).AddToParser(parser)
+  flags.GetNotificationChannelsArg(required=False).AddToParser(parser)
   labels_util.AddCreateLabelsFlags(parser)
 
 
@@ -118,8 +119,6 @@ class Create(base.CreateCommand):
   @staticmethod
   def Args(parser):
     _Args(parser)
-    # TODO(b/294293683): move notification channel arg to _Args when GA.
-    flags.GetNotificationChannelsArg(required=False).AddToParser(parser)
 
   def Run(self, args):
     return _Run(args, constants.BETA_VERSION, self.ReleaseTrack().prefix)

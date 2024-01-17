@@ -25,9 +25,7 @@ from googlecloudsdk.api_lib.privateca import request_utils
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.calliope.concepts import deps
-from googlecloudsdk.command_lib.privateca import create_utils
 from googlecloudsdk.command_lib.privateca import flags
-from googlecloudsdk.command_lib.privateca import flags_v1
 from googlecloudsdk.command_lib.privateca import key_generation
 from googlecloudsdk.command_lib.privateca import pem_utils
 from googlecloudsdk.command_lib.privateca import resource_args
@@ -36,7 +34,6 @@ from googlecloudsdk.command_lib.util.concepts import concept_parsers
 from googlecloudsdk.command_lib.util.concepts import presentation_specs
 from googlecloudsdk.core import log
 from googlecloudsdk.core.util import files
-
 import six
 
 _KEY_OUTPUT_HELP = """The path where the generated private key file should be written (in PEM format).
@@ -51,7 +48,8 @@ def _ReadCsr(csr_file):
     return files.ReadFileContents(csr_file)
   except (files.Error, OSError, IOError):
     raise exceptions.BadFileException(
-        "Could not read provided CSR file '{}'.".format(csr_file))
+        "Could not read provided CSR file '{}'.".format(csr_file)
+    )
 
 
 def _WritePemChain(pem_cert, issuing_chain, cert_file):
@@ -60,223 +58,8 @@ def _WritePemChain(pem_cert, issuing_chain, cert_file):
     files.WriteFileContents(cert_file, pem_utils.PemChainForOutput(pem_chain))
   except (files.Error, OSError, IOError):
     raise exceptions.BadFileException(
-        "Could not write certificate to '{}'.".format(cert_file))
-
-
-# TODO(b/177604350): Remove Beta code paths.
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class CreateBeta(base.CreateCommand):
-  r"""Create a new certificate.
-
-  ## EXAMPLES
-
-  To create a certificate using a CSR:
-
-      $ {command} frontend-server-tls \
-        --issuer=server-tls-1 --issuer-location=us \
-        --csr=./csr.pem \
-        --cert-output-file=./cert.pem \
-        --validity=P30D
-
-    To create a certificate using a client-generated key:
-
-      $ {command} frontend-server-tls \
-        --issuer=server-tls-1 --issuer-location=us \
-        --generate-key \
-        --key-output-file=./key \
-        --cert-output-file=./cert.pem \
-        --dns-san=www.example.com \
-        --reusable-config=server-tls
-  """
-
-  @staticmethod
-  def Args(parser):
-    base.Argument(
-        '--cert-output-file',
-        help='The path where the resulting PEM-encoded certificate chain file should be written (ordered from leaf to root).',
-        required=False).AddToParser(parser)
-    flags.AddValidityFlag(parser, 'certificate', 'P30D', '30 days')
-    labels_util.AddCreateLabelsFlags(parser)
-
-    cert_generation_group = parser.add_group(
-        mutex=True, required=True, help='Certificate generation method.')
-    base.Argument(
-        '--csr', help='A PEM-encoded certificate signing request file path.'
-    ).AddToParser(cert_generation_group)
-
-    # This group is not useful in the beta command, but is here for consistency
-    # in the flag hierarchy with the GA command.
-    non_csr_group = cert_generation_group.add_group(
-        help='Alternatively, you may describe the certificate and key to use.')
-    key_group = non_csr_group.add_group(
-        mutex=True, required=True,
-        help='To describe the key that will be used for this certificate, use '
-             'one of the following options.')
-    key_generation_group = key_group.add_group(
-        help='To generate a new key pair, use the following:')
-    base.Argument(
-        '--generate-key',
-        help='Use this flag to have a new RSA-2048 private key securely generated on your machine.',
-        action='store_const',
-        const=True,
-        default=False,
-        required=True).AddToParser(key_generation_group)
-    base.Argument(
-        '--key-output-file', help=_KEY_OUTPUT_HELP,
-        required=True).AddToParser(key_generation_group)
-
-    subject_group = non_csr_group.add_group(
-        help='The subject names for the certificate.', required=True)
-    flags.AddSubjectFlags(subject_group)
-    reusable_config_group = non_csr_group.add_group(
-        mutex=True, help='The x509 configuration used for this certificate.')
-    flags.AddInlineReusableConfigFlags(
-        reusable_config_group, is_ca_command=False, default_max_chain_length=0)
-
-    cert_arg = 'CERTIFICATE'
-    concept_parsers.ConceptParser([
-        presentation_specs.ResourcePresentationSpec(
-            cert_arg,
-            resource_args.CreateCertificateResourceSpec(
-                cert_arg, [CreateBeta._GenerateCertificateIdFallthrough()]),
-            'The name of the certificate to issue. If the certificate ID is '
-            'omitted, a random identifier will be generated according to the '
-            'following format: {YYYYMMDD}-{3 random alphanumeric characters}-'
-            '{3 random alphanumeric characters}. The certificate ID is not '
-            'required when the issuing CA is in the DevOps tier.',
-            required=True)
-    ]).AddToParser(parser)
-
-    concept_parsers.ConceptParser([
-        presentation_specs.ResourcePresentationSpec(
-            '--reusable-config',
-            resource_args.CreateReusableConfigResourceSpec(
-                location_fallthroughs=[
-                    deps.Fallthrough(
-                        function=lambda: '',
-                        hint=(
-                            'location will default to the same location as the '
-                            'certificate'),
-                        active=False,
-                        plural=False)
-                ]),
-            'The Reusable Config containing X.509 values for this certificate.',
-            flag_name_overrides={
-                'location': '',
-                'project': '',
-            },
-            group=reusable_config_group)
-    ]).AddToParser(reusable_config_group)
-
-  @classmethod
-  def _GenerateCertificateIdFallthrough(cls):
-    cls.id_fallthrough_was_used = False
-
-    def FallthroughFn():
-      cls.id_fallthrough_was_used = True
-      return certificate_utils.GenerateCertId()
-
-    return deps.Fallthrough(
-        function=FallthroughFn,
-        hint='certificate id will default to an automatically generated id',
-        active=False,
-        plural=False)
-
-  def _GetIssuingCa(self, ca_name):
-    return self.client.projects_locations_certificateAuthorities.Get(
-        self.messages
-        .PrivatecaProjectsLocationsCertificateAuthoritiesGetRequest(
-            name=ca_name))
-
-  @classmethod
-  def _ValidateArgsForDevOpsIssuer(cls, args):
-    """Validates the command-line args when the issuer is a DevOps CA."""
-    if not args.IsSpecified('cert_output_file'):
-      raise exceptions.RequiredArgumentException(
-          '--cert-output-file',
-          'Certificate must be written to a file since the issuing CA does '
-          'not support describing certificates after they are issued.')
-
-    unused_args = []
-    if not cls.id_fallthrough_was_used:
-      unused_args.append('certificate ID')
-    if args.IsSpecified('labels'):
-      unused_args.append('labels')
-
-    if unused_args:
-      names = ', '.join(unused_args)
-      verb = 'was' if len(unused_args) == 1 else 'were'
-      log.warning('{names} {verb} specified but will not be used since the '
-                  'issuing CA is in the DevOps tier, which does not expose '
-                  'certificate lifecycle.'.format(names=names, verb=verb))
-
-  def _GenerateCertificateConfig(self, request, args, location):
-    private_key, public_key = key_generation.RSAKeyGen(2048)
-    key_generation.ExportPrivateKey(args.key_output_file, private_key)
-
-    config = self.messages.CertificateConfig()
-    config.publicKey = self.messages.PublicKey()
-    config.publicKey.key = public_key
-    config.publicKey.type = self.messages.PublicKey.TypeValueValuesEnum.PEM_RSA_KEY
-    config.reusableConfig = flags.ParseReusableConfig(
-        args, location, is_ca_command=args.is_ca_cert)
-    config.subjectConfig = flags.ParseSubjectFlags(args, is_ca=args.is_ca_cert)
-
-    return config
-
-  def Run(self, args):
-    self.client = privateca_base.GetClientInstance()
-    self.messages = privateca_base.GetMessagesModule()
-
-    cert_ref = args.CONCEPTS.certificate.Parse()
-    issuing_ca = self._GetIssuingCa(cert_ref.Parent().RelativeName())
-
-    if issuing_ca.tier == self.messages.CertificateAuthority.TierValueValuesEnum.DEVOPS:
-      CreateBeta._ValidateArgsForDevOpsIssuer(args)
-
-    labels = labels_util.ParseCreateArgs(args,
-                                         self.messages.Certificate.LabelsValue)
-
-    request = self.messages.PrivatecaProjectsLocationsCertificateAuthoritiesCertificatesCreateRequest(
+        "Could not write certificate to '{}'.".format(cert_file)
     )
-    request.certificate = self.messages.Certificate()
-    request.certificateId = cert_ref.Name()
-    request.certificate.lifetime = flags.ParseValidityFlag(args)
-    request.certificate.labels = labels
-    request.parent = cert_ref.Parent().RelativeName()
-    request.requestId = request_utils.GenerateRequestId()
-
-    # TODO(b/12345): only show this for Enterprise certs.
-    create_utils.PrintBetaResourceDeletionDisclaimer('certificates')
-
-    if args.csr:
-      request.certificate.pemCsr = _ReadCsr(args.csr)
-    elif args.generate_key:
-      request.certificate.config = self._GenerateCertificateConfig(
-          request, args, cert_ref.locationsId)
-    else:
-      # This should not happen because of the required arg group, but protects
-      # in case of future additions.
-      raise exceptions.OneOfArgumentsRequiredException(
-          ['--csr', '--generate-key'],
-          ('To create a certificate, please specify either a CSR or the '
-           '--generate-key flag to create a new key.'))
-
-    certificate = self.client.projects_locations_certificateAuthorities_certificates.Create(
-        request)
-
-    status_message = 'Created Certificate'
-    # DevOps certs won't have a name.
-    if certificate.name:
-      status_message += ' [{}]'.format(certificate.name)
-
-    if args.IsSpecified('cert_output_file'):
-      status_message += ' and saved it to [{}]'.format(args.cert_output_file)
-      _WritePemChain(certificate.pemCertificate,
-                     certificate.pemCertificateChain, args.cert_output_file)
-
-    status_message += '.'
-    log.status.Print(status_message)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
@@ -307,61 +90,87 @@ class Create(base.CreateCommand):
   @staticmethod
   def Args(parser):
     persistence_group = parser.add_group(
-        mutex=True, required=True, help='Certificate persistence options.')
+        mutex=True, required=True, help='Certificate persistence options.'
+    )
     base.Argument(
         '--cert-output-file',
-        help='The path where the resulting PEM-encoded certificate chain file should be written (ordered from leaf to root).',
-        required=False).AddToParser(persistence_group)
+        help=(
+            'The path where the resulting PEM-encoded certificate chain file'
+            ' should be written (ordered from leaf to root).'
+        ),
+        required=False,
+    ).AddToParser(persistence_group)
     base.Argument(
         '--validate-only',
-        help='If this flag is set, the certificate resource will not be persisted '
-        'and the returned certificate will not contain the pem_certificate field.',
+        help=(
+            'If this flag is set, the certificate resource will not be'
+            ' persisted and the returned certificate will not contain the'
+            ' pem_certificate field.'
+        ),
         action='store_true',
         default=False,
-        required=False).AddToParser(persistence_group)
+        required=False,
+    ).AddToParser(persistence_group)
 
-    flags_v1.AddValidityFlag(parser, 'certificate', 'P30D', '30 days')
+    flags.AddValidityFlag(parser, 'certificate', 'P30D', '30 days')
     labels_util.AddCreateLabelsFlags(parser)
 
     cert_generation_group = parser.add_group(
-        mutex=True, required=True, help='Certificate generation method.')
+        mutex=True, required=True, help='Certificate generation method.'
+    )
     base.Argument(
         '--csr', help='A PEM-encoded certificate signing request file path.'
     ).AddToParser(cert_generation_group)
 
     non_csr_group = cert_generation_group.add_group(
-        help='Alternatively, you may describe the certificate and key to use.')
+        help='Alternatively, you may describe the certificate and key to use.'
+    )
     key_group = non_csr_group.add_group(
-        mutex=True, required=True,
-        help='To describe the key that will be used for this certificate, use '
-             'one of the following options.')
+        mutex=True,
+        required=True,
+        help=(
+            'To describe the key that will be used for this certificate, use '
+            'one of the following options.'
+        ),
+    )
     key_generation_group = key_group.add_group(
-        help='To generate a new key pair, use the following:')
+        help='To generate a new key pair, use the following:'
+    )
     base.Argument(
         '--generate-key',
-        help='Use this flag to have a new RSA-2048 private key securely generated on your machine.',
+        help=(
+            'Use this flag to have a new RSA-2048 private key securely'
+            ' generated on your machine.'
+        ),
         action='store_const',
         const=True,
         default=False,
-        required=True).AddToParser(key_generation_group)
+        required=True,
+    ).AddToParser(key_generation_group)
     base.Argument(
-        '--key-output-file', help=_KEY_OUTPUT_HELP,
-        required=True).AddToParser(key_generation_group)
+        '--key-output-file', help=_KEY_OUTPUT_HELP, required=True
+    ).AddToParser(key_generation_group)
     base.Argument(
         '--ca',
-        help='The name of an existing certificate authority to use for '
-        'issuing the certificate. If omitted, a certificate authority '
-        'will be will be chosen from the CA pool by the service on your behalf.',
-        required=False).AddToParser(parser)
+        help=(
+            'The name of an existing certificate authority to use for issuing'
+            ' the certificate. If omitted, a certificate authority will be will'
+            ' be chosen from the CA pool by the service on your behalf.'
+        ),
+        required=False,
+    ).AddToParser(parser)
     subject_group = non_csr_group.add_group(
-        help='The subject names for the certificate.', required=True)
-    flags_v1.AddSubjectFlags(subject_group)
+        help='The subject names for the certificate.', required=True
+    )
+    flags.AddSubjectFlags(subject_group)
     x509_parameters_group = non_csr_group.add_group(
-        mutex=True, help='The x509 configuration used for this certificate.')
-    flags_v1.AddInlineX509ParametersFlags(
-        x509_parameters_group, is_ca_command=False, default_max_chain_length=0)
-    flags_v1.AddUsePresetProfilesFlag(x509_parameters_group)
-    flags_v1.AddSubjectKeyIdFlag(parser)
+        mutex=True, help='The x509 configuration used for this certificate.'
+    )
+    flags.AddInlineX509ParametersFlags(
+        x509_parameters_group, is_ca_command=False, default_max_chain_length=0
+    )
+    flags.AddUsePresetProfilesFlag(x509_parameters_group)
+    flags.AddSubjectKeyIdFlag(parser)
 
     cert_arg = 'CERTIFICATE'
     concept_parsers.ConceptParser(
@@ -369,35 +178,41 @@ class Create(base.CreateCommand):
             presentation_specs.ResourcePresentationSpec(
                 cert_arg,
                 resource_args.CreateCertResourceSpec(
-                    cert_arg, [Create._GenerateCertificateIdFallthrough()]),
+                    cert_arg, [Create._GenerateCertificateIdFallthrough()]
+                ),
                 'The name of the certificate to issue. If the certificate ID '
                 'is omitted, a random identifier will be generated according '
                 'to the following format: {YYYYMMDD}-{3 random alphanumeric '
                 'characters}-{3 random alphanumeric characters}. The '
                 'certificate ID is not required when the issuing CA pool is in '
                 'the DevOps tier.',
-                required=True),
+                required=True,
+            ),
             presentation_specs.ResourcePresentationSpec(
                 '--template',
                 resource_args.CreateCertificateTemplateResourceSpec(
-                    'certificate_template'),
+                    'certificate_template'
+                ),
                 'The name of a certificate template to use for issuing this '
                 'certificate, if desired. A template may overwrite parts of '
                 'the certificate request, and the use of certificate templates '
-                'may be required and/or regulated by the issuing CA Pool\'s CA '
+                "may be required and/or regulated by the issuing CA Pool's CA "
                 'Manager. The specified template must be in the same location '
                 'as the issuing CA Pool.',
                 required=False,
-                prefixes=True),
+                prefixes=True,
+            ),
             presentation_specs.ResourcePresentationSpec(
                 '--kms-key-version',
                 resource_args.CreateKmsKeyVersionResourceSpec(),
                 'An existing KMS key version backing this certificate.',
-                group=key_group),
+                group=key_group,
+            ),
         ],
         command_level_fallthroughs={
             '--template.location': ['CERTIFICATE.issuer-location']
-        }).AddToParser(parser)
+        },
+    ).AddToParser(parser)
 
     # The only time a resource is returned is when args.validate_only is set.
     parser.display_info.AddFormat('yaml(certificateDescription)')
@@ -414,15 +229,19 @@ class Create(base.CreateCommand):
         function=FallthroughFn,
         hint='certificate id will default to an automatically generated id',
         active=False,
-        plural=False)
+        plural=False,
+    )
 
   def _ValidateArgs(self, args):
     """Validates the command-line args."""
     if args.IsSpecified('use_preset_profile') and args.IsSpecified('template'):
       raise exceptions.OneOfArgumentsRequiredException(
           ['--use-preset-profile', '--template'],
-          ('To create a certificate, please specify either a preset profile '
-           'or a certificate template.'))
+          (
+              'To create a certificate, please specify either a preset profile '
+              'or a certificate template.'
+          ),
+      )
 
     resource_args.ValidateResourceIsCompleteIfSpecified(args, 'kms_key_version')
 
@@ -441,7 +260,8 @@ class Create(base.CreateCommand):
       log.warning(
           '{names} {verb} specified but will not be used since the '
           'issuing CA pool is in the DevOps tier, which does not expose '
-          'certificate lifecycle.'.format(names=names, verb=verb))
+          'certificate lifecycle.'.format(names=names, verb=verb)
+      )
 
   def _GetPublicKey(self, args):
     """Fetches the public key associated with a non-CSR certificate request, as UTF-8 encoded bytes."""
@@ -453,16 +273,22 @@ class Create(base.CreateCommand):
     elif kms_key_version:
       public_key_response = cryptokeyversions.GetPublicKey(kms_key_version)
       # bytes(..) requires an explicit encoding in PY3.
-      return (bytes(public_key_response.pem) if six.PY2
-              else bytes(public_key_response.pem, 'utf-8'))
+      return (
+          bytes(public_key_response.pem)
+          if six.PY2
+          else bytes(public_key_response.pem, 'utf-8')
+      )
     else:
       # This should not happen because of the required arg group, but protects
       # in case of future additions.
       raise exceptions.OneOfArgumentsRequiredException(
           ['--csr', '--generate-key', '--kms-key-version'],
-          ('To create a certificate, please specify either a CSR, the '
-           '--generate-key flag to create a new key, or the --kms-key-version '
-           'flag to use an existing KMS key.'))
+          (
+              'To create a certificate, please specify either a CSR, the'
+              ' --generate-key flag to create a new key, or the'
+              ' --kms-key-version flag to use an existing KMS key.'
+          ),
+      )
 
   def _GenerateCertificateConfig(self, request, args):
     public_key = self._GetPublicKey(args)
@@ -471,10 +297,9 @@ class Create(base.CreateCommand):
     config.publicKey = self.messages.PublicKey()
     config.publicKey.key = public_key
     config.publicKey.format = self.messages.PublicKey.FormatValueValuesEnum.PEM
-    config.subjectConfig = flags_v1.ParseSubjectFlags(
-        args, is_ca=args.is_ca_cert)
-    config.x509Config = flags_v1.ParseX509Parameters(args, is_ca_command=False)
-    config.subjectKeyId = flags_v1.ParseSubjectKeyId(args, self.messages)
+    config.subjectConfig = flags.ParseSubjectFlags(args, is_ca=args.is_ca_cert)
+    config.x509Config = flags.ParseX509Parameters(args, is_ca_command=False)
+    config.subjectKeyId = flags.ParseSubjectKeyId(args, self.messages)
     return config
 
   def Run(self, args):
@@ -484,14 +309,16 @@ class Create(base.CreateCommand):
     self._ValidateArgs(args)
 
     cert_ref = args.CONCEPTS.certificate.Parse()
-    labels = labels_util.ParseCreateArgs(args,
-                                         self.messages.Certificate.LabelsValue)
+    labels = labels_util.ParseCreateArgs(
+        args, self.messages.Certificate.LabelsValue
+    )
 
-    request = self.messages.PrivatecaProjectsLocationsCaPoolsCertificatesCreateRequest(
+    request = (
+        self.messages.PrivatecaProjectsLocationsCaPoolsCertificatesCreateRequest()
     )
     request.certificate = self.messages.Certificate()
     request.certificateId = cert_ref.Name()
-    request.certificate.lifetime = flags_v1.ParseValidityFlag(args)
+    request.certificate.lifetime = flags.ParseValidityFlag(args)
     request.certificate.labels = labels
     request.parent = cert_ref.Parent().RelativeName()
     request.requestId = request_utils.GenerateRequestId()
@@ -505,17 +332,20 @@ class Create(base.CreateCommand):
         raise exceptions.InvalidArgumentException(
             '--template',
             'The certificate template must be in the same location as the '
-            'issuing CA Pool.')
+            'issuing CA Pool.',
+        )
       request.certificate.certificateTemplate = template_ref.RelativeName()
 
     if args.csr:
       request.certificate.pemCsr = _ReadCsr(args.csr)
     else:
       request.certificate.config = self._GenerateCertificateConfig(
-          request, args)
+          request, args
+      )
 
     certificate = self.client.projects_locations_caPools_certificates.Create(
-        request)
+        request
+    )
 
     # Validate-only certs don't have a resource name or pem certificate.
     if args.validate_only:
@@ -530,8 +360,11 @@ class Create(base.CreateCommand):
 
     if certificate.pemCertificate:
       status_message += ' and saved it to [{}]'.format(args.cert_output_file)
-      _WritePemChain(certificate.pemCertificate,
-                     certificate.pemCertificateChain, args.cert_output_file)
+      _WritePemChain(
+          certificate.pemCertificate,
+          certificate.pemCertificateChain,
+          args.cert_output_file,
+      )
 
     status_message += '.'
     log.status.Print(status_message)

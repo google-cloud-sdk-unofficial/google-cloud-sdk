@@ -139,17 +139,18 @@ def _ConvertToDict(policy):
 
   output = {
       'name': policy.name,
-      'enable_rules': [],
-      'update_time': policy.updateTime,
+      'enableRules': [],
+      'updateTime': policy.updateTime,
       'etag': policy.etag,
       'createTime': policy.createTime,
   }
 
   for enable_rule in policy.enableRules:
-    output['enable_rules'].append({
-        'services': list(enable_rule.services),
-        'categories': list(enable_rule.categories),
-        'groups': list(enable_rule.groups),
-    })
+    if enable_rule.services:
+      output['enableRules'].append({'services': list(enable_rule.services)})
+    if enable_rule.categories:
+      output['enableRules'].append({'categories': list(enable_rule.categories)})
+    if enable_rule.groups:
+      output['enableRules'].append({'groups': list(enable_rule.groups)})
 
   return output

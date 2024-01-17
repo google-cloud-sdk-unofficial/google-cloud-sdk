@@ -28,7 +28,9 @@ from googlecloudsdk.core import properties
 from googlecloudsdk.core.console import console_io
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
+)
 class Create(base.Command):
   """Create Cloud Datastore indexes."""
 
@@ -59,9 +61,23 @@ Any indexes in your index file that do not exist will be created.
       parser: argparse.ArgumentParser, the parser for this command.
     """
     flags.AddIndexFileFlag(parser)
+    parser.add_argument(
+        '--database',
+        help="""\
+        The database to operate on. If not specified, the CLI refers the
+        `(default)` database by default.
+
+        For example, to operate on database `testdb`:
+
+          $ {command} --database='testdb'
+        """,
+        type=str,
+    )
 
   def Run(self, args):
-    return self.CreateIndexes(index_file=args.index_file)
+    return self.CreateIndexes(
+        index_file=args.index_file, database=args.database
+    )
 
   def CreateIndexes(self, index_file, database=None):
     project = properties.VALUES.core.project.Get(required=True)
@@ -89,34 +105,3 @@ Any indexes in your index file that do not exist will be created.
       index_api.CreateMissingIndexes(
           project_id=project, index_definitions=info.parsed
       )
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class CreateFirestoreAPI(Create):
-  """Create Cloud Datastore indexes with Firestore API."""
-
-  @staticmethod
-  def Args(parser):
-    """Get arguments for this command.
-
-    Args:
-      parser: argparse.ArgumentParser, the parser for this command.
-    """
-    parser.add_argument(
-        'index_file',
-        help="""
-        The path to your `index.yaml` file. For a detailed look into defining
-        your `index.yaml` file, refer to this configuration guide:
-        https://cloud.google.com/datastore/docs/tools/indexconfig#Datastore_About_index_yaml
-        """,
-    )
-    parser.add_argument(
-        '--database',
-        help='The database to operate on.',
-        type=str,
-    )
-
-  def Run(self, args):
-    return self.CreateIndexes(
-        index_file=args.index_file, database=args.database
-    )

@@ -458,6 +458,9 @@ def ParseCreateOptionsBase(args, is_autopilot, get_default, location,
       fleet_project=get_default('fleet_project'),
       enable_fleet=get_default('enable_fleet'),
       enable_secret_manager=get_default('enable_secret_manager'),
+      enable_cilium_clusterwide_network_policy=get_default(
+          'enable_cilium_clusterwide_network_policy'
+      ),
       resource_manager_tags=get_default('resource_manager_tags'),
       autoprovisioning_resource_manager_tags=get_default(
           'autoprovisioning_resource_manager_tags'
@@ -742,6 +745,8 @@ flags_to_add = {
         'containerdConfig':
             (lambda p: flags.AddContainerdConfigFlag(p, hidden=True)),
         'InTransitEncryption': flags.AddInTransitEncryptionFlag,
+        'enableCiliumClusterwideNetworkPolicy':
+            flags.AddEnableCiliumClusterwideNetworkPolicyFlag,
     },
     BETA: {
         'accelerator':
@@ -992,8 +997,10 @@ flags_to_add = {
             p, hidden=True
         ),
         'secretManagerConfig': lambda p: flags.AddSecretManagerEnableFlag(
-            p, hidden=True
-            ),
+            p, hidden=False
+        ),
+        'enableCiliumClusterwideNetworkPolicy':
+            flags.AddEnableCiliumClusterwideNetworkPolicyFlag,
     },
     ALPHA: {
         'accelerator':
@@ -1255,8 +1262,10 @@ flags_to_add = {
             p, hidden=True
         ),
         'secretManagerConfig': lambda p: flags.AddSecretManagerEnableFlag(
-            p, hidden=True
-            ),
+            p, hidden=False
+        ),
+        'enableCiliumClusterwideNetworkPolicy':
+            flags.AddEnableCiliumClusterwideNetworkPolicyFlag,
     },
 }
 
@@ -1348,13 +1357,7 @@ class Create(base.CreateCommand):
           'https://cloud.google.com/kubernetes-engine/docs/how-to/private-clusters'
       )
 
-    if options.enable_ip_alias:
-      log.status.Print(
-          'Note: The Pod address range limits the maximum size of the cluster. '
-          'Please refer to '
-          'https://cloud.google.com/kubernetes-engine/docs/how-to/flexible-pod-cidr '
-          'to learn how to optimize IP address allocation.')
-    else:
+    if not options.enable_ip_alias:
       max_node_number = util.CalculateMaxNodeNumberByPodRange(
           options.cluster_ipv4_cidr)
       if max_node_number > 0:
@@ -1524,6 +1527,9 @@ class CreateBeta(Create):
     )
     ops.enable_confidential_storage = get_default('enable_confidential_storage')
     ops.enable_secret_manager = get_default('enable_secret_manager')
+    ops.enable_cilium_clusterwide_networkpolicy = get_default(
+        'enable_cilium_clusterwide_networkpolicy'
+    )
     return ops
 
 
@@ -1639,4 +1645,7 @@ class CreateAlpha(Create):
     ops.contianerd_config_from_file = get_default('contianerd_config_from_file')
     ops.enable_confidential_storage = get_default('enable_confidential_storage')
     ops.enable_secret_manager = get_default('enable_secret_manager')
+    ops.enable_cilium_clusterwide_networkpolicy = get_default(
+        'enable_cilium_clusterwide_networkpolicy'
+    )
     return ops

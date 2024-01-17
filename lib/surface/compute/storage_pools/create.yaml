@@ -3,7 +3,7 @@
     brief: "Create a storage pool."
     description: "Create a storage pool."
     examples: |
-      The following command creates a new storage pool named "my-storage-pool":
+      To create a new storage pool named `my-storage-pool`, run the following command:
 
         $ {command} my-storage-pool --size=10tb --provisioned-throughput=200 --storage-pool-type=hyperdisk-throughput
 
@@ -46,13 +46,13 @@
     - arg_name: provisioned-iops
       api_field: storagePool.provisionedIops
       help_text: |
-        IOPS to provision the pool with.
+        IOPS with which to provision the pool.
       type: int
 
     - arg_name: provisioned-throughput
       api_field: storagePool.provisionedThroughput
       help_text: |
-        Throughput in mb/s to provision the pool with.
+        Throughput in MB/s with which to provision the pool.
       type: int
 
     - arg_name: storage-pool-type

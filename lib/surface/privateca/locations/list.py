@@ -23,37 +23,6 @@ from googlecloudsdk.api_lib.privateca import locations
 from googlecloudsdk.calliope import base
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class ListBeta(base.ListCommand):
-  """List supported locations for the Private CA preview API."""
-
-  detailed_help = {
-      'DESCRIPTION':
-          """\
-          Returns supported locations where resources can be managed through
-          the Private CA preview API.""",
-      'EXAMPLES':
-          """\
-          To list the locations available for the Private CA preview API:
-
-          $ {command}
-
-          """,
-  }
-
-  @staticmethod
-  def Args(parser):
-    parser.display_info.AddFormat('table(locationId:label=LOCATION_ID)')
-
-  def Run(self, args):
-    """Runs the command."""
-    messages = privateca_base.GetMessagesModule('v1beta1')
-    return [
-        messages.Location(locationId=location)
-        for location in locations.GetSupportedLocations('v1beta1')
-    ]
-
-
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class List(base.ListCommand):
   """List supported locations for the Private CA GA API."""

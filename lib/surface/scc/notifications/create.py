@@ -20,14 +20,13 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-from googlecloudsdk.api_lib.scc import securitycenter_client as sc_client
-from googlecloudsdk.api_lib.util import apis
+from googlecloudsdk.api_lib.scc import securitycenter_client
 from googlecloudsdk.calliope import base
-from googlecloudsdk.command_lib.scc import util
+from googlecloudsdk.command_lib.scc import flags as scc_flags
+from googlecloudsdk.command_lib.scc import util as scc_util
 from googlecloudsdk.command_lib.scc.notifications import flags as notifications_flags
 from googlecloudsdk.command_lib.scc.notifications import notification_util
 from googlecloudsdk.core import log
-from googlecloudsdk.generated_clients.apis.securitycenter.v1 import securitycenter_v1_messages
 
 
 @base.ReleaseTracks(
@@ -90,23 +89,48 @@ class Create(base.CreateCommand):
     notifications_flags.AddNotificationConfigPositionalArgument(parser)
     notifications_flags.AddParentGroup(parser)
 
+    scc_flags.API_VERSION_FLAG.AddToParser(parser)
+    scc_flags.LOCATION_FLAG.AddToParser(parser)
+
   def Run(self, args):
-    req = (
-        securitycenter_v1_messages.SecuritycenterOrganizationsNotificationConfigsCreateRequest()
-    )
-    parent = util.GetParentFromNamedArguments(args)
-
+    parent = scc_util.GetParentFromNamedArguments(args)
     notification_util.ValidateMutexOnConfigIdAndParent(args, parent)
-    config_name = notification_util.GetNotificationConfigName(args)
 
-    req.parent = notification_util.GetParentFromResourceName(config_name)
+    # Determine what version to call from --location and --api-version.
+    version = scc_util.GetVersionFromArguments(args, args.NOTIFICATIONCONFIGID)
+    messages = securitycenter_client.GetMessages(version)
+    client = securitycenter_client.GetClient(version)
+
+    # Build initial request from versioned messages
+    if version == 'v1':
+      req = (
+          messages.SecuritycenterOrganizationsNotificationConfigsCreateRequest()
+      )
+      config_name = notification_util.ValidateAndGetNotificationConfigV1Name(
+          args
+      )
+    else:
+      req = (
+          messages.SecuritycenterOrganizationsLocationsNotificationConfigsCreateRequest()
+      )
+      config_name = notification_util.ValidateAndGetNotificationConfigV2Name(
+          args
+      )
+
+    req.parent = notification_util.GetParentFromNotificationConfigName(
+        config_name
+    )
     req.configId = _GetNotificationConfigId(config_name)
 
-    messages = sc_client.GetMessages('v1')
     req.notificationConfig = messages.NotificationConfig()
-    req.notificationConfig.name = args.NOTIFICATIONCONFIGID
     req.notificationConfig.description = args.description
     req.notificationConfig.pubsubTopic = args.pubsub_topic
+
+    # Use the full config name if provided.
+    if '/notificationConfigs/' in args.NOTIFICATIONCONFIGID:
+      req.notificationConfig.name = config_name
+    else:
+      req.notificationConfig.name = args.NOTIFICATIONCONFIGID
 
     # Set the Streaming Config inside Notification Config.
     streaming_config = messages.StreamingConfig()
@@ -116,12 +140,23 @@ class Create(base.CreateCommand):
       streaming_config.filter = args.filter
     req.notificationConfig.streamingConfig = streaming_config
 
-    client = apis.GetClientInstance('securitycenter', 'v1')
-    result = client.organizations_notificationConfigs.Create(req)
+    # SCC's custom --filter is passing the streaming config filter as part of
+    # the request body. However --filter is a global filter flag in gcloud. The
+    # --filter flag in gcloud (outside of this command) is used as client side
+    # filtering. This has led to a collision in logic as gcloud believes the
+    # update is trying to perform client side filtering. Since changing the
+    # argument flag would be considered a breaking change, setting args.filter
+    # to None in the request hook will skip over the client side filter logic.
+    args.filter = None
+
+    if version == 'v1':
+      result = client.organizations_notificationConfigs.Create(req)
+    else:
+      result = client.organizations_locations_notificationConfigs.Create(req)
     log.status.Print('Created.')
     return result.name
 
 
 def _GetNotificationConfigId(resource_name):
   params_as_list = resource_name.split('/')
-  return params_as_list[3]
+  return params_as_list[-1]

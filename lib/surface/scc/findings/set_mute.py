@@ -19,10 +19,11 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-from googlecloudsdk.api_lib.util import apis
+from googlecloudsdk.api_lib.scc import securitycenter_client
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.scc import flags as scc_flags
+from googlecloudsdk.command_lib.scc import util as scc_util
 from googlecloudsdk.command_lib.scc.findings import util
-from googlecloudsdk.generated_clients.apis.securitycenter.v1 import securitycenter_v1_messages as messages
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.ALPHA)
@@ -65,6 +66,8 @@ class SetMute(base.Command):
   @staticmethod
   def Args(parser):
     # Add flags and finding positional argument.
+    scc_flags.API_VERSION_FLAG.AddToParser(parser)
+    scc_flags.LOCATION_FLAG.AddToParser(parser)
     parser.add_argument(
         "finding",
         help="ID of the finding or the full resource name of the finding.",
@@ -97,6 +100,8 @@ class SetMute(base.Command):
     parser.add_argument("--source", help="ID of the source.")
 
   def Run(self, args):
+    version = scc_util.GetVersionFromArguments(args, args.finding)
+    messages = securitycenter_client.GetMessages(version)
     # Create and build the request.
     request = (
         messages.SecuritycenterOrganizationsSourcesFindingsSetMuteRequest()
@@ -111,7 +116,7 @@ class SetMute(base.Command):
         "undefined": messages.SetMuteRequest.MuteValueValuesEnum.UNDEFINED,
     }
 
-    # The muted option has to be case insensitive so we convert to lower before
+    # The muted option has to be case insensitive, so we convert to lower before
     # mapping to set_mute_dict.
     args.mute = args.mute.lower()
     request.setMuteRequest.mute = set_mute_dict.get(
@@ -122,13 +127,22 @@ class SetMute(base.Command):
     parent = util.ValidateAndGetParent(args)
     if parent is not None:
       util.ValidateSourceAndFindingIdIfParentProvided(args)
-      request.name = (
-          parent + "/sources/" + args.source + "/findings/" + args.finding
-      )
+      if version == "v1":
+        request.name = (
+            parent + "/sources/" + args.source + "/findings/" + args.finding
+        )
+      elif version == "v2":
+        source_parent = parent + "/sources/" + args.source
+        regionalized_parent = util.ValidateLocationAndGetRegionalizedParent(
+            args, source_parent
+        )
+        request.name = (
+            regionalized_parent + "/findings/" + args.finding
+        )
     else:
-      request.name = util.GetFindingNameForParent(args)
+      request.name = util.GetFullFindingName(args, version)
 
     # Make the request to the API.
-    client = apis.GetClientInstance("securitycenter", "v1")
+    client = securitycenter_client.GetClient(version)
     response = client.organizations_sources_findings.SetMute(request)
     return response

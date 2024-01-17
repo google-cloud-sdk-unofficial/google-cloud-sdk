@@ -387,6 +387,7 @@ class Update(base.UpdateCommand):
     flags.AddAutoprovisioningResourceManagerTagsUpdate(group)
     flags.AddFleetProjectFlag(group, is_update=True)
     flags.AddInTransitEncryptionFlag(group)
+    flags.AddEnableCiliumClusterwideNetworkPolicyFlag(group, is_update=True)
 
   def ParseUpdateOptions(self, args, locations):
     get_default = lambda key: getattr(args, key)
@@ -479,6 +480,9 @@ class Update(base.UpdateCommand):
     opts.fleet_project = args.fleet_project
     opts.enable_fleet = args.enable_fleet
     opts.clear_fleet_project = args.clear_fleet_project
+    opts.enable_cilium_clusterwide_network_policy = (
+        args.enable_cilium_clusterwide_network_policy
+    )
     return opts
 
   def Run(self, args):
@@ -915,7 +919,8 @@ class UpdateBeta(Update):
     flags.AddConvertToAutopilotFlag(group)
     flags.AddCompleteConvertToAutopilotFlag(group)
     flags.AddConvertToStandardFlag(group)
-    flags.AddSecretManagerEnableFlag(group)
+    flags.AddSecretManagerEnableFlag(group, hidden=False)
+    flags.AddEnableCiliumClusterwideNetworkPolicyFlag(group, is_update=True)
 
   def ParseUpdateOptions(self, args, locations):
     get_default = lambda key: getattr(args, key)
@@ -1068,6 +1073,9 @@ class UpdateBeta(Update):
     opts.complete_convert_to_autopilot = args.complete_convert_to_autopilot
     opts.convert_to_standard = args.convert_to_standard
     opts.enable_secret_manager = args.enable_secret_manager
+    opts.enable_cilium_clusterwide_network_policy = (
+        args.enable_cilium_clusterwide_network_policy
+    )
     return opts
 
 
@@ -1180,7 +1188,8 @@ class UpdateAlpha(Update):
     flags.AddConvertToAutopilotFlag(group)
     flags.AddCompleteConvertToAutopilotFlag(group)
     flags.AddConvertToStandardFlag(group)
-    flags.AddSecretManagerEnableFlag(group)
+    flags.AddSecretManagerEnableFlag(group, hidden=False)
+    flags.AddEnableCiliumClusterwideNetworkPolicyFlag(group, is_update=True)
 
   def ParseUpdateOptions(self, args, locations):
     get_default = lambda key: getattr(args, key)
@@ -1328,4 +1337,7 @@ class UpdateAlpha(Update):
     opts.complete_convert_to_autopilot = args.complete_convert_to_autopilot
     opts.convert_to_standard = args.convert_to_standard
     opts.enable_secret_manager = args.enable_secret_manager
+    opts.enable_cilium_clusterwide_network_policy = (
+        args.enable_cilium_clusterwide_network_policy
+    )
     return opts

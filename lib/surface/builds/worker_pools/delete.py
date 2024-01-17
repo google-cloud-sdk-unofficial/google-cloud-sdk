@@ -21,7 +21,6 @@ from __future__ import unicode_literals
 from googlecloudsdk.api_lib.cloudbuild import cloudbuild_util
 from googlecloudsdk.api_lib.util import waiter
 from googlecloudsdk.calliope import base
-from googlecloudsdk.core import exceptions
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 from googlecloudsdk.core import resources
@@ -89,17 +88,6 @@ class Delete(base.DeleteCommand):
             'workerPoolsId': wp_name,
         })
 
-    # Allow a hybrid worker pool specifically only to be deleted in the alpha
-    # release track. To do this we must first GET information about the worker
-    # pool to determine it's type (i.e. hybrid or private).
-    if release_track != base.ReleaseTrack.ALPHA:
-      # Send the Get request
-      wp = client.projects_locations_workerPools.Get(
-          messages.CloudbuildProjectsLocationsWorkerPoolsGetRequest(
-              name=wp_resource.RelativeName()))
-      if wp.hybridPoolConfig is not None:
-        raise exceptions.Error('NOT_FOUND: Requested entity was not found.')
-
     # Send the Delete request
     deleted_op = client.projects_locations_workerPools.Delete(
         messages.CloudbuildProjectsLocationsWorkerPoolsDeleteRequest(
@@ -123,14 +111,14 @@ class DeleteBeta(Delete):
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class DeleteAlpha(Delete):
-  """Delete a private or hybrid worker pool from Google Cloud Build."""
+  """Delete a private worker pool from Google Cloud Build."""
 
   detailed_help = {
       'DESCRIPTION':
           '{description}',
       'EXAMPLES':
           """\
-          To delete a private or hybrid worker pool named `wp1` in region `us-central1`, run:
+          To delete a private worker pool named `wp1` in region `us-central1`, run:
 
             $ {command} wp1 --region=us-central1
           """,

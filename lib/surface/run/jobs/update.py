@@ -180,10 +180,16 @@ class Update(base.Command):
 class BetaUpdate(Update):
   """Update a Cloud Run Job."""
 
-  @staticmethod
-  def Args(parser):
+  @classmethod
+  def Args(cls, parser):
     Update.CommonArgs(parser)
     flags.AddVpcNetworkGroupFlagsForUpdate(parser, resource_kind='job')
+    flags.AddVolumesFlags(parser, cls.ReleaseTrack())
+    group = base.ArgumentGroup()
+    group.AddArgument(flags.AddVolumeMountFlag())
+    group.AddArgument(flags.RemoveVolumeMountFlag())
+    group.AddArgument(flags.ClearVolumeMountsFlag())
+    group.AddToParser(parser)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)

@@ -49,7 +49,6 @@ class Delete(base.Command):
     arguments.AddResourceFlagsToParser(parser)
     parser.add_argument(
         '--etag',
-        hidden=True,
         metavar='ETAG',
         help=(
             'The current top-level etag of the Policy. If an etag is provided'

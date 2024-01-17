@@ -20,16 +20,15 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 from apitools.base.py import encoding
-from googlecloudsdk.api_lib.scc import securitycenter_client as sc_client
-from googlecloudsdk.api_lib.util import apis
+from googlecloudsdk.api_lib.scc import securitycenter_client
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.scc import flags as scc_flags
 from googlecloudsdk.command_lib.scc import util as scc_util
 from googlecloudsdk.command_lib.scc.findings import flags
 from googlecloudsdk.command_lib.scc.findings import util
 from googlecloudsdk.core import properties
 from googlecloudsdk.core.util import times
-from googlecloudsdk.generated_clients.apis.securitycenter.v1 import securitycenter_v1_messages as scc_messages
 
 
 @base.ReleaseTracks(
@@ -71,7 +70,8 @@ class UpdateMarks(base.UpdateCommand):
   def Args(parser):
     # Add the shared flags and positional argument.
     flags.CreateFindingArg().AddToParser(parser)
-
+    scc_flags.API_VERSION_FLAG.AddToParser(parser)
+    scc_flags.LOCATION_FLAG.AddToParser(parser)
     base.Argument(
         "--security-marks",
         help="""
@@ -99,37 +99,48 @@ class UpdateMarks(base.UpdateCommand):
     parser.display_info.AddFormat(properties.VALUES.core.default_format.Get())
 
   def Run(self, args):
+    # Determine what version to call from --location and --api-version.
+    version = _GetApiVersion(args)
+    messages = securitycenter_client.GetMessages(version)
     request = (
-        scc_messages.SecuritycenterOrganizationsSourcesFindingsUpdateSecurityMarksRequest()
+        messages.SecuritycenterOrganizationsSourcesFindingsUpdateSecurityMarksRequest()
     )
     # Convert start time to correct format
     if args.start_time:
       start_time_dt = times.ParseDateTime(args.start_time)
       request.startTime = times.FormatDateTime(start_time_dt)
 
+    client = securitycenter_client.GetClient(version)
     request.updateMask = args.update_mask
-    request.securityMarks = _ConvertToSecurityMarks(args.security_marks)
-    request = _ValidateParentAndUpdateName(args, request)
+    if version == "v1":
+      security_marks = messages.SecurityMarks()
+      security_marks.marks = encoding.DictToMessage(
+          args.security_marks, messages.SecurityMarks.MarksValue
+      )
+      request.securityMarks = security_marks
+    elif version == "v2":
+      security_marks = messages.GoogleCloudSecuritycenterV2SecurityMarks()
+      security_marks.marks = encoding.DictToMessage(
+          args.security_marks,
+          messages.GoogleCloudSecuritycenterV2SecurityMarks.MarksValue,
+      )
+      request.googleCloudSecuritycenterV2SecurityMarks = security_marks
+
+    request = _ValidateParentAndUpdateName(args, request, version)
     if request.updateMask is not None:
       request.updateMask = scc_util.CleanUpUserMaskInput(request.updateMask)
-    client = apis.GetClientInstance("securitycenter", "v1")
-    response = client.organizations_sources_findings.UpdateSecurityMarks(
-        request
-    )
-    return response
+    marks = client.organizations_sources_findings.UpdateSecurityMarks(request)
+    return marks
 
 
-def _ConvertToSecurityMarks(parsed_dict):
-  """Hook to capture "key1=val1,key2=val2" as SecurityMarks object."""
-  security_marks = sc_client.GetMessages().SecurityMarks()
-  security_marks.marks = encoding.DictToMessage(
-      parsed_dict, sc_client.GetMessages().SecurityMarks.MarksValue
-  )
-  return security_marks
-
-
-def _ValidateParentAndUpdateName(args, req):
+def _ValidateParentAndUpdateName(args, req, version):
   """Generate a security mark's name using org, source and finding id."""
   util.ValidateMutexOnFindingAndSourceAndOrganization(args)
-  req.name = util.GetFindingNameForParent(args) + "/securityMarks"
+  req.name = util.GetFullFindingName(args, version) + "/securityMarks"
   return req
+
+
+def _GetApiVersion(args):
+  """Determine what version to call from --location and --api-version."""
+  deprecated_args = ["start_time"]
+  return scc_util.GetVersionFromArguments(args, args.finding, deprecated_args)

@@ -25,7 +25,9 @@ from googlecloudsdk.command_lib.firestore import flags
 from googlecloudsdk.core import properties
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
+)
 class CreateFirestoreAPI(base.Command):
   """Create a Google Cloud Firestore database via Firestore API.
 
@@ -42,6 +44,11 @@ class CreateFirestoreAPI(base.Command):
   To create a Datastore Mode database in `us-east1` with a databaseId `foo`.
 
       $ {command} --database=foo --location=us-east1 --type=datastore-mode
+
+  To create a Firestore Native database in `nam5` with delete protection
+  enabled.
+
+      $ {command} --location=nam5 --delete-protection
 
   To create a Firestore Native database in `nam5` with Point In Time Recovery
   (PITR) enabled.
@@ -90,7 +97,7 @@ class CreateFirestoreAPI(base.Command):
         args.location,
         args.database,
         self.DatabaseType(args.type),
-        self.DatabaseDeleteProtectionState(False),
+        self.DatabaseDeleteProtectionState(args.delete_protection),
         self.DatabasePitrState(args.enable_pitr),
     )
 
@@ -121,62 +128,6 @@ class CreateFirestoreAPI(base.Command):
         default='(default)',
     )
     parser.add_argument(
-        '--enable-pitr',
-        help="""Whether to enable Point In Time Recovery (PITR) on the created
-        database.
-
-        If set to true, PITR on the new database will be enabled. By default,
-        this feature is not enabled.
-        """,
-        action='store_true',
-        default=None,
-    )
-
-
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
-class CreateFirestoreAPIWithDeleteProtection(CreateFirestoreAPI):
-  """Create a Google Cloud Firestore database via Firestore API.
-
-  ## EXAMPLES
-
-  To create a Firestore Native database in `nam5`.
-
-      $ {command} --location=nam5
-
-  To create a Datastore Mode database in `us-east1`.
-
-      $ {command} --location=us-east1 --type=datastore-mode
-
-  To create a Datastore Mode database in `us-east1` with a database ID `foo`.
-
-      $ {command} --database=foo --location=us-east1 --type=datastore-mode
-
-  To create a Firestore Native database in `nam5` with delete protection
-  enabled.
-
-      $ {command} --location=nam5 --delete-protection
-
-  To create a Firestore Native database in `nam5` with Point In Time Recovery
-  (PITR) enabled.
-
-      $ {command} --location=nam5 --enable-pitr
-  """
-
-  def Run(self, args):
-    project = properties.VALUES.core.project.Get(required=True)
-    return databases.CreateDatabase(
-        project,
-        args.location,
-        args.database,
-        self.DatabaseType(args.type),
-        self.DatabaseDeleteProtectionState(args.delete_protection),
-        self.DatabasePitrState(args.enable_pitr),
-    )
-
-  @classmethod
-  def Args(cls, parser):
-    super(CreateFirestoreAPIWithDeleteProtection, cls).Args(parser)
-    parser.add_argument(
         '--delete-protection',
         help="""Whether to enable delete protection on the created database.
 
@@ -187,4 +138,15 @@ class CreateFirestoreAPIWithDeleteProtection(CreateFirestoreAPI):
         """,
         action='store_true',
         default=False,
+    )
+    parser.add_argument(
+        '--enable-pitr',
+        help="""Whether to enable Point In Time Recovery (PITR) on the created
+        database.
+
+        If set to true, PITR on the new database will be enabled. By default,
+        this feature is not enabled.
+        """,
+        action='store_true',
+        default=None,
     )

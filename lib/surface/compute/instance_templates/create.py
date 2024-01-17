@@ -194,7 +194,7 @@ The type of reservation for instances created from this template.
     instances_flags.AddMaintenanceIntervalArgs(parser)
 
   if support_graceful_shutdown:
-    instances_flags.AddGracefulShutdownArgs(parser)
+    instances_flags.AddGracefulShutdownArgs(parser, is_create=True)
 
 
 def _ValidateInstancesFlags(

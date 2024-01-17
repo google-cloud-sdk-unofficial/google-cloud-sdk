@@ -123,6 +123,8 @@ class UpdateBeta(Update):
   def Args(parser):
     super(UpdateBeta, UpdateBeta).Args(parser)
     flags.AddUpdateMode(parser)
+    flags.AddAssignInboundPublicIp(parser, update=True)
+    flags.AddAuthorizedExternalNetworks(parser)
 
   def ConstructPatchRequestFromArgs(self, alloydb_messages, instance_ref, args):
     return instance_helper.ConstructPatchRequestFromArgsBeta(
@@ -137,8 +139,6 @@ class UpdateAlpha(UpdateBeta):
   @staticmethod
   def Args(parser):
     super(UpdateAlpha, UpdateAlpha).Args(parser)
-    flags.AddAssignInboundPublicIp(parser, update=True)
-    flags.AddAuthorizedExternalNetworks(parser)
 
   def ConstructPatchRequestFromArgs(self, alloydb_messages, instance_ref, args):
     return instance_helper.ConstructPatchRequestFromArgsAlpha(

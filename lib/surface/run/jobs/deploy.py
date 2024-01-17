@@ -288,10 +288,16 @@ class Deploy(base.Command):
 class BetaDeploy(Deploy):
   """Create or update a Cloud Run job."""
 
-  @staticmethod
-  def Args(parser):
+  @classmethod
+  def Args(cls, parser):
     Deploy.CommonArgs(parser)
     flags.AddVpcNetworkGroupFlagsForUpdate(parser, resource_kind='job')
+    flags.AddVolumesFlags(parser, cls.ReleaseTrack())
+    group = base.ArgumentGroup()
+    group.AddArgument(flags.AddVolumeMountFlag())
+    group.AddArgument(flags.RemoveVolumeMountFlag())
+    group.AddArgument(flags.ClearVolumeMountsFlag())
+    group.AddToParser(parser)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)

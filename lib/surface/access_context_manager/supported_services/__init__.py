@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*- #
-# Copyright 2020 Google LLC. All Rights Reserved.
+# Copyright 2023 Google LLC. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""The command group for reusable config resources."""
+"""The command group for the Access Context Manager supported-services CLI."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -21,6 +21,20 @@ from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class ReusableConfigs(base.Group):
-  """Manage reusable configs."""
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+class SupportedServices(base.Group):
+  """Retrieve VPC-SC Supported Services.
+
+  The {command} command group lets you list VPC Service Controls supported
+  services and its properties.
+
+  ## EXAMPLES
+
+  To see all VPC-SC supportedservices:
+
+    $ {command} list
+
+  To see support information about VPC-SC supported service:
+
+    $ {command} describe SERVICE_NAME
+  """

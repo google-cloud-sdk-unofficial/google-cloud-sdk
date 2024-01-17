@@ -22,14 +22,14 @@ from __future__ import unicode_literals
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute import scp_utils
+from googlecloudsdk.core import log
 
-DEPRECATION_WARNING = (
-    '`gcloud compute copy-files` is deprecated.  Please use `gcloud compute '
-    'scp` instead.  Note that `gcloud compute scp` does not have recursive '
-    'copy on by default.  To turn on recursion, use the `--recurse` flag.')
+ENCOURAGE_SCP_INFO = (
+    'Consider using the `gcloud compute scp` command instead, which '
+    'includes support for internal IP connections and Identity-Aware '
+    'Proxy tunneling.')
 
 
-@base.Deprecate(is_removed=False, warning=DEPRECATION_WARNING)
 class CopyFiles(base.Command):
   """Copy files to and from Google Compute Engine virtual machines via scp."""
 
@@ -44,6 +44,8 @@ class CopyFiles(base.Command):
 
   def Run(self, args):
     """See scp_utils.BaseScpCommand.Run."""
+    log.warning(ENCOURAGE_SCP_INFO)
+
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
 
     scp_helper = scp_utils.BaseScpHelper()

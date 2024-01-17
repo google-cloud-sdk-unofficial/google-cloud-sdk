@@ -19,10 +19,8 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-import re
-
 from apitools.base.py import list_pager
-from googlecloudsdk.api_lib.util import apis
+from googlecloudsdk.api_lib.scc import securitycenter_client
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.scc import flags as scc_flags
 from googlecloudsdk.command_lib.scc import util as scc_util
@@ -30,7 +28,6 @@ from googlecloudsdk.command_lib.scc.findings import flags
 from googlecloudsdk.command_lib.scc.findings import util
 from googlecloudsdk.core import properties
 from googlecloudsdk.core.util import times
-from googlecloudsdk.generated_clients.apis.securitycenter.v1 import securitycenter_v1_messages as messages
 
 
 # base.ListCommand defines --filter, --flatten, --limit, --page-size, --sort-by
@@ -102,6 +99,8 @@ class List(base.ListCommand):
     scc_flags.READ_TIME_FLAG.AddToParser(parser)
     flags.COMPARE_DURATION_FLAG.AddToParser(parser)
     flags.SOURCE_FLAG.AddToParser(parser)
+    scc_flags.API_VERSION_FLAG.AddToParser(parser)
+    scc_flags.LOCATION_FLAG.AddToParser(parser)
 
     parser.add_argument(
         "--field-mask",
@@ -115,8 +114,7 @@ class List(base.ListCommand):
         list all fields.""",
     )
     # Cloud SCC doesn't use gcloud's sort-by flag since that sorts at the client
-    # level while
-    # Cloud SCC's ordering needs to be passed to the server.
+    # level while Cloud SCC's ordering needs to be passed to the server.
 
     parser.add_argument(
         "--order-by",
@@ -132,32 +130,40 @@ class List(base.ListCommand):
     )
 
   def Run(self, args):
+    deprecated_args = ["compare_duration", "read_time"]
+    version = util.GetApiVersionUsingDeprecatedArgs(args, deprecated_args)
+    messages = securitycenter_client.GetMessages(version)
     request = messages.SecuritycenterOrganizationsSourcesFindingsListRequest()
 
     # Populate request fields from args.
-    request.compareDuration = args.compare_duration
-    if request.compareDuration:
-      # Process compareDuration argument.
-      compare_duration_iso = times.ParseDuration(request.compareDuration)
-      request.compareDuration = times.FormatDurationForJson(
-          compare_duration_iso
-      )
+    if version == "v1":
+      # Include args deprecated in v2.
+      if args.IsKnownAndSpecified("compare_duration"):
+        # Process compareDuration argument.
+        request.compareDuration = args.compare_duration
+        compare_duration_iso = times.ParseDuration(request.compareDuration)
+        request.compareDuration = times.FormatDurationForJson(
+            compare_duration_iso
+        )
+
+      if args.IsKnownAndSpecified("read_time"):
+        # Get DateTime from string and convert to the format required by API.
+        request.readTime = args.read_time
+        read_time_dt = times.ParseDateTime(request.readTime)
+        request.readTime = times.FormatDateTime(read_time_dt)
 
     request.fieldMask = args.field_mask
+    if request.fieldMask is not None:
+      request.fieldMask = scc_util.CleanUpUserMaskInput(request.fieldMask)
     request.filter = args.filter
+    args.filter = ""
     request.orderBy = args.order_by
     request.pageSize = args.page_size
     request.pageToken = args.page_token
     request.parent = args.parent
 
-    request.readTime = args.read_time
-    if request.readTime:
-      # Get DateTime from string and convert to the format required by the API.
-      read_time_dt = times.ParseDateTime(request.readTime)
-      request.readTime = times.FormatDateTime(read_time_dt)
-
-    request = _GenerateParent(args, request)
-    client = apis.GetClientInstance("securitycenter", "v1")
+    request = _GenerateParent(args, request, version)
+    client = securitycenter_client.GetClient(version)
 
     # Automatically handle pagination. All findings are returned regarldess of
     # --page-size argument.
@@ -170,26 +176,20 @@ class List(base.ListCommand):
     )
 
 
-def _GenerateParent(args, req):
+def _GenerateParent(args, req, version="v1"):
   """Generates a finding's parent using org and source and hook up filter.
 
   Args:
     args: (argparse namespace)
     req: request
+    version: API version for the request
 
   Returns:
     req: Modified request
   """
   util.ValidateMutexOnSourceAndParent(args)
-  req.parent = util.GetSourceNameForParent(args)
-  req.filter = args.filter
-  if req.fieldMask is not None:
-    req.fieldMask = scc_util.CleanUpUserMaskInput(req.fieldMask)
-  args.filter = ""
-  resource_pattern = re.compile(
-      "(organizations|projects|folders)/.*/sources/[0-9-]+$"
-  )
-  parent = scc_util.GetParentFromPositionalArguments(args)
-  if resource_pattern.match(parent):
-    args.source = parent
+  if args.parent and "/sources/" in args.parent:
+    args.source = args.parent
+
+  req.parent = util.GetFullSourceName(args, version)
   return req

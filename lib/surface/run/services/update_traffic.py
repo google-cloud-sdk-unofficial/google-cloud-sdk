@@ -127,6 +127,7 @@ class AdjustTraffic(base.Command):
         config_changes.SetLaunchStageAnnotationChange(self.ReleaseTrack()))
 
     is_managed = platforms.GetPlatform() == platforms.PLATFORM_MANAGED
+    use_wait = is_managed and self.ReleaseTrack() == base.ReleaseTrack.ALPHA
     with serverless_operations.Connect(conn_context) as client:
       deployment_stages = stages.UpdateTrafficStages()
       try:
@@ -135,7 +136,13 @@ class AdjustTraffic(base.Command):
             deployment_stages,
             failure_message='Updating traffic failed',
             suppress_output=args.async_) as tracker:
-          client.UpdateTraffic(service_ref, changes, tracker, args.async_)
+          serv = client.UpdateTraffic(
+              service_ref,
+              changes,
+              tracker,
+              args.async_,
+              use_wait=use_wait,
+          )
       except:
         serv = client.GetService(service_ref)
         if serv:
@@ -153,7 +160,6 @@ class AdjustTraffic(base.Command):
       if args.async_:
         pretty_print.Success('Updating traffic asynchronously.')
       else:
-        serv = client.GetService(service_ref)
         resources = traffic_pair.GetTrafficTargetPairs(
             serv.spec_traffic,
             serv.status_traffic,

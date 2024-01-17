@@ -92,22 +92,22 @@ List.detailed_help = {
         """\
         To list CopyLogEntries operations, run:
 
-            $ {command} --location=LOCATION --operation-filter=request_type=CopyLogEntries
+            $ {command} --location=LOCATION --operation-filter='request_type=CopyLogEntries'
 
         To list CopyLogEntries operations that started after a specified time, run:
 
-            $ {command} --location=LOCATION --operation-filter=request_type=CopyLogEntries AND operation_start_time>TIMESTAMP
+            $ {command} --location=LOCATION --operation-filter='request_type=CopyLogEntries AND operation_start_time>="2023-11-20T00:00:00Z"'
 
         To list CopyLogEntries operations that finished before a specified time, run:
 
-            $ {command} --location=LOCATION --operation-filter=request_type=CopyLogEntries AND operation_finish_time<TIMESTAMP
+            $ {command} --location=LOCATION --operation-filter='request_type=CopyLogEntries AND operation_finish_time<="2023-11-20T00:00:00Z"'
 
         To list CopyLogEntries operations that have a specified state, run:
 
-            $ {command} --location=LOCATION --operation-filter=request_type=CopyLogEntries AND operation_state=STATE
+            $ {command} --location=LOCATION --operation-filter='request_type=CopyLogEntries AND operation_state=STATE'
 
         To list CopyLogEntries operations that don't have a specified state, run:
 
-            $ {command} --location=LOCATION --operation-filter=request_type=CopyLogEntries AND operation_state!=STATE
+            $ {command} --location=LOCATION --operation-filter='request_type=CopyLogEntries AND operation_state!=STATE'
         """
 }

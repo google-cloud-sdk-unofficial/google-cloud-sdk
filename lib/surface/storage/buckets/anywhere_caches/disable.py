@@ -24,10 +24,9 @@ from googlecloudsdk.command_lib.storage.tasks import task_status
 from googlecloudsdk.command_lib.storage.tasks.buckets.anywhere_caches import disable_anywhere_cache_task
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Disable(base.Command):
-  """Disable Anywhere Cache instances of a bucket."""
+  """Disable Anywhere Cache instances."""
 
   detailed_help = {
       'DESCRIPTION': """
@@ -44,10 +43,10 @@ class Disable(base.Command):
       """,
       'EXAMPLES': """
 
-      The following command disable the anywhere cache instance for bucket
-      ``gs://my-bucket'' in ``asia-south2-b'' zone:
+      The following command disables the anywhere cache instance of bucket
+      ``my-bucket'' having anywhere_cache_id ``my-cache-id'':
 
-        $ {command} gs://my-bucket/asia-south2-b
+        $ {command} my-bucket/my-cache-id
       """,
   }
 
@@ -59,7 +58,8 @@ class Disable(base.Command):
         nargs='+',
         help=(
             'Identifiers for a Anywhere Cache instance. They are combination of'
-            ' bucket_name/zone.'
+            ' bucket_name/anywhere_cache_id. For example :'
+            ' test-bucket/my-cache-id.'
         ),
     )
 
@@ -69,9 +69,11 @@ class Disable(base.Command):
     )
 
     for id_str in args.id:
-      bucket_name, _, zone = id_str.rpartition(storage_url.CLOUD_URL_DELIMITER)
+      bucket_name, _, anywhere_cache_id = id_str.rpartition(
+          storage_url.CLOUD_URL_DELIMITER
+      )
       yield disable_anywhere_cache_task.DisableAnywhereCacheTask(
-          bucket_name, zone
+          bucket_name, anywhere_cache_id
       )
 
   def Run(self, args):

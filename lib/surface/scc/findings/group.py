@@ -22,16 +22,14 @@ from __future__ import unicode_literals
 import re
 import sys
 
-from googlecloudsdk.api_lib.scc import securitycenter_client as sc_client
-from googlecloudsdk.api_lib.util import apis
+from googlecloudsdk.api_lib.scc import securitycenter_client
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.scc import flags as scc_flags
-from googlecloudsdk.command_lib.scc import util
+from googlecloudsdk.command_lib.scc import util as scc_util
 from googlecloudsdk.command_lib.scc.findings import flags
-from googlecloudsdk.command_lib.scc.findings import util as findings_util
+from googlecloudsdk.command_lib.scc.findings import util
 from googlecloudsdk.core.util import times
-from googlecloudsdk.generated_clients.apis.securitycenter.v1 import securitycenter_v1_messages as scc_messages
 
 
 @base.ReleaseTracks(
@@ -85,7 +83,8 @@ class Group(base.Command):
     scc_flags.READ_TIME_FLAG.AddToParser(parser)
     flags.COMPARE_DURATION_FLAG.AddToParser(parser)
     flags.SOURCE_FLAG.AddToParser(parser)
-
+    scc_flags.API_VERSION_FLAG.AddToParser(parser)
+    scc_flags.LOCATION_FLAG.AddToParser(parser)
     parser.add_argument(
         "--filter",
         help="""
@@ -125,51 +124,65 @@ class Group(base.Command):
     )
 
   def Run(self, args):
-    request = (
-        scc_messages.SecuritycenterOrganizationsSourcesFindingsGroupRequest()
-    )
-    request.groupFindingsRequest = scc_messages.GroupFindingsRequest()
+    deprecated_args = ["compare_duration", "read_time"]
+    version = util.GetApiVersionUsingDeprecatedArgs(args, deprecated_args)
+    messages = securitycenter_client.GetMessages(version)
+    request = messages.SecuritycenterOrganizationsSourcesFindingsGroupRequest()
+    request.groupFindingsRequest = messages.GroupFindingsRequest()
 
     # Populate request fields from args.
-    request.groupFindingsRequest.compareDuration = args.compare_duration
-    if request.groupFindingsRequest.compareDuration:
-      # Process compareDuration argument.
-      compare_duration_iso = times.ParseDuration(
-          request.groupFindingsRequest.compareDuration
-      )
-      request.groupFindingsRequest.compareDuration = (
-          times.FormatDurationForJson(compare_duration_iso)
-      )
+    if version == "v1":
+      # Include args deprecated in v2.
+
+      if args.IsKnownAndSpecified("compare_duration"):
+        # Process compareDuration argument.
+        request.groupFindingsRequest.compareDuration = args.compare_duration
+        compare_duration_iso = times.ParseDuration(
+            request.groupFindingsRequest.compareDuration
+        )
+        request.groupFindingsRequest.compareDuration = (
+            times.FormatDurationForJson(compare_duration_iso)
+        )
+
+      if args.IsKnownAndSpecified("read_time"):
+        # Get DateTime from string and convert to the format required by API.
+        request.groupFindingsRequest.readTime = args.read_time
+        read_time_dt = times.ParseDateTime(
+            request.groupFindingsRequest.readTime
+        )
+        request.groupFindingsRequest.readTime = times.FormatDateTime(
+            read_time_dt
+        )
     request.groupFindingsRequest.filter = args.filter
     request.groupFindingsRequest.groupBy = args.group_by
     request.groupFindingsRequest.pageSize = args.page_size
     request.groupFindingsRequest.pageToken = args.page_token
-    request.groupFindingsRequest.readTime = args.read_time
 
-    if request.groupFindingsRequest.readTime:
-      # Get DateTime from string and convert to the format required by the API.
-      read_time_dt = times.ParseDateTime(request.groupFindingsRequest.readTime)
-      request.groupFindingsRequest.readTime = times.FormatDateTime(read_time_dt)
-
-    request = GenerateParentForGroupCommand(args, request)
-    client = apis.GetClientInstance("securitycenter", "v1")
+    request = _GenerateParentForGroupCommand(args, request, version)
+    client = securitycenter_client.GetClient(version)
     result = client.organizations_sources_findings.Group(request)
     return result
 
 
-def GenerateParentForGroupCommand(args, req):
+def _GenerateParentForGroupCommand(args, req, version="v1"):
   """Generate a finding's name and parent using org, source and finding id."""
-  findings_util.ValidateMutexOnSourceAndParent(args)
-  if not req.groupFindingsRequest:
-    messages = sc_client.GetMessages()
-    req.groupFindingsRequest = messages.GroupFindingsRequest()
+  util.ValidateMutexOnSourceAndParent(args)
   req.groupFindingsRequest.filter = args.filter
   args.filter = ""
-  resource_pattern = re.compile(
-      "(organizations|projects|folders)/[a-z0-9]+/sources/[0-9]+"
+
+  region_resource_patern = re.compile(
+      "(organizations|projects|folders)/[a-z0-9]+/sources/[0-9-]{0,62}/locations/[A-Za-z0-9-]{0,62}$"
   )
-  parent = util.GetParentFromPositionalArguments(args)
+  parent = scc_util.GetParentFromPositionalArguments(args)
+
+  if region_resource_patern.match(parent):
+    req.parent = parent
+    return req
+
+  resource_pattern = re.compile(
+      "(organizations|projects|folders)/[a-z0-9]+/sources/[0-9-]{0,62}$"
+  )
   if resource_pattern.match(parent):
     args.source = parent
-  req.parent = findings_util.GetSourceNameForParent(args)
+  req.parent = util.GetFullSourceName(args, version)
   return req

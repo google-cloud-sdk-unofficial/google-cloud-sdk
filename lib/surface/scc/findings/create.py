@@ -19,15 +19,15 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-from googlecloudsdk.api_lib.scc import securitycenter_client as sc_client
-from googlecloudsdk.api_lib.util import apis
+from googlecloudsdk.api_lib.scc import securitycenter_client
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.scc import flags as scc_flags
+from googlecloudsdk.command_lib.scc import util as scc_util
 from googlecloudsdk.command_lib.scc.findings import flags
 from googlecloudsdk.command_lib.scc.findings import util
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 from googlecloudsdk.core.util import times
-from googlecloudsdk.generated_clients.apis.securitycenter.v1 import securitycenter_v1_messages as scc_messages
 
 
 @base.ReleaseTracks(
@@ -63,7 +63,8 @@ class Create(base.CreateCommand):
     flags.SOURCE_PROPERTIES_FLAG.AddToParser(parser)
     flags.STATE_FLAG.AddToParser(parser)
     flags.EVENT_TIME_FLAG_REQUIRED.AddToParser(parser)
-
+    scc_flags.API_VERSION_FLAG.AddToParser(parser)
+    scc_flags.LOCATION_FLAG.AddToParser(parser)
     parser.add_argument(
         "--category",
         help="""
@@ -81,49 +82,92 @@ class Create(base.CreateCommand):
     )
 
   def Run(self, args):
-    request = (
-        scc_messages.SecuritycenterOrganizationsSourcesFindingsCreateRequest()
-    )
-    request.finding = scc_messages.Finding()
-    request.finding.externalUri = args.external_uri
-    if args.source_properties:
-      request.finding.sourceProperties = flags.ConvertSourceProperties(
-          args.source_properties
-      )
-
-    # Convert state input to scc_messages.Finding.StateValueValuesEnum object.
-    request.finding.state = util.ConvertStateInput(args.state)
-
-    # Convert event_time argument to correct format.
-    event_time_dt = times.ParseDateTime(args.event_time)
-    request.finding.eventTime = times.FormatDateTime(event_time_dt)
-
-    request.finding.category = args.category
-    request.finding.resourceName = args.resource_name
-
-    request = _GenerateRequestArgumentsForCreateCommand(args, request)
-    client = apis.GetClientInstance("securitycenter", "v1")
+    version = scc_util.GetVersionFromArguments(args, args.finding)
+    if version == "v1":
+      request = _V1GenerateRequestArgumentsForCreateCommand(args)
+    else:
+      request = _V2GenerateRequestArgumentsForCreateCommand(args)
+    client = securitycenter_client.GetClient(version)
     response = client.organizations_sources_findings.Create(request)
     log.status.Print("Created.")
     return response
 
 
-def _GenerateRequestArgumentsForCreateCommand(args, req):
-  """Generate a finding's name, finding ID and parent using org, source and finding.
+def _V2GenerateRequestArgumentsForCreateCommand(args):
+  """Generate the request's finding name, finding ID, parent and v2 googleCloudSecuritycenterV2Finding using specified arguments.
 
   Args:
     args: (argparse namespace)
-    req: request
 
   Returns:
     req: Modified request
   """
+  messages = securitycenter_client.GetMessages("v2")
+  request = messages.SecuritycenterOrganizationsSourcesFindingsCreateRequest()
+  request.googleCloudSecuritycenterV2Finding = (
+      messages.GoogleCloudSecuritycenterV2Finding(
+          category=args.category,
+          resourceName=args.resource_name,
+          state=util.ConvertStateInput(args.state, "v2"),
+      )
+  )
+  request.googleCloudSecuritycenterV2Finding.externalUri = args.external_uri
+  if args.IsKnownAndSpecified("source_properties"):
+    request.googleCloudSecuritycenterV2Finding.sourceProperties = (
+        util.ConvertSourceProperties(args.source_properties, "v2")
+    )
+
+  # Convert event_time argument to correct format.
+  event_time_dt = times.ParseDateTime(args.event_time)
+  request.googleCloudSecuritycenterV2Finding.eventTime = times.FormatDateTime(
+      event_time_dt
+  )
+
   util.ValidateMutexOnFindingAndSourceAndOrganization(args)
-  finding_name = util.GetFindingNameForParent(args)
-  req.parent = util.GetSourceParentFromResourceName(finding_name)
-  req.findingId = util.GetFindingIdFromName(finding_name)
-  messages = sc_client.GetMessages()
-  if not req.finding:
-    req.finding = messages.Finding()
-  req.finding.name = finding_name
-  return req
+  finding_name = util.GetFullFindingName(args, "v2")
+  request.parent = util.GetSourceParentFromFindingName(finding_name, "v2")
+  request.findingId = util.GetFindingIdFromName(finding_name)
+
+  if not request.googleCloudSecuritycenterV2Finding:
+    request.googleCloudSecuritycenterV2Finding = (
+        messages.GoogleCloudSecuritycenterV2Finding()
+    )
+  request.googleCloudSecuritycenterV2Finding.name = finding_name
+  return request
+
+
+def _V1GenerateRequestArgumentsForCreateCommand(args):
+  """Generate the request's finding name, finding ID, parent and v1 Finding using specified arguments.
+
+  Args:
+    args: (argparse namespace)
+
+  Returns:
+    req: Modified request
+  """
+  messages = securitycenter_client.GetMessages("v1")
+  request = messages.SecuritycenterOrganizationsSourcesFindingsCreateRequest()
+  request.finding = messages.Finding(
+      category=args.category,
+      resourceName=args.resource_name,
+      state=util.ConvertStateInput(args.state, "v1"),
+  )
+  request.finding.externalUri = args.external_uri
+  if args.IsKnownAndSpecified("source_properties"):
+    request.finding.sourceProperties = util.ConvertSourceProperties(
+        args.source_properties, "v1"
+    )
+
+  # Convert event_time argument to correct format.
+  event_time_dt = times.ParseDateTime(args.event_time)
+  request.finding.eventTime = times.FormatDateTime(event_time_dt)
+
+  util.ValidateMutexOnFindingAndSourceAndOrganization(args)
+  finding_name = util.GetFullFindingName(args, "v1")
+  request.parent = util.GetSourceParentFromFindingName(finding_name, "v1")
+  request.findingId = util.GetFindingIdFromName(finding_name)
+
+  if not request.finding:
+    request.finding = messages.Finding()
+  request.finding.name = finding_name
+  return request

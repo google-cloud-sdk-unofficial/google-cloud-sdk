@@ -24,10 +24,9 @@ from googlecloudsdk.command_lib.storage.tasks import task_status
 from googlecloudsdk.command_lib.storage.tasks.buckets.anywhere_caches import patch_anywhere_cache_task
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Update(base.UpdateCommand):
-  """Update Anywhere Cache instances of a bucket."""
+  """Update Anywhere Cache instances."""
 
   detailed_help = {
       'DESCRIPTION': """
@@ -38,15 +37,16 @@ class Update(base.UpdateCommand):
       'EXAMPLES': """
 
       The following command updates cache entry's ttl, and admisson policy of
-      anywhere cache instance of bucket ``my-bucket'' in ``asia-south2-b''
-      zone.
+      anywhere cache instance in bucket ``my-bucket'' having anywhere_cache_id
+      ``my-cache-id'':
 
-        $ {command} my-bucket/asia-south2-b --ttl=6h --admission-policy='ADMIT_ON_SECOND_MISS'
+        $ {command} my-bucket/my-cache-id --ttl=6h --admission-policy='ADMIT_ON_SECOND_MISS'
 
-      The following command updates cache entry's ttl of anywhere cache instance
-      of bucket ``my-bucket'', and ``my-bucket-2'' in ``asia-south2-b'' zone.
+      The following command updates cache entry's ttl of anywhere cache
+      instances in bucket ``bucket-1'' and ``bucket-2'' having anywhere_cache_id
+      ``my-cache-id-1'', and ``my-cache-id-2'' respectively:
 
-        $ {command} my-bucket/asia-south2-b my-bucket-2/asia-south2-b --ttl=6h
+        $ {command} bucket-1/my-cache-id-1 bucket-2/my-cache-id-2 --ttl=6h
       """,
   }
 
@@ -58,7 +58,8 @@ class Update(base.UpdateCommand):
         nargs='+',
         help=(
             'Identifiers for a Anywhere Cache Instance.They are combination of'
-            ' bucket_name/zone.'
+            ' bucket_name/anywhere_cache_id. For example :'
+            ' test-bucket/my-cache-id.'
         ),
     )
 
@@ -78,9 +79,12 @@ class Update(base.UpdateCommand):
     ttl = str(args.ttl) + 's' if args.ttl else None
 
     for id_str in args.id:
-      bucket_name, _, zone = id_str.rpartition('/')
+      bucket_name, _, anywhere_cache_id = id_str.rpartition('/')
       yield patch_anywhere_cache_task.PatchAnywhereCacheTask(
-          bucket_name, zone, admission_policy=args.admission_policy, ttl=ttl
+          bucket_name,
+          anywhere_cache_id,
+          admission_policy=args.admission_policy,
+          ttl=ttl,
       )
 
   def Run(self, args):

@@ -20,14 +20,14 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-from googlecloudsdk.api_lib.util import apis
+from googlecloudsdk.api_lib.scc import securitycenter_client
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.scc import flags as scc_flags
 from googlecloudsdk.command_lib.scc import util as scc_util
 from googlecloudsdk.command_lib.scc.bqexports import bqexport_util
 from googlecloudsdk.command_lib.scc.bqexports import flags as bqexport_flags
 from googlecloudsdk.core import log
 from googlecloudsdk.core.console import console_io
-from googlecloudsdk.generated_clients.apis.securitycenter.v1 import securitycenter_v1_messages
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
@@ -74,10 +74,10 @@ class Delete(base.DeleteCommand):
     bqexport_flags.AddBigQueryPositionalArgument(parser)
     bqexport_flags.AddParentGroup(parser)
 
+    scc_flags.API_VERSION_FLAG.AddToParser(parser)
+    scc_flags.LOCATION_FLAG.AddToParser(parser)
+
   def Run(self, args):
-    req = (
-        securitycenter_v1_messages.SecuritycenterOrganizationsBigQueryExportsDeleteRequest()
-    )
 
     # Prompt user to confirm deletion.
     console_io.PromptContinue(
@@ -85,18 +85,26 @@ class Delete(base.DeleteCommand):
         cancel_on_no=True,
     )
 
-    # Compose and validate after prompt.
-    parent = scc_util.GetParentFromNamedArguments(args)
-    if parent is not None:
-      bq_export_id = bqexport_util.ValidateAndGetBigQueryExportId(args)
-      req.name = parent + '/bigQueryExports/' + bq_export_id
-    else:
-      bq_export_name = (
-          bqexport_util.ValidateAndGetBigQueryExportFullResourceName(args)
-      )
-      req.name = bq_export_name
+    # Determine what version to call from --location and --api-version. The
+    # BigQuery export is a version_specific_existing_resource that may not be
+    # accessed through v2 if it currently exists in v1, and vice versa.
+    version = scc_util.GetVersionFromArguments(
+        args, args.BIG_QUERY_EXPORT, version_specific_existing_resource=True
+    )
+    messages = securitycenter_client.GetMessages(version)
+    client = securitycenter_client.GetClient(version)
 
-    client = apis.GetClientInstance('securitycenter', 'v1')
-    empty_bq_response = client.organizations_bigQueryExports.Delete(req)
+    if version == 'v1':
+      req = messages.SecuritycenterOrganizationsBigQueryExportsDeleteRequest()
+      req.name = bqexport_util.ValidateAndGetBigQueryExportV1Name(args)
+      empty_bq_response = client.organizations_bigQueryExports.Delete(req)
+    else:
+      req = (
+          messages.SecuritycenterOrganizationsLocationsBigQueryExportsDeleteRequest()
+      )
+      req.name = bqexport_util.ValidateAndGetBigQueryExportV2Name(args)
+      empty_bq_response = client.organizations_locations_bigQueryExports.Delete(
+          req
+      )
     log.status.Print('Deleted.')
     return empty_bq_response

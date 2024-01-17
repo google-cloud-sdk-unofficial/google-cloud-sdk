@@ -1,7 +1,7 @@
 - release_tracks: [ALPHA]
   help_text:
-    brief: "Get IAM configuration of the given storage pool."
-    description: "Get IAM configuration of the given storage pool."
+    brief: "Get the IAM policy of a storage pool."
+    description: "Get the IAM policy of a storage pool."
     examples: |
       The following command retrieves the IAM configuration of the specified storage pool.
 
@@ -15,7 +15,7 @@
 
   arguments:
     resource:
-      help_text: The storage pool you want to get the IAM permissions of.
+      help_text: Storage pool you want to get the IAM permissions of.
       spec: !REF googlecloudsdk.command_lib.compute.resources:storage_pool
 
   iam:

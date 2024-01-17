@@ -21,58 +21,11 @@ from __future__ import unicode_literals
 from googlecloudsdk.api_lib.privateca import base as privateca_base
 from googlecloudsdk.api_lib.privateca import request_utils
 from googlecloudsdk.calliope import base
-from googlecloudsdk.command_lib.privateca import flags_v1
+from googlecloudsdk.command_lib.privateca import flags
 from googlecloudsdk.command_lib.privateca import operations
 from googlecloudsdk.command_lib.privateca import resource_args
 from googlecloudsdk.core import log
 from googlecloudsdk.core.console import console_io
-
-
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class DisableBeta(base.SilentCommand):
-  r"""Disable a subordinate certificate authority.
-
-    Disables a subordinate certificate authority. The subordinate certificate
-    authority will not be allowed to issue certificates once disabled. It may
-    still revoke certificates and/or generate CRLs.
-
-    ## EXAMPLES
-
-    To disable a subordinate CA:
-
-        $ {command} server-tls1 --location=us-west1
-  """
-
-  @staticmethod
-  def Args(parser):
-    resource_args.AddCertificateAuthorityPositionalResourceArg(
-        parser, 'to disable')
-
-  def Run(self, args):
-    client = privateca_base.GetClientInstance(api_version='v1beta1')
-    messages = privateca_base.GetMessagesModule(api_version='v1beta1')
-
-    ca_ref = args.CONCEPTS.certificate_authority.Parse()
-
-    current_ca = client.projects_locations_certificateAuthorities.Get(
-        messages.PrivatecaProjectsLocationsCertificateAuthoritiesGetRequest(
-            name=ca_ref.RelativeName()))
-
-    resource_args.CheckExpectedCAType(
-        messages.CertificateAuthority.TypeValueValuesEnum.SUBORDINATE,
-        current_ca)
-
-    operation = client.projects_locations_certificateAuthorities.Disable(
-        messages.PrivatecaProjectsLocationsCertificateAuthoritiesDisableRequest(
-            name=ca_ref.RelativeName(),
-            disableCertificateAuthorityRequest=messages
-            .DisableCertificateAuthorityRequest(
-                requestId=request_utils.GenerateRequestId())))
-
-    operations.Await(operation, 'Disabling Subordinate CA')
-
-    log.status.Print('Disabled Subordinate CA [{}].'.format(
-        ca_ref.RelativeName()))
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
@@ -93,7 +46,7 @@ class Disable(base.SilentCommand):
   @staticmethod
   def Args(parser):
     resource_args.AddCertAuthorityPositionalResourceArg(parser, 'to disable')
-    flags_v1.AddIgnoreDependentResourcesFlag(parser)
+    flags.AddIgnoreDependentResourcesFlag(parser)
 
   def Run(self, args):
     client = privateca_base.GetClientInstance(api_version='v1')

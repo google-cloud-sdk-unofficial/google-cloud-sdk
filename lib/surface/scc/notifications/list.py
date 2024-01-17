@@ -20,11 +20,10 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 from apitools.base.py import list_pager
-from googlecloudsdk.api_lib.util import apis
+from googlecloudsdk.api_lib.scc import securitycenter_client
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.scc import flags as scc_flags
-from googlecloudsdk.command_lib.scc import util
-from googlecloudsdk.generated_clients.apis.securitycenter.v1 import securitycenter_v1_messages as messages
+from googlecloudsdk.command_lib.scc import util as scc_util
 
 
 @base.ReleaseTracks(
@@ -63,19 +62,36 @@ class List(base.ListCommand):
     # Add shared flags and parent positional argument.
     scc_flags.AppendParentArg()[0].AddToParser(parser)
 
-  def Run(self, args):
-    request = (
-        messages.SecuritycenterOrganizationsNotificationConfigsListRequest()
-    )
-    request.parent = util.GetParentFromPositionalArguments(args)
-    request.pageSize = args.page_size
+    scc_flags.API_VERSION_FLAG.AddToParser(parser)
+    scc_flags.LOCATION_FLAG.AddToParser(parser)
 
-    client = apis.GetClientInstance('securitycenter', 'v1')
+  def Run(self, args):
+    # Determine what version to call from --api-version.
+    version = scc_util.GetVersionFromArguments(
+        args, version_specific_existing_resource=True
+    )
+    messages = securitycenter_client.GetMessages(version)
+    client = securitycenter_client.GetClient(version)
+
+    if version == 'v1':
+      request = (
+          messages.SecuritycenterOrganizationsNotificationConfigsListRequest()
+      )
+      request.parent = scc_util.GetParentFromPositionalArguments(args)
+      endpoint = client.organizations_notificationConfigs
+    else:
+      request = (
+          messages.SecuritycenterOrganizationsLocationsNotificationConfigsListRequest()
+      )
+      location = scc_util.ValidateAndGetLocation(args, 'v2')
+      request.parent = f'{scc_util.GetParentFromPositionalArguments(args)}/locations/{location}'
+      endpoint = client.organizations_locations_notificationConfigs
+    request.pageSize = args.page_size
 
     # Automatically handle pagination. All notifications are returned regardless
     # of --page-size argument.
     return list_pager.YieldFromList(
-        client.organizations_notificationConfigs,
+        endpoint,
         request,
         batch_size_attribute='pageSize',
         batch_size=args.page_size,

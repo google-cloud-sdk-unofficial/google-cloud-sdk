@@ -3,7 +3,7 @@
     brief: "Update a storage pool."
     description: "Update a storage pool."
     examples: |
-      The following command updates the size of the specified storage pool.
+      To update the size of a storage pool named 'my-storage-pool', run th following command:
 
         $ {command} my-storage-pool --size=20tb
 
@@ -21,7 +21,7 @@
 
   arguments:
     resource:
-      help_text: The storage pool you want to update.
+      help_text: Storage pool you want to update.
       spec: !REF googlecloudsdk.command_lib.compute.resources:storage_pool
 
     params:

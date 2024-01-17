@@ -21,11 +21,6 @@ from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class SubordinatesBeta(base.Group):
-  """Manage subordinate certificate authorities."""
-
-
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Subordinates(base.Group):
   """Manage subordinate certificate authorities."""

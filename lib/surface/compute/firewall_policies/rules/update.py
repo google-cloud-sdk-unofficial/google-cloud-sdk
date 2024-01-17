@@ -71,6 +71,21 @@ class Update(base.UpdateCommand):
     flags.AddOrganization(parser, required=False)
 
   def Run(self, args):
+    clearable_arg_name_to_field_name = {
+        'src_ip_ranges': 'match.srcIpRanges',
+        'dest_ip_ranges': 'match.destIpRanges',
+        'src_region_codes': 'match.srcRegionCodes',
+        'dest_region_codes': 'match.destRegionCodes',
+        'src_fqdns': 'match.srcFqdns',
+        'dest_fqdns': 'match.destFqdns',
+        'src_address_groups': 'match.srcAddressGroups',
+        'dest_address_groups': 'match.destAddressGroups',
+        'src_threat_intelligence': 'match.srcThreatIntelligences',
+        'dest_threat_intelligence': 'match.destThreatIntelligences',
+        'security_profile_group': 'securityProfileGroup',
+        'target_resources': 'targetResources',
+        'target_service_accounts': 'targetServiceAccounts',
+    }
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     ref = self.FIREWALL_POLICY_ARG.ResolveAsResource(
         args, holder.resources, with_project=False
@@ -102,13 +117,17 @@ class Update(base.UpdateCommand):
     dest_region_codes = []
     src_threat_intelligence = []
     dest_threat_intelligence = []
-    enable_logging = False
-    disabled = False
+    enable_logging = None
+    disabled = None
     should_setup_match = False
     traffic_direct = None
     matcher = None
     security_profile_group = None
     tls_inspect = None
+
+    for arg in clearable_arg_name_to_field_name:
+      if args.IsKnownAndSpecified(arg) and not args.GetValue(arg):
+        cleared_fields.append(clearable_arg_name_to_field_name[arg])
 
     if args.IsSpecified('src_ip_ranges'):
       src_ip_ranges = args.src_ip_ranges
@@ -169,7 +188,10 @@ class Update(base.UpdateCommand):
                 firewall_policy_id=args.firewall_policy,
             )
         )
-      else:
+      elif (
+          args.IsSpecified('action')
+          and args.action != 'apply_security_profile_group'
+      ):
         cleared_fields.append('securityProfileGroup')
       if args.IsSpecified('tls_inspect'):
         tls_inspect = args.tls_inspect

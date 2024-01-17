@@ -21,7 +21,7 @@ from __future__ import unicode_literals
 from googlecloudsdk.api_lib.privateca import base as privateca_base
 from googlecloudsdk.api_lib.privateca import request_utils
 from googlecloudsdk.calliope import base
-from googlecloudsdk.command_lib.privateca import flags_v1
+from googlecloudsdk.command_lib.privateca import flags
 from googlecloudsdk.command_lib.privateca import operations
 from googlecloudsdk.command_lib.privateca import resource_args
 from googlecloudsdk.command_lib.util.args import labels_util
@@ -55,9 +55,9 @@ class Create(base.CreateCommand):
   @staticmethod
   def Args(parser):
     resource_args.AddCaPoolPositionalResourceArg(parser, 'to create')
-    flags_v1.AddTierFlag(parser)
-    flags_v1.AddPublishingOptionsFlags(parser, use_update_help_text=False)
-    flags_v1.AddCaPoolIssuancePolicyFlag(parser)
+    flags.AddTierFlag(parser)
+    flags.AddPublishingOptionsFlags(parser, use_update_help_text=False)
+    flags.AddCaPoolIssuancePolicyFlag(parser)
     labels_util.AddCreateLabelsFlags(parser)
 
   def Run(self, args):
@@ -65,9 +65,9 @@ class Create(base.CreateCommand):
     messages = privateca_base.GetMessagesModule('v1')
 
     ca_pool_ref = args.CONCEPTS.ca_pool.Parse()
-    issuance_policy = flags_v1.ParseIssuancePolicy(args)
-    publishing_options = flags_v1.ParsePublishingOptions(args)
-    tier = flags_v1.ParseTierFlag(args)
+    issuance_policy = flags.ParseIssuancePolicy(args)
+    publishing_options = flags.ParsePublishingOptions(args)
+    tier = flags.ParseTierFlag(args)
     labels = labels_util.ParseCreateArgs(args, messages.CaPool.LabelsValue)
     new_ca_pool = messages.CaPool(
         issuancePolicy=issuance_policy,

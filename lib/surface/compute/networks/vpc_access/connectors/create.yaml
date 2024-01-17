@@ -122,7 +122,7 @@
               required: false
               help_text: |
                 Minimum number of instances within an autoscaling group underlying the connector.
-                Value must be between 1-9. Must be lower than the value specified by
+                Value must be between 2 and 9, inclusive. Must be lower than the value specified by
                 `--max-instances`.
             - arg_name: max-instances
               api_field: connector.maxInstances
@@ -130,7 +130,7 @@
               required: false
               help_text: |
                 Maximum number of instances within an autoscaling group underlying the connector.
-                Value must be between 2-10. Must be higher than the value specified by
+                Value must be between 3 and 10, inclusive. Must be higher than the value specified by
                 `--min-instances`.
     - arg_name: machine-type
       api_field: connector.machineType

@@ -44,6 +44,8 @@ class Create(base.CreateCommand):
   def Args(parser):
     resource_args.AddRepositoryResourceArg(parser, "to create")
     flags.AddInstance(parser)
+    flags.AddDescription(parser)
+    flags.AddInitialConfigGroup(parser)
 
   def Run(self, args):
     # Get --instance flag
@@ -62,7 +64,14 @@ class Create(base.CreateCommand):
       client = repositories.RepositoriesClient()
       # this is a shortcut LRO, it completes immediately and is marked as done
       # there is no need to wait
-      create_operation = client.Create(repository_ref)
+      create_operation = client.Create(
+          repository_ref,
+          args.description,
+          args.default_branch,
+          args.gitignores,
+          args.license,
+          args.readme,
+      )
       if not args.IsSpecified("format"):
         args.format = "default"
       return create_operation

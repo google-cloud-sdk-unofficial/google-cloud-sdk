@@ -19,14 +19,14 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-from googlecloudsdk.api_lib.util import apis
+from googlecloudsdk.api_lib.scc import securitycenter_client
 from googlecloudsdk.calliope import base
-from googlecloudsdk.command_lib.scc import util
+from googlecloudsdk.command_lib.scc import flags as scc_flags
+from googlecloudsdk.command_lib.scc import util as scc_util
 from googlecloudsdk.command_lib.scc.notifications import flags as notifications_flags
 from googlecloudsdk.command_lib.scc.notifications import notification_util
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
-from googlecloudsdk.generated_clients.apis.securitycenter.v1 import securitycenter_v1_messages
 
 
 @base.ReleaseTracks(
@@ -111,19 +111,40 @@ class Update(base.UpdateCommand):
     notifications_flags.AddNotificationConfigPositionalArgument(parser)
     notifications_flags.AddParentGroup(parser)
 
+    scc_flags.API_VERSION_FLAG.AddToParser(parser)
+    scc_flags.LOCATION_FLAG.AddToParser(parser)
+
     parser.display_info.AddFormat(properties.VALUES.core.default_format.Get())
 
   def Run(self, args):
-    req = (
-        securitycenter_v1_messages.SecuritycenterOrganizationsNotificationConfigsPatchRequest()
+    # Determine what version to call from --location and --api-version. The
+    # NotificationConfig is a version_specific_existing_resource that may not be
+    # accesed through v2 if it currently exists in v1, and vice vesra.
+    version = scc_util.GetVersionFromArguments(
+        args, args.NOTIFICATIONCONFIGID, version_specific_existing_resource=True
     )
+    messages = securitycenter_client.GetMessages(version)
+    client = securitycenter_client.GetClient(version)
 
-    parent = util.GetParentFromNamedArguments(args)
+    parent = scc_util.GetParentFromNamedArguments(args)
     notification_util.ValidateMutexOnConfigIdAndParent(args, parent)
-    req.name = notification_util.GetNotificationConfigName(args)
+
+    if version == 'v1':
+      req = (
+          messages.SecuritycenterOrganizationsNotificationConfigsPatchRequest()
+      )
+      req.name = notification_util.ValidateAndGetNotificationConfigV1Name(args)
+      endpoint = client.organizations_notificationConfigs
+
+    else:
+      req = (
+          messages.SecuritycenterOrganizationsLocationsNotificationConfigsPatchRequest()
+      )
+      req.name = notification_util.ValidateAndGetNotificationConfigV2Name(args)
+      endpoint = client.organizations_locations_notificationConfigs
 
     computed_update_mask = []
-    req.notificationConfig = securitycenter_v1_messages.NotificationConfig()
+    req.notificationConfig = messages.NotificationConfig()
     if args.IsKnownAndSpecified('description'):
       computed_update_mask.append('description')
       req.notificationConfig.description = args.description
@@ -132,7 +153,7 @@ class Update(base.UpdateCommand):
       req.notificationConfig.pubsubTopic = args.pubsub_topic
     if args.IsKnownAndSpecified('filter'):
       computed_update_mask.append('streamingConfig.filter')
-      streaming_config = securitycenter_v1_messages.StreamingConfig()
+      streaming_config = messages.StreamingConfig()
       streaming_config.filter = args.filter
       req.notificationConfig.streamingConfig = streaming_config
 
@@ -142,7 +163,6 @@ class Update(base.UpdateCommand):
     # Set the args' filter to None to avoid downstream naming conflicts.
     args.filter = None
 
-    client = apis.GetClientInstance('securitycenter', 'v1')
-    result = client.organizations_notificationConfigs.Patch(req)
+    result = endpoint.Patch(req)
     log.status.Print('Updated.')
     return result

@@ -21,7 +21,7 @@ from __future__ import unicode_literals
 from googlecloudsdk.api_lib.privateca import base as privateca_base
 from googlecloudsdk.api_lib.privateca import request_utils
 from googlecloudsdk.calliope import base
-from googlecloudsdk.command_lib.privateca import flags_v1
+from googlecloudsdk.command_lib.privateca import flags
 from googlecloudsdk.command_lib.privateca import operations
 from googlecloudsdk.command_lib.privateca import resource_args
 from googlecloudsdk.command_lib.util.args import labels_util
@@ -74,10 +74,10 @@ class Create(base.CreateCommand):
         '--description',
         help='A text description for the Certificate Template.').AddToParser(
             parser)
-    flags_v1.AddPredefinedValuesFileFlag(parser)
-    flags_v1.AddIdentityConstraintsFlags(parser)
-    flags_v1.AddExtensionConstraintsFlags(parser)
-    flags_v1.AddMaximumLifetimeFlag(parser)
+    flags.AddPredefinedValuesFileFlag(parser)
+    flags.AddIdentityConstraintsFlags(parser)
+    flags.AddExtensionConstraintsFlags(parser)
+    flags.AddMaximumLifetimeFlag(parser)
     labels_util.AddCreateLabelsFlags(parser)
 
   def Run(self, args):
@@ -86,16 +86,16 @@ class Create(base.CreateCommand):
 
     cert_template_ref = args.CONCEPTS.certificate_template.Parse()
 
-    flags_v1.ValidateIdentityConstraints(args)
+    flags.ValidateIdentityConstraints(args)
 
     new_cert_template = messages.CertificateTemplate(
-        predefinedValues=flags_v1.ParsePredefinedValues(args),
-        identityConstraints=flags_v1.ParseIdentityConstraints(args),
-        passthroughExtensions=flags_v1.ParseExtensionConstraints(args),
+        predefinedValues=flags.ParsePredefinedValues(args),
+        identityConstraints=flags.ParseIdentityConstraints(args),
+        passthroughExtensions=flags.ParseExtensionConstraints(args),
         description=args.description
         if args.IsSpecified('description')
         else None,
-        maximumLifetime=flags_v1.ParseMaximumLifetime(args),
+        maximumLifetime=flags.ParseMaximumLifetime(args),
     )
 
     operation = client.projects_locations_certificateTemplates.Create(

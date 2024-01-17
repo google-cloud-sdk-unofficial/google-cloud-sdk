@@ -242,6 +242,9 @@ information on how to structure KEYs and VALUEs, run
 
   flags.ENABLE_HIGH_RESILIENCE.AddToParser(parser)
 
+  flags.ENABLE_LOGS_IN_CLOUD_LOGGING_ONLY.AddToParser(parser)
+  flags.DISABLE_LOGS_IN_CLOUD_LOGGING_ONLY.AddToParser(parser)
+
   scheduled_snapshots_params_group = parser.add_argument_group(
       flags.SCHEDULED_SNAPSHOTS_GROUP_DESCRIPTION)
   flags.ENABLE_SCHEDULED_SNAPSHOT_CREATION.AddToParser(
@@ -565,6 +568,18 @@ class Create(base.Command):
     if args.enable_high_resilience and is_composer_v1:
       raise command_util.InvalidUserInputError(
           _INVALID_OPTION_FOR_V1_ERROR_MSG.format(opt='enable-high-resilience'))
+    if args.enable_logs_in_cloud_logging_only and is_composer_v1:
+      raise command_util.InvalidUserInputError(
+          _INVALID_OPTION_FOR_V1_ERROR_MSG.format(
+              opt='enable-logs-in-cloud-logging-only'
+          )
+      )
+    if args.disable_logs_in_cloud_logging_only and is_composer_v1:
+      raise command_util.InvalidUserInputError(
+          _INVALID_OPTION_FOR_V1_ERROR_MSG.format(
+              opt='disable-logs-in-cloud-logging-only'
+          )
+      )
     if args.cloud_sql_preferred_zone and is_composer_v1:
       raise command_util.InvalidUserInputError(
           _INVALID_OPTION_FOR_V1_ERROR_MSG.format(
@@ -688,10 +703,12 @@ class Create(base.Command):
         snapshot_location=args.snapshot_location,
         snapshot_schedule_timezone=args.snapshot_schedule_timezone,
         enable_high_resilience=args.enable_high_resilience,
+        enable_logs_in_cloud_logging_only=args.enable_logs_in_cloud_logging_only,
+        disable_logs_in_cloud_logging_only=args.disable_logs_in_cloud_logging_only,
         cloud_sql_preferred_zone=args.cloud_sql_preferred_zone,
         release_track=self.ReleaseTrack(),
         storage_bucket=args.storage_bucket,
-        airflow_database_retention_days=args.airflow_database_retention_days
+        airflow_database_retention_days=args.airflow_database_retention_days,
     )
     return environments_api_util.Create(self.env_ref, create_flags,
                                         is_composer_v1)
@@ -799,6 +816,8 @@ class CreateBeta(Create):
         enable_cloud_data_lineage_integration=args.enable_cloud_data_lineage_integration,
         disable_cloud_data_lineage_integration=args.disable_cloud_data_lineage_integration,
         enable_high_resilience=args.enable_high_resilience,
+        enable_logs_in_cloud_logging_only=args.enable_logs_in_cloud_logging_only,
+        disable_logs_in_cloud_logging_only=args.disable_logs_in_cloud_logging_only,
         cloud_sql_preferred_zone=args.cloud_sql_preferred_zone,
         support_web_server_plugins=args.support_web_server_plugins,
         dag_processor_cpu=args.dag_processor_cpu,
@@ -1048,6 +1067,8 @@ class CreateAlpha(CreateBeta):
         enable_cloud_data_lineage_integration=args.enable_cloud_data_lineage_integration,
         disable_cloud_data_lineage_integration=args.disable_cloud_data_lineage_integration,
         enable_high_resilience=args.enable_high_resilience,
+        enable_logs_in_cloud_logging_only=args.enable_logs_in_cloud_logging_only,
+        disable_logs_in_cloud_logging_only=args.disable_logs_in_cloud_logging_only,
         cloud_sql_preferred_zone=args.cloud_sql_preferred_zone,
         support_web_server_plugins=args.support_web_server_plugins,
         dag_processor_cpu=args.dag_processor_cpu,

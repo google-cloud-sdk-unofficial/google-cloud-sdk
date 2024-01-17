@@ -301,10 +301,20 @@ class Login(base.Command):
     #    If provider_name is present, then this is the 3PI flow.
     #    We can start the flow as is as the remote_bootstrap value will be used.
     if args.remote_bootstrap and 'provider_name' in args.remote_bootstrap:
-      auth_util.DoInstalledAppBrowserFlowGoogleAuth(
+      creds = auth_util.DoInstalledAppBrowserFlowGoogleAuth(
           config.CLOUDSDK_EXTERNAL_ACCOUNT_SCOPES,
           auth_proxy_redirect_uri='https://sdk.cloud.google/authcode.html',
-          **flow_params)
+          **flow_params
+      )
+      universe_domain_property = properties.VALUES.core.universe_domain
+      if (
+          creds
+          and hasattr(creds, 'universe_domain')
+          and creds.universe_domain != universe_domain_property.Get()
+      ):
+        # Get the account and handle universe domain conflict.
+        account = auth_external_account.GetExternalAccountId(creds)
+        auth_util.HandleUniverseDomainConflict(creds.universe_domain, account)
       return
     # 2. Try the 3PI web flow with a login configuration file.
     login_config_file = workforce_login_config_util.GetWorkforceLoginConfig()
@@ -424,6 +434,9 @@ def LoginWithCredFileConfig(cred_config, scopes, project, activate, brief,
 def LoginAs(account, creds, project, activate, brief, update_adc,
             add_quota_project_to_adc):
   """Logs in with valid credentials."""
+  if hasattr(creds, 'universe_domain'):
+    auth_util.HandleUniverseDomainConflict(creds.universe_domain, account)
+
   _ValidateADCFlags(update_adc, add_quota_project_to_adc)
   if update_adc:
     _UpdateADC(creds, add_quota_project_to_adc)
@@ -475,17 +488,6 @@ def _UpdateADC(creds, add_quota_project_to_adc):
           'just update the quota project in ADC, use $gcloud auth '
           'application-default set-quota-project.'.format(quota_project))
     log.status.Print(adc_msg)
-
-  # --update-adc for 1P auth gets deprecated
-  if (c_creds.IsUserAccountCredentials(creds) and not
-      c_creds.IsExternalAccountUserCredentials(creds) and not
-      c_creds.IsExternalAccountAuthorizedUserCredentials(creds)):
-    log.status.Print(
-        '\nThe --update-adc flag is deprecated. Use the `gcloud auth'
-        ' application-default login` command instead.\n\nFor information'
-        ' about local development authentication setup, see https://cloud.'
-        'google.com/docs/authentication/external/set-up-adc-local'
-    )
 
 
 def _ValidateADCFlags(update_adc, add_quota_project_to_adc):

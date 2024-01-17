@@ -23,10 +23,9 @@ from googlecloudsdk.command_lib.storage.tasks import task_status
 from googlecloudsdk.command_lib.storage.tasks.buckets.anywhere_caches import pause_anywhere_cache_task
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Pause(base.Command):
-  """Pause Anywhere Cache instances of a bucket."""
+  """Pause Anywhere Cache instances."""
 
   detailed_help = {
       'DESCRIPTION': """
@@ -37,9 +36,9 @@ class Pause(base.Command):
       'EXAMPLES': """
 
       The following command pause the anywhere cache instance of bucket
-      ``my-bucket'' in ``asia-south2-b'' zone:
+      ``my-bucket'' having anywhere_cache_id ``my-cache-id'':
 
-        $ {command} my-bucket/asia-south2-b
+        $ {command} my-bucket/my-cache-id
       """,
   }
 
@@ -51,7 +50,8 @@ class Pause(base.Command):
         nargs='+',
         help=(
             'Identifiers for a Anywhere Cache instance. They are combination of'
-            ' bucket_name/zone.'
+            ' bucket_name/anywhere_cache_id. For example :'
+            ' test-bucket/my-cache-id.'
         ),
     )
 
@@ -61,8 +61,10 @@ class Pause(base.Command):
     )
 
     for id_str in args.id:
-      bucket_name, _, zone = id_str.rpartition('/')
-      yield pause_anywhere_cache_task.PauseAnywhereCacheTask(bucket_name, zone)
+      bucket_name, _, anywhere_cache_id = id_str.rpartition('/')
+      yield pause_anywhere_cache_task.PauseAnywhereCacheTask(
+          bucket_name, anywhere_cache_id
+      )
 
   def Run(self, args):
     task_status_queue = task_graph_executor.multiprocessing_context.Queue()

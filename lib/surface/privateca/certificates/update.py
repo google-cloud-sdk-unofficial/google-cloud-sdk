@@ -26,64 +26,6 @@ from googlecloudsdk.command_lib.privateca import resource_args
 from googlecloudsdk.command_lib.util.args import labels_util
 
 
-# TODO(b/177604350): Remove Beta code paths.
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class UpdateBeta(base.UpdateCommand):
-  r"""Update an existing certificate.
-
-  ## EXAMPLES
-
-   To update labels on a certificate:
-
-      $ {command} frontend-server-tls \
-        --issuer=server-tls-1 --issuer-location=us \
-        --update-labels=in_use=true
-  """
-
-  NO_CHANGES_MESSAGE = (
-      'There are no changes to the certificate [{certificate}].')
-
-  @staticmethod
-  def Args(parser):
-    resource_args.AddCertificatePositionalResourceArg(parser, 'to update')
-    labels_util.AddUpdateLabelsFlags(parser)
-
-  def _RunUpdate(self, client, messages, original_cert, args):
-    # Collect the list of update masks
-    labels_diff = labels_util.GetAndValidateOpsFromArgs(args)
-    labels_update = labels_diff.Apply(messages.Certificate.LabelsValue,
-                                      original_cert.labels)
-
-    if not labels_update.needs_update:
-      raise exceptions.InvalidArgumentException(
-          'labels',
-          self.NO_CHANGES_MESSAGE.format(certificate=original_cert.name))
-
-    original_cert.labels = labels_update.labels
-
-    return client.projects_locations_certificateAuthorities_certificates.Patch(
-        messages.
-        PrivatecaProjectsLocationsCertificateAuthoritiesCertificatesPatchRequest(
-            name=original_cert.name,
-            certificate=original_cert,
-            updateMask='labels',
-            requestId=request_utils.GenerateRequestId()))
-
-  def Run(self, args):
-    client = privateca_base.GetClientInstance()
-    messages = privateca_base.GetMessagesModule()
-
-    certificate_ref = args.CONCEPTS.certificate.Parse()
-    # Attempt to get the certificate
-    certificate = client.projects_locations_certificateAuthorities_certificates.Get(
-        messages
-        .PrivatecaProjectsLocationsCertificateAuthoritiesCertificatesGetRequest(
-            name=certificate_ref.RelativeName()))
-
-    # The certificate exists, update it
-    return self._RunUpdate(client, messages, certificate, args)
-
-
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Update(base.UpdateCommand):
   r"""Update an existing certificate.

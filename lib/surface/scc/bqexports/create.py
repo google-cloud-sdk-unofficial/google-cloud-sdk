@@ -20,15 +20,14 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-from googlecloudsdk.api_lib.scc import securitycenter_client as sc_client
-from googlecloudsdk.api_lib.util import apis
+from googlecloudsdk.api_lib.scc import securitycenter_client
 from googlecloudsdk.calliope import base
-from googlecloudsdk.command_lib.scc import util
+from googlecloudsdk.command_lib.scc import flags as scc_flags
+from googlecloudsdk.command_lib.scc import util as scc_util
 from googlecloudsdk.command_lib.scc.bqexports import bqexport_util
 from googlecloudsdk.command_lib.scc.bqexports import flags as bqexports_flags
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
-from googlecloudsdk.generated_clients.apis.securitycenter.v1 import securitycenter_v1_messages
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
@@ -113,50 +112,53 @@ class Create(base.CreateCommand):
 
     parser.display_info.AddFormat(properties.VALUES.core.default_format.Get())
 
+    scc_flags.API_VERSION_FLAG.AddToParser(parser)
+    scc_flags.LOCATION_FLAG.AddToParser(parser)
+
   def Run(self, args):
-    req = (
-        securitycenter_v1_messages.SecuritycenterOrganizationsBigQueryExportsCreateRequest()
-    )
 
-    # Validate and compose the BigQuery Export Name.
-    parent = util.GetParentFromNamedArguments(args)
-    if parent is not None:
-      req.bigQueryExportId = bqexport_util.ValidateAndGetBigQueryExportId(args)
-      req.parent = parent
+    # Determine what version to call from --location and --api-version.
+    version = scc_util.GetVersionFromArguments(args, args.BIG_QUERY_EXPORT)
+    messages = securitycenter_client.GetMessages(version)
+    client = securitycenter_client.GetClient(version)
+
+    # Set version-specific variables
+    if version == 'v1':
+      req = messages.SecuritycenterOrganizationsBigQueryExportsCreateRequest()
+      config_name = bqexport_util.ValidateAndGetBigQueryExportV1Name(args)
+      export = messages.GoogleCloudSecuritycenterV1BigQueryExport()
+      req.googleCloudSecuritycenterV1BigQueryExport = export
+      endpoint = client.organizations_bigQueryExports
     else:
-      bq_export_name = (
-          bqexport_util.ValidateAndGetBigQueryExportFullResourceName(args)
+      req = (
+          messages.SecuritycenterOrganizationsLocationsBigQueryExportsCreateRequest()
       )
-      req.bigQueryExportId = _GetBigQueryExportIdFromFullResourceName(
-          bq_export_name
-      )
-      bqparent = _GetParentFromFullResourceName(bq_export_name)
-      req.parent = bqparent
+      config_name = bqexport_util.ValidateAndGetBigQueryExportV2Name(args)
+      export = messages.GoogleCloudSecuritycenterV2BigQueryExport()
+      req.googleCloudSecuritycenterV2BigQueryExport = export
+      endpoint = client.organizations_locations_bigQueryExports
 
-    messages = sc_client.GetMessages('v1')
-    req.googleCloudSecuritycenterV1BigQueryExport = (
-        messages.GoogleCloudSecuritycenterV1BigQueryExport()
-    )
-    req.googleCloudSecuritycenterV1BigQueryExport.dataset = args.dataset
-    req.googleCloudSecuritycenterV1BigQueryExport.description = args.description
-    req.googleCloudSecuritycenterV1BigQueryExport.filter = args.filter
+    req.bigQueryExportId = _GetBigQueryExportIdFromFullResourceName(config_name)
+    req.parent = _GetParentFromFullResourceName(config_name)
+
+    export.dataset = args.dataset
+    export.description = args.description
+    export.filter = args.filter
 
     # Set the args' filter to None to avoid downstream naming conflicts.
     args.filter = None
 
-    client = apis.GetClientInstance('securitycenter', 'v1')
-    bq_export_response = client.organizations_bigQueryExports.Create(req)
+    bq_export_response = endpoint.Create(req)
     log.status.Print('Created.')
     return bq_export_response
 
 
-def _GetBigQueryExportIdFromFullResourceName(bq_export_name):
+def _GetBigQueryExportIdFromFullResourceName(config_name):
   """Gets BigQuery export id from the full resource name."""
-  bq_export_components = bq_export_name.split('/')
+  bq_export_components = config_name.split('/')
   return bq_export_components[len(bq_export_components) - 1]
 
 
-def _GetParentFromFullResourceName(bq_export_name):
-  """Gets parent from the full resource name."""
-  bq_export_components = bq_export_name.split('/')
-  return bq_export_components[0] + '/' + bq_export_components[1]
+def _GetParentFromFullResourceName(config_name):
+  """Returns the parts of the BigQuery export name before "/bigQueryExports"."""
+  return '/'.join(config_name.split('/')[:-2])

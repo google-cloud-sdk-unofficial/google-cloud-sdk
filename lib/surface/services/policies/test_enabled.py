@@ -12,11 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""services policies check command."""
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
-
+"""services policies test-enabled command."""
 from googlecloudsdk.api_lib.services import serviceusage
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.services import common_flags
@@ -32,19 +28,19 @@ _SERVICE = 'services/%s'
 # TODO(b/274633761) make command public after suv2 launch.
 @base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class Check(base.Command):
-  """Check if a service is enabled or can be enabled in the resource or from the resource ancestors.
+class TestEnabled(base.Command):
+  """Test a value against the result of merging consumer policies in the resource hierarchy.
 
-  Check if a service is enabled or can be enabled in the resource or from the
-  resource ancestors.
+  Test a value against the result of merging consumer policies in the resource
+  hierarchy.
 
   ## EXAMPLES
 
-  Check for service my-service for current project:
+  Test for service my-service for current project:
 
     $ {command} my-service
 
-  Check for service my-service for project `my-project`:
+  Test for service my-service for project `my-project`:
 
     $ {command} my-service --project=my-project
   """
@@ -74,15 +70,24 @@ class Check(base.Command):
       project = properties.VALUES.core.project.Get(required=True)
       resource_name = _PROJECT_RESOURCE % project
 
-    response = serviceusage.CheckValue(
-        resource_name, _SERVICE % args.service
-    ).result
+    response = serviceusage.TestEnabled(resource_name, _SERVICE % args.service)
 
-    log.status.Print(
-        'service %s is %s for resource %s'
-        % (
-            args.service,
-            response,
-            resource_name,
-        )
-    )
+    # If enableRules is empty that means service is not enabled.
+    if response.enableRules:
+      log.status.Print(
+          'service %s is ENABLED for resource %s\n'
+          % (
+              args.service,
+              resource_name,
+          )
+      )
+      return response
+
+    else:
+      log.status.Print(
+          'service %s is NOT ENABLED for resource %s'
+          % (
+              args.service,
+              resource_name,
+          )
+      )

@@ -21,10 +21,10 @@ from __future__ import unicode_literals
 from googlecloudsdk.api_lib.privateca import base as privateca_base
 from googlecloudsdk.api_lib.privateca import request_utils
 from googlecloudsdk.calliope import base
-from googlecloudsdk.command_lib.privateca import flags_v1
+from googlecloudsdk.command_lib.privateca import flags
 from googlecloudsdk.command_lib.privateca import operations
 from googlecloudsdk.command_lib.privateca import resource_args
-from googlecloudsdk.command_lib.privateca import update_utils_v1
+from googlecloudsdk.command_lib.privateca import update_utils
 from googlecloudsdk.command_lib.util.args import labels_util
 
 
@@ -50,8 +50,8 @@ class Update(base.UpdateCommand):
   def Args(parser):
     resource_args.AddCaPoolPositionalResourceArg(
         parser, 'to update')
-    flags_v1.AddPublishingOptionsFlags(parser, use_update_help_text=True)
-    flags_v1.AddCaPoolIssuancePolicyFlag(parser)
+    flags.AddPublishingOptionsFlags(parser, use_update_help_text=True)
+    flags.AddCaPoolIssuancePolicyFlag(parser)
     labels_util.AddUpdateLabelsFlags(parser)
 
   def Run(self, args):
@@ -64,7 +64,7 @@ class Update(base.UpdateCommand):
         messages.PrivatecaProjectsLocationsCaPoolsGetRequest(
             name=ca_pool_ref.RelativeName()))
 
-    pool_to_update, update_mask = update_utils_v1.UpdateCaPoolFromArgs(
+    pool_to_update, update_mask = update_utils.UpdateCaPoolFromArgs(
         args, current_ca_pool.labels)
 
     operation = client.projects_locations_caPools.Patch(

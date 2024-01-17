@@ -95,14 +95,17 @@ Container Flags
   group.AddArgument(flags.ArgsFlag())
   group.AddArgument(flags.SecretsFlags())
   group.AddArgument(flags.DependsOnFlag())
-  if release_track == base.ReleaseTrack.ALPHA:
+  if release_track in [base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA]:
     group.AddArgument(flags.AddVolumeMountFlag())
     group.AddArgument(flags.RemoveVolumeMountFlag())
     group.AddArgument(flags.ClearVolumeMountsFlag())
+
+  if release_track == base.ReleaseTrack.ALPHA:
     group.AddArgument(flags.AddCommandAndFunctionFlag())
     group.AddArgument(flags.BaseImageArg())
   else:
     group.AddArgument(flags.CommandFlag())
+
   return group
 
 
@@ -201,6 +204,11 @@ class Deploy(base.Command):
     """Deploy a container to Cloud Run."""
     platform = flags.GetAndValidatePlatform(
         args, self.ReleaseTrack(), flags.Product.RUN
+    )
+
+    use_wait = (
+        self.ReleaseTrack() == base.ReleaseTrack.ALPHA
+        and platforms.GetPlatform() == platforms.PLATFORM_MANAGED
     )
 
     if flags.FlagIsExplicitlySet(args, 'containers'):
@@ -422,6 +430,7 @@ class Deploy(base.Command):
                 flags.FlagIsExplicitlySet(args, 'revision_suffix')
                 or flags.FlagIsExplicitlySet(args, 'tag')
             ),
+            use_wait=use_wait,
         )
 
       if args.async_:
@@ -430,7 +439,6 @@ class Deploy(base.Command):
             'asynchronously.'.format(serv=service.name)
         )
       else:
-        service = operations.GetService(service_ref)
         pretty_print.Success(
             messages_util.GetSuccessMessageForSynchronousDeploy(service)
         )
@@ -480,6 +488,7 @@ class BetaDeploy(Deploy):
     # Flags specific to managed CR
     managed_group = flags.GetManagedArgGroup(parser)
     flags.AddVpcNetworkGroupFlagsForUpdate(managed_group)
+    flags.AddVolumesFlags(managed_group, cls.ReleaseTrack())
     flags.RemoveContainersFlag().AddToParser(managed_group)
     container_args = ContainerArgGroup(cls.ReleaseTrack())
     container_parser.AddContainerFlags(parser, container_args)

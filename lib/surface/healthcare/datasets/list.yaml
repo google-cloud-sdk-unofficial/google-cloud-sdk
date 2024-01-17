@@ -33,5 +33,6 @@
       table(
           name.scope("datasets"):label=ID,
           name.scope("locations").segment(0):label=LOCATION,
-          timeZone:label=TIMEZONE
+          timeZone:label=TIMEZONE,
+          encryptionSpec.kmsKeyName.yesno(yes='Customer-managed key', no='Google-managed key'):label=ENCRYPTION
       )

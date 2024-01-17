@@ -123,6 +123,7 @@ class CreateBeta(Create):
   @classmethod
   def Args(cls, parser):
     super(CreateBeta, CreateBeta).Args(parser)
+    flags.AddAssignInboundPublicIp(parser, False)
 
   def ConstructCreateRequestFromArgs(
       self, client, alloydb_messages, cluster_ref, args
@@ -139,7 +140,6 @@ class CreateAlpha(CreateBeta):
   @classmethod
   def Args(cls, parser):
     super(CreateAlpha, CreateAlpha).Args(parser)
-    flags.AddAssignInboundPublicIp(parser, update=False)
 
   def ConstructCreateRequestFromArgs(
       self, client, alloydb_messages, cluster_ref, args

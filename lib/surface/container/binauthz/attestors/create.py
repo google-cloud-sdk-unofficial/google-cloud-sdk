@@ -47,13 +47,13 @@ class Create(base.CreateCommand):
             positional=True,
             group_help='The attestor to be created.',
         ),
-        flags.GetAuthorityNotePresentationSpec(
+        flags.GetNotePresentationSpec(
             base_name='attestation-authority-note',
             required=True,
             positional=False,
             group_help=textwrap.dedent("""\
-                The Container Analysis ATTESTATION_AUTHORITY Note to which the
-                created attestor will be bound.
+                The Container Analysis Note to which the created attestor will
+                be bound.
 
                 For the attestor to be able to access and use the Note,
                 the Note must exist and the active gcloud account (core/account)

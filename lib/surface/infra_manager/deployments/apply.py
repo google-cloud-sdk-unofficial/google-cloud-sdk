@@ -54,7 +54,26 @@ class Create(base.CreateCommand):
 
   @staticmethod
   def Args(parser):
-    flags.AddLabelsFlag(parser)
+    deployment_help_text = """\
+Labels to apply to the deployment. Existing values are overwritten. To retain
+the existing labels on a deployment, do not specify this flag.
+
+Examples:
+
+Update labels for an existing deployment:
+
+  $ {command} projects/p1/locations/us-central1/deployments/my-deployment --gcs-source="gs://my-bucket" --labels="env=prod,team=finance"
+
+Clear labels for an existing deployment:
+
+  $ {command} projects/p1/locations/us-central1/deployments/my-deployment --gcs-source="gs://my-bucket" --labels=""
+
+Add a label to an existing deployment:
+
+  First, fetch the current labels using the `describe` command, then follow the
+  preceding example for updating labels.
+"""
+    flags.AddLabelsFlag(parser, deployment_help_text)
     flags.AddAsyncFlag(parser)
     flags.AddTerraformBlueprintFlag(parser)
     flags.AddServiceAccountFlag(parser)

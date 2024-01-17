@@ -209,10 +209,12 @@ class ConnectToSerialPort(base.Command):
       )
     else:
       log.warning(
-          'Unable to download Host Key for [{0}] from [{1}]. gcloud does not'
-          'have a fallback Host Key and will therefore terminate the '
-          'connection attempt. If the problem persists, try '
-          'updating gcloud and connecting again.'.format(gateway, hostkey_url)
+          'Unable to download Host Key for [{0}] from [{1}]. No Host Key found'
+          ' in known_hosts file [{2}]. gcloud does not have a fallback Host Key'
+          ' and will therefore terminate the connection attempt. If the problem'
+          ' persists, try updating gcloud and connecting again.'.format(
+              gateway, hostkey_url, known_hosts.file_path
+          )
       )
       # We shouldn't allow a connection without the correct host key
       return

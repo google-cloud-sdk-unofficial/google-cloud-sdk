@@ -115,7 +115,7 @@ class List(base.ListCommand):
           'constraint': policy.name.split('/')[-1],
           'listPolicy': list_policy_output,
           'booleanPolicy': boolean_policy_output,
-          'etag': spec.etag if spec else dry_run_spec.etag
+          'etag': policy.etag,
       })
     if args.show_unset:
       constraints = org_policy_api.ListConstraints(parent).constraints

@@ -21,11 +21,11 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 from apitools.base.py import list_pager
-from googlecloudsdk.api_lib.util import apis
+from googlecloudsdk.api_lib.scc import securitycenter_client
 from googlecloudsdk.calliope import base
-from googlecloudsdk.command_lib.scc import util
+from googlecloudsdk.command_lib.scc import flags as scc_flags
+from googlecloudsdk.command_lib.scc import util as scc_util
 from googlecloudsdk.command_lib.scc.bqexports import flags as bqexports_flags
-from googlecloudsdk.generated_clients.apis.securitycenter.v1 import securitycenter_v1_messages as messages
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
@@ -63,17 +63,36 @@ class List(base.ListCommand):
 
     bqexports_flags.AddParentGroup(parser, required=True)
 
-  def Run(self, args):
-    request = messages.SecuritycenterOrganizationsBigQueryExportsListRequest()
-    request.parent = util.GetParentFromNamedArguments(args)
-    request.pageSize = args.page_size
+    scc_flags.API_VERSION_FLAG.AddToParser(parser)
+    scc_flags.LOCATION_FLAG.AddToParser(parser)
 
-    client = apis.GetClientInstance('securitycenter', 'v1')
+  def Run(self, args):
+    # Determine what version to call from --api-version.
+    version = scc_util.GetVersionFromArguments(
+        args, version_specific_existing_resource=True
+    )
+    messages = securitycenter_client.GetMessages(version)
+    client = securitycenter_client.GetClient(version)
+
+    if version == 'v1':
+      request = messages.SecuritycenterOrganizationsBigQueryExportsListRequest()
+      request.parent = scc_util.GetParentFromNamedArguments(args)
+      endpoint = client.organizations_bigQueryExports
+    else:
+      request = (
+          messages.SecuritycenterOrganizationsLocationsBigQueryExportsListRequest()
+      )
+      parent = scc_util.GetParentFromNamedArguments(args)
+      location = scc_util.ValidateAndGetLocation(args, 'v2')
+      request.parent = f'{parent}/locations/{location}'
+      endpoint = client.organizations_locations_bigQueryExports
+
+    request.pageSize = args.page_size
 
     # Automatically handle pagination. All BigQuery exports are returned
     # regardless of --page-size argument.
     return list_pager.YieldFromList(
-        client.organizations_bigQueryExports,
+        endpoint,
         request,
         batch_size_attribute='pageSize',
         batch_size=args.page_size,
