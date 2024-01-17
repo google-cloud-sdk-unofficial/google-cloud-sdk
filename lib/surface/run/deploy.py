@@ -207,7 +207,7 @@ class Deploy(base.Command):
     )
 
     use_wait = (
-        self.ReleaseTrack() == base.ReleaseTrack.ALPHA
+        self.ReleaseTrack() != base.ReleaseTrack.GA
         and platforms.GetPlatform() == platforms.PLATFORM_MANAGED
     )
 

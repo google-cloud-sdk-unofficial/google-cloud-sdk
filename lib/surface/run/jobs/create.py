@@ -155,7 +155,6 @@ class Create(base.Command):
             'asynchronously.'.format(job=job.name)
         )
       else:
-        job = operations.GetJob(job_ref)
         operation = 'been created'
         if args.wait:
           operation += ' and completed execution [{}]'.format(execution.name)

@@ -107,9 +107,11 @@ class SetPolicy(base.Command):
       policy = org_policy_api.GetPolicy(input_policy.name)
     except api_exceptions.HttpNotFoundError:
       if update_mask:
-        log.warning('A policy for the input constraint does not exist on the '
-                    'resource and so the flag `--update_mask` will be ignored. '
-                    'The policy will be set as per input policy file.')
+        log.warning(
+            'A policy for the input constraint does not exist on the '
+            'resource and so the flag `--update-mask` will be ignored. '
+            'The policy will be set as per input policy file.'
+        )
       create_response = org_policy_api.CreatePolicy(input_policy)
       log.CreatedResource(input_policy.name, 'policy')
       return create_response

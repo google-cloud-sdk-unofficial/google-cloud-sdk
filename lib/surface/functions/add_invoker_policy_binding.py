@@ -60,7 +60,7 @@ class AddInvokerPolicyBinding(util.FunctionResourceCommand):
   def Args(parser):
     """Registers flags for this command."""
     flags.AddFunctionResourceArg(parser, 'to add the invoker binding to')
-    flags.AddGen2Flag(parser, 'to add the invoker binding to')
+    flags.AddGen2Flag(parser, 'to add the invoker binding to', hidden=True)
     iam_util.AddMemberFlag(parser, 'to add to the IAM policy', False)
 
   def _RunV1(self, args: parser_extensions.Namespace):

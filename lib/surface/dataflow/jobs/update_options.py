@@ -26,6 +26,10 @@ from googlecloudsdk.command_lib.dataflow import job_utils
 
 @base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
 class UpdateOptions(base.Command):
+  # TODO(b/316018726): come back and add examples of how to instantiate the
+  # worker_utilization_hint once the flag is no longer hidden. Also update
+  # initial description that asks to provide at-least one of --min-num-workers
+  # to include --worker-utilization-hint.
   """Update pipeline options on-the-fly for running Dataflow jobs.
 
   This command can modify properties of running Dataflow jobs. Currently, only
@@ -75,6 +79,26 @@ class UpdateOptions(base.Command):
             ' streaming-engine jobs.'
         ),
     )
+    parser.add_argument(
+        '--worker-utilization-hint',
+        type=float,
+        hidden=True,
+        help=(
+            'Target CPU utilization for autoscaling, ranging from 0.1 to 0.9.'
+            ' Only supported for streaming-engine jobs with autoscaling'
+            ' enabled.'
+        ),
+    )
+    parser.add_argument(
+        '--unset-worker-utilization-hint',
+        action='store_true',
+        hidden=True,
+        help=(
+            'Unset --worker-utilization-hint. This causes the'
+            ' job autoscaling to fall back to internal tunings'
+            ' if they exist, or otherwise use the default hint value.'
+        ),
+    )
 
   def Run(self, args):
     """Called when the user runs gcloud dataflow jobs update-options ...
@@ -85,11 +109,30 @@ class UpdateOptions(base.Command):
     Returns:
       The updated Job
     """
-
-    if args.min_num_workers is None and args.max_num_workers is None:
+    if (
+        args.min_num_workers is None
+        and args.max_num_workers is None
+        and args.worker_utilization_hint is None
+        and not args.unset_worker_utilization_hint
+    ):
+      # TODO(b/316018726): come back and add --worker-utilization-hint and
+      # --unset-worker-utilization-hint to this list of arguments required.
       raise exceptions.OneOfArgumentsRequiredException(
-          ['--min_num_workers', '--max_num_workers'],
+          [
+              '--min_num_workers',
+              '--max_num_workers'
+          ],
           'You must provide at-least one field to update',
+      )
+    elif (
+        args.worker_utilization_hint is not None
+        and args.unset_worker_utilization_hint
+    ):
+      raise exceptions.ConflictingArgumentsException(
+          'The arguments --worker-utilization-hint and'
+          ' --unset-worker-utilization-hint are mutually exclusive (as the'
+          ' unset command will unset the given hint), and must be called'
+          ' separately.',
       )
 
     job_ref = job_utils.ExtractJobRef(args)
@@ -99,4 +142,6 @@ class UpdateOptions(base.Command):
         region_id=job_ref.location,
         min_num_workers=args.min_num_workers,
         max_num_workers=args.max_num_workers,
+        worker_utilization_hint=args.worker_utilization_hint,
+        unset_worker_utilization_hint=args.unset_worker_utilization_hint,
     )

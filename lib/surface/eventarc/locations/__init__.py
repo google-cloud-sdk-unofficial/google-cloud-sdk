@@ -21,6 +21,22 @@ from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Locations(base.Group):
+  """Explore locations available for Eventarc."""
+
+
+@base.Deprecate(
+    is_removed=False,
+    warning=(
+        'This command is deprecated. '
+        'Please use `gcloud eventarc locations` instead.'
+    ),
+    error=(
+        'This command has been removed. '
+        'Please use `gcloud eventarc locations` instead.'
+    ),
+)
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class LocationsBeta(base.Group):
   """Explore locations available for Eventarc."""

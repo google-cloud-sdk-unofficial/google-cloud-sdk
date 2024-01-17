@@ -213,6 +213,22 @@
         Set of credit types, specifying that usage from only this set of credits should be included
         in the budget. If a nonempty list is specified, then --credit-types-treatment must be
         include-specified-credits.
+    - arg_name: ownership-scope
+      ALPHA:
+        api_field: googleCloudBillingBudgetsV1beta1UpdateBudgetRequest.budget.ownershipScope
+      BETA:
+        api_field: googleCloudBillingBudgetsV1beta1UpdateBudgetRequest.budget.ownershipScope
+      GA:
+        api_field: googleCloudBillingBudgetsV1Budget.ownershipScope
+      help_text: |
+        Sets the ownership scope of the budget. The ownership scope and users' IAM permissions
+        determine who has full access to the budget's data.
+
+        Must be one of: 'ALL_USERS' or 'BILLING_ACCOUNT'. Use 'ALL_USERS' to allow billing account-
+        level users and project-level users to have full access to the budget (if the users have
+        the required IAM permissions). Use 'BILLING_ACCOUNT' to allow only billing account-level
+        users to have full access to the budget. Project-level users will have read-only access,
+        even if they have the required IAM permissions.
     - group:
         mutex: true
         params:

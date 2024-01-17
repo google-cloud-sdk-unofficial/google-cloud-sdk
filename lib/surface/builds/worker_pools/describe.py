@@ -20,14 +20,12 @@ from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.cloudbuild import cloudbuild_util
 from googlecloudsdk.calliope import base
-from googlecloudsdk.command_lib.container.fleet.features import base as hubbase
-from googlecloudsdk.core import exceptions
 from googlecloudsdk.core import properties
 from googlecloudsdk.core import resources
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
-class Describe(hubbase.DescribeCommand):
+class Describe(base.DescribeCommand):
   """Describe a worker pool used by Cloud Build."""
 
   detailed_help = {
@@ -93,10 +91,6 @@ class Describe(hubbase.DescribeCommand):
         messages.CloudbuildProjectsLocationsWorkerPoolsGetRequest(
             name=wp_resource.RelativeName()))
 
-    if release_track != base.ReleaseTrack.ALPHA:
-      if wp.hybridPoolConfig is not None:
-        raise exceptions.Error('NOT_FOUND: Requested entity was not found.')
-
     # Format the workerpool name for display
     try:
       wp.name = cloudbuild_util.WorkerPoolShortName(wp.name)
@@ -113,71 +107,4 @@ class DescribeBeta(Describe):
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class DescribeAlpha(Describe):
-  """Describe a private or hybrid worker pool used by Cloud Build."""
-
-  detailed_help = {
-      'DESCRIPTION':
-          '{description}',
-      'EXAMPLES':
-          """\
-            To get information about a private or hybrid worker pool named `wp1` in region `us-central1`, run:
-
-              $ {command} wp1 --region=us-central1
-            """,
-  }
-
-  feature_name = 'cloudbuild'
-
-  @staticmethod
-  def Args(parser):
-    """Register flags for this command.
-
-    Args:
-      parser: An argparse.ArgumentParser-like object. It is mocked out in order
-        to capture some information, but behaves like an ArgumentParser.
-    """
-    parser.add_argument(
-        '--region',
-        required=True,
-        help='The Cloud region where the worker pool is.')
-    parser.add_argument(
-        'WORKER_POOL', help='The ID of the worker pool to describe.')
-    parser.display_info.AddFormat("""
-      multi(wp_status:format='table[box](
-          NAME:label=NAME:sort=1,
-          TYPE:label="TYPE",
-          HWP_DESCRIPTION:label="CLUSTER DESCRIPTION":optional,
-          HWP_STATUS:label=STATUS:optional
-      )',
-          wp_config:format=default)
-    """)
-
-  def Run(self, args):
-    """This is what gets called when the user runs this command.
-
-    Args:
-      args: an argparse namespace. All the arguments that were provided to this
-        command invocation.
-
-    Returns:
-      Some value that we want to have printed later.
-    """
-
-    wp = super(DescribeAlpha, self).Run(args)
-
-    wp_status = {
-        'NAME': wp.name,
-    }
-    wp_out = {
-        'wp_config': wp,
-        'wp_status': wp_status
-    }
-
-    if wp.privatePoolV1Config is not None:
-      wp_status[
-          'TYPE'] = cloudbuild_util.WorkerpoolTypes.PRIVATE.name.capitalize()
-    else:
-      wp_status[
-          'TYPE'] = cloudbuild_util.WorkerpoolTypes.UNKNOWN.name.capitalize()
-
-    return wp_out
+  """Describe a private worker pool used by Cloud Build."""

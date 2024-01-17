@@ -43,7 +43,7 @@ class SetIamPolicy(util.FunctionResourceCommand):
     """Register flags for this command."""
     flags.AddFunctionResourceArg(parser, 'to get IAM policy for')
     flags.AddIAMPolicyFileArg(parser)
-    flags.AddGen2Flag(parser)
+    flags.AddGen2Flag(parser, hidden=True)
 
   def _RunV1(self, args):
     return command_v1.Run(args)

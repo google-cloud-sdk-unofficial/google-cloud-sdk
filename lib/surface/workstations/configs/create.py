@@ -63,6 +63,7 @@ class Create(base.CreateCommand):
     workstations_flags.AddNetworkTags(parser)
     workstations_flags.AddPoolSize(parser)
     workstations_flags.AddDisablePublicIpAddresses(parser)
+    workstations_flags.AddDisableTcpConnections(parser)
     workstations_flags.AddShieldedSecureBoot(parser)
     workstations_flags.AddShieldedVtpm(parser)
     workstations_flags.AddShieldedIntegrityMonitoring(parser)

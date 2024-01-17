@@ -43,9 +43,14 @@ class Create(base.CreateCommand):
           Creates a Storage Pool to contain Volumes with a specified Service Level and capacity.
           """,
       'EXAMPLES': """\
-          The following command creates a Storage Pool named NAME using all possible arguments
+          The following command creates a Storage Pool named NAME using all possible arguments with a VPC network in the same project
 
               $ {command} NAME --location=us-central1 --service-level=standard --capacity=2048 --network=name=default --active-directory=ad1 --kms-config=kms-config1 --enable-ldap=true --description="example description"
+
+          The following command creates a Storage pool named NAME using all possible arguments with a shared VPC network in a separate project called VPC_PROJECT
+
+              $ {command} NAME --location=us-central1 --service-level=standard --capacity=2048 --network=name=projects/VPC_PROJECT/locations/us-central1/networks/default --active-directory=ad1 --kms-config=kms-config1 --enable-ldap=true --description="example description"
+
           """,
   }
 

@@ -1,5 +1,5 @@
 - release_tracks: [GA, BETA, ALPHA]
-  hidden: true  # TODO(b/277572435): unhide the CLI for GA.
+  hidden: true  # TODO(b/277573292): unhide the CLI for GA.
 
   help_text:
     brief: Delete a Cloud Bigtable view.

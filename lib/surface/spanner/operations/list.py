@@ -258,9 +258,8 @@ class AlphaList(List):
             name.basename():label=OPERATION_ID,
             done():label=DONE,
             metadata.'@type'.split('.').slice(-1:).join(),
-            metadata.progress.startTime:label=START_TIME,
-            metadata.progress.endTime:label=END_TIME,
-            metadata.cancelTime:label=CANCEL_TIME
+            metadata.startTime:label=START_TIME,
+            metadata.endTime:label=END_TIME
           )
         """)
       return ssd_cache_operations.List(args.ssd_cache, args.instance_config)

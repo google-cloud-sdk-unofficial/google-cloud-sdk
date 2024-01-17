@@ -52,6 +52,22 @@ class Create(base.CreateCommand):
           `https://www.google.com` run:
 
             $ {command} my-instance --content=my-content --version=my-version --add-region=region=us-west1,capacity=2 --fallback-url="https://www.google.com"
+
+           By default, the instance is created with mode=ar, which supports both
+           3D and AR experiences. Instances can also be configured to use
+           3D-only mode. This configuration cannot be updated later.
+           To use 3D-only mode, include:
+
+            --mode=3d
+
+           By default, the instance is created with gpu-class=t4. This uses the
+           NVIDIA T4 GPU for the instance. Instances can also be configured to
+           use NVIDIA L4 GPUs at creation. Note that only certain regions are
+           available for L4, and only 3D-only mode is supported. This
+           configuration cannot be updated later.
+           To use NVIDIA L4 GPU for the instance, include:
+
+            --gpu-class=l4
       """,
   }
 
@@ -82,13 +98,11 @@ class Create(base.CreateCommand):
         '--mode',
         help='The rendering mode that is supported by this service instance',
         required=False,
-        hidden=True,
     )
     parser.add_argument(
         '--gpu-class',
         help='The class of GPU that is used by this service instance',
         required=False,
-        hidden=True,
     )
     flags.AddRegionConfigArg('--add-region', parser)
     base.ASYNC_FLAG.AddToParser(parser)

@@ -25,6 +25,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.network_security import association_flags
 from googlecloudsdk.command_lib.util.args import labels_util
 from googlecloudsdk.core import exceptions as core_exceptions
+from googlecloudsdk.core import properties
 
 DETAILED_HELP = {
     'DESCRIPTION': """
@@ -39,7 +40,7 @@ DETAILED_HELP = {
     'EXAMPLES': """
         To associate a network with a firewall endpoint, run:
 
-            $ {command} my-assoc --network=projects/my-project/networks/global/myNetwork --endpoint=organizations/1234/locations/us-central1-a/firewallEndpoints/my-endpoint  --zone=us-central1-a  --project=my-project
+            $ {command} --network=projects/my-project/networks/global/myNetwork --endpoint=organizations/1234/locations/us-central1-a/firewallEndpoints/my-endpoint  --zone=us-central1-a  --project=my-project
         """,
 }
 
@@ -50,7 +51,8 @@ class Create(base.CreateCommand):
 
   @classmethod
   def Args(cls, parser):
-    association_flags.AddAssociationResource(cls.ReleaseTrack(), parser)
+    association_flags.AddAssociationIDArg(parser)
+    association_flags.AddZoneArg(parser)
     association_flags.AddEndpointResource(cls.ReleaseTrack(), parser)
     association_flags.AddNetworkResource(parser)
     association_flags.AddMaxWait(parser, '60m')  # default to 60 minutes wait.
@@ -62,7 +64,10 @@ class Create(base.CreateCommand):
   def Run(self, args):
     client = association_api.Client(self.ReleaseTrack())
 
-    association = args.CONCEPTS.firewall_endpoint_association.Parse()
+    project = args.project or properties.VALUES.core.project.GetOrFail()
+    zone = args.zone
+    parent = 'projects/{}/locations/{}'.format(project, zone)
+    association_id = args.association_id
     labels = labels_util.ParseCreateArgs(
         args, client.messages.FirewallEndpointAssociation.LabelsValue
     )
@@ -85,8 +90,8 @@ class Create(base.CreateCommand):
         )
 
     operation = client.CreateAssociation(
-        name=association.Name(),
-        parent=association.Parent().RelativeName(),
+        association_id=association_id,
+        parent=parent,
         network=network.RelativeName(),
         firewall_endpoint=endpoint.RelativeName(),
         tls_inspection_policy=tls_inspection_policy.RelativeName()
@@ -101,11 +106,22 @@ class Create(base.CreateCommand):
       if not args.IsSpecified('format'):
         args.format = 'default'
       return operation
+
+    if association_id:
+      association_name = '{}/firewallEndpointAssociations/{}'.format(
+          parent, association_id
+      )
+    else:
+      association_name = 'between {} and {}'.format(
+          network.RelativeName(), endpoint.RelativeName()
+      )
+
     return client.WaitForOperation(
         operation_ref=client.GetOperationRef(operation),
         message=(
-            'waiting for firewall endpoint association [{}] to be created'
-            .format(association.RelativeName())
+            'waiting for firewall endpoint association {} to be created'.format(
+                association_name
+            )
         ),
         has_result=True,
         max_wait=max_wait,

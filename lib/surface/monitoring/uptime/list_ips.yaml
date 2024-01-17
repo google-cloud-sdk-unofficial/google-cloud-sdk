@@ -1,8 +1,8 @@
 - help_text:
-    brief: List uptime check egress ips.
+    brief: List uptime check server ips.
     description: List uptime check egress ips.
     examples: |
-      To see all uptime check egress ips:
+      To see all uptime check servers ips:
 
         $ {command}
 

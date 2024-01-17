@@ -180,6 +180,17 @@ class Update(base.UpdateCommand):
         'The specified trigger is not for a function destination.')
 
 
+@base.Deprecate(
+    is_removed=False,
+    warning=(
+        'This command is deprecated. '
+        'Please use `gcloud eventarc triggers update` instead.'
+    ),
+    error=(
+        'This command has been removed. '
+        'Please use `gcloud eventarc triggers update` instead.'
+    ),
+)
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class UpdateBeta(Update):
   """Update an Eventarc trigger."""

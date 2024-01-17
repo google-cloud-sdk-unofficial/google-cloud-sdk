@@ -23,6 +23,7 @@ from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.storage import errors_util
 from googlecloudsdk.command_lib.storage import flags
+from googlecloudsdk.command_lib.storage import stdin_iterator
 from googlecloudsdk.command_lib.storage import storage_url
 from googlecloudsdk.command_lib.storage import user_request_args_factory
 from googlecloudsdk.command_lib.storage import wildcard_iterator
@@ -85,8 +86,11 @@ def _add_common_args(parser):
     buckets update flag group
   """
   parser.add_argument(
-      'url', nargs='+', type=str, help='URLs of the buckets to update.')
-
+      'url',
+      nargs='*',
+      type=str,
+      help='Specifies the URLs of the buckets to update.',
+  )
   acl_flags_group = parser.add_group()
   flags.add_acl_modifier_flags(acl_flags_group)
 
@@ -261,34 +265,46 @@ def _add_common_args(parser):
   parser.add_argument(
       '--versioning',
       action=arg_parsers.StoreTrueFalseAction,
-      help='Allows you to configure a Cloud Storage bucket to keep old'
-      ' versions of objects.')
+      help=(
+          'Allows you to configure a Cloud Storage bucket to keep old'
+          ' versions of objects.'
+      ),
+  )
   web_main_page_suffix = parser.add_mutually_exclusive_group()
   web_main_page_suffix.add_argument(
       '--web-main-page-suffix',
-      help='Cloud Storage allows you to configure a bucket to behave like a'
-      ' static website. A subsequent GET bucket request through a custom'
-      ' domain serves the specified "main" page instead of performing the'
-      ' usual bucket listing.')
+      help=(
+          'Cloud Storage allows you to configure a bucket to behave like a'
+          ' static website. A subsequent GET bucket request through a custom'
+          ' domain serves the specified "main" page instead of performing the'
+          ' usual bucket listing.'
+      ),
+  )
   web_main_page_suffix.add_argument(
       '--clear-web-main-page-suffix',
       action='store_true',
-      help='Clear website main page suffix if bucket is hosting website.')
+      help='Clear website main page suffix if bucket is hosting website.',
+  )
   web_error_page = parser.add_mutually_exclusive_group()
   web_error_page.add_argument(
       '--web-error-page',
-      help='Cloud Storage allows you to configure a bucket to behave like a'
-      ' static website. A subsequent GET bucket request through a custom'
-      ' domain for a non-existent object serves the specified error page'
-      ' instead of the standard Cloud Storage error.')
+      help=(
+          'Cloud Storage allows you to configure a bucket to behave like a'
+          ' static website. A subsequent GET bucket request through a custom'
+          ' domain for a non-existent object serves the specified error page'
+          ' instead of the standard Cloud Storage error.'
+      ),
+  )
   web_error_page.add_argument(
       '--clear-web-error-page',
       action='store_true',
-      help='Clear website error page if bucket is hosting website.')
+      help='Clear website error page if bucket is hosting website.',
+  )
   flags.add_additional_headers_flag(parser)
   flags.add_autoclass_flags(parser)
   flags.add_continue_on_error_flag(parser)
   flags.add_recovery_point_objective_flag(parser)
+  flags.add_read_paths_from_stdin_flag(parser)
 
 
 def _add_alpha_args(parser):
@@ -351,12 +367,18 @@ class Update(base.Command):
   def update_task_iterator(self, args):
     user_request_args = (
         user_request_args_factory.get_user_request_args_from_command_args(
-            args, metadata_type=user_request_args_factory.MetadataType.BUCKET))
+            args, metadata_type=user_request_args_factory.MetadataType.BUCKET
+        )
+    )
     if user_request_args_factory.adds_or_removes_acls(user_request_args):
       fields_scope = cloud_api.FieldsScope.FULL
     else:
       fields_scope = cloud_api.FieldsScope.NO_ACL
-    for url_string in args.url:
+
+    urls = stdin_iterator.get_urls_iterable(
+        args.url, args.read_paths_from_stdin
+    )
+    for url_string in urls:
       url = storage_url.storage_url_from_string(url_string)
       errors_util.raise_error_if_not_bucket(args.command_path, url)
       for resource in wildcard_iterator.get_wildcard_iterator(

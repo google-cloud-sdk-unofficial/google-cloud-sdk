@@ -101,12 +101,6 @@ class List(base.ListCommand):
         messages.CloudbuildProjectsLocationsWorkerPoolsListRequest(
             parent=parent_resource.RelativeName())).workerPools
 
-    # Format the workerpool names for display
-    for wp in wp_list:
-      if release_track != base.ReleaseTrack.ALPHA:
-        if wp.hybridPoolConfig is not None:
-          wp_list.remove(wp)
-
     return wp_list
 
 
@@ -117,99 +111,4 @@ class ListBeta(List):
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class ListAlpha(List):
-  """List all private and hybrid worker pools in a Google Cloud project."""
-
-  detailed_help = {
-      'DESCRIPTION':
-          '{description}',
-      'EXAMPLES':
-          """\
-          To fetch a list of all private and hybrid worker pools running in region `us-central1`, run:
-
-            $ {command} --region=us-central1
-
-          To fetch a list of only hybrid worker pools running in region `us-central1`, run:
-
-            $ {command} --region=us-central1 --filter="type:Hybrid"
-          """,
-  }
-
-  detailed_help = {
-      'DESCRIPTION':
-          '{description}',
-      'EXAMPLES':
-          """\
-          To fetch a list of all private and hybrid worker pools running in region `us-central1`, run:
-
-            $ {command} --region=us-central1
-
-          To fetch a list of only hybrid worker pools running in region `us-central1`, run:
-
-            $ {command} --region=us-central1 --filter="type:Hybrid"
-          """,
-  }
-
-  @staticmethod
-  def Args(parser):
-    """Register flags for this command.
-
-    Args:
-      parser: An argparse.ArgumentParser-like object. It is mocked out in order
-        to capture some information, but behaves like an ArgumentParser.
-    """
-
-    parser.add_argument(
-        '--region',
-        required=True,
-        help='The Cloud region to list worker pools in.')
-    parser.display_info.AddFormat("""
-            table[all-box](
-            wp.name.segment(-1),
-            type:label="TYPE",
-            wp.createTime.date('%Y-%m-%dT%H:%M:%S%Oz', undefined='-'),
-            wp.state
-          )
-        """)
-    parser.display_info.AddUriFunc(_GetWorkerPoolURI)
-
-  def Run(self, args):
-    """This is what gets called when the user runs this command.
-
-    Args:
-      args: an argparse namespace. All the arguments that were provided to this
-        command invocation.
-
-    Returns:
-      Some value that we want to have printed later.
-    """
-
-    wp_region = args.region
-
-    release_track = self.ReleaseTrack()
-    client = cloudbuild_util.GetClientInstance(release_track)
-    messages = cloudbuild_util.GetMessagesModule(release_track)
-
-    parent = properties.VALUES.core.project.Get(required=True)
-
-    # Get the parent project ref
-    parent_resource = resources.REGISTRY.Create(
-        collection='cloudbuild.projects.locations',
-        projectsId=parent,
-        locationsId=wp_region)
-
-    # Send the List request
-    wp_list = client.projects_locations_workerPools.List(
-        messages.CloudbuildProjectsLocationsWorkerPoolsListRequest(
-            parent=parent_resource.RelativeName())).workerPools
-
-    wp_out = []
-    # Format the workerpool names for display and determine workerpool type
-    for wp in wp_list:
-      wp_type = cloudbuild_util.WorkerpoolTypes.UNKNOWN.name.capitalize()
-      if wp.privatePoolV1Config is not None:
-        wp_type = cloudbuild_util.WorkerpoolTypes.PRIVATE.name.capitalize()
-      elif wp.hybridPoolConfig is not None:
-        wp_type = cloudbuild_util.WorkerpoolTypes.HYBRID.name.capitalize()
-      wp_out.append({'wp': wp, 'type': wp_type})
-
-    return wp_out
+  """List all private worker pools in a Google Cloud project."""

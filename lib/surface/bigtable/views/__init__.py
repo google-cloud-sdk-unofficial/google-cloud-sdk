@@ -22,6 +22,6 @@ from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 
 
-@base.Hidden  # TODO(b/277572435): unhide for GA.
+@base.Hidden  # TODO(b/277573292): unhide for GA.
 class Views(base.Group):
   """Manage Cloud Bigtable views."""

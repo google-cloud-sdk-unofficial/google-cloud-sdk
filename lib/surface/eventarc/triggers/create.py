@@ -222,6 +222,13 @@ class Create(base.CreateCommand):
     return destination_location
 
 
+@base.Deprecate(
+    is_removed=False,
+    warning=('This command is deprecated. '
+             'Please use `gcloud eventarc triggers create` instead.'),
+    error=('This command has been removed. '
+           'Please use `gcloud eventarc triggers create` instead.')
+)
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class CreateBeta(Create):
   """Create an Eventarc trigger."""

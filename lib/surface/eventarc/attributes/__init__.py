@@ -21,6 +21,11 @@ from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 
 
+@base.Deprecate(
+    is_removed=False,
+    warning='This command is deprecated.',
+    error='This command has been removed.',
+)
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class Attributes(base.Group):
   """Explore CloudEvents attributes in Eventarc."""

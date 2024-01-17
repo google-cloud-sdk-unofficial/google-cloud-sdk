@@ -168,7 +168,6 @@ class Replace(base.Command):
             'Job [{{bold}}{job}{{reset}}] is being {operation} '
             'asynchronously.'.format(job=job_obj.name, operation=operation))
       else:
-        job_obj = client.GetJob(job_ref)
         pretty_print.Success('Job [{{bold}}{job}{{reset}}] has been '
                              'successfully {operation}.'.format(
                                  job=job_obj.name, operation=operation))

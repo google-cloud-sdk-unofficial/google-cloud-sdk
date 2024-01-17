@@ -17,17 +17,18 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+import collections
+
 from googlecloudsdk.api_lib.services import serviceusage
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.services import common_flags
-from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 
-_PROJECT_RESOURCE = 'projects/%s'
-_FOLDER_RESOURCE = 'folders/%s'
-_ORGANIZATION_RESOURCE = 'organizations/%s'
-_SERVICE_RESOURCE = 'services/%s'
-_GROUP_RESOURCE = 'groups/%s'
+_PROJECT_RESOURCE = 'projects/{}'
+_FOLDER_RESOURCE = 'folders/{}'
+_ORGANIZATION_RESOURCE = 'organizations/{}'
+_SERVICE_RESOURCE = 'services/{}'
+_GROUP_RESOURCE = 'groups/{}'
 
 
 # TODO(b/274633761) make command public after suv2 launch.
@@ -44,23 +45,11 @@ class ListGroupMembers(base.ListCommand):
 
    $ {command} my-service my-group
 
-   List flattened members of service my-service and group my-group :
-
-    $ {command} my-service my-group --flattened-members
-
-   List flattened members of service my-service and default group :
-
-    $ {command} my-service --flattened-members
-
    List members of service my-service and group my-group
    for a specific project '12345678':
 
     $ {command} my-service my-group --project=12345678
 
-   List flattened fembers of service my-service and group my-group
-   for a specific folder '12345678':
-
-    $ {command} my-service my-group --folder=12345678 --flattened-members
   """
 
   @staticmethod
@@ -70,14 +59,6 @@ class ListGroupMembers(base.ListCommand):
         'group', help='Service group name, for example "dependencies".'
     )
     common_flags.add_resource_args(parser)
-    parser.add_argument(
-        '--flattened-members',
-        action='store_true',
-        help=(
-            'If specified, the list call will retun list of flattened group'
-            ' members.'
-        ),
-    )
 
     base.PAGE_SIZE_FLAG.SetDefault(parser, 50)
 
@@ -101,36 +82,31 @@ class ListGroupMembers(base.ListCommand):
       Resource name and its parent name.
     """
     if args.IsSpecified('folder'):
-      resource_name = _FOLDER_RESOURCE % args.folder
+      resource_name = _FOLDER_RESOURCE.format(args.folder)
     elif args.IsSpecified('organization'):
-      resource_name = _ORGANIZATION_RESOURCE % args.organization
+      resource_name = _ORGANIZATION_RESOURCE.format(args.organization)
     elif args.IsSpecified('project'):
-      resource_name = _PROJECT_RESOURCE % args.project
+      resource_name = _PROJECT_RESOURCE.format(args.project)
     else:
       project = properties.VALUES.core.project.Get(required=True)
-      resource_name = _PROJECT_RESOURCE % project
-    if args.flattened_members:
-      response = serviceusage.ListFlattenedMembers(
-          resource_name,
-          _SERVICE_RESOURCE % args.service + '/' + _GROUP_RESOURCE % args.group,
-      ).flattenedMembers
-    else:
-      response = serviceusage.ListGroupMembers(
-          resource_name,
-          _SERVICE_RESOURCE % args.service + '/' + _GROUP_RESOURCE % args.group,
-          args.page_size,
-      )
-    if response:
-      if args.flattened_members:
-        log.status.Print(
-            'List of flattened members for service %s and group name %s :'
-            % (args.service, args.group),
-        )
+      resource_name = _PROJECT_RESOURCE.format(project)
+    response = serviceusage.ListGroupMembersV2Alpha(
+        resource_name,
+        '{}/{}'.format(
+            _SERVICE_RESOURCE.format(args.service),
+            _GROUP_RESOURCE.format(args.group),
+        ),
+        args.page_size,
+    )
+
+    group_members = []
+    result = collections.namedtuple('ListMembers', ['name'])
+
+    for member_list in response:
+      member = member_list.member
+      if member.groupName:
+        group_members.append(result(member.groupName))
       else:
-        log.status.Print(
-            'List of group members for service %s and group name %s :'
-            % (args.service, args.group),
-        )
-      return response
-    else:
-      log.status.Print('Listed 0 items.')
+        group_members.append(result(member.serviceName))
+
+    return group_members

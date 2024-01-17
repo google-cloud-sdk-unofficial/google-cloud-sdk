@@ -36,6 +36,9 @@ def main():
 
   cmd_args = [arg for arg in argv[1:] if not arg.startswith('-')]
   args = []
+  print_logging = False
+  if len(cmd_args) == 1 and cmd_args[0] == 'info':
+    print_logging = True
   if cmd_args and cmd_args[0] not in ('version', 'help'):
     # Check for credentials only if they are needed.
     store.IMPERSONATION_TOKEN_PROVIDER = iamcred_util.ImpersonationAccessTokenProvider(
@@ -43,14 +46,23 @@ def main():
     creds = store.Load()  # Checks if there are active credentials
 
     project, account = bootstrapping.GetActiveProjectAndAccount()
+    if print_logging:
+      print('Project:', project)
+      print('Account:', account)
     adc_path = config.Paths().LegacyCredentialsAdcPath(account)
     single_store_path = config.Paths().LegacyCredentialsBqPath(account)
 
     if bootstrapping.GetActiveImpersonateServiceAccount():
+      if print_logging:
+        print('Using Oauth')
       args = ['--oauth_access_token', creds.token]
     elif gce.Metadata() and account in gce.Metadata().Accounts():
+      if print_logging:
+        print('Using a GCE service account')
       args = ['--use_gce_service_account']
     elif os.path.isfile(adc_path):
+      if print_logging:
+        print('Using an ADC path')
       args = [
           '--application_default_credential_file',
           adc_path,
@@ -58,6 +70,11 @@ def main():
           single_store_path,
       ]
     else:
+      if print_logging:
+        print(
+            'Falling back to p12 credentials. '
+            'WARNING these are being deprecated.'
+        )
       p12_key_path = config.Paths().LegacyCredentialsP12KeyPath(account)
       if os.path.isfile(p12_key_path):
         args = [
@@ -76,6 +93,8 @@ def main():
         os.getenv('GOOGLE_API_USE_CLIENT_CERTIFICATE',
                   'false').upper() == 'TRUE')
     if use_client_cert:
+      if print_logging:
+        print('Using MTLS')
       args.append('--mtls')
 
     _MaybeAddOption(args, 'project_id', project)
@@ -91,6 +110,9 @@ def main():
                   properties.VALUES.auth.disable_ssl_validation.GetBool())
   _MaybeAddOption(args, 'ca_certificates_file',
                   properties.VALUES.core.custom_ca_certs_file.Get())
+
+  if print_logging:
+    print('Complete gcloud args:', args)
 
   bootstrapping.ExecutePythonTool('platform/bq', 'bq.py', *args)
 

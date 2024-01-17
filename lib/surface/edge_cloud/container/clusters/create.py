@@ -83,6 +83,10 @@ class Create(base.CreateCommand):
   def Run(self, args):
     cluster_ref = cluster.GetClusterReference(args)
     req = cluster.GetClusterCreateRequest(args, self.ReleaseTrack())
+    error = cluster.ValidateClusterCreateRequest(req, self.ReleaseTrack())
+    if error is not None:
+      log.error(error)
+      return None
     cluster_client = util.GetClientInstance(self.ReleaseTrack())
     op = cluster_client.projects_locations_clusters.Create(req)
     op_ref = resources.REGISTRY.ParseRelativeName(

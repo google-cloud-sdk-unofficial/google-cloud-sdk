@@ -27,6 +27,7 @@ from googlecloudsdk.api_lib.util import waiter
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.artifacts import flags
 from googlecloudsdk.command_lib.artifacts import util
+from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 from googlecloudsdk.core import resources
 from googlecloudsdk.core.util import scaled_integer
@@ -131,6 +132,7 @@ class Upload(base.Command):
         raise ar_exceptions.InvalidInputValueError(
             'Specified path is not an existing directory.'
             )
+      log.status.Print('Uploading directory: {}'.format(source_dir))
       for path, _, files in os.walk(source_dir):
         for file in files:
           self.uploadArtifact(
@@ -148,7 +150,8 @@ class Upload(base.Command):
     # ie. file path is folder1/folder2/file.txt, the file name is file.txt
     if args.source:
       if args.destination_path:
-        file_name = args.destination_path
+        path = os.path.normpath(args.destination_path)
+        file_name = os.path.join(path, os.path.basename(file_path))
       else:
         file_name = os.path.basename(file_path)
     else:
@@ -181,5 +184,5 @@ class Upload(base.Command):
       result = waiter.WaitFor(
           waiter.CloudOperationPollerNoResources(
               client.projects_locations_operations), op_ref,
-          'Uploading file')
+          'Uploading file: {}'.format(file_name))
       return result

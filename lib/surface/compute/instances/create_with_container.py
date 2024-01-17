@@ -356,7 +356,7 @@ class CreateWithContainerBeta(CreateWithContainer):
   _support_nvdimm = False
   _support_visible_core_count = True
   _support_confidential_compute_type = True
-  _support_confidential_compute_type_tdx = False
+  _support_confidential_compute_type_tdx = True
   _support_host_error_timeout_seconds = True
   _support_numa_node_count = False
   _support_local_ssd_recovery_timeout = True
@@ -368,7 +368,7 @@ class CreateWithContainerBeta(CreateWithContainer):
         parser,
         container_mount_enabled=True,
         support_confidential_compute_type=True,
-        support_confidential_compute_type_tdx=False)
+        support_confidential_compute_type_tdx=True)
     instances_flags.AddNetworkTierArgs(parser, instance=True)
     instances_flags.AddLocalSsdArgs(parser)
     instances_flags.AddMinCpuPlatformArgs(parser, base.ReleaseTrack.BETA)

@@ -25,6 +25,17 @@ from googlecloudsdk.command_lib.domains import util
 from googlecloudsdk.core import log
 
 
+@base.Deprecate(
+    is_removed=False,
+    warning=(
+        'This command is deprecated. See'
+        ' https://cloud.google.com/domains/docs/deprecations/feature-deprecations.'
+    ),
+    error=(
+        'This command has been removed. See'
+        ' https://cloud.google.com/domains/docs/deprecations/feature-deprecations.'
+    ),
+)
 class GetTransferParameters(base.DescribeCommand):
   """Get transfer parameters of a specific domain.
 

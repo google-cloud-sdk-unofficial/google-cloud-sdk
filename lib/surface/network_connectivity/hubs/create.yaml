@@ -32,6 +32,12 @@
       hidden: true
       help_text: |-
         This boolean controls whether Private Service Connect transitivity is enabled for the hub.
+    - arg_name: exchange-pupi
+      release_tracks: [GA]
+      api_field: hub.exchangePupi
+      hidden: true
+      help_text: |-
+        This boolean controls whether Privately Used Public IP (PUPI) exchange is enabled for the hub.
     labels:
       api_field: hub.labels
 

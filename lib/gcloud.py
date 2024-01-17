@@ -28,6 +28,12 @@ import sys
 _GCLOUD_PY_DIR = os.path.dirname(__file__)
 _THIRD_PARTY_DIR = os.path.join(_GCLOUD_PY_DIR, 'third_party')
 
+# From Python 3.11 onwards, the script directory is not prepended to sys.path by
+# default if PYTHONSAFEPATH env var is set.
+# NOMUTANTS--Tested through the installed SDK in e2e.bundle.sanity_test.
+if _GCLOUD_PY_DIR not in sys.path:
+  sys.path.insert(0, _GCLOUD_PY_DIR)
+
 if os.path.isdir(_THIRD_PARTY_DIR):
   sys.path.insert(0, _THIRD_PARTY_DIR)
 

@@ -28,6 +28,17 @@ table(
 """
 
 
+@base.Deprecate(
+    is_removed=False,
+    warning=(
+        'This command is deprecated. See'
+        ' https://cloud.google.com/domains/docs/deprecations/feature-deprecations.'
+    ),
+    error=(
+        'This command has been removed. See'
+        ' https://cloud.google.com/domains/docs/deprecations/feature-deprecations.'
+    ),
+)
 class ListImportableDomains(base.ListCommand):
   # pylint: disable=line-too-long
   """List Google Domains registrations importable into Cloud Domains.

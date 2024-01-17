@@ -47,7 +47,7 @@ class Describe(util.FunctionResourceCommand, base.DescribeCommand):
   def Args(parser):
     """Register flags for this command."""
     flags.AddFunctionResourceArg(parser, 'to describe')
-    flags.AddGen2Flag(parser)
+    flags.AddGen2Flag(parser, hidden=True)
 
   def _RunV1(self, args):
     client = api_util_v1.GetApiClientInstance()

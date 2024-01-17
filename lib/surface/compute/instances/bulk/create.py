@@ -351,7 +351,7 @@ class CreateBeta(Create):
   _support_max_run_duration = True
   _support_enable_target_shape = True
   _support_confidential_compute_type = True
-  _support_confidential_compute_type_tdx = False
+  _support_confidential_compute_type_tdx = True
   _support_no_address_in_networking = False
   _support_max_count_per_zone = True
   _support_local_ssd_recovery_timeout = True

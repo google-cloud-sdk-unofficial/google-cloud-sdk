@@ -1,10 +1,10 @@
 - help_text:
-    brief: Describe an uptime check.
-    description: Describe an uptime check
+    brief: Describe an uptime check or synthetic monitor.
+    description: Describe an uptime check or synthetic monitor
     examples: |
-      To describe an uptime check:
+      To describe an uptime check or synthetic monitor:
 
-        $ {command}
+        $ {command} CHECK_ID
 
       More information can be found at
       https://cloud.google.com/monitoring/uptime-checks/manage#get.
@@ -14,5 +14,5 @@
 
   arguments:
     resource:
-      help_text: The uptime check to describe.
+      help_text: The uptime check or synthetic monitor to describe.
       spec: !REF googlecloudsdk.command_lib.monitoring.resources:uptime_check

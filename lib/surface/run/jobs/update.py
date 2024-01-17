@@ -148,7 +148,6 @@ class Update(base.Command):
             'asynchronously.'.format(job=job.name)
         )
       else:
-        job = operations.GetJob(job_ref)
         operation = 'been updated'
         if args.wait:
           operation += ' and completed execution [{}]'.format(execution.name)

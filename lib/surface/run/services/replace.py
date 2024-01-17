@@ -155,7 +155,7 @@ class Replace(base.Command):
         args, flags.Product.RUN, self.ReleaseTrack(), region_label=region_label)
     dry_run = args.dry_run if hasattr(args, 'dry_run') else False
     use_wait = (
-        self.ReleaseTrack() == base.ReleaseTrack.ALPHA
+        self.ReleaseTrack() != base.ReleaseTrack.GA
         and platforms.GetPlatform() == platforms.PLATFORM_MANAGED
     )
 

@@ -27,7 +27,7 @@ from googlecloudsdk.command_lib.compute import scope as compute_scope
 from googlecloudsdk.command_lib.compute.instance_groups import flags as instance_groups_flags
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class StopInstances(base.Command):
   """Stop instances owned by a managed instance group."""
 
@@ -103,10 +103,15 @@ class StopInstances(base.Command):
 
 
 StopInstances.detailed_help = {
-    'brief':
-        'Stop instances owned by a managed instance group.',
-    'DESCRIPTION':
-        """
+    'brief': 'Stop instances owned by a managed instance group.',
+    'DESCRIPTION': """
         *{command}* stops one or more instances from a managed instance group
 """,
+    'EXAMPLES': """\
+      To stop an instance from a managed instance group in the us-central1-a
+      zone, run:
+
+              $ {command} example-managed-instance-group --zone=us-central1-a \\
+              --instances=example-instance
+    """,
 }

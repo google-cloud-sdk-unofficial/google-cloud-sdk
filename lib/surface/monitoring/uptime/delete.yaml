@@ -1,10 +1,10 @@
 - help_text:
-    brief: Delete an uptime check.
-    description: Delete an uptime check
+    brief: Delete an uptime check or synthetic monitor.
+    description: Delete an uptime check or synthetic monitor
     examples: |
-      To delete an uptime check:
+      To delete an uptime check or synthetic monitor:
 
-        $ {command} check-id
+        $ {command} CHECK_ID
 
       More information can be found at
       https://cloud.google.com/monitoring/uptime-checks/manage#delete.
@@ -14,5 +14,5 @@
 
   arguments:
     resource:
-      help_text: The uptime check to delete.
+      help_text: The uptime check or synthetic monitor to delete.
       spec: !REF googlecloudsdk.command_lib.monitoring.resources:uptime_check

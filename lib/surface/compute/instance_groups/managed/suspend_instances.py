@@ -27,7 +27,7 @@ from googlecloudsdk.command_lib.compute import scope as compute_scope
 from googlecloudsdk.command_lib.compute.instance_groups import flags as instance_groups_flags
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class SuspendInstances(base.Command):
   """Suspend instances owned by a managed instance group."""
 
@@ -103,10 +103,8 @@ class SuspendInstances(base.Command):
 
 
 SuspendInstances.detailed_help = {
-    'brief':
-        'Suspend instances owned by a managed instance group.',
-    'DESCRIPTION':
-        """
+    'brief': 'Suspend instances owned by a managed instance group.',
+    'DESCRIPTION': """
         *{command}* suspends one or more instances from a managed instance
 group, thereby reducing the targetSize and increasing the targetSuspendedSize
 of the group.
@@ -116,4 +114,11 @@ The command returns the operation status per instance, which might be ``FAIL'',
 regional groups when the gcloud command-line tool wasn't able to resolve the
 zone from the instance name.
 """,
+    'EXAMPLES': """\
+      To suspend an instance from a managed instance group in the us-central1-a
+      zone, run:
+
+              $ {command} example-managed-instance-group --zone=us-central1-a \\
+              --instances=example-instance
+    """,
 }

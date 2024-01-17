@@ -61,7 +61,7 @@ class RemoveInvokerPolicyBinding(util.FunctionResourceCommand):
   def Args(parser):
     """Registers flags for this command."""
     flags.AddFunctionResourceArg(parser, 'to remove the invoker binding from')
-    flags.AddGen2Flag(parser, 'to remove the invoker binding from')
+    flags.AddGen2Flag(parser, 'to remove the invoker binding from', hidden=True)
     iam_util.AddMemberFlag(parser, 'to remove from the IAM policy', False)
 
   def _RunV1(self, args: parser_extensions.Namespace):

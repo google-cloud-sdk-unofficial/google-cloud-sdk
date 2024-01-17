@@ -20,7 +20,6 @@ from __future__ import unicode_literals
 from googlecloudsdk.api_lib.services import serviceusage
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.services import common_flags
-from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 
 _PROJECT_RESOURCE = 'projects/%s'
@@ -93,12 +92,5 @@ class ListDescendantServices(base.ListCommand):
         '{}/{}'.format(
             _SERVICE_RESOURCE % args.service, _GROUP_RESOURCE % args.group
         ),
-    ).services
-    if response:
-      log.status.Print(
-          'List of descendant services for service %s and group name %s :'
-          % (args.service, args.group),
-      )
-      return response
-    else:
-      log.status.Print('Listed 0 items.')
+    )
+    return response

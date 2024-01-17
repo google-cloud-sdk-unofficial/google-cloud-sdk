@@ -27,7 +27,7 @@ from googlecloudsdk.command_lib.compute import scope as compute_scope
 from googlecloudsdk.command_lib.compute.instance_groups import flags as instance_groups_flags
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class StartInstances(base.Command):
   """Start instances owned by a managed instance group."""
 
@@ -90,10 +90,8 @@ class StartInstances(base.Command):
 
 
 StartInstances.detailed_help = {
-    'brief':
-        'Start instances owned by a managed instance group.',
-    'DESCRIPTION':
-        """
+    'brief': 'Start the stopped instances in a managed instance group.',
+    'DESCRIPTION': """
         *{command}* starts one or more instances from a managed instance group,
 thereby increasing the targetSize and reducing the targetStoppedSize of the
 group.
@@ -103,4 +101,11 @@ The command returns the operation status per instance, which might be ``FAIL'',
 regional groups when the gcloud command-line tool wasn't able to resolve the
 zone from the instance name.
 """,
+    'EXAMPLES': """\
+      To start an instance from a managed instance group in the us-central1-a
+      zone, run:
+
+              $ {command} example-managed-instance-group --zone=us-central1-a \\
+              --instances=example-instance
+    """,
 }

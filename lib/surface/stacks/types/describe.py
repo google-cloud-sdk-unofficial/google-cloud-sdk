@@ -81,7 +81,7 @@ class Describe(base.DescribeCommand):
           'description':
               type_def.description,
           'example_command':
-              type_def.example_command.format(track=self.ReleaseTrack().prefix),
+              type_def.example_yaml,
           'parameters':
               self._GetParams(type_def),
       }
@@ -98,13 +98,13 @@ class Describe(base.DescribeCommand):
       if required:
         required_params.append(
             frozendict({
-                'name': param.name,
+                'name': param.config_name,
                 'description': param.description
             }))
       else:
         optional_params.append(
             frozendict({
-                'name': param.name,
+                'name': param.config_name,
                 'description': param.description
             }))
 

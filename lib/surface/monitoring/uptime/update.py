@@ -28,14 +28,23 @@ from googlecloudsdk.core import log
 
 
 class Update(base.UpdateCommand):
-  """Update an existing uptime check."""
+  """Update an existing uptime check or synthetic monitor."""
 
-  detailed_help = {'DESCRIPTION': """\
-          Updates an existing uptime check.
+  detailed_help = {
+      'DESCRIPTION': """\
+          Updates an existing uptime check or synthetic monitor.
+
+          Flags only apply to uptime checks unless noted that they apply to
+          synthetic monitors.
 
           For information about the JSON/YAML format of an uptime check:
           https://cloud.google.com/monitoring/api/ref_v3/rest/v3/projects.uptimeCheckConfigs
-       """}
+       """,
+      'EXAMPLES': """\
+          To update an uptime check or synthetic monitor, run:
+
+          $ {command} CHECK_ID --period=5 --timeout=30
+       """,}
 
   @staticmethod
   def Args(parser):

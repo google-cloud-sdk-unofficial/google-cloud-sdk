@@ -56,7 +56,7 @@ PerformMaintenance.detailed_help = {
         'Perform maintenance of Google Compute Engine instance',
     'EXAMPLES':
         """\
-        To perform a customer trigged maintenance on an instance named ``{0}''
+        To perform customer-triggered maintenance on an instance named ``{0}''
         located in zone ``{1}'', run:
 
           $ {2} {0} --zone={1}

@@ -102,6 +102,22 @@
             required: false
           - api_field: thresholdPercent
             arg_name: percent
+    - arg_name: ownership-scope
+      ALPHA:
+        api_field: googleCloudBillingBudgetsV1beta1CreateBudgetRequest.budget.ownershipScope
+      BETA:
+        api_field: googleCloudBillingBudgetsV1beta1CreateBudgetRequest.budget.ownershipScope
+      GA:
+        api_field: googleCloudBillingBudgetsV1Budget.ownershipScope
+      help_text: |
+        Sets the ownership scope of the budget. The ownership scope and users' IAM permissions
+        determine who has full access to the budget's data.
+
+        Must be one of: 'ALL_USERS' or 'BILLING_ACCOUNT'. Use 'ALL_USERS' to allow billing account-
+        level users and project-level users to have full access to the budget (if the users have
+        the required IAM permissions). Use 'BILLING_ACCOUNT' to allow only billing account-level
+        users to have full access to the budget. Project-level users will have read-only access,
+        even if they have the required IAM permissions.
     - arg_name: filter-projects
       ALPHA:
         api_field: googleCloudBillingBudgetsV1beta1CreateBudgetRequest.budget.budgetFilter.projects

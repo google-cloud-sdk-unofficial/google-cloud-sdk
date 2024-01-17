@@ -67,18 +67,15 @@ class Diagnose(base.Command):
         '--tarball-access',
         type=arg_utils.ChoiceToEnumName,
         choices=Diagnose._GetValidTarballAccessChoices(dataproc),
-        hidden=True,
         help='Target access privileges for diagnose tarball.')
     parser.add_argument(
         '--start-time',
-        hidden=True,
-        help='Time instant to start the diagnosis from. (in ' +
-        '%Y-%m-%dT%H:%M:%S.%fZ format)')
+        help='Time instant to start the diagnosis from (in ' +
+        '%Y-%m-%dT%H:%M:%S.%fZ format).')
     parser.add_argument(
         '--end-time',
-        hidden=True,
-        help='Time instant to stop the diagnosis at. (in ' +
-        '%Y-%m-%dT%H:%M:%S.%fZ format)')
+        help='Time instant to stop the diagnosis at (in ' +
+        '%Y-%m-%dT%H:%M:%S.%fZ format).')
     parser.add_argument(
         '--job-id',
         hidden=True,
@@ -112,12 +109,10 @@ class Diagnose(base.Command):
         'on.')
     parser.add_argument(
         '--job-ids',
-        hidden=True,
         help='A list of jobs on which to perform the diagnosis.',
     )
     parser.add_argument(
         '--yarn-application-ids',
-        hidden=True,
         help='A list of yarn applications on which to perform the diagnosis.',
     )
     parser.add_argument(

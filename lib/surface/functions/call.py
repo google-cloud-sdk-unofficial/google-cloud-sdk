@@ -57,11 +57,11 @@ class Call(util.FunctionResourceCommand):
     flags.AddDataFlag(data_flag_group)
 
     # Flags for GCFv2
-    flags.AddGen2Flag(parser)
+    flags.AddGen2Flag(parser, hidden=True)
     flags.AddCloudEventsFlag(data_flag_group)
 
   def _RunV1(self, args):
-    return command_v1.Run(args)
+    return command_v1.Run(args, self.ReleaseTrack())
 
   def _RunV2(self, args):
     return command_v2.Run(args, self.ReleaseTrack())
@@ -70,6 +70,14 @@ class Call(util.FunctionResourceCommand):
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class CallBeta(Call):
   """Triggers execution of a Google Cloud Function."""
+
+  @staticmethod
+  def Args(parser):
+    """Register beta (and implicitly alpha) flags for this command."""
+    Call.Args(parser)
+
+    # Flags for beta (and implicitly alpha)
+    flags.AddGcloudHttpTimeoutFlag(parser)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)

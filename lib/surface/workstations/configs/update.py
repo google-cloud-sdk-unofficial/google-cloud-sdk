@@ -57,6 +57,7 @@ class Update(base.UpdateCommand):
     workstations_flags.AddNetworkTags(parser)
     workstations_flags.AddPoolSize(parser, use_default=False)
     workstations_flags.AddDisablePublicIpAddresses(parser, use_default=False)
+    workstations_flags.AddEnableTcpConnections(parser, use_default=False)
     workstations_flags.AddServiceAccountScopes(parser)
     workstations_flags.AddShieldedSecureBoot(parser, use_default=False)
     workstations_flags.AddShieldedVtpm(parser, use_default=False)

@@ -45,6 +45,7 @@ class CreateBackup(base.CreateCommand):
           allowed.
     """
     flags.AddInstance(parser)
+    flags.AddProjectLevelBackupEndpoint(parser)
     parser.add_argument(
         '--description', help='A friendly description of the backup.')
     parser.add_argument(
@@ -88,15 +89,31 @@ class CreateBackup(base.CreateCommand):
       # This is for informational purposes, so don't throw an error if failure.
       pass
 
-    result_operation = sql_client.backupRuns.Insert(
-        sql_messages.SqlBackupRunsInsertRequest(
-            project=instance_ref.project,
-            instance=instance_ref.instance,
-            backupRun=sql_messages.BackupRun(
-                description=args.description,
-                instance=instance_ref.instance,
-                location=args.location,
-                kind='sql#backupRun')))
+    if args.project_level:
+      result_operation = sql_client.backups.CreateBackup(
+          sql_messages.SqlBackupsCreateBackupRequest(
+              parent='projects/'+instance_ref.project,
+              backup=sql_messages.Backup(
+                  description=args.description,
+                  instance=instance_ref.instance,
+                  location=args.location,
+                  kind='sql#backup',
+              ),
+          )
+      )
+    else:
+      result_operation = sql_client.backupRuns.Insert(
+          sql_messages.SqlBackupRunsInsertRequest(
+              project=instance_ref.project,
+              instance=instance_ref.instance,
+              backupRun=sql_messages.BackupRun(
+                  description=args.description,
+                  instance=instance_ref.instance,
+                  location=args.location,
+                  kind='sql#backupRun',
+              ),
+          )
+      )
 
     operation_ref = client.resource_parser.Create(
         'sql.operations',

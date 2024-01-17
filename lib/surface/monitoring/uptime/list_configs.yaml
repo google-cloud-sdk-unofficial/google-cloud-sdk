@@ -1,8 +1,8 @@
 - help_text:
-    brief: List uptime checks.
-    description: List uptime checks.
+    brief: List uptime checks and synthetic monitors.
+    description: List uptime checks and synthetic monitors.
     examples: |
-      To see all uptime checks:
+      To see all uptime checks and synthetic monitors:
 
         $ {command}
 
@@ -17,5 +17,6 @@
 
   arguments:
     resource:
-      help_text: The Cloud Monitoring Workspace from which to list uptime checks from.
+      help_text: |
+        The Cloud Monitoring Workspace from which to list uptime checks and synthetic monitors.
       spec: !REF googlecloudsdk.command_lib.monitoring.resources:project

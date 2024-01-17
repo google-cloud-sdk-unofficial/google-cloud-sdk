@@ -42,23 +42,30 @@ class Describe(base.DescribeCommand):
           on the command line after this command. Positional arguments are
           allowed.
     """
-    flags.AddBackupRunId(parser)
-    flags.AddInstance(parser)
+    flags.AddBackupId(parser)
+    flags.AddOptionalInstance(parser)
+    flags.AddProjectLevelBackupEndpoint(parser)
 
-  def _GetById(self, id_integer, args):
+  def _GetById(self, backup_id, instance_name, project_level):
     client = api_util.SqlClient(api_util.API_VERSION_DEFAULT)
     sql_client = client.sql_client
     sql_messages = client.sql_messages
 
+    if project_level:
+      request = sql_messages.SqlBackupsGetBackupRequest(name=backup_id)
+      return sql_client.backups.GetBackup(request)
+
     instance_ref = client.resource_parser.Parse(
-        args.instance,
+        instance_name,
         params={'project': properties.VALUES.core.project.GetOrFail},
-        collection='sql.instances')
+        collection='sql.instances',
+    )
 
     request = sql_messages.SqlBackupRunsGetRequest(
         project=instance_ref.project,
         instance=instance_ref.instance,
-        id=id_integer)
+        id=int(backup_id),
+    )
     return sql_client.backupRuns.Get(request)
 
   def Run(self, args):
@@ -72,6 +79,8 @@ class Describe(base.DescribeCommand):
       A dict object that has the backup run resource if the command ran
       successfully.
     """
-    validate.ValidateInstanceName(args.instance)
 
-    return self._GetById(args.id, args)
+    if args.instance:
+      validate.ValidateInstanceName(args.instance)
+
+    return self._GetById(args.id, args.instance, args.project_level)

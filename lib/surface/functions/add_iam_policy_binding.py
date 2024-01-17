@@ -50,7 +50,7 @@ class AddIamPolicyBinding(util.FunctionResourceCommand):
     flags.AddFunctionResourceArg(parser, 'to add IAM policy binding for')
     iam_util.AddArgsForAddIamPolicyBinding(parser)
 
-    flags.AddGen2Flag(parser)
+    flags.AddGen2Flag(parser, hidden=True)
 
   def _RunV1(self, args):
     return command_v1.Run(args)

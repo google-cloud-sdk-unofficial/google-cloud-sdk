@@ -36,7 +36,7 @@ class Delete(base.DeleteCommand, util.FunctionResourceCommand):
     flags.AddFunctionResourceArg(parser, 'to delete')
     parser.display_info.AddCacheUpdater(None)
 
-    flags.AddGen2Flag(parser)
+    flags.AddGen2Flag(parser, hidden=True)
 
   def _RunV1(self, args):
     return command_v1.Run(args)

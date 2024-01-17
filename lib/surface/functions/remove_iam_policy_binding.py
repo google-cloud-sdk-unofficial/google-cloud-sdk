@@ -47,7 +47,7 @@ class RemoveIamPolicyBinding(util.FunctionResourceCommand):
     """Registers flags for this command."""
     flags.AddFunctionResourceArg(parser, 'to remove IAM policy binding from')
     iam_util.AddArgsForRemoveIamPolicyBinding(parser)
-    flags.AddGen2Flag(parser)
+    flags.AddGen2Flag(parser, hidden=True)
 
   def _RunV1(self, args):
     return command_v1.Run(args)

@@ -182,7 +182,7 @@ class Update(base.Command):
 
     use_wait = (
         platforms.GetPlatform() == platforms.PLATFORM_MANAGED
-        and self.ReleaseTrack() == base.ReleaseTrack.ALPHA
+        and self.ReleaseTrack() != base.ReleaseTrack.GA
     )
     with serverless_operations.Connect(conn_context) as client:
       service = client.GetService(service_ref)

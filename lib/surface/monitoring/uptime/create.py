@@ -28,38 +28,44 @@ from googlecloudsdk.core import properties
 
 
 class Create(base.CreateCommand):
-  """Create a new uptime check."""
+  """Create a new uptime check or synthetic monitor."""
 
   detailed_help = {
       "DESCRIPTION": """\
-          Create a new uptime check.
+          Create a new uptime check or synthetic monitor.
+
+          Flags only apply to uptime checks unless noted that they apply to
+          synthetic monitors.
 
           For information about the JSON/YAML format of an uptime check:
           https://cloud.google.com/monitoring/api/ref_v3/rest/v3/projects.uptimeCheckConfigs
        """,
       "EXAMPLES": """\
-          To create an uptime check against an uptime_url, run:
+          To create an uptime check against a URL, run:
 
             $ {command} DISPLAY_NAME --resource-type=uptime-url
             --resource-labels=host=google.com,project_id=PROJECT_ID
 
           To create a synthetic monitor, run:
 
-            $ {command} fake_uptime_check
+            $ {command} SYNTHETIC_MONITOR_NAME
             --synthetic-target=projects/PROJECT_ID/locations/REGION/functions/FUNCTION_NAME
-       """
+       """,
   }
 
   @staticmethod
   def Args(parser):
-    flags.AddDisplayNameFlag(parser, "Uptime Check", positional=True)
+    flags.AddDisplayNameFlag(
+        parser, "uptime check or synthetic monitor", positional=True
+    )
     flags.AddUptimeSettingsFlags(parser)
 
   def Run(self, args):
     client = uptime.UptimeClient()
     uptime_check = util.CreateUptimeFromArgs(args, client.messages)
-    project_ref = (
-        projects_util.ParseProject(properties.VALUES.core.project.Get()))
+    project_ref = projects_util.ParseProject(
+        properties.VALUES.core.project.Get()
+    )
     result = client.Create(project_ref, uptime_check)
     log.CreatedResource(result.name, "uptime")
     return result
