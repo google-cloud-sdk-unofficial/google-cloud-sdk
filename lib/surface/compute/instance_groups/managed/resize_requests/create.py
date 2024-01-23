@@ -28,21 +28,23 @@ from googlecloudsdk.command_lib.compute.instance_groups import flags as instance
 from googlecloudsdk.command_lib.compute.instance_groups.managed.resize_requests import flags as rr_flags
 from googlecloudsdk.core.util import times
 
+DETAILED_HELP = {
+    'brief': 'Create a Compute Engine managed instance group resize request.',
+    'EXAMPLES': """
+
+     To create a resize request for a managed instance group, run the following command:
+
+       $ {command} my-mig --resize-request=resize-request-1 --resize-by=1 --requested-run-duration=3d1h30s
+   """,
+}
+
 
 @base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class CreateBeta(base.CreateCommand):
   """Create a Compute Engine managed instance group resize request."""
 
-  detailed_help = {
-      'brief': 'Create a Compute Engine managed instance group resize request.',
-      'EXAMPLES': """
-
-     To create a resize request for a managed instance group, run the following command:
-
-       $ {command} my-mig --resize-request=resize-request-1 --resize-by=1 --run-duration=3d1h30s
-   """,
-  }
+  detailed_help = DETAILED_HELP
 
   @classmethod
   def Args(cls, parser):
@@ -63,7 +65,7 @@ class CreateBeta(base.CreateCommand):
         help="""The number of VMs to resize managed instance group by.""",
     )
     parser.add_argument(
-        '--run-duration',
+        '--requested-run-duration',
         type=arg_parsers.Duration(),
         required=True,
         help="""The time you need the requested VMs to run before being
@@ -99,7 +101,9 @@ class CreateBeta(base.CreateCommand):
     resize_request = client.messages.InstanceGroupManagerResizeRequest(
         name=args.resize_request,
         resizeBy=args.resize_by,
-        requestedRunDuration=client.messages.Duration(seconds=args.run_duration)
+        requestedRunDuration=client.messages.Duration(
+            seconds=args.requested_run_duration
+        ),
     )
 
     request = (
@@ -122,22 +126,7 @@ class CreateBeta(base.CreateCommand):
 class CreateAlpha(base.CreateCommand):
   """Create a Compute Engine managed instance group resize request."""
 
-  detailed_help = {
-      'brief': 'Create a Compute Engine managed instance group resize request.',
-      'EXAMPLES': """
-     To create a managed instance group resize request that succeeds only if all the VMs are immediately provisioned, run the following command:
-
-       $ {command} my-mig --resize-request=resize-request-1 --resize-by=1
-
-     To create a queued managed instance group resize request, run the following command:
-
-       $ {command} my-mig --resize-request=resize-request-1 --resize-by=1 --valid-until-duration=4h
-
-     To create a resize request that provisions VM instances to run for a specified time before being automatically deleted, run the following command:
-
-       $ {command} my-mig --resize-request=resize-request-1 --resize-by=1 --run-duration=3d1h30s
-   """,
-  }
+  detailed_help = DETAILED_HELP
 
   @classmethod
   def Args(cls, parser):
@@ -156,7 +145,8 @@ class CreateAlpha(base.CreateCommand):
     count_resize_by_group.add_argument(
         '--count',
         type=int,
-        help="""(ALPHA only) The number of VMs to create."""
+        hidden=True,
+        help="""(ALPHA only) The number of VMs to create.""",
     )
     count_resize_by_group.add_argument(
         '--resize-by',
@@ -164,19 +154,22 @@ class CreateAlpha(base.CreateCommand):
         help="""The number of VMs to resize managed instance group by.""",
     )
 
-    valid_until_group = parser.add_group(mutex=True, required=False)
+    valid_until_group = parser.add_group(
+        mutex=True, required=False, hidden=True
+    )
     valid_until_group.add_argument(
         '--valid-until-duration',
         type=arg_parsers.Duration(),
-        help="""Relative deadline for waiting for capacity.""")
+        help="""Relative deadline for waiting for capacity.""",
+    )
     valid_until_group.add_argument(
         '--valid-until-time',
         type=arg_parsers.Datetime.Parse,
-        help="""Absolute deadline for waiting for capacity in RFC3339 text format."""
+        help="""Absolute deadline for waiting for capacity in RFC3339 text format.""",
     )
 
     parser.add_argument(
-        '--run-duration',
+        '--requested-run-duration',
         type=arg_parsers.Duration(),
         required=False,
         help="""The time you need the requested VMs to run before being
@@ -222,22 +215,24 @@ class CreateAlpha(base.CreateCommand):
     else:
       queuing_policy = None
 
-    run_duration = None
-    if args.IsKnownAndSpecified('run_duration'):
-      run_duration = client.messages.Duration(seconds=args.run_duration)
+    requested_run_duration = None
+    if args.IsKnownAndSpecified('requested_run_duration'):
+      requested_run_duration = client.messages.Duration(
+          seconds=args.requested_run_duration
+      )
 
     if args.IsKnownAndSpecified('resize_by'):
       resize_request = client.messages.InstanceGroupManagerResizeRequest(
           name=args.resize_request,
           queuingPolicy=queuing_policy,
-          requestedRunDuration=run_duration,
+          requestedRunDuration=requested_run_duration,
           resizeBy=args.resize_by,
       )
     else:
       resize_request = client.messages.InstanceGroupManagerResizeRequest(
           name=args.resize_request,
           queuingPolicy=queuing_policy,
-          requestedRunDuration=run_duration,
+          requestedRunDuration=requested_run_duration,
           resizeBy=args.count,
       )
 

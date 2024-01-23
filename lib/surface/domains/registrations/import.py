@@ -28,7 +28,7 @@ from googlecloudsdk.core.console import console_io
 
 
 @base.Deprecate(
-    is_removed=False,
+    is_removed=True,
     warning=(
         'This command is deprecated. See'
         ' https://cloud.google.com/domains/docs/deprecations/feature-deprecations.'

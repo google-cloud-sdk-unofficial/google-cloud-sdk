@@ -52,6 +52,7 @@ class Add(base.UpdateCommand):
     network_interfaces_flags.AddStackTypeArg(parser)
     network_interfaces_flags.AddNetworkTierArg(parser)
     network_interfaces_flags.AddIpv6NetworkTierArg(parser)
+    network_interfaces_flags.AddAddressArgs(parser)
     network_interfaces_flags.AddExternalIpv6AddressArg(parser)
     network_interfaces_flags.AddExternalIpv6PrefixLengthArg(parser)
     network_interfaces_flags.AddInternalIpv6AddressArg(parser)
@@ -88,6 +89,8 @@ class Add(base.UpdateCommand):
         stack_type=getattr(args, 'stack_type', None),
         network_tier=getattr(args, 'network_tier', None),
         ipv6_network_tier=getattr(args, 'ipv6_network_tier', None),
+        address=getattr(args, 'address', None),
+        no_address=getattr(args, 'no_address', None),
         external_ipv6_address=getattr(args, 'external_ipv6_address', None),
         external_ipv6_prefix_length=getattr(
             args, 'external_ipv6_prefix_length', None

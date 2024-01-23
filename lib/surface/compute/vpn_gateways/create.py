@@ -145,7 +145,7 @@ class CreateBeta(Create):
   INSTANCE_ARG = None
 
   _support_outer_vpn_ipv6 = True
-  _ipv6_only_vpn_enabled = False
+  _ipv6_only_vpn_enabled = True
 
   @classmethod
   def Args(cls, parser):

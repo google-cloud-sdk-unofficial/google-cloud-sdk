@@ -216,6 +216,8 @@ class SignUrl(base.Command):
     key = None
     delegates = None
     creds = c_store.Load(prevent_refresh=True, use_google_auth=False)
+    delegate_chain = args.impersonate_service_account or (
+        properties.VALUES.auth.impersonate_service_account.Get())
     if args.private_key_file:
       try:
         client_id, key = sign_url_util.get_signing_information_from_file(
@@ -225,9 +227,9 @@ class SignUrl(base.Command):
         if 'OpenSSL' in str(error):
           raise command_errors.Error(_INSTALL_PY_OPEN_SSL_MESSAGE)
         raise
-    elif args.impersonate_service_account:
+    elif delegate_chain:
       impersonated_account, delegates = c_store.ParseImpersonationAccounts(
-          args.impersonate_service_account
+          delegate_chain
       )
       client_id = impersonated_account
     elif (

@@ -36,7 +36,7 @@
   output:
     format: |
       table(
-         name.basename():label=VERSION,
+         name.basename().sub("%5E", "^"):label=VERSION,
          description,
          createTime.date(tz=LOCAL),
          updateTime.date(tz=LOCAL)

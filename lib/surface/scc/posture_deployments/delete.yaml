@@ -1,8 +1,9 @@
-- release_tracks: [ALPHA]
+- release_tracks: [ALPHA, GA]
+  command_type: GENERIC
   help_text:
-    brief: Delete a  Cloud Security Command Center (SCC) posture deployment.
+    brief: Delete a Cloud Security Command Center (SCC) posture deployment.
     description: |
-      Delete a  Cloud Security Command Center (SCC) posture deployment.
+      Delete a Cloud Security Command Center (SCC) posture deployment.
 
     examples: |
       Delete the posture deployment named `organizations/123/locations/global/postureDeployments/posture-deployment-foo` (i.e. a posture deployment in organization `123`, location `global`, with id `posture-deployment-foo`):
@@ -16,19 +17,18 @@
 
   request:
     collection: securityposture.organizations.locations.postureDeployments
-    disable_resource_check: true
     api_version: v1alpha
     method: delete
+    GA:
+      api_version: v1
 
   arguments:
-    params:
-    - arg_name: posture_deployment_name
-      api_field: name
-      is_positional: true
-      required: true
+    resource:
+      spec: !REF googlecloudsdk.command_lib.scc.resources:posture_deployment
       help_text: |
-          Relative resource name of the posture deployment, like organizations/<organizationID>/locations/<location>/postureDeployments/<postureID>.
+          The posture deployment to delete. For example organizations/<organizationID>/locations/<location>/postureDeployments/<postureDeploymentID>.
 
+    params:
     - arg_name: etag
       api_field: etag
       required: false
@@ -37,7 +37,11 @@
 
   input:
     confirmation_prompt: |
-      You are about to delete a posture deployment. All policies of this posture will get removed/un-enforced.
+      You are about to delete posture deployment [{__name__}]. All the deployed policies of this posture will get removed.
 
   async:
     collection: securityposture.organizations.locations.operations
+    extract_resource_result: false
+
+  output:
+    format: yaml

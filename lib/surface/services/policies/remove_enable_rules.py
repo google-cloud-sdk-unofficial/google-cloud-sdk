@@ -161,7 +161,7 @@ class RemovedEnableRules(base.SilentCommand):
         )
         continue
 
-    update_policy = serviceusage.GetConsumerPolicyV2(
+    update_policy = serviceusage.GetConsumerPolicyV2Alpha(
         resource_name + _CONSUMER_POLICY_DEFAULT.format(args.policy_name)
     )
 
@@ -175,6 +175,6 @@ class RemovedEnableRules(base.SilentCommand):
     if update_policy.enableRules:
       resources = collections.namedtuple('Values', ['services'])
       result = []
-      for value in update_policy.enableRules[0].values:
+      for value in update_policy.enableRules[0].services:
         result.append(resources(value))
       return result

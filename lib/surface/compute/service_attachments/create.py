@@ -56,21 +56,28 @@ def _DetailedHelp():
   }
 
 
-@base.ReleaseTracks(
-    base.ReleaseTrack.ALPHA,
-    base.ReleaseTrack.BETA,
-    base.ReleaseTrack.GA,
-)
-class Create(base.CreateCommand):
-  """Create a Google Compute Engine service attachment."""
+class CreateHelper(object):
+  """Helper class to create a service attachment."""
 
   SERVICE_ATTACHMENT_ARG = None
   PRODUCER_FORWARDING_RULE_ARG = None
   NAT_SUBNETWORK_ARG = None
-  detailed_help = _DetailedHelp()
+
+  def __init__(self, holder, support_propagated_connection_limit):
+    self._holder = holder
+    self._support_propagated_connection_limit = (
+        support_propagated_connection_limit
+    )
 
   @classmethod
-  def Args(cls, parser):
+  def Args(cls, parser, support_propagated_connection_limit):
+    """Create a Google Compute Engine service attachment.
+
+    Args:
+      parser: the parser that parses the input from the user.
+      support_propagated_connection_limit: whether propagated_connection_limit
+        is supported.
+    """
     cls.SERVICE_ATTACHMENT_ARG = flags.ServiceAttachmentArgument()
     cls.SERVICE_ATTACHMENT_ARG.AddArgument(parser, operation_type='create')
     cls.PRODUCER_FORWARDING_RULE_ARG = forwarding_rule_flags.ForwardingRuleArgumentForServiceAttachment(
@@ -90,20 +97,28 @@ class Create(base.CreateCommand):
     flags.AddConsumerRejectList(parser)
     flags.AddConsumerAcceptList(parser)
     flags.AddDomainNames(parser)
+    if support_propagated_connection_limit:
+      flags.AddPropagatedConnectionLimit(parser)
 
   def Run(self, args):
     """Issue a service attachment INSERT request."""
-    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
-    client = holder.client
+    client = self._holder.client
     service_attachment_ref = self.SERVICE_ATTACHMENT_ARG.ResolveAsResource(
-        args, holder.resources, default_scope=compute_scope.ScopeEnum.REGION)
-    producer_forwarding_rule_ref = self.PRODUCER_FORWARDING_RULE_ARG.ResolveAsResource(
-        args, holder.resources)
+        args,
+        self._holder.resources,
+        default_scope=compute_scope.ScopeEnum.REGION,
+    )
+    producer_forwarding_rule_ref = (
+        self.PRODUCER_FORWARDING_RULE_ARG.ResolveAsResource(
+            args, self._holder.resources
+        )
+    )
     nat_subnetwork_refs = self.NAT_SUBNETWORK_ARG.ResolveAsResource(
         args,
-        holder.resources,
+        self._holder.resources,
         default_scope=compute_scope.ScopeEnum.REGION,
-        scope_lister=compute_flags.GetDefaultScopeLister(client))
+        scope_lister=compute_flags.GetDefaultScopeLister(client),
+    )
     nat_subnetworks = [
         nat_subnetwork_ref.SelfLink()
         for nat_subnetwork_ref in nat_subnetwork_refs
@@ -131,6 +146,12 @@ class Create(base.CreateCommand):
       service_attachment.domainNames = args.domain_names
     if args.IsSpecified('reconcile_connections'):
       service_attachment.reconcileConnections = args.reconcile_connections
+    if self._support_propagated_connection_limit and args.IsSpecified(
+        'propagated_connection_limit'
+    ):
+      service_attachment.propagatedConnectionLimit = (
+          args.propagated_connection_limit
+      )
 
     request = client.messages.ComputeServiceAttachmentsInsertRequest(
         project=service_attachment_ref.project,
@@ -138,3 +159,34 @@ class Create(base.CreateCommand):
         serviceAttachment=service_attachment)
     collection = client.apitools_client.serviceAttachments
     return client.MakeRequests([(collection, 'Insert', request)])
+
+
+@base.ReleaseTracks(
+    base.ReleaseTrack.BETA,
+    base.ReleaseTrack.GA,
+)
+class Create(base.CreateCommand):
+  """Create a Google Compute Engine service attachment."""
+
+  _support_propagated_connection_limit = False
+  detailed_help = _DetailedHelp()
+
+  @classmethod
+  def Args(cls, parser):
+    CreateHelper.Args(parser, cls._support_propagated_connection_limit)
+
+  def Run(self, args):
+    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    return CreateHelper(holder, self._support_propagated_connection_limit).Run(
+        args
+    )
+
+
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA,
+)
+class CreateAlpha(Create):
+  """Create a Google Compute Engine service attachment."""
+
+  _support_propagated_connection_limit = True
+  detailed_help = _DetailedHelp()

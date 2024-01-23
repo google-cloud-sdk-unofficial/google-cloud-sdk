@@ -1,4 +1,4 @@
-- release_tracks: [ALPHA]
+- release_tracks: [ALPHA, GA]
   help_text:
     brief: Delete a Cloud Security Command Center (SCC) posture.
     description: |
@@ -18,24 +18,27 @@
 
   request:
     collection: securityposture.organizations.locations.postures
-    disable_resource_check: true
     api_version: v1alpha
     method: delete
+    GA:
+      api_version: v1
 
   arguments:
-    params:
-    - arg_name: posture_name
-      api_field: name
-      is_positional: true
-      required: true
+    resource:
+      spec: !REF googlecloudsdk.command_lib.scc.resources:posture
       help_text: |
-          Relative resource name of the posture, like organizations/<organizationID>/locations/<location>/postures/<postureID>.
+          The posture to delete. For example organizations/<organizationID>/locations/<location>/postures/<postureID>.
 
+    params:
     - arg_name: etag
       api_field: etag
       required: false
       help_text: |
           Etag is an optional flag. If the provided Etag doesn't match the server generated Etag, the delete operation won't proceed.
+
+  input:
+    confirmation_prompt: |
+      You are about to delete a posture [{__name__}]. All its revisions will be deleted.
 
   async:
     collection: securityposture.organizations.locations.operations

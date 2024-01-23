@@ -1,8 +1,8 @@
-- release_tracks: [ALPHA]
+- release_tracks: [ALPHA, GA]
   help_text:
-    brief: Describe a  Cloud Security Command Center (SCC) posture template.
+    brief: Describe a Cloud Security Command Center (SCC) posture template.
     description: |
-      Describe a  Cloud Security Command Center (SCC) posture template.
+      Describe a Cloud Security Command Center (SCC) posture template.
 
       By default, the latest created revision of the posture template is described. Users must provide revision ID to describe a specific revision.
     examples: |
@@ -16,21 +16,23 @@
 
   request:
     collection: securityposture.organizations.locations.postureTemplates
-    disable_resource_check: true
     api_version: v1alpha
     method: get
+    GA:
+      api_version: v1
 
   arguments:
-    params:
-    - arg_name: posture_template_name
-      api_field: name
-      is_positional: true
-      required: true
+    resource:
+      spec: !REF googlecloudsdk.command_lib.scc.resources:posture_template
       help_text: |
-        Relative resource name of the posture template, like organizations/<organizationID>/locations/<location>/postureTemplates/<postureTemplateID>.
+          The posture template to describe. For example organizations/<organizationID>/locations/<location>/postureTemplates/<postureTemplateID>.
 
+    params:
     - arg_name: revision-id
       api_field: revisionId
       required: false
       help_text: |
         ID of the specific posture template revision to describe. If not specified, latest revision is described.
+
+  output:
+    format: yaml

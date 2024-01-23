@@ -360,7 +360,9 @@ class Ssh(base.Command):
                                      host_keys_to_add=host_keys)
 
     if oslogin_state.third_party_user:
-      cert_file = ssh.CertFileFromZone(args.zone)
+      # Use the region if present; fall back to parsing region from zone.
+      region = args.region if args.region else args.zone[:args.zone.rindex('-')]
+      cert_file = ssh.CertFileFromRegion(region)
 
     extra_flags = ssh.ParseAndSubstituteSSHFlags(args, remote, instance_address,
                                                  internal_address)

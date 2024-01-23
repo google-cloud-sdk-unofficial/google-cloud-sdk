@@ -1,6 +1,6 @@
-- release_tracks: [ALPHA]
+- release_tracks: [ALPHA, GA]
   help_text:
-    brief: Describe a  Cloud Security Command Center (SCC) posture.
+    brief: Describe a Cloud Security Command Center (SCC) posture.
     description: |
       Describe a Cloud Security Command Center (SCC) posture.
 
@@ -16,21 +16,23 @@
 
   request:
     collection: securityposture.organizations.locations.postures
-    disable_resource_check: true
     api_version: v1alpha
     method: get
+    GA:
+      api_version: v1
 
   arguments:
-    params:
-    - arg_name: posture_name
-      api_field: name
-      is_positional: true
-      required: true
+    resource:
+      spec: !REF googlecloudsdk.command_lib.scc.resources:posture
       help_text: |
-        Relative resource name of the posture, like organizations/<organizationID>/locations/<location>/postures/<postureID>.
+          The posture to describe. For example organizations/<organizationID>/locations/<location>/postures/<postureID>.
 
+    params:
     - arg_name: revision-id
       api_field: revisionId
       required: false
       help_text: |
         ID of the specific posture revision to describe. If not specified, latest revision is described.
+
+  output:
+    format: yaml

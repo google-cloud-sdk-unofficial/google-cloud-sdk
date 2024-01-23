@@ -24,8 +24,7 @@ from googlecloudsdk.command_lib.edge_cloud.networking import resource_args
 from googlecloudsdk.command_lib.edge_cloud.networking.routers import flags as routers_flags
 from googlecloudsdk.core import log
 
-DESCRIPTION = (
-    'Create an interface to a Distributed Cloud Edge Network router.')
+DESCRIPTION = 'Create an interface to a Distributed Cloud Edge Network router.'
 EXAMPLES = """\
     To create and add a northbound interface for Distributed Cloud Edge Network router 'my-router' in edge zone 'us-central1-edge-den1' , run:
 
@@ -50,11 +49,10 @@ class AddInterface(base.UpdateCommand):
 
   @classmethod
   def Args(cls, parser):
-    resource_args.AddRouterResourceArg(parser, 'to which we add an interface',
-                                       True)
-    routers_flags.AddInterfaceArgs(
-        parser, is_alpha=cls.ReleaseTrack() == base.ReleaseTrack.ALPHA
+    resource_args.AddRouterResourceArg(
+        parser, 'to which we add an interface', True
     )
+    routers_flags.AddInterfaceArgs(parser)
     base.ASYNC_FLAG.AddToParser(parser)
 
   def Run(self, args):
@@ -66,8 +64,12 @@ class AddInterface(base.UpdateCommand):
     if not async_:
       response = routers_client.WaitForOperation(update_req_op)
       log.UpdatedResource(
-          router_ref.RelativeName(), details='Operation was successful.')
+          router_ref.RelativeName(), details='Operation was successful.'
+      )
       return response
 
-    log.status.Print('Updating [{0}] with operation [{1}].'.format(
-        router_ref.RelativeName(), update_req_op.name))
+    log.status.Print(
+        'Updating [{0}] with operation [{1}].'.format(
+            router_ref.RelativeName(), update_req_op.name
+        )
+    )

@@ -122,7 +122,7 @@ class ListAlpha(base.ListCommand):
     else:
       organization = None
     if args.IsSpecified('limit'):
-      return serviceusage.ListServicesV2(
+      return serviceusage.ListServicesV2Alpha(
           project,
           args.enabled,
           args.page_size,
@@ -131,7 +131,7 @@ class ListAlpha(base.ListCommand):
           organization=organization,
       )
     else:
-      return serviceusage.ListServicesV2(
+      return serviceusage.ListServicesV2Alpha(
           project,
           args.enabled,
           args.page_size,

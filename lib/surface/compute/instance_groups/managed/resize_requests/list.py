@@ -97,7 +97,7 @@ class ListBeta(base.ListCommand):
       args: the argparse arguments that this command was invoked with.
 
     Returns:
-      List of resize requests and their queuing policies.
+      List of resize requests.
     """
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     return self._Run(args, holder)

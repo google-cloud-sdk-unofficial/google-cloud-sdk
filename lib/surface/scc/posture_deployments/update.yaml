@@ -1,4 +1,5 @@
-- release_tracks: [ALPHA]
+- release_tracks: [ALPHA, GA]
+  command_type: GENERIC
   help_text:
     brief: Update the given Cloud Security Command Center (SCC) posture deployment.
     description: |
@@ -18,19 +19,18 @@
 
   request:
     collection: securityposture.organizations.locations.postureDeployments
-    disable_resource_check: true
     api_version: v1alpha
     method: patch
+    GA:
+      api_version: v1
 
   arguments:
-    params:
-    - arg_name: posture_deployment_name
-      api_field: name
-      is_positional: true
-      required: true
+    resource:
+      spec: !REF googlecloudsdk.command_lib.scc.resources:posture_deployment
       help_text: |
-        Relative resource name of the posture deployment, like `organizations/<organizationID>/locations/<location>/postureDeployments/<postureDeploymentID>`.
+          The posture deployment to update. For example organizations/<organizationID>/locations/<location>/postureDeployments/<postureDeploymentID>.
 
+    params:
     - group:
         params:
         - arg_name: posture-id
@@ -62,3 +62,7 @@
 
   async:
     collection: securityposture.organizations.locations.operations
+    extract_resource_result: false
+
+  output:
+    format: yaml

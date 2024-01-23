@@ -1,6 +1,6 @@
-- release_tracks: [ALPHA]
+- release_tracks: [ALPHA, GA]
   help_text:
-    brief: List the revisions of a  Cloud Security Command Center (SCC) posture.
+    brief: List the revisions of a Cloud Security Command Center (SCC) posture.
     description: |
       List the revisions of a Cloud Security Command Center (SCC) posture.
     examples: |
@@ -10,19 +10,16 @@
   command_type: LIST
   request:
     collection: securityposture.organizations.locations.postures
-    disable_resource_check: true
     api_version: v1alpha
     method: listRevisions
+    GA:
+      api_version: v1
 
   response:
     result_attribute: revisions
 
   arguments:
-    params:
-    - arg_name: posture_name
-      api_field: name
-      is_positional: true
-      required: true
+    resource:
+      spec: !REF googlecloudsdk.command_lib.scc.resources:posture
       help_text: |
-        Posture name of the Cloud Security Command Center posture for listing the revisions.
-        Formatted as `organizations/<organizationID>/locations/<location>/postures/<postureID>`
+          The posture whose revisions are to be listed. For example organizations/<organizationID>/locations/<location>/postures/<postureID>.

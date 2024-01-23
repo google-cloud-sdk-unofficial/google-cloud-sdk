@@ -23,7 +23,6 @@ from googlecloudsdk.command_lib.run import container_parser
 from googlecloudsdk.command_lib.run import exceptions
 from googlecloudsdk.command_lib.run import flags
 from googlecloudsdk.command_lib.run import messages_util
-from googlecloudsdk.command_lib.run import platforms
 from googlecloudsdk.command_lib.run import pretty_print
 from googlecloudsdk.command_lib.run import resource_args
 from googlecloudsdk.command_lib.run import resource_change_validators
@@ -180,10 +179,6 @@ class Update(base.Command):
     service_ref = args.CONCEPTS.service.Parse()
     flags.ValidateResource(service_ref)
 
-    use_wait = (
-        platforms.GetPlatform() == platforms.PLATFORM_MANAGED
-        and self.ReleaseTrack() != base.ReleaseTrack.GA
-    )
     with serverless_operations.Connect(conn_context) as client:
       service = client.GetService(service_ref)
       resource_change_validators.ValidateClearVpcConnector(service, args)
@@ -202,6 +197,7 @@ class Update(base.Command):
         service = client.ReleaseService(
             service_ref,
             changes,
+            self.ReleaseTrack(),
             tracker,
             asyn=args.async_,
             prefetch=service,
@@ -209,7 +205,6 @@ class Update(base.Command):
                 flags.FlagIsExplicitlySet(args, 'revision_suffix')
                 or flags.FlagIsExplicitlySet(args, 'tag')
             ),
-            use_wait=use_wait,
         )
 
       if args.async_:

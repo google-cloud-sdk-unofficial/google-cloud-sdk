@@ -1,8 +1,8 @@
-- release_tracks: [ALPHA]
+- release_tracks: [ALPHA, GA]
   help_text:
-    brief: Lists all the  Cloud Security Command Center (SCC) postures for an organization.
+    brief: Lists all the Cloud Security Command Center (SCC) postures for an organization.
     description: |
-      Lists all  Cloud Security Command Center (SCC) postures for an organization.
+      Lists all Cloud Security Command Center (SCC) postures for an organization.
 
       By default, postures created in global location are returned.
     examples: |
@@ -21,6 +21,8 @@
     disable_resource_check: true
     api_version: v1alpha
     method: list
+    GA:
+      api_version: v1
 
   arguments:
     params:
@@ -30,3 +32,6 @@
       required: true
       help_text: |
         Resource name of the parent, like organizations/<organizationID> or organizations/<organizationID>/locations/<location>.
+
+  output:
+    format: yaml

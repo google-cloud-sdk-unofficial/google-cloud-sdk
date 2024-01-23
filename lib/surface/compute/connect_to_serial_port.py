@@ -94,7 +94,6 @@ class ConnectToSerialPort(base.Command):
   """
 
   category = base.TOOLS_CATEGORY
-  enable_regional_support = False
 
   @staticmethod
   def Args(parser):
@@ -144,6 +143,14 @@ class ConnectToSerialPort(base.Command):
         replay-lines=N. See {0} for additional options.
         """.format(SERIAL_PORT_HELP))
 
+    parser.add_argument(
+        '--location',
+        help="""\
+        If provided, the region in which the serial console connection will
+        occur. Must be the region of the VM to connect to.
+        """,
+    )
+
     flags.AddZoneFlag(
         parser,
         resource_type='instance',
@@ -170,7 +177,7 @@ class ConnectToSerialPort(base.Command):
       remote.user = ssh.GetDefaultSshUsername()
     public_key = ssh_helper.keys.GetPublicKey().ToEntry(include_comment=True)
 
-    if self.enable_regional_support and args.location:
+    if args.location:
       gateway = REGIONAL_SERIAL_PORT_GATEWAY_TEMPLATE.format(args.location)
       hostkey_url = REGIONAL_HOST_KEY_URL_TEMPLATE.format(args.location)
       log.info(
@@ -287,6 +294,8 @@ class ConnectToSerialPort(base.Command):
       sys.exit(return_code)
 
 
+# Alpha and Beta ISPAC don't currently do anything different, but this method
+# has been left in for convenience with any future alpha/beta features.
 @base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
 class ConnectToSerialPortAlphaBeta(ConnectToSerialPort):
   """Connect to the serial port of an instance.
@@ -311,16 +320,7 @@ class ConnectToSerialPortAlphaBeta(ConnectToSerialPort):
 
     $ {command} my-instance --zone=us-central1-f
   """
-  enable_regional_support = True
 
   @classmethod
   def Args(cls, parser):
     super(ConnectToSerialPortAlphaBeta, cls).Args(parser)
-
-    parser.add_argument(
-        '--location',
-        help="""\
-        If provided, the region in which the serial console connection will
-        occur. Must be the region of the VM to connect to.
-        """,
-    )

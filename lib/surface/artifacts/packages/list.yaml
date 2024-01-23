@@ -30,7 +30,7 @@
   output:
     format: |
       table(
-         name:label=PACKAGE,
+         name.sub("%5E", "^"):label=PACKAGE,
          createTime.date(tz=LOCAL),
          updateTime.date(tz=LOCAL)
        )

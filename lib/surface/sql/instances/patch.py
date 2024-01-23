@@ -268,6 +268,7 @@ def AddBaseArgs(parser):
   flags.AddClearAllowedPscProjects(psc_update_group)
   flags.AddSslMode(parser)
   flags.AddUpgradeSqlNetworkArchitecture(parser)
+  flags.AddSimulateMaintenanceEvent(parser)
 
 
 def AddBetaArgs(parser):
@@ -278,9 +279,9 @@ def AddBetaArgs(parser):
   flags.AddReplicationLagMaxSecondsForRecreate(parser)
 
 
-def AddAlphaArgs(parser):
+def AddAlphaArgs(unused_parser):
   """Adds alpha args and flags to the parser."""
-  flags.AddSimulateMaintenanceEvent(parser)
+  pass
 
 
 def RunBasePatchCommand(args, release_track):
@@ -312,7 +313,7 @@ def RunBasePatchCommand(args, release_track):
 
   # If the flag to simulate a maintenance event is supplied along with other
   # flags thrown an error.
-  if release_track == release_track.ALPHA and args.IsSpecified(
+  if args.IsSpecified(
       'simulate_maintenance_event'
   ):
     for key in args.GetSpecifiedArgsDict():

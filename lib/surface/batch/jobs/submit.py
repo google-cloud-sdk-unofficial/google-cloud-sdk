@@ -71,9 +71,9 @@ def _CommonArgs(parser):
   task_spec_group.add_argument(
       '--config',
       type=arg_parsers.FileContents(),
-      help="""The file path of the JSON job config JSON. It also supports direct
-        input from stdin with '-' or HereDoc (in shells with HereDoc support like
-        Bash) with '- <<DELIMITER'. """,
+      help="""The file path of the job config file in either JSON or YAML format.
+        It also supports direct input from stdin with '-' or HereDoc
+        (in shells with HereDoc support like Bash) with '- <<DELIMITER'. """,
   )
 
   runnable_group = task_spec_group.add_group(
@@ -250,35 +250,45 @@ def _BuildJobMsg(args, job_msg, batch_msgs):
 class Submit(base.Command):
   """Submit a Batch job.
 
-  This command can fail for the following reasons:
-  * The active account does not have permission to create the Batch job.
+  This command creates and submits a Batch job. After you create and
+  submit the job, Batch automatically queues, schedules, and executes it.
 
   ## EXAMPLES
 
-  To submit the job with config.json sample config file and name
+  To submit a job with a sample JSON configuration file (config.json) and name
   `projects/foo/locations/us-central1/jobs/bar`, run:
 
     $ {command} projects/foo/locations/us-central1/jobs/bar --config=config.json
 
-  To submit the job through stdin with json job config and name
+  To submit a job with a sample YAML configuration file (config.yaml) and
+  name projects/foo/locations/us-central1/jobs/bar, run:
+
+    $ {command} projects/foo/locations/us-central1/jobs/bar --config=config.yaml
+
+  To submit a job through stdin with a sample job configuration and name
   `projects/foo/locations/us-central1/jobs/bar`, run:
 
     $ {command} projects/foo/locations/us-central1/jobs/bar --config=-
 
       then input json job config via stdin
       {
-        json job config
+        job config
       }
 
-  To submit the job through HereDoc with json job config and name
+  To submit a job through HereDoc with a sample job configuration and name
   `projects/foo/locations/us-central1/jobs/bar`, run:
 
     $ {command} projects/foo/locations/us-central1/jobs/bar --config=- << EOF
 
       {
-        json job config
+        job config
       }
       EOF
+
+  For details about how to define a job's configuration using JSON, see the
+  projects.locations.jobs resource in the Batch API Reference.
+  If you want to define a job's configuration using YAML, convert the JSON
+  syntax to YAML.
   """
 
   @staticmethod
@@ -288,21 +298,24 @@ class Submit(base.Command):
 
   @classmethod
   def _CreateJobMessage(cls, batch_msgs, config):
-    """Create the job message from the config file.
+    """Parse into Job message using the config input.
 
     Args:
-        batch_msgs: Batch defined proto message.
-        config: The input config file in the JSON format, this parent
-        class only takes JSON format while alpha subclass would take both
-        JSON and YAML.
+         batch_msgs: Batch defined proto message.
+         config: The input content being either YAML or JSON or the HEREDOC
+           input.
 
     Returns:
-        Parsed job message from the config file.
+         The Parsed job message.
     """
     try:
-      return encoding.JsonToMessage(batch_msgs.Job, config)
-    except Exception as e:
-      raise exceptions.Error('Unable to parse config file: {}'.format(e))
+      result = encoding.PyValueToMessage(batch_msgs.Job, yaml.load(config))
+    except (ValueError, AttributeError, yaml.YAMLParseError):
+      try:
+        result = encoding.JsonToMessage(batch_msgs.Job, config)
+      except (ValueError, DecodeError) as e:
+        raise exceptions.Error('Unable to parse config file: {}'.format(e))
+    return result
 
   def Run(self, args):
     job_ref = args.CONCEPTS.job.Parse()
@@ -337,8 +350,10 @@ class Submit(base.Command):
     # Remove the invalid job_id if no job_id being specified,
     # batch_client would create a valid job_id.
     elif args.job_prefix:
-      job_id = args.job_prefix + '-' + datetime.datetime.now().strftime(
-          '%Y%m%d-%H%M%S'
+      job_id = (
+          args.job_prefix
+          + '-'
+          + datetime.datetime.now().strftime('%Y%m%d-%H%M%S')
       )
 
     # The case that both positional JOB ID and prefix are not specified
@@ -352,35 +367,45 @@ class Submit(base.Command):
 class SubmitBeta(Submit):
   """Submit a Batch job.
 
-  This command can fail for the following reasons:
-  * The active account does not have permission to create the Batch job.
+  This command creates and submits a Batch job. After you create and
+  submit the job, Batch automatically queues, schedules, and executes it.
 
   ## EXAMPLES
 
-  To submit the job with config.json sample config file and name
+  To submit a job with a sample JSON configuration file (config.json) and name
   `projects/foo/locations/us-central1/jobs/bar`, run:
 
     $ {command} projects/foo/locations/us-central1/jobs/bar --config=config.json
 
-  To submit the job through stdin with json job config and name
+  To submit a job with a sample YAML configuration file (config.yaml) and
+  name projects/foo/locations/us-central1/jobs/bar, run:
+
+    $ {command} projects/foo/locations/us-central1/jobs/bar --config=config.yaml
+
+  To submit a job through stdin with a sample job configuration and name
   `projects/foo/locations/us-central1/jobs/bar`, run:
 
     $ {command} projects/foo/locations/us-central1/jobs/bar --config=-
 
       then input json job config via stdin
       {
-        json job config
+        job config
       }
 
-  To submit the job through HereDoc with json job config and name
+  To submit a job through HereDoc with a sample job configuration and name
   `projects/foo/locations/us-central1/jobs/bar`, run:
 
     $ {command} projects/foo/locations/us-central1/jobs/bar --config=- << EOF
 
       {
-        json job config
+        job config
       }
       EOF
+
+  For details about how to define a job's configuration using JSON, see the
+  projects.locations.jobs resource in the Batch API Reference.
+  If you want to define a job's configuration using YAML, convert the JSON
+  syntax to YAML.
   """
 
 
@@ -388,59 +413,43 @@ class SubmitBeta(Submit):
 class SubmitAlpha(SubmitBeta):
   """Submit a Batch job.
 
-  This command can fail for the following reasons:
-  * The active account does not have permission to create the Batch job.
+  This command creates and submits a Batch job. After you create and
+  submit the job, Batch automatically queues, schedules, and executes it.
 
   ## EXAMPLES
 
-  To submit the job with config.json or config.yaml sample config file and name
+  To submit a job with a sample JSON configuration file (config.json) and name
   `projects/foo/locations/us-central1/jobs/bar`, run:
 
     $ {command} projects/foo/locations/us-central1/jobs/bar --config=config.json
 
-    or
+  To submit a job with a sample YAML configuration file (config.yaml) and
+  name projects/foo/locations/us-central1/jobs/bar, run:
 
     $ {command} projects/foo/locations/us-central1/jobs/bar --config=config.yaml
 
-  To submit the job through stdin with json job config and name
+  To submit a job through stdin with a sample job configuration and name
   `projects/foo/locations/us-central1/jobs/bar`, run:
 
     $ {command} projects/foo/locations/us-central1/jobs/bar --config=-
 
       then input json job config via stdin
       {
-        json job config
+        job config
       }
 
-  To submit the job through HereDoc with json job config and name
+  To submit a job through HereDoc with a sample job configuration and name
   `projects/foo/locations/us-central1/jobs/bar`, run:
 
     $ {command} projects/foo/locations/us-central1/jobs/bar --config=- << EOF
 
       {
-        json job config
+        job config
       }
       EOF
+
+  For details about how to define a job's configuration using JSON, see the
+  projects.locations.jobs resource in the Batch API Reference.
+  If you want to define a job's configuration using YAML, convert the JSON
+  syntax to YAML.
   """
-
-  @classmethod
-  def _CreateJobMessage(cls, batch_msgs, config):
-    """Parse with trying YAML then JSON.
-
-    Args:
-         batch_msgs: Batch defined proto message.
-         config: The input config file either in YAML or JSON.
-
-    Returns:
-         Parsed job message from the config file.
-    """
-    try:
-      result = encoding.PyValueToMessage(batch_msgs.Job, yaml.load(config))
-    except (ValueError, AttributeError, yaml.YAMLParseError):
-      try:
-        result = encoding.JsonToMessage(batch_msgs.Job, config)
-      except (ValueError, DecodeError) as e:
-        raise exceptions.Error(
-            'Unable to parse config file: {}'.format(e)
-        )
-    return result

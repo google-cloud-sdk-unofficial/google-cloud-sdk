@@ -475,7 +475,7 @@ class Run(base.Command):
 
     if poll_result and poll_result.exitInfo and poll_result.exitInfo.exitCode:
       if poll_result.exitInfo.error:
-        log.error('Error message: {}', poll_result.exitInfo.error)
+        log.error('Error message: {}'.format(poll_result.exitInfo.error))
       log.error('Command exit code: {}'.format(poll_result.exitInfo.exitCode))
       exit(poll_result.exitInfo.exitCode)
 

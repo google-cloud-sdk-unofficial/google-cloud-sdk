@@ -35,6 +35,10 @@ are attached to any other instances or the `--keep-disks` flag is given and \
 specifies them for keeping. \
 Deleting a disk is irreversible and any data on the disk will be lost."""
 
+# During delete, graceful shutdown can take up to 60 minutes to complete, we
+# are setting timeout to `70` minutes to give some space for delete operation
+# to complete gracefully
+_TIMEOUT_IN_SEC = 60 * 70
 
 AUTO_DELETE_OVERRIDE_CHOICES = {
     'boot': 'The first partition is reserved for the root filesystem.',
@@ -209,7 +213,9 @@ class Delete(base.DeleteCommand):
         errors = []
         client.MakeRequests(
             requests=set_auto_delete_requests,
-            errors_to_collect=errors)
+            errors_to_collect=errors,
+            timeout=_TIMEOUT_IN_SEC,
+        )
         if errors:
           utils.RaiseToolException(
               errors,
@@ -229,6 +235,6 @@ class Delete(base.DeleteCommand):
       delete_requests.append((client.apitools_client.instances, 'Delete',
                               request_protobuf))
 
-    return client.MakeRequests(delete_requests)
+    return client.MakeRequests(delete_requests, timeout=_TIMEOUT_IN_SEC)
 
 Delete.detailed_help = DETAILED_HELP

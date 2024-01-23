@@ -21,7 +21,6 @@ from __future__ import unicode_literals
 import threading
 
 from googlecloudsdk.api_lib.workstations import workstations
-from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.workstations import flags as workstations_flags
 
@@ -57,6 +56,7 @@ class Start(base.Command):
   def Args(parser):
     workstations_flags.AddWorkstationResourceArg(parser)
     workstations_flags.AddPortField(parser)
+    workstations_flags.AddLocalHostPortField(parser)
     workstations_flags.AddCommandField(parser)
     workstations_flags.AddSshArgsAndUserField(parser)
 
@@ -65,7 +65,6 @@ class Start(base.Command):
 
   def Run(self, args):
     # Format arguments for StartTcpTunnel
-    args.local_host_port = arg_parsers.HostPort('localhost', '0')
     args.workstation_port = args.port
 
     client = workstations.Workstations(self.ReleaseTrack())

@@ -21,3 +21,6 @@
       required: true
       help_text: |
         Relative resource name of the operation, of the format: organizations/<organizationID>/locations/<location>/operations/<operationID>.
+
+  output:
+    format: yaml

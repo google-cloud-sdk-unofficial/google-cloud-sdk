@@ -1,8 +1,8 @@
-- release_tracks: [ALPHA]
+- release_tracks: [ALPHA, GA]
   help_text:
     brief: Describe a Cloud Security Command Center (SCC) posture deployment.
     description: |
-      Describe a  Cloud Security Command Center (SCC) posture deployment.
+      Describe a Cloud Security Command Center (SCC) posture deployment.
 
     examples: |
       To describe posture deployment `organizations/123/locations/global/postureDeployments/posture-deployment-foo-1`
@@ -11,17 +11,19 @@
 
               $ {command} organizations/123/locations/global/postureDeployments/posture-deployment-foo-1
 
+              or, run:
+
+              $ {command} posture-deployment-foo-1 --organization=123 --location=global
+
   request:
     collection: securityposture.organizations.locations.postureDeployments
-    disable_resource_check: true
     api_version: v1alpha
     method: get
+    GA:
+      api_version: v1
 
   arguments:
-    params:
-    - arg_name: posture_deployment_name
-      api_field: name
-      is_positional: true
-      required: true
+    resource:
+      spec: !REF googlecloudsdk.command_lib.scc.resources:posture_deployment
       help_text: |
-        Relative resource name of the posture deployment, like `organizations/<organizationID>/locations/<location>/postureDeployments/<postureDeploymentID>`.
+          The posture deployment to describe. For example organizations/<organizationID>/locations/<location>/postureDeployments/<postureDeploymentID>.

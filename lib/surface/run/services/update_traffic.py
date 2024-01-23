@@ -127,7 +127,6 @@ class AdjustTraffic(base.Command):
         config_changes.SetLaunchStageAnnotationChange(self.ReleaseTrack()))
 
     is_managed = platforms.GetPlatform() == platforms.PLATFORM_MANAGED
-    use_wait = is_managed and self.ReleaseTrack() != base.ReleaseTrack.GA
     with serverless_operations.Connect(conn_context) as client:
       deployment_stages = stages.UpdateTrafficStages()
       try:
@@ -141,7 +140,6 @@ class AdjustTraffic(base.Command):
               changes,
               tracker,
               args.async_,
-              use_wait=use_wait,
           )
       except:
         serv = client.GetService(service_ref)

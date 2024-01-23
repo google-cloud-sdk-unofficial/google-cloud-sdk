@@ -236,6 +236,7 @@ class Deploy(base.Command):
         job = operations.DeployJob(
             job_ref,
             changes,
+            self.ReleaseTrack(),
             tracker,
             asyn=(args.async_ and not execute_now),
             build_image=image,

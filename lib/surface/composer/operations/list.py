@@ -27,9 +27,10 @@ from googlecloudsdk.command_lib.composer import resource_args
 DETAILED_HELP = {
     'EXAMPLES':
         """\
-          To list the environment operations, run:
+          To list the environment operations in locations ``us-central1'' and
+          ``europe-west3'', run:
 
-            $ {command}
+            $ {command} --locations=us-central1,europe-west3
         """
 }
 

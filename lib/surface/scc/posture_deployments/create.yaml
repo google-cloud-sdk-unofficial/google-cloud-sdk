@@ -1,4 +1,5 @@
-- release_tracks: [ALPHA]
+- release_tracks: [ALPHA, GA]
+  command_type: GENERIC
   help_text:
     brief: Create a Cloud Security Command Center (SCC) posture deployment.
     description: |
@@ -6,34 +7,25 @@
       be created. Second argument is the name of the posture deployment to be created. It is followed by details of the posture to be deployed and the target_resource to be deployed on.
 
       LRO operation ID is returned as the response of the command.
-    example: |
+    examples: |
      Create a posture deployment named `posture-deployment-foo-1` within parent `organizations/123/locations/global`(i.e. a posture-deployment in organization `123`, location `global`, with id `posture-deployment-foo-1`, which deploys posture `organizations/123/locations/foo-posture` with revision-id `foo-posture-revision-id`):
 
         $ {command} organizations/123/locations/global posture-deployment-foo-1 --posture-name=organizations/123/locations/global/foo-posture --posture-revision-id=foo-posture-revision-id
 
   request:
     collection: securityposture.organizations.locations.postureDeployments
-    disable_resource_check: true
     api_version: v1alpha
     method: create
+    GA:
+      api_version: v1
 
   arguments:
+    resource:
+      spec: !REF googlecloudsdk.command_lib.scc.resources:posture_deployment
+      help_text: |
+          The name of the posture deployment to be created. For example organizations/<organizationID>/locations/<location>/postureDeployments/<postureDeploymentID>.
+
     params:
-    - arg_name: posture_deployment_parent
-      api_field: parent
-      is_positional: true
-      required: true
-      help_text: |
-        Name of the organization of the workload where posture-deployment is to be created. Format:
-        organizations/<organizationID>/locations/<location>
-
-    - arg_name: posture_deployment_id
-      api_field: postureDeploymentId
-      is_positional: true
-      required: true
-      help_text: |
-         Name of the posture deployment to be created. It has to be unique for an organization.
-
     - arg_name: posture-name
       api_field: postureDeployment.postureId
       required: true
@@ -65,3 +57,7 @@
 
   async:
     collection: securityposture.organizations.locations.operations
+    extract_resource_result: false
+
+  output:
+    format: yaml

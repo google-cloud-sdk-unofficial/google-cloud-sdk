@@ -53,7 +53,7 @@ BUILDER_18 = frozenset({
     # 'ruby30',
     # 'php81',
 })
-# LINT.ThenChange(../../tests/unit/command_lib/run/functions_test.py)
+# LINT.ThenChange(../../tests/unit/command_lib/run/sourcedeploys/builders_test.py)
 
 
 def FunctionBuilder(base_image: str) -> str:
