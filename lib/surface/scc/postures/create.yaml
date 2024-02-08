@@ -2,16 +2,16 @@
   help_text:
     brief: Create a Cloud Security Command Center (SCC) posture.
     description: |
-      Create a Cloud Security Command Center (SCC) posture. First argument is the parent of the posture to
-      be created. Second argument is the name of the posture to be created. The posture details are
-      provided in YAML file. The file path is mentioned in `posture-from-file` flag.
+      Create a Cloud Security Command Center (SCC) posture. First argument consists of the parent
+      and name of the posture to be created. The posture details are provided in YAML file. The file
+      path is mentioned in `--posture-from-file` flag.
 
       Created posture is returned as the response of the command. LRO operation ID is printed as the
       standard output.
     examples: |
-     Create a posture named `posture-foo-1` within parent `organizations/123/locations/global`(i.e. a posture in organization `123`, location `global`, with id `posture-foo-1`):
+     Create a posture named `posture-foo-1` within parent `organizations/123/locations/global`(i.e. a posture in organization `123`, location `global`, with ID `posture-foo-1`):
 
-        $ {command} organizations/123/locations/global posture-foo-1 --posture-from-file=posture.yaml
+        $ {command} organizations/123/locations/global/postures/posture-foo-1 --posture-from-file=posture.yaml
 
   request:
     collection: securityposture.organizations.locations.postures

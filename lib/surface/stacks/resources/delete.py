@@ -51,6 +51,7 @@ class Delete(base.Command):
       parser: An argparse.ArgumentParser.
     """
     flags.AddNamePositionalArg(parser)
+    flags.AddServiceAccountArg(parser)
 
   def Run(self, args):
     """Delete a Stacks resource."""

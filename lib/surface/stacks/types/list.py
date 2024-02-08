@@ -56,6 +56,6 @@ class List(base.ListCommand):
     with run_apps_operations.Connect(args, release_track) as client:
       # Output is sorted by the type name to guarantee the same ordering
       # for scenario tests.
-      result = sorted(client.ListIntegrationTypes(),
+      result = sorted(client.ListIntegrationTypes(include_workload=True),
                       key=lambda t: t.integration_type)
       return list(result)

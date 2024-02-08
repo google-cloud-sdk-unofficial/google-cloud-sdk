@@ -47,6 +47,7 @@ class Apply(base.Command):
   @classmethod
   def Args(cls, parser):
     flags.AddFileArg(parser)
+    flags.AddServiceAccountArg(parser)
 
   def _ValidateAppConfigFile(self, file_content):
     if 'name' not in file_content and 'resources' not in file_content:

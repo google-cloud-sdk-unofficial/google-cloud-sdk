@@ -107,12 +107,6 @@ class GetEffectivePolicy(base.Command):
       log.status.Print(' Services:')
       for service in enable_rule.services:
         log.status.Print('  - %s' % service)
-      log.status.Print(' Categories:')
-      for category in enable_rule.categories:
-        log.status.Print('  - %s' % category)
-      log.status.Print(' Groups:')
-      for group in enable_rule.groups:
-        log.status.Print('  - %s' % group)
 
     if args.view == 'FULL':
       log.status.Print('\nMetadata of effective policy:')

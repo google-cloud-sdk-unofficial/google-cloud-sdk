@@ -36,8 +36,8 @@ class ListRoutePolicies(base.ListCommand):
 
   ROUTER_ARG = None
 
-  @staticmethod
-  def Args(parser):
+  @classmethod
+  def Args(cls, parser):
     ListRoutePolicies.ROUTER_ARG = flags.RouterArgument()
     ListRoutePolicies.ROUTER_ARG.AddArgument(parser, operation_type='list')
     parser.display_info.AddCacheUpdater(flags.RoutersCompleter)

@@ -35,8 +35,8 @@ class GetRoutePolicy(base.DescribeCommand):
 
   ROUTER_ARG = None
 
-  @staticmethod
-  def Args(parser):
+  @classmethod
+  def Args(cls, parser):
     GetRoutePolicy.ROUTER_ARG = flags.RouterArgument()
     GetRoutePolicy.ROUTER_ARG.AddArgument(parser, operation_type='get')
     parser.add_argument(

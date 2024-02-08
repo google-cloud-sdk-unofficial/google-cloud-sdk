@@ -28,8 +28,8 @@ from googlecloudsdk.command_lib.compute.routers import flags
 class List(base.ListCommand):
   """List Compute Engine routers."""
 
-  @staticmethod
-  def Args(parser):
+  @classmethod
+  def Args(cls, parser):
     parser.display_info.AddFormat(flags.DEFAULT_LIST_FORMAT)
     lister.AddRegionsArg(parser)
     parser.display_info.AddCacheUpdater(flags.RoutersCompleter)

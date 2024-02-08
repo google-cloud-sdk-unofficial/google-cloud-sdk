@@ -19,7 +19,9 @@ from __future__ import division
 from __future__ import unicode_literals
 
 import datetime
+
 from googlecloudsdk.api_lib.securesourcemanager import instances
+from googlecloudsdk.api_lib.services import exceptions
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.source_manager import flags
 from googlecloudsdk.command_lib.source_manager import resource_args
@@ -68,12 +70,24 @@ class Create(base.CreateCommand):
     # Get a long-running operation for this creation
     client = instances.InstancesClient()
     instance = args.CONCEPTS.instance.Parse()
-    operation = client.Create(
-        instance_ref=instance,
-        kms_key=kms_key,
-        is_private=is_private,
-        ca_pool=ca_pool,
-    )
+
+    try:
+      operation = client.Create(
+          instance_ref=instance,
+          kms_key=kms_key,
+          is_private=is_private,
+          ca_pool=ca_pool,
+      )
+    except exceptions.EnableServicePermissionDeniedException:
+      # Display a message indicating the special invitation only status of SSM
+      # upon failure to enable the service.
+      log.warning(
+          'Secure Source Manager API (securesourcemanager.googleapis.com) has'
+          ' not been enabled on the project. Secure Source Manager is generally'
+          ' available (GA) by invitation only. To use Secure Source Manager,'
+          ' you may need to contact your Google Account team.'
+      )
+      raise
 
     log.status.Print('Create request issued for [{}].'
                      .format(instance.instancesId))
@@ -93,5 +107,6 @@ class Create(base.CreateCommand):
         .format(
             client.GetOperationRef(operation).RelativeName()),
         max_wait=max_wait)
+
 
 Create.detailed_help = DETAILED_HELP

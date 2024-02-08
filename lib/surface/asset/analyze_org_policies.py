@@ -108,8 +108,6 @@ class AnalyzeOrgPoliciesBeta(AnalyzeOrgPolicies):
     return client.AnalyzeOrgPolicies(args)
 
 
-# TODO(b/294131253): remove Hidden label once we are ready to launch.
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class AnalyzeOrgPoliciesGA(AnalyzeOrgPolicies):
   """Analyze organization policies under a scope."""

@@ -89,6 +89,30 @@
       "limit_key": "MaxRecords",
       "output_token": "Marker",
       "result_key": "GlobalReplicationGroups"
+    },
+    "DescribeUserGroups": {
+      "input_token": "Marker",
+      "limit_key": "MaxRecords",
+      "output_token": "Marker",
+      "result_key": "UserGroups"
+    },
+    "DescribeUsers": {
+      "input_token": "Marker",
+      "limit_key": "MaxRecords",
+      "output_token": "Marker",
+      "result_key": "Users"
+    },
+    "DescribeServerlessCacheSnapshots": {
+      "input_token": "NextToken",
+      "limit_key": "MaxResults",
+      "output_token": "NextToken",
+      "result_key": "ServerlessCacheSnapshots"
+    },
+    "DescribeServerlessCaches": {
+      "input_token": "NextToken",
+      "limit_key": "MaxResults",
+      "output_token": "NextToken",
+      "result_key": "ServerlessCaches"
     }
   }
 }

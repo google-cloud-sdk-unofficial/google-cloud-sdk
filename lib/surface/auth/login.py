@@ -240,7 +240,16 @@ class Login(base.Command):
         ),
     )
     parser.add_argument(
-        'account', nargs='?', help='User account used for authorization.'
+        'account',
+        nargs='?',
+        help=(
+            'User account used for authorization. When the account specified '
+            'has valid credentials in the local credential store these '
+            'credentials will be re-used, otherwise a new credential will be '
+            'fetched. If you need to fetch a new credential for an account '
+            'with valid credentials stored, run the command with the --force '
+            'flag.'
+        )
     )
     parser.add_argument(
         '--cred-file',

@@ -25,14 +25,14 @@
     resource:
       spec: !REF googlecloudsdk.command_lib.scc.resources:posture
       help_text: |
-          The posture to describe. For example organizations/<organizationID>/locations/<location>/postures/<postureID>.
+          The posture to be described. For example organizations/<organizationID>/locations/<location>/postures/<postureID>.
 
     params:
     - arg_name: revision-id
       api_field: revisionId
       required: false
       help_text: |
-        ID of the specific posture revision to describe. If not specified, latest revision is described.
+        ID of the specific posture revision to described. If not specified, latest revision is described.
 
   output:
     format: yaml

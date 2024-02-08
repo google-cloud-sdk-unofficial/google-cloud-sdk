@@ -12,13 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Google Cloud namespace package."""
-
-try:
-    import pkg_resources
-
-    pkg_resources.declare_namespace(__name__)
-except ImportError:
-    import pkgutil
-
-    __path__ = pkgutil.extend_path(__path__, __name__)  # type: ignore
+# NOTE: This file still exists explicitly in google3 because usages of
+# "from google import cloud" need the file to make strict deps work when the
+# targets depend on "//third_party/py/google/cloud:core" (:core globs "*.py").

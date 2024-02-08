@@ -24,3 +24,8 @@
         If not specified, the value of the [compute/zone] property in the current gcloud configuration is used.
 
       spec: !REF googlecloudsdk.command_lib.migration.vms.resources:locationDefaultGlobal
+
+      removed_flags: [location]
+
+  output:
+    format: table(name, project, createTime)

@@ -1,5 +1,4 @@
 - release_tracks: [GA]
-  hidden: true
   help_text:
     brief: |
       Demote a destination of a Database Migration Service migration job.

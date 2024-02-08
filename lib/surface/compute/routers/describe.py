@@ -34,8 +34,8 @@ class Describe(base.DescribeCommand):
 
   ROUTERS_ARG = None
 
-  @staticmethod
-  def Args(parser):
+  @classmethod
+  def Args(cls, parser):
     Describe.ROUTERS_ARG = flags.RouterArgument()
     Describe.ROUTERS_ARG.AddArgument(parser, operation_type='describe')
 

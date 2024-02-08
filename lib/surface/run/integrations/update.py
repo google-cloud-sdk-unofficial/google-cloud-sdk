@@ -56,6 +56,7 @@ class Update(base.Command):
     flags.AddNamePositionalArg(parser)
     flags.AddServiceUpdateArgs(parser)
     flags.AddParametersArg(parser)
+    flags.AddServiceAccountArg(parser)
 
   def Run(self, args):
     """Update a Cloud Run Integration."""

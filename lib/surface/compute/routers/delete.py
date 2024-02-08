@@ -36,8 +36,8 @@ class Delete(base.DeleteCommand):
 
   ROUTER_ARG = None
 
-  @staticmethod
-  def Args(parser):
+  @classmethod
+  def Args(cls, parser):
     Delete.ROUTER_ARG = flags.RouterArgument(plural=True)
     Delete.ROUTER_ARG.AddArgument(parser, operation_type='delete')
     parser.display_info.AddCacheUpdater(flags.RoutersCompleter)

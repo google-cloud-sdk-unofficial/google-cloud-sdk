@@ -59,6 +59,42 @@
       "limit_key": "maxResults",
       "output_token": "nextToken",
       "result_key": "batchInferenceJobs"
+    },
+    "ListDatasetExportJobs": {
+      "input_token": "nextToken",
+      "limit_key": "maxResults",
+      "output_token": "nextToken",
+      "result_key": "datasetExportJobs"
+    },
+    "ListFilters": {
+      "input_token": "nextToken",
+      "limit_key": "maxResults",
+      "output_token": "nextToken",
+      "result_key": "Filters"
+    },
+    "ListBatchSegmentJobs": {
+      "input_token": "nextToken",
+      "limit_key": "maxResults",
+      "output_token": "nextToken",
+      "result_key": "batchSegmentJobs"
+    },
+    "ListRecommenders": {
+      "input_token": "nextToken",
+      "limit_key": "maxResults",
+      "output_token": "nextToken",
+      "result_key": "recommenders"
+    },
+    "ListMetricAttributionMetrics": {
+      "input_token": "nextToken",
+      "limit_key": "maxResults",
+      "output_token": "nextToken",
+      "result_key": "metrics"
+    },
+    "ListMetricAttributions": {
+      "input_token": "nextToken",
+      "limit_key": "maxResults",
+      "output_token": "nextToken",
+      "result_key": "metricAttributions"
     }
   }
 }

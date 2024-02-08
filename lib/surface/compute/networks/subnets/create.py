@@ -53,7 +53,6 @@ def _AddArgs(
     include_alpha_logging,
     include_aggregate_purpose,
     include_l2,
-    include_reserved_internal_range,
     include_external_ipv6_prefix,
     api_version,
 ):
@@ -72,7 +71,6 @@ def _AddArgs(
 
   parser.add_argument(
       '--range',
-      required=not include_reserved_internal_range,
       help='The IP space allocated to this subnetwork in CIDR format.')
 
   parser.add_argument(
@@ -261,42 +259,36 @@ def _AddArgs(
         Specifies ID of the vlan to tag the subnetwork.
         """)
 
-  if include_reserved_internal_range:
-    parser.add_argument(
-        '--reserved-internal-range',
-        help=("""
-        If set, the primary IP range of the subnetwork will be
-        associated with the given InternalRange resource.
-
-        If --range is set, the subnetwork will only use the given IP range.
-        It has to be contained by the IP range defined by the InternalRange resource.
-
-        For example,
-        --range=10.0.0.0/24
-        --reserved-internal-range //networkconnectivity.googleapis.com/projects/PROJECT/locations/global/internalRanges/RANGE
-
-        If --range is not set, the subnetwork will use the entire IP range
-        defined by the InternalRange resource.
-
-        For example, `--reserved-internal-range //networkconnectivity.googleapis.com/projects/PROJECT/locations/global/internalRanges/RANGE`
-
-        """))
-    parser.add_argument(
-        '--secondary-range-with-reserved-internal-range',
-        type=arg_parsers.ArgDict(min_length=1),
-        action='append',
-        metavar='RANGE_NAME=INTERNAL_RANGE_URL',
-        help="""\
-         Adds secondary IP ranges that are associated with InternalRange
-         resources.
-
-         For example, `--secondary-range-with-reserved-internal-range
-         range1=//networkconnectivity.googleapis.com/projects/PROJECT/locations/global/internalRanges/RANGE`
-         adds a secondary range with the reserved internal range resource.
-
-         * `RANGE_NAME` - Name of the secondary range.
-         * `INTERNAL_RANGE_URL` - `URL of an InternalRange resource.`
-        """)
+  parser.add_argument(
+      '--reserved-internal-range',
+      help=("""
+      If set, the primary IP range of the subnetwork will be
+      associated with the given internal range resource.
+      If --range is set, the subnetwork will only use the given IP range,
+      which must be contained by the IP range defined by the internal range resource.
+      For example,
+      --range=10.0.0.0/24
+      --reserved-internal-range //networkconnectivity.googleapis.com/projects/PROJECT/locations/global/internalRanges/RANGE
+      If --range is not set, the subnetwork will use the entire IP range
+      defined by the internal range resource.
+      For example, `--reserved-internal-range //networkconnectivity.googleapis.com/projects/PROJECT/locations/global/internalRanges/RANGE`
+      """),
+  )
+  parser.add_argument(
+      '--secondary-range-with-reserved-internal-range',
+      type=arg_parsers.ArgDict(min_length=1),
+      action='append',
+      metavar='RANGE_NAME=INTERNAL_RANGE_URL',
+      help="""\
+       Adds secondary IP ranges that are associated with internal range
+       resources.
+       For example, `--secondary-range-with-reserved-internal-range
+       range1=//networkconnectivity.googleapis.com/projects/PROJECT/locations/global/internalRanges/RANGE`
+       adds a secondary range with the reserved internal range resource.
+       * `RANGE_NAME` - Name of the secondary range.
+       * `INTERNAL_RANGE_URL` - `URL of an internal range resource.`
+      """,
+  )
 
   if include_external_ipv6_prefix:
     parser.add_argument(
@@ -332,7 +324,6 @@ def _CreateSubnetwork(
     include_alpha_logging,
     include_aggregate_purpose,
     include_l2,
-    include_reserved_internal_range,
     include_external_ipv6_prefix,
 ):
   """Create the subnet resource."""
@@ -432,9 +423,8 @@ def _CreateSubnetwork(
     if args.vlan is not None:
       subnetwork.vlans.append(args.vlan)
 
-  if include_reserved_internal_range:
-    if args.reserved_internal_range:
-      subnetwork.reservedInternalRange = args.reserved_internal_range
+  if args.reserved_internal_range:
+    subnetwork.reservedInternalRange = args.reserved_internal_range
 
   if include_external_ipv6_prefix:
     if args.external_ipv6_prefix:
@@ -449,7 +439,6 @@ def _Run(
     include_alpha_logging,
     include_aggregate_purpose,
     include_l2,
-    include_reserved_internal_range,
     include_external_ipv6_prefix,
 ):
   """Issues a list of requests necessary for adding a subnetwork."""
@@ -471,7 +460,6 @@ def _Run(
       include_alpha_logging,
       include_aggregate_purpose,
       include_l2,
-      include_reserved_internal_range,
       include_external_ipv6_prefix,
   )
   request = client.messages.ComputeSubnetworksInsertRequest(
@@ -479,13 +467,11 @@ def _Run(
       region=subnet_ref.region,
       project=subnet_ref.project)
 
-  if include_reserved_internal_range:
-    secondary_ranges = subnets_utils.CreateSecondaryRanges(
-        client, args.secondary_range,
-        args.secondary_range_with_reserved_internal_range)
-  else:
-    secondary_ranges = subnets_utils.CreateSecondaryRanges(
-        client, args.secondary_range, None)
+  secondary_ranges = subnets_utils.CreateSecondaryRanges(
+      client,
+      args.secondary_range,
+      args.secondary_range_with_reserved_internal_range,
+  )
 
   request.subnetwork.secondaryIpRanges = secondary_ranges
   return client.MakeRequests([(client.apitools_client.subnetworks, 'Insert',
@@ -499,7 +485,6 @@ class Create(base.CreateCommand):
   _include_alpha_logging = False
   _include_aggregate_purpose = False
   _include_l2 = False
-  _include_reserved_internal_range = False
   _include_external_ipv6_prefix = False
   _api_version = compute_api.COMPUTE_GA_API_VERSION
 
@@ -512,7 +497,6 @@ class Create(base.CreateCommand):
         cls._include_alpha_logging,
         cls._include_aggregate_purpose,
         cls._include_l2,
-        cls._include_reserved_internal_range,
         cls._include_external_ipv6_prefix,
         cls._api_version,
     )
@@ -526,7 +510,6 @@ class Create(base.CreateCommand):
         self._include_alpha_logging,
         self._include_aggregate_purpose,
         self._include_l2,
-        self._include_reserved_internal_range,
         self._include_external_ipv6_prefix,
     )
 
@@ -535,7 +518,6 @@ class Create(base.CreateCommand):
 class CreateBeta(Create):
   """Create a subnet in the Beta release track."""
 
-  _include_reserved_internal_range = True
   _api_version = compute_api.COMPUTE_BETA_API_VERSION
 
 

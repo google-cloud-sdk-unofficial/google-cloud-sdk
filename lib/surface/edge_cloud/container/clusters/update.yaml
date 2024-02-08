@@ -55,6 +55,14 @@
                 An [RFC 5545](https://tools.ietf.org/html/rfc5545#section-3.8.5.3)
                 recurrence rule for how the cluster maintenance window recurs. They go
                 on for the span of time between the start and the end time. E.g. FREQ=WEEKLY;BYDAY=SU.
+    - arg_name: release-channel
+      api_field: cluster.releaseChannel
+      repeated: false
+      help_text: |
+        Release channel a cluster is subscribed to. It supports two values, NONE and REGULAR. NONE
+        is used to opt out of any release channel. Clusters subscribed to the REGULAR channel will
+        be automatically upgraded to versions that are considered GA quality, and cannot be manually
+        upgraded.
 
   response:
     modify_response_hooks:

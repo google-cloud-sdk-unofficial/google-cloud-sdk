@@ -28,12 +28,15 @@ from googlecloudsdk.command_lib.util.args import labels_util
 from googlecloudsdk.core import log
 
 
-def _Args(parser, enable_push_to_cps=False):
+def _Args(
+    parser, enable_push_to_cps=False, enable_cps_gcs_file_datetime_format=False
+):
   resource_args.AddSubscriptionResourceArg(parser, 'to update.')
   flags.AddSubscriptionSettingsFlags(
       parser,
       is_update=True,
       enable_push_to_cps=enable_push_to_cps,
+      enable_cps_gcs_file_datetime_format=enable_cps_gcs_file_datetime_format,
   )
   labels_util.AddUpdateLabelsFlags(parser)
 
@@ -47,7 +50,12 @@ class Update(base.UpdateCommand):
     _Args(parser)
 
   @exceptions.CatchHTTPErrorRaiseHTTPException()
-  def Run(self, args, enable_push_to_cps=False):
+  def Run(
+      self,
+      args,
+      enable_push_to_cps=False,
+      enable_cps_gcs_file_datetime_format=False,
+  ):
     """This is what gets called when the user runs this command.
 
     Args:
@@ -55,6 +63,8 @@ class Update(base.UpdateCommand):
         command invocation.
       enable_push_to_cps: whether or not to enable Pubsub Export config flags
         support.
+      enable_cps_gcs_file_datetime_format: whether or not to enable GCS file
+        datetime format flags support.
 
     Returns:
       A serialized object (dict) describing the results of the operation. This
@@ -116,6 +126,11 @@ class Update(base.UpdateCommand):
     cloud_storage_bucket = getattr(args, 'cloud_storage_bucket', None)
     cloud_storage_file_prefix = getattr(args, 'cloud_storage_file_prefix', None)
     cloud_storage_file_suffix = getattr(args, 'cloud_storage_file_suffix', None)
+    cloud_storage_file_datetime_format = (
+        getattr(args, 'cloud_storage_file_datetime_format', None)
+        if enable_cps_gcs_file_datetime_format
+        else None
+    )
     cloud_storage_max_bytes = getattr(args, 'cloud_storage_max_bytes', None)
     cloud_storage_max_duration = getattr(
         args, 'cloud_storage_max_duration', None
@@ -178,6 +193,7 @@ class Update(base.UpdateCommand):
           cloud_storage_bucket=cloud_storage_bucket,
           cloud_storage_file_prefix=cloud_storage_file_prefix,
           cloud_storage_file_suffix=cloud_storage_file_suffix,
+          cloud_storage_file_datetime_format=cloud_storage_file_datetime_format,
           cloud_storage_max_bytes=cloud_storage_max_bytes,
           cloud_storage_max_duration=cloud_storage_max_duration,
           cloud_storage_output_format=cloud_storage_output_format,
@@ -207,10 +223,14 @@ class UpdateBeta(Update):
 
   @classmethod
   def Args(cls, parser):
-    _Args(parser, enable_push_to_cps=True)
+    _Args(
+        parser,
+        enable_push_to_cps=True,
+        enable_cps_gcs_file_datetime_format=True,
+    )
 
   @exceptions.CatchHTTPErrorRaiseHTTPException()
   def Run(self, args):
     return super(UpdateBeta, self).Run(
-        args, enable_push_to_cps=True
+        args, enable_push_to_cps=True, enable_cps_gcs_file_datetime_format=True
     )

@@ -145,15 +145,31 @@ class SshGa(base.Command):
             'instancesId': instance,
             'servicesId': service,
         },
-        collection='appengine.apps.services.versions.instances')
+        collection='appengine.apps.services.versions.instances',
+    )
     try:
       instance_resource = api_client.GetInstanceResource(res)
     except apitools_exceptions.HttpNotFoundError:
       raise command_exceptions.MissingInstanceError(res.RelativeName())
-    iap_tunnel_args = iap_tunnel.CreateSshTunnelArgs(args, api_client,
-                                                     self.ReleaseTrack(),
-                                                     project, version_resource,
-                                                     instance_resource)
+    iap_tunnel_args = iap_tunnel.CreateSshTunnelArgs(
+        args,
+        api_client,
+        self.ReleaseTrack(),
+        project,
+        version_resource,
+        instance_resource,
+    )
+    try:
+      filtered_firewall_rules = ssh_common.FilterFirewallRules(
+          ssh_common.FetchFirewallRules()
+      )
+      if not filtered_firewall_rules:
+        log.warning(
+            'No ingress firewall rule that allows ingress to port 22. '
+            'User should add a firewall rule that allows ingress to port 22.'
+        )
+    except apitools_exceptions.NotFoundError:
+      raise log.exception('Unable to fetch firewall rules')
     return ssh.SSHCommand(
         connection_details.remote,
         identity_file=keys.key_file,

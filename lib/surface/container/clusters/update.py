@@ -388,6 +388,7 @@ class Update(base.UpdateCommand):
     flags.AddFleetProjectFlag(group, is_update=True)
     flags.AddInTransitEncryptionFlag(group)
     flags.AddEnableCiliumClusterwideNetworkPolicyFlag(group, is_update=True)
+    flags.AddEnableFqdnNetworkPolicyFlag(group)
 
   def ParseUpdateOptions(self, args, locations):
     get_default = lambda key: getattr(args, key)
@@ -483,6 +484,7 @@ class Update(base.UpdateCommand):
     opts.enable_cilium_clusterwide_network_policy = (
         args.enable_cilium_clusterwide_network_policy
     )
+    opts.enable_fqdn_network_policy = args.enable_fqdn_network_policy
     return opts
 
   def Run(self, args):

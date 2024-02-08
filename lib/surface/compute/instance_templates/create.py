@@ -69,6 +69,7 @@ def _CommonArgs(
     support_maintenance_interval=False,
     support_specific_then_x_affinity=False,
     support_graceful_shutdown=False,
+    support_ipv6_only=False,
 ):
   """Adding arguments applicable for creating instance templates."""
   parser.display_info.AddFormat(instance_templates_flags.DEFAULT_LIST_FORMAT)
@@ -92,6 +93,7 @@ def _CommonArgs(
       instances=False,
       support_network_attachments=support_network_attachments,
       support_network_queue_count=support_network_queue_count,
+      support_ipv6_only=support_ipv6_only,
   )
   instances_flags.AddAcceleratorArgs(parser)
   instances_flags.AddMachineTypeArgs(parser)
@@ -115,7 +117,7 @@ def _CommonArgs(
   instances_flags.AddResourceManagerTagsArgs(parser)
   if support_numa_node_count:
     instances_flags.AddNumaNodeCountArgs(parser)
-  instances_flags.AddStackTypeArgs(parser)
+  instances_flags.AddStackTypeArgs(parser, support_ipv6_only)
   instances_flags.AddIpv6NetworkTierArgs(parser)
   maintenance_flags.AddResourcePoliciesArgs(
       parser, 'added to', 'instance-template'
@@ -1333,6 +1335,7 @@ class CreateAlpha(Create):
   _support_maintenance_interval = True
   _support_specific_then_x_affinity = True
   _support_graceful_shutdown = True
+  _support_ipv6_only = True
 
   @classmethod
   def Args(cls, parser):
@@ -1358,6 +1361,7 @@ class CreateAlpha(Create):
         support_maintenance_interval=cls._support_maintenance_interval,
         support_specific_then_x_affinity=cls._support_specific_then_x_affinity,
         support_graceful_shutdown=cls._support_graceful_shutdown,
+        support_ipv6_only=cls._support_ipv6_only,
     )
     instances_flags.AddLocalNvdimmArgs(parser)
     instances_flags.AddMinCpuPlatformArgs(parser, base.ReleaseTrack.ALPHA)

@@ -4,7 +4,7 @@
     description: |
       Delete a Cloud Security Command Center (SCC) posture.
 
-      Posture with all it's revisions is deleted. Deletion won't be allowed in case any of the versions of the posture is deployed on a workload.
+      Posture with all its revisions is deleted. Deletion won't be allowed in case any of the versions of the posture is deployed on a workload.
       ETAG can be provided as an optional flag.
     examples: |
       Delete the posture named `organizations/123/locations/global/postures/posture-foo-1` (i.e. a posture in organization `123`, location `global`, with id `posture-foo-1`):
@@ -27,7 +27,7 @@
     resource:
       spec: !REF googlecloudsdk.command_lib.scc.resources:posture
       help_text: |
-          The posture to delete. For example organizations/<organizationID>/locations/<location>/postures/<postureID>.
+          The name of the posture to be deleted. For example organizations/<organizationID>/locations/<location>/postures/<postureID>.
 
     params:
     - arg_name: etag

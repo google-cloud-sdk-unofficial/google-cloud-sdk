@@ -4,7 +4,7 @@
     description: |
       List the details of the Cloud Security Command Center (SCC) posture deployments for the specified organization.
     examples: |
-      To list Cloud Security Command Center posture deployments for organization `123`, run:
+      To list Cloud Security Command Center posture deployments for organization `123` in the `global` location, run:
 
         $ {command} organizations/123/locations/global
 

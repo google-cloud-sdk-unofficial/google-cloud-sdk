@@ -71,7 +71,7 @@ class Describe(base.DescribeCommand):
     release_track = self.ReleaseTrack()
     type_name = args.type
     with run_apps_operations.Connect(args, release_track) as client:
-      type_def = client.GetIntegrationTypeDefinition(type_name)
+      type_def = client.GetIntegrationTypeDefinition(type_name, True)
       if not type_def:
         raise exceptions.ArgumentError(
             'Cannot find type [{}]'.format(type_name)

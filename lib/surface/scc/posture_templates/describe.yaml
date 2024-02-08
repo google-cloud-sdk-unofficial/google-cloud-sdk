@@ -25,14 +25,14 @@
     resource:
       spec: !REF googlecloudsdk.command_lib.scc.resources:posture_template
       help_text: |
-          The posture template to describe. For example organizations/<organizationID>/locations/<location>/postureTemplates/<postureTemplateID>.
+          Posture template to be described. For example organizations/<organizationID>/locations/<location>/postureTemplates/<postureTemplateID>.
 
     params:
     - arg_name: revision-id
       api_field: revisionId
       required: false
       help_text: |
-        ID of the specific posture template revision to describe. If not specified, latest revision is described.
+        ID of the specific posture template revision to be described. If not specified, latest revision is described.
 
   output:
     format: yaml

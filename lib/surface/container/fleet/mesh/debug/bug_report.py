@@ -21,7 +21,6 @@ from googlecloudsdk.command_lib.container.fleet.mesh import istioctl_backend
 from googlecloudsdk.core import properties
 
 
-@base.Hidden
 class BugReport(base.BinaryBackedCommand):
   """Capture cluster information and logs into archive to help diagnose problems.
 

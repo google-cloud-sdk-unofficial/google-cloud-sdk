@@ -40,8 +40,8 @@ class DownloadRoutePolicy(base.DescribeCommand):
 
   ROUTER_ARG = None
 
-  @staticmethod
-  def Args(parser):
+  @classmethod
+  def Args(cls, parser):
     DownloadRoutePolicy.ROUTER_ARG = flags.RouterArgument()
     DownloadRoutePolicy.ROUTER_ARG.AddArgument(parser, operation_type='export')
     parser.add_argument(

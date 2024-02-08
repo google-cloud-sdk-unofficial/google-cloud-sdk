@@ -17,11 +17,12 @@
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
-
 from googlecloudsdk.api_lib.container.binauthz import apis
 from googlecloudsdk.api_lib.container.binauthz import platform_policy
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.container.binauthz import flags
+from googlecloudsdk.command_lib.container.binauthz import sigstore_image
+from googlecloudsdk.core import log
 from googlecloudsdk.core.exceptions import Error
 
 
@@ -69,6 +70,15 @@ class EvaluateAndSign(base.Command):
         ).EvaluateGkePolicyResponse.VerdictValueValuesEnum.CONFORMANT
     ):
       self.exit_code = 2
-    # TODO(b/310721968): else upload attestations
+      return response
+
+    # Upload attestations.
+    # TODO(b/310721968): flag gate this.
+    for attestation in response.attestations:
+      image_url = sigstore_image.AttestationToImageUrl(attestation)
+      log.Print('Uploading attestation for {}'.format(image_url))
+      sigstore_image.UploadAttestationToRegistry(
+          image_url, sigstore_image.StandardOrUrlsafeBase64Decode(attestation)
+      )
 
     return response

@@ -37,8 +37,8 @@ class ListBgpRoutes(base.ListCommand):
 
   ROUTER_ARG = None
 
-  @staticmethod
-  def Args(parser):
+  @classmethod
+  def Args(cls, parser):
     ListBgpRoutes.ROUTER_ARG = flags.RouterArgument()
     ListBgpRoutes.ROUTER_ARG.AddArgument(parser, operation_type='list')
     parser.display_info.AddCacheUpdater(flags.RoutersCompleter)

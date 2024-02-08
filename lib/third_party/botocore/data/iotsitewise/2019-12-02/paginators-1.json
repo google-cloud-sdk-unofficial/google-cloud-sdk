@@ -65,6 +65,66 @@
       "output_token": "nextToken",
       "limit_key": "maxResults",
       "result_key": "projectSummaries"
+    },
+    "ListAssetRelationships": {
+      "input_token": "nextToken",
+      "output_token": "nextToken",
+      "limit_key": "maxResults",
+      "result_key": "assetRelationshipSummaries"
+    },
+    "GetInterpolatedAssetPropertyValues": {
+      "input_token": "nextToken",
+      "output_token": "nextToken",
+      "limit_key": "maxResults",
+      "result_key": "interpolatedAssetPropertyValues"
+    },
+    "ListTimeSeries": {
+      "input_token": "nextToken",
+      "output_token": "nextToken",
+      "limit_key": "maxResults",
+      "result_key": "TimeSeriesSummaries"
+    },
+    "ListBulkImportJobs": {
+      "input_token": "nextToken",
+      "output_token": "nextToken",
+      "limit_key": "maxResults",
+      "result_key": "jobSummaries"
+    },
+    "ListAssetModelProperties": {
+      "input_token": "nextToken",
+      "output_token": "nextToken",
+      "limit_key": "maxResults",
+      "result_key": "assetModelPropertySummaries"
+    },
+    "ListAssetProperties": {
+      "input_token": "nextToken",
+      "output_token": "nextToken",
+      "limit_key": "maxResults",
+      "result_key": "assetPropertySummaries"
+    },
+    "ExecuteQuery": {
+      "input_token": "nextToken",
+      "output_token": "nextToken",
+      "limit_key": "maxResults",
+      "result_key": "rows"
+    },
+    "ListActions": {
+      "input_token": "nextToken",
+      "output_token": "nextToken",
+      "limit_key": "maxResults",
+      "result_key": "actionSummaries"
+    },
+    "ListAssetModelCompositeModels": {
+      "input_token": "nextToken",
+      "output_token": "nextToken",
+      "limit_key": "maxResults",
+      "result_key": "assetModelCompositeModelSummaries"
+    },
+    "ListCompositionRelationships": {
+      "input_token": "nextToken",
+      "output_token": "nextToken",
+      "limit_key": "maxResults",
+      "result_key": "compositionRelationshipSummaries"
     }
   }
 }

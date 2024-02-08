@@ -157,18 +157,12 @@ def _Run(args, legacy_output=False):
     raise util.RequestsFailedError(failed, 'create')
 
 
-def _Args(
-    parser,
-    include_ingestion_flags=False,
-    enforce_in_transit_flag_supported=False,
-):
+def _Args(parser, include_ingestion_flags=False):
   """Custom args implementation.
 
   Args:
     parser: The current parser.
     include_ingestion_flags: Whether to include ingestion datasource flags
-    enforce_in_transit_flag_supported: Whether or not to allow the enforce
-      in-transit flag to be set.
   """
 
   resource_args.AddResourceArgs(
@@ -182,11 +176,7 @@ def _Args(
   labels_util.AddCreateLabelsFlags(parser)
   flags.AddTopicMessageRetentionFlags(parser, is_update=False)
 
-  flags.AddTopicMessageStoragePolicyFlags(
-      parser,
-      is_update=False,
-      enforce_in_transit_flag_supported=enforce_in_transit_flag_supported,
-  )
+  flags.AddTopicMessageStoragePolicyFlags(parser, is_update=False)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
@@ -225,8 +215,4 @@ class CreateAlpha(CreateBeta):
 
   @staticmethod
   def Args(parser):
-    _Args(
-        parser,
-        include_ingestion_flags=True,
-        enforce_in_transit_flag_supported=True,
-    )
+    _Args(parser, include_ingestion_flags=True)

@@ -60,6 +60,10 @@ DETAILED_HELP = {'EXAMPLES': """\
           To recompute a Cloud Pub/Sub topic's message storage policy based on your organization's "Resource Location Restriction" policy, run:
 
               $ {command} mytopic --recompute-message-storage-policy
+
+          To enforce both at-rest and in-transit guarantees for messages published to the topic, run:
+
+              $ {command} mytopic --message-storage-policy-allowed-regions=some-cloud-region1,some-cloud-region2 --message-storage-policy-enforce-in-transit
           """}
 
 _KMS_FLAG_OVERRIDES = {
@@ -107,11 +111,7 @@ def _GetKmsKeyNameFromArgs(args):
   return None
 
 
-def _Args(
-    parser,
-    include_ingestion_flags=False,
-    enforce_in_transit_flag_supported=False,
-):
+def _Args(parser, include_ingestion_flags=False):
   """Registers flags for this command."""
   resource_args.AddTopicResourceArg(parser, 'to update.')
   labels_util.AddUpdateLabelsFlags(parser)
@@ -127,11 +127,7 @@ def _Args(
   )
   flags.AddTopicMessageRetentionFlags(parser, is_update=True)
 
-  flags.AddTopicMessageStoragePolicyFlags(
-      parser,
-      is_update=True,
-      enforce_in_transit_flag_supported=enforce_in_transit_flag_supported,
-  )
+  flags.AddTopicMessageStoragePolicyFlags(parser, is_update=True)
 
   flags.AddSchemaSettingsFlags(parser, is_update=True)
   if include_ingestion_flags:
@@ -264,18 +260,7 @@ class UpdateBeta(Update):
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class UpdateAlpha(UpdateBeta):
   """Updates an existing Cloud Pub/Sub topic."""
-  detailed_help = {
-      'EXAMPLES': DETAILED_HELP['EXAMPLES'] + """
-          To enforce both at-rest and in-transit guarantees for messages published to the topic, run:
-
-              $ {command} mytopic --message-storage-policy-allowed-regions=some-cloud-region1,some-cloud-region2 --message-storage-policy-enforce-in-transit
-      """
-  }
 
   @staticmethod
   def Args(parser):
-    _Args(
-        parser,
-        include_ingestion_flags=True,
-        enforce_in_transit_flag_supported=True,
-    )
+    _Args(parser, include_ingestion_flags=True)

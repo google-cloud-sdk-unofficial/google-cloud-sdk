@@ -68,6 +68,8 @@ class Sql(base.Command):
     """
     import_util.AddBaseImportFlags(parser, filetype='MySQL dump')
     flags.AddDatabase(parser, flags.DEFAULT_DATABASE_IMPORT_HELP_TEXT)
+    flags.AddParallelArgument(parser, operation='import')
+    flags.AddThreadsArgument(parser, operation='import')
 
   def Run(self, args):
     """Runs the command to import into the Cloud SQL instance."""

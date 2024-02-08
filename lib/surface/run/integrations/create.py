@@ -58,6 +58,7 @@ class Create(base.Command):
     flags.AddNameArg(parser)
     flags.AddServiceCreateArg(parser)
     flags.AddParametersArg(parser)
+    flags.AddServiceAccountArg(parser)
 
   def Run(self, args):
     """Creates a Cloud Run Integration."""

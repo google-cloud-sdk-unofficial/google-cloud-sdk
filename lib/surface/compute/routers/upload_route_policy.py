@@ -43,8 +43,8 @@ class UploadRoutePolicy(base.SilentCommand):
 
   ROUTER_ARG = None
 
-  @staticmethod
-  def Args(parser):
+  @classmethod
+  def Args(cls, parser):
     UploadRoutePolicy.ROUTER_ARG = flags.RouterArgument()
     UploadRoutePolicy.ROUTER_ARG.AddArgument(parser, operation_type='upload')
     parser.add_argument(

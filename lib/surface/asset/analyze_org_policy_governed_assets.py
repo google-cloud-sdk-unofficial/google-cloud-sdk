@@ -93,8 +93,6 @@ class AnalyzeOrgPolicyGovernedAssets(base.ListCommand):
     return client.AnalyzeOrgPolicyGovernedAssets(args)
 
 
-# TODO(b/294131253): remove Hidden label once we are ready to launch.
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class AnalyzeOrgPolicyGovernedAssetsGA(AnalyzeOrgPolicyGovernedAssets):
   """Analyze organization policies governed assets under a scope."""

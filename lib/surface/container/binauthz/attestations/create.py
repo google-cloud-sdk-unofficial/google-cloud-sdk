@@ -212,6 +212,7 @@ class Create(base.CreateCommand):
           validation_callback=None,
       )
     else:
+      # This code is unreachable since Args() handles this case.
       raise exceptions.InvalidArgumentError(
           'One of --attestor or --note must be provided.'
       )
@@ -233,7 +234,7 @@ class CreateWithPkixSupport(base.CreateCommand):
 
       $ {command} \
           --project=my_proj \
-          --artifact-url='gcr.io/example-project/example-image@sha256:abcd' \
+          --artifact-url=gcr.io/example-project/example-image@sha256:abcd \
           --attestor=projects/foo/attestors/bar \
           --signature-file=signed_artifact_attestation.pgp.sig \
           --public-key-id=AAAA0000000000000000FFFFFFFFFFFFFFFFFFFF
@@ -398,6 +399,7 @@ class CreateWithPkixSupport(base.CreateCommand):
           validation_callback=None,
       )
     else:
+      # This code is unreachable since Args() handles this case.
       raise exceptions.InvalidArgumentError(
           'One of --attestor or --note must be provided.'
       )

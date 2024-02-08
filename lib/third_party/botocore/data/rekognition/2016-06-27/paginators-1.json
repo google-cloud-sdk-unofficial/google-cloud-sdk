@@ -35,6 +35,30 @@
       "limit_key": "MaxResults",
       "output_token": "NextToken",
       "result_key": "ProjectDescriptions"
+    },
+    "ListDatasetEntries": {
+      "input_token": "NextToken",
+      "limit_key": "MaxResults",
+      "output_token": "NextToken",
+      "result_key": "DatasetEntries"
+    },
+    "ListDatasetLabels": {
+      "input_token": "NextToken",
+      "limit_key": "MaxResults",
+      "output_token": "NextToken",
+      "result_key": "DatasetLabelDescriptions"
+    },
+    "ListProjectPolicies": {
+      "input_token": "NextToken",
+      "limit_key": "MaxResults",
+      "output_token": "NextToken",
+      "result_key": "ProjectPolicies"
+    },
+    "ListUsers": {
+      "input_token": "NextToken",
+      "limit_key": "MaxResults",
+      "output_token": "NextToken",
+      "result_key": "Users"
     }
   }
 }

@@ -110,7 +110,9 @@ class Update(base.Command):
     conn_context = connection_context.GetConnectionContext(
         args, flags.Product.RUN, self.ReleaseTrack()
     )
-    changes = flags.GetJobConfigurationChanges(args)
+    changes = flags.GetJobConfigurationChanges(
+        args,
+        release_track=self.ReleaseTrack())
     changes.append(
         config_changes.SetLaunchStageAnnotationChange(self.ReleaseTrack())
     )

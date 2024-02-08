@@ -35,8 +35,8 @@ class RemoveRoutePolicy(base.DeleteCommand):
 
   ROUTER_ARG = None
 
-  @staticmethod
-  def Args(parser):
+  @classmethod
+  def Args(cls, parser):
     RemoveRoutePolicy.ROUTER_ARG = flags.RouterArgument()
     RemoveRoutePolicy.ROUTER_ARG.AddArgument(parser, operation_type='delete')
     parser.add_argument(

@@ -2,16 +2,16 @@
   help_text:
     brief: Extract a Cloud Security Command Center (SCC) posture from a workload.
     description: |
-      Extract a Cloud Security Command Center (SCC) posture from a workload. First argument is the parent
-      of the posture to be created. Second argument is the name of the posture to be created. The workload
-      from where the organization policies need to be extracted is provided via 'workload' flag.
+      Extract a Cloud Security Command Center (SCC) posture from a workload. First argument is the
+      parent and name of the posture to be created. The workload from where the organization
+      policies need to be extracted is provided via '--workload' flag.
 
       Extracted posture is returned as the response of the command. LRO operation ID is printed as the
       standard output.
     examples: |
      Extract a posture named `posture-foo-1` within parent `organizations/123/locations/global`(i.e. a posture in organization `123`, location `global`, with id `posture-foo-1`) from workload `projects/456`:
 
-        $ {command} organizations/123/locations/global posture-foo-1 --workload=projects/456
+        $ {command} organizations/123/locations/global/postures/posture-foo-1 --workload=projects/456
 
   request:
     collection: securityposture.organizations.locations.postures

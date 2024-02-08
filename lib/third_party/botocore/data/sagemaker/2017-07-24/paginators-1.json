@@ -191,6 +191,246 @@
       "output_token": "NextToken",
       "limit_key": "MaxResults",
       "result_key": "UserProfiles"
+    },
+    "ListWorkforces": {
+      "input_token": "NextToken",
+      "output_token": "NextToken",
+      "limit_key": "MaxResults",
+      "result_key": "Workforces"
+    },
+    "ListImageVersions": {
+      "input_token": "NextToken",
+      "output_token": "NextToken",
+      "limit_key": "MaxResults",
+      "result_key": "ImageVersions"
+    },
+    "ListImages": {
+      "input_token": "NextToken",
+      "output_token": "NextToken",
+      "limit_key": "MaxResults",
+      "result_key": "Images"
+    },
+    "ListActions": {
+      "input_token": "NextToken",
+      "output_token": "NextToken",
+      "limit_key": "MaxResults",
+      "result_key": "ActionSummaries"
+    },
+    "ListAppImageConfigs": {
+      "input_token": "NextToken",
+      "output_token": "NextToken",
+      "limit_key": "MaxResults",
+      "result_key": "AppImageConfigs"
+    },
+    "ListArtifacts": {
+      "input_token": "NextToken",
+      "output_token": "NextToken",
+      "limit_key": "MaxResults",
+      "result_key": "ArtifactSummaries"
+    },
+    "ListAssociations": {
+      "input_token": "NextToken",
+      "output_token": "NextToken",
+      "limit_key": "MaxResults",
+      "result_key": "AssociationSummaries"
+    },
+    "ListContexts": {
+      "input_token": "NextToken",
+      "output_token": "NextToken",
+      "limit_key": "MaxResults",
+      "result_key": "ContextSummaries"
+    },
+    "ListFeatureGroups": {
+      "input_token": "NextToken",
+      "output_token": "NextToken",
+      "limit_key": "MaxResults",
+      "result_key": "FeatureGroupSummaries"
+    },
+    "ListModelPackageGroups": {
+      "input_token": "NextToken",
+      "output_token": "NextToken",
+      "limit_key": "MaxResults",
+      "result_key": "ModelPackageGroupSummaryList"
+    },
+    "ListPipelineExecutionSteps": {
+      "input_token": "NextToken",
+      "output_token": "NextToken",
+      "limit_key": "MaxResults",
+      "result_key": "PipelineExecutionSteps"
+    },
+    "ListPipelineExecutions": {
+      "input_token": "NextToken",
+      "output_token": "NextToken",
+      "limit_key": "MaxResults",
+      "result_key": "PipelineExecutionSummaries"
+    },
+    "ListPipelineParametersForExecution": {
+      "input_token": "NextToken",
+      "output_token": "NextToken",
+      "limit_key": "MaxResults",
+      "result_key": "PipelineParameters"
+    },
+    "ListPipelines": {
+      "input_token": "NextToken",
+      "output_token": "NextToken",
+      "limit_key": "MaxResults",
+      "result_key": "PipelineSummaries"
+    },
+    "ListDataQualityJobDefinitions": {
+      "input_token": "NextToken",
+      "output_token": "NextToken",
+      "limit_key": "MaxResults",
+      "result_key": "JobDefinitionSummaries"
+    },
+    "ListDeviceFleets": {
+      "input_token": "NextToken",
+      "output_token": "NextToken",
+      "limit_key": "MaxResults",
+      "result_key": "DeviceFleetSummaries"
+    },
+    "ListDevices": {
+      "input_token": "NextToken",
+      "output_token": "NextToken",
+      "limit_key": "MaxResults",
+      "result_key": "DeviceSummaries"
+    },
+    "ListEdgePackagingJobs": {
+      "input_token": "NextToken",
+      "output_token": "NextToken",
+      "limit_key": "MaxResults",
+      "result_key": "EdgePackagingJobSummaries"
+    },
+    "ListModelBiasJobDefinitions": {
+      "input_token": "NextToken",
+      "output_token": "NextToken",
+      "limit_key": "MaxResults",
+      "result_key": "JobDefinitionSummaries"
+    },
+    "ListModelExplainabilityJobDefinitions": {
+      "input_token": "NextToken",
+      "output_token": "NextToken",
+      "limit_key": "MaxResults",
+      "result_key": "JobDefinitionSummaries"
+    },
+    "ListModelQualityJobDefinitions": {
+      "input_token": "NextToken",
+      "output_token": "NextToken",
+      "limit_key": "MaxResults",
+      "result_key": "JobDefinitionSummaries"
+    },
+    "ListStudioLifecycleConfigs": {
+      "input_token": "NextToken",
+      "output_token": "NextToken",
+      "limit_key": "MaxResults",
+      "result_key": "StudioLifecycleConfigs"
+    },
+    "ListInferenceRecommendationsJobs": {
+      "input_token": "NextToken",
+      "output_token": "NextToken",
+      "limit_key": "MaxResults",
+      "result_key": "InferenceRecommendationsJobs"
+    },
+    "ListLineageGroups": {
+      "input_token": "NextToken",
+      "output_token": "NextToken",
+      "limit_key": "MaxResults",
+      "result_key": "LineageGroupSummaries"
+    },
+    "ListModelMetadata": {
+      "input_token": "NextToken",
+      "output_token": "NextToken",
+      "limit_key": "MaxResults",
+      "result_key": "ModelMetadataSummaries"
+    },
+    "ListEdgeDeploymentPlans": {
+      "input_token": "NextToken",
+      "output_token": "NextToken",
+      "limit_key": "MaxResults",
+      "result_key": "EdgeDeploymentPlanSummaries"
+    },
+    "ListStageDevices": {
+      "input_token": "NextToken",
+      "output_token": "NextToken",
+      "limit_key": "MaxResults",
+      "result_key": "DeviceDeploymentSummaries"
+    },
+    "ListInferenceRecommendationsJobSteps": {
+      "input_token": "NextToken",
+      "output_token": "NextToken",
+      "limit_key": "MaxResults",
+      "result_key": "Steps"
+    },
+    "ListInferenceExperiments": {
+      "input_token": "NextToken",
+      "output_token": "NextToken",
+      "limit_key": "MaxResults",
+      "result_key": "InferenceExperiments"
+    },
+    "ListModelCardExportJobs": {
+      "input_token": "NextToken",
+      "output_token": "NextToken",
+      "limit_key": "MaxResults",
+      "result_key": "ModelCardExportJobSummaries"
+    },
+    "ListModelCardVersions": {
+      "input_token": "NextToken",
+      "output_token": "NextToken",
+      "limit_key": "MaxResults",
+      "result_key": "ModelCardVersionSummaryList"
+    },
+    "ListModelCards": {
+      "input_token": "NextToken",
+      "output_token": "NextToken",
+      "limit_key": "MaxResults",
+      "result_key": "ModelCardSummaries"
+    },
+    "ListMonitoringAlertHistory": {
+      "input_token": "NextToken",
+      "output_token": "NextToken",
+      "limit_key": "MaxResults",
+      "result_key": "MonitoringAlertHistory"
+    },
+    "ListMonitoringAlerts": {
+      "input_token": "NextToken",
+      "output_token": "NextToken",
+      "limit_key": "MaxResults",
+      "result_key": "MonitoringAlertSummaries"
+    },
+    "ListSpaces": {
+      "input_token": "NextToken",
+      "output_token": "NextToken",
+      "limit_key": "MaxResults",
+      "result_key": "Spaces"
+    },
+    "ListAliases": {
+      "input_token": "NextToken",
+      "output_token": "NextToken",
+      "limit_key": "MaxResults",
+      "result_key": "SageMakerImageVersionAliases"
+    },
+    "ListResourceCatalogs": {
+      "input_token": "NextToken",
+      "output_token": "NextToken",
+      "limit_key": "MaxResults",
+      "result_key": "ResourceCatalogs"
+    },
+    "ListClusterNodes": {
+      "input_token": "NextToken",
+      "output_token": "NextToken",
+      "limit_key": "MaxResults",
+      "result_key": "ClusterNodeSummaries"
+    },
+    "ListClusters": {
+      "input_token": "NextToken",
+      "output_token": "NextToken",
+      "limit_key": "MaxResults",
+      "result_key": "ClusterSummaries"
+    },
+    "ListInferenceComponents": {
+      "input_token": "NextToken",
+      "output_token": "NextToken",
+      "limit_key": "MaxResults",
+      "result_key": "InferenceComponents"
     }
   }
 }

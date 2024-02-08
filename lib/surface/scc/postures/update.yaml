@@ -68,7 +68,7 @@
     resource:
       spec: !REF googlecloudsdk.command_lib.scc.resources:posture
       help_text: |
-          Arguments and flags that specify the Posture instance to update.
+          Arguments and flags that specify the Posture instance to be updated.
 
     params:
     - arg_name: posture-from-file

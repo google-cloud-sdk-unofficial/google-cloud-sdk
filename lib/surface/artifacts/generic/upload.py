@@ -107,12 +107,6 @@ class Upload(base.Command):
 
     source_dir = args.source_directory
     source_file = args.source
-    destination = args.destination_path
-
-    if source_dir and destination:
-      raise ar_exceptions.InvalidInputValueError(
-          'Cannot specify both --source-dir and --destination-path.'
-      )
 
     if source_dir and args.async_:
       raise ar_exceptions.InvalidInputValueError(
@@ -149,18 +143,23 @@ class Upload(base.Command):
     # take the last portion of the file path as the the file name.
     # ie. file path is folder1/folder2/file.txt, the file name is file.txt
     if args.source:
+      file_name = os.path.basename(file_path)
       if args.destination_path:
         path = os.path.normpath(args.destination_path)
         file_name = os.path.join(path, os.path.basename(file_path))
-      else:
-        file_name = os.path.basename(file_path)
     else:
       # ie: "/usr/Desktop/test_generic_folder"
       # remove the prefix from the full file path
       # /usr/Desktop/test_generic_folder/test.txt
       # to get 'test.txt'
       file_name = file_path[len(args.source_directory)+1:]
+      if args.destination_path:
+        path = os.path.normpath(args.destination_path)
+        file_name = os.path.join(path, file_name)
 
+    # Windows uses "\" as its path separator, replace it with "/" to standardize
+    # all file resource names.
+    file_name = file_name.replace(os.sep, '/')
     request = messages.ArtifactregistryProjectsLocationsRepositoriesGenericArtifactsUploadRequest(
         uploadGenericArtifactRequest=messages.UploadGenericArtifactRequest(
             packageId=args.package,

@@ -109,8 +109,6 @@ class AnalyzeOrgPolicyGovernedContainersBeta(AnalyzeOrgPolicyGovernedContainers
     return client.AnalyzeOrgPolicyGovernedContainers(args)
 
 
-# TODO(b/294131253): remove Hidden label once we are ready to launch.
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class AnalyzeOrgPolicyGovernedContainersGA(AnalyzeOrgPolicyGovernedContainers):
   """Analyze organization policies governed containers under a scope."""

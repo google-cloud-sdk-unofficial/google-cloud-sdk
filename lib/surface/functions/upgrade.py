@@ -50,11 +50,11 @@ _ABORT_GUIDANCE_MSG = (
 _SETUP_CONFIG_ACTION = UpgradeAction(
     target_state='SETUP_FUNCTION_UPGRADE_CONFIG_SUCCESSFUL',
     prompt_msg=(
-        'This will duplicate the code and configuration of the 1st gen function'
-        '  [{}] to a 2nd gen function. The 1st gen function will continue to'
-        ' serve traffic until you redirect traffic to its 2nd gen copy in the'
-        ' next step. \n\nTo learn more about the differences between 1st gen'
-        ' and 2nd gen functions, visit:'
+        'This creates a 2nd gen function with the same name [{}], code, and'
+        ' configuration as the 1st gen function. The 1st gen function will'
+        ' continue to serve traffic until you redirect traffic to the 2nd gen'
+        ' function in the next step.\n\nTo learn more about the differences'
+        ' between 1st gen and 2nd gen functions, visit:'
         ' https://cloud.google.com/functions/docs/concepts/version-comparison'
     ),
     op_description=(

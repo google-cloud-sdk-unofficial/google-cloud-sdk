@@ -277,6 +277,7 @@ def AddBetaArgs(parser):
   flags.AddAllocatedIpRangeName(parser)
   labels_util.AddUpdateLabelsFlags(parser, enable_clear=True)
   flags.AddReplicationLagMaxSecondsForRecreate(parser)
+  flags.AddEnableGoogleMLIntegration(parser)
 
 
 def AddAlphaArgs(unused_parser):

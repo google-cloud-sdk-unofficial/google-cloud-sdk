@@ -206,48 +206,19 @@ class Update(base.UpdateCommand):
 
     # If need to construct a new matcher.
     if should_setup_match:
-      if self.ReleaseTrack() == base.ReleaseTrack.ALPHA:
-        matcher = holder.client.messages.FirewallPolicyRuleMatcher(
-            srcIpRanges=src_ip_ranges,
-            destIpRanges=dest_ip_ranges,
-            layer4Configs=layer4_config_list,
-            srcAddressGroups=src_address_groups,
-            destAddressGroups=dest_address_groups,
-            srcFqdns=src_fqdns,
-            destFqdns=dest_fqdns,
-            srcRegionCodes=src_region_codes,
-            destRegionCodes=dest_region_codes,
-            srcThreatIntelligences=src_threat_intelligence,
-            destThreatIntelligences=dest_threat_intelligence,
-        )
-      elif self.ReleaseTrack() == base.ReleaseTrack.BETA:
-        matcher = holder.client.messages.FirewallPolicyRuleMatcher(
-            srcIpRanges=src_ip_ranges,
-            destIpRanges=dest_ip_ranges,
-            layer4Configs=layer4_config_list,
-            srcAddressGroups=src_address_groups,
-            destAddressGroups=dest_address_groups,
-            srcFqdns=src_fqdns,
-            destFqdns=dest_fqdns,
-            srcRegionCodes=src_region_codes,
-            destRegionCodes=dest_region_codes,
-            srcThreatIntelligences=src_threat_intelligence,
-            destThreatIntelligences=dest_threat_intelligence,
-        )
-      else:
-        matcher = holder.client.messages.FirewallPolicyRuleMatcher(
-            srcIpRanges=src_ip_ranges,
-            destIpRanges=dest_ip_ranges,
-            layer4Configs=layer4_config_list,
-            srcThreatIntelligences=src_threat_intelligence,
-            destThreatIntelligences=dest_threat_intelligence,
-            srcRegionCodes=src_region_codes,
-            destRegionCodes=dest_region_codes,
-            srcAddressGroups=src_address_groups,
-            destAddressGroups=dest_address_groups,
-            srcFqdns=src_fqdns,
-            destFqdns=dest_fqdns,
-        )
+      matcher = holder.client.messages.FirewallPolicyRuleMatcher(
+          srcIpRanges=src_ip_ranges,
+          destIpRanges=dest_ip_ranges,
+          layer4Configs=layer4_config_list,
+          srcAddressGroups=src_address_groups,
+          destAddressGroups=dest_address_groups,
+          srcFqdns=src_fqdns,
+          destFqdns=dest_fqdns,
+          srcRegionCodes=src_region_codes,
+          destRegionCodes=dest_region_codes,
+          srcThreatIntelligences=src_threat_intelligence,
+          destThreatIntelligences=dest_threat_intelligence,
+      )
     if args.IsSpecified('direction'):
       if args.direction == 'INGRESS':
         traffic_direct = (

@@ -31,6 +31,10 @@ _PROJECT_RESOURCE = 'projects/{}'
 _FOLDER_RESOURCE = 'folders/{}'
 _ORGANIZATION_RESOURCE = 'organizations/{}'
 _CONSUMER_POLICY_DEFAULT = '/consumerPolicies/{}'
+_INVALID_TIMESTAMP = (
+    # Invalid timestamp as the consumer policy is not created previously.
+    '1970-01-01T00:00:00Z'
+)
 
 
 # TODO(b/274633761) make command public after suv2 launch.
@@ -122,9 +126,15 @@ class Get(base.Command):
             'Policy written to the output file %s ' % args.output_file
         )
     else:
-      # TODO(b/274633761) Rearrange the ouput in the format:
-      # (policy name -> enable rules -> update time -> etag)
-      return policy
+      result = _ConvertToDict(policy)
+      for k, v in result.items():
+        if k != 'enableRules' and v:
+          log.status.Print(k + ': ' + v)
+        elif k == 'enableRules':
+          log.status.Print(k + ':')
+          for enable_rule in v:
+            _PrintRules(enable_rule)
+      return
 
 
 def _ConvertToDict(policy):
@@ -141,16 +151,29 @@ def _ConvertToDict(policy):
       'name': policy.name,
       'enableRules': [],
       'updateTime': policy.updateTime,
-      'etag': policy.etag,
       'createTime': policy.createTime,
+      'etag': policy.etag,
   }
 
   for enable_rule in policy.enableRules:
     if enable_rule.services:
       output['enableRules'].append({'services': list(enable_rule.services)})
-    if enable_rule.categories:
-      output['enableRules'].append({'categories': list(enable_rule.categories)})
-    if enable_rule.groups:
-      output['enableRules'].append({'groups': list(enable_rule.groups)})
+
+  if not policy.enableRules:
+    del output['enableRules']
+
+  if policy.updateTime == _INVALID_TIMESTAMP:
+    del output['updateTime']
+  if policy.createTime == _INVALID_TIMESTAMP:
+    del output['createTime']
 
   return output
+
+
+def _PrintRules(rule):
+  keys = ['services']
+  for key in keys:
+    if key in rule.keys():
+      log.status.Print(' ' + key + ':')
+      for value in rule[key]:
+        log.status.Print('  - ' + value)

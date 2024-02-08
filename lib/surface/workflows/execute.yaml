@@ -75,6 +75,12 @@
         lowercase characters, and numbers.
       release_tracks: [GA]
       type: 'googlecloudsdk.calliope.arg_parsers:ArgDict:'
+    - arg_name: disable-concurrency-quota-overflow-buffering
+      api_field: execution.disableConcurrencyQuotaOverflowBuffering
+      help_text: |
+        If set, the execution will not be backlogged when the concurrency quota is exhausted.
+        Backlogged executions start when the concurrency quota becomes available.
+      release_tracks: [GA]
 
   request:
     ALPHA:

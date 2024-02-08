@@ -44,8 +44,7 @@ class GetCredentials(base.Command):
   def Args(cls, parser):
     resource_args.AddClusterResourceArg(parser, 'to get credentials')
     flags.AddAuthProviderCmdPath(parser)
-    if cls.ReleaseTrack() == base.ReleaseTrack.ALPHA:
-      flags.AddOfflineCredential(parser)
+    flags.AddOfflineCredential(parser)
 
   def Run(self, args):
     """Runs the get-credentials command."""
@@ -68,7 +67,7 @@ class GetCredentials(base.Command):
     if cluster.IsOfflineCredential(args):
       if resp.controlPlane is None or resp.controlPlane.local is None:
         log.error(
-            'Offline credential is currently supported only in local'
+            'Offline credential is currently supported only in local '
             'control plane cluster'
         )
         return None

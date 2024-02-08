@@ -8,9 +8,9 @@
 
       LRO operation ID is returned as the response of the command.
     examples: |
-     Create a posture deployment named `posture-deployment-foo-1` within parent `organizations/123/locations/global`(i.e. a posture-deployment in organization `123`, location `global`, with id `posture-deployment-foo-1`, which deploys posture `organizations/123/locations/foo-posture` with revision-id `foo-posture-revision-id`):
+     Create a posture deployment named `posture-deployment-foo-1` within parent `organizations/123/locations/global` on resource `folders/456` (i.e. a posture-deployment in organization `123`, location `global`, with id `posture-deployment-foo-1`, which deploys posture `organizations/123/locations/foo-posture` with revision-id `foo-posture-revision-id` on `folders/456`):
 
-        $ {command} organizations/123/locations/global posture-deployment-foo-1 --posture-name=organizations/123/locations/global/foo-posture --posture-revision-id=foo-posture-revision-id
+        $ {command} organizations/123/locations/global/postureDeployments/posture-deployment-foo-1 --posture-name=organizations/123/locations/global/foo-posture --posture-revision-id=foo-posture-revision-id --target-resource=projects/456
 
   request:
     collection: securityposture.organizations.locations.postureDeployments
@@ -31,7 +31,7 @@
       required: true
       help_text: |
         Posture that needs to be deployed. Format:
-        organizations/<organizationID>/locations/global/postures/<postureID>
+        organizations/<organizationID>/locations/<location>/postures/<postureID>
 
     - arg_name: posture-revision-id
       api_field: postureDeployment.postureRevisionId

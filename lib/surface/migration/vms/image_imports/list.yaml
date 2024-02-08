@@ -22,3 +22,6 @@
         If not specified, the value of the [compute/zone] property in the current gcloud configuration is used.
 
       spec: !REF googlecloudsdk.command_lib.migration.vms.resources:location
+
+  output:
+    format: table(name.basename(), recentImageImportJobs[0].state, cloudStorageUri, diskImageTargetDefaults.imageName, diskImageTargetDefaults.targetProject.basename(), createTime)

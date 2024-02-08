@@ -465,6 +465,7 @@ def ParseCreateOptionsBase(args, is_autopilot, get_default, location,
       autoprovisioning_resource_manager_tags=get_default(
           'autoprovisioning_resource_manager_tags'
       ),
+      enable_fqdn_network_policy=get_default('enable_fqdn_network_policy'),
   )
 
 
@@ -747,6 +748,7 @@ flags_to_add = {
         'InTransitEncryption': flags.AddInTransitEncryptionFlag,
         'enableCiliumClusterwideNetworkPolicy':
             flags.AddEnableCiliumClusterwideNetworkPolicyFlag,
+        'enableFqdnNetworkPolicy': flags.AddEnableFqdnNetworkPolicyFlag,
     },
     BETA: {
         'accelerator':
@@ -1520,7 +1522,6 @@ class CreateBeta(Create):
     ops.enable_runtime_vulnerability_insight = get_default(
         'enable_runtime_vulnerability_insight')
     ops.enable_dns_endpoint = get_default('enable_dns_endpoint')
-    ops.enable_fqdn_network_policy = get_default('enable_fqdn_network_policy')
     ops.host_maintenance_interval = get_default('host_maintenance_interval')
     ops.containerd_config_from_file = get_default(
         'containerd_config_from_file',
@@ -1640,7 +1641,6 @@ class CreateAlpha(Create):
     )
     ops.enable_runtime_vulnerability_insight = get_default('enable_runtime_vulnerability_insight')
     ops.enable_dns_endpoint = get_default('enable_dns_endpoint')
-    ops.enable_fqdn_network_policy = get_default('enable_fqdn_network_policy')
     ops.host_maintenance_interval = get_default('host_maintenance_interval')
     ops.contianerd_config_from_file = get_default('contianerd_config_from_file')
     ops.enable_confidential_storage = get_default('enable_confidential_storage')

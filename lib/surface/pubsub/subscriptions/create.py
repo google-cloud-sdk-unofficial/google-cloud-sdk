@@ -35,6 +35,7 @@ def _Run(
     enable_labels=False,
     legacy_output=False,
     enable_push_to_cps=False,
+    enable_cps_gcs_file_datetime_format=False,
 ):
   """Creates one or more subscriptions."""
   flags.ValidateDeadLetterPolicy(args)
@@ -68,6 +69,11 @@ def _Run(
   cloud_storage_bucket = getattr(args, 'cloud_storage_bucket', None)
   cloud_storage_file_prefix = getattr(args, 'cloud_storage_file_prefix', None)
   cloud_storage_file_suffix = getattr(args, 'cloud_storage_file_suffix', None)
+  cloud_storage_file_datetime_format = (
+      getattr(args, 'cloud_storage_file_datetime_format', None)
+      if enable_cps_gcs_file_datetime_format
+      else None
+  )
   cloud_storage_max_bytes = getattr(args, 'cloud_storage_max_bytes', None)
   cloud_storage_max_duration = getattr(args, 'cloud_storage_max_duration', None)
   if args.IsSpecified('cloud_storage_max_duration'):
@@ -135,6 +141,7 @@ def _Run(
           cloud_storage_bucket=cloud_storage_bucket,
           cloud_storage_file_prefix=cloud_storage_file_prefix,
           cloud_storage_file_suffix=cloud_storage_file_suffix,
+          cloud_storage_file_datetime_format=cloud_storage_file_datetime_format,
           cloud_storage_max_bytes=cloud_storage_max_bytes,
           cloud_storage_max_duration=cloud_storage_max_duration,
           cloud_storage_output_format=cloud_storage_output_format,
@@ -210,7 +217,9 @@ class CreateBeta(Create):
     )
     resource_args.AddResourceArgs(parser, [topic, subscription])
     flags.AddSubscriptionSettingsFlags(
-        parser, enable_push_to_cps=True
+        parser,
+        enable_push_to_cps=True,
+        enable_cps_gcs_file_datetime_format=True,
     )
     labels_util.AddCreateLabelsFlags(parser)
 
@@ -222,4 +231,5 @@ class CreateBeta(Create):
         enable_labels=True,
         legacy_output=legacy_output,
         enable_push_to_cps=True,
+        enable_cps_gcs_file_datetime_format=True,
     )

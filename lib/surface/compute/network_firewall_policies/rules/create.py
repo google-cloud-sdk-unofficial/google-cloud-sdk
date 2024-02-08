@@ -35,10 +35,6 @@ class Create(base.CreateCommand):
   """
 
   NETWORK_FIREWALL_POLICY_ARG = None
-  _support_address_group = True
-  _support_fqdn = True
-  _support_geo = True
-  _support_nti = True
   _support_ips = False
   _support_ips_with_tls = False
 
@@ -60,18 +56,14 @@ class Create(base.CreateCommand):
     flags.AddDescription(parser)
     flags.AddSrcSecureTags(parser)
     flags.AddTargetSecureTags(parser)
-    if cls._support_address_group:
-      flags.AddSrcAddressGroups(parser)
-      flags.AddDestAddressGroups(parser)
-    if cls._support_fqdn:
-      flags.AddSrcFqdns(parser)
-      flags.AddDestFqdns(parser)
-    if cls._support_geo:
-      flags.AddSrcRegionCodes(parser)
-      flags.AddDestRegionCodes(parser)
-    if cls._support_nti:
-      flags.AddSrcThreatIntelligence(parser)
-      flags.AddDestThreatIntelligence(parser)
+    flags.AddSrcAddressGroups(parser)
+    flags.AddDestAddressGroups(parser)
+    flags.AddSrcFqdns(parser)
+    flags.AddDestFqdns(parser)
+    flags.AddSrcRegionCodes(parser)
+    flags.AddDestRegionCodes(parser)
+    flags.AddSrcThreatIntelligence(parser)
+    flags.AddDestThreatIntelligence(parser)
     if cls._support_ips:
       flags.AddSecurityProfileGroup(parser)
       if cls._support_ips_with_tls:
@@ -142,21 +134,21 @@ class Create(base.CreateCommand):
         layer4Configs=layer4_config_list,
         srcSecureTags=src_secure_tags,
     )
-    if self._support_address_group and args.IsSpecified('src_address_groups'):
+    if args.IsSpecified('src_address_groups'):
       matcher.srcAddressGroups = args.src_address_groups
-    if self._support_address_group and args.IsSpecified('dest_address_groups'):
+    if args.IsSpecified('dest_address_groups'):
       matcher.destAddressGroups = args.dest_address_groups
-    if self._support_fqdn and args.IsSpecified('src_fqdns'):
+    if args.IsSpecified('src_fqdns'):
       matcher.srcFqdns = args.src_fqdns
-    if self._support_fqdn and args.IsSpecified('dest_fqdns'):
+    if args.IsSpecified('dest_fqdns'):
       matcher.destFqdns = args.dest_fqdns
-    if self._support_geo and args.IsSpecified('src_region_codes'):
+    if args.IsSpecified('src_region_codes'):
       matcher.srcRegionCodes = args.src_region_codes
-    if self._support_geo and args.IsSpecified('dest_region_codes'):
+    if args.IsSpecified('dest_region_codes'):
       matcher.destRegionCodes = args.dest_region_codes
-    if self._support_nti and args.IsSpecified('src_threat_intelligence'):
+    if args.IsSpecified('src_threat_intelligence'):
       matcher.srcThreatIntelligences = args.src_threat_intelligence
-    if self._support_nti and args.IsSpecified('dest_threat_intelligence'):
+    if args.IsSpecified('dest_threat_intelligence'):
       matcher.destThreatIntelligences = args.dest_threat_intelligence
     traffic_direct = (
         holder.client.messages.FirewallPolicyRule.DirectionValueValuesEnum.INGRESS
@@ -224,10 +216,6 @@ class CreateBeta(Create):
 
   *{command}* is used to create network firewall policy rules.
   """
-  _support_address_group = True
-  _support_fqdn = True
-  _support_geo = True
-  _support_nti = True
   _support_ips = True
   _support_ips_with_tls = True
 
@@ -238,10 +226,6 @@ class CreateAlpha(Create):
 
   *{command}* is used to create network firewall policy rules.
   """
-  _support_address_group = True
-  _support_fqdn = True
-  _support_geo = True
-  _support_nti = True
   _support_ips = True
   _support_ips_with_tls = True
 

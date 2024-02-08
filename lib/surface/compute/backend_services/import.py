@@ -143,6 +143,57 @@ class ImportGA(base.UpdateCommand):
                                                    backend_service_ref,
                                                    'Creating backend service')
 
+  def GetClearedFieldList(self, backend_service):
+    """Retrieves a list of fields to clear for the backend service being inserted.
+
+    Args:
+      backend_service: The backend service being inserted.
+
+    Returns:
+      The the list of fields to clear for a GA resource.
+    """
+    # Unspecified fields are assumed to be cleared.
+    cleared_fields = []
+    # TODO(b/321258406) This entire section ought to use a library which
+    # walks the schema and compares it to the resource being imported
+    # and the utility must be tested to verify that deeply nested structures
+    # are creating field masks appropriately.
+    if not backend_service.securitySettings:
+      cleared_fields.append('securitySettings')
+    if not backend_service.localityLbPolicy:
+      cleared_fields.append('localityLbPolicy')
+    if not backend_service.localityLbPolicies:
+      cleared_fields.append('localityLbPolicies')
+    if not backend_service.circuitBreakers:
+      cleared_fields.append('circuitBreakers')
+    if not backend_service.consistentHash:
+      cleared_fields.append('consistentHash')
+    if not backend_service.outlierDetection:
+      cleared_fields.append('outlierDetection')
+    if not backend_service.customRequestHeaders:
+      cleared_fields.append('customRequestHeaders')
+    if not backend_service.customResponseHeaders:
+      cleared_fields.append('customResponseHeaders')
+    if backend_service.cdnPolicy:
+      cdn_policy = backend_service.cdnPolicy
+      if cdn_policy.defaultTtl is None:
+        cleared_fields.append('cdnPolicy.defaultTtl')
+      if cdn_policy.clientTtl is None:
+        cleared_fields.append('cdnPolicy.clientTtl')
+      if cdn_policy.maxTtl is None:
+        cleared_fields.append('cdnPolicy.maxTtl')
+      if not cdn_policy.negativeCachingPolicy:
+        cleared_fields.append('cdnPolicy.negativeCachingPolicy')
+      if not cdn_policy.bypassCacheOnRequestHeaders:
+        cleared_fields.append('cdnPolicy.bypassCacheOnRequestHeaders')
+      if cdn_policy.serveWhileStale is None:
+        cleared_fields.append('cdnPolicy.serveWhileStale')
+      if cdn_policy.requestCoalescing is None:
+        cleared_fields.append('cdnPolicy.requestCoalescing')
+    else:
+      cleared_fields.append('cdnPolicy')
+    return cleared_fields
+
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     client = holder.client
@@ -190,48 +241,14 @@ class ImportGA(base.UpdateCommand):
     backend_service.fingerprint = backend_service_old.fingerprint
 
     # Unspecified fields are assumed to be cleared.
-    cleared_fields = []
-    if not backend_service.securitySettings:
-      cleared_fields.append('securitySettings')
-    if not backend_service.localityLbPolicy:
-      cleared_fields.append('localityLbPolicy')
-    if not backend_service.localityLbPolicies:
-      cleared_fields.append('localityLbPolicies')
-    if not backend_service.circuitBreakers:
-      cleared_fields.append('circuitBreakers')
-    if not backend_service.consistentHash:
-      cleared_fields.append('consistentHash')
-    if not backend_service.outlierDetection:
-      cleared_fields.append('outlierDetection')
-    if not backend_service.customRequestHeaders:
-      cleared_fields.append('customRequestHeaders')
-    if not backend_service.customResponseHeaders:
-      cleared_fields.append('customResponseHeaders')
-    if backend_service.cdnPolicy:
-      cdn_policy = backend_service.cdnPolicy
-      if cdn_policy.defaultTtl is None:
-        cleared_fields.append('cdnPolicy.defaultTtl')
-      if cdn_policy.clientTtl is None:
-        cleared_fields.append('cdnPolicy.clientTtl')
-      if cdn_policy.maxTtl is None:
-        cleared_fields.append('cdnPolicy.maxTtl')
-      if not cdn_policy.negativeCachingPolicy:
-        cleared_fields.append('cdnPolicy.negativeCachingPolicy')
-      if not cdn_policy.bypassCacheOnRequestHeaders:
-        cleared_fields.append('cdnPolicy.bypassCacheOnRequestHeaders')
-      if cdn_policy.serveWhileStale is None:
-        cleared_fields.append('cdnPolicy.serveWhileStale')
-      if cdn_policy.requestCoalescing is None:
-        cleared_fields.append('cdnPolicy.requestCoalescing')
-    else:
-      cleared_fields.append('cdnPolicy')
+    cleared_fields = self.GetClearedFieldList(backend_service)
 
     with client.apitools_client.IncludeFields(cleared_fields):
       return self.SendPatchRequest(client, resources, backend_service_ref,
                                    backend_service)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
 class ImportAlphaBeta(ImportGA):
   """Import a backend service.
 
@@ -240,3 +257,48 @@ class ImportAlphaBeta(ImportGA):
   To edit a backend service you can export the backend service to a file,
   edit its configuration, and then import the new configuration.
   """
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class ImportAlpha(ImportGA):
+  """Import a backend service.
+
+  If the specified backend service already exists, it will be overwritten.
+  Otherwise, a new backend service will be created.
+  To edit a backend service you can export the backend service to a file,
+  edit its configuration, and then import the new configuration.
+  """
+
+  def GetClearedFieldList(self, backend_service):
+    """Retrieves a list of fields to clear for the backend service being inserted.
+
+    Args:
+      backend_service: The backend service being inserted.
+
+    Returns:
+      The the list of fields to clear for a GA resource.
+    """
+
+    # TODO(b/321258406) This entire section ought to use a library which
+    # walks the schema and compares it to the resource being imported
+    # and the utility must be tested to verify that deeply nested structures
+    # are creating field masks appropriately.
+    cleared_fields = super().GetClearedFieldList(backend_service)
+    if backend_service.haPolicy:
+      ha_policy = backend_service.haPolicy
+      if not ha_policy.fastIPMove:
+        cleared_fields.append('haPolicy.fastIPMove')
+      if ha_policy.leader:
+        leader = ha_policy.leader
+        if not leader.backendGroup:
+          cleared_fields.append('haPolicy.leader.backendGroup')
+        if leader.networkEndpoint:
+          if not leader.networkEndpoint.instance:
+            cleared_fields.append('haPolicy.leader.networkEndpoint.instance')
+        else:
+          cleared_fields.append('haPolicy.leader.networkEndpoint')
+      else:
+        cleared_fields.append('haPolicy.leader')
+    else:
+      cleared_fields.append('haPolicy')
+    return cleared_fields

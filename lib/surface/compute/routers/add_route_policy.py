@@ -37,8 +37,8 @@ class AddRoutePolicy(base.CreateCommand):
 
   ROUTER_ARG = None
 
-  @staticmethod
-  def Args(parser):
+  @classmethod
+  def Args(cls, parser):
     AddRoutePolicy.ROUTER_ARG = flags.RouterArgument()
     AddRoutePolicy.ROUTER_ARG.AddArgument(parser, operation_type='insert')
     parser.add_argument(
@@ -108,7 +108,7 @@ class AddRoutePolicy(base.CreateCommand):
           in exception.__str__()
       ):
         return
-      raise exception
+      raise
     raise exceptions.BadArgumentException(
         'policy-name', "A policy named '{0}' already exists".format(policy_name)
     )

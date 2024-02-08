@@ -125,8 +125,7 @@ def _Args(parser):
       load balancer. The forwarding rule's `--load-balancing-scheme` must be
       `INTERNAL`. You can use any `--destination-range` that doesn't exactly
       match the destination of a subnet route and isn't more specific (has a
-      longer subnet mask) than the destination of a subnet route. Also, the
-      forwarding rule's IP address can't be in the `--destination-range`. For
+      longer subnet mask) than the destination of a subnet route. For
       more information, see
       https://cloud.google.com/load-balancing/docs/internal/ilb-next-hop-overview#destination_range.
       """)
