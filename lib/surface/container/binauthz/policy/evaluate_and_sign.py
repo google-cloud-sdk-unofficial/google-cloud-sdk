@@ -17,12 +17,16 @@
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
+
 from googlecloudsdk.api_lib.container.binauthz import apis
 from googlecloudsdk.api_lib.container.binauthz import platform_policy
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.container.binauthz import flags
+from googlecloudsdk.command_lib.container.binauthz import parsing
 from googlecloudsdk.command_lib.container.binauthz import sigstore_image
+from googlecloudsdk.command_lib.container.binauthz import util
 from googlecloudsdk.core import log
+from googlecloudsdk.core import yaml
 from googlecloudsdk.core.exceptions import Error
 
 
@@ -46,7 +50,9 @@ class EvaluateAndSign(base.Command):
   @staticmethod
   def Args(parser):
     flags.AddPlatformPolicyResourceArg(parser, 'to evaluate and sign')
-    flags.AddPodFileContentArg(parser)
+    flags.AddEvaluationUnitArg(parser)
+    flags.AddNoUploadArg(parser)
+    flags.AddOutputFileArg(parser)
 
   def Run(self, args):
     policy_ref = args.CONCEPTS.policy_resource_name.Parse().RelativeName()
@@ -57,8 +63,15 @@ class EvaluateAndSign(base.Command):
           "policies are supported.".format(platform_id)
       )
 
+    if args.output_file and not args.resource:
+      raise util.Error('Cannot specify --output-file without --resource.')
+
+    if args.resource:
+      resource_obj = parsing.LoadResourceFile(args.resource)
+    else:
+      resource_obj = util.GeneratePodSpecFromImages(args.image)
     response = platform_policy.Client('v1').Evaluate(
-        policy_ref, args.resource, True
+        policy_ref, resource_obj, True
     )
 
     # Set non-zero exit code for non-conformant verdicts to improve the
@@ -73,12 +86,30 @@ class EvaluateAndSign(base.Command):
       return response
 
     # Upload attestations.
-    # TODO(b/310721968): flag gate this.
-    for attestation in response.attestations:
-      image_url = sigstore_image.AttestationToImageUrl(attestation)
-      log.Print('Uploading attestation for {}'.format(image_url))
-      sigstore_image.UploadAttestationToRegistry(
-          image_url, sigstore_image.StandardOrUrlsafeBase64Decode(attestation)
+    if not args.no_upload:
+      for attestation in response.attestations:
+        image_url = sigstore_image.AttestationToImageUrl(attestation)
+        log.Print('Uploading attestation for {}'.format(image_url))
+        sigstore_image.UploadAttestationToRegistry(
+            image_url, sigstore_image.StandardOrUrlsafeBase64Decode(attestation)
+        )
+
+    # Write inline attestations.
+    if args.output_file:
+      modified_resource = util.AddInlineAttestationsToResource(
+          resource_obj, response.attestations
+      )
+      if (
+          parsing.GetResourceFileType(args.resource)
+          == parsing.ResourceFileType.YAML
+      ):
+        modified_resource = yaml.dump(modified_resource)
+      log.WriteToFileOrStdout(
+          args.output_file,
+          modified_resource,
+          overwrite=True,
+          binary=False,
+          private=True,
       )
 
     return response

@@ -49,5 +49,6 @@ class Iam(base.Group):
     base.RequireProjectID(args)
     base.DisableUserProjectQuota()
 
-    # Enable self signed jwt for alpha track
-    self.EnableSelfSignedJwtForTracks([base.ReleaseTrack.ALPHA])
+    self.EnableSelfSignedJwtForTracks(
+        [base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA]
+    )

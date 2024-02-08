@@ -157,5 +157,11 @@
       default: 1
       help_text: |
         Maximum actions each worker VM can run concurrently.
+    - api_field: workerPool.workerConfig.zones
+      arg_name: zones
+      required: false
+      help_text: |
+        List of zones where the workers should be located. If empty, workers
+        will be located in all zones in the region.
     labels:
       api_field: workerPool.workerConfig.labels

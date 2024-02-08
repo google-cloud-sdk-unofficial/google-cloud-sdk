@@ -54,5 +54,6 @@ class Dataflow(base.Group):
     del context, args
     base.DisableUserProjectQuota()
 
-    # Enable self signed jwt for alpha track
-    self.EnableSelfSignedJwtForTracks([base.ReleaseTrack.ALPHA])
+    self.EnableSelfSignedJwtForTracks(
+        [base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA]
+    )

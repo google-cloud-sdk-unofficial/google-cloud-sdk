@@ -20,6 +20,7 @@ from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.clouddeploy import rollout
 from googlecloudsdk.api_lib.util import apis as core_apis
+from googlecloudsdk.api_lib.util import exceptions as gcloud_exception
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.deploy import delivery_pipeline_util
 from googlecloudsdk.command_lib.deploy import exceptions as deploy_exceptions
@@ -55,6 +56,9 @@ class Advance(base.CreateCommand):
     # be surfaced to the user.
     flags.AddPhaseId(parser, required=False)
 
+  @gcloud_exception.CatchHTTPErrorRaiseHTTPException(
+      deploy_exceptions.HTTP_ERROR_FORMAT
+  )
   def Run(self, args):
     rollout_ref = args.CONCEPTS.rollout.Parse()
     pipeline_ref = rollout_ref.Parent().Parent()

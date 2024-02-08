@@ -20,9 +20,10 @@ from __future__ import unicode_literals
 
 from apitools.base.py import exceptions as apitools_exceptions
 from googlecloudsdk.api_lib.clouddeploy import delivery_pipeline
+from googlecloudsdk.api_lib.util import exceptions as gcloud_exception
 from googlecloudsdk.calliope import base
-from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.deploy import describe
+from googlecloudsdk.command_lib.deploy import exceptions as deploy_exceptions
 from googlecloudsdk.command_lib.deploy import resource_args
 from googlecloudsdk.command_lib.deploy import target_util
 from googlecloudsdk.core import log
@@ -78,15 +79,16 @@ class Describe(base.DescribeCommand):
   def Args(parser):
     _CommonArgs(parser)
 
+  @gcloud_exception.CatchHTTPErrorRaiseHTTPException(
+      deploy_exceptions.HTTP_ERROR_FORMAT
+  )
   def Run(self, args):
     """This is what gets called when the user runs this command."""
     pipeline_ref = args.CONCEPTS.delivery_pipeline.Parse()
     # Check if the pipeline exists.
-    try:
-      pipeline = delivery_pipeline.DeliveryPipelinesClient().Get(
-          pipeline_ref.RelativeName())
-    except apitools_exceptions.HttpError as error:
-      raise exceptions.HttpException(error)
+    pipeline = delivery_pipeline.DeliveryPipelinesClient().Get(
+        pipeline_ref.RelativeName()
+    )
     output = {'Delivery Pipeline': pipeline}
     region = pipeline_ref.AsDict()['locationsId']
     targets = []

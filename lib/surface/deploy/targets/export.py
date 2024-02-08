@@ -20,7 +20,9 @@ from __future__ import unicode_literals
 
 import textwrap
 
+from googlecloudsdk.api_lib.util import exceptions as gcloud_exception
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.deploy import exceptions as deploy_exceptions
 from googlecloudsdk.command_lib.deploy import export_util
 from googlecloudsdk.command_lib.deploy import manifest_util
 from googlecloudsdk.command_lib.deploy import resource_args
@@ -55,6 +57,9 @@ class Export(base.ExportCommand):
     resource_args.AddTargetResourceArg(parser, positional=True)
     core_export_util.AddExportFlags(parser)
 
+  @gcloud_exception.CatchHTTPErrorRaiseHTTPException(
+      deploy_exceptions.HTTP_ERROR_FORMAT
+  )
   def Run(self, args):
     """Entry point of the export command.
 

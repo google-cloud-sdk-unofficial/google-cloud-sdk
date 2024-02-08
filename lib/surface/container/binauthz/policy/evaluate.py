@@ -22,6 +22,8 @@ from googlecloudsdk.api_lib.container.binauthz import apis
 from googlecloudsdk.api_lib.container.binauthz import platform_policy
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.container.binauthz import flags
+from googlecloudsdk.command_lib.container.binauthz import parsing
+from googlecloudsdk.command_lib.container.binauthz import util
 from googlecloudsdk.core.exceptions import Error
 
 
@@ -45,7 +47,7 @@ class Evaluate(base.Command):
   @staticmethod
   def Args(parser):
     flags.AddPlatformPolicyResourceArg(parser, 'to evaluate')
-    flags.AddPodFileContentArg(parser)
+    flags.AddEvaluationUnitArg(parser)
 
   def Run(self, args):
     policy_ref = args.CONCEPTS.policy_resource_name.Parse().RelativeName()
@@ -56,7 +58,16 @@ class Evaluate(base.Command):
           "policies are supported.".format(platform_id)
       )
 
-    response = platform_policy.Client('v1').Evaluate(policy_ref, args.resource)
+    if args.resource:
+      resource_obj = parsing.LoadResourceFile(args.resource)
+      response = platform_policy.Client('v1').Evaluate(
+          policy_ref, resource_obj, False
+      )
+    else:
+      pod_spec = util.GeneratePodSpecFromImages(args.image)
+      response = platform_policy.Client('v1').Evaluate(
+          policy_ref, pod_spec, False
+      )
 
     # Set non-zero exit code for non-conformant verdicts to improve the
     # command's scriptability.

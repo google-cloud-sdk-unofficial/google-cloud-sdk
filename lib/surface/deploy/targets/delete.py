@@ -20,7 +20,9 @@ from __future__ import unicode_literals
 import textwrap
 
 from googlecloudsdk.api_lib.clouddeploy import client_util
+from googlecloudsdk.api_lib.util import exceptions as gcloud_exception
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.deploy import exceptions as deploy_exceptions
 from googlecloudsdk.command_lib.deploy import resource_args
 from googlecloudsdk.command_lib.deploy import target_util
 
@@ -46,6 +48,9 @@ class Delete(base.DeleteCommand):
   def Args(parser):
     resource_args.AddTargetResourceArg(parser, positional=True)
 
+  @gcloud_exception.CatchHTTPErrorRaiseHTTPException(
+      deploy_exceptions.HTTP_ERROR_FORMAT
+  )
   def Run(self, args):
     """Entry point of the export command.
 

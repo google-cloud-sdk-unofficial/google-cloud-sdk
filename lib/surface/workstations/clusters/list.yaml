@@ -29,5 +29,6 @@
     format: |
       table(
         name.basename():sort=1,
+        name.scope(locations).segment(0):label='REGION',
         createTime.date()
       )

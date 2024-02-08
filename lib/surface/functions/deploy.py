@@ -27,6 +27,34 @@ from googlecloudsdk.command_lib.functions.v1.deploy import labels_util
 from googlecloudsdk.command_lib.functions.v2.deploy import command as command_v2
 from googlecloudsdk.command_lib.functions.v2.deploy import env_vars_util
 from googlecloudsdk.command_lib.util.args import labels_util as args_labels_util
+from googlecloudsdk.core import log
+
+_HOW_TO_DISABLE_CHANGE = (
+    'You can disable this behavior by explicitly specifying the --no-gen2 flag'
+    " or by setting the functions/gen2 config property to 'off'."
+)
+
+_LEARN_ABOUT_GEN_DIFFS = (
+    'To learn more about the differences between 1st gen and 2nd gen functions,'
+    ' visit:'
+    '\nhttps://cloud.google.com/functions/docs/concepts/version-comparison'
+)
+
+_RECENT_DEFAULT_CHANGE = (
+    'This function will be deployed as a 2nd gen function. This is a'
+    ' recent change in the default behavior for newly created functions.'
+    f'\n{_HOW_TO_DISABLE_CHANGE}\n{_LEARN_ABOUT_GEN_DIFFS}'
+)
+
+# TODO(b/286788716): Show this warning in GA track when change is incoming.
+_UPCOMING_CHANGE_WARNING = (
+    'In a future Cloud SDK release, new functions will be deployed as 2nd gen '
+    ' functions by default. This is equivalent to currently deploying new '
+    ' with the --gen2 flag. Existing 1st gen functions will not be impacted'
+    ' and will continue to deploy as 1st gen functions.\nYou can preview this'
+    ' behavior in beta. Alternatively,'
+    f' {_HOW_TO_DISABLE_CHANGE}\n{_LEARN_ABOUT_GEN_DIFFS}'
+)
 
 
 def _CommonArgs(parser, track):
@@ -111,6 +139,9 @@ class Deploy(util.FunctionResourceCommand, base.Command):
     return command_v1.Run(args, track=self.ReleaseTrack())
 
   def _RunV2(self, args):
+    if not self._v2_function and not flags.ShouldUseGen2():
+      # Gen2 function creation without an explicit generation specification.
+      log.status.Print(_RECENT_DEFAULT_CHANGE)
     return command_v2.Run(args, self.ReleaseTrack())
 
 

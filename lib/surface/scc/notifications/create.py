@@ -97,7 +97,9 @@ class Create(base.CreateCommand):
     notification_util.ValidateMutexOnConfigIdAndParent(args, parent)
 
     # Determine what version to call from --location and --api-version.
-    version = scc_util.GetVersionFromArguments(args, args.NOTIFICATIONCONFIGID)
+    version = scc_util.GetVersionFromArguments(
+        args, args.NOTIFICATIONCONFIGID, version_specific_existing_resource=True
+    )
     messages = securitycenter_client.GetMessages(version)
     client = securitycenter_client.GetClient(version)
 

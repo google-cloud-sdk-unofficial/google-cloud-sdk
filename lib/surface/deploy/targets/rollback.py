@@ -24,6 +24,7 @@ from apitools.base.py import exceptions as apitools_exceptions
 from googlecloudsdk.api_lib.clouddeploy import client_util
 from googlecloudsdk.api_lib.clouddeploy import release
 from googlecloudsdk.api_lib.util import apis as core_apis
+from googlecloudsdk.api_lib.util import exceptions as gcloud_exception
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.deploy import delivery_pipeline_util
@@ -76,6 +77,9 @@ class Rollback(base.CreateCommand):
     flags.AddLabelsFlag(parser, _ROLLBACK)
     flags.AddStartingPhaseId(parser)
 
+  @gcloud_exception.CatchHTTPErrorRaiseHTTPException(
+      deploy_exceptions.HTTP_ERROR_FORMAT
+  )
   def Run(self, args):
     target_ref = args.CONCEPTS.target.Parse()
     ref_dict = target_ref.AsDict()
@@ -101,12 +105,11 @@ class Rollback(base.CreateCommand):
     current_release_ref, rollback_release_ref = _GetCurrentAndRollbackRelease(
         args.release, pipeline_ref, target_ref
     )
-    try:
-      release_obj = release.ReleaseClient().Get(
-          rollback_release_ref.RelativeName()
-      )
-    except apitools_exceptions.HttpError as error:
-      raise exceptions.HttpException(error)
+
+    release_obj = release.ReleaseClient().Get(
+        rollback_release_ref.RelativeName()
+    )
+
     if release_obj.abandoned:
       error_msg_annotation_prefix = 'Cannot perform rollback.'
       raise deploy_exceptions.AbandonedReleaseError(

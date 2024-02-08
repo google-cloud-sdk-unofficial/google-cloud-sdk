@@ -21,7 +21,9 @@ from __future__ import unicode_literals
 import textwrap
 
 from googlecloudsdk.api_lib.clouddeploy import automation_run
+from googlecloudsdk.api_lib.util import exceptions as gcloud_exception
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.deploy import exceptions as deploy_exceptions
 from googlecloudsdk.command_lib.deploy import resource_args
 from googlecloudsdk.core import log
 
@@ -49,6 +51,9 @@ class Cancel(base.CreateCommand):
   def Args(parser):
     resource_args.AddAutomationRunResourceArg(parser, positional=True)
 
+  @gcloud_exception.CatchHTTPErrorRaiseHTTPException(
+      deploy_exceptions.HTTP_ERROR_FORMAT
+  )
   def Run(self, args):
     automation_run_ref = args.CONCEPTS.automation_run.Parse()
     log.status.Print(

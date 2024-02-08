@@ -893,11 +893,14 @@ class ValidatorConfig(_messages.Message):
   for any GCP-managed validator client.
 
   Fields:
+    managedValidatorClient: Immutable. When true, deploys a GCP-managed
+      validator client alongside the beacon client.
     mevRelayUrls: URLs for MEV-relay services to use for block building. When
       set, a GCP-managed MEV-boost service is configured on the beacon client.
   """
 
-  mevRelayUrls = _messages.StringField(1, repeated=True)
+  managedValidatorClient = _messages.BooleanField(1)
+  mevRelayUrls = _messages.StringField(2, repeated=True)
 
 
 encoding.AddCustomJsonFieldMapping(

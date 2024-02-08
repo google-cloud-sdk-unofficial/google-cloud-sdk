@@ -27,8 +27,17 @@ from googlecloudsdk.command_lib.compute import flags as compute_flags
 from googlecloudsdk.command_lib.compute import scope as compute_scope
 from googlecloudsdk.command_lib.compute.instance_groups import flags as instance_groups_flags
 
+DETAILED_HELP = {
+    'brief': 'Delete a Compute Engine managed instance group resize request.',
+    'EXAMPLES': """
 
-@base.Hidden
+     To delete a resize request for a managed instance group, run the following command:
+
+       $ {command} my-mig --resize-requests=resize-request-1
+   """,
+}
+
+
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Delete(base.DeleteCommand):
   """Delete a Compute Engine managed instance group resize request.
@@ -39,6 +48,8 @@ class Delete(base.DeleteCommand):
   You can only delete a request when it is in a state SUCCEEDED,
   FAILED, or CANCELLED.
   """
+
+  detailed_help = DETAILED_HELP
 
   @classmethod
   def Args(cls, parser):

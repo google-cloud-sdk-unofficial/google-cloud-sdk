@@ -79,7 +79,7 @@ class Update(base.Command):
   }
 
   @staticmethod
-  def CommonArgs(parser, add_container_args=True):
+  def CommonArgs(parser):
     # Flags specific to managed CR
     managed_group = flags.GetManagedArgGroup(parser)
     flags.AddBinAuthzPolicyFlags(managed_group)
@@ -96,6 +96,7 @@ class Update(base.Command):
     flags.AddSessionAffinityFlag(managed_group)
     flags.AddStartupCpuBoostFlag(managed_group)
     flags.AddVpcConnectorArgs(managed_group)
+    flags.RemoveContainersFlag().AddToParser(managed_group)
 
     # Flags specific to connecting to a cluster
     cluster_group = flags.GetClusterArgGroup(parser)
@@ -110,9 +111,6 @@ class Update(base.Command):
         required=True,
         prefixes=False,
     )
-    if add_container_args:
-      flags.AddMutexEnvVarsFlags(parser)
-      flags.AddMemoryFlag(parser)
     flags.AddConcurrencyFlag(parser)
     flags.AddTimeoutFlag(parser)
     flags.AddAsyncFlag(parser)
@@ -120,28 +118,20 @@ class Update(base.Command):
     flags.AddGeneralAnnotationFlags(parser)
     flags.AddMinInstancesFlag(parser)
     flags.AddMaxInstancesFlag(parser)
-    if add_container_args:
-      flags.AddCommandFlag(parser)
-      flags.AddArgsFlag(parser)
-      flags.AddPortFlag(parser)
-      flags.AddCpuFlag(parser)
     flags.AddNoTrafficFlag(parser)
     flags.AddDeployTagFlag(parser)
     flags.AddServiceAccountFlag(parser)
-    if add_container_args:
-      flags.AddImageArg(parser, required=False)
     flags.AddClientNameAndVersionFlags(parser)
     flags.AddIngressFlag(parser)
-    if add_container_args:
-      flags.AddHttp2Flag(parser)
-      flags.AddSecretsFlags(parser)
     concept_parsers.ConceptParser([service_presentation]).AddToParser(parser)
     # No output by default, can be overridden by --format
     parser.display_info.AddFormat('none')
 
-  @staticmethod
-  def Args(parser):
+  @classmethod
+  def Args(cls, parser):
     Update.CommonArgs(parser)
+    container_args = ContainerArgGroup(cls.ReleaseTrack())
+    container_parser.AddContainerFlags(parser, container_args)
 
   def Run(self, args):
     """Update the service resource.
@@ -230,13 +220,12 @@ class BetaUpdate(Update):
 
   @classmethod
   def Args(cls, parser):
-    Update.CommonArgs(parser, add_container_args=False)
+    Update.CommonArgs(parser)
 
     # Flags specific to managed CR
     managed_group = flags.GetManagedArgGroup(parser)
     flags.AddVpcNetworkGroupFlagsForUpdate(managed_group)
     flags.AddVolumesFlags(managed_group, cls.ReleaseTrack())
-    flags.RemoveContainersFlag().AddToParser(managed_group)
     container_args = ContainerArgGroup(cls.ReleaseTrack())
     container_parser.AddContainerFlags(parser, container_args)
 
@@ -247,10 +236,11 @@ class AlphaUpdate(BetaUpdate):
 
   @classmethod
   def Args(cls, parser):
-    Update.CommonArgs(parser, add_container_args=False)
+    Update.CommonArgs(parser)
 
     # Flags specific to managed CR
     managed_group = flags.GetManagedArgGroup(parser)
+    flags.AddDeployHealthCheckFlag(managed_group)
     flags.AddDefaultUrlFlag(managed_group)
     flags.AddInvokerIamCheckFlag(managed_group)
     flags.AddVpcNetworkGroupFlagsForUpdate(managed_group)
@@ -258,7 +248,6 @@ class AlphaUpdate(BetaUpdate):
     flags.AddDescriptionFlag(managed_group)
     flags.AddServiceMinInstancesFlag(managed_group)
     flags.AddVolumesFlags(managed_group, cls.ReleaseTrack())
-    flags.RemoveContainersFlag().AddToParser(managed_group)
     flags.AddGpuTypeFlag(managed_group)
     flags.SERVICE_MESH_FLAG.AddToParser(managed_group)
     container_args = ContainerArgGroup(cls.ReleaseTrack())

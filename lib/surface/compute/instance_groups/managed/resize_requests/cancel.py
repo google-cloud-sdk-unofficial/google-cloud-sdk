@@ -26,8 +26,17 @@ from googlecloudsdk.command_lib.compute import flags
 from googlecloudsdk.command_lib.compute import scope as compute_scope
 from googlecloudsdk.command_lib.compute.instance_groups import flags as instance_groups_flags
 
+DETAILED_HELP = {
+    'brief': 'Cancel a Compute Engine managed instance group resize request.',
+    'EXAMPLES': """
 
-@base.Hidden
+     To cancel a resize request for a managed instance group, run the following command:
+
+       $ {command} my-mig --resize-requests=resize-request-1
+   """,
+}
+
+
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class CancelBeta(base.UpdateCommand):
   """Cancel a Compute Engine managed instance group resize request.
@@ -37,6 +46,8 @@ class CancelBeta(base.UpdateCommand):
 
   You can only cancel a resize request when it is in the ACCEPTED state.
   """
+
+  detailed_help = DETAILED_HELP
 
   @classmethod
   def Args(cls, parser):
@@ -107,7 +118,6 @@ class CancelBeta(base.UpdateCommand):
     return client.MakeRequests(requests)
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class CancelAlpha(CancelBeta):
   """Cancel a Compute Engine managed instance group resize request.
@@ -117,6 +127,8 @@ class CancelAlpha(CancelBeta):
 
   You can only cancel a resize request when it is in the ACCEPTED state.
   """
+
+  detailed_help = DETAILED_HELP
 
   @classmethod
   def Args(cls, parser):

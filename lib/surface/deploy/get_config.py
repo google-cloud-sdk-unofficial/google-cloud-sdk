@@ -19,7 +19,9 @@ from __future__ import division
 from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.clouddeploy import config
+from googlecloudsdk.api_lib.util import exceptions as gcloud_exception
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.deploy import exceptions as deploy_exceptions
 from googlecloudsdk.command_lib.deploy import resource_args
 
 
@@ -59,6 +61,9 @@ class GetConfig(base.DescribeCommand):
   def Args(parser):
     _CommonArgs(parser)
 
+  @gcloud_exception.CatchHTTPErrorRaiseHTTPException(
+      deploy_exceptions.HTTP_ERROR_FORMAT
+  )
   def Run(self, args):
     location_ref = args.CONCEPTS.region.Parse()
     project = location_ref.AsDict()['projectsId']
@@ -66,4 +71,3 @@ class GetConfig(base.DescribeCommand):
     config_client = config.ConfigClient()
     conf = config_client.GetConfig(project, region)
     return conf
-

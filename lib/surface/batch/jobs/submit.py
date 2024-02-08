@@ -151,13 +151,14 @@ def _CommonArgs(parser):
   return network_group
 
 
-def _BuildJobMsg(args, job_msg, batch_msgs):
+def _BuildJobMsg(args, job_msg, batch_msgs, release_track):
   """Build the job API message from the args.
 
   Args:
     args: the args from the parser.
     job_msg: the output job message.
     batch_msgs: the related version of the batch message.
+    release_track: the release track from which _BuildJobMsg was called.
   """
 
   if job_msg.taskGroups is None:
@@ -201,8 +202,19 @@ def _BuildJobMsg(args, job_msg, batch_msgs):
   if args.priority:
     job_msg.priority = args.priority
 
-  if job_msg.allocationPolicy is None:
-    job_msg.allocationPolicy = batch_msgs.AllocationPolicy()
+  # Add default empty allocation policy if there is no allocation policy.
+  # For alpha track, add only if an allocation policy is needed by some other
+  # argument.
+  if release_track == base.ReleaseTrack.ALPHA:
+    if job_msg.allocationPolicy is None and (
+        args.machine_type
+        or (args.network and args.subnetwork)
+        or args.provisioning_model
+    ):
+      job_msg.allocationPolicy = batch_msgs.AllocationPolicy()
+  else:
+    if job_msg.allocationPolicy is None:
+      job_msg.allocationPolicy = batch_msgs.AllocationPolicy()
 
   if args.machine_type:
     if job_msg.allocationPolicy.instances is None:
@@ -331,7 +343,7 @@ class Submit(base.Command):
     if args.config:
       job_msg = self._CreateJobMessage(batch_msgs, args.config)
 
-    _BuildJobMsg(args, job_msg, batch_msgs)
+    _BuildJobMsg(args, job_msg, batch_msgs, release_track)
 
     resp = batch_client.Create(job_id, location_ref, job_msg)
     log.status.Print(

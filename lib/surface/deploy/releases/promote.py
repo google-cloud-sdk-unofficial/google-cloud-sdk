@@ -18,11 +18,10 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
-from apitools.base.py import exceptions as apitools_exceptions
 from googlecloudsdk.api_lib.clouddeploy import release
 from googlecloudsdk.api_lib.util import apis as core_apis
+from googlecloudsdk.api_lib.util import exceptions as gcloud_exception
 from googlecloudsdk.calliope import base
-from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.deploy import delivery_pipeline_util
 from googlecloudsdk.command_lib.deploy import exceptions as deploy_exceptions
 from googlecloudsdk.command_lib.deploy import flags
@@ -79,6 +78,9 @@ class Promote(base.CreateCommand):
   def Args(parser):
     _CommonArgs(parser)
 
+  @gcloud_exception.CatchHTTPErrorRaiseHTTPException(
+      deploy_exceptions.HTTP_ERROR_FORMAT
+  )
   def Run(self, args):
     release_ref = args.CONCEPTS.release.Parse()
     pipeline_obj = delivery_pipeline_util.GetPipeline(
@@ -90,10 +92,7 @@ class Promote(base.CreateCommand):
     delivery_pipeline_util.ThrowIfPipelineSuspended(
         pipeline_obj, failed_activity_msg
     )
-    try:
-      release_obj = release.ReleaseClient().Get(release_ref.RelativeName())
-    except apitools_exceptions.HttpError as error:
-      raise exceptions.HttpException(error)
+    release_obj = release.ReleaseClient().Get(release_ref.RelativeName())
 
     messages = core_apis.GetMessagesModule('clouddeploy', 'v1')
     skaffold_support_state = release_util.GetSkaffoldSupportState(release_obj)

@@ -25,8 +25,20 @@ from googlecloudsdk.command_lib.compute import flags
 from googlecloudsdk.command_lib.compute import scope as compute_scope
 from googlecloudsdk.command_lib.compute.instance_groups import flags as instance_groups_flags
 
+DETAILED_HELP = {
+    'brief': (
+        'Describe a Compute Engine managed instance group resize request'
+        ' resource.'
+    ),
+    'EXAMPLES': """
 
-@base.Hidden
+     To describe a resize request for a managed instance group, run the following command:
+
+       $ {command} my-mig --resize-request=resize-request-1
+   """,
+}
+
+
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Describe(base.DescribeCommand):
   """Describe a Compute Engine managed instance group resize request resource.
@@ -34,6 +46,8 @@ class Describe(base.DescribeCommand):
   *{command}* describes a Compute Engine managed instance group resize request
   resource.
   """
+
+  detailed_help = DETAILED_HELP
 
   @staticmethod
   def Args(parser):

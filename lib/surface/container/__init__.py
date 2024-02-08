@@ -76,6 +76,9 @@ class ContainerBeta(Container):
     """
     base.DisableUserProjectQuota()
     context['api_adapter'] = api_adapter.NewAPIAdapter('v1beta1')
+
+    self.EnableSelfSignedJwtForTracks([base.ReleaseTrack.BETA])
+
     return context
 
 

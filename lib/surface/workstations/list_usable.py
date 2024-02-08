@@ -46,6 +46,7 @@ class ListUsable(base.ListCommand):
         table(
             name.basename():sort=1,
             name.scope(workstationConfigs).segment(0):label='CONFIG',
+            name.scope(locations).segment(0):label='REGION',
             state.sub("STATE_", ""),
             createTime.date()
         )

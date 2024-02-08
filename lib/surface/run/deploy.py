@@ -26,6 +26,7 @@ from googlecloudsdk.command_lib.run import artifact_registry
 from googlecloudsdk.command_lib.run import config_changes
 from googlecloudsdk.command_lib.run import connection_context
 from googlecloudsdk.command_lib.run import container_parser
+from googlecloudsdk.command_lib.run import exceptions
 from googlecloudsdk.command_lib.run import flags
 from googlecloudsdk.command_lib.run import messages_util
 from googlecloudsdk.command_lib.run import platforms
@@ -135,7 +136,7 @@ class Deploy(base.Command):
   }
 
   @staticmethod
-  def CommonArgs(parser, add_container_args=True):
+  def CommonArgs(parser):
     # Flags specific to managed CR
     managed_group = flags.GetManagedArgGroup(parser)
     flags.AddAllowUnauthenticatedFlag(managed_group)
@@ -154,6 +155,7 @@ class Deploy(base.Command):
     flags.AddSessionAffinityFlag(managed_group)
     flags.AddStartupCpuBoostFlag(managed_group)
     flags.AddVpcConnectorArgs(managed_group)
+    flags.RemoveContainersFlag().AddToParser(managed_group)
 
     # Flags specific to connecting to a cluster
     cluster_group = flags.GetClusterArgGroup(parser)
@@ -169,9 +171,6 @@ class Deploy(base.Command):
         prefixes=False,
     )
     flags.AddPlatformAndLocationFlags(parser)
-    if add_container_args:
-      flags.AddMutexEnvVarsFlags(parser)
-      flags.AddMemoryFlag(parser)
     flags.AddConcurrencyFlag(parser)
     flags.AddTimeoutFlag(parser)
     flags.AddAsyncFlag(parser)
@@ -179,27 +178,20 @@ class Deploy(base.Command):
     flags.AddGeneralAnnotationFlags(parser)
     flags.AddMinInstancesFlag(parser)
     flags.AddMaxInstancesFlag(parser)
-    if add_container_args:
-      flags.AddCommandFlag(parser)
-      flags.AddArgsFlag(parser)
-      flags.AddPortFlag(parser)
-      flags.AddCpuFlag(parser)
     flags.AddNoTrafficFlag(parser)
     flags.AddDeployTagFlag(parser)
     flags.AddServiceAccountFlag(parser)
     flags.AddClientNameAndVersionFlags(parser)
     flags.AddIngressFlag(parser)
-    if add_container_args:
-      flags.AddHttp2Flag(parser)
-      flags.AddSourceAndImageFlags(parser)
-      flags.AddSecretsFlags(parser)
     concept_parsers.ConceptParser([service_presentation]).AddToParser(parser)
     # No output by default, can be overridden by --format
     parser.display_info.AddFormat('none')
 
-  @staticmethod
-  def Args(parser):
+  @classmethod
+  def Args(cls, parser):
     Deploy.CommonArgs(parser)
+    container_args = ContainerArgGroup(cls.ReleaseTrack())
+    container_parser.AddContainerFlags(parser, container_args)
 
   def Run(self, args):
     """Deploy a container to Cloud Run."""
@@ -241,12 +233,7 @@ class Deploy(base.Command):
           if not flags.FlagIsExplicitlySet(container, 'source')
       ]
       if needs_image:
-        raise c_exceptions.RequiredArgumentException(
-            '--image',
-            'Containers {} require a container image to deploy (e.g.'
-            ' `gcr.io/cloudrun/hello:latest`) if no build source is'
-            ' provided.'.format(', '.join(needs_image)),
-        )
+        raise exceptions.RequiredImageArgumentException(needs_image)
       raise c_exceptions.InvalidArgumentException(
           '--container', 'At most one container can be deployed from source.'
       )
@@ -479,13 +466,12 @@ class BetaDeploy(Deploy):
 
   @classmethod
   def Args(cls, parser):
-    Deploy.CommonArgs(parser, False)
+    Deploy.CommonArgs(parser)
 
     # Flags specific to managed CR
     managed_group = flags.GetManagedArgGroup(parser)
     flags.AddVpcNetworkGroupFlagsForUpdate(managed_group)
     flags.AddVolumesFlags(managed_group, cls.ReleaseTrack())
-    flags.RemoveContainersFlag().AddToParser(managed_group)
     container_args = ContainerArgGroup(cls.ReleaseTrack())
     container_parser.AddContainerFlags(parser, container_args)
 
@@ -496,17 +482,17 @@ class AlphaDeploy(BetaDeploy):
 
   @classmethod
   def Args(cls, parser):
-    Deploy.CommonArgs(parser, False)
+    Deploy.CommonArgs(parser)
 
     # Flags specific to managed CR
     managed_group = flags.GetManagedArgGroup(parser)
     flags.AddVpcNetworkGroupFlagsForUpdate(managed_group)
+    flags.AddDeployHealthCheckFlag(managed_group)
     flags.AddDefaultUrlFlag(managed_group)
     flags.AddInvokerIamCheckFlag(managed_group)
     flags.AddRuntimeFlag(managed_group)
     flags.AddServiceMinInstancesFlag(managed_group)
     flags.AddVolumesFlags(managed_group, cls.ReleaseTrack())
-    flags.RemoveContainersFlag().AddToParser(managed_group)
     flags.AddGpuTypeFlag(managed_group)
     flags.SERVICE_MESH_FLAG.AddToParser(managed_group)
     container_args = ContainerArgGroup(cls.ReleaseTrack())

@@ -118,7 +118,9 @@ class Create(base.CreateCommand):
   def Run(self, args):
 
     # Determine what version to call from --location and --api-version.
-    version = scc_util.GetVersionFromArguments(args, args.BIG_QUERY_EXPORT)
+    version = scc_util.GetVersionFromArguments(
+        args, args.BIG_QUERY_EXPORT, version_specific_existing_resource=True
+    )
     messages = securitycenter_client.GetMessages(version)
     client = securitycenter_client.GetClient(version)
 

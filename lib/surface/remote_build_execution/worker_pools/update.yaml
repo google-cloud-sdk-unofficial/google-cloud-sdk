@@ -167,4 +167,10 @@
           processor: googlecloudsdk.command_lib.scheduler.util:ClearFlag
           help_text: |
             Remove the autoscale settings.
+    - api_field: googleDevtoolsRemotebuildexecutionAdminV1alphaUpdateWorkerPoolRequest.workerPool.workerConfig.zones
+      arg_name: zones
+      required: false
+      help_text: |
+        List of zones where the workers should be located. If empty, workers
+        will be located in all zones in the region.
     additional_arguments_hook: googlecloudsdk.command_lib.remote_build_execution.workerpool_update_util:AddLabelsFlags

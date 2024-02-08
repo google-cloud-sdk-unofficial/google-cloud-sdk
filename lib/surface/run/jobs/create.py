@@ -20,8 +20,11 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 from googlecloudsdk.calliope import base
+from googlecloudsdk.calliope import parser_errors as c_parser_errors
 from googlecloudsdk.command_lib.run import config_changes
 from googlecloudsdk.command_lib.run import connection_context
+from googlecloudsdk.command_lib.run import container_parser
+from googlecloudsdk.command_lib.run import exceptions
 from googlecloudsdk.command_lib.run import flags
 from googlecloudsdk.command_lib.run import messages_util
 from googlecloudsdk.command_lib.run import pretty_print
@@ -32,6 +35,30 @@ from googlecloudsdk.command_lib.util.concepts import concept_parsers
 from googlecloudsdk.command_lib.util.concepts import presentation_specs
 from googlecloudsdk.core import log
 from googlecloudsdk.core.console import progress_tracker
+
+
+EXAMPLE_JOB_IMAGE = 'us-docker.pkg.dev/cloudrun/container/job:latest'
+
+
+def ContainerArgGroup():
+  """Returns an argument group with all per-container deploy args."""
+
+  help_text = """
+Container Flags
+
+  If the --container is specified the following arguments may only be specified after a --container flag.
+"""
+  group = base.ArgumentGroup(help=help_text)
+  # Verify image flag is specified in Run function for better error message.
+  group.AddArgument(flags.ImageArg(image=EXAMPLE_JOB_IMAGE, required=False))
+  group.AddArgument(flags.MutexEnvVarsFlags())
+  group.AddArgument(flags.MemoryFlag())
+  group.AddArgument(flags.CpuFlag())
+  group.AddArgument(flags.ArgsFlag())
+  group.AddArgument(flags.SecretsFlags())
+  group.AddArgument(flags.CommandFlag())
+
+  return group
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
@@ -55,7 +82,7 @@ class Create(base.Command):
   }
 
   @staticmethod
-  def CommonArgs(parser):
+  def CommonArgs(parser, add_container_args=True):
     # Flags not specific to any platform
     job_presentation = presentation_specs.ResourcePresentationSpec(
         'JOB',
@@ -64,24 +91,23 @@ class Create(base.Command):
         required=True,
         prefixes=False,
     )
-    flags.AddImageArg(
-        parser, image='us-docker.pkg.dev/cloudrun/container/job:latest'
-    )
+    if add_container_args:
+      flags.AddImageArg(parser, image=EXAMPLE_JOB_IMAGE)
+      flags.AddArgsFlag(parser)
+      flags.AddCommandFlag(parser)
+      flags.AddCpuFlag(parser, managed_only=True)
+      flags.AddMemoryFlag(parser)
+      flags.AddMutexEnvVarsFlagsForCreate(parser)
+      flags.AddSetSecretsFlag(parser)
     flags.AddLabelsFlag(parser)
     flags.AddParallelismFlag(parser)
     flags.AddTasksFlag(parser)
     flags.AddMaxRetriesFlag(parser)
     flags.AddTaskTimeoutFlags(parser)
     flags.AddServiceAccountFlag(parser, managed_only=True)
-    flags.AddMutexEnvVarsFlagsForCreate(parser)
     flags.AddSetCloudSQLFlag(parser)
     flags.AddVpcConnectorArg(parser)
     flags.AddEgressSettingsFlag(parser)
-    flags.AddSetSecretsFlag(parser)
-    flags.AddMemoryFlag(parser)
-    flags.AddCpuFlag(parser, managed_only=True)
-    flags.AddCommandFlag(parser)
-    flags.AddArgsFlag(parser)
     flags.AddClientNameAndVersionFlags(parser)
     flags.AddBinAuthzPolicyFlags(parser, with_clear=False)
     flags.AddBinAuthzBreakglassFlag(parser)
@@ -109,6 +135,17 @@ class Create(base.Command):
 
   def Run(self, args):
     """Deploy a Job to Cloud Run."""
+    if flags.FlagIsExplicitlySet(args, 'containers'):
+      needs_image = {
+          name: container
+          for name, container in args.containers.items()
+          if not container.IsSpecified('image')
+      }
+      if needs_image:
+        raise exceptions.RequiredImageArgumentException(needs_image)
+    elif not flags.FlagIsExplicitlySet(args, 'image'):
+      raise c_parser_errors.RequiredError(argument='--image')
+
     job_ref = args.CONCEPTS.job.Parse()
     flags.ValidateResource(job_ref)
 
@@ -200,6 +237,8 @@ class AlphaCreate(BetaCreate):
 
   @staticmethod
   def Args(parser):
-    Create.CommonArgs(parser)
+    Create.CommonArgs(parser, add_container_args=False)
     flags.AddVpcNetworkGroupFlagsForCreate(parser, resource_kind='job')
     flags.AddRuntimeFlag(parser)
+    container_args = ContainerArgGroup()
+    container_parser.AddContainerFlags(parser, container_args)

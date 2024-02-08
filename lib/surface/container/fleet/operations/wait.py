@@ -31,7 +31,6 @@ $ {command} OPERATION --location=us-west1
 """
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Wait(base.Command):
   """Poll a long-running operation for completion."""
 
@@ -46,10 +45,10 @@ class Wait(base.Command):
   def Run(self, args: parser_extensions.Namespace):
     """Runs the wait command."""
     flag_parser = fleet_flags.FleetFlagParser(
-        args, release_track=base.ReleaseTrack.ALPHA
+        args, release_track=self.ReleaseTrack()
     )
     operation_client = client.OperationClient(
-        release_track=base.ReleaseTrack.ALPHA
+        release_track=self.ReleaseTrack()
     )
 
     return operation_client.Wait(operation_ref=flag_parser.OperationRef())

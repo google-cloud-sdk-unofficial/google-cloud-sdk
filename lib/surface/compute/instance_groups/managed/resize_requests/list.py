@@ -48,7 +48,6 @@ DETAILED_HELP = {
 }
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class ListBeta(base.ListCommand):
   """List Compute Engine managed instance group resize requests."""
@@ -103,7 +102,6 @@ class ListBeta(base.ListCommand):
     return self._Run(args, holder)
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class ListAlpha(ListBeta):
   """List Compute Engine managed instance group resize requests."""

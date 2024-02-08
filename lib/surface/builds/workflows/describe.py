@@ -19,15 +19,16 @@ from __future__ import division
 from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.cloudbuild.v2 import client_util
-from googlecloudsdk.api_lib.cloudbuild.v2 import workflow_input_util
+from googlecloudsdk.api_lib.cloudbuild.v2 import workflow_output_util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.cloudbuild import run_flags
+from googlecloudsdk.core.resource import resource_printer
 from googlecloudsdk.core.resource import resource_projector
 
 
 @base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class Describe(base.Command):
+class Describe(base.DescribeCommand):
   """Get a Workflow."""
 
   @staticmethod
@@ -39,6 +40,12 @@ class Describe(base.Command):
         to capture some information, but behaves like an ArgumentParser.
     """
     parser.add_argument('WORKFLOW_ID', help='The ID of the Workflow.')
+    resource_printer.RegisterFormatter(
+        workflow_output_util.PRINTER_FORMAT,
+        workflow_output_util.WorkflowPrinter,
+        hidden=True,
+    )
+    parser.display_info.AddFormat(workflow_output_util.PRINTER_FORMAT)
     run_flags.AddsRegionResourceArg(parser)
 
   def Run(self, args):
@@ -54,5 +61,4 @@ class Describe(base.Command):
         messages.CloudbuildProjectsLocationsWorkflowsGetRequest(
             name=workflow_name))
     synthesized = resource_projector.MakeSerializable(workflow)
-    workflow_input_util.WorkflowDisplay(synthesized)
     return synthesized

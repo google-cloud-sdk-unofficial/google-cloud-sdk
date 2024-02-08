@@ -32,7 +32,6 @@ $ {command} OPERATION --location=us-west1
 """
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Describe(base.DescribeCommand):
   """Describe a long-running operation."""
 
@@ -47,11 +46,11 @@ class Describe(base.DescribeCommand):
   def Run(self, args: parser_extensions.Namespace):
     """Runs the describe command."""
     flag_parser = fleet_flags.FleetFlagParser(
-        args, release_track=base.ReleaseTrack.ALPHA
+        args, release_track=self.ReleaseTrack()
     )
 
     operation_client = client.OperationClient(
-        release_track=base.ReleaseTrack.ALPHA
+        release_track=self.ReleaseTrack()
     )
     req = flag_parser.messages.GkehubProjectsLocationsOperationsGetRequest(
         name=flag_parser.OperationRef().RelativeName(),

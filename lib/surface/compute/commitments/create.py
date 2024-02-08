@@ -48,7 +48,7 @@ class Create(base.Command):
   """Create Compute Engine commitments."""
   _support_share_setting = True
   _support_stable_fleet = False
-  _support_existing_reservation = False
+  _support_existing_reservation = True
 
   detailed_help = {
       'EXAMPLES': '''
@@ -102,6 +102,7 @@ class Create(base.Command):
         mergeSourceCommitments=flags.TranslateMergeArg(
             args.merge_source_commitments,
         ),
+        existingReservations=existing_reservations
     )
     return messages.ComputeRegionCommitmentsInsertRequest(
         commitment=commitment,
@@ -167,7 +168,7 @@ class CreateBeta(Create):
   """Create Compute Engine commitments."""
   _support_share_setting = True
   _support_stable_fleet = True
-  _support_existing_reservation = False
+  _support_existing_reservation = True
 
   @classmethod
   def Args(cls, parser):

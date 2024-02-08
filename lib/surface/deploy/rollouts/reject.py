@@ -19,8 +19,10 @@ from __future__ import division
 from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.clouddeploy import rollout
+from googlecloudsdk.api_lib.util import exceptions as gcloud_exception
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.deploy import delivery_pipeline_util
+from googlecloudsdk.command_lib.deploy import exceptions as deploy_exceptions
 from googlecloudsdk.command_lib.deploy import resource_args
 from googlecloudsdk.core.console import console_io
 
@@ -47,6 +49,9 @@ class Reject(base.CreateCommand):
   def Args(parser):
     resource_args.AddRolloutResourceArg(parser, positional=True)
 
+  @gcloud_exception.CatchHTTPErrorRaiseHTTPException(
+      deploy_exceptions.HTTP_ERROR_FORMAT
+  )
   def Run(self, args):
     rollout_ref = args.CONCEPTS.rollout.Parse()
     pipeline_ref = rollout_ref.Parent().Parent()

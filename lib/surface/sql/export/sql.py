@@ -54,6 +54,8 @@ class Sql(base.Command):
     """
     export_util.AddBaseExportFlags(parser)
     flags.AddOffloadArgument(parser)
+    flags.AddParallelArgument(parser, operation='export')
+    flags.AddThreadsArgument(parser, operation='export')
     parser.add_argument(
         '--table',
         '-t',

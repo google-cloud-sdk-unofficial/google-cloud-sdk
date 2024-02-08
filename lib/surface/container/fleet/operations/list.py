@@ -37,7 +37,6 @@ $ {command} --location=us-west1
 """
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class List(base.ListCommand):
   """List long-running operations."""
 

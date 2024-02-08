@@ -73,27 +73,7 @@ class List(base.ListCommand):
       parser: An argparse parser that you can use to add arguments that go on
         the command line after this command. Positional arguments are allowed.
     """
-    mutex_group = parser.add_group(mutex=True, required=True)
-    mutex_group.add_argument(
-        '--instance-config',
-        completer=flags.InstanceConfigCompleter,
-        help='The ID of the instance configuration the operation is executing on.'
-    )
-    mutex_group.add_argument(
-        '--instance',
-        completer=flags.InstanceCompleter,
-        help='The ID of the instance the operation is executing on.')
-
-    additional_choices = {
-        'INSTANCE_CONFIG_CREATE':
-            'Instance configuration create operations are returned for the '
-            'given instance configuration (--instance-config).',
-        'INSTANCE_CONFIG_UPDATE':
-            'Instance configuration update operations are returned for the '
-            'given instance configuration (--instance-config).'
-    }
-
-    flags.AddCommonListArgs(parser, additional_choices)
+    flags.AddCommonListArgs(parser)
 
   def Run(self, args):
     """This is what gets called when the user runs this command.
@@ -106,8 +86,9 @@ class List(base.ListCommand):
       Some value that we want to have printed later.
     """
     if args.instance_config:
-      type_filter = instance_config_operations.BuildInstanceConfigOperationTypeFilter(
-          args.type)
+      type_filter = (
+          instance_config_operations.BuildInstanceConfigOperationTypeFilter(
+              args.type))
       return instance_config_operations.List(args.instance_config, type_filter)
 
     is_database_type = (
@@ -221,8 +202,15 @@ class AlphaList(List):
       parser: An argparse parser that you can use to add arguments that go on
         the command line after this command. Positional arguments are allowed.
     """
-    super(AlphaList, AlphaList).Args(parser)
+    additional_choices = {
+        'DATABASE_CHANGE_QUORUM': (
+            'Database change quorum operations are returned for all databases '
+            'in the given instance (--instance only) or only those associated '
+            'with the given database (--database).'
+        )
+    }
 
+    flags.AddCommonListArgs(parser, additional_choices)
     flags.SsdCache(
         positional=False,
         required=False,

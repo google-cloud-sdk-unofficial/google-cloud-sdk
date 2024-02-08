@@ -71,17 +71,13 @@ def AddBaseArgs(parser):
   # TODO(b/35705305): move common flags to command_lib.sql.flags
   base.ASYNC_FLAG.AddToParser(parser)
   parser.display_info.AddFormat(flags.GetInstanceListFormat())
+  # (-- LINT.IfChange(instance_settings) --)
   flags.AddActivationPolicy(parser)
   flags.AddActiveDirectoryDomain(parser)
   flags.AddAssignIp(parser)
   flags.AddAuthorizedNetworks(parser)
   flags.AddAvailabilityType(parser)
-  parser.add_argument(
-      '--backup',
-      required=False,
-      action='store_true',
-      default=True,
-      help='Enables daily backup.')
+  flags.AddBackup(parser)
   flags.AddBackupStartTime(parser)
   flags.AddBackupLocation(parser, allow_empty=False)
   flags.AddCPU(parser)
@@ -90,11 +86,7 @@ def AddBaseArgs(parser):
   flags.AddEnableBinLog(parser, show_negated_in_help=False)
   flags.AddRetainedBackupsCount(parser)
   flags.AddRetainedTransactionLogDays(parser)
-
-  parser.add_argument(
-      '--failover-replica-name',
-      required=False,
-      help='Also create a failover replica with the specified name.')
+  flags.AddFailoverReplicaName(parser)
   parser.add_argument(
       'instance',
       type=command_validate.InstanceNameRegexpValidator(),
@@ -111,12 +103,7 @@ def AddBaseArgs(parser):
       parser, show_negated_in_help=True)
   flags.AddInsightsConfigRecordClientAddress(parser, show_negated_in_help=True)
   flags.AddInsightsConfigQueryPlansPerMinute(parser)
-  parser.add_argument(
-      '--master-instance-name',
-      required=False,
-      help=('Name of the instance which will act as master in the '
-            'replication setup. The newly created instance will be a read '
-            'replica of the specified master instance.'))
+  flags.AddMasterInstanceName(parser)
   flags.AddMemory(parser)
   flags.AddPasswordPolicyMinLength(parser)
   flags.AddPasswordPolicyComplexity(parser)
@@ -124,26 +111,13 @@ def AddBaseArgs(parser):
   flags.AddPasswordPolicyDisallowUsernameSubstring(parser)
   flags.AddPasswordPolicyPasswordChangeInterval(parser)
   flags.AddPasswordPolicyEnablePasswordPolicy(parser)
-  parser.add_argument(
-      '--replica-type',
-      choices=['READ', 'FAILOVER'],
-      help='The type of replica to create.')
+  flags.AddReplicaType(parser)
   flags.AddReplication(parser)
-  parser.add_argument(
-      '--require-ssl',
-      required=False,
-      action='store_true',
-      default=None,
-      help='Specified if users connecting over IP must use SSL.')
+  flags.AddRequireSsl(parser)
   flags.AddRootPassword(parser)
   flags.AddStorageAutoIncrease(parser)
   flags.AddStorageSize(parser)
-  parser.add_argument(
-      '--storage-type',
-      required=False,
-      choices=['SSD', 'HDD'],
-      default=None,
-      help='The storage type for the instance. The default is SSD.')
+  flags.AddStorageType(parser)
   flags.AddTier(parser)
   flags.AddEdition(parser)
   kms_flag_overrides = {
@@ -172,6 +146,9 @@ def AddBaseArgs(parser):
   flags.AddEnablePrivateServiceConnect(psc_setup_group)
   flags.AddAllowedPscProjects(psc_setup_group)
   flags.AddSslMode(parser)
+  # (--
+  # LINT.ThenChange(../backups/restore.py:instance_settings)
+  # --)
 
 
 def AddBetaArgs(parser):

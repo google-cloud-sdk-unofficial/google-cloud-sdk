@@ -18,11 +18,10 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
-from apitools.base.py import exceptions as apitools_exceptions
 from googlecloudsdk.api_lib.clouddeploy import release
 from googlecloudsdk.api_lib.util import apis as core_apis
+from googlecloudsdk.api_lib.util import exceptions as gcloud_exception
 from googlecloudsdk.calliope import base
-from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.deploy import delivery_pipeline_util
 from googlecloudsdk.command_lib.deploy import exceptions as deploy_exceptions
 from googlecloudsdk.command_lib.deploy import flags
@@ -72,6 +71,9 @@ class Redeploy(base.CreateCommand):
     flags.AddLabelsFlag(parser, _ROLLOUT)
     flags.AddStartingPhaseId(parser)
 
+  @gcloud_exception.CatchHTTPErrorRaiseHTTPException(
+      deploy_exceptions.HTTP_ERROR_FORMAT
+  )
   def Run(self, args):
     target_ref = args.CONCEPTS.target.Parse()
     # Check if target exists
@@ -97,12 +99,10 @@ class Redeploy(base.CreateCommand):
     current_release_ref = _GetCurrentRelease(
         pipeline_ref, target_ref, rollout_util.ROLLOUT_IN_TARGET_FILTER_TEMPLATE
     )
-    try:
-      release_obj = release.ReleaseClient().Get(
-          current_release_ref.RelativeName()
-      )
-    except apitools_exceptions.HttpError as error:
-      raise exceptions.HttpException(error)
+    release_obj = release.ReleaseClient().Get(
+        current_release_ref.RelativeName()
+    )
+
     # Check if the release is abandoned.
     if release_obj.abandoned:
       raise deploy_exceptions.AbandonedReleaseError(

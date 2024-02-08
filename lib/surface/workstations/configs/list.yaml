@@ -29,8 +29,9 @@
     format: |
       table(
         name.basename():sort=1,
-        name.scope(workstationClusters).segment(0):label='Cluster',
+        name.scope(workstationClusters).segment(0):label='CLUSTER',
+        name.scope(locations).segment(0):label='REGION',
         createTime.date(),
-        host.gceInstance.machine_type:label='Machine Type',
-        container.image:label='Image'
+        host.gceInstance.machine_type:label='MACHINE TYPE',
+        container.image:label='IMAGE'
       )

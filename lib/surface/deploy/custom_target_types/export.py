@@ -20,10 +20,10 @@ from __future__ import unicode_literals
 
 import textwrap
 
-from apitools.base.py import exceptions as apitools_exceptions
 from googlecloudsdk.api_lib.clouddeploy import custom_target_type
+from googlecloudsdk.api_lib.util import exceptions as gcloud_exception
 from googlecloudsdk.calliope import base
-from googlecloudsdk.calliope import exceptions
+from googlecloudsdk.command_lib.deploy import exceptions as deploy_exceptions
 from googlecloudsdk.command_lib.deploy import export_util
 from googlecloudsdk.command_lib.deploy import manifest_util
 from googlecloudsdk.command_lib.deploy import resource_args
@@ -57,6 +57,9 @@ class Export(base.ExportCommand):
     resource_args.AddCustomTargetTypeResourceArg(parser, positional=True)
     core_export_util.AddExportFlags(parser)
 
+  @gcloud_exception.CatchHTTPErrorRaiseHTTPException(
+      deploy_exceptions.HTTP_ERROR_FORMAT
+  )
   def Run(self, args):
     """Entry point of the export command.
 
@@ -65,13 +68,9 @@ class Export(base.ExportCommand):
         arguments specified in the .Args() method.
     """
     custom_target_type_ref = args.CONCEPTS.custom_target_type.Parse()
-    try:
-      resource = custom_target_type.CustomTargetTypesClient().Get(
-          custom_target_type_ref.RelativeName()
-      )
-    except apitools_exceptions.HttpError as error:
-      raise exceptions.HttpException(error)
-
+    resource = custom_target_type.CustomTargetTypesClient().Get(
+        custom_target_type_ref.RelativeName()
+    )
     manifest = manifest_util.ProtoToManifest(
         resource, custom_target_type_ref, manifest_util.CUSTOM_TARGET_TYPE_KIND
     )

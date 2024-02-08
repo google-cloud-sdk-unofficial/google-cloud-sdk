@@ -39,7 +39,6 @@ DETAILED_HELP = {
 }
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class CreateBeta(base.CreateCommand):
   """Create a Compute Engine managed instance group resize request."""
@@ -121,7 +120,6 @@ class CreateBeta(base.CreateCommand):
     )])
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class CreateAlpha(base.CreateCommand):
   """Create a Compute Engine managed instance group resize request."""

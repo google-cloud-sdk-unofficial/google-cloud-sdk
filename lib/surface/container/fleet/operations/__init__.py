@@ -22,7 +22,6 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import parser_arguments
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Operations(base.Group):
   """Manage Anthos fleet long-running operations."""
 

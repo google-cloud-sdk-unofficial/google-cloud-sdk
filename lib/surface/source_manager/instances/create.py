@@ -85,7 +85,7 @@ class Create(base.CreateCommand):
           'Secure Source Manager API (securesourcemanager.googleapis.com) has'
           ' not been enabled on the project. Secure Source Manager is generally'
           ' available (GA) by invitation only. To use Secure Source Manager,'
-          ' you may need to contact your Google Account team.'
+          ' contact your Google Account team.'
       )
       raise
 

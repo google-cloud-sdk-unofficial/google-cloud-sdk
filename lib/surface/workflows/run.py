@@ -57,6 +57,7 @@ class Run(base.DescribeCommand):
   def Args(parser):
     Run.CommonArgs(parser)
     flags.AddLoggingArg(parser)
+    flags.AddDisableOverflowBufferArg(parser)
     labels_util.AddCreateLabelsFlags(parser)
 
   def CallLogLevel(self, args):
@@ -65,6 +66,9 @@ class Run(base.DescribeCommand):
   def Labels(self, args):
     return flags.ParseExecutionLabels(args)
 
+  def OverflowBufferingDisabled(self, args):
+    return args.disable_concurrency_quota_overflow_buffering
+
   def Run(self, args):
     """Execute a workflow and wait for the completion of the execution."""
     hooks.print_default_location_warning(None, args, None)
@@ -72,7 +76,11 @@ class Run(base.DescribeCommand):
     workflow_ref = flags.ParseWorkflow(args)
     client = workflows.WorkflowExecutionClient(api_version)
     execution = client.Create(
-        workflow_ref, args.data, self.CallLogLevel(args), self.Labels(args)
+        workflow_ref,
+        args.data,
+        self.CallLogLevel(args),
+        self.Labels(args),
+        self.OverflowBufferingDisabled(args),
     )
     cache.cache_execution_id(execution.name)
     execution_ref = resources.REGISTRY.Parse(
@@ -107,6 +115,9 @@ class BetaRun(Run):
   def Labels(self, args):
     return None
 
+  def OverflowBufferingDisabled(self, args):
+    return False
+
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class AlphaRun(Run):
@@ -132,3 +143,6 @@ class AlphaRun(Run):
 
   def Labels(self, args):
     return None
+
+  def OverflowBufferingDisabled(self, args):
+    return False
