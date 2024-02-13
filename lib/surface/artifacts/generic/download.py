@@ -91,6 +91,11 @@ class Download(base.Command):
     """Run the generic artifact download command."""
 
     repo_ref = args.CONCEPTS.repository.Parse()
+    if not os.path.isdir(args.destination):
+      log.error(
+          'Directory {} does not exist.'.format(args.destination))
+      sys.exit(1)
+
     # Get the file name when given a file path
     if args.name:
       file_name = os.path.basename(args.name)
@@ -105,23 +110,7 @@ class Download(base.Command):
                 args.package, args.version
             )
         )
-      for files in list_files:
-        # Extract just the file id.
-        file_id = os.path.basename(files.name)
-        file_name = file_id.rsplit(':', 1)[1].replace('%2F', '/')
-        # Create the directory structure.
-        if '/' in file_name:
-          d = os.path.dirname(file_name)
-          try:
-            os.makedirs(os.path.join(args.destination, d))
-          except FileExistsError:
-            log.error(
-                'Directory {} already exists.'.format(
-                    os.path.join(args.destination, d)
-                )
-            )
-            sys.exit(1)
-        self.downloadGenericArtifact(args, repo_ref, file_id, file_name)
+      self.batchDownloadFiles(args, repo_ref, list_files)
 
   def downloadGenericArtifact(self, args, repo_ref, file_id, file_name):
     final_path = os.path.join(args.destination, file_name)
@@ -146,3 +135,14 @@ class Download(base.Command):
     log.status.Print(
         'Successfully downloaded the file to {}'.format(args.destination)
     )
+
+  def batchDownloadFiles(self, args, repo_ref, list_files):
+    for files in list_files:
+      # Extract just the file id.
+      file_id = os.path.basename(files.name)
+      file_name = file_id.rsplit(':', 1)[1].replace('%2F', '/')
+      # Create the directory structure.
+      if '/' in file_name:
+        d = os.path.dirname(file_name)
+        os.makedirs(os.path.join(args.destination, d), exist_ok=True)
+      self.downloadGenericArtifact(args, repo_ref, file_id, file_name)

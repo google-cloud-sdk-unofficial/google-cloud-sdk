@@ -32,6 +32,7 @@ from googlecloudsdk.core.util import files
 
 
 RESOURCE_TYPE = 'login configuration file'
+GOOGLE_DEFAULT_CLOUD_WEB_DOMAIN = 'cloud.google'
 
 
 class CreateLoginConfig(base.CreateCommand):
@@ -94,35 +95,26 @@ class CreateLoginConfig(base.CreateCommand):
   def Run(self, args):
     # Take universe domains into account.
     universe_domain_property = properties.VALUES.core.universe_domain
+
+    universe_domain = universe_domain_property.Get()
+    # Universe_domain arg takes precedence over the configuration.
     if getattr(args, 'universe_domain', None):
-      # Universe_domain arg takes precedence.
       universe_domain = args.universe_domain
-    elif universe_domain_property.IsExplicitlySet():
-      universe_domain = universe_domain_property.Get()
-    else:
-      universe_domain = 'googleapis.com'
 
     # TODO(b/284507677): Retrieve automatically when lookup is available.
-    universe_cloud_web_domain = 'cloud.google'
+    universe_cloud_web_domain = GOOGLE_DEFAULT_CLOUD_WEB_DOMAIN
     if getattr(args, 'universe_cloud_web_domain', None):
       universe_cloud_web_domain = args.universe_cloud_web_domain
 
     if (
-        universe_domain != 'googleapis.com'
-        and universe_cloud_web_domain == 'cloud.google'
+        universe_domain != universe_domain_property.default
+        and universe_cloud_web_domain == GOOGLE_DEFAULT_CLOUD_WEB_DOMAIN
+    ) or (
+        universe_domain == universe_domain_property.default
+        and universe_cloud_web_domain != GOOGLE_DEFAULT_CLOUD_WEB_DOMAIN
     ):
       raise exceptions.RequiredArgumentException(
-          '--universe_cloud_web_domain',
-          'Both --universe-domain and --universe-cloud-web-domain must be set'
-          ' together.',
-      )
-
-    if (
-        universe_domain == 'googleapis.com'
-        and universe_cloud_web_domain != 'cloud.google'
-    ):
-      raise exceptions.RequiredArgumentException(
-          '--universe-domain',
+          '--universe-cloud-web-domain',
           'Both --universe-domain and --universe-cloud-web-domain must be set'
           ' together.',
       )
@@ -132,6 +124,7 @@ class CreateLoginConfig(base.CreateCommand):
         enable_mtls=enable_mtls, universe_domain=universe_domain
     )
     output = {
+        'universe_domain': universe_domain,
         'type': 'external_account_authorized_user_login_config',
         'audience': '//iam.googleapis.com/' + args.audience,
         'auth_url': 'https://auth.{cloud_web_domain}/authorize'.format(
@@ -140,12 +133,6 @@ class CreateLoginConfig(base.CreateCommand):
         'token_url': token_endpoint_builder.oauth_token_url,
         'token_info_url': token_endpoint_builder.token_info_url,
     }
-
-    # TODO(b/276367366): Add in all cases once approved.
-    if universe_domain != 'googleapis.com':
-      output['universe_domain'] = universe_domain
-    if universe_cloud_web_domain != 'cloud.google':
-      output['universe_cloud_web_domain'] = universe_cloud_web_domain
 
     files.WriteFileContents(args.output_file, json.dumps(output, indent=2))
     log.CreatedResource(args.output_file, RESOURCE_TYPE)

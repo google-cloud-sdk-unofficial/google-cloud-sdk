@@ -35,6 +35,17 @@ arguments:
   - arg_name: items
     api_field: addressGroup.items
     help_text: Items of the address group.
+  - arg_name: purpose
+    api_field: addressGroup.purpose
+    release_tracks: [ALPHA, BETA]
+    hidden: true
+    help_text: |
+      List of Address Group purposes.
+    choices:
+    - arg_value: DEFAULT
+      enum_value: DEFAULT
+    - arg_value: CLOUD-ARMOR
+      enum_value: CLOUD_ARMOR
   - arg_name: labels
     api_field: addressGroup.labels.additionalProperties
     metavar: KEY=VALUE

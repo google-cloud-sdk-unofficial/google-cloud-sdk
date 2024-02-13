@@ -22,6 +22,7 @@ from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.run import config_changes
 from googlecloudsdk.command_lib.run import connection_context
+from googlecloudsdk.command_lib.run import container_parser
 from googlecloudsdk.command_lib.run import flags
 from googlecloudsdk.command_lib.run import messages_util
 from googlecloudsdk.command_lib.run import pretty_print
@@ -32,6 +33,35 @@ from googlecloudsdk.command_lib.util.concepts import concept_parsers
 from googlecloudsdk.command_lib.util.concepts import presentation_specs
 from googlecloudsdk.core import log
 from googlecloudsdk.core.console import progress_tracker
+
+
+def ContainerArgGroup():
+  """Returns an argument group with all per-container update args."""
+
+  help_text = """
+Container Flags
+
+  If the --container or --remove-containers flag is specified the following
+  arguments may only be specified after a --container flag.
+"""
+  group = base.ArgumentGroup(help=help_text)
+  group.AddArgument(
+      flags.ImageArg(
+          image='us-docker.pkg.dev/cloudrun/container/job:latest',
+          required=False,
+      )
+  )
+  group.AddArgument(flags.MutexEnvVarsFlags())
+  group.AddArgument(flags.MemoryFlag())
+  group.AddArgument(flags.CpuFlag())
+  group.AddArgument(flags.ArgsFlag())
+  group.AddArgument(flags.SecretsFlags())
+  group.AddArgument(flags.CommandFlag())
+  group.AddArgument(flags.AddVolumeMountFlag())
+  group.AddArgument(flags.RemoveVolumeMountFlag())
+  group.AddArgument(flags.ClearVolumeMountsFlag())
+
+  return group
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
@@ -50,7 +80,7 @@ class Update(base.Command):
   }
 
   @staticmethod
-  def CommonArgs(parser):
+  def CommonArgs(parser, add_container_args=True):
     # Flags not specific to any platform
     job_presentation = presentation_specs.ResourcePresentationSpec(
         'JOB',
@@ -59,26 +89,27 @@ class Update(base.Command):
         required=True,
         prefixes=False,
     )
-    flags.AddImageArg(
-        parser,
-        required=False,
-        image='us-docker.pkg.dev/cloudrun/container/job:latest',
-    )
+    if add_container_args:
+      flags.AddImageArg(
+          parser,
+          required=False,
+          image='us-docker.pkg.dev/cloudrun/container/job:latest',
+      )
+      flags.AddMutexEnvVarsFlags(parser)
+      flags.AddSecretsFlags(parser)
+      flags.AddMemoryFlag(parser)
+      flags.AddCpuFlag(parser, managed_only=True)
+      flags.AddCommandFlag(parser)
+      flags.AddArgsFlag(parser)
     flags.AddLabelsFlags(parser)
     flags.AddParallelismFlag(parser)
     flags.AddTasksFlag(parser)
     flags.AddMaxRetriesFlag(parser)
     flags.AddTaskTimeoutFlags(parser)
     flags.AddServiceAccountFlag(parser, managed_only=True)
-    flags.AddMutexEnvVarsFlags(parser)
     flags.AddCloudSQLFlags(parser)
     flags.AddVpcConnectorArgs(parser)
     flags.AddEgressSettingsFlag(parser)
-    flags.AddSecretsFlags(parser)
-    flags.AddMemoryFlag(parser)
-    flags.AddCpuFlag(parser, managed_only=True)
-    flags.AddCommandFlag(parser)
-    flags.AddArgsFlag(parser)
     flags.AddClientNameAndVersionFlags(parser)
     flags.AddBinAuthzPolicyFlags(parser, with_clear=True)
     flags.AddBinAuthzBreakglassFlag(parser)
@@ -199,12 +230,10 @@ class AlphaUpdate(BetaUpdate):
 
   @classmethod
   def Args(cls, parser):
-    Update.CommonArgs(parser)
+    Update.CommonArgs(parser, add_container_args=False)
+    container_args = ContainerArgGroup()
+    container_parser.AddContainerFlags(parser, container_args)
     flags.AddVpcNetworkGroupFlagsForUpdate(parser, resource_kind='job')
     flags.AddRuntimeFlag(parser)
     flags.AddVolumesFlags(parser, cls.ReleaseTrack())
-    group = base.ArgumentGroup()
-    group.AddArgument(flags.AddVolumeMountFlag())
-    group.AddArgument(flags.RemoveVolumeMountFlag())
-    group.AddArgument(flags.ClearVolumeMountsFlag())
-    group.AddToParser(parser)
+    flags.RemoveContainersFlag().AddToParser(parser)

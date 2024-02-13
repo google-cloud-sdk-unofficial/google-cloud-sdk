@@ -33,7 +33,7 @@ OP_BASE_CMD = 'gcloud beta services operations '
 OP_WAIT_CMD = OP_BASE_CMD + 'wait {0}'
 
 
-# TODO(b/274633761) make command public after preview.
+# TODO(b/321801975) make command public after preview.
 @base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class DisableAlpha(base.SilentCommand):

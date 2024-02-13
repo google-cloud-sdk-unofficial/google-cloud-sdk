@@ -12,7 +12,7 @@
 
   arguments:
     resource:
-      spec: !REF googlecloudsdk.command_lib.workstations.resources:config
+      spec: !REF googlecloudsdk.command_lib.workstations.resources:config_with_global_fallthrough
       help_text: |
         The configuration of the workstations to display.
 
@@ -30,6 +30,7 @@
       table(
         name.basename():sort=1,
         name.scope(workstationConfigs).segment(0):label='CONFIG',
+        name.scope(workstationsClusters).segment(0):label='CLUSTER',
         name.scope(locations).segment(0):label='REGION',
         state.sub("STATE_", ""):optional,
         createTime.date()

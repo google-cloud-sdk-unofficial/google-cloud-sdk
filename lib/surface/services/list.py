@@ -25,7 +25,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.services import common_flags
 
 
-# TODO(b/274633761) make command public after preview.
+# TODO(b/321801975) make command public after preview.
 @base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class ListAlpha(base.ListCommand):

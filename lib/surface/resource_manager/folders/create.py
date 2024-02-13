@@ -52,17 +52,20 @@ class Create(base.CreateCommand):
     base.Argument(
         '--display-name',
         required=True,
-        help='Friendly display name to use for the new folder.').AddToParser(
-            parser)
+        help='Friendly display name to use for the new folder.',
+    ).AddToParser(parser)
+    flags.TagsFlag().AddToParser(parser)
 
   def Run(self, args):
     flags.CheckParentFlags(args)
     messages = folders.FoldersMessages()
+    tags = flags.GetTagsFromFlags(args, messages.Folder.TagsValue)
     operation = folders.FoldersService().Create(
         messages.CloudresourcemanagerFoldersCreateRequest(
             parent=flags.GetParentFromFlags(args),
-            folder=messages.Folder(
-                displayName=args.display_name)))
+            folder=messages.Folder(displayName=args.display_name, tags=tags),
+        )
+    )
     if args.async_:
       return operation
     else:

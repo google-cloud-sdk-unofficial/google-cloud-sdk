@@ -290,7 +290,9 @@ class Create(base.Command):
     return []
 
   def ValidateAndParseDiskRefs(self, args, compute_holder):
-    return _ValidateAndParseDiskRefsRegionalReplica(args, compute_holder)
+    return _ValidateAndParseDiskRefsRegionalReplica(
+        args, compute_holder, self.source_instant_snapshot_enabled
+    )
 
   def GetFromImage(self, args):
     return args.image or args.image_family
@@ -655,7 +657,10 @@ class Create(base.Command):
 
         request = (client.apitools_client.disks, 'Insert', request)
       elif disk_ref.Collection() == 'compute.regionDisks':
-        disk.replicaZones = self.GetReplicaZones(args, compute_holder, disk_ref)
+        if args.IsSpecified('replica_zones'):
+          disk.replicaZones = self.GetReplicaZones(
+              args, compute_holder, disk_ref
+          )
         request = client.messages.ComputeRegionDisksInsertRequest(
             disk=disk, project=disk_ref.project, region=disk_ref.region)
 
@@ -756,7 +761,9 @@ class CreateAlpha(CreateBeta):
     )
 
 
-def _ValidateAndParseDiskRefsRegionalReplica(args, compute_holder):
+def _ValidateAndParseDiskRefsRegionalReplica(
+    args, compute_holder, source_instant_snapshot_enabled
+):
   """Validate flags and parse disks references.
 
   Subclasses may override it to customize parsing.
@@ -764,11 +771,17 @@ def _ValidateAndParseDiskRefsRegionalReplica(args, compute_holder):
   Args:
     args: The argument namespace
     compute_holder: base_classes.ComputeApiHolder instance
+    source_instant_snapshot_enabled: True if source instant snapshot is enabled
 
   Returns:
     List of compute.regionDisks resources.
   """
-  if not args.IsSpecified('replica_zones') and args.IsSpecified('region'):
+  if (
+      not args.IsSpecified('replica_zones')
+      and args.IsSpecified('region')
+      and not (source_instant_snapshot_enabled
+               and args.IsSpecified('source_instant_snapshot'))
+  ):
     raise exceptions.RequiredArgumentException(
         '--replica-zones',
         '--replica-zones is required for regional disk creation')
@@ -782,10 +795,14 @@ def _ValidateAndParseDiskRefsRegionalReplica(args, compute_holder):
       compute_holder.resources,
       scope_lister=flags.GetDefaultScopeLister(compute_holder.client))
 
-  # --replica-zones is required for regional disks always - also when region
-  # is selected in prompt.
+  # --replica-zones is required for regional disks unless a source instant
+  # snapshot is specified - also when region is selected in prompt.
   for disk_ref in disk_refs:
-    if disk_ref.Collection() == 'compute.regionDisks':
+    if (
+        disk_ref.Collection() == 'compute.regionDisks'
+        and not (source_instant_snapshot_enabled
+                 and args.IsSpecified('source_instant_snapshot'))
+    ):
       raise exceptions.RequiredArgumentException(
           '--replica-zones',
           '--replica-zones is required for regional disk creation [{}]'.format(

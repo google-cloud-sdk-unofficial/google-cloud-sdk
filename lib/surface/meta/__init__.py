@@ -22,6 +22,7 @@ from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 
 
+@base.UniverseCompatible
 @base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Meta(base.Group):

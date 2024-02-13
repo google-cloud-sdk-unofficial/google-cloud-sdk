@@ -17,19 +17,22 @@
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
+
 from apitools.base.py import exceptions as apitools_exceptions
 from googlecloudsdk.api_lib.audit_manager import enrollments
-from googlecloudsdk.api_lib.util import exceptions
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.audit_manager import exception_utils
 from googlecloudsdk.command_lib.audit_manager import flags
+from googlecloudsdk.core import exceptions as core_exceptions
+from googlecloudsdk.core import properties
+
 
 _DETAILED_HELP = {
     'DESCRIPTION': 'Enroll a new scope.',
     'EXAMPLES': """ \
-        To enroll a project with ID 123 in the us-central1 region, run:
+        To enroll a project with ID `123` in the `us-central1` region with `gs://test-bucket-1` and `gs://my-bucket-2` as eligible gcs buckets, run:
 
-        $ {command} --project=123 --location=us-central1 --eligible-gcs-buckets "gs://my-bucket-1,gs://my-bucket-2"
+        $ {command} --project=123 --location=us-central1 --eligible-gcs-buckets "gs://test-bucket-1,gs://my-bucket-2"
         """,
 }
 
@@ -66,15 +69,22 @@ class Add(base.CreateCommand):
           is_parent_folder=is_parent_folder,
       )
 
-    except apitools_exceptions.HttpNotFoundError as e:
-      details = exception_utils.ExtractErrorDetails(e)
-      if (
-          details['reason']
-          == exception_utils.ERROR_REASON_NO_ORGANISATION_FOUND
-      ):
-        raise exceptions.HttpException(
-            e,
-            error_format=(
-                'No corresponding oganization found for the given resource.'
-            ),
+    except apitools_exceptions.HttpError as error:
+      exc = exception_utils.AuditManagerError(error)
+
+      if exc.has_error_info(exception_utils.ERROR_REASON_PERMISSION_DENIED):
+        role = 'roles/auditmanager.admin'
+        user = properties.VALUES.core.account.Get()
+        exc.suggested_command_purpose = 'grant permission'
+        command_prefix = (
+            'gcloud resource-manager folders add-iam-policy-binding'
+            if is_parent_folder
+            else 'gcloud projects add-iam-policy-binding'
         )
+        exc.suggested_command = (
+            f'{command_prefix}'
+            f' {args.folder if is_parent_folder else args.project}'
+            f' --member=user:{user} --role {role}'
+        )
+
+      core_exceptions.reraise(exc)

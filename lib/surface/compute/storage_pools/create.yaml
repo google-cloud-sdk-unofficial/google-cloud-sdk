@@ -5,7 +5,7 @@
     examples: |
       To create a new storage pool named `my-storage-pool`, run the following command:
 
-        $ {command} my-storage-pool --size=10tb --provisioned-throughput=200 --storage-pool-type=hyperdisk-throughput
+        $ {command} my-storage-pool --storage-pool-type=hyperdisk-throughput --provisioned-capacity=10TB --provisioned-throughput=200
 
   request:
     collection: compute.storagePools
@@ -28,11 +28,11 @@
 
     params:
 
-    - arg_name: size
-      api_field: storagePool.sizeGb
+    - arg_name: provisioned-capacity
+      api_field: storagePool.poolProvisionedCapacityGb
       required: true
       help_text: |
-        Size of the storage pool.
+        Provisioned capacity of the storage pool.
       type: 'googlecloudsdk.calliope.arg_parsers:BinarySize:'
       # TODO(b/283676448), this processor can be effectively eliminated.
       processor: googlecloudsdk.api_lib.compute.storage_pools.processors:convert_to_gb
@@ -44,13 +44,13 @@
       type: str
 
     - arg_name: provisioned-iops
-      api_field: storagePool.provisionedIops
+      api_field: storagePool.poolProvisionedIops
       help_text: |
         IOPS with which to provision the pool.
       type: int
 
     - arg_name: provisioned-throughput
-      api_field: storagePool.provisionedThroughput
+      api_field: storagePool.poolProvisionedThroughput
       help_text: |
         Throughput in MB/s with which to provision the pool.
       type: int

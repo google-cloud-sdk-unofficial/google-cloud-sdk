@@ -29,6 +29,8 @@ from googlecloudsdk.command_lib.artifacts import docker_util
 from googlecloudsdk.command_lib.run import artifact_registry
 from googlecloudsdk.command_lib.run import config_changes
 from googlecloudsdk.command_lib.run import connection_context
+from googlecloudsdk.command_lib.run import container_parser
+from googlecloudsdk.command_lib.run import exceptions
 from googlecloudsdk.command_lib.run import flags
 from googlecloudsdk.command_lib.run import messages_util
 from googlecloudsdk.command_lib.run import pretty_print
@@ -46,6 +48,34 @@ from googlecloudsdk.core.console import progress_tracker
 class BuildType(enum.Enum):
   DOCKERFILE = 'Dockerfile'
   BUILDPACKS = 'Buildpacks'
+
+
+def ContainerArgGroup():
+  """Returns an argument group with all per-container deploy args."""
+
+  help_text = """
+Container Flags
+
+  If the --container or --remove-containers flag is specified the following
+  arguments may only be specified after a --container flag.
+"""
+  group = base.ArgumentGroup(help=help_text)
+  group.AddArgument(
+      flags.SourceAndImageFlags(
+          image='us-docker.pkg.dev/cloudrun/container/job:latest'
+      )
+  )
+  group.AddArgument(flags.MutexEnvVarsFlags())
+  group.AddArgument(flags.MemoryFlag())
+  group.AddArgument(flags.CpuFlag())
+  group.AddArgument(flags.ArgsFlag())
+  group.AddArgument(flags.SecretsFlags())
+  group.AddArgument(flags.CommandFlag())
+  group.AddArgument(flags.AddVolumeMountFlag())
+  group.AddArgument(flags.RemoveVolumeMountFlag())
+  group.AddArgument(flags.ClearVolumeMountsFlag())
+
+  return group
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
@@ -69,7 +99,7 @@ class Deploy(base.Command):
   }
 
   @staticmethod
-  def CommonArgs(parser):
+  def CommonArgs(parser, add_container_args=True):
     job_presentation = presentation_specs.ResourcePresentationSpec(
         'JOB',
         resource_args.GetJobResourceSpec(prompt=True),
@@ -83,24 +113,25 @@ class Deploy(base.Command):
     flags.AddMaxRetriesFlag(parser)
     flags.AddTaskTimeoutFlags(parser)
     flags.AddServiceAccountFlag(parser, managed_only=True)
-    flags.AddMutexEnvVarsFlags(parser)
     flags.AddSetCloudSQLFlag(parser)
     flags.AddVpcConnectorArg(parser)
     flags.AddEgressSettingsFlag(parser)
-    flags.AddSetSecretsFlag(parser)
-    flags.AddMemoryFlag(parser)
-    flags.AddCpuFlag(parser, managed_only=True)
-    flags.AddCommandFlag(parser)
-    flags.AddArgsFlag(parser)
+    if add_container_args:
+      flags.AddMutexEnvVarsFlags(parser)
+      flags.AddSetSecretsFlag(parser)
+      flags.AddMemoryFlag(parser)
+      flags.AddCpuFlag(parser, managed_only=True)
+      flags.AddCommandFlag(parser)
+      flags.AddArgsFlag(parser)
+      flags.AddSourceAndImageFlags(
+          parser, image='us-docker.pkg.dev/cloudrun/container/job:latest'
+      )
     flags.AddClientNameAndVersionFlags(parser)
     flags.AddBinAuthzPolicyFlags(parser, with_clear=False)
     flags.AddBinAuthzBreakglassFlag(parser)
     flags.AddCmekKeyFlag(parser, with_clear=False)
     flags.AddSandboxArg(parser, hidden=True)
     flags.AddGeneralAnnotationFlags(parser)
-    flags.AddSourceAndImageFlags(
-        parser, image='us-docker.pkg.dev/cloudrun/container/job:latest'
-    )
 
     polling_group = parser.add_mutually_exclusive_group()
     flags.AddAsyncFlag(polling_group)
@@ -121,22 +152,57 @@ class Deploy(base.Command):
 
   def Run(self, args):
     """Deploy a Job to Cloud Run."""
-    include_build = flags.FlagIsExplicitlySet(args, 'source')
-    if not include_build and not args.IsSpecified('image'):
-      if console_io.CanPrompt():
-        args.source = flags.PromptForDefaultSource()
-        include_build = True
-      else:
-        raise c_exceptions.RequiredArgumentException(
-            '--image',
-            (
+    if flags.FlagIsExplicitlySet(args, 'containers'):
+      containers = args.containers
+    else:
+      containers = {'': args}
+
+    if len(containers) > 10:
+      raise c_exceptions.InvalidArgumentException(
+          '--container', 'Jobs may include at most 10 containers'
+      )
+
+    build_from_source = {
+        name: container
+        for name, container in containers.items()
+        if not container.IsSpecified('image')
+    }
+    if len(build_from_source) > 1:
+      needs_image = [
+          name
+          for name, container in build_from_source.items()
+          if not flags.FlagIsExplicitlySet(container, 'source')
+      ]
+      if needs_image:
+        raise exceptions.RequiredImageArgumentException(needs_image)
+      raise c_exceptions.InvalidArgumentException(
+          '--container', 'At most one container can be deployed from source.'
+      )
+
+    for name, container in build_from_source.items():
+      if not flags.FlagIsExplicitlySet(container, 'source'):
+        if console_io.CanPrompt():
+          container.source = flags.PromptForDefaultSource(name)
+        else:
+          if name:
+            message = (
+                'Container {} requires a container image to deploy (e.g.'
+                ' `us-docker.pkg.dev/cloudrun/container/job:latest`) if no'
+                '  build source is provided.'.format(name)
+            )
+          else:
+            message = (
                 'Requires a container image to deploy (e.g.'
                 ' `us-docker.pkg.dev/cloudrun/container/job:latest`) if no'
-                ' build source is provided.'
-            ),
-        )
+                '  build source is provided.'
+            )
+          raise c_exceptions.RequiredArgumentException(
+              '--image',
+              message,
+          )
+
     required_apis = [api_enabler.get_run_api()]
-    if include_build:
+    if build_from_source:
       required_apis.append('artifactregistry.googleapis.com')
       required_apis.append('cloudbuild.googleapis.com')
     already_activated_services = api_enabler.check_and_enable_apis(
@@ -149,15 +215,16 @@ class Deploy(base.Command):
         args, flags.Product.RUN, self.ReleaseTrack()
     )
 
-    build_type = None
     image = None
     pack = None
     source = None
     operation_message = 'Deploying container to'
     repo_to_create = None
     # Build an image from source if source specified
-    if include_build:
-      source = args.source
+    if build_from_source:
+      # Only one container can deployed from source
+      container = next(iter(build_from_source.values()))
+      source = container.source
 
       ar_repo = docker_util.DockerRepo(
           project_id=properties.VALUES.core.project.Get(required=True),
@@ -170,7 +237,7 @@ class Deploy(base.Command):
         repo_to_create = ar_repo
       # The image is built with latest tag. After build, the image digest
       # from the build result will be added to the image of the job spec.
-      args.image = '{repo}/{job}'.format(
+      container.image = '{repo}/{job}'.format(
           repo=ar_repo.GetDockerString(), job=job_ref.jobsId
       )
       # Use GCP Buildpacks if Dockerfile doesn't exist
@@ -178,16 +245,16 @@ class Deploy(base.Command):
       if os.path.exists(docker_file):
         build_type = BuildType.DOCKERFILE
       else:
-        pack = [{'image': args.image}]
+        pack = [{'image': container.image}]
         if self.ReleaseTrack() is base.ReleaseTrack.ALPHA:
-          command_arg = getattr(args, 'command', None)
+          command_arg = getattr(container, 'command', None)
           if command_arg is not None:
             command = ' '.join(command_arg)
             pack[0].update(
                 {'env': 'GOOGLE_ENTRYPOINT="{command}"'.format(command=command)}
             )
         build_type = BuildType.BUILDPACKS
-      image = None if pack else args.image
+      image = None if pack else container.image
       operation_message = (
           'Building using {build_type} and deploying container to'
       ).format(build_type=build_type.value)
@@ -214,11 +281,10 @@ class Deploy(base.Command):
               conn_context, job_ref, operation_message, 'job'
           )
       )
-      header_msg = None
       operation = 'Creating' if job_obj is None else 'Updating'
-      if include_build and execute_now:
+      if build_from_source and execute_now:
         header_msg = 'Building, {} and running job...'.format(operation.lower())
-      elif include_build:
+      elif build_from_source:
         header_msg = 'Building and {} job...'.format(operation.lower())
       elif execute_now:
         header_msg = '{} and running job...'.format(operation)
@@ -229,7 +295,7 @@ class Deploy(base.Command):
           stages.JobStages(
               execute_now=execute_now,
               include_completion=args.wait,
-              include_build=include_build,
+              include_build=bool(build_from_source),
               include_create_repo=repo_to_create is not None,
           ),
           failure_message='Job failed to deploy',
@@ -259,7 +325,6 @@ class Deploy(base.Command):
             'asynchronously.'.format(job=job.name)
         )
       else:
-        job = operations.GetJob(job_ref)
         operation = 'been deployed'
         if args.wait:
           operation += ' and completed execution [{}]'.format(execution.name)
@@ -309,11 +374,9 @@ class AlphaDeploy(BetaDeploy):
 
   @classmethod
   def Args(cls, parser):
-    Deploy.CommonArgs(parser)
+    Deploy.CommonArgs(parser, add_container_args=False)
+    container_args = ContainerArgGroup()
+    container_parser.AddContainerFlags(parser, container_args)
     flags.AddVpcNetworkGroupFlagsForUpdate(parser, resource_kind='job')
     flags.AddVolumesFlags(parser, cls.ReleaseTrack())
-    group = base.ArgumentGroup()
-    group.AddArgument(flags.AddVolumeMountFlag())
-    group.AddArgument(flags.RemoveVolumeMountFlag())
-    group.AddArgument(flags.ClearVolumeMountsFlag())
-    group.AddToParser(parser)
+    flags.RemoveContainersFlag().AddToParser(parser)

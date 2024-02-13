@@ -5,7 +5,7 @@
     examples: |
       To update the size of a storage pool named 'my-storage-pool', run th following command:
 
-        $ {command} my-storage-pool --size=20tb
+        $ {command} my-storage-pool --pool-provisioned-capacity=20TB
 
   request:
     collection: compute.storagePools
@@ -25,10 +25,10 @@
       spec: !REF googlecloudsdk.command_lib.compute.resources:storage_pool
 
     params:
-    - arg_name: size
-      api_field: storagePoolResource.sizeGb
+    - arg_name: provisioned-capacity
+      api_field: storagePoolResource.poolProvisionedCapacityGb
       help_text: |
-        Size of the storage pool.
+        Provisioned capacity of the storage pool.
       type: 'googlecloudsdk.calliope.arg_parsers:BinarySize:'
       # TODO(b/283676448), this processor can be effectively eliminated.
       processor: googlecloudsdk.api_lib.compute.storage_pools.processors:convert_to_gb
@@ -40,13 +40,13 @@
       type: str
 
     - arg_name: provisioned-iops
-      api_field: storagePoolResource.provisionedIops
+      api_field: storagePoolResource.poolProvisionedIops
       help_text: |
         IOPS to provision the pool with.
       type: int
 
     - arg_name: provisioned-throughput
-      api_field: storagePoolResource.provisionedThroughput
+      api_field: storagePoolResource.poolProvisionedThroughput
       help_text: |
-        Throughput to provision the pool with.
+        Throughput in MB/s provision the pool with.
       type: int

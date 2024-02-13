@@ -33,11 +33,12 @@ from googlecloudsdk.core import resources
 from googlecloudsdk.core.util import scaled_integer
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
-                    base.ReleaseTrack.GA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
+)
 @base.Hidden
 class Upload(base.Command):
-  """Upload a generic artifact to an artifact repository."""
+  """Uploads an artifact to a generic repository."""
 
   api_version = 'v1'
 
@@ -64,6 +65,7 @@ class Upload(base.Command):
       parser: An argparse.ArgumentPaser.
     """
     flags.GetRequiredRepoFlag().AddToParser(parser)
+    flags.GetSkipExistingFlag().AddToParser(parser)
     base.ASYNC_FLAG.AddToParser(parser)
     group = parser.add_group(mutex=True, required=True)
 
@@ -113,6 +115,10 @@ class Upload(base.Command):
           'Asynchronous uploads not supported for directories.'
       )
 
+    if source_file and args.skip_existing:
+      raise ar_exceptions.InvalidInputValueError(
+          'Skip existing is not supported for single file uploads.'
+      )
     # Uploading a single file
     if source_file:
       return self.uploadArtifact(args, source_file, client, messages)
@@ -129,9 +135,17 @@ class Upload(base.Command):
       log.status.Print('Uploading directory: {}'.format(source_dir))
       for path, _, files in os.walk(source_dir):
         for file in files:
-          self.uploadArtifact(
-              args, (os.path.join(path, file)), client, messages
-          )
+          try:
+            self.uploadArtifact(
+                args, (os.path.join(path, file)), client, messages
+            )
+          except waiter.OperationError as e:
+            if args.skip_existing and 'already exists' in str(e):
+              log.warning(
+                  'File with the same package and version already exists.'
+              )
+              continue
+            raise
 
   def uploadArtifact(self, args, file_path, client, messages):
     # Default chunk size to be consistent for uploading to clouds.

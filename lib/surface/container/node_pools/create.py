@@ -119,6 +119,7 @@ for examples.
   flags.AddAsyncFlag(parser)
   flags.AddSoleTenantNodeAffinityFileFlag(parser)
   flags.AddContainerdConfigFlag(parser)
+  flags.AddEnableKubeletReadonlyPortFlag(parser)
 
 
 def ParseCreateNodePoolOptionsBase(args):
@@ -208,6 +209,7 @@ def ParseCreateNodePoolOptionsBase(args):
       sole_tenant_node_affinity_file=args.sole_tenant_node_affinity_file,
       containerd_config_from_file=args.containerd_config_from_file,
       resource_manager_tags=args.resource_manager_tags,
+      enable_insecure_kubelet_readonly_port=args.enable_insecure_kubelet_readonly_port,
   )
 
 

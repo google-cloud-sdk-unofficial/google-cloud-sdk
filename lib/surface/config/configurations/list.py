@@ -48,14 +48,37 @@ class List(base.ListCommand):
   def Args(parser):
     base.PAGE_SIZE_FLAG.RemoveFromParser(parser)
     base.URI_FLAG.RemoveFromParser(parser)
-    parser.display_info.AddFormat("""table(
+    configs = named_configs.ConfigurationStore.AllConfigs()
+    table_format = """table(
         name,
         is_active,
         properties.core.account,
         properties.core.project,
         properties.compute.zone:label=COMPUTE_DEFAULT_ZONE,
         properties.compute.region:label=COMPUTE_DEFAULT_REGION)
-    """)
+    """
+    for _, config in sorted(six.iteritems(configs)):
+      props = properties.VALUES.AllValues(
+          list_unset=True,
+          include_hidden=True,
+          properties_file=properties_file.PropertiesFile([config.file_path]),
+      )
+      config_universe = props['core'].get('universe_domain')
+      if (
+          config_universe
+          and config_universe != properties.VALUES.core.universe_domain.default
+      ):
+        table_format = """table(
+          name,
+          is_active,
+          properties.core.account,
+          properties.core.project,
+          properties.core.universe_domain,
+          properties.compute.zone:label=COMPUTE_DEFAULT_ZONE,
+          properties.compute.region:label=COMPUTE_DEFAULT_REGION)
+      """
+        break
+    parser.display_info.AddFormat(table_format)
 
   def Run(self, args):
     configs = named_configs.ConfigurationStore.AllConfigs()

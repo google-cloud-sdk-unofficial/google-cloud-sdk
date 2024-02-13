@@ -94,12 +94,13 @@ class UpdateBeta(Update):
   """
 
   _support_label = True
-  _support_partner_ipv6 = False
+  _support_partner_ipv6 = True
 
   @classmethod
   def Args(cls, parser):
     super(UpdateBeta, cls).Args(parser)
     labels_util.AddUpdateLabelsFlags(parser)
+    attachment_flags.AddStackType(parser)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -117,4 +118,3 @@ class UpdateAlpha(UpdateBeta):
   @classmethod
   def Args(cls, parser):
     super(UpdateAlpha, cls).Args(parser)
-    attachment_flags.AddStackType(parser)

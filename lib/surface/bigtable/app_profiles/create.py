@@ -158,7 +158,7 @@ class CreateAppProfileBeta(CreateAppProfile):
         transactional_writes=args.transactional_writes,
         priority=args.priority,
         data_boost=args.data_boost,
-        data_boost_billing_owner=args.data_boost_billing_owner,
+        data_boost_compute_billing_owner=args.data_boost_compute_billing_owner,
         force=args.force,
     )
 
@@ -208,6 +208,6 @@ class CreateAppProfileAlpha(CreateAppProfileBeta):
         row_affinity=args.row_affinity,
         priority=args.priority,
         data_boost=args.data_boost,
-        data_boost_billing_owner=args.data_boost_billing_owner,
+        data_boost_compute_billing_owner=args.data_boost_compute_billing_owner,
         force=args.force,
     )

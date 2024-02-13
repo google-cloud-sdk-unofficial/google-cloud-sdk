@@ -12,7 +12,7 @@
 
   arguments:
     resource:
-      spec: !REF googlecloudsdk.command_lib.workstations.resources:region
+      spec: !REF googlecloudsdk.command_lib.workstations.resources:region_with_global_fallthrough
       help_text: |
         The region of the clusters to display.
 

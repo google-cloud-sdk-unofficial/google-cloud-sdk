@@ -102,6 +102,8 @@ class Update(base.UpdateCommand):
       if args.IsKnownAndSpecified("filter"):
         computed_update_mask.append("filter")
       request.updateMask = ",".join(computed_update_mask)
+    else:
+      request.updateMask = args.update_mask
 
     # Generate name and send request
     request = util.GenerateMuteConfigName(args, request, version)

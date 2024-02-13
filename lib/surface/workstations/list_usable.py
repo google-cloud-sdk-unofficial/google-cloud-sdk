@@ -41,11 +41,14 @@ class ListUsable(base.ListCommand):
   @staticmethod
   def Args(parser):
     base.URI_FLAG.RemoveFromParser(parser)
-    flags.AddConfigResourceArg(parser, flag_anchor=True)
+    flags.AddConfigResourceArg(
+        parser, flag_anchor=True, global_fallthrough=True
+    )
     parser.display_info.AddFormat("""
         table(
             name.basename():sort=1,
             name.scope(workstationConfigs).segment(0):label='CONFIG',
+            name.scope(workstationsClusters).segment(0):label='CLUSTER',
             name.scope(locations).segment(0):label='REGION',
             state.sub("STATE_", ""),
             createTime.date()

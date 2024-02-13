@@ -29,11 +29,13 @@ _SERVICE_RESOURCE_TEMPLATE = 'services/%s'
 _GROUP_RESOURCE_TEMPLATE = 'groups/%s'
 
 
-# TODO(b/309115642) make command public after suv2alpha launch.
+# TODO(b/321801975) make command public after suv2alpha launch.
 @base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class ListAncestorGroups(base.ListCommand):
-  """A command to list ancestor groups of a specific service.
+  """List ancestor groups of a specific service.
+
+  List ancestor groups of a specific service.
 
   ## EXAMPLES
 

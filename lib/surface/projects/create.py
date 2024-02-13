@@ -113,6 +113,7 @@ class Create(base.CreateCommand):
         action='store_true',
         default=False,
         help='Set newly created project as [core.project] property.')
+    flags.TagsFlag().AddToParser(parser)
     flags.OrganizationIdFlag('to use as a parent').AddToParser(parser)
     flags.FolderIdFlag('to use as a parent').AddToParser(parser)
 
@@ -134,13 +135,16 @@ class Create(base.CreateCommand):
     project_ref = command_lib_util.ParseProject(project_id)
     labels = labels_util.ParseCreateArgs(
         args, projects_util.GetMessages().Project.LabelsValue)
+    tags = flags.GetTagsFromFlags(
+        args, projects_util.GetMessages().Project.TagsValue)
     try:
       create_op = projects_api.Create(
           project_ref,
           display_name=args.name,
           parent=projects_api.ParentNameToResourceId(
               flags.GetParentFromFlags(args)),
-          labels=labels)
+          labels=labels,
+          tags=tags)
     except apitools_exceptions.HttpConflictError:
       msg = ('Project creation failed. The project ID you specified is '
              'already in use by another project. Please try an alternative '

@@ -37,13 +37,13 @@ _INVALID_TIMESTAMP = (
 )
 
 
-# TODO(b/274633761) make command public after suv2 launch.
+# TODO(b/321801975) make command public after suv2 launch.
 @base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Get(base.Command):
-  """Get a consumer policy of a project, folder or organization.
+  """Get consumer policy for a project, folder or organization.
 
-  Get a consumer policy of a project, folder or
+  Get consumer policy for a project, folder or
   organization.
 
   ## EXAMPLES

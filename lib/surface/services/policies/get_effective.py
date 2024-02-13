@@ -33,7 +33,7 @@ _FOLDER_RESOURCE = 'folders/{}'
 _ORGANIZATION_RESOURCE = 'organizations/{}'
 
 
-# TODO: b/274633761 - Make command public after suv2 launch.
+# TODO: b/321801975 - Make command public after suv2 launch.
 @base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class GetEffectivePolicy(base.Command):

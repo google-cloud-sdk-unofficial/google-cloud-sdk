@@ -37,7 +37,7 @@ def PrintPairingKeyEpilog(pairing_key):
   log.status.Print(message)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Create(base.CreateCommand):
   """Create a Compute Engine partner interconnect attachment.
 
@@ -118,8 +118,25 @@ class Create(base.CreateCommand):
     PrintPairingKeyEpilog(self._pairing_key)
 
 
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class CreateBeta(Create):
+  """Create a Compute Engine partner interconnect attachment.
+
+  *{command}* is used to create partner interconnect attachments. A partner
+  interconnect attachment binds the underlying connectivity of a provider's
+  Interconnect to a path into and out of the customer's cloud network.
+  """
+
+  _support_partner_ipv6 = True
+
+  @classmethod
+  def Args(cls, parser):
+    super(CreateBeta, cls).Args(parser)
+    attachment_flags.AddStackType(parser)
+
+
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class CreateAlpha(Create):
+class CreateAlpha(CreateBeta):
   """Create a Compute Engine partner interconnect attachment.
 
   *{command}* is used to create partner interconnect attachments. A partner
@@ -132,4 +149,3 @@ class CreateAlpha(Create):
   def Args(cls, parser):
     super(CreateAlpha, cls).Args(parser)
     attachment_flags.AddDryRun(parser)
-    attachment_flags.AddStackType(parser)

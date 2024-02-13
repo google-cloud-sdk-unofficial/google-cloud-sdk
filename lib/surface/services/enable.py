@@ -105,7 +105,7 @@ _DETAILED_HELP = {
 }
 
 
-# TODO(b/274633761) make command public after preview.
+# TODO(b/321801975) make command public after preview.
 @base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class EnableAlpha(base.SilentCommand):

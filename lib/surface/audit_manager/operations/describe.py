@@ -20,19 +20,19 @@ from __future__ import unicode_literals
 
 from apitools.base.py import exceptions as apitools_exceptions
 from googlecloudsdk.api_lib.audit_manager import operations
-from googlecloudsdk.api_lib.util import exceptions
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.audit_manager import exception_utils
 from googlecloudsdk.command_lib.audit_manager import flags
+from googlecloudsdk.core import exceptions as core_exceptions
 
 
 _DETAILED_HELP = {
     'DESCRIPTION': 'Obtain details about an audit operation.',
     'EXAMPLES': """ \
-        To describe an Audit operation in the us-central1 region,
-        belonging to a project with ID 123, with operation ID 456, run:
+        To describe an Audit operation in the `us-central1` region,
+        belonging to a project with ID `123`, with operation ID `operation-456`, run:
 
-          $ {command} 456 --project=123 --location=us-central1
+          $ {command} operation-456 --project=123 --location=us-central1
         """,
 }
 
@@ -52,21 +52,14 @@ class Describe(base.DescribeCommand):
     result = args.CONCEPTS.operation.Parse()
     resource = result.result
     is_folder_parent = (
-        result.concept_type.name == 'auditmanager.folders.locations.operations'
+        result.concept_type.name
+        == 'auditmanager.folders.locations.operationIds'
     )
 
     client = operations.OperationsClient()
 
     try:
       return client.Get(resource.RelativeName(), is_folder_parent)
-
-    except apitools_exceptions.HttpNotFoundError as e:
-      details = exception_utils.ExtractErrorDetails(e)
-
-      if details is not None:
-        raise e
-      elif e.status_code == 404:
-        raise exceptions.HttpException(
-            e,
-            error_format='The requested operation does not exist.',
-        )
+    except apitools_exceptions.HttpError as error:
+      exc = exception_utils.AuditManagerError(error)
+      core_exceptions.reraise(exc)

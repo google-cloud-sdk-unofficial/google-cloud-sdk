@@ -39,7 +39,7 @@ DETAILED_HELP = {
 }
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.GA)
 class Describe(six.with_metaclass(abc.ABCMeta, base.CacheCommand)):
   """Describe Bare Metal Solution OS images in a project."""
 

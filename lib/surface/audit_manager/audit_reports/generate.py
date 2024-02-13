@@ -17,20 +17,23 @@
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
+
 from apitools.base.py import exceptions as apitools_exceptions
 from googlecloudsdk.api_lib.audit_manager import audit_reports
-from googlecloudsdk.api_lib.util import exceptions
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.audit_manager import exception_utils
 from googlecloudsdk.command_lib.audit_manager import flags
+from googlecloudsdk.core import exceptions as core_exceptions
+from googlecloudsdk.core import properties
+
 
 _DETAILED_HELP = {
     'DESCRIPTION': 'Generate a new Audit Report.',
     'EXAMPLES': """ \
-        To generate an Audit Report in the us-central1 region,
-        for a project with ID 123, run:
+        To generate an Audit Report in the `us-central1` region,
+        for a project with ID `123` for compliance standard `fedramp_moderate` in `odf` format and store it in `gs://testbucketauditmanager` bucket, run:
 
-          $ {command} --folder="8767234" --location="us-central1" --compliance-standard="fedramp_moderate" --report-format="odf" --gcs-uri="gs://testbucketauditmanager"
+          $ {command} --project=123 --location=us-central1 --compliance-standard=fedramp_moderate --report-format=odf --gcs-uri=gs://testbucketauditmanager
         """,
 }
 
@@ -48,6 +51,7 @@ class Generate(base.CreateCommand):
     flags.AddComplianceStandardFlag(parser)
     flags.AddReportFormatFlag(parser)
     flags.AddDestinationFlags(parser)
+    parser.display_info.AddFormat(properties.VALUES.core.default_format.Get())
 
   def Run(self, args):
     """Run the generate command."""
@@ -62,8 +66,9 @@ class Generate(base.CreateCommand):
     scope += '/locations/{location}'.format(location=args.location)
 
     client = audit_reports.AuditReportsClient()
+
     try:
-      client.Generate(
+      return client.Generate(
           scope,
           args.compliance_standard,
           report_format=args.report_format,
@@ -71,10 +76,29 @@ class Generate(base.CreateCommand):
           is_parent_folder=is_parent_folder,
       )
 
-    except apitools_exceptions.HttpNotFoundError as e:
-      details = exception_utils.ExtractErrorDetails(e)
-      if details['reason'] == exception_utils.ERROR_REASON_NOT_ENROLLED:
-        raise exceptions.HttpException(
-            e,
-            error_format='The resource is not enrolled',
+    except apitools_exceptions.HttpError as error:
+      exc = exception_utils.AuditManagerError(error)
+
+      if exc.has_error_info(exception_utils.ERROR_REASON_NOT_ENROLLED):
+        exc.suggested_command_purpose = 'enroll the resource'
+        exc.suggested_command = (
+            f'{flags.GetCommandPrefix(args.command_path)} enrollments add'
+            f' {flags.GetProjectOrFolderParam(args)} {flags.GetLocationParam(args)}'
+            f' {flags.GetEligibleGcsBucketParam(args)}'
         )
+      elif exc.has_error_info(exception_utils.ERROR_REASON_PERMISSION_DENIED):
+        role = 'roles/auditmanager.auditor'
+        user = properties.VALUES.core.account.Get()
+        exc.suggested_command_purpose = 'grant permission'
+        command_prefix = (
+            'gcloud resource-manager folders add-iam-policy-binding'
+            if is_parent_folder
+            else 'gcloud projects add-iam-policy-binding'
+        )
+        exc.suggested_command = (
+            f'{command_prefix}'
+            f' {args.folder if is_parent_folder else args.project}'
+            f' --member=user:{user} --role {role}'
+        )
+
+      core_exceptions.reraise(exc)

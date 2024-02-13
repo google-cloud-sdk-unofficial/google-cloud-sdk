@@ -31,10 +31,22 @@ class _StreamObjectInfo:
     self.display_name = message.displayName
     self.name = message.name
     self.source_object = source_object
-    self.backfill_job_state = message.backfillJob.state
-    self.backfill_job_trigger = message.backfillJob.trigger
-    self.last_backfill_job_start_time = message.backfillJob.lastStartTime
-    self.last_backfill_job_end_time = message.backfillJob.lastEndTime
+    self.backfill_job_state = (
+        message.backfillJob.state if message.backfillJob is not None else None
+    )
+    self.backfill_job_trigger = (
+        message.backfillJob.trigger if message.backfillJob is not None else None
+    )
+    self.last_backfill_job_start_time = (
+        message.backfillJob.lastStartTime
+        if message.backfillJob is not None
+        else None
+    )
+    self.last_backfill_job_end_time = (
+        message.backfillJob.lastEndTime
+        if message.backfillJob is not None
+        else None
+    )
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)

@@ -59,7 +59,7 @@ class AuditReportsClient(object):
     )
 
     inner_req = self.messages.GenerateAuditReportRequest()
-    inner_req.complianceRegime = compliance_standard
+    inner_req.complianceStandard = compliance_standard
     inner_req.reportFormat = self.report_format_map[report_format]
     inner_req.gcsUri = gcs_uri
 

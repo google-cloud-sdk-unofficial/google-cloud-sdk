@@ -218,7 +218,7 @@ class Deploy(base.Command):
 
     if len(containers) > 10:
       raise c_exceptions.InvalidArgumentException(
-          '--container', 'Services may include at most 10 contianers'
+          '--container', 'Services may include at most 10 containers'
       )
 
     build_from_source = {
@@ -470,6 +470,7 @@ class BetaDeploy(Deploy):
 
     # Flags specific to managed CR
     managed_group = flags.GetManagedArgGroup(parser)
+    flags.AddDefaultUrlFlag(managed_group)
     flags.AddVpcNetworkGroupFlagsForUpdate(managed_group)
     flags.AddVolumesFlags(managed_group, cls.ReleaseTrack())
     container_args = ContainerArgGroup(cls.ReleaseTrack())

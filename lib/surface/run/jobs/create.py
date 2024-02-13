@@ -20,6 +20,7 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 from googlecloudsdk.calliope import base
+from googlecloudsdk.calliope import exceptions as c_exceptions
 from googlecloudsdk.calliope import parser_errors as c_parser_errors
 from googlecloudsdk.command_lib.run import config_changes
 from googlecloudsdk.command_lib.run import connection_context
@@ -136,9 +137,14 @@ class Create(base.Command):
   def Run(self, args):
     """Deploy a Job to Cloud Run."""
     if flags.FlagIsExplicitlySet(args, 'containers'):
+      containers = args.containers
+      if len(containers) > 10:
+        raise c_exceptions.InvalidArgumentException(
+            '--container', 'Jobs may include at most 10 containers'
+        )
       needs_image = {
           name: container
-          for name, container in args.containers.items()
+          for name, container in containers.items()
           if not container.IsSpecified('image')
       }
       if needs_image:

@@ -73,11 +73,16 @@ class Create(base.Command):
     jobs_flag_util.setup_parser(parser)
 
   def Run(self, args):
+    is_hdfs_source = args.source.startswith(
+        storage_url.ProviderPrefix.HDFS.value
+    )
     is_posix_source = args.source.startswith(
-        storage_url.ProviderPrefix.POSIX.value)
+        storage_url.ProviderPrefix.POSIX.value
+    )
     is_posix_destination = args.destination.startswith(
-        storage_url.ProviderPrefix.POSIX.value)
-    if is_posix_source and not args.source_agent_pool:
+        storage_url.ProviderPrefix.POSIX.value
+    )
+    if (is_hdfs_source or is_posix_source) and not args.source_agent_pool:
       raise ValueError(
           'Missing agent pool. Please add --source-agent-pool flag.')
     if is_posix_destination and not args.destination_agent_pool:

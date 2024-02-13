@@ -42,7 +42,7 @@ auto_flags = [
     'fleetProject',
     'enableFleet',
     'enableSecurityPosture',
-    'enableKubeletReadonlyPort',
+    'autoprovisioningEnableKubeletReadonlyPort',
     'dataplanev2obs',
     'enableK8sBetaApis',
     'securityPosture',

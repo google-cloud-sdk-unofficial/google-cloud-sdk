@@ -21,6 +21,7 @@ from __future__ import unicode_literals
 import os
 import tempfile
 
+from googlecloudsdk.api_lib.artifacts import exceptions as ar_exceptions
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.artifacts import download_util
 from googlecloudsdk.command_lib.artifacts import file_util
@@ -86,6 +87,15 @@ class Download(base.Command):
     )
     tmp_path = os.path.join(tempfile.gettempdir(), filename)
     final_path = os.path.join(args.destination, filename)
+    dest_dir = os.path.dirname(final_path)
+    if not os.path.exists(dest_dir):
+      raise ar_exceptions.DirectoryNotExistError(
+          'Destination directory does not exist: ' + dest_dir
+      )
+    if not os.path.isdir(dest_dir):
+      raise ar_exceptions.PathNotDirectoryError(
+          'Destination is not a directory: ' + dest_dir
+      )
     download_util.Download(
         tmp_path, final_path, file_escaped.RelativeName(), args.allow_overwrite
     )

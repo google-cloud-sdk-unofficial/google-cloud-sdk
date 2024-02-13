@@ -37,6 +37,8 @@ def ContainerArgGroup(release_track=base.ReleaseTrack.GA):
   """Returns an argument group with all per-container update args."""
 
   help_text = """
+Container Flags
+
     If the --container or --remove-containers flag is specified the following
     arguments may only be specified after a --container flag.
     """
@@ -224,6 +226,7 @@ class BetaUpdate(Update):
 
     # Flags specific to managed CR
     managed_group = flags.GetManagedArgGroup(parser)
+    flags.AddDefaultUrlFlag(managed_group)
     flags.AddVpcNetworkGroupFlagsForUpdate(managed_group)
     flags.AddVolumesFlags(managed_group, cls.ReleaseTrack())
     container_args = ContainerArgGroup(cls.ReleaseTrack())

@@ -29,7 +29,7 @@ _SERVICE_RESOURCE = 'services/%s'
 _GROUP_RESOURCE = 'groups/%s'
 
 
-# TODO(b/309115642) make command public after suv2alpha launch.
+# TODO(b/321801975) make command public after suv2alpha launch.
 @base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class ListDescendantServices(base.ListCommand):

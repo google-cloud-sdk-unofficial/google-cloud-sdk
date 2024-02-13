@@ -109,7 +109,8 @@ class Update(base.UpdateCommand):
     flags.AddWindowsOsVersionFlag(group)
     flags.AddContainerdConfigFlag(group, hidden=True)
     flags.AddResourceManagerTagsNodePoolUpdate(group)
-
+    flags.AddQueuedProvisioningFlag(group, hidden=True)
+    flags.AddEnableKubeletReadonlyPortFlag(group)
     node_config_group = group.add_argument_group('Node config')
     flags.AddMachineTypeFlag(node_config_group, update=True)
     flags.AddDiskTypeFlag(node_config_group)
@@ -151,8 +152,10 @@ class Update(base.UpdateCommand):
         logging_variant=args.logging_variant,
         windows_os_version=args.windows_os_version,
         containerd_config_from_file=args.containerd_config_from_file,
+        enable_queued_provisioning=args.enable_queued_provisioning,
         machine_type=args.machine_type,
         disk_type=args.disk_type,
+        enable_insecure_kubelet_readonly_port=args.enable_insecure_kubelet_readonly_port,
         disk_size_gb=utils.BytesToGb(args.disk_size)
         if hasattr(args, 'disk_size')
         else None,
@@ -288,6 +291,8 @@ class UpdateBeta(Update):
     flags.AddWindowsOsVersionFlag(group)
     flags.AddResourceManagerTagsNodePoolUpdate(group)
     flags.AddContainerdConfigFlag(group, hidden=True)
+    flags.AddQueuedProvisioningFlag(group, hidden=True)
+    flags.AddEnableKubeletReadonlyPortFlag(group)
 
     node_config_group = group.add_argument_group('Node config')
     flags.AddMachineTypeFlag(node_config_group, update=True)
@@ -334,8 +339,10 @@ class UpdateBeta(Update):
         windows_os_version=args.windows_os_version,
         resource_manager_tags=args.resource_manager_tags,
         containerd_config_from_file=args.containerd_config_from_file,
+        enable_queued_provisioning=args.enable_queued_provisioning,
         machine_type=args.machine_type,
         disk_type=args.disk_type,
+        enable_insecure_kubelet_readonly_port=args.enable_insecure_kubelet_readonly_port,
         disk_size_gb=utils.BytesToGb(args.disk_size)
         if hasattr(args, 'disk_size')
         else None,
@@ -402,6 +409,8 @@ class UpdateAlpha(Update):
     flags.AddWindowsOsVersionFlag(group)
     flags.AddResourceManagerTagsNodePoolUpdate(group)
     flags.AddContainerdConfigFlag(group, hidden=True)
+    flags.AddQueuedProvisioningFlag(group, hidden=True)
+    flags.AddEnableKubeletReadonlyPortFlag(group)
 
     node_config_group = group.add_argument_group('Node config')
     flags.AddMachineTypeFlag(node_config_group, update=True)
@@ -448,8 +457,10 @@ class UpdateAlpha(Update):
         windows_os_version=args.windows_os_version,
         resource_manager_tags=args.resource_manager_tags,
         containerd_config_from_file=args.containerd_config_from_file,
+        enable_queued_provisioning=args.enable_queued_provisioning,
         machine_type=args.machine_type,
         disk_type=args.disk_type,
+        enable_insecure_kubelet_readonly_port=args.enable_insecure_kubelet_readonly_port,
         disk_size_gb=utils.BytesToGb(args.disk_size)
         if hasattr(args, 'disk_size')
         else None,

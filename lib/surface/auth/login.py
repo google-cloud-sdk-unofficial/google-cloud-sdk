@@ -21,8 +21,6 @@ from __future__ import unicode_literals
 
 import textwrap
 
-from google.auth import jwt
-from googlecloudsdk.api_lib.auth import exceptions as auth_exceptions
 from googlecloudsdk.api_lib.auth import external_account as auth_external_account
 from googlecloudsdk.api_lib.auth import service_account as auth_service_account
 from googlecloudsdk.api_lib.auth import util as auth_util
@@ -106,20 +104,6 @@ def ShouldUseCachedCredentials(args, scopes):
               'To fetch new credentials, re-run the command with the '
               '`--force` flag.'.format(args.account))
   return True
-
-
-def ExtractAndValidateAccount(account, creds):
-  """Extracts account from creds and validates it against account."""
-  decoded_id_token = jwt.decode(creds.id_token, verify=False)
-  web_flow_account = decoded_id_token['email']
-  if account and account.lower() != web_flow_account.lower():
-    raise auth_exceptions.WrongAccountError(
-        'You attempted to log in as account [{account}] but the received '
-        'credentials were for account [{web_flow_account}].\n\n'
-        'Please check that your browser is logged in as account [{account}] '
-        'and that you are using the correct browser profile.'.format(
-            account=account, web_flow_account=web_flow_account))
-  return web_flow_account
 
 
 class Login(base.Command):
@@ -353,7 +337,7 @@ class Login(base.Command):
         **flow_params)
     if not creds:
       return
-    account = ExtractAndValidateAccount(args.account, creds)
+    account = command_auth_util.ExtractAndValidateAccount(args.account, creds)
     # We got new creds, and they are for the correct user.
     c_store.Store(creds, account, scopes)
     return LoginAs(account, creds, args.project, args.activate, args.brief,

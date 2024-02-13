@@ -12,7 +12,7 @@
 
   arguments:
     resource:
-      spec: !REF googlecloudsdk.command_lib.workstations.resources:cluster
+      spec: !REF googlecloudsdk.command_lib.workstations.resources:cluster_with_global_fallthrough
       help_text: |
         The cluster of the configurations to display.
 

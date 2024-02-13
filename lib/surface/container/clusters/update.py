@@ -389,6 +389,8 @@ class Update(base.UpdateCommand):
     flags.AddInTransitEncryptionFlag(group)
     flags.AddEnableCiliumClusterwideNetworkPolicyFlag(group, is_update=True)
     flags.AddEnableFqdnNetworkPolicyFlag(group)
+    flags.AddEnableKubeletReadonlyPortFlag(group)
+    flags.AddAutoprovisioningEnableKubeletReadonlyPortFlag(group)
 
   def ParseUpdateOptions(self, args, locations):
     get_default = lambda key: getattr(args, key)
@@ -485,6 +487,12 @@ class Update(base.UpdateCommand):
         args.enable_cilium_clusterwide_network_policy
     )
     opts.enable_fqdn_network_policy = args.enable_fqdn_network_policy
+    opts.enable_insecure_kubelet_readonly_port = (
+        args.enable_insecure_kubelet_readonly_port
+    )
+    opts.autoprovisioning_enable_insecure_kubelet_readonly_port = (
+        args.autoprovisioning_enable_insecure_kubelet_readonly_port
+    )
     return opts
 
   def Run(self, args):
@@ -624,6 +632,7 @@ completion."""
       except apitools_exceptions.HttpError as error:
         raise exceptions.HttpException(error, util.HTTP_ERROR_FORMAT)
     elif args.complete_ip_rotation or args.complete_credential_rotation:
+      msg_tmpl = None
       if args.complete_ip_rotation:
         msg_tmpl = """This will complete the in-progress IP Rotation on \
 cluster [{name}]. The master will be updated to stop serving on the old IP \
@@ -736,6 +745,32 @@ to completion."""
             clear_all_subnetworks=True)
       except apitools_exceptions.HttpError as error:
         raise exceptions.HttpException(error, util.HTTP_ERROR_FORMAT)
+    elif (
+        getattr(args, 'enable_insecure_kubelet_readonly_port', None) is not None
+    ):
+      try:
+        op_ref = adapter.ModifyInsecureKubeletReadonlyPortEnabled(
+            cluster_ref,
+            args.enable_insecure_kubelet_readonly_port,
+        )
+      except apitools_exceptions.HttpError as error:
+        raise exceptions.HttpException(error, util.HTTP_ERROR_FORMAT)
+    elif (
+        getattr(
+            args, 'autoprovisioning_enable_insecure_kubelet_readonly_port', None
+        )
+        is not None
+    ):
+      try:
+        op_ref = (
+            adapter.ModifyAutoprovisioningInsecureKubeletReadonlyPortEnabled(
+                cluster_ref,
+                args.autoprovisioning_enable_insecure_kubelet_readonly_port,
+            )
+        )
+      except apitools_exceptions.HttpError as error:
+        raise exceptions.HttpException(error, util.HTTP_ERROR_FORMAT)
+
     elif getattr(args, 'enable_google_cloud_access', None) is not None:
       try:
         op_ref = adapter.ModifyGoogleCloudAccess(
@@ -743,6 +778,7 @@ to completion."""
             args.enable_google_cloud_access)
       except apitools_exceptions.HttpError as error:
         raise exceptions.HttpException(error, util.HTTP_ERROR_FORMAT)
+
     elif getattr(args, 'complete_convert_to_autopilot', None) is not None:
       try:
         op_ref = adapter.CompleteConvertToAutopilot(cluster_ref)
@@ -923,6 +959,8 @@ class UpdateBeta(Update):
     flags.AddConvertToStandardFlag(group)
     flags.AddSecretManagerEnableFlag(group, hidden=False)
     flags.AddEnableCiliumClusterwideNetworkPolicyFlag(group, is_update=True)
+    flags.AddEnableKubeletReadonlyPortFlag(group)
+    flags.AddAutoprovisioningEnableKubeletReadonlyPortFlag(group)
 
   def ParseUpdateOptions(self, args, locations):
     get_default = lambda key: getattr(args, key)
@@ -1078,6 +1116,12 @@ class UpdateBeta(Update):
     opts.enable_cilium_clusterwide_network_policy = (
         args.enable_cilium_clusterwide_network_policy
     )
+    opts.enable_insecure_kubelet_readonly_port = (
+        args.enable_insecure_kubelet_readonly_port
+    )
+    opts.autoprovisioning_enable_insecure_kubelet_readonly_port = (
+        args.autoprovisioning_enable_insecure_kubelet_readonly_port
+    )
     return opts
 
 
@@ -1192,6 +1236,8 @@ class UpdateAlpha(Update):
     flags.AddConvertToStandardFlag(group)
     flags.AddSecretManagerEnableFlag(group, hidden=False)
     flags.AddEnableCiliumClusterwideNetworkPolicyFlag(group, is_update=True)
+    flags.AddEnableKubeletReadonlyPortFlag(group)
+    flags.AddAutoprovisioningEnableKubeletReadonlyPortFlag(group)
 
   def ParseUpdateOptions(self, args, locations):
     get_default = lambda key: getattr(args, key)
@@ -1341,5 +1387,11 @@ class UpdateAlpha(Update):
     opts.enable_secret_manager = args.enable_secret_manager
     opts.enable_cilium_clusterwide_network_policy = (
         args.enable_cilium_clusterwide_network_policy
+    )
+    opts.enable_insecure_kubelet_readonly_port = (
+        args.enable_insecure_kubelet_readonly_port
+    )
+    opts.autoprovisioning_enable_insecure_kubelet_readonly_port = (
+        args.autoprovisioning_enable_insecure_kubelet_readonly_port
     )
     return opts
