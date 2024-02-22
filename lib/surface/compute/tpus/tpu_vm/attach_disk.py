@@ -30,7 +30,6 @@ from googlecloudsdk.command_lib.compute.tpus.tpu_vm import resource_args
 from googlecloudsdk.command_lib.compute.tpus.tpu_vm import util as tpu_utils
 from googlecloudsdk.command_lib.util.concepts import concept_parsers
 from googlecloudsdk.core import properties
-from googlecloudsdk.core import resources
 
 MODE_OPTIONS = {
     'read-write':
@@ -145,7 +144,9 @@ class AttachDisk(base.Command):
       source_path = args.disk
     else:
       project = properties.VALUES.core.project.Get(required=True)
-      source_path = 'projects/' + project + '/zones/' + args.zone + '/disks/' + args.disk
+      source_path = (
+          'projects/' + project + '/zones/' + args.zone + '/disks/' + args.disk
+      )
 
     if not node.dataDisks:
       disk_to_attach = tpu.messages.AttachedDisk(
@@ -167,13 +168,12 @@ class AttachDisk(base.Command):
         raise exceptions.BadArgumentException(
             'TPU', 'disk is already attached to the TPU VM.')
 
-    operation = tpu.UpdateNode(name=tpu_name_ref.Name(), zone=args.zone,
-                               node=node, update_mask='data_disks'
-                              )
-    operation_ref = resources.REGISTRY.ParseRelativeName(
-        operation.name, collection='tpu.projects.locations.operations'
+    return tpu.UpdateNode(
+        name=tpu_name_ref.Name(),
+        zone=args.zone,
+        node=node,
+        update_mask='data_disks',
+        poller_message='Attaching disk to TPU VM',
     )
-    return tpu.WaitForOperation(operation_ref,
-                                'Attaching disk to TPU VM')
 
 AttachDisk.detailed_help = DETAILED_HELP

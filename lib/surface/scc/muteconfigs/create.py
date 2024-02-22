@@ -78,7 +78,9 @@ class Create(base.CreateCommand):
     if version == "v2":
       request.googleCloudSecuritycenterV2MuteConfig = (
           messages.GoogleCloudSecuritycenterV2MuteConfig(
-              filter=args.filter, description=args.description
+              filter=args.filter,
+              description=args.description,
+              type=messages.GoogleCloudSecuritycenterV2MuteConfig.TypeValueValuesEnum.STATIC,
           )
       )
     else:

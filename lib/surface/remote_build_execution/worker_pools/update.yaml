@@ -20,6 +20,7 @@
   request:
     collection: remotebuildexecution.projects.instances.workerpools
     modify_request_hooks:
+    - googlecloudsdk.command_lib.remote_build_execution.workerpool_update_util:RemoveDockerRootDiskConfig
     - googlecloudsdk.command_lib.remote_build_execution.workerpool_update_util:RemoveAcceleratorConfig
     - googlecloudsdk.command_lib.remote_build_execution.workerpool_update_util:RemoveAutoscale
     - googlecloudsdk.command_lib.remote_build_execution.workerpool_update_util:UpdateLabels
@@ -99,6 +100,43 @@
       help_text: |
         Determines the type of VM to use.  If set then reserved VMs are used, otherwise preemptable
         VMs are used.
+    - group:
+        mutex: true
+        params:
+        - group:
+            help_text: |
+              Either all or none of docker-root-disk-image, docker-root-disk-type,
+              and docker-root-disk-size should be set.
+            params:
+            - api_field: googleDevtoolsRemotebuildexecutionAdminV1alphaUpdateWorkerPoolRequest.workerPool.workerConfig.attachedDisks.dockerRootDisk.sourceImage
+              arg_name: docker-root-disk-image
+              required: true
+              help_text: The source image to use for the user-provided docker root disk.
+            - api_field: googleDevtoolsRemotebuildexecutionAdminV1alphaUpdateWorkerPoolRequest.workerPool.workerConfig.attachedDisks.dockerRootDisk.diskType
+              arg_name: docker-root-disk-type
+              required: true
+              choices:
+              - arg_value: pd-standard
+                enum_value: pd-standard
+                help_text: |
+                  Standard persistent disk.
+              - arg_value: pd-ssd
+                enum_value: pd-ssd
+                help_text: |
+                  SSD persistent disk.
+              help_text: |
+                The disk type to use for the user-provided docker root disk. Must be one of
+                pd-ssd and pd-standard.
+            - api_field: googleDevtoolsRemotebuildexecutionAdminV1alphaUpdateWorkerPoolRequest.workerPool.workerConfig.attachedDisks.dockerRootDisk.diskSizeGb
+              arg_name: docker-root-disk-size
+              required: true
+              help_text: Size of the user-provided docker root disk, in Gb.
+        - arg_name: clear-docker-root-disk-config
+          action: store_true
+          processor: googlecloudsdk.command_lib.scheduler.util:ClearFlag
+          help_text: |
+            Remove the user-provided disk for docker root from the VMs in the worker pool and
+            use the boot disk instead.
     - group:
         mutex: true
         params:

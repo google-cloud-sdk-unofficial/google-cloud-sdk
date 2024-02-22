@@ -12,6 +12,7 @@
     collection: securityposture.organizations.locations.postures
     api_version: v1alpha
     method: listRevisions
+    disable_pagination: true
     GA:
       api_version: v1
 

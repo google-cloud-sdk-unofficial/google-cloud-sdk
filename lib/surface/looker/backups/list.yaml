@@ -10,7 +10,7 @@
     examples: |
       To list up to five backups, of a Looker instance named `my-looker-instance` run:
 
-      $ {command} --insatnce='my-looker-instance' --limit=5
+      $ {command} --instance='my-looker-instance' --limit=5
 
   arguments:
     resource:

@@ -134,8 +134,8 @@ class _Create(object):
       conversion_workspace_ref = None
       cmek_key_ref = None
 
-    cp_client = migration_jobs.MigrationJobsClient(self.ReleaseTrack())
-    result_operation = cp_client.Create(
+    mj_client = migration_jobs.MigrationJobsClient(self.ReleaseTrack())
+    result_operation = mj_client.Create(
         parent_ref,
         migration_job_ref.migrationJobsId,
         source_ref,
@@ -193,6 +193,7 @@ class CreateGA(_Create, base.Command):
     mj_flags.AddFilterFlag(parser)
     mj_flags.AddCommitIdFlag(parser)
     mj_flags.AddDumpParallelLevelFlag(parser)
+    mj_flags.AddSqlServerHomogeneousMigrationConfigFlag(parser)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)

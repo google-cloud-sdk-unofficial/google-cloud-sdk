@@ -1,6 +1,4 @@
-- release_tracks: [ALPHA]
-  hidden: true
-  help_text:
+- help_text:
     brief: Create a Cloud Build Connection for Bitbucket Cloud.
     description: |
       Create a Cloud Build Connection for Bitbucket Cloud.

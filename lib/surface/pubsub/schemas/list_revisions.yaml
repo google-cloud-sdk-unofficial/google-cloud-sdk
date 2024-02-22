@@ -12,6 +12,7 @@
     collection: pubsub.projects.schemas
     api_version: v1
     method: listRevisions
+    disable_pagination: true
 
   response:
     id_field: name

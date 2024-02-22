@@ -25,6 +25,7 @@ from googlecloudsdk.api_lib.functions.v1 import util as api_util_v1
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import parser_extensions
+from googlecloudsdk.command_lib.functions import flags
 from googlecloudsdk.command_lib.functions.v1 import decorator as decorator_v1
 from googlecloudsdk.command_lib.functions.v1.list import command as command_v1
 from googlecloudsdk.command_lib.functions.v2.list import command as command_v2
@@ -47,6 +48,8 @@ class List(base.ListCommand):
         type=arg_parsers.ArgList(min_length=1),
         default=['-'],
     )
+    flags.AddV2Flag(parser)
+
     parser.display_info.AddFormat("""
         table(
           name.basename():sort=1,
@@ -59,6 +62,9 @@ class List(base.ListCommand):
     base.URI_FLAG.RemoveFromParser(parser)
 
   def Run(self, args):
+    if args.v2:
+      return command_v2.Run(args, self.ReleaseTrack())
+
     list_v2_generator = command_v2.Run(
         args, self.ReleaseTrack(), 'environment="GEN_2"'
     )
@@ -98,6 +104,8 @@ class ListAlpha(ListBeta):
         type=arg_parsers.ArgList(min_length=1),
         default=['-'],
     )
+    flags.AddV2Flag(parser)
+
     parser.display_info.AddTransforms(transforms.GetTransformsAlpha())
     parser.display_info.AddFormat("""
         table(
@@ -112,6 +120,9 @@ class ListAlpha(ListBeta):
     base.URI_FLAG.RemoveFromParser(parser)
 
   def Run(self, args):
+    if args.v2:
+      return command_v2.Run(args, self.ReleaseTrack())
+
     list_gen2_generator_v2 = command_v2.Run(
         args,
         self.ReleaseTrack(),

@@ -41,6 +41,7 @@ class UpsertDatapointsV1(base.CreateCommand):
   def Args(parser):
     flags.AddIndexResourceArg(parser, 'to upsert data points from')
     flags.GetDatapointsFilePathArg('index', required=True).AddToParser(parser)
+    flags.GetDynamicMetadataUpdateMaskArg(required=False).AddToParser(parser)
 
   def _Run(self, args, version):
     index_ref = args.CONCEPTS.index.Parse()

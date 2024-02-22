@@ -32,11 +32,12 @@
         The instance resource name, in the format
         `projects/{project_id}/locations/{location}/instances/{instance_id}`.
       is_positional: true
-      resource_spec: !REF googlecloudsdk.command_lib.parallelstore.resources:instance
+      resource_spec: !REF googlecloudsdk.command_lib.parallelstore.generated_resources:project_location_instance
       required: true
   request:
     api_version: v1alpha
-    collection: parallelstore.projects.locations.instances
+    collection:
+    - parallelstore.projects.locations.instances
 - release_tracks:
   - BETA
   hidden: true
@@ -54,8 +55,9 @@
         The instance resource name, in the format
         `projects/{project_id}/locations/{location}/instances/{instance_id}`.
       is_positional: true
-      resource_spec: !REF googlecloudsdk.command_lib.parallelstore.resources:instance
+      resource_spec: !REF googlecloudsdk.command_lib.parallelstore.generated_resources:project_location_instance
       required: true
   request:
     api_version: v1beta
-    collection: parallelstore.projects.locations.instances
+    collection:
+    - parallelstore.projects.locations.instances

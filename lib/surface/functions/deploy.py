@@ -46,14 +46,14 @@ _RECENT_DEFAULT_CHANGE = (
     f'\n{_HOW_TO_DISABLE_CHANGE}\n{_LEARN_ABOUT_GEN_DIFFS}'
 )
 
-# TODO(b/286788716): Show this warning in GA track when change is incoming.
 _UPCOMING_CHANGE_WARNING = (
     'In a future Cloud SDK release, new functions will be deployed as 2nd gen '
     ' functions by default. This is equivalent to currently deploying new '
     ' with the --gen2 flag. Existing 1st gen functions will not be impacted'
     ' and will continue to deploy as 1st gen functions.\nYou can preview this'
     ' behavior in beta. Alternatively,'
-    f' {_HOW_TO_DISABLE_CHANGE}\n{_LEARN_ABOUT_GEN_DIFFS}'
+    f' {_HOW_TO_DISABLE_CHANGE[0].lower() + _HOW_TO_DISABLE_CHANGE[1:]}\n'
+    f'{_LEARN_ABOUT_GEN_DIFFS}'
 )
 
 
@@ -124,6 +124,8 @@ def _CommonArgs(parser, track):
   flags.AddGen2Flag(parser)
   flags.AddServeAllTrafficLatestRevisionFlag(parser)
   flags.AddConcurrencyFlag(parser)
+
+  # Add flag for user-provided Cloud Build Service Account
   flags.AddBuildServiceAccountFlag(parser, track)
 
 
@@ -136,6 +138,10 @@ class Deploy(util.FunctionResourceCommand, base.Command):
     _CommonArgs(parser, base.ReleaseTrack.GA)
 
   def _RunV1(self, args):
+    if not flags.ShouldUseGen1():
+      # For all gen 1 deploys (even updates, per PM input) that don't explicitly
+      # set --no-gen2, warn about upcoming gen 1 default changes
+      log.status.Print(_UPCOMING_CHANGE_WARNING)
     return command_v1.Run(args, track=self.ReleaseTrack())
 
   def _RunV2(self, args):

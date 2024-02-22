@@ -44,7 +44,7 @@ class List(base.ListCommand):
   `MEMBERSHIP_NAME`, provide the location LOCATION_NAME for the Membership where
   the Binding belongs along with membership name.
 
-  $ {command} BINDING_NAME --membership=MEMBERSHIP_NAME --location=LOCATION_NAME
+  $ {command} --membership=MEMBERSHIP_NAME --location=LOCATION_NAME
 
   """
 

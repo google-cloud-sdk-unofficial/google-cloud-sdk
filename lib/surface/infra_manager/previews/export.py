@@ -21,6 +21,7 @@ from __future__ import unicode_literals
 from googlecloudsdk.api_lib.infra_manager import configmanager_util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.infra_manager import deploy_util
+from googlecloudsdk.command_lib.infra_manager import flags
 from googlecloudsdk.command_lib.infra_manager import resource_args
 from googlecloudsdk.command_lib.util.concepts import concept_parsers
 
@@ -41,6 +42,7 @@ class Export(base.Command):
 
   @staticmethod
   def Args(parser):
+    flags.AddFileFlag(parser)
     concept_parsers.ConceptParser(
         [
             resource_args.GetPreviewResourceArgSpec(
@@ -67,4 +69,5 @@ class Export(base.Command):
     return deploy_util.ExportPreviewResult(
         messages,
         preview_full_name,
+        args.file,
     )

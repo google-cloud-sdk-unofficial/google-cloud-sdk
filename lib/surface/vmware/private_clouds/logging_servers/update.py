@@ -72,7 +72,7 @@ class Update(base.UpdateCommand):
     )
     parser.add_argument(
         '--protocol',
-        choices=['UDP', 'TCP'],
+        choices=['UDP', 'TCP', 'TLS', 'RELP', 'SSL'],
         help="""\
             Defines possible protocols used to send logs to
             a logging server.

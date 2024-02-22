@@ -13,7 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Updates a Cloud NetApp Volume."""
-
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
@@ -170,16 +169,18 @@ class Update(base.UpdateCommand):
       updated_fields.append('kerberosEnabled')
     if args.IsSpecified('source_snapshot'):
       updated_fields.append('restoreParameters')
-    if self._RELEASE_TRACK == base.ReleaseTrack.BETA and args.IsSpecified(
-        'source_backup'
-    ):
-      updated_fields.append('restoreParameters')
     if args.IsSpecified('restricted_actions'):
       updated_fields.append('restrictedActions')
-    if self._RELEASE_TRACK == base.ReleaseTrack.BETA and args.IsSpecified(
-        'backup_config'
-    ):
-      updated_fields.append('backupConfig')
+    if self._RELEASE_TRACK == base.ReleaseTrack.BETA:
+      if args.IsSpecified('source_backup'):
+        updated_fields.append('restoreParameters')
+      if backup_config is not None:
+        if backup_config.get('backup-policies', []):
+          updated_fields.append('backupConfig.backupPolicies')
+        if backup_config.get('backup-vault', ''):
+          updated_fields.append('backupConfig.backupVault')
+        if backup_config.get('enable-scheduled-backups', False):
+          updated_fields.append('backupConfig.scheduledBackupEnabled')
     if args.IsSpecified('description'):
       updated_fields.append('description')
     if (

@@ -70,7 +70,7 @@ class Lint(base.ListCommand):
                         'has_list': True,
                         'resource_arg': bool(method.request_collection),
                         'flattened': bool(method.ListItemField()),
-                        'pageable': method.IsPageableList(),
+                        'pageable': method.HasTokenizedRequest(),
                         'page_size': bool(method.BatchPageSizeField())})
       else:
         results.append({'collection': c.full_name, 'has_list': False})

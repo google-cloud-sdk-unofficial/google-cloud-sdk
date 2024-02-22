@@ -37,17 +37,17 @@ DETAILED_HELP = {
 }
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class List(base.ListCommand):
-  r"""List insights for a cloud entity.
+  r"""List insights for a Google Cloud entity.
 
-  This command lists all insights for a given cloud entity, location and
+  This command lists all insights for a given Google Cloud entity, location, and
   insight type. If insight-type or location is not specified,
   insights for all supported insight-types and locations are listed.  Supported
   insight-types can be found here:
-  https://cloud.google.com/recommender/docs/insights/insight-types. Currently
-  the following cloud_entity_types are supported: project, billing_account,
-  folder and organization.
+  https://cloud.google.com/recommender/docs/insights/insight-types.
+  The following Google Cloud entity types are supported: project,
+  billing_account, folder, and organization.
   """
 
   detailed_help = DETAILED_HELP
@@ -153,104 +153,15 @@ class List(base.ListCommand):
     return insights
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class ListBETA(base.ListCommand):
-  r"""List insights for a cloud entity.
-
-  This command lists all insights for a given cloud entity, location and
-  insight type. If insight-type is not specified,
-  insights for all supported insight-types are listed.  Supported insight-types
-  can be found here:
-  https://cloud.google.com/recommender/docs/insights/insight-types. Currently
-  the following cloud_entity_types are supported: project, billing_account,
-  folder and organization.
-  """
-
-  detailed_help = DETAILED_HELP
-
-  @staticmethod
-  def Args(parser):
-    """Args is called by calliope to gather arguments for this command.
-
-    Args:
-      parser: An argparse parser that you can use to add arguments that go on
-        the command line after this command.
-    """
-    flags.AddParentFlagsToParser(parser)
-    parser.add_argument(
-        '--location',
-        metavar='LOCATION',
-        required=True,
-        help='Location to list insights for. ',
-    )
-    parser.add_argument(
-        '--insight-type',
-        metavar='INSIGHT_TYPE',
-        required=False,
-        help=(
-            'Insight type to list insights for. Supported insight-types can '
-            'be found here: '
-            'https://cloud.google.com/recommender/docs/insights/insight-types'
-        ),
-    )
-    parser.display_info.AddFormat("""
-        table(
-          name.basename(): label=INSIGHT_ID,
-          category: label=CATEGORY,
-          stateInfo.state: label=INSIGHT_STATE,
-          lastRefreshTime: label=LAST_REFRESH_TIME,
-          severity: label=SEVERITY,
-          insightSubtype: label=INSIGHT_SUBTYPE,
-          description: label=DESCRIPTION
-        )
-    """)
-
-  def Run(self, args):
-    """Run 'gcloud recommender insights list'.
-
-    Args:
-      args: argparse.Namespace, The arguments that this command was invoked
-        with.
-
-    Returns:
-      The list of insights for this project.
-    """
-
-    insights_client = insight.CreateClient(self.ReleaseTrack())
-
-    insights = []
-    if args.insight_type is not None:
-      parent_name = flags.GetInsightTypeName(args)
-      insights = insights_client.List(parent_name, args.page_size)
-    else:
-      insight_types_client = insight_types.CreateClient(self.ReleaseTrack())
-      insight_types_response = insight_types_client.List(args.page_size)
-      insight_types_set = [response.name for response in insight_types_response]
-      for insight_type in insight_types_set:
-        parent_name = flags.GetFullInsightTypeName(args, insight_type)
-        new_insights = insights_client.List(parent_name, args.page_size)
-
-        try:  # skip insight-types that do not allow customer access
-          peek = next(new_insights)  # execute first element of generator
-        except (
-            apitools_exceptions.HttpBadRequestError,
-            apitools_exceptions.BadStatusCodeError,
-            StopIteration,
-        ):
-          continue
-        insights = itertools.chain(insights, [peek], new_insights)
-    return insights
-
-
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class ListOriginal(base.ListCommand):
-  r"""List insights for a cloud entity.
+  r"""List insights for a Google Cloud entity.
 
-  This command lists all insights for a given cloud entity, location and
+  This command lists all insights for a given Google Cloud entity, location, and
   insight type. Supported insight-types can be found here:
   https://cloud.google.com/recommender/docs/insights/insight-types. Currently
-  the following cloud_entity_types are supported: project, billing_account,
-  folder and organization.
+  the following Google Cloud entity types are supported: project,
+  billing_account, folder, and organization.
   """
 
   detailed_help = DETAILED_HELP

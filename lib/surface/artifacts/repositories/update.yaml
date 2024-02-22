@@ -66,6 +66,13 @@
           - arg_value: true
             enum_value: DISABLED
             help_text: Vulnerability scanning enablement config set to disabled.
+    - arg_name: disable-remote-validation
+      type: bool
+      api_field: repository.remoteRepositoryConfig.disableUpstreamValidation
+      default: null
+      hidden: true
+      help_text: |
+        Do not make an HTTP request to validate the remote upstream. Not recommended when setting a custom remote upstream unless you are absolutely sure your upstream URI and any auth is valid.
     - group:
         mutex: true
         hidden: true

@@ -37,6 +37,7 @@
     - _REF_: googlecloudsdk.command_lib.migration.vms.flags:labels
     - _REF_: googlecloudsdk.command_lib.migration.vms.flags:additional_licenses
     - _REF_: googlecloudsdk.command_lib.migration.vms.flags:single_region_storage
+    - _REF_: googlecloudsdk.command_lib.migration.vms.flags:kms_key
     - group:
         help_text: OS adaptation parameters
         required: false

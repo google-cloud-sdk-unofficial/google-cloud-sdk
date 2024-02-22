@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*- #
-# Copyright 2021 Google LLC. All Rights Reserved.
+# Copyright 2024 Google LLC. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Command for creating or replacing an application from YAML specification."""
+"""Command for creating or updating application resources from YAML specification."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -27,8 +27,8 @@ from googlecloudsdk.command_lib.runapps import exceptions
 
 @base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class Apply(base.Command):
-  """Create or replace an application from a YAML specification."""
+class Deploy(base.Command):
+  """Create or update application resources from a YAML specification."""
 
   detailed_help = {
       'DESCRIPTION':
@@ -37,7 +37,7 @@ class Apply(base.Command):
           """,
       'EXAMPLES':
           """\
-          To create an application from specification
+          To create application resources from specification
 
               $ {command} stack.yaml
 

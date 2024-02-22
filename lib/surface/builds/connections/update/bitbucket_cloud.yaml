@@ -1,6 +1,4 @@
-- release_tracks: [ALPHA]
-  hidden: true
-  help_text:
+- help_text:
     brief: Update a Cloud Build Connection of type Bitbucket Cloud.
     description: |
       Update a Cloud Build Connection of type Bitbucket Cloud.

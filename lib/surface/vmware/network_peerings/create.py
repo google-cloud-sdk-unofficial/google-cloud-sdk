@@ -18,10 +18,10 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
-from googlecloudsdk.api_lib.vmware.networkpeering import NetworkPeeringClient
+from googlecloudsdk.api_lib.vmware import networkpeering
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
-from googlecloudsdk.command_lib.vmware.networks import flags
+from googlecloudsdk.command_lib.vmware.network_peerings import flags
 from googlecloudsdk.core import log
 
 
@@ -91,6 +91,11 @@ class Create(base.CreateCommand):
         """,
     )
     parser.add_argument(
+        '--vmware-engine-network-project',
+        help="""\
+        Project of the VMware Engine network to attach the new peering to. Use this flag when the VMware Engine network is in another project.
+        """)
+    parser.add_argument(
         '--peer-project',
         help="""\
         Project ID or project number of the peer network. Use this flag when the peer network is in another project.
@@ -150,7 +155,7 @@ class Create(base.CreateCommand):
 
   def Run(self, args):
     peering = args.CONCEPTS.network_peering.Parse()
-    client = NetworkPeeringClient()
+    client = networkpeering.NetworkPeeringClient()
     is_async = args.async_
 
     operation = client.Create(
@@ -159,6 +164,7 @@ class Create(base.CreateCommand):
         peer_network_id=args.peer_network,
         peer_network_type=args.peer_network_type,
         description=args.description,
+        vmware_engine_network_project=args.vmware_engine_network_project,
         peer_project=args.peer_project,
         peer_mtu=args.peer_mtu,
         export_custom_routes=args.export_custom_routes,

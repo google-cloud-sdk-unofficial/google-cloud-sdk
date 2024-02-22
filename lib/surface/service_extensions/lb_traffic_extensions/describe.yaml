@@ -1,4 +1,4 @@
-release_tracks: [BETA, ALPHA]
+release_tracks: [ALPHA, BETA, GA]
 
 help_text:
   brief: |
@@ -21,4 +21,7 @@ request: &request
     api_version: v1alpha1
   BETA:
     api_version: v1beta1
+  GA:
+    api_version: v1
+
   collection: networkservices.projects.locations.lbTrafficExtensions

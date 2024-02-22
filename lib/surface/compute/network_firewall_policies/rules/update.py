@@ -35,8 +35,6 @@ class Update(base.UpdateCommand):
   """
 
   NETWORK_FIREWALL_POLICY_ARG = None
-  _support_ips = False
-  _support_ips_with_tls = False
 
   @classmethod
   def Args(cls, parser):
@@ -44,7 +42,7 @@ class Update(base.UpdateCommand):
         required=True, operation='update'
     )
     cls.NETWORK_FIREWALL_POLICY_ARG.AddArgument(parser)
-    flags.AddAction(parser, required=False, support_ips=cls._support_ips)
+    flags.AddAction(parser, required=False)
     flags.AddRulePriority(parser, operation='updated')
     flags.AddSrcIpRanges(parser)
     flags.AddDestIpRanges(parser)
@@ -65,10 +63,8 @@ class Update(base.UpdateCommand):
     flags.AddDestRegionCodes(parser)
     flags.AddSrcThreatIntelligence(parser)
     flags.AddDestThreatIntelligence(parser)
-    if cls._support_ips:
-      flags.AddSecurityProfileGroup(parser)
-      if cls._support_ips_with_tls:
-        flags.AddTlsInspect(parser)
+    flags.AddSecurityProfileGroup(parser)
+    flags.AddTlsInspect(parser)
 
   def Run(self, args):
     clearable_arg_name_to_field_name = {
@@ -180,16 +176,15 @@ class Update(base.UpdateCommand):
     if args.IsSpecified('dest_threat_intelligence'):
       matcher.destThreatIntelligences = args.dest_threat_intelligence
       should_setup_match = True
-    if self._support_ips:
-      if args.IsSpecified('security_profile_group'):
-        security_profile_group = args.security_profile_group
-      elif (
-          args.IsSpecified('action')
-          and args.action != 'apply_security_profile_group'
-      ):
-        cleared_fields.append('securityProfileGroup')
-      if self._support_ips_with_tls and args.IsSpecified('tls_inspect'):
-        tls_inspect = args.tls_inspect
+    if args.IsSpecified('security_profile_group'):
+      security_profile_group = args.security_profile_group
+    elif (
+        args.IsSpecified('action')
+        and args.action != 'apply_security_profile_group'
+    ):
+      cleared_fields.append('securityProfileGroup')
+    if args.IsSpecified('tls_inspect'):
+      tls_inspect = args.tls_inspect
     # If not need to construct a new matcher.
     if not should_setup_match:
       matcher = None
@@ -204,46 +199,19 @@ class Update(base.UpdateCommand):
             holder.client.messages.FirewallPolicyRule.DirectionValueValuesEnum.EGRESS
         )
 
-    if self._support_ips:
-      if self._support_ips_with_tls:
-        firewall_policy_rule = holder.client.messages.FirewallPolicyRule(
-            priority=new_priority,
-            action=args.action,
-            match=matcher,
-            direction=traffic_direct,
-            targetServiceAccounts=target_service_accounts,
-            description=args.description,
-            enableLogging=enable_logging,
-            disabled=disabled,
-            targetSecureTags=target_secure_tags,
-            securityProfileGroup=security_profile_group,
-            tlsInspect=tls_inspect,
-        )
-      else:
-        firewall_policy_rule = holder.client.messages.FirewallPolicyRule(
-            priority=new_priority,
-            action=args.action,
-            match=matcher,
-            direction=traffic_direct,
-            targetServiceAccounts=target_service_accounts,
-            description=args.description,
-            enableLogging=enable_logging,
-            disabled=disabled,
-            targetSecureTags=target_secure_tags,
-            securityProfileGroup=security_profile_group,
-        )
-    else:
-      firewall_policy_rule = holder.client.messages.FirewallPolicyRule(
-          priority=new_priority,
-          action=args.action,
-          match=matcher,
-          direction=traffic_direct,
-          targetServiceAccounts=target_service_accounts,
-          description=args.description,
-          enableLogging=enable_logging,
-          disabled=disabled,
-          targetSecureTags=target_secure_tags,
-      )
+    firewall_policy_rule = holder.client.messages.FirewallPolicyRule(
+        priority=new_priority,
+        action=args.action,
+        match=matcher,
+        direction=traffic_direct,
+        targetServiceAccounts=target_service_accounts,
+        description=args.description,
+        enableLogging=enable_logging,
+        disabled=disabled,
+        targetSecureTags=target_secure_tags,
+        securityProfileGroup=security_profile_group,
+        tlsInspect=tls_inspect,
+    )
 
     with holder.client.apitools_client.IncludeFields(cleared_fields):
       return network_firewall_policy_rule_client.Update(
@@ -261,9 +229,6 @@ class UpdateBeta(Update):
   *{command}* is used to update network firewall policy rules.
   """
 
-  _support_ips = True
-  _support_ips_with_tls = True
-
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class UpdateAlpha(Update):
@@ -271,9 +236,6 @@ class UpdateAlpha(Update):
 
   *{command}* is used to update network firewall policy rules.
   """
-
-  _support_ips = True
-  _support_ips_with_tls = True
 
 
 Update.detailed_help = {

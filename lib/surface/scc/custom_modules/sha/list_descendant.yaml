@@ -28,6 +28,7 @@
     disable_resource_check: true
     api_version: v1
     method: listDescendant
+    disable_pagination: true
     modify_request_hooks:
     - googlecloudsdk.command_lib.scc.custom_modules.sha.request_hooks:ListDescendantSecurityHealthAnalyticsCustomModulesReqHook
 

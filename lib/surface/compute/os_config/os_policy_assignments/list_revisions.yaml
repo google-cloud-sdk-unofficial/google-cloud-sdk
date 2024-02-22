@@ -13,6 +13,7 @@
   command_type: LIST
   request:
     collection: osconfig.projects.locations.osPolicyAssignments
+    disable_pagination: true
     method: listRevisions
     ALPHA:
       api_version: v1alpha

@@ -261,6 +261,7 @@ class Create(base.CreateCommand):
     flags.AddLoggingVariantFlag(parser, for_node_pool=True)
     flags.AddWindowsOsVersionFlag(parser)
     flags.AddPlacementTypeFlag(parser, for_node_pool=True, hidden=False)
+    flags.AddQueuedProvisioningFlag(parser)
     flags.AddBestEffortProvisionFlags(parser)
     flags.AddPlacementPolicyFlag(parser)
     flags.AddTPUTopologyFlag(parser)

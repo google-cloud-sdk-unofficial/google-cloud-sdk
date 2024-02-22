@@ -153,131 +153,56 @@ def _ParseNewNodesConfigsParameters(
   ]
 
 
-def _MergeWithExistingAutoscalingSettings(
-    existing_cluster, autoscaling_settings, policies_to_remove
+def _ValidatePoliciesToRemove(
+    existing_cluster, updated_settings, policies_to_remove
 ):
-  """Merges the updated autoscaling settings with the existing ones.
-
-  The existing autoscaling settings are the base onto which the updated
-  autoscaling settings are merged. If a given existing autoscaling policy should
-  not be updated, it remains unchanged but it's still returned in the resulting
-  dict. Removed autoscaling policies are simply omitted in the resulting dict.
+  """Checks if the policies specified for removal actually exist and that they are not updated in the same call.
 
   Args:
-    existing_cluster: cluster whose autoscaling settings should be updated
-    autoscaling_settings: the update autoscaling settings to be merged
-    policies_to_remove: autoscaling policies to be removed
-
-  Returns:
-    dict of the new autoscaling settings that should be applied to the cluster.
-    The dict has the same structure as the output from the "describe" command.
+    existing_cluster: cluster before the update
+    updated_settings: updated autoscale settings
+    policies_to_remove: list of policy names to remove
 
   Raises:
-    InvalidAutoscalingSettingsProvidedError:
-      if a policy is specified both for update and removal or if a nonexistent
-      policy is specified for removal
+    InvalidAutoscalingSettingsProvidedError: if the validation fails.
   """
+  if not policies_to_remove:
+    return
 
-  def _MergeField(existing_value, new_value):
-    return new_value if new_value is not None else existing_value
+  if updated_settings and updated_settings.autoscaling_policies:
+    for name in updated_settings.autoscaling_policies:
+      if name in policies_to_remove:
+        raise util.InvalidAutoscalingSettingsProvidedError(
+            f"policy '{name}' specified both for update and removal"
+        )
 
-  def _MergeThresholds(
-      existing_thresholds, new_thresholds
-  ):
-    if not existing_thresholds:
-      return new_thresholds
-
-    if not new_thresholds:
-      return {
-          'scaleIn': existing_thresholds.scaleIn,
-          'scaleOut': existing_thresholds.scaleOut,
-      }
-
-    result = {}
-    result['scaleIn'] = _MergeField(
-        existing_thresholds.scaleIn, new_thresholds.get('scaleIn')
-    )
-    result['scaleOut'] = _MergeField(
-        existing_thresholds.scaleOut, new_thresholds.get('scaleOut')
-    )
-    return result
-
-  for name in autoscaling_settings.get('autoscalingPolicies', {}):
-    if name in policies_to_remove:
-      raise util.InvalidAutoscalingSettingsProvidedError(
-          f"policy '{name}' specified both for update and removal"
-      )
-
-  existing_settings = existing_cluster.autoscalingSettings
-  if existing_settings is None:
-    return autoscaling_settings
-
-  merged_settings = {'autoscalingPolicies': {}}
-
-  merged_settings['minClusterNodeCount'] = _MergeField(
-      existing_settings.minClusterNodeCount,
-      autoscaling_settings.get('minClusterNodeCount')
-  )
-  merged_settings['maxClusterNodeCount'] = _MergeField(
-      existing_settings.maxClusterNodeCount,
-      autoscaling_settings.get('maxClusterNodeCount')
-  )
-  merged_settings['coolDownPeriod'] = _MergeField(
-      existing_settings.coolDownPeriod,
-      autoscaling_settings.get('coolDownPeriod')
-  )
-
-  for entry in existing_settings.autoscalingPolicies.additionalProperties:
-    name = entry.key
-    if name in policies_to_remove:
-      policies_to_remove.remove(name)
-      continue
-
-    existing_policy = entry.value
-    policy = autoscaling_settings.get('autoscalingPolicies', {}).get(name, {})
-
-    merged_policy = {}
-    merged_policy['nodeTypeId'] = _MergeField(
-        existing_policy.nodeTypeId, policy.get('nodeTypeId')
-    )
-    merged_policy['scaleOutSize'] = _MergeField(
-        existing_policy.scaleOutSize, policy.get('scaleOutSize')
-    )
-    merged_policy['minNodeCount'] = _MergeField(
-        existing_policy.minNodeCount, policy.get('minNodeCount')
-    )
-    merged_policy['maxNodeCount'] = _MergeField(
-        existing_policy.maxNodeCount, policy.get('maxNodeCount')
-    )
-    merged_policy['cpuThresholds'] = _MergeThresholds(
-        existing_policy.cpuThresholds, policy.get('cpuThresholds', {})
-    )
-    merged_policy['grantedMemoryThresholds'] = _MergeThresholds(
-        existing_policy.grantedMemoryThresholds,
-        policy.get('grantedMemoryThresholds', {}),
-    )
-    merged_policy['consumedMemoryThresholds'] = _MergeThresholds(
-        existing_policy.consumedMemoryThresholds,
-        policy.get('consumedMemoryThresholds', {}),
-    )
-    merged_policy['storageThresholds'] = _MergeThresholds(
-        existing_policy.storageThresholds, policy.get('storageThresholds', {})
-    )
-
-    merged_settings['autoscalingPolicies'][name] = merged_policy
-    if policy:
-      del autoscaling_settings['autoscalingPolicies'][name]
-
-  if policies_to_remove:
+  if not existing_cluster.autoscalingSettings:
     raise util.InvalidAutoscalingSettingsProvidedError(
         f"nonexistent policies '{policies_to_remove}' specified for removal"
     )
 
-  # add remaining new autoscaling policies that didn't exist before
-  merged_settings['autoscalingPolicies'] |= autoscaling_settings[
-      'autoscalingPolicies'
-  ]
-  return merged_settings
+  existing_policies = {
+      p.key
+      for p in existing_cluster.autoscalingSettings.autoscalingPolicies.additionalProperties
+  }
+  for name in policies_to_remove:
+    if name not in existing_policies:
+      raise util.InvalidAutoscalingSettingsProvidedError(
+          f"nonexistent policies '{policies_to_remove}' specified for removal"
+      )
+
+
+def _RemoveAutoscalingPolicies(
+    autoscaling_settings: util.AutoscalingSettings,
+    policies_to_remove: list[str],
+) -> util.AutoscalingSettings:
+  if not policies_to_remove:
+    return autoscaling_settings
+
+  for policy in policies_to_remove:
+    del autoscaling_settings.autoscaling_policies[policy]
+
+  return autoscaling_settings
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
@@ -426,29 +351,39 @@ class Update(base.UpdateCommand):
       configs = None
 
     if args.autoscaling_settings_from_file:
-      autoscaling_settings = args.autoscaling_settings_from_file[
-          'autoscalingSettings'
-      ]
+      updated_settings = util.ParseAutoscalingSettingsFromFileFormat(
+          args.autoscaling_settings_from_file
+      )
     elif (
         args.autoscaling_min_cluster_node_count
         or args.autoscaling_max_cluster_node_count
         or args.autoscaling_cool_down_period
         or args.update_autoscaling_policy
     ):
-      autoscaling_settings = util.ParseInlinedAutoscalingSettings(
+      updated_settings = util.ParseAutoscalingSettingsFromInlinedFormat(
           args.autoscaling_min_cluster_node_count,
           args.autoscaling_max_cluster_node_count,
           args.autoscaling_cool_down_period,
           args.update_autoscaling_policy,
       )
     else:
-      autoscaling_settings = None
+      updated_settings = None
 
-    if autoscaling_settings is not None or args.remove_autoscaling_policy:
-      autoscaling_settings = _MergeWithExistingAutoscalingSettings(
-          existing_cluster,
-          autoscaling_settings or {},
-          args.remove_autoscaling_policy,
+    _ValidatePoliciesToRemove(
+        existing_cluster, updated_settings, args.remove_autoscaling_policy
+    )
+
+    autoscaling_settings = None
+    if updated_settings is not None or args.remove_autoscaling_policy:
+      old_settings = util.ParseAutoscalingSettingsFromApiFormat(
+          existing_cluster
+      )
+      autoscaling_settings = util.MergeAutoscalingSettings(
+          old_settings, updated_settings
+      )
+
+      autoscaling_settings = _RemoveAutoscalingPolicies(
+          autoscaling_settings, args.remove_autoscaling_policy
       )
 
     operation = client.Update(cluster, configs, autoscaling_settings)

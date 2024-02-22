@@ -24,6 +24,7 @@ from googlecloudsdk.command_lib.scc.manage import flags
 from googlecloudsdk.command_lib.scc.manage import parsing
 
 
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.ALPHA)
 class ListDescendant(base.ListCommand):
   """List the details of the resident and descendant Security Health Analytics custom modules.
 

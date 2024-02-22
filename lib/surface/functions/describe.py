@@ -26,8 +26,8 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.functions import flags
 from googlecloudsdk.command_lib.functions import util
 from googlecloudsdk.command_lib.functions.v1 import decorator
-
 from googlecloudsdk.core import log
+from googlecloudsdk.core import properties
 
 
 def _PrintV2StateMessages(state_messages):
@@ -39,6 +39,24 @@ def _PrintV2StateMessages(state_messages):
   log.status.Print('')  # newline
 
 
+def _ValidateArgs(args):
+  """Validate arguments."""
+  if (
+      args.IsSpecified('v2')
+      and properties.VALUES.functions.gen2.IsExplicitlySet()
+  ):
+    if args.v2 and not flags.ShouldUseGen2():
+      log.warning(
+          'Conflicting flags "--v2" and "--no-gen2" specified, Cloud Functions'
+          ' v2 APIs will be used.'
+      )
+    if not args.v2 and flags.ShouldUseGen2():
+      log.warning(
+          'Conflicting flags "--no-v2" and "--gen2" specified, Cloud Functions'
+          ' v2 APIs will be used.'
+      )
+
+
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Describe(util.FunctionResourceCommand, base.DescribeCommand):
   """Display details of a Google Cloud Function."""
@@ -47,7 +65,8 @@ class Describe(util.FunctionResourceCommand, base.DescribeCommand):
   def Args(parser):
     """Register flags for this command."""
     flags.AddFunctionResourceArg(parser, 'to describe')
-    flags.AddGen2Flag(parser, hidden=True)
+    flags.AddGen2Flag(parser, hidden=True, allow_v2=True)
+    flags.AddV2Flag(parser)
 
   def _RunV1(self, args):
     client = api_util_v1.GetApiClientInstance()
@@ -74,6 +93,14 @@ class Describe(util.FunctionResourceCommand, base.DescribeCommand):
     if function.stateMessages:
       _PrintV2StateMessages(function.stateMessages)
     return function
+
+  def Run(self, args):
+    _ValidateArgs(args)
+
+    if args.v2:
+      return self._RunV2(args)
+
+    return util.FunctionResourceCommand.Run(self, args)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)

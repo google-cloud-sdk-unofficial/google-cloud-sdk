@@ -25,6 +25,7 @@ from googlecloudsdk.command_lib.scc.manage import flags
 from googlecloudsdk.command_lib.scc.manage import parsing
 
 
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.ALPHA)
 class DescribeEffective(base.DescribeCommand):
   """Get effective the details of a Security Health Analytics effective custom module.
 

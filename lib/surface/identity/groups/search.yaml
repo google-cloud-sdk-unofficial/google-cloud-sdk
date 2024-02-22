@@ -101,6 +101,7 @@
   request:
     collection: cloudidentity.groups
     method: search
+    disable_pagination: true
     modify_request_hooks:
     - googlecloudsdk.command_lib.identity.groups.hooks:GenerateQuery
     ALPHA:

@@ -24,6 +24,7 @@ from googlecloudsdk.command_lib.scc.manage import flags
 from googlecloudsdk.command_lib.scc.manage import parsing
 
 
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.ALPHA)
 class List(base.ListCommand):
   """List details of resident and inherited Event Threat Detection Custom Modules.
 

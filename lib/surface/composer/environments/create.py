@@ -282,6 +282,8 @@ class Create(base.Command):
   def Args(cls, parser, release_track=base.ReleaseTrack.GA):
     _CommonArgs(parser, cls._support_max_pods_per_node, release_track)
 
+    AddLineageIntegrationParser(parser)
+
   def Run(self, args):
     if image_versions_util.IsDefaultImageVersion(args.image_version):
       message = image_versions_util.BuildDefaultComposerVersionWarning(
@@ -580,6 +582,18 @@ class Create(base.Command):
               opt='disable-logs-in-cloud-logging-only'
           )
       )
+    if args.enable_cloud_data_lineage_integration and is_composer_v1:
+      raise command_util.InvalidUserInputError(
+          _INVALID_OPTION_FOR_V1_ERROR_MSG.format(
+              opt='enable-cloud-data-lineage-integration'
+          )
+      )
+    if args.disable_cloud_data_lineage_integration and is_composer_v1:
+      raise command_util.InvalidUserInputError(
+          _INVALID_OPTION_FOR_V1_ERROR_MSG.format(
+              opt='disable-cloud-data-lineage-integration'
+          )
+      )
     if args.cloud_sql_preferred_zone and is_composer_v1:
       raise command_util.InvalidUserInputError(
           _INVALID_OPTION_FOR_V1_ERROR_MSG.format(
@@ -702,6 +716,8 @@ class Create(base.Command):
         snapshot_creation_schedule=args.snapshot_creation_schedule,
         snapshot_location=args.snapshot_location,
         snapshot_schedule_timezone=args.snapshot_schedule_timezone,
+        enable_cloud_data_lineage_integration=args.enable_cloud_data_lineage_integration,
+        disable_cloud_data_lineage_integration=args.disable_cloud_data_lineage_integration,
         enable_high_resilience=args.enable_high_resilience,
         enable_logs_in_cloud_logging_only=args.enable_logs_in_cloud_logging_only,
         disable_logs_in_cloud_logging_only=args.disable_logs_in_cloud_logging_only,
@@ -729,8 +745,6 @@ class CreateBeta(Create):
   @classmethod
   def Args(cls, parser, release_track=base.ReleaseTrack.BETA):
     super(CreateBeta, cls).Args(parser, release_track)
-
-    AddLineageIntegrationParser(parser)
 
     AddComposer3Flags(parser)
 

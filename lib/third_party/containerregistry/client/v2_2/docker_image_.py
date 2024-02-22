@@ -269,6 +269,18 @@ class FromRegistry(DockerImage):
       self._response[suffix] = content
     return content
 
+  def check_usage_only(self):
+    # See //cloud/containers/registry/proto/v2/registry_usage.proto
+    # for the full response structure.
+    response = json.loads(
+        self._content('tags/list?check_usage_only=true').decode('utf8')
+    )
+    if 'usage' not in response:
+      raise docker_http.BadStateException(
+          'Malformed JSON response: {}. Missing "usage" field'.format(response)
+      )
+    return response.get('usage')
+
   def _tags(self):
     # See //cloud/containers/registry/proto/v2/tags.proto
     # for the full response structure.

@@ -48,6 +48,10 @@ class Start(base.Command):
           To run the local Firestore emulator with a Firebase Rules set, run:
 
             $ {command} --rules=firestore.rules
+
+          To run the local Firestore emulator in Datastore Mode, run:
+
+            $ {command} --database-mode=datastore-mode
           """,
   }
 
@@ -70,6 +74,14 @@ class Start(base.Command):
         'e.g.\n\n'
         '  [2001:db8:0:0:0:ff00:42:8329]:8080\n\n'
         'The default value is localhost:8080.')
+    parser.add_argument(
+        '--database-mode',
+        required=False,
+        help='The database mode to start the Firestore Emulator in. The valid '
+        'options are: \n\n'
+        '  `firestore-native` (default): start the emulator in Firestore '
+        'Native\n'
+        '  `datastore-mode`: start the emulator in Datastore Mode')
 
   def Run(self, args):
     if not args.host_port:
@@ -77,6 +89,7 @@ class Start(base.Command):
           firestore_util.GetHostPort(), ipv6_enabled=socket.has_ipv6)
     args.host_port.host = args.host_port.host or 'localhost'
     args.host_port.port = args.host_port.port or '8080'
+    args.database_mode = args.database_mode or 'firestore-native'
     firestore_util.ValidateStartArgs(args)
     java.RequireJavaInstalled(firestore_util.FIRESTORE_TITLE, min_version=11)
     with firestore_util.StartFirestoreEmulator(args) as proc:

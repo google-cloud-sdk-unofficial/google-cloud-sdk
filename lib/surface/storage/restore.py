@@ -168,20 +168,27 @@ class Restore(base.Command):
       """,
       'EXAMPLES': """
 
-      Restore specific version of object in a bucket. Note: Generation number
-      is required.
+      Restore latest soft-deleted version of object in a bucket.
+
+        $ {command} gs://bucket/file1.txt
+
+      Restore a specific soft-deleted version of object in a bucket by specifying the generation.
 
         $ {command} gs://bucket/file1.txt#123
 
-      Restore two objects in a bucket:
+      Restore all soft-deleted versions of object in a bucket.
 
-        $ {command} gs://bucket/file1.txt#123 gs://bucket/file2.txt#456
+        $ {command} gs://bucket/file1.txt --all-versions
 
-      Restore all text objects in a bucket:
+      Restore several objects in a bucket (with or without generation):
+
+        $ {command} gs://bucket/file1.txt gs://bucket/file2.txt#456
+
+      Restore the latest soft-deleted version of all text objects in a bucket:
 
         $ {command} gs://bucket/**.txt
 
-      Read list of files to restore from stdin:
+      Restore a list of objects read from stdin (with or without generation):
 
         $ cat list-of-files.txt | {command} --read-paths-from-stdin
 

@@ -109,7 +109,7 @@ class Update(base.UpdateCommand):
     flags.AddWindowsOsVersionFlag(group)
     flags.AddContainerdConfigFlag(group, hidden=True)
     flags.AddResourceManagerTagsNodePoolUpdate(group)
-    flags.AddQueuedProvisioningFlag(group, hidden=True)
+    flags.AddQueuedProvisioningFlag(group)
     flags.AddEnableKubeletReadonlyPortFlag(group)
     node_config_group = group.add_argument_group('Node config')
     flags.AddMachineTypeFlag(node_config_group, update=True)
@@ -291,7 +291,7 @@ class UpdateBeta(Update):
     flags.AddWindowsOsVersionFlag(group)
     flags.AddResourceManagerTagsNodePoolUpdate(group)
     flags.AddContainerdConfigFlag(group, hidden=True)
-    flags.AddQueuedProvisioningFlag(group, hidden=True)
+    flags.AddQueuedProvisioningFlag(group)
     flags.AddEnableKubeletReadonlyPortFlag(group)
 
     node_config_group = group.add_argument_group('Node config')
@@ -409,7 +409,7 @@ class UpdateAlpha(Update):
     flags.AddWindowsOsVersionFlag(group)
     flags.AddResourceManagerTagsNodePoolUpdate(group)
     flags.AddContainerdConfigFlag(group, hidden=True)
-    flags.AddQueuedProvisioningFlag(group, hidden=True)
+    flags.AddQueuedProvisioningFlag(group)
     flags.AddEnableKubeletReadonlyPortFlag(group)
 
     node_config_group = group.add_argument_group('Node config')

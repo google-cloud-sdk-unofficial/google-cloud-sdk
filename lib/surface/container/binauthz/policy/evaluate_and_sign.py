@@ -33,18 +33,30 @@ from googlecloudsdk.core.exceptions import Error
 @base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class EvaluateAndSign(base.Command):
-  """Evaluate a policy and sign the results, if conformant.
+  """Evaluate a Binary Authorization platform policy and sign the results, if conformant.
 
   ## EXAMPLES
 
   To evaluate and sign a policy using its resource name:
 
-    $ {command} projects/my_proj/platforms/gke/policies/policy1
-    --resource=pod.json
+    $ {command} projects/my-proj/platforms/gke/policies/my-policy
+    --resource=$KUBERNETES_RESOURCE
 
-  To evaluate and sign the same policy using flags:
+  To evaluate the same policy using flags against multiple images:
 
-    $ {command} policy1 --platform=gke --project=my_proj --resource=pod.json
+    $ {command} my-policy --platform=gke --project=my-proj --image=$IMAGE1
+    --image=$IMAGE2
+
+  To return a modified resource with attestations added as an annotation on the
+  input resource, without uploading attestations to the registry:
+
+    $ {command} projects/my-proj/platforms/gke/policies/my-policy
+    --resource=$KUBERNETES_RESOURCE --output-file=$MODIFIED_RESOURCE --no-upload
+
+  To upload attestations using Docker credentials located in a custom directory:
+
+    $ {command} projects/my-proj/platforms/gke/policies/my-policy
+    --image=$IMAGE --use-docker-creds --docker-config-dir=$CUSTOM_DIR
   """
 
   @staticmethod
@@ -53,6 +65,7 @@ class EvaluateAndSign(base.Command):
     flags.AddEvaluationUnitArg(parser)
     flags.AddNoUploadArg(parser)
     flags.AddOutputFileArg(parser)
+    flags.AddDockerCredsArgs(parser)
 
   def Run(self, args):
     policy_ref = args.CONCEPTS.policy_resource_name.Parse().RelativeName()
@@ -60,11 +73,19 @@ class EvaluateAndSign(base.Command):
     if platform_id != 'gke':
       raise Error(
           "Found unsupported platform '{}'. Currently only 'gke' platform "
-          "policies are supported.".format(platform_id)
+          'policies are supported.'.format(platform_id)
       )
 
     if args.output_file and not args.resource:
       raise util.Error('Cannot specify --output-file without --resource.')
+
+    if args.use_docker_creds and args.no_upload:
+      raise util.Error('Cannot specify --use-docker-creds with --no-upload.')
+
+    if args.docker_config_dir and not args.use_docker_creds:
+      raise util.Error(
+          'Cannot specify --docker-config-dir without --use-docker-creds.'
+      )
 
     if args.resource:
       resource_obj = parsing.LoadResourceFile(args.resource)
@@ -91,7 +112,12 @@ class EvaluateAndSign(base.Command):
         image_url = sigstore_image.AttestationToImageUrl(attestation)
         log.Print('Uploading attestation for {}'.format(image_url))
         sigstore_image.UploadAttestationToRegistry(
-            image_url, sigstore_image.StandardOrUrlsafeBase64Decode(attestation)
+            image_url=image_url,
+            attestation=sigstore_image.StandardOrUrlsafeBase64Decode(
+                attestation
+            ),
+            use_docker_creds=args.use_docker_creds,
+            docker_config_dir=args.docker_config_dir,
         )
 
     # Write inline attestations.

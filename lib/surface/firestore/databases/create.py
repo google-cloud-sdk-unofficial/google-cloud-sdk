@@ -26,7 +26,7 @@ from googlecloudsdk.core import properties
 
 
 @base.ReleaseTracks(
-    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
+    base.ReleaseTrack.BETA, base.ReleaseTrack.GA
 )
 class CreateFirestoreAPI(base.Command):
   """Create a Google Cloud Firestore database via Firestore API.
@@ -90,6 +90,11 @@ class CreateFirestoreAPI(base.Command):
         api_utils.GetMessages().GoogleFirestoreAdminV1Database.PointInTimeRecoveryEnablementValueValuesEnum.POINT_IN_TIME_RECOVERY_DISABLED
     )
 
+  def DatabaseCmekConfig(self, args):
+    return (
+        api_utils.GetMessages().GoogleFirestoreAdminV1CmekConfig()
+    )
+
   def Run(self, args):
     project = properties.VALUES.core.project.Get(required=True)
     return databases.CreateDatabase(
@@ -99,6 +104,7 @@ class CreateFirestoreAPI(base.Command):
         self.DatabaseType(args.type),
         self.DatabaseDeleteProtectionState(args.delete_protection),
         self.DatabasePitrState(args.enable_pitr),
+        self.DatabaseCmekConfig(args),
     )
 
   @classmethod
@@ -148,5 +154,67 @@ class CreateFirestoreAPI(base.Command):
         this feature is not enabled.
         """,
         action='store_true',
+        default=None,
+    )
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class CreateFirestoreAPIWithCmekConfig(CreateFirestoreAPI):
+  r"""Create a Google Cloud Firestore database via Firestore API.
+
+  ## EXAMPLES
+
+  To create a Firestore Native database in `nam5`.
+
+      $ {command} --location=nam5
+
+  To create a Datastore Mode database in `us-east1`.
+
+      $ {command} --location=us-east1 --type=datastore-mode
+
+  To create a Datastore Mode database in `us-east1` with a databaseId `foo`.
+
+      $ {command} --database=foo --location=us-east1 --type=datastore-mode
+
+  To create a Firestore Native database in `nam5` with delete protection
+  enabled.
+
+      $ {command} --location=nam5 --delete-protection
+
+  To create a Firestore Native database in `nam5` with Point In Time Recovery
+  (PITR) enabled.
+
+      $ {command} --location=nam5 --enable-pitr
+  """
+
+  def DatabaseCmekConfig(self, args):
+    if args.kms_key_name is not None:
+      return api_utils.GetMessages().GoogleFirestoreAdminV1CmekConfig(
+          kmsKeyName=args.kms_key_name
+      )
+    return api_utils.GetMessages().GoogleFirestoreAdminV1CmekConfig()
+
+  @classmethod
+  def Args(cls, parser):
+    super(CreateFirestoreAPIWithCmekConfig, cls).Args(parser)
+    parser.add_argument(
+        '--kms-key-name',
+        help="""The resource ID of a Cloud KMS key. If set, the database created will
+        be a Customer-managed Encryption Key (CMEK) database encrypted with
+        this key. This feature is allowlist only in initial launch.
+
+        Only the key in the same location as this database is allowed to be
+        used for encryption.
+
+        For Firestore's nam5 multi-region, this corresponds to Cloud KMS
+        location us. For Firestore's eur3 multi-region, this corresponds to
+        Cloud KMS location europe. See https://cloud.google.com/kms/docs/locations.
+
+        This value should be the KMS key resource ID in the format of
+        `projects/{project_id}/locations/{kms_location}/keyRings/{key_ring}/cryptoKeys/{crypto_key}`.
+        How to retrive this resource ID is listed at https://cloud.google.com/kms/docs/getting-resource-ids#getting_the_id_for_a_key_and_version.
+        """,
+        type=str,
+        hidden=True,
         default=None,
     )

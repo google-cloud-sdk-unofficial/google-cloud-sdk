@@ -26,7 +26,6 @@ from surface.container.clusters import create
 auto_flags = [
     'args',
     'clusterversion',
-    'ipalias_additional',
     'masterauth',
     'nodeidentity',
     'privatecluster',
@@ -54,6 +53,7 @@ auto_flags = [
     'containerdConfig',
     'labels',
     'secretManagerConfig',
+    'enableCiliumClusterwideNetworkPolicy',
 ]
 
 # Change default flag values in create-auto
@@ -81,6 +81,7 @@ def AddAutoFlags(parser, release_track):
   flags.AddEnableBackupRestoreFlag(parser)
   flags.AddAutoprovisioningResourceManagerTagsCreate(parser)
   flags.AddAdditiveVPCScopeFlags(parser, release_track=release_track)
+  flags.AddIPAliasRelatedFlags(parser, autopilot=True)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)

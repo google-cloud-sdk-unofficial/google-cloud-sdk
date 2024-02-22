@@ -31,6 +31,10 @@
       required: true
       help_text: |
         Public domain name to create an authorization for.
+    - arg_name: type
+      api_field: dnsAuthorization.type
+      help_text: |
+        Type of the DNS authorization.
 
     labels:
       api_field: dnsAuthorization.labels

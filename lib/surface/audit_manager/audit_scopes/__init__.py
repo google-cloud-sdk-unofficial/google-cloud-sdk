@@ -22,7 +22,6 @@ from googlecloudsdk.calliope import base
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-@base.Hidden
 class AuditScopes(base.Group):
   """Command group for Audit Manager Audit Scopes."""
 

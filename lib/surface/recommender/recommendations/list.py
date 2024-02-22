@@ -49,16 +49,16 @@ DISPLAY_FORMAT = """
     """
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class List(base.ListCommand):
   r"""List operations for a recommendation.
 
-  This command lists all recommendations for a given cloud_entity_id,
+  This command lists all recommendations for a given Google Cloud entity ID,
   location, and recommender. If recommender or location is not specified,
   recommendations for all supported recommenders and locations are listed.
   Supported recommenders can be found here:
   https://cloud.google.com/recommender/docs/recommenders.
-  Currently the following cloud_entity_types are supported: project,
+  The following Google Cloud entity types are supported: project,
   billing_account, folder and organization.
   """
 
@@ -160,95 +160,14 @@ class List(base.ListCommand):
     return recommendations
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class ListBeta(base.ListCommand):
-  r"""List operations for a recommendation.
-
-  This command lists all recommendations for a given cloud_entity_id,
-  location, and recommender. If recommender is not specified, recommendations
-  for all supported recommenders are listed. Supported recommenders can be found
-  here:
-  https://cloud.google.com/recommender/docs/recommenders.
-  Currently the following cloud_entity_types are supported: project,
-  billing_account, folder and organization.
-  """
-
-  detailed_help = DETAILED_HELP
-
-  @staticmethod
-  def Args(parser):
-    """Args is called by calliope to gather arguments for this command.
-
-    Args:
-      parser: An argparse parser that you can use to add arguments that go on
-        the command line after this command.
-    """
-    flags.AddParentFlagsToParser(parser)
-    parser.add_argument(
-        '--location',
-        metavar='LOCATION',
-        required=True,
-        help='Location to list recommendations for.',
-    )
-    parser.add_argument(
-        '--recommender',
-        metavar='RECOMMENDER',
-        required=False,
-        help=(
-            'Recommender to list recommendations for. If no recommender is'
-            ' specified, recommendations for all supported recommenders are'
-            ' listed. Supported recommenders can be found here:'
-            ' https://cloud.google.com/recommender/docs/recommenders'
-        ),
-    )
-    parser.display_info.AddFormat(DISPLAY_FORMAT)
-
-  def Run(self, args):
-    """Run 'gcloud recommender recommendations list'.
-
-    Args:
-      args: argparse.Namespace, The arguments that this command was invoked
-        with.
-
-    Returns:
-      The list of recommendations for this project.
-    """
-    recommendations_client = recommendation.CreateClient(self.ReleaseTrack())
-
-    recommendations = []
-    if args.recommender is not None:
-      parent_name = flags.GetRecommenderName(args)
-      recommendations = recommendations_client.List(parent_name, args.page_size)
-    else:
-      recommenders_client = recommenders.CreateClient(self.ReleaseTrack())
-      recommenders_response = recommenders_client.List(args.page_size)
-      for recommender in [response.name for response in recommenders_response]:
-        parent_name = flags.GetFullRecommenderName(args, recommender)
-        new_recommendations = recommendations_client.List(
-            parent_name, args.page_size
-        )
-        try:  # skip recommenders that do not allow customer access
-          peek = next(new_recommendations)  # execute first element of generator
-        except (
-            apitools_exceptions.HttpBadRequestError,
-            apitools_exceptions.BadStatusCodeError,
-            StopIteration,
-        ):
-          continue
-        recommendations = itertools.chain(
-            recommendations, [peek], new_recommendations
-        )
-    return recommendations
-
-
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class ListOriginal(base.ListCommand):
   r"""List operations for a recommendation.
 
-  This command lists all recommendations for a given cloud_entity_id,
+  This command lists all recommendations for a given Google Cloud entity ID,
   location, and recommender. Supported recommenders can be found here:
   https://cloud.google.com/recommender/docs/recommenders.
-  Currently the following cloud_entity_types are supported: project,
+  The following Google Cloud entity types are supported: project,
   billing_account, folder and organization.
   """
 

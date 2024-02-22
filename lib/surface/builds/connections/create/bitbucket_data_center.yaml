@@ -1,6 +1,4 @@
-- release_tracks: [ALPHA]
-  hidden: true
-  help_text:
+- help_text:
     brief: Create a Cloud Build Connection for Bitbucket Data Center.
     description: |
       Create a Cloud Build Connection for Bitbucket Data Center.
@@ -22,7 +20,7 @@
           --webhook-secret-secret-version=projects/myproj/secrets/whsecret/versions/1
 
       To create a Bitbucket Data Center connection for a private Bitbucket Data Center server.
-      provide the service-directory-service and ssl-ca-file as well:
+      Provide the service-directory-service and ssl-ca-file as well:
 
         $ {command} my-private-bitbucket-conn \
           --host-uri=https://my.private-bitbucket-server.net \

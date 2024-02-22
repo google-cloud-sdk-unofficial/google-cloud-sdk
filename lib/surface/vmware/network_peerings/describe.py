@@ -18,9 +18,9 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
-from googlecloudsdk.api_lib.vmware.networkpeering import NetworkPeeringClient
+from googlecloudsdk.api_lib.vmware import networkpeering
 from googlecloudsdk.calliope import base
-from googlecloudsdk.command_lib.vmware.networks import flags
+from googlecloudsdk.command_lib.vmware.network_peerings import flags
 
 DETAILED_HELP = {
     'DESCRIPTION':
@@ -51,5 +51,5 @@ class Describe(base.DescribeCommand):
 
   def Run(self, args):
     peering = args.CONCEPTS.network_peering.Parse()
-    client = NetworkPeeringClient()
+    client = networkpeering.NetworkPeeringClient()
     return client.Get(peering)

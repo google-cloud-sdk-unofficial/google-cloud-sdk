@@ -70,6 +70,7 @@ def _CommonArgs(
     support_specific_then_x_affinity=False,
     support_graceful_shutdown=False,
     support_ipv6_only=False,
+    support_vlan_nic=False,
 ):
   """Adding arguments applicable for creating instance templates."""
   parser.display_info.AddFormat(instance_templates_flags.DEFAULT_LIST_FORMAT)
@@ -93,6 +94,7 @@ def _CommonArgs(
       instances=False,
       support_network_attachments=support_network_attachments,
       support_network_queue_count=support_network_queue_count,
+      support_vlan_nic=support_vlan_nic,
       support_ipv6_only=support_ipv6_only,
   )
   instances_flags.AddAcceleratorArgs(parser)
@@ -1107,6 +1109,7 @@ class Create(base.CreateCommand):
   _support_local_ssd_recovery_timeout = True
   _support_specific_then_x_affinity = False
   _support_graceful_shutdown = False
+  _support_vlan_nic = False
 
   @classmethod
   def Args(cls, parser):
@@ -1130,6 +1133,7 @@ class Create(base.CreateCommand):
         support_local_ssd_recovery_timeout=cls._support_local_ssd_recovery_timeout,
         support_specific_then_x_affinity=cls._support_specific_then_x_affinity,
         support_graceful_shutdown=cls._support_graceful_shutdown,
+        support_vlan_nic=cls._support_vlan_nic,
     )
     instances_flags.AddMinCpuPlatformArgs(parser, base.ReleaseTrack.GA)
     instances_flags.AddPrivateIpv6GoogleAccessArgForTemplate(
@@ -1219,6 +1223,7 @@ class CreateBeta(Create):
   _support_maintenance_interval = True
   _support_specific_then_x_affinity = True
   _support_graceful_shutdown = False
+  _support_vlan_nic = False
 
   @classmethod
   def Args(cls, parser):
@@ -1243,6 +1248,7 @@ class CreateBeta(Create):
         support_maintenance_interval=cls._support_maintenance_interval,
         support_specific_then_x_affinity=cls._support_specific_then_x_affinity,
         support_graceful_shutdown=cls._support_graceful_shutdown,
+        support_vlan_nic=cls._support_vlan_nic,
     )
     instances_flags.AddMinCpuPlatformArgs(parser, base.ReleaseTrack.BETA)
     instances_flags.AddPrivateIpv6GoogleAccessArgForTemplate(
@@ -1335,6 +1341,7 @@ class CreateAlpha(Create):
   _support_maintenance_interval = True
   _support_specific_then_x_affinity = True
   _support_graceful_shutdown = True
+  _support_vlan_nic = True
   _support_ipv6_only = True
 
   @classmethod
@@ -1362,6 +1369,7 @@ class CreateAlpha(Create):
         support_specific_then_x_affinity=cls._support_specific_then_x_affinity,
         support_graceful_shutdown=cls._support_graceful_shutdown,
         support_ipv6_only=cls._support_ipv6_only,
+        support_vlan_nic=cls._support_vlan_nic,
     )
     instances_flags.AddLocalNvdimmArgs(parser)
     instances_flags.AddMinCpuPlatformArgs(parser, base.ReleaseTrack.ALPHA)

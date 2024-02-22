@@ -58,6 +58,7 @@ Container Flags
   group.AddArgument(flags.ArgsFlag())
   group.AddArgument(flags.SecretsFlags())
   group.AddArgument(flags.CommandFlag())
+  group.AddArgument(flags.DependsOnFlag())
 
   return group
 

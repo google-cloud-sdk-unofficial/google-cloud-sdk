@@ -238,6 +238,8 @@ class Status(feature_base.FeatureCommand, base.ListCommand):
       # as it indicates an unreachable cluster or a dated syncState.code
       if md.state is None or md.state.code is None:
         cluster.config_sync = 'CODE_UNSPECIFIED'
+      elif fs is None:
+        cluster.config_sync = 'NOT_INSTALLED'
       else:
         # operator errors could occur regardless of the deployment_state
         if has_operator_error(fs):

@@ -111,6 +111,14 @@ class Create(base.CreateCommand):
         if self._RELEASE_TRACK == base.ReleaseTrack.BETA
         else None
     )
+    if (self._RELEASE_TRACK == base.ReleaseTrack.ALPHA or
+        self._RELEASE_TRACK == base.ReleaseTrack.BETA):
+      large_capacity = args.large_capacity
+      multiple_endpoints = args.multiple_endpoints
+    else:
+      large_capacity = None
+      multiple_endpoints = None
+
     volume = client.ParseVolumeConfig(
         name=volume_ref.RelativeName(),
         capacity=capacity_in_gib,
@@ -130,7 +138,9 @@ class Create(base.CreateCommand):
         snapshot=args.source_snapshot,
         backup=source_backup,
         restricted_actions=restricted_actions,
-        backup_config=backup_config)
+        backup_config=backup_config,
+        large_capacity=large_capacity,
+        multiple_endpoints=multiple_endpoints)
     result = client.CreateVolume(volume_ref, args.async_, volume)
     if args.async_:
       command = 'gcloud {} netapp volumes list'.format(

@@ -24,6 +24,7 @@
     collection: cloudidentity.groups.memberships
     disable_resource_check: true
     method: searchTransitiveMemberships
+    disable_pagination: true
     modify_request_hooks:
     - googlecloudsdk.command_lib.identity.groups.memberships.hooks:SetTransitiveMembershipParent
     ALPHA:

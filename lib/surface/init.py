@@ -114,7 +114,17 @@ class Init(base.Command):
     parser.add_argument(
         '--skip-diagnostics',
         action='store_true',
-        help='Do not run diagnostics.')
+        help='Do not run diagnostics.',
+    )
+    parser.add_argument(
+        '--universe-domain',
+        type=str,
+        hidden=True,
+        help=(
+            'If set, creates the configuration with the specified'
+            ' [core/universe_domain].'
+        ),
+    )
 
   def Run(self, args):
     """Allows user to select configuration, and initialize it."""
@@ -154,11 +164,18 @@ class Init(base.Command):
           log.status.write('  gcloud info --run-diagnostics\n\n')
           return
 
+    if args.universe_domain:
+      properties.PersistProperty(
+          properties.VALUES.core.universe_domain, args.universe_domain
+      )
+      return
+
     # User project quota is now the global default, but this command calls
     # legacy APIs where it should be disabled.
     with base.WithLegacyQuota():
       if not self._PickAccount(
-          args.console_only, args.no_browser, preselected=args.account):
+          args.console_only, args.no_browser, preselected=args.account
+      ):
         return
 
       if not self._PickProject(preselected=args.project):

@@ -30,9 +30,9 @@ from googlecloudsdk.core import properties
 _DETAILED_HELP = {
     'DESCRIPTION': 'Enroll a new scope.',
     'EXAMPLES': """ \
-        To enroll a project with ID `123` in the `us-central1` region with `gs://test-bucket-1` and `gs://my-bucket-2` as eligible gcs buckets, run:
+        To enroll a project with ID `123` in the `us-central1` region with `gs://test-bucket-1` and `gs://my-bucket-2` as eligible storage buckets, run:
 
-        $ {command} --project=123 --location=us-central1 --eligible-gcs-buckets "gs://test-bucket-1,gs://my-bucket-2"
+        $ {command} --project=123 --location=us-central1 --eligible-gcs-buckets="gs://test-bucket-1,gs://my-bucket-2"
         """,
 }
 

@@ -182,13 +182,24 @@ class Update(base.Command):
       has_latest = (
           service is None or traffic.LATEST_REVISION_KEY in service.spec_traffic
       )
+      creates_revision = config_changes.AdjustsTemplate(changes)
       deployment_stages = stages.ServiceStages(
-          include_iam_policy_set=False, include_route=has_latest
+          include_iam_policy_set=False,
+          include_route=creates_revision and has_latest,
+          include_create_revision=creates_revision
       )
+      if creates_revision:
+        progress_message = 'Deploying...'
+        failure_message = 'Deployment failed'
+        result_message = 'deploying'
+      else:
+        progress_message = 'Updating...'
+        failure_message = 'Update failed'
+        result_message = 'updating'
       with progress_tracker.StagedProgressTracker(
-          'Deploying...',
+          progress_message,
           deployment_stages,
-          failure_message='Deployment failed',
+          failure_message=failure_message,
           suppress_output=args.async_,
       ) as tracker:
         service = client.ReleaseService(
@@ -206,13 +217,18 @@ class Update(base.Command):
 
       if args.async_:
         pretty_print.Success(
-            'Service [{{bold}}{serv}{{reset}}] is deploying '
-            'asynchronously.'.format(serv=service.name)
+            'Service [{{bold}}{serv}{{reset}}] is {result_message} '
+            'asynchronously.'.format(serv=service.name,
+                                     result_message=result_message)
         )
       else:
-        pretty_print.Success(
-            messages_util.GetSuccessMessageForSynchronousDeploy(service)
-        )
+        if creates_revision:
+          pretty_print.Success(
+              messages_util.GetSuccessMessageForSynchronousDeploy(service)
+          )
+        else:
+          pretty_print.Success('Service [{{bold}}{serv}{{reset}}] has been '
+                               'updated.'.format(serv=service.name))
       return service
 
 

@@ -56,11 +56,21 @@ class Create(base.SilentCommand):
         action='store_true',
         default=True,
         help='If true, activate this configuration upon create.')
+    parser.add_argument(
+        '--universe-domain',
+        type=str,
+        hidden=True,
+        help=(
+            'If set, creates the configuration with the specified'
+            ' [core/universe_domain].'
+        ),
+    )
 
   def Run(self, args):
-    named_configs.ConfigurationStore.CreateConfig(args.configuration_name)
+    created_config = named_configs.ConfigurationStore.CreateConfig(
+        args.configuration_name
+    )
     log.CreatedResource(args.configuration_name)
-
     if args.activate:
       named_configs.ConfigurationStore.ActivateConfig(args.configuration_name)
       log.status.Print('Activated [{0}].'.format(args.configuration_name))
@@ -68,5 +78,10 @@ class Create(base.SilentCommand):
       log.status.Print('To use this configuration, activate it by running:\n'
                        '  $ gcloud config configurations activate {name}\n\n'.
                        format(name=args.configuration_name))
+    if args.universe_domain:
+      created_config.PersistProperty(
+          'core', 'universe_domain', args.universe_domain
+      )
+      log.status.Print('Updated property [core/universe_domain].')
 
     return args.configuration_name

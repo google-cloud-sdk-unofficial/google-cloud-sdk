@@ -41,11 +41,7 @@ class Update(base.UpdateCommand):
         required=True, operation='update'
     )
     cls.FIREWALL_POLICY_ARG.AddArgument(parser)
-    is_alpha_beta = cls.ReleaseTrack() in [
-        base.ReleaseTrack.ALPHA,
-        base.ReleaseTrack.BETA,
-    ]
-    flags.AddAction(parser, required=False, support_ips=is_alpha_beta)
+    flags.AddAction(parser, required=False)
     flags.AddFirewallPolicyId(parser, operation='updated')
     flags.AddSrcIpRanges(parser)
     flags.AddDestIpRanges(parser)
@@ -63,9 +59,8 @@ class Update(base.UpdateCommand):
     flags.AddDestAddressGroups(parser)
     flags.AddSrcFqdns(parser)
     flags.AddDestFqdns(parser)
-    if is_alpha_beta:
-      flags.AddSecurityProfileGroup(parser)
-      flags.AddTlsInspect(parser)
+    flags.AddSecurityProfileGroup(parser)
+    flags.AddTlsInspect(parser)
     flags.AddDescription(parser)
     flags.AddNewPriority(parser, operation='update')
     flags.AddOrganization(parser, required=False)
@@ -178,23 +173,22 @@ class Update(base.UpdateCommand):
     if args.IsSpecified('dest_fqdns'):
       dest_fqdns = args.dest_fqdns
       should_setup_match = True
-    if self.ReleaseTrack() in [base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA]:
-      if args.IsSpecified('security_profile_group'):
-        security_profile_group = (
-            firewall_policies_utils.BuildSecurityProfileGroupUrl(
-                security_profile_group=args.security_profile_group,
-                optional_organization=args.organization,
-                firewall_policy_client=org_firewall_policy,
-                firewall_policy_id=args.firewall_policy,
-            )
-        )
-      elif (
-          args.IsSpecified('action')
-          and args.action != 'apply_security_profile_group'
-      ):
-        cleared_fields.append('securityProfileGroup')
-      if args.IsSpecified('tls_inspect'):
-        tls_inspect = args.tls_inspect
+    if args.IsSpecified('security_profile_group'):
+      security_profile_group = (
+          firewall_policies_utils.BuildSecurityProfileGroupUrl(
+              security_profile_group=args.security_profile_group,
+              optional_organization=args.organization,
+              firewall_policy_client=org_firewall_policy,
+              firewall_policy_id=args.firewall_policy,
+          )
+      )
+    elif (
+        args.IsSpecified('action')
+        and args.action != 'apply_security_profile_group'
+    ):
+      cleared_fields.append('securityProfileGroup')
+    if args.IsSpecified('tls_inspect'):
+      tls_inspect = args.tls_inspect
     if args.IsSpecified('enable_logging'):
       enable_logging = args.enable_logging
     if args.IsSpecified('disabled'):
@@ -229,32 +223,19 @@ class Update(base.UpdateCommand):
             holder.client.messages.FirewallPolicyRule.DirectionValueValuesEnum.EGRESS
         )
 
-    if self.ReleaseTrack() in [base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA]:
-      firewall_policy_rule = holder.client.messages.FirewallPolicyRule(
-          priority=new_priority,
-          action=args.action,
-          match=matcher,
-          direction=traffic_direct,
-          targetResources=target_resources,
-          targetServiceAccounts=target_service_accounts,
-          description=args.description,
-          enableLogging=enable_logging,
-          disabled=disabled,
-          securityProfileGroup=security_profile_group,
-          tlsInspect=tls_inspect,
-      )
-    else:
-      firewall_policy_rule = holder.client.messages.FirewallPolicyRule(
-          priority=new_priority,
-          action=args.action,
-          match=matcher,
-          direction=traffic_direct,
-          targetResources=target_resources,
-          targetServiceAccounts=target_service_accounts,
-          description=args.description,
-          enableLogging=enable_logging,
-          disabled=disabled,
-      )
+    firewall_policy_rule = holder.client.messages.FirewallPolicyRule(
+        priority=new_priority,
+        action=args.action,
+        match=matcher,
+        direction=traffic_direct,
+        targetResources=target_resources,
+        targetServiceAccounts=target_service_accounts,
+        description=args.description,
+        enableLogging=enable_logging,
+        disabled=disabled,
+        securityProfileGroup=security_profile_group,
+        tlsInspect=tls_inspect,
+    )
 
     firewall_policy_id = firewall_policies_utils.GetFirewallPolicyId(
         firewall_policy_rule_client,

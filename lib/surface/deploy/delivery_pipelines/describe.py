@@ -54,7 +54,7 @@ def _CommonArgs(parser):
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
                     base.ReleaseTrack.GA)
 class Describe(base.DescribeCommand):
-  """Describes details specific to the individual target, delivery pipeline qualified.
+  """Show details about a delivery pipeline.
 
   The output contains the following sections:
 

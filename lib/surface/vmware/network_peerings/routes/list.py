@@ -18,9 +18,9 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
-from googlecloudsdk.api_lib.vmware.networkpeeringroutes import NetworkPeeringRoutesClient
+from googlecloudsdk.api_lib.vmware import networkpeeringroutes
 from googlecloudsdk.calliope import base
-from googlecloudsdk.command_lib.vmware.networks import flags
+from googlecloudsdk.command_lib.vmware.network_peerings import flags
 from googlecloudsdk.core.resource import resource_projector
 
 DETAILED_HELP = {
@@ -65,7 +65,7 @@ class List(base.ListCommand):
 
   def Run(self, args):
     networkpeering = args.CONCEPTS.network_peering.Parse()
-    client = NetworkPeeringRoutesClient()
+    client = networkpeeringroutes.NetworkPeeringRoutesClient()
     items = client.List(networkpeering)
 
     def _TransformStatus(direction, imported):

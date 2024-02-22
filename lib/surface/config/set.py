@@ -27,6 +27,7 @@ from googlecloudsdk.command_lib.config import flags
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 from googlecloudsdk.core.console import console_io
+from googlecloudsdk.core.credentials import store as c_store
 
 
 class Set(base.Command):
@@ -137,11 +138,35 @@ class Set(base.Command):
       showed_warning = config_validators.WarnIfSettingApiEndpointOverrideOutsideOfConfigUniverse(
           args.value, prop
       )
+    cred_account_universe_domain = None
+    if prop == properties.VALUES.core.account:
+      cred_account_universe_domain = (
+          c_store.GetCredentialedAccountUniverseDomain(args.value)
+      )
+      showed_warning = (
+          config_validators.WarnIfSettingAccountOutsideOfConfigUniverse(
+              args.value, cred_account_universe_domain
+          )
+      )
+    if prop == properties.VALUES.core.universe_domain:
+      showed_warning = config_validators.WarnIfSettingUniverseDomainOutsideOfConfigAccountUniverse(
+          args.value
+      )
+
     if showed_warning and not args.quiet and console_io.CanPrompt():
       if not console_io.PromptContinue(
           'Are you sure you wish to set {0}property [{1}] to {2}?'.format(
-              scope_msg, prop, args.value)):
+              scope_msg, prop, args.value
+          )
+      ):
         return
 
     properties.PersistProperty(prop, args.value, scope=scope)
     log.status.Print('Updated {0}property [{1}].'.format(scope_msg, prop))
+    if cred_account_universe_domain and showed_warning:
+      properties.PersistProperty(
+          properties.VALUES.core.universe_domain,
+          cred_account_universe_domain,
+          scope=scope,
+      )
+      log.status.Print('Updated [core/universe_domain] to match.')

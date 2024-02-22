@@ -24,6 +24,7 @@ from googlecloudsdk.command_lib.scc.manage import flags
 from googlecloudsdk.command_lib.scc.manage import parsing
 
 
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.ALPHA)
 class ListEffective(base.ListCommand):
   """List the details of an Event Threat Detection effective custom module.
 

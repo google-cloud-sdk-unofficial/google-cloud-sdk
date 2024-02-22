@@ -27,21 +27,20 @@ from googlecloudsdk.command_lib.container.binauthz import util
 from googlecloudsdk.core.exceptions import Error
 
 
-@base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
 class Evaluate(base.Command):
-  """Evaluate a policy.
+  """Evaluate a Binary Authorization platform policy.
 
   ## EXAMPLES
 
   To evaluate a policy using its resource name:
 
-    $ {command} projects/my_proj/platforms/gke/policies/policy1
-    --resource=pod.json
+    $ {command} projects/my-proj/platforms/gke/policies/my-policy
+    --resource=$KUBERNETES_RESOURCE
 
-  To evaluate the same policy using flags:
+  To evaluate the same policy using flags against an image:
 
-    $ {command} policy1 --platform=gke --project=my_proj --resource=pod.json
+    $ {command} my-policy --platform=gke --project=my-proj --image=$IMAGE
   """
 
   @staticmethod

@@ -18,9 +18,9 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
-from googlecloudsdk.api_lib.vmware.networkpeering import NetworkPeeringClient
+from googlecloudsdk.api_lib.vmware import networkpeering
 from googlecloudsdk.calliope import base
-from googlecloudsdk.command_lib.vmware.networks import flags
+from googlecloudsdk.command_lib.vmware.network_peerings import flags
 from googlecloudsdk.core import log
 
 DETAILED_HELP = {
@@ -54,7 +54,7 @@ class Delete(base.DescribeCommand):
 
   def Run(self, args):
     peering = args.CONCEPTS.network_peering.Parse()
-    client = NetworkPeeringClient()
+    client = networkpeering.NetworkPeeringClient()
     is_async = args.async_
     operation = client.Delete(peering)
     if is_async:

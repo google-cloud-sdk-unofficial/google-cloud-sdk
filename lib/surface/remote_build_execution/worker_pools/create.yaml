@@ -98,6 +98,33 @@
     - group:
         required: false
         params:
+        - api_field: workerPool.workerConfig.attachedDisks.dockerRootDisk.sourceImage
+          arg_name: docker-root-disk-image
+          required: true
+          help_text: The source image to use for the user-provided docker root disk.
+        - api_field: workerPool.workerConfig.attachedDisks.dockerRootDisk.diskType
+          arg_name: docker-root-disk-type
+          required: true
+          choices:
+          - arg_value: pd-standard
+            enum_value: pd-standard
+            help_text: |
+              Standard persistent disk.
+          - arg_value: pd-ssd
+            enum_value: pd-ssd
+            help_text: |
+              SSD persistent disk.
+          help_text: |
+            The disk type to use for the user-provided docker root disk. Must be one of
+            pd-ssd and pd-standard.
+        - api_field: workerPool.workerConfig.attachedDisks.dockerRootDisk.diskSizeGb
+          arg_name: docker-root-disk-size
+          required: true
+          help_text: |
+            Size of the user-provided docker root disk, in Gb.
+    - group:
+        required: false
+        params:
         - api_field: workerPool.workerConfig.accelerator.acceleratorCount
           arg_name: accelerator-count
           required: true

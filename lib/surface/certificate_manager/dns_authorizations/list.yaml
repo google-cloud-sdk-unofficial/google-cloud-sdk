@@ -28,5 +28,6 @@
         domain:label=DOMAIN,
         dnsResourceRecord.name:label=DNS_RECORD,
         dnsResourceRecord.type:label=RECORD_TYPE,
-        dnsResourceRecord.data:label=DNS_VALUE
+        dnsResourceRecord.data:label=DNS_VALUE,
+        type:label=TYPE
       )

@@ -50,6 +50,9 @@ class Delete(base.Command):
         'instance',
         completer=flags.InstanceCompleter,
         help='Cloud SQL instance ID.')
+    flags.AddSkipFinalBackup(parser)
+    flags.AddFinalbackupRetentionDays(parser)
+    flags.AddFinalbackupDescription(parser)
 
   def Run(self, args):
     """Deletes a Cloud SQL instance.
@@ -79,7 +82,13 @@ class Delete(base.Command):
     try:
       result = sql_client.instances.Delete(
           sql_messages.SqlInstancesDeleteRequest(
-              instance=instance_ref.instance, project=instance_ref.project))
+              instance=instance_ref.instance,
+              project=instance_ref.project,
+              skipFinalBackup=args.skip_final_backup,
+              finalBackupTtlDays=args.final_backup_retention_days,
+              finalBackupDescription=args.final_backup_description,
+          )
+      )
 
       operation_ref = client.resource_parser.Create(
           'sql.operations', operation=result.name, project=instance_ref.project)

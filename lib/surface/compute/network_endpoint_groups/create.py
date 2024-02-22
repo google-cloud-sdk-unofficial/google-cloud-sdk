@@ -360,6 +360,12 @@ class CreateAlpha(CreateBeta):
 
     valid_scopes_inverted = _Invert(valid_scopes)
 
+    if not is_regional and args.client_port_mapping_mode:
+      raise exceptions.InvalidArgumentException(
+          '--client-port-mapping-mode',
+          'Client port mapping mode is only supported for regional NEGs.',
+      )
+
     if is_zonal:
       valid_zonal_types = valid_scopes_inverted['zonal']
       if network_endpoint_type not in valid_zonal_types:

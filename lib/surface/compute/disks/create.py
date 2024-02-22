@@ -619,7 +619,7 @@ class Create(base.Command):
       disk.licenses = self.ParseLicenses(args)
 
       if args.IsSpecified('provisioned_iops'):
-        if type_uri and disks_util.IsProvisioingTypeIops(type_uri):
+        if type_uri and disks_util.IsProvisioningTypeIops(type_uri):
           disk.provisionedIops = args.provisioned_iops
         else:
           raise exceptions.InvalidArgumentException(

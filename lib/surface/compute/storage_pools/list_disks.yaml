@@ -11,6 +11,7 @@
     collection: compute.storagePools
     api_version: alpha
     method: listDisks
+    disable_pagination: true
 
   arguments:
     resource:

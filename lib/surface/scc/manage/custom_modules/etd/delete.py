@@ -26,6 +26,7 @@ from googlecloudsdk.command_lib.scc.manage import parsing
 from googlecloudsdk.core.console import console_io
 
 
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.ALPHA)
 class Delete(base.DeleteCommand):
   """Delete an Event Threat Detection custom module.
 

@@ -26,6 +26,7 @@ from googlecloudsdk.command_lib.scc.manage import parsing
 from googlecloudsdk.core.console import console_io
 
 
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.ALPHA)
 class Update(base.Command):
   """Update an Event Threat Detection custom module.
 
@@ -34,9 +35,9 @@ class Update(base.Command):
   To update an Event Threat Detection custom module with ID 123456 for
   organization 123, run:
 
-      $ gcloud alpha scc custom-modules etd update 123456
+      $ {command} 123456
           --organization=organizations/123 --enablement-state="ENABLED"
-          --custom-config-from-file=custom_config.json
+          --custom-config-file=custom_config.json
   """
 
   @staticmethod

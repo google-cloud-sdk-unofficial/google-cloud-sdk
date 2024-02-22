@@ -87,8 +87,8 @@ class _Update(object):
     source_ref = args.CONCEPTS.source.Parse()
     destination_ref = args.CONCEPTS.destination.Parse()
 
-    cp_client = migration_jobs.MigrationJobsClient(self.ReleaseTrack())
-    result_operation = cp_client.Update(migration_job_ref.RelativeName(),
+    mj_client = migration_jobs.MigrationJobsClient(self.ReleaseTrack())
+    result_operation = mj_client.Update(migration_job_ref.RelativeName(),
                                         source_ref, destination_ref, args)
 
     client = api_util.GetClientInstance(self.ReleaseTrack())
@@ -128,6 +128,8 @@ class UpdateGA(_Update, base.Command):
   def Args(parser):
     _Update.Args(parser)
     mj_flags.AddDumpParallelLevelFlag(parser)
+    mj_flags.AddFilterFlag(parser)
+    mj_flags.AddCommitIdFlag(parser)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)

@@ -24,6 +24,7 @@ from googlecloudsdk.command_lib.scc.manage import flags
 from googlecloudsdk.command_lib.scc.manage import parsing
 
 
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.ALPHA)
 class Validate(base.Command):
   """Command to validate an ETD custom module.
 
@@ -33,14 +34,14 @@ class Validate(base.Command):
   module type 'CONFIGURABLE_BAD_IP', run:
 
     $ {command}
-      --organization organizations/252600681248
+      --organization=organizations/252600681248
       --custom-config-file=config.json
       --module-type=CONFIGURABLE_BAD_IP
 
   You can also specify the parent more generally:
 
     $ {command}
-      --parent organizations/252600681248
+      --parent=organizations/252600681248
       --custom-config-file=config.json
       --module-type=CONFIGURABLE_BAD_IP
   """

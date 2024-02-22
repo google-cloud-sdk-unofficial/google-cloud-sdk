@@ -26,6 +26,7 @@ from googlecloudsdk.command_lib.scc.manage import parsing
 from googlecloudsdk.core.console import console_io
 
 
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.ALPHA)
 class Update(base.Command):
   """Update a Security Health Analytics custom module.
 
@@ -34,7 +35,7 @@ class Update(base.Command):
   To update an Security Health Analytics custom module with ID 123456 for
   organization 123, run:
 
-      $ gcloud alpha scc custom-modules sha update 123456
+      $ {command} 123456
           --organization=organizations/123 --enablement-state="ENABLED"
           --custom-config-file=custom_config.yaml
   """

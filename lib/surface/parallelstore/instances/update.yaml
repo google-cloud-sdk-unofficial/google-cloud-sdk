@@ -32,7 +32,7 @@
         Identifier. The resource name of the instance, in the format
         `projects/{project}/locations/{location}/instances/{instance_id}`
       is_positional: true
-      resource_spec: !REF googlecloudsdk.command_lib.parallelstore.resources:instance
+      resource_spec: !REF googlecloudsdk.command_lib.parallelstore.generated_resources:project_location_instance
       required: true
     - arg_name: description
       api_field: instance.description
@@ -44,7 +44,6 @@
       api_field: instance.labels
       required: false
       repeated: true
-      type: arg_object
       help_text: |-
         Cloud Labels are a flexible and lightweight mechanism for organizing cloud
         resources into groups that reflect a customer's organizational needs and
@@ -68,11 +67,16 @@
         as the string:  name + "_" + value  would prove problematic if we were to
         allow "_" in a future release.
       clearable: true
+      spec:
+      - api_field: key
+      - api_field: value
   request:
     api_version: v1alpha
-    collection: parallelstore.projects.locations.instances
+    collection:
+    - parallelstore.projects.locations.instances
   async:
-    collection: parallelstore.projects.locations.operations
+    collection:
+    - parallelstore.projects.locations.operations
   update:
     read_modify_update: true
 - release_tracks:
@@ -92,7 +96,7 @@
         Identifier. The resource name of the instance, in the format
         `projects/{project}/locations/{location}/instances/{instance_id}`
       is_positional: true
-      resource_spec: !REF googlecloudsdk.command_lib.parallelstore.resources:instance
+      resource_spec: !REF googlecloudsdk.command_lib.parallelstore.generated_resources:project_location_instance
       required: true
     - arg_name: description
       api_field: instance.description
@@ -132,8 +136,10 @@
       - api_field: value
   request:
     api_version: v1beta
-    collection: parallelstore.projects.locations.instances
+    collection:
+    - parallelstore.projects.locations.instances
   async:
-    collection: parallelstore.projects.locations.operations
+    collection:
+    - parallelstore.projects.locations.operations
   update:
     read_modify_update: true

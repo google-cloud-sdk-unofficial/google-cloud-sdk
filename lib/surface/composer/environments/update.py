@@ -55,7 +55,6 @@ class Update(base.Command):
   _support_composer3flags = False
   _support_maintenance_window = True
   _support_environment_size = True
-  _support_cloud_data_lineage_integration = False
 
   @staticmethod
   def Args(parser, release_track=base.ReleaseTrack.GA):
@@ -96,6 +95,8 @@ class Update(base.Command):
     flags.AddScheduledSnapshotFlagsToGroup(Update.update_type_group)
 
     flags.AddMaintenanceWindowFlagsGroup(Update.update_type_group)
+    flags.AddCloudDataLineageIntegrationUpdateFlagsToGroup(
+        Update.update_type_group)
 
   def _ConstructPatch(self, env_ref, args, support_environment_upgrades=False):
     env_obj = environments_api_util.Get(
@@ -293,10 +294,6 @@ class Update(base.Command):
     command_util.ValidateMasterAuthorizedNetworks(
         args.master_authorized_networks)
     params['master_authorized_networks'] = args.master_authorized_networks
-    if self._support_cloud_data_lineage_integration:
-      if args.enable_cloud_data_lineage_integration or args.disable_cloud_data_lineage_integration:
-        params[
-            'cloud_data_lineage_integration_enabled'] = True if args.enable_cloud_data_lineage_integration else False
 
     if args.enable_high_resilience or args.disable_high_resilience:
       if is_composer_v1:
@@ -323,6 +320,22 @@ class Update(base.Command):
         )
       params['enable_logs_in_cloud_logging_only'] = bool(
           args.enable_logs_in_cloud_logging_only
+      )
+
+    if (
+        args.enable_cloud_data_lineage_integration
+        or args.disable_cloud_data_lineage_integration
+    ):
+      if is_composer_v1:
+        raise command_util.InvalidUserInputError(
+            _INVALID_OPTION_FOR_V1_ERROR_MSG.format(
+                opt='enable-cloud-data-lineage-integration'
+                if args.enable_cloud_data_lineage_integration
+                else 'disable-cloud-data-lineage-integration'
+            )
+        )
+      params['cloud_data_lineage_integration_enabled'] = bool(
+          args.enable_cloud_data_lineage_integration
       )
 
     if self._support_composer3flags:
@@ -525,7 +538,6 @@ class UpdateBeta(Update):
   _support_composer3flags = True
   _support_maintenance_window = True
   _support_environment_size = True
-  _support_cloud_data_lineage_integration = True
 
   @staticmethod
   def AlphaAndBetaArgs(parser, release_track=base.ReleaseTrack.BETA):
@@ -535,8 +547,6 @@ class UpdateBeta(Update):
     # Environment upgrade arguments
     UpdateBeta.support_environment_upgrades = True
     flags.AddEnvUpgradeFlagsToGroup(Update.update_type_group)
-    flags.AddCloudDataLineageIntegrationUpdateFlagsToGroup(
-        Update.update_type_group)
     flags.AddComposer3FlagsToGroup(Update.update_type_group)
 
   @staticmethod
