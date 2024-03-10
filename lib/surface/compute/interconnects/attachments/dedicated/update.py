@@ -78,6 +78,7 @@ class Update(base.UpdateCommand):
         customer_router_ipv6_interface_id=getattr(
             args, 'customer_router_ipv6_interface_id', None
         ),
+        multicast_enabled=getattr(args, 'enable_multicast', None),
     )
 
 
@@ -126,6 +127,7 @@ class UpdateBeta(Update):
         customer_router_ipv6_interface_id=getattr(
             args, 'customer_router_ipv6_interface_id', None
         ),
+        multicast_enabled=getattr(args, 'enable_multicast', None),
     )
 
 
@@ -141,3 +143,4 @@ class UpdateAlpha(UpdateBeta):
   @classmethod
   def Args(cls, parser):
     super(UpdateAlpha, cls).Args(parser)
+    attachment_flags.AddEnableMulticast(parser, update=True)

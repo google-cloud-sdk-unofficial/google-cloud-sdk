@@ -27,13 +27,13 @@ from googlecloudsdk.command_lib.compute.instant_snapshots import flags as ips_fl
 
 def _CommonArgs(parser):
   """A helper function to build args based on different API version."""
-  DeleteBeta.ips_arg = ips_flags.MakeInstantSnapshotArg(plural=True)
-  DeleteBeta.ips_arg.AddArgument(parser, operation_type='delete')
+  Delete.ips_arg = ips_flags.MakeInstantSnapshotArg(plural=True)
+  Delete.ips_arg.AddArgument(parser, operation_type='delete')
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class DeleteBeta(base.DeleteCommand):
-  """Delete Compute Engine instant snapshots in beta."""
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class Delete(base.DeleteCommand):
+  """Delete Compute Engine instant snapshots."""
 
   def _GetCommonScopeNameForRefs(self, refs):
     """Gets common scope for references."""
@@ -79,7 +79,7 @@ class DeleteBeta(base.DeleteCommand):
   def _Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
 
-    ips_refs = DeleteBeta.ips_arg.ResolveAsResource(
+    ips_refs = Delete.ips_arg.ResolveAsResource(
         args,
         holder.resources,
         scope_lister=compute_flags.GetDefaultScopeLister(holder.client),
@@ -98,8 +98,20 @@ class DeleteBeta(base.DeleteCommand):
     return self._Run(args)
 
 
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class DeleteBeta(Delete):
+  """Delete Compute Engine instant snapshots in beta."""
+
+  @classmethod
+  def Args(cls, parser):
+    _CommonArgs(parser)
+
+  def Run(self, args):
+    return self._Run(args)
+
+
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class DeleteAlpha(DeleteBeta):
+class DeleteAlpha(Delete):
   """Delete Compute Engine instant snapshots in alpha."""
 
   @classmethod
@@ -110,7 +122,7 @@ class DeleteAlpha(DeleteBeta):
     return self._Run(args)
 
 
-DeleteBeta.detailed_help = {
+Delete.detailed_help = {
     'brief': 'Delete a Compute Engine instant snapshot',
     'DESCRIPTION': """\
         *{command}* deletes a Compute Engine instant snapshot. A disk can be

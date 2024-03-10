@@ -33,31 +33,45 @@ from googlecloudsdk.core.console import console_io
     base.ReleaseTrack.GA, base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA
 )
 class Delete(base.DeleteCommand):
-  """Delete a Cloud Security Command Center notification config."""
+  """Delete a Security Command Center notification config."""
 
   detailed_help = {
       'DESCRIPTION': """\
-      Delete a Cloud Security Command Center notification config.
+      Delete a Security Command Center notification config.
+
+      Notification configs that are created with Security Command Center API V2
+      and later include a `location` attribute. If the `location` attribute is
+      included in the resource name of a Notification configs, you must specify
+      it when referencing the Notification config. For example, the following
+      Notification configs name has `location=eu`:
+      `organizations/123/locations/eu/notificationConfigs/test-config`.
       """,
       'EXAMPLES': """\
-      Delete notification config 'my-config' from organization 123
+      Delete notification config 'test-config' from organization `123`
 
-        $ {command} my-config --organization=123
-        $ {command} organizations/123/notificationConfigs/my-config
+        $ {command} test-config --organization=123
 
-      Delete notification config 'my-config' from folder 456
+      Delete notification config 'test-config' from folder `456`
 
-        $ {command} my-config --folder=456
-        $ {command} folders/456/notificationConfigs/my-config
+        $ {command} test-config --folder=456
 
-      Delete notification config 'my-config' from project 789
+      Delete notification config 'test-config' from project `789`
 
-        $ {command} my-config --project=789
-        $ {command} projects/789/notificationConfigs/my-config
+        $ {command} test-config --project=789
+
+      Delete notification config 'test-config' with location `global` from
+      organization `123`
+
+        $ {command} test-config --organization=123 --location=global
+
+      Delete notification config 'test-config' with `location=eu` from
+      organization `123`
+
+        $ {command} test-config --organization=123 --location=eu
       """,
       'API REFERENCE': """\
-      This command uses the securitycenter/v1 API. The full documentation for
-      this API can be found at: https://cloud.google.com/security-command-center
+      This command uses the Security Command Center API. For more information,
+      see [Security Command Center API.](https://cloud.google.com/security-command-center/docs/reference/rest)
       """,
   }
 

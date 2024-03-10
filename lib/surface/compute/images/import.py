@@ -638,6 +638,10 @@ Import.detailed_help = {
         This command performs all four of these steps as required,
         depending on the input arguments specified.
 
+        Before importing an image, set up access to Cloud Storage and grant
+        required roles to the user accounts and service accounts. For more
+        information, see [](https://cloud.google.com/compute/docs/import/requirements-export-import-images).
+
         To override the detected OS, specify the `--os` flag.
         You can omit the translation step using the `--data-disk` flag.
 

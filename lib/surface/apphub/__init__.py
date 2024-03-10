@@ -21,8 +21,16 @@ from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 
 
+@base.Hidden
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class ApphubGA(base.Group):
+  """Manage App Hub resources."""
+  # See third_party/py/googlecloudsdk/calliope/base.py for a list of categories.
+  category = base.MANAGEMENT_TOOLS_CATEGORY
+
+
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class Apphub(base.Group):
+class ApphubAlpha(base.Group):
   """Manage App Hub resources."""
   # See third_party/py/googlecloudsdk/calliope/base.py for a list of categories.
   category = base.MANAGEMENT_TOOLS_CATEGORY

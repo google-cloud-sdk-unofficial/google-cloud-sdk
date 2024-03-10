@@ -131,6 +131,14 @@ class Create(base.Command):
     flags.add_enable_per_object_retention_flag(parser)
     flags.add_recovery_point_objective_flag(parser)
 
+    if cls.ReleaseTrack() == base.ReleaseTrack.ALPHA:
+      parser.add_argument(
+          '--enable-hierarchical-namespace',
+          action='store_true',
+          hidden=True,
+          help='Enable heirarchical namepsace for the bucket',
+      )
+
   def Run(self, args):
     for url_string in args.url:
       url = storage_url.storage_url_from_string(url_string)

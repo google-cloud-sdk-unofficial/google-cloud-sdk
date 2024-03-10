@@ -56,7 +56,15 @@ DETAILED_HELP = {
 class Update(base.UpdateCommand):
   """Update a Firewall Plus endpoint association."""
 
-  _valid_arguments = [
+  _valid_arguments_alpha = [
+      '--clear-labels',
+      '--remove-labels',
+      '--update-labels',
+      '--[no-]tls-inspection-policy',
+      '--[no-]disabled',
+  ]
+
+  _valid_arguments_beta = [
       '--clear-labels',
       '--remove-labels',
       '--update-labels',
@@ -69,9 +77,16 @@ class Update(base.UpdateCommand):
     association_flags.AddMaxWait(parser, '60m')  # default to 60 minutes wait.
     base.ASYNC_FLAG.AddToParser(parser)
     base.ASYNC_FLAG.SetDefault(parser, True)
-    labels_util.AddUpdateLabelsFlags(parser)
 
-    tls_group = parser.add_mutually_exclusive_group()
+    outer_group = parser.add_mutually_exclusive_group()
+
+    if cls.ReleaseTrack() == base.ReleaseTrack.ALPHA:
+      association_flags.AddDisabledArg(outer_group)
+
+    tls_and_labels_group = outer_group.add_group()
+    labels_util.AddUpdateLabelsFlags(tls_and_labels_group)
+
+    tls_group = tls_and_labels_group.add_mutually_exclusive_group()
     association_flags.AddTLSInspectionPolicy(cls.ReleaseTrack(), tls_group)
     association_flags.AddNoTLSInspectionPolicyArg(tls_group)
 
@@ -94,14 +109,19 @@ class Update(base.UpdateCommand):
           'Firewall endpoint association does not exist.',
       )
 
+    if self.ReleaseTrack() == base.ReleaseTrack.ALPHA:
+      if args.IsSpecified('disabled'):
+        update_fields['disabled'] = getattr(args, 'disabled', False)
+
     if args.IsSpecified('tls_inspection_policy'):
       parsed_policy = args.CONCEPTS.tls_inspection_policy.Parse()
       if parsed_policy is None:
         raise core_exceptions.Error(
-            'TLS Inspection Policy resource path is either empty, malformed, or'
-            ' missing necessary flag `--tls-inspection-policy-region`.\nNOTE:'
-            ' TLS Inspection Policy needs to be in the same region as Firewall'
-            ' Plus endpoint resource.'
+            'TLS Inspection Policy resource path is either empty, malformed,'
+            ' or missing necessary flag'
+            ' `--tls-inspection-policy-region`.\nNOTE: TLS Inspection Policy'
+            ' needs to be in the same region as Firewall Plus endpoint'
+            ' resource.'
         )
       update_fields['tls_inspection_policy'] = parsed_policy.RelativeName()
     elif getattr(args, 'no_tls_inspection_policy', False):
@@ -119,7 +139,10 @@ class Update(base.UpdateCommand):
         update_fields['labels'] = labels_update.labels
 
     if not update_fields:
-      raise exceptions.MinimumArgumentException(self._valid_arguments)
+      if self.ReleaseTrack() == base.ReleaseTrack.ALPHA:
+        raise exceptions.MinimumArgumentException(self._valid_arguments_alpha)
+      else:
+        raise exceptions.MinimumArgumentException(self._valid_arguments_beta)
 
     is_async = args.async_
     max_wait = datetime.timedelta(seconds=args.max_wait)

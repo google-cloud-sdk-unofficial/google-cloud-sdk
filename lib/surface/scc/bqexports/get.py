@@ -30,37 +30,47 @@ from googlecloudsdk.command_lib.scc.bqexports import flags as bqexports_flags
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Get(base.DescribeCommand):
-  """Get a Cloud Security Command Center BigQuery export."""
+  """Get a Security Command Center BigQuery export."""
 
   detailed_help = {
       'DESCRIPTION': """\
-      Get a Cloud Security Command Center BigQuery export.
+      Get a Security Command Center BigQuery export.
+
+      BigQuery exports that are created with Security Command Center API V2 and
+      later include a `location` attribute. If the `location` attribute is
+      included in the resource name of a BigQuery export, you must specify it
+      when referencing the export. For example, the following BigQuery export
+      name has `location=eu`:
+      `organizations/123/locations/eu/bigQueryExports/test-bq-export`.
       """,
       'EXAMPLES': """\
-      To get a BigQuery export under given organization 123 with id my-bq-export,
+      To get a BigQuery export under given organization `123` with id
+      `test-bq-export`,
       run:
 
-        $ gcloud scc bqexports get my-bq-export \
-            --organization=organizations/123
-        $ gcloud scc bqexports get my-bq-export --organization=123
-        $ gcloud scc bqexports get \
-            organizations/123/bigQueryExports/bq-export
+        $ gcloud scc bqexports get test-bq-export \
+            --organization=123
 
-      To get a BigQuery export under given folder 456 with id my-bq-export, run:
+      To get a BigQuery export under given folder `456` with id `test-bq-export`,
+      run:
 
-        $ gcloud scc bqexports get my-bq-export --folder=folders/456
-        $ gcloud scc bqexports get my-bq-export --folder=456
-        $ gcloud scc bqexports get folders/456/bigQueryExports/my-bq-export
+        $ gcloud scc bqexports get test-bq-export --folder=456
 
-      To get a BigQuery export under given project 789 with id my-bq-export, run:
+      To get a BigQuery export under given project `789` with id `test-bq-export,`
+      run:
 
-        $ gcloud scc bqexports get my-bq-export --project=projects/789
-        $ gcloud scc bqexports get my-bq-export --project=789
-        $ gcloud scc bqexports get projects/789/bigQueryExports/my-bq-export
+        $ gcloud scc bqexports get test-bq-export --project=789
+
+      To get a BigQuery export under given organization `123` with id
+      `test-bq-export`, and `location=global` run:
+
+        $ gcloud scc bqexports get test-bq-export \
+            --organization=123 \
+            --location=global
       """,
       'API REFERENCE': """\
-      This command uses the securitycenter/v1 API. The full documentation for
-      this API can be found at: https://cloud.google.com/security-command-center
+      This command uses the Security Command Center API. For more information,
+      see [Security Command Center API.](https://cloud.google.com/security-command-center/docs/reference/rest)
       """,
   }
 
@@ -69,7 +79,6 @@ class Get(base.DescribeCommand):
     bqexports_flags.AddBigQueryPositionalArgument(parser)
     bqexports_flags.AddParentGroup(parser)
 
-    # TODO: b/311713896 - Remove api-version flag when v2 is fully GA.
     scc_flags.API_VERSION_FLAG.AddToParser(parser)
     scc_flags.LOCATION_FLAG.AddToParser(parser)
 

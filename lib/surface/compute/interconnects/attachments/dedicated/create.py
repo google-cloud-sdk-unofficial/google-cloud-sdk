@@ -102,8 +102,9 @@ class Create(base.CreateCommand):
     region = attachment_ref.region
     if args.ipsec_internal_addresses is not None:
       ipsec_internal_addresses_urls = [
-          attachment_flags.GetAddressRef(holder.resources, name, region,
-                                         attachment_ref.project).SelfLink()
+          attachment_flags.GetAddressRef(
+              holder.resources, name, region, attachment_ref.project
+          ).SelfLink()
           for name in args.ipsec_internal_addresses
       ]
 
@@ -129,6 +130,7 @@ class Create(base.CreateCommand):
             args, 'customer_router_ipv6_interface_id', None
         ),
         subnet_length=getattr(args, 'subnet_length', None),
+        multicast_enabled=getattr(args, 'enable_multicast', None),
     )
 
   def Epilog(self, resources_were_displayed):
@@ -154,6 +156,7 @@ class CreateAlpha(Create):
   @classmethod
   def Args(cls, parser):
     super(CreateAlpha, cls).Args(parser)
+    attachment_flags.AddEnableMulticast(parser)
     attachment_flags.AddDryRun(parser)
 
   def Run(self, args):

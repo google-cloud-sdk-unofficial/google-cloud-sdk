@@ -36,33 +36,46 @@ from googlecloudsdk.core.util import times
     base.ReleaseTrack.GA, base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA
 )
 class Update(base.UpdateCommand):
-  """Update a Cloud Security Command Center finding."""
+  """Update a Security Command Center finding."""
 
   detailed_help = {
-      "DESCRIPTION": "Update a Cloud Security Command Center finding.",
+      "DESCRIPTION": "Update a Security Command Center finding.",
       "EXAMPLES": """
-        Update myFinding's state from ACTIVE to INACTIVE:
+        Update testFinding's state from `ACTIVE` to `INACTIVE`:
 
-          $ {command} `myFinding` --organization=123456 --source=5678 --state=INACTIVE
+          $ {command} `testFinding` --organization=123456 --source=5678
+            --state=INACTIVE
 
-        Update myFinding's state from ACTIVE to INACTIVE using project name for example-project:
+        Update testFinding's state from `ACTIVE` to `INACTIVE` using project name
+        for example-project:
 
-          $ {command} projects/example-project/sources/5678/findings/myFinding --state=INACTIVE
+          $ {command} projects/example-project/sources/5678/findings/testFinding
+            --state=INACTIVE
 
-        Update myFinding's state from ACTIVE to INACTIVE using folder name 456:
+        Update testFinding's state from `ACTIVE` to `INACTIVE` using folder name
+        `456`:
 
-          $ {command} folders/456/sources/5678/findings/myFinding --state=INACTIVE
+          $ {command} folders/456/sources/5678/findings/testFinding
+            --state=INACTIVE
 
-        Override all source properties on myFinding:
+        Override all source properties on `testFinding`:
 
-          $ {command} `myFinding` --organization=123456 --source=5678 --source-properties="propKey1=propVal1,propKey2=propVal2"
+          $ {command} `testFinding` --organization=123456 --source=5678
+            --source-properties="propKey1=propVal1,propKey2=propVal2"
 
-        Selectively update a specific source property on myFinding:
+        Selectively update a specific source property on `testFinding`:
 
-          $ {command} `myFinding` --organization=123456 --source=5678 --source-properties="propKey1=propVal1,propKey2=propVal2" --update-mask="source_properties.propKey1" """,
+          $ {command} `testFinding` --organization=123456 --source=5678
+            --source-properties="propKey1=propVal1,propKey2=propVal2" --update-mask="source_properties.propKey1"
+
+        Update finding `testFinding` with `location=eu`, state from `ACTIVE` to
+        `INACTIVE`:
+
+          $ {command} `testFinding` --organization=123456 --source=5678
+            --state=INACTIVE --location=eu""",
       "API REFERENCE": """
-          This command uses the securitycenter/v1 API. The full documentation for
-          this API can be found at: https://cloud.google.com/security-command-center""",
+      This command uses the Security Command Center API. For more information,
+      see [Security Command Center API.](https://cloud.google.com/security-command-center/docs/reference/rest)""",
   }
 
   @staticmethod
@@ -78,16 +91,19 @@ class Update(base.UpdateCommand):
     parser.add_argument(
         "--update-mask",
         help="""
-        Optional: If left unspecified (default), an update-mask is automatically created using the
-        flags specified in the command and only those values are updated.
-        For example: --external-uri='<some-uri>' --event-time='<some-time>' would automatically
-        generate --update-mask='external_uri,event_time'. Note that as a result, only external-uri
-        and event-time are updated for the given finding and everything else remains untouched. If
-        you want to delete attributes/properties (that are not being changed in the update command)
-        use an empty update-mask (''). That will delete all the mutable properties/attributes that
-        aren't specified as flags in the update command. In the above example it would delete
-        source-properties. State can be toggled from ACTIVE to INACTIVE and vice-versa but it cannot
-        be deleted.""",
+        Optional: If left unspecified (default), an update-mask is automatically
+        created using the flags specified in the command and only those values
+        are updated. For example: --external-uri='<some-uri>'
+        --event-time='<some-time>' would automatically generate
+        --update-mask='external_uri,event_time'. Note that as a result, only
+        external-uri and event-time are updated for the given finding and
+        everything else remains untouched. If you want to delete
+        attributes/properties (that are not being changed in the update command)
+        use an empty update-mask (''). That will delete all the mutable
+        properties/attributes that aren't specified as flags in the update
+        command. In the above example it would delete source-properties.
+        State can be toggled from ACTIVE to INACTIVE and vice-versa but it
+        cannot be deleted.""",
     )
     parser.display_info.AddFormat(properties.VALUES.core.default_format.Get())
 

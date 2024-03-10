@@ -58,18 +58,16 @@ def _GAArgs(parser):
   snap_flags.SOURCE_DISK_ARG.AddArgument(parser)
   snap_flags.AddSnapshotType(parser)
   snap_flags.SOURCE_DISK_FOR_RECOVERY_CHECKPOINT_ARG.AddArgument(parser)
+  snap_flags.SOURCE_INSTANT_SNAPSHOT_ARG.AddArgument(parser)
+  snap_flags.AddSourceInstantSnapshotCsekKey(parser)
 
 
 def _BetaArgs(parser):
   _GAArgs(parser)
-  snap_flags.SOURCE_INSTANT_SNAPSHOT_ARG.AddArgument(parser)
-  snap_flags.AddSourceInstantSnapshotCsekKey(parser)
 
 
 def _AlphaArgs(parser):
   _GAArgs(parser)
-  snap_flags.SOURCE_INSTANT_SNAPSHOT_ARG.AddArgument(parser)
-  snap_flags.AddSourceInstantSnapshotCsekKey(parser)
   snap_flags.AddMaxRetentionDays(parser)
 
 
@@ -87,7 +85,6 @@ class Create(base.CreateCommand):
   def _Run(
       self,
       args,
-      support_source_instant_snapshot=False,
       support_max_retention_days=False,
   ):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
@@ -151,7 +148,7 @@ class Create(base.CreateCommand):
       snapshot_message.guestFlush = True
     if args.chain_name:
       snapshot_message.chainName = args.chain_name
-    if support_source_instant_snapshot and args.source_instant_snapshot:
+    if args.source_instant_snapshot:
       iss_ref = snap_flags.SOURCE_INSTANT_SNAPSHOT_ARG.ResolveAsResource(
           args,
           holder.resources,
@@ -213,7 +210,7 @@ class CreateBeta(Create):
     _BetaArgs(parser)
 
   def Run(self, args):
-    return self._Run(args, support_source_instant_snapshot=True)
+    return self._Run(args)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -226,7 +223,6 @@ class CreateAlpha(Create):
   def Run(self, args):
     return self._Run(
         args,
-        support_source_instant_snapshot=True,
         support_max_retention_days=True,
     )
 

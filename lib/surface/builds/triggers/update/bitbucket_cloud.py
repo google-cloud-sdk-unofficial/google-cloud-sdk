@@ -28,6 +28,7 @@ from googlecloudsdk.core import properties
 from googlecloudsdk.core import resources
 
 
+@base.Hidden
 class UpdateBitbucketCloud(base.UpdateCommand):
   """Updates Bitbucket Cloud trigger used by Cloud Build."""
 

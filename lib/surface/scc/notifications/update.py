@@ -33,71 +33,64 @@ from googlecloudsdk.core import properties
     base.ReleaseTrack.GA, base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA
 )
 class Update(base.UpdateCommand):
-  """Update a Cloud Security Command Center notification config."""
+  """Update a Security Command Center notification config."""
 
   detailed_help = {
       'DESCRIPTION': """\
-      Update a Cloud Security Command Center notification config.
+      Update a Security Command Center notification config.
+
+      Notification configs that are created with Security Command Center API V2
+      and later include a `location` attribute. If the `location` attribute is
+      included in the resource name of a Notification configs, you must specify
+      it when referencing the Notification config. For example, the following
+      Notification configs name has `location=eu`:
+      `organizations/123/locations/eu/notificationConfigs/test-config`.
       """,
       'EXAMPLES': """\
-      Update all mutable fields under an organization parent my-config (description + pubsub topic + filter):
+      Update all mutable fields under an organization parent `test-config`
+      (description + pubsub topic + filter):
 
-        $ {command} scc notifications update my-config --organization=123 \
+        $ {command} scc notifications update test-config --organization=123 \
             --description="New description" \
             --pubsub-topic="projects/22222/topics/newtopic"
 
-        $ {command} scc notifications update \
-            organizations/123/notificationConfigs/my-config \
+      Update all mutable fields under a folder parent `test-config`
+      (description + pubsub topic + filter):
+
+        $ {command} scc notifications update test-config --folder=456 \
             --description="New description" \
             --pubsub-topic="projects/22222/topics/newtopic"
 
-      Update all mutable fields under a folder parent my-config (description + pubsub topic + filter):
+      Update all mutable fields under a project parent `test-config`
+      (description + pubsub topic + filter):
 
-        $ {command} scc notifications update my-config --folder=456 \
+        $ {command} scc notifications update test-config --project=789 \
             --description="New description" \
             --pubsub-topic="projects/22222/topics/newtopic"
 
-        $ {command} scc notifications update \
-            folders/456/notificationConfigs/my-config \
-            --description="New description" \
-            --pubsub-topic="projects/22222/topics/newtopic"
+      Update test-config's description
 
-      Update all mutable fields under a project parent my-config (description + pubsub topic + filter):
+        $ {command} test-config --organization=123 --description="New description"
 
-        $ {command} scc notifications update my-config --project=789 \
-            --description="New description" \
-            --pubsub-topic="projects/22222/topics/newtopic"
+      Update test-config's pubsub-topic
 
-        $ {command} scc notifications update \
-            projects/789/notificationConfigs/my-config \
-            --description="New description" \
-            --pubsub-topic="projects/22222/topics/newtopic"
-
-      Update my-config's description
-
-        $ {command} my-config --organization=123 --description="New description"
-
-        $ {command} organizations/123/notificationConfigs/my-config
-        --description="New description"
-
-      Update my-config's pubsub-topic
-
-        $ {command} my-config --organization=123
+        $ {command} test-config --organization=123
         --pubsub-topic="projects/22222/topics/newtopic"
 
-        $ {command} organizations/123/notificationConfigs/my-config
-        --pubsub-topic="projects/22222/topics/newtopic"
+      Update test-config's filter
 
-      Update my-config's filter
+        $ {command} test-config --organization=123 --filter='state = \\"ACTIVE\\"'
 
-        $ {command} my-config --organization=123 --filter='state = \\"ACTIVE\\"'
+      Update all mutable fields for `test-config` with `location=global` under an
+      organization parent (description + pubsub topic + filter):
 
-        $ {command} organizations/123/notificationConfigs/my-config
-        --filter='state = \\"ACTIVE\\"'
+        $ {command} scc notifications update test-config --organization=123 \
+            --description="New description" \
+            --pubsub-topic="projects/22222/topics/newtopic" --location=global
       """,
       'API REFERENCE': """\
-      This command uses the securitycenter/v1 API. The full documentation for
-      this API can be found at: https://cloud.google.com/security-command-center
+      This command uses the Security Command Center API. For more information,
+      see [Security Command Center API.](https://cloud.google.com/security-command-center/docs/reference/rest)
       """,
   }
 

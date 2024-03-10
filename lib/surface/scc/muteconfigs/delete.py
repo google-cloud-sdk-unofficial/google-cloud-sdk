@@ -31,31 +31,32 @@ from googlecloudsdk.core.console import console_io
 
 @base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.ALPHA)
 class Delete(base.DeleteCommand):
-  """Delete a Cloud Security Command Center mute config."""
+  """Delete a Security Command Center mute config."""
 
   detailed_help = {
-      "DESCRIPTION": "Delete a Cloud Security Command Center mute config.",
+      "DESCRIPTION": "Delete a Security Command Center mute config.",
       "EXAMPLES": """
-        To delete a mute config given organization ``123'' with id ``my-test-mute-config'', run:
+        To delete a mute config given organization ``123'' with id ``test-mute-config'', run:
 
-        $ {command} my-test-mute-config --organization=organizations/123
-        $ {command} my-test-mute-config --organization=123
-        $ {command} organizations/123/muteConfigs/my-test-mute-config
+        $ {command} test-mute-config --organization=123
 
-      To delete a mute config given folder ``456'' with id ``my-test-mute-config'', run:
+      To delete a mute config given folder ``456'' with id
+      ``test-mute-config'', run:
 
-        $ {command} my-test-mute-config --folder=folders/456
-        $ {command} my-test-mute-config --folder=456
-        $ {command} folders/456/muteConfigs/my-test-mute-config
+        $ {command} test-mute-config --folder=456
 
-      To delete a mute config given project ``789'' with id ``my-test-mute-config'', run:
+      To delete a mute config given project ``789'' with id
+      ``test-mute-config'', run:
 
-        $ {command} my-test-mute-config --project=projects/789
-        $ {command} my-test-mute-config --project=789
-        $ {command} projects/789/muteConfigs/my-test-mute-config""",
+        $ {command} test-mute-config --project=789
+
+      To delete a mute config given organization ``123'' with id
+      ``test-mute-config'' and `location=eu`, run:
+
+        $ {command} test-mute-config --organization=123 --location=eu""",
       "API REFERENCE": """
-        This command uses the securitycenter/v1 API. The full documentation for
-        this API can be found at: https://cloud.google.com/security-command-center""",
+      This command uses the Security Command Center API. For more information,
+      see [Security Command Center API.](https://cloud.google.com/security-command-center/docs/reference/rest)""",
   }
 
   @staticmethod

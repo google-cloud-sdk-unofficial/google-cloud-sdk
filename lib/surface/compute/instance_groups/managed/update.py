@@ -65,6 +65,7 @@ class UpdateGA(base.UpdateCommand):
     managed_flags.AddMigUpdatePolicyFlags(
         parser, support_min_ready_flag=cls.support_update_policy_min_ready_flag)
     managed_flags.AddMigForceUpdateOnRepairFlags(parser)
+    managed_flags.AddMigDefaultActionOnVmFailure(parser)
     # When adding RMIG-specific flag, update REGIONAL_FLAGS constant.
 
   def _GetUpdatedStatefulPolicyForDisks(self,
@@ -388,7 +389,6 @@ class UpdateBeta(UpdateGA):
   def Args(cls, parser):
     super(UpdateBeta, cls).Args(parser)
     managed_flags.AddStandbyPolicyFlags(parser)
-    managed_flags.AddMigDefaultActionOnVmFailure(parser)
 
   def _CreateInstanceGroupManagerPatch(self, args, igm_ref, igm_resource,
                                        client, holder):

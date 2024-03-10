@@ -33,8 +33,9 @@ _DETAILED_HELP = {
 }
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class Remove(base.DeleteCommand):
+@base.Hidden
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class RemoveGA(base.DeleteCommand):
   """Remove an Apphub service project."""
 
   detailed_help = _DETAILED_HELP
@@ -45,7 +46,31 @@ class Remove(base.DeleteCommand):
 
   def Run(self, args):
     """Run the remove command."""
-    client = apis.ServiceProjectsClient()
+    client = apis.ServiceProjectsClient(release_track=base.ReleaseTrack.GA)
+    sp_ref = args.CONCEPTS.service_project.Parse()
+    if not sp_ref.Name():
+      raise exceptions.InvalidArgumentException(
+          'service project', 'service project id must be non-empty.'
+      )
+    return client.Remove(
+        service_project=sp_ref.RelativeName(),
+        async_flag=args.async_
+    )
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class RemoveAlpha(base.DeleteCommand):
+  """Remove an Apphub service project."""
+
+  detailed_help = _DETAILED_HELP
+
+  @staticmethod
+  def Args(parser):
+    flags.AddRemoveServiceProjectFlags(parser)
+
+  def Run(self, args):
+    """Run the remove command."""
+    client = apis.ServiceProjectsClient(release_track=base.ReleaseTrack.ALPHA)
     sp_ref = args.CONCEPTS.service_project.Parse()
     if not sp_ref.Name():
       raise exceptions.InvalidArgumentException(

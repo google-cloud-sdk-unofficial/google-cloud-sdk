@@ -33,8 +33,9 @@ _DETAILED_HELP = {
 }
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class Delete(base.DeleteCommand):
+@base.Hidden
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class DeleteGA(base.DeleteCommand):
   """Delete an Apphub application service."""
 
   detailed_help = _DETAILED_HELP
@@ -45,7 +46,30 @@ class Delete(base.DeleteCommand):
 
   def Run(self, args):
     """Run the delete command."""
-    client = apis.ServicesClient()
+    client = apis.ServicesClient(release_track=base.ReleaseTrack.GA)
+    service_ref = args.CONCEPTS.service.Parse()
+    if not service_ref.Name():
+      raise exceptions.InvalidArgumentException(
+          'service', 'service id must be non-empty.'
+      )
+    return client.Delete(
+        service=service_ref.RelativeName(), async_flag=args.async_
+    )
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class DeleteAlpha(base.DeleteCommand):
+  """Delete an Apphub application service."""
+
+  detailed_help = _DETAILED_HELP
+
+  @staticmethod
+  def Args(parser):
+    flags.AddDeleteApplicationServiceFlags(parser)
+
+  def Run(self, args):
+    """Run the delete command."""
+    client = apis.ServicesClient(release_track=base.ReleaseTrack.ALPHA)
     service_ref = args.CONCEPTS.service.Parse()
     if not service_ref.Name():
       raise exceptions.InvalidArgumentException(

@@ -423,6 +423,7 @@ def ParseCreateOptionsBase(args, is_autopilot, get_default, location,
       gvnic=get_default('enable_gvnic'),
       enable_confidential_nodes=get_default('enable_confidential_nodes'),
       enable_confidential_storage=get_default('enable_confidential_storage'),
+      storage_pools=get_default('storage_pools'),
       enable_image_streaming=get_default('enable_image_streaming'),
       spot=get_default('spot'),
       enable_service_externalips=get_default('enable_service_externalips'),
@@ -780,6 +781,7 @@ flags_to_add = {
         'spot': flags.AddSpotFlag,
         'stackdriver': flags.AddEnableStackdriverKubernetesFlag,
         'stacktype': flags.AddStackTypeFlag,
+        'storagePools': flags.AddStoragePoolsFlag,
         'ipv6accesstype': flags.AddIpv6AccessTypeFlag,
         'surgeupgrade': lambda p: flags.AddSurgeUpgradeFlag(p, default=1),
         'systemconfig': lambda p: flags.AddSystemConfigFlag(p, hidden=False),
@@ -954,6 +956,7 @@ flags_to_add = {
         'stackdriver': flags.AddEnableStackdriverKubernetesFlag,
         'securityprofile': flags.AddSecurityProfileForCreateFlags,
         'stacktype': flags.AddStackTypeFlag,
+        'storagePools': flags.AddStoragePoolsFlag,
         'ipv6accesstype': flags.AddIpv6AccessTypeFlag,
         'surgeupgrade': lambda p: flags.AddSurgeUpgradeFlag(p, default=1),
         'systemconfig': lambda p: flags.AddSystemConfigFlag(p, hidden=False),
@@ -1270,6 +1273,7 @@ class CreateBeta(Create):
         'containerd_config_from_file',
     )
     ops.enable_confidential_storage = get_default('enable_confidential_storage')
+    ops.storage_pools = get_default('storage_pools')
     ops.enable_secret_manager = get_default('enable_secret_manager')
     ops.enable_cilium_clusterwide_networkpolicy = get_default(
         'enable_cilium_clusterwide_networkpolicy'
@@ -1387,6 +1391,7 @@ class CreateAlpha(Create):
     ops.host_maintenance_interval = get_default('host_maintenance_interval')
     ops.contianerd_config_from_file = get_default('contianerd_config_from_file')
     ops.enable_confidential_storage = get_default('enable_confidential_storage')
+    ops.storage_pools = get_default('storage_pools')
     ops.enable_secret_manager = get_default('enable_secret_manager')
     ops.enable_cilium_clusterwide_networkpolicy = get_default(
         'enable_cilium_clusterwide_networkpolicy'

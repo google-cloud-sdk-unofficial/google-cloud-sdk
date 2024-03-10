@@ -47,17 +47,17 @@ def _SourceArgs(parser):
 
 def _CommonArgs(parser):
   """A helper function to build args based on different API version."""
-  CreateBeta.IPS_ARG = ips_flags.MakeInstantSnapshotArg()
-  CreateBeta.IPS_ARG.AddArgument(parser, operation_type='create')
+  Create.IPS_ARG = ips_flags.MakeInstantSnapshotArg()
+  Create.IPS_ARG.AddArgument(parser, operation_type='create')
   labels_util.AddCreateLabelsFlags(parser)
   parser.display_info.AddFormat(
       'table(name, location(), location_scope(), status)')
   _SourceArgs(parser)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class CreateBeta(base.Command):
-  """Create a Compute Engine instant snapshot in beta."""
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class Create(base.Command):
+  """Create a Compute Engine instant snapshot."""
 
   @classmethod
   def Args(cls, parser):
@@ -79,7 +79,7 @@ class CreateBeta(base.Command):
     client = compute_holder.client
     messages = client.messages
 
-    ips_ref = CreateBeta.IPS_ARG.ResolveAsResource(
+    ips_ref = Create.IPS_ARG.ResolveAsResource(
         args, compute_holder.resources
     )
     requests = []
@@ -121,8 +121,20 @@ class CreateBeta(base.Command):
     return self._Run(args)
 
 
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class CreateBeta(Create):
+  """Create a Compute Engine instant snapshot in beta."""
+
+  @classmethod
+  def Args(cls, parser):
+    _CommonArgs(parser)
+
+  def Run(self, args):
+    return self._Run(args)
+
+
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class CreateAlpha(CreateBeta):
+class CreateAlpha(Create):
   """Create a Compute Engine instant snapshot in alpha."""
 
   @classmethod
@@ -133,4 +145,4 @@ class CreateAlpha(CreateBeta):
     return self._Run(args)
 
 
-CreateBeta.detailed_help = DETAILED_HELP
+Create.detailed_help = DETAILED_HELP

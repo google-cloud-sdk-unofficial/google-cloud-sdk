@@ -32,72 +32,61 @@ from googlecloudsdk.core import properties
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Create(base.CreateCommand):
-  """Create a Cloud Security Command Center BigQuery export."""
+  """Create a Security Command Center BigQuery export."""
 
   detailed_help = {
       'DESCRIPTION': """\
-      Create a Cloud Security Command Center BigQuery export.
+      Create a Security Command Center BigQuery export.
+
+      BigQuery exports that are created with Security Command Center API V2 and
+      later include a `location` attribute. If a location is not specified, the
+      default `global` location is used. For example, the following BigQuery
+      export name has `location=global` attribute:
+      `organizations/123/locations/global/bigQueryExports/test-bq-export`.
       """,
       'EXAMPLES': """\
-      To create a BigQuery export my-bq-export given organization 123 with a
-      dataset abc in project 234 and filter on category that equals to
-      XSS_SCRIPTING, run:
+      To create a BigQuery export `test-bq-export` given organization `123` with a
+      dataset `abc` in project `234` and filter on category that equals to
+      `XSS_SCRIPTING`, run:
 
-        $ gcloud scc bqexports create my-bq-export \
-          --organization=organizations/123 \
-          --dataset=projects/234/datasets/abc \
-          --description="This is a test BigQuery export" \
-          --filter="category=\\"XSS_SCRIPTING\\""
-        $ gcloud scc bqexports create my-bq-export --organization=123 \
-          --dataset=projects/234/datasets/abc \
-          --description="This is a test BigQuery export" \
-          --filter="category=\\"XSS_SCRIPTING\\""
-        $ gcloud scc bqexports create \
-          organizations/123/bigQueryExports/my-bq-export \
+        $ gcloud scc bqexports create test-bq-export \
+          --organization=123 \
           --dataset=projects/234/datasets/abc \
           --description="This is a test BigQuery export" \
           --filter="category=\\"XSS_SCRIPTING\\""
 
-      To create a BigQuery export my-bq-export given folder 456 with a dataset
-      abc in project 234 and filter on category that equals to XSS_SCRIPTING,
-      run:
+      To create a BigQuery export `test-bq-export` given folder `456` with a
+      dataset `abc` in project `234` and filter on category that equals to
+      `XSS_SCRIPTING`, run:
 
-        $ gcloud scc bqexports create my-bq-export --folder=folders/456 \
-          --dataset=projects/234/datasets/abc \
-          --description="This is a test BigQuery export" \
-          --filter="category=\\"XSS_SCRIPTING\\""
-        $ gcloud scc bqexports create my-bq-export --folder=456 \
-          --dataset=projects/234/datasets/abc \
-          --description="This is a test BigQuery export" \
-          --filter="category=\\"XSS_SCRIPTING\\""
-        $ gcloud scc bqexports create \
-          folders/456/bigQueryExports/my-bq-export \
+        $ gcloud scc bqexports create test-bq-export --folder=456 \
           --dataset=projects/234/datasets/abc \
           --description="This is a test BigQuery export" \
           --filter="category=\\"XSS_SCRIPTING\\""
 
-      To create a BigQuery export my-bq-export given project 789 with a dataset
-      abc in project 234 and filter on category that equals to XSS_SCRIPTING,
-      run:
+      To create a BigQuery export test-bq-export given project `789` with a
+      dataset `abc` in project `234` and filter on category that equals to
+      `XSS_SCRIPTING`, run:
 
-        $ gcloud scc bqexports create my-bq-export --project=projects/789 \
-          --dataset=projects/234/datasets/abc \
-          --description="This is a test BigQuery export" \
-          --filter="category=\\"XSS_SCRIPTING\\""
-        $ gcloud scc bqexports create my-bq-export --project=789 \
-          --dataset=projects/234/datasets/abc \
-          --description="This is a test BigQuery export" \
-          --filter="category=\\"XSS_SCRIPTING\\""
-        $ gcloud scc bqexports create \
-          projects/789/bigQueryExports/my-bq-export \
+        $ gcloud scc bqexports create test-bq-export --project=789 \
           --dataset=projects/234/datasets/abc \
           --description="This is a test BigQuery export" \
           --filter="category=\\"XSS_SCRIPTING\\""
 
+      To create a BigQuery export `test-bq-export` given organization `123` and
+      `location=global` to send findings with `category=XSS_SCRIPTING` to the
+      BigQuery dataset `abc` in project `234`, run:
+
+        $ gcloud scc bqexports create test-bq-export \
+          --organization=123 \
+          --dataset=projects/234/datasets/abc \
+          --description="This is a test BigQuery export" \
+          --filter="category=\\"XSS_SCRIPTING\\""
+          --location=global
       """,
       'API REFERENCE': """\
-      This command uses the securitycenter/v1 API. The full documentation for
-      this API can be found at: https://cloud.google.com/security-command-center
+      This command uses the Security Command Center API. For more information,
+      see [Security Command Center API.](https://cloud.google.com/security-command-center/docs/reference/rest)
       """,
   }
 

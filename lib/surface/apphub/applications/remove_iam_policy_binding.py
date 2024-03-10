@@ -39,7 +39,9 @@ _DETAILED_HELP = {
 }
 
 
-class RemoveIamPolicyBinding(base.Command):
+@base.Hidden
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class RemoveIamPolicyBindingGA(base.Command):
   """Remove IAM policy binding from an Apphub application."""
 
   detailed_help = _DETAILED_HELP
@@ -50,7 +52,30 @@ class RemoveIamPolicyBinding(base.Command):
     iam_util.AddArgsForRemoveIamPolicyBinding(parser)
 
   def Run(self, args):
-    client = apis.ApplicationsClient()
+    client = apis.ApplicationsClient(release_track=base.ReleaseTrack.GA)
+    app_ref = args.CONCEPTS.application.Parse()
+    if not app_ref.Name():
+      raise exceptions.InvalidArgumentException(
+          'application', 'application id must be non-empty.'
+      )
+    return client.RemoveIamPolicyBinding(
+        app_id=app_ref.RelativeName(), member=args.member, role=args.role
+    )
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class RemoveIamPolicyBindingAlpha(base.Command):
+  """Remove IAM policy binding from an Apphub application."""
+
+  detailed_help = _DETAILED_HELP
+
+  @staticmethod
+  def Args(parser):
+    flags.AddRemoveIamPolicyBindingFlags(parser)
+    iam_util.AddArgsForRemoveIamPolicyBinding(parser)
+
+  def Run(self, args):
+    client = apis.ApplicationsClient(release_track=base.ReleaseTrack.ALPHA)
     app_ref = args.CONCEPTS.application.Parse()
     if not app_ref.Name():
       raise exceptions.InvalidArgumentException(

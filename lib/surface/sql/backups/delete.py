@@ -43,8 +43,9 @@ class Delete(base.DeleteCommand):
           allowed.
     """
     base.ASYNC_FLAG.AddToParser(parser)
-    flags.AddBackupRunId(parser)
-    flags.AddInstance(parser)
+    flags.AddBackupId(parser)
+    flags.AddOptionalInstance(parser)
+    flags.AddProjectLevelBackupEndpoint(parser)
     parser.display_info.AddCacheUpdater(None)
 
   def Run(self, args):
@@ -65,36 +66,48 @@ class Delete(base.DeleteCommand):
 
     operation_ref = None
 
-    validate.ValidateInstanceName(args.instance)
-    instance_ref = client.resource_parser.Parse(
-        args.instance,
-        params={'project': properties.VALUES.core.project.GetOrFail},
-        collection='sql.instances')
-
     # TODO(b/36051078): validate on FE that a backup run id is valid.
 
     console_io.PromptContinue(
         message='The backup will be deleted. You cannot undo this action.',
         default=True,
-        cancel_on_no=True)
-
-    result = sql_client.backupRuns.Delete(
-        sql_messages.SqlBackupRunsDeleteRequest(
-            project=instance_ref.project,
-            instance=instance_ref.instance,
-            id=args.id))
-
-    operation_ref = client.resource_parser.Create(
-        'sql.operations', operation=result.name, project=instance_ref.project)
+        cancel_on_no=True,
+    )
+    if args.project_level:
+      result = sql_client.backups.DeleteBackup(
+          sql_messages.SqlBackupsDeleteBackupRequest(name=args.id)
+      )
+      operation_ref = client.resource_parser.Create(
+          'sql.operations', operation=result.name, project=args.id.split('/')[1]
+      )
+    else:
+      validate.ValidateInstanceName(args.instance)
+      instance_ref = client.resource_parser.Parse(
+          args.instance,
+          params={'project': properties.VALUES.core.project.GetOrFail},
+          collection='sql.instances',
+      )
+      result = sql_client.backupRuns.Delete(
+          sql_messages.SqlBackupRunsDeleteRequest(
+              project=instance_ref.project,
+              instance=instance_ref.instance,
+              id=int(args.id),
+          )
+      )
+      operation_ref = client.resource_parser.Create(
+          'sql.operations', operation=result.name, project=instance_ref.project
+      )
 
     if args.async_:
       # Don't wait for the running operation to complete when async is used.
       return sql_client.operations.Get(
           sql_messages.SqlOperationsGetRequest(
-              project=operation_ref.project,
-              operation=operation_ref.operation))
+              project=operation_ref.project, operation=operation_ref.operation
+          )
+      )
 
-    operations.OperationsV1Beta4.WaitForOperation(sql_client, operation_ref,
-                                                  'Deleting backup run')
+    operations.OperationsV1Beta4.WaitForOperation(
+        sql_client, operation_ref, 'Deleting backup run'
+    )
 
     log.DeletedResource(args.id, 'backup run')

@@ -31,31 +31,43 @@ from googlecloudsdk.core import properties
 
 @base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.ALPHA)
 class Update(base.UpdateCommand):
-  """Update a Cloud Security Command Center mute config."""
+  """Update a Security Command Center mute config."""
 
   detailed_help = {
-      "DESCRIPTION": "Update a Cloud Security Command Center mute config.",
+      "DESCRIPTION": "Update a Security Command Center mute config.",
       "EXAMPLES": """
-        Update a mute config with ``ID=my-test-mute-config'' under ``organization=123'' with a filter on category that equals to XSS_SCRIPTING:
+        Update a mute config with ``ID=test-mute-config'' under
+        ``organization=123'' with a filter on category that equals to
+        XSS_SCRIPTING:
 
-          $ {command} my-test-mute-config --organization=organizations/123 --description="This is a test mute config" --filter="category=\\"XSS_SCRIPTING\\""
-          $ {command} my-test-mute-config --organization=123 --description="This is a test mute config" --filter="category=\\"XSS_SCRIPTING\\""
-          $ {command} organizations/123/muteConfigs/my-test-mute-config --description="This is a test mute config" --filter="category=\\"XSS_SCRIPTING\\""
+          $ {command} test-mute-config --organization=123
+            --description="This is a test mute config"
+            --filter="category=\\"XSS_SCRIPTING\\""
 
-        Update a mute config with ``ID=my-test-mute-config'' under ``folder=456'' with a filter on category that equals to XSS_SCRIPTING:
+        Update a mute config with ``ID=test-mute-config'' under
+        ``folder=456'' with a filter on category that equals to XSS_SCRIPTING:
 
-          $ {command} my-test-mute-config --folder=folders/456 --description="This is a test mute config" --filter="category=\\"XSS_SCRIPTING\\""
-          $ {command} my-test-mute-config --folder=456 --description="This is a test mute config" --filter="category=\\"XSS_SCRIPTING\\""
-          $ {command} folders/456/muteConfigs/my-test-mute-config --description="This is a test mute config" --filter="category=\\"XSS_SCRIPTING\\""
+          $ {command} test-mute-config --folder=456
+            --description="This is a test mute config"
+            --filter="category=\\"XSS_SCRIPTING\\""
 
-        Update a mute config with ``ID=my-test-mute-config'' under ``project=789'' with a filter on category that equals to XSS_SCRIPTING:
+        Update a mute config with ``ID=test-mute-config'' under
+        ``project=789'' with a filter on category that equals to XSS_SCRIPTING:
 
-          $ {command} my-test-mute-config --project=projects/789 --description="This is a test mute config" --filter="category=\\"XSS_SCRIPTING\\""
-          $ {command} my-test-mute-config --project=789 --description="This is a test mute config" --filter="category=\\"XSS_SCRIPTING\\""
-          $ {command} projects/789/muteConfigs/my-test-mute-config --description="This is a test mute config" --filter="category=\\"XSS_SCRIPTING\\"" """,
+          $ {command} test-mute-config --project=789
+            --description="This is a test mute config"
+            --filter="category=\\"XSS_SCRIPTING\\""
+
+        Update a mute config with ``ID=test-mute-config'' under
+        ``organization=123'' `location=eu`  with a filter on category that
+        equals to XSS_SCRIPTING:
+
+          $ {command} test-mute-config --organization=123
+            --description="This is a test mute config"
+            --filter="category=\\"XSS_SCRIPTING\\"" --location=eu""",
       "API REFERENCE": """
-        This command uses the securitycenter/v1 API. The full documentation for
-        this API can be found at: https://cloud.google.com/security-command-center""",
+      This command uses the Security Command Center API. For more information,
+      see [Security Command Center API.](https://cloud.google.com/security-command-center/docs/reference/rest)""",
   }
 
   @staticmethod
@@ -70,8 +82,9 @@ class Update(base.UpdateCommand):
     parser.add_argument(
         "--update-mask",
         help="""
-        Optional: If left unspecified (default), an update-mask is automatically created using the
-        flags specified in the command and only those values are updated.""",
+        Optional: If left unspecified (default), an update-mask is automatically
+        created using the flags specified in the command and only those values
+        are updated.""",
     )
     parser.display_info.AddFormat(properties.VALUES.core.default_format.Get())
 

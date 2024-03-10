@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Command to describe the discovered workloads."""
+"""Command to describe the Discovered Workload."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -34,8 +34,9 @@ _DETAILED_HELP = {
 }
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class Describe(base.DescribeCommand):
+@base.Hidden
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class DescribeGA(base.DescribeCommand):
   """Describe an Apphub discovered workload."""
 
   detailed_help = _DETAILED_HELP
@@ -46,7 +47,30 @@ class Describe(base.DescribeCommand):
 
   def Run(self, args):
     """Run the describe command."""
-    client = apis.DiscoveredWorkloadsClient()
+    client = apis.DiscoveredWorkloadsClient(release_track=base.ReleaseTrack.GA)
+    dis_workload_ref = args.CONCEPTS.discovered_workload.Parse()
+    if not dis_workload_ref.Name():
+      raise exceptions.InvalidArgumentException(
+          'discovered workload', 'discovered workload id must be non-empty.'
+      )
+    return client.Describe(discovered_workload=dis_workload_ref.RelativeName())
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class DescribeAlpha(base.DescribeCommand):
+  """Describe an Apphub discovered workload."""
+
+  detailed_help = _DETAILED_HELP
+
+  @staticmethod
+  def Args(parser):
+    flags.AddDescribeDiscoveredWorkloadFlags(parser)
+
+  def Run(self, args):
+    """Run the describe command."""
+    client = apis.DiscoveredWorkloadsClient(
+        release_track=base.ReleaseTrack.ALPHA
+    )
     dis_workload_ref = args.CONCEPTS.discovered_workload.Parse()
     if not dis_workload_ref.Name():
       raise exceptions.InvalidArgumentException(

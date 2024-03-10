@@ -37,19 +37,22 @@ _DETAILED_HELP = {
 }
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class Create(base.CreateCommand):
+@base.Hidden
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class CreateGA(base.CreateCommand):
   """Create an Apphub application service."""
 
   detailed_help = _DETAILED_HELP
 
   @staticmethod
   def Args(parser):
-    flags.AddCreateApplicationServiceFlags(parser)
+    flags.AddCreateApplicationServiceFlags(
+        parser, release_track=base.ReleaseTrack.GA
+    )
 
   def Run(self, args):
     """Run the create command."""
-    client = apis.ServicesClient()
+    client = apis.ServicesClient(release_track=base.ReleaseTrack.GA)
     service_ref = args.CONCEPTS.service.Parse()
     dis_service_ref = args.CONCEPTS.discovered_service.Parse()
     parent_ref = service_ref.Parent()
@@ -57,7 +60,46 @@ class Create(base.CreateCommand):
       raise exceptions.InvalidArgumentException(
           'service', 'service id must be non-empty.'
       )
-    attributes = api_lib_utils.PopulateAttributes(args)
+    attributes = api_lib_utils.PopulateAttributes(
+        args, release_track=base.ReleaseTrack.GA
+    )
+
+    return client.Create(
+        service_id=service_ref.Name(),
+        parent=parent_ref.RelativeName(),
+        async_flag=args.async_,
+        discovered_service=dis_service_ref.RelativeName(),
+        display_name=args.display_name,
+        description=args.description,
+        attributes=attributes,
+    )
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class CreateAlpha(base.CreateCommand):
+  """Create an Apphub application service."""
+
+  detailed_help = _DETAILED_HELP
+
+  @staticmethod
+  def Args(parser):
+    flags.AddCreateApplicationServiceFlags(
+        parser, release_track=base.ReleaseTrack.ALPHA
+    )
+
+  def Run(self, args):
+    """Run the create command."""
+    client = apis.ServicesClient(release_track=base.ReleaseTrack.ALPHA)
+    service_ref = args.CONCEPTS.service.Parse()
+    dis_service_ref = args.CONCEPTS.discovered_service.Parse()
+    parent_ref = service_ref.Parent()
+    if not service_ref.Name():
+      raise exceptions.InvalidArgumentException(
+          'service', 'service id must be non-empty.'
+      )
+    attributes = api_lib_utils.PopulateAttributes(
+        args, release_track=base.ReleaseTrack.ALPHA
+    )
 
     return client.Create(
         service_id=service_ref.Name(),

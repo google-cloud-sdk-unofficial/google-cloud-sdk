@@ -32,8 +32,8 @@ DETAILED_HELP = {
         """\
         *{command}* deletes a node pool from a Google Kubernetes Engine (GKE)
         cluster. When you delete a node pool, GKE drains all the nodes in the
-        node pool. The draining process involves GKE evicting Pods on each node
-        in the node pool. Each node in a node pool is drained by evicting Pods
+        node pool. The draining process involves GKE deleting Pods on each node
+        in the node pool. Each node in a node pool is drained by deleting Pods
         with an allotted graceful termination period of `MAX_POD`. `MAX_POD` is
         the maximum `terminationGracePeriodSeconds` set on the Pods scheduled to
         the node with a cap of one hour.

@@ -40,7 +40,9 @@ _DETAILED_HELP = {
 }
 
 
-class SetIamPolicy(base.Command):
+@base.Hidden
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class SetIamPolicyGA(base.Command):
   """Set the IAM policy for an Apphub application as defined in a JSON/YAML file.
 
      See https://cloud.google.com/iam/docs/managing-policies for details of
@@ -54,7 +56,33 @@ class SetIamPolicy(base.Command):
     iam_util.AddArgForPolicyFile(parser)
 
   def Run(self, args):
-    client = apis.ApplicationsClient()
+    client = apis.ApplicationsClient(release_track=base.ReleaseTrack.GA)
+    app_ref = args.CONCEPTS.application.Parse()
+    if not app_ref.Name():
+      raise exceptions.InvalidArgumentException(
+          'application', 'application id must be non-empty.'
+      )
+    return client.SetIamPolicy(
+        app_id=app_ref.RelativeName(), policy_file=args.policy_file
+    )
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class SetIamPolicyAlpha(base.Command):
+  """Set the IAM policy for an Apphub application as defined in a JSON/YAML file.
+
+     See https://cloud.google.com/iam/docs/managing-policies for details of
+        the policy file format and contents.
+  """
+  detailed_help = _DETAILED_HELP
+
+  @staticmethod
+  def Args(parser):
+    flags.AddSetIamPolicyFlags(parser)
+    iam_util.AddArgForPolicyFile(parser)
+
+  def Run(self, args):
+    client = apis.ApplicationsClient(release_track=base.ReleaseTrack.ALPHA)
     app_ref = args.CONCEPTS.application.Parse()
     if not app_ref.Name():
       raise exceptions.InvalidArgumentException(

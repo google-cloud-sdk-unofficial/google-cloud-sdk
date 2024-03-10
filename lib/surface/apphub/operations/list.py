@@ -42,8 +42,9 @@ _FORMAT = """
 """
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class List(base.ListCommand):
+@base.Hidden
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class ListGA(base.ListCommand):
   """List Apphub operations (long-running operations)."""
 
   detailed_help = _DETAILED_HELP
@@ -54,13 +55,42 @@ class List(base.ListCommand):
     parser.display_info.AddFormat(_FORMAT)
     parser.display_info.AddUriFunc(
         api_lib_utils.MakeGetUriFunc(
-            'apphub.projects.locations.operations'
+            'apphub.projects.locations.operations',
+            release_track=base.ReleaseTrack.GA,
         )
     )
 
   def Run(self, args):
     """Run the list command."""
-    client = apis.OperationsClient()
+    client = apis.OperationsClient(release_track=base.ReleaseTrack.GA)
+    location_ref = args.CONCEPTS.location.Parse()
+    return client.List(
+        limit=args.limit,
+        page_size=args.page_size,
+        parent=location_ref.RelativeName(),
+    )
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class ListAlpha(base.ListCommand):
+  """List Apphub operations (long-running operations)."""
+
+  detailed_help = _DETAILED_HELP
+
+  @staticmethod
+  def Args(parser):
+    flags.AddListOperationsFlags(parser)
+    parser.display_info.AddFormat(_FORMAT)
+    parser.display_info.AddUriFunc(
+        api_lib_utils.MakeGetUriFunc(
+            'apphub.projects.locations.operations',
+            release_track=base.ReleaseTrack.ALPHA,
+        )
+    )
+
+  def Run(self, args):
+    """Run the list command."""
+    client = apis.OperationsClient(release_track=base.ReleaseTrack.ALPHA)
     location_ref = args.CONCEPTS.location.Parse()
     return client.List(
         limit=args.limit,

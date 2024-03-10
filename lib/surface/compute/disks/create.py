@@ -82,7 +82,7 @@ DETAILED_HELP = {
 }
 
 
-def _SourceArgs(parser, source_instant_snapshot_enabled=False):
+def _SourceArgs(parser):
   """Add mutually exclusive source args."""
   source_parent_group = parser.add_group()
   source_group = source_parent_group.add_mutually_exclusive_group()
@@ -117,8 +117,7 @@ def _SourceArgs(parser, source_instant_snapshot_enabled=False):
   image_utils.AddImageFamilyScopeFlag(source_parent_group)
 
   disks_flags.SOURCE_SNAPSHOT_ARG.AddArgument(source_group)
-  if source_instant_snapshot_enabled:
-    disks_flags.SOURCE_INSTANT_SNAPSHOT_ARG.AddArgument(source_group)
+  disks_flags.SOURCE_INSTANT_SNAPSHOT_ARG.AddArgument(source_group)
   disks_flags.SOURCE_DISK_ARG.AddArgument(parser, mutex_group=source_group)
   disks_flags.ASYNC_PRIMARY_DISK_ARG.AddArgument(
       parser, mutex_group=source_group
@@ -132,7 +131,6 @@ def _CommonArgs(
     parser,
     include_physical_block_size_support=False,
     vss_erase_enabled=False,
-    source_instant_snapshot_enabled=False,
     support_pd_interface=False,
     support_user_licenses=False,
     support_storage_pool=False,
@@ -193,7 +191,7 @@ def _CommonArgs(
             'be added onto the created disks to indicate the licensing and '
             'billing policies.'))
 
-  _SourceArgs(parser, source_instant_snapshot_enabled)
+  _SourceArgs(parser)
 
   disks_flags.AddProvisionedIopsFlag(parser, arg_parsers)
   disks_flags.AddArchitectureFlag(parser, messages)
@@ -261,8 +259,6 @@ def _ParseGuestOsFeaturesToMessages(args, client_messages):
 class Create(base.Command):
   """Create Compute Engine persistent disks."""
 
-  source_instant_snapshot_enabled = False
-
   @classmethod
   def Args(cls, parser):
     messages = cls._GetApiHolder(no_http=True).client.messages
@@ -290,16 +286,12 @@ class Create(base.Command):
     return []
 
   def ValidateAndParseDiskRefs(self, args, compute_holder):
-    return _ValidateAndParseDiskRefsRegionalReplica(
-        args, compute_holder, self.source_instant_snapshot_enabled
-    )
+    return _ValidateAndParseDiskRefsRegionalReplica(args, compute_holder)
 
   def GetFromImage(self, args):
     return args.image or args.image_family
 
   def GetFromSourceInstantSnapshot(self, args):
-    if not self.source_instant_snapshot_enabled:
-      return False
     return args.source_instant_snapshot
 
   def GetDiskSizeGb(self, args, from_image):
@@ -504,9 +496,8 @@ class Create(base.Command):
                                         args.IsSpecified('image_family') or
                                         args.IsSpecified('source_snapshot') or
                                         args.IsSpecified('source_disk'))
-    if self.source_instant_snapshot_enabled:
-      self.show_unformated_message = self.show_unformated_message and not (
-          args.IsSpecified('source_instant_snapshot'))
+    self.show_unformated_message = self.show_unformated_message and not (
+        args.IsSpecified('source_instant_snapshot'))
 
     disk_refs = self.ValidateAndParseDiskRefs(args, compute_holder)
     from_image = self.GetFromImage(args)
@@ -596,9 +587,8 @@ class Create(base.Command):
           physicalBlockSizeBytes=physical_block_size_bytes,
           **kwargs)
       disk.sourceDisk = self.GetSourceDiskUri(args, disk_ref, compute_holder)
-      if self.source_instant_snapshot_enabled:
-        disk.sourceInstantSnapshot = self.GetSourceInstantSnapshotUri(
-            args, compute_holder)
+      disk.sourceInstantSnapshot = self.GetSourceInstantSnapshotUri(
+          args, compute_holder)
 
       if (support_multiwriter_disk and
           disk_ref.Collection() in ['compute.disks', 'compute.regionDisks'] and
@@ -686,8 +676,6 @@ class Create(base.Command):
 class CreateBeta(Create):
   """Create Compute Engine persistent disks."""
 
-  source_instant_snapshot_enabled = True
-
   @classmethod
   def Args(cls, parser):
     messages = cls._GetApiHolder(no_http=True).client.messages
@@ -697,7 +685,6 @@ class CreateBeta(Create):
         parser,
         include_physical_block_size_support=True,
         vss_erase_enabled=True,
-        source_instant_snapshot_enabled=True,
         support_pd_interface=True,
     )
     image_utils.AddGuestOsFeaturesArg(parser, messages)
@@ -722,8 +709,6 @@ class CreateBeta(Create):
 class CreateAlpha(CreateBeta):
   """Create Compute Engine persistent disks."""
 
-  source_instant_snapshot_enabled = True
-
   @classmethod
   def Args(cls, parser):
     messages = cls._GetApiHolder(no_http=True).client.messages
@@ -733,7 +718,6 @@ class CreateAlpha(CreateBeta):
         parser,
         include_physical_block_size_support=True,
         vss_erase_enabled=True,
-        source_instant_snapshot_enabled=True,
         support_pd_interface=True,
         support_user_licenses=True,
         support_storage_pool=True,
@@ -762,7 +746,7 @@ class CreateAlpha(CreateBeta):
 
 
 def _ValidateAndParseDiskRefsRegionalReplica(
-    args, compute_holder, source_instant_snapshot_enabled
+    args, compute_holder
 ):
   """Validate flags and parse disks references.
 
@@ -771,7 +755,6 @@ def _ValidateAndParseDiskRefsRegionalReplica(
   Args:
     args: The argument namespace
     compute_holder: base_classes.ComputeApiHolder instance
-    source_instant_snapshot_enabled: True if source instant snapshot is enabled
 
   Returns:
     List of compute.regionDisks resources.
@@ -779,8 +762,7 @@ def _ValidateAndParseDiskRefsRegionalReplica(
   if (
       not args.IsSpecified('replica_zones')
       and args.IsSpecified('region')
-      and not (source_instant_snapshot_enabled
-               and args.IsSpecified('source_instant_snapshot'))
+      and not (args.IsSpecified('source_instant_snapshot'))
   ):
     raise exceptions.RequiredArgumentException(
         '--replica-zones',
@@ -800,8 +782,7 @@ def _ValidateAndParseDiskRefsRegionalReplica(
   for disk_ref in disk_refs:
     if (
         disk_ref.Collection() == 'compute.regionDisks'
-        and not (source_instant_snapshot_enabled
-                 and args.IsSpecified('source_instant_snapshot'))
+        and not args.IsSpecified('source_instant_snapshot')
     ):
       raise exceptions.RequiredArgumentException(
           '--replica-zones',

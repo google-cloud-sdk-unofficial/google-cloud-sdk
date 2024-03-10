@@ -33,8 +33,9 @@ _DETAILED_HELP = {
 }
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class Delete(base.DeleteCommand):
+@base.Hidden
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class DeleteGA(base.DeleteCommand):
   """Delete an Apphub application workload."""
 
   detailed_help = _DETAILED_HELP
@@ -45,7 +46,30 @@ class Delete(base.DeleteCommand):
 
   def Run(self, args):
     """Run the delete command."""
-    client = apis.WorkloadsClient()
+    client = apis.WorkloadsClient(release_track=base.ReleaseTrack.GA)
+    workload_ref = args.CONCEPTS.workload.Parse()
+    if not workload_ref.Name():
+      raise exceptions.InvalidArgumentException(
+          'workload', 'workload id must be non-empty.'
+      )
+    return client.Delete(
+        workload=workload_ref.RelativeName(), async_flag=args.async_
+    )
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class DeleteAlpha(base.DeleteCommand):
+  """Delete an Apphub application workload."""
+
+  detailed_help = _DETAILED_HELP
+
+  @staticmethod
+  def Args(parser):
+    flags.AddDeleteApplicationWorkloadFlags(parser)
+
+  def Run(self, args):
+    """Run the delete command."""
+    client = apis.WorkloadsClient(release_track=base.ReleaseTrack.ALPHA)
     workload_ref = args.CONCEPTS.workload.Parse()
     if not workload_ref.Name():
       raise exceptions.InvalidArgumentException(

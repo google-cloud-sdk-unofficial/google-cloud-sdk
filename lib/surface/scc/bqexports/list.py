@@ -30,29 +30,41 @@ from googlecloudsdk.command_lib.scc.bqexports import flags as bqexports_flags
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class List(base.ListCommand):
-  """List Cloud Security Command Center BigQuery exports."""
+  """List Security Command Center BigQuery exports."""
 
   detailed_help = {
-      'DESCRIPTION': 'List Cloud Security Command Center BigQuery exports.',
-      'EXAMPLES': """\
-      List BigQuery exports under organization 123:
+      'DESCRIPTION': """List Security Command Center BigQuery exports.
 
-          $ gcloud scc bqexports list --organization=organizations/123
+      BigQuery exports that are created with Security Command Center API V2 and
+      later include a `location` attribute. Include the `--location` flag to
+      list BigQuery exports with `location` attribute other than `global`.
+      """,
+      'EXAMPLES': """\
+      List BigQuery exports under organization `123`:
+
           $ gcloud scc bqexports list --organization=123
 
-      List BigQuery exports under folder 456:
+      List BigQuery exports under folder `456`:
 
-          $ gcloud scc bqexports list --folder=folders/456
           $ gcloud scc bqexports list --folder=456
 
-      List BigQuery exports under project 789:
+      List BigQuery exports under project `789`:
 
-          $ gcloud scc bqexports list --project=projects/789
           $ gcloud scc bqexports list --project=789
+
+      List BigQuery exports under organization `123` and location `global`:
+
+          $ gcloud scc bqexports list --organization=123 \
+              --location=global
+
+      List BigQuery exports under organization `123` and `location=eu`:
+
+          $ gcloud scc bqexports list --organization=123 \
+              --location=eu
       """,
       'API REFERENCE': """\
-      This command uses the securitycenter/v1 API. The full documentation for
-      this API can be found at: https://cloud.google.com/security-command-center
+      This command uses the Security Command Center API. For more information, see
+      [Security Command Center API.](https://cloud.google.com/security-command-center/docs/reference/rest)
           """,
   }
 

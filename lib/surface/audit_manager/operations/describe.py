@@ -53,7 +53,7 @@ class Describe(base.DescribeCommand):
     resource = result.result
     is_folder_parent = (
         result.concept_type.name
-        == 'auditmanager.folders.locations.operationIds'
+        == 'auditmanager.folders.locations.operationDetails'
     )
 
     client = operations.OperationsClient()

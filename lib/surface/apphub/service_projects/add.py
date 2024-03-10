@@ -35,8 +35,9 @@ _DETAILED_HELP = {
 }
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class Create(base.CreateCommand):
+@base.Hidden
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class CreateGA(base.CreateCommand):
   """Add an Apphub service project."""
 
   detailed_help = _DETAILED_HELP
@@ -47,7 +48,33 @@ class Create(base.CreateCommand):
 
   def Run(self, args):
     """Run the add command."""
-    client = apis.ServiceProjectsClient()
+    client = apis.ServiceProjectsClient(release_track=base.ReleaseTrack.GA)
+    service_project_ref = args.CONCEPTS.service_project.Parse()
+    parent_ref = service_project_ref.Parent()
+    if not service_project_ref.Name():
+      raise exceptions.InvalidArgumentException(
+          'service project', 'service project id must be non-empty.'
+      )
+    return client.Add(
+        service_project=service_project_ref.Name(),
+        async_flag=args.async_,
+        parent=parent_ref.RelativeName(),
+    )
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class CreateAlpha(base.CreateCommand):
+  """Add an Apphub service project."""
+
+  detailed_help = _DETAILED_HELP
+
+  @staticmethod
+  def Args(parser):
+    flags.AddServiceProjectFlags(parser)
+
+  def Run(self, args):
+    """Run the add command."""
+    client = apis.ServiceProjectsClient(release_track=base.ReleaseTrack.ALPHA)
     service_project_ref = args.CONCEPTS.service_project.Parse()
     parent_ref = service_project_ref.Parent()
     if not service_project_ref.Name():

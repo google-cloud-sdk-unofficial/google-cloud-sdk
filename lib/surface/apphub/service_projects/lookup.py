@@ -31,14 +31,28 @@ _DETAILED_HELP = {
 }
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class Lookup(base.DescribeCommand):
+@base.Hidden
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class LookupGA(base.DescribeCommand):
   """Lookup an Apphub service project."""
 
   detailed_help = _DETAILED_HELP
 
   def Run(self, args):
     """Run the lookup command."""
-    client = apis.ServiceProjectsClient()
+    client = apis.ServiceProjectsClient(release_track=base.ReleaseTrack.GA)
+    service_project = properties.VALUES.core.project.Get()
+    return client.Lookup(service_project=service_project)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class LookupAlpha(base.DescribeCommand):
+  """Lookup an Apphub service project."""
+
+  detailed_help = _DETAILED_HELP
+
+  def Run(self, args):
+    """Run the lookup command."""
+    client = apis.ServiceProjectsClient(release_track=base.ReleaseTrack.ALPHA)
     service_project = properties.VALUES.core.project.Get()
     return client.Lookup(service_project=service_project)

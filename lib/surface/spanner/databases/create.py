@@ -95,11 +95,15 @@ class Create(base.CreateCommand):
     """
     database_ref = args.CONCEPTS.database.Parse()
     instance_ref = database_ref.Parent()
-    kms_key = resource_args.GetAndValidateKmsKeyName(args)
-    op = databases.Create(instance_ref, args.database,
-                          flags.SplitDdlIntoStatements(args),
-                          flags.GetProtoDescriptors(args), kms_key,
-                          args.database_dialect)
+    kms_key_name_or_names = resource_args.GetAndValidateKmsKeyName(args)
+    op = databases.Create(
+        instance_ref,
+        args.database,
+        flags.SplitDdlIntoStatements(args),
+        flags.GetProtoDescriptors(args),
+        kms_key_name_or_names,
+        args.database_dialect,
+    )
     if args.async_:
       return op
     return database_operations.Await(op, 'Creating database')

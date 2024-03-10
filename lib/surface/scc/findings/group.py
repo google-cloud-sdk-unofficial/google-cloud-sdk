@@ -42,37 +42,52 @@ class Group(base.Command):
       "DESCRIPTION": """
           To group across all sources provide a '-' as the source id.""",
       "EXAMPLES": """
-          Group findings under organization 123456 across all sources by their category:
+          Group findings under organization `123456` across all sources by their
+          category:
 
             $ {command} 123456 --group-by="category"
 
-          Group findings under project example-project across all sources by their category:
+          Group findings under project `example-project` across all sources by
+          their category:
 
             $ {command} projects/example-project --group-by="category"
 
-          Group findings under folders 456 across all sources by their category:
+          Group findings under folders `456` across all sources by their
+          category:
 
             $ {command} folders/456 --group-by="category"
 
-          Group findings under organization 123456 and source 5678, by their category:
+          Group findings under organization `123456` and source `5678`, by their
+          category:
 
             $ {command} 123456 --source=5678 --group-by="category"
 
-          Group ACTIVE findings under organization 123456 and source 5678, by their category:
+          Group ACTIVE findings under organization `123456` and source `5678`,
+          by their category:
 
-            $ {command} 123456 --source=5678 --group-by="category" --filter="state=\\"ACTIVE\\""
+            $ {command} 123456 --source=5678 --group-by="category"
+              --filter="state=\\"ACTIVE\\""
 
-          Group ACTIVE findings under organization 123456 and source 5678, on 2019-01-01T01:00:00 GMT, by their category:
+          Group ACTIVE findings under organization `123456` and source `5678`,
+          on `2019-01-01T01:00:00 GMT`, by their category:
 
             $ {command} 123456 --source=5678 --group-by="category"
             --filter="state=\\"ACTIVE\\"" --read-time="2019-01-01T01:00:00Z"
 
-          Group findings under organization 123456 and source 5678 into following 3 state_changes (ADDED/CHANGED/UNCHANGED) based on the activity during past 24 hours:
+          Group findings under organization `123456` and source `5678` into
+          following 3 state_changes (ADDED/CHANGED/UNCHANGED) based on the
+          activity during past 24 hours:
 
-            $ {command} 123456 --source=5678 --group-by="state_change" --compare-duration=86400s""",
+            $ {command} 123456 --source=5678 --group-by="state_change"
+              --compare-duration=86400s
+
+          Group findings under organization `123456` and `location=eu` across
+          all sources by their category:
+
+            $ {command} 123456 --group-by="category" --location=eu""",
       "API REFERENCE": """
-            This command uses the securitycenter/v1 API. The full documentation for
-          this API can be found at: https://cloud.google.com/security-command-center""",
+      This command uses the Security Command Center API. For more information,
+      see [Security Command Center API.](https://cloud.google.com/security-command-center/docs/reference/rest)""",
   }
 
   @staticmethod
@@ -88,27 +103,31 @@ class Group(base.Command):
     parser.add_argument(
         "--filter",
         help="""
-        Expression that defines the filter to apply across findings. The expression is a list of
-        one or more restrictions combined via logical operators 'AND' and 'OR'. Parentheses are
-        supported, and 'OR' has higher precedence than 'AND'. Restrictions have the form
-        '<field> <operator> <value>' and may have a '-' character in front of them to indicate
-        negation. Examples include: name, source_properties.a_property, security_marks.marks.marka.
+        Expression that defines the filter to apply across findings. The
+        expression is a list of one or more restrictions combined via logical
+        operators 'AND' and 'OR'. Parentheses are supported, and 'OR' has higher
+        precedence than 'AND'. Restrictions have the form
+        '<field> <operator> <value>' and may have a '-' character in front of
+        them to indicate negation. Examples include: name,
+        source_properties.a_property, security_marks.marks.marka.
         The supported operators are:
         *  '=' for all value types.
         *  '>', '<', '>=', '<=' for integer values.
         *  ':', meaning substring matching, for strings.
 
-        The supported value types are:string literals in quotes, integer literals without quotes,
-        boolean literals 'true' and 'false' without quotes.
-        Some example filters: 'source_properties.size = 100', 'category=\\"XSS\\" AND event_time > 10' etc.""",
+        The supported value types are:string literals in quotes, integer
+        literals without quotes, boolean literals 'true' and 'false' without
+        quotes. Some example filters: 'source_properties.size = 100',
+        'category=\\"XSS\\" AND event_time > 10' etc.""",
     )
 
     parser.add_argument(
         "--group-by",
         help="""
-        Expression that defines what findings fields to use for grouping (including 'state').
-        String value should follow SQL syntax: comma separated list  of fields.
-        For example: "parent,resource_name".  The following fields are supported:
+        Expression that defines what findings fields to use for grouping
+        (including 'state'). String value should follow SQL syntax: comma
+        separated list  of fields. For example: "parent,resource_name".
+        The following fields are supported:
         * resource_name
         * category
         * state
@@ -119,8 +138,8 @@ class Group(base.Command):
         "--page-size",
         type=arg_parsers.BoundedInt(1, sys.maxsize, unlimited=True),
         help="""
-        Maximum number of results to return in a single response. Default is 10, minimum is 1,
-        maximum is 1000.""",
+        Maximum number of results to return in a single response. Default is 10,
+        minimum is 1, maximum is 1000.""",
     )
 
   def Run(self, args):

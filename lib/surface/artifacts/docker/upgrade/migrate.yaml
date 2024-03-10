@@ -38,6 +38,19 @@
     - arg_name: copy-only
       type: bool
       help_text: "Only perform image copying"
+    - arg_name: canary-reads
+      metavar: PERCENT
+      type: int
+      hidden: true
+      help_text: "Send only a percent of reads to Artifact Registry. The rest of reads and all writes are sent to Container Registry."
+    - arg_name: max-threads
+      type: int
+      default: 8
+      help_text: "Max number of images to copy simultaneously. Consider quota usage when increasing this"
+    - arg_name: skip-iam-update
+      type: bool
+      help_text: >
+        Migrate without changing iam-policy. Users without Artifact Registry permissions will not have access to migrated images.
 
   request:
     api_version: v1

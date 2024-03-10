@@ -35,24 +35,32 @@ class BulkMute(base.Command):
           "Bulk mute Security Command Center findings based on a filter."
       ),
       "EXAMPLES": """
-      To bulk mute findings given organization ``123'' based on a filter on category that equals ``XSS_SCRIPTING'', run:
+      To bulk mute findings given organization ``123'' based on a filter on
+      category that equals ``XSS_SCRIPTING'', run:
 
-        $ {command} --organization=organizations/123 --filter="category=\\"XSS_SCRIPTING\\""
-        $ {command} --organization=123 --filter="category=\\"XSS_SCRIPTING\\""
+        $ {command} --organization=organizations/123
+          --filter="category=\\"XSS_SCRIPTING\\""
 
-      To bulk mute findings given folder ``123'' based on a filter on category that equals ``XSS_SCRIPTING'', run:
+      To bulk mute findings given folder ``123'' based on a filter on category
+      that equals ``XSS_SCRIPTING'', run:
 
         $ {command} --folder=folders/123 --filter="category=\\"XSS_SCRIPTING\\""
-        $ {command} --folder=123 --filter="category=\\"XSS_SCRIPTING\\""
 
-      To bulk mute findings given project ``123'' based on a filter on category that equals ``XSS_SCRIPTING'', run:
+      To bulk mute findings given project ``123'' based on a filter on category
+      that equals ``XSS_SCRIPTING'', run:
 
-        $ {command} --project=projects/123 --filter="category=\\"XSS_SCRIPTING\\""
-        $ {command} --project=123 --filter="category=\\"XSS_SCRIPTING\\""
+        $ {command} --project=projects/123
+          --filter="category=\\"XSS_SCRIPTING\\""
+
+      To bulk mute findings given organization ``123'' based on a filter on
+      category that equals ``XSS_SCRIPTING'' and `location=eu` run:
+
+        $ {command} --organization=organizations/123
+          --filter="category=\\"XSS_SCRIPTING\\"" --location=locations/eu
       """,
       "API REFERENCE": """
-          This command uses the securitycenter/v1 API. The full documentation for
-          this API can be found at: https://cloud.google.com/security-command-center""",
+      This command uses the Security Command Center API. For more information,
+      see [Security Command Center API.](https://cloud.google.com/security-command-center/docs/reference/rest)""",
   }
 
   @staticmethod
@@ -61,16 +69,22 @@ class BulkMute(base.Command):
     parent_group = parser.add_group(mutex=True, required=True)
     parent_group.add_argument(
         "--organization",
-        help="""Organization where the findings reside. Formatted as ``organizations/123'' or just ``123''.""",
+        help="""
+        Organization where the findings reside. Formatted as
+        ``organizations/123'' or just ``123''.""",
     )
 
     parent_group.add_argument(
         "--folder",
-        help="""Folder where the findings reside. Formatted as ``folders/456'' or just ``456''.""",
+        help="""
+        Folder where the findings reside. Formatted as ``folders/456'' or just
+        ``456''.""",
     )
     parent_group.add_argument(
         "--project",
-        help="""Project (id or number) where the findings reside. Formatted as ``projects/789'' or just ``789''.""",
+        help="""
+        Project (id or number) where the findings reside. Formatted as
+        ``projects/789'' or just ``789''.""",
     )
 
     parser.add_argument(

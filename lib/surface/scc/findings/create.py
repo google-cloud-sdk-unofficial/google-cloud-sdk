@@ -34,25 +34,48 @@ from googlecloudsdk.core.util import times
     base.ReleaseTrack.GA, base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA
 )
 class Create(base.CreateCommand):
-  """Create a Cloud Security Command Center finding."""
+  """Create a Security Command Center finding."""
 
   detailed_help = {
-      "DESCRIPTION": "Create a Cloud Security Command Center finding.",
+      "DESCRIPTION": "Create a Security Command Center finding.",
       "EXAMPLES": f"""
-          Create an ACTIVE myFinding with category: XSS_SCRIPTING attached to example-project under organization 123456 and source 5678:
+          Create an ACTIVE finding `testFinding` with category: XSS_SCRIPTING
+          attached to `example-project` under organization `123456` and source
+          `5678`:
 
-          $ {{command}} `myFinding` --organization=123456 --source=5678 --state=ACTIVE --category='XSS_SCRIPTING' --event-time=2023-01-11T07:00:06.861Z --resource-name='//cloudresourcemanager.{properties.VALUES.core.universe_domain.Get()}/projects/example-project'
+          $ {{command}} `testFinding` --organization=123456 --source=5678
+            --state=ACTIVE --category='XSS_SCRIPTING'
+            --event-time=2023-01-11T07:00:06.861Z
+            --resource-name='//cloudresourcemanager.{properties.VALUES.core.universe_domain.Get()}/projects/example-project'
 
-          Create an ACTIVE myFinding attached to example-project under project example-project and source 5678:
+          Create an ACTIVE finding `testFinding` attached to `example-project`
+          under project `example-project` and source 5678:
 
-            $ {{command}} projects/example-project/sources/5678/findings/myFinding --state=ACTIVE --category='XSS_SCRIPTING' --event-time=2023-01-11T07:00:06.861Z --resource-name='//cloudresourcemanager.{properties.VALUES.core.universe_domain.Get()}/projects/example-project'
+            $ {{command}} projects/example-project/sources/5678/findings/testFinding
+              --state=ACTIVE --category='XSS_SCRIPTING'
+              --event-time=2023-01-11T07:00:06.861Z
+              --resource-name='//cloudresourcemanager.{properties.VALUES.core.universe_domain.Get()}/projects/example-project'
 
-          Create an ACTIVE myFinding attached to example-project under folder 456 and source 5678:
+          Create an ACTIVE finding `testFinding` attached to `example-project`
+          under folder `456` and source `5678`:
 
-            $ {{command}} folders/456/sources/5678/findings/myFinding --state=ACTIVE --category='XSS_SCRIPTING' --event-time=2023-01-11T07:00:06.861Z --resource-name='//cloudresourcemanager.{properties.VALUES.core.universe_domain.Get()}/projects/example-project'""",
+            $ {{command}} folders/456/sources/5678/findings/testFinding
+              --state=ACTIVE --category='XSS_SCRIPTING'
+              --event-time=2023-01-11T07:00:06.861Z
+              --resource-name='//cloudresourcemanager.{properties.VALUES.core.universe_domain.Get()}/projects/example-project'
+
+          Create an ACTIVE finding `testFinding` with category: `XSS_SCRIPTING`
+          attached to `example-project` under organization `123456`, source
+          `5678` and `location=eu`:
+
+          $ {{command}} `testFinding` --organization=123456 --source=5678
+            --state=ACTIVE --category='XSS_SCRIPTING'
+            --event-time=2023-01-11T07:00:06.861Z
+            --resource-name='//cloudresourcemanager.{properties.VALUES.core.universe_domain.Get()}/projects/example-project' --location=eu""",
+
       "API REFERENCE": """
-          This command uses the securitycenter/v1 API. The full documentation for
-          this API can be found at: https://cloud.google.com/security-command-center""",
+      This command uses the Security Command Center API. For more information,
+      see [Security Command Center API.](https://cloud.google.com/security-command-center/docs/reference/rest)""",
   }
 
   @staticmethod
@@ -68,16 +91,16 @@ class Create(base.CreateCommand):
     parser.add_argument(
         "--category",
         help="""
-        Taxonomy group within findings from a given source. Example: XSS_SCRIPTING
-        """,
+        Taxonomy group within findings from a given source. Example:
+        XSS_SCRIPTING""",
         required=True,
     )
 
     parser.add_argument(
         "--resource-name",
         help="""
-        Full resource name of the Google Cloud Platform resource this finding is for.
-        """,
+        Full resource name of the Google Cloud Platform resource this finding is
+        for.""",
         required=True,
     )
 

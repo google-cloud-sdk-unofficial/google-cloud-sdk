@@ -34,8 +34,9 @@ _DETAILED_HELP = {
 }
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class Describe(base.DescribeCommand):
+@base.Hidden
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class DescribeGA(base.DescribeCommand):
   """Describe an Apphub application workload."""
 
   detailed_help = _DETAILED_HELP
@@ -46,7 +47,28 @@ class Describe(base.DescribeCommand):
 
   def Run(self, args):
     """Run the describe command."""
-    client = apis.WorkloadsClient()
+    client = apis.WorkloadsClient(release_track=base.ReleaseTrack.GA)
+    workload_ref = args.CONCEPTS.workload.Parse()
+    if not workload_ref.Name():
+      raise exceptions.InvalidArgumentException(
+          'workload', 'workload id must be non-empty.'
+      )
+    return client.Describe(workload=workload_ref.RelativeName())
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class DescribeAlpha(base.DescribeCommand):
+  """Describe an Apphub application workload."""
+
+  detailed_help = _DETAILED_HELP
+
+  @staticmethod
+  def Args(parser):
+    flags.AddDescribeApplicationWorkloadFlags(parser)
+
+  def Run(self, args):
+    """Run the describe command."""
+    client = apis.WorkloadsClient(release_track=base.ReleaseTrack.ALPHA)
     workload_ref = args.CONCEPTS.workload.Parse()
     if not workload_ref.Name():
       raise exceptions.InvalidArgumentException(

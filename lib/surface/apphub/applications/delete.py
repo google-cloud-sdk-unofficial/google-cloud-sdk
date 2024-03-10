@@ -31,8 +31,9 @@ _DETAILED_HELP = {
 }
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class Delete(base.DeleteCommand):
+@base.Hidden
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class DeleteGA(base.DeleteCommand):
   """Delete an Apphub application."""
 
   detailed_help = _DETAILED_HELP
@@ -43,6 +44,23 @@ class Delete(base.DeleteCommand):
 
   def Run(self, args):
     """Run the delete command."""
-    client = apis.ApplicationsClient()
+    client = apis.ApplicationsClient(release_track=base.ReleaseTrack.GA)
+    app_id = args.CONCEPTS.application.Parse()
+    return client.Delete(app_id=app_id.RelativeName(), async_flag=args.async_)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class DeleteAlpha(base.DeleteCommand):
+  """Delete an Apphub application."""
+
+  detailed_help = _DETAILED_HELP
+
+  @staticmethod
+  def Args(parser):
+    flags.AddDeleteApplicationFlags(parser)
+
+  def Run(self, args):
+    """Run the delete command."""
+    client = apis.ApplicationsClient(release_track=base.ReleaseTrack.ALPHA)
     app_id = args.CONCEPTS.application.Parse()
     return client.Delete(app_id=app_id.RelativeName(), async_flag=args.async_)

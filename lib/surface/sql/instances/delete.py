@@ -21,6 +21,7 @@ from __future__ import unicode_literals
 from apitools.base.py import exceptions
 
 from googlecloudsdk.api_lib.sql import api_util
+from googlecloudsdk.api_lib.sql import exceptions as sql_exceptions
 from googlecloudsdk.api_lib.sql import operations
 from googlecloudsdk.api_lib.sql import validate
 from googlecloudsdk.calliope import base
@@ -53,6 +54,7 @@ class Delete(base.Command):
     flags.AddSkipFinalBackup(parser)
     flags.AddFinalbackupRetentionDays(parser)
     flags.AddFinalbackupDescription(parser)
+    flags.AddFinalBackupExpiryTimeArgument(parser)
 
   def Run(self, args):
     """Deletes a Cloud SQL instance.
@@ -65,6 +67,13 @@ class Delete(base.Command):
       A dict object representing the operations resource describing the delete
       operation if the delete was successful.
     """
+    if args.IsSpecified('final_backup_expiry_time') and args.IsSpecified(
+        'final_backup_retention_days'
+    ):
+      raise sql_exceptions.ArgumentError(
+          '`--final-backup-expiry-time` and `--final-backup-retention-days`'
+          ' both cannot be specified. Only one of them can be provided.'
+      )
     client = api_util.SqlClient(api_util.API_VERSION_DEFAULT)
     sql_client = client.sql_client
     sql_messages = client.sql_messages
@@ -79,14 +88,24 @@ class Delete(base.Command):
     if not console_io.PromptContinue(
         'All of the instance data will be lost when the instance is deleted.'):
       return None
+
+    expiry_time = None
+    retention_days = args.final_backup_retention_days
+    if args.final_backup_expiry_time is not None:
+      expiry_time = args.final_backup_expiry_time.strftime(
+          '%Y-%m-%dT%H:%M:%S.%fZ'
+      )
+      retention_days = None
+
     try:
       result = sql_client.instances.Delete(
           sql_messages.SqlInstancesDeleteRequest(
               instance=instance_ref.instance,
               project=instance_ref.project,
               skipFinalBackup=args.skip_final_backup,
-              finalBackupTtlDays=args.final_backup_retention_days,
+              finalBackupTtlDays=retention_days,
               finalBackupDescription=args.final_backup_description,
+              finalBackupExpiryTime=expiry_time,
           )
       )
 

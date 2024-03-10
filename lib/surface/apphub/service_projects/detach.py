@@ -31,14 +31,28 @@ _DETAILED_HELP = {
 }
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class Detach(base.SilentCommand):
+@base.Hidden
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class DetachGA(base.SilentCommand):
   """Detach an Apphub service project."""
 
   detailed_help = _DETAILED_HELP
 
   def Run(self, args):
     """Run the detach command."""
-    client = apis.ServiceProjectsClient()
+    client = apis.ServiceProjectsClient(release_track=base.ReleaseTrack.GA)
+    service_project = properties.VALUES.core.project.Get()
+    return client.Detach(service_project=service_project)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class DetachAlpha(base.SilentCommand):
+  """Detach an Apphub service project."""
+
+  detailed_help = _DETAILED_HELP
+
+  def Run(self, args):
+    """Run the detach command."""
+    client = apis.ServiceProjectsClient(release_track=base.ReleaseTrack.ALPHA)
     service_project = properties.VALUES.core.project.Get()
     return client.Detach(service_project=service_project)

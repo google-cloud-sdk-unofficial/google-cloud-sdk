@@ -23,8 +23,17 @@ from googlecloudsdk.calliope import base
 
 # NOTE: Release track decorators can be used here as well, and would propagate
 # to this group's children.
+@base.Hidden
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class DiscoveredWorkloadsGA(base.Group):
+  """Manage App Hub Discovered Workloads.
+
+  Commands for managing App Hub Discovered Workloads.
+  """
+
+
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class DiscoveredWorkloads(base.Group):
+class DiscoveredWorkloadsAlpha(base.Group):
   """Manage App Hub Discovered Workloads.
 
   Commands for managing App Hub Discovered Workloads.

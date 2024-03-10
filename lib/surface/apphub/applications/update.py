@@ -28,22 +28,39 @@ _DETAILED_HELP = {
         To update the Application `my-app` with a new environment
         `prod` in location `us-east1`, run:
 
-          $ {command} my-app --location=us-east1 --environment=prod
+          $ {command} my-app --location=us-east1 --environment-type=TEST
         """,
 }
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class Update(base.UpdateCommand):
+@base.Hidden
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class UpdateGA(base.UpdateCommand):
   """Update an Apphub application."""
 
   detailed_help = _DETAILED_HELP
 
   @staticmethod
   def Args(parser):
-    flags.UpdateApplicationFlags(parser)
+    flags.UpdateApplicationFlags(parser, release_track=base.ReleaseTrack.GA)
 
   def Run(self, args):
     """Run the create command."""
-    client = apis.ApplicationsClient()
-    return client.Update(args)
+    client = apis.ApplicationsClient(release_track=base.ReleaseTrack.GA)
+    return client.Update(args, release_track=base.ReleaseTrack.GA)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class UpdateAlpha(base.UpdateCommand):
+  """Update an Apphub application."""
+
+  detailed_help = _DETAILED_HELP
+
+  @staticmethod
+  def Args(parser):
+    flags.UpdateApplicationFlags(parser, release_track=base.ReleaseTrack.ALPHA)
+
+  def Run(self, args):
+    """Run the create command."""
+    client = apis.ApplicationsClient(release_track=base.ReleaseTrack.ALPHA)
+    return client.Update(args, release_track=base.ReleaseTrack.ALPHA)

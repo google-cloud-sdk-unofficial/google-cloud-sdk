@@ -24,13 +24,13 @@ from googlecloudsdk.command_lib.compute.instant_snapshots import flags as ips_fl
 
 
 def _CommonArgs(parser):
-  DescribeBeta.ips_arg = ips_flags.MakeInstantSnapshotArg(plural=False)
-  DescribeBeta.ips_arg.AddArgument(parser, operation_type='describe')
+  Describe.ips_arg = ips_flags.MakeInstantSnapshotArg(plural=False)
+  Describe.ips_arg.AddArgument(parser, operation_type='describe')
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class DescribeBeta(base.DescribeCommand):
-  """Describe a Compute Engine instant snapshot in beta."""
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class Describe(base.DescribeCommand):
+  """Describe a Compute Engine instant snapshot."""
 
   @classmethod
   def Args(cls, parser):
@@ -41,7 +41,7 @@ class DescribeBeta(base.DescribeCommand):
     client = holder.client
     messages = client.messages
 
-    ips_ref = DescribeBeta.ips_arg.ResolveAsResource(args, holder.resources)
+    ips_ref = Describe.ips_arg.ResolveAsResource(args, holder.resources)
 
     if ips_ref.Collection() == 'compute.instantSnapshots':
       service = client.apitools_client.instantSnapshots
@@ -57,8 +57,20 @@ class DescribeBeta(base.DescribeCommand):
     return self._Run(args)
 
 
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class DescribeBeta(Describe):
+  """Describe a Compute Engine instant snapshot in beta."""
+
+  @classmethod
+  def Args(cls, parser):
+    _CommonArgs(parser)
+
+  def Run(self, args):
+    return self._Run(args)
+
+
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class DescribeAlpha(DescribeBeta):
+class DescribeAlpha(Describe):
   """Describe a Compute Engine instant snapshot in alpha."""
 
   @classmethod
@@ -69,7 +81,7 @@ class DescribeAlpha(DescribeBeta):
     return self._Run(args)
 
 
-DescribeBeta.detailed_help = {
+Describe.detailed_help = {
     'brief': 'Describe a Compute Engine instant snapshot',
     'DESCRIPTION': """\
         *{command}* displays all data associated with a Compute

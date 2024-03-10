@@ -68,6 +68,7 @@ class CreateBeta(base.CreateCommand):
   _support_planning_status = True
   _support_local_ssd_count = True
   _support_auto_delete = True
+  _suppport_require_specific_reservation = False
 
   @classmethod
   def Args(cls, parser):
@@ -81,7 +82,9 @@ class CreateBeta(base.CreateCommand):
         support_planning_status=cls._support_planning_status,
         support_instance_template=cls._support_instance_template,
         support_local_ssd_count=cls._support_local_ssd_count,
-        support_auto_delete=cls._support_auto_delete)
+        support_auto_delete=cls._support_auto_delete,
+        support_require_specific_reservation=cls._suppport_require_specific_reservation,
+    )
 
   def Run(self, args):
     return _RunCreate(
@@ -99,6 +102,7 @@ class CreateAlpha(CreateBeta):
   _support_planning_status = True
   _support_local_ssd_count = True
   _support_auto_delete = True
+  _suppport_require_specific_reservation = True
 
   @classmethod
   def Args(cls, parser):
@@ -112,7 +116,9 @@ class CreateAlpha(CreateBeta):
         support_planning_status=cls._support_planning_status,
         support_instance_template=cls._support_instance_template,
         support_local_ssd_count=cls._support_local_ssd_count,
-        support_auto_delete=cls._support_auto_delete)
+        support_auto_delete=cls._support_auto_delete,
+        support_require_specific_reservation=cls._suppport_require_specific_reservation,
+    )
 
   def Run(self, args):
     return _RunCreate(

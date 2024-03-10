@@ -2,17 +2,11 @@
   help_text:
     brief: Lists all the Cloud Security Command Center (SCC) postures for an organization.
     description: |
-      Lists all Cloud Security Command Center (SCC) postures for an organization.
+      Lists all Cloud Security Command Center (SCC) postures for an organization. For a posture with
+      multiple revisions, only the latest updated revision of the posture is returned in the output.
 
-      By default, postures created in global location are returned.
     examples: |
-       List all postures in organization 123. If location is omitted,
-       this returns postures from location 'global'. For a posture with multiple revisions,
-       only the latest updated revision of the posture is returned in the output.
-
-        $ {command} organizations/123
-
-       List all postures in organization 123, location global
+       List all postures in organization 123, location global.
 
         $ {command} organizations/123/locations/global
 

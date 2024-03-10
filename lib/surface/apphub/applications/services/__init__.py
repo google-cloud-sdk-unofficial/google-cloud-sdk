@@ -23,8 +23,17 @@ from googlecloudsdk.calliope import base
 
 # NOTE: Release track decorators can be used here as well, and would propagate
 # to this group's children.
+@base.Hidden
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class ServicesGA(base.Group):
+  """Manage App Hub Application Services.
+
+  Commands for managing App Hub Application Services.
+  """
+
+
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class Services(base.Group):
+class ServicesAlpha(base.Group):
   """Manage App Hub Application Services.
 
   Commands for managing App Hub Application Services.

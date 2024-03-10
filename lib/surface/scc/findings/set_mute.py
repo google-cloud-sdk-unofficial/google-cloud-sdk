@@ -28,39 +28,43 @@ from googlecloudsdk.command_lib.scc.findings import util
 
 @base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.ALPHA)
 class SetMute(base.Command):
-  """Update a Cloud Security Command Center finding's mute state."""
+  """Update a Security Command Center finding's mute state."""
 
   detailed_help = {
       "DESCRIPTION": (
-          "Update a Cloud Security Command Center finding's mute state."
+          "Update a Security Command Center finding's mute state."
       ),
       "EXAMPLES": """
-        To update finding's mute state to ``MUTED'', given finding organizations/123/sources/456/findings/789, run:
+        To update finding's mute state to ``MUTED'', given finding
+        `organizations/123/sources/456/findings/789`, run:
 
-          $ {command} 789 --organization=organizations/123 --source=456 --mute=MUTED
-          $ {command} 789 --organization=123 --source=456 --mute=MUTED
-          $ {command} organizations/123/sources/456/findings/789 --mute=MUTED
+          $ {command} 789 --organization=organizations/123 --source=456
+            --mute=MUTED
 
-        To update finding's mute state to ``UNMUTED'', given finding organizations/123/sources/456/findings/789, run:
+        To update finding's mute state to ``UNMUTED'', given finding
+        `organizations/123/sources/456/findings/789`, run:
 
-          $ {command} 789 --organization=organizations/123 --source=456 --mute=UNMUTED
-          $ {command} 789 --organization=123 --source=456 --mute=UNMUTED
-          $ {command} organizations/123/sources/456/findings/789 --mute=UNMUTED
+          $ {command} 789 --organization=organizations/123 --source=456
+            --mute=UNMUTED
 
-        To update finding's mute state to ``MUTED'', given finding folders/123/sources/456/findings/789, run:
+        To update finding's mute state to ``MUTED'', given finding
+        `folders/123/sources/456/findings/789`, run:
 
           $ {command} 789 --folder=folders/123 --source=456 --mute=MUTED
-          $ {command} 789 --folder=123 --source=456 --mute=MUTED
-          $ {command} folders/123/sources/456/findings/789 --mute=MUTED
 
-        To update finding's mute state to ``MUTED'', given finding projects/123/sources/456/findings/789, run:
+        To update finding's mute state to ``MUTED'', given finding
+        `projects/123/sources/456/findings/789`, run:
 
           $ {command} 789 --project=projects/123 --source=456 --mute=MUTED
-          $ {command} 789 --project=123 --source=456 --mute=MUTED
-          $ {command} projects/123/sources/456/findings/789 --mute=MUTED""",
+
+        To update finding's mute state to ``MUTED'', given finding
+        `organizations/123/sources/456/findings/789` and `location=eu`, run:
+
+          $ {command} 789 --organization=organizations/123 --source=456
+          --mute=MUTED --location=locations/eu""",
       "API REFERENCE": """
-          This command uses the securitycenter/v1 API. The full documentation for
-          this API can be found at: https://cloud.google.com/security-command-center""",
+      This command uses the Security Command Center API. For more information,
+      see [Security Command Center API.](https://cloud.google.com/security-command-center/docs/reference/rest)""",
   }
 
   @staticmethod
@@ -75,16 +79,19 @@ class SetMute(base.Command):
     source_group = parser.add_group(mutex=True)
     source_group.add_argument(
         "--organization",
-        help="""Organization where the finding resides. Formatted as ``organizations/123'' or just ``123''.""",
+        help="""Organization where the finding resides. Formatted as
+        ``organizations/123'' or just ``123''.""",
     )
 
     source_group.add_argument(
         "--folder",
-        help="""Folder where the finding resides. Formatted as ``folders/456'' or just ``456''.""",
+        help="""Folder where the finding resides. Formatted as ``folders/456''
+        or just ``456''.""",
     )
     source_group.add_argument(
         "--project",
-        help="""Project (id or number) where the finding resides. Formatted as ``projects/789'' or just ``789''.""",
+        help="""Project (id or number) where the finding resides. Formatted as
+        ``projects/789'' or just ``789''.""",
     )
 
     # To accept both lower and uppercase arguments for the choices we use
@@ -136,9 +143,7 @@ class SetMute(base.Command):
         regionalized_parent = util.ValidateLocationAndGetRegionalizedParent(
             args, source_parent
         )
-        request.name = (
-            regionalized_parent + "/findings/" + args.finding
-        )
+        request.name = regionalized_parent + "/findings/" + args.finding
     else:
       request.name = util.GetFullFindingName(args, version)
 

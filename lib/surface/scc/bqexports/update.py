@@ -32,72 +32,63 @@ from googlecloudsdk.core import properties
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Update(base.UpdateCommand):
-  """Update a Cloud Security Command Center BigQuery export."""
+  """Update a Security Command Center BigQuery export."""
 
   detailed_help = {
       'DESCRIPTION': """\
-      Update a Cloud Security Command Center BigQuery export.
+      Update a Security Command Center BigQuery export.
+
+      BigQuery exports that are created with Security Command Center API V2 and
+      later include a `location` attribute. If the `location` attribute is
+      included in the resource name of a BigQuery export, you must specify it
+      when referencing the export. For example, the following BigQuery export
+      name has `location=eu`:
+      `organizations/123/locations/eu/bigQueryExports/test-bq-export`.
       """,
       'EXAMPLES': """\
-      Update a BigQuery export with id test-bq-export under organization 123
-      with a dataset abc in project 234 and a filter on category that equals to
-      XSS_SCRIPTING:
+      Update a BigQuery export with id `test-bq-export` under organization `123`
+      with a dataset `abc` in project `234` and a filter on category that equals
+      to `XSS_SCRIPTING`:
 
         $ gcloud scc bqexports update test-bq-export \
-          --organization=organizations/123 \
-          --dataset=projects/234/datasets/abc \
-          --description="This is a test BigQuery export" \
-          --filter="category=\\"XSS_SCRIPTING\\""
-        $ gcloud scc bqexports update test-bq-export --organization=123 \
-          --dataset=projects/234/datasets/abc \
-          --description="This is a test BigQuery export" \
-          --filter="category=\\"XSS_SCRIPTING\\""
-        $ gcloud scc bqexports update \
-          organizations/123/bigQueryExports/test-bq-export \
+          --organization=123 \
           --dataset=projects/234/datasets/abc \
           --description="This is a test BigQuery export" \
           --filter="category=\\"XSS_SCRIPTING\\""
 
-      Update a BigQuery export with id test-bq-export under folder 456 with a
-      dataset abc in project 234 and a filter on category that equals to
-      XSS_SCRIPTING:
+      Update a BigQuery export with id `test-bq-export` under folder `456` with
+      a dataset `abc` in project `234` and a filter on category that equals to
+      `XSS_SCRIPTING`:
 
-        $ gcloud scc bqexports update test-bq-export --folder=folders/456 \
-          --dataset=projects/234/datasets/abc \
-          --description="This is a test BigQuery export" \
-          --filter="category=\\"XSS_SCRIPTING\\""
         $ gcloud scc bqexports update test-bq-export --folder=456 \
           --dataset=projects/234/datasets/abc \
           --description="This is a test BigQuery export" \
           --filter="category=\\"XSS_SCRIPTING\\""
-        $ gcloud scc bqexports update \
-          folders/456/bigQueryExports/test-bq-export \
-          --dataset=projects/234/datasets/abc \
-          --description="This is a test BigQuery export" \
-          --filter="category=\\"XSS_SCRIPTING\\""
 
-      Update a BigQuery export with id test-bq-export under project 789 with a
-      dataset abc in project 234 and a filter on category that equals to
-      XSS_SCRIPTING:
+      Update a BigQuery export with id `test-bq-export` under project `789` with
+      a dataset `abc` in project `234` and a filter on category that equals to
+      `XSS_SCRIPTING`:
 
         $ gcloud scc bqexports update test-bq-export \
-          --project=projects/789 --dataset=projects/234/datasets/abc \
-          --description="This is a test BigQuery export" \
-          --filter="category=\\"XSS_SCRIPTING\\""
-        $ gcloud scc bqexports update test-bq-export --project=789 \
-          --dataset=projects/234/datasets/abc \
-          --description="This is a test BigQuery export" \
-          --filter="category=\\"XSS_SCRIPTING\\""
-        $ gcloud scc bqexports update \
-          projects/789/bigQueryExports/test-bq-export \
-          --dataset=projects/234/datasets/abc \
+          --project=789 --dataset=projects/234/datasets/abc \
           --description="This is a test BigQuery export" \
           --filter="category=\\"XSS_SCRIPTING\\""
 
+      Update a BigQuery export `test-bq-export` in organization `123` and
+      `location=global`. This command updates the target dataset to
+      `projects/234/datasets/abc`, the export description to `This is a test
+      BigQuery export` and the export filter to `XSS_SCRIPTING`:
+
+        $ gcloud scc bqexports update test-bq-export \
+          --organization=123 \
+          --dataset=projects/234/datasets/abc \
+          --description="This is a test BigQuery export" \
+          --filter="category=\\"XSS_SCRIPTING\\"" \
+          --location=global
       """,
       'API REFERENCE': """\
-      This command uses the securitycenter/v1 API. The full documentation for
-      this API can be found at: https://cloud.google.com/security-command-center
+      This command uses the Security Command Center API. For more information,
+      see [Security Command Center API.](https://cloud.google.com/security-command-center/docs/reference/rest)
       """,
   }
 

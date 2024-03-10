@@ -147,7 +147,6 @@ information on how to structure KEYs and VALUEs, run
       'Cannot be updated.')
 
   version_group = parser.add_mutually_exclusive_group()
-  # TODO(b/309750417): Update help text
   airflow_version_type = arg_parsers.RegexpValidator(
       r'^(\d+(?:\.\d+(?:\.\d+(?:-build\.\d+)?)?)?)',
       'must be in the form X[.Y[.Z]].',
@@ -167,7 +166,6 @@ information on how to structure KEYs and VALUEs, run
       Composer version. The resolved version is stored in the created
       environment.""")
 
-  # TODO(b/309750417): Update help text
   image_version_type = arg_parsers.RegexpValidator(
       r'^composer-(\d+(?:\.\d+.\d+(?:-[a-z]+\.\d+)?)?|latest)-airflow-(\d+(?:\.\d+(?:\.\d+(?:-build\.\d+)?)?)?)',
       "must be in the form 'composer-A[.B.C[-D.E]]-airflow-X[.Y[.Z]]' or "

@@ -33,8 +33,9 @@ _DETAILED_HELP = {
 }
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class Describe(base.DescribeCommand):
+@base.Hidden
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class DescribeGA(base.DescribeCommand):
   """Describe an Apphub operation (long-running operation)."""
 
   detailed_help = _DETAILED_HELP
@@ -45,7 +46,28 @@ class Describe(base.DescribeCommand):
 
   def Run(self, args):
     """Run the describe command."""
-    client = apis.OperationsClient()
+    client = apis.OperationsClient(release_track=base.ReleaseTrack.GA)
+    op_ref = args.CONCEPTS.operation.Parse()
+    if not op_ref.Name():
+      raise exceptions.InvalidArgumentException(
+          'operation', 'operation id must be non-empty.'
+      )
+    return client.Describe(operation=op_ref.RelativeName())
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class DescribeAlpha(base.DescribeCommand):
+  """Describe an Apphub operation (long-running operation)."""
+
+  detailed_help = _DETAILED_HELP
+
+  @staticmethod
+  def Args(parser):
+    flags.AddDescribeOperationFlags(parser)
+
+  def Run(self, args):
+    """Run the describe command."""
+    client = apis.OperationsClient(release_track=base.ReleaseTrack.ALPHA)
     op_ref = args.CONCEPTS.operation.Parse()
     if not op_ref.Name():
       raise exceptions.InvalidArgumentException(

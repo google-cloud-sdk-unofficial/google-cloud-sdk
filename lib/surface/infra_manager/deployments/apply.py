@@ -80,6 +80,7 @@ Add a label to an existing deployment:
     flags.AddWorkerPoolFlag(parser)
     flags.AddImportExistingResourcesFlag(parser)
     flags.AddArtifactsGCSBucketFlag(parser)
+    flags.AddTFVersionConstraintFlag(parser)
 
     concept_parsers.ConceptParser(
         [
@@ -109,6 +110,7 @@ Add a label to an existing deployment:
         args.async_,
         deployment_full_name,
         args.service_account,
+        args.tf_version_constraint,
         args.local_source,
         args.stage_bucket,
         args.ignore_file,

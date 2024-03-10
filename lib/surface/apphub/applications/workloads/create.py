@@ -37,19 +37,22 @@ _DETAILED_HELP = {
 }
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class Create(base.CreateCommand):
+@base.Hidden
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class CreateGA(base.CreateCommand):
   """Create an Apphub application workload."""
 
   detailed_help = _DETAILED_HELP
 
   @staticmethod
   def Args(parser):
-    flags.AddCreateApplicationWorkloadFlags(parser)
+    flags.AddCreateApplicationWorkloadFlags(
+        parser, release_track=base.ReleaseTrack.GA
+    )
 
   def Run(self, args):
     """Run the create command."""
-    client = apis.WorkloadsClient()
+    client = apis.WorkloadsClient(release_track=base.ReleaseTrack.GA)
     workload_ref = args.CONCEPTS.workload.Parse()
     dis_workload_ref = args.CONCEPTS.discovered_workload.Parse()
     parent_ref = workload_ref.Parent()
@@ -57,7 +60,46 @@ class Create(base.CreateCommand):
       raise exceptions.InvalidArgumentException(
           'workload', 'workload id must be non-empty.'
       )
-    attributes = api_lib_utils.PopulateAttributes(args)
+    attributes = api_lib_utils.PopulateAttributes(
+        args, release_track=base.ReleaseTrack.GA
+    )
+
+    return client.Create(
+        workload_id=workload_ref.Name(),
+        parent=parent_ref.RelativeName(),
+        async_flag=args.async_,
+        discovered_workload=dis_workload_ref.RelativeName(),
+        display_name=args.display_name,
+        description=args.description,
+        attributes=attributes,
+    )
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class CreateAlpha(base.CreateCommand):
+  """Create an Apphub application workload."""
+
+  detailed_help = _DETAILED_HELP
+
+  @staticmethod
+  def Args(parser):
+    flags.AddCreateApplicationWorkloadFlags(
+        parser, release_track=base.ReleaseTrack.ALPHA
+    )
+
+  def Run(self, args):
+    """Run the create command."""
+    client = apis.WorkloadsClient(release_track=base.ReleaseTrack.ALPHA)
+    workload_ref = args.CONCEPTS.workload.Parse()
+    dis_workload_ref = args.CONCEPTS.discovered_workload.Parse()
+    parent_ref = workload_ref.Parent()
+    if not workload_ref.Name():
+      raise exceptions.InvalidArgumentException(
+          'workload', 'workload id must be non-empty.'
+      )
+    attributes = api_lib_utils.PopulateAttributes(
+        args, release_track=base.ReleaseTrack.ALPHA
+    )
 
     return client.Create(
         workload_id=workload_ref.Name(),

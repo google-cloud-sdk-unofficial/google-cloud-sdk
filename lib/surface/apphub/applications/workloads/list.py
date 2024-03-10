@@ -43,8 +43,9 @@ _FORMAT = """
 """
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class List(base.ListCommand):
+@base.Hidden
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class ListGA(base.ListCommand):
   """List Apphub application workloads."""
 
   detailed_help = _DETAILED_HELP
@@ -55,13 +56,42 @@ class List(base.ListCommand):
     parser.display_info.AddFormat(_FORMAT)
     parser.display_info.AddUriFunc(
         api_lib_utils.MakeGetUriFunc(
-            'apphub.projects.locations.applications.workloads'
+            'apphub.projects.locations.applications.workloads',
+            release_track=base.ReleaseTrack.GA,
         )
     )
 
   def Run(self, args):
     """Run the list command."""
-    client = apis.WorkloadsClient()
+    client = apis.WorkloadsClient(release_track=base.ReleaseTrack.GA)
+    application_ref = args.CONCEPTS.application.Parse()
+    return client.List(
+        limit=args.limit,
+        page_size=args.page_size,
+        parent=application_ref.RelativeName(),
+    )
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class ListAlpha(base.ListCommand):
+  """List Apphub application workloads."""
+
+  detailed_help = _DETAILED_HELP
+
+  @staticmethod
+  def Args(parser):
+    flags.AddListApplicationWorkloadFlags(parser)
+    parser.display_info.AddFormat(_FORMAT)
+    parser.display_info.AddUriFunc(
+        api_lib_utils.MakeGetUriFunc(
+            'apphub.projects.locations.applications.workloads',
+            release_track=base.ReleaseTrack.ALPHA,
+        )
+    )
+
+  def Run(self, args):
+    """Run the list command."""
+    client = apis.WorkloadsClient(release_track=base.ReleaseTrack.ALPHA)
     application_ref = args.CONCEPTS.application.Parse()
     return client.List(
         limit=args.limit,

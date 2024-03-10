@@ -37,20 +37,29 @@ class ListMarks(base.ListCommand):
   detailed_help = {
       "DESCRIPTION": "List a finding's security marks.",
       "EXAMPLES": """
-        List all security marks for myFinding under organization 123456 and source 5678:
+        List all security marks for `testFinding` under organization `123456` and
+        source `5678`:
 
-          $ {command} `myFinding` --organization=123456 --source=5678
+          $ {command} `testFinding` --organization=123456 --source=5678
 
-        List all security marks for myFinding under project example-project and source 5678:
+        List all security marks for `testFinding` under project `example-project`
+        and source `5678`:
 
-          $ {command} projects/example-project/sources/5678/findings/myFinding
+          $ {command} projects/example-project/sources/5678/findings/testFinding
 
-        List all security marks for myFinding under folder 456 and source 5678:
+        List all security marks for `testFinding` under folder `456` and source
+        `5678`:
 
-          $ {command} folders/456/sources/5678/findings/myFinding""",
+          $ {command} folders/456/sources/5678/findings/testFinding
+
+        List all security marks for `testFinding` under organization `123456`,
+        source `5678` and `location=eu`:
+
+          $ {command} `testFinding` --organization=123456 --source=5678
+            --location=eu""",
       "API REFERENCE": """
-          This command uses the securitycenter/v1 API. The full documentation for
-          this API can be found at: https://cloud.google.com/security-command-center""",
+      This command uses the Security Command Center API. For more information,
+      see [Security Command Center API.](https://cloud.google.com/security-command-center/docs/reference/rest)""",
   }
 
   @staticmethod

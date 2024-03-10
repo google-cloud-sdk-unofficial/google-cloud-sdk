@@ -55,12 +55,15 @@ class UpdateBeta(base.UpdateCommand):
     )
 
     cls.fr_arg.AddArgument(parser, operation_type='update')
-    fr_flags.AddUpdateFlags(parser,
-                            support_fleet=False,
-                            support_planning_status=True,
-                            support_local_ssd_count=True,
-                            support_share_setting=True,
-                            support_auto_delete=True)
+    fr_flags.AddUpdateFlags(
+        parser,
+        support_fleet=False,
+        support_planning_status=True,
+        support_local_ssd_count=True,
+        support_share_setting=True,
+        support_auto_delete=True,
+        support_require_specific_reservation=False,
+    )
 
   def _ValidateArgs(self, update_mask):
     """Validates that at least one field to update is specified.
@@ -92,6 +95,8 @@ class UpdateBeta(base.UpdateCommand):
           '--no-auto-delete-auto-created-reservations',
           '--auto-created-reservations-delete-time',
           '--auto-created-reservations-duration',
+          '--require-specific-reservation',
+          '--no-require-specific-reservation',
       ]
       raise exceptions.MinimumArgumentException(
           parameter_names, 'Please specify at least one property to update'
@@ -159,6 +164,12 @@ class UpdateBeta(base.UpdateCommand):
     if args.IsSpecified('auto_created_reservations_duration'):
       update_mask.append('autoCreatedReservationsDuration')
 
+    require_specific_reservation = getattr(
+        args, 'require_specific_reservation', None
+    )
+
+    if require_specific_reservation is not None:
+      update_mask.append('specificReservationRequired')
     self._ValidateArgs(update_mask=update_mask)
 
     fr_resource = util.MakeFutureReservationMessageFromArgs(
@@ -218,5 +229,6 @@ class UpdateAlpha(UpdateBeta):
         support_planning_status=True,
         support_local_ssd_count=True,
         support_share_setting=True,
-        support_auto_delete=True
+        support_auto_delete=True,
+        support_require_specific_reservation=True,
     )

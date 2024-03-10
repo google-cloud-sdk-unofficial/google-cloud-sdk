@@ -31,30 +31,66 @@ _DETAILED_HELP = {
         `prod` in the Application `my-app` in location `us-east1`,
         run:
 
-          $ {command} my-workload --environment=prod --application=my-app --location=us-east1
+          $ {command} my-workload --environment-type=TEST --application=my-app --location=us-east1
         """,
 }
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class Update(base.UpdateCommand):
+@base.Hidden
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class UpdateGA(base.UpdateCommand):
   """Update an Apphub application workload."""
 
   detailed_help = _DETAILED_HELP
 
   @staticmethod
   def Args(parser):
-    flags.AddUpdateApplicationWorkloadFlags(parser)
+    flags.AddUpdateApplicationWorkloadFlags(
+        parser, release_track=base.ReleaseTrack.GA
+    )
 
   def Run(self, args):
     """Run the create command."""
-    client = apis.WorkloadsClient()
+    client = apis.WorkloadsClient(release_track=base.ReleaseTrack.GA)
     workload_ref = args.CONCEPTS.workload.Parse()
     if not workload_ref.Name():
       raise exceptions.InvalidArgumentException(
           'workload', 'workload id must be non-empty.'
       )
-    attributes = api_lib_utils.PopulateAttributes(args)
+    attributes = api_lib_utils.PopulateAttributes(
+        args, release_track=base.ReleaseTrack.GA
+    )
+    return client.Update(
+        workload_id=workload_ref.RelativeName(),
+        async_flag=args.async_,
+        attributes=attributes,
+        args=args,
+    )
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class UpdateAlpha(base.UpdateCommand):
+  """Update an Apphub application workload."""
+
+  detailed_help = _DETAILED_HELP
+
+  @staticmethod
+  def Args(parser):
+    flags.AddUpdateApplicationWorkloadFlags(
+        parser, release_track=base.ReleaseTrack.ALPHA
+    )
+
+  def Run(self, args):
+    """Run the create command."""
+    client = apis.WorkloadsClient(release_track=base.ReleaseTrack.ALPHA)
+    workload_ref = args.CONCEPTS.workload.Parse()
+    if not workload_ref.Name():
+      raise exceptions.InvalidArgumentException(
+          'workload', 'workload id must be non-empty.'
+      )
+    attributes = api_lib_utils.PopulateAttributes(
+        args, release_track=base.ReleaseTrack.ALPHA
+    )
     return client.Update(
         workload_id=workload_ref.RelativeName(),
         async_flag=args.async_,

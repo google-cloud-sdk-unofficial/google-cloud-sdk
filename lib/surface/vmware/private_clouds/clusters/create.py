@@ -81,6 +81,7 @@ class Create(base.CreateCommand):
         run the gcloud vmware node-types describe command and reference the
         availableCustomCoreCounts field in the output.
         """)
+    flags.AddAutoscalingSettingsFlagsToParser(parser)
 
   def Run(self, args):
     cluster = args.CONCEPTS.cluster.Parse()
@@ -88,7 +89,24 @@ class Create(base.CreateCommand):
     is_async = args.async_
 
     nodes_configs = util.ParseNodesConfigsParameters(args.node_type_config)
-    operation = client.Create(cluster, nodes_configs)
+    autoscaling_settings = None
+    if args.autoscaling_settings_from_file:
+      autoscaling_settings = util.ParseAutoscalingSettingsFromFileFormat(
+          args.autoscaling_settings_from_file
+      )
+    if (
+        args.autoscaling_min_cluster_node_count
+        or args.autoscaling_max_cluster_node_count
+        or args.autoscaling_cool_down_period
+        or args.autoscaling_policy
+    ):
+      autoscaling_settings = util.ParseAutoscalingSettingsFromInlinedFormat(
+          args.autoscaling_min_cluster_node_count,
+          args.autoscaling_max_cluster_node_count,
+          args.autoscaling_cool_down_period,
+          args.autoscaling_policy,
+      )
+    operation = client.Create(cluster, nodes_configs, autoscaling_settings)
 
     if is_async:
       log.CreatedResource(operation.name, kind='cluster', is_async=True)

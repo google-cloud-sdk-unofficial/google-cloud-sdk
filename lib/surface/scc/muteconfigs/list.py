@@ -30,28 +30,29 @@ from googlecloudsdk.command_lib.scc.muteconfigs import util
 
 @base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.ALPHA)
 class List(base.ListCommand):
-  """List Cloud Security Command Center mute configs."""
+  """ListSecurity Command Center mute configs."""
 
   detailed_help = {
-      "DESCRIPTION": "List Cloud Security Command Center mute configs.",
+      "DESCRIPTION": "List Security Command Center mute configs.",
       "EXAMPLES": """
         List mute configs under organization ``123'':
 
-        $ {command} --organization=organizations/123
         $ {command} --organization=123
 
       List mute configs under folder ``456'':
 
-        $ {command} --folder=folders/456
         $ {command} --folder=456
 
       List mute configs under project ``789'':
 
-        $ {command} --project=projects/789
-        $ {command} --project=789""",
+        $ {command} --project=789
+
+        List mute configs under organization ``123'' and `location=eu`:
+
+        $ {command} --organization=123 --location=eu""",
       "API REFERENCE": """
-        This command uses the securitycenter/v1 API. The full documentation for
-        this API can be found at: https://cloud.google.com/security-command-center""",
+      This command uses the Security Command Center API. For more information,
+      see [Security Command Center API.](https://cloud.google.com/security-command-center/docs/reference/rest)""",
   }
 
   @staticmethod

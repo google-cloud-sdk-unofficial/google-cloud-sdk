@@ -33,9 +33,9 @@ def _CommonArgs(parser):
   parser.display_info.AddCacheUpdater(completers.InstantSnapshotsCompleter)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class ListBeta(base.ListCommand):
-  """List Compute Engine persistent instant snapshots in beta."""
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class List(base.ListCommand):
+  """List Compute Engine persistent instant snapshots."""
 
   @classmethod
   def Args(cls, parser):
@@ -59,8 +59,20 @@ class ListBeta(base.ListCommand):
     return self._Run(args)
 
 
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class ListBeta(List):
+  """List Compute Engine persistent instant snapshots in beta."""
+
+  @classmethod
+  def Args(cls, parser):
+    _CommonArgs(parser)
+
+  def Run(self, args):
+    return self._Run(args)
+
+
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class ListAlpha(ListBeta):
+class ListAlpha(List):
   """List Compute Engine persistent instant snapshots in alpha."""
 
   @classmethod
@@ -71,7 +83,7 @@ class ListAlpha(ListBeta):
     return self._Run(args)
 
 
-ListBeta.detailed_help = base_classes.GetMultiScopeListerHelp(
+List.detailed_help = base_classes.GetMultiScopeListerHelp(
     'instant snapshots',
     scopes=[
         base_classes.ScopeType.zonal_scope,

@@ -30,40 +30,40 @@ class Set(base.Command):
           """\
           To set the IAP setting for the resources within an organization, run:
 
-            $ {command} SETTING_FILE --organization=ORGANIZATION_ID
+            $ {command} iap_settings.yaml --organization=ORGANIZATION_ID
 
           To set the IAP setting for the resources within a folder, run:
 
-            $ {command} SETTING_FILE --folder=FOLDER_ID
+            $ {command} iap_settings.yaml --folder=FOLDER_ID
 
           To set the IAP setting for the resources within a project, run:
 
-            $ {command} SETTING_FILE --project=PROJECT_ID
+            $ {command} iap_settings.yaml --project=PROJECT_ID
 
           To set the IAP setting for web type resources within a project, run:
 
-            $ {command} SETTING_FILE --project=PROJECT_ID --resource-type=iap_web
+            $ {command} iap_settings.yaml --project=PROJECT_ID --resource-type=iap_web
 
           To set the IAP setting for all app engine services within a project, run:
 
-            $ {command} SETTING_FILE --project=PROJECT_ID --resource-type=app-engine
+            $ {command} iap_settings.yaml --project=PROJECT_ID --resource-type=app-engine
 
           To set the IAP setting for an app engine service within a project, run:
 
-            $ {command} SETTING_FILE --project=PROJECT_ID --resource-type=app-engine --service=SERVICE_ID
+            $ {command} iap_settings.yaml --project=PROJECT_ID --resource-type=app-engine --service=SERVICE_ID
 
           To set the IAP setting for an app engine service version within a project, run:
 
-            $ {command} SETTING_FILE --project=PROJECT_ID --resource-type=app-engine --service=SERVICE_ID
+            $ {command} iap_settings.yaml --project=PROJECT_ID --resource-type=app-engine --service=SERVICE_ID
                 --version=VERSION_ID
 
           To set the IAP setting for all backend services within a project, run:
 
-            $ {command} SETTING_FILE --project=PROJECT_ID --resource-type=compute
+            $ {command} iap_settings.yaml --project=PROJECT_ID --resource-type=compute
 
           To set the IAP setting for a backend service within a project, run:
 
-            $ {command} SETTING_FILE --project=PROJECT_ID --resource-type=compute --service=SERVICE_ID
+            $ {command} iap_settings.yaml --project=PROJECT_ID --resource-type=compute --service=SERVICE_ID
 
           """,
   }

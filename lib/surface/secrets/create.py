@@ -429,6 +429,12 @@ class CreateBeta(Create):
       'This secret and all of its versions will be automatically deleted '
       'after the requested ttl of [{ttl}] has elapsed.')
 
+  REGIONAL_KMS_FLAG_MESSAGE = (
+      'The --regional-kms-key-name flag can only be used when creating a'
+      ' regional secret with "--location" and should not be used with'
+      ' "--replication-policy-file" or "--kms-key-name"'
+  )
+
   @staticmethod
   def Args(parser):
     secrets_args.AddSecret(
@@ -439,6 +445,7 @@ class CreateBeta(Create):
     secrets_args.AddCreateExpirationGroup(parser)
     secrets_args.AddCreateRotationGroup(parser)
     secrets_args.AddTopics(parser)
+    secrets_args.AddRegionalKmsKeyName(parser, hidden=True)
     annotations = parser.add_group(mutex=True, help='Annotations')
     map_util.AddMapSetFlag(annotations, 'annotations', 'Annotations', str, str)
 
@@ -462,15 +469,22 @@ class CreateBeta(Create):
     if args.replication_policy_file and args.kms_key_name:
       raise exceptions.ConflictingArgumentsException(
           self.KMS_KEY_AND_POLICY_FILE_MESSAGE)
-
+    if args.regional_kms_key_name and (
+        args.replication_policy_file or args.kms_key_name
+    ):
+      raise exceptions.ConflictingArgumentsException(
+          self.REGIONAL_KMS_FLAG_MESSAGE
+      )
     if args.kms_key_name:
       kms_keys.append(args.kms_key_name)
     if args.replication_policy_file:
       if not replication_policy_contents:
         raise exceptions.InvalidArgumentException(
-            'replication-policy', self.REPLICATION_POLICY_FILE_EMPTY_MESSAGE)
-      replication_policy, locations, kms_keys = secrets_util.ParseReplicationFileContents(
-          replication_policy_contents)
+            'replication-policy', self.REPLICATION_POLICY_FILE_EMPTY_MESSAGE
+        )
+      replication_policy, locations, kms_keys = (
+          secrets_util.ParseReplicationFileContents(replication_policy_contents)
+      )
 
     else:
 
@@ -552,7 +566,8 @@ class CreateBeta(Create):
         next_rotation_time=args.next_rotation_time,
         rotation_period=args.rotation_period,
         topics=args.topics,
-        annotations=annotations)
+        annotations=annotations,
+        regional_kms_key_name=args.regional_kms_key_name)
 
     if data:
       data_crc32c = crc32c.get_crc32c(data)
