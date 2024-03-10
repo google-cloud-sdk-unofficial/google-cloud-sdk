@@ -26,17 +26,25 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.container.binauthz import flags
 
 
-class Create(base.CreateCommand):
-  r"""Create an Attestor.
-
-  ## EXAMPLES
-
+DETAILED_HELP = {
+    'DESCRIPTION':
+        """
+        Create an Attestor.
+    """,
+    'EXAMPLES':
+        """
   To create an Attestor with an existing Note `projects/my_proj/notes/my_note`:
 
     $ {command} \
         my_new_attestor
         --attestation-authority-note=my_note \
         --attestation-authority-note-project=my_proj \
+    """,
+}
+
+
+class Create(base.CreateCommand):
+  r"""Create an Attestor.
   """
 
   @classmethod
@@ -75,3 +83,7 @@ class Create(base.CreateCommand):
     api_version = apis.GetApiVersion(self.ReleaseTrack())
     return attestors.Client(api_version).Create(
         attestor_ref, note_ref, description=args.description)
+
+# This is the user-visible help text for the command. Workaround for web
+# version of help text not being generated correctly (b/319501293).
+Create.detailed_help = DETAILED_HELP

@@ -26,54 +26,10 @@ from googlecloudsdk.command_lib.compute.public_advertised_prefixes import flags
 from googlecloudsdk.core import log
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
+)
 class Create(base.CreateCommand):
-  r"""Creates a Compute Engine public advertised prefix.
-
-  ## EXAMPLES
-
-  To create a public advertised prefix:
-
-    $ {command} my-public-advertised-prefix --range=120.120.10.0/24 \
-      --dns-verification-ip=120.120.10.15
-  """
-  support_pdp_scope_input = False
-
-  @classmethod
-  def Args(cls, parser):
-    flags.MakePublicAdvertisedPrefixesArg().AddArgument(parser)
-    flags.AddCreatePapArgsToParser(parser, cls.support_pdp_scope_input)
-
-  def Run(self, args):
-    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
-    pap_client = public_advertised_prefixes.PublicAdvertisedPrefixesClient(
-        holder.client, holder.client.messages, holder.resources)
-    pap_ref = flags.MakePublicAdvertisedPrefixesArg().ResolveAsResource(
-        args,
-        holder.resources,
-        scope_lister=compute_flags.GetDefaultScopeLister(holder.client))
-
-    if self.support_pdp_scope_input:
-      result = pap_client.Create(
-          pap_ref,
-          ip_cidr_range=args.range,
-          dns_verification_ip=args.dns_verification_ip,
-          description=args.description,
-          pdp_scope=holder.client.messages.PublicAdvertisedPrefix
-          .PdpScopeValueValuesEnum(args.pdp_scope) if args.pdp_scope else None)
-    else:
-      result = pap_client.Create(
-          pap_ref,
-          ip_cidr_range=args.range,
-          dns_verification_ip=args.dns_verification_ip,
-          description=args.description,
-          pdp_scope=None)
-    log.CreatedResource(pap_ref.Name(), 'public advertised prefix')
-    return result
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class CreateAlpha(Create):
   r"""Creates a Compute Engine public advertised prefix.
 
   ## EXAMPLES
@@ -88,4 +44,33 @@ class CreateAlpha(Create):
     $ {command} my-v2-public-advertised-prefix --range=120.120.10.0/24 \
       --dns-verification-ip=120.120.10.15 --pdp-scope=REGIONAL
   """
-  support_pdp_scope_input = True
+
+  @classmethod
+  def Args(cls, parser):
+    flags.MakePublicAdvertisedPrefixesArg().AddArgument(parser)
+    flags.AddCreatePapArgsToParser(parser)
+
+  def Run(self, args):
+    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    messages = holder.client.messages
+    pap_client = public_advertised_prefixes.PublicAdvertisedPrefixesClient(
+        holder.client, messages, holder.resources
+    )
+    pap_ref = flags.MakePublicAdvertisedPrefixesArg().ResolveAsResource(
+        args,
+        holder.resources,
+        scope_lister=compute_flags.GetDefaultScopeLister(holder.client),
+    )
+
+    pap = messages.PublicAdvertisedPrefix
+    result = pap_client.Create(
+        pap_ref,
+        ip_cidr_range=args.range,
+        dns_verification_ip=args.dns_verification_ip,
+        description=args.description,
+        pdp_scope=pap.PdpScopeValueValuesEnum(args.pdp_scope)
+        if args.pdp_scope
+        else None,
+    )
+    log.CreatedResource(pap_ref.Name(), 'public advertised prefix')
+    return result

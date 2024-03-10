@@ -122,6 +122,7 @@ class EnableAlpha(base.SilentCommand):
     common_flags.available_service_flag(suffix='to enable').AddToParser(parser)
     common_flags.add_resource_args(parser)
     base.ASYNC_FLAG.AddToParser(parser)
+    common_flags.validate_only_args(parser)
 
   def Run(self, args):
     """Run 'services enable'.
@@ -147,15 +148,20 @@ class EnableAlpha(base.SilentCommand):
       organization = None
 
     op = serviceusage.AddEnableRule(
-        args.service, project, folder=folder, organization=organization
+        args.service,
+        project,
+        folder=folder,
+        organization=organization,
+        validate_only=args.validate_only,
     )
-    if args.async_:
-      cmd = _OP_WAIT_CMD.format(op.name)
-      log.status.Print(
-          'Asynchronous operation is in progress... '
-          'Use the following command to wait for its '
-          'completion:\n {0}'.format(cmd)
-      )
+    if not args.validate_only:
+      if args.async_:
+        cmd = _OP_WAIT_CMD.format(op.name)
+        log.status.Print(
+            'Asynchronous operation is in progress... '
+            'Use the following command to wait for its '
+            'completion:\n {0}'.format(cmd)
+        )
     log.status.Print('Operation finished successfully')
 
 EnableAlpha.detailed_help = _DETAILED_HELP_ALPHA

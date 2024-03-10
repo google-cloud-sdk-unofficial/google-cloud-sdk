@@ -88,6 +88,7 @@ class DisableAlpha(base.SilentCommand):
     common_flags.consumer_service_flag(suffix='to disable').AddToParser(parser)
     common_flags.add_resource_args(parser)
     base.ASYNC_FLAG.AddToParser(parser)
+    common_flags.validate_only_args(parser)
     parser.add_argument(
         '--force',
         action='store_true',
@@ -139,17 +140,20 @@ class DisableAlpha(base.SilentCommand):
           force=args.force,
           folder=folder,
           organization=organization,
+          validate_only=args.validate_only,
       )
-      if op.done:
-        continue
-      if args.async_:
-        cmd = OP_WAIT_CMD.format(op.name)
-        log.status.Print(
-            'Asynchronous operation is in progress... '
-            'Use the following command to wait for its '
-            'completion:\n {0}'.format(cmd)
-        )
-        continue
+
+      if not args.validate_only:
+        if op.done:
+          continue
+        if args.async_:
+          cmd = OP_WAIT_CMD.format(op.name)
+          log.status.Print(
+              'Asynchronous operation is in progress... '
+              'Use the following command to wait for its '
+              'completion:\n {0}'.format(cmd)
+          )
+          continue
     log.status.Print('Operation finished successfully')
 
 

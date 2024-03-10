@@ -53,9 +53,11 @@ class Apply(base.UpdateCommand):
         '--config',
         type=str,
         help='The path to config-management.yaml.',
-        required=True)
+        required=True,
+    )
     parser.add_argument(
-        '--version', type=str, help='The version of ACM to install.')
+        '--version', type=str, help='The version of ACM to install.'
+    )
 
   def Run(self, args):
     utils.enable_poco_api_if_disabled(self.Project())
@@ -64,19 +66,25 @@ class Apply(base.UpdateCommand):
     try:
       loaded_cm = yaml.load_path(args.config)
     except yaml.Error as e:
-      raise exceptions.Error('Invalid config yaml file {}'.format(args.config),
-                             e)
+      raise exceptions.Error(
+          'Invalid config yaml file {}'.format(args.config), e
+      )
     _validate_meta(loaded_cm)
 
     membership = base.ParseMembership(
-        args, prompt=True, autoselect=True, search=True)
+        args, prompt=True, autoselect=True, search=True
+    )
 
     config_sync = _parse_config_sync(loaded_cm, self.messages)
     policy_controller = _parse_policy_controller(loaded_cm, self.messages)
     hierarchy_controller_config = _parse_hierarchy_controller_config(
-        loaded_cm, self.messages)
-    version = self._get_backfill_version(
-        membership) if not args.version else args.version
+        loaded_cm, self.messages
+    )
+    version = (
+        self._get_backfill_version(membership)
+        if not args.version
+        else args.version
+    )
     cluster = loaded_cm.get('spec', {}).get('cluster', '')
     spec = self.messages.MembershipFeatureSpec(
         configmanagement=self.messages.ConfigManagementMembershipSpec(
@@ -84,13 +92,16 @@ class Apply(base.UpdateCommand):
             cluster=cluster,
             configSync=config_sync,
             policyController=policy_controller,
-            hierarchyController=hierarchy_controller_config))
+            hierarchyController=hierarchy_controller_config,
+        )
+    )
     spec_map = {membership: spec}
 
     # UpdateFeature uses patch method to update membership_configs map,
     # there's no need to get the existing feature spec
     patch = self.messages.Feature(
-        membershipSpecs=self.hubclient.ToMembershipSpecs(spec_map))
+        membershipSpecs=self.hubclient.ToMembershipSpecs(spec_map)
+    )
     self.Update(['membership_specs'], patch)
 
   def _get_backfill_version(self, membership):
@@ -119,17 +130,23 @@ def _validate_meta(configmanagement):
     raise exceptions.Error(
         'Only "applySpecVersion: 1" is supported. To use a later version,'
         'please fetch the config by running\n'
-        'gcloud container fleet config-management fetch-for-apply')
+        'gcloud container fleet config-management fetch-for-apply'
+    )
 
   if 'spec' not in configmanagement:
     raise exceptions.Error('Missing required field .spec')
   spec = configmanagement['spec']
-  legal_fields = {utils.CONFIG_SYNC, utils.POLICY_CONTROLLER, utils.HNC,
-                  utils.CLUSTER}
+  legal_fields = {
+      utils.CONFIG_SYNC,
+      utils.POLICY_CONTROLLER,
+      utils.HNC,
+      utils.CLUSTER,
+  }
   for field in spec:
     if field not in legal_fields:
       raise exceptions.Error(
-          'Please remove illegal field .spec.{}'.format(field))
+          'Please remove illegal field .spec.{}'.format(field)
+      )
 
 
 def _parse_config_sync(configmanagement, msg):
@@ -147,16 +164,21 @@ def _parse_config_sync(configmanagement, msg):
     are included in .spec
   """
 
-  if ('spec' not in configmanagement or
-      utils.CONFIG_SYNC not in configmanagement['spec']):
+  if (
+      'spec' not in configmanagement
+      or utils.CONFIG_SYNC not in configmanagement['spec']
+  ):
     return None
   spec_source = configmanagement['spec'][utils.CONFIG_SYNC]
   for field in spec_source:
-    if field not in yaml.load(
-        utils.APPLY_SPEC_VERSION_1)['spec'][utils.CONFIG_SYNC]:
+    if (
+        field
+        not in yaml.load(utils.APPLY_SPEC_VERSION_1)['spec'][utils.CONFIG_SYNC]
+    ):
       raise exceptions.Error(
-          'The field .spec.{}.{}'.format(utils.CONFIG_SYNC, field) +
-          ' is unrecognized in this applySpecVersion. Please remove.')
+          'The field .spec.{}.{}'.format(utils.CONFIG_SYNC, field)
+          + ' is unrecognized in this applySpecVersion. Please remove.'
+      )
 
   config_sync = msg.ConfigManagementConfigSync()
   # missing `enabled: true` will enable configSync
@@ -175,7 +197,8 @@ def _parse_config_sync(configmanagement, msg):
     config_sync.preventDrift = spec_source['preventDrift']
   if 'metricsGcpServiceAccountEmail' in spec_source:
     config_sync.metricsGcpServiceAccountEmail = spec_source[
-        'metricsGcpServiceAccountEmail']
+        'metricsGcpServiceAccountEmail'
+    ]
 
   return config_sync
 
@@ -196,8 +219,13 @@ def _parse_git_config(spec_source, msg):
   if 'syncWait' in spec_source:
     git_config.syncWaitSecs = spec_source['syncWait']
   for field in [
-      'policyDir', 'secretType', 'syncBranch', 'syncRepo', 'syncRev',
-      'httpsProxy', 'gcpServiceAccountEmail'
+      'policyDir',
+      'secretType',
+      'syncBranch',
+      'syncRepo',
+      'syncRev',
+      'httpsProxy',
+      'gcpServiceAccountEmail',
   ]:
     if field in spec_source:
       setattr(git_config, field, spec_source[field])
@@ -220,7 +248,10 @@ def _parse_oci_config(spec_source, msg):
   if 'syncWait' in spec_source:
     oci_config.syncWaitSecs = spec_source['syncWait']
   for field in [
-      'policyDir', 'secretType', 'syncRepo', 'gcpServiceAccountEmail'
+      'policyDir',
+      'secretType',
+      'syncRepo',
+      'gcpServiceAccountEmail',
   ]:
     if field in spec_source:
       setattr(oci_config, field, spec_source[field])
@@ -242,20 +273,26 @@ def _parse_policy_controller(configmanagement, msg):
   Raises: Error, if Policy Controller `enabled` is missing or not a boolean
   """
 
-  if ('spec' not in configmanagement or
-      'policyController' not in configmanagement['spec']):
+  if (
+      'spec' not in configmanagement
+      or 'policyController' not in configmanagement['spec']
+  ):
     return None
 
   spec_policy_controller = configmanagement['spec']['policyController']
   # Required field
-  if configmanagement['spec'][
-      'policyController'] is None or 'enabled' not in spec_policy_controller:
+  if (
+      configmanagement['spec']['policyController'] is None
+      or 'enabled' not in spec_policy_controller
+  ):
     raise exceptions.Error(
-        'Missing required field .spec.policyController.enabled')
+        'Missing required field .spec.policyController.enabled'
+    )
   enabled = spec_policy_controller['enabled']
   if not isinstance(enabled, bool):
     raise exceptions.Error(
-        'policyController.enabled should be `true` or `false`')
+        'policyController.enabled should be `true` or `false`'
+    )
 
   policy_controller = msg.ConfigManagementPolicyController()
   # When the policyController is set to be enabled, policy_controller will
@@ -263,12 +300,18 @@ def _parse_policy_controller(configmanagement, msg):
   # were mapped from the config-management.yaml
   for field in spec_policy_controller:
     if field not in [
-        'enabled', 'templateLibraryInstalled', 'auditIntervalSeconds',
-        'referentialRulesEnabled', 'exemptableNamespaces', 'logDeniesEnabled',
-        'mutationEnabled', 'monitoring'
+        'enabled',
+        'templateLibraryInstalled',
+        'auditIntervalSeconds',
+        'referentialRulesEnabled',
+        'exemptableNamespaces',
+        'logDeniesEnabled',
+        'mutationEnabled',
+        'monitoring',
     ]:
       raise exceptions.Error(
-          'Please remove illegal field .spec.policyController.{}'.format(field))
+          'Please remove illegal field .spec.policyController.{}'.format(field)
+      )
     if field == 'monitoring':
       monitoring = _build_monitoring_msg(spec_policy_controller[field], msg)
       setattr(policy_controller, field, monitoring)
@@ -294,19 +337,23 @@ def _parse_hierarchy_controller_config(configmanagement, msg):
     other fields present in the config
   """
 
-  if ('spec' not in configmanagement or
-      'hierarchyController' not in configmanagement['spec']):
+  if (
+      'spec' not in configmanagement
+      or 'hierarchyController' not in configmanagement['spec']
+  ):
     return None
 
   spec = configmanagement['spec']['hierarchyController']
   # Required field
   if spec is None or 'enabled' not in spec:
     raise exceptions.Error(
-        'Missing required field .spec.hierarchyController.enabled')
+        'Missing required field .spec.hierarchyController.enabled'
+    )
   enabled = spec['enabled']
   if not isinstance(enabled, bool):
     raise exceptions.Error(
-        'hierarchyController.enabled should be `true` or `false`')
+        'hierarchyController.enabled should be `true` or `false`'
+    )
 
   config_proto = msg.ConfigManagementHierarchyControllerConfig()
   # When the hierarchyController is set to be enabled, hierarchy_controller will
@@ -314,11 +361,15 @@ def _parse_hierarchy_controller_config(configmanagement, msg):
   # were mapped from the config-management.yaml
   for field in spec:
     if field not in [
-        'enabled', 'enablePodTreeLabels', 'enableHierarchicalResourceQuota'
+        'enabled',
+        'enablePodTreeLabels',
+        'enableHierarchicalResourceQuota',
     ]:
       raise exceptions.Error(
           'Please remove illegal field .spec.hierarchyController{}'.format(
-              field))
+              field
+          )
+      )
     setattr(config_proto, field, spec[field])
 
   return config_proto
@@ -343,14 +394,19 @@ def _build_monitoring_msg(spec_monitoring, msg):
   backends = []
   for backend in spec_monitoring['backends']:
     if backend == 'prometheus':
-      backends.append(msg.ConfigManagementPolicyControllerMonitoring
-                      .BackendsValueListEntryValuesEnum.PROMETHEUS)
+      backends.append(
+          msg.ConfigManagementPolicyControllerMonitoring.BackendsValueListEntryValuesEnum.PROMETHEUS
+      )
     elif backend == 'cloudmonitoring':
-      backends.append(msg.ConfigManagementPolicyControllerMonitoring
-                      .BackendsValueListEntryValuesEnum.CLOUD_MONITORING)
+      backends.append(
+          msg.ConfigManagementPolicyControllerMonitoring.BackendsValueListEntryValuesEnum.CLOUD_MONITORING
+      )
     else:
-      raise exceptions.Error('policyController.monitoring.backend ' + backend +
-                             ' is not recognized')
+      raise exceptions.Error(
+          'policyController.monitoring.backend '
+          + backend
+          + ' is not recognized'
+      )
   monitoring = msg.ConfigManagementPolicyControllerMonitoring()
   monitoring.backends = backends
   return monitoring

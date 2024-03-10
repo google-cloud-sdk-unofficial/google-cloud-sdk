@@ -28,8 +28,7 @@ from googlecloudsdk.core import log
 NA = 'NA'
 
 DETAILED_HELP = {
-    'EXAMPLES':
-        """\
+    'EXAMPLES': """\
    Print the status of the Config Management Feature:
 
     $ {command}
@@ -97,24 +96,30 @@ class ConfigmanagementFeatureState(object):
       self.policy_controller_state = 'ERROR: {}'.format(md.state.description)
       return
     fs = md.configmanagement
-    if not (fs.policyControllerState and
-            fs.policyControllerState.deploymentState):
+    if not (
+        fs.policyControllerState and fs.policyControllerState.deploymentState
+    ):
       self.policy_controller_state = NA
       return
     pc_deployment_state = fs.policyControllerState.deploymentState
     expected_deploys = {
-        'GatekeeperControllerManager':
+        'GatekeeperControllerManager': (
             pc_deployment_state.gatekeeperControllerManagerState
+        )
     }
-    if (fs.membershipSpec and fs.membershipSpec.version and
-        fs.membershipSpec.version > '1.4.1'):
+    if (
+        fs.membershipSpec
+        and fs.membershipSpec.version
+        and fs.membershipSpec.version > '1.4.1'
+    ):
       expected_deploys['GatekeeperAudit'] = pc_deployment_state.gatekeeperAudit
     for deployment_name, deployment_state in expected_deploys.items():
       if not deployment_state:
         continue
       elif deployment_state.name != 'INSTALLED':
-        self.policy_controller_state = '{} {}'.format(deployment_name,
-                                                      deployment_state)
+        self.policy_controller_state = '{} {}'.format(
+            deployment_name, deployment_state
+        )
         return
       self.policy_controller_state = deployment_state.name
 
@@ -148,8 +153,9 @@ class ConfigmanagementFeatureState(object):
         ('NOT_INSTALLED', 'NOT_INSTALLED'): NA,
     }
     if (hnc_state, ext_state) in deploys_to_status:
-      self.hierarchy_controller_state = deploys_to_status[(hnc_state,
-                                                           ext_state)]
+      self.hierarchy_controller_state = deploys_to_status[
+          (hnc_state, ext_state)
+      ]
     else:
       self.hierarchy_controller_state = 'ERROR'
 
@@ -161,28 +167,40 @@ class ConfigmanagementFeatureState(object):
       feature_state_mc: MembershipConfig
     """
     feature_state_pending = (
-        feature_state_mc is None and feature_spec_mc is not None)
+        feature_state_mc is None and feature_spec_mc is not None
+    )
     if feature_state_pending:
       self.last_synced_token = 'PENDING'
       self.last_synced = 'PENDING'
       self.sync_branch = 'PENDING'
     if self.config_sync.__str__() in [
-        'SYNCED', 'NOT_CONFIGURED', 'NOT_INSTALLED', NA
-    ] and (feature_state_pending or
-           feature_spec_mc.configSync != feature_state_mc.configSync):
+        'SYNCED',
+        'NOT_CONFIGURED',
+        'NOT_INSTALLED',
+        NA,
+    ] and (
+        feature_state_pending
+        or feature_spec_mc.configSync != feature_state_mc.configSync
+    ):
       self.config_sync = 'PENDING'
-    if self.policy_controller_state.__str__() in [
-        'INSTALLED', 'GatekeeperAudit NOT_INSTALLED', NA
-    ] and feature_state_pending:
+    if (
+        self.policy_controller_state.__str__()
+        in ['INSTALLED', 'GatekeeperAudit NOT_INSTALLED', NA]
+        and feature_state_pending
+    ):
       self.policy_controller_state = 'PENDING'
-    if (self.hierarchy_controller_state.__str__() != 'ERROR' and
-        feature_state_pending or feature_spec_mc.hierarchyController !=
-        feature_state_mc.hierarchyController):
+    if (
+        self.hierarchy_controller_state.__str__() != 'ERROR'
+        and feature_state_pending
+        or feature_spec_mc.hierarchyController
+        != feature_state_mc.hierarchyController
+    ):
       self.hierarchy_controller_state = 'PENDING'
 
 
 class Status(feature_base.FeatureCommand, base.ListCommand):
   """Print the status of all clusters with Config Management enabled."""
+
   detailed_help = DETAILED_HELP
 
   feature_name = 'configmanagement'
@@ -204,8 +222,10 @@ class Status(feature_base.FeatureCommand, base.ListCommand):
   def Run(self, args):
     memberships, unreachable = api_util.ListMembershipsFull()
     if unreachable:
-      log.warning('Locations {} are currently unreachable. Status '
-                  'entries may be incomplete'.format(unreachable))
+      log.warning(
+          'Locations {} are currently unreachable. Status '
+          'entries may be incomplete'.format(unreachable)
+      )
     if not memberships:
       return None
     f = self.GetFeature()
@@ -228,8 +248,7 @@ class Status(feature_base.FeatureCommand, base.ListCommand):
         if name in feature_spec_memberships:
           # (b/187846229) Show PENDING if feature spec is aware of
           # this membership name but feature state is not
-          cluster.update_pending_state(feature_spec_memberships[name],
-                                       None)
+          cluster.update_pending_state(feature_spec_memberships[name], None)
         acm_status.append(cluster)
         continue
       md = feature_state_memberships[name]
@@ -256,13 +275,15 @@ class Status(feature_base.FeatureCommand, base.ListCommand):
           if cluster.config_sync == 'INSTALLED':
             cluster.update_sync_state(fs)
             if has_config_sync_error(fs):
-              append_error(name, fs.configSyncState.syncState.errors,
-                           acm_errors)
+              append_error(
+                  name, fs.configSyncState.syncState.errors, acm_errors
+              )
             cluster.update_hierarchy_controller_state(fs)
             if name in feature_spec_memberships:
               cluster.update_pending_state(
                   feature_spec_memberships[name].configmanagement,
-                  fs.membershipSpec)
+                  fs.membershipSpec,
+              )
       acm_status.append(cluster)
     return {'acm_errors': acm_errors, 'acm_status': acm_status}
 
@@ -276,11 +297,20 @@ def has_operator_error(fs):
 
 
 def has_config_sync_error(fs):
-  return fs and fs.configSyncState and fs.configSyncState.syncState and fs.configSyncState.syncState.errors
+  return (
+      fs
+      and fs.configSyncState
+      and fs.configSyncState.syncState
+      and fs.configSyncState.syncState.errors
+  )
 
 
 def has_config_sync_git(fs):
-  return fs.membershipSpec and fs.membershipSpec.configSync and fs.membershipSpec.configSync.git
+  return (
+      fs.membershipSpec
+      and fs.membershipSpec.configSync
+      and fs.membershipSpec.configSync.git
+  )
 
 
 def append_error(cluster, state_errors, acm_errors):

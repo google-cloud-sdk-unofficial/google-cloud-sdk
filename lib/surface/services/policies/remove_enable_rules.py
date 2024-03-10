@@ -99,6 +99,7 @@ class RemovedEnableRules(base.SilentCommand):
             ' rule will also be removed  .'
         ),
     )
+    common_flags.validate_only_args(parser)
 
     parser.display_info.AddFormat("""
         table(
@@ -114,7 +115,7 @@ class RemovedEnableRules(base.SilentCommand):
         with.
 
     Returns:
-      Nothing.
+      The services in the consumer policy.
     """
 
     if args.IsSpecified('project'):
@@ -152,7 +153,12 @@ class RemovedEnableRules(base.SilentCommand):
           args.force,
           folder,
           organization,
+          args.validate_only,
       )
+
+      if args.validate_only:
+        return
+
       if op.done:
         continue
       if args.async_:

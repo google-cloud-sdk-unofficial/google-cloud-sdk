@@ -27,6 +27,7 @@ from googlecloudsdk.command_lib.services import common_flags
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 
+
 _PROJECT_RESOURCE = 'projects/{}'
 _FOLDER_RESOURCE = 'folders/{}'
 _ORGANIZATION_RESOURCE = 'organizations/{}'
@@ -92,6 +93,7 @@ class AddEnableRules(base.SilentCommand):
         default='default',
     )
     common_flags.add_resource_args(parser)
+    common_flags.validate_only_args(parser)
     base.ASYNC_FLAG.AddToParser(parser)
 
     parser.display_info.AddFormat("""
@@ -108,7 +110,7 @@ class AddEnableRules(base.SilentCommand):
         with.
 
     Returns:
-      Nothing.
+      The services in the consumer policy.
     """
     if args.IsSpecified('project'):
       project = args.project
@@ -132,7 +134,11 @@ class AddEnableRules(base.SilentCommand):
         args.policy_name,
         folder,
         organization,
+        args.validate_only,
     )
+    if args.validate_only:
+      return
+
     if args.async_:
       cmd = _OP_WAIT_CMD.format(op.name)
       log.status.Print(

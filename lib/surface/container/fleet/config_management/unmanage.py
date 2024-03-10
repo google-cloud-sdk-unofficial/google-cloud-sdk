@@ -43,12 +43,14 @@ class Unmanage(base.UpdateCommand):
 
   def Run(self, args):
     membership = base.ParseMembership(
-        args, prompt=True, autoselect=True, search=True)
+        args, prompt=True, autoselect=True, search=True
+    )
 
     # Setup a patch to set the MembershipSpec to the empty proto ("delete").
     membership_key = membership
     specs = {membership_key: self.messages.MembershipFeatureSpec()}
     patch = self.messages.Feature(
-        membershipSpecs=self.hubclient.ToMembershipSpecs(specs))
+        membershipSpecs=self.hubclient.ToMembershipSpecs(specs)
+    )
 
     self.Update(['membership_specs'], patch)

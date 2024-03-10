@@ -89,7 +89,7 @@ class Rollback(base.Command):
       # Make sure it exists (will raise appropriate error if not)
       adapter.GetNodePool(pool_ref)
 
-      op_ref = adapter.RollbackUpgrade(pool_ref)
+      op_ref = adapter.RollbackUpgrade(pool_ref, respect_pdb=args.respect_pdb)
 
       if not args.async_:
         adapter.WaitForOperation(

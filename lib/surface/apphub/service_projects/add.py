@@ -19,8 +19,8 @@ from __future__ import division
 from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.apphub import service_projects as apis
+from googlecloudsdk.api_lib.apphub import utils as api_lib_utils
 from googlecloudsdk.calliope import base
-from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.apphub import flags
 
 
@@ -49,12 +49,8 @@ class CreateGA(base.CreateCommand):
   def Run(self, args):
     """Run the add command."""
     client = apis.ServiceProjectsClient(release_track=base.ReleaseTrack.GA)
-    service_project_ref = args.CONCEPTS.service_project.Parse()
+    service_project_ref = api_lib_utils.GetServiceProjectRef(args)
     parent_ref = service_project_ref.Parent()
-    if not service_project_ref.Name():
-      raise exceptions.InvalidArgumentException(
-          'service project', 'service project id must be non-empty.'
-      )
     return client.Add(
         service_project=service_project_ref.Name(),
         async_flag=args.async_,
@@ -75,12 +71,8 @@ class CreateAlpha(base.CreateCommand):
   def Run(self, args):
     """Run the add command."""
     client = apis.ServiceProjectsClient(release_track=base.ReleaseTrack.ALPHA)
-    service_project_ref = args.CONCEPTS.service_project.Parse()
+    service_project_ref = api_lib_utils.GetServiceProjectRef(args)
     parent_ref = service_project_ref.Parent()
-    if not service_project_ref.Name():
-      raise exceptions.InvalidArgumentException(
-          'service project', 'service project id must be non-empty.'
-      )
     return client.Add(
         service_project=service_project_ref.Name(),
         async_flag=args.async_,

@@ -23,6 +23,7 @@ from googlecloudsdk.api_lib.util import apis as core_apis
 from googlecloudsdk.api_lib.util import exceptions as gcloud_exception
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.deploy import delivery_pipeline_util
+from googlecloudsdk.command_lib.deploy import deploy_policy_util
 from googlecloudsdk.command_lib.deploy import exceptions as deploy_exceptions
 from googlecloudsdk.command_lib.deploy import flags
 from googlecloudsdk.command_lib.deploy import promote_util
@@ -70,6 +71,7 @@ class Redeploy(base.CreateCommand):
     flags.AddAnnotationsFlag(parser, _ROLLOUT)
     flags.AddLabelsFlag(parser, _ROLLOUT)
     flags.AddStartingPhaseId(parser)
+    flags.AddOverrideDeployPolicies(parser)
 
   @gcloud_exception.CatchHTTPErrorRaiseHTTPException(
       deploy_exceptions.HTTP_ERROR_FORMAT
@@ -137,6 +139,11 @@ class Redeploy(base.CreateCommand):
         )
     )
     console_io.PromptContinue(prompt, cancel_on_no=True)
+    # On the command line deploy policy IDs are provided, but for the
+    # CreateRollout API we need to provide the full resource name.
+    policies = deploy_policy_util.CreateDeployPolicyNamesFromIDs(
+        pipeline_ref, args.override_deploy_policies
+    )
 
     promote_util.Promote(
         current_release_ref,
@@ -148,6 +155,7 @@ class Redeploy(base.CreateCommand):
         labels=args.labels,
         description=args.description,
         starting_phase_id=args.starting_phase_id,
+        override_deploy_policies=policies,
     )
 
 

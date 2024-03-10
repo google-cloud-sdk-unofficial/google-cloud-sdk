@@ -23,6 +23,7 @@ from googlecloudsdk.api_lib.util import apis as core_apis
 from googlecloudsdk.api_lib.util import exceptions as gcloud_exception
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.deploy import delivery_pipeline_util
+from googlecloudsdk.command_lib.deploy import deploy_policy_util
 from googlecloudsdk.command_lib.deploy import exceptions as deploy_exceptions
 from googlecloudsdk.command_lib.deploy import flags
 from googlecloudsdk.command_lib.deploy import promote_util
@@ -59,6 +60,7 @@ def _CommonArgs(parser):
   flags.AddAnnotationsFlag(parser, _ROLLOUT)
   flags.AddLabelsFlag(parser, _ROLLOUT)
   flags.AddStartingPhaseId(parser)
+  flags.AddOverrideDeployPolicies(parser)
 
 
 @base.ReleaseTracks(
@@ -83,8 +85,9 @@ class Promote(base.CreateCommand):
   )
   def Run(self, args):
     release_ref = args.CONCEPTS.release.Parse()
+    pipeline_ref = release_ref.Parent()
     pipeline_obj = delivery_pipeline_util.GetPipeline(
-        release_ref.Parent().RelativeName()
+        pipeline_ref.RelativeName()
     )
     failed_activity_msg = 'Cannot promote release {}.'.format(
         release_ref.RelativeName()
@@ -140,7 +143,11 @@ class Promote(base.CreateCommand):
         ),
         cancel_on_no=True,
     )
-
+    # On the command line deploy policy IDs are provided, but for the
+    # CreateRollout API we need to provide the full resource name.
+    policies = deploy_policy_util.CreateDeployPolicyNamesFromIDs(
+        pipeline_ref, args.override_deploy_policies
+    )
     rollout_resource = promote_util.Promote(
         release_ref,
         release_obj,
@@ -150,5 +157,6 @@ class Promote(base.CreateCommand):
         annotations=args.annotations,
         labels=args.labels,
         starting_phase_id=args.starting_phase_id,
+        override_deploy_policies=policies,
     )
     return rollout_resource

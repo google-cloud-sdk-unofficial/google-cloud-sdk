@@ -128,6 +128,7 @@ class UpdateGA(_Update, base.Command):
   def Args(parser):
     _Update.Args(parser)
     mj_flags.AddDumpParallelLevelFlag(parser)
+    mj_flags.AddDumpTypeFlag(parser)
     mj_flags.AddFilterFlag(parser)
     mj_flags.AddCommitIdFlag(parser)
 

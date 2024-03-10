@@ -51,13 +51,16 @@ class Version(feature_base.FeatureCommand, calliope_base.ListCommand):
   @staticmethod
   def Args(parser):
     parser.display_info.AddFormat(
-        'table(name:label=Name:sort=1,version:label=Version)')
+        'table(name:label=Name:sort=1,version:label=Version)'
+    )
 
   def Run(self, args):
     memberships, unreachable = api_util.ListMembershipsFull()
     if unreachable:
-      log.warning('Locations {} are currently unreachable. Version '
-                  'entries may be incomplete'.format(unreachable))
+      log.warning(
+          'Locations {} are currently unreachable. Version '
+          'entries may be incomplete'.format(unreachable)
+      )
     f = self.GetFeature()
 
     acm_status = []

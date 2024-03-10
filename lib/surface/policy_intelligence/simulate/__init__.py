@@ -45,3 +45,17 @@ class SimulateBeta(base.Group):
           https://cloud.google.com/iam/docs.
       """
   }
+
+
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.Hidden
+class SimulateGA(base.Group):
+  """Simulate changes to Organization Policies."""
+  detailed_help = {
+      'DESCRIPTION': """\
+          Simulate Org policies.
+
+          More information can be found here:
+          https://cloud.google.com/iam/docs.
+      """
+  }

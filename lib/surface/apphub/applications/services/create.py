@@ -21,7 +21,6 @@ from __future__ import unicode_literals
 from googlecloudsdk.api_lib.apphub import utils as api_lib_utils
 from googlecloudsdk.api_lib.apphub.applications import services as apis
 from googlecloudsdk.calliope import base
-from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.apphub import flags
 
 
@@ -53,13 +52,9 @@ class CreateGA(base.CreateCommand):
   def Run(self, args):
     """Run the create command."""
     client = apis.ServicesClient(release_track=base.ReleaseTrack.GA)
-    service_ref = args.CONCEPTS.service.Parse()
-    dis_service_ref = args.CONCEPTS.discovered_service.Parse()
+    service_ref = api_lib_utils.GetApplicationServiceRef(args)
+    dis_service_ref = api_lib_utils.GetDiscoveredServiceRef(args)
     parent_ref = service_ref.Parent()
-    if not service_ref.Name():
-      raise exceptions.InvalidArgumentException(
-          'service', 'service id must be non-empty.'
-      )
     attributes = api_lib_utils.PopulateAttributes(
         args, release_track=base.ReleaseTrack.GA
     )
@@ -90,13 +85,9 @@ class CreateAlpha(base.CreateCommand):
   def Run(self, args):
     """Run the create command."""
     client = apis.ServicesClient(release_track=base.ReleaseTrack.ALPHA)
-    service_ref = args.CONCEPTS.service.Parse()
-    dis_service_ref = args.CONCEPTS.discovered_service.Parse()
+    service_ref = api_lib_utils.GetApplicationServiceRef(args)
+    dis_service_ref = api_lib_utils.GetDiscoveredServiceRef(args)
     parent_ref = service_ref.Parent()
-    if not service_ref.Name():
-      raise exceptions.InvalidArgumentException(
-          'service', 'service id must be non-empty.'
-      )
     attributes = api_lib_utils.PopulateAttributes(
         args, release_track=base.ReleaseTrack.ALPHA
     )

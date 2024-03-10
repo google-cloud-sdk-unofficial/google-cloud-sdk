@@ -56,19 +56,12 @@ DETAILED_HELP = {
 class Update(base.UpdateCommand):
   """Update a Firewall Plus endpoint association."""
 
-  _valid_arguments_alpha = [
+  _valid_arguments = [
       '--clear-labels',
       '--remove-labels',
       '--update-labels',
       '--[no-]tls-inspection-policy',
       '--[no-]disabled',
-  ]
-
-  _valid_arguments_beta = [
-      '--clear-labels',
-      '--remove-labels',
-      '--update-labels',
-      '--[no-]tls-inspection-policy',
   ]
 
   @classmethod
@@ -80,8 +73,7 @@ class Update(base.UpdateCommand):
 
     outer_group = parser.add_mutually_exclusive_group()
 
-    if cls.ReleaseTrack() == base.ReleaseTrack.ALPHA:
-      association_flags.AddDisabledArg(outer_group)
+    association_flags.AddDisabledArg(outer_group)
 
     tls_and_labels_group = outer_group.add_group()
     labels_util.AddUpdateLabelsFlags(tls_and_labels_group)
@@ -109,9 +101,8 @@ class Update(base.UpdateCommand):
           'Firewall endpoint association does not exist.',
       )
 
-    if self.ReleaseTrack() == base.ReleaseTrack.ALPHA:
-      if args.IsSpecified('disabled'):
-        update_fields['disabled'] = getattr(args, 'disabled', False)
+    if args.IsSpecified('disabled'):
+      update_fields['disabled'] = getattr(args, 'disabled', False)
 
     if args.IsSpecified('tls_inspection_policy'):
       parsed_policy = args.CONCEPTS.tls_inspection_policy.Parse()
@@ -139,10 +130,7 @@ class Update(base.UpdateCommand):
         update_fields['labels'] = labels_update.labels
 
     if not update_fields:
-      if self.ReleaseTrack() == base.ReleaseTrack.ALPHA:
-        raise exceptions.MinimumArgumentException(self._valid_arguments_alpha)
-      else:
-        raise exceptions.MinimumArgumentException(self._valid_arguments_beta)
+      raise exceptions.MinimumArgumentException(self._valid_arguments)
 
     is_async = args.async_
     max_wait = datetime.timedelta(seconds=args.max_wait)

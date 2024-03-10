@@ -267,7 +267,6 @@ class Ssh(base.Command):
 
     ssh_helper = ssh_utils.BaseSSHCLIHelper()
     ssh_helper.Run(args)
-    oslogin_state = ssh.OsloginState()
 
     if on_prem:
       user, ip = ssh_utils.GetUserAndInstance(args.user_host)
@@ -277,6 +276,7 @@ class Ssh(base.Command):
           args, self.ReleaseTrack(), ip)
       instance_address = ip
       internal_address = ip
+      oslogin_state = ssh.OsloginState()
     else:
       user, instance_name = ssh_utils.GetUserAndInstance(args.user_host)
       instance_ref = instance_flags.SSH_INSTANCE_RESOLVER.ResolveResources(
@@ -310,8 +310,9 @@ class Ssh(base.Command):
                   'Continuing.')
       expiration, expiration_micros = ssh_utils.GetSSHKeyExpirationFromArgs(
           args)
+
       if args.plain:
-        oslogin_state.oslogin_enabled = False
+        oslogin_state = ssh.OsloginState(oslogin_enabled=False)
       else:
         public_key = ssh_helper.keys.GetPublicKey().ToEntry(
             include_comment=True)
@@ -328,7 +329,6 @@ class Ssh(base.Command):
             username_requested=username_requested,
             messages=holder.client.messages)
         user = oslogin_state.user
-
       log.debug(oslogin_state)
 
       if iap_tunnel_args:
@@ -378,18 +378,18 @@ class Ssh(base.Command):
 
     # Do not include default port since that will prevent users from
     # specifying a custom port (b/121998342).
-    ssh_cmd_args = {'remote': remote,
-                    'identity_file': identity_file,
-                    'cert_file': cert_file,
-                    'options': options,
-                    'extra_flags': extra_flags,
-                    'remote_command': remote_command,
-                    'tty': tty,
-                    'iap_tunnel_args': iap_tunnel_args,
-                    'remainder': remainder,
-                    'identity_list': identity_file_list}
-
-    cmd = ssh.SSHCommand(**ssh_cmd_args)
+    cmd = ssh.SSHCommand(
+        remote=remote,
+        identity_file=identity_file,
+        cert_file=cert_file,
+        options=options,
+        extra_flags=extra_flags,
+        remote_command=remote_command,
+        tty=tty,
+        iap_tunnel_args=iap_tunnel_args,
+        remainder=remainder,
+        identity_list=identity_file_list,
+    )
 
     if args.dry_run:
       # Add quotes around any arguments that contain spaces.

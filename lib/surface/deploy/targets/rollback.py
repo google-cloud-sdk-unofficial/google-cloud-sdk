@@ -28,6 +28,7 @@ from googlecloudsdk.api_lib.util import exceptions as gcloud_exception
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.deploy import delivery_pipeline_util
+from googlecloudsdk.command_lib.deploy import deploy_policy_util
 from googlecloudsdk.command_lib.deploy import deploy_util
 from googlecloudsdk.command_lib.deploy import exceptions as deploy_exceptions
 from googlecloudsdk.command_lib.deploy import flags
@@ -76,6 +77,7 @@ class Rollback(base.CreateCommand):
     flags.AddAnnotationsFlag(parser, _ROLLBACK)
     flags.AddLabelsFlag(parser, _ROLLBACK)
     flags.AddStartingPhaseId(parser)
+    flags.AddOverrideDeployPolicies(parser)
 
   @gcloud_exception.CatchHTTPErrorRaiseHTTPException(
       deploy_exceptions.HTTP_ERROR_FORMAT
@@ -149,6 +151,11 @@ class Rollback(base.CreateCommand):
     rollout_description = args.description or 'Rollback from {}'.format(
         current_release_ref.Name()
     )
+    # On the command line deploy policy IDs are provided, but for the
+    # CreateRollout API we need to provide the full resource name.
+    policies = deploy_policy_util.CreateDeployPolicyNamesFromIDs(
+        pipeline_ref, args.override_deploy_policies
+    )
     return promote_util.Promote(
         rollback_release_ref,
         release_obj,
@@ -160,6 +167,7 @@ class Rollback(base.CreateCommand):
         description=rollout_description,
         # For rollbacks, default is `stable`.
         starting_phase_id=args.starting_phase_id or 'stable',
+        override_deploy_policies=policies,
     )
 
 

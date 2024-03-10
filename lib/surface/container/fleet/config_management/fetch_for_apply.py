@@ -40,7 +40,6 @@ class Fetch(base.DescribeCommand):
   To fetch the applied Config Management configuration, run:
 
     $ {command}
-
   """
 
   feature_name = 'configmanagement'
@@ -51,14 +50,18 @@ class Fetch(base.DescribeCommand):
 
   def Run(self, args):
     membership = base.ParseMembership(
-        args, prompt=True, autoselect=True, search=True)
+        args, prompt=True, autoselect=True, search=True
+    )
 
     f = self.GetFeature()
     membership_spec = None
     version = utils.get_backfill_version_from_feature(f, membership)
     for full_name, spec in self.hubclient.ToPyDict(f.membershipSpecs).items():
-      if util.MembershipPartialName(full_name) == util.MembershipPartialName(
-          membership) and spec is not None:
+      if (
+          util.MembershipPartialName(full_name)
+          == util.MembershipPartialName(membership)
+          and spec is not None
+      ):
         membership_spec = spec.configmanagement
     if membership_spec is None:
       log.status.Print('Membership {} not initialized'.format(membership))
@@ -97,8 +100,9 @@ def merge_config_sync(spec, config, version):
       cs['enabled'] = True
   if spec.configSync.sourceFormat:
     cs['sourceFormat'] = spec.configSync.sourceFormat
-  if (not version or
-      semver.SemVer(version) >= semver.SemVer(utils.PREVENT_DRIFT_VERSION)):
+  if not version or semver.SemVer(version) >= semver.SemVer(
+      utils.PREVENT_DRIFT_VERSION
+  ):
     if spec.configSync.preventDrift:
       cs['preventDrift'] = spec.configSync.preventDrift
   else:
@@ -107,8 +111,9 @@ def merge_config_sync(spec, config, version):
   if not git and not oci:
     return
   # Update sourceType if version >= 1.12.0
-  if (not version or
-      semver.SemVer(version) >= semver.SemVer(utils.OCI_SUPPORT_VERSION)):
+  if not version or semver.SemVer(version) >= semver.SemVer(
+      utils.OCI_SUPPORT_VERSION
+  ):
     if git:
       cs['sourceType'] = 'git'
     elif oci:
@@ -120,7 +125,10 @@ def merge_config_sync(spec, config, version):
     if oci.syncWaitSecs:
       cs['syncWait'] = oci.syncWaitSecs
     for field in [
-        'policyDir', 'secretType', 'syncRepo', 'gcpServiceAccountEmail'
+        'policyDir',
+        'secretType',
+        'syncRepo',
+        'gcpServiceAccountEmail',
     ]:
       if hasattr(oci, field) and getattr(oci, field) is not None:
         cs[field] = getattr(oci, field)
@@ -128,8 +136,13 @@ def merge_config_sync(spec, config, version):
     if git.syncWaitSecs:
       cs['syncWait'] = git.syncWaitSecs
     for field in [
-        'policyDir', 'httpsProxy', 'secretType', 'syncBranch', 'syncRepo',
-        'syncRev', 'gcpServiceAccountEmail'
+        'policyDir',
+        'httpsProxy',
+        'secretType',
+        'syncBranch',
+        'syncRepo',
+        'syncRev',
+        'gcpServiceAccountEmail',
     ]:
       if hasattr(git, field) and getattr(git, field) is not None:
         cs[field] = getattr(git, field)
@@ -149,12 +162,15 @@ def merge_policy_controller(spec, config, version):
     return
   c = config[utils.POLICY_CONTROLLER]
   for field in list(config[utils.POLICY_CONTROLLER]):
-    if hasattr(spec.policyController, field) and getattr(
-        spec.policyController, field) is not None:
+    if (
+        hasattr(spec.policyController, field)
+        and getattr(spec.policyController, field) is not None
+    ):
       c[field] = getattr(spec.policyController, field)
 
   valid_version = not version or semver.SemVer(version) >= semver.SemVer(
-      utils.MONITORING_VERSION)
+      utils.MONITORING_VERSION
+  )
   spec_monitoring = spec.policyController.monitoring
   if not valid_version:
     c.pop('monitoring', None)
@@ -167,6 +183,8 @@ def merge_hierarchy_controller(spec, config):
     return
   c = config[utils.HNC]
   for field in list(config[utils.HNC]):
-    if hasattr(spec.hierarchyController, field) and getattr(
-        spec.hierarchyController, field) is not None:
+    if (
+        hasattr(spec.hierarchyController, field)
+        and getattr(spec.hierarchyController, field) is not None
+    ):
       c[field] = getattr(spec.hierarchyController, field)

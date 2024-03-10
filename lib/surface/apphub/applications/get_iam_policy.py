@@ -17,9 +17,9 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+from googlecloudsdk.api_lib.apphub import utils as api_lib_utils
 from googlecloudsdk.api_lib.apphub.applications import client as apis
 from googlecloudsdk.calliope import base
-from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.apphub import flags
 
 
@@ -51,11 +51,7 @@ class GetIamPolicyGA(base.ListCommand):
 
   def Run(self, args):
     client = apis.ApplicationsClient(release_track=base.ReleaseTrack.GA)
-    app_ref = args.CONCEPTS.application.Parse()
-    if not app_ref.Name():
-      raise exceptions.InvalidArgumentException(
-          'application', 'application id must be non-empty.'
-      )
+    app_ref = api_lib_utils.GetApplicationRef(args)
     return client.GetIamPolicy(app_id=app_ref.RelativeName())
 
 
@@ -75,9 +71,5 @@ class GetIamPolicy(base.ListCommand):
 
   def Run(self, args):
     client = apis.ApplicationsClient(release_track=base.ReleaseTrack.ALPHA)
-    app_ref = args.CONCEPTS.application.Parse()
-    if not app_ref.Name():
-      raise exceptions.InvalidArgumentException(
-          'application', 'application id must be non-empty.'
-      )
+    app_ref = api_lib_utils.GetApplicationRef(args)
     return client.GetIamPolicy(app_id=app_ref.RelativeName())

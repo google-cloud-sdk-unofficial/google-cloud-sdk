@@ -28,6 +28,7 @@ from googlecloudsdk.api_lib.clouddeploy import release
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions as c_exceptions
 from googlecloudsdk.command_lib.deploy import delivery_pipeline_util
+from googlecloudsdk.command_lib.deploy import deploy_policy_util
 from googlecloudsdk.command_lib.deploy import deploy_util
 from googlecloudsdk.command_lib.deploy import flags
 from googlecloudsdk.command_lib.deploy import promote_util
@@ -92,6 +93,7 @@ def _CommonArgs(parser):
   flags.AddSkaffoldSources(parser)
   flags.AddInitialRolloutGroup(parser)
   flags.AddDeployParametersFlag(parser)
+  flags.AddOverrideDeployPolicies(parser)
 
 
 @base.ReleaseTracks(
@@ -256,6 +258,12 @@ class Create(base.CreateCommand):
     release_obj = release.ReleaseClient().Get(release_ref.RelativeName())
     if args.disable_initial_rollout:
       return release_obj
+    # On the command line deploy policy IDs are provided, but for the
+    # CreateRollout API we need to provide the full resource name.
+    pipeline_ref = release_ref.Parent()
+    policies = deploy_policy_util.CreateDeployPolicyNamesFromIDs(
+        pipeline_ref, args.override_deploy_policies
+    )
     rollout_resource = promote_util.Promote(
         release_ref,
         release_obj,
@@ -264,6 +272,7 @@ class Create(base.CreateCommand):
         labels=args.initial_rollout_labels,
         annotations=args.initial_rollout_annotations,
         starting_phase_id=args.initial_rollout_phase_id,
+        override_deploy_policies=policies,
     )
 
     return release_obj, rollout_resource

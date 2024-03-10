@@ -71,7 +71,7 @@ class ListGrantableRoles(base.Command):
     if args.resource.startswith('http'):
       # This is a full resource URL that needs to be converted to an atomic path
       resource_ref = resources.REGISTRY.Parse(args.resource)
-      resource = iam_util.GetResourceName(resource_ref)
+      resource = iam_util.GetFullResourceName(resource_ref)
 
     if not resource:
       raise exceptions.InvalidResourceException(

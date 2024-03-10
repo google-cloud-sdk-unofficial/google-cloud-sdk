@@ -21,7 +21,6 @@ from __future__ import unicode_literals
 from googlecloudsdk.api_lib.apphub import utils as api_lib_utils
 from googlecloudsdk.api_lib.apphub.applications import workloads as apis
 from googlecloudsdk.calliope import base
-from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.apphub import flags
 
 _DETAILED_HELP = {
@@ -52,11 +51,7 @@ class UpdateGA(base.UpdateCommand):
   def Run(self, args):
     """Run the create command."""
     client = apis.WorkloadsClient(release_track=base.ReleaseTrack.GA)
-    workload_ref = args.CONCEPTS.workload.Parse()
-    if not workload_ref.Name():
-      raise exceptions.InvalidArgumentException(
-          'workload', 'workload id must be non-empty.'
-      )
+    workload_ref = api_lib_utils.GetApplicationWorkloadRef(args)
     attributes = api_lib_utils.PopulateAttributes(
         args, release_track=base.ReleaseTrack.GA
     )
@@ -83,11 +78,7 @@ class UpdateAlpha(base.UpdateCommand):
   def Run(self, args):
     """Run the create command."""
     client = apis.WorkloadsClient(release_track=base.ReleaseTrack.ALPHA)
-    workload_ref = args.CONCEPTS.workload.Parse()
-    if not workload_ref.Name():
-      raise exceptions.InvalidArgumentException(
-          'workload', 'workload id must be non-empty.'
-      )
+    workload_ref = api_lib_utils.GetApplicationWorkloadRef(args)
     attributes = api_lib_utils.PopulateAttributes(
         args, release_track=base.ReleaseTrack.ALPHA
     )

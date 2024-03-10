@@ -26,17 +26,16 @@ from googlecloudsdk.command_lib.dataflow import job_utils
 
 @base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
 class UpdateOptions(base.Command):
-  # TODO(b/316018726): come back and add examples of how to instantiate the
-  # worker_utilization_hint once the flag is no longer hidden. Also update
-  # initial description that asks to provide at-least one of --min-num-workers
-  # to include --worker-utilization-hint.
   """Update pipeline options on-the-fly for running Dataflow jobs.
 
   This command can modify properties of running Dataflow jobs. Currently, only
   updating autoscaling settings for Streaming Engine jobs is supported.
 
   Adjust the autoscaling settings for Streaming Engine Dataflow jobs by
-  providing at-least one of --min-num-workers or --max-num-workers (or both).
+  providing at-least one of --min-num-workers or --max-num-workers or
+  --worker-utilization-hint (or all 3), or --unset-worker-utilization-hint
+  (which cannot be run at the same time as --worker-utilization-hint but works
+  with the others).
   Allow a few minutes for the changes to take effect.
 
   Note that autoscaling settings can only be modified on-the-fly for Streaming
@@ -57,6 +56,16 @@ class UpdateOptions(base.Command):
   Require a job to use at most 20 workers:
 
     $ {command} --max-num-workers=20
+
+  Adjust the hint of target worker utilization to 70% for horizontal
+  autoscaling:
+
+    $ {command} --worker-utilization-hint=0.7
+
+  "Unset" worker utilization hint so that horizontal scaling will rely on its
+  default CPU utilization target:
+
+    $ {command} --unset-worker-utilization-hint
   """
 
   @staticmethod
@@ -82,7 +91,6 @@ class UpdateOptions(base.Command):
     parser.add_argument(
         '--worker-utilization-hint',
         type=float,
-        hidden=True,
         help=(
             'Target CPU utilization for autoscaling, ranging from 0.1 to 0.9.'
             ' Only supported for streaming-engine jobs with autoscaling'
@@ -92,7 +100,6 @@ class UpdateOptions(base.Command):
     parser.add_argument(
         '--unset-worker-utilization-hint',
         action='store_true',
-        hidden=True,
         help=(
             'Unset --worker-utilization-hint. This causes the'
             ' job autoscaling to fall back to internal tunings'
@@ -115,12 +122,12 @@ class UpdateOptions(base.Command):
         and args.worker_utilization_hint is None
         and not args.unset_worker_utilization_hint
     ):
-      # TODO(b/316018726): come back and add --worker-utilization-hint and
-      # --unset-worker-utilization-hint to this list of arguments required.
       raise exceptions.OneOfArgumentsRequiredException(
           [
-              '--min_num_workers',
-              '--max_num_workers'
+              '--min-num-workers',
+              '--max-num-workers',
+              '--worker-utilization-hint',
+              '--unset-worker-utilization-hint',
           ],
           'You must provide at-least one field to update',
       )

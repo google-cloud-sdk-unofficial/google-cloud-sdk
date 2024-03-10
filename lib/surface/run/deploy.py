@@ -202,6 +202,12 @@ class Deploy(base.Command):
     if flags.FlagIsExplicitlySet(args, 'containers'):
       containers = args.containers
     else:
+      # base image mapping needs container names
+      if flags.FlagIsExplicitlySet(args, 'base_image'):
+        raise c_exceptions.InvalidArgumentException(
+            '--base-image',
+            'Base image can only be specified together with --container',
+        )
       containers = {'': args}
 
     if len(containers) > 1:
@@ -387,9 +393,7 @@ class Deploy(base.Command):
         header += ' new service'
         # new services default cpu boost on the client
         if not flags.FlagIsExplicitlySet(args, 'cpu_boost'):
-          changes.append(
-              config_changes.StartupCpuBoostChange(cpu_boost=True)
-          )
+          changes.append(config_changes.StartupCpuBoostChange(cpu_boost=True))
       header += '...'
       with progress_tracker.StagedProgressTracker(
           header,
@@ -448,15 +452,11 @@ def _CreateBuildPack(container, release_track=base.ReleaseTrack.GA):
       })
       base_image_arg = getattr(container, 'base_image', None)
       if base_image_arg:
-        pack[0].update(
-            {
-                'builder': '{builder}'.format(
-                    builder=builders.FunctionBuilder(
-                        base_image_arg
-                    )
-                )
-            }
-        )
+        pack[0].update({
+            'builder': '{builder}'.format(
+                builder=builders.FunctionBuilder(base_image_arg)
+            )
+        })
   return pack
 
 
@@ -472,6 +472,7 @@ class BetaDeploy(Deploy):
     managed_group = flags.GetManagedArgGroup(parser)
     flags.AddDefaultUrlFlag(managed_group)
     flags.AddVpcNetworkGroupFlagsForUpdate(managed_group)
+    flags.AddServiceMinInstancesFlag(managed_group)
     flags.AddVolumesFlags(managed_group, cls.ReleaseTrack())
     container_args = ContainerArgGroup(cls.ReleaseTrack())
     container_parser.AddContainerFlags(parser, container_args)

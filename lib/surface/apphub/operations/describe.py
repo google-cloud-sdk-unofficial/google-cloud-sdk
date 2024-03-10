@@ -19,8 +19,8 @@ from __future__ import division
 from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.apphub import operations as apis
+from googlecloudsdk.api_lib.apphub import utils as api_lib_utils
 from googlecloudsdk.calliope import base
-from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.apphub import flags
 
 _DETAILED_HELP = {
@@ -47,11 +47,7 @@ class DescribeGA(base.DescribeCommand):
   def Run(self, args):
     """Run the describe command."""
     client = apis.OperationsClient(release_track=base.ReleaseTrack.GA)
-    op_ref = args.CONCEPTS.operation.Parse()
-    if not op_ref.Name():
-      raise exceptions.InvalidArgumentException(
-          'operation', 'operation id must be non-empty.'
-      )
+    op_ref = api_lib_utils.GetOperationRef(args)
     return client.Describe(operation=op_ref.RelativeName())
 
 
@@ -68,9 +64,5 @@ class DescribeAlpha(base.DescribeCommand):
   def Run(self, args):
     """Run the describe command."""
     client = apis.OperationsClient(release_track=base.ReleaseTrack.ALPHA)
-    op_ref = args.CONCEPTS.operation.Parse()
-    if not op_ref.Name():
-      raise exceptions.InvalidArgumentException(
-          'operation', 'operation id must be non-empty.'
-      )
+    op_ref = api_lib_utils.GetOperationRef(args)
     return client.Describe(operation=op_ref.RelativeName())

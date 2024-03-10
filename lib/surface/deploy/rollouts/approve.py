@@ -25,7 +25,9 @@ from googlecloudsdk.api_lib.util import exceptions as gcloud_exception
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.deploy import delivery_pipeline_util
+from googlecloudsdk.command_lib.deploy import deploy_policy_util
 from googlecloudsdk.command_lib.deploy import exceptions as deploy_exceptions
+from googlecloudsdk.command_lib.deploy import flags
 from googlecloudsdk.command_lib.deploy import release_util
 from googlecloudsdk.command_lib.deploy import resource_args
 from googlecloudsdk.core import resources
@@ -53,6 +55,7 @@ class Approve(base.CreateCommand):
   @staticmethod
   def Args(parser):
     resource_args.AddRolloutResourceArg(parser, positional=True)
+    flags.AddOverrideDeployPolicies(parser)
 
   @gcloud_exception.CatchHTTPErrorRaiseHTTPException(
       deploy_exceptions.HTTP_ERROR_FORMAT
@@ -84,5 +87,14 @@ class Approve(base.CreateCommand):
     release_util.PrintDiff(release_ref, release_obj, prompt=prompt)
 
     console_io.PromptContinue(cancel_on_no=True)
+    # On the command line deploy policy IDs are provided, but for the Approve
+    # API we need to provide the full resource name.
+    policies = deploy_policy_util.CreateDeployPolicyNamesFromIDs(
+        pipeline_ref, args.override_deploy_policies
+    )
 
-    return rollout.RolloutClient().Approve(rollout_ref.RelativeName(), True)
+    return rollout.RolloutClient().Approve(
+        rollout_ref.RelativeName(),
+        True,
+        policies,
+    )

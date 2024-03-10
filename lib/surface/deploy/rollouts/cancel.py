@@ -22,7 +22,9 @@ from googlecloudsdk.api_lib.clouddeploy import rollout
 from googlecloudsdk.api_lib.util import exceptions as gcloud_exception
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.deploy import delivery_pipeline_util
+from googlecloudsdk.command_lib.deploy import deploy_policy_util
 from googlecloudsdk.command_lib.deploy import exceptions as deploy_exceptions
+from googlecloudsdk.command_lib.deploy import flags
 from googlecloudsdk.command_lib.deploy import resource_args
 from googlecloudsdk.core import log
 
@@ -48,6 +50,7 @@ class Cancel(base.CreateCommand):
   @staticmethod
   def Args(parser):
     resource_args.AddRolloutResourceArg(parser, positional=True)
+    flags.AddOverrideDeployPolicies(parser)
 
   @gcloud_exception.CatchHTTPErrorRaiseHTTPException(
       deploy_exceptions.HTTP_ERROR_FORMAT
@@ -68,5 +71,12 @@ class Cancel(base.CreateCommand):
     log.status.Print(
         'Cancelling rollout {}.\n'.format(rollout_ref.RelativeName())
     )
+    # On the command line deploy policy IDs are provided, but for the
+    # CancelRollout API we need to provide the full resource name.
+    policies = deploy_policy_util.CreateDeployPolicyNamesFromIDs(
+        pipeline_ref, args.override_deploy_policies
+    )
 
-    return rollout.RolloutClient().CancelRollout(rollout_ref.RelativeName())
+    return rollout.RolloutClient().CancelRollout(
+        rollout_ref.RelativeName(), policies
+    )

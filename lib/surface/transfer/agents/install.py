@@ -414,6 +414,69 @@ class Install(base.Command):
         action='store_true',
         help=S3_COMPATIBLE_HELP_TEXT)
 
+    hdfs_group = parser.add_group(
+        category='HDFS',
+        sort_args=False,
+    )
+    hdfs_group.add_argument(
+        '--hdfs-namenode-uri',
+        help=(
+            'A URI representing an HDFS cluster including a schema, namenode,'
+            ' and port. Examples: "rpc://my-namenode:8020",'
+            ' "http://my-namenode:9870".\n\nUse "http" or "https" for WebHDFS.'
+            ' If no schema is'
+            ' provided, the CLI assumes native "rpc". If no port is provided,'
+            ' the default is 8020 for RPC, 9870 for HTTP, and 9871 for HTTPS.'
+            ' For example, the input "my-namenode" becomes'
+            ' "rpc://my-namenode:8020".'
+        ),
+    )
+    hdfs_group.add_argument(
+        '--hdfs-username',
+        help='Username for connecting to an HDFS cluster with simple auth.',
+    )
+    hdfs_group.add_argument(
+        '--hdfs-data-transfer-protection',
+        choices=['authentication', 'integrity', 'privacy'],
+        help=(
+            'Client-side quality of protection setting for Kerberized clusters.'
+            ' Client-side QOP value cannot be more restrictive than the'
+            ' server-side QOP value.'
+        ),
+    )
+
+    kerberos_group = parser.add_group(
+        category='Kerberos',
+        sort_args=False,
+    )
+    kerberos_group.add_argument(
+        '--kerberos-config-file', help='Path to Kerberos config file.'
+    )
+    kerberos_group.add_argument(
+        '--kerberos-keytab-file',
+        help=(
+            'Path to a Keytab file containing the user principal specified'
+            ' with the --kerberos-user-principal flag.'
+        ),
+    )
+    kerberos_group.add_argument(
+        '--kerberos-user-principal',
+        help=(
+            'Kerberos user principal to use when connecting to an HDFS cluster'
+            ' via Kerberos auth.'
+        ),
+    )
+    kerberos_group.add_argument(
+        '--kerberos-service-principal',
+        help=(
+            'Kerberos service principal to use, of the form'
+            ' "<primary>/<instance>". Realm is mapped from your Kerberos'
+            ' config. Any supplied realm is ignored. If not passed in, it will'
+            ' default to "hdfs/<namenode_fqdn>" (fqdn = fully qualified domain'
+            ' name).'
+        ),
+    )
+
   def Run(self, args):
     if args.count is not None and args.count < 1:
       raise ValueError('Agent count must be greater than zero.')
@@ -456,66 +519,3 @@ class InstallAlpha(Install):
         help='Adjust the maximum number of files less than or equal to 32 MiB'
         ' large that the agent can upload in parallel. Not recommended for'
         " users unfamiliar with Google Cloud's rate limiting.")
-
-    hdfs_group = parser.add_group(
-        category='HDFS',
-        hidden=True,
-    )
-    hdfs_group.add_argument(
-        '--hdfs-data-transfer-protection',
-        choices=['authentication', 'integrity', 'privacy'],
-        help=(
-            'Client-side quality of protection setting for Kerberized clusters.'
-            ' Client-side QOP value cannot be more restrictive than the'
-            ' server-side QOP value.'
-        ),
-    )
-    hdfs_group.add_argument(
-        '--hdfs-namenode-uri',
-        help=(
-            'A URI representing an HDFS cluster including a schema, namenode,'
-            ' and port. Examples: "rpc://my-namenode:8020",'
-            ' "http://my-namenode:9870".\n\nUse "http" or "https" for WebHDFS.'
-            ' If no schema is'
-            ' provided, the CLI assumes native "rpc". If no port is provided,'
-            ' the default is 8020 for RPC, 9870 for HTTP, and 9871 for HTTPS.'
-            ' For example, the input "my-namenode" becomes'
-            ' "rpc://my-namenode:8020".'
-        ),
-    )
-    hdfs_group.add_argument(
-        '--hdfs-username',
-        help='Username for connecting to an HDFS cluster with simple auth.',
-    )
-
-    kerberos_group = parser.add_group(
-        category='Kerberos',
-        hidden=True,
-    )
-    kerberos_group.add_argument(
-        '--kerberos-config-file', help='Path to Kerberos config file.'
-    )
-    kerberos_group.add_argument(
-        '--kerberos-keytab-file',
-        help=(
-            'Path to a Keytab file containing the user principal specified'
-            ' with the --kerberos-user-principal flag.'
-        ),
-    )
-    kerberos_group.add_argument(
-        '--kerberos-service-principal',
-        help=(
-            'Kerberos service principal to use, of the form'
-            ' "<primary>/<instance>". Realm is mapped from your Kerberos'
-            ' config. Any supplied realm is ignored. If not passed in, it will'
-            ' default to "hdfs/<namenode_fqdn>" (fqdn = fully qualified domain'
-            ' name).'
-        ),
-    )
-    kerberos_group.add_argument(
-        '--kerberos-user-principal',
-        help=(
-            'Kerberos user principal to use when connecting to an HDFS cluster'
-            ' via Kerberos auth.'
-        ),
-    )

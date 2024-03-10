@@ -18,8 +18,8 @@ from __future__ import division
 from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.apphub import service_projects as apis
+from googlecloudsdk.api_lib.apphub import utils as api_lib_utils
 from googlecloudsdk.calliope import base
-from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.apphub import flags
 
 _DETAILED_HELP = {
@@ -47,14 +47,10 @@ class RemoveGA(base.DeleteCommand):
   def Run(self, args):
     """Run the remove command."""
     client = apis.ServiceProjectsClient(release_track=base.ReleaseTrack.GA)
-    sp_ref = args.CONCEPTS.service_project.Parse()
-    if not sp_ref.Name():
-      raise exceptions.InvalidArgumentException(
-          'service project', 'service project id must be non-empty.'
-      )
+    service_project_ref = api_lib_utils.GetServiceProjectRef(args)
     return client.Remove(
-        service_project=sp_ref.RelativeName(),
-        async_flag=args.async_
+        service_project=service_project_ref.RelativeName(),
+        async_flag=args.async_,
     )
 
 
@@ -71,12 +67,8 @@ class RemoveAlpha(base.DeleteCommand):
   def Run(self, args):
     """Run the remove command."""
     client = apis.ServiceProjectsClient(release_track=base.ReleaseTrack.ALPHA)
-    sp_ref = args.CONCEPTS.service_project.Parse()
-    if not sp_ref.Name():
-      raise exceptions.InvalidArgumentException(
-          'service project', 'service project id must be non-empty.'
-      )
+    service_project_ref = api_lib_utils.GetServiceProjectRef(args)
     return client.Remove(
-        service_project=sp_ref.RelativeName(),
-        async_flag=args.async_
+        service_project=service_project_ref.RelativeName(),
+        async_flag=args.async_,
     )

@@ -83,7 +83,7 @@ def AddSCPArgs(parser):
   )
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.GA)
 class Scp(base.Command):
   """Copy files to and from a Cloud TPU Queued Resource via SCP."""
 

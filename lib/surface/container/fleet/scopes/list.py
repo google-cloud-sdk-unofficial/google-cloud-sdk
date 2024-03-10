@@ -20,6 +20,7 @@ from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.container.fleet import client
 from googlecloudsdk.calliope import base
+from googlecloudsdk.core import properties
 
 
 class List(base.ListCommand):
@@ -42,6 +43,8 @@ class List(base.ListCommand):
 
   def Run(self, args):
     project = args.project
+    if project is None:
+      project = properties.VALUES.core.project.Get()
     fleetclient = client.FleetClient(release_track=self.ReleaseTrack())
     # TODO(b/321111171): Use ListPermittedScopes in all release tracks.
     if self.ReleaseTrack() == base.ReleaseTrack.ALPHA:

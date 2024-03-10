@@ -1,4 +1,4 @@
-- release_tracks: [ALPHA]
+- release_tracks: [ALPHA, GA]
   help_text:
     brief: List Queued Resources.
     description: List all Queued Resources associated with a project and location.
@@ -9,7 +9,10 @@
 
   request:
     collection: tpu.projects.locations.queuedResources
-    api_version: v2alpha1
+    ALPHA:
+      api_version: v2alpha1
+    GA:
+      api_version: v2
 
   response:
     id_field: name

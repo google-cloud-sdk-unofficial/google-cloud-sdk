@@ -94,7 +94,7 @@ class Update(base.Command):
 
     flags.AddScheduledSnapshotFlagsToGroup(Update.update_type_group)
 
-    flags.AddMaintenanceWindowFlagsGroup(Update.update_type_group)
+    flags.AddMaintenanceWindowFlagsUpdateGroup(Update.update_type_group)
     flags.AddCloudDataLineageIntegrationUpdateFlagsToGroup(
         Update.update_type_group)
 
@@ -269,6 +269,7 @@ class Update(base.Command):
     self._addTriggererFields(params, args, env_obj)
 
     if self._support_maintenance_window:
+      params['clear_maintenance_window'] = args.clear_maintenance_window
       params['maintenance_window_start'] = args.maintenance_window_start
       params['maintenance_window_end'] = args.maintenance_window_end
       params[
@@ -386,6 +387,7 @@ class Update(base.Command):
         'disable-private-environment': args.disable_private_environment,
         'network': args.network,
         'subnetwork': args.subnetwork,
+        'clear-maintenance-window': args.clear_maintenance_window,
     }
     for k, v in possible_args.items():
       if v is not None and not is_composer3:

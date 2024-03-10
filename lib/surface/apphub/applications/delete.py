@@ -13,13 +13,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Command to delete an Application in the Project/Location."""
+
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+from googlecloudsdk.api_lib.apphub import utils as api_lib_utils
 from googlecloudsdk.api_lib.apphub.applications import client as apis
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.apphub import flags
+
 
 _DETAILED_HELP = {
     'DESCRIPTION': '{description}',
@@ -45,8 +48,8 @@ class DeleteGA(base.DeleteCommand):
   def Run(self, args):
     """Run the delete command."""
     client = apis.ApplicationsClient(release_track=base.ReleaseTrack.GA)
-    app_id = args.CONCEPTS.application.Parse()
-    return client.Delete(app_id=app_id.RelativeName(), async_flag=args.async_)
+    app_ref = api_lib_utils.GetApplicationRef(args)
+    return client.Delete(app_id=app_ref.RelativeName(), async_flag=args.async_)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -62,5 +65,5 @@ class DeleteAlpha(base.DeleteCommand):
   def Run(self, args):
     """Run the delete command."""
     client = apis.ApplicationsClient(release_track=base.ReleaseTrack.ALPHA)
-    app_id = args.CONCEPTS.application.Parse()
-    return client.Delete(app_id=app_id.RelativeName(), async_flag=args.async_)
+    app_ref = api_lib_utils.GetApplicationRef(args)
+    return client.Delete(app_id=app_ref.RelativeName(), async_flag=args.async_)

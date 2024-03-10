@@ -29,7 +29,7 @@ from googlecloudsdk.command_lib.policy_intelligence.simulator.orgpolicy import u
 from googlecloudsdk.core import log
 
 
-_DETAILED_HELP_ALPHA_BETA = {
+_DETAILED_HELP = {
     'brief':
         """\
       Preview of Violations Service for OrgPolicy Simulator.
@@ -54,7 +54,7 @@ _DETAILED_HELP_ALPHA_BETA = {
 }
 
 
-def _ArgsAlphaBeta(parser):
+def _ArgsParse(parser):
   """Parses arguments for the commands."""
   parser.add_argument(
       '--organization',
@@ -131,17 +131,17 @@ def _Run(args, version):
   overlay = op_api.GetOrgPolicyOverlay(
       policies=policies, custom_constraints=custom_constraints)
 
-  # Generate Violations Preview and get long operation id
+  # Create Violations Preview and get long operation id
   organization_resource = 'organizations/' + args.organization
   parent = utils.GetParentFromOrganization(organization_resource)
   violations = op_api.GetPolicysimulatorOrgPolicyViolationsPreview(
       overlay=overlay)
-  request = op_api.GenerateOrgPolicyViolationsPreviewRequest(
+  request = op_api.CreateOrgPolicyViolationsPreviewRequest(
       violations_preview=violations,
       parent=parent)
-  op_service = op_api.client.OrganizationsLocationsService(
+  op_service = op_api.client.OrganizationsLocationsOrgPolicyViolationsPreviewsService(
       op_api.client)
-  violations_preview_operation = op_service.OrgPolicyViolationsPreviews(
+  violations_preview_operation = op_service.Create(
       request=request)
 
   # Poll Long Running Operation and get Violations Preview
@@ -175,12 +175,12 @@ def _Run(args, version):
 class SimulateAlpha(base.Command):
   """Simulate the Org Policies."""
 
-  detailed_help = _DETAILED_HELP_ALPHA_BETA
+  detailed_help = _DETAILED_HELP
 
   @staticmethod
   def Args(parser):
     """Parses arguments for the commands."""
-    _ArgsAlphaBeta(parser)
+    _ArgsParse(parser)
 
   def Run(self, args):
     return _Run(args, self.ReleaseTrack())
@@ -190,12 +190,28 @@ class SimulateAlpha(base.Command):
 class SimulateBeta(base.Command):
   """Simulate the Org Policies."""
 
-  detailed_help = _DETAILED_HELP_ALPHA_BETA
+  detailed_help = _DETAILED_HELP
 
   @staticmethod
   def Args(parser):
     """Parses arguments for the commands."""
-    _ArgsAlphaBeta(parser)
+    _ArgsParse(parser)
+
+  def Run(self, args):
+    return _Run(args, self.ReleaseTrack())
+
+
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.Hidden
+class SimulateGA(base.Command):
+  """Simulate the Org Policies."""
+
+  detailed_help = _DETAILED_HELP
+
+  @staticmethod
+  def Args(parser):
+    """Parses arguments for the commands."""
+    _ArgsParse(parser)
 
   def Run(self, args):
     return _Run(args, self.ReleaseTrack())

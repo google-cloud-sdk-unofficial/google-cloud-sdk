@@ -18,6 +18,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+from googlecloudsdk.api_lib.apphub import utils as api_lib_utils
 from googlecloudsdk.api_lib.apphub.applications import client as apis
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.apphub import flags
@@ -47,7 +48,8 @@ class UpdateGA(base.UpdateCommand):
   def Run(self, args):
     """Run the create command."""
     client = apis.ApplicationsClient(release_track=base.ReleaseTrack.GA)
-    return client.Update(args, release_track=base.ReleaseTrack.GA)
+    app_ref = api_lib_utils.GetApplicationRef(args)
+    return client.Update(args, app_ref, release_track=base.ReleaseTrack.GA)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -63,4 +65,5 @@ class UpdateAlpha(base.UpdateCommand):
   def Run(self, args):
     """Run the create command."""
     client = apis.ApplicationsClient(release_track=base.ReleaseTrack.ALPHA)
-    return client.Update(args, release_track=base.ReleaseTrack.ALPHA)
+    app_ref = api_lib_utils.GetApplicationRef(args)
+    return client.Update(args, app_ref, release_track=base.ReleaseTrack.ALPHA)

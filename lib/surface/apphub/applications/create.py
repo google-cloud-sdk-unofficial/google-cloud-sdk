@@ -21,7 +21,6 @@ from __future__ import unicode_literals
 from googlecloudsdk.api_lib.apphub import utils as api_lib_utils
 from googlecloudsdk.api_lib.apphub.applications import client as apis
 from googlecloudsdk.calliope import base
-from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.apphub import flags
 
 
@@ -50,12 +49,8 @@ class CreateGA(base.CreateCommand):
   def Run(self, args):
     """Run the create command."""
     client = apis.ApplicationsClient(release_track=base.ReleaseTrack.GA)
-    app_ref = args.CONCEPTS.application.Parse()
+    app_ref = api_lib_utils.GetApplicationRef(args)
     parent_ref = app_ref.Parent()
-    if not parent_ref.Name():
-      raise exceptions.InvalidArgumentException(
-          'project', ' project id must be non-empty.'
-      )
 
     attributes = api_lib_utils.PopulateAttributes(
         args, release_track=base.ReleaseTrack.GA
@@ -85,12 +80,8 @@ class CreateAlpha(base.CreateCommand):
   def Run(self, args):
     """Run the create command."""
     client = apis.ApplicationsClient(release_track=base.ReleaseTrack.ALPHA)
-    app_ref = args.CONCEPTS.application.Parse()
+    app_ref = api_lib_utils.GetApplicationRef(args)
     parent_ref = app_ref.Parent()
-    if not parent_ref.Name():
-      raise exceptions.InvalidArgumentException(
-          'project', ' project id must be non-empty.'
-      )
 
     attributes = api_lib_utils.PopulateAttributes(
         args, release_track=base.ReleaseTrack.ALPHA

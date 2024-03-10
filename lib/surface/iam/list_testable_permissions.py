@@ -58,7 +58,7 @@ class ListTestablePermissions(base.Command):
     if args.resource.startswith('//'):
       resource = args.resource
     elif args.resource.startswith('http'):
-      resource = iam_util.GetResourceName(
+      resource = iam_util.GetFullResourceName(
           resources.REGISTRY.Parse(args.resource))
     if not resource:
       raise exceptions.InvalidResourceException(

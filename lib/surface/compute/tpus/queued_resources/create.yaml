@@ -1,4 +1,4 @@
-- release_tracks: [ALPHA]
+- release_tracks: [ALPHA, GA]
   help_text:
     brief: Create a Queued Resource.
     description: Create a new Queued Resource with the specified attributes.
@@ -28,11 +28,24 @@
       - googlecloudsdk.command_lib.compute.tpus.queued_resources.util:SetValidInterval:api_version=v2alpha1
       - googlecloudsdk.command_lib.compute.tpus.queued_resources.util:VerifyNodeCount
       - googlecloudsdk.command_lib.compute.tpus.queued_resources.util:CreateReservationName
+    GA:
+      api_version: v2
+      modify_request_hooks:
+      - googlecloudsdk.command_lib.util.hooks.request_modifiers:SetParentRequestHook
+      - googlecloudsdk.command_lib.compute.tpus.queued_resources.util:CreateNodeSpec:api_version=v2
+      - googlecloudsdk.command_lib.compute.tpus.queued_resources.util:SetSpot:api_version=v2
+      - googlecloudsdk.command_lib.compute.tpus.queued_resources.util:SetGuaranteed:api_version=v2
+      - googlecloudsdk.command_lib.compute.tpus.queued_resources.util:SetValidInterval:api_version=v2
+      - googlecloudsdk.command_lib.compute.tpus.queued_resources.util:VerifyNodeCount
+      - googlecloudsdk.command_lib.compute.tpus.queued_resources.util:CreateReservationName
 
   async:
     collection: tpu.projects.locations.operations
-    api_version: v2alpha1
     extract_resource_result: true
+    ALPHA:
+      api_version: v2alpha1
+    GA:
+      api_version: v2
 
   arguments:
     resource:
@@ -73,17 +86,24 @@
             - _REF_: googlecloudsdk.command_lib.compute.tpus.flags:type
               api_field: queuedResource.tpu.nodeSpec.node.acceleratorConfig.type
               required: true
+              release_tracks: [ALPHA]
+            - _REF_: googlecloudsdk.command_lib.compute.tpus.flags:ga-type
+              api_field: queuedResource.tpu.nodeSpec.node.acceleratorConfig.type
+              required: true
+              release_tracks: [GA]
             - _REF_: googlecloudsdk.command_lib.compute.tpus.flags:topology
               api_field: queuedResource.tpu.nodeSpec.node.acceleratorConfig.topology
               required: true
     - _REF_: googlecloudsdk.command_lib.compute.tpus.queued_resources.flags:runtime_version
 
     - _REF_: googlecloudsdk.command_lib.compute.tpus.queued_resources.flags:best_effort
+      release_tracks: [ALPHA]
     - _REF_: googlecloudsdk.command_lib.compute.tpus.queued_resources.flags:spot
     - _REF_: googlecloudsdk.command_lib.compute.tpus.queued_resources.flags:guaranteed
     - _REF_: googlecloudsdk.command_lib.compute.tpus.queued_resources.flags:min_duration
       hidden: true
     - _REF_: googlecloudsdk.command_lib.compute.tpus.queued_resources.flags:reserved
+      release_tracks: [ALPHA]
     - _REF_: googlecloudsdk.command_lib.compute.tpus.queued_resources.flags:valid_after_duration
     - _REF_: googlecloudsdk.command_lib.compute.tpus.queued_resources.flags:valid_after_time
     - _REF_: googlecloudsdk.command_lib.compute.tpus.queued_resources.flags:valid_until_duration
@@ -105,5 +125,6 @@
     - _REF_: googlecloudsdk.command_lib.compute.tpus.queued_resources.flags:enable_secure_boot
     - _REF_: googlecloudsdk.command_lib.compute.tpus.queued_resources.flags:range
     - _REF_: googlecloudsdk.command_lib.compute.tpus.queued_resources.flags:autocheckpoint_enabled
+      release_tracks: [ALPHA]
     - _REF_: googlecloudsdk.command_lib.compute.tpus.queued_resources.flags:boot_disk
       release_tracks: [ALPHA]

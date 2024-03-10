@@ -131,7 +131,7 @@ def AddSSHArgs(parser):
   )
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.GA)
 class Ssh(base.Command):
   """Send SSH commands to a Cloud TPU Queued Resource."""
 

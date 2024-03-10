@@ -25,7 +25,9 @@ from googlecloudsdk.command_lib.compute import flags as compute_flags
 from googlecloudsdk.command_lib.compute.public_delegated_prefixes import flags
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
+)
 class Update(base.UpdateCommand):
   r"""Updates a Compute Engine public delegated prefix.
 
@@ -44,18 +46,21 @@ class Update(base.UpdateCommand):
   def Args(parser):
     flags.MakeRegionalPublicDelegatedPrefixesArg().AddArgument(parser)
     announce_withdraw_parser = parser.add_mutually_exclusive_group(
-        required=True)
+        required=True
+    )
     flags.AddUpdatePrefixArgs(announce_withdraw_parser)
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     pdp_client = public_delegated_prefixes.PublicDelegatedPrefixesClient(
-        holder.client, holder.client.messages, holder.resources)
+        holder.client, holder.client.messages, holder.resources
+    )
 
     pdp_ref = flags.MakeRegionalPublicDelegatedPrefixesArg().ResolveAsResource(
         args,
         holder.resources,
-        scope_lister=compute_flags.GetDefaultScopeLister(holder.client))
+        scope_lister=compute_flags.GetDefaultScopeLister(holder.client),
+    )
 
     if args.announce_prefix:
       return pdp_client.Announce(pdp_ref)

@@ -19,8 +19,8 @@ from __future__ import division
 from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.apphub import service_projects as apis
+from googlecloudsdk.api_lib.apphub import utils as api_lib_utils
 from googlecloudsdk.calliope import base
-from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.apphub import flags
 
 _DETAILED_HELP = {
@@ -48,11 +48,7 @@ class DescribeGA(base.DescribeCommand):
   def Run(self, args):
     """Run the describe command."""
     client = apis.ServiceProjectsClient(release_track=base.ReleaseTrack.GA)
-    service_project_ref = args.CONCEPTS.service_project.Parse()
-    if not service_project_ref.Name():
-      raise exceptions.InvalidArgumentException(
-          'service project', 'service project id must be non-empty.'
-      )
+    service_project_ref = api_lib_utils.GetServiceProjectRef(args)
     return client.Describe(service_project=service_project_ref.RelativeName())
 
 
@@ -69,9 +65,5 @@ class DescribeAlpha(base.DescribeCommand):
   def Run(self, args):
     """Run the describe command."""
     client = apis.ServiceProjectsClient(release_track=base.ReleaseTrack.ALPHA)
-    service_project_ref = args.CONCEPTS.service_project.Parse()
-    if not service_project_ref.Name():
-      raise exceptions.InvalidArgumentException(
-          'service project', 'service project id must be non-empty.'
-      )
+    service_project_ref = api_lib_utils.GetServiceProjectRef(args)
     return client.Describe(service_project=service_project_ref.RelativeName())

@@ -25,56 +25,10 @@ from googlecloudsdk.command_lib.compute import flags as compute_flags
 from googlecloudsdk.command_lib.compute.public_advertised_prefixes import flags
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
+)
 class Update(base.UpdateCommand):
-  r"""Updates a Compute Engine public advertised prefix.
-
-  ## EXAMPLES
-
-  To update a public advertised prefix:
-
-    $ {command} my-pap --status=ptr-configured
-  """
-  support_pap_announce_withdraw = False
-
-  @classmethod
-  def Args(cls, parser):
-    flags.MakePublicAdvertisedPrefixesArg().AddArgument(parser)
-    if cls.support_pap_announce_withdraw:
-      announce_withdraw_parser = parser.add_mutually_exclusive_group(
-          required=True)
-      flags.AddUpdatePapArgsToParser(announce_withdraw_parser,
-                                     cls.support_pap_announce_withdraw)
-    else:
-      flags.AddUpdatePapArgsToParser(parser, cls.support_pap_announce_withdraw)
-
-  def Run(self, args):
-    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
-    client = holder.client
-    messages = holder.client.messages
-    resources = holder.resources
-
-    pap_ref = flags.MakePublicAdvertisedPrefixesArg().ResolveAsResource(
-        args,
-        resources,
-        scope_lister=compute_flags.GetDefaultScopeLister(holder.client))
-
-    pap_client = public_advertised_prefixes.PublicAdvertisedPrefixesClient(
-        client, messages, resources)
-
-    if self.support_pap_announce_withdraw:
-      if args.status is not None:
-        return pap_client.Patch(pap_ref, status=args.status)
-      if args.announce_prefix:
-        return pap_client.Announce(pap_ref)
-      if args.withdraw_prefix:
-        return pap_client.Withdraw(pap_ref)
-    else:
-      return pap_client.Patch(pap_ref, status=args.status)
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class UpdateAlpha(Update):
   r"""Updates a Compute Engine public advertised prefix.
 
   ## EXAMPLES
@@ -91,4 +45,31 @@ class UpdateAlpha(Update):
 
     $ {command} my-pap --withdraw-prefix
   """
-  support_pap_announce_withdraw = True
+
+  @classmethod
+  def Args(cls, parser):
+    flags.MakePublicAdvertisedPrefixesArg().AddArgument(parser)
+    announce_withdraw_parser = parser.add_mutually_exclusive_group(
+        required=True)
+    flags.AddUpdatePapArgsToParser(announce_withdraw_parser)
+
+  def Run(self, args):
+    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    client = holder.client
+    messages = holder.client.messages
+    resources = holder.resources
+
+    pap_ref = flags.MakePublicAdvertisedPrefixesArg().ResolveAsResource(
+        args,
+        resources,
+        scope_lister=compute_flags.GetDefaultScopeLister(holder.client))
+
+    pap_client = public_advertised_prefixes.PublicAdvertisedPrefixesClient(
+        client, messages, resources)
+
+    if args.status is not None:
+      return pap_client.Patch(pap_ref, status=args.status)
+    if args.announce_prefix:
+      return pap_client.Announce(pap_ref)
+    if args.withdraw_prefix:
+      return pap_client.Withdraw(pap_ref)

@@ -19,8 +19,8 @@ from __future__ import division
 from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.apphub import discovered_workloads as apis
+from googlecloudsdk.api_lib.apphub import utils as api_lib_utils
 from googlecloudsdk.calliope import base
-from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.apphub import flags
 
 _DETAILED_HELP = {
@@ -48,11 +48,7 @@ class DescribeGA(base.DescribeCommand):
   def Run(self, args):
     """Run the describe command."""
     client = apis.DiscoveredWorkloadsClient(release_track=base.ReleaseTrack.GA)
-    dis_workload_ref = args.CONCEPTS.discovered_workload.Parse()
-    if not dis_workload_ref.Name():
-      raise exceptions.InvalidArgumentException(
-          'discovered workload', 'discovered workload id must be non-empty.'
-      )
+    dis_workload_ref = api_lib_utils.GetDiscoveredWorkloadRef(args)
     return client.Describe(discovered_workload=dis_workload_ref.RelativeName())
 
 
@@ -71,9 +67,5 @@ class DescribeAlpha(base.DescribeCommand):
     client = apis.DiscoveredWorkloadsClient(
         release_track=base.ReleaseTrack.ALPHA
     )
-    dis_workload_ref = args.CONCEPTS.discovered_workload.Parse()
-    if not dis_workload_ref.Name():
-      raise exceptions.InvalidArgumentException(
-          'discovered workload', 'discovered workload id must be non-empty.'
-      )
+    dis_workload_ref = api_lib_utils.GetDiscoveredWorkloadRef(args)
     return client.Describe(discovered_workload=dis_workload_ref.RelativeName())

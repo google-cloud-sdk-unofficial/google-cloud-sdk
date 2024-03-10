@@ -81,6 +81,7 @@ Add a label to an existing deployment:
     flags.AddImportExistingResourcesFlag(parser)
     flags.AddArtifactsGCSBucketFlag(parser)
     flags.AddTFVersionConstraintFlag(parser)
+    flags.AddQuotaValidationFlag(parser)
 
     concept_parsers.ConceptParser(
         [
@@ -124,4 +125,5 @@ Add a label to an existing deployment:
         args.input_values,
         args.inputs_file,
         args.labels,
+        args.quota_validation,
     )

@@ -36,11 +36,18 @@ _DETAILED_HELP = frozendict.frozendict({
         To list Container Registry usage in a folder:
 
           $ {command} --folder=my-folder
+
+        To list all active Container Registry usage in an organization:
+
+          $ {command} --organization=my-org --filter="usage=ACTIVE"
+
+        To list all projects that aren't redirected yet:
+
+          $ {command} --organization=my-org --filter="usage!=REDIRECTED"
         """,
 })
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class ListGCRUsage(base.ListCommand):
   """List Container Registry usage.
@@ -51,14 +58,28 @@ class ListGCRUsage(base.ListCommand):
   `storage.objects.list permission` on the Cloud Storage buckets used by
   Container Registry.
 
-  REDIRECTED: Container Registry projects that have been redirected to Artifact
-  Registry.
+  The tool returns the following lists of usage states:
 
-  ACTIVE: Container Registry projects that have had a pull or push in the last
-  30 days.
+  ACTIVE: Container Registry usage has occurred in the last 30 days. The host
+  location and project are not redirected.
 
-  INACTIVE: Container Registry projects that have not had a pull or push in the
-  last 30 days.
+  INACTIVE: No Container Registry usage has occurred in the last 30 days. The
+  host location and project are not redirected.
+
+  REDIRECTED: The project has been redirected to Artifact Registry but still has
+  Container Registry Cloud Storage buckets. This project will continue to
+  function after Container Registry is turned down and no further action is
+  required. You can reduce costs by deleting the Container Registry Cloud
+  Storage buckets.
+
+  REDIRECTION_INCOMPLETE: Requests are redirected to Artifact Registry, but data
+  is still being copied from Container Registry.
+
+  LEGACY: Container Registry usage is unknown. This state is caused by legacy
+  Container Registry projects that store container image metadata files in Cloud
+  Storage buckets. For more information on legacy Container Registry projects,
+  see
+  https://cloud.google.com/container-registry/docs/deprecations/feature-deprecations#container_image_metadata_storage_change.
   """
 
   detailed_help = _DETAILED_HELP
