@@ -34,7 +34,7 @@ DETAILED_HELP = {
         To apply a conversion workspace:
 
             $ {command} my-conversion-workspace --region=us-central1
-            --destination-connection-profile=projects/$$PROJECT_ID$$/locations/us-central1/connectionProfiles/destination-connection-profile-name
+            --destination-connection-profile=projects/1234/locations/us-central1/connectionProfiles/destination-connection-profile-name
         """,
 }
 

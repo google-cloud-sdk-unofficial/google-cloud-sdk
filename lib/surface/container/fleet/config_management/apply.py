@@ -21,6 +21,7 @@ from __future__ import unicode_literals
 from googlecloudsdk.command_lib.container.fleet import resources
 from googlecloudsdk.command_lib.container.fleet.config_management import utils
 from googlecloudsdk.command_lib.container.fleet.features import base
+from googlecloudsdk.command_lib.container.fleet.policycontroller import constants
 from googlecloudsdk.core import exceptions
 from googlecloudsdk.core import yaml
 
@@ -389,24 +390,24 @@ def _build_monitoring_msg(spec_monitoring, msg):
     configmanagement.spec.policyController.monitoring
   Raises: Error, if Policy Controller Monitoring Backend is not recognized
   """
-  if spec_monitoring['backends'] is None:
+  backends = spec_monitoring.get('backends', [])
+  if not backends:
     return None
-  backends = []
-  for backend in spec_monitoring['backends']:
-    if backend == 'prometheus':
-      backends.append(
-          msg.ConfigManagementPolicyControllerMonitoring.BackendsValueListEntryValuesEnum.PROMETHEUS
-      )
-    elif backend == 'cloudmonitoring':
-      backends.append(
-          msg.ConfigManagementPolicyControllerMonitoring.BackendsValueListEntryValuesEnum.CLOUD_MONITORING
-      )
-    else:
+
+  # n.b. Policy Controller is the source of truth for supported backends.
+  converter = constants.monitoring_backend_converter(msg)
+
+  def convert(backend):
+    result = converter.get(backend.lower())
+    if not result:
       raise exceptions.Error(
-          'policyController.monitoring.backend '
-          + backend
-          + ' is not recognized'
+          'policyController.monitoring.backend {} is not recognized'.format(
+              backend
+          )
       )
+    return result
+
+  monitoring_backends = [convert(backend) for backend in backends]
   monitoring = msg.ConfigManagementPolicyControllerMonitoring()
-  monitoring.backends = backends
+  monitoring.backends = monitoring_backends
   return monitoring

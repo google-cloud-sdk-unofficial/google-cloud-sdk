@@ -359,7 +359,7 @@ class Ssh(base.Command):
                                      args.strict_host_key_checking,
                                      host_keys_to_add=host_keys)
 
-    if oslogin_state.third_party_user:
+    if oslogin_state.third_party_user or oslogin_state.require_certificates:
       # Use the region if present; fall back to parsing region from zone.
       region = args.region if args.region else args.zone[:args.zone.rindex('-')]
       cert_file = ssh.CertFileFromRegion(region)

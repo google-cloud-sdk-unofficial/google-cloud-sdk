@@ -42,7 +42,8 @@ class List(base.ListCommand):
 
   @staticmethod
   def Args(parser):
-    flags.AddInstance(parser, True)
+    flags.AddOptionalInstance(parser, True)
+    flags.AddProjectLevelBackupEndpoint(parser)
     parser.display_info.AddFormat("""
       table(
         id,
@@ -69,6 +70,32 @@ class List(base.ListCommand):
     client = api_util.SqlClient(api_util.API_VERSION_DEFAULT)
     sql_client = client.sql_client
     sql_messages = client.sql_messages
+
+    if args.project_level:
+      # For project-level backups, this command updates the output table.
+      # pylint:disable-next=protected-access
+      args._GetParser().ai.display_info.AddFormat("""table(
+            name,
+            backupInterval.startTime.iso():label=WINDOW_START_TIME,
+            error.errors[0].code.yesno(no="-"):label=ERROR,
+            state:label=STATE,
+            instance,
+            type
+          )""")
+      return list_pager.YieldFromList(
+          sql_client.backups,
+          sql_messages.SqlBackupsListBackupsRequest(
+              parent='projects/{0}'.format(
+                  properties.VALUES.core.project.GetOrFail()
+              ),
+              filter=args.filter,
+          ),
+          limit=args.limit,
+          batch_size=args.page_size,
+          batch_size_attribute='pageSize',
+          method='ListBackups',
+          field='backups',
+      )
 
     validate.ValidateInstanceName(args.instance)
     instance_ref = client.resource_parser.Parse(

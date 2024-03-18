@@ -120,6 +120,7 @@ def _CommonArgs(
     support_specific_then_x_affinity=False,
     support_ipv6_only=False,
     support_graceful_shutdown=False,
+    support_igmp_query=False,
 ):
   """Register parser args common to all tracks."""
   metadata_utils.AddMetadataArgs(parser)
@@ -146,7 +147,8 @@ def _CommonArgs(
       support_network_queue_count=support_network_queue_count,
       support_network_attachments=support_network_attachments,
       support_vlan_nic=support_vlan_nic,
-      support_ipv6_only=support_ipv6_only)
+      support_ipv6_only=support_ipv6_only,
+      support_igmp_query=support_igmp_query)
   instances_flags.AddAcceleratorArgs(parser)
   instances_flags.AddMachineTypeArgs(parser)
   instances_flags.AddMaintenancePolicyArgs(
@@ -296,6 +298,7 @@ class Create(base.CreateCommand):
   _support_enable_confidential_compute = True
   _support_specific_then_x_affinity = False
   _support_graceful_shutdown = False
+  _support_igmp_query = False
 
   @classmethod
   def Args(cls, parser):
@@ -320,6 +323,7 @@ class Create(base.CreateCommand):
         support_enable_confidential_compute=cls._support_enable_confidential_compute,
         support_specific_then_x_affinity=cls._support_specific_then_x_affinity,
         support_graceful_shutdown=cls._support_graceful_shutdown,
+        support_igmp_query=cls._support_igmp_query,
     )
     cls.SOURCE_INSTANCE_TEMPLATE = (
         instances_flags.MakeSourceInstanceTemplateArg()
@@ -782,6 +786,7 @@ class CreateBeta(Create):
   _support_enable_confidential_compute = True
   _support_specific_then_x_affinity = True
   _support_graceful_shutdown = False
+  _support_igmp_query = False
 
   def GetSourceMachineImage(self, args, resources):
     """Retrieves the specified source machine image's selflink.
@@ -822,6 +827,7 @@ class CreateBeta(Create):
         support_enable_confidential_compute=cls._support_enable_confidential_compute,
         support_specific_then_x_affinity=cls._support_specific_then_x_affinity,
         support_graceful_shutdown=cls._support_graceful_shutdown,
+        support_igmp_query=cls._support_igmp_query,
     )
     cls.SOURCE_INSTANCE_TEMPLATE = (
         instances_flags.MakeSourceInstanceTemplateArg()
@@ -888,6 +894,7 @@ class CreateAlpha(CreateBeta):
   _support_specific_then_x_affinity = True
   _support_ipv6_only = True
   _support_graceful_shutdown = True
+  _support_igmp_query = True
 
   @classmethod
   def Args(cls, parser):
@@ -917,6 +924,7 @@ class CreateAlpha(CreateBeta):
         support_specific_then_x_affinity=cls._support_specific_then_x_affinity,
         support_ipv6_only=cls._support_ipv6_only,
         support_graceful_shutdown=cls._support_graceful_shutdown,
+        support_igmp_query=cls._support_igmp_query,
     )
 
     CreateAlpha.SOURCE_INSTANCE_TEMPLATE = (

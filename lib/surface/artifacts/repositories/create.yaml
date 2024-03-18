@@ -94,7 +94,6 @@
       type: bool
       api_field: repository.remoteRepositoryConfig.disableUpstreamValidation
       default: null
-      hidden: true
       help_text: |
         Do not make an HTTP request to validate the remote upstream. Not recommended when setting a custom remote upstream unless you are absolutely sure your upstream URI and any auth is valid.
     - group:

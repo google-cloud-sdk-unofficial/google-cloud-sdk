@@ -276,6 +276,7 @@ class Create(base.CreateCommand):
     ops.enable_best_effort_provision = args.enable_best_effort_provision
     ops.min_provision_nodes = args.min_provision_nodes
     ops.placement_policy = args.placement_policy
+    ops.enable_queued_provisioning = args.enable_queued_provisioning
     ops.tpu_topology = args.tpu_topology
     return ops
 

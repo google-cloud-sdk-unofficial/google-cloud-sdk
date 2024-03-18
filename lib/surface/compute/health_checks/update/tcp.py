@@ -252,7 +252,7 @@ class Update(base.UpdateCommand):
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class UpdateBeta(Update):
 
-  _include_source_regions = False
+  _include_source_regions = True
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)

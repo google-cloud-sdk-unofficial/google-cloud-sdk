@@ -109,12 +109,15 @@ class CreateBeta(Create):
 
   @staticmethod
   def Args(parser):
-    secrets_args.AddSecret(
-        parser, purpose='to create', positional=True, required=True)
+    secrets_args.AddGlobalOrRegionalSecret(
+        parser, purpose='to create', positional=True, required=True
+    )
     secrets_args.AddDataFile(parser, required=True)
 
   def Run(self, args):
-    secret_ref = args.CONCEPTS.secret.Parse()
+    result = args.CONCEPTS.secret.Parse()
+    is_regional = result.concept_type.name == 'regional secret'
+    secret_ref = result.result
     data = secrets_util.ReadFileOrStdin(args.data_file)
 
     # Differentiate between the flag being provided with an empty value and the
@@ -125,7 +128,10 @@ class CreateBeta(Create):
     data_crc32c = crc32c.get_crc32c(data)
     version = secrets_api.Secrets().AddVersion(secret_ref, data,
                                                crc32c.get_checksum(data_crc32c))
-    version_ref = secrets_args.ParseVersionRef(version.name)
+    if is_regional:
+      version_ref = secrets_args.ParseRegionalVersionRef(version.name)
+    else:
+      version_ref = secrets_args.ParseVersionRef(version.name)
     secrets_log.Versions().Created(version_ref)
     if not version.clientSpecifiedPayloadChecksum:
       raise exceptions.HttpException(

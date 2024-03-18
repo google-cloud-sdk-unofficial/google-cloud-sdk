@@ -101,25 +101,6 @@ def ExecutePythonTool(tool_dir, exec_name, *args):
     if bq_py:
       py_path = bq_py
 
-  if exec_name == 'dev_appserver.py':
-    if platforms.OperatingSystem.Current() != platforms.OperatingSystem.WINDOWS:
-      # Hard code the python to 'python2' which should exist on most Unix based
-      # systems.
-      py_path = 'python2'
-    else:
-      # On windows attempt to use the bundled PY2 component.
-      bundled_py2 = os.path.join(
-          SDK_ROOT, 'platform', 'bundledpython2', 'python.exe')
-      if os.path.exists(bundled_py2):
-        py_path = bundled_py2
-
-    # Set this ENV var to explicitly select the python binary to use for
-    # dev_appserver.py
-    devapp_env_py = encoding.GetEncodedValue(os.environ,
-                                             'CLOUDSDK_DEVAPPSERVER_PYTHON')
-    if devapp_env_py:
-      py_path = devapp_env_py
-
   _ExecuteTool(
       execution_utils.ArgsForPythonTool(
           _FullPath(tool_dir, exec_name), *args, python=py_path),

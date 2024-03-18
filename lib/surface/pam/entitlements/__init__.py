@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""The command group for the PAM CLI."""
+"""The command group for the PAM Entitlements CLI."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -36,5 +36,10 @@ class Entitlements(base.Group):
      run:
 
      ${command} describe entitlement-name
+
+     To list all entitlement under a parent,
+     run:
+
+     ${command} list --location parent
 
   """

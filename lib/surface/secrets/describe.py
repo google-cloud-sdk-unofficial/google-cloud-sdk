@@ -62,6 +62,12 @@ class DescribeBeta(Describe):
 
   @staticmethod
   def Args(parser):
-    secrets_args.AddSecret(
-        parser, purpose='to describe', positional=True, required=True)
+    secrets_args.AddGlobalOrRegionalSecret(
+        parser, purpose='to describe', positional=True, required=True
+    )
 
+  def Run(self, args):
+    result = args.CONCEPTS.secret.Parse()
+    secret_ref = result.result
+    secret = secrets_api.Secrets().Get(secret_ref)
+    return secret

@@ -96,14 +96,15 @@ class DeleteBeta(Delete):
 
   @staticmethod
   def Args(parser):
-    secrets_args.AddSecret(
-        parser, purpose='to delete', positional=True, required=True)
+    secrets_args.AddGlobalOrRegionalSecret(
+        parser, purpose='to delete', positional=True, required=True
+    )
     secrets_args.AddSecretEtag(parser)
 
   def Run(self, args):
     messages = secrets_api.GetMessages()
-    secret_ref = args.CONCEPTS.secret.Parse()
-
+    result = args.CONCEPTS.secret.Parse()
+    secret_ref = result.result
     # List all secret versions and parse their refs
     versions = secrets_api.Versions().ListWithPager(
         secret_ref=secret_ref, limit=9999)

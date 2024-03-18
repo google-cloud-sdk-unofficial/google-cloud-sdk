@@ -21,7 +21,9 @@ from __future__ import unicode_literals
 from googlecloudsdk.api_lib.clouddeploy import job_run
 from googlecloudsdk.api_lib.util import exceptions as gcloud_exception
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.deploy import deploy_policy_util
 from googlecloudsdk.command_lib.deploy import exceptions as deploy_exceptions
+from googlecloudsdk.command_lib.deploy import flags
 from googlecloudsdk.command_lib.deploy import resource_args
 from googlecloudsdk.core import log
 
@@ -48,6 +50,7 @@ class Terminate(base.UpdateCommand):
   @staticmethod
   def Args(parser):
     resource_args.AddJobRunResourceArg(parser, positional=True)
+    flags.AddOverrideDeployPolicies(parser)
 
   @gcloud_exception.CatchHTTPErrorRaiseHTTPException(
       deploy_exceptions.HTTP_ERROR_FORMAT
@@ -58,5 +61,14 @@ class Terminate(base.UpdateCommand):
     log.status.Print(
         'Terminating job run {}.\n'.format(job_run_ref.RelativeName())
     )
+    # On the command line deploy policy IDs are provided, but for the
+    # Terminate API we need to provide the full resource name.
+    pipeline_ref = job_run_ref.Parent().Parent().Parent()
+    policies = deploy_policy_util.CreateDeployPolicyNamesFromIDs(
+        pipeline_ref, args.override_deploy_policies
+    )
 
-    return job_run.JobRunsClient().Terminate(job_run_ref.RelativeName())
+    return job_run.JobRunsClient().Terminate(
+        name=job_run_ref.RelativeName(),
+        override_deploy_policies=policies,
+    )

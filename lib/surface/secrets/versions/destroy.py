@@ -88,13 +88,14 @@ class DestroyBeta(Destroy):
 
   @staticmethod
   def Args(parser):
-    secrets_args.AddVersion(
-        parser, purpose='to destroy', positional=True, required=True)
+    secrets_args.AddGlobalOrRegionalVersion(
+        parser, purpose='to destroy', positional=True, required=True
+    )
     secrets_args.AddVersionEtag(parser)
 
   def Run(self, args):
-    version_ref = args.CONCEPTS.version.Parse()
-
+    result = args.CONCEPTS.version.Parse()
+    version_ref = result.result
     # Destructive action, prompt to continue
     console_io.PromptContinue(
         self.CONFIRM_DESTROY_MESSAGE.format(

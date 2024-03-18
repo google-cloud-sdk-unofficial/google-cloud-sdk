@@ -30,7 +30,6 @@ from googlecloudsdk.core import log
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
-@base.Hidden
 class Download(base.Command):
   """Download an Artifact Registry file.
 
@@ -87,6 +86,7 @@ class Download(base.Command):
     )
     tmp_path = os.path.join(tempfile.gettempdir(), filename)
     final_path = os.path.join(args.destination, filename)
+    final_path = os.path.expanduser(final_path)
     dest_dir = os.path.dirname(final_path)
     if not os.path.exists(dest_dir):
       raise ar_exceptions.DirectoryNotExistError(

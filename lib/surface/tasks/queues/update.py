@@ -137,13 +137,29 @@ class Update(base.UpdateCommand):
       )
     else:
       app_engine_routing_override = queue_config.appEngineRoutingOverride
+
+      http_target_args = parsers.GetHttpTargetArgs(queue_config)
       update_response = queues_client.Patch(
           queue_ref,
           updated_fields,
           retry_config=queue_config.retryConfig,
           rate_limits=queue_config.rateLimits,
           app_engine_routing_override=app_engine_routing_override,
-          stackdriver_logging_config=queue_config.stackdriverLoggingConfig)
+          stackdriver_logging_config=queue_config.stackdriverLoggingConfig,
+          http_uri_override=http_target_args['http_uri_override'],
+          http_method_override=http_target_args['http_method_override'],
+          http_header_override=http_target_args['http_header_override'],
+          http_oauth_email_override=http_target_args[
+              'http_oauth_email_override'
+          ],
+          http_oauth_scope_override=http_target_args[
+              'http_oauth_scope_override'
+          ],
+          http_oidc_email_override=http_target_args['http_oidc_email_override'],
+          http_oidc_audience_override=http_target_args[
+              'http_oidc_audience_override'
+          ],
+      )
     log.status.Print('Updated queue [{}].'.format(
         parsers.GetConsolePromptString(queue_ref.RelativeName())))
     return update_response

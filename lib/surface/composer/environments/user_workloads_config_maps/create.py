@@ -46,7 +46,10 @@ class CreateUserWorkloadsConfigMap(base.Command):
     parser.add_argument(
         '--config-map-file-path',
         type=str,
-        help='Path to a local file with Kubernetes ConfigMap in YAML format.',
+        help=(
+            'Path to a local file with a single Kubernetes ConfigMap in YAML'
+            ' format.'
+        ),
         required=True,
     )
 

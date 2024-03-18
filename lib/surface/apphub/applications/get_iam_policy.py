@@ -34,7 +34,6 @@ _DETAILED_HELP = {
 }
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class GetIamPolicyGA(base.ListCommand):
   """Get the IAM policy for an Apphub application.

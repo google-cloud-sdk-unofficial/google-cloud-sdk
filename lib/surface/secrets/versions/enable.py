@@ -75,12 +75,14 @@ class CreateBeta(Create):
 
   @staticmethod
   def Args(parser):
-    secrets_args.AddVersion(
-        parser, purpose='to enable', positional=True, required=True)
+    secrets_args.AddGlobalOrRegionalVersion(
+        parser, purpose='to enable', positional=True, required=True
+    )
     secrets_args.AddVersionEtag(parser)
 
   def Run(self, args):
-    version_ref = args.CONCEPTS.version.Parse()
+    result = args.CONCEPTS.version.Parse()
+    version_ref = result.result
     result = secrets_api.Versions().Enable(version_ref, etag=args.etag)
     secrets_log.Versions().Enabled(version_ref)
     return result

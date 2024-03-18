@@ -34,7 +34,6 @@ _DETAILED_HELP = {
 }
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class DeleteGA(base.DeleteCommand):
   """Delete an Apphub application."""

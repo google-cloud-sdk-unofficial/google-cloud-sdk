@@ -22,6 +22,7 @@ from googlecloudsdk.api_lib.clouddeploy import rollout
 from googlecloudsdk.api_lib.util import exceptions as gcloud_exception
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.deploy import delivery_pipeline_util
+from googlecloudsdk.command_lib.deploy import deploy_policy_util
 from googlecloudsdk.command_lib.deploy import exceptions as deploy_exceptions
 from googlecloudsdk.command_lib.deploy import flags
 from googlecloudsdk.command_lib.deploy import resource_args
@@ -51,6 +52,7 @@ class RetryJob(base.CreateCommand):
     resource_args.AddRolloutResourceArg(parser, positional=True)
     flags.AddJobId(parser)
     flags.AddPhaseId(parser)
+    flags.AddOverrideDeployPolicies(parser)
 
   @gcloud_exception.CatchHTTPErrorRaiseHTTPException(
       deploy_exceptions.HTTP_ERROR_FORMAT
@@ -67,6 +69,14 @@ class RetryJob(base.CreateCommand):
 
     log.status.Print('Retrying job {} in phase {} of rollout {}.\n'.format(
         args.job_id, args.phase_id, rollout_ref.RelativeName()))
-
-    return rollout.RolloutClient().RetryJob(rollout_ref.RelativeName(),
-                                            args.job_id, args.phase_id)
+    # On the command line deploy policy IDs are provided, but for the
+    # RetryJob API we need to provide the full resource name.
+    policies = deploy_policy_util.CreateDeployPolicyNamesFromIDs(
+        pipeline_ref, args.override_deploy_policies
+    )
+    return rollout.RolloutClient().RetryJob(
+        rollout_ref.RelativeName(),
+        args.job_id,
+        args.phase_id,
+        override_deploy_policies=policies,
+    )

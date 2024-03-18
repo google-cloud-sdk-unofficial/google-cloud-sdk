@@ -37,6 +37,8 @@
         name.basename():label=CLUSTER_NAME:sort=2,
         state:label=STATUS,
         name.segment(3):label=REGION,
+        nodeType:label=NODE_TYPE,
+        preciseSizeGb:label=PRECISE_SIZE_GB,
         sizeGb:label=SIZE_GB,
         shardCount:label=SHARD_COUNT,
         replicaCount:label=REPLICA_COUNT,

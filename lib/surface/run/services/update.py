@@ -61,6 +61,7 @@ Container Flags
     group.AddArgument(flags.AddVolumeMountFlag())
     group.AddArgument(flags.RemoveVolumeMountFlag())
     group.AddArgument(flags.ClearVolumeMountsFlag())
+    group.AddArgument(flags.BaseImageArg())
 
   return group
 
@@ -135,18 +136,12 @@ class Update(base.Command):
     container_args = ContainerArgGroup(cls.ReleaseTrack())
     container_parser.AddContainerFlags(parser, container_args)
 
-  def Run(self, args):
-    """Update the service resource.
+  def _ConnectionContext(self, args):
+    return connection_context.GetConnectionContext(
+        args, flags.Product.RUN, self.ReleaseTrack()
+    )
 
-       Different from `deploy` in that it can only update the service spec but
-       no IAM or Cloud build changes.
-
-    Args:
-      args: Args!
-
-    Returns:
-      googlecloudsdk.api_lib.run.Service, the updated service
-    """
+  def _GetBaseChanges(self, args):
     changes = flags.GetServiceConfigurationChanges(args, self.ReleaseTrack())
     if not changes or (
         len(changes) == 1
@@ -169,10 +164,23 @@ class Update(base.Command):
     changes.append(
         config_changes.SetLaunchStageAnnotationChange(self.ReleaseTrack())
     )
+    return changes
 
-    conn_context = connection_context.GetConnectionContext(
-        args, flags.Product.RUN, self.ReleaseTrack()
-    )
+  def Run(self, args):
+    """Update the service resource.
+
+       Different from `deploy` in that it can only update the service spec but
+       no IAM or Cloud build changes.
+
+    Args:
+      args: Args!
+
+    Returns:
+      googlecloudsdk.api_lib.run.Service, the updated service
+    """
+    changes = self._GetBaseChanges(args)
+
+    conn_context = self._ConnectionContext(args)
     service_ref = args.CONCEPTS.service.Parse()
     flags.ValidateResource(service_ref)
 
@@ -243,6 +251,7 @@ class BetaUpdate(Update):
     # Flags specific to managed CR
     managed_group = flags.GetManagedArgGroup(parser)
     flags.AddDefaultUrlFlag(managed_group)
+    flags.AddDeployHealthCheckFlag(managed_group)
     flags.AddVpcNetworkGroupFlagsForUpdate(managed_group)
     flags.AddServiceMinInstancesFlag(managed_group)
     flags.AddVolumesFlags(managed_group, cls.ReleaseTrack())

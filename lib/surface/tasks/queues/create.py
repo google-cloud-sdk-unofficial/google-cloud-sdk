@@ -95,6 +95,7 @@ class Create(base.CreateCommand):
           retry_config=queue_config.retryConfig,
           rate_limits=queue_config.rateLimits,
           app_engine_routing_override=queue_config.appEngineRoutingOverride,
+          http_target=queue_config.httpTarget,
           stackdriver_logging_config=queue_config.stackdriverLoggingConfig)
     log.CreatedResource(
         parsers.GetConsolePromptString(queue_ref.RelativeName()), 'queue')

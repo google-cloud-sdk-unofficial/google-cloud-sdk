@@ -314,7 +314,7 @@ class Update(base.UpdateCommand):
 class UpdateBeta(Update):
 
   _include_weighted_load_balancing = False
-  _include_source_regions = False
+  _include_source_regions = True
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)

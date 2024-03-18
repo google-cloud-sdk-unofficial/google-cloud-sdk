@@ -46,7 +46,10 @@ class UpdateUserWorkloadsSecret(base.Command):
     parser.add_argument(
         '--secret-file-path',
         type=str,
-        help='Path to a local file with Kubernetes Secret in YAML format.',
+        help=(
+            'Path to a local file with a single Kubernetes Secret in YAML'
+            ' format.'
+        ),
         required=True,
     )
 

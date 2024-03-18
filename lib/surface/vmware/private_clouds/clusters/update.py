@@ -18,6 +18,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+from typing import List
 from googlecloudsdk.api_lib.vmware import clusters
 from googlecloudsdk.calliope import actions
 from googlecloudsdk.calliope import arg_parsers
@@ -194,7 +195,7 @@ def _ValidatePoliciesToRemove(
 
 def _RemoveAutoscalingPolicies(
     autoscaling_settings: util.AutoscalingSettings,
-    policies_to_remove: list[str],
+    policies_to_remove: List[str],
 ) -> util.AutoscalingSettings:
   if not policies_to_remove:
     return autoscaling_settings

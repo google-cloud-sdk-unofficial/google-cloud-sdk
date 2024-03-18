@@ -79,10 +79,14 @@ class Describe(base.Command):
   def Args(parser):
     Describe.CommonArgs(parser)
 
+  def _ConnectionContext(self, args):
+    return connection_context.GetConnectionContext(
+        args, flags.Product.RUN, self.ReleaseTrack()
+    )
+
   def Run(self, args):
     """Obtain details about a given service."""
-    conn_context = connection_context.GetConnectionContext(
-        args, flags.Product.RUN, self.ReleaseTrack())
+    conn_context = self._ConnectionContext(args)
     service_ref = args.CONCEPTS.service.Parse()
     flags.ValidateResource(service_ref)
     with serverless_operations.Connect(conn_context) as client:

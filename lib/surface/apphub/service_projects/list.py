@@ -42,7 +42,6 @@ _FORMAT = """
 """
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class ListGA(base.ListCommand):
   """List Apphub service projects."""

@@ -22,6 +22,8 @@ from googlecloudsdk.command_lib.anthos.common import file_parsers
 from googlecloudsdk.command_lib.container.fleet import resources
 from googlecloudsdk.command_lib.container.fleet.features import base
 from googlecloudsdk.command_lib.container.fleet.identity_service import utils
+from googlecloudsdk.core import exceptions
+from googlecloudsdk.core.util import retry
 
 
 # Pull out the example text so the example command can be one line without the
@@ -91,7 +93,19 @@ class Apply(base.UpdateCommand):
     if args.fleet_default_member_config:
       self.prepareFleetDefaultMemberConfigPatch(args, patch, update_mask)
 
-    self.Update(update_mask, patch)
+    try:
+      max_wait_ms = 60000  # 60 secs
+      retryer = retry.Retryer(
+          max_wait_ms=max_wait_ms, exponential_sleep_multiplier=1.1
+      )
+      retryer.RetryOnException(
+          self.Update, args=(update_mask, patch), sleep_ms=1000
+      )
+    except retry.MaxRetrialsException:
+      raise exceptions.Error(
+          'Retry limit exceeded while waiting for the {} feature to update'
+          .format(self.feature.display_name)
+      )
 
   def prepareFleetDefaultMemberConfigPatch(self, args, patch, update_mask):
     # Load the config YAML file.

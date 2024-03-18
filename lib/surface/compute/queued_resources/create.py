@@ -18,6 +18,8 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+import uuid
+
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
@@ -210,7 +212,9 @@ class Create(base.CreateCommand):
     request = client.messages.ComputeZoneQueuedResourcesInsertRequest(
         queuedResource=queued_resource,
         project=queued_resource_ref.project,
-        zone=queued_resource_ref.zone)
+        zone=queued_resource_ref.zone,
+        requestId=uuid.uuid4().hex,
+    )
     if args.async_:
       response = client.apitools_client.zoneQueuedResources.Insert(request)
       log.status.Print('Queued resource creation in progress: {}'.format(

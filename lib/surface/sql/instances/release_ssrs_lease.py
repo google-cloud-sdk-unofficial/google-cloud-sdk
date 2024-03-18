@@ -23,14 +23,31 @@ from googlecloudsdk.api_lib.sql import operations
 from googlecloudsdk.api_lib.sql import validate
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.sql import flags
+
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 
+DESCRIPTION = """\
+    Release a SQL Server Reporting Services lease on a Cloud SQL instance.
+    """
 
-@base.Hidden
+EXAMPLES = """\
+    To release a SQL Server Reporting Services lease on an instance:
+
+    $ {command} instance-foo
+    """
+
+DETAILED_HELP = {
+    'DESCRIPTION': DESCRIPTION,
+    'EXAMPLES': EXAMPLES,
+}
+
+
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class ReleaseSsrsLease(base.Command):
   """Releases a SQL Server Reporting Services lease on a Cloud SQL instance."""
+
+  detailed_help = DETAILED_HELP
 
   @staticmethod
   def Args(parser):
@@ -48,7 +65,6 @@ class ReleaseSsrsLease(base.Command):
         'instance',
         completer=flags.InstanceCompleter,
         help='Cloud SQL instance ID.',
-        hidden=True,
     )
 
   def Run(self, args):

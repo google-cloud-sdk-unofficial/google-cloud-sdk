@@ -33,7 +33,6 @@ _DETAILED_HELP = {
 }
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class RemoveGA(base.DeleteCommand):
   """Remove an Apphub service project."""

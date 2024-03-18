@@ -211,4 +211,15 @@
       help_text: |
         List of zones where the workers should be located. If empty, workers
         will be located in all zones in the region.
+    - api_field: googleDevtoolsRemotebuildexecutionAdminV1alphaUpdateWorkerPoolRequest.workerPool.workerConfig.userServiceAccounts
+      arg_name: user-service-accounts
+      required: false
+      help_text: |
+        A chain of user service accounts, the last of which will be the service account that user
+        code running on workers will authenticate as. The VM's service account (typically
+        "service-<consumer-project-num>@remotebuildexecution.iam.gserviceaccount.com") should be
+        granted roles/iam.serviceAccountTokenCreator on the first user account in the chain, the
+        first user account in the chain should be granted roles/iam.serviceAccountTokenCreator on
+        the second user account in the chain, and so on. If user service account is empty then the
+        user code will use the VM's service account.
     additional_arguments_hook: googlecloudsdk.command_lib.remote_build_execution.workerpool_update_util:AddLabelsFlags

@@ -31,3 +31,5 @@
       api_version: v1
     collection: redis.projects.locations.clusters
     method: getCertificateAuthority
+    modify_request_hooks:
+    - googlecloudsdk.command_lib.redis.util:UpdateGetCertificateAuthorityRequestPath

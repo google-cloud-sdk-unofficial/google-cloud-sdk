@@ -273,8 +273,9 @@ class UpdateBeta(Update):
 
   @staticmethod
   def Args(parser):
-    secrets_args.AddSecret(
-        parser, purpose='to update', positional=True, required=True)
+    secrets_args.AddGlobalOrRegionalSecret(
+        parser, purpose='to update', positional=True, required=True
+    )
     alias = parser.add_group(mutex=True, help='Version Aliases')
     annotations = parser.add_group(mutex=True, help='Annotations')
     labels_util.AddUpdateLabelsFlags(parser)
@@ -293,7 +294,8 @@ class UpdateBeta(Update):
 
   def _RunUpdate(self, original, args):
     messages = secrets_api.GetMessages()
-    secret_ref = args.CONCEPTS.secret.Parse()
+    result = args.CONCEPTS.secret.Parse()
+    secret_ref = result.result
 
     # Collect the list of update masks
     update_mask = []
@@ -397,14 +399,15 @@ class UpdateBeta(Update):
         ttl=args.ttl,
         topics=topics,
         next_rotation_time=args.next_rotation_time,
-        rotation_period=args.rotation_period)
+        rotation_period=args.rotation_period,
+    )
     secrets_log.Secrets().Updated(secret_ref)
 
     return secret
 
   def Run(self, args):
-    secret_ref = args.CONCEPTS.secret.Parse()
-    # Attempt to get the secret
+    result = args.CONCEPTS.secret.Parse()
+    secret_ref = result.result
     secret = secrets_api.Secrets().GetOrNone(secret_ref)
 
     # Secret does not exist

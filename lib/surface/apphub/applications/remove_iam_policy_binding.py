@@ -38,7 +38,6 @@ _DETAILED_HELP = {
 }
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class RemoveIamPolicyBindingGA(base.Command):
   """Remove IAM policy binding from an Apphub application."""

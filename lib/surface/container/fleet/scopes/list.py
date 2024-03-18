@@ -20,6 +20,7 @@ from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.container.fleet import client
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.container.fleet import util
 from googlecloudsdk.core import properties
 
 
@@ -40,6 +41,11 @@ class List(base.ListCommand):
 
     $ {command} --project=PROJECT_ID
   """
+
+  @staticmethod
+  def Args(parser):
+    # Table formatting
+    parser.display_info.AddFormat(util.SC_LIST_FORMAT)
 
   def Run(self, args):
     project = args.project

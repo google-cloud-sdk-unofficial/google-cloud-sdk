@@ -80,16 +80,18 @@ class ListBeta(List):
 
   @staticmethod
   def Args(parser):
-    secrets_args.AddSecret(
+    secrets_args.AddGlobalOrRegionalSecret(
         parser,
         purpose='from which to list versions',
         positional=True,
-        required=True)
+        required=True,
+    )
     secrets_fmt.UseVersionTable(parser)
     base.PAGE_SIZE_FLAG.SetDefault(parser, 100)
 
   def Run(self, args):
-    secret_ref = args.CONCEPTS.secret.Parse()
+    result = args.CONCEPTS.secret.Parse()
+    secret_ref = result.result
     server_filter = None
     if args.filter:
       rewriter = resource_expr_rewrite.Backend()

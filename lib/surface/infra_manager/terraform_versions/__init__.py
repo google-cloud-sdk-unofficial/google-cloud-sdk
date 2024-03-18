@@ -20,7 +20,6 @@ from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class TerraformVersions(base.Group):
   """Manage Terraform version resources."""

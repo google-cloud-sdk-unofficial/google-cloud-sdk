@@ -435,10 +435,15 @@ class CreateBeta(Create):
       ' "--replication-policy-file" or "--kms-key-name"'
   )
 
+  REGIONAL_SECRET_MESSAGE = (
+      'Regional secret created using "--location" should not have flags like '
+      '"--replication-policy-file" or "--kms-key-name" or "--locations" or '
+      '--replication-policy'
+  )
+
   @staticmethod
   def Args(parser):
-    secrets_args.AddSecret(
-        parser, purpose='to create', positional=True, required=True)
+    secrets_args.AddGlobalOrRegionalSecret(parser)
     secrets_args.AddDataFile(parser)
     secrets_args.AddCreateReplicationPolicyGroup(parser)
     labels_util.AddCreateLabelsFlags(parser)
@@ -451,7 +456,9 @@ class CreateBeta(Create):
 
   def Run(self, args):
     messages = secrets_api.GetMessages()
-    secret_ref = args.CONCEPTS.secret.Parse()
+    result = args.CONCEPTS.secret.Parse()
+    is_regional = result.concept_type.name == 'regional secret'
+    secret_ref = result.result
     data = secrets_util.ReadFileOrStdin(args.data_file)
     replication_policy_contents = secrets_util.ReadFileOrStdin(
         args.replication_policy_file, is_binary=False)
@@ -469,11 +476,24 @@ class CreateBeta(Create):
     if args.replication_policy_file and args.kms_key_name:
       raise exceptions.ConflictingArgumentsException(
           self.KMS_KEY_AND_POLICY_FILE_MESSAGE)
+    if not is_regional and args.regional_kms_key_name:
+      raise exceptions.ConflictingArgumentsException(
+          self.REGIONAL_KMS_FLAG_MESSAGE
+      )
     if args.regional_kms_key_name and (
         args.replication_policy_file or args.kms_key_name
     ):
       raise exceptions.ConflictingArgumentsException(
           self.REGIONAL_KMS_FLAG_MESSAGE
+      )
+    if is_regional and (
+        replication_policy
+        or args.kms_key_name
+        or args.replication_policy_file
+        or args.locations
+    ):
+      raise exceptions.ConflictingArgumentsException(
+          self.REGIONAL_SECRET_MESSAGE
       )
     if args.kms_key_name:
       kms_keys.append(args.kms_key_name)
@@ -554,6 +574,8 @@ class CreateBeta(Create):
           for (annotation, metadata) in args.set_annotations.items()
       ]
 
+    if is_regional:
+      replication_policy = None
     # Create the secret
     response = secrets_api.Secrets().Create(
         secret_ref,
@@ -567,13 +589,17 @@ class CreateBeta(Create):
         rotation_period=args.rotation_period,
         topics=args.topics,
         annotations=annotations,
-        regional_kms_key_name=args.regional_kms_key_name)
+        regional_kms_key_name=args.regional_kms_key_name,
+    )
 
     if data:
       data_crc32c = crc32c.get_crc32c(data)
       version = secrets_api.Secrets().AddVersion(
           secret_ref, data, crc32c.get_checksum(data_crc32c))
-      version_ref = secrets_args.ParseVersionRef(version.name)
+      if is_regional:
+        version_ref = secrets_args.ParseRegionalVersionRef(version.name)
+      else:
+        version_ref = secrets_args.ParseVersionRef(version.name)
       secrets_log.Versions().Created(version_ref)
     else:
       secrets_log.Secrets().Created(secret_ref)

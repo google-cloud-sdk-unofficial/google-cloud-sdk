@@ -38,7 +38,6 @@ _DETAILED_HELP = {
 }
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class AddIamPolicyBindingGA(base.Command):
   """Add IAM policy binding to an Apphub application."""

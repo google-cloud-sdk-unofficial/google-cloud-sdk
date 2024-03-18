@@ -102,6 +102,10 @@ class List(commands.List):
         )
     )
 
+  def _GlobalList(self, client):
+    """Provides the method to provide a regionless list."""
+    return global_methods.ListServices(client)
+
   def Run(self, args):
     """List available services."""
     is_managed = platforms.GetPlatform() == platforms.PLATFORM_MANAGED
@@ -111,7 +115,7 @@ class List(commands.List):
       self.SetPartialApiEndpoint(client.url)
       args.CONCEPTS.namespace.Parse()  # Error if no proj.
       # Don't consider region property here, we'll default to all regions
-      return commands.SortByName(global_methods.ListServices(client))
+      return commands.SortByName(self._GlobalList(client))
     else:
       conn_context = connection_context.GetConnectionContext(
           args, flags.Product.RUN, self.ReleaseTrack())

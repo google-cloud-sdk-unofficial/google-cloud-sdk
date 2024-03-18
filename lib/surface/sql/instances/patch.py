@@ -278,6 +278,8 @@ def AddBetaArgs(parser):
   labels_util.AddUpdateLabelsFlags(parser, enable_clear=True)
   flags.AddReplicationLagMaxSecondsForRecreate(parser)
   flags.AddEnableGoogleMLIntegration(parser)
+  flags.AddFailoverDrReplicaName(parser)
+  flags.AddClearFailoverDrReplicaName(parser)
 
 
 def AddAlphaArgs(unused_parser):
@@ -339,6 +341,13 @@ def RunBasePatchCommand(args, release_track):
           '`--enable-point-in-time-recovery` cannot be specified when '
           '--no-backup is specified')
 
+  # beta only
+  if args.IsKnownAndSpecified('failover_dr_replica_name'):
+    if args.IsKnownAndSpecified('clear_failover_dr_replica_name'):
+      raise exceptions.ArgumentError(
+          '`--failover-dr-replica-name` cannot be specified when '
+          '--clear-failover-dr-replica-name is specified')
+
   # If --authorized-networks is used, confirm that the user knows the networks
   # will get overwritten.
   if args.authorized_networks:
@@ -361,6 +370,10 @@ def RunBasePatchCommand(args, release_track):
   # beta only
   if args.maintenance_window_any:
     cleared_fields.append('settings.maintenanceWindow')
+
+  # beta only
+  if args.IsKnownAndSpecified('clear_failover_dr_replica_name'):
+    cleared_fields.append('replicationCluster')
 
   with sql_client.IncludeFields(cleared_fields):
     result_operation = sql_client.instances.Patch(

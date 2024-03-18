@@ -185,7 +185,7 @@ class GetCredentials(base.Command):
   @classmethod
   def GetVersion(cls):
     if cls.ReleaseTrack() is base.ReleaseTrack.ALPHA:
-      return 'v1alpha'
+      return 'v1alpha1'
     elif cls.ReleaseTrack() is base.ReleaseTrack.BETA:
       return 'v1beta1'
     elif cls.ReleaseTrack() is base.ReleaseTrack.GA:

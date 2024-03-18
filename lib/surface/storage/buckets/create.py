@@ -135,7 +135,6 @@ class Create(base.Command):
       parser.add_argument(
           '--enable-hierarchical-namespace',
           action='store_true',
-          hidden=True,
           help='Enable heirarchical namepsace for the bucket',
       )
 

@@ -27,7 +27,7 @@
       - googlecloudsdk.command_lib.compute.tpus.queued_resources.util:SetGuaranteed:api_version=v2alpha1
       - googlecloudsdk.command_lib.compute.tpus.queued_resources.util:SetValidInterval:api_version=v2alpha1
       - googlecloudsdk.command_lib.compute.tpus.queued_resources.util:VerifyNodeCount
-      - googlecloudsdk.command_lib.compute.tpus.queued_resources.util:CreateReservationName
+      - googlecloudsdk.command_lib.compute.tpus.queued_resources.util:CreateReservationName:api_version=v2alpha1
     GA:
       api_version: v2
       modify_request_hooks:
@@ -37,7 +37,7 @@
       - googlecloudsdk.command_lib.compute.tpus.queued_resources.util:SetGuaranteed:api_version=v2
       - googlecloudsdk.command_lib.compute.tpus.queued_resources.util:SetValidInterval:api_version=v2
       - googlecloudsdk.command_lib.compute.tpus.queued_resources.util:VerifyNodeCount
-      - googlecloudsdk.command_lib.compute.tpus.queued_resources.util:CreateReservationName
+      - googlecloudsdk.command_lib.compute.tpus.queued_resources.util:CreateReservationName:api_version=v2
 
   async:
     collection: tpu.projects.locations.operations
@@ -103,7 +103,8 @@
     - _REF_: googlecloudsdk.command_lib.compute.tpus.queued_resources.flags:min_duration
       hidden: true
     - _REF_: googlecloudsdk.command_lib.compute.tpus.queued_resources.flags:reserved
-      release_tracks: [ALPHA]
+      ALPHA:
+        api_field: queuedResource.guaranteed.reserved
     - _REF_: googlecloudsdk.command_lib.compute.tpus.queued_resources.flags:valid_after_duration
     - _REF_: googlecloudsdk.command_lib.compute.tpus.queued_resources.flags:valid_after_time
     - _REF_: googlecloudsdk.command_lib.compute.tpus.queued_resources.flags:valid_until_duration

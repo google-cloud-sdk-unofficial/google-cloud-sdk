@@ -42,7 +42,6 @@ _FORMAT = """
 """
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class List(base.ListCommand):
   """List Apphub discovered workloads that could be added to an application."""

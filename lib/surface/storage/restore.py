@@ -116,11 +116,18 @@ def _sync_restore_task_iterator(args, fields_scope, user_request_args):
   """Yields blocking restore tasks."""
   last_resource = None
   for url in _url_iterator(args):
-    for resource in wildcard_iterator.get_wildcard_iterator(
-        url.url_string,
-        fields_scope=fields_scope,
-        object_state=cloud_api.ObjectState.SOFT_DELETED,
-    ):
+    resources = list(
+        wildcard_iterator.get_wildcard_iterator(
+            url.url_string,
+            fields_scope=fields_scope,
+            object_state=cloud_api.ObjectState.SOFT_DELETED,
+        )
+    )
+    if not resources:
+      raise errors.InvalidUrlError(
+          'The following URLs matched no objects:\n-{}'.format(url.url_string)
+      )
+    for resource in resources:
       if args.all_versions:
         yield restore_object_task.RestoreObjectTask(resource, user_request_args)
       else:

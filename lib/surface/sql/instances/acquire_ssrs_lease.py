@@ -26,11 +26,27 @@ from googlecloudsdk.command_lib.sql import flags
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 
+DESCRIPTION = """\
+    Acquire a SQL Server Reporting Services lease on a Cloud SQL instance.
+    """
 
-@base.Hidden
+EXAMPLES = """\
+    To acquire a SQL Server Reporting Services lease on an instance:
+
+    $ {command} instance-foo --setup-login=setuplogin --service-login=reportuser --report-database=ReportServer --duration=4h
+    """
+
+DETAILED_HELP = {
+    'DESCRIPTION': DESCRIPTION,
+    'EXAMPLES': EXAMPLES,
+}
+
+
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class AcquireSsrsLease(base.Command):
   """Acquires a SQL Server Reporting Services lease on a Cloud SQL instance."""
+
+  detailed_help = DETAILED_HELP
 
   @staticmethod
   def Args(parser):
@@ -48,7 +64,6 @@ class AcquireSsrsLease(base.Command):
         'instance',
         completer=flags.InstanceCompleter,
         help='Cloud SQL instance ID.',
-        hidden=True,
     )
 
     flags.AddSqlServerSsrs(parser)

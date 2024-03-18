@@ -40,7 +40,6 @@ _DETAILED_HELP = {
 }
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class SetIamPolicyGA(base.Command):
   """Set the IAM policy for an Apphub application as defined in a JSON/YAML file.

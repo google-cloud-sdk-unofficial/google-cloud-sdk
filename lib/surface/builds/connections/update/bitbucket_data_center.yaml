@@ -1,5 +1,4 @@
-- hidden: true
-  help_text:
+- help_text:
     brief: Update a Cloud Build Connection of type Bitbucket Data Center.
     description: |
       Update a Cloud Build Connection of type Bitbucket Data Center.

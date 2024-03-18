@@ -57,7 +57,7 @@ class Update(base.UpdateCommand):
     workstations_flags.AddNetworkTags(parser)
     workstations_flags.AddPoolSize(parser, use_default=False)
     workstations_flags.AddDisablePublicIpAddresses(parser, use_default=False)
-    workstations_flags.AddEnableSSHToVM(parser)
+
     workstations_flags.AddEnableTcpConnections(parser)
     workstations_flags.AddServiceAccountScopes(parser)
     workstations_flags.AddShieldedSecureBoot(parser, use_default=False)
@@ -76,6 +76,7 @@ class Update(base.UpdateCommand):
     workstations_flags.AddLabelsField(parser)
     if (cls.ReleaseTrack() != base.ReleaseTrack.GA):
       workstations_flags.AddAcceleratorFields(parser)
+      workstations_flags.AddEnableSSHToVM(parser)
 
   def Collection(self):
     return (

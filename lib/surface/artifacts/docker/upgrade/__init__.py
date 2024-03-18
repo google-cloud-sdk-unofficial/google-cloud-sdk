@@ -23,11 +23,22 @@ from googlecloudsdk.calliope import base
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
 class Upgrade(base.Group):
-  """Commands to support Container Registry to Artifact Registry upgrade.
+  r"""Commands to support Container Registry to Artifact Registry upgrade.
 
   To print an equivalent Artifact Registry IAM policy for 'gcr.io/my-project':
 
       $ {command} print-iam-policy gcr.io --project=my-project
+
+  To migrate a project from Container Registry to Artifact Registry using gcr.io
+  repos:
+
+      $ {command} migrate --projects=my-project
+
+  To migrate a project from Container Registry to Artifact Registry using
+  pkg.dev repos:
+
+      $ {command} migrate --from-gcr-io=gcr.io/from-project \
+        --to-pkg-dev=to-project/to-repo
   """
 
   category = base.CI_CD_CATEGORY

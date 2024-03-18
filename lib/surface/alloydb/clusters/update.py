@@ -70,8 +70,12 @@ class Update(base.UpdateCommand):
     base.ASYNC_FLAG.AddToParser(parser)
     flags.AddRegion(parser)
     flags.AddCluster(parser)
-    flags.AddAutomatedBackupFlags(parser, alloydb_messages, update=True)
-    flags.AddContinuousBackupConfigFlags(parser, update=True)
+    flags.AddAutomatedBackupFlags(
+        parser, alloydb_messages, cls.ReleaseTrack(), update=True
+    )
+    flags.AddContinuousBackupConfigFlags(
+        parser, cls.ReleaseTrack(), update=True
+    )
 
   def ConstructPatchRequestFromArgs(self, alloydb_messages, cluster_ref, args):
     return cluster_helper.ConstructPatchRequestFromArgsGA(

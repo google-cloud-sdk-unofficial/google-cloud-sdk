@@ -1,5 +1,4 @@
-- hidden: true
-  help_text:
+- help_text:
     brief: Create a Cloud Build Connection for Bitbucket Data Center.
     description: |
       Create a Cloud Build Connection for Bitbucket Data Center.

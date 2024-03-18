@@ -63,8 +63,10 @@ class Create(base.CreateCommand):
         'cluster',
         permission_info="The 'AlloyDB Service Agent' service account must hold permission 'Cloud KMS CryptoKey Encrypter/Decrypter'"
     )
-    flags.AddAutomatedBackupFlags(parser, alloydb_messages, update=False)
-    flags.AddContinuousBackupConfigFlags(parser)
+    flags.AddAutomatedBackupFlags(
+        parser, alloydb_messages, cls.ReleaseTrack(), update=False
+    )
+    flags.AddContinuousBackupConfigFlags(parser, cls.ReleaseTrack())
     flags.AddDatabaseVersion(parser, alloydb_messages)
 
   def ConstructCreateRequestFromArgs(self, alloydb_messages, location_ref,

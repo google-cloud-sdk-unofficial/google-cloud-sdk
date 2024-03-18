@@ -124,16 +124,16 @@ class Upload(base.Command):
       return self.uploadArtifact(args, source_file, client, messages)
     # Uploading a directory
     elif source_dir:
-      # If source_dir was specified, normalize and traverse
+      # If source_dir was specified, expand, normalize and traverse
       # through the directory sending one upload request per file found,
       # preserving the folder structure.
-      args.source_directory = os.path.normpath(source_dir)
+      args.source_directory = os.path.normpath(os.path.expanduser(source_dir))
       if not os.path.isdir(args.source_directory):
         raise ar_exceptions.InvalidInputValueError(
             'Specified path is not an existing directory.'
             )
       log.status.Print('Uploading directory: {}'.format(source_dir))
-      for path, _, files in os.walk(source_dir):
+      for path, _, files in os.walk(args.source_directory):
         for file in files:
           try:
             self.uploadArtifact(

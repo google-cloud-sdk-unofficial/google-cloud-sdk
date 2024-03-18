@@ -53,18 +53,21 @@ class List(base.ListCommand):
     if not project_ref:
       raise exceptions.RequiredArgumentException(
           'project',
-          'Please set a project with "--project" flag or "gcloud config set project <project_id>".'
+          'Please set a project with `--project` flag or `gcloud config set'
+          ' project PROJECT_ID`.',
       )
     server_filter = None
     if args.filter:
       rewriter = resource_expr_rewrite.Backend()
       display_info = args.GetDisplayInfo()
       defaults = resource_projection_spec.ProjectionSpec(
-          symbols=display_info.transforms, aliases=display_info.aliases)
+          symbols=display_info.transforms, aliases=display_info.aliases
+      )
       _, server_filter = rewriter.Rewrite(args.filter, defaults=defaults)
 
     return secrets_api.Secrets().ListWithPager(
-        project_ref=project_ref, limit=args.limit, request_filter=server_filter)
+        project_ref=project_ref, limit=args.limit, request_filter=server_filter
+    )
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
@@ -85,23 +88,34 @@ class ListBeta(List):
   @staticmethod
   def Args(parser):
     secrets_args.AddProject(parser)
-    secrets_fmt.UseSecretTable(parser)
+    secrets_args.AddLocation(
+        parser, purpose='[EXPERIMRNTAL] to list regional secrets', hidden=True
+    )
     base.PAGE_SIZE_FLAG.SetDefault(parser, 100)
 
   def Run(self, args):
     project_ref = args.CONCEPTS.project.Parse()
+    location_ref = args.CONCEPTS.location.Parse()
+    if args.location:
+      project_ref = location_ref
+      secrets_fmt.RegionalSecretTableUsingArgument(args)
+    else:
+      secrets_fmt.SecretTableUsingArgument(args)
     if not project_ref:
       raise exceptions.RequiredArgumentException(
           'project',
-          'Please set a project with "--project" flag or "gcloud config set project <project_id>".'
+          'Please set a project with `--project` flag or `gcloud config set'
+          ' project <project_id>`.',
       )
     server_filter = None
     if args.filter:
       rewriter = resource_expr_rewrite.Backend()
       display_info = args.GetDisplayInfo()
       defaults = resource_projection_spec.ProjectionSpec(
-          symbols=display_info.transforms, aliases=display_info.aliases)
+          symbols=display_info.transforms, aliases=display_info.aliases
+      )
       _, server_filter = rewriter.Rewrite(args.filter, defaults=defaults)
 
     return secrets_api.Secrets().ListWithPager(
-        project_ref=project_ref, limit=args.limit, request_filter=server_filter)
+        project_ref=project_ref, limit=args.limit, request_filter=server_filter
+    )

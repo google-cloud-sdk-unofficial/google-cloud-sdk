@@ -23,6 +23,7 @@ from googlecloudsdk.api_lib.util import apis as core_apis
 from googlecloudsdk.api_lib.util import exceptions as gcloud_exception
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.deploy import delivery_pipeline_util
+from googlecloudsdk.command_lib.deploy import deploy_policy_util
 from googlecloudsdk.command_lib.deploy import exceptions as deploy_exceptions
 from googlecloudsdk.command_lib.deploy import flags
 from googlecloudsdk.command_lib.deploy import resource_args
@@ -55,6 +56,7 @@ class Advance(base.CreateCommand):
     # Phase to be processed on the rollout will be calculated and a prompt will
     # be surfaced to the user.
     flags.AddPhaseId(parser, required=False)
+    flags.AddOverrideDeployPolicies(parser)
 
   @gcloud_exception.CatchHTTPErrorRaiseHTTPException(
       deploy_exceptions.HTTP_ERROR_FORMAT
@@ -80,9 +82,15 @@ class Advance(base.CreateCommand):
             rollout_ref.RelativeName(), phase_id
         )
     )
-
+    # On the command line deploy policy IDs are provided, but for the
+    # AdvanceRollout API we need to provide the full resource name.
+    policies = deploy_policy_util.CreateDeployPolicyNamesFromIDs(
+        pipeline_ref, args.override_deploy_policies
+    )
     return rollout.RolloutClient().AdvanceRollout(
-        rollout_ref.RelativeName(), phase_id
+        rollout_ref.RelativeName(),
+        phase_id,
+        override_deploy_policies=policies,
     )
 
   def _DetermineNextPhase(self, rollout_ref):

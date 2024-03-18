@@ -261,7 +261,7 @@ class Deploy(base.Command):
       ).format(build_type=build_type.value)
       pretty_print.Info(
           messages_util.GetBuildEquivalentForSourceRunMessage(
-              job_ref.jobsId, pack, source, is_job=True
+              job_ref.jobsId, pack, source, subgroup='jobs '
           )
       )
 

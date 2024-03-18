@@ -70,6 +70,7 @@ class Create(base.CreateCommand):
     container_flags.AddMachineFilter(parser)
     container_flags.AddLocalDiskKMSKey(parser)
     container_flags.AddLROMaximumTimeout(parser)
+    container_flags.AddNodeLabels(parser)
     labels_util.AddCreateLabelsFlags(parser)
     base.ASYNC_FLAG.AddToParser(parser)
 
@@ -132,4 +133,3 @@ class CreateAlpha(Create):
         API=util.VERSION_MAP.get(track)
     )
     Create.Args(parser)
-    container_flags.AddNodeLabels(parser)

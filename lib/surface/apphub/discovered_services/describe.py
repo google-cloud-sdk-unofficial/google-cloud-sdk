@@ -34,7 +34,6 @@ _DETAILED_HELP = {
 }
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class DescribeGA(base.DescribeCommand):
   """Describe an Apphub discovered service."""

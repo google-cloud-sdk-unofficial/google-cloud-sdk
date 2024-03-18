@@ -131,7 +131,7 @@ class Create(base.CreateCommand):
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class CreateBeta(Create):
 
-  _include_source_regions = False
+  _include_source_regions = True
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)

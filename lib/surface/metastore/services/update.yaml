@@ -282,6 +282,44 @@
                 Clears the existing auxiliary services attached to the primary Hive metastore
                 services. If --add-auxiliary-versions is also specified, --clear-auxiliary-versions
                 is applied first.
+    - group:
+        mutex: true
+        help_text: |
+          Scheduled backup configurations to enable a scheduled backup of the metastore service.
+        params:
+        - arg_name: scheduled-backup-configs-from-file
+          api_field: service.scheduledBackup
+          type: "googlecloudsdk.calliope.arg_parsers:FileContents:"
+          processor: googlecloudsdk.command_lib.metastore.services.util:LoadScheduledBackupConfigsFromJsonFile
+          help_text: |
+            Path to a JSON file containing a mapping of scheduled backup configurations key-value pairs to apply to the scheduled backup.
+
+            For example:
+
+              backup_configs.json
+                  {
+                    "enabled": true,
+                    "cron_schedule": "0 * * * *",
+                    "backup_location": "gs://example-bucket",
+                    "time_zone": "UTC"
+                  }
+        - group:
+            help_text: |
+              Scheduled backup configurations to enable a scheduled backup of the metastore service.
+            params:
+            - arg_name: enable-scheduled-backup
+              api_field: service.scheduledBackup.enabled
+              action: store_true
+              help_text: |
+                Enable or disable scheduled backups for the Metastore service.
+            - arg_name: scheduled-backup-cron
+              api_field: service.scheduledBackup.cronSchedule
+              help_text: |
+                Specify the frequency of a scheduled backup of the metastore service.
+            - arg_name: scheduled-backup-location
+              api_field: service.scheduledBackup.backupLocation
+              help_text: |
+                Set the Cloud Storage URI to store the scheduled backups of the metastore service.
     labels:
       api_field: service.labels
 

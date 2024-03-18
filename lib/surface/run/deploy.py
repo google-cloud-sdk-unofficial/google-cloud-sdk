@@ -43,35 +43,6 @@ from googlecloudsdk.core.console import console_io
 from googlecloudsdk.core.console import progress_tracker
 
 
-def GetAllowUnauth(args, operations, service_ref, service_exists):
-  """Returns allow_unauth value for a service change.
-
-  Args:
-    args: argparse.Namespace, Command line arguments
-    operations: serverless_operations.ServerlessOperations, Serverless client.
-    service_ref: protorpc.messages.Message, A resource reference object for the
-      service See googlecloudsdk.core.resources.Registry.ParseResourceId for
-      details.
-    service_exists: True if the service being changed already exists.
-
-  Returns:
-    allow_unauth value where
-     True means to enable unauthenticated access for the service.
-     False means to disable unauthenticated access for the service.
-     None means to retain the current value for the service.
-  """
-  allow_unauth = None
-  if platforms.GetPlatform() == platforms.PLATFORM_MANAGED:
-    allow_unauth = flags.GetAllowUnauthenticated(
-        args, operations, service_ref, not service_exists
-    )
-    # Avoid failure removing a policy binding for a service that
-    # doesn't exist.
-    if not service_exists and not allow_unauth:
-      allow_unauth = None
-  return allow_unauth
-
-
 class BuildType(enum.Enum):
   DOCKERFILE = 'Dockerfile'
   BUILDPACKS = 'Buildpacks'
@@ -193,12 +164,35 @@ class Deploy(base.Command):
     container_args = ContainerArgGroup(cls.ReleaseTrack())
     container_parser.AddContainerFlags(parser, container_args)
 
-  def Run(self, args):
-    """Deploy a container to Cloud Run."""
-    platform = flags.GetAndValidatePlatform(
-        args, self.ReleaseTrack(), flags.Product.RUN
-    )
+  def GetAllowUnauth(self, args, operations, service_ref, service_exists):
+    """Returns allow_unauth value for a service change.
 
+    Args:
+      args: argparse.Namespace, Command line arguments
+      operations: serverless_operations.ServerlessOperations, Serverless client.
+      service_ref: protorpc.messages.Message, A resource reference object for
+        the service See googlecloudsdk.core.resources.Registry.ParseResourceId
+        for details.
+      service_exists: True if the service being changed already exists.
+
+    Returns:
+      allow_unauth value where
+      True means to enable unauthenticated access for the service.
+      False means to disable unauthenticated access for the service.
+      None means to retain the current value for the service.
+    """
+    allow_unauth = None
+    if platforms.GetPlatform() == platforms.PLATFORM_MANAGED:
+      allow_unauth = flags.GetAllowUnauthenticated(
+          args, operations, service_ref, not service_exists
+      )
+      # Avoid failure removing a policy binding for a service that
+      # doesn't exist.
+      if not service_exists and not allow_unauth:
+        allow_unauth = None
+    return allow_unauth
+
+  def _ValidateAndGetContainers(self, args):
     if flags.FlagIsExplicitlySet(args, 'containers'):
       containers = args.containers
     else:
@@ -226,7 +220,9 @@ class Deploy(base.Command):
       raise c_exceptions.InvalidArgumentException(
           '--container', 'Services may include at most 10 containers'
       )
+    return containers
 
+  def _ValidateAndGetBuildFromSource(self, containers):
     build_from_source = {
         name: container
         for name, container in containers.items()
@@ -265,6 +261,125 @@ class Deploy(base.Command):
               '--image',
               message,
           )
+    return build_from_source
+
+  def _BuildFromSource(
+      self,
+      args,
+      build_from_source,
+      service_ref,
+      conn_context,
+      platform,
+      already_activated_services,
+  ):
+    # Only one container can deployed from source
+    container = next(iter(build_from_source.values()))
+    pack = None
+    repo_to_create = None
+    source = container.source
+    # We cannot use flag.isExplicitlySet(args, 'function') because it will
+    # return False when user provide --function after --container.
+    is_function = (
+        self.ReleaseTrack() == base.ReleaseTrack.ALPHA and container.function
+    )
+
+    ar_repo = docker_util.DockerRepo(
+        project_id=properties.VALUES.core.project.Get(required=True),
+        location_id=artifact_registry.RepoRegion(
+            args,
+            cluster_location=(
+                conn_context.cluster_location
+                if platform == platforms.PLATFORM_GKE
+                else None
+            ),
+        ),
+        repo_id='cloud-run-source-deploy',
+    )
+    if artifact_registry.ShouldCreateRepository(
+        ar_repo, skip_activation_prompt=already_activated_services
+    ):
+      repo_to_create = ar_repo
+    # The image is built with latest tag. After build, the image digest
+    # from the build result will be added to the image of the service spec.
+    container.image = '{repo}/{service}'.format(
+        repo=ar_repo.GetDockerString(), service=service_ref.servicesId
+    )
+    # Use GCP Buildpacks if Dockerfile doesn't exist
+    docker_file = source + '/Dockerfile'
+    if os.path.exists(docker_file):
+      build_type = BuildType.DOCKERFILE
+      # TODO(b/310727875): check --function is not provided
+    else:
+      pack = _CreateBuildPack(container, self.ReleaseTrack())
+      build_type = BuildType.BUILDPACKS
+    image = None if pack else container.image
+    operation_message = (
+        'Building using {build_type} and deploying container to'
+    ).format(build_type=build_type.value)
+    # TODO(b/310732246) this command might need to be changed
+    pretty_print.Info(
+        messages_util.GetBuildEquivalentForSourceRunMessage(
+            service_ref.servicesId, pack, source
+        )
+    )
+    return is_function, image, pack, source, operation_message, repo_to_create
+
+  def _GetBaseChanges(self, args):
+    """Returns the service config changes with some default settings."""
+    changes = flags.GetServiceConfigurationChanges(args, self.ReleaseTrack())
+    changes.insert(
+        0,
+        config_changes.DeleteAnnotationChange(
+            k8s_object.BINAUTHZ_BREAKGLASS_ANNOTATION
+        ),
+    )
+    changes.append(
+        config_changes.SetLaunchStageAnnotationChange(self.ReleaseTrack())
+    )
+    return changes
+
+  def _GetTracker(
+      self,
+      args,
+      service,
+      changes,
+      build_from_source,
+      repo_to_create,
+      allow_unauth,
+      has_latest,
+  ):
+    deployment_stages = stages.ServiceStages(
+        include_iam_policy_set=allow_unauth is not None,
+        include_route=has_latest,
+        include_build=bool(build_from_source),
+        include_create_repo=repo_to_create is not None,
+    )
+    if build_from_source:
+      header = 'Building and deploying'
+    else:
+      header = 'Deploying'
+    if service is None:
+      header += ' new service'
+      # new services default cpu boost on the client
+      if not flags.FlagIsExplicitlySet(args, 'cpu_boost'):
+        changes.append(config_changes.StartupCpuBoostChange(cpu_boost=True))
+    header += '...'
+    return progress_tracker.StagedProgressTracker(
+        header,
+        deployment_stages,
+        failure_message='Deployment failed',
+        suppress_output=args.async_,
+    )
+
+  def Run(self, args):
+    """Deploy a container to Cloud Run."""
+    platform = flags.GetAndValidatePlatform(
+        args, self.ReleaseTrack(), flags.Product.RUN
+    )
+
+    containers = self._ValidateAndGetContainers(args)
+    build_from_source = self._ValidateAndGetBuildFromSource(containers)
+
     service_ref = args.CONCEPTS.service.Parse()
     flags.ValidateResource(service_ref)
 
@@ -293,72 +408,25 @@ class Deploy(base.Command):
     is_function = False
     # Build an image from source if source specified
     if build_from_source:
-      # Only one container can deployed from source
-      container = next(iter(build_from_source.values()))
-      source = container.source
-      # We cannot use flag.isExplicitlySet(args, 'function') because it will
-      # return False when user provide --function after --container.
-      is_function = (
-          self.ReleaseTrack() == base.ReleaseTrack.ALPHA and container.function
-      )
-
-      ar_repo = docker_util.DockerRepo(
-          project_id=properties.VALUES.core.project.Get(required=True),
-          location_id=artifact_registry.RepoRegion(
+      is_function, image, pack, source, operation_message, repo_to_create = (
+          self._BuildFromSource(
               args,
-              cluster_location=(
-                  conn_context.cluster_location
-                  if platform == platforms.PLATFORM_GKE
-                  else None
-              ),
-          ),
-          repo_id='cloud-run-source-deploy',
-      )
-      if artifact_registry.ShouldCreateRepository(
-          ar_repo, skip_activation_prompt=already_activated_services
-      ):
-        repo_to_create = ar_repo
-      # The image is built with latest tag. After build, the image digest
-      # from the build result will be added to the image of the service spec.
-      container.image = '{repo}/{service}'.format(
-          repo=ar_repo.GetDockerString(), service=service_ref.servicesId
-      )
-      # Use GCP Buildpacks if Dockerfile doesn't exist
-      docker_file = source + '/Dockerfile'
-      if os.path.exists(docker_file):
-        build_type = BuildType.DOCKERFILE
-        # TODO(b/310727875): check --function is not provided
-      else:
-        pack = _CreateBuildPack(container, self.ReleaseTrack())
-        build_type = BuildType.BUILDPACKS
-      image = None if pack else container.image
-      operation_message = (
-          'Building using {build_type} and deploying container to'
-      ).format(build_type=build_type.value)
-      # TODO(b/310732246) this command might need to be changed
-      pretty_print.Info(
-          messages_util.GetBuildEquivalentForSourceRunMessage(
-              service_ref.servicesId, pack, source
+              build_from_source,
+              service_ref,
+              conn_context,
+              platform,
+              already_activated_services,
           )
       )
 
     # Deploy a container with an image
-    changes = flags.GetServiceConfigurationChanges(args, self.ReleaseTrack())
-    changes.insert(
-        0,
-        config_changes.DeleteAnnotationChange(
-            k8s_object.BINAUTHZ_BREAKGLASS_ANNOTATION
-        ),
-    )
-    changes.append(
-        config_changes.SetLaunchStageAnnotationChange(self.ReleaseTrack())
-    )
+    changes = self._GetBaseChanges(args)
 
     with serverless_operations.Connect(
         conn_context, already_activated_services
     ) as operations:
       service = operations.GetService(service_ref)
-      allow_unauth = GetAllowUnauth(args, operations, service_ref, service)
+      allow_unauth = self.GetAllowUnauth(args, operations, service_ref, service)
       resource_change_validators.ValidateClearVpcConnector(service, args)
       if service:  # Service has been deployed before
         if is_function and service.template.container.command:
@@ -379,27 +447,14 @@ class Deploy(base.Command):
       has_latest = (
           service is None or traffic.LATEST_REVISION_KEY in service.spec_traffic
       )
-      deployment_stages = stages.ServiceStages(
-          include_iam_policy_set=allow_unauth is not None,
-          include_route=has_latest,
-          include_build=bool(build_from_source),
-          include_create_repo=repo_to_create is not None,
-      )
-      if build_from_source:
-        header = 'Building and deploying'
-      else:
-        header = 'Deploying'
-      if service is None:
-        header += ' new service'
-        # new services default cpu boost on the client
-        if not flags.FlagIsExplicitlySet(args, 'cpu_boost'):
-          changes.append(config_changes.StartupCpuBoostChange(cpu_boost=True))
-      header += '...'
-      with progress_tracker.StagedProgressTracker(
-          header,
-          deployment_stages,
-          failure_message='Deployment failed',
-          suppress_output=args.async_,
+      with self._GetTracker(
+          args,
+          service,
+          changes,
+          build_from_source,
+          repo_to_create,
+          allow_unauth,
+          has_latest,
       ) as tracker:
         service = operations.ReleaseService(
             service_ref,
@@ -471,6 +526,7 @@ class BetaDeploy(Deploy):
     # Flags specific to managed CR
     managed_group = flags.GetManagedArgGroup(parser)
     flags.AddDefaultUrlFlag(managed_group)
+    flags.AddDeployHealthCheckFlag(managed_group)
     flags.AddVpcNetworkGroupFlagsForUpdate(managed_group)
     flags.AddServiceMinInstancesFlag(managed_group)
     flags.AddVolumesFlags(managed_group, cls.ReleaseTrack())

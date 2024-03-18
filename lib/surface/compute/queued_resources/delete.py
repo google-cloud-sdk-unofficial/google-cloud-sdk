@@ -18,6 +18,8 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+import uuid
+
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import utils
 from googlecloudsdk.calliope import base
@@ -61,9 +63,14 @@ class Delete(base.DeleteCommand):
 
     requests = []
     for queued_resource_ref in queued_resources_refs:
-      requests.append((client.apitools_client.zoneQueuedResources, 'Delete',
-                       client.messages.ComputeZoneQueuedResourcesDeleteRequest(
-                           project=queued_resource_ref.project,
-                           zone=queued_resource_ref.zone,
-                           queuedResource=queued_resource_ref.queuedResource)))
+      requests.append((
+          client.apitools_client.zoneQueuedResources,
+          'Delete',
+          client.messages.ComputeZoneQueuedResourcesDeleteRequest(
+              project=queued_resource_ref.project,
+              zone=queued_resource_ref.zone,
+              queuedResource=queued_resource_ref.queuedResource,
+              requestId=uuid.uuid4().hex,
+          ),
+      ))
     return client.MakeRequests(requests)

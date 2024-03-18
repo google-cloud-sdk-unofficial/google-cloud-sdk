@@ -166,7 +166,7 @@ class Create(base.CreateCommand):
 class CreateBeta(Create):
 
   _include_weighted_load_balancing = False
-  _include_source_regions = False
+  _include_source_regions = True
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)

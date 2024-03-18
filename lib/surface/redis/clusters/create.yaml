@@ -29,6 +29,20 @@
         Your cluster ID must be 1 to 63 characters and use only lowercase letters, numbers, or
         hyphens. It must start with a lowercase letter and end with a lowercase letter or number.
     params:
+    - arg_name: node-type
+      release_tracks: [ALPHA, BETA]
+      hidden: true
+      api_field: cluster.nodeType
+      help_text: Node Type of the redis cluster Node.
+      choices:
+      - enum_value: REDIS_HIGHMEM_MEDIUM
+        arg_value: redis-highmem-medium
+      - enum_value: REDIS_HIGHMEM_XLARGE
+        arg_value: redis-highmem-xlarge
+      - enum_value: REDIS_STANDARD_SMALL
+        arg_value: redis-standard-small
+      - enum_value: REDIS_SHARED_CORE_NANO
+        arg_value: redis-shared-core-nano
     - arg_name: network
       required: true
       api_field: cluster.pscConfigs.network
@@ -75,6 +89,14 @@
         arg_value: server-authentication
         help_text: |
           The cluster uses server managed encryption for in-transit encryption.
+    - arg_name: deletion-protection
+      api_field: cluster.deletionProtectionEnabled
+      type: bool
+      hidden: true
+      release_tracks: [ALPHA, BETA]
+      help_text: |
+        Enable Delete Protection on the Redis Cluster to prevent accidental deletions.
+        Use --deletion-protection to enabled and --no-deletion-protection to disable.
 
   async:
     collection: redis.projects.locations.operations

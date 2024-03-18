@@ -118,13 +118,14 @@ class AccessBeta(Access):
 
   @staticmethod
   def Args(parser):
-    secrets_args.AddVersionOrAlias(
+    secrets_args.AddGlobalOrRegionalVersionOrAlias(
         parser, purpose='to access', positional=True, required=True)
     secrets_args.AddOutFile(parser)
     secrets_fmt.UseSecretData(parser)
 
   def Run(self, args):
-    version_ref = args.CONCEPTS.version.Parse()
+    result = args.CONCEPTS.version.Parse()
+    version_ref = result.result
     version = secrets_api.Versions().Access(version_ref)
     if version.payload.dataCrc32c is None or crc32c.does_data_match_checksum(
         version.payload.data, version.payload.dataCrc32c):

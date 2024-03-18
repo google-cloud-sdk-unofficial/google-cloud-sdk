@@ -31,6 +31,14 @@
       type: int
       help_text: |
         The shard count of the cluster.
+    - arg_name: deletion-protection
+      api_field: cluster.deletionProtectionEnabled
+      type: bool
+      release_tracks: [ALPHA, BETA]
+      hidden: true
+      help_text: |
+        Enable Delete Protection on the Redis Cluster to prevent accidental deletions.
+        Use --deletion-protection to enabled and --no-deletion-protection to disable.
 
   async:
     collection: redis.projects.locations.operations
@@ -41,11 +49,13 @@
       modify_request_hooks:
       - googlecloudsdk.command_lib.redis.clusters_update_util:UpdateReplicaCount
       - googlecloudsdk.command_lib.redis.clusters_update_util:UpdateShardCount
+      - googlecloudsdk.command_lib.redis.clusters_update_util:UpdateDeletionProtection
     BETA:
       api_version: v1beta1
       modify_request_hooks:
       - googlecloudsdk.command_lib.redis.clusters_update_util:UpdateReplicaCount
       - googlecloudsdk.command_lib.redis.clusters_update_util:UpdateShardCount
+      - googlecloudsdk.command_lib.redis.clusters_update_util:UpdateDeletionProtection
     GA:
       api_version: v1
       modify_request_hooks:

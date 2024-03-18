@@ -18,6 +18,8 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+import uuid
+
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute import flags as compute_flags
@@ -58,9 +60,14 @@ class Cancel(base.Command):
 
     requests = []
     for queued_resource_ref in queued_resources_refs:
-      requests.append((client.apitools_client.zoneQueuedResources, 'Cancel',
-                       client.messages.ComputeZoneQueuedResourcesCancelRequest(
-                           project=queued_resource_ref.project,
-                           zone=queued_resource_ref.zone,
-                           queuedResource=queued_resource_ref.queuedResource)))
+      requests.append((
+          client.apitools_client.zoneQueuedResources,
+          'Cancel',
+          client.messages.ComputeZoneQueuedResourcesCancelRequest(
+              project=queued_resource_ref.project,
+              zone=queued_resource_ref.zone,
+              queuedResource=queued_resource_ref.queuedResource,
+              requestId=uuid.uuid4().hex,
+          ),
+      ))
     return client.MakeRequests(requests)

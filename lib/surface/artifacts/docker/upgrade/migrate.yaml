@@ -1,5 +1,4 @@
 - release_tracks: [GA]
-  hidden: true
   help_text:
     brief: |
       Migrate projects from Container Registry to Artifact Registry
@@ -16,14 +15,14 @@
 
       To migrate a project using pkg.dev repositories:
 
-         $ {command} --from_gcr=gcr.io/project1  --to_pkg_dev=project2/repo_name
+         $ {command} --from-gcr=gcr.io/project1  --to-pkg-dev=project2/repo_name
 
   arguments:
     params:
     - arg_name: projects
       help_text: >
         Comma seperated list of Container Registry projects to migrate to Artifact Registry gcr.io repositories.
-    - arg_name: recent-images-only
+    - arg_name: recent-images
       metavar: NUM_DAYS
       type: int
       help_text: Only copy images pulled or pushed in the last NUM_DAYS days. NUM_DAYS must be between 30 and 90 inclusive.
@@ -51,6 +50,11 @@
       type: bool
       help_text: >
         Migrate without changing iam-policy. Users without Artifact Registry permissions will not have access to migrated images.
+    - arg_name: last-uploaded-versions
+      metavar: N
+      type: int
+      help_text: >
+        Only copy the N most recently uploaded versions of each image. More than N images may be copied if new images are uploaded during migration.
 
   request:
     api_version: v1

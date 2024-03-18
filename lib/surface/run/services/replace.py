@@ -43,8 +43,7 @@ from googlecloudsdk.core import resources
 from googlecloudsdk.core.console import progress_tracker
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
-                    base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
 class Replace(base.Command):
   """Create or replace a service from a YAML service specification."""
 
@@ -63,7 +62,7 @@ class Replace(base.Command):
   }
 
   @classmethod
-  def Args(cls, parser):
+  def CommonArgs(cls, parser):
     # Flags specific to connecting to a cluster
     cluster_group = flags.GetClusterArgGroup(parser)
     namespace_presentation = presentation_specs.ResourcePresentationSpec(
@@ -89,6 +88,15 @@ class Replace(base.Command):
     # No output by default, can be overridden by --format
     parser.display_info.AddFormat('none')
 
+  @classmethod
+  def Args(cls, parser):
+    cls.CommonArgs(parser)
+
+  def _ConnectionContext(self, args, region_label):
+    return connection_context.GetConnectionContext(
+        args, flags.Product.RUN, self.ReleaseTrack(), region_label=region_label
+    )
+
   def Run(self, args):
     """Create or Update service from YAML."""
     run_messages = apis.GetMessagesModule(global_methods.SERVERLESS_API_NAME,
@@ -107,6 +115,7 @@ class Replace(base.Command):
     if namespace is not None and not isinstance(namespace, str):
       service_dict['metadata']['namespace'] = str(namespace)
 
+    new_service = None  # this avoids a lot of errors.
     try:
       raw_service = messages_util.DictToMessageWithErrorCheck(
           service_dict, run_messages.Service)
@@ -150,8 +159,7 @@ class Replace(base.Command):
 
     region_label = new_service.region if new_service.is_managed else None
 
-    conn_context = connection_context.GetConnectionContext(
-        args, flags.Product.RUN, self.ReleaseTrack(), region_label=region_label)
+    conn_context = self._ConnectionContext(args, region_label)
     dry_run = args.dry_run if hasattr(args, 'dry_run') else False
 
     action = (
@@ -204,3 +212,14 @@ class Replace(base.Command):
                              'URL: {{bold}}{url}{{reset}}'.format(
                                  serv=service_obj.name, url=service_obj.domain))
       return service_obj
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class AlphaReplace(Replace):
+
+  @classmethod
+  def Args(cls, parser):
+    Replace.CommonArgs(parser)
+
+
+AlphaReplace.__doc__ = Replace.__doc__

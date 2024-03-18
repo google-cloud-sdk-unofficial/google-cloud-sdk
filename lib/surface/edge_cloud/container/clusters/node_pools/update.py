@@ -60,6 +60,7 @@ class Update(base.UpdateCommand):
     container_flags.AddNodeCount(parser, required=False)
     container_flags.AddMachineFilter(parser)
     container_flags.AddLROMaximumTimeout(parser)
+    container_flags.AddNodeLabels(parser)
     labels_util.AddUpdateLabelsFlags(parser)
     base.ASYNC_FLAG.AddToParser(parser)
 
@@ -132,4 +133,3 @@ class UpdateAlpha(Update):
         API=util.VERSION_MAP.get(track)
     )
     Update.Args(parser)
-    container_flags.AddNodeLabels(parser)

@@ -36,8 +36,7 @@ def _ParseBackupType(alloydb_messages, backup_type):
   return None
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
-                    base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Create(base.CreateCommand):
   """Creates a new AlloyDB backup within a given project."""
 
@@ -52,8 +51,8 @@ class Create(base.CreateCommand):
         """,
   }
 
-  @staticmethod
-  def Args(parser):
+  @classmethod
+  def Args(cls, parser):
     """Specifies additional command flags.
 
     Args:
@@ -64,15 +63,35 @@ class Create(base.CreateCommand):
         '--region',
         required=True,
         type=str,
-        help=('The region of the cluster to backup. Note: both the cluster '
-              'and the backup have to be in the same region.'))
+        help=(
+            'The region of the cluster to backup. Note: both the cluster '
+            'and the backup have to be in the same region.'
+        ),
+    )
     flags.AddBackup(parser)
     flags.AddCluster(parser, False)
     kms_resource_args.AddKmsKeyResourceArg(
         parser,
         'backup',
-        permission_info="The 'AlloyDB Service Agent' service account must hold permission 'Cloud KMS CryptoKey Encrypter/Decrypter'"
+        permission_info=(
+            "The 'AlloyDB Service Agent' service account must hold permission"
+            " 'Cloud KMS CryptoKey Encrypter/Decrypter'"
+        ),
     )
+
+  def ConstructResourceFromArgs(
+      self, alloydb_messages, cluster_ref, backup_ref, args
+  ):
+    backup_resource = alloydb_messages.Backup()
+    backup_resource.name = backup_ref.RelativeName()
+    backup_resource.type = _ParseBackupType(alloydb_messages, 'ON_DEMAND')
+    backup_resource.clusterName = cluster_ref.RelativeName()
+    kms_key = flags.GetAndValidateKmsKeyName(args)
+    if kms_key:
+      encryption_config = alloydb_messages.EncryptionConfig()
+      encryption_config.kmsKeyName = kms_key
+      backup_resource.encryptionConfig = encryption_config
+    return backup_resource
 
   def Run(self, args):
     """Constructs and sends request.
@@ -102,15 +121,9 @@ class Create(base.CreateCommand):
         locationsId=args.region,
         backupsId=args.backup)
 
-    backup_resource = alloydb_messages.Backup()
-    backup_resource.name = backup_ref.RelativeName()
-    backup_resource.type = _ParseBackupType(alloydb_messages, 'ON_DEMAND')
-    backup_resource.clusterName = cluster_ref.RelativeName()
-    kms_key = flags.GetAndValidateKmsKeyName(args)
-    if kms_key:
-      encryption_config = alloydb_messages.EncryptionConfig()
-      encryption_config.kmsKeyName = kms_key
-      backup_resource.encryptionConfig = encryption_config
+    backup_resource = self.ConstructResourceFromArgs(
+        alloydb_messages, cluster_ref, backup_ref, args
+    )
 
     req = alloydb_messages.AlloydbProjectsLocationsBackupsCreateRequest(
         backup=backup_resource,
@@ -123,3 +136,32 @@ class Create(base.CreateCommand):
     if not args.async_:
       backup_operations.Await(op_ref, 'Creating backup', self.ReleaseTrack())
     return op
+
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class CreateBeta(Create):
+  """Create a new AlloyDB backup within a given project."""
+
+  @classmethod
+  def Args(cls, parser):
+    super(CreateBeta, cls).Args(parser)
+    flags.AddEnforcedRetention(parser)
+
+  def ConstructResourceFromArgs(
+      self, alloydb_messages, cluster_ref, backup_ref, args
+  ):
+    backup_resource = super(CreateBeta, self).ConstructResourceFromArgs(
+        alloydb_messages, cluster_ref, backup_ref, args
+    )
+    if args.enforced_retention:
+      backup_resource.enforcedRetention = True
+    return backup_resource
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class CreateAlpha(CreateBeta):
+  """Create a new AlloyDB backup within a given project."""
+
+  @classmethod
+  def Args(cls, parser):
+    super(CreateAlpha, cls).Args(parser)

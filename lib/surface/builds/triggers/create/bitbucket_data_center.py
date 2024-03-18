@@ -26,7 +26,6 @@ from googlecloudsdk.core import properties
 from googlecloudsdk.core import resources
 
 
-@base.Hidden
 class CreateBitbucketDataCenter(base.CreateCommand):
   """Create a build trigger for a 2nd-gen Bitbucket Data Center repository."""
 
