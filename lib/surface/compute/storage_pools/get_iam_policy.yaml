@@ -1,4 +1,4 @@
-- release_tracks: [ALPHA]
+- release_tracks: [ALPHA, BETA, GA]
   help_text:
     brief: "Get the IAM policy of a storage pool."
     description: "Get the IAM policy of a storage pool."
@@ -8,9 +8,15 @@
         $ {command} my-storage-pool
 
   request:
+    ALPHA:
+      api_version: alpha
+    BETA:
+      api_version: beta
+    GA:
+      api_version: v1
+
     collection: compute.storagePools
     use_relative_name: false
-    api_version: alpha
     method: getIamPolicy
 
   arguments:

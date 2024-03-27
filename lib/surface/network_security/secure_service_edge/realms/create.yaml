@@ -24,6 +24,13 @@ arguments:
     choices:
     - arg_value: prisma-access
       enum_value: PALO_ALTO_PRISMA_ACCESS
+    - arg_value: symantec-cloud-swg
+      enum_value: SYMANTEC_CLOUD_SWG
+  - arg_name: symantec-api-key
+    api_field: sSERealm.symantecOptions.apiKey
+    help_text: |
+      API key used by Google to manage Symantec resources on the customer's behalf.
+      This is required for Symantec realms and invalid for other realms.
 
 async:
   collection: networksecurity.projects.locations.operations

@@ -19,17 +19,12 @@ from __future__ import division
 from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.container.gkemulticloud import attached as api_util
-from googlecloudsdk.api_lib.container.gkemulticloud import util
-from googlecloudsdk.api_lib.util import waiter
 from googlecloudsdk.calliope import base
-from googlecloudsdk.command_lib.container.attached import flags as attached_flags
 from googlecloudsdk.command_lib.container.attached import resource_args
 from googlecloudsdk.command_lib.container.gkemulticloud import command_util
 from googlecloudsdk.command_lib.container.gkemulticloud import constants
 from googlecloudsdk.command_lib.container.gkemulticloud import endpoint_util
 from googlecloudsdk.command_lib.container.gkemulticloud import flags
-from googlecloudsdk.command_lib.run import pretty_print
-from googlecloudsdk.core.console import console_io
 
 _EXAMPLES = """
 To delete an AttachedCluster resource named ``my-cluster'' managed in location
@@ -51,9 +46,8 @@ class Delete(base.DeleteCommand):
     resource_args.AddAttachedClusterResourceArg(parser, 'to delete')
 
     flags.AddValidateOnly(parser, 'cluster to delete')
-    flags.AddAllowMissing(parser)
-
-    attached_flags.AddIgnoreErrors(parser)
+    flags.AddAllowMissing(parser, 'cluster')
+    flags.AddIgnoreErrors(parser, constants.ATTACHED, 'cluster')
 
     base.ASYNC_FLAG.AddToParser(parser)
 
@@ -66,38 +60,10 @@ class Delete(base.DeleteCommand):
       message = command_util.ClusterMessage(
           cluster_ref.attachedClustersId, kind=constants.ATTACHED
       )
-      if not args.ignore_errors:
-        self._prompt_ignore_errors(args, cluster_client, cluster_ref)
-      try:
-        ret = command_util.Delete(
-            resource_ref=cluster_ref,
-            resource_client=cluster_client,
-            args=args,
-            message=message,
-            kind=constants.ATTACHED_CLUSTER_KIND,
-        )
-      except waiter.OperationError as e:
-        pretty_print.Info(
-            'Delete cluster failed. Try re-running with `--ignore-errors`.'
-        )
-        raise e
-      return ret
-
-  def _prompt_ignore_errors(self, args, cluster_client, cluster_ref):
-    resp = cluster_client.Get(cluster_ref)
-    messages = util.GetMessagesModule()
-    error_states = [
-        messages.GoogleCloudGkemulticloudV1AttachedCluster.StateValueValuesEnum.ERROR,
-        messages.GoogleCloudGkemulticloudV1AttachedCluster.StateValueValuesEnum.DEGRADED,
-    ]
-    if resp.state not in error_states:
-      return
-    args.ignore_errors = console_io.PromptContinue(
-        message=(
-            'Cluster is in ERROR or DEGRADED state. '
-            'Setting --ignore-errors flag.'
-        ),
-        throw_if_unattended=True,
-        cancel_on_no=False,
-        default=False,
-    )
+      command_util.DeleteWithIgnoreErrors(
+          args,
+          cluster_client,
+          cluster_ref,
+          message,
+          constants.ATTACHED_CLUSTER_KIND,
+      )

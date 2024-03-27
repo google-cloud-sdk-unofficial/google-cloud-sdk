@@ -419,12 +419,17 @@ class UpdateAlpha(UpdateBeta):
   @classmethod
   def Args(cls, parser):
     super(UpdateAlpha, cls).Args(parser)
+    managed_flags.AddInstanceFlexibilityPolicyArgs(parser, is_update=True)
 
   def _CreateInstanceGroupManagerPatch(self, args, igm_ref, igm_resource,
                                        client, holder):
     igm_patch = super(UpdateAlpha, self)._CreateInstanceGroupManagerPatch(
         args, igm_ref, igm_resource, client, holder)
+    igm_patch.instanceFlexibilityPolicy = (
+        managed_instance_groups_utils.CreateInstanceFlexibilityPolicy(
+            args, client.messages, igm_resource))
 
     return igm_patch
+
 
 UpdateAlpha.detailed_help = UpdateBeta.detailed_help

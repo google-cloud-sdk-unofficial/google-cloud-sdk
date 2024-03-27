@@ -225,47 +225,55 @@ class Update(base.UpdateCommand):
 class UpdateBeta(Update):
   r"""Update a secret's metadata.
 
-      Update a secret's metadata (e.g. labels). This command will
-      return an error if given a secret that does not exist.
+  Update a secret's metadata (e.g. labels). This command will
+  return an error if given a secret that does not exist.
 
-      ## EXAMPLES
+  ## EXAMPLES
 
-      Update the label of a secret named 'my-secret'.
+  Update the label of a secret named 'my-secret'.
 
-        $ {command} my-secret --update-labels=foo=bar
+    $ {command} my-secret --update-labels=foo=bar
 
-      Update the label of a secret using etag.
+  Update the label of a secret using etag.
 
-        $ {command} my-secret --update-labels=foo=bar --etag=\"123\"
+    $ {command} my-secret --update-labels=foo=bar --etag=\"123\"
 
-      Update the expiration of a secret named 'my-secret' using a ttl.
+  Update the expiration of a secret named 'my-secret' using a ttl.
 
-        $ {command} my-secret --ttl="600s"
+    $ {command} my-secret --ttl="600s"
 
-      Update the expiration of a secret named 'my-secret' using an expire-time.
+  Update the expiration of a secret named 'my-secret' using an expire-time.
 
-        $ {command} my-secret --expire-time="2030-01-01T08:15:30-05:00"
+    $ {command} my-secret --expire-time="2030-01-01T08:15:30-05:00"
 
-      Remove the expiration of a secret named 'my-secret'.
+  Remove the expiration of a secret named 'my-secret'.
 
-        $ {command} my-secret --remove-expiration
+    $ {command} my-secret --remove-expiration
 
-      Update a secret to have a next-rotation-time:
+  Update a secret to have a next-rotation-time:
 
-        $ {command} my-secret --next-rotation-time="2030-01-01T15:30:00-05:00"
+    $ {command} my-secret --next-rotation-time="2030-01-01T15:30:00-05:00"
 
-      Update a secret to have a next-rotation-time and rotation-period:
+  Update a secret to have a next-rotation-time and rotation-period:
 
-        $ {command} my-secret --next-rotation-time="2030-01-01T15:30:00-05:00"
-        --rotation-period="7200s"
+    $ {command} my-secret --next-rotation-time="2030-01-01T15:30:00-05:00"
+    --rotation-period="7200s"
 
-      Update a secret to remove the next-rotation-time:
+  Update a secret to remove the next-rotation-time:
 
-        $ {command} my-secret --remove-next-rotation-time
+    $ {command} my-secret --remove-next-rotation-time
 
-      Update a secret to clear rotation policy:
+  Update a secret to clear rotation policy:
 
-        $ {command} my-secret --remove-rotation-schedule
+    $ {command} my-secret --remove-rotation-schedule
+
+  Update version destroy ttl of a secret:
+
+    $ {command} my-secret --version-destroy-ttl="86400s"
+
+  Disable delayed secret version destroy:
+
+    $ {command} my-secret --remove-version-destroy-ttl
   """
 
   NO_CHANGES_MESSAGE = (
@@ -283,6 +291,7 @@ class UpdateBeta(Update):
     secrets_args.AddUpdateExpirationGroup(parser)
     secrets_args.AddUpdateRotationGroup(parser)
     secrets_args.AddUpdateTopicsGroup(parser)
+    secrets_args.AddUpdateVersionDestroyTTL(parser)
     map_util.AddMapUpdateFlag(alias, 'version-aliases', 'Version Aliases', str,
                               int)
     map_util.AddMapRemoveFlag(alias, 'version-aliases', 'Version Aliases', str)
@@ -331,18 +340,40 @@ class UpdateBeta(Update):
         'remove_annotations') or args.IsSpecified('clear_annotations'):
       update_mask.append('annotations')
 
+    if args.IsSpecified('version_destroy_ttl') or args.IsSpecified(
+        'remove_version_destroy_ttl'
+    ):
+      update_mask.append('version_destroy_ttl')
+
     # Validations
     if not update_mask:
-      raise exceptions.MinimumArgumentException([
-          '--clear-labels', '--remove-labels', '--update-labels', '--ttl',
-          '--expire-time', '--remove-expiration', '--clear-topics',
-          '--remove-topics', '--add-topics', '--update-version-aliases',
-          '--remove-version-aliases', '--clear-version-aliases',
-          '--update-annotations', '--remove-annotations', '--clear-annotations',
-          '--next-rotation-time', '--remove-next-rotation-time',
-          '--rotation-period', '--remove-rotation-period',
-          '--remove-rotation-schedule'
-      ], self.NO_CHANGES_MESSAGE.format(secret=secret_ref.Name()))
+      raise exceptions.MinimumArgumentException(
+          [
+              '--clear-labels',
+              '--remove-labels',
+              '--update-labels',
+              '--ttl',
+              '--expire-time',
+              '--remove-expiration',
+              '--clear-topics',
+              '--remove-topics',
+              '--add-topics',
+              '--update-version-aliases',
+              '--remove-version-aliases',
+              '--clear-version-aliases',
+              '--update-annotations',
+              '--remove-annotations',
+              '--clear-annotations',
+              '--next-rotation-time',
+              '--remove-next-rotation-time',
+              '--rotation-period',
+              '--remove-rotation-period',
+              '--remove-rotation-schedule',
+              '--version-destroy-ttl',
+              '--remove-version-destroy-ttl',
+          ],
+          self.NO_CHANGES_MESSAGE.format(secret=secret_ref.Name()),
+      )
 
     labels_update = labels_diff.Apply(messages.Secret.LabelsValue,
                                       original.labels)
@@ -400,6 +431,7 @@ class UpdateBeta(Update):
         topics=topics,
         next_rotation_time=args.next_rotation_time,
         rotation_period=args.rotation_period,
+        version_destroy_ttl=str(args.version_destroy_ttl) + 's',
     )
     secrets_log.Secrets().Updated(secret_ref)
 

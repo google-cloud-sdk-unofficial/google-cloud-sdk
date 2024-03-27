@@ -1,4 +1,4 @@
-- release_tracks: [ALPHA]
+- release_tracks: [ALPHA, BETA, GA]
   help_text:
     brief: "Set the IAM policy of the given storage pool."
     description: "Set the IAM policy of the given storage pool."
@@ -9,11 +9,17 @@
         $ {command} my-storage-pool policy.json
 
   request:
+    ALPHA:
+      api_version: alpha
+    BETA:
+      api_version: beta
+    GA:
+      api_version: v1
+
     collection: compute.storagePools
     use_relative_name: false
     modify_request_hooks:
     - googlecloudsdk.command_lib.iam.hooks:UseMaxRequestedPolicyVersion:api_field=zoneSetPolicyRequest.policy.version
-    api_version: alpha
     method: setIamPolicy
 
   arguments:

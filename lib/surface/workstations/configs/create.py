@@ -63,6 +63,7 @@ class Create(base.CreateCommand):
     workstations_flags.AddNetworkTags(parser)
     workstations_flags.AddPoolSize(parser)
     workstations_flags.AddDisablePublicIpAddresses(parser)
+    workstations_flags.AddDisableSSHToVM(parser)
     workstations_flags.AddDisableTcpConnections(parser)
     workstations_flags.AddShieldedSecureBoot(parser)
     workstations_flags.AddShieldedVtpm(parser)
@@ -86,7 +87,6 @@ class Create(base.CreateCommand):
     workstations_flags.AddEphemeralDirectory(parser)
     if (cls.ReleaseTrack() != base.ReleaseTrack.GA):
       workstations_flags.AddAcceleratorFields(parser)
-      workstations_flags.AddDisableSSHToVM(parser)
 
   def Collection(self):
     return 'workstations.projects.locations.workstationClusters.workstationConfigs'

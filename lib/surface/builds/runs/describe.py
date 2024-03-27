@@ -13,19 +13,19 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Get a PipelineRun/TaskRun."""
-
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
-
 from googlecloudsdk.api_lib.cloudbuild.v2 import client_util as v2_client_util
+from googlecloudsdk.api_lib.cloudbuild.v2 import pipeline_output_util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.cloudbuild import run_flags
+from googlecloudsdk.core.resource import resource_printer
 
 
 @base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class Describe(base.Command):
+class Describe(base.DescribeCommand):
   """Get a PipelineRun/TaskRun."""
 
   @staticmethod
@@ -37,6 +37,11 @@ class Describe(base.Command):
         to capture some information, but behaves like an ArgumentParser.
     """
     parser = run_flags.AddsRunFlags(parser)
+    resource_printer.RegisterFormatter(
+        pipeline_output_util.PRINTER_FORMAT,
+        pipeline_output_util.TektonPrinter,
+        hidden=True,
+    )
 
   def Run(self, args):
     """This is what gets called when the user runs this command."""
@@ -44,4 +49,6 @@ class Describe(base.Command):
     region = region_ref.AsDict()['locationsId']
     project = region_ref.AsDict()['projectsId']
     run_id = args.RUN_ID
+    if args.format == 'tekton':
+      args.GetDisplayInfo().AddFormat(pipeline_output_util.PRINTER_FORMAT)
     return v2_client_util.GetRun(project, region, run_id, args.type)

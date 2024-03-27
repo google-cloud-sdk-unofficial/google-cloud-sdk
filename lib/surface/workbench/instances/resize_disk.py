@@ -26,7 +26,7 @@ from googlecloudsdk.command_lib.workbench import flags
 DETAILED_HELP = {
     'DESCRIPTION':
         """
-        Request for resizing the workbench instances disk.
+        Resizes the workbench instance's disk.
     """,
     'EXAMPLES':
         """
@@ -43,7 +43,7 @@ DETAILED_HELP = {
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Update(base.Command):
-  """Request for updating instances."""
+  """Resizes the workbench instance's disk."""
 
   @staticmethod
   def Args(parser):

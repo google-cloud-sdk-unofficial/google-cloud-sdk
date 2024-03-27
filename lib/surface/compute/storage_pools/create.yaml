@@ -1,4 +1,4 @@
-- release_tracks: [ALPHA]
+- release_tracks: [ALPHA, BETA, GA]
   help_text:
     brief: "Create a storage pool."
     description: "Create a storage pool."
@@ -8,8 +8,14 @@
         $ {command} my-storage-pool --storage-pool-type=hyperdisk-throughput --provisioned-capacity=10TB --provisioned-throughput=200
 
   request:
+    ALPHA:
+      api_version: alpha
+    BETA:
+      api_version: beta
+    GA:
+      api_version: v1
+
     collection: compute.storagePools
-    api_version: alpha
     method: insert
     modify_request_hooks:
     - googlecloudsdk.api_lib.compute.storage_pools.modify_request_hooks:add_name_to_payload
@@ -56,16 +62,13 @@
       type: int
 
     - arg_name: storage-pool-type
-      api_field: storagePool.storagePoolType
+      is_positional: false
       required: true
       help_text: |
         Type of the storage pool.
-      choices:
-      - arg_value: hyperdisk-throughput
-        enum_value: hyperdisk-throughput
-      - arg_value: hyperdisk-balanced
-        enum_value: hyperdisk-balanced
-      processor: googlecloudsdk.api_lib.compute.storage_pools.processors:format_pool_type
+      resource_spec: !REF googlecloudsdk.command_lib.compute.resources:storage_pool_type
+      resource_method_params:
+        storagePool.storagePoolType: "{__relative_name__}"
 
     - arg_name: capacity-provisioning-type
       api_field: storagePool.capacityProvisioningType

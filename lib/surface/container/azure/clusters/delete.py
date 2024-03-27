@@ -43,7 +43,8 @@ class Delete(base.DeleteCommand):
   def Args(parser):
     resource_args.AddAzureClusterResourceArg(parser, 'to delete')
 
-    flags.AddAllowMissing(parser)
+    flags.AddAllowMissing(parser, 'cluster')
+    flags.AddIgnoreErrors(parser, constants.AZURE, 'cluster')
 
     base.ASYNC_FLAG.AddToParser(parser)
 
@@ -59,10 +60,10 @@ class Delete(base.DeleteCommand):
           kind=constants.AZURE,
           region=cluster.azureRegion,
       )
-      return command_util.Delete(
-          resource_ref=cluster_ref,
-          resource_client=cluster_client,
-          message=message,
-          args=args,
-          kind=constants.AZURE_CLUSTER_KIND,
+      command_util.DeleteWithIgnoreErrors(
+          args,
+          cluster_client,
+          cluster_ref,
+          message,
+          constants.AZURE_CLUSTER_KIND,
       )

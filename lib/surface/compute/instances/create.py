@@ -114,13 +114,13 @@ def _CommonArgs(
     support_local_ssd_recovery_timeout=True,
     support_local_ssd_size=False,
     support_vlan_nic=False,
-    support_storage_pool=False,
     support_source_instant_snapshot=False,
     support_enable_confidential_compute=False,
     support_specific_then_x_affinity=False,
     support_ipv6_only=False,
     support_graceful_shutdown=False,
     support_igmp_query=False,
+    support_watchdog_timer=False,
 ):
   """Register parser args common to all tracks."""
   metadata_utils.AddMetadataArgs(parser)
@@ -134,7 +134,6 @@ def _CommonArgs(
       support_boot=True,
       support_multi_writer=support_multi_writer,
       support_replica_zones=support_replica_zones,
-      support_storage_pool=support_storage_pool,
       enable_source_instant_snapshots=support_source_instant_snapshot,
       enable_confidential_compute=support_enable_confidential_compute,
   )
@@ -253,6 +252,9 @@ def _CommonArgs(
   else:
     instances_flags.AddLocalSsdArgs(parser)
 
+  if support_watchdog_timer:
+    instances_flags.AddWatchdogTimerArg(parser)
+
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Create(base.CreateCommand):
@@ -291,7 +293,6 @@ class Create(base.CreateCommand):
   _support_local_ssd_size = True
   _support_vlan_nic = False
   _support_performance_monitoring_unit = False
-  _support_storage_pool = False
   _support_source_instant_snapshot = False
   _support_boot_instant_snapshot_uri = False
   _support_partner_metadata = False
@@ -299,6 +300,7 @@ class Create(base.CreateCommand):
   _support_specific_then_x_affinity = False
   _support_graceful_shutdown = False
   _support_igmp_query = False
+  _support_watchdog_timer = False
 
   @classmethod
   def Args(cls, parser):
@@ -319,11 +321,11 @@ class Create(base.CreateCommand):
         support_local_ssd_size=cls._support_local_ssd_size,
         support_network_queue_count=cls._support_network_queue_count,
         support_vlan_nic=cls._support_vlan_nic,
-        support_storage_pool=cls._support_storage_pool,
         support_enable_confidential_compute=cls._support_enable_confidential_compute,
         support_specific_then_x_affinity=cls._support_specific_then_x_affinity,
         support_graceful_shutdown=cls._support_graceful_shutdown,
         support_igmp_query=cls._support_igmp_query,
+        support_watchdog_timer=cls._support_watchdog_timer,
     )
     cls.SOURCE_INSTANCE_TEMPLATE = (
         instances_flags.MakeSourceInstanceTemplateArg()
@@ -473,7 +475,6 @@ class Create(base.CreateCommand):
             support_create_disk_snapshots=self._support_create_disk_snapshots,
             support_replica_zones=self._support_replica_zones,
             support_multi_writer=self._support_multi_writer,
-            support_storage_pool=self._support_storage_pool,
             support_source_instant_snapshot=self._support_source_instant_snapshot,
             support_boot_instant_snapshot_uri=self._support_boot_instant_snapshot_uri,
             support_enable_confidential_compute=self._support_enable_confidential_compute,
@@ -577,7 +578,9 @@ class Create(base.CreateCommand):
           (self._support_numa_node_count and args.numa_node_count is not None)
           or has_visible_core_count or args.enable_uefi_networking is not None
           or (self._support_performance_monitoring_unit
-              and args.performance_monitoring_unit)):
+              and args.performance_monitoring_unit)
+          or (self._support_watchdog_timer
+              and args.enable_watchdog_timer is not None)):
         visible_core_count = (
             args.visible_core_count if has_visible_core_count else None
         )
@@ -588,7 +591,9 @@ class Create(base.CreateCommand):
                 args.numa_node_count if self._support_numa_node_count else None,
                 visible_core_count, args.enable_uefi_networking,
                 args.performance_monitoring_unit
-                if self._support_performance_monitoring_unit else None))
+                if self._support_performance_monitoring_unit else None,
+                args.enable_watchdog_timer
+                if self._support_watchdog_timer else None))
 
       resource_policies = getattr(args, 'resource_policies', None)
       if resource_policies:
@@ -779,7 +784,6 @@ class CreateBeta(Create):
   _support_local_ssd_size = True
   _support_vlan_nic = False
   _support_performance_monitoring_unit = False
-  _support_storage_pool = False
   _support_source_instant_snapshot = False
   _support_boot_instant_snapshot_uri = False
   _support_partner_metadata = False
@@ -787,6 +791,7 @@ class CreateBeta(Create):
   _support_specific_then_x_affinity = True
   _support_graceful_shutdown = False
   _support_igmp_query = False
+  _support_watchdog_timer = False
 
   def GetSourceMachineImage(self, args, resources):
     """Retrieves the specified source machine image's selflink.
@@ -823,11 +828,11 @@ class CreateBeta(Create):
         support_local_ssd_recovery_timeout=cls._support_local_ssd_recovery_timeout,
         support_local_ssd_size=cls._support_local_ssd_size,
         support_vlan_nic=cls._support_vlan_nic,
-        support_storage_pool=cls._support_storage_pool,
         support_enable_confidential_compute=cls._support_enable_confidential_compute,
         support_specific_then_x_affinity=cls._support_specific_then_x_affinity,
         support_graceful_shutdown=cls._support_graceful_shutdown,
         support_igmp_query=cls._support_igmp_query,
+        support_watchdog_timer=cls._support_watchdog_timer,
     )
     cls.SOURCE_INSTANCE_TEMPLATE = (
         instances_flags.MakeSourceInstanceTemplateArg()
@@ -886,7 +891,6 @@ class CreateAlpha(CreateBeta):
   _support_local_ssd_size = True
   _support_vlan_nic = True
   _support_performance_monitoring_unit = True
-  _support_storage_pool = True
   _support_source_instant_snapshot = True
   _support_boot_instant_snapshot_uri = True
   _support_partner_metadata = True
@@ -895,6 +899,7 @@ class CreateAlpha(CreateBeta):
   _support_ipv6_only = True
   _support_graceful_shutdown = True
   _support_igmp_query = True
+  _support_watchdog_timer = True
 
   @classmethod
   def Args(cls, parser):
@@ -918,13 +923,13 @@ class CreateAlpha(CreateBeta):
         support_local_ssd_recovery_timeout=cls._support_local_ssd_recovery_timeout,
         support_local_ssd_size=cls._support_local_ssd_size,
         support_vlan_nic=cls._support_vlan_nic,
-        support_storage_pool=cls._support_storage_pool,
         support_source_instant_snapshot=cls._support_source_instant_snapshot,
         support_enable_confidential_compute=cls._support_enable_confidential_compute,
         support_specific_then_x_affinity=cls._support_specific_then_x_affinity,
         support_ipv6_only=cls._support_ipv6_only,
         support_graceful_shutdown=cls._support_graceful_shutdown,
         support_igmp_query=cls._support_igmp_query,
+        support_watchdog_timer=cls._support_watchdog_timer,
     )
 
     CreateAlpha.SOURCE_INSTANCE_TEMPLATE = (

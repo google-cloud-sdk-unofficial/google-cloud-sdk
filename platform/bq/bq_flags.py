@@ -8,7 +8,8 @@ from typing import Optional
 
 from absl import flags
 
-_APILOG = flags.DEFINE_string(
+
+APILOG = flags.DEFINE_string(
     'apilog',
     None,
     (
@@ -22,6 +23,13 @@ API: flags.FlagHolder[Optional[str]] = flags.DEFINE_string(
     'https://www.googleapis.com',
     'API endpoint to talk to.'
 )
+
+UNIVERSE_DOMAIN: flags.FlagHolder[Optional[str]] = flags.DEFINE_string(
+    'universe_domain',
+    None,
+    'The universe domain to use in TPC domains.',
+)
+
 _API_VERSION = flags.DEFINE_string('api_version', 'v2', 'API version to use.')
 _DEBUG_MODE = flags.DEFINE_boolean(
     'debug_mode', False, 'Show tracebacks on Python exceptions.'
@@ -99,7 +107,7 @@ _SYNCHRONOUS_MODE = flags.DEFINE_boolean(
     ),
     short_name='sync',
 )
-_PROJECT_ID = flags.DEFINE_string(
+PROJECT_ID: flags.FlagHolder[str] = flags.DEFINE_string(
     'project_id', '', 'Default project to use for requests.'
 )
 _DATASET_ID = flags.DEFINE_string(
@@ -111,7 +119,7 @@ _DATASET_ID = flags.DEFINE_string(
         ' project is missing, the value of the project_id flag will be used.'
     ),
 )
-_LOCATION = flags.DEFINE_string(
+LOCATION = flags.DEFINE_string(
     'location',
     None,
     (
@@ -119,10 +127,23 @@ _LOCATION = flags.DEFINE_string(
         ' determining where jobs should run (Ignored when not applicable.)'
     ),
 )
-_USE_REGIONAL_ENDPOINTS = flags.DEFINE_boolean(
+# TODO(b/302038541): Define this flag more accurately or deprecate it.
+USE_REGIONAL_ENDPOINTS: flags.FlagHolder[bool] = flags.DEFINE_boolean(
     'use_regional_endpoints',
     False,
     "Use a regional endpoint based on the operation's location.",
+)
+
+USE_REP = flags.DEFINE_boolean(
+    'use_rep',
+    False,
+    "Use a REP endpoint based on the operation's location.",
+)
+
+USE_LEP = flags.DEFINE_boolean(
+    'use_lep',
+    False,
+    "Use a LEP endpoint based on the operation's location.",
 )
 
 # This flag is "hidden" at the global scope to avoid polluting help
@@ -215,7 +236,7 @@ ENABLE_GDRIVE = flags.DEFINE_boolean(
         'When set to false, requests new OAuth token without GDrive scope.'
     ),
 )
-_MTLS = flags.DEFINE_boolean(
+MTLS: flags.FlagHolder[bool] = flags.DEFINE_boolean(
     'mtls',
     False,
     'If set will use mtls client certificate on connections to BigQuery.',

@@ -76,9 +76,9 @@ class Create(base.CreateCommand):
   _support_network_queue_count = True
   _support_performance_monitoring_unit = True
   _support_custom_hostnames = True
-  _support_storage_pool = False
   _support_specific_then_x = True
   _support_ipv6_only = True
+  _support_watchdog_timer = True
 
   @classmethod
   def Args(cls, parser):
@@ -109,6 +109,7 @@ class Create(base.CreateCommand):
         support_custom_hostnames=cls._support_custom_hostnames,
         support_specific_then_x_affinity=cls._support_specific_then_x,
         support_ipv6_only=cls._support_ipv6_only,
+        support_watchdog_timer=cls._support_watchdog_timer,
     )
     cls.AddSourceInstanceTemplate(parser)
     instances_flags.AddSecureTagsArgs(parser)
@@ -191,8 +192,8 @@ class Create(base.CreateCommand):
         self._support_max_count_per_zone,
         self._support_performance_monitoring_unit,
         self._support_custom_hostnames,
-        self._support_storage_pool,
         self._support_specific_then_x,
+        self._support_watchdog_timer,
     )
     bulk_insert_instance_resource = bulk_util.CreateBulkInsertInstanceResource(
         args, holder, client, holder.resources, queued_resource_ref.project,

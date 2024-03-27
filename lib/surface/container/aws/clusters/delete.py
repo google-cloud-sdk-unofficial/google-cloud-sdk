@@ -46,7 +46,8 @@ class Delete(base.DeleteCommand):
     resource_args.AddAwsClusterResourceArg(parser, 'to delete')
 
     flags.AddValidateOnly(parser, 'cluster to delete')
-    flags.AddAllowMissing(parser)
+    flags.AddAllowMissing(parser, 'cluster')
+    flags.AddIgnoreErrors(parser, constants.AWS, 'cluster')
 
     base.ASYNC_FLAG.AddToParser(parser)
 
@@ -62,10 +63,10 @@ class Delete(base.DeleteCommand):
           kind=constants.AWS,
           region=cluster.awsRegion,
       )
-      return command_util.Delete(
-          resource_ref=cluster_ref,
-          resource_client=cluster_client,
-          args=args,
-          message=message,
-          kind=constants.AWS_CLUSTER_KIND,
+      command_util.DeleteWithIgnoreErrors(
+          args,
+          cluster_client,
+          cluster_ref,
+          message,
+          constants.AWS_CLUSTER_KIND,
       )

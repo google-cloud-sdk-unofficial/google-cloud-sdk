@@ -34,6 +34,7 @@ DEFAULT_LIST_FORMAT = """\
       version:label=DIGEST,
       createTime.date(tz=LOCAL),
       updateTime.date(tz=LOCAL),
+      metadata.imageSizeBytes:label=SIZE,
       {}
     )""".format(format_util.CONTAINER_ANALYSIS_METADATA_FORMAT)
 
@@ -44,6 +45,7 @@ EXTENDED_LIST_FORMAT = """\
       tags,
       createTime.date(tz=LOCAL),
       updateTime.date(tz=LOCAL),
+      metadata.imageSizeBytes:label=SIZE,
       {}
     )""".format(format_util.CONTAINER_ANALYSIS_METADATA_FORMAT)
 

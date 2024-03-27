@@ -109,6 +109,9 @@ class CreateBeta(Create):
   @classmethod
   def Args(cls, parser):
     super(CreateBeta, cls).Args(parser)
+    alloydb_messages = api_util.GetMessagesModule(cls.ReleaseTrack())
+    flags.AddMaintenanceWindow(parser, alloydb_messages)
+    flags.AddDenyMaintenancePeriod(parser, alloydb_messages)
 
   def ConstructCreateRequestFromArgs(
       self, alloydb_messages, location_ref, args

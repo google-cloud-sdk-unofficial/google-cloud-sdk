@@ -5,10 +5,8 @@ Discovery Documents are used to create API Clients.
 """
 
 import pkgutil
-import string
 from typing import Optional
 from absl import logging
-import bq_flags
 
 PKG_NAME = 'bigquery_client'
 
@@ -21,29 +19,6 @@ SUPPORTED_BIGQUERY_APIS = frozenset([
     'https://www.googleapis.com',
     'https://bigquery.googleapis.com',
 ])
-
-
-def is_api_being_overwritten() -> bool:
-  """Returns true if the api flag is being used and requests should change."""
-  return (
-      bq_flags.API.present
-  )
-
-
-def get_discovery_bigquery_name(api_url: str, api_version: str) -> str:
-  """Returns a filename for `api_url` for fetching discovery doc from pkg files.
-
-  Used for discovery and not discovery_next.
-
-  Args:
-    api_url: [str], The url for the discovery doc.
-    api_version: [str], the version of the discovery doc.
-  """
-  filename_from_url = ''.join(
-      [c for c in api_url if c in string.ascii_lowercase])
-  doc_filename = 'discovery/{}.bigquery.{}.rest.json'.format(
-      filename_from_url, api_version)
-  return doc_filename
 
 
 def load_local_discovery_doc(doc_filename: str) -> bytes:

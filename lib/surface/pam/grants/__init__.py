@@ -25,12 +25,21 @@ from googlecloudsdk.calliope import base
 @base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Grants(base.Group):
-  """Manage PAM Grants.
+  r"""Manage PAM Grants.
 
      The gcloud pam grants command group lets you manage Privileged
      Access Manager (PAM) Grants.
 
      ## EXAMPLES
+
+     To create a new grant under an entitlement sample-entitlement-name, with
+     requested duration 1 hour 30 minutes, a justification and two additional
+     email recipients, run:
+
+     $ {command} --entitlement sample-entitlement-name
+     --requested-duration 5400s
+     --justification "some justification"
+     --additional-email-recipients abc@google.com,xyz@google.com
 
      To display the details of a grant with the name grant-name,
      run:
@@ -49,5 +58,27 @@ class Grants(base.Group):
      To approve a grant with a given name and reason, run:
 
      $ {command} approve grant-name --reason approval-reason
+
+     To revoke a grant with a given name and reason, run:
+
+     $ {command} revoke grant-name --reason revoke-reason
+
+     To search and list all grants under an entitlement which you had created,
+     run:
+
+     $ {command} --entitlement entitlement-name \
+     --caller-relationship had-created
+
+     To search and list all grants under an entitlement which you had approved
+     or denied, run:
+
+     $ {command} --entitlement entitlement-name \
+     --caller-relationship had-approved
+
+     To search and list all grants under an entitlement which you can approve,
+     run:
+
+     $ {command} --entitlement entitlement-name \
+     --caller-relationship can-approve
 
   """

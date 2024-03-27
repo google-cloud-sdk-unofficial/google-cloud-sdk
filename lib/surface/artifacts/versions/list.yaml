@@ -39,5 +39,6 @@
          name.basename().sub("%5E", "^"):label=VERSION,
          description,
          createTime.date(tz=LOCAL),
-         updateTime.date(tz=LOCAL)
+         updateTime.date(tz=LOCAL),
+         metadata.imageSizeBytes:label=SIZE
        )

@@ -44,7 +44,8 @@ class Delete(base.DeleteCommand):
   def Args(parser):
     resource_args.AddAzureNodePoolResourceArg(parser, 'to delete')
 
-    flags.AddAllowMissing(parser)
+    flags.AddAllowMissing(parser, 'node pool')
+    flags.AddIgnoreErrors(parser, constants.AZURE, 'node pool')
 
     base.ASYNC_FLAG.AddToParser(parser)
 
@@ -57,10 +58,10 @@ class Delete(base.DeleteCommand):
       message = command_util.NodePoolMessage(
           node_pool_ref.azureNodePoolsId, cluster=node_pool_ref.azureClustersId
       )
-      return command_util.Delete(
-          resource_ref=node_pool_ref,
-          resource_client=node_pool_client,
-          message=message,
-          args=args,
-          kind=constants.AZURE_NODEPOOL_KIND,
+      command_util.DeleteWithIgnoreErrors(
+          args,
+          node_pool_client,
+          node_pool_ref,
+          message,
+          constants.AZURE_NODEPOOL_KIND,
       )

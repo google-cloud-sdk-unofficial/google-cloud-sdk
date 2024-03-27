@@ -21,7 +21,9 @@ from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
+)
 class ThreatPrevention(base.Group):
   """Manage Security Profiles - Threat Prevention Profile.
 
@@ -30,7 +32,7 @@ class ThreatPrevention(base.Group):
   ## EXAMPLES
 
   To create a Security Profile with the name `my-security-profile` which
-  includes location as global or region specifed and organization ID, optional
+  includes location as global or region specified and organization ID, optional
   description as `New Security Profile`, run:
 
     $ {command} create my-security-profile  --description="New Security Profile"
@@ -77,13 +79,14 @@ class ThreatPrevention(base.Group):
     the changes should apply, location either global or region specified and
     security_profile_id the Security Profile Identifier.
 
-  To list Security Profiles in specifed location and organization, run:
+  To list Security Profiles in specified location and organization, run:
 
     $ {command} list --location=global
 
   To delete a Security Profile called `my-security-profile` which includes
-  location as global or region specifed and organization ID, run:
+  location as global or region specified and organization ID, run:
 
       $ {command} delete my-security-profile
   """
+
   category = base.NETWORK_SECURITY_CATEGORY

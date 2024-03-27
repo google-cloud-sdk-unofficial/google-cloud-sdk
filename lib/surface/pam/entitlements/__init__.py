@@ -35,11 +35,21 @@ class Entitlements(base.Group):
      To display the details of an entitlement with the name entitlement-name,
      run:
 
-     ${command} describe entitlement-name
+     $ {command} describe entitlement-name
+
+     To search and list all entitlements under a parent for which you are a
+     requester, run:
+
+     $ {command} search --location parent --caller-access-type grant-requester
+
+     To search and list all entitlements under a parent for which you are a
+     approver, run:
+
+     $ {command} search --location parent --caller-access-type grant-approver
 
      To list all entitlement under a parent,
      run:
 
-     ${command} list --location parent
+     $ {command} list --location parent
 
   """

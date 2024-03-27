@@ -135,6 +135,33 @@ class UpdateAppProfile(base.CreateCommand):
 class UpdateAppProfileBeta(UpdateAppProfile):
   """Update a Bigtable app profile."""
 
+  detailed_help = {
+      'EXAMPLES': textwrap.dedent("""\
+          To update an app profile to use a multi-cluster routing policy, run:
+
+            $ {command} my-app-profile-id --instance=my-instance-id --route-any
+
+          To update an app profile to use a single-cluster routing policy that
+          routes all requests to `my-cluster-id` and allows transactional
+          writes, run:
+
+            $ {command} my-app-profile-id --instance=my-instance-id --route-to=my-cluster-id --transactional-writes
+
+          To update the description for an app profile, run:
+
+            $ {command} my-app-profile-id --instance=my-instance-id --description="New description"
+
+          To update the request priority for an app profile to PRIORITY_LOW, run:
+
+            $ {command} my-app-profile-id --instance=my-instance-id --priority=PRIORITY_LOW
+
+          To update an app profile to enable Data Boost which bills usage to the host project, run:
+
+            $ {command} my-app-profile-id --instance=my-instance-id --data-boost --data-boost-compute-billing-owner=HOST_PAYS
+
+          """),
+  }
+
   @staticmethod
   def Args(parser):
     arguments.AddAppProfileResourceArg(parser, 'to update')

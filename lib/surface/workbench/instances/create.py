@@ -26,7 +26,7 @@ from googlecloudsdk.command_lib.workbench import flags
 DETAILED_HELP = {
     'DESCRIPTION':
         """
-        Request for creating an instance.
+        Creates a workbench instance.
     """,
     'EXAMPLES':
         """
@@ -47,7 +47,7 @@ DETAILED_HELP = {
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Create(base.CreateCommand):
-  """Request for creating an instance."""
+  """Creates a workbench instance."""
 
   @staticmethod
   def Args(parser):

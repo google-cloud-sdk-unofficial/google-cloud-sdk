@@ -59,6 +59,9 @@ Container Flags
   group.AddArgument(flags.SecretsFlags())
   group.AddArgument(flags.CommandFlag())
   group.AddArgument(flags.DependsOnFlag())
+  group.AddArgument(flags.AddVolumeMountFlag())
+  group.AddArgument(flags.RemoveVolumeMountFlag())
+  group.AddArgument(flags.ClearVolumeMountsFlag())
 
   return group
 
@@ -232,20 +235,27 @@ class Create(base.Command):
 class BetaCreate(Create):
   """Create a Cloud Run job."""
 
-  @staticmethod
-  def Args(parser):
+  @classmethod
+  def Args(cls, parser):
     Create.CommonArgs(parser)
     flags.AddVpcNetworkGroupFlagsForCreate(parser, resource_kind='job')
+    flags.AddVolumesFlags(parser, cls.ReleaseTrack())
+    group = base.ArgumentGroup()
+    group.AddArgument(flags.AddVolumeMountFlag())
+    group.AddArgument(flags.RemoveVolumeMountFlag())
+    group.AddArgument(flags.ClearVolumeMountsFlag())
+    group.AddToParser(parser)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class AlphaCreate(BetaCreate):
   """Create a Cloud Run job."""
 
-  @staticmethod
-  def Args(parser):
+  @classmethod
+  def Args(cls, parser):
     Create.CommonArgs(parser, add_container_args=False)
     flags.AddVpcNetworkGroupFlagsForCreate(parser, resource_kind='job')
     flags.AddRuntimeFlag(parser)
+    flags.AddVolumesFlags(parser, cls.ReleaseTrack())
     container_args = ContainerArgGroup()
     container_parser.AddContainerFlags(parser, container_args)

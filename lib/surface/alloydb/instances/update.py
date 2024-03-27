@@ -139,6 +139,7 @@ class UpdateAlpha(UpdateBeta):
   @staticmethod
   def Args(parser):
     super(UpdateAlpha, UpdateAlpha).Args(parser)
+    flags.AddAllowedPSCProjects(parser)
 
   def ConstructPatchRequestFromArgs(self, alloydb_messages, instance_ref, args):
     return instance_helper.ConstructPatchRequestFromArgsAlpha(

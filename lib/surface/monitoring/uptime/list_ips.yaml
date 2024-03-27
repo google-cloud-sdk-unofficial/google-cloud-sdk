@@ -9,6 +9,8 @@
       More information can be found at
       https://cloud.google.com/monitoring/uptime-checks/using-uptime-checks
 
+  command_type: LIST
+
   request:
     method: list
     collection: monitoring.uptimeCheckIps

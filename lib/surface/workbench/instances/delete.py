@@ -26,7 +26,7 @@ from googlecloudsdk.command_lib.workbench import flags
 DETAILED_HELP = {
     'DESCRIPTION':
         """
-        Request for deleting workbench instances.
+        Deletes a workbench instance.
     """,
     'EXAMPLES':
         """
@@ -39,7 +39,7 @@ DETAILED_HELP = {
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Delete(base.DeleteCommand):
-  """Request for deleting instances."""
+  """Deletes a workbench instance."""
 
   @staticmethod
   def Args(parser):

@@ -51,7 +51,9 @@ DETAILED_HELP = {
 }
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
+)
 class UpdateOverride(base.UpdateCommand):
   """Update Overrides of Threat Prevention Profile."""
 
@@ -131,5 +133,6 @@ class UpdateOverride(base.UpdateCommand):
         ),
         has_result=True,
     )
+
 
 UpdateOverride.detailed_help = DETAILED_HELP

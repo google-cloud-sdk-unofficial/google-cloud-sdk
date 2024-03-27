@@ -1,4 +1,4 @@
-- release_tracks: [ALPHA]
+- release_tracks: [ALPHA, BETA, GA]
   help_text:
     brief: "Delete a storage pool."
     description: "Deleta a storage pool."
@@ -8,8 +8,14 @@
         $ {command} my-storage-pool
 
   request:
+    ALPHA:
+      api_version: alpha
+    BETA:
+      api_version: beta
+    GA:
+      api_version: v1
+
     collection: compute.storagePools
-    api_version: alpha
 
   async:
     collection: compute.zoneOperations

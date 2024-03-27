@@ -125,7 +125,7 @@ class Replace(base.Command):
           e,
           help_text='Please make sure that the YAML file matches the Knative '
           'service definition spec in https://kubernetes.io/docs/'
-          'reference/kubernetes-api/services-resources/service-v1/'
+          'reference/kubernetes-api/service-resources/service-v1/'
           '#Service.')
 
     # If managed, namespace must match project (or will default to project if

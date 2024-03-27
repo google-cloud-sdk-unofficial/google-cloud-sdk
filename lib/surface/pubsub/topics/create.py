@@ -157,12 +157,11 @@ def _Run(args, legacy_output=False):
     raise util.RequestsFailedError(failed, 'create')
 
 
-def _Args(parser, include_ingestion_flags=False):
+def _Args(parser):
   """Custom args implementation.
 
   Args:
     parser: The current parser.
-    include_ingestion_flags: Whether to include ingestion datasource flags
   """
 
   resource_args.AddResourceArgs(
@@ -170,8 +169,7 @@ def _Args(parser, include_ingestion_flags=False):
   )
   # This group should not be hidden
   flags.AddSchemaSettingsFlags(parser, is_update=False)
-  if include_ingestion_flags:
-    flags.AddIngestionDatasourceFlags(parser, is_update=False)
+  flags.AddIngestionDatasourceFlags(parser, is_update=False)
 
   labels_util.AddCreateLabelsFlags(parser)
   flags.AddTopicMessageRetentionFlags(parser, is_update=False)
@@ -190,7 +188,7 @@ class Create(base.CreateCommand):
 
   @staticmethod
   def Args(parser):
-    _Args(parser, include_ingestion_flags=False)
+    _Args(parser)
 
   def Run(self, args):
     return _Run(args)
@@ -202,7 +200,7 @@ class CreateBeta(Create):
 
   @staticmethod
   def Args(parser):
-    _Args(parser, include_ingestion_flags=False)
+    _Args(parser)
 
   def Run(self, args):
     legacy_output = properties.VALUES.pubsub.legacy_output.GetBool()
@@ -215,4 +213,4 @@ class CreateAlpha(CreateBeta):
 
   @staticmethod
   def Args(parser):
-    _Args(parser, include_ingestion_flags=True)
+    _Args(parser)

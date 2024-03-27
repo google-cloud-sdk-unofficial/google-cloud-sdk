@@ -351,6 +351,9 @@ class CreateBeta(Create):
     $ {command} my-secret --next-rotation-time="2030-01-01T15:30:00-05:00"
     --rotation-period="7200s"
 
+  Create a secret with delayed secret version destroy enabled:
+
+    $ {command} my-secret --version-destroy-ttl="86400s"
   """
   # pylint: enable=line-too-long
 
@@ -450,7 +453,8 @@ class CreateBeta(Create):
     secrets_args.AddCreateExpirationGroup(parser)
     secrets_args.AddCreateRotationGroup(parser)
     secrets_args.AddTopics(parser)
-    secrets_args.AddRegionalKmsKeyName(parser, hidden=True)
+    secrets_args.AddRegionalKmsKeyName(parser)
+    secrets_args.AddCreateVersionDestroyTTL(parser)
     annotations = parser.add_group(mutex=True, help='Annotations')
     map_util.AddMapSetFlag(annotations, 'annotations', 'Annotations', str, str)
 
@@ -590,6 +594,7 @@ class CreateBeta(Create):
         topics=args.topics,
         annotations=annotations,
         regional_kms_key_name=args.regional_kms_key_name,
+        version_destroy_ttl=str(args.version_destroy_ttl) + 's',
     )
 
     if data:

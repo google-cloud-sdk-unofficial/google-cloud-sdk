@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 """Auth flags for calling BigQuery."""
 
+
 import os
 from typing import Optional
 
@@ -57,11 +58,13 @@ OAUTH_ACCESS_TOKEN = flags.DEFINE_string(
     'Only for the gcloud wrapper use.'
 )
 USE_GOOGLE_AUTH = flags.DEFINE_boolean(
-    'use_google_auth', False, 'Use new google auth libraries'
+    'use_google_auth',
+    False,
+    'Use new google auth libraries',
 )
-QUOTA_PROJECT_ID = flags.DEFINE_string(
+QUOTA_PROJECT_ID: flags.FlagHolder[Optional[str]] = flags.DEFINE_string(
     'quota_project_id',
-    '',
+    None,
     'ID of a Google Cloud Project as the quota project to be used for billing '
     'and quota limits.',
 )

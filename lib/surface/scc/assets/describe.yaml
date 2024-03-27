@@ -8,6 +8,8 @@
   # This command calls a list operation behind the scenes but we can't make command_type as list
   # since it doesn't support any of the list-flags.
   command_type: GENERIC
+  generic:
+    disable_paging_flags: true
 
   help_text:
     brief: Describe an asset given its resource name or asset id.

@@ -65,12 +65,12 @@ def _CommonArgs(
     support_replica_zones=True,
     support_local_ssd_recovery_timeout=False,
     support_network_queue_count=False,
-    support_storage_pool=False,
     support_maintenance_interval=False,
     support_specific_then_x_affinity=False,
     support_graceful_shutdown=False,
     support_ipv6_only=False,
     support_vlan_nic=False,
+    support_watchdog_timer=False,
 ):
   """Adding arguments applicable for creating instance templates."""
   parser.display_info.AddFormat(instance_templates_flags.DEFAULT_LIST_FORMAT)
@@ -82,7 +82,6 @@ def _CommonArgs(
       support_boot=True,
       support_multi_writer=support_multi_writer,
       support_replica_zones=support_replica_zones,
-      support_storage_pool=support_storage_pool,
   )
   if support_local_ssd_size:
     instances_flags.AddLocalSsdArgsWithSize(parser)
@@ -130,6 +129,8 @@ def _CommonArgs(
   instances_flags.AddIPv6PrefixLengthArgs(parser)
   instances_flags.AddInternalIPv6AddressArgs(parser)
   instances_flags.AddInternalIPv6PrefixLengthArgs(parser)
+  if support_watchdog_timer:
+    instances_flags.AddWatchdogTimerArg(parser)
 
   if support_max_run_duration:
     instances_flags.AddMaxRunDurationVmArgs(parser)
@@ -554,11 +555,11 @@ def _RunCreate(
     support_replica_zones=True,
     support_local_ssd_recovery_timeout=False,
     support_performance_monitoring_unit=False,
-    support_storage_pool=False,
     support_partner_metadata=False,
     support_maintenance_interval=False,
     support_specific_then_x_affinity=False,
     support_graceful_shutdown=False,
+    support_watchdog_timer=False,
 ):
   """Common routine for creating instance template.
 
@@ -599,7 +600,6 @@ def _RunCreate(
         recovery timeout is set.
       support_performance_monitoring_unit: Indicate whether the PMU is
         supported.
-      support_storage_pool: Indicate whether storage pool is supported.
       support_partner_metadata: Indicate whether partner metadata is supported.
       support_maintenance_interval: Indicate whether maintenance interval was
         set.
@@ -607,6 +607,8 @@ def _RunCreate(
         set.
       support_graceful_shutdown: Indicate whether graceful shutdown is
         supported.
+      support_watchdog_timer: Indicate whether the watchdog timer
+        is supported.
 
   Returns:
       A resource object dispatched by display.Displayer().
@@ -869,7 +871,6 @@ def _RunCreate(
       support_kms=support_kms,
       support_multi_writer=support_multi_writer,
       support_replica_zones=support_replica_zones,
-      support_storage_pool=support_storage_pool,
   )
 
   machine_type = instance_utils.InterpretMachineType(
@@ -982,6 +983,7 @@ def _RunCreate(
           support_performance_monitoring_unit
           and args.performance_monitoring_unit
       )
+      or (support_watchdog_timer and (args.enable_watchdog_timer is not None))
   ):
     visible_core_count = (
         args.visible_core_count if has_visible_core_count else None
@@ -997,6 +999,9 @@ def _RunCreate(
             args.enable_uefi_networking,
             args.performance_monitoring_unit
             if support_performance_monitoring_unit
+            else None,
+            enable_watchdog_timer=args.enable_watchdog_timer
+            if support_watchdog_timer
             else None,
         )
     )
@@ -1104,12 +1109,12 @@ class Create(base.CreateCommand):
   _support_network_queue_count = True
   _support_performance_monitoring_unit = False
   _support_internal_ipv6_reservation = True
-  _support_storage_pool = False
   _support_partner_metadata = False
   _support_local_ssd_recovery_timeout = True
   _support_specific_then_x_affinity = False
   _support_graceful_shutdown = False
   _support_vlan_nic = False
+  _support_watchdog_timer = False
 
   @classmethod
   def Args(cls, parser):
@@ -1129,11 +1134,11 @@ class Create(base.CreateCommand):
         support_replica_zones=cls._support_replica_zones,
         support_local_ssd_size=cls._support_local_ssd_size,
         support_network_queue_count=cls._support_network_queue_count,
-        support_storage_pool=cls._support_storage_pool,
         support_local_ssd_recovery_timeout=cls._support_local_ssd_recovery_timeout,
         support_specific_then_x_affinity=cls._support_specific_then_x_affinity,
         support_graceful_shutdown=cls._support_graceful_shutdown,
         support_vlan_nic=cls._support_vlan_nic,
+        support_watchdog_timer=cls._support_watchdog_timer,
     )
     instances_flags.AddMinCpuPlatformArgs(parser, base.ReleaseTrack.GA)
     instances_flags.AddPrivateIpv6GoogleAccessArgForTemplate(
@@ -1175,11 +1180,11 @@ class Create(base.CreateCommand):
         support_replica_zones=self._support_replica_zones,
         support_performance_monitoring_unit=self._support_performance_monitoring_unit,
         support_internal_ipv6_reservation=self._support_internal_ipv6_reservation,
-        support_storage_pool=self._support_storage_pool,
         support_partner_metadata=self._support_partner_metadata,
         support_local_ssd_recovery_timeout=self._support_local_ssd_recovery_timeout,
         support_specific_then_x_affinity=self._support_specific_then_x_affinity,
         support_graceful_shutdown=self._support_graceful_shutdown,
+        support_watchdog_timer=self._support_watchdog_timer,
     )
 
 
@@ -1218,12 +1223,12 @@ class CreateBeta(Create):
   _support_network_queue_count = True
   _support_performance_monitoring_unit = False
   _support_internal_ipv6_reservation = True
-  _support_storage_pool = False
   _support_partner_metadata = False
   _support_maintenance_interval = True
   _support_specific_then_x_affinity = True
   _support_graceful_shutdown = False
   _support_vlan_nic = False
+  _support_watchdog_timer = False
 
   @classmethod
   def Args(cls, parser):
@@ -1244,11 +1249,11 @@ class CreateBeta(Create):
         support_replica_zones=cls._support_replica_zones,
         support_local_ssd_recovery_timeout=cls._support_local_ssd_recovery_timeout,
         support_network_queue_count=cls._support_network_queue_count,
-        support_storage_pool=cls._support_storage_pool,
         support_maintenance_interval=cls._support_maintenance_interval,
         support_specific_then_x_affinity=cls._support_specific_then_x_affinity,
         support_graceful_shutdown=cls._support_graceful_shutdown,
         support_vlan_nic=cls._support_vlan_nic,
+        support_watchdog_timer=cls._support_watchdog_timer,
     )
     instances_flags.AddMinCpuPlatformArgs(parser, base.ReleaseTrack.BETA)
     instances_flags.AddPrivateIpv6GoogleAccessArgForTemplate(
@@ -1293,11 +1298,11 @@ class CreateBeta(Create):
         support_local_ssd_recovery_timeout=self._support_local_ssd_recovery_timeout,
         support_performance_monitoring_unit=self._support_performance_monitoring_unit,
         support_internal_ipv6_reservation=self._support_internal_ipv6_reservation,
-        support_storage_pool=self._support_storage_pool,
         support_partner_metadata=self._support_partner_metadata,
         support_maintenance_interval=self._support_maintenance_interval,
         support_specific_then_x_affinity=self._support_specific_then_x_affinity,
         support_graceful_shutdown=self._support_graceful_shutdown,
+        support_watchdog_timer=self._support_watchdog_timer,
     )
 
 
@@ -1336,13 +1341,13 @@ class CreateAlpha(Create):
   _support_local_ssd_size = True
   _support_performance_monitoring_unit = True
   _support_internal_ipv6_reservation = True
-  _support_storage_pool = True
   _support_partner_metadata = True
   _support_maintenance_interval = True
   _support_specific_then_x_affinity = True
   _support_graceful_shutdown = True
   _support_vlan_nic = True
   _support_ipv6_only = True
+  _support_watchdog_timer = True
 
   @classmethod
   def Args(cls, parser):
@@ -1364,12 +1369,12 @@ class CreateAlpha(Create):
         support_replica_zones=cls._support_replica_zones,
         support_local_ssd_recovery_timeout=cls._support_local_ssd_recovery_timeout,
         support_network_queue_count=cls._support_network_queue_count,
-        support_storage_pool=cls._support_storage_pool,
         support_maintenance_interval=cls._support_maintenance_interval,
         support_specific_then_x_affinity=cls._support_specific_then_x_affinity,
         support_graceful_shutdown=cls._support_graceful_shutdown,
         support_ipv6_only=cls._support_ipv6_only,
         support_vlan_nic=cls._support_vlan_nic,
+        support_watchdog_timer=cls._support_watchdog_timer,
     )
     instances_flags.AddLocalNvdimmArgs(parser)
     instances_flags.AddMinCpuPlatformArgs(parser, base.ReleaseTrack.ALPHA)
@@ -1419,11 +1424,11 @@ class CreateAlpha(Create):
         support_local_ssd_recovery_timeout=self._support_local_ssd_recovery_timeout,
         support_performance_monitoring_unit=self._support_performance_monitoring_unit,
         support_internal_ipv6_reservation=self._support_internal_ipv6_reservation,
-        support_storage_pool=self._support_storage_pool,
         support_partner_metadata=self._support_partner_metadata,
         support_maintenance_interval=self._support_maintenance_interval,
         support_specific_then_x_affinity=self._support_specific_then_x_affinity,
         support_graceful_shutdown=self._support_graceful_shutdown,
+        support_watchdog_timer=self._support_watchdog_timer,
     )
 
 

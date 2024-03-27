@@ -29,7 +29,7 @@ from googlecloudsdk.core import properties
 DETAILED_HELP = {
     'DESCRIPTION':
         """
-        Request for listing instances.
+        Lists workbench instances.
     """,
     'EXAMPLES':
         """
@@ -42,7 +42,7 @@ DETAILED_HELP = {
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class List(base.ListCommand):
-  """Request for listing instances."""
+  """Lists workbench instances."""
 
   @staticmethod
   def Args(parser):

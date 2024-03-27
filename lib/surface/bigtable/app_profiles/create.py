@@ -122,6 +122,33 @@ class CreateAppProfile(base.CreateCommand):
 class CreateAppProfileBeta(CreateAppProfile):
   """Create a new Bigtable app profile."""
 
+  detailed_help = {
+      'EXAMPLES': textwrap.dedent("""\
+          To create an app profile with a multi-cluster routing policy, run:
+
+            $ {command} my-app-profile-id --instance=my-instance-id --route-any
+
+          To create an app profile with a single-cluster routing policy which
+          routes all requests to `my-cluster-id`, run:
+
+            $ {command} my-single-cluster-app-profile --instance=my-instance-id --route-to=my-cluster-id
+
+          To create an app profile with a friendly description, run:
+
+            $ {command} my-app-profile-id --instance=my-instance-id --route-any --description="Routes requests for my use case"
+
+          To create an app profile with a request priority of PRIORITY_MEDIUM,
+          run:
+
+            $ {command} my-app-profile-id --instance=my-instance-id --route-any --priority=PRIORITY_MEDIUM
+
+          To create an app profile with Data Boost enabled which bills usage to the host project, run:
+
+            $ {command} my-app-profile-id --instance=my-instance-id --data-boost --data-boost-compute-billing-owner=HOST_PAYS
+
+          """),
+  }
+
   @staticmethod
   def Args(parser):
     arguments.AddAppProfileResourceArg(parser, 'to create')

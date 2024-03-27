@@ -1,4 +1,4 @@
-- release_tracks: [ALPHA]
+- release_tracks: [ALPHA, BETA, GA]
   help_text:
     brief: "View storage pools types."
     description: "View storage pools."
@@ -14,8 +14,14 @@
         $ {command} --filter="zone ~ us"
 
   request:
+    ALPHA:
+      api_version: alpha
+    BETA:
+      api_version: beta
+    GA:
+      api_version: v1
+
     collection: compute.storagePoolTypes
-    api_version: alpha
     method: aggregatedList
 
   arguments:

@@ -26,7 +26,7 @@ from googlecloudsdk.command_lib.workbench import flags
 DETAILED_HELP = {
     'DESCRIPTION':
         """
-        Request for rolling back workbench instances.
+        Rolls back a workbench instance.
     """,
     'EXAMPLES':
         """
@@ -39,7 +39,7 @@ DETAILED_HELP = {
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Rollback(base.Command):
-  """Request for rolling back instances."""
+  """Rolls back a workbench instance."""
 
   @staticmethod
   def Args(parser):

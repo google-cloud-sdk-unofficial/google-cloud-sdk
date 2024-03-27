@@ -483,7 +483,7 @@ class CreateAlpha(CreateBeta):
                                        holder)
     instance_flexibility_policy = (
         managed_instance_groups_utils.CreateInstanceFlexibilityPolicy(
-            client.messages, args
+            args, client.messages
         )
     )
     instance_group_manager.instanceFlexibilityPolicy = (

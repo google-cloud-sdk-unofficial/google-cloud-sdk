@@ -56,6 +56,10 @@
             arg_value: cloudflare
             help_text: |
               Cloudflare
+          - enum_value: AKAMAI
+            arg_value: akamai
+            help_text: |
+              Akamai
         - arg_name: waf-feature
           required: true
           api_field: googleCloudRecaptchaenterpriseV1Key.wafSettings.wafFeature

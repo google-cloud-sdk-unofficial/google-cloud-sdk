@@ -133,7 +133,6 @@ def _CommonArgs(
     vss_erase_enabled=False,
     support_pd_interface=False,
     support_user_licenses=False,
-    support_storage_pool=False,
     support_access_mode=False,
 ):
   """Add arguments used for parsing in all command tracks."""
@@ -198,8 +197,7 @@ def _CommonArgs(
 
   disks_flags.AddProvisionedThroughputFlag(parser, arg_parsers)
 
-  if support_storage_pool:
-    disks_flags.STORAGE_POOL_ARG.AddArgument(parser)
+  disks_flags.STORAGE_POOL_ARG.AddArgument(parser)
 
   if support_access_mode:
     disks_flags.AddAccessModeFlag(parser, messages)
@@ -486,7 +484,6 @@ class Create(base.Command):
       support_pd_interface=False,
       support_user_licenses=False,
       support_enable_confidential_compute=True,
-      support_storage_pool=False,
       support_access_mode=False,
   ):
     compute_holder = self._GetApiHolder()
@@ -638,7 +635,7 @@ class Create(base.Command):
       if args.IsSpecified('location_hint'):
         disk.locationHint = args.location_hint
 
-      if support_storage_pool and args.IsSpecified('storage_pool'):
+      if args.IsSpecified('storage_pool'):
         disk.storagePool = self.GetStoragePoolUri(args, compute_holder)
 
       if disk_ref.Collection() == 'compute.disks':
@@ -720,7 +717,6 @@ class CreateAlpha(CreateBeta):
         vss_erase_enabled=True,
         support_pd_interface=True,
         support_user_licenses=True,
-        support_storage_pool=True,
         support_access_mode=True,
     )
     image_utils.AddGuestOsFeaturesArg(parser, messages)
@@ -740,7 +736,6 @@ class CreateAlpha(CreateBeta):
         support_pd_interface=True,
         support_user_licenses=True,
         support_enable_confidential_compute=True,
-        support_storage_pool=True,
         support_access_mode=True,
     )
 

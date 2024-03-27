@@ -224,6 +224,7 @@ class CreateBeta(Create):
     labels_util.AddCreateLabelsFlags(parser)
 
   def Run(self, args):
+    flags.ValidateSubscriptionArgsUseUniverseSupportedFeatures(args)
     flags.ValidateFilterString(args)
     legacy_output = properties.VALUES.pubsub.legacy_output.GetBool()
     return _Run(

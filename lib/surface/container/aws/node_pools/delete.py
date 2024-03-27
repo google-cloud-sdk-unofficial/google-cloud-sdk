@@ -45,7 +45,8 @@ class Delete(base.DeleteCommand):
     resource_args.AddAwsNodePoolResourceArg(parser, 'to delete')
 
     flags.AddValidateOnly(parser, 'node pool to delete')
-    flags.AddAllowMissing(parser)
+    flags.AddAllowMissing(parser, 'node pool')
+    flags.AddIgnoreErrors(parser, constants.AWS, 'node pool')
 
     base.ASYNC_FLAG.AddToParser(parser)
 
@@ -58,10 +59,10 @@ class Delete(base.DeleteCommand):
       message = command_util.NodePoolMessage(
           node_pool_ref.awsNodePoolsId, cluster=node_pool_ref.awsClustersId
       )
-      return command_util.Delete(
-          resource_ref=node_pool_ref,
-          resource_client=node_pool_client,
-          message=message,
-          args=args,
-          kind=constants.AWS_NODEPOOL_KIND,
+      command_util.DeleteWithIgnoreErrors(
+          args,
+          node_pool_client,
+          node_pool_ref,
+          message,
+          constants.AWS_NODEPOOL_KIND,
       )

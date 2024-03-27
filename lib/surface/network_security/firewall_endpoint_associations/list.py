@@ -54,7 +54,6 @@ table(
 """
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class List(base.ListCommand):
   """List Firewall Plus endpoint associations."""
 

@@ -1,4 +1,4 @@
-- release_tracks: [ALPHA]
+- release_tracks: [ALPHA, BETA, GA]
   help_text:
     brief: "Update a storage pool."
     description: "Update a storage pool."
@@ -8,8 +8,14 @@
         $ {command} my-storage-pool --pool-provisioned-capacity=20TB
 
   request:
+    ALPHA:
+      api_version: alpha
+    BETA:
+      api_version: beta
+    GA:
+      api_version: v1
+
     collection: compute.storagePools
-    api_version: alpha
     method: update
 
   async:

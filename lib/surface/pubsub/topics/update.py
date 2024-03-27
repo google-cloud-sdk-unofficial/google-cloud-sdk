@@ -111,7 +111,7 @@ def _GetKmsKeyNameFromArgs(args):
   return None
 
 
-def _Args(parser, include_ingestion_flags=False):
+def _Args(parser):
   """Registers flags for this command."""
   resource_args.AddTopicResourceArg(parser, 'to update.')
   labels_util.AddUpdateLabelsFlags(parser)
@@ -130,8 +130,7 @@ def _Args(parser, include_ingestion_flags=False):
   flags.AddTopicMessageStoragePolicyFlags(parser, is_update=True)
 
   flags.AddSchemaSettingsFlags(parser, is_update=True)
-  if include_ingestion_flags:
-    flags.AddIngestionDatasourceFlags(parser, is_update=True)
+  flags.AddIngestionDatasourceFlags(parser, is_update=True)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
@@ -143,7 +142,7 @@ class Update(base.UpdateCommand):
   @staticmethod
   def Args(parser):
     """Registers flags for this command."""
-    _Args(parser, include_ingestion_flags=False)
+    _Args(parser)
 
   def Run(self, args):
     """This is what gets called when the user runs this command.
@@ -254,7 +253,7 @@ class UpdateBeta(Update):
 
   @staticmethod
   def Args(parser):
-    _Args(parser, include_ingestion_flags=False)
+    _Args(parser)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -263,4 +262,4 @@ class UpdateAlpha(UpdateBeta):
 
   @staticmethod
   def Args(parser):
-    _Args(parser, include_ingestion_flags=True)
+    _Args(parser)

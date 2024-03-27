@@ -10,6 +10,11 @@ from absl import logging as absl_logging
 from googleapiclient import model
 
 
+def _SetLogFile(logfile: TextIO):
+  absl_logging.use_python_logging(quiet=True)
+  absl_logging.get_absl_handler().python_handler.stream = logfile
+
+
 def ConfigurePythonLogger(apilog: Optional[str] = None):
   """Sets up Python logger.
 
@@ -46,11 +51,6 @@ def ConfigurePythonLogger(apilog: Optional[str] = None):
       model.dump_request_response = True
 
 
-def _SetLogFile(logfile: TextIO):
-  absl_logging.use_python_logging(quiet=True)
-  absl_logging.get_absl_handler().python_handler.stream = logfile
-
-
 def EncodeForPrinting(o: object) -> str:
   """Safely encode an object as the encoding for sys.stdout."""
   # Not all file objects provide an encoding attribute, so we make sure to
@@ -66,3 +66,13 @@ def EncodeForPrinting(o: object) -> str:
     return o.encode(encoding, 'backslashreplace')
   else:
     return str(o)
+
+
+def ConfigureLogging(apilog: Optional[str] = None):
+  try:
+    ConfigurePythonLogger(apilog)
+  except IOError as e:
+    if e.errno == 2:
+      print('Could not configure logging. %s: %s' % (e.strerror, e.filename))
+      sys.exit(1)
+    raise e

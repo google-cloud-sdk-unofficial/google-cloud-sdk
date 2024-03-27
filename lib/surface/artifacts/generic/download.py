@@ -19,7 +19,6 @@ from __future__ import division
 from __future__ import unicode_literals
 
 import os
-import sys
 import tempfile
 
 from googlecloudsdk.api_lib.artifacts import exceptions as ar_exceptions
@@ -91,11 +90,15 @@ class Download(base.Command):
     """Run the generic artifact download command."""
 
     repo_ref = args.CONCEPTS.repository.Parse()
+    args.destination = os.path.expanduser(args.destination)
+    if not os.path.exists(args.destination):
+      raise ar_exceptions.DirectoryNotExistError(
+          'Destination directory does not exist: ' + args.destination
+      )
     if not os.path.isdir(args.destination):
-      log.error(
-          'Directory {} does not exist.'.format(args.destination))
-      sys.exit(1)
-
+      raise ar_exceptions.PathNotDirectoryError(
+          'Destination is not a directory: ' + args.destination
+      )
     # Get the file name when given a file path
     if args.name:
       file_name = os.path.basename(args.name)

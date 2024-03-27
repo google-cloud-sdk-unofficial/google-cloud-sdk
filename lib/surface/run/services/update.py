@@ -81,6 +81,11 @@ class Update(base.Command):
          """,
   }
 
+  input_flags = (
+      '`--update-env-vars`, `--memory`, `--concurrency`, `--timeout`,'
+      ' `--connectivity`, `--image`'
+  )
+
   @staticmethod
   def CommonArgs(parser):
     # Flags specific to managed CR
@@ -141,20 +146,24 @@ class Update(base.Command):
         args, flags.Product.RUN, self.ReleaseTrack()
     )
 
-  def _GetBaseChanges(self, args):
-    changes = flags.GetServiceConfigurationChanges(args, self.ReleaseTrack())
+  def _AssertChanges(self, changes, flags_text, ignore_empty):
+    if ignore_empty:
+      return
     if not changes or (
         len(changes) == 1
         and isinstance(
-            changes[0], config_changes.SetClientNameAndVersionAnnotationChange
+            changes[0],
+            config_changes.SetClientNameAndVersionAnnotationChange,
         )
     ):
       raise exceptions.NoConfigurationChangeError(
           'No configuration change requested. '
-          'Did you mean to include the flags `--update-env-vars`, '
-          '`--memory`, `--concurrency`, `--timeout`, `--connectivity`, '
-          '`--image`?'
+          'Did you mean to include the flags {}?'.format(flags_text)
       )
+
+  def _GetBaseChanges(self, args, existing_service=None, ignore_empty=False):  # pylint: disable=unused-argument
+    changes = flags.GetServiceConfigurationChanges(args, self.ReleaseTrack())
+    self._AssertChanges(changes, self.input_flags, ignore_empty)
     changes.insert(
         0,
         config_changes.DeleteAnnotationChange(
@@ -178,7 +187,6 @@ class Update(base.Command):
     Returns:
       googlecloudsdk.api_lib.run.Service, the updated service
     """
-    changes = self._GetBaseChanges(args)
 
     conn_context = self._ConnectionContext(args)
     service_ref = args.CONCEPTS.service.Parse()
@@ -186,6 +194,7 @@ class Update(base.Command):
 
     with serverless_operations.Connect(conn_context) as client:
       service = client.GetService(service_ref)
+      changes = self._GetBaseChanges(args, service)
       resource_change_validators.ValidateClearVpcConnector(service, args)
       has_latest = (
           service is None or traffic.LATEST_REVISION_KEY in service.spec_traffic
@@ -194,7 +203,7 @@ class Update(base.Command):
       deployment_stages = stages.ServiceStages(
           include_iam_policy_set=False,
           include_route=creates_revision and has_latest,
-          include_create_revision=creates_revision
+          include_create_revision=creates_revision,
       )
       if creates_revision:
         progress_message = 'Deploying...'
@@ -226,8 +235,9 @@ class Update(base.Command):
       if args.async_:
         pretty_print.Success(
             'Service [{{bold}}{serv}{{reset}}] is {result_message} '
-            'asynchronously.'.format(serv=service.name,
-                                     result_message=result_message)
+            'asynchronously.'.format(
+                serv=service.name, result_message=result_message
+            )
         )
       else:
         if creates_revision:
@@ -235,8 +245,11 @@ class Update(base.Command):
               messages_util.GetSuccessMessageForSynchronousDeploy(service)
           )
         else:
-          pretty_print.Success('Service [{{bold}}{serv}{{reset}}] has been '
-                               'updated.'.format(serv=service.name))
+          pretty_print.Success(
+              'Service [{{bold}}{serv}{{reset}}] has been updated.'.format(
+                  serv=service.name
+              )
+          )
       return service
 
 

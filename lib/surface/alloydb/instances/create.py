@@ -140,6 +140,7 @@ class CreateAlpha(CreateBeta):
   @classmethod
   def Args(cls, parser):
     super(CreateAlpha, CreateAlpha).Args(parser)
+    flags.AddAllowedPSCProjects(parser)
 
   def ConstructCreateRequestFromArgs(
       self, client, alloydb_messages, cluster_ref, args

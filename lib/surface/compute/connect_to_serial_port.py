@@ -22,6 +22,7 @@ from __future__ import unicode_literals
 import sys
 
 from googlecloudsdk.api_lib.compute import base_classes
+from googlecloudsdk.api_lib.compute import daisy_utils
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute import completers
@@ -94,6 +95,7 @@ class ConnectToSerialPort(base.Command):
   """
 
   category = base.TOOLS_CATEGORY
+  use_region_from_zone = False
 
   @staticmethod
   def Args(parser):
@@ -177,11 +179,26 @@ class ConnectToSerialPort(base.Command):
       remote.user = ssh.GetDefaultSshUsername()
     public_key = ssh_helper.keys.GetPublicKey().ToEntry(include_comment=True)
 
-    if args.location:
-      gateway = REGIONAL_SERIAL_PORT_GATEWAY_TEMPLATE.format(args.location)
-      hostkey_url = REGIONAL_HOST_KEY_URL_TEMPLATE.format(args.location)
+    instance_ref = instance_flags.SSH_INSTANCE_RESOLVER.ResolveResources(
+        [remote.host],
+        compute_scope.ScopeEnum.ZONE,
+        args.zone,
+        holder.resources,
+        scope_lister=instance_flags.GetInstanceZoneScopeLister(client),
+    )[0]
+
+    # Attempt to determine the region from the zone flag if possible.
+    if not args.location and self.use_region_from_zone:
+      location = daisy_utils.GetRegionFromZone(instance_ref.zone)
+      log.info('Determined region from zone: {0}'.format(location))
+    else:
+      location = args.location
+
+    if location:
+      gateway = REGIONAL_SERIAL_PORT_GATEWAY_TEMPLATE.format(location)
+      hostkey_url = REGIONAL_HOST_KEY_URL_TEMPLATE.format(location)
       log.info(
-          'Connecting to serialport via server in {0}'.format(args.location)
+          'Connecting to serialport via server in {0}'.format(location)
       )
     else:
       gateway = SERIAL_PORT_GATEWAY
@@ -226,13 +243,6 @@ class ConnectToSerialPort(base.Command):
       # We shouldn't allow a connection without the correct host key
       return
 
-    instance_ref = instance_flags.SSH_INSTANCE_RESOLVER.ResolveResources(
-        [remote.host],
-        compute_scope.ScopeEnum.ZONE,
-        args.zone,
-        holder.resources,
-        scope_lister=instance_flags.GetInstanceZoneScopeLister(client),
-    )[0]
     instance = ssh_helper.GetInstance(client, instance_ref)
     project = ssh_helper.GetProject(client, instance_ref.project)
     expiration, expiration_micros = ssh_utils.GetSSHKeyExpirationFromArgs(args)
@@ -320,6 +330,8 @@ class ConnectToSerialPortAlphaBeta(ConnectToSerialPort):
 
     $ {command} my-instance --zone=us-central1-f
   """
+
+  use_region_from_zone = True
 
   @classmethod
   def Args(cls, parser):

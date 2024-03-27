@@ -2,6 +2,7 @@
 """A library of functions to handle bq flags consistently."""
 
 import codecs
+import copy
 import http.client
 import json
 import logging
@@ -12,20 +13,21 @@ import sys
 import textwrap
 import time
 import traceback
-from typing import Dict, List, Optional, TextIO
+from typing import Any, Dict, List, Optional, TextIO
 
 from absl import app
 from absl import flags
 from google.auth import version as google_auth_version
+from google.oauth2 import credentials as google_oauth2
 import googleapiclient
 import httplib2
 import oauth2client_4_0.client
 import requests
-import six
 import urllib3
 
 from utils import bq_error
 from utils import bq_logging
+from pyglib import stringutil
 
 
 FLAGS = flags.FLAGS
@@ -54,7 +56,7 @@ def _GetVersion() -> str:
   """Returns content of VERSION file found in same dir as the cli binary."""
   root = 'bq_utils'
   # pragma pylint: disable=line-too-long
-  return six.ensure_str(pkgutil.get_data(root, _VERSION_FILENAME)).strip()
+  return stringutil.ensure_str(pkgutil.get_data(root, _VERSION_FILENAME)).strip()
 
 
 VERSION_NUMBER = _GetVersion()
@@ -97,6 +99,40 @@ def UpdateFlag(flag_values, flag: str, value) -> None:
   setattr(flag_values, flag, getattr(flag_values, flag))
 
 
+def _UseGcloudValueIfExistsAndFlagIsDefaultValue(
+    flag_values,
+    flag_name: str,
+    gcloud_config_section: Dict[str, str],
+    gcloud_property_name: str,
+):
+  """Updates flag if it's using the default and the gcloud value exists."""
+  if not gcloud_config_section:
+    return
+  if gcloud_property_name not in gcloud_config_section:
+    return
+  flag = flag_values[flag_name]
+  gcloud_value = gcloud_config_section[gcloud_property_name]
+  logging.debug('Gcloud config exists for %s', gcloud_property_name)
+  if flag.using_default_value:
+    logging.info(
+        'The `%s` flag is using a default value and a value is set in gcloud,'
+        ' using that: %s',
+        flag_name,
+        gcloud_value,
+    )
+    UpdateFlag(flag_values, flag_name, gcloud_value)
+  elif flag.value != gcloud_value:
+    logging.warning(
+        'Executing with different configuration than in gcloud.'
+        'The flag "%s" has become set to "%s" but gcloud sets "%s" as "%s".'
+        'To update the gcloud value, start from `gcloud config list`.',
+        flag_name,
+        flag.value,
+        gcloud_property_name,
+        gcloud_value,
+    )
+
+
 def ProcessGcloudConfig(flag_values) -> None:
   """Processes the user's gcloud config and applies that configuration to BQ."""
   gcloud_file_name = GetGcloudConfigFilename()
@@ -114,12 +150,26 @@ def ProcessGcloudConfig(flag_values) -> None:
     logging.warning('Could not load gcloud config data')
     return
 
-  if (
-      billing_config
-      and 'quota_project' in billing_config
-      and flag_values['quota_project_id'].using_default_value
-  ):
-    UpdateFlag(flag_values, 'quota_project_id', billing_config['quota_project'])
+  _UseGcloudValueIfExistsAndFlagIsDefaultValue(
+      flag_values=flag_values,
+      flag_name='project_id',
+      gcloud_config_section=core_config,
+      gcloud_property_name='project',
+  )
+
+  _UseGcloudValueIfExistsAndFlagIsDefaultValue(
+      flag_values=flag_values,
+      flag_name='quota_project_id',
+      gcloud_config_section=billing_config,
+      gcloud_property_name='quota_project',
+  )
+
+  _UseGcloudValueIfExistsAndFlagIsDefaultValue(
+      flag_values=flag_values,
+      flag_name='universe_domain',
+      gcloud_config_section=core_config,
+      gcloud_property_name='universe_domain',
+  )
 
   if not auth_config or not core_config:
     return
@@ -133,7 +183,6 @@ def ProcessGcloudConfig(flag_values) -> None:
     if (
         not flag_values['oauth_access_token'].using_default_value
         or not flag_values['use_google_auth'].using_default_value
-        or not flag_values['api'].using_default_value
     ):
       logging.warning(
           'Users gcloud config file and bigqueryrc file have incompatible'
@@ -155,11 +204,6 @@ def ProcessGcloudConfig(flag_values) -> None:
     else:
       UpdateFlag(flag_values, 'oauth_access_token', token)
       UpdateFlag(flag_values, 'use_google_auth', True)
-      UpdateFlag(
-          flag_values,
-          'api',
-          'https://bigquery.' + universe_domain,
-      )
 
 
 def ProcessBigqueryrc() -> None:
@@ -183,6 +227,7 @@ def _ProcessConfigSections(
   # TODO(b/286571605): Replace typing when python 3.5 is unsupported.
   dictionary = {}  # type: Dict[str, Dict[str, str]]
   if not os.path.exists(filename):
+    logging.debug('File not found: %s', filename)
     return dictionary
   try:
     with open(filename) as rcfile:
@@ -190,8 +235,9 @@ def _ProcessConfigSections(
         dictionary[section_name] = _ProcessSingleConfigSection(
             rcfile, section_name
         )
-  except IOError:
-    pass
+        rcfile.seek(0)
+  except IOError as e:
+    logging.debug('IOError opening config file %s: %s', filename, e)
   return dictionary
 
 
@@ -288,6 +334,53 @@ def ProcessBigqueryrcSection(section_name: Optional[str], flag_values) -> None:
         setattr(flag_values, flag, old_value + getattr(flag_values, flag))
 
 
+def GetResolvedQuotaProjectID(
+    quota_project_id: Optional[str],
+    fallback_project_id: Optional[str],
+) -> Optional[str]:
+  """Return the final resolved quota project ID after cross-referencing gcloud properties defined in http://google3/third_party/py/googlecloudsdk/core/properties.py;l=1647;rcl=598870349."""
+  if not quota_project_id and fallback_project_id:
+    return fallback_project_id
+  if quota_project_id and quota_project_id in (
+      'CURRENT_PROJECT',
+      'CURRENT_PROJECT_WITH_FALLBACK',
+  ):
+    return fallback_project_id
+  if 'LEGACY' == quota_project_id:
+    return None
+  return quota_project_id
+
+
+def GetEffectiveQuotaProjectIDForHTTPHeader(
+    quota_project_id: str, use_google_auth: bool, credentials: Any
+) -> Optional[str]:
+  """Return the effective quota project ID to be set in the API HTTP header."""
+  if use_google_auth and hasattr(credentials, '_quota_project_id'):
+    return credentials._quota_project_id  # pylint: disable=protected-access
+  return quota_project_id
+
+
+def GetSanitizedCredentialForDiscoveryRequest(
+    use_google_auth: bool, credentials: Any
+) -> Any:
+  """Return the sanitized input credentials used to make discovery requests.
+
+  When the credentials object is not Google Auth, return the original
+  credentials. When it's of type google.oauth2.Credentials, return a copy of the
+  original credentials without quota project ID. The returned credentials object
+  is used in bigquery_client to construct an http object for discovery requests.
+
+  Args:
+    use_google_auth: True if Google Auth credentials should be used.
+    credentials: The credentials object.
+  """
+  if use_google_auth and isinstance(credentials, google_oauth2.Credentials):
+    sanitized_credentials = copy.deepcopy(credentials)
+    sanitized_credentials._quota_project_id = None  # pylint: disable=protected-access
+    return sanitized_credentials
+  return credentials
+
+
 def GetPlatformString() -> str:
   return ':'.join([
       platform.python_implementation(),
@@ -334,10 +427,10 @@ def ProcessError(
      """)
       % (
           platform_str,
-          six.ensure_str(VERSION_NUMBER),
-          [six.ensure_str(item) for item in sys.argv],
+          stringutil.ensure_str(VERSION_NUMBER),
+          [stringutil.ensure_str(item) for item in sys.argv],
           time.strftime('%Y-%m-%d %H:%M:%S', time.gmtime()),
-          six.ensure_str(trace),
+          stringutil.ensure_str(trace),
       )
   )
 

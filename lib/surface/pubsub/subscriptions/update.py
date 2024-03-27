@@ -231,6 +231,7 @@ class UpdateBeta(Update):
 
   @exceptions.CatchHTTPErrorRaiseHTTPException()
   def Run(self, args):
+    flags.ValidateSubscriptionArgsUseUniverseSupportedFeatures(args)
     return super(UpdateBeta, self).Run(
         args, enable_push_to_cps=True, enable_cps_gcs_file_datetime_format=True
     )

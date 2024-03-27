@@ -26,7 +26,7 @@ from googlecloudsdk.command_lib.workbench import flags
 DETAILED_HELP = {
     'DESCRIPTION':
         """
-        Request for describing workbench instances.
+        Describes a workbench instance.
     """,
     'EXAMPLES':
         """
@@ -39,7 +39,7 @@ DETAILED_HELP = {
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Describe(base.DescribeCommand):
-  """Request for describing instances."""
+  """Describes a workbench instance."""
 
   @staticmethod
   def Args(parser):

@@ -63,6 +63,9 @@ class Export(base.Command):
     # Filter out OUTPUT_ONLY fields and resource identifying fields. Note this
     # needs to be kept in sync with v1 session_templates.proto.
     template.name = None
+    template.createTime = None
+    template.updateTime = None
+    template.uuid = None
 
     if args.destination:
       with files.FileWriter(args.destination) as stream:

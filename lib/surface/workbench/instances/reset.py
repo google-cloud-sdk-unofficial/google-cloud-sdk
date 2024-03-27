@@ -26,7 +26,7 @@ from googlecloudsdk.command_lib.workbench import flags
 DETAILED_HELP = {
     'DESCRIPTION':
         """
-        Request for resetting workbench instances.
+        Resets a workbench instance.
     """,
     'EXAMPLES':
         """
@@ -39,7 +39,7 @@ DETAILED_HELP = {
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Reset(base.Command):
-  """Request for resetting instances."""
+  """Resets a workbench instance."""
 
   @staticmethod
   def Args(parser):

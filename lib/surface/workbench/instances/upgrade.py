@@ -26,7 +26,7 @@ from googlecloudsdk.command_lib.workbench import flags
 DETAILED_HELP = {
     'DESCRIPTION':
         """
-        Request for upgrading workbench instances.
+        Upgrades a workbench instance.
     """,
     'EXAMPLES':
         """
@@ -39,7 +39,7 @@ DETAILED_HELP = {
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Upgrade(base.Command):
-  """Request for upgrading instances."""
+  """Upgrades a workbench instance."""
 
   @staticmethod
   def Args(parser):

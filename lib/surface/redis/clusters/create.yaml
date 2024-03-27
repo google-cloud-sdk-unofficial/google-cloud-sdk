@@ -97,6 +97,26 @@
       help_text: |
         Enable Delete Protection on the Redis Cluster to prevent accidental deletions.
         Use --deletion-protection to enabled and --no-deletion-protection to disable.
+    - arg_name: zone-distribution-mode
+      api_field: cluster.zoneDistributionConfig.mode
+      release_tracks: [ALPHA, BETA]
+      help_text: |
+        Determines how the cluster nodes are distributed across zones.
+      choices:
+      - enum_value: MULTI_ZONE
+        arg_value: multi-zone
+        help_text: |
+          Allocate cluster nodes across multiple zones.
+      - enum_value: SINGLE_ZONE
+        arg_value: single-zone
+        help_text: |
+          Allocate cluster nodes in a single zone.
+    - arg_name: zone
+      api_field: cluster.zoneDistributionConfig.zone
+      release_tracks: [ALPHA, BETA]
+      help_text: |
+        The zone used to allocate the cluster nodes. Applicable only if the zone-distribution-mode
+        is set to single-zone.
 
   async:
     collection: redis.projects.locations.operations

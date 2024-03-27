@@ -164,7 +164,9 @@ class Deploy(base.Command):
     container_args = ContainerArgGroup(cls.ReleaseTrack())
     container_parser.AddContainerFlags(parser, container_args)
 
-  def GetAllowUnauth(self, args, operations, service_ref, service_exists):
+  def GetAllowUnauth(
+      self, args, operations, service_ref, service_exists
+  ):
     """Returns allow_unauth value for a service change.
 
     Args:
@@ -184,7 +186,10 @@ class Deploy(base.Command):
     allow_unauth = None
     if platforms.GetPlatform() == platforms.PLATFORM_MANAGED:
       allow_unauth = flags.GetAllowUnauthenticated(
-          args, operations, service_ref, not service_exists
+          args,
+          operations,
+          service_ref,
+          not service_exists
       )
       # Avoid failure removing a policy binding for a service that
       # doesn't exist.
@@ -313,6 +318,9 @@ class Deploy(base.Command):
       pack = _CreateBuildPack(container, self.ReleaseTrack())
       build_type = BuildType.BUILDPACKS
     image = None if pack else container.image
+    base_image = getattr(container, 'base_image', None)
+    if flags.FlagIsExplicitlySet(args, 'delegate_builds') or base_image:
+      image = pack[0].get('image') if pack else image
     operation_message = (
         'Building using {build_type} and deploying container to'
     ).format(build_type=build_type.value)
@@ -322,7 +330,8 @@ class Deploy(base.Command):
             service_ref.servicesId, pack, source
         )
     )
-    return is_function, image, pack, source, operation_message, repo_to_create
+    return (is_function, image, pack, source, operation_message,
+            repo_to_create, base_image)
 
   def _GetBaseChanges(self, args):
     """Returns the service config changes with some default settings."""
@@ -337,6 +346,16 @@ class Deploy(base.Command):
         config_changes.SetLaunchStageAnnotationChange(self.ReleaseTrack())
     )
     return changes
+
+  def _ConnectionContext(self, args):
+    # Obtaining the connection context prompts the user to select a region if
+    # one hasn't been provided. We want to do this prior to preparing a source
+    # deploy so that we can use that region for the Artifact Registry repo.
+    return connection_context.GetConnectionContext(
+        args,
+        flags.Product.RUN,
+        self.ReleaseTrack(),
+    )
 
   def _GetTracker(
       self,
@@ -393,12 +412,8 @@ class Deploy(base.Command):
       already_activated_services = api_enabler.check_and_enable_apis(
           properties.VALUES.core.project.Get(), required_apis
       )
-    # Obtaining the connection context prompts the user to select a region if
-    # one hasn't been provided. We want to do this prior to preparing a source
-    # deploy so that we can use that region for the Artifact Registry repo.
-    conn_context = connection_context.GetConnectionContext(
-        args, flags.Product.RUN, self.ReleaseTrack()
-    )
+
+    conn_context = self._ConnectionContext(args)
 
     image = None
     pack = None
@@ -406,22 +421,22 @@ class Deploy(base.Command):
     operation_message = 'Deploying container to'
     repo_to_create = None
     is_function = False
+    base_image = None
     # Build an image from source if source specified
     if build_from_source:
-      is_function, image, pack, source, operation_message, repo_to_create = (
-          self._BuildFromSource(
-              args,
-              build_from_source,
-              service_ref,
-              conn_context,
-              platform,
-              already_activated_services,
-          )
-      )
-
+      (is_function, image, pack, source, operation_message,
+       repo_to_create, base_image) = (
+           self._BuildFromSource(
+               args,
+               build_from_source,
+               service_ref,
+               conn_context,
+               platform,
+               already_activated_services,
+               )
+           )
     # Deploy a container with an image
     changes = self._GetBaseChanges(args)
-
     with serverless_operations.Connect(
         conn_context, already_activated_services
     ) as operations:
@@ -473,6 +488,8 @@ class Deploy(base.Command):
                 flags.FlagIsExplicitlySet(args, 'revision_suffix')
                 or flags.FlagIsExplicitlySet(args, 'tag')
             ),
+            delegate_builds=flags.FlagIsExplicitlySet(args, 'delegate_builds'),
+            base_image=base_image,
         )
 
       if args.async_:
@@ -551,10 +568,93 @@ class AlphaDeploy(BetaDeploy):
     flags.AddRuntimeFlag(managed_group)
     flags.AddServiceMinInstancesFlag(managed_group)
     flags.AddVolumesFlags(managed_group, cls.ReleaseTrack())
+    flags.AddRegionsArg(managed_group)
     flags.AddGpuTypeFlag(managed_group)
     flags.SERVICE_MESH_FLAG.AddToParser(managed_group)
     container_args = ContainerArgGroup(cls.ReleaseTrack())
     container_parser.AddContainerFlags(parser, container_args)
+    flags.AddDelegateBuildsFlag(managed_group)
+
+  def GetAllowUnauth(
+      self, args, operations, service_ref, service_exists
+  ):
+    if self.__is_multi_region:
+      return None
+    # TODO(b/328157043): Implement this.
+    return super().GetAllowUnauth(
+        args,
+        operations,
+        service_ref,
+        service_exists
+    )
+
+  def _ConnectionContext(self, args):
+    """Returns the connection context with is_multiregion set."""
+    return connection_context.GetConnectionContext(
+        args,
+        flags.Product.RUN,
+        self.ReleaseTrack(),
+        is_multiregion=self.__is_multi_region,
+    )
+
+  def _GetBaseChanges(self, args):
+    """Returns the service config changes with maybe multi-region annotation."""
+    changes = super()._GetBaseChanges(args)
+    if self.__is_multi_region:
+      changes.append(
+          config_changes.SetRegionsAnnotationChange(
+              regions=self.__is_multi_region
+          )
+      )
+    return changes
+
+  def _GetTracker(
+      self,
+      args,
+      service,
+      changes,
+      build_from_source,
+      repo_to_create,
+      allow_unauth,
+      has_latest,
+  ):
+    if not self.__is_multi_region:
+      return super()._GetTracker(
+          args,
+          service,
+          changes,
+          build_from_source,
+          repo_to_create,
+          allow_unauth,
+          has_latest,
+      )
+    deployment_stages = stages.ServiceStages(
+        include_iam_policy_set=False,
+        include_route=False,
+        include_build=bool(build_from_source),
+        include_create_repo=False,
+        include_create_revision=True,
+    )
+    header = 'Deploying new Multi-Region service...'
+    # new services default cpu boost on the client
+    if not flags.FlagIsExplicitlySet(args, 'cpu_boost'):
+      changes.append(config_changes.StartupCpuBoostChange(cpu_boost=True))
+    return progress_tracker.StagedProgressTracker(
+        header,
+        deployment_stages,
+        failure_message=(
+            'Multi-region deployment failed. Some regions might already be'
+            ' serving traffic.'
+        ),
+        suppress_output=args.async_,
+    )
+
+  def Run(self, args):
+    """Deploy a container to Cloud Run."""
+    # If this is a multi-region Service, we will use the global endpoint
+    # for all operations, and append a regions annotation to the Service.
+    self.__is_multi_region = flags.GetMultiRegion(args)
+    return super().Run(args)
 
 
 AlphaDeploy.__doc__ = Deploy.__doc__

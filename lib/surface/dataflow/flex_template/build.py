@@ -337,7 +337,7 @@ class Build(base.Command):
           'Builds a flex template file from the specified parameters.',
       'EXAMPLES':
           """\
-          To build and store a the flex template json file, run:
+          To build and store a flex template JSON file, run:
 
             $ {command} gs://template-file-gcs-path --image=gcr://image-path \
               --metadata-file=/local/path/to/metadata.json --sdk-language=JAVA
@@ -351,7 +351,7 @@ class Build(base.Command):
               --metadata-file=metadata.json
               --sdk-language=JAVA
 
-          To build the template image and flex template json file, run:
+          To build the template image and flex template JSON file, run:
 
             $ {command} gs://template-file-gcs-path \
               --image-gcr-path=gcr://path-to-store-image \

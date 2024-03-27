@@ -29,9 +29,7 @@ from googlecloudsdk.core import properties
 from googlecloudsdk.core import resources
 
 
-@base.ReleaseTracks(
-    base.ReleaseTrack.GA, base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA
-)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Update(base.UpdateCommand):
   """Update an AlloyDB cluster within a given project and region."""
 
@@ -112,3 +110,20 @@ class Update(base.UpdateCommand):
       cluster_operations.Await(op_ref, 'Updating cluster', self.ReleaseTrack(),
                                False)
     return op
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+class UpdateBeta(Update):
+  """Update an AlloyDB cluster within a given project and region."""
+
+  @classmethod
+  def Args(cls, parser):
+    super(UpdateBeta, UpdateBeta).Args(parser)
+    alloydb_messages = api_util.GetMessagesModule(cls.ReleaseTrack())
+    flags.AddMaintenanceWindow(parser, alloydb_messages, update=True)
+    flags.AddDenyMaintenancePeriod(parser, alloydb_messages, update=True)
+
+  def ConstructPatchRequestFromArgs(self, alloydb_messages, cluster_ref, args):
+    return cluster_helper.ConstructPatchRequestFromArgsBeta(
+        alloydb_messages, cluster_ref, args
+    )

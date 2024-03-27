@@ -66,6 +66,7 @@ class Update(base.UpdateCommand):
     workstations_flags.AddEnableAuditAgent(parser, use_default=False)
     workstations_flags.AddEnableConfidentialCompute(parser, use_default=False)
     workstations_flags.AddEnableNestedVirtualization(parser, use_default=False)
+    workstations_flags.AddEnableSSHToVM(parser)
     workstations_flags.AddBootDiskSize(parser, use_default=False)
     workstations_flags.AddContainerImageField(parser, use_default=False)
     workstations_flags.AddContainerCommandField(parser)
@@ -76,7 +77,6 @@ class Update(base.UpdateCommand):
     workstations_flags.AddLabelsField(parser)
     if (cls.ReleaseTrack() != base.ReleaseTrack.GA):
       workstations_flags.AddAcceleratorFields(parser)
-      workstations_flags.AddEnableSSHToVM(parser)
 
   def Collection(self):
     return (

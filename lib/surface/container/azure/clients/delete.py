@@ -44,7 +44,7 @@ class Delete(base.DeleteCommand):
     resource_args.AddAzureClientResourceArg(parser, 'to delete')
 
     base.ASYNC_FLAG.AddToParser(parser)
-    flags.AddAllowMissing(parser)
+    flags.AddAllowMissing(parser, 'client')
 
   def Run(self, args):
     """Runs the delete command."""

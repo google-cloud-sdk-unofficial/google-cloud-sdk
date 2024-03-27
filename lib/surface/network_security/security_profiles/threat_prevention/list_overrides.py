@@ -47,7 +47,9 @@ DETAILED_HELP = {
 }
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
+)
 class ListOverrides(base.DescribeCommand):
   """List overrides of Threat Prevention Profile."""
 
@@ -64,5 +66,6 @@ class ListOverrides(base.DescribeCommand):
       )
 
     return client.ListOverrides(security_profile.RelativeName())
+
 
 ListOverrides.detailed_help = DETAILED_HELP

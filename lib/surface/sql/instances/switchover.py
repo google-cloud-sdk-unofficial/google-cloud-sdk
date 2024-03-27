@@ -15,8 +15,7 @@
 """Switches over a Cloud SQL instance to one of its replicas.
 
 Switches over a Cloud SQL instance to one of its replicas. Currently only
-supported on Cloud SQL for SQL Server and MySQL instances. MySQL instances are
-only supperted on gcloud ALPHA.
+supported on Cloud SQL for SQL Server and MySQL instances.
 """
 
 from __future__ import absolute_import
@@ -62,14 +61,14 @@ def AddBaseArgs(parser):
   parser.add_argument(
       'replica', completer=flags.InstanceCompleter, help='Cloud SQL replica ID.'
   )
+  flags.AddSwitchoverDbTimeout(parser)
 
 
-def RunBaseSwitchoverCommand(args, allow_mysql):
+def RunBaseSwitchoverCommand(args):
   """Switches over a Cloud SQL instance to one of its replicas.
 
   Args:
     args: argparse.Namespace, The arguments that this command was invoked with.
-    allow_mysql: whether to allow MySQL on the gcloud version or not.
 
   Returns:
     A dict object representing the operations resource describing the
@@ -94,19 +93,13 @@ def RunBaseSwitchoverCommand(args, allow_mysql):
 
   if not instances.InstancesV1Beta4.IsSqlServerDatabaseVersion(
       instance_resource.databaseVersion
+  ) and not instances.InstancesV1Beta4.IsMysqlDatabaseVersion(
+      instance_resource.databaseVersion
   ):
-    if not allow_mysql:
-      raise exceptions.OperationError(
-          'Switchover operation is currently supported for Cloud SQL for SQL'
-          ' Server instances only'
-      )
-    elif not instances.InstancesV1Beta4.IsMysqlDatabaseVersion(
-        instance_resource.databaseVersion
-    ):
-      raise exceptions.OperationError(
-          'Switchover operation is currently supported for Cloud SQL for SQL'
-          ' Server and MySQL instances only'
-      )
+    raise exceptions.OperationError(
+        'Switchover operation is currently supported for Cloud SQL for SQL'
+        ' Server and MySQL instances only'
+    )
 
   # Format the message ourselves here rather than supplying it as part of the
   # 'message' to PromptContinue. Having the whole paragraph be automatically
@@ -125,9 +118,15 @@ def RunBaseSwitchoverCommand(args, allow_mysql):
 
   console_io.PromptContinue(message='', default=True, cancel_on_no=True)
 
+  db_timeout_str = args.db_timeout
+  if db_timeout_str is not None:
+    db_timeout_str = str(args.db_timeout) + 's'
+
   result = sql_client.instances.Switchover(
       sql_messages.SqlInstancesSwitchoverRequest(
-          project=instance_ref.project, instance=instance_ref.instance
+          project=instance_ref.project,
+          instance=instance_ref.instance,
+          dbTimeout=db_timeout_str,
       )
   )
   operation_ref = client.resource_parser.Create(
@@ -161,7 +160,7 @@ class SwitchoverAlpha(base.Command):
   detailed_help = DETAILED_HELP_ALPHA
 
   def Run(self, args):
-    return RunBaseSwitchoverCommand(args, allow_mysql=True)
+    return RunBaseSwitchoverCommand(args)
 
   @staticmethod
   def Args(parser):
@@ -179,14 +178,14 @@ class SwitchoverAlpha(base.Command):
 class SwitchoverBeta(base.Command):
   """Switches over a Cloud SQL instance to one of its replicas.
 
-  Switches over a Cloud SQL instance to one of its replicas. Currently only
-  supported on Cloud SQL for SQL Server instances.
+  Switches over a Cloud SQL instance to one of its replicas. Only supported on
+  Cloud SQL for SQL Server and MySQL instances.
   """
 
   detailed_help = DETAILED_HELP_BETA
 
   def Run(self, args):
-    return RunBaseSwitchoverCommand(args, allow_mysql=False)
+    return RunBaseSwitchoverCommand(args)
 
   @staticmethod
   def Args(parser):

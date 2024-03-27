@@ -21,7 +21,9 @@ from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
+)
 class SecurityProfileGroups(base.Group):
   """Manage Network Security - Security Profile Groups.
 
@@ -53,7 +55,7 @@ class SecurityProfileGroups(base.Group):
       $ {command} describe my-security-profile-group --organization=1234
       --location=global
 
-  To list Security Profile Groups in specifed location and organization, run:
+  To list Security Profile Groups in specified location and organization, run:
 
       $ {command} list --location=global
 
@@ -66,4 +68,5 @@ class SecurityProfileGroups(base.Group):
       --threat-prevention-profile=`organizations/1234/locations/global/securityProfiles/my-new-security-profile`
       --description='New Security Profile of type threat prevention'
   """
+
   category = base.NETWORK_SECURITY_CATEGORY

@@ -5,7 +5,7 @@
   "name": "bigquery",
   "canonicalName": "Bigquery",
   "version": "v2",
-  "revision": "20231213",
+  "revision": "20240306",
   "title": "BigQuery API",
   "description": "A data platform for customers to create, manage, share and query data.",
   "ownerDomain": "google.com",
@@ -252,6 +252,11 @@
           "readOnly": true,
           "type": "boolean"
         },
+        "satisfiesPzi": {
+          "description": "Output only. Reserved for future use.",
+          "readOnly": true,
+          "type": "boolean"
+        },
         "type": {
           "description": "Output only. Same as `type` in `ListFormatDataset`. The type of the dataset, one of: * DEFAULT - only accessible by owner and authorized accounts, * PUBLIC - accessible by everyone, * LINKED - linked dataset, * EXTERNAL - dataset with definition in external metadata catalog. -- *BIGLAKE_METASTORE - dataset that references a database created in BigLakeMetastore service. --",
           "readOnly": true,
@@ -261,9 +266,18 @@
           "description": "Optional. The source dataset reference when the dataset is of type LINKED. For all other dataset types it is not set. This field cannot be updated once it is set. Any attempt to update this field using Update and Patch API Operations will be ignored.",
           "$ref": "LinkedDatasetSource"
         },
+        "linkedDatasetMetadata": {
+          "description": "Output only. Metadata about the LinkedDataset. Filled out when the dataset type is LINKED.",
+          "readOnly": true,
+          "$ref": "LinkedDatasetMetadata"
+        },
         "externalDatasetReference": {
-          "description": "Optional. Information about the external metadata storage where the dataset is defined. Filled out when the dataset type is EXTERNAL.",
+          "description": "Optional. Reference to a read-only external dataset defined in data catalogs outside of BigQuery. Filled out when the dataset type is EXTERNAL.",
           "$ref": "ExternalDatasetReference"
+        },
+        "externalCatalogDatasetOptions": {
+          "description": "Optional. Options defining open source compatible datasets living in the BigQuery catalog. Contains metadata of open source database, schema or namespace represented by the current dataset.",
+          "$ref": "ExternalCatalogDatasetOptions"
         },
         "isCaseInsensitive": {
           "description": "Optional. TRUE if the dataset and its table names are case-insensitive, otherwise FALSE. By default, this is FALSE, which means the dataset and its table names are case-sensitive. This field does not affect routine references.",
@@ -416,6 +430,28 @@
         }
       }
     },
+    "LinkedDatasetMetadata": {
+      "id": "LinkedDatasetMetadata",
+      "description": "Metadata about the Linked Dataset.",
+      "type": "object",
+      "properties": {
+        "linkState": {
+          "description": "Output only. Specifies whether Linked Dataset is currently in a linked state or not.",
+          "readOnly": true,
+          "type": "string",
+          "enumDescriptions": [
+            "The default value. Default to the LINKED state.",
+            "Normal Linked Dataset state. Data is queryable via the Linked Dataset.",
+            "Data publisher or owner has unlinked this Linked Dataset. It means you can no longer query or see the data in the Linked Dataset."
+          ],
+          "enum": [
+            "LINK_STATE_UNSPECIFIED",
+            "LINKED",
+            "UNLINKED"
+          ]
+        }
+      }
+    },
     "ExternalDatasetReference": {
       "id": "ExternalDatasetReference",
       "description": "Configures the access a dataset defined in an external metadata storage.",
@@ -427,6 +463,24 @@
         },
         "connection": {
           "description": "Required. The connection id that is used to access the external_source. Format: projects\/{project_id}\/locations\/{location_id}\/connections\/{connection_id}",
+          "type": "string"
+        }
+      }
+    },
+    "ExternalCatalogDatasetOptions": {
+      "id": "ExternalCatalogDatasetOptions",
+      "description": "Options defining open source compatible datasets living in the BigQuery catalog. Contains metadata of open source database, schema or namespace represented by the current dataset.",
+      "type": "object",
+      "properties": {
+        "parameters": {
+          "description": "Optional. A map of key value pairs defining the parameters and properties of the open source schema. Maximum size of 2Mib.",
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "defaultStorageLocationUri": {
+          "description": "Optional. The storage location URI for all tables in the dataset. Equivalent to hive metastore's database locationUri. Maximum length of 1024 characters.",
           "type": "string"
         }
       }
@@ -502,6 +556,25 @@
               }
             }
           }
+        },
+        "unreachable": {
+          "description": "A list of skipped locations that were unreachable. For more information about BigQuery locations, see: https:\/\/cloud.google.com\/bigquery\/docs\/locations. Example: \"europe-west5\"",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "UndeleteDatasetRequest": {
+      "id": "UndeleteDatasetRequest",
+      "description": "Request format for undeleting a dataset.",
+      "type": "object",
+      "properties": {
+        "deletionTime": {
+          "description": "Optional. The exact time when the dataset was deleted. If not specified, it will undelete the most recently deleted version.",
+          "type": "string",
+          "format": "google-datetime"
         }
       }
     },
@@ -3464,7 +3537,7 @@
           "type": "string"
         },
         "type": {
-          "description": "Required. The field data type. Possible values include: * STRING * BYTES * INTEGER (or INT64) * FLOAT (or FLOAT64) * BOOLEAN (or BOOL) * TIMESTAMP * DATE * TIME * DATETIME * GEOGRAPHY * NUMERIC * BIGNUMERIC * JSON * RECORD (or STRUCT) Use of RECORD\/STRUCT indicates that the field contains a nested schema.",
+          "description": "Required. The field data type. Possible values include: * STRING * BYTES * INTEGER (or INT64) * FLOAT (or FLOAT64) * BOOLEAN (or BOOL) * TIMESTAMP * DATE * TIME * DATETIME * GEOGRAPHY * NUMERIC * BIGNUMERIC * JSON * RECORD (or STRUCT) * RANGE ([Preview](\/products\/#product-launch-stages)) Use of RECORD\/STRUCT indicates that the field contains a nested schema.",
           "type": "string"
         },
         "mode": {
@@ -3533,7 +3606,7 @@
           "type": "string"
         },
         "rangeElementType": {
-          "description": "Optional. The subtype of the RANGE, if the type of this field is RANGE. If the type is RANGE, this field is required. Possible values for the field element type of a RANGE include: * DATE * DATETIME * TIMESTAMP",
+          "description": "Optional. The subtype of the RANGE, if the type of this field is RANGE. If the type is RANGE, this field is required. Values for the field element type can be the following: * DATE * DATETIME * TIMESTAMP",
           "$ref": "FieldElementType"
         }
       }
@@ -3544,7 +3617,7 @@
       "type": "object",
       "properties": {
         "type": {
-          "description": "Required. The type of a field element. See TableFieldSchema.type.",
+          "description": "Required. The type of a field element. For more information, see TableFieldSchema.type.",
           "type": "string"
         }
       }
@@ -3853,6 +3926,25 @@
           "additionalProperties": {
             "$ref": "QueryParameterValue"
           }
+        },
+        "rangeValue": {
+          "description": "Optional. The range value, if this is a range type.",
+          "$ref": "RangeValue"
+        }
+      }
+    },
+    "RangeValue": {
+      "id": "RangeValue",
+      "description": "Represents the value of a range.",
+      "type": "object",
+      "properties": {
+        "start": {
+          "description": "Optional. The start value of the range. A missing value represents an unbounded start.",
+          "$ref": "QueryParameterValue"
+        },
+        "end": {
+          "description": "Optional. The end value of the range. A missing value represents an unbounded end.",
+          "$ref": "QueryParameterValue"
         }
       }
     },
@@ -4190,6 +4282,10 @@
         },
         "createSession": {
           "description": "Optional. If this property is true, the job creates a new session using a randomly generated session_id. To continue using a created session with subsequent queries, pass the existing session identifier as a `ConnectionProperty` value. The session identifier is returned as part of the `SessionInfo` message within the query statistics. The new session's location will be set to `Job.JobReference.location` if it is present, otherwise it's set to the default location based on existing routing logic.",
+          "type": "boolean"
+        },
+        "copyFilesOnly": {
+          "description": "Optional. [Experimental] Configures the load job to only copy files to the destination BigLake managed table with an external storage_uri, without reading file content and writing them to new files. Copying files only is supported when: * source_uris are in the same external storage system as the destination table but they do not overlap with storage_uri of the destination table. * source_format is the same file format as the destination table. * destination_table is an existing BigLake managed table. Its schema does not have default value expression. It schema does not have type parameters other than precision and scale. * No options other than the above are specified.",
           "type": "boolean"
         }
       }
@@ -4764,7 +4860,7 @@
           "$ref": "SearchStatistics"
         },
         "vectorSearchStatistics": {
-          "description": "Output only. Search query specific statistics.",
+          "description": "Output only. Vector Search query specific statistics.",
           "readOnly": true,
           "$ref": "VectorSearchStatistics"
         },
@@ -5409,11 +5505,11 @@
             "Indicates that the search index and the search function call do not have the same text analyzer.",
             "Indicates the base table is too small (below a certain threshold). The index does not provide noticeable search performance gains when the base table is too small.",
             "Indicates that the total size of indexed base tables in your organization exceeds your region's limit and the index is not used in the query. To index larger base tables, you can use your own reservation for index-management jobs.",
-            "Indicates that the esitmated performance gain from using the search index is too low for the given search query.",
+            "Indicates that the estimated performance gain from using the search index is too low for the given search query.",
             "Indicates that search indexes can not be used for search query with STANDARD edition.",
             "Indicates that an option in the search function that cannot make use of the index has been selected.",
-            "Indicates an internal error that causes the search index to be unused.",
             "Indicates that the query was cached, and thus the search index was not used.",
+            "Indicates an internal error that causes the search index to be unused.",
             "Indicates that the reason search indexes cannot be used in the query is not covered by any of the other IndexUnusedReason options."
           ],
           "enum": [
@@ -5434,8 +5530,8 @@
             "ESTIMATED_PERFORMANCE_GAIN_TOO_LOW",
             "NOT_SUPPORTED_IN_STANDARD_EDITION",
             "INDEX_SUPPRESSED_BY_FUNCTION_OPTION",
-            "INTERNAL_ERROR",
             "QUERY_CACHE_HIT",
+            "INTERNAL_ERROR",
             "OTHER_REASON"
           ]
         },
@@ -5658,12 +5754,12 @@
           "$ref": "LoggingInfo"
         },
         "kmsKeyName": {
-          "description": "Output only. The Cloud KMS encryption key that is used to protect the resources created by the Spark job. If the Spark procedure uses DEFINER security mode, the Cloud KMS key is inferred from the Spark connection associated with the procedure if it is provided. Otherwise the key is inferred from the default key of the Spark connection's project if the CMEK organization policy is enforced. If the Spark procedure uses INVOKER security mode, the Cloud KMS encryption key is inferred from the system variable @@spark_proc_properties.kms_key_name if it is provided. Otherwise, the key is inferred fromt he default key of the BigQuery job's project if the CMEK organization policy is enforced. Example: * `projects\/[kms_project_id]\/locations\/[region]\/keyRings\/[key_region]\/cryptoKeys\/[key]`",
+          "description": "Output only. The Cloud KMS encryption key that is used to protect the resources created by the Spark job. If the Spark procedure uses the invoker security mode, the Cloud KMS encryption key is either inferred from the provided system variable, `@@spark_proc_properties.kms_key_name`, or the default key of the BigQuery job's project (if the CMEK organization policy is enforced). Otherwise, the Cloud KMS key is either inferred from the Spark connection associated with the procedure (if it is provided), or from the default key of the Spark connection's project if the CMEK organization policy is enforced. Example: * `projects\/[kms_project_id]\/locations\/[region]\/keyRings\/[key_region]\/cryptoKeys\/[key]`",
           "readOnly": true,
           "type": "string"
         },
         "gcsStagingBucket": {
-          "description": "Output only. The Google Cloud Storage bucket that is used as the default filesystem by the Spark application. This fields is only filled when the Spark procedure uses the INVOKER security mode. It is inferred from the system variable @@spark_proc_properties.staging_bucket if it is provided. Otherwise, BigQuery creates a default staging bucket for the job and returns the bucket name in this field. Example: * `gs:\/\/[bucket_name]`",
+          "description": "Output only. The Google Cloud Storage bucket that is used as the default file system by the Spark application. This field is only filled when the Spark procedure uses the invoker security mode. The `gcsStagingBucket` bucket is inferred from the `@@spark_proc_properties.staging_bucket` system variable (if it is provided). Otherwise, BigQuery creates a default staging bucket for the job and returns the bucket name in this field. Example: * `gs:\/\/[bucket_name]`",
           "readOnly": true,
           "type": "string"
         }
@@ -6151,6 +6247,13 @@
               }
             }
           }
+        },
+        "unreachable": {
+          "description": "A list of skipped locations that were unreachable. For more information about BigQuery locations, see: https:\/\/cloud.google.com\/bigquery\/docs\/locations. Example: \"europe-west5\"",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
         }
       }
     },
@@ -6627,7 +6730,7 @@
           ]
         },
         "strictMode": {
-          "description": "Optional. Can be set for procedures only. If true (default), the definition body will be validated in the creation and the updates of the procedure. For procedures with an argument of ANY TYPE, the definition body validtion is not supported at creation\/update time, and thus this field must be set to false explicitly.",
+          "description": "Optional. Use this option to catch many common errors. Error checking is not exhaustive, and successfully creating a procedure doesn't guarantee that the procedure will successfully execute at runtime. If `strictMode` is set to `TRUE`, the procedure body is further checked for errors such as non-existent tables or columns. The `CREATE PROCEDURE` statement fails if the body fails any of these checks. If `strictMode` is set to `FALSE`, the procedure body is checked only for syntax. For procedures that invoke themselves recursively, specify `strictMode=FALSE` to avoid non-existent procedure errors during validation. Default value is `TRUE`.",
           "type": "boolean"
         },
         "remoteFunctionOptions": {
@@ -6936,6 +7039,11 @@
           "default": "false",
           "type": "boolean"
         },
+        "partitionDefinition": {
+          "description": "Output only. The partition information for all table formats, including managed partitioned tables, hive partitioned tables, and iceberg partitioned tables.",
+          "readOnly": true,
+          "$ref": "PartitioningDefinition"
+        },
         "numBytes": {
           "description": "Output only. The size of this table in logical bytes, excluding any data in the streaming buffer.",
           "readOnly": true,
@@ -7102,7 +7210,7 @@
           "$ref": "TableConstraints"
         },
         "resourceTags": {
-          "description": "Optional. Labels V2\/Tags for the Table. These tags are managed by Resource Manager. go\/bq-table-tags-api",
+          "description": "Optional. The [tags](\/bigquery\/docs\/tags) attached to this table. Tag keys are globally unique. Tag key is expected to be in the namespaced format, for example \"123456789012\/environment\" where 123456789012 is the ID of the parent organization or project resource for this tag key. Tag value is expected to be the short name, for example \"Production\". See [Tag definitions](\/iam\/docs\/tags-access-control#definitions) for more details.",
           "type": "object",
           "additionalProperties": {
             "type": "string"
@@ -7119,6 +7227,37 @@
           "items": {
             "$ref": "TableReference"
           }
+        },
+        "externalCatalogTableOptions": {
+          "description": "Optional. Options defining open source compatible table.",
+          "$ref": "ExternalCatalogTableOptions"
+        }
+      }
+    },
+    "PartitioningDefinition": {
+      "id": "PartitioningDefinition",
+      "description": "The partitioning information, which includes managed table and external table partition information.",
+      "type": "object",
+      "properties": {
+        "partitionedColumn": {
+          "description": "Output only. Details about each partitioning column. BigQuery native tables only support 1 partitioning column. Other table types may support 0, 1 or more partitioning columns.",
+          "readOnly": true,
+          "type": "array",
+          "items": {
+            "$ref": "PartitionedColumn"
+          }
+        }
+      }
+    },
+    "PartitionedColumn": {
+      "id": "PartitionedColumn",
+      "description": "The partitioning column information.",
+      "type": "object",
+      "properties": {
+        "field": {
+          "description": "Output only. The name of the partition column.",
+          "readOnly": true,
+          "type": "string"
         }
       }
     },
@@ -7440,6 +7579,69 @@
         }
       }
     },
+    "ExternalCatalogTableOptions": {
+      "id": "ExternalCatalogTableOptions",
+      "description": "Metadata about open source compatible table. The fields contained in these options correspond to hive metastore's table level properties.",
+      "type": "object",
+      "properties": {
+        "parameters": {
+          "description": "Optional. A map of key value pairs defining the parameters and properties of the open source table. Corresponds with hive meta store table parameters. Maximum size of 4Mib.",
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "storageDescriptor": {
+          "description": "Optional. A storage descriptor containing information about the physical storage of this table.",
+          "$ref": "StorageDescriptor"
+        }
+      }
+    },
+    "StorageDescriptor": {
+      "id": "StorageDescriptor",
+      "description": "Contains information about how a table's data is stored and accessed by open source query engines.",
+      "type": "object",
+      "properties": {
+        "locationUri": {
+          "description": "Optional. The physical location of the table (e.g. 'gs:\/\/spark-dataproc-data\/pangea-data\/case_sensitive\/' or 'gs:\/\/spark-dataproc-data\/pangea-data\/*'). The maximum length is 2056 bytes.",
+          "type": "string"
+        },
+        "inputFormat": {
+          "description": "Optional. Specifies the fully qualified class name of the InputFormat (e.g. \"org.apache.hadoop.hive.ql.io.orc.OrcInputFormat\"). The maximum length is 128 characters.",
+          "type": "string"
+        },
+        "outputFormat": {
+          "description": "Optional. Specifies the fully qualified class name of the OutputFormat (e.g. \"org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat\"). The maximum length is 128 characters.",
+          "type": "string"
+        },
+        "serdeInfo": {
+          "description": "Optional. Serializer and deserializer information.",
+          "$ref": "SerDeInfo"
+        }
+      }
+    },
+    "SerDeInfo": {
+      "id": "SerDeInfo",
+      "description": "Serializer and deserializer information.",
+      "type": "object",
+      "properties": {
+        "name": {
+          "description": "Optional. Name of the SerDe. The maximum length is 256 characters.",
+          "type": "string"
+        },
+        "serializationLibrary": {
+          "description": "Required. Specifies a fully-qualified class name of the serialization library that is responsible for the translation of data between table representation and the underlying low-level input and output format structures. The maximum length is 256 characters.",
+          "type": "string"
+        },
+        "parameters": {
+          "description": "Optional. Key-value pairs that define the initialization parameters for the serialization library. Maximum size 10 Kib.",
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        }
+      }
+    },
     "TableList": {
       "id": "TableList",
       "description": "Partial projection of the metadata for a given table in a list response.",
@@ -7680,7 +7882,7 @@
       "type": "object",
       "properties": {
         "role": {
-          "description": "Role that is assigned to the list of `members`, or principals. For example, `roles\/viewer`, `roles\/editor`, or `roles\/owner`.",
+          "description": "Role that is assigned to the list of `members`, or principals. For example, `roles\/viewer`, `roles\/editor`, or `roles\/owner`. For an overview of the IAM roles and permissions, see the [IAM documentation](https:\/\/cloud.google.com\/iam\/docs\/roles-overview). For a list of the available pre-defined roles, see [here](https:\/\/cloud.google.com\/iam\/docs\/understanding-roles).",
           "type": "string"
         },
         "members": {
@@ -8136,6 +8338,43 @@
             "https://www.googleapis.com/auth/cloud-platform.read-only"
           ],
           "description": "Lists all datasets in the specified project to which the user has been granted the READER dataset role."
+        },
+        "undelete": {
+          "id": "bigquery.datasets.undelete",
+          "path": "bigquery/v2/projects/{+projectId}/datasets/{+datasetId}:undelete",
+          "flatPath": "bigquery/v2/projects/{projectsId}/datasets/{datasetsId}:undelete",
+          "httpMethod": "POST",
+          "parameters": {
+            "projectId": {
+              "description": "Required. Project ID of the dataset to be undeleted",
+              "pattern": "^[^\/]+$",
+              "location": "path",
+              "required": true,
+              "type": "string"
+            },
+            "datasetId": {
+              "description": "Required. Dataset ID of dataset being deleted",
+              "pattern": "^[^\/]+$",
+              "location": "path",
+              "required": true,
+              "type": "string"
+            }
+          },
+          "parameterOrder": [
+            "projectId",
+            "datasetId"
+          ],
+          "request": {
+            "$ref": "UndeleteDatasetRequest"
+          },
+          "response": {
+            "$ref": "Dataset"
+          },
+          "scopes": [
+            "https://www.googleapis.com/auth/bigquery",
+            "https://www.googleapis.com/auth/cloud-platform"
+          ],
+          "description": "Undeletes a dataset which is within time travel window based on datasetId. If a time is specified, the dataset version deleted at that time is undeleted, else the last live version is undeleted."
         },
         "setIamPolicy": {
           "id": "bigquery.datasets.setIamPolicy",
@@ -9048,6 +9287,65 @@
             "https://www.googleapis.com/auth/cloud-platform.read-only"
           ],
           "description": "Lists all routines in the specified dataset. Requires the READER dataset role."
+        },
+        "setIamPolicy": {
+          "id": "bigquery.routines.setIamPolicy",
+          "path": "bigquery/v2/{+resource}:setIamPolicy",
+          "flatPath": "bigquery/v2/projects/{projectsId}/datasets/{datasetsId}/routines/{routinesId}:setIamPolicy",
+          "httpMethod": "POST",
+          "parameters": {
+            "resource": {
+              "description": "REQUIRED: The resource for which the policy is being specified. See [Resource names](https:\/\/cloud.google.com\/apis\/design\/resource_names) for the appropriate value for this field.",
+              "pattern": "^projects\/[^\/]+\/datasets\/[^\/]+\/routines\/[^\/]+$",
+              "location": "path",
+              "required": true,
+              "type": "string"
+            }
+          },
+          "parameterOrder": [
+            "resource"
+          ],
+          "request": {
+            "$ref": "SetIamPolicyRequest"
+          },
+          "response": {
+            "$ref": "Policy"
+          },
+          "scopes": [
+            "https://www.googleapis.com/auth/bigquery",
+            "https://www.googleapis.com/auth/cloud-platform"
+          ],
+          "description": "Sets the access control policy on the specified resource. Replaces any existing policy. Can return `NOT_FOUND`, `INVALID_ARGUMENT`, and `PERMISSION_DENIED` errors."
+        },
+        "getIamPolicy": {
+          "id": "bigquery.routines.getIamPolicy",
+          "path": "bigquery/v2/{+resource}:getIamPolicy",
+          "flatPath": "bigquery/v2/projects/{projectsId}/datasets/{datasetsId}/routines/{routinesId}:getIamPolicy",
+          "httpMethod": "POST",
+          "parameters": {
+            "resource": {
+              "description": "REQUIRED: The resource for which the policy is being requested. See [Resource names](https:\/\/cloud.google.com\/apis\/design\/resource_names) for the appropriate value for this field.",
+              "pattern": "^projects\/[^\/]+\/datasets\/[^\/]+\/routines\/[^\/]+$",
+              "location": "path",
+              "required": true,
+              "type": "string"
+            }
+          },
+          "parameterOrder": [
+            "resource"
+          ],
+          "request": {
+            "$ref": "GetIamPolicyRequest"
+          },
+          "response": {
+            "$ref": "Policy"
+          },
+          "scopes": [
+            "https://www.googleapis.com/auth/bigquery",
+            "https://www.googleapis.com/auth/cloud-platform",
+            "https://www.googleapis.com/auth/cloud-platform.read-only"
+          ],
+          "description": "Gets the access control policy for a resource. Returns an empty policy if the resource exists and does not have a policy set."
         }
       }
     },
@@ -9674,6 +9972,31 @@
     {
       "endpointUrl": "https://bigquery.me-central2.rep.googleapis.com/",
       "location": "me-central2",
+      "description": "Regional Endpoint"
+    },
+    {
+      "endpointUrl": "https://bigquery.europe-west3.rep.googleapis.com/",
+      "location": "europe-west3",
+      "description": "Regional Endpoint"
+    },
+    {
+      "endpointUrl": "https://bigquery.europe-west9.rep.googleapis.com/",
+      "location": "europe-west9",
+      "description": "Regional Endpoint"
+    },
+    {
+      "endpointUrl": "https://bigquery.us-east4.rep.googleapis.com/",
+      "location": "us-east4",
+      "description": "Regional Endpoint"
+    },
+    {
+      "endpointUrl": "https://bigquery.us-east7.rep.googleapis.com/",
+      "location": "us-east7",
+      "description": "Regional Endpoint"
+    },
+    {
+      "endpointUrl": "https://bigquery.us-west1.rep.googleapis.com/",
+      "location": "us-west1",
       "description": "Regional Endpoint"
     }
   ],
