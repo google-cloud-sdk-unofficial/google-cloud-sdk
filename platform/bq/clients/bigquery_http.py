@@ -12,6 +12,7 @@ import logging
 from typing import Optional
 
 
+
 # To configure apiclient logging.
 from absl import flags
 import googleapiclient
@@ -23,6 +24,66 @@ import bq_utils
 from clients import utils as bq_client_utils
 
 
+# pylint: disable=protected-access
+
+_ORIGINAL_GOOGLEAPI_CLIENT_RETRY_REQUEST = http_request._retry_request
+
+
+def _RetryRequest(
+    http, num_retries, req_type, sleep, rand, uri, method, *args, **kwargs
+):
+  """Conditionally retries an HTTP request.
+
+  This is a wrapper around http_request._retry_request. If the original request
+  fails with a specific permission error, retry it once without the
+  x-goog-user-project header.
+
+  Args:
+    http: Http object to be used to execute request.
+    num_retries: Maximum number of retries.
+    req_type: Type of the request (used for logging retries).
+    sleep: Function to sleep for random time between retries.
+    rand: Function to sleep for random time between retries.
+    uri: URI to be requested.
+    method: HTTP method to be used.
+    *args: Additional arguments passed to http.request.
+    **kwargs: Additional arguments passed to http.request.
+
+  Returns:
+    resp, content - Response from the http request (may be HTTP 5xx).
+  """
+  # Call the original http_request._retry_request first to get the original
+  # response.
+  resp, content = _ORIGINAL_GOOGLEAPI_CLIENT_RETRY_REQUEST(
+      http, num_retries, req_type, sleep, rand, uri, method, *args, **kwargs
+  )
+  if int(resp.status) == 403:
+    data = json.loads(content.decode('utf-8'))
+    if isinstance(data, dict) and 'message' in data['error']:
+      err_message = data['error']['message']
+      if 'roles/serviceusage.serviceUsageConsumer' in err_message:
+        if 'headers' in kwargs and 'x-goog-user-project' in kwargs['headers']:
+          del kwargs['headers']['x-goog-user-project']
+          logging.info(
+              'Retrying request without the x-goog-user-project header'
+          )
+          resp, content = _ORIGINAL_GOOGLEAPI_CLIENT_RETRY_REQUEST(
+              http,
+              num_retries,
+              req_type,
+              sleep,
+              rand,
+              uri,
+              method,
+              *args,
+              **kwargs,
+          )
+  return resp, content
+
+
+http_request._retry_request = _RetryRequest
+# pylint: enable=protected-access
+
 
 class BigqueryModel(model.JsonModel):
   """Adds optional global parameters to all requests."""
@@ -31,7 +92,8 @@ class BigqueryModel(model.JsonModel):
       self,
       trace=None,
       quota_project_id: Optional[str] = None,
-      **kwds):
+      **kwds,
+  ):
     super().__init__(**kwds)
     self.trace = trace
     self.quota_project_id = quota_project_id
@@ -65,11 +127,12 @@ class BigqueryHttp(http_request.HttpRequest):
       self,
       bigquery_model: BigqueryModel,
       *args,
-      **kwds
+      **kwds,
   ):
     super().__init__(*args, **kwds)
-    logging.info('URL being requested from BQ client: %s %s', kwds['method'],
-                 args[2])
+    logging.info(
+        'URL being requested from BQ client: %s %s', kwds['method'], args[2]
+    )
     self._model = bigquery_model
 
   @staticmethod
@@ -95,7 +158,7 @@ class BigqueryHttp(http_request.HttpRequest):
       return BigqueryHttp(
           captured_model,
           *args,
-          **kwds
+          **kwds,
       )
 
     return _Construct

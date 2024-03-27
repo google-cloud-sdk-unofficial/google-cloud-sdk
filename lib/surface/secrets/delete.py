@@ -55,22 +55,27 @@ class Delete(base.DeleteCommand):
     secrets_args.AddSecretEtag(parser)
 
   def Run(self, args):
-    messages = secrets_api.GetMessages()
+    api_version = secrets_api.GetApiFromTrack(self.ReleaseTrack())
+    messages = secrets_api.GetMessages(version=api_version)
     secret_ref = args.CONCEPTS.secret.Parse()
 
     # List all secret versions and parse their refs
-    versions = secrets_api.Versions().ListWithPager(
-        secret_ref=secret_ref, limit=9999)
+    versions = secrets_api.Versions(api_version=api_version).ListWithPager(
+        secret_ref=secret_ref, limit=9999
+    )
     active_version_count = 0
     for version in versions:
       if version.state != messages.SecretVersion.StateValueValuesEnum.DESTROYED:
         active_version_count += 1
 
     msg = self.CONFIRM_DELETE_MESSAGE.format(
-        secret=secret_ref.Name(), num_versions=active_version_count)
+        secret=secret_ref.Name(), num_versions=active_version_count
+    )
     console_io.PromptContinue(msg, throw_if_unattended=True, cancel_on_no=True)
 
-    result = secrets_api.Secrets().Delete(secret_ref, etag=args.etag)
+    result = secrets_api.Secrets(api_version=api_version).Delete(
+        secret_ref, etag=args.etag
+    )
     secrets_log.Secrets().Deleted(secret_ref)
     return result
 
@@ -96,27 +101,32 @@ class DeleteBeta(Delete):
 
   @staticmethod
   def Args(parser):
-    secrets_args.AddGlobalOrRegionalSecret(
+    secrets_args.AddSecret(
         parser, purpose='to delete', positional=True, required=True
     )
+    secrets_args.AddLocation(parser, purpose='to delete secret', hidden=True)
     secrets_args.AddSecretEtag(parser)
 
   def Run(self, args):
-    messages = secrets_api.GetMessages()
-    result = args.CONCEPTS.secret.Parse()
-    secret_ref = result.result
+    api_version = secrets_api.GetApiFromTrack(self.ReleaseTrack())
+    messages = secrets_api.GetMessages(version=api_version)
+    secret_ref = args.CONCEPTS.secret.Parse()
     # List all secret versions and parse their refs
-    versions = secrets_api.Versions().ListWithPager(
-        secret_ref=secret_ref, limit=9999)
+    versions = secrets_api.Versions(api_version=api_version).ListWithPager(
+        secret_ref=secret_ref, limit=9999, secret_location=args.location
+    )
     active_version_count = 0
     for version in versions:
       if version.state != messages.SecretVersion.StateValueValuesEnum.DESTROYED:
         active_version_count += 1
 
     msg = self.CONFIRM_DELETE_MESSAGE.format(
-        secret=secret_ref.Name(), num_versions=active_version_count)
+        secret=secret_ref.Name(), num_versions=active_version_count
+    )
     console_io.PromptContinue(msg, throw_if_unattended=True, cancel_on_no=True)
 
-    result = secrets_api.Secrets().Delete(secret_ref, etag=args.etag)
+    result = secrets_api.Secrets(api_version=api_version).Delete(
+        secret_ref, etag=args.etag, secret_location=args.location
+    )
     secrets_log.Secrets().Deleted(secret_ref)
     return result

@@ -21,6 +21,7 @@ from __future__ import unicode_literals
 import collections
 
 from googlecloudsdk.api_lib.storage import cloud_api
+from googlecloudsdk.api_lib.storage import errors as api_errors
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.storage import flags
 from googlecloudsdk.command_lib.storage import folder_util
@@ -114,16 +115,15 @@ class Rm(base.Command):
         ' [versions](https://cloud.google.com/storage/docs/object-versioning)'
         ' of an object.')
 
-    if cls.ReleaseTrack() is base.ReleaseTrack.ALPHA:
-      parser.add_argument(
-          '--exclude-managed-folders',
-          action='store_true',
-          default=False,
-          help=(
-              'Excludes managed folders from command operations. By default'
-              ' gcloud storage includes managed folders in recursive removals.'
-          ),
-      )
+    parser.add_argument(
+        '--exclude-managed-folders',
+        action='store_true',
+        default=False,
+        help=(
+            'Excludes managed folders from command operations. By default'
+            ' gcloud storage includes managed folders in recursive removals.'
+        ),
+    )
 
     flags.add_additional_headers_flag(parser)
     flags.add_continue_on_error_flag(parser)
@@ -141,9 +141,7 @@ class Rm(base.Command):
       recursion_setting = name_expansion.RecursionSetting.NO_WITH_WARNING
 
     should_perform_managed_folder_operations = (
-        args.recursive
-        # TODO(b/304524534): Replace with args.exclude_managed_folders.
-        and not getattr(args, 'exclude_managed_folders', True)
+        args.recursive and not args.exclude_managed_folders
     )
 
     url_found_match_tracker = collections.OrderedDict()
@@ -190,17 +188,27 @@ class Rm(base.Command):
           recursion_requested=name_expansion.RecursionSetting.YES,
           url_found_match_tracker=url_found_match_tracker,
       )
-      managed_folder_exit_code = rm_command_util.remove_managed_folders(
-          args,
-          managed_folder_expansion_iterator,
-          task_status_queue,
-          verbose=True,
-      )
+      try:
+        managed_folder_exit_code = rm_command_util.remove_managed_folders(
+            args,
+            managed_folder_expansion_iterator,
+            task_status_queue,
+            verbose=True,
+        )
+      except api_errors.GcsApiError as error:
+        if error.payload.status_code != 403:
+          # Avoids unexpectedly escalating permissions.
+          raise
+        log.warning(
+            'Unable to delete managed folders due to missing permissions.'
+        )
+        managed_folder_exit_code = 0
     else:
       managed_folder_exit_code = 0
 
     bucket_iterator = plurality_checkable_iterator.PluralityCheckableIterator(
-        task_iterator_factory.bucket_iterator())
+        task_iterator_factory.bucket_iterator()
+    )
 
     # We perform the is_empty check to avoid printing unneccesary status lines.
     if args.recursive and not bucket_iterator.is_empty():

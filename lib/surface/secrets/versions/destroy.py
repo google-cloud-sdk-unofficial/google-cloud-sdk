@@ -88,20 +88,25 @@ class DestroyBeta(Destroy):
 
   @staticmethod
   def Args(parser):
-    secrets_args.AddGlobalOrRegionalVersion(
+    secrets_args.AddVersion(
         parser, purpose='to destroy', positional=True, required=True
     )
+    secrets_args.AddLocation(parser, purpose='to destroy ', hidden=True)
     secrets_args.AddVersionEtag(parser)
 
   def Run(self, args):
-    result = args.CONCEPTS.version.Parse()
-    version_ref = result.result
+    api_version = secrets_api.GetApiFromTrack(self.ReleaseTrack())
+    version_ref = args.CONCEPTS.version.Parse()
     # Destructive action, prompt to continue
     console_io.PromptContinue(
         self.CONFIRM_DESTROY_MESSAGE.format(
-            version=version_ref.Name(), secret=version_ref.Parent().Name()),
+            version=version_ref.Name(), secret=version_ref.Parent().Name()
+        ),
         throw_if_unattended=True,
-        cancel_on_no=True)
-    result = secrets_api.Versions().Destroy(version_ref, etag=args.etag)
+        cancel_on_no=True,
+    )
+    result = secrets_api.Versions(api_version=api_version).Destroy(
+        version_ref, etag=args.etag, secret_location=args.location
+    )
     secrets_log.Versions().Destroyed(version_ref)
     return result

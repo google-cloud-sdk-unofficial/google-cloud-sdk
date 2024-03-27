@@ -1,0 +1,24 @@
+- release_tracks: [ALPHA]
+
+  help_text:
+    brief: Export an entitlement into a local YAML file.
+    description: Export an entitlement into a local YAML file.
+    examples: |
+      The following command exports an entitlement with a given name into a local YAML file
+      entitlement-file.yaml:
+
+      $ {command} entitlement-name --destination entitlement-file.yaml
+
+  request:
+    ALPHA:
+      api_version: v1alpha
+    collection:
+    - privilegedaccessmanager.projects.locations.entitlements
+    - privilegedaccessmanager.folders.locations.entitlements
+    - privilegedaccessmanager.organizations.locations.entitlements
+
+  arguments:
+    resource:
+      spec: !REF googlecloudsdk.command_lib.pam.resources:entitlement
+      help_text: |
+        Name of the entitlement to export.

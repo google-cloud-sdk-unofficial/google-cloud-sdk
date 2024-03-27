@@ -11,7 +11,7 @@ import collections
 import json
 import os
 import re
-from typing import Any, Dict, List
+from typing import Any, List
 
 
 
@@ -109,7 +109,7 @@ def ToLowerCamel(name: str) -> str:
   return re.sub('_[a-z]', lambda match: match.group(0)[1].upper(), name)
 
 
-def ApplyParameters(config: Dict[str, str], **kwds: Dict[str, str]) -> None:
+def ApplyParameters(config, **kwds) -> None:
   """Adds all kwds to config dict, adjusting keys to camelcase.
 
   Note this does not remove entries that are set to None, however.

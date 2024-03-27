@@ -434,7 +434,7 @@ class CreateBeta(CreateGA):
   """Create Compute Engine managed instance groups."""
 
   support_update_policy_min_ready_flag = True
-  support_resource_manager_tags = False
+  support_resource_manager_tags = True
 
   @classmethod
   def Args(cls, parser):

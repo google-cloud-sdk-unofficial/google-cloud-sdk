@@ -89,14 +89,12 @@ def _RunGcloudForOAuthTokens() -> Tuple[Optional[str], Optional[str]]:
         ['gcloud', 'auth', 'print-access-token'],
         check=True,
         capture_output=True,
-        timeout=5,
     )
     access_token = access_token_result.stdout.decode('utf-8').strip()
     refresh_token_result = subprocess.run(
         ['gcloud', 'auth', 'print-refresh-token'],
         check=True,
         capture_output=True,
-        timeout=5,
     )
     refresh_token = refresh_token_result.stdout.decode('utf-8').strip()
     return (access_token, refresh_token)
@@ -112,15 +110,6 @@ def _RunGcloudForOAuthTokens() -> Tuple[Optional[str], Optional[str]]:
           'Error retrieving auth credentials from gcloud.\n'
           'Stdout:\n%s\nStderr:\n%s' % (str(e.stdout), str(e.stderr))
       )
-  except subprocess.SubprocessError as e:
-    if isinstance(e, subprocess.TimeoutExpired):
-      raise bq_error.BigqueryError(
-          'Timed out retrieving auth credentials from gcloud. '
-          + _GetReauthMessage()
-      )
-    raise bq_error.BigqueryError(
-        'Error retrieving auth credentials from gcloud: %s' % str(e)
-    )
   except Exception as e:  # pylint: disable=broad-exception-caught
     if "No such file or directory: 'gcloud'" in str(e):
       raise bq_error.BigqueryError(
@@ -129,7 +118,7 @@ def _RunGcloudForOAuthTokens() -> Tuple[Optional[str], Optional[str]]:
           ' https://cloud.google.com/sdk/docs/install'
       )
     raise bq_error.BigqueryError(
-        'Unknown error retrieving auth credentials from gcloud: %s' % str(e)
+        'Error retrieving auth credentials from gcloud: %s' % str(e)
     )
 
 

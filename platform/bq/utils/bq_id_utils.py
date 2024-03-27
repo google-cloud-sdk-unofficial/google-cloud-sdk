@@ -4,7 +4,7 @@
 import collections
 import re
 import sys
-from typing import Any, Optional, Type
+from typing import Any, Optional, Tuple, Type, Union
 from absl import app
 from pyglib import stringutil
 
@@ -140,8 +140,8 @@ class ApiClientHelper:
     def __init__(self, **kwds):
       # pylint: disable=invalid-name Aligns with API
       self.projectId: str = kwds['projectId']
-      # pylint: disable=invalid-name Aligns with API
       self.jobId: str = kwds['jobId']
+      # pylint: enable=invalid-name
       super().__init__(**kwds)
 
     def GetProjectReference(self) -> 'ApiClientHelper.ProjectReference':
@@ -156,6 +156,7 @@ class ApiClientHelper:
     def __init__(self, **kwds):
       # pylint: disable=invalid-name Aligns with API
       self.projectId: str = kwds['projectId']
+      # pylint: enable=invalid-name
       super().__init__(**kwds)
 
     def GetDatasetReference(
@@ -179,8 +180,8 @@ class ApiClientHelper:
     def __init__(self, **kwds):
       # pylint: disable=invalid-name Aligns with API
       self.projectId: str = kwds['projectId']
-      # pylint: disable=invalid-name Aligns with API
       self.datasetId: str = kwds['datasetId']
+      # pylint: enable=invalid-name
       super().__init__(**kwds)
 
     def GetProjectReference(self) -> 'ApiClientHelper.ProjectReference':
@@ -202,8 +203,9 @@ class ApiClientHelper:
     def __init__(self, **kwds):
       # pylint: disable=invalid-name Aligns with API
       self.projectId: str = kwds['projectId']
-      # pylint: disable=invalid-name Aligns with API
       self.datasetId: str = kwds['datasetId']
+      self.tableId: str = kwds['tableId']
+      # pylint: enable=invalid-name
       super().__init__(**kwds)
 
     def GetDatasetReference(self) -> 'ApiClientHelper.DatasetReference':
@@ -218,10 +220,26 @@ class ApiClientHelper:
     _format_str = '%(projectId)s:%(datasetId)s.%(modelId)s'
     typename = 'model'
 
+    def __init__(self, **kwds):
+      # pylint: disable=invalid-name Aligns with API
+      self.projectId: str = kwds['projectId']
+      self.datasetId: str = kwds['datasetId']
+      self.modelId: str = kwds['modelId']
+      # pylint: enable=invalid-name
+      super().__init__(**kwds)
+
   class RoutineReference(Reference):
     _required_fields = frozenset(('projectId', 'datasetId', 'routineId'))
     _format_str = '%(projectId)s:%(datasetId)s.%(routineId)s'
     typename = 'routine'
+
+    def __init__(self, **kwds):
+      # pylint: disable=invalid-name Aligns with API
+      self.projectId: str = kwds['projectId']
+      self.datasetId: str = kwds['datasetId']
+      self.routineId: str = kwds['routineId']
+      # pylint: enable=invalid-name
+      super().__init__(**kwds)
 
   class RowAccessPolicyReference(Reference):
     _required_fields = frozenset(
@@ -229,10 +247,25 @@ class ApiClientHelper:
     _format_str = '%(projectId)s:%(datasetId)s.%(tableId)s.%(policyId)s'
     typename = 'row access policy'
 
+    def __init__(self, **kwds):
+      # pylint: disable=invalid-name Aligns with API
+      self.projectId: str = kwds['projectId']
+      self.datasetId: str = kwds['datasetId']
+      self.tableId: str = kwds['tableId']
+      self.policyId: str = kwds['policyId']
+      # pylint: enable=invalid-name
+      super().__init__(**kwds)
+
   class TransferConfigReference(Reference):
     _required_fields = frozenset(('transferConfigName',))
     _format_str = '%(transferConfigName)s'
     typename = 'transfer config'
+
+    def __init__(self, **kwds):
+      # pylint: disable=invalid-name Aligns with API
+      self.transferConfigName: str = kwds['transferConfigName']
+      # pylint: enable=invalid-name
+      super().__init__(**kwds)
 
   class TransferRunReference(Reference):
     _required_fields = frozenset(('transferRunName',))
@@ -323,7 +356,10 @@ class ApiClientHelper:
 
 def typecheck(  # pylint: disable=invalid-name
     obj: ApiClientHelper.Reference,
-    types: Type[ApiClientHelper.Reference],
+    types: Union[
+        Type[Optional[ApiClientHelper.Reference]],
+        Tuple[Type[Optional[ApiClientHelper.Reference]], ...],
+    ],
     message: Optional[str] = None,
     method: Optional[str] = None,
     # In code on the surface, taking user input, we throw a usage error.

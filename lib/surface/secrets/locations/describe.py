@@ -41,5 +41,6 @@ class Describe(base.DescribeCommand):
         parser, purpose='to describe', positional=True, required=True)
 
   def Run(self, args):
+    api_version = secrets_api.GetApiFromTrack(self.ReleaseTrack())
     location_ref = args.CONCEPTS.location.Parse()
-    return secrets_api.Locations().Get(location_ref)
+    return secrets_api.Locations(api_version=api_version).Get(location_ref)

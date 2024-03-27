@@ -125,6 +125,7 @@ class Deploy(base.Command):
     flags.AddGeneralAnnotationFlags(parser)
     flags.AddServiceAccountFlag(parser)
     flags.AddClientNameAndVersionFlags(parser)
+    flags.AddNoPromoteFlag(parser)
     concept_parsers.ConceptParser([worker_presentation]).AddToParser(parser)
     container_args = ContainerArgGroup()
     container_parser.AddContainerFlags(parser, container_args)

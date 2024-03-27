@@ -144,16 +144,3 @@ class Gcloud(base.Group):
         action=actions.StoreProperty(properties.VALUES.core.trace_token),
         help='Token used to route traces of service requests for investigation'
         ' of issues.')
-    trace_group.add_argument(
-        '--trace-email',
-        metavar='USERNAME',
-        default=None,
-        action=actions.StoreProperty(properties.VALUES.core.trace_email),
-        hidden=True,
-        help='THIS ARGUMENT NEEDS HELP TEXT.')
-    trace_group.add_argument(
-        '--trace-log',
-        default=None,
-        action=actions.StoreBooleanProperty(properties.VALUES.core.trace_log),
-        hidden=True,
-        help='THIS ARGUMENT NEEDS HELP TEXT.')

@@ -25,12 +25,26 @@ from googlecloudsdk.calliope import base
 @base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Entitlements(base.Group):
-  """Manage PAM Entitlements.
+  r"""Manage PAM Entitlements.
 
      The gcloud pam entitlements command group lets you manage Privileged
      Access Manager (PAM) Entitlements.
 
      ## EXAMPLES
+
+     To create a new entitlement with the name sample-entitlement, under the
+     project sample-project, location global and the entitlement body present in
+     the sample-entitlement.yaml file, run:
+
+     $ {command} create sample-entitlement --project sample-project --location global \
+     --entitlement-file sample-entitlement.yaml
+
+     To update an entitlement with the name sample-entitlement, under the
+     project sample-project, location global and the new entitlement body
+     present in the sample-entitlement.yaml file, run:
+
+     $ {command} update sample-entitlement --project sample-project --location global
+     --entitlement-file sample-entitlement.yaml
 
      To display the details of an entitlement with the name entitlement-name,
      run:
@@ -51,5 +65,14 @@ class Entitlements(base.Group):
      run:
 
      $ {command} list --location parent
+
+     To delete an entitlement along with all grants under it, run:
+
+     $ {command} entitlement-name
+
+     To export an entitlement with a given name into a local YAML file
+     entitlement-file.yaml, run:
+
+     $ {command} entitlement-name --destination entitlement-file.yaml
 
   """

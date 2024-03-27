@@ -267,6 +267,7 @@ def AddBaseArgs(parser):
   flags.AddAllowedPscProjects(psc_update_group)
   flags.AddClearAllowedPscProjects(psc_update_group)
   flags.AddSslMode(parser)
+  flags.AddEnableGoogleMLIntegration(parser)
   flags.AddUpgradeSqlNetworkArchitecture(parser)
   flags.AddSimulateMaintenanceEvent(parser)
 
@@ -277,7 +278,6 @@ def AddBetaArgs(parser):
   flags.AddAllocatedIpRangeName(parser)
   labels_util.AddUpdateLabelsFlags(parser, enable_clear=True)
   flags.AddReplicationLagMaxSecondsForRecreate(parser)
-  flags.AddEnableGoogleMLIntegration(parser)
   flags.AddFailoverDrReplicaName(parser)
   flags.AddClearFailoverDrReplicaName(parser)
 

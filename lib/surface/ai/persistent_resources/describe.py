@@ -26,8 +26,8 @@ from googlecloudsdk.command_lib.ai.persistent_resources import flags
 from googlecloudsdk.command_lib.ai.persistent_resources import validation
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class DescribePreGA(base.DescribeCommand):
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class DescribeGA(base.DescribeCommand):
   """Get detailed information about a PersistentResource with a given id.
 
   ## EXAMPLES
@@ -38,7 +38,7 @@ class DescribePreGA(base.DescribeCommand):
     $ {command} 123 --project=example --region=us-central1
   """
 
-  _api_version = constants.BETA_VERSION
+  _api_version = constants.GA_VERSION
 
   @staticmethod
   def Args(parser):
@@ -56,3 +56,18 @@ class DescribePreGA(base.DescribeCommand):
           version=self._api_version
       ).Get(persistent_resource_ref.RelativeName())
       return response
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+class DescribePreGA(DescribeGA):
+  """Get detailed information about a PersistentResource with a given id.
+
+  ## EXAMPLES
+
+  To get the persistent resource with the PersistentResource id ``123'' under
+  project ``example'' in region ``us-central1'', run:
+
+    $ {command} 123 --project=example --region=us-central1
+  """
+
+  _api_version = constants.BETA_VERSION

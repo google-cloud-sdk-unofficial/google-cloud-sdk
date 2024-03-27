@@ -1,0 +1,35 @@
+- release_tracks: [ALPHA]
+
+  help_text:
+    brief: List all operations under a location.
+    description: |
+      List all operations under a project/folder/organization location.
+    examples: |
+      The following command lists all operations under project `sample-project` and
+      location `global`:
+
+      $ {command} --location=global --project=sample-project
+
+      The following command lists all operations under folder `sample-folder` and
+      location `global`:
+
+      $ {command} --location=global --folder=sample-folder
+
+      The following command lists all operations under organization `sample-organization` and
+      location `global`:
+
+      $ {command} --location=global --organization=sample-organization
+
+  request:
+    ALPHA:
+      api_version: v1alpha
+    collection:
+    - privilegedaccessmanager.projects.locations.operations
+    - privilegedaccessmanager.folders.locations.operations
+    - privilegedaccessmanager.organizations.locations.operations
+
+  arguments:
+    resource:
+      spec: !REF googlecloudsdk.command_lib.pam.resources:location
+      help_text: |
+        The location under which the operations are to be listed.

@@ -259,8 +259,15 @@ class ConnectToSerialPort(base.Command):
 
     # Determine the serial user, host tuple (remote)
     port = 'port={0}'.format(args.port)
-    constructed_username_list = [instance_ref.project, instance_ref.zone,
-                                 instance_ref.Name(), remote.user, port]
+    source = 'source={0}'.format('gcloud')
+    constructed_username_list = [
+        instance_ref.project,
+        instance_ref.zone,
+        instance_ref.Name(),
+        remote.user,
+        port,
+        source,
+    ]
     if args.extra_args:
       for k, v in args.extra_args.items():
         constructed_username_list.append('{0}={1}'.format(k, v))

@@ -21,6 +21,7 @@ from __future__ import unicode_literals
 from googlecloudsdk.api_lib.alloydb import api_util
 from googlecloudsdk.api_lib.alloydb import cluster_operations
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.alloydb import cluster_helper
 from googlecloudsdk.command_lib.alloydb import flags
 from googlecloudsdk.command_lib.kms import resource_args as kms_resource_args
 from googlecloudsdk.core import log
@@ -55,6 +56,7 @@ class CreateSecondary(base.CreateCommand):
     flags.AddCluster(parser)
     flags.AddPrimaryCluster(parser)
     flags.AddAllocatedIPRangeName(parser)
+    flags.AddContinuousBackupConfigFlagsForCreateSecondary(parser)
     kms_resource_args.AddKmsKeyResourceArg(
         parser,
         'cluster',
@@ -82,28 +84,11 @@ class CreateSecondary(base.CreateCommand):
         projectsId=properties.VALUES.core.project.GetOrFail,
         locationsId=args.region,
     )
-    cluster_resource = alloydb_messages.Cluster()
-    cluster_resource.secondaryConfig = alloydb_messages.SecondaryConfig(
-        primaryClusterName=args.primary_cluster
-    )
-    kms_key = flags.GetAndValidateKmsKeyName(args)
-    if kms_key:
-      encryption_config = alloydb_messages.EncryptionConfig()
-      encryption_config.kmsKeyName = kms_key
-      cluster_resource.encryptionConfig = encryption_config
 
-    if args.allocated_ip_range_name:
-      cluster_resource.networkConfig = alloydb_messages.NetworkConfig(
-          allocatedIpRange=args.allocated_ip_range_name
-      )
-
-    req = (
-        alloydb_messages.AlloydbProjectsLocationsClustersCreatesecondaryRequest(
-            cluster=cluster_resource,
-            clusterId=args.cluster,
-            parent=location_ref.RelativeName(),
-        )
+    req = cluster_helper.ConstructCreatesecondaryRequestFromArgs(
+        alloydb_messages, location_ref, args
     )
+
     op = alloydb_client.projects_locations_clusters.Createsecondary(req)
     op_ref = resources.REGISTRY.ParseRelativeName(
         op.name, collection='alloydb.projects.locations.operations'

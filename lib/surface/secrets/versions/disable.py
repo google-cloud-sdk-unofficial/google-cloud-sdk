@@ -25,7 +25,7 @@ from googlecloudsdk.command_lib.secrets import log as secrets_log
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
-class Create(base.DeleteCommand):
+class Disable(base.DeleteCommand):
   r"""Disable the version of the provided secret.
 
   Disable the version of the provided secret. It can be re-enabled with
@@ -56,7 +56,7 @@ class Create(base.DeleteCommand):
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
-class CreateBeta(Create):
+class DisableBeta(Disable):
   r"""Disable the version of the provided secret.
 
   Disable the version of the provided secret. It can be re-enabled with
@@ -75,14 +75,17 @@ class CreateBeta(Create):
 
   @staticmethod
   def Args(parser):
-    secrets_args.AddGlobalOrRegionalVersion(
+    secrets_args.AddVersion(
         parser, purpose='to disable', positional=True, required=True
     )
+    secrets_args.AddLocation(parser, purpose='to disable', hidden=True)
     secrets_args.AddVersionEtag(parser)
 
   def Run(self, args):
-    result = args.CONCEPTS.version.Parse()
-    version_ref = result.result
-    result = secrets_api.Versions().Disable(version_ref, etag=args.etag)
+    api_version = secrets_api.GetApiFromTrack(self.ReleaseTrack())
+    version_ref = args.CONCEPTS.version.Parse()
+    result = secrets_api.Versions(api_version=api_version).Disable(
+        version_ref, etag=args.etag, secret_location=args.location
+    )
     secrets_log.Versions().Disabled(version_ref)
     return result

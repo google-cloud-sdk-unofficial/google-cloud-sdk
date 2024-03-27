@@ -118,17 +118,22 @@ class AccessBeta(Access):
 
   @staticmethod
   def Args(parser):
-    secrets_args.AddGlobalOrRegionalVersionOrAlias(
-        parser, purpose='to access', positional=True, required=True)
+    secrets_args.AddVersionOrAlias(
+        parser, purpose='to access', positional=True, required=True
+    )
+    secrets_args.AddLocation(parser, purpose='to access secret', hidden=True)
     secrets_args.AddOutFile(parser)
     secrets_fmt.UseSecretData(parser)
 
   def Run(self, args):
-    result = args.CONCEPTS.version.Parse()
-    version_ref = result.result
-    version = secrets_api.Versions().Access(version_ref)
+    api_version = secrets_api.GetApiFromTrack(self.ReleaseTrack())
+    version_ref = args.CONCEPTS.version.Parse()
+    version = secrets_api.Versions(api_version=api_version).Access(
+        version_ref, secret_location=args.location
+    )
     if version.payload.dataCrc32c is None or crc32c.does_data_match_checksum(
-        version.payload.data, version.payload.dataCrc32c):
+        version.payload.data, version.payload.dataCrc32c
+    ):
       if args.IsSpecified('out_file'):
         if not args.out_file:
           raise calliope_exceptions.BadFileException(

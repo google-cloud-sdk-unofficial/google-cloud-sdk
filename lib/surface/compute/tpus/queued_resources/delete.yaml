@@ -8,9 +8,10 @@
 
         $ {parent_command} list
     examples: |
-      To delete a Queued Resource in zone `us-central1-b` and project `my-project`, run:
+      To delete a Queued Resource with ID `my-queued-resource` in zone `us-central1-b`
+      and project `my-project`, run:
 
-        $ {command} --zone=us-central1-b --project=my-project
+        $ {command} my-queued-resource --zone=us-central1-b --project=my-project
 
   request:
     collection: tpu.projects.locations.queuedResources

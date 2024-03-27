@@ -71,7 +71,7 @@ class Cp(base.Command):
 
   @classmethod
   def Args(cls, parser):
-    cp_command_util.add_cp_and_mv_flags(parser, cls.ReleaseTrack())
+    cp_command_util.add_cp_and_mv_flags(parser)
     cp_command_util.add_recursion_flag(parser)
     flags.add_per_object_retention_flags(parser)
 

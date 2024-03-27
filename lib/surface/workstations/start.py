@@ -38,10 +38,12 @@ class Start(base.Command):
       $ {command} WORKSTATION
   """
 
-  @staticmethod
-  def Args(parser):
+  @classmethod
+  def Args(cls, parser):
     workstations_flags.AddAsyncFlag(parser)
     workstations_flags.AddWorkstationResourceArg(parser)
+    if (cls.ReleaseTrack() != base.ReleaseTrack.GA):
+      workstations_flags.AddBoost(parser)
 
   def Collection(self):
     return 'workstations.projects.locations.workstationClusters.workstationConfigs.workstations'

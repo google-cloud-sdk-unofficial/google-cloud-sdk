@@ -133,7 +133,7 @@ class Create(base.Command):
   _support_enable_target_shape = True
   _support_confidential_compute_type = False
   _support_confidential_compute_type_tdx = False
-  _support_no_address_in_networking = False
+  _support_no_address_in_networking = True
   _support_max_count_per_zone = True
   _support_local_ssd_recovery_timeout = True
   _support_network_queue_count = True
@@ -141,6 +141,7 @@ class Create(base.Command):
   _support_custom_hostnames = False
   _support_specific_then_x_affinity = False
   _support_watchdog_timer = False
+  _support_per_interface_stack_type = False
 
   _log_async = False
 
@@ -169,6 +170,7 @@ class Create(base.Command):
         support_custom_hostnames=cls._support_custom_hostnames,
         support_specific_then_x_affinity=cls._support_specific_then_x_affinity,
         support_watchdog_timer=cls._support_watchdog_timer,
+        support_per_interface_stack_type=cls._support_per_interface_stack_type,
     )
     cls.AddSourceInstanceTemplate(parser)
 
@@ -352,7 +354,7 @@ class CreateBeta(Create):
   _support_enable_target_shape = True
   _support_confidential_compute_type = True
   _support_confidential_compute_type_tdx = True
-  _support_no_address_in_networking = False
+  _support_no_address_in_networking = True
   _support_max_count_per_zone = True
   _support_local_ssd_recovery_timeout = True
   _support_network_queue_count = True
@@ -361,6 +363,7 @@ class CreateBeta(Create):
   _support_custom_hostnames = True
   _support_specific_then_x_affinity = True
   _support_watchdog_timer = False
+  _support_per_interface_stack_type = False
 
   @classmethod
   def Args(cls, parser):
@@ -388,6 +391,7 @@ class CreateBeta(Create):
         support_custom_hostnames=cls._support_custom_hostnames,
         support_specific_then_x_affinity=cls._support_specific_then_x_affinity,
         support_watchdog_timer=cls._support_watchdog_timer,
+        support_per_interface_stack_type=cls._support_per_interface_stack_type,
     )
     cls.AddSourceInstanceTemplate(parser)
 
@@ -420,6 +424,7 @@ class CreateAlpha(Create):
   _support_specific_then_x_affinity = True
   _support_ipv6_only = True
   _support_watchdog_timer = True
+  _support_per_interface_stack_type = True
 
   @classmethod
   def Args(cls, parser):
@@ -448,6 +453,7 @@ class CreateAlpha(Create):
         support_specific_then_x_affinity=cls._support_specific_then_x_affinity,
         support_ipv6_only=cls._support_ipv6_only,
         support_watchdog_timer=cls._support_watchdog_timer,
+        support_per_interface_stack_type=cls._support_per_interface_stack_type,
     )
 
     cls.AddSourceInstanceTemplate(parser)

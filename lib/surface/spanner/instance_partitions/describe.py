@@ -45,7 +45,7 @@ class AlphaDescribe(base.DescribeCommand):
       parser: An argparse parser that you can use to add arguments that go on
         the command line after this command. Positional arguments are allowed.
     """
-    flags.InstancePartition().AddToParser(parser)
+    flags.InstancePartition(hidden=False).AddToParser(parser)
     flags.Instance(positional=False).AddToParser(parser)
 
   def Run(self, args):

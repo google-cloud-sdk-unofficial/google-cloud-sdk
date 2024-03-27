@@ -1,4 +1,4 @@
-- release_tracks: [ALPHA]
+- release_tracks: [ALPHA, GA]
   command_type: GENERIC
   hidden: true
   help_text:
@@ -19,6 +19,8 @@
     disable_resource_check: true
     api_version: v1alpha
     method: createIaCValidationReport
+    GA:
+      api_version: v1
 
   arguments:
     params:
@@ -43,4 +45,4 @@
     extract_resource_result: false
 
   output:
-    format: yaml
+    format: multi(response:format=yaml)

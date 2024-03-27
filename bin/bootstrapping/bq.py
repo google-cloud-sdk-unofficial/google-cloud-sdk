@@ -6,10 +6,11 @@
 
 from __future__ import absolute_import
 from __future__ import unicode_literals
+
 import os
+import re
 
 import bootstrapping
-
 from googlecloudsdk.api_lib.iamcredentials import util as iamcred_util
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.core import config
@@ -35,13 +36,19 @@ def main():
   bootstrapping.WarnAndExitOnBlockedCommand(argv, blocked_commands)
 
   cmd_args = [arg for arg in argv[1:] if not arg.startswith('-')]
+  use_google_auth = False
+  for arg in argv[1:]:
+    if re.fullmatch(r'--use_google_auth(=True)*', arg):
+      use_google_auth = True
+      break
   args = []
   print_logging = False
   if len(cmd_args) == 1 and cmd_args[0] == 'info':
     print_logging = True
   if cmd_args and cmd_args[0] not in ('version', 'help'):
     # Check for credentials only if they are needed.
-    store.IMPERSONATION_TOKEN_PROVIDER = iamcred_util.ImpersonationAccessTokenProvider(
+    store.IMPERSONATION_TOKEN_PROVIDER = (
+        iamcred_util.ImpersonationAccessTokenProvider()
     )
     creds = store.Load()  # Checks if there are active credentials
 
@@ -51,8 +58,11 @@ def main():
       print('Account:', account)
     adc_path = config.Paths().LegacyCredentialsAdcPath(account)
     single_store_path = config.Paths().LegacyCredentialsBqPath(account)
-
-    if bootstrapping.GetActiveImpersonateServiceAccount():
+    if use_google_auth:
+      if print_logging:
+        print('Using Google auth')
+      args = ['--use_google_auth']
+    elif bootstrapping.GetActiveImpersonateServiceAccount():
       if print_logging:
         print('Using Oauth')
       args = ['--oauth_access_token', creds.token]
@@ -90,8 +100,9 @@ def main():
         raise store.NoCredentialsForAccountException(account)
 
     use_client_cert = (
-        os.getenv('GOOGLE_API_USE_CLIENT_CERTIFICATE',
-                  'false').upper() == 'TRUE')
+        os.getenv('GOOGLE_API_USE_CLIENT_CERTIFICATE', 'false').upper()
+        == 'TRUE'
+    )
     if use_client_cert:
       if print_logging:
         print('Using MTLS')
@@ -106,10 +117,16 @@ def main():
   _MaybeAddOption(args, 'proxy_port', proxy_params.port.Get())
   _MaybeAddOption(args, 'proxy_username', proxy_params.username.Get())
   _MaybeAddOption(args, 'proxy_password', proxy_params.password.Get())
-  _MaybeAddOption(args, 'disable_ssl_validation',
-                  properties.VALUES.auth.disable_ssl_validation.GetBool())
-  _MaybeAddOption(args, 'ca_certificates_file',
-                  properties.VALUES.core.custom_ca_certs_file.Get())
+  _MaybeAddOption(
+      args,
+      'disable_ssl_validation',
+      properties.VALUES.auth.disable_ssl_validation.GetBool(),
+  )
+  _MaybeAddOption(
+      args,
+      'ca_certificates_file',
+      properties.VALUES.core.custom_ca_certs_file.Get(),
+  )
 
   if print_logging:
     print('Complete gcloud args:', args)

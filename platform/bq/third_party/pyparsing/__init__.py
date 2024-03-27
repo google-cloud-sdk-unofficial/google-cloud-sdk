@@ -85,7 +85,6 @@ import copy
 import sys
 import warnings
 import re
-import sre_constants
 import collections
 import pprint
 import traceback
@@ -2792,7 +2791,7 @@ class Regex(Token):
             try:
                 self.re = re.compile(self.pattern, self.flags)
                 self.reString = self.pattern
-            except sre_constants.error:
+            except re.error:
                 warnings.warn("invalid pattern (%s) passed to Regex" % pattern,
                     SyntaxWarning, stacklevel=2)
                 raise
@@ -2945,7 +2944,7 @@ class QuotedString(Token):
         try:
             self.re = re.compile(self.pattern, self.flags)
             self.reString = self.pattern
-        except sre_constants.error:
+        except re.error:
             warnings.warn("invalid pattern (%s) passed to Regex" % self.pattern,
                 SyntaxWarning, stacklevel=2)
             raise

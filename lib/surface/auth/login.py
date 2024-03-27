@@ -411,7 +411,7 @@ def LoginWithCredFileConfig(cred_config, scopes, project, activate, brief,
         account=account, scopes=scopes, prevent_refresh=True)
   except creds_exceptions.Error:
     exist_creds = None
-  if exist_creds:
+  if exist_creds and exist_creds.universe_domain == creds.universe_domain:
     message = textwrap.dedent("""
       You are already authenticated with '%s'.
       Do you wish to proceed and overwrite existing credentials?

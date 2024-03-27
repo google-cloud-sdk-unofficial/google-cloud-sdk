@@ -161,10 +161,10 @@ class ListBeta(List):
 
   @classmethod
   def Args(cls, parser):
-    _Args(parser, support_image_zone_flag=False)
+    _Args(parser, support_image_zone_flag=True)
 
   def Run(self, args):
-    return self._Run(args, support_image_zone_flag=False)
+    return self._Run(args, support_image_zone_flag=True)
 
   def AugmentImagesStatus(self, resources, images):
     """Modify images status based on OrgPolicy."""

@@ -24,19 +24,14 @@ from googlecloudsdk.api_lib.spanner import backup_operations
 from googlecloudsdk.api_lib.spanner import database_operations
 from googlecloudsdk.api_lib.spanner import instance_config_operations
 from googlecloudsdk.api_lib.spanner import instance_operations
+from googlecloudsdk.api_lib.spanner import instance_partition_operations
 from googlecloudsdk.api_lib.spanner import ssd_cache_operations
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions as c_exceptions
 from googlecloudsdk.command_lib.spanner import flags
 
-
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
-class List(base.ListCommand):
-  """List the Cloud Spanner operations on the given instance or database or instance configuration."""
-
-  detailed_help = {
-      'EXAMPLES':
-          textwrap.dedent("""\
+DETAILED_HELP = {
+    'EXAMPLES': textwrap.dedent("""\
         To list Cloud Spanner instance operations for an instance, run:
 
           $ {command} --instance=my-instance-id --type=INSTANCE
@@ -61,7 +56,14 @@ class List(base.ListCommand):
 
           $ {command} --instance=my-instance-id --backup=my-backup-id --type=BACKUP
         """),
-  }
+}
+
+
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
+class List(base.ListCommand):
+  """List the Cloud Spanner operations."""
+
+  detailed_help = DETAILED_HELP
 
   @staticmethod
   def Args(parser):
@@ -190,7 +192,14 @@ class List(base.ListCommand):
 class AlphaList(List):
   """List the Cloud Spanner operations with ALPHA features."""
 
-  __doc__ = List.__doc__
+  detailed_help = {
+      'EXAMPLES': DETAILED_HELP['EXAMPLES'] + textwrap.dedent("""\
+
+        To list Cloud Spanner instance partition operations for an instance partition, run:
+
+          $ {command} --instance=my-instance-id --instance-partition=my-partition-id --type=INSTANCE_PARTITION
+        """),
+  }
 
   @staticmethod
   def Args(parser):
@@ -207,7 +216,14 @@ class AlphaList(List):
             'Database change quorum operations are returned for all databases '
             'in the given instance (--instance only) or only those associated '
             'with the given database (--database).'
-        )
+        ),
+        'INSTANCE_PARTITION': (
+            'If only the instance is specified (--instance), returns all '
+            'instance partition operations associated with instance partitions '
+            'in the instance. When an instance partition is specified '
+            '(--instance-partition), only the instance partition operations '
+            'for the given instance partition are returned. '
+        ),
     }
 
     flags.AddCommonListArgs(parser, additional_choices)
@@ -216,6 +232,16 @@ class AlphaList(List):
         required=False,
         hidden=True,
         text='For SSD Cache operations, the SSD Cache ID.',
+    ).AddToParser(parser)
+
+    flags.InstancePartition(
+        positional=False,
+        required=False,
+        hidden=True,
+        text=(
+            'For instance partition operations, the name of the instance '
+            'partition the operation is executing on.'
+        ),
     ).AddToParser(parser)
 
   def Run(self, args):
@@ -252,4 +278,24 @@ class AlphaList(List):
         """)
       return ssd_cache_operations.List(args.ssd_cache, args.instance_config)
 
+    if args.type == 'INSTANCE_PARTITION':
+      # Update output table for instance partition operations.
+      # pylint:disable=protected-access
+      args.GetDisplayInfo().AddFormat("""
+            table(
+              name.basename():label=OPERATION_ID,
+              done():label=DONE,
+              metadata.'@type'.split('.').slice(-1:).join(),
+              metadata.instancePartition.name.split('/').slice(-1:).join():label=INSTANCE_PARTITION_ID,
+              metadata.startTime:label=START_TIME,
+              metadata.endTime:label=END_TIME
+            )
+          """)
+      if args.instance_partition:
+        return instance_partition_operations.ListGeneric(
+            args.instance_partition, args.instance
+        )
+      else:
+        # TODO(b/328253726): support ListInstancePartitionOperations API.
+        pass
     return super().Run(args)

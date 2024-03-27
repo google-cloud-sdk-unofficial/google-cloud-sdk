@@ -44,8 +44,8 @@ You may view the status of your PersistentResource create operation with the com
 """
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class CreatePreGA(base.CreateCommand):
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class CreateGA(base.CreateCommand):
   """Create a new persistent resource.
 
   This command will create a persistent resource on the users project to use
@@ -62,7 +62,7 @@ class CreatePreGA(base.CreateCommand):
     --display-name=example-resource
   """
 
-  _version = constants.BETA_VERSION
+  _version = constants.GA_VERSION
 
   @staticmethod
   def Args(parser):
@@ -137,3 +137,24 @@ class CreatePreGA(base.CreateCommand):
       )
       self._DisplayResult(response, project, region)
       return response
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+class CreatePreGA(CreateGA):
+  """Create a new persistent resource.
+
+  This command will create a persistent resource on the users project to use
+  with Vertex AI custom training jobs. Persistent resources remain active until
+  they are deleted by the user.
+
+  ## EXAMPLES
+
+  To create a PersistentResource under project ``example'' in region
+  ``us-central1'', run:
+
+    $ {command} --region=us-central1 --project=example
+    --resource-pool-spec=replica-count=1,machine-type='n1-standard-4'
+    --display-name=example-resource
+  """
+
+  _version = constants.BETA_VERSION

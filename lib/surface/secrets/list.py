@@ -49,6 +49,7 @@ class List(base.ListCommand):
     base.PAGE_SIZE_FLAG.SetDefault(parser, 100)
 
   def Run(self, args):
+    api_version = secrets_api.GetApiFromTrack(self.ReleaseTrack())
     project_ref = args.CONCEPTS.project.Parse()
     if not project_ref:
       raise exceptions.RequiredArgumentException(
@@ -65,7 +66,7 @@ class List(base.ListCommand):
       )
       _, server_filter = rewriter.Rewrite(args.filter, defaults=defaults)
 
-    return secrets_api.Secrets().ListWithPager(
+    return secrets_api.Secrets(api_version=api_version).ListWithPager(
         project_ref=project_ref, limit=args.limit, request_filter=server_filter
     )
 
@@ -94,13 +95,16 @@ class ListBeta(List):
     base.PAGE_SIZE_FLAG.SetDefault(parser, 100)
 
   def Run(self, args):
+    api_version = secrets_api.GetApiFromTrack(self.ReleaseTrack())
     project_ref = args.CONCEPTS.project.Parse()
     location_ref = args.CONCEPTS.location.Parse()
     if args.location:
       project_ref = location_ref
-      secrets_fmt.RegionalSecretTableUsingArgument(args)
+      secrets_fmt.RegionalSecretTableUsingArgument(
+          args, api_version=api_version
+      )
     else:
-      secrets_fmt.SecretTableUsingArgument(args)
+      secrets_fmt.SecretTableUsingArgument(args, api_version=api_version)
     if not project_ref:
       raise exceptions.RequiredArgumentException(
           'project',
@@ -116,6 +120,6 @@ class ListBeta(List):
       )
       _, server_filter = rewriter.Rewrite(args.filter, defaults=defaults)
 
-    return secrets_api.Secrets().ListWithPager(
+    return secrets_api.Secrets(api_version=api_version).ListWithPager(
         project_ref=project_ref, limit=args.limit, request_filter=server_filter
     )

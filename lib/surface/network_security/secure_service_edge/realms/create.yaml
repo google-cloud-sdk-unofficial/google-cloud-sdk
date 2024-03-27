@@ -26,6 +26,13 @@ arguments:
       enum_value: PALO_ALTO_PRISMA_ACCESS
     - arg_value: symantec-cloud-swg
       enum_value: SYMANTEC_CLOUD_SWG
+  - arg_name: environment
+    api_field: sSERealm.partnerSseEnvironment
+    help_text: |
+      Resource name of the partner environment which should support this realm, in the form
+      `projects/{partner_project}/locations/global/partnerSSEEnvironments/{partner_environment}`.
+      This is only valid for Symantec realms.
+      If not specified, the realm uses the default environment for the chosen security service.
   - arg_name: symantec-api-key
     api_field: sSERealm.symantecOptions.apiKey
     help_text: |

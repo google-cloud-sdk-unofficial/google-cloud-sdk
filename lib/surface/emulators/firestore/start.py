@@ -82,6 +82,12 @@ class Start(base.Command):
         '  `firestore-native` (default): start the emulator in Firestore '
         'Native\n'
         '  `datastore-mode`: start the emulator in Datastore Mode')
+    parser.add_argument(
+        '--use-firestore-in-datastore-mode',
+        default=False,
+        action='store_true',
+        hidden=True,
+        help='Runs the emulator in Datastore Mode.')
 
   def Run(self, args):
     if not args.host_port:

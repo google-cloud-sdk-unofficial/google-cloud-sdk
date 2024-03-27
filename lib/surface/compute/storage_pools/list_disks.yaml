@@ -33,5 +33,4 @@
         items.status,
         items.provisionedIops,
         items.provisionedThroughput,
-        items.sizeGb,
-        items.usedBytes.size(units_in="b", units_out="gb"):label=USED_GB)
+        items.sizeGb)

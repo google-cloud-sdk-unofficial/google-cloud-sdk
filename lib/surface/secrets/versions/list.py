@@ -47,11 +47,12 @@ class List(base.ListCommand):
         purpose='from which to list versions',
         positional=True,
         required=True)
-    secrets_fmt.UseVersionTable(parser)
     base.PAGE_SIZE_FLAG.SetDefault(parser, 100)
 
   def Run(self, args):
+    api_version = secrets_api.GetApiFromTrack(self.ReleaseTrack())
     secret_ref = args.CONCEPTS.secret.Parse()
+    secrets_fmt.SecretVersionTableUsingArgument(args, api_version=api_version)
     server_filter = None
     if args.filter:
       rewriter = resource_expr_rewrite.Backend()
@@ -60,8 +61,9 @@ class List(base.ListCommand):
           symbols=display_info.transforms, aliases=display_info.aliases)
       _, server_filter = rewriter.Rewrite(args.filter, defaults=defaults)
 
-    return secrets_api.Versions().ListWithPager(
-        secret_ref=secret_ref, limit=args.limit, request_filter=server_filter)
+    return secrets_api.Versions(api_version=api_version).ListWithPager(
+        secret_ref=secret_ref, limit=args.limit, request_filter=server_filter
+    )
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
@@ -80,25 +82,36 @@ class ListBeta(List):
 
   @staticmethod
   def Args(parser):
-    secrets_args.AddGlobalOrRegionalSecret(
+    secrets_args.AddSecret(
         parser,
         purpose='from which to list versions',
         positional=True,
         required=True,
     )
-    secrets_fmt.UseVersionTable(parser)
+    secrets_args.AddLocation(parser, purpose='to create secret', hidden=True)
     base.PAGE_SIZE_FLAG.SetDefault(parser, 100)
 
   def Run(self, args):
-    result = args.CONCEPTS.secret.Parse()
-    secret_ref = result.result
+    api_version = secrets_api.GetApiFromTrack(self.ReleaseTrack())
+    secret_ref = args.CONCEPTS.secret.Parse()
+    if args.location:
+      secrets_fmt.RegionalSecretVersionTableUsingArgument(
+          args, api_version=api_version
+      )
+    else:
+      secrets_fmt.SecretVersionTableUsingArgument(args, api_version=api_version)
     server_filter = None
     if args.filter:
       rewriter = resource_expr_rewrite.Backend()
       display_info = args.GetDisplayInfo()
       defaults = resource_projection_spec.ProjectionSpec(
-          symbols=display_info.transforms, aliases=display_info.aliases)
+          symbols=display_info.transforms, aliases=display_info.aliases
+      )
       _, server_filter = rewriter.Rewrite(args.filter, defaults=defaults)
 
-    return secrets_api.Versions().ListWithPager(
-        secret_ref=secret_ref, limit=args.limit, request_filter=server_filter)
+    return secrets_api.Versions(api_version=api_version).ListWithPager(
+        secret_ref=secret_ref,
+        limit=args.limit,
+        request_filter=server_filter,
+        secret_location=args.location,
+    )

@@ -1,5 +1,5 @@
 {
-  "CLI_VERSION": "2.1.1",
+  "CLI_VERSION": "2.1.2",
   "VERSION": "1",
   "capsule": "",
   "commands": {
@@ -177,7 +177,7 @@
       "release": "GA",
       "sections": {
         "DESCRIPTION": "Inserts rows in a table.\n\nInserts the records formatted as newline delimited\nJSON from file into the specified table. If file is\nnot specified, reads from stdin. If there were any\ninsert errors it prints the errors to stdout.\n",
-        "EXAMPLES": "bq insert dataset.table /tmp/mydata.json\necho '{\"a\":1, \"b\":2}' | bq insert dataset.table\n\nTemplate table examples: Insert to\ndataset.template_suffix table using dataset.template\ntable as its template.\nbq insert -x=_suffix dataset.table /tmp/mydata.json\n"
+        "EXAMPLES": "bq insert dataset.table /tmp/mydata.json\necho '{\"a\":1, \"b\":2}' | bq insert dataset.table\n\nTemplate table examples: Insert to\ndataset.table_suffix table using dataset.table table\nas its template.\nbq insert -x=_suffix dataset.table /tmp/mydata.json\n"
       }
     },
     "load": {

@@ -79,6 +79,7 @@ class Create(base.CreateCommand):
   _support_specific_then_x = True
   _support_ipv6_only = True
   _support_watchdog_timer = True
+  _support_per_interface_stack_type = True
 
   @classmethod
   def Args(cls, parser):
@@ -110,6 +111,7 @@ class Create(base.CreateCommand):
         support_specific_then_x_affinity=cls._support_specific_then_x,
         support_ipv6_only=cls._support_ipv6_only,
         support_watchdog_timer=cls._support_watchdog_timer,
+        support_per_interface_stack_type=cls._support_per_interface_stack_type,
     )
     cls.AddSourceInstanceTemplate(parser)
     instances_flags.AddSecureTagsArgs(parser)
@@ -214,7 +216,7 @@ class Create(base.CreateCommand):
         queuedResource=queued_resource,
         project=queued_resource_ref.project,
         zone=queued_resource_ref.zone,
-        requestId=uuid.uuid4().hex,
+        requestId=str(uuid.uuid4()),
     )
     if args.async_:
       response = client.apitools_client.zoneQueuedResources.Insert(request)

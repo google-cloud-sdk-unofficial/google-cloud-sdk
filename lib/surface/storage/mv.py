@@ -83,7 +83,7 @@ class Mv(base.Command):
 
   @classmethod
   def Args(cls, parser):
-    cp_command_util.add_cp_and_mv_flags(parser, cls.ReleaseTrack())
+    cp_command_util.add_cp_and_mv_flags(parser)
     flags.add_per_object_retention_flags(parser)
 
   def Run(self, args):

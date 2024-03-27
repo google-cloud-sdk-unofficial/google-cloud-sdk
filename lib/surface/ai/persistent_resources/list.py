@@ -28,8 +28,8 @@ from googlecloudsdk.command_lib.ai.persistent_resources import persistent_resour
 from googlecloudsdk.command_lib.ai.persistent_resources import validation
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class ListPreGA(base.ListCommand):
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class ListGA(base.ListCommand):
   """Lists the active persistent resources.
 
   ## EXAMPLES
@@ -39,7 +39,7 @@ class ListPreGA(base.ListCommand):
 
     $ {command} --project=example --region=us-central1
   """
-  _api_version = constants.BETA_VERSION
+  _api_version = constants.GA_VERSION
 
   @classmethod
   def Args(cls, parser):
@@ -84,3 +84,17 @@ class ListPreGA(base.ListCommand):
           (resource.resourceRuntimeSpec is None) or
           (resource.resourceRuntimeSpec.raySpec is None))]
       return response
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+class ListPreGA(ListGA):
+  """Lists the active persistent resources.
+
+  ## EXAMPLES
+
+  To list the persistent resources of project ``example'' in region
+  ``us-central1'', run:
+
+    $ {command} --project=example --region=us-central1
+  """
+  _api_version = constants.BETA_VERSION

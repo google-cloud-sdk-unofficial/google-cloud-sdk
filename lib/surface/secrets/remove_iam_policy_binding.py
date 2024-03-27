@@ -41,7 +41,12 @@ class RemoveIamPolicyBinding(base.Command):
 
   @staticmethod
   def Args(parser):
-    secrets_args.AddGlobalOrRegionalSecret(parser)
+    secrets_args.AddSecret(
+        parser, purpose='to remove iam policy', positional=True, required=True
+    )
+    secrets_args.AddLocation(
+        parser, purpose='to remove iam policy', hidden=True
+    )
 
     iam_util.AddArgsForRemoveIamPolicyBinding(parser, add_condition=True)
 
@@ -49,10 +54,17 @@ class RemoveIamPolicyBinding(base.Command):
       'Status code: {status_code}. {status_message}.'
   )
   def Run(self, args):
-    multi_ref = args.CONCEPTS.secret.Parse()
+    api_version = secrets_api.GetApiFromTrack(self.ReleaseTrack())
+    secret_ref = args.CONCEPTS.secret.Parse()
     condition = iam_util.ValidateAndExtractConditionMutexRole(args)
-    result = secrets_api.Secrets().RemoveIamPolicyBinding(
-        multi_ref, args.member, args.role, condition=condition
+    result = secrets_api.Secrets(
+        api_version=api_version
+    ).RemoveIamPolicyBinding(
+        secret_ref,
+        args.member,
+        args.role,
+        condition=condition,
+        secret_location=args.location,
     )
-    iam_util.LogSetIamPolicy(multi_ref.result.Name(), 'secret')
+    iam_util.LogSetIamPolicy(secret_ref.Name(), 'secret')
     return result

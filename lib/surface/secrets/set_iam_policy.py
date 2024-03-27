@@ -42,7 +42,10 @@ class SetIamPolicy(base.ListCommand):
 
   @staticmethod
   def Args(parser):
-    secrets_args.AddGlobalOrRegionalSecret(parser)
+    secrets_args.AddSecret(
+        parser, purpose='to set iam policy', positional=True, required=True
+    )
+    secrets_args.AddLocation(parser, purpose='to set iam policy', hidden=True)
     iam_util.AddArgForPolicyFile(parser)
     base.URI_FLAG.RemoveFromParser(parser)
     base.FILTER_FLAG.RemoveFromParser(parser)
@@ -51,11 +54,14 @@ class SetIamPolicy(base.ListCommand):
     base.SORT_BY_FLAG.RemoveFromParser(parser)
 
   def Run(self, args):
-    multi_ref = args.CONCEPTS.secret.Parse()
-    messages = secrets_api.GetMessages()
+    api_version = secrets_api.GetApiFromTrack(self.ReleaseTrack())
+    secret_ref = args.CONCEPTS.secret.Parse()
+    messages = secrets_api.GetMessages(version=api_version)
     policy, update_mask = iam_util.ParseYamlOrJsonPolicyFile(
         args.policy_file, messages.Policy
     )
-    result = secrets_api.Secrets().SetIamPolicy(multi_ref, policy, update_mask)
-    iam_util.LogSetIamPolicy(multi_ref.result.Name(), 'secret')
+    result = secrets_api.Secrets(api_version=api_version).SetIamPolicy(
+        secret_ref, policy, update_mask, secret_location=args.location
+    )
+    iam_util.LogSetIamPolicy(secret_ref.Name(), 'secret')
     return result

@@ -122,7 +122,7 @@ def PrintDryRunInfo(job):
               'tables.' % (num_bytes,))
 
 
-def GetJobIdFromFlags():
+def GetJobIdFromFlags() -> Optional[bq_client_utils.JobIdGenerator]:
   """Returns the job id or job generator from the flags."""
   if FLAGS.fingerprint_job_id and FLAGS.job_id:
     raise app.UsageError(

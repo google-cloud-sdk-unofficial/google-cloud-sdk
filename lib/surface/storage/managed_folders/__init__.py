@@ -22,6 +22,5 @@ from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class ManagedFolders(base.Group):
   """Manage Cloud Storage managed folders."""

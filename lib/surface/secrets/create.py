@@ -171,7 +171,8 @@ class Create(base.CreateCommand):
     map_util.AddMapSetFlag(annotations, 'annotations', 'Annotations', str, str)
 
   def Run(self, args):
-    messages = secrets_api.GetMessages()
+    api_version = secrets_api.GetApiFromTrack(self.ReleaseTrack())
+    messages = secrets_api.GetMessages(version=api_version)
     secret_ref = args.CONCEPTS.secret.Parse()
     data = secrets_util.ReadFileOrStdin(args.data_file)
     replication_policy_contents = secrets_util.ReadFileOrStdin(
@@ -267,7 +268,7 @@ class Create(base.CreateCommand):
       ]
 
     # Create the secret
-    response = secrets_api.Secrets().Create(
+    response = secrets_api.Secrets(api_version=api_version).Create(
         secret_ref,
         labels=labels,
         locations=locations,
@@ -278,12 +279,14 @@ class Create(base.CreateCommand):
         topics=args.topics,
         annotations=annotations,
         next_rotation_time=args.next_rotation_time,
-        rotation_period=args.rotation_period)
+        rotation_period=args.rotation_period,
+    )
 
     if data:
       data_crc32c = crc32c.get_crc32c(data)
-      version = secrets_api.Secrets().AddVersion(
-          secret_ref, data, crc32c.get_checksum(data_crc32c))
+      version = secrets_api.Secrets(api_version=api_version).AddVersion(
+          secret_ref, data, crc32c.get_checksum(data_crc32c)
+      )
       version_ref = secrets_args.ParseVersionRef(version.name)
       secrets_log.Versions().Created(version_ref)
     else:
@@ -293,7 +296,7 @@ class Create(base.CreateCommand):
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
-class CreateBeta(Create):
+class CreateBeta(base.CreateCommand):
   # pylint: disable=line-too-long
   r"""Create a new secret.
 
@@ -446,7 +449,10 @@ class CreateBeta(Create):
 
   @staticmethod
   def Args(parser):
-    secrets_args.AddGlobalOrRegionalSecret(parser)
+    secrets_args.AddSecret(
+        parser, purpose='to create', positional=True, required=True
+    )
+    secrets_args.AddLocation(parser, purpose='to create secret', hidden=True)
     secrets_args.AddDataFile(parser)
     secrets_args.AddCreateReplicationPolicyGroup(parser)
     labels_util.AddCreateLabelsFlags(parser)
@@ -459,10 +465,10 @@ class CreateBeta(Create):
     map_util.AddMapSetFlag(annotations, 'annotations', 'Annotations', str, str)
 
   def Run(self, args):
-    messages = secrets_api.GetMessages()
-    result = args.CONCEPTS.secret.Parse()
-    is_regional = result.concept_type.name == 'regional secret'
-    secret_ref = result.result
+    api_version = secrets_api.GetApiFromTrack(self.ReleaseTrack())
+    messages = secrets_api.GetMessages(version=api_version)
+    secret_ref = args.CONCEPTS.secret.Parse()
+    is_regional = args.location is not None
     data = secrets_util.ReadFileOrStdin(args.data_file)
     replication_policy_contents = secrets_util.ReadFileOrStdin(
         args.replication_policy_file, is_binary=False)
@@ -580,8 +586,12 @@ class CreateBeta(Create):
 
     if is_regional:
       replication_policy = None
+    if args.version_destroy_ttl:
+      version_destroy_ttl = f'{args.version_destroy_ttl}s'
+    else:
+      version_destroy_ttl = None
     # Create the secret
-    response = secrets_api.Secrets().Create(
+    response = secrets_api.Secrets(api_version=api_version).Create(
         secret_ref,
         labels=labels,
         locations=locations,
@@ -594,13 +604,18 @@ class CreateBeta(Create):
         topics=args.topics,
         annotations=annotations,
         regional_kms_key_name=args.regional_kms_key_name,
-        version_destroy_ttl=str(args.version_destroy_ttl) + 's',
+        version_destroy_ttl=version_destroy_ttl,
+        secret_location=args.location,
     )
 
     if data:
       data_crc32c = crc32c.get_crc32c(data)
-      version = secrets_api.Secrets().AddVersion(
-          secret_ref, data, crc32c.get_checksum(data_crc32c))
+      version = secrets_api.Secrets(api_version=api_version).AddVersion(
+          secret_ref,
+          data,
+          crc32c.get_checksum(data_crc32c),
+          secret_location=args.location,
+      )
       if is_regional:
         version_ref = secrets_args.ParseRegionalVersionRef(version.name)
       else:

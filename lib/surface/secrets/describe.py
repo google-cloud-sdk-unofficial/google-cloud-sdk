@@ -42,8 +42,9 @@ class Describe(base.DescribeCommand):
         parser, purpose='to describe', positional=True, required=True)
 
   def Run(self, args):
+    api_version = secrets_api.GetApiFromTrack(self.ReleaseTrack())
     secret_ref = args.CONCEPTS.secret.Parse()
-    secret = secrets_api.Secrets().Get(secret_ref)
+    secret = secrets_api.Secrets(api_version=api_version).Get(secret_ref)
     return secret
 
 
@@ -62,12 +63,15 @@ class DescribeBeta(Describe):
 
   @staticmethod
   def Args(parser):
-    secrets_args.AddGlobalOrRegionalSecret(
+    secrets_args.AddSecret(
         parser, purpose='to describe', positional=True, required=True
     )
+    secrets_args.AddLocation(parser, purpose='to describe', hidden=True)
 
   def Run(self, args):
-    result = args.CONCEPTS.secret.Parse()
-    secret_ref = result.result
-    secret = secrets_api.Secrets().Get(secret_ref)
+    api_version = secrets_api.GetApiFromTrack(self.ReleaseTrack())
+    secret_ref = args.CONCEPTS.secret.Parse()
+    secret = secrets_api.Secrets(api_version=api_version).Get(
+        secret_ref, secret_location=args.location
+    )
     return secret

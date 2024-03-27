@@ -97,7 +97,8 @@ class Update(base.UpdateCommand):
     map_util.AddMapClearFlag(annotations, 'annotations', 'Annotations')
 
   def _RunUpdate(self, original, args):
-    messages = secrets_api.GetMessages()
+    api_version = secrets_api.GetApiFromTrack(self.ReleaseTrack())
+    messages = secrets_api.GetMessages(version=api_version)
     secret_ref = args.CONCEPTS.secret.Parse()
 
     # Collect the list of update masks
@@ -190,7 +191,7 @@ class Update(base.UpdateCommand):
             messages.Secret.AnnotationsValue.AdditionalProperty(
                 key=annotation, value=metadata))
 
-    secret = secrets_api.Secrets().Update(
+    secret = secrets_api.Secrets(api_version=api_version).Update(
         secret_ref=secret_ref,
         labels=labels,
         version_aliases=version_aliases,
@@ -201,15 +202,17 @@ class Update(base.UpdateCommand):
         ttl=args.ttl,
         topics=topics,
         next_rotation_time=args.next_rotation_time,
-        rotation_period=args.rotation_period)
+        rotation_period=args.rotation_period,
+    )
     secrets_log.Secrets().Updated(secret_ref)
 
     return secret
 
   def Run(self, args):
+    api_version = secrets_api.GetApiFromTrack(self.ReleaseTrack())
     secret_ref = args.CONCEPTS.secret.Parse()
     # Attempt to get the secret
-    secret = secrets_api.Secrets().GetOrNone(secret_ref)
+    secret = secrets_api.Secrets(api_version=api_version).GetOrNone(secret_ref)
 
     # Secret does not exist
     if secret is None:
@@ -278,12 +281,17 @@ class UpdateBeta(Update):
 
   NO_CHANGES_MESSAGE = (
       'There are no changes to the secret [{secret}] for update')
+  REGIONAL_KMS_FLAG_MESSAGE = (
+      'The --regional-kms-key-name flag can only be used when update a'
+      ' regional secret with "--location".'
+  )
 
   @staticmethod
   def Args(parser):
-    secrets_args.AddGlobalOrRegionalSecret(
+    secrets_args.AddSecret(
         parser, purpose='to update', positional=True, required=True
     )
+    secrets_args.AddLocation(parser, purpose='to update secret', hidden=True)
     alias = parser.add_group(mutex=True, help='Version Aliases')
     annotations = parser.add_group(mutex=True, help='Annotations')
     labels_util.AddUpdateLabelsFlags(parser)
@@ -292,6 +300,7 @@ class UpdateBeta(Update):
     secrets_args.AddUpdateRotationGroup(parser)
     secrets_args.AddUpdateTopicsGroup(parser)
     secrets_args.AddUpdateVersionDestroyTTL(parser)
+    secrets_args.AddRegionalKmsKeyName(parser)
     map_util.AddMapUpdateFlag(alias, 'version-aliases', 'Version Aliases', str,
                               int)
     map_util.AddMapRemoveFlag(alias, 'version-aliases', 'Version Aliases', str)
@@ -302,9 +311,9 @@ class UpdateBeta(Update):
     map_util.AddMapClearFlag(annotations, 'annotations', 'Annotations')
 
   def _RunUpdate(self, original, args):
-    messages = secrets_api.GetMessages()
-    result = args.CONCEPTS.secret.Parse()
-    secret_ref = result.result
+    api_version = secrets_api.GetApiFromTrack(self.ReleaseTrack())
+    messages = secrets_api.GetMessages(version=api_version)
+    secret_ref = args.CONCEPTS.secret.Parse()
 
     # Collect the list of update masks
     update_mask = []
@@ -345,6 +354,9 @@ class UpdateBeta(Update):
     ):
       update_mask.append('version_destroy_ttl')
 
+    if args.IsSpecified('regional_kms_key_name'):
+      update_mask.append('customer_managed_encryption')
+
     # Validations
     if not update_mask:
       raise exceptions.MinimumArgumentException(
@@ -371,6 +383,7 @@ class UpdateBeta(Update):
               '--remove-rotation-schedule',
               '--version-destroy-ttl',
               '--remove-version-destroy-ttl',
+              '--regional-kms-key-name',
           ],
           self.NO_CHANGES_MESSAGE.format(secret=secret_ref.Name()),
       )
@@ -389,37 +402,57 @@ class UpdateBeta(Update):
     if 'version_aliases' in update_mask:
       if original.versionAliases is None:
         original.versionAliases = messages.Secret.VersionAliasesValue(
-            additionalProperties=[])
+            additionalProperties=[]
+        )
       version_aliases_dict = secrets_util.ApplyAliasUpdate(
-          args, original.versionAliases.additionalProperties)
+          args, original.versionAliases.additionalProperties
+      )
       for alias, version in version_aliases_dict.items():
         version_aliases.append(
             messages.Secret.VersionAliasesValue.AdditionalProperty(
-                key=alias, value=version))
+                key=alias, value=version
+            )
+        )
     annotations = []
     if 'annotations' in update_mask:
       annotations = []
       if original.annotations is None:
         original.annotations = messages.Secret.AnnotationsValue(
-            additionalProperties=[])
+            additionalProperties=[]
+        )
       annotations_dict = secrets_util.ApplyAnnotationsUpdate(
-          args, original.annotations.additionalProperties)
+          args, original.annotations.additionalProperties
+      )
       for annotation, metadata in annotations_dict.items():
         annotations.append(
             messages.Secret.AnnotationsValue.AdditionalProperty(
-                key=annotation, value=metadata))
+                key=annotation, value=metadata
+            )
+        )
     if args.expire_time:
       msg = self.CONFIRM_EXPIRE_TIME_MESSAGE.format(
-          expire_time=args.expire_time)
+          expire_time=args.expire_time
+      )
       console_io.PromptContinue(
-          msg, throw_if_unattended=True, cancel_on_no=True)
+          msg, throw_if_unattended=True, cancel_on_no=True
+      )
 
     if args.ttl:
       msg = self.CONFIRM_TTL_MESSAGE.format(ttl=args.ttl)
       console_io.PromptContinue(
-          msg, throw_if_unattended=True, cancel_on_no=True)
+          msg, throw_if_unattended=True, cancel_on_no=True
+      )
+    if args.version_destroy_ttl:
+      version_destroy_ttl = f'{args.version_destroy_ttl}s'
+    else:
+      version_destroy_ttl = None
 
-    secret = secrets_api.Secrets().Update(
+    if not args.location and args.regional_kms_key_name:
+      raise exceptions.RequiredArgumentException(
+          'location', self.REGIONAL_KMS_FLAG_MESSAGE
+      )
+
+    secret = secrets_api.Secrets(api_version=api_version).Update(
         secret_ref=secret_ref,
         labels=labels,
         update_mask=update_mask,
@@ -431,22 +464,26 @@ class UpdateBeta(Update):
         topics=topics,
         next_rotation_time=args.next_rotation_time,
         rotation_period=args.rotation_period,
-        version_destroy_ttl=str(args.version_destroy_ttl) + 's',
+        version_destroy_ttl=version_destroy_ttl,
+        regional_kms_key_name=args.regional_kms_key_name,
+        secret_location=args.location,
     )
     secrets_log.Secrets().Updated(secret_ref)
 
     return secret
 
   def Run(self, args):
-    result = args.CONCEPTS.secret.Parse()
-    secret_ref = result.result
-    secret = secrets_api.Secrets().GetOrNone(secret_ref)
+    api_version = secrets_api.GetApiFromTrack(self.ReleaseTrack())
+    secret_ref = args.CONCEPTS.secret.Parse()
+    secret = secrets_api.Secrets(api_version=api_version).GetOrNone(
+        secret_ref, secret_location=args.location
+    )
 
     # Secret does not exist
     if secret is None:
       raise exceptions.InvalidArgumentException(
-          'secret',
-          self.SECRET_MISSING_MESSAGE.format(secret=secret_ref.Name()))
+          'secret', self.SECRET_MISSING_MESSAGE.format(secret=secret_ref.Name())
+      )
 
     # The secret exists, update it
     return self._RunUpdate(secret, args)

@@ -53,6 +53,7 @@ class Set(base.UpdateCommand):
     secrets_args.AddReplicationPolicyFile(parser, required=True)
 
   def Run(self, args):
+    api_version = secrets_api.GetApiFromTrack(self.ReleaseTrack())
     replication_policy_contents = secrets_util.ReadFileOrStdin(
         args.replication_policy_file, is_binary=False)
 
@@ -64,7 +65,7 @@ class Set(base.UpdateCommand):
         replication_policy_contents)
 
     # Attempt to get the secret
-    secret = secrets_api.Secrets().GetOrNone(secret_ref)
+    secret = secrets_api.Secrets(api_version=api_version).GetOrNone(secret_ref)
 
     # Secret does not exist
     if secret is None:
@@ -72,8 +73,9 @@ class Set(base.UpdateCommand):
           'secret',
           self.SECRET_MISSING_MESSAGE.format(secret=secret_ref.Name()))
 
-    secret = secrets_api.Secrets().SetReplication(secret_ref, policy, locations,
-                                                  kms_keys)
+    secret = secrets_api.Secrets(api_version=api_version).SetReplication(
+        secret_ref, policy, locations, kms_keys
+    )
     secrets_log.Secrets().UpdatedReplication(secret_ref)
 
     return secret

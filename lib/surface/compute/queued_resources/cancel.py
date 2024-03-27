@@ -67,7 +67,7 @@ class Cancel(base.Command):
               project=queued_resource_ref.project,
               zone=queued_resource_ref.zone,
               queuedResource=queued_resource_ref.queuedResource,
-              requestId=uuid.uuid4().hex,
+              requestId=str(uuid.uuid4()),
           ),
       ))
     return client.MakeRequests(requests)

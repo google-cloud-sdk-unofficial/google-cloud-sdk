@@ -40,18 +40,21 @@ class ListBeta(base.ListCommand):
 
   @staticmethod
   def Args(parser):
+    api_version = secrets_api.GetApiFromTrack(base.ReleaseTrack.BETA)
     secrets_args.AddProject(parser)
-    secrets_fmt.UseLocationTable(parser)
+    secrets_fmt.UseLocationTable(parser, api_version=api_version)
 
   def Run(self, args):
+    api_version = secrets_api.GetApiFromTrack(self.ReleaseTrack())
     project_ref = args.CONCEPTS.project.Parse()
     if not project_ref:
       raise exceptions.RequiredArgumentException(
           'project',
           'Please set a project with "--project" flag or "gcloud config set project <project_id>".'
       )
-    return secrets_api.Locations().ListWithPager(
-        project_ref=project_ref, limit=args.limit)
+    return secrets_api.Locations(api_version=api_version).ListWithPager(
+        project_ref=project_ref, limit=args.limit
+    )
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
@@ -69,15 +72,18 @@ class List(base.ListCommand):
 
   @staticmethod
   def Args(parser):
+    api_version = secrets_api.GetApiFromTrack(base.ReleaseTrack.GA)
     secrets_args.AddProject(parser)
-    secrets_fmt.UseLocationTable(parser)
+    secrets_fmt.UseLocationTable(parser, api_version)
 
   def Run(self, args):
+    api_version = secrets_api.GetApiFromTrack(self.ReleaseTrack())
     project_ref = args.CONCEPTS.project.Parse()
     if not project_ref:
       raise exceptions.RequiredArgumentException(
           'project',
           'Please set a project with "--project" flag or "gcloud config set project <project_id>".'
       )
-    return secrets_api.Locations().ListWithPager(
-        project_ref=project_ref, limit=args.limit)
+    return secrets_api.Locations(api_version=api_version).ListWithPager(
+        project_ref=project_ref, limit=args.limit
+    )

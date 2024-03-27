@@ -60,6 +60,7 @@ def _CommonArgs(parser):
   )
 
   flags.AddRegionFlag(parser)
+  flags.AddServiceAccountFlag(parser)
   flags.AddGcsSourceStagingDirFlag(parser)
   flags.AddGcsLogDirFlag(parser)
   flags.AddTimeoutFlag(parser)
@@ -220,11 +221,12 @@ class Submit(base.CreateCommand):
         args.git_source_revision,
         args.dir,
         args.revision,
+        args.service_account,
         args.pack,
         False,
         args.default_buckets_behavior,
         skip_set_source=True,
-        client_tag='gcloudsubmits'
+        client_tag='gcloudsubmits',
     )
 
     build_region = submit_util.DetermineBuildRegion(build_config, build_region)
@@ -255,7 +257,8 @@ class Submit(base.CreateCommand):
         build_config,
         build_region=build_region,
         support_gcl=self._support_gcl,
-        suppress_logs=args.suppress_logs)
+        suppress_logs=args.suppress_logs,
+    )
     return build
 
 
@@ -324,7 +327,7 @@ class SubmitAlpha(SubmitBeta):
         False,
         args.default_buckets_behavior,
         skip_set_source=True,
-        client_tag='gcloudsubmits'
+        client_tag='gcloudsubmits',
     )
 
     build_region = submit_util.DetermineBuildRegion(build_config, build_region)
@@ -354,5 +357,6 @@ class SubmitAlpha(SubmitBeta):
         args.async_,
         build_config,
         build_region=build_region,
-        support_gcl=True)
+        support_gcl=True,
+    )
     return build

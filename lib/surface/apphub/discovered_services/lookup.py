@@ -40,17 +40,14 @@ class LookupGA(base.DescribeCommand):
   @staticmethod
   def Args(parser):
     flags.AddLookupDiscoveredServiceFlags(parser)
-    parser.display_info.AddUriFunc(
-        lambda x: x
-    )  # TODO(b/327027327): Delete this.
 
   def Run(self, args):
     """Run the lookup command."""
-    client = apis.DiscoveredServicesClient(
-        release_track=base.ReleaseTrack.GA
-    )
+    client = apis.DiscoveredServicesClient(release_track=base.ReleaseTrack.GA)
     location_ref = args.CONCEPTS.location.Parse()
-    return client.Lookup(parent=location_ref.RelativeName(), uri=args.uri)
+    return client.Lookup(
+        parent=location_ref.RelativeName(), uri=args.resource_uri
+    )
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -62,9 +59,6 @@ class LookupAlpha(base.DescribeCommand):
   @staticmethod
   def Args(parser):
     flags.AddLookupDiscoveredServiceFlags(parser)
-    parser.display_info.AddUriFunc(
-        lambda x: x
-    )  # TODO(b/327027327): Delete this.
 
   def Run(self, args):
     """Run the lookup command."""
@@ -72,4 +66,6 @@ class LookupAlpha(base.DescribeCommand):
         release_track=base.ReleaseTrack.ALPHA
     )
     location_ref = args.CONCEPTS.location.Parse()
-    return client.Lookup(parent=location_ref.RelativeName(), uri=args.uri)
+    return client.Lookup(
+        parent=location_ref.RelativeName(), uri=args.resource_uri
+    )

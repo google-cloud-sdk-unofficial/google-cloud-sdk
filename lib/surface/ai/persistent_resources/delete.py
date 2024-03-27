@@ -35,8 +35,8 @@ You may view the status of your persistent resource with the command
 """
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class CancelPreGA(base.SilentCommand):
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class DeleteGA(base.SilentCommand):
   """Delete an active Persistent Resource.
 
   If the Persistent Resource is not in the active state,
@@ -49,7 +49,7 @@ class CancelPreGA(base.SilentCommand):
 
     $ {command} 123 --project=example --region=us-central1
   """
-  _api_version = constants.BETA_VERSION
+  _api_version = constants.GA_VERSION
 
   @staticmethod
   def Args(parser):
@@ -75,3 +75,20 @@ class CancelPreGA(base.SilentCommand):
           _PERSISTENT_RESOURCE_DELETE_DISPLAY_MESSAGE.format(
               name=resource_name, command_prefix=self._CommandPrefix()))
       return response
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+class DeletePreGA(DeleteGA):
+  """Delete an active Persistent Resource.
+
+  If the Persistent Resource is not in the active state,
+  the command will not perform any operation.
+
+  ## EXAMPLES
+
+  To delete a persistent resource ``123'' under project ``example'' in region
+  ``us-central1'', run:
+
+    $ {command} 123 --project=example --region=us-central1
+  """
+  _api_version = constants.BETA_VERSION

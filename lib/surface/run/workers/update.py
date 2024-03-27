@@ -113,6 +113,7 @@ class Update(base.Command):
     flags.AddGeneralAnnotationFlags(parser)
     flags.AddServiceAccountFlag(parser)
     flags.AddClientNameAndVersionFlags(parser)
+    flags.AddNoPromoteFlag(parser)
     concept_parsers.ConceptParser([worker_presentation]).AddToParser(parser)
     # No output by default, can be overridden by --format
     parser.display_info.AddFormat('none')

@@ -48,7 +48,7 @@ class Describe(base.DescribeCommand):
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
-class DescribeBeta(Describe):
+class DescribeBeta(base.DescribeCommand):
   r"""Describe metadata about the secret version.
 
   Describe a secret version's metadata. This command does not include the
@@ -65,3 +65,11 @@ class DescribeBeta(Describe):
   def Args(parser):
     secrets_args.AddVersionOrAlias(
         parser, purpose='to describe', positional=True, required=True)
+    secrets_args.AddLocation(parser, purpose='to describe secret', hidden=True)
+
+  def Run(self, args):
+    api_version = secrets_api.GetApiFromTrack(self.ReleaseTrack())
+    version_ref = args.CONCEPTS.version.Parse()
+    return secrets_api.Versions(api_version=api_version).Get(
+        version_ref, secret_location=args.location
+    )

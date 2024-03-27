@@ -41,9 +41,15 @@ class GetIamPolicy(base.ListCommand):
 
   @staticmethod
   def Args(parser):
-    secrets_args.AddGlobalOrRegionalSecret(parser)
+    secrets_args.AddSecret(
+        parser, purpose='to get iam policy', positional=True, required=True
+    )
+    secrets_args.AddLocation(parser, purpose='to get iam policy', hidden=True)
     base.URI_FLAG.RemoveFromParser(parser)
 
   def Run(self, args):
+    api_version = secrets_api.GetApiFromTrack(self.ReleaseTrack())
     multi_ref = args.CONCEPTS.secret.Parse()
-    return secrets_api.Secrets().GetIamPolicy(multi_ref)
+    return secrets_api.Secrets(api_version=api_version).GetIamPolicy(
+        multi_ref, secret_location=args.location
+    )

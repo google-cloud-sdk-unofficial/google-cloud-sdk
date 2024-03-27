@@ -215,6 +215,5 @@ class CreateFirestoreAPIWithCmekConfig(CreateFirestoreAPI):
         How to retrive this resource ID is listed at https://cloud.google.com/kms/docs/getting-resource-ids#getting_the_id_for_a_key_and_version.
         """,
         type=str,
-        hidden=True,
         default=None,
     )

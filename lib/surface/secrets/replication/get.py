@@ -21,6 +21,8 @@ from __future__ import unicode_literals
 from googlecloudsdk.api_lib.secrets import api as secrets_api
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
+from googlecloudsdk.calliope import parser_arguments
+from googlecloudsdk.calliope import parser_extensions
 from googlecloudsdk.command_lib.secrets import args as secrets_args
 
 
@@ -42,13 +44,14 @@ class Get(base.DescribeCommand):
       'Please use the create command to create a new secret.')
 
   @staticmethod
-  def Args(parser):
+  def Args(parser: parser_arguments.ArgumentInterceptor):
     secrets_args.AddSecret(
         parser, purpose='to describe', positional=True, required=True)
 
-  def Run(self, args):
+  def Run(self, args: parser_extensions.Namespace):
+    api_version = secrets_api.GetApiFromTrack(self.ReleaseTrack())
     secret_ref = args.CONCEPTS.secret.Parse()
-    secret = secrets_api.Secrets().GetOrNone(secret_ref)
+    secret = secrets_api.Secrets(api_version=api_version).GetOrNone(secret_ref)
 
     # Secret does not exist
     if secret is None:

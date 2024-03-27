@@ -52,9 +52,11 @@ class AlphaUpdate(base.Command):
       parser: An argparse parser that you can use to add arguments that go on
         the command line after this command. Positional arguments are allowed.
     """
-    flags.InstancePartition().AddToParser(parser)
+    flags.InstancePartition(hidden=False).AddToParser(parser)
     flags.Instance(positional=False).AddToParser(parser)
-    flags.Description(required=False).AddToParser(parser)
+    flags.Description(
+        required=False, text='Description of the instance partition.'
+    ).AddToParser(parser)
     base.ASYNC_FLAG.AddToParser(parser)
     flags.AddCapacityArgsForInstancePartition(parser=parser)
 

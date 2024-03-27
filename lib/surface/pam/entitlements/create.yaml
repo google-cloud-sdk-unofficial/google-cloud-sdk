@@ -1,0 +1,47 @@
+- release_tracks: [ALPHA]
+
+  help_text:
+    brief: Create a new entitlement.
+    description: Create a new entitlement under a project/folder/organization and a location.
+    examples: |
+      The following command creates a new entitlement with the name sample-entitlement, under the
+      project sample-project, location global and the entitlement body present in the
+      sample-entitlement.yaml file:
+
+      $ {command} sample-entitlement --project sample-project --location global
+      --entitlement-file sample-entitlement.yaml
+
+  request:
+    ALPHA:
+      api_version: v1alpha
+    collection:
+    - privilegedaccessmanager.projects.locations.entitlements
+    - privilegedaccessmanager.folders.locations.entitlements
+    - privilegedaccessmanager.organizations.locations.entitlements
+    modify_request_hooks:
+    - googlecloudsdk.command_lib.pam.util:ParseEntitlementNameIntoCreateEntitlementRequest
+
+  arguments:
+    resource:
+      spec: !REF googlecloudsdk.command_lib.pam.resources:entitlement
+      help_text: |
+        The name of the entitlement to create.
+    params:
+    - arg_name: entitlement-file
+      api_field: entitlement
+      required: true
+      type: "googlecloudsdk.calliope.arg_parsers:FileContents:"
+      processor: googlecloudsdk.core.yaml:load
+      help_text: |
+        YAML file containing the body of the entitlement to be created.
+
+  async:
+    ALPHA:
+      api_version: v1alpha
+    collection:
+    - privilegedaccessmanager.projects.locations.operations
+    - privilegedaccessmanager.folders.locations.operations
+    - privilegedaccessmanager.organizations.locations.operations
+
+  output:
+    format: yaml

@@ -208,7 +208,7 @@ class Ls(base.Command):
         fetch_encrypted_object_hashes=args.fetch_encrypted_object_hashes,
         halt_on_empty_response=not getattr(args, 'exhaustive', False),
         include_etag=args.etag,
-        include_managed_folders=self.ReleaseTrack() is base.ReleaseTrack.ALPHA,
+        include_managed_folders=True,
         next_page_token=getattr(args, 'next_page_token', None),
         object_state=flags.get_object_state_from_flags(args),
         readable_sizes=args.readable_sizes,

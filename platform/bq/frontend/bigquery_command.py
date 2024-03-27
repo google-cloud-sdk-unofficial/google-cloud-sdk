@@ -60,7 +60,7 @@ class NewCmd(appcommands.Cmd):
       self.__doc__ = self.RunWithArgs.__doc__
     elif (
         hasattr(self.Run, '__func__')
-        and self.Run.__func__ is NewCmd.Run.__func__
+        and self.Run.__func__ is NewCmd.Run.__func__  # pytype: disable=attribute-error
     ):
       raise appcommands.AppCommandsError(
           'Subclasses of NewCmd must override Run or RunWithArgs')

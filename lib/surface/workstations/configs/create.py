@@ -85,8 +85,9 @@ class Create(base.CreateCommand):
     workstations_flags.AddLabelsField(parser)
     workstations_flags.AddReplicaZones(parser)
     workstations_flags.AddEphemeralDirectory(parser)
+    workstations_flags.AddAcceleratorFields(parser)
     if (cls.ReleaseTrack() != base.ReleaseTrack.GA):
-      workstations_flags.AddAcceleratorFields(parser)
+      workstations_flags.AddBoostConfigs(parser)
 
   def Collection(self):
     return 'workstations.projects.locations.workstationClusters.workstationConfigs'

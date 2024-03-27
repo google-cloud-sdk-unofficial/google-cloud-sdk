@@ -1,0 +1,41 @@
+- release_tracks: [ALPHA]
+
+  help_text:
+    brief: Delete an entitlement
+    description: |
+      Delete an entitlement along with all grants under it.
+
+      This command can fail for the following reasons:
+        * There are non-terminal grants under the entitlement.
+    examples: |
+      The following command deletes an entitlement with a given name:
+
+      $ {command} entitlement-name
+
+  request:
+    ALPHA:
+      api_version: v1alpha
+    collection:
+    - privilegedaccessmanager.projects.locations.entitlements
+    - privilegedaccessmanager.folders.locations.entitlements
+    - privilegedaccessmanager.organizations.locations.entitlements
+    modify_request_hooks:
+    - googlecloudsdk.command_lib.pam.util:SetForceFieldInDeleteEntitlementRequest
+
+  arguments:
+    resource:
+      spec: !REF googlecloudsdk.command_lib.pam.resources:entitlement
+      help_text: |
+        The name of the entitlement to delete.
+
+  async:
+    ALPHA:
+      api_version: v1alpha
+    collection:
+    - privilegedaccessmanager.projects.locations.operations
+    - privilegedaccessmanager.folders.locations.operations
+    - privilegedaccessmanager.organizations.locations.operations
+
+  input:
+    confirmation_prompt: |
+      All grants associated with the entitlement will also be deleted upon deleting the entitlement.

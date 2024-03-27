@@ -48,9 +48,18 @@ class AlphaCreate(base.CreateCommand):
       parser: An argparse parser that you can use to add arguments that go on
         the command line after this command. Positional arguments are allowed.
     """
-    flags.InstancePartition().AddToParser(parser)
-    flags.Config().AddToParser(parser)
-    flags.Description().AddToParser(parser)
+    flags.InstancePartition(hidden=False).AddToParser(parser)
+    flags.Config(
+        text=(
+            'Instance configuration defines the geographic placement and'
+            ' replication used by the instance partition. Available'
+            ' configurations can be found by running "gcloud spanner'
+            ' instance-configs list"'
+        )
+    ).AddToParser(parser)
+    flags.Description(
+        text='Description of the instance partition.'
+    ).AddToParser(parser)
     flags.Instance(positional=False).AddToParser(parser)
     flags.AddCapacityArgsForInstancePartition(parser=parser)
     base.ASYNC_FLAG.AddToParser(parser)

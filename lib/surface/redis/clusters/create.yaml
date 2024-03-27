@@ -97,6 +97,21 @@
       help_text: |
         Enable Delete Protection on the Redis Cluster to prevent accidental deletions.
         Use --deletion-protection to enabled and --no-deletion-protection to disable.
+    - arg_name: redis-config
+      api_field: cluster.redisConfigs.additionalProperties
+      metavar: KEY=VALUE
+      help_text: |
+        A list of Redis config KEY=VALUE pairs to set on the Redis Cluster according to
+        http://redis.io/topics/config. Currently the supported Redis configs are:
+
+          maxmemory-clients, maxmemory, maxmemory-policy, notify-keyspace-events,
+          slowlog-log-slower-than, maxclients.
+      type:
+        arg_dict:
+          flatten: true
+          spec:
+          - api_field: key
+          - api_field: value
     - arg_name: zone-distribution-mode
       api_field: cluster.zoneDistributionConfig.mode
       release_tracks: [ALPHA, BETA]
@@ -117,6 +132,59 @@
       help_text: |
         The zone used to allocate the cluster nodes. Applicable only if the zone-distribution-mode
         is set to single-zone.
+    - arg_name: persistence-mode
+      api_field: cluster.persistenceConfig.mode
+      help_text: |
+        Operation mode for persistence.
+      choices:
+      - enum_value: DISABLED
+        arg_value: disabled
+        help_text: Persistence mode is disabled
+      - enum_value: RDB
+        arg_value: RDB
+        help_text: RDB-based persistence
+      - enum_value: AOF
+        arg_value: AOF
+        help_text: AOF-based persistence
+    - arg_name: rdb-snapshot-period
+      api_field: cluster.persistenceConfig.rdbConfig.rdbSnapshotPeriod
+      help_text: |
+        Attempted period between RDB snapshots.
+      choices:
+      - enum_value: ONE_HOUR
+        arg_value: 1h
+        help_text: 1 hour
+      - enum_value: SIX_HOURS
+        arg_value: 6h
+        help_text: 6 hours
+      - enum_value: TWELVE_HOURS
+        arg_value: 12h
+        help_text: 12 hours
+      - enum_value: TWENTY_FOUR_HOURS
+        arg_value: 24h
+        help_text: (default) 24 hours
+    - arg_name: rdb-snapshot-start-time
+      api_field: cluster.persistenceConfig.rdbConfig.rdbSnapshotStartTime
+      help_text: |
+        Date and time of the first snapshot in the ISO 1801 format, and alignment time for future snapshots. For example, 2024-01-01T01:00:00Z.
+        If not specified, the current time will be used.
+    - arg_name: aof-append-fsync
+      api_field: cluster.persistenceConfig.aofConfig.appendFsync
+      help_text: |
+        Fsync configuration.
+      choices:
+      - enum_value: NO  # yamllint disable-line rule:truthy
+        arg_value: no  # yamllint disable-line rule:truthy
+        help_text: |
+          Redis will not explicitly call fsync.
+      - enum_value: EVERYSEC
+        arg_value: everysec
+        help_text: |
+          (default) Redis explicitly calls fsync every second.
+      - enum_value: ALWAYS
+        arg_value: always
+        help_text: |
+          Redis explicitly calls fsync for every write command.
 
   async:
     collection: redis.projects.locations.operations

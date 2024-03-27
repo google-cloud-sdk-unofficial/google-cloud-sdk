@@ -96,9 +96,11 @@ class Update(base.UpdateCommand):
     secrets_args.AddUpdateReplicationGroup(parser)
 
   def _RemoveCmek(self, secret_ref, secret):
+    api_version = secrets_api.GetApiFromTrack(self.ReleaseTrack())
     if secret.replication.automatic:
-      updated_secret = secrets_api.Secrets().SetReplication(
-          secret_ref, 'automatic', [], [])
+      updated_secret = secrets_api.Secrets(
+          api_version=api_version
+      ).SetReplication(secret_ref, 'automatic', [], [])
       secrets_log.Secrets().UpdatedReplication(secret_ref)
       return updated_secret
     if secret.replication.userManaged and secret.replication.userManaged.replicas:
@@ -108,20 +110,23 @@ class Update(base.UpdateCommand):
           raise exceptions.MisconfiguredReplicationError(
               self.MISCONFIGURED_REPLICATION_MESSAGE)
         locations.append(replica.location)
-      updated_secret = secrets_api.Secrets().SetReplication(
-          secret_ref, 'user-managed', locations, [])
+      updated_secret = secrets_api.Secrets(
+          api_version=api_version
+      ).SetReplication(secret_ref, 'user-managed', locations, [])
       secrets_log.Secrets().UpdatedReplication(secret_ref)
       return updated_secret
     raise exceptions.MisconfiguredReplicationError(
         self.MISCONFIGURED_REPLICATION_MESSAGE)
 
   def _SetKmsKey(self, secret_ref, secret, kms_key, location):
+    api_version = secrets_api.GetApiFromTrack(self.ReleaseTrack())
     if secret.replication.automatic:
       if location:
         raise calliope_exceptions.BadArgumentException(
             'location', self.LOCATION_AND_AUTOMATIC_MESSAGE)
-      updated_secret = secrets_api.Secrets().SetReplication(
-          secret_ref, 'automatic', [], [kms_key])
+      updated_secret = secrets_api.Secrets(
+          api_version=api_version
+      ).SetReplication(secret_ref, 'automatic', [], [kms_key])
       secrets_log.Secrets().UpdatedReplication(secret_ref)
       return updated_secret
     if secret.replication.userManaged and secret.replication.userManaged.replicas:
@@ -147,14 +152,16 @@ class Update(base.UpdateCommand):
       if len(locations) != len(keys):
         raise exceptions.MisconfiguredEncryptionError(
             self.PARTIALLY_CMEK_MESSAGE)
-      updated_secret = secrets_api.Secrets().SetReplication(
-          secret_ref, 'user-managed', locations, keys)
+      updated_secret = secrets_api.Secrets(
+          api_version=api_version
+      ).SetReplication(secret_ref, 'user-managed', locations, keys)
       secrets_log.Secrets().UpdatedReplication(secret_ref)
       return updated_secret
     raise exceptions.MisconfiguredReplicationError(
         self.MISCONFIGURED_REPLICATION_MESSAGE)
 
   def Run(self, args):
+    api_version = secrets_api.GetApiFromTrack(self.ReleaseTrack())
     secret_ref = args.CONCEPTS.secret.Parse()
 
     if not args.remove_cmek and not args.set_kms_key:
@@ -171,7 +178,7 @@ class Update(base.UpdateCommand):
     # a single replica.
 
     # Attempt to get the secret
-    secret = secrets_api.Secrets().GetOrNone(secret_ref)
+    secret = secrets_api.Secrets(api_version=api_version).GetOrNone(secret_ref)
     # Secret does not exist
     if secret is None:
       raise calliope_exceptions.InvalidArgumentException(

@@ -1,4 +1,4 @@
-release_tracks: [ALPHA]
+release_tracks: [ALPHA, GA]
 hidden: true
 
 help_text:
@@ -23,6 +23,8 @@ async:
 request:
   ALPHA:
     api_version: v1alpha
+  GA:
+    api_version: v1
   collection: authztoolkit.projects.locations.policies
   modify_request_hooks:
   - googlecloudsdk.command_lib.authz_toolkit.hooks:SetUpdateMask
@@ -34,4 +36,6 @@ import:
     collection: authztoolkit.projects.locations.policies
     ALPHA:
       api_version: v1alpha
+    GA:
+      api_version: v1
     method: create

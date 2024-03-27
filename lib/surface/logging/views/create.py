@@ -32,27 +32,28 @@ class Create(base.CreateCommand):
 
   To create a view that matches all Google Compute Engine logs in a bucket, run:
 
-    $ {command} my-view --bucket=my-bucket --location=global --log-filter='resource.type="gce_instance"'
+    $ {command} my-view --bucket=my-bucket --location=global
+    --log-filter='resource.type="gce_instance"'
   """
 
   @staticmethod
   def Args(parser):
     """Register flags for this command."""
+    parser.add_argument('VIEW_ID', help='ID of the view to create.')
     parser.add_argument(
-        'VIEW_ID', help='ID of the view to create.')
-    parser.add_argument(
-        '--description',
-        help='A textual description for the view.')
-    parser.add_argument(
-        '--log-filter',
-        help='A filter for the view.')
+        '--description', help='A textual description for the view.'
+    )
+    parser.add_argument('--log-filter', help='A filter for the view.')
     util.AddParentArgs(parser, 'view to create')
     util.AddBucketLocationArg(
-        parser, True, 'Location of the bucket that will hold the view.')
+        parser, True, 'Location of the bucket that will hold the view.'
+    )
     parser.add_argument(
-        '--bucket', required=True,
+        '--bucket',
+        required=True,
         type=arg_parsers.RegexpValidator(r'.+', 'must be non-empty'),
-        help='ID of the bucket that will hold the view')
+        help='ID of the bucket that will hold the view',
+    )
 
   def Run(self, args):
     """This is what gets called when the user runs this command.
@@ -73,8 +74,9 @@ class Create(base.CreateCommand):
     return util.GetClient().projects_locations_buckets_views.Create(
         util.GetMessages().LoggingProjectsLocationsBucketsViewsCreateRequest(
             viewId=args.VIEW_ID,
-            parent=util.CreateResourceName(util.CreateResourceName(
-                util.GetProjectResource(args.project).RelativeName(),
-                'locations',
-                args.location), 'buckets', args.bucket),
-            logView=util.GetMessages().LogView(**view_data)))
+            parent=util.CreateResourceName(
+                util.GetBucketLocationFromArgs(args), 'buckets', args.bucket
+            ),
+            logView=util.GetMessages().LogView(**view_data),
+        )
+    )

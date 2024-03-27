@@ -20,10 +20,8 @@ from __future__ import unicode_literals
 
 import textwrap
 
-from googlecloudsdk.api_lib.spanner import instance_configs
 from googlecloudsdk.api_lib.spanner import instance_operations
 from googlecloudsdk.api_lib.spanner import instances
-from googlecloudsdk.api_lib.util import apis
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.spanner import flags
 from googlecloudsdk.command_lib.spanner import resource_args
@@ -205,12 +203,6 @@ class AlphaCreate(Create):
     instance_type = resource_args.GetInstanceType(args)
     expire_behavior = resource_args.GetExpireBehavior(args)
     default_storage_type = resource_args.GetDefaultStorageTypeArg(args)
-    if default_storage_type is None:
-      default_storage_type = self.FetchValueFromAllowedStorageTypes(args.config)
-
-    if default_storage_type is None:
-      return ('Operation unsuccessful. Default storage type value could not be '
-              'determined.')
 
     op = instances.Create(
         args.instance,
@@ -232,19 +224,3 @@ class AlphaCreate(Create):
     if args.async_:
       return op
     instance_operations.Await(op, 'Creating instance')
-
-  # Return the first value in the config's allowed-storage-types;
-  # Else, return SSD.
-  def FetchValueFromAllowedStorageTypes(self, instance_config_id):
-    instance_config = instance_configs.Get(instance_config_id)
-    allowed_storage_types = instance_config.allowedStorageTypes
-    msgs = apis.GetMessagesModule('spanner', 'v1')
-    if not allowed_storage_types:
-      return msgs.Instance.DefaultStorageTypeValueValuesEnum.SSD
-    first_allowed_storage_type = allowed_storage_types[0]
-    if first_allowed_storage_type == msgs.InstanceConfig.AllowedStorageTypesValueListEntryValuesEnum.SSD:
-      return msgs.Instance.DefaultStorageTypeValueValuesEnum.SSD
-    elif first_allowed_storage_type == msgs.InstanceConfig.AllowedStorageTypesValueListEntryValuesEnum.HDD:
-      return msgs.Instance.DefaultStorageTypeValueValuesEnum.HDD
-    else:
-      return None

@@ -955,7 +955,6 @@ def AddComposer3Flags(parser):
   # Dag processor
   dag_processor_params_group = parser.add_argument_group(
       flags.DAG_PROCESSOR_PARAMETERS_FLAG_GROUP_DESCRIPTION,
-      hidden=True,
   )
   flags.DAG_PROCESSOR_CPU.AddToParser(dag_processor_params_group)
   flags.DAG_PROCESSOR_COUNT.AddToParser(dag_processor_params_group)
@@ -964,7 +963,7 @@ def AddComposer3Flags(parser):
   # other flags
   flags.COMPOSER_INTERNAL_IPV4_CIDR_FLAG.AddToParser(parser)
   # support-private-builds-only
-  private_builds_only_group = parser.add_mutually_exclusive_group(hidden=True)
+  private_builds_only_group = parser.add_mutually_exclusive_group()
   flags.ENABLE_PRIVATE_BUILDS_ONLY.AddToParser(private_builds_only_group)
   flags.DISABLE_PRIVATE_BUILDS_ONLY.AddToParser(private_builds_only_group)
 

@@ -44,7 +44,10 @@ class AddIamPolicyBinding(base.Command):
 
   @staticmethod
   def Args(parser):
-    secrets_args.AddGlobalOrRegionalSecret(parser)
+    secrets_args.AddSecret(
+        parser, purpose='to add iam policy', positional=True, required=True
+    )
+    secrets_args.AddLocation(parser, purpose='to add iam policy', hidden=True)
 
     iam_util.AddArgsForAddIamPolicyBinding(parser, add_condition=True)
 
@@ -52,10 +55,15 @@ class AddIamPolicyBinding(base.Command):
       'Status code: {status_code}. {status_message}.'
   )
   def Run(self, args):
+    api_version = secrets_api.GetApiFromTrack(self.ReleaseTrack())
     multi_ref = args.CONCEPTS.secret.Parse()
     condition = iam_util.ValidateAndExtractConditionMutexRole(args)
-    result = secrets_api.Secrets().AddIamPolicyBinding(
-        multi_ref, args.member, args.role, condition=condition
+    result = secrets_api.Secrets(api_version=api_version).AddIamPolicyBinding(
+        multi_ref,
+        args.member,
+        args.role,
+        condition=condition,
+        secret_location=args.location,
     )
-    iam_util.LogSetIamPolicy(multi_ref.result.Name(), 'secret')
+    iam_util.LogSetIamPolicy(multi_ref.Name(), 'secret')
     return result

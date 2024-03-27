@@ -19,6 +19,7 @@
       table(
       name.basename(),
       state,
+      tfVersion,
       latestRevision.basename(),
       createTime:sort=1,
       updateTime

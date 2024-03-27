@@ -41,6 +41,14 @@ class List(base.ListCommand):
     base.PAGE_SIZE_FLAG.RemoveFromParser(parser)
     base.URI_FLAG.RemoveFromParser(parser)
     util.AddParentArgs(parser, 'sinks to list')
+    parser.add_argument(
+        '--sink-filter',
+        help=(
+            'A filter expression passed to the Logging API to constrain the '
+            'sinks returned. For information on accepted values, see '
+            'https://cloud.google.com/logging/docs/reference/v2/rpc/google.logging.v2#listsinksrequest'
+        ),
+    )
     parser.display_info.AddFormat('table(name, destination, filter)')
     parser.display_info.AddCacheUpdater(None)
 
@@ -51,13 +59,15 @@ class List(base.ListCommand):
       args: an argparse namespace. All the arguments that were provided to this
         command invocation.
 
-    Yields:
+    Returns:
       The list of sinks.
     """
     result = util.GetClient().projects_sinks.List(
         util.GetMessages().LoggingProjectsSinksListRequest(
-            parent=util.GetParentFromArgs(args)))
+            parent=util.GetParentFromArgs(args), filter=args.sink_filter
+        )
+    )
     for sink in result.sinks:
       if not sink.filter:
         sink.filter = '(empty filter)'
-      yield sink
+    return result.sinks

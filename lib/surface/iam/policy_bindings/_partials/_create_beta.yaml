@@ -70,7 +70,7 @@
       - api_field: key
       - api_field: value
     - group:
-        required: false
+        required: true
         help_text: |-
           Target is the full resource name of the resource to which the policy will
           be bound. Immutable once set.
@@ -117,7 +117,7 @@
           Principal access boundary policy kind
     - arg_name: policy
       api_field: googleIamV3betaPolicyBinding.policy
-      required: false
+      required: true
       repeated: false
       help_text: |-
         The resource name of the policy to be bound. The binding parent and policy

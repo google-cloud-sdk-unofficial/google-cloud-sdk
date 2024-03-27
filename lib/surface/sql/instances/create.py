@@ -146,6 +146,7 @@ def AddBaseArgs(parser):
   flags.AddEnablePrivateServiceConnect(psc_setup_group)
   flags.AddAllowedPscProjects(psc_setup_group)
   flags.AddSslMode(parser)
+  flags.AddEnableGoogleMLIntegration(parser)
   # (--
   # LINT.ThenChange(../backups/restore.py:instance_settings)
   # --)
@@ -158,7 +159,6 @@ def AddBetaArgs(parser):
   flags.AddAllocatedIpRangeName(parser)
   labels_util.AddCreateLabelsFlags(parser)
   flags.AddReplicationLagMaxSecondsForRecreate(parser)
-  flags.AddEnableGoogleMLIntegration(parser)
 
 
 def AddAlphaArgs(unused_parser):
