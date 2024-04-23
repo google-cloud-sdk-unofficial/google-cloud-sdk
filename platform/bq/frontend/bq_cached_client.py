@@ -60,6 +60,13 @@ class Client(object):
     # Gcloud config currently gets processed twice.
     bq_utils.ProcessGcloudConfig(flag_values=FLAGS)
 
+    if (
+        bq_flags.UNIVERSE_DOMAIN.present
+        and not bq_auth_flags.USE_GOOGLE_AUTH.value
+    ):
+      raise app.UsageError(
+          'Attempting to use TPC without setting `use_google_auth`.')
+
     if FLAGS.httplib2_debuglevel:
       httplib2.debuglevel = FLAGS.httplib2_debuglevel
 

@@ -1,16 +1,18 @@
-- release_tracks: [ALPHA]
+- release_tracks: [ALPHA, BETA]
 
   help_text:
-    brief: Show details of an entitlement.
-    description: Show details of an entitlement with a given name.
+    brief: Show details of a Privileged Access Manager (PAM) entitlement.
+    description: Show details of a Privileged Access Manager (PAM) entitlement.
     examples: |
-      The following command displays the details of an entitlement with the name entitlement-name:
+      The following command describes an entitlement with the full name ``ENTITLEMENT_NAME'':
 
-      ${command} entitlement-name
+      $ {command} ENTITLEMENT_NAME
 
   request:
     ALPHA:
       api_version: v1alpha
+    BETA:
+      api_version: v1beta
     collection:
     - privilegedaccessmanager.projects.locations.entitlements
     - privilegedaccessmanager.folders.locations.entitlements
@@ -20,4 +22,4 @@
     resource:
       spec: !REF googlecloudsdk.command_lib.pam.resources:entitlement
       help_text: |
-        The name of the entitlement to describe.
+        Name of the entitlement to describe.

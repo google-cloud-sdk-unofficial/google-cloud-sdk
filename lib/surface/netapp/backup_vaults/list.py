@@ -26,8 +26,8 @@ from googlecloudsdk.command_lib.util.concepts import concept_parsers
 from googlecloudsdk.core import properties
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class ListBeta(base.ListCommand):
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class List(base.ListCommand):
   """List Cloud NetApp Volumes Backup Vaults."""
 
   detailed_help = {
@@ -45,7 +45,7 @@ class ListBeta(base.ListCommand):
           """,
   }
 
-  _RELEASE_TRACK = base.ReleaseTrack.BETA
+  _RELEASE_TRACK = base.ReleaseTrack.GA
 
   @staticmethod
   def Args(parser):
@@ -73,3 +73,11 @@ class ListBeta(base.ListCommand):
     client = backupvaults_client.BackupVaultsClient(
         release_track=self._RELEASE_TRACK)
     return list(client.ListBackupVaults(location_ref))
+
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class ListBeta(List):
+  """List Cloud NetApp Volumes Backup Vaults."""
+
+  _RELEASE_TRACK = base.ReleaseTrack.BETA
+

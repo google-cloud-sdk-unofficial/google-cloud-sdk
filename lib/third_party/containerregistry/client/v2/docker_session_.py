@@ -15,7 +15,6 @@
 
 from __future__ import absolute_import
 from __future__ import division
-
 from __future__ import print_function
 
 import logging
@@ -129,7 +128,7 @@ class Push(object):
     qs = six.moves.urllib.parse.parse_qs(query_string)
     qs['digest'] = [digest]
     query_string = six.moves.urllib.parse.urlencode(qs, doseq=True)
-    return six.moves.urllib.parse.urlunsplit((scheme, netloc, path,
+    return six.moves.urllib.parse.urlunsplit((scheme, netloc, path,  # pytype: disable=bad-return-type
                                               query_string, fragment))
 
   def _put_upload(self, image, digest):

@@ -81,16 +81,18 @@ class Apply(base.UpdateCommand):
     hierarchy_controller_config = _parse_hierarchy_controller_config(
         loaded_cm, self.messages
     )
-    version = (
-        self._get_backfill_version(membership)
-        if not args.version
-        else args.version
-    )
+
+    upgrades = loaded_cm.get('spec', {}).get(utils.UPGRADES, '')
+    validate_upgrades(upgrades)
+    version = args.version
+    if upgrades != utils.UPGRADES_AUTO and not version:
+      version = self._get_backfill_version(membership)
     cluster = loaded_cm.get('spec', {}).get('cluster', '')
     spec = self.messages.MembershipFeatureSpec(
         configmanagement=self.messages.ConfigManagementMembershipSpec(
             version=version,
             cluster=cluster,
+            management=self.upgradesFromStr(upgrades),
             configSync=config_sync,
             policyController=policy_controller,
             hierarchyController=hierarchy_controller_config,
@@ -105,6 +107,24 @@ class Apply(base.UpdateCommand):
     )
     self.Update(['membership_specs'], patch)
 
+  def upgradesFromStr(self, upgrades):
+    """Convert the string `upgrades` to an enum in the ACM Fleet Feature API.
+
+    Args:
+      upgrades: a string.
+
+    Returns:
+      an enum represent the field `management` in the ACM Fleet Feature API.
+    """
+    if upgrades == utils.UPGRADES_AUTO:
+      return self.messages.ConfigManagementMembershipSpec.ManagementValueValuesEnum(
+          utils.MANAGEMENT_AUTOMATIC
+      )
+    else:
+      return self.messages.ConfigManagementMembershipSpec.ManagementValueValuesEnum(
+          utils.MANAGEMENT_MANUAL
+      )
+
   def _get_backfill_version(self, membership):
     """Get the value the version field in FeatureSpec should be set to.
 
@@ -117,6 +137,28 @@ class Apply(base.UpdateCommand):
     """
     f = self.GetFeature()
     return utils.get_backfill_version_from_feature(f, membership)
+
+
+def validate_upgrades(upgrades):
+  """Validate the string `upgrades`.
+
+  Args:
+    upgrades: a string.
+
+  Raises: Error, if upgrades is invalid.
+  """
+  legal_fields = [
+      utils.UPGRADES_AUTO,
+      utils.UPGRADES_MANUAL,
+      utils.UPGRADES_EMPTY,
+  ]
+  valid_values = ' '.join(f"'{field}'" for field in legal_fields)
+  if upgrades not in legal_fields:
+    raise exceptions.Error(
+        'The valid values of field .spec.{} are: {}'.format(
+            utils.UPGRADES, valid_values
+        )
+    )
 
 
 def _validate_meta(configmanagement):
@@ -142,6 +184,7 @@ def _validate_meta(configmanagement):
       utils.POLICY_CONTROLLER,
       utils.HNC,
       utils.CLUSTER,
+      utils.UPGRADES,
   }
   for field in spec:
     if field not in legal_fields:

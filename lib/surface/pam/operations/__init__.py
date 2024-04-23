@@ -23,37 +23,40 @@ from googlecloudsdk.calliope import base
 
 
 @base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Operations(base.Group):
-  """Manage PAM Operations.
+  r"""Manage Privileged Access Manager (PAM) Long Running Operations.
 
-     The gcloud pam operations command group lets you manage Privileged
-     Access Manager (PAM) Operations.
+  The `gcloud pam operations` command group lets you manage Privileged
+  Access Manager (PAM) Operations.
 
-     ## EXAMPLES
+  ## EXAMPLES
 
-     To display the details of an operation with the name operation-name,
-     run:
+  To describe an operation with the full name ``OPERATION_NAME'', run:
 
-     $ {command} describe operation-name
+      $ {command} describe OPERATION_NAME
 
-     To list all operations under project `sample-project` and location
-     `global`, run:
+  To list all operations under a project `sample-project` and location
+  `global`, run:
 
-     $ {command} --location=global --project=sample-project
+      $ {command} list --project=sample-project --location=global
 
-     To list all operations under folder `sample-folder` and location
-     `global`, run:
+  To list all operations under a folder `sample-folder` and location
+  `global`, run:
 
-     $ {command} --location=global --folder=sample-folder
+      $ {command} list --folder=sample-folder --location=global
 
-     To list all operations under organization `sample-organization` and
-     location `global`, run:
+  To list all operations under an organization `sample-organization` and
+  location `global`, run:
 
-     $ {command} --location=global --organization=sample-organization
+      $ {command} list --organization=sample-organization --location=global
 
-     To delete an operation with the name operation-name, run:
+  To delete an operation with the full name ``OPERATION_NAME'', run:
 
-     $ {command} delete operation-name
+      $ {command} delete OPERATION_NAME
+
+  To poll an operation with the full name ``OPERATION_NAME'', run:
+
+      $ {command} wait OPERATION_NAME
 
   """

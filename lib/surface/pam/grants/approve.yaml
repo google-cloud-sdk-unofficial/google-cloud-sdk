@@ -1,17 +1,19 @@
-- release_tracks: [ALPHA]
+- release_tracks: [ALPHA, BETA]
 
   help_text:
-    brief: Approve a grant.
-    description: |
-      Approve a grant with a given name and reason.
+    brief: Approve a Privileged Access Manager (PAM) grant.
+    description: Approve a Privileged Access Manager (PAM) grant with a reason.
     examples: |
-      The following command approves a grant with a given name and provides a reason for approval:
+      The following command approves a grant with the full name ``GRANT_NAME'' and a reason
+      `approval reason`:
 
-      $ {command} grant-name --reason approval-reason
+      $ {command} GRANT_NAME --reason="approval reason"
 
   request:
     ALPHA:
       api_version: v1alpha
+    BETA:
+      api_version: v1beta
     method: approve
     collection:
     - privilegedaccessmanager.projects.locations.entitlements.grants
@@ -22,8 +24,9 @@
     resource:
       spec: !REF googlecloudsdk.command_lib.pam.resources:grant
       help_text: |
-        The name of the grant to approve.
+        Name of the grant to approve.
     params:
     - api_field: approveGrantRequest.reason
       arg_name: reason
-      help_text: The reason for approving the grant.
+      help_text: |
+        Reason for approving the grant.

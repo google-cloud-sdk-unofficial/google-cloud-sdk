@@ -1,17 +1,19 @@
-- release_tracks: [ALPHA]
+- release_tracks: [ALPHA, BETA]
 
   help_text:
-    brief: Revoke a grant.
-    description: |
-      Revoke a grant with a given name and reason.
+    brief: Revoke a Privileged Access Manager (PAM) grant.
+    description: Revoke a Privileged Access Manager (PAM) grant with a reason.
     examples: |
-      The following command revokes a grant with a given name and provides a reason for revoking:
+      The following command revokes a grant with the full name ``GRANT_NAME'' and a reason
+      `revoke reason`:
 
-      $ {command} grant-name --reason revoke-reason
+      $ {command} GRANT_NAME --reason="revoke reason"
 
   request:
     ALPHA:
       api_version: v1alpha
+    BETA:
+      api_version: v1beta
     method: revoke
     collection:
     - privilegedaccessmanager.projects.locations.entitlements.grants
@@ -22,15 +24,18 @@
     resource:
       spec: !REF googlecloudsdk.command_lib.pam.resources:grant
       help_text: |
-        The name of the grant to revoke.
+        Name of the grant to revoke.
     params:
     - api_field: revokeGrantRequest.reason
       arg_name: reason
-      help_text: The reason for revoking the grant.
+      help_text: |
+        Reason for revoking the grant.
 
   async:
     ALPHA:
       api_version: v1alpha
+    BETA:
+      api_version: v1beta
     collection:
     - privilegedaccessmanager.projects.locations.operations
     - privilegedaccessmanager.folders.locations.operations

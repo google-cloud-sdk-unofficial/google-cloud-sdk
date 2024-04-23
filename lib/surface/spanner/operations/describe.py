@@ -24,19 +24,14 @@ from googlecloudsdk.api_lib.spanner import backup_operations
 from googlecloudsdk.api_lib.spanner import database_operations
 from googlecloudsdk.api_lib.spanner import instance_config_operations
 from googlecloudsdk.api_lib.spanner import instance_operations
+from googlecloudsdk.api_lib.spanner import instance_partition_operations
 from googlecloudsdk.api_lib.spanner import ssd_cache_operations
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions as c_exceptions
 from googlecloudsdk.command_lib.spanner import flags
 
-
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
-class Describe(base.DescribeCommand):
-  """Describe a Cloud Spanner operation."""
-
-  detailed_help = {
-      'EXAMPLES':
-          textwrap.dedent("""\
+DETAILED_HELP = {
+    'EXAMPLES': textwrap.dedent("""\
         To describe a Cloud Spanner instance operation, run:
 
           $ {command} _auto_12345 --instance=my-instance-id
@@ -51,7 +46,14 @@ class Describe(base.DescribeCommand):
           $ {command}  _auto_12345 --instance=my-instance-id
               --backup=my-backup-id
         """),
-  }
+}
+
+
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
+class Describe(base.DescribeCommand):
+  """Describe a Cloud Spanner operation."""
+
+  detailed_help = DETAILED_HELP
 
   @staticmethod
   def Args(parser):
@@ -111,7 +113,14 @@ class Describe(base.DescribeCommand):
 class AlphaDescribe(Describe):
   """Describe a Cloud Spanner operation with ALPHA features."""
 
-  __doc__ = Describe.__doc__
+  detailed_help = {
+      'EXAMPLES': DETAILED_HELP['EXAMPLES'] + textwrap.dedent("""\
+
+        To describe a Cloud Spanner instance partition operation, run:
+
+          $ {command} _auto_12345 --instance=my-instance-id --instance-partition=my-partition-id
+        """),
+  }
 
   @staticmethod
   def Args(parser):
@@ -132,6 +141,16 @@ class AlphaDescribe(Describe):
         text='The ID of the SSD Cache the operation is executing on.',
     ).AddToParser(parser)
 
+    flags.InstancePartition(
+        positional=False,
+        required=False,
+        hidden=True,
+        text=(
+            'For instance partition operations, the name of the instance '
+            'partition the operation is executing on.'
+        ),
+    ).AddToParser(parser)
+
   def Run(self, args):
     """This is what gets called when the user runs this command.
 
@@ -150,6 +169,11 @@ class AlphaDescribe(Describe):
         )
       return ssd_cache_operations.Get(
           args.operation, args.ssd_cache, args.instance_config
+      )
+
+    if args.instance_partition:
+      return instance_partition_operations.Get(
+          args.instance_partition, args.instance, args.operation
       )
 
     return super().Run(args)

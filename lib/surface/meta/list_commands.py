@@ -161,6 +161,11 @@ class ListCommands(base.Command):
         action='store_true',
         help='Include hidden commands and groups.')
     parser.add_argument(
+        '--universe-compatible-commands',
+        hidden=True,
+        action='store_true',
+        help='Exclusively show universe compatible commands.')
+    parser.add_argument(
         'restrict',
         metavar='COMMAND/GROUP',
         nargs='*',
@@ -172,9 +177,12 @@ class ListCommands(base.Command):
       args.flags = True
       args.flag_values = True
       args.hidden = True
+      args.universe_compatible_commands = False
     return walker_util.CommandTreeGenerator(
-        self._cli_power_users_only, with_flags=args.flags,
-        with_flag_values=args.flag_values).Walk(args.hidden, args.restrict)
+        self._cli_power_users_only,
+        with_flags=args.flags,
+        with_flag_values=args.flag_values,
+    ).Walk(args.hidden, args.universe_compatible_commands, args.restrict)
 
   def Display(self, args, result):
     if args.completions:

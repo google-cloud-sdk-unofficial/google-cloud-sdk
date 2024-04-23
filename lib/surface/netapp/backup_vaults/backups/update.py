@@ -26,11 +26,11 @@ from googlecloudsdk.command_lib.util.args import labels_util
 from googlecloudsdk.core import log
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class UpdateBeta(base.UpdateCommand):
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class Update(base.UpdateCommand):
   """Update a Cloud NetApp Backup."""
 
-  _RELEASE_TRACK = base.ReleaseTrack.BETA
+  _RELEASE_TRACK = base.ReleaseTrack.GA
 
   detailed_help = {
       'DESCRIPTION': """\
@@ -92,3 +92,9 @@ class UpdateBeta(base.UpdateCommand):
       )
     return result
 
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class UpdateBeta(Update):
+  """Update a Cloud NetApp Backup."""
+
+  _RELEASE_TRACK = base.ReleaseTrack.BETA

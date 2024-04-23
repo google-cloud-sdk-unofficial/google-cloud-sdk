@@ -35,6 +35,7 @@ from googlecloudsdk.command_lib.run import resource_args
 from googlecloudsdk.command_lib.run import resource_change_validators
 from googlecloudsdk.command_lib.run import serverless_operations
 from googlecloudsdk.command_lib.run import stages
+from googlecloudsdk.command_lib.run.integrations import run_apps_operations
 from googlecloudsdk.command_lib.run.sourcedeploys import builders
 from googlecloudsdk.command_lib.util.concepts import concept_parsers
 from googlecloudsdk.command_lib.util.concepts import presentation_specs
@@ -164,9 +165,7 @@ class Deploy(base.Command):
     container_args = ContainerArgGroup(cls.ReleaseTrack())
     container_parser.AddContainerFlags(parser, container_args)
 
-  def GetAllowUnauth(
-      self, args, operations, service_ref, service_exists
-  ):
+  def GetAllowUnauth(self, args, operations, service_ref, service_exists):
     """Returns allow_unauth value for a service change.
 
     Args:
@@ -186,10 +185,7 @@ class Deploy(base.Command):
     allow_unauth = None
     if platforms.GetPlatform() == platforms.PLATFORM_MANAGED:
       allow_unauth = flags.GetAllowUnauthenticated(
-          args,
-          operations,
-          service_ref,
-          not service_exists
+          args, operations, service_ref, not service_exists
       )
       # Avoid failure removing a policy binding for a service that
       # doesn't exist.
@@ -390,6 +386,9 @@ class Deploy(base.Command):
         suppress_output=args.async_,
     )
 
+  def _GetRequiredApis(self, args):
+    return [api_enabler.get_run_api()]
+
   def Run(self, args):
     """Deploy a container to Cloud Run."""
     platform = flags.GetAndValidatePlatform(
@@ -402,7 +401,7 @@ class Deploy(base.Command):
     service_ref = args.CONCEPTS.service.Parse()
     flags.ValidateResource(service_ref)
 
-    required_apis = [api_enabler.get_run_api()]
+    required_apis = self._GetRequiredApis(args)
     if build_from_source:
       required_apis.append('artifactregistry.googleapis.com')
       required_apis.append('cloudbuild.googleapis.com')
@@ -569,24 +568,18 @@ class AlphaDeploy(BetaDeploy):
     flags.AddServiceMinInstancesFlag(managed_group)
     flags.AddVolumesFlags(managed_group, cls.ReleaseTrack())
     flags.AddRegionsArg(managed_group)
+    flags.AddDomainArg(managed_group)
     flags.AddGpuTypeFlag(managed_group)
     flags.SERVICE_MESH_FLAG.AddToParser(managed_group)
     container_args = ContainerArgGroup(cls.ReleaseTrack())
     container_parser.AddContainerFlags(parser, container_args)
     flags.AddDelegateBuildsFlag(managed_group)
 
-  def GetAllowUnauth(
-      self, args, operations, service_ref, service_exists
-  ):
+  def GetAllowUnauth(self, args, operations, service_ref, service_exists):
     if self.__is_multi_region:
       return None
     # TODO(b/328157043): Implement this.
-    return super().GetAllowUnauth(
-        args,
-        operations,
-        service_ref,
-        service_exists
-    )
+    return super().GetAllowUnauth(args, operations, service_ref, service_exists)
 
   def _ConnectionContext(self, args):
     """Returns the connection context with is_multiregion set."""
@@ -649,12 +642,68 @@ class AlphaDeploy(BetaDeploy):
         suppress_output=args.async_,
     )
 
+  def _MaybeGetDomain(self, args):
+    if self.__is_multi_region and flags.FlagIsExplicitlySet(args, 'domain'):
+      return getattr(args, 'domain', None)
+
+  def _GetRequiredApis(self, args):
+    required_apis = super()._GetRequiredApis(args)
+    if self._MaybeGetDomain(args):
+      required_apis.append('runapps.googleapis.com')
+      required_apis.append('compute.googleapis.com')
+    return required_apis
+
+  def _MaybeCreateDomainIntegration(self, service, args):
+    domain_name = self._MaybeGetDomain(args)
+    if not domain_name:
+      return
+    # We need to choose a single region, Stacks has no multi-region entry.
+    first_region = flags.GetMultiRegion(args).split(',')[0]
+    service_name = service.metadata.name
+    params = {
+        'set-mapping': '%s/*:%s' % (
+            domain_name,
+            service_name,
+        ),
+    }
+    pretty_print.Info(
+        'Mapping multi-region Service {svc} to domain {domain}',
+        svc=service_name,
+        domain=domain_name,
+    )
+
+    with run_apps_operations.ConnectWithRegion(
+        first_region, None, self.ReleaseTrack()
+    ) as stacks_client:
+      stacks_client.VerifyLocation()
+      if stacks_client.MaybeGetIntegrationGeneric('custom-domains', 'router'):
+        stacks_client.UpdateIntegration('custom-domains', params)
+        pretty_print.Success(
+            'Sucessfully updated mapping {svc} to domain {domain}',
+            svc=service_name,
+            domain=domain_name,
+        )
+      else:
+        stacks_client.CreateIntegration(
+            'custom-domains',
+            params,
+            None,
+        )
+        pretty_print.Success(
+            'Sucessfully created mapping {svc} to domain {domain}',
+            svc=service_name,
+            domain=domain_name,
+        )
+
   def Run(self, args):
     """Deploy a container to Cloud Run."""
     # If this is a multi-region Service, we will use the global endpoint
     # for all operations, and append a regions annotation to the Service.
     self.__is_multi_region = flags.GetMultiRegion(args)
-    return super().Run(args)
+    service = super().Run(args)
+    # TODO(b/331844226) - integrate Cloud Run and Integrations stages.
+    self._MaybeCreateDomainIntegration(service, args)
+    return service
 
 
 AlphaDeploy.__doc__ = Deploy.__doc__

@@ -19,10 +19,10 @@ from __future__ import division
 from __future__ import unicode_literals
 
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.pubsub import flags
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
-                    base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Schemas(base.Group):
   """Manage Pub/Sub schemas.
 
@@ -30,3 +30,16 @@ class Schemas(base.Group):
   schemas can be attached to topics to enable validation of published messages.
   Commands to validate schemas and messages against schemas are also available.
   """
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+class SchemasBeta(Schemas):
+  """Manage Pub/Sub schemas.
+
+  The {command} group lets you create and manage Pub/Sub schemas. These
+  schemas can be attached to topics to enable validation of published messages.
+  Commands to validate schemas and messages against schemas are also available.
+  """
+
+  def Filter(self, context, args):
+    flags.ValidateIsDefaultUniverse('schemas')

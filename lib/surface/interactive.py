@@ -23,13 +23,15 @@ import io
 import os
 
 from googlecloudsdk.calliope import base
+from googlecloudsdk.calliope import cli_tree
 from googlecloudsdk.command_lib.interactive import config as configuration
+from googlecloudsdk.core import config as gcloud_config
 from googlecloudsdk.core import exceptions
 from googlecloudsdk.core import properties
 from googlecloudsdk.core.document_renderers import render_document
 from googlecloudsdk.core.util import encoding
-
 import six
+
 
 if six.PY3:
   # pylint: disable=g-import-not-at-top
@@ -294,6 +296,10 @@ class Interactive(base.Command):
     if six.PY2:
       raise exceptions.Error('This command does not support Python 2. Please '
                              'upgrade to Python 3.')
+
+    sdk_root = gcloud_config.Paths().sdk_root
+    if sdk_root:
+      cli_tree.Load(cli=self._cli_do_not_use_directly, force=False, verbose=False)
 
     if not args.quiet:
       render_document.RenderDocument(fin=io.StringIO(_SPLASH))

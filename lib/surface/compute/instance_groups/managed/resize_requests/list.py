@@ -48,15 +48,15 @@ DETAILED_HELP = {
 }
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class ListBeta(base.ListCommand):
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
+class List(base.ListCommand):
   """List Compute Engine managed instance group resize requests."""
 
   detailed_help = DETAILED_HELP
 
   @classmethod
   def Args(cls, parser):
-    rr_flags.AddOutputFormat(parser, base.ReleaseTrack.BETA)
+    rr_flags.AddOutputFormat(parser, base.ReleaseTrack.GA)
     instance_groups_flags.MakeZonalInstanceGroupManagerArg().AddArgument(
         parser)
 
@@ -103,7 +103,7 @@ class ListBeta(base.ListCommand):
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class ListAlpha(ListBeta):
+class ListAlpha(List):
   """List Compute Engine managed instance group resize requests."""
 
   detailed_help = DETAILED_HELP

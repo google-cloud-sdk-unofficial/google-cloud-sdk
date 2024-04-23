@@ -46,6 +46,14 @@ class Gcloud(base.Group):
         help='Google Cloud user account to use for invocation.',
         action=actions.StoreProperty(properties.VALUES.core.account))
 
+    parser.add_argument(
+        '--universe-domain',
+        metavar='UNIVERSE_DOMAIN',
+        category=base.COMMONLY_USED_FLAGS,
+        help='Universe domain to target.',
+        hidden=True,
+        action=actions.StoreProperty(properties.VALUES.core.universe_domain))
+
     # Ideally this would be on the alpha group (since it's alpha) but there are
     # a bunch of problems with doing that. Global flags are treated differently
     # than other flags and flags on the Alpha group are not treated as global.

@@ -14,7 +14,6 @@
 """This package manipulates v2.2 image configuration metadata."""
 
 from __future__ import absolute_import
-
 from __future__ import print_function
 
 from collections import namedtuple
@@ -93,7 +92,7 @@ class Overrides(_OverridesT):
         workdir=workdir or self.workdir,
         author=author or self.author,
         created_by=created_by or self.created_by,
-        creation_time=creation_time or self.creation_time)
+        creation_time=creation_time or self.creation_time)  # pytype: disable=bad-return-type  # b/228241343
 
 
 # NOT THREADSAFE

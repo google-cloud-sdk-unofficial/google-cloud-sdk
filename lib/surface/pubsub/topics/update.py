@@ -133,6 +133,109 @@ def _Args(parser):
   flags.AddIngestionDatasourceFlags(parser, is_update=True)
 
 
+def _Run(args):
+  """This is what gets called when the user runs this command.
+
+  Args:
+    args: an argparse namespace. All the arguments that were provided to this
+      command invocation.
+
+  Returns:
+    A serialized object (dict) describing the results of the operation.
+
+  Raises:
+    An HttpException if there was a problem calling the
+    API topics.Patch command.
+  """
+  client = topics.TopicsClient()
+  topic_ref = args.CONCEPTS.topic.Parse()
+
+  message_retention_duration = getattr(
+      args, 'message_retention_duration', None
+  )
+  if message_retention_duration:
+    message_retention_duration = util.FormatDuration(
+        message_retention_duration
+    )
+  clear_message_retention_duration = getattr(
+      args, 'clear_message_retention_duration', None
+  )
+
+  labels_update = labels_util.ProcessUpdateArgsLazy(
+      args,
+      client.messages.Topic.LabelsValue,
+      orig_labels_thunk=lambda: client.Get(topic_ref).labels,
+  )
+
+  schema = getattr(args, 'schema', None)
+  if schema:
+    schema = args.CONCEPTS.schema.Parse().RelativeName()
+  message_encoding_list = getattr(args, 'message_encoding', None)
+  message_encoding = None
+  if message_encoding_list:
+    message_encoding = message_encoding_list[0]
+  first_revision_id = getattr(args, 'first_revision_id', None)
+  last_revision_id = getattr(args, 'last_revision_id', None)
+  result = None
+  clear_schema_settings = getattr(args, 'clear_schema_settings', None)
+
+  message_storage_policy_enforce_in_transit = getattr(
+      args, 'message_storage_policy_enforce_in_transit', None
+  )
+
+  kinesis_ingestion_stream_arn = getattr(
+      args, 'kinesis_ingestion_stream_arn', None
+  )
+  kinesis_ingestion_consumer_arn = getattr(
+      args, 'kinesis_ingestion_consumer_arn', None
+  )
+  kinesis_ingestion_role_arn = getattr(
+      args, 'kinesis_ingestion_role_arn', None
+  )
+  kinesis_ingestion_service_account = getattr(
+      args, 'kinesis_ingestion_service_account', None
+  )
+  clear_ingestion_data_source_settings = getattr(
+      args, 'clear_ingestion_data_source_settings', None
+  )
+
+  try:
+    result = client.Patch(
+        topic_ref,
+        labels_update.GetOrNone(),
+        _GetKmsKeyNameFromArgs(args),
+        message_retention_duration,
+        clear_message_retention_duration,
+        args.recompute_message_storage_policy,
+        args.message_storage_policy_allowed_regions,
+        message_storage_policy_enforce_in_transit,
+        schema=schema,
+        message_encoding=message_encoding,
+        first_revision_id=first_revision_id,
+        last_revision_id=last_revision_id,
+        clear_schema_settings=clear_schema_settings,
+        kinesis_ingestion_stream_arn=kinesis_ingestion_stream_arn,
+        kinesis_ingestion_consumer_arn=kinesis_ingestion_consumer_arn,
+        kinesis_ingestion_role_arn=kinesis_ingestion_role_arn,
+        kinesis_ingestion_service_account=kinesis_ingestion_service_account,
+        clear_ingestion_data_source_settings=clear_ingestion_data_source_settings,
+    )
+  except topics.NoFieldsSpecifiedError:
+    operations = [
+        'clear_labels',
+        'update_labels',
+        'remove_labels',
+        'recompute_message_storage_policy',
+        'message_storage_policy_allowed_regions',
+    ]
+    if not any(args.IsSpecified(arg) for arg in operations):
+      raise
+    log.status.Print('No update to perform.')
+  else:
+    log.UpdatedResource(topic_ref.RelativeName(), kind='topic')
+  return result
+
+
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Update(base.UpdateCommand):
   """Updates an existing Cloud Pub/Sub topic."""
@@ -145,106 +248,7 @@ class Update(base.UpdateCommand):
     _Args(parser)
 
   def Run(self, args):
-    """This is what gets called when the user runs this command.
-
-    Args:
-      args: an argparse namespace. All the arguments that were provided to this
-        command invocation.
-
-    Returns:
-      A serialized object (dict) describing the results of the operation.
-
-    Raises:
-      An HttpException if there was a problem calling the
-      API topics.Patch command.
-    """
-    client = topics.TopicsClient()
-    topic_ref = args.CONCEPTS.topic.Parse()
-
-    message_retention_duration = getattr(
-        args, 'message_retention_duration', None
-    )
-    if message_retention_duration:
-      message_retention_duration = util.FormatDuration(
-          message_retention_duration
-      )
-    clear_message_retention_duration = getattr(
-        args, 'clear_message_retention_duration', None
-    )
-
-    labels_update = labels_util.ProcessUpdateArgsLazy(
-        args,
-        client.messages.Topic.LabelsValue,
-        orig_labels_thunk=lambda: client.Get(topic_ref).labels,
-    )
-
-    schema = getattr(args, 'schema', None)
-    if schema:
-      schema = args.CONCEPTS.schema.Parse().RelativeName()
-    message_encoding_list = getattr(args, 'message_encoding', None)
-    message_encoding = None
-    if message_encoding_list:
-      message_encoding = message_encoding_list[0]
-    first_revision_id = getattr(args, 'first_revision_id', None)
-    last_revision_id = getattr(args, 'last_revision_id', None)
-    result = None
-    clear_schema_settings = getattr(args, 'clear_schema_settings', None)
-
-    message_storage_policy_enforce_in_transit = getattr(
-        args, 'message_storage_policy_enforce_in_transit', None
-    )
-
-    kinesis_ingestion_stream_arn = getattr(
-        args, 'kinesis_ingestion_stream_arn', None
-    )
-    kinesis_ingestion_consumer_arn = getattr(
-        args, 'kinesis_ingestion_consumer_arn', None
-    )
-    kinesis_ingestion_role_arn = getattr(
-        args, 'kinesis_ingestion_role_arn', None
-    )
-    kinesis_ingestion_service_account = getattr(
-        args, 'kinesis_ingestion_service_account', None
-    )
-    clear_ingestion_data_source_settings = getattr(
-        args, 'clear_ingestion_data_source_settings', None
-    )
-
-    try:
-      result = client.Patch(
-          topic_ref,
-          labels_update.GetOrNone(),
-          _GetKmsKeyNameFromArgs(args),
-          message_retention_duration,
-          clear_message_retention_duration,
-          args.recompute_message_storage_policy,
-          args.message_storage_policy_allowed_regions,
-          message_storage_policy_enforce_in_transit,
-          schema=schema,
-          message_encoding=message_encoding,
-          first_revision_id=first_revision_id,
-          last_revision_id=last_revision_id,
-          clear_schema_settings=clear_schema_settings,
-          kinesis_ingestion_stream_arn=kinesis_ingestion_stream_arn,
-          kinesis_ingestion_consumer_arn=kinesis_ingestion_consumer_arn,
-          kinesis_ingestion_role_arn=kinesis_ingestion_role_arn,
-          kinesis_ingestion_service_account=kinesis_ingestion_service_account,
-          clear_ingestion_data_source_settings=clear_ingestion_data_source_settings,
-      )
-    except topics.NoFieldsSpecifiedError:
-      operations = [
-          'clear_labels',
-          'update_labels',
-          'remove_labels',
-          'recompute_message_storage_policy',
-          'message_storage_policy_allowed_regions',
-      ]
-      if not any(args.IsSpecified(arg) for arg in operations):
-        raise
-      log.status.Print('No update to perform.')
-    else:
-      log.UpdatedResource(topic_ref.RelativeName(), kind='topic')
-    return result
+    return _Run(args)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
@@ -254,6 +258,10 @@ class UpdateBeta(Update):
   @staticmethod
   def Args(parser):
     _Args(parser)
+
+  def Run(self, args):
+    flags.ValidateTopicArgsUseUniverseSupportedFeatures(args)
+    return _Run(args)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)

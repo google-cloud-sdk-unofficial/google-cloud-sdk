@@ -30,6 +30,26 @@ from pyglib import stringutil
 
 FLAGS = flags.FLAGS
 
+PARQUET_LIST_INFERENCE_DESCRIPTION = (
+    'Use schema inference specifically for Parquet LIST logical type.\n It'
+    ' checks whether the LIST node is in the standard form as documented in:\n'
+    ' https://github.com/apache/parquet-format/blob/master/LogicalTypes.md#lists\n'
+    '  <optional | required> group <name> (LIST) {\n    repeated group list {\n'
+    '      <optional | required> <element-type> element;\n    }\n  }\n Returns'
+    ' the "element" node in list_element_node. The corresponding field for the'
+    ' LIST node in the converted schema is treated as if the node has the'
+    ' following schema:\n repeated <element-type> <name>\n This means nodes'
+    ' "list" and "element" are omitted.\n\n Otherwise, the LIST node must be in'
+    ' one of the forms described by the backward-compatibility rules as'
+    ' documented in:\n'
+    ' https://github.com/apache/parquet-format/blob/master/LogicalTypes.md#backward-compatibility-rules\n'
+    ' <optional | required> group <name> (LIST) {\n   repeated <element-type>'
+    ' <element-name>\n }\n Returns the <element-name> node in'
+    ' list_element_node. The corresponding field for the LIST node in the'
+    ' converted schema is treated as if the node has the following schema:\n'
+    ' repeated <element-type> <name>\n This means the element node is omitted.'
+)
+
 CONNECTION_ID_PATTERN = re.compile(r'[\w-]+')
 _RANGE_PATTERN = re.compile(r'^\[(\S+.+\S+), (\S+.+\S+)\)$')
 

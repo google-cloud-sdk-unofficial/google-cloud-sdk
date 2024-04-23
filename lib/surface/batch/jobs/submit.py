@@ -354,7 +354,7 @@ class Submit(base.Command):
   def _GetJobId(self, job_ref, args):
     job_id = job_ref.RelativeName().split('/')[-1]
 
-    if job_id != resource_args.INVALIDJOBID and args.job_prefix:
+    if job_id != resource_args.INVALIDID and args.job_prefix:
       raise exceptions.Error(
           '--job-prefix cannot be specified when JOB ID positional '
           'argument is specified'
@@ -369,7 +369,7 @@ class Submit(base.Command):
       )
 
     # The case that both positional JOB ID and prefix are not specified
-    elif job_id == resource_args.INVALIDJOBID:
+    elif job_id == resource_args.INVALIDID:
       job_id = None
 
     return job_id

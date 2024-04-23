@@ -56,6 +56,23 @@ def _IsFieldSpecified(field_name, args):
   return any(args.IsSpecified(arg) for arg in list_args)
 
 
+def _GetIngressEgressFieldValue(args, field_name, base_config_value, has_spec):
+  """Returns the ingress/egress field value to use for the update operation."""
+  ingress_egress_field = perimeters.ParseUpdateDirectionalPoliciesArgs(
+      args, field_name
+  )
+  # If there's currently no dry run spec and no input for ingress/egress rules
+  # we will inherit the existing ingress/egress rules from status/base config.
+  if not has_spec and ingress_egress_field is None:
+    ingress_egress_field = base_config_value
+  # At this point, there's either spec present or ingress/egress rules present,
+  # or both are present. If the ingress/egress input is present, we take it to
+  # update the existing config. If the ingress/egress is empty, then spec must
+  # be present. In this case, we won't update the spec because the
+  # ingress_egress_field will be None. None gets skipped for updates.
+  return ingress_egress_field
+
+
 @base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
 class UpdatePerimeterDryRun(base.UpdateCommand):
   """Updates the dry-run mode configuration for a Service Perimeter."""
@@ -107,7 +124,6 @@ class UpdatePerimeterDryRun(base.UpdateCommand):
         help="""Return immediately, without waiting for the operation in
                 progress to complete.""")
 
-
   def Run(self, args):
     client = zones_api.Client(version=self._API_VERSION)
     messages = util.GetMessages(version=self._API_VERSION)
@@ -157,6 +173,19 @@ class UpdatePerimeterDryRun(base.UpdateCommand):
     elif not updated_vpc_enabled:
       updated_vpc_services = []
 
+    updated_ingress = _GetIngressEgressFieldValue(
+        args,
+        'ingress-policies',
+        base_config.ingressPolicies,
+        original_perimeter.useExplicitDryRunSpec,
+    )
+    updated_egress = _GetIngressEgressFieldValue(
+        args,
+        'egress-policies',
+        base_config.egressPolicies,
+        original_perimeter.useExplicitDryRunSpec,
+    )
+
     return client.PatchDryRunConfig(
         perimeter_ref,
         resources=updated_resources,
@@ -164,10 +193,9 @@ class UpdatePerimeterDryRun(base.UpdateCommand):
         restricted_services=updated_restricted_services,
         vpc_allowed_services=updated_vpc_services,
         enable_vpc_accessible_services=updated_vpc_enabled,
-        ingress_policies=perimeters.ParseUpdateDirectionalPoliciesArgs(
-            args, 'ingress-policies'),
-        egress_policies=perimeters.ParseUpdateDirectionalPoliciesArgs(
-            args, 'egress-policies'))
+        ingress_policies=updated_ingress,
+        egress_policies=updated_egress,
+    )
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)

@@ -18,6 +18,8 @@
 
   request:
     collection: remotebuildexecution.projects.instances.workerpools
+    modify_request_hooks:
+    - googlecloudsdk.command_lib.remote_build_execution.workerpool_create_util:RemoveDiskTypeForMacOS
     static_fields:
       workerPool.workerConfig.diskType: "pd-standard"
 

@@ -1,17 +1,19 @@
-- release_tracks: [ALPHA]
+- release_tracks: [ALPHA, BETA]
 
   help_text:
-    brief: Export an entitlement into a local YAML file.
-    description: Export an entitlement into a local YAML file.
+    brief: Export a Privileged Access Manager (PAM) entitlement into a local YAML file.
+    description: Export a Privileged Access Manager (PAM) entitlement into a local YAML file.
     examples: |
-      The following command exports an entitlement with a given name into a local YAML file
-      entitlement-file.yaml:
+      The following command exports an entitlement with the full name ``ENTITLEMENT_NAME'' to a
+      local YAML file `entitlement-file.yaml`:
 
-      $ {command} entitlement-name --destination entitlement-file.yaml
+      $ {command} ENTITLEMENT_NAME --destination=entitlement-file.yaml
 
   request:
     ALPHA:
       api_version: v1alpha
+    BETA:
+      api_version: v1beta
     collection:
     - privilegedaccessmanager.projects.locations.entitlements
     - privilegedaccessmanager.folders.locations.entitlements

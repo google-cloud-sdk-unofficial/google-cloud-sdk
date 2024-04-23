@@ -25,8 +25,8 @@ from googlecloudsdk.core import log
 from googlecloudsdk.core.console import console_io
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class DeleteBeta(base.DeleteCommand):
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class Delete(base.DeleteCommand):
   """Delete a Cloud NetApp Volumes Backup Policy."""
 
   detailed_help = {
@@ -44,7 +44,7 @@ class DeleteBeta(base.DeleteCommand):
           """,
   }
 
-  _RELEASE_TRACK = base.ReleaseTrack.BETA
+  _RELEASE_TRACK = base.ReleaseTrack.GA
 
   @staticmethod
   def Args(parser):
@@ -70,3 +70,10 @@ class DeleteBeta(base.DeleteCommand):
           'Check the status of the deletion by listing all Backup Policies:\n  '
           '$ {} '.format(command))
     return result
+
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class DeleteBeta(Delete):
+  """Delete a Cloud NetApp Volumes Backup Policy."""
+
+  _RELEASE_TRACK = base.ReleaseTrack.BETA

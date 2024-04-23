@@ -32,7 +32,7 @@ if typing.TYPE_CHECKING:
 _DETAILED_HELP = frozendict.frozendict({'EXAMPLES': textwrap.dedent("""\
           To list user workloads ConfigMaps of the environment named env-1, run:
 
-            $ {command} --environment env-1
+            $ {command} --environment=env-1
         """)})
 
 

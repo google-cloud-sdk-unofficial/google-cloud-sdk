@@ -5,7 +5,7 @@
     examples: |
       To update the size of a storage pool named 'my-storage-pool', run th following command:
 
-        $ {command} my-storage-pool --pool-provisioned-capacity=20TB
+        $ {command} my-storage-pool --provisioned-capacity=20TB
 
   request:
     ALPHA:

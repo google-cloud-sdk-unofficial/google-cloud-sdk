@@ -1,17 +1,29 @@
-- release_tracks: [ALPHA]
+- release_tracks: [ALPHA, BETA]
 
   help_text:
-    brief: List all entitlements under a parent.
-    description: |
-      List all entitlements under a project/folder/organization and location.
+    brief: List all Privileged Access Manager (PAM) entitlements under a parent.
+    description: List all Privileged Access Manager (PAM) entitlements under a project/folder/organization location.
     examples: |
-      The following command lists all entitlements under a given parent:
+      The following command lists all entitlement under a project `sample-project` and location
+      `global`:
 
-      ${command} --location parent
+      $ {command} --project=sample-project --location=global
+
+      The following command lists all entitlement under a folder `sample-folder` and location
+      `global`:
+
+      $ {command} --folder=sample-folder --location=global
+
+      The following command lists all entitlement under an organization `sample-organization` and
+      location `global`:
+
+      $ {command} --organization=sample-organization --location=global
 
   request:
     ALPHA:
       api_version: v1alpha
+    BETA:
+      api_version: v1beta
     collection:
     - privilegedaccessmanager.projects.locations.entitlements
     - privilegedaccessmanager.folders.locations.entitlements
@@ -21,4 +33,4 @@
     resource:
       spec: !REF googlecloudsdk.command_lib.pam.resources:location
       help_text: |
-        The location under which the entitlements are to be listed.
+        Location under which the entitlements are to be listed.

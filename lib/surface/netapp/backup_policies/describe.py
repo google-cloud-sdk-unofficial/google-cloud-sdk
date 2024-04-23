@@ -24,8 +24,8 @@ from googlecloudsdk.command_lib.netapp import flags
 from googlecloudsdk.command_lib.util.concepts import concept_parsers
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class DescribeBeta(base.DescribeCommand):
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class Describe(base.DescribeCommand):
   """Show metadata for a Cloud NetApp Volumes Backup Policy."""
 
   detailed_help = {
@@ -43,7 +43,7 @@ class DescribeBeta(base.DescribeCommand):
           """,
   }
 
-  _RELEASE_TRACK = base.ReleaseTrack.BETA
+  _RELEASE_TRACK = base.ReleaseTrack.GA
 
   @staticmethod
   def Args(parser):
@@ -56,4 +56,11 @@ class DescribeBeta(base.DescribeCommand):
     client = backuppolicies_client.BackupPoliciesClient(
         release_track=self._RELEASE_TRACK)
     return client.GetBackupPolicy(backuppolicy_ref)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class DescribeBeta(Describe):
+  """Show metadata for a Cloud NetApp Volumes Backup Policy."""
+
+  _RELEASE_TRACK = base.ReleaseTrack.BETA
 

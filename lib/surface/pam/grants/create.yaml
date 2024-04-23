@@ -1,19 +1,21 @@
-- release_tracks: [ALPHA]
+- release_tracks: [ALPHA, BETA]
 
   help_text:
-    brief: Create a new grant.
-    description: Create a new grant under an entitlement.
+    brief: Create a new Privileged Access Manager (PAM) grant.
+    description: Create a new Privileged Access Manager (PAM) grant under an entitlement.
     examples: |
-      The following command creates a new grant under an entitlement sample-entitlement-name, with requested duration 1 hour 30 minutes, a justification and two additional email recipients:
+      The following command creates a new grant under an entitlement with the full name
+      ``ENTITLEMENT_NAME'', with requested duration `1 hour 30 minutes`, a justification
+      `some justification` and two additional email recipients `abc@example.com` and
+      `xyz@example.com`:
 
-      $ {command} --entitlement sample-entitlement-name
-      --requested-duration 5400s
-      --justification "some justification"
-      --additional-email-recipients abc@google.com,xyz@google.com
+      $ {command} --entitlement=ENTITLEMENT_NAME --requested-duration=5400s --justification="some justification" --additional-email-recipients=abc@example.com,xyz@example.com
 
   request:
     ALPHA:
       api_version: v1alpha
+    BETA:
+      api_version: v1beta
     collection:
     - privilegedaccessmanager.projects.locations.entitlements.grants
     - privilegedaccessmanager.folders.locations.entitlements.grants
@@ -28,16 +30,16 @@
       is_positional: false
       required: true
       help_text: |
-        The entitlement under which the grant is to be created
+        Entitlement under which the grant is to be created
     - arg_name: requested-duration
       api_field: grant.requestedDuration
       required: true
       help_text: |
-        The duration of the grant being created.
+        Duration of the grant being created.
     - arg_name: justification
       api_field: grant.justification.unstructuredJustification
       help_text: |
-        The justification for the grant.
+        Justification for the grant.
     - arg_name: additional-email-recipients
       api_field: grant.additionalEmailRecipients
       repeated: true

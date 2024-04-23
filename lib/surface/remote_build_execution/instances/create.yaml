@@ -319,6 +319,21 @@
       help_text: |
         Defines whether Windows actions and worker pools are allowed and how they can be configured
         to support various levels of isolation.
+    - api_field: instance.featurePolicy.macExecution
+      arg_name: mac-execution
+      required: false
+      choices:
+      - arg_value: forbidden
+        enum_value: MAC_EXECUTION_FORBIDDEN
+        help_text: |
+          Forbid Mac actions and worker pools.
+      - arg_value: unrestricted
+        enum_value: MAC_EXECUTION_UNRESTRICTED
+        help_text: |
+          No additional restrictions imposed on Mac actions or worker pools by this policy.
+      help_text: |
+        Defines whether Mac actions and worker pools are allowed and how they can be configured
+        to support various levels of isolation.
     - api_field: instance.featurePolicy.actionIsolation
       arg_name: action-isolation
       required: false

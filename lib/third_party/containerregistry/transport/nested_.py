@@ -14,7 +14,6 @@
 """An httplib2.Http extending and composing an inner httplib2.Http transport.
 """
 
-
 import httplib2
 
 

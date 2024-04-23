@@ -41,21 +41,27 @@ import bq_flags
 import bq_utils
 import credential_loader
 
-from clients import client_dataset
 from clients import utils as bq_client_utils
 from frontend import bigquery_command
 from frontend import bq_cached_client
 from frontend import commands
+from frontend import commands_iam
 from frontend import command_info
+from frontend import command_load
 from frontend import command_make
+from frontend import command_query
+from frontend import command_repl
 from frontend import command_show
+from frontend import command_update
 from frontend import utils as frontend_utils
 from utils import bq_id_utils
 
 flags.adopt_module_key_flags(bq_flags)
 
 FLAGS = flags.FLAGS
-# These are long names.
+
+# TODO(b/324243535): Remove these re-exports once the refactor is complete.
+# pylint: disable=protected-access
 # pylint: disable=g-bad-name
 JobReference = bq_id_utils.ApiClientHelper.JobReference
 ProjectReference = bq_id_utils.ApiClientHelper.ProjectReference
@@ -90,41 +96,11 @@ BetaReservationAssignmentReference = (
     bq_id_utils.ApiClientHelper.BetaReservationAssignmentReference
 )
 ConnectionReference = bq_id_utils.ApiClientHelper.ConnectionReference
-
-# TODO(b/324243535): Remove these re-exports once the refactor is complete.
 _FormatDataTransferIdentifiers = bq_id_utils.FormatDataTransferIdentifiers
 _FormatProjectIdentifier = bq_id_utils.FormatProjectIdentifier
-# pylint: enable=g-bad-name
-
 _PARQUET_LIST_INFERENCE_DESCRIPTION = (
-    'Use schema inference specifically for Parquet LIST logical type.\n It '
-    'checks whether the LIST node is in the standard form as documented in:\n '
-    'https://github.com/apache/parquet-format/blob/master/LogicalTypes.md#lists\n'
-    '  <optional | required> group <name> (LIST) {\n    repeated group list '
-    '{\n      <optional | required> <element-type> element;\n    }\n  }\n '
-    'Returns the "element" node in list_element_node. The corresponding field '
-    'for the LIST node in the converted schema is treated as if the node has '
-    'the following schema:\n repeated <element-type> <name>\n This means nodes'
-    ' "list" and "element" are omitted.\n\n Otherwise, the LIST node must be '
-    'in one of the forms described by the backward-compatibility rules as '
-    'documented in:\n '
-    'https://github.com/apache/parquet-format/blob/master/LogicalTypes.md#backward-compatibility-rules\n'
-    ' <optional | required> group <name> (LIST) {\n   repeated <element-type> '
-    '<element-name>\n }\n Returns the <element-name> node in '
-    'list_element_node. The corresponding field for the LIST node in the '
-    'converted schema is treated as if the node has the following schema:\n '
-    'repeated <element-type> <name>\n This means the element node is omitted.')
-# These aren't relevant for user-facing docstrings:
-# pylint: disable=g-doc-return-or-yield
-# pylint: disable=g-doc-args
-# TODO(user): Write some explanation of the structure of this file.
-
-####################
-# flags processing
-####################
-
-# TODO(b/324243535): Remove these re-exports as a final step.
-# pylint: disable=protected-access
+    frontend_utils.PARQUET_LIST_INFERENCE_DESCRIPTION
+)
 _FormatDataTransferIdentifiers = bq_id_utils.FormatDataTransferIdentifiers
 _FormatProjectIdentifier = bq_id_utils.FormatProjectIdentifier
 _ValidateGlobalFlags = frontend_utils.ValidateGlobalFlags
@@ -152,10 +128,10 @@ Factory = bq_cached_client.Factory
 Client = bq_cached_client.Client
 NewCmd = bigquery_command.NewCmd
 BigqueryCmd = bigquery_command.BigqueryCmd
-_Load = commands.Load
+_Load = command_load.Load
 _CreateExternalTableDefinition = frontend_utils.CreateExternalTableDefinition
 _MakeExternalTableDefinition = commands.MakeExternalTableDefinition
-_Query = commands.Query
+_Query = command_query.Query
 _Extract = commands.Extract
 _Partition = commands.Partition
 _List = commands.ListCmd
@@ -169,7 +145,7 @@ _ParseNumericTypeConversionMode = frontend_utils.ParseNumericTypeConversionMode
 _ParseRangePartitioning = frontend_utils.ParseRangePartitioning
 _Make = command_make.Make
 _Truncate = commands.Truncate
-_Update = commands.Update
+_Update = command_update.Update
 _Show = command_show.Show
 _IsSuccessfulDmlOrDdlJob = frontend_utils.IsSuccessfulDmlOrDdlJob
 _MaybeGetSessionTempObjectName = frontend_utils.MaybeGetSessionTempObjectName
@@ -181,19 +157,20 @@ _Cancel = commands.Cancel
 _Head = commands.Head
 _Insert = commands.Insert
 _Wait = commands.Wait
-_IamPolicyCmd = commands._IamPolicyCmd
-_GetIamPolicy = commands.GetIamPolicy
-_SetIamPolicy = commands.SetIamPolicy
-_IamPolicyBindingCmd = commands._IamPolicyBindingCmd
-_AddIamPolicyBinding = commands.AddIamPolicyBinding
-_RemoveIamPolicyBinding = commands.RemoveIamPolicyBinding
+_IamPolicyCmd = commands_iam._IamPolicyCmd
+_GetIamPolicy = commands_iam.GetIamPolicy
+_SetIamPolicy = commands_iam.SetIamPolicy
+_IamPolicyBindingCmd = commands_iam._IamPolicyBindingCmd
+_AddIamPolicyBinding = commands_iam.AddIamPolicyBinding
+_RemoveIamPolicyBinding = commands_iam.RemoveIamPolicyBinding
 # pylint: enable=protected-access
+# pylint: enable=g-bad-name
 
 
 # pylint: enable=g-bad-name
 
 # TODO(b/324243535): Remove these re-exports as a final step.
-_Repl = commands.Repl
+_Repl = command_repl.Repl
 _Init = commands.Init
 _Version = commands.Version
 _Info = command_info.Info
@@ -222,28 +199,28 @@ def main(unused_argv):
 
     bq_commands = {
         # Keep the commands alphabetical.
-        'add-iam-policy-binding': commands.AddIamPolicyBinding,
+        'add-iam-policy-binding': commands_iam.AddIamPolicyBinding,
         'cancel': commands.Cancel,
         'cp': commands.Copy,
         'extract': commands.Extract,
-        'get-iam-policy': commands.GetIamPolicy,
+        'get-iam-policy': commands_iam.GetIamPolicy,
         'head': commands.Head,
         'info': command_info.Info,
         'init': commands.Init,
         'insert': commands.Insert,
-        'load': commands.Load,
+        'load': command_load.Load,
         'ls': commands.ListCmd,
         'mk': command_make.Make,
         'mkdef': commands.MakeExternalTableDefinition,
         'partition': commands.Partition,
-        'query': commands.Query,
-        'remove-iam-policy-binding': commands.RemoveIamPolicyBinding,
+        'query': command_query.Query,
+        'remove-iam-policy-binding': commands_iam.RemoveIamPolicyBinding,
         'rm': commands.Delete,
-        'set-iam-policy': commands.SetIamPolicy,
-        'shell': commands.Repl,
+        'set-iam-policy': commands_iam.SetIamPolicy,
+        'shell': command_repl.Repl,
         'show': command_show.Show,
         'truncate': commands.Truncate,
-        'update': commands.Update,
+        'update': command_update.Update,
         'version': commands.Version,
         'wait': commands.Wait,
     }

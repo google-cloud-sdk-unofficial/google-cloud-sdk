@@ -37,8 +37,8 @@ DETAILED_HELP = {
 }
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class CancelBeta(base.UpdateCommand):
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
+class Cancel(base.UpdateCommand):
   """Cancel a Compute Engine managed instance group resize request.
 
   *{command}* cancels one or more Compute Engine managed instance group resize
@@ -119,7 +119,7 @@ class CancelBeta(base.UpdateCommand):
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class CancelAlpha(CancelBeta):
+class CancelAlpha(Cancel):
   """Cancel a Compute Engine managed instance group resize request.
 
   *{command}* cancels one or more Compute Engine managed instance group resize

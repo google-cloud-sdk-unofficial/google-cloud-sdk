@@ -14,7 +14,6 @@
 """This package flattens image metadata into a single tarball."""
 
 from __future__ import absolute_import
-
 from __future__ import print_function
 
 import argparse

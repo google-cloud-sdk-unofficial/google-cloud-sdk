@@ -21,7 +21,12 @@ from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 
 
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class BackupPolicies(base.Group):
+  """Create and manage Cloud NetApp Backup Policies."""
+
+
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
-class BackupPoliciesBeta(base.Group):
+class BackupPoliciesBeta(BackupPolicies):
   """Create and manage Cloud NetApp Backup Policies."""
 

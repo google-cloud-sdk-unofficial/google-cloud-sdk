@@ -25,11 +25,11 @@ from googlecloudsdk.command_lib.netapp.backup_vaults.backups import flags as bac
 from googlecloudsdk.command_lib.util.concepts import concept_parsers
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class DescribeBeta(base.DescribeCommand):
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class Describe(base.DescribeCommand):
   """Describe a Cloud NetApp Backup."""
 
-  _RELEASE_TRACK = base.ReleaseTrack.BETA
+  _RELEASE_TRACK = base.ReleaseTrack.GA
 
   detailed_help = {
       'DESCRIPTION': """\
@@ -59,3 +59,8 @@ class DescribeBeta(base.DescribeCommand):
     return client.GetBackup(backup_ref)
 
 
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class DescribeBeta(Describe):
+  """Describe a Cloud NetApp Backup."""
+
+  _RELEASE_TRACK = base.ReleaseTrack.BETA

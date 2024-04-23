@@ -198,6 +198,10 @@ class AlphaList(List):
         To list Cloud Spanner instance partition operations for an instance partition, run:
 
           $ {command} --instance=my-instance-id --instance-partition=my-partition-id --type=INSTANCE_PARTITION
+
+        To list Cloud Spanner instance partition operations for an instance, run:
+
+          $ {command} --instance=my-instance-id --type=INSTANCE_PARTITION
         """),
   }
 
@@ -296,6 +300,5 @@ class AlphaList(List):
             args.instance_partition, args.instance
         )
       else:
-        # TODO(b/328253726): support ListInstancePartitionOperations API.
-        pass
+        return instance_partition_operations.List(args.instance)
     return super().Run(args)

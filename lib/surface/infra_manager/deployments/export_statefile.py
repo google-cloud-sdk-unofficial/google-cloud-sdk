@@ -42,6 +42,13 @@ class ExportStatefile(base.Command):
 
   @staticmethod
   def Args(parser):
+    file_help_text = """\
+        File name for statefile. It is optional and it specifies the filename or
+        complete path for the downloaded statefile. If only a file path is
+        provided, the statefile will be downloaded as "statefile" within that
+        directory. If a filename is included, the statefile will be downloaded
+        with that name."""
+    flags.AddFileFlag(parser, file_help_text)
     flags.AddDraftFlag(parser)
 
     concept_parsers.ConceptParser(
@@ -70,4 +77,5 @@ class ExportStatefile(base.Command):
         messages,
         deployment_full_name,
         args.draft,
+        args.file,
     )

@@ -75,6 +75,7 @@ class Create(base.CreateCommand):
     )
     flags.AddSSLMode(parser, update=False)
     flags.AddRequireConnectors(parser)
+    flags.AddAssignInboundPublicIp(parser, False)
     # TODO(b/185795425): Add --ssl-required and --labels later once we
     # understand the use cases
 
@@ -123,7 +124,6 @@ class CreateBeta(Create):
   @classmethod
   def Args(cls, parser):
     super(CreateBeta, CreateBeta).Args(parser)
-    flags.AddAssignInboundPublicIp(parser, False)
 
   def ConstructCreateRequestFromArgs(
       self, client, alloydb_messages, cluster_ref, args

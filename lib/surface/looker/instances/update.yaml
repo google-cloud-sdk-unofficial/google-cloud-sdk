@@ -191,6 +191,55 @@
           api_field: instance.customDomain.domain
           help_text: |
             Domain name wanted to serve the Looker instance.
+    # Group for PSC
+    - group:
+        required: false
+        release_tracks: [GA]
+        hidden: true
+        help_text: |
+          Private Service Connect - Private Service Connect allows private consumption of services
+          across VPC networks that belong to different groups, teams, projects, or organizations.
+        params:
+        - group:
+            mutex: true
+            hidden: true
+            params:
+            - api_field: instance.pscConfig.allowedVpcs
+              arg_name: psc-allowed-vpcs
+              hidden: true
+              help_text: |
+                List of VPCs that are allowed ingress into the Looker instance.
+            - arg_name: clear-psc-allowed-vpcs
+              action: store_true
+              hidden: true
+              help_text: |
+                Remove all service attachments from the PSC config of the instance.
+        - group:
+            mutex: true
+            hidden: true
+            params:
+            - api_field: instance.pscConfig.serviceAttachments
+              arg_name: psc-service-attachment
+              hidden: true
+              help_text: |
+                The service attachments asigned to the Private Service Connect (PSC) config.
+                This flag can be repeated.
+                (Example: --psc-service-attachment domain="mydomain.com",attachment="projects/my-project/regions/us-east1/serviceAttachments/sa" --psc-service-attachments domain="mydomain.com",attachment="projects/my-project/regions/us-east1/serviceAttachments/sa")
+              type:
+                arg_dict:
+                  flatten: false
+                  spec:
+                  - api_field: localFqdn
+                    arg_name: domain
+                    type: str
+                  - api_field: targetServiceAttachmentUri
+                    arg_name: attachment
+                    type: str
+            - arg_name: clear-psc-service-attachments
+              action: store_true
+              hidden: true
+              help_text: |
+                Remove all service attachments from the PSC config of the instance.
 
   request:
     ALPHA:
@@ -213,6 +262,8 @@
       - googlecloudsdk.command_lib.looker.instances_update_util:UpdateDenyMaintenancePeriod
       - googlecloudsdk.command_lib.looker.instances_update_util:UpdatePublicIPEnabled
       - googlecloudsdk.command_lib.looker.instances_update_util:UpdateCustomDomain
+      - googlecloudsdk.command_lib.looker.instances_update_util:UpdatePscAllowedVpcs
+      - googlecloudsdk.command_lib.looker.instances_update_util:UpdatePscServiceAttachments
     collection: looker.projects.locations.instances
 
   update:

@@ -14,7 +14,6 @@
 """This package appends a tarball to an image in a Docker Registry."""
 
 from __future__ import absolute_import
-
 from __future__ import print_function
 
 import argparse

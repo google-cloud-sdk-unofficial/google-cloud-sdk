@@ -16,8 +16,6 @@
 Unlike 'docker save' the format this uses is proprietary.
 """
 
-
-
 import argparse
 import logging
 

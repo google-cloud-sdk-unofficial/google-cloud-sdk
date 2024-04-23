@@ -13,8 +13,6 @@
 # limitations under the License.
 """This package facilitates retries for HTTP/REST requests to the registry."""
 
-
-
 import logging
 import time
 

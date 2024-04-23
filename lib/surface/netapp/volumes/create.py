@@ -101,16 +101,13 @@ class Create(base.CreateCommand):
     labels = labels_util.ParseCreateArgs(
         args, client.messages.Volume.LabelsValue
     )
-    backup_config = (
-        args.backup_config
-        if self._RELEASE_TRACK == base.ReleaseTrack.BETA
-        else None
-    )
-    source_backup = (
-        args.source_backup
-        if self._RELEASE_TRACK == base.ReleaseTrack.BETA
-        else None
-    )
+    if (self._RELEASE_TRACK == base.ReleaseTrack.BETA or
+        self._RELEASE_TRACK == base.ReleaseTrack.GA):
+      backup_config = args.backup_config
+      source_backup = args.source_backup
+    else:
+      backup_config = None
+      source_backup = None
     if (self._RELEASE_TRACK == base.ReleaseTrack.ALPHA or
         self._RELEASE_TRACK == base.ReleaseTrack.BETA):
       large_capacity = args.large_capacity

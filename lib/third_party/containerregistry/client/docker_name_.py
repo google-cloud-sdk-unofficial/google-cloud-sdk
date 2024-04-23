@@ -15,7 +15,6 @@
 
 from __future__ import absolute_import
 from __future__ import division
-
 from __future__ import print_function
 
 import os
@@ -254,7 +253,13 @@ class Digest(Repository):
 
     self._digest = parts[1]
     _check_digest(self._digest)
-    super(Digest, self).__init__(parts[0], strict=strict)
+
+    # check if there is a tag
+    try:
+      tag = Tag(parts[0], strict=strict)
+      super(Digest, self).__init__(tag.as_repository().__str__(), strict=strict)
+    except BadNameException:
+      super(Digest, self).__init__(parts[0], strict=strict)
 
   def _validation_exception(self, name):
     return BadNameException('Docker image name must be fully qualified (e.g.'

@@ -73,6 +73,8 @@ class Update(base.UpdateCommand):
     )
     flags.AddSSLMode(parser, update=True)
     flags.AddRequireConnectors(parser)
+    flags.AddAssignInboundPublicIp(parser, update=True)
+    flags.AddAuthorizedExternalNetworks(parser)
     # TODO(b/185795425): Add --ssl-required and --labels later once we
     # understand the use cases
 
@@ -123,8 +125,6 @@ class UpdateBeta(Update):
   def Args(parser):
     super(UpdateBeta, UpdateBeta).Args(parser)
     flags.AddUpdateMode(parser)
-    flags.AddAssignInboundPublicIp(parser, update=True)
-    flags.AddAuthorizedExternalNetworks(parser)
 
   def ConstructPatchRequestFromArgs(self, alloydb_messages, instance_ref, args):
     return instance_helper.ConstructPatchRequestFromArgsBeta(

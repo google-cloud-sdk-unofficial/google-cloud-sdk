@@ -45,6 +45,9 @@
       required: true
       api_field: googleCloudNetworkconnectivityV1betaRegionalEndpoint.targetGoogleApi
       help_text: The service endpoint the regional endpoint will connect to.
+    - arg_name: address
+      api_field: googleCloudNetworkconnectivityV1betaRegionalEndpoint.address
+      help_text: The IP address or address resource URI of the Regional Endpoint. When no address value is provided, an IP from the subnetwork is allocated.
     labels:
       api_field: googleCloudNetworkconnectivityV1betaRegionalEndpoint.labels
 

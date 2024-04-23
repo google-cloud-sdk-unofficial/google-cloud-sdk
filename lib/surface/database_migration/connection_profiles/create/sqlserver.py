@@ -44,7 +44,6 @@ DETAILED_HELP = {
 }
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class _SQLServer(base.Command):
   """Create a Database Migration Service connection profile for SQL Server."""

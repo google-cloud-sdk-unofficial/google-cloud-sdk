@@ -131,7 +131,7 @@ class RestoreAlpha(Restore):
   @classmethod
   def Args(cls, parser):
     super(RestoreAlpha, cls).Args(parser)
-    flags.AddEnablePrivateServicesConnect(parser)
+    flags.AddEnablePrivateServiceConnect(parser)
 
   def ConstructRestoreRequestFromArgs(
       self, alloydb_messages, location_ref, resource_parser, args

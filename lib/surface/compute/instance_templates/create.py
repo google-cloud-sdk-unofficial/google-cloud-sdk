@@ -134,6 +134,7 @@ def _CommonArgs(
 
   if support_max_run_duration:
     instances_flags.AddMaxRunDurationVmArgs(parser)
+    instances_flags.AddDiscardLocalSsdVmArgs(parser)
 
   instance_templates_flags.AddServiceProxyConfigArgs(
       parser, release_track=release_track
@@ -770,6 +771,14 @@ def _RunCreate(
   if hasattr(args, 'termination_time') and args.IsSpecified('termination_time'):
     termination_time = args.termination_time
 
+  discard_local_ssds_at_termination_timestamp = None
+  if hasattr(
+      args, 'discard_local_ssds_at_termination_timestamp'
+  ) and args.IsSpecified('discard_local_ssds_at_termination_timestamp'):
+    discard_local_ssds_at_termination_timestamp = (
+        args.discard_local_ssds_at_termination_timestamp
+    )
+
   host_error_timeout_seconds = None
   if support_host_error_timeout_seconds and args.IsSpecified(
       'host_error_timeout_seconds'
@@ -809,6 +818,7 @@ def _RunCreate(
       local_ssd_recovery_timeout=local_ssd_recovery_timeout,
       maintenance_interval=maintenance_interval,
       graceful_shutdown=graceful_shutdown,
+      discard_local_ssds_at_termination_timestamp=discard_local_ssds_at_termination_timestamp,
   )
 
   if args.no_service_account:

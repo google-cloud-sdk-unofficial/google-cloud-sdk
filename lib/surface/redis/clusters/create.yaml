@@ -30,8 +30,6 @@
         hyphens. It must start with a lowercase letter and end with a lowercase letter or number.
     params:
     - arg_name: node-type
-      release_tracks: [ALPHA, BETA]
-      hidden: true
       api_field: cluster.nodeType
       help_text: Node Type of the redis cluster Node.
       choices:

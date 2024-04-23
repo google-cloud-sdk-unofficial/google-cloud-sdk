@@ -128,7 +128,7 @@ class CreateAlpha(CreateBeta):
   @classmethod
   def Args(cls, parser):
     super(CreateAlpha, cls).Args(parser)
-    flags.AddEnablePrivateServicesConnect(parser)
+    flags.AddEnablePrivateServiceConnect(parser)
 
   def ConstructCreateRequestFromArgs(
       self, alloydb_messages, location_ref, args

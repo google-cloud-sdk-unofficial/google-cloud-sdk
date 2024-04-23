@@ -21,6 +21,7 @@ from __future__ import unicode_literals
 from googlecloudsdk.api_lib.container.fleet import util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.container.fleet import api_util
+from googlecloudsdk.command_lib.container.fleet.config_management import utils
 from googlecloudsdk.command_lib.container.fleet.features import base as feature_base
 from googlecloudsdk.core import log
 
@@ -68,6 +69,8 @@ class ConfigmanagementFeatureState(object):
     self.sync_branch = NA
     self.policy_controller_state = NA
     self.hierarchy_controller_state = NA
+    self.version = NA
+    self.upgrades = NA
 
   def update_sync_state(self, fs):
     """Update config_sync state for the membership that has ACM installed.
@@ -215,7 +218,9 @@ class Status(feature_base.FeatureCommand, base.ListCommand):
             sync_branch:label="Sync_Branch",
             last_synced:label="Last_Synced_Time",
             policy_controller_state:label="Policy_Controller",
-            hierarchy_controller_state:label="Hierarchy_Controller"
+            hierarchy_controller_state:label="Hierarchy_Controller",
+            version:label="Version",
+            upgrades:label="Upgrades"
       )' , acm_errors:format=list)
     """)
 
@@ -271,7 +276,26 @@ class Status(feature_base.FeatureCommand, base.ListCommand):
           else:
             cluster.config_sync = 'OPERATOR_STATE_UNSPECIFIED'
         else:
-          cluster.config_sync = fs.operatorState.deploymentState.name
+          # Set cluster.upgrades
+          if (
+              fs.membershipSpec is not None
+              and fs.membershipSpec.management is not None
+              and fs.membershipSpec.management.name
+              == utils.MANAGEMENT_AUTOMATIC
+          ):
+            cluster.upgrades = utils.UPGRADES_AUTO
+          else:
+            cluster.upgrades = utils.UPGRADES_MANUAL
+          # Set cluster.version
+          if fs.membershipSpec is not None:
+            cluster.version = fs.membershipSpec.version
+          # Set cluster.config_sync
+          if fs.configSyncState.state is not None:
+            cluster.config_sync = config_sync_state(
+                fs.configSyncState.state.name
+            )
+          if fs.configSyncState.errors:
+            append_error(name, fs.configSyncState.errors, acm_errors)
           if cluster.config_sync == 'INSTALLED':
             cluster.update_sync_state(fs)
             if has_config_sync_error(fs):
@@ -286,6 +310,28 @@ class Status(feature_base.FeatureCommand, base.ListCommand):
               )
       acm_status.append(cluster)
     return {'acm_errors': acm_errors, 'acm_status': acm_status}
+
+
+def config_sync_state(state):
+  """Convert state to a string shown to the users.
+
+  Args:
+    state: a string from the ACM Fleet Feature state representing the Config
+    Sync state.
+
+  Returns:
+    a string shown to the users representing the Config Sync state.
+  """
+  if state == 'CONFIG_SYNC_INSTALLED':
+    return 'INSTALLED'
+  elif state == 'CONFIG_SYNC_NOT_INSTALLED':
+    return 'NOT_INSTALLED'
+  elif state == 'CONFIG_SYNC_ERROR':
+    return 'ERROR'
+  elif state == 'CONFIG_SYNC_PENDING':
+    return 'PENDING'
+  else:
+    return 'UNSPECIFIED'
 
 
 def has_operator_state(fs):

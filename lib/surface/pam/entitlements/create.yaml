@@ -1,19 +1,32 @@
-- release_tracks: [ALPHA]
+- release_tracks: [ALPHA, BETA]
 
   help_text:
-    brief: Create a new entitlement.
-    description: Create a new entitlement under a project/folder/organization and a location.
+    brief: Create a new Privileged Access Manager (PAM) entitlement.
+    description: Create a new Privileged Access Manager (PAM) entitlement under a project/folder/organization location.
     examples: |
-      The following command creates a new entitlement with the name sample-entitlement, under the
-      project sample-project, location global and the entitlement body present in the
-      sample-entitlement.yaml file:
+      The following command creates a new entitlement with the name `sample-entitlement`, under a
+      project `sample-project`, location `global` and the entitlement body present in the
+      `sample-entitlement.yaml` file:
 
-      $ {command} sample-entitlement --project sample-project --location global
-      --entitlement-file sample-entitlement.yaml
+      $ {command} sample-entitlement --project=sample-project --location=global --entitlement-file=sample-entitlement.yaml
+
+      The following command creates a new entitlement with the name `sample-entitlement`, under a
+      folder `sample-folder`, location `global` and the entitlement body present in the
+      `sample-entitlement.yaml` file:
+
+      $ {command} sample-entitlement --folder=sample-folder --location=global --entitlement-file=sample-entitlement.yaml
+
+      The following command creates a new entitlement with the name `sample-entitlement`, under an
+      organization `sample-organization`, location `global` and the entitlement body present in the
+      `sample-entitlement.yaml` file:
+
+      $ {command} sample-entitlement --organization=sample-organization --location=global --entitlement-file=sample-entitlement.yaml
 
   request:
     ALPHA:
       api_version: v1alpha
+    BETA:
+      api_version: v1beta
     collection:
     - privilegedaccessmanager.projects.locations.entitlements
     - privilegedaccessmanager.folders.locations.entitlements
@@ -25,7 +38,7 @@
     resource:
       spec: !REF googlecloudsdk.command_lib.pam.resources:entitlement
       help_text: |
-        The name of the entitlement to create.
+        Name of the entitlement to create.
     params:
     - arg_name: entitlement-file
       api_field: entitlement
@@ -38,6 +51,8 @@
   async:
     ALPHA:
       api_version: v1alpha
+    BETA:
+      api_version: v1beta
     collection:
     - privilegedaccessmanager.projects.locations.operations
     - privilegedaccessmanager.folders.locations.operations

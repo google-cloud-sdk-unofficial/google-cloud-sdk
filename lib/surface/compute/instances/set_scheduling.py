@@ -170,6 +170,20 @@ class SetSchedulingInstances(base.SilentCommand):
       scheduling_options.terminationTime = None
       cleared_fields.append('terminationTime')
 
+    if hasattr(
+        args, 'discard_local_ssds_at_termination_timestamp'
+    ) and args.IsSpecified('discard_local_ssds_at_termination_timestamp'):
+      scheduling_options.onInstanceStopAction = (
+          client.messages.SchedulingOnInstanceStopAction(
+              discardLocalSsd=args.discard_local_ssds_at_termination_timestamp
+          )
+      )
+    elif hasattr(
+        args, 'clear_discard_local_ssds_at_termination_timestamp'
+    ) and args.IsSpecified('clear_discard_local_ssds_at_termination_timestamp'):
+      scheduling_options.onInstanceStopAction = None
+      cleared_fields.append('discardLocalSsdsAtTerminationTimestamp')
+
     if instance_utils.IsAnySpecified(args, 'node', 'node_affinity_file',
                                      'node_group'):
       affinities = sole_tenancy_util.GetSchedulingNodeAffinityListFromArgs(
@@ -225,6 +239,7 @@ class SetSchedulingInstancesBeta(SetSchedulingInstances):
     flags.AddMinNodeCpuArg(parser, is_update=True)
     flags.AddHostErrorTimeoutSecondsArgs(parser)
     flags.AddMaxRunDurationVmArgs(parser, is_update=True)
+    flags.AddDiscardLocalSsdVmArgs(parser, is_update=True)
     flags.AddLocalSsdRecoveryTimeoutArgs(parser)
 
   def Run(self, args):
@@ -266,4 +281,5 @@ class SetSchedulingInstancesAlpha(SetSchedulingInstancesBeta):
     flags.AddHostErrorTimeoutSecondsArgs(parser)
     flags.AddLocalSsdRecoveryTimeoutArgs(parser)
     flags.AddMaxRunDurationVmArgs(parser, is_update=True)
+    flags.AddDiscardLocalSsdVmArgs(parser, is_update=True)
     flags.AddGracefulShutdownArgs(parser)

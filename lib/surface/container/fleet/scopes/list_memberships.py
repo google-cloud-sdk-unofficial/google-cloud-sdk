@@ -25,7 +25,6 @@ from googlecloudsdk.command_lib.container.fleet import resources
 from googlecloudsdk.command_lib.container.fleet import util
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class ListBoundMemberships(base.ListCommand):
   """List memberships bound to a fleet scope.
 

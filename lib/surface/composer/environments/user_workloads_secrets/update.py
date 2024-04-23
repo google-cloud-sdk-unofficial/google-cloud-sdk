@@ -26,7 +26,7 @@ from googlecloudsdk.core import log
 _DETAILED_HELP = frozendict.frozendict({'EXAMPLES': textwrap.dedent("""\
           To update a user workloads Secret of the environment named env-1, run:
 
-            $ {command} --environment env-1 --secret-file-path=secret.yaml
+            $ {command} --environment=env-1 --secret-file-path=secret.yaml
         """)})
 
 

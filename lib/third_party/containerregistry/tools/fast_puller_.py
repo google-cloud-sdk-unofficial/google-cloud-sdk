@@ -16,8 +16,6 @@
 Unlike docker_puller the format this uses is proprietary.
 """
 
-
-
 import argparse
 import logging
 import sys

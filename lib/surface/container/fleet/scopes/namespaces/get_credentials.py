@@ -20,11 +20,11 @@ from __future__ import unicode_literals
 
 import textwrap
 
-from googlecloudsdk.command_lib.container.fleet import connect_gateway_util as cg_util
+from googlecloudsdk.command_lib.container.fleet import gateway
 from googlecloudsdk.command_lib.container.fleet import resources
 
 
-class GetCredentials(cg_util.GetCredentialsCommand):
+class GetCredentials(gateway.GetCredentialsCommand):
   """Fetch credentials for a membership with a particular namespace.
 
   ## EXAMPLES

@@ -106,16 +106,13 @@ class Update(base.UpdateCommand):
       )
     else:
       security_style = None
-    backup_config = (
-        args.backup_config
-        if self._RELEASE_TRACK == base.ReleaseTrack.BETA
-        else None
-    )
-    source_backup = (
-        args.source_backup
-        if self._RELEASE_TRACK == base.ReleaseTrack.BETA
-        else None
-    )
+    if (self._RELEASE_TRACK == base.ReleaseTrack.BETA or
+        self._RELEASE_TRACK == base.ReleaseTrack.GA):
+      backup_config = args.backup_config
+      source_backup = args.source_backup
+    else:
+      backup_config = None
+      source_backup = None
     volume = client.ParseUpdatedVolumeConfig(
         original_volume,
         description=args.description,
@@ -171,7 +168,8 @@ class Update(base.UpdateCommand):
       updated_fields.append('restoreParameters')
     if args.IsSpecified('restricted_actions'):
       updated_fields.append('restrictedActions')
-    if self._RELEASE_TRACK == base.ReleaseTrack.BETA:
+    if (self._RELEASE_TRACK == base.ReleaseTrack.BETA or
+        self._RELEASE_TRACK == base.ReleaseTrack.GA):
       if args.IsSpecified('source_backup'):
         updated_fields.append('restoreParameters')
       if backup_config is not None:

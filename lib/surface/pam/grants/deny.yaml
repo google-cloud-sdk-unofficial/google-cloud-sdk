@@ -1,17 +1,19 @@
-- release_tracks: [ALPHA]
+- release_tracks: [ALPHA, BETA]
 
   help_text:
-    brief: Deny a grant.
-    description: |
-      Deny a grant with a given name and reason.
+    brief: Deny a Privileged Access Manager (PAM) grant.
+    description: Deny a Privileged Access Manager (PAM) grant with a reason.
     examples: |
-      The following command denies a grant with a given name and provides a reason for denial:
+      The following command denies a grant with the full name ``GRANT_NAME'' and a reason
+      `denial reason`:
 
-      $ {command} grant-name --reason denial-reason
+      $ {command} GRANT_NAME --reason="denial reason"
 
   request:
     ALPHA:
       api_version: v1alpha
+    BETA:
+      api_version: v1beta
     method: deny
     collection:
     - privilegedaccessmanager.projects.locations.entitlements.grants
@@ -22,8 +24,9 @@
     resource:
       spec: !REF googlecloudsdk.command_lib.pam.resources:grant
       help_text: |
-        The name of the grant to deny.
+        Name of the grant to deny.
     params:
     - api_field: denyGrantRequest.reason
       arg_name: reason
-      help_text: Reason for denying the grant.
+      help_text: |
+        Reason for denying the grant.

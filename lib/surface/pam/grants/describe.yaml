@@ -1,16 +1,18 @@
-- release_tracks: [ALPHA]
+- release_tracks: [ALPHA, BETA]
 
   help_text:
-    brief: Show details of a grant.
-    description: Show details of a grant with a given name.
+    brief: Show details of a Privileged Access Manager (PAM) grant.
+    description: Show details of a Privileged Access Manager (PAM) grant.
     examples: |
-      The following command displays the details of a grant with the name grant-name:
+      The following command describes a grant with the full name ``GRANT_NAME'':
 
-      ${command} grant-name
+      $ {command} GRANT_NAME
 
   request:
     ALPHA:
       api_version: v1alpha
+    BETA:
+      api_version: v1beta
     collection:
     - privilegedaccessmanager.projects.locations.entitlements.grants
     - privilegedaccessmanager.folders.locations.entitlements.grants
@@ -20,4 +22,4 @@
     resource:
       spec: !REF googlecloudsdk.command_lib.pam.resources:grant
       help_text: |
-        The name of the grant to describe.
+        Name of the grant to describe.

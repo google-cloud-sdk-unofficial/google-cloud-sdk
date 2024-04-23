@@ -63,6 +63,18 @@
         is used to opt out of any release channel. Clusters subscribed to the REGULAR channel will
         be automatically upgraded to versions that are considered GA quality, and cannot be manually
         upgraded.
+    - arg_name: offline-reboot-ttl
+      type: googlecloudsdk.core.util.times:ParseDuration
+      processor: googlecloudsdk.core.util.times:FormatDurationForJson
+      api_field: cluster.survivabilityConfig.offlineRebootTtl
+      required: false
+      help_text: |
+        Limits how long machines in this cluster can reboot offline (without connection to
+        google), specified as a duration relative to the machine's most-recent
+        connection to google. The parameter should be a ISO 8601 duration
+        string, for example, "1dT1h2m3s".
+      release_tracks: [ALPHA]
+      hidden: true
 
   response:
     modify_response_hooks:

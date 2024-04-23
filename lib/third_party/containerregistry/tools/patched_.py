@@ -13,8 +13,6 @@
 # limitations under the License.
 """Context managers for patching libraries for use in PAR files."""
 
-
-
 import os
 import pkgutil
 import shutil

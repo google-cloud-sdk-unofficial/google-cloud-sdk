@@ -246,6 +246,7 @@ def _CommonArgs(
 
   if support_max_run_duration:
     instances_flags.AddMaxRunDurationVmArgs(parser)
+    instances_flags.AddDiscardLocalSsdVmArgs(parser)
 
   if support_local_ssd_size:
     instances_flags.AddLocalSsdArgsWithSize(parser)

@@ -26,7 +26,7 @@ from googlecloudsdk.core import log
 _DETAILED_HELP = frozendict.frozendict({'EXAMPLES': textwrap.dedent("""\
           To update a user workloads ConfigMap of the environment named env-1, run:
 
-            $ {command} --environment env-1 --config-map-file-path=config_map.yaml
+            $ {command} --environment=env-1 --config-map-file-path=config_map.yaml
         """)})
 
 

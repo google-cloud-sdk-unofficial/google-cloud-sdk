@@ -26,7 +26,7 @@ from googlecloudsdk.core import log
 _DETAILED_HELP = frozendict.frozendict({'EXAMPLES': textwrap.dedent("""\
           To delete a user workloads Secret of the environment named env-1, run:
 
-            $ {command} secret-1 --environment env-1
+            $ {command} secret-1 --environment=env-1
         """)})
 
 

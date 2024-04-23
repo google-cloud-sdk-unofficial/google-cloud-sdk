@@ -26,6 +26,38 @@ from googlecloudsdk.command_lib.pubsub import resource_args
 from googlecloudsdk.command_lib.pubsub import util
 
 
+def _Run(args):
+  """This is what gets called when the user runs this command.
+
+  Args:
+    args: an argparse namespace. All the arguments that were provided to this
+      command invocation.
+
+  Returns:
+    A serialized object (dict) describing the results of the operation.  This
+    description fits the Resource described in the ResourceRegistry under
+    'pubsub.subscriptions.seek'.
+  """
+  client = subscriptions.SubscriptionsClient()
+
+  subscription_ref = args.CONCEPTS.subscription.Parse()
+  result = {'subscriptionId': subscription_ref.RelativeName()}
+
+  snapshot_ref = None
+  time = None
+  if args.snapshot:
+    snapshot_ref = util.ParseSnapshot(args.snapshot, args.snapshot_project)
+    result['snapshotId'] = snapshot_ref.RelativeName()
+  else:
+    time = util.FormatSeekTime(args.time)
+    result['time'] = time
+
+  client.Seek(subscription_ref, time=time, snapshot_ref=snapshot_ref)
+
+  return result
+
+
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Seek(base.Command):
   """Resets a subscription's backlog to a point in time or to a given snapshot."""
 
@@ -35,31 +67,13 @@ class Seek(base.Command):
     flags.AddSeekFlags(parser)
 
   def Run(self, args):
-    """This is what gets called when the user runs this command.
+    return _Run(args)
 
-    Args:
-      args: an argparse namespace. All the arguments that were provided to this
-        command invocation.
 
-    Returns:
-      A serialized object (dict) describing the results of the operation.  This
-      description fits the Resource described in the ResourceRegistry under
-      'pubsub.subscriptions.seek'.
-    """
-    client = subscriptions.SubscriptionsClient()
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
+class SeekBeta(Seek):
+  """Resets a subscription's backlog to a point in time or to a given snapshot."""
 
-    subscription_ref = args.CONCEPTS.subscription.Parse()
-    result = {'subscriptionId': subscription_ref.RelativeName()}
-
-    snapshot_ref = None
-    time = None
-    if args.snapshot:
-      snapshot_ref = util.ParseSnapshot(args.snapshot, args.snapshot_project)
-      result['snapshotId'] = snapshot_ref.RelativeName()
-    else:
-      time = util.FormatSeekTime(args.time)
-      result['time'] = time
-
-    client.Seek(subscription_ref, time=time, snapshot_ref=snapshot_ref)
-
-    return result
+  def Run(self, args):
+    flags.ValidateSubscriptionArgsUseUniverseSupportedFeatures(args)
+    return _Run(args)

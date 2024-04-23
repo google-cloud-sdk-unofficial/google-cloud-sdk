@@ -25,8 +25,8 @@ from googlecloudsdk.command_lib.util.args import labels_util
 from googlecloudsdk.core import log
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class UpdateBeta(base.UpdateCommand):
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class Update(base.UpdateCommand):
   """Update a Cloud NetApp Volumes Backup Vault."""
 
   detailed_help = {
@@ -43,7 +43,7 @@ class UpdateBeta(base.UpdateCommand):
               $ {command} BACKUP_VAULT --async --location=us-central1 --description="new description"  --update-labels=newkey=newval """,
   }
 
-  _RELEASE_TRACK = base.ReleaseTrack.BETA
+  _RELEASE_TRACK = base.ReleaseTrack.GA
 
   @staticmethod
   def Args(parser):
@@ -91,3 +91,10 @@ class UpdateBeta(base.UpdateCommand):
           ' configs:\n  $ {} '.format(command)
       )
     return result
+
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class UpdateBeta(Update):
+  """Update a Cloud NetApp Volumes Backup Vault."""
+
+  _RELEASE_TRACK = base.ReleaseTrack.BETA

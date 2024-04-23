@@ -18,8 +18,8 @@ from clients import bigquery_client_extended
 from clients import utils as bq_client_utils
 from frontend import bigquery_command
 from frontend import bq_cached_client
-from frontend import commands
 from frontend import utils as frontend_utils
+from frontend import utils_data_transfer
 from utils import bq_error
 from utils import bq_id_utils
 from utils import bq_processor_utils
@@ -686,7 +686,7 @@ class Make(bigquery_command.BigqueryCmd):
     flags.DEFINE_boolean(
         'parquet_enable_list_inference',
         False,
-        commands._PARQUET_LIST_INFERENCE_DESCRIPTION,
+        frontend_utils.PARQUET_LIST_INFERENCE_DESCRIPTION,
         flag_values=fv,
     )
     flags.DEFINE_integer(
@@ -911,7 +911,7 @@ class Make(bigquery_command.BigqueryCmd):
       reference = 'projects/' + (client.GetProjectReference().projectId)
       credentials = False
       if self.data_source:
-        credentials = commands.CheckValidCreds(
+        credentials = utils_data_transfer.CheckValidCreds(
             reference, self.data_source, transfer_client
         )
       else:
@@ -922,7 +922,7 @@ class Make(bigquery_command.BigqueryCmd):
           and self.data_source != 'loadtesting'
           and not self.service_account_name
       ):
-        auth_info = commands.RetrieveAuthorizationInfo(
+        auth_info = utils_data_transfer.RetrieveAuthorizationInfo(
             reference, self.data_source, transfer_client
         )
       location = self.data_location or FLAGS.location
@@ -1122,8 +1122,8 @@ class Make(bigquery_command.BigqueryCmd):
           )
       resource_tags = None
       client.CreateDataset(
-          reference,
-          ignore_existing=True,
+          reference=reference,
+          ignore_existing=self.force,
           description=self.description,
           default_table_expiration_ms=default_table_exp_ms,
           default_partition_expiration_ms=default_partition_exp_ms,

@@ -13,8 +13,6 @@
 # limitations under the License.
 """This package pulls images from a Docker Registry."""
 
-
-
 import argparse
 import logging
 import sys

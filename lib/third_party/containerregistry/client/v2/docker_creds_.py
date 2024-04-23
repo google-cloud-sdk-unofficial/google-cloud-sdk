@@ -13,8 +13,6 @@
 # limitations under the License.
 """This package exposes credentials for talking to a Docker registry."""
 
-
-
 from containerregistry.client import docker_creds
 
 

@@ -42,7 +42,13 @@ class Export(base.Command):
 
   @staticmethod
   def Args(parser):
-    flags.AddFileFlag(parser)
+    flag_help_text = """\
+        File name for preview export artifacts. It is optional and it specifies
+        the filename or complete path for the downloaded preview export
+        artifacts. If only a file path is provided, the artifacts will be
+        downloaded as "preview" within that directory. If a filename is
+        included, the artifacts will be downloaded with that name."""
+    flags.AddFileFlag(parser, flag_help_text)
     concept_parsers.ConceptParser(
         [
             resource_args.GetPreviewResourceArgSpec(

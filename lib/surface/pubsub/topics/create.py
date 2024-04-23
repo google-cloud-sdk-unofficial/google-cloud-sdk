@@ -204,6 +204,7 @@ class CreateBeta(Create):
 
   def Run(self, args):
     legacy_output = properties.VALUES.pubsub.legacy_output.GetBool()
+    flags.ValidateTopicArgsUseUniverseSupportedFeatures(args)
     return _Run(args, legacy_output=legacy_output)
 
 

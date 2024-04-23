@@ -15,7 +15,6 @@
 
 from __future__ import absolute_import
 from __future__ import division
-
 from __future__ import print_function
 
 import abc
@@ -24,6 +23,7 @@ import io
 import json
 import os
 import tarfile
+from typing import Any, Dict, Iterator, List, Set, Text, Union  # pylint: disable=g-multiple-import,unused-import
 
 from containerregistry.client import docker_creds
 from containerregistry.client import docker_name
@@ -114,6 +114,7 @@ class FromRegistry(DockerImage):
   def __init__(self, name,
                basic_creds,
                transport):
+    super().__init__()
     self._name = name
     self._creds = basic_creds
     self._original_transport = transport
@@ -145,6 +146,12 @@ class FromRegistry(DockerImage):
 
   def tags(self):
     return self._tags().get('tags', [])
+
+  def digest(self):
+    """The digest of the manifest."""
+    if isinstance(self._name, docker_name.Digest):
+      return self._name.digest
+    return super().digest()
 
   def manifests(self):
     payload = self._tags()

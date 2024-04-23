@@ -1,27 +1,31 @@
-- release_tracks: [ALPHA]
+- release_tracks: [ALPHA, BETA]
 
   command_type: LIST
 
   help_text:
-    brief: Search and list all grants under an entitlement which you had created, had approved or can approve.
-    description: |
-      Search and list all grants under an entitlement which you had created, had approved or can approve.
+    brief: Search and list all Privileged Access Manager (PAM) grants under an entitlement which you had created, had approved or can approve.
+    description: Search and list all Privileged Access Manager (PAM) grants under an entitlement which you had created, had approved or can approve.
     examples: |
-      The following command will search and list all grants under an entitlement which you had created:
+      The following command searches and lists all grants under an entitlement with the full name
+      ``ENTITLEMENT_NAME'', which you had created:
 
-      $ {command} --entitlement entitlement-name --caller-relationship had-created
+      $ {command} --entitlement=ENTITLEMENT_NAME --caller-relationship=had-created
 
-      The following command will search and list all grants under an entitlement which you had approved or denied:
+      The following command searches and lists all grants under an entitlement with the full name
+      ``ENTITLEMENT_NAME'', which you had approved or denied:
 
-      $ {command} --entitlement entitlement-name --caller-relationship had-approved
+      $ {command} --entitlement=ENTITLEMENT_NAME --caller-relationship=had-approved
 
-      The following command will search and list all grants under an entitlement which you can approve:
+      The following command searches and lists all grants under an entitlement with the full name
+      ``ENTITLEMENT_NAME'', which you can approve:
 
-      $ {command} --entitlement entitlement-name --caller-relationship can-approve
+      $ {command} --entitlement=ENTITLEMENT_NAME --caller-relationship=can-approve
 
   request:
     ALPHA:
       api_version: v1alpha
+    BETA:
+      api_version: v1beta
     method: search
     collection:
     - privilegedaccessmanager.projects.locations.entitlements.grants
@@ -37,7 +41,7 @@
       is_positional: false
       required: true
       help_text: |
-        The entitlement under which the grants are to be listed.
+        Entitlement under which the grants are to be listed.
     - api_field: callerRelationship
       arg_name: caller-relationship
       required: true

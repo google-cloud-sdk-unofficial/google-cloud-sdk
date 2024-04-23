@@ -174,13 +174,16 @@ def get_tpc_root_url_from_flags(
       is_rep=inputted_flags.USE_REP.value,
       is_lep=is_lep
   )
-  return add_trailing_slash_if_missing(
+
+  root_url = add_trailing_slash_if_missing(
       urllib.parse.urlunsplit(
           urllib.parse.SplitResult(
               scheme='https', netloc=hostname, path='', query='', fragment=''
           )
       )
   )
+  logging.info('Final root URL built as: %s', root_url)
+  return root_url
 
 
 def get_discovery_url_from_root_url(

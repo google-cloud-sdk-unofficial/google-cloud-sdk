@@ -17,7 +17,6 @@
 from googlecloudsdk.calliope import base
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class UserWorkloadsConfigMaps(base.Group):
   """Create and manage user workloads ConfigMaps of environment.

@@ -17,8 +17,6 @@ These arguments are used to select the image to pull when given a Docker
 manifest list.
 """
 
-
-
 import argparse
 
 from containerregistry.client.v2_2 import docker_image_list

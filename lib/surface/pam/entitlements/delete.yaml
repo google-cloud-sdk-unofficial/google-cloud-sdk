@@ -1,20 +1,23 @@
-- release_tracks: [ALPHA]
+- release_tracks: [ALPHA, BETA]
 
   help_text:
-    brief: Delete an entitlement
+    brief: Delete a Privileged Access Manager (PAM) entitlement.
     description: |
-      Delete an entitlement along with all grants under it.
+      Delete a Privileged Access Manager (PAM) entitlement along with all grants under it.
 
       This command can fail for the following reasons:
         * There are non-terminal grants under the entitlement.
     examples: |
-      The following command deletes an entitlement with a given name:
+      The following command deletes an entitlement with the full name ``ENTITLEMENT_NAME'' along
+      with all grants under it:
 
-      $ {command} entitlement-name
+      $ {command} ENTITLEMENT_NAME
 
   request:
     ALPHA:
       api_version: v1alpha
+    BETA:
+      api_version: v1beta
     collection:
     - privilegedaccessmanager.projects.locations.entitlements
     - privilegedaccessmanager.folders.locations.entitlements
@@ -26,11 +29,13 @@
     resource:
       spec: !REF googlecloudsdk.command_lib.pam.resources:entitlement
       help_text: |
-        The name of the entitlement to delete.
+        Name of the entitlement to delete.
 
   async:
     ALPHA:
       api_version: v1alpha
+    BETA:
+      api_version: v1beta
     collection:
     - privilegedaccessmanager.projects.locations.operations
     - privilegedaccessmanager.folders.locations.operations

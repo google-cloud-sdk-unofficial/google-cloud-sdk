@@ -111,17 +111,18 @@ class CreateAlpha(base.DeleteCommand):
       raise exceptions.HttpException(e, util.HTTP_ERROR_FORMAT)
 
     if no_async:
-      return client.WaitForOperation(
+      resource = client.WaitForOperation(
           operation_ref=client.GetOperationRef(operation),
           message=(
               'Creating backup vault [{}]. (This operation could'
               ' take up to 2 minutes.)'.format(backup_vault.RelativeName())
           ),
-          has_result=False,
       )
+      log.CreatedResource(backup_vault.RelativeName(), kind='backup vault')
+      return resource
 
     log.CreatedResource(
-        backup_vault,
+        operation.name,
         kind='backup vault',
         is_async=True,
         details=(

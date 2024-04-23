@@ -1,19 +1,19 @@
-- release_tracks: [ALPHA]
+- release_tracks: [ALPHA, BETA]
 
   help_text:
-    brief: Update an entitlement.
-    description: Update an existing entitlement.
+    brief: Update an existing Privileged Access Manager (PAM) entitlement.
+    description: Update an existing Privileged Access Manager (PAM) entitlement.
     examples: |
-      The following command updates an entitlement with the name sample-entitlement, under the
-      project sample-project, location global and the new entitlement body present in the
-      sample-entitlement.yaml file:
+      The following command updates an entitlement with the full name ``ENTITLEMENT_NAME'' and the
+      new entitlement body present in the `sample-entitlement.yaml` file:
 
-      $ {command} sample-entitlement --project sample-project --location global
-      --entitlement-file sample-entitlement.yaml
+      $ {command} ENTITLEMENT_NAME --entitlement-file=sample-entitlement.yaml
 
   request:
     ALPHA:
       api_version: v1alpha
+    BETA:
+      api_version: v1beta
     collection:
     - privilegedaccessmanager.projects.locations.entitlements
     - privilegedaccessmanager.folders.locations.entitlements
@@ -25,7 +25,7 @@
     resource:
       spec: !REF googlecloudsdk.command_lib.pam.resources:entitlement
       help_text: |
-        The name of the entitlement to update.
+        Name of the entitlement to update.
     params:
     - arg_name: entitlement-file
       api_field: entitlement
@@ -38,6 +38,8 @@
   async:
     ALPHA:
       api_version: v1alpha
+    BETA:
+      api_version: v1beta
     collection:
     - privilegedaccessmanager.projects.locations.operations
     - privilegedaccessmanager.folders.locations.operations

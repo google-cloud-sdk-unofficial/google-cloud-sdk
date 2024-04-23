@@ -13,8 +13,6 @@
 # limitations under the License.
 """This package sets up the Python logging system."""
 
-
-
 import logging
 import sys
 

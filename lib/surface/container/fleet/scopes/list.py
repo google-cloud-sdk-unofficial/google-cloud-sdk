@@ -25,7 +25,7 @@ from googlecloudsdk.core import properties
 
 
 class List(base.ListCommand):
-  """List fleet scopes in a project.
+  """List fleet scopes in a project permitted to be viewed by the caller.
 
   This command can fail for the following reasons:
   * The project specified does not exist.
@@ -52,8 +52,4 @@ class List(base.ListCommand):
     if project is None:
       project = properties.VALUES.core.project.Get()
     fleetclient = client.FleetClient(release_track=self.ReleaseTrack())
-    # TODO(b/321111171): Use ListPermittedScopes in all release tracks.
-    if self.ReleaseTrack() == base.ReleaseTrack.ALPHA:
-      return fleetclient.ListPermittedScopes(project)
-    else:
-      return fleetclient.ListScopes(project)
+    return fleetclient.ListPermittedScopes(project)

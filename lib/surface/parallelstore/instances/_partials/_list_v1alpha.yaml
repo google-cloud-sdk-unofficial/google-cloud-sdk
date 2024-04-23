@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*- #
-# Copyright 2023 Google LLC. All Rights Reserved.
+# Copyright 2024 Google LLC. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -45,11 +45,11 @@
   output:
     format: |-
       table(name,
-            capacityGib:label=capacity,
+            capacityGib:label=Capacity,
             description,
             createTime,
             updateTime,
             state,
-            networkConfig.networkName:label=network,
-            networkConfig.reserved_ip_range,
+            network,
+            reserved_ip_range,
             accessPoints.join(","))
