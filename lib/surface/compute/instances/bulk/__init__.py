@@ -21,6 +21,8 @@ from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 
 
+@base.UniverseCompatible
+@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
                     base.ReleaseTrack.GA)
 class Bulk(base.Group):

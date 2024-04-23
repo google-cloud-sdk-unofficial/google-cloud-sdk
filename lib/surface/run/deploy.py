@@ -197,12 +197,6 @@ class Deploy(base.Command):
     if flags.FlagIsExplicitlySet(args, 'containers'):
       containers = args.containers
     else:
-      # base image mapping needs container names
-      if flags.FlagIsExplicitlySet(args, 'base_image'):
-        raise c_exceptions.InvalidArgumentException(
-            '--base-image',
-            'Base image can only be specified together with --container',
-        )
       containers = {'': args}
 
     if len(containers) > 1:
@@ -276,6 +270,7 @@ class Deploy(base.Command):
     # Only one container can deployed from source
     container = next(iter(build_from_source.values()))
     pack = None
+    changes = []
     repo_to_create = None
     source = container.source
     # We cannot use flag.isExplicitlySet(args, 'function') because it will
@@ -311,7 +306,7 @@ class Deploy(base.Command):
       build_type = BuildType.DOCKERFILE
       # TODO(b/310727875): check --function is not provided
     else:
-      pack = _CreateBuildPack(container, self.ReleaseTrack())
+      pack, changes = _CreateBuildPack(container, self.ReleaseTrack())
       build_type = BuildType.BUILDPACKS
     image = None if pack else container.image
     base_image = getattr(container, 'base_image', None)
@@ -326,8 +321,16 @@ class Deploy(base.Command):
             service_ref.servicesId, pack, source
         )
     )
-    return (is_function, image, pack, source, operation_message,
-            repo_to_create, base_image)
+    return (
+        is_function,
+        image,
+        pack,
+        source,
+        operation_message,
+        repo_to_create,
+        base_image,
+        changes,
+    )
 
   def _GetBaseChanges(self, args):
     """Returns the service config changes with some default settings."""
@@ -421,21 +424,29 @@ class Deploy(base.Command):
     repo_to_create = None
     is_function = False
     base_image = None
+    build_changes = []
     # Build an image from source if source specified
     if build_from_source:
-      (is_function, image, pack, source, operation_message,
-       repo_to_create, base_image) = (
-           self._BuildFromSource(
-               args,
-               build_from_source,
-               service_ref,
-               conn_context,
-               platform,
-               already_activated_services,
-               )
-           )
+      (
+          is_function,
+          image,
+          pack,
+          source,
+          operation_message,
+          repo_to_create,
+          base_image,
+          build_changes,
+      ) = self._BuildFromSource(
+          args,
+          build_from_source,
+          service_ref,
+          conn_context,
+          platform,
+          already_activated_services,
+      )
     # Deploy a container with an image
     changes = self._GetBaseChanges(args)
+    changes.extend(build_changes)
     with serverless_operations.Connect(
         conn_context, already_activated_services
     ) as operations:
@@ -506,6 +517,7 @@ class Deploy(base.Command):
 def _CreateBuildPack(container, release_track=base.ReleaseTrack.GA):
   """A helper method to cofigure buildpack."""
   pack = [{'image': container.image}]
+  changes = []
   if release_track is base.ReleaseTrack.ALPHA:
     command_arg = getattr(container, 'command', None)
     function_arg = getattr(container, 'function', None)
@@ -515,6 +527,11 @@ def _CreateBuildPack(container, release_track=base.ReleaseTrack.GA):
           {'envs': ['GOOGLE_ENTRYPOINT="{command}"'.format(command=command)]}
       )
     elif function_arg is not None:
+      changes.append(
+          config_changes.EnvVarLiteralChanges(
+              updates={'FUNCTION_TARGET': function_arg}
+          )
+      )
       pack[0].update({
           'envs': [
               'GOOGLE_FUNCTION_SIGNATURE_TYPE=http',
@@ -528,7 +545,7 @@ def _CreateBuildPack(container, release_track=base.ReleaseTrack.GA):
                 builder=builders.FunctionBuilder(base_image_arg)
             )
         })
-  return pack
+  return pack, changes
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)

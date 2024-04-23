@@ -7,6 +7,7 @@ from __future__ import print_function
 
 import cmd
 import shlex
+from typing import List, Optional
 
 
 from absl import flags
@@ -15,8 +16,6 @@ from pyglib import appcommands
 import bq_utils
 from frontend import bigquery_command
 from frontend import bq_cached_client
-
-FLAGS = flags.FLAGS
 
 # These aren't relevant for user-facing docstrings:
 # pylint: disable=g-doc-return-or-yield
@@ -49,7 +48,7 @@ class CommandLoop(cmd.Cmd):
     self._last_return_code = 0
 
   @property
-  def last_return_code(self):
+  def last_return_code(self) -> int:
     return self._last_return_code
 
   def _set_prompt(self):
@@ -60,7 +59,7 @@ class CommandLoop(cmd.Cmd):
     else:
       self.prompt = self._default_prompt
 
-  def do_EOF(self, *unused_args):
+  def do_EOF(self, *unused_args) -> None:
     """Terminate the running command loop.
 
     This function raises an exception to avoid the need to do
@@ -74,10 +73,12 @@ class CommandLoop(cmd.Cmd):
     """
     raise CommandLoop.TerminateSignal()
 
-  def postloop(self):
+  def postloop(self) -> None:
     print('Goodbye.')
 
-  def completedefault(self, unused_text, line, unused_begidx, unused_endidx):
+  def completedefault(
+      self, unused_text, line: str, unused_begidx, unused_endidx
+  ):
     if not line:
       return []
     else:
@@ -99,7 +100,7 @@ class CommandLoop(cmd.Cmd):
     print('Available commands:', end=' ')
     print(' '.join(list(self._commands)))
 
-  def precmd(self, line):
+  def precmd(self, line: str) -> str:
     """Preprocess the shell input."""
     if line == 'EOF':
       return line
@@ -112,7 +113,7 @@ class CommandLoop(cmd.Cmd):
       return 'help %s' % (line.strip(),)
     return line
 
-  def onecmd(self, line):
+  def onecmd(self, line: str) -> bool:
     """Process a single command.
 
     Runs a single command, and stores the return code in
@@ -135,7 +136,7 @@ class CommandLoop(cmd.Cmd):
       self._last_return_code = 1
     return False
 
-  def get_names(self):
+  def get_names(self) -> List[str]:
     names = dir(self)
     commands = (
         name
@@ -147,7 +148,7 @@ class CommandLoop(cmd.Cmd):
     names.remove('do_EOF')
     return names
 
-  def do_set(self, line):
+  def do_set(self, line: str) -> int:
     """Set the value of the project_id or dataset_id flag."""
     client = bq_cached_client.Client().Get()
     name, value = (line.split(' ') + ['', ''])[:2]
@@ -163,7 +164,7 @@ class CommandLoop(cmd.Cmd):
       self._set_prompt()
     return 0
 
-  def do_unset(self, line):
+  def do_unset(self, line: str) -> int:
     """Unset the value of the project_id or dataset_id flag."""
     name = line.strip()
     client = bq_cached_client.Client.Get()
@@ -176,7 +177,7 @@ class CommandLoop(cmd.Cmd):
       self._set_prompt()
     return 0
 
-  def do_help(self, command_name):
+  def do_help(self, command_name: str):
     """Print the help for command_name (if present) or general help."""
 
     # TODO(user): Add command-specific flags.
@@ -225,7 +226,7 @@ class CommandLoop(cmd.Cmd):
       )
     return 0
 
-  def postcmd(self, stop, line):
+  def postcmd(self, stop, line: str) -> bool:
     return bool(stop) or line == 'EOF'
 # pylint: enable=g-bad-name
 
@@ -233,7 +234,7 @@ class CommandLoop(cmd.Cmd):
 class Repl(bigquery_command.BigqueryCmd):
   """Start an interactive bq session."""
 
-  def __init__(self, name, fv):
+  def __init__(self, name: str, fv: flags.FlagValues):
     super(Repl, self).__init__(name, fv)
     self.surface_in_shell = False
     flags.DEFINE_string(
@@ -241,7 +242,7 @@ class Repl(bigquery_command.BigqueryCmd):
     )
     self._ProcessCommandRc(fv)
 
-  def RunWithArgs(self):
+  def RunWithArgs(self) -> Optional[int]:
     """Start an interactive bq session."""
     repl = CommandLoop(appcommands.GetCommandList(), prompt=self.prompt)
     print('Welcome to BigQuery! (Type help for more information.)')

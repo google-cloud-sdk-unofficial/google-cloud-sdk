@@ -35,6 +35,7 @@ from googlecloudsdk.core.resource import resource_filter
 from googlecloudsdk.core.resource import resource_projector
 
 
+@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
 class ListInstances(base.ListCommand):
   r"""List instances with specific OS inventory data values.
@@ -274,6 +275,7 @@ class ListInstances(base.ListCommand):
     return self._GetInventoryFilteredInstances(instances, responses, query)
 
 
+@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class ListInstancesAlpha(ListInstances):
   r"""List instances with specific OS inventory data values.

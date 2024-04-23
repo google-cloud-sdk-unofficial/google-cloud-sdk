@@ -102,21 +102,24 @@ class GetEffectivePolicy(base.Command):
         resource_name + '/effectivePolicy', args.view
     )
 
-    log.status.Print('EnabledRules:')
-    for enable_rule in response.enableRules:
-      log.status.Print(' Services:')
-      for service in enable_rule.services:
-        log.status.Print('  - %s' % service)
+    if args.IsSpecified('format'):
+      return response
+    else:
+      log.status.Print('EnabledRules:')
+      for enable_rule in response.enableRules:
+        log.status.Print(' Services:')
+        for service in enable_rule.services:
+          log.status.Print('  - %s' % service)
 
-    if args.view == 'FULL':
-      log.status.Print('\nMetadata of effective policy:')
-      result = []
+      if args.view == 'FULL':
+        log.status.Print('\nMetadata of effective policy:')
+        result = []
 
-      resources = collections.namedtuple(
-          'serviceSources', ['EnabledService', 'EnabledPolicies']
-      )
+        resources = collections.namedtuple(
+            'serviceSources', ['EnabledService', 'EnabledPolicies']
+        )
 
-      for metadata in response.enableRuleMetadata:
-        for values in metadata.serviceSources.additionalProperties:
-          result.append(resources(values.key, values.value.policies))
-      return result
+        for metadata in response.enableRuleMetadata:
+          for values in metadata.serviceSources.additionalProperties:
+            result.append(resources(values.key, values.value.policies))
+        return result

@@ -274,6 +274,7 @@ def ParseCreateOptionsBase(args, is_autopilot, get_default, location,
       enable_ip_alias=enable_ip_alias,
       enable_intra_node_visibility=get_default('enable_intra_node_visibility'),
       enable_kubernetes_alpha=get_default('enable_kubernetes_alpha'),
+      alpha_cluster_feature_gates=get_default('alpha_cluster_feature_gates'),
       enable_cloud_run_alpha=flags.GetLegacyCloudRunFlag(
           'enable_{}_alpha', args, get_default
       ),
@@ -726,6 +727,9 @@ flags_to_add = {
         'issueclientcert': flags.AddIssueClientCertificateFlag,
         'istioconfig': flags.AddIstioConfigFlag,
         'kubernetesalpha': flags.AddEnableKubernetesAlphaFlag,
+        'alphaclusterfeaturegates': (
+            lambda p: flags.AddAlphaClusterFeatureGatesFlags(p, hidden=True)
+        ),
         'kubernetesobjectsexport': AddKubernetesObjectsExportFlag,
         'gvnic': flags.AddEnableGvnicFlag,
         'gkeoidc': flags.AddGkeOidcFlag,
@@ -897,6 +901,9 @@ flags_to_add = {
         'issueclientcert': flags.AddIssueClientCertificateFlag,
         'istioconfig': flags.AddIstioConfigFlag,
         'kubernetesalpha': flags.AddEnableKubernetesAlphaFlag,
+        'alphaclusterfeaturegates': (
+            lambda p: flags.AddAlphaClusterFeatureGatesFlags(p, hidden=True)
+        ),
         'labels': flags.AddLabelsFlag,
         'legacyauth': flags.AddEnableLegacyAuthorizationFlag,
         'linuxsysctl': flags.AddLinuxSysctlFlags,

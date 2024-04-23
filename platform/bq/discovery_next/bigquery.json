@@ -33,6 +33,38 @@
   "description": "A data platform for customers to create, manage, share and query data.",
   "discoveryVersion": "v1",
   "documentationLink": "https://cloud.google.com/bigquery/",
+  "endpoints": [
+    {
+      "description": "Regional Endpoint",
+      "endpointUrl": "https://bigquery.me-central2.rep.googleapis.com/",
+      "location": "me-central2"
+    },
+    {
+      "description": "Regional Endpoint",
+      "endpointUrl": "https://bigquery.europe-west3.rep.googleapis.com/",
+      "location": "europe-west3"
+    },
+    {
+      "description": "Regional Endpoint",
+      "endpointUrl": "https://bigquery.europe-west9.rep.googleapis.com/",
+      "location": "europe-west9"
+    },
+    {
+      "description": "Regional Endpoint",
+      "endpointUrl": "https://bigquery.us-east4.rep.googleapis.com/",
+      "location": "us-east4"
+    },
+    {
+      "description": "Regional Endpoint",
+      "endpointUrl": "https://bigquery.us-east7.rep.googleapis.com/",
+      "location": "us-east7"
+    },
+    {
+      "description": "Regional Endpoint",
+      "endpointUrl": "https://bigquery.us-west1.rep.googleapis.com/",
+      "location": "us-west1"
+    }
+  ],
   "fullyEncodeReservedExpansion": true,
   "icons": {
     "x16": "http://www.google.com/images/icons/product/search-16.gif",
@@ -257,7 +289,7 @@
               "type": "boolean"
             },
             "filter": {
-              "description": "An expression for filtering the results of the request by label. The syntax is \\\"labels.<name>[:<value>]\\\". Multiple filters can be ANDed together by connecting with a space. Example: \\\"labels.department:receiving labels.active\\\". See [Filtering datasets using labels](/bigquery/docs/labeling-datasets#filtering_datasets_using_labels) for details.",
+              "description": "An expression for filtering the results of the request by label. The syntax is \\\"labels.<name>[:<value>]\\\". Multiple filters can be ANDed together by connecting with a space. Example: \\\"labels.department:receiving labels.active\\\". See [Filtering datasets using labels](/bigquery/docs/filtering-labels#filtering_datasets_using_labels) for details.",
               "location": "query",
               "type": "string"
             },
@@ -1903,7 +1935,7 @@
       }
     }
   },
-  "revision": "20240327",
+  "revision": "20240410",
   "rootUrl": "https://bigquery.googleapis.com/",
   "schemas": {
     "AggregateClassificationMetrics": {
@@ -3001,7 +3033,7 @@
           "type": "string"
         },
         "nullMarker": {
-          "description": "[Optional] A custom string that will represent a NULL value in CSV import data.",
+          "description": "Optional. Specifies a string that represents a null value in a CSV file. For example, if you specify \"\\N\", BigQuery interprets \"\\N\" as a null value when querying a CSV file. The default value is the empty string. If you set this property to a custom value, BigQuery throws an error if an empty string is present for all data types except for STRING and BYTE. For STRING and BYTE columns, BigQuery interprets the empty string as an empty value.",
           "type": "string"
         },
         "preserveAsciiControlCharacters": {
@@ -3221,6 +3253,11 @@
           "format": "int64",
           "type": "string"
         },
+        "restrictions": {
+          "$ref": "RestrictionConfig",
+          "description": "Optional. Output only. Restriction config for all tables and dataset. If set, restrict certain accesses on the dataset and all its tables based on the config. See [Data egress](/bigquery/docs/analytics-hub-introduction#data_egress) for more details.",
+          "readOnly": true
+        },
         "satisfiesPzi": {
           "description": "Output only. Reserved for future use.",
           "readOnly": true,
@@ -3270,7 +3307,7 @@
           "type": "array"
         },
         "type": {
-          "description": "Output only. Same as `type` in `ListFormatDataset`. The type of the dataset, one of: * DEFAULT - only accessible by owner and authorized accounts, * PUBLIC - accessible by everyone, * LINKED - linked dataset, * EXTERNAL - dataset with definition in external metadata catalog. -- *BIGLAKE_METASTORE - dataset that references a database created in BigLakeMetastore service. --",
+          "description": "Output only. Same as `type` in `ListFormatDataset`. The type of the dataset, one of: * DEFAULT - only accessible by owner and authorized accounts, * PUBLIC - accessible by everyone, * LINKED - linked dataset, * EXTERNAL - dataset with definition in external metadata catalog.",
           "readOnly": true,
           "type": "string"
         }
@@ -6151,7 +6188,7 @@
       "id": "MaterializedViewDefinition",
       "properties": {
         "allowNonIncrementalDefinition": {
-          "description": "Optional. This option declares authors intention to construct a materialized view that will not be refreshed incrementally.",
+          "description": "Optional. This option declares the intention to construct a materialized view that isn't refreshed incrementally.",
           "type": "boolean"
         },
         "enableRefresh": {
@@ -6601,6 +6638,18 @@
         "enumAsString": {
           "description": "Optional. Indicates whether to infer Parquet ENUM logical type as STRING instead of BYTES by default.",
           "type": "boolean"
+        },
+        "mapTargetType": {
+          "description": "Optional. Will indicate how to represent a parquet map if present.",
+          "enum": [
+            "MAP_TARGET_TYPE_UNSPECIFIED",
+            "ARRAY_OF_STRUCT"
+          ],
+          "enumDescriptions": [
+            "In this mode, we fall back to the default. Currently (3/24) we represent the map as: struct map_field_name { repeated struct key_value { key value } }",
+            "In this mode, we omit parquet's key_value struct and represent the map as: repeated struct map_field_name { key value }"
+          ],
+          "type": "string"
         }
       },
       "type": "object"
@@ -7333,6 +7382,25 @@
         },
         "speechRecognizer": {
           "description": "Output only. The name of the speech recognizer to use for speech recognition. The expected format is `projects/{project}/locations/{location}/recognizers/{recognizer}`. Customers can specify this field at model creation. If not specified, a default recognizer `projects/{model project}/locations/global/recognizers/_` will be used. See more details at [recognizers](https://cloud.google.com/speech-to-text/v2/docs/reference/rest/v2/projects.locations.recognizers)",
+          "readOnly": true,
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "RestrictionConfig": {
+      "id": "RestrictionConfig",
+      "properties": {
+        "type": {
+          "description": "Output only. Specifies the type of dataset/table restriction.",
+          "enum": [
+            "RESTRICTION_TYPE_UNSPECIFIED",
+            "RESTRICTED_DATA_EGRESS"
+          ],
+          "enumDescriptions": [
+            "Should never be used.",
+            "Restrict data egress. See [Data egress](/bigquery/docs/analytics-hub-introduction#data_egress) for more details."
+          ],
           "readOnly": true,
           "type": "string"
         }
@@ -8386,6 +8454,11 @@
           },
           "description": "[Optional] The tags associated with this table. Tag keys are globally unique. See additional information on [tags](https://cloud.google.com/iam/docs/tags-access-control#definitions). An object containing a list of \"key\": value pairs. The key is the namespaced friendly name of the tag key, e.g. \"12345/environment\" where 12345 is parent id. The value is the friendly short name of the tag value, e.g. \"production\".",
           "type": "object"
+        },
+        "restrictions": {
+          "$ref": "RestrictionConfig",
+          "description": "Optional. Output only. Restriction config for table. If set, restrict certain accesses on the table based on the config. See [Data egress](/bigquery/docs/analytics-hub-introduction#data_egress) for more details.",
+          "readOnly": true
         },
         "schema": {
           "$ref": "TableSchema",

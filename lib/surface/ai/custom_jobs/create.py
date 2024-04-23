@@ -63,7 +63,7 @@ class CreateGA(base.CreateCommand):
 
   @staticmethod
   def Args(parser):
-    flags.AddCreateCustomJobFlags(parser, constants.GA_VERSION)
+    flags.AddCreateCustomJobFlags(parser)
 
   def _DisplayResult(self, response):
     cmd_prefix = 'gcloud'
@@ -95,9 +95,7 @@ class CreateGA(base.CreateCommand):
         args=args.args,
         command=args.command,
         python_package_uri=args.python_package_uris,
-        persistent_resource_id=(args.persistent_resource_id
-                                if self._version == constants.BETA_VERSION
-                                else None))
+        persistent_resource_id=args.persistent_resource_id)
 
     return job_spec
 
@@ -141,7 +139,3 @@ class CreatePreGA(CreateGA):
     --display-name=test
   """
   _version = constants.BETA_VERSION
-
-  @staticmethod
-  def Args(parser):
-    flags.AddCreateCustomJobFlags(parser, constants.BETA_VERSION)

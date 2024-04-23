@@ -21,6 +21,7 @@ from __future__ import unicode_literals
 from apitools.base.py import exceptions as apitools_exceptions
 from googlecloudsdk.api_lib.compute.instances.ops_agents import exceptions as ops_agents_exceptions
 from googlecloudsdk.api_lib.compute.instances.ops_agents.converters import guest_policy_to_ops_agents_policy_converter as to_ops_agents
+from googlecloudsdk.api_lib.compute.instances.ops_agents.converters import os_policy_assignment_to_cloud_ops_agents_policy_converter as to_ops_agents_policy
 from googlecloudsdk.api_lib.compute.instances.ops_agents.validators import guest_policy_validator
 from googlecloudsdk.api_lib.compute.os_config import utils as osconfig_api_utils
 from googlecloudsdk.calliope import base
@@ -30,8 +31,9 @@ from googlecloudsdk.command_lib.compute.os_config import utils as osconfig_comma
 from googlecloudsdk.core import properties
 
 
+@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
-class Describe(base.DescribeCommand):
+class DescribeOsConfig(base.DescribeCommand):
   """Describe a Google Cloud's operations suite agents (Ops Agents) policy.
 
   *{command}* describes a policy that facilitates agent management across
@@ -109,4 +111,105 @@ class Describe(base.DescribeCommand):
     except calliope_exceptions.BadArgumentException:
       raise ops_agents_exceptions.PolicyMalformedError(
           policy_id=args.POLICY_ID)
+    return ops_agents_policy
+
+
+@base.Hidden
+@base.UniverseCompatible
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class Describe(base.DescribeCommand):
+  """Describe a Google Cloud's operations suite agents (Ops Agents) policy.
+
+  *{command}* describes a policy that facilitates agent management across
+  Compute Engine instances based on user specified instance filters. This policy
+  installs, specifies versioning, enables autoupgrade, and removes Ops Agents.
+
+  The command returns the content of one policy. For instance:
+
+    agent_rules:
+    - enable_autoupgrade: true
+      package_state: installed
+      type: ops-agent
+      version: latest
+    assignment:
+      group_labels:
+      - app: myapp
+        env: prod
+      os_types:
+      - short_name: ubuntu
+        version: '18.04'
+      zones:
+      - us-central1-a
+    id: projects/<PROJECT_NUMBER>/guestPolicies/ops-agents-test-policy
+
+  If no policies are found, it returns a ``NOT_FOUND'' error.
+  """
+
+  detailed_help = {
+      'DESCRIPTION':
+          '{description}',
+      'EXAMPLES':
+          """\
+          To describe an Ops Agents policy named ``ops-agents-test-policy'' in
+          the current project, run:
+
+            $ {command} ops-agents-test-policy
+          """,
+  }
+
+  @staticmethod
+  def Args(parser):
+    """See base class."""
+    parser.add_argument(
+        'POLICY_ID',
+        type=str,
+        help="""\
+          ID of the policy.
+
+          This ID must contain only lowercase letters,
+          numbers, and hyphens, end with a number or a letter, be between 1-63
+          characters, and be unique within the project.
+          """,
+    )
+    parser.add_argument(
+        '--zone',
+        required=True,
+        help="""\
+          this is zone.""")
+
+  def Run(self, args):
+    """See base class."""
+    release_track = self.ReleaseTrack()
+    project = properties.VALUES.core.project.GetOrFail()
+    parent_path = osconfig_command_utils.GetProjectLocationUriPath(
+        project, args.zone
+    )
+    assignment_id = (
+        osconfig_command_utils.GetOsPolicyAssignmentRelativePath(
+            parent_path, args.POLICY_ID
+        )
+    )
+    client = osconfig_api_utils.GetClientInstance(release_track)
+    service = client.projects_locations_osPolicyAssignments
+    messages = osconfig_api_utils.GetClientMessages(release_track)
+
+    get_request = (
+        messages.OsconfigProjectsLocationsOsPolicyAssignmentsGetRequest(
+            name=assignment_id
+        )
+    )
+    # TODO: b/315395613 - Update exceptions using the new one.
+    try:
+      get_response = service.Get(get_request)
+    except apitools_exceptions.HttpNotFoundError:
+      raise ops_agents_exceptions.PolicyNotFoundError(policy_id=args.POLICY_ID)
+    # TODO: b/315392183 - Add validator to confirm it's OpsAgentsPolicy.
+    try:
+      ops_agents_policy = (
+          to_ops_agents_policy.ConvertOsPolicyAssignmentToCloudOpsAgentPolicy(
+              get_response
+          )
+      )
+    except calliope_exceptions.BadArgumentException:
+      raise ops_agents_exceptions.PolicyMalformedError(policy_id=args.POLICY_ID)
     return ops_agents_policy

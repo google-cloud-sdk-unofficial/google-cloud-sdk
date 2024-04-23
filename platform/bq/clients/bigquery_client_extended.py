@@ -345,11 +345,11 @@ class BigqueryClientExtended(bigquery_client.BigqueryClient):
     return table_info.get('schema', {})
 
   def InsertTableRows(self,
-                      table_dict,
-                      inserts,
-                      skip_invalid_rows=None,
-                      ignore_unknown_values=None,
-                      template_suffix=None):
+                      table_dict: bq_id_utils.ApiClientHelper.TableReference,
+                      inserts: List[Optional[bq_processor_utils.InsertEntry]],
+                      skip_invalid_rows: Optional[bool] = None,
+                      ignore_unknown_values: Optional[bool] = None,
+                      template_suffix: Optional[int] = None):
     """Insert rows into a table.
 
     Arguments:
@@ -3271,9 +3271,9 @@ class BigqueryClientExtended(bigquery_client.BigqueryClient):
   # TODO(b/324243535): Delete these once the migration is complete.
   def UpdateDataset(
       self,
-      reference,
-      description=None,
-      display_name=None,
+      reference: bq_id_utils.ApiClientHelper.DatasetReference,
+      description: Optional[str] = None,
+      display_name: Optional[str] = None,
       acl=None,
       default_table_expiration_ms=None,
       default_partition_expiration_ms=None,

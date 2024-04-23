@@ -24,6 +24,7 @@ from googlecloudsdk.api_lib.spanner import instance_partition_operations
 from googlecloudsdk.api_lib.spanner import instance_partitions
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.spanner import flags
+from googlecloudsdk.command_lib.spanner import resource_args
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -48,7 +49,7 @@ class AlphaCreate(base.CreateCommand):
       parser: An argparse parser that you can use to add arguments that go on
         the command line after this command. Positional arguments are allowed.
     """
-    flags.InstancePartition(hidden=False).AddToParser(parser)
+    resource_args.AddInstancePartitionResourceArg(parser, 'to create')
     flags.Config(
         text=(
             'Instance configuration defines the geographic placement and'
@@ -60,7 +61,6 @@ class AlphaCreate(base.CreateCommand):
     flags.Description(
         text='Description of the instance partition.'
     ).AddToParser(parser)
-    flags.Instance(positional=False).AddToParser(parser)
     flags.AddCapacityArgsForInstancePartition(parser=parser)
     base.ASYNC_FLAG.AddToParser(parser)
     parser.display_info.AddCacheUpdater(flags.InstancePartitionCompleter)
@@ -75,10 +75,11 @@ class AlphaCreate(base.CreateCommand):
     Returns:
       Some value that we want to have printed later.
     """
-
+    instance_partition_ref = args.CONCEPTS.instance_partition.Parse()
+    instance_ref = instance_partition_ref.Parent()
     op = instance_partitions.Create(
+        instance_ref,
         args.instance_partition,
-        args.instance,
         args.config,
         args.description,
         nodes=args.nodes,

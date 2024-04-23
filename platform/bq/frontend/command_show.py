@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 """The show command for the BQ CLI."""
 
+from typing import Optional
+
 from absl import app
 from absl import flags
 
@@ -22,7 +24,7 @@ class Show(bigquery_command.BigqueryCmd):
   """The BQ CLI command to display a resource to the user."""
   usage = """show [<identifier>]"""
 
-  def __init__(self, name: str, fv) -> None:
+  def __init__(self, name: str, fv: flags.FlagValues) -> None:
     super(Show, self).__init__(name, fv)
     flags.DEFINE_boolean(
         'job',
@@ -145,7 +147,7 @@ class Show(bigquery_command.BigqueryCmd):
         flag_values=fv)
     self._ProcessCommandRc(fv)
 
-  def RunWithArgs(self, identifier: str = '') -> None:
+  def RunWithArgs(self, identifier: str = '') -> Optional[int]:
     """Show all information about an object.
 
     Examples:

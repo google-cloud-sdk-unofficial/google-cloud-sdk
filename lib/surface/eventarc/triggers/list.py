@@ -156,7 +156,7 @@ class List(base.ListCommand):
 
 
 @base.Deprecate(
-    is_removed=False,
+    is_removed=True,
     warning=(
         'This command is deprecated. '
         'Please use `gcloud eventarc triggers list` instead.'

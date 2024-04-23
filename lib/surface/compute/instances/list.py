@@ -52,6 +52,7 @@ EXAMPLE_FORMAT = """\
     """
 
 
+@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
 class List(base.ListCommand):
   """List Compute Engine virtual machine instances."""
@@ -77,6 +78,7 @@ class List(base.ListCommand):
     return lister.Invoke(request_data, list_implementation)
 
 
+@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class ListAlpha(base.ListCommand):
   """List Compute Engine virtual machine instances."""

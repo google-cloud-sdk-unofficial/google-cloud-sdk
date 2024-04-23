@@ -61,6 +61,7 @@ DETAILED_HELP = {
 }
 
 
+@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class InstancesAddPartnerMetadata(base.UpdateCommand):
   """add or update or patch partner metadata."""

@@ -64,6 +64,7 @@ def _CommonArgs(parser):
   flags.AddGcsSourceStagingDirFlag(parser)
   flags.AddGcsLogDirFlag(parser)
   flags.AddTimeoutFlag(parser)
+  flags.AddPollingIntervalFlag(parser)
 
   flags.AddMachineTypeFlag(parser)
   flags.AddDiskSizeFlag(parser)
@@ -258,7 +259,7 @@ class Submit(base.CreateCommand):
         build_region=build_region,
         support_gcl=self._support_gcl,
         suppress_logs=args.suppress_logs,
-    )
+        polling_interval=args.polling_interval)
     return build
 
 
@@ -358,5 +359,5 @@ class SubmitAlpha(SubmitBeta):
         build_config,
         build_region=build_region,
         support_gcl=True,
-    )
+        polling_interval=args.polling_interval)
     return build

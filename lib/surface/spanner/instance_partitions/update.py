@@ -24,6 +24,7 @@ from googlecloudsdk.api_lib.spanner import instance_partition_operations
 from googlecloudsdk.api_lib.spanner import instance_partitions
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.spanner import flags
+from googlecloudsdk.command_lib.spanner import resource_args
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -52,8 +53,7 @@ class AlphaUpdate(base.Command):
       parser: An argparse parser that you can use to add arguments that go on
         the command line after this command. Positional arguments are allowed.
     """
-    flags.InstancePartition(hidden=False).AddToParser(parser)
-    flags.Instance(positional=False).AddToParser(parser)
+    resource_args.AddInstancePartitionResourceArg(parser, 'to update')
     flags.Description(
         required=False, text='Description of the instance partition.'
     ).AddToParser(parser)
@@ -71,8 +71,7 @@ class AlphaUpdate(base.Command):
       Some value that we want to have printed later.
     """
     op = instance_partitions.Patch(
-        args.instance_partition,
-        args.instance,
+        args.CONCEPTS.instance_partition.Parse(),
         description=args.description,
         nodes=args.nodes,
         processing_units=args.processing_units,

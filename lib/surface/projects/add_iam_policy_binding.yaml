@@ -7,21 +7,21 @@ help_text:
     an optional condition.
 
   examples: |
-    To add an IAM policy binding for the role of 'roles/editor' for the user
-    'test-user@gmail.com' on a project with identifier 'example-project-id-1',
+    To add an IAM policy binding for the role of `roles/editor` for the user
+    `test-user@gmail.com` on a project with identifier `example-project-id-1`,
     run:
 
       $ {command} example-project-id-1 --member='user:test-user@gmail.com' --role='roles/editor'
 
-    To add an IAM policy binding for the role of 'roles/editor' to the service
-    account 'test-proj1@example.domain.com'  on a project with identifier 'example-project-id-1',
+    To add an IAM policy binding for the role of `roles/editor` to the service
+    account `test-proj1@example.domain.com` on a project with identifier `example-project-id-1`,
     run:
 
       $ {command} example-project-id-1 --member='serviceAccount:test-proj1@example.domain.com' --role='roles/editor'
 
     To add an IAM policy binding that expires at the end of the year 2021 for
-    the role of 'roles/browser' and the user 'test-user@gmail.com' on a project
-    with identifier 'example-project-id-1', run:
+    the role of `roles/browser` and the user `test-user@gmail.com` on a project
+    with identifier `example-project-id-1`, run:
 
       $ {command} example-project-id-1 --member='user:test-user@gmail.com' --role='roles/browser' --condition='expression=request.time < timestamp("2019-01-01T00:00:00Z"),title=expires_end_of_2021,description=Expires at midnight on 2021-12-31'
 

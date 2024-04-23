@@ -107,6 +107,7 @@ def _GetResult(compute_client, request, operation_group_id):
   return result
 
 
+@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Create(base.Command):
   """Create Compute Engine virtual machine instances."""
@@ -341,6 +342,7 @@ class Create(base.Command):
               self._status_message))
 
 
+@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class CreateBeta(Create):
   """Create Compute Engine virtual machine instances."""
@@ -400,6 +402,7 @@ class CreateBeta(Create):
     instances_flags.AddLocalSsdRecoveryTimeoutArgs(parser)
 
 
+@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class CreateAlpha(Create):
   """Create Compute Engine virtual machine instances."""

@@ -26,8 +26,10 @@ from googlecloudsdk.command_lib.util.args import labels_util
 from googlecloudsdk.core import log
 
 
-def _CommonArgs(parser):
-  storagepools_flags.AddStoragePoolUpdateArgs(parser)
+def _CommonArgs(parser, release_track):
+  storagepools_flags.AddStoragePoolUpdateArgs(
+      parser, release_track=release_track
+  )
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
@@ -49,7 +51,7 @@ class Update(base.UpdateCommand):
 
   @staticmethod
   def Args(parser):
-    _CommonArgs(parser)
+    _CommonArgs(parser, Update._RELEASE_TRACK)
 
   def Run(self, args):
     """Update a Cloud NetApp Storage Pool in the current project."""
@@ -66,11 +68,18 @@ class Update(base.UpdateCommand):
     else:
       labels = None
 
+    if (self._RELEASE_TRACK == base.ReleaseTrack.ALPHA or
+        self._RELEASE_TRACK == base.ReleaseTrack.BETA):
+      allow_auto_tiering = args.allow_auto_tiering
+    else:
+      allow_auto_tiering = None
+
     storage_pool = client.ParseUpdatedStoragePoolConfig(
         orig_storagepool,
         capacity=capacity_in_gib,
         description=args.description,
         labels=labels,
+        allow_auto_tiering=allow_auto_tiering
     )
 
     updated_fields = []
@@ -86,6 +95,10 @@ class Update(base.UpdateCommand):
         or args.IsSpecified('clear_labels')
     ):
       updated_fields.append('labels')
+    if (self._RELEASE_TRACK == base.ReleaseTrack.ALPHA or
+        self._RELEASE_TRACK == base.ReleaseTrack.BETA):
+      if args.IsSpecified('allow_auto_tiering'):
+        updated_fields.append('allowAutoTiering')
     update_mask = ','.join(updated_fields)
 
     result = client.UpdateStoragePool(
@@ -108,6 +121,10 @@ class UpdateBeta(Update):
 
   _RELEASE_TRACK = base.ReleaseTrack.BETA
 
+  @staticmethod
+  def Args(parser):
+    _CommonArgs(parser, UpdateBeta._RELEASE_TRACK)
+
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class UpdateAlpha(UpdateBeta):
@@ -115,3 +132,6 @@ class UpdateAlpha(UpdateBeta):
 
   _RELEASE_TRACK = base.ReleaseTrack.ALPHA
 
+  @staticmethod
+  def Args(parser):
+    _CommonArgs(parser, UpdateAlpha._RELEASE_TRACK)

@@ -92,6 +92,7 @@ def _Args(parser,
   parser.display_info.AddCacheUpdater(completers.InstancesCompleter)
 
 
+@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class CreateWithContainer(base.CreateCommand):
   """Command for creating VM instances running container images."""
@@ -346,6 +347,7 @@ class CreateWithContainer(base.CreateCommand):
     return compute_client.MakeRequests(requests)
 
 
+@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class CreateWithContainerBeta(CreateWithContainer):
   """Command for creating VM instances running container images."""
@@ -382,6 +384,7 @@ class CreateWithContainerBeta(CreateWithContainer):
     instances_flags.ValidateLocalSsdFlags(args)
 
 
+@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class CreateWithContainerAlpha(CreateWithContainerBeta):
   """Alpha version of compute instances create-with-container command."""

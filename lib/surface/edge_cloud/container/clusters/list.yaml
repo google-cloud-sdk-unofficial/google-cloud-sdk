@@ -1,4 +1,5 @@
-- release_tracks: [ALPHA, GA]
+# TODO(b/331978625): Unify GA in python after validating Alpha.
+- release_tracks: [GA]
 
   help_text:
     brief: List Edge Container clusters.
@@ -11,8 +12,6 @@
 
   request:
     collection: edgecontainer.projects.locations.clusters
-    ALPHA:
-      api_version: v1alpha
     GA:
       api_version: v1
 

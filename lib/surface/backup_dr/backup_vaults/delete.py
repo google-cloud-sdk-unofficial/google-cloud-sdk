@@ -63,7 +63,6 @@ class DeleteAlpha(base.DeleteCommand):
     )
     flags.AddNoAsyncFlag(parser)
     flags.AddForceDeleteFlag(parser)
-    flags.AddRequestIdFlag(parser)
 
   def Run(self, args):
     """Constructs and sends request.
@@ -88,9 +87,7 @@ class DeleteAlpha(base.DeleteCommand):
     )
 
     try:
-      operation = client.Delete(
-          backup_vault, args.force_delete, args.request_id
-      )
+      operation = client.Delete(backup_vault, args.force_delete)
     except apitools_exceptions.HttpError as e:
       raise exceptions.HttpException(e, util.HTTP_ERROR_FORMAT)
 

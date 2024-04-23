@@ -1684,7 +1684,7 @@ def ProcessSources(source_string):
   return sources
 
 
-def ReadSchema(schema):
+def ReadSchema(schema: str) -> List[str]:
   """Create a schema from a string or a filename.
 
   If schema does not contain ':' and is the name of an existing

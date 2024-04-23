@@ -42,6 +42,11 @@ class ImportStatefile(base.Command):
 
   @staticmethod
   def Args(parser):
+    file_help_text = """\
+        File path for importing statefile into a deployment. It specifies the
+        local file path of an existing Terraform statefile to directly upload
+        for a deployment."""
+    flags.AddFileFlag(parser, file_help_text)
     flags.AddLockFlag(parser)
 
     concept_parsers.ConceptParser(
@@ -70,4 +75,5 @@ class ImportStatefile(base.Command):
         messages,
         deployment_full_name,
         args.lock_id,
+        args.file,
     )

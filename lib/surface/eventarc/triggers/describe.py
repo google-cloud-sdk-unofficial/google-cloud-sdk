@@ -64,7 +64,7 @@ class Describe(base.DescribeCommand):
 
 
 @base.Deprecate(
-    is_removed=False,
+    is_removed=True,
     warning=(
         'This command is deprecated. '
         'Please use `gcloud eventarc triggers describe` instead.'

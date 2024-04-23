@@ -8,6 +8,7 @@ from __future__ import print_function
 import json
 import logging
 import sys
+from typing import Optional
 
 
 from absl import app
@@ -35,7 +36,7 @@ FLAGS = flags.FLAGS
 class Query(bigquery_command.BigqueryCmd):
   usage = """query <sql>"""
 
-  def __init__(self, name, fv):
+  def __init__(self, name: str, fv: flags.FlagValues):
     super(Query, self).__init__(name, fv)
     flags.DEFINE_string(
         'destination_table',
@@ -364,7 +365,7 @@ class Query(bigquery_command.BigqueryCmd):
     )
     self._ProcessCommandRc(fv)
 
-  def RunWithArgs(self, *args):
+  def RunWithArgs(self, *args) -> Optional[int]:
     # pylint: disable=g-doc-exception
     """Execute a query.
 
@@ -632,7 +633,9 @@ class Query(bigquery_command.BigqueryCmd):
           client.GetTableReference(self.destination_table), read_schema
       )
 
-  def _PrintQueryJobResults(self, client, job):
+  def _PrintQueryJobResults(
+      self, client: bigquery_client_extended.BigqueryClientExtended, job
+  ) -> None:
     """Prints the results of a successful query job.
 
     This function is invoked only for successful jobs.  Output is printed to
@@ -651,7 +654,9 @@ class Query(bigquery_command.BigqueryCmd):
     else:
       self.PrintNonScriptQueryJobResults(client, job)
 
-  def _PrintScriptJobResults(self, client, job):
+  def _PrintScriptJobResults(
+      self, client: bigquery_client_extended.BigqueryClientExtended, job
+  ) -> None:
     """Prints the results of a successful script job.
 
     This function is invoked only for successful script jobs.  Prints the output
@@ -763,7 +768,9 @@ class Query(bigquery_command.BigqueryCmd):
     if is_json:
       sys.stdout.write(']\n')
 
-  def PrintNonScriptQueryJobResults(self, client, job):
+  def PrintNonScriptQueryJobResults(
+      self, client: bigquery_client_extended.BigqueryClientExtended, job
+  ) -> None:
     printable_job_info = bq_client_utils.FormatJobInfo(job)
     is_assert_job = job['statistics']['query']['statementType'] == 'ASSERT'
     if (

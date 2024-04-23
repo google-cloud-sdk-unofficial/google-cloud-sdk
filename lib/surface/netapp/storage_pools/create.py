@@ -68,6 +68,12 @@ class Create(base.CreateCommand):
     labels = labels_util.ParseCreateArgs(
         args, client.messages.StoragePool.LabelsValue)
     capacity_in_gib = args.capacity >> 30
+
+    allow_auto_tiering = None
+    if (self._RELEASE_TRACK == base.ReleaseTrack.ALPHA or
+        self._RELEASE_TRACK == base.ReleaseTrack.BETA):
+      allow_auto_tiering = args.allow_auto_tiering
+
     storage_pool = client.ParseStoragePoolConfig(
         name=storagepool_ref.RelativeName(),
         service_level=service_level,
@@ -77,6 +83,7 @@ class Create(base.CreateCommand):
         enable_ldap=args.enable_ldap,
         capacity=capacity_in_gib,
         description=args.description,
+        allow_auto_tiering=allow_auto_tiering,
         labels=labels,
     )
     result = client.CreateStoragePool(

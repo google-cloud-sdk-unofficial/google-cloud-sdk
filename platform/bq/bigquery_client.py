@@ -71,12 +71,6 @@ JobIdGeneratorFingerprint = bq_client_utils.JobIdGeneratorFingerprint
 JobIdGeneratorIncrementing = bq_client_utils.JobIdGeneratorIncrementing
 TransferScheduleArgs = bigquery_client_extended.TransferScheduleArgs
 BigqueryClient = bigquery_client_extended.BigqueryClientExtended
-# pylint: enable=protected-access
-
-
-
-# TODO(b/324243535): Delete these once the migration is complete.
-# pylint: disable=protected-access
 _TableReader = bq_table_reader._TableReader
 _TableTableReader = bq_table_reader.TableTableReader
 _JobTableReader = bq_table_reader.JobTableReader

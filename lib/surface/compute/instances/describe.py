@@ -49,6 +49,7 @@ DETAILED_HELP = {
 }
 
 
+@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
 class Describe(base.DescribeCommand):
   """Describe a virtual machine instance."""
@@ -75,6 +76,7 @@ class Describe(base.DescribeCommand):
     return self._GetInstance(holder, instance_ref)
 
 
+@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class DescribeAlpha(Describe):
   """Describe a virtual machine instance."""

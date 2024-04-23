@@ -2,8 +2,7 @@
 """Utilities to create Google Auth credentials."""
 
 import logging
-import subprocess
-from typing import Optional, Tuple, Union
+from typing import Union
 
 from absl import app
 from google.auth.compute_engine import credentials as compute_engine
@@ -13,6 +12,7 @@ from google.oauth2 import service_account
 import bq_auth_flags
 import bq_flags
 import bq_utils
+from auth import gcloud_credential_loader
 from utils import bq_error
 
 
@@ -67,63 +67,6 @@ def GetCredentialsFromFlags() -> GoogleAuthCredentialsUnionType:
     logging.info('No `use_gce_service_account`, load credentials elsewhere')
 
 
-  # Use gcloud to get currently active credentials.
-  logging.info('Loading auth credentials from gcloud')
-  (access_token, refresh_token) = _RunGcloudForOAuthTokens()
-  return google_oauth2.Credentials(
-      token=access_token,
-      refresh_token=refresh_token,
-      quota_project_id=bq_utils.GetResolvedQuotaProjectID(
-          bq_auth_flags.QUOTA_PROJECT_ID.value, bq_flags.PROJECT_ID.value
-      ),
-  )
+  return gcloud_credential_loader.LoadCredential()
 
 
-
-
-def _RunGcloudForOAuthTokens() -> Tuple[Optional[str], Optional[str]]:
-  """Returns an (access token, refresh token) tuple by calling gcloud auth commands."""
-  access_token = None
-  try:
-    access_token_result = subprocess.run(
-        ['gcloud', 'auth', 'print-access-token'],
-        check=True,
-        capture_output=True,
-    )
-    access_token = access_token_result.stdout.decode('utf-8').strip()
-    refresh_token_result = subprocess.run(
-        ['gcloud', 'auth', 'print-refresh-token'],
-        check=True,
-        capture_output=True,
-    )
-    refresh_token = refresh_token_result.stdout.decode('utf-8').strip()
-    return (access_token, refresh_token)
-  except subprocess.CalledProcessError as e:
-    if 'Refresh token has expired' in str(e.stderr):
-      raise bq_error.BigqueryError(
-          'Refresh token has expired. ' + _GetReauthMessage()
-      )
-    elif 'do not support refresh tokens' in str(e.stderr):
-      return (access_token, None)
-    else:
-      raise bq_error.BigqueryError(
-          'Error retrieving auth credentials from gcloud.\n'
-          'Stdout:\n%s\nStderr:\n%s' % (str(e.stdout), str(e.stderr))
-      )
-  except Exception as e:  # pylint: disable=broad-exception-caught
-    if "No such file or directory: 'gcloud'" in str(e):
-      raise bq_error.BigqueryError(
-          "'gcloud' not found but is required for authentication. To install,"
-          ' follow these instructions:'
-          ' https://cloud.google.com/sdk/docs/install'
-      )
-    raise bq_error.BigqueryError(
-        'Error retrieving auth credentials from gcloud: %s' % str(e)
-    )
-
-
-def _GetReauthMessage() -> str:
-  gcloud_command = '$ gcloud auth login' + (
-      ' --enable-gdrive-access' if bq_flags.ENABLE_GDRIVE.value else ''
-  )
-  return 'To re-authenticate, run:\n\n%s' % gcloud_command

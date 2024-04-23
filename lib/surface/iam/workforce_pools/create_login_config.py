@@ -106,17 +106,19 @@ class CreateLoginConfig(base.CreateCommand):
     if getattr(args, 'universe_cloud_web_domain', None):
       universe_cloud_web_domain = args.universe_cloud_web_domain
 
-    if (
-        universe_domain != universe_domain_property.default
-        and universe_cloud_web_domain == GOOGLE_DEFAULT_CLOUD_WEB_DOMAIN
-    ) or (
-        universe_domain == universe_domain_property.default
-        and universe_cloud_web_domain != GOOGLE_DEFAULT_CLOUD_WEB_DOMAIN
-    ):
+    # The universe domain and cloud web domain must be specified together.
+    if universe_domain != universe_domain_property.default:
+      if universe_cloud_web_domain == GOOGLE_DEFAULT_CLOUD_WEB_DOMAIN:
+        raise exceptions.RequiredArgumentException(
+            '--universe-cloud-web-domain',
+            'The universe domain and universe cloud web domain must be'
+            ' specified together.',
+        )
+    elif universe_cloud_web_domain != GOOGLE_DEFAULT_CLOUD_WEB_DOMAIN:
       raise exceptions.RequiredArgumentException(
-          '--universe-cloud-web-domain',
-          'Both --universe-domain and --universe-cloud-web-domain must be set'
-          ' together.',
+          '--universe-domain',
+          'The universe domain must be configured when the'
+          ' universe cloud web domain is specified.',
       )
 
     enable_mtls = getattr(args, 'enable_mtls', False)
@@ -133,6 +135,11 @@ class CreateLoginConfig(base.CreateCommand):
         'token_url': token_endpoint_builder.oauth_token_url,
         'token_info_url': token_endpoint_builder.token_info_url,
     }
+
+    # If the universe domain is not the default, set the cloud web domain in the
+    # config. This is needed for gcloud to determine the auth proxy domain.
+    if universe_cloud_web_domain != GOOGLE_DEFAULT_CLOUD_WEB_DOMAIN:
+      output['universe_cloud_web_domain'] = universe_cloud_web_domain
 
     files.WriteFileContents(args.output_file, json.dumps(output, indent=2))
     log.CreatedResource(args.output_file, RESOURCE_TYPE)

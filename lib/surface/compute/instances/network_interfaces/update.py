@@ -37,6 +37,7 @@ from googlecloudsdk.command_lib.compute.security_policies import (
 import six
 
 
+@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Update(base.UpdateCommand):
   r"""Update a Compute Engine virtual machine network interface.
@@ -276,6 +277,7 @@ class Update(base.UpdateCommand):
     )
 
 
+@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class UpdateBeta(Update):
   r"""Update a Compute Engine virtual machine network interface.
@@ -292,6 +294,7 @@ class UpdateBeta(Update):
   support_ipv6_assignment = False
 
 
+@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class UpdateAlpha(UpdateBeta):
   r"""Update a Compute Engine virtual machine network interface.

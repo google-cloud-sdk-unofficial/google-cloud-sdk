@@ -8,6 +8,7 @@ from __future__ import print_function
 import json
 import os
 import time
+from typing import Dict, List, Optional
 
 
 
@@ -36,7 +37,7 @@ FLAGS = flags.FLAGS
 class Update(bigquery_command.BigqueryCmd):
   usage = """update [-d] [-t] <identifier> [<schema>]"""
 
-  def __init__(self, name, fv):
+  def __init__(self, name: str, fv: flags.FlagValues):
     super(Update, self).__init__(name, fv)
     flags.DEFINE_boolean(
         'dataset',
@@ -619,11 +620,13 @@ class Update(bigquery_command.BigqueryCmd):
     )
     self._ProcessCommandRc(fv)
 
-  def RunWithArgs(self, identifier='', schema=''):
+  def RunWithArgs(
+      self, identifier: str = '', schema: str = ''
+  ) -> Optional[int]:
     # pylint: disable=g-doc-exception
     """Updates a dataset, table, view or transfer configuration with this name.
 
-    See 'bq help load' for more information on specifying the schema.
+    See 'bq help update' for more information.
 
     Examples:
       bq update --description "Dataset description" existing_dataset
@@ -1072,9 +1075,9 @@ class Update(bigquery_command.BigqueryCmd):
 
 
 def _UpdateDataset(
-    client,
-    reference,
-    description=None,
+    client: bigquery_client_extended.BigqueryClientExtended,
+    reference: bq_id_utils.ApiClientHelper.DatasetReference,
+    description: Optional[str] = None,
     source=None,
     default_table_expiration_ms=None,
     default_partition_expiration_ms=None,
@@ -1084,9 +1087,9 @@ def _UpdateDataset(
     default_kms_key=None,
     max_time_travel_hours=None,
     storage_billing_model=None,
-    tags_to_attach=None,
-    tags_to_remove=None,
-    clear_all_tags=None,
+    tags_to_attach: Optional[Dict[str, str]] = None,
+    tags_to_remove: Optional[List[str]] = None,
+    clear_all_tags: Optional[bool] = None,
 ):
   """Updates a dataset.
 

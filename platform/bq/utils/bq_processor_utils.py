@@ -7,11 +7,10 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-import collections
 import json
 import os
 import re
-from typing import Any, List
+from typing import Any, List, NamedTuple, Optional
 
 
 
@@ -153,10 +152,15 @@ def ParseJson(json_string: str) -> Any:
     )
 
 
-InsertEntry = collections.namedtuple('InsertEntry', ['insert_id', 'record'])
+class InsertEntry(NamedTuple):
+  insert_id: Optional[str]  # Optional here is to support legacy tests.
+  record: object
 
 
-def JsonToInsertEntry(insert_id, json_string):
+def JsonToInsertEntry(
+    insert_id: Optional[str],  # Optional here is to support legacy tests.
+    json_string: str
+) -> InsertEntry:
   """Parses a JSON encoded record and returns an InsertEntry.
 
   Arguments:

@@ -280,10 +280,11 @@ class UpdateBeta(Update):
   """
 
   NO_CHANGES_MESSAGE = (
-      'There are no changes to the secret [{secret}] for update')
+      'There are no changes to the secret [{secret}] for update'
+  )
   REGIONAL_KMS_FLAG_MESSAGE = (
-      'The --regional-kms-key-name flag can only be used when update a'
-      ' regional secret with "--location".'
+      'The --regional-kms-key-name or --remove-regional-kms-key-name flag can'
+      ' only be used when update a regional secret with "--location".'
   )
 
   @staticmethod
@@ -300,7 +301,7 @@ class UpdateBeta(Update):
     secrets_args.AddUpdateRotationGroup(parser)
     secrets_args.AddUpdateTopicsGroup(parser)
     secrets_args.AddUpdateVersionDestroyTTL(parser)
-    secrets_args.AddRegionalKmsKeyName(parser)
+    secrets_args.AddUpdateRegionalKmsKey(parser)
     map_util.AddMapUpdateFlag(alias, 'version-aliases', 'Version Aliases', str,
                               int)
     map_util.AddMapRemoveFlag(alias, 'version-aliases', 'Version Aliases', str)
@@ -354,7 +355,9 @@ class UpdateBeta(Update):
     ):
       update_mask.append('version_destroy_ttl')
 
-    if args.IsSpecified('regional_kms_key_name'):
+    if args.IsSpecified('regional_kms_key_name') or args.IsSpecified(
+        'remove_regional_kms_key_name'
+    ):
       update_mask.append('customer_managed_encryption')
 
     # Validations
@@ -447,7 +450,9 @@ class UpdateBeta(Update):
     else:
       version_destroy_ttl = None
 
-    if not args.location and args.regional_kms_key_name:
+    if not args.location and (
+        args.regional_kms_key_name or args.remove_regional_kms_key_name
+    ):
       raise exceptions.RequiredArgumentException(
           'location', self.REGIONAL_KMS_FLAG_MESSAGE
       )

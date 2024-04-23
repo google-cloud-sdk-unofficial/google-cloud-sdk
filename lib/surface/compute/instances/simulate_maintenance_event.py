@@ -31,6 +31,7 @@ from googlecloudsdk.core import log
 SIMULATE_MAINTENANCE_EVENT_TIMEOUT_MS = 7200000
 
 
+@base.UniverseCompatible
 @base.ReleaseTracks(
     base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
 )

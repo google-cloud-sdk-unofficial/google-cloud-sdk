@@ -8,6 +8,7 @@ from __future__ import division
 from __future__ import print_function
 
 import json
+from typing import Optional
 
 
 from absl import app
@@ -32,7 +33,7 @@ class _IamPolicyCmd(bigquery_command.BigqueryCmd):
   SetIamPolicy logic.
   """
 
-  def __init__(self, name, fv, verb):
+  def __init__(self, name: str, fv: flags.FlagValues, verb):
     """Initialize.
 
     Args:
@@ -152,11 +153,11 @@ class _IamPolicyCmd(bigquery_command.BigqueryCmd):
 class GetIamPolicy(_IamPolicyCmd):  # pylint: disable=missing-docstring
   usage = """get-iam-policy [(-d|-t|-connection)] <identifier>"""
 
-  def __init__(self, name, fv):
+  def __init__(self, name: str, fv: flags.FlagValues):
     super(GetIamPolicy, self).__init__(name, fv, 'Get')
     self._ProcessCommandRc(fv)
 
-  def RunWithArgs(self, identifier):
+  def RunWithArgs(self, identifier: str) -> Optional[int]:
     """Get the IAM policy for a resource.
 
     Gets the IAM policy for a dataset, table or connection resource, and prints
@@ -185,11 +186,11 @@ class GetIamPolicy(_IamPolicyCmd):  # pylint: disable=missing-docstring
 class SetIamPolicy(_IamPolicyCmd):  # pylint: disable=missing-docstring
   usage = """set-iam-policy [(-d|-t|-connection)] <identifier> <filename>"""
 
-  def __init__(self, name, fv):
+  def __init__(self, name: str, fv: flags.FlagValues):
     super(SetIamPolicy, self).__init__(name, fv, 'Set')
     self._ProcessCommandRc(fv)
 
-  def RunWithArgs(self, identifier, filename):
+  def RunWithArgs(self, identifier: str, filename: str) -> Optional[int]:
     """Set the IAM policy for a resource.
 
     Sets the IAM policy for a dataset, table or connection resource. After
@@ -231,7 +232,7 @@ class _IamPolicyBindingCmd(_IamPolicyCmd):  # pylint: disable=missing-docstring
   flags and logic from the _IamPolicyCmd class.
   """
 
-  def __init__(self, name, fv, verb):
+  def __init__(self, name: str, fv: flags.FlagValues, verb: str):
     super(_IamPolicyBindingCmd, self).__init__(name, fv, verb)
     flags.DEFINE_string(
         'member',
@@ -281,11 +282,11 @@ class AddIamPolicyBinding(_IamPolicyBindingCmd):  # pylint: disable=missing-docs
       '<identifier>'
   )
 
-  def __init__(self, name, fv):
+  def __init__(self, name: str, fv: flags.FlagValues):
     super(AddIamPolicyBinding, self).__init__(name, fv, verb='Add binding to')
     self._ProcessCommandRc(fv)
 
-  def RunWithArgs(self, identifier):
+  def RunWithArgs(self, identifier: str) -> Optional[int]:
     r"""Add a binding to a BigQuery resource's policy in IAM.
 
     Usage:
@@ -408,13 +409,13 @@ class RemoveIamPolicyBinding(_IamPolicyBindingCmd):  # pylint: disable=missing-d
       '[(-d|-t)] <identifier>'
   )
 
-  def __init__(self, name, fv):
+  def __init__(self, name: str, fv: flags.FlagValues):
     super(RemoveIamPolicyBinding, self).__init__(
         name, fv, verb='Remove binding from'
     )
     self._ProcessCommandRc(fv)
 
-  def RunWithArgs(self, identifier):
+  def RunWithArgs(self, identifier: str) -> Optional[int]:
     r"""Remove a binding from a BigQuery resource's policy in IAM.
 
     Usage:

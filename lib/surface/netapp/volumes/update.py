@@ -113,6 +113,11 @@ class Update(base.UpdateCommand):
     else:
       backup_config = None
       source_backup = None
+    if (self._RELEASE_TRACK == base.ReleaseTrack.ALPHA or
+        self._RELEASE_TRACK == base.ReleaseTrack.BETA):
+      tiering_policy = args.tiering_policy
+    else:
+      tiering_policy = None
     volume = client.ParseUpdatedVolumeConfig(
         original_volume,
         description=args.description,
@@ -132,7 +137,8 @@ class Update(base.UpdateCommand):
         snapshot=args.source_snapshot,
         backup=source_backup,
         restricted_actions=restricted_actions,
-        backup_config=backup_config)
+        backup_config=backup_config,
+        tiering_policy=tiering_policy)
 
     updated_fields = []
     # add possible updated volume fields
@@ -177,8 +183,15 @@ class Update(base.UpdateCommand):
           updated_fields.append('backupConfig.backupPolicies')
         if backup_config.get('backup-vault', ''):
           updated_fields.append('backupConfig.backupVault')
-        if backup_config.get('enable-scheduled-backups', False):
+        if backup_config.get('enable-scheduled-backups') is not None:
           updated_fields.append('backupConfig.scheduledBackupEnabled')
+    if (self._RELEASE_TRACK == base.ReleaseTrack.ALPHA or
+        self._RELEASE_TRACK == base.ReleaseTrack.BETA):
+      if tiering_policy is not None:
+        if tiering_policy.get('tier-action') is not None:
+          updated_fields.append('tieringPolicy.tierAction')
+        if tiering_policy.get('cooling-threshold-days') is not None:
+          updated_fields.append('tieringPolicy.coolingThresholdDays')
     if args.IsSpecified('description'):
       updated_fields.append('description')
     if (

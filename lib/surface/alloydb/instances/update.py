@@ -75,6 +75,7 @@ class Update(base.UpdateCommand):
     flags.AddRequireConnectors(parser)
     flags.AddAssignInboundPublicIp(parser, update=True)
     flags.AddAuthorizedExternalNetworks(parser)
+    flags.AddAllowedPSCProjects(parser)
     # TODO(b/185795425): Add --ssl-required and --labels later once we
     # understand the use cases
 
@@ -139,7 +140,6 @@ class UpdateAlpha(UpdateBeta):
   @staticmethod
   def Args(parser):
     super(UpdateAlpha, UpdateAlpha).Args(parser)
-    flags.AddAllowedPSCProjects(parser)
 
   def ConstructPatchRequestFromArgs(self, alloydb_messages, instance_ref, args):
     return instance_helper.ConstructPatchRequestFromArgsAlpha(

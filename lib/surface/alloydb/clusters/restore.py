@@ -55,6 +55,7 @@ class Restore(base.RestoreCommand):
     flags.AddRegion(parser)
     flags.AddNetwork(parser)
     flags.AddAllocatedIPRangeName(parser)
+    flags.AddEnablePrivateServiceConnect(parser)
     kms_resource_args.AddKmsKeyResourceArg(
         parser,
         'cluster',
@@ -131,7 +132,6 @@ class RestoreAlpha(Restore):
   @classmethod
   def Args(cls, parser):
     super(RestoreAlpha, cls).Args(parser)
-    flags.AddEnablePrivateServiceConnect(parser)
 
   def ConstructRestoreRequestFromArgs(
       self, alloydb_messages, location_ref, resource_parser, args

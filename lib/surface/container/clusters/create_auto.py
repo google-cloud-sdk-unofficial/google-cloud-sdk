@@ -82,6 +82,7 @@ def AddAutoFlags(parser, release_track):
   flags.AddAutoprovisioningResourceManagerTagsCreate(parser)
   flags.AddAdditiveVPCScopeFlags(parser, release_track=release_track)
   flags.AddIPAliasRelatedFlags(parser, autopilot=True)
+  flags.AddEnableConfidentialNodesFlag(parser, hidden=True)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)

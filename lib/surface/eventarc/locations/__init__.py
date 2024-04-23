@@ -27,7 +27,7 @@ class Locations(base.Group):
 
 
 @base.Deprecate(
-    is_removed=False,
+    is_removed=True,
     warning=(
         'This command is deprecated. '
         'Please use `gcloud eventarc locations` instead.'

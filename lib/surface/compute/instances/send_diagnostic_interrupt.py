@@ -42,6 +42,7 @@ DETAILED_HELP = {
 }
 
 
+@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
                     base.ReleaseTrack.GA)
 class SendDiagnosticInterrupt(base.SilentCommand):

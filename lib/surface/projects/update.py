@@ -41,7 +41,7 @@ class UpdateAlpha(base.UpdateCommand):
   ## EXAMPLES
 
   The following command updates a project with the ID
-  `example-foo-bar-1` to have the name "Foo Bar & Grill" and removes the
+  `example-foo-bar-1` to have the name `Foo Bar & Grill` and removes the
   label `dive`:
 
     $ {command} example-foo-bar-1 --name="Foo Bar & Grill" --remove-labels=dive
@@ -85,7 +85,7 @@ class Update(base.UpdateCommand):
   ## EXAMPLES
 
   The following command updates a project with the ID
-  `example-foo-bar-1` to have the name "Foo Bar & Grill":
+  `example-foo-bar-1` to have the name `Foo Bar & Grill`:
 
     $ {command} example-foo-bar-1 --name="Foo Bar & Grill"
   """

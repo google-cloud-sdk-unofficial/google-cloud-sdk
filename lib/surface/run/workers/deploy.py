@@ -104,7 +104,6 @@ class Deploy(base.Command):
     flags.AddDescriptionFlag(managed_group)
     flags.AddEncryptionKeyShutdownHoursFlag(managed_group)
     flags.AddRevisionSuffixArg(managed_group)
-    flags.AddSandboxArg(managed_group)
     flags.RemoveContainersFlag().AddToParser(managed_group)
     flags.AddRuntimeFlag(managed_group)
     flags.AddMinInstancesFlag(managed_group, resource_kind='worker')

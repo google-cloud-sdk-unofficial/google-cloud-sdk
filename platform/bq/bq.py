@@ -46,12 +46,18 @@ from frontend import bigquery_command
 from frontend import bq_cached_client
 from frontend import commands
 from frontend import commands_iam
+from frontend import command_copy
+from frontend import command_delete
+from frontend import command_extract
 from frontend import command_info
+from frontend import command_list
 from frontend import command_load
 from frontend import command_make
+from frontend import command_mkdef
 from frontend import command_query
 from frontend import command_repl
 from frontend import command_show
+from frontend import command_truncate
 from frontend import command_update
 from frontend import utils as frontend_utils
 from utils import bq_id_utils
@@ -130,21 +136,21 @@ NewCmd = bigquery_command.NewCmd
 BigqueryCmd = bigquery_command.BigqueryCmd
 _Load = command_load.Load
 _CreateExternalTableDefinition = frontend_utils.CreateExternalTableDefinition
-_MakeExternalTableDefinition = commands.MakeExternalTableDefinition
+_MakeExternalTableDefinition = command_mkdef.MakeExternalTableDefinition
 _Query = command_query.Query
-_Extract = commands.Extract
+_Extract = command_extract.Extract
 _Partition = commands.Partition
-_List = commands.ListCmd
+_List = command_list.ListCmd
 _PrintPageToken = frontend_utils.PrintPageToken
-_Delete = commands.Delete
-_Copy = commands.Copy
+_Delete = command_delete.Delete
+_Copy = command_copy.Copy
 _ParseTimePartitioning = frontend_utils.ParseTimePartitioning
 _ParseFileSetSpecType = frontend_utils.ParseFileSetSpecType
 _ParseClustering = frontend_utils.ParseClustering
 _ParseNumericTypeConversionMode = frontend_utils.ParseNumericTypeConversionMode
 _ParseRangePartitioning = frontend_utils.ParseRangePartitioning
 _Make = command_make.Make
-_Truncate = commands.Truncate
+_Truncate = command_truncate.Truncate
 _Update = command_update.Update
 _Show = command_show.Show
 _IsSuccessfulDmlOrDdlJob = frontend_utils.IsSuccessfulDmlOrDdlJob
@@ -201,25 +207,25 @@ def main(unused_argv):
         # Keep the commands alphabetical.
         'add-iam-policy-binding': commands_iam.AddIamPolicyBinding,
         'cancel': commands.Cancel,
-        'cp': commands.Copy,
-        'extract': commands.Extract,
+        'cp': command_copy.Copy,
+        'extract': command_extract.Extract,
         'get-iam-policy': commands_iam.GetIamPolicy,
         'head': commands.Head,
         'info': command_info.Info,
         'init': commands.Init,
         'insert': commands.Insert,
         'load': command_load.Load,
-        'ls': commands.ListCmd,
+        'ls': command_list.ListCmd,
         'mk': command_make.Make,
-        'mkdef': commands.MakeExternalTableDefinition,
+        'mkdef': command_mkdef.MakeExternalTableDefinition,
         'partition': commands.Partition,
         'query': command_query.Query,
         'remove-iam-policy-binding': commands_iam.RemoveIamPolicyBinding,
-        'rm': commands.Delete,
+        'rm': command_delete.Delete,
         'set-iam-policy': commands_iam.SetIamPolicy,
         'shell': command_repl.Repl,
         'show': command_show.Show,
-        'truncate': commands.Truncate,
+        'truncate': command_truncate.Truncate,
         'update': command_update.Update,
         'version': commands.Version,
         'wait': commands.Wait,

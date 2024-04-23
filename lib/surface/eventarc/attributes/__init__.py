@@ -22,7 +22,7 @@ from googlecloudsdk.calliope import base
 
 
 @base.Deprecate(
-    is_removed=False,
+    is_removed=True,
     warning='This command is deprecated.',
     error='This command has been removed.',
 )

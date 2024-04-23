@@ -44,23 +44,6 @@ SERIAL_PORT_HELP = (
 )
 CONNECTION_PORT = '9600'
 
-# Global ISPAC Constants and Templates
-
-SERIAL_PORT_GATEWAY = 'ssh-serialport.googleapis.com'
-HOST_KEY_URL = (
-    'https://cloud-certs.storage.googleapis.com/'
-    'google-cloud-serialport-host-key.pub'
-)
-DEFAULT_HOST_KEY = (
-    'ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDkOOCaBZVTxzvjJ7+7'
-    'YonnZOwIZ2Z7azwPC+oHbBCbWNBZAwzs63JQlHLibHG6NiNunFwP/lWs'
-    '5SpLx5eEdxGL+WQmvtldnBdqJzNE1UHrxPDegysCXxn1fT7KELpLozLh'
-    'vlfSnWJXbFbDrGB0bTv2U373Zo3BL9XTRf3qthdDEMF3GouUH8pGvitH'
-    'lwcwO1ulpVB0sTIdB7Bu+YPuo1XSuL2n3tXA9n9S+7kQCoyuXodeBpJo'
-    'JxzdJeoQXAepLrLA7nl6jRiYZyic0WJeSJm7vmvl1VDAGkyXloNEhBnv'
-    'oQFQl5aCwcS8UQnzzwMDflQ+JgsynYN08dLIRGcwkJe9'
-)
-
 # Regional ISPAC Constants and Templates
 
 REGIONAL_SERIAL_PORT_GATEWAY_TEMPLATE = '{0}-ssh-serialport.googleapis.com'
@@ -95,7 +78,6 @@ class ConnectToSerialPort(base.Command):
   """
 
   category = base.TOOLS_CATEGORY
-  use_region_from_zone = False
 
   @staticmethod
   def Args(parser):
@@ -188,21 +170,16 @@ class ConnectToSerialPort(base.Command):
     )[0]
 
     # Attempt to determine the region from the zone flag if possible.
-    if not args.location and self.use_region_from_zone:
+    if not args.location:
       location = daisy_utils.GetRegionFromZone(instance_ref.zone)
       log.info('Determined region from zone: {0}'.format(location))
     else:
       location = args.location
 
-    if location:
-      gateway = REGIONAL_SERIAL_PORT_GATEWAY_TEMPLATE.format(location)
-      hostkey_url = REGIONAL_HOST_KEY_URL_TEMPLATE.format(location)
-      log.info(
-          'Connecting to serialport via server in {0}'.format(location)
-      )
-    else:
-      gateway = SERIAL_PORT_GATEWAY
-      hostkey_url = HOST_KEY_URL
+    gateway = REGIONAL_SERIAL_PORT_GATEWAY_TEMPLATE.format(location)
+    hostkey_url = REGIONAL_HOST_KEY_URL_TEMPLATE.format(location)
+    log.info('Connecting to serialport via server in {0}'.format(location))
+
     hostname = '[{0}]:{1}'.format(gateway, CONNECTION_PORT)
     # Update google_compute_known_hosts file with published host key
     http_client = http.Http()
@@ -220,16 +197,6 @@ class ConnectToSerialPort(base.Command):
           'Attempting to connect using existing Host Key in [{2}]. If '
           'the connection fails, please try again to update the Host '
           'Key.'.format(gateway, hostkey_url, known_hosts.file_path)
-      )
-    elif gateway == SERIAL_PORT_GATEWAY:
-      known_hosts.Add(hostname, DEFAULT_HOST_KEY)
-      known_hosts.Write()
-      log.warning(
-          'Unable to download Host Key for [{0}] from [{1}]. To ensure '
-          'the security of the SSH connection, gcloud will attempt to '
-          'connect using a hard-coded Host Key value. If the connection '
-          'fails, please try again. If the problem persists, try '
-          'updating gcloud and connecting again.'.format(gateway, hostkey_url)
       )
     else:
       log.warning(
@@ -259,15 +226,18 @@ class ConnectToSerialPort(base.Command):
 
     # Determine the serial user, host tuple (remote)
     port = 'port={0}'.format(args.port)
-    source = 'source={0}'.format('gcloud')
     constructed_username_list = [
         instance_ref.project,
         instance_ref.zone,
         instance_ref.Name(),
         remote.user,
         port,
-        source,
     ]
+
+    if not args.dry_run:
+      source = 'source={0}'.format('gcloud')
+      constructed_username_list.append(source)
+
     if args.extra_args:
       for k, v in args.extra_args.items():
         constructed_username_list.append('{0}={1}'.format(k, v))
@@ -337,8 +307,6 @@ class ConnectToSerialPortAlphaBeta(ConnectToSerialPort):
 
     $ {command} my-instance --zone=us-central1-f
   """
-
-  use_region_from_zone = True
 
   @classmethod
   def Args(cls, parser):

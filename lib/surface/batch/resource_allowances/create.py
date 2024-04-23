@@ -20,6 +20,7 @@ from __future__ import unicode_literals
 from apitools.base.protorpclite.messages import DecodeError
 from apitools.base.py import encoding
 from googlecloudsdk.api_lib.batch import resource_allowances
+from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.batch import resource_args
 from googlecloudsdk.core import exceptions
@@ -49,8 +50,10 @@ class Submit(base.Command):
 
     parser.add_argument(
         '--config',
+        type=arg_parsers.FileContents(),
         required=True,
-        help='''The config file of a resource allowance.''')
+        help="""The config file of a resource allowance.""",
+    )
 
   @classmethod
   def _CreateResourceAllowanceMessage(cls, batch_msgs, config):

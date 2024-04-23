@@ -31,6 +31,7 @@ from googlecloudsdk.command_lib.compute.os_config import utils as osconfig_comma
 from googlecloudsdk.core import properties
 
 
+@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
 class CreateOsConfig(base.Command):
   """Create a Google Cloud's operations suite agents (Ops Agents) policy.
@@ -111,6 +112,7 @@ class CreateOsConfig(base.Command):
 
 
 @base.Hidden
+@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Create(base.Command):
   """Create a Google Cloud's operations suite agents (Ops Agents) policy.

@@ -20,6 +20,7 @@ from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import firewall_policy_association_utils as association_utils
+from googlecloudsdk.api_lib.compute.network_firewall_policies import client
 from googlecloudsdk.api_lib.compute.network_firewall_policies import region_client
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute.network_firewall_policies import flags
@@ -41,7 +42,7 @@ class Update(base.UpdateCommand):
   def Args(cls, parser):
     cls.NETWORK_FIREWALL_POLICY_ARG = (
         flags.NetworkFirewallPolicyAssociationArgument(
-            required=True, operation='update', allow_global=False
+            required=True, operation='update'
         )
     )
     cls.NETWORK_FIREWALL_POLICY_ARG.AddArgument(parser, operation_type='update')
@@ -53,9 +54,13 @@ class Update(base.UpdateCommand):
         args, holder.resources
     )
 
-    network_firewall_policy = region_client.RegionNetworkFirewallPolicy(
+    network_firewall_policy = client.NetworkFirewallPolicy(
         ref, compute_client=holder.client
     )
+    if hasattr(ref, 'region'):
+      network_firewall_policy = region_client.RegionNetworkFirewallPolicy(
+          ref, compute_client=holder.client
+      )
 
     priority = association_utils.ConvertPriorityToInt(args.priority)
 

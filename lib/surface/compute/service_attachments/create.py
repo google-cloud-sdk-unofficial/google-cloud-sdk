@@ -80,10 +80,11 @@ class CreateHelper(object):
     """
     cls.SERVICE_ATTACHMENT_ARG = flags.ServiceAttachmentArgument()
     cls.SERVICE_ATTACHMENT_ARG.AddArgument(parser, operation_type='create')
-    cls.PRODUCER_FORWARDING_RULE_ARG = forwarding_rule_flags.ForwardingRuleArgumentForServiceAttachment(
+    cls.PRODUCER_FORWARDING_RULE_ARG = (
+        forwarding_rule_flags.ForwardingRuleArgumentForServiceAttachment()
     )
-    cls.PRODUCER_FORWARDING_RULE_ARG.AddArgument(parser)
-    cls.NAT_SUBNETWORK_ARG = subnetwork_flags.SubnetworkArgumentForServiceAttachment(
+    cls.NAT_SUBNETWORK_ARG = (
+        subnetwork_flags.SubnetworkArgumentForServiceAttachment()
     )
     cls.NAT_SUBNETWORK_ARG.AddArgument(parser)
 
@@ -91,6 +92,7 @@ class CreateHelper(object):
     parser.display_info.AddCacheUpdater(flags.ServiceAttachmentsCompleter)
 
     flags.AddDescription(parser)
+    flags.AddTargetServiceAndProducerForwardingRuleArgs(parser)
     flags.AddConnectionPreference(parser, is_update=False)
     flags.AddEnableProxyProtocolForCreate(parser)
     flags.AddReconcileConnectionsForCreate(parser)
@@ -113,6 +115,12 @@ class CreateHelper(object):
             args, self._holder.resources
         )
     )
+    if target_service_args := args.target_service:
+      target_service = target_service_args
+      producer_forwarding_rule = None
+    elif producer_forwarding_rule_ref:
+      producer_forwarding_rule = producer_forwarding_rule_ref.SelfLink()
+      target_service = producer_forwarding_rule_ref.SelfLink()
     nat_subnetwork_refs = self.NAT_SUBNETWORK_ARG.ResolveAsResource(
         args,
         self._holder.resources,
@@ -133,8 +141,9 @@ class CreateHelper(object):
         natSubnets=nat_subnetworks,
         connectionPreference=connection_preference,
         enableProxyProtocol=enable_proxy_protocol,
-        producerForwardingRule=producer_forwarding_rule_ref.SelfLink(),
-        targetService=producer_forwarding_rule_ref.SelfLink())
+        producerForwardingRule=producer_forwarding_rule,
+        targetService=target_service,
+    )
 
     if args.IsSpecified('consumer_reject_list'):
       service_attachment.consumerRejectLists = args.consumer_reject_list

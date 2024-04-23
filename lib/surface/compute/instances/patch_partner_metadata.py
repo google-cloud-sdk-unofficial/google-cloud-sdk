@@ -61,6 +61,7 @@ DETAILED_HELP = {
 }
 
 
+@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class InstancesPatchPartnerMetadata(base.UpdateCommand):
   """patch partner metadata."""

@@ -223,7 +223,7 @@ class Create(base.CreateCommand):
 
 
 @base.Deprecate(
-    is_removed=False,
+    is_removed=True,
     warning=('This command is deprecated. '
              'Please use `gcloud eventarc triggers create` instead.'),
     error=('This command has been removed. '

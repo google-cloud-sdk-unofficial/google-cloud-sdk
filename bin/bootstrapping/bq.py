@@ -25,6 +25,15 @@ def _MaybeAddOption(args, name, value):
   args.append('--{name}={value}'.format(name=name, value=value))
 
 
+def _GetGoogleAuthFlagValue(argv):
+  for arg in argv[1:]:
+    if re.fullmatch(r'--use_google_auth(=True)*', arg):
+      return True
+    if re.fullmatch(r'(--nouse_google_auth|--use_google_auth=False)', arg):
+      return False
+  return None
+
+
 def main():
   """Launches bq."""
   version = bootstrapping.ReadFileContents('platform/bq', 'VERSION')
@@ -36,11 +45,8 @@ def main():
   bootstrapping.WarnAndExitOnBlockedCommand(argv, blocked_commands)
 
   cmd_args = [arg for arg in argv[1:] if not arg.startswith('-')]
-  use_google_auth = False
-  for arg in argv[1:]:
-    if re.fullmatch(r'--use_google_auth(=True)*', arg):
-      use_google_auth = True
-      break
+  use_google_auth = _GetGoogleAuthFlagValue(argv)
+  use_google_auth_unspecified = use_google_auth is None
   args = []
   print_logging = False
   if len(cmd_args) == 1 and cmd_args[0] == 'info':
@@ -87,14 +93,31 @@ def main():
         )
       p12_key_path = config.Paths().LegacyCredentialsP12KeyPath(account)
       if os.path.isfile(p12_key_path):
-        args = [
-            '--service_account',
-            account,
-            '--service_account_credential_file',
-            single_store_path,
-            '--service_account_private_key_file',
-            p12_key_path,
-        ]
+        if use_google_auth_unspecified:
+          # Unless explicitly disabled, use Google Auth by default since p12 key
+          # handling is deprecated in legacy auth libraries.
+          print(
+              'Using Google Auth since the P12 service account key format is'
+              ' detected. Note that the P12 key format has been depreacated in'
+              ' favor of the newer JSON key format.'
+          )
+          args = ['--use_google_auth']
+        else:
+          print(
+              'Using the deprecated P12 service account key format with legacy'
+              ' auth may introduce security vulnerabilities and will soon be'
+              ' unsupported. If you are unable to migrate to using the newer'
+              ' JSON key format, file a report to inform the BQ CLI team of'
+              ' your use case.'
+          )
+          args = [
+              '--service_account',
+              account,
+              '--service_account_credential_file',
+              single_store_path,
+              '--service_account_private_key_file',
+              p12_key_path,
+          ]
       else:
         # Don't have any credentials we can pass.
         raise store.NoCredentialsForAccountException(account)

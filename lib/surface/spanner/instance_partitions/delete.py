@@ -23,6 +23,7 @@ import textwrap
 from googlecloudsdk.api_lib.spanner import instance_partitions
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.spanner import flags
+from googlecloudsdk.command_lib.spanner import resource_args
 from googlecloudsdk.core.console import console_io
 
 
@@ -47,8 +48,7 @@ class Delete(base.DeleteCommand):
       parser: An argparse parser that you can use to add arguments that go on
         the command line after this command. Positional arguments are allowed.
     """
-    flags.InstancePartition(hidden=False).AddToParser(parser)
-    flags.Instance(positional=False).AddToParser(parser)
+    resource_args.AddInstancePartitionResourceArg(parser, 'to delete')
     parser.display_info.AddCacheUpdater(flags.InstancePartitionCompleter)
 
   def Run(self, args):
@@ -61,10 +61,11 @@ class Delete(base.DeleteCommand):
     Returns:
       Some value that we want to have printed later.
     """
+    instance_partition_ref = args.CONCEPTS.instance_partition.Parse()
     console_io.PromptContinue(
         message='Delete instance partition [{0}]. Are you sure?'.format(
             args.instance_partition
         ),
         cancel_on_no=True,
     )
-    return instance_partitions.Delete(args.instance_partition, args.instance)
+    return instance_partitions.Delete(instance_partition_ref)

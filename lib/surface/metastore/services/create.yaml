@@ -25,6 +25,7 @@
     ALPHA:
       api_version: v1alpha
       modify_request_hooks:
+      - googlecloudsdk.command_lib.metastore.services.util:UpdateAutoscalingScalingConfig
       - googlecloudsdk.command_lib.metastore.services.util:GenerateNetworkConfigFromSubnetList
       - googlecloudsdk.command_lib.metastore.services.util:GenerateAuxiliaryVersionsConfigFromList
       - googlecloudsdk.command_lib.metastore.validators:ValidateServiceMutexConfig
@@ -32,6 +33,7 @@
     BETA:
       api_version: v1beta
       modify_request_hooks:
+      - googlecloudsdk.command_lib.metastore.services.util:UpdateAutoscalingScalingConfig
       - googlecloudsdk.command_lib.metastore.services.util:GenerateNetworkConfigFromSubnetList
       - googlecloudsdk.command_lib.metastore.services.util:GenerateAuxiliaryVersionsConfigFromList
       - googlecloudsdk.command_lib.metastore.validators:ValidateServiceMutexConfig
@@ -82,10 +84,8 @@
         - arg_name: scaling-factor
           api_field: service.scalingConfig.scalingFactor
           help_text: |
-            The scaling factor of the service. This should be a float in the range [0.1,6.0].
-            If the value is less than 1.0, then it should be a multiple of 0.1.
-            If the value is greater than 1.0, then it should be a whole number.
-            Float values should be formatted as `x.y`.
+            The scaling factor of the service.
+            Can be one of [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0].
           processor: googlecloudsdk.command_lib.metastore.validators:ValidateScalingFactor
         - arg_name: instance-size
           api_field: service.scalingConfig.instanceSize
@@ -112,6 +112,36 @@
             enum_value: EXTRA_LARGE
             help_text:  |
               Extra large instance size, maps to a scaling factor of 6.0.
+        - group:
+            release_tracks: [ALPHA, BETA]
+            help_text: |
+              The autoscaling configuration of the Dataproc Metastore instance.
+            params:
+            - arg_name: min-scaling-factor
+              api_field: service.scalingConfig.autoscalingConfig.limitConfig.minScalingFactor
+              help_text: |
+                The minimum scaling factor allowed by the autoscaler.
+                Can be one of [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0].
+                The default value is 0.1.
+              processor: googlecloudsdk.command_lib.metastore.validators:ValidateMinScalingFactor
+            - arg_name: max-scaling-factor
+              api_field: service.scalingConfig.autoscalingConfig.limitConfig.maxScalingFactor
+              help_text: |
+                The maximum scaling factor allowed by the autoscaler.
+                Can be one of [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0].
+                The default value is 6.0.
+              processor: googlecloudsdk.command_lib.metastore.validators:ValidateMaxScalingFactor
+    - arg_name: autoscaling-enabled
+      release_tracks: [ALPHA, BETA]
+      api_field: service.scalingConfig.autoscalingConfig.autoscalingEnabled
+      help_text: |
+        A boolean flag to determine whether Dataproc Metastore autoscaling should be enabled,
+        false if unspecified.
+
+        The default minimum and maximum scaling factors are 0.1 and 6.0, respectively.
+
+        The minimum and maximum scaling factors can be specified using --min-scaling-factor and
+        --max-scaling-factor.
     - arg_name: hive-metastore-version
       api_field: service.hiveMetastoreConfig.version
       help_text: |

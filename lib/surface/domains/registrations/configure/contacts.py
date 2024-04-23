@@ -37,6 +37,17 @@ class ConfigureContacts(base.UpdateCommand):
   the registrant before they take effect. In order to resend the email, execute
   this command again.
 
+  NOTE: Please consider carefully any changes to contact privacy settings when
+  changing from "redacted-contact-data" to "public-contact-data."
+  There may be a delay in reflecting updates you make to registrant
+  contact information such that any changes you make to contact privacy
+  (including from "redacted-contact-data" to "public-contact-data")
+  will be applied without delay but changes to registrant contact
+  information may take a limited time to be publicized. This means that
+  changes to contact privacy from "redacted-contact-data" to
+  "public-contact-data" may make the previous registrant contact
+  data public until the modified registrant contact details are published.
+
   ## EXAMPLES
 
   To start an interactive flow to configure contact settings for
@@ -100,13 +111,18 @@ class ConfigureContacts(base.UpdateCommand):
       return None
 
     new_privacy = contact_privacy or registration.contactSettings.privacy
-    if not public_contacts_ack and new_privacy == client.messages.ContactSettings.PrivacyValueValuesEnum.PUBLIC_CONTACT_DATA:
+    privacy = client.messages.ContactSettings.PrivacyValueValuesEnum
+    if not public_contacts_ack and new_privacy == privacy.PUBLIC_CONTACT_DATA:
       merged_contacts = contacts_util.MergeContacts(
           api_version,
           prev_contacts=registration.contactSettings,
           new_contacts=contacts)
-      public_contacts_ack = contacts_util.PromptForPublicContactsAck(
-          registration.domainName, merged_contacts)
+      if registration.contactSettings.privacy != privacy.PUBLIC_CONTACT_DATA:
+        public_contacts_ack = contacts_util.PromptForPublicContactsUpdateAck(
+            registration.domainName, merged_contacts)
+      else:
+        public_contacts_ack = contacts_util.PromptForPublicContactsAck(
+            registration.domainName, merged_contacts)
 
     response = client.ConfigureContacts(
         registration_ref,

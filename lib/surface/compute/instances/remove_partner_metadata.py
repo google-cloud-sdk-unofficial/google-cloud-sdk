@@ -48,6 +48,7 @@ DETAILED_HELP = {
 }
 
 
+@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class InstancesRemovePartnerMetadata(base.UpdateCommand):
   """remove partner metadata namespace."""

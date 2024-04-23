@@ -12,6 +12,8 @@ help_text:
 request:
   collection: certificatemanager.projects.locations.trustConfigs
   api_version: v1
+  modify_request_hooks:
+  - googlecloudsdk.command_lib.certificate_manager.hooks:UpdateTrustConfigAllowlistedCertificates
 
 arguments:
   resource:
@@ -47,12 +49,43 @@ arguments:
         spec:
         - arg_name: trust-anchors
           api_field: trustAnchors
-          type: "googlecloudsdk.command_lib.certificate_manager.arg_parsers:PemCertificatesFilesList:"
+          type: "googlecloudsdk.command_lib.certificate_manager.arg_parsers:SemicolonSeparatedPemCertificatesFilesList:"
           required: true
         - arg_name: intermediate-cas
           api_field: intermediateCas
-          type: "googlecloudsdk.command_lib.certificate_manager.arg_parsers:PemCertificatesFilesList:"
+          type: "googlecloudsdk.command_lib.certificate_manager.arg_parsers:SemicolonSeparatedPemCertificatesFilesList:"
           required: false
+  - arg_name: add-allowlisted-certificates
+    type: "googlecloudsdk.command_lib.certificate_manager.arg_parsers:CommaSeparatedPemCertificatesFilesList:"
+    help_text: |
+      Add allowlisted PEM-encoded certificates.
+      Certificates should be provided in files. For multiple file names, separate them by a comma (',').
+      One file can contain multiple certificates.
+
+      Examples:
+
+        Single file: --add-allowlisted-certificates=ac.pem
+
+        Multiple files: --add-allowlisted-certificates=ac1.pem,ac2.pem
+  - group:
+      mutex: true
+      params:
+      - arg_name: remove-allowlisted-certificates
+        type: "googlecloudsdk.command_lib.certificate_manager.arg_parsers:CommaSeparatedPemCertificatesFilesList:"
+        help_text: |
+          Remove allowlisted PEM-encoded certificates.
+          Certificates should be provided in files. For multiple file names, separate them by a comma (',').
+          One file can contain multiple certificates.
+
+          Examples:
+
+            Single file: --remove-allowlisted-certificates=ac.pem
+
+            Multiple files: --remove-allowlisted-certificates=ac1.pem,ac2.pem
+      - arg_name: clear-allowlisted-certificates
+        type: bool
+        help_text: |
+          Clear all allowlisted certificates.
   labels:
     api_field: trustConfig.labels
 

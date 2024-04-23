@@ -1,5 +1,5 @@
 {
-  "CLI_VERSION": "2.1.3",
+  "CLI_VERSION": "2.1.4",
   "VERSION": "1",
   "capsule": "",
   "commands": {
@@ -230,7 +230,7 @@
       "positionals": [],
       "release": "GA",
       "sections": {
-        "DESCRIPTION": "Create a dataset, table, view, or transfer\nconfiguration with this name.\n\nSee 'bq help load' for more information on specifying\nthe schema.\n",
+        "DESCRIPTION": "Create a dataset, table, view, or transfer\nconfiguration with this name.\n\nSee 'bq help mk' for more information.\n",
         "EXAMPLES": "bq mk new_dataset\nbq mk new_dataset.new_table\nbq --dataset_id=new_dataset mk table\nbq mk -t new_dataset.newtable\nname:integer,value:string\nbq mk --view='select 1 as num' new_dataset.newview\n(--view_udf_resource=path/to/file.js)\nbq mk --materialized_view='select sum(x) as sum_x\nfrom dataset.table'\nnew_dataset.newview\nbq mk -d --data_location=EU new_dataset\nbq mk -d --source_dataset=src_dataset new_dataset\n(requires allowlisting)\nbq mk -d\n--external_source=aws-\nglue://<aws_arn_of_glue_database>\n--connection_id=<connection>\nnew_dataset\nbq mk --transfer_config --target_dataset=dataset\n--display_name=name\n-p='{\"param\":\"value\"}' --data_source=source\n--schedule_start_time={schedule_start_time}\n--schedule_end_time={schedule_end_time}\nbq mk --transfer_run --start_time={start_time}\n--end_time={end_time}\nprojects/p/locations/l/transferConfigs/c\nbq mk --transfer_run --run_time={run_time}\nprojects/p/locations/l/transferConfigs/c\nbq mk --reservation --project_id=project\n--location=us reservation_name\nbq mk --reservation_assignment\n--reservation_id=project:us.dev\n--job_type=QUERY --assignee_type=PROJECT\n--assignee_id=myproject\nbq mk --reservation_assignment\n--reservation_id=project:us.dev\n--job_type=QUERY --assignee_type=FOLDER\n--assignee_id=123\nbq mk --reservation_assignment\n--reservation_id=project:us.dev\n--job_type=QUERY --assignee_type=ORGANIZATION\n--assignee_id=456\nbq mk --connection --connection_type='CLOUD_SQL'\n--properties='{\"instanceId\" : \"instance\",\n\"database\" : \"db\", \"type\" : \"MYSQL\" }'\n--connection_credential='{\"username\":\"u\",\n\"password\":\"p\"}'\n--project_id=proj --location=us --display_name=name\nnew_connection\n"
       }
     },
@@ -409,7 +409,7 @@
       "positionals": [],
       "release": "GA",
       "sections": {
-        "DESCRIPTION": "Updates a dataset, table, view or transfer\nconfiguration with this name.\n\nSee 'bq help load' for more information on specifying\nthe schema.\n",
+        "DESCRIPTION": "Updates a dataset, table, view or transfer\nconfiguration with this name.\n\nSee 'bq help update' for more information.\n",
         "EXAMPLES": "bq update --description \"Dataset description\"\nexisting_dataset\nbq update --description \"My table\"\nexisting_dataset.existing_table\nbq update --description \"My model\" -m\nexisting_dataset.existing_model\nbq update -t existing_dataset.existing_table\nname:integer,value:string\nbq update --destination_kms_key\nprojects/p/locations/l/keyRings/r/cryptoKeys/k\nexisting_dataset.existing_table\nbq update --view='select 1 as num'\nexisting_dataset.existing_view\n(--view_udf_resource=path/to/file.js)\nbq update --transfer_config --display_name=name\n-p='{\"param\":\"value\"}'\nprojects/p/locations/l/transferConfigs/c\nbq update --transfer_config --target_dataset=dataset\n--refresh_window_days=5 --update_credentials\nprojects/p/locations/l/transferConfigs/c\nbq update --reservation --location=US\n--project_id=my-project\n--bi_reservation_size=2G\nbq update --capacity_commitment --location=US\n--project_id=my-project\n--plan=MONTHLY --renewal_plan=FLEX commitment_id\nbq update --capacity_commitment --location=US\n--project_id=my-project\n--split --slots=500 commitment_id\nbq update --capacity_commitment --location=US\n--project_id=my-project\n--merge commitment_id1,commitment_id2\nbq update --reservation_assignment\n--destination_reservation_id=proj:US.new_reservation\nproj:US.old_reservation.assignment_id\nbq update --connection_credential='{\"username\":\"u\",\n\"password\":\"p\"}'\n--location=US --project_id=my-project\nexisting_connection\n"
       }
     },

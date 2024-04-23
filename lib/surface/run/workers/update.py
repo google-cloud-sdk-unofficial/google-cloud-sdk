@@ -88,7 +88,6 @@ class Update(base.Command):
     flags.AddEncryptionKeyShutdownHoursFlag(managed_group)
     flags.AddMinInstancesFlag(parser, resource_kind='worker')
     flags.AddRevisionSuffixArg(managed_group)
-    flags.AddSandboxArg(managed_group)
     flags.AddSessionAffinityFlag(managed_group)
     flags.RemoveContainersFlag().AddToParser(managed_group)
     flags.AddVpcNetworkGroupFlagsForUpdate(

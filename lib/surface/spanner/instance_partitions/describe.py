@@ -19,7 +19,7 @@ from __future__ import unicode_literals
 import textwrap
 from googlecloudsdk.api_lib.spanner import instance_partitions
 from googlecloudsdk.calliope import base
-from googlecloudsdk.command_lib.spanner import flags
+from googlecloudsdk.command_lib.spanner import resource_args
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -45,8 +45,7 @@ class AlphaDescribe(base.DescribeCommand):
       parser: An argparse parser that you can use to add arguments that go on
         the command line after this command. Positional arguments are allowed.
     """
-    flags.InstancePartition(hidden=False).AddToParser(parser)
-    flags.Instance(positional=False).AddToParser(parser)
+    resource_args.AddInstancePartitionResourceArg(parser, 'to describe')
 
   def Run(self, args):
     """This is what gets called when the user runs this command.
@@ -58,4 +57,4 @@ class AlphaDescribe(base.DescribeCommand):
     Returns:
       Some value that we want to have printed later.
     """
-    return instance_partitions.Get(args.instance_partition, args.instance)
+    return instance_partitions.Get(args.CONCEPTS.instance_partition.Parse())

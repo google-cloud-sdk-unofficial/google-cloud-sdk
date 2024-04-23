@@ -7,6 +7,7 @@ from __future__ import print_function
 
 import datetime
 import time
+from typing import Optional
 
 
 
@@ -15,6 +16,7 @@ from absl import flags
 from clients import utils as bq_client_utils
 from frontend import bigquery_command
 from frontend import bq_cached_client
+from frontend import flags as frontend_flags
 from frontend import utils as frontend_utils
 
 FLAGS = flags.FLAGS
@@ -27,7 +29,7 @@ FLAGS = flags.FLAGS
 class Load(bigquery_command.BigqueryCmd):
   usage = """load <destination_table> <source> <schema>"""
 
-  def __init__(self, name, fv):
+  def __init__(self, name: str, fv: flags.FlagValues):
     super(Load, self).__init__(name, fv)
     flags.DEFINE_string(
         'field_delimiter',
@@ -382,7 +384,9 @@ class Load(bigquery_command.BigqueryCmd):
     )
     self._ProcessCommandRc(fv)
 
-  def RunWithArgs(self, destination_table, source, schema=None):
+  def RunWithArgs(
+      self, destination_table: str, source: str, schema: Optional[str] = None
+  ) -> Optional[int]:
     """Perform a load operation of source into destination_table.
 
     Usage:

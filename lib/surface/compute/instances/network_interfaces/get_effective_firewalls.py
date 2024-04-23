@@ -28,6 +28,7 @@ from googlecloudsdk.command_lib.compute.instances import flags as instances_flag
 from googlecloudsdk.core import log
 
 
+@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
 class GetEffectiveFirewalls(base.DescribeCommand, base.ListCommand):
   r"""Get the effective firewalls for a Compute Engine virtual machine network interface.
@@ -139,6 +140,7 @@ class GetEffectiveFirewalls(base.DescribeCommand, base.ListCommand):
     log.status.Print('\n' + firewalls_utils.LIST_NOTICE)
 
 
+@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class GetEffectiveFirewallsAlpha(GetEffectiveFirewalls):
   r"""Get the effective firewalls for a Compute Engine virtual machine network interface."""

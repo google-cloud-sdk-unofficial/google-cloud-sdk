@@ -6,6 +6,7 @@ from __future__ import division
 from __future__ import print_function
 
 import time
+from typing import Optional
 
 
 
@@ -15,9 +16,11 @@ from pyglib import appcommands
 
 import bq_utils
 from clients import bigquery_client_extended
+from clients import client_dataset
 from clients import utils as bq_client_utils
 from frontend import bigquery_command
 from frontend import bq_cached_client
+from frontend import flags as frontend_flags
 from frontend import utils as frontend_utils
 from frontend import utils_data_transfer
 from utils import bq_error
@@ -36,7 +39,7 @@ class Make(bigquery_command.BigqueryCmd):
 
   usage = """mk [-d] <identifier>  OR  mk [-t] <identifier> [<schema>]"""
 
-  def __init__(self, name, fv):
+  def __init__(self, name: str, fv: flags.FlagValues):
     super(Make, self).__init__(name, fv)
     flags.DEFINE_boolean(
         'force',
@@ -766,13 +769,16 @@ class Make(bigquery_command.BigqueryCmd):
         ' "1234567/my_tag_key:my_tag_value,test-project123/environment:production" ',  # pylint: disable=line-too-long
         flag_values=fv,
     )
+    self.null_marker_flag = frontend_flags.define_null_marker(flag_values=fv)
     self._ProcessCommandRc(fv)
 
-  def RunWithArgs(self, identifier='', schema=''):
+  def RunWithArgs(
+      self, identifier: str = '', schema: str = ''
+  ) -> Optional[int]:
     # pylint: disable=g-doc-exception
     """Create a dataset, table, view, or transfer configuration with this name.
 
-    See 'bq help load' for more information on specifying the schema.
+    See 'bq help mk' for more information.
 
     Examples:
       bq mk new_dataset
@@ -1055,11 +1061,17 @@ class Make(bigquery_command.BigqueryCmd):
             created_connection, flag_format=FLAGS.format
         )
     elif self.d or not identifier:
-      reference = client.GetDatasetReference(identifier)
+      reference = bq_client_utils.GetDatasetReference(
+          id_fallbacks=client,
+          identifier=identifier
+      )
       if reference.datasetId and identifier:
         frontend_utils.ValidateDatasetName(reference.datasetId)
     else:
-      reference = client.GetReference(identifier)
+      reference = bq_client_utils.GetReference(
+          id_fallbacks=client,
+          identifier=identifier
+      )
       bq_id_utils.typecheck(
           reference,
           (
@@ -1078,7 +1090,10 @@ class Make(bigquery_command.BigqueryCmd):
         raise app.UsageError(
             'Cannot specify an external_table_definition for a dataset.'
         )
-      if client.DatasetExists(reference):
+      if client_dataset.DatasetExists(
+          apiclient=client.apiclient,
+          reference=reference,
+      ):
         message = "Dataset '%s' already exists." % (reference,)
         if not self.f:
           raise bq_error.BigqueryError(message)
@@ -1098,8 +1113,9 @@ class Make(bigquery_command.BigqueryCmd):
         labels = frontend_utils.ParseLabels(self.label)
 
       if self.source_dataset:
-        source_dataset_reference = client.GetDatasetReference(
-            self.source_dataset
+        source_dataset_reference = bq_client_utils.GetDatasetReference(
+            id_fallbacks=client,
+            identifier=self.source_dataset
         )
       else:
         source_dataset_reference = None
@@ -1121,7 +1137,8 @@ class Make(bigquery_command.BigqueryCmd):
               'connection_id is required when external_source is specified.'
           )
       resource_tags = None
-      client.CreateDataset(
+      client_dataset.CreateDataset(
+          apiclient=client.apiclient,
           reference=reference,
           ignore_existing=self.force,
           description=self.description,
@@ -1188,6 +1205,7 @@ class Make(bigquery_command.BigqueryCmd):
             self.preserve_ascii_control_characters,
             self.reference_file_schema_uri,
             self.file_set_spec_type,
+            self.null_marker_flag.value,
         )
         if (self.require_partition_filter is not None) and (
             'hivePartitioningOptions' in external_data_config

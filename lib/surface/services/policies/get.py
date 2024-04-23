@@ -125,6 +125,8 @@ class Get(base.Command):
         log.status.Print(
             'Policy written to the output file %s ' % args.output_file
         )
+    elif args.IsSpecified('format'):
+      return policy
     else:
       result = _ConvertToDict(policy)
       for k, v in result.items():

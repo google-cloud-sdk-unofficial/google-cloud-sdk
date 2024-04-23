@@ -394,6 +394,8 @@ def CreateExternalTableDefinition(
     reference_file_schema_uri=None,
     encoding=None,
     file_set_spec_type=None,
+    null_marker=None,
+    parquet_map_target_type=None,
 ):
   """Creates an external table definition with the given URIs and the schema.
 
@@ -402,8 +404,8 @@ def CreateExternalTableDefinition(
       Google spreadsheet files, specify 'GOOGLE_SHEETS'. For newline-delimited
       JSON, specify 'NEWLINE_DELIMITED_JSON'. For Cloud Datastore backup,
       specify 'DATASTORE_BACKUP'. For Avro files, specify 'AVRO'. For Orc files,
-      specify 'ORC'. For Parquet files, specify 'PARQUET'.
-      For Iceberg tables, specify 'ICEBERG'.
+      specify 'ORC'. For Parquet files, specify 'PARQUET'. For Iceberg tables,
+      specify 'ICEBERG'.
     source_uris: Comma separated list of URIs that contain data for this table.
     schema: Either an inline schema or path to a schema file.
     autodetect: Indicates if format options, compression mode and schema be auto
@@ -413,8 +415,8 @@ def CreateExternalTableDefinition(
       JSON, defaulting to autodetection is safer because the only option
       autodetected is compression. If a schema is passed, then the user-supplied
       schema is used.
-    connection_id: The user flag with the same name defined for
-      the _Load BigqueryCmd
+    connection_id: The user flag with the same name defined for the _Load
+      BigqueryCmd
     ignore_unknown_values:  Indicates if BigQuery should allow extra values that
       are not represented in the table schema. If true, the extra values are
       ignored. If false, records with extra columns are treated as bad records,
@@ -444,14 +446,19 @@ def CreateExternalTableDefinition(
     reference_file_schema_uri: The user flag with the same name defined for the
       _Load BigqueryCmd
     encoding: Encoding types for CSV files. Available options are: 'UTF-8',
-    'ISO-8859-1', 'UTF-16BE', 'UTF-16LE', 'UTF-32BE', and 'UTF-32LE'.
-    The default value is 'UTF-8'.
+      'ISO-8859-1', 'UTF-16BE', 'UTF-16LE', 'UTF-32BE', and 'UTF-32LE'. The
+      default value is 'UTF-8'.
     file_set_spec_type: Set how to discover files given source URIs. Specify
       'FILE_SYSTEM_MATCH' (default behavior) to expand source URIs by listing
       files from the underlying object store. Specify
       'NEW_LINE_DELIMITED_MANIFEST' to parse the URIs as new line delimited
       manifest files, where each line contains a URI (No wild-card URIs are
       supported).
+    null_marker: Specifies a string that represents a null value in a CSV file.
+    parquet_map_target_type: Indicate the target type for parquet maps. If
+      unspecified, we represent parquet maps as map {repeated key_value {key,
+      value}}. This option can simplify this by omiting the key_value record if
+      it's equal to ARRAY_OF_STRUCT.
 
   Returns:
     A python dictionary that contains a external table definition for the given
@@ -511,6 +518,8 @@ def CreateExternalTableDefinition(
       external_table_def['csvOptions'][
           'preserveAsciiControlCharacters'] = preserve_ascii_control_characters
       external_table_def['csvOptions']['encoding'] = encoding or 'UTF-8'
+      if null_marker is not None:
+        external_table_def['csvOptions']['nullMarker'] = null_marker
     elif external_table_def['sourceFormat'] == 'NEWLINE_DELIMITED_JSON':
       if autodetect is None or autodetect:
         external_table_def['autodetect'] = True
@@ -533,7 +542,8 @@ def CreateExternalTableDefinition(
     elif external_table_def['sourceFormat'] == 'PARQUET':
       external_table_def['parquetOptions'] = {
           'enumAsString': parquet_enum_as_string,
-          'enableListInference': parquet_enable_list_inference
+          'enableListInference': parquet_enable_list_inference,
+          'mapTargetType': parquet_map_target_type,
       }
       if reference_file_schema_uri is not None:
         external_table_def['referenceFileSchemaUri'] = reference_file_schema_uri
@@ -602,6 +612,8 @@ def GetExternalDataConfig(
     preserve_ascii_control_characters=None,
     reference_file_schema_uri=None,
     file_set_spec_type=None,
+    null_marker=None,
+    parquet_map_target_type=None,
 ):
   """Returns a ExternalDataConfiguration from the file or specification string.
 
@@ -688,6 +700,8 @@ def GetExternalDataConfig(
         preserve_ascii_control_characters=preserve_ascii_control_characters,
         reference_file_schema_uri=reference_file_schema_uri,
         file_set_spec_type=file_set_spec_type,
+        null_marker=null_marker,
+        parquet_map_target_type=parquet_map_target_type
     )
 
 

@@ -156,5 +156,9 @@ class List(_List, base.ListCommand):
       return "PostgreSQL"
     elif profile.gcsProfile:
       return "Google Cloud Storage"
+    elif profile.sqlServerProfile:
+      return "SQL Server"
+    elif profile.bigqueryProfile:
+      return "BigQuery"
     else:
       return None

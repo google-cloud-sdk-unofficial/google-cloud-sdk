@@ -259,9 +259,9 @@ def CreateDataset(
 
 def UpdateDataset(
     apiclient: discovery.Resource,
-    reference,
-    description=None,
-    display_name=None,
+    reference: 'bq_id_utils.ApiClientHelper.DatasetReference',
+    description: Optional[str] = None,
+    display_name: Optional[str] = None,
     acl=None,
     default_table_expiration_ms=None,
     default_partition_expiration_ms=None,

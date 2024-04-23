@@ -1,6 +1,4 @@
 - release_tracks: [BETA, GA]
-  GA:
-    hidden: true
   help_text:
     brief: Revert a Filestore instance.
     description: |

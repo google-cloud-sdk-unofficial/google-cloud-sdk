@@ -56,12 +56,12 @@ Container Flags
 
   if release_track == base.ReleaseTrack.ALPHA:
     group.AddArgument(flags.GpuFlag())
+    group.AddArgument(flags.BaseImageArg())
 
   if release_track in [base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA]:
     group.AddArgument(flags.AddVolumeMountFlag())
     group.AddArgument(flags.RemoveVolumeMountFlag())
     group.AddArgument(flags.ClearVolumeMountsFlag())
-    group.AddArgument(flags.BaseImageArg())
 
   return group
 

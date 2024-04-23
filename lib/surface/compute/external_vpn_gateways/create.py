@@ -24,7 +24,9 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute.external_vpn_gateways import flags
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
+)
 class Create(base.CreateCommand):
   """Create a new Compute Engine external VPN gateway.
 
@@ -43,17 +45,13 @@ class Create(base.CreateCommand):
 
               $ {command} my-external-gateway --interfaces=0=8.9.9.9"""}
 
-  _is_ipv6_supported = False
-
   @classmethod
   def Args(cls, parser):
     """Set up arguments for this command."""
     parser.display_info.AddFormat(flags.DEFAULT_LIST_FORMAT)
     cls.EXTERNAL_VPN_GATEWAY_ARG = flags.ExternalVpnGatewayArgument()
     cls.EXTERNAL_VPN_GATEWAY_ARG.AddArgument(parser, operation_type='create')
-    flags.AddCreateExternalVpnGatewayArgs(
-        parser, is_ipv6_supported=cls._is_ipv6_supported
-    )
+    flags.AddCreateExternalVpnGatewayArgs(parser)
     parser.display_info.AddCacheUpdater(flags.ExternalVpnGatewaysCompleter)
 
   def Run(self, args):
@@ -65,9 +63,7 @@ class Create(base.CreateCommand):
     )
     messages = holder.client.messages
 
-    interfaces = flags.ParseInterfaces(
-        args.interfaces, messages, is_ipv6_supported=self._is_ipv6_supported
-    )
+    interfaces = flags.ParseInterfaces(args.interfaces, messages)
     redundancy_type = flags.InferAndGetRedundancyType(args.interfaces, messages)
 
     external_vpn_gateway_to_insert = helper.GetExternalVpnGatewayForInsert(
@@ -81,37 +77,3 @@ class Create(base.CreateCommand):
         ref, operation_ref, 'Creating external VPN gateway'
     )
     return ret
-
-
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class CreateBeta(Create):
-  """Create a new Compute Engine external VPN gateway.
-
-  *{command}* creates a new external VPN gateway.
-
-  External VPN gateway is the on-premises VPN gateway or another cloud
-  provider's VPN gateway that connects to your Google Cloud VPN gateway.
-  To create a highly available VPN from Google Cloud to your on-premises side
-  or another Cloud provider's VPN gateway, you must create an external VPN
-  gateway resource in Google Cloud, which provides the information to
-  Google Cloud about your external VPN gateway.
-  """
-
-  _is_ipv6_supported = True
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class CreateAlpha(Create):
-  """Create a new Compute Engine external VPN gateway.
-
-  *{command}* creates a new external VPN gateway.
-
-  External VPN gateway is the on-premises VPN gateway or another cloud
-  provider's VPN gateway that connects to your Google Cloud VPN gateway.
-  To create a highly available VPN from Google Cloud to your on-premises side
-  or another Cloud provider's VPN gateway, you must create an external VPN
-  gateway resource in Google Cloud, which provides the information to
-  Google Cloud about your external VPN gateway.
-  """
-
-  _is_ipv6_supported = True

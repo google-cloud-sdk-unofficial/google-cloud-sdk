@@ -38,10 +38,10 @@ class List(base.ListCommand):
 
   ## EXAMPLES
 
-  To print all tasks in the group0 of job with name
+  To print all tasks in the job with name
   `projects/foo/locations/us-central1/jobs/bar`, run:
 
-    $ {command} projects/foo/locations/us-central1/jobs/bar
+    $ {command} --job projects/foo/locations/us-central1/jobs/bar
   """
 
   @staticmethod

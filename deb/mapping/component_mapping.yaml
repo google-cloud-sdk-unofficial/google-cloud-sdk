@@ -15,6 +15,7 @@ cbt: google-cloud-cli-cbt
 cloud-build-local: google-cloud-cli-cloud-build-local
 cloud-run-proxy: google-cloud-cli-cloud-run-proxy
 cloud_sql_proxy: unavailable
+cloud-sql-proxy: unavailable
 cloud-datastore-emulator: google-cloud-cli-datastore-emulator
 cloud-firestore-emulator: google-cloud-cli-firestore-emulator
 cloud-spanner-emulator: google-cloud-cli-spanner-emulator

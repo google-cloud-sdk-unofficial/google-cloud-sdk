@@ -51,8 +51,8 @@ class Create(base.CreateCommand):
   """Create a new project.
 
   Creates a new project with the given project ID. By default, projects are not
-  created under a parent resource. To do so, use either the --organization or
-  --folder flag.
+  created under a parent resource. To do so, use either the `--organization` or
+  `--folder` flag.
 
   ## EXAMPLES
 
@@ -107,7 +107,7 @@ class Create(base.CreateCommand):
         '--enable-cloud-apis',
         action='store_true',
         default=True,
-        help='Enable cloudapis.googleapis.com during creation.')
+        help='Enable `cloudapis.googleapis.com` during creation.')
     parser.add_argument(
         '--set-as-default',
         action='store_true',

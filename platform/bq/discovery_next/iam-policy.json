@@ -5,7 +5,7 @@
   "name": "bigquery",
   "canonicalName": "Bigquery",
   "version": "v2",
-  "revision": "20240327",
+  "revision": "20240410",
   "title": "BigQuery API",
   "description": "A data platform for customers to create, manage, share and query data.",
   "ownerDomain": "google.com",
@@ -258,7 +258,7 @@
           "type": "boolean"
         },
         "type": {
-          "description": "Output only. Same as `type` in `ListFormatDataset`. The type of the dataset, one of: * DEFAULT - only accessible by owner and authorized accounts, * PUBLIC - accessible by everyone, * LINKED - linked dataset, * EXTERNAL - dataset with definition in external metadata catalog. -- *BIGLAKE_METASTORE - dataset that references a database created in BigLakeMetastore service. --",
+          "description": "Output only. Same as `type` in `ListFormatDataset`. The type of the dataset, one of: * DEFAULT - only accessible by owner and authorized accounts, * PUBLIC - accessible by everyone, * LINKED - linked dataset, * EXTERNAL - dataset with definition in external metadata catalog.",
           "readOnly": true,
           "type": "string"
         },
@@ -327,6 +327,11 @@
             "LOGICAL",
             "PHYSICAL"
           ]
+        },
+        "restrictions": {
+          "description": "Optional. Output only. Restriction config for all tables and dataset. If set, restrict certain accesses on the dataset and all its tables based on the config. See [Data egress](\/bigquery\/docs\/analytics-hub-introduction#data_egress) for more details.",
+          "readOnly": true,
+          "$ref": "RestrictionConfig"
         }
       }
     },
@@ -497,6 +502,25 @@
         "tagValue": {
           "description": "Required. The friendly short name of the tag value, e.g. \"production\".",
           "type": "string"
+        }
+      }
+    },
+    "RestrictionConfig": {
+      "id": "RestrictionConfig",
+      "type": "object",
+      "properties": {
+        "type": {
+          "description": "Output only. Specifies the type of dataset\/table restriction.",
+          "readOnly": true,
+          "type": "string",
+          "enumDescriptions": [
+            "Should never be used.",
+            "Restrict data egress. See [Data egress](\/bigquery\/docs\/analytics-hub-introduction#data_egress) for more details."
+          ],
+          "enum": [
+            "RESTRICTION_TYPE_UNSPECIFIED",
+            "RESTRICTED_DATA_EGRESS"
+          ]
         }
       }
     },
@@ -3657,6 +3681,10 @@
         "preserveAsciiControlCharacters": {
           "description": "Optional. Indicates if the embedded ASCII control characters (the first 32 characters in the ASCII-table, from '\\x00' to '\\x1F') are preserved.",
           "type": "boolean"
+        },
+        "nullMarker": {
+          "description": "Optional. Specifies a string that represents a null value in a CSV file. For example, if you specify \"\\N\", BigQuery interprets \"\\N\" as a null value when querying a CSV file. The default value is the empty string. If you set this property to a custom value, BigQuery throws an error if an empty string is present for all data types except for STRING and BYTE. For STRING and BYTE columns, BigQuery interprets the empty string as an empty value.",
+          "type": "string"
         }
       }
     },
@@ -3826,6 +3854,18 @@
         "enableListInference": {
           "description": "Optional. Indicates whether to use schema inference specifically for Parquet LIST logical type.",
           "type": "boolean"
+        },
+        "mapTargetType": {
+          "description": "Optional. Will indicate how to represent a parquet map if present.",
+          "type": "string",
+          "enumDescriptions": [
+            "In this mode, we fall back to the default. Currently (3\/24) we represent the map as: struct map_field_name { repeated struct key_value { key value } }",
+            "In this mode, we omit parquet's key_value struct and represent the map as: repeated struct map_field_name { key value }"
+          ],
+          "enum": [
+            "MAP_TARGET_TYPE_UNSPECIFIED",
+            "ARRAY_OF_STRUCT"
+          ]
         }
       }
     },
@@ -7238,6 +7278,11 @@
           "description": "Optional. The maximum staleness of data that could be returned when the table (or stale MV) is queried. Staleness encoded as a string encoding of sql IntervalValue type.",
           "type": "string"
         },
+        "restrictions": {
+          "description": "Optional. Output only. Restriction config for table. If set, restrict certain accesses on the table based on the config. See [Data egress](\/bigquery\/docs\/analytics-hub-introduction#data_egress) for more details.",
+          "readOnly": true,
+          "$ref": "RestrictionConfig"
+        },
         "tableConstraints": {
           "description": "Optional. Tables Primary Key and Foreign Key information",
           "$ref": "TableConstraints"
@@ -7455,7 +7500,7 @@
           "format": "uint64"
         },
         "allowNonIncrementalDefinition": {
-          "description": "Optional. This option declares authors intention to construct a materialized view that will not be refreshed incrementally.",
+          "description": "Optional. This option declares the intention to construct a materialized view that isn't refreshed incrementally.",
           "type": "boolean"
         }
       }
@@ -8434,7 +8479,7 @@
               "type": "boolean"
             },
             "filter": {
-              "description": "An expression for filtering the results of the request by label. The syntax is \\\"labels.<name>[:<value>]\\\". Multiple filters can be ANDed together by connecting with a space. Example: \\\"labels.department:receiving labels.active\\\". See [Filtering datasets using labels](\/bigquery\/docs\/labeling-datasets#filtering_datasets_using_labels) for details.",
+              "description": "An expression for filtering the results of the request by label. The syntax is \\\"labels.<name>[:<value>]\\\". Multiple filters can be ANDed together by connecting with a space. Example: \\\"labels.department:receiving labels.active\\\". See [Filtering datasets using labels](\/bigquery\/docs\/filtering-labels#filtering_datasets_using_labels) for details.",
               "location": "query",
               "type": "string"
             }

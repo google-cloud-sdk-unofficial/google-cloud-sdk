@@ -41,6 +41,7 @@ _DETAILED_HELP = {
 }
 
 
+@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
 class GetScreenshot(base.Command):
   """Capture a screenshot (JPEG image) of the virtual machine instance's display."""

@@ -28,6 +28,7 @@ from googlecloudsdk.command_lib.compute.instances import flags
 from googlecloudsdk.command_lib.util.args import labels_util
 
 
+@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
                     base.ReleaseTrack.GA)
 class InstancesAddLabels(base.UpdateCommand):

@@ -72,8 +72,7 @@ class CreateAlpha(base.DeleteCommand):
         ' unique within the project and location.',
     )
     flags.AddNoAsyncFlag(parser)
-    flags.AddRequestIdFlag(parser)
-    flags.AddEnforcedRetention(parser)
+    flags.AddEnforcedRetention(parser, True)
     flags.AddDescription(parser)
     flags.AddEffectiveTime(parser)
     flags.AddLabels(parser)
@@ -105,7 +104,6 @@ class CreateAlpha(base.DeleteCommand):
           description,
           labels,
           effective_time,
-          args.request_id,
       )
     except apitools_exceptions.HttpError as e:
       raise exceptions.HttpException(e, util.HTTP_ERROR_FORMAT)

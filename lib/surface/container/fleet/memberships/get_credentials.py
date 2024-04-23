@@ -21,6 +21,7 @@ from __future__ import unicode_literals
 import textwrap
 
 from googlecloudsdk.api_lib.container.fleet import util as fleet_util
+from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.container.fleet import gateway
 from googlecloudsdk.command_lib.container.fleet import resources
 
@@ -65,11 +66,47 @@ class GetCredentials(gateway.GetCredentialsCommand):
           If not specified, defaults to `global`.
         """),
         membership_required=True,
-        positional=True)
+        positional=True,
+    )
+
+    if cls.ReleaseTrack() is base.ReleaseTrack.ALPHA:
+      group = parser.add_group(
+          required=False, hidden=True, help='Server-side generation options.'
+      )
+      group.add_argument(
+          '--use-server-side-generation',
+          action='store_true',
+          required=True,
+          help=textwrap.dedent("""\
+            Generate the kubeconfig using an API call rather than generating
+            it locally.
+          """),
+      )
+
+      group.add_argument(
+          '--force-use-agent',
+          action='store_true',
+          required=False,
+          hidden=True,
+          help=textwrap.dedent("""\
+            Force the use of Connect Agent-based transport.
+          """),
+      )
 
   def Run(self, args):
     membership_name = resources.ParseMembershipArg(args)
     location = fleet_util.MembershipLocation(membership_name)
     membership_id = fleet_util.MembershipShortname(membership_name)
-    self.RunGetCredentials(membership_id, location)
 
+    if (
+        hasattr(args, 'use_server_side_generation')
+        and args.use_server_side_generation
+    ):
+      force_use_agent = (
+          False
+          if not hasattr(args, 'force_use_agent')
+          else args.force_use_agent
+      )
+      self.RunServerSide(membership_id, location, force_use_agent)
+    else:
+      self.RunGetCredentials(membership_id, location)

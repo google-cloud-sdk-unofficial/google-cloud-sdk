@@ -45,3 +45,6 @@
       repeated: true
       help_text: |
         Additional email addresses who will be notified for all the actions performed on the grant.
+
+  output:
+    format: yaml
