@@ -54,7 +54,6 @@ DETAILED_HELP = {
 }
 
 
-@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Update(base.UpdateCommand):
   """Update a Compute Engine virtual machine."""
@@ -406,7 +405,6 @@ class Update(base.UpdateCommand):
     return None
 
 
-@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class UpdateBeta(Update):
   """Update a Compute Engine virtual machine."""
@@ -427,7 +425,6 @@ class UpdateBeta(Update):
     return self._Run(args)
 
 
-@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class UpdateAlpha(UpdateBeta):
   """Update a Compute Engine virtual machine."""

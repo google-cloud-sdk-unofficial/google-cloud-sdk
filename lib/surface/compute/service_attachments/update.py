@@ -215,7 +215,7 @@ class UpdateHelper(object):
           [self._GetPatchRequest(client, service_attachment_ref, replacement)])
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Update(base.UpdateCommand):
   """Update a Google Compute Engine service attachment."""
 
@@ -232,6 +232,14 @@ class Update(base.UpdateCommand):
     return UpdateHelper(holder, self._support_propagated_connection_limit).Run(
         args
     )
+
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class UpdateBeta(Update):
+  """Update a Google Compute Engine service attachment."""
+
+  _support_propagated_connection_limit = True
+  detailed_help = _DetailedHelp()
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)

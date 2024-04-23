@@ -127,6 +127,7 @@ class Deploy(base.Command):
     flags.AddSessionAffinityFlag(managed_group)
     flags.AddStartupCpuBoostFlag(managed_group)
     flags.AddVpcConnectorArgs(managed_group)
+    flags.AddVpcNetworkGroupFlagsForUpdate(managed_group)
     flags.RemoveContainersFlag().AddToParser(managed_group)
 
     # Flags specific to connecting to a cluster
@@ -268,7 +269,7 @@ class Deploy(base.Command):
       already_activated_services,
   ):
     # Only one container can deployed from source
-    container = next(iter(build_from_source.values()))
+    name, container = next(iter(build_from_source.items()))
     pack = None
     changes = []
     repo_to_create = None
@@ -330,6 +331,7 @@ class Deploy(base.Command):
         repo_to_create,
         base_image,
         changes,
+        name,
     )
 
   def _GetBaseChanges(self, args):
@@ -425,6 +427,7 @@ class Deploy(base.Command):
     is_function = False
     base_image = None
     build_changes = []
+    build_from_source_container_name = ''
     # Build an image from source if source specified
     if build_from_source:
       (
@@ -436,6 +439,7 @@ class Deploy(base.Command):
           repo_to_create,
           base_image,
           build_changes,
+          build_from_source_container_name,
       ) = self._BuildFromSource(
           args,
           build_from_source,
@@ -500,6 +504,7 @@ class Deploy(base.Command):
             ),
             delegate_builds=flags.FlagIsExplicitlySet(args, 'delegate_builds'),
             base_image=base_image,
+            build_from_source_container_name=build_from_source_container_name,
         )
 
       if args.async_:
@@ -560,7 +565,6 @@ class BetaDeploy(Deploy):
     managed_group = flags.GetManagedArgGroup(parser)
     flags.AddDefaultUrlFlag(managed_group)
     flags.AddDeployHealthCheckFlag(managed_group)
-    flags.AddVpcNetworkGroupFlagsForUpdate(managed_group)
     flags.AddServiceMinInstancesFlag(managed_group)
     flags.AddVolumesFlags(managed_group, cls.ReleaseTrack())
     container_args = ContainerArgGroup(cls.ReleaseTrack())
@@ -577,12 +581,12 @@ class AlphaDeploy(BetaDeploy):
 
     # Flags specific to managed CR
     managed_group = flags.GetManagedArgGroup(parser)
-    flags.AddVpcNetworkGroupFlagsForUpdate(managed_group)
     flags.AddDeployHealthCheckFlag(managed_group)
     flags.AddDefaultUrlFlag(managed_group)
     flags.AddInvokerIamCheckFlag(managed_group)
     flags.AddRuntimeFlag(managed_group)
     flags.AddServiceMinInstancesFlag(managed_group)
+    flags.AddMaxSurgeFlag(managed_group)
     flags.AddVolumesFlags(managed_group, cls.ReleaseTrack())
     flags.AddRegionsArg(managed_group)
     flags.AddDomainArg(managed_group)

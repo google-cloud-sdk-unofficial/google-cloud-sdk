@@ -27,7 +27,6 @@ from googlecloudsdk.command_lib.util.apis import arg_utils
 from googlecloudsdk.core.console import console_io
 
 
-@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class UpdateFromFile(base.Command):
   """Update a Compute Engine virtual machine instance using a configuration file."""
@@ -138,14 +137,12 @@ class UpdateFromFile(base.Command):
     return
 
 
-@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class UpdateFromFileBeta(UpdateFromFile):
   """Update a Compute Engine virtual machine instance using a configuration file."""
   _support_secure_tag = False
 
 
-@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class UpdateFromFileAlpha(UpdateFromFile):
   """Update a Compute Engine virtual machine instance using a configuration file."""

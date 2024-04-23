@@ -35,7 +35,7 @@
         Format:
           `organizations/{organization_id}/locations/{location}`
       is_positional: false
-      resource_spec: !REF googlecloudsdk.command_lib.iam.generated_resources:organization_location
+      resource_spec: !REF googlecloudsdk.command_lib.iam.v3beta_resources:organization_location
       required: true
   request:
     api_version: v3beta

@@ -33,7 +33,7 @@
         `projects/{project}/locations/{location}/instances/{instance_id}`
       is_positional: true
       request_id_field: instanceId
-      resource_spec: !REF googlecloudsdk.command_lib.parallelstore.generated_resources:project_location_instance
+      resource_spec: !REF googlecloudsdk.command_lib.parallelstore.v1alpha_resources:project_location_instance
       required: true
     - arg_name: description
       api_field: instance.description
@@ -83,18 +83,18 @@
         [VPC network](https://cloud.google.com/vpc/docs/vpc) to which the
         instance is connected.
       is_positional: false
-      resource_spec: !REF googlecloudsdk.command_lib.parallelstore.generated_resources:project_network
+      resource_spec: !REF googlecloudsdk.command_lib.parallelstore.v1alpha_resources:project_network
       resource_method_params:
         instance.network: '{__relative_name__}'
       required: false
     - arg_name: reserved-ip-range
       help_text: |-
-        Contains the id of allocated IP address range associated with the private
-        service access connection for example, "test-default" associated with IP
-        range 10.0.0.0/29. If no range id is provided all ranges will be
+        Contains the id of the allocated IP address range associated with the
+        private service access connection for example, "test-default" associated
+        with IP range 10.0.0.0/29. If no range id is provided all ranges will be
         considered.
       is_positional: false
-      resource_spec: !REF googlecloudsdk.command_lib.parallelstore.generated_resources:project_region_address
+      resource_spec: !REF googlecloudsdk.command_lib.parallelstore.v1alpha_resources:project_region_address
       resource_method_params:
         instance.reservedIpRange: '{__relative_name__}'
       required: false

@@ -87,6 +87,8 @@ class Update(base.Command):
     flags.AddEgressSettingsFlag(managed_group)
     flags.AddEncryptionKeyShutdownHoursFlag(managed_group)
     flags.AddMinInstancesFlag(parser, resource_kind='worker')
+    flags.AddMaxInstancesFlag(parser, resource_kind='worker')
+    flags.AddMaxSurgeFlag(managed_group, resource_kind='worker')
     flags.AddRevisionSuffixArg(managed_group)
     flags.AddSessionAffinityFlag(managed_group)
     flags.RemoveContainersFlag().AddToParser(managed_group)

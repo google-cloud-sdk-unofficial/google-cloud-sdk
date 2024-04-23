@@ -97,7 +97,11 @@ class Download(base.Command):
           'Destination is not a directory: ' + dest_dir
       )
     download_util.Download(
-        tmp_path, final_path, file_escaped.RelativeName(), args.allow_overwrite
+        tmp_path,
+        final_path,
+        file_escaped.RelativeName(),
+        filename,
+        args.allow_overwrite,
     )
     log.status.Print('Successfully downloaded the file to ' + args.destination)
 

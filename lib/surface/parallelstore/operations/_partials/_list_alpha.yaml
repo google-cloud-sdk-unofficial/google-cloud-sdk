@@ -30,9 +30,11 @@
     - help_text: |-
         The name of the operation's parent resource.
       is_positional: false
-      resource_spec: !REF googlecloudsdk.command_lib.parallelstore.generated_resources:project_location
+      resource_spec: !REF googlecloudsdk.command_lib.parallelstore.default_resources:project_location
       required: true
   request:
     api_version: v1alpha
     collection:
     - parallelstore.projects.locations.operations
+  response:
+    id_field: name

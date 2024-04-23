@@ -37,7 +37,7 @@
           `folders/{folder_id}/locations/{location}`
           `organizations/{organization_id}/locations/{location}`
       is_positional: false
-      resource_spec: !REF googlecloudsdk.command_lib.iam.generated_resources:folder_or_organization_or_project_location
+      resource_spec: !REF googlecloudsdk.command_lib.iam.v3beta_resources:folder_or_organization_or_project_location
       required: true
   request:
     api_version: v3beta

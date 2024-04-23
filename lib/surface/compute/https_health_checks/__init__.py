@@ -21,6 +21,7 @@ from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 
 
+@base.UniverseCompatible
 class HttpsHealthChecks(base.Group):
   """Read and manipulate HTTPS health checks for load balanced instances."""
 

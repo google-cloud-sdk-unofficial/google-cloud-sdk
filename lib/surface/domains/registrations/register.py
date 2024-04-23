@@ -47,9 +47,9 @@ class Register(base.CreateCommand):
   Also in rare cases, the domain may end up in state REGISTRATION_FAILED. In
   that case, delete the registration resource and try again.
 
-  When using Cloud DNS Zone or Google Domains name servers, DNSSEC will be
-  enabled by default where possible. You can choose to not enable DNSSEC by
-  using the --disable-dnssec flag.
+  When using Cloud DNS Zone DNSSEC will be enabled by default whenever the Zone
+  is DNSSEC signed. You can choose to not enable DNSSEC by using the
+  --disable-dnssec flag.
 
   ## EXAMPLES
 
@@ -120,6 +120,10 @@ class Register(base.CreateCommand):
     labels = labels_util.ParseCreateArgs(
         args, client.messages.Registration.LabelsValue)
 
+    dnssec_update = dns_util.DNSSECUpdate.ENABLE
+    if args.disable_dnssec:
+      dnssec_update = dns_util.DNSSECUpdate.DISABLE
+
     dns_settings, _ = dns_util.ParseDNSSettings(
         api_version,
         args.name_servers,
@@ -127,7 +131,7 @@ class Register(base.CreateCommand):
         args.use_google_domains_dns,
         None,
         registration_ref.registrationsId,
-        enable_dnssec=not args.disable_dnssec)
+        dnssec_update=dnssec_update)
 
     contacts = contacts_util.ParseContactData(api_version,
                                               args.contact_data_from_file)
@@ -159,7 +163,7 @@ class Register(base.CreateCommand):
       dns_settings, _ = dns_util.PromptForNameServers(
           api_version,
           registration_ref.registrationsId,
-          enable_dnssec=not args.disable_dnssec)
+          dnssec_update=dnssec_update)
       if dns_settings is None:
         raise exceptions.Error('Providing DNS settings is required.')
 

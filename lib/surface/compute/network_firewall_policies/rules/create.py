@@ -169,7 +169,7 @@ class Create(base.CreateCommand):
         tlsInspect=tls_inspect,
     )
 
-    return network_firewall_policy_rule_client.Create(
+    return network_firewall_policy_rule_client.CreateRule(
         firewall_policy=args.firewall_policy,
         firewall_policy_rule=firewall_policy_rule,
     )

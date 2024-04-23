@@ -210,6 +210,7 @@ def ParseCreateNodePoolOptionsBase(args):
       containerd_config_from_file=args.containerd_config_from_file,
       resource_manager_tags=args.resource_manager_tags,
       enable_insecure_kubelet_readonly_port=args.enable_insecure_kubelet_readonly_port,
+      enable_nested_virtualization=args.enable_nested_virtualization,
   )
 
 
@@ -266,6 +267,9 @@ class Create(base.CreateCommand):
     flags.AddPlacementPolicyFlag(parser)
     flags.AddTPUTopologyFlag(parser)
     flags.AddResourceManagerTagsCreate(parser, for_node_pool=True)
+    flags.AddEnableNestedVirtualizationFlag(
+        parser, for_node_pool=True, hidden=False)
+    flags.AddSecondaryBootDisksArgs(parser)
 
   def ParseCreateNodePoolOptions(self, args):
     ops = ParseCreateNodePoolOptionsBase(args)
@@ -392,11 +396,11 @@ class CreateBeta(Create):
     flags.AddQueuedProvisioningFlag(parser)
     flags.AddTPUTopologyFlag(parser)
     flags.AddEnableNestedVirtualizationFlag(
-        parser, for_node_pool=True, hidden=True)
+        parser, for_node_pool=True, hidden=False)
     flags.AddHostMaintenanceIntervalFlag(
         parser, for_node_pool=True, hidden=True)
     flags.AddResourceManagerTagsCreate(parser, for_node_pool=True)
-    flags.AddSecondaryBootDisksArgs(parser, hidden=True)
+    flags.AddSecondaryBootDisksArgs(parser)
 
   def ParseCreateNodePoolOptions(self, args):
     ops = ParseCreateNodePoolOptionsBase(args)
@@ -546,12 +550,13 @@ class CreateAlpha(Create):
     flags.AddBestEffortProvisionFlags(parser, hidden=False)
     flags.AddQueuedProvisioningFlag(parser)
     flags.AddTPUTopologyFlag(parser)
-    flags.AddEnableNestedVirtualizationFlag(parser, hidden=True)
+    flags.AddEnableNestedVirtualizationFlag(
+        parser, for_node_pool=True, hidden=False)
     flags.AddHostMaintenanceIntervalFlag(
         parser, for_node_pool=True, hidden=True)
     flags.AddPerformanceMonitoringUnit(parser, hidden=True)
     flags.AddAutoscaleRolloutPolicyFlag(parser)
     flags.AddResourceManagerTagsCreate(parser, for_node_pool=True)
-    flags.AddSecondaryBootDisksArgs(parser, hidden=True)
+    flags.AddSecondaryBootDisksArgs(parser)
 
 Create.detailed_help = DETAILED_HELP

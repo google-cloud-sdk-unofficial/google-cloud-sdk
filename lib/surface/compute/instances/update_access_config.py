@@ -59,7 +59,6 @@ def _Args(parser, support_public_dns, support_network_tier):
     flags.AddNetworkTierArgs(parser, instance=False, for_update=True)
 
 
-@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class UpdateAccessConfigInstances(base.UpdateCommand):
   """Update a Compute Engine virtual machine access configuration."""
@@ -182,7 +181,6 @@ class UpdateAccessConfigInstances(base.UpdateCommand):
     ])
 
 
-@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class UpdateAccessConfigInstancesBeta(UpdateAccessConfigInstances):
   """Update a Compute Engine virtual machine access configuration."""
@@ -191,7 +189,6 @@ class UpdateAccessConfigInstancesBeta(UpdateAccessConfigInstances):
   _support_network_tier = False
 
 
-@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class UpdateAccessConfigInstancesAlpha(UpdateAccessConfigInstances):
   """Update a Compute Engine virtual machine access configuration."""

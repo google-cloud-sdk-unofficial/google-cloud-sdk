@@ -102,8 +102,8 @@ class List(base.ListCommand):
 
 def _SetFormat(namespace: parser_extensions.Namespace) -> None:
   columns = [
-      # latest_deployment_status does not have a column name
-      'formatted_latest_deployment_status:label=',
+      # latest_resource_status does not have a column name
+      'formatted_latest_resource_status:label=',
       'integration_name:label=INTEGRATION',
       'integration_type:label=TYPE',
       'region:label=REGION',

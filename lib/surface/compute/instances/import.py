@@ -38,7 +38,7 @@ from googlecloudsdk.core import resources
 _OUTPUT_FILTER = ['[Daisy', '[import-', 'starting build', '  import', 'ERROR']
 
 
-@base.UniverseCompatible
+@base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Import(base.CreateCommand):
   """Import an instance into Compute Engine from OVF."""
@@ -229,7 +229,6 @@ class Import(base.CreateCommand):
     )
 
 
-@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
 class ImportBeta(Import):
   """Import an instance into Compute Engine from OVF."""

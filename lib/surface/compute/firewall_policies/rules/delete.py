@@ -57,7 +57,7 @@ class Delete(base.DeleteCommand):
         firewall_policy_rule_client,
         args.firewall_policy,
         organization=args.organization)
-    return firewall_policy_rule_client.Delete(
+    return firewall_policy_rule_client.DeleteRule(
         priority=rule_utils.ConvertPriorityToInt(ref.Name()),
         firewall_policy_id=firewall_policy_id,
         only_generate_request=False)

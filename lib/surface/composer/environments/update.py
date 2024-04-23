@@ -98,7 +98,10 @@ class Update(base.Command):
     flags.AddCloudDataLineageIntegrationUpdateFlagsToGroup(
         Update.update_type_group)
 
-  def _ConstructPatch(self, env_ref, args, support_environment_upgrades=False):
+    # Environment upgrade arguments
+    flags.AddEnvUpgradeFlagsToGroup(Update.update_type_group, release_track)
+
+  def _ConstructPatch(self, env_ref, args):
     env_obj = environments_api_util.Get(
         env_ref, release_track=self.ReleaseTrack())
     is_composer_v1 = image_versions_command_util.IsImageVersionStringComposerV1(
@@ -126,10 +129,9 @@ class Update(base.Command):
         release_track=self.ReleaseTrack(),
     )
 
-    if support_environment_upgrades:
-      params['update_image_version'] = self._getImageVersion(
-          args, env_ref, env_obj
-      )
+    params['update_image_version'] = self._getImageVersion(
+        args, env_ref, env_obj, self.ReleaseTrack()
+    )
     params['update_web_server_access_control'] = (
         environments_api_util.BuildWebServerAllowedIps(
             args.update_web_server_allow_ip,
@@ -343,21 +345,24 @@ class Update(base.Command):
       self._addComposer3Fields(params, args, env_obj)
     return patch_util.ConstructPatch(**params)
 
-  def _getImageVersion(self, args, env_ref, env_obj):
-    if (
-        args.airflow_version or args.image_version
-    ) and image_versions_command_util.IsDefaultImageVersion(args.image_version):
-      message = image_versions_command_util.BuildDefaultComposerVersionWarning(
-          args.image_version, args.airflow_version
-      )
-      log.warning(message)
+  def _getImageVersion(self, args, env_ref, env_obj, release_track):
+    if release_track != base.ReleaseTrack.GA:
+      if (args.airflow_version or args.image_version) and (
+          image_versions_command_util.IsDefaultImageVersion(args.image_version)
+      ):
+        message = (
+            image_versions_command_util.BuildDefaultComposerVersionWarning(
+                args.image_version, args.airflow_version
+            )
+        )
+        log.warning(message)
 
-    if args.airflow_version:
-      args.image_version = (
-          image_versions_command_util.ImageVersionFromAirflowVersion(
-              args.airflow_version, env_obj.config.softwareConfig.imageVersion
-          )
-      )
+      if args.airflow_version:
+        args.image_version = (
+            image_versions_command_util.ImageVersionFromAirflowVersion(
+                args.airflow_version, env_obj.config.softwareConfig.imageVersion
+            )
+        )
     # Checks validity of image_version upgrade request.
     if args.image_version:
       upgrade_validation = (
@@ -547,8 +552,6 @@ class UpdateBeta(Update):
     Update.Args(parser, release_track=release_track)
 
     # Environment upgrade arguments
-    UpdateBeta.support_environment_upgrades = True
-    flags.AddEnvUpgradeFlagsToGroup(Update.update_type_group)
     flags.AddComposer3FlagsToGroup(Update.update_type_group)
 
   @staticmethod
@@ -565,8 +568,7 @@ class UpdateBeta(Update):
       flags.ValidateIpRanges(
           [acl['ip_range'] for acl in args.update_web_server_allow_ip])
 
-    field_mask, patch = self._ConstructPatch(
-        env_ref, args, UpdateBeta.support_environment_upgrades)
+    field_mask, patch = self._ConstructPatch(env_ref, args)
 
     return patch_util.Patch(
         env_ref,

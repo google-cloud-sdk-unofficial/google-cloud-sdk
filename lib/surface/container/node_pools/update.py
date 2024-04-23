@@ -107,7 +107,7 @@ class Update(base.UpdateCommand):
     flags.AddEnableFastSocketFlag(group)
     flags.AddLoggingVariantFlag(group, for_node_pool=True)
     flags.AddWindowsOsVersionFlag(group)
-    flags.AddContainerdConfigFlag(group, hidden=True)
+    flags.AddContainerdConfigFlag(group)
     flags.AddResourceManagerTagsNodePoolUpdate(group)
     flags.AddQueuedProvisioningFlag(group)
     flags.AddEnableKubeletReadonlyPortFlag(group)
@@ -290,7 +290,7 @@ class UpdateBeta(Update):
     flags.AddLoggingVariantFlag(group, for_node_pool=True)
     flags.AddWindowsOsVersionFlag(group)
     flags.AddResourceManagerTagsNodePoolUpdate(group)
-    flags.AddContainerdConfigFlag(group, hidden=True)
+    flags.AddContainerdConfigFlag(group)
     flags.AddQueuedProvisioningFlag(group)
     flags.AddEnableKubeletReadonlyPortFlag(group)
 
@@ -408,7 +408,7 @@ class UpdateAlpha(Update):
     flags.AddLoggingVariantFlag(group, for_node_pool=True)
     flags.AddWindowsOsVersionFlag(group)
     flags.AddResourceManagerTagsNodePoolUpdate(group)
-    flags.AddContainerdConfigFlag(group, hidden=True)
+    flags.AddContainerdConfigFlag(group)
     flags.AddQueuedProvisioningFlag(group)
     flags.AddEnableKubeletReadonlyPortFlag(group)
 

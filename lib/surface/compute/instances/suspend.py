@@ -67,7 +67,6 @@ DETAILED_HELP = {
 }
 
 
-@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
                     base.ReleaseTrack.GA)
 class Suspend(base.SilentCommand):

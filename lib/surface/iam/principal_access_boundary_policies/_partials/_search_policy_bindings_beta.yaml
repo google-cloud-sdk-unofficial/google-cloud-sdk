@@ -33,7 +33,7 @@
         Format:
          `organizations/{organization_id}/locations/{location}/principalAccessBoundaryPolicies/{principal_access_boundary_policy_id}`
       is_positional: true
-      resource_spec: !REF googlecloudsdk.command_lib.iam.generated_resources:organization_location_principal_access_boundary_policy
+      resource_spec: !REF googlecloudsdk.command_lib.iam.v3beta_resources:organization_location_principal_access_boundary_policy
       required: true
   request:
     api_version: v3beta

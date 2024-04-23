@@ -29,7 +29,6 @@ from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 
 
-@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
 class Delete(base.DeleteCommand):
   """Delete a Google Cloud's operations suite agents (Ops Agents) policy.

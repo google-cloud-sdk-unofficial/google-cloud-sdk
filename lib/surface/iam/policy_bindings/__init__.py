@@ -21,6 +21,12 @@ from googlecloudsdk.calliope import base
 
 
 @base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
-class PolicyBindings(base.Group):
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class PolicyBindingsALPHA(base.Group):
+  """Manage PolicyBinding instances."""
+
+
+@base.Hidden
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class PolicyBindingsBETA(base.Group):
   """Manage PolicyBinding instances."""

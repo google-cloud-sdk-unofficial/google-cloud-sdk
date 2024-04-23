@@ -171,7 +171,6 @@ class CreateHelper(object):
 
 
 @base.ReleaseTracks(
-    base.ReleaseTrack.BETA,
     base.ReleaseTrack.GA,
 )
 class Create(base.CreateCommand):
@@ -189,6 +188,16 @@ class Create(base.CreateCommand):
     return CreateHelper(holder, self._support_propagated_connection_limit).Run(
         args
     )
+
+
+@base.ReleaseTracks(
+    base.ReleaseTrack.BETA,
+)
+class CreateBeta(Create):
+  """Create a Google Compute Engine service attachment."""
+
+  _support_propagated_connection_limit = True
+  detailed_help = _DetailedHelp()
 
 
 @base.ReleaseTracks(

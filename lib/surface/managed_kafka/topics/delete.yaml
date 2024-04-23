@@ -1,0 +1,24 @@
+release_tracks: [ALPHA]
+hidden: true
+
+help_text:
+  brief: |
+    Delete an Apache Kafka for BigQuery topic.
+  description: |
+    Delete an Apache Kafka for BigQuery topic.
+
+  examples: |
+    To delete a topic in a cluster named mycluster located in us-central1,
+    run the following:
+
+      $ {command} mytopic \
+          --cluster=mycluster \
+          --location=us-central1
+
+request:
+  collection: managedkafka.projects.locations.clusters.topics
+
+arguments:
+  resource:
+    help_text: Identifies the topic for deletion.
+    spec: !REF googlecloudsdk.command_lib.managed_kafka.resources:topic

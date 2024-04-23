@@ -47,6 +47,10 @@ class Submit(base.Group):
           To submit a Spark-Sql job, run:
 
             $ {command} spark-sql 'my-sql-script.sql' --region='us-central1' --deps-bucket=gs://my-bucket --vars='variable=value'
+
+          To submit a Ray job, run:
+
+            $ {command} ray my-ray.py --location='us-central1' --deps-bucket=gs://my-bucket -- ARG1 ARG2
         """
   }
 

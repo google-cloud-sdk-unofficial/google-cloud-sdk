@@ -21,6 +21,12 @@ from googlecloudsdk.calliope import base
 
 
 @base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
-class Parallelstore(base.Group):
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class ParallelstoreALPHA(base.Group):
+  """Manage Parallelstore resources."""
+
+
+@base.Hidden
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class ParallelstoreBETA(base.Group):
   """Manage Parallelstore resources."""

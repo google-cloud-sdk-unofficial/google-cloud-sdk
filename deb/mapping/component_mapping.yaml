@@ -5,7 +5,7 @@ app-engine-php: unavailable
 app-engine-python: google-cloud-cli-app-engine-python
 app-engine-python-extras: google-cloud-cli-app-engine-python-extras
 alpha: google-cloud-cli
-anthoscli: google-cloud-cli
+anthoscli: google-cloud-cli-anthoscli
 anthos-auth: google-cloud-cli-anthos-auth
 appctl: unavailable
 beta: google-cloud-cli

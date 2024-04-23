@@ -52,7 +52,7 @@ class Delete(base.DeleteCommand):
       network_firewall_policy_rule_client = region_client.RegionNetworkFirewallPolicyRule(
           ref, compute_client=holder.client)
 
-    return network_firewall_policy_rule_client.Delete(
+    return network_firewall_policy_rule_client.DeleteRule(
         priority=rule_utils.ConvertPriorityToInt(args.priority),
         firewall_policy=args.firewall_policy,
         only_generate_request=False)

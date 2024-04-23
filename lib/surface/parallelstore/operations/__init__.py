@@ -21,6 +21,12 @@ from googlecloudsdk.calliope import base
 
 
 @base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
-class Operations(base.Group):
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class OperationsALPHA(base.Group):
+  """Manage Operation resources."""
+
+
+@base.Hidden
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class OperationsBETA(base.Group):
   """Manage Operation resources."""

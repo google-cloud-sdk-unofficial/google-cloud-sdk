@@ -1,0 +1,31 @@
+release_tracks: [ALPHA]
+hidden: true
+
+help_text:
+  brief: |
+    Update an Apache Kafka for BigQuery topic.
+  description: |
+    Update an Apache Kafka for BigQuery topic.
+
+  examples: |
+    To update an attribute in a topic, such as the partitions, for a cluster named mycluster
+    located in us-central1, run the following:
+
+      $ {command} mytopic \
+          --cluster=mycluster \
+          --location=us-central1 \
+          --partitions=3
+
+request:
+  collection: managedkafka.projects.locations.clusters.topics
+
+arguments:
+  resource:
+    help_text: Identifies the topic to be updated.
+    spec: !REF googlecloudsdk.command_lib.managed_kafka.resources:topic
+  params:
+  - group:
+      required: true
+      params:
+      - _REF_: googlecloudsdk.command_lib.managed_kafka.flags:partitions
+      - _REF_: googlecloudsdk.command_lib.managed_kafka.flags:configs

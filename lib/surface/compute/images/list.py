@@ -28,6 +28,17 @@ from googlecloudsdk.command_lib.compute.images import policy
 from googlecloudsdk.core import properties
 
 
+def _PublicImageProjects():
+  if properties.IsDefaultUniverse():
+    return sorted(constants.PUBLIC_IMAGE_PROJECTS)
+  else:
+    prefix = properties.VALUES.core.project.GetOrFail().split(':')[0]
+    return [
+        prefix + ':' + project
+        for project in sorted(constants.BASE_PUBLIC_IMAGE_PROJECTS)
+    ]
+
+
 def _Args(parser, support_image_zone_flag=False):
   """Helper function for arguments."""
   # GA Args
@@ -73,7 +84,7 @@ def _Args(parser, support_image_zone_flag=False):
       help="""\
        List images from public image projects. The public image projects
        that are available include the following: {0}.
-       """.format(', '.join(constants.PUBLIC_IMAGE_PROJECTS)),
+       """.format(', '.join(_PublicImageProjects())),
   )
 
   # Alpha Args
@@ -112,7 +123,7 @@ class List(base.ListCommand):
           None, {'project': project}, collection='compute.projects')
 
     if args.standard_images:
-      for project in constants.PUBLIC_IMAGE_PROJECTS:
+      for project in _PublicImageProjects():
         request_data.scope_set.add(ParseProject(project))
 
     if args.preview_images:

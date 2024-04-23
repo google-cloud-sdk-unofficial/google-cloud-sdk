@@ -43,7 +43,7 @@
           `organizations/{organization_id}/locations/{location}/policyBindings/{policy_binding_id}`
       is_positional: true
       request_id_field: policyBindingId
-      resource_spec: !REF googlecloudsdk.command_lib.iam.generated_resources:folder_or_organization_or_project_location_policy_binding
+      resource_spec: !REF googlecloudsdk.command_lib.iam.v3beta_resources:folder_or_organization_or_project_location_policy_binding
       required: true
     - arg_name: etag
       api_field: googleIamV3betaPolicyBinding.etag

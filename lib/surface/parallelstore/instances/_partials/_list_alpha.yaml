@@ -36,12 +36,14 @@
         To retrieve instance information for all locations, use "-" for the
         `{location}` value.
       is_positional: false
-      resource_spec: !REF googlecloudsdk.command_lib.parallelstore.generated_resources:project_location
+      resource_spec: !REF googlecloudsdk.command_lib.parallelstore.v1alpha_resources:project_location
       required: true
   request:
     api_version: v1alpha
     collection:
     - parallelstore.projects.locations.instances
+  response:
+    id_field: name
   output:
     format: |-
       table(name,

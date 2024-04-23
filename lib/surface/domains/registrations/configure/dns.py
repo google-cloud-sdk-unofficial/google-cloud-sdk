@@ -37,10 +37,6 @@ class ConfigureDNS(base.UpdateCommand):
   servers and DNSSEC options for the given domain. However, advanced options
   like glue records are available.
 
-  When using Cloud DNS Zone or Google Domains name servers, DNSSEC will be
-  enabled by default where possible. You can disable it using the
-  --disable-dnssec flag.
-
   ## EXAMPLES
 
   To start an interactive flow to configure DNS settings for ``example.com'',
@@ -52,7 +48,13 @@ class ConfigureDNS(base.UpdateCommand):
 
     $ {command} example.com --cloud-dns-zone=example-zone
 
-  If the managed-zone is signed, DNSSEC will be enabled for the domain.
+  DNSSEC will not be enabled as it may not be safe to enable it (e.g. when the
+  Cloud DNS managed-zone was signed less than 24h ago).
+
+  To use a signed Cloud DNS managed-zone ``example-zone'' for ``example.com''
+  and enable DNSSEC, run:
+
+    $ {command} example.com --cloud-dns-zone=example-zone --no-disable-dnssec
 
   To change DNS settings for ``example.com'' according to information from a
   YAML file ``dns_settings.yaml'', run:
@@ -78,13 +80,20 @@ class ConfigureDNS(base.UpdateCommand):
     client = registrations.RegistrationsClient(api_version)
     args.registration = util.NormalizeResourceName(args.registration)
     registration_ref = args.CONCEPTS.registration.Parse()
-    if args.disable_dnssec and args.dns_settings_from_file:
+    dnssec_flag_provided = args.IsSpecified('disable_dnssec')
+    if dnssec_flag_provided and args.dns_settings_from_file:
       raise exceptions.Error(
           'argument --disable-dnssec: At most one of '
           '--dns-settings-from-file | --disable-dnssec can be specified.')
 
     registration = client.Get(registration_ref)
     util.AssertRegistrationOperational(api_version, registration)
+
+    dnssec_update = dns_util.DNSSECUpdate.NO_CHANGE
+    if dnssec_flag_provided and args.disable_dnssec:
+      dnssec_update = dns_util.DNSSECUpdate.DISABLE
+    elif dnssec_flag_provided and not args.disable_dnssec:
+      dnssec_update = dns_util.DNSSECUpdate.ENABLE
 
     dns_settings, update_mask = dns_util.ParseDNSSettings(
         api_version,
@@ -93,29 +102,38 @@ class ConfigureDNS(base.UpdateCommand):
         args.use_google_domains_dns,
         args.dns_settings_from_file,
         registration_ref.registrationsId,
-        enable_dnssec=not args.disable_dnssec,
-        dns_settings=registration.dnsSettings)
+        dnssec_update=dnssec_update,
+        dns_settings=registration.dnsSettings,
+    )
 
     if dns_settings is None:
       dns_settings, update_mask = dns_util.PromptForNameServers(
           api_version,
           registration_ref.registrationsId,
-          enable_dnssec=not args.disable_dnssec,
-          dns_settings=registration.dnsSettings)
+          dnssec_update=dnssec_update,
+          dns_settings=registration.dnsSettings,
+      )
       if dns_settings is None:
         return None
 
     if registration.dnsSettings.glueRecords and not update_mask.glue_records:
       # It's ok to leave Glue records while changing name servers.
-      log.status.Print('Glue records will not be cleared. If you want to clear '
-                       'them, use --dns-settings-from-file flag.')
+      log.status.Print(
+          'Glue records will not be cleared. If you want to clear '
+          'them, use --dns-settings-from-file flag.'
+      )
 
     ds_records_present = dns_util.DnssecEnabled(registration.dnsSettings)
-    name_servers_changed = update_mask.name_servers and not dns_util.NameServersEquivalent(
-        registration.dnsSettings, dns_settings)
-    if ds_records_present and name_servers_changed:
+    new_ds_records = dns_util.DnssecEnabled(dns_settings)
+    name_servers_changed = (
+        update_mask.name_servers
+        and not dns_util.NameServersEquivalent(
+            registration.dnsSettings, dns_settings
+        )
+    )
+    if (ds_records_present or new_ds_records) and name_servers_changed:
       log.warning('Name servers should not be changed if DS '
-                  'records are present. Disable DNSSEC first and wait '
+                  'records are present or added. Disable DNSSEC first and wait '
                   '24 hours before you change name servers. Otherwise '
                   'your domain may stop serving.')
       if not args.unsafe_dns_update:

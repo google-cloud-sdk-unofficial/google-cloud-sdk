@@ -116,6 +116,7 @@ class Deploy(base.Command):
     flags.AddServiceAccountFlag(parser, managed_only=True)
     flags.AddSetCloudSQLFlag(parser)
     flags.AddVpcConnectorArg(parser)
+    flags.AddVpcNetworkGroupFlagsForUpdate(parser, resource_kind='job')
     flags.AddEgressSettingsFlag(parser)
     if add_container_args:
       flags.AddMutexEnvVarsFlags(parser)
@@ -360,7 +361,6 @@ class BetaDeploy(Deploy):
   @classmethod
   def Args(cls, parser):
     Deploy.CommonArgs(parser)
-    flags.AddVpcNetworkGroupFlagsForUpdate(parser, resource_kind='job')
     flags.AddVolumesFlags(parser, cls.ReleaseTrack())
     group = base.ArgumentGroup()
     group.AddArgument(flags.AddVolumeMountFlag())
@@ -378,6 +378,5 @@ class AlphaDeploy(BetaDeploy):
     Deploy.CommonArgs(parser, add_container_args=False)
     container_args = ContainerArgGroup()
     container_parser.AddContainerFlags(parser, container_args)
-    flags.AddVpcNetworkGroupFlagsForUpdate(parser, resource_kind='job')
     flags.AddVolumesFlags(parser, cls.ReleaseTrack())
     flags.RemoveContainersFlag().AddToParser(parser)

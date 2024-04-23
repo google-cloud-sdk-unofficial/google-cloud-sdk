@@ -107,6 +107,8 @@ class Deploy(base.Command):
     flags.RemoveContainersFlag().AddToParser(managed_group)
     flags.AddRuntimeFlag(managed_group)
     flags.AddMinInstancesFlag(managed_group, resource_kind='worker')
+    flags.AddMaxInstancesFlag(managed_group, resource_kind='worker')
+    flags.AddMaxSurgeFlag(managed_group, resource_kind='worker')
     flags.AddVolumesFlags(managed_group, cls.ReleaseTrack())
     flags.AddGpuTypeFlag(managed_group)
     flags.AddVpcNetworkGroupFlagsForUpdate(parser, resource_kind='worker')

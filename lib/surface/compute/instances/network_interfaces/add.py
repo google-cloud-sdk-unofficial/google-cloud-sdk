@@ -28,7 +28,6 @@ from googlecloudsdk.command_lib.compute.instances import flags as instances_flag
 from googlecloudsdk.command_lib.compute.instances.network_interfaces import flags as network_interfaces_flags
 
 
-@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Add(base.UpdateCommand):
   r"""Add a Compute Engine virtual machine network interface.

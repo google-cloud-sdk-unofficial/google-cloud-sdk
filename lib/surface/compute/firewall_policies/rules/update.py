@@ -244,7 +244,7 @@ class Update(base.UpdateCommand):
     )
 
     with holder.client.apitools_client.IncludeFields(cleared_fields):
-      return firewall_policy_rule_client.Update(
+      return firewall_policy_rule_client.UpdateRule(
           priority=priority,
           firewall_policy=firewall_policy_id,
           firewall_policy_rule=firewall_policy_rule,

@@ -1,0 +1,38 @@
+release_tracks: [ALPHA]
+hidden: true
+
+help_text:
+  brief: |
+    Update an Apache Kafka for BigQuery cluster.
+
+  description: |
+    Update an Apache Kafka for BigQuery cluster.
+
+  examples: |
+    To update an attribute in a cluster named mycluster located in us-central1,
+    such as the CPU, run the following:
+
+      $ {command} mycluster \
+          --location=us-central1 \
+          --cpu=3
+
+request:
+  collection: managedkafka.projects.locations.clusters
+  modify_request_hooks:
+  - googlecloudsdk.command_lib.managed_kafka.util:AddUpdateMaskForSubnets
+
+arguments:
+  resource:
+    help_text: Identifies the cluster to be updated.
+    spec: !REF googlecloudsdk.command_lib.managed_kafka.resources:cluster
+  params:
+  - group:
+      required: true
+      params:
+      - _REF_: googlecloudsdk.command_lib.managed_kafka.flags:cpu
+      - _REF_: googlecloudsdk.command_lib.managed_kafka.flags:memory
+      - _REF_: googlecloudsdk.command_lib.managed_kafka.flags:subnets
+      - _REF_: googlecloudsdk.command_lib.managed_kafka.flags:labels
+
+async:
+  collection: managedkafka.projects.locations.operations

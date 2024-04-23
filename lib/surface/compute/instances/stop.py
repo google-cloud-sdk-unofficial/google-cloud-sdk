@@ -67,7 +67,6 @@ DETAILED_HELP = {
 }
 
 
-@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.GA,
                     base.ReleaseTrack.BETA)
 class Stop(base.SilentCommand):

@@ -21,6 +21,7 @@ from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 
 
+@base.UniverseCompatible
 class TargetPools(base.Group):
   """Control Compute Engine target pools for network load balancing."""
 

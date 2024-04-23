@@ -227,7 +227,15 @@ def _CommonArgs(
   csek_utils.AddCsekKeyArgs(parser)
 
   base.ASYNC_FLAG.AddToParser(parser)
-  parser.display_info.AddFormat(instances_flags.DEFAULT_LIST_FORMAT)
+  if support_ipv6_only:
+    parser.display_info.AddFormat(instances_flags.DEFAULT_LIST_FORMAT_WITH_IPV6)
+    parser.display_info.AddTransforms({
+        'external_ip': instances_flags.TransformInstanceExternalIp,
+        'internal_ip': instances_flags.TransformInstanceInternalIp,
+    })
+  else:
+    parser.display_info.AddFormat(instances_flags.DEFAULT_LIST_FORMAT)
+
   parser.display_info.AddCacheUpdater(completers.InstancesCompleter)
 
   instances_flags.AddNodeProjectArgs(parser)
@@ -257,7 +265,6 @@ def _CommonArgs(
     instances_flags.AddWatchdogTimerArg(parser)
 
 
-@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Create(base.CreateCommand):
   """Create Compute Engine virtual machine instances."""
@@ -751,7 +758,6 @@ class Create(base.CreateCommand):
     return responses
 
 
-@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class CreateBeta(Create):
   """Create Compute Engine virtual machine instances."""
@@ -858,7 +864,6 @@ class CreateBeta(Create):
     instances_flags.AddVisibleCoreCountArgs(parser)
 
 
-@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class CreateAlpha(CreateBeta):
   """Create Compute Engine virtual machine instances."""

@@ -92,6 +92,7 @@ def _Run(args, version):
           args.region,
           args.display_name,
           machine_type=args.machine_type,
+          tpu_topology=args.tpu_topology,
           accelerator_dict=args.accelerator,
           min_replica_count=args.min_replica_count,
           max_replica_count=args.max_replica_count,

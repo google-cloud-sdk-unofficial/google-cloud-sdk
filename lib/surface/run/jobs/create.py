@@ -112,6 +112,7 @@ class Create(base.Command):
     flags.AddServiceAccountFlag(parser, managed_only=True)
     flags.AddSetCloudSQLFlag(parser)
     flags.AddVpcConnectorArg(parser)
+    flags.AddVpcNetworkGroupFlagsForCreate(parser, resource_kind='job')
     flags.AddEgressSettingsFlag(parser)
     flags.AddClientNameAndVersionFlags(parser)
     flags.AddBinAuthzPolicyFlags(parser, with_clear=False)
@@ -238,7 +239,6 @@ class BetaCreate(Create):
   @classmethod
   def Args(cls, parser):
     Create.CommonArgs(parser)
-    flags.AddVpcNetworkGroupFlagsForCreate(parser, resource_kind='job')
     flags.AddVolumesFlags(parser, cls.ReleaseTrack())
     group = base.ArgumentGroup()
     group.AddArgument(flags.AddVolumeMountFlag())
@@ -254,7 +254,6 @@ class AlphaCreate(BetaCreate):
   @classmethod
   def Args(cls, parser):
     Create.CommonArgs(parser, add_container_args=False)
-    flags.AddVpcNetworkGroupFlagsForCreate(parser, resource_kind='job')
     flags.AddRuntimeFlag(parser)
     flags.AddVolumesFlags(parser, cls.ReleaseTrack())
     container_args = ContainerArgGroup()

@@ -471,6 +471,7 @@ def ParseCreateOptionsBase(args, is_autopilot, get_default, location,
           'autoprovisioning_resource_manager_tags'
       ),
       enable_fqdn_network_policy=get_default('enable_fqdn_network_policy'),
+      enable_nested_virtualization=get_default('enable_nested_virtualization'),
   )
 
 
@@ -668,14 +669,15 @@ flags_to_add = {
         'enableRuntimeVulnerabilityInsight': (
             flags.AddRuntimeVulnerabilityInsightFlag
         ),
-        'containerdConfig': lambda p: flags.AddContainerdConfigFlag(
-            p, hidden=True
-        ),
+        'containerdConfig': flags.AddContainerdConfigFlag,
         'InTransitEncryption': flags.AddInTransitEncryptionFlag,
         'enableCiliumClusterwideNetworkPolicy': (
             flags.AddEnableCiliumClusterwideNetworkPolicyFlag
         ),
         'enableFqdnNetworkPolicy': flags.AddEnableFqdnNetworkPolicyFlag,
+        'nestedvirtualization': (
+            lambda p: flags.AddEnableNestedVirtualizationFlag(p, hidden=False)
+        ),
     },
     BETA: {
         'accelerator': lambda p: AddAcceleratorFlag(p, True, True, True, True),
@@ -760,7 +762,7 @@ flags_to_add = {
         'maintenanceinterval': flags.AddMaintenanceIntervalFlag,
         'monitoring': flags.AddMonitoringFlag,
         'nestedvirtualization': (
-            lambda p: flags.AddEnableNestedVirtualizationFlag(p, hidden=True)
+            lambda p: flags.AddEnableNestedVirtualizationFlag(p, hidden=False)
         ),
         'networkpolicy': flags.AddNetworkPolicyFlags,
         'nodetaints': flags.AddNodeTaintsFlag,
@@ -836,9 +838,7 @@ flags_to_add = {
         'enableDnsEndpoint': flags.AddEnableDNSEndpoint,
         'enableFqdnNetworkPolicy': flags.AddEnableFqdnNetworkPolicyFlag,
         'InTransitEncryption': flags.AddInTransitEncryptionFlag,
-        'containerdConfig': lambda p: flags.AddContainerdConfigFlag(
-            p, hidden=True
-        ),
+        'containerdConfig': flags.AddContainerdConfigFlag,
         'secretManagerConfig': lambda p: flags.AddSecretManagerEnableFlag(
             p, hidden=False
         ),
@@ -914,7 +914,7 @@ flags_to_add = {
         'kubernetesobjectsexport': AddKubernetesObjectsExportFlag,
         'npname': lambda p: flags.AddInitialNodePoolNameArg(p, hidden=False),
         'nestedvirtualization': (
-            lambda p: flags.AddEnableNestedVirtualizationFlag(p, hidden=True)
+            lambda p: flags.AddEnableNestedVirtualizationFlag(p, hidden=False)
         ),
         'maxunavailable': lambda p: flags.AddMaxUnavailableUpgradeFlag(
             p, is_create=True
@@ -1014,9 +1014,7 @@ flags_to_add = {
         'enableDnsEndpoint': flags.AddEnableDNSEndpoint,
         'enableFqdnNetworkPolicy': flags.AddEnableFqdnNetworkPolicyFlag,
         'InTransitEncryption': flags.AddInTransitEncryptionFlag,
-        'containerdConfig': lambda p: flags.AddContainerdConfigFlag(
-            p, hidden=True
-        ),
+        'containerdConfig': flags.AddContainerdConfigFlag,
         'secretManagerConfig': lambda p: flags.AddSecretManagerEnableFlag(
             p, hidden=False
         ),

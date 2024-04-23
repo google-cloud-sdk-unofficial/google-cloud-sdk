@@ -77,7 +77,6 @@ def _Args(parser, support_public_dns):
   flags.INSTANCE_ARG.AddArgument(parser)
 
 
-@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class AddAccessConfigInstances(base.SilentCommand):
   """Create a Compute Engine virtual machine access configuration."""
@@ -138,7 +137,6 @@ class AddAccessConfigInstances(base.SilentCommand):
                                  'AddAccessConfig', request)])
 
 
-@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class AddAccessConfigInstancesBeta(AddAccessConfigInstances):
   """Create a Compute Engine virtual machine access configuration."""
@@ -146,7 +144,6 @@ class AddAccessConfigInstancesBeta(AddAccessConfigInstances):
   _support_public_dns = False
 
 
-@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class AddAccessConfigInstancesAlpha(AddAccessConfigInstances):
   """Create a Compute Engine virtual machine access configuration."""

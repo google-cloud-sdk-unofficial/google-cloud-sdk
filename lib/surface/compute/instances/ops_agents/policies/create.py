@@ -20,18 +20,23 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+from apitools.base.py import encoding
+from googlecloudsdk.api_lib.compute.instances.ops_agents import cloud_ops_agents_policy
 from googlecloudsdk.api_lib.compute.instances.ops_agents import ops_agents_policy as agent_policy
+from googlecloudsdk.api_lib.compute.instances.ops_agents.converters import cloud_ops_agents_policy_to_os_assignment_policy_converter as to_os_policy_assignment
 from googlecloudsdk.api_lib.compute.instances.ops_agents.converters import guest_policy_to_ops_agents_policy_converter as to_ops_agents
 from googlecloudsdk.api_lib.compute.instances.ops_agents.converters import ops_agents_policy_to_guest_policy_converter as to_guest_policy
+from googlecloudsdk.api_lib.compute.instances.ops_agents.converters import os_policy_assignment_to_cloud_ops_agents_policy_converter as to_cloud_ops_agents
 from googlecloudsdk.api_lib.compute.instances.ops_agents.validators import ops_agents_policy_validator as validator
 from googlecloudsdk.api_lib.compute.os_config import utils as osconfig_api_utils
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute.instances.ops_agents.policies import parser_utils
 from googlecloudsdk.command_lib.compute.os_config import utils as osconfig_command_utils
 from googlecloudsdk.core import properties
+from googlecloudsdk.core import yaml
+from googlecloudsdk.generated_clients.apis.osconfig.v1 import osconfig_v1_messages as osconfig
 
 
-@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
 class CreateOsConfig(base.Command):
   """Create a Google Cloud's operations suite agents (Ops Agents) policy.
@@ -46,10 +51,8 @@ class CreateOsConfig(base.Command):
   """
 
   detailed_help = {
-      'DESCRIPTION':
-          '{description}',
-      'EXAMPLES':
-          """\
+      'DESCRIPTION': '{description}',
+      'EXAMPLES': """\
           To create a policy named ``ops-agents-test-policy'' that targets a
           single CentOS 7 VM instance named
           ``zones/us-central1-a/instances/test-instance'' for testing or
@@ -88,15 +91,23 @@ class CreateOsConfig(base.Command):
 
     release_track = self.ReleaseTrack()
     client = osconfig_api_utils.GetClientInstance(
-        release_track, api_version_override='v1beta')
+        release_track, api_version_override='v1beta'
+    )
     messages = osconfig_api_utils.GetClientMessages(
-        release_track, api_version_override='v1beta')
+        release_track, api_version_override='v1beta'
+    )
     ops_agents_policy = agent_policy.CreateOpsAgentPolicy(
-        args.description, args.agent_rules, args.group_labels, args.os_types,
-        args.zones, args.instances)
+        args.description,
+        args.agent_rules,
+        args.group_labels,
+        args.os_types,
+        args.zones,
+        args.instances,
+    )
     validator.ValidateOpsAgentsPolicy(ops_agents_policy)
     guest_policy = to_guest_policy.ConvertOpsAgentPolicyToGuestPolicy(
-        messages, ops_agents_policy)
+        messages, ops_agents_policy
+    )
     project = properties.VALUES.core.project.GetOrFail()
     parent_path = osconfig_command_utils.GetProjectUriPath(project)
     request = messages.OsconfigProjectsGuestPoliciesCreateRequest(
@@ -107,12 +118,12 @@ class CreateOsConfig(base.Command):
     service = client.projects_guestPolicies
     complete_guest_policy = service.Create(request)
     ops_agents_policy = to_ops_agents.ConvertGuestPolicyToOpsAgentPolicy(
-        complete_guest_policy)
+        complete_guest_policy
+    )
     return ops_agents_policy
 
 
 @base.Hidden
-@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Create(base.Command):
   """Create a Google Cloud's operations suite agents (Ops Agents) policy.
@@ -121,10 +132,8 @@ class Create(base.Command):
   """
 
   detailed_help = {
-      'DESCRIPTION':
-          '{description}',
-      'EXAMPLES':
-          """\
+      'DESCRIPTION': '{description}',
+      'EXAMPLES': """\
           TBD
           """,
   }
@@ -148,92 +157,61 @@ class Create(base.Command):
         required=True,
         help="""\
           The YAML file with the Cloud Ops Policy Assignment to create. For
-          information about the Cloud Ops Policy Assignment format, see [PLACEHOLDER for our public doc].""")
+          information about the Cloud Ops Policy Assignment format, see [PLACEHOLDER for our public doc].""",
+    )
     parser.add_argument(
         '--zone',
         required=True,
         help="""\
-          this is zone.""")
+          this is zone.""",
+    )
 
   def Run(self, args):
     """See base class."""
 
     release_track = self.ReleaseTrack()
-    client = osconfig_api_utils.GetClientInstance(
-        release_track)
-    messages = osconfig_api_utils.GetClientMessages(
-        release_track)
-    # TODO: b/322521006 - Create an Ops Agent Object from args.file
-    # ops_agents_policy = agent_policy.CreateOpsAgentPolicy(
-    #     args.description, args.agent_rules, args.group_labels, args.os_types,
-    #     args.zones, args.instances)
+    client = osconfig_api_utils.GetClientInstance(release_track)
+    messages = osconfig_api_utils.GetClientMessages(release_track)
 
-    # TODO: b/315392183 - Create a validator
-    # validator.ValidateOpsAgentsPolicy(ops_agents_policy)
+    # Load config from yaml file.
+    config = yaml.load_path(args.file)
 
-    # TODO: b/315395612 - Compose an OSPolicyAssignment
-    # guest_policy = to_guest_policy.ConvertOpsAgentPolicyToGuestPolicy(
-    #     messages, ops_agents_policy)
+    # Convert to domain object from users input.
+    ops_agents_policy = cloud_ops_agents_policy.CreateOpsAgentsPolicy(config)
+
     project = properties.VALUES.core.project.GetOrFail()
-    parent_path = osconfig_command_utils.GetProjectLocationUriPath(project, args.zone)
-
-    # TODO: b/315395612 - Replace below sample OSPolicyAssignment object with
-    # OSPolicyAssignment created with above converter code.
-    sample_instance_filter = messages.OSPolicyAssignmentInstanceFilter(
-        all=True
-    )
-    add_repo_resource = messages.OSPolicyResource(
-        id='add-repo',
-        repository=messages.OSPolicyResourceRepositoryResource(
-            yum=messages.OSPolicyResourceRepositoryResourceYumRepository(
-                baseUrl='https://packages.cloud.google.com/yum/repos/google-cloud-ops-agent-el9-$basearch-2',
-                displayName='Google Cloud Ops Agent Repository',
-                gpgKeys=['https://packages.cloud.google.com/yum/doc/yum-key.gpg', 'https://packages.cloud.google.com/yum/doc/rpm-package-key.gpg'],
-                id='google-cloud-ops-agent'))
-    )
-    install_pkg_resource = messages.OSPolicyResource(
-        id='install-pkg',
-        pkg=messages.OSPolicyResourcePackageResource(
-            desiredState=messages.OSPolicyResourcePackageResource.DesiredStateValueValuesEnum.INSTALLED,
-            yum=messages.OSPolicyResourcePackageResourceYUM(
-                name='google-cloud-ops-agent'
-            )
-        ))
-    sample_resource_group = messages.OSPolicyResourceGroup(
-        inventoryFilters=[
-            messages.OSPolicyInventoryFilter(osShortName='rocky',
-                                             osVersion='9.*'),
-            messages.OSPolicyInventoryFilter(osShortName='rhel',
-                                             osVersion='9.*')
-        ],
-        resources=[add_repo_resource, install_pkg_resource],
-    )
-    sample_policy = messages.OSPolicy(
-        allowNoResourceGroupMatch=True,
-        id='goog-ops-agent-policy',
-        mode=messages.OSPolicy.ModeValueValuesEnum.ENFORCEMENT,
-        resourceGroups=[sample_resource_group]
-    )
-    rollout = messages.OSPolicyAssignmentRollout(
-        disruptionBudget=messages.FixedOrPercent(
-            percent=100),
-        minWaitDuration='0s')
-    sample_policy_assignment = messages.OSPolicyAssignment(
-        instanceFilter=sample_instance_filter,
-        osPolicies=[sample_policy],
-        rollout=rollout,
+    parent_path = osconfig_command_utils.GetProjectLocationUriPath(
+        project, args.zone
     )
 
-    request = messages.OsconfigProjectsLocationsOsPolicyAssignmentsCreateRequest(
-        oSPolicyAssignment=sample_policy_assignment,
-        osPolicyAssignmentId=args.POLICY_ID,
-        parent=parent_path,
+    name = f'{parent_path}/osPolicyAssignments/{args.POLICY_ID}'
+
+    ops_policy_assignment = (
+        to_os_policy_assignment.ConvertOpsAgentsPolicyToOSPolicyAssignment(
+            name, ops_agents_policy
+        )
+    )
+
+    # Create request to projects_locations_osPolicyAssignments.
+    request = (
+        messages.OsconfigProjectsLocationsOsPolicyAssignmentsCreateRequest(
+            oSPolicyAssignment=ops_policy_assignment,
+            osPolicyAssignmentId=args.POLICY_ID,
+            parent=parent_path,
+        )
     )
     service = client.projects_locations_osPolicyAssignments
-    complete_guest_policy = service.Create(request)
+    response = service.Create(request)
+    # Converting response from JSON python object.
+    complete_os_policy_assignment_obj = encoding.MessageToPyValue(
+        response.response
+    )
+    complete_os_policy_assignment = encoding.PyValueToMessage(
+        osconfig.OSPolicyAssignment, complete_os_policy_assignment_obj
+    )
+    # TODO: b/334112329 - Fix yaml marshaling
+    policy = to_cloud_ops_agents.ConvertOsPolicyAssignmentToCloudOpsAgentPolicy(
+        complete_os_policy_assignment
+    )
 
-    # TODO: b/315395612 - Replace the return object with OpsPolicyAssignment
-    # created with below sample converter code.
-    # ops_agents_policy = to_ops_agents.ConvertGuestPolicyToOpsAgentPolicy(
-    #     complete_guest_policy)
-    return complete_guest_policy
+    return policy

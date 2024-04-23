@@ -56,7 +56,7 @@ class Describe(base.DescribeCommand):
         firewall_policy_rule_client,
         args.firewall_policy,
         organization=args.organization)
-    return firewall_policy_rule_client.Describe(
+    return firewall_policy_rule_client.DescribeRule(
         priority=rule_utils.ConvertPriorityToInt(ref.Name()),
         firewall_policy_id=firewall_policy_id,
         only_generate_request=False)

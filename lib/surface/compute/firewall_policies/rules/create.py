@@ -200,7 +200,7 @@ class Create(base.CreateCommand):
         args.firewall_policy,
         organization=args.organization,
     )
-    return firewall_policy_rule_client.Create(
+    return firewall_policy_rule_client.CreateRule(
         firewall_policy=firewall_policy_id,
         firewall_policy_rule=firewall_policy_rule,
     )

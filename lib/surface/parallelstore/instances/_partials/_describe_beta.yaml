@@ -23,7 +23,7 @@
     description: |
       Gets details of a single Parallelstore instance.
     examples: |-
-      To get the details of a single instance `my-instance in location `us-central1-a` run:
+      To get the details of a single instance `my-instance` in location `us-central1-a` run:
 
       $ {command} my-instance --location=us-central1-a
   arguments:
@@ -32,7 +32,7 @@
         The instance resource name, in the format
         `projects/{project_id}/locations/{location}/instances/{instance_id}`.
       is_positional: true
-      resource_spec: !REF googlecloudsdk.command_lib.parallelstore.generated_resources:project_location_instance
+      resource_spec: !REF googlecloudsdk.command_lib.parallelstore.v1beta_resources:project_location_instance
       required: true
   request:
     api_version: v1beta

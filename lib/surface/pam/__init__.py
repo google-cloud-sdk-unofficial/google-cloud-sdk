@@ -22,7 +22,6 @@ from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Pam(base.Group):
   r"""Manage Privileged Access Manager (PAM) Entitlements and Grants.
@@ -51,3 +50,5 @@ class Pam(base.Group):
       --location=global
 
   """
+
+  category = base.IDENTITY_AND_SECURITY_CATEGORY

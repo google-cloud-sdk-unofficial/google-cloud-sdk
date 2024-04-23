@@ -78,8 +78,9 @@
 
     - arg_name: storage-location-names
       help_text: |
-        The custom storage locations that you specify for the project's
-        snapshots. Use this flag only when you use the `SPECIFIC_LOCATIONS`
+        The custom storage location that you specify for the project's
+        snapshots. You can specify only a single location.
+        Use this flag only when you use the `specific-locations`
         value for the `--storage-location-policy` flag. For more information,
         refer to the snapshot settings documentation at https://cloud.google.com/compute/docs/disks/snapshot-settings.
       type: 'googlecloudsdk.calliope.arg_parsers:ArgList:'

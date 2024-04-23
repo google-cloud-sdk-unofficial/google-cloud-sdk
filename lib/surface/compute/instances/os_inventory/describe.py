@@ -32,7 +32,6 @@ from googlecloudsdk.core.resource import resource_projector
 import six
 
 
-@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA,
                     base.ReleaseTrack.ALPHA)
 class Describe(base.DescribeCommand):

@@ -53,7 +53,8 @@ class CheckUpgrade(base.Command):
     resource_args.AddEnvironmentResourceArg(parser, 'to check upgrade for')
     base.ASYNC_FLAG.AddToParser(parser)
 
-    flags.AddEnvUpgradeFlagsToGroup(parser)
+    flags.AddEnvUpgradeFlagsToGroup(
+        parser, release_track=base.ReleaseTrack.BETA)
 
   def Run(self, args):
     env_resource = args.CONCEPTS.environment.Parse()

@@ -44,8 +44,14 @@
     # Backup schedule
     - group:
         params:
-        - _REF_: googlecloudsdk.command_lib.container.backup_restore.flags:update_cron_schedule
         - _REF_: googlecloudsdk.command_lib.container.backup_restore.flags:paused
+        - group:
+            params:
+            - _REF_: googlecloudsdk.command_lib.container.backup_restore.flags:cron_schedule
+            - group:
+                params:
+                - _REF_: googlecloudsdk.command_lib.container.backup_restore.flags:target_rpo_minutes
+                - _REF_: googlecloudsdk.command_lib.container.backup_restore.flags:exclusion_windows_file
     # Backup scope
     - group:
         mutex: true

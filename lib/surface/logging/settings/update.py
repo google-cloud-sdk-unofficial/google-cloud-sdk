@@ -33,8 +33,9 @@ class Update(base.Command):
   # pylint: disable=line-too-long
   """Update the settings for the Cloud Logging Logs Router.
 
-  Use this command to update the *--kms-key-name, --storage-location and
-  --disable-default-sink* associated with the Cloud Logging Logs Router.
+  Use this command to update the *--kms-key-name, --storage-location,
+  --disable-default-sink* and --analytics-mode associated with the Cloud Logging
+  Logs Router.
 
   The Cloud KMS key must already exist and Cloud Logging must have
   permission to access it.
@@ -72,6 +73,11 @@ class Update(base.Command):
   To enable default sink for the Logs Router for an organization, run:
 
     $ {command} --organization=[ORGANIZATION_ID] --disable-default-sink=false
+
+  To enable analytics for the log buckets under an organization, run:
+
+    $ {command} --organization=[ORGANIZATION_ID] --disable-default-sink=false
+    --analytics-mode=enabled
   """
 
   @staticmethod
@@ -97,6 +103,7 @@ class Update(base.Command):
         help='Update the storage location for ```_Default``` bucket and '
         '```_Required``` bucket. Note: It only applies to the newly created '
         'projects and will not affect the projects created before.')
+
     parser.add_argument(
         '--disable-default-sink',
         action='store_true',
@@ -104,6 +111,18 @@ class Update(base.Command):
         'bucket. Specify --no-disable-default-sink to enable a disabled '
         '```_Default``` sink. Note: It only applies to the newly created '
         'projects and will not affect the projects created before.')
+
+    parser.add_argument(
+        '--analytics-mode',
+        required=False,
+        hidden=True,
+        choices=['enabled', 'disabled', 'unspecified'],
+        help=(
+            'Update the analytics mode for ```_Default``` bucket and'
+            ' ```_Required``` bucket. Note: It only applies to the newly'
+            ' created buckets and will not affect the buckets created before.'
+        ),
+    )
 
     group = parser.add_mutually_exclusive_group(required=False)
 
@@ -154,6 +173,21 @@ class Update(base.Command):
     if args.IsSpecified('disable_default_sink'):
       settings['disableDefaultSink'] = args.disable_default_sink
       update_mask.append('disable_default_sink')
+
+    if args.IsSpecified('analytics_mode'):
+      update_mask.append('analytics_mode')
+      if args.analytics_mode == 'enabled':
+        settings['analyticsMode'] = (
+            util.GetMessages().Settings.AnalyticsModeValueValuesEnum.ANALYTICS_ENABLED
+        )
+      elif args.analytics_mode == 'disabled':
+        settings['analyticsMode'] = (
+            util.GetMessages().Settings.AnalyticsModeValueValuesEnum.ANALYTICS_DISABLED
+        )
+      else:
+        settings['analyticsMode'] = (
+            util.GetMessages().Settings.AnalyticsModeValueValuesEnum.ANALYTICS_MODE_UNSPECIFIED
+        )
 
     if not update_mask:
       raise calliope_exceptions.MinimumArgumentException(

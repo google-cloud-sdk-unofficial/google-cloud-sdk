@@ -30,7 +30,6 @@ from googlecloudsdk.core import log
     is_removed=False,
     warning='This command is deprecated. Use '
     '$ gcloud alpha compute instances update --set-min-cpu-platform instead.')
-@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class SetMinCpuPlatform(base.UpdateCommand):
   # pylint: disable=line-too-long

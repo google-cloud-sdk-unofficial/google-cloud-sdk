@@ -21,6 +21,7 @@ from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 
 
+@base.UniverseCompatible
 class TargetInstances(base.Group):
   """Read and manipulate Compute Engine virtual target instances."""
 

@@ -1,0 +1,38 @@
+release_tracks: [ALPHA]
+hidden: true
+
+help_text:
+  brief: |
+    List all Apache Kafka for BigQuery clusters in a given location.
+  description: |
+    List all Apache Kafka for BigQuery clusters in a given location.
+
+  examples: |
+    To list all clusters in a given location, such as us-central1, run the following:
+
+      $ {command} us-central1
+
+request:
+  collection: managedkafka.projects.locations.clusters
+
+arguments:
+  resource:
+    is_positional: true
+    help_text: |
+      Identifies the region which contains all the clusters to be listed.
+    spec: !REF googlecloudsdk.command_lib.managed_kafka.resources:location
+
+response:
+  modify_response_hooks:
+  - googlecloudsdk.command_lib.managed_kafka.util:ListWithBootstrapAddr
+
+output:
+  format: |
+    table[box](
+      name.segment(5):label=NAME,
+      bootstrapAddress:label=BOOTSTRAP,
+      capacityConfig.vcpuCount:label=VCPU,
+      capacityConfig.memoryBytes:label=MEMORY_BYTES,
+      gcpConfig.accessConfig.networkConfigs.subnet.list(separator="
+    "):label=NETWORK
+    )

@@ -1,0 +1,27 @@
+release_tracks: [ALPHA]
+hidden: true
+
+help_text:
+  brief: |
+    Describe an Apache Kafka for BigQuery cluster.
+  description: |
+    Describe an Apache Kafka for BigQuery cluster.
+
+  examples: |
+    To describe a cluster named mycluster located in us-central1,
+    run the following:
+
+      $ {command} mycluster \
+          --location=us-central1
+
+request:
+  collection: managedkafka.projects.locations.clusters
+
+arguments:
+  resource:
+    help_text: Identifies the cluster whose details are to be displayed.
+    spec: !REF googlecloudsdk.command_lib.managed_kafka.resources:cluster
+
+response:
+  modify_response_hooks:
+  - googlecloudsdk.command_lib.managed_kafka.util:DescribeWithBootstrapAddr

@@ -110,6 +110,7 @@ class Update(base.Command):
     flags.AddServiceAccountFlag(parser, managed_only=True)
     flags.AddCloudSQLFlags(parser)
     flags.AddVpcConnectorArgs(parser)
+    flags.AddVpcNetworkGroupFlagsForUpdate(parser, resource_kind='job')
     flags.AddEgressSettingsFlag(parser)
     flags.AddClientNameAndVersionFlags(parser)
     flags.AddBinAuthzPolicyFlags(parser, with_clear=True)
@@ -216,7 +217,6 @@ class BetaUpdate(Update):
   @classmethod
   def Args(cls, parser):
     Update.CommonArgs(parser)
-    flags.AddVpcNetworkGroupFlagsForUpdate(parser, resource_kind='job')
     flags.AddVolumesFlags(parser, cls.ReleaseTrack())
     group = base.ArgumentGroup()
     group.AddArgument(flags.AddVolumeMountFlag())
@@ -234,7 +234,6 @@ class AlphaUpdate(BetaUpdate):
     Update.CommonArgs(parser, add_container_args=False)
     container_args = ContainerArgGroup()
     container_parser.AddContainerFlags(parser, container_args)
-    flags.AddVpcNetworkGroupFlagsForUpdate(parser, resource_kind='job')
     flags.AddRuntimeFlag(parser)
     flags.AddVolumesFlags(parser, cls.ReleaseTrack())
     flags.RemoveContainersFlag().AddToParser(parser)

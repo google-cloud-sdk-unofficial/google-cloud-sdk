@@ -134,6 +134,7 @@ class Download(base.Command):
         tmp_path,
         final_path,
         file_escaped.RelativeName(),
+        file_name,
         False)
     log.status.Print(
         'Successfully downloaded the file to {}'.format(args.destination)

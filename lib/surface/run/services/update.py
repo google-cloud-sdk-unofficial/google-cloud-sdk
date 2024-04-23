@@ -104,6 +104,7 @@ class Update(base.Command):
     flags.AddSessionAffinityFlag(managed_group)
     flags.AddStartupCpuBoostFlag(managed_group)
     flags.AddVpcConnectorArgs(managed_group)
+    flags.AddVpcNetworkGroupFlagsForUpdate(managed_group)
     flags.RemoveContainersFlag().AddToParser(managed_group)
 
     # Flags specific to connecting to a cluster
@@ -265,7 +266,6 @@ class BetaUpdate(Update):
     managed_group = flags.GetManagedArgGroup(parser)
     flags.AddDefaultUrlFlag(managed_group)
     flags.AddDeployHealthCheckFlag(managed_group)
-    flags.AddVpcNetworkGroupFlagsForUpdate(managed_group)
     flags.AddServiceMinInstancesFlag(managed_group)
     flags.AddVolumesFlags(managed_group, cls.ReleaseTrack())
     container_args = ContainerArgGroup(cls.ReleaseTrack())
@@ -285,10 +285,10 @@ class AlphaUpdate(BetaUpdate):
     flags.AddDeployHealthCheckFlag(managed_group)
     flags.AddDefaultUrlFlag(managed_group)
     flags.AddInvokerIamCheckFlag(managed_group)
-    flags.AddVpcNetworkGroupFlagsForUpdate(managed_group)
     flags.AddRuntimeFlag(managed_group)
     flags.AddDescriptionFlag(managed_group)
     flags.AddServiceMinInstancesFlag(managed_group)
+    flags.AddMaxSurgeFlag(managed_group)
     flags.AddVolumesFlags(managed_group, cls.ReleaseTrack())
     flags.AddGpuTypeFlag(managed_group)
     flags.SERVICE_MESH_FLAG.AddToParser(managed_group)

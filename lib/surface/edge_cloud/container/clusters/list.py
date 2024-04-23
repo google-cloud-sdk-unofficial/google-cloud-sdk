@@ -18,6 +18,7 @@ from apitools.base.py import list_pager
 from googlecloudsdk.api_lib.edge_cloud.container import util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.edge_cloud.container import resource_args
+from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 from googlecloudsdk.core import resources
 
@@ -58,6 +59,15 @@ LOC_FLAG = '--location'
 LOC_FLAG_HELP = ('Parent Edge Container location to list all contained Edge'
                  ' Container clusters.')
 
+RCP_DEPRECATION_RELEASE_NOTES_LINK = (
+    'https://cloud.google.com/distributed-cloud/edge/latest/docs/'
+    'release-notes#March_14_2024')
+DEPRECATION_WARNING_TEMPLATE = (
+    'DEPRECATION: Cluster {} is hosting a control plane in the cloud, which is '
+    'now deprecated. Please migrate all clusters to host the control plane '
+    'locally on edge-cloud machines: ' + RCP_DEPRECATION_RELEASE_NOTES_LINK
+)
+
 
 def GetUriFromResourceFunc(api_version):
   def UriFunc(cluster, **kwargs):
@@ -65,6 +75,17 @@ def GetUriFromResourceFunc(api_version):
     kwargs['collection'] = 'edgecontainer.projects.locations.clusters'
     return resources.REGISTRY.Parse(cluster.name, **kwargs).SelfLink()
   return UriFunc
+
+
+def IsRCPCluster(cluster):
+  return cluster.controlPlane is None or cluster.controlPlane.local is None
+
+
+def PrintWarningsAndReturnTrue(cluster):
+  if IsRCPCluster(cluster) and cluster.status != 'PROVISIONING':
+    log.warning(DEPRECATION_WARNING_TEMPLATE.format(cluster.name))
+
+  return True
 
 
 # TODO(b/331978625): Unify GA in python after validating Alpha.
@@ -113,4 +134,5 @@ class ListAlpha(base.ListCommand):
         batch_size=args.page_size,
         field='clusters',
         limit=args.limit,
-        batch_size_attribute='pageSize')
+        batch_size_attribute='pageSize',
+        predicate=PrintWarningsAndReturnTrue)

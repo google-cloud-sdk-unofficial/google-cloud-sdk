@@ -45,7 +45,7 @@
     - help_text: |-
         Name of the resource.
       is_positional: true
-      resource_spec: !REF googlecloudsdk.command_lib.parallelstore.generated_resources:project_location_instance
+      resource_spec: !REF googlecloudsdk.command_lib.parallelstore.v1beta_resources:project_location_instance
       required: true
     - arg_name: request-id
       api_field: exportDataRequest.requestId

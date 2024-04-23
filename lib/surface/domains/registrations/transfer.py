@@ -139,7 +139,7 @@ class Transfer(base.CreateCommand):
           args.use_google_domains_dns,
           None,
           registration_ref.registrationsId,
-          enable_dnssec=False)
+          dnssec_update=dns_util.DNSSECUpdate.DISABLE)
 
     contacts = contacts_util.ParseContactData(api_version,
                                               args.contact_data_from_file)
