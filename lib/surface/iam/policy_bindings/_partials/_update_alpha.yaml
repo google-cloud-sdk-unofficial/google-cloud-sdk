@@ -39,24 +39,24 @@
           `folders/{folder_id}/locations/{location}/policyBindings/{policy_binding_id}`
           `organizations/{organization_id}/locations/{location}/policyBindings/{policy_binding_id}`
       is_positional: true
-      resource_spec: !REF googlecloudsdk.command_lib.iam.v3beta_resources:folder_or_organization_or_project_location_policy_binding
+      resource_spec: !REF googlecloudsdk.command_lib.iam.v3alpha_resources:folder_or_organization_or_project_location_policy_binding
       required: true
     - arg_name: etag
-      api_field: googleIamV3betaPolicyBinding.etag
+      api_field: googleIamV3alphaPolicyBinding.etag
       required: false
       repeated: false
       help_text: |-
         The etag for the policy binding.
         If this is provided on update, it must match the server's etag.
     - arg_name: display-name
-      api_field: googleIamV3betaPolicyBinding.displayName
+      api_field: googleIamV3alphaPolicyBinding.displayName
       required: false
       repeated: false
       help_text: |-
         The description of the policy binding. Must be less than or equal to 63
         characters.
     - arg_name: annotations
-      api_field: googleIamV3betaPolicyBinding.annotations
+      api_field: googleIamV3alphaPolicyBinding.annotations
       required: false
       repeated: true
       help_text: |-
@@ -102,14 +102,14 @@
           documentation for additional information.
         params:
         - arg_name: condition-expression
-          api_field: googleIamV3betaPolicyBinding.condition.expression
+          api_field: googleIamV3alphaPolicyBinding.condition.expression
           required: false
           repeated: false
           help_text: |-
             Textual representation of an expression in Common Expression Language
             syntax.
         - arg_name: condition-title
-          api_field: googleIamV3betaPolicyBinding.condition.title
+          api_field: googleIamV3alphaPolicyBinding.condition.title
           required: false
           repeated: false
           help_text: |-
@@ -117,21 +117,21 @@
             its purpose. This can be used e.g. in UIs which allow to enter the
             expression.
         - arg_name: condition-description
-          api_field: googleIamV3betaPolicyBinding.condition.description
+          api_field: googleIamV3alphaPolicyBinding.condition.description
           required: false
           repeated: false
           help_text: |-
             Description of the expression. This is a longer text which
             describes the expression, e.g. when hovered over it in a UI.
         - arg_name: condition-location
-          api_field: googleIamV3betaPolicyBinding.condition.location
+          api_field: googleIamV3alphaPolicyBinding.condition.location
           required: false
           repeated: false
           help_text: |-
             String indicating the location of the expression for error
             reporting, e.g. a file name and a position in the file.
   request:
-    api_version: v3beta
+    api_version: v3alpha
     collection:
     - iam.folders.locations.policyBindings
     - iam.organizations.locations.policyBindings

@@ -49,7 +49,7 @@ DETAILED_HELP = {
 }
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Describe(base.DescribeCommand):
   """Describe a virtual machine instance."""
 
@@ -75,47 +75,28 @@ class Describe(base.DescribeCommand):
     return self._GetInstance(holder, instance_ref)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class DescribeAlpha(Describe):
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class DescribeBeta(Describe):
   """Describe a virtual machine instance."""
 
   @staticmethod
   def Args(parser):
     flags.INSTANCE_ARG.AddArgument(parser, operation_type='describe')
     parser.add_argument(
-        '--guest-attributes',
-        metavar='GUEST_ATTRIBUTE_KEY',
-        type=arg_parsers.ArgList(),
-        default=[],
-        help=('Instead of instance resource display guest attributes of the '
-              'instance stored with the given keys.'))
-    parser.add_argument(
         '--view',
         choices={
-            'FULL': 'Include everything in instance',
+            'FULL': (
+                'Output contains all configuration details of the instance'
+                ', including partner metadata.'
+            ),
             'BASIC': (
-                'Default view of instance, Including everything except Partner'
-                ' Metadata.'
+                'Default output view. Output contains all configuration details'
+                ' of the instance, except partner metadata.'
             ),
         },
         type=arg_utils.ChoiceToEnumName,
-        help='specify Instance view',
+        help='Specifies the information that the output should contain.',
     )
-
-  def _GetGuestAttributes(self, holder, instance_ref, variable_keys):
-    def _GetGuestAttributeRequest(holder, instance_ref, variable_key):
-      req = holder.client.messages.ComputeInstancesGetGuestAttributesRequest(
-          instance=instance_ref.Name(),
-          project=instance_ref.project,
-          variableKey=variable_key,
-          zone=instance_ref.zone)
-      return (
-          holder.client.apitools_client.instances, 'GetGuestAttributes', req)
-
-    requests = [
-        _GetGuestAttributeRequest(holder, instance_ref, variable_key)
-        for variable_key in variable_keys]
-    return holder.client.MakeRequests(requests)
 
   def _GetInstanceView(self, view, request_message):
     if view == 'FULL':
@@ -133,6 +114,61 @@ class DescribeAlpha(Describe):
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     instance_ref = self._GetInstanceRef(holder, args)
+    if args.view:
+      args.view = self._GetInstanceView(
+          args.view, holder.client.messages.ComputeInstancesGetRequest
+      )
+    return self._GetInstance(holder, instance_ref, args.view)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class DescribeAlpha(DescribeBeta):
+  """Describe a virtual machine instance."""
+
+  @staticmethod
+  def Args(parser):
+    flags.INSTANCE_ARG.AddArgument(parser, operation_type='describe')
+    parser.add_argument(
+        '--guest-attributes',
+        metavar='GUEST_ATTRIBUTE_KEY',
+        type=arg_parsers.ArgList(),
+        default=[],
+        help=('Instead of instance resource display guest attributes of the '
+              'instance stored with the given keys.'))
+    parser.add_argument(
+        '--view',
+        choices={
+            'FULL': (
+                'Output contains all configuration details of the instance'
+                ', including partner metadata.'
+            ),
+            'BASIC': (
+                'Default output view. Output contains all configuration details'
+                ' of the instance, except partner metadata.'
+            ),
+        },
+        type=arg_utils.ChoiceToEnumName,
+        help='Specifies the information that the output should contain.',
+    )
+
+  def _GetGuestAttributes(self, holder, instance_ref, variable_keys):
+    def _GetGuestAttributeRequest(holder, instance_ref, variable_key):
+      req = holder.client.messages.ComputeInstancesGetGuestAttributesRequest(
+          instance=instance_ref.Name(),
+          project=instance_ref.project,
+          variableKey=variable_key,
+          zone=instance_ref.zone)
+      return (
+          holder.client.apitools_client.instances, 'GetGuestAttributes', req)
+
+    requests = [
+        _GetGuestAttributeRequest(holder, instance_ref, variable_key)
+        for variable_key in variable_keys]
+    return holder.client.MakeRequests(requests)
+
+  def Run(self, args):
+    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    instance_ref = self._GetInstanceRef(holder, args)
     if args.guest_attributes:
       return self._GetGuestAttributes(
           holder, instance_ref, args.guest_attributes
@@ -145,4 +181,5 @@ class DescribeAlpha(Describe):
 
 
 Describe.detailed_help = DETAILED_HELP
+DescribeBeta.detailed_help = DETAILED_HELP
 DescribeAlpha.detailed_help = DETAILED_HELP

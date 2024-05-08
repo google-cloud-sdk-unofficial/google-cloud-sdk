@@ -133,6 +133,9 @@ address ranges allocated to VMs, existing routes, or ranges allocated to other
 clusters. The automatically chosen range might conflict with reserved IP
 addresses, dynamic routes, or routes within VPCs that peer with this cluster.
 You should specify `--cluster-ipv4-cidr` to prevent conflicts.
+
+This field is not applicable in a Shared VPC setup where the IP address range
+for the pods must be specified with `--cluster-secondary-range-name`
 """)
 
   parser.display_info.AddFormat(util.CLUSTERS_FORMAT)
@@ -210,6 +213,11 @@ def ParseCreateOptionsBase(args, is_autopilot, get_default, location,
       addons = api_adapter.BACKUPRESTORE
     else:
       addons += api_adapter.BACKUPRESTORE
+  if getattr(args, 'enable_ray_operator', None):
+    if addons is None:
+      addons = api_adapter.RAYOPERATOR
+    else:
+      addons += api_adapter.RAYOPERATOR
 
   return api_adapter.CreateClusterOptions(
       accelerators=get_default('accelerator'),
@@ -1141,6 +1149,8 @@ class Create(base.CreateCommand):
 
     if options.accelerators is not None:
       log.status.Print('Note: ' + constants.KUBERNETES_GPU_LIMITATION_MSG)
+      log.status.Print('Note: ' +
+                       constants.KUBERNETES_GPU_DRIVER_AUTO_INSTALL_MSG)
 
     # image streaming feature requires Container File System API to be enabled.
     # Checking whether the API has been enabled, and warning if not.

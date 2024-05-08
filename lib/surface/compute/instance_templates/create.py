@@ -441,16 +441,14 @@ def AddServiceProxyArgsToMetadata(args):
     service_proxy_agent_recipe['desired_state'] = 'INSTALLED'
 
     if getattr(args, 'service_proxy_agent_location', False):
-      service_proxy_agent_recipe['installSteps'] = [
-          {
-              'scriptRun': {
-                  'script': (
-                      service_proxy_aux_data.startup_script_with_location_template
-                      % args.service_proxy_agent_location
-                  )
-              }
+      service_proxy_agent_recipe['installSteps'] = [{
+          'scriptRun': {
+              'script': (
+                  service_proxy_aux_data.startup_script_with_location_template
+                  % args.service_proxy_agent_location
+              )
           }
-      ]
+      }]
     else:
       service_proxy_agent_recipe['installSteps'] = [
           {'scriptRun': {'script': service_proxy_aux_data.startup_script}}
@@ -1047,7 +1045,7 @@ def _RunCreate(
           properties.PartnerMetadataValue.AdditionalProperty(
               key=namespace,
               value=partner_metadata_utils.ConvertStructuredEntries(
-                  structured_entries
+                  structured_entries, client.messages
               ),
           )
       )
@@ -1233,7 +1231,7 @@ class CreateBeta(Create):
   _support_network_queue_count = True
   _support_performance_monitoring_unit = False
   _support_internal_ipv6_reservation = True
-  _support_partner_metadata = False
+  _support_partner_metadata = True
   _support_maintenance_interval = True
   _support_specific_then_x_affinity = True
   _support_graceful_shutdown = False
@@ -1277,6 +1275,7 @@ class CreateBeta(Create):
         ._support_confidential_compute_type_tdx)
     instances_flags.AddPostKeyRevocationActionTypeArgs(parser)
     instance_templates_flags.AddKeyRevocationActionTypeArgs(parser)
+    partner_metadata_utils.AddPartnerMetadataArgs(parser)
 
   def Run(self, args):
     """Creates and runs an InstanceTemplates.Insert request.

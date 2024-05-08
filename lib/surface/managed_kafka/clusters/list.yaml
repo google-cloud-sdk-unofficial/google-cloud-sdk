@@ -6,6 +6,7 @@ help_text:
     List all Apache Kafka for BigQuery clusters in a given location.
   description: |
     List all Apache Kafka for BigQuery clusters in a given location.
+    To specify the maximum number of clusters to list, use the --limit flag.
 
   examples: |
     To list all clusters in a given location, such as us-central1, run the following:

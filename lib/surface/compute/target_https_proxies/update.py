@@ -69,42 +69,54 @@ def _DetailedHelp():
   }
 
 
-def _CheckMissingArgument(args, server_tls_policy_enabled):
+def _CheckMissingArgument(
+    args, server_tls_policy_enabled, tls_early_data_enabled
+):
   """Checks for missing argument."""
   server_tls_policy_args = [
       'clear_server_tls_policy',
       'server_tls_policy',
   ]
-  all_args = [
-      'ssl_certificates',
-      'url_map',
-      'quic_override',
-      'ssl_policy',
-      'clear_ssl_policy',
-      'certificate_map',
-      'clear_certificate_map',
-      'clear_ssl_certificates',
-      'certificate_manager_certificates',
-      'clear_http_keep_alive_timeout_sec',
-      'http_keep_alive_timeout_sec',
-  ] + (server_tls_policy_args if server_tls_policy_enabled else [])
+  tls_early_data_args = ['tls_early_data']
+  all_args = (
+      [
+          'ssl_certificates',
+          'url_map',
+          'quic_override',
+          'ssl_policy',
+          'clear_ssl_policy',
+          'certificate_map',
+          'clear_certificate_map',
+          'clear_ssl_certificates',
+          'certificate_manager_certificates',
+          'clear_http_keep_alive_timeout_sec',
+          'http_keep_alive_timeout_sec',
+      ]
+      + (server_tls_policy_args if server_tls_policy_enabled else [])
+      + (tls_early_data_args if tls_early_data_enabled else [])
+  )
   err_server_tls_policy_args = [
       '[--clear-server-tls-policy]',
       '[--server-tls-policy]',
   ]
-  err_msg_args = [
-      '[--ssl-certificates]',
-      '[--url-map]',
-      '[--quic-override]',
-      '[--ssl-policy]',
-      '[--clear-ssl-policy]',
-      '[--certificate-map]',
-      '[--clear-certificate-map]',
-      '[--clear-ssl-certificates]',
-      '[--certificate-manager-certificates]',
-      '[--clear-http-keep-alive-timeout-sec]',
-      '[--http-keep-alive-timeout-sec]',
-  ] + (err_server_tls_policy_args if server_tls_policy_enabled else [])
+  err_tls_early_data_args = ['[--tls-early-data]']
+  err_msg_args = (
+      [
+          '[--ssl-certificates]',
+          '[--url-map]',
+          '[--quic-override]',
+          '[--ssl-policy]',
+          '[--clear-ssl-policy]',
+          '[--certificate-map]',
+          '[--clear-certificate-map]',
+          '[--clear-ssl-certificates]',
+          '[--certificate-manager-certificates]',
+          '[--clear-http-keep-alive-timeout-sec]',
+          '[--http-keep-alive-timeout-sec]',
+      ]
+      + (err_server_tls_policy_args if server_tls_policy_enabled else [])
+      + (err_tls_early_data_args if tls_early_data_enabled else [])
+  )
   if not sum(args.IsSpecified(arg) for arg in all_args):
     raise compute_exceptions.ArgumentError(
         'You must specify at least one of %s or %s.'
@@ -121,6 +133,7 @@ def _Run(
     ssl_policy_arg,
     certificate_map_ref,
     server_tls_policy_enabled,
+    tls_early_data_enabled,
 ):
   """Issues requests necessary to update Target HTTPS Proxies."""
   client = holder.client
@@ -167,6 +180,13 @@ def _Run(
     new_resource.quicOverride = (
         client.messages.TargetHttpsProxy.QuicOverrideValueValuesEnum(
             args.quic_override
+        )
+    )
+
+  if tls_early_data_enabled and args.tls_early_data:
+    new_resource.tlsEarlyData = (
+        client.messages.TargetHttpsProxy.TlsEarlyDataValueValuesEnum(
+            args.tls_early_data
         )
     )
 
@@ -275,6 +295,7 @@ class Update(base.UpdateCommand):
   SSL_POLICY_ARG = None
   detailed_help = _DetailedHelp()
   _server_tls_policy_enabled = False
+  _tls_early_data_enabled = False
 
   @classmethod
   def Args(cls, parser):
@@ -346,11 +367,15 @@ class Update(base.UpdateCommand):
     target_proxies_utils.AddClearHttpKeepAliveTimeoutSec(group)
 
     target_proxies_utils.AddQuicOverrideUpdateArgs(parser)
+    if cls._tls_early_data_enabled:
+      target_proxies_utils.AddTlsEarlyDataUpdateArgs(parser)
     if cls._server_tls_policy_enabled:
       _AddServerTLSPolicyArguments(parser)
 
   def Run(self, args):
-    _CheckMissingArgument(args, self._server_tls_policy_enabled)
+    _CheckMissingArgument(
+        args, self._server_tls_policy_enabled, self._tls_early_data_enabled
+    )
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     certificate_map_ref = args.CONCEPTS.certificate_map.Parse()
     return _Run(
@@ -362,9 +387,11 @@ class Update(base.UpdateCommand):
         self.SSL_POLICY_ARG,
         certificate_map_ref,
         self._server_tls_policy_enabled,
+        self._tls_early_data_enabled,
     )
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
 class UpdateBeta(Update):
   _server_tls_policy_enabled = True
+  _tls_early_data_enabled = True

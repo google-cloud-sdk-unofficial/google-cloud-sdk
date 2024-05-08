@@ -33,6 +33,7 @@ arguments:
       - _REF_: googlecloudsdk.command_lib.managed_kafka.flags:memory
       - _REF_: googlecloudsdk.command_lib.managed_kafka.flags:subnets
       - _REF_: googlecloudsdk.command_lib.managed_kafka.flags:labels
+      - _REF_: googlecloudsdk.command_lib.managed_kafka.flags:auto-rebalance
 
 async:
   collection: managedkafka.projects.locations.operations

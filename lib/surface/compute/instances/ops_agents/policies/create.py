@@ -165,13 +165,14 @@ class Create(base.Command):
         help="""\
           this is zone.""",
     )
+    parser.add_argument(
+        '--dry-run',
+        action='store_true',
+        help=('If provided, the resulting OSPolicyAssignment will be printed to'
+              ' standard output and no actual changes are made.'))
 
   def Run(self, args):
     """See base class."""
-
-    release_track = self.ReleaseTrack()
-    client = osconfig_api_utils.GetClientInstance(release_track)
-    messages = osconfig_api_utils.GetClientMessages(release_track)
 
     # Load config from yaml file.
     config = yaml.load_path(args.file)
@@ -191,6 +192,11 @@ class Create(base.Command):
             name, ops_agents_policy
         )
     )
+    if args.dry_run:
+      return ops_policy_assignment
+
+    release_track = self.ReleaseTrack()
+    messages = osconfig_api_utils.GetClientMessages(release_track)
 
     # Create request to projects_locations_osPolicyAssignments.
     request = (
@@ -200,6 +206,7 @@ class Create(base.Command):
             parent=parent_path,
         )
     )
+    client = osconfig_api_utils.GetClientInstance(release_track)
     service = client.projects_locations_osPolicyAssignments
     response = service.Create(request)
     # Converting response from JSON python object.

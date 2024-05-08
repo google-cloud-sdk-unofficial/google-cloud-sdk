@@ -35,7 +35,6 @@ class Update(base.UpdateCommand):
   Interconnect to a path into and out of the customer's cloud network.
   """
   _support_label = False
-  _support_partner_ipv6 = False
 
   @classmethod
   def Args(cls, parser):
@@ -45,6 +44,7 @@ class Update(base.UpdateCommand):
     attachment_flags.AddDescription(parser)
     attachment_flags.AddAdminEnabled(parser, update=True)
     attachment_flags.AddMtu(parser)
+    attachment_flags.AddStackType(parser)
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
@@ -70,17 +70,13 @@ class Update(base.UpdateCommand):
         if labels is not None:
           label_fingerprint = old_attachment.labelFingerprint
 
-    stack_type = None
-    if self._support_partner_ipv6:
-      stack_type = getattr(args, 'stack_type', None)
-
     return interconnect_attachment.Patch(
         description=args.description,
         admin_enabled=admin_enabled,
         labels=labels,
         label_fingerprint=label_fingerprint,
         mtu=getattr(args, 'mtu', None),
-        stack_type=stack_type,
+        stack_type=getattr(args, 'stack_type', None),
     )
 
 
@@ -94,13 +90,11 @@ class UpdateBeta(Update):
   """
 
   _support_label = True
-  _support_partner_ipv6 = True
 
   @classmethod
   def Args(cls, parser):
     super(UpdateBeta, cls).Args(parser)
     labels_util.AddUpdateLabelsFlags(parser)
-    attachment_flags.AddStackType(parser)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -113,7 +107,6 @@ class UpdateAlpha(UpdateBeta):
   """
 
   _support_label = True
-  _support_partner_ipv6 = True
 
   @classmethod
   def Args(cls, parser):

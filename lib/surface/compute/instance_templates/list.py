@@ -26,7 +26,7 @@ from googlecloudsdk.command_lib.compute.instance_templates import flags
 from googlecloudsdk.command_lib.util.apis import arg_utils
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class List(base.ListCommand):
   """List Compute Engine virtual machine instance templates."""
 
@@ -60,7 +60,7 @@ class List(base.ListCommand):
 List.detailed_help = base_classes.GetGlobalListerHelp('instance templates')
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class ListAlpha(List):
   """List Compute Engine virtual machine instance templates."""
 
@@ -72,14 +72,17 @@ class ListAlpha(List):
     parser.add_argument(
         '--view',
         choices={
-            'FULL': 'Include everything in instance template',
+            'FULL': (
+                'Output contains all configuration details of the instance'
+                ' template, including partner metadata.'
+            ),
             'BASIC': (
-                'Default view of instance, Including everything except Partner'
-                ' Metadata.'
+                'Default output view. Output contains all configuration details'
+                ' of the instance template, except partner metadata.'
             ),
         },
         type=arg_utils.ChoiceToEnumName,
-        help='specify Instance view',
+        help='Specifies the information that the output should contain.',
     )
 
   def ParseFlags(self, args, resources):

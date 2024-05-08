@@ -24,14 +24,13 @@ EXAMPLES = r"""
     To retrieve the type cluster config dump for Pod instance pn.default.
 
     ${command} pn.default
-              --type cluster
-              --project projectId
-              --membership membershipId
-              --location us-central1
+              --type=cluster
+              --project=projectId
+              --membership=membershipId
+              --location=us-central1
 """
 
 
-@base.Hidden
 class ProxyConfig(base.BinaryBackedCommand):
   """Retrieve a configuration summary for a given Envoy instance.
   """

@@ -31,7 +31,6 @@ from googlecloudsdk.core import resources
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Create(base.Command):
-  # TODO(b/216961706) Add documentation for VPC spokes.
   """Create a new VPC spoke.
 
   Create a new VPC spoke.
@@ -39,7 +38,7 @@ class Create(base.Command):
 
   @staticmethod
   def Args(parser):
-    flags.AddSpokeResourceArg(parser, 'to create', vpc_spoke_only_command=True)
+    flags.AddSpokeResourceArg(parser, 'to create', global_spoke_command=True)
     flags.AddRegionGroup(parser, hide_global_arg=False, hide_region_arg=True)
     flags.AddHubFlag(parser)
     flags.AddGroupFlag(parser)
@@ -47,8 +46,8 @@ class Create(base.Command):
     flags.AddDescriptionFlag(parser, 'Description of the spoke to create.')
     flags.AddAsyncFlag(parser)
     flags.AddExcludeExportRangesFlag(
-        parser,
-        hide_exclude_export_ranges_flag=False)
+        parser, hide_exclude_export_ranges_flag=False
+    )
     flags.AddIncludeExportRangesFlag(
         parser, hide_include_export_ranges_flag=True
     )
@@ -56,11 +55,13 @@ class Create(base.Command):
 
   def Run(self, args):
     client = networkconnectivity_api.SpokesClient(
-        release_track=self.ReleaseTrack())
+        release_track=self.ReleaseTrack()
+    )
 
     spoke_ref = args.CONCEPTS.spoke.Parse()
     labels = labels_util.ParseCreateArgs(
-        args, client.messages.Spoke.LabelsValue)
+        args, client.messages.Spoke.LabelsValue
+    )
     spoke = client.messages.Spoke(
         hub=args.hub,
         group=args.group,
@@ -88,25 +89,27 @@ class Create(base.Command):
     op_resource = resources.REGISTRY.ParseRelativeName(
         op_ref.name,
         collection='networkconnectivity.projects.locations.operations',
-        api_version=networkconnectivity_util.VERSION_MAP[self.ReleaseTrack()])
-    poller = waiter.CloudOperationPoller(client.spoke_service,
-                                         client.operation_service)
+        api_version=networkconnectivity_util.VERSION_MAP[self.ReleaseTrack()],
+    )
+    poller = waiter.CloudOperationPoller(
+        client.spoke_service, client.operation_service
+    )
     res = waiter.WaitFor(
-        poller, op_resource,
-        'Waiting for operation [{}] to complete'.format(op_ref.name))
+        poller,
+        op_resource,
+        'Waiting for operation [{}] to complete'.format(op_ref.name),
+    )
     log.CreatedResource(spoke_ref.Name(), kind='spoke')
     return res
 
 
 Create.detailed_help = {
-    'EXAMPLES':
-        """ \
+    'EXAMPLES': """ \
   To create a VPC spoke named ``myspoke'', run:
 
     $ {command} myspoke --hub="https://www.googleapis.com/networkconnectivity/v1/projects/my-project/locations/global/hubs/my-hub" --global --vpc-network="https://www.googleapis.com/compute/v1/projects/my-project/global/networks/my-vpc"
   """,
-    'API REFERENCE':
-        """ \
+    'API REFERENCE': """ \
   This command uses the networkconnectivity/v1 API. The full documentation
   for this API can be found at:
   https://cloud.google.com/network-connectivity/docs/reference/networkconnectivity/rest

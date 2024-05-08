@@ -40,7 +40,7 @@ _FORMAT = """table(release.segment(5):label=RESOURCE_BUNDLE,
 @base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Describe(base.DescribeCommand):
-  """Describe Package Rollouts Rollout resource."""
+  """Describe Rollout resource."""
 
   detailed_help = _DETAILED_HELP
 

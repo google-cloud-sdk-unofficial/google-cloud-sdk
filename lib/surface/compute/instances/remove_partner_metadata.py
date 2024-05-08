@@ -31,15 +31,18 @@ from googlecloudsdk.command_lib.compute.instances import flags
 
 DETAILED_HELP = {
     'DESCRIPTION': """\
-          {command} can be used to remove instance metadata entries.
+          {command} can be used to remove a specific entry in a namespace, a specific namespace, or all namespaces.
         """,
     'EXAMPLES': """\
-        To remove partner metadata namespace ``gcar.googleapis.com/engine''
-        and ``gcar.googleapis.com/body'' along with their data from
+        To remove partner metadata specific entry in a namespace
+        ``test.compute.googleapis.com/entries/engine''
         an instance named ``INSTANCE_NAME'', run:
 
           $ {command} INSTANCE_NAME \\
-          --keys=gcar.googleapis.com/engine,gcar.googleapis.com/body
+          --keys=test.compute.googleapis.com/entries/engine
+
+        To remove specific namespace with its data, run:
+          $ {command} INSTANCE_NAME --keys=test.compute.googleapis.com
 
         To remove all namespaces, run:
           $ {command} INSTANCE_NAME --all
@@ -48,9 +51,9 @@ DETAILED_HELP = {
 }
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class InstancesRemovePartnerMetadata(base.UpdateCommand):
-  """remove partner metadata namespace."""
+  """Remove partner metadata."""
 
   @staticmethod
   def Args(parser):
@@ -102,10 +105,10 @@ class InstancesRemovePartnerMetadata(base.UpdateCommand):
       partner_metadata_dict = {k: None for k in partner_metadata_dict.keys()}
     else:
       for key in args.keys:
-        namespace, *entries = key.split('/')
+        namespace, *entries = key.strip('/').split('/')
         if entries:
           deleted_entry = entries.pop()
-          curr_dict = partner_metadata_dict[namespace]['entries']
+          curr_dict = partner_metadata_dict[namespace]
           for entry in entries:
             curr_dict = curr_dict[entry]
           curr_dict[deleted_entry] = None
@@ -113,7 +116,8 @@ class InstancesRemovePartnerMetadata(base.UpdateCommand):
           partner_metadata_dict[namespace] = None
     partner_metadata_message = (
         partner_metadata_utils.ConvertPartnerMetadataDictToMessage(
-            partner_metadata_dict
+            partner_metadata_dict,
+            client.messages
         )
     )
     patch_request = (

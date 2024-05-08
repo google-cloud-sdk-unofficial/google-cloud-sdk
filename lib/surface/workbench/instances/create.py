@@ -41,6 +41,10 @@ DETAILED_HELP = {
     To create an instance from a Container Repository, run:
 
       $ {command} example-instance --container-repository=gcr.io/deeplearning-platform-release/base-cpu --container-tag=latest --machine-type=n1-standard-4 --location=us-central1-b
+
+    To create an instance with shielded-secure-boot, shielded-vtpm and shielded-integrity-monitoring disabled, run:
+
+      $ {command} example-instance --shielded-integrity-monitoring=false --shielded-secure-boot=false --shielded-vtpm=false --location=us-central1-b
     """,
 }
 

@@ -224,9 +224,13 @@ class Update(base.UpdateCommand):
         args.shielded_vm_vtpm is None and
         args.shielded_vm_integrity_monitoring is None):
       return None
-    shieldedinstance_config_message = instance_utils.CreateShieldedInstanceConfigMessage(
-        messages, args.shielded_vm_secure_boot, args.shielded_vm_vtpm,
-        args.shielded_vm_integrity_monitoring)
+    shieldedinstance_config_message = (
+        instance_utils.CreateShieldedInstanceConfigMessage(
+            messages,
+            args.shielded_vm_secure_boot,
+            args.shielded_vm_vtpm,
+            args.shielded_vm_integrity_monitoring)
+        )
 
     request = messages.ComputeInstancesUpdateShieldedInstanceConfigRequest(
         instance=instance_ref.Name(),
@@ -377,7 +381,7 @@ class Update(base.UpdateCommand):
           messages.Instance.PartnerMetadataValue.AdditionalProperty(
               key=namespace,
               value=partner_metadata_utils.ConvertStructuredEntries(
-                  structured_entries
+                  structured_entries, messages
               ),
           )
       )
@@ -420,6 +424,7 @@ class UpdateBeta(Update):
     flags.AddShieldedInstanceIntegrityPolicyArgs(parser)
     flags.AddDisplayDeviceArg(parser, is_update=True)
     sole_tenancy_flags.AddNodeAffinityFlagToParser(parser, is_update=True)
+    partner_metadata_utils.AddPartnerMetadataArgs(parser)
 
   def Run(self, args):
     return self._Run(args)

@@ -256,7 +256,7 @@ class CreateAlpha(CreateBeta):
     messages = holder.client.messages
     resources = holder.resources
     neg_client = network_endpoint_groups.NetworkEndpointGroupsClient(
-        client, messages, resources
+        client, messages, resources, self.support_port_mapping_neg
     )
     neg_ref = flags.MakeNetworkEndpointGroupsArg().ResolveAsResource(
         args,
@@ -272,6 +272,7 @@ class CreateAlpha(CreateBeta):
           neg_ref,
           args.network_endpoint_type,
           default_port=args.default_port,
+          producer_port=args.producer_port,
           network=args.network,
           subnet=args.subnet,
           cloud_run_service=args.cloud_run_service,
@@ -345,6 +346,7 @@ class CreateAlpha(CreateBeta):
 
     if self.support_port_mapping_neg:
       valid_scopes['gce-vm-ip-port'] = ['zonal', 'regional']
+      valid_scopes['gce-vm-ip-portmap'] = ['regional']
     else:
       valid_scopes['gce-vm-ip-port'] = ['zonal']
 

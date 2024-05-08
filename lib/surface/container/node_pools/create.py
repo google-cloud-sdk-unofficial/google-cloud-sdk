@@ -307,6 +307,8 @@ class Create(base.CreateCommand):
 
       if options.accelerators is not None:
         log.status.Print('Note: ' + constants.KUBERNETES_GPU_LIMITATION_MSG)
+        log.status.Print('Note: ' +
+                         constants.KUBERNETES_GPU_DRIVER_AUTO_INSTALL_MSG)
 
       elif options.image_type and options.image_type.upper().startswith(
           'WINDOWS_SAC'):

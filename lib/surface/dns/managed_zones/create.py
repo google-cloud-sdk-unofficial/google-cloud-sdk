@@ -33,7 +33,7 @@ def _AddArgsCommon(parser, messages):
   flags.GetDnsZoneArg(
       'The name of the managed-zone to be created.').AddToParser(parser)
   flags.GetManagedZonesDnsNameArg().AddToParser(parser)
-  flags.GetManagedZonesDescriptionArg(required=True).AddToParser(parser)
+  flags.GetManagedZonesDescriptionArg().AddToParser(parser)
   flags.AddCommonManagedZonesDnssecArgs(parser, messages)
   labels_util.AddCreateLabelsFlags(parser)
   flags.GetManagedZoneNetworksArg().AddToParser(parser)

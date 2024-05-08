@@ -33,10 +33,10 @@ from googlecloudsdk.core import resources
 from googlecloudsdk.core.util import scaled_integer
 
 
+@base.DefaultUniverseOnly
 @base.ReleaseTracks(
     base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
 )
-@base.Hidden
 class Upload(base.Command):
   """Uploads an artifact to a generic repository."""
 

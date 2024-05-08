@@ -52,7 +52,9 @@ class List(base.ListCommand):
     resource_args.AddLocationResourceArgs(parser)
     base.URI_FLAG.RemoveFromParser(parser)
     parser.display_info.AddFormat(
-        'table(name, name.segment(3):label=LOCATION, status.state)')
+        'table(name, name.segment(3):label=LOCATION,'
+        ' usageResourceAllowance.status.state)'
+    )
 
   def Run(self, args):
     release_track = self.ReleaseTrack()

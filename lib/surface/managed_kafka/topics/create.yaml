@@ -14,7 +14,8 @@ help_text:
       $ {command} mytopic \
           --cluster=mycluster
           --location=us-central1 \
-          --partitions=1
+          --partitions=1 \
+          --replication-factor=3
 
 request:
   collection: managedkafka.projects.locations.clusters.topics
@@ -26,6 +27,7 @@ arguments:
 
   params:
   - _REF_: googlecloudsdk.command_lib.managed_kafka.flags:partitions
+    required: true
   - _REF_: googlecloudsdk.command_lib.managed_kafka.flags:replication-factor
-    default: 3
+    required: true
   - _REF_: googlecloudsdk.command_lib.managed_kafka.flags:configs

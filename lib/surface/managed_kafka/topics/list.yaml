@@ -3,8 +3,7 @@ hidden: true
 
 help_text:
   brief: |
-   List all Apache Kafka for BigQuery topics in a given cluster.
-
+    List all Apache Kafka for BigQuery topics in a given cluster.
   description: |
     List all Apache Kafka for BigQuery topics in a given cluster.
     To specify the maximum number of topics to list, use the --limit flag.

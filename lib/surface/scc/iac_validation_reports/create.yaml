@@ -1,6 +1,5 @@
 - release_tracks: [ALPHA, GA]
   command_type: GENERIC
-  hidden: true
   help_text:
     brief: Create a Cloud Security Command Center (SCC) IaC Validation Report.
     description: |

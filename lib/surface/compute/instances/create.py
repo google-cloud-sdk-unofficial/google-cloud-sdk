@@ -541,7 +541,7 @@ class Create(base.CreateCommand):
               compute_client.messages.Instance.PartnerMetadataValue.AdditionalProperty(
                   key=namespace,
                   value=partner_metadata_utils.ConvertStructuredEntries(
-                      structured_entries
+                      structured_entries, compute_client.messages
                   ),
               )
           )
@@ -795,7 +795,7 @@ class CreateBeta(Create):
   _support_performance_monitoring_unit = False
   _support_source_instant_snapshot = False
   _support_boot_instant_snapshot_uri = False
-  _support_partner_metadata = False
+  _support_partner_metadata = True
   _support_enable_confidential_compute = True
   _support_specific_then_x_affinity = True
   _support_graceful_shutdown = False
@@ -862,6 +862,7 @@ class CreateBeta(Create):
     instances_flags.AddPostKeyRevocationActionTypeArgs(parser)
     instances_flags.AddKeyRevocationActionTypeArgs(parser)
     instances_flags.AddVisibleCoreCountArgs(parser)
+    partner_metadata_utils.AddPartnerMetadataArgs(parser)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)

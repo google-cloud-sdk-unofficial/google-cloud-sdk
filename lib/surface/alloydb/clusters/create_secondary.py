@@ -44,19 +44,21 @@ class CreateSecondary(base.CreateCommand):
         """,
   }
 
-  @staticmethod
-  def Args(parser):
+  @classmethod
+  def Args(cls, parser):
     """Specifies additional command flags.
 
     Args:
       parser: argparse.Parser: Parser object for command line inputs.
     """
+    alloydb_messages = api_util.GetMessagesModule(cls.ReleaseTrack())
     base.ASYNC_FLAG.AddToParser(parser)
     flags.AddRegion(parser)
     flags.AddCluster(parser)
     flags.AddPrimaryCluster(parser)
     flags.AddAllocatedIPRangeName(parser)
     flags.AddContinuousBackupConfigFlagsForCreateSecondary(parser)
+    flags.AddAutomatedBackupFlagsForCreateSecondary(parser, alloydb_messages)
     kms_resource_args.AddKmsKeyResourceArg(
         parser,
         'cluster',

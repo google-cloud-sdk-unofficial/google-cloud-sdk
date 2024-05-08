@@ -38,7 +38,7 @@ class Update(base.Command):
 
   @staticmethod
   def Args(parser):
-    flags.AddSpokeResourceArg(parser, 'to update', vpc_spoke_only_command=True)
+    flags.AddSpokeResourceArg(parser, 'to update', global_spoke_command=True)
     flags.AddRegionGroup(parser, hide_global_arg=False, hide_region_arg=True)
     flags.AddDescriptionFlag(parser, 'New description of the spoke.')
     flags.AddAsyncFlag(parser)

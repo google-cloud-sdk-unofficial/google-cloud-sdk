@@ -19,7 +19,7 @@ request:
 
 arguments:
   resource:
-    help_text: Identifies the cluster whose details are to be displayed.
+    help_text: Identifies the cluster for details to be displayed.
     spec: !REF googlecloudsdk.command_lib.managed_kafka.resources:cluster
 
 response:

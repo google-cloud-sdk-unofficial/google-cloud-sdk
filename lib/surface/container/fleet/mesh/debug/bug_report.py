@@ -24,9 +24,9 @@ from googlecloudsdk.core import properties
 class BugReport(base.BinaryBackedCommand):
   """Capture cluster information and logs into archive to help diagnose problems.
 
-  Example: ${command} --project projectId
-                      --membership membershipId
-                      --location location
+  Example: ${command} --project=projectId
+                      --membership=membershipId
+                      --location=location
   """
 
   @staticmethod

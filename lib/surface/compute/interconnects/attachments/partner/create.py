@@ -48,7 +48,6 @@ class Create(base.CreateCommand):
   INTERCONNECT_ATTACHMENT_ARG = None
   INTERCONNECT_ARG = None
   ROUTER_ARG = None
-  _support_partner_ipv6 = False
 
   @classmethod
   def Args(cls, parser):
@@ -66,6 +65,7 @@ class Create(base.CreateCommand):
     attachment_flags.AddMtu(parser)
     attachment_flags.AddEncryption(parser)
     attachment_flags.GetIpsecInternalAddressesFlag().AddToParser(parser)
+    attachment_flags.AddStackType(parser)
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
@@ -127,12 +127,9 @@ class CreateBeta(Create):
   Interconnect to a path into and out of the customer's cloud network.
   """
 
-  _support_partner_ipv6 = True
-
   @classmethod
   def Args(cls, parser):
     super(CreateBeta, cls).Args(parser)
-    attachment_flags.AddStackType(parser)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -143,7 +140,6 @@ class CreateAlpha(CreateBeta):
   interconnect attachment binds the underlying connectivity of a provider's
   Interconnect to a path into and out of the customer's cloud network.
   """
-  _support_partner_ipv6 = True
 
   @classmethod
   def Args(cls, parser):

@@ -21,8 +21,10 @@ from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 
 
+@base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
                     base.ReleaseTrack.GA)
-@base.Hidden
 class Generic(base.Group):
   """Manage Artifact Registry generic artifacts."""
+
+  category = base.CI_CD_CATEGORY

@@ -29,10 +29,10 @@ from googlecloudsdk.command_lib.artifacts import flags
 from googlecloudsdk.core import log
 
 
+@base.DefaultUniverseOnly
 @base.ReleaseTracks(
     base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
 )
-@base.Hidden
 class Download(base.Command):
   """Download a generic artifact from a generic artifact repository."""
 

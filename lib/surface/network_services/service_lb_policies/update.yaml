@@ -1,4 +1,4 @@
-release_tracks: [ALPHA, BETA]
+release_tracks: [ALPHA, BETA, GA]
 
 help_text:
   brief: |
@@ -43,6 +43,8 @@ arguments:
       processor: googlecloudsdk.command_lib.network_services.util:AutoCapacityDrainHook:api_version=v1alpha1
     BETA:
       processor: googlecloudsdk.command_lib.network_services.util:AutoCapacityDrainHook:api_version=v1beta1
+    GA:
+      processor: googlecloudsdk.command_lib.network_services.util:AutoCapacityDrainHook:api_version=v1
     help_text: |
       If specified, an unhealthy MIG/NEG will be removed from Global load balancing and traffic
       routing for the service.
@@ -57,6 +59,8 @@ arguments:
       processor: googlecloudsdk.command_lib.network_services.util:FailoverHealthThresholdHook:api_version=v1alpha1
     BETA:
       processor: googlecloudsdk.command_lib.network_services.util:FailoverHealthThresholdHook:api_version=v1beta1
+    GA:
+      processor: googlecloudsdk.command_lib.network_services.util:FailoverHealthThresholdHook:api_version=v1
     help_text: |
       The percentage threshold that a load balancer will begin to send traffic to failover backends.
       If the percentage of endpoints in a MIG/NEG is smaller than this value, traffic would be sent
@@ -76,5 +80,7 @@ request:
     api_version: v1alpha1
   BETA:
     api_version: v1beta1
+  GA:
+    api_version: v1
   collection: networkservices.projects.locations.serviceLbPolicies
   method: patch

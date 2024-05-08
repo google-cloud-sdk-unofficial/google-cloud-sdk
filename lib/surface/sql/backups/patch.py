@@ -42,9 +42,13 @@ class Patch(base.UpdateCommand):
         the command line after this command. Positional arguments are allowed.
     """
     flags.AddBackupName(parser)
-    expiration = parser.add_mutually_exclusive_group(required=True, hidden=True)
-    flags.AddBackupExpiryTime(expiration)
-    flags.AddBackupTtlDays(expiration)
+    update_group = parser.add_group(required=True, hidden=True)
+    flags.AddFinalbackupDescription(update_group)
+    expiration_group = update_group.add_mutually_exclusive_group(
+        required=False, hidden=True
+    )
+    flags.AddBackupExpiryTime(expiration_group)
+    flags.AddBackupTtlDays(expiration_group)
 
   def Run(self, args):
     """Update the Final backup of a Cloud SQL project.
@@ -63,7 +67,7 @@ class Patch(base.UpdateCommand):
     sql_messages = client.sql_messages
 
     console_io.PromptContinue(
-        message="This backup's expiration time is updated.",
+        message='This backup will be updated.',
         default=True,
         cancel_on_no=True,
     )
@@ -79,6 +83,12 @@ class Patch(base.UpdateCommand):
       patch_backup.expiryTime = args.expiry_time.strftime(
           '%Y-%m-%dT%H:%M:%S.%fZ')
       update_mask = 'expiry_time'
+
+    if args.final_backup_description is not None:
+      patch_backup.description = args.final_backup_description
+      if update_mask is not None:
+        update_mask = update_mask + ','
+      update_mask = (update_mask if update_mask else '') + 'description'
 
     request = sql_messages.SqlBackupsUpdateBackupRequest(
         backup=patch_backup,

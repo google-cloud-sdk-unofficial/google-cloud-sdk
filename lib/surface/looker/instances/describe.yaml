@@ -2,12 +2,9 @@
 
   help_text:
     brief: |
-      Show metadata for a Looker.
+      Show metadata for a Looker instance.
     description: |
       Show metadata for a Looker instance.
-
-      Displays all metadata associated with a Looker instance given a valid
-      instance name.
 
       This command can fail for the following reasons:
         * The instance specified does not exist.
@@ -18,6 +15,10 @@
       region, run:
 
         $ {command} my-looker-instance
+
+      To display all fields of the instance metadata, add the `--format=json` flag:
+
+        $ {command} my-looker-instance --format=json
 
   arguments:
     resource:

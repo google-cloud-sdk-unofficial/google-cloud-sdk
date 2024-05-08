@@ -26,7 +26,7 @@ from googlecloudsdk.command_lib.compute.instance_templates import flags
 from googlecloudsdk.command_lib.util.apis import arg_utils
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class DescribeGA(base.DescribeCommand):
   """Describe a virtual machine instance template."""
   support_region_flag = True
@@ -43,14 +43,17 @@ class DescribeGA(base.DescribeCommand):
       parser.add_argument(
           '--view',
           choices={
-              'FULL': 'Include everything in instance',
+              'FULL': (
+                  'Output contains all configuration details of the instance'
+                  ' template, including partner metadata.'
+              ),
               'BASIC': (
-                  'Default view of instance, Including everything except'
-                  ' Partner Metadata.'
+                  'Default output view. Output contains all configuration'
+                  ' details of the instance template, except partner metadata.'
               ),
           },
           type=arg_utils.ChoiceToEnumName,
-          help='specify Instance view',
+          help='Specifies the information that the output should contain.',
       )
 
   @staticmethod
@@ -121,6 +124,6 @@ DescribeGA.detailed_help = {
 }
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class DescribeAlpha(DescribeGA):
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+class DescribeBeta(DescribeGA):
   view_flag = True
