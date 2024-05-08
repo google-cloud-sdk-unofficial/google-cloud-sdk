@@ -22,8 +22,9 @@ from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.DefaultUniverseOnly
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
 class Yaml(base.Group):
-  """A group of subcommands for launching beam yaml jobs on Dataflow."""
+  """A group of subcommands for launching Beam YAML jobs on Dataflow."""
 
   pass

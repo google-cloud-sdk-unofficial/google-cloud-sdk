@@ -86,16 +86,23 @@ class Delete(base.Command):
         collection='sql.instances')
 
     if not console_io.PromptContinue(
-        'All of the instance data will be lost when the instance is deleted.'):
+        'All of the instance data will be lost when the instance is deleted.'
+    ):
       return None
 
     expiry_time = None
-    retention_days = args.final_backup_retention_days
+    if (
+        args.final_backup_retention_days is not None
+        and args.final_backup_retention_days > 0
+    ):
+      retention_days = args.final_backup_retention_days
+    else:
+      retention_days = None
+
     if args.final_backup_expiry_time is not None:
       expiry_time = args.final_backup_expiry_time.strftime(
           '%Y-%m-%dT%H:%M:%S.%fZ'
       )
-      retention_days = None
 
     try:
       result = sql_client.instances.Delete(

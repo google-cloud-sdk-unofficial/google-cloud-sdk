@@ -76,30 +76,26 @@ class Update(base.Command):
 
   @classmethod
   def Args(cls, parser):
-    # Flags specific to managed CR
-    managed_group = flags.GetManagedArgGroup(parser)
-    flags.AddBinAuthzPolicyFlags(managed_group)
-    flags.AddBinAuthzBreakglassFlag(managed_group)
-    flags.AddCloudSQLFlags(managed_group)
-    flags.AddCmekKeyFlag(managed_group)
-    flags.AddCmekKeyRevocationActionTypeFlag(managed_group)
-    flags.AddCustomAudiencesFlag(managed_group)
-    flags.AddEgressSettingsFlag(managed_group)
-    flags.AddEncryptionKeyShutdownHoursFlag(managed_group)
+    flags.AddBinAuthzPolicyFlags(parser)
+    flags.AddBinAuthzBreakglassFlag(parser)
+    flags.AddCloudSQLFlags(parser)
+    flags.AddCmekKeyFlag(parser)
+    flags.AddCmekKeyRevocationActionTypeFlag(parser)
+    flags.AddCustomAudiencesFlag(parser)
+    flags.AddEgressSettingsFlag(parser)
+    flags.AddEncryptionKeyShutdownHoursFlag(parser)
     flags.AddMinInstancesFlag(parser, resource_kind='worker')
     flags.AddMaxInstancesFlag(parser, resource_kind='worker')
-    flags.AddMaxSurgeFlag(managed_group, resource_kind='worker')
-    flags.AddRevisionSuffixArg(managed_group)
-    flags.AddSessionAffinityFlag(managed_group)
-    flags.RemoveContainersFlag().AddToParser(managed_group)
-    flags.AddVpcNetworkGroupFlagsForUpdate(
-        managed_group, resource_kind='worker'
-    )
-    flags.AddRuntimeFlag(managed_group)
-    flags.AddDescriptionFlag(managed_group)
-    flags.AddVolumesFlags(managed_group, cls.ReleaseTrack())
-    flags.AddGpuTypeFlag(managed_group)
-    flags.SERVICE_MESH_FLAG.AddToParser(managed_group)
+    flags.AddMaxSurgeFlag(parser, resource_kind='worker')
+    flags.AddRevisionSuffixArg(parser)
+    flags.AddSessionAffinityFlag(parser)
+    flags.RemoveContainersFlag().AddToParser(parser)
+    flags.AddVpcNetworkGroupFlagsForUpdate(parser, resource_kind='worker')
+    flags.AddRuntimeFlag(parser)
+    flags.AddDescriptionFlag(parser)
+    flags.AddVolumesFlags(parser, cls.ReleaseTrack())
+    flags.AddGpuTypeFlag(parser)
+    flags.SERVICE_MESH_FLAG.AddToParser(parser)
     container_args = ContainerArgGroup()
     container_parser.AddContainerFlags(parser, container_args)
     worker_presentation = presentation_specs.ResourcePresentationSpec(
@@ -210,7 +206,9 @@ class Update(base.Command):
       else:
         if creates_revision:
           pretty_print.Success(
-              messages_util.GetSuccessMessageForWorkerDeploy(worker)
+              messages_util.GetSuccessMessageForWorkerDeploy(
+                  worker, args.no_promote
+              )
           )
         else:
           pretty_print.Success(

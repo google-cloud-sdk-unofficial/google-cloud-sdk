@@ -1,10 +1,10 @@
 - release_tracks: [ALPHA, BETA]
 
   help_text:
-    brief: List all Privileged Access Manager (PAM) grants under an entitlement.
-    description: List all Privileged Access Manager (PAM) grants under an entitlement.
+    brief: List all Privileged Access Manager (PAM) grants associated with an entitlement.
+    description: List all Privileged Access Manager (PAM) grants associated with an entitlement.
     examples: |
-      The following command lists all grants under an entitlement with the full name
+      The following command lists all grants associated with an entitlement with the full name
       ``ENTITLEMENT_NAME'':
 
       $ {command} --entitlement=ENTITLEMENT_NAME
@@ -23,4 +23,4 @@
     resource:
       spec: !REF googlecloudsdk.command_lib.pam.resources:entitlement
       help_text: |
-        Entitlement under which the grants are to be listed.
+        Entitlement the grants are associated with.

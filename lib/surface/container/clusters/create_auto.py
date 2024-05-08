@@ -84,6 +84,8 @@ def AddAutoFlags(parser, release_track):
   flags.AddIPAliasRelatedFlags(parser, autopilot=True)
   flags.AddEnableConfidentialNodesFlag(parser, hidden=True)
   flags.AddEnableRayOperatorFlag(parser, hidden=True)
+  flags.AddEnableRayClusterMonitoring(parser, hidden=True)
+  flags.AddEnableRayClusterLogging(parser, hidden=True)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)

@@ -3,21 +3,21 @@
   command_type: LIST
 
   help_text:
-    brief: Search and list all Privileged Access Manager (PAM) grants under an entitlement which you had created, had approved or can approve.
-    description: Search and list all Privileged Access Manager (PAM) grants under an entitlement which you had created, had approved or can approve.
+    brief: Search for and list all Privileged Access Manager (PAM) grants you have created, have approved, or can approve.
+    description: Search for and list all Privileged Access Manager (PAM) grants you have created, have approved, or can approve.
     examples: |
-      The following command searches and lists all grants under an entitlement with the full name
-      ``ENTITLEMENT_NAME'', which you had created:
+      The following command searches for and lists all grants you have created which are associated
+      with an entitlement with the full name ``ENTITLEMENT_NAME'':
 
       $ {command} --entitlement=ENTITLEMENT_NAME --caller-relationship=had-created
 
-      The following command searches and lists all grants under an entitlement with the full name
-      ``ENTITLEMENT_NAME'', which you had approved or denied:
+      The following command searches for and lists all grants you have approved or denied which are
+      associated with an entitlement with the full name ``ENTITLEMENT_NAME'':
 
       $ {command} --entitlement=ENTITLEMENT_NAME --caller-relationship=had-approved
 
-      The following command searches and lists all grants under an entitlement with the full name
-      ``ENTITLEMENT_NAME'', which you can approve:
+      The following command searches for and lists all grants you can approve which are associated
+      with an entitlement with the full name ``ENTITLEMENT_NAME'':
 
       $ {command} --entitlement=ENTITLEMENT_NAME --caller-relationship=can-approve
 
@@ -41,7 +41,7 @@
       is_positional: false
       required: true
       help_text: |
-        Entitlement under which the grants are to be listed.
+        Entitlement the grants are associated with.
     - api_field: callerRelationship
       arg_name: caller-relationship
       required: true
@@ -53,4 +53,4 @@
       - arg_value: can-approve
         enum_value: CAN_APPROVE
       help_text: |
-        Whether to search the grants which you had created, had approved or can approve.
+        Whether to return grants you have created, have approved, or can approve.

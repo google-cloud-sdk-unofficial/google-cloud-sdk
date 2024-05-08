@@ -23,30 +23,31 @@ from googlecloudsdk.calliope import base
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.UniverseCompatible
 class Pam(base.Group):
-  r"""Manage Privileged Access Manager (PAM) Entitlements and Grants.
+  r"""Manage Privileged Access Manager (PAM) entitlements and grants.
 
-  The gcloud pam command group lets you manage Privileged Access Manager
-  (PAM) Entitlements and Grants.
+  The `gcloud pam` command group lets you manage Privileged Access Manager
+  (PAM) entitlements and grants.
 
   ## EXAMPLES
 
-  To check the PAM onboarding status for a project `sample-project` and
-  location `global`, run:
+  To check the PAM onboarding status for a project named `sample-project` and
+  in location `global`, run:
 
       $ {command} check-onboarding-status --project=sample-project
       --location=global
 
-  To check the PAM onboarding status for a folder `sample-folder` and
+  To check the PAM onboarding status for a folder with ID ``FOLDER_ID'' and in
   location `global`, run:
 
-      $ {command} check-onboarding-status --folder=sample-folder
+      $ {command} check-onboarding-status --folder=FOLDER_ID
       --location=global
 
-  To check the PAM onboarding status for an organization
-  `sample-organization` and location `global`, run:
+  To check the PAM onboarding status for an organization with ID
+  ``ORGANIZATION_ID'' and in location `global`, run:
 
-      $ {command} check-onboarding-status --organization=sample-organization
+      $ {command} check-onboarding-status --organization=ORGANIZATION_ID
       --location=global
 
   """

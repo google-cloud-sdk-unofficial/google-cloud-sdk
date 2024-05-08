@@ -18,6 +18,8 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+import textwrap
+
 from googlecloudsdk.api_lib.cloudbuild import cloudbuild_util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.builds import flags
@@ -114,24 +116,28 @@ https://git-scm.com/docs/gitrevisions#_specifying_revisions. For information on
   )
   parser.add_argument(
       '--dir',
-      help="""\
-Directory, relative to the source root, in which to run the build. This is used when the build source is a 2nd-gen Cloud Build repository resource.
-This must be a relative path. If a step's `dir` is specified and is an absolute
-path, this value is ignored for that step's execution.
-""",
+      help=textwrap.dedent("""\
+    Directory, relative to the source root, in which to run the build. This is
+    used when the build source is a 2nd-gen Cloud Build repository resource, or
+    a Developer Connect GitRepositoryLink resource. This must be a relative
+    path. If a step's `dir` is specified and is an absolute path, this value is
+    ignored for that step's execution.
+    """),
   )
   parser.add_argument(
       '--revision',
-      help="""\
-Revision to fetch from the Git repository such as a branch, a tag, a commit
-SHA, or any Git ref to run the build. This is used when the build source is a 2nd-gen Cloud Build repository resource.
+      help=textwrap.dedent("""\
+    Revision to fetch from the Git repository such as a branch, a tag, a commit
+    SHA, or any Git ref to run the build. This is used when the build source is
+    a 2nd-gen Cloud Build repository resource, or a Developer Connect
+    GitRepositoryLink resource.
 
-Cloud Build uses `git fetch` to fetch the revision from the Git repository;
-therefore make sure that the string you provide for `revision` is parsable by
-the command. For information on string values accepted by `git fetch`, see
-https://git-scm.com/docs/gitrevisions#_specifying_revisions. For information on
-`git fetch`, see https://git-scm.com/docs/git-fetch.
-""",
+    Cloud Build uses `git fetch` to fetch the revision from the Git repository;
+    therefore make sure that the string you provide for `revision` is parsable
+    by the command. For information on string values accepted by `git fetch`,
+    see https://git-scm.com/docs/gitrevisions#_specifying_revisions. For
+    information on `git fetch`, see https://git-scm.com/docs/git-fetch.
+"""),
   )
 
   return worker_pools
@@ -176,6 +182,10 @@ class Submit(base.CreateCommand):
       To submit a build with source from a 2nd-gen Cloud Build repository resource `projects/my-project/locations/us-west1/connections/my-conn/repositories/my-repo`:
 
         $ {command} "projects/my-project/locations/us-west1/connections/my-conn/repositories/my-repo" --revision=main
+
+      To submit a build with source from a Developer Connect GitRepositoryLink resource `projects/my-project/locations/us-west1/connections/my-conn/gitRepositoryLinks/my-repo-link`:
+
+        $ {command} "projects/my-project/locations/us-west1/connections/my-conn/gitRepositoryLinks/my-repo-link" --revision=main
       """,
   }
 

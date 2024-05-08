@@ -4,8 +4,8 @@
     brief: Create a new Privileged Access Manager (PAM) grant.
     description: Create a new Privileged Access Manager (PAM) grant under an entitlement.
     examples: |
-      The following command creates a new grant under an entitlement with the full name
-      ``ENTITLEMENT_NAME'', with requested duration `1 hour 30 minutes`, a justification
+      The following command creates a new grant against the entitlement with the full name
+      ``ENTITLEMENT_NAME'', a requested duration of 1 hour 30 minutes, a justification of
       `some justification` and two additional email recipients `abc@example.com` and
       `xyz@example.com`:
 
@@ -30,7 +30,7 @@
       is_positional: false
       required: true
       help_text: |
-        Entitlement under which the grant is to be created
+        Entitlement the grant is to be created against.
     - arg_name: requested-duration
       api_field: grant.requestedDuration
       required: true
@@ -44,7 +44,7 @@
       api_field: grant.additionalEmailRecipients
       repeated: true
       help_text: |
-        Additional email addresses who will be notified for all the actions performed on the grant.
+        Additional email addresses that are notified for all actions performed on the grant.
 
   output:
     format: yaml

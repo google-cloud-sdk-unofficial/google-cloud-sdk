@@ -4,7 +4,7 @@
     brief: Revoke a Privileged Access Manager (PAM) grant.
     description: Revoke a Privileged Access Manager (PAM) grant with a reason.
     examples: |
-      The following command revokes a grant with the full name ``GRANT_NAME'' and a reason
+      The following command revokes a grant with the full name ``GRANT_NAME'' and a reason of
       `revoke reason`:
 
       $ {command} GRANT_NAME --reason="revoke reason"

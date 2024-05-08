@@ -243,7 +243,9 @@ class Update(base.Command):
       else:
         if creates_revision:
           pretty_print.Success(
-              messages_util.GetSuccessMessageForSynchronousDeploy(service)
+              messages_util.GetSuccessMessageForSynchronousDeploy(
+                  service, args.no_traffic
+              )
           )
         else:
           pretty_print.Success(

@@ -74,7 +74,7 @@ class Create(base.Command):
         labels=labels,
     )
 
-    op_ref = client.CreateVPCSpoke(spoke_ref, spoke)
+    op_ref = client.CreateSpoke(spoke_ref, spoke)
 
     log.status.Print('Create request issued for: [{}]'.format(spoke_ref.Name()))
 

@@ -148,3 +148,4 @@ class CreateAlpha(Create):
     container_flags.AddExternalLbIpv6AddressPools(parser)
     container_flags.AddExternalLoadBalancerAddressPools(parser)
     container_flags.AddOfflineRebootTtL(parser)
+    container_flags.AddControlPlaneNodeStorageSchema(parser)

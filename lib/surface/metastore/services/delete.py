@@ -18,6 +18,8 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+import json
+
 from apitools.base.py import exceptions as apitools_exceptions
 from googlecloudsdk.api_lib.metastore import services_util as services_api_util
 from googlecloudsdk.api_lib.metastore import util as api_util
@@ -45,8 +47,10 @@ DETAILED_HELP = {
 }
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
-                    base.ReleaseTrack.GA)
+@base.DefaultUniverseOnly
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
+)
 class Delete(base.DeleteCommand):
   """Delete one or more Dataproc Metastore services.
 
@@ -86,6 +90,7 @@ class Delete(base.DeleteCommand):
         operation = services_api_util.Delete(
             env_ref.RelativeName(), release_track=self.ReleaseTrack())
       except apitools_exceptions.HttpError as e:
+        failed = json.loads(e.content)['error']['message']
         encountered_errors = True
       else:
         details = 'with operation [{0}]'.format(operation.name)

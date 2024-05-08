@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Command to list the details of a SCC service."""
+"""Command to list the details of an SCC service."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -25,6 +25,7 @@ from googlecloudsdk.command_lib.scc.manage import parsing
 
 
 @base.Hidden
+@base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class List(base.ListCommand):
   """List the details of Security Command Center services.

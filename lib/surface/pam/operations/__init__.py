@@ -23,11 +23,12 @@ from googlecloudsdk.calliope import base
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.UniverseCompatible
 class Operations(base.Group):
   r"""Manage Privileged Access Manager (PAM) Long Running Operations.
 
   The `gcloud pam operations` command group lets you manage Privileged
-  Access Manager (PAM) Operations.
+  Access Manager (PAM) operations.
 
   ## EXAMPLES
 
@@ -35,20 +36,20 @@ class Operations(base.Group):
 
       $ {command} describe OPERATION_NAME
 
-  To list all operations under a project `sample-project` and location
+  To list all operations in a project named `sample-project` and in location
   `global`, run:
 
       $ {command} list --project=sample-project --location=global
 
-  To list all operations under a folder `sample-folder` and location
+  To list all operations in a folder with ID ``FOLDER_ID'' and in location
   `global`, run:
 
-      $ {command} list --folder=sample-folder --location=global
+      $ {command} list --folder=FOLDER_ID --location=global
 
-  To list all operations under an organization `sample-organization` and
+  To list all operations in an organization with ID ``ORGANIZATION_ID'' and in
   location `global`, run:
 
-      $ {command} list --organization=sample-organization --location=global
+      $ {command} list --organization=ORGANIZATION_ID --location=global
 
   To delete an operation with the full name ``OPERATION_NAME'', run:
 

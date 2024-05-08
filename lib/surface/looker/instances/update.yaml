@@ -36,6 +36,12 @@
       type: bool
       help_text: |
         This specifies whether public IP is enabled on the Looker instance.
+    - arg_name: linked-lsp-project-number
+      required: false
+      api_field: instance.linkedLspProjectNumber
+      type: long
+      help_text: |
+        The Looker Studio Pro project number to be linked.
     # Group for Maintanence Windows
     - group:
         required: false

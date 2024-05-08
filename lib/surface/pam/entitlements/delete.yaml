@@ -3,15 +3,25 @@
   help_text:
     brief: Delete a Privileged Access Manager (PAM) entitlement.
     description: |
-      Delete a Privileged Access Manager (PAM) entitlement along with all grants under it.
+      Delete a Privileged Access Manager (PAM) entitlement along with all grants associated with it.
 
       This command can fail for the following reasons:
         * There are non-terminal grants under the entitlement.
     examples: |
-      The following command deletes an entitlement with the full name ``ENTITLEMENT_NAME'' along
-      with all grants under it:
+      The following command deletes an entitlement with a name of `sample-entitlement`, in a
+      project named `sample-project`, and in location `global`:
 
-      $ {command} ENTITLEMENT_NAME
+      $ {command} sample-entitlement --project=sample-project --location=global
+
+      The following command deletes an entitlement with a name of `sample-entitlement`, in a folder
+      with ID ``FOLDER_ID'', and in location `global`:
+
+      $ {command} sample-entitlement --folder=FOLDER_ID --location=global
+
+      The following command deletes an entitlement with a name of `sample-entitlement`, in an
+      organization with ID ``ORGANIZATION_ID'', and in location `global`:
+
+      $ {command} sample-entitlement --organization=ORGANIZATION_ID --location=global
 
   request:
     ALPHA:
@@ -43,4 +53,4 @@
 
   input:
     confirmation_prompt: |
-      All grants associated with the entitlement will also be deleted upon deleting the entitlement.
+      All grants associated with the entitlement are also deleted upon deleting the entitlement.

@@ -33,6 +33,7 @@ from googlecloudsdk.core.util import times
 @base.ReleaseTracks(
     base.ReleaseTrack.GA, base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA
 )
+@base.UniverseCompatible
 class Create(base.CreateCommand):
   """Create a Security Command Center finding."""
 
@@ -40,38 +41,31 @@ class Create(base.CreateCommand):
       "DESCRIPTION": "Create a Security Command Center finding.",
       "EXAMPLES": f"""
           Create an ACTIVE finding `testFinding` with category: XSS_SCRIPTING
-          attached to `example-project` under organization `123456` and source
+          attached to project with project number `9876` under organization `123456` and source
           `5678`:
 
           $ {{command}} `testFinding` --organization=123456 --source=5678
             --state=ACTIVE --category='XSS_SCRIPTING'
             --event-time=2023-01-11T07:00:06.861Z
-            --resource-name='//cloudresourcemanager.{properties.VALUES.core.universe_domain.Get()}/projects/example-project'
+            --resource-name='//cloudresourcemanager.{properties.VALUES.core.universe_domain.Get()}/projects/9876'
 
-          Create an ACTIVE finding `testFinding` attached to `example-project`
-          under project `example-project` and source 5678:
+          Create an ACTIVE finding `testFinding` with category: XSS_SCRIPTING
+          attached to project with project number `9876` under organization `123456` and source
+          `5678` using the full resource name:
 
-            $ {{command}} projects/example-project/sources/5678/findings/testFinding
-              --state=ACTIVE --category='XSS_SCRIPTING'
-              --event-time=2023-01-11T07:00:06.861Z
-              --resource-name='//cloudresourcemanager.{properties.VALUES.core.universe_domain.Get()}/projects/example-project'
-
-          Create an ACTIVE finding `testFinding` attached to `example-project`
-          under folder `456` and source `5678`:
-
-            $ {{command}} folders/456/sources/5678/findings/testFinding
-              --state=ACTIVE --category='XSS_SCRIPTING'
-              --event-time=2023-01-11T07:00:06.861Z
-              --resource-name='//cloudresourcemanager.{properties.VALUES.core.universe_domain.Get()}/projects/example-project'
+          $ {{command}} organizations/123456/sources/5678/findings/testFinding
+            --state=ACTIVE --category='XSS_SCRIPTING'
+            --event-time=2023-01-11T07:00:06.861Z
+            --resource-name='//cloudresourcemanager.{properties.VALUES.core.universe_domain.Get()}/projects/9876'
 
           Create an ACTIVE finding `testFinding` with category: `XSS_SCRIPTING`
-          attached to `example-project` under organization `123456`, source
+          attached to project with project number`9876` under organization `123456`, source
           `5678` and `location=eu`:
 
           $ {{command}} `testFinding` --organization=123456 --source=5678
             --state=ACTIVE --category='XSS_SCRIPTING'
             --event-time=2023-01-11T07:00:06.861Z
-            --resource-name='//cloudresourcemanager.{properties.VALUES.core.universe_domain.Get()}/projects/example-project' --location=eu""",
+            --resource-name='//cloudresourcemanager.{properties.VALUES.core.universe_domain.Get()}/projects/9876' --location=eu""",
 
       "API REFERENCE": """
       This command uses the Security Command Center API. For more information,

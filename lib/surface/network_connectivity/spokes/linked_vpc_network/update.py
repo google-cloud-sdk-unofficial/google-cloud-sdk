@@ -67,7 +67,7 @@ class Update(base.Command):
     # Construct a spoke message with only the updated fields
     spoke = client.messages.Spoke(description=description, labels=labels)
 
-    op_ref = client.UpdateVPCSpoke(spoke_ref, spoke, update_mask)
+    op_ref = client.UpdateSpoke(spoke_ref, spoke, update_mask)
 
     log.status.Print('Update request issued for: [{}]'.format(spoke_ref.Name()))
 

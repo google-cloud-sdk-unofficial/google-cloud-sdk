@@ -77,6 +77,8 @@ def _Args(parser,
   instances_flags.AddIPv6PrefixLengthArgs(parser)
   labels_util.AddCreateLabelsFlags(parser)
   instances_flags.AddPrivateNetworkIpArgs(parser)
+  instances_flags.AddStackTypeArgs(parser)
+  instances_flags.AddIpv6NetworkTierArgs(parser)
 
   if enable_guest_accelerators:
     instances_flags.AddAcceleratorArgs(parser)
@@ -460,8 +462,6 @@ class CreateWithContainerAlpha(CreateWithContainerBeta):
     instances_flags.AddLocalNvdimmArgs(parser)
     instances_flags.AddPrivateIpv6GoogleAccessArgForTemplate(
         parser, utils.COMPUTE_ALPHA_API_VERSION)
-    instances_flags.AddStackTypeArgs(parser)
-    instances_flags.AddIpv6NetworkTierArgs(parser)
     instances_flags.AddIPv6AddressAlphaArgs(parser)
     instances_flags.AddIPv6PrefixLengthAlphaArgs(parser)
     instances_flags.AddInternalIPv6AddressArgs(parser)

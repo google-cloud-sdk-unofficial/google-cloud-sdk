@@ -31,7 +31,7 @@ from googlecloudsdk.core import resources
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
-@base.Hidden
+@base.DefaultUniverseOnly
 class Update(base.Command):
   """Update a group.
 

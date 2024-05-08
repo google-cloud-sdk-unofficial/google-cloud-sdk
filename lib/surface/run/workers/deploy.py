@@ -94,26 +94,24 @@ class Deploy(base.Command):
 
   @classmethod
   def Args(cls, parser):
-    # Flags specific to managed CR
-    managed_group = flags.GetManagedArgGroup(parser)
-    flags.AddBinAuthzPolicyFlags(managed_group)
-    flags.AddBinAuthzBreakglassFlag(managed_group)
-    flags.AddCloudSQLFlags(managed_group)
-    flags.AddCmekKeyFlag(managed_group)
-    flags.AddCmekKeyRevocationActionTypeFlag(managed_group)
-    flags.AddDescriptionFlag(managed_group)
-    flags.AddEncryptionKeyShutdownHoursFlag(managed_group)
-    flags.AddRevisionSuffixArg(managed_group)
-    flags.RemoveContainersFlag().AddToParser(managed_group)
-    flags.AddRuntimeFlag(managed_group)
-    flags.AddMinInstancesFlag(managed_group, resource_kind='worker')
-    flags.AddMaxInstancesFlag(managed_group, resource_kind='worker')
-    flags.AddMaxSurgeFlag(managed_group, resource_kind='worker')
-    flags.AddVolumesFlags(managed_group, cls.ReleaseTrack())
-    flags.AddGpuTypeFlag(managed_group)
+    flags.AddBinAuthzPolicyFlags(parser)
+    flags.AddBinAuthzBreakglassFlag(parser)
+    flags.AddCloudSQLFlags(parser)
+    flags.AddCmekKeyFlag(parser)
+    flags.AddCmekKeyRevocationActionTypeFlag(parser)
+    flags.AddDescriptionFlag(parser)
+    flags.AddEncryptionKeyShutdownHoursFlag(parser)
+    flags.AddRevisionSuffixArg(parser)
+    flags.RemoveContainersFlag().AddToParser(parser)
+    flags.AddRuntimeFlag(parser)
+    flags.AddMinInstancesFlag(parser, resource_kind='worker')
+    flags.AddMaxInstancesFlag(parser, resource_kind='worker')
+    flags.AddMaxSurgeFlag(parser, resource_kind='worker')
+    flags.AddVolumesFlags(parser, cls.ReleaseTrack())
+    flags.AddGpuTypeFlag(parser)
     flags.AddVpcNetworkGroupFlagsForUpdate(parser, resource_kind='worker')
-    flags.AddEgressSettingsFlag(managed_group)
-    flags.SERVICE_MESH_FLAG.AddToParser(managed_group)
+    flags.AddEgressSettingsFlag(parser)
+    flags.SERVICE_MESH_FLAG.AddToParser(parser)
     worker_presentation = presentation_specs.ResourcePresentationSpec(
         'WORKER',
         resource_args.GetWorkerResourceSpec(prompt=True),
@@ -354,7 +352,9 @@ class Deploy(base.Command):
         )
       else:
         pretty_print.Success(
-            messages_util.GetSuccessMessageForWorkerDeploy(worker)
+            messages_util.GetSuccessMessageForWorkerDeploy(
+                worker, args.no_promote
+            )
         )
       return worker
 

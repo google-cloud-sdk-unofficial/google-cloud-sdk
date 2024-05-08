@@ -28,6 +28,7 @@ from googlecloudsdk.command_lib.util import java
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
                     base.ReleaseTrack.GA)
+@base.DefaultUniverseOnly
 class Start(base.Command):
   """Start a local Firestore emulator.
 
@@ -52,6 +53,14 @@ class Start(base.Command):
           To run the local Firestore emulator in Datastore Mode, run:
 
             $ {command} --database-mode=datastore-mode
+
+          To import data at the start of the Firestore emulator, run:
+
+            $ {command} --import-data=<path/to/file>
+
+          To export emulator data upon emulator shutdown, run:
+
+            $ {command} --export-on-exit=<path/to/directory>
           """,
   }
 
@@ -88,6 +97,16 @@ class Start(base.Command):
         action='store_true',
         hidden=True,
         help='Runs the emulator in Datastore Mode.')
+    parser.add_argument(
+        '--import-data',
+        required=False,
+        help='File path to the data to be loaded into the emulator upon start '
+        'up. Example:`/home/user/myexports/sampleExport/sampleExport.overall_export_metadata.`')
+    parser.add_argument(
+        '--export-on-exit',
+        required=False,
+        help='Directory path in which emulator data will be saved upon '
+        'shutdown. Example:`/home/user/myexports/2024-03-26/`')
 
   def Run(self, args):
     if not args.host_port:

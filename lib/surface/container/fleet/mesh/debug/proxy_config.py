@@ -57,28 +57,31 @@ class ProxyConfig(base.BinaryBackedCommand):
             'all',
             'bootstrap',
             'cluster',
-            'listeners',
-            'routes',
+            'clusters',
+            'endpoint',
             'endpoints',
             'listener',
+            'listeners',
             'log',
+            'route',
+            'routes',
             'secret',
+            'secrets',
         ],
         help_str=(
-            'Proxy configuration type, one of'
-            ' all|clusters|listeners|routes|endpoints|bootstrap|log|secret \n\n'
-            ' all            Retrieves all configuration for the Envoy in the'
-            ' specified pod \n bootstrap      Retrieves bootstrap configuration'
-            ' for the Envoy in the specified pod \n cluster        Retrieves'
-            ' cluster configuration for the Envoy in the specified pod \n ecds '
-            '          Retrieves typed extension configuration for the Envoy in'
-            ' the specified pod \n endpoint       Retrieves endpoint'
-            ' configuration for the Envoy in the specified pod \n listener     '
-            '  Retrieves listener configuration for the Envoy in the specified'
-            ' pod \n log            Retrieves logging levels of the Envoy in'
-            ' the specified pod \n route          Retrieves route configuration'
-            ' for the Envoy in the specified pod \n secret         Retrieves'
-            ' secret configuration for the Envoy in the specified pod \n'
+            'Proxy configuration type to retrieve. \n\n all                 '
+            ' Retrieves all configuration for the Envoy in the specified pod \n'
+            ' bootstrap            Retrieves bootstrap configuration for the'
+            ' Envoy in the specified pod \n clusters/cluster     Retrieves'
+            ' cluster configuration for the Envoy in the specified pod \n'
+            ' endpoints/endpoint   Retrieves endpoint configuration for the'
+            ' Envoy in the specified pod \n listeners/listener   Retrieves'
+            ' listener configuration for the Envoy in the specified pod \n log '
+            '                 Retrieves logging levels of the Envoy in the'
+            ' specified pod \n routes/route         Retrieves route'
+            ' configuration for the Envoy in the specified pod \n'
+            ' secrets/secret       Retrieves secret configuration for the Envoy'
+            ' in the specified pod \n'
         ),
     )
     proxy_config_type.AddToParser(parser)

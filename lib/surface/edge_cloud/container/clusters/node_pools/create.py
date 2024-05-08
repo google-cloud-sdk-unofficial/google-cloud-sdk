@@ -133,3 +133,4 @@ class CreateAlpha(Create):
         API=util.VERSION_MAP.get(track)
     )
     Create.Args(parser)
+    container_flags.AddNodeStorageSchema(parser)

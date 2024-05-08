@@ -24,16 +24,13 @@
 
   output:
     format: |
-      table(
-        name.basename():label=NAME:sort=2,
-        name.scope("locations").segment(0):label=LOCATION,
-        state:label=STATUS,
-        createTime.date():sort=1:reverse,
-        backupRules[]:format=
-          'table(
-            ruleId:label=BACKUP_RULE_ID,
-            backupRetentionDays:label=RETENTION_DAYS,
-            standardSchedule.recurrenceType:label=RECURRENCE_TYPE,
-            backupVault.basename():label=BACKUP_VAULT_NAME
-          )'
+      json(
+        name,
+        state,
+        createTime.date(),
+        backupRules[].ruleId,
+        backupRules[].backupRetentionDays,
+        backupRules[].standardSchedule.recurrenceType,
+        backupRules[].backupVault
       )
+# TODO: b/336698260 Update the format to table format

@@ -148,9 +148,7 @@ def positional(max_positional_args):
     if isinstance(max_positional_args, six.integer_types):
         return positional_decorator
     else:
-        argspec = inspect.getfullargspec(max_positional_args)
-        args = argspec.args
-        defaults = argspec.defaults
+        args, _, _, defaults, *_ = inspect.getfullargspec(max_positional_args)
         if defaults is None:
             raise ValueError(
                 'Functions with no keyword arguments must specify '

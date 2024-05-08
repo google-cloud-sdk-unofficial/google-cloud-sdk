@@ -179,9 +179,9 @@ class Update(base.UpdateCommand):
       if args.IsSpecified('source_backup'):
         updated_fields.append('restoreParameters')
       if backup_config is not None:
-        if backup_config.get('backup-policies', []):
+        if backup_config.get('backup-policies') is not None:
           updated_fields.append('backupConfig.backupPolicies')
-        if backup_config.get('backup-vault', ''):
+        if backup_config.get('backup-vault') is not None:
           updated_fields.append('backupConfig.backupVault')
         if backup_config.get('enable-scheduled-backups') is not None:
           updated_fields.append('backupConfig.scheduledBackupEnabled')

@@ -480,6 +480,10 @@ def ParseCreateOptionsBase(args, is_autopilot, get_default, location,
       ),
       enable_fqdn_network_policy=get_default('enable_fqdn_network_policy'),
       enable_nested_virtualization=get_default('enable_nested_virtualization'),
+      enable_ray_cluster_logging=get_default('enable_ray_cluster_logging'),
+      enable_ray_cluster_monitoring=get_default(
+          'enable_ray_cluster_monitoring'
+      ),
   )
 
 
@@ -686,6 +690,8 @@ flags_to_add = {
         'nestedvirtualization': (
             lambda p: flags.AddEnableNestedVirtualizationFlag(p, hidden=False)
         ),
+        'enableRayClusterLogging': flags.AddEnableRayClusterLogging,
+        'enableRayClusterMonitoring': flags.AddEnableRayClusterMonitoring,
     },
     BETA: {
         'accelerator': lambda p: AddAcceleratorFlag(p, True, True, True, True),
@@ -853,6 +859,8 @@ flags_to_add = {
         'enableCiliumClusterwideNetworkPolicy': (
             flags.AddEnableCiliumClusterwideNetworkPolicyFlag
         ),
+        'enableRayClusterLogging': flags.AddEnableRayClusterLogging,
+        'enableRayClusterMonitoring': flags.AddEnableRayClusterMonitoring,
     },
     ALPHA: {
         'accelerator': lambda p: AddAcceleratorFlag(p, True, True, True, True),
@@ -1029,6 +1037,8 @@ flags_to_add = {
         'enableCiliumClusterwideNetworkPolicy': (
             flags.AddEnableCiliumClusterwideNetworkPolicyFlag
         ),
+        'enableRayClusterLogging': flags.AddEnableRayClusterLogging,
+        'enableRayClusterMonitoring': flags.AddEnableRayClusterMonitoring,
     },
 }
 
@@ -1293,6 +1303,10 @@ class CreateBeta(Create):
     ops.enable_cilium_clusterwide_networkpolicy = get_default(
         'enable_cilium_clusterwide_networkpolicy'
     )
+    ops.enable_ray_cluster_logging = get_default('enable_ray_cluster_logging')
+    ops.enable_ray_cluster_monitoring = get_default(
+        'enable_ray_cluster_monitoring'
+    )
     return ops
 
 
@@ -1410,5 +1424,9 @@ class CreateAlpha(Create):
     ops.enable_secret_manager = get_default('enable_secret_manager')
     ops.enable_cilium_clusterwide_networkpolicy = get_default(
         'enable_cilium_clusterwide_networkpolicy'
+    )
+    ops.enable_ray_cluster_logging = get_default('enable_ray_cluster_logging')
+    ops.enable_ray_cluster_monitoring = get_default(
+        'enable_ray_cluster_monitoring'
     )
     return ops

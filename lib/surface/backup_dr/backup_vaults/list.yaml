@@ -26,10 +26,9 @@
     format: |
       table(
         name.basename(),
-        description,
-        enforcedRetentionDuration,
-        deletable,
-        state,
-        backupInstanceCount,
-        size
+        createTime:label=CREATED,
+        state:label=STATUS,
+        name.scope("locations").segment(0):label=LOCATION,
+        totalStoredBytes:label=STORED_BYTES,
+        enforcedRetentionDuration:label=ENFORCED_RETENTION
       )

@@ -54,8 +54,70 @@
   async:
     collection: networkconnectivity.projects.locations.operations
 
-  request: &request
+  request:
     BETA:
       api_version: v1beta
+    collection: networkconnectivity.projects.locations.regionalEndpoints
+    method: create
+
+- release_tracks: [GA]
+
+  help_text:
+    brief: Create a new regional endpoint.
+    description: Create a new regional endpoint with the given name.
+    examples: |
+      To create a regional endpoint with the name 'my-regional-endpoint' in us-central1
+      targeting my-target-endpoint, run:
+
+        $ {command} my-regional-endpoint
+          --region=us-centeral1
+          [--network=my-network]
+          [--subnetwork=my-subnet]
+          --target-google-api=my-target-endpoint
+          [--enable-global-access]
+
+  arguments:
+    resource:
+      spec: !REF googlecloudsdk.command_lib.network_connectivity.resources:regionalEndpoint
+      help_text: Name of the regional endpoint to be created.
+    params:
+    - arg_name: enable-global-access
+      action: store_true
+      default: false
+      api_field: regionalEndpoint.accessType
+      help_text: |
+        Whether the REGIONAL or GLOBAL access is enabled.
+      choices:
+      - arg_value: false
+        enum_value: REGIONAL
+        help_text: REGIONAL access is enabled for the regional endpoint.
+      - arg_value: true
+        enum_value: GLOBAL
+        help_text: GLOBAL access is enabled for the regional.
+    - arg_name: description
+      api_field: regionalEndpoint.description
+      help_text: Description of the regional endpoint.
+    - arg_name: network
+      api_field: regionalEndpoint.network
+      help_text: Consumer's VPC network that this regional endpoint belongs to.
+    - arg_name: subnetwork
+      api_field: regionalEndpoint.subnetwork
+      help_text: The name of the subnetwork from which the IP address will be allocated.
+    - arg_name: target-google-api
+      required: true
+      api_field: regionalEndpoint.targetGoogleApi
+      help_text: The service endpoint the regional endpoint will connect to.
+    - arg_name: address
+      api_field: regionalEndpoint.address
+      help_text: The IP address or address resource URI of the Regional Endpoint. When no address value is provided, an IP from the subnetwork is allocated.
+    labels:
+      api_field: regionalEndpoint.labels
+
+  async:
+    collection: networkconnectivity.projects.locations.operations
+
+  request:
+    GA:
+      api_version: v1
     collection: networkconnectivity.projects.locations.regionalEndpoints
     method: create

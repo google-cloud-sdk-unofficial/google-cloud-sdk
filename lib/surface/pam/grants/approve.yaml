@@ -5,7 +5,7 @@
     description: Approve a Privileged Access Manager (PAM) grant with a reason.
     examples: |
       The following command approves a grant with the full name ``GRANT_NAME'' and a reason
-      `approval reason`:
+      of `approval reason`:
 
       $ {command} GRANT_NAME --reason="approval reason"
 

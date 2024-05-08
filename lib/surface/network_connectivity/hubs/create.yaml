@@ -19,17 +19,14 @@
     - arg_name: policy-mode
       release_tracks: [GA]
       api_field: hub.policyMode
-      hidden: true
       help_text: Policy mode of the hub.
     - arg_name: preset-topology
       release_tracks: [GA]
       api_field: hub.presetTopology
-      hidden: true
       help_text: Topology of the hub. Only applicable when ``--policy-mode=PRESET''.
     - arg_name: export-psc
       release_tracks: [GA]
       api_field: hub.exportPsc
-      hidden: true
       help_text: |-
         This boolean controls whether Private Service Connect transitivity is enabled for the hub.
     - arg_name: exchange-pupi

@@ -394,6 +394,8 @@ class Update(base.UpdateCommand):
     flags.AddEnableFqdnNetworkPolicyFlag(group)
     flags.AddEnableKubeletReadonlyPortFlag(group)
     flags.AddAutoprovisioningEnableKubeletReadonlyPortFlag(group)
+    flags.AddEnableRayClusterLogging(group, is_update=True)
+    flags.AddEnableRayClusterMonitoring(group, is_update=True)
 
   def ParseUpdateOptions(self, args, locations):
     get_default = lambda key: getattr(args, key)
@@ -496,6 +498,8 @@ class Update(base.UpdateCommand):
     opts.autoprovisioning_enable_insecure_kubelet_readonly_port = (
         args.autoprovisioning_enable_insecure_kubelet_readonly_port
     )
+    opts.enable_ray_cluster_logging = args.enable_ray_cluster_logging
+    opts.enable_ray_cluster_monitoring = args.enable_ray_cluster_monitoring
     return opts
 
   def Run(self, args):
@@ -804,6 +808,22 @@ to completion."""
         )
       except apitools_exceptions.HttpError as error:
         raise exceptions.HttpException(error, util.HTTP_ERROR_FORMAT)
+    elif getattr(args, 'enable_ray_cluster_logging', None) is not None:
+      try:
+        op_ref = adapter.ModifyRayClusterLoggingConfig(
+            cluster_ref,
+            args.enable_ray_cluster_logging,
+        )
+      except apitools_exceptions.HttpError as error:
+        raise exceptions.HttpException(error, util.HTTP_ERROR_FORMAT)
+    elif getattr(args, 'enable_ray_cluster_monitoring', None) is not None:
+      try:
+        op_ref = adapter.ModifyRayClusterMonitoringConfig(
+            cluster_ref,
+            args.enable_ray_cluster_monitoring,
+        )
+      except apitools_exceptions.HttpError as error:
+        raise exceptions.HttpException(error, util.HTTP_ERROR_FORMAT)
     else:
       if args.enable_legacy_authorization is not None:
         op_ref = adapter.SetLegacyAuthorization(
@@ -964,6 +984,8 @@ class UpdateBeta(Update):
     flags.AddEnableCiliumClusterwideNetworkPolicyFlag(group, is_update=True)
     flags.AddEnableKubeletReadonlyPortFlag(group)
     flags.AddAutoprovisioningEnableKubeletReadonlyPortFlag(group)
+    flags.AddEnableRayClusterLogging(group, is_update=True)
+    flags.AddEnableRayClusterMonitoring(group, is_update=True)
 
   def ParseUpdateOptions(self, args, locations):
     get_default = lambda key: getattr(args, key)
@@ -1125,6 +1147,8 @@ class UpdateBeta(Update):
     opts.autoprovisioning_enable_insecure_kubelet_readonly_port = (
         args.autoprovisioning_enable_insecure_kubelet_readonly_port
     )
+    opts.enable_ray_cluster_logging = args.enable_ray_cluster_logging
+    opts.enable_ray_cluster_monitoring = args.enable_ray_cluster_monitoring
     return opts
 
 
@@ -1241,6 +1265,8 @@ class UpdateAlpha(Update):
     flags.AddEnableCiliumClusterwideNetworkPolicyFlag(group, is_update=True)
     flags.AddEnableKubeletReadonlyPortFlag(group)
     flags.AddAutoprovisioningEnableKubeletReadonlyPortFlag(group)
+    flags.AddEnableRayClusterLogging(group, is_update=True)
+    flags.AddEnableRayClusterMonitoring(group, is_update=True)
 
   def ParseUpdateOptions(self, args, locations):
     get_default = lambda key: getattr(args, key)
@@ -1397,4 +1423,6 @@ class UpdateAlpha(Update):
     opts.autoprovisioning_enable_insecure_kubelet_readonly_port = (
         args.autoprovisioning_enable_insecure_kubelet_readonly_port
     )
+    opts.enable_ray_cluster_logging = args.enable_ray_cluster_logging
+    opts.enable_ray_cluster_monitoring = args.enable_ray_cluster_monitoring
     return opts

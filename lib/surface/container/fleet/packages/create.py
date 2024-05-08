@@ -33,6 +33,7 @@ _DETAILED_HELP = {
 
 
 @base.Hidden
+@base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Create(base.CreateCommand):
   """Create Package Rollouts Fleet Package."""
@@ -47,13 +48,15 @@ class Create(base.CreateCommand):
   def Run(self, args):
     """Run the create command."""
     client = apis.FleetPackagesClient()
-    schema_path = apis.GetSchemaPath()
     data = console_io.ReadFromFileOrStdin(args.source, binary=False)
     fleet_package = export_util.Import(
         message_type=client.messages.FleetPackage,
         stream=data,
-        schema_path=schema_path,
     )
+    if not fleet_package.variantSelector:
+      fleet_package.variantSelector = client.messages.VariantSelector(
+          variantNameTemplate='default'
+      )
 
     project = command_utils.ProjectFromFleetPackage(fleet_package)
     location = command_utils.LocationFromFleetPackage(fleet_package)

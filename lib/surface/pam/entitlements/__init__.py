@@ -23,106 +23,164 @@ from googlecloudsdk.calliope import base
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.UniverseCompatible
 class Entitlements(base.Group):
-  r"""Manage Privileged Access Manager (PAM) Entitlements.
+  r"""Manage Privileged Access Manager (PAM) entitlements.
 
   The `gcloud pam entitlements` command group lets you manage Privileged Access
-  Manager (PAM) Entitlements.
+  Manager (PAM) entitlements.
 
   ## EXAMPLES
 
-  To create a new entitlement with the name `sample-entitlement`, under a
-  project `sample-project`, location `global` and the entitlement body present
-  in the `sample-entitlement.yaml` file, run:
+  To create a new entitlement with a name of `sample-entitlement`, in a project
+  named `sample-project`, in location `global`, and the entitlement
+  configuration stored in a file named `sample-entitlement.yaml`, run:
 
       $ {command} create sample-entitlement --project=sample-project
       --location=global --entitlement-file=sample-entitlement.yaml
 
-  To create a new entitlement with the name `sample-entitlement`, under a
-  folder `sample-folder`, location `global` and the entitlement body present
-  in the `sample-entitlement.yaml` file, run:
+  To create a new entitlement with a name of `sample-entitlement`, in a folder
+  with ID ``FOLDER_ID'', in location `global`, and the entitlement
+  configuration stored in a file named `sample-entitlement.yaml`, run:
 
-      $ {command} create sample-entitlement --folder=sample-folder
+      $ {command} create sample-entitlement --folder=FOLDER_ID
       --location=global --entitlement-file=sample-entitlement.yaml
 
-  To create a new entitlement with the name `sample-entitlement`, under an
-  organization `sample-organization`, location `global` and the entitlement
-  body present in the `sample-entitlement.yaml` file, run:
+  To create a new entitlement with a name of `sample-entitlement`, in an
+  organization with ID ``ORGANIZATION_ID'', in location `global`, and the
+  entitlement configuration stored in a file named `sample-entitlement.yaml`,
+  run:
 
-      $ {command} create sample-entitlement --organization=sample-organization
+      $ {command} create sample-entitlement --organization=ORGANIZATION_ID
       --location=global --entitlement-file=sample-entitlement.yaml
 
-  To update an entitlement with the full name ``ENTITLEMENT_NAME'' and the new
-  entitlement body present in the `sample-entitlement.yaml` file, run:
+  To update an entitlement with a name of `sample-entitlement`, in a project
+  named `sample-project`, in location `global`, and the new entitlement
+  configuration stored in a file named `sample-entitlement.yaml`, run:
 
-      $ {command} update ENTITLEMENT_NAME
-      --entitlement-file=sample-entitlement.yaml
+      $ {command} update sample-entitlement --project=sample-project
+      --location=global --entitlement-file=sample-entitlement.yaml
 
-  To describe an entitlement with the full name ``ENTITLEMENT_NAME'', run:
+  To update an entitlement with a name of `sample-entitlement`, in a folder
+  with ID ``FOLDER_ID'', in location `global`, and the new entitlement
+  configuration stored in a file named `sample-entitlement.yaml`, run:
 
-      $ {command} describe ENTITLEMENT_NAME
+      $ {command} update sample-entitlement --folder=FOLDER_ID
+      --location=global --entitlement-file=sample-entitlement.yaml
 
-  To search and list all entitlements under a project `sample-project` and
-  location `global` for which you are a requester, run:
+  To update an entitlement with a name of `sample-entitlement`, in an
+  organization with ID ``ORGANIZATION_ID'', in location `global`, and the new
+  entitlement configuration stored in a file named `sample-entitlement.yaml`,
+  run:
+
+      $ {command} update sample-entitlement --organization=ORGANIZATION_ID
+      --location=global --entitlement-file=sample-entitlement.yaml
+
+  To describe an entitlement with a name of `sample-entitlement`, in a project
+  named `sample-project`, and in location `global`, run:
+
+      $ {command} describe sample-entitlement --project=sample-project
+      --location=global
+
+  To describe an entitlement with a name of `sample-entitlement`, in a folder
+  with ID ``FOLDER_ID'', and in location `global`, run:
+
+      $ {command} describe sample-entitlement --folder=FOLDER_ID
+      --location=global
+
+  To describe an entitlement with a name of `sample-entitlement`, in an
+  organization with ID ``ORGANIZATION_ID'', and in location `global`, run:
+
+      $ {command} describe sample-entitlement --organization=ORGANIZATION_ID
+      --location=global
+
+  To search for and list all entitlements for which you are a requester, in a
+  project named `sample-project`, and in location `global`, run:
 
       $ {command} search --project=sample-project --location=global
       --caller-access-type=grant-requester
 
-  To search and list all entitlements under a project `sample-project` and
-  location `global` for which you are an approver, run:
+  To search for and list all entitlements for which you are an approver, in a
+  project named `sample-project`, and in location `global`, run:
 
       $ {command} search --project=sample-project --location=global
       --caller-access-type=grant-approver
 
-  To search and list all entitlements under a folder `sample-folder` and
-  location `global` for which you are a requester, run:
+  To search for and list all entitlements for which you are a requester, in a
+  folder with ID ``FOLDER_ID'', and in location `global`, run:
 
-      $ {command} search --folder=sample-folder --location=global
+      $ {command} search --folder=FOLDER_ID --location=global
       --caller-access-type=grant-requester
 
-  To search and list all entitlements under a folder `sample-folder` and
-  location `global` for which you are an approver, run:
+  To search for and list all entitlements for which you are an approver, in a
+  folder with ID ``FOLDER_ID'', and in location `global`, run:
 
-      $ {command} search --folder=sample-folder --location=global
+      $ {command} search --folder=FOLDER_ID --location=global
       --caller-access-type=grant-approver
 
-  To search and list all entitlements under an organization
-  `sample-organization` and location `global` for which you are a requester,
-  run:
+  To search for and list all entitlements for which you are a requester, in an
+  organization with ID ``ORGANIZATION_ID'', and in location `global`, run:
 
-      $ {command} search --organization=sample-organization --location=global
+      $ {command} search --organization=ORGANIZATION_ID --location=global
       --caller-access-type=grant-requester
 
-  To search and list all entitlements under an organization
-  `sample-organization` and location `global` for which you are an approver,
-  run:
+  To search for and list all entitlements for which you are an approver, in an
+  organization with ID ``ORGANIZATION_ID'', and in location `global`, run:
 
-      $ {command} search --organization=sample-organization --location=global
+      $ {command} search --organization=ORGANIZATION_ID --location=global
       --caller-access-type=grant-approver
 
-  To list all entitlement under a project `sample-project` and location
+  To list all entitlements in a project named `sample-project` and in location
   `global`, run:
 
       $ {command} list --project=sample-project --location=global
 
-  To list all entitlement under a folder `sample-folder` and location
+  To list all entitlements in a folder with ID ``FOLDER_ID'' and in location
   `global`, run:
 
-      $ {command} list --folder=sample-folder --location=global
+      $ {command} list --folder=FOLDER_ID --location=global
 
-  To list all entitlement under an organization `sample-organization` and
-  location `global`, run:
+  To list all entitlements in an organization with ID ``ORGANIZATION_ID'' and
+  in location `global`, run:
 
-      $ {command} list --organization=sample-organization --location=global
+      $ {command} list --organization=ORGANIZATION_ID --location=global
 
-  To delete an entitlement with the full name ``ENTITLEMENT_NAME'' along with
-  all grants under it, run:
+  To delete an entitlement with a name of `sample-entitlement`, in a project
+  named `sample-project`, and in location `global`, run:
 
-      $ {command} delete ENTITLEMENT_NAME
+      $ {command} delete sample-entitlement --project=sample-project
+      --location=global
 
-  To export an entitlement with the full name ``ENTITLEMENT_NAME'' to a
-  local YAML file `entitlement-file.yaml`, run:
+  To delete an entitlement with a name of `sample-entitlement`, in a folder
+  with ID ``FOLDER_ID'', and in location `global`, run:
 
-      $ {command} export ENTITLEMENT_NAME --destination=entitlement-file.yaml
+      $ {command} delete sample-entitlement --folder=FOLDER_ID
+      --location=global
 
+  To delete an entitlement with a name of `sample-entitlement`, in an
+  organization with ID ``ORGANIZATION_ID'', and in location `global`, run:
+
+      $ {command} delete sample-entitlement --organization=ORGANIZATION_ID
+      --location=global
+
+  To export an entitlement with a name of `sample-entitlement`, in a project
+  named `sample-project`, and in location `global` to a local YAML file named
+  `sample-entitlement.yaml`, run:
+
+      $ {command} export sample-entitlement --project=sample-project
+      --location=global --destination=sample-entitlement.yaml
+
+  To export an entitlement with a name of `sample-entitlement`, in a folder
+  with ID ``FOLDER_ID'', and in location `global` to a local YAML file named
+  `sample-entitlement.yaml`, run:
+
+      $ {command} export sample-entitlement --folder=FOLDER_ID
+      --location=global --destination=sample-entitlement.yaml
+
+  To export an entitlement with a name of `sample-entitlement`, in an
+  organization with ID ``ORGANIZATION_ID'', and in location `global` to a local
+  YAML file named `sample-entitlement.yaml`, run:
+
+      $ {command} export sample-entitlement --organization=ORGANIZATION_ID
+      --location=global --destination=sample-entitlement.yaml
   """

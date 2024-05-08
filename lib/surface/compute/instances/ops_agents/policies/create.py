@@ -124,6 +124,7 @@ class CreateOsConfig(base.Command):
 
 
 @base.Hidden
+@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Create(base.Command):
   """Create a Google Cloud's operations suite agents (Ops Agents) policy.
@@ -156,14 +157,14 @@ class Create(base.Command):
         '--file',
         required=True,
         help="""\
-          The YAML file with the Cloud Ops Policy Assignment to create. For
-          information about the Cloud Ops Policy Assignment format, see [PLACEHOLDER for our public doc].""",
+          YAML file with the Cloud Ops Agents Policy to create. For
+          information about the Cloud Ops Agents Policy format, see [PLACEHOLDER for our public doc].""",
     )
     parser.add_argument(
         '--zone',
         required=True,
         help="""\
-          this is zone.""",
+          Zone in which to create the OS Policy Assignment.""",
     )
     parser.add_argument(
         '--dry-run',
@@ -216,9 +217,8 @@ class Create(base.Command):
     complete_os_policy_assignment = encoding.PyValueToMessage(
         osconfig.OSPolicyAssignment, complete_os_policy_assignment_obj
     )
-    # TODO: b/334112329 - Fix yaml marshaling
     policy = to_cloud_ops_agents.ConvertOsPolicyAssignmentToCloudOpsAgentPolicy(
         complete_os_policy_assignment
     )
 
-    return policy
+    return policy.ToPyValue()

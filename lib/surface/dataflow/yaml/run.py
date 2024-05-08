@@ -32,16 +32,18 @@ YAML_TEMPLATE_GCS_LOCATION = (
 )
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.DefaultUniverseOnly
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
 class Run(base.Command):
   """Runs a job from the specified path."""
 
   detailed_help = {
       'DESCRIPTION': (
-          'Runs a job from the specified yaml description or gcs path.'
+          'Runs a job from the specified YAML description or '
+          'Cloud Storage path.'
       ),
       'EXAMPLES': """\
-          To run a job from yaml, run:
+          To run a job from YAML, run:
 
             $ {command} my-job --yaml-pipeline-file=gs://yaml-path --region=europe-west1
           """,
@@ -63,13 +65,13 @@ class Run(base.Command):
     group.add_argument(
         '--yaml-pipeline-file',
         help=(
-            'Path of a file defining the yaml pipeline to run. '
+            'Path of a file defining the YAML pipeline to run. '
             "(Must be a local file or a URL beginning with 'gs://'.)"
         ),
     )
 
     group.add_argument(
-        '--yaml-pipeline', help='Inline definition of the yaml pipeline to run.'
+        '--yaml-pipeline', help='Inline definition of the YAML pipeline to run.'
     )
 
     parser.add_argument(

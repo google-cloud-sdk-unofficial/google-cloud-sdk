@@ -4,10 +4,23 @@
     brief: Export a Privileged Access Manager (PAM) entitlement into a local YAML file.
     description: Export a Privileged Access Manager (PAM) entitlement into a local YAML file.
     examples: |
-      The following command exports an entitlement with the full name ``ENTITLEMENT_NAME'' to a
-      local YAML file `entitlement-file.yaml`:
+      The following command exports an entitlement with a name of `sample-entitlement`, in a
+      project named `sample-project`, and in location `global` to a local YAML file named
+      `sample-entitlement.yaml`:
 
-      $ {command} ENTITLEMENT_NAME --destination=entitlement-file.yaml
+      $ {command} sample-entitlement --project=sample-project --location=global --destination=sample-entitlement.yaml
+
+      The following command exports an entitlement with a name of `sample-entitlement`, in a folder
+      with ID ``FOLDER_ID'', and in location `global` to a local YAML file named
+      `sample-entitlement.yaml`:
+
+      $ {command} sample-entitlement --folder=FOLDER_ID --location=global --destination=sample-entitlement.yaml
+
+      The following command exports an entitlement with a name of `sample-entitlement`, in an
+      organization with ID ``ORGANIZATION_ID'', and in location `global` to a local YAML file named
+      `sample-entitlement.yaml`:
+
+      $ {command} sample-entitlement --organization=ORGANIZATION_ID --location=global --destination=sample-entitlement.yaml
 
   request:
     ALPHA:

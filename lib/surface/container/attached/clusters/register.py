@@ -34,6 +34,7 @@ from googlecloudsdk.command_lib.container.gkemulticloud import constants
 from googlecloudsdk.command_lib.container.gkemulticloud import endpoint_util
 from googlecloudsdk.command_lib.container.gkemulticloud import errors
 from googlecloudsdk.command_lib.container.gkemulticloud import flags
+from googlecloudsdk.command_lib.run import exceptions as run_exceptions
 from googlecloudsdk.command_lib.run import pretty_print
 from googlecloudsdk.core import exceptions
 from googlecloudsdk.core.console import console_io
@@ -93,6 +94,14 @@ class Register(base.CreateCommand):
 
   def Run(self, args):
     location = resource_args.ParseAttachedClusterResourceArg(args).locationsId
+    if (
+        attached_flags.GetHasPrivateIssuer(args)
+        and attached_flags.GetDistribution(args) == 'eks'
+    ):
+      raise run_exceptions.ArgumentError(
+          'Distributions of type "eks" cannot use the `has-private-issuer`'
+          ' flag.'
+      )
     with endpoint_util.GkemulticloudEndpointOverride(location):
       cluster_ref = resource_args.ParseAttachedClusterResourceArg(args)
       manifest = self._get_manifest(args, cluster_ref)

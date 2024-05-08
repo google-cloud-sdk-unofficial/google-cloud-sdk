@@ -5,7 +5,7 @@
     description: Deny a Privileged Access Manager (PAM) grant with a reason.
     examples: |
       The following command denies a grant with the full name ``GRANT_NAME'' and a reason
-      `denial reason`:
+      of `denial reason`:
 
       $ {command} GRANT_NAME --reason="denial reason"
 

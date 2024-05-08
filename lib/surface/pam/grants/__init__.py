@@ -23,17 +23,18 @@ from googlecloudsdk.calliope import base
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.UniverseCompatible
 class Grants(base.Group):
-  r"""Manage Privileged Access Manager (PAM) Grants.
+  r"""Manage Privileged Access Manager (PAM) grants.
 
-  The `gcloud pam grants` command group lets you manage Privileged
-  Access Manager (PAM) Grants.
+  The `gcloud pam grants` command group lets you manage Privileged Access
+  Manager (PAM) grants.
 
   ## EXAMPLES
 
-  To create a new grant under an entitlement with the full name
-  ``ENTITLEMENT_NAME'', with requested duration `1 hour 30 minutes`, a
-  justification `some justification` and two additional email recipients
+  To create a new grant against an entitlement with the full name
+  ``ENTITLEMENT_NAME'', a requested duration of `1 hour 30 minutes`, a
+  justification of `some justification`, and two additional email recipients
   `abc@example.com` and `xyz@example.com`, run:
 
       $ {command} create --entitlement=ENTITLEMENT_NAME
@@ -45,7 +46,7 @@ class Grants(base.Group):
 
       $ {command} describe GRANT_NAME
 
-  To list all grants under an entitlement with the full name
+  To list all grants associated with an entitlement with the full name
   ``ENTITLEMENT_NAME'', run:
 
       $ {command} list --entitlement=ENTITLEMENT_NAME
@@ -65,20 +66,20 @@ class Grants(base.Group):
 
       $ {command} revoke GRANT_NAME --reason="revoke reason"
 
-  To search and list all grants under an entitlement with the full name
-  ``ENTITLEMENT_NAME'', which you had created, run:
+  To search for and list all grants that you have created that are associated
+  with an entitlement with the full name ``ENTITLEMENT_NAME'', run:
 
       $ {command} search --entitlement=ENTITLEMENT_NAME
       --caller-relationship=had-created
 
-  To search and list all grants under an entitlement with the full name
-  ``ENTITLEMENT_NAME'', which you had approved or denied, run:
+  To search for and list all grants that you have approved or denied, that are
+  associated with an entitlement with the full name ``ENTITLEMENT_NAME'', run:
 
       $ {command} search --entitlement=ENTITLEMENT_NAME
       --caller-relationship=had-approved
 
-  To search and list all grants under an entitlement with the full name
-  ``ENTITLEMENT_NAME'', which you can approve, run:
+  To search for and list all grants that you can approve that are associated
+  with an entitlement with the full name ``ENTITLEMENT_NAME'', run:
 
       $ {command} search --entitlement=ENTITLEMENT_NAME
       --caller-relationship=can-approve
