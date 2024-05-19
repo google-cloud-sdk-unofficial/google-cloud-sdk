@@ -27,9 +27,9 @@ from googlecloudsdk.command_lib.compute.routers import flags
 from googlecloudsdk.command_lib.util.apis import arg_utils
 
 
-@base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class AddRoutePolicy(base.CreateCommand):
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.UniverseCompatible
+class AddRoutePolicy(base.UpdateCommand):
   """Add an empty route policy to a Compute Engine router.
 
   *{command}* adds an empty route policy to a Compute Engine router.
@@ -40,7 +40,7 @@ class AddRoutePolicy(base.CreateCommand):
   @classmethod
   def Args(cls, parser):
     AddRoutePolicy.ROUTER_ARG = flags.RouterArgument()
-    AddRoutePolicy.ROUTER_ARG.AddArgument(parser, operation_type='insert')
+    AddRoutePolicy.ROUTER_ARG.AddArgument(parser, operation_type='update')
     parser.add_argument(
         '--policy-name',
         help="""Name of the route policy to add.""",
@@ -50,8 +50,8 @@ class AddRoutePolicy(base.CreateCommand):
         '--policy-type',
         type=arg_utils.ChoiceToEnumName,
         choices={
-            'IMPORT': 'The Route Policy is an Import Policy.',
-            'EXPORT': 'The Route Policy is an Export Policy.',
+            'IMPORT': 'The route policy is an import policy.',
+            'EXPORT': 'The route policy is an export policy.',
         },
         help="""Type of the route policy to add.""",
         required=True,

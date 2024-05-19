@@ -36,7 +36,7 @@ DETAILED_HELP = {
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
-@base.Hidden
+@base.UniverseCompatible
 class GetIamPolicy(base.Command):
   """Display the IAM policy for a view."""
 

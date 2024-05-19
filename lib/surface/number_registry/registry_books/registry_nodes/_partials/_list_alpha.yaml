@@ -17,14 +17,14 @@
 # AUTOGEN_CLI_VERSION: HEAD
 - release_tracks:
   - ALPHA
-  hidden: true
   help_text:
-    brief: List registryNodes
-    description: List registryNodes
+    brief: List registry node resources in a registry book.
+    description: |
+      List registry node resources in a registry book.
     examples: |-
-      To list all registryNodes, run:
+      To list all registry nodes in registry book `my-registry-book` in location `global` run:
 
-      $ {command}
+      $ {command} --registry-book=my-registry-book --location=global
   arguments:
     params:
     - help_text: |-

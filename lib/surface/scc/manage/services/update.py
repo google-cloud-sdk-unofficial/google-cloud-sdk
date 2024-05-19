@@ -25,9 +25,8 @@ from googlecloudsdk.command_lib.scc.manage import parsing
 from googlecloudsdk.core.console import console_io
 
 
-@base.Hidden
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.ALPHA)
 class Update(base.Command):
   """Update a Security Command Center service.
 

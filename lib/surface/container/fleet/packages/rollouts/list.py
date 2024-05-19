@@ -17,6 +17,7 @@
 from googlecloudsdk.api_lib.container.fleet.packages import rollouts as apis
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.container.fleet.packages import flags
+from googlecloudsdk.command_lib.container.fleet.packages import utils
 
 _DETAILED_HELP = {
     'DESCRIPTION': '{description}',
@@ -31,12 +32,21 @@ _DETAILED_HELP = {
 # http://cloud/sdk/gcloud/reference/topic/formats
 _FORMAT = """table(name.basename():label=ROLLOUT,
                    release.basename():label=RELEASE,
-                   info.reconciliationStartTime:label=START_TIME:sort=1:reverse,
-                   info.reconciliationEndTime:label=END_TIME,
-                   info.state:label=STATE)"""
+                   info.startTime:label=START_TIME:sort=1:reverse,
+                   info.endTime:label=END_TIME,
+                   info.state:label=STATE,
+                   info.message:label=MESSAGE)"""
+
+_FORMAT_TRUNCATED_MESSAGES = """table(name.basename():label=ROLLOUT,
+                                      release.basename():label=RELEASE,
+                                      info.startTime:label=START_TIME:sort=1:reverse,
+                                      info.endTime:label=END_TIME,
+                                      info.state:label=STATE,
+                                      trim_message():label=MESSAGE)"""
 
 
 @base.Hidden
+@base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class List(base.ListCommand):
   """List Rollouts of a Fleet Package."""
@@ -47,12 +57,19 @@ class List(base.ListCommand):
   def Args(parser):
     parser.display_info.AddFormat(_FORMAT)
     parser.display_info.AddUriFunc(apis.GetRolloutURI)
+    parser.display_info.AddTransforms(
+        {'trim_message': utils.TransformTrimMessage}
+    )
     flags.AddLocationFlag(parser)
     flags.AddFleetPackageFlag(parser)
+    flags.AddLessFlag(parser)
 
   def Run(self, args):
     """Run the list command."""
     client = apis.RolloutsClient()
+    if args.less:
+      args.format = _FORMAT_TRUNCATED_MESSAGES
+
     return client.List(
         project=flags.GetProject(args),
         location=flags.GetLocation(args),

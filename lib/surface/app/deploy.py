@@ -32,23 +32,24 @@ _DETAILED_HELP = {
               'Engine.'),
     'DESCRIPTION':
         """\
-        This command is used to deploy both code and configuration to the App
-        Engine server. As an input it takes one or more ``DEPLOYABLES'' that
-        should be uploaded.  A ``DEPLOYABLE'' can be a service's .yaml file or a
-        configuration's .yaml file (for more information about configuration
-        files specific to your App Engine environment, refer to
-        [](https://cloud.google.com/appengine/docs/standard/python/configuration-files)
-        or [](https://cloud.google.com/appengine/docs/flexible/python/configuration-files)).
-        Note, for Java8 Standard apps or Java11/17 Standard apps using bundled services, you must add the path to the
-        `appengine-web.xml` file inside the WEB-INF directory. {command}
-        skips files specified in the .gcloudignore file (see `gcloud topic
-        gcloudignore` for more information).
-        For Java11 Standard, you can either use the yaml file, a Maven pom.xml, or a Gradle build.gradle. Alternatively, if the
-        application is a single self-contained jar, you can give the path to the
-        jar and a simple service configuration will be generated. You can deploy
-        Java11 Maven source projects by specifying the location of your
-        project's pom.xml file, and it will be built and deployed using
-        App Engine Buildpacks.
+    This command is used to deploy both code and configuration to the App
+    Engine server. As an input it takes one or more DEPLOYABLES that should be
+    uploaded. A DEPLOYABLE can be a service's .yaml file or a configuration's
+    .yaml file (for more information about configuration files specific to your
+    App Engine environment, refer to
+    https://cloud.google.com/appengine/docs/standard/configuration-files
+    or
+    https://cloud.google.com/appengine/docs/flexible/configuration-files).
+    Note, for Java 8 Standard apps or Java 11/17/21 Standard apps using bundled
+    services, you must add the path to the appengine-web.xml file inside the
+    WEB-INF directory. gcloud app deploy skips files specified in the
+    .gcloudignore file (see gcloud topic gcloudignore for more information).
+    For Java 11 Standard, you can either use the yaml file, a Maven pom.xml, or
+    a Gradle build.gradle. Alternatively, if the application is a single
+    self-contained jar, you can give the path to the jar and a simple service
+    configuration will be generated. You can deploy Java 11 Maven source
+    projects by specifying the location of your project's pom.xml file, and it
+    will be built and deployed using App Engine Buildpacks.
         """,
     'EXAMPLES':
         """\
@@ -99,6 +100,7 @@ _DETAILED_HELP = {
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.DefaultUniverseOnly
 class DeployGA(base.SilentCommand):
   """Deploy the local code and/or configuration of your app to App Engine."""
 
@@ -158,6 +160,7 @@ class DeployGA(base.SilentCommand):
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.DefaultUniverseOnly
 class DeployBeta(base.SilentCommand):
   """Deploy the local code and/or configuration of your app to App Engine."""
 

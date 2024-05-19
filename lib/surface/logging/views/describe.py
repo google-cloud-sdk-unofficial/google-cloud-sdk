@@ -23,12 +23,10 @@ from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 
 DETAILED_HELP = {
-    'DESCRIPTION':
-        """
-        Displays information about a view.
+    'DESCRIPTION': """
+        Displays information about a log view.
     """,
-    'EXAMPLES':
-        """
+    'EXAMPLES': """
      To describe a view in a project, run:
 
         $ {command} my-view --bucket=my-bucket --location=global
@@ -36,6 +34,7 @@ DETAILED_HELP = {
 }
 
 
+@base.UniverseCompatible
 class Describe(base.DescribeCommand):
   """Display information about a view."""
 

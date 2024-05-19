@@ -26,7 +26,10 @@ from googlecloudsdk.command_lib.compute.public_delegated_prefixes import flags
 from googlecloudsdk.core import log
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
+)
+@base.UniverseCompatible
 class Create(base.CreateCommand):
   r"""Creates a Compute Engine public delegated prefix.
 
@@ -37,12 +40,11 @@ class Create(base.CreateCommand):
     $ {command} my-public-delegated-prefix --public-advertised-prefix=my-pap \
       --range=120.120.10.128/27 --global
   """
-  support_ipv6_pdp = False
 
   @classmethod
   def Args(cls, parser):
     flags.MakePublicDelegatedPrefixesArg().AddArgument(parser)
-    flags.AddCreatePdpArgsToParser(parser, cls.support_ipv6_pdp)
+    flags.AddCreatePdpArgsToParser(parser)
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
@@ -55,60 +57,30 @@ class Create(base.CreateCommand):
         scope_lister=compute_flags.GetDefaultScopeLister(holder.client),
     )
 
-    if self.support_ipv6_pdp:
-      if args.mode:
-        input_mode = (
-            holder.client.messages.PublicDelegatedPrefix.ModeValueValuesEnum(
-                args.mode
-            )
-        )
-      else:
-        input_mode = None
-
-      result = pdp_client.Create(
-          pdp_ref,
-          parent_pap_prefix=args.public_advertised_prefix
-          if args.public_advertised_prefix
-          else None,
-          parent_pdp_prefix=args.public_delegated_prefix
-          if args.public_delegated_prefix
-          else None,
-          ip_cidr_range=args.range,
-          description=args.description,
-          enable_live_migration=args.enable_live_migration,
-          mode=input_mode,
-          allocatable_prefix_length=int(args.allocatable_prefix_length)
-          if args.allocatable_prefix_length
-          else None,
+    if args.mode:
+      input_mode = (
+          holder.client.messages.PublicDelegatedPrefix.ModeValueValuesEnum(
+              args.mode
+          )
       )
     else:
-      result = pdp_client.Create(
-          pdp_ref,
-          parent_pap_prefix=args.public_advertised_prefix
-          if args.public_advertised_prefix
-          else None,
-          parent_pdp_prefix=args.public_delegated_prefix
-          if args.public_delegated_prefix
-          else None,
-          ip_cidr_range=args.range,
-          description=args.description,
-          enable_live_migration=args.enable_live_migration,
-          mode=None,
-          allocatable_prefix_length=None,
-      )
+      input_mode = None
+
+    result = pdp_client.Create(
+        pdp_ref,
+        parent_pap_prefix=args.public_advertised_prefix
+        if args.public_advertised_prefix
+        else None,
+        parent_pdp_prefix=args.public_delegated_prefix
+        if args.public_delegated_prefix
+        else None,
+        ip_cidr_range=args.range,
+        description=args.description,
+        enable_live_migration=args.enable_live_migration,
+        mode=input_mode,
+        allocatable_prefix_length=int(args.allocatable_prefix_length)
+        if args.allocatable_prefix_length
+        else None,
+    )
     log.CreatedResource(pdp_ref.Name(), 'public delegated prefix')
     return result
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class CreateAlpha(Create):
-  r"""Creates a Compute Engine public delegated prefix.
-
-  ## EXAMPLES
-
-  To create a public delegated prefix:
-
-    $ {command} my-public-delegated-prefix --public-advertised-prefix=my-pap \
-      --range=120.120.10.128/27 --global
-  """
-  support_ipv6_pdp = True

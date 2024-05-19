@@ -22,6 +22,7 @@ from googlecloudsdk.calliope import base
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.DefaultUniverseOnly
 @base.Hidden
 class PolicyIntelligenceAlpha(base.Group):
   """A platform to help better understand, use and manage policies at scale."""
@@ -35,6 +36,7 @@ class PolicyIntelligenceAlpha(base.Group):
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.DefaultUniverseOnly
 @base.Hidden
 class PolicyIntelligenceBeta(base.Group):
   """A platform to help better understand, use and manage policies at scale."""
@@ -48,6 +50,7 @@ class PolicyIntelligenceBeta(base.Group):
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.DefaultUniverseOnly
 class PolicyIntelligenceGA(base.Group):
   """A platform to help better understand, use and manage policies at scale."""
   category = base.IDENTITY_AND_SECURITY_CATEGORY

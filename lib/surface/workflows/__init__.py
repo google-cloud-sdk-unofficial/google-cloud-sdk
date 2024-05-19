@@ -22,6 +22,7 @@ from googlecloudsdk.calliope import base
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.DefaultUniverseOnly
 class Workflows(base.Group):
   """Manage your Cloud Workflows resources."""
 
@@ -34,6 +35,7 @@ class Workflows(base.Group):
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.DefaultUniverseOnly
 class WorkflowsBeta(base.Group):
   """Manage your Cloud Workflows resources."""
 
@@ -46,6 +48,7 @@ class WorkflowsBeta(base.Group):
 
 
 @base.Hidden
+@base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class WorkflowsAlpha(base.Group):
   """Manage your Cloud Workflows resources."""

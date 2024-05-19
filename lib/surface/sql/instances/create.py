@@ -19,7 +19,6 @@ from __future__ import division
 from __future__ import unicode_literals
 
 from apitools.base.py import exceptions as apitools_exceptions
-
 from googlecloudsdk.api_lib.sql import api_util as common_api_util
 from googlecloudsdk.api_lib.sql import exceptions as sql_exceptions
 from googlecloudsdk.api_lib.sql import operations
@@ -41,8 +40,7 @@ import six
 _INSTANCE_CREATION_TIMEOUT_SECONDS = 3600
 
 DETAILED_HELP = {
-    'EXAMPLES':
-        """\
+    'EXAMPLES': """\
         To create a MySQL 5.7 instance with ID ``prod-instance'' that has 2
         CPUs, 4 GB of RAM, and is in the region ``us-central1'' (a zone will be
         auto-assigned), where the 'root' user has its password set to
@@ -90,7 +88,8 @@ def AddBaseArgs(parser):
   parser.add_argument(
       'instance',
       type=command_validate.InstanceNameRegexpValidator(),
-      help='Cloud SQL instance ID.')
+      help='Cloud SQL instance ID.',
+  )
   flags.AddMaintenanceReleaseChannel(parser)
   flags.AddMaintenanceWindowDay(parser)
   flags.AddMaintenanceWindowHour(parser)
@@ -100,7 +99,8 @@ def AddBaseArgs(parser):
   flags.AddInsightsConfigQueryInsightsEnabled(parser, show_negated_in_help=True)
   flags.AddInsightsConfigQueryStringLength(parser)
   flags.AddInsightsConfigRecordApplicationTags(
-      parser, show_negated_in_help=True)
+      parser, show_negated_in_help=True
+  )
   flags.AddInsightsConfigRecordClientAddress(parser, show_negated_in_help=True)
   flags.AddInsightsConfigQueryPlansPerMinute(parser)
   flags.AddMasterInstanceName(parser)
@@ -124,12 +124,11 @@ def AddBaseArgs(parser):
       'kms-key': '--disk-encryption-key',
       'kms-keyring': '--disk-encryption-key-keyring',
       'kms-location': '--disk-encryption-key-location',
-      'kms-project': '--disk-encryption-key-project'
+      'kms-project': '--disk-encryption-key-project',
   }
   kms_resource_args.AddKmsKeyResourceArg(
-      parser,
-      'instance',
-      flag_overrides=kms_flag_overrides)
+      parser, 'instance', flag_overrides=kms_flag_overrides
+  )
   flags.AddEnablePointInTimeRecovery(parser)
   flags.AddNetwork(parser)
   flags.AddSqlServerAudit(parser)
@@ -194,7 +193,8 @@ def RunBaseCreateCommand(args, release_track):
   instance_ref = client.resource_parser.Parse(
       args.instance,
       params={'project': properties.VALUES.core.project.GetOrFail},
-      collection='sql.instances')
+      collection='sql.instances',
+  )
 
   # Get the region, tier, and database version from the master if these fields
   # are not specified.
@@ -203,30 +203,42 @@ def RunBaseCreateCommand(args, release_track):
     master_instance_ref = client.resource_parser.Parse(
         args.master_instance_name,
         params={'project': properties.VALUES.core.project.GetOrFail},
-        collection='sql.instances')
+        collection='sql.instances',
+    )
     try:
       master_instance_resource = sql_client.instances.Get(
           sql_messages.SqlInstancesGetRequest(
               project=instance_ref.project,
-              instance=master_instance_ref.instance))
+              instance=master_instance_ref.instance,
+          )
+      )
     except apitools_exceptions.HttpError as error:
       # TODO(b/64292220): Remove once API gives helpful error message.
       log.debug('operation : %s', six.text_type(master_instance_ref))
       exc = exceptions.HttpException(error)
-      if resource_property.Get(exc.payload.content,
-                               resource_lex.ParseKey('error.errors[0].reason'),
-                               None) == 'notAuthorized':
-        msg = ('You are either not authorized to access the master instance or '
-               'it does not exist.')
+      if (
+          resource_property.Get(
+              exc.payload.content,
+              resource_lex.ParseKey('error.errors[0].reason'),
+              None,
+          )
+          == 'notAuthorized'
+      ):
+        msg = (
+            'You are either not authorized to access the master instance or '
+            'it does not exist.'
+        )
         raise exceptions.HttpException(msg)
       raise
     if not args.IsSpecified('region'):
       args.region = master_instance_resource.region
     if not args.IsSpecified('database_version'):
       args.database_version = master_instance_resource.databaseVersion.name
-    if not args.IsSpecified('tier') and not (
-        args.IsSpecified('cpu') or
-        args.IsSpecified('memory')) and master_instance_resource.settings:
+    if (
+        not args.IsSpecified('tier')
+        and not (args.IsSpecified('cpu') or args.IsSpecified('memory'))
+        and master_instance_resource.settings
+    ):
       args.tier = master_instance_resource.settings.tier
 
     # Validate master/replica CMEK configurations.
@@ -241,7 +253,8 @@ def RunBaseCreateCommand(args, release_track):
         raise exceptions.RequiredArgumentException(
             '--disk-encryption-key',
             '`--disk-encryption-key` is required when creating a cross-region '
-            'replica of an instance with customer-managed encryption.')
+            'replica of an instance with customer-managed encryption.',
+        )
       else:
         command_util.ShowCmekWarning('replica')
     elif args.IsSpecified('disk_encryption_key'):
@@ -249,29 +262,34 @@ def RunBaseCreateCommand(args, release_track):
       # master is not.
       raise sql_exceptions.ArgumentError(
           '`--disk-encryption-key` cannot be specified when creating a replica '
-          'of an instance without customer-managed encryption.')
+          'of an instance without customer-managed encryption.'
+      )
 
     if args.IsSpecified('cascadable_replica'):
       if args.region == master_instance_resource.region:
         raise exceptions.InvalidArgumentException(
             '--cascadable-replica',
             '`--cascadable-replica` can only be specified when creating a '
-            'replica that is in a different region than the primary.'
+            'replica that is in a different region than the primary.',
         )
   else:
     if args.IsSpecified('cascadable_replica'):
       raise exceptions.InvalidArgumentException(
           '--cascadable-replica',
           '`--cascadable-replica` can only be specified when '
-          '`--master-instance-name` is specified.'
+          '`--master-instance-name` is specified.',
       )
 
   # --root-password is required when creating SQL Server instances
-  if args.IsSpecified('database_version') and args.database_version.startswith(
-      'SQLSERVER') and not args.IsSpecified('root_password'):
+  if (
+      args.IsSpecified('database_version')
+      and args.database_version.startswith('SQLSERVER')
+      and not args.IsSpecified('root_password')
+  ):
     raise exceptions.RequiredArgumentException(
         '--root-password',
-        '`--root-password` is required when creating SQL Server instances.')
+        '`--root-password` is required when creating SQL Server instances.',
+    )
 
   if not args.backup:
     if args.IsSpecified('enable_bin_log'):
@@ -280,17 +298,20 @@ def RunBaseCreateCommand(args, release_track):
         # otherwise no_backup is not allowed with enable_bin_log
         raise sql_exceptions.ArgumentError(
             '`--enable-bin-log` cannot be specified when --no-backup is '
-            'specified')
+            'specified'
+        )
     elif args.IsSpecified('enable_point_in_time_recovery'):
       raise sql_exceptions.ArgumentError(
           '`--enable-point-in-time-recovery` cannot be specified when '
-          '--no-backup is specified')
+          '--no-backup is specified'
+      )
 
-  if (args.IsKnownAndSpecified('allowed_psc_projects') and
-      not args.IsKnownAndSpecified('enable_private_service_connect')):
+  if args.IsKnownAndSpecified(
+      'allowed_psc_projects'
+  ) and not args.IsKnownAndSpecified('enable_private_service_connect'):
     raise sql_exceptions.ArgumentError(
-        '`--allowed-psc-projects` requires '
-        '`--enable-private-service-connect`')
+        '`--allowed-psc-projects` requires `--enable-private-service-connect`'
+    )
 
   if args.database_flags is not None and any([
       'sync_binlog' in args.database_flags,
@@ -314,47 +335,62 @@ def RunBaseCreateCommand(args, release_track):
           sql_messages,
           args,
           instance_ref=instance_ref,
-          release_track=release_track))
+          release_track=release_track,
+      )
+  )
 
   operation_ref = None
   try:
     result_operation = sql_client.instances.Insert(
         sql_messages.SqlInstancesInsertRequest(
-            databaseInstance=instance_resource,
-            project=instance_ref.project))
+            databaseInstance=instance_resource, project=instance_ref.project
+        )
+    )
 
     operation_ref = client.resource_parser.Create(
         'sql.operations',
         operation=result_operation.name,
-        project=instance_ref.project)
+        project=instance_ref.project,
+    )
 
     if args.async_:
       if not args.IsSpecified('format'):
         args.format = 'default'
       return sql_client.operations.Get(
           sql_messages.SqlOperationsGetRequest(
-              project=operation_ref.project, operation=operation_ref.operation))
+              project=operation_ref.project, operation=operation_ref.operation
+          )
+      )
 
     operations.OperationsV1Beta4.WaitForOperation(
         sql_client,
         operation_ref,
         'Creating Cloud SQL instance for ' + args.database_version,
-        max_wait_seconds=args.timeout)
+        max_wait_seconds=args.timeout,
+    )
 
     log.CreatedResource(instance_ref)
 
     new_resource = sql_client.instances.Get(
         sql_messages.SqlInstancesGetRequest(
-            project=instance_ref.project, instance=instance_ref.instance))
+            project=instance_ref.project, instance=instance_ref.instance
+        )
+    )
     return new_resource
   except apitools_exceptions.HttpError as error:
     log.debug('operation : %s', six.text_type(operation_ref))
     exc = exceptions.HttpException(error)
-    if resource_property.Get(exc.payload.content,
-                             resource_lex.ParseKey('error.errors[0].reason'),
-                             None) == 'errorMaxInstancePerLabel':
-      msg = resource_property.Get(exc.payload.content,
-                                  resource_lex.ParseKey('error.message'), None)
+    if (
+        resource_property.Get(
+            exc.payload.content,
+            resource_lex.ParseKey('error.errors[0].reason'),
+            None,
+        )
+        == 'errorMaxInstancePerLabel'
+    ):
+      msg = resource_property.Get(
+          exc.payload.content, resource_lex.ParseKey('error.message'), None
+      )
       raise exceptions.HttpException(msg)
     raise
 

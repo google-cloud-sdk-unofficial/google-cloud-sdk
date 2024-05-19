@@ -24,6 +24,7 @@ from googlecloudsdk.calliope import base
 
 @base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA,
                     base.ReleaseTrack.ALPHA)
+@base.DefaultUniverseOnly
 class Iap(base.Group):
   """Manage IAP policies.
 

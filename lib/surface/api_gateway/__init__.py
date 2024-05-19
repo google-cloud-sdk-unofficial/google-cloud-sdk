@@ -28,6 +28,7 @@ from googlecloudsdk.core import resources
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
                     base.ReleaseTrack.GA)
+@base.DefaultUniverseOnly
 class ApiGateway(base.Group):
   """Manage Cloud API Gateway resources.
 

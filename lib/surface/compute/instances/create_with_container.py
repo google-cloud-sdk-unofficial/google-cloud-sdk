@@ -34,12 +34,15 @@ from googlecloudsdk.command_lib.util.args import labels_util
 from googlecloudsdk.core import log
 
 
-def _Args(parser,
-          deprecate_maintenance_policy=False,
-          container_mount_enabled=False,
-          support_multi_writer=True,
-          support_confidential_compute_type=False,
-          support_confidential_compute_type_tdx=False):
+def _Args(
+    parser,
+    deprecate_maintenance_policy=False,
+    container_mount_enabled=False,
+    support_multi_writer=True,
+    support_confidential_compute_type=False,
+    support_confidential_compute_type_tdx=False,
+    support_specific_then_x_affinity=False,
+):
   """Add flags shared by all release tracks."""
   parser.display_info.AddFormat(instances_flags.DEFAULT_LIST_FORMAT)
   metadata_utils.AddMetadataArgs(parser)
@@ -82,6 +85,15 @@ def _Args(parser,
   labels_util.AddCreateLabelsFlags(parser)
   instances_flags.AddStackTypeArgs(parser)
   instances_flags.AddIpv6NetworkTierArgs(parser)
+  instances_flags.AddInternalIPv6AddressArgs(parser)
+  instances_flags.AddInternalIPv6PrefixLengthArgs(parser)
+
+  instances_flags.AddReservationAffinityGroup(
+      parser,
+      group_text='Specifies the reservation for the instance.',
+      affinity_text='The type of reservation for the instance.',
+      support_specific_then_x_affinity=support_specific_then_x_affinity,
+  )
 
   parser.add_argument(
       '--description', help='Specifies a textual description of the instances.')
@@ -108,7 +120,7 @@ class CreateWithContainer(base.CreateCommand):
   _support_confidential_compute_type = False
   _support_confidential_compute_type_tdx = False
   _support_local_ssd_recovery_timeout = True
-  _support_internal_ipv6_reservation = False
+  _support_specific_then_x_affinity = False
 
   @staticmethod
   def Args(parser):
@@ -118,7 +130,9 @@ class CreateWithContainer(base.CreateCommand):
         container_mount_enabled=True,
         support_multi_writer=False,
         support_confidential_compute_type=False,
-        support_confidential_compute_type_tdx=False)
+        support_confidential_compute_type_tdx=False,
+        support_specific_then_x_affinity=False,
+    )
     instances_flags.AddNetworkTierArgs(parser, instance=True)
     instances_flags.AddMinCpuPlatformArgs(parser, base.ReleaseTrack.GA)
     instances_flags.AddPrivateIpv6GoogleAccessArg(parser,
@@ -137,6 +151,9 @@ class CreateWithContainer(base.CreateCommand):
     instances_flags.ValidatePublicPtrFlags(args)
     instances_flags.ValidateNetworkPerformanceConfigsArgs(args)
     instances_flags.ValidateInstanceScheduling(args)
+    instances_flags.ValidateNetworkTierArgs(args)
+    instances_flags.ValidateReservationAffinityGroup(args)
+
     if instance_utils.UseExistingBootDisk(args.disk or []):
       raise exceptions.InvalidArgumentException(
           '--disk', 'Boot disk specified for containerized VM.')
@@ -165,8 +182,9 @@ class CreateWithContainer(base.CreateCommand):
 
   def _GetNetworkInterfaces(self, args, client, holder, project, location,
                             scope, skip_defaults):
-    return create_utils.GetNetworkInterfaces(args, client, holder, project,
-                                             location, scope, skip_defaults)
+    return create_utils.GetNetworkInterfaces(
+        args, client, holder, project, location, scope, skip_defaults,
+        support_internal_ipv6_reservation=True)
 
   def GetNetworkInterfaces(self, args, resources, client, holder, project,
                            location, scope, skip_defaults):
@@ -178,7 +196,7 @@ class CreateWithContainer(base.CreateCommand):
           project=project,
           location=location,
           scope=scope,
-          support_internal_ipv6_reservation=self._support_internal_ipv6_reservation,
+          support_internal_ipv6_reservation=True,
       )
     return self._GetNetworkInterfaces(args, client, holder, project, location,
                                       scope, skip_defaults)
@@ -342,6 +360,11 @@ class CreateWithContainer(base.CreateCommand):
           project=instance_ref.project,
           zone=instance_ref.zone)
 
+      request.instance.reservationAffinity = (
+          instance_utils.GetReservationAffinity(
+              args, compute_client, self._support_specific_then_x_affinity
+          )
+      )
       requests.append(
           (compute_client.apitools_client.instances, 'Insert', request))
 
@@ -362,6 +385,7 @@ class CreateWithContainerBeta(CreateWithContainer):
   _support_host_error_timeout_seconds = True
   _support_numa_node_count = False
   _support_local_ssd_recovery_timeout = True
+  _support_specific_then_x_affinity = True
 
   @staticmethod
   def Args(parser):
@@ -370,7 +394,9 @@ class CreateWithContainerBeta(CreateWithContainer):
         parser,
         container_mount_enabled=True,
         support_confidential_compute_type=True,
-        support_confidential_compute_type_tdx=True)
+        support_confidential_compute_type_tdx=True,
+        support_specific_then_x_affinity=True,
+    )
     instances_flags.AddNetworkTierArgs(parser, instance=True)
     instances_flags.AddLocalSsdArgs(parser)
     instances_flags.AddMinCpuPlatformArgs(parser, base.ReleaseTrack.BETA)
@@ -398,6 +424,7 @@ class CreateWithContainerAlpha(CreateWithContainerBeta):
   _support_confidential_compute_type = True
   _support_confidential_compute_type_tdx = True
   _support_local_ssd_recovery_timeout = True
+  _support_specific_then_x_affinity = True
 
   @staticmethod
   def Args(parser):
@@ -406,7 +433,9 @@ class CreateWithContainerAlpha(CreateWithContainerBeta):
         deprecate_maintenance_policy=True,
         container_mount_enabled=True,
         support_confidential_compute_type=True,
-        support_confidential_compute_type_tdx=True)
+        support_confidential_compute_type_tdx=True,
+        support_specific_then_x_affinity=True,
+    )
 
     instances_flags.AddNetworkTierArgs(parser, instance=True)
     instances_flags.AddLocalSsdArgsWithSize(parser)
@@ -421,8 +450,6 @@ class CreateWithContainerAlpha(CreateWithContainerBeta):
     instances_flags.AddVisibleCoreCountArgs(parser)
     instances_flags.AddIPv6AddressAlphaArgs(parser)
     instances_flags.AddIPv6PrefixLengthAlphaArgs(parser)
-    instances_flags.AddInternalIPv6AddressArgs(parser)
-    instances_flags.AddInternalIPv6PrefixLengthArgs(parser)
 
   def _ValidateTrackSpecificArgs(self, args):
     instances_flags.ValidateLocalSsdFlags(args)

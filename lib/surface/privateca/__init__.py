@@ -22,6 +22,7 @@ from googlecloudsdk.calliope import base
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.DefaultUniverseOnly
 class PrivateCaGa(base.Group):
   """Manage private Certificate Authorities on Google Cloud.
 

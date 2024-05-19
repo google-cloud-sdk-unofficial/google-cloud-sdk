@@ -28,6 +28,10 @@ from googlecloudsdk.core import properties
 from googlecloudsdk.core import resources
 
 
+# TODO(b/312466999): Change @base.DefaultUniverseOnly to
+# @base.UniverseCompatible once b/312466999 is fixed.
+# See go/gcloud-cli-running-tpc-tests.
+@base.DefaultUniverseOnly
 @base.ReleaseTracks(
     base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
 )
@@ -55,6 +59,9 @@ class CreateSecondary(base.CreateCommand):
     flags.AddAvailabilityType(parser)
     flags.AddInstance(parser)
     flags.AddRegion(parser)
+    flags.AddSSLMode(parser, default_from_primary=True)
+    flags.AddRequireConnectors(parser)
+    flags.AddAssignInboundPublicIp(parser)
 
   def Run(self, args):
     """Constructs and sends request.
@@ -89,6 +96,18 @@ class CreateSecondary(base.CreateCommand):
     )
     instance_resource.availabilityType = instance_helper.ParseAvailabilityType(
         alloydb_messages, args.availability_type)
+    instance_resource.clientConnectionConfig = (
+        instance_helper.ClientConnectionConfig(
+            alloydb_messages, args.ssl_mode, args.require_connectors
+        )
+    )
+    instance_resource.networkConfig = (
+        instance_helper.NetworkConfig(
+            alloydb_messages,
+            args.assign_inbound_public_ip,
+            None
+        )
+    )
     req = alloydb_messages.AlloydbProjectsLocationsClustersInstancesCreatesecondaryRequest(
         instance=instance_resource,
         instanceId=args.instance,

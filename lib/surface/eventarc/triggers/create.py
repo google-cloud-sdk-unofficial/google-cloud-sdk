@@ -58,6 +58,7 @@ class UnsupportedDestinationError(exceptions.Error):
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.DefaultUniverseOnly
 class Create(base.CreateCommand):
   """Create an Eventarc trigger."""
 
@@ -220,17 +221,3 @@ class Create(base.CreateCommand):
       destination_location = args.GetValue(location_arg_name)
 
     return destination_location
-
-
-@base.Deprecate(
-    is_removed=True,
-    warning=('This command is deprecated. '
-             'Please use `gcloud eventarc triggers create` instead.'),
-    error=('This command has been removed. '
-           'Please use `gcloud eventarc triggers create` instead.')
-)
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class CreateBeta(Create):
-  """Create an Eventarc trigger."""
-
-  detailed_help = _DETAILED_HELP_BETA

@@ -44,6 +44,7 @@ class Create(base.CreateCommand):
   def Args(parser):
     flags.AddSourceFlag(parser)
     flags.AddNameFlag(parser)
+    flags.AddLocationFlag(parser)
 
   def Run(self, args):
     """Run the create command."""
@@ -58,9 +59,11 @@ class Create(base.CreateCommand):
           variantNameTemplate='default'
       )
 
-    project = command_utils.ProjectFromFleetPackage(fleet_package)
-    location = command_utils.LocationFromFleetPackage(fleet_package)
-    parent = f'projects/{project}/locations/{location}'
+    fleet_package = command_utils.UpsertDefaultVariants(fleet_package)
+
+    parent = (
+        f'projects/{flags.GetProject(args)}/locations/{flags.GetLocation(args)}'
+    )
 
     return client.Create(
         fleet_package=fleet_package, fleet_package_id=args.name, parent=parent

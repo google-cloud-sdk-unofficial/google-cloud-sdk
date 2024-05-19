@@ -155,9 +155,10 @@ class AlphaCancel(Cancel):
       Some value that we want to have printed later.
     """
 
+    flags.CheckExclusiveLROFlagsUnderInstance(args)
     if args.instance_partition:
       return instance_partition_operations.Cancel(
-          args.instance_partition, args.instance, args.operation
+          args.instance, args.instance_partition, args.operation
       )
 
     return super().Run(args)

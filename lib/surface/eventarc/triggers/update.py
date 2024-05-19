@@ -38,6 +38,7 @@ _DETAILED_HELP = {
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.DefaultUniverseOnly
 class Update(base.UpdateCommand):
   """Update an Eventarc trigger."""
 
@@ -178,52 +179,3 @@ class Update(base.UpdateCommand):
     raise exceptions.InvalidArgumentException(
         '--destination-function-location',
         'The specified trigger is not for a function destination.')
-
-
-@base.Deprecate(
-    is_removed=True,
-    warning=(
-        'This command is deprecated. '
-        'Please use `gcloud eventarc triggers update` instead.'
-    ),
-    error=(
-        'This command has been removed. '
-        'Please use `gcloud eventarc triggers update` instead.'
-    ),
-)
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class UpdateBeta(Update):
-  """Update an Eventarc trigger."""
-
-  def Run(self, args):
-    """Run the update command."""
-    client = triggers.CreateTriggersClient(self.ReleaseTrack())
-    trigger_ref = args.CONCEPTS.trigger.Parse()
-    event_filters = flags.GetEventFiltersArg(args, self.ReleaseTrack())
-    update_mask = client.BuildUpdateMask(
-        event_filters=event_filters is not None,
-        event_data_content_type=None,
-        service_account=args.IsSpecified('service_account')
-        or args.clear_service_account,
-        destination_run_service=args.IsSpecified('destination_run_service'),
-        destination_run_job=None,  # Not supported in BETA release track or API
-        destination_run_path=args.IsSpecified('destination_run_path')
-        or args.clear_destination_run_path,
-        destination_run_region=args.IsSpecified('destination_run_region'),
-    )
-    old_trigger = client.Get(trigger_ref)
-    # The type can't be updated, so it's safe to use the old trigger's type.
-    # In the async case, this is the only way to get the type.
-    self._event_type = client.GetEventType(old_trigger)
-    destination_message = client.BuildCloudRunDestinationMessage(
-        args.destination_run_service, None, args.destination_run_path,
-        args.destination_run_region)
-    trigger_message = client.BuildTriggerMessage(trigger_ref, event_filters,
-                                                 None, None,
-                                                 args.service_account,
-                                                 destination_message, None,
-                                                 None)
-    operation = client.Patch(trigger_ref, trigger_message, update_mask)
-    if args.async_:
-      return operation
-    return client.WaitFor(operation, 'Updating', trigger_ref)

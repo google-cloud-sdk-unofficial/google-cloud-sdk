@@ -31,6 +31,13 @@
       help_text: |
         Whether to enable site-to-site data transfer for this spoke. Data transfer is available only
         in [supported locations](https://cloud.google.com/network-connectivity/docs/network-connectivity-center/concepts/locations).
+    - arg_name: include-import-ranges
+      api_field: spoke.linkedVpnTunnels.includeImportRanges
+      type: arg_list
+      hidden: true
+      help_text: |
+        IP address range(s) allowed to be imported from hub subnets. Only ``ALL_IPV4_RANGES`` can be
+        added to the list now. If it's empty, the spoke will not import any subnets from the hub.
     labels:
       api_field: spoke.labels
 

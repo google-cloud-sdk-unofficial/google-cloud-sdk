@@ -1,29 +1,55 @@
 - release_tracks: [GA, ALPHA]
 
-  help_text:
-    brief: Update a existing cloud access binding under an organization.
-    description: |
-      Update an existing cloud access binding. You can update the level, dry run level or both.
-      They can't be both empty after update.
-    examples: |
-      To update an existing cloud access binding, run:
+  GA:
+    help_text:
+      brief: Update a existing cloud access binding under an organization.
+      description: |
+        Update an existing cloud access binding. You can update the level, dry run level or both.
+        They can't be both empty after update.
+      examples: |
+        To update an existing cloud access binding, run:
 
-        $ {command} --binding=my-binding-id --level=accessPolicies/123/accessLevels/new-abc
+          $ {command} --binding=my-binding-id --level=accessPolicies/123/accessLevels/new-abc
 
-      To remove level and add dry run level, run:
+        To remove level and add dry run level, run:
 
-        $ {command} --binding=my-binding-id --level=  \
-          --dry-run-level=accessPolicies/123/accessLevels/new-def
+          $ {command} --binding=my-binding-id --level=  \
+            --dry-run-level=accessPolicies/123/accessLevels/new-def
+    request:
+      collection: accesscontextmanager.organizations.gcpUserAccessBindings
+      api_version: v1
+      modify_request_hooks:
+      - googlecloudsdk.command_lib.accesscontextmanager.cloud_bindings:ProcessLevels
+      - googlecloudsdk.command_lib.accesscontextmanager.cloud_bindings:AddUpdateMask
+  ALPHA:
+    help_text:
+      brief: Update an existing access binding under an organization.
+      description: |
+        Update an existing access binding. You can update the level, dry run level,
+        restricted client application client IDs and restricted client application names.
+        They can't all be empty.
+      examples: |
+        To update an existing access binding, run:
 
+          $ {command} --binding=my-binding-id --level=accessPolicies/123/accessLevels/new-abc
 
-  request:
-    collection: accesscontextmanager.organizations.gcpUserAccessBindings
-    api_version: v1
-    modify_request_hooks:
-    - googlecloudsdk.command_lib.accesscontextmanager.cloud_bindings:ProcessLevels
-    - googlecloudsdk.command_lib.accesscontextmanager.cloud_bindings:AddUpdateMask
-    ALPHA:
+        To remove level and add dry run level, run:
+
+          $ {command} --binding=my-binding-id --level=  \
+            --dry-run-level=accessPolicies/123/accessLevels/new-def
+
+        To update restricted client applications, run:
+
+          $ {command} --binding=my-binding-id  \
+            --restricted-client-application-client-ids='123.apps.googleusercontent.com'  \
+            --restricted-client-application-names='Cloud Console, Google Cloud SDK'
+    request:
+      collection: accesscontextmanager.organizations.gcpUserAccessBindings
       api_version: v1alpha
+      modify_request_hooks:
+      - googlecloudsdk.command_lib.accesscontextmanager.cloud_bindings:ProcessLevels
+      - googlecloudsdk.command_lib.accesscontextmanager.cloud_bindings:ProcessRestrictedClientApplicationsAlpha
+      - googlecloudsdk.command_lib.accesscontextmanager.cloud_bindings:AddUpdateMaskAlpha
 
 
   arguments:
@@ -50,3 +76,17 @@
       type: str
       hidden: true
       help_text: The access policy that the access level belongs to.
+    - arg_name: restricted-client-application-client-ids
+      required: false
+      release_tracks: [ALPHA]
+      type: 'googlecloudsdk.calliope.arg_parsers:ArgList:'
+      help_text: |
+        The application client IDs that replace the existing application client IDs for
+        the restricted client applications in the given binding.
+    - arg_name: restricted-client-application-names
+      required: false
+      release_tracks: [ALPHA]
+      type: 'googlecloudsdk.calliope.arg_parsers:ArgList:'
+      help_text: |
+        The application names that replace the existing application names for
+        the restricted client applications in the given binding.

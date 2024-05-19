@@ -31,6 +31,7 @@ from googlecloudsdk.calliope import base
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.DefaultUniverseOnly
 class Genomics(base.Group):
   """Manage Genomics resources."""
   category = base.SOLUTIONS_CATEGORY

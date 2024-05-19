@@ -289,6 +289,7 @@ to the flag. For example:
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.UniverseCompatible
 class Update(base.UpdateCommand):
   """Update cluster settings for an existing container cluster."""
 

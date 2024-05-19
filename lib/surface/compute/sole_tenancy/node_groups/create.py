@@ -27,7 +27,9 @@ from googlecloudsdk.command_lib.compute.sole_tenancy.node_groups import flags
 from googlecloudsdk.command_lib.compute.sole_tenancy.node_groups import util
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
+)
 class Create(base.CreateCommand):
   """Create a Compute Engine node group."""
 
@@ -48,6 +50,7 @@ class Create(base.CreateCommand):
     flags.AddMaintenanceWindowArgToParser(parser)
     flags.AddLocationHintArgToParser(parser)
     flags.AddShareSettingArgToParser(parser)
+    flags.AddMaintenanceIntervalArgToParser(parser)
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
@@ -103,23 +106,3 @@ class Create(base.CreateCommand):
 
     service = holder.client.apitools_client.nodeGroups
     return client.MakeRequests([(service, 'Insert', request)])[0]
-
-
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class CreateBeta(Create):
-  """Create a Compute Engine node group."""
-
-  @staticmethod
-  def Args(parser):
-    Create.Args(parser)
-    flags.AddMaintenanceIntervalArgToParser(parser)
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class CreateAlpha(CreateBeta):
-  """Create a Compute Engine node group."""
-
-  @staticmethod
-  def Args(parser):
-    Create.Args(parser)
-    flags.AddMaintenanceIntervalArgToParser(parser)

@@ -1,4 +1,4 @@
-- release_tracks: [ALPHA]
+- release_tracks: [ALPHA, BETA, GA]
   help_text:
     brief: Describe a Dataplex entry.
     description: |

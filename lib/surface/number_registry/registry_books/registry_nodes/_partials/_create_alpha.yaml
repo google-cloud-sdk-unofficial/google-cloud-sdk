@@ -17,14 +17,19 @@
 # AUTOGEN_CLI_VERSION: HEAD
 - release_tracks:
   - ALPHA
-  hidden: true
   help_text:
-    brief: Create registryNodes
-    description: Create a registryNode
+    brief: Create a registry node resource in a registry book.
+    description: |
+      Create a registry node resource in a registry book.
     examples: |-
-      To create the registryNode, run:
+      To create a registry node `my-registry-node` under registry book `my-registry-book` with IP range `10.10.10.0/24` in location `global` run:
 
-      $ {command}
+      $ {command} my-registry-node --registry-book=my-registry-book --ip-range=10.10.10.0/24 --location=global
+
+
+      To create a registry node `my-registry-node` under registry book `my-registry-book` with IP range `10.10.20.0/24` with two attributes in location `global` run:
+
+      $ {command} my-registry-node --registry-book=my-registry-book --ip-range=10.10.20.0/24 --attribute=key='gke',value='gke usage' --attribute=key='gce subnet',value='gce subnet for auto gke' --location=global
   arguments:
     params:
     - help_text: |-

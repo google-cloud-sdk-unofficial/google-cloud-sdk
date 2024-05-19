@@ -30,8 +30,8 @@ from googlecloudsdk.core.resource import resource_printer
 from googlecloudsdk.core.util import files
 
 
-@base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.UniverseCompatible
 class DownloadRoutePolicy(base.DescribeCommand):
   """Download a route policy from a Compute Engine router.
 

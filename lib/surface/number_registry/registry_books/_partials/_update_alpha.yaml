@@ -17,14 +17,14 @@
 # AUTOGEN_CLI_VERSION: HEAD
 - release_tracks:
   - ALPHA
-  hidden: true
   help_text:
-    brief: Update registryBooks
-    description: Update a registryBook
+    brief: Update the parameters of a single registry book resource.
+    description: |
+      Update a registry book resource.
     examples: |-
-      To update the registryBook, run:
+      To update the name of a registry book `my-registry-book` in location `global` run:
 
-      $ {command}
+      $ {command} my-registry-book --location=global --name="updated-registry-book"
   arguments:
     params:
     - help_text: |-

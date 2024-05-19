@@ -282,6 +282,16 @@ class AlphaList(List):
         """)
       return ssd_cache_operations.List(args.ssd_cache, args.instance_config)
 
+    flags.CheckExclusiveLROFlagsUnderInstance(args)
+
+    if args.type == 'INSTANCE':
+      if args.IsSpecified('instance_partition'):
+        raise c_exceptions.InvalidArgumentException(
+            '--instance-partition or --type',
+            'The `--instance-partition` flag cannot be used with'
+            ' `--type=INSTANCE`.',
+        )
+
     if args.type == 'INSTANCE_PARTITION':
       # Update output table for instance partition operations.
       # pylint:disable=protected-access
@@ -297,7 +307,7 @@ class AlphaList(List):
           """)
       if args.instance_partition:
         return instance_partition_operations.ListGeneric(
-            args.instance_partition, args.instance
+            args.instance, args.instance_partition
         )
       else:
         return instance_partition_operations.List(args.instance)

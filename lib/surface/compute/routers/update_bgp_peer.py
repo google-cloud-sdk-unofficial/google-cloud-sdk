@@ -30,13 +30,14 @@ from googlecloudsdk.core import resources
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.UniverseCompatible
 class UpdateBgpPeer(base.UpdateCommand):
   """Update a BGP peer on a Compute Engine router."""
 
   ROUTER_ARG = None
 
   @classmethod
-  def _Args(cls, parser, enable_ipv6_bgp=False, enable_route_policies=False):
+  def _Args(cls, parser, enable_route_policies=False):
     cls.ROUTER_ARG = flags.RouterArgument()
     cls.ROUTER_ARG.AddArgument(parser)
     base.ASYNC_FLAG.AddToParser(parser)
@@ -44,7 +45,6 @@ class UpdateBgpPeer(base.UpdateCommand):
         parser,
         for_add_bgp_peer=False,
         is_update=True,
-        enable_ipv6_bgp=enable_ipv6_bgp,
         enable_route_policies=enable_route_policies,
     )
     flags.AddUpdateCustomAdvertisementArgs(parser, 'peer')
@@ -58,7 +58,6 @@ class UpdateBgpPeer(base.UpdateCommand):
       self,
       args,
       support_bfd_mode=False,
-      enable_ipv6_bgp=False,
       enable_route_policies=False,
   ):
     """Runs the command.
@@ -66,7 +65,6 @@ class UpdateBgpPeer(base.UpdateCommand):
     Args:
       args: contains arguments passed to the command.
       support_bfd_mode: The flag to indicate whether bfd mode is supported.
-      enable_ipv6_bgp: The flag to indicate whether IPv6-based BGP is supported.
       enable_route_policies: The flag to indicate whether exportPolicies and
         importPolicies are supported.
 
@@ -125,7 +123,6 @@ class UpdateBgpPeer(base.UpdateCommand):
         args,
         md5_authentication_key_name=md5_authentication_key_name,
         support_bfd_mode=support_bfd_mode,
-        enable_ipv6_bgp=enable_ipv6_bgp,
         enable_route_policies=enable_route_policies,
     )
 
@@ -277,7 +274,7 @@ class UpdateBgpPeerBeta(UpdateBgpPeer):
 
   @classmethod
   def Args(cls, parser):
-    cls._Args(parser, enable_ipv6_bgp=True)
+    cls._Args(parser, enable_route_policies=True)
 
   def Run(self, args):
     """Runs the command.
@@ -289,7 +286,7 @@ class UpdateBgpPeerBeta(UpdateBgpPeer):
       The result of patching the router updating the bgp peer with the
       information provided in the arguments.
     """
-    return self._Run(args, support_bfd_mode=False, enable_ipv6_bgp=True)
+    return self._Run(args, support_bfd_mode=False, enable_route_policies=True)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -300,7 +297,7 @@ class UpdateBgpPeerAlpha(UpdateBgpPeerBeta):
 
   @classmethod
   def Args(cls, parser):
-    cls._Args(parser, enable_ipv6_bgp=True, enable_route_policies=True)
+    cls._Args(parser, enable_route_policies=True)
 
   def Run(self, args):
     """Runs the command.
@@ -315,7 +312,6 @@ class UpdateBgpPeerAlpha(UpdateBgpPeerBeta):
     return self._Run(
         args,
         support_bfd_mode=True,
-        enable_ipv6_bgp=True,
         enable_route_policies=True,
     )
 
@@ -326,7 +322,6 @@ def _UpdateBgpPeerMessage(
     args,
     md5_authentication_key_name,
     support_bfd_mode=False,
-    enable_ipv6_bgp=False,
     enable_route_policies=False,
 ):
   """Updates base attributes of a BGP peer based on flag arguments."""
@@ -350,11 +345,11 @@ def _UpdateBgpPeerMessage(
     attrs['ipv6NexthopAddress'] = args.ipv6_nexthop_address
   if args.peer_ipv6_nexthop_address is not None:
     attrs['peerIpv6NexthopAddress'] = args.peer_ipv6_nexthop_address
-  if enable_ipv6_bgp and args.enable_ipv4 is not None:
+  if args.enable_ipv4 is not None:
     attrs['enableIpv4'] = args.enable_ipv4
-  if enable_ipv6_bgp and args.ipv4_nexthop_address is not None:
+  if args.ipv4_nexthop_address is not None:
     attrs['ipv4NexthopAddress'] = args.ipv4_nexthop_address
-  if enable_ipv6_bgp and args.peer_ipv4_nexthop_address is not None:
+  if args.peer_ipv4_nexthop_address is not None:
     attrs['peerIpv4NexthopAddress'] = args.peer_ipv4_nexthop_address
   if args.custom_learned_route_priority is not None:
     attrs['customLearnedRoutePriority'] = args.custom_learned_route_priority

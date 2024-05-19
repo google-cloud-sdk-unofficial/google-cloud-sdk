@@ -36,6 +36,7 @@ _FORMAT = 'table(locationId:label=NAME)'
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.DefaultUniverseOnly
 class List(base.ListCommand):
   """List locations available for Eventarc."""
 
@@ -50,19 +51,3 @@ class List(base.ListCommand):
     """Run the list command."""
     client = locations.LocationsClient(self.ReleaseTrack())
     return client.List(limit=args.limit, page_size=args.page_size)
-
-
-@base.Deprecate(
-    is_removed=True,
-    warning=(
-        'This command is deprecated. '
-        'Please use `gcloud eventarc locations list` instead.'
-    ),
-    error=(
-        'This command has been removed. '
-        'Please use `gcloud eventarc locations list` instead.'
-    ),
-)
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class ListBeta(List):
-  """List locations available for Eventarc."""

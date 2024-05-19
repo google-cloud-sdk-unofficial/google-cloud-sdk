@@ -28,6 +28,20 @@ from googlecloudsdk.core import log
 from googlecloudsdk.core import resources
 
 
+@base.Deprecate(
+    is_removed=False,
+    warning=(
+        'This command is deprecated. Please see'
+        ' https://cloud.google.com/compute/docs/instances/moving-instance-across-zones'
+        ' for an alternative method.'
+    ),
+    error=(
+        'This command has been removed. Please see'
+        ' https://cloud.google.com/compute/docs/instances/moving-instance-across-zones'
+        'for an alternative method.'
+    ),
+)
+@base.DefaultUniverseOnly
 class Move(base.SilentCommand):
   """Move an instance and its attached persistent disks between zones."""
 
@@ -39,19 +53,23 @@ class Move(base.SilentCommand):
         '--destination-zone',
         completer=completers.ZonesCompleter,
         help='The zone to move the instance to.',
-        required=True)
+        required=True,
+    )
 
     base.ASYNC_FLAG.AddToParser(parser)
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     target_instance = flags.INSTANCE_ARG.ResolveAsResource(
-        args, holder.resources,
-        scope_lister=flags.GetInstanceZoneScopeLister(holder.client))
+        args,
+        holder.resources,
+        scope_lister=flags.GetInstanceZoneScopeLister(holder.client),
+    )
     destination_zone = holder.resources.Parse(
         args.destination_zone,
         params={'project': target_instance.project},
-        collection='compute.zones')
+        collection='compute.zones',
+    )
 
     client = holder.client.apitools_client
     messages = holder.client.messages
@@ -68,34 +86,42 @@ class Move(base.SilentCommand):
     operation_ref = resources.REGISTRY.Parse(
         result.name,
         params={'project': target_instance.project},
-        collection='compute.globalOperations')
+        collection='compute.globalOperations',
+    )
 
     if args.async_:
       log.UpdatedResource(
           operation_ref,
           kind='gce instance {0}'.format(target_instance.Name()),
           is_async=True,
-          details='Use [gcloud compute operations describe] command '
-                  'to check the status of this operation.'
+          details=(
+              'Use [gcloud compute operations describe] command '
+              'to check the status of this operation.'
+          ),
       )
       return result
 
     destination_instance_ref = holder.resources.Parse(
-        target_instance.Name(), collection='compute.instances',
+        target_instance.Name(),
+        collection='compute.instances',
         params={
             'project': target_instance.project,
-            'zone': destination_zone.Name()
-        })
+            'zone': destination_zone.Name(),
+        },
+    )
 
     operation_poller = poller.Poller(client.instances, destination_instance_ref)
     return waiter.WaitFor(
-        operation_poller, operation_ref,
-        'Moving gce instance {0}'.format(target_instance.Name()))
+        operation_poller,
+        operation_ref,
+        'Moving gce instance {0}'.format(target_instance.Name()),
+    )
 
 
 Move.detailed_help = {
-    'brief': ('Move an instance and its attached persistent disks between '
-              'zones.'),
+    'brief': (
+        'Move an instance and its attached persistent disks between zones.'
+    ),
     'DESCRIPTION': """
         *{command}* moves a Compute Engine virtual machine
         from one zone to another. Moving a virtual machine might incur downtime
@@ -120,4 +146,5 @@ Move.detailed_help = {
     To move `instance-1` from `us-central-a` to `europe-west1-d`, run:
 
       $ {command} instance-1 --zone=us-central1-a --destination-zone=europe-west1-d
-    """}
+    """,
+}

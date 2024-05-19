@@ -27,6 +27,7 @@ from googlecloudsdk.command_lib.spanner import flags
 from googlecloudsdk.command_lib.spanner import resource_args
 
 
+@base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Create(base.CreateCommand):
   """Create a Cloud Spanner instance."""
@@ -167,6 +168,7 @@ class BetaCreate(base.CreateCommand):
     instance_operations.Await(op, 'Creating instance')
 
 
+@base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class AlphaCreate(Create):
   """Create a Cloud Spanner instance with ALPHA features."""
@@ -181,7 +183,6 @@ class AlphaCreate(Create):
     flags.SsdCache().AddToParser(parser)
     resource_args.AddExpireBehaviorArg(parser)
     resource_args.AddInstanceTypeArg(parser)
-    resource_args.AddDefaultStorageTypeArg(parser)
     flags.AddCapacityArgsForInstance(
         require_all_autoscaling_args=True,
         hide_autoscaling_args=False,
@@ -202,7 +203,6 @@ class AlphaCreate(Create):
     """
     instance_type = resource_args.GetInstanceType(args)
     expire_behavior = resource_args.GetExpireBehavior(args)
-    default_storage_type = resource_args.GetDefaultStorageTypeArg(args)
 
     op = instances.Create(
         args.instance,
@@ -218,7 +218,6 @@ class AlphaCreate(Create):
         args.autoscaling_storage_target,
         instance_type,
         expire_behavior,
-        default_storage_type,
         args.ssd_cache,
     )
     if args.async_:

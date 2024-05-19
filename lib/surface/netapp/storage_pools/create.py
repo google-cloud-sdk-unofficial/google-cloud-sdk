@@ -32,6 +32,7 @@ def _CommonArgs(parser, release_track):
   )
 
 
+@base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Create(base.CreateCommand):
   """Create a Cloud NetApp Storage Pool."""
@@ -70,9 +71,13 @@ class Create(base.CreateCommand):
     capacity_in_gib = args.capacity >> 30
 
     allow_auto_tiering = None
+    zone = None
+    replica_zone = None
     if (self._RELEASE_TRACK == base.ReleaseTrack.ALPHA or
         self._RELEASE_TRACK == base.ReleaseTrack.BETA):
       allow_auto_tiering = args.allow_auto_tiering
+      zone = args.zone
+      replica_zone = args.replica_zone
 
     storage_pool = client.ParseStoragePoolConfig(
         name=storagepool_ref.RelativeName(),
@@ -84,6 +89,8 @@ class Create(base.CreateCommand):
         capacity=capacity_in_gib,
         description=args.description,
         allow_auto_tiering=allow_auto_tiering,
+        zone=zone,
+        replica_zone=replica_zone,
         labels=labels,
     )
     result = client.CreateStoragePool(

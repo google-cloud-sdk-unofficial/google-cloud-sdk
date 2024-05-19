@@ -23,6 +23,7 @@ from googlecloudsdk.calliope import base
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.DefaultUniverseOnly
 class InfraManager(base.Group):
   """Manage Infra Manager resources."""
 

@@ -1,4 +1,4 @@
-- release_tracks: [ALPHA]
+- release_tracks: [ALPHA, BETA, GA]
   help_text:
     brief: List Dataplex entries.
     description: List Dataplex entries in an entry group.

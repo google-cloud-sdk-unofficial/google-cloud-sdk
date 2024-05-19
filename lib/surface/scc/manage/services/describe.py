@@ -24,9 +24,8 @@ from googlecloudsdk.command_lib.scc.manage import flags
 from googlecloudsdk.command_lib.scc.manage import parsing
 
 
-@base.Hidden
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.ALPHA)
 class Describe(base.DescribeCommand):
   """Get the details of a Security Command Center service.
 

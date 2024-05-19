@@ -17,6 +17,7 @@
 from googlecloudsdk.api_lib.container.fleet.packages import fleet_packages as apis
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.container.fleet.packages import flags
+from googlecloudsdk.command_lib.container.fleet.packages import utils as command_utils
 from googlecloudsdk.command_lib.export import util as export_util
 from googlecloudsdk.command_lib.util.concepts import concept_parsers
 from googlecloudsdk.core.console import console_io
@@ -32,6 +33,7 @@ _DETAILED_HELP = {
 
 
 @base.Hidden
+@base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Update(base.UpdateCommand):
   """Update Package Rollouts Fleet Package."""
@@ -52,13 +54,12 @@ class Update(base.UpdateCommand):
   def Run(self, args):
     """Run the update command."""
     client = apis.FleetPackagesClient()
-    schema_path = apis.GetSchemaPath()
     data = console_io.ReadFromFileOrStdin(args.source, binary=False)
     fleet_package = export_util.Import(
         message_type=client.messages.FleetPackage,
         stream=data,
-        schema_path=schema_path,
     )
+    fleet_package = command_utils.UpsertDefaultVariants(fleet_package)
 
     fully_qualified_name = f'projects/{flags.GetProject(args)}/locations/{flags.GetLocation(args)}/fleetPackages/{args.fleet_package}'
 

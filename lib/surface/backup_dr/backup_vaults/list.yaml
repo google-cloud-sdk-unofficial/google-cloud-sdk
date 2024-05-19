@@ -30,5 +30,5 @@
         state:label=STATUS,
         name.scope("locations").segment(0):label=LOCATION,
         totalStoredBytes:label=STORED_BYTES,
-        enforcedRetentionDuration:label=ENFORCED_RETENTION
+        backupMinimumEnforcedRetentionDuration:label=BACKUP_MINIMUM_ENFORCED_RETENTION_DURATION
       )

@@ -29,6 +29,7 @@ from googlecloudsdk.core import log
 
 
 @base.Hidden
+@base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Create(base.CreateCommand):
   """Create a new backup plan association."""
@@ -36,7 +37,8 @@ class Create(base.CreateCommand):
   detailed_help = {
       'BRIEF': 'Creates a new backup plan association',
       'DESCRIPTION': (
-          '{description} A backup plan association is used to.'
+          'Create a new backup plan association in the project. It can only be'
+          ' created in locations where Backup and DR is available.'
       ),
       'EXAMPLES': """\
         To create a new backup plan association `sample-bpa` in project `sample-project` and location `us-central1` for resource `sample-resource-uri` with backup plan `sample-backup-plan`, run:

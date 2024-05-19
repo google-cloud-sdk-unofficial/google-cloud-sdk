@@ -63,6 +63,7 @@ class Compute(base.Command):
     compute_flags.AddNameArg(parser)
     compute_flags.AddTargetZoneArg(parser)
     compute_flags.AddTargetProjectArg(parser)
+    compute_flags.AddNetworkInterfaceArg(parser, False)
 
   def Run(self, args):
     """Constructs and sends request.
@@ -84,6 +85,8 @@ class Compute(base.Command):
     restore_config['TargetProject'] = (
         args.CONCEPTS.target_project.Parse().RelativeName()
     )
+    if args.network_interface:
+      restore_config['NetworkInterfaces'] = args.network_interface
     try:
       operation = client.RestoreCompute(backup, restore_config)
     except apitools_exceptions.HttpError as e:

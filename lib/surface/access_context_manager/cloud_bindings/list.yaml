@@ -3,19 +3,41 @@
   help_text:
     brief: List cloud access bindings under an organization.
     description: List cloud access bindings.
-    examples: |
-      To list cloud access bindings, run:
+    GA:
+      examples: |
+        To list cloud access bindings, run:
 
-        $ {command}
+          $ {command}
 
-      This command prints a list of gcpUserAccessBindings in a tabular form:
+        This command prints a list of gcpUserAccessBindings in a tabular form:
 
-        NAME                                                  GROUP_KEY    ACCESS_LEVEL                                     DRY_RUN_ACCESS_LEVEL
-        organizations/256/gcpUserAccessBindings/b3-BhcX_Ud5N  a3dad        accessPolicies/9522/accessLevels/device_trusted  accessPolicies/9522/accessLevels/specific_location
+          NAME                                                  GROUP_KEY    ACCESS_LEVEL                                     DRY_RUN_ACCESS_LEVEL
+          organizations/256/gcpUserAccessBindings/b3-BhcX_Ud5N  a3dad        accessPolicies/9522/accessLevels/device_trusted  accessPolicies/9522/accessLevels/specific_location
+    ALPHA:
+      examples: |
+        To list cloud access bindings, run:
+
+          $ {command}
+
+        This command prints a list of Google Cloud user access bindings, `gcpUserAccessBindings`,
+        in YAML format:
+
+          ---
+          accessLevels:
+          - accessPolicies/9522/accessLevels/device_trusted
+          dryRunAccessLevels:
+          - accessPolicies/9522/accessLevels/specific_location
+          groupKey: a3dad
+          name: organizations/256/gcpUserAccessBindings/b3-BhcX_Ud5N
+          restrictedClientApplications:
+          - clientId: 123.apps.googleusercontent.com
+          - name: Cloud Console
+          - name: Google Cloud SDK
 
   request:
     collection: accesscontextmanager.organizations.gcpUserAccessBindings
-    api_version: v1
+    GA:
+      api_version: v1
     ALPHA:
       api_version: v1alpha
 
@@ -25,10 +47,13 @@
       spec: !REF googlecloudsdk.command_lib.accesscontextmanager.resources:organization
 
   output:
-    format: |
-      table(
-          name,
-          groupKey:label=GROUP_KEY,
-          accessLevels.join(","):label=ACCESS_LEVEL,
-          dryRunAccessLevels.join(","):label=DRY_RUN_ACCESS_LEVEL
-      )
+    GA:
+      format: |
+        table(
+            name,
+            groupKey:label=GROUP_KEY,
+            accessLevels.join(","):label=ACCESS_LEVEL,
+            dryRunAccessLevels.join(","):label=DRY_RUN_ACCESS_LEVEL
+        )
+    ALPHA:
+      format: yaml(name, groupKey, accessLevels, dryRunAccessLevels, restrictedClientApplications)

@@ -47,7 +47,7 @@ class UpdateInterface(base.UpdateCommand):
   INTERCONNECT_ATTACHMENT_ARG = None
 
   @classmethod
-  def _Args(cls, parser, enable_ipv6_bgp=False):
+  def _Args(cls, parser):
     cls.ROUTER_ARG = router_flags.RouterArgument()
     cls.ROUTER_ARG.AddArgument(parser, operation_type='update')
 
@@ -65,9 +65,7 @@ class UpdateInterface(base.UpdateCommand):
     )
     cls.INTERCONNECT_ATTACHMENT_ARG.AddArgument(link_parser)
 
-    router_flags.AddInterfaceArgs(
-        parser, for_update=True, enable_ipv6_bgp=enable_ipv6_bgp
-    )
+    router_flags.AddInterfaceArgs(parser, for_update=True)
 
   @classmethod
   def Args(cls, parser):
@@ -96,7 +94,7 @@ class UpdateInterface(base.UpdateCommand):
         ),
     )
 
-  def Modify(self, client, resources, args, existing, enable_ipv6_bgp=False):
+  def Modify(self, client, resources, args, existing):
     replacement = encoding.CopyProtoMessage(existing)
 
     iface = None
@@ -115,7 +113,7 @@ class UpdateInterface(base.UpdateCommand):
     elif (args.ip_address is not None) or (args.mask_length is not None):
       raise router_utils.RequireIpAddressAndMaskLengthError()
 
-    if enable_ipv6_bgp and args.ip_version is not None:
+    if args.ip_version is not None:
       iface.ipVersion = (
           client.messages.RouterInterface.IpVersionValueValuesEnum(
               args.ip_version
@@ -153,7 +151,7 @@ class UpdateInterface(base.UpdateCommand):
 
     return replacement
 
-  def _Run(self, args, enable_ipv6_bgp=False):
+  def _Run(self, args):
     """Issues requests necessary to update interfaces of the Router."""
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     client = holder.client
@@ -168,7 +166,6 @@ class UpdateInterface(base.UpdateCommand):
         holder.resources,
         args,
         objects[0],
-        enable_ipv6_bgp=enable_ipv6_bgp,
     )
 
     # If existing object is equal to the proposed object or if
@@ -199,11 +196,11 @@ class UpdateInterfaceBeta(UpdateInterface):
   """
 
   def Run(self, args):
-    return self._Run(args, enable_ipv6_bgp=True)
+    return self._Run(args)
 
   @classmethod
   def Args(cls, parser):
-    return cls._Args(parser, enable_ipv6_bgp=True)
+    return cls._Args(parser)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -213,4 +210,5 @@ class UpdateInterfaceAlpha(UpdateInterfaceBeta):
   *{command}* is used to update an interface on a Compute Engine
   router.
   """
+
   pass

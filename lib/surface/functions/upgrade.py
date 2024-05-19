@@ -187,6 +187,8 @@ def _ValidateStateTransition(upgrade_state, action):
     )
 
 
+@base.Hidden
+@base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class UpgradeAlpha(base.Command):
   """Upgrade a 1st gen Cloud Function to the 2nd gen environment."""

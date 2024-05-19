@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Deletes a Backup and DR Backup Plan Association."""
+"""Delete a specified Backup and DR Backup Plan Association."""
 
 
 from __future__ import absolute_import
@@ -30,12 +30,13 @@ from googlecloudsdk.core.console import console_io
 
 
 @base.Hidden
+@base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class DeleteAlpha(base.DeleteCommand):
-  """Delete the specified Backup plan association."""
+  """Delete the specified backup plan association."""
 
   detailed_help = {
-      'BRIEF': 'Deletes a specific backup plan association',
+      'BRIEF': 'Delete a specific backup plan association',
       'DESCRIPTION': '{description}',
       'EXAMPLES': """\
         To delete a backup plan association `sample-bpa` in project `sample-project` and location `us-central1` , run:

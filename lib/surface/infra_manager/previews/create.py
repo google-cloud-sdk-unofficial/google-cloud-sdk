@@ -26,6 +26,7 @@ from googlecloudsdk.command_lib.infra_manager import resource_args
 from googlecloudsdk.command_lib.util.concepts import concept_parsers
 
 
+@base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Create(base.CreateCommand):
   """Create a preview.
@@ -48,26 +49,12 @@ class Create(base.CreateCommand):
 
   @staticmethod
   def Args(parser):
-    preview_help_text = """\
-Labels to apply to the preview. Existing values are overwritten. To retain
-the existing labels on a preview, do not specify this flag.
-
-Examples:
-
-Update labels for an existing preview:
-
-  $ {command} projects/p1/locations/us-central1/previews/my-preview --gcs-source="gs://my-bucket" --labels="env=prod,team=finance"
-
-Clear labels for an existing preview:
-
-  $ {command} projects/p1/locations/us-central1/previews/my-preview --gcs-source="gs://my-bucket" --labels=""
-
-Add a label to an existing preview:
-
-  First, fetch the current labels using the `describe` command, then follow the
-  preceding example for updating labels.
-"""
-    flags.AddLabelsFlag(parser, preview_help_text)
+    labels_help_text = 'Preview labels cannot be updated after creation.'
+    annotations_help_text = (
+        'Preview annotations cannot be updated after creation.'
+    )
+    flags.AddLabelsFlag(parser, labels_help_text)
+    flags.AddAnnotationsFlag(parser, annotations_help_text)
     flags.AddAsyncFlag(parser)
     flags.AddDeploymentFlag(parser)
     flags.AddPreviewModeFlag(parser)
@@ -134,4 +121,5 @@ Add a label to an existing preview:
         args.input_values,
         args.inputs_file,
         args.labels,
+        args.annotations,
     )

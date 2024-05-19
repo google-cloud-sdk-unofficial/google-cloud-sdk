@@ -17,14 +17,16 @@
 # AUTOGEN_CLI_VERSION: HEAD
 - release_tracks:
   - ALPHA
-  hidden: true
   help_text:
-    brief: Describe registryNodes
-    description: Describe a registryNode
+    brief: Gets details of a single registry node resource
+    description: |
+      Gets details of a single registry node resource.
     examples: |-
-      To describe the registryNode, run:
+      To get the details of a single registry node `my-registry-node` in location `global` run:
 
-      $ {command}
+      $ {command} my-registry-node \
+          --registry-book=my-registry-book \
+          --location=global
   arguments:
     params:
     - help_text: |-

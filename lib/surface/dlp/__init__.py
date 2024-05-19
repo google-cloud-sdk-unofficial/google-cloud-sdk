@@ -23,6 +23,7 @@ from googlecloudsdk.calliope import base
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.DefaultUniverseOnly
 class DLP(base.Group):
   """Manage sensitive data with Cloud Data Loss Prevention.
 

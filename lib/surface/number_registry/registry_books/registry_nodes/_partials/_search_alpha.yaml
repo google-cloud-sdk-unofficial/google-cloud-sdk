@@ -17,14 +17,18 @@
 # AUTOGEN_CLI_VERSION: HEAD
 - release_tracks:
   - ALPHA
-  hidden: true
   help_text:
-    brief: search registryNodes
-    description: search registryNodes
+    brief: Search registry node resources in a registry book.
+    description: |
+      Search registry node resources in a registry book.
     examples: |-
-      To search all registryNodes, run:
+      To search all registry nodes containing keyword `gke` in registry book `my-registry-book` in location `global` run:
 
-      $ {command}
+      $ {command} --keywords='gke' --registry-book=my-registry-book --location=global
+
+      To search all registry nodes with IP range `192.168.0.0/24` in registry book `my-registry-book` in location `global` run:
+
+      $ {command} --ip-range='192.168.0.0/24' --registry-book=my-registry-book --location=global
   arguments:
     params:
     - help_text: |-

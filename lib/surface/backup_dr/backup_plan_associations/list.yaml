@@ -1,9 +1,9 @@
 - release_tracks: [ALPHA]
   help_text:
     brief: List Backup and DR backup plan associations
-    description: List Backup and DR backup plan associations in a project for a location.
+    description: List backup plan associations in the project for a specified location.
     examples: |
-      To list backup plan associations in default location, run:
+      To list backup plan associations for all locations, run:
 
       $ {command}
 

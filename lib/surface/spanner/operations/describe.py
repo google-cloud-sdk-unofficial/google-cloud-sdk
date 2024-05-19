@@ -171,9 +171,10 @@ class AlphaDescribe(Describe):
           args.operation, args.ssd_cache, args.instance_config
       )
 
+    flags.CheckExclusiveLROFlagsUnderInstance(args)
     if args.instance_partition:
       return instance_partition_operations.Get(
-          args.instance_partition, args.instance, args.operation
+          args.instance, args.instance_partition, args.operation
       )
 
     return super().Run(args)

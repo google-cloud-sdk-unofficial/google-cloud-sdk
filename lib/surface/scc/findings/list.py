@@ -84,13 +84,7 @@ class List(base.ListCommand):
           time, under organization `123456`:
 
             $ {{command}} 123456
-              --filter="state=\\"ACTIVE\\" AND event_time > 1546304400000"
-
-          List all findings that were `ACTIVE` as of `2019-01-01T01:00:00 GMT`
-          time, under organization 123456:
-
-            $ {{command}} 123456
-              --filter="state=\\"ACTIVE\\"" --read-time="2019-01-01T01:00:00Z"
+              --filter="state=\\"ACTIVE\\" AND event_time > 1546304400000""
 
           List all findings under organization `123456` across all sources and
           `location=eu`:

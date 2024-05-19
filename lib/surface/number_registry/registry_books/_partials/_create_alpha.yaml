@@ -17,14 +17,14 @@
 # AUTOGEN_CLI_VERSION: HEAD
 - release_tracks:
   - ALPHA
-  hidden: true
   help_text:
-    brief: Create registryBooks
-    description: Create a registryBook
+    brief: Create a registry book resource
+    description: |
+      Create a registry book resource.
     examples: |-
-      To create the registryBook, run:
+      To create an registry book `my-registry-book` in location `global` run:
 
-      $ {command}
+      $ {command} my-registry-book --location=global
   arguments:
     params:
     - help_text: |-

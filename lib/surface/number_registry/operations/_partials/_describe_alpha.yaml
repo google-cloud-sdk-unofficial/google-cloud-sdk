@@ -17,7 +17,6 @@
 # AUTOGEN_CLI_VERSION: HEAD
 - release_tracks:
   - ALPHA
-  hidden: true
   help_text:
     brief: Describe operations
     description: Describe an operation

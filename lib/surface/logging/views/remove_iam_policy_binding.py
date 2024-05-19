@@ -27,7 +27,7 @@ from googlecloudsdk.command_lib.iam import iam_util
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
-@base.Hidden
+@base.UniverseCompatible
 class RemoveIamPolicyBinding(base.Command):
   """Remove IAM policy binding to a log view."""
 

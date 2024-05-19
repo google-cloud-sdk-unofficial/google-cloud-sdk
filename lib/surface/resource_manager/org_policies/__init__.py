@@ -21,6 +21,7 @@ from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 
 
+@base.DefaultUniverseOnly
 class OrgPolicies(base.Group):
   """Manage Org Policies.
 

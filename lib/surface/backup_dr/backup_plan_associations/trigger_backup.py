@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Create an on-demand backup for a resource."""
+"""Create an on-demand backup."""
 
 
 from __future__ import absolute_import
@@ -29,6 +29,7 @@ from googlecloudsdk.core import log
 
 
 @base.Hidden
+@base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class TriggerBackup(base.Command):
   """Create an on-demand backup for a resource."""
@@ -39,9 +40,9 @@ class TriggerBackup(base.Command):
           '{description} Trigger an on demand backup for the given backup rule.'
       ),
       'EXAMPLES': """\
-        To trigger an on demand backup for a backup pla association `sample-bpa` in project `sample-project` and location `us-central1` with backup plan `sample-backup-rule`, run:
+        To trigger an on demand backup for a backup plan association `sample-bpa` in project `sample-project` and location `us-central1` with backup rule `sample-backup-rule`, run:
 
-          $ {command} sample-bpa --project=sample-project --location=us-central1 --backup-rule=sample-backup-rule
+          $ {command} sample-bpa --project=sample-project --location=us-central1 --backup-rule-id=sample-backup-rule
         """,
   }
 

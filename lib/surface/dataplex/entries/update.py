@@ -23,7 +23,10 @@ from googlecloudsdk.command_lib.dataplex import flags
 from googlecloudsdk.command_lib.dataplex import resource_args
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.DefaultUniverseOnly
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
+)
 class Update(base.UpdateCommand):
   """Update a Dataplex Entry."""
 

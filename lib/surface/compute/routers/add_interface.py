@@ -47,7 +47,7 @@ class AddInterface(base.UpdateCommand):
   SUBNETWORK_ARG = None
 
   @classmethod
-  def _Args(cls, parser, enable_ipv6_bgp=False):
+  def _Args(cls, parser):
     cls.ROUTER_ARG = router_flags.RouterArgument()
     cls.ROUTER_ARG.AddArgument(parser, operation_type='update')
 
@@ -71,7 +71,7 @@ class AddInterface(base.UpdateCommand):
     cls.SUBNETWORK_ARG = subnet_flags.SubnetworkArgumentForRouter()
     cls.SUBNETWORK_ARG.AddArgument(subnetwork_group)
 
-    router_flags.AddInterfaceArgs(parser, enable_ipv6_bgp=enable_ipv6_bgp)
+    router_flags.AddInterfaceArgs(parser)
 
   @classmethod
   def Args(cls, parser):
@@ -100,7 +100,7 @@ class AddInterface(base.UpdateCommand):
         ),
     )
 
-  def Modify(self, client, resources, args, existing, enable_ipv6_bgp=False):
+  def Modify(self, client, resources, args, existing):
     replacement = encoding.CopyProtoMessage(existing)
     mask = None
     interface_name = args.interface_name
@@ -118,7 +118,7 @@ class AddInterface(base.UpdateCommand):
         )
 
     ip_version = None
-    if enable_ipv6_bgp and args.ip_version is not None:
+    if args.ip_version is not None:
       ip_version = client.messages.RouterInterface.IpVersionValueValuesEnum(
           args.ip_version
       )
@@ -167,7 +167,7 @@ class AddInterface(base.UpdateCommand):
 
     return replacement
 
-  def _Run(self, args, enable_ipv6_bgp=False):
+  def _Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     client = holder.client
 
@@ -181,7 +181,6 @@ class AddInterface(base.UpdateCommand):
         holder.resources,
         args,
         objects[0],
-        enable_ipv6_bgp=enable_ipv6_bgp,
     )
 
     return client.MakeRequests(
@@ -199,13 +198,7 @@ class AddInterfaceBeta(AddInterface):
   *{command}* is used to add an interface to a Compute Engine
   router.
   """
-
-  @classmethod
-  def Args(cls, parser):
-    cls._Args(parser, enable_ipv6_bgp=True)
-
-  def Run(self, args):
-    return self._Run(args, enable_ipv6_bgp=True)
+  pass
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)

@@ -25,8 +25,8 @@ from googlecloudsdk.command_lib.compute import flags as compute_flags
 from googlecloudsdk.command_lib.compute.routers import flags
 
 
-@base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.UniverseCompatible
 class GetRoutePolicy(base.DescribeCommand):
   """Get a route policy from a Compute Engine router.
 

@@ -17,14 +17,14 @@
 # AUTOGEN_CLI_VERSION: HEAD
 - release_tracks:
   - ALPHA
-  hidden: true
   help_text:
-    brief: List registryBooks
-    description: List registryBooks
+    brief: List registry book resources
+    description: |
+      List registry book resources.
     examples: |-
-      To list all registryBooks, run:
+      To list all registry books in location `global` run:
 
-      $ {command}
+      $ {command} --location=global
   arguments:
     params:
     - help_text: |-

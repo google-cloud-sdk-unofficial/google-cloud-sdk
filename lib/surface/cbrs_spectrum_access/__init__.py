@@ -24,6 +24,7 @@ from googlecloudsdk.calliope import base
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 @base.Hidden
+@base.DefaultUniverseOnly
 class CbrsSpectrumAccess(base.Group):
   """Create and manage Spectrum Access System (SAS) resources."""
 

@@ -22,6 +22,7 @@ from googlecloudsdk.calliope import base
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.DefaultUniverseOnly
 class Eventarc(base.Group):
   """Manage Eventarc resources."""
 
@@ -31,15 +32,3 @@ class Eventarc(base.Group):
     # TODO(b/190533987):  Determine if command group works with project number
     base.RequireProjectID(args)
     del context, args
-
-
-@base.Deprecate(
-    is_removed=True,
-    warning='This command is deprecated. Please use `gcloud eventarc` instead.',
-    error=(
-        'This command has been removed. Please use `gcloud eventarc` instead.'
-    ),
-)
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class EventarcBeta(Eventarc):
-  """Manage Eventarc resources."""

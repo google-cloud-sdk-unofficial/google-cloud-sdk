@@ -17,14 +17,14 @@
 # AUTOGEN_CLI_VERSION: HEAD
 - release_tracks:
   - ALPHA
-  hidden: true
   help_text:
-    brief: Update registryNodes
-    description: Update a registryNode
+    brief: Update the parameters of a single registry node resource.
+    description: |
+      Update the parameters of a single registry node resource.
     examples: |-
-      To update the registryNode, run:
+      To update the IP range of a registry node `my-registry-node` with a new IP range `10.20.10.0/24` in location `global` run:
 
-      $ {command}
+      $ {command} my-registry-node --ip-range=10.20.10.0/24 --location=global --registry-book=my-registry-book
   arguments:
     params:
     - help_text: |-

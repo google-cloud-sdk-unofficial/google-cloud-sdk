@@ -30,6 +30,10 @@ from googlecloudsdk.core import properties
 from googlecloudsdk.core import resources
 
 
+# TODO(b/312466999): Change @base.DefaultUniverseOnly to
+# @base.UniverseCompatible once b/312466999 is fixed.
+# See go/gcloud-cli-running-tpc-tests.
+@base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Create(base.CreateCommand):
   """Creates a new AlloyDB instance within a given cluster."""
@@ -73,7 +77,7 @@ class Create(base.CreateCommand):
     flags.AddInsightsConfigRecordClientAddress(
         parser, show_negated_in_help=True
     )
-    flags.AddSSLMode(parser, update=False)
+    flags.AddSSLMode(parser)
     flags.AddRequireConnectors(parser)
     flags.AddAssignInboundPublicIp(parser, False)
     flags.AddAllowedPSCProjects(parser)

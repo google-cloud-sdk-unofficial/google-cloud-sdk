@@ -54,7 +54,6 @@ class ProxyConfig(base.BinaryBackedCommand):
         '--type',
         required=True,
         choices=[
-            'all',
             'bootstrap',
             'cluster',
             'clusters',
@@ -69,8 +68,7 @@ class ProxyConfig(base.BinaryBackedCommand):
             'secrets',
         ],
         help_str=(
-            'Proxy configuration type to retrieve. \n\n all                 '
-            ' Retrieves all configuration for the Envoy in the specified pod \n'
+            'Proxy configuration type to retrieve. \n\n '
             ' bootstrap            Retrieves bootstrap configuration for the'
             ' Envoy in the specified pod \n clusters/cluster     Retrieves'
             ' cluster configuration for the Envoy in the specified pod \n'

@@ -22,6 +22,7 @@ from googlecloudsdk.calliope import base
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.DefaultUniverseOnly
 class Vmware(base.Group):
   """Manage Google Cloud VMware Engine resources."""
 

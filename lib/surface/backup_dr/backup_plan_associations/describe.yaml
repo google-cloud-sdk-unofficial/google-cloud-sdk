@@ -1,7 +1,7 @@
 - release_tracks: [ALPHA]
   help_text:
     brief: Show details of the backup plan association.
-    description: Show all data associated with the specified backup plan association.
+    description: Show all configuration data associated with the specified backup plan association.
     examples: |
       To view details for backup plan association ``BACKUP_PLAN_ASSOCIATION'', run:
 

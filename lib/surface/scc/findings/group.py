@@ -68,19 +68,6 @@ class Group(base.Command):
             $ {command} 123456 --source=5678 --group-by="category"
               --filter="state=\\"ACTIVE\\""
 
-          Group ACTIVE findings under organization `123456` and source `5678`,
-          on `2019-01-01T01:00:00 GMT`, by their category:
-
-            $ {command} 123456 --source=5678 --group-by="category"
-            --filter="state=\\"ACTIVE\\"" --read-time="2019-01-01T01:00:00Z"
-
-          Group findings under organization `123456` and source `5678` into
-          following 3 state_changes (ADDED/CHANGED/UNCHANGED) based on the
-          activity during past 24 hours:
-
-            $ {command} 123456 --source=5678 --group-by="state_change"
-              --compare-duration=86400s
-
           Group findings under organization `123456` and `location=eu` across
           all sources by their category:
 

@@ -449,6 +449,8 @@ def ParseCreateOptionsBase(args, is_autopilot, get_default, location,
       enable_multi_networking=get_default('enable_multi_networking'),
       placement_type=get_default('placement_type'),
       placement_policy=get_default('placement_policy'),
+      compliance=get_default('compliance'),
+      compliance_standards=get_default('compliance_standards'),
       enable_security_posture=get_default('enable_security_posture'),
       network_performance_config=get_default('network_performance_configs'),
       enable_insecure_kubelet_readonly_port=get_default(
@@ -676,6 +678,7 @@ flags_to_add = {
             flags.AddAutoprovisioningEnableKubeletReadonlyPortFlag
         ),
         'enableK8sBetaApis': flags.AddEnableK8sBetaAPIs,
+        'compliance': lambda p: flags.AddComplianceFlags(p, hidden=True),
         'securityPosture': flags.AddSecurityPostureEnumFlag,
         'workloadVulnerabilityScanning': flags.AddWorkloadVulnScanningEnumFlag,
         'enableRuntimeVulnerabilityInsight': (
@@ -844,6 +847,7 @@ flags_to_add = {
             flags.AddAutoprovisioningEnableKubeletReadonlyPortFlag
         ),
         'enableK8sBetaApis': flags.AddEnableK8sBetaAPIs,
+        'compliance': lambda p: flags.AddComplianceFlags(p, hidden=True),
         'securityPosture': flags.AddSecurityPostureEnumFlag,
         'workloadVulnerabilityScanning': flags.AddWorkloadVulnScanningEnumFlag,
         'enableRuntimeVulnerabilityInsight': (
@@ -1022,6 +1026,7 @@ flags_to_add = {
             flags.AddAutoprovisioningEnableKubeletReadonlyPortFlag
         ),
         'enableK8sBetaApis': flags.AddEnableK8sBetaAPIs,
+        'compliance': lambda p: flags.AddComplianceFlags(p, hidden=True),
         'securityPosture': flags.AddSecurityPostureEnumFlag,
         'workloadVulnerabilityScanning': flags.AddWorkloadVulnScanningEnumFlag,
         'enableRuntimeVulnerabilityInsight': (
@@ -1068,6 +1073,7 @@ base_flag_defaults = {
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.UniverseCompatible
 class Create(base.CreateCommand):
   """Create a cluster for running containers."""
 
@@ -1285,6 +1291,8 @@ class CreateBeta(Create):
     ops.fleet_project = get_default('fleet_project')
     ops.enable_fleet = get_default('enable_fleet')
     ops.enable_multi_networking = get_default('enable_multi_networking')
+    ops.compliance = get_default('compliance')
+    ops.compliance_standards = get_default('compliance_standards')
     ops.enable_security_posture = get_default('enable_security_posture')
     ops.security_posture = get_default('security_posture')
     ops.workload_vulnerability_scanning = get_default(
@@ -1408,6 +1416,8 @@ class CreateAlpha(Create):
     ops.fleet_project = get_default('fleet_project')
     ops.enable_fleet = get_default('enable_fleet')
     ops.enable_multi_networking = get_default('enable_multi_networking')
+    ops.compliance = get_default('compliance')
+    ops.compliance_standards = get_default('compliance_standards')
     ops.enable_security_posture = get_default('enable_security_posture')
     ops.security_posture = get_default('security_posture')
     ops.workload_vulnerability_scanning = get_default(

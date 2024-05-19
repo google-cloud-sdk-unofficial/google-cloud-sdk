@@ -35,6 +35,7 @@ _DETAILED_HELP = {
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.DefaultUniverseOnly
 class Delete(base.DeleteCommand):
   """Delete an Eventarc trigger."""
 
@@ -53,19 +54,3 @@ class Delete(base.DeleteCommand):
     if args.async_:
       return operation
     return client.WaitFor(operation, 'Deleting', trigger_ref)
-
-
-@base.Deprecate(
-    is_removed=True,
-    warning=(
-        'This command is deprecated. '
-        'Please use `gcloud eventarc triggers delete` instead.'
-    ),
-    error=(
-        'This command has been removed. '
-        'Please use `gcloud eventarc triggers delete` instead.'
-    ),
-)
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class DeleteBeta(Delete):
-  """Delete an Eventarc trigger."""

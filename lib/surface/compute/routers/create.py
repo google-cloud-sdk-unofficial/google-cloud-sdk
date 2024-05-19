@@ -41,7 +41,7 @@ class Create(base.CreateCommand):
   ROUTER_ARG = None
 
   @classmethod
-  def _Args(cls, parser, enable_ipv6_bgp=False):
+  def _Args(cls, parser):
     parser.display_info.AddFormat(flags.DEFAULT_LIST_FORMAT)
     cls.NETWORK_ARG = network_flags.NetworkArgumentForOtherResource(
         'The network for this router'
@@ -52,8 +52,7 @@ class Create(base.CreateCommand):
     base.ASYNC_FLAG.AddToParser(parser)
     flags.AddCreateRouterArgs(parser)
     flags.AddKeepaliveIntervalArg(parser)
-    if enable_ipv6_bgp:
-      flags.AddBgpIdentifierRangeArg(parser)
+    flags.AddBgpIdentifierRangeArg(parser)
     flags.AddEncryptedInterconnectRouter(parser)
     flags.AddReplaceCustomAdvertisementArgs(parser, 'router')
     parser.display_info.AddCacheUpdater(flags.RoutersCompleter)
@@ -63,7 +62,7 @@ class Create(base.CreateCommand):
     """See base.CreateCommand."""
     cls._Args(parser)
 
-  def _Run(self, args, enable_ipv6_bgp=False):
+  def _Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     messages = holder.client.messages
     service = holder.client.apitools_client.routers
@@ -104,7 +103,7 @@ class Create(base.CreateCommand):
         if value is not None:
           setattr(router_resource.bgp, attr, value)
 
-    if enable_ipv6_bgp and args.bgp_identifier_range is not None:
+    if args.bgp_identifier_range is not None:
       if not hasattr(router_resource.bgp, 'identifierRange'):
         router_resource.bgp = messages.RouterBgp()
       router_resource.bgp.identifierRange = args.bgp_identifier_range
@@ -170,14 +169,7 @@ class CreateBeta(Create):
   tunnels and interconnects.
   """
 
-  @classmethod
-  def Args(cls, parser):
-    """See base.CreateCommand."""
-    cls._Args(parser, enable_ipv6_bgp=True)
-
-  def Run(self, args):
-    """See base.UpdateCommand."""
-    return self._Run(args, enable_ipv6_bgp=True)
+  pass
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)

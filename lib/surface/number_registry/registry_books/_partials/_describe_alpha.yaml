@@ -17,14 +17,14 @@
 # AUTOGEN_CLI_VERSION: HEAD
 - release_tracks:
   - ALPHA
-  hidden: true
   help_text:
-    brief: Describe registryBooks
-    description: Describe a registryBook
+    brief: Gets details of a single registry book resource
+    description: |
+      Gets details of a single registry book resource.
     examples: |-
-      To describe the registryBook, run:
+      To get the details of a single registry book `my-registry-book` in location `global` run:
 
-      $ {command}
+      $ {command} my-registry-book --location=global
   arguments:
     params:
     - help_text: |-

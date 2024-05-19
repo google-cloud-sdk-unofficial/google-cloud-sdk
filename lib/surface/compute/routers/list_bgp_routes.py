@@ -27,12 +27,13 @@ from googlecloudsdk.command_lib.compute.routers import flags
 from googlecloudsdk.command_lib.util.apis import arg_utils
 
 
-@base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.UniverseCompatible
 class ListBgpRoutes(base.ListCommand):
-  """List route policies from a Compute Engine router.
+  """List routes advertised and learned on individual BGP sessions, both pre- and post-policy evaluation.
 
-  *{command}* lists all route policies from a Compute Engine router.
+  *{command}* lists routes advertised and learned on individual BGP sessions,
+  both pre- and post-policy evaluation.
   """
 
   ROUTER_ARG = None
@@ -54,7 +55,7 @@ class ListBgpRoutes(base.ListCommand):
             'IPV4': 'Interface with IPv4-based BGP.',
             'IPV6': 'Interface with IPv6-based BGP.',
         },
-        help="""Limit results to routes learned for this AFI.""",
+        help="""Limit results to routes learned for this Address Family Identifier.""",
         required=True,
     )
     parser.add_argument(

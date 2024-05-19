@@ -25,8 +25,10 @@ from googlecloudsdk.command_lib.compute import flags as compute_flags
 from googlecloudsdk.command_lib.compute.public_delegated_prefixes import flags
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
-                    base.ReleaseTrack.GA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
+)
+@base.UniverseCompatible
 class Create(base.UpdateCommand):
   r"""Creates a Compute Engine delegated sub prefix."""
   DETAILED_HELP = {
@@ -61,6 +63,22 @@ class Create(base.UpdateCommand):
     pdp_client = public_delegated_prefixes.PublicDelegatedPrefixesClient(
         client, messages, resources)
 
-    return pdp_client.AddSubPrefix(pdp_ref, args.name, args.range,
-                                   args.description, args.delegatee_project,
-                                   args.create_addresses)
+    if args.mode:
+      input_mode = holder.client.messages.PublicDelegatedPrefixPublicDelegatedSubPrefix.ModeValueValuesEnum(
+          args.mode
+      )
+    else:
+      input_mode = None
+
+    return pdp_client.AddSubPrefix(
+        pdp_ref,
+        args.name,
+        args.range,
+        args.description,
+        args.delegatee_project,
+        args.create_addresses,
+        input_mode,
+        int(args.allocatable_prefix_length)
+        if args.allocatable_prefix_length
+        else None,
+    )

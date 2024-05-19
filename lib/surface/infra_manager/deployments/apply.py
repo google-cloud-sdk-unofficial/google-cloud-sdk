@@ -26,6 +26,7 @@ from googlecloudsdk.command_lib.infra_manager import resource_args
 from googlecloudsdk.command_lib.util.concepts import concept_parsers
 
 
+@base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Create(base.CreateCommand):
   """Create or update a deployment.
@@ -54,7 +55,7 @@ class Create(base.CreateCommand):
 
   @staticmethod
   def Args(parser):
-    deployment_help_text = """\
+    labels_help_text = """\
 Labels to apply to the deployment. Existing values are overwritten. To retain
 the existing labels on a deployment, do not specify this flag.
 
@@ -73,7 +74,27 @@ Add a label to an existing deployment:
   First, fetch the current labels using the `describe` command, then follow the
   preceding example for updating labels.
 """
-    flags.AddLabelsFlag(parser, deployment_help_text)
+    annotations_help_text = """\
+Annotations to apply to the deployment. Existing values are overwritten. To retain
+the existing annotations on a deployment, do not specify this flag.
+
+Examples:
+
+Update annotations for an existing deployment:
+
+  $ {command} projects/p1/locations/us-central1/deployments/my-deployment --gcs-source="gs://my-bucket" --annotations="env=prod,team=finance"
+
+Clear annotations for an existing deployment:
+
+  $ {command} projects/p1/locations/us-central1/deployments/my-deployment --gcs-source="gs://my-bucket" --annotations=""
+
+Add an annotation to an existing deployment:
+
+  First, fetch the current annotations using the `describe` command, then follow the
+  preceding example for updating annotations.
+"""
+    flags.AddLabelsFlag(parser, labels_help_text)
+    flags.AddAnnotationsFlag(parser, annotations_help_text)
     flags.AddAsyncFlag(parser)
     flags.AddTerraformBlueprintFlag(parser)
     flags.AddServiceAccountFlag(parser)
@@ -126,4 +147,5 @@ Add a label to an existing deployment:
         args.inputs_file,
         args.labels,
         args.quota_validation,
+        args.annotations,
     )

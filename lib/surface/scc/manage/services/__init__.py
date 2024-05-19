@@ -21,8 +21,8 @@ from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 
 
-@base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.DefaultUniverseOnly
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.ALPHA)
 class Services(base.Group):
   """Manage Cloud SCC (Security Command Center) services."""
 

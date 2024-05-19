@@ -17,14 +17,14 @@
 # AUTOGEN_CLI_VERSION: HEAD
 - release_tracks:
   - ALPHA
-  hidden: true
   help_text:
-    brief: show historicalEvents
-    description: show historicalEvents
+    brief: List all historical events in a registry book.
+    description: |
+      List all historical events in a registry book.
     examples: |-
-      To show all historicalEvents, run:
+      To list all historical events in registry book `my-registry-book` in location `global` run:
 
-      $ {command}
+      $ {command} --registry-book=my-registry-book --location=global
   arguments:
     params:
     - help_text: |-

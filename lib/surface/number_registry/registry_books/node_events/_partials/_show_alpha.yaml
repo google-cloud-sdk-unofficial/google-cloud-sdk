@@ -17,14 +17,14 @@
 # AUTOGEN_CLI_VERSION: HEAD
 - release_tracks:
   - ALPHA
-  hidden: true
   help_text:
-    brief: show nodeEvents
-    description: show nodeEvents
+    brief: List all node events of an IP range in a registry book.
+    description: |
+      List all node events of an IP range in a registry book.
     examples: |-
-      To show all nodeEvents, run:
+      To list all node events of IP range `10.10.20.0/24` in registry book `my-registry-book` in location `global` run:
 
-      $ {command}
+      $ {command} --ip-range=10.10.20.0/24 --registry-book=my-registry-book --location=global
   arguments:
     params:
     - help_text: |-

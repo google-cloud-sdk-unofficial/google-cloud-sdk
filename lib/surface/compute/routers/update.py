@@ -36,13 +36,12 @@ class Update(base.UpdateCommand):
   ROUTER_ARG = None
 
   @classmethod
-  def _Args(cls, parser, enable_ipv6_bgp=False):
+  def _Args(cls, parser):
     cls.ROUTER_ARG = flags.RouterArgument()
     cls.ROUTER_ARG.AddArgument(parser, operation_type='update')
     base.ASYNC_FLAG.AddToParser(parser)
     flags.AddKeepaliveIntervalArg(parser)
-    if enable_ipv6_bgp:
-      flags.AddBgpIdentifierRangeArg(parser)
+    flags.AddBgpIdentifierRangeArg(parser)
     flags.AddAsnArg(parser)
     flags.AddUpdateCustomAdvertisementArgs(parser, 'router')
 
@@ -50,7 +49,7 @@ class Update(base.UpdateCommand):
   def Args(cls, parser):
     cls._Args(parser)
 
-  def _Run(self, args, enable_ipv6_bgp=False):
+  def _Run(self, args):
     # Manually ensure replace/incremental flags are mutually exclusive.
     router_utils.CheckIncompatibleFlagsOrRaise(args)
 
@@ -68,7 +67,7 @@ class Update(base.UpdateCommand):
     if args.keepalive_interval is not None:
       setattr(replacement.bgp, 'keepaliveInterval', args.keepalive_interval)
 
-    if enable_ipv6_bgp and args.bgp_identifier_range is not None:
+    if args.bgp_identifier_range is not None:
       setattr(replacement.bgp, 'identifierRange', args.bgp_identifier_range)
 
     if args.asn is not None:
@@ -202,13 +201,7 @@ class Update(base.UpdateCommand):
 class UpdateBeta(Update):
   """Update a Compute Engine router."""
 
-  @classmethod
-  def Args(cls, parser):
-    cls._Args(parser, enable_ipv6_bgp=True)
-
-  def Run(self, args):
-    """See base.UpdateCommand."""
-    return self._Run(args, enable_ipv6_bgp=True)
+  pass
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
