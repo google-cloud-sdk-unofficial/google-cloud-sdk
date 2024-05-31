@@ -41,9 +41,9 @@ class Compute(base.Command):
       'DESCRIPTION': '{description}',
       'EXAMPLES': """\
         To restore a backup `sample-backup` in project `sample-project` and location `us-central1`,
-        with `sample-datastore` and `sample-backup-vault`, and additional target properties, run:
+        with `sample-data-store` and `sample-backup-vault`, and additional target properties, run:
 
-          $ {command} sample-backup --project=sample-project --location=us-central1 --backup-vault=sample-backup-vault --datasource=sample-datasource --<target-properties>
+          $ {command} sample-backup --project=sample-project --location=us-central1 --backup-vault=sample-backup-vault --data-source=sample-data-source --<target-properties>
         """,
   }
 
@@ -64,6 +64,8 @@ class Compute(base.Command):
     compute_flags.AddTargetZoneArg(parser)
     compute_flags.AddTargetProjectArg(parser)
     compute_flags.AddNetworkInterfaceArg(parser, False)
+    compute_flags.AddServiceAccountArg(parser, False)
+    compute_flags.AddScopesArg(parser, False)
 
   def Run(self, args):
     """Constructs and sends request.
@@ -82,11 +84,15 @@ class Compute(base.Command):
     restore_config = ComputeRestoreConfig()
     restore_config['Name'] = args.name
     restore_config['TargetZone'] = args.target_zone
-    restore_config['TargetProject'] = (
-        args.CONCEPTS.target_project.Parse().RelativeName()
-    )
+    restore_config['TargetProject'] = args.target_project
     if args.network_interface:
       restore_config['NetworkInterfaces'] = args.network_interface
+    if args.service_account:
+      restore_config['ServiceAccount'] = args.service_account
+    if args.scopes:
+      restore_config['Scopes'] = args.scopes
+    restore_config['NoScopes'] = args.no_scopes if args.no_scopes else False
+
     try:
       operation = client.RestoreCompute(backup, restore_config)
     except apitools_exceptions.HttpError as e:

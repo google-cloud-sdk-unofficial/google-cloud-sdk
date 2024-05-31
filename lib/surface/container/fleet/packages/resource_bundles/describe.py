@@ -21,7 +21,7 @@ from googlecloudsdk.command_lib.container.fleet.packages import flags
 _DETAILED_HELP = {
     'DESCRIPTION': '{description}',
     'EXAMPLES': """ \
-        To describe Resource Bundle ``cert-manager'' in ``us-central1'', run:
+        To describe Resource Bundle `cert-manager` in `us-central1`, run:
 
           $ {command} cert-manager --location=us-central1
         """,
@@ -29,6 +29,7 @@ _DETAILED_HELP = {
 
 
 @base.Hidden
+@base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Describe(base.DescribeCommand):
   """Describe Package Rollouts Resource Bundle."""

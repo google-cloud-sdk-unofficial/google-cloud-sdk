@@ -325,7 +325,15 @@ def RunBaseCreateCommand(args, release_track):
     )
 
   if args.IsSpecified('edition') and args.edition == 'enterprise-plus':
-    if not args.IsSpecified('tier'):
+    # This logic is awkward because we only want to change behavior for "new"
+    # database types to avoid breaking changes.
+    can_infer_tier = (
+        args.tier
+        and command_util.DoesEnterprisePlusReplicaInferTierForDatabaseType(
+            sql_messages, args.database_version
+        )
+    )
+    if not (args.IsSpecified('tier') or can_infer_tier):
       raise sql_exceptions.ArgumentError(
           '`--edition=enterprise-plus` requires `--tier`'
       )
@@ -395,6 +403,7 @@ def RunBaseCreateCommand(args, release_track):
     raise
 
 
+@base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Create(base.Command):
   """Creates a new Cloud SQL instance."""
@@ -413,6 +422,7 @@ class Create(base.Command):
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.DefaultUniverseOnly
 class CreateBeta(base.Command):
   """Creates a new Cloud SQL instance."""
 
@@ -431,6 +441,7 @@ class CreateBeta(base.Command):
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.DefaultUniverseOnly
 class CreateAlpha(base.Command):
   """Creates a new Cloud SQL instance."""
 

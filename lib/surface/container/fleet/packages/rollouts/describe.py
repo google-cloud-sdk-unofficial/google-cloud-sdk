@@ -23,7 +23,7 @@ from googlecloudsdk.core import log
 _DETAILED_HELP = {
     'DESCRIPTION': '{description}',
     'EXAMPLES': """ \
-        To view Rollout ``20240318'' for ``cert-manager-app'' in ``us-central1'', run:
+        To view Rollout `20240318` for `cert-manager-app` in `us-central1`, run:
 
           $ {command} 20240318 --fleet-package=cert-manager-app --location=us-central1
         """,

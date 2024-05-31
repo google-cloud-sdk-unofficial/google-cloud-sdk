@@ -378,6 +378,7 @@ class Update(base.UpdateCommand):
     flags.AddStackTypeFlag(group)
     flags.AddCostManagementConfigFlag(group, is_update=True)
     flags.AddGatewayFlags(group, hidden=False)
+    flags.AddComplianceFlags(group, hidden=True)
     flags.AddSecurityPostureFlag(group)
     flags.AddClusterNetworkPerformanceConfigFlags(group)
     flags.AddEnableK8sBetaAPIs(group)
@@ -478,6 +479,8 @@ class Update(base.UpdateCommand):
     opts.enable_security_posture = args.enable_security_posture
     opts.network_performance_config = args.network_performance_configs
     opts.enable_k8s_beta_apis = args.enable_kubernetes_unstable_apis
+    opts.compliance = args.compliance
+    opts.compliance_standards = args.compliance_standards
     opts.security_posture = args.security_posture
     opts.workload_vulnerability_scanning = args.workload_vulnerability_scanning
     opts.enable_runtime_vulnerability_insight = (
@@ -964,6 +967,7 @@ class UpdateBeta(Update):
     flags.AddRemoveAdditionalPodIpv4RangesFlag(group_add_pod_ipv4_ranges)
     flags.AddGatewayFlags(group, hidden=False)
     flags.AddFleetProjectFlag(group, is_update=True)
+    flags.AddComplianceFlags(group, hidden=True)
     flags.AddSecurityPostureFlag(group)
     flags.AddClusterNetworkPerformanceConfigFlags(group)
     flags.AddEnableK8sBetaAPIs(group)
@@ -1124,6 +1128,8 @@ class UpdateBeta(Update):
     opts.enable_security_posture = args.enable_security_posture
     opts.network_performance_config = args.network_performance_configs
     opts.enable_k8s_beta_apis = args.enable_kubernetes_unstable_apis
+    opts.compliance = args.compliance
+    opts.compliance_standards = args.compliance_standards
     opts.security_posture = args.security_posture
     opts.workload_vulnerability_scanning = args.workload_vulnerability_scanning
     opts.enable_runtime_vulnerability_insight = (
@@ -1245,6 +1251,7 @@ class UpdateAlpha(Update):
     flags.AddAdditionalPodIpv4RangesFlag(group_add_pod_ipv4_ranges)
     flags.AddRemoveAdditionalPodIpv4RangesFlag(group_add_pod_ipv4_ranges)
     flags.AddFleetProjectFlag(group, is_update=True)
+    flags.AddComplianceFlags(group, hidden=True)
     flags.AddSecurityPostureFlag(group)
     flags.AddClusterNetworkPerformanceConfigFlags(group)
     flags.AddEnableK8sBetaAPIs(group)
@@ -1400,6 +1407,8 @@ class UpdateAlpha(Update):
     opts.enable_security_posture = args.enable_security_posture
     opts.network_performance_config = args.network_performance_configs
     opts.enable_k8s_beta_apis = args.enable_kubernetes_unstable_apis
+    opts.compliance = args.compliance
+    opts.compliance_standards = args.compliance_standards
     opts.security_posture = args.security_posture
     opts.workload_vulnerability_scanning = args.workload_vulnerability_scanning
     opts.enable_runtime_vulnerability_insight = (

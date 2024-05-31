@@ -24,8 +24,6 @@ from googlecloudsdk.command_lib.artifacts import docker_util
 from googlecloudsdk.command_lib.run import artifact_registry
 from googlecloudsdk.command_lib.run import config_changes
 from googlecloudsdk.command_lib.run import connection_context
-from googlecloudsdk.command_lib.run import container_parser
-from googlecloudsdk.command_lib.run import exceptions
 from googlecloudsdk.command_lib.run import flags
 from googlecloudsdk.command_lib.run import messages_util
 from googlecloudsdk.command_lib.run import pretty_print
@@ -45,13 +43,12 @@ class BuildType(enum.Enum):
 
 
 def ContainerArgGroup():
-  """Returns an argument group with all per-container deploy args."""
+  """Returns an argument group with all container deploy args."""
 
   help_text = """
 Container Flags
 
-  The following flags apply to a single container. If the --container flag is specified these flags may only be
-  specified after a --container flag. Otherwise they will apply to the primary container.
+  The following flags apply to the container.
 """
   group = base.ArgumentGroup(help=help_text)
   group.AddArgument(flags.SourceAndImageFlags())
@@ -60,7 +57,6 @@ Container Flags
   group.AddArgument(flags.CpuFlag())
   group.AddArgument(flags.ArgsFlag())
   group.AddArgument(flags.SecretsFlags())
-  group.AddArgument(flags.DependsOnFlag())
   group.AddArgument(flags.CommandFlag())
   # ALPHA features
   group.AddArgument(flags.AddVolumeMountFlag())
@@ -71,7 +67,7 @@ Container Flags
   return group
 
 
-@base.Hidden
+@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Deploy(base.Command):
   """Create or update a Cloud Run worker."""
@@ -102,7 +98,6 @@ class Deploy(base.Command):
     flags.AddDescriptionFlag(parser)
     flags.AddEncryptionKeyShutdownHoursFlag(parser)
     flags.AddRevisionSuffixArg(parser)
-    flags.RemoveContainersFlag().AddToParser(parser)
     flags.AddRuntimeFlag(parser)
     flags.AddMinInstancesFlag(parser, resource_kind='worker')
     flags.AddMaxInstancesFlag(parser, resource_kind='worker')
@@ -127,124 +122,23 @@ class Deploy(base.Command):
     flags.AddNoPromoteFlag(parser)
     concept_parsers.ConceptParser([worker_presentation]).AddToParser(parser)
     container_args = ContainerArgGroup()
-    container_parser.AddContainerFlags(parser, container_args)
+    container_args.AddToParser(parser)
 
     # No output by default, can be overridden by --format
     parser.display_info.AddFormat('none')
-
-  def _ValidateAndGetContainers(self, args):
-    if flags.FlagIsExplicitlySet(args, 'containers'):
-      containers = args.containers
-    else:
-      containers = {'': args}
-
-    if len(containers) > 10:
-      raise c_exceptions.InvalidArgumentException(
-          '--container', 'Workers may include at most 10 containers'
-      )
-    return containers
-
-  def _ValidateAndGetBuildFromSource(self, containers):
-    build_from_source = {
-        name: container
-        for name, container in containers.items()
-        if not container.IsSpecified('image')
-    }
-    if len(build_from_source) > 1:
-      needs_image = [
-          name
-          for name, container in build_from_source.items()
-          if not flags.FlagIsExplicitlySet(container, 'source')
-      ]
-      if needs_image:
-        raise exceptions.RequiredImageArgumentException(needs_image)
-      raise c_exceptions.InvalidArgumentException(
-          '--container', 'At most one container can be deployed from source.'
-      )
-
-    for name, container in build_from_source.items():
-      if not flags.FlagIsExplicitlySet(container, 'source'):
-        if console_io.CanPrompt():
-          container.source = flags.PromptForDefaultSource(name)
-        else:
-          if name:
-            message = (
-                'Container {} requires a container image to deploy (e.g.'
-                ' `gcr.io/cloudrun/hello:latest`) if no build source is'
-                ' provided.'.format(name)
-            )
-          else:
-            message = (
-                'Requires a container image to deploy (e.g.'
-                ' `gcr.io/cloudrun/hello:latest`) if no build source is'
-                ' provided.'
-            )
-          raise c_exceptions.RequiredArgumentException(
-              '--image',
-              message,
-          )
-    return build_from_source
-
-  def _BuildFromSource(
-      self,
-      args,
-      build_from_source,
-      worker_ref,
-      already_activated_services,
-  ):
-    # Only one container can deployed from source
-    container = next(iter(build_from_source.values()))
-    pack = None
-    repo_to_create = None
-    source = container.source
-    ar_repo = docker_util.DockerRepo(
-        project_id=properties.VALUES.core.project.Get(required=True),
-        location_id=artifact_registry.RepoRegion(
-            args,
-        ),
-        repo_id='cloud-run-source-deploy',
-    )
-    if artifact_registry.ShouldCreateRepository(
-        ar_repo, skip_activation_prompt=already_activated_services
-    ):
-      repo_to_create = ar_repo
-    # The image is built with latest tag. After build, the image digest
-    # from the build result will be added to the image of the worker spec.
-    container.image = '{repo}/{worker}'.format(
-        repo=ar_repo.GetDockerString(), worker=worker_ref.servicesId
-    )
-    # Use GCP Buildpacks if Dockerfile doesn't exist
-    docker_file = source + '/Dockerfile'
-    if os.path.exists(docker_file):
-      build_type = BuildType.DOCKERFILE
-    else:
-      pack = _CreateBuildPack(container)
-      build_type = BuildType.BUILDPACKS
-    image = None if pack else container.image
-    if flags.FlagIsExplicitlySet(args, 'delegate_builds'):
-      image = pack[0].get('image') if pack else image
-    operation_message = (
-        'Building using {build_type} and deploying container to'
-    ).format(build_type=build_type.value)
-    pretty_print.Info(
-        messages_util.GetBuildEquivalentForSourceRunMessage(
-            worker_ref.servicesId, pack, source, subgroup='workers '
-        )
-    )
-    return image, pack, source, operation_message, repo_to_create
 
   def _GetTracker(
       self,
       args,
       worker,
-      build_from_source,
+      include_build,
       repo_to_create,
   ):
     deployment_stages = stages.WorkerStages(
-        include_build=bool(build_from_source),
+        include_build=include_build,
         include_create_repo=repo_to_create is not None,
     )
-    if build_from_source:
+    if include_build:
       header = 'Building and deploying'
     else:
       header = 'Deploying'
@@ -258,9 +152,11 @@ class Deploy(base.Command):
         suppress_output=args.async_,
     )
 
-  def _GetBaseChanges(self, args):
+  def _GetBaseChanges(self, args, worker):
     """Returns the worker config changes with some default settings."""
-    changes = flags.GetWorkerConfigurationChanges(args, self.ReleaseTrack())
+    changes = flags.GetWorkerConfigurationChanges(
+        args, self.ReleaseTrack(), for_update=worker is not None
+    )
     changes.insert(
         0,
         config_changes.DeleteAnnotationChange(
@@ -274,15 +170,24 @@ class Deploy(base.Command):
 
   def Run(self, args):
     """Deploy a Worker container to Cloud Run."""
-    containers = self._ValidateAndGetContainers(args)
-    build_from_source = self._ValidateAndGetBuildFromSource(containers)
-    worker_ref = args.CONCEPTS.worker.Parse()
+    include_build = flags.FlagIsExplicitlySet(args, 'source')
+    if not include_build and not args.IsSpecified('image'):
+      if console_io.CanPrompt():
+        args.source = flags.PromptForDefaultSource()
+        include_build = True
+      else:
+        raise c_exceptions.RequiredArgumentException(
+            '--image',
+            'Requires a container image to deploy (e.g. '
+            '`gcr.io/cloudrun/hello:latest`) if no build source is provided.',
+        )
 
+    worker_ref = args.CONCEPTS.worker.Parse()
     flags.ValidateResource(worker_ref)
 
     required_apis = [api_enabler.get_run_api()]
     # gcloud-disable-gdu-domain
-    if build_from_source:
+    if include_build:
       required_apis.append('artifactregistry.googleapis.com')
       required_apis.append('cloudbuild.googleapis.com')
 
@@ -296,29 +201,52 @@ class Deploy(base.Command):
         args, flags.Product.RUN, self.ReleaseTrack()
     )
 
+    build_type = None
     image = None
     pack = None
     source = None
     operation_message = 'Deploying container to'
     repo_to_create = None
     # Build an image from source if source specified
-    if build_from_source:
-      image, pack, source, operation_message, repo_to_create = (
-          self._BuildFromSource(
-              args,
-              build_from_source,
-              worker_ref,
-              already_activated_services,
+    if include_build:
+      source = args.source
+      ar_repo = docker_util.DockerRepo(
+          project_id=properties.VALUES.core.project.Get(required=True),
+          location_id=artifact_registry.RepoRegion(args),
+          repo_id='cloud-run-source-deploy',
+      )
+      if artifact_registry.ShouldCreateRepository(
+          ar_repo, skip_activation_prompt=already_activated_services
+      ):
+        repo_to_create = ar_repo
+      # The image is built with latest tag. After build, the image digest
+      # from the build result will be added to the image of the service spec.
+      args.image = '{repo}/{service}'.format(
+          repo=ar_repo.GetDockerString(), service=worker_ref.servicesId
+      )
+      # Use GCP Buildpacks if Dockerfile doesn't exist
+      docker_file = source + '/Dockerfile'
+      if os.path.exists(docker_file):
+        build_type = BuildType.DOCKERFILE
+      else:
+        pack = _CreateBuildPack(args, self.ReleaseTrack())
+        build_type = BuildType.BUILDPACKS
+      image = None if pack else args.image
+      operation_message = (
+          'Building using {build_type} and deploying container to'
+      ).format(build_type=build_type.value)
+      pretty_print.Info(
+          messages_util.GetBuildEquivalentForSourceRunMessage(
+              worker_ref.servicesId, pack, source
           )
       )
-
-    # Deploy a container with an image
-    changes = self._GetBaseChanges(args)
 
     with serverless_operations.Connect(
         conn_context, already_activated_services
     ) as operations:
       worker = operations.GetWorker(worker_ref)
+      # Deploy a container with an image
+      changes = self._GetBaseChanges(args, worker)
       pretty_print.Info(
           messages_util.GetStartDeployMessage(
               conn_context,
@@ -328,7 +256,7 @@ class Deploy(base.Command):
           )
       )
       with self._GetTracker(
-          args, worker, build_from_source, repo_to_create
+          args, worker, include_build, repo_to_create
       ) as tracker:
         worker = operations.ReleaseWorker(
             worker_ref,
@@ -359,13 +287,14 @@ class Deploy(base.Command):
       return worker
 
 
-def _CreateBuildPack(container):
+def _CreateBuildPack(args, release_track=base.ReleaseTrack.GA):
   """A helper method to cofigure buildpack."""
-  pack = [{'image': container.image}]
-  command_arg = getattr(container, 'command', None)
-  if command_arg is not None:
-    command = ' '.join(command_arg)
-    pack[0].update(
-        {'envs': ['GOOGLE_ENTRYPOINT="{command}"'.format(command=command)]}
-    )
+  pack = [{'image': args.image}]
+  if release_track is base.ReleaseTrack.ALPHA:
+    command_arg = getattr(args, 'command', None)
+    if command_arg is not None:
+      command = ' '.join(command_arg)
+      pack[0].update(
+          {'envs': ['GOOGLE_ENTRYPOINT="{command}"'.format(command=command)]}
+      )
   return pack

@@ -23,14 +23,5 @@
       spec: !REF googlecloudsdk.command_lib.backupdr.resources:locationDefaultGlobal
 
   output:
-    format: |
-      json(
-        name,
-        state,
-        createTime.date(),
-        backupRules[].ruleId,
-        backupRules[].backupRetentionDays,
-        backupRules[].standardSchedule.recurrenceType,
-        backupRules[].backupVault
-      )
+    format: json
 # TODO: b/336698260 Update the format to table format

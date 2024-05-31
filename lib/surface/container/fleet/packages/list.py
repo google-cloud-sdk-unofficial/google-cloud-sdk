@@ -21,7 +21,7 @@ from googlecloudsdk.command_lib.container.fleet.packages import flags
 _DETAILED_HELP = {
     'DESCRIPTION': '{description}',
     'EXAMPLES': """ \
-        To list all Fleet Packages in ``us-central1'', run:
+        To list all Fleet Packages in `us-central1`, run:
 
           $ {command} --location=us-central1
         """,
@@ -33,6 +33,7 @@ _FORMAT = 'table(name, createTime)'
 
 
 @base.Hidden
+@base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class List(base.ListCommand):
   """List Package Rollouts Fleet Packages."""

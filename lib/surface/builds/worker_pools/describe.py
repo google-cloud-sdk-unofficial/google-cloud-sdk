@@ -19,12 +19,15 @@ from __future__ import division
 from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.cloudbuild import cloudbuild_util
+from googlecloudsdk.api_lib.cloudbuild.v2 import client_util as cloudbuild_v2_util
 from googlecloudsdk.calliope import base
+from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.core import properties
 from googlecloudsdk.core import resources
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.UniverseCompatible
 class Describe(base.DescribeCommand):
   """Describe a worker pool used by Cloud Build."""
 
@@ -65,39 +68,7 @@ class Describe(base.DescribeCommand):
       Some value that we want to have printed later.
     """
 
-    wp_region = args.region
-
-    release_track = self.ReleaseTrack()
-    client = cloudbuild_util.GetClientInstance(release_track)
-    messages = cloudbuild_util.GetMessagesModule(release_track)
-
-    parent = properties.VALUES.core.project.Get(required=True)
-
-    wp_name = args.WORKER_POOL
-
-    # Get the workerpool ref
-    wp_resource = resources.REGISTRY.Parse(
-        None,
-        collection='cloudbuild.projects.locations.workerPools',
-        api_version=cloudbuild_util.RELEASE_TRACK_TO_API_VERSION[release_track],
-        params={
-            'projectsId': parent,
-            'locationsId': wp_region,
-            'workerPoolsId': wp_name,
-        })
-
-    # Send the Get request
-    wp = client.projects_locations_workerPools.Get(
-        messages.CloudbuildProjectsLocationsWorkerPoolsGetRequest(
-            name=wp_resource.RelativeName()))
-
-    # Format the workerpool name for display
-    try:
-      wp.name = cloudbuild_util.WorkerPoolShortName(wp.name)
-    except ValueError:
-      pass  # Must be an old version.
-
-    return wp
+    return _DescribeWorkerPoolFirstGen(args, self.ReleaseTrack())
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
@@ -107,4 +78,129 @@ class DescribeBeta(Describe):
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class DescribeAlpha(Describe):
-  """Describe a private worker pool used by Cloud Build."""
+  """Describe a worker pool used by Cloud Build."""
+
+  @staticmethod
+  def Args(parser):
+    """Register flags for this command.
+
+    Args:
+      parser: An argparse.ArgumentParser-like object. It is mocked out in order
+        to capture some information, but behaves like an ArgumentParser.
+    """
+    parser.add_argument(
+        '--region',
+        required=True,
+        help='The Cloud region where the worker pool is.')
+    parser.add_argument(
+        '--generation',
+        default=1,
+        type=int,
+        help=('Generation of the worker pool.'))
+    parser.add_argument(
+        'WORKER_POOL', help='The ID of the worker pool to describe.')
+
+  def Run(self, args):
+    """This is what gets called when the user runs this command.
+
+    Args:
+      args: an argparse namespace. All the arguments that were provided to this
+        command invocation.
+
+    Returns:
+      Some value that we want to have printed later.
+    """
+
+    if args.generation == 1:
+      return _DescribeWorkerPoolFirstGen(args, self.ReleaseTrack())
+    if args.generation == 2:
+      return _DescribeWorkerPoolSecondGen(args)
+
+    raise exceptions.InvalidArgumentException(
+        '--generation',
+        'please use one of the following valid generation values: 1, 2',
+    )
+
+
+def _DescribeWorkerPoolSecondGen(args):
+  """Describes a Worker Pool Second Generation.
+
+  Args:
+    args: an argparse namespace. All the arguments that were provided to the
+        create command invocation.
+
+  Returns:
+    A Worker Pool Second Generation resource.
+  """
+  client = cloudbuild_v2_util.GetClientInstance()
+  messages = client.MESSAGES_MODULE
+
+  # Get the workerpool second gen ref
+  wp_resource = resources.REGISTRY.Parse(
+      None,
+      collection='cloudbuild.projects.locations.workerPoolSecondGen',
+      api_version=cloudbuild_v2_util.GA_API_VERSION,
+      params={
+          'projectsId': properties.VALUES.core.project.Get(required=True),
+          'locationsId': args.region,
+          'workerPoolSecondGenId': args.WORKER_POOL,
+      })
+
+  # Send the Get request
+  wp = client.projects_locations_workerPoolSecondGen.Get(
+      messages.CloudbuildProjectsLocationsWorkerPoolSecondGenGetRequest(
+          name=wp_resource.RelativeName()))
+
+  # Format the workerpool second gen name for display
+  try:
+    wp.name = cloudbuild_v2_util.WorkerPoolSecondGenShortName(wp.name)
+  except ValueError:
+    pass  # Must be an old version.
+
+  return wp
+
+
+def _DescribeWorkerPoolFirstGen(args, release_track):
+  """Describes a Worker Pool First Generation.
+
+  Args:
+    args: an argparse namespace. All the arguments that were provided to the
+        create command invocation.
+    release_track: The desired value of the enum
+      googlecloudsdk.calliope.base.ReleaseTrack.
+
+  Returns:
+    A Worker Pool First Generation resource.
+  """
+  wp_region = args.region
+
+  client = cloudbuild_util.GetClientInstance(release_track)
+  messages = cloudbuild_util.GetMessagesModule(release_track)
+
+  parent = properties.VALUES.core.project.Get(required=True)
+
+  wp_name = args.WORKER_POOL
+
+  # Get the workerpool ref
+  wp_resource = resources.REGISTRY.Parse(
+      None,
+      collection='cloudbuild.projects.locations.workerPools',
+      api_version=cloudbuild_util.RELEASE_TRACK_TO_API_VERSION[release_track],
+      params={
+          'projectsId': parent,
+          'locationsId': wp_region,
+          'workerPoolsId': wp_name,
+      })
+
+  # Send the Get request
+  wp = client.projects_locations_workerPools.Get(
+      messages.CloudbuildProjectsLocationsWorkerPoolsGetRequest(
+          name=wp_resource.RelativeName()))
+
+  # Format the workerpool name for display
+  try:
+    wp.name = cloudbuild_util.WorkerPoolShortName(wp.name)
+  except ValueError:
+    pass  # Must be an old version.
+
+  return wp

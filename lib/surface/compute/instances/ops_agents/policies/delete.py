@@ -34,7 +34,7 @@ from googlecloudsdk.generated_clients.apis.osconfig.v1 import osconfig_v1_messag
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
-class DeleteOsConfig(base.DeleteCommand):
+class DeleteAlphaBeta(base.DeleteCommand):
   """Delete a Google Cloud's operations suite agents (Ops Agents) policy.
 
   *{command}* deletes a policy that facilitates agent management across
@@ -154,29 +154,30 @@ class Delete(base.Command):
   def Run(self, args):
     """See base class."""
 
+    release_track = self.ReleaseTrack()
     project = properties.VALUES.core.project.GetOrFail()
+    # Make sure the policy we're deleting is a valid Ops Agents policy.
+    _ = cloud_ops_agents_util.GetOpsAgentsPolicyFromApi(
+        release_track, args.POLICY_ID, project, args.zone
+    )
+
     parent_path = osconfig_command_utils.GetProjectLocationUriPath(
         project, args.zone
     )
 
-    release_track = self.ReleaseTrack()
-    messages = osconfig_api_utils.GetClientMessages(release_track)
-    client = osconfig_api_utils.GetClientInstance(release_track)
-    service = client.projects_locations_osPolicyAssignments
     assignment_id = osconfig_command_utils.GetOsPolicyAssignmentRelativePath(
         parent_path, args.POLICY_ID
     )
 
-    # Make sure the policy we're deleting is a valid Ops Agents policy
-    cloud_ops_agents_util.GetOpsAgentsPolicyFromApi(
-        release_track, args.POLICY_ID, project, args.zone
-    )
-
+    messages = osconfig_api_utils.GetClientMessages(release_track)
     delete_request = (
         messages.OsconfigProjectsLocationsOsPolicyAssignmentsDeleteRequest(
             name=assignment_id
         )
     )
+
+    client = osconfig_api_utils.GetClientInstance(release_track)
+    service = client.projects_locations_osPolicyAssignments
     delete_response = service.Delete(delete_request)
 
     # Converting osconfig.Operation.ResponseValue to

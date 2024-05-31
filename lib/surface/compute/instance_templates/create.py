@@ -71,6 +71,7 @@ def _CommonArgs(
     support_ipv6_only=False,
     support_vlan_nic=False,
     support_watchdog_timer=False,
+    support_disk_labels=False,
 ):
   """Adding arguments applicable for creating instance templates."""
   parser.display_info.AddFormat(instance_templates_flags.DEFAULT_LIST_FORMAT)
@@ -82,6 +83,7 @@ def _CommonArgs(
       support_boot=True,
       support_multi_writer=support_multi_writer,
       support_replica_zones=support_replica_zones,
+      support_disk_labels=support_disk_labels,
   )
   if support_local_ssd_size:
     instances_flags.AddLocalSsdArgsWithSize(parser)
@@ -559,6 +561,7 @@ def _RunCreate(
     support_specific_then_x_affinity=False,
     support_graceful_shutdown=False,
     support_watchdog_timer=False,
+    support_disk_labels=False,
 ):
   """Common routine for creating instance template.
 
@@ -606,8 +609,8 @@ def _RunCreate(
         set.
       support_graceful_shutdown: Indicate whether graceful shutdown is
         supported.
-      support_watchdog_timer: Indicate whether the watchdog timer
-        is supported.
+      support_watchdog_timer: Indicate whether the watchdog timer is supported.
+      support_disk_labels: Indicate whether disk labels are supported.
 
   Returns:
       A resource object dispatched by display.Displayer().
@@ -879,6 +882,7 @@ def _RunCreate(
       support_kms=support_kms,
       support_multi_writer=support_multi_writer,
       support_replica_zones=support_replica_zones,
+      support_disk_labels=support_disk_labels,
   )
 
   machine_type = instance_utils.InterpretMachineType(
@@ -1084,6 +1088,10 @@ def _RunCreate(
     )
 
 
+# TODO(b/305707695):Change @base.DefaultUniverseOnly to
+# @base.UniverseCompatible once b/305707695 is fixed.
+# See go/gcloud-cli-running-tpc-tests.
+@base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Create(base.CreateCommand):
   """Create a Compute Engine virtual machine instance template.
@@ -1123,6 +1131,7 @@ class Create(base.CreateCommand):
   _support_graceful_shutdown = False
   _support_vlan_nic = False
   _support_watchdog_timer = False
+  _support_disk_labels = False
 
   @classmethod
   def Args(cls, parser):
@@ -1147,6 +1156,7 @@ class Create(base.CreateCommand):
         support_graceful_shutdown=cls._support_graceful_shutdown,
         support_vlan_nic=cls._support_vlan_nic,
         support_watchdog_timer=cls._support_watchdog_timer,
+        support_disk_labels=cls._support_disk_labels,
     )
     instances_flags.AddMinCpuPlatformArgs(parser, base.ReleaseTrack.GA)
     instances_flags.AddPrivateIpv6GoogleAccessArgForTemplate(
@@ -1193,6 +1203,7 @@ class Create(base.CreateCommand):
         support_specific_then_x_affinity=self._support_specific_then_x_affinity,
         support_graceful_shutdown=self._support_graceful_shutdown,
         support_watchdog_timer=self._support_watchdog_timer,
+        support_disk_labels=self._support_disk_labels,
     )
 
 
@@ -1237,6 +1248,7 @@ class CreateBeta(Create):
   _support_graceful_shutdown = False
   _support_vlan_nic = False
   _support_watchdog_timer = False
+  _support_disk_labels = True
 
   @classmethod
   def Args(cls, parser):
@@ -1262,6 +1274,7 @@ class CreateBeta(Create):
         support_graceful_shutdown=cls._support_graceful_shutdown,
         support_vlan_nic=cls._support_vlan_nic,
         support_watchdog_timer=cls._support_watchdog_timer,
+        support_disk_labels=cls._support_disk_labels,
     )
     instances_flags.AddMinCpuPlatformArgs(parser, base.ReleaseTrack.BETA)
     instances_flags.AddPrivateIpv6GoogleAccessArgForTemplate(
@@ -1312,6 +1325,7 @@ class CreateBeta(Create):
         support_specific_then_x_affinity=self._support_specific_then_x_affinity,
         support_graceful_shutdown=self._support_graceful_shutdown,
         support_watchdog_timer=self._support_watchdog_timer,
+        support_disk_labels=self._support_disk_labels,
     )
 
 
@@ -1357,6 +1371,7 @@ class CreateAlpha(Create):
   _support_vlan_nic = True
   _support_ipv6_only = True
   _support_watchdog_timer = True
+  _support_disk_labels = True
 
   @classmethod
   def Args(cls, parser):
@@ -1384,6 +1399,7 @@ class CreateAlpha(Create):
         support_ipv6_only=cls._support_ipv6_only,
         support_vlan_nic=cls._support_vlan_nic,
         support_watchdog_timer=cls._support_watchdog_timer,
+        support_disk_labels=cls._support_disk_labels,
     )
     instances_flags.AddLocalNvdimmArgs(parser)
     instances_flags.AddMinCpuPlatformArgs(parser, base.ReleaseTrack.ALPHA)
@@ -1438,6 +1454,7 @@ class CreateAlpha(Create):
         support_specific_then_x_affinity=self._support_specific_then_x_affinity,
         support_graceful_shutdown=self._support_graceful_shutdown,
         support_watchdog_timer=self._support_watchdog_timer,
+        support_disk_labels=self._support_disk_labels,
     )
 
 

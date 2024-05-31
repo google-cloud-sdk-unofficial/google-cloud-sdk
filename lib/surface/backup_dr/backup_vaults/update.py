@@ -29,6 +29,7 @@ from googlecloudsdk.core import log
 
 
 @base.Hidden
+@base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class UpdateAlpha(base.UpdateCommand):
   """Update a Backup and DR backup vault."""

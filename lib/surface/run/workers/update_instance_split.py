@@ -38,7 +38,7 @@ from googlecloudsdk.core.console import progress_tracker
 from googlecloudsdk.core.resource import resource_printer
 
 
-@base.Hidden
+@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class AdjustInstanceSplit(base.Command):
   """Adjust the instance assignments for a Cloud Run worker."""

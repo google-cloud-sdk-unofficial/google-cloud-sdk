@@ -21,6 +21,7 @@ from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 
 
+@base.UniverseCompatible
 class SslPolicies(base.Group):
   """List, create, delete and update Compute Engine SSL policies."""
 

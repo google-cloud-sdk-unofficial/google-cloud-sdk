@@ -32,6 +32,7 @@ from googlecloudsdk.command_lib.compute import completers
 from googlecloudsdk.command_lib.compute import flags
 from googlecloudsdk.command_lib.compute.instance_templates import flags as instance_templates_flags
 from googlecloudsdk.command_lib.compute.instances import flags as instances_flags
+from googlecloudsdk.command_lib.compute.resource_policies import flags as maintenance_flags
 from googlecloudsdk.command_lib.util.args import labels_util
 from googlecloudsdk.core import log
 
@@ -44,6 +45,7 @@ def _Args(
     support_multi_writer=True,
     support_region_instance_template=False,
     support_specific_then_x_affinity=False,
+    support_disk_labels=False,
 ):
   """Add flags shared by all release tracks."""
   parser.display_info.AddFormat(instance_templates_flags.DEFAULT_LIST_FORMAT)
@@ -53,7 +55,9 @@ def _Args(
   instances_flags.AddCreateDiskArgs(
       parser,
       container_mount_enabled=container_mount_enabled,
-      support_multi_writer=support_multi_writer)
+      support_multi_writer=support_multi_writer,
+      support_disk_labels=support_disk_labels,
+  )
   if release_track == base.ReleaseTrack.ALPHA:
     instances_flags.AddLocalSsdArgsWithSize(parser)
   elif release_track == base.ReleaseTrack.BETA:
@@ -84,6 +88,9 @@ def _Args(
   instances_flags.AddIpv6NetworkTierArgs(parser)
   instances_flags.AddInternalIPv6AddressArgs(parser)
   instances_flags.AddInternalIPv6PrefixLengthArgs(parser)
+  maintenance_flags.AddResourcePoliciesArgs(
+      parser, 'added to', 'instance-template'
+  )
   instances_flags.AddReservationAffinityGroup(
       parser,
       group_text="""Specifies the reservation for instances created from this template.""",
@@ -113,11 +120,16 @@ def _Args(
   parser.display_info.AddCacheUpdater(completers.InstanceTemplatesCompleter)
 
 
+# TODO(b/305707695):Change @base.DefaultUniverseOnly to
+# @base.UniverseCompatible once b/305707695 is fixed.
+# See go/gcloud-cli-running-tpc-tests.
+@base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class CreateWithContainer(base.CreateCommand):
   """Command for creating VM instance templates hosting Docker images."""
 
   _support_specific_then_x_affinity = False
+  _support_disk_labels = False
 
   @staticmethod
   def Args(parser):
@@ -128,6 +140,7 @@ class CreateWithContainer(base.CreateCommand):
         support_multi_writer=False,
         support_region_instance_template=False,
         support_specific_then_x_affinity=False,
+        support_disk_labels=False,
     )
     instances_flags.AddPrivateIpv6GoogleAccessArgForTemplate(
         parser, utils.COMPUTE_GA_API_VERSION)
@@ -267,6 +280,7 @@ class CreateWithContainer(base.CreateCommand):
         boot_disk_size_gb,
         create_boot_disk=create_boot_disk,
         match_container_mount_disks=match_container_mount_disks,
+        support_disk_labels=self._support_disk_labels,
     )
 
   def Run(self, args):
@@ -332,6 +346,9 @@ class CreateWithContainer(base.CreateCommand):
         tags=containers_utils.CreateTagsMessage(client.messages, args.tags),
     )
 
+    if args.resource_policies:
+      properties.resourcePolicies = args.resource_policies
+
     if args.private_ipv6_google_access_type is not None:
       properties.privateIpv6GoogleAccess = (
           instances_flags.GetPrivateIpv6GoogleAccessTypeFlagMapperForTemplate(
@@ -366,6 +383,7 @@ class CreateWithContainerBeta(CreateWithContainer):
   """Command for creating VM instance templates hosting Docker images."""
 
   _support_specific_then_x_affinity = True
+  _support_disk_labels = True
 
   @staticmethod
   def Args(parser):
@@ -376,6 +394,7 @@ class CreateWithContainerBeta(CreateWithContainer):
         enable_guest_accelerators=True,
         support_region_instance_template=False,
         support_specific_then_x_affinity=True,
+        support_disk_labels=True,
     )
     instances_flags.AddPrivateIpv6GoogleAccessArgForTemplate(
         parser, utils.COMPUTE_BETA_API_VERSION)
@@ -450,6 +469,9 @@ class CreateWithContainerBeta(CreateWithContainer):
         tags=containers_utils.CreateTagsMessage(client.messages, args.tags),
         guestAccelerators=guest_accelerators)
 
+    if args.resource_policies:
+      properties.resourcePolicies = args.resource_policies
+
     if args.private_ipv6_google_access_type is not None:
       properties.privateIpv6GoogleAccess = (
           instances_flags.GetPrivateIpv6GoogleAccessTypeFlagMapperForTemplate(
@@ -484,6 +506,7 @@ class CreateWithContainerAlpha(CreateWithContainerBeta):
   """Command for creating VM instance templates hosting Docker images."""
 
   _support_specific_then_x_affinity = True
+  _support_disk_labels = True
 
   @staticmethod
   def Args(parser):
@@ -494,6 +517,7 @@ class CreateWithContainerAlpha(CreateWithContainerBeta):
         enable_guest_accelerators=True,
         support_region_instance_template=True,
         support_specific_then_x_affinity=True,
+        support_disk_labels=True,
     )
     instances_flags.AddLocalNvdimmArgs(parser)
     instances_flags.AddPrivateIpv6GoogleAccessArgForTemplate(
@@ -567,6 +591,9 @@ class CreateWithContainerAlpha(CreateWithContainerBeta):
         scheduling=scheduling,
         tags=containers_utils.CreateTagsMessage(client.messages, args.tags),
         guestAccelerators=guest_accelerators)
+
+    if args.resource_policies is not None:
+      properties.resourcePolicies = args.resource_policies
 
     if args.private_ipv6_google_access_type is not None:
       properties.privateIpv6GoogleAccess = (

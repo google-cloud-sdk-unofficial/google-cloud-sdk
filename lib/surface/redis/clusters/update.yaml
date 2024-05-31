@@ -34,11 +34,9 @@
     - arg_name: deletion-protection
       api_field: cluster.deletionProtectionEnabled
       type: bool
-      release_tracks: [ALPHA, BETA]
-      hidden: true
       help_text: |
-        Enable Delete Protection on the Redis Cluster to prevent accidental deletions.
-        Use --deletion-protection to enabled and --no-deletion-protection to disable.
+        Enable deletion protection for the Redis Cluster. Use
+        `--deletion-protection`/`--no-deletion-protection` to enable/disable it.
     - arg_name: persistence-mode
       api_field: cluster.persistenceConfig.mode
       help_text: |
@@ -121,6 +119,7 @@
       modify_request_hooks:
       - googlecloudsdk.command_lib.redis.clusters_update_util:UpdateReplicaCount
       - googlecloudsdk.command_lib.redis.clusters_update_util:UpdateShardCount
+      - googlecloudsdk.command_lib.redis.clusters_update_util:UpdateDeletionProtection
       - googlecloudsdk.command_lib.redis.clusters_update_util:UpdatePersistenceConfig
       - googlecloudsdk.command_lib.redis.clusters_update_util:RemoveRedisConfigs
       - googlecloudsdk.command_lib.redis.clusters_update_util:UpdateRedisConfigs

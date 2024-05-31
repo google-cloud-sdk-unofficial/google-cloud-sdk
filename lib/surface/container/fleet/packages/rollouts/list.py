@@ -22,7 +22,7 @@ from googlecloudsdk.command_lib.container.fleet.packages import utils
 _DETAILED_HELP = {
     'DESCRIPTION': '{description}',
     'EXAMPLES': """ \
-        To list all Rollouts for Fleet Package ``cert-manager-app'' in ``us-central1'', run:
+        To list all Rollouts for Fleet Package `cert-manager-app` in `us-central1`, run:
 
           $ {command} --fleet-package=cert-manager-app --location=us-central1
         """,

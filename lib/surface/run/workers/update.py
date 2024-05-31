@@ -18,7 +18,6 @@ from googlecloudsdk.api_lib.run import k8s_object
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.run import config_changes
 from googlecloudsdk.command_lib.run import connection_context
-from googlecloudsdk.command_lib.run import container_parser
 from googlecloudsdk.command_lib.run import exceptions
 from googlecloudsdk.command_lib.run import flags
 from googlecloudsdk.command_lib.run import messages_util
@@ -32,14 +31,13 @@ from googlecloudsdk.core.console import progress_tracker
 
 
 def ContainerArgGroup():
-  """Returns an argument group with all per-container update args."""
+  """Returns an argument group with all container update args."""
 
   help_text = """
 Container Flags
 
-    If the --container or --remove-containers flag is specified the following
-    arguments may only be specified after a --container flag.
-    """
+  The following flags apply to the container.
+"""
   group = base.ArgumentGroup(help=help_text)
   group.AddArgument(flags.ImageArg(required=False))
   group.AddArgument(flags.MutexEnvVarsFlags())
@@ -48,7 +46,6 @@ Container Flags
   group.AddArgument(flags.CommandFlag())
   group.AddArgument(flags.ArgsFlag())
   group.AddArgument(flags.SecretsFlags())
-  group.AddArgument(flags.DependsOnFlag())
   # ALPHA features
   group.AddArgument(flags.AddVolumeMountFlag())
   group.AddArgument(flags.RemoveVolumeMountFlag())
@@ -58,7 +55,7 @@ Container Flags
   return group
 
 
-@base.Hidden
+@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Update(base.Command):
   """Update Cloud Run environment variables and other configuration settings."""
@@ -89,7 +86,6 @@ class Update(base.Command):
     flags.AddMaxSurgeFlag(parser, resource_kind='worker')
     flags.AddRevisionSuffixArg(parser)
     flags.AddSessionAffinityFlag(parser)
-    flags.RemoveContainersFlag().AddToParser(parser)
     flags.AddVpcNetworkGroupFlagsForUpdate(parser, resource_kind='worker')
     flags.AddRuntimeFlag(parser)
     flags.AddDescriptionFlag(parser)
@@ -97,7 +93,7 @@ class Update(base.Command):
     flags.AddGpuTypeFlag(parser)
     flags.SERVICE_MESH_FLAG.AddToParser(parser)
     container_args = ContainerArgGroup()
-    container_parser.AddContainerFlags(parser, container_args)
+    container_args.AddToParser(parser)
     worker_presentation = presentation_specs.ResourcePresentationSpec(
         'WORKER',
         resource_args.GetWorkerResourceSpec(prompt=True),

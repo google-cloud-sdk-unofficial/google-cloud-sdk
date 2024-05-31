@@ -90,11 +90,9 @@
     - arg_name: deletion-protection
       api_field: cluster.deletionProtectionEnabled
       type: bool
-      hidden: true
-      release_tracks: [ALPHA, BETA]
       help_text: |
-        Enable Delete Protection on the Redis Cluster to prevent accidental deletions.
-        Use --deletion-protection to enabled and --no-deletion-protection to disable.
+        Enable deletion protection for the Redis Cluster. Use
+        `--deletion-protection`/`--no-deletion-protection` to enable/disable it.
     - arg_name: redis-config
       api_field: cluster.redisConfigs.additionalProperties
       metavar: KEY=VALUE

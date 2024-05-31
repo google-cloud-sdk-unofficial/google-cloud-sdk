@@ -21,6 +21,7 @@ from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 
 
+@base.UniverseCompatible
 class MachineTypes(base.Group):
   """Read Compute Engine virtual machine types."""
 

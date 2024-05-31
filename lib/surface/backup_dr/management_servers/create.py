@@ -31,6 +31,7 @@ from googlecloudsdk.core import log
 @base.ReleaseTracks(
     base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
 )
+@base.DefaultUniverseOnly
 class Create(base.CreateCommand):
   """Create a new management server in the project."""
 

@@ -32,7 +32,7 @@ from googlecloudsdk.core import properties
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
-class DescribeOsConfig(base.DescribeCommand):
+class DescribeAlphaBeta(base.DescribeCommand):
   """Describe a Google Cloud's operations suite agents (Ops Agents) policy.
 
   *{command}* describes a policy that facilitates agent management across

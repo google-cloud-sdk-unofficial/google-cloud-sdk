@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Command group for Network Connectivity Policy Based Routes."""
+"""Command group for Network Connectivity Policy-based Routes."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -21,8 +21,9 @@ from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 
 
+@base.DefaultUniverseOnly
 @base.ReleaseTracks(
-    base.ReleaseTrack.ALPHA, base.ReleaseTrack.GA
+    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
 )
 class PolicyBasedRoutes(base.Group):
-  """Manage Policy Based Routes."""
+  """Manage Policy-based Routes."""

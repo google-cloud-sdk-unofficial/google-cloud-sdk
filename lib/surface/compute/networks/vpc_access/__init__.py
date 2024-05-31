@@ -21,7 +21,6 @@ from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 
 
-# TODO(b/305707166): Change the marker if necessary when the bug is fixed.
 @base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
 class VpcAccess(base.Group):

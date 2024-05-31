@@ -22,7 +22,7 @@ from googlecloudsdk.command_lib.container.fleet.packages import utils
 _DETAILED_HELP = {
     'DESCRIPTION': '{description}',
     'EXAMPLES': """ \
-        To update Release ``v1.0.0'' for Resource Bundle ``my-bundle'' in ``us-central1'', run:
+        To update Release `v1.0.0` for Resource Bundle `my-bundle` in `us-central1`, run:
 
           $ {command} --version=v1.0.0 --resource-bundle=my-bundle --source=manifest.yaml
 

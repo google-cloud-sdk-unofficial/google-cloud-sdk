@@ -38,6 +38,7 @@ _DETAILED_HELP = {
 }
 
 
+@base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class Create(base.CreateCommand):
   """Creates Data Pipelines Pipeline."""
@@ -63,6 +64,7 @@ class Create(base.CreateCommand):
     flags.GetDataflowKmsKeyArg(required=False).AddToParser(parser)
     flags.GetDisablePublicIpsArg(required=False).AddToParser(parser)
     flags.GetDataflowServiceAccountEmailArg(required=False).AddToParser(parser)
+    flags.GetSchedulerServiceAccountEmailArg(required=False).AddToParser(parser)
     flags.GetEnableStreamingEngineArg(required=False).AddToParser(parser)
     flags.GetAdditionalExperimentsArg(required=False).AddToParser(parser)
     flags.GetAdditionalUserLabelsArg(required=False).AddToParser(parser)

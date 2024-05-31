@@ -42,6 +42,7 @@ DETAILED_HELP = {
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.DefaultUniverseOnly
 class Create(base.CreateCommand):
   """Create a VMware Engine VPC network peering."""
 
@@ -58,6 +59,7 @@ class Create(base.CreateCommand):
         'NETAPP_CLOUD_VOLUMES',
         'THIRD_PARTY_SERVICE',
         'DELL_POWERSCALE',
+        'GOOGLE_CLOUD_NETAPP_VOLUMES',
     ]
     flags.AddNetworkPeeringToParser(parser, positional=True)
     base.ASYNC_FLAG.AddToParser(parser)
@@ -88,6 +90,7 @@ class Create(base.CreateCommand):
         * NETAPP_CLOUD_VOLUMES: Peering connection used for connecting to NetApp Cloud Volumes.
         * THIRD_PARTY_SERVICE: Peering connection used for connecting to third-party services. Most third-party services require manual setup of reverse peering on the VPC network associated with the third-party service.
         * DELL_POWERSCALE: Peering connection used for connecting to Dell PowerScale Filers.
+        * GOOGLE_CLOUD_NETAPP_VOLUMES: Peering connection used for connecting to Google Cloud NetApp Volumes.
         """,
     )
     parser.add_argument(

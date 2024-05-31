@@ -25,6 +25,7 @@ DETAILED_HELP = {
 }
 
 
+@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.GA,
                     base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
 class InstantSnapshots(base.Group):

@@ -121,6 +121,7 @@ def _CommonArgs(
     support_graceful_shutdown=False,
     support_igmp_query=False,
     support_watchdog_timer=False,
+    support_disk_labels=False,
 ):
   """Register parser args common to all tracks."""
   metadata_utils.AddMetadataArgs(parser)
@@ -136,6 +137,7 @@ def _CommonArgs(
       support_replica_zones=support_replica_zones,
       enable_source_instant_snapshots=support_source_instant_snapshot,
       enable_confidential_compute=support_enable_confidential_compute,
+      support_disk_labels=support_disk_labels,
   )
   instances_flags.AddCanIpForwardArgs(parser)
   instances_flags.AddAddressArgs(
@@ -265,6 +267,10 @@ def _CommonArgs(
     instances_flags.AddWatchdogTimerArg(parser)
 
 
+# TODO(b/305707759):Change @base.DefaultUniverseOnly to
+# @base.UniverseCompatible once b/305707759 is fixed.
+# See go/gcloud-cli-running-tpc-tests.
+@base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Create(base.CreateCommand):
   """Create Compute Engine virtual machine instances."""
@@ -310,6 +316,7 @@ class Create(base.CreateCommand):
   _support_graceful_shutdown = False
   _support_igmp_query = False
   _support_watchdog_timer = False
+  _support_disk_labels = False
 
   @classmethod
   def Args(cls, parser):
@@ -335,6 +342,7 @@ class Create(base.CreateCommand):
         support_graceful_shutdown=cls._support_graceful_shutdown,
         support_igmp_query=cls._support_igmp_query,
         support_watchdog_timer=cls._support_watchdog_timer,
+        support_disk_labels=cls._support_disk_labels,
     )
     cls.SOURCE_INSTANCE_TEMPLATE = (
         instances_flags.MakeSourceInstanceTemplateArg()
@@ -487,6 +495,7 @@ class Create(base.CreateCommand):
             support_source_instant_snapshot=self._support_source_instant_snapshot,
             support_boot_instant_snapshot_uri=self._support_boot_instant_snapshot_uri,
             support_enable_confidential_compute=self._support_enable_confidential_compute,
+            support_disk_labels=self._support_disk_labels,
         )
 
       machine_type_uri = None
@@ -801,6 +810,7 @@ class CreateBeta(Create):
   _support_graceful_shutdown = False
   _support_igmp_query = False
   _support_watchdog_timer = False
+  _support_disk_labels = True
 
   def GetSourceMachineImage(self, args, resources):
     """Retrieves the specified source machine image's selflink.
@@ -842,6 +852,7 @@ class CreateBeta(Create):
         support_graceful_shutdown=cls._support_graceful_shutdown,
         support_igmp_query=cls._support_igmp_query,
         support_watchdog_timer=cls._support_watchdog_timer,
+        support_disk_labels=cls._support_disk_labels,
     )
     cls.SOURCE_INSTANCE_TEMPLATE = (
         instances_flags.MakeSourceInstanceTemplateArg()
@@ -910,6 +921,7 @@ class CreateAlpha(CreateBeta):
   _support_graceful_shutdown = True
   _support_igmp_query = True
   _support_watchdog_timer = True
+  _support_disk_labels = True
 
   @classmethod
   def Args(cls, parser):
@@ -940,6 +952,7 @@ class CreateAlpha(CreateBeta):
         support_graceful_shutdown=cls._support_graceful_shutdown,
         support_igmp_query=cls._support_igmp_query,
         support_watchdog_timer=cls._support_watchdog_timer,
+        support_disk_labels=cls._support_disk_labels,
     )
 
     CreateAlpha.SOURCE_INSTANCE_TEMPLATE = (

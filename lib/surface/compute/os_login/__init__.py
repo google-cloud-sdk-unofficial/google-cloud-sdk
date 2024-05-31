@@ -38,6 +38,7 @@ DETAILED_HELP = {
 }
 
 
+@base.DefaultUniverseOnly
 class Oslogin(base.Group):
   """Create and manipulate Compute Engine OS Login resources."""
   category = base.TOOLS_CATEGORY

@@ -1,5 +1,4 @@
 release_tracks: [ALPHA]
-hidden: true
 
 help_text:
   brief: |
@@ -11,14 +10,13 @@ help_text:
   examples: |
     To list all clusters in a given location, such as us-central1, run the following:
 
-      $ {command} us-central1
+      $ {command} --location=us-central1
 
 request:
   collection: managedkafka.projects.locations.clusters
 
 arguments:
   resource:
-    is_positional: true
     help_text: |
       Identifies the region which contains all the clusters to be listed.
     spec: !REF googlecloudsdk.command_lib.managed_kafka.resources:location

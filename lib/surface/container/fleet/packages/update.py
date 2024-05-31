@@ -25,7 +25,7 @@ from googlecloudsdk.core.console import console_io
 _DETAILED_HELP = {
     'DESCRIPTION': '{description}',
     'EXAMPLES': """ \
-        To update Fleet Package ``cert-manager-app'', run:
+        To update Fleet Package `cert-manager-app`, run:
 
           $ {command} cert-manager-app --source=my_source.yaml
         """,

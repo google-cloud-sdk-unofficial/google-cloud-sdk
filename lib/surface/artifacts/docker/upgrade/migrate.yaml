@@ -55,6 +55,16 @@
       type: int
       help_text: >
         Only copy the N most recently uploaded versions of each image. More than N images may be copied if new images are uploaded during migration.
+    - arg_name: output-iam-policy-dir
+      metavar: DIRECTORY
+      hidden: true
+      help_text: >
+        Outputs Artifact Registry-equivalent bindings to this directory during IAM update step and then exits the tool. After any neccesary modifications are made, the tool can be rerun with --input-iam-policy-dir to continue migration with the generated bindings.
+    - arg_name: input-iam-policy-dir
+      metavar: DIRECTORY
+      hidden: true
+      help_text: >
+        During the IAM update step, the tool applies all iam policies in the given directory.
 
   request:
     api_version: v1

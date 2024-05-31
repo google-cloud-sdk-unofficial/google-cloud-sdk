@@ -28,6 +28,7 @@ from googlecloudsdk.command_lib.backupdr import flags
 from googlecloudsdk.core import log
 
 
+@base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 @base.Hidden
 class Create(base.CreateCommand):
@@ -110,13 +111,6 @@ class Create(base.CreateCommand):
         """Name of the backup plan to be created.
         Once the backup plan is created, this name can't be changed.
         The name must be unique for a project and location.
-
-        The name must be provided either as:
-        a relative name,
-        e.g., projects/<project>/locations/<location>/backupPlans/<backupPlanId>
-        or
-        a single ID name (with the parent resources provided through options or properties),
-        e.g.,  <backupPlanId> --project=<project> --location=<location>
         """,
     )
     flags.AddResourceType(parser)

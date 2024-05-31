@@ -30,6 +30,7 @@ from googlecloudsdk.core import log
 
 
 @base.Hidden
+@base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class CreateAlpha(base.DeleteCommand):
   """Create a Backup and DR backup vault."""

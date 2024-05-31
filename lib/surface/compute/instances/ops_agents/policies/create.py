@@ -27,6 +27,7 @@ from googlecloudsdk.api_lib.compute.instances.ops_agents.converters import cloud
 from googlecloudsdk.api_lib.compute.instances.ops_agents.converters import guest_policy_to_ops_agents_policy_converter as to_ops_agents
 from googlecloudsdk.api_lib.compute.instances.ops_agents.converters import ops_agents_policy_to_guest_policy_converter as to_guest_policy
 from googlecloudsdk.api_lib.compute.instances.ops_agents.converters import os_policy_assignment_to_cloud_ops_agents_policy_converter as to_cloud_ops_agents
+from googlecloudsdk.api_lib.compute.instances.ops_agents.validators import cloud_ops_agents_policy_validator
 from googlecloudsdk.api_lib.compute.instances.ops_agents.validators import ops_agents_policy_validator as validator
 from googlecloudsdk.api_lib.compute.os_config import utils as osconfig_api_utils
 from googlecloudsdk.calliope import base
@@ -38,7 +39,7 @@ from googlecloudsdk.generated_clients.apis.osconfig.v1 import osconfig_v1_messag
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
-class CreateOsConfig(base.Command):
+class CreateAlphaBeta(base.Command):
   """Create a Google Cloud's operations suite agents (Ops Agents) policy.
 
   *{command}* creates a policy that facilitates agent management across
@@ -169,8 +170,11 @@ class Create(base.Command):
     parser.add_argument(
         '--dry-run',
         action='store_true',
-        help=('If provided, the resulting OSPolicyAssignment will be printed to'
-              ' standard output and no actual changes are made.'))
+        help=(
+            'If provided, the resulting OSPolicyAssignment will be printed to'
+            ' standard output and no actual changes are made.'
+        ),
+    )
 
   def Run(self, args):
     """See base class."""
@@ -181,16 +185,20 @@ class Create(base.Command):
     # Convert to domain object from users input.
     ops_agents_policy = cloud_ops_agents_policy.CreateOpsAgentsPolicy(config)
 
+    cloud_ops_agents_policy_validator.ValidateOpsAgentsPolicy(ops_agents_policy)
+
     project = properties.VALUES.core.project.GetOrFail()
     parent_path = osconfig_command_utils.GetProjectLocationUriPath(
         project, args.zone
     )
 
-    name = f'{parent_path}/osPolicyAssignments/{args.POLICY_ID}'
+    assignment_id = osconfig_command_utils.GetOsPolicyAssignmentRelativePath(
+        parent_path, args.POLICY_ID
+    )
 
     ops_policy_assignment = (
         to_os_policy_assignment.ConvertOpsAgentsPolicyToOSPolicyAssignment(
-            name, ops_agents_policy
+            assignment_id, ops_agents_policy
         )
     )
     if args.dry_run:

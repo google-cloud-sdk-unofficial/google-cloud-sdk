@@ -21,6 +21,7 @@ from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 
 
+@base.UniverseCompatible
 class Images(base.Group):
   """List, create, and delete Compute Engine images."""
 

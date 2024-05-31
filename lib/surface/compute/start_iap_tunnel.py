@@ -82,6 +82,7 @@ specify the `--region` and `--network` flags:
   return detailed_help
 
 
+@base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class StartIapTunnel(base.Command):
   """Starts an IAP TCP forwarding tunnel."""
@@ -163,7 +164,7 @@ If `LOCAL_PORT` is 0, an arbitrary unused local port is chosen."""
       tunneler = iap_tunnel.SecurityGatewayTunnelHelper(
           args, project=target.project, region=target.region,
           security_gateway=target.security_gateway,
-          host=target.host, port=target.port)
+          host=target.host, port=target.port, use_dest_group=target.dest_group)
     elif target.host:
       tunneler = iap_tunnel.IAPWebsocketTunnelHelper(
           args, target.project,
@@ -214,7 +215,7 @@ If `LOCAL_PORT` is 0, an arbitrary unused local port is chosen."""
           region=args.region,
           security_gateway=args.security_gateway,
           network=None,
-          dest_group=None,
+          dest_group=args.use_dest_group,
           zone=None,
           instance=None,
           interface=None)
@@ -280,6 +281,7 @@ If `LOCAL_PORT` is 0, an arbitrary unused local port is chosen."""
       log.warning(_NUMPY_HELP_TEXT)
 
 
+@base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class StartIapTunnelBeta(StartIapTunnel):
   """Starts an IAP TCP forwarding tunnel (Beta)."""
@@ -287,6 +289,7 @@ class StartIapTunnelBeta(StartIapTunnel):
   fetch_instance_after_connect_error = True
 
 
+@base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class StartIapTunnelAlpha(StartIapTunnelBeta):
   """Starts an IAP TCP forwarding tunnel (Beta)."""

@@ -30,6 +30,8 @@ from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.compute import completers
 from googlecloudsdk.command_lib.compute import scope as compute_scopes
 from googlecloudsdk.command_lib.compute.instances import flags as instances_flags
+from googlecloudsdk.command_lib.compute.resource_policies import flags as maintenance_flags
+from googlecloudsdk.command_lib.compute.resource_policies import util as maintenance_util
 from googlecloudsdk.command_lib.util.args import labels_util
 from googlecloudsdk.core import log
 
@@ -42,6 +44,7 @@ def _Args(
     support_confidential_compute_type=False,
     support_confidential_compute_type_tdx=False,
     support_specific_then_x_affinity=False,
+    support_disk_labels=False,
 ):
   """Add flags shared by all release tracks."""
   parser.display_info.AddFormat(instances_flags.DEFAULT_LIST_FORMAT)
@@ -51,7 +54,9 @@ def _Args(
   instances_flags.AddCreateDiskArgs(
       parser,
       container_mount_enabled=container_mount_enabled,
-      support_multi_writer=support_multi_writer)
+      support_multi_writer=support_multi_writer,
+      support_disk_labels=support_disk_labels,
+  )
   instances_flags.AddCanIpForwardArgs(parser)
   instances_flags.AddContainerMountDiskFlag(parser)
   instances_flags.AddAddressArgs(parser, instances=True, containers=True)
@@ -95,6 +100,8 @@ def _Args(
       support_specific_then_x_affinity=support_specific_then_x_affinity,
   )
 
+  maintenance_flags.AddResourcePoliciesArgs(parser, 'added to', 'instance')
+
   parser.add_argument(
       '--description', help='Specifies a textual description of the instances.')
 
@@ -106,6 +113,10 @@ def _Args(
   parser.display_info.AddCacheUpdater(completers.InstancesCompleter)
 
 
+# TODO(b/305707759):Change @base.DefaultUniverseOnly to
+# @base.UniverseCompatible once b/305707759 is fixed.
+# See go/gcloud-cli-running-tpc-tests.
+@base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class CreateWithContainer(base.CreateCommand):
   """Command for creating VM instances running container images."""
@@ -121,6 +132,7 @@ class CreateWithContainer(base.CreateCommand):
   _support_confidential_compute_type_tdx = False
   _support_local_ssd_recovery_timeout = True
   _support_specific_then_x_affinity = False
+  _support_disk_labels = False
 
   @staticmethod
   def Args(parser):
@@ -132,6 +144,7 @@ class CreateWithContainer(base.CreateCommand):
         support_confidential_compute_type=False,
         support_confidential_compute_type_tdx=False,
         support_specific_then_x_affinity=False,
+        support_disk_labels=False,
     )
     instances_flags.AddNetworkTierArgs(parser, instance=True)
     instances_flags.AddMinCpuPlatformArgs(parser, base.ReleaseTrack.GA)
@@ -277,8 +290,9 @@ class CreateWithContainer(base.CreateCommand):
             image_uri=image_uri,
             create_boot_disk=self._support_create_boot_disk,
             support_nvdimm=self._support_nvdimm,
-            support_match_container_mount_disks=self
-            ._support_match_container_mount_disks)
+            support_match_container_mount_disks=self._support_match_container_mount_disks,
+            support_disk_labels=self._support_disk_labels,
+        )
 
       machine_type_uri = None
       if instance_utils.CheckSpecifiedMachineTypeArgs(args, skip_defaults):
@@ -345,6 +359,19 @@ class CreateWithContainer(base.CreateCommand):
                 args.numa_node_count if self._support_numa_node_count else None,
                 visible_core_count))
 
+      resource_policies = getattr(args, 'resource_policies', None)
+      if resource_policies:
+        parsed_resource_policies = []
+        for policy in resource_policies:
+          resource_policy_ref = maintenance_util.ParseResourcePolicyWithZone(
+              resource_parser,
+              policy,
+              project=instance_ref.project,
+              zone=instance_ref.zone,
+          )
+          parsed_resource_policies.append(resource_policy_ref.SelfLink())
+        instance.resourcePolicies = parsed_resource_policies
+
       shielded_instance_config = create_utils.BuildShieldedInstanceConfigMessage(
           messages=compute_client.messages, args=args)
       if shielded_instance_config:
@@ -386,6 +413,7 @@ class CreateWithContainerBeta(CreateWithContainer):
   _support_numa_node_count = False
   _support_local_ssd_recovery_timeout = True
   _support_specific_then_x_affinity = True
+  _support_disk_labels = True
 
   @staticmethod
   def Args(parser):
@@ -396,6 +424,7 @@ class CreateWithContainerBeta(CreateWithContainer):
         support_confidential_compute_type=True,
         support_confidential_compute_type_tdx=True,
         support_specific_then_x_affinity=True,
+        support_disk_labels=True,
     )
     instances_flags.AddNetworkTierArgs(parser, instance=True)
     instances_flags.AddLocalSsdArgs(parser)
@@ -425,6 +454,7 @@ class CreateWithContainerAlpha(CreateWithContainerBeta):
   _support_confidential_compute_type_tdx = True
   _support_local_ssd_recovery_timeout = True
   _support_specific_then_x_affinity = True
+  _support_disk_labels = True
 
   @staticmethod
   def Args(parser):
@@ -435,6 +465,7 @@ class CreateWithContainerAlpha(CreateWithContainerBeta):
         support_confidential_compute_type=True,
         support_confidential_compute_type_tdx=True,
         support_specific_then_x_affinity=True,
+        support_disk_labels=True,
     )
 
     instances_flags.AddNetworkTierArgs(parser, instance=True)

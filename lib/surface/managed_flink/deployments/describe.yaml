@@ -1,0 +1,22 @@
+release_tracks: [ALPHA]
+hidden: true
+
+help_text:
+  brief: |
+    Describe a Managed Flink deployment.
+  description: |
+    Describe a Managed Flink deployment.
+
+  examples: |
+    To describe a Managed Flink whose ID is mydeployment, run the following:
+
+      $ {command} mydeployment \
+          --location=us-central1
+
+request:
+  collection: managedflink.projects.locations.deployments
+
+arguments:
+  resource:
+    help_text: Identifies the Flink deployment whose details are to be displayed.
+    spec: !REF googlecloudsdk.command_lib.managed_flink.resources:deployment

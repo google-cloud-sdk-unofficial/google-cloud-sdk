@@ -76,6 +76,7 @@ class Update(base.UpdateCommand):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     messages = holder.client.messages
     service = holder.client.apitools_client.networks
+    cleared_fields = []
 
     network_ref = self.NETWORK_ARG.ResolveAsResource(args, holder.resources)
 
@@ -147,6 +148,11 @@ class Update(base.UpdateCommand):
               args.bgp_best_path_selection_mode
           )
       )
+      # In case the customer set the BGP BPS mode to LEGACY, we need to clear
+      # any STANDARD mode-only fields.
+      if args.bgp_best_path_selection_mode == 'LEGACY':
+        cleared_fields.append('routingConfig.bgpAlwaysCompareMed')
+        cleared_fields.append('routingConfig.bgpInterRegionCost')
 
     if getattr(args, 'bgp_bps_always_compare_med', None) is not None:
       should_patch = True
@@ -173,11 +179,12 @@ class Update(base.UpdateCommand):
               args.network_firewall_policy_enforcement_order))
 
     if should_patch:
-      resource = service.Patch(
-          messages.ComputeNetworksPatchRequest(
-              project=network_ref.project,
-              network=network_ref.Name(),
-              networkResource=network_resource))
+      with holder.client.apitools_client.IncludeFields(cleared_fields):
+        resource = service.Patch(
+            messages.ComputeNetworksPatchRequest(
+                project=network_ref.project,
+                network=network_ref.Name(),
+                networkResource=network_resource))
 
     return resource
 
@@ -205,8 +212,7 @@ class Update(base.UpdateCommand):
     tracker.StartStage(latest_status_message)
     tracker.last_status_message = latest_status_message
 
-
-# Mark all stages between last and latest status messages as completed
+  # Mark all stages between last and latest status messages as completed
 
   def _MarkStagesCompleted(self, tracker, latest_status_message):
     ordered_stages = list(self.MIGRATION_STAGES.keys())

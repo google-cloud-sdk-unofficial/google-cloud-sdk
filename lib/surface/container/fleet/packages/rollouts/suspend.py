@@ -22,7 +22,7 @@ from googlecloudsdk.command_lib.util.concepts import concept_parsers
 _DETAILED_HELP = {
     'DESCRIPTION': '{description}',
     'EXAMPLES': """ \
-        To suspend Rollout ``20240318'' for ``cert-manager-app'' in ``us-central1'', run:
+        To suspend Rollout `20240318` for `cert-manager-app` in `us-central1`, run:
 
           $ {command} 20240318 --fleet-package=cert-manager-app --location=us-central1
         """,
@@ -30,6 +30,7 @@ _DETAILED_HELP = {
 
 
 @base.Hidden
+@base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Suspend(base.Command):
   """Suspend in-progress Rollout."""

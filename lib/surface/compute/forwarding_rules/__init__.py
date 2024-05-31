@@ -21,6 +21,7 @@ from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 
 
+@base.UniverseCompatible
 class ForwardingRules(base.Group):
   """Read and manipulate traffic forwarding rules to network load balancers."""
 

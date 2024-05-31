@@ -1,0 +1,30 @@
+release_tracks: [ALPHA]
+hidden: true
+help_text:
+  brief: Create a Managed Flink deployment.
+  description: Create a Managed Flink deployment.
+  examples: |
+    To create a Managed Flink deployment, run:
+
+        $ {command} my-deployment \
+            --location=us-central1 \
+            --parallelism=1 \
+            --entry-class=com.package.Main \
+            --jar-uri=gs:///opt/flink/examples/streaming/StateMachineExample.jar
+
+request:
+  collection: managedflink.projects.locations.deployments
+  method: create
+
+async:
+  collection: managedflink.projects.locations.operations
+
+arguments:
+  resource:
+    help_text: Identifies the deployment for which the command runs.
+    spec: !REF googlecloudsdk.command_lib.managed_flink.resources:deployment
+
+  params:
+  - _REF_: googlecloudsdk.command_lib.managed_flink.flags:parallelism
+  - _REF_: googlecloudsdk.command_lib.managed_flink.flags:entry-class
+  - _REF_: googlecloudsdk.command_lib.managed_flink.flags:jar-uri

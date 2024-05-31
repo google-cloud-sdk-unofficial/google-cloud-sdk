@@ -222,6 +222,7 @@ def RunTroubleshooting(project=None, zone=None, instance=None,
   vm_boot()
 
 
+@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Ssh(base.Command):
   """SSH into a virtual machine instance."""
@@ -468,6 +469,7 @@ class Ssh(base.Command):
     return RECOMMEND_MESSAGE.format(command, command_iap)
 
 
+@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class SshAlphaBeta(Ssh):
   """SSH into a virtual machine instance (Beta)."""

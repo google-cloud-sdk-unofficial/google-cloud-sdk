@@ -24,6 +24,7 @@ from googlecloudsdk.api_lib.database_migration import resource_args
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.database_migration import flags
 from googlecloudsdk.command_lib.database_migration.connection_profiles import flags as cp_flags
+from googlecloudsdk.command_lib.database_migration.connection_profiles import sqlserver_flags
 from googlecloudsdk.core.console import console_io
 
 DETAILED_HELP = {
@@ -129,3 +130,4 @@ class UpdateGA(_Update, base.Command):
     cp_flags.AddClientCertificateFlag(parser)
     cp_flags.AddCloudSQLInstanceFlag(parser)
     cp_flags.AddAlloydbClusterFlag(parser)
+    sqlserver_flags.AddSourceUpdateFlag(parser)

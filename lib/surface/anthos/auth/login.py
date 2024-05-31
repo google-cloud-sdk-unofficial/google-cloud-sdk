@@ -25,6 +25,7 @@ from googlecloudsdk.command_lib.anthos.common import messages
 from googlecloudsdk.core import log
 
 
+@base.DefaultUniverseOnly
 class Login(base.BinaryBackedCommand):
   """Authenticate clusters using the Anthos client."""
 
@@ -50,6 +51,11 @@ class Login(base.BinaryBackedCommand):
       To add credentials to custom kubeconfig file using server side login:
 
           $ {command}  --cluster=testcluster --server=<server-url> --kubeconfig=my.kubeconfig
+
+
+      To add credentials to custom kubeconfig file with server side login using a remote-device for login:
+
+          $ {command}  --cluster=testcluster --server=<server-url> --kubeconfig=my.kubeconfig --no-browser
             """,
   }
 
@@ -66,6 +72,8 @@ class Login(base.BinaryBackedCommand):
                         'but do not execute them.').AddToParser(parser)
     flags.GetSetPreferredAuthenticationFlag().AddToParser(parser)
     flags.GetServerFlag().AddToParser(parser)
+    flags.GetNoBrowserFlag().AddToParser(parser)
+    flags.GetRemoteBootstrapFlag().AddToParser(parser)
 
   def Run(self, args):
     command_executor = anthoscli_backend.AnthosAuthWrapper()
@@ -82,6 +90,8 @@ class Login(base.BinaryBackedCommand):
           login_config_cert=args.login_config_cert,
           dry_run=args.dry_run,
           server_url=args.server,
+          no_browser=args.no_browser,
+          remote_bootstrap=args.remote_bootstrap,
           env=anthoscli_backend.GetEnvArgsForCommand(
               extra_vars={'GCLOUD_AUTH_PLUGIN': 'true'}
           ),

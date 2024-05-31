@@ -20,7 +20,7 @@ from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 
 
-@base.Hidden
+@base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Topics(base.Group):
   """Administer Apache Kafka for BigQuery topics."""

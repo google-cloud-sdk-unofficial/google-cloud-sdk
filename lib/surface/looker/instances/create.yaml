@@ -80,11 +80,6 @@
         help_text: |
           A Looker (Google Cloud core) product for deploying and maintaining external analytics and
           custom applications at scale. This can be purchased via an annual contract.
-      - enum_value:  LOOKER_MODELER
-        arg_value: looker-modeler
-        release_tracks: [ALPHA]
-        help_text: |
-          Standalone Model Service.
     # Flags - Public IP
     - arg_name: enable-public-ip
       api_field: instance.enablePublicIp

@@ -25,6 +25,7 @@ from googlecloudsdk.command_lib.secrets import log as secrets_log
 from googlecloudsdk.core.console import console_io
 
 
+@base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Destroy(base.DeleteCommand):
   r"""Destroy a secret version's metadata and secret data.
@@ -108,5 +109,10 @@ class DestroyBeta(Destroy):
     result = secrets_api.Versions(api_version=api_version).Destroy(
         version_ref, etag=args.etag, secret_location=args.location
     )
-    secrets_log.Versions().Destroyed(version_ref)
+    if result.scheduledDestroyTime is not None:
+      secrets_log.Versions().ScheduledDestroy(
+          result.scheduledDestroyTime, version_ref
+      )
+    else:
+      secrets_log.Versions().Destroyed(version_ref)
     return result

@@ -21,6 +21,7 @@ from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 
 
+@base.UniverseCompatible
 class Snapshots(base.Group):
   """List, describe, and delete Compute Engine snapshots."""
 

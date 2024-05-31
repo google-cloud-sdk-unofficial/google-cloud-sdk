@@ -30,7 +30,7 @@ from googlecloudsdk.command_lib.util.concepts import concept_parsers
 from googlecloudsdk.command_lib.util.concepts import presentation_specs
 
 
-@base.Hidden
+@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class List(commands.List):
   """List available worker revisions."""
@@ -77,6 +77,27 @@ class List(commands.List):
   def Args(cls, parser):
     cls.CommonArgs(parser)
 
+  def _FilterWorkerRevisions(self, worker_revisions):
+    """Filters out revisions that are not worker revisions.
+
+    For Workers private preview, workers are services underneath the table.
+    Adding a logic to only show revisions that are under the services that are
+    configured to behave like workers.
+    Checking for revisions with concurrency/timeout not set.
+
+    Args:
+      worker_revisions: List of revisions to filter.
+
+    Returns:
+      List of revisions that are worker revisions.
+    """
+    return list(
+        filter(
+            lambda wr: not wr.timeout and not wr.concurrency,
+            worker_revisions,
+        )
+    )
+
   def Run(self, args):
     """List available worker revisions."""
     worker_name = args.worker
@@ -89,7 +110,9 @@ class List(commands.List):
     namespace_ref = args.CONCEPTS.namespace.Parse()
     with serverless_operations.Connect(conn_context) as client:
       self.SetCompleteApiEndpoint(conn_context.endpoint)
-      for rev in client.ListWorkerRevisions(
-          namespace_ref, worker_name, args.limit, args.page_size
+      for rev in self._FilterWorkerRevisions(
+          client.ListWorkerRevisions(
+              namespace_ref, worker_name, args.limit, args.page_size
+          )
       ):
         yield rev

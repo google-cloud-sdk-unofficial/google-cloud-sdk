@@ -22,7 +22,7 @@ from googlecloudsdk.command_lib.util.concepts import concept_parsers
 _DETAILED_HELP = {
     'DESCRIPTION': '{description}',
     'EXAMPLES': """ \
-        To view Fleet Package ``cert-manager-app'' in ``us-central1'', run:
+        To view Fleet Package `cert-manager-app` in `us-central1`, run:
 
           $ {command} cert-manager-app --location=us-central1
         """,
@@ -30,6 +30,7 @@ _DETAILED_HELP = {
 
 
 @base.Hidden
+@base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Describe(base.DescribeCommand):
   """Describe Package Rollouts Fleet Package."""

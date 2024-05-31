@@ -21,7 +21,7 @@ from googlecloudsdk.command_lib.container.fleet.packages import flags
 _DETAILED_HELP = {
     'DESCRIPTION': '{description}',
     'EXAMPLES': """ \
-        To list all Releases for bundle ``cert-manager'' in ``us-central1'', run:
+        To list all Releases for bundle `cert-manager` in `us-central1`, run:
 
           $ {command} --resource-bundle=cert-manager --location=us-central1
         """,
@@ -33,6 +33,7 @@ _FORMAT = 'table(name.basename(), lifecycle, createTime)'
 
 
 @base.Hidden
+@base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class List(base.ListCommand):
   """List Releases of a Resource Bundle."""

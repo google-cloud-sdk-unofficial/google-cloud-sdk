@@ -18,20 +18,28 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+from apitools.base.py import encoding
+from googlecloudsdk.api_lib.compute.instances.ops_agents import cloud_ops_agents_policy
+from googlecloudsdk.api_lib.compute.instances.ops_agents import cloud_ops_agents_util
 from googlecloudsdk.api_lib.compute.instances.ops_agents import ops_agents_policy
+from googlecloudsdk.api_lib.compute.instances.ops_agents.converters import cloud_ops_agents_policy_to_os_assignment_policy_converter as to_os_policy_assignment
 from googlecloudsdk.api_lib.compute.instances.ops_agents.converters import guest_policy_to_ops_agents_policy_converter
 from googlecloudsdk.api_lib.compute.instances.ops_agents.converters import ops_agents_policy_to_guest_policy_converter
+from googlecloudsdk.api_lib.compute.instances.ops_agents.converters import os_policy_assignment_to_cloud_ops_agents_policy_converter as to_ops_agents_policy
+from googlecloudsdk.api_lib.compute.instances.ops_agents.validators import cloud_ops_agents_policy_validator
 from googlecloudsdk.api_lib.compute.instances.ops_agents.validators import ops_agents_policy_validator
 from googlecloudsdk.api_lib.compute.os_config import utils as osconfig_api_utils
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute.instances.ops_agents.policies import parser_utils
 from googlecloudsdk.command_lib.compute.os_config import utils as osconfig_command_utils
 from googlecloudsdk.core import properties
+from googlecloudsdk.core import yaml
+from googlecloudsdk.generated_clients.apis.osconfig.v1 import osconfig_v1_messages as osconfig
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
-class Update(base.Command):
-  """Update a Google Cloud's operations suite agents (Ops Agents) policy.
+class UpdateAlphaBeta(base.Command):
+  """Update a Google Cloud operations suite agent (Ops Agent) policy.
 
   *{command}* updates a policy that facilitates agent management across
   Compute Engine instances based on user specified instance filters. This policy
@@ -60,10 +68,8 @@ class Update(base.Command):
   """
 
   detailed_help = {
-      'DESCRIPTION':
-          '{description}',
-      'EXAMPLES':
-          """\
+      'DESCRIPTION': '{description}',
+      'EXAMPLES': """\
           To update a policy named ``ops-agents-test-policy'' to target a
           single CentOS 7 VM instance named
           ``zones/us-central1-a/instances/test-instance'' for testing or
@@ -106,35 +112,159 @@ class Update(base.Command):
     """See base class."""
     release_track = self.ReleaseTrack()
     client = osconfig_api_utils.GetClientInstance(
-        release_track, api_version_override='v1beta')
+        release_track, api_version_override='v1beta'
+    )
     messages = osconfig_api_utils.GetClientMessages(
-        release_track, api_version_override='v1beta')
+        release_track, api_version_override='v1beta'
+    )
 
     project = properties.VALUES.core.project.GetOrFail()
     request = messages.OsconfigProjectsGuestPoliciesGetRequest(
         name=osconfig_command_utils.GetGuestPolicyUriPath(
-            'projects', project, args.POLICY_ID))
+            'projects', project, args.POLICY_ID
+        )
+    )
     service = client.projects_guestPolicies
     current_guest_policy = service.Get(request)
     current_ops_agents_policy = guest_policy_to_ops_agents_policy_converter.ConvertGuestPolicyToOpsAgentPolicy(
-        current_guest_policy)
+        current_guest_policy
+    )
     updated_ops_agents_policy = ops_agents_policy.UpdateOpsAgentsPolicy(
-        current_ops_agents_policy, args.description,
-        args.etag, args.agent_rules, args.os_types,
+        current_ops_agents_policy,
+        args.description,
+        args.etag,
+        args.agent_rules,
+        args.os_types,
         [] if args.clear_group_labels else args.group_labels,
         [] if args.clear_zones else args.zones,
-        [] if args.clear_instances else args.instances)
+        [] if args.clear_instances else args.instances,
+    )
     ops_agents_policy_validator.ValidateOpsAgentsPolicy(
-        updated_ops_agents_policy)
+        updated_ops_agents_policy
+    )
     updated_os_config_policy = ops_agents_policy_to_guest_policy_converter.ConvertOpsAgentPolicyToGuestPolicy(
-        messages, updated_ops_agents_policy, current_guest_policy.recipes)
+        messages, updated_ops_agents_policy, current_guest_policy.recipes
+    )
     request = messages.OsconfigProjectsGuestPoliciesPatchRequest(
         guestPolicy=updated_os_config_policy,
         name=osconfig_command_utils.GetGuestPolicyUriPath(
-            'projects', project, args.POLICY_ID),
+            'projects', project, args.POLICY_ID
+        ),
         updateMask=None,
     )
     complete_os_config_policy = service.Patch(request)
     complete_ops_agent_policy = guest_policy_to_ops_agents_policy_converter.ConvertGuestPolicyToOpsAgentPolicy(
-        complete_os_config_policy)
+        complete_os_config_policy
+    )
     return complete_ops_agent_policy
+
+
+@base.Hidden
+@base.UniverseCompatible
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class Update(base.Command):
+  """Update a Google Cloud operations suite agent (Ops Agent) policy.
+
+  TBD
+  """
+
+  detailed_help = {
+      'DESCRIPTION': '{description}',
+      'EXAMPLES': """\
+          TBD
+          """,
+  }
+
+  @staticmethod
+  def Args(parser):
+    """See base class."""
+    parser.add_argument(
+        'POLICY_ID',
+        type=str,
+        help="""\
+          ID of the policy.
+
+          This ID must contain only lowercase letters,
+          numbers, and hyphens, end with a number or a letter, be between 1-63
+          characters, and be unique within the project.
+          """,
+    )
+    parser.add_argument(
+        '--file',
+        required=True,
+        help="""\
+          YAML file with a subset of Cloud Ops Policy fields you wish to update. For
+          information about the Cloud Ops Agents Policy Assignment format, see [PLACEHOLDER for our public doc].""",
+    )
+    parser.add_argument(
+        '--zone',
+        required=True,
+        help="""\
+          Zone where the OS Policy Assignment is located.""",
+    )
+    parser.add_argument(
+        '--dry-run',
+        action='store_true',
+        help=(
+            'If provided, the resulting OSPolicyAssignment will be printed to'
+            ' standard output and no actual changes are made.'
+        ),
+    )
+
+  def Run(self, args):
+    """See base class."""
+    release_track = self.ReleaseTrack()
+    project = properties.VALUES.core.project.GetOrFail()
+    # Make sure the policy we're updating is a valid Ops Agents policy.
+    current_ops_agents_policy = cloud_ops_agents_util.GetOpsAgentsPolicyFromApi(
+        release_track, args.POLICY_ID, project, args.zone
+    )
+
+    # Grab user's config.
+    config = yaml.load_path(args.file)
+
+    updated_policy = cloud_ops_agents_policy.UpdateOpsAgentsPolicy(
+        update_ops_agents_policy=config,
+        ops_agents_policy=current_ops_agents_policy,
+    )
+    cloud_ops_agents_policy_validator.ValidateOpsAgentsPolicy(updated_policy)
+
+    if args.dry_run:
+      return updated_policy
+
+    parent_path = osconfig_command_utils.GetProjectLocationUriPath(
+        project, args.zone
+    )
+    assignment_id = osconfig_command_utils.GetOsPolicyAssignmentRelativePath(
+        parent_path, args.POLICY_ID
+    )
+    messages = osconfig_api_utils.GetClientMessages(release_track)
+
+    # TODO: b/339694475 - Include updateMask to better indicate what fields
+    # were updated.
+    update_request = messages.OsconfigProjectsLocationsOsPolicyAssignmentsPatchRequest(
+        oSPolicyAssignment=to_os_policy_assignment.ConvertOpsAgentsPolicyToOSPolicyAssignment(
+            name=assignment_id, ops_agents_policy=updated_policy
+        ),
+        name=assignment_id,
+    )
+
+    client = osconfig_api_utils.GetClientInstance(release_track)
+    service = client.projects_locations_osPolicyAssignments
+    update_reponse = service.Patch(update_request)
+
+    # Converting osconfig.Operation.ReponseValue to osconfig.OSPolicyAssignment.
+    updated_os_policy_assignment = encoding.PyValueToMessage(
+        osconfig.OSPolicyAssignment,
+        encoding.MessageToPyValue(update_reponse.response),
+    )
+
+    updated_ops_agents_policy = (
+        to_ops_agents_policy.ConvertOsPolicyAssignmentToCloudOpsAgentPolicy(
+            updated_os_policy_assignment
+        )
+    )
+
+    assert updated_ops_agents_policy == updated_policy
+
+    return updated_policy.ToPyValue()

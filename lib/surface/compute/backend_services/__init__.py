@@ -21,6 +21,7 @@ from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 
 
+@base.UniverseCompatible
 class BackendServices(base.Group):
   """List, create, and delete backend services."""
 

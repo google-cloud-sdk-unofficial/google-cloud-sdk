@@ -18,6 +18,7 @@ from googlecloudsdk.calliope import base
 
 
 @base.Hidden
+@base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class ConfigDelivery(base.Group):
   """Manage Fleet Packages resources."""

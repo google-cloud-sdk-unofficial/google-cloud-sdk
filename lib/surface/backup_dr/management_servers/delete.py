@@ -32,6 +32,7 @@ from googlecloudsdk.core.console import console_io
 @base.ReleaseTracks(
     base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
 )
+@base.DefaultUniverseOnly
 class DeleteAlpha(base.DeleteCommand):
   """Delete the specified Management Server."""
 
