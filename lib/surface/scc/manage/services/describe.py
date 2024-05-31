@@ -57,16 +57,32 @@ class Describe(base.DescribeCommand):
   You can also specify the parent more generally:
 
     $ {command} sha --parent=organizations/123
+
+  To get the details of modules, `[ABC, DEF]` of a Security Command
+  Center service with name `sha` for organization `123`, run:
+
+    $ {command} sha --module-list=[ABC, DEF] --organization=123
   """
 
   @staticmethod
   def Args(parser):
     flags.CreateServiceNameArg().AddToParser(parser)
     flags.CreateParentFlag(required=True).AddToParser(parser)
+    flags.CreateModuleList().AddToParser(parser)
 
   def Run(self, args):
     name = parsing.GetServiceNameFromArgs(args)
-
+    module_list = parsing.GetModuleListFromArgs(args)
     client = clients.SecurityCenterServicesClient()
 
-    return client.Get(name)
+    response = client.Get(name)
+
+    if not module_list:
+      return response
+    else:
+      filtered_response = [
+          module_value
+          for module_value in response.modules.additionalProperties
+          if module_value.key in module_list
+      ]
+      return filtered_response

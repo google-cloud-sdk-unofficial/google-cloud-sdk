@@ -11,15 +11,19 @@ import sys
 from typing import Optional
 
 
+
 from absl import app
 from absl import flags
-from pyglib import appcommands
 
+import bq_flags
 from clients import bigquery_client
 from clients import bigquery_client_extended
 from clients import utils as bq_client_utils
 from frontend import bigquery_command
 from frontend import bq_cached_client
+from pyglib import appcommands
+
+from frontend import flags as frontend_flags
 from frontend import utils as frontend_utils
 from frontend import utils_data_transfer
 from utils import bq_error
@@ -421,8 +425,8 @@ class Query(bigquery_command.BigqueryCmd):
     if not query:
       query = sys.stdin.read()
     client = bq_cached_client.Client.Get()
-    if FLAGS.location:
-      kwds['location'] = FLAGS.location
+    if bq_flags.LOCATION.value:
+      kwds['location'] = bq_flags.LOCATION.value
     kwds['use_legacy_sql'] = self.use_legacy_sql
     time_partitioning = frontend_utils.ParseTimePartitioning(
         self.time_partitioning_type,
@@ -468,7 +472,9 @@ class Query(bigquery_command.BigqueryCmd):
 
     if self.schedule or self.no_auto_scheduling:
       transfer_client = client.GetTransferV1ApiClient()
-      reference = 'projects/' + (client.GetProjectReference().projectId)
+      reference = 'projects/' + (
+          bq_client_utils.GetProjectReference(id_fallbacks=client).projectId
+      )
       scheduled_queries_reference = reference + '/dataSources/scheduled_query'
       try:
         transfer_client.projects().dataSources().get(
@@ -505,12 +511,14 @@ class Query(bigquery_command.BigqueryCmd):
       target_dataset = self.target_dataset
       if self.destination_table:
         target_dataset = (
-            client.GetTableReference(self.destination_table)
+            bq_client_utils.GetTableReference(
+                id_fallbacks=client, identifier=self.destination_table
+            )
             .GetDatasetReference()
             .datasetId
         )
-        destination_table = client.GetTableReference(
-            self.destination_table
+        destination_table = bq_client_utils.GetTableReference(
+            id_fallbacks=client, identifier=self.destination_table
         ).tableId
         params['destination_table_name_template'] = destination_table
       if self.append_table:
@@ -530,7 +538,7 @@ class Query(bigquery_command.BigqueryCmd):
           auth_info=auth_info,
           destination_kms_key=self.destination_kms_key,
           schedule_args=schedule_args,
-          location=FLAGS.location,
+          location=bq_flags.LOCATION.value,
       )
       print("Transfer configuration '%s' successfully created." % transfer_name)
       return
@@ -624,13 +632,16 @@ class Query(bigquery_command.BigqueryCmd):
 
       if self.dry_run:
         frontend_utils.PrintDryRunInfo(job)
-      elif not FLAGS.sync:
+      elif not bq_flags.SYNCHRONOUS_MODE.value:
         self.PrintJobStartInfo(job)
       else:
         self._PrintQueryJobResults(client, job)
     if read_schema:
       client.UpdateTable(
-          client.GetTableReference(self.destination_table), read_schema
+          bq_client_utils.GetTableReference(
+              id_fallbacks=client, identifier=self.destination_table
+          ),
+          read_schema,
       )
 
   def _PrintQueryJobResults(

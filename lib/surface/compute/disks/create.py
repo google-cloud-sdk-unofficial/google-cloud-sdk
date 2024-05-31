@@ -38,9 +38,9 @@ from googlecloudsdk.command_lib.compute import flags
 from googlecloudsdk.command_lib.compute import scope as compute_scope
 from googlecloudsdk.command_lib.compute.disks import create
 from googlecloudsdk.command_lib.compute.disks import flags as disks_flags
-from googlecloudsdk.command_lib.compute.kms import resource_args as kms_resource_args
 from googlecloudsdk.command_lib.compute.resource_policies import flags as resource_flags
 from googlecloudsdk.command_lib.compute.resource_policies import util as resource_util
+from googlecloudsdk.command_lib.kms import resource_args as kms_resource_args
 from googlecloudsdk.command_lib.util.apis import arg_utils
 from googlecloudsdk.command_lib.util.args import labels_util
 from googlecloudsdk.core import log
@@ -253,6 +253,7 @@ def _ParseGuestOsFeaturesToMessages(args, client_messages):
   return guest_os_feature_messages
 
 
+@base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Create(base.Command):
   """Create Compute Engine persistent disks."""
@@ -669,6 +670,7 @@ class Create(base.Command):
       log.status.Print(textwrap.dedent(message))
 
 
+@base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class CreateBeta(Create):
   """Create Compute Engine persistent disks."""
@@ -702,6 +704,7 @@ class CreateBeta(Create):
         support_enable_confidential_compute=True)
 
 
+@base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class CreateAlpha(CreateBeta):
   """Create Compute Engine persistent disks."""

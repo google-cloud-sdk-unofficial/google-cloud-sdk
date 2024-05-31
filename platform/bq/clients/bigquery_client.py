@@ -14,7 +14,7 @@ import sys
 import tempfile
 import time
 import traceback
-from typing import Any, Callable, Optional, Union
+from typing import Any, Callable, List, Optional, Union
 import urllib
 
 
@@ -42,8 +42,9 @@ except ImportError:
 
 try:
   import google_auth_httplib2
+  _HAS_GOOGLE_AUTH_HTTPLIB2 = True
 except ImportError:
-  google_auth_httplib2 = None
+  _HAS_GOOGLE_AUTH_HTTPLIB2 = False
 
 # A unique non-None default, for use in kwargs that need to
 # distinguish default from None.
@@ -67,18 +68,18 @@ class BigqueryClient:
       api_version: str,
       project_id: Optional[str] = '',
       dataset_id: Optional[str] = '',
-      discovery_document=_DEFAULT,
+      discovery_document: Union[bytes, object, None] = _DEFAULT,
       job_property: str = '',
-      trace=None,
+      trace: Optional[str] = None,
       sync: bool = True,
       wait_printer_factory: Optional[
           Callable[[], bq_client_utils.TransitionWaitPrinter]
       ] = bq_client_utils.TransitionWaitPrinter,
-      job_id_generator=bq_client_utils.JobIdGeneratorIncrementing(
+      job_id_generator: bq_client_utils.JobIdGenerator = bq_client_utils.JobIdGeneratorIncrementing(
           bq_client_utils.JobIdGeneratorRandom()
       ),
-      max_rows_per_request=None,
-      quota_project_id=None,
+      max_rows_per_request: Optional[int] = None,
+      quota_project_id: Optional[str] = None,
       use_google_auth: bool = False,
       **kwds,
   ):
@@ -154,7 +155,11 @@ class BigqueryClient:
   columns_excluded_for_make_transfer_run = ['schedule', 'endTime', 'startTime']
 
 
-  def GetHttp(self):
+  def GetHttp(
+      self,
+  ) -> Union[
+      'httplib2.Http',
+  ]:
     """Returns the httplib2 Http to use."""
 
     proxy_info = httplib2.proxy_info_from_environment
@@ -203,8 +208,14 @@ class BigqueryClient:
   def GetAuthorizedHttp(
       self,
       credentials: Any,
-      http: Any,
-      is_for_discovery: bool = False):
+      http: Union[
+          'httplib2.Http',
+      ],
+      is_for_discovery: bool = False,
+  ) -> Union[
+      'httplib2.Http',
+      'google_auth_httplib2.AuthorizedHttp',
+  ]:
     """Returns an http client that is authorized with the given credentials."""
     if is_for_discovery:
       # Discovery request shouldn't have any quota project ID set.
@@ -225,7 +236,7 @@ class BigqueryClient:
 
     if _HAS_GOOGLE_AUTH and isinstance(credentials,
                                        google_credentials.Credentials):
-      if google_auth_httplib2 is None:
+      if not _HAS_GOOGLE_AUTH_HTTPLIB2:
         raise ValueError(
             'Credentials from google.auth specified, but '
             'google-api-python-client is unable to use these credentials '

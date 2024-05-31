@@ -24,6 +24,7 @@ from googlecloudsdk.command_lib.projects import util as projects_util
 from googlecloudsdk.core import properties
 
 
+@base.DefaultUniverseOnly
 @base.ReleaseTracks(
     base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
 )
@@ -43,10 +44,13 @@ class GetVpcServiceControls(base.DescribeCommand):
 
         When enabled, Google Cloud also creates Cloud DNS managed private
         zones and authorizes those zones for the service producer VPC network.
-        The zones include googleapis.com, pkg.dev, gcr.io, and other necessary
-        domains or host names for Google APIs and services that are compatible
-        with VPC Service Controls. Record data in the zones resolves all host
-        names to 199.36.153.4, 199.36.153.5, 199.36.153.6, and 199.36.153.7.
+        The zones include googleapis.com, gcr.io, pkg.dev,
+        notebooks.cloud.google.com, kernels.googleusercontent.com,
+        backupdr.cloud.google.com, and backupdr.googleusercontent.com
+        as necessary domains or host names for Google APIs and services that are
+        compatible with VPC Service Controls. Record data in the zones resolves
+        all host names to 199.36.153.4, 199.36.153.5, 199.36.153.6, and
+        199.36.153.7.
 
         When disabled, Google Cloud makes the following route configuration
         changes in the service producer VPC network: Google Cloud restores a

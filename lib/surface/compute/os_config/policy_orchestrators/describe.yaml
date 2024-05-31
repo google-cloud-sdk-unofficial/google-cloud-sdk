@@ -1,0 +1,21 @@
+- release_tracks: [ALPHA]
+
+  help_text:
+    brief: Describe a policy orchestrator
+    description: |
+      Describe a policy orchestrator
+      ## EXAMPLES
+
+      To describe a policy orchestrator `my-orchestrator`:
+
+        $ {command} my-orchestrator
+
+  request:
+    collection: osconfig.folders.locations.global.policyOrchestrators
+    ALPHA:
+      api_version: v2alpha
+
+  arguments:
+    resource:
+      help_text: The policy orchestrator to describe.
+      spec: !REF googlecloudsdk.command_lib.compute.os_config.resources:policy_orchestrator

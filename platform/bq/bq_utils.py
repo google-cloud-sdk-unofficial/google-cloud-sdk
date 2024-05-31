@@ -13,10 +13,11 @@ import sys
 import textwrap
 import time
 import traceback
-from typing import Any, Dict, List, Optional, TextIO
+from typing import Dict, List, Literal, Optional, TextIO, Union
 
 from absl import app
 from absl import flags
+from google.auth import credentials as google_credentials
 from google.auth import version as google_auth_version
 from google.oauth2 import credentials as google_oauth2
 import googleapiclient
@@ -352,7 +353,9 @@ def GetResolvedQuotaProjectID(
 
 
 def GetEffectiveQuotaProjectIDForHTTPHeader(
-    quota_project_id: str, use_google_auth: bool, credentials: Any
+    quota_project_id: str,
+    use_google_auth: bool,
+    credentials: 'google_oauth2.Credentials',
 ) -> Optional[str]:
   """Return the effective quota project ID to be set in the API HTTP header."""
   if use_google_auth and hasattr(credentials, '_quota_project_id'):
@@ -361,8 +364,11 @@ def GetEffectiveQuotaProjectIDForHTTPHeader(
 
 
 def GetSanitizedCredentialForDiscoveryRequest(
-    use_google_auth: bool, credentials: Any
-) -> Any:
+    use_google_auth: bool,
+    credentials: Union[
+        'google_oauth2.Credentials', 'google_credentials.Credentials'
+    ],
+) -> Union['google_oauth2.Credentials', 'google_credentials.Credentials']:
   """Return the sanitized input credentials used to make discovery requests.
 
   When the credentials object is not Google Auth, return the original
@@ -600,7 +606,7 @@ def GetInfoString() -> str:
   )
 
 
-def PrintFormattedJsonObject(obj, default_format='json'):
+def PrintFormattedJsonObject(obj: object, default_format: Literal['json', 'prettyjson'] = 'json'):
   """Prints obj in a JSON format according to the "--format" flag.
 
   Args:

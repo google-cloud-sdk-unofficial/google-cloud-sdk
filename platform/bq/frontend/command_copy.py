@@ -12,6 +12,7 @@ from typing import List, Optional, Tuple
 
 from absl import flags
 
+import bq_flags
 from clients import bigquery_client
 from clients import client_dataset
 from clients import utils as bq_client_utils
@@ -20,8 +21,6 @@ from frontend import bq_cached_client
 from frontend import utils as frontend_utils
 from utils import bq_error
 from utils import bq_id_utils
-
-FLAGS = flags.FLAGS
 
 # These aren't relevant for user-facing docstrings:
 # pylint: disable=g-doc-return-or-yield
@@ -180,7 +179,9 @@ class Copy(bigquery_command.BigqueryCmd):
           )
       )
       if destination_region is None:
-        destination_region = client.GetDatasetRegion(destination_dataset)
+        destination_region = client_dataset.GetDatasetRegion(
+            apiclient=client.apiclient, reference=destination_dataset
+        )
     except bq_error.BigqueryAccessDeniedError as err:
       print(
           'Unable to determine source or destination dataset location, skipping'
@@ -201,7 +202,7 @@ class Copy(bigquery_command.BigqueryCmd):
     print(
         self._NOTE,
         '\n' + self._SYNC_FLAG_ENABLED_WARNING
-        if FLAGS.sync
+        if bq_flags.SYNCHRONOUS_MODE.value
         else '\n' + self._CROSS_REGION_WARNING,
     )
     if self.force:
@@ -222,10 +223,13 @@ class Copy(bigquery_command.BigqueryCmd):
     """
     client = bq_cached_client.Client.Get()
     source_references = [
-        client.GetTableReference(src) for src in source_tables.split(',')
+        bq_client_utils.GetTableReference(id_fallbacks=client, identifier=src)
+        for src in source_tables.split(',')
     ]
     source_references_str = ', '.join(str(src) for src in source_references)
-    dest_reference = client.GetTableReference(dest_table)
+    dest_reference = bq_client_utils.GetTableReference(
+        id_fallbacks=client, identifier=dest_table
+    )
 
     if self.append_table:
       write_disposition = 'WRITE_APPEND'
@@ -274,8 +278,8 @@ class Copy(bigquery_command.BigqueryCmd):
         'job_id': frontend_utils.GetJobIdFromFlags(),
         'operation_type': operation_type,
     }
-    if FLAGS.location:
-      kwds['location'] = FLAGS.location
+    if bq_flags.LOCATION.value:
+      kwds['location'] = bq_flags.LOCATION.value
 
     if self.destination_kms_key:
       kwds['encryption_configuration'] = {
@@ -291,7 +295,7 @@ class Copy(bigquery_command.BigqueryCmd):
     job = client.CopyTable(source_references, dest_reference, **kwds)
     if job is None:
       print("Table '%s' already exists, skipping" % (dest_reference,))
-    elif not FLAGS.sync:
+    elif not bq_flags.SYNCHRONOUS_MODE.value:
       self.PrintJobStartInfo(job)
     else:
       plurality = 's' if len(source_references) > 1 else ''

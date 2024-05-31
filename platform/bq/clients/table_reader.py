@@ -22,7 +22,7 @@ class _TableReader:
       self,
       start_row: Optional[int] = 0,
       max_rows: Optional[int] = None,
-      selected_fields=None,
+      selected_fields: Optional[str] = None,
   ):
     """Read at most max_rows rows from a table.
 
@@ -45,7 +45,7 @@ class _TableReader:
       self,
       start_row: Optional[int],
       max_rows: Optional[int],
-      selected_fields=None,
+      selected_fields: Optional[str] = None,
   ):
     """Read at most max_rows rows from a table and the schema.
 
@@ -136,7 +136,7 @@ class _TableReader:
                    start_row: Optional[int],
                    max_rows: Optional[int],
                    page_token: Optional[str] = None,
-                   selected_fields=None):
+                   selected_fields: Optional[str] = None):
     """Read one page of data, up to max_rows rows.
 
     Assumes that the table is ready for reading. Will signal an error otherwise.
@@ -168,11 +168,13 @@ class TableTableReader(_TableReader):
   def _GetPrintContext(self) -> str:
     return '%r' % (self.table_ref,)
 
-  def _ReadOnePage(self,
-                   start_row: Optional[int],
-                   max_rows: Optional[int],
-                   page_token: Optional[str] = None,
-                   selected_fields=None):
+  def _ReadOnePage(
+      self,
+      start_row: Optional[int],
+      max_rows: Optional[int],
+      page_token: Optional[str] = None,
+      selected_fields: Optional[str] = None,
+  ):
     kwds = dict(self.table_ref)
     kwds['maxResults'] = max_rows
     if page_token:
@@ -211,7 +213,7 @@ class JobTableReader(_TableReader):
                    start_row: Optional[int],
                    max_rows: Optional[int],
                    page_token: Optional[str] = None,
-                   selected_fields=None):
+                   selected_fields: Optional[str] = None):
     kwds = dict(self.job_ref)
     kwds['maxResults'] = max_rows
     # Sets the timeout to 0 because we assume the table is already ready.
@@ -241,11 +243,13 @@ class QueryTableReader(_TableReader):
   def _GetPrintContext(self) -> str:
     return '%r' % (self.job_ref,)
 
-  def _ReadOnePage(self,
-                   start_row: Optional[int],
-                   max_rows: Optional[int],
-                   page_token: Optional[str] = None,
-                   selected_fields=None):
+  def _ReadOnePage(
+      self,
+      start_row: Optional[int],
+      max_rows: Optional[int],
+      page_token: Optional[str] = None,
+      selected_fields: Optional[str] = None,
+  ):
     kwds = dict(self.job_ref) if self.job_ref else {}
     kwds['maxResults'] = max_rows
     # Sets the timeout to 0 because we assume the table is already ready.
@@ -260,9 +264,21 @@ class QueryTableReader(_TableReader):
     # getQueryResults.
     result_rows = self._results.get('rows', None)
     total_rows = self._results.get('totalRows', None)
-    if (total_rows is not None and result_rows is not None and
-        start_row is not None and
-        len(result_rows) >= min(int(total_rows), start_row + max_rows)):
+    job_reference = self._results.get('jobReference', None)
+    if job_reference is None and (
+        total_rows is not None and int(total_rows) == 0
+    ):
+      # Handle the case when jobs.query requests with JOB_CREATION_OPTIONAL
+      # return empty results. This will avoid a call to getQueryResults.
+      schema = self._results.get('schema', None)
+      rows = self._results.get('rows', [])
+      page_token = None
+    elif (
+        total_rows is not None
+        and result_rows is not None
+        and start_row is not None
+        and len(result_rows) >= min(int(total_rows), start_row + max_rows)
+    ):
       page_token = self._results.get('pageToken', None)
       if (len(result_rows) < int(total_rows) and page_token is None):
         raise bq_error.BigqueryError(

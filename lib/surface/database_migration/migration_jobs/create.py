@@ -208,7 +208,7 @@ class CreateGA(_Create, base.Command):
     mj_flags.AddFilterFlag(parser)
     mj_flags.AddCommitIdFlag(parser)
     mj_flags.AddDumpParallelLevelFlag(parser)
-    mj_flags.AddSqlServerHomogeneousMigrationConfigFlag(parser)
+    mj_flags.AddSqlServerHomogeneousMigrationConfigFlag(parser, is_update=False)
     mj_flags.AddDumpTypeFlag(parser)
 
 

@@ -14,7 +14,11 @@ from typing import Optional
 from absl import app
 from absl import flags
 
+import bq_flags
 import bq_utils
+from clients import client_connection
+from clients import client_dataset
+from clients import utils as bq_client_utils
 from frontend import bigquery_command
 from frontend import bq_cached_client
 from utils import bq_id_utils
@@ -86,15 +90,23 @@ class _IamPolicyCmd(bigquery_command.BigqueryCmd):
       )
 
     if self.t:
-      reference = client.GetTableReference(identifier)
+      reference = bq_client_utils.GetTableReference(
+          id_fallbacks=client, identifier=identifier
+      )
     elif self.d:
-      reference = client.GetDatasetReference(identifier)
+      reference = bq_client_utils.GetDatasetReference(
+          id_fallbacks=client, identifier=identifier
+      )
     elif self.connection:
-      reference = client.GetConnectionReference(
-          identifier, default_location=FLAGS.location
+      reference = bq_client_utils.GetConnectionReference(
+          id_fallbacks=client,
+          identifier=identifier,
+          default_location=bq_flags.LOCATION.value,
       )
     else:
-      reference = client.GetReference(identifier)
+      reference = bq_client_utils.GetReference(
+          id_fallbacks=client, identifier=identifier
+      )
       bq_id_utils.typecheck(
           reference,
           (
@@ -121,9 +133,13 @@ class _IamPolicyCmd(bigquery_command.BigqueryCmd):
     if isinstance(reference, bq_id_utils.ApiClientHelper.TableReference):
       return client.GetTableIAMPolicy(reference)
     elif isinstance(reference, bq_id_utils.ApiClientHelper.DatasetReference):
-      return client.GetDatasetIAMPolicy(reference)
+      return client_dataset.GetDatasetIAMPolicy(
+          apiclient=client.GetIAMPolicyApiClient(), reference=reference
+      )
     elif isinstance(reference, bq_id_utils.ApiClientHelper.ConnectionReference):
-      return client.GetConnectionIAMPolicy(reference)
+      return client_connection.GetConnectionIAMPolicy(
+          client=client.GetConnectionV1ApiClient(),
+          reference=reference)
     raise RuntimeError(
         'Unexpected reference type: {r_type}'.format(r_type=type(reference))
     )
@@ -142,9 +158,17 @@ class _IamPolicyCmd(bigquery_command.BigqueryCmd):
     if isinstance(reference, bq_id_utils.ApiClientHelper.TableReference):
       return client.SetTableIAMPolicy(reference, policy)
     elif isinstance(reference, bq_id_utils.ApiClientHelper.DatasetReference):
-      return client.SetDatasetIAMPolicy(reference, policy)
+      return client_dataset.SetDatasetIAMPolicy(
+          apiclient=client.GetIAMPolicyApiClient(),
+          reference=reference,
+          policy=policy,
+      )
     elif isinstance(reference, bq_id_utils.ApiClientHelper.ConnectionReference):
-      return client.SetConnectionIAMPolicy(reference, policy)
+      return client_connection.SetConnectionIAMPolicy(
+          client=client.GetConnectionV1ApiClient(),
+          reference=reference,
+          policy=policy,
+      )
     raise RuntimeError(
         'Unexpected reference type: {r_type}'.format(r_type=type(reference))
     )

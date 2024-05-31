@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-"""Bigquery Client library for reservations requests."""
+"""The BigQuery CLI reservation client library."""
 
 from __future__ import absolute_import
 from __future__ import division

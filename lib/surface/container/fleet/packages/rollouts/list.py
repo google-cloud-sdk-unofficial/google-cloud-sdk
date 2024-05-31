@@ -32,14 +32,14 @@ _DETAILED_HELP = {
 # http://cloud/sdk/gcloud/reference/topic/formats
 _FORMAT = """table(name.basename():label=ROLLOUT,
                    release.basename():label=RELEASE,
-                   info.startTime:label=START_TIME:sort=1:reverse,
+                   info.startTime:label=START_TIME,
                    info.endTime:label=END_TIME,
                    info.state:label=STATE,
                    info.message:label=MESSAGE)"""
 
 _FORMAT_TRUNCATED_MESSAGES = """table(name.basename():label=ROLLOUT,
                                       release.basename():label=RELEASE,
-                                      info.startTime:label=START_TIME:sort=1:reverse,
+                                      info.startTime:label=START_TIME,
                                       info.endTime:label=END_TIME,
                                       info.state:label=STATE,
                                       trim_message():label=MESSAGE)"""

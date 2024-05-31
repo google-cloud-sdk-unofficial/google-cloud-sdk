@@ -35,6 +35,7 @@ def _Run(
     enable_labels=False,
     legacy_output=False,
     enable_push_to_cps=False,
+    enable_cloud_storage_use_topic_schema=False,
 ):
   """Creates one or more subscriptions."""
   flags.ValidateDeadLetterPolicy(args)
@@ -81,6 +82,11 @@ def _Run(
   cloud_storage_output_format = None
   if cloud_storage_output_format_list:
     cloud_storage_output_format = cloud_storage_output_format_list[0]
+  cloud_storage_use_topic_schema = (
+      getattr(args, 'cloud_storage_use_topic_schema', None)
+      if enable_cloud_storage_use_topic_schema
+      else None
+  )
   cloud_storage_write_metadata = getattr(
       args, 'cloud_storage_write_metadata', None
   )
@@ -142,6 +148,7 @@ def _Run(
           cloud_storage_max_bytes=cloud_storage_max_bytes,
           cloud_storage_max_duration=cloud_storage_max_duration,
           cloud_storage_output_format=cloud_storage_output_format,
+          cloud_storage_use_topic_schema=cloud_storage_use_topic_schema,
           cloud_storage_write_metadata=cloud_storage_write_metadata,
           pubsub_export_topic=pubsub_export_topic,
           pubsub_export_topic_region=pubsub_export_topic_region,
@@ -166,6 +173,7 @@ def _Run(
     raise util.RequestsFailedError(failed, 'create')
 
 
+@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Create(base.CreateCommand):
   """Creates one or more Cloud Pub/Sub subscriptions."""
@@ -196,6 +204,7 @@ class Create(base.CreateCommand):
     return _Run(args, enable_labels=True)
 
 
+@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
 class CreateBeta(Create):
   """Creates one or more Cloud Pub/Sub subscriptions."""
@@ -216,6 +225,7 @@ class CreateBeta(Create):
     flags.AddSubscriptionSettingsFlags(
         parser,
         enable_push_to_cps=True,
+        enable_cloud_storage_use_topic_schema=True,
     )
     labels_util.AddCreateLabelsFlags(parser)
 
@@ -228,4 +238,5 @@ class CreateBeta(Create):
         enable_labels=True,
         legacy_output=legacy_output,
         enable_push_to_cps=True,
+        enable_cloud_storage_use_topic_schema=True,
     )

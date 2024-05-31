@@ -28,6 +28,7 @@ from googlecloudsdk.core import log
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
+@base.DefaultUniverseOnly
 class Drain(base.Command):
   """Drains all jobs that match the command line arguments.
 
@@ -56,8 +57,12 @@ class Drain(base.Command):
             region_id=job_ref.location)
         log.status.Print('Started draining job [{0}]'.format(job_ref.jobId))
       except exceptions.HttpException as error:
-        log.status.Print((
-            "Failed to drain job [{0}]: {1} Please ensure you have permission "
-            "to access the job and the `--region` flag, {2}, matches the job\'s"
-            " region.").format(
-                job_ref.jobId, error.payload.status_message, job_ref.location))
+        log.status.Print(
+            (
+                "Failed to drain job [{0}]: {1} Ensure that you have permission"
+                " to access the job and that the `--region` flag, {2}, matches"
+                " the job's region."
+            ).format(
+                job_ref.jobId, error.payload.status_message, job_ref.location
+            )
+        )

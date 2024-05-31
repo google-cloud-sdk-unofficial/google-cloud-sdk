@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*- #
-# Copyright 2023 Google LLC. All Rights Reserved.
+# Copyright 2024 Google LLC. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""QuotaPreference create command."""
+"""QuotaPreference update command."""
 
 import json
 
@@ -25,36 +25,34 @@ from googlecloudsdk.core import log
 
 @base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class Create(base.CreateCommand):
-  """Creates a new QuotaPreference that declares the desired value for a quota.
+@base.UniverseCompatible
+class Update(base.UpdateCommand):
+  """Update the parameters of a single QuotaPreference.
 
-  This command creates a new QuotaPreference that declares the desired value for
-  a quota for a customer. The supported consumers can be projects, folders, or
-  organizations.
+  This command updates an existing or creates a new QuotaPreference. It can
+  updates the config in any states, not just the ones pending approval.
 
   ## EXAMPLES
 
-  To create a quota preference in region `us-central1` that applies to the
-  `default_limit` quota under service `example.googleapis.com` for
-  `projects/12321`, run:
+  To update a quota preference with id `my-preference` in region `us-central1`
+  that applies to the `default_limit` quota for `projects/12321`, run:
 
-    $ {command}
+    $ {command} my-preference
     --service=example.googleapis.com
     --project=12321
     --quota-id=default_limit
     --preferred-value=100
     --dimensions=region=us-central1
-    --preference-id=example_default-limit_us-central1
 
 
-  To create a quota preference under service `example.googleapis.com` for
-  `organizations/123` with random preference ID, run:
+  To create a new quota preference for `organizations/123`, run:
 
-    $ {command}
+    $ {command} my-preference
     --service=example.googleapis.com
     --organization=123
     --quota-id=default_limit
     --preferred-value=200
+    --allow-missing
   """
 
   @staticmethod
@@ -66,18 +64,20 @@ class Create(base.CreateCommand):
         the command line after this command. Positional arguments are allowed.
     """
     # required flags
-    flags.AddConsumerFlags(parser, 'quota preference to create')
+    flags.PreferenceId().AddToParser(parser)
     flags.Service().AddToParser(parser)
     flags.PreferredValue().AddToParser(parser)
     flags.QuotaId(positional=False).AddToParser(parser)
+    flags.AddResourceFlags(parser, 'quota preference to update')
 
     # optional flags
-    flags.PreferrenceId(positional=False).AddToParser(parser)
     flags.Dimensions().AddToParser(parser)
-    flags.AllowsQuotaDecreaseBelowUsage().AddToParser(parser)
-    flags.AllowHighPercentageQuotaDecrease().AddToParser(parser)
     flags.Email().AddToParser(parser)
     flags.Justification().AddToParser(parser)
+    flags.AllowMissing().AddToParser(parser)
+    flags.ValidateOnly().AddToParser(parser)
+    flags.AllowsQuotaDecreaseBelowUsage().AddToParser(parser)
+    flags.AllowHighPercentageQuotaDecrease().AddToParser(parser)
 
   def Run(self, args):
     """Run command.
@@ -87,17 +87,18 @@ class Create(base.CreateCommand):
         with.
 
     Returns:
-      The created quota preference for the consumer.
+      The updated QuotaPreference. If `--validate-only` is specified, it returns
+      None or any possible error.
     """
-
-    self.created_resource = quota_preference.CreateQuotaPreference(args)
-    return self.created_resource
+    self.updated_resource = quota_preference.UpdateQuotaPreference(args)
+    self.validate_only = args.validate_only
+    return self.updated_resource
 
   def Epilog(self, resources_were_displayed=True):
-    if resources_were_displayed:
+    if resources_were_displayed and not self.validate_only:
       log.status.Print(
           json.dumps(
-              encoding.MessageToDict(self.created_resource),
+              encoding.MessageToDict(self.updated_resource),
               sort_keys=True,
               indent=4,
               separators=(',', ':'),

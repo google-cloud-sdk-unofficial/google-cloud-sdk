@@ -1,0 +1,20 @@
+release_tracks: [ALPHA]
+help_text:
+  brief: |
+    Describe a multicast domain.
+  description: |
+    Show details of a multicast domain in the specified location of the current project.
+  examples: |
+    To describe details of a multicast domain in the current project, run:
+
+      $ {command} my-multicast-domain --location=global
+
+arguments:
+  resource:
+    spec: !REF googlecloudsdk.command_lib.network_services.resources:multicastDomain
+    help_text: |
+      The multicast domain to display.
+
+request: &request
+  api_version: v1alpha1
+  collection: networkservices.projects.locations.multicastDomains

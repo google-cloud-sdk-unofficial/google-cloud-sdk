@@ -30,17 +30,17 @@ UNIVERSE_DOMAIN: flags.FlagHolder[Optional[str]] = flags.DEFINE_string(
     'The universe domain to use in TPC domains.',
 )
 
-_API_VERSION = flags.DEFINE_string('api_version', 'v2', 'API version to use.')
-_DEBUG_MODE = flags.DEFINE_boolean(
+API_VERSION = flags.DEFINE_string('api_version', 'v2', 'API version to use.')
+DEBUG_MODE = flags.DEFINE_boolean(
     'debug_mode', False, 'Show tracebacks on Python exceptions.'
 )
-_TRACE = flags.DEFINE_string(
+TRACE = flags.DEFINE_string(
     'trace',
     None,
     'A tracing token '
     'to include in api requests.'
 )
-_HTTPLIB2_DEBUGLEVEL = flags.DEFINE_integer(
+HTTPLIB2_DEBUGLEVEL = flags.DEFINE_integer(
     'httplib2_debuglevel',
     None,
     (
@@ -49,18 +49,18 @@ _HTTPLIB2_DEBUGLEVEL = flags.DEFINE_integer(
     ),
 )
 
-_BIGQUERYRC = flags.DEFINE_string(
+BIGQUERYRC = flags.DEFINE_string(
     'bigqueryrc',
     os.path.join(os.path.expanduser('~'), '.bigqueryrc'),
     (
         'Path to configuration file. The configuration file specifies new'
-        ' defaults for any flags, and can be overrridden by specifying the flag'
+        ' defaults for any flags, and can be overridden by specifying the flag'
         ' on the command line. If the --bigqueryrc flag is not specified, the'
         ' BIGQUERYRC environment variable is used. If that is not specified,'
         ' the path "~/.bigqueryrc" is used.'
     ),
 )
-_DISCOVERY_FILE = flags.DEFINE_string(
+DISCOVERY_FILE = flags.DEFINE_string(
     'discovery_file',
     '',
     (
@@ -70,34 +70,34 @@ _DISCOVERY_FILE = flags.DEFINE_string(
     ),
 )
 
-_DISABLE_SSL_VALIDATION = flags.DEFINE_boolean(
+DISABLE_SSL_VALIDATION = flags.DEFINE_boolean(
     'disable_ssl_validation',
     False,
     'Disables HTTPS certificates validation. This is off by default.',
 )
-_CA_CERTIFICATES_FILE = flags.DEFINE_string(
+CA_CERTIFICATES_FILE = flags.DEFINE_string(
     'ca_certificates_file', '', 'Location of CA certificates file.'
 )
-_PROXY_ADDRESS = flags.DEFINE_string(
+PROXY_ADDRESS = flags.DEFINE_string(
     'proxy_address',
     '',
     'The name or IP address of the proxy host to use for connecting to GCP.',
 )
-_PROXY_PORT = flags.DEFINE_string(
+PROXY_PORT = flags.DEFINE_string(
     'proxy_port', '', 'The port number to use to connect to the proxy host.'
 )
-_PROXY_USERNAME = flags.DEFINE_string(
+PROXY_USERNAME = flags.DEFINE_string(
     'proxy_username',
     '',
     'The user name to use when authenticating with proxy host.',
 )
-_PROXY_PASSWORD = flags.DEFINE_string(
+PROXY_PASSWORD = flags.DEFINE_string(
     'proxy_password',
     '',
     'The password to use when authenticating with proxy host.',
 )
 
-_SYNCHRONOUS_MODE = flags.DEFINE_boolean(
+SYNCHRONOUS_MODE = flags.DEFINE_boolean(
     'synchronous_mode',
     True,
     (
@@ -110,7 +110,7 @@ _SYNCHRONOUS_MODE = flags.DEFINE_boolean(
 PROJECT_ID: flags.FlagHolder[str] = flags.DEFINE_string(
     'project_id', '', 'Default project to use for requests.'
 )
-_DATASET_ID = flags.DEFINE_string(
+DATASET_ID = flags.DEFINE_string(
     'dataset_id',
     '',
     (
@@ -148,7 +148,7 @@ USE_LEP = flags.DEFINE_boolean(
 
 # This flag is "hidden" at the global scope to avoid polluting help
 # text on individual commands for rarely used functionality.
-_JOB_ID = flags.DEFINE_string(
+JOB_ID = flags.DEFINE_string(
     'job_id',
     None,
     (
@@ -157,7 +157,7 @@ _JOB_ID = flags.DEFINE_string(
         'such as cp, extract, load, and query.'
     ),
 )
-_FINGERPRINT_JOB_ID = flags.DEFINE_boolean(
+FINGERPRINT_JOB_ID = flags.DEFINE_boolean(
     'fingerprint_job_id',
     False,
     (
@@ -166,13 +166,13 @@ _FINGERPRINT_JOB_ID = flags.DEFINE_boolean(
         ' times accidentally.'
     ),
 )
-_QUIET = flags.DEFINE_boolean(
+QUIET = flags.DEFINE_boolean(
     'quiet',
     False,
     'If True, ignore status updates while jobs are running.',
     short_name='q',
 )
-_HEADLESS = flags.DEFINE_boolean(
+HEADLESS = flags.DEFINE_boolean(
     'headless',
     False,
     (
@@ -182,7 +182,7 @@ _HEADLESS = flags.DEFINE_boolean(
         'of informational printing.'
     ),
 )
-_FORMAT = flags.DEFINE_enum(
+FORMAT = flags.DEFINE_enum(
     'format',
     None,
     ['none', 'json', 'prettyjson', 'csv', 'sparse', 'pretty'],
@@ -198,7 +198,7 @@ _FORMAT = flags.DEFINE_enum(
         'one will be chosen based on the command run.'
     ),
 )
-_JOB_PROPERTY = flags.DEFINE_multi_string(
+JOB_PROPERTY = flags.DEFINE_multi_string(
     'job_property',
     None,
     (
@@ -206,24 +206,24 @@ _JOB_PROPERTY = flags.DEFINE_multi_string(
         'the job configuration'
     ),
 )  # No period: Multistring adds flagspec suffix.
-_ENABLE_RESUMABLE_UPLOADS = flags.DEFINE_boolean(
+ENABLE_RESUMABLE_UPLOADS = flags.DEFINE_boolean(
     'enable_resumable_uploads',
     None,
     'Enables resumable uploads over HTTP (Only applies to load jobs that load '
     'data from local files.). Defaults to True.'
 )
-_MAX_ROWS_PER_REQUEST = flags.DEFINE_integer(
+MAX_ROWS_PER_REQUEST = flags.DEFINE_integer(
     'max_rows_per_request',
     None,
     'Specifies the max number of rows to return per read.',
 )
 
-_JOBS_QUERY_USE_RESULTS_FROM_RESPONSE = flags.DEFINE_boolean(
+JOBS_QUERY_USE_RESULTS_FROM_RESPONSE = flags.DEFINE_boolean(
     'jobs_query_use_results_from_response',
     True,
     'If true, results from jobs.query response are used.',
 )
-_JOBS_QUERY_USE_REQUEST_ID = flags.DEFINE_boolean(
+JOBS_QUERY_USE_REQUEST_ID = flags.DEFINE_boolean(
     'jobs_query_use_request_id',
     False,
     'If true, sends request_id in jobs.query request.',

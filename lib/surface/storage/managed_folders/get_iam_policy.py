@@ -24,6 +24,7 @@ from googlecloudsdk.command_lib.storage import errors_util
 from googlecloudsdk.command_lib.storage import storage_url
 
 
+@base.UniverseCompatible
 class GetIamPolicy(base.Command):
   """Get the IAM policy for a managed folder."""
 
@@ -52,7 +53,7 @@ class GetIamPolicy(base.Command):
 
   def Run(self, args):
     url = storage_url.storage_url_from_string(args.url)
-    errors_util.raise_error_if_not_gcs_managed_folder(args.command_path, url)
+    errors_util.raise_error_if_not_gcs_folder_type(args.command_path, url)
     client = api_factory.get_api(url.scheme)
     return client.get_managed_folder_iam_policy(
         url.bucket_name, url.object_name

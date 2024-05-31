@@ -25,7 +25,7 @@ from googlecloudsdk.command_lib.firestore import flags
 from googlecloudsdk.core import properties
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.DefaultUniverseOnly
 class Describe(base.DescribeCommand):
   """Retrieves information about a Cloud Firestore backup.
 

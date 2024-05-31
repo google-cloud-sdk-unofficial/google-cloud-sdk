@@ -24,6 +24,7 @@ from googlecloudsdk.command_lib.container.backup_restore import resource_args
 from googlecloudsdk.command_lib.util.args import labels_util
 
 
+@base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Create(base.CreateCommand):
   """Creates a backup.

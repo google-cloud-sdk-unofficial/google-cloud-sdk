@@ -2,7 +2,6 @@
 """BQ CLI helper functions for IDs."""
 
 import collections
-import re
 import sys
 from typing import Any, Optional, Tuple, Type, Union
 from absl import app
@@ -11,57 +10,6 @@ from pyglib import stringutil
 collections_abc = collections
 if sys.version_info > (3, 8):
   collections_abc = collections.abc
-
-
-def FormatDataTransferIdentifiers(client, transfer_identifier: str) -> str:
-  """Formats a transfer config or run identifier.
-
-  Transfer configuration/run commands should be able to support different
-  formats of how the user could input the project information. This function
-  will take the user input and create a uniform transfer config or
-  transfer run reference that can be used for various commands.
-
-  This function will also set the client's project id to the specified
-  project id.
-
-  Returns:
-    The formatted transfer config or run.
-  """
-
-  formatted_identifier = transfer_identifier
-  match = re.search(r'projects/([^/]+)', transfer_identifier)
-  if not match:
-    formatted_identifier = ('projects/' +
-                            client.GetProjectReference().projectId + '/' +
-                            transfer_identifier)
-  else:
-    # TODO(b/324243535): Refactor out this side-effect.
-    client.project_id = match.group(1)
-
-  return formatted_identifier
-
-
-def FormatProjectIdentifier(client, project_id: str) -> str:
-  """Formats a project identifier.
-
-  If the user specifies a project with "projects/${PROJECT_ID}", isolate the
-  project id and return it.
-
-  This function will also set the client's project id to the specified
-  project id.
-
-  Returns:
-    The project is.
-  """
-
-  formatted_identifier = project_id
-  match = re.search(r'projects/([^/]+)', project_id)
-  if match:
-    formatted_identifier = match.group(1)
-    # TODO(b/324243535): Refactor out this side-effect.
-    client.project_id = formatted_identifier
-
-  return formatted_identifier
 
 
 class ApiClientHelper:
@@ -308,6 +256,14 @@ class ApiClientHelper:
     _format_str = '%(projectId)s:%(location)s.%(capacityCommitmentId)s'
     _path_str = 'projects/%(projectId)s/locations/%(location)s/capacityCommitments/%(capacityCommitmentId)s'
     typename = 'capacity commitment'
+
+    def __init__(self, **kwds):
+      # pylint: disable=invalid-name Aligns with API
+      self.projectId: str = kwds['projectId']
+      self.location: str = kwds['location']
+      self.capacityCommitmentId: str = kwds['capacityCommitmentId']
+      # pylint: enable=invalid-name
+      super().__init__(**kwds)
 
     def path(self) -> str:  # pylint: disable=invalid-name Legacy
       return self._path_str % dict(self)

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*- #
-# Copyright 2023 Google LLC. All Rights Reserved.
+# Copyright 2024 Google LLC. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -21,22 +21,20 @@ from googlecloudsdk.command_lib.quotas import flags
 
 @base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.UniverseCompatible
 class List(base.ListCommand):
-  """Lists QuotaInfo of all quotas for a given project, folder or organization.
-
-  This command lists all quota info for a consumer. The supported consumers can
-  be projects, folders, or organizations.
+  """List QuotaInfos of all quotas for a given project, folder or organization.
 
   ## EXAMPLES
 
-  To list all quota info for service `example.googleapis.com` and consumer
+  To list all quota info for service `example.googleapis.com` and
   `projects/12321`, run:
 
     $ {command} --service=example.googleapis.com --project=12321
     $ {command} --service=example.googleapis.com --project=my-project-id
 
    To list first 100 quota info ordered alphabetically for service
-   `example.googleapis.com` and consumer `folders/12321`,
+   `example.googleapis.com` and `folders/12321`,
    run:
 
     $ {command} --service=example.googleapis.com --folder=12321 --page-size=100
@@ -50,7 +48,7 @@ class List(base.ListCommand):
       parser: An argparse parser that you can use to add arguments that go on
         the command line after this command. Positional arguments are allowed.
     """
-    flags.AddConsumerFlags(parser, 'quota info to list')
+    flags.AddResourceFlags(parser, 'quota info to list')
     flags.Service().AddToParser(parser)
     flags.PageToken().AddToParser(parser)
 
@@ -62,6 +60,6 @@ class List(base.ListCommand):
         with.
 
     Returns:
-      List of QuotaInfo for the service and consumer.
+      List of QuotaInfo for specified container and service.
     """
     return quota_info.ListQuotaInfo(args)

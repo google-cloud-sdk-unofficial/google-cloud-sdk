@@ -62,6 +62,13 @@
         is enabled, false if unspecified.
         Mutually exclusive with flag `--encryption-kms-key`.
         Cannot be updated if the service uses customer-managed encryption keys.
+    - arg_name: deletion-protection
+      type: bool
+      api_field: service.deletionProtection
+      help_text: |
+        Flag that enables delete protection on Dataproc Metastore instance to prevent
+        accidental deletions of the instance.
+        Use --deletion-protection to enable and --no-deletion-protection to disable.
     - group:
         help_text: |
           The instance size of the Dataproc Metastore instance.

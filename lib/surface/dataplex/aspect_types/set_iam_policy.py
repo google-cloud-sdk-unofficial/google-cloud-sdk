@@ -25,7 +25,8 @@ from googlecloudsdk.command_lib.dataplex import resource_args
 from googlecloudsdk.command_lib.iam import iam_util
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.GA)
+@base.DefaultUniverseOnly
 class SetIamPolicy(base.Command):
   """Set an IAM policy binding for a Dataplex Aspect Type as defined in a JSON or YAML file.
 

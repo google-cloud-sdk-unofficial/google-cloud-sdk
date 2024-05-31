@@ -16,18 +16,21 @@ from absl import app
 from absl import flags
 from pyglib import appcommands
 
+import bq_flags
 import bq_utils
 from clients import bigquery_client_extended
+from clients import client_connection
+from clients import client_dataset
+from clients import client_reservation
 from clients import utils as bq_client_utils
 from frontend import bigquery_command
 from frontend import bq_cached_client
 from frontend import utils as frontend_utils
 from frontend import utils_data_transfer
+from frontend import utils_id as frontend_id_utils
 from utils import bq_error
 from utils import bq_id_utils
 from utils import bq_processor_utils
-
-FLAGS = flags.FLAGS
 
 # These aren't relevant for user-facing docstrings:
 # pylint: disable=g-doc-return-or-yield
@@ -668,11 +671,17 @@ class Update(bigquery_command.BigqueryCmd):
           ' --schema or --view or --materialized_view.'
       )
     if self.t:
-      reference = client.GetTableReference(identifier)
+      reference = bq_client_utils.GetTableReference(
+          id_fallbacks=client, identifier=identifier
+      )
     elif self.view:
-      reference = client.GetTableReference(identifier)
+      reference = bq_client_utils.GetTableReference(
+          id_fallbacks=client, identifier=identifier
+      )
     elif self.materialized_view:
-      reference = client.GetTableReference(identifier)
+      reference = bq_client_utils.GetTableReference(
+          id_fallbacks=client, identifier=identifier
+      )
     elif self.reservation:
       try:
         if (
@@ -682,12 +691,20 @@ class Update(bigquery_command.BigqueryCmd):
           size = self.bi_reservation_size
           if size is None:
             size = self.reservation_size
-          reference = client.GetBiReservationReference(FLAGS.location)
-          object_info = client.UpdateBiReservation(reference, size)
+          reference = bq_client_utils.GetBiReservationReference(
+              id_fallbacks=client, default_location=bq_flags.LOCATION.value
+          )
+          object_info = client_reservation.UpdateBiReservation(
+              client=client.GetReservationApiClient(),
+              reference=reference,
+              reservation_size=size,
+          )
           print(object_info)
         else:
-          reference = client.GetReservationReference(
-              identifier=identifier, default_location=FLAGS.location
+          reference = bq_client_utils.GetReservationReference(
+              id_fallbacks=client,
+              identifier=identifier,
+              default_location=bq_flags.LOCATION.value,
           )
           ignore_idle_arg = self.ignore_idle_slots
           if ignore_idle_arg is None and self.use_idle_slots is not None:
@@ -699,7 +716,9 @@ class Update(bigquery_command.BigqueryCmd):
                 if self.concurrency is not None
                 else self.max_concurrency
             )
-          object_info = client.UpdateReservation(
+          object_info = client_reservation.UpdateReservation(
+              client=client.GetReservationApiClient(),
+              api_version=bq_flags.API_VERSION.value,
               reference=reference,
               slots=self.slots,
               ignore_idle_slots=ignore_idle_arg,
@@ -719,30 +738,43 @@ class Update(bigquery_command.BigqueryCmd):
           raise bq_error.BigqueryError(
               'Cannot specify both --split and --merge.'
           )
-        reference = client.GetCapacityCommitmentReference(
+        reference = bq_client_utils.GetCapacityCommitmentReference(
+            id_fallbacks=client,
             identifier=identifier,
-            default_location=FLAGS.location,
+            default_location=bq_flags.LOCATION.value,
             allow_commas=self.merge,
         )
         if self.split:
-          response = client.SplitCapacityCommitment(reference, self.slots)
+          response = client_reservation.SplitCapacityCommitment(
+              client=client.GetReservationApiClient(),
+              reference=reference,
+              slots=self.slots,
+          )
           frontend_utils.PrintObjectsArray(
               response,
               objects_type=bq_id_utils.ApiClientHelper.CapacityCommitmentReference,
           )
         elif self.merge:
-          object_info = client.MergeCapacityCommitments(
-              reference.location, reference.capacityCommitmentId.split(',')
+          object_info = client_reservation.MergeCapacityCommitments(
+              client=client.GetReservationApiClient(),
+              project_id=reference.projectId,
+              location=reference.location,
+              capacity_commitment_ids=reference.capacityCommitmentId.split(',')
           )
-          reference = client.GetCapacityCommitmentReference(
-              path=object_info['name']
+          if not isinstance(object_info['name'], str):
+            raise ValueError('Parsed object does not have a name of type str.')
+          reference = bq_client_utils.GetCapacityCommitmentReference(
+              id_fallbacks=client, path=object_info['name']
           )
           frontend_utils.PrintObjectInfo(
               object_info, reference, custom_format='show'
           )
         else:
-          object_info = client.UpdateCapacityCommitment(
-              reference, self.plan, self.renewal_plan
+          object_info = client_reservation.UpdateCapacityCommitment(
+              client=client.GetReservationApiClient(),
+              reference=reference,
+              plan=self.plan,
+              renewal_plan=self.renewal_plan,
           )
           frontend_utils.PrintObjectInfo(
               object_info, reference, custom_format='show'
@@ -760,25 +792,31 @@ class Update(bigquery_command.BigqueryCmd):
         raise bq_error.BigqueryError(err)
     elif self.reservation_assignment:
       try:
-        reference = client.GetReservationAssignmentReference(
-            identifier=identifier, default_location=FLAGS.location
+        reference = bq_client_utils.GetReservationAssignmentReference(
+            id_fallbacks=client,
+            identifier=identifier,
+            default_location=bq_flags.LOCATION.value,
         )
         if self.destination_reservation_id and self.priority is not None:
           raise bq_error.BigqueryError(
               'Cannot specify both --destination_reservation_id and --priority.'
           )
         if self.destination_reservation_id:
-          object_info = client.MoveReservationAssignment(
+          object_info = client_reservation.MoveReservationAssignment(
+              client=client.GetReservationApiClient(),
+              id_fallbacks=client,
               reference=reference,
               destination_reservation_id=self.destination_reservation_id,
-              default_location=FLAGS.location,
+              default_location=bq_flags.LOCATION.value,
           )
-          reference = client.GetReservationAssignmentReference(
-              path=object_info['name']
+          reference = bq_client_utils.GetReservationAssignmentReference(
+              id_fallbacks=client, path=object_info['name']
           )
         elif self.priority is not None:
-          object_info = client.UpdateReservationAssignment(
-              reference, self.priority
+          object_info = client_reservation.UpdateReservationAssignment(
+              client=client.GetReservationApiClient(),
+              reference=reference,
+              priority=self.priority,
           )
         else:
           raise bq_error.BigqueryError(
@@ -794,19 +832,25 @@ class Update(bigquery_command.BigqueryCmd):
             "Failed to update reservation assignment '%s': %s" % (identifier, e)
         )
     elif self.d or not identifier:
-      reference = client.GetDatasetReference(identifier)
+      reference = bq_client_utils.GetDatasetReference(
+          id_fallbacks=client, identifier=identifier
+      )
     elif self.m:
-      reference = client.GetModelReference(identifier)
+      reference = bq_client_utils.GetModelReference(
+          id_fallbacks=client, identifier=identifier
+      )
     elif self.transfer_config:
-      formatted_identifier = bq_id_utils.FormatDataTransferIdentifiers(
+      formatted_identifier = frontend_id_utils.FormatDataTransferIdentifiers(
           client, identifier
       )
       reference = bq_id_utils.ApiClientHelper.TransferConfigReference(
           transferConfigName=formatted_identifier
       )
     elif self.connection or self.connection_credential:
-      reference = client.GetConnectionReference(
-          identifier=identifier, default_location=FLAGS.location
+      reference = bq_client_utils.GetConnectionReference(
+          id_fallbacks=client,
+          identifier=identifier,
+          default_location=bq_flags.LOCATION.value,
       )
       if self.connection_type == 'AWS' and self.iam_role_id:
         self.properties = bq_processor_utils.MakeAccessRolePropertiesJson(
@@ -835,7 +879,8 @@ class Update(bigquery_command.BigqueryCmd):
           or self.connector_configuration
           or self.kms_key_name is not None
       ):
-        updated_connection = client.UpdateConnection(
+        updated_connection = client_connection.UpdateConnection(
+            client=client.GetConnectionV1ApiClient(),
             reference=reference,
             display_name=self.display_name,
             description=self.description,
@@ -850,7 +895,9 @@ class Update(bigquery_command.BigqueryCmd):
         )
 
     else:
-      reference = client.GetReference(identifier)
+      reference = bq_client_utils.GetReference(
+          id_fallbacks=client, identifier=identifier
+      )
       bq_id_utils.typecheck(
           reference,
           (
@@ -1022,12 +1069,17 @@ class Update(bigquery_command.BigqueryCmd):
           if self.service_account_name:
             service_account_name = self.service_account_name
           else:
-            transfer_config_name = bq_id_utils.FormatDataTransferIdentifiers(
-                client, reference.transferConfigName
+            transfer_config_name = (
+                frontend_id_utils.FormatDataTransferIdentifiers(
+                    client, reference.transferConfigName
+                )
             )
             current_config = client.GetTransferConfig(transfer_config_name)
             auth_info = utils_data_transfer.RetrieveAuthorizationInfo(
-                'projects/' + client.GetProjectReference().projectId,
+                'projects/'
+                + bq_client_utils.GetProjectReference(
+                    id_fallbacks=client
+                ).projectId,
                 current_config['dataSourceId'],
                 client.GetTransferV1ApiClient(),
             )
@@ -1140,8 +1192,9 @@ def _UpdateDataset(
         raise app.UsageError(
             'Error decoding JSON schema from file %s: %s' % (source, e)
         )
-  client.UpdateDataset(
-      reference,
+  client_dataset.UpdateDataset(
+      apiclient=client.apiclient,
+      reference=reference,
       description=description,
       acl=acl,
       default_table_expiration_ms=default_table_expiration_ms,

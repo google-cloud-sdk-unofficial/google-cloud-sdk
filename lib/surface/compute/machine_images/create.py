@@ -24,10 +24,11 @@ from googlecloudsdk.api_lib.compute import kms_utils
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute import flags
 from googlecloudsdk.command_lib.compute import scope
-from googlecloudsdk.command_lib.compute.kms import resource_args as kms_resource_args
 from googlecloudsdk.command_lib.compute.machine_images import flags as machine_image_flags
+from googlecloudsdk.command_lib.kms import resource_args as kms_resource_args
 
 
+@base.DefaultUniverseOnly
 class Create(base.CreateCommand):
   """Create a Compute Engine machine image."""
   _ALLOW_RSA_ENCRYPTED_CSEK_KEYS = True

@@ -24,7 +24,7 @@ from googlecloudsdk.command_lib.firestore import flags
 from googlecloudsdk.core import properties
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.DefaultUniverseOnly
 class Update(base.Command):
   """Updates a Cloud Firestore backup schedule.
 

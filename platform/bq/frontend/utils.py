@@ -12,21 +12,25 @@ import json
 import os
 import re
 import sys
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, NamedTuple, Optional, Tuple, Type
 
 from absl import app
 from absl import flags
-
 import yaml
 
 import table_formatter
-
 import bq_utils
 from clients import utils as bq_client_utils
-
 from utils import bq_error
 from utils import bq_id_utils
 from pyglib import stringutil
+
+# pylint: disable=g-multiple-import
+if sys.version_info < (3, 11):
+  from typing_extensions import TypedDict, NotRequired  # pylint: disable=g-import-not-at-top
+else:
+  from typing import TypedDict, NotRequired  # pylint: disable=g-import-not-at-top
+# pylint: enable=g-multiple-import
 
 FLAGS = flags.FLAGS
 
@@ -1144,13 +1148,58 @@ def PrintObjectsArray(object_infos, objects_type):
     formatter.Print()
 
 
-def PrintObjectsArrayWithToken(object_infos, objects_type):
+class ResourceMetadata(TypedDict):
+  token: NotRequired[str] = None
+  unreachable: NotRequired[List[str]] = None
+
+
+def PrintObjectsArrayWithMetadata(
+    objects_list: List[Any],
+    objects_type: Type[bq_id_utils.ApiClientHelper.Reference],
+    passed_flags: NamedTuple(
+        'PassedFlags',
+        [
+            ('print_last_token', bool),
+            ('print_unreachable', bool),
+        ],
+    ),
+    objects_metadata: Optional[ResourceMetadata],
+) -> None:
+  """Prints the objects array with metadata configured to print using flags.
+
+  If there is no `objects_metadata` passed in, then this function has the same
+  behaviour as `PrintObjectsArray`.
+
+  Different metadata can be printed by setting flags in `passed_flags`. With
+  a `format` of 'sparse' or 'pretty' then nothing will be printed if no flags
+  are set. With a format of 'prettyjson' or 'json' then the `objects_list`
+  will be printed as a `results` value even if no flags are set to print
+  metadata but if some are set, these will also be printed.
+
+  Arguments:
+    objects_list: The list of resources to print.
+    objects_type: The type of the resources to be printed.
+    passed_flags: Flags used to configure the printing behaviour.
+    objects_metadata: Optional metadata to be printed.
+  """
   if FLAGS.format in ['prettyjson', 'json']:
-    bq_utils.PrintFormattedJsonObject(object_infos)
+    if passed_flags.print_last_token or passed_flags.print_unreachable:
+      json_object = {'results': objects_list}
+      if passed_flags.print_last_token and 'token' in objects_metadata:
+        json_object['token'] = objects_metadata['token']
+      if passed_flags.print_unreachable and 'unreachable' in objects_metadata:
+        json_object['unreachable'] = objects_metadata['unreachable']
+    else:
+      json_object = objects_list
+    bq_utils.PrintFormattedJsonObject(json_object)
   elif FLAGS.format in [None, 'sparse', 'pretty']:
-    PrintObjectsArray(object_infos['results'], objects_type)
-    if 'token' in object_infos:
-      print('\nNext token: ' + object_infos['token'])
+    PrintObjectsArray(objects_list, objects_type)
+    if objects_metadata is None:
+      return
+    if passed_flags.print_last_token and 'token' in objects_metadata:
+      print('\nNext token: ' + objects_metadata['token'])
+    if passed_flags.print_unreachable and 'unreachable' in objects_metadata:
+      print('\nUnreachable: ' + ', '.join(objects_metadata['unreachable']))
 
 
 def ParseUdfResources(udf_resources):

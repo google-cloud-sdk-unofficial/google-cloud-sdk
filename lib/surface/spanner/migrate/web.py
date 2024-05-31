@@ -24,6 +24,7 @@ from googlecloudsdk.command_lib.spanner import flags
 from googlecloudsdk.command_lib.spanner import migration_backend
 
 
+@base.DefaultUniverseOnly
 class Web(base.BinaryBackedCommand):
   """Run the web UI assistant for schema migrations."""
 
@@ -41,6 +42,8 @@ class Web(base.BinaryBackedCommand):
     """Register the flags for this command."""
     flags.GetSpannerMigrationWebPortFlag().AddToParser(parser)
     flags.GetSpannerMigrationWebOpenFlag().AddToParser(parser)
+    flags.GetSpannerMigrationLogLevelFlag().AddToParser(parser)
+    flags.GetSpannerMigrationDataflowTemplateFlag().AddToParser(parser)
 
   def Run(self, args):
     """Run the web UI assistant."""
@@ -51,6 +54,8 @@ class Web(base.BinaryBackedCommand):
         command='web',
         open_flag=args.open,
         port=args.port,
+        log_level=args.log_level,
+        dataflow_template=args.dataflow_template,
         env=env_vars,
     )
     self.exit_code = response.exit_code

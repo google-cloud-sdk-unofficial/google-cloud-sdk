@@ -10,7 +10,7 @@ from __future__ import print_function
 import json
 import os
 import re
-from typing import Any, List, NamedTuple, Optional
+from typing import Any, Dict, List, NamedTuple, Optional, TypedDict
 
 
 
@@ -142,7 +142,9 @@ def FormatProjectIdentifierForTransfers(
   return 'projects/' + project_reference.projectId + '/locations/' + location
 
 
-def ParseJson(json_string: str) -> Any:
+def ParseJson(
+    json_string: Optional[str],
+) -> Dict[str, Dict[str, Dict[str, Any]]]:
   """Wrapper for standard json parsing, may throw BigQueryClientError."""
   try:
     return json.loads(json_string)
@@ -305,9 +307,27 @@ def PrepareListRequest(
   return request
 
 
+## Data transfer request types
+
+# pylint: disable=invalid-name
+
+
+class TransferListRequest(TypedDict):
+  parent: str
+  pageSize: Optional[int]
+  pageToken: Optional[str]
+  dataSourceIds: Optional[List[str]]
+
+# pylint: enable=invalid-name
+
+
 def PrepareTransferListRequest(
-    reference, location, page_size=None, page_token=None, data_source_ids=None
-):
+    reference: bq_id_utils.ApiClientHelper.ProjectReference,
+    location: str,
+    page_size: Optional[int] = None,
+    page_token: Optional[str] = None,
+    data_source_ids: Optional[str] = None,
+) -> TransferListRequest:
   """Create and populate a list request."""
   request = dict(
       parent=FormatProjectIdentifierForTransfers(reference, location))
@@ -330,7 +350,11 @@ def PrepareTransferListRequest(
 
 
 def PrepareTransferRunListRequest(
-    reference, run_attempt, max_results=None, page_token=None, states=None
+    reference: str,
+    run_attempt: Optional[str],
+    max_results: Optional[int] = None,
+    page_token: Optional[str] = None,
+    states: Optional[str] = None,
 ):
   """Create and populate a transfer run list request."""
   request = dict(parent=reference)
@@ -356,7 +380,10 @@ def PrepareTransferRunListRequest(
 
 
 def PrepareListTransferLogRequest(
-    reference, max_results=None, page_token=None, message_type=None
+    reference: str,
+    max_results: Optional[int] = None,
+    page_token: Optional[str] = None,
+    message_type: Optional[str] = None,
 ):
   """Create and populate a transfer log list request."""
   request = dict(parent=reference)
@@ -380,7 +407,7 @@ def PrepareListTransferLogRequest(
   return request
 
 
-def ProcessParamsFlag(params, items):
+def ProcessParamsFlag(params: str, items: Dict[str, Any]):
   """Processes the params flag.
 
   Args:
@@ -405,7 +432,10 @@ def ProcessParamsFlag(params, items):
 
 
 def ProcessRefreshWindowDaysFlag(
-    refresh_window_days, data_source_info, items, data_source
+    refresh_window_days: str,
+    data_source_info: Dict[str, Any],
+    items: Dict[str, Any],
+    data_source: str,
 ):
   """Processes the Refresh Window Days flag.
 

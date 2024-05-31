@@ -13,13 +13,12 @@ from typing import Optional
 
 from absl import flags
 
+import bq_flags
 from clients import utils as bq_client_utils
 from frontend import bigquery_command
 from frontend import bq_cached_client
 from frontend import flags as frontend_flags
 from frontend import utils as frontend_utils
-
-FLAGS = flags.FLAGS
 
 # These aren't relevant for user-facing docstrings:
 # pylint: disable=g-doc-return-or-yield
@@ -367,6 +366,18 @@ class Load(bigquery_command.BigqueryCmd):
         'newline-delimited GeoJSON.',
         flag_values=fv,
     )
+    flags.DEFINE_enum(
+        'column_name_character_map',
+        None,
+        ['STRICT', 'V1', 'V2'],
+        'Indicates the character map used for column names: '
+        '\n STRICT: The latest character map and reject invalid column names.'
+        '\n V1: Supports alphanumeric + underscore and name must start with a '
+        'letter or underscore. Invalid column names will be normalized.'
+        '\n V2: Supports flexible column name. Invalid column names will be '
+        'normalized.',
+        flag_values=fv,
+    )
     flags.DEFINE_string(
         'session_id',
         None,
@@ -381,6 +392,9 @@ class Load(bigquery_command.BigqueryCmd):
         'destination BigLake managed table, without reading file content and '
         'writing them to new files.',
         flag_values=fv,
+    )
+    self.parquet_map_target_type_flag = (
+        frontend_flags.define_parquet_map_target_type(flag_values=fv)
     )
     self._ProcessCommandRc(fv)
 
@@ -434,8 +448,10 @@ class Load(bigquery_command.BigqueryCmd):
     default_dataset_id = ''
     if self.session_id:
       default_dataset_id = '_SESSION'
-    table_reference = client.GetTableReference(
-        destination_table, default_dataset_id
+    table_reference = bq_client_utils.GetTableReference(
+        id_fallbacks=client,
+        identifier=destination_table,
+        default_dataset_id=default_dataset_id,
     )
     opts = {
         'encoding': self.encoding,
@@ -447,8 +463,8 @@ class Load(bigquery_command.BigqueryCmd):
     }
     if self.max_bad_records:
       opts['max_bad_records'] = self.max_bad_records
-    if FLAGS.location:
-      opts['location'] = FLAGS.location
+    if bq_flags.LOCATION.value:
+      opts['location'] = bq_flags.LOCATION.value
     if self.session_id:
       opts['connection_properties'] = [
           {'key': 'session_id', 'value': self.session_id}
@@ -515,6 +531,8 @@ class Load(bigquery_command.BigqueryCmd):
       opts['hive_partitioning_options'] = hive_partitioning_options
     if self.json_extension is not None:
       opts['json_extension'] = self.json_extension
+    if self.column_name_character_map is not None:
+      opts['column_name_character_map'] = self.column_name_character_map
     opts['decimal_target_types'] = self.decimal_target_types
     if self.file_set_spec_type is not None:
       opts['file_set_spec_type'] = frontend_utils.ParseFileSetSpecType(
@@ -550,10 +568,14 @@ class Load(bigquery_command.BigqueryCmd):
         parquet_options['enable_list_inference'] = (
             self.parquet_enable_list_inference
         )
+      if self.parquet_map_target_type_flag.value is not None:
+        parquet_options['mapTargetType'] = (
+            self.parquet_map_target_type_flag.value
+        )
       if parquet_options:
         opts['parquet_options'] = parquet_options
     job = client.Load(table_reference, source, schema=schema, **opts)
-    if FLAGS.sync:
+    if bq_flags.SYNCHRONOUS_MODE.value:
       frontend_utils.PrintJobMessages(bq_client_utils.FormatJobInfo(job))
     else:
       self.PrintJobStartInfo(job)

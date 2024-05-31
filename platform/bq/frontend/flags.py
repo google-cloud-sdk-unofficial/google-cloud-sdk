@@ -30,3 +30,14 @@ def define_parquet_map_target_type(
       ' key and value fields).',
       flag_values=flag_values,
   )
+
+
+def define_workload_id(
+    flag_values: flags.FlagValues,
+) -> flags.FlagHolder[Optional[str]]:
+  return flags.DEFINE_string(
+      'workload_id',
+      None,
+      'Whether to execute the job using the provided workload_id.',
+      flag_values=flag_values,
+  )

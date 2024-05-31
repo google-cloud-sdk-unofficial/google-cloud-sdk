@@ -10,6 +10,7 @@ import os
 import sys
 import textwrap
 import time
+import typing
 from typing import Optional, TextIO
 
 
@@ -93,19 +94,31 @@ class Partition(bigquery_command.BigqueryCmd):  # pylint: disable=missing-docstr
     client = bq_cached_client.Client.Get()
     formatter = frontend_utils.GetFormatterFromFlags()
 
-    source_table_prefix = client.GetReference(source_prefix)
+    source_table_prefix = bq_client_utils.GetReference(
+        id_fallbacks=client, identifier=source_prefix
+    )
     bq_id_utils.typecheck(
         source_table_prefix,
         bq_id_utils.ApiClientHelper.TableReference,
         'Cannot determine table associated with "%s"' % (source_prefix,),
         is_usage_error=True,
     )
-    destination_table = client.GetReference(destination_table)
+    # TODO(b/333595633): Fix typecheck so the response is cast.
+    source_table_prefix = typing.cast(
+        bq_id_utils.ApiClientHelper.TableReference, source_table_prefix
+    )
+    destination_table = bq_client_utils.GetReference(
+        id_fallbacks=client, identifier=destination_table
+    )
     bq_id_utils.typecheck(
         destination_table,
         bq_id_utils.ApiClientHelper.TableReference,
         'Cannot determine table associated with "%s"' % (destination_table,),
         is_usage_error=True,
+    )
+    # TODO(b/333595633): Fix typecheck so the response is cast.
+    destination_table = typing.cast(
+        bq_id_utils.ApiClientHelper.TableReference, destination_table
     )
 
     source_dataset = source_table_prefix.GetDatasetReference()
@@ -210,10 +223,10 @@ class Partition(bigquery_command.BigqueryCmd):  # pylint: disable=missing-docstr
             'write_disposition': 'WRITE_TRUNCATE',
             'job_id': current_job_id,
         }
-        if FLAGS.location:
-          kwds['location'] = FLAGS.location
+        if bq_flags.LOCATION.value:
+          kwds['location'] = bq_flags.LOCATION.value
         job = client.CopyTable([source_table], destination_partition, **kwds)
-        if not FLAGS.sync:
+        if not bq_flags.SYNCHRONOUS_MODE.value:
           self.PrintJobStartInfo(job)
         else:
           print(
@@ -253,7 +266,13 @@ class Cancel(bigquery_command.BigqueryCmd):
       job_id: Job ID to cancel.
     """
     client = bq_cached_client.Client.Get()
-    job_reference_dict = dict(client.GetJobReference(job_id, FLAGS.location))
+    job_reference_dict = dict(
+        bq_client_utils.GetJobReference(
+            id_fallbacks=client,
+            identifier=job_id,
+            default_location=bq_flags.LOCATION.value,
+        )
+    )
     job = client.CancelJob(
         job_id=job_reference_dict['jobId'],
         location=job_reference_dict['location'],
@@ -337,9 +356,15 @@ class Head(bigquery_command.BigqueryCmd):
       raise app.UsageError('Cannot specify both -j and -t.')
 
     if self.j:
-      reference = client.GetJobReference(identifier, FLAGS.location)
+      reference = bq_client_utils.GetJobReference(
+          id_fallbacks=client,
+          identifier=identifier,
+          default_location=bq_flags.LOCATION.value,
+      )
     else:
-      reference = client.GetTableReference(identifier)
+      reference = bq_client_utils.GetTableReference(
+          id_fallbacks=client, identifier=identifier
+      )
 
     if isinstance(reference, bq_id_utils.ApiClientHelper.JobReference):
       fields, rows = client.ReadSchemaAndJobRows(
@@ -449,7 +474,9 @@ class Insert(bigquery_command.BigqueryCmd):
   ) -> int:
     """Insert the contents of the file into a table."""
     client = bq_cached_client.Client.Get()
-    reference = client.GetReference(identifier)
+    reference = bq_client_utils.GetReference(
+        id_fallbacks=client, identifier=identifier
+    )
     bq_id_utils.typecheck(
         reference,
         (bq_id_utils.ApiClientHelper.TableReference,),
@@ -568,7 +595,11 @@ class Wait(bigquery_command.BigqueryCmd):  # pylint: disable=missing-docstring
         )
       job_reference = running_jobs.pop()
     else:
-      job_reference = client.GetJobReference(job_id, FLAGS.location)
+      job_reference = bq_client_utils.GetJobReference(
+          id_fallbacks=client,
+          identifier=job_id,
+          default_location=bq_flags.LOCATION.value,
+      )
     try:
       job = client.WaitJob(
           job_reference=job_reference, wait=secs, status=self.wait_for_status

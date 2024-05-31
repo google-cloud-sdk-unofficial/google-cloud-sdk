@@ -7,16 +7,23 @@ from __future__ import print_function
 
 from typing import Optional
 
+
+
 from absl import app
 from absl import flags
 
+import bq_flags
+from clients import client_connection
+from clients import client_dataset
+from clients import client_reservation
+from clients import client_routine
+from clients import utils as bq_client_utils
 from frontend import bigquery_command
 from frontend import bq_cached_client
 from frontend import utils as frontend_utils
+from frontend import utils_id as frontend_id_utils
 from utils import bq_error
 from utils import bq_id_utils
-
-FLAGS = flags.FLAGS
 
 # These aren't relevant for user-facing docstrings:
 # pylint: disable=g-doc-return-or-yield
@@ -146,6 +153,13 @@ class ListCmd(bigquery_command.BigqueryCmd):  # pylint: disable=missing-docstrin
         'If true, also print the next page token for the jobs list.',
         flag_values=fv,
     )
+    flags.DEFINE_boolean(
+        'print_unreachable',
+        False,
+        'If true, also print unreachable locations for the dataset list and '
+        'the jobs list.',
+        flag_values=fv,
+    )
     flags.DEFINE_string(
         'filter',
         None,
@@ -248,10 +262,14 @@ class ListCmd(bigquery_command.BigqueryCmd):  # pylint: disable=missing-docstrin
 
     client = bq_cached_client.Client.Get()
     if identifier:
-      reference = client.GetReference(identifier)
+      reference = bq_client_utils.GetReference(
+          id_fallbacks=client, identifier=identifier
+      )
     else:
       try:
-        reference = client.GetReference(identifier)
+        reference = bq_client_utils.GetReference(
+            id_fallbacks=client, identifier=identifier
+        )
       except bq_error.BigqueryError:
         # We want to let through the case of no identifier, which
         # will fall through to the second case below.
@@ -274,7 +292,9 @@ class ListCmd(bigquery_command.BigqueryCmd):  # pylint: disable=missing-docstrin
       # set.
       if isinstance(reference, bq_id_utils.ApiClientHelper.TableReference):
         try:
-          reference = client.GetDatasetReference(identifier)
+          reference = bq_client_utils.GetDatasetReference(
+              id_fallbacks=client, identifier=identifier
+          )
         except bq_error.BigqueryError:
           pass
       bq_id_utils.typecheck(
@@ -300,29 +320,19 @@ class ListCmd(bigquery_command.BigqueryCmd):  # pylint: disable=missing-docstrin
     page_token = self.k
     results = None
     object_type = None
+    objects_metadata = None
     if self.j:
       object_type = bq_id_utils.ApiClientHelper.JobReference
-      reference = client.GetProjectReference(identifier)
+      reference = bq_client_utils.GetProjectReference(
+          id_fallbacks=client, identifier=identifier
+      )
       bq_id_utils.typecheck(
           reference,
           bq_id_utils.ApiClientHelper.ProjectReference,
           'Cannot determine job(s) associated with "%s"' % (identifier,),
           is_usage_error=True,
       )
-      if self.print_last_token:
-        results = client.ListJobsAndToken(
-            reference=reference,
-            max_results=self.max_results,
-            all_users=self.a,
-            min_creation_time=self.min_creation_time,
-            max_creation_time=self.max_creation_time,
-            page_token=page_token,
-            parent_job_id=self.parent_job_id,
-        )
-        assert object_type is not None
-        frontend_utils.PrintObjectsArrayWithToken(results, object_type)
-        return
-      results = client.ListJobs(
+      objects_metadata = client.ListJobsWithTokenAndUnreachable(
           reference=reference,
           max_results=self.max_results,
           all_users=self.a,
@@ -331,9 +341,12 @@ class ListCmd(bigquery_command.BigqueryCmd):  # pylint: disable=missing-docstrin
           page_token=page_token,
           parent_job_id=self.parent_job_id,
       )
+      results = objects_metadata.pop('results')
     elif self.m:
       object_type = bq_id_utils.ApiClientHelper.ModelReference
-      reference = client.GetDatasetReference(identifier)
+      reference = bq_client_utils.GetDatasetReference(
+          id_fallbacks=client, identifier=identifier
+      )
       response = client.ListModels(
           reference=reference,
           max_results=self.max_results,
@@ -345,8 +358,11 @@ class ListCmd(bigquery_command.BigqueryCmd):  # pylint: disable=missing-docstrin
         frontend_utils.PrintPageToken(response)
     elif self.routines:
       object_type = bq_id_utils.ApiClientHelper.RoutineReference
-      reference = client.GetDatasetReference(identifier)
-      response = client.ListRoutines(
+      reference = bq_client_utils.GetDatasetReference(
+          id_fallbacks=client, identifier=identifier
+      )
+      response = client_routine.ListRoutines(
+          routines_api_client=client.GetRoutinesApiClient(),
           reference=reference,
           max_results=self.max_results,
           page_token=page_token,
@@ -358,7 +374,7 @@ class ListCmd(bigquery_command.BigqueryCmd):  # pylint: disable=missing-docstrin
         frontend_utils.PrintPageToken(response)
     elif self.reservation_assignment:
       try:
-        if FLAGS.api_version == 'v1beta1':
+        if bq_flags.API_VERSION.value == 'v1beta1':
           object_type = (
               bq_id_utils.ApiClientHelper.BetaReservationAssignmentReference
           )
@@ -366,13 +382,17 @@ class ListCmd(bigquery_command.BigqueryCmd):  # pylint: disable=missing-docstrin
           object_type = (
               bq_id_utils.ApiClientHelper.ReservationAssignmentReference
           )
-        reference = client.GetReservationReference(
+        reference = bq_client_utils.GetReservationReference(
+            id_fallbacks=client,
             identifier=identifier if identifier else '-',
-            default_location=FLAGS.location,
+            default_location=bq_flags.LOCATION.value,
             default_reservation_id=' ',
         )
-        response = client.ListReservationAssignments(
-            reference, self.max_results, self.page_token
+        response = client_reservation.ListReservationAssignments(
+            client=client.GetReservationApiClient(),
+            reference=reference,
+            page_size=self.max_results,
+            page_token=self.page_token,
         )
         if 'assignments' in response:
           results = response['assignments']
@@ -387,13 +407,17 @@ class ListCmd(bigquery_command.BigqueryCmd):  # pylint: disable=missing-docstrin
     elif self.capacity_commitment:
       try:
         object_type = bq_id_utils.ApiClientHelper.CapacityCommitmentReference
-        reference = client.GetCapacityCommitmentReference(
+        reference = bq_client_utils.GetCapacityCommitmentReference(
+            id_fallbacks=client,
             identifier=identifier,
-            default_location=FLAGS.location,
+            default_location=bq_flags.LOCATION.value,
             default_capacity_commitment_id=' ',
         )
-        response = client.ListCapacityCommitments(
-            reference, self.max_results, self.page_token
+        response = client_reservation.ListCapacityCommitments(
+            client=client.GetReservationApiClient(),
+            reference=reference,
+            page_size=self.max_results,
+            page_token=self.page_token,
         )
         if 'capacityCommitments' in response:
           results = response['capacityCommitments']
@@ -407,18 +431,21 @@ class ListCmd(bigquery_command.BigqueryCmd):  # pylint: disable=missing-docstrin
         )
     elif self.reservation:
       response = None
-      if FLAGS.api_version == 'v1beta1':
+      if bq_flags.API_VERSION.value == 'v1beta1':
         object_type = bq_id_utils.ApiClientHelper.BetaReservationReference
       else:
         object_type = bq_id_utils.ApiClientHelper.ReservationReference
-      reference = client.GetReservationReference(
+      reference = bq_client_utils.GetReservationReference(
+          id_fallbacks=client,
           identifier=identifier,
-          default_location=FLAGS.location,
+          default_location=bq_flags.LOCATION.value,
           default_reservation_id=' ',
       )
       try:
         if True:
-          response = client.ListBiReservations(reference)
+          response = client_reservation.ListBiReservations(
+              client=client.GetReservationApiClient(), reference=reference
+          )
           results = [response]
         if response and 'size' in response:
           size_in_bytes = int(response['size'])
@@ -433,7 +460,8 @@ class ListCmd(bigquery_command.BigqueryCmd):  # pylint: disable=missing-docstrin
 
       try:
         if True:
-          response = client.ListReservations(
+          response = client_reservation.ListReservations(
+              client=client.GetReservationApiClient(),
               reference=reference,
               page_size=self.max_results,
               page_token=self.page_token,
@@ -451,8 +479,11 @@ class ListCmd(bigquery_command.BigqueryCmd):  # pylint: disable=missing-docstrin
         frontend_utils.PrintPageToken(response)
     elif self.transfer_config:
       object_type = bq_id_utils.ApiClientHelper.TransferConfigReference
-      reference = client.GetProjectReference(
-          bq_id_utils.FormatProjectIdentifier(client, identifier)
+      reference = bq_client_utils.GetProjectReference(
+          id_fallbacks=client,
+          identifier=frontend_id_utils.FormatProjectIdentifier(
+              client, identifier
+          ),
       )
       bq_id_utils.typecheck(
           reference,
@@ -485,7 +516,7 @@ class ListCmd(bigquery_command.BigqueryCmd):  # pylint: disable=missing-docstrin
     elif self.transfer_run:
       object_type = bq_id_utils.ApiClientHelper.TransferRunReference
       run_attempt = self.run_attempt
-      formatted_identifier = bq_id_utils.FormatDataTransferIdentifiers(
+      formatted_identifier = frontend_id_utils.FormatDataTransferIdentifiers(
           client, identifier
       )
       reference = bq_id_utils.ApiClientHelper.TransferRunReference(
@@ -508,7 +539,7 @@ class ListCmd(bigquery_command.BigqueryCmd):  # pylint: disable=missing-docstrin
       results = list_transfer_runs_result[0]
     elif self.transfer_log:
       object_type = bq_id_utils.ApiClientHelper.TransferLogReference
-      formatted_identifier = bq_id_utils.FormatDataTransferIdentifiers(
+      formatted_identifier = frontend_id_utils.FormatDataTransferIdentifiers(
           client, identifier
       )
       reference = bq_id_utils.ApiClientHelper.TransferLogReference(
@@ -528,9 +559,10 @@ class ListCmd(bigquery_command.BigqueryCmd):  # pylint: disable=missing-docstrin
       results = list_transfer_log_result[0]
     elif self.connection:
       object_type = bq_id_utils.ApiClientHelper.ConnectionReference
-      list_connections_results = client.ListConnections(
-          FLAGS.project_id,
-          FLAGS.location,
+      list_connections_results = client_connection.ListConnections(
+          client=client.GetConnectionV1ApiClient(),
+          project_id=bq_flags.PROJECT_ID.value,
+          location=bq_flags.LOCATION.value,
           max_results=self.max_results,
           page_token=self.page_token,
       )
@@ -554,15 +586,20 @@ class ListCmd(bigquery_command.BigqueryCmd):  # pylint: disable=missing-docstrin
       if 'nextPageToken' in response:
         frontend_utils.PrintPageToken(response)
     elif self.d:
-      reference = client.GetProjectReference(identifier)
+      reference = bq_client_utils.GetProjectReference(
+          id_fallbacks=client, identifier=identifier
+      )
       object_type = bq_id_utils.ApiClientHelper.DatasetReference
-      results = client.ListDatasets(
-          reference,
+      objects_metadata = client_dataset.ListDatasetsWithTokenAndUnreachable(
+          apiclient=client.apiclient,
+          id_fallbacks=client,
+          reference=reference,
           max_results=self.max_results,
           list_all=self.a,
           page_token=page_token,
           filter_expression=self.filter,
       )
+      results = objects_metadata.pop('datasets')
     elif self.p or reference is None:
       object_type = bq_id_utils.ApiClientHelper.ProjectReference
       results = client.ListProjects(
@@ -570,18 +607,26 @@ class ListCmd(bigquery_command.BigqueryCmd):  # pylint: disable=missing-docstrin
       )
     elif isinstance(reference, bq_id_utils.ApiClientHelper.ProjectReference):
       object_type = bq_id_utils.ApiClientHelper.DatasetReference
-      results = client.ListDatasets(
-          reference,
+      objects_metadata = client_dataset.ListDatasetsWithTokenAndUnreachable(
+          apiclient=client.apiclient,
+          id_fallbacks=client,
+          reference=reference,
           max_results=self.max_results,
           list_all=self.a,
           page_token=page_token,
           filter_expression=self.filter,
       )
+      results = objects_metadata.pop('datasets')
     else:  # isinstance(reference, DatasetReference):
       object_type = bq_id_utils.ApiClientHelper.TableReference
       results = client.ListTables(
           reference, max_results=self.max_results, page_token=page_token
       )
-    if results:
+    if results or self.print_last_token or self.print_unreachable:
       assert object_type is not None
-      frontend_utils.PrintObjectsArray(results, object_type)
+      frontend_utils.PrintObjectsArrayWithMetadata(
+          objects_list=results,
+          objects_type=object_type,
+          passed_flags=self,
+          objects_metadata=objects_metadata,
+      )

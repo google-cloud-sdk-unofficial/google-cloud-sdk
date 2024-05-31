@@ -6,12 +6,17 @@ from typing import Optional
 from absl import app
 from absl import flags
 
+import bq_flags
+from clients import client_connection
+from clients import client_dataset
+from clients import client_reservation
+from clients import utils as bq_client_utils
 from frontend import bigquery_command
 from frontend import bq_cached_client
 from frontend import utils as bq_frontend_utils
+from frontend import utils_id as frontend_id_utils
 from utils import bq_id_utils
 
-FLAGS = flags.FLAGS
 ApiClientHelper = bq_id_utils.ApiClientHelper
 DatasetReference = bq_id_utils.ApiClientHelper.DatasetReference
 TransferConfigReference = bq_id_utils.ApiClientHelper.TransferConfigReference
@@ -180,50 +185,75 @@ class Show(bigquery_command.BigqueryCmd):
     object_info = None
     print_reference = True
     if self.j:
-      reference = client.GetJobReference(identifier, FLAGS.location)
+      reference = bq_client_utils.GetJobReference(
+          id_fallbacks=client,
+          identifier=identifier,
+          default_location=bq_flags.LOCATION.value,
+      )
     elif self.d:
-      reference = client.GetDatasetReference(identifier)
+      reference = bq_client_utils.GetDatasetReference(
+          id_fallbacks=client, identifier=identifier
+      )
     elif self.view:
-      reference = client.GetTableReference(identifier)
+      reference = bq_client_utils.GetTableReference(
+          id_fallbacks=client, identifier=identifier
+      )
       custom_format = 'view'
     elif self.materialized_view:
-      reference = client.GetTableReference(identifier)
+      reference = bq_client_utils.GetTableReference(
+          id_fallbacks=client, identifier=identifier
+      )
       custom_format = 'materialized_view'
     elif self.table_replica:
-      reference = client.GetTableReference(identifier)
+      reference = bq_client_utils.GetTableReference(
+          id_fallbacks=client, identifier=identifier
+      )
       custom_format = 'table_replica'
     elif self.schema:
-      if FLAGS.format not in [None, 'prettyjson', 'json']:
+      if bq_flags.FORMAT.value not in [None, 'prettyjson', 'json']:
         raise app.UsageError(
-            'Table schema output format must be json or prettyjson.')
-      reference = client.GetTableReference(identifier)
+            'Table schema output format must be json or prettyjson.'
+        )
+      reference = bq_client_utils.GetTableReference(
+          id_fallbacks=client, identifier=identifier
+      )
       custom_format = 'schema'
     elif self.transfer_config:
-      formatted_identifier = bq_id_utils.FormatDataTransferIdentifiers(
+      formatted_identifier = frontend_id_utils.FormatDataTransferIdentifiers(
           client, identifier
       )
       reference = TransferConfigReference(
           transferConfigName=formatted_identifier)
       object_info = client.GetTransferConfig(formatted_identifier)
     elif self.transfer_run:
-      formatted_identifier = bq_id_utils.FormatDataTransferIdentifiers(
+      formatted_identifier = frontend_id_utils.FormatDataTransferIdentifiers(
           client, identifier
       )
       reference = TransferRunReference(transferRunName=formatted_identifier)
       object_info = client.GetTransferRun(formatted_identifier)
     elif self.m:
-      reference = client.GetModelReference(identifier)
+      reference = bq_client_utils.GetModelReference(
+          id_fallbacks=client, identifier=identifier
+      )
     elif self.routine:
-      reference = client.GetRoutineReference(identifier)
+      reference = bq_client_utils.GetRoutineReference(
+          id_fallbacks=client, identifier=identifier
+      )
     elif self.reservation:
-      reference = client.GetReservationReference(
-          identifier=identifier, default_location=FLAGS.location)
-      object_info = client.GetReservation(reference)
+      reference = bq_client_utils.GetReservationReference(
+          id_fallbacks=client,
+          identifier=identifier,
+          default_location=bq_flags.LOCATION.value,
+      )
+      object_info = client_reservation.GetReservation(
+          client=client.GetReservationApiClient(), reference=reference
+      )
     elif self.reservation_assignment:
       search_all_projects = True
       if search_all_projects:
-        object_info = client.SearchAllReservationAssignments(
-            location=FLAGS.location,
+        object_info = client_reservation.SearchAllReservationAssignments(
+            client=client.GetReservationApiClient(),
+            location=bq_flags.LOCATION.value,
             job_type=self.job_type,
             assignee_type=self.assignee_type,
             assignee_id=self.assignee_id)
@@ -238,21 +268,41 @@ class Show(bigquery_command.BigqueryCmd):
           reservationAssignmentId=' ')
       print_reference = False
     elif self.capacity_commitment:
-      reference = client.GetCapacityCommitmentReference(
-          identifier=identifier, default_location=FLAGS.location)
-      object_info = client.GetCapacityCommitment(reference)
+      reference = bq_client_utils.GetCapacityCommitmentReference(
+          id_fallbacks=client,
+          identifier=identifier,
+          default_location=bq_flags.LOCATION.value,
+      )
+      object_info = client_reservation.GetCapacityCommitment(
+          client=client.GetReservationApiClient(),
+          reference=reference,
+      )
     elif self.encryption_service_account:
-      object_info = client.apiclient.projects().getServiceAccount(
-          projectId=client.GetProjectReference().projectId).execute()
+      object_info = (
+          client.apiclient.projects()
+          .getServiceAccount(
+              projectId=bq_client_utils.GetProjectReference(
+                  id_fallbacks=client
+              ).projectId
+          )
+          .execute()
+      )
       email = object_info['email']
       object_info = {'ServiceAccountID': email}
       reference = EncryptionServiceAccount(serviceAccount='serviceAccount')
     elif self.connection:
-      reference = client.GetConnectionReference(
-          identifier, default_location=FLAGS.location)
-      object_info = client.GetConnection(reference)
+      reference = bq_client_utils.GetConnectionReference(
+          id_fallbacks=client,
+          identifier=identifier,
+          default_location=bq_flags.LOCATION.value,
+      )
+      object_info = client_connection.GetConnection(
+          client=client.GetConnectionV1ApiClient(), reference=reference
+      )
     else:
-      reference = client.GetReference(identifier)
+      reference = bq_client_utils.GetReference(
+          id_fallbacks=client, identifier=identifier
+      )
     if reference is None:
       raise app.UsageError('Must provide an identifier for show.')
 

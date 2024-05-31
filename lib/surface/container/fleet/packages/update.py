@@ -61,6 +61,25 @@ class Update(base.UpdateCommand):
     )
     fleet_package = command_utils.UpsertDefaultVariants(fleet_package)
 
-    fully_qualified_name = f'projects/{flags.GetProject(args)}/locations/{flags.GetLocation(args)}/fleetPackages/{args.fleet_package}'
+    possible_attributes = [
+        'resourceBundleSelector',
+        'target',
+        'variantSelector',
+        'rolloutStrategy',
+    ]
+    update_mask_attrs = []
+    for attr in possible_attributes:
+      attr_value = getattr(fleet_package, attr, None)
+      if attr_value is not None:
+        update_mask_attrs.append(attr)
+    update_mask = ','.join(update_mask_attrs)
 
-    return client.Update(fleet_package=fleet_package, name=fully_qualified_name)
+    fully_qualified_name = f'projects/{flags.GetProject(args)}/locations/{flags.GetLocation(args)}/fleetPackages/{args.fleet_package}'
+    if not fleet_package.name:
+      fleet_package.name = fully_qualified_name
+
+    return client.Update(
+        fleet_package=fleet_package,
+        name=fully_qualified_name,
+        update_mask=update_mask,
+    )

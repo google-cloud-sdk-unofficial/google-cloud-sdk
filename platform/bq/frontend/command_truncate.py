@@ -10,14 +10,13 @@ from typing import Optional
 from absl import app
 from absl import flags
 
+import bq_flags
 from clients import utils as bq_client_utils
 from frontend import bigquery_command
 from frontend import bq_cached_client
 from utils import bq_error
 from utils import bq_id_utils
 from utils import bq_processor_utils
-
-FLAGS = flags.FLAGS
 
 # These aren't relevant for user-facing docstrings:
 # pylint: disable=g-doc-return-or-yield
@@ -77,7 +76,9 @@ class Truncate(bigquery_command.BigqueryCmd):  # pylint: disable=missing-docstri
     client = bq_cached_client.Client.Get()
 
     if identifier:
-      reference = client.GetReference(identifier.strip())
+      reference = bq_client_utils.GetReference(
+          id_fallbacks=client, identifier=identifier.strip()
+      )
     else:
       raise app.UsageError('Must specify one of project, dataset or table')
 
@@ -97,7 +98,9 @@ class Truncate(bigquery_command.BigqueryCmd):  # pylint: disable=missing-docstri
         if isinstance(reference, bq_id_utils.ApiClientHelper.DatasetReference):
           all_tables = list(
               map(
-                  lambda x: client.GetReference(x['id']),
+                  lambda x: bq_client_utils.GetReference(
+                      id_fallbacks=client, identifier=x['id']
+                  ),
                   client.ListTables(reference, max_results=1000 * 1000),
               )
           )
@@ -135,6 +138,8 @@ class Truncate(bigquery_command.BigqueryCmd):  # pylint: disable=missing-docstri
       print('Recommended timestamp to truncate to is %s' % recovery_timestamp)
 
       for a_table in all_table_infos:
+        if not hasattr(reference, 'datasetId'):
+          raise AttributeError('Missing `datasetId` on reference.')
         try:
           table_reference = bq_id_utils.ApiClientHelper.TableReference.Create(
               projectId=reference.projectId,
@@ -306,10 +311,11 @@ FROM (
         'ignore_already_exists': 'False',
         'operation_type': 'COPY',
     }
-    if FLAGS.location:
-      kwds['location'] = FLAGS.location
-    source_table = client.GetTableReference(
-        '%s@%s' % (table_reference, recovery_timestamp)
+    if bq_flags.LOCATION.value:
+      kwds['location'] = bq_flags.LOCATION.value
+    source_table = bq_client_utils.GetTableReference(
+        id_fallbacks=client,
+        identifier='%s@%s' % (table_reference, recovery_timestamp),
     )
     job_ref = ' '
     try:

@@ -37,6 +37,7 @@ from googlecloudsdk.command_lib.compute.security_policies import (
 import six
 
 
+@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Update(base.UpdateCommand):
   r"""Update a Compute Engine virtual machine network interface.
@@ -51,6 +52,7 @@ class Update(base.UpdateCommand):
   """
 
   support_ipv6_assignment = False
+  support_igmp_query = False
 
   SECURITY_POLICY_ARG = None
 
@@ -72,6 +74,9 @@ class Update(base.UpdateCommand):
     if cls.support_ipv6_assignment:
       network_interfaces_flags.AddIpv6AddressArg(parser)
       network_interfaces_flags.AddIpv6PrefixLengthArg(parser)
+
+    if cls.support_igmp_query:
+      network_interfaces_flags.AddIgmpQueryArg(parser)
 
     cls.SECURITY_POLICY_ARG = (
         security_policy_flags.SecurityPolicyRegionalArgumentForTargetResource(
@@ -157,6 +162,7 @@ class Update(base.UpdateCommand):
           collection='compute.subnetworks',
       ).SelfLink()
 
+    igmp_query = getattr(args, 'igmp_query', None)
     stack_type = getattr(args, 'stack_type', None)
     ipv6_address = getattr(args, 'ipv6_address', None)
     ipv6_prefix_length = getattr(args, 'ipv6_prefix_length', None)
@@ -168,6 +174,7 @@ class Update(base.UpdateCommand):
     internal_ipv6_prefix_length = getattr(
         args, 'internal_ipv6_prefix_length', None
     )
+
     if stack_type is not None:
       stack_type_enum = messages.NetworkInterface.StackTypeValueValuesEnum(
           stack_type
@@ -235,6 +242,16 @@ class Update(base.UpdateCommand):
           fingerprint=fingerprint,
           ipv6Address=internal_ipv6_address,
           internalIpv6PrefixLength=internal_ipv6_prefix_length,
+      )
+    elif igmp_query is not None:
+      igmp_query_enum = messages.NetworkInterface.IgmpQueryValueValuesEnum(
+          igmp_query
+      )
+      patch_network_interface = messages.NetworkInterface(
+          network=network_uri,
+          subnetwork=subnetwork_uri,
+          igmpQuery=igmp_query_enum,
+          fingerprint=fingerprint,
       )
     else:
       patch_network_interface = messages.NetworkInterface(
@@ -306,3 +323,4 @@ class UpdateAlpha(UpdateBeta):
   """
 
   support_ipv6_assignment = True
+  support_igmp_query = True

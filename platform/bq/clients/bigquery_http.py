@@ -9,7 +9,7 @@ from __future__ import print_function
 
 import json
 import logging
-from typing import Optional
+from typing import Any, Callable, Dict, List, Optional, Tuple
 
 
 
@@ -29,14 +29,23 @@ from clients import utils as bq_client_utils
 _ORIGINAL_GOOGLEAPI_CLIENT_RETRY_REQUEST = http_request._retry_request
 
 
+# Note: All the `Optional` added here is to support tests.
 def _RetryRequest(
-    http, num_retries, req_type, sleep, rand, uri, method, *args, **kwargs
+    http: Optional[httplib2.Http],
+    num_retries: int,
+    req_type: Optional[str],
+    sleep: Optional[Callable[[float], None]],
+    rand: Optional[Callable[[int], float]],
+    uri: Optional[str],
+    method: Optional[str],
+    *args,
+    **kwargs,
 ):
   """Conditionally retries an HTTP request.
 
-  This is a wrapper around http_request._retry_request. If the original request
-  fails with a specific permission error, retry it once without the
-  x-goog-user-project header.
+
+  If the original request fails with a specific permission error, retry it once
+  without the x-goog-user-project header.
 
   Args:
     http: Http object to be used to execute request.
@@ -90,7 +99,7 @@ class BigqueryModel(model.JsonModel):
 
   def __init__(
       self,
-      trace=None,
+      trace: Optional[str] = None,
       quota_project_id: Optional[str] = None,
       **kwds,
   ):
@@ -99,8 +108,35 @@ class BigqueryModel(model.JsonModel):
     self.quota_project_id = quota_project_id
 
   # pylint: disable=g-bad-name
-  def request(self, headers, path_params, query_params, body_value):
-    """Updates outgoing request."""
+  def request(
+      self,
+      headers: Dict[str, str],
+      path_params: Dict[str, str],
+      query_params: Dict[str, Any],  # TODO(b/314756043): This seems incorrect.
+      body_value: object,
+  ) -> Tuple[
+      Dict[str, str],
+      Dict[str, str],
+      str,
+      str
+  ]:
+    """Updates outgoing request.
+
+
+    Args:
+      headers: dict, request headers
+      path_params: dict, parameters that appear in the request path
+      query_params: dict, parameters that appear in the query
+      body_value: object, the request body as a Python object, which must be
+                  serializable.
+    Returns:
+      A tuple of (headers, path_params, query, body)
+
+      headers: dict, request headers
+      path_params: dict, parameters that appear in the request path
+      query: string, query part of the request URI
+      body: string, the body serialized in the desired wire format.
+    """
     if 'trace' not in query_params and self.trace:
       headers['cookie'] = self.trace
 
@@ -112,8 +148,20 @@ class BigqueryModel(model.JsonModel):
   # pylint: enable=g-bad-name
 
   # pylint: disable=g-bad-name
-  def response(self, resp, content):
-    """Convert the response wire format into a Python object."""
+  def response(self, resp: httplib2.Response, content: str) -> object:
+    """Convert the response wire format into a Python object.
+
+
+    Args:
+      resp: httplib2.Response, the HTTP response headers and status
+      content: string, the body of the HTTP response
+
+    Returns:
+      The body de-serialized as a Python object.
+
+    Raises:
+      googleapiclient.errors.HttpError if a non 2xx response is received.
+    """
     logging.info('Response from server with status code: %s', resp['status'])
     return super().response(resp, content)
 
@@ -139,7 +187,7 @@ class BigqueryHttp(http_request.HttpRequest):
   def Factory(
       bigquery_model: BigqueryModel,
       use_google_auth: bool,
-  ):
+  ) -> Callable[..., 'BigqueryHttp']:
     """Returns a function that creates a BigqueryHttp with the given model."""
 
     def _Construct(*args, **kwds):

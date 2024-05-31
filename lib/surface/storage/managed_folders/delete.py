@@ -28,6 +28,7 @@ from googlecloudsdk.command_lib.storage import storage_url
 from googlecloudsdk.command_lib.storage.tasks import task_graph_executor
 
 
+@base.UniverseCompatible
 class Delete(base.Command):
   """Delete managed folders."""
 
@@ -55,7 +56,7 @@ class Delete(base.Command):
   def Run(self, args):
     for url_string in args.url:
       url = storage_url.storage_url_from_string(url_string)
-      errors_util.raise_error_if_not_gcs_managed_folder(args.command_path, url)
+      errors_util.raise_error_if_not_gcs_folder_type(args.command_path, url)
 
     managed_folder_expansion_iterator = name_expansion.NameExpansionIterator(
         args.url,

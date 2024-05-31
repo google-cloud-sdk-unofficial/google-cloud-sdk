@@ -24,6 +24,7 @@ from googlecloudsdk.command_lib.spanner import flags
 from googlecloudsdk.command_lib.spanner import migration_backend
 
 
+@base.DefaultUniverseOnly
 class Schema(base.BinaryBackedCommand):
   """Migrate schema from a source database to Cloud Spanner."""
 
@@ -46,6 +47,7 @@ class Schema(base.BinaryBackedCommand):
     flags.GetSpannerMigrationTargetProfileFlag().AddToParser(parser)
     flags.GetSpannerMigrationDryRunFlag().AddToParser(parser)
     flags.GetSpannerMigrationLogLevelFlag().AddToParser(parser)
+    flags.GetSpannerMigrationProjectFlag().AddToParser(parser)
 
   def Run(self, args):
     """Run the schema command."""
@@ -61,6 +63,7 @@ class Schema(base.BinaryBackedCommand):
         target_profile=args.target_profile,
         dry_run=args.dry_run,
         log_level=args.log_level,
+        project=args.project,
         env=env_vars,
     )
     self.exit_code = response.exit_code

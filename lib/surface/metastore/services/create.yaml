@@ -157,6 +157,13 @@
         A boolean flag to determine whether Dataproc Metastore metadata sync
         to Data Catalog should be enabled, false if unspecified.
         Mutually exclusive with flag `--encryption-kms-key`.
+    - arg_name: deletion-protection
+      type: bool
+      api_field: service.deletionProtection
+      help_text: |
+        Flag that enables delete protection on Dataproc Metastore instance to prevent
+        accidental deletions of the instance.
+        Use --deletion-protection to enable.
     - arg_name: release-channel
       help_text: |
         The release channel of the service.

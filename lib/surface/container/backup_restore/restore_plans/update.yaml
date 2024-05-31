@@ -34,8 +34,10 @@
     - _REF_: googlecloudsdk.command_lib.container.backup_restore.flags:restore_plan_description
 
     - _REF_: googlecloudsdk.command_lib.container.backup_restore.flags:volume_data_restore_policy
+    - _REF_: googlecloudsdk.command_lib.container.backup_restore.flags:volume_data_restore_policy_bindings
     - _REF_: googlecloudsdk.command_lib.container.backup_restore.flags:namespaced_resource_restore_mode_update
     - _REF_: googlecloudsdk.command_lib.container.backup_restore.flags:cluster_resource_conflict_policy
+    - _REF_: googlecloudsdk.command_lib.container.backup_restore.flags:restore_plan_restore_order_file
 
     # Restore scope
 

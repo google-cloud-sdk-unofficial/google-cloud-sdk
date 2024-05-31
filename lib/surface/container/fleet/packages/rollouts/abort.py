@@ -33,7 +33,7 @@ _DETAILED_HELP = {
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 @base.DefaultUniverseOnly
 class Abort(base.Command):
-  """Describe Rollout resource."""
+  """Abort Rollout resource."""
 
   detailed_help = _DETAILED_HELP
 

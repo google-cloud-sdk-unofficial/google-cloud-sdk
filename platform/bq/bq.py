@@ -60,6 +60,7 @@ from frontend import command_show
 from frontend import command_truncate
 from frontend import command_update
 from frontend import utils as frontend_utils
+from frontend import utils_id as frontend_id_utils
 from utils import bq_id_utils
 
 flags.adopt_module_key_flags(bq_flags)
@@ -102,13 +103,13 @@ BetaReservationAssignmentReference = (
     bq_id_utils.ApiClientHelper.BetaReservationAssignmentReference
 )
 ConnectionReference = bq_id_utils.ApiClientHelper.ConnectionReference
-_FormatDataTransferIdentifiers = bq_id_utils.FormatDataTransferIdentifiers
-_FormatProjectIdentifier = bq_id_utils.FormatProjectIdentifier
+_FormatDataTransferIdentifiers = frontend_id_utils.FormatDataTransferIdentifiers
+_FormatProjectIdentifier = frontend_id_utils.FormatProjectIdentifier
 _PARQUET_LIST_INFERENCE_DESCRIPTION = (
     frontend_utils.PARQUET_LIST_INFERENCE_DESCRIPTION
 )
-_FormatDataTransferIdentifiers = bq_id_utils.FormatDataTransferIdentifiers
-_FormatProjectIdentifier = bq_id_utils.FormatProjectIdentifier
+_FormatDataTransferIdentifiers = frontend_id_utils.FormatDataTransferIdentifiers
+_FormatProjectIdentifier = frontend_id_utils.FormatProjectIdentifier
 _ValidateGlobalFlags = frontend_utils.ValidateGlobalFlags
 ValidateAtMostOneSelected = frontend_utils.ValidateAtMostOneSelected
 _UseServiceAccount = bigquery_command._UseServiceAccount
@@ -158,7 +159,6 @@ _MaybeGetSessionTempObjectName = frontend_utils.MaybeGetSessionTempObjectName
 _PrintJobMessages = frontend_utils.PrintJobMessages
 _PrintObjectInfo = frontend_utils.PrintObjectInfo
 _PrintObjectsArray = frontend_utils.PrintObjectsArray
-_PrintObjectsArrayWithToken = frontend_utils.PrintObjectsArrayWithToken
 _Cancel = commands.Cancel
 _Head = commands.Head
 _Insert = commands.Insert

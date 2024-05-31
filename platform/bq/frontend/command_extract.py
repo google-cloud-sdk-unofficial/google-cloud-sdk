@@ -8,14 +8,15 @@ from __future__ import print_function
 from typing import Optional
 
 
+
 from absl import flags
 
+import bq_flags
 from clients import utils as bq_client_utils
 from frontend import bigquery_command
 from frontend import bq_cached_client
+from frontend import flags as frontend_flags
 from frontend import utils as frontend_utils
-
-FLAGS = flags.FLAGS
 
 # These aren't relevant for user-facing docstrings:
 # pylint: disable=g-doc-return-or-yield
@@ -130,13 +131,17 @@ class Extract(bigquery_command.BigqueryCmd):
     kwds = {
         'job_id': frontend_utils.GetJobIdFromFlags(),
     }
-    if FLAGS.location:
-      kwds['location'] = FLAGS.location
+    if bq_flags.LOCATION.value:
+      kwds['location'] = bq_flags.LOCATION.value
 
     if self.m:
-      reference = client.GetModelReference(identifier)
+      reference = bq_client_utils.GetModelReference(
+          id_fallbacks=client, identifier=identifier
+      )
     else:
-      reference = client.GetTableReference(identifier)
+      reference = bq_client_utils.GetTableReference(
+          id_fallbacks=client, identifier=identifier
+      )
     job = client.Extract(
         reference,
         destination_uris,
@@ -151,7 +156,7 @@ class Extract(bigquery_command.BigqueryCmd):
         use_avro_logical_types=self.use_avro_logical_types,
         **kwds,
     )
-    if FLAGS.sync:
+    if bq_flags.SYNCHRONOUS_MODE.value:
       # If we are here, the job succeeded, but print warnings if any.
       frontend_utils.PrintJobMessages(bq_client_utils.FormatJobInfo(job))
     else:

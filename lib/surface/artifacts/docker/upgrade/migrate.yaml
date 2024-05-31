@@ -65,6 +65,10 @@
       hidden: true
       help_text: >
         During the IAM update step, the tool applies all iam policies in the given directory.
+    - arg_name: pkg-dev-location
+      hidden: true
+      help_text: >
+        The location of the pkg-dev repo copied too. If not specified, migration is always done to the same multi-region as GCR. Setting this flag can cause cross-regional copying and lead to billing charges.
 
   request:
     api_version: v1

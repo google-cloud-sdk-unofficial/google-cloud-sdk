@@ -27,6 +27,7 @@ from googlecloudsdk.command_lib.storage.resources import full_resource_formatter
 from googlecloudsdk.command_lib.storage.resources import resource_util
 
 
+@base.UniverseCompatible
 class Describe(base.Command):
   """Describe managed folders."""
 
@@ -52,7 +53,7 @@ class Describe(base.Command):
 
   def Run(self, args):
     url = storage_url.storage_url_from_string(args.url)
-    errors_util.raise_error_if_not_gcs_managed_folder(args.command_path, url)
+    errors_util.raise_error_if_not_gcs_folder_type(args.command_path, url)
     client = api_factory.get_api(url.scheme)
     resource = client.get_managed_folder(
         url.bucket_name,

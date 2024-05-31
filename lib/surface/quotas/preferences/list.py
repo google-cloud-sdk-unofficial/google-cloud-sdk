@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*- #
-# Copyright 2023 Google LLC. All Rights Reserved.
+# Copyright 2024 Google LLC. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,34 +12,38 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""QuotaInfo get command."""
+"""QuotaPreference list command."""
 
-from googlecloudsdk.api_lib.quotas import quota_info
+from googlecloudsdk.api_lib.quotas import quota_preference
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.quotas import flags
 
 
 @base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class Describe(base.DescribeCommand):
-  """Get QuotaInfo for a consumer.
-
-  This command gets a specific quota info for a consumer. The supported
-  consumers can be projects, folders, or organizations.
+@base.UniverseCompatible
+class List(base.ListCommand):
+  """List QuotaPreferences in a given project, folder or organization.
 
   ## EXAMPLES
 
-  To get the details of quota `CpusPerProject` for service
-  `example.googleapis.com` and consumer `projects/my-project`, run:
+  To list the quota preferences for `projects/12321`, run:
 
-    $ {command} CpusPerProject --service=example.googleapis.com
-    --project=my-project
+    $ {command} --project=12321
+    $ {command} --project=my-project-id
 
 
-  To get the details of quota `CpusPerProject` for service
-  `example.googleapis.com` and consumer `folders/12345`, run:
+  To list first 10 quota preferences ordered by create time for `folder/12345`,
+  run:
 
-    $ {command} CpusPerProject --service=example.googleapis.com --folder=12345
+    $ {command} --folder=12345 --page-size=10 --sort-by=create_time
+
+
+  To list all quota preferences in unresolved state in region `us-central1` for
+  `organization/987`, run:
+
+    $ {command} --organization=987 --filter=dimensions.region:us-central1
+    --reconciling-only
   """
 
   @staticmethod
@@ -50,9 +54,9 @@ class Describe(base.DescribeCommand):
       parser: An argparse parser that you can use to add arguments that go on
         the command line after this command. Positional arguments are allowed.
     """
-    flags.QuotaId().AddToParser(parser)
-    flags.AddConsumerFlags(parser, 'quota info to describe')
-    flags.Service().AddToParser(parser)
+    flags.AddResourceFlags(parser, 'quota preferences to list')
+    flags.PageToken().AddToParser(parser)
+    flags.ReconcilingOnly().AddToParser(parser)
 
   def Run(self, args):
     """Run command.
@@ -62,6 +66,6 @@ class Describe(base.DescribeCommand):
         with.
 
     Returns:
-      The requested QuotaInfo for the service and consumer.
+      List of quota preferences.
     """
-    return quota_info.GetQuotaInfo(args)
+    return quota_preference.ListQuotaPreferences(args)

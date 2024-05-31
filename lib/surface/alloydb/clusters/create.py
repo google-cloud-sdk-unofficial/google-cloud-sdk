@@ -29,6 +29,10 @@ from googlecloudsdk.core import properties
 from googlecloudsdk.core import resources
 
 
+# TODO: b/312466999 - Change @base.DefaultUniverseOnly to
+# @base.UniverseCompatible once b/312466999 is fixed.
+# See go/gcloud-cli-running-tpc-tests.
+@base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Create(base.CreateCommand):
   """Create a new AlloyDB cluster within a given project."""
@@ -61,7 +65,10 @@ class Create(base.CreateCommand):
     kms_resource_args.AddKmsKeyResourceArg(
         parser,
         'cluster',
-        permission_info="The 'AlloyDB Service Agent' service account must hold permission 'Cloud KMS CryptoKey Encrypter/Decrypter'"
+        permission_info=(
+            "The 'AlloyDB Service Agent' service account must hold permission"
+            " 'Cloud KMS CryptoKey Encrypter/Decrypter'"
+        ),
     )
     flags.AddAutomatedBackupFlags(
         parser, alloydb_messages, cls.ReleaseTrack(), update=False
@@ -113,6 +120,7 @@ class CreateBeta(Create):
     super(CreateBeta, cls).Args(parser)
     alloydb_messages = api_util.GetMessagesModule(cls.ReleaseTrack())
     flags.AddDenyMaintenancePeriod(parser, alloydb_messages)
+    flags.AddSubscriptionType(parser, alloydb_messages)
 
   def ConstructCreateRequestFromArgs(
       self, alloydb_messages, location_ref, args

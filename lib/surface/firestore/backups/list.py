@@ -24,7 +24,7 @@ from googlecloudsdk.command_lib.firestore import flags
 from googlecloudsdk.core import properties
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.DefaultUniverseOnly
 class List(base.ListCommand):
   """List backups available to Cloud Firestore.
 

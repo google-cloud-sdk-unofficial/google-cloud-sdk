@@ -28,6 +28,7 @@ from googlecloudsdk.core import log
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.DefaultUniverseOnly
 class Resume(base.Command):
   """Resumes job running with the specified job id.
 
@@ -64,8 +65,14 @@ class Resume(base.Command):
                            job_ref.jobId))
     except exceptions.HttpException as error:
       log.status.Print(
-          ("Failed to resume job [{0}]: {1} Please ensure you have permission "
-           "to access the job, the `--region` flag, {2}, is correct for the "
-           "job and the `--token` flag, {3}, corresponds to the job.").format(
-               job_ref.jobId, error.payload.status_message, job_ref.location,
-               args.token))
+          (
+              "Failed to resume job [{0}]: {1} Ensure that you have permission "
+              "to access the job, the `--region` flag, {2}, is correct for the "
+              "job and the `--token` flag, {3}, corresponds to the job."
+          ).format(
+              job_ref.jobId,
+              error.payload.status_message,
+              job_ref.location,
+              args.token,
+          )
+      )

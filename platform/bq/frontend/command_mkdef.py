@@ -178,6 +178,9 @@ class MakeExternalTableDefinition(bigquery_command.BigqueryCmd):
         flag_values=fv,
     )
     self.null_marker_flag = frontend_flags.define_null_marker(flag_values=fv)
+    self.parquet_map_target_type_flag = (
+        frontend_flags.define_parquet_map_target_type(flag_values=fv)
+    )
     self._ProcessCommandRc(fv)
 
   def RunWithArgs(
@@ -241,6 +244,7 @@ class MakeExternalTableDefinition(bigquery_command.BigqueryCmd):
             encoding=self.encoding,
             file_set_spec_type=self.file_set_spec_type,
             null_marker=self.null_marker_flag.value,
+            parquet_map_target_type=self.parquet_map_target_type_flag.value,
         ),
         sys.stdout,
         sort_keys=True,

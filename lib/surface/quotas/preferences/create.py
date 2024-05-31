@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*- #
-# Copyright 2023 Google LLC. All Rights Reserved.
+# Copyright 2024 Google LLC. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""QuotaPreference update command."""
+"""QuotaPreference create command."""
 
 import json
 
@@ -25,33 +25,33 @@ from googlecloudsdk.core import log
 
 @base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class Update(base.UpdateCommand):
-  """Updates the parameters of a single QuotaPreference.
-
-  This command updates an existing or creates a new QuotaPreference for a
-  customer. The supported consumers can be projects, folders, or organizations.
+@base.UniverseCompatible
+class Create(base.CreateCommand):
+  """Create a new QuotaPreference that declares the desired value for a quota.
 
   ## EXAMPLES
 
-  To update a quota preference with id `my-preference` in region `us-central1`
-  that applies to the `default_limit` quota for `projects/12321`, run:
+  To create a quota preference in region `us-central1` that applies to the
+  `default_limit` quota under service `example.googleapis.com` for
+  `projects/12321`, run:
 
-    $ {command} my-preference
+    $ {command}
     --service=example.googleapis.com
     --project=12321
     --quota-id=default_limit
     --preferred-value=100
     --dimensions=region=us-central1
+    --preference-id=example_default-limit_us-central1
 
 
-  To create a new quota preference for `organizations/123`, run:
+  To create a quota preference under service `example.googleapis.com` for
+  `organizations/123` with random preference ID, run:
 
-    $ {command} my-preference
+    $ {command}
     --service=example.googleapis.com
     --organization=123
     --quota-id=default_limit
     --preferred-value=200
-    --allow-missing
   """
 
   @staticmethod
@@ -63,20 +63,18 @@ class Update(base.UpdateCommand):
         the command line after this command. Positional arguments are allowed.
     """
     # required flags
-    flags.PreferrenceId().AddToParser(parser)
+    flags.AddResourceFlags(parser, 'quota preference to create')
     flags.Service().AddToParser(parser)
     flags.PreferredValue().AddToParser(parser)
     flags.QuotaId(positional=False).AddToParser(parser)
-    flags.AddConsumerFlags(parser, 'quota preference to update')
 
     # optional flags
+    flags.PreferenceId(positional=False).AddToParser(parser)
     flags.Dimensions().AddToParser(parser)
-    flags.Email().AddToParser(parser)
-    flags.Justification().AddToParser(parser)
-    flags.AllowMissing().AddToParser(parser)
-    flags.ValidateOnly().AddToParser(parser)
     flags.AllowsQuotaDecreaseBelowUsage().AddToParser(parser)
     flags.AllowHighPercentageQuotaDecrease().AddToParser(parser)
+    flags.Email().AddToParser(parser)
+    flags.Justification().AddToParser(parser)
 
   def Run(self, args):
     """Run command.
@@ -86,18 +84,17 @@ class Update(base.UpdateCommand):
         with.
 
     Returns:
-      The updated QuotaPreference. If `--validate-only` is specified, it returns
-      None or any possible error.
+      The created quota preference.
     """
-    self.updated_resource = quota_preference.UpdateQuotaPreference(args)
-    self.validate_only = args.validate_only
-    return self.updated_resource
+
+    self.created_resource = quota_preference.CreateQuotaPreference(args)
+    return self.created_resource
 
   def Epilog(self, resources_were_displayed=True):
-    if resources_were_displayed and not self.validate_only:
+    if resources_were_displayed:
       log.status.Print(
           json.dumps(
-              encoding.MessageToDict(self.updated_resource),
+              encoding.MessageToDict(self.created_resource),
               sort_keys=True,
               indent=4,
               separators=(',', ':'),

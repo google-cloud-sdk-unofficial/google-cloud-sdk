@@ -30,6 +30,7 @@ from googlecloudsdk.calliope import exceptions as c_exceptions
 from googlecloudsdk.command_lib.deploy import delivery_pipeline_util
 from googlecloudsdk.command_lib.deploy import deploy_policy_util
 from googlecloudsdk.command_lib.deploy import deploy_util
+from googlecloudsdk.command_lib.deploy import exceptions as deploy_exceptions
 from googlecloudsdk.command_lib.deploy import flags
 from googlecloudsdk.command_lib.deploy import promote_util
 from googlecloudsdk.command_lib.deploy import release_util
@@ -99,6 +100,7 @@ def _CommonArgs(parser):
 @base.ReleaseTracks(
     base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
 )
+@base.DefaultUniverseOnly
 class Create(base.CreateCommand):
   """Creates a new release, delivery pipeline qualified."""
 
@@ -138,27 +140,29 @@ class Create(base.CreateCommand):
       )
     except (times.DateTimeSyntaxError, times.DateTimeValueError):
       support_expiration_dt = None
-    if maintenance_dt and (
-        maintenance_dt - times.Now()) <= datetime.timedelta(days=28):
+    if maintenance_dt and (maintenance_dt - times.Now()) <= datetime.timedelta(
+        days=28
+    ):
       log.status.Print(
-          'WARNING: This release\'s Skaffold version will be'
+          "WARNING: This release's Skaffold version will be"
           ' in maintenance mode beginning on {date}.'
-          ' After that you won\'t be able to create releases'
+          " After that you won't be able to create releases"
           ' using this version of Skaffold.\n'
           'https://cloud.google.com/deploy/docs/using-skaffold'
           '/select-skaffold#skaffold_version_deprecation'
           '_and_maintenance_policy'.format(
-              date=maintenance_dt.strftime('%Y-%m-%d'))
+              date=maintenance_dt.strftime('%Y-%m-%d')
+          )
       )
     if support_expiration_dt and times.Now() > support_expiration_dt:
       raise core_exceptions.Error(
-          'The Skaffold version you\'ve chosen is no longer supported.\n'
+          "The Skaffold version you've chosen is no longer supported.\n"
           'https://cloud.google.com/deploy/docs/using-skaffold/select-skaffold'
           '#skaffold_version_deprecation_and_maintenance_policy'
       )
     if maintenance_dt and times.Now() > maintenance_dt:
       raise core_exceptions.Error(
-          'You can\'t create a new release using a Skaffold version'
+          "You can't create a new release using a Skaffold version"
           ' that is in maintenance mode.\n'
           'https://cloud.google.com/deploy/docs/using-skaffold/select-skaffold'
           '#skaffold_version_deprecation_and_maintenance_policy'
@@ -170,6 +174,12 @@ class Create(base.CreateCommand):
       raise c_exceptions.ConflictingArgumentsException(
           '--disable-initial-rollout', '--to-target'
       )
+    # check that `--from-run-container` and `--services` are always paired
+    if args.services:
+      if not args.from_run_container:
+        raise deploy_exceptions.MissingCoupledArgumentsException(
+            ['--from-run-container', '--services']
+        )
     if args.from_run_container:
       if args.build_artifacts:
         raise c_exceptions.ConflictingArgumentsException(
@@ -178,9 +188,13 @@ class Create(base.CreateCommand):
         )
       if args.images:
         raise c_exceptions.ConflictingArgumentsException(
-            '--from-run-container',
-            '--images'
+            '--from-run-container', '--images'
         )
+      if not args.services:
+        raise deploy_exceptions.MissingCoupledArgumentsException(
+            ['--from-run-container', '--services']
+        )
+
     args.CONCEPTS.parsed_args.release = release_util.RenderPattern(
         args.CONCEPTS.parsed_args.release
     )

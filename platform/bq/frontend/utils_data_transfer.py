@@ -88,7 +88,7 @@ def RetrieveAuthorizationInfo(reference, data_source, transfer_client):
   if data_source_info['authorizationType'] == 'FIRST_PARTY_OAUTH':
     first_party_oauth = True
   auth_uri = (
-      'https://www.gstatic.com/bigquerydatatransfer/oauthz/auth?client_id='
+      'https://bigquery.cloud.google.com/datatransfer/oauthz/auth?client_id='
       + data_source_info['clientId']
       + '&scope='
       + '%20'.join(data_source_info['scopes'])

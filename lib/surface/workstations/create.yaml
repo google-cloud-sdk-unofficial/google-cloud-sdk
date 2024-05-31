@@ -23,6 +23,12 @@
       help_text: |
         Labels that are applied to the workstation and propagated to the underlying Compute Engine
         resources.
+    - arg_name: env
+      metavar: KEY=VALUE
+      api_field: workstation.env
+      type: "googlecloudsdk.calliope.arg_parsers:ArgDict:"
+      help_text: |
+        Environment variables passed to the Workstation.
 
   request:
     GA:

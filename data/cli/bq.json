@@ -1,5 +1,5 @@
 {
-  "CLI_VERSION": "2.1.4",
+  "CLI_VERSION": "2.1.5",
   "VERSION": "1",
   "capsule": "",
   "commands": {
@@ -496,7 +496,7 @@
       "attr": {},
       "category": "",
       "default": "'/user/forge-00/.bigqueryrc'",
-      "description": "Path to configuration file. The configuration file specifies new defaults for any flags, and can be overrridden by specifying the flag on the command line. If the --bigqueryrc flag is not specified, the BIGQUERYRC environment variable is used. If that is not specified, the path \"~/.bigqueryrc\" is used.",
+      "description": "Path to configuration file. The configuration file specifies new defaults for any flags, and can be overridden by specifying the flag on the command line. If the --bigqueryrc flag is not specified, the BIGQUERYRC environment variable is used. If that is not specified, the path \"~/.bigqueryrc\" is used.",
       "group": "",
       "is_global": true,
       "is_hidden": false,

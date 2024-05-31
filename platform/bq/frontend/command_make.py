@@ -14,20 +14,22 @@ from absl import app
 from absl import flags
 from pyglib import appcommands
 
+import bq_flags
 import bq_utils
 from clients import bigquery_client_extended
+from clients import client_connection
 from clients import client_dataset
+from clients import client_reservation
 from clients import utils as bq_client_utils
 from frontend import bigquery_command
 from frontend import bq_cached_client
 from frontend import flags as frontend_flags
 from frontend import utils as frontend_utils
 from frontend import utils_data_transfer
+from frontend import utils_id as frontend_id_utils
 from utils import bq_error
 from utils import bq_id_utils
 from utils import bq_processor_utils
-
-FLAGS = flags.FLAGS
 
 # These aren't relevant for user-facing docstrings:
 # pylint: disable=g-doc-return-or-yield
@@ -770,6 +772,9 @@ class Make(bigquery_command.BigqueryCmd):
         flag_values=fv,
     )
     self.null_marker_flag = frontend_flags.define_null_marker(flag_values=fv)
+    self.parquet_map_target_type_flag = (
+        frontend_flags.define_parquet_map_target_type(flag_values=fv)
+    )
     self._ProcessCommandRc(fv)
 
   def RunWithArgs(
@@ -829,15 +834,23 @@ class Make(bigquery_command.BigqueryCmd):
           ' --schema or --view or --materialized_view.'
       )
     if self.t:
-      reference = client.GetTableReference(identifier)
+      reference = bq_client_utils.GetTableReference(
+          id_fallbacks=client, identifier=identifier
+      )
     elif self.view:
-      reference = client.GetTableReference(identifier)
+      reference = bq_client_utils.GetTableReference(
+          id_fallbacks=client, identifier=identifier
+      )
     elif self.materialized_view:
-      reference = client.GetTableReference(identifier)
+      reference = bq_client_utils.GetTableReference(
+          id_fallbacks=client, identifier=identifier
+      )
     elif self.reservation:
       object_info = None
-      reference = client.GetReservationReference(
-          identifier=identifier, default_location=FLAGS.location
+      reference = bq_client_utils.GetReservationReference(
+          id_fallbacks=client,
+          identifier=identifier,
+          default_location=bq_flags.LOCATION.value,
       )
       try:
         ignore_idle_arg = self.ignore_idle_slots
@@ -850,7 +863,9 @@ class Make(bigquery_command.BigqueryCmd):
               if self.concurrency is not None
               else self.max_concurrency
           )
-        object_info = client.CreateReservation(
+        object_info = client_reservation.CreateReservation(
+            client=client.GetReservationApiClient(),
+            api_version=bq_flags.API_VERSION.value,
             reference=reference,
             slots=self.slots,
             ignore_idle_slots=ignore_idle_arg,
@@ -868,19 +883,21 @@ class Make(bigquery_command.BigqueryCmd):
             object_info, reference, custom_format='show'
         )
     elif self.capacity_commitment:
-      reference = client.GetCapacityCommitmentReference(
+      reference = bq_client_utils.GetCapacityCommitmentReference(
+          id_fallbacks=client,
           identifier=identifier,
-          default_location=FLAGS.location,
+          default_location=bq_flags.LOCATION.value,
           default_capacity_commitment_id=' ',
       )
       try:
-        object_info = client.CreateCapacityCommitment(
-            reference,
-            self.edition,
-            self.slots,
-            self.plan,
-            self.renewal_plan,
-            self.multi_region_auxiliary,
+        object_info = client_reservation.CreateCapacityCommitment(
+            client=client.GetReservationApiClient(),
+            reference=reference,
+            edition=self.edition,
+            slots=self.slots,
+            plan=self.plan,
+            renewal_plan=self.renewal_plan,
+            multi_region_auxiliary=self.multi_region_auxiliary,
         )
       except BaseException as e:
         raise bq_error.BigqueryError(
@@ -892,18 +909,21 @@ class Make(bigquery_command.BigqueryCmd):
         )
     elif self.reservation_assignment:
       try:
-        reference = client.GetReservationReference(
-            default_location=FLAGS.location, identifier=self.reservation_id
+        reference = bq_client_utils.GetReservationReference(
+            id_fallbacks=client,
+            default_location=bq_flags.LOCATION.value,
+            identifier=self.reservation_id,
         )
-        object_info = client.CreateReservationAssignment(
+        object_info = client_reservation.CreateReservationAssignment(
+            client=client.GetReservationApiClient(),
             reference=reference,
             job_type=self.job_type,
             priority=self.priority,
             assignee_type=self.assignee_type,
             assignee_id=self.assignee_id,
         )
-        reference = client.GetReservationAssignmentReference(
-            path=object_info['name']
+        reference = bq_client_utils.GetReservationAssignmentReference(
+            id_fallbacks=client, path=object_info['name']
         )
         frontend_utils.PrintObjectInfo(
             object_info, reference, custom_format='show'
@@ -914,7 +934,9 @@ class Make(bigquery_command.BigqueryCmd):
         )
     elif self.transfer_config:
       transfer_client = client.GetTransferV1ApiClient()
-      reference = 'projects/' + (client.GetProjectReference().projectId)
+      reference = 'projects/' + (
+          bq_client_utils.GetProjectReference(id_fallbacks=client).projectId
+      )
       credentials = False
       if self.data_source:
         credentials = utils_data_transfer.CheckValidCreds(
@@ -931,7 +953,7 @@ class Make(bigquery_command.BigqueryCmd):
         auth_info = utils_data_transfer.RetrieveAuthorizationInfo(
             reference, self.data_source, transfer_client
         )
-      location = self.data_location or FLAGS.location
+      location = self.data_location or bq_flags.LOCATION.value
       schedule_args = bigquery_client_extended.TransferScheduleArgs(
           schedule=self.schedule,
           start_time=self.schedule_start_time,
@@ -955,7 +977,7 @@ class Make(bigquery_command.BigqueryCmd):
       print("Transfer configuration '%s' successfully created." % transfer_name)
     elif self.transfer_run:
       formatter = frontend_utils.GetFormatterFromFlags()
-      formatted_identifier = bq_id_utils.FormatDataTransferIdentifiers(
+      formatted_identifier = frontend_id_utils.FormatDataTransferIdentifiers(
           client, identifier
       )
       reference = bq_id_utils.ApiClientHelper.TransferConfigReference(
@@ -1040,9 +1062,10 @@ class Make(bigquery_command.BigqueryCmd):
       if not properties_defined:
         error = 'Need to specify --properties or --connector_configuration'
         raise app.UsageError(error)
-      created_connection = client.CreateConnection(
-          project_id=FLAGS.project_id,
-          location=FLAGS.location,
+      created_connection = client_connection.CreateConnection(
+          client=client.GetConnectionV1ApiClient(),
+          project_id=bq_flags.PROJECT_ID.value,
+          location=bq_flags.LOCATION.value,
           connection_type=self.connection_type,
           properties=param_properties,
           connection_credential=self.connection_credential,
@@ -1053,12 +1076,12 @@ class Make(bigquery_command.BigqueryCmd):
           connector_configuration=self.connector_configuration,
       )
       if created_connection:
-        reference = client.GetConnectionReference(
-            path=created_connection['name']
+        reference = bq_client_utils.GetConnectionReference(
+            id_fallbacks=client, path=created_connection['name']
         )
         print('Connection %s successfully created' % reference)
         bq_client_utils.MaybePrintManualInstructionsForConnection(
-            created_connection, flag_format=FLAGS.format
+            created_connection, flag_format=bq_flags.FORMAT.value
         )
     elif self.d or not identifier:
       reference = bq_client_utils.GetDatasetReference(
@@ -1107,7 +1130,7 @@ class Make(bigquery_command.BigqueryCmd):
       if self.default_partition_expiration is not None:
         default_partition_exp_ms = self.default_partition_expiration * 1000
 
-      location = self.data_location or FLAGS.location
+      location = self.data_location or bq_flags.LOCATION.value
       labels = None
       if self.label is not None:
         labels = frontend_utils.ParseLabels(self.label)
@@ -1206,6 +1229,7 @@ class Make(bigquery_command.BigqueryCmd):
             self.reference_file_schema_uri,
             self.file_set_spec_type,
             self.null_marker_flag.value,
+            parquet_map_target_type=self.parquet_map_target_type_flag.value,
         )
         if (self.require_partition_filter is not None) and (
             'hivePartitioningOptions' in external_data_config
@@ -1239,9 +1263,16 @@ class Make(bigquery_command.BigqueryCmd):
             'table_format': self.table_format,
         }
       elif has_some_required_biglake_config:
+        missing_fields = []
+        if not self.connection_id:
+          missing_fields.append('connection_id')
+        if not self.storage_uri:
+          missing_fields.append('storage_uri')
+        if not self.table_format:
+          missing_fields.append('table_format')
+        missing_fields = ', '.join(missing_fields)
         raise app.UsageError(
-            'BigLake tables require all of connection_id, storage_uri,'
-            ' and table_format to be specified'
+            f'BigLake tables require {missing_fields} to be specified'
         )
 
       view_udf_resources = None

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*- #
-# Copyright 2023 Google LLC. All Rights Reserved.
+# Copyright 2024 Google LLC. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -21,23 +21,21 @@ from googlecloudsdk.command_lib.quotas import flags
 
 @base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.UniverseCompatible
 class Describe(base.DescribeCommand):
-  """Gets details of a single QuotaPreference for a consumer.
-
-  This command gets a specific quota preference for a consumer. The supported
-  consumers can be projects, folders, or organizations.
+  """Get details about a single QuotaPreference.
 
   ## EXAMPLES
 
-  To get the details of quota preference `my-preference` for consumer
+  To get the details about quota preference `my-preference` for
   `projects/12321`, run:
 
     $ {command} my-preference --project=12321
     $ {command} my-preference --project=my-project-id
 
 
-  To get the details of quota preference `my-preference` for consumer
-  `folders/12345`, run:
+  To get the details about quota preference `my-preference` for `folders/12345`,
+  run:
 
     $ {command} my-preference --folder=12345
   """
@@ -50,8 +48,8 @@ class Describe(base.DescribeCommand):
       parser: An argparse parser that you can use to add arguments that go on
         the command line after this command. Positional arguments are allowed.
     """
-    flags.AddConsumerFlags(parser, 'quota preference to describe')
-    flags.PreferrenceId().AddToParser(parser)
+    flags.AddResourceFlags(parser, 'quota preference to describe')
+    flags.PreferenceId().AddToParser(parser)
 
   def Run(self, args):
     """Run command.
@@ -61,6 +59,6 @@ class Describe(base.DescribeCommand):
         with.
 
     Returns:
-      The requested QuotaPreference for the service and consumer.
+      The requested QuotaPreference for specified container and service.
     """
     return quota_preference.GetQuotaPreference(args)

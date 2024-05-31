@@ -27,7 +27,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.compute import flags as compute_flags
 from googlecloudsdk.command_lib.compute.images import flags
-from googlecloudsdk.command_lib.compute.kms import resource_args as kms_resource_args
+from googlecloudsdk.command_lib.kms import resource_args as kms_resource_args
 from googlecloudsdk.command_lib.util.args import labels_util
 from googlecloudsdk.core import resources
 import six
@@ -132,6 +132,7 @@ def _Args(
   compute_flags.AddShieldedInstanceInitialStateKeyArg(parser)
 
 
+@base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Create(base.CreateCommand):
   """Create Compute Engine images."""
@@ -298,6 +299,7 @@ class Create(base.CreateCommand):
                                  request)], timeout=POLL_TIMEOUT)
 
 
+@base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class CreateBeta(Create):
   """Create Compute Engine images."""
@@ -318,6 +320,7 @@ class CreateBeta(Create):
     return self._Run(args, support_user_licenses=True)
 
 
+@base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class CreateAlpha(Create):
   """Create Compute Engine images."""

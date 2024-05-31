@@ -24,6 +24,7 @@ from googlecloudsdk.command_lib.spanner import flags
 from googlecloudsdk.command_lib.spanner import migration_backend
 
 
+@base.DefaultUniverseOnly
 class Data(base.BinaryBackedCommand):
   """Migrate data from a source database to Cloud Spanner given a schema."""
 
@@ -49,6 +50,8 @@ class Data(base.BinaryBackedCommand):
     flags.GetSpannerMigrationWriteLimitFlag().AddToParser(parser)
     flags.GetSpannerMigrationDryRunFlag().AddToParser(parser)
     flags.GetSpannerMigrationLogLevelFlag().AddToParser(parser)
+    flags.GetSpannerMigrationProjectFlag().AddToParser(parser)
+    flags.GetSpannerMigrationDataflowTemplateFlag().AddToParser(parser)
 
   def Run(self, args):
     """Run the data command."""
@@ -67,6 +70,8 @@ class Data(base.BinaryBackedCommand):
         write_limit=args.write_limit,
         dry_run=args.dry_run,
         log_level=args.log_level,
+        project=args.project,
+        dataflow_template=args.dataflow_template,
         env=env_vars,
     )
     self.exit_code = response.exit_code

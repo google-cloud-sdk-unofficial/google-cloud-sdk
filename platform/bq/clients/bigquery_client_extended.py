@@ -897,7 +897,9 @@ class BigqueryClientExtended(bigquery_client.BigqueryClient):
         assignee_id=assignee_id,
     )
 
-  def GetConnection(self, reference):
+  def GetConnection(
+      self, reference: bq_id_utils.ApiClientHelper.ConnectionReference
+  ):
     """Gets connection with the given connection reference.
 
     Arguments:
@@ -912,16 +914,16 @@ class BigqueryClientExtended(bigquery_client.BigqueryClient):
 
   def CreateConnection(
       self,
-      project_id,
-      location,
-      connection_type,
-      properties,
-      connection_credential=None,
-      display_name=None,
-      description=None,
-      connection_id=None,
-      kms_key_name=None,
-      connector_configuration=None,
+      project_id: str,
+      location: str,
+      connection_type: str,  # Actually a CONNECTION_TYPE_TO_PROPERTY_MAP key.
+      properties: str,
+      connection_credential: Optional[str] = None,
+      display_name: Optional[str] = None,
+      description: Optional[str] = None,
+      connection_id: Optional[str] = None,
+      kms_key_name: Optional[str] = None,
+      connector_configuration: Optional[str] = None,
   ):
     """Create a connection with the given connection reference.
 
@@ -941,7 +943,7 @@ class BigqueryClientExtended(bigquery_client.BigqueryClient):
       Connection object that was created.
     """
 
-    connection = {}
+    connection: Dict[str, Any] = {}
 
     if display_name:
       connection['friendlyName'] = display_name
@@ -978,14 +980,14 @@ class BigqueryClientExtended(bigquery_client.BigqueryClient):
 
   def UpdateConnection(
       self,
-      reference,
-      connection_type,
-      properties,
-      connection_credential=None,
-      display_name=None,
-      description=None,
-      kms_key_name=None,
-      connector_configuration=None,
+      reference: bq_id_utils.ApiClientHelper.ConnectionReference,
+      connection_type: str,  # Actually a CONNECTION_TYPE_TO_PROPERTY_MAP key.
+      properties: str,
+      connection_credential: Optional[str] = None,
+      display_name: Optional[str] = None,
+      description: Optional[str] = None,
+      kms_key_name: Optional[str] = None,
+      connector_configuration: Optional[str] = None,
   ):
     """Update connection with the given connection reference.
 
@@ -1014,7 +1016,9 @@ class BigqueryClientExtended(bigquery_client.BigqueryClient):
     connection = {}
     update_mask = []
 
-    def GetUpdateMask(base_path, json_properties):
+    def GetUpdateMask(
+        base_path: str, json_properties: Dict[str, Any]
+    ) -> List[str]:
       """Creates an update mask from json_properties.
 
       Arguments:
@@ -1030,7 +1034,9 @@ class BigqueryClientExtended(bigquery_client.BigqueryClient):
           for json_property in json_properties
       ]
 
-    def GetUpdateMaskRecursively(prefix, json_value):
+    def GetUpdateMaskRecursively(
+        prefix: str, json_value: Dict[str, Any]
+    ) -> List[str]:
       if not isinstance(json_value, dict) or not json_value:
         return [inflection.underscore(prefix)]
 
@@ -1154,7 +1160,9 @@ class BigqueryClientExtended(bigquery_client.BigqueryClient):
         updateMask=','.join(update_mask),
         body=connection).execute()
 
-  def DeleteConnection(self, reference):
+  def DeleteConnection(
+      self, reference: bq_id_utils.ApiClientHelper.ConnectionReference
+  ):
     """Delete a connection with the given connection reference.
 
     Arguments:
@@ -1187,7 +1195,11 @@ class BigqueryClientExtended(bigquery_client.BigqueryClient):
     return client.projects().locations().connections().list(
         parent=parent, pageToken=page_token, pageSize=max_results).execute()
 
-  def SetConnectionIAMPolicy(self, reference, policy):
+  def SetConnectionIAMPolicy(
+      self,
+      reference: bq_id_utils.ApiClientHelper.ConnectionReference,
+      policy: str,
+  ):
     """Sets IAM policy for the given connection resource.
 
     Arguments:
@@ -1210,7 +1222,9 @@ class BigqueryClientExtended(bigquery_client.BigqueryClient):
         resource=reference.path(), body={'policy': policy}
     ).execute()
 
-  def GetConnectionIAMPolicy(self, reference):
+  def GetConnectionIAMPolicy(
+      self, reference: bq_id_utils.ApiClientHelper.ConnectionReference
+  ):
     """Gets IAM policy for the given connection resource.
 
     Arguments:
@@ -1236,11 +1250,13 @@ class BigqueryClientExtended(bigquery_client.BigqueryClient):
         .execute()
     )
 
-  def ReadSchemaAndRows(self,
-                        table_dict,
-                        start_row=None,
-                        max_rows=None,
-                        selected_fields=None):
+  def ReadSchemaAndRows(
+      self,
+      table_dict: bq_id_utils.ApiClientHelper.TableReference,
+      start_row: Optional[int] = None,
+      max_rows: Optional[int] = None,
+      selected_fields: Optional[str] = None,
+  ):
     """Convenience method to get the schema and rows from a table.
 
     Arguments:
@@ -1758,20 +1774,28 @@ class BigqueryClientExtended(bigquery_client.BigqueryClient):
     Returns:
       A list of jobs.
     """
-    return self.ListJobsAndToken(reference, max_results, page_token,
-                                 state_filter, min_creation_time,
-                                 max_creation_time, all_users,
-                                 parent_job_id)['results']
+    return self.ListJobsWithTokenAndUnreachable(
+        reference,
+        max_results,
+        page_token,
+        state_filter,
+        min_creation_time,
+        max_creation_time,
+        all_users,
+        parent_job_id,
+    )['results']
 
-  def ListJobsAndToken(self,
-                       reference=None,
-                       max_results=None,
-                       page_token=None,
-                       state_filter=None,
-                       min_creation_time=None,
-                       max_creation_time=None,
-                       all_users=None,
-                       parent_job_id=None):
+  def ListJobsWithTokenAndUnreachable(
+      self,
+      reference=None,
+      max_results=None,
+      page_token=None,
+      state_filter=None,
+      min_creation_time=None,
+      max_creation_time=None,
+      all_users=None,
+      parent_job_id=None,
+  ):
     # pylint: disable=g-doc-args
     """Return a list of jobs.
 
@@ -1834,9 +1858,15 @@ class BigqueryClientExtended(bigquery_client.BigqueryClient):
         request['pageToken'] = result['nextPageToken']
         result = self.apiclient.jobs().list(**request).execute()
         results.extend(result.get('jobs', []))
+    response = dict(results=results)
     if 'nextPageToken' in result:
-      return dict(results=results, token=result['nextPageToken'])
-    return dict(results=results)
+      response['token'] = result['nextPageToken']
+    # The 'unreachable' field is a list of skipped locations that were
+    # unreachable. The field definition is
+    # google3/google/cloud/bigquery/v2/job.proto;rcl=622304818;l=593
+    if 'unreachable' in result:
+      response['unreachable'] = result['unreachable']
+    return response
 
   def ListTransferConfigs(self,
                           reference=None,
@@ -2080,27 +2110,6 @@ class BigqueryClientExtended(bigquery_client.BigqueryClient):
         datasetId=reference.datasetId,
         maxResults=max_results,
         pageToken=page_token).execute()
-
-  def ListRoutines(self, reference, max_results, page_token, filter_expression):
-    """Lists routines for the given dataset reference.
-
-    Arguments:
-      reference: Reference to the dataset.
-      max_results: Number of results to return.
-      page_token: Token to retrieve the next page of results.
-      filter_expression: An expression for filtering routines.
-
-    Returns:
-      A dict that contains entries:
-        'routines': a list of routines.
-        'token': nextPageToken for the last page, if present.
-    """
-    return self.GetRoutinesApiClient().routines().list(
-        projectId=reference.projectId,
-        datasetId=reference.datasetId,
-        maxResults=max_results,
-        pageToken=page_token,
-        filter=filter_expression).execute()
 
   def _ListRowAccessPolicies(
       self,
@@ -2484,23 +2493,6 @@ class BigqueryClientExtended(bigquery_client.BigqueryClient):
     except bq_error.BigqueryNotFoundError:
       return False
 
-  def RoutineExists(
-      self, reference: 'bq_id_utils.ApiClientHelper.RoutineReference'
-  ) -> bool:
-    """Returns true if the routine exists."""
-    bq_id_utils.typecheck(
-        reference,
-        bq_id_utils.ApiClientHelper.RoutineReference,
-        method='RoutineExists',
-    )
-    try:
-      return self.GetRoutinesApiClient().routines().get(
-          projectId=reference.projectId,
-          datasetId=reference.datasetId,
-          routineId=reference.routineId).execute()
-    except bq_error.BigqueryNotFoundError:
-      return False
-
   def TransferExists(
       self, reference: 'bq_id_utils.ApiClientHelper.TransferConfigReference'
   ) -> bool:
@@ -2801,7 +2793,9 @@ class BigqueryClientExtended(bigquery_client.BigqueryClient):
           id_fallbacks=self,
           identifier=target_dataset
       )
-      if self.DatasetExists(dataset_reference):
+      if client_dataset.DatasetExists(
+          apiclient=self.apiclient, reference=dataset_reference
+      ):
         update_items['destinationDatasetId'] = target_dataset
         update_mask.append('transfer_config.destination_dataset_id')
       else:
@@ -3445,29 +3439,6 @@ class BigqueryClientExtended(bigquery_client.BigqueryClient):
       if not ignore_not_found:
         raise
 
-  def DeleteRoutine(self, reference, ignore_not_found=False):
-    """Deletes RoutineReference reference.
-
-    Args:
-      reference: the RoutineReference to delete.
-      ignore_not_found: Whether to ignore "not found" errors.
-
-    Raises:
-      TypeError: if reference is not a RoutineReference.
-      bq_error.BigqueryNotFoundError: if reference does not exist and
-        ignore_not_found is False.
-    """
-    bq_id_utils.typecheck(
-        reference,
-        bq_id_utils.ApiClientHelper.RoutineReference,
-        method='DeleteRoutine',
-    )
-    try:
-      self.GetRoutinesApiClient().routines().delete(**dict(reference)).execute()
-    except bq_error.BigqueryNotFoundError:
-      if not ignore_not_found:
-        raise
-
   def DeleteTransferConfig(self, reference, ignore_not_found=False):
     """Deletes TransferConfigReference reference.
 
@@ -3600,6 +3571,9 @@ class BigqueryClientExtended(bigquery_client.BigqueryClient):
       use_legacy_sql=None,
       location=None,
       connection_properties=None,
+      create_session=None,
+      query_parameters=None,
+      positional_parameter_mode=None,
       **kwds,
   ):
     """Executes the given query using the rpc-style query api.
@@ -3633,6 +3607,10 @@ class BigqueryClientExtended(bigquery_client.BigqueryClient):
         the query, presented as a list of key/value pairs. A key of "time_zone"
         indicates that the query will be run with the default timezone
         corresponding to the value.
+      create_session: Optional. True to create a session for the query.
+      query_parameters: parameter values for use_legacy_sql=False queries.
+      positional_parameter_mode: If true, set the parameter mode to POSITIONAL
+        instead of the default NAMED.
       **kwds: Extra keyword arguments passed directly to jobs.Query().
 
     Returns:
@@ -3671,7 +3649,13 @@ class BigqueryClientExtended(bigquery_client.BigqueryClient):
         max_results=max_results,
         use_legacy_sql=use_legacy_sql,
         min_completion_ratio=min_completion_ratio,
-        location=location)
+        location=location,
+        create_session=create_session,
+        query_parameters=query_parameters,
+        parameter_mode=None
+        if positional_parameter_mode is None
+        else ('POSITIONAL' if positional_parameter_mode else 'NAMED'),
+    )
     bq_processor_utils.ApplyParameters(
         request, connection_properties=connection_properties
     )
@@ -4077,7 +4061,8 @@ class BigqueryClientExtended(bigquery_client.BigqueryClient):
               udf_resources=udf_resources,
               location=location,
               connection_properties=connection_properties,
-              **kwds)
+              **kwds,
+          )
           if dry_run:
             execution = dict(
                 statistics=dict(
@@ -4261,14 +4246,18 @@ class BigqueryClientExtended(bigquery_client.BigqueryClient):
         create_session=create_session,
         min_completion_ratio=min_completion_ratio,
         continuous=continuous,
-        range_partitioning=range_partitioning)
+        range_partitioning=range_partitioning,
+    )
     bq_processor_utils.ApplyParameters(
         query_config, connection_properties=connection_properties
     )
     request = {'query': query_config}
     bq_processor_utils.ApplyParameters(
-        request, dry_run=dry_run, labels=labels, job_timeout_ms=job_timeout_ms)
-    logging.debug('Calling self.ExecuteJob(%s, %s)', request, kwds)
+        request,
+        dry_run=dry_run,
+        labels=labels,
+        job_timeout_ms=job_timeout_ms,
+    )
     return self.ExecuteJob(request, **kwds)
 
   def Load(
@@ -4301,12 +4290,14 @@ class BigqueryClientExtended(bigquery_client.BigqueryClient):
       hive_partitioning_options=None,
       decimal_target_types=None,
       json_extension=None,
+      column_name_character_map=None,
       file_set_spec_type=None,
       thrift_options=None,
       parquet_options=None,
       connection_properties=None,
       copy_files_only: Optional[bool] = None,
-      **kwds):
+      **kwds,
+  ):
     """Load the given data into BigQuery.
 
     The job will execute synchronously if sync=True is provided as an
@@ -4386,6 +4377,12 @@ class BigqueryClientExtended(bigquery_client.BigqueryClient):
       json_extension: (experimental) Specify alternative parsing for JSON source
         format. To load newline-delimited JSON, specify 'GEOJSON'. Only
         applicable if `source_format` is 'NEWLINE_DELIMITED_JSON'.
+      column_name_character_map: Indicates the character map used for column
+        names. Specify 'STRICT' to use the latest character map and reject
+        invalid column names. Specify 'V1' to support alphanumeric + underscore
+        and name must start with a letter or underscore. Invalid column names
+        will be normalized. Specify 'V2' to support flexible column name.
+        Invalid column names will be normalized.
       file_set_spec_type: (experimental) Set how to discover files for loading.
         Specify 'FILE_SYSTEM_MATCH' (default behavior) to expand source URIs by
         listing files from the underlying object store. Specify
@@ -4425,6 +4422,8 @@ class BigqueryClientExtended(bigquery_client.BigqueryClient):
       load_config['fileSetSpecType'] = file_set_spec_type
     if json_extension is not None:
       load_config['jsonExtension'] = json_extension
+    if column_name_character_map is not None:
+      load_config['columnNameCharacterMap'] = column_name_character_map
     if parquet_options is not None:
       load_config['parquetOptions'] = parquet_options
     load_config['decimalTargetTypes'] = decimal_target_types
@@ -4457,21 +4456,25 @@ class BigqueryClientExtended(bigquery_client.BigqueryClient):
         connection_properties=connection_properties,
         copy_files_only=copy_files_only,
         parquet_options=parquet_options)
+    configuration = {'load': load_config}
     return self.ExecuteJob(
-        configuration={'load': load_config}, upload_file=upload_file, **kwds)
+        configuration=configuration, upload_file=upload_file, **kwds
+    )
 
 
-  def Extract(self,
-              reference,
-              destination_uris,
-              print_header=None,
-              field_delimiter=None,
-              destination_format=None,
-              trial_id=None,
-              add_serving_default_signature=None,
-              compression=None,
-              use_avro_logical_types=None,
-              **kwds):
+  def Extract(
+      self,
+      reference,
+      destination_uris,
+      print_header=None,
+      field_delimiter=None,
+      destination_format=None,
+      trial_id=None,
+      add_serving_default_signature=None,
+      compression=None,
+      use_avro_logical_types=None,
+      **kwds,
+  ):
     """Extract the given table from BigQuery.
 
     The job will execute synchronously if sync=True is provided as an
@@ -4535,4 +4538,5 @@ class BigqueryClientExtended(bigquery_client.BigqueryClient):
         field_delimiter=field_delimiter,
         compression=compression,
         use_avro_logical_types=use_avro_logical_types)
-    return self.ExecuteJob(configuration={'extract': extract_config}, **kwds)
+    configuration = {'extract': extract_config}
+    return self.ExecuteJob(configuration=configuration, **kwds)

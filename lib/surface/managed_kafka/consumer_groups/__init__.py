@@ -21,7 +21,7 @@ from googlecloudsdk.calliope import base
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class ConsumerGroups(base.Group):
   """Administer Apache Kafka for BigQuery consumer groups."""
   category = base.DATA_ANALYTICS_CATEGORY

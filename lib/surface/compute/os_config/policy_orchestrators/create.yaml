@@ -1,0 +1,41 @@
+- release_tracks: [ALPHA]
+
+  help_text:
+    brief: Create a policy orchestrator
+    description: |
+      Create a policy orchestrator.
+      ## EXAMPLES
+
+      To create an policy orchestrator `my-orchestrator` in folder `123456` for OS Policy assignment
+      with config file `/path/to/file/config.yaml`, run:
+
+        $ {command} my-orchestrator --folder=123456 --policy-type OS_POLICY_ASSIGNMENT_V1 \
+            --file=/path/to/file/config.yaml
+
+  request:
+    collection: osconfig.folders.locations.global.policyOrchestrators
+    method: create
+    modify_request_hooks:
+    - googlecloudsdk.command_lib.compute.os_config.utils:ModifyOrchestrorPolicyRequest
+    ALPHA:
+      api_version: v2alpha
+
+  async:
+    collection: osconfig.folders.locations.operations
+    ALPHA:
+      api_version: v2alpha
+
+  arguments:
+    resource:
+      help_text: Policy orchestrator to create.
+      spec: !REF googlecloudsdk.command_lib.compute.os_config.resources:policy_orchestrator
+    params:
+    - arg_name: policy-type
+      help_text: Policy type to use.
+      required: true
+      choices:
+      - arg_value: OS_POLICY_ASSIGNMENT_V1
+        help_text: OS policy assignment v1.
+    - _REF_: googlecloudsdk.command_lib.compute.os_config.flags:policy-file
+    - arg_name: include-projects
+      help_text: Applies policy to selected projects only.

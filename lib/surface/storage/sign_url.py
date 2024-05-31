@@ -79,6 +79,7 @@ def _get_region(args, resource):
   )
 
 
+@base.UniverseCompatible
 class SignUrl(base.Command):
   """Generate a URL with embedded authentication that can be used by anyone."""
 
@@ -215,7 +216,6 @@ class SignUrl(base.Command):
   def Run(self, args):
     key = None
     delegates = None
-    creds = c_store.Load(prevent_refresh=True, use_google_auth=False)
     delegate_chain = args.impersonate_service_account or (
         properties.VALUES.auth.impersonate_service_account.Get())
     if args.private_key_file:
@@ -232,22 +232,25 @@ class SignUrl(base.Command):
           delegate_chain
       )
       client_id = impersonated_account
-    elif (
-        c_creds.CredentialType.FromCredentials(creds)
-        == c_creds.CredentialType.GCE
-    ):
-      client_id = properties.VALUES.core.account.Get()
-    elif c_creds.IsServiceAccountCredentials(creds):
-      try:
-        client_id, key = sign_url_util.get_signing_information_from_json(
-            c_creds.ToJson(creds)
-        )
-      except ModuleNotFoundError as error:
-        if 'OpenSSL' in str(error):
-          raise command_errors.Error(_INSTALL_PY_OPEN_SSL_MESSAGE)
-        raise
     else:
-      raise command_errors.Error(_PROVIDE_SERVICE_ACCOUNT_MESSAGE)
+      try:
+        creds = c_store.Load(prevent_refresh=True, use_google_auth=True)
+        if c_creds.IsServiceAccountCredentials(creds):
+          try:
+            client_id, key = sign_url_util.get_signing_information_from_json(
+                c_creds.ToJson(creds)
+            )
+          except ModuleNotFoundError as error:
+            if 'OpenSSL' in str(error):
+              raise command_errors.Error(_INSTALL_PY_OPEN_SSL_MESSAGE)
+            raise
+        else:
+          raise command_errors.Error(_PROVIDE_SERVICE_ACCOUNT_MESSAGE)
+      except c_creds.UnknownCredentialsType as error:
+        if 'gce' in str(error):
+          client_id = properties.VALUES.core.account.Get()
+        else:
+          raise
 
     # Signed URLs always hit the XML API, regardless of what API is preferred
     # for other operations.

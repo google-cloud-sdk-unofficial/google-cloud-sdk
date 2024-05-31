@@ -14,6 +14,7 @@ from absl import flags
 from pyglib import appcommands
 
 import bq_utils
+from clients import utils as bq_client_utils
 from frontend import bigquery_command
 from frontend import bq_cached_client
 
@@ -54,7 +55,7 @@ class CommandLoop(cmd.Cmd):
   def _set_prompt(self):
     client = bq_cached_client.Client().Get()
     if client.project_id:
-      path = str(client.GetReference())
+      path = str(bq_client_utils.GetReference(id_fallbacks=client))
       self.prompt = '%s> ' % (path,)
     else:
       self.prompt = self._default_prompt

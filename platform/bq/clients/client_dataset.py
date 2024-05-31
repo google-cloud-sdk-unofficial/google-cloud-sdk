@@ -1,14 +1,13 @@
 #!/usr/bin/env python
 """The BigQuery CLI dataset client library."""
 
-
+import datetime
 from typing import Dict, List, NamedTuple, Optional
 from googleapiclient import discovery
 from clients import utils as bq_client_utils
 from utils import bq_error
 from utils import bq_id_utils
 from utils import bq_processor_utils
-
 
 
 
@@ -21,11 +20,37 @@ def ListDatasets(
             ('project_id', Optional[str]),
         ],
     ),
-    reference=None,
-    max_results=None,
-    page_token=None,
-    list_all=None,
-    filter_expression=None,
+    reference: Optional[bq_id_utils.ApiClientHelper.ProjectReference] = None,
+    max_results: Optional[int] = None,
+    page_token: Optional[str] = None,
+    list_all: Optional[bool] = None,
+    filter_expression: Optional[str] = None,
+):
+  """List the datasets associated with this reference."""
+  return ListDatasetsWithTokenAndUnreachable(
+      apiclient,
+      id_fallbacks,
+      reference,
+      max_results,
+      page_token,
+      list_all,
+      filter_expression,
+  )['datasets']
+
+
+def ListDatasetsWithTokenAndUnreachable(
+    apiclient: discovery.Resource,
+    id_fallbacks: NamedTuple(
+        'IDS',
+        [
+            ('project_id', Optional[str]),
+        ],
+    ),
+    reference: Optional[bq_id_utils.ApiClientHelper.ProjectReference] = None,
+    max_results: Optional[int] = None,
+    page_token: Optional[str] = None,
+    list_all: Optional[bool] = None,
+    filter_expression: Optional[str] = None,
 ):
   """List the datasets associated with this reference."""
   reference = bq_client_utils.NormalizeProjectReference(
@@ -43,14 +68,23 @@ def ListDatasets(
   if list_all is not None:
     request['all'] = list_all
   result = apiclient.datasets().list(**request).execute()
-  results = result.get('datasets', [])
+  dataset_list = result.get('datasets', [])
+  unreachable_set = set(result.get('unreachable', []))
+  next_token = result.get('nextPageToken', None)
   if max_results is not None:
-    while 'nextPageToken' in result and len(results) < max_results:
-      request['maxResults'] = max_results - len(results)
+    while 'nextPageToken' in result and len(dataset_list) < max_results:
+      request['maxResults'] = max_results - len(dataset_list)
       request['pageToken'] = result['nextPageToken']
       result = apiclient.datasets().list(**request).execute()
-      results.extend(result.get('datasets', []))
-  return results
+      dataset_list.extend(result.get('datasets', []))
+      unreachable_set.update(result.get('unreachable', []))
+      next_token = result.get('nextPageToken', None)
+  response = dict(datasets=dataset_list)
+  if next_token:
+    response['token'] = next_token
+  if unreachable_set:
+    response['unreachable'] = list(unreachable_set)
+  return response
 
 
 def GetDatasetIAMPolicy(apiclient, reference):
@@ -429,3 +463,33 @@ def DeleteDataset(
   except bq_error.BigqueryNotFoundError:
     if not ignore_not_found:
       raise
+
+
+def UndeleteDataset(
+    apiclient: discovery.Resource,
+    dataset_reference: bq_id_utils.ApiClientHelper.DatasetReference,
+    timestamp: Optional[datetime.datetime] = None,
+) -> bool:
+  """Undeletes a dataset.
+
+  Args:
+    apiclient: the api client to make the request with.
+    dataset_reference: [Type:
+      bq_id_utils.ApiClientHelper.DatasetReference]DatasetReference of the
+      dataset to be undeleted
+    timestamp: [Type: Optional[datetime.datetime]]Timestamp for which dataset
+      version is to be undeleted
+
+  Returns:
+    bool: The job description, or None for ignored errors.
+
+  Raises:
+    BigqueryDuplicateError: when the dataset to be undeleted already exists.
+  """
+  try:
+    _ = timestamp  # TODO: b/270238943 - Add timestamp to the request
+    args = dict(dataset_reference)
+    return apiclient.datasets().undelete(**args).execute()
+
+  except bq_error.BigqueryDuplicateError as e:
+    raise e

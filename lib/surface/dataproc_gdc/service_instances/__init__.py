@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*- #
-# Copyright 2023 Google LLC. All Rights Reserved.
+# Copyright 2024 Google Inc. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,14 +12,19 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""The command group for Cloud Quotas Quota Info."""
+"""Command group for managing Spark Applciations on Dataproc GDC service instances."""
+
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import unicode_literals
 
 from googlecloudsdk.calliope import base
 
 
-# We could have multiple tracks here, e.g.
-#   @base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.ALPHA)
 @base.Hidden
+@base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class QuotaInfo(base.Group):
-  """Manage Cloud Quotas QuotaInfo."""
+class SparkApplications(base.Group):
+  """Manage Dataproc GDC Spark Applications."""
+
+  category = base.DATA_ANALYTICS_CATEGORY

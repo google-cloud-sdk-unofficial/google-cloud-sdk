@@ -87,7 +87,7 @@ specify the `--region` and `--network` flags:
 class StartIapTunnel(base.Command):
   """Starts an IAP TCP forwarding tunnel."""
 
-  fetch_instance_after_connect_error = False
+  fetch_instance_after_connect_error = True
   support_security_gateway = False
 
   @classmethod

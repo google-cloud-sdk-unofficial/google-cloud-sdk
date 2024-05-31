@@ -24,7 +24,7 @@ from googlecloudsdk.command_lib.firestore import flags
 from googlecloudsdk.core import properties
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.DefaultUniverseOnly
 class Delete(base.Command):
   """Deletes a Cloud Firestore backup schedule.
 

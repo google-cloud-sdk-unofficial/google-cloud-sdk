@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*- #
-# Copyright 2023 Google LLC. All Rights Reserved.
+# Copyright 2024 Google LLC. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,40 +12,32 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""QuotaPreference list command."""
+"""QuotaInfo get command."""
 
-from googlecloudsdk.api_lib.quotas import quota_preference
+from googlecloudsdk.api_lib.quotas import quota_info
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.quotas import flags
 
 
 @base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class List(base.ListCommand):
-  """Lists QuotaPreferences in a given project, folder or organization.
-
-  This command lists quota preferences for a consumer. The supported consumers
-  can be projects, folders, or organizations.
+@base.UniverseCompatible
+class Describe(base.DescribeCommand):
+  """Retrieve the QuotaInfo of a quota for a project, folder or organization.
 
   ## EXAMPLES
 
-  To list the quota preferences for consumer `projects/12321`, run:
+  To get the details about quota `CpusPerProject` for service
+  `example.googleapis.com` and `projects/my-project`, run:
 
-    $ {command} --project=12321
-    $ {command} --project=my-project-id
-
-
-  To list first 10 quota preferences ordered by create time for consumer
-  `folder/12345`, run:
-
-    $ {command} --folder=12345 --page-size=10 --sort-by=create_time
+    $ {command} CpusPerProject --service=example.googleapis.com
+    --project=my-project
 
 
-  To list all quota preferences in unresolved state in region `us-central1` for
-  consumer `organization/987`, run:
+  To get the details about quota `CpusPerProject` for service
+  `example.googleapis.com` and `folders/12345`, run:
 
-    $ {command} --organization=987 --filter=dimensions.region:us-central1
-    --reconciling-only
+    $ {command} CpusPerProject --service=example.googleapis.com --folder=12345
   """
 
   @staticmethod
@@ -56,9 +48,9 @@ class List(base.ListCommand):
       parser: An argparse parser that you can use to add arguments that go on
         the command line after this command. Positional arguments are allowed.
     """
-    flags.AddConsumerFlags(parser, 'quota preferences to list')
-    flags.PageToken().AddToParser(parser)
-    flags.ReconcilingOnly().AddToParser(parser)
+    flags.QuotaId().AddToParser(parser)
+    flags.AddResourceFlags(parser, 'quota info to describe')
+    flags.Service().AddToParser(parser)
 
   def Run(self, args):
     """Run command.
@@ -68,6 +60,6 @@ class List(base.ListCommand):
         with.
 
     Returns:
-      List of quota preferences.
+      The requested QuotaInfo for specified container and service.
     """
-    return quota_preference.ListQuotaPreferences(args)
+    return quota_info.GetQuotaInfo(args)

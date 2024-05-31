@@ -66,6 +66,7 @@ Container Flags
   return group
 
 
+@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Update(base.Command):
   """Update Cloud Run environment variables and other configuration settings."""
@@ -290,6 +291,7 @@ class AlphaUpdate(BetaUpdate):
     flags.AddRuntimeFlag(managed_group)
     flags.AddDescriptionFlag(managed_group)
     flags.AddServiceMinInstancesFlag(managed_group)
+    flags.AddScalingModeFlag(managed_group)
     flags.AddMaxSurgeFlag(managed_group)
     flags.AddVolumesFlags(managed_group, cls.ReleaseTrack())
     flags.AddGpuTypeFlag(managed_group)

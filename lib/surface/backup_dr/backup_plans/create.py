@@ -44,13 +44,15 @@ class Create(base.CreateCommand):
         To create a new backup plan ``sample-backup-plan''
         in project ``sample-project'',
         at location ``us-central1'',
-        with resource-type ``compute.<UNIVERSE_DOMAIN>.com/Instance''
+        with resource-type ``compute.<UNIVERSE_DOMAIN>.com/Instance'' and
+        backup-vault ``backup-vault''
         with 2 backup-rules:
 
         run:
 
           $ {command} sample-backup-plan --project=sample-project --location=us-central1
             --resource-type 'compute.<UNIVERSE_DOMAIN>.com/Instance'
+            --backup-vault <BACKUP-VAULT>
             --backup-rule <BACKUP-RULE>
             --backup-rule <BACKUP-RULE>
 
@@ -58,11 +60,10 @@ class Create(base.CreateCommand):
 
         1. Hourly backup rule with hourly backup frequency of 6 hours and store it for 30 days, and expect the backups to run only between 10:00 to 20:00 UTC
 
-        <BACKUP-RULE>: rule-id=sample-hourly-rule,backup-vault=projects/admin-project/locations/us-central1/backupVaults/bv1,retention-days=30,recurrence=HOURLY,hourly-frequency=6,time-zone=UTC,backup-window-start=10,backup-window-end=20
+        <BACKUP-RULE>: rule-id=sample-hourly-rule,retention-days=30,recurrence=HOURLY,hourly-frequency=6,time-zone=UTC,backup-window-start=10,backup-window-end=20
 
         Properties:
           -- rule-id = "sample-hourly-rule"
-          -- backup-vault = projects/admin-project/locations/us-central1/backupVaults/bv1
           -- retention-days = 30
           -- recurrence = HOURLY
           -- hourly-frequency = 6
@@ -72,11 +73,10 @@ class Create(base.CreateCommand):
 
         2. Daily backup rule with daily backup frequency of 6 hours and store it for 7 days
 
-        <BACKUP-RULE>: rule-id=sample-daily-rule,backup-vault=projects/admin-project/locations/us-central1/backupVaults/bv1,retention-days=7,recurrence=DAILY,backup-window-start=1,backup-window-end=14
+        <BACKUP-RULE>: rule-id=sample-daily-rule,retention-days=7,recurrence=DAILY,backup-window-start=1,backup-window-end=14
 
         Properties:
           -- rule-id = "sample-daily-rule"
-          -- backup-vault = projects/admin-project/locations/us-central1/backupVaults/bv1
           -- retention-days = 7
           -- recurrence = DAILY
           -- backup-window-start = 1
@@ -84,11 +84,10 @@ class Create(base.CreateCommand):
 
         3. Weekly backup rule with weekly backup frequency on every MONDAY & FRIDAY and store it for 21 days
 
-        <BACKUP-RULE>: rule-id=sample-weekly-rule,backup-vault=projects/admin-project/locations/us-central1/backupVaults/bv1,retention-days=21,recurrence=WEEKLY,days-of-week="MONDAY FRIDAY",backup-window-start=10,backup-window-end=20
+        <BACKUP-RULE>: rule-id=sample-weekly-rule,retention-days=21,recurrence=WEEKLY,days-of-week="MONDAY FRIDAY",backup-window-start=10,backup-window-end=20
 
         Properties:
           -- rule-id = "sample-weekly-rule"
-          -- backup-vault = projects/admin-project/locations/us-central1/backupVaults/bv1
           -- retention-days: 21
           -- recurrence = WEEKLY
           -- days-of-week = "MONDAY FRIDAY"
@@ -106,7 +105,7 @@ class Create(base.CreateCommand):
     """
     base.ASYNC_FLAG.AddToParser(parser)
     base.ASYNC_FLAG.SetDefault(parser, True)
-    flags.AddBackupPlanResourceArg(
+    flags.AddBackupPlanResourceArgWithBackupVault(
         parser,
         """Name of the backup plan to be created.
         Once the backup plan is created, this name can't be changed.
@@ -130,11 +129,14 @@ class Create(base.CreateCommand):
     is_async = args.async_
 
     backup_plan = args.CONCEPTS.backup_plan.Parse()
+    backup_vault = args.CONCEPTS.backup_vault.Parse()
     resource_type = args.resource_type
     backup_rules = args.backup_rule
 
     try:
-      operation = client.Create(backup_plan, resource_type, backup_rules)
+      operation = client.Create(
+          backup_plan, backup_vault.RelativeName(), resource_type, backup_rules
+      )
     except apitools_exceptions.HttpError as e:
       raise exceptions.HttpException(e, util.HTTP_ERROR_FORMAT)
 

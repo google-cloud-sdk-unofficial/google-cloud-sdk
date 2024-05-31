@@ -31,6 +31,7 @@ _NETWORK_ARG = network_flags.NetworkArgumentForOtherResource("""\
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.UniverseCompatible
 class Create(base.CreateCommand):
   """Create a new Compute Engine Highly Available VPN gateway.
 
@@ -52,8 +53,6 @@ class Create(base.CreateCommand):
           """
   }
 
-  _ipv6_only_vpn_enabled = False
-
   @classmethod
   def Args(cls, parser):
     """Set up arguments for this command."""
@@ -62,7 +61,7 @@ class Create(base.CreateCommand):
     _VPN_GATEWAY_ARG.AddArgument(parser, operation_type='create')
     flags.GetDescriptionFlag().AddToParser(parser)
     flags.GetInterconnectAttachmentsFlag().AddToParser(parser)
-    flags.GetStackType(cls._ipv6_only_vpn_enabled).AddToParser(parser)
+    flags.GetStackType().AddToParser(parser)
     flags.GetGatewayIpVersion().AddToParser(parser)
     parser.display_info.AddCacheUpdater(flags.VpnGatewaysCompleter)
 
@@ -137,7 +136,6 @@ class CreateBeta(Create):
   INSTANCE_ARG = None
 
   _support_outer_vpn_ipv6 = True
-  _ipv6_only_vpn_enabled = True
 
   @classmethod
   def Args(cls, parser):
@@ -165,8 +163,6 @@ class CreateAlpha(Create):
 
   ROUTER_ARG = None
   INSTANCE_ARG = None
-
-  _ipv6_only_vpn_enabled = True
 
   @classmethod
   def Args(cls, parser):

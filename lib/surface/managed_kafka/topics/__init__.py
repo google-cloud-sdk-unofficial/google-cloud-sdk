@@ -21,7 +21,7 @@ from googlecloudsdk.calliope import base
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Topics(base.Group):
   """Administer Apache Kafka for BigQuery topics."""
   category = base.DATA_ANALYTICS_CATEGORY

@@ -450,7 +450,36 @@ class Migrate(base.CreateCommand):
   """Migrate from legacy firewall rules to network firewall policies."""
 
   NETWORK_ARG = None
-  exclusion_patterns = ['gke-(.*)-(.*)']
+  exclusion_patterns = [
+      # https://cloud.google.com/kubernetes-engine/docs/concepts/firewall-rules
+      # gke-[cluster-hash]-ipv6-all
+      'gke-(.+)-ipv6-all',
+      # gke-[cluster-name]-[cluster-hash]-master
+      # gke-[cluster-name]-[cluster-hash]-vms
+      # gke-[cluster-name]-[cluster-hash]-all
+      # gke-[cluster-name]-[cluster-hash]-inkubelet
+      # gke-[cluster-name]-[cluster-hash]-exkubelet
+      # gke-[cluster-name]-[cluster-hash]-mcsd
+      'gke-(.+)-(.+)-((master)|(vms)|(all)|(inkubelet)|(exkubelet)|(mcsd))',
+      # k8s-fw-[loadbalancer-hash]
+      # k8s-fw-l7-[random-hash]
+      'k8s-fw-(l7-)?(.+)',
+      # k8s-[cluster-id]-node-http-hc
+      # k8s-[loadbalancer-hash]-http-hc
+      # k8s-[cluster-id]-node-hc
+      'k8s-(.+)-((node)|(http)|(node-http))-hc',
+      # [loadbalancer-hash]-hc
+      '(.+)-hc',
+      # k8s2-[cluster-id]-[namespace]-[service-name]-[suffixhash]
+      # k8s2-[cluster-id]-[namespace]-[service-name]-[suffixhash]-fw
+      'k8s2-(.+)-(.+)-(.+)-(.+)(-fw)?',
+      # k8s2-[cluster-id]-l4-shared-hc-fw
+      'k8s2-(.+)-l4-shared-hc-fw',
+      # gkegw1-l7-[network]-[region/global]
+      # gkemcg1-l7-[network]-[region/global]
+      'gke((gw)|(mcg))1-l7-(.+)-(.+)',
+      # https://cloud.google.com/vpc/docs/serverless-vpc-access#firewall_rules
+  ]
 
   @classmethod
   def Args(cls, parser):

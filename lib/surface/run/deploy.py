@@ -83,6 +83,7 @@ Container Flags
   return group
 
 
+@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Deploy(base.Command):
   """Create or update a Cloud Run service."""
@@ -584,6 +585,7 @@ class AlphaDeploy(BetaDeploy):
     flags.AddInvokerIamCheckFlag(managed_group)
     flags.AddRuntimeFlag(managed_group)
     flags.AddServiceMinInstancesFlag(managed_group)
+    flags.AddScalingModeFlag(managed_group)
     flags.AddMaxSurgeFlag(managed_group)
     flags.AddVolumesFlags(managed_group, cls.ReleaseTrack())
     flags.AddRegionsArg(managed_group)

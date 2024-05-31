@@ -131,6 +131,7 @@ class UpdateGA(_Update, base.Command):
     mj_flags.AddDumpTypeFlag(parser)
     mj_flags.AddFilterFlag(parser)
     mj_flags.AddCommitIdFlag(parser)
+    mj_flags.AddSqlServerHomogeneousMigrationConfigFlag(parser, is_update=True)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)

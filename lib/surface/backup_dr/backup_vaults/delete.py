@@ -31,6 +31,7 @@ from googlecloudsdk.core.console import console_io
 @base.Hidden
 @base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.DefaultUniverseOnly
 class DeleteAlpha(base.DeleteCommand):
   """Delete the specified Backup Vault."""
 
@@ -64,6 +65,7 @@ class DeleteAlpha(base.DeleteCommand):
     )
     flags.AddNoAsyncFlag(parser)
     flags.AddForceDeleteFlag(parser)
+    flags.AddAllowMissing(parser, 'backup vault')
 
   def Run(self, args):
     """Constructs and sends request.
@@ -88,13 +90,29 @@ class DeleteAlpha(base.DeleteCommand):
     )
 
     try:
-      operation = client.Delete(backup_vault, args.force_delete)
+      operation = client.Delete(
+          backup_vault, args.force_delete, args.allow_missing
+      )
     except apitools_exceptions.HttpError as e:
       raise exceptions.HttpException(e, util.HTTP_ERROR_FORMAT)
 
+    operation_ref = client.GetOperationRef(operation)
+    if args.allow_missing and operation_ref == 'None':
+      log.DeletedResource(
+          operation.name,
+          kind='backup vault',
+          is_async=False,
+          details=(
+              '= requested backup vault [{}] was not found.'.format(
+                  backup_vault.RelativeName()
+              )
+          ),
+      )
+      return operation
+
     if no_async:
       return client.WaitForOperation(
-          operation_ref=client.GetOperationRef(operation),
+          operation_ref=operation_ref,
           message=(
               'Deleting backup vault [{}]. (This operation could'
               ' take up to 2 minutes.)'.format(backup_vault.RelativeName())
