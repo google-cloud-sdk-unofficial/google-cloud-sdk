@@ -35,7 +35,6 @@ def _CommonArgs(
     cls,
     parser,
     support_user_licenses=False,
-    support_access_mode=False,
 ):
   """Add arguments used for parsing in all command tracks."""
   cls.DISK_ARG = disks_flags.MakeDiskArg(plural=False)
@@ -68,16 +67,18 @@ def _CommonArgs(
       '--update-architecture',
       choices=architecture_choices,
       help=(
-          'Updates the architecture or processor type that this disk can support. For available processor types on Compute Engine, see https://cloud.google.com/compute/docs/cpu-platforms.'
+          'Updates the architecture or processor type that this disk '
+          'can support. For available processor types on Compute Engine, '
+          'see https://cloud.google.com/compute/docs/cpu-platforms.'
       ))
   scope.add_argument(
       '--clear-architecture',
       action='store_true',
-      help='Removes the architecture or processor type annotation from the disk.'
+      help=('Removes the architecture or processor '
+            'type annotation from the disk.')
   )
 
-  if support_access_mode:
-    disks_flags.AddAccessModeFlag(parser, messages)
+  disks_flags.AddAccessModeFlag(parser, messages)
 
   parser.add_argument(
       '--provisioned-iops',
@@ -123,8 +124,8 @@ def _ArchitectureFlagsIncluded(args):
       'clear_architecture')
 
 
-def _AccessModeFlagsIncluded(args, support_access_mode=False):
-  return support_access_mode and args.IsSpecified('access_mode')
+def _AccessModeFlagsIncluded(args):
+  return args.IsSpecified('access_mode')
 
 
 def _ProvisionedIopsIncluded(args):
@@ -139,6 +140,7 @@ def _SizeIncluded(args):
   return args.IsSpecified('size')
 
 
+@base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Update(base.UpdateCommand):
   r"""Update a Compute Engine persistent disk."""
@@ -160,7 +162,7 @@ class Update(base.UpdateCommand):
         args,
         support_user_licenses=False)
 
-  def _Run(self, args, support_user_licenses=False, support_access_mode=False):
+  def _Run(self, args, support_user_licenses=False):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     client = holder.client.apitools_client
     messages = holder.client.messages
@@ -177,9 +179,7 @@ class Update(base.UpdateCommand):
         or _ArchitectureFlagsIncluded(args)
         or _SizeIncluded(args)
         or (support_user_licenses and _UserLicensesFlagsIncluded(args))
-        or _AccessModeFlagsIncluded(
-            args, support_access_mode=support_access_mode
-        )
+        or _AccessModeFlagsIncluded(args)
     ):
       disk_res = messages.Disk(name=disk_ref.Name())
       disk_update_request = None
@@ -209,9 +209,7 @@ class Update(base.UpdateCommand):
               args.update_architecture)
         disk_update_request.paths.append('architecture')
 
-      if _AccessModeFlagsIncluded(
-          args, support_access_mode=support_access_mode
-      ):
+      if _AccessModeFlagsIncluded(args):
         disk_res.accessMode = disk_res.AccessModeValueValuesEnum(
             args.access_mode
         )
@@ -266,6 +264,7 @@ class Update(base.UpdateCommand):
             disk_ref.Name()))
 
 
+@base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class UpdateBeta(Update):
   r"""Update a Compute Engine persistent disk."""
@@ -288,6 +287,7 @@ class UpdateBeta(Update):
         support_user_licenses=True)
 
 
+@base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class UpdateAlpha(UpdateBeta):
   r"""Update a Compute Engine persistent disk."""
@@ -302,7 +302,6 @@ class UpdateAlpha(UpdateBeta):
         cls,
         parser,
         support_user_licenses=True,
-        support_access_mode=True,
     )
 
   @classmethod
@@ -310,7 +309,7 @@ class UpdateAlpha(UpdateBeta):
     return base_classes.ComputeApiHolder(cls.ReleaseTrack(), no_http)
 
   def Run(self, args):
-    return self._Run(args, support_user_licenses=True, support_access_mode=True)
+    return self._Run(args, support_user_licenses=True)
 
 
 Update.detailed_help = {

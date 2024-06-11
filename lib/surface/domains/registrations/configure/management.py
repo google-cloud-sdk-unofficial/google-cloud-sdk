@@ -26,6 +26,7 @@ from googlecloudsdk.command_lib.domains import util
 from googlecloudsdk.core import log
 
 
+@base.DefaultUniverseOnly
 class ConfigureManagement(base.UpdateCommand):
   """Configure management settings of a Cloud Domains registration.
 

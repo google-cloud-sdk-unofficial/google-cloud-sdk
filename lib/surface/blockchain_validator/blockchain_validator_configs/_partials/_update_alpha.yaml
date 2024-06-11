@@ -17,7 +17,6 @@
 # AUTOGEN_CLI_VERSION: HEAD
 - release_tracks:
   - ALPHA
-  hidden: true
   help_text:
     brief: Update the configuration of a single blockchain validator
     description: |
@@ -30,6 +29,21 @@
         --validation-work-enabled=true
   arguments:
     params:
+    - group:
+        mutex: true
+        help_text: |-
+          Arguments for the blockchain node.
+        params:
+        - arg_name: blockchain-node-id
+          api_field: blockchainValidatorConfig.blockchainNodeId
+          required: false
+          repeated: false
+          help_text: |-
+            The fully qualified name of the blockchain node which carries out work
+            on behalf of the validator. If not set, the validator must either be
+            operated outside of Blockchain Validator Manager, or it will be offline
+            (no attestations or blocks will be produced).
+            If this node is offline or deleted, the validator will be offline.
     - group:
         mutex: true
         help_text: |-
@@ -95,9 +109,10 @@
                 request signing of attestations, blocks, etc.
     - help_text: |-
         Blockchain Validator Config Name
-        Identifier of the blockchainValidatorConfig or fully qualified name for the blockchainValidatorConfig.
+        The name of the Blockchain Validator Config. The fully specified name must have the format
+        projects/{project}/locations/{location}/blockchainValidatorConfigs/{validator}.
       is_positional: true
-      resource_spec: !REF googlecloudsdk.command_lib.blockchain_validator.v1alpha_resources:project_location_blockchain_validator_config
+      resource_spec: !REF googlecloudsdk.command_lib.blockchain_validator.v1_resources:project_location_blockchain_validator_config
       required: true
     - arg_name: labels
       api_field: blockchainValidatorConfig.labels
@@ -109,16 +124,6 @@
       spec:
       - api_field: key
       - api_field: value
-    - arg_name: blockchain-node-id
-      api_field: blockchainValidatorConfig.blockchainNodeId
-      required: false
-      repeated: false
-      help_text: |-
-        The fully qualified name of the blockchain node which carries out work
-        on behalf of the validator. If not set, the validator must either be
-        operated outside of Blockchain Validator Manager, or it will be offline
-        (no attestations or blocks will be produced).
-        If this node is offline or deleted, the validator will be offline.
     - arg_name: validation-work-enabled
       api_field: blockchainValidatorConfig.validationWorkEnabled
       action: store_true
@@ -133,7 +138,7 @@
         when migrating validators to/from Blockchain Node Engine, where the
         validator may be paused during the migration.
   request:
-    api_version: v1alpha
+    api_version: v1
     collection:
     - blockchainvalidatormanager.projects.locations.blockchainValidatorConfigs
   async:

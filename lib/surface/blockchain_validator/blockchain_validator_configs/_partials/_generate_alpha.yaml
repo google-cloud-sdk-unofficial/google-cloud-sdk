@@ -259,8 +259,8 @@
                           Arguments for the  network.
                         params:
                         - arg_name: new-blockchain-node-source-ethereum-details-network
-                          api_field: generateBlockchainValidatorConfigsRequest.blockchainValidatorConfigTemplate.newBlockchainNodeSource.ethereumNodeDetails.network
-                          required: false
+                          api_field: generateBlockchainValidatorConfigsRequest.blockchainValidatorConfigTemplate.newBlockchainNodeSource.ethereumDetails.network
+                          required: true
                           help_text: |-
                             The Ethereum environment being accessed.
                           choices:
@@ -289,7 +289,7 @@
                           Arguments for the  execution client.
                         params:
                         - arg_name: new-blockchain-node-source-ethereum-details-execution-client
-                          api_field: generateBlockchainValidatorConfigsRequest.blockchainValidatorConfigTemplate.newBlockchainNodeSource.ethereumNodeDetails.executionClient
+                          api_field: generateBlockchainValidatorConfigsRequest.blockchainValidatorConfigTemplate.newBlockchainNodeSource.ethereumDetails.executionClient
                           required: true
                           help_text: |-
                             The execution client
@@ -305,7 +305,7 @@
                           Arguments for the  consensus client.
                         params:
                         - arg_name: new-blockchain-node-source-ethereum-details-consensus-client
-                          api_field: generateBlockchainValidatorConfigsRequest.blockchainValidatorConfigTemplate.newBlockchainNodeSource.ethereumNodeDetails.consensusClient
+                          api_field: generateBlockchainValidatorConfigsRequest.blockchainValidatorConfigTemplate.newBlockchainNodeSource.ethereumDetails.consensusClient
                           required: true
                           help_text: |-
                             The consensus client.
@@ -317,7 +317,7 @@
                               Prime. See [Lighthouse - Sigma
                               Prime](https://lighthouse.sigmaprime.io/) for details.
                     - arg_name: new-blockchain-node-source-ethereum-details-mev-relay-urls
-                      api_field: generateBlockchainValidatorConfigsRequest.blockchainValidatorConfigTemplate.newBlockchainNodeSource.ethereumNodeDetails.mevRelayUrls
+                      api_field: generateBlockchainValidatorConfigsRequest.blockchainValidatorConfigTemplate.newBlockchainNodeSource.ethereumDetails.mevRelayUrls
                       required: false
                       repeated: true
                       help_text: |-
@@ -349,7 +349,7 @@
         specified above is carrying out validation tasks.
     - arg_name: blockchain-validator-config-template-type
       api_field: generateBlockchainValidatorConfigsRequest.blockchainValidatorConfigTemplate.blockchainType
-      required: false
+      required: true
       help_text: |-
         The blockchain type of the validator.
       choices:
@@ -359,7 +359,7 @@
           The blockchain type is Ethereum.
     - arg_name: blockchain-validator-config-template-key-source
       api_field: generateBlockchainValidatorConfigsRequest.blockchainValidatorConfigTemplate.keySource
-      required: false
+      required: true
       help_text: |-
         The source of the voting key for the blockchain validator.
       choices:
@@ -378,7 +378,7 @@
           Derive voting keys from existing seed material.
     - arg_name: blockchain-validator-config-template-node-source
       api_field: generateBlockchainValidatorConfigsRequest.blockchainValidatorConfigTemplate.blockchainNodeSource
-      required: false
+      required: true
       help_text: |-
         The source of the blockchain node for the validator configurations to be
         deployed to.

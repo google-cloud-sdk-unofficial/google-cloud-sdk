@@ -19,14 +19,17 @@ from __future__ import division
 from __future__ import unicode_literals
 
 import textwrap
+
 from googlecloudsdk.api_lib.spanner import databases
 from googlecloudsdk.api_lib.util import apis
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.spanner import resource_args
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-@base.Hidden
+@base.DefaultUniverseOnly
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
+)
 class ChangeQuorum(base.Command):
   """Change quorum of a Cloud Spanner database."""
 

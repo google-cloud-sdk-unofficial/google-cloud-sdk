@@ -66,6 +66,11 @@ class Compute(base.Command):
     compute_flags.AddNetworkInterfaceArg(parser, False)
     compute_flags.AddServiceAccountArg(parser, False)
     compute_flags.AddScopesArg(parser, False)
+    compute_flags.AddCreateDiskArg(parser, False)
+    compute_flags.AddDescriptionArg(parser, False)
+    compute_flags.AddMetadataArg(parser, False)
+    compute_flags.AddLabelsArg(parser, False)
+    compute_flags.AddTagsArg(parser, False)
 
   def Run(self, args):
     """Constructs and sends request.
@@ -92,6 +97,16 @@ class Compute(base.Command):
     if args.scopes:
       restore_config['Scopes'] = args.scopes
     restore_config['NoScopes'] = args.no_scopes if args.no_scopes else False
+    if args.create_disk:
+      restore_config['CreateDisks'] = args.create_disk
+    if args.description:
+      restore_config['Description'] = args.description
+    if args.metadata:
+      restore_config['Metadata'] = args.metadata
+    if args.labels:
+      restore_config['Labels'] = args.labels
+    if args.tags:
+      restore_config['Tags'] = args.tags
 
     try:
       operation = client.RestoreCompute(backup, restore_config)

@@ -22,7 +22,6 @@ import datetime
 
 from googlecloudsdk.api_lib.functions.v1 import util as util_v1
 from googlecloudsdk.api_lib.functions.v2 import client as client_v2
-from googlecloudsdk.api_lib.functions.v2 import exceptions
 from googlecloudsdk.api_lib.logging import common as logging_common
 from googlecloudsdk.api_lib.logging import util as logging_util
 from googlecloudsdk.calliope import arg_parsers
@@ -36,11 +35,6 @@ from googlecloudsdk.core import resources
 import six
 
 _DEFAULT_TABLE_FORMAT = 'table(level,name,execution_id,time_utc,log)'
-_DEFAULT_TABLE_FORMAT_V2 = 'table(level,name,time_utc,log)'
-
-_EXECUTION_ID_NOT_SUPPORTED = (
-    '`execution_id` is not supported in Cloud Functions v2.'
-)
 
 
 def _GetFunctionRef(name):
@@ -119,8 +113,6 @@ def _CreateLogFilter(args):
 
   # Append common filters
   if args.execution_id:
-    # This is currently only supported for gen1 but is applied "commonly" so
-    # that Cloud Run logs filter out.
     log_filter.append('labels.execution_id="{}"'.format(args.execution_id))
   if args.min_log_level:
     log_filter.append('severity>={}'.format(args.min_log_level.upper()))
@@ -181,6 +173,7 @@ def _YieldLogEntries(entries):
     yield row
 
 
+@base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class GetLogs(base.ListCommand):
   """Display log entries produced by Google Cloud Functions."""
@@ -258,14 +251,7 @@ class GetLogs(base.ListCommand):
       A generator of objects representing log entries.
     """
     if not args.IsSpecified('format'):
-      args.format = (
-          _DEFAULT_TABLE_FORMAT_V2
-          if flags.ShouldUseGen2()
-          else _DEFAULT_TABLE_FORMAT
-      )
-
-    if flags.ShouldUseGen2() and args.execution_id:
-      raise exceptions.FunctionsError(_EXECUTION_ID_NOT_SUPPORTED)
+      args.format = _DEFAULT_TABLE_FORMAT
 
     log_filter = _CreateLogFilter(args)
     entries = list(

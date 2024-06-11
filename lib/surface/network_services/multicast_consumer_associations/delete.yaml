@@ -1,0 +1,17 @@
+release_tracks: [ALPHA]
+help_text:
+  brief: |
+    Delete a multicast consumer association.
+  description: |
+    Delete a multicast consumer association in the specified location of the current project.
+  examples: |
+    To delete a multicast consumer association in the current project, run:
+
+      $ {command} my-multicast-consumer-association --location=zone
+arguments:
+  resource:
+    spec: !REF googlecloudsdk.command_lib.network_services.resources:multicastConsumerAssociation
+    help_text: The multicast consumer association to delete.
+request: &request
+  api_version: v1alpha1
+  collection: networkservices.projects.locations.multicastConsumerAssociations

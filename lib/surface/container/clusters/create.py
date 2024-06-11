@@ -486,6 +486,12 @@ def ParseCreateOptionsBase(args, is_autopilot, get_default, location,
       enable_ray_cluster_monitoring=get_default(
           'enable_ray_cluster_monitoring'
       ),
+      enable_insecure_binding_system_authenticated=get_default(
+          'enable_insecure_binding_system_authenticated'
+      ),
+      enable_insecure_binding_system_unauthenticated=get_default(
+          'enable_insecure_binding_system_unauthenticated'
+      ),
   )
 
 
@@ -695,6 +701,8 @@ flags_to_add = {
         ),
         'enableRayClusterLogging': flags.AddEnableRayClusterLogging,
         'enableRayClusterMonitoring': flags.AddEnableRayClusterMonitoring,
+        'insecureRBACBinding': lambda p: flags.AddInsecureRBACBindingFlags(
+            p, hidden=True),
     },
     BETA: {
         'accelerator': lambda p: AddAcceleratorFlag(p, True, True, True, True),
@@ -865,6 +873,8 @@ flags_to_add = {
         ),
         'enableRayClusterLogging': flags.AddEnableRayClusterLogging,
         'enableRayClusterMonitoring': flags.AddEnableRayClusterMonitoring,
+        'insecureRBACBinding': lambda p: flags.AddInsecureRBACBindingFlags(
+            p, hidden=True),
     },
     ALPHA: {
         'accelerator': lambda p: AddAcceleratorFlag(p, True, True, True, True),
@@ -1044,6 +1054,8 @@ flags_to_add = {
         ),
         'enableRayClusterLogging': flags.AddEnableRayClusterLogging,
         'enableRayClusterMonitoring': flags.AddEnableRayClusterMonitoring,
+        'insecureRBACBinding': lambda p: flags.AddInsecureRBACBindingFlags(
+            p, hidden=True),
     },
 }
 
@@ -1315,6 +1327,12 @@ class CreateBeta(Create):
     ops.enable_ray_cluster_monitoring = get_default(
         'enable_ray_cluster_monitoring'
     )
+    ops.enable_insecure_binding_system_authenticated = get_default(
+        'enable_insecure_binding_system_authenticated'
+    )
+    ops.enable_insecure_binding_system_unauthenticated = get_default(
+        'enable_insecure_binding_system_unauthenticated'
+    )
     return ops
 
 
@@ -1438,5 +1456,11 @@ class CreateAlpha(Create):
     ops.enable_ray_cluster_logging = get_default('enable_ray_cluster_logging')
     ops.enable_ray_cluster_monitoring = get_default(
         'enable_ray_cluster_monitoring'
+    )
+    ops.enable_insecure_binding_system_authenticated = get_default(
+        'enable_insecure_binding_system_authenticated'
+    )
+    ops.enable_insecure_binding_system_unauthenticated = get_default(
+        'enable_insecure_binding_system_unauthenticated'
     )
     return ops

@@ -20,7 +20,6 @@
 from googlecloudsdk.calliope import base
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class BlockchainValidatorConfigsALPHA(base.Group):
   """Manage blockchain validator configurations."""

@@ -29,7 +29,6 @@ _DETAILED_HELP = {
 }
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 @base.DefaultUniverseOnly
 class Abort(base.Command):

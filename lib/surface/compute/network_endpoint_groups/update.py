@@ -36,6 +36,7 @@ To remove two endpoints from a network endpoint group:
 """}
 
 
+@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Update(base.UpdateCommand):
   """Update a Compute Engine network endpoint group."""
@@ -83,6 +84,8 @@ class Update(base.UpdateCommand):
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class BetaUpdate(Update):
   """Update a Compute Engine network endpoint group."""
+
+  support_port_mapping_neg = True
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)

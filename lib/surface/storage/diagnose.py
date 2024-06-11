@@ -18,22 +18,8 @@
 import enum
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
-
-
-class DownloadType(enum.Enum):
-  """Enum class for specifying download type for diagnostic tests."""
-
-  STREAMING = 'STREAMING'
-  SLICED = 'SLICED'
-  FILE = 'FILE'
-
-
-class UploadType(enum.Enum):
-  """Enum class for specifying upload type for diagnostic tests."""
-
-  PARALLEL_COMPOSITE = 'PARALLEL_COMPOSITE'
-  STREAMING = 'STREAMING'
-  FILE = 'FILE'
+from googlecloudsdk.command_lib.storage.diagnose import download_throughput_diagnostic
+from googlecloudsdk.command_lib.storage.diagnose import upload_throughput_diagnostic
 
 
 class PerformanceTestType(enum.Enum):
@@ -46,6 +32,7 @@ class PerformanceTestType(enum.Enum):
 
 @base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.DefaultUniverseOnly
 class Diagnose(base.Command):
   """Diagnose Google Cloud Storage."""
 
@@ -131,7 +118,10 @@ class Diagnose(base.Command):
     )
     parser.add_argument(
         '--download-type',
-        choices=sorted([option.value for option in DownloadType]),
+        choices=sorted([
+            option.value
+            for option in download_throughput_diagnostic.DownloadType
+        ]),
         help="""
         Download strategy to use for the DOWNLOAD_THROUGHPUT diagnostic test.
 
@@ -150,7 +140,9 @@ class Diagnose(base.Command):
     )
     parser.add_argument(
         '--upload-type',
-        choices=sorted([option.value for option in UploadType]),
+        choices=sorted(
+            [option.value for option in upload_throughput_diagnostic.UploadType]
+        ),
         help="""
         Upload strategy to use for the _UPLOAD_THROUGHPUT_ diagnostic test.
 

@@ -1,0 +1,34 @@
+release_tracks: [ALPHA]
+help_text:
+  brief: |
+    Create a multicast domain activation.
+  description: |
+    Create a multicast domain activation in the specified location of the current project.
+  examples: |
+    Create a multicast domain activation with the name 'my-multicast-domain-activation',
+    multicast-domain 'path-to-md',
+    and location 'zone'.
+
+      $ {command} my-multicast-group-definition --multicast-domain=path-to-md --location=zone
+arguments:
+  resource:
+    spec: !REF googlecloudsdk.command_lib.network_services.resources:multicastDomainActivation
+    help_text: |
+      Name of the multicast group definition to be created.
+  params:
+  - arg_name:  multicast-domain
+    api_field: multicastDomainActivation.multicastDomain
+    help_text: The multicast domain to be used.
+    required: true
+  - arg_name: description
+    api_field: multicastDomainActivation.description
+    help_text: The description for the multicast domain activation.
+  labels:
+    api_field: multicastDomainActivation.labels
+async:
+  collection: networkservices.projects.locations.operations
+request: &request
+  ALPHA:
+    api_version: v1alpha1
+  collection: networkservices.projects.locations.multicastDomainActivations
+  method: create

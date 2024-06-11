@@ -20,6 +20,7 @@
     - googlecloudsdk.command_lib.edge_cloud.container.maintenance_policy:AddMaintenanceExclusionWindow
     - googlecloudsdk.command_lib.edge_cloud.container.maintenance_policy:RemoveMaintenanceExclusionWindow
     - googlecloudsdk.command_lib.edge_cloud.container.maintenance_policy:ClearMaintenanceWindow
+    - googlecloudsdk.command_lib.edge_cloud.container.max_unavailable:ClearMaxUnavailable
 
   arguments:
     resource:
@@ -100,6 +101,22 @@
         string, for example, "1dT1h2m3s".
       release_tracks: [ALPHA]
       hidden: true
+    - group:
+        release_tracks: [ALPHA]
+        mutex: true
+        hidden: true
+        params:
+        - arg_name: clear-max-unavailable-worker-nodes
+          action: store_true
+          help_text: |
+            Clear the worker node upgrade parallelism, which will default to the upgrade stage size.
+        - arg_name: max-unavailable-worker-nodes
+          api_field: cluster.upgradeSettings.maxUnavailableWorkerNodes
+          help_text: |
+            Set the worker node upgrade parallelism. The value must be between 1 and the worker node
+            upgrade stage size, inclusively. If unset, the worker node upgrade parallelism defaults
+            to the upgrade stage size. This value does not affect the control plane node upgrade
+            parallelism.
 
   response:
     modify_response_hooks:

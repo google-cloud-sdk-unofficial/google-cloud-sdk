@@ -25,6 +25,7 @@ from googlecloudsdk.command_lib.domains import util
 from googlecloudsdk.core import log
 
 
+@base.DefaultUniverseOnly
 class GetRegisterParameters(base.DescribeCommand):
   """Get register parameters (including availability) of a specific domain.
 

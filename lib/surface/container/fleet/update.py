@@ -32,6 +32,7 @@ from googlecloudsdk.core import log
 from googlecloudsdk.generated_clients.apis.gkehub.v1alpha import gkehub_v1alpha_messages as messages
 
 
+@base.DefaultUniverseOnly
 class Update(base.UpdateCommand):
   """Update a fleet.
 
@@ -83,6 +84,7 @@ class Update(base.UpdateCommand):
       long-running operation to be polled manually.
     """
     flag_parser = fleet_flags.FleetFlagParser(
+        # TODO(b/343764482) Fleet is GA, release track should not be hardcoded.
         args, release_track=base.ReleaseTrack.ALPHA
     )
 
@@ -91,6 +93,7 @@ class Update(base.UpdateCommand):
         args.format = fleet_util.OPERATION_FORMAT
       else:
         args.format = fleet_util.FLEET_FORMAT
+    # TODO(b/343764482) Fleet is GA, release track should not be hardcoded.
     fleetclient = client.FleetClient(release_track=base.ReleaseTrack.ALPHA)
 
     # update GCP labels for namespace resource

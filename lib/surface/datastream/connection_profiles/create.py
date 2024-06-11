@@ -63,6 +63,7 @@ EXAMPLES_BETA = """\
    """
 
 
+@base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Create(base.Command):
   """Create a Datastream connection profile."""
@@ -90,6 +91,7 @@ class Create(base.Command):
     cp_flags.AddMysqlProfileGroup(profile_flags)
     cp_flags.AddOracleProfileGroup(profile_flags)
     cp_flags.AddPostgresqlProfileGroup(profile_flags)
+    cp_flags.AddSqlServerProfileGroup(profile_flags)
     cp_flags.AddGcsProfileGroup(profile_flags, release_track)
     flags.AddLabelsCreateFlags(parser)
 
@@ -122,6 +124,11 @@ class Create(base.Command):
     if args.postgresql_prompt_for_password:
       args.postgresql_password = console_io.PromptPassword(
           'Please Enter Password: ')
+
+    if args.sqlserver_prompt_for_password:
+      args.sqlserver_password = console_io.PromptPassword(
+          'Please Enter Password: '
+      )
 
     cp_type = (args.type).upper()
     cp_client = connection_profiles.ConnectionProfilesClient()

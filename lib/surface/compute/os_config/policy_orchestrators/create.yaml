@@ -12,11 +12,17 @@
         $ {command} my-orchestrator --folder=123456 --policy-type OS_POLICY_ASSIGNMENT_V1 \
             --file=/path/to/file/config.yaml
 
+      To create an policy orchestrator `my-orchestrator` in folder `123456` that deletes OS Policy
+      assignments with id `my-policy`, run:
+
+        $ {command} my-orchestrator --folder=123456 --policy-type OS_POLICY_ASSIGNMENT_V1 \
+            --action delete --policy-id my-policy
+
   request:
     collection: osconfig.folders.locations.global.policyOrchestrators
     method: create
     modify_request_hooks:
-    - googlecloudsdk.command_lib.compute.os_config.utils:ModifyOrchestrorPolicyRequest
+    - googlecloudsdk.command_lib.compute.os_config.utils:ModifyOrchestrorPolicyCreateRequest
     ALPHA:
       api_version: v2alpha
 
@@ -30,6 +36,16 @@
       help_text: Policy orchestrator to create.
       spec: !REF googlecloudsdk.command_lib.compute.os_config.resources:policy_orchestrator
     params:
+    - arg_name: action
+      help_text: Action to be taken on policy.
+      default: upsert
+      choices:
+      - arg_value: UPSERT
+        help_text: Create or update a policy. `policy-file` must be specified.
+      - arg_value: DELETE
+        help_text: Delete a policy with a given name. `policy-id` must be specified.
+    - arg_name: policy-id
+      help_text: Policy id. Must be specified for `DELETE` action.
     - arg_name: policy-type
       help_text: Policy type to use.
       required: true

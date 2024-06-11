@@ -24,6 +24,7 @@ from googlecloudsdk.command_lib.domains import resource_args
 from googlecloudsdk.command_lib.domains import util
 
 
+@base.DefaultUniverseOnly
 class ResetAuthorizationCode(base.DescribeCommand):
   """Resets authorization code of a specific Cloud Domains registration.
 

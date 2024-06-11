@@ -28,6 +28,7 @@ from googlecloudsdk.core import exceptions
 from googlecloudsdk.core import log
 
 
+@base.DefaultUniverseOnly
 class Update(base.UpdateCommand):
   """Update a Cloud Domains registration.
 

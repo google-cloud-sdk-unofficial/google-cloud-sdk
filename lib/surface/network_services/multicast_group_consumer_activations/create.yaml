@@ -1,0 +1,39 @@
+release_tracks: [ALPHA]
+help_text:
+  brief: |
+    Create a multicast group consumer activation.
+  description: |
+    Create a multicast group consumer activation in the specified location of the current project.
+  examples: |
+    Create a multicast group consumer activation with the name 'my-multicast-group-consumer-activation',
+    multicast-consumer-association 'path-to-mca',
+    multicast-group 'path-to-mg',
+    and location 'zone'.
+
+      $ {command} my-multicast-group-consumer-activation --multicast-consumer-association=path-to-mca --multicast-group=path-to-mg --location=zone
+arguments:
+  resource:
+    spec: !REF googlecloudsdk.command_lib.network_services.resources:multicastGroupConsumerActivation
+    help_text: |
+      Name of the multicast group consumer activation to be created.
+  params:
+  - arg_name:  multicast-consumer-association
+    api_field: multicastGroupConsumerActivation.multicastConsumerAssociation
+    help_text: The multicast consumer association to be used.
+    required: true
+  - arg_name:  multicast-group
+    api_field: multicastGroupConsumerActivation.multicastGroup
+    help_text: The multicast group to be used.
+    required: true
+  - arg_name: description
+    api_field: multicastGroupConsumerActivation.description
+    help_text: The description for the multicast group consumer activation.
+  labels:
+    api_field: multicastGroupConsumerActivation.labels
+async:
+  collection: networkservices.projects.locations.operations
+request: &request
+  ALPHA:
+    api_version: v1alpha1
+  collection: networkservices.projects.locations.multicastGroupConsumerActivations
+  method: create

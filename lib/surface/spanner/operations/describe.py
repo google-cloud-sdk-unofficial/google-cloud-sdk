@@ -49,7 +49,8 @@ DETAILED_HELP = {
 }
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
+@base.DefaultUniverseOnly
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Describe(base.DescribeCommand):
   """Describe a Cloud Spanner operation."""
 
@@ -109,9 +110,10 @@ class Describe(base.DescribeCommand):
     return instance_operations.Get(args.instance, args.operation)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class AlphaDescribe(Describe):
-  """Describe a Cloud Spanner operation with ALPHA features."""
+@base.DefaultUniverseOnly
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class BetaDescribe(Describe):
+  """Describe a Cloud Spanner operation."""
 
   detailed_help = {
       'EXAMPLES': DETAILED_HELP['EXAMPLES'] + textwrap.dedent("""\
@@ -132,15 +134,7 @@ class AlphaDescribe(Describe):
       parser: An argparse parser that you can use to add arguments that go on
         the command line after this command. Positional arguments are allowed.
     """
-    super(AlphaDescribe, AlphaDescribe).Args(parser)
-
-    flags.SsdCache(
-        positional=False,
-        required=False,
-        hidden=True,
-        text='The ID of the SSD Cache the operation is executing on.',
-    ).AddToParser(parser)
-
+    super(BetaDescribe, BetaDescribe).Args(parser)
     flags.InstancePartition(
         positional=False,
         required=False,
@@ -161,6 +155,49 @@ class AlphaDescribe(Describe):
     Returns:
       Some value that we want to have printed later.
     """
+    flags.CheckExclusiveLROFlagsUnderInstance(args)
+    if args.instance_partition:
+      return instance_partition_operations.Get(
+          args.instance, args.instance_partition, args.operation
+      )
+
+    return super().Run(args)
+
+
+@base.DefaultUniverseOnly
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class AlphaDescribe(BetaDescribe):
+  """Describe a Cloud Spanner operation."""
+
+  @staticmethod
+  def Args(parser):
+    """Args is called by calliope to gather arguments for this command.
+
+    Please add arguments in alphabetical order except for no- or a clear-
+    pair for that argument which can follow the argument itself.
+    Args:
+      parser: An argparse parser that you can use to add arguments that go on
+        the command line after this command. Positional arguments are allowed.
+    """
+    super(AlphaDescribe, AlphaDescribe).Args(parser)
+
+    flags.SsdCache(
+        positional=False,
+        required=False,
+        hidden=True,
+        text='The ID of the SSD Cache the operation is executing on.',
+    ).AddToParser(parser)
+
+  def Run(self, args):
+    """This is what gets called when the user runs this command.
+
+    Args:
+      args: an argparse namespace. All the arguments that were provided to this
+        command invocation.
+
+    Returns:
+      Some value that we want to have printed later.
+    """
     if args.ssd_cache:
       if args.instance:
         raise c_exceptions.InvalidArgumentException(
@@ -169,12 +206,6 @@ class AlphaDescribe(Describe):
         )
       return ssd_cache_operations.Get(
           args.operation, args.ssd_cache, args.instance_config
-      )
-
-    flags.CheckExclusiveLROFlagsUnderInstance(args)
-    if args.instance_partition:
-      return instance_partition_operations.Get(
-          args.instance, args.instance_partition, args.operation
       )
 
     return super().Run(args)

@@ -17,7 +17,6 @@
 from googlecloudsdk.calliope import base
 
 
-@base.Hidden
 @base.DefaultUniverseOnly
 class ResourceBundles(base.Group):
   """Commands for managing Package Rollouts Resource Bundles.

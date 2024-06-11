@@ -24,6 +24,7 @@ from googlecloudsdk.command_lib.domains import resource_args
 from googlecloudsdk.command_lib.domains import util
 
 
+@base.DefaultUniverseOnly
 class GetAuthorizationCode(base.DescribeCommand):
   """Get authorization code of a specific Cloud Domains registration.
 

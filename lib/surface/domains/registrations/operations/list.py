@@ -35,6 +35,7 @@ table(
 """
 
 
+@base.DefaultUniverseOnly
 class List(base.ListCommand):
   """List Cloud Domains operations.
 

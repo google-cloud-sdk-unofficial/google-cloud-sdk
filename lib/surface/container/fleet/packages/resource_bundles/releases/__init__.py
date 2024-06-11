@@ -17,7 +17,6 @@
 from googlecloudsdk.calliope import base
 
 
-@base.Hidden
 @base.DefaultUniverseOnly
 class Releases(base.Group):
   """Commands for managing Package Rollouts Releases.

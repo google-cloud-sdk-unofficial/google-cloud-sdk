@@ -24,6 +24,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.domains import resource_args
 
 
+@base.DefaultUniverseOnly
 class Describe(base.DescribeCommand):
   """Show details about a Cloud Domains operation.
 

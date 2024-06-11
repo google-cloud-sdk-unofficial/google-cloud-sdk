@@ -125,6 +125,8 @@ class ListBeta(_List, base.ListCommand):
       return "Oracle"
     elif profile.gcsProfile:
       return "Google Cloud Storage"
+    elif profile.sqlServerProfile:
+      return "SQL Server"
     else:
       return None
 

@@ -42,6 +42,10 @@ EXPECTED_P4SA_ROLES = frozenset([
     'roles/storage.admin',
     'roles/storagetransfer.serviceAgent',
 ])
+EXPECTED_GCS_SA_ROLES = frozenset(['roles/pubsub.publisher'])
+SERVICE_ACCOUNT_URL_FORMAT = (
+    'serviceAccount:service-{}@gs-project-accounts.iam.gserviceaccount.com'
+)
 
 
 def _get_iam_prefixed_email(email_string, is_service_account):
@@ -50,8 +54,14 @@ def _get_iam_prefixed_email(email_string, is_service_account):
   return '{}:{}'.format(iam_prefix, email_string)
 
 
-def _get_existing_transfer_roles_for_account(project_iam_policy,
-                                             prefixed_account_email, roles_set):
+def _get_iam_prefiexed_gcs_sa_email(project_number):
+  """Returns a GCS SA email."""
+  return SERVICE_ACCOUNT_URL_FORMAT.format(project_number)
+
+
+def _get_existing_transfer_roles_for_account(
+    project_iam_policy, prefixed_account_email, roles_set
+):
   """Returns roles in IAM policy from roles_set assigned to account email."""
   roles = set()
   # iam_policy.bindings structure:
@@ -65,6 +75,7 @@ def _get_existing_transfer_roles_for_account(project_iam_policy,
   return roles
 
 
+@base.DefaultUniverseOnly
 class Authorize(base.Command):
   """Authorize an account for all Transfer Service features."""
 
@@ -168,6 +179,23 @@ class Authorize(base.Command):
     all_missing_role_tuples += [
         (prefixed_transfer_p4sa_email, role) for role in missing_p4sa_roles
     ]
+
+    if self.ReleaseTrack() is base.ReleaseTrack.ALPHA:
+      project_number = projects_util.GetProjectNumber(project_id)
+      prefixed_gcs_sa_email = _get_iam_prefiexed_gcs_sa_email(project_number)
+      existing_gcs_sa_roles = _get_existing_transfer_roles_for_account(
+          project_iam_policy, prefixed_gcs_sa_email, EXPECTED_GCS_SA_ROLES)
+      log.status.Print('***')
+      log.status.Print(
+          'Google-managed service account {} has roles:\n{}'.format(
+              prefixed_gcs_sa_email, list(existing_gcs_sa_roles)
+          )
+      )
+      missing_gcs_sa_roles = EXPECTED_GCS_SA_ROLES - existing_gcs_sa_roles
+      log.status.Print('Missing roles:\n{}'.format(list(missing_gcs_sa_roles)))
+      all_missing_role_tuples += [
+          (prefixed_gcs_sa_email, role) for role in missing_gcs_sa_roles
+      ]
 
     if args.add_missing or all_missing_role_tuples:
       log.status.Print('***')

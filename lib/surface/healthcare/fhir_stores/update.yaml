@@ -41,3 +41,16 @@
 
         Note, a topic needs to be created before publishing or subscribing to it. For instructions
         on creating topics, refer to: https://cloud.google.com/pubsub/docs/admin#create_a_topic
+    - arg_name: enable-history-modifications
+      release_tracks: [ALPHA, BETA]
+      api_field: fhirStore.enableHistoryModifications
+      action: store_true
+      default: false
+      help_text: |
+        Whether this FHIR store has history modifications enabled.
+        Enabling history modifications is required to use FHIR history bundles
+        with the
+        [executeBundle](https://cloud.google.com/healthcare-api/docs/reference/rest/v1beta1/projects.locations.datasets.fhirStores.fhir/executeBundle)
+        and
+        [importHistory](https://cloud.google.com/healthcare-api/docs/reference/rest/v1beta1/projects.locations.datasets.fhirStores/importHistory)
+        APIs.

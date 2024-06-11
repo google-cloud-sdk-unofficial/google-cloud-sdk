@@ -63,50 +63,55 @@ class GetCredentials(gateway.GetCredentialsCommand):
         """),
         location_help=textwrap.dedent("""\
           The location of the membership resource, e.g. `us-central1`.
-          If not specified, defaults to `global`.
+          If not specified, attempts to automatically choose the correct region.
         """),
         membership_required=True,
         positional=True,
     )
 
-    if cls.ReleaseTrack() is base.ReleaseTrack.ALPHA:
-      group = parser.add_group(
-          required=False, hidden=True, help='Server-side generation options.'
-      )
-      group.add_argument(
-          '--use-server-side-generation',
-          action='store_true',
-          required=True,
-          help=textwrap.dedent("""\
-            Generate the kubeconfig using an API call rather than generating
-            it locally.
-          """),
-      )
+    group = parser.add_group(
+        required=False, hidden=True, help='Server-side generation options.'
+    )
+    group.add_argument(
+        '--use-server-side-generation',
+        action='store_true',
+        required=True,
+        help=textwrap.dedent("""\
+          Generate the kubeconfig using an API call rather than generating
+          it locally.
+        """),
+    )
 
-      group.add_argument(
-          '--force-use-agent',
-          action='store_true',
-          required=False,
-          hidden=True,
-          help=textwrap.dedent("""\
-            Force the use of Connect Agent-based transport.
-          """),
-      )
+    group.add_argument(
+        '--force-use-agent',
+        action='store_true',
+        required=False,
+        hidden=True,
+        help=textwrap.dedent("""\
+          Force the use of Connect Agent-based transport.
+        """),
+    )
 
   def Run(self, args):
     membership_name = resources.ParseMembershipArg(args)
     location = fleet_util.MembershipLocation(membership_name)
     membership_id = fleet_util.MembershipShortname(membership_name)
 
-    if (
-        hasattr(args, 'use_server_side_generation')
-        and args.use_server_side_generation
-    ):
-      force_use_agent = (
-          False
-          if not hasattr(args, 'force_use_agent')
-          else args.force_use_agent
-      )
-      self.RunServerSide(membership_id, location, force_use_agent)
+    if args.use_server_side_generation:
+      # Don't fall back for explicit requests to use server-side generation.
+      try:
+        self.RunServerSide(membership_id, location, args.force_use_agent)
+      except Exception as e:  # pylint: disable=broad-exception-caught
+        gateway.RecordServerSideFailure(e)
+        # Re-raise the exception so it's visible to the user.
+        raise
+    elif self.ReleaseTrack() is base.ReleaseTrack.ALPHA:
+      # Use server-side generation by default for ALPHA track, and fall back to
+      # client-side if needed.
+      try:
+        self.RunServerSide(membership_id, location, args.force_use_agent)
+      except Exception as e:  # pylint: disable=broad-exception-caught
+        gateway.RecordClientSideFallback(e)
+        self.RunGetCredentials(membership_id, location)
     else:
       self.RunGetCredentials(membership_id, location)

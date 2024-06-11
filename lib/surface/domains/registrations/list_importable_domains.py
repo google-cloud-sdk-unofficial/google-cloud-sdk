@@ -39,6 +39,7 @@ table(
         ' https://cloud.google.com/domains/docs/deprecations/feature-deprecations.'
     ),
 )
+@base.DefaultUniverseOnly
 class ListImportableDomains(base.ListCommand):
   # pylint: disable=line-too-long
   """List Google Domains registrations importable into Cloud Domains.

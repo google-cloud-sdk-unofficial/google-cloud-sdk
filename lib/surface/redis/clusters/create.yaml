@@ -110,7 +110,6 @@
           - api_field: value
     - arg_name: zone-distribution-mode
       api_field: cluster.zoneDistributionConfig.mode
-      release_tracks: [ALPHA, BETA]
       help_text: |
         Determines how the cluster nodes are distributed across zones.
       choices:
@@ -124,7 +123,6 @@
           Allocate cluster nodes in a single zone.
     - arg_name: zone
       api_field: cluster.zoneDistributionConfig.zone
-      release_tracks: [ALPHA, BETA]
       help_text: |
         The zone used to allocate the cluster nodes. Applicable only if the zone-distribution-mode
         is set to single-zone.

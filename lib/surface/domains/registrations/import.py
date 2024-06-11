@@ -38,6 +38,7 @@ from googlecloudsdk.core.console import console_io
         ' https://cloud.google.com/domains/docs/deprecations/feature-deprecations.'
     ),
 )
+@base.DefaultUniverseOnly
 class Import(base.CreateCommand):
   # pylint: disable=line-too-long
   """Import a domain from Google Domains registrar to Cloud Domains.

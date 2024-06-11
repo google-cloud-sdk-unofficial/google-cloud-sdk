@@ -28,6 +28,7 @@ from googlecloudsdk.command_lib.workstations import flags as workstations_flags
 @base.ReleaseTracks(
     base.ReleaseTrack.GA, base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA
 )
+@base.DefaultUniverseOnly
 class Start(base.Command):
   """SSH into a running workstation.
 
@@ -68,6 +69,11 @@ class Start(base.Command):
     args.workstation_port = args.port
 
     client = workstations.Workstations(self.ReleaseTrack())
+
+    # Validate args in the main thread to reduce the chances of raising an
+    # exception within the tunnel thread. Otherwise, the exception won't bubble
+    # up correctly and can hang the process or generate unexpected output.
+    args.CONCEPTS.workstation.Parse()
 
     client.threading_event.clear()
     client.tcp_tunnel_open = False

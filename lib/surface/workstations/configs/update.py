@@ -23,6 +23,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.workstations import flags as workstations_flags
 
 
+@base.DefaultUniverseOnly
 @base.ReleaseTracks(
     base.ReleaseTrack.GA, base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA
 )
@@ -77,6 +78,7 @@ class Update(base.UpdateCommand):
     workstations_flags.AddAcceleratorFields(parser)
     if (cls.ReleaseTrack() != base.ReleaseTrack.GA):
       workstations_flags.AddBoostConfigs(parser)
+      workstations_flags.AddAllowedPortsFlag(parser)
 
   def Collection(self):
     return (

@@ -32,7 +32,6 @@ _DETAILED_HELP = {
 _FORMAT = 'table(name.basename(), lifecycle, createTime)'
 
 
-@base.Hidden
 @base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class List(base.ListCommand):

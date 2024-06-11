@@ -27,6 +27,7 @@ from googlecloudsdk.command_lib.domains import util
 from googlecloudsdk.core import log
 
 
+@base.DefaultUniverseOnly
 class ConfigureContacts(base.UpdateCommand):
   """Configure contact settings of a Cloud Domains registration.
 

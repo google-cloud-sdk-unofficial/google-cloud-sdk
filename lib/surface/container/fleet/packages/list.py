@@ -36,7 +36,6 @@ _FORMAT = """table(name.basename():label=NAME,
                    fleet_package_errors():label=MESSAGES)"""
 
 
-@base.Hidden
 @base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class List(base.ListCommand):

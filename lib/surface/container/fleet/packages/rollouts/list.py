@@ -45,7 +45,6 @@ _FORMAT_TRUNCATED_MESSAGES = """table(name.basename():label=ROLLOUT,
                                       trim_message():label=MESSAGE)"""
 
 
-@base.Hidden
 @base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class List(base.ListCommand):

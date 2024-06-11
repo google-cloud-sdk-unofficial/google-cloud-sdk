@@ -119,6 +119,22 @@ def _Run(args, legacy_output=False):
       args, 'kinesis_ingestion_service_account', None
   )
 
+  cloud_storage_ingestion_bucket = getattr(
+      args, 'cloud_storage_ingestion_bucket', None
+  )
+  cloud_storage_ingestion_input_format = getattr(
+      args, 'cloud_storage_ingestion_input_format', None
+  )
+  cloud_storage_ingestion_text_delimiter = getattr(
+      args, 'cloud_storage_ingestion_text_delimiter', None
+  )
+  cloud_storage_ingestion_minimum_object_create_time = getattr(
+      args, 'cloud_storage_ingestion_minimum_object_create_time', None
+  )
+  cloud_storage_ingestion_match_glob = getattr(
+      args, 'cloud_storage_ingestion_match_glob', None
+  )
+
   failed = []
   for topic_ref in args.CONCEPTS.topic.Parse():
     try:
@@ -137,6 +153,11 @@ def _Run(args, legacy_output=False):
           kinesis_ingestion_consumer_arn=kinesis_ingestion_consumer_arn,
           kinesis_ingestion_role_arn=kinesis_ingestion_role_arn,
           kinesis_ingestion_service_account=kinesis_ingestion_service_account,
+          cloud_storage_ingestion_bucket=cloud_storage_ingestion_bucket,
+          cloud_storage_ingestion_input_format=cloud_storage_ingestion_input_format,
+          cloud_storage_ingestion_text_delimiter=cloud_storage_ingestion_text_delimiter,
+          cloud_storage_ingestion_minimum_object_create_time=cloud_storage_ingestion_minimum_object_create_time,
+          cloud_storage_ingestion_match_glob=cloud_storage_ingestion_match_glob,
       )
     except api_ex.HttpError as error:
       exc = exceptions.HttpException(error)
@@ -157,11 +178,13 @@ def _Run(args, legacy_output=False):
     raise util.RequestsFailedError(failed, 'create')
 
 
-def _Args(parser):
+def _Args(parser, include_ingestion_from_cloud_storage_flags=False):
   """Custom args implementation.
 
   Args:
     parser: The current parser.
+    include_ingestion_from_cloud_storage_flags: Whether to include ingestion
+      from Cloud Storage flags
   """
 
   resource_args.AddResourceArgs(
@@ -169,7 +192,11 @@ def _Args(parser):
   )
   # This group should not be hidden
   flags.AddSchemaSettingsFlags(parser, is_update=False)
-  flags.AddIngestionDatasourceFlags(parser, is_update=False)
+  flags.AddIngestionDatasourceFlags(
+      parser,
+      is_update=False,
+      include_ingestion_from_cloud_storage_flags=include_ingestion_from_cloud_storage_flags,
+  )
 
   labels_util.AddCreateLabelsFlags(parser)
   flags.AddTopicMessageRetentionFlags(parser, is_update=False)
@@ -177,6 +204,7 @@ def _Args(parser):
   flags.AddTopicMessageStoragePolicyFlags(parser, is_update=False)
 
 
+@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Create(base.CreateCommand):
   """Creates one or more Cloud Pub/Sub topics."""
@@ -188,19 +216,20 @@ class Create(base.CreateCommand):
 
   @staticmethod
   def Args(parser):
-    _Args(parser)
+    _Args(parser, include_ingestion_from_cloud_storage_flags=False)
 
   def Run(self, args):
     return _Run(args)
 
 
+@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class CreateBeta(Create):
   """Creates one or more Cloud Pub/Sub topics."""
 
   @staticmethod
   def Args(parser):
-    _Args(parser)
+    _Args(parser, include_ingestion_from_cloud_storage_flags=False)
 
   def Run(self, args):
     legacy_output = properties.VALUES.pubsub.legacy_output.GetBool()
@@ -214,4 +243,4 @@ class CreateAlpha(CreateBeta):
 
   @staticmethod
   def Args(parser):
-    _Args(parser)
+    _Args(parser, include_ingestion_from_cloud_storage_flags=True)

@@ -42,6 +42,7 @@ EXAMPLES = """\
    """
 
 
+@base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Lookup(base.Command):
   """Lookup a Datastream stream object."""
@@ -61,6 +62,7 @@ class Lookup(base.Command):
     so_flags.AddOracleObjectIdentifier(object_identifier_parser)
     so_flags.AddMysqlObjectIdentifier(object_identifier_parser)
     so_flags.AddPostgresqlObjectIdentifier(object_identifier_parser)
+    so_flags.AddSqlServerObjectIdentifier(object_identifier_parser)
 
   def Run(self, args):
     """Lookup a Datastream stream object.

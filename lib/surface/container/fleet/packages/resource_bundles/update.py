@@ -28,7 +28,6 @@ _DETAILED_HELP = {
 }
 
 
-@base.Hidden
 @base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Update(base.UpdateCommand):

@@ -398,6 +398,7 @@ class Update(base.UpdateCommand):
     flags.AddAutoprovisioningEnableKubeletReadonlyPortFlag(group)
     flags.AddEnableRayClusterLogging(group, is_update=True)
     flags.AddEnableRayClusterMonitoring(group, is_update=True)
+    flags.AddInsecureRBACBindingFlags(group, hidden=True)
 
   def ParseUpdateOptions(self, args, locations):
     get_default = lambda key: getattr(args, key)
@@ -504,6 +505,12 @@ class Update(base.UpdateCommand):
     )
     opts.enable_ray_cluster_logging = args.enable_ray_cluster_logging
     opts.enable_ray_cluster_monitoring = args.enable_ray_cluster_monitoring
+    opts.enable_insecure_binding_system_authenticated = (
+        args.enable_insecure_binding_system_authenticated
+    )
+    opts.enable_insecure_binding_system_unauthenticated = (
+        args.enable_insecure_binding_system_unauthenticated
+    )
     return opts
 
   def Run(self, args):
@@ -828,6 +835,20 @@ to completion."""
         )
       except apitools_exceptions.HttpError as error:
         raise exceptions.HttpException(error, util.HTTP_ERROR_FORMAT)
+    elif (
+        getattr(args, 'enable_insecure_binding_system_authenticated', None)
+        is not None or
+        getattr(args, 'enable_insecure_binding_system_unauthenticated', None)
+        is not None
+    ):
+      try:
+        op_ref = adapter.ModifyRBACBindingConfig(
+            cluster_ref,
+            args.enable_insecure_binding_system_authenticated,
+            args.enable_insecure_binding_system_unauthenticated,
+        )
+      except apitools_exceptions.HttpError as error:
+        raise exceptions.HttpException(error, util.HTTP_ERROR_FORMAT)
     else:
       if args.enable_legacy_authorization is not None:
         op_ref = adapter.SetLegacyAuthorization(
@@ -991,6 +1012,7 @@ class UpdateBeta(Update):
     flags.AddAutoprovisioningEnableKubeletReadonlyPortFlag(group)
     flags.AddEnableRayClusterLogging(group, is_update=True)
     flags.AddEnableRayClusterMonitoring(group, is_update=True)
+    flags.AddInsecureRBACBindingFlags(group, hidden=True)
 
   def ParseUpdateOptions(self, args, locations):
     get_default = lambda key: getattr(args, key)
@@ -1156,6 +1178,12 @@ class UpdateBeta(Update):
     )
     opts.enable_ray_cluster_logging = args.enable_ray_cluster_logging
     opts.enable_ray_cluster_monitoring = args.enable_ray_cluster_monitoring
+    opts.enable_insecure_binding_system_authenticated = (
+        args.enable_insecure_binding_system_authenticated
+    )
+    opts.enable_insecure_binding_system_unauthenticated = (
+        args.enable_insecure_binding_system_unauthenticated
+    )
     return opts
 
 
@@ -1275,6 +1303,7 @@ class UpdateAlpha(Update):
     flags.AddAutoprovisioningEnableKubeletReadonlyPortFlag(group)
     flags.AddEnableRayClusterLogging(group, is_update=True)
     flags.AddEnableRayClusterMonitoring(group, is_update=True)
+    flags.AddInsecureRBACBindingFlags(group, hidden=True)
 
   def ParseUpdateOptions(self, args, locations):
     get_default = lambda key: getattr(args, key)
@@ -1435,4 +1464,10 @@ class UpdateAlpha(Update):
     )
     opts.enable_ray_cluster_logging = args.enable_ray_cluster_logging
     opts.enable_ray_cluster_monitoring = args.enable_ray_cluster_monitoring
+    opts.enable_insecure_binding_system_authenticated = (
+        args.enable_insecure_binding_system_authenticated
+    )
+    opts.enable_insecure_binding_system_unauthenticated = (
+        args.enable_insecure_binding_system_unauthenticated
+    )
     return opts

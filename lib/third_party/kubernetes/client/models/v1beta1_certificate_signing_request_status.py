@@ -72,10 +72,10 @@ class V1beta1CertificateSigningRequestStatus(object):
         :type: str
         """
     if certificate is not None and not re.search(
-        '^(?:[A-Za-z0-9+\/]{4})*(?:[A-Za-z0-9+\/]{2}==|[A-Za-z0-9+\/]{3}=)?$',
+        r'^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$',
         certificate):
       raise ValueError(
-          'Invalid value for `certificate`, must be a follow pattern or equal to `/^(?:[A-Za-z0-9+\/]{4})*(?:[A-Za-z0-9+\/]{2}==|[A-Za-z0-9+\/]{3}=)?$/`'
+          'Invalid value for `certificate`, must be a follow pattern or equal to r`/^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$/`'
       )
 
     self._certificate = certificate

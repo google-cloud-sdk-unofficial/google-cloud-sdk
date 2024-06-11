@@ -214,6 +214,7 @@ def ParseCreateNodePoolOptionsBase(args):
   )
 
 
+@base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Create(base.CreateCommand):
   """Create a node pool in a running cluster."""
@@ -282,6 +283,7 @@ class Create(base.CreateCommand):
     ops.placement_policy = args.placement_policy
     ops.enable_queued_provisioning = args.enable_queued_provisioning
     ops.tpu_topology = args.tpu_topology
+    ops.secondary_boot_disks = args.secondary_boot_disk
     return ops
 
   def Run(self, args):

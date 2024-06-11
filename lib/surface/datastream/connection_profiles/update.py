@@ -64,6 +64,7 @@ EXAMPLES_BETA = """\
    """
 
 
+@base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Update(base.Command):
   """Update a Datastream connection profile."""
@@ -91,6 +92,7 @@ class Update(base.Command):
     cp_flags.AddMysqlProfileGroup(profile_flags, required=False)
     cp_flags.AddOracleProfileGroup(profile_flags, required=False)
     cp_flags.AddPostgresqlProfileGroup(profile_flags, required=False)
+    cp_flags.AddSqlServerProfileGroup(profile_flags, required=False)
     cp_flags.AddGcsProfileGroup(profile_flags, release_track, required=False)
     flags.AddLabelsUpdateFlags(parser)
 
@@ -122,6 +124,11 @@ class Update(base.Command):
     if args.postgresql_prompt_for_password:
       args.postgresql_password = console_io.PromptPassword(
           'Please Enter Password: ')
+
+    if args.sqlserver_prompt_for_password:
+      args.sqlserver_password = console_io.PromptPassword(
+          'Please Enter Password: '
+      )
 
     cp_type = (args.type).upper()
     cp_client = connection_profiles.ConnectionProfilesClient()

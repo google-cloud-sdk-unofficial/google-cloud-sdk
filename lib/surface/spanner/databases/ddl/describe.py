@@ -26,6 +26,10 @@ from googlecloudsdk.command_lib.spanner import flags
 from googlecloudsdk.command_lib.spanner import resource_args
 
 
+# TODO(b/305722139) Change @base.DefaultUniverseOnly to
+# @base.UniverseCompatible once b/305722139 is fixed.
+# See go/gcloud-cli-running-tpc-tests.
+@base.DefaultUniverseOnly
 class Describe(base.ListCommand):
   """Describe the DDL for a Cloud Spanner database."""
 
@@ -46,8 +50,8 @@ class Describe(base.ListCommand):
     parser.display_info.AddFormat('value(format("{0};\n"))')
     flags.IncludeProtoDescriptors(
         help_text=(
-            'Include debug string of proto bundle descriptors in output. Output'
-            ' is information only and not meant to be parsed.'
+            'Include debug string of proto bundle descriptors in the output.'
+            ' The output is information only and not meant to be parsed.'
         )
     ).AddToParser(parser)
 

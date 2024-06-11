@@ -22,6 +22,7 @@ from googlecloudsdk.api_lib.compute import utils
 from googlecloudsdk.calliope import base
 
 
+@base.UniverseCompatible
 class ManagedInstanceGroups(base.Group):
   """Read and manipulate Compute Engine managed instance groups."""
 

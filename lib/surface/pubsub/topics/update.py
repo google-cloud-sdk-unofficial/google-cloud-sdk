@@ -111,7 +111,7 @@ def _GetKmsKeyNameFromArgs(args):
   return None
 
 
-def _Args(parser):
+def _Args(parser, include_ingestion_from_cloud_storage_flags=False):
   """Registers flags for this command."""
   resource_args.AddTopicResourceArg(parser, 'to update.')
   labels_util.AddUpdateLabelsFlags(parser)
@@ -130,7 +130,11 @@ def _Args(parser):
   flags.AddTopicMessageStoragePolicyFlags(parser, is_update=True)
 
   flags.AddSchemaSettingsFlags(parser, is_update=True)
-  flags.AddIngestionDatasourceFlags(parser, is_update=True)
+  flags.AddIngestionDatasourceFlags(
+      parser,
+      is_update=True,
+      include_ingestion_from_cloud_storage_flags=include_ingestion_from_cloud_storage_flags,
+  )
 
 
 def _Run(args):
@@ -195,6 +199,21 @@ def _Run(args):
   kinesis_ingestion_service_account = getattr(
       args, 'kinesis_ingestion_service_account', None
   )
+  cloud_storage_ingestion_bucket = getattr(
+      args, 'cloud_storage_ingestion_bucket', None
+  )
+  cloud_storage_ingestion_input_format = getattr(
+      args, 'cloud_storage_ingestion_input_format', None
+  )
+  cloud_storage_ingestion_text_delimiter = getattr(
+      args, 'cloud_storage_ingestion_text_delimiter', None
+  )
+  cloud_storage_ingestion_minimum_object_create_time = getattr(
+      args, 'cloud_storage_ingestion_minimum_object_create_time', None
+  )
+  cloud_storage_ingestion_match_glob = getattr(
+      args, 'cloud_storage_ingestion_match_glob', None
+  )
   clear_ingestion_data_source_settings = getattr(
       args, 'clear_ingestion_data_source_settings', None
   )
@@ -218,6 +237,11 @@ def _Run(args):
         kinesis_ingestion_consumer_arn=kinesis_ingestion_consumer_arn,
         kinesis_ingestion_role_arn=kinesis_ingestion_role_arn,
         kinesis_ingestion_service_account=kinesis_ingestion_service_account,
+        cloud_storage_ingestion_bucket=cloud_storage_ingestion_bucket,
+        cloud_storage_ingestion_input_format=cloud_storage_ingestion_input_format,
+        cloud_storage_ingestion_text_delimiter=cloud_storage_ingestion_text_delimiter,
+        cloud_storage_ingestion_minimum_object_create_time=cloud_storage_ingestion_minimum_object_create_time,
+        cloud_storage_ingestion_match_glob=cloud_storage_ingestion_match_glob,
         clear_ingestion_data_source_settings=clear_ingestion_data_source_settings,
     )
   except topics.NoFieldsSpecifiedError:
@@ -236,6 +260,7 @@ def _Run(args):
   return result
 
 
+@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Update(base.UpdateCommand):
   """Updates an existing Cloud Pub/Sub topic."""
@@ -245,7 +270,7 @@ class Update(base.UpdateCommand):
   @staticmethod
   def Args(parser):
     """Registers flags for this command."""
-    _Args(parser)
+    _Args(parser, include_ingestion_from_cloud_storage_flags=False)
 
   def Run(self, args):
     return _Run(args)
@@ -257,7 +282,7 @@ class UpdateBeta(Update):
 
   @staticmethod
   def Args(parser):
-    _Args(parser)
+    _Args(parser, include_ingestion_from_cloud_storage_flags=False)
 
   def Run(self, args):
     flags.ValidateTopicArgsUseUniverseSupportedFeatures(args)
@@ -270,4 +295,4 @@ class UpdateAlpha(UpdateBeta):
 
   @staticmethod
   def Args(parser):
-    _Args(parser)
+    _Args(parser, include_ingestion_from_cloud_storage_flags=True)

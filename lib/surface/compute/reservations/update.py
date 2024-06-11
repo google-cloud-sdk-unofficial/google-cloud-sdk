@@ -30,13 +30,12 @@ from googlecloudsdk.command_lib.compute.reservations import util
 
 
 def _ValidateArgs(
-    args, support_share_with, support_share_with_flag, support_auto_delete=False
+    args, support_share_with_flag, support_auto_delete=False
 ):
   """Validates that both share settings arguments are mentioned.
 
   Args:
     args: The arguments given to the update command.
-    support_share_with: Check the version.
     support_share_with_flag: Check if share_with is supported.
     support_auto_delete: Check if auto-delete settings are supported.
   """
@@ -64,26 +63,28 @@ def _ValidateArgs(
         ' auto-delete-after-duration or disable-auto-delete flags.'
     )
 
-  if support_share_with:
-    has_share_with = False
-    if support_share_with_flag:
-      has_share_with = args.IsSpecified('share_with')
-    has_add_share_with = args.IsSpecified('add_share_with')
-    has_remove_share_with = args.IsSpecified('remove_share_with')
-    if has_share_with or has_add_share_with or has_remove_share_with:
-      share_with = True
-    if (has_share_with and has_add_share_with) or (
-        has_share_with and has_remove_share_with) or (has_add_share_with and
-                                                      has_remove_share_with):
-      raise exceptions.ConflictingArgumentsException('--share-with',
-                                                     '--add-share-with',
-                                                     '--remove-share-with')
-    if has_remove_share_with:
-      for project in getattr(args, 'remove_share_with', []):
-        if not project.isnumeric():
-          raise exceptions.InvalidArgumentException(
-              '--remove-share-with',
-              'Please specify project number (not project id/name).')
+  has_share_with = False
+  if support_share_with_flag:
+    has_share_with = args.IsSpecified('share_with')
+  has_add_share_with = args.IsSpecified('add_share_with')
+  has_remove_share_with = args.IsSpecified('remove_share_with')
+  if has_share_with or has_add_share_with or has_remove_share_with:
+    share_with = True
+  if (
+      (has_share_with and has_add_share_with)
+      or (has_share_with and has_remove_share_with)
+      or (has_add_share_with and has_remove_share_with)
+  ):
+    raise exceptions.ConflictingArgumentsException(
+        '--share-with', '--add-share-with', '--remove-share-with'
+    )
+  if has_remove_share_with:
+    for project in getattr(args, 'remove_share_with', []):
+      if not project.isnumeric():
+        raise exceptions.InvalidArgumentException(
+            '--remove-share-with',
+            'Please specify project number (not project id/name).',
+        )
 
   minimum_argument_specified = not share_with and not args.IsSpecified(
       'vm_count'
@@ -229,9 +230,9 @@ def _AutoDeleteUpdateRequest(args, reservation_ref, holder):
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.UniverseCompatible
 class Update(base.UpdateCommand):
   """Update Compute Engine reservations."""
-  _support_share_with = True
   _support_share_with_flag = False
   _support_auto_delete = False
 
@@ -252,7 +253,6 @@ class Update(base.UpdateCommand):
     # Validate the command.
     _ValidateArgs(
         args,
-        self._support_share_with,
         self._support_share_with_flag,
         self._support_auto_delete,
     )
@@ -265,15 +265,14 @@ class Update(base.UpdateCommand):
     result = list()
     errors = []
     share_with = False
-    if self._support_share_with:
-      if args.IsSpecified('add_share_with') or args.IsSpecified(
-          'remove_share_with'):
+    if args.IsSpecified('add_share_with') or args.IsSpecified(
+        'remove_share_with'):
+      share_with = True
+    if self._support_share_with_flag:
+      if args.IsSpecified('share_with'):
         share_with = True
-      if self._support_share_with_flag:
-        if args.IsSpecified('share_with'):
-          share_with = True
 
-    if self._support_share_with and share_with:
+    if share_with:
       r_update_request = _GetShareSettingUpdateRequest(
           args, reservation_ref, holder, self._support_share_with_flag)
       # Invoke Reservation.update API.
@@ -321,7 +320,6 @@ class Update(base.UpdateCommand):
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class UpdateBeta(Update):
   """Update Compute Engine reservations."""
-  _support_share_with = True
   _support_share_with_flag = True
   _support_auto_delete = True
 
@@ -349,7 +347,6 @@ class UpdateBeta(Update):
 class UpdateAlpha(Update):
   """Update Compute Engine reservations."""
 
-  _support_share_with = True
   _support_share_with_flag = True
   _support_auto_delete = True
 

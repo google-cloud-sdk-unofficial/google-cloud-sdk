@@ -24,6 +24,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.domains import resource_args
 
 
+@base.DefaultUniverseOnly
 class Wait(base.SilentCommand):
   """Wait for asynchronous operation to complete.
 

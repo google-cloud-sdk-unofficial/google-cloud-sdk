@@ -20,7 +20,6 @@
 from googlecloudsdk.calliope import base
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class OperationsALPHA(base.Group):
   """Manage Operation resources."""

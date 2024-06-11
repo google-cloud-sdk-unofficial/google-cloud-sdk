@@ -39,6 +39,11 @@ class CreateAlpha(base.DeleteCommand):
   detailed_help = {
       'BRIEF': 'Creates a Backup and DR backup vault.',
       'DESCRIPTION': '{description}',
+      'API REFERENCE': (
+          'This command uses the backupdr/v1 API. The full documentation for'
+          ' this API can be found at:'
+          ' https://cloud.google.com/backup-disaster-recovery'
+      ),
       'EXAMPLES': """\
         To create a new backup vault ``BACKUP_VAULT'' in location ``MY_LOCATION'' with
         minimum enforced-retention for backups of 1 month and 1 day, run:

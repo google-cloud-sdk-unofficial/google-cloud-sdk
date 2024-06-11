@@ -17,7 +17,6 @@
 # AUTOGEN_CLI_VERSION: HEAD
 - release_tracks:
   - ALPHA
-  hidden: true
   help_text:
     brief: Delete a single blockchain validator configuration
     description: |
@@ -32,7 +31,7 @@
     - help_text: |-
         Name of the resource
       is_positional: true
-      resource_spec: !REF googlecloudsdk.command_lib.blockchain_validator.v1alpha_resources:project_location_blockchain_validator_config
+      resource_spec: !REF googlecloudsdk.command_lib.blockchain_validator.v1_resources:project_location_blockchain_validator_config
       required: true
     - arg_name: request-id
       api_field: requestId
@@ -53,7 +52,7 @@
         The request ID must be a valid UUID with the exception that zero UUID is
         not supported (00000000-0000-0000-0000-000000000000).
   request:
-    api_version: v1alpha
+    api_version: v1
     collection:
     - blockchainvalidatormanager.projects.locations.blockchainValidatorConfigs
   async:

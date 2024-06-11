@@ -1,0 +1,18 @@
+release_tracks: [ALPHA]
+help_text:
+  brief: |
+    Describe a multicast group consumer activations.
+  description: |
+    Show details of a multicastgroup consumer activations in the specified location of the current project.
+  examples: |
+    To describe details of a multicast group consumer activations in the current project and location, run:
+
+      $ {command} my-multicast-group-consumer-activation --location=zone
+arguments:
+  resource:
+    spec: !REF googlecloudsdk.command_lib.network_services.resources:multicastGroupConsumerActivation
+    help_text: |
+      The multicast group consumer activation to display.
+request: &request
+  api_version: v1alpha1
+  collection: networkservices.projects.locations.multicastGroupConsumerActivations

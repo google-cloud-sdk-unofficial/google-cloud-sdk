@@ -65,10 +65,16 @@ class Destroy(base.DeleteCommand):
         cancel_on_no=True)
 
     result = secrets_api.Versions().Destroy(version_ref, etag=args.etag)
-    secrets_log.Versions().Destroyed(version_ref)
+    if result.scheduledDestroyTime is None:
+      secrets_log.Versions().Destroyed(version_ref)
+    else:
+      secrets_log.Versions().ScheduledDestroy(
+          result.scheduledDestroyTime, version_ref
+      )
     return result
 
 
+@base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class DestroyBeta(Destroy):
   r"""Destroy a secret version's metadata and secret data.
@@ -109,10 +115,10 @@ class DestroyBeta(Destroy):
     result = secrets_api.Versions(api_version=api_version).Destroy(
         version_ref, etag=args.etag, secret_location=args.location
     )
-    if result.scheduledDestroyTime is not None:
+    if result.scheduledDestroyTime is None:
+      secrets_log.Versions().Destroyed(version_ref)
+    else:
       secrets_log.Versions().ScheduledDestroy(
           result.scheduledDestroyTime, version_ref
       )
-    else:
-      secrets_log.Versions().Destroyed(version_ref)
     return result

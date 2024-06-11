@@ -30,13 +30,14 @@ from googlecloudsdk.core import properties
 _DETAILED_HELP = {
     'DESCRIPTION': 'Enroll a new scope.',
     'EXAMPLES': """ \
-        To enroll a project with ID `123` in the `us-central1` region with `gs://test-bucket-1` and `gs://my-bucket-2` as eligible storage buckets, run:
+        To enroll a project with ID `123` with `gs://test-bucket-1` and `gs://my-bucket-2` as eligible storage buckets, run:
 
-        $ {command} --project=123 --location=us-central1 --eligible-gcs-buckets="gs://test-bucket-1,gs://my-bucket-2"
+        $ {command} --project=123 --eligible-gcs-buckets="gs://test-bucket-1,gs://my-bucket-2"
         """,
 }
 
 
+@base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Add(base.CreateCommand):
   """Enroll a new scope."""
@@ -46,11 +47,10 @@ class Add(base.CreateCommand):
   @staticmethod
   def Args(parser):
     flags.AddProjectOrFolderFlags(parser, 'to enroll')
-    flags.AddLocationFlag(parser, 'to enroll')
     flags.AddEligibleDestinationsFlags(parser)
 
   def Run(self, args):
-    """Run the generate command."""
+    """Run the add command."""
     is_parent_folder = args.folder is not None
 
     scope = (
@@ -59,7 +59,7 @@ class Add(base.CreateCommand):
         else 'projects/{project}'.format(project=args.project)
     )
 
-    scope += '/locations/{location}'.format(location=args.location)
+    scope += '/locations/global'
 
     client = enrollments.EnrollmentsClient()
     try:

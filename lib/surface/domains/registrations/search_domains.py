@@ -33,6 +33,7 @@ table(
 """
 
 
+@base.DefaultUniverseOnly
 class SearchDomains(base.DescribeCommand):
   """Search for available domains.
 

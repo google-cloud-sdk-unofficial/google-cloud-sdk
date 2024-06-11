@@ -158,6 +158,7 @@ def AddBetaArgs(parser):
   flags.AddAllocatedIpRangeName(parser)
   labels_util.AddCreateLabelsFlags(parser)
   flags.AddReplicationLagMaxSecondsForRecreate(parser)
+  flags.AddServerCaMode(parser)
 
 
 def AddAlphaArgs(unused_parser):

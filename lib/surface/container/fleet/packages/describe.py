@@ -33,7 +33,6 @@ _DETAILED_HELP = {
 _ROLLOUT_BASENAME_INDEX = 7
 
 
-@base.Hidden
 @base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Describe(base.DescribeCommand):

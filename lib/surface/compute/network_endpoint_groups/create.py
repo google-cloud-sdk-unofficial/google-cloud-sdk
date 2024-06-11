@@ -69,6 +69,7 @@ def _JoinWithOr(strings):
     return ', '.join(strings[:-1]) + ', or ' + strings[-1]
 
 
+@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Create(base.CreateCommand):
   """Create a Compute Engine network endpoint group."""
@@ -95,7 +96,7 @@ class Create(base.CreateCommand):
     messages = holder.client.messages
     resources = holder.resources
     neg_client = network_endpoint_groups.NetworkEndpointGroupsClient(
-        client, messages, resources
+        client, messages, resources, self.support_port_mapping_neg
     )
     neg_ref = flags.MakeNetworkEndpointGroupsArg().ResolveAsResource(
         args,
@@ -106,7 +107,30 @@ class Create(base.CreateCommand):
 
     self._ValidateNEG(args, neg_ref)
 
-    if self.support_serverless_deployment:
+    if self.support_port_mapping_neg:
+      result = neg_client.Create(
+          neg_ref,
+          args.network_endpoint_type,
+          default_port=args.default_port,
+          producer_port=args.producer_port,
+          network=args.network,
+          subnet=args.subnet,
+          cloud_run_service=args.cloud_run_service,
+          cloud_run_tag=args.cloud_run_tag,
+          cloud_run_url_mask=args.cloud_run_url_mask,
+          app_engine_app=args.app_engine_app,
+          app_engine_service=args.app_engine_service,
+          app_engine_version=args.app_engine_version,
+          app_engine_url_mask=args.app_engine_url_mask,
+          cloud_function_name=args.cloud_function_name,
+          cloud_function_url_mask=args.cloud_function_url_mask,
+          serverless_deployment_platform=args.serverless_deployment_platform,
+          serverless_deployment_resource=args.serverless_deployment_resource,
+          serverless_deployment_version=args.serverless_deployment_version,
+          serverless_deployment_url_mask=args.serverless_deployment_url_mask,
+          psc_target_service=args.psc_target_service,
+      )
+    elif self.support_serverless_deployment:
       result = neg_client.Create(
           neg_ref,
           args.network_endpoint_type,
@@ -159,6 +183,9 @@ class Create(base.CreateCommand):
 
     valid_scopes = collections.OrderedDict()
     valid_scopes['gce-vm-ip-port'] = ['zonal']
+
+    if self.support_port_mapping_neg:
+      valid_scopes['gce-vm-ip-portmap'] = ['regional']
 
     valid_scopes['internet-ip-port'] = ['global', 'regional']
     valid_scopes['internet-fqdn-port'] = ['global', 'regional']
@@ -229,13 +256,6 @@ class CreateBeta(Create):
   """Create a Google Compute Engine network endpoint group."""
 
   support_serverless_deployment = True
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class CreateAlpha(CreateBeta):
-  """Create a Google Compute Engine network endpoint group."""
-
-  support_neg_type = True
   support_port_mapping_neg = True
 
   @classmethod
@@ -248,186 +268,19 @@ class CreateAlpha(CreateBeta):
         support_port_mapping_neg=cls.support_port_mapping_neg,
     )
 
-  def Run(self, args):
-    """Issues the request necessary for adding the network endpoint group."""
 
-    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
-    client = holder.client
-    messages = holder.client.messages
-    resources = holder.resources
-    neg_client = network_endpoint_groups.NetworkEndpointGroupsClient(
-        client, messages, resources, self.support_port_mapping_neg
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class CreateAlpha(CreateBeta):
+  """Create a Google Compute Engine network endpoint group."""
+
+  support_neg_type = True
+
+  @classmethod
+  def Args(cls, parser):
+    flags.MakeNetworkEndpointGroupsArg().AddArgument(parser)
+    flags.AddCreateNegArgsToParser(
+        parser,
+        support_neg_type=cls.support_neg_type,
+        support_serverless_deployment=cls.support_serverless_deployment,
+        support_port_mapping_neg=cls.support_port_mapping_neg,
     )
-    neg_ref = flags.MakeNetworkEndpointGroupsArg().ResolveAsResource(
-        args,
-        holder.resources,
-        default_scope=compute_scope.ScopeEnum.ZONE,
-        scope_lister=compute_flags.GetDefaultScopeLister(holder.client),
-    )
-
-    self._ValidateNEG(args, neg_ref)
-
-    if self.support_port_mapping_neg:
-      result = neg_client.Create(
-          neg_ref,
-          args.network_endpoint_type,
-          default_port=args.default_port,
-          producer_port=args.producer_port,
-          network=args.network,
-          subnet=args.subnet,
-          cloud_run_service=args.cloud_run_service,
-          cloud_run_tag=args.cloud_run_tag,
-          cloud_run_url_mask=args.cloud_run_url_mask,
-          app_engine_app=args.app_engine_app,
-          app_engine_service=args.app_engine_service,
-          app_engine_version=args.app_engine_version,
-          app_engine_url_mask=args.app_engine_url_mask,
-          cloud_function_name=args.cloud_function_name,
-          cloud_function_url_mask=args.cloud_function_url_mask,
-          serverless_deployment_platform=args.serverless_deployment_platform,
-          serverless_deployment_resource=args.serverless_deployment_resource,
-          serverless_deployment_version=args.serverless_deployment_version,
-          serverless_deployment_url_mask=args.serverless_deployment_url_mask,
-          psc_target_service=args.psc_target_service,
-          client_port_mapping_mode=args.client_port_mapping_mode,
-      )
-    elif self.support_serverless_deployment:
-      result = neg_client.Create(
-          neg_ref,
-          args.network_endpoint_type,
-          default_port=args.default_port,
-          network=args.network,
-          subnet=args.subnet,
-          cloud_run_service=args.cloud_run_service,
-          cloud_run_tag=args.cloud_run_tag,
-          cloud_run_url_mask=args.cloud_run_url_mask,
-          app_engine_app=args.app_engine_app,
-          app_engine_service=args.app_engine_service,
-          app_engine_version=args.app_engine_version,
-          app_engine_url_mask=args.app_engine_url_mask,
-          cloud_function_name=args.cloud_function_name,
-          cloud_function_url_mask=args.cloud_function_url_mask,
-          serverless_deployment_platform=args.serverless_deployment_platform,
-          serverless_deployment_resource=args.serverless_deployment_resource,
-          serverless_deployment_version=args.serverless_deployment_version,
-          serverless_deployment_url_mask=args.serverless_deployment_url_mask,
-          psc_target_service=args.psc_target_service,
-      )
-
-    else:
-      result = neg_client.Create(
-          neg_ref,
-          args.network_endpoint_type,
-          default_port=args.default_port,
-          network=args.network,
-          subnet=args.subnet,
-          cloud_run_service=args.cloud_run_service,
-          cloud_run_tag=args.cloud_run_tag,
-          cloud_run_url_mask=args.cloud_run_url_mask,
-          app_engine_app=args.app_engine_app,
-          app_engine_service=args.app_engine_service,
-          app_engine_version=args.app_engine_version,
-          app_engine_url_mask=args.app_engine_url_mask,
-          cloud_function_name=args.cloud_function_name,
-          cloud_function_url_mask=args.cloud_function_url_mask,
-          psc_target_service=args.psc_target_service,
-      )
-
-    log.CreatedResource(neg_ref.Name(), 'network endpoint group')
-    return result
-
-  def _ValidateNEG(self, args, neg_ref):
-    """Validate NEG input before making request."""
-    is_zonal = hasattr(neg_ref, 'zone')
-    is_regional = hasattr(neg_ref, 'region')
-    network_endpoint_type = args.network_endpoint_type
-
-    valid_scopes = collections.OrderedDict()
-
-    if self.support_port_mapping_neg:
-      valid_scopes['gce-vm-ip-port'] = ['zonal', 'regional']
-      valid_scopes['gce-vm-ip-portmap'] = ['regional']
-    else:
-      valid_scopes['gce-vm-ip-port'] = ['zonal']
-
-    valid_scopes['internet-ip-port'] = ['global', 'regional']
-    valid_scopes['internet-fqdn-port'] = ['global', 'regional']
-
-    valid_scopes['serverless'] = ['regional']
-    valid_scopes['private-service-connect'] = ['regional']
-
-    valid_scopes['non-gcp-private-ip-port'] = ['zonal']
-
-    valid_scopes['gce-vm-ip'] = ['zonal']
-
-    valid_scopes_inverted = _Invert(valid_scopes)
-
-    if not is_regional and args.client_port_mapping_mode:
-      raise exceptions.InvalidArgumentException(
-          '--client-port-mapping-mode',
-          'Client port mapping mode is only supported for regional NEGs.',
-      )
-
-    if is_zonal:
-      valid_zonal_types = valid_scopes_inverted['zonal']
-      if network_endpoint_type not in valid_zonal_types:
-        raise exceptions.InvalidArgumentException(
-            '--network-endpoint-type',
-            'Zonal NEGs only support network endpoints of type {0}.{1}'.format(
-                _JoinWithOr(valid_zonal_types),
-                _GetValidScopesErrorMessage(
-                    network_endpoint_type, valid_scopes
-                ),
-            ),
-        )
-    elif is_regional:
-      valid_regional_types = valid_scopes_inverted['regional']
-      if network_endpoint_type not in valid_regional_types:
-        raise exceptions.InvalidArgumentException(
-            '--network-endpoint-type',
-            'Regional NEGs only support network endpoints of type {0}.{1}'
-            .format(
-                _JoinWithOr(valid_regional_types),
-                _GetValidScopesErrorMessage(
-                    network_endpoint_type, valid_scopes
-                ),
-            ),
-        )
-
-      if (
-          network_endpoint_type == 'private-service-connect'
-          and not args.psc_target_service
-      ):
-        raise exceptions.InvalidArgumentException(
-            '--private-service-connect',
-            (
-                'Network endpoint type private-service-connect must specify '
-                '--psc-target-service for private service NEG.'
-            ),
-        )
-
-    else:
-      valid_global_types = valid_scopes_inverted['global']
-      if network_endpoint_type not in valid_global_types:
-        raise exceptions.InvalidArgumentException(
-            '--network-endpoint-type',
-            'Global NEGs only support network endpoints of type {0}.{1}'.format(
-                _JoinWithOr(valid_global_types),
-                _GetValidScopesErrorMessage(
-                    network_endpoint_type, valid_scopes
-                ),
-            ),
-        )
-
-    if (
-        is_regional
-        and network_endpoint_type == 'gce-vm-ip-port'
-        and not args.client_port_mapping_mode
-    ):
-      raise exceptions.InvalidArgumentException(
-          '--client-port-mapping-mode',
-          (
-              'Network endpoint type gce-vm-ip-port must specify '
-              '--client-port-mapping-mode for regional NEG.'
-          ),
-      )

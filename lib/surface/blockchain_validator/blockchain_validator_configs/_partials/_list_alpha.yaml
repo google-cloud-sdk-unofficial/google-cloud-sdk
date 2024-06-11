@@ -17,7 +17,6 @@
 # AUTOGEN_CLI_VERSION: HEAD
 - release_tracks:
   - ALPHA
-  hidden: true
   help_text:
     brief: List blockchain validator configs
     description: |
@@ -31,10 +30,10 @@
     - help_text: |-
         The location to list blockchain validator configurations within.
       is_positional: false
-      resource_spec: !REF googlecloudsdk.command_lib.blockchain_validator.v1alpha_resources:project_location
+      resource_spec: !REF googlecloudsdk.command_lib.blockchain_validator.v1_resources:project_location
       required: true
   request:
-    api_version: v1alpha
+    api_version: v1
     collection:
     - blockchainvalidatormanager.projects.locations.blockchainValidatorConfigs
   response:

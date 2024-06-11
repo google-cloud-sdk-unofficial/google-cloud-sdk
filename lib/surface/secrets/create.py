@@ -32,6 +32,7 @@ from googlecloudsdk.core.console import console_io
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.DefaultUniverseOnly
 class Create(base.CreateCommand):
   # pylint: disable=line-too-long
   r"""Create a new secret.
@@ -79,6 +80,10 @@ class Create(base.CreateCommand):
 
     $ {command} my-secret --next-rotation-time="2030-01-01T15:30:00-05:00"
     --rotation-period="7200s"
+
+  Create a secret with delayed secret version destroy enabled:
+
+    $ {command} my-secret --version-destroy-ttl="86400s"
   """
   # pylint: enable=line-too-long
 
@@ -167,6 +172,7 @@ class Create(base.CreateCommand):
     secrets_args.AddCreateExpirationGroup(parser)
     secrets_args.AddTopics(parser)
     secrets_args.AddCreateRotationGroup(parser)
+    secrets_args.AddCreateVersionDestroyTTL(parser)
     annotations = parser.add_group(mutex=True, help='Annotations')
     map_util.AddMapSetFlag(annotations, 'annotations', 'Annotations', str, str)
 
@@ -266,7 +272,10 @@ class Create(base.CreateCommand):
               key=annotation, value=metadata)
           for (annotation, metadata) in args.set_annotations.items()
       ]
-
+    if args.version_destroy_ttl:
+      version_destroy_ttl = f'{args.version_destroy_ttl}s'
+    else:
+      version_destroy_ttl = None
     # Create the secret
     response = secrets_api.Secrets(api_version=api_version).Create(
         secret_ref,
@@ -280,6 +289,7 @@ class Create(base.CreateCommand):
         annotations=annotations,
         next_rotation_time=args.next_rotation_time,
         rotation_period=args.rotation_period,
+        version_destroy_ttl=version_destroy_ttl,
     )
 
     if data:
@@ -296,6 +306,7 @@ class Create(base.CreateCommand):
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.DefaultUniverseOnly
 class CreateBeta(base.CreateCommand):
   # pylint: disable=line-too-long
   r"""Create a new secret.

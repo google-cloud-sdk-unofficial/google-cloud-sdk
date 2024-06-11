@@ -1,0 +1,37 @@
+release_tracks: [ALPHA]
+hidden: true
+help_text:
+  brief: Create a Managed Flink job.
+  description: Create a Managed Flink job.
+  examples: |
+    To create a Managed Flink job, run:
+
+        $ {command} my-job \
+            --location=us-central1 \
+            --job-graph-uri=gs:///opt/flink/examples/streaming/job-graph.json \
+            --artifact-uris=gs:///opt/flink/examples/streaming/artifact \
+            --parallelism=1 \
+            --jar-uris=gs:///opt/flink/examples/streaming/StateMachineExample.jar
+
+request:
+  collection: managedflink.projects.locations.jobs
+  method: create
+  modify_request_hooks:
+  - googlecloudsdk.command_lib.managed_flink.util:GenerateAndUploadJobGraph
+
+async:
+  collection: managedflink.projects.locations.operations
+
+arguments:
+  resource:
+    help_text: Identifies the job for which the command runs.
+    spec: !REF googlecloudsdk.command_lib.managed_flink.resources:job
+
+  params:
+  - _REF_: googlecloudsdk.command_lib.managed_flink.flags_jobs:job-graph-uri
+    required: true
+  - _REF_: googlecloudsdk.command_lib.managed_flink.flags_jobs:artifact-uris
+    required: true
+  - _REF_: googlecloudsdk.command_lib.managed_flink.flags_jobs:jar-uris
+  - _REF_: googlecloudsdk.command_lib.managed_flink.flags_jobs:deployment
+  - _REF_: googlecloudsdk.command_lib.managed_flink.flags_jobs:parallelism

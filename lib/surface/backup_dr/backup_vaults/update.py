@@ -38,6 +38,11 @@ class UpdateAlpha(base.UpdateCommand):
   detailed_help = {
       'BRIEF': 'Updates a Backup and DR backup vault.',
       'DESCRIPTION': '{description}',
+      'API REFERENCE': (
+          'This command uses the backupdr/v1 API. The full documentation for'
+          ' this API can be found at:'
+          ' https://cloud.google.com/backup-disaster-recovery'
+      ),
       'EXAMPLES': """\
         To update a backup vault BACKUP_VAULT in location MY_LOCATION with one update
         field, run:

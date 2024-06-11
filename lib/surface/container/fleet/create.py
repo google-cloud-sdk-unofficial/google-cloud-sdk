@@ -31,6 +31,7 @@ from googlecloudsdk.core import log
 from googlecloudsdk.generated_clients.apis.gkehub.v1alpha import gkehub_v1alpha_messages as messages
 
 
+@base.DefaultUniverseOnly
 class Create(base.CreateCommand):
   """Create a fleet.
 

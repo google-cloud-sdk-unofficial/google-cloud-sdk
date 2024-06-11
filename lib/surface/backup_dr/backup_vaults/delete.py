@@ -38,6 +38,11 @@ class DeleteAlpha(base.DeleteCommand):
   detailed_help = {
       'BRIEF': 'Deletes a specific backup vault',
       'DESCRIPTION': '{description}',
+      'API REFERENCE': (
+          'This command uses the backupdr/v1 API. The full documentation for'
+          ' this API can be found at:'
+          ' https://cloud.google.com/backup-disaster-recovery'
+      ),
       'EXAMPLES': """\
         To delete a backup vault ``BACKUP_VAULT'' in location ``MY_LOCATION'', run:
 

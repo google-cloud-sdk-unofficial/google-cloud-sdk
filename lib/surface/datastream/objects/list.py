@@ -49,6 +49,7 @@ class _StreamObjectInfo:
     )
 
 
+@base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class List(base.ListCommand):
   """List a Datastream stream objects.
@@ -108,6 +109,9 @@ class List(base.ListCommand):
       return "%s.%s" % (identifier.schema, identifier.table)
     elif stream_object.sourceObject.postgresqlIdentifier:
       identifier = stream_object.sourceObject.postgresqlIdentifier
+      return "%s.%s" % (identifier.schema, identifier.table)
+    elif stream_object.sourceObject.sqlserverIdentifier:
+      identifier = stream_object.sourceObject.sqlserverIdentifier
       return "%s.%s" % (identifier.schema, identifier.table)
     else:
       return None

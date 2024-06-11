@@ -28,6 +28,7 @@ from googlecloudsdk.core import exceptions
 from googlecloudsdk.core import log
 
 
+@base.DefaultUniverseOnly
 class ConfigureDNS(base.UpdateCommand):
   """Configure DNS settings of a Cloud Domains registration.
 

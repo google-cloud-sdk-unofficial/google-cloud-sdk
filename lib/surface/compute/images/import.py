@@ -723,6 +723,9 @@ Import.detailed_help = {
         *{command}* imports Virtual Disk images, such as VMWare VMDK files
         and VHD files, into Compute Engine.
 
+        NOTE: It is recommended to use the new Image Import.
+        Run "gcloud alpha migration vms image-imports --help" for details.
+
         Importing images involves four steps:
         *  Upload the virtual disk file to Cloud Storage.
         *  Import the image to Compute Engine.
@@ -744,6 +747,15 @@ Import.detailed_help = {
 
         Files stored on Cloud Storage and images in Compute Engine incur
         charges. See [](https://cloud.google.com/compute/docs/images/importing-virtual-disks#resource_cleanup).
+
+        Troubleshooting: Image import/export tools rely on CloudBuild default
+        behavior. They has been using the default CloudBuild service account in
+        order to import/export images to/from Google Cloud Platform. However,
+        Cloud Build has changed this default behavior and in new projects a
+        custom user managed service account may need to be provided to perform
+        the builds. If you get a CloudBuild service account related error, run
+        gcloud with --cloudbuild-service-account=<custom service account>.
+        See `gcloud compute images import --help` for details.
         """,
     'EXAMPLES': """
         To import a centos-7 VMDK file, run:

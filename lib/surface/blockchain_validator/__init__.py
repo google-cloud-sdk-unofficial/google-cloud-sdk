@@ -20,7 +20,6 @@
 from googlecloudsdk.calliope import base
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class BlockchainValidatorALPHA(base.Group):
   """Manage blockchain validator configurations.
@@ -28,3 +27,4 @@ class BlockchainValidatorALPHA(base.Group):
   Configurations can be deployed to blockchain nodes running under
   Blockchain Node Engine.
   """
+  category = base.UNCATEGORIZED_CATEGORY

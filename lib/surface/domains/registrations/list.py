@@ -35,6 +35,7 @@ table(
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.DefaultUniverseOnly
 class List(base.ListCommand):
   """List Cloud Domains registrations.
 
@@ -68,6 +69,7 @@ class List(base.ListCommand):
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.DefaultUniverseOnly
 class ListAlpha(List):
   """List Cloud Domains registrations.
 
@@ -86,6 +88,7 @@ class ListAlpha(List):
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.DefaultUniverseOnly
 class ListGa(List):
   """List Cloud Domains registrations.
 

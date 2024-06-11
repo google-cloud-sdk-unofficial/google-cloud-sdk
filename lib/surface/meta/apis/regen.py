@@ -19,6 +19,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+import collections
 import fnmatch
 import os
 import re
@@ -42,6 +43,7 @@ from six.moves import map
 _API_REGEX = '([a-z0-9_]+)/([a-z0-9_]+)'
 
 
+@base.UniverseCompatible
 class Regen(base.Command):
   """Regenerate given API(s) in gcloud."""
 
@@ -141,14 +143,29 @@ class Regen(base.Command):
           .format(api_name,
                   api_version,
                   os.path.join(root_dir, api_config['discovery_doc'])))
-      generate.GenerateApitoolsApi(base_dir, root_dir,
-                                   api_name, api_version, api_config)
-      generate.GenerateApitoolsResourceModule(base_dir, root_dir,
-                                              api_name, api_version,
-                                              api_config['discovery_doc'],
-                                              api_config.get('resources', {}))
+      discovery_doc = os.path.join(
+          base_dir, root_dir, api_config['discovery_doc'])
+      output_dir = os.path.join(base_dir, root_dir)
+      root_package = root_dir.replace('/', '.')
 
-    generate.GenerateApiMap(base_dir, root_dir, config['apis'])
+      generate.GenerateApitoolsApi(
+          discovery_doc, output_dir, root_package, api_name, api_version,
+          api_config)
+      generate.GenerateApitoolsResourceModule(
+          discovery_doc,
+          output_dir,
+          api_name,
+          api_version,
+          api_config.get('resources', {}),
+      )
+
+    apis_map_file = os.path.join(base_dir, root_dir, 'apis_map.py')
+    package_map = collections.defaultdict(dict)
+    for api_name, versions_config in config['apis'].items():
+      for version in versions_config:
+        # Generated APIs all reside under same folder.
+        package_map[api_name][version] = root_dir.replace('/', '.')
+    generate.GenerateApiMap(apis_map_file, package_map, config['apis'])
 
     # Now that everything passed, config can be updated if needed.
     if changed_config:

@@ -30,6 +30,7 @@ from googlecloudsdk.core import log
 from googlecloudsdk.generated_clients.apis.gkehub.v1alpha import gkehub_v1alpha_messages as messages
 
 
+@base.DefaultUniverseOnly
 class Delete(base.DeleteCommand):
   """Delete a fleet.
 
@@ -64,6 +65,7 @@ class Delete(base.DeleteCommand):
       long-running operation to be polled manually.
     """
     flag_parser = fleet_flags.FleetFlagParser(
+        # TODO(b/343764482) Fleet is GA, release track should not be hardcoded.
         args, release_track=base.ReleaseTrack.ALPHA
     )
 
@@ -74,6 +76,7 @@ class Delete(base.DeleteCommand):
     req = flag_parser.messages.GkehubProjectsLocationsFleetsDeleteRequest(
         name=util.FleetResourceName(flag_parser.Project())
     )
+    # TODO(b/343764482) Fleet is GA, release track should not be hardcoded.
     fleetclient = client.FleetClient(release_track=base.ReleaseTrack.ALPHA)
     operation = fleetclient.DeleteFleet(req)
     fleet_ref = util.FleetRef(flag_parser.Project())

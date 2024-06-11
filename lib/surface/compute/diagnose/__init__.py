@@ -21,6 +21,7 @@ from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 
 
+@base.UniverseCompatible
 class Diagnose(base.Group):
   """Debugging tools for Compute Engine virtual machine instances."""
 

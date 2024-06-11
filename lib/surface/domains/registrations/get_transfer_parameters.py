@@ -36,6 +36,7 @@ from googlecloudsdk.core import log
         ' https://cloud.google.com/domains/docs/deprecations/feature-deprecations.'
     ),
 )
+@base.DefaultUniverseOnly
 class GetTransferParameters(base.DescribeCommand):
   """Get transfer parameters of a specific domain.
 

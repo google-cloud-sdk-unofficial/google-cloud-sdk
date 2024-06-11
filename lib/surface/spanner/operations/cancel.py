@@ -48,7 +48,8 @@ DETAILED_HELP = {
 }
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
+@base.DefaultUniverseOnly
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Cancel(base.Command):
   """Cancel a Cloud Spanner operation."""
 
@@ -109,9 +110,10 @@ class Cancel(base.Command):
       return instance_operations.Cancel(args.instance, args.operation)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class AlphaCancel(Cancel):
-  """Cancel a Cloud Spanner operation with ALPHA features."""
+@base.DefaultUniverseOnly
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+class BetaAndAlphaCancel(Cancel):
+  """Cancel a Cloud Spanner operation."""
 
   detailed_help = {
       'EXAMPLES': DETAILED_HELP['EXAMPLES'] + textwrap.dedent("""\
@@ -132,7 +134,7 @@ class AlphaCancel(Cancel):
       parser: An argparse parser that you can use to add arguments that go on
         the command line after this command. Positional arguments are allowed.
     """
-    super(AlphaCancel, AlphaCancel).Args(parser)
+    super(BetaAndAlphaCancel, BetaAndAlphaCancel).Args(parser)
 
     flags.InstancePartition(
         positional=False,

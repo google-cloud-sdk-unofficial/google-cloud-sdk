@@ -30,6 +30,7 @@ from googlecloudsdk.core.console import console_io
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.DefaultUniverseOnly
 class Update(base.UpdateCommand):
   r"""Update a secret's metadata.
 
@@ -62,6 +63,14 @@ class Update(base.UpdateCommand):
       Update a secret to clear rotation policy:
 
         $ {command} my-secret --remove-rotation-schedule
+
+      Update version destroy ttl of a secret:
+
+        $ {command} my-secret --version-destroy-ttl="86400s"
+
+      Disable delayed secret version destroy:
+
+        $ {command} my-secret --remove-version-destroy-ttl
   """
 
   NO_CHANGES_MESSAGE = (
@@ -87,6 +96,7 @@ class Update(base.UpdateCommand):
     secrets_args.AddUpdateExpirationGroup(parser)
     secrets_args.AddUpdateTopicsGroup(parser)
     secrets_args.AddUpdateRotationGroup(parser)
+    secrets_args.AddUpdateVersionDestroyTTL(parser)
     map_util.AddMapUpdateFlag(alias, 'version-aliases', 'Version Aliases', str,
                               int)
     map_util.AddMapRemoveFlag(alias, 'version-aliases', 'Version Aliases', str)
@@ -133,6 +143,11 @@ class Update(base.UpdateCommand):
         'remove_annotations') or args.IsSpecified('clear_annotations'):
       update_mask.append('annotations')
 
+    if args.IsSpecified('version_destroy_ttl') or args.IsSpecified(
+        'remove_version_destroy_ttl'
+    ):
+      update_mask.append('version_destroy_ttl')
+
     # Validations
     if not update_mask:
       raise exceptions.MinimumArgumentException([
@@ -143,7 +158,8 @@ class Update(base.UpdateCommand):
           '--update-annotations', '--remove-annotations', '--clear-annotations',
           '--next-rotation-time', '--remove-next-rotation-time',
           '--rotation-period', '--remove-rotation-period',
-          '--remove-rotation-schedule'
+          '--remove-rotation-schedule', '--version-destroy-ttl',
+          '--remove-version-destroy-ttl'
       ], self.NO_CHANGES_MESSAGE.format(secret=secret_ref.Name()))
 
     labels_update = labels_diff.Apply(messages.Secret.LabelsValue,
@@ -190,6 +206,10 @@ class Update(base.UpdateCommand):
         annotations.append(
             messages.Secret.AnnotationsValue.AdditionalProperty(
                 key=annotation, value=metadata))
+    if args.version_destroy_ttl:
+      version_destroy_ttl = f'{args.version_destroy_ttl}s'
+    else:
+      version_destroy_ttl = None
 
     secret = secrets_api.Secrets(api_version=api_version).Update(
         secret_ref=secret_ref,
@@ -203,6 +223,7 @@ class Update(base.UpdateCommand):
         topics=topics,
         next_rotation_time=args.next_rotation_time,
         rotation_period=args.rotation_period,
+        version_destroy_ttl=version_destroy_ttl,
     )
     secrets_log.Secrets().Updated(secret_ref)
 
@@ -225,6 +246,7 @@ class Update(base.UpdateCommand):
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.DefaultUniverseOnly
 class UpdateBeta(Update):
   r"""Update a secret's metadata.
 

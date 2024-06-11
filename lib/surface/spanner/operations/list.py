@@ -59,7 +59,8 @@ DETAILED_HELP = {
 }
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
+@base.DefaultUniverseOnly
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class List(base.ListCommand):
   """List the Cloud Spanner operations."""
 
@@ -123,7 +124,7 @@ class List(base.ListCommand):
               metadata.name.split('/').slice(-1:).join():label=RESTORED_DATABASE,
               metadata.backupInfo.backup.split('/').slice(-1).join():label=SOURCE_BACKUP,
               metadata.progress.startTime:label=START_TIME,
-              metadata.progress.endTime:label=END_TIME
+              endtime():label=END_TIME
             )
           """)
     elif is_database_type:
@@ -188,9 +189,10 @@ class List(base.ListCommand):
     return instance_operations.List(args.instance)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class AlphaList(List):
-  """List the Cloud Spanner operations with ALPHA features."""
+@base.DefaultUniverseOnly
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class BetaList(List):
+  """List the Cloud Spanner operations."""
 
   detailed_help = {
       'EXAMPLES': DETAILED_HELP['EXAMPLES'] + textwrap.dedent("""\
@@ -216,6 +218,84 @@ class AlphaList(List):
         the command line after this command. Positional arguments are allowed.
     """
     additional_choices = {
+        'INSTANCE_PARTITION': (
+            'If only the instance is specified (--instance), returns all '
+            'instance partition operations associated with instance partitions '
+            'in the instance. When an instance partition is specified '
+            '(--instance-partition), only the instance partition operations '
+            'for the given instance partition are returned. '
+        ),
+    }
+
+    flags.AddCommonListArgs(parser, additional_choices)
+    flags.InstancePartition(
+        positional=False,
+        required=False,
+        hidden=True,
+        text=(
+            'For instance partition operations, the name of the instance '
+            'partition the operation is executing on.'
+        ),
+    ).AddToParser(parser)
+
+  def Run(self, args):
+    """This is what gets called when the user runs this command.
+
+    Args:
+      args: an argparse namespace. All the arguments that were provided to this
+        command invocation.
+
+    Returns:
+      Some value that we want to have printed later.
+    """
+    flags.CheckExclusiveLROFlagsUnderInstance(args)
+
+    if args.type == 'INSTANCE':
+      if args.IsSpecified('instance_partition'):
+        raise c_exceptions.InvalidArgumentException(
+            '--instance-partition or --type',
+            'The `--instance-partition` flag cannot be used with'
+            ' `--type=INSTANCE`.',
+        )
+
+    if args.type == 'INSTANCE_PARTITION':
+      # Update output table for instance partition operations.
+      # pylint:disable=protected-access
+      args.GetDisplayInfo().AddFormat("""
+            table(
+              name.basename():label=OPERATION_ID,
+              done():label=DONE,
+              metadata.'@type'.split('.').slice(-1:).join(),
+              metadata.instancePartition.name.split('/').slice(-1:).join():label=INSTANCE_PARTITION_ID,
+              metadata.startTime:label=START_TIME,
+              metadata.endTime:label=END_TIME
+            )
+          """)
+      if args.instance_partition:
+        return instance_partition_operations.ListGeneric(
+            args.instance, args.instance_partition
+        )
+      else:
+        return instance_partition_operations.List(args.instance)
+    return super().Run(args)
+
+
+@base.DefaultUniverseOnly
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class AlphaList(BetaList):
+  """List the Cloud Spanner operations."""
+
+  @staticmethod
+  def Args(parser):
+    """Args is called by calliope to gather arguments for this command.
+
+    Please add arguments in alphabetical order except for no- or a clear-
+    pair for that argument which can follow the argument itself.
+    Args:
+      parser: An argparse parser that you can use to add arguments that go on
+        the command line after this command. Positional arguments are allowed.
+    """
+    additional_choices = {
         'DATABASE_CHANGE_QUORUM': (
             'Database change quorum operations are returned for all databases '
             'in the given instance (--instance only) or only those associated '
@@ -229,7 +309,6 @@ class AlphaList(List):
             'for the given instance partition are returned. '
         ),
     }
-
     flags.AddCommonListArgs(parser, additional_choices)
     flags.SsdCache(
         positional=False,
@@ -281,34 +360,4 @@ class AlphaList(List):
           )
         """)
       return ssd_cache_operations.List(args.ssd_cache, args.instance_config)
-
-    flags.CheckExclusiveLROFlagsUnderInstance(args)
-
-    if args.type == 'INSTANCE':
-      if args.IsSpecified('instance_partition'):
-        raise c_exceptions.InvalidArgumentException(
-            '--instance-partition or --type',
-            'The `--instance-partition` flag cannot be used with'
-            ' `--type=INSTANCE`.',
-        )
-
-    if args.type == 'INSTANCE_PARTITION':
-      # Update output table for instance partition operations.
-      # pylint:disable=protected-access
-      args.GetDisplayInfo().AddFormat("""
-            table(
-              name.basename():label=OPERATION_ID,
-              done():label=DONE,
-              metadata.'@type'.split('.').slice(-1:).join(),
-              metadata.instancePartition.name.split('/').slice(-1:).join():label=INSTANCE_PARTITION_ID,
-              metadata.startTime:label=START_TIME,
-              metadata.endTime:label=END_TIME
-            )
-          """)
-      if args.instance_partition:
-        return instance_partition_operations.ListGeneric(
-            args.instance, args.instance_partition
-        )
-      else:
-        return instance_partition_operations.List(args.instance)
     return super().Run(args)

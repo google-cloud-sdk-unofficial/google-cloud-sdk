@@ -77,10 +77,10 @@ class V1alpha1WebhookClientConfig(object):
         :type: str
         """
     if ca_bundle is not None and not re.search(
-        '^(?:[A-Za-z0-9+\/]{4})*(?:[A-Za-z0-9+\/]{2}==|[A-Za-z0-9+\/]{3}=)?$',
+        r'^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$',
         ca_bundle):
       raise ValueError(
-          'Invalid value for `ca_bundle`, must be a follow pattern or equal to `/^(?:[A-Za-z0-9+\/]{4})*(?:[A-Za-z0-9+\/]{2}==|[A-Za-z0-9+\/]{3}=)?$/`'
+          'Invalid value for `ca_bundle`, must be a follow pattern or equal to r`/^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$/`'
       )
 
     self._ca_bundle = ca_bundle
